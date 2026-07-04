@@ -37,20 +37,16 @@ const fr_savedrename1 = /** @type {(inputs: Savedrename1Inputs) => LocalizedStri
 	return /** @type {LocalizedString} */ (`Rebaptiser`)
 };
 
-const uk_savedrename1 = /** @type {(inputs: Savedrename1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Перейменувати`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Rename" |
 *
 * @param {Savedrename1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const savedrename1 = /** @type {((inputs?: Savedrename1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedrename1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const savedrename1 = /** @type {((inputs?: Savedrename1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedrename1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_savedrename1(inputs)
 	if (locale === "es") return es_savedrename1(inputs)
@@ -59,7 +55,6 @@ const savedrename1 = /** @type {((inputs?: Savedrename1Inputs, options?: { local
 	if (locale === "ko") return ko_savedrename1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_savedrename1(inputs)
 	if (locale === "de") return de_savedrename1(inputs)
-	if (locale === "fr") return fr_savedrename1(inputs)
-	return uk_savedrename1(inputs)
+	return fr_savedrename1(inputs)
 });
 export { savedrename1 as "savedRename" }

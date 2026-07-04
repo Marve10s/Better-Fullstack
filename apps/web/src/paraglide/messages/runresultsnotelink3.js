@@ -37,20 +37,16 @@ const fr_runresultsnotelink3 = /** @type {(inputs: Runresultsnotelink3Inputs) =>
 	return /** @type {LocalizedString} */ (`rapports publiés`)
 };
 
-const uk_runresultsnotelink3 = /** @type {(inputs: Runresultsnotelink3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`опубліковані звіти`)
-};
-
 /**
 * | output |
 * | --- |
 * | "published reports" |
 *
 * @param {Runresultsnotelink3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const runresultsnotelink3 = /** @type {((inputs?: Runresultsnotelink3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runresultsnotelink3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const runresultsnotelink3 = /** @type {((inputs?: Runresultsnotelink3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runresultsnotelink3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_runresultsnotelink3(inputs)
 	if (locale === "es") return es_runresultsnotelink3(inputs)
@@ -59,7 +55,6 @@ const runresultsnotelink3 = /** @type {((inputs?: Runresultsnotelink3Inputs, opt
 	if (locale === "ko") return ko_runresultsnotelink3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_runresultsnotelink3(inputs)
 	if (locale === "de") return de_runresultsnotelink3(inputs)
-	if (locale === "fr") return fr_runresultsnotelink3(inputs)
-	return uk_runresultsnotelink3(inputs)
+	return fr_runresultsnotelink3(inputs)
 });
 export { runresultsnotelink3 as "runResultsNoteLink" }

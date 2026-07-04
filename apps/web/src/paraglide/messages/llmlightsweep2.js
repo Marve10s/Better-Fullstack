@@ -37,20 +37,16 @@ const fr_llmlightsweep2 = /** @type {(inputs: Llmlightsweep2Inputs) => Localized
 	return /** @type {LocalizedString} */ (`Balayage lumineux du 12 juin`)
 };
 
-const uk_llmlightsweep2 = /** @type {(inputs: Llmlightsweep2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`12 червня легкий заміт`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Jun 12 light sweep" |
 *
 * @param {Llmlightsweep2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const llmlightsweep2 = /** @type {((inputs?: Llmlightsweep2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmlightsweep2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const llmlightsweep2 = /** @type {((inputs?: Llmlightsweep2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmlightsweep2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_llmlightsweep2(inputs)
 	if (locale === "es") return es_llmlightsweep2(inputs)
@@ -59,7 +55,6 @@ const llmlightsweep2 = /** @type {((inputs?: Llmlightsweep2Inputs, options?: { l
 	if (locale === "ko") return ko_llmlightsweep2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_llmlightsweep2(inputs)
 	if (locale === "de") return de_llmlightsweep2(inputs)
-	if (locale === "fr") return fr_llmlightsweep2(inputs)
-	return uk_llmlightsweep2(inputs)
+	return fr_llmlightsweep2(inputs)
 });
 export { llmlightsweep2 as "llmLightSweep" }

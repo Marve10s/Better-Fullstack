@@ -8,7 +8,7 @@
     "i18n:compile": "bun run scripts/compile-paraglide.ts",
     "prebuild": "bun run i18n:compile && cd ../../packages/types && bun run build && cd ../template-generator && bun run build",
     "build": "vite build",
-    "dev": "vite dev --port 3333",
+    "dev": "bun run i18n:compile && vite dev --port 3333",
     "start": "node .output/server/index.mjs",
     "lint": "bun run i18n:compile && oxlint -c ../../.oxlintrc.json . && tsc --noEmit",
     "test": "bun run i18n:compile && bun test ./test/*.test.ts",

@@ -1,4 +1,5 @@
 import { blogMeta } from "virtual:content-meta";
+import { localizedBlogMdxLoaders } from "virtual:localized-content";
 
 import { blogMdxLoaders as mdxLoaders, type BlogMdxModule } from "@/lib/blog/mdx-loaders";
 import type { TocEntry } from "@/lib/docs/remark-extract-toc";
@@ -59,8 +60,12 @@ function localizedFilePath(filePath: string, locale: SupportedLocale): string {
   return filePath.replace(/\.mdx$/, `.${locale}.mdx`);
 }
 
+function localizedContentKey(filePath: string, locale: SupportedLocale): string {
+  return `${locale}:${filePath}`;
+}
+
 function hasLocalizedContent(filePath: string, locale: SupportedLocale): boolean {
-  return locale !== "en" && localizedFilePath(filePath, locale) in mdxLoaders;
+  return locale !== "en" && localizedContentKey(filePath, locale) in localizedBlogMdxLoaders;
 }
 
 function contentCacheKey(post: BlogPost, locale: SupportedLocale): string {
@@ -95,10 +100,11 @@ const contentCache = createSuspenseCache<BlogPostContent>();
 
 async function loadBlogContent(post: BlogPost): Promise<BlogPostContent> {
   const locale = currentContentLocale();
-  const filePath = hasLocalizedContent(post.filePath, locale)
-    ? localizedFilePath(post.filePath, locale)
-    : post.filePath;
-  const module = await mdxLoaders[filePath]?.();
+  const localizedKey = localizedContentKey(post.filePath, locale);
+  const hasLocalized = hasLocalizedContent(post.filePath, locale);
+  const filePath = hasLocalized ? localizedFilePath(post.filePath, locale) : post.filePath;
+  const loader = hasLocalized ? localizedBlogMdxLoaders[localizedKey] : mdxLoaders[filePath];
+  const module = await loader?.();
   if (!module) throw new Error(`Blog content module missing for ${filePath}`);
   return {
     toc: module.toc ?? [],

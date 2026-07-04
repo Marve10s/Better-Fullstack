@@ -37,20 +37,16 @@ const fr_hometestimonialseyebrow2 = /** @type {(inputs: Hometestimonialseyebrow2
 	return /** @type {LocalizedString} */ (`sur le dossier`)
 };
 
-const uk_hometestimonialseyebrow2 = /** @type {(inputs: Hometestimonialseyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`на запис`)
-};
-
 /**
 * | output |
 * | --- |
 * | "on the record" |
 *
 * @param {Hometestimonialseyebrow2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const hometestimonialseyebrow2 = /** @type {((inputs?: Hometestimonialseyebrow2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Hometestimonialseyebrow2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const hometestimonialseyebrow2 = /** @type {((inputs?: Hometestimonialseyebrow2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Hometestimonialseyebrow2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_hometestimonialseyebrow2(inputs)
 	if (locale === "es") return es_hometestimonialseyebrow2(inputs)
@@ -59,7 +55,6 @@ const hometestimonialseyebrow2 = /** @type {((inputs?: Hometestimonialseyebrow2I
 	if (locale === "ko") return ko_hometestimonialseyebrow2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_hometestimonialseyebrow2(inputs)
 	if (locale === "de") return de_hometestimonialseyebrow2(inputs)
-	if (locale === "fr") return fr_hometestimonialseyebrow2(inputs)
-	return uk_hometestimonialseyebrow2(inputs)
+	return fr_hometestimonialseyebrow2(inputs)
 });
 export { hometestimonialseyebrow2 as "homeTestimonialsEyebrow" }

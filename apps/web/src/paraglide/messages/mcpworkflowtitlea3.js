@@ -37,20 +37,16 @@ const fr_mcpworkflowtitlea3 = /** @type {(inputs: Mcpworkflowtitlea3Inputs) => L
 	return /** @type {LocalizedString} */ (`Vous décrivez.`)
 };
 
-const uk_mcpworkflowtitlea3 = /** @type {(inputs: Mcpworkflowtitlea3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ви описуєте.`)
-};
-
 /**
 * | output |
 * | --- |
 * | "You describe." |
 *
 * @param {Mcpworkflowtitlea3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const mcpworkflowtitlea3 = /** @type {((inputs?: Mcpworkflowtitlea3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpworkflowtitlea3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcpworkflowtitlea3 = /** @type {((inputs?: Mcpworkflowtitlea3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpworkflowtitlea3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcpworkflowtitlea3(inputs)
 	if (locale === "es") return es_mcpworkflowtitlea3(inputs)
@@ -59,7 +55,6 @@ const mcpworkflowtitlea3 = /** @type {((inputs?: Mcpworkflowtitlea3Inputs, optio
 	if (locale === "ko") return ko_mcpworkflowtitlea3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcpworkflowtitlea3(inputs)
 	if (locale === "de") return de_mcpworkflowtitlea3(inputs)
-	if (locale === "fr") return fr_mcpworkflowtitlea3(inputs)
-	return uk_mcpworkflowtitlea3(inputs)
+	return fr_mcpworkflowtitlea3(inputs)
 });
 export { mcpworkflowtitlea3 as "mcpWorkflowTitleA" }

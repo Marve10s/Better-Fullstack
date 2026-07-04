@@ -37,20 +37,16 @@ const fr_presettrackmobileappdescription4 = /** @type {(inputs: Presettrackmobil
 	return /** @type {LocalizedString} */ (`Expo avec Uniwind pour un premier shell d'application natif avant que les services backend ne soient nécessaires.`)
 };
 
-const uk_presettrackmobileappdescription4 = /** @type {(inputs: Presettrackmobileappdescription4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Expo з Uniwind для створення нативної оболонки додатків, перш ніж знадобляться серверні служби.`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Expo with Uniwind for a native-first app shell before backend services are needed." |
 *
 * @param {Presettrackmobileappdescription4Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const presettrackmobileappdescription4 = /** @type {((inputs?: Presettrackmobileappdescription4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackmobileappdescription4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const presettrackmobileappdescription4 = /** @type {((inputs?: Presettrackmobileappdescription4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackmobileappdescription4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_presettrackmobileappdescription4(inputs)
 	if (locale === "es") return es_presettrackmobileappdescription4(inputs)
@@ -59,7 +55,6 @@ const presettrackmobileappdescription4 = /** @type {((inputs?: Presettrackmobile
 	if (locale === "ko") return ko_presettrackmobileappdescription4(inputs)
 	if (locale === "zh-Hant") return zh_hant1_presettrackmobileappdescription4(inputs)
 	if (locale === "de") return de_presettrackmobileappdescription4(inputs)
-	if (locale === "fr") return fr_presettrackmobileappdescription4(inputs)
-	return uk_presettrackmobileappdescription4(inputs)
+	return fr_presettrackmobileappdescription4(inputs)
 });
 export { presettrackmobileappdescription4 as "presetTrackMobileAppDescription" }

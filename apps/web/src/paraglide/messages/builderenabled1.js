@@ -37,20 +37,16 @@ const fr_builderenabled1 = /** @type {(inputs: Builderenabled1Inputs) => Localiz
 	return /** @type {LocalizedString} */ (`Activé`)
 };
 
-const uk_builderenabled1 = /** @type {(inputs: Builderenabled1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Увімкнено`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Enabled" |
 *
 * @param {Builderenabled1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const builderenabled1 = /** @type {((inputs?: Builderenabled1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderenabled1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const builderenabled1 = /** @type {((inputs?: Builderenabled1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderenabled1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderenabled1(inputs)
 	if (locale === "es") return es_builderenabled1(inputs)
@@ -59,7 +55,6 @@ const builderenabled1 = /** @type {((inputs?: Builderenabled1Inputs, options?: {
 	if (locale === "ko") return ko_builderenabled1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderenabled1(inputs)
 	if (locale === "de") return de_builderenabled1(inputs)
-	if (locale === "fr") return fr_builderenabled1(inputs)
-	return uk_builderenabled1(inputs)
+	return fr_builderenabled1(inputs)
 });
 export { builderenabled1 as "builderEnabled" }

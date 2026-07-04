@@ -37,20 +37,16 @@ const fr_presettrackrestapiintent4 = /** @type {(inputs: Presettrackrestapiinten
 	return /** @type {LocalizedString} */ (`Expovoir un service`)
 };
 
-const uk_presettrackrestapiintent4 = /** @type {(inputs: Presettrackrestapiintent4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Розкрити послугу`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Expose a service" |
 *
 * @param {Presettrackrestapiintent4Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const presettrackrestapiintent4 = /** @type {((inputs?: Presettrackrestapiintent4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackrestapiintent4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const presettrackrestapiintent4 = /** @type {((inputs?: Presettrackrestapiintent4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackrestapiintent4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_presettrackrestapiintent4(inputs)
 	if (locale === "es") return es_presettrackrestapiintent4(inputs)
@@ -59,7 +55,6 @@ const presettrackrestapiintent4 = /** @type {((inputs?: Presettrackrestapiintent
 	if (locale === "ko") return ko_presettrackrestapiintent4(inputs)
 	if (locale === "zh-Hant") return zh_hant1_presettrackrestapiintent4(inputs)
 	if (locale === "de") return de_presettrackrestapiintent4(inputs)
-	if (locale === "fr") return fr_presettrackrestapiintent4(inputs)
-	return uk_presettrackrestapiintent4(inputs)
+	return fr_presettrackrestapiintent4(inputs)
 });
 export { presettrackrestapiintent4 as "presetTrackRestApiIntent" }

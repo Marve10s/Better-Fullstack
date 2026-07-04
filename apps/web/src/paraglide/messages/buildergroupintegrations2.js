@@ -37,20 +37,16 @@ const fr_buildergroupintegrations2 = /** @type {(inputs: Buildergroupintegration
 	return /** @type {LocalizedString} */ (`Intégrations`)
 };
 
-const uk_buildergroupintegrations2 = /** @type {(inputs: Buildergroupintegrations2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Інтеграції`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Integrations" |
 *
 * @param {Buildergroupintegrations2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const buildergroupintegrations2 = /** @type {((inputs?: Buildergroupintegrations2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildergroupintegrations2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const buildergroupintegrations2 = /** @type {((inputs?: Buildergroupintegrations2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildergroupintegrations2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_buildergroupintegrations2(inputs)
 	if (locale === "es") return es_buildergroupintegrations2(inputs)
@@ -59,7 +55,6 @@ const buildergroupintegrations2 = /** @type {((inputs?: Buildergroupintegrations
 	if (locale === "ko") return ko_buildergroupintegrations2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_buildergroupintegrations2(inputs)
 	if (locale === "de") return de_buildergroupintegrations2(inputs)
-	if (locale === "fr") return fr_buildergroupintegrations2(inputs)
-	return uk_buildergroupintegrations2(inputs)
+	return fr_buildergroupintegrations2(inputs)
 });
 export { buildergroupintegrations2 as "builderGroupIntegrations" }

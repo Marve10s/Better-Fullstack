@@ -37,20 +37,16 @@ const fr_builderupdatepreset2 = /** @type {(inputs: Builderupdatepreset2Inputs) 
 	return /** @type {LocalizedString} */ (`Mettre à jour le préréglage`)
 };
 
-const uk_builderupdatepreset2 = /** @type {(inputs: Builderupdatepreset2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Оновити попередні налаштування`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Update Preset" |
 *
 * @param {Builderupdatepreset2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const builderupdatepreset2 = /** @type {((inputs?: Builderupdatepreset2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderupdatepreset2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const builderupdatepreset2 = /** @type {((inputs?: Builderupdatepreset2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderupdatepreset2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderupdatepreset2(inputs)
 	if (locale === "es") return es_builderupdatepreset2(inputs)
@@ -59,7 +55,6 @@ const builderupdatepreset2 = /** @type {((inputs?: Builderupdatepreset2Inputs, o
 	if (locale === "ko") return ko_builderupdatepreset2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderupdatepreset2(inputs)
 	if (locale === "de") return de_builderupdatepreset2(inputs)
-	if (locale === "fr") return fr_builderupdatepreset2(inputs)
-	return uk_builderupdatepreset2(inputs)
+	return fr_builderupdatepreset2(inputs)
 });
 export { builderupdatepreset2 as "builderUpdatePreset" }

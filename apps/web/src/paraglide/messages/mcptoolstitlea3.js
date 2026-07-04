@@ -37,20 +37,16 @@ const fr_mcptoolstitlea3 = /** @type {(inputs: Mcptoolstitlea3Inputs) => Localiz
 	return /** @type {LocalizedString} */ (`Sept outils.`)
 };
 
-const uk_mcptoolstitlea3 = /** @type {(inputs: Mcptoolstitlea3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Сім інструментів.`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Seven tools." |
 *
 * @param {Mcptoolstitlea3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const mcptoolstitlea3 = /** @type {((inputs?: Mcptoolstitlea3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcptoolstitlea3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcptoolstitlea3 = /** @type {((inputs?: Mcptoolstitlea3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcptoolstitlea3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcptoolstitlea3(inputs)
 	if (locale === "es") return es_mcptoolstitlea3(inputs)
@@ -59,7 +55,6 @@ const mcptoolstitlea3 = /** @type {((inputs?: Mcptoolstitlea3Inputs, options?: {
 	if (locale === "ko") return ko_mcptoolstitlea3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcptoolstitlea3(inputs)
 	if (locale === "de") return de_mcptoolstitlea3(inputs)
-	if (locale === "fr") return fr_mcptoolstitlea3(inputs)
-	return uk_mcptoolstitlea3(inputs)
+	return fr_mcptoolstitlea3(inputs)
 });
 export { mcptoolstitlea3 as "mcpToolsTitleA" }

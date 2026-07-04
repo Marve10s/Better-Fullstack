@@ -37,20 +37,16 @@ const fr_changelogrelease20260612highlightstorybook3 = /** @type {(inputs: Chang
 	return /** @type {LocalizedString} */ (`Correction des échafaudages Storybook sur les projets Next.js : la détection du framework gère désormais les piles multi-frontend et l'importation des types d'histoires à partir du package de rendu, de sorte que les applications générées vérifient et construisent.`)
 };
 
-const uk_changelogrelease20260612highlightstorybook3 = /** @type {(inputs: Changelogrelease20260612highlightstorybook3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Виправлено каркаси Storybook у проектах Next.js: виявлення фреймворку тепер обробляє багатоінтерфейсні стеки та типи історій, імпортовані з пакета рендерера, тому згенеровані програми перевіряють тип і будують.`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Fixed Storybook scaffolds on Next.js projects: framework detection now handles multi-frontend stacks and story types import from the renderer package, so gen..." |
 *
 * @param {Changelogrelease20260612highlightstorybook3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const changelogrelease20260612highlightstorybook3 = /** @type {((inputs?: Changelogrelease20260612highlightstorybook3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Changelogrelease20260612highlightstorybook3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const changelogrelease20260612highlightstorybook3 = /** @type {((inputs?: Changelogrelease20260612highlightstorybook3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Changelogrelease20260612highlightstorybook3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_changelogrelease20260612highlightstorybook3(inputs)
 	if (locale === "es") return es_changelogrelease20260612highlightstorybook3(inputs)
@@ -59,7 +55,6 @@ const changelogrelease20260612highlightstorybook3 = /** @type {((inputs?: Change
 	if (locale === "ko") return ko_changelogrelease20260612highlightstorybook3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_changelogrelease20260612highlightstorybook3(inputs)
 	if (locale === "de") return de_changelogrelease20260612highlightstorybook3(inputs)
-	if (locale === "fr") return fr_changelogrelease20260612highlightstorybook3(inputs)
-	return uk_changelogrelease20260612highlightstorybook3(inputs)
+	return fr_changelogrelease20260612highlightstorybook3(inputs)
 });
 export { changelogrelease20260612highlightstorybook3 as "changelogRelease20260612HighlightStorybook" }

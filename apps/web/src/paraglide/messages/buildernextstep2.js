@@ -37,20 +37,16 @@ const fr_buildernextstep2 = /** @type {(inputs: Buildernextstep2Inputs) => Local
 	return /** @type {LocalizedString} */ (`Étape suivante`)
 };
 
-const uk_buildernextstep2 = /** @type {(inputs: Buildernextstep2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Наступний крок`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Next step" |
 *
 * @param {Buildernextstep2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const buildernextstep2 = /** @type {((inputs?: Buildernextstep2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildernextstep2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const buildernextstep2 = /** @type {((inputs?: Buildernextstep2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildernextstep2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_buildernextstep2(inputs)
 	if (locale === "es") return es_buildernextstep2(inputs)
@@ -59,7 +55,6 @@ const buildernextstep2 = /** @type {((inputs?: Buildernextstep2Inputs, options?:
 	if (locale === "ko") return ko_buildernextstep2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_buildernextstep2(inputs)
 	if (locale === "de") return de_buildernextstep2(inputs)
-	if (locale === "fr") return fr_buildernextstep2(inputs)
-	return uk_buildernextstep2(inputs)
+	return fr_buildernextstep2(inputs)
 });
 export { buildernextstep2 as "builderNextStep" }

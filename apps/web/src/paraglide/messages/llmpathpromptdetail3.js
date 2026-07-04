@@ -37,20 +37,16 @@ const fr_llmpathpromptdetail3 = /** @type {(inputs: Llmpathpromptdetail3Inputs) 
 	return /** @type {LocalizedString} */ (`pas de Better-Fullstack — l'agent écrit manuellement chaque fichier`)
 };
 
-const uk_llmpathpromptdetail3 = /** @type {(inputs: Llmpathpromptdetail3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`no Better-Fullstack — агент вручну пише кожен файл`)
-};
-
 /**
 * | output |
 * | --- |
 * | "no Better-Fullstack — agent hand-writes every file" |
 *
 * @param {Llmpathpromptdetail3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const llmpathpromptdetail3 = /** @type {((inputs?: Llmpathpromptdetail3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmpathpromptdetail3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const llmpathpromptdetail3 = /** @type {((inputs?: Llmpathpromptdetail3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmpathpromptdetail3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_llmpathpromptdetail3(inputs)
 	if (locale === "es") return es_llmpathpromptdetail3(inputs)
@@ -59,7 +55,6 @@ const llmpathpromptdetail3 = /** @type {((inputs?: Llmpathpromptdetail3Inputs, o
 	if (locale === "ko") return ko_llmpathpromptdetail3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_llmpathpromptdetail3(inputs)
 	if (locale === "de") return de_llmpathpromptdetail3(inputs)
-	if (locale === "fr") return fr_llmpathpromptdetail3(inputs)
-	return uk_llmpathpromptdetail3(inputs)
+	return fr_llmpathpromptdetail3(inputs)
 });
 export { llmpathpromptdetail3 as "llmPathPromptDetail" }

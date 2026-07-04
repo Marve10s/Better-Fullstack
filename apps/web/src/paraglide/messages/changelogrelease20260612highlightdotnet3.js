@@ -37,20 +37,16 @@ const fr_changelogrelease20260612highlightdotnet3 = /** @type {(inputs: Changelo
 	return /** @type {LocalizedString} */ (`Ajout de .NET en tant qu'écosystème de première classe, ainsi que d'un niveau entreprise, d'utilitaires backend et d'options de déploiement Render/Netlify sur le graphique de pile.`)
 };
 
-const uk_changelogrelease20260612highlightdotnet3 = /** @type {(inputs: Changelogrelease20260612highlightdotnet3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Додано .NET як першокласну екосистему, а також корпоративний рівень, серверні утиліти та параметри розгортання Render/Netlify на графі стека.`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Added .NET as a first-class ecosystem, plus an enterprise tier, backend-utils, and Render/Netlify deployment options on the stack graph." |
 *
 * @param {Changelogrelease20260612highlightdotnet3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const changelogrelease20260612highlightdotnet3 = /** @type {((inputs?: Changelogrelease20260612highlightdotnet3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Changelogrelease20260612highlightdotnet3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const changelogrelease20260612highlightdotnet3 = /** @type {((inputs?: Changelogrelease20260612highlightdotnet3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Changelogrelease20260612highlightdotnet3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_changelogrelease20260612highlightdotnet3(inputs)
 	if (locale === "es") return es_changelogrelease20260612highlightdotnet3(inputs)
@@ -59,7 +55,6 @@ const changelogrelease20260612highlightdotnet3 = /** @type {((inputs?: Changelog
 	if (locale === "ko") return ko_changelogrelease20260612highlightdotnet3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_changelogrelease20260612highlightdotnet3(inputs)
 	if (locale === "de") return de_changelogrelease20260612highlightdotnet3(inputs)
-	if (locale === "fr") return fr_changelogrelease20260612highlightdotnet3(inputs)
-	return uk_changelogrelease20260612highlightdotnet3(inputs)
+	return fr_changelogrelease20260612highlightdotnet3(inputs)
 });
 export { changelogrelease20260612highlightdotnet3 as "changelogRelease20260612HighlightDotnet" }

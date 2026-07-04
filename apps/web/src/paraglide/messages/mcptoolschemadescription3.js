@@ -37,20 +37,16 @@ const fr_mcptoolschemadescription3 = /** @type {(inputs: Mcptoolschemadescriptio
 	return /** @type {LocalizedString} */ (`Options valides pour n'importe quelle catégorie, filtrables par écosystème`)
 };
 
-const uk_mcptoolschemadescription3 = /** @type {(inputs: Mcptoolschemadescription3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Дійсні параметри для будь-якої категорії, які можна фільтрувати за екосистемою`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Valid options for any category, filterable by ecosystem" |
 *
 * @param {Mcptoolschemadescription3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const mcptoolschemadescription3 = /** @type {((inputs?: Mcptoolschemadescription3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcptoolschemadescription3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcptoolschemadescription3 = /** @type {((inputs?: Mcptoolschemadescription3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcptoolschemadescription3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcptoolschemadescription3(inputs)
 	if (locale === "es") return es_mcptoolschemadescription3(inputs)
@@ -59,7 +55,6 @@ const mcptoolschemadescription3 = /** @type {((inputs?: Mcptoolschemadescription
 	if (locale === "ko") return ko_mcptoolschemadescription3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcptoolschemadescription3(inputs)
 	if (locale === "de") return de_mcptoolschemadescription3(inputs)
-	if (locale === "fr") return fr_mcptoolschemadescription3(inputs)
-	return uk_mcptoolschemadescription3(inputs)
+	return fr_mcptoolschemadescription3(inputs)
 });
 export { mcptoolschemadescription3 as "mcpToolSchemaDescription" }

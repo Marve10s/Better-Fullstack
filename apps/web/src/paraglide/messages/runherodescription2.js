@@ -37,20 +37,16 @@ const fr_runherodescription2 = /** @type {(inputs: Runherodescription2Inputs) =>
 	return /** @type {LocalizedString} */ (`Ce framework est open source. Clonez-le, configurez-le avec n'importe quel agent (Claude Code, Codex, opencode, Kilo ou Antigravity pour Gemini) et il générera la structure de chaque spécification, puis vérifiera si le projet généré s'installe et se compile correctement. Il fonctionne avec une interface de ligne de commande (CLI) ou une simple clé API.`)
 };
 
-const uk_runherodescription2 = /** @type {(inputs: Runherodescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Збруя є відкритим кодом. Склонуйте його, направте на будь-який агент — Claude Code, Codex, відкритий код, Kilo або Antigravity для Gemini — і він створить кожну специфікацію, а потім оцінить, чи справді згенерований проект інсталюється та збирається. Запускає роботу з зареєстрованим CLI або звичайним ключем API.`)
-};
-
 /**
 * | output |
 * | --- |
 * | "The harness is open source. Clone it, point it at any agent — Claude Code, Codex, opencode, Kilo, or Antigravity for Gemini — and it scaffolds each spec, the..." |
 *
 * @param {Runherodescription2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const runherodescription2 = /** @type {((inputs?: Runherodescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runherodescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const runherodescription2 = /** @type {((inputs?: Runherodescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runherodescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_runherodescription2(inputs)
 	if (locale === "es") return es_runherodescription2(inputs)
@@ -59,7 +55,6 @@ const runherodescription2 = /** @type {((inputs?: Runherodescription2Inputs, opt
 	if (locale === "ko") return ko_runherodescription2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_runherodescription2(inputs)
 	if (locale === "de") return de_runherodescription2(inputs)
-	if (locale === "fr") return fr_runherodescription2(inputs)
-	return uk_runherodescription2(inputs)
+	return fr_runherodescription2(inputs)
 });
 export { runherodescription2 as "runHeroDescription" }

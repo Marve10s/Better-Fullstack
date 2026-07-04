@@ -37,20 +37,16 @@ const fr_builderclosesectionnavigation3 = /** @type {(inputs: Builderclosesectio
 	return /** @type {LocalizedString} */ (`Fermer la navigation dans la section`)
 };
 
-const uk_builderclosesectionnavigation3 = /** @type {(inputs: Builderclosesectionnavigation3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Закрити розділ навігації`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Close section navigation" |
 *
 * @param {Builderclosesectionnavigation3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const builderclosesectionnavigation3 = /** @type {((inputs?: Builderclosesectionnavigation3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderclosesectionnavigation3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const builderclosesectionnavigation3 = /** @type {((inputs?: Builderclosesectionnavigation3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderclosesectionnavigation3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderclosesectionnavigation3(inputs)
 	if (locale === "es") return es_builderclosesectionnavigation3(inputs)
@@ -59,7 +55,6 @@ const builderclosesectionnavigation3 = /** @type {((inputs?: Builderclosesection
 	if (locale === "ko") return ko_builderclosesectionnavigation3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderclosesectionnavigation3(inputs)
 	if (locale === "de") return de_builderclosesectionnavigation3(inputs)
-	if (locale === "fr") return fr_builderclosesectionnavigation3(inputs)
-	return uk_builderclosesectionnavigation3(inputs)
+	return fr_builderclosesectionnavigation3(inputs)
 });
 export { builderclosesectionnavigation3 as "builderCloseSectionNavigation" }

@@ -37,20 +37,16 @@ const fr_homefactuniverselifetimes3 = /** @type {(inputs: Homefactuniverselifeti
 	return /** @type {LocalizedString} */ (`${i?.mantissa} × 10^${i?.exponent} durées de vie de l'univers pour tester toutes les combinaisons`)
 };
 
-const uk_homefactuniverselifetimes3 = /** @type {(inputs: Homefactuniverselifetimes3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.mantissa} × 10^${i?.exponent} час життя всесвіту для перевірки всіх комбінацій`)
-};
-
 /**
 * | output |
 * | --- |
 * | "{mantissa} × 10^{exponent} universe lifetimes to test all combinations" |
 *
 * @param {Homefactuniverselifetimes3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const homefactuniverselifetimes3 = /** @type {((inputs: Homefactuniverselifetimes3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homefactuniverselifetimes3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
+const homefactuniverselifetimes3 = /** @type {((inputs: Homefactuniverselifetimes3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homefactuniverselifetimes3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_homefactuniverselifetimes3(inputs)
 	if (locale === "es") return es_homefactuniverselifetimes3(inputs)
@@ -59,7 +55,6 @@ const homefactuniverselifetimes3 = /** @type {((inputs: Homefactuniverselifetime
 	if (locale === "ko") return ko_homefactuniverselifetimes3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_homefactuniverselifetimes3(inputs)
 	if (locale === "de") return de_homefactuniverselifetimes3(inputs)
-	if (locale === "fr") return fr_homefactuniverselifetimes3(inputs)
-	return uk_homefactuniverselifetimes3(inputs)
+	return fr_homefactuniverselifetimes3(inputs)
 });
 export { homefactuniverselifetimes3 as "homeFactUniverseLifetimes" }

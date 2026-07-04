@@ -37,20 +37,16 @@ const fr_stackdependencycount2 = /** @type {(inputs: Stackdependencycount2Inputs
 	return /** @type {LocalizedString} */ (`${i?.count} dépendances`)
 };
 
-const uk_stackdependencycount2 = /** @type {(inputs: Stackdependencycount2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} залежності`)
-};
-
 /**
 * | output |
 * | --- |
 * | "{count} dependencies" |
 *
 * @param {Stackdependencycount2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const stackdependencycount2 = /** @type {((inputs: Stackdependencycount2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Stackdependencycount2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
+const stackdependencycount2 = /** @type {((inputs: Stackdependencycount2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Stackdependencycount2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_stackdependencycount2(inputs)
 	if (locale === "es") return es_stackdependencycount2(inputs)
@@ -59,7 +55,6 @@ const stackdependencycount2 = /** @type {((inputs: Stackdependencycount2Inputs, 
 	if (locale === "ko") return ko_stackdependencycount2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_stackdependencycount2(inputs)
 	if (locale === "de") return de_stackdependencycount2(inputs)
-	if (locale === "fr") return fr_stackdependencycount2(inputs)
-	return uk_stackdependencycount2(inputs)
+	return fr_stackdependencycount2(inputs)
 });
 export { stackdependencycount2 as "stackDependencyCount" }

@@ -37,20 +37,16 @@ const fr_docssearchloading2 = /** @type {(inputs: Docssearchloading2Inputs) => L
 	return /** @type {LocalizedString} */ (`Chargement de la recherche...`)
 };
 
-const uk_docssearchloading2 = /** @type {(inputs: Docssearchloading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Завантаження пошуку...`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Loading search..." |
 *
 * @param {Docssearchloading2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const docssearchloading2 = /** @type {((inputs?: Docssearchloading2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssearchloading2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const docssearchloading2 = /** @type {((inputs?: Docssearchloading2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssearchloading2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_docssearchloading2(inputs)
 	if (locale === "es") return es_docssearchloading2(inputs)
@@ -59,7 +55,6 @@ const docssearchloading2 = /** @type {((inputs?: Docssearchloading2Inputs, optio
 	if (locale === "ko") return ko_docssearchloading2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_docssearchloading2(inputs)
 	if (locale === "de") return de_docssearchloading2(inputs)
-	if (locale === "fr") return fr_docssearchloading2(inputs)
-	return uk_docssearchloading2(inputs)
+	return fr_docssearchloading2(inputs)
 });
 export { docssearchloading2 as "docsSearchLoading" }

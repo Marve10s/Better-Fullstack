@@ -37,20 +37,16 @@ const fr_docssectionsections2 = /** @type {(inputs: Docssectionsections2Inputs) 
 	return /** @type {LocalizedString} */ (`Sections`)
 };
 
-const uk_docssectionsections2 = /** @type {(inputs: Docssectionsections2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Розділи`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Sections" |
 *
 * @param {Docssectionsections2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const docssectionsections2 = /** @type {((inputs?: Docssectionsections2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssectionsections2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const docssectionsections2 = /** @type {((inputs?: Docssectionsections2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssectionsections2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_docssectionsections2(inputs)
 	if (locale === "es") return es_docssectionsections2(inputs)
@@ -59,7 +55,6 @@ const docssectionsections2 = /** @type {((inputs?: Docssectionsections2Inputs, o
 	if (locale === "ko") return ko_docssectionsections2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_docssectionsections2(inputs)
 	if (locale === "de") return de_docssectionsections2(inputs)
-	if (locale === "fr") return fr_docssectionsections2(inputs)
-	return uk_docssectionsections2(inputs)
+	return fr_docssectionsections2(inputs)
 });
 export { docssectionsections2 as "docsSectionSections" }

@@ -37,20 +37,16 @@ const fr_mcptoolseyebrow2 = /** @type {(inputs: Mcptoolseyebrow2Inputs) => Local
 	return /** @type {LocalizedString} */ (`boîte à outils`)
 };
 
-const uk_mcptoolseyebrow2 = /** @type {(inputs: Mcptoolseyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ящик для інструментів`)
-};
-
 /**
 * | output |
 * | --- |
 * | "toolbox" |
 *
 * @param {Mcptoolseyebrow2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const mcptoolseyebrow2 = /** @type {((inputs?: Mcptoolseyebrow2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcptoolseyebrow2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcptoolseyebrow2 = /** @type {((inputs?: Mcptoolseyebrow2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcptoolseyebrow2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcptoolseyebrow2(inputs)
 	if (locale === "es") return es_mcptoolseyebrow2(inputs)
@@ -59,7 +55,6 @@ const mcptoolseyebrow2 = /** @type {((inputs?: Mcptoolseyebrow2Inputs, options?:
 	if (locale === "ko") return ko_mcptoolseyebrow2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcptoolseyebrow2(inputs)
 	if (locale === "de") return de_mcptoolseyebrow2(inputs)
-	if (locale === "fr") return fr_mcptoolseyebrow2(inputs)
-	return uk_mcptoolseyebrow2(inputs)
+	return fr_mcptoolseyebrow2(inputs)
 });
 export { mcptoolseyebrow2 as "mcpToolsEyebrow" }

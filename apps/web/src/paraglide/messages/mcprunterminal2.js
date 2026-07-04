@@ -37,20 +37,16 @@ const fr_mcprunterminal2 = /** @type {(inputs: Mcprunterminal2Inputs) => Localiz
 	return /** @type {LocalizedString} */ (`exécuter dans votre terminal`)
 };
 
-const uk_mcprunterminal2 = /** @type {(inputs: Mcprunterminal2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`запустіть у вашому терміналі`)
-};
-
 /**
 * | output |
 * | --- |
 * | "run in your terminal" |
 *
 * @param {Mcprunterminal2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const mcprunterminal2 = /** @type {((inputs?: Mcprunterminal2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcprunterminal2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcprunterminal2 = /** @type {((inputs?: Mcprunterminal2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcprunterminal2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcprunterminal2(inputs)
 	if (locale === "es") return es_mcprunterminal2(inputs)
@@ -59,7 +55,6 @@ const mcprunterminal2 = /** @type {((inputs?: Mcprunterminal2Inputs, options?: {
 	if (locale === "ko") return ko_mcprunterminal2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcprunterminal2(inputs)
 	if (locale === "de") return de_mcprunterminal2(inputs)
-	if (locale === "fr") return fr_mcprunterminal2(inputs)
-	return uk_mcprunterminal2(inputs)
+	return fr_mcprunterminal2(inputs)
 });
 export { mcprunterminal2 as "mcpRunTerminal" }

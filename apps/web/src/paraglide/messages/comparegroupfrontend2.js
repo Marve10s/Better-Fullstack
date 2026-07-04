@@ -37,20 +37,16 @@ const fr_comparegroupfrontend2 = /** @type {(inputs: Comparegroupfrontend2Inputs
 	return /** @type {LocalizedString} */ (`L'extrémité avant`)
 };
 
-const uk_comparegroupfrontend2 = /** @type {(inputs: Comparegroupfrontend2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Інтерфейс`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Frontend" |
 *
 * @param {Comparegroupfrontend2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const comparegroupfrontend2 = /** @type {((inputs?: Comparegroupfrontend2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparegroupfrontend2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const comparegroupfrontend2 = /** @type {((inputs?: Comparegroupfrontend2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparegroupfrontend2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_comparegroupfrontend2(inputs)
 	if (locale === "es") return es_comparegroupfrontend2(inputs)
@@ -59,7 +55,6 @@ const comparegroupfrontend2 = /** @type {((inputs?: Comparegroupfrontend2Inputs,
 	if (locale === "ko") return ko_comparegroupfrontend2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_comparegroupfrontend2(inputs)
 	if (locale === "de") return de_comparegroupfrontend2(inputs)
-	if (locale === "fr") return fr_comparegroupfrontend2(inputs)
-	return uk_comparegroupfrontend2(inputs)
+	return fr_comparegroupfrontend2(inputs)
 });
 export { comparegroupfrontend2 as "compareGroupFrontend" }

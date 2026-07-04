@@ -37,20 +37,16 @@ const fr_compareseotitle2 = /** @type {(inputs: Compareseotitle2Inputs) => Local
 	return /** @type {LocalizedString} */ (`Comparez les outils d'échafaudage Fullstack | Better Fullstack`)
 };
 
-const uk_compareseotitle2 = /** @type {(inputs: Compareseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Порівняти інструменти для будівельних лісів Fullstack | Better Fullstack`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Compare Fullstack Scaffolding Tools \| Better Fullstack" |
 *
 * @param {Compareseotitle2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const compareseotitle2 = /** @type {((inputs?: Compareseotitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Compareseotitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const compareseotitle2 = /** @type {((inputs?: Compareseotitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Compareseotitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_compareseotitle2(inputs)
 	if (locale === "es") return es_compareseotitle2(inputs)
@@ -59,7 +55,6 @@ const compareseotitle2 = /** @type {((inputs?: Compareseotitle2Inputs, options?:
 	if (locale === "ko") return ko_compareseotitle2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_compareseotitle2(inputs)
 	if (locale === "de") return de_compareseotitle2(inputs)
-	if (locale === "fr") return fr_compareseotitle2(inputs)
-	return uk_compareseotitle2(inputs)
+	return fr_compareseotitle2(inputs)
 });
 export { compareseotitle2 as "compareSeoTitle" }

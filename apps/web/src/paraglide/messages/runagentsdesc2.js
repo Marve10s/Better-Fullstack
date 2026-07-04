@@ -37,20 +37,16 @@ const fr_runagentsdesc2 = /** @type {(inputs: Runagentsdesc2Inputs) => Localized
 	return /** @type {LocalizedString} */ (`Le fournisseur est déduit de l'identifiant du modèle ; un seul indicateur sélectionne donc à la fois le modèle et l'interface de ligne de commande qui le pilote.`)
 };
 
-const uk_runagentsdesc2 = /** @type {(inputs: Runagentsdesc2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Постачальник визначається за ідентифікатором моделі, тому один прапор вибирає як модель, так і CLI, який її керує.`)
-};
-
 /**
 * | output |
 * | --- |
 * | "The provider is inferred from the model id, so one flag picks both the model and the CLI that drives it." |
 *
 * @param {Runagentsdesc2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const runagentsdesc2 = /** @type {((inputs?: Runagentsdesc2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runagentsdesc2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const runagentsdesc2 = /** @type {((inputs?: Runagentsdesc2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runagentsdesc2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_runagentsdesc2(inputs)
 	if (locale === "es") return es_runagentsdesc2(inputs)
@@ -59,7 +55,6 @@ const runagentsdesc2 = /** @type {((inputs?: Runagentsdesc2Inputs, options?: { l
 	if (locale === "ko") return ko_runagentsdesc2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_runagentsdesc2(inputs)
 	if (locale === "de") return de_runagentsdesc2(inputs)
-	if (locale === "fr") return fr_runagentsdesc2(inputs)
-	return uk_runagentsdesc2(inputs)
+	return fr_runagentsdesc2(inputs)
 });
 export { runagentsdesc2 as "runAgentsDesc" }

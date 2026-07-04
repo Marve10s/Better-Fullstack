@@ -37,20 +37,16 @@ const fr_llmagenttitle2 = /** @type {(inputs: Llmagenttitle2Inputs) => Localized
 	return /** @type {LocalizedString} */ (`Donnez à votre agent la voie rapide.`)
 };
 
-const uk_llmagenttitle2 = /** @type {(inputs: Llmagenttitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Дайте своєму агенту швидкий шлях.`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Give your agent the fast path." |
 *
 * @param {Llmagenttitle2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const llmagenttitle2 = /** @type {((inputs?: Llmagenttitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmagenttitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const llmagenttitle2 = /** @type {((inputs?: Llmagenttitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmagenttitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_llmagenttitle2(inputs)
 	if (locale === "es") return es_llmagenttitle2(inputs)
@@ -59,7 +55,6 @@ const llmagenttitle2 = /** @type {((inputs?: Llmagenttitle2Inputs, options?: { l
 	if (locale === "ko") return ko_llmagenttitle2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_llmagenttitle2(inputs)
 	if (locale === "de") return de_llmagenttitle2(inputs)
-	if (locale === "fr") return fr_llmagenttitle2(inputs)
-	return uk_llmagenttitle2(inputs)
+	return fr_llmagenttitle2(inputs)
 });
 export { llmagenttitle2 as "llmAgentTitle" }

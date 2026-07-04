@@ -37,20 +37,16 @@ const fr_llmtrymcp2 = /** @type {(inputs: Llmtrymcp2Inputs) => LocalizedString} 
 	return /** @type {LocalizedString} */ (`Essayez MCP`)
 };
 
-const uk_llmtrymcp2 = /** @type {(inputs: Llmtrymcp2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Спробуйте MCP`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Try out MCP" |
 *
 * @param {Llmtrymcp2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const llmtrymcp2 = /** @type {((inputs?: Llmtrymcp2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmtrymcp2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const llmtrymcp2 = /** @type {((inputs?: Llmtrymcp2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmtrymcp2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_llmtrymcp2(inputs)
 	if (locale === "es") return es_llmtrymcp2(inputs)
@@ -59,7 +55,6 @@ const llmtrymcp2 = /** @type {((inputs?: Llmtrymcp2Inputs, options?: { locale?: 
 	if (locale === "ko") return ko_llmtrymcp2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_llmtrymcp2(inputs)
 	if (locale === "de") return de_llmtrymcp2(inputs)
-	if (locale === "fr") return fr_llmtrymcp2(inputs)
-	return uk_llmtrymcp2(inputs)
+	return fr_llmtrymcp2(inputs)
 });
 export { llmtrymcp2 as "llmTryMcp" }

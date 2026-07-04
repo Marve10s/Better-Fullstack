@@ -37,20 +37,16 @@ const fr_presettrackrustbackenddescription4 = /** @type {(inputs: Presettrackrus
 	return /** @type {LocalizedString} */ (`Axum et SeaORM pour un backend Rust compact avec des hooks de persistance et d'observabilité typés.`)
 };
 
-const uk_presettrackrustbackenddescription4 = /** @type {(inputs: Presettrackrustbackenddescription4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Axum і SeaORM для компактної серверної частини Rust з типізованими гачками постійності та спостережуваності.`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Axum and SeaORM for a compact Rust backend with typed persistence and observability hooks." |
 *
 * @param {Presettrackrustbackenddescription4Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const presettrackrustbackenddescription4 = /** @type {((inputs?: Presettrackrustbackenddescription4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackrustbackenddescription4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const presettrackrustbackenddescription4 = /** @type {((inputs?: Presettrackrustbackenddescription4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackrustbackenddescription4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_presettrackrustbackenddescription4(inputs)
 	if (locale === "es") return es_presettrackrustbackenddescription4(inputs)
@@ -59,7 +55,6 @@ const presettrackrustbackenddescription4 = /** @type {((inputs?: Presettrackrust
 	if (locale === "ko") return ko_presettrackrustbackenddescription4(inputs)
 	if (locale === "zh-Hant") return zh_hant1_presettrackrustbackenddescription4(inputs)
 	if (locale === "de") return de_presettrackrustbackenddescription4(inputs)
-	if (locale === "fr") return fr_presettrackrustbackenddescription4(inputs)
-	return uk_presettrackrustbackenddescription4(inputs)
+	return fr_presettrackrustbackenddescription4(inputs)
 });
 export { presettrackrustbackenddescription4 as "presetTrackRustBackendDescription" }

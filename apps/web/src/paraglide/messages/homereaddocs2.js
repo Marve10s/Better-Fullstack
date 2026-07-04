@@ -37,20 +37,16 @@ const fr_homereaddocs2 = /** @type {(inputs: Homereaddocs2Inputs) => LocalizedSt
 	return /** @type {LocalizedString} */ (`Lire la documentation`)
 };
 
-const uk_homereaddocs2 = /** @type {(inputs: Homereaddocs2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Читайте документи`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Read the docs" |
 *
 * @param {Homereaddocs2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const homereaddocs2 = /** @type {((inputs?: Homereaddocs2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homereaddocs2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const homereaddocs2 = /** @type {((inputs?: Homereaddocs2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homereaddocs2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_homereaddocs2(inputs)
 	if (locale === "es") return es_homereaddocs2(inputs)
@@ -59,7 +55,6 @@ const homereaddocs2 = /** @type {((inputs?: Homereaddocs2Inputs, options?: { loc
 	if (locale === "ko") return ko_homereaddocs2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_homereaddocs2(inputs)
 	if (locale === "de") return de_homereaddocs2(inputs)
-	if (locale === "fr") return fr_homereaddocs2(inputs)
-	return uk_homereaddocs2(inputs)
+	return fr_homereaddocs2(inputs)
 });
 export { homereaddocs2 as "homeReadDocs" }

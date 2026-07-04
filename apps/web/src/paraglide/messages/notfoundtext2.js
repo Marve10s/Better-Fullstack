@@ -37,20 +37,16 @@ const fr_notfoundtext2 = /** @type {(inputs: Notfoundtext2Inputs) => LocalizedSt
 	return /** @type {LocalizedString} */ (`La page que vous recherchez n'existe pas.`)
 };
 
-const uk_notfoundtext2 = /** @type {(inputs: Notfoundtext2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Сторінка, яку ви шукаєте, не існує.`)
-};
-
 /**
 * | output |
 * | --- |
 * | "The page you're looking for doesn't exist." |
 *
 * @param {Notfoundtext2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const notfoundtext2 = /** @type {((inputs?: Notfoundtext2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Notfoundtext2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const notfoundtext2 = /** @type {((inputs?: Notfoundtext2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Notfoundtext2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_notfoundtext2(inputs)
 	if (locale === "es") return es_notfoundtext2(inputs)
@@ -59,7 +55,6 @@ const notfoundtext2 = /** @type {((inputs?: Notfoundtext2Inputs, options?: { loc
 	if (locale === "ko") return ko_notfoundtext2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_notfoundtext2(inputs)
 	if (locale === "de") return de_notfoundtext2(inputs)
-	if (locale === "fr") return fr_notfoundtext2(inputs)
-	return uk_notfoundtext2(inputs)
+	return fr_notfoundtext2(inputs)
 });
 export { notfoundtext2 as "notFoundText" }

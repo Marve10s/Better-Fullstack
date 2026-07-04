@@ -37,20 +37,16 @@ const fr_presettrackjavaapiintent4 = /** @type {(inputs: Presettrackjavaapiinten
 	return /** @type {LocalizedString} */ (`Services de ressort de navire`)
 };
 
-const uk_presettrackjavaapiintent4 = /** @type {(inputs: Presettrackjavaapiintent4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Корабель Весняні послуги`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Ship Spring services" |
 *
 * @param {Presettrackjavaapiintent4Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const presettrackjavaapiintent4 = /** @type {((inputs?: Presettrackjavaapiintent4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackjavaapiintent4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const presettrackjavaapiintent4 = /** @type {((inputs?: Presettrackjavaapiintent4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackjavaapiintent4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_presettrackjavaapiintent4(inputs)
 	if (locale === "es") return es_presettrackjavaapiintent4(inputs)
@@ -59,7 +55,6 @@ const presettrackjavaapiintent4 = /** @type {((inputs?: Presettrackjavaapiintent
 	if (locale === "ko") return ko_presettrackjavaapiintent4(inputs)
 	if (locale === "zh-Hant") return zh_hant1_presettrackjavaapiintent4(inputs)
 	if (locale === "de") return de_presettrackjavaapiintent4(inputs)
-	if (locale === "fr") return fr_presettrackjavaapiintent4(inputs)
-	return uk_presettrackjavaapiintent4(inputs)
+	return fr_presettrackjavaapiintent4(inputs)
 });
 export { presettrackjavaapiintent4 as "presetTrackJavaApiIntent" }

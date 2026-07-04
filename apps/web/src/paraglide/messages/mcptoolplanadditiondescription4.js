@@ -37,20 +37,16 @@ const fr_mcptoolplanadditiondescription4 = /** @type {(inputs: Mcptoolplanadditi
 	return /** @type {LocalizedString} */ (`Valider les extensions proposées pour un projet existant`)
 };
 
-const uk_mcptoolplanadditiondescription4 = /** @type {(inputs: Mcptoolplanadditiondescription4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Перевірте запропоновані додатки для існуючого проекту`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Validate proposed addons for an existing project" |
 *
 * @param {Mcptoolplanadditiondescription4Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const mcptoolplanadditiondescription4 = /** @type {((inputs?: Mcptoolplanadditiondescription4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcptoolplanadditiondescription4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcptoolplanadditiondescription4 = /** @type {((inputs?: Mcptoolplanadditiondescription4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcptoolplanadditiondescription4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcptoolplanadditiondescription4(inputs)
 	if (locale === "es") return es_mcptoolplanadditiondescription4(inputs)
@@ -59,7 +55,6 @@ const mcptoolplanadditiondescription4 = /** @type {((inputs?: Mcptoolplanadditio
 	if (locale === "ko") return ko_mcptoolplanadditiondescription4(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcptoolplanadditiondescription4(inputs)
 	if (locale === "de") return de_mcptoolplanadditiondescription4(inputs)
-	if (locale === "fr") return fr_mcptoolplanadditiondescription4(inputs)
-	return uk_mcptoolplanadditiondescription4(inputs)
+	return fr_mcptoolplanadditiondescription4(inputs)
 });
 export { mcptoolplanadditiondescription4 as "mcpToolPlanAdditionDescription" }

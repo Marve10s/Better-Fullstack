@@ -37,20 +37,16 @@ const fr_docsopennavigation2 = /** @type {(inputs: Docsopennavigation2Inputs) =>
 	return /** @type {LocalizedString} */ (`Ouvrir la navigation dans les documents`)
 };
 
-const uk_docsopennavigation2 = /** @type {(inputs: Docsopennavigation2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Навігація відкритими документами`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Open docs navigation" |
 *
 * @param {Docsopennavigation2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const docsopennavigation2 = /** @type {((inputs?: Docsopennavigation2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsopennavigation2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const docsopennavigation2 = /** @type {((inputs?: Docsopennavigation2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsopennavigation2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_docsopennavigation2(inputs)
 	if (locale === "es") return es_docsopennavigation2(inputs)
@@ -59,7 +55,6 @@ const docsopennavigation2 = /** @type {((inputs?: Docsopennavigation2Inputs, opt
 	if (locale === "ko") return ko_docsopennavigation2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_docsopennavigation2(inputs)
 	if (locale === "de") return de_docsopennavigation2(inputs)
-	if (locale === "fr") return fr_docsopennavigation2(inputs)
-	return uk_docsopennavigation2(inputs)
+	return fr_docsopennavigation2(inputs)
 });
 export { docsopennavigation2 as "docsOpenNavigation" }

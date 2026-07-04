@@ -37,20 +37,16 @@ const fr_runlabelsignin2 = /** @type {(inputs: Runlabelsignin2Inputs) => Localiz
 	return /** @type {LocalizedString} */ (`Connectez-vous à votre agent`)
 };
 
-const uk_runlabelsignin2 = /** @type {(inputs: Runlabelsignin2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`увійдіть до свого агента`)
-};
-
 /**
 * | output |
 * | --- |
 * | "sign in to your agent" |
 *
 * @param {Runlabelsignin2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const runlabelsignin2 = /** @type {((inputs?: Runlabelsignin2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runlabelsignin2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const runlabelsignin2 = /** @type {((inputs?: Runlabelsignin2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runlabelsignin2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_runlabelsignin2(inputs)
 	if (locale === "es") return es_runlabelsignin2(inputs)
@@ -59,7 +55,6 @@ const runlabelsignin2 = /** @type {((inputs?: Runlabelsignin2Inputs, options?: {
 	if (locale === "ko") return ko_runlabelsignin2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_runlabelsignin2(inputs)
 	if (locale === "de") return de_runlabelsignin2(inputs)
-	if (locale === "fr") return fr_runlabelsignin2(inputs)
-	return uk_runlabelsignin2(inputs)
+	return fr_runlabelsignin2(inputs)
 });
 export { runlabelsignin2 as "runLabelSignin" }

@@ -37,20 +37,16 @@ const fr_comparereadydescription2 = /** @type {(inputs: Comparereadydescription2
 	return /** @type {LocalizedString} */ (`Configurez visuellement votre pile ou passez directement au CLI.`)
 };
 
-const uk_comparereadydescription2 = /** @type {(inputs: Comparereadydescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Налаштуйте свій стек візуально або відразу перейдіть до CLI.`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Configure your stack visually or jump straight into the CLI." |
 *
 * @param {Comparereadydescription2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const comparereadydescription2 = /** @type {((inputs?: Comparereadydescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparereadydescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const comparereadydescription2 = /** @type {((inputs?: Comparereadydescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparereadydescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_comparereadydescription2(inputs)
 	if (locale === "es") return es_comparereadydescription2(inputs)
@@ -59,7 +55,6 @@ const comparereadydescription2 = /** @type {((inputs?: Comparereadydescription2I
 	if (locale === "ko") return ko_comparereadydescription2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_comparereadydescription2(inputs)
 	if (locale === "de") return de_comparereadydescription2(inputs)
-	if (locale === "fr") return fr_comparereadydescription2(inputs)
-	return uk_comparereadydescription2(inputs)
+	return fr_comparereadydescription2(inputs)
 });
 export { comparereadydescription2 as "compareReadyDescription" }

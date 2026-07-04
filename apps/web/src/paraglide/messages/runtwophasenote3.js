@@ -37,20 +37,16 @@ const fr_runtwophasenote3 = /** @type {(inputs: Runtwophasenote3Inputs) => Local
 	return /** @type {LocalizedString} */ (`Vous préférez une validation simple ? Divisez-la en deux phases : générez d’abord tout, puis validez séparément :`)
 };
 
-const uk_runtwophasenote3 = /** @type {(inputs: Runtwophasenote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Бажаєте підтримувати перевірку в чистоті? Розділіть його на дві фази — спочатку згенеруйте все, а потім перевірте самостійно:`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Prefer to keep validation clean? Split it into two phases — generate everything first, then validate on its own:" |
 *
 * @param {Runtwophasenote3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const runtwophasenote3 = /** @type {((inputs?: Runtwophasenote3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runtwophasenote3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const runtwophasenote3 = /** @type {((inputs?: Runtwophasenote3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runtwophasenote3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_runtwophasenote3(inputs)
 	if (locale === "es") return es_runtwophasenote3(inputs)
@@ -59,7 +55,6 @@ const runtwophasenote3 = /** @type {((inputs?: Runtwophasenote3Inputs, options?:
 	if (locale === "ko") return ko_runtwophasenote3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_runtwophasenote3(inputs)
 	if (locale === "de") return de_runtwophasenote3(inputs)
-	if (locale === "fr") return fr_runtwophasenote3(inputs)
-	return uk_runtwophasenote3(inputs)
+	return fr_runtwophasenote3(inputs)
 });
 export { runtwophasenote3 as "runTwoPhaseNote" }

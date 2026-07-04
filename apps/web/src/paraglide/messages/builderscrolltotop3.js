@@ -37,20 +37,16 @@ const fr_builderscrolltotop3 = /** @type {(inputs: Builderscrolltotop3Inputs) =>
 	return /** @type {LocalizedString} */ (`Faire défiler vers le haut`)
 };
 
-const uk_builderscrolltotop3 = /** @type {(inputs: Builderscrolltotop3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Прокрутіть до верху`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Scroll to top" |
 *
 * @param {Builderscrolltotop3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const builderscrolltotop3 = /** @type {((inputs?: Builderscrolltotop3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderscrolltotop3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const builderscrolltotop3 = /** @type {((inputs?: Builderscrolltotop3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderscrolltotop3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderscrolltotop3(inputs)
 	if (locale === "es") return es_builderscrolltotop3(inputs)
@@ -59,7 +55,6 @@ const builderscrolltotop3 = /** @type {((inputs?: Builderscrolltotop3Inputs, opt
 	if (locale === "ko") return ko_builderscrolltotop3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderscrolltotop3(inputs)
 	if (locale === "de") return de_builderscrolltotop3(inputs)
-	if (locale === "fr") return fr_builderscrolltotop3(inputs)
-	return uk_builderscrolltotop3(inputs)
+	return fr_builderscrolltotop3(inputs)
 });
 export { builderscrolltotop3 as "builderScrollToTop" }

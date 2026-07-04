@@ -37,20 +37,16 @@ const fr_homefeaturesdescription2 = /** @type {(inputs: Homefeaturesdescription2
 	return /** @type {LocalizedString} */ (`TypeScript, React Native, Rust, Python, Go, Java, Elixir — un CLI échafaude des applications prêtes pour la production sur les sept. Choisissez votre écosystème, choisissez votre pile.`)
 };
 
-const uk_homefeaturesdescription2 = /** @type {(inputs: Homefeaturesdescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`TypeScript, React Native, Rust, Python, Go, Java, Elixir — один CLI розміщує готові до виробництва програми для всіх семи. Виберіть свою екосистему, виберіть свій стек.`)
-};
-
 /**
 * | output |
 * | --- |
 * | "TypeScript, React Native, Rust, Python, Go, Java, Elixir — one CLI scaffolds production-ready apps across all seven. Pick your ecosystem, pick your stack." |
 *
 * @param {Homefeaturesdescription2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const homefeaturesdescription2 = /** @type {((inputs?: Homefeaturesdescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homefeaturesdescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const homefeaturesdescription2 = /** @type {((inputs?: Homefeaturesdescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homefeaturesdescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_homefeaturesdescription2(inputs)
 	if (locale === "es") return es_homefeaturesdescription2(inputs)
@@ -59,7 +55,6 @@ const homefeaturesdescription2 = /** @type {((inputs?: Homefeaturesdescription2I
 	if (locale === "ko") return ko_homefeaturesdescription2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_homefeaturesdescription2(inputs)
 	if (locale === "de") return de_homefeaturesdescription2(inputs)
-	if (locale === "fr") return fr_homefeaturesdescription2(inputs)
-	return uk_homefeaturesdescription2(inputs)
+	return fr_homefeaturesdescription2(inputs)
 });
 export { homefeaturesdescription2 as "homeFeaturesDescription" }

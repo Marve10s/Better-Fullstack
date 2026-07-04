@@ -37,20 +37,16 @@ const fr_comparepaymentintegrations2 = /** @type {(inputs: Comparepaymentintegra
 	return /** @type {LocalizedString} */ (`Intégrations de paiement`)
 };
 
-const uk_comparepaymentintegrations2 = /** @type {(inputs: Comparepaymentintegrations2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Платіжні інтеграції`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Payment integrations" |
 *
 * @param {Comparepaymentintegrations2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const comparepaymentintegrations2 = /** @type {((inputs?: Comparepaymentintegrations2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparepaymentintegrations2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const comparepaymentintegrations2 = /** @type {((inputs?: Comparepaymentintegrations2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparepaymentintegrations2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_comparepaymentintegrations2(inputs)
 	if (locale === "es") return es_comparepaymentintegrations2(inputs)
@@ -59,7 +55,6 @@ const comparepaymentintegrations2 = /** @type {((inputs?: Comparepaymentintegrat
 	if (locale === "ko") return ko_comparepaymentintegrations2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_comparepaymentintegrations2(inputs)
 	if (locale === "de") return de_comparepaymentintegrations2(inputs)
-	if (locale === "fr") return fr_comparepaymentintegrations2(inputs)
-	return uk_comparepaymentintegrations2(inputs)
+	return fr_comparepaymentintegrations2(inputs)
 });
 export { comparepaymentintegrations2 as "comparePaymentIntegrations" }

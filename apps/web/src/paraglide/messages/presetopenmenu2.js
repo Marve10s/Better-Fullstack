@@ -37,20 +37,16 @@ const fr_presetopenmenu2 = /** @type {(inputs: Presetopenmenu2Inputs) => Localiz
 	return /** @type {LocalizedString} */ (`Ouvrir le menu prédéfini`)
 };
 
-const uk_presetopenmenu2 = /** @type {(inputs: Presetopenmenu2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Відкрити меню попередніх налаштувань`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Open preset menu" |
 *
 * @param {Presetopenmenu2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const presetopenmenu2 = /** @type {((inputs?: Presetopenmenu2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presetopenmenu2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const presetopenmenu2 = /** @type {((inputs?: Presetopenmenu2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presetopenmenu2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_presetopenmenu2(inputs)
 	if (locale === "es") return es_presetopenmenu2(inputs)
@@ -59,7 +55,6 @@ const presetopenmenu2 = /** @type {((inputs?: Presetopenmenu2Inputs, options?: {
 	if (locale === "ko") return ko_presetopenmenu2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_presetopenmenu2(inputs)
 	if (locale === "de") return de_presetopenmenu2(inputs)
-	if (locale === "fr") return fr_presetopenmenu2(inputs)
-	return uk_presetopenmenu2(inputs)
+	return fr_presetopenmenu2(inputs)
 });
 export { presetopenmenu2 as "presetOpenMenu" }

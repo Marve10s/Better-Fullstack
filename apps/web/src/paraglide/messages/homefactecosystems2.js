@@ -37,20 +37,16 @@ const fr_homefactecosystems2 = /** @type {(inputs: Homefactecosystems2Inputs) =>
 	return /** @type {LocalizedString} */ (`Sur TypeScript, React Native, Rust, Python, Go, Java et Elixir`)
 };
 
-const uk_homefactecosystems2 = /** @type {(inputs: Homefactecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Через TypeScript, React Native, Rust, Python, Go, Java та Elixir`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Across TypeScript, React Native, Rust, Python, Go, Java, and Elixir" |
 *
 * @param {Homefactecosystems2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const homefactecosystems2 = /** @type {((inputs?: Homefactecosystems2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homefactecosystems2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const homefactecosystems2 = /** @type {((inputs?: Homefactecosystems2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homefactecosystems2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_homefactecosystems2(inputs)
 	if (locale === "es") return es_homefactecosystems2(inputs)
@@ -59,7 +55,6 @@ const homefactecosystems2 = /** @type {((inputs?: Homefactecosystems2Inputs, opt
 	if (locale === "ko") return ko_homefactecosystems2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_homefactecosystems2(inputs)
 	if (locale === "de") return de_homefactecosystems2(inputs)
-	if (locale === "fr") return fr_homefactecosystems2(inputs)
-	return uk_homefactecosystems2(inputs)
+	return fr_homefactecosystems2(inputs)
 });
 export { homefactecosystems2 as "homeFactEcosystems" }

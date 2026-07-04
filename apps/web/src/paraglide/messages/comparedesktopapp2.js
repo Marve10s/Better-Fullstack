@@ -37,20 +37,16 @@ const fr_comparedesktopapp2 = /** @type {(inputs: Comparedesktopapp2Inputs) => L
 	return /** @type {LocalizedString} */ (`Application de bureau (Tauri)`)
 };
 
-const uk_comparedesktopapp2 = /** @type {(inputs: Comparedesktopapp2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Настільна програма (Tauri)`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Desktop app (Tauri)" |
 *
 * @param {Comparedesktopapp2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const comparedesktopapp2 = /** @type {((inputs?: Comparedesktopapp2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparedesktopapp2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const comparedesktopapp2 = /** @type {((inputs?: Comparedesktopapp2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparedesktopapp2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_comparedesktopapp2(inputs)
 	if (locale === "es") return es_comparedesktopapp2(inputs)
@@ -59,7 +55,6 @@ const comparedesktopapp2 = /** @type {((inputs?: Comparedesktopapp2Inputs, optio
 	if (locale === "ko") return ko_comparedesktopapp2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_comparedesktopapp2(inputs)
 	if (locale === "de") return de_comparedesktopapp2(inputs)
-	if (locale === "fr") return fr_comparedesktopapp2(inputs)
-	return uk_comparedesktopapp2(inputs)
+	return fr_comparedesktopapp2(inputs)
 });
 export { comparedesktopapp2 as "compareDesktopApp" }

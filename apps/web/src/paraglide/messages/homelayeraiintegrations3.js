@@ -37,20 +37,16 @@ const fr_homelayeraiintegrations3 = /** @type {(inputs: Homelayeraiintegrations3
 	return /** @type {LocalizedString} */ (`AI INTÉGRATIONS`)
 };
 
-const uk_homelayeraiintegrations3 = /** @type {(inputs: Homelayeraiintegrations3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`AI ІНТЕГРАЦІЇ`)
-};
-
 /**
 * | output |
 * | --- |
 * | "AI INTEGRATIONS" |
 *
 * @param {Homelayeraiintegrations3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const homelayeraiintegrations3 = /** @type {((inputs?: Homelayeraiintegrations3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homelayeraiintegrations3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const homelayeraiintegrations3 = /** @type {((inputs?: Homelayeraiintegrations3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homelayeraiintegrations3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_homelayeraiintegrations3(inputs)
 	if (locale === "es") return es_homelayeraiintegrations3(inputs)
@@ -59,7 +55,6 @@ const homelayeraiintegrations3 = /** @type {((inputs?: Homelayeraiintegrations3I
 	if (locale === "ko") return ko_homelayeraiintegrations3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_homelayeraiintegrations3(inputs)
 	if (locale === "de") return de_homelayeraiintegrations3(inputs)
-	if (locale === "fr") return fr_homelayeraiintegrations3(inputs)
-	return uk_homelayeraiintegrations3(inputs)
+	return fr_homelayeraiintegrations3(inputs)
 });
 export { homelayeraiintegrations3 as "homeLayerAiIntegrations" }

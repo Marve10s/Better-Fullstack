@@ -37,20 +37,16 @@ const fr_changelogrelease20260612imagealt3 = /** @type {(inputs: Changelogreleas
 	return /** @type {LocalizedString} */ (`Oeuvre abstraite dégradé coloré`)
 };
 
-const uk_changelogrelease20260612imagealt3 = /** @type {(inputs: Changelogrelease20260612imagealt3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Абстрактні барвисті градієнта ілюстрації`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Abstract colorful gradient artwork" |
 *
 * @param {Changelogrelease20260612imagealt3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const changelogrelease20260612imagealt3 = /** @type {((inputs?: Changelogrelease20260612imagealt3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Changelogrelease20260612imagealt3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const changelogrelease20260612imagealt3 = /** @type {((inputs?: Changelogrelease20260612imagealt3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Changelogrelease20260612imagealt3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_changelogrelease20260612imagealt3(inputs)
 	if (locale === "es") return es_changelogrelease20260612imagealt3(inputs)
@@ -59,7 +55,6 @@ const changelogrelease20260612imagealt3 = /** @type {((inputs?: Changelogrelease
 	if (locale === "ko") return ko_changelogrelease20260612imagealt3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_changelogrelease20260612imagealt3(inputs)
 	if (locale === "de") return de_changelogrelease20260612imagealt3(inputs)
-	if (locale === "fr") return fr_changelogrelease20260612imagealt3(inputs)
-	return uk_changelogrelease20260612imagealt3(inputs)
+	return fr_changelogrelease20260612imagealt3(inputs)
 });
 export { changelogrelease20260612imagealt3 as "changelogRelease20260612ImageAlt" }

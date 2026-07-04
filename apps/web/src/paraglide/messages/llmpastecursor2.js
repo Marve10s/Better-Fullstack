@@ -37,20 +37,16 @@ const fr_llmpastecursor2 = /** @type {(inputs: Llmpastecursor2Inputs) => Localiz
 	return /** @type {LocalizedString} */ (`coller dans ~/.cursor/mcp.json sous mcpServers`)
 };
 
-const uk_llmpastecursor2 = /** @type {(inputs: Llmpastecursor2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`вставте в ~/.cursor/mcp.json під mcpServers`)
-};
-
 /**
 * | output |
 * | --- |
 * | "paste into ~/.cursor/mcp.json under mcpServers" |
 *
 * @param {Llmpastecursor2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const llmpastecursor2 = /** @type {((inputs?: Llmpastecursor2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmpastecursor2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const llmpastecursor2 = /** @type {((inputs?: Llmpastecursor2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmpastecursor2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_llmpastecursor2(inputs)
 	if (locale === "es") return es_llmpastecursor2(inputs)
@@ -59,7 +55,6 @@ const llmpastecursor2 = /** @type {((inputs?: Llmpastecursor2Inputs, options?: {
 	if (locale === "ko") return ko_llmpastecursor2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_llmpastecursor2(inputs)
 	if (locale === "de") return de_llmpastecursor2(inputs)
-	if (locale === "fr") return fr_llmpastecursor2(inputs)
-	return uk_llmpastecursor2(inputs)
+	return fr_llmpastecursor2(inputs)
 });
 export { llmpastecursor2 as "llmPasteCursor" }

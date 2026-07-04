@@ -37,20 +37,16 @@ const fr_sharegeneratingqr2 = /** @type {(inputs: Sharegeneratingqr2Inputs) => L
 	return /** @type {LocalizedString} */ (`Génération de code QR...`)
 };
 
-const uk_sharegeneratingqr2 = /** @type {(inputs: Sharegeneratingqr2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Генерація коду QR...`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Generating QR code..." |
 *
 * @param {Sharegeneratingqr2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const sharegeneratingqr2 = /** @type {((inputs?: Sharegeneratingqr2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Sharegeneratingqr2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const sharegeneratingqr2 = /** @type {((inputs?: Sharegeneratingqr2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Sharegeneratingqr2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_sharegeneratingqr2(inputs)
 	if (locale === "es") return es_sharegeneratingqr2(inputs)
@@ -59,7 +55,6 @@ const sharegeneratingqr2 = /** @type {((inputs?: Sharegeneratingqr2Inputs, optio
 	if (locale === "ko") return ko_sharegeneratingqr2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_sharegeneratingqr2(inputs)
 	if (locale === "de") return de_sharegeneratingqr2(inputs)
-	if (locale === "fr") return fr_sharegeneratingqr2(inputs)
-	return uk_sharegeneratingqr2(inputs)
+	return fr_sharegeneratingqr2(inputs)
 });
 export { sharegeneratingqr2 as "shareGeneratingQr" }

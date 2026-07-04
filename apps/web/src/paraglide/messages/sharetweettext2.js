@@ -59,22 +59,16 @@ const fr_sharetweettext2 = /** @type {(inputs: Sharetweettext2Inputs) => Localiz
 ${i?.count} technologies sélectionnées`)
 };
 
-const uk_sharetweettext2 = /** @type {(inputs: Sharetweettext2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Перегляньте цей технічний стек, який я налаштував за допомогою Better Fullstack!
-
-Вибрано технологій ${i?.count}`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Check out this tech stack I configured with Better Fullstack! {count} technologies selected" |
 *
 * @param {Sharetweettext2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const sharetweettext2 = /** @type {((inputs: Sharetweettext2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Sharetweettext2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
+const sharetweettext2 = /** @type {((inputs: Sharetweettext2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Sharetweettext2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_sharetweettext2(inputs)
 	if (locale === "es") return es_sharetweettext2(inputs)
@@ -83,7 +77,6 @@ const sharetweettext2 = /** @type {((inputs: Sharetweettext2Inputs, options?: { 
 	if (locale === "ko") return ko_sharetweettext2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_sharetweettext2(inputs)
 	if (locale === "de") return de_sharetweettext2(inputs)
-	if (locale === "fr") return fr_sharetweettext2(inputs)
-	return uk_sharetweettext2(inputs)
+	return fr_sharetweettext2(inputs)
 });
 export { sharetweettext2 as "shareTweetText" }

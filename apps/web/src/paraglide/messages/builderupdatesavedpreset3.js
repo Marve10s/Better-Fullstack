@@ -37,20 +37,16 @@ const fr_builderupdatesavedpreset3 = /** @type {(inputs: Builderupdatesavedprese
 	return /** @type {LocalizedString} */ (`Mettre à jour le préréglage enregistré`)
 };
 
-const uk_builderupdatesavedpreset3 = /** @type {(inputs: Builderupdatesavedpreset3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Оновити збережений стиль`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Update Saved Preset" |
 *
 * @param {Builderupdatesavedpreset3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const builderupdatesavedpreset3 = /** @type {((inputs?: Builderupdatesavedpreset3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderupdatesavedpreset3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const builderupdatesavedpreset3 = /** @type {((inputs?: Builderupdatesavedpreset3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderupdatesavedpreset3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderupdatesavedpreset3(inputs)
 	if (locale === "es") return es_builderupdatesavedpreset3(inputs)
@@ -59,7 +55,6 @@ const builderupdatesavedpreset3 = /** @type {((inputs?: Builderupdatesavedpreset
 	if (locale === "ko") return ko_builderupdatesavedpreset3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderupdatesavedpreset3(inputs)
 	if (locale === "de") return de_builderupdatesavedpreset3(inputs)
-	if (locale === "fr") return fr_builderupdatesavedpreset3(inputs)
-	return uk_builderupdatesavedpreset3(inputs)
+	return fr_builderupdatesavedpreset3(inputs)
 });
 export { builderupdatesavedpreset3 as "builderUpdateSavedPreset" }

@@ -1,4 +1,8 @@
 import { docsMeta } from "virtual:content-meta";
+import {
+  localizedDocsMdxLoaders,
+  localizedDocsRawMdxLoaders,
+} from "virtual:localized-content";
 
 import {
   type LocalizedContentLocale,
@@ -198,8 +202,12 @@ function localizedFilePath(filePath: string, locale: ContentLocale): string {
   return filePath.replace(/\.mdx$/, `.${locale}.mdx`);
 }
 
+function localizedContentKey(filePath: string, locale: ContentLocale): string {
+  return `${locale}:${filePath}`;
+}
+
 function hasLocalizedContent(filePath: string, locale: ContentLocale): boolean {
-  return locale !== "en" && localizedFilePath(filePath, locale) in mdxLoaders;
+  return locale !== "en" && localizedContentKey(filePath, locale) in localizedDocsMdxLoaders;
 }
 
 function contentCacheKey(page: DocPage, locale: ContentLocale): string {
@@ -271,12 +279,16 @@ const contentCache = createSuspenseCache<DocPageContent>();
 
 async function loadPageContent(page: DocPage): Promise<DocPageContent> {
   const locale = currentContentLocale();
-  const filePath = hasLocalizedContent(page.filePath, locale)
-    ? localizedFilePath(page.filePath, locale)
-    : page.filePath;
+  const localizedKey = localizedContentKey(page.filePath, locale);
+  const hasLocalized = hasLocalizedContent(page.filePath, locale);
+  const filePath = hasLocalized ? localizedFilePath(page.filePath, locale) : page.filePath;
+  const moduleLoader = hasLocalized ? localizedDocsMdxLoaders[localizedKey] : mdxLoaders[filePath];
+  const rawLoader = hasLocalized
+    ? localizedDocsRawMdxLoaders[localizedKey]
+    : rawMdxLoaders[filePath];
   const [module, raw] = await Promise.all([
-    mdxLoaders[filePath]?.(),
-    rawMdxLoaders[filePath]?.(),
+    moduleLoader?.(),
+    rawLoader?.(),
   ]);
   if (!module) throw new Error(`Docs content module missing for ${filePath}`);
   return {
@@ -312,10 +324,13 @@ export async function loadAllRawPages(): Promise<Map<string, string>> {
   const locale = currentContentLocale();
   const entries = await Promise.all(
     getAllPages().map(async (page) => {
-      const filePath = hasLocalizedContent(page.filePath, locale)
-        ? localizedFilePath(page.filePath, locale)
-        : page.filePath;
-      return [page.filePath, (await rawMdxLoaders[filePath]?.()) ?? ""] as const;
+      const localizedKey = localizedContentKey(page.filePath, locale);
+      const hasLocalized = hasLocalizedContent(page.filePath, locale);
+      const filePath = hasLocalized ? localizedFilePath(page.filePath, locale) : page.filePath;
+      const rawLoader = hasLocalized
+        ? localizedDocsRawMdxLoaders[localizedKey]
+        : rawMdxLoaders[filePath];
+      return [page.filePath, (await rawLoader?.()) ?? ""] as const;
     }),
   );
   return new Map(entries);

@@ -37,20 +37,16 @@ const fr_llmbenchmarkdescription2 = /** @type {(inputs: Llmbenchmarkdescription2
 	return /** @type {LocalizedString} */ (`Mesurer les agents de codage sur de véritables tâches d'échafaudage fullstack : temps, jetons, coût et si le résultat est réellement généré.`)
 };
 
-const uk_llmbenchmarkdescription2 = /** @type {(inputs: Llmbenchmarkdescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Вимірювання агентів кодування на реальних завданнях повного стеку: час, токени, вартість і те, чи дійсно результат створюється.`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Measuring coding agents on real fullstack scaffolding tasks — time, tokens, cost, and whether the result actually builds." |
 *
 * @param {Llmbenchmarkdescription2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const llmbenchmarkdescription2 = /** @type {((inputs?: Llmbenchmarkdescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmbenchmarkdescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const llmbenchmarkdescription2 = /** @type {((inputs?: Llmbenchmarkdescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmbenchmarkdescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_llmbenchmarkdescription2(inputs)
 	if (locale === "es") return es_llmbenchmarkdescription2(inputs)
@@ -59,7 +55,6 @@ const llmbenchmarkdescription2 = /** @type {((inputs?: Llmbenchmarkdescription2I
 	if (locale === "ko") return ko_llmbenchmarkdescription2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_llmbenchmarkdescription2(inputs)
 	if (locale === "de") return de_llmbenchmarkdescription2(inputs)
-	if (locale === "fr") return fr_llmbenchmarkdescription2(inputs)
-	return uk_llmbenchmarkdescription2(inputs)
+	return fr_llmbenchmarkdescription2(inputs)
 });
 export { llmbenchmarkdescription2 as "llmBenchmarkDescription" }

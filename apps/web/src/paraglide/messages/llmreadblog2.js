@@ -37,20 +37,16 @@ const fr_llmreadblog2 = /** @type {(inputs: Llmreadblog2Inputs) => LocalizedStri
 	return /** @type {LocalizedString} */ (`Lire le blog`)
 };
 
-const uk_llmreadblog2 = /** @type {(inputs: Llmreadblog2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Читайте блог`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Read the blog" |
 *
 * @param {Llmreadblog2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const llmreadblog2 = /** @type {((inputs?: Llmreadblog2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmreadblog2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const llmreadblog2 = /** @type {((inputs?: Llmreadblog2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmreadblog2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_llmreadblog2(inputs)
 	if (locale === "es") return es_llmreadblog2(inputs)
@@ -59,7 +55,6 @@ const llmreadblog2 = /** @type {((inputs?: Llmreadblog2Inputs, options?: { local
 	if (locale === "ko") return ko_llmreadblog2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_llmreadblog2(inputs)
 	if (locale === "de") return de_llmreadblog2(inputs)
-	if (locale === "fr") return fr_llmreadblog2(inputs)
-	return uk_llmreadblog2(inputs)
+	return fr_llmreadblog2(inputs)
 });
 export { llmreadblog2 as "llmReadBlog" }

@@ -37,20 +37,16 @@ const fr_hometestimonialsdescriptiona3 = /** @type {(inputs: Hometestimonialsdes
 	return /** @type {LocalizedString} */ (`Publié le`)
 };
 
-const uk_hometestimonialsdescriptiona3 = /** @type {(inputs: Hometestimonialsdescriptiona3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Опубліковано на`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Posted on" |
 *
 * @param {Hometestimonialsdescriptiona3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const hometestimonialsdescriptiona3 = /** @type {((inputs?: Hometestimonialsdescriptiona3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Hometestimonialsdescriptiona3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const hometestimonialsdescriptiona3 = /** @type {((inputs?: Hometestimonialsdescriptiona3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Hometestimonialsdescriptiona3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_hometestimonialsdescriptiona3(inputs)
 	if (locale === "es") return es_hometestimonialsdescriptiona3(inputs)
@@ -59,7 +55,6 @@ const hometestimonialsdescriptiona3 = /** @type {((inputs?: Hometestimonialsdesc
 	if (locale === "ko") return ko_hometestimonialsdescriptiona3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_hometestimonialsdescriptiona3(inputs)
 	if (locale === "de") return de_hometestimonialsdescriptiona3(inputs)
-	if (locale === "fr") return fr_hometestimonialsdescriptiona3(inputs)
-	return uk_hometestimonialsdescriptiona3(inputs)
+	return fr_hometestimonialsdescriptiona3(inputs)
 });
 export { hometestimonialsdescriptiona3 as "homeTestimonialsDescriptionA" }

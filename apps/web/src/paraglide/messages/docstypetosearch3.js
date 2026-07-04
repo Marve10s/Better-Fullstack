@@ -37,20 +37,16 @@ const fr_docstypetosearch3 = /** @type {(inputs: Docstypetosearch3Inputs) => Loc
 	return /** @type {LocalizedString} */ (`Tapez pour rechercher`)
 };
 
-const uk_docstypetosearch3 = /** @type {(inputs: Docstypetosearch3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Введіть для пошуку`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Type to search" |
 *
 * @param {Docstypetosearch3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const docstypetosearch3 = /** @type {((inputs?: Docstypetosearch3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docstypetosearch3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const docstypetosearch3 = /** @type {((inputs?: Docstypetosearch3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docstypetosearch3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_docstypetosearch3(inputs)
 	if (locale === "es") return es_docstypetosearch3(inputs)
@@ -59,7 +55,6 @@ const docstypetosearch3 = /** @type {((inputs?: Docstypetosearch3Inputs, options
 	if (locale === "ko") return ko_docstypetosearch3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_docstypetosearch3(inputs)
 	if (locale === "de") return de_docstypetosearch3(inputs)
-	if (locale === "fr") return fr_docstypetosearch3(inputs)
-	return uk_docstypetosearch3(inputs)
+	return fr_docstypetosearch3(inputs)
 });
 export { docstypetosearch3 as "docsTypeToSearch" }

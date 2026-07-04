@@ -37,20 +37,16 @@ const fr_runflagpaths2 = /** @type {(inputs: Runflagpaths2Inputs) => LocalizedSt
 	return /** @type {LocalizedString} */ (`prompt saisit tout manuellement ; mcp parcourt les outils MCP ; cli compose la commande CLI`)
 };
 
-const uk_runflagpaths2 = /** @type {(inputs: Runflagpaths2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`оперативно все пише від руки; mcp проходить через інструменти MCP; cli створює команду CLI`)
-};
-
 /**
 * | output |
 * | --- |
 * | "prompt hand-writes everything; mcp goes through the MCP tools; cli composes the CLI command" |
 *
 * @param {Runflagpaths2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const runflagpaths2 = /** @type {((inputs?: Runflagpaths2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runflagpaths2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const runflagpaths2 = /** @type {((inputs?: Runflagpaths2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runflagpaths2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_runflagpaths2(inputs)
 	if (locale === "es") return es_runflagpaths2(inputs)
@@ -59,7 +55,6 @@ const runflagpaths2 = /** @type {((inputs?: Runflagpaths2Inputs, options?: { loc
 	if (locale === "ko") return ko_runflagpaths2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_runflagpaths2(inputs)
 	if (locale === "de") return de_runflagpaths2(inputs)
-	if (locale === "fr") return fr_runflagpaths2(inputs)
-	return uk_runflagpaths2(inputs)
+	return fr_runflagpaths2(inputs)
 });
 export { runflagpaths2 as "runFlagPaths" }

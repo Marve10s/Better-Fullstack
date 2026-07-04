@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import type { Plugin } from "vite";
-import { parse as parseYaml } from "yaml";
+import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 
 import {
   LOCALIZED_CONTENT_LOCALES,
@@ -25,6 +25,11 @@ import {
  */
 const VIRTUAL_ID = "virtual:content-meta";
 const RESOLVED_ID = "\0" + VIRTUAL_ID;
+const LOCALIZED_CONTENT_ID = "virtual:localized-content";
+const RESOLVED_LOCALIZED_CONTENT_ID = "\0" + LOCALIZED_CONTENT_ID;
+const LOCALIZED_MDX_PREFIX = "virtual:localized-content-mdx/";
+
+type ContentSubdir = "docs" | "guides" | "blog";
 
 type MetaEntry = {
   filePath: string;
@@ -32,6 +37,14 @@ type MetaEntry = {
   localizedFrontmatter: Partial<Record<LocalizedContentLocale, Record<string, unknown>>>;
 };
 type MetaBuild = { entries: MetaEntry[]; watchFiles: string[] };
+type LocalizedJsonEntry = {
+  frontmatter?: Record<string, unknown>;
+  body?: string;
+};
+type LocalizedJsonBundle = Partial<
+  Record<ContentSubdir, Record<string, LocalizedJsonEntry>>
+>;
+type LocalizedJsonBundles = Partial<Record<LocalizedContentLocale, LocalizedJsonBundle>>;
 
 function extractFrontmatter(source: string): Record<string, unknown> {
   if (!source.startsWith("---")) return {};
@@ -62,25 +75,96 @@ function isLocalizedMdxFile(fileName: string): boolean {
   return LOCALIZED_CONTENT_LOCALES.some((locale) => fileName.endsWith(`.${locale}.mdx`));
 }
 
+function readLocalizedBundles(rootDir: string): {
+  bundles: LocalizedJsonBundles;
+  watchFiles: string[];
+} {
+  const contentDir = path.join(rootDir, "content", "i18n");
+  const bundles: LocalizedJsonBundles = {};
+  const watchFiles: string[] = [];
+
+  for (const locale of LOCALIZED_CONTENT_LOCALES) {
+    const file = path.join(contentDir, `${locale}.json`);
+    if (!fs.existsSync(file)) continue;
+    watchFiles.push(file);
+    try {
+      bundles[locale] = JSON.parse(fs.readFileSync(file, "utf8")) as LocalizedJsonBundle;
+    } catch {
+      bundles[locale] = {};
+    }
+  }
+
+  return { bundles, watchFiles };
+}
+
+function localizedEntryToMdxSource(entry: LocalizedJsonEntry): string {
+  const frontmatter = entry.frontmatter ?? {};
+  const body = entry.body ?? "";
+  return `---\n${stringifyYaml(frontmatter).trim()}\n---\n\n${body}`;
+}
+
+function localizedLoaderKey(
+  locale: LocalizedContentLocale,
+  contentSubdir: ContentSubdir,
+  relativePath: string,
+): string {
+  return `${locale}:../../../content/${contentSubdir}/${relativePath}`;
+}
+
+function localizedMdxModuleId(
+  contentSubdir: ContentSubdir,
+  locale: LocalizedContentLocale,
+  relativePath: string,
+): string {
+  return `${LOCALIZED_MDX_PREFIX}${contentSubdir}/${locale}/${relativePath}`;
+}
+
+function parseLocalizedMdxId(id: string):
+  | {
+      contentSubdir: ContentSubdir;
+      locale: LocalizedContentLocale;
+      relativePath: string;
+    }
+  | undefined {
+  if (!id.startsWith(LOCALIZED_MDX_PREFIX)) return undefined;
+  const rest = id.slice(LOCALIZED_MDX_PREFIX.length);
+  const [contentSubdir, locale, ...relativeParts] = rest.split("/");
+  if (
+    contentSubdir !== "docs" &&
+    contentSubdir !== "guides" &&
+    contentSubdir !== "blog"
+  ) {
+    return undefined;
+  }
+  if (!LOCALIZED_CONTENT_LOCALES.includes(locale as LocalizedContentLocale)) {
+    return undefined;
+  }
+  const relativePath = relativeParts.join("/");
+  if (!relativePath) return undefined;
+  return {
+    contentSubdir,
+    locale: locale as LocalizedContentLocale,
+    relativePath,
+  };
+}
+
 export function contentMetaPlugin(): Plugin {
   let rootDir = "";
 
-  function buildMeta(contentSubdir: "docs" | "guides" | "blog", globPrefix: string): MetaBuild {
+  function buildMeta(
+    contentSubdir: ContentSubdir,
+    globPrefix: string,
+    bundles: LocalizedJsonBundles,
+  ): MetaBuild {
     const contentDir = path.join(rootDir, "content", contentSubdir);
     const watchFiles: string[] = [];
     const entries = collectMdxFiles(contentDir).map((file) => {
       const rel = path.relative(contentDir, file).split(path.sep).join("/");
       const localizedFrontmatter: MetaEntry["localizedFrontmatter"] = {};
       for (const locale of LOCALIZED_CONTENT_LOCALES) {
-        const localizedFile = path.join(
-          contentDir,
-          rel.replace(/\.mdx$/, `.${locale}.mdx`).split("/").join(path.sep),
-        );
-        if (fs.existsSync(localizedFile)) {
-          localizedFrontmatter[locale] = extractFrontmatter(
-            fs.readFileSync(localizedFile, "utf8"),
-          );
-          watchFiles.push(localizedFile);
+        const localizedEntry = bundles[locale]?.[contentSubdir]?.[rel];
+        if (localizedEntry?.frontmatter) {
+          localizedFrontmatter[locale] = localizedEntry.frontmatter;
         }
       }
       return {
@@ -92,26 +176,98 @@ export function contentMetaPlugin(): Plugin {
     return { entries, watchFiles };
   }
 
+  function buildLocalizedContentModule(bundles: LocalizedJsonBundles): string {
+    const maps: Record<
+      ContentSubdir,
+      {
+        mdxLoaders: string[];
+        rawLoaders: string[];
+      }
+    > = {
+      docs: { mdxLoaders: [], rawLoaders: [] },
+      guides: { mdxLoaders: [], rawLoaders: [] },
+      blog: { mdxLoaders: [], rawLoaders: [] },
+    };
+
+    for (const locale of LOCALIZED_CONTENT_LOCALES) {
+      const bundle = bundles[locale];
+      if (!bundle) continue;
+
+      for (const contentSubdir of ["docs", "guides", "blog"] as const) {
+        const entries = bundle[contentSubdir] ?? {};
+        for (const [relativePath, entry] of Object.entries(entries).sort(([a], [b]) =>
+          a.localeCompare(b),
+        )) {
+          if (!entry.body) continue;
+          const key = localizedLoaderKey(locale, contentSubdir, relativePath);
+          const moduleId = localizedMdxModuleId(contentSubdir, locale, relativePath);
+          const source = localizedEntryToMdxSource(entry);
+          maps[contentSubdir].mdxLoaders.push(
+            `${JSON.stringify(key)}: () => import(${JSON.stringify(moduleId)})`,
+          );
+          maps[contentSubdir].rawLoaders.push(
+            `${JSON.stringify(key)}: () => Promise.resolve(${JSON.stringify(source)})`,
+          );
+        }
+      }
+    }
+
+    return [
+      `export const localizedDocsMdxLoaders = {${maps.docs.mdxLoaders.join(",")}};`,
+      `export const localizedDocsRawMdxLoaders = {${maps.docs.rawLoaders.join(",")}};`,
+      `export const localizedGuideMdxLoaders = {${maps.guides.mdxLoaders.join(",")}};`,
+      `export const localizedBlogMdxLoaders = {${maps.blog.mdxLoaders.join(",")}};`,
+    ].join("\n");
+  }
+
   return {
     name: "better-fullstack:content-meta",
     configResolved(config) {
       rootDir = config.root;
     },
-    resolveId(id) {
+    resolveId(id, _importer, options) {
       if (id === VIRTUAL_ID) return RESOLVED_ID;
+      if (options.ssr && id === LOCALIZED_CONTENT_ID) return undefined;
+      if (id === LOCALIZED_CONTENT_ID) return RESOLVED_LOCALIZED_CONTENT_ID;
+      if (options.ssr && id.startsWith(LOCALIZED_MDX_PREFIX)) return undefined;
+      if (id.startsWith(LOCALIZED_MDX_PREFIX)) {
+        return id;
+      }
       return undefined;
     },
     load(id) {
+      const { bundles, watchFiles: localizedWatchFiles } = readLocalizedBundles(rootDir);
+
+      if (id === RESOLVED_LOCALIZED_CONTENT_ID) {
+        for (const filePath of localizedWatchFiles) this.addWatchFile(filePath);
+        return buildLocalizedContentModule(bundles);
+      }
+
+      const localizedMdx = parseLocalizedMdxId(id);
+      if (localizedMdx) {
+        const entry =
+          bundles[localizedMdx.locale]?.[localizedMdx.contentSubdir]?.[
+            localizedMdx.relativePath
+          ];
+        if (!entry) return undefined;
+        return localizedEntryToMdxSource(entry);
+      }
+
       if (id !== RESOLVED_ID) return undefined;
-      const docs = buildMeta("docs", "../../../content/docs/");
-      const guides = buildMeta("guides", "../../../content/guides/");
-      const blog = buildMeta("blog", "../../../content/blog/");
+      const docs = buildMeta("docs", "../../../content/docs/", bundles);
+      const guides = buildMeta("guides", "../../../content/guides/", bundles);
+      const blog = buildMeta("blog", "../../../content/blog/", bundles);
       for (const entry of [...docs.entries, ...guides.entries, ...blog.entries]) {
         this.addWatchFile(
           path.join(rootDir, "content", entry.filePath.replace("../../../content/", "")),
         );
       }
-      for (const filePath of [...docs.watchFiles, ...guides.watchFiles, ...blog.watchFiles]) {
+      for (const filePath of [
+        ...docs.watchFiles,
+        ...guides.watchFiles,
+        ...blog.watchFiles,
+        ...localizedWatchFiles,
+      ]) {
         this.addWatchFile(filePath);
       }
       return (
@@ -121,9 +277,11 @@ export function contentMetaPlugin(): Plugin {
       );
     },
     handleHotUpdate(ctx) {
-      if (!ctx.file.endsWith(".mdx")) return;
-      const mod = ctx.server.moduleGraph.getModuleById(RESOLVED_ID);
-      if (mod) ctx.server.moduleGraph.invalidateModule(mod);
+      if (!ctx.file.endsWith(".mdx") && !ctx.file.endsWith(".json")) return;
+      for (const id of [RESOLVED_ID, RESOLVED_LOCALIZED_CONTENT_ID]) {
+        const mod = ctx.server.moduleGraph.getModuleById(id);
+        if (mod) ctx.server.moduleGraph.invalidateModule(mod);
+      }
     },
   };
 }

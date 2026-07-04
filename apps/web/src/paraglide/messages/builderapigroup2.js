@@ -37,20 +37,16 @@ const fr_builderapigroup2 = /** @type {(inputs: Builderapigroup2Inputs) => Local
 	return /** @type {LocalizedString} */ (`${i?.ecosystem} API`)
 };
 
-const uk_builderapigroup2 = /** @type {(inputs: Builderapigroup2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.ecosystem} API`)
-};
-
 /**
 * | output |
 * | --- |
 * | "{ecosystem} API" |
 *
 * @param {Builderapigroup2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const builderapigroup2 = /** @type {((inputs: Builderapigroup2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderapigroup2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
+const builderapigroup2 = /** @type {((inputs: Builderapigroup2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderapigroup2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderapigroup2(inputs)
 	if (locale === "es") return es_builderapigroup2(inputs)
@@ -59,7 +55,6 @@ const builderapigroup2 = /** @type {((inputs: Builderapigroup2Inputs, options?: 
 	if (locale === "ko") return ko_builderapigroup2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderapigroup2(inputs)
 	if (locale === "de") return de_builderapigroup2(inputs)
-	if (locale === "fr") return fr_builderapigroup2(inputs)
-	return uk_builderapigroup2(inputs)
+	return fr_builderapigroup2(inputs)
 });
 export { builderapigroup2 as "builderApiGroup" }

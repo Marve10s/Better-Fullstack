@@ -37,20 +37,16 @@ const fr_navmultiecosystem2 = /** @type {(inputs: Navmultiecosystem2Inputs) => L
 	return /** @type {LocalizedString} */ (`Multi-écosystème`)
 };
 
-const uk_navmultiecosystem2 = /** @type {(inputs: Navmultiecosystem2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Мультиекосистема`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Multi-Ecosystem" |
 *
 * @param {Navmultiecosystem2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const navmultiecosystem2 = /** @type {((inputs?: Navmultiecosystem2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navmultiecosystem2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const navmultiecosystem2 = /** @type {((inputs?: Navmultiecosystem2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navmultiecosystem2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_navmultiecosystem2(inputs)
 	if (locale === "es") return es_navmultiecosystem2(inputs)
@@ -59,7 +55,6 @@ const navmultiecosystem2 = /** @type {((inputs?: Navmultiecosystem2Inputs, optio
 	if (locale === "ko") return ko_navmultiecosystem2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_navmultiecosystem2(inputs)
 	if (locale === "de") return de_navmultiecosystem2(inputs)
-	if (locale === "fr") return fr_navmultiecosystem2(inputs)
-	return uk_navmultiecosystem2(inputs)
+	return fr_navmultiecosystem2(inputs)
 });
 export { navmultiecosystem2 as "navMultiEcosystem" }

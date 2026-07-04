@@ -37,20 +37,16 @@ const fr_builderuniversal1 = /** @type {(inputs: Builderuniversal1Inputs) => Loc
 	return /** @type {LocalizedString} */ (`Universel`)
 };
 
-const uk_builderuniversal1 = /** @type {(inputs: Builderuniversal1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Універсальний`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Universal" |
 *
 * @param {Builderuniversal1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const builderuniversal1 = /** @type {((inputs?: Builderuniversal1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderuniversal1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const builderuniversal1 = /** @type {((inputs?: Builderuniversal1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderuniversal1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderuniversal1(inputs)
 	if (locale === "es") return es_builderuniversal1(inputs)
@@ -59,7 +55,6 @@ const builderuniversal1 = /** @type {((inputs?: Builderuniversal1Inputs, options
 	if (locale === "ko") return ko_builderuniversal1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderuniversal1(inputs)
 	if (locale === "de") return de_builderuniversal1(inputs)
-	if (locale === "fr") return fr_builderuniversal1(inputs)
-	return uk_builderuniversal1(inputs)
+	return fr_builderuniversal1(inputs)
 });
 export { builderuniversal1 as "builderUniversal" }

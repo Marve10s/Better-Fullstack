@@ -37,20 +37,16 @@ const fr_builderpreviewhidewarnings3 = /** @type {(inputs: Builderpreviewhidewar
 	return /** @type {LocalizedString} */ (`cacher`)
 };
 
-const uk_builderpreviewhidewarnings3 = /** @type {(inputs: Builderpreviewhidewarnings3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`приховати`)
-};
-
 /**
 * | output |
 * | --- |
 * | "hide" |
 *
 * @param {Builderpreviewhidewarnings3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const builderpreviewhidewarnings3 = /** @type {((inputs?: Builderpreviewhidewarnings3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderpreviewhidewarnings3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const builderpreviewhidewarnings3 = /** @type {((inputs?: Builderpreviewhidewarnings3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderpreviewhidewarnings3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderpreviewhidewarnings3(inputs)
 	if (locale === "es") return es_builderpreviewhidewarnings3(inputs)
@@ -59,7 +55,6 @@ const builderpreviewhidewarnings3 = /** @type {((inputs?: Builderpreviewhidewarn
 	if (locale === "ko") return ko_builderpreviewhidewarnings3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderpreviewhidewarnings3(inputs)
 	if (locale === "de") return de_builderpreviewhidewarnings3(inputs)
-	if (locale === "fr") return fr_builderpreviewhidewarnings3(inputs)
-	return uk_builderpreviewhidewarnings3(inputs)
+	return fr_builderpreviewhidewarnings3(inputs)
 });
 export { builderpreviewhidewarnings3 as "builderPreviewHideWarnings" }

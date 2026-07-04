@@ -1,6 +1,6 @@
 ---
-title: "FastAPI with PostgreSQL and SQLAlchemy"
-description: "使用 Better Fullstack 建立包含 FastAPI、PostgreSQL、SQLAlchemy、Pydantic 和 Ruff 的 Python API project。"
+title: FastAPI with PostgreSQL and SQLAlchemy
+description: 使用 Better Fullstack 建立包含 FastAPI、PostgreSQL、SQLAlchemy、Pydantic 和 Ruff 的 Python API project。
 updated: 2026-05-12
 category: Python
 tags:
@@ -29,13 +29,13 @@ npm create better-fullstack@latest my-fastapi-api -- \
 ```
 
 <GuideStackSnapshot
-  title="Generated stack snapshot"
-  description="The runtime boundary this stack is optimized for."
+  title="生成的 stack 快照"
+  description="这个 stack 优化的 runtime 边界。"
   items={[
-    { label: "HTTP", value: "FastAPI", detail: "Route functions, dependency injection, and OpenAPI output." },
-    { label: "Data", value: "PostgreSQL + SQLAlchemy", detail: "SQLAlchemy models with a PostgreSQL driver selected by the scaffold." },
-    { label: "Validation", value: "Pydantic", detail: "Request and response schemas close to the API edge." },
-    { label: "Quality", value: "Ruff", detail: "Fast linting and formatting for the generated Python package." },
+    { label: "HTTP", value: "FastAPI", detail: "Route functions、dependency injection 和 OpenAPI output。" },
+    { label: "数据", value: "PostgreSQL + SQLAlchemy", detail: "SQLAlchemy models，以及 scaffold 选择的 PostgreSQL driver。" },
+    { label: "验证", value: "Pydantic", detail: "靠近 API edge 的 request 和 response schemas。" },
+    { label: "质量", value: "Ruff", detail: "为生成的 Python package 提供快速 linting 和 formatting。" },
   ]}
 />
 
@@ -160,11 +160,11 @@ uv run alembic upgrade head
 
 <GuideCompatibilityNote
   kind="supported"
-  title="Compatibility rule"
+  title="兼容性规则"
   items={[
-    "`--python-web-framework fastapi` pairs naturally with `--python-orm sqlalchemy` and `--python-validation pydantic`.",
-    "Django API options such as `--python-api django-rest-framework` are only valid with `--python-web-framework django`.",
-    "The `--database postgres` selection adds PostgreSQL driver support, but the runtime connection is controlled by `DATABASE_URL`.",
+    "`--python-web-framework fastapi` 与 `--python-orm sqlalchemy` 和 `--python-validation pydantic` 自然搭配。",
+    "Django API options（如 `--python-api django-rest-framework`）只在 `--python-web-framework django` 下有效。",
+    "`--database postgres` 会添加 PostgreSQL driver 支持，但 runtime connection 由 `DATABASE_URL` 控制。",
   ]}
 />
 

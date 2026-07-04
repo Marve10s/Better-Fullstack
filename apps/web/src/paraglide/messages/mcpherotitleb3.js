@@ -37,20 +37,16 @@ const fr_mcpherotitleb3 = /** @type {(inputs: Mcpherotitleb3Inputs) => Localized
 	return /** @type {LocalizedString} */ (`Chaque pile.`)
 };
 
-const uk_mcpherotitleb3 = /** @type {(inputs: Mcpherotitleb3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Кожен стек.`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Every stack." |
 *
 * @param {Mcpherotitleb3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const mcpherotitleb3 = /** @type {((inputs?: Mcpherotitleb3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpherotitleb3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcpherotitleb3 = /** @type {((inputs?: Mcpherotitleb3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpherotitleb3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcpherotitleb3(inputs)
 	if (locale === "es") return es_mcpherotitleb3(inputs)
@@ -59,7 +55,6 @@ const mcpherotitleb3 = /** @type {((inputs?: Mcpherotitleb3Inputs, options?: { l
 	if (locale === "ko") return ko_mcpherotitleb3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcpherotitleb3(inputs)
 	if (locale === "de") return de_mcpherotitleb3(inputs)
-	if (locale === "fr") return fr_mcpherotitleb3(inputs)
-	return uk_mcpherotitleb3(inputs)
+	return fr_mcpherotitleb3(inputs)
 });
 export { mcpherotitleb3 as "mcpHeroTitleB" }

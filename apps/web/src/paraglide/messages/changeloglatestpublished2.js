@@ -37,20 +37,16 @@ const fr_changeloglatestpublished2 = /** @type {(inputs: Changeloglatestpublishe
 	return /** @type {LocalizedString} */ (`Dernière version publiée ${i?.date}.`)
 };
 
-const uk_changeloglatestpublished2 = /** @type {(inputs: Changeloglatestpublished2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Останній випуск опубліковано ${i?.date}.`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Latest release published {date}." |
 *
 * @param {Changeloglatestpublished2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const changeloglatestpublished2 = /** @type {((inputs: Changeloglatestpublished2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Changeloglatestpublished2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
+const changeloglatestpublished2 = /** @type {((inputs: Changeloglatestpublished2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Changeloglatestpublished2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_changeloglatestpublished2(inputs)
 	if (locale === "es") return es_changeloglatestpublished2(inputs)
@@ -59,7 +55,6 @@ const changeloglatestpublished2 = /** @type {((inputs: Changeloglatestpublished2
 	if (locale === "ko") return ko_changeloglatestpublished2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_changeloglatestpublished2(inputs)
 	if (locale === "de") return de_changeloglatestpublished2(inputs)
-	if (locale === "fr") return fr_changeloglatestpublished2(inputs)
-	return uk_changeloglatestpublished2(inputs)
+	return fr_changeloglatestpublished2(inputs)
 });
 export { changeloglatestpublished2 as "changelogLatestPublished" }

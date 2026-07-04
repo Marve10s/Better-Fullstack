@@ -12,10 +12,17 @@ const WEB_ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const CONTENT_ROOT = join(WEB_ROOT, "content");
 const DOCS_ROOT = join(CONTENT_ROOT, "docs");
 const GUIDES_ROOT = join(CONTENT_ROOT, "guides");
+const BLOG_ROOT = join(CONTENT_ROOT, "blog");
+const LOCALIZED_CONTENT_ROOT = join(CONTENT_ROOT, "i18n");
 const PUBLIC_ROUTE_ROOTS = new Map([
   ["/docs", DOCS_ROOT],
   ["/guides", GUIDES_ROOT],
 ]);
+const CONTENT_SECTION_ROOTS = new Map([
+  ["docs", DOCS_ROOT],
+  ["guides", GUIDES_ROOT],
+  ["blog", BLOG_ROOT],
+] as const);
 const BUILDER_URL_KEYS = new Set([
   ...Object.values(STACK_SELECTION_URL_KEYS),
   "preset",
@@ -27,6 +34,12 @@ type ContentFile = {
   relativePath: string;
   source: string;
 };
+type ContentSection = "docs" | "guides" | "blog";
+type LocalizedContentEntry = {
+  frontmatter?: Record<string, unknown>;
+  body?: string;
+};
+type LocalizedContentBundle = Partial<Record<ContentSection, Record<string, LocalizedContentEntry>>>;
 
 function walkFiles(root: string, predicate: (path: string) => boolean): string[] {
   const out: string[] = [];
@@ -56,6 +69,21 @@ function readContentFiles(): ContentFile[] {
 
 function isLocalizedMdxFile(path: string): boolean {
   return LOCALIZED_CONTENT_LOCALES.some((locale) => path.endsWith(`.${locale}.mdx`));
+}
+
+function getContentSection(filePath: string): { section: ContentSection; path: string } | undefined {
+  for (const [section, root] of CONTENT_SECTION_ROOTS) {
+    if (!filePath.startsWith(`${root}${sep}`)) continue;
+    return {
+      section,
+      path: relative(root, filePath).split(sep).join("/"),
+    };
+  }
+  return undefined;
+}
+
+function readLocalizedContent(locale: string): LocalizedContentBundle {
+  return JSON.parse(readFileSync(join(LOCALIZED_CONTENT_ROOT, `${locale}.json`), "utf8"));
 }
 
 function parseFrontmatter(source: string): Map<string, string> {
@@ -147,18 +175,31 @@ describe("docs content contract", () => {
   });
 
   it("keeps localized docs, guides, and blog coverage complete", () => {
-    const missingLocalizedFiles = contentFiles
+    const baseContentFiles = contentFiles.filter((file) => !isLocalizedMdxFile(file.path));
+    const localizedBundles = new Map(
+      LOCALIZED_CONTENT_LOCALES.map((locale) => [locale, readLocalizedContent(locale)]),
+    );
+    const missingLocalizedContent = baseContentFiles
       .filter((file) => !isLocalizedMdxFile(file.path))
       .flatMap((file) =>
         LOCALIZED_CONTENT_LOCALES.flatMap((locale) => {
-          const localizedPath = file.path.replace(/\.mdx$/, `.${locale}.mdx`);
-          return existsSync(localizedPath)
-            ? []
-            : [`${file.relativePath}: missing ${locale} translation`];
+          const section = getContentSection(file.path);
+          if (!section) return [];
+          const entry = localizedBundles.get(locale)?.[section.section]?.[section.path];
+          const problems: string[] = [];
+          if (!entry) problems.push(`missing ${locale} translation`);
+          if (entry && !entry.body?.trim()) problems.push(`missing ${locale} body`);
+          if (entry && !entry.frontmatter?.title) {
+            problems.push(`missing ${locale} title`);
+          }
+          if (entry && !entry.frontmatter?.description) {
+            problems.push(`missing ${locale} description`);
+          }
+          return problems.map((problem) => `${file.relativePath}: ${problem}`);
         }),
       );
 
-    expect(missingLocalizedFiles).toEqual([]);
+    expect(missingLocalizedContent).toEqual([]);
   });
 
   it("keeps docs sidebar metadata complete", () => {

@@ -37,20 +37,16 @@ const fr_savedtitle1 = /** @type {(inputs: Savedtitle1Inputs) => LocalizedString
 	return /** @type {LocalizedString} */ (`Projets et préréglages enregistrés`)
 };
 
-const uk_savedtitle1 = /** @type {(inputs: Savedtitle1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Збережені проекти та стилі`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Saved Projects & Presets" |
 *
 * @param {Savedtitle1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const savedtitle1 = /** @type {((inputs?: Savedtitle1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedtitle1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const savedtitle1 = /** @type {((inputs?: Savedtitle1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedtitle1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_savedtitle1(inputs)
 	if (locale === "es") return es_savedtitle1(inputs)
@@ -59,7 +55,6 @@ const savedtitle1 = /** @type {((inputs?: Savedtitle1Inputs, options?: { locale?
 	if (locale === "ko") return ko_savedtitle1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_savedtitle1(inputs)
 	if (locale === "de") return de_savedtitle1(inputs)
-	if (locale === "fr") return fr_savedtitle1(inputs)
-	return uk_savedtitle1(inputs)
+	return fr_savedtitle1(inputs)
 });
 export { savedtitle1 as "savedTitle" }

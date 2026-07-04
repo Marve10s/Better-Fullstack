@@ -37,20 +37,16 @@ const fr_presettrackaiagentname4 = /** @type {(inputs: Presettrackaiagentname4In
 	return /** @type {LocalizedString} */ (`AI Application d'agent`)
 };
 
-const uk_presettrackaiagentname4 = /** @type {(inputs: Presettrackaiagentname4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`AI Програма агента`)
-};
-
 /**
 * | output |
 * | --- |
 * | "AI Agent App" |
 *
 * @param {Presettrackaiagentname4Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const presettrackaiagentname4 = /** @type {((inputs?: Presettrackaiagentname4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackaiagentname4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const presettrackaiagentname4 = /** @type {((inputs?: Presettrackaiagentname4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackaiagentname4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_presettrackaiagentname4(inputs)
 	if (locale === "es") return es_presettrackaiagentname4(inputs)
@@ -59,7 +55,6 @@ const presettrackaiagentname4 = /** @type {((inputs?: Presettrackaiagentname4Inp
 	if (locale === "ko") return ko_presettrackaiagentname4(inputs)
 	if (locale === "zh-Hant") return zh_hant1_presettrackaiagentname4(inputs)
 	if (locale === "de") return de_presettrackaiagentname4(inputs)
-	if (locale === "fr") return fr_presettrackaiagentname4(inputs)
-	return uk_presettrackaiagentname4(inputs)
+	return fr_presettrackaiagentname4(inputs)
 });
 export { presettrackaiagentname4 as "presetTrackAiAgentName" }

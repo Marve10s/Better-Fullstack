@@ -37,20 +37,16 @@ const fr_builderauthgroup2 = /** @type {(inputs: Builderauthgroup2Inputs) => Loc
 	return /** @type {LocalizedString} */ (`${i?.ecosystem} Authentification`)
 };
 
-const uk_builderauthgroup2 = /** @type {(inputs: Builderauthgroup2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.ecosystem} Авт`)
-};
-
 /**
 * | output |
 * | --- |
 * | "{ecosystem} Auth" |
 *
 * @param {Builderauthgroup2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const builderauthgroup2 = /** @type {((inputs: Builderauthgroup2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderauthgroup2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
+const builderauthgroup2 = /** @type {((inputs: Builderauthgroup2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderauthgroup2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderauthgroup2(inputs)
 	if (locale === "es") return es_builderauthgroup2(inputs)
@@ -59,7 +55,6 @@ const builderauthgroup2 = /** @type {((inputs: Builderauthgroup2Inputs, options?
 	if (locale === "ko") return ko_builderauthgroup2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderauthgroup2(inputs)
 	if (locale === "de") return de_builderauthgroup2(inputs)
-	if (locale === "fr") return fr_builderauthgroup2(inputs)
-	return uk_builderauthgroup2(inputs)
+	return fr_builderauthgroup2(inputs)
 });
 export { builderauthgroup2 as "builderAuthGroup" }

@@ -37,20 +37,16 @@ const fr_runctaeyebrow2 = /** @type {(inputs: Runctaeyebrow2Inputs) => Localized
 	return /** @type {LocalizedString} */ (`Comparer`)
 };
 
-const uk_runctaeyebrow2 = /** @type {(inputs: Runctaeyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Порівняйте`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Compare" |
 *
 * @param {Runctaeyebrow2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const runctaeyebrow2 = /** @type {((inputs?: Runctaeyebrow2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runctaeyebrow2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const runctaeyebrow2 = /** @type {((inputs?: Runctaeyebrow2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runctaeyebrow2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_runctaeyebrow2(inputs)
 	if (locale === "es") return es_runctaeyebrow2(inputs)
@@ -59,7 +55,6 @@ const runctaeyebrow2 = /** @type {((inputs?: Runctaeyebrow2Inputs, options?: { l
 	if (locale === "ko") return ko_runctaeyebrow2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_runctaeyebrow2(inputs)
 	if (locale === "de") return de_runctaeyebrow2(inputs)
-	if (locale === "fr") return fr_runctaeyebrow2(inputs)
-	return uk_runctaeyebrow2(inputs)
+	return fr_runctaeyebrow2(inputs)
 });
 export { runctaeyebrow2 as "runCtaEyebrow" }

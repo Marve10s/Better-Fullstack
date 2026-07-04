@@ -37,20 +37,16 @@ const fr_comparegroupbackend2 = /** @type {(inputs: Comparegroupbackend2Inputs) 
 	return /** @type {LocalizedString} */ (`Back-end`)
 };
 
-const uk_comparegroupbackend2 = /** @type {(inputs: Comparegroupbackend2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Backend`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Backend" |
 *
 * @param {Comparegroupbackend2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const comparegroupbackend2 = /** @type {((inputs?: Comparegroupbackend2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparegroupbackend2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const comparegroupbackend2 = /** @type {((inputs?: Comparegroupbackend2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparegroupbackend2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_comparegroupbackend2(inputs)
 	if (locale === "es") return es_comparegroupbackend2(inputs)
@@ -59,7 +55,6 @@ const comparegroupbackend2 = /** @type {((inputs?: Comparegroupbackend2Inputs, o
 	if (locale === "ko") return ko_comparegroupbackend2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_comparegroupbackend2(inputs)
 	if (locale === "de") return de_comparegroupbackend2(inputs)
-	if (locale === "fr") return fr_comparegroupbackend2(inputs)
-	return uk_comparegroupbackend2(inputs)
+	return fr_comparegroupbackend2(inputs)
 });
 export { comparegroupbackend2 as "compareGroupBackend" }

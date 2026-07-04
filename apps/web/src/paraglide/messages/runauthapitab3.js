@@ -37,20 +37,16 @@ const fr_runauthapitab3 = /** @type {(inputs: Runauthapitab3Inputs) => Localized
 	return /** @type {LocalizedString} */ (`Clé API`)
 };
 
-const uk_runauthapitab3 = /** @type {(inputs: Runauthapitab3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ключ API`)
-};
-
 /**
 * | output |
 * | --- |
 * | "API key" |
 *
 * @param {Runauthapitab3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const runauthapitab3 = /** @type {((inputs?: Runauthapitab3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runauthapitab3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const runauthapitab3 = /** @type {((inputs?: Runauthapitab3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runauthapitab3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_runauthapitab3(inputs)
 	if (locale === "es") return es_runauthapitab3(inputs)
@@ -59,7 +55,6 @@ const runauthapitab3 = /** @type {((inputs?: Runauthapitab3Inputs, options?: { l
 	if (locale === "ko") return ko_runauthapitab3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_runauthapitab3(inputs)
 	if (locale === "de") return de_runauthapitab3(inputs)
-	if (locale === "fr") return fr_runauthapitab3(inputs)
-	return uk_runauthapitab3(inputs)
+	return fr_runauthapitab3(inputs)
 });
 export { runauthapitab3 as "runAuthApiTab" }

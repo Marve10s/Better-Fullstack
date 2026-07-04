@@ -37,20 +37,16 @@ const fr_presettrackaiagentdescription4 = /** @type {(inputs: Presettrackaiagent
 	return /** @type {LocalizedString} */ (`Un espace de travail Next.js préparé pour les flux AI CLI, MCP, les compétences et les documents d'agent générés.`)
 };
 
-const uk_presettrackaiagentdescription4 = /** @type {(inputs: Presettrackaiagentdescription4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Робоча область Next.js, підготовлена ​​для потоків AI CLI, MCP, навичок і створених документів агента.`)
-};
-
 /**
 * | output |
 * | --- |
 * | "A Next.js workspace prepared for AI CLI flows, MCP, skills, and generated agent docs." |
 *
 * @param {Presettrackaiagentdescription4Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const presettrackaiagentdescription4 = /** @type {((inputs?: Presettrackaiagentdescription4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackaiagentdescription4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const presettrackaiagentdescription4 = /** @type {((inputs?: Presettrackaiagentdescription4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackaiagentdescription4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_presettrackaiagentdescription4(inputs)
 	if (locale === "es") return es_presettrackaiagentdescription4(inputs)
@@ -59,7 +55,6 @@ const presettrackaiagentdescription4 = /** @type {((inputs?: Presettrackaiagentd
 	if (locale === "ko") return ko_presettrackaiagentdescription4(inputs)
 	if (locale === "zh-Hant") return zh_hant1_presettrackaiagentdescription4(inputs)
 	if (locale === "de") return de_presettrackaiagentdescription4(inputs)
-	if (locale === "fr") return fr_presettrackaiagentdescription4(inputs)
-	return uk_presettrackaiagentdescription4(inputs)
+	return fr_presettrackaiagentdescription4(inputs)
 });
 export { presettrackaiagentdescription4 as "presetTrackAiAgentDescription" }

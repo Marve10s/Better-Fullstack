@@ -37,20 +37,16 @@ const fr_homefactunique2 = /** @type {(inputs: Homefactunique2Inputs) => Localiz
 	return /** @type {LocalizedString} */ (`Chaque combinaison crée une application unique, prête pour la production`)
 };
 
-const uk_homefactunique2 = /** @type {(inputs: Homefactunique2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Кожна комбінація створює унікальну, готову до виробництва програму`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Each combination scaffolds a unique, production-ready app" |
 *
 * @param {Homefactunique2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const homefactunique2 = /** @type {((inputs?: Homefactunique2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homefactunique2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const homefactunique2 = /** @type {((inputs?: Homefactunique2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homefactunique2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_homefactunique2(inputs)
 	if (locale === "es") return es_homefactunique2(inputs)
@@ -59,7 +55,6 @@ const homefactunique2 = /** @type {((inputs?: Homefactunique2Inputs, options?: {
 	if (locale === "ko") return ko_homefactunique2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_homefactunique2(inputs)
 	if (locale === "de") return de_homefactunique2(inputs)
-	if (locale === "fr") return fr_homefactunique2(inputs)
-	return uk_homefactunique2(inputs)
+	return fr_homefactunique2(inputs)
 });
 export { homefactunique2 as "homeFactUnique" }

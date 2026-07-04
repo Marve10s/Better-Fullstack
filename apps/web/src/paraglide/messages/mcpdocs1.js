@@ -37,20 +37,16 @@ const fr_mcpdocs1 = /** @type {(inputs: Mcpdocs1Inputs) => LocalizedString} */ (
 	return /** @type {LocalizedString} */ (`Documents`)
 };
 
-const uk_mcpdocs1 = /** @type {(inputs: Mcpdocs1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`документи`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Docs" |
 *
 * @param {Mcpdocs1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const mcpdocs1 = /** @type {((inputs?: Mcpdocs1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpdocs1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcpdocs1 = /** @type {((inputs?: Mcpdocs1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpdocs1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcpdocs1(inputs)
 	if (locale === "es") return es_mcpdocs1(inputs)
@@ -59,7 +55,6 @@ const mcpdocs1 = /** @type {((inputs?: Mcpdocs1Inputs, options?: { locale?: "en"
 	if (locale === "ko") return ko_mcpdocs1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcpdocs1(inputs)
 	if (locale === "de") return de_mcpdocs1(inputs)
-	if (locale === "fr") return fr_mcpdocs1(inputs)
-	return uk_mcpdocs1(inputs)
+	return fr_mcpdocs1(inputs)
 });
 export { mcpdocs1 as "mcpDocs" }

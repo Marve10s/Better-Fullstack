@@ -37,20 +37,16 @@ const fr_comparelibrarycount2 = /** @type {(inputs: Comparelibrarycount2Inputs) 
 	return /** @type {LocalizedString} */ (`Bibliothèques ${i?.count}`)
 };
 
-const uk_comparelibrarycount2 = /** @type {(inputs: Comparelibrarycount2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} бібліотеки`)
-};
-
 /**
 * | output |
 * | --- |
 * | "{count} libraries" |
 *
 * @param {Comparelibrarycount2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const comparelibrarycount2 = /** @type {((inputs: Comparelibrarycount2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparelibrarycount2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
+const comparelibrarycount2 = /** @type {((inputs: Comparelibrarycount2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparelibrarycount2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_comparelibrarycount2(inputs)
 	if (locale === "es") return es_comparelibrarycount2(inputs)
@@ -59,7 +55,6 @@ const comparelibrarycount2 = /** @type {((inputs: Comparelibrarycount2Inputs, op
 	if (locale === "ko") return ko_comparelibrarycount2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_comparelibrarycount2(inputs)
 	if (locale === "de") return de_comparelibrarycount2(inputs)
-	if (locale === "fr") return fr_comparelibrarycount2(inputs)
-	return uk_comparelibrarycount2(inputs)
+	return fr_comparelibrarycount2(inputs)
 });
 export { comparelibrarycount2 as "compareLibraryCount" }

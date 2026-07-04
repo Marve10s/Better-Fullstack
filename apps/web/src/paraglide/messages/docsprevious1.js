@@ -37,20 +37,16 @@ const fr_docsprevious1 = /** @type {(inputs: Docsprevious1Inputs) => LocalizedSt
 	return /** @type {LocalizedString} */ (`Précédent`)
 };
 
-const uk_docsprevious1 = /** @type {(inputs: Docsprevious1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Попередній`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Previous" |
 *
 * @param {Docsprevious1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const docsprevious1 = /** @type {((inputs?: Docsprevious1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsprevious1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const docsprevious1 = /** @type {((inputs?: Docsprevious1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsprevious1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_docsprevious1(inputs)
 	if (locale === "es") return es_docsprevious1(inputs)
@@ -59,7 +55,6 @@ const docsprevious1 = /** @type {((inputs?: Docsprevious1Inputs, options?: { loc
 	if (locale === "ko") return ko_docsprevious1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_docsprevious1(inputs)
 	if (locale === "de") return de_docsprevious1(inputs)
-	if (locale === "fr") return fr_docsprevious1(inputs)
-	return uk_docsprevious1(inputs)
+	return fr_docsprevious1(inputs)
 });
 export { docsprevious1 as "docsPrevious" }

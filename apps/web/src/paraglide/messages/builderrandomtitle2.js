@@ -37,20 +37,16 @@ const fr_builderrandomtitle2 = /** @type {(inputs: Builderrandomtitle2Inputs) =>
 	return /** @type {LocalizedString} */ (`Générer une pile aléatoire`)
 };
 
-const uk_builderrandomtitle2 = /** @type {(inputs: Builderrandomtitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Створити випадковий стек`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Generate a random stack" |
 *
 * @param {Builderrandomtitle2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const builderrandomtitle2 = /** @type {((inputs?: Builderrandomtitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderrandomtitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const builderrandomtitle2 = /** @type {((inputs?: Builderrandomtitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderrandomtitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderrandomtitle2(inputs)
 	if (locale === "es") return es_builderrandomtitle2(inputs)
@@ -59,7 +55,6 @@ const builderrandomtitle2 = /** @type {((inputs?: Builderrandomtitle2Inputs, opt
 	if (locale === "ko") return ko_builderrandomtitle2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderrandomtitle2(inputs)
 	if (locale === "de") return de_builderrandomtitle2(inputs)
-	if (locale === "fr") return fr_builderrandomtitle2(inputs)
-	return uk_builderrandomtitle2(inputs)
+	return fr_builderrandomtitle2(inputs)
 });
 export { builderrandomtitle2 as "builderRandomTitle" }

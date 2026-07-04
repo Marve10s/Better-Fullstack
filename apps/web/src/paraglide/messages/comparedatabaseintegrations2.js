@@ -37,20 +37,16 @@ const fr_comparedatabaseintegrations2 = /** @type {(inputs: Comparedatabaseinteg
 	return /** @type {LocalizedString} */ (`Intégrations de bases de données`)
 };
 
-const uk_comparedatabaseintegrations2 = /** @type {(inputs: Comparedatabaseintegrations2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Інтеграція баз даних`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Database integrations" |
 *
 * @param {Comparedatabaseintegrations2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const comparedatabaseintegrations2 = /** @type {((inputs?: Comparedatabaseintegrations2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparedatabaseintegrations2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const comparedatabaseintegrations2 = /** @type {((inputs?: Comparedatabaseintegrations2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparedatabaseintegrations2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_comparedatabaseintegrations2(inputs)
 	if (locale === "es") return es_comparedatabaseintegrations2(inputs)
@@ -59,7 +55,6 @@ const comparedatabaseintegrations2 = /** @type {((inputs?: Comparedatabaseintegr
 	if (locale === "ko") return ko_comparedatabaseintegrations2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_comparedatabaseintegrations2(inputs)
 	if (locale === "de") return de_comparedatabaseintegrations2(inputs)
-	if (locale === "fr") return fr_comparedatabaseintegrations2(inputs)
-	return uk_comparedatabaseintegrations2(inputs)
+	return fr_comparedatabaseintegrations2(inputs)
 });
 export { comparedatabaseintegrations2 as "compareDatabaseIntegrations" }

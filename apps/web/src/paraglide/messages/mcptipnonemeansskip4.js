@@ -37,20 +37,16 @@ const fr_mcptipnonemeansskip4 = /** @type {(inputs: Mcptipnonemeansskip4Inputs) 
 	return /** @type {LocalizedString} */ (`"aucun" signifie ignorer, et non "utiliser la valeur par défaut"`)
 };
 
-const uk_mcptipnonemeansskip4 = /** @type {(inputs: Mcptipnonemeansskip4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`"немає" означає пропустити, а не "використовувати за замовчуванням"`)
-};
-
 /**
 * | output |
 * | --- |
 * | "\"none\" means skip, not \"use the default\"" |
 *
 * @param {Mcptipnonemeansskip4Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const mcptipnonemeansskip4 = /** @type {((inputs?: Mcptipnonemeansskip4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcptipnonemeansskip4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcptipnonemeansskip4 = /** @type {((inputs?: Mcptipnonemeansskip4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcptipnonemeansskip4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcptipnonemeansskip4(inputs)
 	if (locale === "es") return es_mcptipnonemeansskip4(inputs)
@@ -59,7 +55,6 @@ const mcptipnonemeansskip4 = /** @type {((inputs?: Mcptipnonemeansskip4Inputs, o
 	if (locale === "ko") return ko_mcptipnonemeansskip4(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcptipnonemeansskip4(inputs)
 	if (locale === "de") return de_mcptipnonemeansskip4(inputs)
-	if (locale === "fr") return fr_mcptipnonemeansskip4(inputs)
-	return uk_mcptipnonemeansskip4(inputs)
+	return fr_mcptipnonemeansskip4(inputs)
 });
 export { mcptipnonemeansskip4 as "mcpTipNoneMeansSkip" }

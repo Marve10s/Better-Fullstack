@@ -37,20 +37,16 @@ const fr_llmbuildspassing2 = /** @type {(inputs: Llmbuildspassing2Inputs) => Loc
 	return /** @type {LocalizedString} */ (`Construit en passant`)
 };
 
-const uk_llmbuildspassing2 = /** @type {(inputs: Llmbuildspassing2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Будує проходження`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Builds passing" |
 *
 * @param {Llmbuildspassing2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const llmbuildspassing2 = /** @type {((inputs?: Llmbuildspassing2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmbuildspassing2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const llmbuildspassing2 = /** @type {((inputs?: Llmbuildspassing2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmbuildspassing2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_llmbuildspassing2(inputs)
 	if (locale === "es") return es_llmbuildspassing2(inputs)
@@ -59,7 +55,6 @@ const llmbuildspassing2 = /** @type {((inputs?: Llmbuildspassing2Inputs, options
 	if (locale === "ko") return ko_llmbuildspassing2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_llmbuildspassing2(inputs)
 	if (locale === "de") return de_llmbuildspassing2(inputs)
-	if (locale === "fr") return fr_llmbuildspassing2(inputs)
-	return uk_llmbuildspassing2(inputs)
+	return fr_llmbuildspassing2(inputs)
 });
 export { llmbuildspassing2 as "llmBuildsPassing" }

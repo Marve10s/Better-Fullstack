@@ -37,20 +37,16 @@ const fr_llmclaudesweep2 = /** @type {(inputs: Llmclaudesweep2Inputs) => Localiz
 	return /** @type {LocalizedString} */ (`Balayage du 12 juin`)
 };
 
-const uk_llmclaudesweep2 = /** @type {(inputs: Llmclaudesweep2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`12 червня зачистка`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Jun 12 sweep" |
 *
 * @param {Llmclaudesweep2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const llmclaudesweep2 = /** @type {((inputs?: Llmclaudesweep2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmclaudesweep2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const llmclaudesweep2 = /** @type {((inputs?: Llmclaudesweep2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmclaudesweep2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_llmclaudesweep2(inputs)
 	if (locale === "es") return es_llmclaudesweep2(inputs)
@@ -59,7 +55,6 @@ const llmclaudesweep2 = /** @type {((inputs?: Llmclaudesweep2Inputs, options?: {
 	if (locale === "ko") return ko_llmclaudesweep2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_llmclaudesweep2(inputs)
 	if (locale === "de") return de_llmclaudesweep2(inputs)
-	if (locale === "fr") return fr_llmclaudesweep2(inputs)
-	return uk_llmclaudesweep2(inputs)
+	return fr_llmclaudesweep2(inputs)
 });
 export { llmclaudesweep2 as "llmClaudeSweep" }

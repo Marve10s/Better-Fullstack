@@ -37,20 +37,16 @@ const fr_shareqralt2 = /** @type {(inputs: Shareqralt2Inputs) => LocalizedString
 	return /** @type {LocalizedString} */ (`Code QR pour la configuration de la pile`)
 };
 
-const uk_shareqralt2 = /** @type {(inputs: Shareqralt2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`QR код для конфігурації стека`)
-};
-
 /**
 * | output |
 * | --- |
 * | "QR code for stack configuration" |
 *
 * @param {Shareqralt2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const shareqralt2 = /** @type {((inputs?: Shareqralt2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Shareqralt2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const shareqralt2 = /** @type {((inputs?: Shareqralt2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Shareqralt2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_shareqralt2(inputs)
 	if (locale === "es") return es_shareqralt2(inputs)
@@ -59,7 +55,6 @@ const shareqralt2 = /** @type {((inputs?: Shareqralt2Inputs, options?: { locale?
 	if (locale === "ko") return ko_shareqralt2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_shareqralt2(inputs)
 	if (locale === "de") return de_shareqralt2(inputs)
-	if (locale === "fr") return fr_shareqralt2(inputs)
-	return uk_shareqralt2(inputs)
+	return fr_shareqralt2(inputs)
 });
 export { shareqralt2 as "shareQrAlt" }

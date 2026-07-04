@@ -37,20 +37,16 @@ const fr_compareopenbuilder2 = /** @type {(inputs: Compareopenbuilder2Inputs) =>
 	return /** @type {LocalizedString} */ (`Ouvrir Stack Builder`)
 };
 
-const uk_compareopenbuilder2 = /** @type {(inputs: Compareopenbuilder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Відкрийте Stack Builder`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Open Stack Builder" |
 *
 * @param {Compareopenbuilder2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const compareopenbuilder2 = /** @type {((inputs?: Compareopenbuilder2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Compareopenbuilder2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const compareopenbuilder2 = /** @type {((inputs?: Compareopenbuilder2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Compareopenbuilder2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_compareopenbuilder2(inputs)
 	if (locale === "es") return es_compareopenbuilder2(inputs)
@@ -59,7 +55,6 @@ const compareopenbuilder2 = /** @type {((inputs?: Compareopenbuilder2Inputs, opt
 	if (locale === "ko") return ko_compareopenbuilder2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_compareopenbuilder2(inputs)
 	if (locale === "de") return de_compareopenbuilder2(inputs)
-	if (locale === "fr") return fr_compareopenbuilder2(inputs)
-	return uk_compareopenbuilder2(inputs)
+	return fr_compareopenbuilder2(inputs)
 });
 export { compareopenbuilder2 as "compareOpenBuilder" }

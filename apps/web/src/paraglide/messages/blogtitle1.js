@@ -37,20 +37,16 @@ const fr_blogtitle1 = /** @type {(inputs: Blogtitle1Inputs) => LocalizedString} 
 	return /** @type {LocalizedString} */ (`Notes de l'atelier.`)
 };
 
-const uk_blogtitle1 = /** @type {(inputs: Blogtitle1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Нотатки з майстерні.`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Notes from the workshop." |
 *
 * @param {Blogtitle1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const blogtitle1 = /** @type {((inputs?: Blogtitle1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Blogtitle1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const blogtitle1 = /** @type {((inputs?: Blogtitle1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Blogtitle1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_blogtitle1(inputs)
 	if (locale === "es") return es_blogtitle1(inputs)
@@ -59,7 +55,6 @@ const blogtitle1 = /** @type {((inputs?: Blogtitle1Inputs, options?: { locale?: 
 	if (locale === "ko") return ko_blogtitle1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_blogtitle1(inputs)
 	if (locale === "de") return de_blogtitle1(inputs)
-	if (locale === "fr") return fr_blogtitle1(inputs)
-	return uk_blogtitle1(inputs)
+	return fr_blogtitle1(inputs)
 });
 export { blogtitle1 as "blogTitle" }

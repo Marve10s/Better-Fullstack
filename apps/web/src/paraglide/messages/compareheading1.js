@@ -37,20 +37,16 @@ const fr_compareheading1 = /** @type {(inputs: Compareheading1Inputs) => Localiz
 	return /** @type {LocalizedString} */ (`Comment Better Fullstack se compare-t-il ?`)
 };
 
-const uk_compareheading1 = /** @type {(inputs: Compareheading1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Як порівняти Better Fullstack?`)
-};
-
 /**
 * | output |
 * | --- |
 * | "How does Better Fullstack compare?" |
 *
 * @param {Compareheading1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const compareheading1 = /** @type {((inputs?: Compareheading1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Compareheading1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const compareheading1 = /** @type {((inputs?: Compareheading1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Compareheading1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_compareheading1(inputs)
 	if (locale === "es") return es_compareheading1(inputs)
@@ -59,7 +55,6 @@ const compareheading1 = /** @type {((inputs?: Compareheading1Inputs, options?: {
 	if (locale === "ko") return ko_compareheading1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_compareheading1(inputs)
 	if (locale === "de") return de_compareheading1(inputs)
-	if (locale === "fr") return fr_compareheading1(inputs)
-	return uk_compareheading1(inputs)
+	return fr_compareheading1(inputs)
 });
 export { compareheading1 as "compareHeading" }

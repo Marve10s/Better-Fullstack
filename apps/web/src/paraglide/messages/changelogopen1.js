@@ -37,20 +37,16 @@ const fr_changelogopen1 = /** @type {(inputs: Changelogopen1Inputs) => Localized
 	return /** @type {LocalizedString} */ (`Ouvrir le journal des modifications`)
 };
 
-const uk_changelogopen1 = /** @type {(inputs: Changelogopen1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Відкрити журнал змін`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Open changelog" |
 *
 * @param {Changelogopen1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const changelogopen1 = /** @type {((inputs?: Changelogopen1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Changelogopen1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const changelogopen1 = /** @type {((inputs?: Changelogopen1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Changelogopen1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_changelogopen1(inputs)
 	if (locale === "es") return es_changelogopen1(inputs)
@@ -59,7 +55,6 @@ const changelogopen1 = /** @type {((inputs?: Changelogopen1Inputs, options?: { l
 	if (locale === "ko") return ko_changelogopen1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_changelogopen1(inputs)
 	if (locale === "de") return de_changelogopen1(inputs)
-	if (locale === "fr") return fr_changelogopen1(inputs)
-	return uk_changelogopen1(inputs)
+	return fr_changelogopen1(inputs)
 });
 export { changelogopen1 as "changelogOpen" }

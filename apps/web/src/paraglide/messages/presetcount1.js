@@ -37,20 +37,16 @@ const fr_presetcount1 = /** @type {(inputs: Presetcount1Inputs) => LocalizedStri
 	return /** @type {LocalizedString} */ (`${i?.count} préréglages`)
 };
 
-const uk_presetcount1 = /** @type {(inputs: Presetcount1Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} пресети`)
-};
-
 /**
 * | output |
 * | --- |
 * | "{count} presets" |
 *
 * @param {Presetcount1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const presetcount1 = /** @type {((inputs: Presetcount1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presetcount1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
+const presetcount1 = /** @type {((inputs: Presetcount1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presetcount1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_presetcount1(inputs)
 	if (locale === "es") return es_presetcount1(inputs)
@@ -59,7 +55,6 @@ const presetcount1 = /** @type {((inputs: Presetcount1Inputs, options?: { locale
 	if (locale === "ko") return ko_presetcount1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_presetcount1(inputs)
 	if (locale === "de") return de_presetcount1(inputs)
-	if (locale === "fr") return fr_presetcount1(inputs)
-	return uk_presetcount1(inputs)
+	return fr_presetcount1(inputs)
 });
 export { presetcount1 as "presetCount" }

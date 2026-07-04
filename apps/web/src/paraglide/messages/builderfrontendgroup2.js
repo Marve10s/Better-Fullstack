@@ -37,20 +37,16 @@ const fr_builderfrontendgroup2 = /** @type {(inputs: Builderfrontendgroup2Inputs
 	return /** @type {LocalizedString} */ (`${i?.ecosystem} Frontal`)
 };
 
-const uk_builderfrontendgroup2 = /** @type {(inputs: Builderfrontendgroup2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.ecosystem} Інтерфейс`)
-};
-
 /**
 * | output |
 * | --- |
 * | "{ecosystem} Frontend" |
 *
 * @param {Builderfrontendgroup2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const builderfrontendgroup2 = /** @type {((inputs: Builderfrontendgroup2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderfrontendgroup2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
+const builderfrontendgroup2 = /** @type {((inputs: Builderfrontendgroup2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderfrontendgroup2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderfrontendgroup2(inputs)
 	if (locale === "es") return es_builderfrontendgroup2(inputs)
@@ -59,7 +55,6 @@ const builderfrontendgroup2 = /** @type {((inputs: Builderfrontendgroup2Inputs, 
 	if (locale === "ko") return ko_builderfrontendgroup2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderfrontendgroup2(inputs)
 	if (locale === "de") return de_builderfrontendgroup2(inputs)
-	if (locale === "fr") return fr_builderfrontendgroup2(inputs)
-	return uk_builderfrontendgroup2(inputs)
+	return fr_builderfrontendgroup2(inputs)
 });
 export { builderfrontendgroup2 as "builderFrontendGroup" }

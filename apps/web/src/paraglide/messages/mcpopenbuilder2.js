@@ -37,20 +37,16 @@ const fr_mcpopenbuilder2 = /** @type {(inputs: Mcpopenbuilder2Inputs) => Localiz
 	return /** @type {LocalizedString} */ (`Constructeur ouvert`)
 };
 
-const uk_mcpopenbuilder2 = /** @type {(inputs: Mcpopenbuilder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Відкритий конструктор`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Open builder" |
 *
 * @param {Mcpopenbuilder2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const mcpopenbuilder2 = /** @type {((inputs?: Mcpopenbuilder2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpopenbuilder2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcpopenbuilder2 = /** @type {((inputs?: Mcpopenbuilder2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpopenbuilder2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcpopenbuilder2(inputs)
 	if (locale === "es") return es_mcpopenbuilder2(inputs)
@@ -59,7 +55,6 @@ const mcpopenbuilder2 = /** @type {((inputs?: Mcpopenbuilder2Inputs, options?: {
 	if (locale === "ko") return ko_mcpopenbuilder2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcpopenbuilder2(inputs)
 	if (locale === "de") return de_mcpopenbuilder2(inputs)
-	if (locale === "fr") return fr_mcpopenbuilder2(inputs)
-	return uk_mcpopenbuilder2(inputs)
+	return fr_mcpopenbuilder2(inputs)
 });
 export { mcpopenbuilder2 as "mcpOpenBuilder" }

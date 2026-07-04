@@ -37,20 +37,16 @@ const fr_mcpworkflowplannote3 = /** @type {(inputs: Mcpworkflowplannote3Inputs) 
 	return /** @type {LocalizedString} */ (`aperçu à sec, 59 fichiers`)
 };
 
-const uk_mcpworkflowplannote3 = /** @type {(inputs: Mcpworkflowplannote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`попередній перегляд, 59 файлів`)
-};
-
 /**
 * | output |
 * | --- |
 * | "dry-run preview, 59 files" |
 *
 * @param {Mcpworkflowplannote3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const mcpworkflowplannote3 = /** @type {((inputs?: Mcpworkflowplannote3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpworkflowplannote3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcpworkflowplannote3 = /** @type {((inputs?: Mcpworkflowplannote3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpworkflowplannote3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcpworkflowplannote3(inputs)
 	if (locale === "es") return es_mcpworkflowplannote3(inputs)
@@ -59,7 +55,6 @@ const mcpworkflowplannote3 = /** @type {((inputs?: Mcpworkflowplannote3Inputs, o
 	if (locale === "ko") return ko_mcpworkflowplannote3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcpworkflowplannote3(inputs)
 	if (locale === "de") return de_mcpworkflowplannote3(inputs)
-	if (locale === "fr") return fr_mcpworkflowplannote3(inputs)
-	return uk_mcpworkflowplannote3(inputs)
+	return fr_mcpworkflowplannote3(inputs)
 });
 export { mcpworkflowplannote3 as "mcpWorkflowPlanNote" }

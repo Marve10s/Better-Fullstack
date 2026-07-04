@@ -37,20 +37,16 @@ const fr_presettrackinternaltoolname4 = /** @type {(inputs: Presettrackinternalt
 	return /** @type {LocalizedString} */ (`Outil interne`)
 };
 
-const uk_presettrackinternaltoolname4 = /** @type {(inputs: Presettrackinternaltoolname4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Внутрішній інструмент`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Internal Tool" |
 *
 * @param {Presettrackinternaltoolname4Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const presettrackinternaltoolname4 = /** @type {((inputs?: Presettrackinternaltoolname4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackinternaltoolname4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const presettrackinternaltoolname4 = /** @type {((inputs?: Presettrackinternaltoolname4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackinternaltoolname4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_presettrackinternaltoolname4(inputs)
 	if (locale === "es") return es_presettrackinternaltoolname4(inputs)
@@ -59,7 +55,6 @@ const presettrackinternaltoolname4 = /** @type {((inputs?: Presettrackinternalto
 	if (locale === "ko") return ko_presettrackinternaltoolname4(inputs)
 	if (locale === "zh-Hant") return zh_hant1_presettrackinternaltoolname4(inputs)
 	if (locale === "de") return de_presettrackinternaltoolname4(inputs)
-	if (locale === "fr") return fr_presettrackinternaltoolname4(inputs)
-	return uk_presettrackinternaltoolname4(inputs)
+	return fr_presettrackinternaltoolname4(inputs)
 });
 export { presettrackinternaltoolname4 as "presetTrackInternalToolName" }

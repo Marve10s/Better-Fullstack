@@ -37,20 +37,16 @@ const fr_builderdisabled1 = /** @type {(inputs: Builderdisabled1Inputs) => Local
 	return /** @type {LocalizedString} */ (`Désactivé`)
 };
 
-const uk_builderdisabled1 = /** @type {(inputs: Builderdisabled1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Вимкнено`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Disabled" |
 *
 * @param {Builderdisabled1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const builderdisabled1 = /** @type {((inputs?: Builderdisabled1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderdisabled1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const builderdisabled1 = /** @type {((inputs?: Builderdisabled1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderdisabled1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderdisabled1(inputs)
 	if (locale === "es") return es_builderdisabled1(inputs)
@@ -59,7 +55,6 @@ const builderdisabled1 = /** @type {((inputs?: Builderdisabled1Inputs, options?:
 	if (locale === "ko") return ko_builderdisabled1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderdisabled1(inputs)
 	if (locale === "de") return de_builderdisabled1(inputs)
-	if (locale === "fr") return fr_builderdisabled1(inputs)
-	return uk_builderdisabled1(inputs)
+	return fr_builderdisabled1(inputs)
 });
 export { builderdisabled1 as "builderDisabled" }

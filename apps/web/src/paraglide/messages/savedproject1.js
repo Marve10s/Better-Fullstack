@@ -37,20 +37,16 @@ const fr_savedproject1 = /** @type {(inputs: Savedproject1Inputs) => LocalizedSt
 	return /** @type {LocalizedString} */ (`Projet`)
 };
 
-const uk_savedproject1 = /** @type {(inputs: Savedproject1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Демонструвати`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Project" |
 *
 * @param {Savedproject1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const savedproject1 = /** @type {((inputs?: Savedproject1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedproject1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const savedproject1 = /** @type {((inputs?: Savedproject1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedproject1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_savedproject1(inputs)
 	if (locale === "es") return es_savedproject1(inputs)
@@ -59,7 +55,6 @@ const savedproject1 = /** @type {((inputs?: Savedproject1Inputs, options?: { loc
 	if (locale === "ko") return ko_savedproject1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_savedproject1(inputs)
 	if (locale === "de") return de_savedproject1(inputs)
-	if (locale === "fr") return fr_savedproject1(inputs)
-	return uk_savedproject1(inputs)
+	return fr_savedproject1(inputs)
 });
 export { savedproject1 as "savedProject" }

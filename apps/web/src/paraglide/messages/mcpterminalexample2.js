@@ -37,20 +37,16 @@ const fr_mcpterminalexample2 = /** @type {(inputs: Mcpterminalexample2Inputs) =>
 	return /** @type {LocalizedString} */ (`Créez une application fullstack TypeScript avec Next.js, Hono, Drizzle et PostgreSQL.`)
 };
 
-const uk_mcpterminalexample2 = /** @type {(inputs: Mcpterminalexample2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Створіть повну програму TypeScript з Next.js, Hono, Drizzle та PostgreSQL.`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Create a fullstack TypeScript app with Next.js, Hono, Drizzle, and PostgreSQL." |
 *
 * @param {Mcpterminalexample2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const mcpterminalexample2 = /** @type {((inputs?: Mcpterminalexample2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpterminalexample2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcpterminalexample2 = /** @type {((inputs?: Mcpterminalexample2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpterminalexample2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcpterminalexample2(inputs)
 	if (locale === "es") return es_mcpterminalexample2(inputs)
@@ -59,7 +55,6 @@ const mcpterminalexample2 = /** @type {((inputs?: Mcpterminalexample2Inputs, opt
 	if (locale === "ko") return ko_mcpterminalexample2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcpterminalexample2(inputs)
 	if (locale === "de") return de_mcpterminalexample2(inputs)
-	if (locale === "fr") return fr_mcpterminalexample2(inputs)
-	return uk_mcpterminalexample2(inputs)
+	return fr_mcpterminalexample2(inputs)
 });
 export { mcpterminalexample2 as "mcpTerminalExample" }

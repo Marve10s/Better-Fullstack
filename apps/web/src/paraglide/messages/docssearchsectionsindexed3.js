@@ -37,20 +37,16 @@ const fr_docssearchsectionsindexed3 = /** @type {(inputs: Docssearchsectionsinde
 	return /** @type {LocalizedString} */ (`${i?.count} sections indexées`)
 };
 
-const uk_docssearchsectionsindexed3 = /** @type {(inputs: Docssearchsectionsindexed3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} розділів проіндексовано`)
-};
-
 /**
 * | output |
 * | --- |
 * | "{count} sections indexed" |
 *
 * @param {Docssearchsectionsindexed3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const docssearchsectionsindexed3 = /** @type {((inputs: Docssearchsectionsindexed3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssearchsectionsindexed3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
+const docssearchsectionsindexed3 = /** @type {((inputs: Docssearchsectionsindexed3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssearchsectionsindexed3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_docssearchsectionsindexed3(inputs)
 	if (locale === "es") return es_docssearchsectionsindexed3(inputs)
@@ -59,7 +55,6 @@ const docssearchsectionsindexed3 = /** @type {((inputs: Docssearchsectionsindexe
 	if (locale === "ko") return ko_docssearchsectionsindexed3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_docssearchsectionsindexed3(inputs)
 	if (locale === "de") return de_docssearchsectionsindexed3(inputs)
-	if (locale === "fr") return fr_docssearchsectionsindexed3(inputs)
-	return uk_docssearchsectionsindexed3(inputs)
+	return fr_docssearchsectionsindexed3(inputs)
 });
 export { docssearchsectionsindexed3 as "docsSearchSectionsIndexed" }

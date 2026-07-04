@@ -37,20 +37,16 @@ const fr_themeswitchtodark3 = /** @type {(inputs: Themeswitchtodark3Inputs) => L
 	return /** @type {LocalizedString} */ (`Passer en mode sombre`)
 };
 
-const uk_themeswitchtodark3 = /** @type {(inputs: Themeswitchtodark3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Переключіться на темний режим`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Switch to dark mode" |
 *
 * @param {Themeswitchtodark3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const themeswitchtodark3 = /** @type {((inputs?: Themeswitchtodark3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Themeswitchtodark3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const themeswitchtodark3 = /** @type {((inputs?: Themeswitchtodark3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Themeswitchtodark3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_themeswitchtodark3(inputs)
 	if (locale === "es") return es_themeswitchtodark3(inputs)
@@ -59,7 +55,6 @@ const themeswitchtodark3 = /** @type {((inputs?: Themeswitchtodark3Inputs, optio
 	if (locale === "ko") return ko_themeswitchtodark3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_themeswitchtodark3(inputs)
 	if (locale === "de") return de_themeswitchtodark3(inputs)
-	if (locale === "fr") return fr_themeswitchtodark3(inputs)
-	return uk_themeswitchtodark3(inputs)
+	return fr_themeswitchtodark3(inputs)
 });
 export { themeswitchtodark3 as "themeSwitchToDark" }

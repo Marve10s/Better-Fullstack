@@ -37,20 +37,16 @@ const fr_navpresets1 = /** @type {(inputs: Navpresets1Inputs) => LocalizedString
 	return /** @type {LocalizedString} */ (`Préréglages`)
 };
 
-const uk_navpresets1 = /** @type {(inputs: Navpresets1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Предустановки`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Presets" |
 *
 * @param {Navpresets1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const navpresets1 = /** @type {((inputs?: Navpresets1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navpresets1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const navpresets1 = /** @type {((inputs?: Navpresets1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navpresets1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_navpresets1(inputs)
 	if (locale === "es") return es_navpresets1(inputs)
@@ -59,7 +55,6 @@ const navpresets1 = /** @type {((inputs?: Navpresets1Inputs, options?: { locale?
 	if (locale === "ko") return ko_navpresets1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_navpresets1(inputs)
 	if (locale === "de") return de_navpresets1(inputs)
-	if (locale === "fr") return fr_navpresets1(inputs)
-	return uk_navpresets1(inputs)
+	return fr_navpresets1(inputs)
 });
 export { navpresets1 as "navPresets" }

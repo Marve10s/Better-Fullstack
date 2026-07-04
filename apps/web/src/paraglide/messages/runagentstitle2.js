@@ -37,20 +37,16 @@ const fr_runagentstitle2 = /** @type {(inputs: Runagentstitle2Inputs) => Localiz
 	return /** @type {LocalizedString} */ (`Amenez n'importe quel agent`)
 };
 
-const uk_runagentstitle2 = /** @type {(inputs: Runagentstitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Приведіть будь-якого агента`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Bring any agent" |
 *
 * @param {Runagentstitle2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const runagentstitle2 = /** @type {((inputs?: Runagentstitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runagentstitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const runagentstitle2 = /** @type {((inputs?: Runagentstitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runagentstitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_runagentstitle2(inputs)
 	if (locale === "es") return es_runagentstitle2(inputs)
@@ -59,7 +55,6 @@ const runagentstitle2 = /** @type {((inputs?: Runagentstitle2Inputs, options?: {
 	if (locale === "ko") return ko_runagentstitle2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_runagentstitle2(inputs)
 	if (locale === "de") return de_runagentstitle2(inputs)
-	if (locale === "fr") return fr_runagentstitle2(inputs)
-	return uk_runagentstitle2(inputs)
+	return fr_runagentstitle2(inputs)
 });
 export { runagentstitle2 as "runAgentsTitle" }

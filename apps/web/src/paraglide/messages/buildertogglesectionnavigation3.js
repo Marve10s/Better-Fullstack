@@ -37,20 +37,16 @@ const fr_buildertogglesectionnavigation3 = /** @type {(inputs: Buildertogglesect
 	return /** @type {LocalizedString} */ (`Basculer la navigation dans les sections`)
 };
 
-const uk_buildertogglesectionnavigation3 = /** @type {(inputs: Buildertogglesectionnavigation3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Перемкнути навігацію по розділах`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Toggle section navigation" |
 *
 * @param {Buildertogglesectionnavigation3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const buildertogglesectionnavigation3 = /** @type {((inputs?: Buildertogglesectionnavigation3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildertogglesectionnavigation3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const buildertogglesectionnavigation3 = /** @type {((inputs?: Buildertogglesectionnavigation3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildertogglesectionnavigation3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_buildertogglesectionnavigation3(inputs)
 	if (locale === "es") return es_buildertogglesectionnavigation3(inputs)
@@ -59,7 +55,6 @@ const buildertogglesectionnavigation3 = /** @type {((inputs?: Buildertogglesecti
 	if (locale === "ko") return ko_buildertogglesectionnavigation3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_buildertogglesectionnavigation3(inputs)
 	if (locale === "de") return de_buildertogglesectionnavigation3(inputs)
-	if (locale === "fr") return fr_buildertogglesectionnavigation3(inputs)
-	return uk_buildertogglesectionnavigation3(inputs)
+	return fr_buildertogglesectionnavigation3(inputs)
 });
 export { buildertogglesectionnavigation3 as "builderToggleSectionNavigation" }

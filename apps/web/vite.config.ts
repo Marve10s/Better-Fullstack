@@ -38,6 +38,10 @@ const ssrMdxLoaderAliases = new Map([
     "@/lib/blog/mdx-loaders",
     fileURLToPath(new URL("./src/lib/blog/mdx-loaders.ssr.ts", import.meta.url)),
   ],
+  [
+    "virtual:localized-content",
+    fileURLToPath(new URL("./src/lib/i18n/localized-content.ssr.ts", import.meta.url)),
+  ],
 ]);
 
 function ssrMdxLoaderAliasPlugin(): PluginOption {

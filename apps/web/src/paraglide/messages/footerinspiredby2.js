@@ -37,20 +37,16 @@ const fr_footerinspiredby2 = /** @type {(inputs: Footerinspiredby2Inputs) => Loc
 	return /** @type {LocalizedString} */ (`Inspiré à l'origine par`)
 };
 
-const uk_footerinspiredby2 = /** @type {(inputs: Footerinspiredby2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Спочатку натхненний`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Originally inspired by" |
 *
 * @param {Footerinspiredby2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const footerinspiredby2 = /** @type {((inputs?: Footerinspiredby2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Footerinspiredby2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const footerinspiredby2 = /** @type {((inputs?: Footerinspiredby2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Footerinspiredby2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_footerinspiredby2(inputs)
 	if (locale === "es") return es_footerinspiredby2(inputs)
@@ -59,7 +55,6 @@ const footerinspiredby2 = /** @type {((inputs?: Footerinspiredby2Inputs, options
 	if (locale === "ko") return ko_footerinspiredby2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_footerinspiredby2(inputs)
 	if (locale === "de") return de_footerinspiredby2(inputs)
-	if (locale === "fr") return fr_footerinspiredby2(inputs)
-	return uk_footerinspiredby2(inputs)
+	return fr_footerinspiredby2(inputs)
 });
 export { footerinspiredby2 as "footerInspiredBy" }

@@ -37,20 +37,16 @@ const fr_hometotaldescription2 = /** @type {(inputs: Hometotaldescription2Inputs
 	return /** @type {LocalizedString} */ (`Multipliez cela par chaque base de données, chaque framework CSS, chaque SDK AI, et vous obtenez plus de combinaisons qu'il n'y a de grains de sable.`)
 };
 
-const uk_hometotaldescription2 = /** @type {(inputs: Hometotaldescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Помножте це на кожну базу даних, кожну структуру CSS, кожен AI SDK, і ви отримаєте більше комбінацій, ніж піщинок.`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Multiply this by every database, every CSS framework, every AI SDK, and you get more combinations than there are grains of sand." |
 *
 * @param {Hometotaldescription2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const hometotaldescription2 = /** @type {((inputs?: Hometotaldescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Hometotaldescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const hometotaldescription2 = /** @type {((inputs?: Hometotaldescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Hometotaldescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_hometotaldescription2(inputs)
 	if (locale === "es") return es_hometotaldescription2(inputs)
@@ -59,7 +55,6 @@ const hometotaldescription2 = /** @type {((inputs?: Hometotaldescription2Inputs,
 	if (locale === "ko") return ko_hometotaldescription2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_hometotaldescription2(inputs)
 	if (locale === "de") return de_hometotaldescription2(inputs)
-	if (locale === "fr") return fr_hometotaldescription2(inputs)
-	return uk_hometotaldescription2(inputs)
+	return fr_hometotaldescription2(inputs)
 });
 export { hometotaldescription2 as "homeTotalDescription" }

@@ -37,20 +37,16 @@ const fr_builderstandalonedatabase2 = /** @type {(inputs: Builderstandalonedatab
 	return /** @type {LocalizedString} */ (`Base de données autonome`)
 };
 
-const uk_builderstandalonedatabase2 = /** @type {(inputs: Builderstandalonedatabase2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Автономна база даних`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Standalone Database" |
 *
 * @param {Builderstandalonedatabase2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const builderstandalonedatabase2 = /** @type {((inputs?: Builderstandalonedatabase2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderstandalonedatabase2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const builderstandalonedatabase2 = /** @type {((inputs?: Builderstandalonedatabase2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderstandalonedatabase2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderstandalonedatabase2(inputs)
 	if (locale === "es") return es_builderstandalonedatabase2(inputs)
@@ -59,7 +55,6 @@ const builderstandalonedatabase2 = /** @type {((inputs?: Builderstandalonedataba
 	if (locale === "ko") return ko_builderstandalonedatabase2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderstandalonedatabase2(inputs)
 	if (locale === "de") return de_builderstandalonedatabase2(inputs)
-	if (locale === "fr") return fr_builderstandalonedatabase2(inputs)
-	return uk_builderstandalonedatabase2(inputs)
+	return fr_builderstandalonedatabase2(inputs)
 });
 export { builderstandalonedatabase2 as "builderStandaloneDatabase" }

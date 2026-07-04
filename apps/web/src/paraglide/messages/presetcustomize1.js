@@ -37,20 +37,16 @@ const fr_presetcustomize1 = /** @type {(inputs: Presetcustomize1Inputs) => Local
 	return /** @type {LocalizedString} */ (`Personnaliser le préréglage`)
 };
 
-const uk_presetcustomize1 = /** @type {(inputs: Presetcustomize1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Налаштувати попередні налаштування`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Customize preset" |
 *
 * @param {Presetcustomize1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const presetcustomize1 = /** @type {((inputs?: Presetcustomize1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presetcustomize1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const presetcustomize1 = /** @type {((inputs?: Presetcustomize1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presetcustomize1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_presetcustomize1(inputs)
 	if (locale === "es") return es_presetcustomize1(inputs)
@@ -59,7 +55,6 @@ const presetcustomize1 = /** @type {((inputs?: Presetcustomize1Inputs, options?:
 	if (locale === "ko") return ko_presetcustomize1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_presetcustomize1(inputs)
 	if (locale === "de") return de_presetcustomize1(inputs)
-	if (locale === "fr") return fr_presetcustomize1(inputs)
-	return uk_presetcustomize1(inputs)
+	return fr_presetcustomize1(inputs)
 });
 export { presetcustomize1 as "presetCustomize" }

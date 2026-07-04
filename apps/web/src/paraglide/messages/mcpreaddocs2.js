@@ -37,20 +37,16 @@ const fr_mcpreaddocs2 = /** @type {(inputs: Mcpreaddocs2Inputs) => LocalizedStri
 	return /** @type {LocalizedString} */ (`Lire la documentation MCP`)
 };
 
-const uk_mcpreaddocs2 = /** @type {(inputs: Mcpreaddocs2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Прочитайте документи MCP`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Read MCP docs" |
 *
 * @param {Mcpreaddocs2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const mcpreaddocs2 = /** @type {((inputs?: Mcpreaddocs2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpreaddocs2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcpreaddocs2 = /** @type {((inputs?: Mcpreaddocs2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpreaddocs2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcpreaddocs2(inputs)
 	if (locale === "es") return es_mcpreaddocs2(inputs)
@@ -59,7 +55,6 @@ const mcpreaddocs2 = /** @type {((inputs?: Mcpreaddocs2Inputs, options?: { local
 	if (locale === "ko") return ko_mcpreaddocs2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcpreaddocs2(inputs)
 	if (locale === "de") return de_mcpreaddocs2(inputs)
-	if (locale === "fr") return fr_mcpreaddocs2(inputs)
-	return uk_mcpreaddocs2(inputs)
+	return fr_mcpreaddocs2(inputs)
 });
 export { mcpreaddocs2 as "mcpReadDocs" }

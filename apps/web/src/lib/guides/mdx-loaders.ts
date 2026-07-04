@@ -10,5 +10,7 @@ export type GuideMdxModule = {
   toc?: TocEntry[];
 };
 
-export const guideMdxLoaders =
-  import.meta.glob<GuideMdxModule>("../../../content/guides/**/*.mdx");
+export const guideMdxLoaders = import.meta.glob<GuideMdxModule>([
+  "../../../content/guides/**/*.mdx",
+  "!../../../content/guides/**/*.{es,zh,ja,ko,zh-Hant,de,fr,uk}.mdx",
+]);

@@ -37,20 +37,16 @@ const fr_comparegroupecosystems2 = /** @type {(inputs: Comparegroupecosystems2In
 	return /** @type {LocalizedString} */ (`Écosystèmes`)
 };
 
-const uk_comparegroupecosystems2 = /** @type {(inputs: Comparegroupecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Екосистеми`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Ecosystems" |
 *
 * @param {Comparegroupecosystems2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const comparegroupecosystems2 = /** @type {((inputs?: Comparegroupecosystems2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparegroupecosystems2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const comparegroupecosystems2 = /** @type {((inputs?: Comparegroupecosystems2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparegroupecosystems2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_comparegroupecosystems2(inputs)
 	if (locale === "es") return es_comparegroupecosystems2(inputs)
@@ -59,7 +55,6 @@ const comparegroupecosystems2 = /** @type {((inputs?: Comparegroupecosystems2Inp
 	if (locale === "ko") return ko_comparegroupecosystems2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_comparegroupecosystems2(inputs)
 	if (locale === "de") return de_comparegroupecosystems2(inputs)
-	if (locale === "fr") return fr_comparegroupecosystems2(inputs)
-	return uk_comparegroupecosystems2(inputs)
+	return fr_comparegroupecosystems2(inputs)
 });
 export { comparegroupecosystems2 as "compareGroupEcosystems" }

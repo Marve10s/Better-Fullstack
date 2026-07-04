@@ -37,20 +37,16 @@ const fr_changelogrelease20260612highlightbenchmark3 = /** @type {(inputs: Chang
 	return /** @type {LocalizedString} */ (`Des modèles frontières comparés échafaudent les mêmes spécifications de projet de trois manières : par invite uniquement, par notre CLI et par notre serveur MCP. Les agents sur le chemin MCP ont terminé jusqu'à 7 fois plus vite avec 4 fois moins de jetons de sortie ; les résultats complets en direct sur la page d'accueil avec un graphique interactif.`)
 };
 
-const uk_changelogrelease20260612highlightbenchmark3 = /** @type {(inputs: Changelogrelease20260612highlightbenchmark3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Порівняльні передові моделі, що створюють один і той самий проект, мають три способи: лише запити, наш CLI і наш MCP сервер. Агенти на шляху MCP закінчували до 7 разів швидше з 4 рази менше маркерів виводу; повні результати доступні на головній сторінці з інтерактивною діаграмою.`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Benchmarked frontier models scaffolding the same project specs three ways: prompt-only, our CLI, and our MCP server. Agents on the MCP path finished up to 7×..." |
 *
 * @param {Changelogrelease20260612highlightbenchmark3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const changelogrelease20260612highlightbenchmark3 = /** @type {((inputs?: Changelogrelease20260612highlightbenchmark3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Changelogrelease20260612highlightbenchmark3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const changelogrelease20260612highlightbenchmark3 = /** @type {((inputs?: Changelogrelease20260612highlightbenchmark3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Changelogrelease20260612highlightbenchmark3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_changelogrelease20260612highlightbenchmark3(inputs)
 	if (locale === "es") return es_changelogrelease20260612highlightbenchmark3(inputs)
@@ -59,7 +55,6 @@ const changelogrelease20260612highlightbenchmark3 = /** @type {((inputs?: Change
 	if (locale === "ko") return ko_changelogrelease20260612highlightbenchmark3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_changelogrelease20260612highlightbenchmark3(inputs)
 	if (locale === "de") return de_changelogrelease20260612highlightbenchmark3(inputs)
-	if (locale === "fr") return fr_changelogrelease20260612highlightbenchmark3(inputs)
-	return uk_changelogrelease20260612highlightbenchmark3(inputs)
+	return fr_changelogrelease20260612highlightbenchmark3(inputs)
 });
 export { changelogrelease20260612highlightbenchmark3 as "changelogRelease20260612HighlightBenchmark" }

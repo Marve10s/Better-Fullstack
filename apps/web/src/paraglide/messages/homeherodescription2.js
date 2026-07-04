@@ -37,20 +37,16 @@ const fr_homeherodescription2 = /** @type {(inputs: Homeherodescription2Inputs) 
 	return /** @type {LocalizedString} */ (`Un CLI qui héberge des applications fullstack prêtes pour la production dans sept écosystèmes linguistiques. Choisissez votre pile – frontend, base de données, authentification, paiements, AI – et exécutez une commande.`)
 };
 
-const uk_homeherodescription2 = /** @type {(inputs: Homeherodescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`CLI, який об’єднує готові до виробництва програми повного стеку в семи мовних екосистемах. Виберіть свій стек — інтерфейс, база даних, авторизація, платежі, AI — і виконайте одну команду.`)
-};
-
 /**
 * | output |
 * | --- |
 * | "A CLI that scaffolds production-ready fullstack apps across seven language ecosystems. Pick your stack — frontend, database, auth, payments, AI — and run one..." |
 *
 * @param {Homeherodescription2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const homeherodescription2 = /** @type {((inputs?: Homeherodescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homeherodescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const homeherodescription2 = /** @type {((inputs?: Homeherodescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homeherodescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_homeherodescription2(inputs)
 	if (locale === "es") return es_homeherodescription2(inputs)
@@ -59,7 +55,6 @@ const homeherodescription2 = /** @type {((inputs?: Homeherodescription2Inputs, o
 	if (locale === "ko") return ko_homeherodescription2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_homeherodescription2(inputs)
 	if (locale === "de") return de_homeherodescription2(inputs)
-	if (locale === "fr") return fr_homeherodescription2(inputs)
-	return uk_homeherodescription2(inputs)
+	return fr_homeherodescription2(inputs)
 });
 export { homeherodescription2 as "homeHeroDescription" }

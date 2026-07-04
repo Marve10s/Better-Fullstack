@@ -37,20 +37,16 @@ const fr_stacknotechnologiesselected3 = /** @type {(inputs: Stacknotechnologiess
 	return /** @type {LocalizedString} */ (`Aucune technologie sélectionnée`)
 };
 
-const uk_stacknotechnologiesselected3 = /** @type {(inputs: Stacknotechnologiesselected3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Технології не вибрано`)
-};
-
 /**
 * | output |
 * | --- |
 * | "No technologies selected" |
 *
 * @param {Stacknotechnologiesselected3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const stacknotechnologiesselected3 = /** @type {((inputs?: Stacknotechnologiesselected3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Stacknotechnologiesselected3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const stacknotechnologiesselected3 = /** @type {((inputs?: Stacknotechnologiesselected3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Stacknotechnologiesselected3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_stacknotechnologiesselected3(inputs)
 	if (locale === "es") return es_stacknotechnologiesselected3(inputs)
@@ -59,7 +55,6 @@ const stacknotechnologiesselected3 = /** @type {((inputs?: Stacknotechnologiesse
 	if (locale === "ko") return ko_stacknotechnologiesselected3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_stacknotechnologiesselected3(inputs)
 	if (locale === "de") return de_stacknotechnologiesselected3(inputs)
-	if (locale === "fr") return fr_stacknotechnologiesselected3(inputs)
-	return uk_stacknotechnologiesselected3(inputs)
+	return fr_stacknotechnologiesselected3(inputs)
 });
 export { stacknotechnologiesselected3 as "stackNoTechnologiesSelected" }

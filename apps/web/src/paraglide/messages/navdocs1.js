@@ -37,20 +37,16 @@ const fr_navdocs1 = /** @type {(inputs: Navdocs1Inputs) => LocalizedString} */ (
 	return /** @type {LocalizedString} */ (`Documents`)
 };
 
-const uk_navdocs1 = /** @type {(inputs: Navdocs1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`документи`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Docs" |
 *
 * @param {Navdocs1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const navdocs1 = /** @type {((inputs?: Navdocs1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navdocs1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const navdocs1 = /** @type {((inputs?: Navdocs1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navdocs1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_navdocs1(inputs)
 	if (locale === "es") return es_navdocs1(inputs)
@@ -59,7 +55,6 @@ const navdocs1 = /** @type {((inputs?: Navdocs1Inputs, options?: { locale?: "en"
 	if (locale === "ko") return ko_navdocs1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_navdocs1(inputs)
 	if (locale === "de") return de_navdocs1(inputs)
-	if (locale === "fr") return fr_navdocs1(inputs)
-	return uk_navdocs1(inputs)
+	return fr_navdocs1(inputs)
 });
 export { navdocs1 as "navDocs" }

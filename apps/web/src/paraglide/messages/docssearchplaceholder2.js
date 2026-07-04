@@ -37,20 +37,16 @@ const fr_docssearchplaceholder2 = /** @type {(inputs: Docssearchplaceholder2Inpu
 	return /** @type {LocalizedString} */ (`Rechercher des documents...`)
 };
 
-const uk_docssearchplaceholder2 = /** @type {(inputs: Docssearchplaceholder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Пошук документів...`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Search docs..." |
 *
 * @param {Docssearchplaceholder2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const docssearchplaceholder2 = /** @type {((inputs?: Docssearchplaceholder2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssearchplaceholder2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const docssearchplaceholder2 = /** @type {((inputs?: Docssearchplaceholder2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssearchplaceholder2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_docssearchplaceholder2(inputs)
 	if (locale === "es") return es_docssearchplaceholder2(inputs)
@@ -59,7 +55,6 @@ const docssearchplaceholder2 = /** @type {((inputs?: Docssearchplaceholder2Input
 	if (locale === "ko") return ko_docssearchplaceholder2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_docssearchplaceholder2(inputs)
 	if (locale === "de") return de_docssearchplaceholder2(inputs)
-	if (locale === "fr") return fr_docssearchplaceholder2(inputs)
-	return uk_docssearchplaceholder2(inputs)
+	return fr_docssearchplaceholder2(inputs)
 });
 export { docssearchplaceholder2 as "docsSearchPlaceholder" }

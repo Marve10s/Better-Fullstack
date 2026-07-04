@@ -37,20 +37,16 @@ const fr_themeswitchtolight3 = /** @type {(inputs: Themeswitchtolight3Inputs) =>
 	return /** @type {LocalizedString} */ (`Passer en mode lumière`)
 };
 
-const uk_themeswitchtolight3 = /** @type {(inputs: Themeswitchtolight3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Переключіться на світлий режим`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Switch to light mode" |
 *
 * @param {Themeswitchtolight3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const themeswitchtolight3 = /** @type {((inputs?: Themeswitchtolight3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Themeswitchtolight3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const themeswitchtolight3 = /** @type {((inputs?: Themeswitchtolight3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Themeswitchtolight3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_themeswitchtolight3(inputs)
 	if (locale === "es") return es_themeswitchtolight3(inputs)
@@ -59,7 +55,6 @@ const themeswitchtolight3 = /** @type {((inputs?: Themeswitchtolight3Inputs, opt
 	if (locale === "ko") return ko_themeswitchtolight3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_themeswitchtolight3(inputs)
 	if (locale === "de") return de_themeswitchtolight3(inputs)
-	if (locale === "fr") return fr_themeswitchtolight3(inputs)
-	return uk_themeswitchtolight3(inputs)
+	return fr_themeswitchtolight3(inputs)
 });
 export { themeswitchtolight3 as "themeSwitchToLight" }

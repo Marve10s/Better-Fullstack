@@ -37,20 +37,16 @@ const fr_builderormgroup2 = /** @type {(inputs: Builderormgroup2Inputs) => Local
 	return /** @type {LocalizedString} */ (`${i?.ecosystem}ORM`)
 };
 
-const uk_builderormgroup2 = /** @type {(inputs: Builderormgroup2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.ecosystem} ORM`)
-};
-
 /**
 * | output |
 * | --- |
 * | "{ecosystem} ORM" |
 *
 * @param {Builderormgroup2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const builderormgroup2 = /** @type {((inputs: Builderormgroup2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderormgroup2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
+const builderormgroup2 = /** @type {((inputs: Builderormgroup2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderormgroup2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderormgroup2(inputs)
 	if (locale === "es") return es_builderormgroup2(inputs)
@@ -59,7 +55,6 @@ const builderormgroup2 = /** @type {((inputs: Builderormgroup2Inputs, options?: 
 	if (locale === "ko") return ko_builderormgroup2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderormgroup2(inputs)
 	if (locale === "de") return de_builderormgroup2(inputs)
-	if (locale === "fr") return fr_builderormgroup2(inputs)
-	return uk_builderormgroup2(inputs)
+	return fr_builderormgroup2(inputs)
 });
 export { builderormgroup2 as "builderOrmGroup" }

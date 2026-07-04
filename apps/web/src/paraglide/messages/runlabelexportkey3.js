@@ -37,20 +37,16 @@ const fr_runlabelexportkey3 = /** @type {(inputs: Runlabelexportkey3Inputs) => L
 	return /** @type {LocalizedString} */ (`exporter une clé de fournisseur`)
 };
 
-const uk_runlabelexportkey3 = /** @type {(inputs: Runlabelexportkey3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`експортувати ключ провайдера`)
-};
-
 /**
 * | output |
 * | --- |
 * | "export a provider key" |
 *
 * @param {Runlabelexportkey3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const runlabelexportkey3 = /** @type {((inputs?: Runlabelexportkey3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runlabelexportkey3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const runlabelexportkey3 = /** @type {((inputs?: Runlabelexportkey3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runlabelexportkey3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_runlabelexportkey3(inputs)
 	if (locale === "es") return es_runlabelexportkey3(inputs)
@@ -59,7 +55,6 @@ const runlabelexportkey3 = /** @type {((inputs?: Runlabelexportkey3Inputs, optio
 	if (locale === "ko") return ko_runlabelexportkey3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_runlabelexportkey3(inputs)
 	if (locale === "de") return de_runlabelexportkey3(inputs)
-	if (locale === "fr") return fr_runlabelexportkey3(inputs)
-	return uk_runlabelexportkey3(inputs)
+	return fr_runlabelexportkey3(inputs)
 });
 export { runlabelexportkey3 as "runLabelExportKey" }

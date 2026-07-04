@@ -37,20 +37,16 @@ const fr_compareauthentication1 = /** @type {(inputs: Compareauthentication1Inpu
 	return /** @type {LocalizedString} */ (`Authentification`)
 };
 
-const uk_compareauthentication1 = /** @type {(inputs: Compareauthentication1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Аутентифікація`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Authentication" |
 *
 * @param {Compareauthentication1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const compareauthentication1 = /** @type {((inputs?: Compareauthentication1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Compareauthentication1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const compareauthentication1 = /** @type {((inputs?: Compareauthentication1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Compareauthentication1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_compareauthentication1(inputs)
 	if (locale === "es") return es_compareauthentication1(inputs)
@@ -59,7 +55,6 @@ const compareauthentication1 = /** @type {((inputs?: Compareauthentication1Input
 	if (locale === "ko") return ko_compareauthentication1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_compareauthentication1(inputs)
 	if (locale === "de") return de_compareauthentication1(inputs)
-	if (locale === "fr") return fr_compareauthentication1(inputs)
-	return uk_compareauthentication1(inputs)
+	return fr_compareauthentication1(inputs)
 });
 export { compareauthentication1 as "compareAuthentication" }

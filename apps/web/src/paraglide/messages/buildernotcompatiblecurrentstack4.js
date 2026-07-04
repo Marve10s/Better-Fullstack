@@ -37,20 +37,16 @@ const fr_buildernotcompatiblecurrentstack4 = /** @type {(inputs: Buildernotcompa
 	return /** @type {LocalizedString} */ (`Non compatible avec la pile actuelle`)
 };
 
-const uk_buildernotcompatiblecurrentstack4 = /** @type {(inputs: Buildernotcompatiblecurrentstack4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Несумісний із поточним стеком`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Not compatible with current stack" |
 *
 * @param {Buildernotcompatiblecurrentstack4Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const buildernotcompatiblecurrentstack4 = /** @type {((inputs?: Buildernotcompatiblecurrentstack4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildernotcompatiblecurrentstack4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const buildernotcompatiblecurrentstack4 = /** @type {((inputs?: Buildernotcompatiblecurrentstack4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildernotcompatiblecurrentstack4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_buildernotcompatiblecurrentstack4(inputs)
 	if (locale === "es") return es_buildernotcompatiblecurrentstack4(inputs)
@@ -59,7 +55,6 @@ const buildernotcompatiblecurrentstack4 = /** @type {((inputs?: Buildernotcompat
 	if (locale === "ko") return ko_buildernotcompatiblecurrentstack4(inputs)
 	if (locale === "zh-Hant") return zh_hant1_buildernotcompatiblecurrentstack4(inputs)
 	if (locale === "de") return de_buildernotcompatiblecurrentstack4(inputs)
-	if (locale === "fr") return fr_buildernotcompatiblecurrentstack4(inputs)
-	return uk_buildernotcompatiblecurrentstack4(inputs)
+	return fr_buildernotcompatiblecurrentstack4(inputs)
 });
 export { buildernotcompatiblecurrentstack4 as "builderNotCompatibleCurrentStack" }

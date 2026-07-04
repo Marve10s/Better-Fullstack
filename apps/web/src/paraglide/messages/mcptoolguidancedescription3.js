@@ -37,20 +37,16 @@ const fr_mcptoolguidancedescription3 = /** @type {(inputs: Mcptoolguidancedescri
 	return /** @type {LocalizedString} */ (`Règles de workflow, sémantique des champs et contraintes critiques`)
 };
 
-const uk_mcptoolguidancedescription3 = /** @type {(inputs: Mcptoolguidancedescription3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Правила робочого процесу, семантика поля та критичні обмеження`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Workflow rules, field semantics, and critical constraints" |
 *
 * @param {Mcptoolguidancedescription3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const mcptoolguidancedescription3 = /** @type {((inputs?: Mcptoolguidancedescription3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcptoolguidancedescription3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcptoolguidancedescription3 = /** @type {((inputs?: Mcptoolguidancedescription3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcptoolguidancedescription3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcptoolguidancedescription3(inputs)
 	if (locale === "es") return es_mcptoolguidancedescription3(inputs)
@@ -59,7 +55,6 @@ const mcptoolguidancedescription3 = /** @type {((inputs?: Mcptoolguidancedescrip
 	if (locale === "ko") return ko_mcptoolguidancedescription3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcptoolguidancedescription3(inputs)
 	if (locale === "de") return de_mcptoolguidancedescription3(inputs)
-	if (locale === "fr") return fr_mcptoolguidancedescription3(inputs)
-	return uk_mcptoolguidancedescription3(inputs)
+	return fr_mcptoolguidancedescription3(inputs)
 });
 export { mcptoolguidancedescription3 as "mcpToolGuidanceDescription" }

@@ -37,20 +37,16 @@ const fr_mcpseotitle2 = /** @type {(inputs: Mcpseotitle2Inputs) => LocalizedStri
 	return /** @type {LocalizedString} */ (`Serveur MCP — AI Intégration de l'agent | Better Fullstack`)
 };
 
-const uk_mcpseotitle2 = /** @type {(inputs: Mcpseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`MCP Сервер — AI Інтеграція агента | Better Fullstack`)
-};
-
 /**
 * | output |
 * | --- |
 * | "MCP Server — AI Agent Integration \| Better Fullstack" |
 *
 * @param {Mcpseotitle2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const mcpseotitle2 = /** @type {((inputs?: Mcpseotitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpseotitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcpseotitle2 = /** @type {((inputs?: Mcpseotitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpseotitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcpseotitle2(inputs)
 	if (locale === "es") return es_mcpseotitle2(inputs)
@@ -59,7 +55,6 @@ const mcpseotitle2 = /** @type {((inputs?: Mcpseotitle2Inputs, options?: { local
 	if (locale === "ko") return ko_mcpseotitle2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcpseotitle2(inputs)
 	if (locale === "de") return de_mcpseotitle2(inputs)
-	if (locale === "fr") return fr_mcpseotitle2(inputs)
-	return uk_mcpseotitle2(inputs)
+	return fr_mcpseotitle2(inputs)
 });
 export { mcpseotitle2 as "mcpSeoTitle" }

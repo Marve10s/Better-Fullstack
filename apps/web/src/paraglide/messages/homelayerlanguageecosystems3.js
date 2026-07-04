@@ -37,20 +37,16 @@ const fr_homelayerlanguageecosystems3 = /** @type {(inputs: Homelayerlanguageeco
 	return /** @type {LocalizedString} */ (`ÉCOSYSTÈMES LINGUISTIQUES`)
 };
 
-const uk_homelayerlanguageecosystems3 = /** @type {(inputs: Homelayerlanguageecosystems3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`МОВНІ ЕКОСИСТЕМИ`)
-};
-
 /**
 * | output |
 * | --- |
 * | "LANGUAGE ECOSYSTEMS" |
 *
 * @param {Homelayerlanguageecosystems3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const homelayerlanguageecosystems3 = /** @type {((inputs?: Homelayerlanguageecosystems3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homelayerlanguageecosystems3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const homelayerlanguageecosystems3 = /** @type {((inputs?: Homelayerlanguageecosystems3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homelayerlanguageecosystems3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_homelayerlanguageecosystems3(inputs)
 	if (locale === "es") return es_homelayerlanguageecosystems3(inputs)
@@ -59,7 +55,6 @@ const homelayerlanguageecosystems3 = /** @type {((inputs?: Homelayerlanguageecos
 	if (locale === "ko") return ko_homelayerlanguageecosystems3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_homelayerlanguageecosystems3(inputs)
 	if (locale === "de") return de_homelayerlanguageecosystems3(inputs)
-	if (locale === "fr") return fr_homelayerlanguageecosystems3(inputs)
-	return uk_homelayerlanguageecosystems3(inputs)
+	return fr_homelayerlanguageecosystems3(inputs)
 });
 export { homelayerlanguageecosystems3 as "homeLayerLanguageEcosystems" }

@@ -37,20 +37,16 @@ const fr_homefactyolo2 = /** @type {(inputs: Homefactyolo2Inputs) => LocalizedSt
 	return /** @type {LocalizedString} */ (`Le mode YOLO double chacun d'entre eux`)
 };
 
-const uk_homefactyolo2 = /** @type {(inputs: Homefactyolo2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Режим YOLO подвоює кожен із них`)
-};
-
 /**
 * | output |
 * | --- |
 * | "YOLO mode doubles every single one of them" |
 *
 * @param {Homefactyolo2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const homefactyolo2 = /** @type {((inputs?: Homefactyolo2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homefactyolo2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const homefactyolo2 = /** @type {((inputs?: Homefactyolo2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homefactyolo2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_homefactyolo2(inputs)
 	if (locale === "es") return es_homefactyolo2(inputs)
@@ -59,7 +55,6 @@ const homefactyolo2 = /** @type {((inputs?: Homefactyolo2Inputs, options?: { loc
 	if (locale === "ko") return ko_homefactyolo2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_homefactyolo2(inputs)
 	if (locale === "de") return de_homefactyolo2(inputs)
-	if (locale === "fr") return fr_homefactyolo2(inputs)
-	return uk_homefactyolo2(inputs)
+	return fr_homefactyolo2(inputs)
 });
 export { homefactyolo2 as "homeFactYolo" }

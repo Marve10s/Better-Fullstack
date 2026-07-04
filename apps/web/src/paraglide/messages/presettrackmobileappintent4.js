@@ -37,20 +37,16 @@ const fr_presettrackmobileappintent4 = /** @type {(inputs: Presettrackmobileappi
 	return /** @type {LocalizedString} */ (`Commencer en mode natif`)
 };
 
-const uk_presettrackmobileappintent4 = /** @type {(inputs: Presettrackmobileappintent4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Почати нативний`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Start native" |
 *
 * @param {Presettrackmobileappintent4Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const presettrackmobileappintent4 = /** @type {((inputs?: Presettrackmobileappintent4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackmobileappintent4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const presettrackmobileappintent4 = /** @type {((inputs?: Presettrackmobileappintent4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackmobileappintent4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_presettrackmobileappintent4(inputs)
 	if (locale === "es") return es_presettrackmobileappintent4(inputs)
@@ -59,7 +55,6 @@ const presettrackmobileappintent4 = /** @type {((inputs?: Presettrackmobileappin
 	if (locale === "ko") return ko_presettrackmobileappintent4(inputs)
 	if (locale === "zh-Hant") return zh_hant1_presettrackmobileappintent4(inputs)
 	if (locale === "de") return de_presettrackmobileappintent4(inputs)
-	if (locale === "fr") return fr_presettrackmobileappintent4(inputs)
-	return uk_presettrackmobileappintent4(inputs)
+	return fr_presettrackmobileappintent4(inputs)
 });
 export { presettrackmobileappintent4 as "presetTrackMobileAppIntent" }

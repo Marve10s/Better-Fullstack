@@ -37,20 +37,16 @@ const fr_homereadywhenyouare4 = /** @type {(inputs: Homereadywhenyouare4Inputs) 
 	return /** @type {LocalizedString} */ (`prêt quand tu l'es`)
 };
 
-const uk_homereadywhenyouare4 = /** @type {(inputs: Homereadywhenyouare4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`готовий, коли ти будеш`)
-};
-
 /**
 * | output |
 * | --- |
 * | "ready when you are" |
 *
 * @param {Homereadywhenyouare4Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const homereadywhenyouare4 = /** @type {((inputs?: Homereadywhenyouare4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homereadywhenyouare4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const homereadywhenyouare4 = /** @type {((inputs?: Homereadywhenyouare4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homereadywhenyouare4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_homereadywhenyouare4(inputs)
 	if (locale === "es") return es_homereadywhenyouare4(inputs)
@@ -59,7 +55,6 @@ const homereadywhenyouare4 = /** @type {((inputs?: Homereadywhenyouare4Inputs, o
 	if (locale === "ko") return ko_homereadywhenyouare4(inputs)
 	if (locale === "zh-Hant") return zh_hant1_homereadywhenyouare4(inputs)
 	if (locale === "de") return de_homereadywhenyouare4(inputs)
-	if (locale === "fr") return fr_homereadywhenyouare4(inputs)
-	return uk_homereadywhenyouare4(inputs)
+	return fr_homereadywhenyouare4(inputs)
 });
 export { homereadywhenyouare4 as "homeReadyWhenYouAre" }

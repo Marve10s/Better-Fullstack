@@ -37,20 +37,16 @@ const fr_llmoutputtokens2 = /** @type {(inputs: Llmoutputtokens2Inputs) => Local
 	return /** @type {LocalizedString} */ (`Jetons de sortie par échafaudage`)
 };
 
-const uk_llmoutputtokens2 = /** @type {(inputs: Llmoutputtokens2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Вихід жетонів на каркас`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Output tokens per scaffold" |
 *
 * @param {Llmoutputtokens2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const llmoutputtokens2 = /** @type {((inputs?: Llmoutputtokens2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmoutputtokens2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const llmoutputtokens2 = /** @type {((inputs?: Llmoutputtokens2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmoutputtokens2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_llmoutputtokens2(inputs)
 	if (locale === "es") return es_llmoutputtokens2(inputs)
@@ -59,7 +55,6 @@ const llmoutputtokens2 = /** @type {((inputs?: Llmoutputtokens2Inputs, options?:
 	if (locale === "ko") return ko_llmoutputtokens2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_llmoutputtokens2(inputs)
 	if (locale === "de") return de_llmoutputtokens2(inputs)
-	if (locale === "fr") return fr_llmoutputtokens2(inputs)
-	return uk_llmoutputtokens2(inputs)
+	return fr_llmoutputtokens2(inputs)
 });
 export { llmoutputtokens2 as "llmOutputTokens" }

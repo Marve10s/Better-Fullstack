@@ -37,20 +37,16 @@ const fr_builderlegacy1 = /** @type {(inputs: Builderlegacy1Inputs) => Localized
 	return /** @type {LocalizedString} */ (`Héritage`)
 };
 
-const uk_builderlegacy1 = /** @type {(inputs: Builderlegacy1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Спадщина`)
-};
-
 /**
 * | output |
 * | --- |
 * | "Legacy" |
 *
 * @param {Builderlegacy1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const builderlegacy1 = /** @type {((inputs?: Builderlegacy1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderlegacy1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const builderlegacy1 = /** @type {((inputs?: Builderlegacy1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderlegacy1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderlegacy1(inputs)
 	if (locale === "es") return es_builderlegacy1(inputs)
@@ -59,7 +55,6 @@ const builderlegacy1 = /** @type {((inputs?: Builderlegacy1Inputs, options?: { l
 	if (locale === "ko") return ko_builderlegacy1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderlegacy1(inputs)
 	if (locale === "de") return de_builderlegacy1(inputs)
-	if (locale === "fr") return fr_builderlegacy1(inputs)
-	return uk_builderlegacy1(inputs)
+	return fr_builderlegacy1(inputs)
 });
 export { builderlegacy1 as "builderLegacy" }

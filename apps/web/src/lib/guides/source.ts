@@ -1,4 +1,5 @@
 import { guidesMeta } from "virtual:content-meta";
+import { localizedGuideMdxLoaders } from "virtual:localized-content";
 
 import type { TocEntry } from "@/lib/docs/remark-extract-toc";
 import { guideMdxLoaders as mdxLoaders, type GuideMdxModule } from "@/lib/guides/mdx-loaders";
@@ -57,8 +58,12 @@ function localizedFilePath(filePath: string, locale: SupportedLocale): string {
   return filePath.replace(/\.mdx$/, `.${locale}.mdx`);
 }
 
+function localizedContentKey(filePath: string, locale: SupportedLocale): string {
+  return `${locale}:${filePath}`;
+}
+
 function hasLocalizedContent(filePath: string, locale: SupportedLocale): boolean {
-  return locale !== "en" && localizedFilePath(filePath, locale) in mdxLoaders;
+  return locale !== "en" && localizedContentKey(filePath, locale) in localizedGuideMdxLoaders;
 }
 
 function contentCacheKey(page: GuidePage, locale: SupportedLocale): string {
@@ -93,10 +98,11 @@ const contentCache = createSuspenseCache<GuidePageContent>();
 
 async function loadGuideContent(page: GuidePage): Promise<GuidePageContent> {
   const locale = currentContentLocale();
-  const filePath = hasLocalizedContent(page.filePath, locale)
-    ? localizedFilePath(page.filePath, locale)
-    : page.filePath;
-  const module = await mdxLoaders[filePath]?.();
+  const localizedKey = localizedContentKey(page.filePath, locale);
+  const hasLocalized = hasLocalizedContent(page.filePath, locale);
+  const filePath = hasLocalized ? localizedFilePath(page.filePath, locale) : page.filePath;
+  const loader = hasLocalized ? localizedGuideMdxLoaders[localizedKey] : mdxLoaders[filePath];
+  const module = await loader?.();
   if (!module) throw new Error(`Guide content module missing for ${filePath}`);
   return {
     toc: module.toc ?? [],
