@@ -45,6 +45,8 @@ describe("Rust Ecosystem", () => {
       expect(RUST_WEB_FRAMEWORKS).toContain("axum");
       expect(RUST_WEB_FRAMEWORKS).toContain("actix-web");
       expect(RUST_WEB_FRAMEWORKS).toContain("rocket");
+      expect(RUST_WEB_FRAMEWORKS).toContain("poem");
+      expect(RUST_WEB_FRAMEWORKS).toContain("loco");
       expect(RUST_WEB_FRAMEWORKS).toContain("none");
     });
 
@@ -484,6 +486,77 @@ describe("Rust Ecosystem", () => {
       expect(mainRsContent).toContain("sea_orm::");
       expect(mainRsContent).toContain("Database");
       expect(mainRsContent).toContain(".manage(state)");
+    });
+  });
+
+  describe("Poem Web Framework", () => {
+    it("should include Poem dependencies in workspace Cargo.toml", async () => {
+      const result = await createVirtual({
+        projectName: "rust-poem-deps",
+        ecosystem: "rust",
+        rustWebFramework: "poem",
+        rustFrontend: "none",
+        rustOrm: "none",
+        rustApi: "none",
+        rustCli: "none",
+        rustLibraries: [],
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const cargoContent = getFileContent(root, "Cargo.toml");
+      expect(cargoContent).toBeDefined();
+      expect(cargoContent).toContain("poem");
+    });
+
+    it("should generate a Poem server main.rs", async () => {
+      const result = await createVirtual({
+        projectName: "rust-poem-server",
+        ecosystem: "rust",
+        rustWebFramework: "poem",
+        rustFrontend: "none",
+        rustOrm: "none",
+        rustApi: "none",
+        rustCli: "none",
+        rustLibraries: [],
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const mainRsContent = getFileContent(root, "crates/server/src/main.rs");
+      expect(mainRsContent).toBeDefined();
+      expect(mainRsContent).toContain("poem");
+    });
+  });
+
+  describe("Loco Web Framework", () => {
+    it("should include Loco dependencies and app files", async () => {
+      const result = await createVirtual({
+        projectName: "rust-loco",
+        ecosystem: "rust",
+        rustWebFramework: "loco",
+        rustFrontend: "none",
+        rustOrm: "none",
+        rustApi: "none",
+        rustCli: "none",
+        rustLibraries: [],
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const cargoContent = getFileContent(root, "Cargo.toml");
+      expect(cargoContent).toBeDefined();
+      expect(cargoContent).toContain("loco-rs");
+
+      const mainRsContent = getFileContent(root, "crates/server/src/main.rs");
+      expect(mainRsContent).toBeDefined();
+      expect(mainRsContent).toContain("loco_rs");
+
+      expect(getFileContent(root, "crates/server/src/app.rs")).toBeDefined();
+      expect(getFileContent(root, "crates/server/src/controllers/home.rs")).toBeDefined();
     });
   });
 

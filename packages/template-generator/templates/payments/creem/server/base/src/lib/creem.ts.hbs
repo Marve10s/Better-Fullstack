@@ -1,0 +1,49 @@
+import { Creem } from "creem";
+import {
+  constructWebhookEvent,
+  type CreemWebhookEvent,
+  type WebhookHeaders,
+} from "creem/webhooks";
+import { env } from "@{{projectName}}/env/server";
+
+// Creem exposes a `prod` (https://api.creem.io) and a `test`
+// (https://test-api.creem.io) server. Default to the sandbox unless the
+// environment is explicitly set to production.
+const server = env.CREEM_ENVIRONMENT === "prod" ? "prod" : "test";
+
+export const creem = new Creem({
+  apiKey: env.CREEM_API_KEY,
+  server,
+});
+
+export function getCreemEnvironment() {
+  return server;
+}
+
+export async function createCheckout(params: {
+  productId: string;
+  successUrl?: string;
+  units?: number;
+  metadata?: Record<string, string>;
+}) {
+  return creem.checkouts.create({
+    productId: params.productId,
+    successUrl: params.successUrl,
+    units: params.units,
+    metadata: params.metadata,
+  });
+}
+
+// Creem signs every webhook and the SDK ships a built-in verifier.
+// `constructWebhookEvent` checks the signature (supporting both the legacy
+// `creem-signature` HMAC scheme and the standard `webhook-signature` scheme)
+// and returns the parsed event. It throws `WebhookVerificationError` when the
+// signature is invalid, so call it inside a try/catch in your webhook route.
+export function constructCreemWebhookEvent(
+  payload: string,
+  headers: WebhookHeaders,
+): Promise<CreemWebhookEvent> {
+  return constructWebhookEvent(payload, headers, env.CREEM_WEBHOOK_SECRET);
+}
+
+export type { CreemWebhookEvent };

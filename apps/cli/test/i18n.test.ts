@@ -103,4 +103,27 @@ describe("i18n Options", () => {
       expect(nextConfig).toContain('outdir: "./src/paraglide"');
     });
   });
+
+  describe("Intlayer", () => {
+    test("generates Intlayer setup for TanStack Router", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "intlayer-tanstack-router",
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          i18n: "intlayer",
+        }),
+      );
+      expectSuccess(result);
+
+      const pkg = await readFile(join(result.projectDir!, "apps/web/package.json"), "utf-8");
+      expect(pkg).toContain("intlayer");
+
+      const config = await readFile(
+        join(result.projectDir!, "apps/web/intlayer.config.ts"),
+        "utf-8",
+      );
+      expect(config).toContain("intlayer");
+    });
+  });
 });

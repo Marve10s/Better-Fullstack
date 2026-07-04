@@ -79,6 +79,21 @@ export function resolvePaymentsPrompt(
       hint: "Simple payment infrastructure for developers.",
     },
     {
+      value: "creem" as Payments,
+      label: "Creem",
+      hint: "Cheapest merchant-of-record payments & billing, with a Better Auth plugin.",
+    },
+    {
+      value: "autumn" as Payments,
+      label: "Autumn",
+      hint: "Usage-based pricing & billing for SaaS and AI apps.",
+    },
+    {
+      value: "commet" as Payments,
+      label: "Commet",
+      hint: "All-in-one plan-first billing for SaaS and AI products.",
+    },
+    {
       value: "none" as Payments,
       label: "None",
       hint: "No payments integration",

@@ -40,6 +40,16 @@ const RUST_WEB_FRAMEWORK_PROMPT_OPTIONS: PromptOption<RustWebFramework>[] = [
     hint: "Convention-over-configuration web framework, 25k+ stars",
   },
   {
+    value: "poem",
+    label: "Poem",
+    hint: "Full-featured, fast web framework built on Tokio and hyper",
+  },
+  {
+    value: "loco",
+    label: "Loco",
+    hint: "The Rails of Rust: opinionated full-stack framework (runs DB-free too)",
+  },
+  {
     value: "none",
     label: "None",
     hint: "No web framework",

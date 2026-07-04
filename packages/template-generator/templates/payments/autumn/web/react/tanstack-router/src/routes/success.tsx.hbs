@@ -1,0 +1,26 @@
+import { createFileRoute, useSearch } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/success")({
+  component: SuccessPage,
+  validateSearch: (search) => ({
+    payment_id: search.payment_id as string | undefined,
+    subscription_id: search.subscription_id as string | undefined,
+  }),
+});
+
+function SuccessPage() {
+  const { payment_id, subscription_id } = useSearch({ from: "/success" });
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-4">Payment Successful!</h1>
+      <p className="text-gray-600 mb-4">
+        Thank you for your purchase. Your Autumn checkout has completed successfully.
+      </p>
+      {payment_id && <p className="text-sm text-gray-500">Payment ID: {payment_id}</p>}
+      {subscription_id && (
+        <p className="text-sm text-gray-500">Subscription ID: {subscription_id}</p>
+      )}
+    </div>
+  );
+}

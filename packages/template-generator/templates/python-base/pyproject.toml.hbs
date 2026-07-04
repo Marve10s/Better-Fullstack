@@ -193,6 +193,9 @@ dependencies = [
 {{#if (eq search "meilisearch")}}
     "meilisearch>=0.41.0",
 {{/if}}
+{{#if (eq search "elasticsearch")}}
+    "elasticsearch>=8.0.0",
+{{/if}}
     "python-dotenv>=1.2.2",
 ]
 

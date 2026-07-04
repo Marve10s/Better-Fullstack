@@ -1,0 +1,99 @@
+import { browser } from "$app/environment";
+import posthog from "posthog-js";
+
+{{#if (eq frontend.[0] "svelte")}}
+const posthogKey = import.meta.env.VITE_POSTHOG_KEY || "";
+const posthogHost = import.meta.env.VITE_POSTHOG_HOST || "https://us.i.posthog.com";
+{{/if}}
+
+// Initialize PostHog only once
+let initialized = false;
+
+/**
+ * Initialize PostHog on the client.
+ * Call once from your root layout, e.g. in `+layout.svelte`:
+ *
+ * ```svelte
+ * <script lang="ts">
+ *   import { onMount } from "svelte";
+ *   import { initPostHog } from "$lib/posthog";
+ *   onMount(() => initPostHog());
+ * </script>
+ * ```
+ */
+export function initPostHog(options?: {
+  autoCapturePageviews?: boolean;
+  autocapture?: boolean;
+}) {
+  if (!browser || !posthogKey || initialized) return;
+
+  posthog.init(posthogKey, {
+    api_host: posthogHost,
+    // Capture pageviews automatically (recommended for SPAs)
+    capture_pageview: options?.autoCapturePageviews ?? true,
+    // Capture pageleaves for accurate session duration
+    capture_pageleave: true,
+    // Autocapture clicks, form submissions, etc.
+    autocapture: options?.autocapture ?? true,
+    // Persist user identity across sessions
+    persistence: "localStorage+cookie",
+  });
+
+  initialized = true;
+}
+
+/**
+ * Capture a custom event.
+ *
+ * @example
+ * trackEvent("signup", { plan: "premium" });
+ */
+export function trackEvent(eventName: string, properties?: Record<string, unknown>) {
+  if (!browser || !initialized) return;
+  posthog.capture(eventName, properties);
+}
+
+/**
+ * Identify the current user across sessions.
+ *
+ * @example
+ * identify(user.id, { email: user.email, plan: user.plan });
+ */
+export function identify(distinctId: string, properties?: Record<string, unknown>) {
+  if (!browser || !initialized) return;
+  posthog.identify(distinctId, properties);
+}
+
+/**
+ * Reset the current user identity (call on logout).
+ */
+export function reset() {
+  if (!browser || !initialized) return;
+  posthog.reset();
+}
+
+/**
+ * Whether the PostHog API key is configured.
+ */
+export function isConfigured() {
+  return !!posthogKey;
+}
+
+// Re-export the PostHog instance for direct access if needed
+export { posthog };
+
+/**
+ * Environment Variables:
+ *
+{{#if (eq frontend.[0] "svelte")}}
+ * VITE_POSTHOG_KEY - PostHog project API key (required)
+ * VITE_POSTHOG_HOST - PostHog API host (default: https://us.i.posthog.com)
+{{/if}}
+ *
+ * Getting started:
+ * 1. Create an account at https://posthog.com
+ * 2. Create a new project
+ * 3. Copy the Project API key to your .env file
+ * 4. Choose your region (US or EU) and set the host accordingly
+ * 5. Call initPostHog() once on the client (e.g. in +layout.svelte onMount)
+ */

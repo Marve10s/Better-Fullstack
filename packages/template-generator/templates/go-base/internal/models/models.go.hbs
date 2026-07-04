@@ -110,6 +110,67 @@ type PostUpdate struct {
 	Published *bool   `json:"published,omitempty"`
 }
 {{/if}}
+{{#if (eq goOrm "bun")}}
+package models
+
+import (
+	"time"
+
+	"github.com/uptrace/bun"
+)
+
+// User represents a user in the system
+type User struct {
+	bun.BaseModel `bun:"table:users,alias:u"`
+
+	ID        int64     `bun:"id,pk,autoincrement" json:"id"`
+	Name      string    `bun:"name,notnull" json:"name"`
+	Email     string    `bun:"email,notnull,unique" json:"email"`
+	CreatedAt time.Time `bun:"created_at,nullzero,notnull,default:current_timestamp" json:"created_at"`
+	UpdatedAt time.Time `bun:"updated_at,nullzero,notnull,default:current_timestamp" json:"updated_at"`
+	Posts     []*Post   `bun:"rel:has-many,join:id=author_id" json:"posts,omitempty"`
+}
+
+// Post represents a blog post
+type Post struct {
+	bun.BaseModel `bun:"table:posts,alias:p"`
+
+	ID        int64     `bun:"id,pk,autoincrement" json:"id"`
+	Title     string    `bun:"title,notnull" json:"title"`
+	Content   string    `bun:"content,notnull,default:''" json:"content"`
+	Published bool      `bun:"published,notnull,default:false" json:"published"`
+	AuthorID  int64     `bun:"author_id,notnull" json:"author_id"`
+	Author    *User     `bun:"rel:belongs-to,join:author_id=id" json:"author,omitempty"`
+	CreatedAt time.Time `bun:"created_at,nullzero,notnull,default:current_timestamp" json:"created_at"`
+	UpdatedAt time.Time `bun:"updated_at,nullzero,notnull,default:current_timestamp" json:"updated_at"`
+}
+
+// UserCreate is used for creating a new user
+type UserCreate struct {
+	Name  string `json:"name" binding:"required"`
+	Email string `json:"email" binding:"required,email"`
+}
+
+// UserUpdate is used for updating a user
+type UserUpdate struct {
+	Name  *string `json:"name,omitempty"`
+	Email *string `json:"email,omitempty"`
+}
+
+// PostCreate is used for creating a new post
+type PostCreate struct {
+	Title    string `json:"title" binding:"required"`
+	Content  string `json:"content"`
+	AuthorID int64  `json:"author_id" binding:"required"`
+}
+
+// PostUpdate is used for updating a post
+type PostUpdate struct {
+	Title     *string `json:"title,omitempty"`
+	Content   *string `json:"content,omitempty"`
+	Published *bool   `json:"published,omitempty"`
+}
+{{/if}}
 {{#if (eq goOrm "ent")}}
 package models
 

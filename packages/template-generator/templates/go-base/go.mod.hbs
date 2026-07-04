@@ -34,6 +34,14 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-sqlite3 v1.14.24
 {{/if}}
+{{#if (eq goOrm "bun")}}
+	github.com/uptrace/bun v1.2.18
+	github.com/uptrace/bun/dialect/pgdialect v1.2.18
+	github.com/uptrace/bun/dialect/sqlitedialect v1.2.18
+	github.com/uptrace/bun/driver/pgdriver v1.2.18
+	github.com/uptrace/bun/extra/bundebug v1.2.18
+	github.com/mattn/go-sqlite3 v1.14.24
+{{/if}}
 {{#if (eq goApi "grpc-go")}}
 	google.golang.org/grpc v1.80.0
 	google.golang.org/protobuf v1.36.11
@@ -115,6 +123,9 @@ require (
 {{/if}}
 {{#if (eq search "meilisearch")}}
 	github.com/meilisearch/meilisearch-go v0.36.2
+{{/if}}
+{{#if (eq search "bleve")}}
+	github.com/blevesearch/bleve/v2 v2.6.0
 {{/if}}
 	github.com/joho/godotenv v1.5.1
 )

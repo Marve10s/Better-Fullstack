@@ -1,0 +1,19 @@
+<script lang="ts">
+  import { page } from '$app/state';
+
+  const paymentId = $derived(page.url.searchParams.get('payment_id'));
+  const subscriptionId = $derived(page.url.searchParams.get('subscription_id'));
+</script>
+
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-2xl font-bold mb-4">Payment Successful!</h1>
+  <p class="text-gray-600 mb-4">
+    Thank you for your purchase. Your Autumn checkout has completed successfully.
+  </p>
+  {#if paymentId}
+    <p class="text-sm text-gray-500">Payment ID: {paymentId}</p>
+  {/if}
+  {#if subscriptionId}
+    <p class="text-sm text-gray-500">Subscription ID: {subscriptionId}</p>
+  {/if}
+</div>

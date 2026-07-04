@@ -22,6 +22,12 @@ export async function getI18nChoice(i18n?: I18n, frontend?: Frontend[]) {
 
   const hasNext = frontend?.includes("next") ?? false;
   const hasParaglideFrontend = frontend?.some((f) => PARAGLIDE_FRONTENDS.has(f)) ?? false;
+  const hasIntlayerFrontend =
+    frontend?.some((f) =>
+      ["next", "vinext", "tanstack-router", "tanstack-start", "react-router", "react-vite"].includes(
+        f,
+      ),
+    ) ?? false;
 
   const options = [
     ...(hasParaglideFrontend
@@ -44,6 +50,15 @@ export async function getI18nChoice(i18n?: I18n, frontend?: Frontend[]) {
             value: "next-intl" as const,
             label: "next-intl",
             hint: "Lightweight i18n for Next.js with App Router support",
+          },
+        ]
+      : []),
+    ...(hasIntlayerFrontend
+      ? [
+          {
+            value: "intlayer" as const,
+            label: "Intlayer",
+            hint: "Component-level, type-safe i18n for React, Next.js, and Vite",
           },
         ]
       : []),

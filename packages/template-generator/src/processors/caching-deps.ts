@@ -49,6 +49,9 @@ function getCachingDeps(caching: ProjectConfig["caching"]): AvailableDependencie
     case "upstash-redis":
       deps.push("@upstash/redis");
       break;
+    case "redis":
+      deps.push("ioredis");
+      break;
   }
 
   return deps;

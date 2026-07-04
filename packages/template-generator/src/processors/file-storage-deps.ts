@@ -55,6 +55,9 @@ function getFileStorageDeps(fileStorage: ProjectConfig["fileStorage"]): Availabl
     case "cloudinary":
       deps.push("cloudinary");
       break;
+    case "supabase-storage":
+      deps.push("@supabase/supabase-js");
+      break;
   }
 
   return deps;

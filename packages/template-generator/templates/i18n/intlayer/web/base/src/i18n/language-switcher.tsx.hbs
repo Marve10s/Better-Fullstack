@@ -1,0 +1,31 @@
+{{#if (eq frontend.[0] "next")}}"use client";
+
+import { useIntlayer, useLocale } from "next-intlayer";
+
+{{else}}import { useIntlayer, useLocale } from "react-intlayer";
+
+{{/if}}/**
+ * Example component that reads the "app" content declaration and lets the user
+ * switch between the configured locales. `useLocale` exposes the current
+ * locale, the list of available locales and a `setLocale` setter.
+ */
+export function LanguageSwitcher() {
+  const content = useIntlayer("app");
+  const { locale, setLocale, availableLocales } = useLocale();
+
+  return (
+    <label>
+      <span>{content.language}</span>
+      <select
+        value={locale}
+        onChange={(event) => setLocale(event.target.value)}
+      >
+        {availableLocales.map((availableLocale) => (
+          <option key={availableLocale} value={availableLocale}>
+            {availableLocale}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}

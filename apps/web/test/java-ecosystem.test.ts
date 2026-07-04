@@ -101,6 +101,7 @@ describe("Java Ecosystem Tab", () => {
       expect(TECH_OPTIONS.javaWebFramework.map((option) => option.id)).toEqual([
         "spring-boot",
         "quarkus",
+        "micronaut",
         "none",
       ]);
       expect(TECH_OPTIONS.javaBuildTool.map((option) => option.id)).toContain("gradle");

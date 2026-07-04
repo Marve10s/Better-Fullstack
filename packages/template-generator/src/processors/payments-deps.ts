@@ -227,4 +227,88 @@ export function processPaymentsDeps(vfs: VirtualFileSystem, config: ProjectConfi
       });
     }
   }
+
+  if (payments === "creem") {
+    // Creem is a redirect-based Merchant of Record — server SDK + Better Auth plugin,
+    // plus the Better Auth client plugin for web frontends.
+    if (vfs.exists(serverPath)) {
+      addPackageDependency({
+        vfs,
+        packagePath: serverPath,
+        dependencies: ["creem", "@creem_io/better-auth"],
+      });
+    }
+
+    if (vfs.exists(authPath)) {
+      addPackageDependency({
+        vfs,
+        packagePath: authPath,
+        dependencies: ["creem", "@creem_io/better-auth"],
+      });
+    }
+
+    // The auth client wires the Creem Better Auth client plugin
+    // (`creemClient` from "@creem_io/better-auth/client") for web frontends.
+    if (vfs.exists(webPath)) {
+      const hasWebFrontend = frontend.some((f) => CLIENT_CHECKOUT_WEB_FRONTENDS.includes(f));
+
+      if (hasWebFrontend) {
+        addPackageDependency({
+          vfs,
+          packagePath: webPath,
+          dependencies: ["@creem_io/better-auth"],
+        });
+      }
+    }
+  }
+
+  if (payments === "autumn") {
+    // Autumn: server client + backend handler, plus the client SDK for <AutumnProvider>.
+    if (vfs.exists(serverPath)) {
+      addPackageDependency({
+        vfs,
+        packagePath: serverPath,
+        dependencies: ["autumn-js"],
+      });
+    }
+
+    if (vfs.exists(authPath)) {
+      addPackageDependency({
+        vfs,
+        packagePath: authPath,
+        dependencies: ["autumn-js"],
+      });
+    }
+
+    if (vfs.exists(webPath)) {
+      const hasWebFrontend = frontend.some((f) => CLIENT_CHECKOUT_WEB_FRONTENDS.includes(f));
+
+      if (hasWebFrontend) {
+        addPackageDependency({
+          vfs,
+          packagePath: webPath,
+          dependencies: ["autumn-js"],
+        });
+      }
+    }
+  }
+
+  if (payments === "commet") {
+    // Commet is a redirect/portal-based billing API — server SDK only.
+    if (vfs.exists(serverPath)) {
+      addPackageDependency({
+        vfs,
+        packagePath: serverPath,
+        dependencies: ["@commet/node"],
+      });
+    }
+
+    if (vfs.exists(authPath)) {
+      addPackageDependency({
+        vfs,
+        packagePath: authPath,
+        dependencies: ["@commet/node"],
+      });
+    }
+  }
 }

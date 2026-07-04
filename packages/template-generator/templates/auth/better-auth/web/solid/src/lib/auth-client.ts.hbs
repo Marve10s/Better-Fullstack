@@ -5,17 +5,23 @@ import { organizationClient } from "better-auth/client/plugins";
 {{#if (eq payments "polar")}}
 import { polarClient } from "@polar-sh/better-auth";
 {{/if}}
+{{#if (eq payments "creem")}}
+import { creemClient } from "@creem_io/better-auth/client";
+{{/if}}
 import { env } from "@{{projectName}}/env/web";
 
 export const authClient = createAuthClient({
 	baseURL: env.VITE_SERVER_URL,
-{{#if (or (hasBetterAuthOrganizations auth) (eq payments "polar"))}}
+{{#if (or (hasBetterAuthOrganizations auth) (eq payments "polar") (eq payments "creem"))}}
 	plugins: [
 {{#if (hasBetterAuthOrganizations auth)}}
 		organizationClient(),
 {{/if}}
 {{#if (eq payments "polar")}}
 		polarClient(),
+{{/if}}
+{{#if (eq payments "creem")}}
+		creemClient(),
 {{/if}}
 	],
 {{/if}}

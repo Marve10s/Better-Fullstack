@@ -11,11 +11,23 @@ const CACHING_PROMPT_OPTIONS = [
     hint: "Serverless Redis with REST API for edge and serverless",
   },
   {
+    value: "redis" as const,
+    label: "Redis",
+    hint: "Self-hosted Redis via ioredis (TCP) — full command surface",
+  },
+  {
     value: "none" as const,
     label: "None",
     hint: "Skip caching layer setup",
   },
 ];
+
+// Non-TypeScript ecosystems have their own native caching fields
+// (goCaching/rustCaching/pythonCaching); the shared self-hosted redis client
+// is TypeScript-only, so drop it from their options.
+const NON_TS_CACHING_PROMPT_OPTIONS = CACHING_PROMPT_OPTIONS.filter(
+  (option) => option.value !== "redis",
+);
 
 type CachingPromptContext = {
   caching?: Caching;
@@ -40,13 +52,13 @@ export function resolveCachingPrompt(
       ? {
           shouldPrompt: false,
           mode: "single",
-          options: CACHING_PROMPT_OPTIONS,
+          options: NON_TS_CACHING_PROMPT_OPTIONS,
           autoValue: context.caching,
         }
       : {
           shouldPrompt: true,
           mode: "single",
-          options: CACHING_PROMPT_OPTIONS,
+          options: NON_TS_CACHING_PROMPT_OPTIONS,
           initialValue: "none",
         };
   }

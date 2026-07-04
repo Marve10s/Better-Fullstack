@@ -1,0 +1,61 @@
+import {
+  Commet,
+  type CreateSubscriptionParams,
+  type WebhookPayload,
+} from "@commet/node";
+import { env } from "@{{projectName}}/env/server";
+
+export const commet = new Commet({
+  apiKey: env.COMMET_API_KEY,
+});
+
+// Commet is plan-first: you subscribe a customer to a plan (by `planCode`) and
+// Commet returns a hosted checkout to collect the first payment. `successUrl` is
+// where the customer lands once that checkout completes.
+export async function createSubscriptionCheckout(params: {
+  customerId: string;
+  planCode: string;
+  successUrl: string;
+  billingInterval?: CreateSubscriptionParams["billingInterval"];
+}) {
+  return commet.subscriptions.create({
+    customerId: params.customerId,
+    planCode: params.planCode,
+    billingInterval: params.billingInterval ?? null,
+    successUrl: params.successUrl,
+  });
+}
+
+// Generate a hosted customer portal URL so customers can manage their own
+// subscription, payment method, and invoices.
+export async function createCustomerPortalSession(customerId: string) {
+  return commet.portal.getUrl({ customerId });
+}
+
+// Verify a Commet webhook signature against the raw request body. Returns a
+// boolean — use this when you want to verify before parsing yourself.
+export function verifyCommetWebhookSignature(
+  payload: string,
+  signature: string | null,
+) {
+  return commet.webhooks.verify({
+    payload,
+    signature,
+    secret: env.COMMET_WEBHOOK_SECRET,
+  });
+}
+
+// Verify the signature AND parse the payload in one step. Returns the typed
+// event payload, or `null` when the signature is invalid.
+export function constructCommetWebhookEvent(
+  rawBody: string,
+  signature: string | null,
+): WebhookPayload | null {
+  return commet.webhooks.verifyAndParse({
+    rawBody,
+    signature,
+    secret: env.COMMET_WEBHOOK_SECRET,
+  });
+}
+
+export type CommetWebhookPayload = WebhookPayload;

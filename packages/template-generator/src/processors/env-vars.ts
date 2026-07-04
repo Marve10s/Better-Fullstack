@@ -299,6 +299,22 @@ function buildClientVars(
     });
   }
 
+  // Autumn backend handler URL for client-side (<AutumnProvider>)
+  if (payments === "autumn") {
+    vars.push({
+      key: hasNextJs
+        ? "NEXT_PUBLIC_AUTUMN_BACKEND_URL"
+        : hasNuxt
+          ? "NUXT_PUBLIC_AUTUMN_BACKEND_URL"
+          : hasSvelte
+            ? "PUBLIC_AUTUMN_BACKEND_URL"
+            : "VITE_AUTUMN_BACKEND_URL",
+      value: "http://localhost:3000/api/autumn",
+      condition: true,
+      comment: "URL/path where the Autumn backend handler is mounted; the client SDK calls this",
+    });
+  }
+
   // GrowthBook feature flags client-side
   if (featureFlags === "growthbook") {
     let apiHostName = "VITE_GROWTHBOOK_API_HOST";
@@ -482,6 +498,35 @@ function buildClientVars(
         value: "https://plausible.io",
         condition: true,
         comment: "Plausible API host (change if self-hosting)",
+      },
+    );
+  }
+
+  // PostHog analytics client-side
+  if (analytics === "posthog") {
+    let posthogKeyName = "VITE_POSTHOG_KEY";
+    let posthogHostName = "VITE_POSTHOG_HOST";
+
+    if (hasNextJs) {
+      posthogKeyName = "NEXT_PUBLIC_POSTHOG_KEY";
+      posthogHostName = "NEXT_PUBLIC_POSTHOG_HOST";
+    } else if (hasNuxt) {
+      posthogKeyName = "NUXT_PUBLIC_POSTHOG_KEY";
+      posthogHostName = "NUXT_PUBLIC_POSTHOG_HOST";
+    }
+
+    vars.push(
+      {
+        key: posthogKeyName,
+        value: "",
+        condition: true,
+        comment: "PostHog project API key (Project Settings > API Keys)",
+      },
+      {
+        key: posthogHostName,
+        value: "https://us.i.posthog.com",
+        condition: true,
+        comment: "PostHog API host (us.i.posthog.com, eu.i.posthog.com, or self-hosted)",
       },
     );
   }
@@ -1091,6 +1136,46 @@ function buildServerVars(
         "Dodo Payments environment - use 'test_mode' for testing, 'live_mode' for production",
     },
     {
+      key: "CREEM_API_KEY",
+      value: "creem_test_your_api_key",
+      condition: payments === "creem",
+      comment:
+        "Creem API key from the dashboard (Developers > API Keys) - use a test-mode key in development",
+    },
+    {
+      key: "CREEM_WEBHOOK_SECRET",
+      value: "",
+      condition: payments === "creem",
+      comment:
+        "Creem webhook signing secret (Developers > Webhooks) - verifies inbound webhook signatures",
+    },
+    {
+      key: "CREEM_ENVIRONMENT",
+      value: "test",
+      condition: payments === "creem",
+      comment: "Creem server to target - 'test' (sandbox) or 'prod' (live)",
+    },
+    {
+      key: "AUTUMN_SECRET_KEY",
+      value: "",
+      condition: payments === "autumn",
+      comment:
+        "Autumn secret key (am_sk_...) from the dashboard - server only; Autumn is webhookless",
+    },
+    {
+      key: "COMMET_API_KEY",
+      value: "",
+      condition: payments === "commet",
+      comment: "Commet secret API key from the dashboard (Settings > API Keys) - format ck_...",
+    },
+    {
+      key: "COMMET_WEBHOOK_SECRET",
+      value: "",
+      condition: payments === "commet",
+      comment:
+        "Commet webhook signing secret (Settings > Webhooks) - verifies inbound webhook signatures",
+    },
+    {
       key: "RESEND_API_KEY",
       value: "",
       condition: email === "resend",
@@ -1558,6 +1643,12 @@ function buildServerVars(
       comment: "Upstash Redis protocol URL for Go, Rust, and Java clients",
     },
     {
+      key: "REDIS_URL",
+      value: "redis://localhost:6379",
+      condition: caching === "redis",
+      comment: "Self-hosted Redis connection URL (ioredis) - e.g. redis://localhost:6379",
+    },
+    {
       key: "MEILISEARCH_HOST",
       value: "http://localhost:7700",
       condition: search === "meilisearch",
@@ -1724,6 +1815,24 @@ function buildServerVars(
       value: "",
       condition: fileStorage === "cloudinary",
       comment: "Cloudinary API secret",
+    },
+    {
+      key: "SUPABASE_URL",
+      value: "",
+      condition: fileStorage === "supabase-storage",
+      comment: "Supabase project URL - https://<project-ref>.supabase.co",
+    },
+    {
+      key: "SUPABASE_SERVICE_ROLE_KEY",
+      value: "",
+      condition: fileStorage === "supabase-storage",
+      comment: "Supabase service-role key (server only) - bypasses RLS for storage operations",
+    },
+    {
+      key: "SUPABASE_STORAGE_BUCKET",
+      value: "uploads",
+      condition: fileStorage === "supabase-storage",
+      comment: "Supabase Storage bucket name",
     },
   ];
 }

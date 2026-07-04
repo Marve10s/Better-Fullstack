@@ -1,0 +1,49 @@
+use loco_rs::prelude::async_trait;
+use loco_rs::{
+    app::{AppContext, Hooks},
+    bgworker::Queue,
+    boot::{create_app, BootResult, StartMode},
+    config::Config,
+    controller::AppRoutes,
+    environment::Environment,
+    task::Tasks,
+    Result,
+};
+
+use crate::controllers;
+
+/// The application type that Loco boots. Implementing [`Hooks`] is how you
+/// customize routing, workers, and tasks. This app is DB-free, so the
+/// `truncate`/`seed` hooks (gated behind Loco's `with-db` feature) are not
+/// required.
+pub struct App;
+
+#[async_trait]
+impl Hooks for App {
+    fn app_name() -> &'static str {
+        env!("CARGO_CRATE_NAME")
+    }
+
+    fn app_version() -> String {
+        env!("CARGO_PKG_VERSION").to_string()
+    }
+
+    async fn boot(
+        mode: StartMode,
+        environment: &Environment,
+        config: Config,
+    ) -> Result<BootResult> {
+        // `create_app::<Self>` (no migrator) is the DB-free boot path.
+        create_app::<Self>(mode, environment, config).await
+    }
+
+    fn routes(_ctx: &AppContext) -> AppRoutes {
+        AppRoutes::empty().add_route(controllers::home::routes())
+    }
+
+    async fn connect_workers(_ctx: &AppContext, _queue: &Queue) -> Result<()> {
+        Ok(())
+    }
+
+    fn register_tasks(_tasks: &mut Tasks) {}
+}

@@ -28,6 +28,11 @@ export async function getFileStorageChoice(fileStorage?: FileStorage, backend?: 
       hint: "Image and media storage with transformations",
     },
     {
+      value: "supabase-storage" as const,
+      label: "Supabase Storage",
+      hint: "S3-compatible object storage with signed URLs and RLS",
+    },
+    {
       value: "none" as const,
       label: "None",
       hint: "Skip file storage setup",

@@ -217,6 +217,33 @@ describe("Caching Options", () => {
     });
   });
 
+  describe("Self-hosted Redis (ioredis)", () => {
+    test("redis with Hono backend", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "redis-hono",
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          caching: "redis",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("redis with Next.js fullstack", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "redis-nextjs",
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          caching: "redis",
+        }),
+      );
+      expectSuccess(result);
+    });
+  });
+
   describe("No caching option", () => {
     test("none caching option", async () => {
       const result = await runTRPCTest(

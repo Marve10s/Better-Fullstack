@@ -634,6 +634,16 @@ export const dependencyVersionMap = {
   "react-native-purchases": "^9.10.5",
   "convex-revenuecat": "^0.3.2",
 
+  // Payments - Creem
+  creem: "^1.5.3",
+  "@creem_io/better-auth": "^1.1.3",
+
+  // Payments - Autumn
+  "autumn-js": "^1.2.34",
+
+  // Payments - Commet
+  "@commet/node": "^7.3.0",
+
   // File Upload - UploadThing
   uploadthing: "^7.7.4",
   "@uploadthing/react": "^7.3.3",
@@ -770,6 +780,12 @@ export const dependencyVersionMap = {
 
   // i18n - next-intl
   "next-intl": "^4.13.0",
+
+  // i18n - Intlayer
+  intlayer: "^8.12.4",
+  "react-intlayer": "^8.12.4",
+  "next-intlayer": "^8.12.4",
+  "vite-intlayer": "^8.12.4",
 
   // Search - Meilisearch
   meilisearch: "^0.58.0",

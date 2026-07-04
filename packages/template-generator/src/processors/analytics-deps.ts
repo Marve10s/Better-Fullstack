@@ -29,6 +29,20 @@ export function processAnalyticsDeps(vfs: VirtualFileSystem, config: ProjectConf
     }
   }
 
+  if (analytics === "posthog") {
+    // PostHog is client-side - add posthog-js to the web app
+    if (hasWebFrontend) {
+      const webPath = getWebPackagePath(frontend, backend);
+      if (vfs.exists(webPath)) {
+        addPackageDependency({
+          vfs,
+          packagePath: webPath,
+          dependencies: ["posthog-js"],
+        });
+      }
+    }
+  }
+
   // Umami uses a script tag approach - no npm dependencies needed
   // The umami.tsx template handles loading the script dynamically
 }

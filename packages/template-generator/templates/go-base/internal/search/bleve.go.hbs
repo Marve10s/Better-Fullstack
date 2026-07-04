@@ -1,0 +1,34 @@
+{{#if (eq search "bleve")}}
+package search
+
+import (
+	"github.com/blevesearch/bleve/v2"
+)
+
+// NewSearchIndex opens the Bleve index at path, creating it with a default
+// mapping when it does not yet exist. Bleve is embedded, so no server is required.
+func NewSearchIndex(path string) (bleve.Index, error) {
+	index, err := bleve.Open(path)
+	if err == nil {
+		return index, nil
+	}
+
+	return bleve.New(path, bleve.NewIndexMapping())
+}
+
+// NewMemorySearchIndex creates an in-memory Bleve index that is not persisted.
+func NewMemorySearchIndex() (bleve.Index, error) {
+	return bleve.NewMemOnly(bleve.NewIndexMapping())
+}
+
+// IndexDocument adds or updates a document in the index under the given id.
+func IndexDocument(index bleve.Index, id string, data any) error {
+	return index.Index(id, data)
+}
+
+// Search runs a full-text match query and returns the matching results.
+func Search(index bleve.Index, query string) (*bleve.SearchResult, error) {
+	request := bleve.NewSearchRequest(bleve.NewMatchQuery(query))
+	return index.Search(request)
+}
+{{/if}}

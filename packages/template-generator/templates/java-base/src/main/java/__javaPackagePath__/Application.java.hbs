@@ -16,6 +16,10 @@ import io.quarkus.runtime.Quarkus;
 import io.quarkus.runtime.annotations.QuarkusMain;
 
 {{/if}}
+{{#if isJavaMicronaut}}
+import io.micronaut.runtime.Micronaut;
+
+{{/if}}
 {{#if isJavaSpringBoot}}
 @SpringBootApplication
 {{#if hasJavaCaffeine}}
@@ -44,6 +48,9 @@ public class Application {
 {{/if}}
 {{#if isJavaQuarkus}}
     Quarkus.run(args);
+{{/if}}
+{{#if isJavaMicronaut}}
+    Micronaut.run(Application.class, args);
 {{/if}}
 {{#if isJavaPlainJava}}
     System.out.println("Hello from {{projectName}}");

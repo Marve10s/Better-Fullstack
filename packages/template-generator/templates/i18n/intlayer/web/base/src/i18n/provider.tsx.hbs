@@ -1,0 +1,34 @@
+{{#if (eq frontend.[0] "next")}}"use client";
+
+import type { Locales } from "intlayer";
+import { IntlayerClientProvider } from "next-intlayer";
+import type { ReactNode } from "react";
+
+/**
+ * Wrap your Next.js App Router tree with this provider so that client
+ * components can read Intlayer content with `useIntlayer`. The `locale`
+ * typically comes from the `[locale]` route segment params.
+ */
+export function I18nProvider({
+  children,
+  locale,
+}: {
+  children: ReactNode;
+  locale?: Locales;
+}) {
+  return (
+    <IntlayerClientProvider locale={locale}>{children}</IntlayerClientProvider>
+  );
+}
+{{else}}import type { ReactNode } from "react";
+import { IntlayerProvider } from "react-intlayer";
+
+/**
+ * Wrap your React app with this provider so that components can read Intlayer
+ * content with `useIntlayer`. The active locale is detected from storage/cookie
+ * and the `intlayer.config.ts` configuration when no `locale` prop is passed.
+ */
+export function I18nProvider({ children }: { children: ReactNode }) {
+  return <IntlayerProvider>{children}</IntlayerProvider>;
+}
+{{/if}}

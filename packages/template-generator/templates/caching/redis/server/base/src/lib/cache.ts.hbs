@@ -1,0 +1,273 @@
+import { Redis } from "ioredis";
+
+/**
+ * Self-hosted Redis client (ioredis)
+ * @see https://github.com/redis/ioredis
+ */
+export const redis = new Redis(process.env.REDIS_URL ?? "redis://localhost:6379");
+
+/**
+ * ioredis stores and returns raw strings, so values are serialized as JSON on
+ * the way in and deserialized on the way out. This keeps the typed API surface
+ * identical to the Upstash Redis client (which auto-serializes for you).
+ */
+function serialize(value: unknown): string {
+  return typeof value === "string" ? value : JSON.stringify(value);
+}
+
+function deserialize<T>(value: string | null): T | null {
+  if (value === null) {
+    return null;
+  }
+  try {
+    return JSON.parse(value) as T;
+  } catch {
+    // Value was stored as a plain (non-JSON) string.
+    return value as unknown as T;
+  }
+}
+
+/**
+ * Cache utilities for common caching patterns
+ */
+
+/**
+ * Get a cached value by key
+ */
+export async function cacheGet<T>(key: string): Promise<T | null> {
+  const value = await redis.get(key);
+  return deserialize<T>(value);
+}
+
+/**
+ * Set a cached value with optional TTL (in seconds)
+ */
+export async function cacheSet<T>(
+  key: string,
+  value: T,
+  options?: { ex?: number; px?: number; nx?: boolean; xx?: boolean }
+): Promise<"OK" | null> {
+  const serialized = serialize(value);
+  if (options?.ex) {
+    return redis.set(key, serialized, "EX", options.ex);
+  }
+  if (options?.px) {
+    return redis.set(key, serialized, "PX", options.px);
+  }
+  if (options?.nx) {
+    return redis.set(key, serialized, "NX");
+  }
+  if (options?.xx) {
+    return redis.set(key, serialized, "XX");
+  }
+  return redis.set(key, serialized);
+}
+
+/**
+ * Delete a cached value
+ */
+export async function cacheDelete(key: string): Promise<number> {
+  return redis.del(key);
+}
+
+/**
+ * Delete multiple cached values
+ */
+export async function cacheDeleteMany(keys: string[]): Promise<number> {
+  if (keys.length === 0) return 0;
+  return redis.del(...keys);
+}
+
+/**
+ * Check if a key exists in cache
+ */
+export async function cacheExists(key: string): Promise<boolean> {
+  const result = await redis.exists(key);
+  return result === 1;
+}
+
+/**
+ * Set expiration time on a key (in seconds)
+ */
+export async function cacheExpire(key: string, seconds: number): Promise<boolean> {
+  const result = await redis.expire(key, seconds);
+  return result === 1;
+}
+
+/**
+ * Get remaining TTL of a key (in seconds)
+ * Returns -1 if key has no expiration, -2 if key doesn't exist
+ */
+export async function cacheTTL(key: string): Promise<number> {
+  return redis.ttl(key);
+}
+
+/**
+ * Increment a numeric value
+ */
+export async function cacheIncr(key: string): Promise<number> {
+  return redis.incr(key);
+}
+
+/**
+ * Increment a numeric value by amount
+ */
+export async function cacheIncrBy(key: string, amount: number): Promise<number> {
+  return redis.incrby(key, amount);
+}
+
+/**
+ * Decrement a numeric value
+ */
+export async function cacheDecr(key: string): Promise<number> {
+  return redis.decr(key);
+}
+
+/**
+ * Get or set pattern - retrieves from cache or executes function and caches result
+ */
+export async function cacheGetOrSet<T>(
+  key: string,
+  fn: () => Promise<T>,
+  ttlSeconds?: number
+): Promise<T> {
+  const cached = await cacheGet<T>(key);
+  if (cached !== null) {
+    return cached;
+  }
+
+  const value = await fn();
+  await cacheSet(key, value, ttlSeconds ? { ex: ttlSeconds } : undefined);
+  return value;
+}
+
+/**
+ * Hash operations - useful for storing objects
+ */
+export const cacheHash = {
+  async get<T>(key: string, field: string): Promise<T | null> {
+    const value = await redis.hget(key, field);
+    return deserialize<T>(value);
+  },
+
+  async getAll<T extends Record<string, unknown>>(key: string): Promise<T | null> {
+    const result = await redis.hgetall(key);
+    if (!result || Object.keys(result).length === 0) {
+      return null;
+    }
+    const parsed: Record<string, unknown> = {};
+    for (const [field, value] of Object.entries(result)) {
+      parsed[field] = deserialize(value);
+    }
+    return parsed as T;
+  },
+
+  async set(key: string, field: string, value: unknown): Promise<number> {
+    return redis.hset(key, field, serialize(value));
+  },
+
+  async setMultiple(key: string, values: Record<string, unknown>): Promise<number> {
+    const serialized: Record<string, string> = {};
+    for (const [field, value] of Object.entries(values)) {
+      serialized[field] = serialize(value);
+    }
+    return redis.hset(key, serialized);
+  },
+
+  async delete(key: string, ...fields: string[]): Promise<number> {
+    return redis.hdel(key, ...fields);
+  },
+
+  async exists(key: string, field: string): Promise<boolean> {
+    const result = await redis.hexists(key, field);
+    return result === 1;
+  },
+};
+
+/**
+ * List operations - useful for queues, recent items, etc.
+ */
+export const cacheList = {
+  async push(key: string, ...values: unknown[]): Promise<number> {
+    return redis.rpush(key, ...values.map(serialize));
+  },
+
+  async unshift(key: string, ...values: unknown[]): Promise<number> {
+    return redis.lpush(key, ...values.map(serialize));
+  },
+
+  async pop<T>(key: string): Promise<T | null> {
+    const value = await redis.rpop(key);
+    return deserialize<T>(value);
+  },
+
+  async shift<T>(key: string): Promise<T | null> {
+    const value = await redis.lpop(key);
+    return deserialize<T>(value);
+  },
+
+  async range<T>(key: string, start: number, stop: number): Promise<T[]> {
+    const values = await redis.lrange(key, start, stop);
+    return values.map((value) => deserialize<T>(value) as T);
+  },
+
+  async length(key: string): Promise<number> {
+    return redis.llen(key);
+  },
+
+  async trim(key: string, start: number, stop: number): Promise<"OK"> {
+    return redis.ltrim(key, start, stop);
+  },
+};
+
+/**
+ * Set operations - useful for unique collections, tags, etc.
+ */
+export const cacheSet_ = {
+  async add(key: string, ...members: unknown[]): Promise<number> {
+    return redis.sadd(key, ...members.map(serialize));
+  },
+
+  async remove(key: string, ...members: unknown[]): Promise<number> {
+    return redis.srem(key, ...members.map(serialize));
+  },
+
+  async members<T>(key: string): Promise<T[]> {
+    const values = await redis.smembers(key);
+    return values.map((value) => deserialize<T>(value) as T);
+  },
+
+  async isMember(key: string, member: unknown): Promise<boolean> {
+    const result = await redis.sismember(key, serialize(member));
+    return result === 1;
+  },
+
+  async size(key: string): Promise<number> {
+    return redis.scard(key);
+  },
+};
+
+/**
+ * JSON operations - for complex data structures
+ *
+ * Note: ioredis has no RedisJSON module, so these operate on the whole value
+ * with JSON serialization. Nested-path operations fall back to whole-value
+ * get/set; only the root path ("$") is meaningful.
+ */
+export const cacheJson = {
+  async get<T>(key: string, path = "$"): Promise<T | null> {
+    void path;
+    const value = await redis.get(key);
+    return deserialize<T>(value);
+  },
+
+  async set(key: string, path: string, value: unknown): Promise<"OK" | null> {
+    void path;
+    return redis.set(key, serialize(value));
+  },
+
+  async delete(key: string, path = "$"): Promise<number> {
+    void path;
+    return redis.del(key);
+  },
+};

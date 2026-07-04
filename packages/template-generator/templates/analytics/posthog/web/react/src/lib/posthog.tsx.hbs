@@ -1,0 +1,246 @@
+import posthog from "posthog-js";
+import type { PostHog } from "posthog-js";
+import type { PropsWithChildren } from "react";
+import { createContext, useContext, useEffect, useMemo, useCallback, useState } from "react";
+
+// PostHog configuration from environment variables
+{{#if (eq frontend.[0] "next")}}
+const posthogKey = process.env.NEXT_PUBLIC_POSTHOG_KEY || "";
+const posthogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com";
+{{else if (eq frontend.[0] "nuxt")}}
+const posthogKey = process.env.NUXT_PUBLIC_POSTHOG_KEY || "";
+const posthogHost = process.env.NUXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com";
+{{else}}
+const posthogKey = import.meta.env.VITE_POSTHOG_KEY || "";
+const posthogHost = import.meta.env.VITE_POSTHOG_HOST || "https://us.i.posthog.com";
+{{/if}}
+
+// Initialize PostHog only once (guards React StrictMode double-mount and HMR)
+let initialized = false;
+
+function initPostHog(options?: {
+  autoCapturePageviews?: boolean;
+  autocapture?: boolean;
+}) {
+  if (initialized || !posthogKey || typeof window === "undefined") return;
+
+  posthog.init(posthogKey, {
+    api_host: posthogHost,
+    // Capture pageviews automatically (recommended for SPAs)
+    capture_pageview: options?.autoCapturePageviews ?? true,
+    // Capture pageleaves for accurate session duration
+    capture_pageleave: true,
+    // Autocapture clicks, form submissions, etc.
+    autocapture: options?.autocapture ?? true,
+    // Persist user identity across sessions
+    persistence: "localStorage+cookie",
+  });
+
+  initialized = true;
+}
+
+// Context for the PostHog instance (null until initialized)
+const PostHogContext = createContext<PostHog | null>(null);
+
+interface PostHogProviderProps extends PropsWithChildren {
+  /**
+   * Enable automatic pageview capture (recommended for SPAs)
+   * @default true
+   */
+  autoCapturePageviews?: boolean;
+  /**
+   * Enable autocapture of clicks, form submissions, and other interactions
+   * @default true
+   */
+  autocapture?: boolean;
+}
+
+/**
+ * PostHog Analytics Provider component
+ * Wrap your app with this provider to enable product analytics
+ *
+ * @example
+ * function App() {
+ *   return (
+ *     <PostHogProvider>
+ *       <YourApp />
+ *     </PostHogProvider>
+ *   );
+ * }
+ */
+export function PostHogProvider({
+  children,
+  autoCapturePageviews = true,
+  autocapture = true,
+}: PostHogProviderProps) {
+  const [client, setClient] = useState<PostHog | null>(null);
+
+  useEffect(() => {
+    if (!posthogKey) {
+      console.warn("[PostHog] API key not configured, analytics disabled");
+      return;
+    }
+
+    initPostHog({ autoCapturePageviews, autocapture });
+    setClient(posthog);
+
+    return () => {
+      // PostHog is a persistent singleton shared across the app, so there is
+      // nothing to tear down here. Call the useReset() hook on logout instead.
+    };
+  }, [autoCapturePageviews, autocapture]);
+
+  return (
+    <PostHogContext.Provider value={client}>
+      {children}
+    </PostHogContext.Provider>
+  );
+}
+
+/**
+ * Hook to access the PostHog instance
+ * Returns null until the provider has initialized the SDK.
+ */
+export function usePostHog() {
+  return useContext(PostHogContext);
+}
+
+/**
+ * Hook to capture custom events
+ *
+ * @example
+ * function SignupButton() {
+ *   const trackEvent = useTrackEvent();
+ *
+ *   const handleClick = () => {
+ *     trackEvent("signup", { plan: "premium" });
+ *   };
+ *
+ *   return <button onClick={handleClick}>Sign Up</button>;
+ * }
+ */
+export function useTrackEvent() {
+  return useCallback(
+    (eventName: string, properties?: Record<string, unknown>) => {
+      if (!posthogKey) return;
+      posthog.capture(eventName, properties);
+    },
+    []
+  );
+}
+
+/**
+ * Hook to identify the current user across sessions
+ *
+ * @example
+ * function UserProfile({ user }) {
+ *   const identify = useIdentify();
+ *
+ *   useEffect(() => {
+ *     identify(user.id, { email: user.email, plan: user.plan });
+ *   }, [user.id, identify]);
+ * }
+ */
+export function useIdentify() {
+  return useCallback(
+    (distinctId: string, properties?: Record<string, unknown>) => {
+      if (!posthogKey) return;
+      posthog.identify(distinctId, properties);
+    },
+    []
+  );
+}
+
+/**
+ * Hook to reset the current user identity (call on logout)
+ *
+ * @example
+ * function LogoutButton() {
+ *   const reset = useReset();
+ *   return <button onClick={reset}>Logout</button>;
+ * }
+ */
+export function useReset() {
+  return useCallback(() => {
+    if (!posthogKey) return;
+    posthog.reset();
+  }, []);
+}
+
+/**
+ * Hook to get the PostHog configuration status
+ */
+export function usePostHogStatus() {
+  return useMemo(
+    () => ({
+      isConfigured: !!posthogKey,
+      apiHost: posthogHost,
+    }),
+    []
+  );
+}
+
+// Re-export the PostHog instance for direct access if needed
+export { posthog };
+
+/**
+ * Environment Variables:
+ *
+{{#if (eq frontend.[0] "next")}}
+ * NEXT_PUBLIC_POSTHOG_KEY - PostHog project API key (required)
+ * NEXT_PUBLIC_POSTHOG_HOST - PostHog API host (default: https://us.i.posthog.com)
+{{else if (eq frontend.[0] "nuxt")}}
+ * NUXT_PUBLIC_POSTHOG_KEY - PostHog project API key (required)
+ * NUXT_PUBLIC_POSTHOG_HOST - PostHog API host (default: https://us.i.posthog.com)
+{{else}}
+ * VITE_POSTHOG_KEY - PostHog project API key (required)
+ * VITE_POSTHOG_HOST - PostHog API host (default: https://us.i.posthog.com)
+{{/if}}
+ *
+ * Getting started:
+ * 1. Create an account at https://posthog.com
+ * 2. Create a new project
+ * 3. Copy the Project API key to your .env file
+ * 4. Choose your region (US or EU) and set the host accordingly
+ * 5. Wrap your app with <PostHogProvider>
+ *
+ * Example usage:
+ * ```tsx
+ * // In your app entry point
+ * import { PostHogProvider } from "./lib/posthog";
+ *
+ * function App() {
+ *   return (
+ *     <PostHogProvider>
+ *       <Router />
+ *     </PostHogProvider>
+ *   );
+ * }
+ *
+ * // In any component - capture custom events
+ * import { useTrackEvent } from "./lib/posthog";
+ *
+ * function PurchaseButton({ product }) {
+ *   const trackEvent = useTrackEvent();
+ *
+ *   const handlePurchase = () => {
+ *     trackEvent("purchase", {
+ *       productId: product.id,
+ *       price: product.price,
+ *     });
+ *   };
+ *
+ *   return <button onClick={handlePurchase}>Buy Now</button>;
+ * }
+ *
+ * // Identify users on login, reset on logout
+ * import { useIdentify, useReset } from "./lib/posthog";
+ * ```
+ *
+ * Features:
+ * - Automatic pageview capture for SPAs
+ * - Autocapture of clicks and form submissions
+ * - Custom event tracking with properties
+ * - User identification across sessions
+ * - Session/pageleave tracking for accurate durations
+ */

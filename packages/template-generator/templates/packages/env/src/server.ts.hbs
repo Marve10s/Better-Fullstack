@@ -74,6 +74,18 @@ export const env = createEnv({
 		LEMONSQUEEZY_STORE_ID: z.string().min(1),
 		LEMONSQUEEZY_WEBHOOK_SECRET: z.string().min(1),
 {{/if}}
+{{#if (eq payments "creem")}}
+		CREEM_API_KEY: z.string().min(1),
+		CREEM_WEBHOOK_SECRET: z.string().min(1),
+		CREEM_ENVIRONMENT: z.enum(["test", "prod"]),
+{{/if}}
+{{#if (eq payments "autumn")}}
+		AUTUMN_SECRET_KEY: z.string().min(1),
+{{/if}}
+{{#if (eq payments "commet")}}
+		COMMET_API_KEY: z.string().min(1),
+		COMMET_WEBHOOK_SECRET: z.string().min(1),
+{{/if}}
 {{#if (eq observability "datadog")}}
 		DD_SERVICE: z.string().min(1),
 		DD_ENV: z.string().min(1),

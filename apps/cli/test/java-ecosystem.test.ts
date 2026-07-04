@@ -83,7 +83,7 @@ describe("Java Ecosystem", () => {
     });
 
     it("should expose scaffolded Java web framework values", () => {
-      expect(JAVA_WEB_FRAMEWORKS).toEqual(["spring-boot", "quarkus", "none"]);
+      expect(JAVA_WEB_FRAMEWORKS).toEqual(["spring-boot", "quarkus", "micronaut", "none"]);
     });
 
     it("should only expose scaffolded Java build tool values", () => {
@@ -244,6 +244,91 @@ describe("Java Ecosystem", () => {
       expect(readmeContent).toContain("http://localhost:8080/hello");
       expect(claudeContent).toContain("Web Framework: quarkus");
       expect(claudeContent).toContain("./mvnw quarkus:dev");
+    });
+
+    it("should create a Micronaut Maven project with REST support", async () => {
+      const result = await createVirtual({
+        projectName: "java-micronaut-maven",
+        ecosystem: "java",
+        javaWebFramework: "micronaut",
+        javaBuildTool: "maven",
+        javaOrm: "none",
+        javaAuth: "none",
+        javaLibraries: [],
+        javaTestingLibraries: ["junit5", "mockito", "archunit"],
+        aiDocs: ["claude-md"],
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      expect(hasFile(root, "pom.xml")).toBe(true);
+      expect(hasFile(root, "mvnw")).toBe(true);
+      expect(hasFile(root, "src/main/java/com/example/javamicronautmaven/Application.java")).toBe(
+        true,
+      );
+      expect(
+        hasFile(
+          root,
+          "src/main/java/com/example/javamicronautmaven/controller/HelloController.java",
+        ),
+      ).toBe(true);
+      expect(hasFile(root, "src/main/resources/application.yml")).toBe(true);
+
+      const pomContent = getFileContent(root, "pom.xml");
+      const applicationContent = getFileContent(
+        root,
+        "src/main/java/com/example/javamicronautmaven/Application.java",
+      );
+
+      expect(pomContent).toContain("io.micronaut");
+      expect(pomContent).not.toContain("spring-boot-starter-parent");
+      expect(applicationContent).toContain("Micronaut.run");
+    });
+
+    it("should wire log4j2 for a Spring Boot Maven project", async () => {
+      const result = await createVirtual({
+        projectName: "java-log4j2-maven",
+        ecosystem: "java",
+        javaWebFramework: "spring-boot",
+        javaBuildTool: "maven",
+        javaOrm: "none",
+        javaAuth: "none",
+        javaLogging: "log4j2",
+        javaLibraries: [],
+        javaTestingLibraries: ["junit5"],
+        aiDocs: ["claude-md"],
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const pomContent = getFileContent(root, "pom.xml");
+      expect(pomContent).toContain("spring-boot-starter-log4j2");
+      expect(hasFile(root, "src/main/resources/log4j2-spring.xml")).toBe(true);
+      expect(hasFile(root, "src/main/resources/logback-spring.xml")).toBe(false);
+    });
+
+    it("should wire OpenAPI Generator for a Spring Boot Maven project", async () => {
+      const result = await createVirtual({
+        projectName: "java-openapi-maven",
+        ecosystem: "java",
+        javaWebFramework: "spring-boot",
+        javaBuildTool: "maven",
+        javaApi: "openapi-generator",
+        javaOrm: "none",
+        javaAuth: "none",
+        javaLibraries: [],
+        javaTestingLibraries: ["junit5"],
+        aiDocs: ["claude-md"],
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const pomContent = getFileContent(root, "pom.xml");
+      expect(pomContent).toContain("openapi-generator-maven-plugin");
+      expect(hasFile(root, "src/main/resources/openapi.yaml")).toBe(true);
     });
 
     it("should create a Quarkus Gradle project with REST support", async () => {

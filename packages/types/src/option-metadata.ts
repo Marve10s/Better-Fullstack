@@ -1003,6 +1003,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     elasticsearch: "Elasticsearch",
     opensearch: "OpenSearch",
     algolia: "Algolia",
+    bleve: "Bleve",
   },
   vectorDb: {
     pgvector: "pgvector",
@@ -1181,6 +1182,8 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     axum: "Axum",
     "actix-web": "Actix-web",
     rocket: "Rocket",
+    poem: "Poem",
+    loco: "Loco",
   },
   rustFrontend: {
     leptos: "Leptos",
@@ -1325,11 +1328,13 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     echo: "Echo",
     fiber: "Fiber",
     chi: "Chi",
+    stdlib: "net/http",
   },
   goOrm: {
     gorm: "GORM",
     sqlc: "sqlc",
     ent: "Ent",
+    bun: "Bun",
   },
   goApi: {
     "grpc-go": "gRPC-Go",
@@ -1377,6 +1382,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   javaWebFramework: {
     "spring-boot": "Spring Boot",
     quarkus: "Quarkus",
+    micronaut: "Micronaut",
   },
   javaBuildTool: {
     maven: "Maven",
@@ -1392,9 +1398,11 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   javaApi: {
     "spring-graphql": "Spring for GraphQL",
+    "openapi-generator": "OpenAPI Generator",
   },
   javaLogging: {
     logback: "Logback",
+    log4j2: "Log4j2",
   },
   javaLibraries: {
     "spring-actuator": "Spring Boot Actuator",

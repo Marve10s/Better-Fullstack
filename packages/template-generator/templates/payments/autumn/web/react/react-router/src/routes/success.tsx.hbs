@@ -1,0 +1,20 @@
+import { useSearchParams } from "react-router";
+
+export default function SuccessPage() {
+  const [searchParams] = useSearchParams();
+  const paymentId = searchParams.get("payment_id");
+  const subscriptionId = searchParams.get("subscription_id");
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-4">Payment Successful!</h1>
+      <p className="text-gray-600 mb-4">
+        Thank you for your purchase. Your Autumn checkout has completed successfully.
+      </p>
+      {paymentId && <p className="text-sm text-gray-500">Payment ID: {paymentId}</p>}
+      {subscriptionId && (
+        <p className="text-sm text-gray-500">Subscription ID: {subscriptionId}</p>
+      )}
+    </div>
+  );
+}

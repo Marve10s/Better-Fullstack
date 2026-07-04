@@ -178,3 +178,90 @@ CREATE TABLE IF NOT EXISTS posts (
 );
 `
 {{/if}}
+{{#if (eq goOrm "bun")}}
+package database
+
+import (
+	"context"
+	"database/sql"
+	"os"
+	"strings"
+
+	"github.com/uptrace/bun"
+	"github.com/uptrace/bun/dialect/pgdialect"
+	"github.com/uptrace/bun/dialect/sqlitedialect"
+	"github.com/uptrace/bun/driver/pgdriver"
+	"github.com/uptrace/bun/extra/bundebug"
+
+	_ "github.com/mattn/go-sqlite3"
+
+	"{{projectName}}/internal/models"
+)
+
+var DB *bun.DB
+
+// InitDB initializes the database connection using Bun.
+// Bun wraps a *sql.DB and selects a dialect based on DATABASE_URL.
+func InitDB() (*bun.DB, error) {
+	dsn := os.Getenv("DATABASE_URL")
+
+	var db *bun.DB
+
+	switch {
+	case dsn == "":
+		// Default to SQLite for development
+		sqldb, err := sql.Open("sqlite3", "file:app.db?cache=shared&_fk=1")
+		if err != nil {
+			return nil, err
+		}
+		db = bun.NewDB(sqldb, sqlitedialect.New())
+	case strings.HasPrefix(dsn, "postgres"):
+		sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
+		db = bun.NewDB(sqldb, pgdialect.New())
+	default:
+		// Assume SQLite file path
+		sqldb, err := sql.Open("sqlite3", "file:"+dsn+"?cache=shared&_fk=1")
+		if err != nil {
+			return nil, err
+		}
+		db = bun.NewDB(sqldb, sqlitedialect.New())
+	}
+
+	// Verify connection
+	if err := db.Ping(); err != nil {
+		_ = db.Close()
+		return nil, err
+	}
+
+	// Log queries outside of production for easier debugging.
+	if os.Getenv("LOG_LEVEL") != "production" {
+		db.AddQueryHook(bundebug.NewQueryHook(bundebug.WithVerbose(true)))
+	}
+
+	// Create tables if they don't exist (development convenience).
+	ctx := context.Background()
+	if _, err := db.NewCreateTable().Model((*models.User)(nil)).IfNotExists().Exec(ctx); err != nil {
+		_ = db.Close()
+		return nil, err
+	}
+	if _, err := db.NewCreateTable().Model((*models.Post)(nil)).IfNotExists().Exec(ctx); err != nil {
+		_ = db.Close()
+		return nil, err
+	}
+
+	DB = db
+	return DB, nil
+}
+
+// GetDB returns the database instance
+func GetDB() *bun.DB {
+	return DB
+}
+
+// Close closes the database connection
+func Close() {
+	if DB != nil {
+		_ = DB.Close()
+	}
+}
+{{/if}}

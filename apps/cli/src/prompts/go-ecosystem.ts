@@ -43,6 +43,11 @@ const GO_WEB_FRAMEWORK_PROMPT_OPTIONS: PromptOption<GoWebFramework>[] = [
     hint: "Lightweight, zero-dependency router built on net/http",
   },
   {
+    value: "stdlib",
+    label: "net/http",
+    hint: "Go 1.22+ standard-library routing (ServeMux), zero dependencies",
+  },
+  {
     value: "none",
     label: "None",
     hint: "No web framework",
@@ -64,6 +69,11 @@ const GO_ORM_PROMPT_OPTIONS: PromptOption<GoOrm>[] = [
     value: "ent",
     label: "Ent",
     hint: "Code-first ORM by Meta with graph traversal API, 15k+ stars",
+  },
+  {
+    value: "bun",
+    label: "Bun",
+    hint: "SQL-first Go ORM by uptrace with a lightweight query builder",
   },
   {
     value: "none",

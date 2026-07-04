@@ -21,6 +21,9 @@ export async function processRustBaseTemplate(
   const hasAsyncGraphql = config.rustApi === "async-graphql";
   const hasClap = config.rustCli === "clap";
   const hasRatatui = config.rustCli === "ratatui";
+  // `loco` is added to RustWebFrameworkSchema separately; the cast keeps this
+  // handler self-contained so it type-checks before that schema change lands.
+  const hasLoco = config.rustWebFramework === "loco";
 
   for (const [templatePath, content] of templates) {
     if (!templatePath.startsWith(prefix)) continue;
@@ -39,6 +42,13 @@ export async function processRustBaseTemplate(
 
     // Skip graphql.rs if async-graphql is not selected
     if (!hasAsyncGraphql && templatePath.includes("crates/server/src/graphql.rs")) continue;
+
+    // Skip Loco-only files (app module, controllers, config) unless Loco is the
+    // selected web framework. Loco is an opinionated framework with its own
+    // Hooks/AppRoutes structure, so these files only make sense for it.
+    if (!hasLoco && templatePath.includes("crates/server/src/app.rs")) continue;
+    if (!hasLoco && templatePath.includes("crates/server/src/controllers/")) continue;
+    if (!hasLoco && templatePath.includes("crates/server/config/")) continue;
 
     // Skip optional capability modules when their option is not selected
     if (

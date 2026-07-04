@@ -1,0 +1,27 @@
+import { type Dictionary, t } from "intlayer";
+
+/**
+ * Intlayer uses per-component content declarations instead of message
+ * catalogs. Each `.content.ts` file exports a dictionary identified by its
+ * `key`, and `t()` holds the per-locale translations. Retrieve this content
+ * anywhere with `useIntlayer("app")`.
+ */
+const appContent = {
+  key: "app",
+  content: {
+    welcome: t({
+      en: "Welcome to {{projectName}}",
+      fr: "Bienvenue sur {{projectName}}",
+    }),
+    description: t({
+      en: "Get started by editing this page",
+      fr: "Commencez par modifier cette page",
+    }),
+    language: t({
+      en: "Language",
+      fr: "Langue",
+    }),
+  },
+} satisfies Dictionary;
+
+export default appContent;

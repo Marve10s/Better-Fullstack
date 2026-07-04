@@ -1,0 +1,65 @@
+import { Autumn } from "autumn-js";
+import { autumnHandler } from "autumn-js/backend";
+import { env } from "@{{projectName}}/env/server";
+
+// Autumn is a plan-first billing layer on top of Stripe: define plans, attach
+// features, and meter usage. The server client is authenticated with your
+// Autumn secret key and talks to the Autumn API on your behalf.
+export const autumn = new Autumn({
+  secretKey: env.AUTUMN_SECRET_KEY,
+});
+
+// Starts a checkout for a plan/product. For a new customer Autumn returns a
+// Stripe Checkout `url` to redirect to; for an existing customer it performs
+// the upgrade/downgrade inline. Redirect to `result.data?.url` when present.
+export async function createCheckout(params: {
+  customerId: string;
+  productId: string;
+  successUrl?: string;
+  customerData?: { name?: string; email?: string };
+}) {
+  return autumn.checkout({
+    customer_id: params.customerId,
+    product_id: params.productId,
+    success_url: params.successUrl,
+    customer_data: params.customerData,
+  });
+}
+
+// Records a usage event for a metered feature. Do this server-side so usage
+// counts cannot be tampered with by the client.
+export async function trackUsage(params: {
+  customerId: string;
+  featureId: string;
+  value?: number;
+}) {
+  return autumn.track({
+    customer_id: params.customerId,
+    feature_id: params.featureId,
+    value: params.value,
+  });
+}
+
+// Autumn is webhookless. Instead of verifying webhook signatures, you mount
+// this handler as a catch-all route (for example `/api/autumn/*`). It securely
+// proxies the client SDK (`<AutumnProvider>` / `useCustomer`) to the Autumn API
+// using your secret key, so no billing state is written from the browser.
+// Resolve the authenticated customer from your own session and pass it in.
+export async function handleAutumnRequest(
+  request: { url: string; method: string; body: unknown },
+  customer?: {
+    customerId?: string;
+    customerData?: { name?: string; email?: string };
+  },
+) {
+  return autumnHandler({
+    request,
+    customerId: customer?.customerId,
+    customerData: customer?.customerData,
+    clientOptions: {
+      secretKey: env.AUTUMN_SECRET_KEY,
+    },
+  });
+}
+
+export type AutumnCheckoutResult = Awaited<ReturnType<typeof createCheckout>>;

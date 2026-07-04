@@ -76,6 +76,9 @@ fn AboutPage() -> impl IntoView {
 {{#if (eq rustWebFramework "actix-web")}}
                 <li>"Actix-web - Powerful, pragmatic web framework"</li>
 {{/if}}
+{{#if (eq rustWebFramework "poem")}}
+                <li>"Poem - Full-featured and easy-to-use web framework"</li>
+{{/if}}
             </ul>
 
             <nav>

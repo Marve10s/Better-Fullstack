@@ -73,3 +73,7 @@ testing/.validate-r4/
 testing/.verify-*/
 # LLM benchmark reports stay local
 testing/llm-benchmarks/
+
+# Erlang/Elixir crash dumps (never commit)
+erl_crash.dump
+*.dump

@@ -48,12 +48,14 @@ describe("Go Language Support", () => {
       expect(GO_WEB_FRAMEWORKS).toContain("echo");
       expect(GO_WEB_FRAMEWORKS).toContain("fiber");
       expect(GO_WEB_FRAMEWORKS).toContain("chi");
+      expect(GO_WEB_FRAMEWORKS).toContain("stdlib");
       expect(GO_WEB_FRAMEWORKS).toContain("none");
     });
 
     it("should have go ORM options", () => {
       expect(GO_ORMS).toContain("gorm");
       expect(GO_ORMS).toContain("sqlc");
+      expect(GO_ORMS).toContain("bun");
       expect(GO_ORMS).toContain("none");
     });
 
@@ -493,6 +495,52 @@ describe("Go Language Support", () => {
     });
   });
 
+  describe("Go stdlib (net/http) Web Framework Integration", () => {
+    it("should generate stdlib main.go with ServeMux and no external router deps", async () => {
+      const result = await createVirtual({
+        projectName: "go-stdlib-main",
+        ecosystem: "go",
+        goWebFramework: "stdlib",
+        goOrm: "none",
+        goApi: "none",
+        goCli: "none",
+        goLogging: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const mainContent = getFileContent(root, "cmd/server/main.go");
+      expect(mainContent).toBeDefined();
+      expect(mainContent).toContain("ServeMux");
+
+      const goModContent = getFileContent(root, "go.mod");
+      expect(goModContent).toBeDefined();
+      expect(goModContent).not.toContain("github.com/go-chi/chi");
+      expect(goModContent).not.toContain("github.com/gin-gonic/gin");
+    });
+
+    it("should generate stdlib handlers using net/http", async () => {
+      const result = await createVirtual({
+        projectName: "go-stdlib-handlers",
+        ecosystem: "go",
+        goWebFramework: "stdlib",
+        goOrm: "gorm",
+        goApi: "none",
+        goCli: "none",
+        goLogging: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const handlersContent = getFileContent(root, "internal/handlers/handlers.go");
+      expect(handlersContent).toBeDefined();
+      expect(handlersContent).toContain("http.ResponseWriter");
+      expect(handlersContent).toContain("*http.Request");
+    });
+  });
+
   describe("Go Auth Validation", () => {
     it("should keep GoBetterAuth selected on Go stacks", () => {
       const result = analyzeStackCompatibility({
@@ -645,6 +693,47 @@ describe("Go Language Support", () => {
       });
 
       expect(result.adjustedStack?.auth).toBe("none");
+    });
+  });
+
+  describe("Bun ORM Integration", () => {
+    it("should include Bun dependencies when selected", async () => {
+      const result = await createVirtual({
+        projectName: "go-bun-project",
+        ecosystem: "go",
+        goWebFramework: "gin",
+        goOrm: "bun",
+        goApi: "none",
+        goCli: "none",
+        goLogging: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const goModContent = getFileContent(root, "go.mod");
+      expect(goModContent).toBeDefined();
+      expect(goModContent).toContain("github.com/uptrace/bun");
+    });
+
+    it("should generate database/models/handlers with Bun for stdlib", async () => {
+      const result = await createVirtual({
+        projectName: "go-bun-stdlib",
+        ecosystem: "go",
+        goWebFramework: "stdlib",
+        goOrm: "bun",
+        goApi: "none",
+        goCli: "none",
+        goLogging: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      expect(hasFile(root, "internal/database/database.go")).toBe(true);
+      expect(hasFile(root, "internal/models/models.go")).toBe(true);
+      const dbContent = getFileContent(root, "internal/database/database.go");
+      expect(dbContent).toContain("bun");
     });
   });
 
@@ -1642,6 +1731,31 @@ describe("Go Language Support", () => {
       // Should not have Rust files
       expect(hasFile(root, "Cargo.toml")).toBe(false);
       expect(hasFile(root, "rust-toolchain.toml")).toBe(false);
+    });
+  });
+
+  describe("Bleve Search (Go)", () => {
+    it("should generate a Bleve search client for a Go project", async () => {
+      const result = await createVirtual({
+        projectName: "go-bleve-search",
+        ecosystem: "go",
+        goWebFramework: "gin",
+        goOrm: "none",
+        goApi: "none",
+        goCli: "none",
+        goLogging: "none",
+        search: "bleve",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const goMod = getFileContent(root, "go.mod");
+      expect(goMod).toContain("github.com/blevesearch/bleve/v2");
+
+      expect(hasFile(root, "internal/search/bleve.go")).toBe(true);
+      const bleveContent = getFileContent(root, "internal/search/bleve.go");
+      expect(bleveContent).toContain("bleve.NewMemOnly");
     });
   });
 });

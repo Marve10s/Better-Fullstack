@@ -659,6 +659,31 @@ function getPaymentSetupInstructions(
     );
   }
 
+  if (payments === "creem") {
+    return (
+      `${pc.bold("Creem Setup:")}\n` +
+      `${pc.cyan("•")} Get your API key from ${pc.underline("https://docs.creem.io")} (Developers > API Keys)\n` +
+      `${pc.cyan("•")} Set ${pc.white("CREEM_API_KEY")}, ${pc.white("CREEM_WEBHOOK_SECRET")}, and ${pc.white("CREEM_ENVIRONMENT")} (test|prod) in ${pc.white(envPath)}`
+    );
+  }
+
+  if (payments === "autumn") {
+    return (
+      `${pc.bold("Autumn Setup:")}\n` +
+      `${pc.cyan("•")} Sign up at ${pc.underline("https://useautumn.com")} and connect Stripe\n` +
+      `${pc.cyan("•")} Set ${pc.white("AUTUMN_SECRET_KEY")} in ${pc.white(envPath)} and mount handleAutumnRequest at ${pc.white("/api/autumn/*")}\n` +
+      `${pc.cyan("•")} Define plans/features with ${pc.white("npx atmn@latest")} (Autumn is webhookless)`
+    );
+  }
+
+  if (payments === "commet") {
+    return (
+      `${pc.bold("Commet Setup:")}\n` +
+      `${pc.cyan("•")} Get your API key from ${pc.underline("https://commet.co")} (Settings > API Keys)\n` +
+      `${pc.cyan("•")} Set ${pc.white("COMMET_API_KEY")} and ${pc.white("COMMET_WEBHOOK_SECRET")} in ${pc.white(envPath)}`
+    );
+  }
+
   return "";
 }
 

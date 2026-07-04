@@ -71,6 +71,14 @@ actix-cors.workspace = true
 rocket.workspace = true
 rocket_cors.workspace = true
 {{/if}}
+{{#if (eq rustWebFramework "poem")}}
+# Web framework
+poem.workspace = true
+{{/if}}
+{{#if (eq rustWebFramework "loco")}}
+# Web framework
+loco-rs.workspace = true
+{{/if}}
 
 {{#if (eq rustOrm "sqlx")}}
 # Database
@@ -104,6 +112,9 @@ async-graphql-actix-web.workspace = true
 {{/if}}
 {{#if (eq rustWebFramework "rocket")}}
 async-graphql-rocket.workspace = true
+{{/if}}
+{{#if (eq rustWebFramework "poem")}}
+async-graphql-poem.workspace = true
 {{/if}}
 {{/if}}
 

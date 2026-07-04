@@ -29,6 +29,11 @@ const JAVA_WEB_FRAMEWORK_PROMPT_OPTIONS: PromptOption<JavaWebFramework>[] = [
     hint: "Cloud-native Java framework optimized for fast startup and lower memory use",
   },
   {
+    value: "micronaut",
+    label: "Micronaut",
+    hint: "Modern JVM framework with compile-time DI/AOP and fast startup, low memory",
+  },
+  {
     value: "none",
     label: "None",
     hint: "No Java web framework",
@@ -392,6 +397,11 @@ const JAVA_API_PROMPT_OPTIONS: PromptOption<JavaApi>[] = [
     hint: "GraphQL schema + annotated controllers on Spring Boot",
   },
   {
+    value: "openapi-generator",
+    label: "OpenAPI Generator",
+    hint: "Generate Spring API interfaces + models from an OpenAPI spec at build time",
+  },
+  {
     value: "none",
     label: "None",
     hint: "REST controllers only",
@@ -403,6 +413,11 @@ const JAVA_LOGGING_PROMPT_OPTIONS: PromptOption<JavaLogging>[] = [
     value: "logback",
     label: "Logback",
     hint: "Spring Boot default logger with explicit logback-spring.xml",
+  },
+  {
+    value: "log4j2",
+    label: "Log4j2",
+    hint: "High-performance Apache logging with async loggers (Spring Boot, Micronaut, plain Java)",
   },
   {
     value: "none",

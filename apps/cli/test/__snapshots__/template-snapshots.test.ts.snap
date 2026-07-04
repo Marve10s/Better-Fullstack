@@ -20992,7 +20992,7 @@ exports[`Template Snapshots - Go Ecosystem Go Key File Content Snapshots key fil
 HOST=0.0.0.0
 PORT=8080
 
-# Database settings (if using GORM or sqlc)
+# Database settings (if using GORM, sqlc, Ent, or Bun)
 DATABASE_URL=postgres://user:password@localhost:5432/dbname?sslmode=disable
 
 # gRPC settings (if using gRPC)
@@ -21050,7 +21050,7 @@ exports[`Template Snapshots - Go Ecosystem Go Key File Content Snapshots key fil
 HOST=0.0.0.0
 PORT=8080
 
-# Database settings (if using GORM or sqlc)
+# Database settings (if using GORM, sqlc, Ent, or Bun)
 DATABASE_URL=postgres://user:password@localhost:5432/dbname?sslmode=disable
 
 # gRPC settings (if using gRPC)
@@ -21140,7 +21140,7 @@ exports[`Template Snapshots - Go Ecosystem Go Key File Content Snapshots key fil
 HOST=0.0.0.0
 PORT=8080
 
-# Database settings (if using GORM or sqlc)
+# Database settings (if using GORM, sqlc, Ent, or Bun)
 DATABASE_URL=postgres://user:password@localhost:5432/dbname?sslmode=disable
 
 # gRPC settings (if using gRPC)
@@ -21198,7 +21198,7 @@ exports[`Template Snapshots - Go Ecosystem Go Key File Content Snapshots key fil
 HOST=0.0.0.0
 PORT=8080
 
-# Database settings (if using GORM or sqlc)
+# Database settings (if using GORM, sqlc, Ent, or Bun)
 DATABASE_URL=postgres://user:password@localhost:5432/dbname?sslmode=disable
 
 # gRPC settings (if using gRPC)
@@ -21256,7 +21256,7 @@ exports[`Template Snapshots - Go Ecosystem Go Key File Content Snapshots key fil
 HOST=0.0.0.0
 PORT=8080
 
-# Database settings (if using GORM or sqlc)
+# Database settings (if using GORM, sqlc, Ent, or Bun)
 DATABASE_URL=postgres://user:password@localhost:5432/dbname?sslmode=disable
 
 # gRPC settings (if using gRPC)
@@ -21306,7 +21306,7 @@ exports[`Template Snapshots - Go Ecosystem Go Key File Content Snapshots key fil
 HOST=0.0.0.0
 PORT=8080
 
-# Database settings (if using GORM or sqlc)
+# Database settings (if using GORM, sqlc, Ent, or Bun)
 DATABASE_URL=postgres://user:password@localhost:5432/dbname?sslmode=disable
 
 # gRPC settings (if using gRPC)
@@ -21364,7 +21364,7 @@ exports[`Template Snapshots - Go Ecosystem Go Key File Content Snapshots key fil
 HOST=0.0.0.0
 PORT=8080
 
-# Database settings (if using GORM or sqlc)
+# Database settings (if using GORM, sqlc, Ent, or Bun)
 DATABASE_URL=postgres://user:password@localhost:5432/dbname?sslmode=disable
 
 # gRPC settings (if using gRPC)
@@ -21438,7 +21438,7 @@ exports[`Template Snapshots - Go Ecosystem Go Key File Content Snapshots key fil
 HOST=0.0.0.0
 PORT=8080
 
-# Database settings (if using GORM or sqlc)
+# Database settings (if using GORM, sqlc, Ent, or Bun)
 DATABASE_URL=postgres://user:password@localhost:5432/dbname?sslmode=disable
 
 # gRPC settings (if using gRPC)
@@ -21504,7 +21504,7 @@ exports[`Template Snapshots - Go Ecosystem Go Key File Content Snapshots key fil
 HOST=0.0.0.0
 PORT=8080
 
-# Database settings (if using GORM or sqlc)
+# Database settings (if using GORM, sqlc, Ent, or Bun)
 DATABASE_URL=postgres://user:password@localhost:5432/dbname?sslmode=disable
 
 # gRPC settings (if using gRPC)

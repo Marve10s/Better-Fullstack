@@ -30,6 +30,10 @@
 {{/if}}
 {{#if isJavaSpringBoot}}
 		<java.version>21</java.version>
+{{#if isJavaOpenApiGenerator}}
+		<openapi-generator.version>7.23.0</openapi-generator.version>
+		<swagger-annotations.version>2.2.52</swagger-annotations.version>
+{{/if}}
 {{#if hasJavaSpringdocOpenapi}}
 		<springdoc.version>3.0.3</springdoc.version>
 {{/if}}
@@ -102,9 +106,49 @@
 		<jqwik.version>1.9.3</jqwik.version>
 {{/if}}
 {{/if}}
+{{else if isJavaMicronaut}}
+		<micronaut.version>4.9.4</micronaut.version>
+		<logback.version>1.5.18</logback.version>
+{{#if hasJavaLog4j2}}
+		<log4j2.version>2.25.4</log4j2.version>
+{{/if}}
+		<snakeyaml.version>2.4</snakeyaml.version>
+		<maven.compiler.release>21</maven.compiler.release>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+{{#if hasJavaTests}}
+		<junit.version>5.12.2</junit.version>
+{{#if hasJavaAssertj}}
+		<assertj.version>3.27.7</assertj.version>
+{{/if}}
+{{#if hasJavaMockito}}
+		<mockito.version>5.23.0</mockito.version>
+{{/if}}
+{{#if hasJavaTestcontainers}}
+		<testcontainers.version>1.20.4</testcontainers.version>
+{{/if}}
+{{#if hasJavaRestAssured}}
+		<rest-assured.version>6.0.0</rest-assured.version>
+{{/if}}
+{{#if hasJavaWireMock}}
+		<wiremock.version>3.13.2</wiremock.version>
+{{/if}}
+{{#if hasJavaAwaitility}}
+		<awaitility.version>4.3.0</awaitility.version>
+{{/if}}
+{{#if hasJavaArchunit}}
+		<archunit.version>1.4.2</archunit.version>
+{{/if}}
+{{#if hasJavaJqwik}}
+		<jqwik.version>1.9.3</jqwik.version>
+{{/if}}
+{{/if}}
 {{else}}
 		<maven.compiler.release>21</maven.compiler.release>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+{{#if hasJavaLog4j2}}
+		<log4j2.version>2.25.4</log4j2.version>
+{{/if}}
 {{#if hasJavaTests}}
 		<junit.version>5.12.2</junit.version>
 {{#if hasJavaAssertj}}
@@ -231,12 +275,28 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
 		</dependency>
 {{/if}}
 {{#if hasJavaJooq}}
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-jooq</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
 		</dependency>
 		<dependency>
 			<groupId>com.h2database</groupId>
@@ -249,6 +309,14 @@
 			<groupId>org.mybatis.spring.boot</groupId>
 			<artifactId>mybatis-spring-boot-starter</artifactId>
 			<version>${mybatis-spring-boot.version}</version>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
 		</dependency>
 		<dependency>
 			<groupId>com.h2database</groupId>
@@ -260,18 +328,59 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
 		</dependency>
 {{/if}}
 {{#if hasJavaGraphql}}
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-graphql</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
+		</dependency>
+{{/if}}
+{{#if isJavaOpenApiGenerator}}
+		<!-- Swagger v3 annotations referenced by the OpenAPI-generated Spring API
+		     interfaces (target/generated-sources/openapi). Spring Web + Jackson
+		     (via spring-boot-starter-webmvc) supply the rest of what they need. -->
+		<dependency>
+			<groupId>io.swagger.core.v3</groupId>
+			<artifactId>swagger-annotations</artifactId>
+			<version>${swagger-annotations.version}</version>
+		</dependency>
+		<!-- The generated models import jakarta.validation.constraints.*; the
+		     annotation API is enough to compile them. Version is managed by the
+		     Spring Boot parent BOM. -->
+		<dependency>
+			<groupId>jakarta.validation</groupId>
+			<artifactId>jakarta.validation-api</artifactId>
 		</dependency>
 {{/if}}
 {{#if hasJavaAmqp}}
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-amqp</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
 		</dependency>
 {{/if}}
 {{#if hasJavaOtel}}
@@ -290,30 +399,70 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
 		</dependency>
 {{/if}}
 {{#if hasJavaActuator}}
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
 		</dependency>
 {{/if}}
 {{#if hasJavaValidation}}
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-validation</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
 		</dependency>
 {{/if}}
 {{#if hasJavaFlyway}}
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-flyway</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
 		</dependency>
 {{/if}}
 {{#if hasJavaLiquibase}}
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-liquibase</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
 		</dependency>
 {{/if}}
 {{#if hasJavaSpringdocOpenapi}}
@@ -342,6 +491,14 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-cache</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
 		</dependency>
 		<dependency>
 			<groupId>com.github.ben-manes.caffeine</groupId>
@@ -359,12 +516,28 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webflux</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
 		</dependency>
 {{/if}}
 {{#if hasJavaBatch}}
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-batch</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
 		</dependency>
 {{/if}}
 {{#if hasJavaKafka}}
@@ -377,6 +550,14 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-mail</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
 		</dependency>
 {{/if}}
 {{#if hasJavaDevtools}}
@@ -398,12 +579,34 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
 		</dependency>
 {{/if}}
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webmvc</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
 		</dependency>
+{{#if hasJavaLog4j2}}
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-log4j2</artifactId>
+		</dependency>
+{{/if}}
 {{#if hasJavaJpa}}
 		<dependency>
 			<groupId>com.h2database</groupId>
@@ -418,6 +621,14 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa-test</artifactId>
 			<scope>test</scope>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
 		</dependency>
 {{/if}}
 {{#if hasJavaSecurity}}
@@ -425,12 +636,28 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security-test</artifactId>
 			<scope>test</scope>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
 		</dependency>
 {{/if}}
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webmvc-test</artifactId>
 			<scope>test</scope>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
 		</dependency>
 {{#if hasJavaAssertj}}
 		<dependency>
@@ -586,7 +813,132 @@
 		</dependency>
 {{/if}}
 {{/if}}
+{{else if isJavaMicronaut}}
+		<dependency>
+			<groupId>io.micronaut</groupId>
+			<artifactId>micronaut-http-server-netty</artifactId>
+			<version>${micronaut.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.micronaut</groupId>
+			<artifactId>micronaut-jackson-databind</artifactId>
+			<version>${micronaut.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.yaml</groupId>
+			<artifactId>snakeyaml</artifactId>
+			<version>${snakeyaml.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+{{#if hasJavaLog4j2}}
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j2-impl</artifactId>
+			<version>${log4j2.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>${log4j2.version}</version>
+			<scope>runtime</scope>
+		</dependency>
 {{else}}
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>${logback.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+{{/if}}
+{{#if hasJavaTests}}
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+{{#if hasJavaAssertj}}
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<version>${assertj.version}</version>
+			<scope>test</scope>
+		</dependency>
+{{/if}}
+{{#if hasJavaMockito}}
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-junit-jupiter</artifactId>
+			<version>${mockito.version}</version>
+			<scope>test</scope>
+		</dependency>
+{{/if}}
+{{#if hasJavaTestcontainers}}
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>testcontainers</artifactId>
+			<scope>test</scope>
+		</dependency>
+{{/if}}
+{{#if hasJavaRestAssured}}
+		<dependency>
+			<groupId>io.rest-assured</groupId>
+			<artifactId>rest-assured</artifactId>
+			<version>${rest-assured.version}</version>
+			<scope>test</scope>
+		</dependency>
+{{/if}}
+{{#if hasJavaWireMock}}
+		<dependency>
+			<groupId>org.wiremock</groupId>
+			<artifactId>wiremock-jetty12</artifactId>
+			<version>${wiremock.version}</version>
+			<scope>test</scope>
+		</dependency>
+{{/if}}
+{{#if hasJavaAwaitility}}
+		<dependency>
+			<groupId>org.awaitility</groupId>
+			<artifactId>awaitility</artifactId>
+			<version>${awaitility.version}</version>
+			<scope>test</scope>
+		</dependency>
+{{/if}}
+{{#if hasJavaArchunit}}
+		<dependency>
+			<groupId>com.tngtech.archunit</groupId>
+			<artifactId>archunit-junit5</artifactId>
+			<version>${archunit.version}</version>
+			<scope>test</scope>
+		</dependency>
+{{/if}}
+{{#if hasJavaJqwik}}
+		<dependency>
+			<groupId>net.jqwik</groupId>
+			<artifactId>jqwik</artifactId>
+			<version>${jqwik.version}</version>
+			<scope>test</scope>
+		</dependency>
+{{/if}}
+{{/if}}
+{{else}}
+{{#if hasJavaLog4j2}}
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+			<version>${log4j2.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>${log4j2.version}</version>
+		</dependency>
+{{/if}}
 {{#if hasJavaTests}}
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
@@ -672,6 +1024,42 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+{{#if isJavaOpenApiGenerator}}
+			<plugin>
+				<groupId>org.openapitools</groupId>
+				<artifactId>openapi-generator-maven-plugin</artifactId>
+				<version>${openapi-generator.version}</version>
+				<executions>
+					<execution>
+						<id>generate-spring-api</id>
+						<!-- Bound to the generate-sources phase; runs on `mvn compile`.
+						     Generated interfaces land in
+						     target/generated-sources/openapi/src/main/java and are
+						     added to the compile source path by the plugin. -->
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<inputSpec>${project.basedir}/src/main/resources/openapi.yaml</inputSpec>
+							<generatorName>spring</generatorName>
+							<apiPackage>{{javaPackageName}}.api</apiPackage>
+							<modelPackage>{{javaPackageName}}.model</modelPackage>
+							<configOptions>
+								<interfaceOnly>true</interfaceOnly>
+								<useSpringBoot3>true</useSpringBoot3>
+								<useJakartaEe>true</useJakartaEe>
+								<useTags>true</useTags>
+								<documentationProvider>source</documentationProvider>
+								<annotationLibrary>swagger2</annotationLibrary>
+								<useBeanValidation>false</useBeanValidation>
+								<openApiNullable>false</openApiNullable>
+								<skipDefaultInterface>false</skipDefaultInterface>
+							</configOptions>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+{{/if}}
 {{#if hasJavaAnnotationProcessors}}
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -731,6 +1119,51 @@
 				</configuration>
 			</plugin>
 {{/if}}
+{{else if isJavaMicronaut}}
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.15.0</version>
+				<configuration>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>io.micronaut</groupId>
+							<artifactId>micronaut-inject-java</artifactId>
+							<version>${micronaut.version}</version>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
+{{#if hasJavaTests}}
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.5.5</version>
+				<configuration>
+					<useModulePath>false</useModulePath>
+				</configuration>
+			</plugin>
+{{/if}}
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>3.6.3</version>
+				<configuration>
+					<mainClass>{{javaPackageName}}.Application</mainClass>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.5.0</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>{{javaPackageName}}.Application</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
 {{else}}
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

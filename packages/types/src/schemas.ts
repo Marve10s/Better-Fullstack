@@ -225,7 +225,18 @@ export const AuthSchema = z
   .describe("Authentication provider");
 
 export const PaymentsSchema = z
-  .enum(["revenuecat","polar", "stripe", "lemon-squeezy", "paddle", "dodo", "none"])
+  .enum([
+    "revenuecat",
+    "polar",
+    "stripe",
+    "lemon-squeezy",
+    "paddle",
+    "dodo",
+    "creem",
+    "autumn",
+    "commet",
+    "none",
+  ])
   .describe("Payments provider");
 
 export const WebDeploySchema = z
@@ -323,21 +334,21 @@ export const CMSSchema = z
   .describe("Headless CMS solution");
 
 export const CachingSchema = z
-  .enum(["upstash-redis", "none"])
-  .describe("Caching solution (upstash-redis for serverless Redis)");
+  .enum(["upstash-redis", "redis", "none"])
+  .describe("Caching solution (upstash-redis for serverless Redis, redis for self-hosted Redis)");
 
 export const RateLimitSchema = z
   .enum(["arcjet", "upstash-ratelimit", "none"])
   .describe("Rate limiting and abuse protection");
 
 export const I18nSchema = z
-  .enum(["paraglide", "i18next", "next-intl", "none"])
+  .enum(["paraglide", "i18next", "next-intl", "intlayer", "none"])
   .describe("Internationalization (i18n) library");
 
 export const SearchSchema = z
-  .enum(["meilisearch", "typesense", "elasticsearch", "opensearch", "algolia", "none"])
+  .enum(["meilisearch", "typesense", "elasticsearch", "opensearch", "algolia", "bleve", "none"])
   .describe(
-    "Search engine solution (meilisearch, typesense, elasticsearch, opensearch, or algolia for fast search experiences)",
+    "Search engine solution (meilisearch, typesense, elasticsearch, opensearch, or algolia for fast search experiences; bleve is a Go-native embedded full-text engine)",
   );
 
 export const VectorDbSchema = z
@@ -347,8 +358,8 @@ export const VectorDbSchema = z
   );
 
 export const FileStorageSchema = z
-  .enum(["s3", "r2", "cloudinary", "none"])
-  .describe("File storage solution (AWS S3, Cloudflare R2, or Cloudinary)");
+  .enum(["s3", "r2", "cloudinary", "supabase-storage", "none"])
+  .describe("File storage solution (AWS S3, Cloudflare R2, Cloudinary, or Supabase Storage)");
 
 export const AnimationSchema = z
   .enum(["framer-motion", "gsap", "react-spring", "auto-animate", "lottie", "none"])
@@ -371,8 +382,8 @@ export const FeatureFlagsSchema = z
   .describe("Feature flags provider for A/B testing and feature management");
 
 export const AnalyticsSchema = z
-  .enum(["plausible", "umami", "none"])
-  .describe("Privacy-focused analytics provider");
+  .enum(["plausible", "umami", "posthog", "none"])
+  .describe("Product analytics provider");
 
 export const MobileNavigationSchema = z
   .enum(["expo-router", "react-navigation", "none"])
@@ -404,7 +415,7 @@ export const MobileDeepLinkingSchema = z
 
 // Rust ecosystem schemas
 export const RustWebFrameworkSchema = z
-  .enum(["axum", "actix-web", "rocket", "none"])
+  .enum(["axum", "actix-web", "rocket", "poem", "loco", "none"])
   .describe("Rust web framework");
 
 export const RustFrontendSchema = z
@@ -545,11 +556,11 @@ export const PythonCliSchema = z
 
 // Go ecosystem schemas
 export const GoWebFrameworkSchema = z
-  .enum(["gin", "echo", "fiber", "chi", "none"])
+  .enum(["gin", "echo", "fiber", "chi", "stdlib", "none"])
   .describe("Go web framework");
 
 export const GoOrmSchema = z
-  .enum(["gorm", "sqlc", "ent", "none"])
+  .enum(["gorm", "sqlc", "ent", "bun", "none"])
   .describe("Go ORM/database layer");
 
 export const GoApiSchema = z
@@ -594,7 +605,7 @@ export const GoObservabilitySchema = z
 
 // Java ecosystem schemas
 export const JavaWebFrameworkSchema = z
-  .enum(["spring-boot", "quarkus", "none"])
+  .enum(["spring-boot", "quarkus", "micronaut", "none"])
   .describe("Java web framework");
 
 export const JavaBuildToolSchema = z.enum(["maven", "gradle", "none"]).describe("Java build tool");
@@ -608,11 +619,11 @@ export const JavaAuthSchema = z
   .describe("Java authentication library");
 
 export const JavaApiSchema = z
-  .enum(["spring-graphql", "none"])
+  .enum(["spring-graphql", "openapi-generator", "none"])
   .describe("Java API layer");
 
 export const JavaLoggingSchema = z
-  .enum(["logback", "none"])
+  .enum(["logback", "log4j2", "none"])
   .describe("Java logging configuration");
 
 export const JavaLibrariesSchema = z
@@ -846,7 +857,7 @@ export const DirectoryConflictSchema = z
   .describe("How to handle existing directory conflicts");
 
 export const TemplateSchema = z
-  .enum(["mern", "pern", "t3", "uniwind", "none"])
+  .enum(["mern", "pern", "t3", "saas", "uniwind", "none"])
   .describe("Predefined project template");
 
 export const ProjectNameSchema = z

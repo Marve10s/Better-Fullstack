@@ -26,3 +26,32 @@ def add_documents(
     index = get_search_client().index(index_name)
     return index.add_documents(documents, primary_key=primary_key)
 {{/if}}
+{{#if (eq search "elasticsearch")}}
+"""Elasticsearch client helpers."""
+
+import os
+from typing import Any
+
+from elasticsearch import Elasticsearch
+
+
+def get_search_client() -> Elasticsearch:
+    url = os.getenv("ELASTICSEARCH_URL", "http://localhost:9200")
+    api_key = os.getenv("ELASTICSEARCH_API_KEY")
+    if api_key:
+        return Elasticsearch(url, api_key=api_key)
+    return Elasticsearch(url)
+
+
+def search_documents(
+    index_name: str, query: str, fields: list[str] | None = None
+) -> dict[str, Any]:
+    body: dict[str, Any] = {
+        "query": {"multi_match": {"query": query, "fields": fields or ["*"]}}
+    }
+    return get_search_client().search(index=index_name, body=body)
+
+
+def add_document(index_name: str, doc_id: str, document: dict[str, Any]) -> dict[str, Any]:
+    return get_search_client().index(index=index_name, id=doc_id, document=document)
+{{/if}}

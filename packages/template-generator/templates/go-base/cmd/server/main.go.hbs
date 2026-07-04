@@ -1,7 +1,7 @@
 package main
 
 import (
-{{#if (eq goWebFramework "chi")}}
+{{#if (or (eq goWebFramework "chi") (eq goWebFramework "stdlib"))}}
 	"encoding/json"
 {{/if}}
 {{#if (eq goLogging "slog")}}
@@ -10,16 +10,22 @@ import (
 {{#if (eq goApi "grpc-go")}}
 	"net"
 {{/if}}
-{{#if (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "chi")) (and (eq auth "go-better-auth") (not (eq goWebFramework "fiber"))))}}
+{{#if (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (or (eq goWebFramework "chi") (eq goWebFramework "stdlib"))) (and (eq auth "go-better-auth") (not (eq goWebFramework "fiber"))))}}
 	"net/http"
 {{/if}}
-{{#if (or (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (eq goWebFramework "chi")) (eq goApi "grpc-go")) (or (eq auth "go-better-auth") (ne goLogging "none")))}}
+{{#if (eq goWebFramework "stdlib")}}
+	"context"
+	"os/signal"
+	"syscall"
+	"time"
+{{/if}}
+{{#if (or (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (or (eq goWebFramework "chi") (eq goWebFramework "stdlib"))) (eq goApi "grpc-go")) (or (eq auth "go-better-auth") (ne goLogging "none")))}}
 	"os"
 {{/if}}
 {{#if (eq goApi "grpc-go")}}
 	"sync"
 {{/if}}
-{{#if (or (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (eq goWebFramework "chi")) (eq goApi "grpc-go")) (or (eq auth "go-better-auth") (ne goLogging "none")))}}
+{{#if (or (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (or (eq goWebFramework "chi") (eq goWebFramework "stdlib"))) (eq goApi "grpc-go")) (or (eq auth "go-better-auth") (ne goLogging "none")))}}
 
 {{/if}}
 {{#if (eq goWebFramework "gin")}}
@@ -55,16 +61,16 @@ import (
 {{#if (eq goApi "grpc-go")}}
 	"google.golang.org/grpc"
 {{/if}}
-{{#if (or (eq auth "go-better-auth") (ne goAuth "none") (eq goOrm "gorm") (eq goOrm "sqlc") (eq goOrm "ent") (eq observability "sentry") (eq goApi "grpc-go"))}}
+{{#if (or (eq auth "go-better-auth") (ne goAuth "none") (eq goOrm "gorm") (eq goOrm "sqlc") (eq goOrm "ent") (eq goOrm "bun") (eq observability "sentry") (eq goApi "grpc-go"))}}
 
 {{/if}}
 {{#if (or (eq auth "go-better-auth") (ne goAuth "none"))}}
 	appauth "{{projectName}}/internal/auth"
 {{/if}}
-{{#if (or (or (eq goOrm "gorm") (eq goOrm "sqlc")) (eq goOrm "ent"))}}
+{{#if (or (or (or (eq goOrm "gorm") (eq goOrm "sqlc")) (eq goOrm "ent")) (eq goOrm "bun"))}}
 	"{{projectName}}/internal/database"
 {{/if}}
-{{#if (and (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (eq goWebFramework "chi")) (or (or (eq goOrm "gorm") (eq goOrm "sqlc")) (eq goOrm "ent")))}}
+{{#if (and (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (or (eq goWebFramework "chi") (eq goWebFramework "stdlib"))) (or (or (or (eq goOrm "gorm") (eq goOrm "sqlc")) (eq goOrm "ent")) (eq goOrm "bun")))}}
 	"{{projectName}}/internal/handlers"
 {{/if}}
 {{#if (eq observability "sentry")}}
@@ -317,7 +323,35 @@ func main() {
 {{/if}}
 	_ = db // Use db in your handlers
 {{/if}}
-{{#if (or (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (eq goWebFramework "chi")) (eq goApi "grpc-go")) (eq auth "go-better-auth"))}}
+{{#if (eq goOrm "bun")}}
+
+	// Initialize database
+	db, err := database.InitDB()
+	if err != nil {
+{{#if (eq goLogging "zap")}}
+		logger.Fatal("Failed to connect to database", zap.Error(err))
+{{else if (eq goLogging "zerolog")}}
+		logger.Fatal().Err(err).Msg("Failed to connect to database")
+{{else if (eq goLogging "slog")}}
+		logger.Error("Failed to connect to database", "error", err)
+		os.Exit(1)
+{{else}}
+		panic("Failed to connect to database: " + err.Error())
+{{/if}}
+	}
+	defer database.Close()
+{{#if (eq goLogging "zap")}}
+	logger.Info("Database connected successfully")
+{{/if}}
+{{#if (eq goLogging "zerolog")}}
+	logger.Info().Msg("Database connected successfully")
+{{/if}}
+{{#if (eq goLogging "slog")}}
+	logger.Info("Database connected successfully")
+{{/if}}
+	_ = db // Use db in your handlers
+{{/if}}
+{{#if (or (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (or (eq goWebFramework "chi") (eq goWebFramework "stdlib"))) (eq goApi "grpc-go")) (eq auth "go-better-auth"))}}
 
 	// Get host from environment
 	host := os.Getenv("HOST")
@@ -325,7 +359,7 @@ func main() {
 		host = "0.0.0.0"
 	}
 {{/if}}
-{{#if (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (eq goWebFramework "chi")) (eq auth "go-better-auth"))}}
+{{#if (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (or (eq goWebFramework "chi") (eq goWebFramework "stdlib"))) (eq auth "go-better-auth"))}}
 	// Get HTTP port from environment
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -433,7 +467,7 @@ func main() {
 			"message": "Welcome to {{projectName}}!",
 		})
 	})
-{{#if (or (eq goOrm "gorm") (eq goOrm "sqlc"))}}
+{{#if (or (or (eq goOrm "gorm") (eq goOrm "sqlc")) (eq goOrm "bun"))}}
 
 	api := r.Group("/api")
 	api.GET("/users", handlers.GetUsers)
@@ -510,7 +544,7 @@ func main() {
 			"message": "Welcome to {{projectName}}!",
 		})
 	})
-{{#if (or (eq goOrm "gorm") (eq goOrm "sqlc"))}}
+{{#if (or (or (eq goOrm "gorm") (eq goOrm "sqlc")) (eq goOrm "bun"))}}
 
 	e.GET("/api/users", handlers.GetUsers)
 	e.POST("/api/users", handlers.CreateUser)
@@ -585,7 +619,7 @@ func main() {
 			"message": "Welcome to {{projectName}}!",
 		})
 	})
-{{#if (or (eq goOrm "gorm") (eq goOrm "sqlc"))}}
+{{#if (or (or (eq goOrm "gorm") (eq goOrm "sqlc")) (eq goOrm "bun"))}}
 
 	app.Get("/api/users", handlers.GetUsers)
 	app.Post("/api/users", handlers.CreateUser)
@@ -675,7 +709,7 @@ func main() {
 			"message": "Welcome to {{projectName}}!",
 		})
 	})
-{{#if (or (eq goOrm "gorm") (eq goOrm "sqlc"))}}
+{{#if (or (or (eq goOrm "gorm") (eq goOrm "sqlc")) (eq goOrm "bun"))}}
 
 	r.Get("/api/users", handlers.GetUsers)
 	r.Post("/api/users", handlers.CreateUser)
@@ -707,6 +741,121 @@ func main() {
 		os.Exit(1)
 {{else}}
 		panic("Failed to start server: " + err.Error())
+{{/if}}
+	}
+{{/if}}
+{{#if (eq goWebFramework "stdlib")}}
+{{#if (eq goLogging "zap")}}
+	logger.Info("Starting HTTP server", zap.String("address", addr))
+
+{{/if}}
+{{#if (eq goLogging "zerolog")}}
+	logger.Info().Str("address", addr).Msg("Starting HTTP server")
+
+{{/if}}
+{{#if (eq goLogging "slog")}}
+	logger.Info("Starting HTTP server", "address", addr)
+
+{{/if}}
+	// Create the standard-library router (Go 1.22+ method + pattern routing)
+	mux := http.NewServeMux()
+{{#if (eq auth "go-better-auth")}}
+
+	mux.Handle("/api/auth", authApp.Handler())
+	mux.Handle("/api/auth/", authApp.Handler())
+{{/if}}
+
+	// Health check endpoint
+	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]string{
+			"status":  "ok",
+			"message": "Server is running",
+		})
+	})
+
+	// Root endpoint ({$} matches only the exact "/" path)
+	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]string{
+			"message": "Welcome to {{projectName}}!",
+		})
+	})
+{{#if (or (or (eq goOrm "gorm") (eq goOrm "sqlc")) (eq goOrm "bun"))}}
+
+	mux.HandleFunc("GET /api/users", handlers.GetUsers)
+	mux.HandleFunc("POST /api/users", handlers.CreateUser)
+	mux.HandleFunc("GET /api/users/{id}", handlers.GetUser)
+	mux.HandleFunc("PUT /api/users/{id}", handlers.UpdateUser)
+	mux.HandleFunc("DELETE /api/users/{id}", handlers.DeleteUser)
+	mux.HandleFunc("GET /api/posts", handlers.GetPosts)
+	mux.HandleFunc("POST /api/posts", handlers.CreatePost)
+	mux.HandleFunc("GET /api/posts/{id}", handlers.GetPost)
+	mux.HandleFunc("PUT /api/posts/{id}", handlers.UpdatePost)
+	mux.HandleFunc("DELETE /api/posts/{id}", handlers.DeletePost)
+{{else if (eq goOrm "ent")}}
+
+	mux.HandleFunc("GET /api/users", handlers.GetUsers)
+	mux.HandleFunc("POST /api/users", handlers.CreateUser)
+	mux.HandleFunc("DELETE /api/users/{id}", handlers.DeleteUser)
+	mux.HandleFunc("GET /api/posts", handlers.GetPosts)
+	mux.HandleFunc("POST /api/posts", handlers.CreatePost)
+{{/if}}
+
+	// corsMiddleware adds permissive CORS headers and handles preflight requests.
+	corsMiddleware := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+			if r.Method == http.MethodOptions {
+				w.WriteHeader(http.StatusNoContent)
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+
+	server := &http.Server{
+		Addr:    addr,
+		Handler: corsMiddleware(mux),
+	}
+
+	// Start the server in a goroutine so shutdown can be handled gracefully.
+	go func() {
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+{{#if (eq goLogging "zap")}}
+			logger.Fatal("Failed to start server", zap.Error(err))
+{{else if (eq goLogging "zerolog")}}
+			logger.Fatal().Err(err).Msg("Failed to start server")
+{{else if (eq goLogging "slog")}}
+			logger.Error("Failed to start server", "error", err)
+			os.Exit(1)
+{{else}}
+			panic("Failed to start server: " + err.Error())
+{{/if}}
+		}
+	}()
+
+	// Wait for an interrupt signal to gracefully shut down the server.
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := server.Shutdown(shutdownCtx); err != nil {
+{{#if (eq goLogging "zap")}}
+		logger.Fatal("Failed to gracefully shut down server", zap.Error(err))
+{{else if (eq goLogging "zerolog")}}
+		logger.Fatal().Err(err).Msg("Failed to gracefully shut down server")
+{{else if (eq goLogging "slog")}}
+		logger.Error("Failed to gracefully shut down server", "error", err)
+		os.Exit(1)
+{{else}}
+		panic("Failed to gracefully shut down server: " + err.Error())
 {{/if}}
 	}
 {{/if}}

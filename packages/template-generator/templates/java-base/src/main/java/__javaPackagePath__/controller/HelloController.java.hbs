@@ -1,0 +1,25 @@
+package {{javaPackageName}}.controller;
+
+import java.util.Map;
+
+import io.micronaut.http.MediaType;
+import io.micronaut.http.annotation.Controller;
+import io.micronaut.http.annotation.Get;
+
+@Controller
+public class HelloController {
+
+  @Get(uri = "/", produces = MediaType.TEXT_PLAIN)
+  public String index() {
+    return "Hello from {{projectName}}";
+  }
+
+  @Get(uri = "/health", produces = MediaType.APPLICATION_JSON)
+  public Map<String, String> health() {
+    return Map.of(
+      "status", "ok",
+      "application", "{{projectName}}",
+      "framework", "micronaut"
+    );
+  }
+}

@@ -3296,4 +3296,27 @@ describe("Python Language Support", () => {
       expect(hasFile(root, "Cargo.toml")).toBe(false);
     });
   });
+
+  describe("Elasticsearch Search (Python)", () => {
+    it("should generate an Elasticsearch client for a Python project", async () => {
+      const result = await createVirtual({
+        projectName: "py-elasticsearch",
+        ecosystem: "python",
+        pythonWebFramework: "fastapi",
+        pythonOrm: "none",
+        pythonApi: "none",
+        search: "elasticsearch",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const pyproject = getFileContent(root, "pyproject.toml");
+      expect(pyproject).toContain("elasticsearch>=");
+
+      expect(hasFile(root, "src/app/search.py")).toBe(true);
+      const searchContent = getFileContent(root, "src/app/search.py");
+      expect(searchContent).toContain("from elasticsearch import Elasticsearch");
+    });
+  });
 });

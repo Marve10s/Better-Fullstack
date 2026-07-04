@@ -113,6 +113,14 @@ actix-cors = "0.7"
 rocket = { version = "0.5", features = ["json"] }
 rocket_cors = "0.6"
 {{/if}}
+{{#if (eq rustWebFramework "poem")}}
+# Web framework (Poem)
+poem = "3.1"
+{{/if}}
+{{#if (eq rustWebFramework "loco")}}
+# Web framework (Loco) — DB-free: routes only, no ORM/migrations required
+loco-rs = { version = "0.16", default-features = false, features = ["cli"] }
+{{/if}}
 
 {{#if (eq rustOrm "sqlx")}}
 # Database (SQLx)
@@ -146,6 +154,9 @@ async-graphql-actix-web = "7"
 {{/if}}
 {{#if (eq rustWebFramework "rocket")}}
 async-graphql-rocket = "7"
+{{/if}}
+{{#if (eq rustWebFramework "poem")}}
+async-graphql-poem = "7"
 {{/if}}
 {{/if}}
 

@@ -1,0 +1,79 @@
+import { createClient } from "@supabase/supabase-js";
+
+/**
+ * Supabase Storage client for file storage
+ * @see https://supabase.com/docs/guides/storage
+ *
+ * Uses the service-role key so server-side uploads/deletes are not blocked by
+ * row-level security. Never expose the service-role key to the browser.
+ */
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  { auth: { persistSession: false } },
+);
+
+const BUCKET_NAME = process.env.SUPABASE_STORAGE_BUCKET ?? "uploads";
+
+const bucket = () => supabase.storage.from(BUCKET_NAME);
+
+/**
+ * Upload a file to Supabase Storage.
+ */
+export async function uploadFile(
+  path: string,
+  body: Buffer | Uint8Array | ArrayBuffer | Blob | string,
+  options?: { contentType?: string; upsert?: boolean }
+): Promise<{ path: string }> {
+  const { data, error } = await bucket().upload(path, body, {
+    contentType: options?.contentType,
+    upsert: options?.upsert ?? false,
+  });
+  if (error) throw error;
+  return { path: data.path };
+}
+
+/**
+ * Download a file as a Blob.
+ */
+export async function downloadFile(path: string): Promise<Blob> {
+  const { data, error } = await bucket().download(path);
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Delete one or more files.
+ */
+export async function deleteFile(paths: string | string[]): Promise<void> {
+  const keys = Array.isArray(paths) ? paths : [paths];
+  const { error } = await bucket().remove(keys);
+  if (error) throw error;
+}
+
+/**
+ * Create a time-limited signed URL for a private object.
+ */
+export async function getSignedUrl(path: string, expiresInSeconds = 3600): Promise<string> {
+  const { data, error } = await bucket().createSignedUrl(path, expiresInSeconds);
+  if (error) throw error;
+  return data.signedUrl;
+}
+
+/**
+ * Get the public URL for an object in a public bucket.
+ */
+export function getPublicUrl(path: string): string {
+  return bucket().getPublicUrl(path).data.publicUrl;
+}
+
+/**
+ * List objects under a prefix.
+ */
+export async function listFiles(prefix = "") {
+  const { data, error } = await bucket().list(prefix);
+  if (error) throw error;
+  return data;
+}
+
+export { supabase, BUCKET_NAME };

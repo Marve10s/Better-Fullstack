@@ -9,6 +9,9 @@ import { env } from "@{{projectName}}/env/server";
 import { polar, checkout, portal } from "@polar-sh/better-auth";
 import { polarClient } from "./lib/payments";
 {{/if}}
+{{#if (eq payments "creem")}}
+import { creem } from "@creem_io/better-auth";
+{{/if}}
 import prisma from "@{{projectName}}/db";
 
 export const auth = betterAuth({
@@ -69,6 +72,13 @@ export const auth = betterAuth({
 			],
 		}),
 {{/if}}
+{{#if (eq payments "creem")}}
+		creem({
+			apiKey: env.CREEM_API_KEY,
+			webhookSecret: env.CREEM_WEBHOOK_SECRET,
+			testMode: env.CREEM_ENVIRONMENT !== "prod",
+		}),
+{{/if}}
 	],
 });
 {{/if}}
@@ -84,6 +94,9 @@ import { env } from "@{{projectName}}/env/server";
 {{#if (eq payments "polar")}}
 import { polar, checkout, portal } from "@polar-sh/better-auth";
 import { polarClient } from "./lib/payments";
+{{/if}}
+{{#if (eq payments "creem")}}
+import { creem } from "@creem_io/better-auth";
 {{/if}}
 import { db } from "@{{projectName}}/db";
 import * as schema from "@{{projectName}}/db/schema/auth";
@@ -146,6 +159,13 @@ export const auth = betterAuth({
 			],
 		}),
 {{/if}}
+{{#if (eq payments "creem")}}
+		creem({
+			apiKey: env.CREEM_API_KEY,
+			webhookSecret: env.CREEM_WEBHOOK_SECRET,
+			testMode: env.CREEM_ENVIRONMENT !== "prod",
+		}),
+{{/if}}
 	],
 });
 {{/if}}
@@ -160,6 +180,9 @@ import { env } from "@{{projectName}}/env/server";
 {{#if (eq payments "polar")}}
 import { polar, checkout, portal } from "@polar-sh/better-auth";
 import { polarClient } from "./lib/payments";
+{{/if}}
+{{#if (eq payments "creem")}}
+import { creem } from "@creem_io/better-auth";
 {{/if}}
 import { db } from "@{{projectName}}/db";
 import * as schema from "@{{projectName}}/db/schema/auth";
@@ -211,7 +234,7 @@ export const auth = betterAuth({
 		//   domain: "<your-workers-subdomain>",
 		// },
 	},
-	{{#if (or (hasBetterAuthOrganizations auth) (eq payments "polar"))}}
+	{{#if (or (hasBetterAuthOrganizations auth) (eq payments "polar") (eq payments "creem"))}}
 		plugins: [
 	{{#if (hasBetterAuthOrganizations auth)}}
 			organization(),
@@ -236,6 +259,13 @@ export const auth = betterAuth({
 				],
 			}),
 	{{/if}}
+	{{#if (eq payments "creem")}}
+			creem({
+				apiKey: env.CREEM_API_KEY,
+				webhookSecret: env.CREEM_WEBHOOK_SECRET,
+				testMode: env.CREEM_ENVIRONMENT !== "prod",
+			}),
+	{{/if}}
 		],
 	{{/if}}
 });
@@ -252,6 +282,9 @@ import { env } from "@{{projectName}}/env/server";
 {{#if (eq payments "polar")}}
 import { polar, checkout, portal } from "@polar-sh/better-auth";
 import { polarClient } from "./lib/payments";
+{{/if}}
+{{#if (eq payments "creem")}}
+import { creem } from "@creem_io/better-auth";
 {{/if}}
 import { client } from "@{{projectName}}/db";
 
@@ -283,7 +316,7 @@ export const auth = betterAuth({
 		},
 	},
 {{/if}}
-	{{#if (or (hasBetterAuthOrganizations auth) (eq payments "polar"))}}
+	{{#if (or (hasBetterAuthOrganizations auth) (eq payments "polar") (eq payments "creem"))}}
 		plugins: [
 	{{#if (hasBetterAuthOrganizations auth)}}
 			organization(),
@@ -308,6 +341,13 @@ export const auth = betterAuth({
 				],
 			}),
 	{{/if}}
+	{{#if (eq payments "creem")}}
+			creem({
+				apiKey: env.CREEM_API_KEY,
+				webhookSecret: env.CREEM_WEBHOOK_SECRET,
+				testMode: env.CREEM_ENVIRONMENT !== "prod",
+			}),
+	{{/if}}
 		],
 	{{/if}}
 });
@@ -322,6 +362,9 @@ import { env } from "@{{projectName}}/env/server";
 {{#if (eq payments "polar")}}
 import { polar, checkout, portal } from "@polar-sh/better-auth";
 import { polarClient } from "./lib/payments";
+{{/if}}
+{{#if (eq payments "creem")}}
+import { creem } from "@creem_io/better-auth";
 {{/if}}
 {{#if (eq orm "kysely")}}
 import { db } from "@{{projectName}}/db";
@@ -390,6 +433,13 @@ export const auth = betterAuth({
 			],
 		}),
 {{/if}}
+{{#if (eq payments "creem")}}
+		creem({
+			apiKey: env.CREEM_API_KEY,
+			webhookSecret: env.CREEM_WEBHOOK_SECRET,
+			testMode: env.CREEM_ENVIRONMENT !== "prod",
+		}),
+{{/if}}
 	],
 });
 {{/if}}
@@ -403,6 +453,9 @@ import { env } from "@{{projectName}}/env/server";
 {{#if (eq payments "polar")}}
 import { polar, checkout, portal } from "@polar-sh/better-auth";
 import { polarClient } from "./lib/payments";
+{{/if}}
+{{#if (eq payments "creem")}}
+import { creem } from "@creem_io/better-auth";
 {{/if}}
 
 
@@ -436,7 +489,7 @@ export const auth = betterAuth({
 		},
 	},
 {{/if}}
-	{{#if (or (hasBetterAuthOrganizations auth) (eq payments "polar"))}}
+	{{#if (or (hasBetterAuthOrganizations auth) (eq payments "polar") (eq payments "creem"))}}
 		plugins: [
 	{{#if (hasBetterAuthOrganizations auth)}}
 			organization(),
@@ -459,6 +512,13 @@ export const auth = betterAuth({
 				}),
 				portal(),
 				],
+			}),
+	{{/if}}
+	{{#if (eq payments "creem")}}
+			creem({
+				apiKey: env.CREEM_API_KEY,
+				webhookSecret: env.CREEM_WEBHOOK_SECRET,
+				testMode: env.CREEM_ENVIRONMENT !== "prod",
 			}),
 	{{/if}}
 		],

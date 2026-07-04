@@ -3,9 +3,15 @@ plugins {
 	java
 	id("org.springframework.boot") version "4.0.6"
 	id("io.spring.dependency-management") version "1.1.7"
+{{#if isJavaOpenApiGenerator}}
+	id("org.openapi.generator") version "7.23.0"
+{{/if}}
 {{else if isJavaQuarkus}}
 	java
 	id("io.quarkus") version "3.35.2"
+{{else if isJavaMicronaut}}
+	java
+	application
 {{else}}
 	java
 	application
@@ -15,7 +21,7 @@ plugins {
 group = "{{javaGroupId}}"
 version = "0.0.1-SNAPSHOT"
 
-{{#if isJavaPlainJava}}
+{{#if (or isJavaPlainJava isJavaMicronaut)}}
 application {
 	mainClass = "{{javaPackageName}}.Application"
 }
@@ -37,6 +43,15 @@ repositories {
 	mavenCentral()
 }
 
+{{#if hasJavaLog4j2}}
+// Spring Boot pulls Logback in transitively through every starter (actuator,
+// data-jpa, ...), not just spring-boot-starter-webmvc. Exclude it globally when
+// Log4j2 is selected to avoid a dual SLF4J binding that fails at runtime.
+configurations.all {
+	exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
+}
+
+{{/if}}
 dependencies {
 {{#if (eq email "resend")}}
 	implementation("com.resend:resend-java:4.13.0")
@@ -67,6 +82,14 @@ dependencies {
 {{/if}}
 {{#if hasJavaGraphql}}
 	implementation("org.springframework.boot:spring-boot-starter-graphql")
+{{/if}}
+{{#if isJavaOpenApiGenerator}}
+	// Swagger v3 annotations referenced by the OpenAPI-generated Spring API
+	// interfaces; Spring Web + Jackson (via webmvc) supply the rest.
+	implementation("io.swagger.core.v3:swagger-annotations:2.2.52")
+	// Generated models import jakarta.validation.constraints.*; the annotation
+	// API is enough to compile them (version managed by Spring Boot BOM).
+	implementation("jakarta.validation:jakarta.validation-api")
 {{/if}}
 {{#if hasJavaAmqp}}
 	implementation("org.springframework.boot:spring-boot-starter-amqp")
@@ -132,7 +155,14 @@ dependencies {
 {{#if hasJavaThymeleaf}}
 	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 {{/if}}
+{{#if hasJavaLog4j2}}
+	implementation("org.springframework.boot:spring-boot-starter-webmvc") {
+		exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
+	}
+	implementation("org.springframework.boot:spring-boot-starter-log4j2")
+{{else}}
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
+{{/if}}
 {{#if hasJavaJpa}}
 	runtimeOnly("com.h2database:h2")
 {{/if}}
@@ -208,7 +238,53 @@ dependencies {
 	testImplementation("net.jqwik:jqwik:1.9.3")
 {{/if}}
 {{/if}}
+{{else if isJavaMicronaut}}
+	annotationProcessor("io.micronaut:micronaut-inject-java:4.9.4")
+	implementation("io.micronaut:micronaut-http-server-netty:4.9.4")
+	implementation("io.micronaut:micronaut-jackson-databind:4.9.4")
+	runtimeOnly("org.yaml:snakeyaml:2.4")
+{{#if hasJavaLog4j2}}
+	runtimeOnly("org.apache.logging.log4j:log4j-slf4j2-impl:2.25.4")
+	runtimeOnly("org.apache.logging.log4j:log4j-core:2.25.4")
 {{else}}
+	runtimeOnly("ch.qos.logback:logback-classic:1.5.18")
+{{/if}}
+{{#if hasJavaTests}}
+	testImplementation(platform("org.junit:junit-bom:5.12.2"))
+	testImplementation("org.junit.jupiter:junit-jupiter")
+	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+{{#if hasJavaAssertj}}
+	testImplementation("org.assertj:assertj-core:3.27.7")
+{{/if}}
+{{#if hasJavaMockito}}
+	testImplementation("org.mockito:mockito-junit-jupiter:5.23.0")
+{{/if}}
+{{#if hasJavaTestcontainers}}
+	testImplementation(platform("org.testcontainers:testcontainers-bom:1.20.4"))
+	testImplementation("org.testcontainers:junit-jupiter")
+	testImplementation("org.testcontainers:testcontainers")
+{{/if}}
+{{#if hasJavaRestAssured}}
+	testImplementation("io.rest-assured:rest-assured:6.0.0")
+{{/if}}
+{{#if hasJavaWireMock}}
+	testImplementation("org.wiremock:wiremock-jetty12:3.13.2")
+{{/if}}
+{{#if hasJavaAwaitility}}
+	testImplementation("org.awaitility:awaitility:4.3.0")
+{{/if}}
+{{#if hasJavaArchunit}}
+	testImplementation("com.tngtech.archunit:archunit-junit5:1.4.2")
+{{/if}}
+{{#if hasJavaJqwik}}
+	testImplementation("net.jqwik:jqwik:1.9.3")
+{{/if}}
+{{/if}}
+{{else}}
+{{#if hasJavaLog4j2}}
+	implementation("org.apache.logging.log4j:log4j-api:2.25.4")
+	implementation("org.apache.logging.log4j:log4j-core:2.25.4")
+{{/if}}
 {{#if hasJavaTests}}
 	testImplementation(platform("org.junit:junit-bom:5.12.2"))
 	testImplementation("org.junit.jupiter:junit-jupiter")
@@ -243,6 +319,38 @@ dependencies {
 {{/if}}
 }
 
+{{#if isJavaOpenApiGenerator}}
+// Generate Spring MVC API interfaces from the OpenAPI contract before compiling.
+openApiGenerate {
+	generatorName.set("spring")
+	inputSpec.set("$projectDir/src/main/resources/openapi.yaml")
+	outputDir.set(layout.buildDirectory.dir("generated/openapi").get().asFile.absolutePath)
+	apiPackage.set("{{javaPackageName}}.api")
+	modelPackage.set("{{javaPackageName}}.model")
+	configOptions.set(
+		mapOf(
+			"interfaceOnly" to "true",
+			"useSpringBoot3" to "true",
+			"useJakartaEe" to "true",
+			"useTags" to "true",
+			"documentationProvider" to "source",
+			"annotationLibrary" to "swagger2",
+			"useBeanValidation" to "false",
+			"openApiNullable" to "false",
+			"skipDefaultInterface" to "false",
+		),
+	)
+}
+
+sourceSets.named("main") {
+	java.srcDir(layout.buildDirectory.dir("generated/openapi/src/main/java"))
+}
+
+tasks.named("compileJava") {
+	dependsOn("openApiGenerate")
+}
+
+{{/if}}
 tasks.withType<Test> {
 	useJUnitPlatform()
 }

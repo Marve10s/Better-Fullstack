@@ -15,13 +15,16 @@ type JavaTemplateContext = ProjectConfig & {
   isJavaGradle: boolean;
   isJavaSpringBoot: boolean;
   isJavaQuarkus: boolean;
+  isJavaMicronaut: boolean;
   isJavaPlainJava: boolean;
   hasJavaJpa: boolean;
   hasJavaJooq: boolean;
   hasJavaMybatis: boolean;
   hasJavaKeycloak: boolean;
   hasJavaGraphql: boolean;
+  isJavaOpenApiGenerator: boolean;
   hasJavaLogback: boolean;
+  hasJavaLog4j2: boolean;
   hasJavaAmqp: boolean;
   hasJavaOtel: boolean;
   hasJavaSecurity: boolean;
@@ -155,6 +158,9 @@ function createJavaTemplateContext(config: ProjectConfig): JavaTemplateContext {
   // plain-Java path instead of emitting uncompilable Spring sources.
   const isJavaSpringBoot = config.javaWebFramework === "spring-boot" && hasJavaBuildTool;
   const isJavaQuarkus = config.javaWebFramework === "quarkus" && hasJavaBuildTool;
+  // `micronaut` is added to `JavaWebFrameworkSchema` separately; cast so this
+  // handler compiles ahead of (and after) that schema widening landing.
+  const isJavaMicronaut = config.javaWebFramework === "micronaut" && hasJavaBuildTool;
   const hasJavaJpa = isJavaSpringBoot && config.javaOrm === "spring-data-jpa";
   const rawLibraries = isJavaSpringBoot
     ? (config.javaLibraries || []).filter((library) => library !== "none")
@@ -200,13 +206,25 @@ function createJavaTemplateContext(config: ProjectConfig): JavaTemplateContext {
     isJavaGradle: config.javaBuildTool === "gradle",
     isJavaSpringBoot,
     isJavaQuarkus,
-    isJavaPlainJava: !isJavaSpringBoot && !isJavaQuarkus,
+    isJavaMicronaut,
+    isJavaPlainJava: !isJavaSpringBoot && !isJavaQuarkus && !isJavaMicronaut,
     hasJavaJpa,
     hasJavaJooq: isJavaSpringBoot && config.javaOrm === "jooq",
     hasJavaMybatis: isJavaSpringBoot && config.javaOrm === "mybatis",
     hasJavaKeycloak: isJavaSpringBoot && config.javaAuth === "keycloak",
     hasJavaGraphql: isJavaSpringBoot && config.javaApi === "spring-graphql",
+    // The OpenAPI Generator `spring` generator targets Spring Boot, so this
+    // API layer is gated to Spring Boot exactly like `spring-graphql`.
+    // `openapi-generator` is added to `JavaApiSchema` separately; cast to string
+    // so this handler compiles ahead of (and after) that schema widening.
+    isJavaOpenApiGenerator: isJavaSpringBoot && config.javaApi === "openapi-generator",
     hasJavaLogback: isJavaSpringBoot && config.javaLogging === "logback",
+    // log4j2 is an additive logging backend supported for Spring Boot,
+    // Micronaut, and plain Java. Quarkus keeps its own default logging
+    // subsystem (JBoss LogManager) and ignores this flag.
+    // `log4j2` is added to `JavaLoggingSchema` separately; cast to string so
+    // this handler compiles ahead of (and after) that schema widening landing.
+    hasJavaLog4j2: config.javaLogging === "log4j2",
     hasJavaAmqp: javaLibraries.includes("spring-amqp"),
     hasJavaOtel: javaLibraries.includes("opentelemetry-java"),
     hasJavaSecurity: isJavaSpringBoot && config.javaAuth === "spring-security",
@@ -259,8 +277,16 @@ function shouldSkipJavaTemplate(templatePath: string, context: JavaTemplateConte
     return true;
   }
 
+  // Plain Java keeps no config/controller/resource surface, EXCEPT the log4j2
+  // config file when javaLogging === "log4j2" and there is a build tool to
+  // wire the log4j2 dependencies (a source-only scaffold has no classpath).
+  const isPlainJavaLog4j2Config =
+    context.hasJavaLog4j2 &&
+    context.hasJavaBuildTool &&
+    templatePath.endsWith("/log4j2.xml.hbs");
   if (
     context.isJavaPlainJava &&
+    !isPlainJavaLog4j2Config &&
     (templatePath.includes("/config/") ||
       templatePath.includes("/controller/") ||
       templatePath.includes("src/main/resources/"))
@@ -278,6 +304,27 @@ function shouldSkipJavaTemplate(templatePath: string, context: JavaTemplateConte
     ) {
       return true;
     }
+  }
+
+  // Micronaut keeps its own web surface: a single `HelloController` (health +
+  // root endpoint) and a Micronaut-flavoured `application.yml`. Skip the
+  // Spring-specific `HealthController` and the Spring/plain-Java lifecycle tests
+  // (`Application.main` there either boots Spring or prints a greeting — neither
+  // matches a Micronaut server main).
+  if (context.isJavaMicronaut) {
+    if (
+      templatePath.endsWith("/controller/HealthController.java.hbs") ||
+      templatePath.endsWith("/ApplicationTests.java.hbs") ||
+      templatePath.endsWith("/ApplicationContainerTests.java.hbs")
+    ) {
+      return true;
+    }
+  }
+
+  // The Micronaut `HelloController` is Micronaut-only; every other framework
+  // (Spring Boot, Quarkus, plain Java) must not emit it.
+  if (!context.isJavaMicronaut && templatePath.endsWith("/controller/HelloController.java.hbs")) {
+    return true;
   }
 
   if (!context.isJavaQuarkus && templatePath.includes("/resource/")) {
@@ -325,6 +372,13 @@ function shouldSkipJavaTemplate(templatePath: string, context: JavaTemplateConte
   ) {
     return true;
   }
+  // The OpenAPI spec is the codegen input; emit it only when the OpenAPI
+  // Generator API layer is selected (Spring Boot only). Other frameworks skip
+  // src/main/resources wholesale above, so this guard is what keeps it out of a
+  // Spring Boot scaffold that did not opt into openapi-generator.
+  if (!context.isJavaOpenApiGenerator && templatePath.endsWith("/openapi.yaml.hbs")) {
+    return true;
+  }
   if (!context.hasJavaJooq && templatePath.includes("/jooqdata/")) {
     return true;
   }
@@ -332,6 +386,26 @@ function shouldSkipJavaTemplate(templatePath: string, context: JavaTemplateConte
     return true;
   }
   if (!context.hasJavaLogback && templatePath.endsWith("/logback-spring.xml.hbs")) {
+    return true;
+  }
+
+  // log4j2 config files are emitted only when javaLogging === "log4j2".
+  // Spring Boot uses the `-spring` variant so Spring controls initialization;
+  // Micronaut and plain Java (with a build tool) use the standard `log4j2.xml`.
+  if (
+    templatePath.endsWith("/log4j2-spring.xml.hbs") &&
+    !(context.hasJavaLog4j2 && context.isJavaSpringBoot)
+  ) {
+    return true;
+  }
+  if (
+    templatePath.endsWith("/log4j2.xml.hbs") &&
+    !(
+      context.hasJavaLog4j2 &&
+      context.hasJavaBuildTool &&
+      (context.isJavaMicronaut || context.isJavaPlainJava)
+    )
+  ) {
     return true;
   }
 

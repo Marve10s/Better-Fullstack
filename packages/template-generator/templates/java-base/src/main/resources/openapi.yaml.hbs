@@ -1,0 +1,34 @@
+{{#if isJavaOpenApiGenerator}}
+openapi: 3.0.3
+info:
+  title: {{projectName}} API
+  version: 0.0.1
+  description: >-
+    OpenAPI contract for {{projectName}}. The openapi-generator Maven/Gradle
+    plugin reads this spec during the build and generates Spring MVC API
+    interfaces (into target/generated-sources) that your controllers implement.
+servers:
+  - url: /
+paths:
+  /api/hello:
+    get:
+      tags:
+        - hello
+      operationId: getHello
+      summary: Return a greeting message
+      responses:
+        "200":
+          description: Successful greeting response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HelloResponse"
+components:
+  schemas:
+    HelloResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Hello from {{projectName}}
+{{/if}}

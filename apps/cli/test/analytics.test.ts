@@ -606,6 +606,41 @@ describe("Analytics Configurations", () => {
     });
   });
 
+  describe("PostHog", () => {
+    it("should work with posthog + hono backend", async () => {
+      const result = await runTRPCTest({
+        projectName: "posthog-hono",
+        analytics: "posthog",
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        api: "trpc",
+        auth: "better-auth",
+        frontend: ["tanstack-router"],
+        addons: ["turborepo"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+
+      if (result.projectDir) {
+        const webPackageJsonPath = path.join(result.projectDir, "apps/web/package.json");
+        if (await fs.pathExists(webPackageJsonPath)) {
+          const pkgJson = await fs.readJson(webPackageJsonPath);
+          expect(pkgJson.dependencies?.["posthog-js"]).toBeDefined();
+        }
+
+        const posthogPath = path.join(result.projectDir, "apps/web/src/lib/posthog.tsx");
+        expect(await fs.pathExists(posthogPath)).toBe(true);
+      }
+    });
+  });
+
   describe("No Analytics (none)", () => {
     it("should not add analytics dependencies when analytics is none", async () => {
       const result = await runTRPCTest({

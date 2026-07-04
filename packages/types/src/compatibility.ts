@@ -887,6 +887,36 @@ export const analyzeStackCompatibility = (
   }
 
   // ============================================
+  // CACHING CONSTRAINTS
+  // ============================================
+
+  // Self-hosted Redis caching (ioredis) is TypeScript-only; other ecosystems
+  // have their own native caching fields (goCaching/rustCaching/pythonCaching).
+  if (nextStack.caching === "redis" && nextStack.ecosystem !== "typescript") {
+    nextStack.caching = "none";
+    changed = true;
+    changes.push({
+      category: "caching",
+      message:
+        "Caching set to 'None' (self-hosted Redis is only available for the TypeScript ecosystem)",
+    });
+  }
+
+  // ============================================
+  // SEARCH CONSTRAINTS
+  // ============================================
+
+  // Bleve is a Go-only embedded search engine; drop it for non-Go ecosystems.
+  if (nextStack.search === "bleve" && nextStack.ecosystem !== "go") {
+    nextStack.search = "none";
+    changed = true;
+    changes.push({
+      category: "search",
+      message: "Search set to 'None' (Bleve is only available for the Go ecosystem)",
+    });
+  }
+
+  // ============================================
   // PAYMENTS CONSTRAINTS
   // ============================================
 
@@ -2155,6 +2185,9 @@ export const getDisabledReason = (
   // ============================================
   // CACHING CONSTRAINTS
   // ============================================
+  if (category === "caching" && optionId === "redis" && currentStack.ecosystem !== "typescript") {
+    return "Self-hosted Redis caching (ioredis) is only available for the TypeScript ecosystem";
+  }
   if (category === "caching" && optionId !== "none") {
     if (currentStack.ecosystem !== "typescript") {
       return null;
@@ -2179,6 +2212,9 @@ export const getDisabledReason = (
   // ============================================
   // SEARCH CONSTRAINTS
   // ============================================
+  if (category === "search" && optionId === "bleve" && currentStack.ecosystem !== "go") {
+    return "Bleve is an embedded Go search engine, only available for the Go ecosystem";
+  }
   if (category === "search" && optionId !== "none") {
     if (currentStack.ecosystem !== "typescript") {
       return null;

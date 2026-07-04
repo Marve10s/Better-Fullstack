@@ -1,0 +1,28 @@
+use loco_rs::prelude::*;
+use serde::Serialize;
+
+#[derive(Serialize)]
+struct HealthResponse {
+    status: &'static str,
+    message: &'static str,
+}
+
+/// Health check endpoint — returns JSON status.
+async fn health() -> Result<Response> {
+    format::json(HealthResponse {
+        status: "ok",
+        message: "Server is running",
+    })
+}
+
+/// Example hello endpoint.
+async fn hello() -> Result<Response> {
+    format::text("Hello from {{projectName}}!")
+}
+
+/// Routes exposed by this controller. Mounted by `App::routes` in `app.rs`.
+pub fn routes() -> Routes {
+    Routes::new()
+        .add("/health", get(health))
+        .add("/hello", get(hello))
+}

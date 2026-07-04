@@ -251,6 +251,9 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   "lemon-squeezy": { type: "si", slug: "lemonsqueezy", hex: "FFC233" },
   paddle: { type: "si", slug: "paddle", hex: "3D3D3D" },
   dodo: { type: "local", src: "/icon/dodo.svg" },
+  creem: { type: "local", src: "/icon/creem.svg" },
+  autumn: { type: "local", src: "/icon/autumn.svg" },
+  commet: { type: "local", src: "/icon/commet.svg" },
 
   // ─── Email ─────────────────────────────────────────────────────────────────
   resend: { type: "si", slug: "resend", hex: "000000" },
@@ -391,6 +394,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
 
   // ─── Search ────────────────────────────────────────────────────────────────
   meilisearch: { type: "si", slug: "meilisearch", hex: "FF5CAA" },
+  bleve: { type: "local", src: "/icon/bleve.svg" },
   typesense: { type: "local", src: "/icon/typesense.png" },
   elasticsearch: { type: "si", slug: "elasticsearch", hex: "005571" },
   opensearch: { type: "si", slug: "opensearch", hex: "005EB8" },
@@ -406,6 +410,8 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   s3: { type: "local", src: "/icon/aws-s3.svg" },
   r2: { type: "si", slug: "cloudflare", hex: "F38020" },
   cloudinary: { type: "si", slug: "cloudinary", hex: "3448C5" },
+  "supabase-storage": { type: "si", slug: "supabase", hex: "3FCF8E" },
+  intlayer: { type: "local", src: "/icon/intlayer.svg" },
 
   // ─── Animation ─────────────────────────────────────────────────────────────
   "framer-motion": { type: "si", slug: "framer", hex: "0055FF" },
@@ -430,6 +436,8 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
 
   // ─── Rust ──────────────────────────────────────────────────────────────────
   axum: { type: "local", src: "/icon/axum.svg" },
+  poem: { type: "local", src: "/icon/poem.svg" },
+  loco: { type: "local", src: "/icon/loco.svg" },
   "actix-web": { type: "local", src: "/icon/actix.svg" },
   leptos: { type: "local", src: "/icon/leptos.svg" },
   dioxus: { type: "local", src: "/icon/dioxus.svg" },
@@ -463,6 +471,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   echo: { type: "si", slug: "go", hex: "00ADD8" },
   fiber: { type: "si", slug: "go", hex: "00ADD8" },
   chi: { type: "si", slug: "go", hex: "00ADD8" },
+  stdlib: { type: "si", slug: "go", hex: "00ADD8" },
   "grpc-go": { type: "local", src: "/icon/grpc.svg" },
   "urfave-cli": { type: "si", slug: "go", hex: "00ADD8" },
   logrus: { type: "si", slug: "go", hex: "00ADD8" },
@@ -470,6 +479,8 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   // ─── Java ──────────────────────────────────────────────────────────────────
   "spring-boot": { type: "si", slug: "springboot", hex: "6DB33F" },
   quarkus: { type: "si", slug: "quarkus", hex: "4695EB" },
+  micronaut: { type: "local", src: "/icon/micronaut.svg" },
+  log4j2: { type: "local", src: "/icon/log4j2.svg" },
   maven: { type: "si", slug: "apachemaven", hex: "C71A36" },
   gradle: { type: "si", slug: "gradle", hex: "02303A" },
   "spring-data-jpa": { type: "si", slug: "hibernate", hex: "59666C" },

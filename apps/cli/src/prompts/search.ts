@@ -41,6 +41,33 @@ const NON_TYPESCRIPT_SEARCH_PROMPT_OPTIONS = SEARCH_PROMPT_OPTIONS.filter(
   (option) => option.value === "meilisearch" || option.value === "none",
 );
 
+// Python supports Meilisearch and Elasticsearch (both have first-class Python clients).
+const PYTHON_SEARCH_PROMPT_OPTIONS = SEARCH_PROMPT_OPTIONS.filter(
+  (option) =>
+    option.value === "meilisearch" ||
+    option.value === "elasticsearch" ||
+    option.value === "none",
+);
+
+// Go additionally supports Bleve, an embedded (server-less) full-text engine.
+const GO_SEARCH_PROMPT_OPTIONS = [
+  {
+    value: "meilisearch" as const,
+    label: "Meilisearch",
+    hint: "Lightning-fast search engine with typo tolerance",
+  },
+  {
+    value: "bleve" as const,
+    label: "Bleve",
+    hint: "Embedded, server-less full-text search for Go (no external service)",
+  },
+  {
+    value: "none" as const,
+    label: "None",
+    hint: "Skip search engine setup",
+  },
+];
+
 type SearchPromptContext = {
   search?: Search;
   backend?: Backend;
@@ -60,9 +87,13 @@ export function resolveSearchPrompt(
   }
 
   const options =
-    context.ecosystem && context.ecosystem !== "typescript"
-      ? NON_TYPESCRIPT_SEARCH_PROMPT_OPTIONS
-      : SEARCH_PROMPT_OPTIONS;
+    context.ecosystem === "go"
+      ? GO_SEARCH_PROMPT_OPTIONS
+      : context.ecosystem === "python"
+        ? PYTHON_SEARCH_PROMPT_OPTIONS
+        : context.ecosystem && context.ecosystem !== "typescript"
+          ? NON_TYPESCRIPT_SEARCH_PROMPT_OPTIONS
+          : SEARCH_PROMPT_OPTIONS;
 
   if (
     (!context.ecosystem || context.ecosystem === "typescript") &&

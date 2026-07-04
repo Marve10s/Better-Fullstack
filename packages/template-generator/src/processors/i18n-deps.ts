@@ -35,6 +35,23 @@ export function processI18nDeps(vfs: VirtualFileSystem, config: ProjectConfig): 
     return;
   }
 
+  if (i18n === "intlayer") {
+    // Intlayer core is always needed; framework package depends on Next vs Vite.
+    const webPath = "apps/web/package.json";
+    if (vfs.exists(webPath)) {
+      const isNext = frontend[0] === "next";
+      const deps: AvailableDependencies[] = isNext
+        ? ["intlayer", "next-intlayer"]
+        : ["intlayer", "react-intlayer", "vite-intlayer"];
+      addPackageDependency({
+        vfs,
+        packagePath: webPath,
+        dependencies: deps,
+      });
+    }
+    return;
+  }
+
   if (i18n === "i18next") {
     // i18next goes into the web package for all frontends
     const webPath = "apps/web/package.json";

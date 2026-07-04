@@ -25,6 +25,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://spec.openapis.org/oas/latest.html",
     githubUrl: "https://github.com/OAI/OpenAPI-Specification",
   },
+  "openapi-generator": {
+    docsUrl: "https://openapi-generator.tech/",
+    githubUrl: "https://github.com/OpenAPITools/openapi-generator",
+  },
   "tanstack-router": {
     docsUrl: "https://tanstack.com/router/latest",
     githubUrl: "https://github.com/TanStack/router",
@@ -421,6 +425,12 @@ const BASE_LINKS: LinkMap = {
   },
   dodo: { docsUrl: "https://docs.dodopayments.com/" },
   revenuecat: { docsUrl: "https://www.revenuecat.com/docs" },
+  creem: { docsUrl: "https://docs.creem.io", githubUrl: "https://github.com/armitage-labs/creem" },
+  autumn: {
+    docsUrl: "https://docs.useautumn.com",
+    githubUrl: "https://github.com/useautumn/autumn-js",
+  },
+  commet: { docsUrl: "https://commet.co/docs", githubUrl: "https://github.com/commet-labs/commet" },
   resend: {
     docsUrl: "https://resend.com/docs",
     githubUrl: "https://github.com/resend/resend-node",
@@ -466,6 +476,10 @@ const BASE_LINKS: LinkMap = {
   quarkus: {
     docsUrl: "https://quarkus.io/guides/",
     githubUrl: "https://github.com/quarkusio/quarkus",
+  },
+  micronaut: {
+    docsUrl: "https://docs.micronaut.io/latest/guide/",
+    githubUrl: "https://github.com/micronaut-projects/micronaut-core",
   },
   maven: {
     docsUrl: "https://maven.apache.org/guides/",
@@ -947,6 +961,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://www.meilisearch.com/docs",
     githubUrl: "https://github.com/meilisearch/meilisearch",
   },
+  bleve: {
+    docsUrl: "https://blevesearch.com/",
+    githubUrl: "https://github.com/blevesearch/bleve",
+  },
   typesense: {
     docsUrl: "https://typesense.org/docs/",
     githubUrl: "https://github.com/typesense/typesense",
@@ -991,6 +1009,11 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://cloudinary.com/documentation/node_integration",
     githubUrl: "https://github.com/cloudinary/cloudinary_npm",
   },
+  "supabase-storage": {
+    docsUrl: "https://supabase.com/docs/guides/storage",
+    githubUrl: "https://github.com/supabase/storage",
+  },
+  intlayer: { docsUrl: "https://intlayer.org", githubUrl: "https://github.com/aymericzip/intlayer" },
   "framer-motion": {
     docsUrl: "https://motion.dev/docs",
     githubUrl: "https://github.com/motiondivision/motion",
@@ -1054,6 +1077,8 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://rocket.rs/guide/",
     githubUrl: "https://github.com/rwf2/Rocket",
   },
+  poem: { docsUrl: "https://docs.rs/poem/latest/poem/", githubUrl: "https://github.com/poem-web/poem" },
+  loco: { docsUrl: "https://loco.rs/docs/", githubUrl: "https://github.com/loco-rs/loco" },
   leptos: { docsUrl: "https://book.leptos.dev/", githubUrl: "https://github.com/leptos-rs/leptos" },
   dioxus: {
     docsUrl: "https://dioxuslabs.com/learn/",
@@ -1241,6 +1266,10 @@ const BASE_LINKS: LinkMap = {
   },
   fiber: { docsUrl: "https://docs.gofiber.io/", githubUrl: "https://github.com/gofiber/fiber" },
   chi: { docsUrl: "https://go-chi.io/", githubUrl: "https://github.com/go-chi/chi" },
+  stdlib: {
+    docsUrl: "https://pkg.go.dev/net/http",
+    githubUrl: "https://github.com/golang/go/tree/master/src/net/http",
+  },
   gorm: { docsUrl: "https://gorm.io/docs/", githubUrl: "https://github.com/go-gorm/gorm" },
   sqlc: { docsUrl: "https://docs.sqlc.dev/", githubUrl: "https://github.com/sqlc-dev/sqlc" },
   ent: {
@@ -1368,6 +1397,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://logback.qos.ch/documentation.html",
     githubUrl: "https://github.com/qos-ch/logback",
   },
+  log4j2: {
+    docsUrl: "https://logging.apache.org/log4j/2.x/",
+    githubUrl: "https://github.com/apache/logging-log4j2",
+  },
   "spring-amqp": {
     docsUrl: "https://docs.spring.io/spring-amqp/reference/",
     githubUrl: "https://github.com/spring-projects/spring-amqp",
@@ -1455,6 +1488,10 @@ const BASE_LINKS: LinkMap = {
 };
 
 const CATEGORY_LINKS: LinkMap = {
+  "goOrm:bun": {
+    docsUrl: "https://bun.uptrace.dev/",
+    githubUrl: "https://github.com/uptrace/bun",
+  },
   "appPlatforms:nx": {
     docsUrl: "https://nx.dev/docs",
     githubUrl: "https://github.com/nrwl/nx",

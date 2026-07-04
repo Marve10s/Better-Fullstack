@@ -5,6 +5,9 @@ import { organizationClient } from "better-auth/client/plugins";
 {{#if (eq payments "polar")}}
 import { polarClient } from "@polar-sh/better-auth";
 {{/if}}
+{{#if (eq payments "creem")}}
+import { creemClient } from "@creem_io/better-auth/client";
+{{/if}}
 {{#unless (eq backend "self")}}
 import { env } from "@{{projectName}}/env/web";
 {{/unless}}
@@ -13,13 +16,16 @@ export const authClient = createAuthClient({
 {{#unless (eq backend "self")}}
 	baseURL: env.{{#if (includes frontend "next")}}NEXT_PUBLIC_SERVER_URL{{else}}VITE_SERVER_URL{{/if}},
 {{/unless}}
-{{#if (or (hasBetterAuthOrganizations auth) (eq payments "polar"))}}
+{{#if (or (hasBetterAuthOrganizations auth) (eq payments "polar") (eq payments "creem"))}}
 	plugins: [
 {{#if (hasBetterAuthOrganizations auth)}}
 		organizationClient(),
 {{/if}}
 {{#if (eq payments "polar")}}
 		polarClient(),
+{{/if}}
+{{#if (eq payments "creem")}}
+		creemClient(),
 {{/if}}
 	],
 {{/if}}

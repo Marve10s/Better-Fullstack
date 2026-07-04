@@ -1,0 +1,21 @@
+# Loco configuration for the development environment.
+# Loaded at boot based on the LOCO_ENV / environment (defaults to development).
+# Run the server from this crate directory so Loco can find `config/`.
+
+logger:
+  # Enable logging to stdout.
+  enable: true
+  # Nicely formatted backtraces (turn off in performance-sensitive production).
+  pretty_backtrace: true
+  # Log level: trace | debug | info | warn | error
+  level: debug
+  # Log format: compact | pretty | json
+  format: compact
+
+server:
+  # Port to listen on.
+  port: 3000
+  # Address to bind to.
+  binding: 127.0.0.1
+  # Host used when building absolute URLs.
+  host: http://localhost

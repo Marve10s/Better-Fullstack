@@ -1,3 +1,12 @@
+{{#if isJavaMicronaut}}
+micronaut:
+  application:
+    name: {{javaArtifactId}}
+  server:
+    port: ${PORT:8080}
+    cors:
+      enabled: true
+{{else}}
 server:
   port: ${PORT:8080}
 
@@ -51,4 +60,5 @@ management:
     web:
       exposure:
         include: health,info,metrics
+{{/if}}
 {{/if}}

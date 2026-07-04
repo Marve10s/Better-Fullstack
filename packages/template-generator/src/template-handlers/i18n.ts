@@ -34,6 +34,12 @@ export async function processI18nTemplates(
     return;
   }
 
+  if (config.i18n === "intlayer") {
+    // Intlayer templates use inline Next-vs-Vite conditionals, so a single base prefix.
+    processTemplatesFromPrefix(vfs, templates, "i18n/intlayer/web/base", "apps/web", config);
+    return;
+  }
+
   if (config.i18n === "i18next") {
     // i18next: check which frontend families are present
     const hasReactWeb = config.frontend.some((f) =>
