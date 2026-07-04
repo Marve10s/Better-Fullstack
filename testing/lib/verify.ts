@@ -413,6 +413,16 @@ export async function verifyReactNative(
   );
   if (!steps.at(-1)!.success) return wrapResult("react-native", comboName, projectDir, steps);
 
+  // Metro/Babel bundle. Call `expo export` DIRECTLY rather than `bun run build`:
+  // the native package has a `prebuild` lifecycle script (`expo prebuild`) that
+  // `bun run build` would trigger first, and that runs CocoaPods — macOS-only, so
+  // it fails on the Linux CI runner. `expo export` is a pure JS/Metro bundle (no
+  // native prebuild), so it runs on Linux and still exercises the Babel transform.
+  // Typecheck alone does NOT: the 2026-06 `@babel/core` ^8 pin broke the Metro
+  // bundle (react-native-gesture-handler SyntaxError) while typecheck stayed green.
+  steps.push(await runStep("build", "bunx", ["expo", "export"], nativeDir));
+  if (!steps.at(-1)!.success) return wrapResult("react-native", comboName, projectDir, steps);
+
   if (
     hasPackageScript(nativeDir, "test") &&
     (options?.config?.mobileTesting === "react-native-testing-library" ||
