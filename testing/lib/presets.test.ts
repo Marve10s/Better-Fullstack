@@ -27,6 +27,7 @@ const PR_BROAD_PRESET_NAMES = [
   "preset-ai-search-workbench",
   "preset-rust-actix-sqlx",
   "preset-python-django-langchain",
+  "preset-python-elasticsearch",
   "preset-go-echo-sqlc",
   "preset-go-stdlib-bun-bleve",
   "preset-java-spring-gradle-jpa",

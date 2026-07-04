@@ -598,6 +598,19 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
       search: "meilisearch",
     },
   },
+  // Verifies this branch's Python Elasticsearch search option end-to-end
+  // (was CLI-blocked before the non-TS search allowlist fix).
+  "python-elasticsearch": {
+    ecosystem: "python",
+    overrides: {
+      pythonWebFramework: "fastapi",
+      pythonOrm: "none",
+      pythonValidation: "pydantic",
+      pythonQuality: "ruff",
+      pythonTesting: ["pytest"],
+      search: "elasticsearch",
+    },
+  },
   "python-django-langchain": {
     ecosystem: "python",
     overrides: {
@@ -780,6 +793,7 @@ const PRESET_GROUPS = {
     "ai-search-workbench",
     "rust-actix-sqlx",
     "python-django-langchain",
+    "python-elasticsearch",
     "go-echo-sqlc",
     "go-stdlib-bun-bleve",
     "java-spring-gradle-jpa",
