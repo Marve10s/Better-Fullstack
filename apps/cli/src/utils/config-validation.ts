@@ -967,7 +967,14 @@ function validateRateLimitConstraints(config: Partial<ProjectConfig>) {
 function validateSearchConstraints(config: Partial<ProjectConfig>) {
   if (!config.search || config.search === "none") return;
   const ecosystem = config.ecosystem ?? "typescript";
-  if (ecosystem !== "typescript" && config.search !== "meilisearch") {
+  // Non-TypeScript ecosystems default to Meilisearch, but a few have native
+  // options: Go adds Bleve (embedded) and Python adds Elasticsearch.
+  const nonTsSearchAllowlist: Record<string, string[]> = {
+    go: ["meilisearch", "bleve"],
+    python: ["meilisearch", "elasticsearch"],
+  };
+  const allowedSearch = nonTsSearchAllowlist[ecosystem] ?? ["meilisearch"];
+  if (ecosystem !== "typescript" && !allowedSearch.includes(config.search)) {
     incompatibilityError({
       message: "Only Meilisearch search is available for non-TypeScript ecosystems.",
       provided: { ecosystem, search: config.search },

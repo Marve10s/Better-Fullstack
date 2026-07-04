@@ -558,6 +558,21 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
       search: "meilisearch",
     },
   },
+  // Exercises this branch's Go additions in one combo: net/http stdlib web
+  // framework + Bun (uptrace) ORM + Bleve embedded search.
+  "go-stdlib-bun-bleve": {
+    ecosystem: "go",
+    overrides: {
+      goWebFramework: "stdlib",
+      goOrm: "bun",
+      goApi: "none",
+      goCli: "cobra",
+      goLogging: "slog",
+      database: "sqlite",
+      search: "bleve",
+      goTesting: ["testify"],
+    },
+  },
 
   // === PYTHON PRESETS ===
   "python-fastapi-sqlalchemy": {
@@ -766,6 +781,7 @@ const PRESET_GROUPS = {
     "rust-actix-sqlx",
     "python-django-langchain",
     "go-echo-sqlc",
+    "go-stdlib-bun-bleve",
     "java-spring-gradle-jpa",
     "java-plain-cli",
     "java-spring-log4j2",

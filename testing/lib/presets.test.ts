@@ -28,6 +28,7 @@ const PR_BROAD_PRESET_NAMES = [
   "preset-rust-actix-sqlx",
   "preset-python-django-langchain",
   "preset-go-echo-sqlc",
+  "preset-go-stdlib-bun-bleve",
   "preset-java-spring-gradle-jpa",
   "preset-java-plain-cli",
   "preset-java-spring-log4j2",

@@ -125,12 +125,30 @@ describe("Cross-ecosystem search services", () => {
 
   it("rejects non-TypeScript search providers that are not implemented cross-ecosystem", async () => {
     const result = await runTRPCTest({
-      projectName: "python-elastic",
+      projectName: "python-typesense",
       ecosystem: "python",
       pythonWebFramework: "fastapi",
-      search: "elasticsearch",
+      search: "typesense",
     });
 
     expectError(result, "Only Meilisearch search is available for non-TypeScript ecosystems");
+  });
+
+  it("allows native ecosystem search: Elasticsearch for Python and Bleve for Go", () => {
+    expect(() =>
+      validateConfigForProgrammaticUse({
+        ecosystem: "python",
+        pythonWebFramework: "fastapi",
+        search: "elasticsearch",
+      }),
+    ).not.toThrow();
+
+    expect(() =>
+      validateConfigForProgrammaticUse({
+        ecosystem: "go",
+        goWebFramework: "gin",
+        search: "bleve",
+      }),
+    ).not.toThrow();
   });
 });

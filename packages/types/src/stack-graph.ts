@@ -1365,7 +1365,14 @@ function createSharedBackendServiceCompatibilityIssue(
     return undefined;
   }
 
-  if (part.toolId !== rule.allowedToolId) {
+  // Some non-TypeScript ecosystems have native search engines beyond
+  // Meilisearch: Bleve (embedded) for Go and Elasticsearch for Python.
+  const isNativeEcosystemSearch =
+    part.role === "search" &&
+    ((part.ecosystem === "go" && part.toolId === "bleve") ||
+      (part.ecosystem === "python" && part.toolId === "elasticsearch"));
+
+  if (part.toolId !== rule.allowedToolId && !isNativeEcosystemSearch) {
     return createStackGraphIssue({
       code: "INCOMPATIBLE_ECOSYSTEM_TOOL",
       partId: part.id,
