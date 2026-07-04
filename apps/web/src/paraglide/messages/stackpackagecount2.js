@@ -37,16 +37,20 @@ const fr_stackpackagecount2 = /** @type {(inputs: Stackpackagecount2Inputs) => L
 	return /** @type {LocalizedString} */ (`Forfaits ${i?.count}`)
 };
 
+const uk_stackpackagecount2 = /** @type {(inputs: Stackpackagecount2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Пакунки ${i?.count}`)
+};
+
 /**
 * | output |
 * | --- |
 * | "{count} packages" |
 *
 * @param {Stackpackagecount2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const stackpackagecount2 = /** @type {((inputs: Stackpackagecount2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Stackpackagecount2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs, options = {}) => {
+const stackpackagecount2 = /** @type {((inputs: Stackpackagecount2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Stackpackagecount2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_stackpackagecount2(inputs)
 	if (locale === "es") return es_stackpackagecount2(inputs)
@@ -55,6 +59,7 @@ const stackpackagecount2 = /** @type {((inputs: Stackpackagecount2Inputs, option
 	if (locale === "ko") return ko_stackpackagecount2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_stackpackagecount2(inputs)
 	if (locale === "de") return de_stackpackagecount2(inputs)
-	return fr_stackpackagecount2(inputs)
+	if (locale === "fr") return fr_stackpackagecount2(inputs)
+	return uk_stackpackagecount2(inputs)
 });
 export { stackpackagecount2 as "stackPackageCount" }

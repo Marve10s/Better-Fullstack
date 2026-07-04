@@ -37,16 +37,20 @@ const fr_compareprovidercount2 = /** @type {(inputs: Compareprovidercount2Inputs
 	return /** @type {LocalizedString} */ (`${i?.count} fournisseurs`)
 };
 
+const uk_compareprovidercount2 = /** @type {(inputs: Compareprovidercount2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} провайдерів`)
+};
+
 /**
 * | output |
 * | --- |
 * | "{count} providers" |
 *
 * @param {Compareprovidercount2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const compareprovidercount2 = /** @type {((inputs: Compareprovidercount2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Compareprovidercount2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs, options = {}) => {
+const compareprovidercount2 = /** @type {((inputs: Compareprovidercount2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Compareprovidercount2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_compareprovidercount2(inputs)
 	if (locale === "es") return es_compareprovidercount2(inputs)
@@ -55,6 +59,7 @@ const compareprovidercount2 = /** @type {((inputs: Compareprovidercount2Inputs, 
 	if (locale === "ko") return ko_compareprovidercount2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_compareprovidercount2(inputs)
 	if (locale === "de") return de_compareprovidercount2(inputs)
-	return fr_compareprovidercount2(inputs)
+	if (locale === "fr") return fr_compareprovidercount2(inputs)
+	return uk_compareprovidercount2(inputs)
 });
 export { compareprovidercount2 as "compareProviderCount" }

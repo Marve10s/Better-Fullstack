@@ -37,16 +37,20 @@ const fr_runflagphase2 = /** @type {(inputs: Runflagphase2Inputs) => LocalizedSt
 	return /** @type {LocalizedString} */ (`diviser l'exécution en une phase de génération et une phase de validation, validée séparément.`)
 };
 
+const uk_runflagphase2 = /** @type {(inputs: Runflagphase2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`розділіть прогін на фазу генерації та фазу перевірки, перевірену окремо`)
+};
+
 /**
 * | output |
 * | --- |
 * | "split the run into a generate phase and a validate phase, validated on its own" |
 *
 * @param {Runflagphase2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const runflagphase2 = /** @type {((inputs?: Runflagphase2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runflagphase2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const runflagphase2 = /** @type {((inputs?: Runflagphase2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runflagphase2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_runflagphase2(inputs)
 	if (locale === "es") return es_runflagphase2(inputs)
@@ -55,6 +59,7 @@ const runflagphase2 = /** @type {((inputs?: Runflagphase2Inputs, options?: { loc
 	if (locale === "ko") return ko_runflagphase2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_runflagphase2(inputs)
 	if (locale === "de") return de_runflagphase2(inputs)
-	return fr_runflagphase2(inputs)
+	if (locale === "fr") return fr_runflagphase2(inputs)
+	return uk_runflagphase2(inputs)
 });
 export { runflagphase2 as "runFlagPhase" }

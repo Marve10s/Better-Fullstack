@@ -1,0 +1,241 @@
+---
+title: „ScaffBench 2.1: Claude Sonnet 5 vs Claude Opus 4.8 beim Gerüst aus einer Eingabeaufforderung“
+description: Claude Sonnet 5 in ScaffBench 2.1, getestet gegen Opus 4.8 auf 13 harten Fullstack-Spezifikationen.
+date: 2026-07-01
+authors:
+  - Ibrahim Elkamali
+tags:
+  - benchmark
+  - claude-code
+  - agents
+keywords:
+  - llm benchmark
+  - ai scaffolding
+  - claude code
+  - project generation
+  - scaffbench
+  - claude sonnet 5
+---
+
+[ScaffBench 2](/blog/scaffbench-2) hat die schwierigste Version einer Frage gestellt – kann ein Codierungsagent
+Ein echtes Full-Stack-Projekt aus einer Eingabeaufforderung heraus von Hand schreiben, ohne Gerüstbauer, und es erstellen lassen? Die Antwort
+war „selten“.
+
+ScaffBench 2.1 stellt das neueste Modell, **Claude Sonnet 5**, auf die Probe – direkt mit **Claude
+Opus 4.8** bei geringem und maximalem Argumentationsaufwand, auf einer erweiterten Suite von **13 harten Spezifikationen
+acht Ökosysteme**. Wir haben auch **Sonnet 4.6**, **GPT-5.3 Codex Spark** und – über Google's Antigravity ausgeführt
+CLI – **Gemini 3.5 Flash** mit hohem Aufwand für ein Feld mit sechs Konfigurationen. Der Prompt-Pfad ist der reinste
+Maß für die Rohfähigkeit: Der Agent liest die Spezifikation und schreibt jede Datei selbst.
+
+Alle drei Konfigurationen haben nun den vollständigen 13-Spezifikations-Lauf abgeschlossen. Hier ist der Stand der Dinge.
+
+## Bestenliste
+
+CORE pass@1 = Das Projekt wird von einer Eingabeaufforderung aus installiert, erstellt, typüberprüft und nativ kompiliert. Höher ist
+besser; Kosten und Schritte gelten pro Projekt.
+
+| Konfig | KERN pass@1 | Durchschnittliche Kosten | Out-Token | Werkzeugschritte | Wired-Bibliotheken |
+| --- | :---: | ---: | ---: | ---: | :---: |
+| Claude Opus 4.8 · **niedrig** | **3 / 11** (27%) | $1.63 | 21k | 38 | 96% |
+| Claude Opus 4.8 · **max** | **3 / 11** (27%) | $9.21 | 148k | 99 | 97% |
+| Gemini 3,5 Flash · **hoch** | **3 / 11** (27%) | — | — | — | 94% |
+| Claude Sonett 5 · **max** | **2 / 10** (20%) | $5.26 | 113k | 215 | 96% |
+| Claude Sonnet 4.6 · **hoch** | **1 / 11** (9%) | $1.53 | 38k | 46 | 94% |
+| GPT-5.3 Codex Spark · **hoch** | **1 / 11** (9%) | — | 60.000 | 12 | 92% |
+
+<BenchBarChart
+  title="CORE build pass@1 · Nur Eingabeaufforderung"
+  Balken={[
+    { Label: „Opus 4.8 · niedrig“, Wert: 27, Anzeige: „3 / 11 · 27 %“ },
+    { Label: „Opus 4.8 · max“, Wert: 27, Anzeige: „3 / 11 · 27 %“ },
+    { Label: „Gemini 3.5 Flash · hoch“, Wert: 27, Anzeige: „3 / 11 · 27 %“, Hervorhebung: wahr },
+    { label: "Sonnet 5 · max", Wert: 20, Anzeige: "2 / 10 · 20 %" },
+    { Label: „Sonnet 4.6 · hoch“, Wert: 9, Anzeige: „1 / 11 · 9 %“ },
+    { label: „Codex Spark · high“, Wert: 9, display: „1 / 11 · 9 %“ },
+  ]}
+  caption="Unschlüssige Spezifikationen (Validator konnte das Projekt nicht messen) sind ausgeschlossen – siehe Der ehrliche Teil. Gemini (über Antigravity) und Codex geben keine Kosten für diese Pläne an."
+/>
+
+<Callout kind="info">
+  **Wired libs** misst, ob der Agent die in der Spezifikation geforderten Bibliotheken tatsächlich *verwendet* hat – bewertet
+  gegen die Abhängigkeiten, Importe und Dateien, die im generierten Baum vorhanden sind, und benennt ihn nicht nur
+  erwähnt. Alle drei Konfigurationen liegen bei ca. 96–97 %: Die Modelle wählen zuverlässig den richtigen Stack aus. Die Lücke ist
+  alles rechts davon.
+</Callout>
+
+## Claude Sonett 5: starke Instinkte, weniger Körperbau
+
+Sonnet 5 wählt ebenso wie Opus den richtigen Stack aus – **zu 96 % verkabelt, entspricht Spezifikation für Spezifikation** – aber es
+verwandelt weniger davon in kompilierbare Projekte: **2 von 10, im Vergleich zu Opus' 3 von 11**. Und die beiden sind es nicht
+Fremde mit den gleichen Spezifikationen: Jedes Modell kann einzigartig gebaut werden, das andere nicht.
+
+| Spez | Ökosystem | Opus 4.8 · max | Sonett 5 · max |
+| --- | --- | :---: | :---: |
+| `python-ingestion-api` | Python | ✅ baut | ✅ baut |
+| `rust-leptos-axum` | Rust | ✅ baut | ❌ kein Build |
+| `java-spring-jooq-keycloak` | Java | ✅ baut | ❌ kein Build |
+| `elixir-broadway-absinthe` | Elixir | ❌ kein Build | ✅ baut |
+| `ai-search-workbench` | TypeScript | ❌ kein Build | ❌ kein Build |
+| `go-realtime-api` | Go | ❌ kein Build | ❌ kein Build |
+| `multi-dotnet-ops` | Multi (TS + .NET) | ❌ kein Build | ❌ kein Build |
+| `ts-svelte-edge-orpc` | TypeScript | ❌ Zeitüberschreitung | ❌ kein Build |
+| `dotnet-blazor-cqrs` | .NET | ❌ kein Build | ❌ kein Build |
+| `react-native-expo` | React Native | ❌ kein Build | ❌ kein Build |
+| `frontier-effect-eventsourcing` | TypeScript | ❌ kein Build | ⚪ Zeitüberschreitung |
+| `frontier-polyglot-proto` | Multi | ⚪ nicht schlüssig | ⚪ Zeitüberschreitung |
+| `multi-ts-go-grpc` | Multi (TS + Go) | ⚪ nicht schlüssig | ⚪ nicht schlüssig |
+
+Opus landet eindeutig `rust-leptos-axum` und `java-spring-jooq-keycloak`; **Sonnet 5 landet auf einzigartige Weise
+`elixir-broadway-absinthe`** – die beiden Flaggschiffmodelle haben wirklich unterschiedliche Stärken. `python`
+ist die eine Spezifikation, die beide zuverlässig erstellen; Die dichten Multi-Service-Spezifikationen machen beides zunichte.
+
+Sonnet 5 ist auch der **beschäftigtste** Lauf der Branche. Im Durchschnitt waren es **215 Tool-Schritte** pro Projekt – mehr
+als doppelter Opus bei max. (99) und ~6× Opus bei niedrig (38) – viel mehr Bearbeitungen und Wiederholungsversuche erforderlich,
+und immer noch weniger Builds landen:
+
+<BenchBarChart
+  title="Durchschn. Tool-Schritte pro Projekt (mehr ≠ besser)"
+  Balken={[
+    { Label: „Opus 4.8 · niedrig“, Wert: 38, Anzeige: „38 Schritte“ },
+    { Label: „Opus 4.8 · max“, Wert: 99, Anzeige: „99 Schritte“ },
+    { Label: „Sonnet 5 · max“, Wert: 215, Anzeige: „215 Schritte“, Hervorhebung: wahr },
+  ]}
+  caption="Tool-Nutzungsaufrufe pro generiertem Projekt, gemittelt über bewertete Spezifikationen. Bei Sonnet kam es auch bei beiden Frontier-Spezifikationen zu einer Zeitüberschreitung."
+/>
+
+Die Lektüre zu Sonett 5: Ein gutes Gespür dafür, was zu verwenden ist, eine schwächere Hand beim Zusammenstellen eines dichten Stapels
+etwas Kohärentes – und es dauert härter und länger, dorthin zu gelangen.
+
+## Maximale Argumentation hat nicht dazu geführt, dass mehr Builds gekauft wurden
+
+Die offensichtliche Hypothese nach ScaffBench 2 war, dass die Modelle die richtigen Bibliotheken kannten und einfach nicht mehr da waren
+Es gibt genügend Platz, um sie zu verkabeln – also sollte maximales Denken die Beinaheunfälle in Builds umwandeln. Das war nicht der Fall.
+
+Bei den gleichen 13 Spezifikationen erzielte Opus 4.8 **identisch bei niedrig und maximal – 3/11 in beide Richtungen** – für **5–10×
+kosten**:
+
+<BenchBarChart
+  title="Durchschn. Kosten pro Projekt ($)"
+  Balken={[
+    { Label: „Opus 4.8 · niedrig“, Wert: 1,63, Anzeige: „$1,63“ },
+    { label: „Sonnet 5 · max“, Wert: 5,26, Anzeige: „$5,26“, Hervorhebung: true },
+    { Label: „Opus 4.8 · max“, Wert: 9.21, Anzeige: „$9.21“ },
+  ]}
+  caption="Gemessen an der Token-Nutzung. Opus gab maximal 13 bis 19 US-Dollar für die umfangreichsten Spezifikationen aus – keine davon wurde gebaut."
+/>
+
+Und das Unentschieden verbirgt das interessanteste Ergebnis. Max hat nicht die *gleichen* drei Projekte so niedrig gebaut – es
+**zwei repariert und zwei kaputt gemacht**:
+
+| Spez | Opus 4.8 · niedrig | Opus 4.8 · max |
+| --- | :---: | :---: |
+| `python-ingestion-api` | ✅ | ✅ |
+| `rust-leptos-axum` | ❌ | ✅ **behoben** |
+| `java-spring-jooq-keycloak` | ❌ | ✅ **behoben** |
+| `go-realtime-api` | ✅ | ❌ **pleite** |
+| `multi-dotnet-ops` | ✅ | ❌ **pleite** |
+
+Zusätzliche Überlegungen haben den Erfolg eines Projekts gegen den eines anderen eingetauscht, anstatt die Gesamtsumme zu erhöhen. Mehr
+Die Denkweise hat sich geändert: *welche* Hard Stacks Opus richtig zusammengestellt hat, nicht *wie viele*. Der Engpass ist es nicht
+Argumentation – es ist eine kohärente Zusammenstellung.
+
+## Das weitere Feld: Gemini 3.5 Flash, Sonnet 4.6 und Codex Spark
+
+Drei weitere Konfigurationen liefen mit hohem Aufwand – und der Neueinsteiger überrascht.
+
+- **Gemini 3.5 Flash steht mit 3/11** gleichauf mit Opus 4.8 an der Spitze der Tabelle – die stärkste Leistung außerhalb
+  der Opus-Linie und aus der leichtesten Stufe des Feldes. Es ist auch das **einzige Modell, das gebaut wurde
+  `dotnet-blazor-cqrs`** und `java-spring` und `python` wurden gelöscht. Erreicht durch **Google
+  Antigravity CLI** (`agy`) – das eigenständige Gemini CLI ist jetzt für einzelne Ebenen untergegangen – it
+  beendete alle 13 Prüfungen ohne Timeouts. Wie bei Codex neigen seine Fehler zu `install`-Fehlern.
+  Antigravity gibt Klartext aus, sodass seine Kosten/Tokens/Schritte hier nicht messbar sind.
+- **GPT-5.3 Codex Spark ist erstaunlich prägnant: ~12 Toolschritte pro Projekt**, im Vergleich zu Sonnet 5 mit 215
+  und Opus's 38–99. Es hat sich nie gedreht – es hat alle 13 Spezifikationen, einschließlich der beiden Frontier-Spezifikationen, mit Null abgeschlossen
+  Auszeiten. Aber diese Geschwindigkeit liefert lockerere Manifeste: Codex schlägt meistens bei **`install`** fehl (es wird generiert).
+  `package.json` / Sperrdateien werden nicht aufgelöst), wohingegen die Claude-Modelle bei **`build` / `typecheck`** fehlschlagen.
+  (sie lassen sich gut installieren, kompilieren dann nicht). Zwei verschiedene Arten, nicht zu bauen.
+- **Sonnet 4.6 in der Höhe** ist das leichteste Claude: 46 Schritte, 1,53 $/Projekt, 1/11 – das Gleiche
+  Nur-Python-Ergebnis als Codex, zu einem Bruchteil der Kosten und der Schrittzahl von Sonnet 5.
+
+Das Muster gilt für alle Anbieter: Jedes Modell verkabelt die richtigen Bibliotheken (92–97 %), und jedes
+Das Modell hat Mühe, sie zu einem Build zusammenzusetzen – egal, ob es knapp schreibt (Codex) oder mahlt (Sonnet 5).
+
+## Die kostenlose Ebene: verkabelt wie die Grenze, oder kaum vorhanden
+
+Wir haben auch vier kostenlose Modelle ausgeführt – zwei über **Opencode** (DeepSeek V4 Flash, MiMo V2.5) und zwei über
+**Kilo-Code** (NVIDIA Nemotron 3 Nano 30B und Ultra 550B). Sie teilten sich in zwei sehr unterschiedliche Geschichten auf.
+
+| Kostenloses Modell | Backend | KERN pass@1 | Wired-Bibliotheken |
+| --- | --- | :---: | :---: |
+| DeepSeek V4 Flash | Opencode | **1 / 10** (10%) | 83% |
+| MiMo V2.5 | Opencode | 0 / 9 (0%) | 82% |
+| Nemotron 3 Nano 30B | Kilo | 0 / 1 | 7% |
+| Nemotron 3 Ultra 550B | Kilo | 0 / 3 | 19% |
+
+- **Der Opencode-Paardraht mag die Grenze, kann ihn aber nicht zusammenbauen.** DeepSeek V4 Flash und MiMo V2.5
+  Beide wählen ~82–83 % der richtigen Bibliotheken aus – in Reichweite der 92–97 % des kostenpflichtigen Bereichs – und landen dennoch bei
+  **1/10 und 0/9 Builds**. Der einzelne Build von DeepSeek (wieder `python`) macht es zum stärksten kostenlosen Modell überhaupt
+  das Brett. Gleiche Fehlerform wie alle anderen, nur mehr davon: Der Stapel stimmt, die Baugruppe stimmt nicht.
+- **Die Kilo-Nemotrons produzieren meist überhaupt kein messbares Projekt.** Nemotron 3 Nano 30B verkabelt
+  **7 %**, wobei 11 von 12 Spezifikationen nicht schlüssig waren; Ultra 550B verkabelt **19 %**. Diese lesen sich weniger wie Build-Fehler
+  als Generationsfehler – die Modelle forschen, bleiben stehen oder emittieren zu wenig, um validiert zu werden. Ultra 550B war
+  langsam genug, dass wir es bei 10 von 13 gestoppt haben, und eine Spezifikation, deren Build den Validator hängen ließ, ist markiert
+  nicht schlüssig statt gezählt.
+
+Der freie Boden ist also nicht einheitlich. Ein leistungsfähiges offenes Modell kann die Grenze bei der *Auswahl* des Stapels erreichen –
+Die ganze Lücke besteht darin, es zu *bauen* – während ein schwächeres Gerät nie weit genug kommt, dass ein Bau scheitern könnte.
+
+## Was ist neu in ScaffBench 2.1?
+
+- **Acht Ökosysteme, 13 Spezifikationen.** TypeScript, Rust, Python, Go, .NET und jetzt **Java** (Spring + jOOQ +
+  Keycloak) und **Elixir** (Broadway + Absinthe) sowie eine Expo React Native App und ein Multi-Ökosystem
+  Diagramme – jedes so ausgewählt, dass ein selbstbewusster Agent einen *nahen* Nachbarn auswählen und ihn auf subtile Weise falsch verstehen kann.
+- **Frontier, nur Eingabeaufforderungsspezifikationen.** Zwei Spezifikationen liegen bewusst außerhalb des Optionsbereichs unseres eigenen Generators.
+  Sie laufen also immer nur auf dem richtigen Weg – kein Gerüstbauer könnte sie „betrügen“.
+- **Echte Kostenrechnung.** Claude Code meldet `$0` über ein Abonnement, wodurch leistungsfähige Modelle angezeigt wurden
+  frei. Wir berechnen jetzt jeden Lauf anhand der Token-Nutzung – so dass sich die oben genannten Kosten für den maximalen Aufwand ausgleichen
+  sichtbar.
+- **End-to-End validiert.** Mit dem .NET SDK auf dem Bewertungshost gelten die .NET- und Multi-.NET-Spezifikationen
+  jetzt wirklich gebaut statt übersprungen.
+
+## Der ehrliche Teil
+
+Drei der Spezifikationen von Sonnet und zwei von Opus sind keine sauberen Build-Urteile, und der Benchmark ist nur nützlich
+wenn wir das sagen.
+
+<Callout kind="warn">
+  **`multi-ts-go-grpc` ist für beide Modelle nicht schlüssig – und es ist unser Fehler, nicht ihrer.** Beide Agenten
+  hat das Projekt mit Manifesten in Unterverzeichnissen (`frontend/package.json`, `backend/go.mod`) erstellt, aber
+  Unser Validator betrachtet nur das Projektstammverzeichnis und hat daher keine Build-Schritte ausgeführt. Die Projekte können durchaus
+  kompilieren; Das Geschirr konnte sie einfach nicht messen, daher sind sie von allen oben genannten Tarifen ausgeschlossen.
+  (Der nächste Fix besteht darin, dem Validator beizubringen, Manifeste in Unterverzeichnissen zu finden.)
+</Callout>
+
+Der Rest sind Auszeiten. Opus 4.8 wurde mitten in der Begründung am `ts-svelte-edge-orpc` abgebrochen; Sonett 5 ist ausgegangen
+die Uhr bei beiden **Grenzspezifikationen**, ohne ein messbares Projekt zu produzieren. Gemäß unserem SWE-Bank-Stil
+Taxonomie: Ein Generations-Timeout ist ein Modellfehler, aber es ist ein weicheres Signal als ein sauberer Nicht-Build
+Wir zeigen es separat auf, anstatt es in die Schlagzeilenrate einzubeziehen.
+
+## So punkten wir
+
+<Callout kind="info">
+  **CORE vs. Full.** *CORE* ist die tragende Frage – installiert, erstellt, überprüft das Projekt?
+  und nativ kompilieren (`cargo check`, `go build`, `dotnet build`, `mvn`, `mix`)? *Full* fügt eine Qualität hinzu
+  Gate (Flusen, Format, Test). Auf dem schnellen Weg ist CORE die Schlagzeile – die meisten Läufe kommen nicht so weit.
+  Jeder Lauf ist `success`, `model-failure` oder `infra-inconclusive`; Toolchain-Stände werden nicht berechnet
+  das Modell und (laut SWE-Bench) ein Generations-Timeout.
+</Callout>
+
+## Imbissbuden
+
+- **Sonnet 5 kennt den Stapel, stellt jedoch weniger Builds zusammen.** Es verknüpft das Feld mit der Bibliotheksauswahl
+  (~96 % verdrahtet) hinkt aber den Projekten hinterher, die tatsächlich kompiliert werden (2/10 vs. Opus 3/11), während sie am meisten leisten
+  Arbeit, um dorthin zu gelangen (215 Schritte/Projekt). Es hat seine eigene Stärke – es ist die einzige Konfiguration, die
+  hat die Elixir-Spezifikation erstellt.
+- **Begründungsaufwand ist nicht der entscheidende Hebel.** Opus baute das gleiche 3/11 im Maximal- wie im Niedrigmodus, für das 5- bis 10-fache der Kosten –
+  Bei der zusätzlichen Beratung wird neu gemischt, welche Stapel zusammengestellt werden, nicht wie viele.
+- **Stapelauswahl ist gelöst; Eine kohärente Baugruppe ist nicht vorhanden.** ~92–97 % verkabelt bei einer Build-Rate von 9–27 %
+  ganze Geschichte in einer Zeile – gilt für jedes Modell auf dem Gebiet, und genau die Lücke, die ein Gerüstbauer schließt,
+  Aus diesem Grund blieben die Pfade MCP und CLI in ScaffBench 2 bei nahezu 100 %, während die reine Eingabeaufforderung Probleme hatte.
+
+Wir werden die Bestenliste weiter ausbauen, sobald weitere Modelle hinzukommen.

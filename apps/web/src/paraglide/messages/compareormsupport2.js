@@ -37,16 +37,20 @@ const fr_compareormsupport2 = /** @type {(inputs: Compareormsupport2Inputs) => L
 	return /** @type {LocalizedString} */ (`Prise en charge ORM (Drizzle, Prisma, etc.)`)
 };
 
+const uk_compareormsupport2 = /** @type {(inputs: Compareormsupport2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Підтримка ORM (Drizzle, Prisma тощо)`)
+};
+
 /**
 * | output |
 * | --- |
 * | "ORM support (Drizzle, Prisma, etc.)" |
 *
 * @param {Compareormsupport2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const compareormsupport2 = /** @type {((inputs?: Compareormsupport2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Compareormsupport2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const compareormsupport2 = /** @type {((inputs?: Compareormsupport2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Compareormsupport2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_compareormsupport2(inputs)
 	if (locale === "es") return es_compareormsupport2(inputs)
@@ -55,6 +59,7 @@ const compareormsupport2 = /** @type {((inputs?: Compareormsupport2Inputs, optio
 	if (locale === "ko") return ko_compareormsupport2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_compareormsupport2(inputs)
 	if (locale === "de") return de_compareormsupport2(inputs)
-	return fr_compareormsupport2(inputs)
+	if (locale === "fr") return fr_compareormsupport2(inputs)
+	return uk_compareormsupport2(inputs)
 });
 export { compareormsupport2 as "compareOrmSupport" }

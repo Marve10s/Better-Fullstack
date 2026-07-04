@@ -37,16 +37,20 @@ const fr_mcpresourcecompatibilitydescription3 = /** @type {(inputs: Mcpresourcec
 	return /** @type {LocalizedString} */ (`Quelles combinaisons de piles sont valides`)
 };
 
+const uk_mcpresourcecompatibilitydescription3 = /** @type {(inputs: Mcpresourcecompatibilitydescription3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Які комбінації стеків дійсні`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Which stack combinations are valid" |
 *
 * @param {Mcpresourcecompatibilitydescription3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const mcpresourcecompatibilitydescription3 = /** @type {((inputs?: Mcpresourcecompatibilitydescription3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpresourcecompatibilitydescription3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcpresourcecompatibilitydescription3 = /** @type {((inputs?: Mcpresourcecompatibilitydescription3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpresourcecompatibilitydescription3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcpresourcecompatibilitydescription3(inputs)
 	if (locale === "es") return es_mcpresourcecompatibilitydescription3(inputs)
@@ -55,6 +59,7 @@ const mcpresourcecompatibilitydescription3 = /** @type {((inputs?: Mcpresourceco
 	if (locale === "ko") return ko_mcpresourcecompatibilitydescription3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcpresourcecompatibilitydescription3(inputs)
 	if (locale === "de") return de_mcpresourcecompatibilitydescription3(inputs)
-	return fr_mcpresourcecompatibilitydescription3(inputs)
+	if (locale === "fr") return fr_mcpresourcecompatibilitydescription3(inputs)
+	return uk_mcpresourcecompatibilitydescription3(inputs)
 });
 export { mcpresourcecompatibilitydescription3 as "mcpResourceCompatibilityDescription" }

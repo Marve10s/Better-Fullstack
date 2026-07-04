@@ -37,16 +37,20 @@ const fr_homestopwiring2 = /** @type {(inputs: Homestopwiring2Inputs) => Localiz
 	return /** @type {LocalizedString} */ (`Arrêtez le câblage.`)
 };
 
+const uk_homestopwiring2 = /** @type {(inputs: Homestopwiring2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Зупинити проводку.`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Stop wiring." |
 *
 * @param {Homestopwiring2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const homestopwiring2 = /** @type {((inputs?: Homestopwiring2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homestopwiring2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const homestopwiring2 = /** @type {((inputs?: Homestopwiring2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homestopwiring2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_homestopwiring2(inputs)
 	if (locale === "es") return es_homestopwiring2(inputs)
@@ -55,6 +59,7 @@ const homestopwiring2 = /** @type {((inputs?: Homestopwiring2Inputs, options?: {
 	if (locale === "ko") return ko_homestopwiring2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_homestopwiring2(inputs)
 	if (locale === "de") return de_homestopwiring2(inputs)
-	return fr_homestopwiring2(inputs)
+	if (locale === "fr") return fr_homestopwiring2(inputs)
+	return uk_homestopwiring2(inputs)
 });
 export { homestopwiring2 as "homeStopWiring" }

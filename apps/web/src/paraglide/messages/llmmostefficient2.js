@@ -37,16 +37,20 @@ const fr_llmmostefficient2 = /** @type {(inputs: Llmmostefficient2Inputs) => Loc
 	return /** @type {LocalizedString} */ (`le plus efficace ↗`)
 };
 
+const uk_llmmostefficient2 = /** @type {(inputs: Llmmostefficient2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`найефективніший ↗`)
+};
+
 /**
 * | output |
 * | --- |
 * | "most efficient ↗" |
 *
 * @param {Llmmostefficient2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const llmmostefficient2 = /** @type {((inputs?: Llmmostefficient2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmmostefficient2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const llmmostefficient2 = /** @type {((inputs?: Llmmostefficient2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmmostefficient2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_llmmostefficient2(inputs)
 	if (locale === "es") return es_llmmostefficient2(inputs)
@@ -55,6 +59,7 @@ const llmmostefficient2 = /** @type {((inputs?: Llmmostefficient2Inputs, options
 	if (locale === "ko") return ko_llmmostefficient2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_llmmostefficient2(inputs)
 	if (locale === "de") return de_llmmostefficient2(inputs)
-	return fr_llmmostefficient2(inputs)
+	if (locale === "fr") return fr_llmmostefficient2(inputs)
+	return uk_llmmostefficient2(inputs)
 });
 export { llmmostefficient2 as "llmMostEfficient" }

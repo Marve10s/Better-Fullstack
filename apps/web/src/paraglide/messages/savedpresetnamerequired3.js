@@ -37,16 +37,20 @@ const fr_savedpresetnamerequired3 = /** @type {(inputs: Savedpresetnamerequired3
 	return /** @type {LocalizedString} */ (`Le nom du préréglage ne peut pas être vide`)
 };
 
+const uk_savedpresetnamerequired3 = /** @type {(inputs: Savedpresetnamerequired3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Ім’я попереднього налаштування не може бути пустим`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Preset name cannot be empty" |
 *
 * @param {Savedpresetnamerequired3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const savedpresetnamerequired3 = /** @type {((inputs?: Savedpresetnamerequired3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedpresetnamerequired3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const savedpresetnamerequired3 = /** @type {((inputs?: Savedpresetnamerequired3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedpresetnamerequired3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_savedpresetnamerequired3(inputs)
 	if (locale === "es") return es_savedpresetnamerequired3(inputs)
@@ -55,6 +59,7 @@ const savedpresetnamerequired3 = /** @type {((inputs?: Savedpresetnamerequired3I
 	if (locale === "ko") return ko_savedpresetnamerequired3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_savedpresetnamerequired3(inputs)
 	if (locale === "de") return de_savedpresetnamerequired3(inputs)
-	return fr_savedpresetnamerequired3(inputs)
+	if (locale === "fr") return fr_savedpresetnamerequired3(inputs)
+	return uk_savedpresetnamerequired3(inputs)
 });
 export { savedpresetnamerequired3 as "savedPresetNameRequired" }

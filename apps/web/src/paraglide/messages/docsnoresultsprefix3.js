@@ -37,16 +37,20 @@ const fr_docsnoresultsprefix3 = /** @type {(inputs: Docsnoresultsprefix3Inputs) 
 	return /** @type {LocalizedString} */ (`Aucun résultat pour`)
 };
 
+const uk_docsnoresultsprefix3 = /** @type {(inputs: Docsnoresultsprefix3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Немає результатів для`)
+};
+
 /**
 * | output |
 * | --- |
 * | "No results for" |
 *
 * @param {Docsnoresultsprefix3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const docsnoresultsprefix3 = /** @type {((inputs?: Docsnoresultsprefix3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsnoresultsprefix3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const docsnoresultsprefix3 = /** @type {((inputs?: Docsnoresultsprefix3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsnoresultsprefix3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_docsnoresultsprefix3(inputs)
 	if (locale === "es") return es_docsnoresultsprefix3(inputs)
@@ -55,6 +59,7 @@ const docsnoresultsprefix3 = /** @type {((inputs?: Docsnoresultsprefix3Inputs, o
 	if (locale === "ko") return ko_docsnoresultsprefix3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_docsnoresultsprefix3(inputs)
 	if (locale === "de") return de_docsnoresultsprefix3(inputs)
-	return fr_docsnoresultsprefix3(inputs)
+	if (locale === "fr") return fr_docsnoresultsprefix3(inputs)
+	return uk_docsnoresultsprefix3(inputs)
 });
 export { docsnoresultsprefix3 as "docsNoResultsPrefix" }

@@ -37,16 +37,20 @@ const fr_runauthclidesc3 = /** @type {(inputs: Runauthclidesc3Inputs) => Localiz
 	return /** @type {LocalizedString} */ (`Utilisez l'interface de ligne de commande d'un agent auquel vous êtes déjà connecté (abonnement/OAuth). Connectez-vous une seule fois, puis le système prend le relais ; aucune clé n'est requise dans votre environnement.`)
 };
 
+const uk_runauthclidesc3 = /** @type {(inputs: Runauthclidesc3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Використовуйте агент CLI, у який ви вже ввійшли (підписка / OAuth). Увійдіть один раз, потім керує джгутом — жодних ключів у вашому середовищі.`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Use an agent CLI you're already signed into (subscription / OAuth). Log in once, then the harness drives it — no keys in your environment." |
 *
 * @param {Runauthclidesc3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const runauthclidesc3 = /** @type {((inputs?: Runauthclidesc3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runauthclidesc3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const runauthclidesc3 = /** @type {((inputs?: Runauthclidesc3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runauthclidesc3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_runauthclidesc3(inputs)
 	if (locale === "es") return es_runauthclidesc3(inputs)
@@ -55,6 +59,7 @@ const runauthclidesc3 = /** @type {((inputs?: Runauthclidesc3Inputs, options?: {
 	if (locale === "ko") return ko_runauthclidesc3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_runauthclidesc3(inputs)
 	if (locale === "de") return de_runauthclidesc3(inputs)
-	return fr_runauthclidesc3(inputs)
+	if (locale === "fr") return fr_runauthclidesc3(inputs)
+	return uk_runauthclidesc3(inputs)
 });
 export { runauthclidesc3 as "runAuthCliDesc" }

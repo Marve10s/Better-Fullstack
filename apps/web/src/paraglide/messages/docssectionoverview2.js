@@ -37,16 +37,20 @@ const fr_docssectionoverview2 = /** @type {(inputs: Docssectionoverview2Inputs) 
 	return /** @type {LocalizedString} */ (`Aperçu`)
 };
 
+const uk_docssectionoverview2 = /** @type {(inputs: Docssectionoverview2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Огляд`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Overview" |
 *
 * @param {Docssectionoverview2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const docssectionoverview2 = /** @type {((inputs?: Docssectionoverview2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssectionoverview2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const docssectionoverview2 = /** @type {((inputs?: Docssectionoverview2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssectionoverview2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_docssectionoverview2(inputs)
 	if (locale === "es") return es_docssectionoverview2(inputs)
@@ -55,6 +59,7 @@ const docssectionoverview2 = /** @type {((inputs?: Docssectionoverview2Inputs, o
 	if (locale === "ko") return ko_docssectionoverview2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_docssectionoverview2(inputs)
 	if (locale === "de") return de_docssectionoverview2(inputs)
-	return fr_docssectionoverview2(inputs)
+	if (locale === "fr") return fr_docssectionoverview2(inputs)
+	return uk_docssectionoverview2(inputs)
 });
 export { docssectionoverview2 as "docsSectionOverview" }

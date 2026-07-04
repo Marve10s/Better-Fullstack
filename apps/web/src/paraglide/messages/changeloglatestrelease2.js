@@ -37,16 +37,20 @@ const fr_changeloglatestrelease2 = /** @type {(inputs: Changeloglatestrelease2In
 	return /** @type {LocalizedString} */ (`Dernière version`)
 };
 
+const uk_changeloglatestrelease2 = /** @type {(inputs: Changeloglatestrelease2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Останній випуск`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Latest release" |
 *
 * @param {Changeloglatestrelease2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const changeloglatestrelease2 = /** @type {((inputs?: Changeloglatestrelease2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Changeloglatestrelease2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const changeloglatestrelease2 = /** @type {((inputs?: Changeloglatestrelease2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Changeloglatestrelease2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_changeloglatestrelease2(inputs)
 	if (locale === "es") return es_changeloglatestrelease2(inputs)
@@ -55,6 +59,7 @@ const changeloglatestrelease2 = /** @type {((inputs?: Changeloglatestrelease2Inp
 	if (locale === "ko") return ko_changeloglatestrelease2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_changeloglatestrelease2(inputs)
 	if (locale === "de") return de_changeloglatestrelease2(inputs)
-	return fr_changeloglatestrelease2(inputs)
+	if (locale === "fr") return fr_changeloglatestrelease2(inputs)
+	return uk_changeloglatestrelease2(inputs)
 });
 export { changeloglatestrelease2 as "changelogLatestRelease" }

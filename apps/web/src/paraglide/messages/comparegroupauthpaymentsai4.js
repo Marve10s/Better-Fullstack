@@ -37,16 +37,20 @@ const fr_comparegroupauthpaymentsai4 = /** @type {(inputs: Comparegroupauthpayme
 	return /** @type {LocalizedString} */ (`Authentification, paiements et AI`)
 };
 
+const uk_comparegroupauthpaymentsai4 = /** @type {(inputs: Comparegroupauthpaymentsai4Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Авторизація, платежі та AI`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Auth, Payments & AI" |
 *
 * @param {Comparegroupauthpaymentsai4Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const comparegroupauthpaymentsai4 = /** @type {((inputs?: Comparegroupauthpaymentsai4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparegroupauthpaymentsai4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const comparegroupauthpaymentsai4 = /** @type {((inputs?: Comparegroupauthpaymentsai4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparegroupauthpaymentsai4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_comparegroupauthpaymentsai4(inputs)
 	if (locale === "es") return es_comparegroupauthpaymentsai4(inputs)
@@ -55,6 +59,7 @@ const comparegroupauthpaymentsai4 = /** @type {((inputs?: Comparegroupauthpaymen
 	if (locale === "ko") return ko_comparegroupauthpaymentsai4(inputs)
 	if (locale === "zh-Hant") return zh_hant1_comparegroupauthpaymentsai4(inputs)
 	if (locale === "de") return de_comparegroupauthpaymentsai4(inputs)
-	return fr_comparegroupauthpaymentsai4(inputs)
+	if (locale === "fr") return fr_comparegroupauthpaymentsai4(inputs)
+	return uk_comparegroupauthpaymentsai4(inputs)
 });
 export { comparegroupauthpaymentsai4 as "compareGroupAuthPaymentsAi" }

@@ -37,16 +37,20 @@ const fr_builderrandom1 = /** @type {(inputs: Builderrandom1Inputs) => Localized
 	return /** @type {LocalizedString} */ (`Aléatoire`)
 };
 
+const uk_builderrandom1 = /** @type {(inputs: Builderrandom1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Випадковий`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Random" |
 *
 * @param {Builderrandom1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const builderrandom1 = /** @type {((inputs?: Builderrandom1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderrandom1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const builderrandom1 = /** @type {((inputs?: Builderrandom1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderrandom1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderrandom1(inputs)
 	if (locale === "es") return es_builderrandom1(inputs)
@@ -55,6 +59,7 @@ const builderrandom1 = /** @type {((inputs?: Builderrandom1Inputs, options?: { l
 	if (locale === "ko") return ko_builderrandom1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderrandom1(inputs)
 	if (locale === "de") return de_builderrandom1(inputs)
-	return fr_builderrandom1(inputs)
+	if (locale === "fr") return fr_builderrandom1(inputs)
+	return uk_builderrandom1(inputs)
 });
 export { builderrandom1 as "builderRandom" }

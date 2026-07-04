@@ -37,16 +37,20 @@ const fr_compareuilibrarychoices3 = /** @type {(inputs: Compareuilibrarychoices3
 	return /** @type {LocalizedString} */ (`Choix de la bibliothèque d'interface utilisateur`)
 };
 
+const uk_compareuilibrarychoices3 = /** @type {(inputs: Compareuilibrarychoices3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Вибір бібліотеки інтерфейсу користувача`)
+};
+
 /**
 * | output |
 * | --- |
 * | "UI library choices" |
 *
 * @param {Compareuilibrarychoices3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const compareuilibrarychoices3 = /** @type {((inputs?: Compareuilibrarychoices3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Compareuilibrarychoices3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const compareuilibrarychoices3 = /** @type {((inputs?: Compareuilibrarychoices3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Compareuilibrarychoices3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_compareuilibrarychoices3(inputs)
 	if (locale === "es") return es_compareuilibrarychoices3(inputs)
@@ -55,6 +59,7 @@ const compareuilibrarychoices3 = /** @type {((inputs?: Compareuilibrarychoices3I
 	if (locale === "ko") return ko_compareuilibrarychoices3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_compareuilibrarychoices3(inputs)
 	if (locale === "de") return de_compareuilibrarychoices3(inputs)
-	return fr_compareuilibrarychoices3(inputs)
+	if (locale === "fr") return fr_compareuilibrarychoices3(inputs)
+	return uk_compareuilibrarychoices3(inputs)
 });
 export { compareuilibrarychoices3 as "compareUiLibraryChoices" }

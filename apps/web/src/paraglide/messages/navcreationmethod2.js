@@ -37,16 +37,20 @@ const fr_navcreationmethod2 = /** @type {(inputs: Navcreationmethod2Inputs) => L
 	return /** @type {LocalizedString} */ (`Méthode de création`)
 };
 
+const uk_navcreationmethod2 = /** @type {(inputs: Navcreationmethod2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Спосіб створення`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Creation method" |
 *
 * @param {Navcreationmethod2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const navcreationmethod2 = /** @type {((inputs?: Navcreationmethod2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navcreationmethod2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const navcreationmethod2 = /** @type {((inputs?: Navcreationmethod2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navcreationmethod2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_navcreationmethod2(inputs)
 	if (locale === "es") return es_navcreationmethod2(inputs)
@@ -55,6 +59,7 @@ const navcreationmethod2 = /** @type {((inputs?: Navcreationmethod2Inputs, optio
 	if (locale === "ko") return ko_navcreationmethod2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_navcreationmethod2(inputs)
 	if (locale === "de") return de_navcreationmethod2(inputs)
-	return fr_navcreationmethod2(inputs)
+	if (locale === "fr") return fr_navcreationmethod2(inputs)
+	return uk_navcreationmethod2(inputs)
 });
 export { navcreationmethod2 as "navCreationMethod" }

@@ -37,16 +37,20 @@ const fr_builderpreviewinfo2 = /** @type {(inputs: Builderpreviewinfo2Inputs) =>
 	return /** @type {LocalizedString} */ (`Informations sur l'aperçu`)
 };
 
+const uk_builderpreviewinfo2 = /** @type {(inputs: Builderpreviewinfo2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Інформація про попередній перегляд`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Preview info" |
 *
 * @param {Builderpreviewinfo2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const builderpreviewinfo2 = /** @type {((inputs?: Builderpreviewinfo2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderpreviewinfo2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const builderpreviewinfo2 = /** @type {((inputs?: Builderpreviewinfo2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderpreviewinfo2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderpreviewinfo2(inputs)
 	if (locale === "es") return es_builderpreviewinfo2(inputs)
@@ -55,6 +59,7 @@ const builderpreviewinfo2 = /** @type {((inputs?: Builderpreviewinfo2Inputs, opt
 	if (locale === "ko") return ko_builderpreviewinfo2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderpreviewinfo2(inputs)
 	if (locale === "de") return de_builderpreviewinfo2(inputs)
-	return fr_builderpreviewinfo2(inputs)
+	if (locale === "fr") return fr_builderpreviewinfo2(inputs)
+	return uk_builderpreviewinfo2(inputs)
 });
 export { builderpreviewinfo2 as "builderPreviewInfo" }

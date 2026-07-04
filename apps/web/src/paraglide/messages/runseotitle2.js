@@ -37,16 +37,20 @@ const fr_runseotitle2 = /** @type {(inputs: Runseotitle2Inputs) => LocalizedStri
 	return /** @type {LocalizedString} */ (`Exécutez ScaffBench vous-même`)
 };
 
+const uk_runseotitle2 = /** @type {(inputs: Runseotitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Запустіть ScaffBench самостійно`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Run ScaffBench yourself" |
 *
 * @param {Runseotitle2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const runseotitle2 = /** @type {((inputs?: Runseotitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runseotitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const runseotitle2 = /** @type {((inputs?: Runseotitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runseotitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_runseotitle2(inputs)
 	if (locale === "es") return es_runseotitle2(inputs)
@@ -55,6 +59,7 @@ const runseotitle2 = /** @type {((inputs?: Runseotitle2Inputs, options?: { local
 	if (locale === "ko") return ko_runseotitle2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_runseotitle2(inputs)
 	if (locale === "de") return de_runseotitle2(inputs)
-	return fr_runseotitle2(inputs)
+	if (locale === "fr") return fr_runseotitle2(inputs)
+	return uk_runseotitle2(inputs)
 });
 export { runseotitle2 as "runSeoTitle" }

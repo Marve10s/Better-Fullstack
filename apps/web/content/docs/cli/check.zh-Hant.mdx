@@ -1,0 +1,34 @@
+---
+title: 檢查項目
+description: 從 CLI 診斷現有 Better Fullstack 項目。
+---
+
+`check` 指令驗證支架式 Better Fullstack 項目。它是現有 `doctor` 指令的面向使用者的別名。
+
+```npm
+npm create better-fullstack@latest check -- --skip-checks
+```
+
+## 檢查做什麼
+
+- 讀取並驗證 `bts.jsonc`。
+- 檢查是否為偵測到的套件管理器或生態系統安裝了依賴項。
+- 報表 `.env.example` 檔案中缺少所需的環境變數。
+- 執行可用的生成項目類型或建置檢查，除非透過 `--skip-checks`。
+- 支援代理程式和 CI 腳本的 `--json`。
+
+## 旗幟
+
+| 旗幟 | 行為 |
+| --- | --- |
+| 位置項目目錄 | 要診斷的項目目錄。預設為當前目錄。 |
+| `--skip-checks` | 跳過產生的類型/建置檢查，僅檢查配置、依賴項和環境檔案。 |
+| `--json` | 列印結構化 JSON。當出現故障時，該命令以非零值退出。 |
+
+## 別名醫生
+
+`doctor` 仍可用於相容性：
+
+```npm
+npm create better-fullstack@latest doctor -- --skip-checks
+```

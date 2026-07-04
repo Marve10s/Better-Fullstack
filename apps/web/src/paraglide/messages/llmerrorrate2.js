@@ -37,16 +37,20 @@ const fr_llmerrorrate2 = /** @type {(inputs: Llmerrorrate2Inputs) => LocalizedSt
 	return /** @type {LocalizedString} */ (`Taux d'erreur`)
 };
 
+const uk_llmerrorrate2 = /** @type {(inputs: Llmerrorrate2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Частота помилок`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Error rate" |
 *
 * @param {Llmerrorrate2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const llmerrorrate2 = /** @type {((inputs?: Llmerrorrate2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmerrorrate2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const llmerrorrate2 = /** @type {((inputs?: Llmerrorrate2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmerrorrate2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_llmerrorrate2(inputs)
 	if (locale === "es") return es_llmerrorrate2(inputs)
@@ -55,6 +59,7 @@ const llmerrorrate2 = /** @type {((inputs?: Llmerrorrate2Inputs, options?: { loc
 	if (locale === "ko") return ko_llmerrorrate2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_llmerrorrate2(inputs)
 	if (locale === "de") return de_llmerrorrate2(inputs)
-	return fr_llmerrorrate2(inputs)
+	if (locale === "fr") return fr_llmerrorrate2(inputs)
+	return uk_llmerrorrate2(inputs)
 });
 export { llmerrorrate2 as "llmErrorRate" }

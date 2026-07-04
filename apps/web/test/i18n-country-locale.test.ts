@@ -25,6 +25,7 @@ describe("country locale detection", () => {
     expect(localeFromCountry("KR")).toBe("ko");
     expect(localeFromCountry("DE")).toBe("de");
     expect(localeFromCountry("FR")).toBe("fr");
+    expect(localeFromCountry("UA")).toBe("uk");
     expect(localeFromCountry("sg")).toBeUndefined();
     expect(localeFromCountry("US")).toBeUndefined();
   });

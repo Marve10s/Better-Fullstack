@@ -1,0 +1,58 @@
+---
+title: Історія команди
+description: Переглядайте, очищайте та експортуйте відтворювані команди з попередніх каркасів Better Fullstack.
+---
+
+Команда `history` показує останні створені проекти та відтворювані команди, які їх створили. Використовуйте його, коли потрібно відтворити стек, порівняти згенерований вихід або поділитися завідомо справною командою.
+
+<PMTabs
+  npm="npx -y create-better-fullstack@latest історія"
+  pnpm="pnpm dlx create-better-fullstack@latest історія"
+  bun="історія bunx create-better-fullstack@latest"
+  yarn="пряжа dlx create-better-fullstack@latest історія"
+/>
+
+## Прапори
+
+| Прапор | За замовчуванням | опис |
+| --- | --- | --- |
+| `--limit` | `10` | Кількість записів історії для показу. |
+| `--clear` | `false` | Очистити всю збережену історію скаффолду. |
+| `--json` | `false` | Друк історії як JSON для сценаріїв. |
+
+## Приклади
+
+Показати п'ять останніх записів:
+
+<PMTabs
+  npm="npx -y create-better-fullstack@latest історія --limit 5"
+  pnpm="pnpm dlx create-better-fullstack@latest історія --limit 5"
+  bun="історія bunx create-better-fullstack@latest --limit 5"
+  yarn="пряжа dlx create-better-fullstack@latest історія --limit 5"
+/>
+
+Історія Export як JSON:
+
+<PMTabs
+  npm="npx -y create-better-fullstack@latest історія --json"
+  pnpm="pnpm dlx create-better-fullstack@latest історія --json"
+  bun="історія bunx create-better-fullstack@latest --json"
+  yarn="пряжа dlx create-better-fullstack@latest історія --json"
+/>
+
+Очистити локальну історію:
+
+<PMTabs
+  npm="npx -y create-better-fullstack@latest історія --clear"
+  pnpm="pnpm dlx create-better-fullstack@latest історія --clear"
+  bun="історія bunx create-better-fullstack@latest --clear"
+  yarn="пряжа dlx create-better-fullstack@latest історія --clear"
+/>
+
+## Відтворюваний робочий процес
+
+1. Запустіть `history`.
+2. Скопіюйте відтворювану команду для потрібного стеку.
+3. Повторно запустіть його з новою назвою проекту або скоригованими прапорцями.
+
+Історія зберігається локально у вашому каталозі користувача та не впливає на створені файли проекту.

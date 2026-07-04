@@ -37,16 +37,20 @@ const fr_sharelinkcopyfailed3 = /** @type {(inputs: Sharelinkcopyfailed3Inputs) 
 	return /** @type {LocalizedString} */ (`Échec de la copie du lien`)
 };
 
+const uk_sharelinkcopyfailed3 = /** @type {(inputs: Sharelinkcopyfailed3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Не вдалося скопіювати посилання`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Failed to copy link" |
 *
 * @param {Sharelinkcopyfailed3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const sharelinkcopyfailed3 = /** @type {((inputs?: Sharelinkcopyfailed3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Sharelinkcopyfailed3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const sharelinkcopyfailed3 = /** @type {((inputs?: Sharelinkcopyfailed3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Sharelinkcopyfailed3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_sharelinkcopyfailed3(inputs)
 	if (locale === "es") return es_sharelinkcopyfailed3(inputs)
@@ -55,6 +59,7 @@ const sharelinkcopyfailed3 = /** @type {((inputs?: Sharelinkcopyfailed3Inputs, o
 	if (locale === "ko") return ko_sharelinkcopyfailed3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_sharelinkcopyfailed3(inputs)
 	if (locale === "de") return de_sharelinkcopyfailed3(inputs)
-	return fr_sharelinkcopyfailed3(inputs)
+	if (locale === "fr") return fr_sharelinkcopyfailed3(inputs)
+	return uk_sharelinkcopyfailed3(inputs)
 });
 export { sharelinkcopyfailed3 as "shareLinkCopyFailed" }

@@ -37,16 +37,20 @@ const fr_sharebuttoncopiedtitle3 = /** @type {(inputs: Sharebuttoncopiedtitle3In
 	return /** @type {LocalizedString} */ (`Copié!`)
 };
 
+const uk_sharebuttoncopiedtitle3 = /** @type {(inputs: Sharebuttoncopiedtitle3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Скопійовано!`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Copied!" |
 *
 * @param {Sharebuttoncopiedtitle3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const sharebuttoncopiedtitle3 = /** @type {((inputs?: Sharebuttoncopiedtitle3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Sharebuttoncopiedtitle3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const sharebuttoncopiedtitle3 = /** @type {((inputs?: Sharebuttoncopiedtitle3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Sharebuttoncopiedtitle3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_sharebuttoncopiedtitle3(inputs)
 	if (locale === "es") return es_sharebuttoncopiedtitle3(inputs)
@@ -55,6 +59,7 @@ const sharebuttoncopiedtitle3 = /** @type {((inputs?: Sharebuttoncopiedtitle3Inp
 	if (locale === "ko") return ko_sharebuttoncopiedtitle3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_sharebuttoncopiedtitle3(inputs)
 	if (locale === "de") return de_sharebuttoncopiedtitle3(inputs)
-	return fr_sharebuttoncopiedtitle3(inputs)
+	if (locale === "fr") return fr_sharebuttoncopiedtitle3(inputs)
+	return uk_sharebuttoncopiedtitle3(inputs)
 });
 export { sharebuttoncopiedtitle3 as "shareButtonCopiedTitle" }

@@ -37,16 +37,20 @@ const fr_llmavgscaffoldtime3 = /** @type {(inputs: Llmavgscaffoldtime3Inputs) =>
 	return /** @type {LocalizedString} */ (`Temps moyen d'échafaudage`)
 };
 
+const uk_llmavgscaffoldtime3 = /** @type {(inputs: Llmavgscaffoldtime3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Середній час риштування`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Avg scaffold time" |
 *
 * @param {Llmavgscaffoldtime3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const llmavgscaffoldtime3 = /** @type {((inputs?: Llmavgscaffoldtime3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmavgscaffoldtime3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const llmavgscaffoldtime3 = /** @type {((inputs?: Llmavgscaffoldtime3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmavgscaffoldtime3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_llmavgscaffoldtime3(inputs)
 	if (locale === "es") return es_llmavgscaffoldtime3(inputs)
@@ -55,6 +59,7 @@ const llmavgscaffoldtime3 = /** @type {((inputs?: Llmavgscaffoldtime3Inputs, opt
 	if (locale === "ko") return ko_llmavgscaffoldtime3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_llmavgscaffoldtime3(inputs)
 	if (locale === "de") return de_llmavgscaffoldtime3(inputs)
-	return fr_llmavgscaffoldtime3(inputs)
+	if (locale === "fr") return fr_llmavgscaffoldtime3(inputs)
+	return uk_llmavgscaffoldtime3(inputs)
 });
 export { llmavgscaffoldtime3 as "llmAvgScaffoldTime" }

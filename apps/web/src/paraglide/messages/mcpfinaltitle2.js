@@ -37,16 +37,20 @@ const fr_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => Localized
 	return /** @type {LocalizedString} */ (`2,6 fois plus rapide que`)
 };
 
+const uk_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`2,6× швидше, ніж`)
+};
+
 /**
 * | output |
 * | --- |
 * | "2.6× faster than" |
 *
 * @param {Mcpfinaltitle2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const mcpfinaltitle2 = /** @type {((inputs?: Mcpfinaltitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpfinaltitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcpfinaltitle2 = /** @type {((inputs?: Mcpfinaltitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpfinaltitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcpfinaltitle2(inputs)
 	if (locale === "es") return es_mcpfinaltitle2(inputs)
@@ -55,6 +59,7 @@ const mcpfinaltitle2 = /** @type {((inputs?: Mcpfinaltitle2Inputs, options?: { l
 	if (locale === "ko") return ko_mcpfinaltitle2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcpfinaltitle2(inputs)
 	if (locale === "de") return de_mcpfinaltitle2(inputs)
-	return fr_mcpfinaltitle2(inputs)
+	if (locale === "fr") return fr_mcpfinaltitle2(inputs)
+	return uk_mcpfinaltitle2(inputs)
 });
 export { mcpfinaltitle2 as "mcpFinalTitle" }

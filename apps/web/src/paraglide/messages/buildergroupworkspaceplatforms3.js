@@ -37,16 +37,20 @@ const fr_buildergroupworkspaceplatforms3 = /** @type {(inputs: Buildergroupworks
 	return /** @type {LocalizedString} */ (`Espace de travail et plateformes`)
 };
 
+const uk_buildergroupworkspaceplatforms3 = /** @type {(inputs: Buildergroupworkspaceplatforms3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Робочий простір і платформи`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Workspace & Platforms" |
 *
 * @param {Buildergroupworkspaceplatforms3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const buildergroupworkspaceplatforms3 = /** @type {((inputs?: Buildergroupworkspaceplatforms3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildergroupworkspaceplatforms3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const buildergroupworkspaceplatforms3 = /** @type {((inputs?: Buildergroupworkspaceplatforms3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildergroupworkspaceplatforms3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_buildergroupworkspaceplatforms3(inputs)
 	if (locale === "es") return es_buildergroupworkspaceplatforms3(inputs)
@@ -55,6 +59,7 @@ const buildergroupworkspaceplatforms3 = /** @type {((inputs?: Buildergroupworksp
 	if (locale === "ko") return ko_buildergroupworkspaceplatforms3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_buildergroupworkspaceplatforms3(inputs)
 	if (locale === "de") return de_buildergroupworkspaceplatforms3(inputs)
-	return fr_buildergroupworkspaceplatforms3(inputs)
+	if (locale === "fr") return fr_buildergroupworkspaceplatforms3(inputs)
+	return uk_buildergroupworkspaceplatforms3(inputs)
 });
 export { buildergroupworkspaceplatforms3 as "builderGroupWorkspacePlatforms" }

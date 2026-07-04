@@ -37,16 +37,20 @@ const fr_llmtokens1 = /** @type {(inputs: Llmtokens1Inputs) => LocalizedString} 
 	return /** @type {LocalizedString} */ (`Jetons`)
 };
 
+const uk_llmtokens1 = /** @type {(inputs: Llmtokens1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Жетони`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Tokens" |
 *
 * @param {Llmtokens1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const llmtokens1 = /** @type {((inputs?: Llmtokens1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmtokens1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const llmtokens1 = /** @type {((inputs?: Llmtokens1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmtokens1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_llmtokens1(inputs)
 	if (locale === "es") return es_llmtokens1(inputs)
@@ -55,6 +59,7 @@ const llmtokens1 = /** @type {((inputs?: Llmtokens1Inputs, options?: { locale?: 
 	if (locale === "ko") return ko_llmtokens1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_llmtokens1(inputs)
 	if (locale === "de") return de_llmtokens1(inputs)
-	return fr_llmtokens1(inputs)
+	if (locale === "fr") return fr_llmtokens1(inputs)
+	return uk_llmtokens1(inputs)
 });
 export { llmtokens1 as "llmTokens" }

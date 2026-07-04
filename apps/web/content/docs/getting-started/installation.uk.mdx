@@ -1,0 +1,101 @@
+---
+title: монтаж
+description: Налаштуйте своє середовище та створіть свій перший проект Better Fullstack.
+---
+
+Better Fullstack працює через пакет `create-better-fullstack`. Вам не потрібно встановлювати його глобально; запустіть його за допомогою менеджера пакетів, дайте відповіді на підказки, і CLI запише вибраний проект.
+
+<Callout kind="tip" title="Online preview">
+Бажаєте вибирати візуально? Відкрийте [Stack Builder](__BFS0__), виберіть сумісний стек і скопіюйте згенеровану команду.
+</Callout>
+
+## передумови
+
+- Node.js 20 або новіша версія для CLI.
+- Термінал.
+- Git, лише якщо ви хочете, щоб CLI ініціалізував репозиторій.
+- Спеціальні інструменти екосистеми лише для створеного вами проекту.
+
+| Екосистема | Додатковий інструмент |
+| --- | --- |
+| TypeScript | npm, pnpm, Yarn або Bun |
+| React Native | Expo-сумісні інструменти iOS/Android під час роботи на симуляторі чи пристрої |
+| Rust | Rust toolchain і Cargo |
+| Python | Python та `uv` |
+| Go | Go інструментальний ланцюг |
+| Java | Java 21 |
+| Elixir | Elixir, Erlang/OTP і PostgreSQL для потоків Phoenix з підтримкою бази даних |
+
+## Запустіть CLI
+
+<PMTabs
+  npm="npm створити better-fullstack@latest"
+  pnpm="pnpm створити better-fullstack@latest"
+  bun="bun create better-fullstack@latest"
+  yarn="пряжа створити better-fullstack@latest"
+/>
+
+Додайте назву проекту, щоб запустити майстер:
+
+```npm
+npm create better-fullstack@latest my-app
+```
+
+Майстер запитує екосистему, параметри стеку, додаткові аддони, Git і встановлення залежностей.
+
+## Використовуйте явні позначки
+
+Явні прапорці пропускають підказки, які вони охоплюють. Це найкраща форма для сценаріїв, документів, згенерованих команд і звітів про помилки, які можна відтворити.
+
+```npm
+npm create better-fullstack@latest my-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime node \
+  --database sqlite \
+  --orm drizzle \
+  --api orpc \
+  --auth better-auth \
+  --db-setup none \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+З `npm create` прапорці Better Fullstack йдуть після `--`. Відтворені вкладки pnpm, Bun та Yarn видаляють цей роздільник лише npm.
+
+Використовуйте `--ai-docs none`, якщо не хочете створювати файли інструкцій AI. Використовуйте `--no-install`, якщо ви хочете перевірити файли перед встановленням залежностей.
+
+## Шаблони
+
+Шаблони є скороченням загальних стеків:
+
+| Шаблон | Стек |
+| --- | --- |
+| `t3` | Next.js, tRPC, Prisma, PostgreSQL, Better Auth |
+| `mern` | MongoDB, Express, React Маршрутизатор, Node.js |
+| `pern` | PostgreSQL, Експрес, TanStack Router, Node.js |
+| `uniwind` | Expo + Uniwind, тільки для мобільних пристроїв |
+| `none` | Немає скороченого шаблону |
+
+```npm
+npm create better-fullstack@latest my-app -- --template t3
+```
+
+## Перевірте перед записом файлів
+
+Використовуйте `--dry-run` для попереднього перегляду створених файлів без написання проекту:
+
+```npm
+npm create better-fullstack@latest my-app -- --dry-run
+```
+
+Використовуйте `--verify`, якщо ви бажаєте, щоб CLI запускав згенеровані перевірки після скаффолдингу. Він не запускає сервери розробників.
+
+## Далі
+
+- Пройдіть процес [Перший проект](/docs/getting-started/first-project/).
+- Перегляньте всі позначки в [CLI Create](/docs/cli/create/).
+- Порівняйте підтримку мови в [Ecosystems](/docs/ecosystems/).

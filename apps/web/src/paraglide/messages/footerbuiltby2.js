@@ -37,16 +37,20 @@ const fr_footerbuiltby2 = /** @type {(inputs: Footerbuiltby2Inputs) => Localized
 	return /** @type {LocalizedString} */ (`Construit par`)
 };
 
+const uk_footerbuiltby2 = /** @type {(inputs: Footerbuiltby2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Побудовано`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Built by" |
 *
 * @param {Footerbuiltby2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const footerbuiltby2 = /** @type {((inputs?: Footerbuiltby2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Footerbuiltby2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const footerbuiltby2 = /** @type {((inputs?: Footerbuiltby2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Footerbuiltby2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_footerbuiltby2(inputs)
 	if (locale === "es") return es_footerbuiltby2(inputs)
@@ -55,6 +59,7 @@ const footerbuiltby2 = /** @type {((inputs?: Footerbuiltby2Inputs, options?: { l
 	if (locale === "ko") return ko_footerbuiltby2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_footerbuiltby2(inputs)
 	if (locale === "de") return de_footerbuiltby2(inputs)
-	return fr_footerbuiltby2(inputs)
+	if (locale === "fr") return fr_footerbuiltby2(inputs)
+	return uk_footerbuiltby2(inputs)
 });
 export { footerbuiltby2 as "footerBuiltBy" }

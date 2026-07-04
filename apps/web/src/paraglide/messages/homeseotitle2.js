@@ -37,16 +37,20 @@ const fr_homeseotitle2 = /** @type {(inputs: Homeseotitle2Inputs) => LocalizedSt
 	return /** @type {LocalizedString} */ (`Better Fullstack — Échafaudez des applications Fullstack prêtes pour la production en quelques secondes`)
 };
 
+const uk_homeseotitle2 = /** @type {(inputs: Homeseotitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Better Fullstack — Програми Fullstack, готові до виробництва Scaffold, за лічені секунди`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Better Fullstack — Scaffold Production-Ready Fullstack Apps in Seconds" |
 *
 * @param {Homeseotitle2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const homeseotitle2 = /** @type {((inputs?: Homeseotitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homeseotitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const homeseotitle2 = /** @type {((inputs?: Homeseotitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homeseotitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_homeseotitle2(inputs)
 	if (locale === "es") return es_homeseotitle2(inputs)
@@ -55,6 +59,7 @@ const homeseotitle2 = /** @type {((inputs?: Homeseotitle2Inputs, options?: { loc
 	if (locale === "ko") return ko_homeseotitle2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_homeseotitle2(inputs)
 	if (locale === "de") return de_homeseotitle2(inputs)
-	return fr_homeseotitle2(inputs)
+	if (locale === "fr") return fr_homeseotitle2(inputs)
+	return uk_homeseotitle2(inputs)
 });
 export { homeseotitle2 as "homeSeoTitle" }

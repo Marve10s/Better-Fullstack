@@ -37,16 +37,20 @@ const fr_comparegroupdeveloperexperience3 = /** @type {(inputs: Comparegroupdeve
 	return /** @type {LocalizedString} */ (`Expérience du développeur`)
 };
 
+const uk_comparegroupdeveloperexperience3 = /** @type {(inputs: Comparegroupdeveloperexperience3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Досвід розробника`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Developer Experience" |
 *
 * @param {Comparegroupdeveloperexperience3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const comparegroupdeveloperexperience3 = /** @type {((inputs?: Comparegroupdeveloperexperience3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparegroupdeveloperexperience3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const comparegroupdeveloperexperience3 = /** @type {((inputs?: Comparegroupdeveloperexperience3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparegroupdeveloperexperience3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_comparegroupdeveloperexperience3(inputs)
 	if (locale === "es") return es_comparegroupdeveloperexperience3(inputs)
@@ -55,6 +59,7 @@ const comparegroupdeveloperexperience3 = /** @type {((inputs?: Comparegroupdevel
 	if (locale === "ko") return ko_comparegroupdeveloperexperience3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_comparegroupdeveloperexperience3(inputs)
 	if (locale === "de") return de_comparegroupdeveloperexperience3(inputs)
-	return fr_comparegroupdeveloperexperience3(inputs)
+	if (locale === "fr") return fr_comparegroupdeveloperexperience3(inputs)
+	return uk_comparegroupdeveloperexperience3(inputs)
 });
 export { comparegroupdeveloperexperience3 as "compareGroupDeveloperExperience" }

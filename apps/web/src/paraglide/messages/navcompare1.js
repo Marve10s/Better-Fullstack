@@ -37,16 +37,20 @@ const fr_navcompare1 = /** @type {(inputs: Navcompare1Inputs) => LocalizedString
 	return /** @type {LocalizedString} */ (`Comparer`)
 };
 
+const uk_navcompare1 = /** @type {(inputs: Navcompare1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Порівняйте`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Compare" |
 *
 * @param {Navcompare1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const navcompare1 = /** @type {((inputs?: Navcompare1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navcompare1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const navcompare1 = /** @type {((inputs?: Navcompare1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navcompare1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_navcompare1(inputs)
 	if (locale === "es") return es_navcompare1(inputs)
@@ -55,6 +59,7 @@ const navcompare1 = /** @type {((inputs?: Navcompare1Inputs, options?: { locale?
 	if (locale === "ko") return ko_navcompare1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_navcompare1(inputs)
 	if (locale === "de") return de_navcompare1(inputs)
-	return fr_navcompare1(inputs)
+	if (locale === "fr") return fr_navcompare1(inputs)
+	return uk_navcompare1(inputs)
 });
 export { navcompare1 as "navCompare" }

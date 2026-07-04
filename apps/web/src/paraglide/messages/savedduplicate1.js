@@ -37,16 +37,20 @@ const fr_savedduplicate1 = /** @type {(inputs: Savedduplicate1Inputs) => Localiz
 	return /** @type {LocalizedString} */ (`Double`)
 };
 
+const uk_savedduplicate1 = /** @type {(inputs: Savedduplicate1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`дублікат`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Duplicate" |
 *
 * @param {Savedduplicate1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const savedduplicate1 = /** @type {((inputs?: Savedduplicate1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedduplicate1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const savedduplicate1 = /** @type {((inputs?: Savedduplicate1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedduplicate1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_savedduplicate1(inputs)
 	if (locale === "es") return es_savedduplicate1(inputs)
@@ -55,6 +59,7 @@ const savedduplicate1 = /** @type {((inputs?: Savedduplicate1Inputs, options?: {
 	if (locale === "ko") return ko_savedduplicate1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_savedduplicate1(inputs)
 	if (locale === "de") return de_savedduplicate1(inputs)
-	return fr_savedduplicate1(inputs)
+	if (locale === "fr") return fr_savedduplicate1(inputs)
+	return uk_savedduplicate1(inputs)
 });
 export { savedduplicate1 as "savedDuplicate" }

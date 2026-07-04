@@ -37,16 +37,20 @@ const fr_changelogfullreleasenotes3 = /** @type {(inputs: Changelogfullreleaseno
 	return /** @type {LocalizedString} */ (`Notes de version complètes`)
 };
 
+const uk_changelogfullreleasenotes3 = /** @type {(inputs: Changelogfullreleasenotes3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Повні примітки до випуску`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Full release notes" |
 *
 * @param {Changelogfullreleasenotes3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const changelogfullreleasenotes3 = /** @type {((inputs?: Changelogfullreleasenotes3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Changelogfullreleasenotes3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const changelogfullreleasenotes3 = /** @type {((inputs?: Changelogfullreleasenotes3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Changelogfullreleasenotes3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_changelogfullreleasenotes3(inputs)
 	if (locale === "es") return es_changelogfullreleasenotes3(inputs)
@@ -55,6 +59,7 @@ const changelogfullreleasenotes3 = /** @type {((inputs?: Changelogfullreleasenot
 	if (locale === "ko") return ko_changelogfullreleasenotes3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_changelogfullreleasenotes3(inputs)
 	if (locale === "de") return de_changelogfullreleasenotes3(inputs)
-	return fr_changelogfullreleasenotes3(inputs)
+	if (locale === "fr") return fr_changelogfullreleasenotes3(inputs)
+	return uk_changelogfullreleasenotes3(inputs)
 });
 export { changelogfullreleasenotes3 as "changelogFullReleaseNotes" }

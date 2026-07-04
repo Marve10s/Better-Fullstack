@@ -37,16 +37,20 @@ const fr_changelogrelease20260612summary2 = /** @type {(inputs: Changelogrelease
 	return /** @type {LocalizedString} */ (`Cette version évalue la façon dont les agents AI s'articulent avec Better Fullstack et publie les résultats sur la page d'accueil, ajoute .NET en tant qu'écosystème de première classe sur le nouveau graphique de pile et fournit une installation beaucoup plus simple. Il corrige également quatre bugs d’échafaudage découverts par le benchmark lui-même.`)
 };
 
+const uk_changelogrelease20260612summary2 = /** @type {(inputs: Changelogrelease20260612summary2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Цей випуск порівнює, як агенти AI працюють з Better Fullstack, і публікує результати на домашній сторінці, додає .NET як першокласну екосистему на новому графі стека та забезпечує набагато меншу інсталяцію. Він також виправляє чотири помилки каркасу, які виявив сам тест.`)
+};
+
 /**
 * | output |
 * | --- |
 * | "This release benchmarks how AI agents scaffold with Better Fullstack and publishes the results on the homepage, adds .NET as a first-class ecosystem on the n..." |
 *
 * @param {Changelogrelease20260612summary2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const changelogrelease20260612summary2 = /** @type {((inputs?: Changelogrelease20260612summary2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Changelogrelease20260612summary2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const changelogrelease20260612summary2 = /** @type {((inputs?: Changelogrelease20260612summary2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Changelogrelease20260612summary2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_changelogrelease20260612summary2(inputs)
 	if (locale === "es") return es_changelogrelease20260612summary2(inputs)
@@ -55,6 +59,7 @@ const changelogrelease20260612summary2 = /** @type {((inputs?: Changelogrelease2
 	if (locale === "ko") return ko_changelogrelease20260612summary2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_changelogrelease20260612summary2(inputs)
 	if (locale === "de") return de_changelogrelease20260612summary2(inputs)
-	return fr_changelogrelease20260612summary2(inputs)
+	if (locale === "fr") return fr_changelogrelease20260612summary2(inputs)
+	return uk_changelogrelease20260612summary2(inputs)
 });
 export { changelogrelease20260612summary2 as "changelogRelease20260612Summary" }

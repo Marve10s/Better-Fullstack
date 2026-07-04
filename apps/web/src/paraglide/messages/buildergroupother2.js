@@ -37,16 +37,20 @@ const fr_buildergroupother2 = /** @type {(inputs: Buildergroupother2Inputs) => L
 	return /** @type {LocalizedString} */ (`Autre`)
 };
 
+const uk_buildergroupother2 = /** @type {(inputs: Buildergroupother2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`інше`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Other" |
 *
 * @param {Buildergroupother2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const buildergroupother2 = /** @type {((inputs?: Buildergroupother2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildergroupother2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const buildergroupother2 = /** @type {((inputs?: Buildergroupother2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildergroupother2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_buildergroupother2(inputs)
 	if (locale === "es") return es_buildergroupother2(inputs)
@@ -55,6 +59,7 @@ const buildergroupother2 = /** @type {((inputs?: Buildergroupother2Inputs, optio
 	if (locale === "ko") return ko_buildergroupother2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_buildergroupother2(inputs)
 	if (locale === "de") return de_buildergroupother2(inputs)
-	return fr_buildergroupother2(inputs)
+	if (locale === "fr") return fr_buildergroupother2(inputs)
+	return uk_buildergroupother2(inputs)
 });
 export { buildergroupother2 as "builderGroupOther" }

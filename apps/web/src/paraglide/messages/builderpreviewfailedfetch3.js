@@ -37,16 +37,20 @@ const fr_builderpreviewfailedfetch3 = /** @type {(inputs: Builderpreviewfailedfe
 	return /** @type {LocalizedString} */ (`Échec de la récupération de l'aperçu`)
 };
 
+const uk_builderpreviewfailedfetch3 = /** @type {(inputs: Builderpreviewfailedfetch3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Не вдалося отримати попередній перегляд`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Failed to fetch preview" |
 *
 * @param {Builderpreviewfailedfetch3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const builderpreviewfailedfetch3 = /** @type {((inputs?: Builderpreviewfailedfetch3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderpreviewfailedfetch3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const builderpreviewfailedfetch3 = /** @type {((inputs?: Builderpreviewfailedfetch3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderpreviewfailedfetch3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderpreviewfailedfetch3(inputs)
 	if (locale === "es") return es_builderpreviewfailedfetch3(inputs)
@@ -55,6 +59,7 @@ const builderpreviewfailedfetch3 = /** @type {((inputs?: Builderpreviewfailedfet
 	if (locale === "ko") return ko_builderpreviewfailedfetch3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderpreviewfailedfetch3(inputs)
 	if (locale === "de") return de_builderpreviewfailedfetch3(inputs)
-	return fr_builderpreviewfailedfetch3(inputs)
+	if (locale === "fr") return fr_builderpreviewfailedfetch3(inputs)
+	return uk_builderpreviewfailedfetch3(inputs)
 });
 export { builderpreviewfailedfetch3 as "builderPreviewFailedFetch" }

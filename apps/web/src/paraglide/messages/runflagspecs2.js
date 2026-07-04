@@ -37,16 +37,20 @@ const fr_runflagspecs2 = /** @type {(inputs: Runflagspecs2Inputs) => LocalizedSt
 	return /** @type {LocalizedString} */ (`par défaut, la suite complète de 13 spécifications, ou un sous-ensemble d'identifiants de spécifications séparés par des virgules.`)
 };
 
+const uk_runflagspecs2 = /** @type {(inputs: Runflagspecs2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`повний набір із 13 специфікацій за замовчуванням або підмножина специфікацій, розділених комами`)
+};
+
 /**
 * | output |
 * | --- |
 * | "the full 13-spec suite by default, or a comma-separated subset of spec ids" |
 *
 * @param {Runflagspecs2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const runflagspecs2 = /** @type {((inputs?: Runflagspecs2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runflagspecs2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const runflagspecs2 = /** @type {((inputs?: Runflagspecs2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runflagspecs2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_runflagspecs2(inputs)
 	if (locale === "es") return es_runflagspecs2(inputs)
@@ -55,6 +59,7 @@ const runflagspecs2 = /** @type {((inputs?: Runflagspecs2Inputs, options?: { loc
 	if (locale === "ko") return ko_runflagspecs2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_runflagspecs2(inputs)
 	if (locale === "de") return de_runflagspecs2(inputs)
-	return fr_runflagspecs2(inputs)
+	if (locale === "fr") return fr_runflagspecs2(inputs)
+	return uk_runflagspecs2(inputs)
 });
 export { runflagspecs2 as "runFlagSpecs" }

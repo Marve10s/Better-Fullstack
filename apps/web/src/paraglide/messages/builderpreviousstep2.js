@@ -37,16 +37,20 @@ const fr_builderpreviousstep2 = /** @type {(inputs: Builderpreviousstep2Inputs) 
 	return /** @type {LocalizedString} */ (`Étape précédente`)
 };
 
+const uk_builderpreviousstep2 = /** @type {(inputs: Builderpreviousstep2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Попередній крок`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Previous step" |
 *
 * @param {Builderpreviousstep2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const builderpreviousstep2 = /** @type {((inputs?: Builderpreviousstep2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderpreviousstep2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const builderpreviousstep2 = /** @type {((inputs?: Builderpreviousstep2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderpreviousstep2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderpreviousstep2(inputs)
 	if (locale === "es") return es_builderpreviousstep2(inputs)
@@ -55,6 +59,7 @@ const builderpreviousstep2 = /** @type {((inputs?: Builderpreviousstep2Inputs, o
 	if (locale === "ko") return ko_builderpreviousstep2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderpreviousstep2(inputs)
 	if (locale === "de") return de_builderpreviousstep2(inputs)
-	return fr_builderpreviousstep2(inputs)
+	if (locale === "fr") return fr_builderpreviousstep2(inputs)
+	return uk_builderpreviousstep2(inputs)
 });
 export { builderpreviousstep2 as "builderPreviousStep" }

@@ -1,0 +1,34 @@
+---
+title: 检查项目
+description: 从 CLI 诊断现有 Better Fullstack 项目。
+---
+
+`check` 命令验证支架式 Better Fullstack 项目。它是现有 `doctor` 命令的面向用户的别名。
+
+```npm
+npm create better-fullstack@latest check -- --skip-checks
+```
+
+## 检查做什么
+
+- 读取并验证 `bts.jsonc`。
+- 检查是否为检测到的包管理器或生态系统安装了依赖项。
+- 报告 `.env.example` 文件中缺少所需的环境变量。
+- 运行可用的生成项目类型或构建检查，除非通过 `--skip-checks`。
+- 支持代理和 CI 脚本的 `--json`。
+
+## 旗帜
+
+| 旗帜 | 行为 |
+| --- | --- |
+| 位置项目目录 | 要诊断的项目目录。默认为当前目录。 |
+| `--skip-checks` | 跳过生成的类型/构建检查，仅检查配置、依赖项和环境文件。 |
+| `--json` | 打印结构化 JSON。当出现故障时，该命令以非零值退出。 |
+
+## 别名医生
+
+`doctor` 仍然可用于兼容性：
+
+```npm
+npm create better-fullstack@latest doctor -- --skip-checks
+```

@@ -37,16 +37,20 @@ const fr_compareaiintegrations2 = /** @type {(inputs: Compareaiintegrations2Inpu
 	return /** @type {LocalizedString} */ (`AI / Intégrations LLM`)
 };
 
+const uk_compareaiintegrations2 = /** @type {(inputs: Compareaiintegrations2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Інтеграція AI / LLM`)
+};
+
 /**
 * | output |
 * | --- |
 * | "AI / LLM integrations" |
 *
 * @param {Compareaiintegrations2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const compareaiintegrations2 = /** @type {((inputs?: Compareaiintegrations2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Compareaiintegrations2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const compareaiintegrations2 = /** @type {((inputs?: Compareaiintegrations2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Compareaiintegrations2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_compareaiintegrations2(inputs)
 	if (locale === "es") return es_compareaiintegrations2(inputs)
@@ -55,6 +59,7 @@ const compareaiintegrations2 = /** @type {((inputs?: Compareaiintegrations2Input
 	if (locale === "ko") return ko_compareaiintegrations2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_compareaiintegrations2(inputs)
 	if (locale === "de") return de_compareaiintegrations2(inputs)
-	return fr_compareaiintegrations2(inputs)
+	if (locale === "fr") return fr_compareaiintegrations2(inputs)
+	return uk_compareaiintegrations2(inputs)
 });
 export { compareaiintegrations2 as "compareAiIntegrations" }

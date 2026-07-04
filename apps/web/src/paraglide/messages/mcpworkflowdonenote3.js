@@ -37,16 +37,20 @@ const fr_mcpworkflowdonenote3 = /** @type {(inputs: Mcpworkflowdonenote3Inputs) 
 	return /** @type {LocalizedString} */ (`lancez bun install pour terminer`)
 };
 
+const uk_mcpworkflowdonenote3 = /** @type {(inputs: Mcpworkflowdonenote3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`запустіть bun install, щоб завершити`)
+};
+
 /**
 * | output |
 * | --- |
 * | "run bun install to finish" |
 *
 * @param {Mcpworkflowdonenote3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const mcpworkflowdonenote3 = /** @type {((inputs?: Mcpworkflowdonenote3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpworkflowdonenote3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcpworkflowdonenote3 = /** @type {((inputs?: Mcpworkflowdonenote3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpworkflowdonenote3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcpworkflowdonenote3(inputs)
 	if (locale === "es") return es_mcpworkflowdonenote3(inputs)
@@ -55,6 +59,7 @@ const mcpworkflowdonenote3 = /** @type {((inputs?: Mcpworkflowdonenote3Inputs, o
 	if (locale === "ko") return ko_mcpworkflowdonenote3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcpworkflowdonenote3(inputs)
 	if (locale === "de") return de_mcpworkflowdonenote3(inputs)
-	return fr_mcpworkflowdonenote3(inputs)
+	if (locale === "fr") return fr_mcpworkflowdonenote3(inputs)
+	return uk_mcpworkflowdonenote3(inputs)
 });
 export { mcpworkflowdonenote3 as "mcpWorkflowDoneNote" }

@@ -1,0 +1,34 @@
+---
+title: Vérifier les projets
+description: Diagnostiquer les projets Better Fullstack existants à partir du CLI.
+---
+
+La commande `check` valide un projet Better Fullstack échafaudé. Il s'agit de l'alias utilisateur de la commande `doctor` existante.
+
+```npm
+npm create better-fullstack@latest check -- --skip-checks
+```
+
+## À quoi sert le contrôle
+
+- Lit et valide `bts.jsonc`.
+- Vérifie si des dépendances sont installées pour le gestionnaire de packages ou l'écosystème détecté.
+- Signale des variables d'environnement requises manquantes dans les fichiers `.env.example`.
+- Exécute les vérifications de type de projet généré ou de build disponibles à moins que `--skip-checks` ne soit transmis.
+- Prend en charge `--json` pour les agents et les scripts CI.
+
+## Drapeaux
+
+| Drapeau | Comportement |
+| --- | --- |
+| répertoire de projet positionnel | Répertoire du projet à diagnostiquer. La valeur par défaut est le répertoire actuel. |
+| `--skip-checks` | Ignorez les vérifications de type/build générées et inspectez uniquement les fichiers de configuration, les dépendances et les fichiers d'environnement. |
+| `--json` | Imprimez du JSON structuré. La commande sort non nulle lorsque des échecs sont présents. |
+
+## Alias ​​du docteur
+
+`doctor` reste disponible pour compatibilité :
+
+```npm
+npm create better-fullstack@latest doctor -- --skip-checks
+```

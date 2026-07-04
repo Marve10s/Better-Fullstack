@@ -37,16 +37,20 @@ const fr_buildergroupedaddonsdescription3 = /** @type {(inputs: Buildergroupedad
 	return /** @type {LocalizedString} */ (`les plates-formes, les intégrations, les agents AI et les extras TanStack sont répartis ci-dessous. MCP et Skills ajoutent toujours les indicateurs du module complémentaire en premier, puis CLI pose des questions de suivi pour les configurer.`)
 };
 
+const uk_buildergroupedaddonsdescription3 = /** @type {(inputs: Buildergroupedaddonsdescription3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`платформи, інтеграції, агенти AI та додаткові функції TanStack розділені нижче. MCP і Skills спочатку додають прапорці аддонів, а потім CLI задає додаткові запитання, щоб налаштувати їх.`)
+};
+
 /**
 * | output |
 * | --- |
 * | "platforms, integrations, AI agents, and TanStack extras are split below. MCP and Skills still add the addon flags first, then the CLI asks follow-up question..." |
 *
 * @param {Buildergroupedaddonsdescription3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const buildergroupedaddonsdescription3 = /** @type {((inputs?: Buildergroupedaddonsdescription3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildergroupedaddonsdescription3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const buildergroupedaddonsdescription3 = /** @type {((inputs?: Buildergroupedaddonsdescription3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildergroupedaddonsdescription3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_buildergroupedaddonsdescription3(inputs)
 	if (locale === "es") return es_buildergroupedaddonsdescription3(inputs)
@@ -55,6 +59,7 @@ const buildergroupedaddonsdescription3 = /** @type {((inputs?: Buildergroupedadd
 	if (locale === "ko") return ko_buildergroupedaddonsdescription3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_buildergroupedaddonsdescription3(inputs)
 	if (locale === "de") return de_buildergroupedaddonsdescription3(inputs)
-	return fr_buildergroupedaddonsdescription3(inputs)
+	if (locale === "fr") return fr_buildergroupedaddonsdescription3(inputs)
+	return uk_buildergroupedaddonsdescription3(inputs)
 });
 export { buildergroupedaddonsdescription3 as "builderGroupedAddonsDescription" }

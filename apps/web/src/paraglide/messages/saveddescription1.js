@@ -37,16 +37,20 @@ const fr_saveddescription1 = /** @type {(inputs: Saveddescription1Inputs) => Loc
 	return /** @type {LocalizedString} */ (`Utilisez l'icône de sauvegarde dans la barre de création pour créer des préréglages locaux, puis chargez-les ou mettez-les à jour ici.`)
 };
 
+const uk_saveddescription1 = /** @type {(inputs: Saveddescription1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Скористайтеся піктограмою збереження на панелі конструктора, щоб створити локальні стилі, а потім завантажте або оновіть їх тут.`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Use the save icon in the builder bar to create local presets, then load or update them here." |
 *
 * @param {Saveddescription1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const saveddescription1 = /** @type {((inputs?: Saveddescription1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Saveddescription1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const saveddescription1 = /** @type {((inputs?: Saveddescription1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Saveddescription1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_saveddescription1(inputs)
 	if (locale === "es") return es_saveddescription1(inputs)
@@ -55,6 +59,7 @@ const saveddescription1 = /** @type {((inputs?: Saveddescription1Inputs, options
 	if (locale === "ko") return ko_saveddescription1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_saveddescription1(inputs)
 	if (locale === "de") return de_saveddescription1(inputs)
-	return fr_saveddescription1(inputs)
+	if (locale === "fr") return fr_saveddescription1(inputs)
+	return uk_saveddescription1(inputs)
 });
 export { saveddescription1 as "savedDescription" }

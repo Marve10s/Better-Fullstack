@@ -37,16 +37,20 @@ const fr_mcpworkfloweyebrow2 = /** @type {(inputs: Mcpworkfloweyebrow2Inputs) =>
 	return /** @type {LocalizedString} */ (`flux de travail`)
 };
 
+const uk_mcpworkfloweyebrow2 = /** @type {(inputs: Mcpworkfloweyebrow2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`робочий процес`)
+};
+
 /**
 * | output |
 * | --- |
 * | "workflow" |
 *
 * @param {Mcpworkfloweyebrow2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const mcpworkfloweyebrow2 = /** @type {((inputs?: Mcpworkfloweyebrow2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpworkfloweyebrow2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcpworkfloweyebrow2 = /** @type {((inputs?: Mcpworkfloweyebrow2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpworkfloweyebrow2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcpworkfloweyebrow2(inputs)
 	if (locale === "es") return es_mcpworkfloweyebrow2(inputs)
@@ -55,6 +59,7 @@ const mcpworkfloweyebrow2 = /** @type {((inputs?: Mcpworkfloweyebrow2Inputs, opt
 	if (locale === "ko") return ko_mcpworkfloweyebrow2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcpworkfloweyebrow2(inputs)
 	if (locale === "de") return de_mcpworkfloweyebrow2(inputs)
-	return fr_mcpworkfloweyebrow2(inputs)
+	if (locale === "fr") return fr_mcpworkfloweyebrow2(inputs)
+	return uk_mcpworkfloweyebrow2(inputs)
 });
 export { mcpworkfloweyebrow2 as "mcpWorkflowEyebrow" }

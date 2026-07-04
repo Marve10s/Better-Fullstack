@@ -37,16 +37,20 @@ const fr_runseodescription2 = /** @type {(inputs: Runseodescription2Inputs) => L
 	return /** @type {LocalizedString} */ (`Reproduisez localement le benchmark ScaffBench : clonez le framework, pointez-le vers n’importe quelle interface de ligne de commande d’agent ou une clé API, et vérifiez si les projets générés sont compilés.`)
 };
 
+const uk_runseodescription2 = /** @type {(inputs: Runseodescription2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Відтворіть контрольний тест ScaffBench локально: клонуйте джгут, направте його на будь-який ключ CLI або API агента та оцініть, чи збираються згенеровані проекти.`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Reproduce the ScaffBench benchmark locally: clone the harness, point it at any agent CLI or an API key, and score whether the generated projects build." |
 *
 * @param {Runseodescription2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const runseodescription2 = /** @type {((inputs?: Runseodescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runseodescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const runseodescription2 = /** @type {((inputs?: Runseodescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runseodescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_runseodescription2(inputs)
 	if (locale === "es") return es_runseodescription2(inputs)
@@ -55,6 +59,7 @@ const runseodescription2 = /** @type {((inputs?: Runseodescription2Inputs, optio
 	if (locale === "ko") return ko_runseodescription2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_runseodescription2(inputs)
 	if (locale === "de") return de_runseodescription2(inputs)
-	return fr_runseodescription2(inputs)
+	if (locale === "fr") return fr_runseodescription2(inputs)
+	return uk_runseodescription2(inputs)
 });
 export { runseodescription2 as "runSeoDescription" }

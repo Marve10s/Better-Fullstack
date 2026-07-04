@@ -37,16 +37,20 @@ const fr_llmscatteraria2 = /** @type {(inputs: Llmscatteraria2Inputs) => Localiz
 	return /** @type {LocalizedString} */ (`Diagramme de dispersion de référence : chaque point correspond à un modèle et à un chemin de création`)
 };
 
+const uk_llmscatteraria2 = /** @type {(inputs: Llmscatteraria2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Еталонна точкова діаграма: кожна точка є однією моделлю та шляхом створення`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Benchmark scatter chart: each point is one model and creation path" |
 *
 * @param {Llmscatteraria2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const llmscatteraria2 = /** @type {((inputs?: Llmscatteraria2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmscatteraria2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const llmscatteraria2 = /** @type {((inputs?: Llmscatteraria2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmscatteraria2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_llmscatteraria2(inputs)
 	if (locale === "es") return es_llmscatteraria2(inputs)
@@ -55,6 +59,7 @@ const llmscatteraria2 = /** @type {((inputs?: Llmscatteraria2Inputs, options?: {
 	if (locale === "ko") return ko_llmscatteraria2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_llmscatteraria2(inputs)
 	if (locale === "de") return de_llmscatteraria2(inputs)
-	return fr_llmscatteraria2(inputs)
+	if (locale === "fr") return fr_llmscatteraria2(inputs)
+	return uk_llmscatteraria2(inputs)
 });
 export { llmscatteraria2 as "llmScatterAria" }

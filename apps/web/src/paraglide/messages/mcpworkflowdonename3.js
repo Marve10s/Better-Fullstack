@@ -37,16 +37,20 @@ const fr_mcpworkflowdonename3 = /** @type {(inputs: Mcpworkflowdonename3Inputs) 
 	return /** @type {LocalizedString} */ (`échafaudage terminé`)
 };
 
+const uk_mcpworkflowdonename3 = /** @type {(inputs: Mcpworkflowdonename3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`риштування завершено`)
+};
+
 /**
 * | output |
 * | --- |
 * | "scaffold complete" |
 *
 * @param {Mcpworkflowdonename3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const mcpworkflowdonename3 = /** @type {((inputs?: Mcpworkflowdonename3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpworkflowdonename3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcpworkflowdonename3 = /** @type {((inputs?: Mcpworkflowdonename3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpworkflowdonename3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcpworkflowdonename3(inputs)
 	if (locale === "es") return es_mcpworkflowdonename3(inputs)
@@ -55,6 +59,7 @@ const mcpworkflowdonename3 = /** @type {((inputs?: Mcpworkflowdonename3Inputs, o
 	if (locale === "ko") return ko_mcpworkflowdonename3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcpworkflowdonename3(inputs)
 	if (locale === "de") return de_mcpworkflowdonename3(inputs)
-	return fr_mcpworkflowdonename3(inputs)
+	if (locale === "fr") return fr_mcpworkflowdonename3(inputs)
+	return uk_mcpworkflowdonename3(inputs)
 });
 export { mcpworkflowdonename3 as "mcpWorkflowDoneName" }

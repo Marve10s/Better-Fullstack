@@ -37,16 +37,20 @@ const fr_homenotjusttypescript4 = /** @type {(inputs: Homenotjusttypescript4Inpu
 	return /** @type {LocalizedString} */ (`Pas seulement TypeScript.`)
 };
 
+const uk_homenotjusttypescript4 = /** @type {(inputs: Homenotjusttypescript4Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Не тільки TypeScript.`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Not just TypeScript." |
 *
 * @param {Homenotjusttypescript4Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const homenotjusttypescript4 = /** @type {((inputs?: Homenotjusttypescript4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homenotjusttypescript4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const homenotjusttypescript4 = /** @type {((inputs?: Homenotjusttypescript4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homenotjusttypescript4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_homenotjusttypescript4(inputs)
 	if (locale === "es") return es_homenotjusttypescript4(inputs)
@@ -55,6 +59,7 @@ const homenotjusttypescript4 = /** @type {((inputs?: Homenotjusttypescript4Input
 	if (locale === "ko") return ko_homenotjusttypescript4(inputs)
 	if (locale === "zh-Hant") return zh_hant1_homenotjusttypescript4(inputs)
 	if (locale === "de") return de_homenotjusttypescript4(inputs)
-	return fr_homenotjusttypescript4(inputs)
+	if (locale === "fr") return fr_homenotjusttypescript4(inputs)
+	return uk_homenotjusttypescript4(inputs)
 });
 export { homenotjusttypescript4 as "homeNotJustTypeScript" }

@@ -37,16 +37,20 @@ const fr_buildercopycommand2 = /** @type {(inputs: Buildercopycommand2Inputs) =>
 	return /** @type {LocalizedString} */ (`Commande Copier`)
 };
 
+const uk_buildercopycommand2 = /** @type {(inputs: Buildercopycommand2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Копіювати команду`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Copy command" |
 *
 * @param {Buildercopycommand2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const buildercopycommand2 = /** @type {((inputs?: Buildercopycommand2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildercopycommand2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const buildercopycommand2 = /** @type {((inputs?: Buildercopycommand2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildercopycommand2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_buildercopycommand2(inputs)
 	if (locale === "es") return es_buildercopycommand2(inputs)
@@ -55,6 +59,7 @@ const buildercopycommand2 = /** @type {((inputs?: Buildercopycommand2Inputs, opt
 	if (locale === "ko") return ko_buildercopycommand2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_buildercopycommand2(inputs)
 	if (locale === "de") return de_buildercopycommand2(inputs)
-	return fr_buildercopycommand2(inputs)
+	if (locale === "fr") return fr_buildercopycommand2(inputs)
+	return uk_buildercopycommand2(inputs)
 });
 export { buildercopycommand2 as "builderCopyCommand" }

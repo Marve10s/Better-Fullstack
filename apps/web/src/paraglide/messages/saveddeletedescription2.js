@@ -37,16 +37,20 @@ const fr_saveddeletedescription2 = /** @type {(inputs: Saveddeletedescription2In
 	return /** @type {LocalizedString} */ (`Êtes-vous sûr de vouloir supprimer « ${i?.name} » ? Cette action ne peut pas être annulée.`)
 };
 
+const uk_saveddeletedescription2 = /** @type {(inputs: Saveddeletedescription2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Ви впевнені, що хочете видалити "${i?.name}"? Цю дію не можна скасувати.`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Are you sure you want to delete \"{name}\"? This action cannot be undone." |
 *
 * @param {Saveddeletedescription2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const saveddeletedescription2 = /** @type {((inputs: Saveddeletedescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Saveddeletedescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs, options = {}) => {
+const saveddeletedescription2 = /** @type {((inputs: Saveddeletedescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Saveddeletedescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_saveddeletedescription2(inputs)
 	if (locale === "es") return es_saveddeletedescription2(inputs)
@@ -55,6 +59,7 @@ const saveddeletedescription2 = /** @type {((inputs: Saveddeletedescription2Inpu
 	if (locale === "ko") return ko_saveddeletedescription2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_saveddeletedescription2(inputs)
 	if (locale === "de") return de_saveddeletedescription2(inputs)
-	return fr_saveddeletedescription2(inputs)
+	if (locale === "fr") return fr_saveddeletedescription2(inputs)
+	return uk_saveddeletedescription2(inputs)
 });
 export { saveddeletedescription2 as "savedDeleteDescription" }

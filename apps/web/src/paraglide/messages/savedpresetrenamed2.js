@@ -37,16 +37,20 @@ const fr_savedpresetrenamed2 = /** @type {(inputs: Savedpresetrenamed2Inputs) =>
 	return /** @type {LocalizedString} */ (`Préréglage renommé`)
 };
 
+const uk_savedpresetrenamed2 = /** @type {(inputs: Savedpresetrenamed2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Налаштування перейменовано`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Preset renamed" |
 *
 * @param {Savedpresetrenamed2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const savedpresetrenamed2 = /** @type {((inputs?: Savedpresetrenamed2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedpresetrenamed2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const savedpresetrenamed2 = /** @type {((inputs?: Savedpresetrenamed2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedpresetrenamed2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_savedpresetrenamed2(inputs)
 	if (locale === "es") return es_savedpresetrenamed2(inputs)
@@ -55,6 +59,7 @@ const savedpresetrenamed2 = /** @type {((inputs?: Savedpresetrenamed2Inputs, opt
 	if (locale === "ko") return ko_savedpresetrenamed2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_savedpresetrenamed2(inputs)
 	if (locale === "de") return de_savedpresetrenamed2(inputs)
-	return fr_savedpresetrenamed2(inputs)
+	if (locale === "fr") return fr_savedpresetrenamed2(inputs)
+	return uk_savedpresetrenamed2(inputs)
 });
 export { savedpresetrenamed2 as "savedPresetRenamed" }

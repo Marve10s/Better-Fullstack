@@ -1,0 +1,57 @@
+---
+title: Створіть Rust Backend
+description: Створіть серверну частину Rust з Axum, SeaORM, PostgreSQL, трасуванням і структурованою обробкою помилок за допомогою Better Fullstack.
+updated: 2026-05-21
+category: Packs
+tags:
+  - rust
+  - axum
+  - seaorm
+  - postgres
+  - backend
+keywords:
+  - create rust backend
+  - rust api starter
+  - axum postgres starter
+  - seaorm api starter
+  - rust backend boilerplate
+---
+
+Використовуйте серверний пакет Rust, якщо вам потрібен компактний сервіс API із сильними типами, передбачуваною продуктивністю та структурою, яка підтримується компілятором.
+
+<StarterPackCta id="rust-backend" />
+
+## Створіть бекенд-стартер Rust
+
+Відкрийте пакет [Rust Backend pack у Stack Builder](/new?preset=rust-api&view=command) або запустіть:
+
+```bash
+bun create better-fullstack@latest my-rust-backend \
+  --ecosystem rust \
+  --rust-web-framework axum \
+  --rust-frontend none \
+  --rust-orm sea-orm \
+  --rust-logging tracing \
+  --rust-error-handling anyhow-thiserror
+```
+
+## Що входить до набору
+
+- Axum для HTTP-маршрутів.
+- SeaORM для типізованого доступу до бази даних.
+- PostgreSQL-орієнтована форма серверної частини.
+- Трасування для структурованих журналів програми.
+- у будь-якому разі та ці шаблони помилок для практичної обробки помилок.
+
+## Перше, що потрібно налаштувати
+
+1. Визначте свої модулі маршруту навколо ресурсів або робочих процесів.
+2. Додайте сутності бази даних і міграції для реального домену.
+3. Зберігайте явні помилки обробника, щоб легко налагодити помилки API.
+4. Запускайте `cargo check` і `cargo clippy -- -D warnings` у міру розвитку проекту.
+
+## Коли це правильний пакет
+
+Виберіть це для високонадійних серверних служб, API із суворими очікуваннями продуктивності, системних інструментів із поверхнею HTTP та команд, які віддають перевагу гарантіям часу компіляції Rust.
+
+Для покрокового керівництва на рівні стека прочитайте [Axum з PostgreSQL і SeaORM](/guides/rust/axum-postgres-seaorm/).

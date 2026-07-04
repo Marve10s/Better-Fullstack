@@ -37,16 +37,20 @@ const fr_runflagefforts2 = /** @type {(inputs: Runflagefforts2Inputs) => Localiz
 	return /** @type {LocalizedString} */ (`effort de raisonnement, là où le modèle le soutient`)
 };
 
+const uk_runflagefforts2 = /** @type {(inputs: Runflagefforts2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`міркування, якщо модель підтримує це`)
+};
+
 /**
 * | output |
 * | --- |
 * | "reasoning effort, where the model supports it" |
 *
 * @param {Runflagefforts2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const runflagefforts2 = /** @type {((inputs?: Runflagefforts2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runflagefforts2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const runflagefforts2 = /** @type {((inputs?: Runflagefforts2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runflagefforts2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_runflagefforts2(inputs)
 	if (locale === "es") return es_runflagefforts2(inputs)
@@ -55,6 +59,7 @@ const runflagefforts2 = /** @type {((inputs?: Runflagefforts2Inputs, options?: {
 	if (locale === "ko") return ko_runflagefforts2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_runflagefforts2(inputs)
 	if (locale === "de") return de_runflagefforts2(inputs)
-	return fr_runflagefforts2(inputs)
+	if (locale === "fr") return fr_runflagefforts2(inputs)
+	return uk_runflagefforts2(inputs)
 });
 export { runflagefforts2 as "runFlagEfforts" }

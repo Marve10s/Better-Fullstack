@@ -37,16 +37,20 @@ const fr_hometestimonialstitleb3 = /** @type {(inputs: Hometestimonialstitleb3In
 	return /** @type {LocalizedString} */ (`presque`)
 };
 
+const uk_hometestimonialstitleb3 = /** @type {(inputs: Hometestimonialstitleb3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`майже`)
+};
+
 /**
 * | output |
 * | --- |
 * | "almost" |
 *
 * @param {Hometestimonialstitleb3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const hometestimonialstitleb3 = /** @type {((inputs?: Hometestimonialstitleb3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Hometestimonialstitleb3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const hometestimonialstitleb3 = /** @type {((inputs?: Hometestimonialstitleb3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Hometestimonialstitleb3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_hometestimonialstitleb3(inputs)
 	if (locale === "es") return es_hometestimonialstitleb3(inputs)
@@ -55,6 +59,7 @@ const hometestimonialstitleb3 = /** @type {((inputs?: Hometestimonialstitleb3Inp
 	if (locale === "ko") return ko_hometestimonialstitleb3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_hometestimonialstitleb3(inputs)
 	if (locale === "de") return de_hometestimonialstitleb3(inputs)
-	return fr_hometestimonialstitleb3(inputs)
+	if (locale === "fr") return fr_hometestimonialstitleb3(inputs)
+	return uk_hometestimonialstitleb3(inputs)
 });
 export { hometestimonialstitleb3 as "homeTestimonialsTitleB" }

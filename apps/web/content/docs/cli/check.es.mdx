@@ -1,0 +1,34 @@
+---
+title: Ver Proyectos
+description: Diagnosticar proyectos Better Fullstack existentes desde CLI.
+---
+
+El comando `check` valida un proyecto Better Fullstack con scaffolding. Es el alias de cara al usuario para el comando `doctor` existente.
+
+```npm
+npm create better-fullstack@latest check -- --skip-checks
+```
+
+## ¿Qué cheque hace?
+
+- Lee y valida `bts.jsonc`.
+- Comprueba si las dependencias están instaladas para el administrador de paquetes o ecosistema detectado.
+- Informa que faltan variables de entorno requeridas en los archivos `.env.example`.
+- Ejecuta comprobaciones de compilación o tipo de proyecto generado disponibles a menos que se pase `--skip-checks`.
+- Admite `--json` para agentes y scripts de CI.
+
+## Banderas
+
+| Bandera | Comportamiento |
+| --- | --- |
+| directorio de proyecto posicional | Directorio del proyecto a diagnosticar. El valor predeterminado es el directorio actual. |
+| `--skip-checks` | Omita las comprobaciones de tipo/compilación generadas y solo inspeccione los archivos de configuración, dependencias y entorno. |
+| `--json` | Imprimir JSON estructurado. El comando sale de un valor distinto de cero cuando hay fallas presentes. |
+
+## Alias ​​del doctor
+
+`doctor` permanece disponible por compatibilidad:
+
+```npm
+npm create better-fullstack@latest doctor -- --skip-checks
+```

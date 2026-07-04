@@ -37,16 +37,20 @@ const fr_mcptoolsdescription2 = /** @type {(inputs: Mcptoolsdescription2Inputs) 
 	return /** @type {LocalizedString} */ (`Le serveur expose des outils restreints et typés pour l'orientation, la recherche de schéma, les vérifications de compatibilité, les essais à blanc, la création et l'ajout de fonctionnalités.`)
 };
 
+const uk_mcptoolsdescription2 = /** @type {(inputs: Mcptoolsdescription2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Сервер надає вузькі типізовані інструменти для вказівок, пошуку схем, перевірки сумісності, тестування, створення та додавання функцій.`)
+};
+
 /**
 * | output |
 * | --- |
 * | "The server exposes narrow, typed tools for guidance, schema lookup, compatibility checks, dry runs, creation, and adding features." |
 *
 * @param {Mcptoolsdescription2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const mcptoolsdescription2 = /** @type {((inputs?: Mcptoolsdescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcptoolsdescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcptoolsdescription2 = /** @type {((inputs?: Mcptoolsdescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcptoolsdescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcptoolsdescription2(inputs)
 	if (locale === "es") return es_mcptoolsdescription2(inputs)
@@ -55,6 +59,7 @@ const mcptoolsdescription2 = /** @type {((inputs?: Mcptoolsdescription2Inputs, o
 	if (locale === "ko") return ko_mcptoolsdescription2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcptoolsdescription2(inputs)
 	if (locale === "de") return de_mcptoolsdescription2(inputs)
-	return fr_mcptoolsdescription2(inputs)
+	if (locale === "fr") return fr_mcptoolsdescription2(inputs)
+	return uk_mcptoolsdescription2(inputs)
 });
 export { mcptoolsdescription2 as "mcpToolsDescription" }

@@ -37,16 +37,20 @@ const fr_runflagmodel2 = /** @type {(inputs: Runflagmodel2Inputs) => LocalizedSt
 	return /** @type {LocalizedString} */ (`le modèle à exécuter (voir le tableau ci-dessus) ; le fournisseur est déduit de l’identifiant`)
 };
 
+const uk_runflagmodel2 = /** @type {(inputs: Runflagmodel2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`модель для запуску (див. таблицю вище); постачальник визначається за ідентифікатором`)
+};
+
 /**
 * | output |
 * | --- |
 * | "the model to run (see the table above); the provider is inferred from the id" |
 *
 * @param {Runflagmodel2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const runflagmodel2 = /** @type {((inputs?: Runflagmodel2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runflagmodel2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const runflagmodel2 = /** @type {((inputs?: Runflagmodel2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runflagmodel2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_runflagmodel2(inputs)
 	if (locale === "es") return es_runflagmodel2(inputs)
@@ -55,6 +59,7 @@ const runflagmodel2 = /** @type {((inputs?: Runflagmodel2Inputs, options?: { loc
 	if (locale === "ko") return ko_runflagmodel2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_runflagmodel2(inputs)
 	if (locale === "de") return de_runflagmodel2(inputs)
-	return fr_runflagmodel2(inputs)
+	if (locale === "fr") return fr_runflagmodel2(inputs)
+	return uk_runflagmodel2(inputs)
 });
 export { runflagmodel2 as "runFlagModel" }

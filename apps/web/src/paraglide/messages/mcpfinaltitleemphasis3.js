@@ -37,16 +37,20 @@ const fr_mcpfinaltitleemphasis3 = /** @type {(inputs: Mcpfinaltitleemphasis3Inpu
 	return /** @type {LocalizedString} */ (`invite uniquement.`)
 };
 
+const uk_mcpfinaltitleemphasis3 = /** @type {(inputs: Mcpfinaltitleemphasis3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`лише підказка.`)
+};
+
 /**
 * | output |
 * | --- |
 * | "prompt-only." |
 *
 * @param {Mcpfinaltitleemphasis3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const mcpfinaltitleemphasis3 = /** @type {((inputs?: Mcpfinaltitleemphasis3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpfinaltitleemphasis3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcpfinaltitleemphasis3 = /** @type {((inputs?: Mcpfinaltitleemphasis3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpfinaltitleemphasis3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcpfinaltitleemphasis3(inputs)
 	if (locale === "es") return es_mcpfinaltitleemphasis3(inputs)
@@ -55,6 +59,7 @@ const mcpfinaltitleemphasis3 = /** @type {((inputs?: Mcpfinaltitleemphasis3Input
 	if (locale === "ko") return ko_mcpfinaltitleemphasis3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcpfinaltitleemphasis3(inputs)
 	if (locale === "de") return de_mcpfinaltitleemphasis3(inputs)
-	return fr_mcpfinaltitleemphasis3(inputs)
+	if (locale === "fr") return fr_mcpfinaltitleemphasis3(inputs)
+	return uk_mcpfinaltitleemphasis3(inputs)
 });
 export { mcpfinaltitleemphasis3 as "mcpFinalTitleEmphasis" }

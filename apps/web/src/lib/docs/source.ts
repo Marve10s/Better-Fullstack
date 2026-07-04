@@ -106,6 +106,7 @@ const DOC_FOLDER_TITLE_TRANSLATIONS: Record<string, LocalizedFrontmatter<{ title
     "zh-Hant": { title: "AI 代理" },
     de: { title: "KI-Agenten" },
     fr: { title: "Agents IA" },
+    uk: { title: "AI-агенти" },
   },
   "Better Fullstack": {
     es: { title: "Better Fullstack" },
@@ -115,6 +116,7 @@ const DOC_FOLDER_TITLE_TRANSLATIONS: Record<string, LocalizedFrontmatter<{ title
     "zh-Hant": { title: "Better Fullstack" },
     de: { title: "Better Fullstack" },
     fr: { title: "Better Fullstack" },
+    uk: { title: "Better Fullstack" },
   },
   CLI: {
     es: { title: "CLI" },
@@ -124,6 +126,7 @@ const DOC_FOLDER_TITLE_TRANSLATIONS: Record<string, LocalizedFrontmatter<{ title
     "zh-Hant": { title: "CLI" },
     de: { title: "CLI" },
     fr: { title: "CLI" },
+    uk: { title: "CLI" },
   },
   Ecosystems: {
     es: { title: "Ecosistemas" },
@@ -133,6 +136,7 @@ const DOC_FOLDER_TITLE_TRANSLATIONS: Record<string, LocalizedFrontmatter<{ title
     "zh-Hant": { title: "生態系統" },
     de: { title: "Ökosysteme" },
     fr: { title: "Écosystèmes" },
+    uk: { title: "Екосистеми" },
   },
   "Getting Started": {
     es: { title: "Primeros pasos" },
@@ -142,6 +146,7 @@ const DOC_FOLDER_TITLE_TRANSLATIONS: Record<string, LocalizedFrontmatter<{ title
     "zh-Hant": { title: "入門" },
     de: { title: "Erste Schritte" },
     fr: { title: "Bien démarrer" },
+    uk: { title: "Початок роботи" },
   },
   Options: {
     es: { title: "Opciones" },
@@ -151,6 +156,7 @@ const DOC_FOLDER_TITLE_TRANSLATIONS: Record<string, LocalizedFrontmatter<{ title
     "zh-Hant": { title: "選項" },
     de: { title: "Optionen" },
     fr: { title: "Options" },
+    uk: { title: "Опції" },
   },
   Reference: {
     es: { title: "Referencia" },
@@ -160,6 +166,7 @@ const DOC_FOLDER_TITLE_TRANSLATIONS: Record<string, LocalizedFrontmatter<{ title
     "zh-Hant": { title: "參考" },
     de: { title: "Referenz" },
     fr: { title: "Référence" },
+    uk: { title: "Довідник" },
   },
   Sections: {
     es: { title: "Secciones" },
@@ -169,6 +176,7 @@ const DOC_FOLDER_TITLE_TRANSLATIONS: Record<string, LocalizedFrontmatter<{ title
     "zh-Hant": { title: "功能分區" },
     de: { title: "Abschnitte" },
     fr: { title: "Sections" },
+    uk: { title: "Розділи" },
   },
 };
 

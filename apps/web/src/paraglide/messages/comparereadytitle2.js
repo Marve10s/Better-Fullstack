@@ -37,16 +37,20 @@ const fr_comparereadytitle2 = /** @type {(inputs: Comparereadytitle2Inputs) => L
 	return /** @type {LocalizedString} */ (`Prêt à l'essayer ?`)
 };
 
+const uk_comparereadytitle2 = /** @type {(inputs: Comparereadytitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Готові спробувати?`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Ready to try it?" |
 *
 * @param {Comparereadytitle2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const comparereadytitle2 = /** @type {((inputs?: Comparereadytitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparereadytitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const comparereadytitle2 = /** @type {((inputs?: Comparereadytitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparereadytitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_comparereadytitle2(inputs)
 	if (locale === "es") return es_comparereadytitle2(inputs)
@@ -55,6 +59,7 @@ const comparereadytitle2 = /** @type {((inputs?: Comparereadytitle2Inputs, optio
 	if (locale === "ko") return ko_comparereadytitle2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_comparereadytitle2(inputs)
 	if (locale === "de") return de_comparereadytitle2(inputs)
-	return fr_comparereadytitle2(inputs)
+	if (locale === "fr") return fr_comparereadytitle2(inputs)
+	return uk_comparereadytitle2(inputs)
 });
 export { comparereadytitle2 as "compareReadyTitle" }

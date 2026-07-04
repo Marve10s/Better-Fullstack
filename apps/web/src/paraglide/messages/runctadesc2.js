@@ -37,16 +37,20 @@ const fr_runctadesc2 = /** @type {(inputs: Runctadesc2Inputs) => LocalizedString
 	return /** @type {LocalizedString} */ (`Vos résultats s'affichent au même format que le classement. Vous avez réalisé une expérience intéressante ? Soumettez une pull request avec votre rapport.`)
 };
 
+const uk_runctadesc2 = /** @type {(inputs: Runctadesc2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Ваші номери мають той самий формат, що й таблиця лідерів. Пробігли щось цікаве? Відкрийте запит на отримання звіту.`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Your numbers land in the same format as the leaderboard. Ran something interesting? Open a pull request with your report." |
 *
 * @param {Runctadesc2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const runctadesc2 = /** @type {((inputs?: Runctadesc2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runctadesc2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const runctadesc2 = /** @type {((inputs?: Runctadesc2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runctadesc2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_runctadesc2(inputs)
 	if (locale === "es") return es_runctadesc2(inputs)
@@ -55,6 +59,7 @@ const runctadesc2 = /** @type {((inputs?: Runctadesc2Inputs, options?: { locale?
 	if (locale === "ko") return ko_runctadesc2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_runctadesc2(inputs)
 	if (locale === "de") return de_runctadesc2(inputs)
-	return fr_runctadesc2(inputs)
+	if (locale === "fr") return fr_runctadesc2(inputs)
+	return uk_runctadesc2(inputs)
 });
 export { runctadesc2 as "runCtaDesc" }

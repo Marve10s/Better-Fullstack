@@ -37,16 +37,20 @@ const fr_buildernone1 = /** @type {(inputs: Buildernone1Inputs) => LocalizedStri
 	return /** @type {LocalizedString} */ (`Aucun`)
 };
 
+const uk_buildernone1 = /** @type {(inputs: Buildernone1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Жодного`)
+};
+
 /**
 * | output |
 * | --- |
 * | "None" |
 *
 * @param {Buildernone1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const buildernone1 = /** @type {((inputs?: Buildernone1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildernone1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const buildernone1 = /** @type {((inputs?: Buildernone1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildernone1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_buildernone1(inputs)
 	if (locale === "es") return es_buildernone1(inputs)
@@ -55,6 +59,7 @@ const buildernone1 = /** @type {((inputs?: Buildernone1Inputs, options?: { local
 	if (locale === "ko") return ko_buildernone1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_buildernone1(inputs)
 	if (locale === "de") return de_buildernone1(inputs)
-	return fr_buildernone1(inputs)
+	if (locale === "fr") return fr_buildernone1(inputs)
+	return uk_buildernone1(inputs)
 });
 export { buildernone1 as "builderNone" }

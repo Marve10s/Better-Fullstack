@@ -12,5 +12,5 @@ export type GuideMdxModule = {
 
 export const guideMdxLoaders = import.meta.glob<GuideMdxModule>([
   "../../../content/guides/**/*.mdx",
-  "!../../../content/guides/**/*.{es,zh,ja,ko,zh-Hant,de,fr}.mdx",
+  "!../../../content/guides/**/*.{es,zh,ja,ko,zh-Hant,de,fr,uk}.mdx",
 ]);

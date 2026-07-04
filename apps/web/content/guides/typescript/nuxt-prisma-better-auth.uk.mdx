@@ -1,0 +1,129 @@
+---
+title: Nuxt з Prisma і Better Auth
+description: Створіть програму повного стеку Nuxt з PostgreSQL, Prisma, Better Auth, oRPC, Tailwind CSS та згенерованою структурою проекту Better Fullstack.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - nuxt
+  - prisma
+  - better-auth
+  - postgres
+keywords:
+  - nuxt prisma better auth
+  - nuxt postgres starter
+  - nuxt fullstack boilerplate
+  - create nuxt fullstack app
+  - nuxt orpc starter
+---
+
+Використовуйте цей стек, якщо вам потрібна повноцінна програма Vue/Nuxt з реляційними даними, автентифікацією та типізованими контрактами API.
+
+```npm
+npm create better-fullstack@latest my-nuxt-app -- \
+  --ecosystem typescript \
+  --frontend nuxt \
+  --backend self \
+  --database postgres \
+  --orm prisma \
+  --auth better-auth \
+  --api orpc \
+  --css-framework tailwind \
+```
+
+## Що це створює
+
+- Додаток Nuxt у повному режимі.
+- PostgreSQL і Prisma.
+- Better Auth.
+- oRPC для типізованих контрактів API.
+- Tailwind CSS.
+- Відтворювана конфігурація стека `bts.jsonc`.
+
+## Згенерована форма
+
+Цей стек зберігає програму всередині моделі повного стека Nuxt. Prisma володіє схемою бази даних і міграціями, Better Auth володіє поведінкою автентифікації, а oRPC надає типізовані контракти, не припускаючи інтерфейсу React.
+
+Представницька форма:
+
+```txt
+my-nuxt-app/
+  bts.jsonc
+  app/
+  server/
+  prisma/
+    schema.prisma
+```
+
+Розглядайте це як репрезентативний макет. Важливим обмеженням є те, що лише серверна база даних і код авторизації залишаються в модулях сервера Nuxt або обробниках API, тоді як компоненти Vue викликають типізовані серверні контракти.
+
+## Приклад моделі Prisma
+
+Маленька модель продукту може починатися так:
+
+```prisma
+model Workspace {
+  id        String   @id
+  name      String
+  ownerId   String
+  createdAt DateTime @default(now())
+}
+```
+
+Зберігайте необхідні моделі Better Auth у відповідності з документацією адаптера та окремо від таблиць, що стосуються окремих програм. Таблиці продуктів мають посилатися на авторизованих користувачів за ідентифікатором, а не дублювати дані для входу.
+
+## Приклад форми контракту oRPC
+
+Використовуйте oRPC, щоб описати перевірені операції сервера для програми Nuxt:
+
+```ts
+import { z } from "zod";
+
+export const createWorkspaceInput = z.object({
+  name: z.string().min(2),
+});
+
+export async function createWorkspace(rawInput: unknown, userId: string) {
+  const input = createWorkspaceInput.parse(rawInput);
+
+  return {
+    id: crypto.randomUUID(),
+    name: input.name,
+    ownerId: userId,
+  };
+}
+```
+
+Розмістіть перевірки авторизації в реалізації сервера, а не лише в компонентах Vue. Захисники на стороні клієнта покращують UX, але не захищають дані.
+
+## Примітки щодо сумісності
+
+Nuxt використовує oRPC в Better Fullstack для типізованих контрактів. tRPC зарезервовано для інтерфейсів TypeScript на основі React, тому в цьому посібнику навмисно використовується `--api orpc`.
+
+`--backend self` є правильним вибором повного стека Nuxt. Якщо вам потрібен окремо розгорнутий сервер API, скористайтеся серверною опцією, такою як Hono, у стеку, який підтримує це з’єднання.
+
+## Коли його вибрати
+
+Виберіть Nuxt, якщо ваша команда віддає перевагу Vue, хоче маршрутизацію з підтримкою сервера та потребує повноцінної форми програми, а не окремого інтерфейсу та сервера API.
+
+## Примітки до розгортання
+
+Установіть рядок підключення PostgreSQL, секрети Better Auth та загальнодоступну URL-адресу програми в середовищі розгортання. Запустіть міграції Prisma перед розгортанням коду, який залежить від нової схеми.
+
+Для безсерверних платформ перегляньте, як генерується ваш клієнт Prisma і як об’єднуються з’єднання з базою даних. Керовані постачальники PostgreSQL часто документують найбезпечніший рядок підключення для безсерверних середовищ виконання.
+
+## Усунення несправностей
+
+- Якщо типи клієнтів Prisma застарілі, повторно згенеруйте клієнта після зміни `schema.prisma`.
+- Якщо виклики oRPC зазнають збою лише у виробництві, перевірте базову URL-адресу маршруту сервера та поведінку адаптера розгортання.
+- Якщо автентифікація переспрямовує петлю, перевірте надійні джерела, файли cookie та URL-адресу програми, яку використовує Better Auth.
+- Якщо міграції вказують на неправильну базу даних, перевірте змінну середовища, яка використовується як локальними командами, так і розгорнутим середовищем виконання.
+
+## Порівняльні нотатки
+
+Використовуйте цей стек, коли конвенції Vue та Nuxt є головним пріоритетом. Виберіть [Next.js з Drizzle і Better Auth](/guides/typescript/nextjs-drizzle-better-auth/) для React-першого стека або [SvelteKit з Hono і Drizzle](/guides/typescript/sveltekit-hono-drizzle/), якщо вам потрібна окрема серверна частина Hono.
+
+## Наступні кроки
+
+- Відкрийте [Stack Builder](/new?eco=typescript&fe-w=nuxt&be=self&db=postgres&orm=prisma&au=better-auth&api=orpc).
+- Порівняйте з [Next.js з Drizzle і Better Auth](/guides/typescript/nextjs-drizzle-better-auth/).
+- Прочитайте [довідник щодо сумісності](/docs/reference/compatibility/).

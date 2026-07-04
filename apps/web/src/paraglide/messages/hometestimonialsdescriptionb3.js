@@ -37,16 +37,20 @@ const fr_hometestimonialsdescriptionb3 = /** @type {(inputs: Hometestimonialsdes
 	return /** @type {LocalizedString} */ (`et`)
 };
 
+const uk_hometestimonialsdescriptionb3 = /** @type {(inputs: Hometestimonialsdescriptionb3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`і`)
+};
+
 /**
 * | output |
 * | --- |
 * | "and" |
 *
 * @param {Hometestimonialsdescriptionb3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const hometestimonialsdescriptionb3 = /** @type {((inputs?: Hometestimonialsdescriptionb3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Hometestimonialsdescriptionb3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const hometestimonialsdescriptionb3 = /** @type {((inputs?: Hometestimonialsdescriptionb3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Hometestimonialsdescriptionb3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_hometestimonialsdescriptionb3(inputs)
 	if (locale === "es") return es_hometestimonialsdescriptionb3(inputs)
@@ -55,6 +59,7 @@ const hometestimonialsdescriptionb3 = /** @type {((inputs?: Hometestimonialsdesc
 	if (locale === "ko") return ko_hometestimonialsdescriptionb3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_hometestimonialsdescriptionb3(inputs)
 	if (locale === "de") return de_hometestimonialsdescriptionb3(inputs)
-	return fr_hometestimonialsdescriptionb3(inputs)
+	if (locale === "fr") return fr_hometestimonialsdescriptionb3(inputs)
+	return uk_hometestimonialsdescriptionb3(inputs)
 });
 export { hometestimonialsdescriptionb3 as "homeTestimonialsDescriptionB" }

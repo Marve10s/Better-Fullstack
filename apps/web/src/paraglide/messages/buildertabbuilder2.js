@@ -37,16 +37,20 @@ const fr_buildertabbuilder2 = /** @type {(inputs: Buildertabbuilder2Inputs) => L
 	return /** @type {LocalizedString} */ (`Constructeur`)
 };
 
+const uk_buildertabbuilder2 = /** @type {(inputs: Buildertabbuilder2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Будівельник`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Builder" |
 *
 * @param {Buildertabbuilder2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const buildertabbuilder2 = /** @type {((inputs?: Buildertabbuilder2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildertabbuilder2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const buildertabbuilder2 = /** @type {((inputs?: Buildertabbuilder2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildertabbuilder2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_buildertabbuilder2(inputs)
 	if (locale === "es") return es_buildertabbuilder2(inputs)
@@ -55,6 +59,7 @@ const buildertabbuilder2 = /** @type {((inputs?: Buildertabbuilder2Inputs, optio
 	if (locale === "ko") return ko_buildertabbuilder2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_buildertabbuilder2(inputs)
 	if (locale === "de") return de_buildertabbuilder2(inputs)
-	return fr_buildertabbuilder2(inputs)
+	if (locale === "fr") return fr_buildertabbuilder2(inputs)
+	return uk_buildertabbuilder2(inputs)
 });
 export { buildertabbuilder2 as "builderTabBuilder" }

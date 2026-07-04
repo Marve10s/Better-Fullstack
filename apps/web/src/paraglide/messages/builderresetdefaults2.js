@@ -37,16 +37,20 @@ const fr_builderresetdefaults2 = /** @type {(inputs: Builderresetdefaults2Inputs
 	return /** @type {LocalizedString} */ (`Réinitialiser aux valeurs par défaut`)
 };
 
+const uk_builderresetdefaults2 = /** @type {(inputs: Builderresetdefaults2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Відновити налаштування за замовчуванням`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Reset to defaults" |
 *
 * @param {Builderresetdefaults2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const builderresetdefaults2 = /** @type {((inputs?: Builderresetdefaults2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderresetdefaults2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const builderresetdefaults2 = /** @type {((inputs?: Builderresetdefaults2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderresetdefaults2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderresetdefaults2(inputs)
 	if (locale === "es") return es_builderresetdefaults2(inputs)
@@ -55,6 +59,7 @@ const builderresetdefaults2 = /** @type {((inputs?: Builderresetdefaults2Inputs,
 	if (locale === "ko") return ko_builderresetdefaults2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderresetdefaults2(inputs)
 	if (locale === "de") return de_builderresetdefaults2(inputs)
-	return fr_builderresetdefaults2(inputs)
+	if (locale === "fr") return fr_builderresetdefaults2(inputs)
+	return uk_builderresetdefaults2(inputs)
 });
 export { builderresetdefaults2 as "builderResetDefaults" }

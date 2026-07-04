@@ -37,16 +37,20 @@ const fr_runsteprun2 = /** @type {(inputs: Runsteprun2Inputs) => LocalizedString
 	return /** @type {LocalizedString} */ (`Exécuter le test de performance`)
 };
 
+const uk_runsteprun2 = /** @type {(inputs: Runsteprun2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Запустіть тест`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Run the benchmark" |
 *
 * @param {Runsteprun2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const runsteprun2 = /** @type {((inputs?: Runsteprun2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runsteprun2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const runsteprun2 = /** @type {((inputs?: Runsteprun2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runsteprun2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_runsteprun2(inputs)
 	if (locale === "es") return es_runsteprun2(inputs)
@@ -55,6 +59,7 @@ const runsteprun2 = /** @type {((inputs?: Runsteprun2Inputs, options?: { locale?
 	if (locale === "ko") return ko_runsteprun2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_runsteprun2(inputs)
 	if (locale === "de") return de_runsteprun2(inputs)
-	return fr_runsteprun2(inputs)
+	if (locale === "fr") return fr_runsteprun2(inputs)
+	return uk_runsteprun2(inputs)
 });
 export { runsteprun2 as "runStepRun" }

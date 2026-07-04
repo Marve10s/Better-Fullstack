@@ -37,16 +37,20 @@ const fr_llmscatterunmetered2 = /** @type {(inputs: Llmscatterunmetered2Inputs) 
 	return /** @type {LocalizedString} */ (`Non mesuré sur cet axe (exclu du graphique) : ${i?.models}`)
 };
 
+const uk_llmscatterunmetered2 = /** @type {(inputs: Llmscatterunmetered2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Не вимірюється на цій осі (виключено з графіка): ${i?.models}`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Not metered on this axis (excluded from the plot): {models}" |
 *
 * @param {Llmscatterunmetered2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const llmscatterunmetered2 = /** @type {((inputs: Llmscatterunmetered2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmscatterunmetered2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs, options = {}) => {
+const llmscatterunmetered2 = /** @type {((inputs: Llmscatterunmetered2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmscatterunmetered2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_llmscatterunmetered2(inputs)
 	if (locale === "es") return es_llmscatterunmetered2(inputs)
@@ -55,6 +59,7 @@ const llmscatterunmetered2 = /** @type {((inputs: Llmscatterunmetered2Inputs, op
 	if (locale === "ko") return ko_llmscatterunmetered2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_llmscatterunmetered2(inputs)
 	if (locale === "de") return de_llmscatterunmetered2(inputs)
-	return fr_llmscatterunmetered2(inputs)
+	if (locale === "fr") return fr_llmscatterunmetered2(inputs)
+	return uk_llmscatterunmetered2(inputs)
 });
 export { llmscatterunmetered2 as "llmScatterUnmetered" }

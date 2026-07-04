@@ -37,16 +37,20 @@ const fr_llmagentdescription2 = /** @type {(inputs: Llmagentdescription2Inputs) 
 	return /** @type {LocalizedString} */ (`Un serveur MCP, chaque outil de spécification à échafaudage utilisé par le benchmark. Choisissez votre agent, collez, c'est fait.`)
 };
 
+const uk_llmagentdescription2 = /** @type {(inputs: Llmagentdescription2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Один сервер MCP, кожен інструмент від spec-to-scaffold використовувався в тесті. Виберіть агента, вставте, готово.`)
+};
+
 /**
 * | output |
 * | --- |
 * | "One MCP server, every spec-to-scaffold tool the benchmark used. Pick your agent, paste, done." |
 *
 * @param {Llmagentdescription2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const llmagentdescription2 = /** @type {((inputs?: Llmagentdescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmagentdescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const llmagentdescription2 = /** @type {((inputs?: Llmagentdescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmagentdescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_llmagentdescription2(inputs)
 	if (locale === "es") return es_llmagentdescription2(inputs)
@@ -55,6 +59,7 @@ const llmagentdescription2 = /** @type {((inputs?: Llmagentdescription2Inputs, o
 	if (locale === "ko") return ko_llmagentdescription2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_llmagentdescription2(inputs)
 	if (locale === "de") return de_llmagentdescription2(inputs)
-	return fr_llmagentdescription2(inputs)
+	if (locale === "fr") return fr_llmagentdescription2(inputs)
+	return uk_llmagentdescription2(inputs)
 });
 export { llmagentdescription2 as "llmAgentDescription" }

@@ -37,16 +37,20 @@ const fr_mcpworkflowguidancenote3 = /** @type {(inputs: Mcpworkflowguidancenote3
 	return /** @type {LocalizedString} */ (`règles de workflow + sémantique des champs`)
 };
 
+const uk_mcpworkflowguidancenote3 = /** @type {(inputs: Mcpworkflowguidancenote3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`правила робочого процесу + семантика поля`)
+};
+
 /**
 * | output |
 * | --- |
 * | "workflow rules + field semantics" |
 *
 * @param {Mcpworkflowguidancenote3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const mcpworkflowguidancenote3 = /** @type {((inputs?: Mcpworkflowguidancenote3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpworkflowguidancenote3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcpworkflowguidancenote3 = /** @type {((inputs?: Mcpworkflowguidancenote3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpworkflowguidancenote3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcpworkflowguidancenote3(inputs)
 	if (locale === "es") return es_mcpworkflowguidancenote3(inputs)
@@ -55,6 +59,7 @@ const mcpworkflowguidancenote3 = /** @type {((inputs?: Mcpworkflowguidancenote3I
 	if (locale === "ko") return ko_mcpworkflowguidancenote3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcpworkflowguidancenote3(inputs)
 	if (locale === "de") return de_mcpworkflowguidancenote3(inputs)
-	return fr_mcpworkflowguidancenote3(inputs)
+	if (locale === "fr") return fr_mcpworkflowguidancenote3(inputs)
+	return uk_mcpworkflowguidancenote3(inputs)
 });
 export { mcpworkflowguidancenote3 as "mcpWorkflowGuidanceNote" }

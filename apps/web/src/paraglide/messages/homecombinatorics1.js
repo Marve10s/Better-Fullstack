@@ -37,16 +37,20 @@ const fr_homecombinatorics1 = /** @type {(inputs: Homecombinatorics1Inputs) => L
 	return /** @type {LocalizedString} */ (`combinatoire`)
 };
 
+const uk_homecombinatorics1 = /** @type {(inputs: Homecombinatorics1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`комбінаторика`)
+};
+
 /**
 * | output |
 * | --- |
 * | "combinatorics" |
 *
 * @param {Homecombinatorics1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const homecombinatorics1 = /** @type {((inputs?: Homecombinatorics1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homecombinatorics1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const homecombinatorics1 = /** @type {((inputs?: Homecombinatorics1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homecombinatorics1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_homecombinatorics1(inputs)
 	if (locale === "es") return es_homecombinatorics1(inputs)
@@ -55,6 +59,7 @@ const homecombinatorics1 = /** @type {((inputs?: Homecombinatorics1Inputs, optio
 	if (locale === "ko") return ko_homecombinatorics1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_homecombinatorics1(inputs)
 	if (locale === "de") return de_homecombinatorics1(inputs)
-	return fr_homecombinatorics1(inputs)
+	if (locale === "fr") return fr_homecombinatorics1(inputs)
+	return uk_homecombinatorics1(inputs)
 });
 export { homecombinatorics1 as "homeCombinatorics" }

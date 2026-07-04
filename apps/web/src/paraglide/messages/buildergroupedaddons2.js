@@ -37,16 +37,20 @@ const fr_buildergroupedaddons2 = /** @type {(inputs: Buildergroupedaddons2Inputs
 	return /** @type {LocalizedString} */ (`Modules complémentaires groupés :`)
 };
 
+const uk_buildergroupedaddons2 = /** @type {(inputs: Buildergroupedaddons2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Згруповані доповнення:`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Grouped add-ons:" |
 *
 * @param {Buildergroupedaddons2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const buildergroupedaddons2 = /** @type {((inputs?: Buildergroupedaddons2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildergroupedaddons2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const buildergroupedaddons2 = /** @type {((inputs?: Buildergroupedaddons2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildergroupedaddons2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_buildergroupedaddons2(inputs)
 	if (locale === "es") return es_buildergroupedaddons2(inputs)
@@ -55,6 +59,7 @@ const buildergroupedaddons2 = /** @type {((inputs?: Buildergroupedaddons2Inputs,
 	if (locale === "ko") return ko_buildergroupedaddons2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_buildergroupedaddons2(inputs)
 	if (locale === "de") return de_buildergroupedaddons2(inputs)
-	return fr_buildergroupedaddons2(inputs)
+	if (locale === "fr") return fr_buildergroupedaddons2(inputs)
+	return uk_buildergroupedaddons2(inputs)
 });
 export { buildergroupedaddons2 as "builderGroupedAddons" }

@@ -1,0 +1,193 @@
+---
+title: Rust Служба gRPC із Tonic і SQLx
+description: Створіть службу Rust gRPC з Axum, Tonic, SQLx, трасуванням і структурованою обробкою помилок за допомогою Better Fullstack.
+updated: 2026-05-12
+category: Rust
+tags:
+  - rust
+  - tonic
+  - grpc
+  - sqlx
+keywords:
+  - rust grpc starter
+  - tonic sqlx starter
+  - axum tonic grpc
+  - create rust grpc service
+  - rust microservice boilerplate
+---
+
+Використовуйте цей стек, коли вам потрібен бекенд Rust, створений для API між послугами та типізованих контрактів gRPC.
+
+```npm
+npm create better-fullstack@latest my-rust-grpc -- \
+  --ecosystem rust \
+  --rust-web-framework axum \
+  --rust-frontend none \
+  --rust-orm sqlx \
+  --rust-api tonic \
+  --rust-cli none \
+  --rust-logging tracing \
+  --rust-error-handling anyhow-thiserror
+```
+
+## Що це створює
+
+- Служба Rust з використанням Axum.
+- Тонік для gRPC.
+- SQLx для доступу до бази даних.
+- Трасування та структурована обробка помилок.
+
+## Згенерована форма
+
+Цей стек сформований для введених міжсервісних викликів. Tonic володіє контрактом gRPC і реалізацією сервера, SQLx володіє доступом до бази даних, а Axum все ще може надавати оперативні HTTP-маршрути, такі як перевірки працездатності, якщо створений проект включає їх.
+
+Основними межами є:
+
+- `proto/` визначає договір обслуговування.
+- Згенеровані Rust типи gRPC залишаються близькими до реалізації служби Tonic.
+- Запити SQLx залишаються в сховищі чи службових модулях, а не в транспортних обробниках.
+- Маршрути Axum, якщо вони використовуються, є робочими кінцевими точками, а не основним продуктом API.
+
+## Репрезентативне дерево файлів
+
+```txt
+my-rust-grpc/
+  Cargo.toml
+  build.rs
+  proto/
+    users.proto
+  src/
+    main.rs
+    config.rs
+    error.rs
+    grpc/
+      mod.rs
+      users.rs
+    repositories/
+      mod.rs
+      users.rs
+    routes/
+      mod.rs
+      health.rs
+```
+
+Файл `build.rs` зазвичай містить генерацію protobuf. Зберігайте створений код подалі від редагованої вручну бізнес-логіки.
+
+## Приклади прото і сервісу
+
+Невеликий контракт protobuf надає клієнтам і серверам однакові межі типу:
+
+```proto
+syntax = "proto3";
+
+package users.v1;
+
+service UserService {
+  rpc GetUser(GetUserRequest) returns (User);
+}
+
+message GetUserRequest {
+  int64 id = 1;
+}
+
+message User {
+  int64 id = 1;
+  string email = 2;
+  string name = 3;
+}
+```
+
+Реалізація Tonic має переводити транспортні помилки в статуси gRPC і зберігати доступ до бази даних в окремому модулі:
+
+```rust
+use tonic::{Request, Response, Status};
+
+use crate::grpc::users_v1::{
+    user_service_server::UserService, GetUserRequest, User,
+};
+use crate::repositories::users::UserRepository;
+
+pub struct UsersGrpc {
+    repo: UserRepository,
+}
+
+#[tonic::async_trait]
+impl UserService for UsersGrpc {
+    async fn get_user(
+        &self,
+        request: Request<GetUserRequest>,
+    ) -> Result<Response<User>, Status> {
+        let id = request.into_inner().id;
+        let user = self
+            .repo
+            .find_by_id(id)
+            .await
+            .map_err(|error| Status::internal(error.to_string()))?
+            .ok_or_else(|| Status::not_found("user not found"))?;
+
+        Ok(Response::new(User {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+        }))
+    }
+}
+```
+
+SQLx зберігає явну форму запиту:
+
+```rust
+use sqlx::PgPool;
+
+pub struct UserRow {
+    pub id: i64,
+    pub email: String,
+    pub name: String,
+}
+
+pub async fn find_user(pool: &PgPool, id: i64) -> Result<Option<UserRow>, sqlx::Error> {
+    sqlx::query_as!(
+        UserRow,
+        "select id, email, name from users where id = $1",
+        id
+    )
+    .fetch_optional(pool)
+    .await
+}
+```
+
+## Примітки щодо сумісності
+
+Зберігайте `--rust-api tonic`, якщо вам потрібна згенерована проводка служби gRPC. Якщо ви змінюєте `--rust-api none`, приклади protobuf і Tonic у цьому посібнику стають ручними доповненнями. SQLx добре працює для контрактів на обслуговування, оскільки вихідні дані запиту можуть бути зіставлені безпосередньо в типи відповідей protobuf.
+
+## Коли його вибрати
+
+Виберіть це для внутрішніх служб, мікросервісів і серверних систем, де контракти gRPC краще підходять, ніж маршрути JSON.
+
+## Компроміси
+
+gRPC чудово підходить для строго типізованих меж сервісів, але він додає очікування щодо протоколу та інструментів. Для браузерних HTTP API починайте з [Axum з PostgreSQL і SeaORM](/guides/rust/axum-postgres-seaorm/).
+
+SQLx забезпечує прозорість поведінки бази даних, але вам потрібно свідомо керувати файлами SQL, міграціями та сумісністю запитів.
+
+## Примітки щодо тестування та розгортання
+
+Перевірте поведінку на рівні protobuf із згенерованими клієнтами або типами запитів Tonic, а потім перевірте функції репозиторію на реальній базі даних PostgreSQL, коли правильність запиту має значення.
+
+```bash
+cargo test
+```
+
+У CI переконайтеся, що інструменти protobuf доступні, якщо проект генерує типи Rust під час збирання. Для розгортання відкрийте порт gRPC, який очікують клієнти, і зберігайте будь-які маршрути працездатності HTTP окремо від адреси служби gRPC, якщо ваша платформа вимагає окремих зондів.
+
+## Усунення несправностей
+
+- Якщо типи protobuf відсутні, перевірте `build.rs` та підтвердьте, що включено шлях `.proto`.
+- Якщо перевірки під час компіляції SQLx не вдаються, перевірте URL-адресу бази даних або метадані офлайн-запиту, очікувані створеним проектом.
+- Якщо клієнти отримують `UNIMPLEMENTED`, підтвердьте, що згенерований сервер служби додано до конструктора серверів Tonic.
+- Якщо перевірки працездатності проходять успішно, але виклики gRPC не вдаються, переконайтеся, що порт gRPC є тим, який відкриває ваш менеджер процесів або контейнер.
+
+## Наступні кроки
+
+- Відкрийте [Stack Builder](/new?eco=rust&rwf=axum&rfe=none&rorm=sqlx&rapi=tonic&rcli=none&rlog=tracing&reh=anyhow-thiserror).
+- Прочитайте [Rust документацію про екосистему](/docs/ecosystems/rust/).

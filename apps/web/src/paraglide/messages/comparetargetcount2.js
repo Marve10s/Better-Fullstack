@@ -37,16 +37,20 @@ const fr_comparetargetcount2 = /** @type {(inputs: Comparetargetcount2Inputs) =>
 	return /** @type {LocalizedString} */ (`${i?.count} cibles`)
 };
 
+const uk_comparetargetcount2 = /** @type {(inputs: Comparetargetcount2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} цілі`)
+};
+
 /**
 * | output |
 * | --- |
 * | "{count} targets" |
 *
 * @param {Comparetargetcount2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const comparetargetcount2 = /** @type {((inputs: Comparetargetcount2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparetargetcount2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs, options = {}) => {
+const comparetargetcount2 = /** @type {((inputs: Comparetargetcount2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparetargetcount2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_comparetargetcount2(inputs)
 	if (locale === "es") return es_comparetargetcount2(inputs)
@@ -55,6 +59,7 @@ const comparetargetcount2 = /** @type {((inputs: Comparetargetcount2Inputs, opti
 	if (locale === "ko") return ko_comparetargetcount2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_comparetargetcount2(inputs)
 	if (locale === "de") return de_comparetargetcount2(inputs)
-	return fr_comparetargetcount2(inputs)
+	if (locale === "fr") return fr_comparetargetcount2(inputs)
+	return uk_comparetargetcount2(inputs)
 });
 export { comparetargetcount2 as "compareTargetCount" }

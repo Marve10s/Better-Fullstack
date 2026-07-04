@@ -42,6 +42,7 @@ const JAPANESE_COUNTRIES = ["JP"] as const;
 const KOREAN_COUNTRIES = ["KR"] as const;
 const GERMAN_COUNTRIES = ["DE"] as const;
 const FRENCH_COUNTRIES = ["FR"] as const;
+const UKRAINIAN_COUNTRIES = ["UA"] as const;
 
 const COUNTRY_LOCALE_ENTRIES: Array<[readonly string[], SupportedLocale]> = [
   [SPANISH_COUNTRIES, "es"],
@@ -51,6 +52,7 @@ const COUNTRY_LOCALE_ENTRIES: Array<[readonly string[], SupportedLocale]> = [
   [KOREAN_COUNTRIES, "ko"],
   [GERMAN_COUNTRIES, "de"],
   [FRENCH_COUNTRIES, "fr"],
+  [UKRAINIAN_COUNTRIES, "uk"],
 ];
 
 const COUNTRY_LOCALE_MAP = new Map<string, SupportedLocale>();

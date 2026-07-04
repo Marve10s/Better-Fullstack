@@ -1,0 +1,69 @@
+---
+title: Elixir
+description: Скаффолди Phoenix з Ecto SQL, конфігурацією, готовою до PostgreSQL, REST або Absinthe, реальним часом, завданнями, тестами та файлами розгортання.
+---
+
+Проекти Elixir створюють програми Phoenix, які дотримуються конвенцій Mix і Phoenix. Виберіть параметри Elixir для LiveView, Ecto SQL, автентифікації, APIs, реального часу, завдань, тестування, якості та файлів розгортання.
+
+## передумови
+
+- Elixir і Erlang/OTP сумісні з Phoenix 1.7.
+- PostgreSQL під час використання `ecto-sql`, `phx-gen-auth` або `oban`.
+- Git, якщо ви хочете ініціалізувати сховище.
+
+## Приклад сценарію
+
+```npm
+npm create better-fullstack@latest my-phoenix-app -- \
+  --ecosystem elixir \
+  --elixir-web-framework phoenix-live-view \
+  --elixir-orm ecto-sql \
+  --elixir-auth phx-gen-auth \
+  --elixir-api absinthe \
+  --elixir-realtime presence \
+  --elixir-jobs oban \
+  --elixir-http req \
+  --elixir-json jason \
+  --elixir-observability telemetry \
+  --elixir-testing ex_unit \
+  --elixir-quality credo \
+  --elixir-deploy docker \
+  --ai-docs none \
+  --no-install \
+  --no-git
+```
+
+## Elixir категорії
+
+| Категорія | Цінності |
+| --- | --- |
+| Веб-фреймворк | `phoenix` `phoenix-live-view` |
+| Наполегливість | `ecto-sql` `none` |
+| Авт | `phx-gen-auth` `ueberauth` `guardian` `none` |
+| API | `rest` `absinthe` `grpc` `none` |
+| Бібліотеки (множинний вибір) | `broadway` `nx` `none` |
+| У реальному часі | `channels` `presence` `pubsub` `live-view-streams` `none` |
+| Вакансії | `oban` `quantum` `none` |
+| HTTP | `req` `finch` `none` |
+| JSON | `jason` |
+| Електронна пошта | `swoosh` `none` |
+| Кешування | `cachex` `nebulex` `none` |
+| Спостережливість | `telemetry` `opentelemetry` `prom_ex` `none` |
+| Тестування | `ex_unit` `mox` `bypass` `wallaby` `none` |
+| якість | `credo` `dialyxir` `sobelow` `none` |
+| Розгорнути | `docker` `fly` `gigalixir` `mix-release` `none` |
+
+## Примітки щодо сумісності
+
+- Параметри Elixir застосовуються лише з `--ecosystem elixir`.
+- Phoenix і Phoenix LiveView є автономними веб-фреймворками Elixir; TypeScript параметри інтерфейсу та серверної частини ігноруються.
+- `phx-gen-auth` і Oban потребують Ecto SQL, оскільки згенерований код потребує репозиторію та міграції.
+- Oban націлений на проекти Ecto SQL із підтримкою PostgreSQL.
+- Потоки LiveView потребують `phoenix-live-view`.
+- Кілька варіантів на рівні схеми навмисно відхиляються валідатором графів, доки не існують відповідні шаблони: `ecto`, `ueberauth`, `guardian`, `nimble-options`, `nebulex`, `opentelemetry`, `prom_ex`, `mox`, `bypass`, `wallaby`, `fly` та `gigalixir`. CLI і конструктор видають це як повідомлення про непідтримувані інструменти, а не генерують частковий код Phoenix.
+
+## Сформована поведінка
+
+- Проект включає конфігурацію `mix.exs`, Phoenix, маршрутизатор, кінцеву точку, контролери, тести, `.env.example` та примітки до налаштування.
+- Вибір Ecto SQL включає репо, міграції, код схеми/контексту та конфігурацію PostgreSQL.
+- Додаткові параметри додають робочі файли Phoenix для завдань LiveView, каналів/присутності, Oban або Quantum, схеми/розв’язувачів Absinthe, HTTP-клієнтів Req/Finch, поштової програми Swoosh, Cachex, Dockerфайлу та конфігурації випуску.

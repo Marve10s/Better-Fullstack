@@ -37,16 +37,20 @@ const fr_stackcommandcopyfailed3 = /** @type {(inputs: Stackcommandcopyfailed3In
 	return /** @type {LocalizedString} */ (`Échec de la copie de la commande`)
 };
 
+const uk_stackcommandcopyfailed3 = /** @type {(inputs: Stackcommandcopyfailed3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Не вдалося скопіювати команду`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Failed to copy command" |
 *
 * @param {Stackcommandcopyfailed3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const stackcommandcopyfailed3 = /** @type {((inputs?: Stackcommandcopyfailed3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Stackcommandcopyfailed3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const stackcommandcopyfailed3 = /** @type {((inputs?: Stackcommandcopyfailed3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Stackcommandcopyfailed3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_stackcommandcopyfailed3(inputs)
 	if (locale === "es") return es_stackcommandcopyfailed3(inputs)
@@ -55,6 +59,7 @@ const stackcommandcopyfailed3 = /** @type {((inputs?: Stackcommandcopyfailed3Inp
 	if (locale === "ko") return ko_stackcommandcopyfailed3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_stackcommandcopyfailed3(inputs)
 	if (locale === "de") return de_stackcommandcopyfailed3(inputs)
-	return fr_stackcommandcopyfailed3(inputs)
+	if (locale === "fr") return fr_stackcommandcopyfailed3(inputs)
+	return uk_stackcommandcopyfailed3(inputs)
 });
 export { stackcommandcopyfailed3 as "stackCommandCopyFailed" }

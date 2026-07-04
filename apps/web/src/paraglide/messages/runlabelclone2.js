@@ -37,16 +37,20 @@ const fr_runlabelclone2 = /** @type {(inputs: Runlabelclone2Inputs) => Localized
 	return /** @type {LocalizedString} */ (`cloner le harnais`)
 };
 
+const uk_runlabelclone2 = /** @type {(inputs: Runlabelclone2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`клонувати джгут`)
+};
+
 /**
 * | output |
 * | --- |
 * | "clone the harness" |
 *
 * @param {Runlabelclone2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const runlabelclone2 = /** @type {((inputs?: Runlabelclone2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runlabelclone2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const runlabelclone2 = /** @type {((inputs?: Runlabelclone2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runlabelclone2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_runlabelclone2(inputs)
 	if (locale === "es") return es_runlabelclone2(inputs)
@@ -55,6 +59,7 @@ const runlabelclone2 = /** @type {((inputs?: Runlabelclone2Inputs, options?: { l
 	if (locale === "ko") return ko_runlabelclone2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_runlabelclone2(inputs)
 	if (locale === "de") return de_runlabelclone2(inputs)
-	return fr_runlabelclone2(inputs)
+	if (locale === "fr") return fr_runlabelclone2(inputs)
+	return uk_runlabelclone2(inputs)
 });
 export { runlabelclone2 as "runLabelClone" }

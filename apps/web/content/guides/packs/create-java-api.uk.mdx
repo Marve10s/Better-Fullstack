@@ -1,0 +1,59 @@
+---
+title: Створіть Java API
+description: Створіть Java API з Spring Boot, Spring Security, Spring Data JPA, Flyway, Gradle, JUnit 5 і Testcontainers.
+updated: 2026-05-21
+category: Packs
+tags:
+  - java
+  - spring-boot
+  - spring-security
+  - jpa
+  - testcontainers
+keywords:
+  - create java api
+  - spring boot api starter
+  - java rest api starter
+  - spring security api
+  - spring boot jpa starter
+---
+
+Використовуйте пакет Java API, якщо вам потрібна служба Spring із безпекою, постійністю, міграціями та тестами, включеними з самого початку.
+
+<StarterPackCta id="java-api" />
+
+## Згенеруйте запуск Java API
+
+Відкрийте пакет [Java API в Stack Builder](/new?preset=java-secure&view=command) або запустіть:
+
+```bash
+bun create better-fullstack@latest my-java-api \
+  --ecosystem java \
+  --java-web-framework spring-boot \
+  --java-build-tool gradle \
+  --java-orm spring-data-jpa \
+  --java-auth spring-security \
+  --java-libraries spring-actuator flyway \
+  --java-testing-libraries junit5 testcontainers
+```
+
+## Що входить до набору
+
+- Spring Boot для програми API.
+- Spring Security для захищених маршрутів.
+- Spring Data JPA для стійкості.
+- Flyway для міграції бази даних.
+- Gradle для збірок.
+- JUnit 5 і Testcontainers для тестів.
+
+## Перше, що потрібно налаштувати
+
+1. Замініть зразки сутностей вашими зведеними коренями та сховищами.
+2. Налаштуйте Spring Security відповідно до вашої реальної моделі автентифікації.
+3. Додайте міграції Flyway, перш ніж покладатися на згенеровану поведінку схеми.
+4. Тримайте Testcontainers поблизу контрактних тестів API.
+
+## Коли це правильний пакет
+
+Виберіть це для корпоративних API, командних серверних служб, захищених систем адміністрування та проектів, де екосистема Java/Spring є очікуваною основою виробництва.
+
+Щоб отримати інструкції на рівні стека, прочитайте [Secure Spring Boot API](/guides/java/spring-security-api/).

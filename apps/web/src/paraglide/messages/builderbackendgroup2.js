@@ -37,16 +37,20 @@ const fr_builderbackendgroup2 = /** @type {(inputs: Builderbackendgroup2Inputs) 
 	return /** @type {LocalizedString} */ (`${i?.ecosystem} Back-end`)
 };
 
+const uk_builderbackendgroup2 = /** @type {(inputs: Builderbackendgroup2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.ecosystem} Сервер`)
+};
+
 /**
 * | output |
 * | --- |
 * | "{ecosystem} Backend" |
 *
 * @param {Builderbackendgroup2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const builderbackendgroup2 = /** @type {((inputs: Builderbackendgroup2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderbackendgroup2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs, options = {}) => {
+const builderbackendgroup2 = /** @type {((inputs: Builderbackendgroup2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderbackendgroup2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderbackendgroup2(inputs)
 	if (locale === "es") return es_builderbackendgroup2(inputs)
@@ -55,6 +59,7 @@ const builderbackendgroup2 = /** @type {((inputs: Builderbackendgroup2Inputs, op
 	if (locale === "ko") return ko_builderbackendgroup2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderbackendgroup2(inputs)
 	if (locale === "de") return de_builderbackendgroup2(inputs)
-	return fr_builderbackendgroup2(inputs)
+	if (locale === "fr") return fr_builderbackendgroup2(inputs)
+	return uk_builderbackendgroup2(inputs)
 });
 export { builderbackendgroup2 as "builderBackendGroup" }

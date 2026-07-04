@@ -1,0 +1,63 @@
+---
+title: Combinaciones verificadas
+description: Vea qué combinaciones de andamios Better Fullstack tienen actualmente evidencia de paso de humo, ScaffBench, protección de liberación y paquete publicado.
+---
+
+Better Fullstack solo trata las filas con evidencia de aprobación actual como verificadas. El libro mayor generado es intencionalmente conservador: las filas configuradas y solo de matriz permanecen visibles, pero no se cuentan como reclamaciones verdes.
+
+<VerifiedCombinationsSummary />
+
+## Qué cubre el reclamo
+
+- Ajustes preestablecidos de humo de PR-core con instalación, compilación, verificación de tipos y validación específica del ecosistema.
+- ScaffBench 2 validación de referencia canónica.
+- Libere puertas de protección para esquemas, plantillas, instantáneas, ejemplos de AI, paridad de CLI/constructor, estado de la pila web, comandos reproducibles, flujos de agregar/historial y validación de enlaces de documentos.
+- Los paquetes publicados se estructuran a través de los puntos de entrada del administrador de paquetes Bun, npm y pnpm cuando existe `testing/.published-package/summary.json`.
+
+## Lo que no afirma
+
+- Se verifica cada combinación de pila teórica.
+- Están pasando filas configuradas o solo de matriz.
+- El registro del administrador de paquetes se instala más allá de las especificaciones del paquete registradas en el artefacto de humo del paquete publicado.
+
+## Enlaces fallidos
+
+Cada tarjeta de evidencia se vincula al artefacto de origen, al área del propietario y al comando de repetición. Cuando una sección no se completa por completo, utilice esos enlaces en orden:
+
+1. Abra el artefacto de origen y busque la fila o puerta que falla.
+2. Siga el enlace del propietario a la plantilla, paquete o área de prueba responsable de esa falla.
+3. Vuelva a ejecutar el comando enumerado después de realizar una corrección y luego reconstruya el libro mayor de combinaciones verificadas.
+
+## Artefacto fuente
+
+El libro mayor detallado se genera en `docs/verified-combinations.md` mediante:
+
+```sh
+bun run build:verified-combinations
+```
+
+Para actualizar la evidencia de la puerta de liberación antes de reconstruir el libro mayor, ejecute:
+
+```sh
+bun run test:release:record
+```
+
+Para actualizar la evidencia de instalación del registro del administrador de paquetes para el paquete publicado actual, ejecute:
+
+```sh
+bun run test:published-package
+```
+
+## Punto final de la insignia
+
+Utilice el punto final compatible con Shields cuando desee mostrar el recuento verificado actual:
+
+```md
+[![Verified combinations](https://img.shields.io/endpoint?url=https%3A%2F%2Fbetter-fullstack.dev%2Fapi%2Fverified-combinations)](https://better-fullstack.dev/docs/reference/verified-combinations)
+```
+
+El punto final devuelve el recuento total de pases entre humo, ScaffBench, liberación de guardia y evidencia de paquete publicado.
+
+<Callout kind="info" title="Scope matters">
+Sólo las combinaciones que se muestran como Aprobadas en el libro mayor generado deben describirse como verificadas. Las afirmaciones más amplias deben esperar a que haya más evidencia de humo, ScaffBench, liberación de protección o paquete publicado.
+</Callout>

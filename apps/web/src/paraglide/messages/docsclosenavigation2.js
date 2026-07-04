@@ -37,16 +37,20 @@ const fr_docsclosenavigation2 = /** @type {(inputs: Docsclosenavigation2Inputs) 
 	return /** @type {LocalizedString} */ (`Fermer la navigation dans les documents`)
 };
 
+const uk_docsclosenavigation2 = /** @type {(inputs: Docsclosenavigation2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Закрити навігацію документами`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Close docs navigation" |
 *
 * @param {Docsclosenavigation2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const docsclosenavigation2 = /** @type {((inputs?: Docsclosenavigation2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsclosenavigation2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const docsclosenavigation2 = /** @type {((inputs?: Docsclosenavigation2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsclosenavigation2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_docsclosenavigation2(inputs)
 	if (locale === "es") return es_docsclosenavigation2(inputs)
@@ -55,6 +59,7 @@ const docsclosenavigation2 = /** @type {((inputs?: Docsclosenavigation2Inputs, o
 	if (locale === "ko") return ko_docsclosenavigation2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_docsclosenavigation2(inputs)
 	if (locale === "de") return de_docsclosenavigation2(inputs)
-	return fr_docsclosenavigation2(inputs)
+	if (locale === "fr") return fr_docsclosenavigation2(inputs)
+	return uk_docsclosenavigation2(inputs)
 });
 export { docsclosenavigation2 as "docsCloseNavigation" }

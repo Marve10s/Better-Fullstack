@@ -37,16 +37,20 @@ const fr_runflagoutdir3 = /** @type {(inputs: Runflagoutdir3Inputs) => Localized
 	return /** @type {LocalizedString} */ (`où les résultats sont enregistrés ; réutiliser le même répertoire pour reprendre ou valider`)
 };
 
+const uk_runflagoutdir3 = /** @type {(inputs: Runflagoutdir3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`де приземляються результати; повторно використовуйте той самий каталог для відновлення або перевірки`)
+};
+
 /**
 * | output |
 * | --- |
 * | "where results land; re-use the same directory to resume or validate" |
 *
 * @param {Runflagoutdir3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const runflagoutdir3 = /** @type {((inputs?: Runflagoutdir3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runflagoutdir3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const runflagoutdir3 = /** @type {((inputs?: Runflagoutdir3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runflagoutdir3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_runflagoutdir3(inputs)
 	if (locale === "es") return es_runflagoutdir3(inputs)
@@ -55,6 +59,7 @@ const runflagoutdir3 = /** @type {((inputs?: Runflagoutdir3Inputs, options?: { l
 	if (locale === "ko") return ko_runflagoutdir3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_runflagoutdir3(inputs)
 	if (locale === "de") return de_runflagoutdir3(inputs)
-	return fr_runflagoutdir3(inputs)
+	if (locale === "fr") return fr_runflagoutdir3(inputs)
+	return uk_runflagoutdir3(inputs)
 });
 export { runflagoutdir3 as "runFlagOutDir" }

@@ -1,0 +1,167 @@
+---
+title: Rust CLI з Ratatui
+description: Створіть програму користувальницького інтерфейсу терміналу Rust за допомогою Ratatui, використовуючи структуру проекту Better Fullstack Rust CLI.
+updated: 2026-05-12
+category: Rust
+tags:
+  - rust
+  - cli
+  - ratatui
+keywords:
+  - rust ratatui starter
+  - rust cli boilerplate
+  - create rust cli
+  - ratatui terminal app
+  - rust tui starter
+---
+
+Використовуйте цей стек, якщо ви хочете створити термінальний інтерфейс користувача замість веб-сервісу.
+
+```npm
+npm create better-fullstack@latest my-rust-cli -- \
+  --ecosystem rust \
+  --rust-web-framework none \
+  --rust-frontend none \
+  --rust-orm none \
+  --rust-api none \
+  --rust-cli ratatui \
+  --rust-logging none
+```
+
+## Що це створює
+
+- Проект Rust CLI.
+- Ratatui як параметр інтерфейсу користувача терміналу.
+- Немає веб-фреймворку, інтерфейсу, ORM або рівня API.
+
+## Згенерована форма
+
+Цей стек створює термінальну програму, а не сервер. Ratatui обробляє рендеринг віджетів у термінал, тоді як ваш код програми володіє станом, подіями та поведінкою команд.
+
+Корисною ментальною моделлю є цикл:
+
+- Читання подій клавіатури або терміналу.
+- Оновити стан програми.
+- Відобразіть поточний стан у віджетах Ratatui.
+- Вийдіть чітко, коли користувач просить вийти.
+
+## Репрезентативне дерево файлів
+
+```txt
+my-rust-cli/
+  Cargo.toml
+  src/
+    main.rs
+    app.rs
+    event.rs
+    ui.rs
+```
+
+Тримайте `app.rs` зосередженим на переходах між станами, `event.rs` зосередженим на обробці введення, а `ui.rs` зосередженим на малюванні. Такий розподіл полегшує перевірку поведінки терміналу.
+
+## CLI та приклади інтерфейсу користувача
+
+Невеликий тип стану програми зберігає детермінованість візуалізації інтерфейсу користувача:
+
+```rust
+#[derive(Debug, Default)]
+pub struct App {
+    pub should_quit: bool,
+    pub selected_index: usize,
+    pub items: Vec<String>,
+}
+
+impl App {
+    pub fn quit(&mut self) {
+        self.should_quit = true;
+    }
+
+    pub fn next(&mut self) {
+        if !self.items.is_empty() {
+            self.selected_index = (self.selected_index + 1) % self.items.len();
+        }
+    }
+}
+```
+
+Функція малювання має отримати стан і відобразити його, не змінюючи поведінку програми:
+
+```rust
+use ratatui::{
+    layout::{Constraint, Direction, Layout},
+    widgets::{Block, Borders, List, ListItem, Paragraph},
+    Frame,
+};
+
+use crate::app::App;
+
+pub fn draw(frame: &mut Frame, app: &App) {
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Min(1), Constraint::Length(1)])
+        .split(frame.area());
+
+    let items = app.items.iter().map(|item| ListItem::new(item.as_str()));
+    let list = List::new(items).block(Block::default().title("Tasks").borders(Borders::ALL));
+    let help = Paragraph::new("q: quit  j/k: move");
+
+    frame.render_widget(list, chunks[0]);
+    frame.render_widget(help, chunks[1]);
+}
+```
+
+Обробка подій може залишатися невеликою та явною:
+
+```rust
+use crossterm::event::{KeyCode, KeyEvent};
+
+use crate::app::App;
+
+pub fn handle_key(app: &mut App, key: KeyEvent) {
+    match key.code {
+        KeyCode::Char('q') => app.quit(),
+        KeyCode::Char('j') | KeyCode::Down => app.next(),
+        _ => {}
+    }
+}
+```
+
+## Примітки щодо сумісності
+
+У проектах CLI слід уникати непов’язаних веб-фреймворків і баз даних, якщо вони вам явно не потрібні. Цей посібник зберігає ці прапорці встановленими на `none`.
+
+Зберігайте `--rust-cli ratatui` та прапорці web/API/database встановленими на `none` для проекту, який працює на терміналі. Якщо пізніше ви додасте бекенд або базу даних, розглядайте це як гібридну програму та запровадьте чіткі межі модулів замість змішування мережевих викликів у коді рендерингу.
+
+## Коли його вибрати
+
+Виберіть Ratatui для інформаційних панелей, інструментів розробника, інструментів інфраструктури та робочих процесів, які використовують термінал.
+
+Це особливо корисно, коли користувачі проводять більшу частину свого дня в оболонці та потребують цілеспрямованого інтерфейсу для повторних операцій.
+
+## Примітки щодо тестування та розгортання
+
+Більшість логіки Ratatui найпростіше перевірити на рівні терміналу. Перехід між станами модульного тесту та розбір команд безпосередньо:
+
+```bash
+cargo test
+```
+
+Для збірок випусків використовуйте звичайну оптимізовану збірку Cargo:
+
+```bash
+cargo build --release
+```
+
+Під час розповсюдження двійкового файлу задокументуйте очікування терміналу, такі як підтримка кольорів, комбінації клавіш, розташування файлів конфігурації та будь-які змінні середовища, які зчитує інструмент.
+
+## Усунення несправностей
+
+- Якщо термінал залишається в незвичному режимі після збою, переконайтеся, що програма відновлює необроблений режим і залишає альтернативний екран під час завершення роботи.
+- Якщо візуалізація мерехтить, переконайтеся, що цикл подій не перемальовується агресивно без введення чи галочок.
+- Якщо текст несподівано вирізається, перевірте з вузькою шириною терміналів і використовуйте обмеження макета Ratatui замість жорстко закодованих координат.
+- Якщо комбінації клавіш не працюють у віддаленій оболонці, порівняйте поведінку емулятора терміналу, перш ніж змінювати логіку програми.
+
+## Наступні кроки
+
+- Відкрийте [Stack Builder](/new?eco=rust&rwf=none&rfe=none&rorm=none&rapi=none&rcli=ratatui&rlog=none).
+- Прочитайте [Rust документацію про екосистему](/docs/ecosystems/rust/).

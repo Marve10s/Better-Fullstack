@@ -39,6 +39,7 @@ export function ogLocale(locale: string) {
     "zh-Hant": "zh_TW",
     de: "de_DE",
     fr: "fr_FR",
+    uk: "uk_UA",
   };
   return locales[locale] ?? "en_US";
 }

@@ -37,16 +37,20 @@ const fr_runresultsnotepre3 = /** @type {(inputs: Runresultsnotepre3Inputs) => L
 	return /** @type {LocalizedString} */ (`Les résultats — un classement, un passage par spécification, les bibliothèques câblées et le coût — sont enregistrés dans le répertoire de sortie, sous la même forme que le `)
 };
 
+const uk_runresultsnotepre3 = /** @type {(inputs: Runresultsnotepre3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Результати — таблиця лідерів, проходження за специфікацією, дротові бібліотеки та вартість — потрапляють у вихідний каталог у тій же формі, що й`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Results — a leaderboard, per-spec pass, wired-libraries, and cost — land in the output directory, in the same shape as the" |
 *
 * @param {Runresultsnotepre3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const runresultsnotepre3 = /** @type {((inputs?: Runresultsnotepre3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runresultsnotepre3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const runresultsnotepre3 = /** @type {((inputs?: Runresultsnotepre3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runresultsnotepre3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_runresultsnotepre3(inputs)
 	if (locale === "es") return es_runresultsnotepre3(inputs)
@@ -55,6 +59,7 @@ const runresultsnotepre3 = /** @type {((inputs?: Runresultsnotepre3Inputs, optio
 	if (locale === "ko") return ko_runresultsnotepre3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_runresultsnotepre3(inputs)
 	if (locale === "de") return de_runresultsnotepre3(inputs)
-	return fr_runresultsnotepre3(inputs)
+	if (locale === "fr") return fr_runresultsnotepre3(inputs)
+	return uk_runresultsnotepre3(inputs)
 });
 export { runresultsnotepre3 as "runResultsNotePre" }

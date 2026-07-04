@@ -1,0 +1,67 @@
+---
+title: Створіть додаток SaaS
+description: Дізнайтеся, як створити програму SaaS з Next.js, Better Auth, Stripe, PostgreSQL, Drizzle, React Email, Tailwind CSS і shadcn/ui за допомогою Better Fullstack.
+updated: 2026-05-21
+category: Packs
+tags:
+  - saas
+  - nextjs
+  - stripe
+  - better-auth
+  - drizzle
+keywords:
+  - create saas app
+  - how to make saas app
+  - build saas app
+  - create sass app
+  - nextjs saas starter
+  - saas boilerplate
+---
+
+Якщо ви шукаєте, як створити програму SaaS, почніть із пакета SaaS. Він надає вам те, що потрібно більшості продуктів для підписки, перш ніж перший клієнт зареєструється: облікові записи, таблиці бази даних, виставлення рахунків, електронна пошта, користувальницький інтерфейс і введена структура програми.
+
+<StarterPackCta id="saas-app" />
+
+## Згенеруйте стартер SaaS
+
+Відкрийте пакет [SaaS у Stack Builder](/new?preset=nextjs-saas&view=command) або виконайте наведену нижче команду.
+
+```bash
+bun create better-fullstack@latest my-saas-app \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --payments stripe \
+  --email react-email \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+  --package-manager bun
+```
+
+## Що входить до набору
+
+- Next.js як межа веб-сервера.
+- PostgreSQL з Drizzle для реляційних даних продукту.
+- Better Auth для входу, сеансів і потоків облікового запису.
+- Смуга для оплати підписки.
+- React Електронна пошта для транзакційних шаблонів електронної пошти.
+- Tailwind CSS та shadcn/ui для інтерфейсу продукту.
+- tRPC для введених викликів між інтерфейсом користувача React та кодом сервера.
+
+## Перше, що потрібно налаштувати
+
+1. Замініть згенеровану назву продукту, метадані та навігацію.
+2. Додайте ваші основні таблиці продуктів поруч із схемою Drizzle.
+3. Налаштуйте секрети Better Auth та надійні джерела.
+4. Створюйте продукти Stripe і зіставляйте їх із планами додатків.
+5. Додайте трансакційні електронні листи для реєстрації, виставлення рахунків і запрошень команди.
+
+## Коли це правильний пакет
+
+Використовуйте цей пакет для продуктів за підпискою, інформаційних панелей B2B, платних інструментів розробника, командних робочих областей і продуктів, де автентифікація та виставлення рахунків мають бути частиною першої робочої версії.
+
+Для покрокового керівництва на рівні стека прочитайте [Next.js з Drizzle і Better Auth](/guides/typescript/nextjs-drizzle-better-auth/).

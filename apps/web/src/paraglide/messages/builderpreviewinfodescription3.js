@@ -37,16 +37,20 @@ const fr_builderpreviewinfodescription3 = /** @type {(inputs: Builderpreviewinfo
 	return /** @type {LocalizedString} */ (`Il s'agit d'un aperçu de modèle statique. Les fichiers ne sont pas formatés. Certaines fonctionnalités telles que la configuration du fournisseur de base de données (Turso, Neon, Supabase, etc.) et certains modules complémentaires (Fumadocs, Starlight, Tauri, etc.) nécessitent l'exécution de CLI et ne sont pas affichées ici.`)
 };
 
+const uk_builderpreviewinfodescription3 = /** @type {(inputs: Builderpreviewinfodescription3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Це попередній перегляд статичного шаблону. Файли не відформатовані. Деякі функції, як-от налаштування постачальника бази даних (Turso, Neon, Supabase тощо) і певні додатки (Fumadocs, Starlight, Tauri тощо), вимагають виконання CLI і тут не показані.`)
+};
+
 /**
 * | output |
 * | --- |
 * | "This is a static template preview. Files are not formatted. Some features like database provider setup (Turso, Neon, Supabase, etc.) and certain addons (Fuma..." |
 *
 * @param {Builderpreviewinfodescription3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const builderpreviewinfodescription3 = /** @type {((inputs?: Builderpreviewinfodescription3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderpreviewinfodescription3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const builderpreviewinfodescription3 = /** @type {((inputs?: Builderpreviewinfodescription3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderpreviewinfodescription3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderpreviewinfodescription3(inputs)
 	if (locale === "es") return es_builderpreviewinfodescription3(inputs)
@@ -55,6 +59,7 @@ const builderpreviewinfodescription3 = /** @type {((inputs?: Builderpreviewinfod
 	if (locale === "ko") return ko_builderpreviewinfodescription3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderpreviewinfodescription3(inputs)
 	if (locale === "de") return de_builderpreviewinfodescription3(inputs)
-	return fr_builderpreviewinfodescription3(inputs)
+	if (locale === "fr") return fr_builderpreviewinfodescription3(inputs)
+	return uk_builderpreviewinfodescription3(inputs)
 });
 export { builderpreviewinfodescription3 as "builderPreviewInfoDescription" }

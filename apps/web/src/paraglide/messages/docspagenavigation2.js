@@ -37,16 +37,20 @@ const fr_docspagenavigation2 = /** @type {(inputs: Docspagenavigation2Inputs) =>
 	return /** @type {LocalizedString} */ (`Navigation dans les pages`)
 };
 
+const uk_docspagenavigation2 = /** @type {(inputs: Docspagenavigation2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Навігація сторінкою`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Page navigation" |
 *
 * @param {Docspagenavigation2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const docspagenavigation2 = /** @type {((inputs?: Docspagenavigation2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docspagenavigation2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const docspagenavigation2 = /** @type {((inputs?: Docspagenavigation2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docspagenavigation2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_docspagenavigation2(inputs)
 	if (locale === "es") return es_docspagenavigation2(inputs)
@@ -55,6 +59,7 @@ const docspagenavigation2 = /** @type {((inputs?: Docspagenavigation2Inputs, opt
 	if (locale === "ko") return ko_docspagenavigation2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_docspagenavigation2(inputs)
 	if (locale === "de") return de_docspagenavigation2(inputs)
-	return fr_docspagenavigation2(inputs)
+	if (locale === "fr") return fr_docspagenavigation2(inputs)
+	return uk_docspagenavigation2(inputs)
 });
 export { docspagenavigation2 as "docsPageNavigation" }

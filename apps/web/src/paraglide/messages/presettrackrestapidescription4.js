@@ -37,16 +37,20 @@ const fr_presettrackrestapidescription4 = /** @type {(inputs: Presettrackrestapi
 	return /** @type {LocalizedString} */ (`FastAPI avec SQLAlchemy, Pydantic, Ruff et une petite mise en page de projet Python API-first.`)
 };
 
+const uk_presettrackrestapidescription4 = /** @type {(inputs: Presettrackrestapidescription4Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`FastAPI з SQLAlchemy, Pydantic, Ruff і макетом невеликого API-першого Python проекту.`)
+};
+
 /**
 * | output |
 * | --- |
 * | "FastAPI with SQLAlchemy, Pydantic, Ruff, and a small API-first Python project layout." |
 *
 * @param {Presettrackrestapidescription4Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const presettrackrestapidescription4 = /** @type {((inputs?: Presettrackrestapidescription4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackrestapidescription4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const presettrackrestapidescription4 = /** @type {((inputs?: Presettrackrestapidescription4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackrestapidescription4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_presettrackrestapidescription4(inputs)
 	if (locale === "es") return es_presettrackrestapidescription4(inputs)
@@ -55,6 +59,7 @@ const presettrackrestapidescription4 = /** @type {((inputs?: Presettrackrestapid
 	if (locale === "ko") return ko_presettrackrestapidescription4(inputs)
 	if (locale === "zh-Hant") return zh_hant1_presettrackrestapidescription4(inputs)
 	if (locale === "de") return de_presettrackrestapidescription4(inputs)
-	return fr_presettrackrestapidescription4(inputs)
+	if (locale === "fr") return fr_presettrackrestapidescription4(inputs)
+	return uk_presettrackrestapidescription4(inputs)
 });
 export { presettrackrestapidescription4 as "presetTrackRestApiDescription" }

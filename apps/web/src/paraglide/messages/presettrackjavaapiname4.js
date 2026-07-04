@@ -37,16 +37,20 @@ const fr_presettrackjavaapiname4 = /** @type {(inputs: Presettrackjavaapiname4In
 	return /** @type {LocalizedString} */ (`Java API`)
 };
 
+const uk_presettrackjavaapiname4 = /** @type {(inputs: Presettrackjavaapiname4Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Java API`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Java API" |
 *
 * @param {Presettrackjavaapiname4Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const presettrackjavaapiname4 = /** @type {((inputs?: Presettrackjavaapiname4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackjavaapiname4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const presettrackjavaapiname4 = /** @type {((inputs?: Presettrackjavaapiname4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackjavaapiname4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_presettrackjavaapiname4(inputs)
 	if (locale === "es") return es_presettrackjavaapiname4(inputs)
@@ -55,6 +59,7 @@ const presettrackjavaapiname4 = /** @type {((inputs?: Presettrackjavaapiname4Inp
 	if (locale === "ko") return ko_presettrackjavaapiname4(inputs)
 	if (locale === "zh-Hant") return zh_hant1_presettrackjavaapiname4(inputs)
 	if (locale === "de") return de_presettrackjavaapiname4(inputs)
-	return fr_presettrackjavaapiname4(inputs)
+	if (locale === "fr") return fr_presettrackjavaapiname4(inputs)
+	return uk_presettrackjavaapiname4(inputs)
 });
 export { presettrackjavaapiname4 as "presetTrackJavaApiName" }

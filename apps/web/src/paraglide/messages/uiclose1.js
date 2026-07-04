@@ -37,16 +37,20 @@ const fr_uiclose1 = /** @type {(inputs: Uiclose1Inputs) => LocalizedString} */ (
 	return /** @type {LocalizedString} */ (`Fermer`)
 };
 
+const uk_uiclose1 = /** @type {(inputs: Uiclose1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Закрити`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Close" |
 *
 * @param {Uiclose1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const uiclose1 = /** @type {((inputs?: Uiclose1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Uiclose1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const uiclose1 = /** @type {((inputs?: Uiclose1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Uiclose1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_uiclose1(inputs)
 	if (locale === "es") return es_uiclose1(inputs)
@@ -55,6 +59,7 @@ const uiclose1 = /** @type {((inputs?: Uiclose1Inputs, options?: { locale?: "en"
 	if (locale === "ko") return ko_uiclose1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_uiclose1(inputs)
 	if (locale === "de") return de_uiclose1(inputs)
-	return fr_uiclose1(inputs)
+	if (locale === "fr") return fr_uiclose1(inputs)
+	return uk_uiclose1(inputs)
 });
 export { uiclose1 as "uiClose" }

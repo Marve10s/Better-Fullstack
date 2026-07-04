@@ -37,16 +37,20 @@ const fr_builderyolomode2 = /** @type {(inputs: Builderyolomode2Inputs) => Local
 	return /** @type {LocalizedString} */ (`Mode YOLO`)
 };
 
+const uk_builderyolomode2 = /** @type {(inputs: Builderyolomode2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Режим YOLO`)
+};
+
 /**
 * | output |
 * | --- |
 * | "YOLO Mode" |
 *
 * @param {Builderyolomode2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const builderyolomode2 = /** @type {((inputs?: Builderyolomode2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderyolomode2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const builderyolomode2 = /** @type {((inputs?: Builderyolomode2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderyolomode2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderyolomode2(inputs)
 	if (locale === "es") return es_builderyolomode2(inputs)
@@ -55,6 +59,7 @@ const builderyolomode2 = /** @type {((inputs?: Builderyolomode2Inputs, options?:
 	if (locale === "ko") return ko_builderyolomode2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderyolomode2(inputs)
 	if (locale === "de") return de_builderyolomode2(inputs)
-	return fr_builderyolomode2(inputs)
+	if (locale === "fr") return fr_builderyolomode2(inputs)
+	return uk_builderyolomode2(inputs)
 });
 export { builderyolomode2 as "builderYoloMode" }

@@ -12,5 +12,5 @@ export type BlogMdxModule = {
 
 export const blogMdxLoaders = import.meta.glob<BlogMdxModule>([
   "../../../content/blog/**/*.mdx",
-  "!../../../content/blog/**/*.{es,zh,ja,ko,zh-Hant,de,fr}.mdx",
+  "!../../../content/blog/**/*.{es,zh,ja,ko,zh-Hant,de,fr,uk}.mdx",
 ]);

@@ -37,16 +37,20 @@ const fr_llmpathclishort3 = /** @type {(inputs: Llmpathclishort3Inputs) => Local
 	return /** @type {LocalizedString} */ (`mention petit ami`)
 };
 
+const uk_llmpathclishort3 = /** @type {(inputs: Llmpathclishort3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Згадка BF`)
+};
+
 /**
 * | output |
 * | --- |
 * | "BF mention" |
 *
 * @param {Llmpathclishort3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const llmpathclishort3 = /** @type {((inputs?: Llmpathclishort3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmpathclishort3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const llmpathclishort3 = /** @type {((inputs?: Llmpathclishort3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmpathclishort3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_llmpathclishort3(inputs)
 	if (locale === "es") return es_llmpathclishort3(inputs)
@@ -55,6 +59,7 @@ const llmpathclishort3 = /** @type {((inputs?: Llmpathclishort3Inputs, options?:
 	if (locale === "ko") return ko_llmpathclishort3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_llmpathclishort3(inputs)
 	if (locale === "de") return de_llmpathclishort3(inputs)
-	return fr_llmpathclishort3(inputs)
+	if (locale === "fr") return fr_llmpathclishort3(inputs)
+	return uk_llmpathclishort3(inputs)
 });
 export { llmpathclishort3 as "llmPathCliShort" }

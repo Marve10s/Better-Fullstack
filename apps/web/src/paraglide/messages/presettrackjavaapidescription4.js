@@ -37,16 +37,20 @@ const fr_presettrackjavaapidescription4 = /** @type {(inputs: Presettrackjavaapi
 	return /** @type {LocalizedString} */ (`Spring Boot avec sécurité, JPA, migrations et couverture de tests pour les équipes backend.`)
 };
 
+const uk_presettrackjavaapidescription4 = /** @type {(inputs: Presettrackjavaapidescription4Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Spring Boot з безпекою, JPA, міграціями та тестовим покриттям для серверних команд.`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Spring Boot with security, JPA, migrations, and test coverage for backend teams." |
 *
 * @param {Presettrackjavaapidescription4Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const presettrackjavaapidescription4 = /** @type {((inputs?: Presettrackjavaapidescription4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackjavaapidescription4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const presettrackjavaapidescription4 = /** @type {((inputs?: Presettrackjavaapidescription4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackjavaapidescription4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_presettrackjavaapidescription4(inputs)
 	if (locale === "es") return es_presettrackjavaapidescription4(inputs)
@@ -55,6 +59,7 @@ const presettrackjavaapidescription4 = /** @type {((inputs?: Presettrackjavaapid
 	if (locale === "ko") return ko_presettrackjavaapidescription4(inputs)
 	if (locale === "zh-Hant") return zh_hant1_presettrackjavaapidescription4(inputs)
 	if (locale === "de") return de_presettrackjavaapidescription4(inputs)
-	return fr_presettrackjavaapidescription4(inputs)
+	if (locale === "fr") return fr_presettrackjavaapidescription4(inputs)
+	return uk_presettrackjavaapidescription4(inputs)
 });
 export { presettrackjavaapidescription4 as "presetTrackJavaApiDescription" }

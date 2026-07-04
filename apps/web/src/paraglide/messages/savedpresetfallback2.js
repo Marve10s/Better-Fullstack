@@ -37,16 +37,20 @@ const fr_savedpresetfallback2 = /** @type {(inputs: Savedpresetfallback2Inputs) 
 	return /** @type {LocalizedString} */ (`Préréglage enregistré`)
 };
 
+const uk_savedpresetfallback2 = /** @type {(inputs: Savedpresetfallback2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Збережений пресет`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Saved preset" |
 *
 * @param {Savedpresetfallback2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const savedpresetfallback2 = /** @type {((inputs?: Savedpresetfallback2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedpresetfallback2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const savedpresetfallback2 = /** @type {((inputs?: Savedpresetfallback2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedpresetfallback2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_savedpresetfallback2(inputs)
 	if (locale === "es") return es_savedpresetfallback2(inputs)
@@ -55,6 +59,7 @@ const savedpresetfallback2 = /** @type {((inputs?: Savedpresetfallback2Inputs, o
 	if (locale === "ko") return ko_savedpresetfallback2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_savedpresetfallback2(inputs)
 	if (locale === "de") return de_savedpresetfallback2(inputs)
-	return fr_savedpresetfallback2(inputs)
+	if (locale === "fr") return fr_savedpresetfallback2(inputs)
+	return uk_savedpresetfallback2(inputs)
 });
 export { savedpresetfallback2 as "savedPresetFallback" }

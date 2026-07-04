@@ -37,16 +37,20 @@ const fr_mcpresources1 = /** @type {(inputs: Mcpresources1Inputs) => LocalizedSt
 	return /** @type {LocalizedString} */ (`ressources lisibles`)
 };
 
+const uk_mcpresources1 = /** @type {(inputs: Mcpresources1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`доступні для читання ресурси`)
+};
+
 /**
 * | output |
 * | --- |
 * | "readable resources" |
 *
 * @param {Mcpresources1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const mcpresources1 = /** @type {((inputs?: Mcpresources1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpresources1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcpresources1 = /** @type {((inputs?: Mcpresources1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpresources1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcpresources1(inputs)
 	if (locale === "es") return es_mcpresources1(inputs)
@@ -55,6 +59,7 @@ const mcpresources1 = /** @type {((inputs?: Mcpresources1Inputs, options?: { loc
 	if (locale === "ko") return ko_mcpresources1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcpresources1(inputs)
 	if (locale === "de") return de_mcpresources1(inputs)
-	return fr_mcpresources1(inputs)
+	if (locale === "fr") return fr_mcpresources1(inputs)
+	return uk_mcpresources1(inputs)
 });
 export { mcpresources1 as "mcpResources" }

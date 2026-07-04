@@ -37,16 +37,20 @@ const fr_presettrackinternaltooldescription4 = /** @type {(inputs: Presettrackin
 	return /** @type {LocalizedString} */ (`TanStack Router, Hono, Drizzle, auth et tRPC pour les tableaux de bord de produits et les outils d'administration.`)
 };
 
+const uk_presettrackinternaltooldescription4 = /** @type {(inputs: Presettrackinternaltooldescription4Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`TanStack Router, Hono, Drizzle, auth і tRPC для інформаційних панелей продукту та інструментів адміністрування.`)
+};
+
 /**
 * | output |
 * | --- |
 * | "TanStack Router, Hono, Drizzle, auth, and tRPC for product dashboards and admin tools." |
 *
 * @param {Presettrackinternaltooldescription4Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const presettrackinternaltooldescription4 = /** @type {((inputs?: Presettrackinternaltooldescription4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackinternaltooldescription4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const presettrackinternaltooldescription4 = /** @type {((inputs?: Presettrackinternaltooldescription4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackinternaltooldescription4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_presettrackinternaltooldescription4(inputs)
 	if (locale === "es") return es_presettrackinternaltooldescription4(inputs)
@@ -55,6 +59,7 @@ const presettrackinternaltooldescription4 = /** @type {((inputs?: Presettrackint
 	if (locale === "ko") return ko_presettrackinternaltooldescription4(inputs)
 	if (locale === "zh-Hant") return zh_hant1_presettrackinternaltooldescription4(inputs)
 	if (locale === "de") return de_presettrackinternaltooldescription4(inputs)
-	return fr_presettrackinternaltooldescription4(inputs)
+	if (locale === "fr") return fr_presettrackinternaltooldescription4(inputs)
+	return uk_presettrackinternaltooldescription4(inputs)
 });
 export { presettrackinternaltooldescription4 as "presetTrackInternalToolDescription" }

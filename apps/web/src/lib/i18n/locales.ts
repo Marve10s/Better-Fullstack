@@ -1,4 +1,14 @@
-export const SUPPORTED_LOCALES = ["en", "es", "zh", "ja", "ko", "zh-Hant", "de", "fr"] as const;
+export const SUPPORTED_LOCALES = [
+  "en",
+  "es",
+  "zh",
+  "ja",
+  "ko",
+  "zh-Hant",
+  "de",
+  "fr",
+  "uk",
+] as const;
 
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 export type LocalizedContentLocale = Exclude<SupportedLocale, "en">;
@@ -18,6 +28,7 @@ export const LOCALE_LABELS: Record<SupportedLocale, string> = {
   "zh-Hant": "繁體中文",
   de: "Deutsch",
   fr: "Français",
+  uk: "Українська",
 };
 
 export const LOCALE_DATE_TAGS: Record<SupportedLocale, string> = {
@@ -29,6 +40,7 @@ export const LOCALE_DATE_TAGS: Record<SupportedLocale, string> = {
   "zh-Hant": "zh-Hant-TW",
   de: "de-DE",
   fr: "fr-FR",
+  uk: "uk-UA",
 };
 
 const LOCALE_SET = new Set<string>(SUPPORTED_LOCALES);

@@ -37,16 +37,20 @@ const fr_changelogaria1 = /** @type {(inputs: Changelogaria1Inputs) => Localized
 	return /** @type {LocalizedString} */ (`Journal des modifications`)
 };
 
+const uk_changelogaria1 = /** @type {(inputs: Changelogaria1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Журнал змін`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Changelog" |
 *
 * @param {Changelogaria1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const changelogaria1 = /** @type {((inputs?: Changelogaria1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Changelogaria1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const changelogaria1 = /** @type {((inputs?: Changelogaria1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Changelogaria1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_changelogaria1(inputs)
 	if (locale === "es") return es_changelogaria1(inputs)
@@ -55,6 +59,7 @@ const changelogaria1 = /** @type {((inputs?: Changelogaria1Inputs, options?: { l
 	if (locale === "ko") return ko_changelogaria1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_changelogaria1(inputs)
 	if (locale === "de") return de_changelogaria1(inputs)
-	return fr_changelogaria1(inputs)
+	if (locale === "fr") return fr_changelogaria1(inputs)
+	return uk_changelogaria1(inputs)
 });
 export { changelogaria1 as "changelogAria" }

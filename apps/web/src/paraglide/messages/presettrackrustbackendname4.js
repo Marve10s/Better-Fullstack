@@ -37,16 +37,20 @@ const fr_presettrackrustbackendname4 = /** @type {(inputs: Presettrackrustbacken
 	return /** @type {LocalizedString} */ (`Back-end rouillé`)
 };
 
+const uk_presettrackrustbackendname4 = /** @type {(inputs: Presettrackrustbackendname4Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Rust Сервер`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Rust Backend" |
 *
 * @param {Presettrackrustbackendname4Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const presettrackrustbackendname4 = /** @type {((inputs?: Presettrackrustbackendname4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackrustbackendname4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const presettrackrustbackendname4 = /** @type {((inputs?: Presettrackrustbackendname4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackrustbackendname4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_presettrackrustbackendname4(inputs)
 	if (locale === "es") return es_presettrackrustbackendname4(inputs)
@@ -55,6 +59,7 @@ const presettrackrustbackendname4 = /** @type {((inputs?: Presettrackrustbackend
 	if (locale === "ko") return ko_presettrackrustbackendname4(inputs)
 	if (locale === "zh-Hant") return zh_hant1_presettrackrustbackendname4(inputs)
 	if (locale === "de") return de_presettrackrustbackendname4(inputs)
-	return fr_presettrackrustbackendname4(inputs)
+	if (locale === "fr") return fr_presettrackrustbackendname4(inputs)
+	return uk_presettrackrustbackendname4(inputs)
 });
 export { presettrackrustbackendname4 as "presetTrackRustBackendName" }

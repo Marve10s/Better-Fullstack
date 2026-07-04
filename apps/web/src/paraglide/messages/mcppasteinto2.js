@@ -37,16 +37,20 @@ const fr_mcppasteinto2 = /** @type {(inputs: Mcppasteinto2Inputs) => LocalizedSt
 	return /** @type {LocalizedString} */ (`coller dans ${i?.file}`)
 };
 
+const uk_mcppasteinto2 = /** @type {(inputs: Mcppasteinto2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`вставити в ${i?.file}`)
+};
+
 /**
 * | output |
 * | --- |
 * | "paste into {file}" |
 *
 * @param {Mcppasteinto2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const mcppasteinto2 = /** @type {((inputs: Mcppasteinto2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcppasteinto2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs, options = {}) => {
+const mcppasteinto2 = /** @type {((inputs: Mcppasteinto2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcppasteinto2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcppasteinto2(inputs)
 	if (locale === "es") return es_mcppasteinto2(inputs)
@@ -55,6 +59,7 @@ const mcppasteinto2 = /** @type {((inputs: Mcppasteinto2Inputs, options?: { loca
 	if (locale === "ko") return ko_mcppasteinto2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcppasteinto2(inputs)
 	if (locale === "de") return de_mcppasteinto2(inputs)
-	return fr_mcppasteinto2(inputs)
+	if (locale === "fr") return fr_mcppasteinto2(inputs)
+	return uk_mcppasteinto2(inputs)
 });
 export { mcppasteinto2 as "mcpPasteInto" }

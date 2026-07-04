@@ -37,16 +37,20 @@ const fr_sharelinkcopied2 = /** @type {(inputs: Sharelinkcopied2Inputs) => Local
 	return /** @type {LocalizedString} */ (`Lien copié dans le presse-papier !`)
 };
 
+const uk_sharelinkcopied2 = /** @type {(inputs: Sharelinkcopied2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Посилання скопійовано в буфер обміну!`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Link copied to clipboard!" |
 *
 * @param {Sharelinkcopied2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const sharelinkcopied2 = /** @type {((inputs?: Sharelinkcopied2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Sharelinkcopied2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const sharelinkcopied2 = /** @type {((inputs?: Sharelinkcopied2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Sharelinkcopied2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_sharelinkcopied2(inputs)
 	if (locale === "es") return es_sharelinkcopied2(inputs)
@@ -55,6 +59,7 @@ const sharelinkcopied2 = /** @type {((inputs?: Sharelinkcopied2Inputs, options?:
 	if (locale === "ko") return ko_sharelinkcopied2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_sharelinkcopied2(inputs)
 	if (locale === "de") return de_sharelinkcopied2(inputs)
-	return fr_sharelinkcopied2(inputs)
+	if (locale === "fr") return fr_sharelinkcopied2(inputs)
+	return uk_sharelinkcopied2(inputs)
 });
 export { sharelinkcopied2 as "shareLinkCopied" }

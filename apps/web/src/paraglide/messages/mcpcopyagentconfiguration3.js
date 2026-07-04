@@ -37,16 +37,20 @@ const fr_mcpcopyagentconfiguration3 = /** @type {(inputs: Mcpcopyagentconfigurat
 	return /** @type {LocalizedString} */ (`Copier la configuration ${i?.agent}`)
 };
 
+const uk_mcpcopyagentconfiguration3 = /** @type {(inputs: Mcpcopyagentconfiguration3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Скопіюйте конфігурацію ${i?.agent}`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Copy {agent} configuration" |
 *
 * @param {Mcpcopyagentconfiguration3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const mcpcopyagentconfiguration3 = /** @type {((inputs: Mcpcopyagentconfiguration3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpcopyagentconfiguration3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs, options = {}) => {
+const mcpcopyagentconfiguration3 = /** @type {((inputs: Mcpcopyagentconfiguration3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpcopyagentconfiguration3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcpcopyagentconfiguration3(inputs)
 	if (locale === "es") return es_mcpcopyagentconfiguration3(inputs)
@@ -55,6 +59,7 @@ const mcpcopyagentconfiguration3 = /** @type {((inputs: Mcpcopyagentconfiguratio
 	if (locale === "ko") return ko_mcpcopyagentconfiguration3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcpcopyagentconfiguration3(inputs)
 	if (locale === "de") return de_mcpcopyagentconfiguration3(inputs)
-	return fr_mcpcopyagentconfiguration3(inputs)
+	if (locale === "fr") return fr_mcpcopyagentconfiguration3(inputs)
+	return uk_mcpcopyagentconfiguration3(inputs)
 });
 export { mcpcopyagentconfiguration3 as "mcpCopyAgentConfiguration" }

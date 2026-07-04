@@ -37,16 +37,20 @@ const fr_buildercancel1 = /** @type {(inputs: Buildercancel1Inputs) => Localized
 	return /** @type {LocalizedString} */ (`Annuler`)
 };
 
+const uk_buildercancel1 = /** @type {(inputs: Buildercancel1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Скасувати`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Cancel" |
 *
 * @param {Buildercancel1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const buildercancel1 = /** @type {((inputs?: Buildercancel1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildercancel1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const buildercancel1 = /** @type {((inputs?: Buildercancel1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildercancel1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_buildercancel1(inputs)
 	if (locale === "es") return es_buildercancel1(inputs)
@@ -55,6 +59,7 @@ const buildercancel1 = /** @type {((inputs?: Buildercancel1Inputs, options?: { l
 	if (locale === "ko") return ko_buildercancel1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_buildercancel1(inputs)
 	if (locale === "de") return de_buildercancel1(inputs)
-	return fr_buildercancel1(inputs)
+	if (locale === "fr") return fr_buildercancel1(inputs)
+	return uk_buildercancel1(inputs)
 });
 export { buildercancel1 as "builderCancel" }

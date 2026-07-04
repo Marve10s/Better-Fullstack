@@ -37,16 +37,20 @@ const fr_mcpherodescription2 = /** @type {(inputs: Mcpherodescription2Inputs) =>
 	return /** @type {LocalizedString} */ (`Accordez aux agents de codage un accès structuré à Better Fullstack. Ils peuvent inspecter les options, valider les combinaisons, prévisualiser les arborescences de fichiers et les projets d'échafaudage sans deviner les indicateurs CLI.`)
 };
 
+const uk_mcpherodescription2 = /** @type {(inputs: Mcpherodescription2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Надайте агентам кодування структурований доступ до Better Fullstack. Вони можуть перевіряти параметри, перевіряти комбінації, переглядати дерева файлів і створювати проекти, не вгадуючи прапорці CLI.`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Give coding agents structured access to Better Fullstack. They can inspect options, validate combinations, preview file trees, and scaffold projects without ..." |
 *
 * @param {Mcpherodescription2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const mcpherodescription2 = /** @type {((inputs?: Mcpherodescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpherodescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcpherodescription2 = /** @type {((inputs?: Mcpherodescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpherodescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcpherodescription2(inputs)
 	if (locale === "es") return es_mcpherodescription2(inputs)
@@ -55,6 +59,7 @@ const mcpherodescription2 = /** @type {((inputs?: Mcpherodescription2Inputs, opt
 	if (locale === "ko") return ko_mcpherodescription2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcpherodescription2(inputs)
 	if (locale === "de") return de_mcpherodescription2(inputs)
-	return fr_mcpherodescription2(inputs)
+	if (locale === "fr") return fr_mcpherodescription2(inputs)
+	return uk_mcpherodescription2(inputs)
 });
 export { mcpherodescription2 as "mcpHeroDescription" }

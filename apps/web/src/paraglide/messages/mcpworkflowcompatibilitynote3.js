@@ -37,16 +37,20 @@ const fr_mcpworkflowcompatibilitynote3 = /** @type {(inputs: Mcpworkflowcompatib
 	return /** @type {LocalizedString} */ (`pile validée, 0 ajustements`)
 };
 
+const uk_mcpworkflowcompatibilitynote3 = /** @type {(inputs: Mcpworkflowcompatibilitynote3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`стек перевірено, 0 коригувань`)
+};
+
 /**
 * | output |
 * | --- |
 * | "stack validated, 0 adjustments" |
 *
 * @param {Mcpworkflowcompatibilitynote3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const mcpworkflowcompatibilitynote3 = /** @type {((inputs?: Mcpworkflowcompatibilitynote3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpworkflowcompatibilitynote3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcpworkflowcompatibilitynote3 = /** @type {((inputs?: Mcpworkflowcompatibilitynote3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpworkflowcompatibilitynote3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcpworkflowcompatibilitynote3(inputs)
 	if (locale === "es") return es_mcpworkflowcompatibilitynote3(inputs)
@@ -55,6 +59,7 @@ const mcpworkflowcompatibilitynote3 = /** @type {((inputs?: Mcpworkflowcompatibi
 	if (locale === "ko") return ko_mcpworkflowcompatibilitynote3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcpworkflowcompatibilitynote3(inputs)
 	if (locale === "de") return de_mcpworkflowcompatibilitynote3(inputs)
-	return fr_mcpworkflowcompatibilitynote3(inputs)
+	if (locale === "fr") return fr_mcpworkflowcompatibilitynote3(inputs)
+	return uk_mcpworkflowcompatibilitynote3(inputs)
 });
 export { mcpworkflowcompatibilitynote3 as "mcpWorkflowCompatibilityNote" }

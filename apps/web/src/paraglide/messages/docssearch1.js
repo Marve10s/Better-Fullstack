@@ -37,16 +37,20 @@ const fr_docssearch1 = /** @type {(inputs: Docssearch1Inputs) => LocalizedString
 	return /** @type {LocalizedString} */ (`Rechercher des documents`)
 };
 
+const uk_docssearch1 = /** @type {(inputs: Docssearch1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Пошук документів`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Search docs" |
 *
 * @param {Docssearch1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const docssearch1 = /** @type {((inputs?: Docssearch1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssearch1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const docssearch1 = /** @type {((inputs?: Docssearch1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssearch1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_docssearch1(inputs)
 	if (locale === "es") return es_docssearch1(inputs)
@@ -55,6 +59,7 @@ const docssearch1 = /** @type {((inputs?: Docssearch1Inputs, options?: { locale?
 	if (locale === "ko") return ko_docssearch1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_docssearch1(inputs)
 	if (locale === "de") return de_docssearch1(inputs)
-	return fr_docssearch1(inputs)
+	if (locale === "fr") return fr_docssearch1(inputs)
+	return uk_docssearch1(inputs)
 });
 export { docssearch1 as "docsSearch" }

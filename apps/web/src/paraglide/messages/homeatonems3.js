@@ -37,16 +37,20 @@ const fr_homeatonems3 = /** @type {(inputs: Homeatonems3Inputs) => LocalizedStri
 	return /** @type {LocalizedString} */ (`à 1 ms par test`)
 };
 
+const uk_homeatonems3 = /** @type {(inputs: Homeatonems3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`на 1 мс на тест`)
+};
+
 /**
 * | output |
 * | --- |
 * | "at 1ms per test" |
 *
 * @param {Homeatonems3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const homeatonems3 = /** @type {((inputs?: Homeatonems3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homeatonems3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const homeatonems3 = /** @type {((inputs?: Homeatonems3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homeatonems3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_homeatonems3(inputs)
 	if (locale === "es") return es_homeatonems3(inputs)
@@ -55,6 +59,7 @@ const homeatonems3 = /** @type {((inputs?: Homeatonems3Inputs, options?: { local
 	if (locale === "ko") return ko_homeatonems3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_homeatonems3(inputs)
 	if (locale === "de") return de_homeatonems3(inputs)
-	return fr_homeatonems3(inputs)
+	if (locale === "fr") return fr_homeatonems3(inputs)
+	return uk_homeatonems3(inputs)
 });
 export { homeatonems3 as "homeAtOneMs" }

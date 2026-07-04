@@ -37,16 +37,20 @@ const fr_navcopyinstallcommand3 = /** @type {(inputs: Navcopyinstallcommand3Inpu
 	return /** @type {LocalizedString} */ (`Copier la commande d'installation`)
 };
 
+const uk_navcopyinstallcommand3 = /** @type {(inputs: Navcopyinstallcommand3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Копіювати команду встановлення`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Copy install command" |
 *
 * @param {Navcopyinstallcommand3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const navcopyinstallcommand3 = /** @type {((inputs?: Navcopyinstallcommand3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navcopyinstallcommand3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const navcopyinstallcommand3 = /** @type {((inputs?: Navcopyinstallcommand3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navcopyinstallcommand3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_navcopyinstallcommand3(inputs)
 	if (locale === "es") return es_navcopyinstallcommand3(inputs)
@@ -55,6 +59,7 @@ const navcopyinstallcommand3 = /** @type {((inputs?: Navcopyinstallcommand3Input
 	if (locale === "ko") return ko_navcopyinstallcommand3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_navcopyinstallcommand3(inputs)
 	if (locale === "de") return de_navcopyinstallcommand3(inputs)
-	return fr_navcopyinstallcommand3(inputs)
+	if (locale === "fr") return fr_navcopyinstallcommand3(inputs)
+	return uk_navcopyinstallcommand3(inputs)
 });
 export { navcopyinstallcommand3 as "navCopyInstallCommand" }

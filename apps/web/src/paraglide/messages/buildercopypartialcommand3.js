@@ -37,16 +37,20 @@ const fr_buildercopypartialcommand3 = /** @type {(inputs: Buildercopypartialcomm
 	return /** @type {LocalizedString} */ (`Copier une commande partielle`)
 };
 
+const uk_buildercopypartialcommand3 = /** @type {(inputs: Buildercopypartialcommand3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Копіювати часткову команду`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Copy partial command" |
 *
 * @param {Buildercopypartialcommand3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const buildercopypartialcommand3 = /** @type {((inputs?: Buildercopypartialcommand3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildercopypartialcommand3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const buildercopypartialcommand3 = /** @type {((inputs?: Buildercopypartialcommand3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildercopypartialcommand3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_buildercopypartialcommand3(inputs)
 	if (locale === "es") return es_buildercopypartialcommand3(inputs)
@@ -55,6 +59,7 @@ const buildercopypartialcommand3 = /** @type {((inputs?: Buildercopypartialcomma
 	if (locale === "ko") return ko_buildercopypartialcommand3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_buildercopypartialcommand3(inputs)
 	if (locale === "de") return de_buildercopypartialcommand3(inputs)
-	return fr_buildercopypartialcommand3(inputs)
+	if (locale === "fr") return fr_buildercopypartialcommand3(inputs)
+	return uk_buildercopypartialcommand3(inputs)
 });
 export { buildercopypartialcommand3 as "builderCopyPartialCommand" }

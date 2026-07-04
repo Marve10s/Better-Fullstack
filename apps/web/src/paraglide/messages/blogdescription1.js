@@ -37,16 +37,20 @@ const fr_blogdescription1 = /** @type {(inputs: Blogdescription1Inputs) => Local
 	return /** @type {LocalizedString} */ (`Benchmarks, versions et ce que nous apprenons en créant un échafaudage fullstack – rédigé avec les données jointes.`)
 };
 
+const uk_blogdescription1 = /** @type {(inputs: Blogdescription1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Порівняльні тести, випуски та те, що ми дізнаємося, створюючи fullstack scaffolder — записані з доданими даними.`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Benchmarks, releases, and what we learn building a fullstack scaffolder — written up with the data attached." |
 *
 * @param {Blogdescription1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const blogdescription1 = /** @type {((inputs?: Blogdescription1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Blogdescription1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const blogdescription1 = /** @type {((inputs?: Blogdescription1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Blogdescription1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_blogdescription1(inputs)
 	if (locale === "es") return es_blogdescription1(inputs)
@@ -55,6 +59,7 @@ const blogdescription1 = /** @type {((inputs?: Blogdescription1Inputs, options?:
 	if (locale === "ko") return ko_blogdescription1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_blogdescription1(inputs)
 	if (locale === "de") return de_blogdescription1(inputs)
-	return fr_blogdescription1(inputs)
+	if (locale === "fr") return fr_blogdescription1(inputs)
+	return uk_blogdescription1(inputs)
 });
 export { blogdescription1 as "blogDescription" }

@@ -37,16 +37,20 @@ const fr_buildermobileapp2 = /** @type {(inputs: Buildermobileapp2Inputs) => Loc
 	return /** @type {LocalizedString} */ (`Application mobile`)
 };
 
+const uk_buildermobileapp2 = /** @type {(inputs: Buildermobileapp2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Мобільний додаток`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Mobile App" |
 *
 * @param {Buildermobileapp2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const buildermobileapp2 = /** @type {((inputs?: Buildermobileapp2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildermobileapp2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const buildermobileapp2 = /** @type {((inputs?: Buildermobileapp2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildermobileapp2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_buildermobileapp2(inputs)
 	if (locale === "es") return es_buildermobileapp2(inputs)
@@ -55,6 +59,7 @@ const buildermobileapp2 = /** @type {((inputs?: Buildermobileapp2Inputs, options
 	if (locale === "ko") return ko_buildermobileapp2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_buildermobileapp2(inputs)
 	if (locale === "de") return de_buildermobileapp2(inputs)
-	return fr_buildermobileapp2(inputs)
+	if (locale === "fr") return fr_buildermobileapp2(inputs)
+	return uk_buildermobileapp2(inputs)
 });
 export { buildermobileapp2 as "builderMobileApp" }

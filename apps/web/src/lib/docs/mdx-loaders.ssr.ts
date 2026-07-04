@@ -13,13 +13,13 @@ export type RawMdxModule = string;
 
 export const docsMdxLoaders = import.meta.glob<DocMdxModule>([
   "../../../content/docs/**/*.mdx",
-  "!../../../content/docs/**/*.{es,zh,ja,ko,zh-Hant,de,fr}.mdx",
+  "!../../../content/docs/**/*.{es,zh,ja,ko,zh-Hant,de,fr,uk}.mdx",
 ]);
 
 export const docsRawMdxLoaders = import.meta.glob<RawMdxModule>(
   [
     "../../../content/docs/**/*.mdx",
-    "!../../../content/docs/**/*.{es,zh,ja,ko,zh-Hant,de,fr}.mdx",
+    "!../../../content/docs/**/*.{es,zh,ja,ko,zh-Hant,de,fr,uk}.mdx",
   ],
   {
     query: "?raw",

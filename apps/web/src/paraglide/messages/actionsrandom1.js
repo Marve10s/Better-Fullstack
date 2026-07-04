@@ -37,16 +37,20 @@ const fr_actionsrandom1 = /** @type {(inputs: Actionsrandom1Inputs) => Localized
 	return /** @type {LocalizedString} */ (`Aléatoire`)
 };
 
+const uk_actionsrandom1 = /** @type {(inputs: Actionsrandom1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Випадковий`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Random" |
 *
 * @param {Actionsrandom1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const actionsrandom1 = /** @type {((inputs?: Actionsrandom1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Actionsrandom1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const actionsrandom1 = /** @type {((inputs?: Actionsrandom1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Actionsrandom1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_actionsrandom1(inputs)
 	if (locale === "es") return es_actionsrandom1(inputs)
@@ -55,6 +59,7 @@ const actionsrandom1 = /** @type {((inputs?: Actionsrandom1Inputs, options?: { l
 	if (locale === "ko") return ko_actionsrandom1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_actionsrandom1(inputs)
 	if (locale === "de") return de_actionsrandom1(inputs)
-	return fr_actionsrandom1(inputs)
+	if (locale === "fr") return fr_actionsrandom1(inputs)
+	return uk_actionsrandom1(inputs)
 });
 export { actionsrandom1 as "actionsRandom" }

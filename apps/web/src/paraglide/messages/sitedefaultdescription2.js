@@ -37,16 +37,20 @@ const fr_sitedefaultdescription2 = /** @type {(inputs: Sitedefaultdescription2In
 	return /** @type {LocalizedString} */ (`Échafaudez des applications fullstack prêtes pour la production en quelques secondes. Choisissez votre pile parmi les options ${i?.optionCount} sur ${i?.ecosystems} — frameworks, bases de données, authentification, paiements, AI et déploiement — le tout relié par un seul CLI.`)
 };
 
+const uk_sitedefaultdescription2 = /** @type {(inputs: Sitedefaultdescription2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`За лічені секунди створюйте готові до виробництва повні додатки. Виберіть свій стек із ${i?.optionCount} параметрів у ${i?.ecosystems} — фреймворки, бази даних, автентифікація, платежі, AI та розгортання — усе це об’єднано одним CLI.`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Scaffold production-ready fullstack apps in seconds. Pick your stack from {optionCount} options across {ecosystems} — frameworks, databases, auth, payments, ..." |
 *
 * @param {Sitedefaultdescription2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const sitedefaultdescription2 = /** @type {((inputs: Sitedefaultdescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Sitedefaultdescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs, options = {}) => {
+const sitedefaultdescription2 = /** @type {((inputs: Sitedefaultdescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Sitedefaultdescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_sitedefaultdescription2(inputs)
 	if (locale === "es") return es_sitedefaultdescription2(inputs)
@@ -55,6 +59,7 @@ const sitedefaultdescription2 = /** @type {((inputs: Sitedefaultdescription2Inpu
 	if (locale === "ko") return ko_sitedefaultdescription2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_sitedefaultdescription2(inputs)
 	if (locale === "de") return de_sitedefaultdescription2(inputs)
-	return fr_sitedefaultdescription2(inputs)
+	if (locale === "fr") return fr_sitedefaultdescription2(inputs)
+	return uk_sitedefaultdescription2(inputs)
 });
 export { sitedefaultdescription2 as "siteDefaultDescription" }

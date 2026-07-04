@@ -37,16 +37,20 @@ const fr_runauthapidesc3 = /** @type {(inputs: Runauthapidesc3Inputs) => Localiz
 	return /** @type {LocalizedString} */ (`Vous préférez une clé API ? Exportez la clé du fournisseur : la même interface de ligne de commande de l’agent facturera automatiquement l’exécution avec cette clé, sans abonnement. Nous publions les exécutions sur abonnement ; les exécutions via API ne sont pas testées, mais sont prises en charge.`)
 };
 
+const uk_runauthapidesc3 = /** @type {(inputs: Runauthapidesc3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Бажаєте ключ API? Експортуйте ключ постачальника, і той самий агент CLI виставляє рахунки за нього — підписка не потрібна. Ми публікуємо випуски за підпискою; Запуски API не перевірені, але підтримуються.`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Prefer an API key? Export the provider key and the same agent CLI bills against it — no subscription needed. We publish subscription-driven runs; API runs ar..." |
 *
 * @param {Runauthapidesc3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const runauthapidesc3 = /** @type {((inputs?: Runauthapidesc3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runauthapidesc3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const runauthapidesc3 = /** @type {((inputs?: Runauthapidesc3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runauthapidesc3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_runauthapidesc3(inputs)
 	if (locale === "es") return es_runauthapidesc3(inputs)
@@ -55,6 +59,7 @@ const runauthapidesc3 = /** @type {((inputs?: Runauthapidesc3Inputs, options?: {
 	if (locale === "ko") return ko_runauthapidesc3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_runauthapidesc3(inputs)
 	if (locale === "de") return de_runauthapidesc3(inputs)
-	return fr_runauthapidesc3(inputs)
+	if (locale === "fr") return fr_runauthapidesc3(inputs)
+	return uk_runauthapidesc3(inputs)
 });
 export { runauthapidesc3 as "runAuthApiDesc" }

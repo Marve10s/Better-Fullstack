@@ -37,16 +37,20 @@ const fr_builderunavailable1 = /** @type {(inputs: Builderunavailable1Inputs) =>
 	return /** @type {LocalizedString} */ (`Indisponible:`)
 };
 
+const uk_builderunavailable1 = /** @type {(inputs: Builderunavailable1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Недоступно:`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Unavailable:" |
 *
 * @param {Builderunavailable1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const builderunavailable1 = /** @type {((inputs?: Builderunavailable1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderunavailable1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const builderunavailable1 = /** @type {((inputs?: Builderunavailable1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderunavailable1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderunavailable1(inputs)
 	if (locale === "es") return es_builderunavailable1(inputs)
@@ -55,6 +59,7 @@ const builderunavailable1 = /** @type {((inputs?: Builderunavailable1Inputs, opt
 	if (locale === "ko") return ko_builderunavailable1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderunavailable1(inputs)
 	if (locale === "de") return de_builderunavailable1(inputs)
-	return fr_builderunavailable1(inputs)
+	if (locale === "fr") return fr_builderunavailable1(inputs)
+	return uk_builderunavailable1(inputs)
 });
 export { builderunavailable1 as "builderUnavailable" }

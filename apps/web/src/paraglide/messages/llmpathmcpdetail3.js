@@ -37,16 +37,20 @@ const fr_llmpathmcpdetail3 = /** @type {(inputs: Llmpathmcpdetail3Inputs) => Loc
 	return /** @type {LocalizedString} */ (`échafaudages grâce à nos outils MCP`)
 };
 
+const uk_llmpathmcpdetail3 = /** @type {(inputs: Llmpathmcpdetail3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`каркаси за допомогою наших інструментів MCP`)
+};
+
 /**
 * | output |
 * | --- |
 * | "scaffolds through our MCP tools" |
 *
 * @param {Llmpathmcpdetail3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const llmpathmcpdetail3 = /** @type {((inputs?: Llmpathmcpdetail3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmpathmcpdetail3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const llmpathmcpdetail3 = /** @type {((inputs?: Llmpathmcpdetail3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmpathmcpdetail3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_llmpathmcpdetail3(inputs)
 	if (locale === "es") return es_llmpathmcpdetail3(inputs)
@@ -55,6 +59,7 @@ const llmpathmcpdetail3 = /** @type {((inputs?: Llmpathmcpdetail3Inputs, options
 	if (locale === "ko") return ko_llmpathmcpdetail3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_llmpathmcpdetail3(inputs)
 	if (locale === "de") return de_llmpathmcpdetail3(inputs)
-	return fr_llmpathmcpdetail3(inputs)
+	if (locale === "fr") return fr_llmpathmcpdetail3(inputs)
+	return uk_llmpathmcpdetail3(inputs)
 });
 export { llmpathmcpdetail3 as "llmPathMcpDetail" }

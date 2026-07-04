@@ -37,16 +37,20 @@ const fr_builderpreviewfiles2 = /** @type {(inputs: Builderpreviewfiles2Inputs) 
 	return /** @type {LocalizedString} */ (`Fichiers`)
 };
 
+const uk_builderpreviewfiles2 = /** @type {(inputs: Builderpreviewfiles2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Файли`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Files" |
 *
 * @param {Builderpreviewfiles2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const builderpreviewfiles2 = /** @type {((inputs?: Builderpreviewfiles2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderpreviewfiles2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const builderpreviewfiles2 = /** @type {((inputs?: Builderpreviewfiles2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderpreviewfiles2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderpreviewfiles2(inputs)
 	if (locale === "es") return es_builderpreviewfiles2(inputs)
@@ -55,6 +59,7 @@ const builderpreviewfiles2 = /** @type {((inputs?: Builderpreviewfiles2Inputs, o
 	if (locale === "ko") return ko_builderpreviewfiles2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderpreviewfiles2(inputs)
 	if (locale === "de") return de_builderpreviewfiles2(inputs)
-	return fr_builderpreviewfiles2(inputs)
+	if (locale === "fr") return fr_builderpreviewfiles2(inputs)
+	return uk_builderpreviewfiles2(inputs)
 });
 export { builderpreviewfiles2 as "builderPreviewFiles" }

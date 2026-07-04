@@ -37,16 +37,20 @@ const fr_changelogallreleases2 = /** @type {(inputs: Changelogallreleases2Inputs
 	return /** @type {LocalizedString} */ (`Toutes les versions`)
 };
 
+const uk_changelogallreleases2 = /** @type {(inputs: Changelogallreleases2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Всі випуски`)
+};
+
 /**
 * | output |
 * | --- |
 * | "All releases" |
 *
 * @param {Changelogallreleases2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const changelogallreleases2 = /** @type {((inputs?: Changelogallreleases2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Changelogallreleases2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const changelogallreleases2 = /** @type {((inputs?: Changelogallreleases2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Changelogallreleases2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_changelogallreleases2(inputs)
 	if (locale === "es") return es_changelogallreleases2(inputs)
@@ -55,6 +59,7 @@ const changelogallreleases2 = /** @type {((inputs?: Changelogallreleases2Inputs,
 	if (locale === "ko") return ko_changelogallreleases2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_changelogallreleases2(inputs)
 	if (locale === "de") return de_changelogallreleases2(inputs)
-	return fr_changelogallreleases2(inputs)
+	if (locale === "fr") return fr_changelogallreleases2(inputs)
+	return uk_changelogallreleases2(inputs)
 });
 export { changelogallreleases2 as "changelogAllReleases" }

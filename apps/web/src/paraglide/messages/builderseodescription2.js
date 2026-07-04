@@ -37,16 +37,20 @@ const fr_builderseodescription2 = /** @type {(inputs: Builderseodescription2Inpu
 	return /** @type {LocalizedString} */ (`Créez et partagez des combinaisons fullstack personnalisées avec le générateur de pile visuelle Better Fullstack.`)
 };
 
+const uk_builderseodescription2 = /** @type {(inputs: Builderseodescription2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Створюйте власні комбінації повного стеку та діліться ними за допомогою візуального конструктора стека Better Fullstack.`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Build and share custom fullstack combinations with the Better Fullstack visual stack builder." |
 *
 * @param {Builderseodescription2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const builderseodescription2 = /** @type {((inputs?: Builderseodescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderseodescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const builderseodescription2 = /** @type {((inputs?: Builderseodescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderseodescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderseodescription2(inputs)
 	if (locale === "es") return es_builderseodescription2(inputs)
@@ -55,6 +59,7 @@ const builderseodescription2 = /** @type {((inputs?: Builderseodescription2Input
 	if (locale === "ko") return ko_builderseodescription2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderseodescription2(inputs)
 	if (locale === "de") return de_builderseodescription2(inputs)
-	return fr_builderseodescription2(inputs)
+	if (locale === "fr") return fr_builderseodescription2(inputs)
+	return uk_builderseodescription2(inputs)
 });
 export { builderseodescription2 as "builderSeoDescription" }

@@ -37,16 +37,20 @@ const fr_homepickyourstack3 = /** @type {(inputs: Homepickyourstack3Inputs) => L
 	return /** @type {LocalizedString} */ (`Choisissez votre`)
 };
 
+const uk_homepickyourstack3 = /** @type {(inputs: Homepickyourstack3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Виберіть свій`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Pick your" |
 *
 * @param {Homepickyourstack3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const homepickyourstack3 = /** @type {((inputs?: Homepickyourstack3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homepickyourstack3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const homepickyourstack3 = /** @type {((inputs?: Homepickyourstack3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homepickyourstack3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_homepickyourstack3(inputs)
 	if (locale === "es") return es_homepickyourstack3(inputs)
@@ -55,6 +59,7 @@ const homepickyourstack3 = /** @type {((inputs?: Homepickyourstack3Inputs, optio
 	if (locale === "ko") return ko_homepickyourstack3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_homepickyourstack3(inputs)
 	if (locale === "de") return de_homepickyourstack3(inputs)
-	return fr_homepickyourstack3(inputs)
+	if (locale === "fr") return fr_homepickyourstack3(inputs)
+	return uk_homepickyourstack3(inputs)
 });
 export { homepickyourstack3 as "homePickYourStack" }

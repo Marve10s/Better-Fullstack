@@ -37,16 +37,20 @@ const fr_hometotal1 = /** @type {(inputs: Hometotal1Inputs) => LocalizedString} 
 	return /** @type {LocalizedString} */ (`total`)
 };
 
+const uk_hometotal1 = /** @type {(inputs: Hometotal1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`всього`)
+};
+
 /**
 * | output |
 * | --- |
 * | "total" |
 *
 * @param {Hometotal1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const hometotal1 = /** @type {((inputs?: Hometotal1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Hometotal1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const hometotal1 = /** @type {((inputs?: Hometotal1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Hometotal1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_hometotal1(inputs)
 	if (locale === "es") return es_hometotal1(inputs)
@@ -55,6 +59,7 @@ const hometotal1 = /** @type {((inputs?: Hometotal1Inputs, options?: { locale?: 
 	if (locale === "ko") return ko_hometotal1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_hometotal1(inputs)
 	if (locale === "de") return de_hometotal1(inputs)
-	return fr_hometotal1(inputs)
+	if (locale === "fr") return fr_hometotal1(inputs)
+	return uk_hometotal1(inputs)
 });
 export { hometotal1 as "homeTotal" }

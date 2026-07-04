@@ -37,16 +37,20 @@ const fr_buildercommandcopied2 = /** @type {(inputs: Buildercommandcopied2Inputs
 	return /** @type {LocalizedString} */ (`Commande copiée`)
 };
 
+const uk_buildercommandcopied2 = /** @type {(inputs: Buildercommandcopied2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Команду скопійовано`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Command copied" |
 *
 * @param {Buildercommandcopied2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const buildercommandcopied2 = /** @type {((inputs?: Buildercommandcopied2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildercommandcopied2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const buildercommandcopied2 = /** @type {((inputs?: Buildercommandcopied2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildercommandcopied2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_buildercommandcopied2(inputs)
 	if (locale === "es") return es_buildercommandcopied2(inputs)
@@ -55,6 +59,7 @@ const buildercommandcopied2 = /** @type {((inputs?: Buildercommandcopied2Inputs,
 	if (locale === "ko") return ko_buildercommandcopied2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_buildercommandcopied2(inputs)
 	if (locale === "de") return de_buildercommandcopied2(inputs)
-	return fr_buildercommandcopied2(inputs)
+	if (locale === "fr") return fr_buildercommandcopied2(inputs)
+	return uk_buildercommandcopied2(inputs)
 });
 export { buildercommandcopied2 as "builderCommandCopied" }

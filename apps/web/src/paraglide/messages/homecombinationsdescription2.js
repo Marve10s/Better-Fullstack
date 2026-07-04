@@ -37,16 +37,20 @@ const fr_homecombinationsdescription2 = /** @type {(inputs: Homecombinationsdesc
 	return /** @type {LocalizedString} */ (`Mélangez et associez les frameworks, les bases de données, l'authentification, les paiements, AI, et bien plus encore. Chaque combinaison échafaude une base de code fonctionnelle et prête pour la production.`)
 };
 
+const uk_homecombinationsdescription2 = /** @type {(inputs: Homecombinationsdescription2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Комбінуйте фреймворки, бази даних, автентифікацію, платежі, AI тощо. Кожна комбінація створює робочу кодову базу, готову до використання.`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Mix and match frameworks, databases, auth, payments, AI, and more. Every combination scaffolds a working, production-ready codebase." |
 *
 * @param {Homecombinationsdescription2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const homecombinationsdescription2 = /** @type {((inputs?: Homecombinationsdescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homecombinationsdescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const homecombinationsdescription2 = /** @type {((inputs?: Homecombinationsdescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homecombinationsdescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_homecombinationsdescription2(inputs)
 	if (locale === "es") return es_homecombinationsdescription2(inputs)
@@ -55,6 +59,7 @@ const homecombinationsdescription2 = /** @type {((inputs?: Homecombinationsdescr
 	if (locale === "ko") return ko_homecombinationsdescription2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_homecombinationsdescription2(inputs)
 	if (locale === "de") return de_homecombinationsdescription2(inputs)
-	return fr_homecombinationsdescription2(inputs)
+	if (locale === "fr") return fr_homecombinationsdescription2(inputs)
+	return uk_homecombinationsdescription2(inputs)
 });
 export { homecombinationsdescription2 as "homeCombinationsDescription" }

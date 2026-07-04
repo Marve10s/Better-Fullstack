@@ -37,16 +37,20 @@ const fr_savedviewfullstack3 = /** @type {(inputs: Savedviewfullstack3Inputs) =>
 	return /** @type {LocalizedString} */ (`Voir la pile complète`)
 };
 
+const uk_savedviewfullstack3 = /** @type {(inputs: Savedviewfullstack3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Переглянути повний стек`)
+};
+
 /**
 * | output |
 * | --- |
 * | "View Full Stack" |
 *
 * @param {Savedviewfullstack3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const savedviewfullstack3 = /** @type {((inputs?: Savedviewfullstack3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedviewfullstack3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const savedviewfullstack3 = /** @type {((inputs?: Savedviewfullstack3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedviewfullstack3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_savedviewfullstack3(inputs)
 	if (locale === "es") return es_savedviewfullstack3(inputs)
@@ -55,6 +59,7 @@ const savedviewfullstack3 = /** @type {((inputs?: Savedviewfullstack3Inputs, opt
 	if (locale === "ko") return ko_savedviewfullstack3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_savedviewfullstack3(inputs)
 	if (locale === "de") return de_savedviewfullstack3(inputs)
-	return fr_savedviewfullstack3(inputs)
+	if (locale === "fr") return fr_savedviewfullstack3(inputs)
+	return uk_savedviewfullstack3(inputs)
 });
 export { savedviewfullstack3 as "savedViewFullStack" }

@@ -37,16 +37,20 @@ const fr_builderprojectname2 = /** @type {(inputs: Builderprojectname2Inputs) =>
 	return /** @type {LocalizedString} */ (`Nom du projet`)
 };
 
+const uk_builderprojectname2 = /** @type {(inputs: Builderprojectname2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Назва проекту`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Project name" |
 *
 * @param {Builderprojectname2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const builderprojectname2 = /** @type {((inputs?: Builderprojectname2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderprojectname2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const builderprojectname2 = /** @type {((inputs?: Builderprojectname2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderprojectname2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderprojectname2(inputs)
 	if (locale === "es") return es_builderprojectname2(inputs)
@@ -55,6 +59,7 @@ const builderprojectname2 = /** @type {((inputs?: Builderprojectname2Inputs, opt
 	if (locale === "ko") return ko_builderprojectname2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderprojectname2(inputs)
 	if (locale === "de") return de_builderprojectname2(inputs)
-	return fr_builderprojectname2(inputs)
+	if (locale === "fr") return fr_builderprojectname2(inputs)
+	return uk_builderprojectname2(inputs)
 });
 export { builderprojectname2 as "builderProjectName" }

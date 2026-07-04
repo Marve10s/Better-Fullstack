@@ -37,16 +37,20 @@ const fr_runheroquickstart2 = /** @type {(inputs: Runheroquickstart2Inputs) => L
 	return /** @type {LocalizedString} */ (`Démarrage rapide`)
 };
 
+const uk_runheroquickstart2 = /** @type {(inputs: Runheroquickstart2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Швидкий старт`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Quickstart" |
 *
 * @param {Runheroquickstart2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const runheroquickstart2 = /** @type {((inputs?: Runheroquickstart2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runheroquickstart2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const runheroquickstart2 = /** @type {((inputs?: Runheroquickstart2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runheroquickstart2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_runheroquickstart2(inputs)
 	if (locale === "es") return es_runheroquickstart2(inputs)
@@ -55,6 +59,7 @@ const runheroquickstart2 = /** @type {((inputs?: Runheroquickstart2Inputs, optio
 	if (locale === "ko") return ko_runheroquickstart2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_runheroquickstart2(inputs)
 	if (locale === "de") return de_runheroquickstart2(inputs)
-	return fr_runheroquickstart2(inputs)
+	if (locale === "fr") return fr_runheroquickstart2(inputs)
+	return uk_runheroquickstart2(inputs)
 });
 export { runheroquickstart2 as "runHeroQuickstart" }

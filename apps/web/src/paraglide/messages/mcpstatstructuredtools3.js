@@ -37,16 +37,20 @@ const fr_mcpstatstructuredtools3 = /** @type {(inputs: Mcpstatstructuredtools3In
 	return /** @type {LocalizedString} */ (`outils structurés`)
 };
 
+const uk_mcpstatstructuredtools3 = /** @type {(inputs: Mcpstatstructuredtools3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`структуровані інструменти`)
+};
+
 /**
 * | output |
 * | --- |
 * | "structured tools" |
 *
 * @param {Mcpstatstructuredtools3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const mcpstatstructuredtools3 = /** @type {((inputs?: Mcpstatstructuredtools3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpstatstructuredtools3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcpstatstructuredtools3 = /** @type {((inputs?: Mcpstatstructuredtools3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpstatstructuredtools3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcpstatstructuredtools3(inputs)
 	if (locale === "es") return es_mcpstatstructuredtools3(inputs)
@@ -55,6 +59,7 @@ const mcpstatstructuredtools3 = /** @type {((inputs?: Mcpstatstructuredtools3Inp
 	if (locale === "ko") return ko_mcpstatstructuredtools3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcpstatstructuredtools3(inputs)
 	if (locale === "de") return de_mcpstatstructuredtools3(inputs)
-	return fr_mcpstatstructuredtools3(inputs)
+	if (locale === "fr") return fr_mcpstatstructuredtools3(inputs)
+	return uk_mcpstatstructuredtools3(inputs)
 });
 export { mcpstatstructuredtools3 as "mcpStatStructuredTools" }

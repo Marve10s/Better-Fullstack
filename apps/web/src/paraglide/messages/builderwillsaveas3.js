@@ -37,16 +37,20 @@ const fr_builderwillsaveas3 = /** @type {(inputs: Builderwillsaveas3Inputs) => L
 	return /** @type {LocalizedString} */ (`Sera enregistré sous : ${i?.name}`)
 };
 
+const uk_builderwillsaveas3 = /** @type {(inputs: Builderwillsaveas3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Буде збережено як: ${i?.name}`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Will be saved as: {name}" |
 *
 * @param {Builderwillsaveas3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const builderwillsaveas3 = /** @type {((inputs: Builderwillsaveas3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderwillsaveas3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs, options = {}) => {
+const builderwillsaveas3 = /** @type {((inputs: Builderwillsaveas3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderwillsaveas3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderwillsaveas3(inputs)
 	if (locale === "es") return es_builderwillsaveas3(inputs)
@@ -55,6 +59,7 @@ const builderwillsaveas3 = /** @type {((inputs: Builderwillsaveas3Inputs, option
 	if (locale === "ko") return ko_builderwillsaveas3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderwillsaveas3(inputs)
 	if (locale === "de") return de_builderwillsaveas3(inputs)
-	return fr_builderwillsaveas3(inputs)
+	if (locale === "fr") return fr_builderwillsaveas3(inputs)
+	return uk_builderwillsaveas3(inputs)
 });
 export { builderwillsaveas3 as "builderWillSaveAs" }

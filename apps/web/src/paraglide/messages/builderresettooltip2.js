@@ -37,16 +37,20 @@ const fr_builderresettooltip2 = /** @type {(inputs: Builderresettooltip2Inputs) 
 	return /** @type {LocalizedString} */ (`Réinitialiser toutes les options du générateur aux valeurs par défaut`)
 };
 
+const uk_builderresettooltip2 = /** @type {(inputs: Builderresettooltip2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Скинути всі параметри конструктора до значень за замовчуванням`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Reset all builder options to defaults" |
 *
 * @param {Builderresettooltip2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const builderresettooltip2 = /** @type {((inputs?: Builderresettooltip2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderresettooltip2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const builderresettooltip2 = /** @type {((inputs?: Builderresettooltip2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderresettooltip2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderresettooltip2(inputs)
 	if (locale === "es") return es_builderresettooltip2(inputs)
@@ -55,6 +59,7 @@ const builderresettooltip2 = /** @type {((inputs?: Builderresettooltip2Inputs, o
 	if (locale === "ko") return ko_builderresettooltip2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderresettooltip2(inputs)
 	if (locale === "de") return de_builderresettooltip2(inputs)
-	return fr_builderresettooltip2(inputs)
+	if (locale === "fr") return fr_builderresettooltip2(inputs)
+	return uk_builderresettooltip2(inputs)
 });
 export { builderresettooltip2 as "builderResetTooltip" }

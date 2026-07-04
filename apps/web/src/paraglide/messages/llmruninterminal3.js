@@ -37,16 +37,20 @@ const fr_llmruninterminal3 = /** @type {(inputs: Llmruninterminal3Inputs) => Loc
 	return /** @type {LocalizedString} */ (`exécuter dans votre terminal`)
 };
 
+const uk_llmruninterminal3 = /** @type {(inputs: Llmruninterminal3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`запустіть у вашому терміналі`)
+};
+
 /**
 * | output |
 * | --- |
 * | "run in your terminal" |
 *
 * @param {Llmruninterminal3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const llmruninterminal3 = /** @type {((inputs?: Llmruninterminal3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmruninterminal3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const llmruninterminal3 = /** @type {((inputs?: Llmruninterminal3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmruninterminal3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_llmruninterminal3(inputs)
 	if (locale === "es") return es_llmruninterminal3(inputs)
@@ -55,6 +59,7 @@ const llmruninterminal3 = /** @type {((inputs?: Llmruninterminal3Inputs, options
 	if (locale === "ko") return ko_llmruninterminal3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_llmruninterminal3(inputs)
 	if (locale === "de") return de_llmruninterminal3(inputs)
-	return fr_llmruninterminal3(inputs)
+	if (locale === "fr") return fr_llmruninterminal3(inputs)
+	return uk_llmruninterminal3(inputs)
 });
 export { llmruninterminal3 as "llmRunInTerminal" }

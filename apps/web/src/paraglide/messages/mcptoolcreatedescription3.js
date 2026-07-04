@@ -37,16 +37,20 @@ const fr_mcptoolcreatedescription3 = /** @type {(inputs: Mcptoolcreatedescriptio
 	return /** @type {LocalizedString} */ (`Échafauder un nouveau projet sur le disque`)
 };
 
+const uk_mcptoolcreatedescription3 = /** @type {(inputs: Mcptoolcreatedescription3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Розмістіть новий проект на диску`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Scaffold a new project to disk" |
 *
 * @param {Mcptoolcreatedescription3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const mcptoolcreatedescription3 = /** @type {((inputs?: Mcptoolcreatedescription3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcptoolcreatedescription3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcptoolcreatedescription3 = /** @type {((inputs?: Mcptoolcreatedescription3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcptoolcreatedescription3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcptoolcreatedescription3(inputs)
 	if (locale === "es") return es_mcptoolcreatedescription3(inputs)
@@ -55,6 +59,7 @@ const mcptoolcreatedescription3 = /** @type {((inputs?: Mcptoolcreatedescription
 	if (locale === "ko") return ko_mcptoolcreatedescription3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcptoolcreatedescription3(inputs)
 	if (locale === "de") return de_mcptoolcreatedescription3(inputs)
-	return fr_mcptoolcreatedescription3(inputs)
+	if (locale === "fr") return fr_mcptoolcreatedescription3(inputs)
+	return uk_mcptoolcreatedescription3(inputs)
 });
 export { mcptoolcreatedescription3 as "mcpToolCreateDescription" }

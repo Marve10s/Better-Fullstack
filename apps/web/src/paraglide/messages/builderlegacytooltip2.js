@@ -37,16 +37,20 @@ const fr_builderlegacytooltip2 = /** @type {(inputs: Builderlegacytooltip2Inputs
 	return /** @type {LocalizedString} */ (`N'est plus activement entretenu`)
 };
 
+const uk_builderlegacytooltip2 = /** @type {(inputs: Builderlegacytooltip2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Більше не обслуговується`)
+};
+
 /**
 * | output |
 * | --- |
 * | "No longer actively maintained" |
 *
 * @param {Builderlegacytooltip2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const builderlegacytooltip2 = /** @type {((inputs?: Builderlegacytooltip2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderlegacytooltip2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const builderlegacytooltip2 = /** @type {((inputs?: Builderlegacytooltip2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderlegacytooltip2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderlegacytooltip2(inputs)
 	if (locale === "es") return es_builderlegacytooltip2(inputs)
@@ -55,6 +59,7 @@ const builderlegacytooltip2 = /** @type {((inputs?: Builderlegacytooltip2Inputs,
 	if (locale === "ko") return ko_builderlegacytooltip2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderlegacytooltip2(inputs)
 	if (locale === "de") return de_builderlegacytooltip2(inputs)
-	return fr_builderlegacytooltip2(inputs)
+	if (locale === "fr") return fr_builderlegacytooltip2(inputs)
+	return uk_builderlegacytooltip2(inputs)
 });
 export { builderlegacytooltip2 as "builderLegacyTooltip" }

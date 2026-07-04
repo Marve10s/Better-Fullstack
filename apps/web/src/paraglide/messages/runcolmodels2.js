@@ -37,16 +37,20 @@ const fr_runcolmodels2 = /** @type {(inputs: Runcolmodels2Inputs) => LocalizedSt
 	return /** @type {LocalizedString} */ (`Exemples de modèles`)
 };
 
+const uk_runcolmodels2 = /** @type {(inputs: Runcolmodels2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Приклади моделей`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Example models" |
 *
 * @param {Runcolmodels2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const runcolmodels2 = /** @type {((inputs?: Runcolmodels2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runcolmodels2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const runcolmodels2 = /** @type {((inputs?: Runcolmodels2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runcolmodels2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_runcolmodels2(inputs)
 	if (locale === "es") return es_runcolmodels2(inputs)
@@ -55,6 +59,7 @@ const runcolmodels2 = /** @type {((inputs?: Runcolmodels2Inputs, options?: { loc
 	if (locale === "ko") return ko_runcolmodels2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_runcolmodels2(inputs)
 	if (locale === "de") return de_runcolmodels2(inputs)
-	return fr_runcolmodels2(inputs)
+	if (locale === "fr") return fr_runcolmodels2(inputs)
+	return uk_runcolmodels2(inputs)
 });
 export { runcolmodels2 as "runColModels" }

@@ -1,0 +1,281 @@
+---
+title: „ScaffBench 2: zehn Konfigurationen, fünf Ökosysteme und ob ein Modell über eine Eingabeaufforderung ein Gerüst erstellen kann“
+description: „ScaffBench 2 führt Opus, GPT-5.5 und kostenlose Modelle über fünf harte Fullstack-Spezifikationen aus, um zu testen, ob Nur-Prompt-Gerüste tatsächlich erstellt werden.“
+date: 2026-06-26
+authors:
+  - Ibrahim Elkamali
+tags:
+  - benchmark
+  - claude-code
+  - agents
+keywords:
+  - llm benchmark
+  - ai scaffolding
+  - claude code
+  - project generation
+  - scaffbench
+---
+
+[ScaffBench](/blog/scaffbench) begann mit einer einfachen, etwas peinlichen Beobachtung: Codierung
+Agenten sind hervorragend darin, Code zu schreiben, und überraschend schlecht darin, Projekte zu *starten*. Der erste
+Benchmark beantwortete eine Frage in einem herstellerübergreifenden Bereich: *Wird das generierte Projekt installiert?
+und bauen?*
+
+ScaffBench 2 legt die Messlatte in jeder Richtung höher: fünf härtere Spezifikationen in **fünf Sprachen
+Ökosysteme** und ein Scoring-Rig, das nicht mehr bei „es baut“ Halt macht. Dieser Beitrag konzentriert sich auf die
+**Eingabeaufforderungspfad** – die schwierigste Version der Frage. Kein Gerüstbauer, kein CLI, kein MCP Server: der
+Der Agent liest die Spezifikation und schreibt das gesamte Projekt von Grund auf handschriftlich. Es ist das sauberste Maß für
+Rohmodellfähigkeit, denn das Ergebnis ist das, was das Modell tatsächlich produzieren kann, nicht das, was a
+Generator erzeugt dafür.
+
+Wir bewerten, ob das Projekt erstellt wird, ob der Agent die *richtigen* Bibliotheken verkabelt hat und wie viel es kostet
+Kosten, dann führen Sie dieselben fünf Spezifikationen für **vier Opus-Versionen und GPT-5.5** aus (aus mehreren Gründen).
+Bemühungen) plus **zwei kostenlose Modelle**, die die Nicht-Claude-Modelle durch neue treiben
+[Codex und Opencode/Kilo-Agent-Adapter](#across-configs-who-can-build-from-scratch). Hier ist, was es ist
+gefunden.
+
+## Was hat sich seit ScaffBench 1 geändert?
+
+ScaffBench 1 war ein Breiten-Benchmark – 102 Durchläufe, viele Modelle, eine Frage. ScaffBench 2 ist eine Tiefe
+Benchmark:
+
+- **Schwierigere Multi-Ökosystem-Spezifikationen.** Fünf Spezifikationen, eine pro Ökosystem, jede so gewählt, dass sie nahezu falsch ist
+  Antwort ist plausibel: eine TypeScript AI-Such-Workbench, ein Rust Leptos/Axum-Dienst, ein Python
+  Aufnahme API, ein Go Echtzeit-API und ein Multi-Ökosystem-TypeScript-Front- + .NET-Backend-Diagramm.
+- **Ergebnis über „es baut sich.“** Wir haben zusätzlich ein **Qualitätstor** (Lint/Format/Test) hinzugefügt
+  Installation + Build + Typprüfung, plus ein artefaktbasiertes **wired-libraries**-Score und ein Composite
+  **ScaffBench Index**.
+- **Eine ehrliche Run-Outcome-Taxonomie.** Jeder Run ist `success`, `model-failure` oder
+  `infra-inconclusive` – Toolchain-Störungen werden dem Modell nicht in Rechnung gestellt, und (laut SWE-Bench) a
+  Generierungs-Timeout *tut*.
+- **Kein Verlust von Antwortschlüsseln.** Der Agent arbeitet in einem isolierten temporären Verzeichnis, unabhängig von
+  Bewertungsbaum, daher kann er keinen kanonischen Befehl oder Geschwisterläufe lesen.
+- **Reproduzierbarkeit.** Die genaue `create-better-fullstack`-Version im Test (hier **2.1.1**) und
+  Die Host-Toolchain-Versionen werden angeheftet und aufgezeichnet.
+
+## Schlagzeilenergebnis
+
+Der schnelle Weg ist brutal. Bei den vier messbaren Spezifikationen erreicht **keine aktuelle Konfiguration mehr als zwei
+von vier, die man von Grund auf neu bauen kann**, und die meisten landen bei einem. Der einzelne Deep-Dive – **Claude Opus 4.8** bei
+Standardbegründung – verwaltet genau eine: `python-ingestion-api`. Bei der TypeScript-Spezifikation ist eine Zeitüberschreitung aufgetreten
+nach 93 Schritten und erzeugte nicht erstellende Rust- und Go-Projekte, während beim Versuch 50–62.000 Token verbrannt wurden.
+
+| Spez | Ökosystem | Opus 4.8 (prompt) | Wired-Bibliotheken | Out-Token |
+| --- | --- | :---: | ---: | ---: |
+| `python-ingestion-api` | Python | ✅ baut | 100% | 31,262 |
+| `ai-search-workbench` | TypeScript | ❌ Zeitüberschreitung | 100% | — |
+| `rust-leptos-axum` | Rust | ❌ kein Build | 92% | 56,222 |
+| `go-realtime-api` | Go | ❌ kein Build | 100% | 62,537 |
+
+Zwei Dinge fallen sofort auf:
+
+1. **Richtige Bibliotheken, falscher Build.** Wired-Bibliotheken bleiben hoch (92–100 %), selbst wenn das Projekt abgeschlossen ist
+   kompiliert nicht – das Modell weiß *welche* Bibliotheken die Spezifikation erfordert; es lässt sich einfach nicht zusammenbauen
+   sie in etwas, das aufbaut. „Sieht richtig aus, stimmt nicht“ ist der vorherrschende Fehlermodus für Eingabeaufforderungspfade.
+2. **Es zahlt sich teuer für die Fehlschläge aus.** Das handgeschriebene Go-Projekt kostete **4,24 $** und eine Ausgabe von 62,5.000
+   Tokens – und wurde immer noch nicht erstellt. Das Erstellen eines harten Projekts mit mehreren Bibliotheken Token für Token ist beides
+   die teuerste und unzuverlässigste Art, damit anzufangen.
+
+## Methodik
+
+### Die fünf Spezifikationen
+
+Jede Spezifikation ist ein echtes Full-Stack-Projekt mit einem bewusst kniffligen Stack – die Art, bei der man sich sicher ist
+Der Agent wählt einen *nahen* Nachbarn aus und versteht es auf subtile Weise falsch.
+
+| Spez | Ökosystem | Die Falle |
+| --- | --- | --- |
+| `ai-search-workbench` | TypeScript | Unterscheiden Sie Qdrant, OpenSearch, Inngest und oRPC von ihren Doppelgängern |
+| `rust-leptos-axum` | Rust | Wählen Sie Leptos + Axum + SQLx + Tonic gegenüber nahegelegenen Rust-Alternativen |
+| `python-ingestion-api` | Python | Kombinieren Sie FastAPI + SQLModel + AI + Warteschlangen, ohne auf reine Django-Tools abzuweichen |
+| `go-realtime-api` | Go | Chi + Ent + gRPC + NATS + Redis + OpenTelemetry unter expliziten Einschränkungen |
+| `multi-dotnet-ops` | Multi-Ökosystem | Erstellen Sie ein TypeScript-Frontend + .NET Minimales API-Backend |
+
+`multi-dotnet-ops` ist von den folgenden Tarifen ausgeschlossen: Der Bewertungshost verfügt über kein .NET SDK, also ist es so
+[infra-inconclusive](#the-honest-part-one-spec-we-couldnt-score), kein Modellfehler.
+
+### Was wir punkten
+
+<Callout kind="info">
+  **Core vs. Full.** *Core*-Validierung ist die tragende Frage – wird das Projekt installiert?
+  Build und Typprüfung (plus native Prüfungen wie `cargo check` / `go build`)? *Full* fügt das hinzu
+  Quality Gate: Lint, Format und Test. Auf dem Eingabeaufforderungspfad ist „Core“ die Schlagzeile – bei den meisten Läufen ist dies nicht der Fall
+  So weit kommen – und Full ist eine strikte Teilmenge von Core (es erfordert, dass das Projekt existiert, mindestens eines).
+  echter Validierungsschritt und jeder Schritt grün).
+</Callout>
+
+Über „Bestanden/Nicht bestanden“ hinaus wird jeder Lauf anhand von **verkabelten Bibliotheken** bewertet – dem primären „richtigen Stapel“-Signal.
+anhand der *tatsächlich vorhandenen* Bibliotheken im generierten Baum bewertet (Abhängigkeiten, Quellimporte,
+erforderliche Dateien), sodass ein Projekt, das eine Bibliothek benennt, sie aber nie verbindet, schlecht abschneidet. Die Bestenliste
+Sortiert nach einem zusammengesetzten **ScaffBench-Index** mit veröffentlichten Gewichtungen, sodass die Schlagzeilennummer lesbar ist
+statt Magie.
+
+### Die Run-Outcome-Taxonomie
+
+In Anlehnung an die Strenge von SWE-Bench landet jeder Lauf in einem von drei Eimern:
+
+- **Erfolg** / **Modellfehler** – beide zählen im Nenner. Ein `build`-Skript, das beendet wird
+  Ein Wert ungleich Null, eine falsche Bibliothek oder ein Generierungs-Timeout* ist ein Modellfehler.
+- **infra-inconclusive** – von den Tarifen ausgeschlossen und separat aufgetaucht: ein Validator, der das nicht einmal kann
+  Spawn (fehlende Toolchain), ein erschöpftes Budget oder ein Tool-Server, der ins Stocken gerät. Nicht die des Agenten
+  Schuld, es wird ihm also nicht in Rechnung gestellt.
+
+Die Zuverlässigkeit wird pro Spezifikation (Makrodurchschnitt) und nicht gepoolt angegeben. Konfidenzintervalle werden berechnet, aber
+wird nur bei n ≥ 8 Läufen angezeigt – bei einem Lauf pro Zelle ist dieser Lauf nicht qualifiziert, und wir sagen das eher als
+Drucken Sie eine Fälschung ±.
+
+## Konfigurationsübergreifend: Wer kann von Grund auf neu erstellen?
+
+Um zu sehen, ob die reine Leistungsfähigkeit den Ausschlag gibt, haben wir dieselben fünf Spezifikationen für zehn Konfigurationen getestet:
+**Opus 4.8, 4.7, 4.6 und 4.5** (Claude-Code), **GPT-5.5 bei niedrig / mittel / xhoch** (über ein neues Codex
+Adapter) und **zwei kostenlose Modelle** (über einen neuen Opencode/Kilo-Adapter). Gleiche Spezifikationen, nur die gleiche Eingabeaufforderung
+Bahn, gleiche Wertung.
+
+| Konfig | Kernpass | Voll | Verdrahtet | Out-Token |
+| --- | ---: | ---: | ---: | ---: |
+| **GPT-5.5 · xhigh** | **50% (2/4)** | **1** | 96% | 45,0k |
+| Opus 4.8 · Standard | 25% (1/4) | 0 | 98% | 50,0k |
+| Opus 4.7 · Standard | 25% (1/4) | 0 | 96% | 34,9k |
+| Opus 4.6 · Standard | 25% (1/4) | 0 | 94% | 24,8k |
+| GPT-5.5 · mittel | 25% (1/4) | 0 | 95% | 14,6k |
+| GPT-5.5 · niedrig | 25% (1/4) | 0 | 92% | 10,8k |
+| Nemotron-3 Super (kostenlos) | 25% (1/4) | 0 | 26% | 17,4k |
+| **Opus 4.5 · Standard** | **0%** | 0 | 92% | 35,2k |
+| North-Mini-Code (kostenlos) | 0% | 0 | 30% | 17,8k |
+
+Drei Dinge fallen heraus:
+
+1. **Von Grund auf gewinnt wirklich das Neuere und Stärkere.** Die meisten Konfigurationen gruppieren sich bei 25 % Kern, aber
+   **Opus 4.5 bricht auf 0 % zusammen** – das älteste Opus ist das einzige Claude-Modell, das kein einziges bekommen kann
+   Schwierige Spezifikation, die ohne fremde Hilfe erstellt werden kann. Es verbindet immer noch die richtigen Bibliotheken (92 %); Der Code funktioniert einfach nicht
+   kompilieren.
+2. **GPT-5.5 bei `xhigh` ist die einzige Konfiguration, die die Hälfte erreicht hat** – und es landet die **einzige Konfiguration der Studie
+   prompt-path Vollständiger Pass**. Mehr zum Warum weiter unten.
+3. **GPT-5.5 ist deutlich sparsamer mit Token** bei geringem/mittlerem Aufwand – ~11–15.000 Ausgabe-Tokens für Opus
+   25–50.000 für das gleiche Kernergebnis. Die Kosten für die Leistungsfähigkeit werden in Token bezahlt, und Opus zahlt einen größeren Teil davon
+   Es.
+
+## Hilft mehr Nachdenken?
+
+Wir haben den Argumentationsaufwand auf zwei Arten gemeistert: **Opus 4.8 bei `max` vs. `default`** und **GPT-5.5 bei `low`,
+`medium` und `xhigh`**. Die kurze Antwort: Auf dem Prompt-Pfad hilft mehr Argumentation nur dort, wo die
+Die Arbeit ist wirklich hart.
+
+**Opus 4.8 `max`** stimmte mit `default` auf dem Prompt-Board überein (immer noch 1/4) – es wurde nur das Extra ausgegeben
+Budget-Timeout für mehr Zellen. Eine eingefrorene Schwierigkeitsgrenze bewegt sich nicht, weil das Modell denkt
+mehr darüber.
+
+Bei **GPT-5.5 `xhigh`** hat sich die Argumentation ausgezahlt. Auf `go-realtime-api` starben beide `low` und `medium`
+im allerersten Schritt – `go mod tidy` (Exit 1) – durch Anheften einer **nicht vorhandenen Modulrevision**
+(`go.opentelemetry.io/contrib` otelchi bei `v0.62.0` / `v0.59.0`, „unbekannte Revision“). Bei `xhigh`,
+GPT-5.5 gab etwa das Vierfache der Ausgabetokens (50,5.000) aus, wählte selbstkonsistente Versionen aus und erstellte ein Projekt
+das auflöst, erstellt, überprüft und sauber testet – `passRate=100`, `stackPercent=100`, für 2,35 $. Das ist
+der **erste echte Prompt-Path-Full-Pass** der Studie, durchgehend.
+
+<Callout kind="info">
+  **Die Bank funktioniert nicht – sie misst.** Jeder Schwung hier wird von einem ehrlichen Compiler unterstützt
+  Ausgabe, kein Ergebnisrauschen: ein Go `unknown revision`, das mehr Argumente auflöst, echtes `TS`/build
+  Fehler, bei denen dies nicht der Fall war. Harte Arbeit zur Abhängigkeitslösung bietet Spielraum, den zusätzliches Denken bietet
+  tatsächlich kaufen. Die einzige Einschränkung, auf die wir immer wieder hinweisen: n=1 pro Zelle, diese sind also reproduzierbar und erklärbar
+  Ergebnisse – keine statistischen Äquivalenzansprüche.
+</Callout>
+
+## Kostenlose Modelle: entgegengesetzte Fehlermodi und ein Fehler, den sie entdeckt haben
+
+Der offensichtliche Stresstest für einen Benchmark von Grund auf ist: *Wie schwach produziert ein Modell noch etwas?*
+Also haben wir zwei wirklich kostenlose Modelle über dieselbe Eingabeaufforderungsspur laufen lassen – **North-mini Code** (Cohere, a
+kleiner *Coder*, über Opencode) und **Nemotron-3 Super** (NVIDIAs 120B *Reasoner*, über Kilo Code's
+kostenloses Kontingent). Sie scheiterten auf genau entgegengesetzte Weise.
+
+- **North-mini** Core-durchläuft **0 %** und verbindet nur **30 %** der angeforderten Bibliotheken – ein kleiner Teil
+  Ein Programmierer, der nichts zum Anlehnen hat, schreibt ein Projekt, das weder den richtigen Stack erstellt noch enthält.
+- **Nemotron** Kerndurchgänge **25 %**: Sein einziger Durchgang ist ein Go-Projekt, das von Hand bis zum Ende geschrieben wurde. Der Große
+  Reasoner kann Code besser von Grund auf schreiben als der kleine Programmierer – aber meistens *erforscht er den
+  Aufgabe und stoppt dann*, wodurch mehrere Runden beendet werden, ohne dass überhaupt ein Projekt produziert wird.
+
+### Der Fehler, den die kostenlose Stufe entdeckt hat
+
+Für ein paar Minuten lag North-mini *mit 58 %* an der Spitze der Full-Pass-Rangliste – über allen Opus und GPT
+config. Das ist genau die Art von Ergebnis, die Sie einem Benchmark misstrauen lassen sollte, also haben wir es verfolgt
+Es. Die Ursache war ein echter Scoring-Fehler: Wenn ein schwaches Modell ein „Projekt“ ohne erkennbaren Build ausgibt
+Einstiegspunkt, der Harness führt **null** Validierungsschritte und einen vollständigen Durchgang aus, der als `passRate === 100` definiert ist
+liest `0 failures ÷ 0 steps` als perfekte Punktzahl. Mehrere „Pässe“ von North-Mini waren leer
+Validierungen** – Anerkennung dafür, dass nichts produziert wurde.
+
+Wir haben die Definition korrigiert, um Core zu spiegeln: Ein vollständiger Durchgang erfordert nun, dass das Projekt **und** existiert
+Mindestens ein echter Validierungsschritt, wobei jeder Schritt grün ist. Dadurch sank North-Mini auf seine tatsächlichen **0 %**
+Diese Spur und platzieren Sie beide kostenlosen Modelle unter einem speziellen **Free-Stufe**-Teiler auf der Bestenliste.
+
+<Callout kind="info">
+  **Ein kostenloses Modell, das „gewinnt“, ist ein Fehlerbericht, kein Ergebnis.** Das Phantom 58 % hat einen leeren Pass aufgetaucht
+  Fehler, der stillschweigend die Gesamtzahl *jedes* Modells erhöht hat, wenn ein Lauf nichts gebracht hat
+  überprüfen. Die Bank sagte es sich selbst – und das ist der Punkt. Zahlen, die Sie nicht erklären können, werden untersucht,
+  nicht veröffentlicht.
+</Callout>
+
+## Der Benchmark prüfte unsere eigenen Vorlagen – und wir korrigierten sie
+
+Ein Gerüstbau-Benchmark ist auch eine kontinuierliche Prüfung des Gerüstbauers, und dieser Lauf hat sich bewährt
+Gewicht. Bei der Prüfung der Spezifikationen stellte die Suite eine Reihe von Fehlern in unserem *eigenen* generierten Programm fest
+Vorlagen – Rust-Ausgabe, die fehlgeschlagen ist `cargo clippy -D warnings` / `cargo fmt --check`, Python das
+löste `ruff` sowie Lücken im Env-Schema und in der Abhängigkeitsversion über mehrere Stacks aus. Nichts davon war das
+Schuld des Agenten; Der Generator hatte einen Liefercode und war im Auslieferungszustand nicht fusselfrei.
+
+<Callout kind="info">
+  **Abgefangen und behoben.** Diese Vorlagenlücken sind jetzt behoben und eingeliefert
+  **`create-better-fullstack@2.1.3`** – generierte Projekte bestehen ihren eigenen schreibgeschützten Lint/Format/Test
+  Tor über TypeScript, Rust, Python, Go, Java und Elixir. Der obige Lauf wurde dagegen aufgezeichnet
+  2.1.1; Eine erneute Ausführung der festen Vorlagen wird in die Warteschlange gestellt. Dies ist genau die Art von Regression der Suite
+  existiert zum Abfangen – und der erste, den es abfing, in ScaffBench 1, war ein Fehler beim Erstellen nativer Vorlagen.
+</Callout>
+
+## Der ehrliche Teil: Eine Spezifikation konnten wir nicht punkten
+
+`multi-dotnet-ops` ist ausgeschlossen, da der Bewertungshost kein .NET SDK hat – der Validator kann dies nicht einmal
+spawn, daher klassifiziert die Taxonomie es als `infra-inconclusive`, anstatt dem einen Fehler in Rechnung zu stellen
+Modell. Es muss eine saubere Neuausführung auf einem Host durchgeführt werden, auf dem die .NET-Toolchain installiert ist. Melde es als Model
+Scheitern wäre die einfache und unehrliche Entscheidung gewesen.
+
+## Wie ScaffBench 2 Anleihen bei den besten Bestenlisten macht
+
+Wir haben die Benchmarks verglichen. Ein paar Konventionen von Artificial Analysis, SWE-bench und Aider gemacht
+es in v2:
+
+- **Modell + Argumentation als erstklassige Identität** (Künstliche Analyse): Die Bestenliste führt mit
+  `Opus 4.8 · default reasoning`, also ist ein zweiter Argumentationsansatz oder ein zweites Modell nur eine weitere Zeile.
+- **Ein transparenter zusammengesetzter Index mit veröffentlichten Gewichtungen** (AA's Intelligence Index): eine Überschrift
+  Zahl, aber Sie können die Formel sehen.
+- **Eine vom Aufgabenerfolg getrennte Achse der Vertragseinhaltung** (Aider): *verkabelte Bibliotheken* werden gemeldet
+  neben der Erfolgsquote, also ist „es funktioniert“ von „es hat den richtigen Stapel ausgewählt“ entkoppelt.
+- **Eine regulierte Ergebnistaxonomie und isolierte Bewertung** (SWE-Benchmark): kein Lösungsschlüsselverlust,
+  Timeouts zählen, Infra-Stände nicht.
+
+## Einschränkungen und was als nächstes kommt
+
+- **Ein Lauf pro Zelle.** Genug zum Lesen der Struktur, nicht genug für Konfidenzintervalle. Der nächste
+  Der Lauf macht **≥3 Wiederholungen** (5 für die Flaky-Prompt-Lane), sodass das Wilson-Intervall meldepflichtig wird.
+- **Die GPT-Kosten werden geschätzt** aus der Token-Nutzung × veröffentlichten OpenAI-Preisen (Codex gibt keinen Dollar an
+  Figur).
+- **`multi-dotnet-ops` muss neu ausgeführt werden** auf einem Host mit einer lokalen .NET-Toolchain.
+- **Die unterstützten Fahrspuren kehren als nächstes zurück.** Nachdem die Vorlagenlücken nun in 2.1.3 behoben wurden, wird die
+  Von Gerüstbauern unterstützte Läufe werden anhand sauberer Vorlagen neu gemessen – ihre Zahlen spiegeln dies wider
+  Modellfähigkeit, nicht unsere Schuld.
+
+Ziel von ScaffBench 2 war es, den Benchmark schwieriger, reproduzierbarer und diagnostischer zu machen. Der
+Prompt Path macht eines deutlich: Das Starten eines harten Multi-Ökosystem-Projekts aus einer leeren Datei ist
+immer noch weit über die heutigen Grenzmodelle hinaus – sie greifen nach den richtigen Bibliotheken und können es dann nicht schaffen
+sie kompilieren.
+
+## Anhang: Prompt-Path-Zellen (Opus 4.8, Standard)
+
+| Spez | Ergebnis | Kern | Voll | Verdrahtet | Kosten | Out-Token | Schritte |
+| --- | --- | :---: | :---: | ---: | ---: | ---: | ---: |
+| `python-ingestion-api` | Modellfehler | ✅ | ❌ | 100% | $2.32 | 31,262 | 47 |
+| `ai-search-workbench` | Modellfehler | ❌ | ❌ | 100% | — | Time-out | 93 |
+| `rust-leptos-axum` | Modellfehler | ❌ | ❌ | 92% | $3.52 | 56,222 | 42 |
+| `go-realtime-api` | Modellfehler | ❌ | ❌ | 100% | $4.24 | 62,537 | 59 |
+| `multi-dotnet-ops` | infra-nicht schlüssig | — | — | 62% | — | — | 30 |
+
+*Lauf: `claude-opus-4-8`, Standardbegründung, Eingabeaufforderungspfad, 1 Lauf/Zelle, Kabelbaum 2.0.0, Generator
+`create-better-fullstack@2.1.1`, 26.06.2026. `python-ingestion-api` Kerndurchgänge (Installationen, Builds,
+Typprüfungen), aber es fehlt „Full“ bei einer Vorlagen-Lint-Lücke, da in 2.1.3 behoben.*

@@ -37,16 +37,20 @@ const fr_mcptipdependenciesneverinstalled4 = /** @type {(inputs: Mcptipdependenc
 	return /** @type {LocalizedString} */ (`Les dépendances ne sont jamais installées : votre agent vous indiquera la commande install`)
 };
 
+const uk_mcptipdependenciesneverinstalled4 = /** @type {(inputs: Mcptipdependenciesneverinstalled4Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Залежності ніколи не встановлюються: ваш агент повідомить вам команду встановлення`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Dependencies are never installed: your agent will tell you the install command" |
 *
 * @param {Mcptipdependenciesneverinstalled4Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const mcptipdependenciesneverinstalled4 = /** @type {((inputs?: Mcptipdependenciesneverinstalled4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcptipdependenciesneverinstalled4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcptipdependenciesneverinstalled4 = /** @type {((inputs?: Mcptipdependenciesneverinstalled4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcptipdependenciesneverinstalled4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcptipdependenciesneverinstalled4(inputs)
 	if (locale === "es") return es_mcptipdependenciesneverinstalled4(inputs)
@@ -55,6 +59,7 @@ const mcptipdependenciesneverinstalled4 = /** @type {((inputs?: Mcptipdependenci
 	if (locale === "ko") return ko_mcptipdependenciesneverinstalled4(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcptipdependenciesneverinstalled4(inputs)
 	if (locale === "de") return de_mcptipdependenciesneverinstalled4(inputs)
-	return fr_mcptipdependenciesneverinstalled4(inputs)
+	if (locale === "fr") return fr_mcptipdependenciesneverinstalled4(inputs)
+	return uk_mcptipdependenciesneverinstalled4(inputs)
 });
 export { mcptipdependenciesneverinstalled4 as "mcpTipDependenciesNeverInstalled" }

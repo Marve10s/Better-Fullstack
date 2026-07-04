@@ -1,0 +1,34 @@
+---
+title: 프로젝트 확인
+description: CLI에서 기존 Better Fullstack 프로젝트를 진단합니다.
+---
+
+`check` 명령은 스캐폴드된 Better Fullstack 프로젝트의 유효성을 검사합니다. 이는 기존 `doctor` 명령에 대한 사용자용 별칭입니다.
+
+```npm
+npm create better-fullstack@latest check -- --skip-checks
+```
+
+## 어떤 수표를 사용합니까?
+
+- `bts.jsonc`을 읽고 유효성을 검사합니다.
+- 감지된 패키지 관리자 또는 에코시스템에 대한 종속성이 설치되어 있는지 확인합니다.
+- `.env.example` 파일에서 필수 환경 변수가 누락되었음을 보고합니다.
+- `--skip-checks`이 전달되지 않는 한 사용 가능한 생성 프로젝트 유형 또는 빌드 검사를 실행합니다.
+- 에이전트 및 CI 스크립트에 대해 `--json`을 지원합니다.
+
+## 플래그
+
+| 깃발 | 행동 |
+| --- | --- |
+| 위치 프로젝트 디렉토리 | 진단할 프로젝트 디렉터리입니다. 기본값은 현재 디렉터리입니다. |
+| `--skip-checks` | 생성된 유형/빌드 검사를 건너뛰고 구성, 종속성 및 환경 파일만 검사합니다. |
+| `--json` | 구조화된 JSON을 인쇄합니다. 오류가 있는 경우 명령은 0이 아닌 값으로 종료됩니다. |
+
+## 닥터 앨리어스
+
+`doctor`은 호환성을 위해 계속 사용 가능합니다.
+
+```npm
+npm create better-fullstack@latest doctor -- --skip-checks
+```

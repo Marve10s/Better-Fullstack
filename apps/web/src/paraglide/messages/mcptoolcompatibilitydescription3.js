@@ -37,16 +37,20 @@ const fr_mcptoolcompatibilitydescription3 = /** @type {(inputs: Mcptoolcompatibi
 	return /** @type {LocalizedString} */ (`Validez les combinaisons de piles avec des ajustements automatiques`)
 };
 
+const uk_mcptoolcompatibilitydescription3 = /** @type {(inputs: Mcptoolcompatibilitydescription3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Перевірте комбінації стеків за допомогою автоматичного налаштування`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Validate stack combinations with auto-adjustments" |
 *
 * @param {Mcptoolcompatibilitydescription3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const mcptoolcompatibilitydescription3 = /** @type {((inputs?: Mcptoolcompatibilitydescription3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcptoolcompatibilitydescription3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcptoolcompatibilitydescription3 = /** @type {((inputs?: Mcptoolcompatibilitydescription3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcptoolcompatibilitydescription3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcptoolcompatibilitydescription3(inputs)
 	if (locale === "es") return es_mcptoolcompatibilitydescription3(inputs)
@@ -55,6 +59,7 @@ const mcptoolcompatibilitydescription3 = /** @type {((inputs?: Mcptoolcompatibil
 	if (locale === "ko") return ko_mcptoolcompatibilitydescription3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcptoolcompatibilitydescription3(inputs)
 	if (locale === "de") return de_mcptoolcompatibilitydescription3(inputs)
-	return fr_mcptoolcompatibilitydescription3(inputs)
+	if (locale === "fr") return fr_mcptoolcompatibilitydescription3(inputs)
+	return uk_mcptoolcompatibilitydescription3(inputs)
 });
 export { mcptoolcompatibilitydescription3 as "mcpToolCompatibilityDescription" }

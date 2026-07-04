@@ -37,16 +37,20 @@ const fr_mcpseodescription2 = /** @type {(inputs: Mcpseodescription2Inputs) => L
 	return /** @type {LocalizedString} */ (`Connectez les agents de codage AI à Better Fullstack via MCP. Laissez Claude, Cursor, VS Code Copilot et d'autres agents élaborer des projets fullstack par programmation.`)
 };
 
+const uk_mcpseodescription2 = /** @type {(inputs: Mcpseodescription2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Підключіть агенти кодування AI до Better Fullstack через MCP. Нехай Claude, Cursor, VS Code Copilot та інші агенти створюють проекти повного стека програмним шляхом.`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Connect AI coding agents to Better Fullstack via MCP. Let Claude, Cursor, VS Code Copilot, and other agents scaffold fullstack projects programmatically." |
 *
 * @param {Mcpseodescription2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const mcpseodescription2 = /** @type {((inputs?: Mcpseodescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpseodescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcpseodescription2 = /** @type {((inputs?: Mcpseodescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpseodescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcpseodescription2(inputs)
 	if (locale === "es") return es_mcpseodescription2(inputs)
@@ -55,6 +59,7 @@ const mcpseodescription2 = /** @type {((inputs?: Mcpseodescription2Inputs, optio
 	if (locale === "ko") return ko_mcpseodescription2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcpseodescription2(inputs)
 	if (locale === "de") return de_mcpseodescription2(inputs)
-	return fr_mcpseodescription2(inputs)
+	if (locale === "fr") return fr_mcpseodescription2(inputs)
+	return uk_mcpseodescription2(inputs)
 });
 export { mcpseodescription2 as "mcpSeoDescription" }

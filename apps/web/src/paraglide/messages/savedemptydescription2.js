@@ -37,16 +37,20 @@ const fr_savedemptydescription2 = /** @type {(inputs: Savedemptydescription2Inpu
 	return /** @type {LocalizedString} */ (`Enregistrez la configuration actuelle du générateur pour créer vous-même un préréglage réutilisable. Ces entrées restent dans le stockage local sur ce navigateur.`)
 };
 
+const uk_savedemptydescription2 = /** @type {(inputs: Savedemptydescription2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Збережіть поточну конфігурацію конструктора, щоб створити для себе шаблон багаторазового використання. Ці записи залишаються в локальному сховищі цього браузера.`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Save the current builder configuration to create a reusable preset for yourself. These entries stay in local storage on this browser." |
 *
 * @param {Savedemptydescription2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const savedemptydescription2 = /** @type {((inputs?: Savedemptydescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedemptydescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const savedemptydescription2 = /** @type {((inputs?: Savedemptydescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedemptydescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_savedemptydescription2(inputs)
 	if (locale === "es") return es_savedemptydescription2(inputs)
@@ -55,6 +59,7 @@ const savedemptydescription2 = /** @type {((inputs?: Savedemptydescription2Input
 	if (locale === "ko") return ko_savedemptydescription2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_savedemptydescription2(inputs)
 	if (locale === "de") return de_savedemptydescription2(inputs)
-	return fr_savedemptydescription2(inputs)
+	if (locale === "fr") return fr_savedemptydescription2(inputs)
+	return uk_savedemptydescription2(inputs)
 });
 export { savedemptydescription2 as "savedEmptyDescription" }

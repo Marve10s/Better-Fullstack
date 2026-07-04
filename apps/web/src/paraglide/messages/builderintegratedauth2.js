@@ -37,16 +37,20 @@ const fr_builderintegratedauth2 = /** @type {(inputs: Builderintegratedauth2Inpu
 	return /** @type {LocalizedString} */ (`Authentification intégrée`)
 };
 
+const uk_builderintegratedauth2 = /** @type {(inputs: Builderintegratedauth2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Інтегрована авторизація`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Integrated Auth" |
 *
 * @param {Builderintegratedauth2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const builderintegratedauth2 = /** @type {((inputs?: Builderintegratedauth2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderintegratedauth2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const builderintegratedauth2 = /** @type {((inputs?: Builderintegratedauth2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderintegratedauth2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderintegratedauth2(inputs)
 	if (locale === "es") return es_builderintegratedauth2(inputs)
@@ -55,6 +59,7 @@ const builderintegratedauth2 = /** @type {((inputs?: Builderintegratedauth2Input
 	if (locale === "ko") return ko_builderintegratedauth2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderintegratedauth2(inputs)
 	if (locale === "de") return de_builderintegratedauth2(inputs)
-	return fr_builderintegratedauth2(inputs)
+	if (locale === "fr") return fr_builderintegratedauth2(inputs)
+	return uk_builderintegratedauth2(inputs)
 });
 export { builderintegratedauth2 as "builderIntegratedAuth" }

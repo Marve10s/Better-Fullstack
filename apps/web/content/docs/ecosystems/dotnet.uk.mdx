@@ -1,0 +1,65 @@
+---
+title: .NET
+description: ASP.NET Основні каркаси з EF Core або Dapper, Identity, Minimal APIs або Hot Chocolate, SignalR, фонові завдання, тести та файли розгортання.
+---
+
+Проекти .NET генерують додатки ASP.NET Core, які відповідають стандартним угодам `dotnet`. Виберіть параметри .NET для веб-платформи, доступу до даних, авторизації, стилю API, реального часу, фонових завдань, спостережуваності, кешування, тестування та розгортання файлів.
+
+## передумови
+
+- .NET SDK 10 або новішої версії.
+- PostgreSQL при використанні `ef-core` з базою даних `postgres`; SQLite не потребує сервера.
+- Docker під час використання цілі розгортання `docker` або `testcontainers-dotnet`.
+- Git, якщо ви хочете ініціалізувати сховище.
+
+## Приклад сценарію
+
+```npm
+npm create better-fullstack@latest my-dotnet-app -- \
+  --ecosystem dotnet \
+  --dotnet-web-framework aspnet-minimal \
+  --dotnet-orm ef-core \
+  --dotnet-auth aspnet-identity \
+  --dotnet-api minimal-api \
+  --dotnet-testing xunit \
+  --dotnet-job-queue hangfire \
+  --dotnet-realtime signalr \
+  --dotnet-observability serilog \
+  --dotnet-caching redis \
+  --dotnet-deploy docker \
+  --database postgres \
+  --ai-docs none \
+  --no-install \
+  --no-git
+```
+
+## .NET категорії
+
+| Категорія | Цінності |
+| --- | --- |
+| Веб-фреймворк | `aspnet-minimal` `aspnet-mvc` `aspnet-blazor` `none` |
+| Доступ до даних | `ef-core` `dapper` `linq2db` `none` |
+| Авт | `aspnet-identity` `duende-identityserver` `auth0-aspnet` `none` |
+| API | `minimal-api` `graphql-hotchocolate` `grpc-dotnet` `none` |
+| Тестування | `xunit` `nunit` `moq` `testcontainers-dotnet` `none` |
+| Фонові роботи | `hangfire` `quartz-net` `hosted-services` `none` |
+| У реальному часі | `signalr` `none` |
+| Спостережливість | `opentelemetry-dotnet` `serilog` `nlog` `health-checks` `none` |
+| Перевірка | `fluentvalidation` `data-annotations` `none` |
+| Кешування | `redis` `memory-cache` `none` |
+| Розгорнути | `docker` `azure` `aws` `none` |
+
+## Примітки щодо сумісності
+
+- Параметри .NET застосовуються лише з `--ecosystem dotnet`.
+- ASP.NET Core — це окрема веб-платформа .NET; TypeScript параметри інтерфейсу та серверної частини ігноруються.
+- `--dotnet-testing` і `--dotnet-observability` приймають кілька значень.
+- `ef-core` вибирає постачальника з `--database`: `postgres` використовує Npgsql, усе інше повертається до SQLite.
+- `aspnet-identity` реєструє ідентифікаційні сховища лише в парі з `ef-core`; без нього каркас реєструє прості служби автентифікації та авторизації.
+- Неінтерактивні параметри за замовчуванням, коли встановлено `--ecosystem dotnet`: `aspnet-minimal`, `ef-core`, `aspnet-identity`, `minimal-api`, `xunit`, `signalr`, `serilog` та `docker`.
+
+## Сформована поведінка
+
+- Проект включає `.csproj`, `Program.cs`, `appsettings.json`, файл запиту `.http`, тестовий проект, `.gitignore` і примітки щодо налаштування в README.
+- Вибір EF Core з’єднує `DbContext` з постачальником Npgsql або SQLite, а також пакетом часу розробки для міграцій.
+- Додаткові параметри додають робочий базовий код ASP.NET для Identity, Hot Chocolate GraphQL, служб gRPC, концентраторів SignalR, завдань Hangfire або Quartz.NET, конвеєрів Serilog/NLog/OpenTelemetry, кешування Redis та багатоступінчастого файлу Docker.

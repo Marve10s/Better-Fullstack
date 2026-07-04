@@ -37,16 +37,20 @@ const fr_homecontributorstitlea3 = /** @type {(inputs: Homecontributorstitlea3In
 	return /** @type {LocalizedString} */ (`Construit en public.`)
 };
 
+const uk_homecontributorstitlea3 = /** @type {(inputs: Homecontributorstitlea3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Побудований у громадському.`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Built in public." |
 *
 * @param {Homecontributorstitlea3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const homecontributorstitlea3 = /** @type {((inputs?: Homecontributorstitlea3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homecontributorstitlea3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const homecontributorstitlea3 = /** @type {((inputs?: Homecontributorstitlea3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homecontributorstitlea3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_homecontributorstitlea3(inputs)
 	if (locale === "es") return es_homecontributorstitlea3(inputs)
@@ -55,6 +59,7 @@ const homecontributorstitlea3 = /** @type {((inputs?: Homecontributorstitlea3Inp
 	if (locale === "ko") return ko_homecontributorstitlea3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_homecontributorstitlea3(inputs)
 	if (locale === "de") return de_homecontributorstitlea3(inputs)
-	return fr_homecontributorstitlea3(inputs)
+	if (locale === "fr") return fr_homecontributorstitlea3(inputs)
+	return uk_homecontributorstitlea3(inputs)
 });
 export { homecontributorstitlea3 as "homeContributorsTitleA" }

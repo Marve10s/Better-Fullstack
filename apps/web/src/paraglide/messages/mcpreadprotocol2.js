@@ -37,16 +37,20 @@ const fr_mcpreadprotocol2 = /** @type {(inputs: Mcpreadprotocol2Inputs) => Local
 	return /** @type {LocalizedString} */ (`Lire le protocole MCP`)
 };
 
+const uk_mcpreadprotocol2 = /** @type {(inputs: Mcpreadprotocol2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Прочитати протокол MCP`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Read MCP protocol" |
 *
 * @param {Mcpreadprotocol2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const mcpreadprotocol2 = /** @type {((inputs?: Mcpreadprotocol2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpreadprotocol2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcpreadprotocol2 = /** @type {((inputs?: Mcpreadprotocol2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpreadprotocol2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcpreadprotocol2(inputs)
 	if (locale === "es") return es_mcpreadprotocol2(inputs)
@@ -55,6 +59,7 @@ const mcpreadprotocol2 = /** @type {((inputs?: Mcpreadprotocol2Inputs, options?:
 	if (locale === "ko") return ko_mcpreadprotocol2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcpreadprotocol2(inputs)
 	if (locale === "de") return de_mcpreadprotocol2(inputs)
-	return fr_mcpreadprotocol2(inputs)
+	if (locale === "fr") return fr_mcpreadprotocol2(inputs)
+	return uk_mcpreadprotocol2(inputs)
 });
 export { mcpreadprotocol2 as "mcpReadProtocol" }

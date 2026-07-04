@@ -1,0 +1,62 @@
+---
+title: Створіть внутрішній інструмент
+description: Створіть внутрішній інструмент із TanStack Router, Hono, Drizzle, PostgreSQL, Better Auth, tRPC, Tailwind CSS та shadcn/ui.
+updated: 2026-05-21
+category: Packs
+tags:
+  - internal-tool
+  - tanstack-router
+  - hono
+  - drizzle
+  - trpc
+keywords:
+  - create internal tool
+  - internal tool starter
+  - admin dashboard starter
+  - tanstack hono starter
+  - crud dashboard starter
+---
+
+Використовуйте пакет внутрішніх інструментів, коли вам потрібна робоча програма, орієнтована на CRUD, для операцій, робочих процесів адміністратора, команд підтримки або інформаційних панелей продуктів.
+
+<StarterPackCta id="internal-tool" />
+
+## Створіть внутрішній запуск інструменту
+
+Відкрийте [Internal Tool pack у Stack Builder](/new?preset=tanstack-hono&view=command) або запустіть:
+
+```bash
+bun create better-fullstack@latest my-internal-tool \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime bun \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui
+```
+
+## Що входить до набору
+
+- TanStack Router для веб-програми.
+- Hono на Bun для серверної частини.
+- PostgreSQL і Drizzle для введеного збереження.
+- Better Auth для захищеного внутрішнього доступу.
+- tRPC для введених зовнішніх викликів.
+- Tailwind CSS і shadcn/ui для інтерфейсу інформаційної панелі.
+
+## Перше, що потрібно налаштувати
+
+1. Моделюйте робочі об’єкти, які ваша команда редагує щодня.
+2. Додайте перевірку ролі, перш ніж виявляти деструктивні дії.
+3. Створюйте список, деталізуйте, створюйте, редагуйте та перевіряйте перегляди навколо того самого типу API.
+4. Додайте секрети розгортання та міграції бази даних, перш ніж запрошувати товаришів по команді.
+
+## Коли це правильний пакет
+
+Виберіть це для панелей адміністратора, внутрішніх інформаційних панелей, інструментів підтримки, робочих процесів бек-офісу та програм CRUD, де швидкість має значення, але безпека типу все ще має значення.
+
+Для покрокового керівництва на рівні стеку прочитайте [Hono з tRPC і Drizzle](/guides/typescript/hono-trpc-drizzle/).

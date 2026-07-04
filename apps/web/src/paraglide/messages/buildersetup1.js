@@ -37,16 +37,20 @@ const fr_buildersetup1 = /** @type {(inputs: Buildersetup1Inputs) => LocalizedSt
 	return /** @type {LocalizedString} */ (`installation`)
 };
 
+const uk_buildersetup1 = /** @type {(inputs: Buildersetup1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`налаштування`)
+};
+
 /**
 * | output |
 * | --- |
 * | "setup" |
 *
 * @param {Buildersetup1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const buildersetup1 = /** @type {((inputs?: Buildersetup1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildersetup1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const buildersetup1 = /** @type {((inputs?: Buildersetup1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildersetup1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_buildersetup1(inputs)
 	if (locale === "es") return es_buildersetup1(inputs)
@@ -55,6 +59,7 @@ const buildersetup1 = /** @type {((inputs?: Buildersetup1Inputs, options?: { loc
 	if (locale === "ko") return ko_buildersetup1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_buildersetup1(inputs)
 	if (locale === "de") return de_buildersetup1(inputs)
-	return fr_buildersetup1(inputs)
+	if (locale === "fr") return fr_buildersetup1(inputs)
+	return uk_buildersetup1(inputs)
 });
 export { buildersetup1 as "builderSetup" }

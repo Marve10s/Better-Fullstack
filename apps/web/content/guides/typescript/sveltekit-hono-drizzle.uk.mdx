@@ -1,0 +1,123 @@
+---
+title: SvelteKit з Hono і Drizzle
+description: Створіть програму SvelteKit з Hono API, oRPC, Drizzle, PostgreSQL, Tailwind CSS та Better Auth за допомогою Better Fullstack.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - sveltekit
+  - hono
+  - orpc
+  - drizzle
+keywords:
+  - sveltekit hono
+  - sveltekit drizzle starter
+  - sveltekit postgres boilerplate
+  - sveltekit orpc
+  - create sveltekit fullstack app
+---
+
+Використовуйте цей стек, якщо вам потрібен SvelteKit на інтерфейсі та маленький сервер TypeScript API поруч із ним.
+
+```npm
+npm create better-fullstack@latest my-sveltekit-app -- \
+  --ecosystem typescript \
+  --frontend svelte \
+  --backend hono \
+  --runtime bun \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api orpc \
+  --css-framework tailwind \
+```
+
+## Що це створює
+
+- Інтерфейс SvelteKit.
+- Сервер Hono на Bun.
+- oRPC для типізованих контрактів API через вибір інтерфейсу, що не є React.
+- PostgreSQL і Drizzle.
+- Better Auth, де вибрана база даних і ORM це підтримують.
+
+## Згенерована форма
+
+Це розділений стек TypeScript: SvelteKit обробляє зовнішній інтерфейс, Hono обробляє сервер API, а oRPC є введеною межею між ними.
+
+Представницька форма:
+
+```txt
+my-sveltekit-app/
+  bts.jsonc
+  apps/
+    web/
+    server/
+  packages/
+    shared/
+```
+
+Конкретні назви робочих областей можуть змінюватися, але зберігайте чітке право власності. Компоненти Svelte не повинні безпосередньо імпортувати модулі бази даних; вони повинні викликати типізовані серверні операції.
+
+## Приклад шаблону виклику SvelteKit
+
+Функція сторінки або завантаження має спілкуватися зі згенерованим клієнтом API замість жорсткого кодування корисних навантажень запитів у всій програмі:
+
+```ts
+export async function load() {
+  return {
+    title: "Projects",
+  };
+}
+```
+
+Для мутацій збережіть перевірку та авторизацію на стороні Hono, навіть якщо інтерфейс користувача SvelteKit вже перевіряє вхідні дані форми.
+
+## Приклад моделі Drizzle
+
+PostgreSQL плюс Drizzle дає чіткі визначення таблиць:
+
+```ts
+import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
+
+export const project = pgTable("project", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  ownerId: text("owner_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+```
+
+Використовуйте невеликі серверні функції навколо запитів, щоб обробники Hono та процедури oRPC не стали звалищем для бізнес-правил.
+
+## Коли його вибрати
+
+Виберіть це, якщо ваша команда віддає перевагу SvelteKit, але все ще хоче чіткий сервер API і типові контракти. Це корисно для додатків, які можуть перетворитися на окремі інтерфейсні та бекенд-розгортання.
+
+## Примітки щодо сумісності
+
+- У цьому посібнику використовується `--api orpc`, оскільки SvelteKit не є інтерфейсом React.
+- `--backend hono` і `--runtime bun` створюють окрему службу API замість того, щоб покладатися лише на маршрути сервера SvelteKit.
+- Better Auth вимагає, щоб вибрана база даних і шлях ORM залишалися сумісними. Синхронізуйте зміни схеми автентифікації та міграції Drizzle.
+- Якщо пізніше ви видалите окрему серверну частину, перегляньте разом налаштування клієнта API, CORS і автентифікаційну обробку файлів cookie.
+
+## Примітки до розгортання
+
+Очікуйте окремих змінних середовища web і API. Додатку SvelteKit потрібне загальнодоступне джерело API. Серверу Hono потрібні PostgreSQL та секрети авторизації. Якщо вони розгортаються в різних доменах, навмисно налаштуйте CORS і файли cookie.
+
+Запустіть міграцію бази даних перед розгортанням коду API, який очікує нових таблиць або стовпців.
+
+## Усунення несправностей
+
+- Якщо запити не надходять із браузера, але працюють із curl, перевірте CORS та облікові дані cookie.
+- Якщо SvelteKit відображається без даних, перевірте джерело API, яке використовується кодом на стороні сервера та браузера.
+- Якщо автентифікація в різних доменах неоднакова, перевірте параметри домену cookie, одного сайту та безпеки.
+- Якщо зміни схеми Drizzle не відображаються, підтвердьте, що міграції створено та застосовано до цільової бази даних PostgreSQL.
+
+## Порівняльні нотатки
+
+Порівняно зі стеком Nuxt або SolidStart, цей посібник дає вам більш чіткі межі API. Порівняно з [Hono з tRPC і Drizzle](/guides/typescript/hono-trpc-drizzle/), він використовує oRPC, оскільки інтерфейс — це SvelteKit, а не React.
+
+## Наступні кроки
+
+- Відкрийте [Stack Builder](/new?eco=typescript&fe-w=svelte&be=hono&rt=bun&db=postgres&orm=drizzle&au=better-auth&api=orpc).
+- Порівняйте зі стеком [Hono з tRPC і Drizzle](/guides/typescript/hono-trpc-drizzle/) React.
+- Прочитайте [довідник щодо сумісності](/docs/reference/compatibility/).

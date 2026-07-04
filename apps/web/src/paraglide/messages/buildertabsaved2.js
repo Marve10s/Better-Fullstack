@@ -37,16 +37,20 @@ const fr_buildertabsaved2 = /** @type {(inputs: Buildertabsaved2Inputs) => Local
 	return /** @type {LocalizedString} */ (`Enregistré`)
 };
 
+const uk_buildertabsaved2 = /** @type {(inputs: Buildertabsaved2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Збережено`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Saved" |
 *
 * @param {Buildertabsaved2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const buildertabsaved2 = /** @type {((inputs?: Buildertabsaved2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildertabsaved2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const buildertabsaved2 = /** @type {((inputs?: Buildertabsaved2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildertabsaved2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_buildertabsaved2(inputs)
 	if (locale === "es") return es_buildertabsaved2(inputs)
@@ -55,6 +59,7 @@ const buildertabsaved2 = /** @type {((inputs?: Buildertabsaved2Inputs, options?:
 	if (locale === "ko") return ko_buildertabsaved2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_buildertabsaved2(inputs)
 	if (locale === "de") return de_buildertabsaved2(inputs)
-	return fr_buildertabsaved2(inputs)
+	if (locale === "fr") return fr_buildertabsaved2(inputs)
+	return uk_buildertabsaved2(inputs)
 });
 export { buildertabsaved2 as "builderTabSaved" }

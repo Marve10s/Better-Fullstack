@@ -37,16 +37,20 @@ const fr_savedpresetloaded2 = /** @type {(inputs: Savedpresetloaded2Inputs) => L
 	return /** @type {LocalizedString} */ (`Préréglage chargé : ${i?.name}`)
 };
 
+const uk_savedpresetloaded2 = /** @type {(inputs: Savedpresetloaded2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Завантажений пресет: ${i?.name}`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Loaded preset: {name}" |
 *
 * @param {Savedpresetloaded2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const savedpresetloaded2 = /** @type {((inputs: Savedpresetloaded2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedpresetloaded2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs, options = {}) => {
+const savedpresetloaded2 = /** @type {((inputs: Savedpresetloaded2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedpresetloaded2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_savedpresetloaded2(inputs)
 	if (locale === "es") return es_savedpresetloaded2(inputs)
@@ -55,6 +59,7 @@ const savedpresetloaded2 = /** @type {((inputs: Savedpresetloaded2Inputs, option
 	if (locale === "ko") return ko_savedpresetloaded2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_savedpresetloaded2(inputs)
 	if (locale === "de") return de_savedpresetloaded2(inputs)
-	return fr_savedpresetloaded2(inputs)
+	if (locale === "fr") return fr_savedpresetloaded2(inputs)
+	return uk_savedpresetloaded2(inputs)
 });
 export { savedpresetloaded2 as "savedPresetLoaded" }

@@ -37,16 +37,20 @@ const fr_homebecomepatron2 = /** @type {(inputs: Homebecomepatron2Inputs) => Loc
 	return /** @type {LocalizedString} */ (`Devenez mécène`)
 };
 
+const uk_homebecomepatron2 = /** @type {(inputs: Homebecomepatron2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Стати меценатом`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Become a patron" |
 *
 * @param {Homebecomepatron2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const homebecomepatron2 = /** @type {((inputs?: Homebecomepatron2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homebecomepatron2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const homebecomepatron2 = /** @type {((inputs?: Homebecomepatron2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homebecomepatron2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_homebecomepatron2(inputs)
 	if (locale === "es") return es_homebecomepatron2(inputs)
@@ -55,6 +59,7 @@ const homebecomepatron2 = /** @type {((inputs?: Homebecomepatron2Inputs, options
 	if (locale === "ko") return ko_homebecomepatron2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_homebecomepatron2(inputs)
 	if (locale === "de") return de_homebecomepatron2(inputs)
-	return fr_homebecomepatron2(inputs)
+	if (locale === "fr") return fr_homebecomepatron2(inputs)
+	return uk_homebecomepatron2(inputs)
 });
 export { homebecomepatron2 as "homeBecomePatron" }

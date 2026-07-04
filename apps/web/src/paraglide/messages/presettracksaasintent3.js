@@ -37,16 +37,20 @@ const fr_presettracksaasintent3 = /** @type {(inputs: Presettracksaasintent3Inpu
 	return /** @type {LocalizedString} */ (`Vendre des abonnements`)
 };
 
+const uk_presettracksaasintent3 = /** @type {(inputs: Presettracksaasintent3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Продавати підписки`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Sell subscriptions" |
 *
 * @param {Presettracksaasintent3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const presettracksaasintent3 = /** @type {((inputs?: Presettracksaasintent3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettracksaasintent3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const presettracksaasintent3 = /** @type {((inputs?: Presettracksaasintent3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettracksaasintent3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_presettracksaasintent3(inputs)
 	if (locale === "es") return es_presettracksaasintent3(inputs)
@@ -55,6 +59,7 @@ const presettracksaasintent3 = /** @type {((inputs?: Presettracksaasintent3Input
 	if (locale === "ko") return ko_presettracksaasintent3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_presettracksaasintent3(inputs)
 	if (locale === "de") return de_presettracksaasintent3(inputs)
-	return fr_presettracksaasintent3(inputs)
+	if (locale === "fr") return fr_presettracksaasintent3(inputs)
+	return uk_presettracksaasintent3(inputs)
 });
 export { presettracksaasintent3 as "presetTrackSaasIntent" }

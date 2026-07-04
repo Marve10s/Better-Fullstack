@@ -146,6 +146,21 @@ describe("docs content contract", () => {
     expect(invalid).toEqual([]);
   });
 
+  it("keeps localized docs, guides, and blog coverage complete", () => {
+    const missingLocalizedFiles = contentFiles
+      .filter((file) => !isLocalizedMdxFile(file.path))
+      .flatMap((file) =>
+        LOCALIZED_CONTENT_LOCALES.flatMap((locale) => {
+          const localizedPath = file.path.replace(/\.mdx$/, `.${locale}.mdx`);
+          return existsSync(localizedPath)
+            ? []
+            : [`${file.relativePath}: missing ${locale} translation`];
+        }),
+      );
+
+    expect(missingLocalizedFiles).toEqual([]);
+  });
+
   it("keeps docs sidebar metadata complete", () => {
     const metaFiles = walkFiles(DOCS_ROOT, (path) => path.endsWith("meta.json"));
     const missingEntries: string[] = [];

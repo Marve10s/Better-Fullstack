@@ -37,16 +37,20 @@ const fr_mcpfinaldescription2 = /** @type {(inputs: Mcpfinaldescription2Inputs) 
 	return /** @type {LocalizedString} */ (`Dans ScaffBench, la création de projet guidée par MCP est plus rapide et plus fiable que de demander à un agent d'écrire manuellement un projet à partir de zéro.`)
 };
 
+const uk_mcpfinaldescription2 = /** @type {(inputs: Mcpfinaldescription2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`У ScaffBench створення проекту під керуванням MCP є швидшим і надійнішим, ніж просити агента написати проект вручну з нуля.`)
+};
+
 /**
 * | output |
 * | --- |
 * | "In ScaffBench, MCP-guided project creation is faster and more reliable than asking an agent to hand-write a project from scratch." |
 *
 * @param {Mcpfinaldescription2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const mcpfinaldescription2 = /** @type {((inputs?: Mcpfinaldescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpfinaldescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcpfinaldescription2 = /** @type {((inputs?: Mcpfinaldescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpfinaldescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcpfinaldescription2(inputs)
 	if (locale === "es") return es_mcpfinaldescription2(inputs)
@@ -55,6 +59,7 @@ const mcpfinaldescription2 = /** @type {((inputs?: Mcpfinaldescription2Inputs, o
 	if (locale === "ko") return ko_mcpfinaldescription2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcpfinaldescription2(inputs)
 	if (locale === "de") return de_mcpfinaldescription2(inputs)
-	return fr_mcpfinaldescription2(inputs)
+	if (locale === "fr") return fr_mcpfinaldescription2(inputs)
+	return uk_mcpfinaldescription2(inputs)
 });
 export { mcpfinaldescription2 as "mcpFinalDescription" }

@@ -37,16 +37,20 @@ const fr_builderlibraries1 = /** @type {(inputs: Builderlibraries1Inputs) => Loc
 	return /** @type {LocalizedString} */ (`Bibliothèques`)
 };
 
+const uk_builderlibraries1 = /** @type {(inputs: Builderlibraries1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Бібліотеки`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Libraries" |
 *
 * @param {Builderlibraries1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const builderlibraries1 = /** @type {((inputs?: Builderlibraries1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderlibraries1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const builderlibraries1 = /** @type {((inputs?: Builderlibraries1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderlibraries1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderlibraries1(inputs)
 	if (locale === "es") return es_builderlibraries1(inputs)
@@ -55,6 +59,7 @@ const builderlibraries1 = /** @type {((inputs?: Builderlibraries1Inputs, options
 	if (locale === "ko") return ko_builderlibraries1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderlibraries1(inputs)
 	if (locale === "de") return de_builderlibraries1(inputs)
-	return fr_builderlibraries1(inputs)
+	if (locale === "fr") return fr_builderlibraries1(inputs)
+	return uk_builderlibraries1(inputs)
 });
 export { builderlibraries1 as "builderLibraries" }

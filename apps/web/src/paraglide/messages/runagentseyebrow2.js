@@ -37,16 +37,20 @@ const fr_runagentseyebrow2 = /** @type {(inputs: Runagentseyebrow2Inputs) => Loc
 	return /** @type {LocalizedString} */ (`Agents et mannequins`)
 };
 
+const uk_runagentseyebrow2 = /** @type {(inputs: Runagentseyebrow2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Агенти та моделі`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Agents & models" |
 *
 * @param {Runagentseyebrow2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const runagentseyebrow2 = /** @type {((inputs?: Runagentseyebrow2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runagentseyebrow2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const runagentseyebrow2 = /** @type {((inputs?: Runagentseyebrow2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runagentseyebrow2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_runagentseyebrow2(inputs)
 	if (locale === "es") return es_runagentseyebrow2(inputs)
@@ -55,6 +59,7 @@ const runagentseyebrow2 = /** @type {((inputs?: Runagentseyebrow2Inputs, options
 	if (locale === "ko") return ko_runagentseyebrow2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_runagentseyebrow2(inputs)
 	if (locale === "de") return de_runagentseyebrow2(inputs)
-	return fr_runagentseyebrow2(inputs)
+	if (locale === "fr") return fr_runagentseyebrow2(inputs)
+	return uk_runagentseyebrow2(inputs)
 });
 export { runagentseyebrow2 as "runAgentsEyebrow" }

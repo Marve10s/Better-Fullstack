@@ -37,16 +37,20 @@ const fr_buildersharelinkfailed3 = /** @type {(inputs: Buildersharelinkfailed3In
 	return /** @type {LocalizedString} */ (`Échec de la copie du lien`)
 };
 
+const uk_buildersharelinkfailed3 = /** @type {(inputs: Buildersharelinkfailed3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Не вдалося скопіювати посилання`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Failed to copy link" |
 *
 * @param {Buildersharelinkfailed3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const buildersharelinkfailed3 = /** @type {((inputs?: Buildersharelinkfailed3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildersharelinkfailed3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const buildersharelinkfailed3 = /** @type {((inputs?: Buildersharelinkfailed3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildersharelinkfailed3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_buildersharelinkfailed3(inputs)
 	if (locale === "es") return es_buildersharelinkfailed3(inputs)
@@ -55,6 +59,7 @@ const buildersharelinkfailed3 = /** @type {((inputs?: Buildersharelinkfailed3Inp
 	if (locale === "ko") return ko_buildersharelinkfailed3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_buildersharelinkfailed3(inputs)
 	if (locale === "de") return de_buildersharelinkfailed3(inputs)
-	return fr_buildersharelinkfailed3(inputs)
+	if (locale === "fr") return fr_buildersharelinkfailed3(inputs)
+	return uk_buildersharelinkfailed3(inputs)
 });
 export { buildersharelinkfailed3 as "builderShareLinkFailed" }

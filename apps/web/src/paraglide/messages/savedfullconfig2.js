@@ -37,16 +37,20 @@ const fr_savedfullconfig2 = /** @type {(inputs: Savedfullconfig2Inputs) => Local
 	return /** @type {LocalizedString} */ (`Configuration entièrement enregistrée pour ce préréglage.`)
 };
 
+const uk_savedfullconfig2 = /** @type {(inputs: Savedfullconfig2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Повна збережена конфігурація для цього стилю.`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Full saved configuration for this preset." |
 *
 * @param {Savedfullconfig2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const savedfullconfig2 = /** @type {((inputs?: Savedfullconfig2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedfullconfig2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const savedfullconfig2 = /** @type {((inputs?: Savedfullconfig2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedfullconfig2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_savedfullconfig2(inputs)
 	if (locale === "es") return es_savedfullconfig2(inputs)
@@ -55,6 +59,7 @@ const savedfullconfig2 = /** @type {((inputs?: Savedfullconfig2Inputs, options?:
 	if (locale === "ko") return ko_savedfullconfig2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_savedfullconfig2(inputs)
 	if (locale === "de") return de_savedfullconfig2(inputs)
-	return fr_savedfullconfig2(inputs)
+	if (locale === "fr") return fr_savedfullconfig2(inputs)
+	return uk_savedfullconfig2(inputs)
 });
 export { savedfullconfig2 as "savedFullConfig" }

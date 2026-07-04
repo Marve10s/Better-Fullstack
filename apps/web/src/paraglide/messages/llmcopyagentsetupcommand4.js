@@ -37,16 +37,20 @@ const fr_llmcopyagentsetupcommand4 = /** @type {(inputs: Llmcopyagentsetupcomman
 	return /** @type {LocalizedString} */ (`Copier la commande de configuration ${i?.agent}`)
 };
 
+const uk_llmcopyagentsetupcommand4 = /** @type {(inputs: Llmcopyagentsetupcommand4Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Скопіюйте команду налаштування ${i?.agent}`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Copy {agent} setup command" |
 *
 * @param {Llmcopyagentsetupcommand4Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const llmcopyagentsetupcommand4 = /** @type {((inputs: Llmcopyagentsetupcommand4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmcopyagentsetupcommand4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs, options = {}) => {
+const llmcopyagentsetupcommand4 = /** @type {((inputs: Llmcopyagentsetupcommand4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmcopyagentsetupcommand4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_llmcopyagentsetupcommand4(inputs)
 	if (locale === "es") return es_llmcopyagentsetupcommand4(inputs)
@@ -55,6 +59,7 @@ const llmcopyagentsetupcommand4 = /** @type {((inputs: Llmcopyagentsetupcommand4
 	if (locale === "ko") return ko_llmcopyagentsetupcommand4(inputs)
 	if (locale === "zh-Hant") return zh_hant1_llmcopyagentsetupcommand4(inputs)
 	if (locale === "de") return de_llmcopyagentsetupcommand4(inputs)
-	return fr_llmcopyagentsetupcommand4(inputs)
+	if (locale === "fr") return fr_llmcopyagentsetupcommand4(inputs)
+	return uk_llmcopyagentsetupcommand4(inputs)
 });
 export { llmcopyagentsetupcommand4 as "llmCopyAgentSetupCommand" }

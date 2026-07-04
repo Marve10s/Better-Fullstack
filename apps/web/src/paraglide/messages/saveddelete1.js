@@ -37,16 +37,20 @@ const fr_saveddelete1 = /** @type {(inputs: Saveddelete1Inputs) => LocalizedStri
 	return /** @type {LocalizedString} */ (`Supprimer`)
 };
 
+const uk_saveddelete1 = /** @type {(inputs: Saveddelete1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Видалити`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Delete" |
 *
 * @param {Saveddelete1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const saveddelete1 = /** @type {((inputs?: Saveddelete1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Saveddelete1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const saveddelete1 = /** @type {((inputs?: Saveddelete1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Saveddelete1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_saveddelete1(inputs)
 	if (locale === "es") return es_saveddelete1(inputs)
@@ -55,6 +59,7 @@ const saveddelete1 = /** @type {((inputs?: Saveddelete1Inputs, options?: { local
 	if (locale === "ko") return ko_saveddelete1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_saveddelete1(inputs)
 	if (locale === "de") return de_saveddelete1(inputs)
-	return fr_saveddelete1(inputs)
+	if (locale === "fr") return fr_saveddelete1(inputs)
+	return uk_saveddelete1(inputs)
 });
 export { saveddelete1 as "savedDelete" }

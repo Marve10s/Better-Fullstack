@@ -37,16 +37,20 @@ const fr_mcptoolplandescription3 = /** @type {(inputs: Mcptoolplandescription3In
 	return /** @type {LocalizedString} */ (`Aperçu à sec : génère l'arborescence des fichiers en mémoire`)
 };
 
+const uk_mcptoolplandescription3 = /** @type {(inputs: Mcptoolplandescription3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Попередній перегляд: створює дерево файлів у пам’яті`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Dry-run preview: generates the file tree in memory" |
 *
 * @param {Mcptoolplandescription3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const mcptoolplandescription3 = /** @type {((inputs?: Mcptoolplandescription3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcptoolplandescription3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcptoolplandescription3 = /** @type {((inputs?: Mcptoolplandescription3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcptoolplandescription3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcptoolplandescription3(inputs)
 	if (locale === "es") return es_mcptoolplandescription3(inputs)
@@ -55,6 +59,7 @@ const mcptoolplandescription3 = /** @type {((inputs?: Mcptoolplandescription3Inp
 	if (locale === "ko") return ko_mcptoolplandescription3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcptoolplandescription3(inputs)
 	if (locale === "de") return de_mcptoolplandescription3(inputs)
-	return fr_mcptoolplandescription3(inputs)
+	if (locale === "fr") return fr_mcptoolplandescription3(inputs)
+	return uk_mcptoolplandescription3(inputs)
 });
 export { mcptoolplandescription3 as "mcpToolPlanDescription" }

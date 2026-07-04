@@ -37,16 +37,20 @@ const fr_builderpreviewgenerating2 = /** @type {(inputs: Builderpreviewgeneratin
 	return /** @type {LocalizedString} */ (`Génération d'un aperçu...`)
 };
 
+const uk_builderpreviewgenerating2 = /** @type {(inputs: Builderpreviewgenerating2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Створення попереднього перегляду...`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Generating preview..." |
 *
 * @param {Builderpreviewgenerating2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const builderpreviewgenerating2 = /** @type {((inputs?: Builderpreviewgenerating2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderpreviewgenerating2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const builderpreviewgenerating2 = /** @type {((inputs?: Builderpreviewgenerating2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderpreviewgenerating2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderpreviewgenerating2(inputs)
 	if (locale === "es") return es_builderpreviewgenerating2(inputs)
@@ -55,6 +59,7 @@ const builderpreviewgenerating2 = /** @type {((inputs?: Builderpreviewgenerating
 	if (locale === "ko") return ko_builderpreviewgenerating2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderpreviewgenerating2(inputs)
 	if (locale === "de") return de_builderpreviewgenerating2(inputs)
-	return fr_builderpreviewgenerating2(inputs)
+	if (locale === "fr") return fr_builderpreviewgenerating2(inputs)
+	return uk_builderpreviewgenerating2(inputs)
 });
 export { builderpreviewgenerating2 as "builderPreviewGenerating" }

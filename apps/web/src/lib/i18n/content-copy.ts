@@ -443,6 +443,7 @@ export function localizeGuideFrontmatter(
       "zh-Hant": "AI 工具",
       de: "KI-Tools",
       fr: "Outils IA",
+      uk: "AI-інструменти",
     },
     Guides: {
       es: "Guias",
@@ -452,6 +453,7 @@ export function localizeGuideFrontmatter(
       "zh-Hant": "指南",
       de: "Guides",
       fr: "Guides",
+      uk: "Посібники",
     },
     Packs: {
       es: "Packs",
@@ -461,6 +463,7 @@ export function localizeGuideFrontmatter(
       "zh-Hant": "套件",
       de: "Packs",
       fr: "Packs",
+      uk: "Паки",
     },
   };
 

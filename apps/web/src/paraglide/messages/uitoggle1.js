@@ -37,16 +37,20 @@ const fr_uitoggle1 = /** @type {(inputs: Uitoggle1Inputs) => LocalizedString} */
 	return /** @type {LocalizedString} */ (`Basculer`)
 };
 
+const uk_uitoggle1 = /** @type {(inputs: Uitoggle1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Перемикач`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Toggle" |
 *
 * @param {Uitoggle1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const uitoggle1 = /** @type {((inputs?: Uitoggle1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Uitoggle1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const uitoggle1 = /** @type {((inputs?: Uitoggle1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Uitoggle1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_uitoggle1(inputs)
 	if (locale === "es") return es_uitoggle1(inputs)
@@ -55,6 +59,7 @@ const uitoggle1 = /** @type {((inputs?: Uitoggle1Inputs, options?: { locale?: "e
 	if (locale === "ko") return ko_uitoggle1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_uitoggle1(inputs)
 	if (locale === "de") return de_uitoggle1(inputs)
-	return fr_uitoggle1(inputs)
+	if (locale === "fr") return fr_uitoggle1(inputs)
+	return uk_uitoggle1(inputs)
 });
 export { uitoggle1 as "uiToggle" }

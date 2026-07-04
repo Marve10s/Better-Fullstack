@@ -37,16 +37,20 @@ const fr_savedupdated1 = /** @type {(inputs: Savedupdated1Inputs) => LocalizedSt
 	return /** @type {LocalizedString} */ (`Mis à jour`)
 };
 
+const uk_savedupdated1 = /** @type {(inputs: Savedupdated1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Оновлено`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Updated" |
 *
 * @param {Savedupdated1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const savedupdated1 = /** @type {((inputs?: Savedupdated1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedupdated1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const savedupdated1 = /** @type {((inputs?: Savedupdated1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedupdated1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_savedupdated1(inputs)
 	if (locale === "es") return es_savedupdated1(inputs)
@@ -55,6 +59,7 @@ const savedupdated1 = /** @type {((inputs?: Savedupdated1Inputs, options?: { loc
 	if (locale === "ko") return ko_savedupdated1(inputs)
 	if (locale === "zh-Hant") return zh_hant1_savedupdated1(inputs)
 	if (locale === "de") return de_savedupdated1(inputs)
-	return fr_savedupdated1(inputs)
+	if (locale === "fr") return fr_savedupdated1(inputs)
+	return uk_savedupdated1(inputs)
 });
 export { savedupdated1 as "savedUpdated" }

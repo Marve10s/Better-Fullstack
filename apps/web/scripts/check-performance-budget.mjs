@@ -20,7 +20,7 @@ const TRACKED_KEYS = [
 
 const MAIN_JS_PATTERNS = [/^main-.*\.js$/, /^index-.*\.js$/];
 const MAIN_CSS_PATTERNS = [/^main-.*\.css$/, /^index-.*\.css$/];
-const LOCALIZED_CONTENT_JS_PATTERN = /\.(?:es|zh-Hant|zh|ja|ko|de|fr)-.*\.js$/;
+const LOCALIZED_CONTENT_JS_PATTERN = /\.(?:es|zh-Hant|zh|ja|ko|de|fr|uk)-.*\.js$/;
 
 const DEFAULT_BUDGETS = {
   mainJsGzip: 8 * 1024,

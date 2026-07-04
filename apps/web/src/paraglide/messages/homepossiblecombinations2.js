@@ -37,16 +37,20 @@ const fr_homepossiblecombinations2 = /** @type {(inputs: Homepossiblecombination
 	return /** @type {LocalizedString} */ (`combinaisons de projets possibles`)
 };
 
+const uk_homepossiblecombinations2 = /** @type {(inputs: Homepossiblecombinations2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`можливі комбінації проектів`)
+};
+
 /**
 * | output |
 * | --- |
 * | "possible project combinations" |
 *
 * @param {Homepossiblecombinations2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const homepossiblecombinations2 = /** @type {((inputs?: Homepossiblecombinations2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homepossiblecombinations2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const homepossiblecombinations2 = /** @type {((inputs?: Homepossiblecombinations2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homepossiblecombinations2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_homepossiblecombinations2(inputs)
 	if (locale === "es") return es_homepossiblecombinations2(inputs)
@@ -55,6 +59,7 @@ const homepossiblecombinations2 = /** @type {((inputs?: Homepossiblecombinations
 	if (locale === "ko") return ko_homepossiblecombinations2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_homepossiblecombinations2(inputs)
 	if (locale === "de") return de_homepossiblecombinations2(inputs)
-	return fr_homepossiblecombinations2(inputs)
+	if (locale === "fr") return fr_homepossiblecombinations2(inputs)
+	return uk_homepossiblecombinations2(inputs)
 });
 export { homepossiblecombinations2 as "homePossibleCombinations" }

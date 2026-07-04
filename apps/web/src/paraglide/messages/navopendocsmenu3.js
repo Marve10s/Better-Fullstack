@@ -37,16 +37,20 @@ const fr_navopendocsmenu3 = /** @type {(inputs: Navopendocsmenu3Inputs) => Local
 	return /** @type {LocalizedString} */ (`Ouvrir le menu Documentation`)
 };
 
+const uk_navopendocsmenu3 = /** @type {(inputs: Navopendocsmenu3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Відкрити меню документації`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Open documentation menu" |
 *
 * @param {Navopendocsmenu3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const navopendocsmenu3 = /** @type {((inputs?: Navopendocsmenu3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navopendocsmenu3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const navopendocsmenu3 = /** @type {((inputs?: Navopendocsmenu3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navopendocsmenu3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_navopendocsmenu3(inputs)
 	if (locale === "es") return es_navopendocsmenu3(inputs)
@@ -55,6 +59,7 @@ const navopendocsmenu3 = /** @type {((inputs?: Navopendocsmenu3Inputs, options?:
 	if (locale === "ko") return ko_navopendocsmenu3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_navopendocsmenu3(inputs)
 	if (locale === "de") return de_navopendocsmenu3(inputs)
-	return fr_navopendocsmenu3(inputs)
+	if (locale === "fr") return fr_navopendocsmenu3(inputs)
+	return uk_navopendocsmenu3(inputs)
 });
 export { navopendocsmenu3 as "navOpenDocsMenu" }

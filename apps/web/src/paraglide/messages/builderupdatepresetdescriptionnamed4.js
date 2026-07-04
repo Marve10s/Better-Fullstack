@@ -37,16 +37,20 @@ const fr_builderupdatepresetdescriptionnamed4 = /** @type {(inputs: Builderupdat
 	return /** @type {LocalizedString} */ (`La mise à jour de "${i?.name}" remplacera le préréglage enregistré par votre configuration de pile actuelle.`)
 };
 
+const uk_builderupdatepresetdescriptionnamed4 = /** @type {(inputs: Builderupdatepresetdescriptionnamed4Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Оновлення "${i?.name}" замінить збережений стиль поточною конфігурацією стека.`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Updating \"{name}\" will override the saved preset with your current stack configuration." |
 *
 * @param {Builderupdatepresetdescriptionnamed4Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const builderupdatepresetdescriptionnamed4 = /** @type {((inputs: Builderupdatepresetdescriptionnamed4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderupdatepresetdescriptionnamed4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs, options = {}) => {
+const builderupdatepresetdescriptionnamed4 = /** @type {((inputs: Builderupdatepresetdescriptionnamed4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderupdatepresetdescriptionnamed4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_builderupdatepresetdescriptionnamed4(inputs)
 	if (locale === "es") return es_builderupdatepresetdescriptionnamed4(inputs)
@@ -55,6 +59,7 @@ const builderupdatepresetdescriptionnamed4 = /** @type {((inputs: Builderupdatep
 	if (locale === "ko") return ko_builderupdatepresetdescriptionnamed4(inputs)
 	if (locale === "zh-Hant") return zh_hant1_builderupdatepresetdescriptionnamed4(inputs)
 	if (locale === "de") return de_builderupdatepresetdescriptionnamed4(inputs)
-	return fr_builderupdatepresetdescriptionnamed4(inputs)
+	if (locale === "fr") return fr_builderupdatepresetdescriptionnamed4(inputs)
+	return uk_builderupdatepresetdescriptionnamed4(inputs)
 });
 export { builderupdatepresetdescriptionnamed4 as "builderUpdatePresetDescriptionNamed" }

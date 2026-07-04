@@ -37,16 +37,20 @@ const fr_compareseodescription2 = /** @type {(inputs: Compareseodescription2Inpu
 	return /** @type {LocalizedString} */ (`Découvrez comment Better Fullstack se compare à create-t3-app, create-next-app et à d'autres outils d'échafaudage CLI. Comparaison côte à côte des fonctionnalités des écosystèmes, de l'authentification, des paiements, des bases de données, etc.`)
 };
 
+const uk_compareseodescription2 = /** @type {(inputs: Compareseodescription2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Подивіться, як Better Fullstack порівнює з create-t3-app, create-next-app та іншими інструментами скеффолдингу CLI. Паралельне порівняння функцій екосистем, авторизації, платежів, баз даних тощо.`)
+};
+
 /**
 * | output |
 * | --- |
 * | "See how Better Fullstack compares to create-t3-app, create-next-app, and other CLI scaffolding tools. Side-by-side feature comparison across ecosystems, auth..." |
 *
 * @param {Compareseodescription2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const compareseodescription2 = /** @type {((inputs?: Compareseodescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Compareseodescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const compareseodescription2 = /** @type {((inputs?: Compareseodescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Compareseodescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_compareseodescription2(inputs)
 	if (locale === "es") return es_compareseodescription2(inputs)
@@ -55,6 +59,7 @@ const compareseodescription2 = /** @type {((inputs?: Compareseodescription2Input
 	if (locale === "ko") return ko_compareseodescription2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_compareseodescription2(inputs)
 	if (locale === "de") return de_compareseodescription2(inputs)
-	return fr_compareseodescription2(inputs)
+	if (locale === "fr") return fr_compareseodescription2(inputs)
+	return uk_compareseodescription2(inputs)
 });
 export { compareseodescription2 as "compareSeoDescription" }

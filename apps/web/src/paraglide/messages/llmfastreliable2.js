@@ -37,16 +37,20 @@ const fr_llmfastreliable2 = /** @type {(inputs: Llmfastreliable2Inputs) => Local
 	return /** @type {LocalizedString} */ (`rapide + fiable ↗`)
 };
 
+const uk_llmfastreliable2 = /** @type {(inputs: Llmfastreliable2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`швидко + надійно ↗`)
+};
+
 /**
 * | output |
 * | --- |
 * | "fast + reliable ↗" |
 *
 * @param {Llmfastreliable2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const llmfastreliable2 = /** @type {((inputs?: Llmfastreliable2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmfastreliable2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const llmfastreliable2 = /** @type {((inputs?: Llmfastreliable2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmfastreliable2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_llmfastreliable2(inputs)
 	if (locale === "es") return es_llmfastreliable2(inputs)
@@ -55,6 +59,7 @@ const llmfastreliable2 = /** @type {((inputs?: Llmfastreliable2Inputs, options?:
 	if (locale === "ko") return ko_llmfastreliable2(inputs)
 	if (locale === "zh-Hant") return zh_hant1_llmfastreliable2(inputs)
 	if (locale === "de") return de_llmfastreliable2(inputs)
-	return fr_llmfastreliable2(inputs)
+	if (locale === "fr") return fr_llmfastreliable2(inputs)
+	return uk_llmfastreliable2(inputs)
 });
 export { llmfastreliable2 as "llmFastReliable" }

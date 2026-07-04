@@ -37,16 +37,20 @@ const fr_mcpstatreadableresources3 = /** @type {(inputs: Mcpstatreadableresource
 	return /** @type {LocalizedString} */ (`ressources lisibles`)
 };
 
+const uk_mcpstatreadableresources3 = /** @type {(inputs: Mcpstatreadableresources3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`доступні для читання ресурси`)
+};
+
 /**
 * | output |
 * | --- |
 * | "readable resources" |
 *
 * @param {Mcpstatreadableresources3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const mcpstatreadableresources3 = /** @type {((inputs?: Mcpstatreadableresources3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpstatreadableresources3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcpstatreadableresources3 = /** @type {((inputs?: Mcpstatreadableresources3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpstatreadableresources3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcpstatreadableresources3(inputs)
 	if (locale === "es") return es_mcpstatreadableresources3(inputs)
@@ -55,6 +59,7 @@ const mcpstatreadableresources3 = /** @type {((inputs?: Mcpstatreadableresources
 	if (locale === "ko") return ko_mcpstatreadableresources3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_mcpstatreadableresources3(inputs)
 	if (locale === "de") return de_mcpstatreadableresources3(inputs)
-	return fr_mcpstatreadableresources3(inputs)
+	if (locale === "fr") return fr_mcpstatreadableresources3(inputs)
+	return uk_mcpstatreadableresources3(inputs)
 });
 export { mcpstatreadableresources3 as "mcpStatReadableResources" }

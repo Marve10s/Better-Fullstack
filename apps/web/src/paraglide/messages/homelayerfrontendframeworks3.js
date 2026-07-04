@@ -37,16 +37,20 @@ const fr_homelayerfrontendframeworks3 = /** @type {(inputs: Homelayerfrontendfra
 	return /** @type {LocalizedString} */ (`CADRES FRONTEND`)
 };
 
+const uk_homelayerfrontendframeworks3 = /** @type {(inputs: Homelayerfrontendframeworks3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`FRONTEND FRAMEWORKS`)
+};
+
 /**
 * | output |
 * | --- |
 * | "FRONTEND FRAMEWORKS" |
 *
 * @param {Homelayerfrontendframeworks3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const homelayerfrontendframeworks3 = /** @type {((inputs?: Homelayerfrontendframeworks3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homelayerfrontendframeworks3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
+const homelayerfrontendframeworks3 = /** @type {((inputs?: Homelayerfrontendframeworks3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homelayerfrontendframeworks3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_homelayerfrontendframeworks3(inputs)
 	if (locale === "es") return es_homelayerfrontendframeworks3(inputs)
@@ -55,6 +59,7 @@ const homelayerfrontendframeworks3 = /** @type {((inputs?: Homelayerfrontendfram
 	if (locale === "ko") return ko_homelayerfrontendframeworks3(inputs)
 	if (locale === "zh-Hant") return zh_hant1_homelayerfrontendframeworks3(inputs)
 	if (locale === "de") return de_homelayerfrontendframeworks3(inputs)
-	return fr_homelayerfrontendframeworks3(inputs)
+	if (locale === "fr") return fr_homelayerfrontendframeworks3(inputs)
+	return uk_homelayerfrontendframeworks3(inputs)
 });
 export { homelayerfrontendframeworks3 as "homeLayerFrontendFrameworks" }
