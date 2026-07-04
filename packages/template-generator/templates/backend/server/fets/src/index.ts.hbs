@@ -20,14 +20,12 @@ import { auth } from "@{{projectName}}/auth";
 {{/if}}
 import { createRouter, Response, type Router } from "fets";
 {{#if (and (includes examples "ai") (or (eq runtime "bun") (eq runtime "node")))}}
-import { createUIMessageStreamResponse, streamText, toUIMessageStream, convertToModelMessages, wrapLanguageModel } from "ai";
+import { streamText, convertToModelMessages } from "ai";
 import { google } from "@ai-sdk/google";
-import { devToolsMiddleware } from "@ai-sdk/devtools";
 {{/if}}
 {{#if (and (includes examples "ai") (eq runtime "workers"))}}
-import { createUIMessageStreamResponse, streamText, toUIMessageStream, convertToModelMessages, wrapLanguageModel } from "ai";
+import { streamText, convertToModelMessages } from "ai";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { devToolsMiddleware } from "@ai-sdk/devtools";
 {{/if}}
 
 {{#if (or (isBetterAuth auth) (or (eq api "trpc") (eq api "orpc")))}}
@@ -198,17 +196,12 @@ const router: Router<any, any, any> = createRouter({
 		handler: async (request) => {
 			const body = await request.json();
 			const uiMessages = body.messages || [];
-			const model = wrapLanguageModel({
-				model: google("gemini-2.5-flash"),
-				middleware: devToolsMiddleware(),
-			});
+			const model = google("gemini-2.5-flash");
 			const result = streamText({
 				model,
 				messages: await convertToModelMessages(uiMessages),
 			});
-			return createUIMessageStreamResponse({
-				stream: toUIMessageStream({ stream: result.stream }),
-			}) as any;
+			return result.toUIMessageStreamResponse() as any;
 		},
 	})
 {{/if}}
@@ -222,17 +215,12 @@ const router: Router<any, any, any> = createRouter({
 			const google = createGoogleGenerativeAI({
 				apiKey: env.GOOGLE_GENERATIVE_AI_API_KEY,
 			});
-			const model = wrapLanguageModel({
-				model: google("gemini-2.5-flash"),
-				middleware: devToolsMiddleware(),
-			});
+			const model = google("gemini-2.5-flash");
 			const result = streamText({
 				model,
 				messages: await convertToModelMessages(uiMessages),
 			});
-			return createUIMessageStreamResponse({
-				stream: toUIMessageStream({ stream: result.stream }),
-			}) as any;
+			return result.toUIMessageStreamResponse() as any;
 		},
 	})
 {{/if}};

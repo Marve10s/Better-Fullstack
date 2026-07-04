@@ -32,9 +32,8 @@ import { executeApolloRequest } from "@{{projectName}}/api";
 {{/if}}
 
 {{#if (includes examples "ai")}}
-import { createUIMessageStreamResponse, streamText, toUIMessageStream, type UIMessage, convertToModelMessages, wrapLanguageModel } from "ai";
+import { streamText, type UIMessage, convertToModelMessages } from "ai";
 import { google } from "@ai-sdk/google";
-import { devToolsMiddleware } from "@ai-sdk/devtools";
 {{/if}}
 
 {{#if (isBetterAuth auth)}}
@@ -287,18 +286,13 @@ interface AiRequestBody {
 
 fastify.post('/ai', async function (request) {
 	const { messages } = request.body as AiRequestBody;
-	const model = wrapLanguageModel({
-		model: google('gemini-2.5-flash'),
-		middleware: devToolsMiddleware(),
-	});
+	const model = google('gemini-2.5-flash');
 	const result = streamText({
 		model,
 		messages: await convertToModelMessages(messages),
 	});
 
-	return createUIMessageStreamResponse({
-		stream: toUIMessageStream({ stream: result.stream }),
-	});
+	return result.toUIMessageStreamResponse();
 });
 {{/if}}
 

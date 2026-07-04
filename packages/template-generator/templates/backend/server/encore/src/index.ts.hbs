@@ -3,9 +3,8 @@ import { api } from "encore.dev/api";
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
 {{#if (and (includes examples "ai") (or (eq runtime "bun") (eq runtime "node")))}}
-import { streamText, convertToModelMessages, wrapLanguageModel } from "ai";
+import { streamText, convertToModelMessages } from "ai";
 import { google } from "@ai-sdk/google";
-import { devToolsMiddleware } from "@ai-sdk/devtools";
 {{/if}}
 
 interface Response {
@@ -53,10 +52,7 @@ interface AIRequest {
 export const chat = api(
 	{ expose: true, method: "POST", path: "/ai" },
 	async (req: AIRequest): Promise<Response> => {
-		const model = wrapLanguageModel({
-			model: google("gemini-2.5-flash"),
-			middleware: devToolsMiddleware(),
-		});
+		const model = google("gemini-2.5-flash");
 
 		const result = await streamText({
 			model,

@@ -109,14 +109,13 @@ export default defineEventHandler(async (event) => {
 	});
 });
 {{else}}
-import { createUIMessageStreamResponse, streamText, toUIMessageStream, type UIMessage, convertToModelMessages, wrapLanguageModel } from "ai";
+import { streamText, type UIMessage, convertToModelMessages } from "ai";
 {{#if (or (eq runtime "bun") (eq runtime "node"))}}
 import { google } from "@ai-sdk/google";
 {{else}}
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { env } from "@{{projectName}}/env/server";
 {{/if}}
-import { devToolsMiddleware } from "@ai-sdk/devtools";
 
 export default defineEventHandler(async (event) => {
 	const body = await readBody<{ messages?: UIMessage[] }>(event);
@@ -127,19 +126,14 @@ export default defineEventHandler(async (event) => {
 		apiKey: env.GOOGLE_GENERATIVE_AI_API_KEY,
 	});
 {{/if}}
-	const model = wrapLanguageModel({
-		model: google("gemini-2.5-flash"),
-		middleware: devToolsMiddleware(),
-	});
+	const model = google("gemini-2.5-flash");
 
 	const result = streamText({
 		model,
 		messages: await convertToModelMessages(messages),
 	});
 
-	return createUIMessageStreamResponse({
-		stream: toUIMessageStream({ stream: result.stream }),
-	});
+	return result.toUIMessageStreamResponse();
 });
 {{/if}}
 {{else}}

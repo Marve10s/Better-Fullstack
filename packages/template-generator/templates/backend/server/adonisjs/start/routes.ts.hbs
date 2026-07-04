@@ -16,9 +16,8 @@ import { createContext } from "@{{projectName}}/api/context";
 {{/if}}
 {{/if}}
 {{#if (includes examples "ai")}}
-import { pipeUIMessageStreamToResponse, streamText, toUIMessageStream, type UIMessage, convertToModelMessages, wrapLanguageModel } from "ai";
+import { streamText, type UIMessage, convertToModelMessages } from "ai";
 import { google } from "@ai-sdk/google";
-import { devToolsMiddleware } from "@ai-sdk/devtools";
 {{/if}}
 {{#if (isBetterAuth auth)}}
 import { auth } from "@{{projectName}}/auth";
@@ -134,17 +133,11 @@ router.post("/ai", async ({ request, response }) => {
 	setCorsHeaders(response);
 	const body = request.body() as { messages?: UIMessage[] };
 	const messages = body.messages || [];
-	const model = wrapLanguageModel({
-		model: google("gemini-2.5-flash"),
-		middleware: devToolsMiddleware(),
-	});
+	const model = google("gemini-2.5-flash");
 	const result = streamText({
 		model,
 		messages: await convertToModelMessages(messages),
 	});
-	pipeUIMessageStreamToResponse({
-		response: response.response as any,
-		stream: toUIMessageStream({ stream: result.stream }),
-	});
+	result.pipeUIMessageStreamToResponse(response.response as any);
 });
 {{/if}}

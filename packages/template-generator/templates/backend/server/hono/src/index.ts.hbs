@@ -38,14 +38,12 @@ import { logger } from "hono/logger";
 import { bot as chatSdkBot } from "./bot";
 {{/if}}
 {{#if (and (includes examples "ai") (or (eq runtime "bun") (eq runtime "node")))}}
-import { createUIMessageStreamResponse, streamText, toUIMessageStream, convertToModelMessages, wrapLanguageModel } from "ai";
+import { streamText, convertToModelMessages } from "ai";
 import { google } from "@ai-sdk/google";
-import { devToolsMiddleware } from "@ai-sdk/devtools";
 {{/if}}
 {{#if (and (includes examples "ai") (eq runtime "workers"))}}
-import { createUIMessageStreamResponse, streamText, toUIMessageStream, convertToModelMessages, wrapLanguageModel } from "ai";
+import { streamText, convertToModelMessages } from "ai";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { devToolsMiddleware } from "@ai-sdk/devtools";
 {{/if}}
 
 const app = new Hono();
@@ -210,18 +208,13 @@ app.route("/", openApiApp);
 app.post("/ai", async (c) => {
 	const body = await c.req.json();
 	const uiMessages = body.messages || [];
-	const model = wrapLanguageModel({
-		model: google("gemini-2.5-flash"),
-		middleware: devToolsMiddleware(),
-	});
+	const model = google("gemini-2.5-flash");
 	const result = streamText({
 		model,
 		messages: await convertToModelMessages(uiMessages),
 	});
 
-	return createUIMessageStreamResponse({
-		stream: toUIMessageStream({ stream: result.stream }),
-	});
+	return result.toUIMessageStreamResponse();
 });
 {{/if}}
 
@@ -232,18 +225,13 @@ app.post("/ai", async (c) => {
 	const google = createGoogleGenerativeAI({
 		apiKey: env.GOOGLE_GENERATIVE_AI_API_KEY,
 	});
-	const model = wrapLanguageModel({
-		model: google("gemini-2.5-flash"),
-		middleware: devToolsMiddleware(),
-	});
+	const model = google("gemini-2.5-flash");
 	const result = streamText({
 		model,
 		messages: await convertToModelMessages(uiMessages),
 	});
 
-	return createUIMessageStreamResponse({
-		stream: toUIMessageStream({ stream: result.stream }),
-	});
+	return result.toUIMessageStreamResponse();
 });
 {{/if}}
 

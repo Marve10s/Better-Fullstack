@@ -1,26 +1,19 @@
 {{#if (includes examples "ai")}}
 import { Injectable } from "@nestjs/common";
-import { pipeUIMessageStreamToResponse, streamText, toUIMessageStream, type UIMessage, convertToModelMessages, wrapLanguageModel } from "ai";
+import { streamText, type UIMessage, convertToModelMessages } from "ai";
 import { google } from "@ai-sdk/google";
-import { devToolsMiddleware } from "@ai-sdk/devtools";
 import type { Request, Response } from "express";
 
 @Injectable()
 export class AiService {
 	async streamChat(req: Request, res: Response) {
 		const { messages = [] } = (req.body || {}) as { messages: UIMessage[] };
-		const model = wrapLanguageModel({
-			model: google("gemini-2.5-flash"),
-			middleware: devToolsMiddleware(),
-		});
+		const model = google("gemini-2.5-flash");
 		const result = streamText({
 			model,
 			messages: await convertToModelMessages(messages),
 		});
-		pipeUIMessageStreamToResponse({
-			response: res,
-			stream: toUIMessageStream({ stream: result.stream }),
-		});
+		result.pipeUIMessageStreamToResponse(res);
 	}
 }
 {{/if}}

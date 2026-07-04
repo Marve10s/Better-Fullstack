@@ -23,9 +23,8 @@ import { executeApolloRequest } from "@{{projectName}}/api";
 import cors from "cors";
 import express{{#if (or (eq api "apollo-server") (and (eq api "openapi") (isBetterAuth auth)))}}, { type Request }{{/if}} from "express";
 {{#if (includes examples "ai")}}
-import { pipeUIMessageStreamToResponse, streamText, toUIMessageStream, type UIMessage, convertToModelMessages, wrapLanguageModel } from "ai";
+import { streamText, type UIMessage, convertToModelMessages } from "ai";
 import { google } from "@ai-sdk/google";
-import { devToolsMiddleware } from "@ai-sdk/devtools";
 {{/if}}
 {{#if (isBetterAuth auth)}}
 import { auth } from "@{{projectName}}/auth";
@@ -184,18 +183,12 @@ app.use("/docs", apiReference({ spec: { url: "/openapi.json" } }));
 {{#if (includes examples "ai")}}
 app.post("/ai", async (req, res) => {
 	const { messages = [] } = (req.body || {}) as { messages: UIMessage[] };
-	const model = wrapLanguageModel({
-		model: google("gemini-2.5-flash"),
-		middleware: devToolsMiddleware(),
-	});
+	const model = google("gemini-2.5-flash");
 	const result = streamText({
 		model,
 		messages: await convertToModelMessages(messages),
 	});
-	pipeUIMessageStreamToResponse({
-		response: res,
-		stream: toUIMessageStream({ stream: result.stream }),
-	});
+	result.pipeUIMessageStreamToResponse(res);
 });
 {{/if}}
 

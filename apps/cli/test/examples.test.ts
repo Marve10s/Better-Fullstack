@@ -3,16 +3,17 @@ import { join } from "node:path";
 
 import { EXAMPLES, expectError, expectSuccess, runTRPCTest, type TestConfig } from "./test-utils";
 
-const LEGACY_AI_RESPONSE_HELPERS = [
-  "result.toUIMessageStreamResponse(",
-  "result.pipeUIMessageStreamToResponse(",
+const REMOVED_AI_HELPERS = [
+  "toUIMessageStream(",
+  "createUIMessageStreamResponse(",
+  "result.stream",
 ];
 
 function expectModernAIChatOutput(files: string[]) {
   const output = files.join("\n");
 
-  expect(output).toContain("toUIMessageStream({ stream: result.stream })");
-  for (const helper of LEGACY_AI_RESPONSE_HELPERS) {
+  expect(output).toContain("result.toUIMessageStreamResponse(");
+  for (const helper of REMOVED_AI_HELPERS) {
     expect(output).not.toContain(helper);
   }
 }
@@ -68,7 +69,7 @@ describe("Example Configurations", () => {
       expect(aiPage).toContain("function MessageBubble");
       expect(aiPage).toContain("max-w-[min(42rem,85%)]");
       expect(aiPage).toContain("Loader2");
-      expect(aiRoute).toContain("createUIMessageStreamResponse");
+      expect(aiRoute).toContain("result.toUIMessageStreamResponse(");
       expectModernAIChatOutput([aiPage, aiRoute]);
     });
 
@@ -172,7 +173,7 @@ describe("Example Configurations", () => {
       expect(webPackageJson.dependencies?.["@ai-sdk/react"]).toBeDefined();
 
       const server = await Bun.file(join(projectDir, "apps/server/src/index.ts")).text();
-      expect(server).toContain("createUIMessageStreamResponse");
+      expect(server).toContain("result.toUIMessageStreamResponse(");
       expectModernAIChatOutput([aiRoute, server]);
     });
 
