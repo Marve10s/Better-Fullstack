@@ -488,6 +488,51 @@ const AI_SEARCH_FLAGS = [
   "--disable-analytics",
 ] as const;
 
+/*
+ * ─────────────────────────────────────────────────────────────────────────────
+ * FUTURE CANDIDATE SPECS — parked for later runs, NOT yet implemented.
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Design rule learned from the 2026-07-04 DeepSeek MCP sweep: a *free* model
+ * wired 100% of libs on 11/11 supported specs via MCP, so "supported + fancy
+ * framework" SATURATES and does not separate models. Difficulty must come from
+ * traps, restraint, build-correctness, or pure engineering — not from picking a
+ * trendier stack. Calibration rule before adding any of these: run it on a WEAK
+ * model (opencode/deepseek-v4-flash-free) AND a STRONG model (claude-opus-4-8);
+ * keep it only if the weak model fails while the strong one passes. Both pass =
+ * saturated, cut it.
+ *
+ * A) SUPPORTED + TRAPS (all paths mcp/cli/prompt). Value is the right-vs-plausible
+ *    fork, NOT the app being fancy. Each needs canonicalFlags + expectedConfig +
+ *    loose strictMarkers, and must be verified weak-fails/strong-passes.
+ *    - calcom-scheduling   → like Cal.com. Next + tRPC + Prisma + Postgres +
+ *      better-auth + Stripe. TRAPS: tRPC not oRPC; Prisma not Drizzle; `self`
+ *      backend; payments faithfulness (don't over-add email/realtime).
+ *    - twenty-crm          → like Twenty. React + NestJS + TypeORM + Postgres +
+ *      GraphQL. TRAPS: TypeORM+better-auth has NO adapter → must pick auth:none;
+ *      NestJS not Hono; GraphQL not REST.
+ *    - novu-notifications  → like Novu. React + NestJS + MongoDB/Mongoose + Redis
+ *      + job-queue. TRAPS: Mongo not Postgres; Mongoose not Drizzle/Prisma.
+ *
+ * B) FRONTIER / PROMPT-ONLY (supportedByBetterFullstack:false, paths:["prompt"]).
+ *    Pure engineering, no scaffolder — the only lane that cleanly separates raw
+ *    model capability. Loose single-token strictMarkers only.
+ *    - frontier-vite-bundler       → replicate a Vite-like tool: pnpm-workspace
+ *      monorepo, plugin API, HMR-over-WS dev server, Rollup-based build. (A build
+ *      TOOL, not an app — BFS can never scaffold this.)
+ *    - frontier-redis-clone        → in-memory store in Rust or Go, RESP protocol.
+ *    - frontier-crdt-collab        → Excalidraw-like canvas SPA with CRDT/WS collab.
+ *    - frontier-clickhouse-analytics → PostHog-like polyglot ingestion + ClickHouse
+ *      (BFS has no ClickHouse → inherently frontier).
+ *
+ * REJECTED as saturating (do NOT re-propose): convex-collab, astro-docs-site,
+ * qwik-storefront, umami-analytics — trivial to author, every model passes, zero
+ * discrimination. "Fancy framework" is not "hard spec".
+ *
+ * Also worth exploring as difficulty multipliers on existing/new specs, not new
+ * specs themselves: RESTRAINT (penalize over-scaffolding) and the DISCOVERY lane
+ * (naturalPrompt + acceptanceSets — same combo, vague brief, model must infer).
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
 export const SCAFFBENCH_2_SPECS: readonly BenchmarkSpec[] = [
   {
     id: "ai-search-workbench",

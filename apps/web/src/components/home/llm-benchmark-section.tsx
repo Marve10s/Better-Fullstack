@@ -70,6 +70,13 @@ const PATH_TAB_ORDER: readonly PathId[] = ["prompt", "mcp", "cli"] as const;
 // hygiene, the quality-gate fixes) more than model capability. Prompt — where the
 // model writes everything itself — is the clean model-capability signal.
 const V2_PATH_TABS: readonly PathId[] = ["prompt"] as const;
+// v2.1 additionally surfaces the MCP path (DeepSeek V4 Flash is the only model
+// with an MCP sweep so far). Per the note above, the assisted MCP numbers run our
+// own scaffolder, so this tab reads model+scaffolder, not raw model capability.
+const V2_1_PATH_TABS: readonly PathId[] = ["prompt", "mcp"] as const;
+function pathTabsFor(version: BenchmarkVersionId | LeaderboardVersion): readonly PathId[] {
+  return version === "v2.1" ? V2_1_PATH_TABS : V2_PATH_TABS;
+}
 
 const PATHS: Record<PathId, { glyph: string; short: string; detail: string }> = {
   mcp: {
@@ -994,13 +1001,17 @@ function computeV2ModelRows(
   mode: ValidationMode,
   specs: ReadonlySet<string>,
 ): ModelLeaderRow[] {
-  const rows = dataset.models.map((model) => {
+  const rows = dataset.models.flatMap((model) => {
     const cells = dataset.cells.filter(
       (cell) =>
         cell.modelKey === model.key &&
         (leaderPath === "all" || cell.path === leaderPath) &&
         specs.has(cell.spec),
     );
+    // On a specific creation path (not the pooled "all"), a model with no cells
+    // for that path was never run on it — drop it entirely rather than show a
+    // fake 0% row. This is what keeps the MCP tab to just the models we swept.
+    if (leaderPath !== "all" && cells.length === 0) return [];
     const scored = cells.filter((cell) => cell.scored);
     const passing = scored.filter((cell) =>
       mode === "core" ? cell.corePass : cell.fullPass,
@@ -1450,9 +1461,11 @@ function BenchmarkChartCard() {
   // ablation views; both share this chart's rendering and differ only in dataset.
   const isV2 = version === "v2" || version === "v2.1";
   const v2DatasetValue = useMemo(() => v2Dataset(version), [version]);
-  // V2-family is Prompt-only (see V2_PATH_TABS): force the path so a stale v1
-  // selection (e.g. mcp) can't leak the wrong data into the v2 chart.
-  const v2Path: PathId = isV2 ? "prompt" : activePath;
+  // V2-family exposes a restricted tab set (pathTabsFor): v2 legacy is Prompt-only;
+  // v2.1 adds MCP. Clamp to a tab this version actually offers so a stale v1
+  // selection (e.g. cli) can't leak the wrong data into the v2 chart.
+  const v2Tabs = pathTabsFor(version);
+  const v2Path: PathId = isV2 ? (v2Tabs.includes(activePath) ? activePath : "prompt") : activePath;
   const v2ModelPoints = useMemo(
     () => computeV2ModelPoints(v2DatasetValue, v2Path),
     [v2DatasetValue, v2Path],
@@ -1483,9 +1496,16 @@ function BenchmarkChartCard() {
     },
     [version],
   );
+  // On the Prompt tab the model picker drives visibility. On the assisted MCP tab
+  // the picker's paid-only default would hide the only model swept there (DeepSeek,
+  // a free provider), so show every model that has data on the path instead; points
+  // with no data for the active metric are dropped by v2PlottedPoints below.
   const v2VisiblePoints = useMemo(
-    () => v2ModelPoints.filter((point) => v2ActiveSelection.includes(point.key)),
-    [v2ModelPoints, v2ActiveSelection],
+    () =>
+      v2Path === "prompt"
+        ? v2ModelPoints.filter((point) => v2ActiveSelection.includes(point.key))
+        : v2ModelPoints,
+    [v2ModelPoints, v2ActiveSelection, v2Path],
   );
   // A visible model with no data for the active metric is left OFF the plot
   // (footnoted below the chart) — plotting it at 0 would fake "cheapest".
@@ -1560,9 +1580,9 @@ function BenchmarkChartCard() {
               <PillButton value="v1" label="v1" active={version === "v1"} onSelect={setVersion} />
             </div>
             <PathTabs
-              active={isV2 ? "prompt" : activePath}
+              active={isV2 ? v2Path : activePath}
               onSelect={setActivePath}
-              paths={isV2 ? V2_PATH_TABS : PATH_TAB_ORDER}
+              paths={isV2 ? v2Tabs : PATH_TAB_ORDER}
             />
             {isV2 ? null : <PathsHelp />}
           </div>
@@ -2574,9 +2594,15 @@ function ScaffbenchLeaderboardCard() {
   // overstated Full). computeV2ModelRows still takes a mode so Full can return
   // with one line once that re-run lands.
   const MODE = "core" as const;
-  // V2-family is Prompt-only (see V2_PATH_TABS): the assisted paths measure our
-  // generator, not the model. Force the path so a stale v1 selection can't leak in.
-  const effectiveLeaderPath: LeaderPath = isV2 ? "prompt" : leaderPath;
+  // V2-family exposes a restricted tab set (pathTabsFor): v2 legacy is Prompt-only;
+  // v2.1 adds the assisted MCP path. Clamp to a tab this version offers so the
+  // pooled "all" default (or a stale v1 selection) resolves to Prompt.
+  const v2LeaderTabs = pathTabsFor(version);
+  const effectiveLeaderPath: LeaderPath = isV2
+    ? v2LeaderTabs.includes(leaderPath as PathId)
+      ? leaderPath
+      : "prompt"
+    : leaderPath;
   const specsSet = useMemo(() => new Set<string>(selectedSpecs), [selectedSpecs]);
   // One row per model, sorted best-first, for the chosen creation path.
   const rows = useMemo(
@@ -2636,9 +2662,18 @@ function ScaffbenchLeaderboardCard() {
             </div>
             <div className="flex items-center gap-1" role="tablist" aria-label="Creation path">
               {isV2 ? (
-                // V2-family is Prompt-only (assisted paths measure our generator,
-                // not the model) — show just the Prompt path, no MCP/CLI/All.
-                <PillButton value="prompt" label="Prompt" active onSelect={setLeaderPath} accent="teal" />
+                // V2-family shows the version's restricted tab set (pathTabsFor):
+                // v2 legacy is Prompt-only; v2.1 adds the assisted MCP path.
+                v2LeaderTabs.map((p) => (
+                  <PillButton
+                    key={p}
+                    value={p}
+                    label={LEADERBOARD_LABELS[p]}
+                    active={effectiveLeaderPath === p}
+                    onSelect={setLeaderPath}
+                    accent="teal"
+                  />
+                ))
               ) : (
                 <>
                   <PillButton
