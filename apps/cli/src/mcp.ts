@@ -1086,7 +1086,7 @@ function matchNearestPreset(input: Record<string, unknown>): Template | null {
   return best && best.score >= 3 ? best.id : null;
 }
 
-function recommendStackFromBrief(
+export function recommendStackFromBrief(
   brief: string,
   ecosystemHint?: ProjectConfig["ecosystem"],
 ): { input: Record<string, unknown>; rationale: string[]; matchedPreset: Template | null } {

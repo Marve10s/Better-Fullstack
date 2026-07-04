@@ -361,6 +361,44 @@ export const router = os.router({
       const { doctorCommand } = await import("./commands/doctor.js");
       await doctorCommand({ projectDir, ...options });
     }),
+  recommend: os
+    .meta({
+      description:
+        "Recommend a stack from a natural-language brief (prompt-to-stack): prints the suggested config, the rationale, and a ready-to-run create command",
+    })
+    .input(
+      z.object({
+        brief: z
+          .string()
+          .min(1)
+          .describe('Natural-language description, e.g. "a SaaS with Postgres, auth and payments"'),
+        ecosystem: z
+          .string()
+          .optional()
+          .describe("Force an ecosystem (typescript, react-native, rust, go, python, java, ...)"),
+        json: z.boolean().default(false).describe("Output the recommendation as JSON"),
+      }),
+    )
+    .handler(async ({ input }) => {
+      const { recommendStackFromBrief } = await import("./mcp.js");
+      const result = recommendStackFromBrief(
+        input.brief,
+        input.ecosystem as Parameters<typeof recommendStackFromBrief>[1],
+      );
+
+      if (input.json) {
+        log.message(JSON.stringify(result, null, 2));
+        return;
+      }
+
+      log.message("Recommended stack:");
+      for (const line of result.rationale) log.message(`  • ${line}`);
+      log.message(`\nConfig: ${JSON.stringify(result.input)}`);
+      if (result.matchedPreset) {
+        log.message(`Nearest preset: ${result.matchedPreset}`);
+      }
+      log.message("\nReview, then scaffold with: create-better-fullstack create <name> [flags]");
+    }),
 });
 
 const caller = createRouterClient(router, { context: {} });
