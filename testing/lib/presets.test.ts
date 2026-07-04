@@ -30,6 +30,7 @@ const PR_BROAD_PRESET_NAMES = [
   "preset-go-echo-sqlc",
   "preset-java-spring-gradle-jpa",
   "preset-java-plain-cli",
+  "preset-java-spring-log4j2",
   "preset-elixir-phoenix-api",
   "preset-dotnet-minimal-efcore",
   "preset-react-vite-hono",
