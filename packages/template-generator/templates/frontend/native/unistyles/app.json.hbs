@@ -24,7 +24,10 @@
     },
     "web": {
       {{#if (eq mobileNavigation "expo-router")}}
-      "output": "static",
+      {{! Unistyles styles resolve at runtime and can't be statically rendered
+          at build time (StyleSheet.configure runs after StyleSheet.create during
+          static SSR), so use single-page (client-rendered) web output. }}
+      "output": "single",
       {{/if}}
       "favicon": "./assets/images/favicon.png"
     },
