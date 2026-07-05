@@ -469,6 +469,10 @@ const BASE_LINKS: LinkMap = {
     githubUrl: "https://github.com/pqina/filepond",
   },
   uppy: { docsUrl: "https://uppy.io/docs/", githubUrl: "https://github.com/transloadit/uppy" },
+  java: {
+    docsUrl: "https://dev.java/learn/",
+    githubUrl: "https://github.com/openjdk/jdk",
+  },
   kotlin: {
     docsUrl: "https://kotlinlang.org/docs/home.html",
     githubUrl: "https://github.com/JetBrains/kotlin",
