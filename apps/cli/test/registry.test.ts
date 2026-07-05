@@ -10,6 +10,8 @@ import { addPack, listInstalledPacks } from "../src/helpers/core/registry-handle
 const FIXTURES = join(import.meta.dir, "fixtures", "registry");
 const SAMPLE_PACK = join(FIXTURES, "sample-pack");
 const INVALID_PACK = join(FIXTURES, "invalid-pack");
+const TRAVERSAL_FILE_PACK = join(FIXTURES, "traversal-file-pack");
+const TRAVERSAL_DEP_PACK = join(FIXTURES, "traversal-dep-pack");
 const TEMP_ROOTS: string[] = [];
 
 async function stageProject(): Promise<string> {
@@ -99,6 +101,21 @@ describe("registry add", () => {
     );
     // Nothing was recorded.
     expect(await fs.pathExists(join(dir, ".better-fullstack", "registry.json"))).toBe(false);
+  });
+
+  it("rejects a pack whose file path escapes the project dir (path traversal)", async () => {
+    const dir = await stageProject();
+    await expect(addPack({ projectDir: dir, source: TRAVERSAL_FILE_PACK })).rejects.toThrow(
+      /escapes the project directory/,
+    );
+    expect(await fs.pathExists(join(dir, "..", "outside.txt"))).toBe(false);
+  });
+
+  it("rejects a pack whose dependency target dir escapes the project dir", async () => {
+    const dir = await stageProject();
+    await expect(addPack({ projectDir: dir, source: TRAVERSAL_DEP_PACK })).rejects.toThrow(
+      /escapes the project directory/,
+    );
   });
 
   it("--dry-run writes nothing", async () => {

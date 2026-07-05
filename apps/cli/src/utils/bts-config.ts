@@ -349,6 +349,11 @@ export function buildBtsConfigForPersistence(
     testing: persistedConfig.testing,
     packageManager: persistedConfig.packageManager,
     versionChannel: persistedConfig.versionChannel,
+    // Persist only the non-default single-app shape so bfs update/stack-update
+    // re-render it flat; monorepo (the default) is omitted to keep existing
+    // bts.jsonc output byte-identical (read-back defaults undefined -> monorepo).
+    workspaceShape:
+      persistedConfig.workspaceShape === "single-app" ? "single-app" : undefined,
     dbSetup: persistedConfig.dbSetup,
     api: persistedConfig.api,
     webDeploy: persistedConfig.webDeploy,
@@ -518,6 +523,7 @@ export async function writeBtsConfig(
     testing: btsConfig.testing,
     packageManager: btsConfig.packageManager,
     versionChannel: btsConfig.versionChannel,
+    workspaceShape: btsConfig.workspaceShape,
     dbSetup: btsConfig.dbSetup,
     api: btsConfig.api,
     webDeploy: btsConfig.webDeploy,

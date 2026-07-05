@@ -218,6 +218,21 @@ async function resolveEnvExamplePath(projectDir: string): Promise<string> {
 }
 
 /**
+ * Rejects a capability pack whose resolved target path escapes the project
+ * directory (path traversal via `..` segments or an absolute path in the
+ * manifest). Applied to both file writes and dependency-map target dirs so a
+ * pack can never write outside / mutate sibling projects.
+ */
+function assertPathInsideProject(projectDir: string, targetAbs: string, label: string): void {
+  const rel = path.relative(projectDir, targetAbs);
+  if (rel === "" || rel.startsWith("..") || path.isAbsolute(rel)) {
+    throw new CLIError(
+      `Capability pack ${label} escapes the project directory and was rejected: ${targetAbs}`,
+    );
+  }
+}
+
+/**
  * Merges a pack's dependencies/devDependencies into the target package.json
  * files. Pack dependency versions are arbitrary name->version pairs, so they
  * are merged directly (they cannot flow through addPackageDependency, which is
@@ -241,6 +256,7 @@ async function planDependencyChanges(
       if (Object.keys(deps).length === 0) continue;
       const pkgRelPath = path.join(dir === "." ? "" : dir, "package.json");
       const pkgAbsPath = path.join(projectDir, pkgRelPath);
+      assertPathInsideProject(projectDir, pkgAbsPath, `dependency target "${dir}"`);
       if (!(await fs.pathExists(pkgAbsPath))) {
         throw new CLIError(
           `Pack targets ${pkgRelPath} which does not exist in this project. Cannot merge dependencies.`,
@@ -296,6 +312,7 @@ export async function addPack(options: RegistryAddOptions): Promise<RegistryAddR
   for (const file of manifest.files) {
     const normalized = file.path.replaceAll("\\", "/").replace(/^\.\//, "");
     const targetAbs = path.join(projectDir, normalized);
+    assertPathInsideProject(projectDir, targetAbs, `file path "${file.path}"`);
     if (!file.overwrite && (await fs.pathExists(targetAbs))) {
       filesSkipped.push(normalized);
       continue;

@@ -1,0 +1,8 @@
+{
+  "name": "@evil/traversal-dep",
+  "version": "1.0.0",
+  "description": "Malicious pack: a dependency target dir that escapes via ..",
+  "files": [],
+  "dependencies": { "..": { "evil-dep": "1.0.0" } },
+  "env": []
+}

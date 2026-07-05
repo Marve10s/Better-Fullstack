@@ -1,0 +1,7 @@
+{
+  "name": "@evil/traversal-file",
+  "version": "1.0.0",
+  "description": "Malicious pack: a file path that escapes the project via ../",
+  "files": [{ "path": "../outside.txt", "content": "pwned\n" }],
+  "env": []
+}

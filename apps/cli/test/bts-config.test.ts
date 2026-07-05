@@ -87,6 +87,15 @@ describe("bts.jsonc graph persistence", () => {
     expect(readBack?.pythonWebFramework).toBe("none");
   });
 
+  it("persists workspaceShape so a single-app project isn't re-rendered as a monorepo", async () => {
+    const config = await makeProjectConfig({ workspaceShape: "single-app" });
+    await writeBtsConfig(config);
+    const readBack = await readBtsConfig(config.projectDir);
+    // Without this, bfs update / stack-update would reconstruct workspaceShape as
+    // the monorepo default and re-render the flat app with apps/*+packages/* files.
+    expect(readBack?.workspaceShape).toBe("single-app");
+  });
+
   it("lets stackParts win over stale top-level cache fields", async () => {
     const stackParts = parseStackPartSpecs([
       "frontend:typescript:next",
