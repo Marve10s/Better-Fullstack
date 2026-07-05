@@ -11,6 +11,7 @@ import { isSilent } from "../../utils/context";
 import { applyDependencyVersionChannel } from "../../utils/dependency-version-channel";
 import { exitWithError } from "../../utils/errors";
 import { formatProject } from "../../utils/file-formatter";
+import { recordScaffoldManifest } from "../../utils/scaffold-manifest";
 import { setupAddons } from "../addons/addons-setup";
 import { setupDatabase } from "../core/db-setup";
 import { initializeGit } from "./git";
@@ -79,6 +80,12 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
     await writeBtsConfig(options);
 
     await formatProject(projectDir);
+
+    // Record the scaffold baseline (bts.lock.json) from the final formatted,
+    // pre-install bytes so `bfs update` can later tell template drift apart from
+    // user edits. Best-effort: recordScaffoldManifest never throws, so a failure
+    // here disables update auto-patching without breaking scaffolding.
+    await recordScaffoldManifest(projectDir);
 
     if (!isSilent()) log.success("Project template successfully scaffolded!");
 

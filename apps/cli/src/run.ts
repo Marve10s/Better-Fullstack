@@ -392,6 +392,49 @@ export const router = os.router({
         dryRun: options.dryRun,
       });
     }),
+  update: os
+    .meta({
+      description:
+        "Re-apply the current bundled templates to an existing Better Fullstack project, classifying template drift vs. your local edits from the bts.lock.json scaffold baseline. Default is a dry-run plan; `--apply` writes safe drift patches + new files. Distinct from the maintainer `update-deps` command.",
+    })
+    .input(
+      z.tuple([
+        z
+          .string()
+          .optional()
+          .describe("Project directory to update (defaults to current directory)"),
+        z.object({
+          dryRun: z
+            .boolean()
+            .optional()
+            .default(false)
+            .describe("Preview the plan without writing (default behavior)"),
+          apply: z
+            .boolean()
+            .optional()
+            .default(false)
+            .describe("Write safe template-drift patches and new files, refreshing the baseline"),
+          check: z
+            .boolean()
+            .optional()
+            .default(false)
+            .describe("Exit non-zero when actionable template drift exists (CI gate)"),
+          json: z.boolean().optional().default(false).describe("Output the plan as JSON"),
+          recordBaseline: z
+            .boolean()
+            .optional()
+            .default(false)
+            .describe(
+              "Adopt the current on-disk state as the scaffold baseline (for projects created before the update engine)",
+            ),
+        }),
+      ]),
+    )
+    .handler(async ({ input }) => {
+      const [projectDir, options] = input;
+      const { updateCommand } = await import("./commands/update.js");
+      await updateCommand({ projectDir, ...options });
+    }),
   mcp: os
     .meta({
       description:
@@ -587,6 +630,28 @@ export async function registry(
       projectDir: options?.projectDir,
       json: options?.json ?? false,
       dryRun: options?.dryRun ?? false,
+    },
+  ]);
+}
+
+export async function update(
+  projectDir?: string,
+  options?: {
+    dryRun?: boolean;
+    apply?: boolean;
+    check?: boolean;
+    json?: boolean;
+    recordBaseline?: boolean;
+  },
+) {
+  return caller.update([
+    projectDir,
+    {
+      dryRun: options?.dryRun ?? false,
+      apply: options?.apply ?? false,
+      check: options?.check ?? false,
+      json: options?.json ?? false,
+      recordBaseline: options?.recordBaseline ?? false,
     },
   ]);
 }

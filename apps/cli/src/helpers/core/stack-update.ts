@@ -163,7 +163,7 @@ async function inferProjectName(projectDir: string): Promise<string> {
   return path.basename(projectDir);
 }
 
-function configFromBtsConfig(
+export function configFromBtsConfig(
   config: BetterTStackConfig,
   projectDir: string,
   projectName: string,
@@ -930,7 +930,7 @@ function applyKnownDependencyExpansions(
   return { config: next, adjustments };
 }
 
-async function generateTree(config: ProjectConfig): Promise<VirtualFileTree> {
+export async function generateTree(config: ProjectConfig): Promise<VirtualFileTree> {
   const result = await generateVirtualProject({ config, templates: EMBEDDED_TEMPLATES });
   if (!result.success || !result.tree) {
     throw new Error(result.error ?? "Failed to generate virtual project");
@@ -938,7 +938,7 @@ async function generateTree(config: ProjectConfig): Promise<VirtualFileTree> {
   return result.tree;
 }
 
-async function formatGeneratedTree(tree: VirtualFileTree): Promise<void> {
+export async function formatGeneratedTree(tree: VirtualFileTree): Promise<void> {
   const denoConfigDirs = new Set<string>();
 
   function collectDenoConfigDirs(nodes: VirtualNode[]) {
@@ -979,7 +979,7 @@ async function formatGeneratedTree(tree: VirtualFileTree): Promise<void> {
   await formatNodes(tree.root.children);
 }
 
-function treeToFileMap(tree: VirtualFileTree): Map<string, VirtualFile> {
+export function treeToFileMap(tree: VirtualFileTree): Map<string, VirtualFile> {
   const files = new Map<string, VirtualFile>();
 
   function walk(nodes: VirtualNode[]) {

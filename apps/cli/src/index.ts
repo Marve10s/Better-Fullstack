@@ -13,6 +13,7 @@ export {
   telemetry,
   doctor,
   check,
+  update,
 } from "./run";
 
 import type { ProjectConfig } from "./types";
