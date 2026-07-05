@@ -1,0 +1,18 @@
+package {{javaPackageName}}
+
+{{#if hasJavaAssertj}}
+import org.assertj.core.api.Assertions.assertThat
+{{/if}}
+import org.junit.jupiter.api.Test
+import org.springframework.boot.test.context.SpringBootTest
+
+@SpringBootTest
+class ApplicationTests {
+
+    @Test
+    fun contextLoads() {
+{{#if hasJavaAssertj}}
+        assertThat(Application::class.java).isNotNull()
+{{/if}}
+    }
+}

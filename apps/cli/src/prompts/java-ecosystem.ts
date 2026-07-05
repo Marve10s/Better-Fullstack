@@ -1,6 +1,7 @@
 import type {
   JavaAuth,
   JavaApi,
+  JavaLanguage,
   JavaLogging,
   JavaBuildTool,
   JavaLibraries,
@@ -37,6 +38,19 @@ const JAVA_WEB_FRAMEWORK_PROMPT_OPTIONS: PromptOption<JavaWebFramework>[] = [
     value: "none",
     label: "None",
     hint: "No Java web framework",
+  },
+];
+
+const JAVA_LANGUAGE_PROMPT_OPTIONS: PromptOption<JavaLanguage>[] = [
+  {
+    value: "java",
+    label: "Java",
+    hint: "Classic Java sources (default)",
+  },
+  {
+    value: "kotlin",
+    label: "Kotlin",
+    hint: "Idiomatic Kotlin sources (Spring Boot only)",
   },
 ];
 
@@ -268,6 +282,27 @@ export async function getJavaWebFrameworkChoice(javaWebFramework?: JavaWebFramew
     message: "Select Java web framework",
     options: resolution.options,
     initialValue: resolution.initialValue as JavaWebFramework,
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}
+
+export function resolveJavaLanguagePrompt(javaLanguage?: JavaLanguage) {
+  return createStaticSinglePromptResolution(JAVA_LANGUAGE_PROMPT_OPTIONS, "java", javaLanguage);
+}
+
+export async function getJavaLanguageChoice(javaLanguage?: JavaLanguage) {
+  const resolution = resolveJavaLanguagePrompt(javaLanguage);
+  if (!resolution.shouldPrompt) {
+    return resolution.autoValue ?? "java";
+  }
+
+  const response = await navigableSelect<JavaLanguage>({
+    message: "Select JVM language",
+    options: resolution.options,
+    initialValue: resolution.initialValue as JavaLanguage,
   });
 
   if (isCancel(response)) return exitCancelled("Operation cancelled");

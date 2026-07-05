@@ -1,0 +1,31 @@
+package {{javaPackageName}}.config
+
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.security.config.Customizer
+import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.web.SecurityFilterChain
+
+/**
+ * Validates Keycloak-issued JWTs as an OAuth2 resource server.
+ *
+ * Point KEYCLOAK_ISSUER_URI at your realm, e.g.
+ * http://localhost:8081/realms/my-realm. The issuer metadata is fetched lazily
+ * on the first request, so the application starts without a running Keycloak.
+ */
+@Configuration
+@EnableWebSecurity
+class ResourceServerConfig {
+
+    @Bean
+    fun resourceServerFilterChain(http: HttpSecurity): SecurityFilterChain {
+        http
+            .authorizeHttpRequests {
+                it.requestMatchers("/", "/health", "/actuator/**").permitAll()
+                    .anyRequest().authenticated()
+            }
+            .oauth2ResourceServer { oauth2 -> oauth2.jwt(Customizer.withDefaults()) }
+        return http.build()
+    }
+}

@@ -1,0 +1,10 @@
+package {{javaPackageName}}.repository
+
+import java.util.Optional
+import org.springframework.data.jpa.repository.JpaRepository
+import {{javaPackageName}}.domain.AppUser
+
+interface AppUserRepository : JpaRepository<AppUser, Long> {
+
+    fun findByEmail(email: String): Optional<AppUser>
+}

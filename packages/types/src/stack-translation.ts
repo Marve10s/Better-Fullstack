@@ -126,6 +126,7 @@ export const DEFAULT_STACK_SELECTION: StackSelectionState = {
   goCaching: "none",
   goConfig: "none",
   goObservability: "none",
+  javaLanguage: "java",
   javaWebFramework: "spring-boot",
   javaBuildTool: "maven",
   javaOrm: "none",
@@ -281,6 +282,7 @@ export const STACK_SELECTION_OPTION_CATEGORY_BY_KEY: Record<
   goCaching: "goCaching",
   goConfig: "goConfig",
   goObservability: "goObservability",
+  javaLanguage: "javaLanguage",
   javaWebFramework: "javaWebFramework",
   javaBuildTool: "javaBuildTool",
   javaOrm: "javaOrm",
@@ -445,6 +447,7 @@ export const STACK_SELECTION_URL_KEYS = {
   goCaching: "gcache",
   goConfig: "gcfg",
   goObservability: "gobs",
+  javaLanguage: "jlang",
   javaWebFramework: "jwf",
   javaBuildTool: "jbt",
   javaOrm: "jorm",
@@ -764,6 +767,7 @@ const CLI_SCALAR_CONFIG_FIELDS = [
   ["goCaching", "goCaching"],
   ["goConfig", "goConfig"],
   ["goObservability", "goObservability"],
+  ["javaLanguage", "javaLanguage"],
   ["javaWebFramework", "javaWebFramework"],
   ["javaBuildTool", "javaBuildTool"],
   ["javaOrm", "javaOrm"],
@@ -883,6 +887,7 @@ const GO_CONFIG_KEYS = [
 ] as const satisfies readonly (keyof CliDefaultProjectConfigBase)[];
 
 const JAVA_CONFIG_KEYS = [
+  "javaLanguage",
   "javaWebFramework",
   "javaBuildTool",
   "javaOrm",
@@ -1914,6 +1919,7 @@ function buildProjectConfigBase(
     goCaching: stack.goCaching as ProjectConfig["goCaching"],
     goConfig: stack.goConfig as ProjectConfig["goConfig"],
     goObservability: stack.goObservability as ProjectConfig["goObservability"],
+    javaLanguage: stack.javaLanguage as ProjectConfig["javaLanguage"],
     javaWebFramework: stack.javaWebFramework as ProjectConfig["javaWebFramework"],
     javaBuildTool: stack.javaBuildTool as ProjectConfig["javaBuildTool"],
     javaOrm: stack.javaOrm as ProjectConfig["javaOrm"],
@@ -2326,6 +2332,9 @@ function generateJavaCommand(selection: StackSelectionInput, projectName: string
   const flags: string[] = [
     "--ecosystem java",
     `--java-web-framework ${selection.javaWebFramework}`,
+    // Emit the language flag only for the non-default (Kotlin) variant so the
+    // command for every existing Java selection stays byte-identical.
+    ...(selection.javaLanguage === "kotlin" ? [`--java-language ${selection.javaLanguage}`] : []),
     `--java-build-tool ${selection.javaBuildTool}`,
     `--java-orm ${selection.javaOrm}`,
     `--java-auth ${selection.javaAuth}`,

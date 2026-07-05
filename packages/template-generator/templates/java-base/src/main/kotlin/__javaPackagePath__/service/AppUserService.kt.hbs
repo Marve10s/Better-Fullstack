@@ -1,0 +1,21 @@
+package {{javaPackageName}}.service
+
+import org.springframework.stereotype.Service
+import {{javaPackageName}}.domain.AppUser
+import {{javaPackageName}}.repository.AppUserRepository
+
+@Service
+class AppUserService(private val repository: AppUserRepository) {
+
+    fun findAll(): List<AppUser> = repository.findAll()
+
+    fun create(email: String?, displayName: String?): AppUser {
+        val normalizedEmail = email?.trim()?.lowercase() ?: ""
+        require(normalizedEmail.isNotBlank()) { "email must not be blank" }
+
+        val normalizedDisplayName =
+            if (displayName.isNullOrBlank()) normalizedEmail else displayName.trim()
+
+        return repository.save(AppUser(normalizedEmail, normalizedDisplayName))
+    }
+}

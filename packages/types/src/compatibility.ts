@@ -178,6 +178,7 @@ export type CompatibilityInput = {
   goCaching: string;
   goConfig: string;
   goObservability: string;
+  javaLanguage: string;
   javaWebFramework: string;
   javaBuildTool: string;
   javaOrm: string;
@@ -1575,6 +1576,48 @@ export const analyzeStackCompatibility = (
         changes.push({
           category: "javaLibraries",
           message: "Liquibase cleared (Flyway and Liquibase cannot be combined)",
+        });
+      }
+    }
+
+    // Kotlin is only wired for the Spring Boot scaffold (with Maven or Gradle)
+    // and its common option surface. For every other Java combination we
+    // normalize the language back to `java` so the generator never emits a
+    // half-built Kotlin project. The uncovered surface is: non-Spring-Boot
+    // frameworks, source-only scaffolds, jOOQ/MyBatis ORMs, the gRPC/OpenAPI
+    // API layers (protoc/codegen paths), and the Java-only third-party service
+    // integrations (Resend email, Meilisearch, Upstash Redis, Sentry).
+    if (nextStack.javaLanguage === "kotlin") {
+      const kotlinUnsupportedTestingLibraries = new Set([
+        "testcontainers",
+        "rest-assured",
+        "wiremock",
+        "awaitility",
+        "archunit",
+        "jqwik",
+      ]);
+      const kotlinSupported =
+        nextStack.javaWebFramework === "spring-boot" &&
+        nextStack.javaBuildTool !== "none" &&
+        nextStack.javaOrm !== "jooq" &&
+        nextStack.javaOrm !== "mybatis" &&
+        nextStack.javaApi !== "grpc" &&
+        nextStack.javaApi !== "openapi-generator" &&
+        nextStack.email !== "resend" &&
+        nextStack.search !== "meilisearch" &&
+        nextStack.caching !== "upstash-redis" &&
+        nextStack.observability !== "sentry" &&
+        !nextStack.javaTestingLibraries.some((library) =>
+          kotlinUnsupportedTestingLibraries.has(library),
+        );
+
+      if (!kotlinSupported) {
+        nextStack.javaLanguage = "java";
+        changed = true;
+        changes.push({
+          category: "javaLanguage",
+          message:
+            "Java language set to 'Java' (Kotlin currently targets the Spring Boot scaffold with Spring Data JPA/none, Spring GraphQL/none, and no jOOQ/MyBatis/gRPC/OpenAPI or Java-only service integrations)",
         });
       }
     }

@@ -469,6 +469,10 @@ const BASE_LINKS: LinkMap = {
     githubUrl: "https://github.com/pqina/filepond",
   },
   uppy: { docsUrl: "https://uppy.io/docs/", githubUrl: "https://github.com/transloadit/uppy" },
+  kotlin: {
+    docsUrl: "https://kotlinlang.org/docs/home.html",
+    githubUrl: "https://github.com/JetBrains/kotlin",
+  },
   "spring-boot": {
     docsUrl: "https://docs.spring.io/spring-boot/",
     githubUrl: "https://github.com/spring-projects/spring-boot",

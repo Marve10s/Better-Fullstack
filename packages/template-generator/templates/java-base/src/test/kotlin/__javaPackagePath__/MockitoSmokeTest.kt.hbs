@@ -1,0 +1,17 @@
+package {{javaPackageName}}
+
+import org.junit.jupiter.api.Test
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.verify
+
+class MockitoSmokeTest {
+
+    @Test
+    fun verifiesMockInteractions() {
+        val task = mock(Runnable::class.java)
+
+        task.run()
+
+        verify(task).run()
+    }
+}

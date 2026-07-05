@@ -1,0 +1,57 @@
+package {{javaPackageName}}.service
+
+{{#if hasJavaAssertj}}
+import org.assertj.core.api.Assertions.assertThat
+{{else}}
+import org.junit.jupiter.api.Assertions.assertEquals
+{{/if}}
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.ArgumentMatchers.any
+import org.mockito.InjectMocks
+import org.mockito.Mock
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
+import org.mockito.junit.jupiter.MockitoExtension
+import {{javaPackageName}}.domain.AppUser
+import {{javaPackageName}}.repository.AppUserRepository
+
+@ExtendWith(MockitoExtension::class)
+class AppUserServiceTest {
+
+    @Mock
+    lateinit var repository: AppUserRepository
+
+    @InjectMocks
+    lateinit var service: AppUserService
+
+    @Test
+    fun createPersistsANormalizedUser() {
+        `when`(repository.save(any(AppUser::class.java))).thenAnswer { it.getArgument(0) }
+
+        val createdUser = service.create("Ada@example.com ", "Ada Lovelace")
+
+        verify(repository).save(any(AppUser::class.java))
+{{#if hasJavaAssertj}}
+        assertThat(createdUser.email).isEqualTo("ada@example.com")
+        assertThat(createdUser.displayName).isEqualTo("Ada Lovelace")
+{{else}}
+        assertEquals("ada@example.com", createdUser.email)
+        assertEquals("Ada Lovelace", createdUser.displayName)
+{{/if}}
+    }
+
+    @Test
+    fun findAllDelegatesToRepository() {
+        `when`(repository.findAll()).thenReturn(listOf(AppUser("grace@example.com", "Grace Hopper")))
+
+        val users = service.findAll()
+
+{{#if hasJavaAssertj}}
+        assertThat(users).hasSize(1)
+{{else}}
+        assertEquals(1, users.size)
+{{/if}}
+        verify(repository).findAll()
+    }
+}

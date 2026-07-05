@@ -399,6 +399,7 @@ export const CLI_FLAG_GROUP_DEFINITIONS: readonly CliFlagGroupDefinition[] = [
     ecosystem: "java",
     flags: [
       { flag: "java-web-framework", summary: "Java web framework.", source: { kind: "category", category: "javaWebFramework" }, configKey: "javaWebFramework" },
+      { flag: "java-language", summary: "JVM language (java or kotlin).", source: { kind: "category", category: "javaLanguage" }, configKey: "javaLanguage" },
       { flag: "java-build-tool", summary: "Build tool.", source: { kind: "category", category: "javaBuildTool" }, configKey: "javaBuildTool" },
       { flag: "java-orm", summary: "Java ORM / database.", source: { kind: "category", category: "javaOrm" }, configKey: "javaOrm" },
       { flag: "java-auth", summary: "Java auth.", source: { kind: "category", category: "javaAuth" }, configKey: "javaAuth" },

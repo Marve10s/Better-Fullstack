@@ -4697,6 +4697,25 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
   ],
+  javaLanguage: [
+    {
+      id: "java",
+      name: "Java",
+      description: "Classic Java sources",
+      icon: "/icon/java.svg",
+      color: "from-orange-500 to-red-600",
+      default: true,
+    },
+    {
+      id: "kotlin",
+      name: "Kotlin",
+      description: "Idiomatic Kotlin sources (Spring Boot only)",
+      icon: "https://cdn.simpleicons.org/kotlin/7F52FF",
+      color: "from-purple-500 to-indigo-600",
+      default: false,
+      isNew: true,
+    },
+  ],
   javaBuildTool: [
     {
       id: "maven",

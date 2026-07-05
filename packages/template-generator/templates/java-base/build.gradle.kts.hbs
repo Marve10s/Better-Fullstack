@@ -4,7 +4,15 @@ import com.google.protobuf.gradle.id
 {{/if}}
 plugins {
 {{#if isJavaSpringBoot}}
+{{#if isJavaKotlin}}
+	kotlin("jvm") version "2.2.20"
+	kotlin("plugin.spring") version "2.2.20"
+{{#if hasJavaJpa}}
+	kotlin("plugin.jpa") version "2.2.20"
+{{/if}}
+{{else}}
 	java
+{{/if}}
 	id("org.springframework.boot") version "4.0.6"
 	id("io.spring.dependency-management") version "1.1.7"
 {{#if isJavaOpenApiGenerator}}
@@ -46,6 +54,15 @@ java {
 	}
 }
 
+{{#if isJavaKotlin}}
+kotlin {
+	jvmToolchain(21)
+	compilerOptions {
+		freeCompilerArgs.add("-Xjsr305=strict")
+	}
+}
+
+{{/if}}
 repositories {
 	mavenCentral()
 }
@@ -184,6 +201,10 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-log4j2")
 {{else}}
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
+{{/if}}
+{{#if isJavaKotlin}}
+	implementation("org.jetbrains.kotlin:kotlin-reflect")
+	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 {{/if}}
 {{#if hasJavaJpa}}
 	runtimeOnly("com.h2database:h2")

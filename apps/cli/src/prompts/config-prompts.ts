@@ -63,6 +63,7 @@ import type {
   GoWebFramework,
   JavaAuth,
   JavaApi,
+  JavaLanguage,
   JavaLogging,
   JavaBuildTool,
   JavaLibraries,
@@ -201,6 +202,7 @@ import { getinstallChoice } from "./install";
 import {
   getJavaAuthChoice,
   getJavaApiChoice,
+  getJavaLanguageChoice,
   getJavaLoggingChoice,
   getJavaBuildToolChoice,
   getJavaLibrariesChoice,
@@ -369,6 +371,7 @@ type PromptGroupResults = {
   goObservability: GoObservability;
   // Java ecosystem
   javaWebFramework: JavaWebFramework;
+  javaLanguage: JavaLanguage;
   javaBuildTool: JavaBuildTool;
   javaOrm: JavaOrm;
   javaAuth: JavaAuth;
@@ -936,6 +939,25 @@ export async function gatherConfig(
         if (results.ecosystem !== "java") return Promise.resolve("none" as JavaWebFramework);
         return getJavaWebFrameworkChoice(flags.javaWebFramework);
       },
+      javaLanguage: ({ results }) => {
+        if (results.ecosystem !== "java") return Promise.resolve("java" as JavaLanguage);
+        // Kotlin is only wired for the Spring Boot scaffold; keep Java otherwise.
+        if (results.javaWebFramework !== "spring-boot") {
+          return Promise.resolve("java" as JavaLanguage);
+        }
+        // Honor an explicit --java-language flag (resolves without prompting).
+        if (flags.javaLanguage !== undefined) {
+          return getJavaLanguageChoice(flags.javaLanguage);
+        }
+        // Flag-driven run (framework was passed as a flag) without --java-language:
+        // default to Java without prompting so existing non-interactive Java
+        // scaffolds stay byte-identical and never hang on a new prompt. The JVM
+        // language prompt only appears in the fully interactive flow.
+        if (flags.javaWebFramework !== undefined) {
+          return Promise.resolve("java" as JavaLanguage);
+        }
+        return getJavaLanguageChoice(flags.javaLanguage);
+      },
       javaBuildTool: ({ results }) => {
         if (results.ecosystem !== "java") return Promise.resolve("none" as JavaBuildTool);
         return getJavaBuildToolChoice(flags.javaBuildTool);
@@ -1229,6 +1251,7 @@ export async function gatherConfig(
     goObservability: result.goObservability,
     // Java ecosystem options
     javaWebFramework: result.javaWebFramework,
+    javaLanguage: result.javaLanguage,
     javaBuildTool: result.javaBuildTool,
     javaOrm: result.javaOrm,
     javaAuth: result.javaAuth,

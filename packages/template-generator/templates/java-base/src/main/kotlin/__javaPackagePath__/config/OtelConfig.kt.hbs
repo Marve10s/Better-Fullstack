@@ -1,0 +1,41 @@
+package {{javaPackageName}}.config
+
+import io.opentelemetry.api.OpenTelemetry
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter
+import io.opentelemetry.sdk.OpenTelemetrySdk
+import io.opentelemetry.sdk.resources.Resource
+import io.opentelemetry.sdk.trace.SdkTracerProvider
+import io.opentelemetry.sdk.trace.export.BatchSpanProcessor
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+
+/**
+ * OpenTelemetry tracing with OTLP export.
+ *
+ * Set OTEL_EXPORTER_OTLP_ENDPOINT (defaults to http://localhost:4317).
+ */
+@Configuration
+class OtelConfig {
+
+    @Bean
+    fun openTelemetry(): OpenTelemetry {
+        val resource =
+            Resource.getDefault().merge(
+                Resource.create(
+                    Attributes.of(AttributeKey.stringKey("service.name"), "{{javaArtifactId}}"),
+                ),
+            )
+
+        val tracerProvider =
+            SdkTracerProvider.builder()
+                .addSpanProcessor(
+                    BatchSpanProcessor.builder(OtlpGrpcSpanExporter.builder().build()).build(),
+                )
+                .setResource(resource)
+                .build()
+
+        return OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).build()
+    }
+}

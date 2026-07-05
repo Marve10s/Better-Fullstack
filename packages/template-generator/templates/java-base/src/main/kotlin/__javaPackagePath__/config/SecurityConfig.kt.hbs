@@ -1,0 +1,46 @@
+package {{javaPackageName}}.config
+
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.security.config.Customizer
+import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.core.userdetails.User
+import org.springframework.security.core.userdetails.UserDetailsService
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.provisioning.InMemoryUserDetailsManager
+import org.springframework.security.web.SecurityFilterChain
+
+@Configuration
+class SecurityConfig {
+
+    @Bean
+    fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
+        http
+            .csrf { it.disable() }
+            .authorizeHttpRequests {
+                it.requestMatchers("/health").permitAll()
+                    .anyRequest().authenticated()
+            }
+            .httpBasic(Customizer.withDefaults())
+        return http.build()
+    }
+
+    @Bean
+    fun userDetailsService(
+        @Value("\${APP_BASIC_USERNAME:admin}") username: String,
+        @Value("\${APP_BASIC_PASSWORD:change-me}") password: String,
+        passwordEncoder: PasswordEncoder,
+    ): UserDetailsService {
+        val user =
+            User.withUsername(username)
+                .password(passwordEncoder.encode(password))
+                .roles("USER")
+                .build()
+        return InMemoryUserDetailsManager(user)
+    }
+
+    @Bean
+    fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
+}

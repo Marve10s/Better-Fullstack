@@ -176,6 +176,7 @@ export async function createVirtual(
       goObservability: options.goObservability || "none",
       javaWebFramework:
         options.javaWebFramework || (options.ecosystem === "java" ? "spring-boot" : "none"),
+      javaLanguage: options.javaLanguage || "java",
       javaBuildTool: options.javaBuildTool || (options.ecosystem === "java" ? "maven" : "none"),
       javaOrm: options.javaOrm || "none",
       javaAuth: options.javaAuth || "none",

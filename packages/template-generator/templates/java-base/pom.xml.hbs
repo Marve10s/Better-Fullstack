@@ -643,6 +643,16 @@
 			<artifactId>spring-boot-starter-log4j2</artifactId>
 		</dependency>
 {{/if}}
+{{#if isJavaKotlin}}
+		<dependency>
+			<groupId>org.jetbrains.kotlin</groupId>
+			<artifactId>kotlin-reflect</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.module</groupId>
+			<artifactId>jackson-module-kotlin</artifactId>
+		</dependency>
+{{/if}}
 {{#if hasJavaJpa}}
 		<dependency>
 			<groupId>com.h2database</groupId>
@@ -1054,6 +1064,10 @@
 	</dependencies>
 
 	<build>
+{{#if isJavaKotlin}}
+		<sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>
+		<testSourceDirectory>${project.basedir}/src/test/kotlin</testSourceDirectory>
+{{/if}}
 {{#if hasJavaGrpc}}
 		<extensions>
 			<!-- os-maven-plugin exposes ${os.detected.classifier}, used to select
@@ -1067,6 +1081,41 @@
 {{/if}}
 		<plugins>
 {{#if isJavaSpringBoot}}
+{{#if isJavaKotlin}}
+			<!-- Compiles src/main/kotlin. The Spring Boot parent manages the plugin
+			     version and its compile/test-compile executions; the all-open plugin
+			     opens @Component/@Configuration classes (required by Spring) and the
+			     no-arg plugin synthesizes the no-arg constructor JPA entities need. -->
+			<plugin>
+				<groupId>org.jetbrains.kotlin</groupId>
+				<artifactId>kotlin-maven-plugin</artifactId>
+				<configuration>
+					<args>
+						<arg>-Xjsr305=strict</arg>
+					</args>
+					<compilerPlugins>
+						<plugin>spring</plugin>
+{{#if hasJavaJpa}}
+						<plugin>jpa</plugin>
+{{/if}}
+					</compilerPlugins>
+				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>org.jetbrains.kotlin</groupId>
+						<artifactId>kotlin-maven-allopen</artifactId>
+						<version>${kotlin.version}</version>
+					</dependency>
+{{#if hasJavaJpa}}
+					<dependency>
+						<groupId>org.jetbrains.kotlin</groupId>
+						<artifactId>kotlin-maven-noarg</artifactId>
+						<version>${kotlin.version}</version>
+					</dependency>
+{{/if}}
+				</dependencies>
+			</plugin>
+{{/if}}
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>

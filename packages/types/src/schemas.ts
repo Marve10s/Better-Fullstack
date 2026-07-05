@@ -608,6 +608,10 @@ export const GoObservabilitySchema = z
   .describe("Go observability/tracing library");
 
 // Java ecosystem schemas
+export const JavaLanguageSchema = z
+  .enum(["java", "kotlin"])
+  .describe("JVM language variant for the Java ecosystem (java or kotlin)");
+
 export const JavaWebFrameworkSchema = z
   .enum(["spring-boot", "quarkus", "micronaut", "none"])
   .describe("Java web framework");
@@ -994,6 +998,7 @@ export const CreateInputSchema = z.object({
   goConfig: GoConfigSchema.optional(),
   goObservability: GoObservabilitySchema.optional(),
   // Java ecosystem options
+  javaLanguage: JavaLanguageSchema.optional(),
   javaWebFramework: JavaWebFrameworkSchema.optional(),
   javaBuildTool: JavaBuildToolSchema.optional(),
   javaOrm: JavaOrmSchema.optional(),
@@ -1163,6 +1168,7 @@ export const ProjectConfigSchema = z.object({
   goConfig: GoConfigSchema,
   goObservability: GoObservabilitySchema,
   // Java ecosystem options
+  javaLanguage: JavaLanguageSchema.optional(),
   javaWebFramework: JavaWebFrameworkSchema,
   javaBuildTool: JavaBuildToolSchema,
   javaOrm: JavaOrmSchema,
@@ -1319,6 +1325,7 @@ export const BetterTStackConfigSchema = z.object({
   goConfig: GoConfigSchema,
   goObservability: GoObservabilitySchema,
   // Java ecosystem options
+  javaLanguage: JavaLanguageSchema.optional(),
   javaWebFramework: JavaWebFrameworkSchema,
   javaBuildTool: JavaBuildToolSchema,
   javaOrm: JavaOrmSchema,
@@ -1485,6 +1492,7 @@ export const GO_MESSAGE_QUEUE_VALUES = GoMessageQueueSchema.options;
 export const GO_CACHING_VALUES = GoCachingSchema.options;
 export const GO_CONFIG_VALUES = GoConfigSchema.options;
 export const GO_OBSERVABILITY_VALUES = GoObservabilitySchema.options;
+export const JAVA_LANGUAGE_VALUES = JavaLanguageSchema.options;
 export const JAVA_WEB_FRAMEWORK_VALUES = JavaWebFrameworkSchema.options;
 export const JAVA_BUILD_TOOL_VALUES = JavaBuildToolSchema.options;
 export const JAVA_ORM_VALUES = JavaOrmSchema.options;

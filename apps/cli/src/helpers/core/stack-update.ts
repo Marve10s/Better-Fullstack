@@ -789,6 +789,7 @@ function buildCompatibilityInputFromConfig(config: ProjectConfig): Compatibility
     goCaching: asString(config.goCaching),
     goConfig: asString(config.goConfig),
     goObservability: asString(config.goObservability),
+    javaLanguage: asString(config.javaLanguage, "java"),
     javaWebFramework: asString(config.javaWebFramework),
     javaBuildTool: asString(config.javaBuildTool),
     javaOrm: asString(config.javaOrm),

@@ -1020,6 +1020,11 @@ function getJavaFlags(config: ProjectConfig) {
   const flags = ["--ecosystem java"];
 
   flags.push(`--java-web-framework ${config.javaWebFramework}`);
+  // Emit the language flag only for the non-default (Kotlin) variant so the
+  // reproducible command for every existing Java project stays byte-identical.
+  if (config.javaLanguage === "kotlin") {
+    flags.push(`--java-language ${config.javaLanguage}`);
+  }
   flags.push(`--java-build-tool ${config.javaBuildTool}`);
   flags.push(`--java-orm ${config.javaOrm}`);
   flags.push(`--java-auth ${config.javaAuth}`);

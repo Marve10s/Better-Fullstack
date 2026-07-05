@@ -1,0 +1,17 @@
+package {{javaPackageName}}
+
+import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.runApplication
+{{#if hasJavaCaffeine}}
+import org.springframework.cache.annotation.EnableCaching
+{{/if}}
+
+@SpringBootApplication
+{{#if hasJavaCaffeine}}
+@EnableCaching
+{{/if}}
+class Application
+
+fun main(args: Array<String>) {
+    runApplication<Application>(*args)
+}

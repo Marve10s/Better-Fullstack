@@ -1,0 +1,63 @@
+package {{javaPackageName}}.controller
+
+import java.time.Instant
+{{#if hasJavaValidation}}
+import jakarta.validation.Valid
+import jakarta.validation.constraints.Email
+import jakarta.validation.constraints.NotBlank
+{{/if}}
+import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.ResponseStatus
+import org.springframework.web.bind.annotation.RestController
+{{#unless hasJavaValidation}}
+import org.springframework.web.server.ResponseStatusException
+{{/unless}}
+import {{javaPackageName}}.domain.AppUser
+import {{javaPackageName}}.service.AppUserService
+
+@RestController
+@RequestMapping("/users")
+class UserController(private val userService: AppUserService) {
+
+    @GetMapping
+    fun listUsers(): List<UserResponse> = userService.findAll().map { UserResponse.from(it) }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+{{#if hasJavaValidation}}
+    fun createUser(@Valid @RequestBody request: CreateUserRequest): UserResponse {
+{{else}}
+    fun createUser(@RequestBody request: CreateUserRequest): UserResponse {
+        if (request.email.isNullOrBlank()) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "email is required")
+        }
+{{/if}}
+        val createdUser = userService.create(request.email, request.displayName)
+        return UserResponse.from(createdUser)
+    }
+
+{{#if hasJavaValidation}}
+    data class CreateUserRequest(
+        @field:NotBlank @field:Email val email: String?,
+        @field:NotBlank val displayName: String?,
+    )
+{{else}}
+    data class CreateUserRequest(val email: String?, val displayName: String?)
+{{/if}}
+
+    data class UserResponse(
+        val id: Long?,
+        val email: String,
+        val displayName: String,
+        val createdAt: Instant?,
+    ) {
+        companion object {
+            fun from(user: AppUser): UserResponse =
+                UserResponse(user.id, user.email, user.displayName, user.createdAt)
+        }
+    }
+}
