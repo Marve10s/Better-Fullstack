@@ -18,6 +18,9 @@ const SHARED_DOCS_CATEGORIES = new Set([
   "shadcnRadius",
   "shadcnStyle",
   "versionChannel",
+  // Project-structure mode (monorepo | single-app), not an external tech —
+  // no per-value docs/GitHub link, same treatment as the shadcn style modes.
+  "workspaceShape",
 ]);
 const LIVE_MODE = process.argv.includes("--live");
 

@@ -183,6 +183,9 @@ export function buildCommand(name: string, config: ProjectConfig): string {
   const reactNativeFlags: Array<[string, string | readonly string[]]> = [
     ["frontend", withExplicitNone(config.frontend)],
     ["auth", config.auth],
+    // Payments (RevenueCat) is native-applicable, so it must be passed explicitly
+    // or the CLI prompts for it and non-interactive scaffolds hang.
+    ["payments", config.payments],
     ["mobile-navigation", withExplicitScalar(config.mobileNavigation)],
     ["mobile-ui", withExplicitScalar(config.mobileUI)],
     ["mobile-storage", withExplicitScalar(config.mobileStorage)],
