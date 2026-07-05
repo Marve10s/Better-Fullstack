@@ -110,6 +110,24 @@ function logStackUpdateSummary(plan: StackUpdatePlan, dryRun: boolean) {
     log.info(pc.dim(`Adjusted: ${adjustment}`));
   }
 
+  if (plan.architectureChanges.length > 0) {
+    const swaps = plan.architectureChanges
+      .map((change) => `${change.key}: ${change.from} -> ${change.to}`)
+      .join(", ");
+    log.warn(pc.yellow(`Architecture change: ${swaps}`));
+    log.info(pc.dim("Data and schema are NOT migrated automatically. Migration checklist:"));
+    for (const step of plan.migrationSteps) {
+      log.info(pc.dim(`  - ${step}`));
+    }
+    if (dryRun && plan.requiresArchitectureAck) {
+      log.warn(
+        pc.yellow(
+          "Re-run with --acknowledge-architecture-change to apply this architecture change.",
+        ),
+      );
+    }
+  }
+
   for (const blocker of plan.manualReviewBlockers) {
     log.warn(pc.yellow(`Manual review: ${blocker}`));
   }

@@ -1045,6 +1045,7 @@ export const AddInputSchema = CreateInputSchema.omit({
   manualDb: true,
 }).extend({
   projectDir: z.string().optional(),
+  acknowledgeArchitectureChange: z.boolean().optional(),
 });
 
 export const CLIInputSchema = CreateInputSchema.extend({

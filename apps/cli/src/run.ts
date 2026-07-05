@@ -197,6 +197,12 @@ const AddCommandInputSchema = CreateCommandOptionsSchema.omit({
   manualDb: true,
 }).extend({
   projectDir: z.string().optional().describe("Project directory (defaults to current)"),
+  acknowledgeArchitectureChange: z
+    .boolean()
+    .optional()
+    .describe(
+      "Acknowledge that this update replaces an existing database/orm/auth/api/backend/runtime choice (data/schema migration required)",
+    ),
 });
 
 const ProjectCheckInputSchema = z.tuple([
