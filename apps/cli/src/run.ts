@@ -4,10 +4,11 @@ import pc from "picocolors";
 import { createCli } from "trpc-cli";
 import z from "zod";
 
+import type { AddResult } from "./helpers/core/add-handler";
+
 import { historyHandler } from "./commands/history";
 import { telemetryHandler } from "./commands/telemetry";
 import { CreateCommandInputSchema, CreateCommandOptionsSchema } from "./create-command-input";
-import type { AddResult } from "./helpers/core/add-handler";
 import { createProjectHandler } from "./helpers/core/command-handlers";
 import {
   type AddInput,
@@ -329,6 +330,29 @@ export const router = os.router({
         all: input.all,
         ecosystem: input.ecosystem,
       });
+    }),
+  gen: os
+    .meta({
+      description:
+        "Generate in-project code for an existing Better Fullstack project (e.g. `gen resource <name>` / `gen route <name>` for a new trpc/orpc API resource router)",
+    })
+    .input(
+      z.tuple([
+        z.enum(["resource", "route"]).describe("What to generate: resource (alias: route)"),
+        z.string().describe("Name of the resource/route (e.g. post)"),
+        z.object({
+          dir: z.string().optional().describe("Project directory (defaults to current)"),
+          dryRun: z
+            .boolean()
+            .default(false)
+            .describe("Print the planned changes without writing any files"),
+        }),
+      ]),
+    )
+    .handler(async ({ input }) => {
+      const [kind, name, options] = input;
+      const { genCommand } = await import("./commands/gen.js");
+      await genCommand({ kind, name, dir: options.dir, dryRun: options.dryRun });
     }),
   mcp: os
     .meta({

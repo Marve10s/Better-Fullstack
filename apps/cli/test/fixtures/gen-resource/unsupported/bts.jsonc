@@ -1,0 +1,38 @@
+// Better Fullstack configuration file
+// safe to delete
+// stackParts is the source of truth; graphSummary/effectiveStack summarize it for humans and tools.
+// Top-level option fields are a derived compatibility cache for older integrations.
+
+{
+  "$schema": "https://better-fullstack-web.vercel.app/schema.json",
+  "version": "2.1.5",
+  "createdAt": "2026-07-05T00:00:00.000Z",
+  "ecosystem": "go",
+  "database": "none",
+  "orm": "none",
+  "backend": "none",
+  "runtime": "none",
+  "frontend": ["none"],
+  "addons": [],
+  "examples": [],
+  "auth": "none",
+  "api": "none",
+  "packageManager": "bun",
+  "goWebFramework": "gin",
+  "goOrm": "none",
+  "goApi": "none",
+  "goCli": "none",
+  "goLogging": "none",
+  "goAuth": "none",
+  "goTesting": [],
+  "stackParts": [
+    {
+      "id": "backend:go:gin",
+      "role": "backend",
+      "toolId": "gin",
+      "ecosystem": "go",
+      "source": "legacy",
+      "targetPath": "apps/server",
+    },
+  ],
+}
