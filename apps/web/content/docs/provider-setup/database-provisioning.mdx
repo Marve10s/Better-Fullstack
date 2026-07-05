@@ -1,0 +1,49 @@
+---
+title: Database Provisioning
+description: Provision hosted databases for Better Fullstack — Turso, Neon, Supabase, PlanetScale, and more.
+---
+
+The `--db-setup` flag adds provider-specific configuration for a hosted database. You still create the database in the provider's dashboard or CLI, then paste the connection details into your `.env`. See [Environment Variables](/docs/provider-setup/environment-variables/) for how keys are loaded.
+
+## Provider quick reference
+
+| `--db-setup` | Engine | You provide |
+| --- | --- | --- |
+| `turso` | SQLite (libSQL) | Database URL and `TURSO_AUTH_TOKEN`. |
+| `neon` | Postgres | Serverless `DATABASE_URL`. |
+| `supabase` | Postgres | Connection string; pairs with Supabase Auth. |
+| `planetscale` | MySQL | Connection string (with SSL). |
+| `mongodb-atlas` | MongoDB | Atlas SRV connection string. |
+| `upstash` | Redis | REST URL and token. |
+| `prisma-postgres` | Postgres | Prisma Postgres connection string. |
+| `d1` | SQLite (Cloudflare) | D1 binding configured in Wrangler. |
+| `docker` | Local | A `docker-compose` database for local development. |
+
+## Provisioning steps
+
+Most hosted providers follow the same flow:
+
+1. Create the database in the provider dashboard or CLI.
+2. Copy the connection string (and any auth token).
+3. Paste it into `.env` as `DATABASE_URL` (plus provider-specific keys).
+4. Run your ORM's migration/generate command to create the schema.
+
+Provider notes:
+
+- **Turso** — create a database with the Turso CLI, then run `turso db show` to get the URL and `turso db tokens create` for the token.
+- **Neon / Supabase / Prisma Postgres** — copy the pooled Postgres connection string from the dashboard.
+- **PlanetScale** — create a branch and copy its connection string; PlanetScale requires SSL.
+- **MongoDB Atlas** — create a cluster and a database user, then copy the SRV URI.
+- **Upstash** — create a Redis database and copy the REST URL and token for serverless access.
+- **Cloudflare D1** — create the database with Wrangler and bind it in `wrangler.toml`.
+- **Docker** — no external account needed; bring the local database up with `docker compose up -d`.
+
+## Local development first
+
+If you just want to build, `--db-setup none` with a local SQLite file (or `--db-setup docker`) gets you running without any hosted account. Switch to a hosted provider when you deploy.
+
+## Next steps
+
+- Pick the right ORM in the [Database and ORM Pairing](/docs/stack-guides/database-orm-pairing/) guide.
+- Configure secrets with the [Environment Variables](/docs/provider-setup/environment-variables/) guide.
+- Read the [Data and Storage](/docs/sections/data-and-storage/) section overview.

@@ -1,0 +1,40 @@
+---
+title: Backend Frameworks
+description: Compare Better Fullstack backend frameworks across runtimes, APIs, and fullstack modes to pick the right server.
+---
+
+The TypeScript `--backend` flag selects the server framework that hosts your API, auth, and integrations. This guide groups the options by how they run; see the [Compatibility Matrix](/docs/reference/compatibility/) for any exact pairing.
+
+## Backend options
+
+| Backend | Character | Notes |
+| --- | --- | --- |
+| `hono` | Small, fast, runs on Bun, Node, and Workers. | The scaffolded default; broadest runtime support. |
+| `express` | The classic Node framework. | Largest ecosystem, Node runtime. |
+| `fastify` | High-throughput Node framework with schemas. | Good for JSON APIs. |
+| `elysia` | Bun-first framework with end-to-end types. | Best on the Bun runtime. |
+| `fets` | Fetch-API framework with OpenAPI. | Standards-based handlers. |
+| `effect` | Effect-based HTTP platform. | Pairs with the `--effect` capability flags. |
+| `nestjs` | Opinionated, decorator-driven framework. | Requires `--runtime node`. |
+| `adonisjs` | Full MVC framework with its own tooling. | Requires `--runtime node`. |
+| `nitro` | Universal server toolkit. | Deploys to many targets. |
+| `encore` | Backend framework with built-in infra. | Encore.ts workflow. |
+| `convex` | Reactive backend-as-a-service. | Replaces backend-owned database/API choices. |
+| `self` | The frontend serves its own API. | Requires `--runtime none` and a fullstack frontend. |
+
+## Runtime and API interactions
+
+- **Runtime.** Most backends run on `bun` or `node`; `hono` also targets `workers`. `nestjs` and `adonisjs` require `--runtime node`. `self` requires `--runtime none`.
+- **API layer.** tRPC is React-oriented. oRPC works across frontends. GraphQL (`garph`, `graphql-yoga`, `apollo-server`) and `openapi` are available where templates support them.
+- **Convex.** Selecting `convex` auto-adjusts the stack because it owns the database and API surface.
+- **Effect.** Choose `effect` as the backend, or layer Effect onto another backend with `--effect effect` / `--effect effect-full`.
+
+## Choosing a backend
+
+Start with `hono` for portability, `elysia` if you are all-in on Bun, `nestjs`/`adonisjs` for a structured Node app, or `convex` when you want managed realtime data. For fullstack frameworks like Next.js or TanStack Start, `--backend self` avoids running a second server.
+
+## Next steps
+
+- See all values on the [TypeScript options](/docs/reference/options/typescript/) page.
+- Pick a client from the [Frontend Frameworks](/docs/stack-guides/frontend-frameworks/) guide.
+- Wire data with the [Database and ORM Pairing](/docs/stack-guides/database-orm-pairing/) guide.

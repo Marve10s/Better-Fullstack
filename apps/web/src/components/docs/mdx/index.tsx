@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 
 import { BenchBarChart } from "./bench-bar-chart";
 import { Callout } from "./callout";
+import { CliFlagTable } from "./cli-flags-table";
 import { CodeBlock } from "./code-block";
 import { CompatibilityMatrix } from "./compatibility-matrix";
 import { GuideCompatibilityNote } from "./guide-compatibility-note";
@@ -30,6 +31,7 @@ export const mdxComponents: Record<string, ComponentType<any>> = {
   BenchBarChart,
   Callout,
   CategoryCount,
+  CliFlagTable,
   CompatibilityMatrix,
   GuideCompatibilityNote,
   GuideStackSnapshot,

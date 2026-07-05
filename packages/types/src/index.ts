@@ -4,6 +4,7 @@ export * from "./types";
 export * from "./capabilities";
 export * from "./compatibility";
 export * from "./option-metadata";
+export * from "./cli-flags";
 export * from "./local-dev";
 export * from "./defaults";
 export * from "./stack-translation";

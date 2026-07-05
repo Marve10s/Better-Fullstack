@@ -1,0 +1,43 @@
+---
+title: Database and ORM Pairing
+description: Which ORM pairs with each database in Better Fullstack, plus provider and auth-adapter notes.
+---
+
+The `--database` and `--orm` flags are chosen together. Not every ORM supports every engine, and a few ORMs affect which auth providers you can use. Treat the table below as guidance and the [Compatibility Matrix](/docs/reference/compatibility/) as authoritative.
+
+## Databases
+
+`--database` accepts `sqlite`, `postgres`, `mysql`, `mongodb`, `edgedb`, `redis`, or `none`. Relational engines cover most apps; `mongodb` is document-based; `redis` is key-value.
+
+## ORM support by engine
+
+| ORM | SQLite | Postgres | MySQL | MongoDB |
+| --- | --- | --- | --- | --- |
+| `drizzle` | Yes | Yes | Yes | No |
+| `prisma` | Yes | Yes | Yes | Yes |
+| `kysely` | Yes | Yes | Yes | No |
+| `mikroorm` | Yes | Yes | Yes | No |
+| `typeorm` | Yes | Yes | Yes | No |
+| `sequelize` | Yes | Yes | Yes | No |
+| `mongoose` | No | No | No | Yes |
+
+MongoDB pairs with `prisma` or `mongoose`. The relational ORMs pair with `sqlite`, `postgres`, and `mysql`.
+
+## Auth adapter caveats
+
+Some ORMs lack a Better Auth adapter:
+
+- `typeorm` + `better-auth` is unsupported — use `--auth none` or a different ORM.
+- `sequelize` + `better-auth` is unsupported — use `--auth none` or a different ORM.
+
+`drizzle`, `prisma`, `kysely`, and `mikroorm` all work with Better Auth. See the [Auth Providers](/docs/stack-guides/auth-providers/) guide for the full picture.
+
+## Hosted provider setup
+
+`--db-setup` layers provider configuration onto your database choice — Turso, Neon, Prisma Postgres, PlanetScale, MongoDB Atlas, Supabase, Upstash, Cloudflare D1, or Docker. Follow the [Database Provisioning](/docs/provider-setup/database-provisioning/) guide to create and connect each one.
+
+## Next steps
+
+- Browse every value on the [TypeScript options](/docs/reference/options/typescript/) page.
+- Read the [Data and Storage](/docs/sections/data-and-storage/) section overview.
+- Provision a hosted database with the [Database Provisioning](/docs/provider-setup/database-provisioning/) guide.

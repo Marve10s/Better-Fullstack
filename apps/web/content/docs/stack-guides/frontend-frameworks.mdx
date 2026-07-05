@@ -1,0 +1,35 @@
+---
+title: Frontend Frameworks
+description: Compare the TypeScript web frontends Better Fullstack scaffolds and how each shapes API, runtime, and deployment choices.
+---
+
+Better Fullstack scaffolds fifteen TypeScript web frontends. They fall into a few families, and your choice narrows the compatible backend, API, runtime, and deployment options. This guide helps you pick one; the [Compatibility Matrix](/docs/reference/compatibility/) is authoritative for any specific combination.
+
+## Framework families
+
+| Family | Frameworks | Choose it when |
+| --- | --- | --- |
+| React SPA | `tanstack-router`, `react-router`, `react-vite` | You want a client-rendered React app with a separate backend. |
+| React fullstack | `tanstack-start`, `next`, `vinext`, `redwood` | You want SSR/RSC and can run the frontend as its own server. |
+| Vue / Nuxt | `nuxt` | You prefer Vue with an integrated server. |
+| Svelte / Solid | `svelte` (SvelteKit), `solid`, `solid-start` | You want a compiler-first framework with fine-grained reactivity. |
+| Content / edge | `astro`, `qwik`, `fresh` | You lead with content or want minimal client JavaScript. |
+| Angular | `angular` | You want Angular's batteries-included framework and built-in HttpClient. |
+
+## How the frontend narrows the stack
+
+- **API layer.** tRPC (`--api trpc`) only works with React-based frontends. Use `--api orpc` (or another value) for Svelte, Solid, Vue, and Qwik.
+- **Fullstack `backend self`.** `--backend self` pairs with `next`, `vinext`, `tanstack-start`, `astro`, `nuxt`, `svelte`, and `solid-start`, and requires `--runtime none` — the frontend serves its own API routes.
+- **Qwik and Angular.** Qwik ships its own server (`--backend none --api none`). Angular has a built-in HttpClient, so it uses `--api none`.
+- **Astro.** Astro needs an island framework: pass `--astro-integration <react|vue|svelte|solid|none>`.
+- **Workers runtime.** `--runtime workers` support depends on the frontend/backend pair. Check the matrix before committing to the edge.
+
+## Picking a default
+
+If you are unsure, `tanstack-router` with a `hono` backend is the scaffolded default and works across runtimes. For a batteries-included fullstack app, `next` or `tanstack-start` with `--backend self` keeps everything in one deployable unit.
+
+## Next steps
+
+- Review every value on the [TypeScript options](/docs/reference/options/typescript/) page.
+- Pair a server from the [Backend Frameworks](/docs/stack-guides/backend-frameworks/) guide.
+- Build a stack visually in the [Stack Builder](/new).

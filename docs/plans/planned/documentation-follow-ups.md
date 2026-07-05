@@ -12,19 +12,19 @@ Canonical user-facing docs live in `apps/web/content/docs`. Planning docs under 
 
 ## CLI Reference
 
-- [ ] Generate flag/default data from CLI definitions or shared schemas where possible
+- [x] Generate flag/default data from CLI definitions or shared schemas where possible — `packages/types/src/cli-flags.ts` is the shared schema source; `apps/web/scripts/generate-cli-flags-data.ts` (wired into `prebuild` via `docs:cli-flags`) emits `apps/web/src/lib/docs/cli-flags-data.ts`, rendered by `<CliFlagTable>` in `content/docs/cli/create.mdx`
 
 ## Stack Guides
 
-- [ ] Add deeper frontend framework guides
-- [ ] Add backend framework guides
-- [ ] Add database + ORM pairing guide
-- [ ] Add auth provider comparison
+- [x] Add deeper frontend framework guides — `content/docs/stack-guides/frontend-frameworks.mdx`
+- [x] Add backend framework guides — `content/docs/stack-guides/backend-frameworks.mdx`
+- [x] Add database + ORM pairing guide — `content/docs/stack-guides/database-orm-pairing.mdx`
+- [x] Add auth provider comparison — `content/docs/stack-guides/auth-providers.mdx`
 
 ## Section Guides
 
-- [ ] Add environment-variable setup per provider
-- [ ] Add database provisioning guides for Turso, Neon, Supabase, PlanetScale, and other supported providers
+- [x] Add environment-variable setup per provider — `content/docs/provider-setup/environment-variables.mdx`
+- [x] Add database provisioning guides for Turso, Neon, Supabase, PlanetScale, and other supported providers — `content/docs/provider-setup/database-provisioning.mdx`
 
 ## Next Documentation Updates
 

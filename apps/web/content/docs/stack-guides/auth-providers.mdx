@@ -1,0 +1,38 @@
+---
+title: Auth Provider Comparison
+description: Compare Better Fullstack auth providers and the stack requirements each one brings.
+---
+
+The `--auth` flag chooses how generated apps handle identity. Providers range from self-hosted (you own the tables) to fully hosted identity platforms. This guide compares them; the [Compatibility Matrix](/docs/reference/compatibility/) is authoritative for exact requirements.
+
+## TypeScript auth providers
+
+| Provider | Hosting | Notes |
+| --- | --- | --- |
+| `better-auth` | Self-hosted | Owns tables in your database; needs a Better Auth-compatible ORM. |
+| `better-auth-organizations` | Self-hosted | Better Auth plus the organizations/teams plugin. |
+| `clerk` | Hosted | Drop-in components and hosted user management. |
+| `nextauth` | Self-hosted | Auth.js; strongest fit for Next.js. |
+| `stack-auth` | Hosted | Hosted auth with a generous free tier. |
+| `supabase-auth` | Hosted | Pairs naturally with Supabase Postgres. |
+| `auth0` | Hosted IdP | Enterprise identity provider. |
+| `workos` | Hosted IdP | AuthKit and enterprise SSO. |
+| `kinde` | Hosted IdP | Hosted auth and feature flags. |
+
+Other ecosystems expose native helpers: Go uses `--auth go-better-auth` or `--go-auth`; Python uses `--python-auth`; Rust uses `--rust-auth`; Java uses `--java-auth`; Elixir uses `--elixir-auth`.
+
+## Stack requirements
+
+- **Better Auth needs an adapter.** It works with `drizzle`, `prisma`, `kysely`, and `mikroorm`, but not with `typeorm` or `sequelize`. See [Database and ORM Pairing](/docs/stack-guides/database-orm-pairing/).
+- **Payments can require Better Auth.** For example, Polar requires Better Auth and a web frontend. Review the [Auth and Payments](/docs/sections/auth-and-payments/) section.
+- **Hosted providers need keys.** Clerk, Auth0, WorkOS, Kinde, Stack Auth, and Supabase Auth read credentials from environment variables — see [Environment Variables](/docs/provider-setup/environment-variables/).
+
+## Choosing a provider
+
+Pick `better-auth` when you want to own the data and already use a supported ORM, `clerk` or `stack-auth` for the fastest hosted setup, `supabase-auth` when you are on Supabase, and `auth0`/`workos`/`kinde` when you need enterprise SSO.
+
+## Next steps
+
+- See every value on the [TypeScript options](/docs/reference/options/typescript/) page.
+- Read the [Auth and Payments](/docs/sections/auth-and-payments/) section overview.
+- Configure credentials with the [Environment Variables](/docs/provider-setup/environment-variables/) guide.

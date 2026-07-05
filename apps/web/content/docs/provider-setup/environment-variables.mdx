@@ -1,0 +1,45 @@
+---
+title: Environment Variables
+description: How generated projects load environment variables and the keys each provider integration expects.
+---
+
+Better Fullstack generates a `.env.example` (and, where applicable, a validated env module) for the integrations in your stack. After scaffolding, copy the example to `.env` and fill in real values before running the app.
+
+## How env loading works
+
+- Each generated app reads environment variables at startup. Server frameworks load `.env` automatically or through their standard config.
+- The scaffold writes a `.env.example` listing every key your selected providers need, with placeholder values.
+- Client-exposed values use the framework's public prefix (for example `VITE_`, `NEXT_PUBLIC_`, or `PUBLIC_`). Never put secrets behind a public prefix.
+
+```bash
+cp .env.example .env
+# then edit .env with your real credentials
+```
+
+## Keys by category
+
+The exact keys depend on your selections. Common ones include:
+
+| Category | Typical keys |
+| --- | --- |
+| Database | `DATABASE_URL` (plus provider tokens like `TURSO_AUTH_TOKEN`). |
+| Auth (Better Auth) | `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`. |
+| Auth (hosted) | Provider client id/secret, e.g. `CLERK_SECRET_KEY`, `AUTH0_CLIENT_ID`. |
+| Payments | Provider secret + webhook secret, e.g. `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`. |
+| Email | Provider API key, e.g. `RESEND_API_KEY`. |
+| Caching | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` or `REDIS_URL`. |
+| File storage | `S3_*` / `R2_*` bucket, key, and secret values. |
+| Observability / analytics | Provider DSN or token, e.g. `SENTRY_DSN`. |
+
+## Good practices
+
+- Keep `.env` out of version control — the scaffold's `.gitignore` already excludes it.
+- Generate strong secrets for keys like `BETTER_AUTH_SECRET` (for example `openssl rand -base64 32`).
+- Set the same keys in your hosting provider's dashboard for production; do not ship `.env` to production.
+- If your stack includes env validation, missing or malformed keys fail fast at startup with a clear message.
+
+## Next steps
+
+- Create hosted databases in the [Database Provisioning](/docs/provider-setup/database-provisioning/) guide.
+- Match keys to providers via the [Auth Provider Comparison](/docs/stack-guides/auth-providers/).
+- Review provider-sensitive options on the [TypeScript options](/docs/reference/options/typescript/) page.

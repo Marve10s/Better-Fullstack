@@ -1,0 +1,5 @@
+{
+  "title": "Provider Setup",
+  "defaultOpen": false,
+  "pages": ["environment-variables", "database-provisioning"]
+}

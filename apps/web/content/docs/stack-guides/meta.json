@@ -1,0 +1,10 @@
+{
+  "title": "Stack Guides",
+  "defaultOpen": false,
+  "pages": [
+    "frontend-frameworks",
+    "backend-frameworks",
+    "database-orm-pairing",
+    "auth-providers"
+  ]
+}
