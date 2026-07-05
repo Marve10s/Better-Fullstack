@@ -1,5 +1,5 @@
 import './unistyles';
-{{#if (eq mobileNavigation "react-navigation")}}
+{{#if (or (eq mobileNavigation "react-navigation") (eq mobileNavigation "none"))}}
 import { registerRootComponent } from 'expo';
 import App from './App';
 
