@@ -2199,6 +2199,24 @@ export const TECH_OPTIONS: Record<
       color: "from-sky-500 to-sky-700",
     },
   ],
+  workspaceShape: [
+    {
+      id: "monorepo",
+      name: "Monorepo",
+      description: "apps/* + packages/* workspaces",
+      icon: "",
+      color: "from-slate-500 to-slate-700",
+      default: true,
+    },
+    {
+      id: "single-app",
+      name: "Single App",
+      description: "Flat root app (no workspaces); thin self apps only",
+      icon: "",
+      color: "from-teal-500 to-teal-700",
+      isNew: true,
+    },
+  ],
   versionChannel: [
     {
       id: "stable",

@@ -87,6 +87,7 @@ export async function createVirtual(
       effect: options.effect || "none",
       git: options.git ?? false,
       packageManager: options.packageManager || "bun",
+      workspaceShape: options.workspaceShape || "monorepo",
       versionChannel: options.versionChannel || "stable",
       install: false,
       dbSetup: options.dbSetup || "none",

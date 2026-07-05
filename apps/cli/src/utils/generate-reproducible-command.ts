@@ -35,6 +35,9 @@ function appendCommonFlags(flags: string[], config: ProjectConfig) {
 
   flags.push(config.git ? "--git" : "--no-git");
   flags.push(`--package-manager ${config.packageManager}`);
+  if (config.workspaceShape && config.workspaceShape !== "monorepo") {
+    flags.push(`--workspace-shape ${config.workspaceShape}`);
+  }
   if (config.versionChannel !== "stable") {
     flags.push(`--version-channel ${config.versionChannel}`);
   }

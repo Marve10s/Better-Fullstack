@@ -85,6 +85,7 @@ import {
   ObservabilitySchema,
   ORMSchema,
   PackageManagerSchema,
+  WorkspaceShapeSchema,
   PaymentsSchema,
   ProjectNameSchema,
   PythonAiSchema,
@@ -226,6 +227,9 @@ export const CreateCommandOptionsSchema = z.object({
   examples: z.array(ExamplesSchema).optional(),
   git: z.boolean().optional(),
   packageManager: PackageManagerSchema.optional(),
+  workspaceShape: WorkspaceShapeSchema.optional().describe(
+    "Workspace layout: monorepo (default) or single-app (flat root app; only for a thin self app)",
+  ),
   install: z.boolean().optional(),
   versionChannel: VersionChannelSchema.optional().describe(
     "Dependency version channel (stable, latest, beta)",

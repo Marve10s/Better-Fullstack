@@ -486,6 +486,7 @@ const MCP_COMPATIBILITY_DEFAULTS = {
   mobilePush: "none",
   mobileOTA: "none",
   packageManager: "bun",
+  workspaceShape: "monorepo",
   versionChannel: "stable",
   examples: [],
   aiSdk: "none",

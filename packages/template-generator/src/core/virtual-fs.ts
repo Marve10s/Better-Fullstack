@@ -51,6 +51,42 @@ export class VirtualFileSystem {
     return this._files.delete(path);
   }
 
+  /**
+   * Recursively removes a directory and every file/subdirectory beneath it,
+   * including the directory entry itself (so it no longer appears in the tree).
+   */
+  removeDir(dirPath: string): void {
+    const path = this.normalizePath(dirPath);
+    if (path === "/") return;
+    const prefix = `${path}/`;
+
+    const filesToDelete: string[] = [];
+    for (const filePath of this._files.keys()) {
+      if (filePath === path || filePath.startsWith(prefix)) {
+        filesToDelete.push(filePath);
+      }
+    }
+    for (const filePath of filesToDelete) {
+      this._files.delete(filePath);
+      this._sourcePathMap.delete(filePath);
+    }
+
+    const dirsToDelete: string[] = [];
+    for (const dir of this._dirs) {
+      if (dir === path || dir.startsWith(prefix)) {
+        dirsToDelete.push(dir);
+      }
+    }
+    for (const dir of dirsToDelete) {
+      this._dirs.delete(dir);
+    }
+  }
+
+  /** Returns the original template source path for a binary file, if tracked. */
+  getSourcePath(filePath: string): string | undefined {
+    return this._sourcePathMap.get(this.normalizePath(filePath));
+  }
+
   listDir(dirPath: string): string[] {
     const dir = this.normalizePath(dirPath) || "/";
     const names = new Set<string>();

@@ -9,6 +9,7 @@ import type {
   AddonsSchema,
   ExamplesSchema,
   PackageManagerSchema,
+  WorkspaceShapeSchema,
   VersionChannelSchema,
   DatabaseSetupSchema,
   APISchema,
@@ -157,6 +158,7 @@ export type Frontend = z.infer<typeof FrontendSchema>;
 export type Addons = z.infer<typeof AddonsSchema>;
 export type Examples = z.infer<typeof ExamplesSchema>;
 export type PackageManager = z.infer<typeof PackageManagerSchema>;
+export type WorkspaceShape = z.infer<typeof WorkspaceShapeSchema>;
 export type VersionChannel = z.infer<typeof VersionChannelSchema>;
 export type DatabaseSetup = z.infer<typeof DatabaseSetupSchema>;
 export type API = z.infer<typeof APISchema>;

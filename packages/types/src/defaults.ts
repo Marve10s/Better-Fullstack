@@ -23,6 +23,7 @@ export function createCliDefaultProjectConfigBase(
     effect: "none",
     git: true,
     packageManager,
+    workspaceShape: "monorepo",
     versionChannel: "stable",
     install: true,
     dbSetup: "none",

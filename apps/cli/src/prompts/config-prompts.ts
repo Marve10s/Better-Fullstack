@@ -81,6 +81,7 @@ import type {
   Observability,
   ORM,
   PackageManager,
+  WorkspaceShape,
   Payments,
   ProjectConfig,
   RateLimit,
@@ -226,6 +227,7 @@ import { navigableGroup } from "./navigable-group";
 import { getObservabilityChoice } from "./observability";
 import { getORMChoice } from "./orm";
 import { getPackageManagerChoice } from "./package-manager";
+import { getWorkspaceShapeChoice } from "./workspace-shape";
 import { getPaymentsChoice } from "./payments";
 import { getRateLimitChoice } from "./rate-limit";
 import {
@@ -406,6 +408,7 @@ type PromptGroupResults = {
   // Keep at end
   aiDocs: AiDocs[];
   git: boolean;
+  workspaceShape: WorkspaceShape;
   packageManager: PackageManager;
   install: boolean;
 };
@@ -1101,6 +1104,8 @@ export async function gatherConfig(
       // Keep at end
       aiDocs: () => getAiDocsChoice(flags.aiDocs),
       git: () => getGitChoice(flags.git),
+      workspaceShape: ({ results }) =>
+        getWorkspaceShapeChoice(flags.workspaceShape, results.backend, results.frontend),
       packageManager: ({ results }) => {
         // Skip package manager prompt for non-JS ecosystems.
         if (
@@ -1143,6 +1148,7 @@ export async function gatherConfig(
     examples: result.examples,
     git: result.git,
     packageManager: result.packageManager,
+    workspaceShape: result.workspaceShape,
     install: result.install,
     dbSetup: result.dbSetup,
     api: result.api,

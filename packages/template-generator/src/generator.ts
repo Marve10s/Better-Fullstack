@@ -8,7 +8,13 @@ import {
 import type { GeneratorOptions, GeneratorResult, VirtualFileTree } from "./types";
 
 import { VirtualFileSystem } from "./core/virtual-fs";
-import { processCatalogs, processPackageConfigs, updateDbPackageJson } from "./post-process";
+import {
+  flattenSingleApp,
+  processCatalogs,
+  processPackageConfigs,
+  qualifiesForSingleApp,
+  updateDbPackageJson,
+} from "./post-process";
 import {
   processDatabaseDeps,
   processDependencies,
@@ -320,6 +326,13 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
       await processParaglidePlugins(vfs, config);
       await processPwaPlugins(vfs, config);
       processCatalogs(vfs, config);
+
+      // Collapse the monorepo layout into a flat single-app repo when the stack
+      // qualifies (thin self app). Runs last so it operates on the complete,
+      // valid monorepo tree; a no-op for the default monorepo shape.
+      if (qualifiesForSingleApp(config)) {
+        flattenSingleApp(vfs, config);
+      }
     }
 
     if (

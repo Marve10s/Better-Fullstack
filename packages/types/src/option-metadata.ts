@@ -78,6 +78,7 @@ import {
   OBSERVABILITY_VALUES,
   ORM_VALUES,
   PACKAGE_MANAGER_VALUES,
+  WORKSPACE_SHAPE_VALUES,
   PAYMENTS_VALUES,
   VERSION_CHANNEL_VALUES,
   PYTHON_AI_VALUES,
@@ -176,6 +177,7 @@ export type OptionCategory =
   | "documentation"
   | "appPlatforms"
   | "packageManager"
+  | "workspaceShape"
   | "versionChannel"
   | "examples"
   | "ai"
@@ -325,6 +327,7 @@ export const TYPESCRIPT_CATEGORY_ORDER = [
   "codeQuality",
   "documentation",
   "appPlatforms",
+  "workspaceShape",
   "packageManager",
   "examples",
   "aiDocs",
@@ -774,6 +777,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   documentation: DOCUMENTATION_VALUES,
   appPlatforms: APP_PLATFORM_VALUES,
   packageManager: PACKAGE_MANAGER_VALUES,
+  workspaceShape: WORKSPACE_SHAPE_VALUES,
   versionChannel: VERSION_CHANNEL_VALUES,
   examples: EXAMPLE_VALUES,
   ai: AI_VALUES,
@@ -1691,6 +1695,7 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   documentation: buildCategoryMetadata("documentation"),
   appPlatforms: buildCategoryMetadata("appPlatforms"),
   packageManager: buildCategoryMetadata("packageManager"),
+  workspaceShape: buildCategoryMetadata("workspaceShape"),
   versionChannel: buildCategoryMetadata("versionChannel"),
   examples: buildCategoryMetadata("examples"),
   ai: buildCategoryMetadata("ai"),

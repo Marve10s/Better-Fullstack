@@ -107,6 +107,7 @@ const CREATE_ONLY_KEYS = new Set([
   "renderTitle",
   "disableAnalytics",
   "manualDb",
+  "workspaceShape",
 ]);
 
 const NON_TS_BASE_CONFIG: Partial<ProjectConfig> = {

@@ -195,6 +195,8 @@ const AddCommandInputSchema = CreateCommandOptionsSchema.omit({
   renderTitle: true,
   disableAnalytics: true,
   manualDb: true,
+  // Workspace shape is a create-time structural choice, not a stack update.
+  workspaceShape: true,
 }).extend({
   projectDir: z.string().optional().describe("Project directory (defaults to current)"),
   acknowledgeArchitectureChange: z

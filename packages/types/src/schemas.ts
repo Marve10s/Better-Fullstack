@@ -189,6 +189,10 @@ export const VersionChannelSchema = z
   .enum(["stable", "latest", "beta"])
   .describe("Dependency version channel");
 
+export const WorkspaceShapeSchema = z
+  .enum(["monorepo", "single-app"])
+  .describe("Workspace layout: monorepo (apps/* + packages/*) or single-app (flat root app)");
+
 export const DatabaseSetupSchema = z
   .enum([
     "turso",
@@ -894,6 +898,7 @@ export const CreateInputSchema = z.object({
   examples: z.array(ExamplesSchema).optional(),
   git: z.boolean().optional(),
   packageManager: PackageManagerSchema.optional(),
+  workspaceShape: WorkspaceShapeSchema.optional(),
   versionChannel: VersionChannelSchema.optional(),
   install: z.boolean().optional(),
   dbSetup: DatabaseSetupSchema.optional(),
@@ -1068,6 +1073,7 @@ export const ProjectConfigSchema = z.object({
   payments: PaymentsSchema,
   git: z.boolean(),
   packageManager: PackageManagerSchema,
+  workspaceShape: WorkspaceShapeSchema.optional(),
   versionChannel: VersionChannelSchema,
   install: z.boolean(),
   dbSetup: DatabaseSetupSchema,
@@ -1224,6 +1230,7 @@ export const BetterTStackConfigSchema = z.object({
   auth: AuthSchema,
   payments: PaymentsSchema,
   packageManager: PackageManagerSchema,
+  workspaceShape: WorkspaceShapeSchema.optional(),
   versionChannel: VersionChannelSchema,
   dbSetup: DatabaseSetupSchema,
   api: APISchema,
@@ -1395,6 +1402,7 @@ export const FRONTEND_VALUES = FrontendSchema.options;
 export const ADDONS_VALUES = AddonsSchema.options;
 export const EXAMPLES_VALUES = ExamplesSchema.options;
 export const PACKAGE_MANAGER_VALUES = PackageManagerSchema.options;
+export const WORKSPACE_SHAPE_VALUES = WorkspaceShapeSchema.options;
 export const VERSION_CHANNEL_VALUES = VersionChannelSchema.options;
 export const DATABASE_SETUP_VALUES = DatabaseSetupSchema.options;
 export const API_VALUES = APISchema.options;

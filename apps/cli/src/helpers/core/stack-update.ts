@@ -116,6 +116,9 @@ const NON_STACK_UPDATE_CREATE_KEYS = new Set([
   "renderTitle",
   "disableAnalytics",
   "manualDb",
+  // Workspace shape is a create-time structural choice; converting an existing
+  // project between monorepo and single-app is out of scope for stack updates.
+  "workspaceShape",
 ]);
 
 export const SUPPORTED_STACK_UPDATE_KEYS = Object.keys(CreateCommandOptionsSchema.shape)
@@ -735,6 +738,7 @@ function buildCompatibilityInputFromConfig(config: ProjectConfig): Compatibility
     documentation,
     appPlatforms,
     packageManager: asString(config.packageManager, "bun"),
+    workspaceShape: asString(config.workspaceShape, "monorepo"),
     versionChannel: asString(config.versionChannel, "stable"),
     examples: asStringArray(config.examples),
     aiSdk: asString(config.ai),

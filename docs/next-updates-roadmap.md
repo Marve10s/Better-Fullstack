@@ -121,7 +121,12 @@ These are still open after the docs refresh:
 - Data/storage: Supabase Storage, InstantDB, raw SQL/no-ORM mode.
 - i18n/browser/desktop: Intlayer, Plasmo, Electrobun.
 - API/runtime: Effect HTTP.
-- Workspace shape: non-monorepo / single-app mode.
+- Workspace shape: non-monorepo / single-app mode — MVP landed. `--workspace-shape single-app`
+  (default `monorepo`) collapses a qualifying "thin self" stack (backend `self` with a single
+  Next.js or TanStack Start web frontend and no sibling-package capability) into a flat root app;
+  every other stack normalizes back to `monorepo`. Follow-ups: self-nuxt flat support (needs a
+  `~/env` alias convention), and a broad flatten that inlines `packages/db`/`packages/auth`/
+  `packages/api` and non-self backends.
 - Mobile depth: Capacitor, TanStack Query mobile offline defaults, Legend State/offline data.
 - Ecosystem depth: Go stdlib and Bun ORM, Rust Loco/Poem and Kafka, Java Micronaut/gRPC/log4j2,
   Python search category, Elixir validation/deploy-depth passes.
