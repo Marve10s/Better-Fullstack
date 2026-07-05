@@ -1,8 +1,10 @@
-import { Check, Pencil, Zap } from "lucide-react";
+import { Check, Pencil, Sparkles, Zap } from "lucide-react";
+import { useState } from "react";
 
 import type { StackState } from "@/lib/constant";
 import { PRESET_CATEGORIES, PRESET_TEMPLATES } from "@/lib/constant";
 import { getLocalizedPresetTemplate } from "@/lib/i18n/builder-copy";
+import { recommendPresetFromBrief } from "@/lib/recommend-preset";
 import { DEFAULT_STACK } from "@/lib/stack-defaults";
 import { TechIcon } from "@/components/stack-builder/tech-icon";
 import { getStarterTracksForEcosystem, type StarterTrack } from "@/lib/starter-tracks";
@@ -204,6 +206,17 @@ export function PresetsPanel({ stack, ecosystem, onApplyPreset, onCustomizePrese
   );
   const starterTracks = getStarterTracksForEcosystem(ecosystem);
 
+  const [brief, setBrief] = useState("");
+  const [promptRationale, setPromptRationale] = useState<string | null>(null);
+
+  const handleSuggestFromBrief = () => {
+    const trimmed = brief.trim();
+    if (trimmed.length === 0) return;
+    const recommendation = recommendPresetFromBrief(trimmed, filteredPresets);
+    setPromptRationale(recommendation.rationale);
+    onApplyPreset(recommendation.presetId);
+  };
+
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <div className="flex items-center gap-2 border-b border-border bg-muted/20 px-3 py-1.5 sm:gap-4">
@@ -216,6 +229,41 @@ export function PresetsPanel({ stack, ecosystem, onApplyPreset, onCustomizePrese
 
       <div className="flex-1 overflow-y-auto p-3 sm:p-4">
         <div className="space-y-6">
+          <section>
+            <div className="mb-2 flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <h2 className="font-mono text-sm font-medium">Describe your app</h2>
+            </div>
+            <p className="mb-2 text-xs text-muted-foreground">
+              Type what you&apos;re building and we&apos;ll start you on the closest preset.
+            </p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={brief}
+                onChange={(event) => setBrief(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") handleSuggestFromBrief();
+                }}
+                placeholder="e.g. a SaaS with postgres and auth"
+                aria-label="Describe your app"
+                className="flex-1 rounded-md border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-primary"
+              />
+              <button
+                type="button"
+                onClick={handleSuggestFromBrief}
+                disabled={brief.trim().length === 0}
+                className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                Suggest
+              </button>
+            </div>
+            {promptRationale && (
+              <p className="mt-2 text-xs text-muted-foreground">{promptRationale}</p>
+            )}
+          </section>
+
           {starterTracks.length > 0 && (
             <section>
               <div className="mb-3 flex items-center gap-2">
