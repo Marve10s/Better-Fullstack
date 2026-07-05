@@ -115,6 +115,7 @@ import {
   I18N_VALUES,
   ANALYTICS_VALUES,
   ANIMATION_VALUES,
+  ASTRO_INTEGRATION_VALUES,
   STATE_MANAGEMENT_VALUES,
   UI_LIBRARY_VALUES,
   VALIDATION_VALUES,
@@ -1115,6 +1116,59 @@ describe("stack graph structural round-trip (phase 0)", () => {
         expect(validateStackParts(parts).issues).toEqual([]);
       }
     }
+  });
+
+  it("carries the Astro integration as a frontend-part setting and round-trips it", () => {
+    for (const astroIntegration of ASTRO_INTEGRATION_VALUES.filter((value) => value !== "none")) {
+      const config: Partial<ProjectConfig> = {
+        ecosystem: "typescript",
+        frontend: ["astro"],
+        backend: "none",
+        database: "none",
+        orm: "none",
+        api: "none",
+        auth: "none",
+        astroIntegration,
+      };
+      const parts = legacyProjectConfigToStackParts(config);
+      const frontendPart = parts.find(
+        (part) => part.role === "frontend" && part.ecosystem === "typescript",
+      );
+
+      // legacy -> parts: the choice rides on the Astro frontend part's settings,
+      // not a flat side channel or a scoped capability part.
+      expect(frontendPart?.toolId).toBe("astro");
+      expect(frontendPart?.settings?.astroIntegration).toBe(astroIntegration);
+
+      // parts -> legacy: the graph restores the same integration with no drift.
+      const diagnostics = compareLegacyConfigToStackParts(config, parts);
+      expect(diagnostics).toEqual([]);
+
+      const derived = stackPartsToLegacyProjectConfigPartial(parts);
+      expect(derived.astroIntegration).toBe(astroIntegration);
+      expect(validateStackParts(parts).issues).toEqual([]);
+    }
+
+    // Without a carried setting the projection leaves astroIntegration unset so a
+    // flat field (e.g. a stack-update whose spec-derived parts drop the setting)
+    // is preserved instead of being clobbered to "none".
+    const noIntegrationParts = legacyProjectConfigToStackParts({
+      ecosystem: "typescript",
+      frontend: ["astro"],
+      backend: "none",
+      database: "none",
+      orm: "none",
+      api: "none",
+      auth: "none",
+    });
+    expect(
+      noIntegrationParts.find(
+        (part) => part.role === "frontend" && part.ecosystem === "typescript",
+      )?.settings,
+    ).toBeUndefined();
+    expect(
+      stackPartsToLegacyProjectConfigPartial(noIntegrationParts).astroIntegration,
+    ).toBeUndefined();
   });
 
   it("round-trips every deploy, runtime, and db setup value as a scoped graph part", () => {

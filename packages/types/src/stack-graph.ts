@@ -666,6 +666,7 @@ const GRAPH_PROJECTION_DEFAULT_LEGACY_CATEGORIES = [
   "orm",
   "api",
   "auth",
+  "astroIntegration",
   "rustFrontend",
   ...Object.values(LEGACY_BACKEND_CATEGORY_BY_ECOSYSTEM),
   ...Object.values(LEGACY_CAPABILITY_CATEGORIES_BY_ECOSYSTEM).flatMap((categories) =>
@@ -2571,9 +2572,10 @@ function addLegacyPart(
   toolId: string | undefined,
   source: StackPartSource,
   ownerPartId?: string,
+  settings?: Record<string, unknown>,
 ) {
   if (!toolId || toolId === "none") return undefined;
-  const part = createStackPart({ role, ecosystem, toolId, source, ownerPartId });
+  const part = createStackPart({ role, ecosystem, toolId, source, ownerPartId, settings });
   parts.push(part);
   return part;
 }
@@ -2635,6 +2637,16 @@ export function legacyProjectConfigToStackParts(
   const webFrontend = webFrontends[0];
   const nativeFrontend = nativeFrontends[0];
   const frontendPart = addLegacyPart(parts, "frontend", "typescript", webFrontend, source);
+  // The Astro sub-framework choice is a settings-shaped detail carried on the
+  // Astro frontend part itself (rather than a scoped capability part), so a pure
+  // graph round-trips the integration without a flat-field side channel.
+  if (
+    frontendPart?.toolId === "astro" &&
+    config.astroIntegration &&
+    config.astroIntegration !== "none"
+  ) {
+    frontendPart.settings = { astroIntegration: config.astroIntegration };
+  }
   const mobilePart = addLegacyPart(parts, "mobile", "react-native", nativeFrontend, source);
 
   let backendPart: StackPart | undefined;
@@ -2896,6 +2908,10 @@ export function stackPartsToLegacyProjectConfigPartial(
           ...(config.frontend ?? []),
           part.toolId as ProjectConfig["frontend"][number],
         ];
+        const astroIntegration = part.settings?.astroIntegration;
+        if (typeof astroIntegration === "string") {
+          config.astroIntegration = astroIntegration as ProjectConfig["astroIntegration"];
+        }
       } else if (part.role === "frontend" && part.ecosystem === "rust") {
         config.rustFrontend = part.toolId as ProjectConfig["rustFrontend"];
       } else if (part.role === "mobile") {
@@ -3096,6 +3112,18 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
   projectLegacyCategoryFromPart(projected, auth, ecosystem, parts);
   if (ecosystem === "go" && config.auth === "go-better-auth") {
     projected.auth = config.auth;
+  }
+
+  // astroIntegration is reset to "none" by the default-category loop above; prefer
+  // the graph-owned value carried on the Astro frontend part's settings, falling
+  // back to the flat field so graph-mode specs (which cannot express the setting)
+  // keep projecting the same value the spread used to carry.
+  const astroIntegrationSetting =
+    frontend?.toolId === "astro" ? frontend.settings?.astroIntegration : undefined;
+  if (typeof astroIntegrationSetting === "string") {
+    projected.astroIntegration = astroIntegrationSetting as ProjectConfig["astroIntegration"];
+  } else if (config.astroIntegration !== undefined) {
+    projected.astroIntegration = config.astroIntegration;
   }
 
   const backendScopedPartRoles = new Set<StackPartRole>(["database", "orm", "api", "auth"]);
