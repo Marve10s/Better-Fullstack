@@ -123,6 +123,7 @@ import {
   ELIXIR_QUALITY_VALUES,
   StackPartRoleSchema,
   STATE_MANAGEMENT_VALUES,
+  TESTING_VALUES,
   UI_LIBRARY_VALUES,
   VALIDATION_VALUES,
   WEB_DEPLOY_VALUES,
@@ -313,8 +314,12 @@ const LEGACY_TYPESCRIPT_BACKEND_SINGLE_CATEGORIES = {
   cms: "cms",
   // Shared web+server categories collapse onto the backend owner (inventory §5 decision 3);
   // without a TypeScript backend they stay flat-only, like the rest of this map.
+  // `testing` (vitest/playwright/jest/cypress) is the shared test-runner choice; owning it
+  // on the backend keeps it in a different scope from the frontend-owned msw/storybook
+  // testing addons, so the two never collide in a single `(owner, role)` scope.
   validation: "validation",
   effect: "effect",
+  testing: "testing",
 } as const satisfies Partial<Record<StackPartRole, keyof ProjectConfig>>;
 
 const LEGACY_TYPESCRIPT_BACKEND_INFRA_CATEGORIES = {
@@ -799,6 +804,9 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(CMS_VALUES, "cms", "typescript", "cms"),
   ...defineTools(VALIDATION_VALUES, "validation", "typescript", "validation"),
   ...defineTools(EFFECT_VALUES, "effect", "typescript", "effect"),
+  // TypeScript test-runner framework (distinct toolIds from the msw/storybook testing
+  // addons registered above), backend-owned so it never shares a scope with them.
+  ...defineTools(TESTING_VALUES, "testing", "typescript", "testing"),
   ...defineTools(AUTH_VALUES, "auth", "react-native", "auth"),
   ...defineTools(MOBILE_NAVIGATION_VALUES, "navigation", "react-native", "mobileNavigation"),
   ...defineTools(MOBILE_UI_VALUES, "ui", "react-native", "mobileUI"),

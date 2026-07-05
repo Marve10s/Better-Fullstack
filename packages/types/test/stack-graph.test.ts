@@ -117,6 +117,7 @@ import {
   ANIMATION_VALUES,
   ASTRO_INTEGRATION_VALUES,
   STATE_MANAGEMENT_VALUES,
+  TESTING_VALUES,
   UI_LIBRARY_VALUES,
   VALIDATION_VALUES,
   WEB_DEPLOY_VALUES,
@@ -1030,6 +1031,7 @@ describe("stack graph structural round-trip (phase 0)", () => {
       cms: CMS_VALUES,
       validation: VALIDATION_VALUES,
       effect: EFFECT_VALUES,
+      testing: TESTING_VALUES,
     } as const;
 
     for (const [field, values] of Object.entries(cases)) {
@@ -1055,7 +1057,7 @@ describe("stack graph structural round-trip (phase 0)", () => {
     }
   });
 
-  it("keeps validation and effect flat-only without a TypeScript backend", () => {
+  it("keeps validation, effect, and testing flat-only without a TypeScript backend", () => {
     const config: Partial<ProjectConfig> = {
       ecosystem: "typescript",
       frontend: ["tanstack-router"],
@@ -1066,10 +1068,48 @@ describe("stack graph structural round-trip (phase 0)", () => {
       auth: "none",
       validation: "valibot",
       effect: "effect",
+      testing: "playwright",
     };
     const parts = legacyProjectConfigToStackParts(config);
-    expect(parts.some((part) => part.role === "validation" || part.role === "effect")).toBe(false);
+    expect(
+      parts.some(
+        (part) => part.role === "validation" || part.role === "effect" || part.role === "testing",
+      ),
+    ).toBe(false);
     expectNoDrift(config);
+  });
+
+  it("owns the TypeScript test runner on the backend without colliding with testing addons", () => {
+    // The framework testing part (backend-owned) and the msw/storybook testing addons
+    // (frontend-owned) share the `testing` role but live in different owner scopes, so
+    // both round-trip cleanly and validateStackParts raises no DUPLICATE_ROLE_SCOPE issue.
+    const config: Partial<ProjectConfig> = {
+      ...TS_BASE,
+      testing: "vitest",
+      addons: ["msw", "storybook"],
+    };
+    const parts = legacyProjectConfigToStackParts(config);
+    const backend = parts.find(
+      (part) => part.role === "backend" && part.ecosystem === "typescript",
+    );
+    const frontend = parts.find(
+      (part) => part.role === "frontend" && part.ecosystem === "typescript",
+    );
+    const frameworkPart = parts.find(
+      (part) => part.role === "testing" && part.toolId === "vitest",
+    );
+    const addonTestingParts = parts.filter(
+      (part) => part.role === "testing" && part.toolId !== "vitest",
+    );
+
+    expect(frameworkPart?.ownerPartId).toBe(backend?.id);
+    expect(addonTestingParts.map((part) => part.toolId).sort()).toEqual(["msw", "storybook"]);
+    expect(addonTestingParts.every((part) => part.ownerPartId === frontend?.id)).toBe(true);
+    expect(validateStackParts(parts).issues).toEqual([]);
+
+    const derived = expectNoDrift(config);
+    expect(derived.testing).toBe("vitest");
+    expect([...(derived.addons ?? [])].sort()).toEqual(["msw", "storybook"]);
   });
 
   it("round-trips every frontend-owned TypeScript single value as a scoped graph part", () => {

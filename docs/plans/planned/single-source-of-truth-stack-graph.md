@@ -1,8 +1,8 @@
 # Single Source of Truth for the Stack Graph
 
 > **Active design doc — keep this updated as decisions land.**
-> Status: **Phase 3 compatibility consolidation shipped; Phase 4 storage/settings cleanup remains**
-> Last updated: 2026-07-02
+> Status: **Phase 3 compatibility consolidation shipped; Phase 4 library promotion complete except settings-shaped `shadcn*`/`elixirJson`; settings-cluster + full flat-storage retirement remain**
+> Last updated: 2026-07-05
 
 ## Active State (read this first)
 
@@ -77,8 +77,8 @@ There are **two categories** of configuration data and they behave differently:
 ## Remaining Implementation Sketch
 
 - [x] **Phase 3 — Consolidate compatibility:** promoted library, ecosystem, addon/example, deploy, database setup, mobile, Java/.NET/Elixir, and shared backend-service disabled reasons now route through graph candidate checks. Graph-complete bindings are authoritative, so clean graph results no longer fall through to duplicated flat library branches. Global backend locks and intentionally setting-shaped checks remain flat.
-- [ ] **Phase 4 — Storage cleanup:** current graph-authoritative cache guards now cover saved config, URL/import paths, MCP previews, stack-update/generated-project updates, reproducible commands, config-file replay, and full history replay. Keep extending those guards as additional categories are promoted, and finish retiring flat-authoritative storage paths.
-- [ ] Keep deferred single-option/settings-shaped fields, such as `elixirJson` and Astro/shadcn detail settings, flat until their final graph-settings shape is settled.
+- [ ] **Phase 4 — Storage cleanup:** current graph-authoritative cache guards now cover saved config, URL/import paths, MCP previews, stack-update/generated-project updates, reproducible commands, config-file replay, and full history replay. Keep extending those guards as additional categories are promoted, and finish retiring flat-authoritative storage paths. **Field promotions done:** `astroIntegration` (frontend-part setting) and `testing` (backend-owned single, graph-authoritative in both `stackGraphToLegacyProjectConfigForEcosystem` and `normalizeGraphConfigForPersistence`). With `testing` landed, every flat `ProjectConfig` field except project metadata and the settings-shaped `shadcn*`/`elixirJson` cluster now round-trips through the graph and is graph-authoritative in the projection when `stackParts` is present.
+- [ ] **Deferred as a larger migration — settings-shaped fields:** `elixirJson` (single-option) and the seven `shadcn*` detail settings. `shadcn*` differs from the already-promoted `astroIntegration` setting: it is seven correlated fields on a *conditional* `ui` part, spans an 18+ file consumer surface, and its enum values are not `"none"`-defaulted (so the reset-then-rederive projection pattern used for every promoted category does not apply cleanly). Keep both flat until their final graph-settings shape is settled.
 
 ## Reference Map (files)
 
