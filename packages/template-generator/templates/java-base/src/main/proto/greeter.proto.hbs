@@ -1,0 +1,24 @@
+{{#if hasJavaGrpc}}syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "{{javaPackageName}}.grpc.proto";
+option java_outer_classname = "GreeterProto";
+
+package greeter;
+
+// The greeting service definition.
+service Greeter {
+  // Sends a greeting.
+  rpc SayHello (HelloRequest) returns (HelloReply) {}
+}
+
+// The request message containing the user's name.
+message HelloRequest {
+  string name = 1;
+}
+
+// The response message containing the greeting.
+message HelloReply {
+  string message = 1;
+}
+{{/if}}

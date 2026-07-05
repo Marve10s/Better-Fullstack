@@ -5033,6 +5033,15 @@ export const TECH_OPTIONS: Record<
       isNew: true,
     },
     {
+      id: "grpc",
+      name: "gRPC",
+      description: "grpc-java service (protoc codegen) started alongside Spring Boot",
+      icon: "/icon/grpc.svg",
+      color: "from-sky-500 to-blue-600",
+      default: false,
+      isNew: true,
+    },
+    {
       id: "none",
       name: "No API Layer",
       description: "REST controllers only",

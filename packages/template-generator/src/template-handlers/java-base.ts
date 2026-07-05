@@ -23,6 +23,7 @@ type JavaTemplateContext = ProjectConfig & {
   hasJavaKeycloak: boolean;
   hasJavaGraphql: boolean;
   isJavaOpenApiGenerator: boolean;
+  hasJavaGrpc: boolean;
   hasJavaLogback: boolean;
   hasJavaLog4j2: boolean;
   hasJavaAmqp: boolean;
@@ -218,6 +219,10 @@ function createJavaTemplateContext(config: ProjectConfig): JavaTemplateContext {
     // `openapi-generator` is added to `JavaApiSchema` separately; cast to string
     // so this handler compiles ahead of (and after) that schema widening.
     isJavaOpenApiGenerator: isJavaSpringBoot && config.javaApi === "openapi-generator",
+    // grpc-java runs its own gRPC server (via protoc codegen) alongside the
+    // Spring Boot web server, so this API layer is gated to Spring Boot exactly
+    // like `spring-graphql` and `openapi-generator`.
+    hasJavaGrpc: isJavaSpringBoot && config.javaApi === "grpc",
     hasJavaLogback: isJavaSpringBoot && config.javaLogging === "logback",
     // log4j2 is an additive logging backend supported for Spring Boot,
     // Micronaut, and plain Java. Quarkus keeps its own default logging
@@ -370,6 +375,12 @@ function shouldSkipJavaTemplate(templatePath: string, context: JavaTemplateConte
     !context.hasJavaGraphql &&
     templatePath.endsWith("/controller/GraphqlController.java.hbs")
   ) {
+    return true;
+  }
+  // gRPC surface: the .proto contract (src/main/proto) is the protoc codegen
+  // input and the /grpc/ Java sources are the service impl + server lifecycle.
+  // Emit them only when the gRPC API layer is selected (Spring Boot only).
+  if (!context.hasJavaGrpc && (templatePath.includes("/proto/") || templatePath.includes("/grpc/"))) {
     return true;
   }
   // The OpenAPI spec is the codegen input; emit it only when the OpenAPI

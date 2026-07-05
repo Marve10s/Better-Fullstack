@@ -7,6 +7,7 @@ import {
   DEFAULT_STACK_SELECTION,
   EcosystemSchema,
   evaluateCompatibility,
+  JavaApiSchema,
   JavaAuthSchema,
   JavaBuildToolSchema,
   JavaLibrariesSchema,
@@ -74,6 +75,7 @@ const JAVA_BUILD_TOOLS = extractEnumValues(JavaBuildToolSchema);
 const JAVA_LIBRARIES = extractEnumValues(JavaLibrariesSchema);
 const JAVA_ORMS = extractEnumValues(JavaOrmSchema);
 const JAVA_AUTHS = extractEnumValues(JavaAuthSchema);
+const JAVA_APIS = extractEnumValues(JavaApiSchema);
 const JAVA_TESTING_LIBRARIES = extractEnumValues(JavaTestingLibrariesSchema);
 
 describe("Java Ecosystem", () => {
@@ -116,6 +118,7 @@ describe("Java Ecosystem", () => {
       ]);
       expect(JAVA_ORMS).toEqual(["spring-data-jpa", "jooq", "mybatis", "none"]);
       expect(JAVA_AUTHS).toEqual(["spring-security", "keycloak", "none"]);
+      expect(JAVA_APIS).toEqual(["spring-graphql", "openapi-generator", "grpc", "none"]);
       expect(JAVA_TESTING_LIBRARIES).toEqual([
         "junit5",
         "mockito",

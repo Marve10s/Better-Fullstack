@@ -619,7 +619,7 @@ export const JavaAuthSchema = z
   .describe("Java authentication library");
 
 export const JavaApiSchema = z
-  .enum(["spring-graphql", "openapi-generator", "none"])
+  .enum(["spring-graphql", "openapi-generator", "grpc", "none"])
   .describe("Java API layer");
 
 export const JavaLoggingSchema = z

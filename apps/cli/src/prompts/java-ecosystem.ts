@@ -402,6 +402,11 @@ const JAVA_API_PROMPT_OPTIONS: PromptOption<JavaApi>[] = [
     hint: "Generate Spring API interfaces + models from an OpenAPI spec at build time",
   },
   {
+    value: "grpc",
+    label: "gRPC",
+    hint: "grpc-java service (protoc codegen) started alongside Spring Boot",
+  },
+  {
     value: "none",
     label: "None",
     hint: "REST controllers only",

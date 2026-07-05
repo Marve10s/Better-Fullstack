@@ -1,0 +1,71 @@
+{{#if hasJavaGrpc}}
+package {{javaPackageName}}.grpc;
+
+import java.io.IOException;
+
+import io.grpc.Server;
+import io.grpc.ServerBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.SmartLifecycle;
+import org.springframework.stereotype.Component;
+
+/**
+ * Starts an in-process gRPC {@link Server} alongside the Spring Boot web server.
+ *
+ * <p>Implemented as a {@link SmartLifecycle} bean so the gRPC server boots when
+ * the application context starts and shuts down gracefully when it stops. The
+ * embedded web server keeps the JVM alive; this component only owns the gRPC
+ * listener on {@code grpc.server.port} (default {@code 9090}).
+ */
+@Component
+public class GrpcServerLifecycle implements SmartLifecycle {
+
+	private static final Logger log = LoggerFactory.getLogger(GrpcServerLifecycle.class);
+
+	private final GreeterService greeterService;
+	private final int port;
+	private Server server;
+	private volatile boolean running = false;
+
+	public GrpcServerLifecycle(
+		GreeterService greeterService,
+		@Value("${grpc.server.port:9090}") int port
+	) {
+		this.greeterService = greeterService;
+		this.port = port;
+	}
+
+	@Override
+	public void start() {
+		if (running) {
+			return;
+		}
+		try {
+			server = ServerBuilder.forPort(port)
+				.addService(greeterService)
+				.build()
+				.start();
+			running = true;
+			log.info("gRPC server started, listening on port {}", port);
+		} catch (IOException ex) {
+			throw new IllegalStateException("Failed to start gRPC server on port " + port, ex);
+		}
+	}
+
+	@Override
+	public void stop() {
+		if (server != null) {
+			server.shutdown();
+			log.info("gRPC server stopped");
+		}
+		running = false;
+	}
+
+	@Override
+	public boolean isRunning() {
+		return running;
+	}
+}
+{{/if}}
