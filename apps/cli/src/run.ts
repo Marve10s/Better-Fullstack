@@ -354,6 +354,44 @@ export const router = os.router({
       const { genCommand } = await import("./commands/gen.js");
       await genCommand({ kind, name, dir: options.dir, dryRun: options.dryRun });
     }),
+  registry: os
+    .meta({
+      description:
+        "Manage community/private capability packs for an existing Better Fullstack project (`registry add <source>` installs a pack from a local path or file:// URL; `registry list` shows installed packs)",
+    })
+    .input(
+      z.tuple([
+        z
+          .enum(["add", "list"])
+          .optional()
+          .default("list")
+          .describe("Action to perform: add (install a pack) or list (default)"),
+        z
+          .string()
+          .optional()
+          .describe("Pack source: a local path or file:// URL (required for `add`)"),
+        z.object({
+          projectDir: z.string().optional().describe("Project directory (defaults to current)"),
+          json: z.boolean().optional().default(false).describe("Output the result as JSON"),
+          dryRun: z
+            .boolean()
+            .optional()
+            .default(false)
+            .describe("Preview the install without writing any files"),
+        }),
+      ]),
+    )
+    .handler(async ({ input }) => {
+      const [action, source, options] = input;
+      const { registryHandler } = await import("./commands/registry.js");
+      await registryHandler({
+        action,
+        source,
+        projectDir: options.projectDir,
+        json: options.json,
+        dryRun: options.dryRun,
+      });
+    }),
   mcp: os
     .meta({
       description:
@@ -534,5 +572,21 @@ export async function check(
   return caller.check([
     projectDir,
     { skipChecks: options?.skipChecks ?? false, json: options?.json ?? false },
+  ]);
+}
+
+export async function registry(
+  action: "add" | "list" = "list",
+  source?: string,
+  options?: { projectDir?: string; json?: boolean; dryRun?: boolean },
+) {
+  return caller.registry([
+    action,
+    source,
+    {
+      projectDir: options?.projectDir,
+      json: options?.json ?? false,
+      dryRun: options?.dryRun ?? false,
+    },
   ]);
 }

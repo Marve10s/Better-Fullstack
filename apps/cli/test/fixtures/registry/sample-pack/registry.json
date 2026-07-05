@@ -1,0 +1,38 @@
+{
+  "name": "@acme/rate-limit",
+  "version": "1.0.0",
+  "description": "Tiny sample capability pack: a rate-limit helper.",
+  "source": "local",
+  "files": [
+    {
+      "path": "apps/server/src/lib/rate-limit.ts",
+      "content": "export function rateLimitKey(ip: string): string {\n  return `rate-limit:${ip}`;\n}\n"
+    },
+    {
+      "path": "apps/server/src/lib/rate-limit-meta.ts",
+      "template": true,
+      "content": "export const RATE_LIMIT_ECOSYSTEM = \"{{ecosystem}}\";\n"
+    }
+  ],
+  "dependencies": {
+    "apps/server": {
+      "@acme/token-bucket": "^1.0.0"
+    }
+  },
+  "devDependencies": {
+    "apps/server": {
+      "@types/acme-token-bucket": "^1.0.0"
+    }
+  },
+  "env": [
+    {
+      "key": "RATE_LIMIT_MAX",
+      "value": "100",
+      "description": "Max requests per window"
+    }
+  ],
+  "addons": ["rate-limit"],
+  "compatibility": {
+    "ecosystems": ["typescript"]
+  }
+}

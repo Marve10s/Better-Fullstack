@@ -1,0 +1,9 @@
+{
+  "description": "Missing name and version; file path is not a string.",
+  "files": [
+    {
+      "path": 123,
+      "content": "export const broken = true;\n"
+    }
+  ]
+}
