@@ -10,6 +10,14 @@ const TEMPLATE_GENERATOR_PACKAGE_JSON_PATH = join(
   process.cwd(),
   "packages/template-generator/package.json",
 );
+const CODEX_PLUGIN_MANIFEST_PATH = join(process.cwd(), "plugin/.codex-plugin/plugin.json");
+const CLAUDE_PLUGIN_MANIFEST_PATH = join(process.cwd(), "plugin/.claude-plugin/plugin.json");
+
+async function updateJsonFile(path: string, update: (json: Record<string, unknown>) => void) {
+  const json = JSON.parse(await readFile(path, "utf-8"));
+  update(json);
+  await writeFile(path, `${JSON.stringify(json, null, 2)}\n`);
+}
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
@@ -101,30 +109,33 @@ async function main(): Promise<void> {
   await writeFile(CLI_PACKAGE_JSON_PATH, `${JSON.stringify(packageJson, null, 2)}\n`);
 
   // Update alias package version
-  const aliasPackageJson = JSON.parse(await readFile(ALIAS_PACKAGE_JSON_PATH, "utf-8"));
-  aliasPackageJson.version = newVersion;
-  aliasPackageJson.dependencies["create-better-fullstack"] = `^${newVersion}`;
-  await writeFile(ALIAS_PACKAGE_JSON_PATH, `${JSON.stringify(aliasPackageJson, null, 2)}\n`);
+  await updateJsonFile(ALIAS_PACKAGE_JSON_PATH, (aliasPackageJson) => {
+    aliasPackageJson.version = newVersion;
+    const dependencies = aliasPackageJson.dependencies as Record<string, string>;
+    dependencies["create-better-fullstack"] = `^${newVersion}`;
+  });
 
   // Update types package version
-  const typesPackageJson = JSON.parse(await readFile(TYPES_PACKAGE_JSON_PATH, "utf-8"));
-  typesPackageJson.version = newVersion;
-  await writeFile(TYPES_PACKAGE_JSON_PATH, `${JSON.stringify(typesPackageJson, null, 2)}\n`);
+  await updateJsonFile(TYPES_PACKAGE_JSON_PATH, (typesPackageJson) => {
+    typesPackageJson.version = newVersion;
+  });
 
   // Update template-generator package version and types dependency
-  const templateGeneratorPackageJson = JSON.parse(
-    await readFile(TEMPLATE_GENERATOR_PACKAGE_JSON_PATH, "utf-8"),
-  );
-  templateGeneratorPackageJson.version = newVersion;
-  templateGeneratorPackageJson.dependencies["@better-fullstack/types"] = `^${newVersion}`;
-  await writeFile(
-    TEMPLATE_GENERATOR_PACKAGE_JSON_PATH,
-    `${JSON.stringify(templateGeneratorPackageJson, null, 2)}\n`,
-  );
+  await updateJsonFile(TEMPLATE_GENERATOR_PACKAGE_JSON_PATH, (templateGeneratorPackageJson) => {
+    templateGeneratorPackageJson.version = newVersion;
+    const dependencies = templateGeneratorPackageJson.dependencies as Record<string, string>;
+    dependencies["@better-fullstack/types"] = `^${newVersion}`;
+  });
+
+  for (const manifestPath of [CODEX_PLUGIN_MANIFEST_PATH, CLAUDE_PLUGIN_MANIFEST_PATH]) {
+    await updateJsonFile(manifestPath, (manifest) => {
+      manifest.version = newVersion;
+    });
+  }
 
   await $`bun install`;
   await $`bun run build:cli`;
-  await $`git add apps/cli/package.json packages/create-bfs/package.json packages/types/package.json packages/template-generator/package.json bun.lock`;
+  await $`git add apps/cli/package.json packages/create-bfs/package.json packages/types/package.json packages/template-generator/package.json plugin/.codex-plugin/plugin.json plugin/.claude-plugin/plugin.json bun.lock`;
   await $`git commit -m "chore(release): ${newVersion}"`;
 
   // Push the release branch
@@ -143,6 +154,7 @@ This PR bumps the version to \`${newVersion}\`.
 - Updated \`create-bts\` to v${newVersion}
 - Updated \`@better-fullstack/types\` to v${newVersion}
 - Updated \`@better-fullstack/template-generator\` to v${newVersion}
+- Updated Better Fullstack plugin manifests to v${newVersion}
 
 ---
 *This PR was automatically created by \`bun run bump\`*`;

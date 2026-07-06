@@ -7,9 +7,12 @@ type JsonObject = Record<string, unknown>;
 
 const rootDir = process.cwd();
 const pluginDir = join(rootDir, "plugin");
-const manifestPath = join(pluginDir, ".codex-plugin", "plugin.json");
+const codexManifestPath = join(pluginDir, ".codex-plugin", "plugin.json");
+const claudeManifestPath = join(pluginDir, ".claude-plugin", "plugin.json");
 const mcpPath = join(pluginDir, ".mcp.json");
-const marketplacePath = join(rootDir, ".agents", "plugins", "marketplace.json");
+const cliPackageJsonPath = join(rootDir, "apps", "cli", "package.json");
+const codexMarketplacePath = join(rootDir, ".agents", "plugins", "marketplace.json");
+const claudeMarketplacePath = join(rootDir, ".claude-plugin", "marketplace.json");
 
 function readJson(path: string): JsonObject {
   try {
@@ -36,6 +39,15 @@ function assertPathInsidePlugin(relativePath: unknown, name: string) {
   return absolutePath;
 }
 
+function assertPathInsideRoot(relativePath: unknown, name: string) {
+  assertString(relativePath, name);
+  const normalized = normalize(relativePath);
+  assert(!normalized.startsWith(".."), `${name} must stay inside repo root: ${relativePath}`);
+  const absolutePath = join(rootDir, normalized);
+  assert(existsSync(absolutePath), `${name} points to a missing path: ${relativePath}`);
+  return absolutePath;
+}
+
 function assertSkillFile(path: string) {
   const skillText = readFileSync(path, "utf8");
   assert(skillText.startsWith("---\n"), `${path} must start with YAML frontmatter`);
@@ -46,16 +58,32 @@ function assertSkillFile(path: string) {
   assert(/^description:\s*.+/m.test(frontmatter), `${path} must declare a skill description`);
 }
 
-const manifest = readJson(manifestPath);
-assertString(manifest.name, "plugin.name");
-assertString(manifest.version, "plugin.version");
-assert(/^\d+\.\d+\.\d+/.test(manifest.version as string), "plugin.version must start with semver");
-assertString(manifest.description, "plugin.description");
-assert(typeof manifest.author === "object" && manifest.author !== null, "plugin.author must be an object");
-assertString((manifest.author as JsonObject).name, "plugin.author.name");
+function assertManifestBasics(manifest: JsonObject, prefix: string) {
+  assertString(manifest.name, `${prefix}.name`);
+  assertString(manifest.version, `${prefix}.version`);
+  assert(/^\d+\.\d+\.\d+/.test(manifest.version as string), `${prefix}.version must start with semver`);
+  assertString(manifest.description, `${prefix}.description`);
+}
 
-const skillsDir = assertPathInsidePlugin(manifest.skills, "plugin.skills");
-assert(statSync(skillsDir).isDirectory(), "plugin.skills must point to a directory");
+function assertPluginComponents(manifest: JsonObject, prefix: string) {
+  const skillsDir = assertPathInsidePlugin(manifest.skills, `${prefix}.skills`);
+  assert(statSync(skillsDir).isDirectory(), `${prefix}.skills must point to a directory`);
+  assert(
+    assertPathInsidePlugin(manifest.mcpServers, `${prefix}.mcpServers`) === mcpPath,
+    `${prefix}.mcpServers must point to ./.mcp.json`,
+  );
+  return skillsDir;
+}
+
+const codexManifest = readJson(codexManifestPath);
+assertManifestBasics(codexManifest, "codexPlugin");
+assert(
+  typeof codexManifest.author === "object" && codexManifest.author !== null,
+  "codexPlugin.author must be an object",
+);
+assertString((codexManifest.author as JsonObject).name, "codexPlugin.author.name");
+
+const skillsDir = assertPluginComponents(codexManifest, "codexPlugin");
 const skillFiles = ["scaffold-project", "add-to-project"].map((name) =>
   join(skillsDir, name, "SKILL.md"),
 );
@@ -64,19 +92,29 @@ for (const skillFile of skillFiles) {
   assertSkillFile(skillFile);
 }
 
-assert(assertPathInsidePlugin(manifest.mcpServers, "plugin.mcpServers") === mcpPath, "plugin.mcpServers must point to ./.mcp.json");
+const claudeManifest = readJson(claudeManifestPath);
+assertManifestBasics(claudeManifest, "claudePlugin");
+assertPluginComponents(claudeManifest, "claudePlugin");
+assert(codexManifest.version === claudeManifest.version, "Codex and Claude plugin versions must match");
 
-const pluginInterface = manifest.interface as JsonObject | undefined;
-assert(pluginInterface && typeof pluginInterface === "object", "plugin.interface must be an object");
-assertString(pluginInterface.displayName, "plugin.interface.displayName");
-assertString(pluginInterface.shortDescription, "plugin.interface.shortDescription");
-assertPathInsidePlugin(pluginInterface.composerIcon, "plugin.interface.composerIcon");
-assertPathInsidePlugin(pluginInterface.logo, "plugin.interface.logo");
-assert(Array.isArray(pluginInterface.capabilities), "plugin.interface.capabilities must be an array");
+const cliPackageJson = readJson(cliPackageJsonPath);
+assertString(cliPackageJson.version, "cliPackage.version");
+assert(
+  codexManifest.version === cliPackageJson.version,
+  "plugin manifest versions must match apps/cli/package.json version",
+);
+
+const pluginInterface = codexManifest.interface as JsonObject | undefined;
+assert(pluginInterface && typeof pluginInterface === "object", "codexPlugin.interface must be an object");
+assertString(pluginInterface.displayName, "codexPlugin.interface.displayName");
+assertString(pluginInterface.shortDescription, "codexPlugin.interface.shortDescription");
+assertPathInsidePlugin(pluginInterface.composerIcon, "codexPlugin.interface.composerIcon");
+assertPathInsidePlugin(pluginInterface.logo, "codexPlugin.interface.logo");
+assert(Array.isArray(pluginInterface.capabilities), "codexPlugin.interface.capabilities must be an array");
 for (const capability of ["Interactive", "Write", "MCP"]) {
   assert(
     (pluginInterface.capabilities as unknown[]).includes(capability),
-    `plugin.interface.capabilities must include ${capability}`,
+    `codexPlugin.interface.capabilities must include ${capability}`,
   );
 }
 
@@ -91,14 +129,26 @@ assert(
   "better-fullstack MCP args must run create-better-fullstack@latest mcp",
 );
 
-const marketplace = readJson(marketplacePath);
-assert(marketplace.name === manifest.name, "marketplace.name must match plugin.name");
-const plugins = marketplace.plugins as JsonObject[] | undefined;
+const codexMarketplace = readJson(codexMarketplacePath);
+assert(codexMarketplace.name === codexManifest.name, "Codex marketplace.name must match plugin.name");
+const plugins = codexMarketplace.plugins as JsonObject[] | undefined;
 assert(Array.isArray(plugins), "marketplace.plugins must be an array");
-const entry = plugins.find((plugin) => plugin.name === manifest.name);
+const entry = plugins.find((plugin) => plugin.name === codexManifest.name);
 assert(entry, "marketplace.plugins must include the plugin");
 assert((entry.source as JsonObject | undefined)?.source === "local", "marketplace plugin source must be local");
 assert((entry.source as JsonObject | undefined)?.path === "./plugin", "marketplace plugin path must be ./plugin");
 assert((entry.policy as JsonObject | undefined)?.installation === "AVAILABLE", "marketplace plugin must be installable");
+
+const claudeMarketplace = readJson(claudeMarketplacePath);
+assert(claudeMarketplace.name === claudeManifest.name, "Claude marketplace.name must match plugin.name");
+const claudePlugins = claudeMarketplace.plugins as JsonObject[] | undefined;
+assert(Array.isArray(claudePlugins), "Claude marketplace.plugins must be an array");
+const claudeEntry = claudePlugins[0];
+assert(claudeEntry, "Claude marketplace.plugins must include the plugin");
+assert(claudeEntry.name === claudeManifest.name, "Claude marketplace plugin name must match manifest name");
+assert(
+  assertPathInsideRoot(claudeEntry.source, "claudeMarketplace.plugins[0].source") === pluginDir,
+  "Claude marketplace plugin source must resolve to plugin/",
+);
 
 console.log("Plugin bundle validation passed");

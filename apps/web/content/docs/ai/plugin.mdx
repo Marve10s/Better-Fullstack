@@ -1,0 +1,85 @@
+---
+title: Agent Plugin
+description: Install the Better Fullstack plugin bundle for Claude Code, Codex, or any MCP-compatible client.
+---
+
+The Better Fullstack plugin bundles the official MCP server with two focused skills:
+
+- `scaffold-project` plans and creates new Better Fullstack projects.
+- `add-to-project` previews and applies supported additions to existing generated projects.
+
+Use the plugin when your agent supports plugin marketplaces and you want one install to provide both the Better Fullstack MCP server and the skills. Use the standalone [MCP server](/docs/ai/mcp/) setup when your client only needs tool calls.
+
+## Claude Code
+
+Add this repository as a Claude Code plugin marketplace, then install the plugin:
+
+```bash
+claude plugin marketplace add Marve10s/Better-Fullstack
+claude plugin install better-fullstack@better-fullstack
+```
+
+You can also install it from the interactive `/plugin` flow in Claude Code.
+
+Claude Code namespaces the bundled skills by plugin name. Invoke them as `better-fullstack:scaffold-project` and `better-fullstack:add-to-project`.
+
+## Codex
+
+The repository includes a Codex marketplace catalog at `.agents/plugins/marketplace.json`. It points at the shared plugin bundle in `./plugin`, which contains the Codex manifest, MCP server definition, skills, and icon.
+
+Install it through the Codex plugin marketplace flow using this repository as the source. The Codex manifest is `plugin/.codex-plugin/plugin.json`, and the MCP server definition stays shared at `plugin/.mcp.json`.
+
+## Any MCP Client
+
+If your client does not support the plugin bundle, connect directly to the Better Fullstack MCP server:
+
+```bash
+npx -y create-better-fullstack@latest mcp
+```
+
+### Cursor
+
+Put this in `.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "better-fullstack": {
+      "command": "npx",
+      "args": ["-y", "create-better-fullstack@latest", "mcp"]
+    }
+  }
+}
+```
+
+### Codex
+
+Put this in `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.better-fullstack]
+command = "npx"
+args = ["-y", "create-better-fullstack@latest", "mcp"]
+```
+
+### opencode
+
+Put this in `opencode.json`:
+
+```json
+{
+  "mcp": {
+    "better-fullstack": {
+      "type": "local",
+      "command": ["npx", "-y", "create-better-fullstack@latest", "mcp"],
+      "enabled": true
+    }
+  }
+}
+```
+
+## What Agents Should Do
+
+For new projects, agents should call `bfs_get_guidance`, inspect the schema, validate compatibility, run a dry-run plan, then create the project only after the plan matches the request.
+
+For existing generated projects, agents should preview additions before applying them. The plugin skills encode the same workflow and keep dependency installation disabled during agent-driven scaffolding.

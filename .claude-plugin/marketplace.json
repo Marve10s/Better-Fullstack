@@ -1,0 +1,16 @@
+{
+  "name": "better-fullstack",
+  "owner": {
+    "name": "Better Fullstack"
+  },
+  "description": "Official Better Fullstack agent plugin marketplace",
+  "plugins": [
+    {
+      "name": "better-fullstack",
+      "source": "./plugin",
+      "description": "Scaffold and extend verified fullstack starters via the official MCP server and skills",
+      "category": "productivity",
+      "strict": true
+    }
+  ]
+}
