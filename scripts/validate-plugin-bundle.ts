@@ -54,8 +54,21 @@ function assertSkillFile(path: string) {
   const frontmatterEnd = skillText.indexOf("\n---", 4);
   assert(frontmatterEnd > 0, `${path} must close YAML frontmatter`);
   const frontmatter = skillText.slice(4, frontmatterEnd);
-  assert(/^name:\s*\S+/m.test(frontmatter), `${path} must declare a skill name`);
-  assert(/^description:\s*.+/m.test(frontmatter), `${path} must declare a skill description`);
+  // Claude Code silently drops ALL frontmatter fields when the YAML fails to
+  // parse (the skill then never auto-triggers), so parse it for real.
+  let parsed: unknown;
+  try {
+    parsed = Bun.YAML.parse(frontmatter);
+  } catch (error) {
+    throw new Error(
+      `${path} frontmatter is not valid YAML — Claude Code would load this skill with empty metadata: ${(error as Error).message}`,
+      { cause: error },
+    );
+  }
+  assert(parsed && typeof parsed === "object", `${path} frontmatter must be a YAML mapping`);
+  const meta = parsed as JsonObject;
+  assertString(meta.name, `${path} frontmatter name`);
+  assertString(meta.description, `${path} frontmatter description`);
 }
 
 function assertManifestBasics(manifest: JsonObject, prefix: string) {

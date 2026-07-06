@@ -103,6 +103,21 @@ yarn create better-fullstack@latest
 
 <br>
 
+## 🤖 AI Agents
+
+Install the Claude Code plugin bundle:
+
+```bash
+claude plugin marketplace add Marve10s/Better-Fullstack
+claude plugin install better-fullstack@better-fullstack
+```
+
+- **Codex plugin catalog** — `.agents/plugins/marketplace.json`
+- **Any MCP client** — `npx -y create-better-fullstack@latest mcp`
+- **Docs** — [better-fullstack.dev/docs/ai/plugin](https://better-fullstack.dev/docs/ai/plugin)
+
+<br>
+
 ## Built Like a Product, Not a Template
 
 Better Fullstack is organized around the decisions that matter: pick an ecosystem, choose the layers you actually need, and ship a runnable project without hand-wiring the glue.

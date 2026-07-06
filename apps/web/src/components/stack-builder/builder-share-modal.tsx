@@ -21,6 +21,8 @@ const X_PROFILE_URL = "https://x.com/IbrahimElkamali";
 const GITHUB_DISCUSSIONS_URL = "https://github.com/Marve10s/Better-Fullstack/discussions";
 const PREVIEW_IMAGE_URL =
   "https://images.unsplash.com/photo-1782149493127-3b4a84f651f7?q=80&w=1035&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
+const CLAUDE_PLUGIN_INSTALL_COMMAND = `claude plugin marketplace add Marve10s/Better-Fullstack
+claude plugin install better-fullstack@better-fullstack`;
 
 type ShareTarget = {
   label: string;
@@ -58,6 +60,7 @@ function getShareMessage(url: string) {
 export function BuilderShareModal() {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [agentCommandCopied, setAgentCommandCopied] = useState(false);
 
   useEffect(() => {
     if (window.navigator.webdriver || !canUseBrowserStorage()) {
@@ -99,6 +102,17 @@ export function BuilderShareModal() {
       toast.error("Could not copy share message");
     }
   }, [shareMessage]);
+
+  const copyAgentCommand = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(CLAUDE_PLUGIN_INSTALL_COMMAND);
+      setAgentCommandCopied(true);
+      toast.success("Claude Code command copied");
+      setTimeout(() => setAgentCommandCopied(false), 1800);
+    } catch {
+      toast.error("Could not copy Claude Code command");
+    }
+  }, []);
 
   const shareWithFriends = useCallback(async () => {
     if (navigator.share) {
@@ -181,6 +195,32 @@ export function BuilderShareModal() {
                 </a>
               );
             })}
+          </div>
+
+          <div className="rounded-xl border border-border/50 bg-muted/30 p-4">
+            <p className="font-medium text-sm text-foreground">Use with Claude Code</p>
+            <p className="mt-1 text-muted-foreground text-xs">
+              Install the plugin once, then ask Claude Code to scaffold this stack.
+            </p>
+            <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <pre className="min-w-0 flex-1 overflow-x-auto rounded-lg border border-border/50 bg-background/80 px-3 py-2.5 font-mono text-[11px] text-foreground leading-relaxed">
+                <code>{CLAUDE_PLUGIN_INSTALL_COMMAND}</code>
+              </pre>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="cursor-pointer sm:w-auto"
+                onClick={copyAgentCommand}
+              >
+                {agentCommandCopied ? (
+                  <Check className="size-3.5 text-green-500" aria-hidden="true" />
+                ) : (
+                  <Copy className="size-3.5" aria-hidden="true" />
+                )}
+                {agentCommandCopied ? "Copied" : "Copy"}
+              </Button>
+            </div>
           </div>
 
           <div className="rounded-xl border border-border/50 bg-muted/30 p-4">

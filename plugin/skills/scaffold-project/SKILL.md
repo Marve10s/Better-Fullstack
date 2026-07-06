@@ -1,6 +1,6 @@
 ---
 name: scaffold-project
-description: Scaffold a new app, API, backend, fullstack project, mobile app, polyglot service, monorepo, or starter with Better Fullstack. Use when the user wants to create, start, bootstrap, initialize, or generate a project from a stack description. Prefer the bundled Better Fullstack MCP server: guidance, schema, compatibility, plan, then create.
+description: "Scaffold a new app, API, backend, fullstack project, mobile app, polyglot service, monorepo, or starter with Better Fullstack. Use when the user wants to create, start, bootstrap, initialize, or generate a project from a stack description. Prefer the bundled Better Fullstack MCP server: guidance, schema, compatibility, plan, then create."
 metadata:
   priority: 9
   docs:
