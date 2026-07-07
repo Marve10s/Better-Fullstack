@@ -109,10 +109,6 @@ yarn create better-fullstack@latest
 
 <br>
 
-### 🌐 The Web Builder
-
-Configure your whole stack visually — every option surfaces with live compatibility, and you get a ready-to-run command. **[Open the App Builder →](https://better-fullstack.dev/new)**
-
 ### 💻 The CLI
 
 `bun create better-fullstack@latest` walks you through a guided prompt flow, then scaffolds a runnable project with every integration pre-wired.
