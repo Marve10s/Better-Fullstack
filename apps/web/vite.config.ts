@@ -159,6 +159,11 @@ export default defineConfig({
               "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
             },
           },
+          "/benchmark": {
+            headers: {
+              "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
+            },
+          },
           "/compare": {
             headers: {
               "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",

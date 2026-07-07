@@ -459,5 +459,10 @@
   "runCtaDesc": "Ihre Zahlen werden im gleichen Format wie die Rangliste angezeigt. Haben Sie etwas Interessantes ausprobiert? Erstellen Sie einen Pull Request mit Ihrem Bericht.",
   "runCtaLeaderboard": "Rangliste ansehen",
   "runCtaWriteup": "Lesen Sie den Artikel.",
-  "llmRunItYourself": "Führen Sie es selbst aus"
+  "llmRunItYourself": "Führen Sie es selbst aus",
+  "navBenchmark": "Benchmark",
+  "benchmarkTeaserTitle": "Wie gut bauen KI-Modelle deine Projekte?",
+  "benchmarkTeaserTopModels": "Top-Modelle",
+  "benchmarkTeaserCta": "Vollständigen Benchmark ansehen",
+  "benchmarkSeoTitle": "ScaffBench — Wie gut bauen KI-Modelle deine Projekte?"
 }

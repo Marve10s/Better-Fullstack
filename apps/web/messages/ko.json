@@ -459,5 +459,10 @@
   "runCtaDesc": "여러분의 결과는 리더보드와 동일한 형식으로 표시됩니다. 흥미로운 작업을 수행하셨나요? 보고서를 첨부하여 풀 리퀘스트를 열어주세요.",
   "runCtaLeaderboard": "순위표를 확인하세요",
   "runCtaWriteup": "글을 읽어보세요",
-  "llmRunItYourself": "직접 실행해 보세요"
+  "llmRunItYourself": "직접 실행해 보세요",
+  "navBenchmark": "벤치마크",
+  "benchmarkTeaserTitle": "AI 모델은 당신의 프로젝트를 얼마나 잘 만들까요?",
+  "benchmarkTeaserTopModels": "상위 모델",
+  "benchmarkTeaserCta": "전체 벤치마크 보기",
+  "benchmarkSeoTitle": "ScaffBench — AI 모델은 당신의 프로젝트를 얼마나 잘 만들까요?"
 }

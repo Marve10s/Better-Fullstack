@@ -459,5 +459,10 @@
   "runCtaDesc": "你的统计数据将以与排行榜相同的格式显示。运行了什么有趣的东西吗？提交一个 pull request 来附上你的报告吧。",
   "runCtaLeaderboard": "查看排行榜",
   "runCtaWriteup": "阅读全文",
-  "llmRunItYourself": "自己运行"
+  "llmRunItYourself": "自己运行",
+  "navBenchmark": "基准测试",
+  "benchmarkTeaserTitle": "AI 模型构建你的项目有多强？",
+  "benchmarkTeaserTopModels": "顶尖模型",
+  "benchmarkTeaserCta": "查看完整基准测试",
+  "benchmarkSeoTitle": "ScaffBench — AI 模型构建你的项目有多强？"
 }

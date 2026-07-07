@@ -17,6 +17,7 @@ type SitemapContentPage = {
 const staticSitemapEntries: SitemapEntry[] = [
   { path: "/", changefreq: "daily", priority: 1 },
   { path: "/new", changefreq: "daily", priority: 0.9 },
+  { path: "/benchmark", changefreq: "weekly", priority: 0.8 },
   { path: "/compare", changefreq: "weekly", priority: 0.8 },
   { path: "/mcp", changefreq: "weekly", priority: 0.7 },
 ];

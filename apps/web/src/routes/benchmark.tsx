@@ -1,12 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import BenchmarkTeaser from "@/components/home/benchmark-teaser";
-import CombinationsSection from "@/components/home/combinations-section";
-import ContributorsSection from "@/components/home/contributors-section";
-import FeaturesSection from "@/components/home/features-section";
 import Footer from "@/components/home/footer";
-import HeroSection from "@/components/home/hero-section";
-import TestimonialsSection from "@/components/home/testimonials-section";
+import LLMBenchmarkSection from "@/components/home/llm-benchmark-section";
 import {
   DEFAULT_OG_IMAGE_ALT,
   DEFAULT_OG_IMAGE_HEIGHT,
@@ -15,14 +10,13 @@ import {
   DEFAULT_ROBOTS,
   DEFAULT_X_IMAGE_URL,
   canonicalUrl,
-  getDefaultDescription,
 } from "@/lib/seo";
 import { m } from "@/paraglide/messages.js";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/benchmark")({
   head: () => {
-    const title = m.homeSeoTitle();
-    const description = getDefaultDescription();
+    const title = m.benchmarkSeoTitle();
+    const description = m.llmBenchmarkDescription();
 
     return {
       meta: [
@@ -32,7 +26,7 @@ export const Route = createFileRoute("/")({
         { property: "og:title", content: title },
         { property: "og:description", content: description },
         { property: "og:type", content: "website" },
-        { property: "og:url", content: canonicalUrl("/") },
+        { property: "og:url", content: canonicalUrl("/benchmark") },
         { property: "og:image", content: DEFAULT_OG_IMAGE_URL },
         { property: "og:image:alt", content: DEFAULT_OG_IMAGE_ALT },
         { property: "og:image:width", content: String(DEFAULT_OG_IMAGE_WIDTH) },
@@ -43,22 +37,17 @@ export const Route = createFileRoute("/")({
         { name: "twitter:image", content: DEFAULT_X_IMAGE_URL },
         { name: "twitter:image:alt", content: DEFAULT_OG_IMAGE_ALT },
       ],
-      links: [{ rel: "canonical", href: canonicalUrl("/") }],
+      links: [{ rel: "canonical", href: canonicalUrl("/benchmark") }],
     };
   },
-  component: HomePage,
+  component: BenchmarkPage,
 });
 
-function HomePage() {
+function BenchmarkPage() {
   return (
     <main className="min-h-svh">
       <div className="mx-auto max-w-[1480px] border-x border-border">
-        <HeroSection />
-        <BenchmarkTeaser />
-        <FeaturesSection />
-        <CombinationsSection />
-        <TestimonialsSection />
-        <ContributorsSection />
+        <LLMBenchmarkSection />
         <Footer />
       </div>
     </main>

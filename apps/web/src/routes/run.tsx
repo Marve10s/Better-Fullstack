@@ -378,7 +378,7 @@ function RunPage() {
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <a
-              href="/#benchmark"
+              href="/benchmark"
               className="group inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-background transition-all hover:gap-3"
             >
               {m.runCtaLeaderboard()}
