@@ -10,78 +10,80 @@ import { ProviderLogo, type ProviderLogoId } from "./provider-marks";
 import type { ScaffbenchModel } from "./scaffbench-2-data";
 import { SCAFFBENCH21_CELLS, SCAFFBENCH21_MODELS } from "./scaffbench-2-1-data";
 
-// The teaser previews the leaderboard's headline view: the Prompt-only path,
-// Core pass@1. This mirrors ScaffbenchLeaderboardCard's default (v2.1 · prompt ·
-// core) so the podium here matches the top of the full page. Kept as a small,
-// self-contained reduction so the homepage doesn't pull in the full chart module.
-const TEASER_PATH = "prompt";
-
-type PodiumModel = {
-  key: string;
-  label: string;
-  effort: string;
-  pass: number;
-  costNum: number;
-  tier: "paid" | "free";
-  logo?: ProviderLogoId;
-  color: string;
-};
-
+// The teaser tells the MCP story: the same agent scaffolding through our MCP
+// tools vs. hand-writing every file from the prompt. We surface the model that
+// gains the most from the MCP path (its Prompt-only vs. MCP Core pass@1, plus the
+// token/step reduction that makes it cheaper and faster). Numbers come straight
+// from the committed v2.1 run data, so they can't drift from the full leaderboard.
 const PROVIDER_LOGO: Partial<Record<ScaffbenchModel["provider"], ProviderLogoId>> = {
   claude: "anthropic",
   codex: "openai",
   agy: "google",
 };
 
-// Same per-provider hues as the leaderboard bars (theme-aware via BAR_VARS).
-const PROVIDER_COLOR: Record<ScaffbenchModel["provider"], string> = {
-  claude: "var(--bar-claude)",
-  codex: "var(--bar-codex)",
-  opencode: "var(--bar-opencode)",
-  kilo: "var(--bar-kilo)",
-  agy: "var(--bar-agy)",
-};
-
-const BAR_VARS = cn(
-  "[--bar-claude:#c2410c] [--bar-codex:#15803d] [--bar-opencode:#6d28d9] [--bar-kilo:#0891b2] [--bar-agy:#1a73e8] [--bar-track:#ececec]",
-  "dark:[--bar-claude:#fb923c] dark:[--bar-codex:#4ade80] dark:[--bar-opencode:#a78bfa] dark:[--bar-kilo:#22d3ee] dark:[--bar-agy:#8ab4f8] dark:[--bar-track:#edebe414]",
-);
-
 function isFreeProvider(provider: ScaffbenchModel["provider"]): boolean {
   return provider === "opencode" || provider === "kilo";
 }
 
-// Top three models by Core pass@1 on the prompt path. Ranking rule matches the
-// leaderboard: paid tier first, then best pass, cheaper as the tiebreak.
-function computePodium(): PodiumModel[] {
-  const rows = SCAFFBENCH21_MODELS.flatMap((model) => {
-    const cells = SCAFFBENCH21_CELLS.filter(
-      (cell) => cell.modelKey === model.key && cell.path === TEASER_PATH,
-    );
-    if (cells.length === 0) return [];
-    const scored = cells.filter((cell) => cell.scored);
-    if (scored.length === 0) return [];
-    const passing = scored.filter((cell) => cell.corePass).length;
-    const costs = scored.map((cell) => cell.costUsd).filter((v): v is number => v !== null);
-    return {
-      key: model.key,
-      label: model.label,
-      effort: model.effort,
-      pass: Math.round((100 * passing) / scored.length),
-      costNum: costs.length > 0 ? costs.reduce((s, c) => s + c, 0) / costs.length : Infinity,
-      tier: isFreeProvider(model.provider) ? ("free" as const) : ("paid" as const),
-      logo: PROVIDER_LOGO[model.provider],
-      color: PROVIDER_COLOR[model.provider],
-    };
-  });
-  const rank = { paid: 0, free: 1 } as const;
-  rows.sort(
-    (a, b) => rank[a.tier] - rank[b.tier] || b.pass - a.pass || a.costNum - b.costNum,
-  );
-  return rows.slice(0, 3);
+type PathStat = { pass: number; tokens: number; steps: number };
+
+function mean(a: readonly number[]): number {
+  return a.length ? a.reduce((x, y) => x + y, 0) / a.length : NaN;
 }
 
-const PODIUM = computePodium();
+function aggregate(modelKey: string, path: "prompt" | "mcp"): PathStat | null {
+  const cells = SCAFFBENCH21_CELLS.filter(
+    (cell) => cell.modelKey === modelKey && cell.path === path && cell.scored,
+  );
+  if (cells.length === 0) return null;
+  const passing = cells.filter((cell) => cell.corePass).length;
+  const tokens = cells.map((c) => c.outTokens).filter((v): v is number => v !== null);
+  const steps = cells.map((c) => c.steps).filter((v): v is number => v !== null);
+  return {
+    pass: Math.round((100 * passing) / cells.length),
+    tokens: mean(tokens),
+    steps: mean(steps),
+  };
+}
+
+type McpHighlight = {
+  label: string;
+  isFree: boolean;
+  logo?: ProviderLogoId;
+  prompt: PathStat;
+  mcp: PathStat;
+  tokenFactor: number;
+  stepFactor: number;
+};
+
+// The model whose MCP path most outscores its prompt path — the sharpest proof
+// that the tools, not the model, close the gap.
+function computeMcpHighlight(): McpHighlight | null {
+  let best: McpHighlight | null = null;
+  for (const model of SCAFFBENCH21_MODELS) {
+    const prompt = aggregate(model.key, "prompt");
+    const mcp = aggregate(model.key, "mcp");
+    if (!prompt || !mcp) continue;
+    const uplift = mcp.pass - prompt.pass;
+    if (best && uplift <= best.mcp.pass - best.prompt.pass) continue;
+    best = {
+      label: model.label,
+      isFree: isFreeProvider(model.provider),
+      logo: PROVIDER_LOGO[model.provider],
+      prompt,
+      mcp,
+      tokenFactor:
+        Number.isFinite(prompt.tokens) && mcp.tokens > 0
+          ? Math.round(prompt.tokens / mcp.tokens)
+          : 0,
+      stepFactor:
+        Number.isFinite(prompt.steps) && mcp.steps > 0 ? Math.round(prompt.steps / mcp.steps) : 0,
+    };
+  }
+  return best;
+}
+
+const HIGHLIGHT = computeMcpHighlight();
 
 const cardReveal = { opacity: 0, y: 16 } as const;
 const cardShown = { opacity: 1, y: 0 } as const;
@@ -96,77 +98,121 @@ export default function BenchmarkTeaser() {
           <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
             ScaffBench
           </p>
-          <h2
-            className="mt-4 text-balance font-mono text-3xl font-bold tracking-[-0.03em] sm:text-4xl"
-          >
+          <h2 className="mt-4 text-balance font-mono text-3xl font-bold tracking-[-0.03em] sm:text-4xl">
             {m.benchmarkTeaserTitle()}
           </h2>
           <p className="mt-5 max-w-md text-pretty text-base text-muted-foreground sm:text-lg">
-            {m.llmBenchmarkDescription()}
+            {m.benchmarkTeaserMcpBody()}
           </p>
-          <Link
-            to="/benchmark"
-            className="group mt-8 inline-flex items-center gap-1.5 rounded-md bg-[#C6E853] px-5 py-2.5 text-sm font-semibold text-[#0a0a0a] transition-all hover:gap-2.5"
-          >
-            {m.benchmarkTeaserCta()}
-            <ArrowRight className="size-4" />
-          </Link>
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <Link
+              to="/benchmark"
+              className="group inline-flex items-center gap-1.5 rounded-md bg-[#C6E853] px-5 py-2.5 text-sm font-semibold text-[#0a0a0a] transition-all hover:gap-2.5"
+            >
+              {m.benchmarkTeaserCta()}
+              <ArrowRight className="size-4" />
+            </Link>
+            <Link
+              to="/mcp"
+              className="rounded-md border border-border px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-brand dark:hover:text-brand"
+            >
+              {m.llmTryMcp()}
+            </Link>
+          </div>
         </div>
 
-        <motion.div
-          initial={cardReveal}
-          whileInView={cardShown}
-          viewport={cardViewport}
-          transition={cardTransition}
-          className={cn(
-            "rounded-2xl border border-[#e1e0d8] bg-[#faf9f5] p-5 text-[#1b1a17] [color-scheme:light] dark:border-[rgba(237,235,228,0.10)] dark:bg-[#161614] dark:text-[#dad8d0] dark:[color-scheme:dark] sm:p-6",
-            BAR_VARS,
-          )}
-        >
-          <div className="mb-4 flex items-baseline justify-between gap-3">
-            <p className="text-sm font-semibold">{m.benchmarkTeaserTopModels()}</p>
-            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#71706a] dark:text-[#8f8d84]">
-              Core pass@1 · Prompt
-            </p>
-          </div>
-          <ol className="space-y-3">
-            {PODIUM.map((model, index) => (
-              <PodiumRow key={model.key} model={model} rank={index + 1} />
-            ))}
-          </ol>
-        </motion.div>
+        {HIGHLIGHT ? <McpUpliftCard highlight={HIGHLIGHT} /> : null}
       </div>
     </section>
   );
 }
 
-const RANK_LABEL = ["1st", "2nd", "3rd"];
-const TRACK_STYLE: CSSProperties = { backgroundColor: "var(--bar-track)" };
-
-function PodiumRow({ model, rank }: { model: PodiumModel; rank: number }) {
-  const fillStyle: CSSProperties = { width: `${model.pass}%`, backgroundColor: model.color };
-
+function McpUpliftCard({ highlight }: { highlight: McpHighlight }) {
   return (
-    <li className="grid grid-cols-[1.5rem_minmax(7rem,10rem)_minmax(0,1fr)_2.75rem] items-center gap-3">
-      <span
-        className="font-mono text-xs font-semibold text-[#9c9a93] dark:text-[#6c6a61]"
-        aria-label={RANK_LABEL[rank - 1] ?? `${rank}`}
-      >
-        {rank}
-      </span>
-      <span className="flex min-w-0 items-center gap-1.5">
-        <ProviderLogo logo={model.logo} />
-        <span className="truncate font-mono text-sm font-bold">{model.label}</span>
-        {model.effort ? (
-          <span className="shrink-0 font-mono text-[11px] text-[#9c9a93] dark:text-[#6c6a61]">
-            [{model.effort}]
+    <motion.div
+      initial={cardReveal}
+      whileInView={cardShown}
+      viewport={cardViewport}
+      transition={cardTransition}
+      className="rounded-2xl border border-[#e1e0d8] bg-[#faf9f5] p-5 text-[#1b1a17] [color-scheme:light] dark:border-[rgba(237,235,228,0.10)] dark:bg-[#161614] dark:text-[#dad8d0] dark:[color-scheme:dark] sm:p-6"
+    >
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <span className="flex min-w-0 items-center gap-1.5">
+          <ProviderLogo logo={highlight.logo} />
+          <span className="truncate font-mono text-sm font-bold">{highlight.label}</span>
+        </span>
+        {highlight.isFree ? (
+          <span className="shrink-0 rounded-full border border-[#e1e0d8] px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-[#71706a] dark:border-[rgba(237,235,228,0.14)] dark:text-[#8f8d84]">
+            free model
           </span>
         ) : null}
+      </div>
+
+      <div className="space-y-3">
+        <UpliftBar label="Prompt only" pass={highlight.prompt.pass} accent="muted" />
+        <UpliftBar label="With MCP" pass={highlight.mcp.pass} accent="lime" />
+      </div>
+      <p className="mt-2 text-right font-mono text-[10px] uppercase tracking-[0.14em] text-[#71706a] dark:text-[#8f8d84]">
+        Core pass@1
+      </p>
+
+      <div className="mt-5 grid grid-cols-2 gap-3 border-t border-[#e1e0d8] pt-5 dark:border-[rgba(237,235,228,0.10)]">
+        <StatTile factor={highlight.tokenFactor} unit="fewer tokens" />
+        <StatTile factor={highlight.stepFactor} unit="fewer steps" />
+      </div>
+    </motion.div>
+  );
+}
+
+const BAR_TRACK: CSSProperties = { backgroundColor: "var(--bar-track)" };
+const CARD_VARS = "[--bar-track:#ececec] dark:[--bar-track:#edebe414]";
+
+function UpliftBar({
+  label,
+  pass,
+  accent,
+}: {
+  label: string;
+  pass: number;
+  accent: "muted" | "lime";
+}) {
+  const fillStyle: CSSProperties = {
+    width: `${pass}%`,
+    backgroundColor: accent === "lime" ? "#C6E853" : "var(--bar-muted)",
+  };
+  return (
+    <div
+      className={cn(
+        "grid grid-cols-[6rem_minmax(0,1fr)_2.75rem] items-center gap-3",
+        CARD_VARS,
+        "[--bar-muted:#c9c7be] dark:[--bar-muted:#4a4842]",
+      )}
+    >
+      <span
+        className={cn(
+          "font-mono text-xs",
+          accent === "lime"
+            ? "font-bold text-[#1b1a17] dark:text-[#dad8d0]"
+            : "text-[#71706a] dark:text-[#8f8d84]",
+        )}
+      >
+        {label}
       </span>
-      <span className="h-2 w-full overflow-hidden rounded-full" style={TRACK_STYLE}>
-        <span className="block h-full rounded-full" style={fillStyle} />
+      <span className="h-2.5 w-full overflow-hidden rounded-full" style={BAR_TRACK}>
+        <span className="block h-full rounded-full transition-[width] duration-700 ease-out" style={fillStyle} />
       </span>
-      <span className="text-right font-mono text-sm font-semibold tabular-nums">{model.pass}%</span>
-    </li>
+      <span className="text-right font-mono text-sm font-bold tabular-nums">{pass}%</span>
+    </div>
+  );
+}
+
+function StatTile({ factor, unit }: { factor: number; unit: string }) {
+  return (
+    <div className="rounded-lg bg-[#f1efe7] px-3 py-2.5 dark:bg-[rgba(237,235,228,0.05)]">
+      <p className="font-mono text-xl font-bold tabular-nums">
+        {factor > 1 ? `${factor}×` : "—"}
+      </p>
+      <p className="mt-0.5 text-xs text-[#71706a] dark:text-[#8f8d84]">{unit}</p>
+    </div>
   );
 }

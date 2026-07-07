@@ -464,5 +464,6 @@
   "benchmarkTeaserTitle": "AI 模型构建你的项目有多强？",
   "benchmarkTeaserTopModels": "顶尖模型",
   "benchmarkTeaserCta": "查看完整基准测试",
-  "benchmarkSeoTitle": "ScaffBench — AI 模型构建你的项目有多强？"
+  "benchmarkSeoTitle": "ScaffBench — AI 模型构建你的项目有多强？",
+  "benchmarkTeaserMcpBody": "差别在于我们的 MCP。让任何编程代理接入 Better-Fullstack 的工具，即使是小型免费模型也能用极少的 tokens 和步骤构建几乎一切。"
 }

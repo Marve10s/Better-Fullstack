@@ -464,5 +464,6 @@
   "benchmarkTeaserTitle": "AI 모델은 당신의 프로젝트를 얼마나 잘 만들까요?",
   "benchmarkTeaserTopModels": "상위 모델",
   "benchmarkTeaserCta": "전체 벤치마크 보기",
-  "benchmarkSeoTitle": "ScaffBench — AI 모델은 당신의 프로젝트를 얼마나 잘 만들까요?"
+  "benchmarkSeoTitle": "ScaffBench — AI 모델은 당신의 프로젝트를 얼마나 잘 만들까요?",
+  "benchmarkTeaserMcpBody": "차이는 우리의 MCP입니다. 어떤 코딩 에이전트든 Better-Fullstack 도구에 연결하면 작은 무료 모델조차 훨씬 적은 토큰과 단계로 거의 모든 것을 만들어 냅니다."
 }

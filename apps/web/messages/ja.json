@@ -464,5 +464,6 @@
   "benchmarkTeaserTitle": "AIモデルはあなたのプロジェクトをどれだけうまく構築できるか？",
   "benchmarkTeaserTopModels": "トップモデル",
   "benchmarkTeaserCta": "ベンチマーク全体を見る",
-  "benchmarkSeoTitle": "ScaffBench — AIモデルはあなたのプロジェクトをどれだけうまく構築できるか？"
+  "benchmarkSeoTitle": "ScaffBench — AIモデルはあなたのプロジェクトをどれだけうまく構築できるか？",
+  "benchmarkTeaserMcpBody": "違いは私たちのMCPです。あらゆるコーディングエージェントをBetter-Fullstackのツールに向ければ、小さな無料モデルでもわずかなトークンとステップでほぼすべてを構築します。"
 }

@@ -54,8 +54,8 @@ function HomePage() {
     <main className="min-h-svh">
       <div className="mx-auto max-w-[1480px] border-x border-border">
         <HeroSection />
-        <BenchmarkTeaser />
         <FeaturesSection />
+        <BenchmarkTeaser />
         <CombinationsSection />
         <TestimonialsSection />
         <ContributorsSection />

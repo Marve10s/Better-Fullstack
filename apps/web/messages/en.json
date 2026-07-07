@@ -464,5 +464,6 @@
   "benchmarkTeaserTitle": "How good are AI models at building your projects?",
   "benchmarkTeaserTopModels": "Top models",
   "benchmarkTeaserCta": "See the full benchmark",
-  "benchmarkSeoTitle": "ScaffBench — How good are AI models at building your projects?"
+  "benchmarkSeoTitle": "ScaffBench — How good are AI models at building your projects?",
+  "benchmarkTeaserMcpBody": "The difference is our MCP. Point any coding agent at Better-Fullstack's tools and even a small free model builds almost everything — with a fraction of the tokens and steps."
 }
