@@ -1,20 +1,10 @@
-```
-██████╗ ███████╗████████╗████████╗███████╗██████╗
-██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
-██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
-██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
-██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
-╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
-
-███████╗██╗   ██╗██╗     ██╗     ███████╗████████╗ █████╗  ██████╗██╗  ██╗
-██╔════╝██║   ██║██║     ██║     ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
-█████╗  ██║   ██║██║     ██║     ███████╗   ██║   ███████║██║     █████╔╝
-██╔══╝  ██║   ██║██║     ██║     ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
-██║     ╚██████╔╝███████╗███████╗███████║   ██║   ██║  ██║╚██████╗██║  ██╗
-╚═╝      ╚═════╝ ╚══════╝╚══════╝╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
-```
-
 <div align="center">
+
+<video src="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/main/.github/media/hero.mp4" width="100%" autoplay loop muted playsinline>
+  <img src="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/main/.github/media/hero.gif" alt="Better Fullstack" width="100%" />
+</video>
+
+<br>
 
 **Scaffold production-ready fullstack apps in seconds. Browse 450+ tools across seven ecosystems — the CLI wires everything together.**
 
@@ -103,6 +93,26 @@ yarn create better-fullstack@latest
 
 <br>
 
+### 🌐 The Web Builder
+
+Configure your whole stack visually — every option surfaces with live compatibility, and you get a ready-to-run command. **[Open the App Builder →](https://better-fullstack.dev/new)**
+
+<video src="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/main/.github/media/web-builder.mp4" width="100%" autoplay loop muted playsinline>
+  <img src="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/main/.github/media/web-builder.gif" alt="Web Builder demo" width="100%" />
+</video>
+
+<br>
+
+### 💻 The CLI
+
+`bun create better-fullstack@latest` walks you through a guided prompt flow, then scaffolds a runnable project with every integration pre-wired.
+
+<video src="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/main/.github/media/cli.mp4" width="100%" autoplay loop muted playsinline>
+  <img src="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/main/.github/media/cli.gif" alt="CLI demo" width="100%" />
+</video>
+
+<br>
+
 ## 🤖 AI Agents
 
 Install the Claude Code plugin bundle:
@@ -115,6 +125,33 @@ claude plugin install better-fullstack@better-fullstack
 - **Codex plugin catalog** — `.agents/plugins/marketplace.json`
 - **Any MCP client** — `npx -y create-better-fullstack@latest mcp`
 - **Docs** — [better-fullstack.dev/docs/ai/plugin](https://better-fullstack.dev/docs/ai/plugin)
+
+<br>
+
+Ask any agent to build your stack — the **skill** runs the scaffold workflow, and the **MCP** exposes `bfs_*` tools (check compatibility, plan, create) to any client.
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+**Claude Code plugin** — the skill in action
+
+<video src="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/main/.github/media/skill.mp4" width="100%" autoplay loop muted playsinline>
+  <img src="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/main/.github/media/skill.gif" alt="Claude Code skill demo" width="100%" />
+</video>
+
+</td>
+<td width="50%" valign="top">
+
+**MCP** — `bfs_*` tools in any client
+
+<video src="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/main/.github/media/mcp.mp4" width="100%" autoplay loop muted playsinline>
+  <img src="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/main/.github/media/mcp.gif" alt="MCP tool-call demo" width="100%" />
+</video>
+
+</td>
+</tr>
+</table>
 
 <br>
 
@@ -303,6 +340,16 @@ Databases and hosting providers are shared across all ecosystems.
 | **CLI** | Cobra · BubbleTea |
 
 </details>
+
+<br>
+
+## 📊 ScaffBench
+
+How good are AI coding agents at actually building your stack? [ScaffBench](https://better-fullstack.dev/benchmark) measures them on real fullstack scaffolding tasks — pass rate, tokens, cost, and whether the result actually builds.
+
+<video src="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/main/.github/media/benchmark.mp4" width="100%" autoplay loop muted playsinline>
+  <img src="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/main/.github/media/benchmark.gif" alt="ScaffBench leaderboard" width="100%" />
+</video>
 
 <br>
 
