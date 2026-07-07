@@ -92,7 +92,7 @@ const cardTransition = { duration: 0.5, ease: [0.16, 1, 0.3, 1] } as const;
 
 export default function BenchmarkTeaser() {
   return (
-    <section className="border-t border-border bg-muted/20">
+    <section id="benchmark" className="border-t border-border bg-muted/20">
       <div className="grid items-center gap-12 px-4 py-20 sm:px-8 sm:py-24 lg:grid-cols-[1fr_minmax(0,30rem)] lg:gap-16">
         <div className="max-w-xl">
           <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
