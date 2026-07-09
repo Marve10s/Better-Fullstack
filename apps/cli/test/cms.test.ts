@@ -901,6 +901,11 @@ describe("CMS Options", () => {
         }),
       );
       expectSuccess(result);
+
+      const webPkg = await Bun.file(`${result.projectDir}/apps/web/package.json`).json();
+      expect(webPkg.dependencies["@strapi/client"]).toBeDefined();
+      expect(webPkg.dependencies.qs).toBeDefined();
+      expect(webPkg.devDependencies["@types/qs"]).toBeDefined();
     });
 
     test("strapi with Vinext and PostgreSQL", async () => {

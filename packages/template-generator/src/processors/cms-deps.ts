@@ -4,6 +4,15 @@ import type { VirtualFileSystem } from "../core/virtual-fs";
 
 import { addPackageDependency, type AvailableDependencies } from "../utils/add-deps";
 
+const REACT_CMS_FRONTENDS = new Set([
+  "tanstack-router",
+  "react-router",
+  "react-vite",
+  "tanstack-start",
+  "next",
+  "vinext",
+]);
+
 export function processCMSDeps(vfs: VirtualFileSystem, config: ProjectConfig): void {
   const { cms, frontend, database } = config;
   if (!cms || cms === "none") return;
@@ -14,9 +23,7 @@ export function processCMSDeps(vfs: VirtualFileSystem, config: ProjectConfig): v
     frontend.includes("astro") ||
     frontend.includes("nuxt") ||
     frontend.includes("svelte") ||
-    frontend.some((f) =>
-      ["tanstack-router", "react-router", "react-vite", "tanstack-start"].includes(f),
-    );
+    frontend.some((f) => REACT_CMS_FRONTENDS.has(f));
 
   if (cms === "payload") {
     if (!hasNext) return;
