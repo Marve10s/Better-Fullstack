@@ -30,6 +30,11 @@
 {{/if}}
 {{#if isJavaSpringBoot}}
 		<java.version>21</java.version>
+{{#if isJavaKotlin}}
+		<!-- Pin the Kotlin toolchain to the same version the Gradle variant uses
+		     (the Spring Boot parent manages an older default otherwise). -->
+		<kotlin.version>2.2.20</kotlin.version>
+{{/if}}
 {{#if isJavaOpenApiGenerator}}
 		<openapi-generator.version>7.23.0</openapi-generator.version>
 		<swagger-annotations.version>2.2.52</swagger-annotations.version>
@@ -1076,8 +1081,18 @@
 						<plugin>spring</plugin>
 {{#if hasJavaJpa}}
 						<plugin>jpa</plugin>
+						<plugin>all-open</plugin>
 {{/if}}
 					</compilerPlugins>
+{{#if hasJavaJpa}}
+					<!-- Open @Entity classes so Hibernate can subclass them for lazy
+					     proxies (the jpa plugin only adds the no-arg constructor). -->
+					<pluginOptions>
+						<option>all-open:annotation=jakarta.persistence.Entity</option>
+						<option>all-open:annotation=jakarta.persistence.MappedSuperclass</option>
+						<option>all-open:annotation=jakarta.persistence.Embeddable</option>
+					</pluginOptions>
+{{/if}}
 				</configuration>
 				<dependencies>
 					<dependency>

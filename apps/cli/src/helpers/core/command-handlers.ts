@@ -6,6 +6,8 @@ import pc from "picocolors";
 
 import type { CreateInput, DirectoryConflict, ProjectConfig } from "../../types";
 
+import { getKotlinJavaIncompatibilityReason } from "../../types";
+
 import { BUILDER_URL, getDefaultConfig } from "../../constants";
 import { CreateCommandOptionsSchema } from "../../create-command-input";
 import { gatherConfig } from "../../prompts/config-prompts";
@@ -239,6 +241,21 @@ function shouldPromptForVersionChannel(
   }
 
   return canPromptInteractively();
+}
+
+// Kotlin (javaLanguage) is only wired for a subset of the Java option surface.
+// Interactive prompts filter the incompatible options up front, but flag-driven
+// and config-file runs bypass those prompts — and the create path does not run
+// analyzeStackCompatibility — so re-check here and fall back to Java loudly
+// instead of letting the template generator do it silently.
+function normalizeKotlinJavaSelection(config: ProjectConfig) {
+  if (config.ecosystem !== "java" || config.javaLanguage !== "kotlin") return;
+  const kotlinBlocker = getKotlinJavaIncompatibilityReason(config);
+  if (!kotlinBlocker) return;
+  config.javaLanguage = "java";
+  if (!isSilent()) {
+    log.warn(pc.yellow(`JVM language set to Java: ${kotlinBlocker}`));
+  }
 }
 
 export async function createProjectHandler(
@@ -587,6 +604,8 @@ export async function createProjectHandler(
         config = { ...gatheredConfig, versionChannel };
         validateConfigCompatibility(config, providedFlags, cliInput);
       }
+
+      normalizeKotlinJavaSelection(config);
 
       const preflight = validatePreflightConfig(config);
       if (preflight.hasWarnings && !isSilent()) {

@@ -1260,12 +1260,20 @@ function CreationModeComposer({
       ? allBackendOptions.filter((option) => option.id === "spring-boot" || option.id === "none")
       : allBackendOptions;
   const databaseOptions = getGraphToolOptions("database", "database", "universal");
-  const backendOrmOptions = getGraphToolOptions(
+  const allBackendOrmOptions = getGraphToolOptions(
     backendConfig.ormCategory,
     "orm",
     graphSelection.backendEcosystem,
     backendCapabilityContext,
   );
+  // The Kotlin scaffold only has Kotlin sources for Spring Data JPA —
+  // jOOQ/MyBatis are Java-only (mirrors the spring-boot-only framework filter).
+  const backendOrmOptions =
+    graphSelection.backendEcosystem === "java" && graphSelection.backendLanguage === "kotlin"
+      ? allBackendOrmOptions.filter(
+          (option) => option.id === "spring-data-jpa" || option.id === "none",
+        )
+      : allBackendOrmOptions;
   const backendApiOptions = backendConfig.apiCategory
     ? getGraphToolOptions(
         backendConfig.apiCategory,
