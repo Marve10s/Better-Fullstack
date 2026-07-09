@@ -19,10 +19,38 @@ const RELEASE_BASE_URL = "https://github.com/Marve10s/Better-Fullstack/releases/
 
 export const changelogReleases: ChangelogRelease[] = [
   {
+    version: "v2.1.7",
+    publishedAt: "2026-07-09T19:27:13Z",
+    displayDate: "July 9, 2026",
+    isLatest: true,
+    href: `${RELEASE_BASE_URL}/v2.1.7`,
+    title: "A smoother first run, Kotlin everywhere, and safer project updates",
+    summary:
+      "Better Fullstack 2.1.7 makes starting a project more flexible and returning to one more dependable. Choose how guided you want the CLI to be, use Kotlin as a first-class option in solo and multi-ecosystem stacks, and keep evolving projects without losing their shape, language, or release-channel choices.",
+    highlights: [
+      "Start interactive projects your way: jump to the Web Builder, choose Core for a quick setup, Full for every choice, or Custom for only the sections you care about—across solo and multi-ecosystem stacks.",
+      "Choose Kotlin directly in the Web Builder and multi-ecosystem composer, or keep it grouped with Java; saved configurations, history, copied commands, and later updates remember your selection.",
+      "Keep evolving projects with more confidence: `bfs add`, `bfs update`, and MCP-created projects retain a current baseline, preserve single-app layouts and native backend choices, and avoid unnecessary update conflicts.",
+      "Use release channels predictably: latest and beta selections remain on the channel you chose, while generated commands preserve the details needed to reproduce the same stack.",
+      "Install community capability packs with project-contained writes and reliable failure reporting, making them safer to use in scripts and agent workflows.",
+      "Read localized docs, guides, and posts in the selected language from the first page response, without an English body briefly appearing before the page settles.",
+      "Explore the new ScaffBench MCP path on the homepage, including DeepSeek V4 Flash results across the core benchmark suite.",
+      "Move a builder stack into Claude Code faster with a copy-ready plugin install command in the share dialog.",
+      "Create fresh projects more reliably across Next.js workspaces, Vinext with Strapi, Upstash Redis, Java testing, and multi-ecosystem commands.",
+      "Anonymous usage reporting now distinguishes successful and failed runs, CLI and MCP entry points, and new versus returning installs while keeping error messages and local paths out of telemetry.",
+    ],
+    image: {
+      src: "https://images.unsplash.com/photo-1777711391050-7e0cefd4b33b?q=80&w=2340&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      alt: "Abstract colorful gradient artwork",
+      credit: "Unsplash",
+      creditHref:
+        "https://images.unsplash.com/photo-1777711391050-7e0cefd4b33b?q=80&w=2340&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    },
+  },
+  {
     version: "v2.1.6",
     publishedAt: "2026-07-06T18:32:26Z",
     displayDate: "July 6, 2026",
-    isLatest: true,
     href: `${RELEASE_BASE_URL}/v2.1.6`,
     title: "Safer updates, steadier stack commands, and template fixes",
     summary:
