@@ -77,6 +77,16 @@ describe("shouldAskConfigPromptKey", () => {
     );
     expect(shouldAskConfigPromptKey("typescript", "payments", "full", [])).toBe(true);
   });
+
+  it("scopes shared service prompts for non-TypeScript ecosystems", () => {
+    expect(shouldAskConfigPromptKey("go", "email", "core", [])).toBe(false);
+    expect(shouldAskConfigPromptKey("python", "search", "core", [])).toBe(false);
+    expect(shouldAskConfigPromptKey("rust", "observability", "custom", [])).toBe(false);
+    expect(shouldAskConfigPromptKey("dotnet", "caching", "custom", ["shared-services"])).toBe(
+      true,
+    );
+    expect(shouldAskConfigPromptKey("java", "email", "full", [])).toBe(true);
+  });
 });
 
 describe("scoped prompt defaults", () => {
@@ -93,6 +103,58 @@ describe("scoped prompt defaults", () => {
         {},
       ),
     ).resolves.toBe("cloudflare");
+  });
+
+  it("keeps skipped server deployment non-interactive when Hono can run without deployment", async () => {
+    await expect(
+      getScopedDefaultPromptValue(
+        "serverDeploy",
+        {
+          ecosystem: "typescript",
+          backend: "hono",
+          runtime: "bun",
+          webDeploy: "none",
+        },
+        {},
+      ),
+    ).resolves.toBe("none");
+  });
+
+  it("uses contextual UI defaults when UI styling is skipped", async () => {
+    await expect(
+      getScopedDefaultPromptValue(
+        "uiLibrary",
+        {
+          ecosystem: "typescript",
+          frontend: ["svelte"],
+        },
+        {},
+      ),
+    ).resolves.toBe("daisyui");
+  });
+
+  it("uses Effect backend defaults when type-safety prompts are skipped", async () => {
+    await expect(
+      getScopedDefaultPromptValue(
+        "effect",
+        {
+          ecosystem: "typescript",
+          backend: "effect",
+        },
+        {},
+      ),
+    ).resolves.toBe("effect-full");
+
+    await expect(
+      getScopedDefaultPromptValue(
+        "validation",
+        {
+          ecosystem: "typescript",
+          backend: "effect",
+        },
+        {},
+      ),
+    ).resolves.toBe("effect-schema");
   });
 
   it("treats individual shadcn option flags as stack prompt intent", () => {

@@ -240,6 +240,7 @@ import { getPackageManagerChoice } from "./package-manager";
 import { getWorkspaceShapeChoice } from "./workspace-shape";
 import { getPaymentsChoice } from "./payments";
 import { getRateLimitChoice } from "./rate-limit";
+import { PROMPT_RESOLVER_REGISTRY } from "./prompt-resolver-registry";
 import {
   getPythonAiChoice,
   getPythonApiChoice,
@@ -592,19 +593,96 @@ export function hasStackPromptFlags(flags: Partial<ProjectConfig>) {
   });
 }
 
+function getPromptResolutionValue(key: ConfigPromptKey, results: Partial<PromptGroupResults>, flags: Partial<ProjectConfig>) {
+  const resolver = PROMPT_RESOLVER_REGISTRY[key];
+  if (!resolver) return undefined;
+
+  const frontends = results.frontend ?? flags.frontend;
+  const contextByKey: Record<string, Record<string, unknown>> = {
+    frontend: { frontend: flags.frontend, backend: flags.backend, auth: flags.auth },
+    backend: { backendFramework: flags.backend, frontends },
+    runtime: { runtime: flags.runtime, backend: results.backend },
+    database: { database: flags.database, backend: results.backend, runtime: results.runtime },
+    orm: {
+      orm: flags.orm,
+      hasDatabase: results.database !== undefined && results.database !== "none",
+      database: results.database,
+      backend: results.backend,
+      runtime: results.runtime,
+    },
+    api: {
+      api: flags.api,
+      frontend: frontends,
+      backend: results.backend,
+      astroIntegration: results.astroIntegration,
+    },
+    auth: {
+      auth: flags.auth,
+      backend: results.backend,
+      frontend: frontends,
+      ecosystem: results.ecosystem,
+    },
+    payments: {
+      payments: flags.payments,
+      auth: results.auth,
+      backend: results.backend,
+      frontends,
+    },
+    email: { email: flags.email, backend: results.backend, ecosystem: results.ecosystem },
+    uiLibrary: {
+      uiLibrary: flags.uiLibrary,
+      frontends,
+      astroIntegration: results.astroIntegration,
+    },
+    cssFramework: { cssFramework: flags.cssFramework, uiLibrary: results.uiLibrary },
+    forms: { forms: flags.forms, frontends },
+    stateManagement: { stateManagement: flags.stateManagement, frontends },
+    animation: { animation: flags.animation, frontends },
+    caching: { caching: flags.caching, backend: results.backend, ecosystem: results.ecosystem },
+    search: { search: flags.search, backend: results.backend, ecosystem: results.ecosystem },
+    observability: {
+      observability: flags.observability,
+      backend: results.backend,
+      ecosystem: results.ecosystem,
+    },
+    realtime: { realtime: flags.realtime, backend: results.backend },
+    jobQueue: { jobQueue: flags.jobQueue, backend: results.backend },
+    fileUpload: { fileUpload: flags.fileUpload, backend: results.backend },
+    logging: { logging: flags.logging, backend: results.backend },
+    rateLimit: { rateLimit: flags.rateLimit, backend: results.backend },
+    cms: { cms: flags.cms, backend: results.backend },
+    vectorDb: { vectorDb: flags.vectorDb, backend: results.backend, ecosystem: results.ecosystem },
+    fileStorage: { fileStorage: flags.fileStorage, backend: results.backend },
+  };
+  const selectedValue = flags[key as keyof ProjectConfig];
+  const context = contextByKey[key] ?? { value: selectedValue };
+  const resolution = resolver.resolve(context);
+
+  return resolution.autoValue ?? resolution.initialValue;
+}
+
 export async function getScopedDefaultPromptValue<K extends PromptGroupKey>(
   key: K,
   results: Partial<PromptGroupResults>,
   flags: Partial<ProjectConfig>,
 ): Promise<PromptGroupResults[K]> {
   if (key === "serverDeploy" && results.ecosystem === "typescript") {
-    return getServerDeploymentChoice(
-      flags.serverDeploy,
-      results.runtime,
-      results.backend,
-      results.webDeploy,
-    ) as Promise<PromptGroupResults[K]>;
+    if (flags.serverDeploy !== undefined) return flags.serverDeploy as PromptGroupResults[K];
+    if (results.backend !== "hono") return "none" as PromptGroupResults[K];
+    if (results.runtime === "workers") return "cloudflare" as PromptGroupResults[K];
+    return "none" as PromptGroupResults[K];
   }
+
+  if (key === "effect" && results.ecosystem === "typescript") {
+    return (flags.effect ?? (results.backend === "effect" ? "effect-full" : "none")) as PromptGroupResults[K];
+  }
+
+  if (key === "validation" && results.ecosystem === "typescript" && results.backend === "effect") {
+    return (flags.validation ?? "effect-schema") as PromptGroupResults[K];
+  }
+
+  const resolvedValue = getPromptResolutionValue(key as ConfigPromptKey, results, flags);
+  if (resolvedValue !== undefined) return resolvedValue as PromptGroupResults[K];
 
   return getDefaultPromptValue(key as ConfigPromptKey) as PromptGroupResults[K];
 }

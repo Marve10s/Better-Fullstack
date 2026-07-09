@@ -44,6 +44,12 @@ export const CONFIG_SCOPE_ALWAYS_KEYS = [
   "install",
 ] as const satisfies ConfigPromptKey[];
 
+const sharedServiceSection = {
+  id: "shared-services",
+  label: "Shared Services",
+  promptKeys: ["email", "caching", "search", "observability"],
+} as const satisfies ConfigSection;
+
 const typescriptSections = [
   {
     id: "ui-styling",
@@ -145,6 +151,7 @@ export const CONFIG_SCOPE_REGISTRY = {
   rust: {
     core: ["rustWebFramework", "rustFrontend", "database", "dbSetup", "rustOrm", "rustApi", "rustAuth"],
     sections: [
+      sharedServiceSection,
       {
         id: "cli-libraries",
         label: "CLI & Libraries",
@@ -170,6 +177,7 @@ export const CONFIG_SCOPE_REGISTRY = {
   python: {
     core: ["pythonWebFramework", "database", "dbSetup", "pythonOrm", "pythonAuth", "pythonApi"],
     sections: [
+      sharedServiceSection,
       {
         id: "type-safety-ai",
         label: "Validation & AI",
@@ -195,6 +203,7 @@ export const CONFIG_SCOPE_REGISTRY = {
   go: {
     core: ["goWebFramework", "database", "dbSetup", "goOrm", "goApi", "goAuth"],
     sections: [
+      sharedServiceSection,
       {
         id: "cli-config",
         label: "CLI, Config & Logging",
@@ -215,6 +224,7 @@ export const CONFIG_SCOPE_REGISTRY = {
   java: {
     core: ["javaWebFramework", "javaLanguage", "javaBuildTool", "database", "dbSetup", "javaOrm", "javaAuth", "javaApi"],
     sections: [
+      sharedServiceSection,
       {
         id: "libraries",
         label: "Libraries",
@@ -230,6 +240,7 @@ export const CONFIG_SCOPE_REGISTRY = {
   dotnet: {
     core: ["dotnetWebFramework", "database", "dbSetup", "dotnetOrm", "dotnetAuth", "dotnetApi"],
     sections: [
+      sharedServiceSection,
       {
         id: "quality",
         label: "Testing & Observability",
