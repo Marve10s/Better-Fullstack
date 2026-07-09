@@ -73,6 +73,7 @@ describe("builder recommendation prompt gate", () => {
   it("does not show when stack/config shortcuts are present", () => {
     expect(shouldShow({ input: { frontend: ["next"] } })).toBe(false);
     expect(shouldShow({ input: { yes: true } })).toBe(false);
+    expect(shouldShow({ input: { dryRun: true } })).toBe(false);
     expect(shouldShow({ input: { part: ["frontend:typescript:next"] } })).toBe(false);
     expect(shouldShow({ input: { config: "bts.jsonc" } })).toBe(false);
     expect(shouldShow({ input: {}, hasConfigBase: true })).toBe(false);

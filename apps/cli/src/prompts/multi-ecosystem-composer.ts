@@ -229,11 +229,16 @@ export async function gatherMultiEcosystemConfig(
   const configScope = shouldPromptForScope
     ? promptValue(await getConfigScopeChoice())
     : "full";
-  // The multi-ecosystem TS part is frontend-only, so offer only the sections
-  // whose prompts this composer actually asks.
+  // Offer only the TypeScript sections whose prompts this composer actually asks.
   const typeScriptSections =
     configScope === "custom"
-      ? promptValue(await getConfigSectionsChoice("typescript", [], ["ui-styling"]))
+      ? promptValue(
+          await getConfigSectionsChoice("typescript", [], [
+            "ui-styling",
+            "deploy",
+            "addons-examples",
+          ]),
+        )
       : [];
 
   const frontend = promptValue(

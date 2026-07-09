@@ -434,6 +434,16 @@ const CONFIG_SCOPE_META_KEYS = new Set<PromptGroupKey>([
   "configSections",
 ]);
 
+const SHADCN_FLAG_KEYS = new Set([
+  "shadcnBase",
+  "shadcnStyle",
+  "shadcnIconLibrary",
+  "shadcnColorTheme",
+  "shadcnBaseColor",
+  "shadcnFont",
+  "shadcnRadius",
+]);
+
 // Record form so the compiler enforces completeness: adding a prompt to
 // PromptGroupResults without listing it here is a type error, which in turn
 // forces classifying it in CONFIG_SCOPE_REGISTRY via the coverage test.
@@ -574,15 +584,34 @@ export const CONFIG_PROMPT_ENTRY_KEYS = Object.keys(
   CONFIG_PROMPT_ENTRY_KEY_MAP,
 ) as PromptGroupKey[];
 
-function hasStackPromptFlags(flags: Partial<ProjectConfig>) {
+export function hasStackPromptFlags(flags: Partial<ProjectConfig>) {
   return Object.keys(flags).some((key) => {
     if (key === "projectName" || key === "projectDir" || key === "relativePath") return false;
+    if (SHADCN_FLAG_KEYS.has(key)) return true;
     return CONFIG_PROMPT_ENTRY_KEYS.includes(key as PromptGroupKey);
   });
 }
 
+export async function getScopedDefaultPromptValue<K extends PromptGroupKey>(
+  key: K,
+  results: Partial<PromptGroupResults>,
+  flags: Partial<ProjectConfig>,
+): Promise<PromptGroupResults[K]> {
+  if (key === "serverDeploy" && results.ecosystem === "typescript") {
+    return getServerDeploymentChoice(
+      flags.serverDeploy,
+      results.runtime,
+      results.backend,
+      results.webDeploy,
+    ) as Promise<PromptGroupResults[K]>;
+  }
+
+  return getDefaultPromptValue(key as ConfigPromptKey) as PromptGroupResults[K];
+}
+
 function scopedPrompt<K extends PromptGroupKey>(
   key: K,
+  flags: Partial<ProjectConfig>,
   prompt: (opts: {
     results: Partial<PromptGroupResults>;
   }) => Promise<PromptGroupResults[K] | symbol | undefined> | undefined,
@@ -597,7 +626,7 @@ function scopedPrompt<K extends PromptGroupKey>(
         opts.results.configSections,
       )
     ) {
-      return Promise.resolve(getDefaultPromptValue(key as ConfigPromptKey) as PromptGroupResults[K]);
+      return getScopedDefaultPromptValue(key, opts.results, flags);
     }
 
     return prompt(opts);
@@ -1343,7 +1372,7 @@ export async function gatherConfig(
   const scopedPromptEntries = Object.fromEntries(
     Object.entries(promptEntries).map(([key, prompt]) => [
       key,
-      scopedPrompt(key as PromptGroupKey, prompt as never),
+      scopedPrompt(key as PromptGroupKey, flags, prompt as never),
     ]),
   ) as NavigablePromptGroup<PromptGroupResults>;
 

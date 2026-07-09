@@ -2,6 +2,8 @@ import { describe, expect, it } from "bun:test";
 
 import {
   CONFIG_PROMPT_ENTRY_KEYS,
+  getScopedDefaultPromptValue,
+  hasStackPromptFlags,
 } from "../src/prompts/config-prompts";
 import {
   CONFIG_SCOPE_ALWAYS_KEYS,
@@ -74,5 +76,26 @@ describe("shouldAskConfigPromptKey", () => {
       true,
     );
     expect(shouldAskConfigPromptKey("typescript", "payments", "full", [])).toBe(true);
+  });
+});
+
+describe("scoped prompt defaults", () => {
+  it("preserves contextual server deployment defaults when deployment prompts are skipped", async () => {
+    await expect(
+      getScopedDefaultPromptValue(
+        "serverDeploy",
+        {
+          ecosystem: "typescript",
+          backend: "hono",
+          runtime: "workers",
+          webDeploy: "none",
+        },
+        {},
+      ),
+    ).resolves.toBe("cloudflare");
+  });
+
+  it("treats individual shadcn option flags as stack prompt intent", () => {
+    expect(hasStackPromptFlags({ shadcnStyle: "vega" })).toBe(true);
   });
 });

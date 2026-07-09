@@ -54,6 +54,7 @@ type BuilderPromptGateInput = Pick<CreateInput, "yes" | "part" | "template"> &
     fromHistory?: number;
     yolo?: boolean;
     manualDb?: boolean;
+    dryRun?: boolean;
   };
 
 // Keys that don't express a stack choice; booleans with zod defaults
@@ -114,6 +115,7 @@ export function shouldShowBuilderRecommendationPrompt({
     input.yes ||
     input.yolo ||
     input.manualDb ||
+    input.dryRun ||
     input.part?.length ||
     hasConfigBase ||
     input.config ||
