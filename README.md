@@ -119,16 +119,6 @@ Configure your whole stack visually — every option surfaces with live compatib
 
 <br>
 
-### 💻 The CLI
-
-`bun create better-fullstack@latest` walks you through a guided prompt flow, then scaffolds a runnable project with every integration pre-wired.
-
-<video src="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/main/.github/media/cli.mp4" width="100%" autoplay loop muted playsinline>
-  <img src="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/main/.github/media/cli.gif" alt="CLI demo" width="100%" />
-</video>
-
-<br>
-
 ## 🤖 AI Agents
 
 Install the Claude Code plugin bundle:
