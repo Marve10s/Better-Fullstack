@@ -1,6 +1,6 @@
 {
   "name": "create-better-fullstack",
-  "version": "2.1.6",
+  "version": "2.1.7",
   "description": "Scaffold production-ready fullstack apps in seconds. Pick your stack from 425 options — the CLI wires everything together.",
   "keywords": [
     "algolia",
@@ -128,8 +128,8 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@better-fullstack/template-generator": "^2.1.6",
-    "@better-fullstack/types": "^2.1.6",
+    "@better-fullstack/template-generator": "^2.1.7",
+    "@better-fullstack/types": "^2.1.7",
     "@clack/core": "^0.5.0",
     "@clack/prompts": "^1.6.0",
     "@orpc/server": "^1.14.6",
