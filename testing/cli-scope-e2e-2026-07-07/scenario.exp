@@ -1,0 +1,251 @@
+#!/usr/bin/expect -f
+
+set scenario [lindex $argv 0]
+set repo [lindex $argv 1]
+set workdir [lindex $argv 2]
+set project [lindex $argv 3]
+set transcript [lindex $argv 4]
+set use_user_agent [lindex $argv 5]
+
+set timeout 240
+log_file -noappend $transcript
+
+set env(BTS_TELEMETRY_DISABLED) 1
+if {$use_user_agent == "1"} {
+  set env(npm_config_user_agent) "bun/1.2.0 npm/? node/v22"
+} else {
+  catch {unset env(npm_config_user_agent)}
+}
+
+proc down {count} {
+  for {set i 0} {$i < $count} {incr i} {
+    send "\033\[B"
+    sleep 0.2
+  }
+}
+
+proc choose_no {} {
+  send "\033\[C"
+  sleep 0.2
+  send "\r"
+}
+
+proc choose_none_ai_docs {} {
+  down 3
+  send " "
+  sleep 0.05
+  send "\r"
+}
+
+proc choose_scope {scenario} {
+  sleep 0.3
+  if {$scenario == "s2"} {
+    down 2
+    sleep 0.2
+    send "\r"
+    return
+  }
+  if {$scenario == "s3"} {
+    down 1
+    sleep 0.2
+    send "\r"
+    return
+  }
+  send "\r"
+}
+
+proc choose_sections {scenario} {
+  sleep 1.0
+  if {$scenario == "s2"} {
+    down 3
+    sleep 0.5
+    send " "
+    sleep 0.5
+    down 6
+    sleep 0.5
+    send " "
+    sleep 0.5
+    send "\r"
+    return
+  }
+  send "\r"
+}
+
+proc letters_re {text} {
+  set out ""
+  foreach char [split $text ""] {
+    append out [string map {
+      "\\" "\\\\"
+      "." "\\."
+      "*" "\\*"
+      "+" "\\+"
+      "?" "\\?"
+      "^" "\\^"
+      "$" "\\$"
+      "(" "\\("
+      ")" "\\)"
+      "[" "\\["
+      "]" "\\]"
+      "{" "\\{"
+      "}" "\\}"
+      "|" "\\|"
+    } $char]
+    append out "\\s*"
+  }
+  return $out
+}
+
+set re_continue [letters_re "Howwouldyouliketocontinue"]
+set re_composition [letters_re "Selectprojectcomposition"]
+set re_version [letters_re "Choosedependencyversionchannel"]
+set re_scope [letters_re "Custom"]
+set re_sections [letters_re "Addons"]
+set re_ai_docs [letters_re "GenerateAIdocumentationfiles"]
+set re_git [letters_re "Initializegitrepository"]
+set re_install [letters_re "Installdependencies"]
+set re_ecosystem [letters_re "Selectecosystem"]
+set re_backend_ecosystem [letters_re "Selectbackendecosystem"]
+set re_ts_frontend [letters_re "SelectTypeScriptwebfrontend"]
+set re_workspace [letters_re "Chooseworkspacelayout"]
+set re_select [letters_re "Select"]
+set re_project_created [letters_re "Projectcreated"]
+set re_builder_ready [letters_re "WebBuilderisready"]
+
+set did_continue 0
+set did_version 0
+set did_composition 0
+set did_scope 0
+set did_sections 0
+set did_ecosystem 0
+set did_backend_ecosystem 0
+set did_ts_frontend 0
+set did_workspace 0
+
+cd $workdir
+spawn node "$repo/apps/cli/dist/cli.mjs" create $project
+
+set finished 0
+while {$finished == 0} {
+  expect {
+    -re $re_continue {
+      if {$did_continue == 1} {
+        exp_continue
+      }
+      set did_continue 1
+      if {$scenario == "s4"} {
+        send "\r"
+      } else {
+        down 1
+        sleep 0.2
+        send "\r"
+      }
+      exp_continue
+    }
+    -re $re_version {
+      if {$did_version == 1} {
+        exp_continue
+      }
+      set did_version 1
+      send "\r"
+      exp_continue
+    }
+    -re $re_composition {
+      if {$did_composition == 1} {
+        exp_continue
+      }
+      set did_composition 1
+      if {$scenario == "s6"} {
+        down 1
+        sleep 0.2
+      }
+      send "\r"
+      exp_continue
+    }
+    -re $re_scope {
+      if {$did_scope == 1} {
+        exp_continue
+      }
+      set did_scope 1
+      choose_scope $scenario
+      exp_continue
+    }
+    -re $re_sections {
+      if {$did_sections == 1} {
+        exp_continue
+      }
+      set did_sections 1
+      choose_sections $scenario
+      exp_continue
+    }
+    -re $re_ai_docs {
+      choose_none_ai_docs
+      exp_continue
+    }
+    -re $re_git {
+      choose_no
+      exp_continue
+    }
+    -re $re_install {
+      choose_no
+      exp_continue
+    }
+    -re "Run .*\\?" {
+      choose_no
+      exp_continue
+    }
+    -re $re_ecosystem {
+      if {$did_ecosystem == 1} {
+        exp_continue
+      }
+      set did_ecosystem 1
+      if {$scenario == "s7"} {
+        down 2
+        sleep 0.2
+      }
+      send "\r"
+      exp_continue
+    }
+    -re $re_backend_ecosystem {
+      if {$did_backend_ecosystem == 1} {
+        exp_continue
+      }
+      set did_backend_ecosystem 1
+      send "\r"
+      exp_continue
+    }
+    -re $re_ts_frontend {
+      if {$did_ts_frontend == 1} {
+        exp_continue
+      }
+      set did_ts_frontend 1
+      send "\r"
+      exp_continue
+    }
+    -re $re_workspace {
+      if {$did_workspace == 1} {
+        exp_continue
+      }
+      set did_workspace 1
+      send "\r"
+      exp_continue
+    }
+    -re $re_select {
+      send "\r"
+      exp_continue
+    }
+    -re "$re_project_created|$re_builder_ready" {
+      set finished 1
+    }
+    timeout {
+      puts "TIMEOUT in $scenario"
+      exit 124
+    }
+    eof {
+      set finished 1
+    }
+  }
+}
+
+catch wait result
+set exit_code [lindex $result 3]
+exit $exit_code

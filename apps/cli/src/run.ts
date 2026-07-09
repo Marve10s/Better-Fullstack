@@ -10,6 +10,7 @@ import { historyHandler } from "./commands/history";
 import { telemetryHandler } from "./commands/telemetry";
 import { CreateCommandInputSchema, CreateCommandOptionsSchema } from "./create-command-input";
 import { createProjectHandler } from "./helpers/core/command-handlers";
+import { BUILDER_URL } from "./constants";
 import {
   type AddInput,
   type Addons,
@@ -261,7 +262,6 @@ export const router = os.router({
   builder: os
     .meta({ description: "Open the interactive web-based stack builder at better-fullstack.dev" })
     .handler(async () => {
-      const BUILDER_URL = "https://better-fullstack-web.vercel.app/new";
       try {
         await openUrl(BUILDER_URL);
         log.success(pc.blue("Opened builder in your default browser."));

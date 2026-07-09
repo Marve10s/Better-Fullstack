@@ -14,6 +14,7 @@ export type { AvailableDependencies } from "@better-fullstack/template-generator
 const __filename = fileURLToPath(import.meta.url);
 const distPath = path.dirname(__filename);
 export const PKG_ROOT = path.join(distPath, "../");
+export const BUILDER_URL = "https://better-fullstack-web.vercel.app/new";
 
 export const DEFAULT_CONFIG_BASE = createCliDefaultProjectConfigBase(getUserPkgManager());
 

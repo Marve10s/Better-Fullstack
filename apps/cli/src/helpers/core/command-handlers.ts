@@ -1,4 +1,4 @@
-import { intro, log, outro } from "@clack/prompts";
+import { intro, log, note, outro } from "@clack/prompts";
 import consola from "consola";
 import fs from "fs-extra";
 import path from "node:path";
@@ -6,15 +6,17 @@ import pc from "picocolors";
 
 import type { CreateInput, DirectoryConflict, ProjectConfig } from "../../types";
 
-import { getDefaultConfig } from "../../constants";
+import { BUILDER_URL, getDefaultConfig } from "../../constants";
+import { CreateCommandOptionsSchema } from "../../create-command-input";
 import { gatherConfig } from "../../prompts/config-prompts";
+import { isCancel, isGoBack, navigableSelect } from "../../prompts/navigable";
 import { getProjectName } from "../../prompts/project-name";
 import { getVersionChannelChoice } from "../../prompts/version-channel";
 import { maybeShowTelemetryNotice, trackProjectCreation } from "../../utils/analytics";
 import { resolveCreateConfigBase } from "../../utils/config-source";
 import { isSilent, runWithContextAsync } from "../../utils/context";
 import { displayConfig } from "../../utils/display-config";
-import { CLIError, UserCancelledError } from "../../utils/errors";
+import { CLIError, UserCancelledError, exitCancelled } from "../../utils/errors";
 import { generateReproducibleCommand } from "../../utils/generate-reproducible-command";
 import { runGeneratedChecks } from "../../utils/generated-checks";
 import { displayPreflightWarnings } from "../../utils/preflight-display";
@@ -23,6 +25,7 @@ import { addToHistory } from "../../utils/project-history";
 import { canPromptInteractively } from "../../utils/prompt-environment";
 import { renderTitle } from "../../utils/render-title";
 import { getTemplateConfig, getTemplateDescription } from "../../utils/templates";
+import { openUrl } from "../../utils/open-url";
 import {
   getProvidedFlags,
   processAndValidateFlags,
@@ -33,6 +36,133 @@ import { createProject } from "./create-project";
 
 interface CreateHandlerOptions {
   silent?: boolean;
+}
+
+type BuilderPromptEnvironment = {
+  npmConfigUserAgent?: string;
+  forceBuilderPrompt?: string;
+  skipBuilderPrompt?: string;
+  silent?: boolean;
+  stdinIsTTY?: boolean;
+  stdoutIsTTY?: boolean;
+  ci?: string;
+};
+
+type BuilderPromptGateInput = Pick<CreateInput, "yes" | "part" | "template"> &
+  Partial<ProjectConfig> & {
+    config?: string;
+    fromHistory?: number;
+    yolo?: boolean;
+    manualDb?: boolean;
+  };
+
+// Keys that don't express a stack choice; booleans with zod defaults
+// (yes/yolo/manualDb/...) are always present in parsed input, so their truthy
+// forms are handled explicitly in the gate instead.
+const NON_STACK_CREATE_OPTION_KEYS = new Set([
+  "template",
+  "fromHistory",
+  "config",
+  "yes",
+  "yolo",
+  "manualDb",
+  "part",
+  "verbose",
+  "dryRun",
+  "verify",
+  "versionChannel",
+  "directoryConflict",
+  "renderTitle",
+  "disableAnalytics",
+]);
+
+const CREATE_STACK_FLAG_KEYS = new Set(
+  Object.keys(CreateCommandOptionsSchema.shape).filter(
+    (key) => !NON_STACK_CREATE_OPTION_KEYS.has(key),
+  ),
+);
+
+function hasCreateStackFlags(input: BuilderPromptGateInput): boolean {
+  return Object.entries(input).some(([key, value]) => {
+    if (value === undefined) return false;
+    if (key === "template" && value === "none") return false;
+    return CREATE_STACK_FLAG_KEYS.has(key);
+  });
+}
+
+export function shouldShowBuilderRecommendationPrompt({
+  input,
+  hasConfigBase,
+  environment = {},
+}: {
+  input: BuilderPromptGateInput;
+  hasConfigBase: boolean;
+  environment?: BuilderPromptEnvironment;
+}): boolean {
+  if (environment.skipBuilderPrompt === "1") return false;
+  if (
+    !canPromptInteractively({
+      silent: environment.silent,
+      stdinIsTTY: environment.stdinIsTTY,
+      stdoutIsTTY: environment.stdoutIsTTY,
+      ci: environment.ci,
+    })
+  ) {
+    return false;
+  }
+  if (
+    input.yes ||
+    input.yolo ||
+    input.manualDb ||
+    input.part?.length ||
+    hasConfigBase ||
+    input.config ||
+    input.fromHistory ||
+    (input.template && input.template !== "none")
+  ) {
+    return false;
+  }
+  if (hasCreateStackFlags(input)) return false;
+  if (environment.forceBuilderPrompt === "1") return true;
+  return Boolean(environment.npmConfigUserAgent);
+}
+
+async function showBuilderRecommendationPrompt() {
+  note(
+    `The Web Builder walks the full stack visually — every option, live compatibility checks — and hands you back a single command to run.\n\n${BUILDER_URL}`,
+    "Prefer a visual builder?",
+  );
+
+  const response = await navigableSelect<"open" | "continue">({
+    message: "How would you like to continue?",
+    options: [
+      {
+        value: "open",
+        label: "Open the Web Builder",
+        hint: "recommended — opens in your browser",
+      },
+      {
+        value: "continue",
+        label: "Continue in the CLI",
+      },
+    ],
+    initialValue: "open",
+  });
+
+  if (isCancel(response) || isGoBack(response)) return exitCancelled("Operation cancelled");
+
+  if (response === "open") {
+    try {
+      await openUrl(BUILDER_URL);
+      log.success(pc.blue("Opened Web Builder in your browser."));
+    } catch {
+      log.message(`Please visit ${BUILDER_URL}`);
+    }
+    outro(pc.magenta("Web Builder is ready when you are."));
+    return "opened" as const;
+  }
+
+  return "continue" as const;
 }
 
 function getYesBaseConfig(flagConfig: Partial<ProjectConfig>): ProjectConfig {
@@ -130,6 +260,21 @@ export async function createProjectHandler(
 
       const configBase = await resolveCreateConfigBase(input);
       const hasConfigBase = configBase !== undefined;
+      if (
+        shouldShowBuilderRecommendationPrompt({
+          input,
+          hasConfigBase,
+          environment: {
+            npmConfigUserAgent: process.env.npm_config_user_agent,
+            forceBuilderPrompt: process.env.BFS_FORCE_BUILDER_PROMPT,
+            skipBuilderPrompt: process.env.BFS_SKIP_BUILDER_PROMPT,
+          },
+        })
+      ) {
+        const builderChoice = await showBuilderRecommendationPrompt();
+        if (builderChoice === "opened") return;
+      }
+
       if (hasConfigBase && !isSilent()) {
         log.info(
           pc.cyan(
