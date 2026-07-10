@@ -1,5 +1,8 @@
-import type { BenchmarkSpec, CreationPath, Effort } from "./types";
-import { runCommand } from "./agents/command";
+import * as Effect from "effect/Effect";
+
+import type { BenchmarkSpec, CreationPath, Effort } from "@/types";
+
+import { runCommand } from "@/agents/command";
 
 export const HARNESS_VERSION = "2.0.0";
 // Below this many scored runs a Wilson interval is too wide to be informative
@@ -10,7 +13,11 @@ export const MIN_CI_RUNS = 8;
 // saturated signal. Validation (does it actually run?) dominates; wired-libs and
 // command discipline saturate fast on assisted paths so they are weighted down.
 // Weights sum to 1.
-export const SCAFFBENCH_INDEX_WEIGHTS = { validation: 0.6, wiredLibs: 0.25, discipline: 0.15 } as const;
+export const SCAFFBENCH_INDEX_WEIGHTS = {
+  validation: 0.6,
+  wiredLibs: 0.25,
+  discipline: 0.15,
+} as const;
 export const VALIDATION_CACHE_VERSION = 3;
 
 // Resolved once at the start of a run so every assisted invocation (canonical
@@ -32,13 +39,15 @@ export function bfSpec(pkg: "better-fullstack" | "create-better-fullstack") {
   return `${pkg}@${RESOLVED_BF_VERSION}`;
 }
 
-export async function resolveBfVersion() {
-  const version = await tryCommandText(
-    "npm",
-    ["view", "create-better-fullstack@latest", "version"],
-    process.cwd(),
-  );
-  return version && /^\d+\.\d+\.\d+/.test(version) ? version : "latest";
+export function resolveBfVersion() {
+  return Effect.gen(function* () {
+    const version = yield* tryCommandText(
+      "npm",
+      ["view", "create-better-fullstack@latest", "version"],
+      process.cwd(),
+    );
+    return version && /^\d+\.\d+\.\d+/.test(version) ? version : "latest";
+  });
 }
 export const DEFAULT_EFFORTS: readonly Effort[] = ["default"];
 // Prompt-only is the current methodology (V2.1+): the committed leaderboard is
@@ -270,13 +279,12 @@ export const AI_SEARCH_FLAGS = [
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-export async function tryCommandText(command: string, args: readonly string[], cwd: string) {
-  try {
-    const result = await runCommand(command, args, cwd, FAST_TIMEOUT_MS);
-    if (result.exitCode !== 0) return undefined;
-    return result.stdout.trim();
-  } catch {
-    return undefined;
-  }
+export function tryCommandText(command: string, args: readonly string[], cwd: string) {
+  return runCommand(command, args, cwd, FAST_TIMEOUT_MS).pipe(
+    Effect.map((result) => {
+      if (result.exitCode !== 0) return undefined;
+      return result.stdout.trim();
+    }),
+    Effect.catchAll(() => Effect.succeed(undefined)),
+  );
 }
-

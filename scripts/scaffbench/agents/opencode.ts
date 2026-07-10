@@ -1,8 +1,13 @@
-import { writeFile } from "node:fs/promises";
+import type { CommandExecutor } from "@effect/platform/CommandExecutor";
+
+import * as FileSystem from "@effect/platform/FileSystem";
+import * as Effect from "effect/Effect";
 import path from "node:path";
-import type { CommandResult, Effort } from "../types";
-import { bfSpec, CLAUDE_TIMEOUT_MS } from "../constants";
-import { runCommand } from "./command";
+
+import type { CommandResult, Effort } from "@/types";
+
+import { runCommand } from "@/agents/command";
+import { bfSpec, CLAUDE_TIMEOUT_MS } from "@/constants";
 
 // opencode / Kilo Code adapter — both ship the same CLI, so one function (binary =
 // "opencode" | "kilo") drives both. Runs `<bin> run --format json` in the isolated
@@ -10,7 +15,7 @@ import { runCommand } from "./command";
 // Better-Fullstack MCP server. opencode reports USD cost directly on each
 // step-finish (0 for free models), so no pricing table is needed. Reasoning effort
 // maps to --variant. Output is the JSONL event stream parseOpencodeResult reads.
-export async function runOpencode(input: {
+export function runOpencode(input: {
   binary: "opencode" | "kilo";
   cwd: string;
   prompt: string;
@@ -18,41 +23,47 @@ export async function runOpencode(input: {
   effort: Effort;
   useMcp: boolean;
   bunx: string;
-}): Promise<CommandResult> {
-  if (input.useMcp) {
-    const config = {
-      mcp: {
-        "better-fullstack": {
-          type: "local",
-          command: [input.bunx, bfSpec("create-better-fullstack"), "mcp"],
-          enabled: true,
+}): Effect.Effect<CommandResult, unknown, CommandExecutor | FileSystem.FileSystem> {
+  return Effect.gen(function* () {
+    if (input.useMcp) {
+      const fs = yield* FileSystem.FileSystem;
+      const config = {
+        mcp: {
+          "better-fullstack": {
+            type: "local",
+            command: [input.bunx, bfSpec("create-better-fullstack"), "mcp"],
+            enabled: true,
+          },
         },
-      },
-    };
-    await writeFile(path.join(input.cwd, "opencode.json"), `${JSON.stringify(config, null, 2)}\n`);
-  }
-  const effortArgs = input.effort === "default" ? [] : ["--variant", input.effort];
-  return runCommand(
-    input.binary,
-    [
-      "run",
-      "--format",
-      "json",
-      // Non-interactive: there is no human to approve tool calls, so without this
-      // opencode/Kilo auto-REJECT every bash/edit ("user rejected permission"),
-      // and the agent can't scaffold anything. Matches claude's
-      // --dangerously-skip-permissions and codex's --full-auto.
-      "--dangerously-skip-permissions",
-      "-m",
-      input.model,
-      ...effortArgs,
-      "--dir",
+      };
+      yield* fs.writeFileString(
+        path.join(input.cwd, "opencode.json"),
+        `${JSON.stringify(config, null, 2)}\n`,
+      );
+    }
+    const effortArgs = input.effort === "default" ? [] : ["--variant", input.effort];
+    return yield* runCommand(
+      input.binary,
+      [
+        "run",
+        "--format",
+        "json",
+        // Non-interactive: there is no human to approve tool calls, so without this
+        // opencode/Kilo auto-REJECT every bash/edit ("user rejected permission"),
+        // and the agent can't scaffold anything. Matches claude's
+        // --dangerously-skip-permissions and codex's --full-auto.
+        "--dangerously-skip-permissions",
+        "-m",
+        input.model,
+        ...effortArgs,
+        "--dir",
+        input.cwd,
+        input.prompt,
+      ],
       input.cwd,
-      input.prompt,
-    ],
-    input.cwd,
-    CLAUDE_TIMEOUT_MS,
-  );
+      CLAUDE_TIMEOUT_MS,
+    );
+  });
 }
 // opencode / Kilo Code analogue. Every JSONL event carries a sessionID; each
 // `step-finish` part carries per-step token usage and USD cost (0 for free
@@ -90,4 +101,3 @@ export function parseOpencodeResult(stdout: string): any | null {
     terminal_reason: undefined,
   };
 }
-

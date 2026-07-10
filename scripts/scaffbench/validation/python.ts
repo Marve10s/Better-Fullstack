@@ -1,2 +1,2 @@
-export { validatePythonProject } from "./index";
+export { validatePythonProject } from "@/validation/index";
 

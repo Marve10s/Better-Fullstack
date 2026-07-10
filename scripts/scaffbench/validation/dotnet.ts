@@ -1,2 +1,2 @@
-export { validateDotnetProject } from "./index";
+export { validateDotnetProject } from "@/validation/index";
 

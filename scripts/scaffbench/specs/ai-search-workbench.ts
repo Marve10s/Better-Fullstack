@@ -1,5 +1,5 @@
-import type { BenchmarkSpec } from "../types";
-import { AI_SEARCH_ADDONS, AI_SEARCH_FLAGS, AI_SEARCH_STACK } from "../constants";
+import type { BenchmarkSpec } from "@/types";
+import { AI_SEARCH_ADDONS, AI_SEARCH_FLAGS, AI_SEARCH_STACK } from "@/constants";
 
 export const AiSearchWorkbenchSpec: BenchmarkSpec = {
     id: "ai-search-workbench",

@@ -1,15 +1,19 @@
-import type { CommandResult, Effort } from "../types";
-import { CLAUDE_TIMEOUT_MS } from "../constants";
-import { runCommand } from "./command";
+import type { CommandExecutor } from "@effect/platform/CommandExecutor";
+import type * as Effect from "effect/Effect";
 
-export async function runClaude(input: {
+import type { CommandResult, Effort } from "@/types";
+
+import { runCommand } from "@/agents/command";
+import { CLAUDE_TIMEOUT_MS } from "@/constants";
+
+export function runClaude(input: {
   cwd: string;
   prompt: string;
   model: string;
   effort: Effort;
   maxBudgetUsd: string;
   mcpConfig: string;
-}): Promise<CommandResult> {
+}): Effect.Effect<CommandResult, never, CommandExecutor> {
   const effortArgs = input.effort === "default" ? [] : ["--effort", input.effort];
 
   return runCommand(
@@ -138,4 +142,3 @@ export function parseClaudeResult(stdout: string): any | null {
     }
   }
 }
-

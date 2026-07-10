@@ -1,8 +1,8 @@
 import { existsSync } from "node:fs";
 import { readFile, readdir, stat } from "node:fs/promises";
 import path from "node:path";
-import { walk, parseJsonc } from "./validation/shared";
-import type { BenchmarkSpec, CommandDisciplineCheck, CommandResult, CreationPath, FailureTag, ProjectIndex, PromptStyle, RunOutcome, RunResult, ScaffbenchOptions, StackScore, StepResult, ToolCompliance } from "./types";
+import { walk, parseJsonc } from "@/validation/shared";
+import type { BenchmarkSpec, CommandDisciplineCheck, CommandResult, CreationPath, FailureTag, ProjectIndex, PromptStyle, RunOutcome, RunResult, ScaffbenchOptions, StackScore, StepResult, ToolCompliance } from "@/types";
 
 export function typecheckGate(
   scripts: Record<string, string>,
