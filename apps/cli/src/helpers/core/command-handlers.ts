@@ -6,14 +6,13 @@ import pc from "picocolors";
 
 import type { CreateInput, DirectoryConflict, ProjectConfig } from "../../types";
 
-import { getKotlinJavaIncompatibilityReason } from "../../types";
-
 import { BUILDER_URL, getDefaultConfig } from "../../constants";
 import { CreateCommandOptionsSchema } from "../../create-command-input";
 import { gatherConfig } from "../../prompts/config-prompts";
 import { isCancel, isGoBack, navigableSelect } from "../../prompts/navigable";
 import { getProjectName } from "../../prompts/project-name";
 import { getVersionChannelChoice } from "../../prompts/version-channel";
+import { getKotlinJavaIncompatibilityReason } from "../../types";
 import {
   maybeShowTelemetryNotice,
   type TelemetrySource,
@@ -26,13 +25,13 @@ import { displayConfig } from "../../utils/display-config";
 import { CLIError, UserCancelledError, exitCancelled } from "../../utils/errors";
 import { generateReproducibleCommand } from "../../utils/generate-reproducible-command";
 import { runGeneratedChecks } from "../../utils/generated-checks";
+import { openUrl } from "../../utils/open-url";
 import { displayPreflightWarnings } from "../../utils/preflight-display";
 import { handleDirectoryConflict, setupProjectDirectory } from "../../utils/project-directory";
 import { addToHistory } from "../../utils/project-history";
 import { canPromptInteractively } from "../../utils/prompt-environment";
 import { renderTitle } from "../../utils/render-title";
 import { getTemplateConfig, getTemplateDescription } from "../../utils/templates";
-import { openUrl } from "../../utils/open-url";
 import {
   getProvidedFlags,
   processAndValidateFlags,
@@ -248,11 +247,31 @@ function shouldPromptForVersionChannel(
 // and config-file runs bypass those prompts — and the create path does not run
 // analyzeStackCompatibility — so re-check here and fall back to Java loudly
 // instead of letting the template generator do it silently.
-function normalizeKotlinJavaSelection(config: ProjectConfig) {
-  if (config.ecosystem !== "java" || config.javaLanguage !== "kotlin") return;
+export function normalizeKotlinJavaSelection(config: ProjectConfig) {
+  const hasJavaGraphBackend = config.stackParts?.some(
+    (part) =>
+      part.role === "backend" &&
+      part.ecosystem === "java" &&
+      !part.ownerPartId &&
+      part.source !== "provided",
+  );
+  if ((!hasJavaGraphBackend && config.ecosystem !== "java") || config.javaLanguage !== "kotlin") {
+    return;
+  }
   const kotlinBlocker = getKotlinJavaIncompatibilityReason(config);
   if (!kotlinBlocker) return;
   config.javaLanguage = "java";
+  if (config.stackParts) {
+    config.stackParts = config.stackParts.filter(
+      (part) =>
+        !(
+          part.role === "language" &&
+          part.ecosystem === "java" &&
+          part.toolId === "kotlin" &&
+          part.source !== "provided"
+        ),
+    );
+  }
   if (!isSilent()) {
     log.warn(pc.yellow(`JVM language set to Java: ${kotlinBlocker}`));
   }

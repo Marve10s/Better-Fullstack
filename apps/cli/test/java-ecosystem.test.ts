@@ -1,6 +1,15 @@
 import { describe, expect, it } from "bun:test";
 
+import { getDefaultConfig } from "../src/constants";
+import { normalizeKotlinJavaSelection } from "../src/helpers/core/command-handlers";
 import { createVirtual } from "../src/index";
+import {
+  resolveJavaApiPrompt,
+  resolveJavaBuildToolPrompt,
+  resolveJavaLibrariesPrompt,
+  resolveJavaOrmPrompt,
+  resolveJavaTestingLibrariesPrompt,
+} from "../src/prompts/java-ecosystem";
 import {
   analyzeStackCompatibility,
   type CompatibilityInput,
@@ -15,19 +24,13 @@ import {
   JavaOrmSchema,
   JavaTestingLibrariesSchema,
   JavaWebFrameworkSchema,
+  parseStackPartSpecs,
+  stackPartsToLegacyProjectConfigPartial,
 } from "../src/types";
-import {
-  resolveJavaApiPrompt,
-  resolveJavaBuildToolPrompt,
-  resolveJavaLibrariesPrompt,
-  resolveJavaOrmPrompt,
-  resolveJavaTestingLibrariesPrompt,
-} from "../src/prompts/java-ecosystem";
 import { validateConfigForProgrammaticUse } from "../src/utils/config-validation";
 import { runWithContext } from "../src/utils/context";
-import {
-  extractEnumValues,
-} from "./test-utils";
+import { generateReproducibleCommand } from "../src/utils/generate-reproducible-command";
+import { extractEnumValues } from "./test-utils";
 import {
   getVirtualFileContent as getFileContent,
   hasVirtualFile as hasFile,
@@ -225,7 +228,10 @@ describe("Java Ecosystem", () => {
         hasFile(root, "src/main/java/com/example/javaquarkusmaven/resource/GreetingResource.java"),
       ).toBe(true);
       expect(
-        hasFile(root, "src/main/java/com/example/javaquarkusmaven/controller/HealthController.java"),
+        hasFile(
+          root,
+          "src/main/java/com/example/javaquarkusmaven/controller/HealthController.java",
+        ),
       ).toBe(false);
       expect(hasFile(root, "src/main/resources/application.yml")).toBe(false);
 
@@ -248,9 +254,9 @@ describe("Java Ecosystem", () => {
       expect(pomContent).toContain("<artifactId>archunit-junit5</artifactId>");
       expect(pomContent).toContain("<artifactId>mockito-junit-jupiter</artifactId>");
       expect(pomContent).toContain("<artifactId>quarkus-maven-plugin</artifactId>");
-      expect(hasFile(root, "src/test/java/com/example/javaquarkusmaven/MockitoSmokeTest.java")).toBe(
-        true,
-      );
+      expect(
+        hasFile(root, "src/test/java/com/example/javaquarkusmaven/MockitoSmokeTest.java"),
+      ).toBe(true);
       expect(pomContent).not.toContain("spring-boot-starter-parent");
       expect(applicationContent).toContain("@QuarkusMain");
       expect(resourceContent).toContain('@Path("/hello")');
@@ -453,9 +459,9 @@ describe("Java Ecosystem", () => {
       expect(hasFile(root, "src/test/java/com/example/javaplainmaven/ApplicationTests.java")).toBe(
         true,
       );
-      expect(
-        hasFile(root, "src/test/java/com/example/javaplainmaven/MockitoSmokeTest.java"),
-      ).toBe(true);
+      expect(hasFile(root, "src/test/java/com/example/javaplainmaven/MockitoSmokeTest.java")).toBe(
+        true,
+      );
 
       const pomContent = getFileContent(root, "pom.xml");
       const readmeContent = getFileContent(root, "README.md");
@@ -1162,6 +1168,47 @@ describe("Java Ecosystem", () => {
       }
     });
 
+    it("removes drop-only Java libraries while preserving a compatible Kotlin stack", () => {
+      const result = analyzeStackCompatibility(
+        createJavaCompatibilityInput({
+          javaLanguage: "kotlin",
+          javaWebFramework: "spring-boot",
+          javaBuildTool: "maven",
+          javaOrm: "spring-data-jpa",
+          javaLibraries: ["lombok", "mapstruct", "caffeine"],
+        }),
+      );
+
+      expect(result.adjustedStack?.javaLanguage ?? "kotlin").toBe("kotlin");
+      expect(result.adjustedStack?.javaLibraries).toEqual(["caffeine"]);
+      expect(result.changes).toContainEqual(expect.objectContaining({ category: "javaLibraries" }));
+    });
+
+    it("removes a stale Kotlin graph part when an incompatible multi-stack falls back to Java", () => {
+      const stackParts = parseStackPartSpecs(
+        [
+          "frontend:typescript:next",
+          "backend:java:spring-boot",
+          "backend.language:java:kotlin",
+          "backend.buildTool:java:maven",
+          "backend.orm:java:jooq",
+        ],
+        "selected",
+      );
+      const config = {
+        ...getDefaultConfig(),
+        ...stackPartsToLegacyProjectConfigPartial(stackParts),
+        stackParts,
+      };
+
+      runWithContext({ silent: true }, () => normalizeKotlinJavaSelection(config));
+
+      expect(config.javaLanguage).toBe("java");
+      expect(generateReproducibleCommand(config)).not.toContain(
+        "--part backend.language:java:kotlin",
+      );
+    });
+
     it("disables the kotlin option when the current stack excludes it", () => {
       const quarkusStack = createJavaCompatibilityInput({
         javaLanguage: "java",
@@ -1194,7 +1241,9 @@ describe("Java Ecosystem", () => {
       expect(getDisabledReason(kotlinStack, "javaApi", "openapi-generator")).not.toBeNull();
       expect(getDisabledReason(kotlinStack, "javaLibraries", "lombok")).not.toBeNull();
       expect(getDisabledReason(kotlinStack, "javaLibraries", "mapstruct")).not.toBeNull();
-      expect(getDisabledReason(kotlinStack, "javaTestingLibraries", "testcontainers")).not.toBeNull();
+      expect(
+        getDisabledReason(kotlinStack, "javaTestingLibraries", "testcontainers"),
+      ).not.toBeNull();
       expect(getDisabledReason(kotlinStack, "email", "resend")).not.toBeNull();
       expect(getDisabledReason(kotlinStack, "search", "meilisearch")).not.toBeNull();
       expect(getDisabledReason(kotlinStack, "caching", "upstash-redis")).not.toBeNull();

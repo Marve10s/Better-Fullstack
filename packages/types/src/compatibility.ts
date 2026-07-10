@@ -1662,6 +1662,19 @@ export const analyzeStackCompatibility = (
           category: "javaLanguage",
           message: `Java language set to 'Java' (${kotlinBlocker})`,
         });
+      } else {
+        const kotlinLibraries = nextStack.javaLibraries.filter(
+          (library) => !KOTLIN_DROPPED_JAVA_LIBRARIES.has(library),
+        );
+        if (kotlinLibraries.length !== nextStack.javaLibraries.length) {
+          nextStack.javaLibraries = kotlinLibraries;
+          changed = true;
+          changes.push({
+            category: "javaLibraries",
+            message:
+              "Java annotation-processor libraries cleared (Lombok and MapStruct are not wired for Kotlin)",
+          });
+        }
       }
     }
   }
@@ -1988,11 +2001,7 @@ export const getDisabledReason = (
   // javaOrm and the ecosystem-scoped email/search/caching/observability rules
   // return early for non-TypeScript ecosystems, so later placement would make
   // these rules unreachable.
-  if (
-    category === "javaLanguage" &&
-    optionId === "kotlin" &&
-    currentStack.ecosystem === "java"
-  ) {
+  if (category === "javaLanguage" && optionId === "kotlin" && currentStack.ecosystem === "java") {
     const kotlinBlocker = getKotlinJavaIncompatibilityReason(currentStack);
     if (kotlinBlocker) {
       return kotlinBlocker;
