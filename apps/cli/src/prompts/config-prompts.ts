@@ -127,6 +127,9 @@ import type {
   WebDeploy,
 } from "../types";
 
+import { log } from "@clack/prompts";
+
+import { getKotlinJavaIncompatibilityReason } from "../types";
 import { hasWebStyling, requiresChatSdkVercelAI } from "../utils/compatibility-rules";
 import { exitCancelled } from "../utils/errors";
 import { getUserPkgManager } from "../utils/get-package-manager";
@@ -1247,6 +1250,28 @@ export async function gatherConfig(
         if (results.javaWebFramework !== "spring-boot") {
           return Promise.resolve("java" as JavaLanguage);
         }
+        // The shared capability prompts (email/search/caching/observability)
+        // run before this one; if an already-chosen integration is Java-only,
+        // resolve to Java instead of offering a Kotlin option that would be
+        // normalized away. The build tool is prompted after the language, so a
+        // Maven stand-in satisfies that gate check here — the build-tool prompt
+        // itself hides 'none' when Kotlin is selected.
+        const kotlinBlocker = getKotlinJavaIncompatibilityReason({
+          javaWebFramework: results.javaWebFramework,
+          javaBuildTool: "maven",
+          email: results.email,
+          search: results.search,
+          caching: results.caching,
+          observability: results.observability,
+        });
+        if (kotlinBlocker) {
+          if (flags.javaLanguage === "kotlin") {
+            log.warn(`JVM language set to Java: ${kotlinBlocker}`);
+          } else if (flags.javaLanguage === undefined && flags.javaWebFramework === undefined) {
+            log.info(`Kotlin not offered: ${kotlinBlocker}`);
+          }
+          return Promise.resolve("java" as JavaLanguage);
+        }
         // Honor an explicit --java-language flag (resolves without prompting).
         if (flags.javaLanguage !== undefined) {
           return getJavaLanguageChoice(flags.javaLanguage);
@@ -1262,14 +1287,14 @@ export async function gatherConfig(
       },
       javaBuildTool: ({ results }) => {
         if (results.ecosystem !== "java") return Promise.resolve("none" as JavaBuildTool);
-        return getJavaBuildToolChoice(flags.javaBuildTool);
+        return getJavaBuildToolChoice(flags.javaBuildTool, results.javaLanguage);
       },
       javaOrm: ({ results }) => {
         if (results.ecosystem !== "java") return Promise.resolve("none" as JavaOrm);
         if (results.javaWebFramework !== "spring-boot" || results.javaBuildTool === "none") {
           return Promise.resolve("none" as JavaOrm);
         }
-        return getJavaOrmChoice(flags.javaOrm);
+        return getJavaOrmChoice(flags.javaOrm, results.javaLanguage);
       },
       javaAuth: ({ results }) => {
         if (results.ecosystem !== "java") return Promise.resolve("none" as JavaAuth);
@@ -1283,7 +1308,7 @@ export async function gatherConfig(
         if (results.javaWebFramework !== "spring-boot") {
           return Promise.resolve("none" as JavaApi);
         }
-        return getJavaApiChoice(flags.javaApi);
+        return getJavaApiChoice(flags.javaApi, results.javaLanguage);
       },
       javaLogging: ({ results }) => {
         if (results.ecosystem !== "java") return Promise.resolve("none" as JavaLogging);
@@ -1297,14 +1322,14 @@ export async function gatherConfig(
         if (results.javaWebFramework !== "spring-boot" || results.javaBuildTool === "none") {
           return Promise.resolve([] as JavaLibraries[]);
         }
-        return getJavaLibrariesChoice(flags.javaLibraries);
+        return getJavaLibrariesChoice(flags.javaLibraries, results.javaLanguage);
       },
       javaTestingLibraries: ({ results }) => {
         if (results.ecosystem !== "java") return Promise.resolve([] as JavaTestingLibraries[]);
         if (results.javaBuildTool === "none") {
           return Promise.resolve([] as JavaTestingLibraries[]);
         }
-        return getJavaTestingLibrariesChoice(flags.javaTestingLibraries);
+        return getJavaTestingLibrariesChoice(flags.javaTestingLibraries, results.javaLanguage);
       },
       // .NET ecosystem prompts (skip if not .NET)
       dotnetWebFramework: ({ results }) => {

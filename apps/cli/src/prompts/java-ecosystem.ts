@@ -10,6 +10,10 @@ import type {
   JavaWebFramework,
 } from "../types";
 
+import {
+  KOTLIN_DROPPED_JAVA_LIBRARIES,
+  KOTLIN_UNSUPPORTED_JAVA_TESTING_LIBRARIES,
+} from "../types";
 import { exitCancelled } from "../utils/errors";
 import { isCancel, navigableMultiselect, navigableSelect } from "./navigable";
 import {
@@ -310,12 +314,24 @@ export async function getJavaLanguageChoice(javaLanguage?: JavaLanguage) {
   return response;
 }
 
-export function resolveJavaBuildToolPrompt(javaBuildTool?: JavaBuildTool) {
-  return createStaticSinglePromptResolution(JAVA_BUILD_TOOL_PROMPT_OPTIONS, "maven", javaBuildTool);
+export function resolveJavaBuildToolPrompt(
+  javaBuildTool?: JavaBuildTool,
+  javaLanguage?: JavaLanguage,
+) {
+  // Kotlin compiles through the Maven/Gradle Kotlin plugins, so the
+  // source-only "none" scaffold is Java-only.
+  const options =
+    javaLanguage === "kotlin"
+      ? JAVA_BUILD_TOOL_PROMPT_OPTIONS.filter((option) => option.value !== "none")
+      : JAVA_BUILD_TOOL_PROMPT_OPTIONS;
+  return createStaticSinglePromptResolution(options, "maven", javaBuildTool);
 }
 
-export async function getJavaBuildToolChoice(javaBuildTool?: JavaBuildTool) {
-  const resolution = resolveJavaBuildToolPrompt(javaBuildTool);
+export async function getJavaBuildToolChoice(
+  javaBuildTool?: JavaBuildTool,
+  javaLanguage?: JavaLanguage,
+) {
+  const resolution = resolveJavaBuildToolPrompt(javaBuildTool, javaLanguage);
   if (!resolution.shouldPrompt) {
     return resolution.autoValue ?? "none";
   }
@@ -331,12 +347,20 @@ export async function getJavaBuildToolChoice(javaBuildTool?: JavaBuildTool) {
   return response;
 }
 
-export function resolveJavaOrmPrompt(javaOrm?: JavaOrm) {
-  return createStaticSinglePromptResolution(JAVA_ORM_PROMPT_OPTIONS, "none", javaOrm);
+export function resolveJavaOrmPrompt(javaOrm?: JavaOrm, javaLanguage?: JavaLanguage) {
+  // The Kotlin scaffold only has Kotlin sources for Spring Data JPA;
+  // jOOQ/MyBatis example sources are Java-only.
+  const options =
+    javaLanguage === "kotlin"
+      ? JAVA_ORM_PROMPT_OPTIONS.filter(
+          (option) => option.value !== "jooq" && option.value !== "mybatis",
+        )
+      : JAVA_ORM_PROMPT_OPTIONS;
+  return createStaticSinglePromptResolution(options, "none", javaOrm);
 }
 
-export async function getJavaOrmChoice(javaOrm?: JavaOrm) {
-  const resolution = resolveJavaOrmPrompt(javaOrm);
+export async function getJavaOrmChoice(javaOrm?: JavaOrm, javaLanguage?: JavaLanguage) {
+  const resolution = resolveJavaOrmPrompt(javaOrm, javaLanguage);
   if (!resolution.shouldPrompt) {
     return resolution.autoValue ?? "none";
   }
@@ -373,12 +397,26 @@ export async function getJavaAuthChoice(javaAuth?: JavaAuth) {
   return response;
 }
 
-export function resolveJavaLibrariesPrompt(javaLibraries?: JavaLibraries[]) {
-  return createStaticMultiPromptResolution(JAVA_LIBRARY_PROMPT_OPTIONS, [], javaLibraries);
+export function resolveJavaLibrariesPrompt(
+  javaLibraries?: JavaLibraries[],
+  javaLanguage?: JavaLanguage,
+) {
+  // Lombok/MapStruct are Java annotation-processor tooling the Kotlin
+  // scaffold drops (data classes replace Lombok; MapStruct would need kapt).
+  const options =
+    javaLanguage === "kotlin"
+      ? JAVA_LIBRARY_PROMPT_OPTIONS.filter(
+          (option) => !KOTLIN_DROPPED_JAVA_LIBRARIES.has(option.value),
+        )
+      : JAVA_LIBRARY_PROMPT_OPTIONS;
+  return createStaticMultiPromptResolution(options, [], javaLibraries);
 }
 
-export async function getJavaLibrariesChoice(javaLibraries?: JavaLibraries[]) {
-  const resolution = resolveJavaLibrariesPrompt(javaLibraries);
+export async function getJavaLibrariesChoice(
+  javaLibraries?: JavaLibraries[],
+  javaLanguage?: JavaLanguage,
+) {
+  const resolution = resolveJavaLibrariesPrompt(javaLibraries, javaLanguage);
   if (!resolution.shouldPrompt) {
     return (resolution.autoValue as JavaLibraries[]) ?? [];
   }
@@ -397,16 +435,26 @@ export async function getJavaLibrariesChoice(javaLibraries?: JavaLibraries[]) {
   return response as JavaLibraries[];
 }
 
-export function resolveJavaTestingLibrariesPrompt(javaTestingLibraries?: JavaTestingLibraries[]) {
-  return createStaticMultiPromptResolution(
-    JAVA_TESTING_LIBRARY_PROMPT_OPTIONS,
-    ["junit5"],
-    javaTestingLibraries,
-  );
+export function resolveJavaTestingLibrariesPrompt(
+  javaTestingLibraries?: JavaTestingLibraries[],
+  javaLanguage?: JavaLanguage,
+) {
+  // Only JUnit 5 / Mockito / AssertJ have Kotlin test sources; the remaining
+  // testing libraries ship Java-only example tests.
+  const options =
+    javaLanguage === "kotlin"
+      ? JAVA_TESTING_LIBRARY_PROMPT_OPTIONS.filter(
+          (option) => !KOTLIN_UNSUPPORTED_JAVA_TESTING_LIBRARIES.has(option.value),
+        )
+      : JAVA_TESTING_LIBRARY_PROMPT_OPTIONS;
+  return createStaticMultiPromptResolution(options, ["junit5"], javaTestingLibraries);
 }
 
-export async function getJavaTestingLibrariesChoice(javaTestingLibraries?: JavaTestingLibraries[]) {
-  const resolution = resolveJavaTestingLibrariesPrompt(javaTestingLibraries);
+export async function getJavaTestingLibrariesChoice(
+  javaTestingLibraries?: JavaTestingLibraries[],
+  javaLanguage?: JavaLanguage,
+) {
+  const resolution = resolveJavaTestingLibrariesPrompt(javaTestingLibraries, javaLanguage);
   if (!resolution.shouldPrompt) {
     return (resolution.autoValue as JavaTestingLibraries[]) ?? [];
   }
@@ -466,12 +514,20 @@ const JAVA_LOGGING_PROMPT_OPTIONS: PromptOption<JavaLogging>[] = [
   },
 ];
 
-export function resolveJavaApiPrompt(javaApi?: JavaApi) {
-  return createStaticSinglePromptResolution(JAVA_API_PROMPT_OPTIONS, "none", javaApi);
+export function resolveJavaApiPrompt(javaApi?: JavaApi, javaLanguage?: JavaLanguage) {
+  // The gRPC/OpenAPI Generator codegen paths only emit Java sources; the
+  // Kotlin scaffold covers Spring GraphQL and plain REST.
+  const options =
+    javaLanguage === "kotlin"
+      ? JAVA_API_PROMPT_OPTIONS.filter(
+          (option) => option.value !== "grpc" && option.value !== "openapi-generator",
+        )
+      : JAVA_API_PROMPT_OPTIONS;
+  return createStaticSinglePromptResolution(options, "none", javaApi);
 }
 
-export async function getJavaApiChoice(javaApi?: JavaApi) {
-  const resolution = resolveJavaApiPrompt(javaApi);
+export async function getJavaApiChoice(javaApi?: JavaApi, javaLanguage?: JavaLanguage) {
+  const resolution = resolveJavaApiPrompt(javaApi, javaLanguage);
   if (!resolution.shouldPrompt) {
     return resolution.autoValue ?? "none";
   }

@@ -12,6 +12,7 @@ import { gatherConfig } from "../../prompts/config-prompts";
 import { isCancel, isGoBack, navigableSelect } from "../../prompts/navigable";
 import { getProjectName } from "../../prompts/project-name";
 import { getVersionChannelChoice } from "../../prompts/version-channel";
+import { getKotlinJavaIncompatibilityReason } from "../../types";
 import {
   maybeShowTelemetryNotice,
   type TelemetrySource,
@@ -24,13 +25,13 @@ import { displayConfig } from "../../utils/display-config";
 import { CLIError, UserCancelledError, exitCancelled } from "../../utils/errors";
 import { generateReproducibleCommand } from "../../utils/generate-reproducible-command";
 import { runGeneratedChecks } from "../../utils/generated-checks";
+import { openUrl } from "../../utils/open-url";
 import { displayPreflightWarnings } from "../../utils/preflight-display";
 import { handleDirectoryConflict, setupProjectDirectory } from "../../utils/project-directory";
 import { addToHistory } from "../../utils/project-history";
 import { canPromptInteractively } from "../../utils/prompt-environment";
 import { renderTitle } from "../../utils/render-title";
 import { getTemplateConfig, getTemplateDescription } from "../../utils/templates";
-import { openUrl } from "../../utils/open-url";
 import {
   getProvidedFlags,
   processAndValidateFlags,
@@ -239,6 +240,41 @@ function shouldPromptForVersionChannel(
   }
 
   return canPromptInteractively();
+}
+
+// Kotlin (javaLanguage) is only wired for a subset of the Java option surface.
+// Interactive prompts filter the incompatible options up front, but flag-driven
+// and config-file runs bypass those prompts — and the create path does not run
+// analyzeStackCompatibility — so re-check here and fall back to Java loudly
+// instead of letting the template generator do it silently.
+export function normalizeKotlinJavaSelection(config: ProjectConfig) {
+  const hasJavaGraphBackend = config.stackParts?.some(
+    (part) =>
+      part.role === "backend" &&
+      part.ecosystem === "java" &&
+      !part.ownerPartId &&
+      part.source !== "provided",
+  );
+  if ((!hasJavaGraphBackend && config.ecosystem !== "java") || config.javaLanguage !== "kotlin") {
+    return;
+  }
+  const kotlinBlocker = getKotlinJavaIncompatibilityReason(config);
+  if (!kotlinBlocker) return;
+  config.javaLanguage = "java";
+  if (config.stackParts) {
+    config.stackParts = config.stackParts.filter(
+      (part) =>
+        !(
+          part.role === "language" &&
+          part.ecosystem === "java" &&
+          part.toolId === "kotlin" &&
+          part.source !== "provided"
+        ),
+    );
+  }
+  if (!isSilent()) {
+    log.warn(pc.yellow(`JVM language set to Java: ${kotlinBlocker}`));
+  }
 }
 
 export async function createProjectHandler(
@@ -587,6 +623,8 @@ export async function createProjectHandler(
         config = { ...gatheredConfig, versionChannel };
         validateConfigCompatibility(config, providedFlags, cliInput);
       }
+
+      normalizeKotlinJavaSelection(config);
 
       const preflight = validatePreflightConfig(config);
       if (preflight.hasWarnings && !isSilent()) {
