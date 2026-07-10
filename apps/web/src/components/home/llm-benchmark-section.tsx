@@ -24,6 +24,8 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -1129,6 +1131,8 @@ interface PathMetrics {
   cost: number | null;
   /** avg tool steps over scored cells. null = no readable trajectory. */
   steps: number | null;
+  /** scored cells on this path. 0 = the model was never swept on this path. */
+  scoredCount: number;
 }
 
 // Aggregate one model's cells for one path over its scored specs. A metric with
@@ -1154,6 +1158,7 @@ function aggregatePathMetrics(
     tokens: tokens.length > 0 ? mean(tokens) / 1000 : null,
     cost: costs.length > 0 ? mean(costs) : null,
     steps: steps.length > 0 ? mean(steps) : null,
+    scoredCount: scored.length,
   };
 }
 
@@ -1227,10 +1232,12 @@ function computeV2ModelPoints(dataset: ScaffbenchDataset, path: PathId): V2Model
   return dataset.models.map((model, index) => {
     const metrics = aggregatePathMetrics(dataset, model.key, path);
     const free = isFreeProvider(model.provider);
-    // Free endpoints (opencode / Kilo) genuinely cost $0 — plot them at zero. A
+    // Free endpoints (opencode / Kilo) genuinely cost $0 — plot them at zero,
+    // but ONLY when the model was actually swept on this path (an unswept model
+    // must not materialize on the Cost axis just because $0 is coercible). A
     // PAID model whose adapter doesn't meter cost stays null and is dropped
     // from the Cost axis instead of masquerading as the cheapest run.
-    if (metrics.cost === null && free) {
+    if (metrics.cost === null && free && metrics.scoredCount > 0) {
       metrics.cost = 0;
     }
     return {
@@ -1242,6 +1249,23 @@ function computeV2ModelPoints(dataset: ScaffbenchDataset, path: PathId): V2Model
       ...metrics,
     };
   });
+}
+
+// Whether a model belongs on the current path+metric view at all — in the
+// model picker AND on the plot. A model with no scored runs on the path has
+// nothing to show (e.g. only DeepSeek was swept on MCP). On the Cost axis:
+// the Prompt lane is the paid-model comparison, so free-tier endpoints are
+// excluded there — their $0 dots would fake "cheapest" (some "free" routes are
+// paid subscriptions that report $0) — as are paid runs the harness couldn't
+// meter. Assisted lanes only ever swept free endpoints, so those keep their
+// honest $0 placement.
+function v2PointEligible(point: V2ModelPoint, metric: V2Metric, path: PathId): boolean {
+  if (point.scoredCount === 0) return false;
+  if (metric === "cost") {
+    if (path === "prompt" && point.free) return false;
+    return point.cost !== null;
+  }
+  return true;
 }
 
 export default function LLMBenchmarkSection() {
@@ -1488,16 +1512,23 @@ function BenchmarkChartCard() {
     },
     [version],
   );
+  // Models that belong on this path+metric view at all: swept on the path, and
+  // (on Cost) priced. Drives both the picker list and the plot, so the picker
+  // never offers a model the chart can't honestly place.
+  const v2EligiblePoints = useMemo(
+    () => v2ModelPoints.filter((point) => v2PointEligible(point, v2Metric, v2Path)),
+    [v2ModelPoints, v2Metric, v2Path],
+  );
   // On the Prompt tab the model picker drives visibility. On the assisted MCP tab
   // the picker's paid-only default would hide the only model swept there (DeepSeek,
-  // a free provider), so show every model that has data on the path instead; points
-  // with no data for the active metric are dropped by v2PlottedPoints below.
+  // a free provider), so show every eligible model instead; points with no data
+  // for the active metric are dropped by v2PlottedPoints below.
   const v2VisiblePoints = useMemo(
     () =>
       v2Path === "prompt"
-        ? v2ModelPoints.filter((point) => v2ActiveSelection.includes(point.key))
-        : v2ModelPoints,
-    [v2ModelPoints, v2ActiveSelection, v2Path],
+        ? v2EligiblePoints.filter((point) => v2ActiveSelection.includes(point.key))
+        : v2EligiblePoints,
+    [v2EligiblePoints, v2ActiveSelection, v2Path],
   );
   // A visible model with no data for the active metric is left OFF the plot
   // (footnoted below the chart) — plotting it at 0 would fake "cheapest".
@@ -1551,26 +1582,7 @@ function BenchmarkChartCard() {
       <div className="border-b border-[#e1e0d8] px-3 py-4 dark:border-[rgba(237,235,228,0.10)] sm:px-6">
         <div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-start justify-between gap-4 px-3">
           <div className="flex min-w-0 flex-wrap items-center gap-2.5">
-            <div className="flex items-center gap-1" role="tablist" aria-label="Benchmark version">
-              <PillButton
-                value="v2.1"
-                label="v2.1"
-                active={version === "v2.1"}
-                onSelect={setVersion}
-              />
-              <PillButton
-                value="v2"
-                label={
-                  <>
-                    v2
-                    <VersionLegacyTag />
-                  </>
-                }
-                active={version === "v2"}
-                onSelect={setVersion}
-              />
-              <PillButton value="v1" label="v1" active={version === "v1"} onSelect={setVersion} />
-            </div>
+            <VersionDropdown value={version} onSelect={setVersion} />
             <PathTabs
               active={isV2 ? v2Path : activePath}
               onSelect={setActivePath}
@@ -1605,7 +1617,7 @@ function BenchmarkChartCard() {
             </div>
             {isV2 ? (
               <V2ModelFilter
-                points={v2ModelPoints}
+                points={v2EligiblePoints}
                 selected={v2ActiveSelection}
                 onToggle={toggleV2Model}
               />
@@ -1858,7 +1870,10 @@ function ModelMenuItem({
 }
 
 // V2-family model picker (mirrors the v1 ModelFilter dropdown). One flat list —
-// every model, ranked together, with no paid/free grouping.
+// every model eligible for the active path+metric, ranked together, with no
+// paid/free grouping. The badge counts selected models among the OFFERED ones,
+// so switching to Cost (which hides free/unpriced models) can't show a count
+// larger than the list.
 function V2ModelFilter({
   points,
   selected,
@@ -1868,6 +1883,7 @@ function V2ModelFilter({
   selected: readonly string[];
   onToggle: (key: string) => void;
 }) {
+  const selectedShown = points.filter((point) => selected.includes(point.key)).length;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -1876,7 +1892,7 @@ function V2ModelFilter({
       >
         {m.llmModels()}
         <span className="rounded-sm bg-[#C6E853] px-1.5 font-mono text-[10px] font-semibold text-[#0a0a0a]">
-          {selected.length}
+          {selectedShown}
         </span>
         <ChevronDown className="size-3.5" />
       </DropdownMenuTrigger>
@@ -2554,26 +2570,7 @@ function ScaffbenchLeaderboardCard() {
       <div className="border-b border-[#e1e0d8] px-3 py-4 dark:border-[rgba(237,235,228,0.10)] sm:px-6">
         <div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-center justify-between gap-3 px-3">
           <div className="flex flex-wrap items-center gap-2.5">
-            <div className="flex items-center gap-1" role="tablist" aria-label="Benchmark version">
-              <PillButton
-                value="v2.1"
-                label="v2.1"
-                active={version === "v2.1"}
-                onSelect={setVersion}
-              />
-              <PillButton
-                value="v2"
-                label={
-                  <>
-                    v2
-                    <VersionLegacyTag />
-                  </>
-                }
-                active={version === "v2"}
-                onSelect={setVersion}
-              />
-              <PillButton value="v1" label="v1" active={version === "v1"} onSelect={setVersion} />
-            </div>
+            <VersionDropdown value={version} onSelect={setVersion} />
             <div className="flex items-center gap-1" role="tablist" aria-label="Creation path">
               {isV2 ? (
                 // V2-family shows the version's restricted tab set (pathTabsFor):
@@ -2768,6 +2765,51 @@ function VersionLegacyTag() {
     <span className="ml-1 select-none font-mono text-[9px] font-medium uppercase tracking-[0.12em] opacity-60">
       legacy
     </span>
+  );
+}
+
+// Benchmark-generation picker for both the graph and the leaderboard. The
+// generations outgrew the pill row (v1 · v2 legacy · v2.1 crowded the toolbar
+// next to the path pills), so they live in a compact dropdown: the trigger
+// names the active generation, the menu single-selects among all three.
+function VersionDropdown({
+  value,
+  onSelect,
+}: {
+  value: BenchmarkVersionId;
+  onSelect: (version: BenchmarkVersionId) => void;
+}) {
+  const handleChange = useCallback(
+    (next: unknown) => {
+      onSelect(next as BenchmarkVersionId);
+    },
+    [onSelect],
+  );
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        aria-label="Benchmark version"
+        className="inline-flex cursor-pointer items-center gap-1.5 rounded-md bg-[#1b1a17] px-3 py-1.5 text-xs font-semibold text-[#faf9f5] transition-opacity hover:opacity-85 dark:bg-[#dad8d0] dark:text-[#161614]"
+      >
+        {value}
+        {value === "v2" ? <VersionLegacyTag /> : null}
+        <ChevronDown className="size-3.5" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="start"
+        className={cn("w-44 max-w-[calc(100vw-2rem)]", CHART_THEME_VARS)}
+      >
+        <DropdownMenuRadioGroup value={value} onValueChange={handleChange}>
+          <DropdownMenuRadioItem value="v2.1">v2.1</DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="v2">
+            v2
+            <VersionLegacyTag />
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="v1">v1</DropdownMenuRadioItem>
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
