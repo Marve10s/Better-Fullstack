@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 
 import { buildBenchmarkDataset, serializeBenchmarkDataset } from "./build-benchmark-data";
-import type { ScaffbenchSummary } from "./scaffbench-v2-lib";
+import type { ScaffbenchSummary } from "@/index";
 
 function fixtureSummary(): ScaffbenchSummary {
   return {

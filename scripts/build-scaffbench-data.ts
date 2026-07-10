@@ -15,7 +15,7 @@ import {
   extractToolUses,
   parseCodexResult,
   providerForModel,
-} from "./scaffbench-v2-lib";
+} from "@/index";
 
 const BASE = "testing/llm-benchmarks/v2";
 const RUNS = [

@@ -1,1 +1,1 @@
-export { runOpencode as runKilo } from "./opencode";
+export { runOpencode as runKilo } from "@/agents/opencode";

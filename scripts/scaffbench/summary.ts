@@ -1,9 +1,8 @@
+import * as Effect from "effect/Effect";
 import { existsSync } from "node:fs";
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
-import { agentLabelForModel } from "./agents";
-import { resolvedBfVersion, SCAFFBENCH_INDEX_WEIGHTS, MIN_CI_RUNS, HARNESS_VERSION, tryCommandText } from "./constants";
-import { validationPassed, qualityPassed, classifyOutcome } from "./scoring";
+
 import type {
   BenchmarkSpec,
   Effort,
@@ -12,7 +11,17 @@ import type {
   ScaffbenchOptions,
   ScaffbenchSummary,
   SummaryAggregate,
-} from "./types";
+} from "@/types";
+
+import { agentLabelForModel } from "@/agents";
+import {
+  resolvedBfVersion,
+  SCAFFBENCH_INDEX_WEIGHTS,
+  MIN_CI_RUNS,
+  HARNESS_VERSION,
+  tryCommandText,
+} from "@/constants";
+import { validationPassed, qualityPassed, classifyOutcome } from "@/scoring";
 
 export function aggregateResults(results: readonly RunResult[]) {
   return {
@@ -336,41 +345,43 @@ function formatSeconds(ms: number) {
   return `${(ms / 1000).toFixed(1)}s`;
 }
 
-export async function collectMetadata(options: ScaffbenchOptions) {
-  const gitHead = await tryCommandText("git", ["rev-parse", "HEAD"], process.cwd());
-  const gitBranch = await tryCommandText("git", ["branch", "--show-current"], process.cwd());
-  const bunVersion = await tryCommandText(
-    existsSync(`${process.env.HOME}/.bun/bin/bun`) ? `${process.env.HOME}/.bun/bin/bun` : "bun",
-    ["--version"],
-    process.cwd(),
-  );
-  // The assisted paths exercise the PUBLISHED generator (pinned at run start via
-  // resolvedBfVersion() and used by every assisted invocation), not repo HEAD, so
-  // record the exact version under test; gitHead only describes the local checkout.
-  const bfGeneratorVersion = resolvedBfVersion() === "latest" ? undefined : resolvedBfVersion();
-  const toolchains = await collectToolchainVersions();
-  return {
-    cwd: process.cwd(),
-    gitHead,
-    gitBranch,
-    bunVersion,
-    nodeVersion: process.version,
-    platform: process.platform,
-    arch: process.arch,
-    // Validation runs non-frozen network installs on the host toolchains below,
-    // so a published pass/fail is qualified by this environment.
-    environmentQualified: true,
-    toolchains,
-    bfGeneratorVersion,
-    model: options.model,
-    effectiveReasoning: options.efforts.map((effort) => ({
-      effort,
-      effectiveReasoning: effectiveReasoning(options.model, effort),
-    })),
-  };
+export function collectMetadata(options: ScaffbenchOptions) {
+  return Effect.gen(function* () {
+    const gitHead = yield* tryCommandText("git", ["rev-parse", "HEAD"], process.cwd());
+    const gitBranch = yield* tryCommandText("git", ["branch", "--show-current"], process.cwd());
+    const bunVersion = yield* tryCommandText(
+      existsSync(`${process.env.HOME}/.bun/bin/bun`) ? `${process.env.HOME}/.bun/bin/bun` : "bun",
+      ["--version"],
+      process.cwd(),
+    );
+    // The assisted paths exercise the PUBLISHED generator (pinned at run start via
+    // resolvedBfVersion() and used by every assisted invocation), not repo HEAD, so
+    // record the exact version under test; gitHead only describes the local checkout.
+    const bfGeneratorVersion = resolvedBfVersion() === "latest" ? undefined : resolvedBfVersion();
+    const toolchains = yield* collectToolchainVersions();
+    return {
+      cwd: process.cwd(),
+      gitHead,
+      gitBranch,
+      bunVersion,
+      nodeVersion: process.version,
+      platform: process.platform,
+      arch: process.arch,
+      // Validation runs non-frozen network installs on the host toolchains below,
+      // so a published pass/fail is qualified by this environment.
+      environmentQualified: true,
+      toolchains,
+      bfGeneratorVersion,
+      model: options.model,
+      effectiveReasoning: options.efforts.map((effort) => ({
+        effort,
+        effectiveReasoning: effectiveReasoning(options.model, effort),
+      })),
+    };
+  });
 }
 
-async function collectToolchainVersions() {
+function collectToolchainVersions() {
   const probes: Record<string, readonly [string, readonly string[]]> = {
     rustc: ["rustc", ["--version"]],
     cargo: ["cargo", ["--version"]],
@@ -381,13 +392,18 @@ async function collectToolchainVersions() {
     protoc: ["protoc", ["--version"]],
     psql: ["psql", ["--version"]],
   };
-  const entries = await Promise.all(
-    Object.entries(probes).map(async ([name, [command, args]]) => {
-      const version = await tryCommandText(command, [...args], process.cwd());
-      return [name, version] as const;
-    }),
-  );
-  return Object.fromEntries(entries);
+  return Effect.gen(function* () {
+    const entries = yield* Effect.forEach(
+      Object.entries(probes),
+      ([name, [command, args]]) =>
+        Effect.gen(function* () {
+          const version = yield* tryCommandText(command, [...args], process.cwd());
+          return [name, version] as const;
+        }),
+      { concurrency: "unbounded" },
+    );
+    return Object.fromEntries(entries);
+  });
 }
 
 export function effectiveReasoning(model: string, effort: Effort) {

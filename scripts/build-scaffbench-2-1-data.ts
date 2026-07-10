@@ -20,7 +20,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 import { corePass, fullPass } from "./build-scaffbench-data";
-import { extractToolUses, providerForModel } from "./scaffbench-v2-lib";
+import { extractToolUses, providerForModel } from "@/index";
 
 // Each source = one (model, effort) leaderboard row. `specs` restricts which
 // cells are emitted (omit = all specs in the summary).

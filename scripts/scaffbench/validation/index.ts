@@ -1,12 +1,29 @@
-import { createHash } from "node:crypto";
+import * as Effect from "effect/Effect";
 import { existsSync, readdirSync } from "node:fs";
 import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { bfSpec, HARNESS_VERSION, VALIDATION_CACHE_VERSION, VALIDATION_TIMEOUT_MS } from "../constants";
-import { runCommand, tail } from "../agents/command";
-import { typecheckGate } from "../scoring";
-import { parseJsonc, walk } from "./shared";
-import type { BenchmarkSpec, CommandResult, ProjectValidation, RunResult, ScaffbenchOptions, StepResult } from "../types";
+
+import type {
+  BenchmarkSpec,
+  CommandResult,
+  ProjectValidation,
+  RunResult,
+  ScaffbenchOptions,
+  StepResult,
+} from "@/types";
+
+import { runCommand, tail } from "@/agents/command";
+import { bfSpec, VALIDATION_TIMEOUT_MS } from "@/constants";
+import { typecheckGate } from "@/scoring";
+import { parseJsonc, walk } from "@/validation/shared";
+
+function fromPromise<A>(evaluate: () => Promise<A>) {
+  return Effect.tryPromise({ try: evaluate, catch: (cause) => cause });
+}
+
+function commandStep(command: string, args: readonly string[], cwd: string) {
+  return runCommand(command, args, cwd, VALIDATION_TIMEOUT_MS).pipe(Effect.map(toStep));
+}
 
 // Every manifest the validators understand — Java/Gradle, Elixir, and .NET
 // included, so a real backend project is never scored project-not-found just
@@ -108,333 +125,219 @@ function dropNestedRoots(roots: string[]) {
 // later ecosystem's install/build keys silently overwrite an earlier one's).
 const SUBROOT_CAP = 3;
 
-export async function validateProject(
+export function validateProject(
   spec: BenchmarkSpec,
   projectDir: string | null,
   options: ScaffbenchOptions,
-): Promise<ProjectValidation> {
-  if (!projectDir) return { projectExists: false, steps: {} };
-  const steps: Record<string, StepResult | undefined> = {};
+) {
+  return Effect.gen(function* () {
+    if (!projectDir) return { projectExists: false, steps: {} } as ProjectValidation;
+    const steps: Record<string, StepResult | undefined> = {};
 
-  const prefixFor = (root: string) =>
-    root === projectDir ? "" : path.relative(projectDir, root).split(path.sep).join("/");
-  const merge = (incoming: Record<string, StepResult | undefined>, prefix: string, eco: string) => {
-    for (const [key, step] of Object.entries(incoming)) {
-      if (!step) continue;
-      const target = prefix ? `${prefix}:${key}` : key;
-      // Same-directory ecosystem collision (e.g. root package.json + root
-      // Cargo.toml both produce "build"): namespace by ecosystem instead of
-      // overwriting the earlier verdict.
-      steps[steps[target] === undefined ? target : `${eco}:${key}`] = step;
-    }
-  };
-  // Sub-roots never run the project-level doctor/route checks (bfs metadata and
-  // the dev server are root concerns).
-  const subOptions = { ...options, doctorCheck: false, routeCheck: false };
-  // Roots beyond the cap are disclosed as "na" marker steps (visible in the
-  // step record, excluded from scoring) instead of being silently ignored.
-  const capRoots = (roots: string[], eco: string) => {
-    for (const dropped of roots.slice(SUBROOT_CAP)) {
-      steps[`${prefixFor(dropped)}:unvalidated`] = naStep(
-        `${eco} root over the ${SUBROOT_CAP}-root cap — not validated`,
-      );
-    }
-    return roots.slice(0, SUBROOT_CAP);
-  };
+    const prefixFor = (root: string) =>
+      root === projectDir ? "" : path.relative(projectDir, root).split(path.sep).join("/");
+    const merge = (
+      incoming: Record<string, StepResult | undefined>,
+      prefix: string,
+      eco: string,
+    ) => {
+      for (const [key, step] of Object.entries(incoming)) {
+        if (!step) continue;
+        const target = prefix ? `${prefix}:${key}` : key;
+        // Same-directory ecosystem collision (e.g. root package.json + root
+        // Cargo.toml both produce "build"): namespace by ecosystem instead of
+        // overwriting the earlier verdict.
+        steps[steps[target] === undefined ? target : `${eco}:${key}`] = step;
+      }
+    };
+    // Sub-roots never run the project-level doctor/route checks (bfs metadata and
+    // the dev server are root concerns).
+    const subOptions = { ...options, doctorCheck: false, routeCheck: false };
+    // Roots beyond the cap are disclosed as "na" marker steps (visible in the
+    // step record, excluded from scoring) instead of being silently ignored.
+    const capRoots = (roots: string[], eco: string) => {
+      for (const dropped of roots.slice(SUBROOT_CAP)) {
+        steps[`${prefixFor(dropped)}:unvalidated`] = naStep(
+          `${eco} root over the ${SUBROOT_CAP}-root cap — not validated`,
+        );
+      }
+      return roots.slice(0, SUBROOT_CAP);
+    };
 
-  // TS/bun — workspace-shaped: the shallowest package.json drives its members.
-  const bunRoots = capRoots(
-    dropNestedRoots(await findManifestRoots(projectDir, ["package.json"])),
-    "bun",
-  );
-  for (const root of bunRoots) {
-    const isRoot = root === projectDir;
-    const bunSteps = await validateBunProject(root, isRoot ? options : subOptions);
-    merge(bunSteps, prefixFor(root), "bun");
-    // A root whose validation is install-only (no build script, no typecheck
-    // surface) measures ~nothing — the near-vacuous-pass shape. Descend into the
-    // member apps so the verdict reflects code, not the root manifest's scripts.
-    if (isRoot && bunSteps.install?.exitCode === 0 && !bunSteps.build && !bunSteps.typecheck) {
-      const members = dropNestedRoots(
-        (await findManifestRoots(projectDir, ["package.json"])).filter((r) => r !== projectDir),
-      ).slice(0, SUBROOT_CAP);
-      for (const member of members) {
-        merge(await validateBunProject(member, subOptions), prefixFor(member), "bun");
+    // TS/bun — workspace-shaped: the shallowest package.json drives its members.
+    const bunRoots = capRoots(
+      dropNestedRoots(yield* fromPromise(() => findManifestRoots(projectDir, ["package.json"]))),
+      "bun",
+    );
+    for (const root of bunRoots) {
+      const isRoot = root === projectDir;
+      const bunSteps = yield* validateBunProject(root, isRoot ? options : subOptions);
+      merge(bunSteps, prefixFor(root), "bun");
+      // A root whose validation is install-only (no build script, no typecheck
+      // surface) measures ~nothing — the near-vacuous-pass shape. Descend into the
+      // member apps so the verdict reflects code, not the root manifest's scripts.
+      if (isRoot && bunSteps.install?.exitCode === 0 && !bunSteps.build && !bunSteps.typecheck) {
+        const members = dropNestedRoots(
+          (yield* fromPromise(() => findManifestRoots(projectDir, ["package.json"]))).filter(
+            (r) => r !== projectDir,
+          ),
+        ).slice(0, SUBROOT_CAP);
+        for (const member of members) {
+          merge(yield* validateBunProject(member, subOptions), prefixFor(member), "bun");
+        }
       }
     }
-  }
 
-  const nativeProfiles = new Set(spec.validationProfile.native ?? []);
-  // Rust/Python — workspace-shaped like bun: shallowest manifest wins.
-  const cargoRoots = capRoots(
-    dropNestedRoots(await findManifestRoots(projectDir, ["Cargo.toml"])),
-    "cargo",
-  );
-  for (const root of cargoRoots) {
-    merge(
-      await validateCargoProject(root, root === projectDir ? options : subOptions),
-      prefixFor(root),
+    const nativeProfiles = new Set(spec.validationProfile.native ?? []);
+    // Rust/Python — workspace-shaped like bun: shallowest manifest wins.
+    const cargoRoots = capRoots(
+      dropNestedRoots(yield* fromPromise(() => findManifestRoots(projectDir, ["Cargo.toml"]))),
       "cargo",
     );
-  }
-  const pythonRoots = capRoots(
-    dropNestedRoots(await findManifestRoots(projectDir, ["pyproject.toml"])),
-    "python",
-  );
-  for (const root of pythonRoots) {
-    merge(
-      await validatePythonProject(root, root === projectDir ? options : subOptions),
-      prefixFor(root),
+    for (const root of cargoRoots) {
+      merge(
+        yield* validateCargoProject(root, root === projectDir ? options : subOptions),
+        prefixFor(root),
+        "cargo",
+      );
+    }
+    const pythonRoots = capRoots(
+      dropNestedRoots(yield* fromPromise(() => findManifestRoots(projectDir, ["pyproject.toml"]))),
       "python",
     );
-  }
-  // Go — every go.mod is an independent module: `go build ./...` in a parent
-  // module never descends into a nested module, so validate each root.
-  const goRoots = capRoots(await findManifestRoots(projectDir, ["go.mod"]), "go");
-  for (const root of goRoots) {
-    merge(
-      await validateGoProject(root, root === projectDir ? options : subOptions),
-      prefixFor(root),
+    for (const root of pythonRoots) {
+      merge(
+        yield* validatePythonProject(root, root === projectDir ? options : subOptions),
+        prefixFor(root),
+        "python",
+      );
+    }
+    // Go — every go.mod is an independent module: `go build ./...` in a parent
+    // module never descends into a nested module, so validate each root.
+    const goRoots = capRoots(
+      yield* fromPromise(() => findManifestRoots(projectDir, ["go.mod"])),
       "go",
     );
-  }
-  if (nativeProfiles.has("dotnet") || (await hasDotnetProject(projectDir))) {
-    merge(await validateDotnetProject(projectDir, options), "", "dotnet");
-  }
-  // Java/Elixir run ONLY on an explicit native profile — NOT file autodetect.
-  // A React Native app ships an Android `build.gradle` (apps/native/android), and
-  // a loose gradle autodetect would wrongly run `gradlew compileJava` on a
-  // TS/bun project and clobber its bun validation. Every Java/Elixir spec
-  // declares validationProfile.native, so the explicit gate is sufficient.
-  if (nativeProfiles.has("java")) {
-    merge(await validateJavaProject(projectDir, options), "", "java");
-  }
-  if (nativeProfiles.has("elixir")) {
-    merge(await validateElixirProject(projectDir, options), "", "elixir");
-  }
-
-  const validation: ProjectValidation = {
-    projectExists: true,
-    steps,
-    install: steps.install ?? steps.dotnetRestore,
-    build: steps.build ?? steps.dotnetBuild ?? steps.cargoCheck,
-    checkTypes: steps.typecheck,
-    lint: steps.lint,
-    format: steps.format,
-    test: steps.test,
-    doctor: steps.doctor,
-    route: steps.route,
-  };
-  return validation;
-}
-
-export async function validateProjectCached(
-  spec: BenchmarkSpec,
-  projectDir: string,
-  options: ScaffbenchOptions,
-): Promise<ProjectValidation> {
-  const sourceHash = await hashProjectSource(projectDir);
-  const cacheKey = validationCacheKey(spec, options, sourceHash);
-  const cacheDir = path.join(options.outDir, "validation-cache");
-  const cachePath = path.join(cacheDir, `${cacheKey}.json`);
-
-  if (existsSync(cachePath)) {
-    try {
-      const cached = JSON.parse(await readFile(cachePath, "utf8"));
-      if (cached?.validation?.projectExists) {
-        return {
-          ...cached.validation,
-          sourceHash,
-          cacheKey,
-          cacheHit: true,
-          deferred: false,
-        };
-      }
-    } catch {}
-  }
-
-  const validation = await validateProject(spec, projectDir, options);
-  const withCacheMeta: ProjectValidation = {
-    ...validation,
-    sourceHash,
-    cacheKey,
-    cacheHit: false,
-    deferred: false,
-  };
-  if (cacheableValidation(withCacheMeta)) {
-    await mkdir(cacheDir, { recursive: true });
-    await writeFile(
-      cachePath,
-      `${JSON.stringify(
-        {
-          version: VALIDATION_CACHE_VERSION,
-          createdAt: new Date().toISOString(),
-          specId: spec.id,
-          validation: withCacheMeta,
-        },
-        null,
-        2,
-      )}\n`,
-    );
-  }
-  return withCacheMeta;
-}
-
-function cacheableValidation(validation: ProjectValidation) {
-  return !Object.values(validation.steps).some((step) => step?.timedOut || step?.spawnError);
-}
-
-function validationCacheKey(spec: BenchmarkSpec, options: ScaffbenchOptions, sourceHash: string) {
-  const hash = createHash("sha256");
-  hash.update(
-    JSON.stringify({
-      version: VALIDATION_CACHE_VERSION,
-      harnessVersion: HARNESS_VERSION,
-      specId: spec.id,
-      sourceHash,
-      qualityGate: options.qualityGate,
-      doctorCheck: options.doctorCheck,
-      routeCheck: options.routeCheck,
-    }),
-  );
-  return hash.digest("hex");
-}
-
-async function hashProjectSource(projectDir: string) {
-  const hash = createHash("sha256");
-  for (const filePath of await listHashableFiles(projectDir)) {
-    const relative = path.relative(projectDir, filePath).split(path.sep).join("/");
-    hash.update(relative);
-    hash.update("\0");
-    hash.update(await readFile(filePath));
-    hash.update("\0");
-  }
-  return hash.digest("hex");
-}
-
-async function listHashableFiles(root: string) {
-  const skip = new Set([
-    "node_modules",
-    ".git",
-    "dist",
-    "build",
-    ".next",
-    ".turbo",
-    "coverage",
-    "target",
-    ".venv",
-    "bin",
-    "obj",
-  ]);
-  const files: string[] = [];
-
-  async function walk(dir: string) {
-    const entries = await readdir(dir, { withFileTypes: true });
-    for (const entry of entries) {
-      if (skip.has(entry.name)) continue;
-      const entryPath = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        await walk(entryPath);
-      } else if (entry.isFile()) {
-        files.push(entryPath);
-      }
+    for (const root of goRoots) {
+      merge(
+        yield* validateGoProject(root, root === projectDir ? options : subOptions),
+        prefixFor(root),
+        "go",
+      );
     }
-  }
+    if (nativeProfiles.has("dotnet") || (yield* fromPromise(() => hasDotnetProject(projectDir)))) {
+      merge(yield* validateDotnetProject(projectDir, options), "", "dotnet");
+    }
+    // Java/Elixir run ONLY on an explicit native profile — NOT file autodetect.
+    // A React Native app ships an Android `build.gradle` (apps/native/android), and
+    // a loose gradle autodetect would wrongly run `gradlew compileJava` on a
+    // TS/bun project and clobber its bun validation. Every Java/Elixir spec
+    // declares validationProfile.native, so the explicit gate is sufficient.
+    if (nativeProfiles.has("java")) {
+      merge(yield* validateJavaProject(projectDir, options), "", "java");
+    }
+    if (nativeProfiles.has("elixir")) {
+      merge(yield* validateElixirProject(projectDir, options), "", "elixir");
+    }
 
-  await walk(root);
-  return files.sort();
+    const validation: ProjectValidation = {
+      projectExists: true,
+      steps,
+      install: steps.install ?? steps.dotnetRestore,
+      build: steps.build ?? steps.dotnetBuild ?? steps.cargoCheck,
+      checkTypes: steps.typecheck,
+      lint: steps.lint,
+      format: steps.format,
+      test: steps.test,
+      doctor: steps.doctor,
+      route: steps.route,
+    };
+    return validation;
+  });
 }
 
-export async function validateBunProject(projectDir: string, options: ScaffbenchOptions) {
-  const steps: Record<string, StepResult | undefined> = {};
-  const packageJsonPath = path.join(projectDir, "package.json");
-  if (!existsSync(packageJsonPath)) return steps;
+export function validateBunProject(projectDir: string, options: ScaffbenchOptions) {
+  return Effect.gen(function* () {
+    const steps: Record<string, StepResult | undefined> = {};
+    const packageJsonPath = path.join(projectDir, "package.json");
+    if (!existsSync(packageJsonPath)) return steps;
 
-  const bun = existsSync(`${process.env.HOME}/.bun/bin/bun`)
-    ? `${process.env.HOME}/.bun/bin/bun`
-    : "bun";
-  steps.install = toStep(await runCommand(bun, ["install"], projectDir, VALIDATION_TIMEOUT_MS));
-  if (steps.install.exitCode !== 0 || steps.install.timedOut) return steps;
+    const bun = existsSync(`${process.env.HOME}/.bun/bin/bun`)
+      ? `${process.env.HOME}/.bun/bin/bun`
+      : "bun";
+    steps.install = yield* commandStep(bun, ["install"], projectDir);
+    if (steps.install.exitCode !== 0 || steps.install.timedOut) return steps;
 
-  const scripts = await readPackageScripts(packageJsonPath);
-  if (scripts.build)
-    steps.build = toStep(
-      await runCommand(bun, ["run", "build"], projectDir, VALIDATION_TIMEOUT_MS),
-    );
-  const gate = typecheckGate(scripts, existsSync(path.join(projectDir, "tsconfig.json")));
-  if (gate === "tsc") {
-    // No typecheck script shipped: fall back to `tsc --build` so a TS project
-    // cannot dodge type-checking by omitting the script. `--build` (unlike
-    // `--noEmit`) descends into project references, so a root tsconfig with
-    // `files: []` + `references` still type-checks the referenced app/packages.
-    const bunx = existsSync(`${process.env.HOME}/.bun/bin/bunx`)
-      ? `${process.env.HOME}/.bun/bin/bunx`
-      : "bunx";
-    steps.typecheck = toStep(
-      await runCommand(bunx, ["tsc", "--build"], projectDir, VALIDATION_TIMEOUT_MS),
-    );
-  } else if (gate) {
-    steps.typecheck = toStep(
-      await runCommand(bun, ["run", gate], projectDir, VALIDATION_TIMEOUT_MS),
-    );
-  }
-  // Quality gate — every check is READ-ONLY (never mutates the scaffold) and runs
-  // the project-LOCAL, version-pinned tool (node_modules/.bin/*) after install, so
-  // the verdict is reproducible and a step can't launder a real problem into a
-  // pass by auto-fixing it. A missing tool is a `skipStep` (disqualifies Full),
-  // never a silent exit-0 pass — that exit-0 skip + the `biome check --write`
-  // fallback were the Finding-1 inflation that made Full == Core for TS cells.
-  if (options.qualityGate || scripts.lint) {
-    const biomeBin = localBin(projectDir, "biome");
-    const eslintBin = localBin(projectDir, "eslint");
-    steps.lint = scripts.lint
-      ? toStep(await runCommand(bun, ["run", "lint"], projectDir, VALIDATION_TIMEOUT_MS))
-      : biomeBin
-        ? toStep(await runCommand(biomeBin, ["lint", "."], projectDir, VALIDATION_TIMEOUT_MS))
-        : eslintBin
-          ? toStep(await runCommand(eslintBin, ["."], projectDir, VALIDATION_TIMEOUT_MS))
-          : skipStep("lint (no linter configured)");
-  }
-  if (options.qualityGate) {
-    // Read-only format check — deliberately NOT the project's `format`/`check`
-    // scripts: generated BFS projects ship `check: biome check --write .`, which
-    // auto-fixes and always exits 0. `biome format` (no --write) / `prettier
-    // --check` report formatting drift without writing. NOTE: Biome 2.5.1 removed
-    // the `--check` flag ("--check is not expected in this context"); the default
-    // `biome format` is already read-only and exits non-zero on unformatted code.
-    const biomeBin = localBin(projectDir, "biome");
-    const prettierBin = localBin(projectDir, "prettier");
-    steps.format = biomeBin
-      ? toStep(await runCommand(biomeBin, ["format", "."], projectDir, VALIDATION_TIMEOUT_MS))
-      : prettierBin
-        ? toStep(await runCommand(prettierBin, ["--check", "."], projectDir, VALIDATION_TIMEOUT_MS))
-        : skipStep("format (no formatter configured)");
-    // A scaffold with no test script is genuinely testless -> n/a (excluded from
-    // Full), neither a free pass nor a failure.
-    steps.test = scripts.test
-      ? toStep(await runCommand(bun, ["run", "test"], projectDir, VALIDATION_TIMEOUT_MS))
-      : naStep("test (no test script)");
-  }
-  if (options.doctorCheck) {
-    const bunx = existsSync(`${process.env.HOME}/.bun/bin/bunx`)
-      ? `${process.env.HOME}/.bun/bin/bunx`
-      : "bunx";
-    steps.doctor = toStep(
-      await runCommand(
+    const scripts = yield* fromPromise(() => readPackageScripts(packageJsonPath));
+    if (scripts.build) steps.build = yield* commandStep(bun, ["run", "build"], projectDir);
+    const gate = typecheckGate(scripts, existsSync(path.join(projectDir, "tsconfig.json")));
+    if (gate === "tsc") {
+      // No typecheck script shipped: fall back to `tsc --build` so a TS project
+      // cannot dodge type-checking by omitting the script. `--build` (unlike
+      // `--noEmit`) descends into project references, so a root tsconfig with
+      // `files: []` + `references` still type-checks the referenced app/packages.
+      const bunx = existsSync(`${process.env.HOME}/.bun/bin/bunx`)
+        ? `${process.env.HOME}/.bun/bin/bunx`
+        : "bunx";
+      steps.typecheck = yield* commandStep(bunx, ["tsc", "--build"], projectDir);
+    } else if (gate) {
+      steps.typecheck = yield* commandStep(bun, ["run", gate], projectDir);
+    }
+    // Quality gate — every check is READ-ONLY (never mutates the scaffold) and runs
+    // the project-LOCAL, version-pinned tool (node_modules/.bin/*) after install, so
+    // the verdict is reproducible and a step can't launder a real problem into a
+    // pass by auto-fixing it. A missing tool is a `skipStep` (disqualifies Full),
+    // never a silent exit-0 pass — that exit-0 skip + the `biome check --write`
+    // fallback were the Finding-1 inflation that made Full == Core for TS cells.
+    if (options.qualityGate || scripts.lint) {
+      const biomeBin = localBin(projectDir, "biome");
+      const eslintBin = localBin(projectDir, "eslint");
+      steps.lint = scripts.lint
+        ? yield* commandStep(bun, ["run", "lint"], projectDir)
+        : biomeBin
+          ? yield* commandStep(biomeBin, ["lint", "."], projectDir)
+          : eslintBin
+            ? yield* commandStep(eslintBin, ["."], projectDir)
+            : skipStep("lint (no linter configured)");
+    }
+    if (options.qualityGate) {
+      // Read-only format check — deliberately NOT the project's `format`/`check`
+      // scripts: generated BFS projects ship `check: biome check --write .`, which
+      // auto-fixes and always exits 0. `biome format` (no --write) / `prettier
+      // --check` report formatting drift without writing. NOTE: Biome 2.5.1 removed
+      // the `--check` flag ("--check is not expected in this context"); the default
+      // `biome format` is already read-only and exits non-zero on unformatted code.
+      const biomeBin = localBin(projectDir, "biome");
+      const prettierBin = localBin(projectDir, "prettier");
+      steps.format = biomeBin
+        ? yield* commandStep(biomeBin, ["format", "."], projectDir)
+        : prettierBin
+          ? yield* commandStep(prettierBin, ["--check", "."], projectDir)
+          : skipStep("format (no formatter configured)");
+      // A scaffold with no test script is genuinely testless -> n/a (excluded from
+      // Full), neither a free pass nor a failure.
+      steps.test = scripts.test
+        ? yield* commandStep(bun, ["run", "test"], projectDir)
+        : naStep("test (no test script)");
+    }
+    if (options.doctorCheck) {
+      const bunx = existsSync(`${process.env.HOME}/.bun/bin/bunx`)
+        ? `${process.env.HOME}/.bun/bin/bunx`
+        : "bunx";
+      steps.doctor = yield* commandStep(
         bunx,
         [bfSpec("create-better-fullstack"), "doctor", ".", "--skip-checks", "--json"],
         projectDir,
-        VALIDATION_TIMEOUT_MS,
-      ),
-    );
-  }
-  if (options.routeCheck) {
-    steps.route = scripts.dev
-      ? await runProjectRouteCheck(projectDir, options.outDir)
-      : naStep("route-check (no dev script)");
-  }
+      );
+    }
+    if (options.routeCheck) {
+      steps.route = scripts.dev
+        ? yield* fromPromise(() => runProjectRouteCheck(projectDir, options.outDir))
+        : naStep("route-check (no dev script)");
+    }
 
-  return steps;
+    return steps;
+  });
 }
 
 async function runProjectRouteCheck(projectDir: string, outDir: string): Promise<StepResult> {
@@ -444,8 +347,8 @@ async function runProjectRouteCheck(projectDir: string, outDir: string): Promise
   const start = Date.now();
   let handle: any = null;
   try {
-    const devCheck = await import("../testing/lib/dev-check");
-    const routeCheck = await import("../testing/lib/route-check");
+    const devCheck = await import("../../../testing/lib/dev-check");
+    const routeCheck = await import("../../../testing/lib/route-check");
     handle = await devCheck.startDevServer(projectDir, config);
     const result = await routeCheck.runRouteCheck(
       handle,
@@ -465,7 +368,7 @@ async function runProjectRouteCheck(projectDir: string, outDir: string): Promise
   } finally {
     if (handle) {
       try {
-        const devCheck = await import("../testing/lib/dev-check");
+        const devCheck = await import("../../../testing/lib/dev-check");
         await devCheck.stopDevServer(handle);
       } catch {}
     }
@@ -516,126 +419,99 @@ function verifyStepToHarnessStep(result: any): StepResult {
   };
 }
 
-export async function validateCargoProject(projectDir: string, options: ScaffbenchOptions) {
-  const steps: Record<string, StepResult | undefined> = {};
-  if (!existsSync(path.join(projectDir, "Cargo.toml"))) return steps;
-  steps.cargoCheck = toStep(
-    await runCommand("cargo", ["check"], projectDir, VALIDATION_TIMEOUT_MS),
-  );
-  if (options.qualityGate) {
-    steps.format = toStep(
-      await runCommand("cargo", ["fmt", "--check"], projectDir, VALIDATION_TIMEOUT_MS),
-    );
-    steps.lint = toStep(
-      await runCommand(
-        "cargo",
-        ["clippy", "--", "-D", "warnings"],
-        projectDir,
-        VALIDATION_TIMEOUT_MS,
-      ),
-    );
-    steps.test = toStep(await runCommand("cargo", ["test"], projectDir, VALIDATION_TIMEOUT_MS));
-  }
-  return steps;
+export function validateCargoProject(projectDir: string, options: ScaffbenchOptions) {
+  return Effect.gen(function* () {
+    const steps: Record<string, StepResult | undefined> = {};
+    if (!existsSync(path.join(projectDir, "Cargo.toml"))) return steps;
+    steps.cargoCheck = yield* commandStep("cargo", ["check"], projectDir);
+    if (options.qualityGate) {
+      steps.format = yield* commandStep("cargo", ["fmt", "--check"], projectDir);
+      steps.lint = yield* commandStep("cargo", ["clippy", "--", "-D", "warnings"], projectDir);
+      steps.test = yield* commandStep("cargo", ["test"], projectDir);
+    }
+    return steps;
+  });
 }
 
-export async function validatePythonProject(projectDir: string, options: ScaffbenchOptions) {
-  const steps: Record<string, StepResult | undefined> = {};
-  if (!existsSync(path.join(projectDir, "pyproject.toml"))) return steps;
-  steps.install =
-    steps.install ??
-    toStep(await runCommand("uv", ["sync", "--all-extras"], projectDir, VALIDATION_TIMEOUT_MS));
-  if (steps.install.exitCode !== 0 || steps.install.timedOut) return steps;
-  const srcDir = existsSync(path.join(projectDir, "src")) ? "src/" : ".";
-  steps.typecheck = toStep(
-    await runCommand(
+export function validatePythonProject(projectDir: string, options: ScaffbenchOptions) {
+  return Effect.gen(function* () {
+    const steps: Record<string, StepResult | undefined> = {};
+    if (!existsSync(path.join(projectDir, "pyproject.toml"))) return steps;
+    steps.install =
+      steps.install ?? (yield* commandStep("uv", ["sync", "--all-extras"], projectDir));
+    if (steps.install.exitCode !== 0 || steps.install.timedOut) return steps;
+    const srcDir = existsSync(path.join(projectDir, "src")) ? "src/" : ".";
+    steps.typecheck = yield* commandStep(
       "uv",
       ["run", "python", "-m", "compileall", "-q", srcDir],
       projectDir,
-      VALIDATION_TIMEOUT_MS,
-    ),
-  );
-  if (options.qualityGate) {
-    steps.lint = toStep(
-      await runCommand("uv", ["run", "ruff", "check", "."], projectDir, VALIDATION_TIMEOUT_MS),
     );
-    // Read-only format check, for parity with the TS/Rust/Go gates (was missing).
-    steps.format = toStep(
-      await runCommand(
+    if (options.qualityGate) {
+      steps.lint = yield* commandStep("uv", ["run", "ruff", "check", "."], projectDir);
+      // Read-only format check, for parity with the TS/Rust/Go gates (was missing).
+      steps.format = yield* commandStep(
         "uv",
         ["run", "ruff", "format", "--check", "."],
         projectDir,
-        VALIDATION_TIMEOUT_MS,
-      ),
-    );
-    // pytest exit 5 = "no tests collected": a genuinely testless scaffold -> n/a
-    // (excluded from Full), not a failure (the old bare pytest would fail it) and
-    // not a pass. Any other non-zero stays a real test failure.
-    const pytest = toStep(
-      await runCommand("uv", ["run", "pytest"], projectDir, VALIDATION_TIMEOUT_MS),
-    );
-    steps.test = pytest.exitCode === 5 ? naStep("pytest (no tests collected)") : pytest;
-  }
-  return steps;
+      );
+      // pytest exit 5 = "no tests collected": a genuinely testless scaffold -> n/a
+      // (excluded from Full), not a failure (the old bare pytest would fail it) and
+      // not a pass. Any other non-zero stays a real test failure.
+      const pytest = yield* commandStep("uv", ["run", "pytest"], projectDir);
+      steps.test = pytest.exitCode === 5 ? naStep("pytest (no tests collected)") : pytest;
+    }
+    return steps;
+  });
 }
 
-export async function validateGoProject(projectDir: string, options: ScaffbenchOptions) {
-  const steps: Record<string, StepResult | undefined> = {};
-  if (!existsSync(path.join(projectDir, "go.mod"))) return steps;
-  steps.install =
-    steps.install ??
-    toStep(await runCommand("go", ["mod", "tidy"], projectDir, VALIDATION_TIMEOUT_MS));
-  if (steps.install.exitCode !== 0 || steps.install.timedOut) return steps;
-  steps.build =
-    steps.build ??
-    toStep(await runCommand("go", ["build", "./..."], projectDir, VALIDATION_TIMEOUT_MS));
-  if (options.qualityGate) {
-    steps.lint = toStep(
-      await runCommand("go", ["vet", "./..."], projectDir, VALIDATION_TIMEOUT_MS),
-    );
-    // Read-only format check, for parity with the other gates (was missing).
-    // `gofmt -l .` lists unformatted files but exits 0 regardless, so treat any
-    // listed file as a failure.
-    const gofmt = await runCommand("gofmt", ["-l", "."], projectDir, VALIDATION_TIMEOUT_MS);
-    const unformatted = gofmt.stdout.trim();
-    steps.format = toStep(
-      gofmt.exitCode === 0 && unformatted
-        ? {
-            ...gofmt,
-            exitCode: 1,
-            stderr: `gofmt: ${unformatted.split("\n").filter(Boolean).length} file(s) need formatting:\n${unformatted}`,
-          }
-        : gofmt,
-    );
-    // go test reports "no test files" and exits 0 for a testless scaffold, which
-    // is an acceptable trivially-green test step (cf. cargo test). (TS/Python map
-    // their testless idioms to n/a; the Full outcome is the same either way.)
-    steps.test = toStep(
-      await runCommand("go", ["test", "./..."], projectDir, VALIDATION_TIMEOUT_MS),
-    );
-  }
-  return steps;
+export function validateGoProject(projectDir: string, options: ScaffbenchOptions) {
+  return Effect.gen(function* () {
+    const steps: Record<string, StepResult | undefined> = {};
+    if (!existsSync(path.join(projectDir, "go.mod"))) return steps;
+    steps.install = steps.install ?? (yield* commandStep("go", ["mod", "tidy"], projectDir));
+    if (steps.install.exitCode !== 0 || steps.install.timedOut) return steps;
+    steps.build = steps.build ?? (yield* commandStep("go", ["build", "./..."], projectDir));
+    if (options.qualityGate) {
+      steps.lint = yield* commandStep("go", ["vet", "./..."], projectDir);
+      // Read-only format check, for parity with the other gates (was missing).
+      // `gofmt -l .` lists unformatted files but exits 0 regardless, so treat any
+      // listed file as a failure.
+      const gofmt = yield* runCommand("gofmt", ["-l", "."], projectDir, VALIDATION_TIMEOUT_MS);
+      const unformatted = gofmt.stdout.trim();
+      steps.format = toStep(
+        gofmt.exitCode === 0 && unformatted
+          ? {
+              ...gofmt,
+              exitCode: 1,
+              stderr: `gofmt: ${unformatted.split("\n").filter(Boolean).length} file(s) need formatting:\n${unformatted}`,
+            }
+          : gofmt,
+      );
+      // go test reports "no test files" and exits 0 for a testless scaffold, which
+      // is an acceptable trivially-green test step (cf. cargo test). (TS/Python map
+      // their testless idioms to n/a; the Full outcome is the same either way.)
+      steps.test = yield* commandStep("go", ["test", "./..."], projectDir);
+    }
+    return steps;
+  });
 }
 
-export async function validateDotnetProject(projectDir: string, options: ScaffbenchOptions) {
-  const steps: Record<string, StepResult | undefined> = {};
-  const roots = await findDotnetRoots(projectDir);
-  if (roots.length === 0) return steps;
+export function validateDotnetProject(projectDir: string, options: ScaffbenchOptions) {
+  return Effect.gen(function* () {
+    const steps: Record<string, StepResult | undefined> = {};
+    const roots = yield* fromPromise(() => findDotnetRoots(projectDir));
+    if (roots.length === 0) return steps;
 
-  const serverRoot = roots.find((root) => root.endsWith(path.join("apps", "server"))) ?? roots[0];
-  steps.dotnetRestore = toStep(
-    await runCommand("dotnet", ["restore"], serverRoot, VALIDATION_TIMEOUT_MS),
-  );
-  if (steps.dotnetRestore.exitCode !== 0 || steps.dotnetRestore.timedOut) return steps;
-  steps.dotnetBuild = toStep(
-    await runCommand("dotnet", ["build", "--no-restore"], serverRoot, VALIDATION_TIMEOUT_MS),
-  );
-  if (options.qualityGate) {
-    steps.test = toStep(
-      await runCommand("dotnet", ["test", "--no-build"], serverRoot, VALIDATION_TIMEOUT_MS),
-    );
-  }
-  return steps;
+    const serverRoot = roots.find((root) => root.endsWith(path.join("apps", "server"))) ?? roots[0];
+    if (!serverRoot) return steps;
+    steps.dotnetRestore = yield* commandStep("dotnet", ["restore"], serverRoot);
+    if (steps.dotnetRestore.exitCode !== 0 || steps.dotnetRestore.timedOut) return steps;
+    steps.dotnetBuild = yield* commandStep("dotnet", ["build", "--no-restore"], serverRoot);
+    if (options.qualityGate) {
+      steps.test = yield* commandStep("dotnet", ["test", "--no-build"], serverRoot);
+    }
+    return steps;
+  });
 }
 
 // Locate the build root for a non-TS ecosystem by its manifest file. Prefers a
@@ -653,56 +529,61 @@ export async function findBuildRoot(
   const list = [...roots];
   return (
     list.find((root) => root.endsWith(path.join("apps", "server"))) ??
-    list.sort((a, b) => a.length - b.length)[0]
+    list.sort((a, b) => a.length - b.length)[0] ??
+    null
   );
 }
 
-export async function validateJavaProject(projectDir: string, options: ScaffbenchOptions) {
-  const steps: Record<string, StepResult | undefined> = {};
-  const root = await findBuildRoot(projectDir, ["pom.xml", "build.gradle", "build.gradle.kts"]);
-  if (!root) return steps;
-  // Prefer the project's wrapper (pins the build-tool version and works even
-  // when the system binary is absent — e.g. gradle via ./gradlew); else the
-  // system binary. Tests stay an advisory step under the quality gate so the
-  // build verdict reflects compilation, not test outcomes.
-  const hasPom = existsSync(path.join(root, "pom.xml"));
-  const wrapper = hasPom ? "mvnw" : "gradlew";
-  const usesWrapper = existsSync(path.join(root, wrapper));
-  const [bin, buildArgs, testArgs] = hasPom
-    ? ([
-        usesWrapper ? "./mvnw" : "mvn",
-        ["-q", "-B", "-DskipTests", "compile"],
-        ["-q", "-B", "test"],
-      ] as const)
-    : ([
-        usesWrapper ? "./gradlew" : "gradle",
-        ["compileJava", "-x", "test", "--console=plain"],
-        ["test", "--console=plain"],
-      ] as const);
-  steps.build = toStep(await runCommand(bin, [...buildArgs], root, VALIDATION_TIMEOUT_MS));
-  if (steps.build.exitCode !== 0 || steps.build.timedOut) return steps;
-  if (options.qualityGate) {
-    steps.test = toStep(await runCommand(bin, [...testArgs], root, VALIDATION_TIMEOUT_MS));
-  }
-  return steps;
+export function validateJavaProject(projectDir: string, options: ScaffbenchOptions) {
+  return Effect.gen(function* () {
+    const steps: Record<string, StepResult | undefined> = {};
+    const root = yield* fromPromise(() =>
+      findBuildRoot(projectDir, ["pom.xml", "build.gradle", "build.gradle.kts"]),
+    );
+    if (!root) return steps;
+    // Prefer the project's wrapper (pins the build-tool version and works even
+    // when the system binary is absent — e.g. gradle via ./gradlew); else the
+    // system binary. Tests stay an advisory step under the quality gate so the
+    // build verdict reflects compilation, not test outcomes.
+    const hasPom = existsSync(path.join(root, "pom.xml"));
+    const wrapper = hasPom ? "mvnw" : "gradlew";
+    const usesWrapper = existsSync(path.join(root, wrapper));
+    const [bin, buildArgs, testArgs] = hasPom
+      ? ([
+          usesWrapper ? "./mvnw" : "mvn",
+          ["-q", "-B", "-DskipTests", "compile"],
+          ["-q", "-B", "test"],
+        ] as const)
+      : ([
+          usesWrapper ? "./gradlew" : "gradle",
+          ["compileJava", "-x", "test", "--console=plain"],
+          ["test", "--console=plain"],
+        ] as const);
+    steps.build = yield* commandStep(bin, [...buildArgs], root);
+    if (steps.build.exitCode !== 0 || steps.build.timedOut) return steps;
+    if (options.qualityGate) {
+      steps.test = yield* commandStep(bin, [...testArgs], root);
+    }
+    return steps;
+  });
 }
 
-export async function validateElixirProject(projectDir: string, options: ScaffbenchOptions) {
-  const steps: Record<string, StepResult | undefined> = {};
-  const root = await findBuildRoot(projectDir, ["mix.exs"]);
-  if (!root) return steps;
-  steps.install = toStep(await runCommand("mix", ["deps.get"], root, VALIDATION_TIMEOUT_MS));
-  if (steps.install.exitCode !== 0 || steps.install.timedOut) return steps;
-  steps.build = toStep(await runCommand("mix", ["compile"], root, VALIDATION_TIMEOUT_MS));
-  if (steps.build.exitCode !== 0 || steps.build.timedOut) return steps;
-  if (options.qualityGate) {
-    // Read-only format check, for parity with the other ecosystem gates.
-    steps.format = toStep(
-      await runCommand("mix", ["format", "--check-formatted"], root, VALIDATION_TIMEOUT_MS),
-    );
-    steps.test = toStep(await runCommand("mix", ["test"], root, VALIDATION_TIMEOUT_MS));
-  }
-  return steps;
+export function validateElixirProject(projectDir: string, options: ScaffbenchOptions) {
+  return Effect.gen(function* () {
+    const steps: Record<string, StepResult | undefined> = {};
+    const root = yield* fromPromise(() => findBuildRoot(projectDir, ["mix.exs"]));
+    if (!root) return steps;
+    steps.install = yield* commandStep("mix", ["deps.get"], root);
+    if (steps.install.exitCode !== 0 || steps.install.timedOut) return steps;
+    steps.build = yield* commandStep("mix", ["compile"], root);
+    if (steps.build.exitCode !== 0 || steps.build.timedOut) return steps;
+    if (options.qualityGate) {
+      // Read-only format check, for parity with the other ecosystem gates.
+      steps.format = yield* commandStep("mix", ["format", "--check-formatted"], root);
+      steps.test = yield* commandStep("mix", ["test"], root);
+    }
+    return steps;
+  });
 }
 
 async function hasDotnetProject(projectDir: string) {
@@ -773,4 +654,3 @@ async function readPackageScripts(packageJsonPath: string) {
  * back to a direct `tsc --noEmit` when a tsconfig exists, so a project cannot
  * dodge type-checking by omitting the script. Returns null when there is
  * genuinely nothing to type-check (no script and no tsconfig). */
-

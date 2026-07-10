@@ -25,7 +25,13 @@ hand-write a real full-stack project from a prompt, with no scaffolder, and have
 was "rarely."
 
 ScaffBench 2.1 now covers **nineteen configs** on that test — **13 hard specs across eight
-ecosystems**, prompt-only, where the agent reads the spec and writes every file itself. This update
+ecosystems**, prompt-only, where the agent reads the spec and writes every file itself. One rule
+defines the lane: **agents may not install dependencies, start dev servers, or initialize git**
+during generation. It's a closed-book exam — every manifest is written from the model's own
+knowledge, with no package registry to check against, and our validator runs the real toolchains
+afterward. Keep that in mind before comparing these numbers to in-repo SWE benchmarks, which measure
+the opposite regime: iterating against live feedback in a codebase whose dependencies humans already
+pinned. This update
 adds the **GPT-5.6 family in five configs** (Sol at high and max, Terra at medium, Luna at medium and
 max) and **Hy3** (via opencode's free endpoint). It also ships a **hardened validator** — while
 scoring the 5.6 family we found and fixed real gaps in our own harness (details in
@@ -179,8 +185,11 @@ sensibly. Then the build fails at the manifest, because the models invent depend
   wrong coordinate fails the whole build.
 
 The 5.6 runs are also the tersest on the board — Terra averages about **4 tool steps and ~9k output
-tokens** per project, a third of Codex Spark's already-minimal 12 steps. It writes the project once
-and never runs the install to find out its `go.mod` points at a repo that doesn't exist.
+tokens** per project, a third of Codex Spark's already-minimal 12 steps. To be fair to the models:
+**no agent is allowed to run the install** (that's the lane's closed-book rule), so none of them get
+to find out their `go.mod` points at a repo that doesn't exist. The difference is what they do with
+the budget instead — the Claude configs spend 37–215 steps re-reading and revising their own files,
+while 5.6 writes the project essentially once and stops.
 
 The framing that survives this data: **picking the right library and producing a project that builds
 are different skills.** GPT-5.6 is great at the former. Its entire regression against GPT-5.5 lives in
@@ -234,10 +243,11 @@ config we've tested, it doesn't:
 
 **GPT-5.6 breaks the pattern.** Sol went 2/13 → 5/13 from high to max; Luna went 2/13 → 5/13 from
 medium to max — the first configs on this board where more reasoning bought strictly more builds
-rather than a reshuffle. The difference is *what* the extra thinking fixes: Claude models already
-spend their effort verifying as they go (Fable low passes 5 specs in 37 steps), while 5.6's default
-budgets produce one-shot projects with unverified dependency facts. Give 5.6 room to check its own
-manifests and the hallucinations largely evaporate.
+rather than a reshuffle. Remember, no model can run an install to check a version — so the extra
+thinking is doing recall work: at max effort, 5.6 dredges up the *right* coordinates it apparently
+knew all along, where its default budgets produce one-shot projects with unverified dependency facts.
+The Claude configs spend their budgets differently (Fable low passes 5 specs in 37 steps of writing
+and revising), which is why more effort merely reshuffles their results instead of adding to them.
 
 <BenchBarChart
   title="Avg cost per project ($) · more spend ≠ more builds"
@@ -347,6 +357,15 @@ The other disclosures:
 ## How we score
 
 <Callout kind="info">
+  **Closed-book by design.** During generation, agents are explicitly forbidden from installing
+  dependencies, starting dev servers, or initializing git — every model faces the same rule, so no
+  one gets registry feedback to correct a hallucinated version. Validation then runs the real
+  toolchains (install, build, type-check, native compile) on what the agent delivered. This makes the
+  prompt lane a test of **scaffolding knowledge and coherent assembly**, not agentic iteration — a
+  model that shines at fix-the-repo benchmarks can land low here, and vice versa.
+</Callout>
+
+<Callout kind="info">
   **CORE vs Full.** *CORE* is the load-bearing question — does the project install, build, type-check,
   and native-compile (`cargo check`, `go build`, `dotnet build`, `mvn`, `mix`)? *Full* adds a quality
   gate (lint, format, test). On the prompt path CORE is the headline — most runs don't get that far.
@@ -378,8 +397,10 @@ The other disclosures:
   intelligence problem.
 - **Free models rank on merit now, and one earns it.** Hy3 wires 95% of the right stack — frontier
   territory — and places mid-board despite a free endpoint that killed two of its runs.
-- **Stack selection is solved; verified assembly is not.** 88–97% wired at a 9–38% build rate is the
-  whole story in one line. "Knows the right library" and "produces a project that builds" are
-  different skills — and the gap between them is exactly what a scaffolder closes.
+- **Stack selection is solved; closed-book assembly is not.** 88–97% wired at a 9–38% build rate is
+  the whole story in one line. "Knows the right library" and "produces a project that builds without
+  ever running an install" are different skills — and the gap between them is exactly what a
+  scaffolder closes. (An "open" lane that lets agents install and verify during generation is the
+  natural next experiment.)
 
 We'll keep the leaderboard growing as more models land — Terra at max is the obvious next cell.

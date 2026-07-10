@@ -1,15 +1,19 @@
-import type { CommandResult, Effort } from "../types";
-import { bfSpec, CLAUDE_TIMEOUT_MS } from "../constants";
-import { runCommand } from "./command";
+import type { CommandExecutor } from "@effect/platform/CommandExecutor";
+import type * as Effect from "effect/Effect";
 
-export async function runCodex(input: {
+import type { CommandResult, Effort } from "@/types";
+
+import { runCommand } from "@/agents/command";
+import { bfSpec, CLAUDE_TIMEOUT_MS } from "@/constants";
+
+export function runCodex(input: {
   cwd: string;
   prompt: string;
   model: string;
   effort: Effort;
   useMcp: boolean;
   bunx: string;
-}): Promise<CommandResult> {
+}): Effect.Effect<CommandResult, never, CommandExecutor> {
   const effortArgs =
     input.effort === "default" ? [] : ["-c", `model_reasoning_effort=${input.effort}`];
   const mcpArgs = input.useMcp
@@ -122,4 +126,3 @@ export function parseCodexResult(stdout: string, model?: string): any | null {
     terminal_reason: undefined,
   };
 }
-

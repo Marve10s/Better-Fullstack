@@ -94,7 +94,7 @@ const PATHS: Record<PathId, { glyph: string; short: string; detail: string }> = 
   prompt: {
     glyph: "●",
     short: "Prompt",
-    detail: "no Better-Fullstack — agent hand-writes every file",
+    detail: "no Better-Fullstack — agent hand-writes every file, closed-book (no installs, no dev server)",
   },
 };
 
@@ -2680,7 +2680,9 @@ function ScaffbenchLeaderboardCard() {
                 Core
                 <MetricHelp label="Core pass@1">
                   The project installs, builds, type-checks, and native-compiles from the prompt — the
-                  real "does it actually run" pass.
+                  real "does it actually run" pass. Closed-book: agents may not run installs or dev
+                  servers while generating, so every manifest is written from model knowledge; our
+                  validator runs the real toolchains afterward.
                 </MetricHelp>
               </span>
               <span className="flex items-center justify-end gap-1">

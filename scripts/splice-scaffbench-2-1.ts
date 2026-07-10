@@ -14,7 +14,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 import { corePass, fullPass } from "./build-scaffbench-data";
-import { extractToolUses, parseCodexResult, providerForModel } from "./scaffbench-v2-lib";
+import { extractToolUses, parseCodexResult, providerForModel } from "@/index";
 import {
   SCAFFBENCH21_CELLS as EXISTING_CELLS,
   SCAFFBENCH21_META as EXISTING_META,

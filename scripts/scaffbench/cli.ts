@@ -1,7 +1,7 @@
 import path from "node:path";
-import { CORE_SPEC_IDS, DEFAULT_EFFORTS, DEFAULT_PATHS } from "./constants";
-import { SCAFFBENCH_2_SPECS } from "./specs";
-import type { ScaffbenchOptions } from "./types";
+import { CORE_SPEC_IDS, DEFAULT_EFFORTS, DEFAULT_PATHS } from "@/constants";
+import { SCAFFBENCH_2_SPECS } from "@/specs";
+import type { ScaffbenchOptions } from "@/types";
 
 export function parseList<T extends string>(
   value: string | undefined,
