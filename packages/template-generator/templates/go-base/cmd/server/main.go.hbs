@@ -435,10 +435,16 @@ func main() {
 	logger.Info("Starting HTTP server", "address", addr)
 
 {{/if}}
+	// CORS: pinned to CORS_ORIGIN when set, permissive otherwise.
+	corsOrigin := os.Getenv("CORS_ORIGIN")
+	if corsOrigin == "" {
+		corsOrigin = "*"
+	}
+
 	// Create Gin router
 	r := gin.Default()
 	r.Use(func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Origin", corsOrigin)
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		if c.Request.Method == http.MethodOptions {
@@ -517,13 +523,21 @@ func main() {
 	logger.Info("Starting HTTP server", "address", addr)
 
 {{/if}}
+	// CORS: pinned to CORS_ORIGIN when set, permissive otherwise.
+	corsOrigin := os.Getenv("CORS_ORIGIN")
+	if corsOrigin == "" {
+		corsOrigin = "*"
+	}
+
 	// Create Echo instance
 	e := echo.New()
 
 	// Middleware
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-	e.Use(middleware.CORS())
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{corsOrigin},
+	}))
 {{#if (eq auth "go-better-auth")}}
 
 	e.Any("/api/auth", echo.WrapHandler(authApp.Handler()))
@@ -592,13 +606,21 @@ func main() {
 	logger.Info("Starting HTTP server", "address", addr)
 
 {{/if}}
+	// CORS: pinned to CORS_ORIGIN when set, permissive otherwise.
+	corsOrigin := os.Getenv("CORS_ORIGIN")
+	if corsOrigin == "" {
+		corsOrigin = "*"
+	}
+
 	// Create Fiber app
 	app := fiber.New()
 
 	// Middleware
 	app.Use(fiberlogger.New())
 	app.Use(fiberrecover.New())
-	app.Use(fibercors.New())
+	app.Use(fibercors.New(fibercors.Config{
+		AllowOrigins: corsOrigin,
+	}))
 {{#if (eq auth "go-better-auth")}}
 
 	app.All("/api/auth", adaptor.HTTPHandler(authApp.Handler()))
@@ -667,6 +689,12 @@ func main() {
 	logger.Info("Starting HTTP server", "address", addr)
 
 {{/if}}
+	// CORS: pinned to CORS_ORIGIN when set, permissive otherwise.
+	corsOrigin := os.Getenv("CORS_ORIGIN")
+	if corsOrigin == "" {
+		corsOrigin = "*"
+	}
+
 	// Create Chi router
 	r := chi.NewRouter()
 
@@ -675,7 +703,7 @@ func main() {
 	r.Use(middleware.Recoverer)
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.Header().Set("Access-Control-Allow-Origin", corsOrigin)
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 			if r.Method == http.MethodOptions {
@@ -804,10 +832,16 @@ func main() {
 	mux.HandleFunc("POST /api/posts", handlers.CreatePost)
 {{/if}}
 
-	// corsMiddleware adds permissive CORS headers and handles preflight requests.
+	// CORS: pinned to CORS_ORIGIN when set, permissive otherwise.
+	corsOrigin := os.Getenv("CORS_ORIGIN")
+	if corsOrigin == "" {
+		corsOrigin = "*"
+	}
+
+	// corsMiddleware adds CORS headers and handles preflight requests.
 	corsMiddleware := func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.Header().Set("Access-Control-Allow-Origin", corsOrigin)
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 			if r.Method == http.MethodOptions {

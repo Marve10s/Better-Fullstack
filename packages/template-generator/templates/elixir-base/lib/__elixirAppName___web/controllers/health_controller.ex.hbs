@@ -2,8 +2,15 @@ defmodule {{elixirModuleName}}Web.HealthController do
   use {{elixirModuleName}}Web, :controller
 
   def show(conn, _params) do
+    # Pinned to the CORS_ORIGIN env var when set, permissive otherwise.
+    cors_origin =
+      case System.get_env("CORS_ORIGIN") do
+        value when value in [nil, ""] -> "*"
+        value -> value
+      end
+
     conn
-    |> put_resp_header("access-control-allow-origin", "*")
+    |> put_resp_header("access-control-allow-origin", cors_origin)
     |> json(%{status: "ok", app: "{{projectName}}"})
   end
 end

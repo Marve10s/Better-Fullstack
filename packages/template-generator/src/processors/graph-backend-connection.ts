@@ -3,6 +3,32 @@ import type { ProjectConfig } from "@better-fullstack/types";
 import type { VirtualFileSystem } from "../core/virtual-fs";
 import { getGraphBackendConnection, hasWebFrontend } from "../utils/graph-backend";
 
+/**
+ * Pins the non-TypeScript backend's CORS to the web frontend's dev origin by
+ * writing CORS_ORIGIN into the backend .env/.env.example. The backend templates
+ * fall back to permissive CORS when the variable is unset, so solo-mode
+ * (backend-only) scaffolds are unaffected.
+ */
+export function processGraphBackendEnv(vfs: VirtualFileSystem, config: ProjectConfig): void {
+  const connection = getGraphBackendConnection(config);
+  if (!connection?.webOrigin || !vfs.directoryExists(connection.targetPath)) return;
+
+  const line = `CORS_ORIGIN=${connection.webOrigin}`;
+  for (const file of [".env", ".env.example"]) {
+    const path = `${connection.targetPath}/${file}`;
+    const current = vfs.exists(path) ? (vfs.readFile(path) ?? "") : "";
+    let next: string;
+    if (/^CORS_ORIGIN=.*$/m.test(current)) {
+      next = current.replace(/^CORS_ORIGIN=.*$/m, line);
+    } else {
+      const separator = current.length > 0 && !current.endsWith("\n") ? "\n" : "";
+      const comment = "# Web frontend dev origin (unset or empty = allow any origin)\n";
+      next = `${current}${separator}${current.length > 0 ? "\n" : ""}${comment}${line}\n`;
+    }
+    vfs.writeFile(path, next);
+  }
+}
+
 export function processGraphBackendConnection(vfs: VirtualFileSystem, config: ProjectConfig): void {
   const connection = getGraphBackendConnection(config);
   if (!connection || !hasWebFrontend(config)) return;

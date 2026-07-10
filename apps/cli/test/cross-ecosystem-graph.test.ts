@@ -73,6 +73,15 @@ function envPathFor(frontend: string) {
   return frontend === "redwood" ? ".env" : "apps/web/.env";
 }
 
+// Mirrors getLocalWebDevPort in @better-fullstack/types.
+function webOriginFor(frontend: string) {
+  if (["react-router", "react-vite", "svelte", "fresh"].includes(frontend)) {
+    return "http://localhost:5173";
+  }
+  if (frontend === "astro") return "http://localhost:4321";
+  return "http://localhost:3001";
+}
+
 function graphDocPathFor(frontend: string) {
   return frontend === "redwood" ? "GRAPH_BACKEND.md" : "apps/web/GRAPH_BACKEND.md";
 }
@@ -193,6 +202,15 @@ describe("Cross-ecosystem graph generation", () => {
           expect(env).toContain(
             `${envVarNameFor(frontend)}=${serverUrlFor(ecosystem, backend)}`,
           );
+
+          // The backend env pins CORS to the web frontend's dev origin.
+          const corsLine = `CORS_ORIGIN=${webOriginFor(frontend)}`;
+          expect(fileContent(root, "apps/server/.env"), `${frontend} + ${ecosystem}:${backend}`).toContain(corsLine);
+          expect(
+            fileContent(root, "apps/server/.env.example"),
+            `${frontend} + ${ecosystem}:${backend}`,
+          ).toContain(corsLine);
+
           expect(fileContent(root, graphDocPathFor(frontend))).toContain("Health URL:");
           expect(fileContent(root, "README.md")).toContain("multi-ecosystem project graph");
 
@@ -347,12 +365,14 @@ describe("Cross-ecosystem graph generation", () => {
       stackParts: graphParts(["frontend:typescript:next", "backend:elixir:phoenix"]),
     });
     expect(phoenix.success).toBe(true);
-    expect(
-      fileContent(
-        phoenix.tree!.root,
-        "apps/server/lib/cors_phoenix_web/controllers/health_controller.ex",
-      ),
-    ).toContain('put_resp_header("access-control-allow-origin", "*")');
+    const phoenixController = fileContent(
+      phoenix.tree!.root,
+      "apps/server/lib/cors_phoenix_web/controllers/health_controller.ex",
+    );
+    expect(phoenixController).toContain('System.get_env("CORS_ORIGIN")');
+    expect(phoenixController).toContain(
+      'put_resp_header("access-control-allow-origin", cors_origin)',
+    );
 
     const goGin = await createVirtual({
       projectName: "cors-go",
@@ -363,9 +383,9 @@ describe("Cross-ecosystem graph generation", () => {
       stackParts: graphParts(["frontend:typescript:next", "backend:go:gin"]),
     });
     expect(goGin.success).toBe(true);
-    expect(fileContent(goGin.tree!.root, "apps/server/cmd/server/main.go")).toContain(
-      'Access-Control-Allow-Origin", "*"',
-    );
+    const goMain = fileContent(goGin.tree!.root, "apps/server/cmd/server/main.go");
+    expect(goMain).toContain('os.Getenv("CORS_ORIGIN")');
+    expect(goMain).toContain('Access-Control-Allow-Origin", corsOrigin');
     expect(
       (
         JSON.parse(fileContent(goGin.tree!.root, "package.json")) as {
@@ -426,9 +446,41 @@ describe("Cross-ecosystem graph generation", () => {
       stackParts: graphParts(["frontend:typescript:next", "backend:dotnet:aspnet-minimal"]),
     });
     expect(dotnet.success).toBe(true);
-    expect(fileContent(dotnet.tree!.root, "apps/server/Program.cs")).toContain(
-      "policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()",
+    const dotnetProgram = fileContent(dotnet.tree!.root, "apps/server/Program.cs");
+    expect(dotnetProgram).toContain('builder.Configuration["CORS_ORIGIN"]');
+    expect(dotnetProgram).toContain("policy.WithOrigins(corsOrigin)");
+    expect(dotnetProgram).toContain("policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()");
+  });
+
+  it("pins backend CORS_ORIGIN and keeps the server URL pair consistent", async () => {
+    const result = await createVirtual({
+      projectName: "pinned-cors",
+      frontend: ["next"],
+      backend: "none",
+      api: "none",
+      runtime: "none",
+      stackParts: graphParts(["frontend:typescript:next", "backend:go:gin"]),
+    });
+
+    expect(result.success).toBe(true);
+    const root = result.tree!.root;
+
+    // Frontend points at the backend's dev URL; backend pins CORS to the
+    // frontend's dev origin — both derived from getGraphBackendConnection.
+    expect(fileContent(root, "apps/web/.env")).toContain(
+      "NEXT_PUBLIC_SERVER_URL=http://localhost:8080",
     );
+    expect(fileContent(root, "apps/server/.env")).toContain(
+      "CORS_ORIGIN=http://localhost:3001",
+    );
+    const backendEnvExample = fileContent(root, "apps/server/.env.example");
+    expect(backendEnvExample).toContain("CORS_ORIGIN=http://localhost:3001");
+    // The port in the frontend's server URL matches the backend's env-driven PORT.
+    expect(backendEnvExample).toContain("PORT=8080");
+
+    const goMain = fileContent(root, "apps/server/cmd/server/main.go");
+    expect(goMain).toContain('os.Getenv("PORT")');
+    expect(goMain).toContain('os.Getenv("CORS_ORIGIN")');
   });
 
   it("populates the database package with drizzle deps and scripts in graph mode", async () => {

@@ -26,7 +26,10 @@ import {
   processEnvVariables,
 } from "./processors";
 import { processAiDocs } from "./processors/ai-docs-generator";
-import { processGraphBackendConnection } from "./processors/graph-backend-connection";
+import {
+  processGraphBackendConnection,
+  processGraphBackendEnv,
+} from "./processors/graph-backend-connection";
 import {
   type TemplateData,
   processBaseTemplate,
@@ -238,6 +241,10 @@ async function processGraphTemplates(
       targetPath,
     );
   }
+
+  // Pin the backend's CORS to the web frontend's dev origin (must run after the
+  // backend templates above so the backend .env.example exists).
+  processGraphBackendEnv(vfs, tsConfig);
 
   if (
     tsConfig.frontend.length === 0 &&

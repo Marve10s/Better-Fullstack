@@ -12,8 +12,13 @@ public class GreetingResource {
   @GET
   @Produces(MediaType.TEXT_PLAIN)
   public RestResponse<String> hello() {
+    // Pinned to the CORS_ORIGIN env var when set, permissive otherwise.
+    String corsOrigin = System.getenv("CORS_ORIGIN");
+    if (corsOrigin == null || corsOrigin.isEmpty()) {
+      corsOrigin = "*";
+    }
     return RestResponse.ResponseBuilder.ok("Hello from {{projectName}}")
-      .header("Access-Control-Allow-Origin", "*")
+      .header("Access-Control-Allow-Origin", corsOrigin)
       .build();
   }
 }

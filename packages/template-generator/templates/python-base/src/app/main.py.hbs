@@ -227,7 +227,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[os.getenv("CORS_ORIGIN") or "*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -1106,6 +1106,8 @@ from app.ariadne_schema import schema as ariadne_schema
 
 load_dotenv()
 
+_cors_origin = os.getenv("CORS_ORIGIN")
+
 if not settings.configured:
     settings.configure(
         DEBUG=os.getenv("DEBUG", "true").lower() == "true",
@@ -1124,7 +1126,8 @@ if not settings.configured:
             "corsheaders.middleware.CorsMiddleware",
             "django.middleware.common.CommonMiddleware",
         ],
-        CORS_ALLOW_ALL_ORIGINS=True,
+        CORS_ALLOW_ALL_ORIGINS=not _cors_origin,
+        CORS_ALLOWED_ORIGINS=[_cors_origin] if _cors_origin else [],
     )
     django.setup()
 
@@ -1245,7 +1248,7 @@ app.config["APP_NAME"] = settings.app_name
 {{else}}
 app = Flask(__name__)
 {{/if}}
-CORS(app)
+CORS(app, origins=os.getenv("CORS_ORIGIN") or "*")
 {{#if (eq pythonGraphql "strawberry")}}
 app.add_url_rule("/graphql", view_func=GraphQLView.as_view("graphql_view", schema=graphql_schema))
 {{/if}}
@@ -1359,7 +1362,7 @@ async def auth_me(authorization: str = "") -> dict:
 {{/if}}
 
 
-cors_config = CORSConfig(allow_origins=["*"])
+cors_config = CORSConfig(allow_origins=[os.getenv("CORS_ORIGIN") or "*"])
 {{#if (eq pythonGraphql "strawberry")}}
 GraphQLController = make_graphql_controller(graphql_schema, path="/graphql")
 {{/if}}
@@ -1401,7 +1404,7 @@ async def health(request: Request) -> JSONResponse:
 middleware = [
     Middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=[os.getenv("CORS_ORIGIN") or "*"],
         allow_methods=["*"],
         allow_headers=["*"],
     ),

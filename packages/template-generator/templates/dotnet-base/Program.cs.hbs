@@ -53,6 +53,13 @@ using Quartz;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Honor a PORT env var so the listen address stays configurable from one place.
+var port = builder.Configuration["PORT"];
+if (!string.IsNullOrEmpty(port))
+{
+    builder.WebHost.UseUrls($"http://localhost:{port}");
+}
+
 {{#if dotnetHasMvc}}
 builder.Services.AddControllers();
 {{/if}}
@@ -172,10 +179,21 @@ builder.Services.AddQuartzHostedService(options => options.WaitForJobsToComplete
 {{#if dotnetHasHostedServices}}
 builder.Services.AddHostedService<Worker>();
 {{/if}}
+// CORS: pinned to the CORS_ORIGIN env var when set, permissive otherwise.
+var corsOrigin = builder.Configuration["CORS_ORIGIN"];
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
-        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+    {
+        if (string.IsNullOrEmpty(corsOrigin))
+        {
+            policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+        }
+        else
+        {
+            policy.WithOrigins(corsOrigin).AllowAnyHeader().AllowAnyMethod();
+        }
+    });
 });
 
 var app = builder.Build();

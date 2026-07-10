@@ -1,10 +1,17 @@
-import { getRoleTargetPath, type ProjectConfig, type StackPart } from "@better-fullstack/types";
+import {
+  getLocalWebDevPort,
+  getRoleTargetPath,
+  type ProjectConfig,
+  type StackPart,
+} from "@better-fullstack/types";
 
 type GraphBackendConnection = {
   ecosystem: Exclude<StackPart["ecosystem"], "typescript" | "react-native" | "universal">;
   toolId: string;
   label: string;
   targetPath: string;
+  /** Dev-server origin of the web frontend (null when the graph has no web frontend). */
+  webOrigin: string | null;
   serverUrl: string;
   healthPath: string;
   healthUrl: string;
@@ -54,6 +61,9 @@ export function getGraphBackendConnection(config: ProjectConfig): GraphBackendCo
 
   const targetPath = backend.targetPath ?? getRoleTargetPath("backend") ?? "apps/server";
   const label = BACKEND_LABELS[backend.toolId] ?? `${backend.ecosystem} ${backend.toolId}`;
+  const webOrigin = hasWebFrontend(config)
+    ? `http://localhost:${getLocalWebDevPort(config.frontend)}`
+    : null;
 
   switch (backend.ecosystem) {
     case "elixir": {
@@ -66,6 +76,7 @@ export function getGraphBackendConnection(config: ProjectConfig): GraphBackendCo
         toolId: backend.toolId,
         label,
         targetPath,
+        webOrigin,
         serverUrl: "http://localhost:4000",
         healthPath: hasPhoenix ? "/api/health" : "/health",
         healthUrl: `http://localhost:4000${hasPhoenix ? "/api/health" : "/health"}`,
@@ -83,6 +94,7 @@ export function getGraphBackendConnection(config: ProjectConfig): GraphBackendCo
         toolId: backend.toolId,
         label,
         targetPath,
+        webOrigin,
         serverUrl: "http://localhost:3000",
         healthPath: "/health",
         healthUrl: "http://localhost:3000/health",
@@ -103,6 +115,7 @@ export function getGraphBackendConnection(config: ProjectConfig): GraphBackendCo
         toolId: backend.toolId,
         label,
         targetPath,
+        webOrigin,
         serverUrl: "http://localhost:8000",
         healthPath: "/health",
         healthUrl: "http://localhost:8000/health",
@@ -118,6 +131,7 @@ export function getGraphBackendConnection(config: ProjectConfig): GraphBackendCo
         toolId: backend.toolId,
         label,
         targetPath,
+        webOrigin,
         serverUrl: "http://localhost:8080",
         healthPath: "/health",
         healthUrl: "http://localhost:8080/health",
@@ -143,6 +157,7 @@ export function getGraphBackendConnection(config: ProjectConfig): GraphBackendCo
         toolId: backend.toolId,
         label,
         targetPath,
+        webOrigin,
         serverUrl: "http://localhost:8080",
         healthPath: isQuarkus ? "/hello" : "/health",
         healthUrl: `http://localhost:8080${isQuarkus ? "/hello" : "/health"}`,
@@ -174,6 +189,7 @@ export function getGraphBackendConnection(config: ProjectConfig): GraphBackendCo
         toolId: backend.toolId,
         label,
         targetPath,
+        webOrigin,
         serverUrl: "http://localhost:5000",
         healthPath,
         healthUrl: `http://localhost:5000${healthPath}`,
