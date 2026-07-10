@@ -1,4 +1,4 @@
-import type { BenchmarkSpec } from "../types";
+import type { BenchmarkSpec } from "@/types";
 
 export const PythonIngestionApiSpec: BenchmarkSpec = {
     id: "python-ingestion-api",

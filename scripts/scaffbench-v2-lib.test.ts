@@ -1,4 +1,6 @@
+import * as BunContext from "@effect/platform-bun/BunContext";
 import { describe, expect, it } from "bun:test";
+import * as Effect from "effect/Effect";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -29,7 +31,7 @@ import {
   qualityPassed,
   type RunResult,
   type StepResult,
-} from "./scaffbench-v2-lib";
+} from "@/index";
 
 const aiSpec = SCAFFBENCH_2_SPECS.find((spec) => spec.id === "ai-search-workbench")!;
 const dotnetSpec = SCAFFBENCH_2_SPECS.find((spec) => spec.id === "multi-dotnet-ops")!;
@@ -160,7 +162,12 @@ describe("ScaffBench 2 harness config", () => {
   });
 
   it("records missing spawned tools as failed commands", async () => {
-    const result = await runCommand("scaffbench-missing-binary-for-test", [], process.cwd(), 1_000);
+    const result = await runCommand(
+      "scaffbench-missing-binary-for-test",
+      [],
+      process.cwd(),
+      1_000,
+    ).pipe(Effect.provide(BunContext.layer), Effect.runPromise);
 
     expect(result.exitCode).toBe(127);
     expect(result.timedOut).toBe(false);

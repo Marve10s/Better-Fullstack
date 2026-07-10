@@ -1,2 +1,2 @@
-export { findProjectDir, archiveProjectSource } from "./index";
+export { findProjectDir, archiveProjectSource } from "@/validation/index";
 

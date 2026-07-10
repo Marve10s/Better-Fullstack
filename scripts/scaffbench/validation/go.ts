@@ -1,2 +1,2 @@
-export { validateGoProject } from "./index";
+export { validateGoProject } from "@/validation/index";
 

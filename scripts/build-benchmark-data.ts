@@ -13,7 +13,7 @@
  */
 import { readFile, writeFile } from "node:fs/promises";
 
-import type { ScaffbenchSummary } from "./scaffbench-v2-lib";
+import type { ScaffbenchSummary } from "@/index";
 
 type Aggregate = ScaffbenchSummary["aggregates"]["leaderboard"][number];
 

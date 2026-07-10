@@ -1,4 +1,4 @@
-import type { BenchmarkSpec } from "../types";
+import type { BenchmarkSpec } from "@/types";
 
 export const TsSvelteEdgeOrpcSpec: BenchmarkSpec = {
     id: "ts-svelte-edge-orpc",

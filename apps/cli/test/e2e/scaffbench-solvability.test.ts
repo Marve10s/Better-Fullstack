@@ -7,7 +7,7 @@ import {
   SCAFFBENCH_2_SPECS,
   validateProject,
   type BenchmarkSpec,
-} from "../../../../scripts/scaffbench-v2-lib";
+} from "../../../../scripts/scaffbench/index";
 import { scaffoldWithCLIBinary } from "./e2e-utils";
 
 /**

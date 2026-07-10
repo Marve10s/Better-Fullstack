@@ -1,5 +1,7 @@
 #!/usr/bin/env bun
 
+import * as BunContext from "@effect/platform-bun/BunContext";
+import * as Effect from "effect/Effect";
 import { mkdir, rm } from "node:fs/promises";
 import path from "node:path";
 
@@ -12,7 +14,7 @@ import {
   type RunResult,
   validateProject,
   writeSummary,
-} from "./scaffbench-v2-lib";
+} from "@/index";
 
 const OUTPUT_DIR = "testing/.tmp-scaffbench-2";
 const PROJECT_ROOT = path.resolve(OUTPUT_DIR, "canonical-cli");
@@ -35,6 +37,7 @@ function scaffbenchOptions(specs: string[]): ScaffbenchOptions {
     skipValidation: false,
     generateOnly: false,
     validateExisting: false,
+    forceRevalidate: false,
     qualityGate: false,
     doctorCheck: false,
     routeCheck: false,
@@ -44,7 +47,10 @@ function scaffbenchOptions(specs: string[]): ScaffbenchOptions {
   };
 }
 
-async function runCommand(command: string, cwd: string): Promise<{
+async function runCommand(
+  command: string,
+  cwd: string,
+): Promise<{
   exitCode: number | null;
   durationMs: number;
 }> {
@@ -74,7 +80,10 @@ async function main(): Promise<void> {
     console.log(`SCAFFBENCH ${spec.id}: ${command}`);
     const create = await runCommand(command, PROJECT_ROOT);
     const projectExists = create.exitCode === 0;
-    const validation = await validateProject(spec, projectExists ? projectDir : null, options);
+    const validation = await validateProject(spec, projectExists ? projectDir : null, options).pipe(
+      Effect.provide(BunContext.layer),
+      Effect.runPromise,
+    );
     const scored = projectExists
       ? await scoreProject(spec, projectDir, options.promptStyle)
       : {

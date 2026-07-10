@@ -1,6 +1,10 @@
-import type { CommandResult, Effort } from "../types";
-import { CLAUDE_TIMEOUT_MS } from "../constants";
-import { runCommand } from "./command";
+import type { CommandExecutor } from "@effect/platform/CommandExecutor";
+import type * as Effect from "effect/Effect";
+
+import type { CommandResult, Effort } from "@/types";
+
+import { runCommand } from "@/agents/command";
+import { CLAUDE_TIMEOUT_MS } from "@/constants";
 
 // Antigravity (Gemini) adapter. Google sunset the standalone gemini CLI for
 // individual tiers ("migrate to Antigravity"), so Gemini is driven through the
@@ -20,12 +24,12 @@ function agyModelString(model: string, effort: Effort): string {
   const tier = effort === "low" ? "Low" : effort === "medium" ? "Medium" : "High";
   return `${base} (${tier})`;
 }
-export async function runAgy(input: {
+export function runAgy(input: {
   cwd: string;
   prompt: string;
   model: string;
   effort: Effort;
-}): Promise<CommandResult> {
+}): Effect.Effect<CommandResult, never, CommandExecutor> {
   return runCommand(
     "agy",
     [
@@ -46,7 +50,6 @@ export async function runAgy(input: {
 // agy emits a plain-text response (no JSON usage stream), so there is nothing to
 // parse for tokens/cost/session/terminal-reason — return undefined and let those
 // fields degrade to "—", exactly like Codex's unreported cost.
-function parseAgyResult(_stdout: string): undefined {
+export function parseAgyResult(_stdout: string): undefined {
   return undefined;
 }
-

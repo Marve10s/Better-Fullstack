@@ -1,6 +1,6 @@
-import { bfSpec } from "./constants";
-import { quoteArg } from "./agents/command";
-import type { BenchmarkSpec, CreationPath, PromptStyle } from "./types";
+import { bfSpec } from "@/constants";
+import { quoteArg } from "@/agents/command";
+import type { BenchmarkSpec, CreationPath, PromptStyle } from "@/types";
 
 export function canonicalCommand(spec: BenchmarkSpec, projectName: string) {
   return ["bun", "create", bfSpec("better-fullstack"), projectName, ...spec.canonicalFlags]

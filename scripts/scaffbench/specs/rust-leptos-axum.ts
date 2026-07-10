@@ -1,4 +1,4 @@
-import type { BenchmarkSpec } from "../types";
+import type { BenchmarkSpec } from "@/types";
 
 export const RustLeptosAxumSpec: BenchmarkSpec = {
     id: "rust-leptos-axum",
