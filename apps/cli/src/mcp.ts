@@ -1915,8 +1915,12 @@ export async function startMcpServer() {
           addonWarnings = await setupAddons(config);
         }
 
-        const { recordScaffoldManifest } = await import("./utils/scaffold-manifest.js");
-        await recordScaffoldManifest(projectDir);
+        const { collectStructuredBaselines, recordScaffoldManifest } = await import(
+          "./utils/scaffold-manifest.js"
+        );
+        await recordScaffoldManifest(projectDir, {
+          baselines: collectStructuredBaselines(result.tree),
+        });
 
         const ecosystem = (input.ecosystem as string) ?? "typescript";
         const installCmd = getInstallCommand(

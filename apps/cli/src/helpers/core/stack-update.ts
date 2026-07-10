@@ -32,7 +32,10 @@ import {
 import { validateConfigForProgrammaticUse } from "../../utils/config-validation";
 import { formatCode } from "../../utils/file-formatter";
 import { getEffectiveStack, getGraphSummary } from "../../utils/graph-summary";
-import { refreshScaffoldManifestFiles } from "../../utils/scaffold-manifest";
+import {
+  collectStructuredBaselines,
+  refreshScaffoldManifestFiles,
+} from "../../utils/scaffold-manifest";
 
 type JsonObject = Record<string, unknown>;
 
@@ -152,7 +155,12 @@ const RISKY_ARCHITECTURE_KEYS: Array<keyof ProjectConfig> = [
   "backend",
   "runtime",
 ];
-const PACKAGE_JSON_SECTIONS = ["dependencies", "devDependencies", "peerDependencies", "scripts"];
+export const PACKAGE_JSON_SECTIONS = [
+  "dependencies",
+  "devDependencies",
+  "peerDependencies",
+  "scripts",
+];
 const BINARY_FILE_MARKER = "[Binary file]";
 
 function isEnvFilePath(filePath: string): boolean {
@@ -1258,7 +1266,11 @@ function diffJsonSection(
   for (const [name, proposedValue] of Object.entries(proposedSection)) {
     if (previousSection[name] === proposedValue) continue;
     const currentValue = currentSection[name];
-    if (currentValue !== undefined && currentValue !== previousSection[name]) {
+    // Any user-side divergence from the baseline blocks the key — including a
+    // deletion (baseline had the key, the user removed it): re-adding it would
+    // silently undo the user's edit. A key absent from both baseline and
+    // current is a plain template addition and merges cleanly.
+    if (currentValue !== previousSection[name]) {
       blockers.push(`${section}.${name}`);
       continue;
     }
@@ -1268,7 +1280,7 @@ function diffJsonSection(
   return { values, blockers };
 }
 
-function mergePackageJson(
+export function mergePackageJson(
   existingContent: string,
   previousContent: string | undefined,
   proposedContent: string,
@@ -1339,7 +1351,7 @@ function parseEnvKeys(content: string): Set<string> {
   return keys;
 }
 
-function mergeEnvExample(
+export function mergeEnvExample(
   existingContent: string,
   previousContent: string | undefined,
   proposedContent: string,
@@ -1861,9 +1873,13 @@ export async function applyStackUpdate(
     createdAt: plan.proposedConfig.createdAt,
   });
 
+  // The whole plan applied cleanly (manual blockers abort above), so every
+  // structured-merge file is now reconciled with the proposed render — advance
+  // its `bfs update` baseline alongside the hashes.
   await refreshScaffoldManifestFiles(
     plan.projectDir,
     plan.operations.map((operation) => operation.path),
+    collectStructuredBaselines(proposedTree),
   );
 
   await writeMigrationChecklist(plan.projectDir, plan);

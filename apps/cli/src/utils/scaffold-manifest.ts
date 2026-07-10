@@ -1,3 +1,4 @@
+import type { VirtualFileTree, VirtualNode } from "@better-fullstack/template-generator";
 import type { Dirent } from "node:fs";
 
 import fs from "fs-extra";
@@ -47,7 +48,43 @@ export type ScaffoldManifest = {
   version: string;
   createdAt: string;
   hashes: Record<string, string>;
+  /**
+   * Pure-template render content (pre post-processing) of structured-merge
+   * files — package.json and *.env.example. `bfs update` uses these as the
+   * "previous" side of a 3-way merge so template-side dependency/script/env-key
+   * changes can be folded into a post-processed or user-edited file without
+   * clobbering either. Optional: manifests recorded by older CLIs lack it.
+   */
+  baselines?: Record<string, string>;
 };
+
+/** Files whose render content is stored in the manifest for structured merges. */
+export function isStructuredBaselinePath(relPath: string): boolean {
+  const name = path.basename(relPath);
+  return name === "package.json" || name.endsWith(".env.example");
+}
+
+const BINARY_FILE_MARKER = "[Binary file]";
+
+/** Extract structured-merge baseline contents from a generated virtual tree. */
+export function collectStructuredBaselines(tree: VirtualFileTree): Record<string, string> {
+  const baselines: Record<string, string> = {};
+
+  function walk(nodes: VirtualNode[]) {
+    for (const node of nodes) {
+      if (node.type === "file") {
+        if (isStructuredBaselinePath(node.path) && node.content !== BINARY_FILE_MARKER) {
+          baselines[node.path] = node.content;
+        }
+      } else {
+        walk(node.children);
+      }
+    }
+  }
+
+  walk(tree.root.children);
+  return baselines;
+}
 
 export function hashContent(content: Buffer | string): string {
   return createHash("sha256").update(content).digest("hex");
@@ -99,12 +136,15 @@ export async function writeScaffoldManifest(
   projectDir: string,
   manifest: ScaffoldManifest,
 ): Promise<void> {
+  const sortEntries = (record: Record<string, string>) =>
+    Object.fromEntries(Object.entries(record).sort(([a], [b]) => a.localeCompare(b)));
   const sorted: ScaffoldManifest = {
     version: manifest.version,
     createdAt: manifest.createdAt,
-    hashes: Object.fromEntries(
-      Object.entries(manifest.hashes).sort(([a], [b]) => a.localeCompare(b)),
-    ),
+    hashes: sortEntries(manifest.hashes),
+    ...(manifest.baselines && Object.keys(manifest.baselines).length > 0
+      ? { baselines: sortEntries(manifest.baselines) }
+      : {}),
   };
   const manifestPath = path.join(projectDir, SCAFFOLD_MANIFEST_FILE);
   await fs.writeFile(manifestPath, `${JSON.stringify(sorted, null, 2)}\n`, "utf-8");
@@ -119,13 +159,14 @@ export async function writeScaffoldManifest(
  */
 export async function recordScaffoldManifest(
   projectDir: string,
-  metadata: { createdAt?: string } = {},
+  metadata: { createdAt?: string; baselines?: Record<string, string> } = {},
 ): Promise<ScaffoldManifest | null> {
   try {
     const manifest: ScaffoldManifest = {
       version: MANIFEST_VERSION,
       createdAt: metadata.createdAt ?? new Date().toISOString(),
       hashes: await computeScaffoldHashes(projectDir),
+      baselines: metadata.baselines,
     };
     await writeScaffoldManifest(projectDir, manifest);
     return manifest;
@@ -143,16 +184,24 @@ export async function readScaffoldManifest(projectDir: string): Promise<Scaffold
     if (!parsed || typeof parsed !== "object" || typeof parsed.hashes !== "object") {
       return null;
     }
+    if (parsed.baselines !== undefined && typeof parsed.baselines !== "object") {
+      delete parsed.baselines;
+    }
     return parsed;
   } catch {
     return null;
   }
 }
 
-/** Refresh only files deliberately written by an in-place stack update. */
+/**
+ * Refresh only files deliberately written by an in-place stack update.
+ * `baselines` (path -> render content) advances the structured-merge baselines
+ * to the render the project was just reconciled against.
+ */
 export async function refreshScaffoldManifestFiles(
   projectDir: string,
   relativePaths: Iterable<string>,
+  baselines?: Record<string, string>,
 ): Promise<void> {
   const manifest = await readScaffoldManifest(projectDir);
   if (!manifest) return;
@@ -165,6 +214,10 @@ export async function refreshScaffoldManifestFiles(
     manifest.hashes[relativePath.split(path.sep).join("/")] = hashContent(
       await fs.readFile(fullPath),
     );
+  }
+
+  if (baselines && Object.keys(baselines).length > 0) {
+    manifest.baselines = { ...manifest.baselines, ...baselines };
   }
 
   await writeScaffoldManifest(projectDir, manifest);

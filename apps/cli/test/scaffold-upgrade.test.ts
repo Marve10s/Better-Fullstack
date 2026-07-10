@@ -10,6 +10,7 @@ import { applyScaffoldUpgrade, planScaffoldUpgrade } from "../src/helpers/core/s
 import { buildBtsConfigForPersistence, writeBtsConfig } from "../src/utils/bts-config";
 import { formatProject } from "../src/utils/file-formatter";
 import {
+  collectStructuredBaselines,
   hashContent,
   readScaffoldManifest,
   recordScaffoldManifest,
@@ -79,7 +80,9 @@ async function scaffoldWithBaseline(projectDir: string, config: ProjectConfig): 
     createdAt: persistedConfig.createdAt,
   });
   await formatProject(projectDir);
-  await recordScaffoldManifest(projectDir);
+  await recordScaffoldManifest(projectDir, {
+    baselines: collectStructuredBaselines(result.tree),
+  });
 }
 
 function assertSuccess<T extends { success: boolean }>(
@@ -259,7 +262,7 @@ describe("scaffold-upgrade engine", () => {
     expect(await readFile(targetPath, "utf-8")).toBe(`// local change\n`);
   });
 
-  it("always routes an edited package.json to manual review", async () => {
+  it("keeps a user-edited package.json as-is when the template side is unchanged", async () => {
     const dir = await makeTempDir();
     await scaffoldWithBaseline(dir, makeConfig(dir));
 
@@ -270,16 +273,309 @@ describe("scaffold-upgrade engine", () => {
 
     const plan = await planScaffoldUpgrade(dir);
     assertSuccess(plan);
-    const manualPaths = plan.manual.map((entry) => entry.path);
-    expect(manualPaths).toContain("package.json");
+    expect(plan.userEdited).toContain("package.json");
     expect(plan.drift).not.toContain("package.json");
     expect(plan.actionable).not.toContain("package.json");
 
-    // Never auto-written.
+    // Never auto-written: the user's additions win when the template is idle.
     const applied = await applyScaffoldUpgrade(dir);
     assertSuccess(applied);
     expect(applied.applied.patched).not.toContain("package.json");
+    expect(applied.applied.merged).not.toContain("package.json");
     expect(await readFile(pkgPath, "utf-8")).toContain("left-pad");
+  });
+
+  it("structurally merges template dependency/script additions into a user-edited package.json", async () => {
+    const dir = await makeTempDir();
+    await scaffoldWithBaseline(dir, makeConfig(dir));
+
+    const target = "apps/server/package.json";
+    const pkgPath = join(dir, target);
+    const render = JSON.parse(await readFile(pkgPath, "utf-8"));
+    const [templateDep] = Object.keys(render.dependencies);
+    const [templateScript, userScript] = Object.keys(render.scripts);
+    expect(templateDep).toBeDefined();
+    expect(userScript).toBeDefined();
+
+    // Simulate an older template: drop one dependency and one script from both
+    // the on-disk file and the recorded render baseline, so the current render
+    // looks like a template that has since added them.
+    const manifest = await readScaffoldManifest(dir);
+    const baseline = JSON.parse(manifest!.baselines![target]!);
+    delete baseline.dependencies[templateDep];
+    delete baseline.scripts[templateScript];
+    manifest!.baselines![target] = `${JSON.stringify(baseline, null, 2)}\n`;
+    await writeScaffoldManifest(dir, manifest!);
+
+    const edited = structuredClone(render);
+    delete edited.dependencies[templateDep];
+    delete edited.scripts[templateScript];
+    // User edits: a new dependency plus a customized script the template never touched.
+    edited.dependencies["left-pad"] = "^1.3.0";
+    edited.scripts[userScript] = "echo custom";
+    await writeFile(pkgPath, `${JSON.stringify(edited, null, 2)}\n`, "utf-8");
+
+    const plan = await planScaffoldUpgrade(dir);
+    assertSuccess(plan);
+    expect(plan.merged).toContain(target);
+    expect(plan.actionable).toContain(target);
+    expect(plan.manual.map((entry) => entry.path)).not.toContain(target);
+
+    const applied = await applyScaffoldUpgrade(dir);
+    assertSuccess(applied);
+    expect(applied.applied.merged).toContain(target);
+
+    // Union: template additions folded in, user edits preserved.
+    const result = JSON.parse(await readFile(pkgPath, "utf-8"));
+    expect(result.dependencies[templateDep]).toBe(render.dependencies[templateDep]);
+    expect(result.scripts[templateScript]).toBe(render.scripts[templateScript]);
+    expect(result.dependencies["left-pad"]).toBe("^1.3.0");
+    expect(result.scripts[userScript]).toBe("echo custom");
+
+    // The content baseline advanced: a re-plan sees only the user's local edits.
+    const rePlan = await planScaffoldUpgrade(dir);
+    assertSuccess(rePlan);
+    expect(rePlan.merged).not.toContain(target);
+    expect(rePlan.userEdited).toContain(target);
+    expect(rePlan.actionable).not.toContain(target);
+  });
+
+  it("flags a conflict when the template and the user changed the same dependency", async () => {
+    const dir = await makeTempDir();
+    await scaffoldWithBaseline(dir, makeConfig(dir));
+
+    const target = "apps/server/package.json";
+    const pkgPath = join(dir, target);
+    const render = JSON.parse(await readFile(pkgPath, "utf-8"));
+    const [dep] = Object.keys(render.dependencies);
+
+    // Template changed the version (baseline differs from the current render)...
+    const manifest = await readScaffoldManifest(dir);
+    const baseline = JSON.parse(manifest!.baselines![target]!);
+    baseline.dependencies[dep] = "0.0.1-old";
+    manifest!.baselines![target] = `${JSON.stringify(baseline, null, 2)}\n`;
+    await writeScaffoldManifest(dir, manifest!);
+
+    // ...and the user pinned their own version.
+    const edited = structuredClone(render);
+    edited.dependencies[dep] = "9.9.9";
+    await writeFile(pkgPath, `${JSON.stringify(edited, null, 2)}\n`, "utf-8");
+
+    const plan = await planScaffoldUpgrade(dir);
+    assertSuccess(plan);
+    expect(plan.conflicts).toContain(target);
+    expect(plan.actionable).not.toContain(target);
+    const entry = plan.files.find((file) => file.path === target);
+    expect(entry?.reason).toContain(`dependencies.${dep}`);
+
+    // Apply never touches a conflicted file: the user's pin wins.
+    const applied = await applyScaffoldUpgrade(dir);
+    assertSuccess(applied);
+    const result = JSON.parse(await readFile(pkgPath, "utf-8"));
+    expect(result.dependencies[dep]).toBe("9.9.9");
+  });
+
+  it("blocks re-adding a dependency the user deleted when the template changed it", async () => {
+    const dir = await makeTempDir();
+    await scaffoldWithBaseline(dir, makeConfig(dir));
+
+    const target = "apps/server/package.json";
+    const pkgPath = join(dir, target);
+    const render = JSON.parse(await readFile(pkgPath, "utf-8"));
+    const [dep] = Object.keys(render.dependencies);
+
+    // Template changed the version since the baseline...
+    const manifest = await readScaffoldManifest(dir);
+    const baseline = JSON.parse(manifest!.baselines![target]!);
+    baseline.dependencies[dep] = "0.0.1-old";
+    manifest!.baselines![target] = `${JSON.stringify(baseline, null, 2)}\n`;
+    await writeScaffoldManifest(dir, manifest!);
+
+    // ...and the user deleted the dependency entirely.
+    const edited = structuredClone(render);
+    delete edited.dependencies[dep];
+    await writeFile(pkgPath, `${JSON.stringify(edited, null, 2)}\n`, "utf-8");
+
+    const plan = await planScaffoldUpgrade(dir);
+    assertSuccess(plan);
+    expect(plan.conflicts).toContain(target);
+    expect(plan.actionable).not.toContain(target);
+    const entry = plan.files.find((file) => file.path === target);
+    expect(entry?.reason).toContain(`dependencies.${dep}`);
+
+    // Apply must not resurrect the deleted dependency.
+    const applied = await applyScaffoldUpgrade(dir);
+    assertSuccess(applied);
+    const result = JSON.parse(await readFile(pkgPath, "utf-8"));
+    expect(result.dependencies[dep]).toBeUndefined();
+  });
+
+  it("routes template changes outside the merged sections to manual review", async () => {
+    const dir = await makeTempDir();
+    await scaffoldWithBaseline(dir, makeConfig(dir));
+
+    const target = "apps/server/package.json";
+    const pkgPath = join(dir, target);
+    const render = JSON.parse(await readFile(pkgPath, "utf-8"));
+
+    // Simulate an older template that shipped an extra dependency and a
+    // top-level field the current template no longer has: baseline and disk
+    // both carry them (user never touched the file), the proposed render lacks
+    // them. mergePackageJson cannot express removals or top-level changes.
+    const older = structuredClone(render);
+    older.dependencies["legacy-sdk"] = "1.0.0";
+    older.sideEffects = false;
+    const olderContent = `${JSON.stringify(older, null, 2)}\n`;
+    const manifest = await readScaffoldManifest(dir);
+    manifest!.baselines![target] = olderContent;
+    await writeScaffoldManifest(dir, manifest!);
+    await writeFile(pkgPath, olderContent, "utf-8");
+
+    const plan = await planScaffoldUpgrade(dir);
+    assertSuccess(plan);
+    const entry = plan.manual.find((file) => file.path === target);
+    expect(entry).toBeDefined();
+    expect(entry?.reason).toContain("dependencies.legacy-sdk removed");
+    expect(entry?.reason).toContain("sideEffects");
+    expect(plan.merged).not.toContain(target);
+    expect(plan.userEdited).not.toContain(target);
+    expect(plan.actionable).not.toContain(target);
+
+    // Apply leaves the file for the user to reconcile.
+    const applied = await applyScaffoldUpgrade(dir);
+    assertSuccess(applied);
+    expect(await readFile(pkgPath, "utf-8")).toBe(olderContent);
+  });
+
+  it("falls back to manual review for package.json when the manifest has no content baseline", async () => {
+    const dir = await makeTempDir();
+    await scaffoldWithBaseline(dir, makeConfig(dir));
+
+    // Simulate a manifest recorded by an older CLI (hashes only).
+    const manifest = await readScaffoldManifest(dir);
+    delete manifest!.baselines;
+    await writeScaffoldManifest(dir, manifest!);
+
+    const pkgPath = join(dir, "package.json");
+    const pkg = JSON.parse(await readFile(pkgPath, "utf-8"));
+    pkg.dependencies = { ...pkg.dependencies, "left-pad": "^1.3.0" };
+    await writeFile(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`, "utf-8");
+
+    const plan = await planScaffoldUpgrade(dir);
+    assertSuccess(plan);
+    const entry = plan.manual.find((file) => file.path === "package.json");
+    expect(entry).toBeDefined();
+    expect(entry?.reason).toContain("baseline");
+    expect(plan.actionable).not.toContain("package.json");
+  });
+
+  it("appends template-added env keys to an edited .env.example, keeping user keys", async () => {
+    const dir = await makeTempDir();
+    const config = makeConfig(dir, {
+      ecosystem: "go",
+      frontend: [],
+      backend: "none",
+      runtime: "none",
+      api: "none",
+      orm: "none",
+      database: "sqlite",
+      auth: "none",
+      goWebFramework: "gin",
+      goOrm: "gorm",
+    } as Partial<ProjectConfig>);
+    await scaffoldWithBaseline(dir, config);
+
+    const target = "apps/server/.env.example";
+    const envPath = join(dir, target);
+    const render = await readFile(envPath, "utf-8");
+    const lines = render.split("\n");
+    const keyLine = lines.find((line) => /^[A-Z][A-Z0-9_]*=/.test(line));
+    expect(keyLine).toBeDefined();
+    const templateKey = (keyLine as string).split("=")[0] as string;
+
+    // Simulate an older template without that key, plus a user-added key.
+    const withoutKey = lines.filter((line) => line !== keyLine).join("\n");
+    const manifest = await readScaffoldManifest(dir);
+    manifest!.baselines![target] = withoutKey;
+    await writeScaffoldManifest(dir, manifest!);
+    await writeFile(envPath, `${withoutKey}\nCUSTOM_FLAG=1\n`, "utf-8");
+
+    const plan = await planScaffoldUpgrade(dir);
+    assertSuccess(plan);
+    expect(plan.merged).toContain(target);
+    const entry = plan.files.find((file) => file.path === target);
+    expect(entry?.reason).toContain(templateKey);
+
+    const applied = await applyScaffoldUpgrade(dir);
+    assertSuccess(applied);
+    expect(applied.applied.merged).toContain(target);
+    const result = await readFile(envPath, "utf-8");
+    expect(result).toContain(keyLine as string);
+    expect(result).toContain("CUSTOM_FLAG=1");
+  });
+
+  it("routes an edited .env.example to manual review when the manifest has no content baseline", async () => {
+    const dir = await makeTempDir();
+    const config = makeConfig(dir, {
+      ecosystem: "go",
+      frontend: [],
+      backend: "none",
+      runtime: "none",
+      api: "none",
+      orm: "none",
+      database: "sqlite",
+      auth: "none",
+      goWebFramework: "gin",
+      goOrm: "gorm",
+    } as Partial<ProjectConfig>);
+    await scaffoldWithBaseline(dir, config);
+
+    const target = "apps/server/.env.example";
+    const envPath = join(dir, target);
+    const render = await readFile(envPath, "utf-8");
+    const lines = render.split("\n");
+    const keyLine = lines.find((line) => /^[A-Z][A-Z0-9_]*=/.test(line));
+    expect(keyLine).toBeDefined();
+
+    // Older-CLI manifest (hashes only) + the user deliberately removed a key.
+    const manifest = await readScaffoldManifest(dir);
+    delete manifest!.baselines;
+    await writeScaffoldManifest(dir, manifest!);
+    await writeFile(envPath, lines.filter((line) => line !== keyLine).join("\n"), "utf-8");
+
+    // Without a baseline, a merge would mistake the removed key for a template
+    // addition and re-append it — the file must go to manual review instead.
+    const plan = await planScaffoldUpgrade(dir);
+    assertSuccess(plan);
+    const entry = plan.manual.find((file) => file.path === target);
+    expect(entry).toBeDefined();
+    expect(entry?.reason).toContain("baseline");
+    expect(plan.merged).not.toContain(target);
+    expect(plan.actionable).not.toContain(target);
+
+    const applied = await applyScaffoldUpgrade(dir);
+    assertSuccess(applied);
+    expect(await readFile(envPath, "utf-8")).not.toContain(keyLine as string);
+  });
+
+  it("routes .env (user secrets) to manual review, never auto-patching it", async () => {
+    const dir = await makeTempDir();
+    await scaffoldWithBaseline(dir, makeConfig(dir));
+
+    // .env is generated for this stack; make it differ from the render.
+    const envPath = join(dir, "apps/server/.env");
+    const original = await readFile(envPath, "utf-8");
+    await writeFile(envPath, `${original}MY_SECRET=shh\n`, "utf-8");
+
+    const plan = await planScaffoldUpgrade(dir);
+    assertSuccess(plan);
+    const entry = plan.manual.find((file) => file.path === "apps/server/.env");
+    expect(entry).toBeDefined();
+    expect(plan.actionable).not.toContain("apps/server/.env");
+
+    const applied = await applyScaffoldUpgrade(dir);
+    assertSuccess(applied);
+    expect(await readFile(envPath, "utf-8")).toContain("MY_SECRET=shh");
   });
 
   it("never treats a generated README as drift, even when it differs from the render", async () => {

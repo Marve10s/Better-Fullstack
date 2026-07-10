@@ -5,12 +5,12 @@ import pc from "picocolors";
 import {
   applyScaffoldUpgrade,
   planScaffoldUpgrade,
+  recordUpgradeBaseline,
   type UpgradePlan,
 } from "../helpers/core/scaffold-upgrade";
 import { readBtsConfig } from "../utils/bts-config";
 import { handleError } from "../utils/errors";
 import { renderTitle } from "../utils/render-title";
-import { recordScaffoldManifest } from "../utils/scaffold-manifest";
 
 export type UpdateCommandInput = {
   projectDir?: string;
@@ -51,6 +51,15 @@ function reportManual(entries: UpgradePlan["manual"]): void {
   }
 }
 
+function reportMerged(plan: UpgradePlan): void {
+  const merged = plan.files.filter((file) => file.category === "merged");
+  if (merged.length === 0) return;
+  log.message(`Structured merges (template changes folded into your file) (${merged.length}):`);
+  for (const entry of merged) {
+    log.message(pc.dim(`  ± ${entry.path}${entry.reason ? ` — ${entry.reason}` : ""}`));
+  }
+}
+
 function reportRemoved(plan: UpgradePlan): void {
   const removed = plan.files.filter((file) => file.category === "removed");
   if (removed.length === 0) return;
@@ -74,6 +83,7 @@ function renderPlan(plan: UpgradePlan): void {
   log.message("");
 
   reportGroup("Template drift (safe to patch)", "~", plan.drift);
+  reportMerged(plan);
   reportGroup("New files from templates", "+", plan.newFiles);
   reportGroup("Locally edited (kept as-is)", "*", plan.userEdited);
   reportGroup("Conflicts (template + local both changed)", "!", plan.conflicts);
@@ -83,8 +93,9 @@ function renderPlan(plan: UpgradePlan): void {
   log.message("");
   log.message(
     pc.dim(
-      `${plan.unchanged.length} up to date · ${plan.drift.length} drift · ${plan.newFiles.length} new · ` +
-        `${plan.userEdited.length} local · ${plan.conflicts.length} conflict · ${plan.manual.length} manual`,
+      `${plan.unchanged.length} up to date · ${plan.drift.length} drift · ${plan.merged.length} merge · ` +
+        `${plan.newFiles.length} new · ${plan.userEdited.length} local · ${plan.conflicts.length} conflict · ` +
+        `${plan.manual.length} manual`,
     ),
   );
 }
@@ -97,6 +108,7 @@ function toJsonPlan(plan: UpgradePlan) {
     summary: {
       unchanged: plan.unchanged.length,
       drift: plan.drift.length,
+      merged: plan.merged.length,
       newFiles: plan.newFiles.length,
       userEdited: plan.userEdited.length,
       conflicts: plan.conflicts.length,
@@ -104,10 +116,13 @@ function toJsonPlan(plan: UpgradePlan) {
       removed: plan.removed.length,
     },
     drift: plan.drift,
+    merged: plan.files
+      .filter((file) => file.category === "merged")
+      .map(({ path: filePath, reason }) => ({ path: filePath, reason })),
     newFiles: plan.newFiles,
     userEdited: plan.userEdited,
     conflicts: plan.conflicts,
-    manual: plan.manual,
+    manual: plan.manual.map(({ path: filePath, reason }) => ({ path: filePath, reason })),
     removed: plan.removed,
     actionable: plan.actionable,
   };
@@ -162,7 +177,7 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
   }
 
   if (recordBaseline) {
-    const manifest = await recordScaffoldManifest(projectDir);
+    const manifest = await recordUpgradeBaseline(projectDir);
     if (json) {
       console.log(
         JSON.stringify(
@@ -196,7 +211,7 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
   }
 
   let plan: UpgradePlan;
-  let applied: { patched: string[]; added: string[] } | undefined;
+  let applied: { patched: string[]; added: string[]; merged: string[] } | undefined;
   if (apply) {
     const result = await applyScaffoldUpgrade(projectDir);
     if (!result.success) return failUpdate(projectDir, result.error, json);
@@ -238,16 +253,16 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
   log.message("");
 
   if (applied) {
-    const total = applied.patched.length + applied.added.length;
+    const total = applied.patched.length + applied.added.length + applied.merged.length;
     if (total === 0) {
       log.success(pc.green("Already up to date. No template-drift patches to apply."));
     } else {
       log.success(
         pc.green(
-          `Applied ${formatCount(applied.patched.length, "patch")} and added ${formatCount(
-            applied.added.length,
-            "file",
-          )}.`,
+          `Applied ${formatCount(applied.patched.length, "patch")}, ${formatCount(
+            applied.merged.length,
+            "structured merge",
+          )}, and added ${formatCount(applied.added.length, "file")}.`,
         ),
       );
     }
@@ -255,7 +270,7 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
     if (leftover > 0) {
       log.warn(
         pc.yellow(
-          `${formatCount(leftover, "file")} still need manual review (conflicts + post-processed files).`,
+          `${formatCount(leftover, "file")} still need manual review (conflicts + lockfiles/manual files).`,
         ),
       );
     }
@@ -268,10 +283,11 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
   } else {
     log.info(
       pc.cyan(
-        `Run \`bfs update --apply\` to patch ${formatCount(
-          plan.drift.length,
-          "drift file",
-        )} and add ${formatCount(plan.newFiles.length, "new file")}.`,
+        `Run \`bfs update --apply\` to patch ${formatCount(plan.drift.length, "drift file")}, ` +
+          `apply ${formatCount(plan.merged.length, "structured merge")}, and add ${formatCount(
+            plan.newFiles.length,
+            "new file",
+          )}.`,
       ),
     );
   }

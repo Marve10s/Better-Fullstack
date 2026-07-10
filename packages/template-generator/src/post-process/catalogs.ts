@@ -67,7 +67,8 @@ export function processCatalogs(vfs: VirtualFileSystem, config: ProjectConfig): 
     }
   }
 
-  const catalog = findDuplicateDependencies(packagesInfo, config.projectName);
+  const existingCatalog = readExistingCatalog(vfs, config);
+  const catalog = findDuplicateDependencies(packagesInfo, config.projectName, existingCatalog);
 
   if (Object.keys(catalog).length === 0) return;
 
@@ -80,9 +81,35 @@ export function processCatalogs(vfs: VirtualFileSystem, config: ProjectConfig): 
   updatePackageJsonsWithCatalogs(vfs, packagesInfo, catalog);
 }
 
+/**
+ * Read the catalog a previous processCatalogs pass may already have written
+ * (graph mode runs the post-process pipeline more than once). Counting those
+ * entries again lets a later pass fold in dependencies added in between (e.g.
+ * the database package) instead of leaving them at literal versions.
+ */
+function readExistingCatalog(vfs: VirtualFileSystem, config: ProjectConfig): Record<string, string> {
+  if (config.packageManager === "bun") {
+    const pkgJson = vfs.readJson<PackageJson>("package.json");
+    const workspaces = pkgJson?.workspaces;
+    if (workspaces && !Array.isArray(workspaces) && workspaces.catalog) {
+      return workspaces.catalog;
+    }
+    return {};
+  }
+
+  const content = vfs.readFile("pnpm-workspace.yaml");
+  if (!content) return {};
+  try {
+    return (yaml.parse(content)?.catalog as Record<string, string> | undefined) ?? {};
+  } catch {
+    return {};
+  }
+}
+
 function findDuplicateDependencies(
   packagesInfo: PackageInfo[],
   projectName: string,
+  existingCatalog: Record<string, string> = {},
 ): Record<string, string> {
   const depCount = new Map<string, CatalogEntry>();
   const projectScope = `@${projectName}/`;
@@ -90,10 +117,14 @@ function findDuplicateDependencies(
   for (const pkg of packagesInfo) {
     const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
 
-    for (const [depName, version] of Object.entries(allDeps)) {
+    for (const [depName, rawVersion] of Object.entries(allDeps)) {
       if (depName.startsWith(projectScope)) continue;
-      if (version.startsWith("workspace:")) continue;
-      if (version.startsWith("catalog:")) continue;
+      if (rawVersion.startsWith("workspace:")) continue;
+      // Resolve plain catalog references through the already-written catalog so
+      // they still count as participants; skip named catalogs and unresolvable
+      // references outright.
+      const version = rawVersion === "catalog:" ? existingCatalog[depName] : rawVersion;
+      if (version === undefined || version.startsWith("catalog:")) continue;
 
       const existing = depCount.get(depName);
       if (existing) {

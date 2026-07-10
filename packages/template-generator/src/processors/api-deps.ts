@@ -152,6 +152,8 @@ function addApiPackageDeps(
     addPackageDependency({ vfs, packagePath: pkgPath, dependencies: ["elysia"] });
   } else if (backend === "hono" || backend === "effect") {
     addPackageDependency({ vfs, packagePath: pkgPath, dependencies: ["hono"] });
+  } else if (backend === "fastify") {
+    addPackageDependency({ vfs, packagePath: pkgPath, dependencies: ["fastify"] });
   }
 }
 
