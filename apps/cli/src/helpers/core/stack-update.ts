@@ -155,7 +155,12 @@ const RISKY_ARCHITECTURE_KEYS: Array<keyof ProjectConfig> = [
   "backend",
   "runtime",
 ];
-const PACKAGE_JSON_SECTIONS = ["dependencies", "devDependencies", "peerDependencies", "scripts"];
+export const PACKAGE_JSON_SECTIONS = [
+  "dependencies",
+  "devDependencies",
+  "peerDependencies",
+  "scripts",
+];
 const BINARY_FILE_MARKER = "[Binary file]";
 
 function isEnvFilePath(filePath: string): boolean {
@@ -1261,7 +1266,11 @@ function diffJsonSection(
   for (const [name, proposedValue] of Object.entries(proposedSection)) {
     if (previousSection[name] === proposedValue) continue;
     const currentValue = currentSection[name];
-    if (currentValue !== undefined && currentValue !== previousSection[name]) {
+    // Any user-side divergence from the baseline blocks the key — including a
+    // deletion (baseline had the key, the user removed it): re-adding it would
+    // silently undo the user's edit. A key absent from both baseline and
+    // current is a plain template addition and merges cleanly.
+    if (currentValue !== previousSection[name]) {
       blockers.push(`${section}.${name}`);
       continue;
     }

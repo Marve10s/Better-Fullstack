@@ -21,6 +21,7 @@ import {
   generateTree,
   mergeEnvExample,
   mergePackageJson,
+  PACKAGE_JSON_SECTIONS,
   treeToFileMap,
 } from "./stack-update";
 
@@ -175,6 +176,67 @@ async function renderCurrentProject(
   }
 }
 
+/** Deep equality ignoring object key order (renders may reorder catalog maps etc.). */
+function deepEqualUnordered(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (Array.isArray(a) || Array.isArray(b)) {
+    return (
+      Array.isArray(a) &&
+      Array.isArray(b) &&
+      a.length === b.length &&
+      a.every((item, index) => deepEqualUnordered(item, b[index]))
+    );
+  }
+  if (a && b && typeof a === "object" && typeof b === "object") {
+    const aRecord = a as Record<string, unknown>;
+    const bRecord = b as Record<string, unknown>;
+    const aKeys = Object.keys(aRecord);
+    return (
+      aKeys.length === Object.keys(bRecord).length &&
+      aKeys.every((key) => key in bRecord && deepEqualUnordered(aRecord[key], bRecord[key]))
+    );
+  }
+  return false;
+}
+
+/**
+ * Template-side package.json changes mergePackageJson cannot express: key
+ * removals inside the merged sections and any change to other top-level fields
+ * (exports, workspaces, type, ...). Files with such changes go to manual review
+ * instead of being silently labeled user-edited or partially merged.
+ */
+function findUnmergeableTemplateChanges(
+  previousContent: string,
+  proposedContent: string,
+): string[] {
+  let previous: unknown;
+  let proposed: unknown;
+  try {
+    previous = JSON.parse(previousContent);
+    proposed = JSON.parse(proposedContent);
+  } catch {
+    return []; // mergePackageJson already reports invalid JSON as a blocker
+  }
+  const isRecord = (value: unknown): value is Record<string, unknown> =>
+    Boolean(value && typeof value === "object" && !Array.isArray(value));
+  if (!isRecord(previous) || !isRecord(proposed)) return [];
+
+  const changes: string[] = [];
+  const mergedSections = new Set<string>(PACKAGE_JSON_SECTIONS);
+  for (const section of PACKAGE_JSON_SECTIONS) {
+    const previousSection = isRecord(previous[section]) ? previous[section] : {};
+    const proposedSection = isRecord(proposed[section]) ? proposed[section] : {};
+    for (const key of Object.keys(previousSection)) {
+      if (!(key in proposedSection)) changes.push(`${section}.${key} removed`);
+    }
+  }
+  for (const key of new Set([...Object.keys(previous), ...Object.keys(proposed)])) {
+    if (mergedSections.has(key)) continue;
+    if (!deepEqualUnordered(previous[key], proposed[key])) changes.push(key);
+  }
+  return changes;
+}
+
 /**
  * Structured 3-way merge for package.json / *.env.example, reusing stack-update's
  * merge semantics: template-side changes (proposed vs the recorded render
@@ -192,21 +254,34 @@ function classifyStructuredMerge(
     return { path: filePath, category: "manual", reason: "no comparable template render" };
   }
 
+  // Without a recorded render baseline there is no "previous" side to diff
+  // against: package.json cannot 3-way merge at all, and an env merge would
+  // mistake every proposed key for a template addition and re-append keys the
+  // user deliberately removed. Both fall back to manual review.
+  if (baselineContent === undefined) {
+    return {
+      path: filePath,
+      category: "manual",
+      reason:
+        "no structured-merge baseline recorded — merge by hand or re-run `update --record-baseline`",
+    };
+  }
+
   if (path.basename(filePath) === "package.json") {
-    if (baselineContent === undefined) {
-      return {
-        path: filePath,
-        category: "manual",
-        reason:
-          "no structured-merge baseline recorded — merge dependencies by hand or re-run `update --record-baseline`",
-      };
-    }
     const merged = mergePackageJson(existingContent, baselineContent, proposedContent);
     if (merged.blockers.length > 0) {
       return {
         path: filePath,
         category: "conflict",
         reason: `template and local copy both changed: ${merged.blockers.join(", ")}`,
+      };
+    }
+    const uncovered = findUnmergeableTemplateChanges(baselineContent, proposedContent);
+    if (uncovered.length > 0) {
+      return {
+        path: filePath,
+        category: "manual",
+        reason: `template changes the merge cannot apply (${uncovered.join(", ")}) — update by hand`,
       };
     }
     if (merged.content) {
