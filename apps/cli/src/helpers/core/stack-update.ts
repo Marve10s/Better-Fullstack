@@ -32,7 +32,10 @@ import {
 import { validateConfigForProgrammaticUse } from "../../utils/config-validation";
 import { formatCode } from "../../utils/file-formatter";
 import { getEffectiveStack, getGraphSummary } from "../../utils/graph-summary";
-import { refreshScaffoldManifestFiles } from "../../utils/scaffold-manifest";
+import {
+  collectStructuredBaselines,
+  refreshScaffoldManifestFiles,
+} from "../../utils/scaffold-manifest";
 
 type JsonObject = Record<string, unknown>;
 
@@ -1268,7 +1271,7 @@ function diffJsonSection(
   return { values, blockers };
 }
 
-function mergePackageJson(
+export function mergePackageJson(
   existingContent: string,
   previousContent: string | undefined,
   proposedContent: string,
@@ -1339,7 +1342,7 @@ function parseEnvKeys(content: string): Set<string> {
   return keys;
 }
 
-function mergeEnvExample(
+export function mergeEnvExample(
   existingContent: string,
   previousContent: string | undefined,
   proposedContent: string,
@@ -1861,9 +1864,13 @@ export async function applyStackUpdate(
     createdAt: plan.proposedConfig.createdAt,
   });
 
+  // The whole plan applied cleanly (manual blockers abort above), so every
+  // structured-merge file is now reconciled with the proposed render — advance
+  // its `bfs update` baseline alongside the hashes.
   await refreshScaffoldManifestFiles(
     plan.projectDir,
     plan.operations.map((operation) => operation.path),
+    collectStructuredBaselines(proposedTree),
   );
 
   await writeMigrationChecklist(plan.projectDir, plan);
