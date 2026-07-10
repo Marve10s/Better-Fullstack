@@ -4,6 +4,7 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.resteasy.reactive.RestResponse;
 
 @Path("/hello")
@@ -12,11 +13,12 @@ public class GreetingResource {
   @GET
   @Produces(MediaType.TEXT_PLAIN)
   public RestResponse<String> hello() {
-    // Pinned to the CORS_ORIGIN env var when set, permissive otherwise.
-    String corsOrigin = System.getenv("CORS_ORIGIN");
-    if (corsOrigin == null || corsOrigin.isEmpty()) {
-      corsOrigin = "*";
-    }
+    // Pinned to CORS_ORIGIN when set (env var, or the .env file Quarkus
+    // loads natively), permissive otherwise.
+    String corsOrigin = ConfigProvider.getConfig()
+      .getOptionalValue("cors.origin", String.class)
+      .filter(value -> !value.isEmpty())
+      .orElse("*");
     return RestResponse.ResponseBuilder.ok("Hello from {{projectName}}")
       .header("Access-Control-Allow-Origin", corsOrigin)
       .build();

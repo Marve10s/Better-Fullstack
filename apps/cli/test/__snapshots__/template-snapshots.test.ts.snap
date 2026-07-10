@@ -18618,10 +18618,11 @@ exports[`Template Snapshots Key File Content Snapshots key files: java-spring-bo
 "PORT=8080
 SPRING_PROFILES_ACTIVE=dev
 
-# Allowed web origin for CORS (unset or empty = allow any origin)
-CORS_ORIGIN=http://localhost:3001
+# Allowed web origin for CORS (unset = allow any origin)
+# CORS_ORIGIN=http://localhost:3001
 APP_BASIC_USERNAME=admin
-APP_BASIC_PASSWORD=change-me"
+APP_BASIC_PASSWORD=change-me
+CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
     },

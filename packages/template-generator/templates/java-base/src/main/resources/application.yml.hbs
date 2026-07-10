@@ -11,6 +11,9 @@ server:
   port: ${PORT:8080}
 
 spring:
+  config:
+    # Pick up scaffold-time settings (PORT, CORS_ORIGIN) from a local .env.
+    import: "optional:file:.env[.properties]"
   application:
     name: {{javaArtifactId}}
 {{#if hasJavaJpa}}

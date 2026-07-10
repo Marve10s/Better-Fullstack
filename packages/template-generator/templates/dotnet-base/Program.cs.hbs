@@ -51,13 +51,33 @@ using Hangfire.InMemory;
 using Quartz;
 {{/if}}
 
+// Load KEY=VALUE pairs from a local .env so scaffold-time settings (PORT,
+// CORS_ORIGIN) apply to `dotnet run`. Real environment variables win.
+if (File.Exists(".env"))
+{
+    foreach (var rawLine in File.ReadAllLines(".env"))
+    {
+        var line = rawLine.Trim();
+        if (line.Length == 0 || line.StartsWith('#')) continue;
+        var separatorIndex = line.IndexOf('=');
+        if (separatorIndex <= 0) continue;
+        var key = line[..separatorIndex].Trim();
+        var value = line[(separatorIndex + 1)..].Trim();
+        if (value.Length > 0 && Environment.GetEnvironmentVariable(key) is null)
+        {
+            Environment.SetEnvironmentVariable(key, value);
+        }
+    }
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Honor a PORT env var so the listen address stays configurable from one place.
+// Honor a PORT env var (binding all interfaces so containers/PaaS work);
+// an explicit ASPNETCORE_URLS always wins.
 var port = builder.Configuration["PORT"];
-if (!string.IsNullOrEmpty(port))
+if (!string.IsNullOrEmpty(port) && string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_URLS")))
 {
-    builder.WebHost.UseUrls($"http://localhost:{port}");
+    builder.WebHost.UseUrls($"http://+:{port}");
 }
 
 {{#if dotnetHasMvc}}

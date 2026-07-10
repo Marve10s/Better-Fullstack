@@ -1,7 +1,12 @@
 const VITE_WEB_FRONTENDS = new Set(["react-router", "react-vite", "svelte", "fresh"]);
 const ASTRO_WEB_FRONTENDS = new Set(["astro"]);
 
-export function getLocalWebDevPort(frontend: readonly string[]): 3001 | 4321 | 5173 {
+export function getLocalWebDevPort(frontend: readonly string[]): 3001 | 4321 | 5173 | 8910 {
+  // Redwood's web dev server port is fixed in redwood.toml.
+  if (frontend.includes("redwood")) {
+    return 8910;
+  }
+
   if (frontend.some((entry) => VITE_WEB_FRONTENDS.has(entry))) {
     return 5173;
   }

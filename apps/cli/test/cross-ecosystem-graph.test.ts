@@ -75,6 +75,7 @@ function envPathFor(frontend: string) {
 
 // Mirrors getLocalWebDevPort in @better-fullstack/types.
 function webOriginFor(frontend: string) {
+  if (frontend === "redwood") return "http://localhost:8910";
   if (["react-router", "react-vite", "svelte", "fresh"].includes(frontend)) {
     return "http://localhost:5173";
   }

@@ -1,5 +1,22 @@
 import Config
 
+# Load KEY=VALUE pairs from a local .env in dev so scaffold-time settings
+# (e.g. CORS_ORIGIN) apply to `mix phx.server`. Real environment variables win.
+if config_env() == :dev and File.exists?(".env") do
+  ".env"
+  |> File.read!()
+  |> String.split("\n")
+  |> Enum.each(fn line ->
+    line = String.trim(line)
+
+    with false <- line == "" or String.starts_with?(line, "#"),
+         [key, value] when value != "" <- String.split(line, "=", parts: 2),
+         nil <- System.get_env(key) do
+      System.put_env(key, value)
+    end
+  end)
+end
+
 if config_env() == :prod do
 {{#if (eq elixirOrm "ecto-sql")}}
   database_url = System.get_env("DATABASE_URL")
