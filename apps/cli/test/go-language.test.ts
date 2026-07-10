@@ -336,7 +336,9 @@ describe("Go Language Support", () => {
       expect(mainContent).toContain("echo.New()");
       expect(mainContent).toContain("middleware.Logger()");
       expect(mainContent).toContain("middleware.Recover()");
-      expect(mainContent).toContain("middleware.CORS()");
+      expect(mainContent).toContain('os.Getenv("CORS_ORIGIN")');
+      expect(mainContent).toContain("middleware.CORSWithConfig(middleware.CORSConfig{");
+      expect(mainContent).toContain("AllowOrigins: []string{corsOrigin}");
       expect(mainContent).toContain(`e.GET("/health"`);
       expect(mainContent).toContain("e.Start(addr)");
     });
@@ -382,7 +384,9 @@ describe("Go Language Support", () => {
       expect(mainContent).toContain("fiber.New()");
       expect(mainContent).toContain("fiberlogger.New()");
       expect(mainContent).toContain("fiberrecover.New()");
-      expect(mainContent).toContain("fibercors.New()");
+      expect(mainContent).toContain('os.Getenv("CORS_ORIGIN")');
+      expect(mainContent).toContain("fibercors.New(fibercors.Config{");
+      expect(mainContent).toContain("AllowOrigins: corsOrigin");
       expect(mainContent).toContain(`app.Get("/health"`);
       expect(mainContent).toContain("app.Listen(addr)");
     });
