@@ -47,6 +47,10 @@
   font-family: "Geist Pixel Grid", ui-monospace, SFMono-Regular, monospace;
 }
 
+@utility font-opendyslexic {
+  font-family: "OpenDyslexic", ui-sans-serif, system-ui, sans-serif;
+}
+
 /* Custom utilities for fumadocs compatibility */
 @utility bg-fd-background {
   background-color: var(--background);
@@ -795,3 +799,49 @@
 }
 
 /* Heading anchor target offset already handled via scroll-margin-top above */
+
+/*
+ * Blog typography ─ builds on .docs-prose with an editorial reading rhythm:
+ * slightly larger measure-tuned body text, and a body-font token the
+ * reading controls swap to OpenDyslexic via `data-blog-font` on <body>.
+ */
+.blog-article {
+  --blog-body-font: var(--font-sans);
+}
+
+.blog-prose {
+  font-family: var(--blog-body-font);
+  font-size: 1.0625rem;
+  line-height: 1.8;
+}
+
+body[data-blog-font="opendyslexic"] .blog-article {
+  --blog-body-font: "OpenDyslexic", ui-sans-serif, system-ui, sans-serif;
+}
+
+body[data-blog-font="opendyslexic"] .blog-prose {
+  font-size: 1.125rem;
+  line-height: 1.9;
+  letter-spacing: 0.01em;
+}
+
+/* Large editorial pull-quotes instead of the compact docs blockquote. */
+.blog-prose blockquote {
+  border-top: 1px solid var(--docs-border-subtle);
+  border-bottom: 1px solid var(--docs-border-subtle);
+  border-left: 0;
+  margin: 2.4rem 0;
+  padding: 1.4rem 0;
+  color: var(--prose-text);
+  font-size: clamp(1.15rem, 2.2vw, 1.4rem);
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+}
+
+/* Long-version sections animate via inline styles from ReadingControls;
+ * clip padding-induced overflow during the height transition. */
+.blog-prose [data-long-version] {
+  min-height: 0;
+}

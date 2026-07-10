@@ -5,11 +5,18 @@ declare module "virtual:content-meta" {
     filePath: string;
     frontmatter: Record<string, unknown>;
     localizedFrontmatter?: Partial<Record<LocalizedContentLocale, Record<string, unknown>>>;
+    /** Blog only: reading time with/without `data-long-version` sections. */
+    readingStats?: { shortMins: number; longMins: number };
   };
 
   export const docsMeta: ReadonlyArray<ContentMetaEntry>;
   export const guidesMeta: ReadonlyArray<ContentMetaEntry>;
   export const blogMeta: ReadonlyArray<ContentMetaEntry>;
+}
+
+declare module "virtual:blog-raw" {
+  /** Raw MDX source per blog slug, for the /blog/$post.md endpoint. */
+  export const rawBlogPosts: Record<string, string>;
 }
 
 declare module "virtual:localized-content" {

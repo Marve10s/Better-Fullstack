@@ -1,7 +1,7 @@
 ---
 title: "ScaffBench 2.1: GPT-5.6 picks the right libraries — and builds fewer of them than GPT-5.5"
-description: "OpenAI's newest models land below GPT-5.5 on prompt-only scaffolding, and the gap is dependency hallucination, not design. Sixteen configs now rank on one board."
-date: 2026-07-09
+description: "OpenAI's newest models land below GPT-5.5 on prompt-only scaffolding — until max effort. The gap is dependency hallucination, not design. Nineteen configs, one board."
+date: 2026-07-10
 authors:
   - Ibrahim Elkamali
 tags:
@@ -24,57 +24,68 @@ keywords:
 hand-write a real full-stack project from a prompt, with no scaffolder, and have it build? The answer
 was "rarely."
 
-ScaffBench 2.1 now covers **sixteen configs** on that test — **13 hard specs across eight
+ScaffBench 2.1 now covers **nineteen configs** on that test — **13 hard specs across eight
 ecosystems**, prompt-only, where the agent reads the spec and writes every file itself. This update
-adds three models: **GPT-5.6 Terra**, **GPT-5.6 Luna**, and **Hy3** (via opencode's free endpoint).
-And it carries the most counterintuitive result on the board so far:
+adds the **GPT-5.6 family in five configs** (Sol at high and max, Terra at medium, Luna at medium and
+max) and **Hy3** (via opencode's free endpoint). It also ships a **hardened validator** — while
+scoring the 5.6 family we found and fixed real gaps in our own harness (details in
+[The honest part](#the-honest-part)), and re-scored every config whose run artifacts we still have.
+The headline survived the re-score, with a twist:
 
-**GPT-5.6 — OpenAI's newest family, released after GPT-5.5 — scores below GPT-5.5.** Not because it
-designs worse projects. Because it hallucinates dependencies.
+**GPT-5.6 — OpenAI's newest family, released after GPT-5.5 — scores below GPT-5.5 at its default
+efforts.** Not because it designs worse projects. Because it hallucinates dependencies. And unlike
+every other family we've tested, cranking reasoning to **max** actually fixes much of it.
 
 ## Leaderboard
 
 CORE pass@1 = the project installs, builds, type-checks, and native-compiles from a prompt.
-Inconclusive specs (the validator couldn't measure the project) are excluded from each denominator.
-This is one unified ranking — free and subscription models now place on merit alongside the paid
-frontier, with no separate tier.
+Inconclusive specs (the environment prevented a clean measurement) are excluded from each
+denominator. This is one unified ranking — free and subscription models place on merit alongside the
+paid frontier, with no separate tier. Rows marked † predate the validator fixes and keep their
+original scores (their run artifacts are gone, so they can't be re-scored until they're rerun).
 
 | Config | CORE pass@1 | Avg cost | Wired libs |
 | --- | :---: | ---: | :---: |
-| GPT-5.5 · **high** | **7 / 13** (54%) | $1.41 | 93% |
-| Fable 5 · **high** | **6 / 12** (50%) | $4.94 | 97% |
-| Fable 5 · **low** | **6 / 13** (46%) | $2.12 | 95% |
-| GPT-5.6 Terra · **medium** | **4 / 13** (31%) | — | 93% |
-| Claude Opus 4.8 · **max** | 3 / 11 (27%) | $9.21 | 97% |
-| Claude Opus 4.8 · **low** | 3 / 11 (27%) | $1.63 | 96% |
-| Gemini 3.5 Flash · **high** | 3 / 11 (27%) | — | 94% |
-| Claude Sonnet 5 · **max** | 2 / 10 (20%) | $5.26 | 96% |
-| GPT-5.6 Luna · **medium** | **2 / 11** (18%) | — | 88% |
-| Hy3 (opencode) | **1 / 8** (13%) | free | 95% |
-| Claude Sonnet 4.6 · **high** | 1 / 11 (9%) | $1.53 | 94% |
-| DeepSeek V4 Flash (opencode) | 1 / 10 (10%) | free | 83% |
-| GPT-5.3 Codex Spark · **high** | 1 / 11 (9%) | — | 92% |
-| MiMo V2.5 (opencode) | 0 / 9 | free | 82% |
-| Nemotron 3 Nano 30B (Kilo) | 0 / 1 | free | 7% |
-| Nemotron 3 Ultra 550B (Kilo) | 0 / 3 | free | 19% |
+| Fable 5 · **low** | **5 / 13** (38%) | $2.12 | 95% |
+| GPT-5.6 Luna · **max** | **5 / 13** (38%) | $0.83 | 94% |
+| GPT-5.5 · **high** | **5 / 13** (38%) | $1.41 | 93% |
+| GPT-5.6 Sol · **max** | **5 / 13** (38%) | $4.72 | 93% |
+| Fable 5 · **high** | **4 / 13** (31%) | $4.94 | 95% |
+| Claude Opus 4.8 · **max** † | 3 / 11 (27%) | $9.21 | 97% |
+| Claude Opus 4.8 · **low** † | 3 / 11 (27%) | $1.63 | 96% |
+| Gemini 3.5 Flash · **high** † | 3 / 11 (27%) | — | 94% |
+| Claude Sonnet 5 · **max** † | 2 / 10 (20%) | $5.26 | 96% |
+| GPT-5.6 Sol · **high** | **2 / 13** (15%) | — | 92% |
+| GPT-5.6 Terra · **medium** | **2 / 13** (15%) | — | 93% |
+| GPT-5.6 Luna · **medium** | **2 / 13** (15%) | — | 88% |
+| Hy3 (opencode) | **1 / 9** (11%) | free | 95% |
+| DeepSeek V4 Flash (opencode) † | 1 / 10 (10%) | free | 83% |
+| Claude Sonnet 4.6 · **high** † | 1 / 11 (9%) | $1.53 | 94% |
+| GPT-5.3 Codex Spark · **high** † | 1 / 11 (9%) | — | 92% |
+| MiMo V2.5 (opencode) † | 0 / 9 | free | 82% |
+| Nemotron 3 Nano 30B (Kilo) † | 0 / 1 | free | 7% |
+| Nemotron 3 Ultra 550B (Kilo) † | 0 / 3 | free | 19% |
 
 <BenchBarChart
   title="CORE build pass@1 · prompt-only"
   bars={[
-    { label: "GPT-5.5 · high", value: 54, display: "7 / 13 · 54%" },
-    { label: "Fable 5 · high", value: 50, display: "6 / 12 · 50%" },
-    { label: "Fable 5 · low", value: 46, display: "6 / 13 · 46%" },
-    { label: "GPT-5.6 Terra · medium", value: 31, display: "4 / 13 · 31%", highlight: true },
-    { label: "Opus 4.8 · low", value: 27, display: "3 / 11 · 27%" },
-    { label: "Opus 4.8 · max", value: 27, display: "3 / 11 · 27%" },
-    { label: "Gemini 3.5 Flash · high", value: 27, display: "3 / 11 · 27%" },
-    { label: "Sonnet 5 · max", value: 20, display: "2 / 10 · 20%" },
-    { label: "GPT-5.6 Luna · medium", value: 18, display: "2 / 11 · 18%", highlight: true },
-    { label: "Hy3 (opencode, free)", value: 13, display: "1 / 8 · 13%", highlight: true },
-    { label: "Sonnet 4.6 · high", value: 9, display: "1 / 11 · 9%" },
-    { label: "Codex Spark · high", value: 9, display: "1 / 11 · 9%" },
+    { label: "Fable 5 · low", value: 38, display: "5 / 13 · 38%" },
+    { label: "GPT-5.6 Luna · max", value: 38, display: "5 / 13 · 38%", highlight: true },
+    { label: "GPT-5.5 · high", value: 38, display: "5 / 13 · 38%" },
+    { label: "GPT-5.6 Sol · max", value: 38, display: "5 / 13 · 38%", highlight: true },
+    { label: "Fable 5 · high", value: 31, display: "4 / 13 · 31%" },
+    { label: "Opus 4.8 · low †", value: 27, display: "3 / 11 · 27%" },
+    { label: "Opus 4.8 · max †", value: 27, display: "3 / 11 · 27%" },
+    { label: "Gemini 3.5 Flash · high †", value: 27, display: "3 / 11 · 27%" },
+    { label: "Sonnet 5 · max †", value: 20, display: "2 / 10 · 20%" },
+    { label: "GPT-5.6 Sol · high", value: 15, display: "2 / 13 · 15%", highlight: true },
+    { label: "GPT-5.6 Terra · medium", value: 15, display: "2 / 13 · 15%", highlight: true },
+    { label: "GPT-5.6 Luna · medium", value: 15, display: "2 / 13 · 15%", highlight: true },
+    { label: "Hy3 (opencode, free)", value: 11, display: "1 / 9 · 11%", highlight: true },
+    { label: "Sonnet 4.6 · high †", value: 9, display: "1 / 11 · 9%" },
+    { label: "Codex Spark · high †", value: 9, display: "1 / 11 · 9%" },
   ]}
-  caption="New entrants highlighted. Gemini (via Antigravity) and the Codex plan runs don't report cost; opencode models are free. Zero-build configs (MiMo, both Nemotrons) omitted from the chart."
+  caption="New entrants highlighted; † rows keep pre-fix scores until rerun. Gemini (via Antigravity) and the Codex plan runs don't report cost; opencode models are free. Zero-build configs (MiMo, both Nemotrons) omitted from the chart."
 />
 
 <Callout kind="info">
@@ -87,56 +98,83 @@ frontier, with no separate tier.
 ## GPT-5.6: the newer model builds less
 
 GPT-5.6 ships in three tiers — **Luna** (fast/cheap), **Terra** (balanced), and **Sol** (frontier).
-We ran Luna and Terra at medium effort; Sol's run is still being finalized and lands in a follow-up.
+We ran Luna and Terra at medium effort, and Sol at high.
 
-The expectation for a successor family is simple: beat the predecessor. It doesn't happen here.
-**Terra builds 4/13 and Luna 2/11, against GPT-5.5's 7/13** — and the miss pattern is telling:
+The expectation for a successor family is simple: beat the predecessor. At the tiers' default
+efforts, it doesn't happen. **All three land on exactly 2/13** — flagship at high effort, workhorse
+at medium, and the fast tier alike — against GPT-5.5's 5/13. The tiers don't even separate: more
+parameters bought precisely nothing at these settings. The miss pattern is telling:
 
-| Spec | Ecosystem | GPT-5.5 · high | Terra · medium | Luna · medium |
-| --- | --- | :---: | :---: | :---: |
-| `python-ingestion-api` | Python | ✅ | ✅ | ✅ |
-| `multi-ts-go-grpc` | Multi (TS + Go) | ✅ | ✅ | ⚪ |
-| `frontier-polyglot-proto` | Multi | ✅ | ✅ | ⚪ |
-| `rust-leptos-axum` | Rust | ❌ | ✅ **gained** | ❌ |
-| `elixir-broadway-absinthe` | Elixir | ✅ | ❌ **lost** | ✅ |
-| `go-realtime-api` | Go | ✅ | ❌ **lost** | ❌ |
-| `react-native-expo` | React Native | ✅ | ❌ **lost** | ❌ |
-| `frontier-effect-eventsourcing` | TypeScript | ✅ | ❌ **lost** | ❌ |
-| `java-spring-jooq-keycloak` | Java | ❌ | ❌ | ❌ |
-| `multi-dotnet-ops` | Multi (TS + .NET) | ❌ | ❌ | ❌ |
-| `dotnet-blazor-cqrs` | .NET | ❌ | ❌ | ❌ |
-| `ts-svelte-edge-orpc` | TypeScript | ❌ | ❌ | ❌ |
-| `ai-search-workbench` | TypeScript | ❌ | ❌ | ❌ |
+| Spec | Ecosystem | GPT-5.5 · high | Sol · high | Terra · medium | Luna · medium |
+| --- | --- | :---: | :---: | :---: | :---: |
+| `python-ingestion-api` | Python | ✅ | ✅ | ✅ | ✅ |
+| `rust-leptos-axum` | Rust | ❌ | ✅ **gained** | ✅ **gained** | ❌ |
+| `elixir-broadway-absinthe` | Elixir | ✅ | ❌ | ❌ | ✅ |
+| `go-realtime-api` | Go | ✅ | ❌ | ❌ | ❌ |
+| `react-native-expo` | React Native | ✅ | ❌ | ❌ | ❌ |
+| `frontier-effect-eventsourcing` | TypeScript | ✅ | ❌ | ❌ | ❌ |
+| `multi-ts-go-grpc` | Multi (TS + Go) | ❌ | ❌ | ❌ | ❌ |
+| `frontier-polyglot-proto` | Multi | ❌ | ❌ | ❌ | ❌ |
+| `java-spring-jooq-keycloak` | Java | ❌ | ❌ | ❌ | ❌ |
+| `multi-dotnet-ops` | Multi (TS + .NET) | ❌ | ❌ | ❌ | ❌ |
+| `dotnet-blazor-cqrs` | .NET | ❌ | ❌ | ❌ | ❌ |
+| `ts-svelte-edge-orpc` | TypeScript | ❌ | ❌ | ❌ | ❌ |
+| `ai-search-workbench` | TypeScript | ❌ | ❌ | ❌ | ❌ |
 
-The regression isn't uniform — Terra uniquely lands `rust-leptos-axum`, a spec GPT-5.5 missed — but
-the net is clear: the newer family drops Go, Elixir, Expo, and the Effect frontier spec, and gains
-one Rust build back.
+The regression isn't uniform — Sol and Terra land `rust-leptos-axum`, a spec GPT-5.5 missed — but the
+net is clear: at default efforts the newer family drops Go, Expo, and the Effect frontier spec and
+only claws one Rust build back.
+
+### Then we turned the dial to max — and 5.6 came alive
+
+Because "the flagship ties the fast tier" felt wrong, we reran Sol *and* Luna at **max** reasoning
+effort. Both jumped from 2/13 to **5/13** — matching GPT-5.5-at-high build-for-build and putting
+Luna-at-max in a tie with Fable 5 low at the very top of the composite index:
+
+- **Sol · max** builds python, rust, go-realtime, elixir, and `multi-ts-go-grpc` — the **first
+  config ever to pass that spec**: both the hand-written TS frontend and the Go gRPC backend compile.
+- **Luna · max** builds python, rust, go-realtime, `react-native-expo`, and
+  `java-spring-jooq-keycloak` — the first 5.6 config to pin **real** Keycloak coordinates instead of
+  imaginary ones.
+
+The price is time, not money: Luna at max costs $0.83/project but its median generation goes from
+~3 to ~15 minutes (Sol: ~19), and each run gave one spec to the 90-minute generation ceiling (scored
+as a model failure, per policy). The tiers *still* don't separate — Sol-at-max and Luna-at-max tie on
+count with different spec mixes — but the family finally expresses its capability.
 
 <BenchBarChart
   title="The GPT line · CORE pass@1"
   bars={[
-    { label: "GPT-5.5 · high", value: 54, display: "7 / 13 · 54%" },
-    { label: "GPT-5.6 Terra · medium", value: 31, display: "4 / 13 · 31%", highlight: true },
-    { label: "GPT-5.6 Luna · medium", value: 18, display: "2 / 11 · 18%", highlight: true },
-    { label: "GPT-5.3 Codex Spark · high", value: 9, display: "1 / 11 · 9%" },
+    { label: "GPT-5.6 Luna · max", value: 38, display: "5 / 13 · 38%", highlight: true },
+    { label: "GPT-5.5 · high", value: 38, display: "5 / 13 · 38%" },
+    { label: "GPT-5.6 Sol · max", value: 38, display: "5 / 13 · 38%", highlight: true },
+    { label: "GPT-5.6 Sol · high", value: 15, display: "2 / 13 · 15%" },
+    { label: "GPT-5.6 Terra · medium", value: 15, display: "2 / 13 · 15%" },
+    { label: "GPT-5.6 Luna · medium", value: 15, display: "2 / 13 · 15%" },
+    { label: "GPT-5.3 Codex Spark · high †", value: 9, display: "1 / 11 · 9%" },
   ]}
-  caption="Newest ≠ best: the 5.6 family lands below 5.5 on prompt-only build success. Sol, the frontier tier, is pending."
+  caption="At default efforts the whole 5.6 family lands below 5.5 and the tiers don't separate. At max effort, both tested tiers match 5.5 — 2.5× the builds for ~4× the wall-clock."
 />
 
 ### The root cause: dependency hallucination, not weak design
 
 Here's what makes this the most interesting result on the board. The 5.6 models are **excellent stack
-selectors** — Terra wires **93%** of the right libraries, dead even with GPT-5.5, and Luna wires most
-of the stack too. They read the spec correctly, choose the right frameworks, and structure the project
+selectors** — Terra wires **93%** of the right libraries, dead even with GPT-5.5, and Sol sits right
+beside it at 92%. They read the spec correctly, choose the right frameworks, and structure the project
 sensibly. Then the build fails at the manifest, because the models invent dependency coordinates:
 
+- **Java:** all three 5.6 tiers pinned `keycloak-admin-client` versions that have never been published
+  — Sol asked Maven Central for 26.3.1, Terra for 26.1.1, Luna for 26.1.4; the artifact stops at
+  26.0.x. Three models, three different imaginary versions of the same library.
 - **Go:** Luna imported `github.com/go-redis/redis/v9` — a module path that no longer exists; the
   project moved to `github.com/redis/go-redis/v9` and the old path is dead.
 - **Go:** Terra's `go.mod` referenced a placeholder repo under `github.com/example/...` that was never
-  a real module.
-- **Go:** Sol referenced `otelchi/v0.60.0` — a version that has never been published.
-- **Java:** unresolvable Maven coordinates across all three 5.6 tiers.
-- **TypeScript:** installs **succeeded for every model** — so this isn't an environment or registry
+  a real module. Sol did the same on the gRPC spec — and separately invented `otelchi/v0.60.0`, a
+  version that has never existed.
+- **Codegen that never ran:** on the protobuf specs, every 5.6 tier wrote code importing generated
+  `gen/...` packages — then neither vendored the generated output nor wired the codegen into the
+  build. The projects cannot compile as delivered.
+- **TypeScript installs succeeded for every model** — so this isn't an environment or registry
   problem. It's the models inventing versions and module paths, worst in Go and Java where a single
   wrong coordinate fails the whole build.
 
@@ -149,37 +187,63 @@ are different skills.** GPT-5.6 is great at the former. Its entire regression ag
 the latter — specifically in dependency correctness, the least glamorous part of scaffolding and the
 one a package registry never forgives.
 
-## Fable 5: the strongest Claude config — and effort barely moves it
+The max-effort runs sharpen this: given ~4× the thinking time, the same models start getting the
+coordinates right (Luna's Keycloak versions become real; Sol's Go modules resolve). The knowledge was
+in there — the default reasoning budgets just don't spend enough of it on the boring parts.
 
-Fable 5 remains the highest-placing Claude model. At **low** reasoning effort it builds **6 of 13** —
-double what Opus 4.8 manages at either low or max, behind only GPT-5.5 — at **37 tool steps and $2.12
-per project**, against Sonnet 5's 215 steps / $5.26 and Opus-at-max's 99 steps / $9.21. And it isn't
-trading accuracy for builds: at **95% wired** it leads the field on stack selection too.
+### Give it a scaffolder and the problem disappears
 
-Turning the dial to **high** doesn't buy more builds: the same count — **6** — for 2.3× the cost.
+We also ran Luna at **medium** effort on the **MCP path** — same model, same reasoning budget, but
+with the Better-Fullstack scaffolder available as a tool instead of hand-writing every manifest. The
+result: **7/11 (64%)** at **$0.20 and 69 seconds median** per project, versus 2/13 (15%) prompt-only.
+It even lands `ai-search-workbench` and `dotnet-blazor-cqrs` — specs **no model has ever built** on
+the prompt path. (The MCP row lives beside the board, not on it — the main leaderboard stays a
+prompt-only comparison. Its misses cluster exactly where the scaffolder can't reach: the
+multi-ecosystem specs whose Go/.NET half must still be hand-written, plus Expo.)
+
+Same model, same effort, 4× the build rate: the capability gap isn't knowledge or reasoning — it's
+that hand-writing dependency coordinates is a memorization task no one should be doing, human or
+model.
+
+## Fable 5: the strongest config on the board
+
+Fable 5 is now the highest-placing config, period. At **low** reasoning effort it builds **5 of 13** —
+tied with GPT-5.5 on builds and ahead of it on the composite index — at **37 tool steps and $2.12 per
+project**, against Sonnet 5's 215 steps / $5.26 and Opus-at-max's 99 steps / $9.21. And it isn't
+trading accuracy for builds: at **95% wired** it leads the paid field on stack selection too.
+
+Turning the dial to **high** doesn't buy more builds — it drops one, to **4**, for 2.3× the cost.
 What changes is *which* specs assemble: high gains `frontier-effect-eventsourcing` but loses
-`java-spring-jooq-keycloak`. Fable is also the only Claude line to build the Expo `react-native-expo`
-app, at either effort.
+`multi-dotnet-ops` and `java-spring-jooq-keycloak`. Fable is also the only Claude line to build the
+Expo `react-native-expo` app, at either effort.
 
-## Reasoning effort isn't the lever
+## Reasoning effort: not the lever for Claude — the whole lever for GPT-5.6
 
 The obvious hypothesis after ScaffBench 2 was that models knew the right libraries and just ran out of
-room to wire them — so maximum reasoning should convert near-misses into builds. Three models later,
-it still doesn't:
+room to wire them — so maximum reasoning should convert near-misses into builds. For every Claude
+config we've tested, it doesn't:
 
 - **Opus 4.8 scored identical at low and max — 3/11 either way — for 5–10× the cost.** Max fixed
   `rust-leptos-axum` and `java-spring-jooq-keycloak`, and broke `go-realtime-api` and
   `multi-dotnet-ops`. Extra deliberation traded one project's success for another's.
-- **Fable 5 built the same 6 at high as at low**, reshuffling one spec each way.
+- **Fable 5 built 5 at low and 4 at high**, reshuffling specs along the way.
 - **Sonnet 5 at max is the busiest run in the field** — 215 tool steps per project, more than double
   Opus at max — and still lands only 2/10. It matches Opus on stack selection (96% wired) and uniquely
-  builds `elixir-broadway-absinthe`, but grinding through more edits and retries didn't buy builds.
+  builds `elixir-broadway-absinthe` among the Sonnet/Opus lines, but grinding through more edits and
+  retries didn't buy builds.
+
+**GPT-5.6 breaks the pattern.** Sol went 2/13 → 5/13 from high to max; Luna went 2/13 → 5/13 from
+medium to max — the first configs on this board where more reasoning bought strictly more builds
+rather than a reshuffle. The difference is *what* the extra thinking fixes: Claude models already
+spend their effort verifying as they go (Fable low passes 5 specs in 37 steps), while 5.6's default
+budgets produce one-shot projects with unverified dependency facts. Give 5.6 room to check its own
+manifests and the hallucinations largely evaporate.
 
 <BenchBarChart
   title="Avg cost per project ($) · more spend ≠ more builds"
   bars={[
     { label: "Opus 4.8 · low (3 builds)", value: 1.63, display: "$1.63" },
-    { label: "Fable 5 · low (6 builds)", value: 2.12, display: "$2.12", highlight: true },
+    { label: "Fable 5 · low (5 builds)", value: 2.12, display: "$2.12", highlight: true },
     { label: "Sonnet 5 · max (2 builds)", value: 5.26, display: "$5.26" },
     { label: "Opus 4.8 · max (3 builds)", value: 9.21, display: "$9.21" },
   ]}
@@ -209,7 +273,7 @@ builds more projects than a paid one should simply rank above it, so everything 
 Pass@1 and the composite index. The newest free entrant shows why that matters.
 
 **Hy3**, run through opencode's free endpoint, wires **95%** of the right libraries — even with the
-paid frontier, and the best stack selection of any free model we've tested. It lands **1/8** builds
+paid frontier, and the best stack selection of any free model we've tested. It lands **1/9** builds
 (`python-ingestion-api`, the field's most-built spec), placing it mid-board — above Sonnet 4.6 and
 Codex Spark on the composite index.
 
@@ -220,8 +284,7 @@ Its denominator needs explaining, and honestly:
   stalled mid-stream after the agent had done the work; on the React Native spec it returned zero
   bytes — the endpoint never responded at all. Those are infrastructure failures (free-tier rate
   limits / capacity), not build failures, so they're excluded from Hy3's denominator rather than
-  counted against it. A third spec, `multi-ts-go-grpc`, hit the same validator gap as several paid
-  models (see below). Hy3 is scored on what actually ran.
+  counted against it. Hy3 is scored on the nine specs that actually ran.
 </Callout>
 
 The read on Hy3: a genuinely strong stack selector hampered by free-endpoint reliability. The rest of
@@ -236,6 +299,9 @@ Kilo **Nemotrons** (7% and 19% wired, mostly inconclusive) rarely produce a meas
   a confident agent can pick a *near* neighbour and get it subtly wrong.
 - **Frontier, prompt-only specs.** Two specs are deliberately beyond our own generator's option space,
   so no scaffolder could "cheat" them.
+- **A hardened validator.** Manifest discovery now finds projects wherever the agent puts them
+  (`frontend/` + `backend/` splits included), every ecosystem in a multi-ecosystem project is
+  validated, and install-only "passes" are gone. Details below.
 - **Real cost accounting.** Claude Code reports `$0` on a subscription; we price every run from its
   token usage. Plan-based Codex runs and Antigravity's plain-text output still can't be metered — those
   show as "—".
@@ -244,13 +310,21 @@ Kilo **Nemotrons** (7% and 19% wired, mostly inconclusive) rarely produce a meas
 
 ## The honest part
 
-A benchmark is only useful if it discloses what it couldn't measure.
+A benchmark is only useful if it discloses what it couldn't measure — and what it got wrong.
 
 <Callout kind="warn">
-  **`multi-ts-go-grpc` is inconclusive for several models — and it's our bug, not theirs.** Agents
-  that put manifests in subdirectories (`frontend/package.json`, `backend/go.mod`) built projects our
-  validator couldn't see, because it only looks at the project root. Those runs are excluded from
-  every rate above. Teaching the validator to find nested manifests is the next harness fix.
+  **Our validator had real bugs, and they were flattering some scores.** While scoring GPT-5.6 we
+  noticed the flagship tier landing below the mid tier and audited our own harness before believing
+  it. We found: (1) manifest discovery only looked at the project root, so an agent that split its
+  project into `frontend/` + `backend/` either auto-failed with nothing measured or — worse — passed
+  on a `bun install` alone while its Go service didn't compile; (2) a `.NET SDK` pinned by a
+  project's `global.json` but missing from the machine was scored as a model failure (we now install
+  .NET 8 alongside 10, and classify a pure SDK gap as inconclusive); (3) validation could wander into
+  vendored dependency trees — a broken npm build *inside a Hex package* was failing runs that
+  deserved to pass. All three are fixed, and every config with surviving run artifacts was re-scored
+  under the fixed validator: GPT-5.5 (7→5), Fable 5 low (6→5), Fable 5 high (6→4), GPT-5.6 Terra
+  (4→2), Sol (3→2), and Hy3 (denominator 8→9) all moved. Rows marked † in the table couldn't be
+  re-scored — their artifacts are gone — and keep their original numbers until they're rerun.
 </Callout>
 
 The other disclosures:
@@ -262,12 +336,13 @@ The other disclosures:
 - **Hy3's endpoint deaths are excluded, not forgiven.** The two specs that died on opencode's free
   endpoint (detailed above) are infrastructure failures and stay out of the denominator — the same
   rule we apply to every model's inconclusive runs.
-- **Effort levels aren't identical across the board.** GPT-5.5 ran at high; the GPT-5.6 tiers ran at
-  medium, their balanced setting. Worth knowing — though the 5.6 failures above are hallucinated
-  module paths and Maven coordinates, which more deliberation has not fixed for any model we've
-  tested (see Opus and Fable at max/high).
-- **No GPT-5.6 Sol score yet.** The frontier tier's run is still being finalized; we publish it when
-  it's clean, not before.
+- **Effort levels aren't identical across the board.** GPT-5.5 ran at high; Luna and Terra ran at
+  medium (their balanced setting) and Sol at high and max, Luna also at max. The max runs show effort
+  *does* move this family (2/13 → 5/13) — which is exactly why we report each config's effort level
+  in every row rather than pretending they're interchangeable.
+- **Two max-effort generations hit the 90-minute ceiling** (one per run) and score as model failures,
+  per the same SWE-bench-style rule as every other timeout. A sleep interruption on the bench machine
+  killed six mid-generation runs; those were regenerated from scratch, not patched.
 
 ## How we score
 
@@ -275,28 +350,36 @@ The other disclosures:
   **CORE vs Full.** *CORE* is the load-bearing question — does the project install, build, type-check,
   and native-compile (`cargo check`, `go build`, `dotnet build`, `mvn`, `mix`)? *Full* adds a quality
   gate (lint, format, test). On the prompt path CORE is the headline — most runs don't get that far.
-  Every run is `success`, `model-failure`, or `infra-inconclusive`; toolchain stalls aren't charged to
-  the model, and (per SWE-bench) a generation timeout is.
+  Every run is `success`, `model-failure`, or `infra-inconclusive`; toolchain gaps aren't charged to
+  the model, and (per SWE-bench) a generation timeout is. Multi-ecosystem projects are validated per
+  ecosystem root — a TS + Go project must build on *both* sides to pass.
 </Callout>
 
 ## Takeaways
 
-- **Newest is not best.** GPT-5.6 Terra (4/13) and Luna (2/11) land below GPT-5.5 (7/13) on
-  prompt-only scaffolding — the first time a successor family has regressed on this board.
+- **Newest is not best at default settings.** All three GPT-5.6 tiers land on 2/13 at their standard
+  efforts, below GPT-5.5's 5/13 — the first time a successor family has regressed on this board. At
+  **max** effort both tested tiers claw back to 5/13, tying 5.5 — for ~4× the wall-clock.
 - **The regression is dependency hallucination, not design.** The 5.6 models select stacks as well as
-  anyone (Terra: 93% wired, even with 5.5) and then invent module paths and versions — a renamed Go
-  module, a placeholder `github.com/example` repo, an otelchi version that doesn't exist,
-  unresolvable Maven coordinates. TypeScript installs succeeded for every model; Go and Java punish
-  invented coordinates with a failed build.
-- **Fable 5 still moves the ceiling cheaply.** 6/13 at low effort, $2.12/project — double either Opus
-  config, second only to GPT-5.5, and the best wired-libs score in the field.
-- **Reasoning effort isn't the lever — on three models now.** Opus, Fable, and Sonnet all show that
-  more deliberation reshuffles *which* stacks assemble, not *how many*.
+  anyone (Terra: 93% wired, even with 5.5) and then invent module paths and versions — three imaginary
+  Keycloak versions across three tiers, a renamed Go module, a placeholder `github.com/example` repo,
+  codegen imports that were never generated. TypeScript installs succeeded for every model; Go and
+  Java punish invented coordinates with a failed build. Max-effort runs get the coordinates right —
+  the knowledge was there, unspent.
+- **Fable 5 still tops the board on efficiency.** 5/13 at *low* effort, 37 steps, $2.12/project, and
+  the paid field's best wired-libs score. Luna-at-max ties its index — while taking 4× the wall-clock
+  and Fable gets there without leaving low effort.
+- **Reasoning effort isn't the lever for Claude — it's the whole lever for GPT-5.6.** Opus, Fable, and
+  Sonnet reshuffle *which* stacks assemble with more deliberation; Sol and Luna tripled their build
+  counts at max. 5.6's default budgets under-spend on verifying its own manifests.
+- **A scaffolder beats reasoning at both price points.** Luna at medium + MCP: 7/11 (64%) at $0.20 and
+  69s/project — versus 2/13 prompt-only from the same model at the same effort, and better than any
+  config's prompt-only score at any effort. Verified assembly is a tooling problem before it's an
+  intelligence problem.
 - **Free models rank on merit now, and one earns it.** Hy3 wires 95% of the right stack — frontier
   territory — and places mid-board despite a free endpoint that killed two of its runs.
-- **Stack selection is solved; verified assembly is not.** 88–97% wired at a 9–54% build rate is the
+- **Stack selection is solved; verified assembly is not.** 88–97% wired at a 9–38% build rate is the
   whole story in one line. "Knows the right library" and "produces a project that builds" are
-  different skills — and the gap between them is exactly what a scaffolder closes, which is why the
-  assisted paths in ScaffBench 2 sat near 100% while prompt-only still separates the field.
+  different skills — and the gap between them is exactly what a scaffolder closes.
 
-We'll keep the leaderboard growing as more models land — GPT-5.6 Sol is next.
+We'll keep the leaderboard growing as more models land — Terra at max is the obvious next cell.

@@ -36,13 +36,13 @@
     },
     "apps/cli": {
       "name": "create-better-fullstack",
-      "version": "2.1.2",
+      "version": "2.1.7",
       "bin": {
         "create-better-fullstack": "dist/cli.mjs",
       },
       "dependencies": {
-        "@better-fullstack/template-generator": "^2.1.2",
-        "@better-fullstack/types": "^2.1.2",
+        "@better-fullstack/template-generator": "^2.1.7",
+        "@better-fullstack/types": "^2.1.7",
         "@clack/core": "^0.5.0",
         "@clack/prompts": "^1.6.0",
         "@modelcontextprotocol/sdk": "^1.29.0",
@@ -77,6 +77,7 @@
         "@better-fullstack/backend": "workspace:*",
         "@better-fullstack/template-generator": "workspace:*",
         "@better-fullstack/types": "workspace:*",
+        "@fontsource/opendyslexic": "^5.2.5",
         "@mdx-js/react": "^3.1.1",
         "@mdx-js/rollup": "^3.1.1",
         "@number-flow/react": "^0.5.10",
@@ -161,7 +162,7 @@
     },
     "packages/create-bfs": {
       "name": "create-bfs",
-      "version": "2.1.2",
+      "version": "2.1.7",
       "bin": {
         "create-bfs": "cli.js",
       },
@@ -171,9 +172,9 @@
     },
     "packages/template-generator": {
       "name": "@better-fullstack/template-generator",
-      "version": "2.1.2",
+      "version": "2.1.7",
       "dependencies": {
-        "@better-fullstack/types": "^2.1.2",
+        "@better-fullstack/types": "^2.1.7",
         "handlebars": "^4.7.9",
         "pathe": "^2.0.3",
         "ts-morph": "^27.0.2",
@@ -191,7 +192,7 @@
     },
     "packages/types": {
       "name": "@better-fullstack/types",
-      "version": "2.1.2",
+      "version": "2.1.7",
       "dependencies": {
         "zod": "4.4.3",
       },
@@ -332,6 +333,8 @@
     "@floating-ui/react-dom": ["@floating-ui/react-dom@2.1.8", "", { "dependencies": { "@floating-ui/dom": "^1.7.6" }, "peerDependencies": { "react": ">=16.8.0", "react-dom": ">=16.8.0" } }, "sha512-cC52bHwM/n/CxS87FH0yWdngEZrjdtLW/qVruo68qg+prK7ZQ4YGdut2GyDVpoGeAYe/h899rVeOVm6Oi40k2A=="],
 
     "@floating-ui/utils": ["@floating-ui/utils@0.2.11", "", {}, "sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg=="],
+
+    "@fontsource/opendyslexic": ["@fontsource/opendyslexic@5.2.5", "", {}, "sha512-NNS9aaPQx2TlaTvb3vTEjw3xz8lKj23mBc+6rM00mSNFDygdoll0/nLMHFtDKKrBT6sMfY6TFFPOR0D9ktdspg=="],
 
     "@hono/node-server": ["@hono/node-server@1.19.14", "", { "peerDependencies": { "hono": "^4" } }, "sha512-GwtvgtXxnWsucXvbQXkRgqksiH2Qed37H9xHZocE5sA3N8O8O8/8FA3uclQXxXVzc9XBZuEOMK7+r02FmSpHtw=="],
 

@@ -34,7 +34,7 @@ moves with provider load, so the mean alone is misleading over small samples).
 
 | Model | Effort | Effective reasoning | Path | Index | Pass@1 | Quality | Inconclusive | Macro | pass@k | pass^k | CI95 | Wired libs | Faithful | Acceptance | Command discipline | Median / p95 | Avg output tokens | Avg cost | Failure tags |
 | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-opencode/hy3-free | default |  | prompt | 43 | 1/10 | 10% | 1/11 | 10% | 1/11 | 1/11 | 10% (2-40) | 86% | — | — | 100% | 526.9s / 4368.7s | 22950 | 0.000 | install-failed:4, stack-mismatch:7, validation-failed:10, build-failed:5, typecheck-failed:1, claude-error:2, project-not-found:1
+opencode/hy3-free | default |  | prompt | 43 | 1/10 | 10% | 1/11 | 10% | 1/11 | 1/11 | 10% (2-40) | 86% | — | — | 100% | 526.9s / 4368.7s | 22950 | 0.000 | install-failed:4, stack-mismatch:7, validation-failed:10, build-failed:6, typecheck-failed:1, lint-failed:1, claude-error:2, project-not-found:1
 
 ## Runs
 
@@ -44,10 +44,10 @@ ai-search-workbench | 1 | default |  | opencode/hy3-free | prompt | fail | insta
 rust-leptos-axum | 1 | default |  | opencode/hy3-free | prompt | fail | build-failed, stack-mismatch, validation-failed | 0 | 615.1s | 29782 | 0.000 | 92 | 11/12 | — | — |  | 101 |  |  |  | miss
 python-ingestion-api | 1 | default |  | opencode/hy3-free | prompt | pass |  | 0 | 192.0s | 12325 | 0.000 | 100 | 13/13 | — | — | 0 |  | 0 |  |  | miss
 go-realtime-api | 1 | default |  | opencode/hy3-free | prompt | fail | install-failed, stack-mismatch, validation-failed | 0 | 526.9s | 24264 | 0.000 | 92 | 12/13 | — | — | 1 |  |  |  |  | miss
-multi-dotnet-ops | 1 | default |  | opencode/hy3-free | prompt | fail | build-failed, stack-mismatch, validation-failed | 0 | 305.1s | 16345 | 0.000 | 92 | 12/13 | — | — | 0 | 1 |  |  |  | miss
+multi-dotnet-ops | 1 | default |  | opencode/hy3-free | prompt | fail | build-failed, install-failed, stack-mismatch, validation-failed | 0 | 305.1s | 16345 | 0.000 | 92 | 12/13 | — | — | 1 | 1 |  |  |  | miss
 ts-svelte-edge-orpc | 1 | default |  | opencode/hy3-free | prompt | fail | build-failed, typecheck-failed, validation-failed | 0 | 434.3s | 24892 | 0.000 | 100 | 10/10 | — | — | 0 | 1 | 2 |  |  | miss
 dotnet-blazor-cqrs | 1 | default |  | opencode/hy3-free | prompt | fail | build-failed, stack-mismatch, validation-failed | 0 | 275.4s | 16022 | 0.000 | 92 | 12/13 | — | — | 0 | 1 |  |  |  | miss
-multi-ts-go-grpc | 1 | default |  | opencode/hy3-free | prompt | fail | stack-mismatch, validation-failed | 0 | 318.0s | 23258 | 0.000 | 88 | 14/16 | — | — |  |  |  |  |  | miss
-java-spring-jooq-keycloak | 1 | default |  | opencode/hy3-free | prompt | fail | build-failed, install-failed, validation-failed | 0 | 781.4s | 39701 | 0.000 | 100 | 14/14 | — | — | 1 | 1 |  |  |  | miss
+multi-ts-go-grpc | 1 | default |  | opencode/hy3-free | prompt | fail | build-failed, lint-failed, stack-mismatch, validation-failed | 0 | 318.0s | 23258 | 0.000 | 88 | 14/16 | — | — |  |  |  |  |  | miss
+java-spring-jooq-keycloak | 1 | default |  | opencode/hy3-free | prompt | fail | build-failed, validation-failed | 0 | 781.4s | 39701 | 0.000 | 100 | 14/14 | — | — |  | 1 |  |  |  | miss
 elixir-broadway-absinthe | 1 | default |  | opencode/hy3-free | prompt | fail | claude-error, install-failed, validation-failed | null | 4368.7s | 8077 | 0.000 | 100 | 13/13 | — | — | 1 |  |  |  |  | miss
 react-native-expo | 1 | default |  | opencode/hy3-free | prompt | inconclusive | claude-error, project-not-found, stack-mismatch, validation-failed | null | 1145.6s |  |  | 0 | 0/8 | — | — |  |  |  |  |  | 

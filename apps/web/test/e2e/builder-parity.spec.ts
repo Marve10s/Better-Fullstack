@@ -1,6 +1,12 @@
 import { expect, test } from "@playwright/test";
 
-import { clickVisibleTestId, commandOutput, openBuilder, visibleTestId } from "./test-helpers";
+import {
+  clickVisibleTestId,
+  commandOutput,
+  gotoAppPage,
+  openBuilder,
+  visibleTestId,
+} from "./test-helpers";
 
 test.describe("Builder parity", () => {
   test.describe.configure({ mode: "serial" });
@@ -124,6 +130,28 @@ test.describe("Builder parity", () => {
     const command = commandOutput(page);
     await expect(command).toContainText("--part backend:java:spring-boot");
     await expect(command).toContainText("--part backend.language:java:kotlin");
+    await expect(page.getByTestId("multi-backend-orm-jooq")).toHaveCount(0);
+    await expect(page.getByTestId("multi-backend-orm-mybatis")).toHaveCount(0);
+    await expect(page.getByTestId("multi-backend-api-grpc")).toHaveCount(0);
+    await expect(page.getByTestId("multi-backend-api-openapi-generator")).toHaveCount(0);
+  });
+
+  test("repairs stale Java-only capabilities in shared Kotlin multi-stack URLs", async ({
+    page,
+  }) => {
+    const partSpecs = [
+      "frontend:typescript:next",
+      "backend:java:spring-boot",
+      "backend.language:java:kotlin",
+      "backend.orm:java:jooq",
+      "backend.api:java:grpc",
+    ].join(",");
+    await gotoAppPage(page, `/new?mode=multi&part=${encodeURIComponent(partSpecs)}`);
+
+    const command = commandOutput(page);
+    await expect(command).toContainText("--part backend.language:java:kotlin");
+    await expect(command).not.toContainText("--part backend.orm:java:jooq");
+    await expect(command).not.toContainText("--part backend.api:java:grpc");
   });
 
   test("disabled options do not mutate the command output", async ({ page }) => {

@@ -47,6 +47,74 @@ export {
 
 export type CompatibilityCategory = OptionCategory;
 
+// ============================================
+// KOTLIN (JAVA ECOSYSTEM) SUPPORT GATE
+// ============================================
+// Kotlin is a `javaLanguage` variant of the Java ecosystem, wired only for the
+// Spring Boot scaffold and the option surface that has Kotlin source templates.
+// This is the single source of truth for that gate — the stack normalization
+// below, `getDisabledReason`, the CLI create path, and the template generator
+// all consume it so the lists can never drift apart.
+
+export const KOTLIN_UNSUPPORTED_JAVA_TESTING_LIBRARIES: ReadonlySet<string> = new Set([
+  "testcontainers",
+  "rest-assured",
+  "wiremock",
+  "awaitility",
+  "archunit",
+  "jqwik",
+]);
+
+// Java annotation-processor tooling the Kotlin scaffold drops rather than
+// blocks: data classes replace Lombok, and MapStruct would need kapt.
+export const KOTLIN_DROPPED_JAVA_LIBRARIES: ReadonlySet<string> = new Set(["lombok", "mapstruct"]);
+
+export type KotlinJavaGateInput = {
+  javaWebFramework?: string;
+  javaBuildTool?: string;
+  javaOrm?: string;
+  javaApi?: string;
+  javaTestingLibraries?: string[];
+  email?: string;
+  search?: string;
+  caching?: string;
+  observability?: string;
+};
+
+export function getKotlinJavaIncompatibilityReason(stack: KotlinJavaGateInput): string | null {
+  if (stack.javaWebFramework !== "spring-boot") {
+    return "Kotlin sources are only wired for the Spring Boot scaffold";
+  }
+  if (!stack.javaBuildTool || stack.javaBuildTool === "none") {
+    return "Kotlin requires Maven or Gradle";
+  }
+  if (stack.javaOrm === "jooq" || stack.javaOrm === "mybatis") {
+    return "The Kotlin scaffold supports Spring Data JPA or no ORM (jOOQ/MyBatis sources are Java-only)";
+  }
+  if (stack.javaApi === "grpc" || stack.javaApi === "openapi-generator") {
+    return "The Kotlin scaffold supports Spring GraphQL or no API layer (gRPC/OpenAPI codegen paths are Java-only)";
+  }
+  if (stack.email === "resend") {
+    return "The Resend email integration is Java-only in the Java ecosystem scaffold";
+  }
+  if (stack.search === "meilisearch") {
+    return "The Meilisearch integration is Java-only in the Java ecosystem scaffold";
+  }
+  if (stack.caching === "upstash-redis") {
+    return "The Upstash Redis integration is Java-only in the Java ecosystem scaffold";
+  }
+  if (stack.observability === "sentry") {
+    return "The Sentry integration is Java-only in the Java ecosystem scaffold";
+  }
+  const unsupportedTestingLibrary = (stack.javaTestingLibraries ?? []).find((library) =>
+    KOTLIN_UNSUPPORTED_JAVA_TESTING_LIBRARIES.has(library),
+  );
+  if (unsupportedTestingLibrary) {
+    return `The '${unsupportedTestingLibrary}' testing library is not wired for the Kotlin scaffold`;
+  }
+  return null;
+}
+
 export type CompatibilityIssue = {
   code: string;
   message: string;
@@ -1583,42 +1651,30 @@ export const analyzeStackCompatibility = (
     // Kotlin is only wired for the Spring Boot scaffold (with Maven or Gradle)
     // and its common option surface. For every other Java combination we
     // normalize the language back to `java` so the generator never emits a
-    // half-built Kotlin project. The uncovered surface is: non-Spring-Boot
-    // frameworks, source-only scaffolds, jOOQ/MyBatis ORMs, the gRPC/OpenAPI
-    // API layers (protoc/codegen paths), and the Java-only third-party service
-    // integrations (Resend email, Meilisearch, Upstash Redis, Sentry).
+    // half-built Kotlin project. See `getKotlinJavaIncompatibilityReason` for
+    // the full gate (shared with getDisabledReason, the CLI, and the generator).
     if (nextStack.javaLanguage === "kotlin") {
-      const kotlinUnsupportedTestingLibraries = new Set([
-        "testcontainers",
-        "rest-assured",
-        "wiremock",
-        "awaitility",
-        "archunit",
-        "jqwik",
-      ]);
-      const kotlinSupported =
-        nextStack.javaWebFramework === "spring-boot" &&
-        nextStack.javaBuildTool !== "none" &&
-        nextStack.javaOrm !== "jooq" &&
-        nextStack.javaOrm !== "mybatis" &&
-        nextStack.javaApi !== "grpc" &&
-        nextStack.javaApi !== "openapi-generator" &&
-        nextStack.email !== "resend" &&
-        nextStack.search !== "meilisearch" &&
-        nextStack.caching !== "upstash-redis" &&
-        nextStack.observability !== "sentry" &&
-        !nextStack.javaTestingLibraries.some((library) =>
-          kotlinUnsupportedTestingLibraries.has(library),
-        );
-
-      if (!kotlinSupported) {
+      const kotlinBlocker = getKotlinJavaIncompatibilityReason(nextStack);
+      if (kotlinBlocker) {
         nextStack.javaLanguage = "java";
         changed = true;
         changes.push({
           category: "javaLanguage",
-          message:
-            "Java language set to 'Java' (Kotlin currently targets the Spring Boot scaffold with Spring Data JPA/none, Spring GraphQL/none, and no jOOQ/MyBatis/gRPC/OpenAPI or Java-only service integrations)",
+          message: `Java language set to 'Java' (${kotlinBlocker})`,
         });
+      } else {
+        const kotlinLibraries = nextStack.javaLibraries.filter(
+          (library) => !KOTLIN_DROPPED_JAVA_LIBRARIES.has(library),
+        );
+        if (kotlinLibraries.length !== nextStack.javaLibraries.length) {
+          nextStack.javaLibraries = kotlinLibraries;
+          changed = true;
+          changes.push({
+            category: "javaLibraries",
+            message:
+              "Java annotation-processor libraries cleared (Lombok and MapStruct are not wired for Kotlin)",
+          });
+        }
       }
     }
   }
@@ -1931,6 +1987,60 @@ export const getDisabledReason = (
     }
     if (category === "validation" && optionId !== "effect-schema") {
       return "Effect backend requires Effect Schema validation";
+    }
+  }
+
+  // ============================================
+  // KOTLIN (JAVA LANGUAGE VARIANT) RULES
+  // ============================================
+  // Grey out the 'kotlin' option when the current stack excludes it, and grey
+  // out Kotlin-incompatible options while Kotlin is selected — instead of
+  // silently normalizing the language back to Java after the fact. Shares the
+  // gate in getKotlinJavaIncompatibilityReason. These run BEFORE the graph
+  // delegation below: the graph engine authoritatively handles categories like
+  // javaOrm and the ecosystem-scoped email/search/caching/observability rules
+  // return early for non-TypeScript ecosystems, so later placement would make
+  // these rules unreachable.
+  if (category === "javaLanguage" && optionId === "kotlin" && currentStack.ecosystem === "java") {
+    const kotlinBlocker = getKotlinJavaIncompatibilityReason(currentStack);
+    if (kotlinBlocker) {
+      return kotlinBlocker;
+    }
+  }
+
+  if (currentStack.ecosystem === "java" && currentStack.javaLanguage === "kotlin") {
+    if (category === "javaWebFramework" && optionId !== "spring-boot") {
+      return "Kotlin sources are only wired for the Spring Boot scaffold";
+    }
+    if (category === "javaBuildTool" && optionId === "none") {
+      return "Kotlin requires Maven or Gradle";
+    }
+    if (category === "javaOrm" && (optionId === "jooq" || optionId === "mybatis")) {
+      return "The Kotlin scaffold supports Spring Data JPA or no ORM (jOOQ/MyBatis sources are Java-only)";
+    }
+    if (category === "javaApi" && (optionId === "grpc" || optionId === "openapi-generator")) {
+      return "The Kotlin scaffold supports Spring GraphQL or no API layer (gRPC/OpenAPI codegen paths are Java-only)";
+    }
+    if (category === "javaLibraries" && KOTLIN_DROPPED_JAVA_LIBRARIES.has(optionId)) {
+      return "Java annotation-processor tooling is not wired for Kotlin (data classes replace Lombok; MapStruct would need kapt)";
+    }
+    if (
+      category === "javaTestingLibraries" &&
+      KOTLIN_UNSUPPORTED_JAVA_TESTING_LIBRARIES.has(optionId)
+    ) {
+      return `The '${optionId}' testing library is not wired for the Kotlin scaffold`;
+    }
+    if (category === "email" && optionId === "resend") {
+      return "The Resend email integration is Java-only in the Java ecosystem scaffold";
+    }
+    if (category === "search" && optionId === "meilisearch") {
+      return "The Meilisearch integration is Java-only in the Java ecosystem scaffold";
+    }
+    if (category === "caching" && optionId === "upstash-redis") {
+      return "The Upstash Redis integration is Java-only in the Java ecosystem scaffold";
+    }
+    if (category === "observability" && optionId === "sentry") {
+      return "The Sentry integration is Java-only in the Java ecosystem scaffold";
     }
   }
 

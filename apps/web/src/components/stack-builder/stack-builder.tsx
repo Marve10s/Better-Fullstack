@@ -43,6 +43,7 @@ import {
   lazy,
   startTransition,
   type ReactNode,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -159,6 +160,20 @@ type GraphBackendPickerConfig = GraphBackendConfig & {
 };
 
 type MultiStackStepId = "frontend" | "backend" | "database" | "mobile" | "finalize";
+
+function filterKotlinBackendCapabilityOptions(
+  selection: Pick<GraphSelection, "backendEcosystem" | "backendLanguage">,
+  role: Extract<StackPartRole, "orm" | "api">,
+  options: TechOption[],
+) {
+  if (selection.backendEcosystem !== "java" || selection.backendLanguage !== "kotlin") {
+    return options;
+  }
+
+  const supportedIds =
+    role === "orm" ? new Set(["spring-data-jpa", "none"]) : new Set(["spring-graphql", "none"]);
+  return options.filter((option) => supportedIds.has(option.id));
+}
 
 const GRAPH_FRONTEND_CONFIGS: GraphFrontendConfig[] = [
   {
@@ -1220,7 +1235,7 @@ function CreationModeComposer({
   activeStep: MultiStackStepId;
   onActiveStepChange: (stepId: MultiStackStepId) => void;
 }) {
-  const graphSelection = getGraphSelection(stack);
+  const graphSelection = useMemo(() => getGraphSelection(stack), [stack]);
   const frontendConfig = GRAPH_FRONTEND_CONFIG_BY_ECOSYSTEM[graphSelection.frontendEcosystem];
   const backendConfig = GRAPH_BACKEND_CONFIG_BY_ECOSYSTEM[graphSelection.backendEcosystem];
   const backendLabel =
@@ -1260,13 +1275,20 @@ function CreationModeComposer({
       ? allBackendOptions.filter((option) => option.id === "spring-boot" || option.id === "none")
       : allBackendOptions;
   const databaseOptions = getGraphToolOptions("database", "database", "universal");
-  const backendOrmOptions = getGraphToolOptions(
+  const allBackendOrmOptions = getGraphToolOptions(
     backendConfig.ormCategory,
     "orm",
     graphSelection.backendEcosystem,
     backendCapabilityContext,
   );
-  const backendApiOptions = backendConfig.apiCategory
+  // The Kotlin scaffold only has Kotlin sources for Spring Data JPA —
+  // jOOQ/MyBatis are Java-only (mirrors the spring-boot-only framework filter).
+  const backendOrmOptions = filterKotlinBackendCapabilityOptions(
+    graphSelection,
+    "orm",
+    allBackendOrmOptions,
+  );
+  const allBackendApiOptions = backendConfig.apiCategory
     ? getGraphToolOptions(
         backendConfig.apiCategory,
         "api",
@@ -1274,6 +1296,11 @@ function CreationModeComposer({
         backendCapabilityContext,
       )
     : [];
+  const backendApiOptions = filterKotlinBackendCapabilityOptions(
+    graphSelection,
+    "api",
+    allBackendApiOptions,
+  );
   const backendAuthOptions = backendConfig.authCategory
     ? getGraphToolOptions(
         backendConfig.authCategory,
@@ -1291,17 +1318,23 @@ function CreationModeComposer({
     ecosystem: graphSelection.backendEcosystem as Ecosystem,
   };
 
-  const applyGraphSelection = (nextSelection: GraphSelection) => {
-    const specs = graphSelectionToSpecs(nextSelection);
-    onChange((current) => ({
-      ...stackPatchFromGraphSpecs(specs),
-      projectName: current.projectName,
-    }));
-  };
+  const applyGraphSelection = useCallback(
+    (nextSelection: GraphSelection) => {
+      const specs = graphSelectionToSpecs(nextSelection);
+      onChange((current) => ({
+        ...stackPatchFromGraphSpecs(specs),
+        projectName: current.projectName,
+      }));
+    },
+    [onChange],
+  );
 
-  const updateGraphSelection = (updates: Partial<GraphSelection>) => {
-    applyGraphSelection({ ...graphSelection, ...updates });
-  };
+  const updateGraphSelection = useCallback(
+    (updates: Partial<GraphSelection>) => {
+      applyGraphSelection({ ...graphSelection, ...updates });
+    },
+    [applyGraphSelection, graphSelection],
+  );
 
   const updateStackOption = (category: keyof typeof TECH_OPTIONS, optionId: string) => {
     onChange((current) => getStackOptionUpdate(current, category, optionId));
@@ -1356,35 +1389,50 @@ function CreationModeComposer({
       return { backendOrm: "none", backendApi: "none", backendAuth: "none" };
     }
 
-    const ormOptions = getGraphToolOptions(
+    const ormOptions = filterKotlinBackendCapabilityOptions(
+      selection,
+      "orm",
+      getGraphToolOptions(
+        config.ormCategory,
+        "orm",
+        config.ecosystem,
+        getBackendContextForSelection(selection),
+      ),
+    );
+    const defaultBackendOrm = getDefaultGraphTool(
       config.ormCategory,
       "orm",
       config.ecosystem,
+      "none",
+      {},
       getBackendContextForSelection(selection),
     );
     const backendOrm = ormOptions.some((option) => option.id === selection.backendOrm)
       ? selection.backendOrm
-      : getDefaultGraphTool(
-          config.ormCategory,
-          "orm",
-          config.ecosystem,
-          "none",
-          {},
-          getBackendContextForSelection(selection),
-        );
+      : ormOptions.some((option) => option.id === defaultBackendOrm)
+        ? defaultBackendOrm
+        : (ormOptions.find((option) => option.id !== "none")?.id ?? "none");
 
     const withOrm = { ...selection, backendOrm };
     const backendApi = config.apiCategory
       ? (() => {
-          const apiOptions = getGraphToolOptions(
-            config.apiCategory,
+          const apiOptions = filterKotlinBackendCapabilityOptions(
+            withOrm,
             "api",
-            config.ecosystem,
-            getBackendContextForSelection(withOrm),
+            getGraphToolOptions(
+              config.apiCategory,
+              "api",
+              config.ecosystem,
+              getBackendContextForSelection(withOrm),
+            ),
           );
-          return apiOptions.some((option) => option.id === selection.backendApi)
-            ? selection.backendApi
-            : getDefaultBackendCapability(config, "api", withOrm);
+          if (apiOptions.some((option) => option.id === selection.backendApi)) {
+            return selection.backendApi;
+          }
+          const defaultBackendApi = getDefaultBackendCapability(config, "api", withOrm);
+          return apiOptions.some((option) => option.id === defaultBackendApi)
+            ? defaultBackendApi
+            : "none";
         })()
       : "none";
 
@@ -1405,6 +1453,19 @@ function CreationModeComposer({
 
     return { backendOrm, backendApi, backendAuth };
   };
+
+  const reconciledBackendCapabilities = reconcileBackendCapabilities(graphSelection, backendConfig);
+  const hasStaleKotlinBackendCapability =
+    graphSelection.backendEcosystem === "java" &&
+    graphSelection.backendLanguage === "kotlin" &&
+    (reconciledBackendCapabilities.backendOrm !== graphSelection.backendOrm ||
+      reconciledBackendCapabilities.backendApi !== graphSelection.backendApi ||
+      reconciledBackendCapabilities.backendAuth !== graphSelection.backendAuth);
+
+  useEffect(() => {
+    if (!hasStaleKotlinBackendCapability) return;
+    updateGraphSelection(reconciledBackendCapabilities);
+  }, [hasStaleKotlinBackendCapability, reconciledBackendCapabilities, updateGraphSelection]);
 
   const getStepSelection = (
     stepId: MultiStackStepId,

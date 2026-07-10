@@ -72,8 +72,8 @@ const PATH_TAB_ORDER: readonly PathId[] = ["prompt", "mcp", "cli"] as const;
 // hygiene, the quality-gate fixes) more than model capability. Prompt — where the
 // model writes everything itself — is the clean model-capability signal.
 const V2_PATH_TABS: readonly PathId[] = ["prompt"] as const;
-// v2.1 additionally surfaces the MCP path (DeepSeek V4 Flash is the only model
-// with an MCP sweep so far). Per the note above, the assisted MCP numbers run our
+// v2.1 additionally surfaces the MCP path (DeepSeek V4 Flash and GPT-5.6 Luna
+// medium have MCP sweeps). Per the note above, the assisted MCP numbers run our
 // own scaffolder, so this tab reads model+scaffolder, not raw model capability.
 const V2_1_PATH_TABS: readonly PathId[] = ["prompt", "mcp"] as const;
 function pathTabsFor(version: BenchmarkVersionId | LeaderboardVersion): readonly PathId[] {
@@ -2505,6 +2505,9 @@ function ScaffbenchLeaderboardCard() {
   const [version, setVersion] = useState<LeaderboardVersion>("v2.1");
   const [leaderPath, setLeaderPath] = useState<LeaderPath>("all");
   const [selectedSpecs, setSelectedSpecs] = useState<readonly string[]>(SCAFFBENCH21_SPECS);
+  const [selectedModelKeys, setSelectedModelKeys] = useState<readonly string[]>(() =>
+    v2Dataset("v2.1").models.map((model) => model.key),
+  );
 
   // "v2-family" = the v2 (legacy 5-spec) and v2.1 (current 13-spec) prompt-only
   // leaderboards; both share rendering and differ only in dataset.
@@ -2516,6 +2519,7 @@ function ScaffbenchLeaderboardCard() {
   useEffect(() => {
     if (version === "v1") return;
     setSelectedSpecs(version === "v2" ? SCAFFBENCH2_SPECS : SCAFFBENCH21_SPECS);
+    setSelectedModelKeys(v2Dataset(version).models.map((model) => model.key));
   }, [version]);
 
   // We publish a single metric — Core pass (install/build/typecheck). The Full /
@@ -2534,13 +2538,17 @@ function ScaffbenchLeaderboardCard() {
       : "prompt"
     : leaderPath;
   const specsSet = useMemo(() => new Set<string>(selectedSpecs), [selectedSpecs]);
-  // One row per model, sorted best-first, for the chosen creation path.
+  const modelKeysSet = useMemo(() => new Set<string>(selectedModelKeys), [selectedModelKeys]);
+  // One row per model, sorted best-first, for the chosen creation path. V2-family
+  // rows are further filtered to the models the user has selected in the picker.
   const rows = useMemo(
     () =>
       isV2
-        ? computeV2ModelRows(dataset, effectiveLeaderPath, MODE, specsSet)
+        ? computeV2ModelRows(dataset, effectiveLeaderPath, MODE, specsSet).filter((row) =>
+            modelKeysSet.has(row.key),
+          )
         : computeV1ModelRows(effectiveLeaderPath),
-    [isV2, dataset, effectiveLeaderPath, specsSet],
+    [isV2, dataset, effectiveLeaderPath, specsSet, modelKeysSet],
   );
 
   const toggleSpec = useCallback(
@@ -2549,6 +2557,17 @@ function ScaffbenchLeaderboardCard() {
         prev.includes(spec)
           ? prev.filter((s) => s !== spec)
           : dataset.specs.filter((s) => s === spec || prev.includes(s)),
+      );
+    },
+    [dataset],
+  );
+
+  const toggleModel = useCallback(
+    (key: string) => {
+      setSelectedModelKeys((prev) =>
+        prev.includes(key)
+          ? prev.filter((k) => k !== key)
+          : dataset.models.filter((m) => m.key === key || prev.includes(m.key)).map((m) => m.key),
       );
     },
     [dataset],
@@ -2620,7 +2639,14 @@ function ScaffbenchLeaderboardCard() {
             </div>
           </div>
           {isV2 ? (
-            <SpecFilter specs={dataset.specs} selectedSpecs={selectedSpecs} onToggle={toggleSpec} />
+            <div className="flex items-center gap-2">
+              <ModelPicker
+                models={dataset.models}
+                selectedKeys={selectedModelKeys}
+                onToggle={toggleModel}
+              />
+              <SpecFilter specs={dataset.specs} selectedSpecs={selectedSpecs} onToggle={toggleSpec} />
+            </div>
           ) : null}
         </div>
       </div>
@@ -2844,6 +2870,79 @@ function ModelLeaderRow({ row }: { row: ModelLeaderRow }) {
       <span className="text-right font-mono text-xs">{row.outTok}</span>
       <span className="text-right font-mono text-xs">{row.steps}</span>
     </div>
+  );
+}
+
+// Model picker for the leaderboard table — sits beside the spec picker so the
+// table can be narrowed to specific models as well as specific specs.
+function ModelPicker({
+  models,
+  selectedKeys,
+  onToggle,
+}: {
+  models: readonly { key: string; label: string; effort: string }[];
+  selectedKeys: readonly string[];
+  onToggle: (key: string) => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        aria-label="Filter models"
+        className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-[#d9d8d2] px-3.5 py-2 text-xs font-medium text-[#71706a] transition-colors hover:text-[#1b1a17] dark:border-[rgba(237,235,228,0.14)] dark:text-[#8f8d84] dark:hover:text-[#dad8d0]"
+      >
+        Models
+        <span className="rounded-sm bg-[#C6E853] px-1.5 font-mono text-[10px] font-semibold text-[#0a0a0a]">
+          {selectedKeys.length}/{models.length}
+        </span>
+        <ChevronDown className="size-3.5" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-72 max-w-[calc(100vw-2rem)]">
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="font-mono text-[10px] uppercase tracking-[0.14em]">
+            Models
+          </DropdownMenuLabel>
+          {models.map((model) => (
+            <ModelPickerItem
+              key={model.key}
+              modelKey={model.key}
+              label={model.label}
+              effort={model.effort}
+              checked={selectedKeys.includes(model.key)}
+              onToggle={onToggle}
+            />
+          ))}
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function ModelPickerItem({
+  modelKey,
+  label,
+  effort,
+  checked,
+  onToggle,
+}: {
+  modelKey: string;
+  label: string;
+  effort: string;
+  checked: boolean;
+  onToggle: (key: string) => void;
+}) {
+  const handleChange = useCallback(() => {
+    onToggle(modelKey);
+  }, [onToggle, modelKey]);
+
+  return (
+    <DropdownMenuCheckboxItem checked={checked} onCheckedChange={handleChange} closeOnClick={false}>
+      <span className="min-w-0 flex-1 text-xs">{label}</span>
+      {effort ? (
+        <span className="ml-2 shrink-0 font-mono text-[10px] text-[#9c9a93] dark:text-[#6c6a61]">
+          {effort}
+        </span>
+      ) : null}
+    </DropdownMenuCheckboxItem>
   );
 }
 

@@ -1,5 +1,10 @@
 import type { ProjectConfig } from "@better-fullstack/types";
 
+import {
+  getKotlinJavaIncompatibilityReason,
+  KOTLIN_DROPPED_JAVA_LIBRARIES,
+} from "@better-fullstack/types";
+
 import type { VirtualFileSystem } from "../core/virtual-fs";
 import type { TemplateData } from "./utils";
 
@@ -165,31 +170,12 @@ function createJavaTemplateContext(config: ProjectConfig): JavaTemplateContext {
   const isJavaMicronaut = config.javaWebFramework === "micronaut" && hasJavaBuildTool;
   // Kotlin is only wired for the Spring Boot scaffold and its common option
   // surface. Everything else falls back to the (byte-identical) Java path so the
-  // generator never emits a half-built Kotlin project. This mirrors the
-  // normalization in compatibility.ts and is repeated here so direct
-  // `createVirtual`/MCP callers (which bypass compatibility) stay safe.
-  const kotlinUnsupportedTestingLibraries = new Set([
-    "testcontainers",
-    "rest-assured",
-    "wiremock",
-    "awaitility",
-    "archunit",
-    "jqwik",
-  ]);
+  // generator never emits a half-built Kotlin project. The gate lives in
+  // @better-fullstack/types (shared with compatibility.ts) and is re-checked
+  // here so direct `createVirtual`/MCP callers (which bypass compatibility)
+  // stay safe.
   const isJavaKotlin =
-    config.javaLanguage === "kotlin" &&
-    isJavaSpringBoot &&
-    config.javaOrm !== "jooq" &&
-    config.javaOrm !== "mybatis" &&
-    config.javaApi !== "grpc" &&
-    config.javaApi !== "openapi-generator" &&
-    config.email !== "resend" &&
-    config.search !== "meilisearch" &&
-    config.caching !== "upstash-redis" &&
-    config.observability !== "sentry" &&
-    !(config.javaTestingLibraries || []).some((library) =>
-      kotlinUnsupportedTestingLibraries.has(library),
-    );
+    config.javaLanguage === "kotlin" && getKotlinJavaIncompatibilityReason(config) === null;
   const hasJavaJpa = isJavaSpringBoot && config.javaOrm === "spring-data-jpa";
   const rawLibraries = isJavaSpringBoot
     ? (config.javaLibraries || []).filter((library) => library !== "none")
@@ -213,7 +199,7 @@ function createJavaTemplateContext(config: ProjectConfig): JavaTemplateContext {
     // are redundant (data classes replace Lombok) and not wired (MapStruct would
     // need kapt), so drop them from the effective library set — the Kotlin
     // scaffold uses idiomatic Kotlin instead of the DTO/mapper example.
-    if (isJavaKotlin && (library === "lombok" || library === "mapstruct")) {
+    if (isJavaKotlin && KOTLIN_DROPPED_JAVA_LIBRARIES.has(library)) {
       continue;
     }
     javaLibraries.push(library);
@@ -341,12 +327,6 @@ function shouldSkipKotlinSource(templatePath: string, context: JavaTemplateConte
     !context.hasJavaMockito &&
     (templatePath.endsWith("/MockitoSmokeTest.kt.hbs") ||
       templatePath.endsWith("/service/AppUserServiceTest.kt.hbs"))
-  ) {
-    return true;
-  }
-  if (
-    !context.hasJavaTestcontainers &&
-    templatePath.endsWith("/ApplicationContainerTests.kt.hbs")
   ) {
     return true;
   }

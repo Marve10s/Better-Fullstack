@@ -376,6 +376,9 @@ function MobileNavMenu({ onBuilder }: { onBuilder: boolean }) {
         <DropdownMenuItem render={<Link to="/benchmark" />} className={MOBILE_MENU_ITEM_CLASS}>
           {m.navBenchmark()}
         </DropdownMenuItem>
+        <DropdownMenuItem render={<Link to="/blog" />} className={MOBILE_MENU_ITEM_CLASS}>
+          {m.navBlog()}
+        </DropdownMenuItem>
         <DropdownMenuItem render={<Link to="/docs" />} className={MOBILE_MENU_ITEM_CLASS}>
           {m.navDocs()}
         </DropdownMenuItem>
@@ -456,6 +459,9 @@ export function Navbar() {
                   activeProps={DOCS_ACTIVE_PROPS}
                 >
                   {m.navBenchmark()}
+                </Link>
+                <Link to="/blog" className={NAV_LINK_CLASS} activeProps={DOCS_ACTIVE_PROPS}>
+                  {m.navBlog()}
                 </Link>
                 <DocsMenu />
               </div>

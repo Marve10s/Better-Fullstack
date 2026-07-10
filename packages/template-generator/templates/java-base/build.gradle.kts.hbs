@@ -62,6 +62,16 @@ kotlin {
 	}
 }
 
+{{#if hasJavaJpa}}
+// Open @Entity classes so Hibernate can subclass them for lazy proxies
+// (plugin.jpa only adds the no-arg constructor).
+allOpen {
+	annotation("jakarta.persistence.Entity")
+	annotation("jakarta.persistence.MappedSuperclass")
+	annotation("jakarta.persistence.Embeddable")
+}
+
+{{/if}}
 {{/if}}
 repositories {
 	mavenCentral()

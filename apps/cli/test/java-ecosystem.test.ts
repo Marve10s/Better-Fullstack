@@ -1,12 +1,22 @@
 import { describe, expect, it } from "bun:test";
 
+import { getDefaultConfig } from "../src/constants";
+import { normalizeKotlinJavaSelection } from "../src/helpers/core/command-handlers";
 import { createVirtual } from "../src/index";
+import {
+  resolveJavaApiPrompt,
+  resolveJavaBuildToolPrompt,
+  resolveJavaLibrariesPrompt,
+  resolveJavaOrmPrompt,
+  resolveJavaTestingLibrariesPrompt,
+} from "../src/prompts/java-ecosystem";
 import {
   analyzeStackCompatibility,
   type CompatibilityInput,
   DEFAULT_STACK_SELECTION,
   EcosystemSchema,
   evaluateCompatibility,
+  getDisabledReason,
   JavaApiSchema,
   JavaAuthSchema,
   JavaBuildToolSchema,
@@ -14,12 +24,13 @@ import {
   JavaOrmSchema,
   JavaTestingLibrariesSchema,
   JavaWebFrameworkSchema,
+  parseStackPartSpecs,
+  stackPartsToLegacyProjectConfigPartial,
 } from "../src/types";
 import { validateConfigForProgrammaticUse } from "../src/utils/config-validation";
 import { runWithContext } from "../src/utils/context";
-import {
-  extractEnumValues,
-} from "./test-utils";
+import { generateReproducibleCommand } from "../src/utils/generate-reproducible-command";
+import { extractEnumValues } from "./test-utils";
 import {
   getVirtualFileContent as getFileContent,
   hasVirtualFile as hasFile,
@@ -217,7 +228,10 @@ describe("Java Ecosystem", () => {
         hasFile(root, "src/main/java/com/example/javaquarkusmaven/resource/GreetingResource.java"),
       ).toBe(true);
       expect(
-        hasFile(root, "src/main/java/com/example/javaquarkusmaven/controller/HealthController.java"),
+        hasFile(
+          root,
+          "src/main/java/com/example/javaquarkusmaven/controller/HealthController.java",
+        ),
       ).toBe(false);
       expect(hasFile(root, "src/main/resources/application.yml")).toBe(false);
 
@@ -240,9 +254,9 @@ describe("Java Ecosystem", () => {
       expect(pomContent).toContain("<artifactId>archunit-junit5</artifactId>");
       expect(pomContent).toContain("<artifactId>mockito-junit-jupiter</artifactId>");
       expect(pomContent).toContain("<artifactId>quarkus-maven-plugin</artifactId>");
-      expect(hasFile(root, "src/test/java/com/example/javaquarkusmaven/MockitoSmokeTest.java")).toBe(
-        true,
-      );
+      expect(
+        hasFile(root, "src/test/java/com/example/javaquarkusmaven/MockitoSmokeTest.java"),
+      ).toBe(true);
       expect(pomContent).not.toContain("spring-boot-starter-parent");
       expect(applicationContent).toContain("@QuarkusMain");
       expect(resourceContent).toContain('@Path("/hello")');
@@ -445,9 +459,9 @@ describe("Java Ecosystem", () => {
       expect(hasFile(root, "src/test/java/com/example/javaplainmaven/ApplicationTests.java")).toBe(
         true,
       );
-      expect(
-        hasFile(root, "src/test/java/com/example/javaplainmaven/MockitoSmokeTest.java"),
-      ).toBe(true);
+      expect(hasFile(root, "src/test/java/com/example/javaplainmaven/MockitoSmokeTest.java")).toBe(
+        true,
+      );
 
       const pomContent = getFileContent(root, "pom.xml");
       const readmeContent = getFileContent(root, "README.md");
@@ -1098,6 +1112,182 @@ describe("Java Ecosystem", () => {
       );
 
       expect(result.issues.filter((issue) => issue.category === "javaLibraries")).toEqual([]);
+    });
+  });
+
+  describe("Kotlin Language Gate", () => {
+    it("keeps Kotlin for a supported Spring Boot stack", () => {
+      const result = analyzeStackCompatibility(
+        createJavaCompatibilityInput({
+          javaLanguage: "kotlin",
+          javaWebFramework: "spring-boot",
+          javaBuildTool: "gradle",
+          javaOrm: "spring-data-jpa",
+          javaAuth: "spring-security",
+          javaApi: "spring-graphql",
+          javaLibraries: ["spring-validation", "caffeine"],
+          javaTestingLibraries: ["junit5", "mockito", "assertj"],
+        }),
+      );
+
+      expect(result.adjustedStack?.javaLanguage ?? "kotlin").toBe("kotlin");
+      expect(result.changes.some((adjustment) => adjustment.category === "javaLanguage")).toBe(
+        false,
+      );
+    });
+
+    it("normalizes Kotlin back to Java when the stack includes Java-only options", () => {
+      // email:'resend' is not testable through analyzeStackCompatibility here —
+      // the generic email-requires-backend normalization clears it first (java
+      // stacks always have backend 'none'), which also resolves the Kotlin
+      // conflict. The email/search/caching/observability legs are covered by
+      // the getDisabledReason assertions below instead.
+      for (const overrides of [
+        { javaOrm: "jooq" },
+        { javaApi: "grpc" },
+        { javaTestingLibraries: ["junit5", "testcontainers"] },
+      ] as const) {
+        const result = analyzeStackCompatibility(
+          createJavaCompatibilityInput({
+            javaLanguage: "kotlin",
+            javaWebFramework: "spring-boot",
+            javaBuildTool: "maven",
+            javaOrm: "none",
+            javaAuth: "none",
+            javaApi: "none",
+            javaLibraries: [],
+            javaTestingLibraries: ["junit5"],
+            ...overrides,
+          }),
+        );
+
+        expect(result.adjustedStack?.javaLanguage).toBe("java");
+        expect(result.changes.some((adjustment) => adjustment.category === "javaLanguage")).toBe(
+          true,
+        );
+      }
+    });
+
+    it("removes drop-only Java libraries while preserving a compatible Kotlin stack", () => {
+      const result = analyzeStackCompatibility(
+        createJavaCompatibilityInput({
+          javaLanguage: "kotlin",
+          javaWebFramework: "spring-boot",
+          javaBuildTool: "maven",
+          javaOrm: "spring-data-jpa",
+          javaLibraries: ["lombok", "mapstruct", "caffeine"],
+        }),
+      );
+
+      expect(result.adjustedStack?.javaLanguage ?? "kotlin").toBe("kotlin");
+      expect(result.adjustedStack?.javaLibraries).toEqual(["caffeine"]);
+      expect(result.changes).toContainEqual(expect.objectContaining({ category: "javaLibraries" }));
+    });
+
+    it("removes a stale Kotlin graph part when an incompatible multi-stack falls back to Java", () => {
+      const stackParts = parseStackPartSpecs(
+        [
+          "frontend:typescript:next",
+          "backend:java:spring-boot",
+          "backend.language:java:kotlin",
+          "backend.buildTool:java:maven",
+          "backend.orm:java:jooq",
+        ],
+        "selected",
+      );
+      const config = {
+        ...getDefaultConfig(),
+        ...stackPartsToLegacyProjectConfigPartial(stackParts),
+        stackParts,
+      };
+
+      runWithContext({ silent: true }, () => normalizeKotlinJavaSelection(config));
+
+      expect(config.javaLanguage).toBe("java");
+      expect(generateReproducibleCommand(config)).not.toContain(
+        "--part backend.language:java:kotlin",
+      );
+    });
+
+    it("disables the kotlin option when the current stack excludes it", () => {
+      const quarkusStack = createJavaCompatibilityInput({
+        javaLanguage: "java",
+        javaWebFramework: "quarkus",
+        javaBuildTool: "maven",
+      });
+      expect(getDisabledReason(quarkusStack, "javaLanguage", "kotlin")).not.toBeNull();
+
+      const springStack = createJavaCompatibilityInput({
+        javaLanguage: "java",
+        javaWebFramework: "spring-boot",
+        javaBuildTool: "maven",
+      });
+      expect(getDisabledReason(springStack, "javaLanguage", "kotlin")).toBeNull();
+    });
+
+    it("disables Kotlin-incompatible options while Kotlin is selected", () => {
+      const kotlinStack = createJavaCompatibilityInput({
+        javaLanguage: "kotlin",
+        javaWebFramework: "spring-boot",
+        javaBuildTool: "gradle",
+        javaOrm: "spring-data-jpa",
+      });
+
+      expect(getDisabledReason(kotlinStack, "javaWebFramework", "quarkus")).not.toBeNull();
+      expect(getDisabledReason(kotlinStack, "javaBuildTool", "none")).not.toBeNull();
+      expect(getDisabledReason(kotlinStack, "javaOrm", "jooq")).not.toBeNull();
+      expect(getDisabledReason(kotlinStack, "javaOrm", "mybatis")).not.toBeNull();
+      expect(getDisabledReason(kotlinStack, "javaApi", "grpc")).not.toBeNull();
+      expect(getDisabledReason(kotlinStack, "javaApi", "openapi-generator")).not.toBeNull();
+      expect(getDisabledReason(kotlinStack, "javaLibraries", "lombok")).not.toBeNull();
+      expect(getDisabledReason(kotlinStack, "javaLibraries", "mapstruct")).not.toBeNull();
+      expect(
+        getDisabledReason(kotlinStack, "javaTestingLibraries", "testcontainers"),
+      ).not.toBeNull();
+      expect(getDisabledReason(kotlinStack, "email", "resend")).not.toBeNull();
+      expect(getDisabledReason(kotlinStack, "search", "meilisearch")).not.toBeNull();
+      expect(getDisabledReason(kotlinStack, "caching", "upstash-redis")).not.toBeNull();
+      expect(getDisabledReason(kotlinStack, "observability", "sentry")).not.toBeNull();
+
+      // The supported surface stays selectable.
+      expect(getDisabledReason(kotlinStack, "javaOrm", "spring-data-jpa")).toBeNull();
+      expect(getDisabledReason(kotlinStack, "javaApi", "spring-graphql")).toBeNull();
+      expect(getDisabledReason(kotlinStack, "javaTestingLibraries", "mockito")).toBeNull();
+      expect(getDisabledReason(kotlinStack, "javaLibraries", "caffeine")).toBeNull();
+    });
+
+    it("filters Kotlin-incompatible options out of the interactive prompts", () => {
+      const ormOptions = resolveJavaOrmPrompt(undefined, "kotlin").options.map(
+        (option) => option.value,
+      );
+      expect(ormOptions).toEqual(["spring-data-jpa", "none"]);
+
+      const apiOptions = resolveJavaApiPrompt(undefined, "kotlin").options.map(
+        (option) => option.value,
+      );
+      expect(apiOptions).toEqual(["spring-graphql", "none"]);
+
+      const buildToolOptions = resolveJavaBuildToolPrompt(undefined, "kotlin").options.map(
+        (option) => option.value,
+      );
+      expect(buildToolOptions).toEqual(["maven", "gradle"]);
+
+      const testingOptions = resolveJavaTestingLibrariesPrompt(undefined, "kotlin").options.map(
+        (option) => option.value,
+      );
+      expect(testingOptions).toEqual(["junit5", "mockito", "assertj", "none"]);
+
+      const libraryOptions = resolveJavaLibrariesPrompt(undefined, "kotlin").options.map(
+        (option) => option.value,
+      );
+      expect(libraryOptions).not.toContain("lombok");
+      expect(libraryOptions).not.toContain("mapstruct");
+
+      // Without a language context the full Java option lists stay intact.
+      expect(resolveJavaOrmPrompt().options.map((option) => option.value)).toEqual(JAVA_ORMS);
+      expect(resolveJavaTestingLibrariesPrompt().options.map((option) => option.value)).toEqual(
+        JAVA_TESTING_LIBRARIES,
+      );
     });
   });
 });

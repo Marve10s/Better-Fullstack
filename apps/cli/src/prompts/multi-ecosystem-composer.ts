@@ -603,7 +603,9 @@ export async function gatherMultiEcosystemConfig(
           : flags.javaWebFramework !== undefined
             ? "java"
             : promptValue(await getJavaLanguageChoice(flags.javaLanguage));
-    const javaBuildTool = promptValue(await getJavaBuildToolChoice(flags.javaBuildTool));
+    const javaBuildTool = promptValue(
+      await getJavaBuildToolChoice(flags.javaBuildTool, javaLanguage),
+    );
     if (javaWebFramework !== "none" && javaBuildTool !== "none") {
       const databaseConfig = await selectDatabaseConfig(flags);
       database = databaseConfig.database;
@@ -612,7 +614,7 @@ export async function gatherMultiEcosystemConfig(
     const javaOrm =
       database === "none" || javaWebFramework !== "spring-boot" || javaBuildTool === "none"
         ? "none"
-        : promptValue(await getJavaOrmChoice(flags.javaOrm));
+        : promptValue(await getJavaOrmChoice(flags.javaOrm, javaLanguage));
     const javaAuth =
       javaWebFramework !== "spring-boot" || javaBuildTool === "none"
         ? "none"
@@ -621,19 +623,19 @@ export async function gatherMultiEcosystemConfig(
       javaWebFramework !== "spring-boot" || javaBuildTool === "none"
         ? []
         : await scopedPromptValue("java", "javaLibraries", configScope, backendSections, () =>
-            getJavaLibrariesChoice(flags.javaLibraries),
+            getJavaLibrariesChoice(flags.javaLibraries, javaLanguage),
           );
     const javaTestingLibraries = await scopedPromptValue(
       "java",
       "javaTestingLibraries",
       configScope,
       backendSections,
-      () => getJavaTestingLibrariesChoice(flags.javaTestingLibraries),
+      () => getJavaTestingLibrariesChoice(flags.javaTestingLibraries, javaLanguage),
     );
     const javaApi =
       javaWebFramework !== "spring-boot" || javaBuildTool === "none"
         ? "none"
-        : promptValue(await getJavaApiChoice(flags.javaApi));
+        : promptValue(await getJavaApiChoice(flags.javaApi, javaLanguage));
     const javaLogging =
       javaWebFramework !== "spring-boot" || javaBuildTool === "none"
         ? "none"

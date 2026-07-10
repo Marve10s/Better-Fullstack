@@ -62,7 +62,9 @@ const MODEL_LABELS: Record<string, string> = {
 };
 
 const PATH_ORDER = ["prompt", "mcp", "cli"] as const;
-const GATE = /^(lint|format|test|doctor|route)$/i;
+// Step keys may be namespaced "<subroot>:<step>" (multi-root validation);
+// the advisory/core split is decided by the base name after the last ":".
+const GATE = /(?:^|:)(lint|format|test|doctor|route)$/i;
 const mean = (a: number[]) => (a.length ? a.reduce((s, v) => s + v, 0) / a.length : 0);
 const W = { macroPass: 0.6, wired: 0.25, cmd: 0.15 };
 
