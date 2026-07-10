@@ -2,7 +2,7 @@
 
 Harness: 2.0.0
 Agent: Claude Code (single agent; single model family per row)
-Specs: ai-search-workbench, rust-leptos-axum, python-ingestion-api, go-realtime-api, multi-dotnet-ops, ts-svelte-edge-orpc, dotnet-blazor-cqrs, multi-ts-go-grpc, java-spring-jooq-keycloak, elixir-broadway-absinthe, react-native-expo, frontier-polyglot-proto, frontier-effect-eventsourcing
+Specs: elixir-broadway-absinthe
 Repeats: 1
 Prompt style: explicit
 
@@ -34,7 +34,7 @@ moves with provider load, so the mean alone is misleading over small samples).
 
 | Model | Effort | Effective reasoning | Path | Index | Pass@1 | Quality | Inconclusive | Macro | pass@k | pass^k | CI95 | Wired libs | Faithful | Acceptance | Command discipline | Median / p95 | Avg output tokens | Avg cost | Failure tags |
 | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-claude-fable-5 | low | low | prompt | 66 | 6/13 | 31% | 0 | 46% | 6/13 | 6/13 | 46% (23-71) | 95% | — | — | 100% | 232.6s / 379.7s | 21959 | 2.119 | lint-failed:3, typecheck-failed:2, validation-failed:7, build-failed:5, stack-mismatch:5, install-failed:1
+claude-fable-5 | low | low | prompt | 62 | 5/13 | 23% | 0 | 38% | 5/13 | 5/13 | 38% (18-64) | 95% | — | — | 100% | 232.6s / 379.7s | 21959 | 2.119 | lint-failed:3, typecheck-failed:3, validation-failed:8, build-failed:5, stack-mismatch:5, install-failed:3
 
 ## Runs
 
@@ -47,9 +47,9 @@ go-realtime-api | 1 | low | low | claude-fable-5 | prompt | fail | install-faile
 multi-dotnet-ops | 1 | low | low | claude-fable-5 | prompt | pass | lint-failed, stack-mismatch | 0 | 243.1s | 23866 | 2.168 | 92 | 12/13 | — | — | 0 | 0 |  | 1 |  | miss
 ts-svelte-edge-orpc | 1 | low | low | claude-fable-5 | prompt | fail | build-failed, validation-failed | 0 | 217.7s | 17376 | 1.872 | 100 | 10/10 | — | — | 0 | 2 |  |  |  | miss
 dotnet-blazor-cqrs | 1 | low | low | claude-fable-5 | prompt | fail | build-failed, validation-failed | 0 | 257.2s | 25914 | 2.316 | 100 | 13/13 | — | — | 0 | 1 |  |  |  | miss
-multi-ts-go-grpc | 1 | low | low | claude-fable-5 | prompt | pass | stack-mismatch | 0 | 232.6s | 22892 | 2.141 | 88 | 14/16 | — | — | 0 |  |  |  |  | miss
-java-spring-jooq-keycloak | 1 | low | low | claude-fable-5 | prompt | pass |  | 0 | 239.1s | 20442 | 2.180 | 100 | 14/14 | — | — | 0 | 0 |  |  |  | miss
+multi-ts-go-grpc | 1 | low | low | claude-fable-5 | prompt | fail | install-failed, stack-mismatch, typecheck-failed, validation-failed | 0 | 232.6s | 22892 | 2.141 | 88 | 14/16 | — | — | 0 |  |  |  |  | miss
+java-spring-jooq-keycloak | 1 | low | low | claude-fable-5 | prompt | pass |  | 0 | 239.1s | 20442 | 2.180 | 100 | 14/14 | — | — |  | 0 |  |  |  | miss
 elixir-broadway-absinthe | 1 | low | low | claude-fable-5 | prompt | pass |  | 0 | 367.9s | 34769 | 3.103 | 100 | 13/13 | — | — | 0 | 0 |  |  |  | miss
 react-native-expo | 1 | low | low | claude-fable-5 | prompt | pass | lint-failed, stack-mismatch | 0 | 161.8s | 12551 | 1.428 | 88 | 7/8 | — | — | 0 |  | 0 | 127 |  | miss
-frontier-polyglot-proto | 1 | low | low | claude-fable-5 | prompt | fail | build-failed, stack-mismatch, validation-failed | 0 | 127.9s | 10177 | 1.146 | 75 | 3/4 | — | — | 0 | 2 |  |  |  | miss
+frontier-polyglot-proto | 1 | low | low | claude-fable-5 | prompt | fail | build-failed, install-failed, stack-mismatch, validation-failed | 0 | 127.9s | 10177 | 1.146 | 75 | 3/4 | — | — | 0 | 2 |  |  |  | miss
 frontier-effect-eventsourcing | 1 | low | low | claude-fable-5 | prompt | fail | build-failed, typecheck-failed, validation-failed | 0 | 217.4s | 17059 | 1.708 | 100 | 4/4 | — | — | 0 | 2 | 2 |  |  | miss

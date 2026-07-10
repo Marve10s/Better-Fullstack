@@ -2,7 +2,7 @@
 
 Harness: 2.0.0
 Agent: Codex (single agent; single model family per row)
-Specs: ai-search-workbench, rust-leptos-axum, python-ingestion-api, go-realtime-api, multi-dotnet-ops, ts-svelte-edge-orpc, dotnet-blazor-cqrs, multi-ts-go-grpc, java-spring-jooq-keycloak, elixir-broadway-absinthe, react-native-expo, frontier-polyglot-proto, frontier-effect-eventsourcing
+Specs: elixir-broadway-absinthe
 Repeats: 1
 Prompt style: explicit
 
@@ -34,7 +34,7 @@ moves with provider load, so the mean alone is misleading over small samples).
 
 | Model | Effort | Effective reasoning | Path | Index | Pass@1 | Quality | Inconclusive | Macro | pass@k | pass^k | CI95 | Wired libs | Faithful | Acceptance | Command discipline | Median / p95 | Avg output tokens | Avg cost | Failure tags |
 | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-gpt-5.6-terra | medium | medium | prompt | 57 | 4/13 | 31% | 0 | 31% | 4/13 | 4/13 | 31% (13-58) | 93% | — | — | 100% | 152.1s / 303.8s | 8792 |  | stack-mismatch:8, typecheck-failed:2, validation-failed:9, install-failed:3, build-failed:6, lint-failed:1
+gpt-5.6-terra | medium | medium | prompt | 47 | 2/13 | 15% | 0 | 15% | 2/13 | 2/13 | 15% (4-42) | 93% | — | — | 100% | 152.1s / 303.8s | 8792 |  | stack-mismatch:8, typecheck-failed:4, validation-failed:11, install-failed:4, build-failed:7, lint-failed:1
 
 ## Runs
 
@@ -47,9 +47,9 @@ go-realtime-api | 1 | medium | medium | gpt-5.6-terra | prompt | fail | install-
 multi-dotnet-ops | 1 | medium | medium | gpt-5.6-terra | prompt | fail | build-failed, lint-failed, stack-mismatch, validation-failed | 0 | 211.7s | 8829 |  | 92 | 12/13 | — | — | 0 | 1 |  | 1 |  | miss
 ts-svelte-edge-orpc | 1 | medium | medium | gpt-5.6-terra | prompt | fail | build-failed, validation-failed | 0 | 174.3s | 7925 |  | 100 | 10/10 | — | — | 0 | 1 |  |  |  | miss
 dotnet-blazor-cqrs | 1 | medium | medium | gpt-5.6-terra | prompt | fail | build-failed, validation-failed | 0 | 141.8s | 7847 |  | 100 | 13/13 | — | — | 0 | 1 |  |  |  | miss
-multi-ts-go-grpc | 1 | medium | medium | gpt-5.6-terra | prompt | pass | stack-mismatch | 0 | 160.0s | 10285 |  | 88 | 14/16 | — | — | 0 |  |  |  |  | miss
-java-spring-jooq-keycloak | 1 | medium | medium | gpt-5.6-terra | prompt | fail | build-failed, install-failed, validation-failed | 0 | 152.1s | 8660 |  | 100 | 14/14 | — | — | 1 | 1 |  |  |  | miss
+multi-ts-go-grpc | 1 | medium | medium | gpt-5.6-terra | prompt | fail | install-failed, stack-mismatch, typecheck-failed, validation-failed | 0 | 160.0s | 10285 |  | 88 | 14/16 | — | — | 0 |  |  |  |  | miss
+java-spring-jooq-keycloak | 1 | medium | medium | gpt-5.6-terra | prompt | fail | build-failed, validation-failed | 0 | 152.1s | 8660 |  | 100 | 14/14 | — | — |  | 1 |  |  |  | miss
 elixir-broadway-absinthe | 1 | medium | medium | gpt-5.6-terra | prompt | fail | build-failed, validation-failed | 0 | 303.8s | 12452 |  | 100 | 13/13 | — | — | 0 | 1 |  |  |  | miss
 react-native-expo | 1 | medium | medium | gpt-5.6-terra | prompt | fail | install-failed, stack-mismatch, validation-failed | 0 | 97.2s | 5954 |  | 88 | 7/8 | — | — | 1 |  |  |  |  | miss
-frontier-polyglot-proto | 1 | medium | medium | gpt-5.6-terra | prompt | pass | stack-mismatch | 0 | 118.3s | 7530 |  | 75 | 3/4 | — | — |  | 0 |  |  |  | miss
+frontier-polyglot-proto | 1 | medium | medium | gpt-5.6-terra | prompt | fail | build-failed, install-failed, stack-mismatch, typecheck-failed, validation-failed | 0 | 118.3s | 7530 |  | 75 | 3/4 | — | — |  | 0 |  |  |  | miss
 frontier-effect-eventsourcing | 1 | medium | medium | gpt-5.6-terra | prompt | fail | build-failed, typecheck-failed, validation-failed | 0 | 119.9s | 7324 |  | 100 | 4/4 | — | — | 0 | 1 | 2 |  |  | miss

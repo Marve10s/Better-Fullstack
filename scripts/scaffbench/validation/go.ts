@@ -1,0 +1,2 @@
+export { validateGoProject } from "./index";
+

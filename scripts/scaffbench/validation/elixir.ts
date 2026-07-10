@@ -1,0 +1,2 @@
+export { validateElixirProject } from "./index";
+

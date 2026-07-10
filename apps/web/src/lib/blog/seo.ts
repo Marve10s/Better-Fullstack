@@ -143,7 +143,12 @@ export function blogPostHead(post: Pick<BlogPost, "url" | "frontmatter">) {
       { name: "twitter:image:alt", content: DEFAULT_OG_IMAGE_ALT },
       { "script:ld+json": postJsonLd(post) } satisfies JsonLdMeta,
     ],
-    links: [{ rel: "canonical", href: url }],
+    links: [
+      { rel: "canonical", href: url },
+      // Raw MDX source served by the /blog/$post.md route — lets AI
+      // crawlers/readers fetch the post as plain markdown.
+      { rel: "alternate", type: "text/markdown", href: `${url}.md` },
+    ],
   };
 }
 

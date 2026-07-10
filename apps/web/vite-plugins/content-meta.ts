@@ -22,6 +22,11 @@ import { LOCALIZED_CONTENT_LOCALES, type LocalizedContentLocale } from "../src/l
  */
 const VIRTUAL_ID = "virtual:content-meta";
 const RESOLVED_ID = "\0" + VIRTUAL_ID;
+// Raw blog MDX sources for the /blog/$post.md endpoint. Inlined at build
+// time (content/ isn't shipped to the server bundle) and only imported
+// dynamically by that route, so it stays in its own lazy server chunk.
+const BLOG_RAW_ID = "virtual:blog-raw";
+const RESOLVED_BLOG_RAW_ID = "\0" + BLOG_RAW_ID;
 const LOCALIZED_CONTENT_ID = "virtual:localized-content";
 const RESOLVED_LOCALIZED_CONTENT_ID = "\0" + LOCALIZED_CONTENT_ID;
 const LOCALIZED_MDX_BUNDLE_PREFIX = "virtual:localized-content-mdx-bundle/";
@@ -38,7 +43,9 @@ type MetaEntry = {
   filePath: string;
   frontmatter: Record<string, unknown>;
   localizedFrontmatter: Partial<Record<LocalizedContentLocale, Record<string, unknown>>>;
+  readingStats?: ReadingStats;
 };
+type ReadingStats = { shortMins: number; longMins: number };
 type MetaBuild = { entries: MetaEntry[]; watchFiles: string[] };
 type LocalizedJsonEntry = {
   frontmatter?: Record<string, unknown>;
@@ -57,6 +64,33 @@ function extractFrontmatter(source: string): Record<string, unknown> {
   } catch {
     return {};
   }
+}
+
+/*
+ * Reading time for blog posts. "Long version" sections (wrapped in
+ * `<div data-long-version="true">` in the MDX) are excluded from the short
+ * estimate; the Short/Long toggle on the post page shows both durations.
+ */
+const LONG_VERSION_BLOCK_RE = /<div\s[^>]*data-long-version[^>]*>[\s\S]*?<\/div>/g;
+const WORDS_PER_MINUTE = 220;
+
+function stripFrontmatterBlock(source: string): string {
+  if (!source.startsWith("---")) return source;
+  const end = source.indexOf("\n---", 3);
+  return end === -1 ? source : source.slice(end + 4);
+}
+
+function readingMins(text: string): number {
+  const words = text.split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / WORDS_PER_MINUTE));
+}
+
+function computeReadingStats(source: string): ReadingStats {
+  const body = stripFrontmatterBlock(source);
+  return {
+    shortMins: readingMins(body.replace(LONG_VERSION_BLOCK_RE, "")),
+    longMins: readingMins(body),
+  };
 }
 
 function collectMdxFiles(dir: string): string[] {
@@ -192,11 +226,14 @@ export function contentMetaPlugin(): Plugin {
           localizedFrontmatter[locale] = localizedEntry.frontmatter;
         }
       }
-      return {
+      const source = fs.readFileSync(file, "utf8");
+      const entry: MetaEntry = {
         filePath: globPrefix + rel,
-        frontmatter: extractFrontmatter(fs.readFileSync(file, "utf8")),
+        frontmatter: extractFrontmatter(source),
         localizedFrontmatter,
       };
+      if (contentSubdir === "blog") entry.readingStats = computeReadingStats(source);
+      return entry;
     });
     return { entries, watchFiles };
   }
@@ -312,6 +349,7 @@ export function contentMetaPlugin(): Plugin {
     },
     resolveId(id) {
       if (id === VIRTUAL_ID) return RESOLVED_ID;
+      if (id === BLOG_RAW_ID) return RESOLVED_BLOG_RAW_ID;
       if (id === LOCALIZED_CONTENT_ID) return RESOLVED_LOCALIZED_CONTENT_ID;
       if (id.startsWith(LOCALIZED_MDX_BUNDLE_PREFIX)) {
         return id;
@@ -325,6 +363,20 @@ export function contentMetaPlugin(): Plugin {
       return undefined;
     },
     load(id) {
+      if (id === RESOLVED_BLOG_RAW_ID) {
+        const contentDir = path.join(rootDir, "content", "blog");
+        const entries = collectMdxFiles(contentDir).map((file) => {
+          this.addWatchFile(file);
+          const slug = path
+            .relative(contentDir, file)
+            .split(path.sep)
+            .join("/")
+            .replace(/\.mdx$/, "");
+          return `${JSON.stringify(slug)}: ${JSON.stringify(fs.readFileSync(file, "utf8"))}`;
+        });
+        return `export const rawBlogPosts = {${entries.join(",")}};`;
+      }
+
       const { bundles, watchFiles: localizedWatchFiles } = readLocalizedBundles(rootDir);
 
       if (id === RESOLVED_LOCALIZED_CONTENT_ID) {
@@ -384,7 +436,7 @@ export function contentMetaPlugin(): Plugin {
     },
     handleHotUpdate(ctx) {
       if (!ctx.file.endsWith(".mdx") && !ctx.file.endsWith(".json")) return;
-      for (const id of [RESOLVED_ID, RESOLVED_LOCALIZED_CONTENT_ID]) {
+      for (const id of [RESOLVED_ID, RESOLVED_LOCALIZED_CONTENT_ID, RESOLVED_BLOG_RAW_ID]) {
         const mod = ctx.server.moduleGraph.getModuleById(id);
         if (mod) ctx.server.moduleGraph.invalidateModule(mod);
       }

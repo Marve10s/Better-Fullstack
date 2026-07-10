@@ -30,6 +30,8 @@ type LocalizedFrontmatter<T> = Partial<Record<LocalizedContentLocale, T>>;
  * via `useBlogPostContent` so post content stays out of the app entry chunk.
  * Mirrors `src/lib/guides/source.ts`.
  */
+export type BlogReadingStats = { shortMins: number; longMins: number };
+
 export type BlogPost = {
   slug: string[];
   url: string;
@@ -37,6 +39,8 @@ export type BlogPost = {
   filePath: string;
   frontmatter: BlogFrontmatter;
   localizedFrontmatter?: LocalizedFrontmatter<BlogFrontmatter>;
+  /** Build-time reading time; short excludes `data-long-version` sections. */
+  readingStats?: BlogReadingStats;
 };
 
 /** Heavy per-post bundle, loaded lazily for the post being viewed. */
@@ -83,7 +87,7 @@ function normalizeMdxPath(filePath: string): { relativePath: string; slug: strin
 
 const postsBySlug = new Map<string, BlogPost>();
 
-for (const { filePath, frontmatter, localizedFrontmatter } of blogMeta) {
+for (const { filePath, frontmatter, localizedFrontmatter, readingStats } of blogMeta) {
   const { relativePath, slug } = normalizeMdxPath(filePath);
   const url = "/blog" + (slug.length ? `/${slug.join("/")}` : "");
   postsBySlug.set(slug.join("/"), {
@@ -93,6 +97,7 @@ for (const { filePath, frontmatter, localizedFrontmatter } of blogMeta) {
     filePath,
     frontmatter: frontmatter ?? {},
     localizedFrontmatter: localizedFrontmatter ?? {},
+    readingStats,
   });
 }
 

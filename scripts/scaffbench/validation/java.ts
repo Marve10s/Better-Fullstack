@@ -1,0 +1,2 @@
+export { validateJavaProject } from "./index";
+

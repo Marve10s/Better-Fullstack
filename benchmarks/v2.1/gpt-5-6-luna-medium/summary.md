@@ -2,7 +2,7 @@
 
 Harness: 2.0.0
 Agent: Codex (single agent; single model family per row)
-Specs: ai-search-workbench, rust-leptos-axum, python-ingestion-api, go-realtime-api, multi-dotnet-ops, ts-svelte-edge-orpc, dotnet-blazor-cqrs, multi-ts-go-grpc, java-spring-jooq-keycloak, elixir-broadway-absinthe, react-native-expo, frontier-polyglot-proto, frontier-effect-eventsourcing
+Specs: elixir-broadway-absinthe
 Repeats: 1
 Prompt style: explicit
 
@@ -34,7 +34,7 @@ moves with provider load, so the mean alone is misleading over small samples).
 
 | Model | Effort | Effective reasoning | Path | Index | Pass@1 | Quality | Inconclusive | Macro | pass@k | pass^k | CI95 | Wired libs | Faithful | Acceptance | Command discipline | Median / p95 | Avg output tokens | Avg cost | Failure tags |
 | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-gpt-5.6-luna | medium | medium | prompt | 46 | 2/13 | 15% | 0 | 15% | 2/13 | 2/13 | 15% (4-42) | 88% | — | — | 100% | 204.8s / 299.1s | 11130 |  | build-failed:7, stack-mismatch:10, typecheck-failed:4, validation-failed:11, install-failed:2, lint-failed:1
+gpt-5.6-luna | medium | medium | prompt | 46 | 2/13 | 15% | 0 | 15% | 2/13 | 2/13 | 15% (4-42) | 88% | — | — | 100% | 204.8s / 299.1s | 11130 |  | build-failed:9, stack-mismatch:10, typecheck-failed:6, validation-failed:11, install-failed:3, lint-failed:1
 
 ## Runs
 
@@ -47,9 +47,9 @@ go-realtime-api | 1 | medium | medium | gpt-5.6-luna | prompt | fail | install-f
 multi-dotnet-ops | 1 | medium | medium | gpt-5.6-luna | prompt | fail | build-failed, lint-failed, stack-mismatch, validation-failed | 0 | 210.3s | 11598 |  | 85 | 11/13 | — | — | 0 | 1 |  | 1 |  | miss
 ts-svelte-edge-orpc | 1 | medium | medium | gpt-5.6-luna | prompt | fail | build-failed, typecheck-failed, validation-failed | 0 | 299.1s | 14806 |  | 100 | 10/10 | — | — | 0 | 1 | 1 |  |  | miss
 dotnet-blazor-cqrs | 1 | medium | medium | gpt-5.6-luna | prompt | fail | build-failed, validation-failed | 0 | 137.2s | 9043 |  | 100 | 13/13 | — | — | 0 | 1 |  |  |  | miss
-multi-ts-go-grpc | 1 | medium | medium | gpt-5.6-luna | prompt | fail | stack-mismatch, validation-failed | 0 | 204.8s | 11808 |  | 88 | 14/16 | — | — |  |  |  |  |  | miss
-java-spring-jooq-keycloak | 1 | medium | medium | gpt-5.6-luna | prompt | fail | build-failed, install-failed, stack-mismatch, validation-failed | 0 | 106.3s | 6192 |  | 93 | 13/14 | — | — | 1 | 1 |  |  |  | miss
+multi-ts-go-grpc | 1 | medium | medium | gpt-5.6-luna | prompt | fail | build-failed, install-failed, stack-mismatch, typecheck-failed, validation-failed | 0 | 204.8s | 11808 |  | 88 | 14/16 | — | — |  |  |  |  |  | miss
+java-spring-jooq-keycloak | 1 | medium | medium | gpt-5.6-luna | prompt | fail | build-failed, stack-mismatch, validation-failed | 0 | 106.3s | 6192 |  | 93 | 13/14 | — | — |  | 1 |  |  |  | miss
 elixir-broadway-absinthe | 1 | medium | medium | gpt-5.6-luna | prompt | pass |  | 0 | 171.3s | 9194 |  | 100 | 13/13 | — | — | 0 | 0 |  |  |  | miss
 react-native-expo | 1 | medium | medium | gpt-5.6-luna | prompt | fail | stack-mismatch, typecheck-failed, validation-failed | 0 | 161.0s | 10015 |  | 88 | 7/8 | — | — | 0 |  | 1 |  |  | miss
-frontier-polyglot-proto | 1 | medium | medium | gpt-5.6-luna | prompt | fail | stack-mismatch, validation-failed | 0 | 216.7s | 12103 |  | 50 | 2/4 | — | — |  |  |  |  |  | miss
+frontier-polyglot-proto | 1 | medium | medium | gpt-5.6-luna | prompt | fail | build-failed, install-failed, stack-mismatch, typecheck-failed, validation-failed | 0 | 216.7s | 12103 |  | 50 | 2/4 | — | — |  |  |  |  |  | miss
 frontier-effect-eventsourcing | 1 | medium | medium | gpt-5.6-luna | prompt | fail | build-failed, stack-mismatch, typecheck-failed, validation-failed | 0 | 218.6s | 13799 |  | 75 | 3/4 | — | — | 0 | 2 | 2 |  |  | miss

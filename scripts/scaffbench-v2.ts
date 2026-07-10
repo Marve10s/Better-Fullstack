@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import { parseArgs, runScaffbench } from "./scaffbench-v2-lib";
+import { parseArgs, runScaffbench } from "./scaffbench";
 
 if (import.meta.main) {
   runScaffbench(parseArgs(process.argv.slice(2))).catch((error) => {
