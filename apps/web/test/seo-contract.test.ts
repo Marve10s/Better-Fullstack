@@ -5,13 +5,10 @@ import { generateLlmsTxt } from "../src/lib/llms";
 import { OPTION_COUNT_LABEL } from "../src/lib/project-stats";
 import { NOINDEX_ROBOTS } from "../src/lib/robots";
 import { canonicalUrl } from "../src/lib/seo";
-import {
-  generateSitemapXmlFromEntries,
-  getSitemapEntriesFromPages,
-} from "../src/lib/sitemap-core";
+import { generateSitemapXmlFromEntries, getSitemapEntriesFromPages } from "../src/lib/sitemap-core";
 
 describe("SEO contracts", () => {
-  it("includes docs, guides, and MCP in the dynamic sitemap", () => {
+  it("includes docs, guides, MCP, and the press kit in the dynamic sitemap", () => {
     const entries = getSitemapEntriesFromPages({
       docsPages: [
         { slug: [], frontmatter: { updated: "2026-05-12" } },
@@ -31,6 +28,7 @@ describe("SEO contracts", () => {
     expect(paths).toContain("/docs/cli/create");
     expect(paths).toContain("/guides/typescript/create-tanstack-start-project");
     expect(paths).toContain("/mcp");
+    expect(paths).toContain("/press");
     expect(paths).not.toContain("/analytics");
     expect(xml).toContain(canonicalUrl("/docs/cli/create"));
     expect(xml).toContain(canonicalUrl("/guides/typescript/create-tanstack-start-project"));
@@ -81,7 +79,9 @@ describe("SEO contracts", () => {
     });
 
     expect(llms).toContain(`${OPTION_COUNT_LABEL} options`);
-    expect(llms).toContain("https://better-fullstack.dev/guides/typescript/create-tanstack-start-project");
+    expect(llms).toContain(
+      "https://better-fullstack.dev/guides/typescript/create-tanstack-start-project",
+    );
     expect(llms).toContain("https://better-fullstack.dev/docs/ai/mcp-tools");
   });
 
@@ -106,5 +106,23 @@ describe("SEO contracts", () => {
       expect(source).toContain('"X-Robots-Tag"');
       expect(source).toContain("NOINDEX_ROBOTS");
     }
+  });
+
+  it("redirects the indexed Vercel hostname to the canonical domain", async () => {
+    const config = (await Bun.file("vercel.json").json()) as {
+      redirects?: Array<{
+        destination: string;
+        has?: Array<{ type: string; value?: string }>;
+        permanent?: boolean;
+        source: string;
+      }>;
+    };
+
+    expect(config.redirects).toContainEqual({
+      source: "/:path*",
+      has: [{ type: "host", value: "better-fullstack-web.vercel.app" }],
+      destination: "https://better-fullstack.dev/:path*",
+      permanent: true,
+    });
   });
 });

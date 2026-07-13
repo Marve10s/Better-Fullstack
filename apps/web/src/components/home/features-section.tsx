@@ -9,6 +9,7 @@ import type { TechCategory } from "@/lib/types";
 import { ContainerScroll } from "@/components/effects/container-scroll";
 import { TechIcon } from "@/components/ui/tech-icon";
 import { ECOSYSTEMS, TECH_OPTIONS } from "@/lib/constant";
+import { ECOSYSTEM_COUNT_LABEL, ECOSYSTEM_NAMES, OPTION_COUNT_LABEL } from "@/lib/project-stats";
 import { m } from "@/paraglide/messages.js";
 
 const WebGLShader = lazy(async () => {
@@ -93,7 +94,7 @@ export default function FeaturesSection() {
         <div className="grid grid-cols-12 gap-x-6 gap-y-10 px-4 py-20 sm:px-8 sm:py-24">
           <div className="col-span-12 lg:col-span-7">
             <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink dark:text-brand">
-              ✦ {m.homeSevenEcosystems()}
+              ✦ {m.homeSevenEcosystems({ ecosystemCount: ECOSYSTEM_COUNT_LABEL })}
             </p>
             <h2
               className="mt-4 max-w-[24ch] text-balance font-mono font-bold tracking-[-0.045em]"
@@ -106,7 +107,7 @@ export default function FeaturesSection() {
               <span className="italic text-muted-foreground">{m.homeEverything()}</span>
             </h2>
             <p className="mt-8 max-w-md text-pretty text-base text-muted-foreground sm:text-lg">
-              {m.homeFeaturesDescription()}
+              {m.homeFeaturesDescription({ ecosystems: ECOSYSTEM_NAMES.join(", ") })}
             </p>
           </div>
 
@@ -115,6 +116,8 @@ export default function FeaturesSection() {
               <Link
                 to="/new"
                 search={{ view: "command", file: "" }}
+                data-analytics-event="builder_opened"
+                data-analytics-source="home_features"
                 className="group relative block aspect-[4/3] w-full overflow-hidden rounded-2xl border border-border bg-black"
               >
                 <Suspense fallback={null}>
@@ -294,7 +297,7 @@ function TotalBlock() {
             >
               <span style={{ fontSize: "clamp(5rem, 18vw, 14rem)" }}>
                 <NumberFlow
-                  value={inView ? 437 : 0}
+                  value={inView ? Number(OPTION_COUNT_LABEL) : 0}
                   transformTiming={{ duration: 1100, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" }}
                 />
               </span>
@@ -303,7 +306,10 @@ function TotalBlock() {
               </span>
             </motion.div>
             <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.22em] text-background/70">
-              {m.homeTotalOptions()}
+              {m.homeTotalOptions({
+                ecosystemCount: ECOSYSTEM_COUNT_LABEL,
+                ecosystems: ECOSYSTEM_NAMES.join(" · "),
+              })}
             </p>
           </div>
         </div>

@@ -6,7 +6,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Homeseotitle2Inputs */
 
 const en_homeseotitle2 = /** @type {(inputs: Homeseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Better Fullstack — Scaffold Production-Ready Fullstack Apps in Seconds`)
+	return /** @type {LocalizedString} */ (`Better Fullstack — Scaffold Fullstack Apps Without Wiring the Stack`)
 };
 
 const es_homeseotitle2 = /** @type {(inputs: Homeseotitle2Inputs) => LocalizedString} */ () => {
@@ -44,7 +44,7 @@ const uk_homeseotitle2 = /** @type {(inputs: Homeseotitle2Inputs) => LocalizedSt
 /**
 * | output |
 * | --- |
-* | "Better Fullstack — Scaffold Production-Ready Fullstack Apps in Seconds" |
+* | "Better Fullstack — Scaffold Fullstack Apps Without Wiring the Stack" |
 *
 * @param {Homeseotitle2Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options

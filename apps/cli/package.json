@@ -1,7 +1,7 @@
 {
   "name": "create-better-fullstack",
   "version": "2.1.8",
-  "description": "Scaffold production-ready fullstack apps in seconds. Pick your stack from 425 options — the CLI wires everything together.",
+  "description": "Scaffold compatibility-aware fullstack starters in seconds. Pick from hundreds of tools — the CLI wires everything together.",
   "keywords": [
     "algolia",
     "angular",

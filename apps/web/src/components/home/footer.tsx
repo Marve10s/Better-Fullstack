@@ -54,6 +54,12 @@ export default function Footer() {
           >
             {m.navBlog()}
           </Link>
+          <Link
+            to="/press"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Press kit
+          </Link>
           <button
             type="button"
             onClick={() => setIsChangelogOpen(true)}

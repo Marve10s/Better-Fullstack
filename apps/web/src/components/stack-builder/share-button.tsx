@@ -24,6 +24,8 @@ export function ShareButton({ stackUrl }: ShareButtonProps) {
     <button
       type="button"
       onClick={copyToClipboard}
+      data-analytics-event="stack_shared"
+      data-analytics-source="builder_share_button"
       title={copied ? m.shareButtonCopiedTitle() : m.shareButtonCopyTitle()}
       className={
         copied

@@ -3,54 +3,54 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {import('../runtime.js').LocalizedString} LocalizedString */
 
-/** @typedef {{}} Homesevenecosystems2Inputs */
+/** @typedef {{ ecosystemCount: NonNullable<unknown> }} Homesevenecosystems2Inputs */
 
-const en_homesevenecosystems2 = /** @type {(inputs: Homesevenecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`seven ecosystems`)
+const en_homesevenecosystems2 = /** @type {(inputs: Homesevenecosystems2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.ecosystemCount} ecosystems`)
 };
 
-const es_homesevenecosystems2 = /** @type {(inputs: Homesevenecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`siete ecosistemas`)
+const es_homesevenecosystems2 = /** @type {(inputs: Homesevenecosystems2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.ecosystemCount} ecosistemas`)
 };
 
-const zh_homesevenecosystems2 = /** @type {(inputs: Homesevenecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`七个生态`)
+const zh_homesevenecosystems2 = /** @type {(inputs: Homesevenecosystems2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.ecosystemCount} 个生态`)
 };
 
-const ja_homesevenecosystems2 = /** @type {(inputs: Homesevenecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`7つのエコシステム`)
+const ja_homesevenecosystems2 = /** @type {(inputs: Homesevenecosystems2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.ecosystemCount} つのエコシステム`)
 };
 
-const ko_homesevenecosystems2 = /** @type {(inputs: Homesevenecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`일곱 개의 생태계`)
+const ko_homesevenecosystems2 = /** @type {(inputs: Homesevenecosystems2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.ecosystemCount}개 생태계`)
 };
 
-const zh_hant1_homesevenecosystems2 = /** @type {(inputs: Homesevenecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`七個生態`)
+const zh_hant1_homesevenecosystems2 = /** @type {(inputs: Homesevenecosystems2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.ecosystemCount} 個生態`)
 };
 
-const de_homesevenecosystems2 = /** @type {(inputs: Homesevenecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`sieben Ökosysteme`)
+const de_homesevenecosystems2 = /** @type {(inputs: Homesevenecosystems2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.ecosystemCount} Ökosysteme`)
 };
 
-const fr_homesevenecosystems2 = /** @type {(inputs: Homesevenecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`sept écosystèmes`)
+const fr_homesevenecosystems2 = /** @type {(inputs: Homesevenecosystems2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.ecosystemCount} écosystèmes`)
 };
 
-const uk_homesevenecosystems2 = /** @type {(inputs: Homesevenecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`сім екосистем`)
+const uk_homesevenecosystems2 = /** @type {(inputs: Homesevenecosystems2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.ecosystemCount} екосистем`)
 };
 
 /**
 * | output |
 * | --- |
-* | "seven ecosystems" |
+* | "{ecosystemCount} ecosystems" |
 *
 * @param {Homesevenecosystems2Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const homesevenecosystems2 = /** @type {((inputs?: Homesevenecosystems2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homesevenecosystems2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const homesevenecosystems2 = /** @type {((inputs: Homesevenecosystems2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homesevenecosystems2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_homesevenecosystems2(inputs)
 	if (locale === "es") return es_homesevenecosystems2(inputs)

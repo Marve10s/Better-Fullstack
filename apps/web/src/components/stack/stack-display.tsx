@@ -1,5 +1,5 @@
-import { Link } from "@tanstack/react-router";
 import { CATEGORY_ORDER } from "@better-fullstack/types";
+import { Link } from "@tanstack/react-router";
 import { Check, Copy, Edit, Share2, Terminal } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -173,6 +173,8 @@ export function StackDisplay({ stackState }: StackDisplayProps) {
             <button
               type="button"
               onClick={copyCommand}
+              data-analytics-event="builder_command_copied"
+              data-analytics-source="shared_stack"
               className={cn(
                 "flex items-center gap-1 rounded border px-2 py-1 font-mono text-xs transition-colors",
                 copied

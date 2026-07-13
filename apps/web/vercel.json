@@ -4,6 +4,19 @@
   "installCommand": "cd ../.. && bun install",
   "buildCommand": "bun run build",
   "outputDirectory": ".vercel/output",
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "better-fullstack-web.vercel.app"
+        }
+      ],
+      "destination": "https://better-fullstack.dev/:path*",
+      "permanent": true
+    }
+  ],
   "build": {
     "env": {
       "NODE_OPTIONS": "--max-old-space-size=7168"

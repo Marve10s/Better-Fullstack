@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 import { AsciiHeroBackground } from "@/components/ui/ascii-hero-background";
 import { latestChangelogRelease } from "@/lib/changelog";
+import { ECOSYSTEM_COUNT_LABEL } from "@/lib/project-stats";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages.js";
 
@@ -135,6 +136,9 @@ export default function HeroSection() {
               type="button"
               onClick={copy}
               aria-label={m.homeCopyCommand()}
+              data-analytics-event="install_command_copied"
+              data-analytics-source="home_install"
+              data-analytics-target={pm}
               className={cn(
                 "flex size-8 cursor-pointer items-center justify-center rounded-md bg-transparent transition-colors active:translate-y-[1px]",
                 copied ? "text-ink dark:text-brand" : "text-soft",
@@ -177,7 +181,7 @@ export default function HeroSection() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="relative z-10 mt-7 max-w-lg text-pretty text-base text-soft sm:text-lg"
         >
-          {m.homeHeroDescription()}
+          {m.homeHeroDescription({ ecosystemCount: ECOSYSTEM_COUNT_LABEL })}
         </motion.p>
 
         <motion.div
@@ -189,6 +193,8 @@ export default function HeroSection() {
           <Link
             to="/new"
             search={{ view: "command", file: "" }}
+            data-analytics-event="builder_opened"
+            data-analytics-source="home_hero"
             className="group inline-flex items-center gap-1.5 rounded-md bg-brand px-5 py-2.5 text-sm font-semibold text-[#0a0a0a] transition-all hover:gap-2.5"
           >
             {m.homeOpenBuilder()}
@@ -196,12 +202,13 @@ export default function HeroSection() {
           </Link>
           <Link
             to="/docs"
+            data-analytics-event="docs_opened"
+            data-analytics-source="home_hero"
             className="rounded-md border border-edge px-5 py-2.5 text-sm font-medium text-ink transition-colors"
           >
             {m.homeReadDocs()}
           </Link>
         </motion.div>
-
       </div>
     </section>
   );

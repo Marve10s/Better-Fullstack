@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as StackRouteImport } from './routes/stack'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RunRouteImport } from './routes/run'
+import { Route as PressRouteImport } from './routes/press'
 import { Route as NewRouteImport } from './routes/new'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
@@ -43,6 +44,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const RunRoute = RunRouteImport.update({
   id: '/run',
   path: '/run',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PressRoute = PressRouteImport.update({
+  id: '/press',
+  path: '/press',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NewRoute = NewRouteImport.update({
@@ -140,6 +146,7 @@ export interface FileRoutesByFullPath {
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
   '/new': typeof NewRoute
+  '/press': typeof PressRoute
   '/run': typeof RunRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stack': typeof StackRoute
@@ -162,6 +169,7 @@ export interface FileRoutesByTo {
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
   '/new': typeof NewRoute
+  '/press': typeof PressRoute
   '/run': typeof RunRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stack': typeof StackRoute
@@ -185,6 +193,7 @@ export interface FileRoutesById {
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
   '/new': typeof NewRoute
+  '/press': typeof PressRoute
   '/run': typeof RunRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stack': typeof StackRoute
@@ -209,6 +218,7 @@ export interface FileRouteTypes {
     | '/llms.txt'
     | '/mcp'
     | '/new'
+    | '/press'
     | '/run'
     | '/sitemap.xml'
     | '/stack'
@@ -231,6 +241,7 @@ export interface FileRouteTypes {
     | '/llms.txt'
     | '/mcp'
     | '/new'
+    | '/press'
     | '/run'
     | '/sitemap.xml'
     | '/stack'
@@ -253,6 +264,7 @@ export interface FileRouteTypes {
     | '/llms.txt'
     | '/mcp'
     | '/new'
+    | '/press'
     | '/run'
     | '/sitemap.xml'
     | '/stack'
@@ -276,6 +288,7 @@ export interface RootRouteChildren {
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   McpRoute: typeof McpRoute
   NewRoute: typeof NewRoute
+  PressRoute: typeof PressRoute
   RunRoute: typeof RunRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StackRoute: typeof StackRoute
@@ -312,6 +325,13 @@ declare module '@tanstack/react-router' {
       path: '/run'
       fullPath: '/run'
       preLoaderRoute: typeof RunRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/press': {
+      id: '/press'
+      path: '/press'
+      fullPath: '/press'
+      preLoaderRoute: typeof PressRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/new': {
@@ -444,6 +464,7 @@ const rootRouteChildren: RootRouteChildren = {
   LlmsDottxtRoute: LlmsDottxtRoute,
   McpRoute: McpRoute,
   NewRoute: NewRoute,
+  PressRoute: PressRoute,
   RunRoute: RunRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StackRoute: StackRoute,

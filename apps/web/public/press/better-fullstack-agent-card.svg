@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Better Fullstack agent workflow launch card</title>
+  <desc id="desc">A launch card showing coding agents using typed stack guidance instead of guessing integrations.</desc>
+  <defs>
+    <pattern id="grid" width="64" height="64" patternUnits="userSpaceOnUse">
+      <path d="M64 0H0V64" fill="none" stroke="#f2eeee" stroke-opacity=".04"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="#0c0c0e"/>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+  <text x="72" y="74" font-family="Geist Mono, ui-monospace, monospace" font-size="24" font-weight="700"><tspan fill="#f2eeee">better</tspan><tspan fill="#b3b0b0">fullstack</tspan></text>
+  <text x="72" y="192" fill="#f2eeee" font-family="Geist, ui-sans-serif, sans-serif" font-size="62" font-weight="700" letter-spacing="-3">Your agent should not</text>
+  <text x="72" y="262" fill="#b3b0b0" font-family="Geist, ui-sans-serif, sans-serif" font-size="62" font-weight="700" letter-spacing="-3">guess the stack.</text>
+  <text x="72" y="330" fill="#b3b0b0" font-family="Geist, ui-sans-serif, sans-serif" font-size="23">Typed options. Compatibility checks. Reproducible commands.</text>
+  <g transform="translate(72 414)" font-family="Geist Mono, ui-monospace, monospace">
+    <rect width="1056" height="128" rx="12" fill="#121214" stroke="#2a2a2a"/>
+    <g transform="translate(32 30)"><rect width="212" height="68" rx="8" fill="#1a1a1a" stroke="#2a2a2a"/><text x="106" y="42" text-anchor="middle" fill="#f2eeee" font-size="16">DESCRIBE</text></g>
+    <path d="M274 64h72" stroke="#8839ef" stroke-width="3"/><path d="m338 56 10 8-10 8" fill="none" stroke="#8839ef" stroke-width="3"/>
+    <g transform="translate(376 30)"><rect width="304" height="68" rx="8" fill="#1a1a1a" stroke="#8839ef"/><text x="152" y="42" text-anchor="middle" fill="#f2eeee" font-size="16">VALIDATE + PLAN</text></g>
+    <path d="M710 64h72" stroke="#8839ef" stroke-width="3"/><path d="m774 56 10 8-10 8" fill="none" stroke="#8839ef" stroke-width="3"/>
+    <g transform="translate(812 30)"><rect width="212" height="68" rx="8" fill="#8839ef"/><text x="106" y="42" text-anchor="middle" fill="#0c0c0e" font-size="16" font-weight="700">SCAFFOLD</text></g>
+  </g>
+</svg>

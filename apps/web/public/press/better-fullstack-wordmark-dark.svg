@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="400" viewBox="0 0 1600 400" role="img" aria-labelledby="title desc">
+  <title id="title">Better Fullstack wordmark</title>
+  <desc id="desc">The words better fullstack on a dark technical grid.</desc>
+  <defs>
+    <pattern id="grid" width="64" height="64" patternUnits="userSpaceOnUse">
+      <path d="M64 0H0V64" fill="none" stroke="#f2eeee" stroke-opacity=".04"/>
+    </pattern>
+  </defs>
+  <rect width="1600" height="400" rx="24" fill="#0c0c0e"/>
+  <rect width="1600" height="400" rx="24" fill="url(#grid)"/>
+  <path d="M96 96h40M96 96v40M1504 304h-40M1504 304v-40" fill="none" stroke="#8839ef" stroke-width="4"/>
+  <text x="800" y="225" text-anchor="middle" font-family="Geist Mono, ui-monospace, SFMono-Regular, monospace" font-size="108" font-weight="700" letter-spacing="-5">
+    <tspan fill="#f2eeee">better</tspan><tspan fill="#b3b0b0">fullstack</tspan>
+  </text>
+  <text x="800" y="286" text-anchor="middle" fill="#8839ef" font-family="Geist Mono, ui-monospace, SFMono-Regular, monospace" font-size="20" font-weight="600" letter-spacing="5">PICK YOUR STACK. GET THE WIRING.</text>
+</svg>

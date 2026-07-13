@@ -6,45 +6,45 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Homefactunique2Inputs */
 
 const en_homefactunique2 = /** @type {(inputs: Homefactunique2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Each combination scaffolds a unique, production-ready app`)
+	return /** @type {LocalizedString} */ (`Compatibility rules keep generated stacks internally consistent`)
 };
 
 const es_homefactunique2 = /** @type {(inputs: Homefactunique2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Cada combinación crea una app única y lista para producción`)
+	return /** @type {LocalizedString} */ (`Las reglas de compatibilidad mantienen coherencia interna en los stacks generados`)
 };
 
 const zh_homefactunique2 = /** @type {(inputs: Homefactunique2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`每个组合都会生成一个独特、可用于生产的应用`)
+	return /** @type {LocalizedString} */ (`兼容性规则让生成的 stack 保持内部一致`)
 };
 
 const ja_homefactunique2 = /** @type {(inputs: Homefactunique2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`それぞれの組み合わせにより、独自の運用準備が整ったアプリが構築されます。`)
+	return /** @type {LocalizedString} */ (`互換性ルールにより、生成されるスタックの内部整合性を維持`)
 };
 
 const ko_homefactunique2 = /** @type {(inputs: Homefactunique2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`각 조합은 프로덕션에 즉시 사용 가능한 고유한 앱을 기반으로 합니다.`)
+	return /** @type {LocalizedString} */ (`호환성 규칙이 생성된 스택의 내부 일관성을 유지합니다`)
 };
 
 const zh_hant1_homefactunique2 = /** @type {(inputs: Homefactunique2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`每個組合都會產生一個獨特、可用於生產的應用`)
+	return /** @type {LocalizedString} */ (`相容性規則讓生成的 stack 保持內部一致`)
 };
 
 const de_homefactunique2 = /** @type {(inputs: Homefactunique2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Jede Kombination bildet das Gerüst für eine einzigartige, produktionsreife App`)
+	return /** @type {LocalizedString} */ (`Kompatibilitätsregeln halten generierte Stacks intern konsistent`)
 };
 
 const fr_homefactunique2 = /** @type {(inputs: Homefactunique2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Chaque combinaison crée une application unique, prête pour la production`)
+	return /** @type {LocalizedString} */ (`Les règles de compatibilité assurent la cohérence interne des piles générées`)
 };
 
 const uk_homefactunique2 = /** @type {(inputs: Homefactunique2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Кожна комбінація генерує унікальний застосунок, готовий до продакшену`)
+	return /** @type {LocalizedString} */ (`Правила сумісності підтримують внутрішню узгодженість згенерованих стеків`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Each combination scaffolds a unique, production-ready app" |
+* | "Compatibility rules keep generated stacks internally consistent" |
 *
 * @param {Homefactunique2Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Better Fullstack visual builder launch card</title>
+  <desc id="desc">A launch card showing stack choices becoming a runnable CLI command.</desc>
+  <defs>
+    <pattern id="grid" width="64" height="64" patternUnits="userSpaceOnUse">
+      <path d="M64 0H0V64" fill="none" stroke="#f2eeee" stroke-opacity=".04"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="#0c0c0e"/>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+  <g font-family="Geist Mono, ui-monospace, monospace" font-size="24" font-weight="700">
+    <text x="72" y="74" fill="#f2eeee">better</text>
+    <text x="159" y="74" fill="#8839ef">/</text>
+    <text x="174" y="74" fill="#b3b0b0">fullstack</text>
+  </g>
+  <text x="72" y="192" fill="#f2eeee" font-family="Geist, ui-sans-serif, sans-serif" font-size="66" font-weight="700" letter-spacing="-3">Pick your stack.</text>
+  <text x="72" y="266" fill="#b3b0b0" font-family="Geist, ui-sans-serif, sans-serif" font-size="66" font-weight="700" letter-spacing="-3">Get the wiring.</text>
+  <text x="72" y="330" fill="#b3b0b0" font-family="Geist, ui-sans-serif, sans-serif" font-size="23">A compatibility-aware visual builder and CLI</text>
+  <text x="72" y="362" fill="#b3b0b0" font-family="Geist, ui-sans-serif, sans-serif" font-size="23">for fullstack starters across eight ecosystems.</text>
+  <g transform="translate(72 432)">
+    <rect width="560" height="78" rx="8" fill="#1a1a1a" stroke="#2a2a2a"/>
+    <text x="28" y="48" fill="#8839ef" font-family="Geist Mono, ui-monospace, monospace" font-size="22" font-weight="700">$</text>
+    <text x="56" y="48" fill="#f2eeee" font-family="Geist Mono, ui-monospace, monospace" font-size="22">bun create better-fullstack@latest</text>
+  </g>
+  <g transform="translate(710 92)">
+    <rect width="418" height="446" rx="18" fill="#121214" stroke="#2a2a2a"/>
+    <text x="28" y="48" fill="#8839ef" font-family="Geist Mono, ui-monospace, monospace" font-size="13" font-weight="700" letter-spacing="2">STACK PLAN / 08</text>
+    <g font-family="Geist Mono, ui-monospace, monospace" font-size="15">
+      <rect x="28" y="78" width="362" height="52" rx="8" fill="#1a1a1a" stroke="#8839ef"/><text x="48" y="110" fill="#f2eeee">frontend</text><text x="276" y="110" fill="#b3b0b0">TanStack Start</text>
+      <rect x="28" y="142" width="362" height="52" rx="8" fill="#1a1a1a" stroke="#2a2a2a"/><text x="48" y="174" fill="#f2eeee">backend</text><text x="324" y="174" fill="#b3b0b0">Hono</text>
+      <rect x="28" y="206" width="362" height="52" rx="8" fill="#1a1a1a" stroke="#2a2a2a"/><text x="48" y="238" fill="#f2eeee">database</text><text x="304" y="238" fill="#b3b0b0">Postgres</text>
+      <rect x="28" y="270" width="362" height="52" rx="8" fill="#1a1a1a" stroke="#2a2a2a"/><text x="48" y="302" fill="#f2eeee">auth</text><text x="278" y="302" fill="#b3b0b0">Better Auth</text>
+      <rect x="28" y="342" width="362" height="70" rx="8" fill="#8839ef"/>
+      <text x="104" y="384" fill="#0c0c0e" font-size="17" font-weight="700">GENERATE COMMAND →</text>
+    </g>
+  </g>
+</svg>

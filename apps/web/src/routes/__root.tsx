@@ -1,4 +1,11 @@
-import { Outlet, HeadContent, Scripts, createRootRoute, Link } from "@tanstack/react-router";
+import {
+  Outlet,
+  HeadContent,
+  Scripts,
+  createRootRoute,
+  Link,
+  useRouterState,
+} from "@tanstack/react-router";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { lazy, Suspense, type ReactNode } from "react";
@@ -156,14 +163,18 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
+  const isPressPage = useRouterState({ select: (state) => state.location.pathname === "/press" });
+
   return (
     <RootDocument>
       <Navbar />
       <Outlet />
-      <Suspense fallback={null}>
-        <ChangelogWidget />
-        <PatreonButton />
-      </Suspense>
+      {!isPressPage && (
+        <Suspense fallback={null}>
+          <ChangelogWidget />
+          <PatreonButton />
+        </Suspense>
+      )}
     </RootDocument>
   );
 }

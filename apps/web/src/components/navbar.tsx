@@ -41,8 +41,7 @@ const DOCS_SKILL_PARAMS = { _splat: "ai/skills" } as const;
 
 const NAV_LINK_CLASS =
   "font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground [&.active]:text-foreground sm:text-[12px]";
-const MOBILE_MENU_ITEM_CLASS =
-  "cursor-pointer font-mono text-[11px] uppercase tracking-[0.14em]";
+const MOBILE_MENU_ITEM_CLASS = "cursor-pointer font-mono text-[11px] uppercase tracking-[0.14em]";
 
 function getFirstPathSegment(pathname: string): string {
   return pathname.split("/").find(Boolean) ?? "";
@@ -58,12 +57,15 @@ function HeaderCopyButton() {
     try {
       // Loaded at click time: these pull in the stack-translation +
       // compatibility bundle, which must stay out of the app entry chunk.
-      const [{ parseStackSelectionFromUrlRecord: parseStackFromUrlRecord }, { parseStackShareSlug }, { generateStackCommand }] =
-        await Promise.all([
-          import("@better-fullstack/types/stack-translation"),
-          import("@/lib/stack-share-paths"),
-          import("@/lib/stack-utils"),
-        ]);
+      const [
+        { parseStackSelectionFromUrlRecord: parseStackFromUrlRecord },
+        { parseStackShareSlug },
+        { generateStackCommand },
+      ] = await Promise.all([
+        import("@better-fullstack/types/stack-translation"),
+        import("@/lib/stack-share-paths"),
+        import("@/lib/stack-utils"),
+      ]);
       const sp = new URLSearchParams(window.location.search);
       const record: Record<string, string | string[]> = {};
       for (const key of sp.keys()) {
@@ -88,6 +90,8 @@ function HeaderCopyButton() {
       type="button"
       onClick={handleCopy}
       aria-label={copied ? m.navCommandCopied() : m.navCopyInstallCommand()}
+      data-analytics-event="builder_command_copied"
+      data-analytics-source="header_builder"
       className="inline-flex cursor-pointer items-center gap-1.5 rounded-md bg-[#C6E853] px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-black transition-colors hover:bg-[#d2ee72] sm:px-4 sm:py-2 sm:text-[12px]"
     >
       {copied ? (
@@ -184,6 +188,8 @@ function DocsMenu() {
     <div className="inline-flex items-center">
       <Link
         to="/docs"
+        data-analytics-event="docs_opened"
+        data-analytics-source="desktop_nav"
         activeOptions={DOCS_ACTIVE_OPTIONS}
         className={cn(NAV_LINK_CLASS, "cursor-pointer")}
         activeProps={DOCS_ACTIVE_PROPS}
@@ -323,10 +329,7 @@ function MobileLocaleItems() {
         <DropdownMenuItem
           key={availableLocale}
           onClick={() => setLocale(availableLocale as Locale)}
-          className={cn(
-            MOBILE_MENU_ITEM_CLASS,
-            locale === availableLocale && "text-foreground",
-          )}
+          className={cn(MOBILE_MENU_ITEM_CLASS, locale === availableLocale && "text-foreground")}
         >
           <span className="flex-1">
             {LOCALE_LABELS[availableLocale as keyof typeof LOCALE_LABELS]}
@@ -453,11 +456,7 @@ export function Navbar() {
                 >
                   {m.navPresets()}
                 </Link>
-                <Link
-                  to="/benchmark"
-                  className={NAV_LINK_CLASS}
-                  activeProps={DOCS_ACTIVE_PROPS}
-                >
+                <Link to="/benchmark" className={NAV_LINK_CLASS} activeProps={DOCS_ACTIVE_PROPS}>
                   {m.navBenchmark()}
                 </Link>
                 <Link to="/blog" className={NAV_LINK_CLASS} activeProps={DOCS_ACTIVE_PROPS}>
@@ -489,6 +488,8 @@ export function Navbar() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label={m.navGithubRepository()}
+            data-analytics-event="github_opened"
+            data-analytics-source="desktop_nav"
             className="flex h-8 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
           >
             <Github className="h-4 w-4" />
@@ -502,6 +503,8 @@ export function Navbar() {
             <Link
               to="/new"
               search={BUILDER_COMMAND_SEARCH}
+              data-analytics-event="builder_opened"
+              data-analytics-source="desktop_nav"
               className="group inline-flex items-center gap-1.5 rounded-md bg-[#C6E853] px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-black transition-all hover:gap-2 hover:bg-[#d2ee72] sm:px-4 sm:py-2 sm:text-[12px]"
             >
               {m.navTryNow()}
@@ -514,6 +517,8 @@ export function Navbar() {
             <Link
               to="/new"
               search={BUILDER_COMMAND_SEARCH}
+              data-analytics-event="builder_opened"
+              data-analytics-source="mobile_nav"
               className="group inline-flex items-center gap-1.5 rounded-md bg-[#C6E853] px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-black transition-all hover:gap-2 hover:bg-[#d2ee72]"
             >
               {m.navTryNow()}

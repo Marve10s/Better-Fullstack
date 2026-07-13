@@ -20,6 +20,7 @@ const staticSitemapEntries: SitemapEntry[] = [
   { path: "/benchmark", changefreq: "weekly", priority: 0.8 },
   { path: "/compare", changefreq: "weekly", priority: 0.8 },
   { path: "/mcp", changefreq: "weekly", priority: 0.7 },
+  { path: "/press", changefreq: "monthly", priority: 0.7 },
 ];
 
 function escapeXml(value: string) {
@@ -95,10 +96,7 @@ export function getSitemapEntriesFromPages({
 export function generateSitemapXmlFromEntries(entries: SitemapEntry[]) {
   const urls = entries
     .map((entry) => {
-      const lines = [
-        "  <url>",
-        `    <loc>${escapeXml(canonicalUrl(entry.path))}</loc>`,
-      ];
+      const lines = ["  <url>", `    <loc>${escapeXml(canonicalUrl(entry.path))}</loc>`];
 
       if (entry.changefreq) {
         lines.push(`    <changefreq>${entry.changefreq}</changefreq>`);

@@ -1,3 +1,4 @@
+import { ProductAnalytics } from "@/components/product-analytics";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/lib/theme";
 
@@ -8,6 +9,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
       {children}
+      <ProductAnalytics />
       <Toaster />
     </ThemeProvider>
   );

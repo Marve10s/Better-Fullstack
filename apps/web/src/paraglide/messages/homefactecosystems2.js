@@ -3,54 +3,54 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {import('../runtime.js').LocalizedString} LocalizedString */
 
-/** @typedef {{}} Homefactecosystems2Inputs */
+/** @typedef {{ ecosystems: NonNullable<unknown> }} Homefactecosystems2Inputs */
 
-const en_homefactecosystems2 = /** @type {(inputs: Homefactecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Across TypeScript, React Native, Rust, Python, Go, Java, and Elixir`)
+const en_homefactecosystems2 = /** @type {(inputs: Homefactecosystems2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Across ${i?.ecosystems}`)
 };
 
-const es_homefactecosystems2 = /** @type {(inputs: Homefactecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`En TypeScript, React Native, Rust, Python, Go, Java y Elixir`)
+const es_homefactecosystems2 = /** @type {(inputs: Homefactecosystems2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`En ${i?.ecosystems}`)
 };
 
-const zh_homefactecosystems2 = /** @type {(inputs: Homefactecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`覆盖 TypeScript、React Native、Rust、Python、Go、Java 和 Elixir`)
+const zh_homefactecosystems2 = /** @type {(inputs: Homefactecosystems2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`覆盖 ${i?.ecosystems}`)
 };
 
-const ja_homefactecosystems2 = /** @type {(inputs: Homefactecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`TypeScript、React Native、Rust、Python、Go、Java、Elixir 全体`)
+const ja_homefactecosystems2 = /** @type {(inputs: Homefactecosystems2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.ecosystems} 全体`)
 };
 
-const ko_homefactecosystems2 = /** @type {(inputs: Homefactecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`TypeScript, React Native, Rust, Python, Go, Java 및 Elixir 전반에 걸쳐`)
+const ko_homefactecosystems2 = /** @type {(inputs: Homefactecosystems2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.ecosystems} 전반에 걸쳐`)
 };
 
-const zh_hant1_homefactecosystems2 = /** @type {(inputs: Homefactecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`覆蓋 TypeScript、React Native、Rust、Python、Go、Java 和 Elixir`)
+const zh_hant1_homefactecosystems2 = /** @type {(inputs: Homefactecosystems2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`覆蓋 ${i?.ecosystems}`)
 };
 
-const de_homefactecosystems2 = /** @type {(inputs: Homefactecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Über TypeScript, React Native, Rust, Python, Go, Java und Elixir`)
+const de_homefactecosystems2 = /** @type {(inputs: Homefactecosystems2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Über ${i?.ecosystems}`)
 };
 
-const fr_homefactecosystems2 = /** @type {(inputs: Homefactecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Sur TypeScript, React Native, Rust, Python, Go, Java et Elixir`)
+const fr_homefactecosystems2 = /** @type {(inputs: Homefactecosystems2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Dans ${i?.ecosystems}`)
 };
 
-const uk_homefactecosystems2 = /** @type {(inputs: Homefactecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`TypeScript, React Native, Rust, Python, Go, Java та Elixir`)
+const uk_homefactecosystems2 = /** @type {(inputs: Homefactecosystems2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`У ${i?.ecosystems}`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Across TypeScript, React Native, Rust, Python, Go, Java, and Elixir" |
+* | "Across {ecosystems}" |
 *
 * @param {Homefactecosystems2Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const homefactecosystems2 = /** @type {((inputs?: Homefactecosystems2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homefactecosystems2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const homefactecosystems2 = /** @type {((inputs: Homefactecosystems2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homefactecosystems2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_homefactecosystems2(inputs)
 	if (locale === "es") return es_homefactecosystems2(inputs)
