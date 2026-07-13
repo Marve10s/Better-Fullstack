@@ -373,6 +373,13 @@ export const CLI_FLAG_GROUP_DEFINITIONS: readonly CliFlagGroupDefinition[] = [
       { flag: "python-realtime", summary: "Python realtime.", source: { kind: "category", category: "pythonRealtime" }, configKey: "pythonRealtime" },
       { flag: "python-observability", summary: "Python observability.", source: { kind: "category", category: "pythonObservability" }, configKey: "pythonObservability" },
       { flag: "python-cli", summary: "Python CLI tooling.", source: { kind: "category", category: "pythonCli" }, configKey: "pythonCli", multiple: true },
+      { flag: "python-cloud-sdk", summary: "Python cloud SDK.", source: { kind: "category", category: "pythonCloudSdk" }, configKey: "pythonCloudSdk" },
+      { flag: "python-http-client", summary: "Python HTTP client.", source: { kind: "category", category: "pythonHttpClient" }, configKey: "pythonHttpClient" },
+      { flag: "python-data", summary: "Python data and scientific libraries.", source: { kind: "category", category: "pythonData" }, configKey: "pythonData", multiple: true },
+      { flag: "python-media", summary: "Python media library.", source: { kind: "category", category: "pythonMedia" }, configKey: "pythonMedia" },
+      { flag: "python-server", summary: "Python production server.", source: { kind: "category", category: "pythonServer" }, configKey: "pythonServer" },
+      { flag: "python-package-manager", summary: "Python package manager.", source: { kind: "category", category: "pythonPackageManager" }, configKey: "pythonPackageManager" },
+      { flag: "python-message-queue", summary: "Python message queue client.", source: { kind: "category", category: "pythonMessageQueue" }, configKey: "pythonMessageQueue" },
     ],
   },
   {

@@ -407,6 +407,13 @@ const GRAPH_BACKEND_ADVANCED_CATEGORY_ORDER_BY_ECOSYSTEM = {
     "pythonRealtime",
     "pythonObservability",
     "pythonCli",
+    "pythonCloudSdk",
+    "pythonHttpClient",
+    "pythonData",
+    "pythonMedia",
+    "pythonServer",
+    "pythonPackageManager",
+    "pythonMessageQueue",
   ],
   go: [
     "goCli",
@@ -3441,6 +3448,8 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                   <button
                     type="button"
                     onClick={copyToClipboard}
+                    data-analytics-event="builder_command_copied"
+                    data-analytics-source="builder_partial"
                     aria-label={copied ? m.builderCommandCopied() : m.builderCopyCommand()}
                     title={m.builderCopyPartialCommand()}
                     className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-[9px] text-[rgba(250,250,247,0.7)] transition-colors hover:bg-white/10 hover:text-[#FAFAF7]"
@@ -3468,6 +3477,8 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                 <button
                   type="button"
                   onClick={copyToClipboard}
+                  data-analytics-event="builder_command_copied"
+                  data-analytics-source={isMultiMode ? "builder_multi" : "builder_solo"}
                   aria-label={copied ? m.builderCommandCopied() : m.builderCopyCommand()}
                   className={cn(
                     "inline-flex h-10 w-32 shrink-0 cursor-pointer items-center justify-center rounded-[11px] p-px text-[11.5px] font-semibold text-[#2A3303] transition-transform hover:scale-[1.02] min-[420px]:w-40 sm:w-48",

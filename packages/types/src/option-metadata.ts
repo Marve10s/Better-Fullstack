@@ -99,6 +99,13 @@ import {
   PYTHON_REALTIME_VALUES,
   PYTHON_OBSERVABILITY_VALUES,
   PYTHON_CLI_VALUES,
+  PYTHON_CLOUD_SDK_VALUES,
+  PYTHON_DATA_VALUES,
+  PYTHON_HTTP_CLIENT_VALUES,
+  PYTHON_MEDIA_VALUES,
+  PYTHON_MESSAGE_QUEUE_VALUES,
+  PYTHON_PACKAGE_MANAGER_VALUES,
+  PYTHON_SERVER_VALUES,
   PYTHON_TASK_QUEUE_VALUES,
   PYTHON_VALIDATION_VALUES,
   PYTHON_WEB_FRAMEWORK_VALUES,
@@ -228,6 +235,13 @@ export type OptionCategory =
   | "pythonRealtime"
   | "pythonObservability"
   | "pythonCli"
+  | "pythonCloudSdk"
+  | "pythonHttpClient"
+  | "pythonData"
+  | "pythonMedia"
+  | "pythonServer"
+  | "pythonPackageManager"
+  | "pythonMessageQueue"
   | "goWebFramework"
   | "goOrm"
   | "goApi"
@@ -407,6 +421,13 @@ export const PYTHON_CATEGORY_ORDER = [
   "pythonRealtime",
   "pythonObservability",
   "pythonCli",
+  "pythonCloudSdk",
+  "pythonHttpClient",
+  "pythonData",
+  "pythonMedia",
+  "pythonServer",
+  "pythonPackageManager",
+  "pythonMessageQueue",
   "email",
   "observability",
   "caching",
@@ -579,6 +600,13 @@ export function getCategoryDisplayName(categoryKey: string): string {
     pythonRealtime: "Python Realtime",
     pythonObservability: "Python Observability",
     pythonCli: "Python CLI Tooling",
+    pythonCloudSdk: "Python Cloud SDK",
+    pythonHttpClient: "Python HTTP Client",
+    pythonData: "Python Data & Scientific Computing",
+    pythonMedia: "Python Media",
+    pythonServer: "Python Production Server",
+    pythonPackageManager: "Python Package Manager",
+    pythonMessageQueue: "Python Message Queue",
     goWebFramework: "Go Web Framework",
     goOrm: "Go ORM / Database",
     goApi: "Go API Layer",
@@ -763,6 +791,7 @@ const MULTI_SELECT_CATEGORIES = new Set<OptionCategory>([
   "goTesting",
   "pythonTesting",
   "pythonCli",
+  "pythonData",
   "elixirLibraries",
 ]);
 
@@ -858,6 +887,13 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   pythonRealtime: PYTHON_REALTIME_VALUES,
   pythonObservability: PYTHON_OBSERVABILITY_VALUES,
   pythonCli: PYTHON_CLI_VALUES,
+  pythonCloudSdk: PYTHON_CLOUD_SDK_VALUES,
+  pythonHttpClient: PYTHON_HTTP_CLIENT_VALUES,
+  pythonData: PYTHON_DATA_VALUES,
+  pythonMedia: PYTHON_MEDIA_VALUES,
+  pythonServer: PYTHON_SERVER_VALUES,
+  pythonPackageManager: PYTHON_PACKAGE_MANAGER_VALUES,
+  pythonMessageQueue: PYTHON_MESSAGE_QUEUE_VALUES,
   goWebFramework: GO_WEB_FRAMEWORK_VALUES,
   goOrm: GO_ORM_VALUES,
   goApi: GO_API_VALUES,
@@ -1356,12 +1392,15 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     flask: "Flask",
     litestar: "Litestar",
     starlette: "Starlette",
+    aiohttp: "aiohttp",
+    streamlit: "Streamlit",
   },
   pythonOrm: {
     sqlalchemy: "SQLAlchemy",
     sqlmodel: "SQLModel",
     "tortoise-orm": "Tortoise ORM",
     peewee: "Peewee",
+    pymongo: "PyMongo",
   },
   pythonValidation: {
     pydantic: "Pydantic",
@@ -1377,10 +1416,16 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     "pydantic-ai": "Pydantic AI",
     "google-adk": "Google ADK",
     smolagents: "smolagents",
+    pytorch: "PyTorch",
+    transformers: "Transformers",
+    "scikit-learn": "scikit-learn",
+    tensorflow: "TensorFlow",
+    mcp: "MCP Python SDK",
   },
   pythonAuth: {
     authlib: "Authlib",
     jwt: "JWT (python-jose)",
+    pyjwt: "PyJWT",
     "fastapi-users": "FastAPI Users",
   },
   pythonApi: {
@@ -1406,6 +1451,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   pythonTesting: {
     pytest: "pytest",
     hypothesis: "Hypothesis",
+    "pytest-cov": "pytest-cov",
   },
   pythonCaching: {
     redis: "redis-py",
@@ -1417,11 +1463,36 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   pythonObservability: {
     opentelemetry: "OpenTelemetry",
+    "prometheus-client": "Prometheus Client",
   },
   pythonCli: {
     typer: "Typer",
     click: "Click",
     rich: "Rich",
+  },
+  pythonCloudSdk: {
+    boto3: "Boto3",
+  },
+  pythonHttpClient: {
+    requests: "Requests",
+  },
+  pythonData: {
+    numpy: "NumPy",
+    pandas: "pandas",
+    scipy: "SciPy",
+  },
+  pythonMedia: {
+    pillow: "Pillow",
+  },
+  pythonServer: {
+    gunicorn: "Gunicorn",
+  },
+  pythonPackageManager: {
+    uv: "uv",
+    poetry: "Poetry",
+  },
+  pythonMessageQueue: {
+    "confluent-kafka": "Confluent Kafka",
   },
   goWebFramework: {
     gin: "Gin",
@@ -1869,6 +1940,13 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   pythonRealtime: buildCategoryMetadata("pythonRealtime"),
   pythonObservability: buildCategoryMetadata("pythonObservability"),
   pythonCli: buildCategoryMetadata("pythonCli"),
+  pythonCloudSdk: buildCategoryMetadata("pythonCloudSdk"),
+  pythonHttpClient: buildCategoryMetadata("pythonHttpClient"),
+  pythonData: buildCategoryMetadata("pythonData"),
+  pythonMedia: buildCategoryMetadata("pythonMedia"),
+  pythonServer: buildCategoryMetadata("pythonServer"),
+  pythonPackageManager: buildCategoryMetadata("pythonPackageManager"),
+  pythonMessageQueue: buildCategoryMetadata("pythonMessageQueue"),
   goWebFramework: buildCategoryMetadata("goWebFramework"),
   goOrm: buildCategoryMetadata("goOrm"),
   goApi: buildCategoryMetadata("goApi"),

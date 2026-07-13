@@ -88,6 +88,13 @@ import type {
   PythonRealtimeSchema,
   PythonObservabilitySchema,
   PythonCliSchema,
+  PythonCloudSdkSchema,
+  PythonHttpClientSchema,
+  PythonDataSchema,
+  PythonMediaSchema,
+  PythonServerSchema,
+  PythonPackageManagerSchema,
+  PythonMessageQueueSchema,
   GoWebFrameworkSchema,
   GoOrmSchema,
   GoApiSchema,
@@ -236,6 +243,13 @@ export type PythonCaching = z.infer<typeof PythonCachingSchema>;
 export type PythonRealtime = z.infer<typeof PythonRealtimeSchema>;
 export type PythonObservability = z.infer<typeof PythonObservabilitySchema>;
 export type PythonCli = z.infer<typeof PythonCliSchema>;
+export type PythonCloudSdk = z.infer<typeof PythonCloudSdkSchema>;
+export type PythonHttpClient = z.infer<typeof PythonHttpClientSchema>;
+export type PythonData = z.infer<typeof PythonDataSchema>;
+export type PythonMedia = z.infer<typeof PythonMediaSchema>;
+export type PythonServer = z.infer<typeof PythonServerSchema>;
+export type PythonPackageManager = z.infer<typeof PythonPackageManagerSchema>;
+export type PythonMessageQueue = z.infer<typeof PythonMessageQueueSchema>;
 export type GoWebFramework = z.infer<typeof GoWebFrameworkSchema>;
 export type GoOrm = z.infer<typeof GoOrmSchema>;
 export type GoApi = z.infer<typeof GoApiSchema>;

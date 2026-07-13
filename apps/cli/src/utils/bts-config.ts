@@ -108,6 +108,13 @@ function normalizeGraphConfigForPersistence(
     normalized.pythonRealtime = "none";
     normalized.pythonObservability = "none";
     normalized.pythonCli = [];
+    normalized.pythonCloudSdk = "none";
+    normalized.pythonHttpClient = "none";
+    normalized.pythonData = [];
+    normalized.pythonMedia = "none";
+    normalized.pythonServer = "none";
+    normalized.pythonPackageManager = "uv";
+    normalized.pythonMessageQueue = "none";
   }
 
   if (!selectedEcosystems.has("go")) {
@@ -418,6 +425,13 @@ export function buildBtsConfigForPersistence(
     pythonRealtime: persistedConfig.pythonRealtime,
     pythonObservability: persistedConfig.pythonObservability,
     pythonCli: persistedConfig.pythonCli,
+    pythonCloudSdk: persistedConfig.pythonCloudSdk,
+    pythonHttpClient: persistedConfig.pythonHttpClient,
+    pythonData: persistedConfig.pythonData,
+    pythonMedia: persistedConfig.pythonMedia,
+    pythonServer: persistedConfig.pythonServer,
+    pythonPackageManager: persistedConfig.pythonPackageManager,
+    pythonMessageQueue: persistedConfig.pythonMessageQueue,
     goWebFramework: persistedConfig.goWebFramework,
     goOrm: persistedConfig.goOrm,
     goApi: persistedConfig.goApi,
@@ -594,6 +608,13 @@ export async function writeBtsConfig(
     pythonRealtime: btsConfig.pythonRealtime,
     pythonObservability: btsConfig.pythonObservability,
     pythonCli: btsConfig.pythonCli,
+    pythonCloudSdk: btsConfig.pythonCloudSdk,
+    pythonHttpClient: btsConfig.pythonHttpClient,
+    pythonData: btsConfig.pythonData,
+    pythonMedia: btsConfig.pythonMedia,
+    pythonServer: btsConfig.pythonServer,
+    pythonPackageManager: btsConfig.pythonPackageManager,
+    pythonMessageQueue: btsConfig.pythonMessageQueue,
     goWebFramework: btsConfig.goWebFramework,
     goOrm: btsConfig.goOrm,
     goApi: btsConfig.goApi,

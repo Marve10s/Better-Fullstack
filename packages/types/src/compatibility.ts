@@ -234,6 +234,13 @@ export type CompatibilityInput = {
   pythonRealtime: string;
   pythonObservability: string;
   pythonCli: string[];
+  pythonCloudSdk: string;
+  pythonHttpClient: string;
+  pythonData: string[];
+  pythonMedia: string;
+  pythonServer: string;
+  pythonPackageManager: string;
+  pythonMessageQueue: string;
   goWebFramework: string;
   goOrm: string;
   goApi: string;
@@ -3672,6 +3679,62 @@ const GRAPH_DISABLED_REASON_BINDINGS: Partial<
   },
   pythonCli: {
     role: "cli",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  pythonCloudSdk: {
+    role: "cloudSdk",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  pythonHttpClient: {
+    role: "httpClient",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  pythonData: {
+    role: "data",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  pythonMedia: {
+    role: "media",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  pythonServer: {
+    role: "server",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  pythonPackageManager: {
+    role: "packageManager",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  pythonMessageQueue: {
+    role: "messageQueue",
     ecosystem: "python",
     ownerRole: "backend",
     ownerEcosystem: "python",
