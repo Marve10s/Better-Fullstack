@@ -1604,10 +1604,14 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
     pythonData,
     pythonMedia,
     pythonServer,
-    pythonPackageManager,
+    pythonPackageManager: configuredPythonPackageManager,
     pythonMessageQueue,
     pythonObservability,
   } = config;
+
+  // Graph-derived and legacy configs may omit this recently introduced field.
+  // Keep generated docs aligned with the CLI's canonical Python default.
+  const pythonPackageManager = configuredPythonPackageManager ?? "uv";
 
   const runPrefix =
     pythonPackageManager === "poetry"

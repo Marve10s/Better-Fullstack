@@ -231,6 +231,13 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["python-realtime", config.pythonRealtime],
     ["python-observability", config.pythonObservability],
     ["python-cli", withExplicitNone(config.pythonCli)],
+    ["python-cloud-sdk", config.pythonCloudSdk],
+    ["python-http-client", config.pythonHttpClient],
+    ["python-data", withExplicitNone(config.pythonData)],
+    ["python-media", config.pythonMedia],
+    ["python-server", config.pythonServer],
+    ["python-package-manager", config.pythonPackageManager],
+    ["python-message-queue", config.pythonMessageQueue],
   ];
 
   const goFlags: Array<[string, string | readonly string[]]> = [

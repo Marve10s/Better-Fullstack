@@ -432,16 +432,17 @@ function generateCommandsSection(config: ProjectConfig): string {
     lines.push(`- \`cargo clippy\` - Run linter`);
     lines.push(`- \`cargo fmt\` - Format code`);
   } else if (config.ecosystem === "python") {
+    const pythonPackageManager = config.pythonPackageManager ?? "uv";
     const pythonRun =
-      config.pythonPackageManager === "poetry"
+      pythonPackageManager === "poetry"
         ? "poetry run "
-        : config.pythonPackageManager === "uv"
+        : pythonPackageManager === "uv"
           ? "uv run "
           : "";
     const pythonInstall =
-      config.pythonPackageManager === "poetry"
+      pythonPackageManager === "poetry"
         ? "poetry install --extras dev"
-        : config.pythonPackageManager === "uv"
+        : pythonPackageManager === "uv"
           ? "uv sync --extra dev"
           : "python -m venv .venv && pip install -e .";
     lines.push(`- \`${pythonInstall}\` - Install dependencies`);
