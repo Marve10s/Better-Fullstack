@@ -872,10 +872,11 @@ function v2Dataset(version: BenchmarkVersionId | LeaderboardVersion): Scaffbench
   return version === "v2" ? SCAFFBENCH_V2 : SCAFFBENCH_V2_1;
 }
 
-// opencode / Kilo runs hit free endpoints — the leaderboard pins them below the
-// paid tier and the graph hides them by default (opt-in via the model picker).
-function isFreeProvider(provider: ScaffbenchModel["provider"]): boolean {
-  return provider === "opencode" || provider === "kilo";
+// Free endpoint status belongs to the model route, not the driving CLI. OpenCode
+// also serves paid Go-subscription models (opencode-go/*), so treating every
+// opencode/Kilo provider as free would hide paid rows from the default graph.
+function isFreeModel(model: ScaffbenchModel): boolean {
+  return /(?:-free$|:free$|\/free$)/i.test(model.model);
 }
 
 type V2Version = "v2" | "v2.1";
@@ -883,7 +884,7 @@ type V2Version = "v2" | "v2.1";
 // Default graph selection: paid models only; free-tier dots are opt-in.
 function v2DefaultModelKeys(version: V2Version): string[] {
   return v2Dataset(version)
-    .models.filter((model) => !isFreeProvider(model.provider))
+    .models.filter((model) => !isFreeModel(model))
     .map((model) => model.key);
 }
 
@@ -1231,7 +1232,7 @@ interface V2ModelPoint extends PathMetrics {
 function computeV2ModelPoints(dataset: ScaffbenchDataset, path: PathId): V2ModelPoint[] {
   return dataset.models.map((model, index) => {
     const metrics = aggregatePathMetrics(dataset, model.key, path);
-    const free = isFreeProvider(model.provider);
+    const free = isFreeModel(model);
     // Free endpoints (opencode / Kilo) genuinely cost $0 — plot them at zero,
     // but ONLY when the model was actually swept on this path (an unswept model
     // must not materialize on the Cost axis just because $0 is coercible). A
