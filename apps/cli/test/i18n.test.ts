@@ -95,9 +95,7 @@ describe("i18n Options", () => {
       expectSuccess(result);
 
       const nextConfig = await readWebFile(result.projectDir!, "next.config.ts");
-      expect(nextConfig).toContain(
-        'import { paraglideWebpackPlugin } from "@inlang/paraglide-js"',
-      );
+      expect(nextConfig).toContain('import { paraglideWebpackPlugin } from "@inlang/paraglide-js"');
       expect(nextConfig).toContain("webpackConfig.plugins.push(");
       expect(nextConfig).toContain("paraglideWebpackPlugin({");
       expect(nextConfig).toContain('outdir: "./src/paraglide"');
@@ -105,6 +103,26 @@ describe("i18n Options", () => {
   });
 
   describe("Intlayer", () => {
+    test("uses the Next.js provider locale prop type", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "intlayer-next",
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          api: "trpc",
+          i18n: "intlayer",
+        }),
+      );
+      expectSuccess(result);
+
+      const provider = await readWebFile(result.projectDir!, "src/i18n/provider.tsx");
+      expect(provider).toContain(
+        'locale?: ComponentProps<typeof IntlayerClientProvider>["locale"]',
+      );
+      expect(provider).not.toContain('import type { Locales } from "intlayer"');
+    });
+
     test("generates Intlayer setup for TanStack Router", async () => {
       const result = await runTRPCTest(
         createCustomConfig({
