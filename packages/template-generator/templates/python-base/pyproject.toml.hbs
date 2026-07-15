@@ -30,10 +30,10 @@ dependencies = [
     "uvicorn[standard]>=0.43.0",
 {{/if}}
 {{#if (eq pythonWebFramework "aiohttp")}}
-    "aiohttp>=3.14.1",
+    "aiohttp>=3.10.10",
 {{/if}}
 {{#if (eq pythonWebFramework "streamlit")}}
-    "streamlit>=1.59.2",
+    "streamlit>=1.40.0",
 {{/if}}
 {{#if (eq pythonOrm "sqlalchemy")}}
     "sqlalchemy>=2.0.49",
@@ -64,7 +64,7 @@ dependencies = [
 {{/if}}
 {{/if}}
 {{#if (eq pythonOrm "pymongo")}}
-    "pymongo>=4.17.0",
+    "pymongo>=4.10.1",
 {{/if}}
 {{#if (eq pythonValidation "pydantic")}}
     "pydantic>=2.12.5",
@@ -107,19 +107,19 @@ dependencies = [
     "smolagents>=1.26.0",
 {{/if}}
 {{#if (includes pythonAi "pytorch")}}
-    "torch>=2.13.0",
+    "torch>=2.5.0",
 {{/if}}
 {{#if (includes pythonAi "transformers")}}
-    "transformers>=5.13.1",
+    "transformers>=4.45.0",
 {{/if}}
 {{#if (includes pythonAi "scikit-learn")}}
-    "scikit-learn>=1.9.0",
+    "scikit-learn>=1.5.2",
 {{/if}}
 {{#if (includes pythonAi "tensorflow")}}
-    "tensorflow>=2.21.0",
+    "tensorflow>=2.18.0",
 {{/if}}
 {{#if (includes pythonAi "mcp")}}
-    "mcp>=1.28.1",
+    "mcp>=1.0.0",
 {{/if}}
 {{#if (eq pythonAuth "authlib")}}
     "authlib>=1.6.0",
@@ -130,7 +130,7 @@ dependencies = [
     "passlib[bcrypt]>=1.7.4",
 {{/if}}
 {{#if (eq pythonAuth "pyjwt")}}
-    "PyJWT[crypto]>=2.13.0",
+    "PyJWT[crypto]>=2.9.0",
 {{/if}}
 {{#if (eq pythonAuth "fastapi-users")}}
     "fastapi-users[sqlalchemy]>=15.0.5",
@@ -175,7 +175,7 @@ dependencies = [
     "opentelemetry-exporter-otlp-proto-http>=1.34.0",
 {{/if}}
 {{#if (eq pythonObservability "prometheus-client")}}
-    "prometheus-client>=0.25.0",
+    "prometheus-client>=0.21.0",
 {{/if}}
 {{#if (includes pythonCli "typer")}}
     "typer>=0.16.0",
@@ -187,28 +187,28 @@ dependencies = [
     "rich>=14.0.0",
 {{/if}}
 {{#if (eq pythonCloudSdk "boto3")}}
-    "boto3>=1.43.46",
+    "boto3>=1.35.0",
 {{/if}}
 {{#if (eq pythonHttpClient "requests")}}
-    "requests>=2.34.2",
+    "requests>=2.32.3",
 {{/if}}
 {{#if (includes pythonData "numpy")}}
-    "numpy>=2.5.1",
+    "numpy>=2.1.0",
 {{/if}}
 {{#if (includes pythonData "pandas")}}
-    "pandas>=3.0.3",
+    "pandas>=2.2.3",
 {{/if}}
 {{#if (includes pythonData "scipy")}}
-    "scipy>=1.18.0",
+    "scipy>=1.14.1",
 {{/if}}
 {{#if (eq pythonMedia "pillow")}}
-    "pillow>=12.3.0",
+    "pillow>=11.0.0",
 {{/if}}
 {{#if (eq pythonServer "gunicorn")}}
-    "gunicorn>=26.0.0",
+    "gunicorn>=23.0.0",
 {{/if}}
 {{#if (eq pythonMessageQueue "confluent-kafka")}}
-    "confluent-kafka>=2.15.0",
+    "confluent-kafka>=2.6.0",
 {{/if}}
 {{#if (eq pythonGraphql "strawberry")}}
 {{#if (eq pythonWebFramework "fastapi")}}
@@ -270,7 +270,7 @@ dev = [
     "hypothesis>=6.130.0",
 {{/if}}
 {{#if (includes pythonTesting "pytest-cov")}}
-    "pytest-cov>=7.1.0",
+    "pytest-cov>=6.0.0",
 {{/if}}
 {{#if (eq pythonWebFramework "fastapi")}}
     "httpx>=0.28.0",

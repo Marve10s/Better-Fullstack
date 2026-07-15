@@ -6,6 +6,7 @@ import {
   validateConfigForProgrammaticUse,
   validateFullConfig,
   validatePythonApiConstraints,
+  validatePythonExpansionConstraints,
 } from "../src/utils/config-validation";
 import {
   EcosystemSchema,
@@ -391,6 +392,32 @@ describe("Python Language Support", () => {
           }),
         ),
       ).toThrow("Python API frameworks require --python-web-framework django.");
+    });
+  });
+
+  describe("Python expansion compatibility", () => {
+    it("requires MongoDB when PyMongo is selected", () => {
+      expect(() =>
+        runWithContext({ silent: true }, () =>
+          validatePythonExpansionConstraints({
+            ecosystem: "python",
+            database: "postgres",
+            pythonOrm: "pymongo",
+          }),
+        ),
+      ).toThrow("PyMongo requires --database mongodb.");
+    });
+
+    it("rejects Gunicorn for Streamlit applications", () => {
+      expect(() =>
+        runWithContext({ silent: true }, () =>
+          validateConfigForProgrammaticUse({
+            ecosystem: "python",
+            pythonWebFramework: "streamlit",
+            pythonServer: "gunicorn",
+          }),
+        ),
+      ).toThrow("Gunicorn requires a WSGI, ASGI, or aiohttp Python application.");
     });
   });
 

@@ -79,6 +79,86 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://www.contentful.com/developers/docs/javascript/tutorials/using-js-cda-sdk/",
     githubUrl: "https://github.com/contentful/contentful.js",
   },
+  aiohttp: {
+    docsUrl: "https://docs.aiohttp.org/en/stable/",
+    githubUrl: "https://github.com/aio-libs/aiohttp",
+  },
+  streamlit: {
+    docsUrl: "https://docs.streamlit.io/",
+    githubUrl: "https://github.com/streamlit/streamlit",
+  },
+  pymongo: {
+    docsUrl: "https://pymongo.readthedocs.io/en/stable/",
+    githubUrl: "https://github.com/mongodb/mongo-python-driver",
+  },
+  pytorch: {
+    docsUrl: "https://docs.pytorch.org/docs/stable/",
+    githubUrl: "https://github.com/pytorch/pytorch",
+  },
+  transformers: {
+    docsUrl: "https://huggingface.co/docs/transformers/",
+    githubUrl: "https://github.com/huggingface/transformers",
+  },
+  "scikit-learn": {
+    docsUrl: "https://scikit-learn.org/stable/",
+    githubUrl: "https://github.com/scikit-learn/scikit-learn",
+  },
+  tensorflow: {
+    docsUrl: "https://www.tensorflow.org/api_docs/python/tf",
+    githubUrl: "https://github.com/tensorflow/tensorflow",
+  },
+  pyjwt: {
+    docsUrl: "https://pyjwt.readthedocs.io/en/stable/",
+    githubUrl: "https://github.com/jpadilla/pyjwt",
+  },
+  "pytest-cov": {
+    docsUrl: "https://pytest-cov.readthedocs.io/en/latest/",
+    githubUrl: "https://github.com/pytest-dev/pytest-cov",
+  },
+  "prometheus-client": {
+    docsUrl: "https://prometheus.github.io/client_python/",
+    githubUrl: "https://github.com/prometheus/client_python",
+  },
+  boto3: {
+    docsUrl: "https://boto3.amazonaws.com/v1/documentation/api/latest/index.html",
+    githubUrl: "https://github.com/boto/boto3",
+  },
+  requests: {
+    docsUrl: "https://requests.readthedocs.io/en/latest/",
+    githubUrl: "https://github.com/psf/requests",
+  },
+  numpy: {
+    docsUrl: "https://numpy.org/doc/stable/",
+    githubUrl: "https://github.com/numpy/numpy",
+  },
+  pandas: {
+    docsUrl: "https://pandas.pydata.org/docs/",
+    githubUrl: "https://github.com/pandas-dev/pandas",
+  },
+  scipy: {
+    docsUrl: "https://docs.scipy.org/doc/scipy/",
+    githubUrl: "https://github.com/scipy/scipy",
+  },
+  pillow: {
+    docsUrl: "https://pillow.readthedocs.io/en/stable/",
+    githubUrl: "https://github.com/python-pillow/Pillow",
+  },
+  gunicorn: {
+    docsUrl: "https://docs.gunicorn.org/en/stable/",
+    githubUrl: "https://github.com/benoitc/gunicorn",
+  },
+  poetry: {
+    docsUrl: "https://python-poetry.org/docs/",
+    githubUrl: "https://github.com/python-poetry/poetry",
+  },
+  uv: {
+    docsUrl: "https://docs.astral.sh/uv/",
+    githubUrl: "https://github.com/astral-sh/uv",
+  },
+  "confluent-kafka": {
+    docsUrl: "https://docs.confluent.io/kafka-clients/python/current/overview.html",
+    githubUrl: "https://github.com/confluentinc/confluent-kafka-python",
+  },
   trpc: { docsUrl: "https://trpc.io/docs", githubUrl: "https://github.com/trpc/trpc" },
   orpc: { docsUrl: "https://orpc.unnoq.com/", githubUrl: "https://github.com/unnoq/orpc" },
   "ts-rest": {

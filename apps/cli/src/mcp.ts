@@ -402,12 +402,18 @@ function getInstallCommand(
   packageManager?: string,
   javaBuildTool?: string,
   javaWebFramework?: string,
+  pythonPackageManager?: string,
 ): string {
   switch (ecosystem) {
     case "rust":
       return `cd ${projectName} && cargo build`;
     case "python":
-      return `cd ${projectName} && uv sync`;
+      if (pythonPackageManager === "poetry")
+        return `cd ${projectName} && poetry install --extras dev`;
+      if (pythonPackageManager === "none") {
+        return `cd ${projectName} && python -m venv .venv && pip install -e .`;
+      }
+      return `cd ${projectName} && uv sync --extra dev`;
     case "go":
       return `cd ${projectName} && go mod tidy`;
     case "elixir":
@@ -1988,6 +1994,7 @@ export async function startMcpServer() {
           input.packageManager as string | undefined,
           input.javaBuildTool as string | undefined,
           input.javaWebFramework as string | undefined,
+          input.pythonPackageManager as string | undefined,
         );
         await trackProjectCreation(config, false, {
           source: "mcp",
@@ -2328,6 +2335,7 @@ export async function startMcpServer() {
             input.packageManager as string | undefined,
             existingConfig?.javaBuildTool,
             existingConfig?.javaWebFramework,
+            existingConfig?.pythonPackageManager,
           );
           const payload = {
             success: true as const,

@@ -1367,25 +1367,42 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
     pythonApi,
     pythonTaskQueue,
     pythonQuality,
+    pythonPackageManager,
   } = config;
 
   const cdCmd = `cd ${relativePath}`;
+  const runPrefix =
+    pythonPackageManager === "poetry"
+      ? "poetry run "
+      : pythonPackageManager === "uv"
+        ? "uv run "
+        : "";
+  const installCommand =
+    pythonPackageManager === "poetry"
+      ? "poetry install --extras dev"
+      : pythonPackageManager === "uv"
+        ? "uv sync"
+        : "python -m venv .venv && pip install -e .";
 
   // Determine run command based on framework
-  let runCommand = "uv run uvicorn app.main:app --reload";
+  let runCommand = `${runPrefix}uvicorn app.main:app --reload`;
   if (pythonWebFramework === "django") {
-    runCommand = "uv run python manage.py runserver";
+    runCommand = `${runPrefix}python -m app.main`;
   } else if (pythonWebFramework === "flask") {
-    runCommand = "uv run flask --app app.main run --reload";
+    runCommand = `${runPrefix}flask --app app.main run --reload`;
   } else if (pythonWebFramework === "litestar") {
-    runCommand = "litestar --app src.app.main:app run --reload --port 3001";
+    runCommand = `${runPrefix}litestar --app src.app.main:app run --reload --port 8000`;
+  } else if (pythonWebFramework === "streamlit") {
+    runCommand = `${runPrefix}streamlit run src/app/main.py`;
+  } else if (pythonWebFramework !== "fastapi") {
+    runCommand = `${runPrefix}python -m app.main`;
   }
 
   let output = `${pc.bold("Next steps")}\n${pc.cyan("1.")} ${cdCmd}\n`;
   let stepCounter = 2;
 
   if (!depsInstalled) {
-    output += `${pc.cyan(`${stepCounter++}.`)} uv sync\n`;
+    output += `${pc.cyan(`${stepCounter++}.`)} ${installCommand}\n`;
   }
 
   output += `${pc.cyan(`${stepCounter++}.`)} ${runCommand}\n`;
@@ -1398,6 +1415,9 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
       django: "Django",
       flask: "Flask",
       litestar: "Litestar",
+      starlette: "Starlette",
+      aiohttp: "aiohttp",
+      streamlit: "Streamlit",
     };
     output += `${pc.cyan("•")} Web Framework: ${frameworkNames[pythonWebFramework] || pythonWebFramework}\n`;
   }
@@ -1407,6 +1427,8 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
       sqlalchemy: "SQLAlchemy",
       sqlmodel: "SQLModel",
       "tortoise-orm": "Tortoise ORM",
+      peewee: "Peewee",
+      pymongo: "PyMongo",
     };
     output += `${pc.cyan("•")} ORM: ${ormNames[pythonOrm] || pythonOrm}\n`;
   }
@@ -1426,6 +1448,11 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
       "openai-sdk": "OpenAI SDK",
       "anthropic-sdk": "Anthropic SDK",
       crewai: "CrewAI",
+      pytorch: "PyTorch",
+      transformers: "Transformers",
+      "scikit-learn": "scikit-learn",
+      tensorflow: "TensorFlow",
+      mcp: "MCP Python SDK",
     };
     const aiList = pythonAi
       .filter((ai) => ai !== "none")
@@ -1459,16 +1486,16 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
   }
 
   output += `\n${pc.bold("Common Python commands:")}\n`;
-  output += `${pc.cyan("•")} Install: uv sync\n`;
+  output += `${pc.cyan("•")} Install: ${installCommand}\n`;
   output += `${pc.cyan("•")} Run: ${runCommand}\n`;
-  output += `${pc.cyan("•")} Test: uv run pytest\n`;
+  output += `${pc.cyan("•")} Test: ${runPrefix}pytest\n`;
   if (pythonQuality === "ruff") {
-    output += `${pc.cyan("•")} Format: uv run ruff format .\n`;
-    output += `${pc.cyan("•")} Lint: uv run ruff check .\n`;
+    output += `${pc.cyan("•")} Format: ${runPrefix}ruff format .\n`;
+    output += `${pc.cyan("•")} Lint: ${runPrefix}ruff check .\n`;
   } else if (pythonQuality === "mypy") {
-    output += `${pc.cyan("•")} Type check: uv run mypy src/app tests\n`;
+    output += `${pc.cyan("•")} Type check: ${runPrefix}mypy src/app tests\n`;
   } else if (pythonQuality === "pyright") {
-    output += `${pc.cyan("•")} Type check: uv run pyright\n`;
+    output += `${pc.cyan("•")} Type check: ${runPrefix}pyright\n`;
   }
 
   output += `\n${pc.bold("Your project will be available at:")}\n`;

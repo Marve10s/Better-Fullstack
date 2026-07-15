@@ -432,22 +432,36 @@ function generateCommandsSection(config: ProjectConfig): string {
     lines.push(`- \`cargo clippy\` - Run linter`);
     lines.push(`- \`cargo fmt\` - Format code`);
   } else if (config.ecosystem === "python") {
-    lines.push(`- \`uv sync --extra dev\` - Install dependencies`);
+    const pythonRun =
+      config.pythonPackageManager === "poetry"
+        ? "poetry run "
+        : config.pythonPackageManager === "uv"
+          ? "uv run "
+          : "";
+    const pythonInstall =
+      config.pythonPackageManager === "poetry"
+        ? "poetry install --extras dev"
+        : config.pythonPackageManager === "uv"
+          ? "uv sync --extra dev"
+          : "python -m venv .venv && pip install -e .";
+    lines.push(`- \`${pythonInstall}\` - Install dependencies`);
     if (config.pythonWebFramework === "fastapi") {
-      lines.push(`- \`uv run uvicorn app.main:app --reload\` - Start dev server`);
+      lines.push(`- \`${pythonRun}uvicorn app.main:app --reload\` - Start dev server`);
     } else if (config.pythonWebFramework === "flask") {
-      lines.push(`- \`uv run flask --app app.main run --reload\` - Start dev server`);
+      lines.push(`- \`${pythonRun}flask --app app.main run --reload\` - Start dev server`);
     } else if (config.pythonWebFramework === "litestar") {
       lines.push(
-        `- \`litestar --app src.app.main:app run --reload --port 3001\` - Start dev server`,
+        `- \`${pythonRun}litestar --app src.app.main:app run --reload --port 8000\` - Start dev server`,
       );
+    } else if (config.pythonWebFramework === "streamlit") {
+      lines.push(`- \`${pythonRun}streamlit run src/app/main.py\` - Start dev server`);
     } else {
-      lines.push(`- \`uv run python -m app.main\` - Run application`);
+      lines.push(`- \`${pythonRun}python -m app.main\` - Run application`);
     }
-    lines.push(`- \`uv run --extra dev pytest\` - Run tests`);
+    lines.push(`- \`${pythonRun}pytest\` - Run tests`);
     if (config.pythonQuality === "ruff") {
-      lines.push(`- \`uv run --extra dev ruff check .\` - Run linter`);
-      lines.push(`- \`uv run --extra dev ruff format .\` - Format code`);
+      lines.push(`- \`${pythonRun}ruff check .\` - Run linter`);
+      lines.push(`- \`${pythonRun}ruff format .\` - Format code`);
     }
   } else if (config.ecosystem === "go") {
     lines.push(`- \`go mod tidy\` - Install dependencies`);

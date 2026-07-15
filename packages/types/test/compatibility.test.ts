@@ -345,11 +345,7 @@ describe("compatibility issue helpers", () => {
       ),
     ).toBe("'cloudflare' web deployment is not wired for the 'vanilla-vite' frontend.");
     expect(
-      getDisabledReason(
-        { ...unsupportedStack, webFrontend: ["vue"] },
-        "webDeploy",
-        "cloudflare",
-      ),
+      getDisabledReason({ ...unsupportedStack, webFrontend: ["vue"] }, "webDeploy", "cloudflare"),
     ).toBe("'cloudflare' web deployment is not wired for the 'vue' frontend.");
     for (const stack of supportedNetlifyStacks) {
       expect(getDisabledReason(stack, "webDeploy", "netlify")).toBeNull();
@@ -1222,6 +1218,28 @@ describe("compatibility issue helpers", () => {
     });
 
     expect(result.adjustedStack?.elixirAuth).toBe("none");
+  });
+
+  it("normalizes Python expansion prerequisites", () => {
+    const pymongoResult = analyzeStackCompatibility({
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "python",
+      database: "postgres",
+      pythonOrm: "pymongo",
+    });
+    expect(pymongoResult.adjustedStack?.database).toBe("mongodb");
+
+    const streamlitStack = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "python",
+      pythonWebFramework: "streamlit",
+      pythonServer: "gunicorn",
+    } as const;
+    const streamlitResult = analyzeStackCompatibility(streamlitStack);
+    expect(streamlitResult.adjustedStack?.pythonServer).toBe("none");
+    expect(getDisabledReason(streamlitStack, "pythonServer", "gunicorn")).toBe(
+      "Gunicorn requires a WSGI, ASGI, or aiohttp application",
+    );
   });
 
   it("locks Effect backend services and validation without blocking compatible tools", () => {

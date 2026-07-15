@@ -1,0 +1,21 @@
+{{#if (includes pythonAi "transformers")}}
+"""Hugging Face Transformers text-generation helper."""
+
+import os
+from functools import lru_cache
+
+from transformers import Pipeline, pipeline
+
+
+@lru_cache
+def text_generator() -> Pipeline:
+    """Load the configured model once and reuse it across requests."""
+    model = os.getenv("HF_MODEL_ID", "distilgpt2")
+    return pipeline("text-generation", model=model)
+
+
+def generate_text(prompt: str, *, max_new_tokens: int = 80) -> str:
+    """Generate text with the configured Hugging Face model."""
+    result = text_generator()(prompt, max_new_tokens=max_new_tokens, num_return_sequences=1)
+    return str(result[0]["generated_text"])
+{{/if}}
