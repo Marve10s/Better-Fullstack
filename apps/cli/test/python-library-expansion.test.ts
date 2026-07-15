@@ -94,6 +94,7 @@ describe("Python library expansion", () => {
     }
 
     expect(pyproject).toContain('build-backend = "poetry.core.masonry.api"');
+    expect(pyproject).toContain('packages = [{ include = "app", from = "src" }]');
     expect(pyproject).toContain('addopts = "--cov=app --cov-report=term-missing"');
     expect(main).toContain("from aiohttp import web");
     expect(main).toContain("app = create_app()");
