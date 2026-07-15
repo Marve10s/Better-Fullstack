@@ -1,8 +1,7 @@
 {{#if (eq frontend.[0] "next")}}"use client";
 
-import type { Locales } from "intlayer";
 import { IntlayerClientProvider } from "next-intlayer";
-import type { ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 
 /**
  * Wrap your Next.js App Router tree with this provider so that client
@@ -14,7 +13,7 @@ export function I18nProvider({
   locale,
 }: {
   children: ReactNode;
-  locale?: Locales;
+  locale?: ComponentProps<typeof IntlayerClientProvider>["locale"];
 }) {
   return (
     <IntlayerClientProvider locale={locale}>{children}</IntlayerClientProvider>
