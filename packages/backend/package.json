@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@convex-dev/crons": "^0.2.2",
-    "convex": "^1.42.0",
+    "convex": "^1.42.1",
     "convex-helpers": "^0.1.120"
   },
   "devDependencies": {

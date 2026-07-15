@@ -4,15 +4,64 @@ import type { VirtualFileSystem } from "../core/virtual-fs";
 
 const JAVA_GROUP_ID = "com.example";
 const JAVA_RESERVED_WORDS = new Set([
-  "abstract", "assert", "boolean", "break", "byte", "case", "catch", "char",
-  "class", "const", "continue", "default", "do", "double", "else", "enum",
-  "extends", "final", "finally", "float", "for", "goto", "if", "implements",
-  "import", "instanceof", "int", "interface", "long", "native", "new",
-  "non-sealed", "package", "private", "protected", "public", "return",
-  "sealed", "short", "static", "strictfp", "super", "switch", "synchronized",
-  "this", "throw", "throws", "transient", "try", "void", "volatile", "while",
-  "yield", "record", "permits",
-  "true", "false", "null",
+  "abstract",
+  "assert",
+  "boolean",
+  "break",
+  "byte",
+  "case",
+  "catch",
+  "char",
+  "class",
+  "const",
+  "continue",
+  "default",
+  "do",
+  "double",
+  "else",
+  "enum",
+  "extends",
+  "final",
+  "finally",
+  "float",
+  "for",
+  "goto",
+  "if",
+  "implements",
+  "import",
+  "instanceof",
+  "int",
+  "interface",
+  "long",
+  "native",
+  "new",
+  "non-sealed",
+  "package",
+  "private",
+  "protected",
+  "public",
+  "return",
+  "sealed",
+  "short",
+  "static",
+  "strictfp",
+  "super",
+  "switch",
+  "synchronized",
+  "this",
+  "throw",
+  "throws",
+  "transient",
+  "try",
+  "void",
+  "volatile",
+  "while",
+  "yield",
+  "record",
+  "permits",
+  "true",
+  "false",
+  "null",
 ]);
 
 export function processAiDocs(vfs: VirtualFileSystem, config: ProjectConfig): void {
@@ -50,7 +99,10 @@ function generateContent(config: ProjectConfig, docType: AiDocs): string {
 }
 
 function sanitizeJavaPackageSuffix(projectName: string): string {
-  const alphanumericOnly = projectName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "");
+  const alphanumericOnly = projectName
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
   const withLetterPrefix = /^[a-z]/.test(alphanumericOnly)
     ? alphanumericOnly
     : `app${alphanumericOnly}`;
@@ -185,7 +237,8 @@ function generateTechStackSection(config: ProjectConfig): string {
       if (libs.length > 0) lines.push(`- Libraries: ${libs.join(", ")}`);
     }
     if (config.rustLogging !== "none") lines.push(`- Logging: ${config.rustLogging}`);
-    if (config.rustErrorHandling !== "none") lines.push(`- Error Handling: ${config.rustErrorHandling}`);
+    if (config.rustErrorHandling !== "none")
+      lines.push(`- Error Handling: ${config.rustErrorHandling}`);
     if (config.rustAuth !== "none") lines.push(`- Auth: ${config.rustAuth}`);
   }
 
@@ -210,6 +263,16 @@ function generateTechStackSection(config: ProjectConfig): string {
     if (config.goCli !== "none") lines.push(`- CLI: ${config.goCli}`);
     if (config.goLogging !== "none") lines.push(`- Logging: ${config.goLogging}`);
     if (config.goAuth !== "none") lines.push(`- Auth Library: ${config.goAuth}`);
+    if (config.goTesting.length > 0) lines.push(`- Testing: ${config.goTesting.join(", ")}`);
+    if (config.goMessageQueue !== "none") lines.push(`- Messaging: ${config.goMessageQueue}`);
+    if (config.goObservability !== "none") lines.push(`- Observability: ${config.goObservability}`);
+    if (config.goValidation !== "none") lines.push(`- Validation: ${config.goValidation}`);
+    if (config.goQuality !== "none") lines.push(`- Code Quality: ${config.goQuality}`);
+    if (config.goMigrations !== "none") lines.push(`- Migrations: ${config.goMigrations}`);
+    if (config.goTemplating !== "none") lines.push(`- Templating: ${config.goTemplating}`);
+    if (config.goProtoTooling !== "none")
+      lines.push(`- Protobuf Tooling: ${config.goProtoTooling}`);
+    if (config.goDI !== "none") lines.push(`- Dependency Injection: ${config.goDI}`);
     if (config.auth !== "none") lines.push(`- Auth: ${config.auth}`);
   }
 
@@ -219,7 +282,9 @@ function generateTechStackSection(config: ProjectConfig): string {
     const isSpringBoot = isSpringBootJavaProject(config);
     const isQuarkus = isQuarkusJavaProject(config);
     lines.push(`- Java Version: 21`);
-    lines.push(`- Scaffold: ${isSpringBoot ? "spring-boot" : isQuarkus ? "quarkus" : "plain-java"}`);
+    lines.push(
+      `- Scaffold: ${isSpringBoot ? "spring-boot" : isQuarkus ? "quarkus" : "plain-java"}`,
+    );
     if (config.javaWebFramework !== "none" && (isSpringBoot || isQuarkus)) {
       lines.push(`- Web Framework: ${config.javaWebFramework}`);
     }
@@ -373,7 +438,9 @@ function generateCommandsSection(config: ProjectConfig): string {
     } else if (config.pythonWebFramework === "flask") {
       lines.push(`- \`uv run flask --app app.main run --reload\` - Start dev server`);
     } else if (config.pythonWebFramework === "litestar") {
-      lines.push(`- \`litestar --app src.app.main:app run --reload --port 3001\` - Start dev server`);
+      lines.push(
+        `- \`litestar --app src.app.main:app run --reload --port 3001\` - Start dev server`,
+      );
     } else {
       lines.push(`- \`uv run python -m app.main\` - Run application`);
     }
@@ -400,18 +467,19 @@ function generateCommandsSection(config: ProjectConfig): string {
           ? config.javaBuildTool === "gradle"
             ? `${buildToolCommand} quarkusDev`
             : `${buildToolCommand} quarkus:dev`
-        : config.javaBuildTool === "gradle"
-          ? `${buildToolCommand} run`
-          : `${buildToolCommand} exec:java`
+          : config.javaBuildTool === "gradle"
+            ? `${buildToolCommand} run`
+            : `${buildToolCommand} exec:java`
       : null;
     const packageCommand = buildToolCommand
       ? config.javaBuildTool === "gradle"
         ? `${buildToolCommand} build`
         : `${buildToolCommand} package`
       : null;
-    const testCommand = buildToolCommand && getEffectiveJavaTestingLibraries(config).length > 0
-      ? `${buildToolCommand} test`
-      : null;
+    const testCommand =
+      buildToolCommand && getEffectiveJavaTestingLibraries(config).length > 0
+        ? `${buildToolCommand} test`
+        : null;
     if (buildToolCommand && runCommand && packageCommand) {
       if (testCommand) lines.push(`- \`${testCommand}\` - Run tests`);
       lines.push(`- \`${runCommand}\` - Start the app`);
@@ -485,6 +553,12 @@ function generateCursorRules(config: ProjectConfig): string {
     if (config.goOrm !== "none") rules.push(`Database: ${config.goOrm}`);
     if (config.goApi !== "none") rules.push(`API: ${config.goApi}`);
     if (config.goLogging !== "none") rules.push(`Logging: ${config.goLogging}`);
+    if (config.goValidation !== "none") rules.push(`Validation: ${config.goValidation}`);
+    if (config.goQuality !== "none") rules.push(`Code quality: ${config.goQuality}`);
+    if (config.goMigrations !== "none") rules.push(`Migrations: ${config.goMigrations}`);
+    if (config.goTemplating !== "none") rules.push(`Templating: ${config.goTemplating}`);
+    if (config.goProtoTooling !== "none") rules.push(`Protobuf tooling: ${config.goProtoTooling}`);
+    if (config.goDI !== "none") rules.push(`Dependency injection: ${config.goDI}`);
     if (config.auth !== "none") rules.push(`Auth: ${config.auth}`);
   } else if (config.ecosystem === "java") {
     const javaLibraries = getEffectiveJavaLibraries(config);

@@ -1,0 +1,15 @@
+{{#if (eq goQuality "golangci-lint")}}
+version: "2"
+linters:
+  default: standard
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+formatters:
+  enable:
+    - gofmt
+    - goimports
+{{/if}}

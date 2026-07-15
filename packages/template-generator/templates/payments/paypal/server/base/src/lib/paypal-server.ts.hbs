@@ -1,12 +1,13 @@
 import { Client, Environment } from "@paypal/paypal-server-sdk";
+import { env } from "@{{projectName}}/env/server";
 
 export const paypal = new Client({
   clientCredentialsAuthCredentials: {
-    oAuthClientId: process.env.PAYPAL_CLIENT_ID ?? "",
-    oAuthClientSecret: process.env.PAYPAL_CLIENT_SECRET ?? "",
+    oAuthClientId: env.PAYPAL_CLIENT_ID,
+    oAuthClientSecret: env.PAYPAL_CLIENT_SECRET,
   },
   environment:
-    process.env.PAYPAL_ENVIRONMENT === "production"
+    env.PAYPAL_ENVIRONMENT === "production"
       ? Environment.Production
       : Environment.Sandbox,
 });

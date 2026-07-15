@@ -1124,9 +1124,7 @@ function validateI18nConstraints(config: Partial<ProjectConfig>) {
   if (config.i18n !== "intlayer") return;
 
   const { web } = splitFrontends(config.frontend ?? []);
-  const unsupportedFrontend = web.find(
-    (frontend) => !INTLAYER_COMPATIBLE_FRONTENDS.has(frontend),
-  );
+  const unsupportedFrontend = web.find((frontend) => !INTLAYER_COMPATIBLE_FRONTENDS.has(frontend));
 
   if (web.length === 0 || unsupportedFrontend) {
     incompatibilityError({
@@ -1336,6 +1334,7 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
     validateSearchConstraints(config);
     validateJavaConstraints(config);
     validateElixirConstraints(config);
+    validateRustExpansionCompatibility(config);
     validateI18nConstraints(config);
 
     validatePaymentsCompatibility(config.payments, config.auth, config.backend, config.frontend);

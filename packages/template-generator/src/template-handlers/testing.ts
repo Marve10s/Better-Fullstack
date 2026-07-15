@@ -14,13 +14,21 @@ export async function processTestingTemplates(
   }
 
   if (config.testing === "mocha") {
-    for (const packagePath of ["apps/web", "apps/server", "packages/api"]) {
-      if (vfs.exists(`${packagePath}/package.json`)) {
+    const packageMappings = [
+      { templatePath: "apps/web", outputPath: "apps/web" },
+      { templatePath: "apps/web", outputPath: "web" },
+      { templatePath: "apps/server", outputPath: "apps/server" },
+      { templatePath: "packages/api", outputPath: "packages/api" },
+      { templatePath: "packages/api", outputPath: "api" },
+    ];
+
+    for (const { templatePath, outputPath } of packageMappings) {
+      if (vfs.exists(`${outputPath}/package.json`)) {
         processTemplatesFromPrefix(
           vfs,
           templates,
-          `testing/mocha/${packagePath}`,
-          packagePath,
+          `testing/mocha/${templatePath}`,
+          outputPath,
           config,
         );
       }

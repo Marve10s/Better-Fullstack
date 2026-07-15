@@ -390,6 +390,12 @@ describe("generateReproducibleCommand", () => {
         "--go-caching none " +
         "--go-config none " +
         "--go-observability none " +
+        "--go-validation none " +
+        "--go-quality none " +
+        "--go-migrations none " +
+        "--go-templating none " +
+        "--go-proto-tooling none " +
+        "--go-di none " +
         "--auth go-better-auth " +
         "--email none " +
         "--observability none " +
@@ -854,10 +860,7 @@ describe("generateReproducibleCommand", () => {
   });
 
   it("preserves Astro integration when stackParts are present", () => {
-    const stackParts = parseStackPartSpecs([
-      "frontend:typescript:astro",
-      "backend:rust:axum",
-    ]);
+    const stackParts = parseStackPartSpecs(["frontend:typescript:astro", "backend:rust:axum"]);
     const command = generateReproducibleCommand(
       makeConfig({
         stackParts,

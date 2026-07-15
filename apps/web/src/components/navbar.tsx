@@ -1,18 +1,28 @@
 import { Link, useMatchRoute, useRouterState } from "@tanstack/react-router";
 import {
   ArrowRight,
+  Blocks,
+  BookOpen,
   Check,
   ChevronDown,
   ClipboardCopy,
+  Gauge,
   Github,
+  Layers3,
   Languages,
   Menu,
   Moon,
+  Newspaper,
+  Plug,
+  Sparkles,
+  Star,
   Sun,
 } from "lucide-react";
-import { motion, LayoutGroup } from "motion/react";
+import { motion, LayoutGroup, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 
+import { formatCompactStat, useProjectStats } from "@/components/home/hero-stats";
+import { LaunchRadarButton } from "@/components/launch-radar-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
   CREATION_MODE_INDICATOR_ID,
@@ -21,12 +31,18 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { type BuilderMode, useBuilderMode } from "@/lib/builder-mode-bridge";
 import { LOCALE_LABELS } from "@/lib/i18n/locales";
+import { requestLaunchRadarOpen } from "@/lib/launch-radar";
 import { isStackShareSlug } from "@/lib/stack-share-slugs";
 import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
@@ -42,10 +58,74 @@ const DOCS_SKILL_PARAMS = { _splat: "ai/skills" } as const;
 const NAV_LINK_CLASS =
   "font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground [&.active]:text-foreground sm:text-[12px]";
 const MOBILE_MENU_ITEM_CLASS =
-  "cursor-pointer font-mono text-[11px] uppercase tracking-[0.14em]";
+  "cursor-pointer py-2.5 font-mono text-xs font-medium text-foreground/80 hover:text-foreground [&_svg]:text-muted-foreground";
+const MOBILE_MENU_LABEL_CLASS =
+  "px-1.5 pb-1.5 font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70";
+const MOBILE_MENU_GROUP_CLASS = "rounded-lg border border-border/50 bg-muted/20 p-1";
 
 function getFirstPathSegment(pathname: string): string {
   return pathname.split("/").find(Boolean) ?? "";
+}
+
+function GithubStarButton() {
+  const stats = useProjectStats();
+  const stars = stats?.github.stars;
+  const reduceMotion = useReducedMotion();
+
+  return (
+    <motion.a
+      href="https://github.com/Marve10s/Better-Fullstack"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={m.navGithubRepository()}
+      title={stars === undefined ? m.navGithubRepository() : `${stars.toLocaleString()} stars`}
+      whileHover={reduceMotion ? undefined : { y: -2, scale: 1.025 }}
+      whileTap={reduceMotion ? undefined : { scale: 0.97 }}
+      transition={{
+        y: { duration: 0.18, ease: "easeOut" },
+        scale: { duration: 0.18, ease: "easeOut" },
+      }}
+      className="group relative isolate inline-flex h-9 transform-gpu overflow-hidden rounded-[10px] p-px font-mono text-[11px] font-semibold text-foreground shadow-[0_5px_16px_rgba(24,213,255,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#18D5FF] focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+    >
+      <motion.span
+        animate={
+          reduceMotion ? undefined : { backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }
+        }
+        transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+        className="absolute inset-0 rounded-[10px] bg-[linear-gradient(105deg,#18D5FF_0%,#C6E853_38%,#FF5C8A_68%,#18D5FF_100%)] bg-[length:240%_240%] will-change-[background-position]"
+        aria-hidden
+      />
+      <span className="relative z-10 flex h-full overflow-hidden rounded-[9px] bg-background/95 backdrop-blur-sm">
+        <span
+          className="pointer-events-none absolute inset-0 bg-[linear-gradient(110deg,transparent_20%,rgba(24,213,255,0.08)_45%,rgba(255,92,138,0.08)_65%,transparent_82%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+          aria-hidden
+        />
+        <span className="relative flex h-full items-center gap-2 px-2.5">
+          <Github
+            className="size-4 transition-transform duration-200 group-hover:rotate-[-6deg] group-hover:scale-110"
+            aria-hidden
+          />
+          <span className="sr-only">GitHub</span>
+        </span>
+        <span className="relative flex h-full min-w-12 items-center justify-center gap-1.5 border-border/80 border-l bg-muted/35 px-2.5 tabular-nums">
+          <motion.span
+            animate={
+              reduceMotion ? undefined : { rotate: [0, -8, 10, 0], scale: [1, 1.13, 1.13, 1] }
+            }
+            transition={{ duration: 2.4, repeat: Infinity, repeatDelay: 2.8, ease: "easeInOut" }}
+            className="text-[#FF5C8A] drop-shadow-[0_0_5px_rgba(255,92,138,0.45)]"
+          >
+            <Star className="size-3.5 fill-current" aria-hidden />
+          </motion.span>
+          {stars === undefined ? (
+            <span className="h-2.5 w-5 animate-pulse rounded-sm bg-[#18D5FF]/25" aria-hidden />
+          ) : (
+            formatCompactStat(stars)
+          )}
+        </span>
+      </span>
+    </motion.a>
+  );
 }
 
 // On the builder page the "Try now" CTA (which links to /new) is redundant, so it
@@ -58,12 +138,15 @@ function HeaderCopyButton() {
     try {
       // Loaded at click time: these pull in the stack-translation +
       // compatibility bundle, which must stay out of the app entry chunk.
-      const [{ parseStackSelectionFromUrlRecord: parseStackFromUrlRecord }, { parseStackShareSlug }, { generateStackCommand }] =
-        await Promise.all([
-          import("@better-fullstack/types/stack-translation"),
-          import("@/lib/stack-share-paths"),
-          import("@/lib/stack-utils"),
-        ]);
+      const [
+        { parseStackSelectionFromUrlRecord: parseStackFromUrlRecord },
+        { parseStackShareSlug },
+        { generateStackCommand },
+      ] = await Promise.all([
+        import("@better-fullstack/types/stack-translation"),
+        import("@/lib/stack-share-paths"),
+        import("@/lib/stack-utils"),
+      ]);
       const sp = new URLSearchParams(window.location.search);
       const record: Record<string, string | string[]> = {};
       for (const key of sp.keys()) {
@@ -308,56 +391,41 @@ function MobileThemeMenuItem() {
   );
 }
 
-function MobileLocaleItems() {
+function MobileLocaleMenu() {
   const locale = getLocale();
 
   return (
-    <>
-      <div
-        className="px-2.5 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground"
-        role="presentation"
-      >
-        {m.navLanguage()}
-      </div>
-      {locales.map((availableLocale) => (
-        <DropdownMenuItem
-          key={availableLocale}
-          onClick={() => setLocale(availableLocale as Locale)}
-          className={cn(
-            MOBILE_MENU_ITEM_CLASS,
-            locale === availableLocale && "text-foreground",
-          )}
-        >
-          <span className="flex-1">
-            {LOCALE_LABELS[availableLocale as keyof typeof LOCALE_LABELS]}
-          </span>
-          {locale === availableLocale ? <Check className="h-3.5 w-3.5" /> : null}
-        </DropdownMenuItem>
-      ))}
-    </>
+    <DropdownMenuSub>
+      <DropdownMenuSubTrigger className={cn(MOBILE_MENU_ITEM_CLASS, "cursor-pointer")}>
+        <Languages className="size-4" />
+        <span>{m.navLanguage()}</span>
+        <span className="ml-auto max-w-20 truncate text-[10px] text-muted-foreground">
+          {LOCALE_LABELS[locale as keyof typeof LOCALE_LABELS]}
+        </span>
+      </DropdownMenuSubTrigger>
+      <DropdownMenuSubContent side="left" align="start" className="w-44 p-1.5">
+        {locales.map((availableLocale) => (
+          <DropdownMenuItem
+            key={availableLocale}
+            onClick={() => setLocale(availableLocale as Locale)}
+            className={cn(
+              MOBILE_MENU_ITEM_CLASS,
+              "justify-between",
+              locale === availableLocale && "bg-amber-400/10 text-foreground",
+            )}
+          >
+            <span>{LOCALE_LABELS[availableLocale as keyof typeof LOCALE_LABELS]}</span>
+            {locale === availableLocale ? (
+              <Check className="size-3.5 text-amber-600 dark:text-amber-300" />
+            ) : null}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuSubContent>
+    </DropdownMenuSub>
   );
 }
 
 function MobileNavMenu({ onBuilder }: { onBuilder: boolean }) {
-  const builderItems = onBuilder
-    ? null
-    : [
-        <DropdownMenuItem
-          key="builder"
-          render={<Link to="/new" search={BUILDER_COMMAND_SEARCH} />}
-          className={MOBILE_MENU_ITEM_CLASS}
-        >
-          {m.navBuilder()}
-        </DropdownMenuItem>,
-        <DropdownMenuItem
-          key="presets"
-          render={<Link to="/new" search={BUILDER_PRESETS_SEARCH} />}
-          className={MOBILE_MENU_ITEM_CLASS}
-        >
-          {m.navPresets()}
-        </DropdownMenuItem>,
-      ];
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -371,35 +439,107 @@ function MobileNavMenu({ onBuilder }: { onBuilder: boolean }) {
       >
         <Menu className="h-4 w-4" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        {builderItems}
-        <DropdownMenuItem render={<Link to="/benchmark" />} className={MOBILE_MENU_ITEM_CLASS}>
-          {m.navBenchmark()}
-        </DropdownMenuItem>
-        <DropdownMenuItem render={<Link to="/blog" />} className={MOBILE_MENU_ITEM_CLASS}>
-          {m.navBlog()}
-        </DropdownMenuItem>
-        <DropdownMenuItem render={<Link to="/docs" />} className={MOBILE_MENU_ITEM_CLASS}>
-          {m.navDocs()}
-        </DropdownMenuItem>
-        <DocsMenuItems />
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={() => {
-            window.open(
-              "https://github.com/Marve10s/Better-Fullstack",
-              "_blank",
-              "noopener,noreferrer",
-            );
-          }}
-          className={MOBILE_MENU_ITEM_CLASS}
-        >
-          <Github className="h-3.5 w-3.5" />
-          <span>{m.navGithubRepository()}</span>
-        </DropdownMenuItem>
-        <MobileThemeMenuItem />
-        <DropdownMenuSeparator />
-        <MobileLocaleItems />
+      <DropdownMenuContent
+        align="end"
+        sideOffset={8}
+        className="w-72 max-w-[calc(100vw-1rem)] space-y-2 rounded-2xl border-border/70 bg-background/95 p-2 shadow-2xl shadow-black/15 backdrop-blur-xl"
+      >
+        {!onBuilder ? (
+          <DropdownMenuGroup>
+            <DropdownMenuLabel className={MOBILE_MENU_LABEL_CLASS}>
+              {m.navSectionCreate()}
+            </DropdownMenuLabel>
+            <div className={MOBILE_MENU_GROUP_CLASS}>
+              <DropdownMenuItem
+                render={<Link to="/new" search={BUILDER_COMMAND_SEARCH} />}
+                className={MOBILE_MENU_ITEM_CLASS}
+              >
+                <Blocks className="size-4" />
+                {m.navBuilder()}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                render={<Link to="/new" search={BUILDER_PRESETS_SEARCH} />}
+                className={MOBILE_MENU_ITEM_CLASS}
+              >
+                <Layers3 className="size-4" />
+                {m.navPresets()}
+              </DropdownMenuItem>
+            </div>
+          </DropdownMenuGroup>
+        ) : null}
+
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className={MOBILE_MENU_LABEL_CLASS}>
+            {m.navSectionExplore()}
+          </DropdownMenuLabel>
+          <div className={MOBILE_MENU_GROUP_CLASS}>
+            <DropdownMenuItem render={<Link to="/benchmark" />} className={MOBILE_MENU_ITEM_CLASS}>
+              <Gauge className="size-4" />
+              {m.navBenchmark()}
+            </DropdownMenuItem>
+            <DropdownMenuItem render={<Link to="/blog" />} className={MOBILE_MENU_ITEM_CLASS}>
+              <Newspaper className="size-4" />
+              {m.navBlog()}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              render={<Link to="/" hash="whats-new" onClick={requestLaunchRadarOpen} />}
+              className={MOBILE_MENU_ITEM_CLASS}
+            >
+              <Sparkles className="size-4 text-[#FF5C8A]" />
+              <span>{m.navUpdates()}</span>
+              <span className="ml-auto rounded-full bg-[#18D5FF]/10 px-2 py-0.5 font-mono text-[9px] text-[#06647A] dark:text-[#18D5FF]">
+                84 {m.builderNewBadge().toLowerCase()}
+              </span>
+            </DropdownMenuItem>
+          </div>
+        </DropdownMenuGroup>
+
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className={MOBILE_MENU_LABEL_CLASS}>
+            {m.navSectionResources()}
+          </DropdownMenuLabel>
+          <div className={MOBILE_MENU_GROUP_CLASS}>
+            <DropdownMenuItem render={<Link to="/docs" />} className={MOBILE_MENU_ITEM_CLASS}>
+              <BookOpen className="size-4" />
+              {m.navDocs()}
+            </DropdownMenuItem>
+            <DropdownMenuItem render={<Link to="/mcp" />} className={MOBILE_MENU_ITEM_CLASS}>
+              <Plug className="size-4" />
+              {m.navMcp()}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              render={<Link to="/docs/$" params={DOCS_SKILL_PARAMS} />}
+              className={MOBILE_MENU_ITEM_CLASS}
+            >
+              <Sparkles className="size-4" />
+              {m.navSkill()}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator className="my-1" />
+            <DropdownMenuItem
+              onClick={() => {
+                window.open(
+                  "https://github.com/Marve10s/Better-Fullstack",
+                  "_blank",
+                  "noopener,noreferrer",
+                );
+              }}
+              className={MOBILE_MENU_ITEM_CLASS}
+            >
+              <Github className="size-4" />
+              <span>{m.navGithubRepository()}</span>
+            </DropdownMenuItem>
+          </div>
+        </DropdownMenuGroup>
+
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className={MOBILE_MENU_LABEL_CLASS}>
+            {m.navSectionPreferences()}
+          </DropdownMenuLabel>
+          <div className={MOBILE_MENU_GROUP_CLASS}>
+            <MobileThemeMenuItem />
+            <MobileLocaleMenu />
+          </div>
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -453,11 +593,7 @@ export function Navbar() {
                 >
                   {m.navPresets()}
                 </Link>
-                <Link
-                  to="/benchmark"
-                  className={NAV_LINK_CLASS}
-                  activeProps={DOCS_ACTIVE_PROPS}
-                >
+                <Link to="/benchmark" className={NAV_LINK_CLASS} activeProps={DOCS_ACTIVE_PROPS}>
                   {m.navBenchmark()}
                 </Link>
                 <Link to="/blog" className={NAV_LINK_CLASS} activeProps={DOCS_ACTIVE_PROPS}>
@@ -484,15 +620,8 @@ export function Navbar() {
         )}
 
         <div className="hidden shrink-0 items-center gap-3 lg:flex">
-          <a
-            href="https://github.com/Marve10s/Better-Fullstack"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={m.navGithubRepository()}
-            className="flex h-8 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <Github className="h-4 w-4" />
-          </a>
+          <LaunchRadarButton />
+          <GithubStarButton />
           <ThemeToggle />
           <LocaleMenu />
           <span className="hidden h-4 w-px bg-border sm:block" aria-hidden />

@@ -1,0 +1,23 @@
+{{#if (eq goMessageQueue "kafka-go")}}
+package messaging
+
+import (
+	"context"
+	"os"
+	"strings"
+
+	"github.com/segmentio/kafka-go"
+)
+
+func NewKafkaWriter(topic string) *kafka.Writer {
+	brokers := strings.Split(os.Getenv("KAFKA_BROKERS"), ",")
+	if len(brokers) == 1 && brokers[0] == "" {
+		brokers = []string{"localhost:9092"}
+	}
+	return &kafka.Writer{Addr: kafka.TCP(brokers...), Topic: topic, Balancer: &kafka.LeastBytes{}}
+}
+
+func PublishKafka(ctx context.Context, writer *kafka.Writer, key, value []byte) error {
+	return writer.WriteMessages(ctx, kafka.Message{Key: key, Value: value})
+}
+{{/if}}

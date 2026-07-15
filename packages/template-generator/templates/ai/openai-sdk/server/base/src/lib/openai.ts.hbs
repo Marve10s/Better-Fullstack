@@ -1,12 +1,13 @@
 import OpenAI from "openai";
+import { env } from "@{{projectName}}/env/server";
 
 export const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: env.OPENAI_API_KEY,
 });
 
 export async function createOpenAIResponse(input: string) {
   return openai.responses.create({
-    model: process.env.OPENAI_MODEL ?? "gpt-5-mini",
+    model: env.OPENAI_MODEL,
     input,
   });
 }

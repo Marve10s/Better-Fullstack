@@ -111,32 +111,6 @@ const DEFAULT_THEMES: { light: SupportedTheme; dark: SupportedTheme } = {
   dark: "github-dark-default",
 };
 
-const SUPPORTED_LANGUAGES = new Set([
-  "typescript",
-  "tsx",
-  "javascript",
-  "jsx",
-  "json",
-  "markdown",
-  "mdx",
-  "css",
-  "scss",
-  "html",
-  "astro",
-  "vue",
-  "svelte",
-  "yaml",
-  "toml",
-  "sql",
-  "prisma",
-  "graphql",
-  "bash",
-  "shellscript",
-  "handlebars",
-]);
-
-type SupportedLanguage = (typeof SUPPORTED_LANGUAGES extends Set<infer T> ? T : never) & string;
-
 const SUPPORTED_THEMES = new Set<SupportedTheme>([
   "github-light",
   "github-dark-default",
@@ -146,7 +120,7 @@ const SUPPORTED_THEMES = new Set<SupportedTheme>([
 
 type DynamicShikiLoader = () => Promise<unknown>;
 
-const LANGUAGE_LOADERS: Record<SupportedLanguage, DynamicShikiLoader> = {
+const LANGUAGE_LOADERS = {
   typescript: () => import("shiki/dist/langs/typescript.mjs"),
   tsx: () => import("shiki/dist/langs/tsx.mjs"),
   javascript: () => import("shiki/dist/langs/javascript.mjs"),
@@ -168,7 +142,34 @@ const LANGUAGE_LOADERS: Record<SupportedLanguage, DynamicShikiLoader> = {
   bash: () => import("shiki/dist/langs/bash.mjs"),
   shellscript: () => import("shiki/dist/langs/shellscript.mjs"),
   handlebars: () => import("shiki/dist/langs/handlebars.mjs"),
-};
+  rust: () => import("shiki/dist/langs/rust.mjs"),
+  go: () => import("shiki/dist/langs/go.mjs"),
+  templ: () => import("shiki/dist/langs/templ.mjs"),
+  python: () => import("shiki/dist/langs/python.mjs"),
+  jinja: () => import("shiki/dist/langs/jinja.mjs"),
+  java: () => import("shiki/dist/langs/java.mjs"),
+  kotlin: () => import("shiki/dist/langs/kotlin.mjs"),
+  groovy: () => import("shiki/dist/langs/groovy.mjs"),
+  csharp: () => import("shiki/dist/langs/csharp.mjs"),
+  razor: () => import("shiki/dist/langs/razor.mjs"),
+  elixir: () => import("shiki/dist/langs/elixir.mjs"),
+  dockerfile: () => import("shiki/dist/langs/dockerfile.mjs"),
+  dotenv: () => import("shiki/dist/langs/dotenv.mjs"),
+  nginx: () => import("shiki/dist/langs/nginx.mjs"),
+  xml: () => import("shiki/dist/langs/xml.mjs"),
+  jsonc: () => import("shiki/dist/langs/jsonc.mjs"),
+  less: () => import("shiki/dist/langs/less.mjs"),
+  protobuf: () => import("shiki/dist/langs/protobuf.mjs"),
+  edge: () => import("shiki/dist/langs/edge.mjs"),
+  http: () => import("shiki/dist/langs/http.mjs"),
+  properties: () => import("shiki/dist/langs/properties.mjs"),
+  ini: () => import("shiki/dist/langs/ini.mjs"),
+  csv: () => import("shiki/dist/langs/csv.mjs"),
+} satisfies Record<string, DynamicShikiLoader>;
+
+type SupportedLanguage = keyof typeof LANGUAGE_LOADERS;
+
+const SUPPORTED_LANGUAGES = new Set<string>(Object.keys(LANGUAGE_LOADERS));
 
 const THEME_LOADERS: Record<SupportedTheme, DynamicShikiLoader> = {
   "github-light": () => import("shiki/dist/themes/github-light.mjs"),

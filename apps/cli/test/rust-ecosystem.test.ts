@@ -15,9 +15,7 @@ import {
   RustObservabilitySchema,
   RustTemplatingSchema,
 } from "../src/types";
-import {
-  extractEnumValues,
-} from "./test-utils";
+import { extractEnumValues } from "./test-utils";
 import {
   getVirtualFileContent as getFileContent,
   hasVirtualFile as hasFile,
@@ -1686,9 +1684,7 @@ describe("Rust Ecosystem", () => {
       expect(cargoContent).toContain(
         'uuid = { version = "1.23.1", features = ["v4", "v7", "serde"] }',
       );
-      expect(cargoContent).toContain(
-        'chrono = { version = "0.4.44", features = ["serde"] }',
-      );
+      expect(cargoContent).toContain('chrono = { version = "0.4.44", features = ["serde"] }');
       expect(cargoContent).toContain(
         'reqwest = { version = "0.13.3", default-features = false, features = ["json", "rustls"] }',
       );
@@ -3141,9 +3137,7 @@ describe("Rust library expansion", () => {
   it("exposes all twenty additions through the Rust schemas", () => {
     expect(RUST_WEB_FRAMEWORKS).toEqual(expect.arrayContaining(["warp", "salvo"]));
     expect(RUST_FRONTENDS).toContain("yew");
-    expect(RUST_ORMS).toEqual(
-      expect.arrayContaining(["mongodb", "rusqlite", "tokio-postgres"]),
-    );
+    expect(RUST_ORMS).toEqual(expect.arrayContaining(["mongodb", "rusqlite", "tokio-postgres"]));
     expect(RUST_APIS).toContain("jsonrpsee");
     expect(RUST_LIBRARIES).toEqual(
       expect.arrayContaining([
@@ -3157,9 +3151,7 @@ describe("Rust library expansion", () => {
       ]),
     );
     expect(RUST_AUTHS).toEqual(expect.arrayContaining(["openidconnect", "tower-sessions"]));
-    expect(RUST_MESSAGE_QUEUES).toEqual(
-      expect.arrayContaining(["rdkafka", "async-nats"]),
-    );
+    expect(RUST_MESSAGE_QUEUES).toEqual(expect.arrayContaining(["rdkafka", "async-nats"]));
     expect(RUST_OBSERVABILITY).toContain("metrics");
     expect(RUST_TEMPLATING).toContain("minijinja");
   });
@@ -3192,6 +3184,9 @@ describe("Rust library expansion", () => {
     const root = result.tree!.root;
     const cargo = getFileContent(root, "Cargo.toml");
     const serverCargo = getFileContent(root, "crates/server/Cargo.toml");
+    expect(getFileContent(root, "crates/yew-client/index.html")).toContain(
+      '<link data-trunk rel="rust" />',
+    );
 
     for (const dependency of [
       "yew",
@@ -3225,8 +3220,16 @@ describe("Rust library expansion", () => {
 
   it("generates Warp and Salvo servers with their selected database integrations", async () => {
     const cases = [
-      { framework: "warp" as const, orm: "rusqlite" as const, databaseSymbol: "rusqlite::Connection" },
-      { framework: "salvo" as const, orm: "tokio-postgres" as const, databaseSymbol: "tokio_postgres" },
+      {
+        framework: "warp" as const,
+        orm: "rusqlite" as const,
+        databaseSymbol: "rusqlite::Connection",
+      },
+      {
+        framework: "salvo" as const,
+        orm: "tokio-postgres" as const,
+        databaseSymbol: "tokio_postgres",
+      },
     ];
 
     for (const { framework, orm, databaseSymbol } of cases) {

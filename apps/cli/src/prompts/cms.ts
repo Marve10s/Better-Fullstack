@@ -1,8 +1,8 @@
 import type { Backend, CMS, Frontend } from "../types";
+import type { PromptSingleResolution } from "./prompt-contract";
 
 import { isWebFrontend } from "../utils/compatibility-rules";
 import { exitCancelled } from "../utils/errors";
-import type { PromptSingleResolution } from "./prompt-contract";
 import { isCancel, navigableSelect } from "./navigable";
 
 const CMS_PROMPT_OPTIONS = [
@@ -54,11 +54,16 @@ type CmsPromptContext = {
   frontends?: Frontend[];
 };
 
-export function resolveCMSPrompt(
-  context: CmsPromptContext = {},
-): PromptSingleResolution<CMS> {
+export function resolveCMSPrompt(context: CmsPromptContext = {}): PromptSingleResolution<CMS> {
+  const hasStandaloneViteFrontend = context.frontends?.some((frontend) =>
+    ["vanilla-vite", "vue"].includes(frontend),
+  );
+  const compatibleOptions = hasStandaloneViteFrontend
+    ? CMS_PROMPT_OPTIONS.filter((option) => ["contentful", "none"].includes(option.value))
+    : CMS_PROMPT_OPTIONS;
+
   if (context.backend === "none" || context.backend === "convex") {
-    const options = CMS_PROMPT_OPTIONS.filter((option) =>
+    const options = compatibleOptions.filter((option) =>
       ["contentful", "none"].includes(option.value),
     );
     const hasWebFrontend =
@@ -93,13 +98,15 @@ export function resolveCMSPrompt(
     ? {
         shouldPrompt: false,
         mode: "single",
-        options: CMS_PROMPT_OPTIONS,
-        autoValue: context.cms,
+        options: compatibleOptions,
+        autoValue: compatibleOptions.some((option) => option.value === context.cms)
+          ? context.cms
+          : "none",
       }
     : {
         shouldPrompt: true,
         mode: "single",
-        options: CMS_PROMPT_OPTIONS,
+        options: compatibleOptions,
         initialValue: "none",
       };
 }

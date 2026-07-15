@@ -1,23 +1,25 @@
-import { afterAll, afterEach, describe, expect, it, mock } from "bun:test";
-import { spawn } from "node:child_process";
-import { existsSync } from "node:fs";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
-import { homedir, tmpdir } from "node:os";
-import { join, resolve } from "node:path";
-import fs from "fs-extra";
-
 import {
   DEFAULT_STACK_SELECTION,
   generateStackSelectionCommand,
   type StackSelectionInput,
 } from "@better-fullstack/types/stack-translation";
+import { afterAll, afterEach, describe, expect, it, mock } from "bun:test";
+import fs from "fs-extra";
+import { spawn } from "node:child_process";
+import { existsSync } from "node:fs";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { homedir, tmpdir } from "node:os";
+import { join, resolve } from "node:path";
+
+import { dependencyVersionMap } from "@better-fullstack/template-generator";
 
 import { CreateCommandOptionsSchema } from "../src/create-command-input";
 import { runTRPCTest, expectSuccess } from "./test-utils";
 
 const CLI_ENTRY = resolve(import.meta.dir, "..", "src", "cli.ts");
 const NATIVE_BUN = resolve(homedir(), ".bun", "bin", "bun");
-const BUN_EXECUTABLE = process.env.BFS_TEST_BUN_BIN || (existsSync(NATIVE_BUN) ? NATIVE_BUN : "bun");
+const BUN_EXECUTABLE =
+  process.env.BFS_TEST_BUN_BIN || (existsSync(NATIVE_BUN) ? NATIVE_BUN : "bun");
 const TEMP_ROOTS: string[] = [];
 const originalFetch = global.fetch;
 
@@ -64,6 +66,7 @@ function extractFlags(command: string): string[] {
 
 function camelToKebab(value: string): string {
   const acronymFlags: Record<string, string> = {
+    goDI: "go-di",
     mobileUI: "mobile-ui",
     mobileOTA: "mobile-ota",
   };
@@ -273,12 +276,7 @@ async function runLocalDryRunFromGeneratedCommand(command: string) {
   const outputDir = await makeTempRoot("bfs-generated-command-output-");
   const stdoutPath = join(outputDir, "stdout.log");
   const stderrPath = join(outputDir, "stderr.log");
-  const args = [
-    "create",
-    ...commandPayload(command),
-    "--dry-run",
-    "--disable-analytics",
-  ];
+  const args = ["create", ...commandPayload(command), "--dry-run", "--disable-analytics"];
   const shellCommand = [
     shellQuote(BUN_EXECUTABLE),
     shellQuote(CLI_ENTRY),
@@ -364,10 +362,7 @@ describe("generated command contract", () => {
       "create",
       "better-fullstack@latest",
     ]);
-    expect(launchersByPackageManager.get("npm")).toEqual([
-      "npx",
-      "create-better-fullstack@latest",
-    ]);
+    expect(launchersByPackageManager.get("npm")).toEqual(["npx", "create-better-fullstack@latest"]);
   });
 
   it("only emits flags accepted by the local create command schema", () => {
@@ -393,10 +388,7 @@ describe("generated command contract", () => {
       );
 
       for (const { name, command, result } of results) {
-        expect(
-          result.exitCode,
-          `${name} failed\nCommand: ${command}\n\n${result.all}`,
-        ).toBe(0);
+        expect(result.exitCode, `${name} failed\nCommand: ${command}\n\n${result.all}`).toBe(0);
         expect(result.all).toContain("Dry run complete");
       }
     },
@@ -408,6 +400,9 @@ describe("generated beta dependency invariants", () => {
   it(
     "keeps Turborepo at the stable template floor for beta scaffolds",
     async () => {
+      const turboTemplateFloor = dependencyVersionMap.turbo;
+      const turboStableVersion = turboTemplateFloor.replace(/^[~^]/, "");
+
       global.fetch = mock(async (input: string | URL | Request) => {
         const url = String(input);
         const packageName = decodeURIComponent(url.split("/").pop() ?? "");
@@ -416,12 +411,12 @@ describe("generated beta dependency invariants", () => {
           return new Response(
             JSON.stringify({
               "dist-tags": {
-                latest: "2.10.0",
+                latest: turboStableVersion,
                 next: "0.9.0-next.22",
               },
               versions: {
                 "0.9.0-next.22": {},
-                "2.10.0": {},
+                [turboStableVersion]: {},
               },
             }),
             {
@@ -469,7 +464,7 @@ describe("generated beta dependency invariants", () => {
       expectSuccess(result);
 
       const packageJson = await fs.readJson(join(result.projectDir!, "package.json"));
-      expect(packageJson.devDependencies.turbo).toBe("^2.10.0");
+      expect(packageJson.devDependencies.turbo).toBe(turboTemplateFloor);
       expect(packageJson.scripts["db:generate"]).toContain("turbo");
     },
     { timeout: 60_000 },

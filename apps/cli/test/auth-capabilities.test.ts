@@ -1,6 +1,5 @@
-import consola from "consola";
-
 import { describe, expect, it } from "bun:test";
+import consola from "consola";
 
 import type { CompatibilityInput, ProjectConfig } from "../src/types";
 
@@ -13,9 +12,7 @@ import {
 } from "../src/types";
 import { validateEcosystemAuthCompatibility } from "../src/utils/config-validation";
 
-function createTypeScriptStack(
-  overrides: Partial<CompatibilityInput> = {},
-): CompatibilityInput {
+function createTypeScriptStack(overrides: Partial<CompatibilityInput> = {}): CompatibilityInput {
   return {
     ecosystem: "typescript",
     projectName: "auth-matrix",
@@ -133,7 +130,9 @@ describe("Auth capability matrix", () => {
       expect(result.normalized).toBe(true);
       expect(result.value).toBe("none");
       expect(result.reason).toContain(
-        ecosystem === "rust" ? "Rust stacks do not support auth integrations yet" : "Python stacks do not support auth integrations yet",
+        ecosystem === "rust"
+          ? "Rust stacks do not support auth integrations yet"
+          : "Python stacks do not support auth integrations yet",
       );
     }
   });
@@ -178,6 +177,18 @@ describe("Auth capability matrix", () => {
     expect(result.changes.some((adjustment) => adjustment.category === "auth")).toBe(true);
   });
 
+  it("disables auth clients for standalone Vue and Vanilla Vite", () => {
+    for (const frontend of ["vue", "vanilla-vite"] as const) {
+      expect(
+        getCapabilityDisabledReason(
+          "auth",
+          { ecosystem: "typescript", backend: "hono", frontend: [frontend] },
+          "better-auth",
+        ),
+      ).toContain("not yet wired");
+    }
+  });
+
   it("rejects go-better-auth on TypeScript stacks", () => {
     expect(
       getCapabilityDisabledReason(
@@ -190,13 +201,9 @@ describe("Auth capability matrix", () => {
 
   it("rejects go-better-auth on Rust and Python stacks", () => {
     for (const ecosystem of ["rust", "python"] as const) {
-      expect(
-        getCapabilityDisabledReason(
-          "auth",
-          { ecosystem },
-          "go-better-auth",
-        ),
-      ).toBe("GoBetterAuth is available only for Go stacks");
+      expect(getCapabilityDisabledReason("auth", { ecosystem }, "go-better-auth")).toBe(
+        "GoBetterAuth is available only for Go stacks",
+      );
     }
   });
 
@@ -307,8 +314,8 @@ describe("Auth capability matrix", () => {
     }
 
     expect(config.auth).toBe("none");
-    expect(warnings.some((warning) => warning.includes("Unsupported auth selection 'nextauth'"))).toBe(
-      true,
-    );
+    expect(
+      warnings.some((warning) => warning.includes("Unsupported auth selection 'nextauth'")),
+    ).toBe(true);
   });
 });

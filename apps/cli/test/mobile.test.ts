@@ -55,7 +55,7 @@ describe("mobile native scaffolding", () => {
 
     expect(pkg.main).toBe("index.js");
     expect(pkg.dependencies).toMatchObject({
-      "@react-navigation/native-stack": "^7.17.6",
+      "@react-navigation/native-stack": "^7.17.10",
       "@gluestack-ui/themed": "^1.1.73",
       "react-native-mmkv": "^4.3.2",
       "expo-notifications": "^56.0.18",

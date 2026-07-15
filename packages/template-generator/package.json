@@ -71,7 +71,7 @@
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^22.10.2",
-    "fs-extra": "^11.3.5",
+    "fs-extra": "^11.3.6",
     "is-binary-path": "^3.0.0",
     "tinyglobby": "^0.2.17",
     "tsdown": "^0.17.2",

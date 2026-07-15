@@ -54,8 +54,14 @@ import {
   GO_API_VALUES,
   GO_AUTH_VALUES,
   GO_CLI_VALUES,
+  GO_DI_VALUES,
   GO_LOGGING_VALUES,
+  GO_MIGRATIONS_VALUES,
   GO_ORM_VALUES,
+  GO_PROTO_TOOLING_VALUES,
+  GO_QUALITY_VALUES,
+  GO_TEMPLATING_VALUES,
+  GO_VALIDATION_VALUES,
   GO_WEB_FRAMEWORK_VALUES,
   JAVA_AUTH_VALUES,
   JAVA_BUILD_TOOL_VALUES,
@@ -154,8 +160,14 @@ import {
   resolveGoApiPrompt,
   resolveGoAuthPrompt,
   resolveGoCliPrompt,
+  resolveGoDIPrompt,
   resolveGoLoggingPrompt,
+  resolveGoMigrationsPrompt,
   resolveGoOrmPrompt,
+  resolveGoProtoToolingPrompt,
+  resolveGoQualityPrompt,
+  resolveGoTemplatingPrompt,
+  resolveGoValidationPrompt,
   resolveGoWebFrameworkPrompt,
 } from "./go-ecosystem";
 import {
@@ -586,6 +598,36 @@ export const PROMPT_RESOLVER_REGISTRY: ResolverRegistry = {
   goAuth: {
     schemaValues: GO_AUTH_VALUES,
     resolve: ({ value }: { value?: string } = {}) => resolveGoAuthPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  goValidation: {
+    schemaValues: GO_VALIDATION_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveGoValidationPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  goQuality: {
+    schemaValues: GO_QUALITY_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveGoQualityPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  goMigrations: {
+    schemaValues: GO_MIGRATIONS_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveGoMigrationsPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  goTemplating: {
+    schemaValues: GO_TEMPLATING_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveGoTemplatingPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  goProtoTooling: {
+    schemaValues: GO_PROTO_TOOLING_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveGoProtoToolingPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  goDI: {
+    schemaValues: GO_DI_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveGoDIPrompt(value as any),
     coverageContexts: [{}],
   },
   javaWebFramework: {

@@ -1,0 +1,42 @@
+{{#if (eq goApi "connect-go")}}
+package api
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"net/http"
+
+	"connectrpc.com/connect"
+)
+
+type HelloRequest struct {
+	Name string `json:"name"`
+}
+
+type HelloReply struct {
+	Message string `json:"message"`
+}
+
+type jsonCodec struct{}
+
+func (jsonCodec) Name() string { return "json" }
+func (jsonCodec) Marshal(value any) ([]byte, error) { return json.Marshal(value) }
+func (jsonCodec) Unmarshal(data []byte, value any) error { return json.Unmarshal(data, value) }
+
+func NewConnectGreeterHandler() (string, http.Handler) {
+	const procedure = "/betterfullstack.v1.GreeterService/SayHello"
+	handler := connect.NewUnaryHandler(
+		procedure,
+		func(_ context.Context, request *connect.Request[HelloRequest]) (*connect.Response[HelloReply], error) {
+			name := request.Msg.Name
+			if name == "" {
+				name = "World"
+			}
+			return connect.NewResponse(&HelloReply{Message: fmt.Sprintf("Hello, %s!", name)}), nil
+		},
+		connect.WithCodec(jsonCodec{}),
+	)
+	return procedure, handler
+}
+{{/if}}

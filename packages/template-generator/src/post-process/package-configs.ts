@@ -6,6 +6,7 @@
 import type { ProjectConfig } from "@better-fullstack/types";
 
 import type { VirtualFileSystem } from "../core/virtual-fs";
+
 import { getGraphBackendConnection } from "../utils/graph-backend";
 
 type PackageJson = {
@@ -208,9 +209,7 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
       workspaces.push("packages/*");
     }
     const needsAppsDir =
-      config.frontend.length > 0 ||
-      addons.includes("starlight") ||
-      addons.includes("fumadocs");
+      config.frontend.length > 0 || addons.includes("starlight") || addons.includes("fumadocs");
     if (needsAppsDir && !workspaces.includes("apps/*")) {
       workspaces.push("apps/*");
     }
@@ -236,8 +235,10 @@ function applyGeneratedPackageTestScripts(vfs: VirtualFileSystem, config: Projec
 
   for (const packagePath of [
     "apps/web/package.json",
+    "web/package.json",
     "apps/server/package.json",
     "packages/api/package.json",
+    "api/package.json",
   ]) {
     const pkgJson = vfs.readJson<PackageJson>(packagePath);
     if (!pkgJson) continue;
@@ -248,9 +249,7 @@ function applyGeneratedPackageTestScripts(vfs: VirtualFileSystem, config: Projec
   }
 }
 
-function getGeneratedTypeScriptTestScript(
-  testing: ProjectConfig["testing"],
-): string | undefined {
+function getGeneratedTypeScriptTestScript(testing: ProjectConfig["testing"]): string | undefined {
   switch (testing) {
     case "vitest":
     case "vitest-playwright":
@@ -272,8 +271,10 @@ function getWorkspaceTestCommands(
 
   for (const packagePath of [
     "apps/web/package.json",
+    "web/package.json",
     "apps/server/package.json",
     "packages/api/package.json",
+    "api/package.json",
     "apps/native/package.json",
   ]) {
     const pkgJson = vfs.readJson<PackageJson>(packagePath);
@@ -490,6 +491,8 @@ function updateEnvPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): vo
       "next",
       "vinext",
       "nuxt",
+      "vanilla-vite",
+      "vue",
       "svelte",
       "solid",
       "solid-start",

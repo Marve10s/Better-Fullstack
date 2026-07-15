@@ -265,3 +265,55 @@ func Close() {
 	}
 }
 {{/if}}
+{{#if (eq goOrm "sqlx")}}
+package database
+
+import (
+	"os"
+
+	"github.com/jmoiron/sqlx"
+{{#if (eq database "mysql")}}
+	_ "github.com/go-sql-driver/mysql"
+{{/if}}
+	_ "github.com/lib/pq"
+	_ "github.com/mattn/go-sqlite3"
+)
+
+var DB *sqlx.DB
+
+// InitDB opens and verifies a sqlx connection. SQLite is the development default.
+func InitDB() (*sqlx.DB, error) {
+	dsn := os.Getenv("DATABASE_URL")
+{{#if (eq database "mysql")}}
+	driver := "mysql"
+	if dsn == "" {
+		dsn = "root:password@tcp(localhost:3306)/{{projectName}}?parseTime=true"
+	}
+{{else if (eq database "postgres")}}
+	driver := "postgres"
+	if dsn == "" {
+		dsn = "postgres://user:password@localhost:5432/{{projectName}}?sslmode=disable"
+	}
+{{else}}
+	driver := "sqlite3"
+	if dsn == "" {
+		dsn = "file:app.db?cache=shared&_fk=1"
+	}
+{{/if}}
+
+	db, err := sqlx.Connect(driver, dsn)
+	if err != nil {
+		return nil, err
+	}
+	DB = db
+	return DB, nil
+}
+
+func GetDB() *sqlx.DB { return DB }
+
+func Close() {
+	if DB != nil {
+		_ = DB.Close()
+	}
+}
+{{/if}}

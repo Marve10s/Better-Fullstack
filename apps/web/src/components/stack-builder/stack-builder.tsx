@@ -30,8 +30,10 @@ import {
   Pencil,
   RefreshCw,
   Save,
+  Search,
   Settings,
   Shuffle,
+  Sparkles,
   Terminal,
   X,
   Zap,
@@ -71,6 +73,16 @@ import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { clearBuilderMode, publishBuilderMode } from "@/lib/builder-mode-bridge";
 import {
+  buildBuilderSearchLookup,
+  createBuilderSearchIndex,
+  findBuilderSearchResults,
+  getBuilderSearchScope,
+  loadBuilderSearchPreferences,
+  saveBuilderSearchPreferences,
+  type BuilderSearchLookup,
+  type BuilderSearchPreferences,
+} from "@/lib/builder-search-preferences";
+import {
   DEFAULT_STACK,
   ECOSYSTEMS,
   PRESET_TEMPLATES,
@@ -78,6 +90,7 @@ import {
   TECH_OPTIONS,
 } from "@/lib/constant";
 import { getLocalizedCategoryDisplayName, getLocalizedTechOption } from "@/lib/i18n/builder-copy";
+import { isLaunchRadarNewOption } from "@/lib/launch-radar";
 import {
   buildSavedStackEntry,
   loadSavedStacks,
@@ -123,6 +136,17 @@ type RenderOptionGroup = {
   category: keyof typeof TECH_OPTIONS;
   options: TechOption[];
 };
+type BuilderSearchEntry = {
+  key: string;
+  kind: "section" | "library";
+  name: string;
+  context: string | null;
+  categoryKey: string;
+  optionCategory?: keyof typeof TECH_OPTIONS;
+  optionId?: string;
+  isNew?: boolean;
+  searchIndex: string;
+};
 type GraphOptionContext = Omit<StackPartOptionContext, "role" | "ecosystem">;
 type GraphFrontendEcosystem = Extract<StackPartEcosystem, "typescript" | "rust">;
 type GraphBackendEcosystem = Extract<
@@ -160,6 +184,187 @@ type GraphBackendPickerConfig = GraphBackendConfig & {
 };
 
 type MultiStackStepId = "frontend" | "backend" | "database" | "mobile" | "finalize";
+
+function BuilderSearchField({
+  scope,
+  placeholder,
+  ariaLabel,
+  clearLabel,
+  emptyLabel,
+  lookup,
+  onSelect,
+  onFocus,
+}: {
+  scope: string;
+  placeholder: string;
+  ariaLabel: string;
+  clearLabel: string;
+  emptyLabel: (query: string) => string;
+  lookup: BuilderSearchLookup<BuilderSearchEntry>;
+  onSelect: (entry: BuilderSearchEntry) => void;
+  onFocus: () => void;
+}) {
+  const [queries, setQueries] = useState<BuilderSearchPreferences>({});
+  const [isOpen, setIsOpen] = useState(false);
+  const [activeResultIndex, setActiveResultIndex] = useState(0);
+  const queriesRef = useRef<BuilderSearchPreferences>({});
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const query = queries[scope] ?? "";
+  const results = useMemo(() => findBuilderSearchResults(lookup, query), [lookup, query]);
+
+  const schedulePreferencesSave = useCallback((preferences: BuilderSearchPreferences) => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      saveBuilderSearchPreferences(preferences);
+      saveTimerRef.current = null;
+    }, 150);
+  }, []);
+
+  const flushPreferencesSave = useCallback(() => {
+    if (!saveTimerRef.current) return;
+    clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = null;
+    saveBuilderSearchPreferences(queriesRef.current);
+  }, []);
+
+  const updateQuery = useCallback(
+    (nextQuery: string) => {
+      const nextQueries = { ...queriesRef.current };
+      if (nextQuery.trim()) {
+        nextQueries[scope] = nextQuery;
+      } else {
+        delete nextQueries[scope];
+      }
+      queriesRef.current = nextQueries;
+      setQueries(nextQueries);
+      schedulePreferencesSave(nextQueries);
+      setActiveResultIndex(0);
+    },
+    [schedulePreferencesSave, scope],
+  );
+
+  useEffect(() => {
+    const preferences = loadBuilderSearchPreferences();
+    queriesRef.current = preferences;
+    setQueries(preferences);
+  }, []);
+
+  useEffect(() => flushPreferencesSave, [flushPreferencesSave]);
+
+  const selectResult = (entry: BuilderSearchEntry) => {
+    setIsOpen(false);
+    onSelect(entry);
+  };
+
+  return (
+    <div
+      className="relative ml-auto min-w-20 max-w-56 flex-1 sm:min-w-36"
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+          setIsOpen(false);
+          flushPreferencesSave();
+        }
+      }}
+    >
+      <div className="group/search flex h-8 items-center rounded-full border border-border/55 bg-muted/30 transition-colors focus-within:border-foreground/40 focus-within:bg-background">
+        <Search className="pointer-events-none ml-2.5 h-3.5 w-3.5 shrink-0 text-muted-foreground transition-colors group-focus-within/search:text-foreground" />
+        <input
+          type="search"
+          value={query}
+          onChange={(event) => {
+            updateQuery(event.target.value);
+            setIsOpen(true);
+          }}
+          onFocus={() => {
+            setIsOpen(true);
+            onFocus();
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "ArrowDown" && results.length > 0) {
+              event.preventDefault();
+              setActiveResultIndex((current) => (current + 1) % results.length);
+            } else if (event.key === "ArrowUp" && results.length > 0) {
+              event.preventDefault();
+              setActiveResultIndex((current) => (current - 1 + results.length) % results.length);
+            } else if (event.key === "Enter" && results[activeResultIndex]) {
+              event.preventDefault();
+              selectResult(results[activeResultIndex]);
+            } else if (event.key === "Escape") {
+              setIsOpen(false);
+              event.currentTarget.blur();
+            }
+          }}
+          placeholder={placeholder}
+          aria-label={ariaLabel}
+          data-testid="builder-search"
+          className="h-full min-w-0 flex-1 appearance-none border-none bg-transparent px-2 font-mono text-[11px] text-foreground outline-none placeholder:text-muted-foreground/65 [&::-webkit-search-cancel-button]:hidden"
+        />
+        {query && (
+          <button
+            type="button"
+            onClick={() => updateQuery("")}
+            aria-label={clearLabel}
+            title={clearLabel}
+            className="mr-1 flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <X className="h-3 w-3" />
+          </button>
+        )}
+      </div>
+
+      {isOpen && query.trim() && (
+        <div
+          id="builder-search-results"
+          aria-live="polite"
+          className="absolute top-[calc(100%+0.5rem)] right-0 z-50 w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-border/70 bg-fd-background/98 p-1.5 shadow-2xl backdrop-blur-xl"
+        >
+          {results.length > 0 ? (
+            results.map((entry, index) => (
+              <button
+                key={entry.key}
+                type="button"
+                data-active={index === activeResultIndex}
+                onMouseDown={(event) => event.preventDefault()}
+                onMouseEnter={() => setActiveResultIndex(index)}
+                onClick={() => selectResult(entry)}
+                className={cn(
+                  "flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors",
+                  index === activeResultIndex ? "bg-muted text-foreground" : "text-foreground/85",
+                )}
+              >
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted/70 text-muted-foreground">
+                  {entry.kind === "section" ? (
+                    <Terminal className="h-3.5 w-3.5" />
+                  ) : (
+                    <Search className="h-3.5 w-3.5" />
+                  )}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-mono text-xs">{entry.name}</span>
+                  {entry.isNew ? (
+                    <span className="mt-1 inline-flex rounded-full bg-[#18D5FF]/10 px-1.5 py-0.5 font-mono text-[8px] font-semibold uppercase tracking-[0.12em] text-[#06647A] dark:text-[#18D5FF]">
+                      {m.builderNewBadge()}
+                    </span>
+                  ) : null}
+                  {entry.context && (
+                    <span className="mt-0.5 block truncate font-mono text-[10px] text-muted-foreground">
+                      {entry.context}
+                    </span>
+                  )}
+                </span>
+                <ArrowRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
+              </button>
+            ))
+          ) : (
+            <p className="px-3 py-5 text-center font-mono text-[11px] text-muted-foreground">
+              {emptyLabel(query.trim())}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function filterKotlinBackendCapabilityOptions(
   selection: Pick<GraphSelection, "backendEcosystem" | "backendLanguage">,
@@ -424,6 +629,12 @@ const GRAPH_BACKEND_ADVANCED_CATEGORY_ORDER_BY_ECOSYSTEM = {
     "goCaching",
     "goConfig",
     "goObservability",
+    "goValidation",
+    "goQuality",
+    "goMigrations",
+    "goTemplating",
+    "goProtoTooling",
+    "goDI",
   ],
   java: ["javaBuildTool", "javaApi", "javaLogging", "javaLibraries", "javaTestingLibraries"],
   elixir: [
@@ -1976,6 +2187,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
   const [, setLastChanges] = useState<Array<{ category: string; message: string }>>([]);
   const [isSaveInputVisible, setIsSaveInputVisible] = useState(false);
   const [savePresetName, setSavePresetName] = useState("");
+  const [showNewOptionsOnly, setShowNewOptionsOnly] = useState(false);
   const [pendingUpdateEntryId, setPendingUpdateEntryId] = useState<string | null>(null);
   const [multiActiveStep, setMultiActiveStep] = useState<MultiStackStepId>("frontend");
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
@@ -1994,6 +2206,13 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
   const lastAppliedStackString = useRef<string>("");
   const lastAppliedEcosystemRef = useRef<Ecosystem>(stack.ecosystem);
   const suppressCompatibilityToastRef = useRef(false);
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("newOptions") === "1") {
+      setShowNewOptionsOnly(true);
+      setViewMode("command");
+    }
+  }, [setViewMode]);
 
   const scrollToTop = () => {
     scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
@@ -2024,6 +2243,80 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
   const isMultiMode = stack.stackMode === "multi";
   const isFinalMultiStep = multiActiveStepIndex >= MULTI_STACK_STEPS.length - 1;
   const isMultiCreationInProgress = isMultiMode && viewMode === "command";
+  const builderSearchScope = getBuilderSearchScope(stack.ecosystem, stack.javaLanguage);
+  const builderSearchEcosystemName =
+    BUILDER_ECOSYSTEMS.find((ecosystem) => ecosystem.id === builderSearchScope)?.name ??
+    builderSearchScope;
+
+  const builderSearchData = useMemo(() => {
+    const groupsByCategory = new Map<string, RenderOptionGroup[]>();
+    const entries: BuilderSearchEntry[] = [];
+    let availableNewOptionCount = 0;
+
+    for (const categoryKey of displayedCategoryOrder) {
+      if (categoryKey === "astroIntegration" || SHADCN_SUB_CATEGORIES.has(categoryKey)) {
+        continue;
+      }
+      if (stack.ecosystem === "go" && categoryKey === "auth") continue;
+
+      const allGroups = getCategoryRenderGroups(stack, categoryKey as keyof typeof TECH_OPTIONS);
+      availableNewOptionCount += allGroups.reduce(
+        (total, group) =>
+          total +
+          group.options.filter((option) => isLaunchRadarNewOption(group.category, option.id))
+            .length,
+        0,
+      );
+      const groups = showNewOptionsOnly
+        ? allGroups
+            .map((group) => ({
+              ...group,
+              options: group.options.filter((option) =>
+                isLaunchRadarNewOption(group.category, option.id),
+              ),
+            }))
+            .filter((group) => group.options.length > 0)
+        : allGroups;
+      const categoryName = getLocalizedCategoryDisplayName(
+        categoryKey,
+        getCategoryDisplayName(categoryKey),
+      );
+      groupsByCategory.set(categoryKey, groups);
+      if (groups.length === 0) continue;
+
+      entries.push({
+        key: `section:${categoryKey}`,
+        kind: "section",
+        name: categoryName,
+        context: null,
+        categoryKey,
+        searchIndex: createBuilderSearchIndex([categoryName]),
+      });
+
+      for (const group of groups) {
+        for (const option of group.options) {
+          const localizedOption = getLocalizedTechOption(option);
+          entries.push({
+            key: `library:${categoryKey}:${group.category}:${option.id}`,
+            kind: "library",
+            name: localizedOption.name,
+            context: group.heading ? `${categoryName} · ${group.heading}` : categoryName,
+            categoryKey,
+            optionCategory: group.category,
+            optionId: option.id,
+            isNew: isLaunchRadarNewOption(group.category, option.id),
+            searchIndex: createBuilderSearchIndex([option.id, option.name, localizedOption.name]),
+          });
+        }
+      }
+    }
+
+    return {
+      groupsByCategory,
+      lookup: buildBuilderSearchLookup(entries),
+      availableNewOptionCount,
+    };
+  }, [displayedCategoryOrder, showNewOptionsOnly, stack]);
 
   // ─── URL generation ──────────────────────────────────────────────────────
 
@@ -2380,6 +2673,28 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
     });
   };
 
+  const goToBuilderSearchResult = (entry: BuilderSearchEntry) => {
+    setViewMode("command");
+    goToSection(entry.categoryKey);
+
+    if (!entry.optionCategory || !entry.optionId) return;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document
+          .querySelector(`[data-testid="option-${entry.optionCategory}-${entry.optionId}"]`)
+          ?.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+    });
+  };
+
+  const getToolbarTabClass = (isActive: boolean) =>
+    cn(
+      "relative flex cursor-pointer items-center gap-1 rounded-full px-2 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-all sm:px-2.5 sm:text-[11px]",
+      isActive
+        ? "bg-foreground text-background shadow-sm"
+        : "text-muted-foreground hover:bg-muted/70 hover:text-foreground",
+    );
+
   // ─── Render ─────────────────────────────────────────────────────────────
 
   return (
@@ -2500,20 +2815,18 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                 viewMode === "command" ? "" : "overflow-hidden",
               )}
             >
-              <div className="flex shrink-0 items-center gap-1 border-border border-b bg-fd-background px-2 py-2 sm:gap-2 sm:px-4">
+              <div className="relative flex shrink-0 items-center gap-1 bg-fd-background px-2 py-2 sm:gap-2 sm:px-4">
                 {/* ─── Project name field ─────────────────────────────────────── */}
                 <label
                   htmlFor="project-name"
                   className={cn(
-                    "group relative inline-flex h-9 w-40 min-w-0 cursor-text items-center gap-2 rounded-none border bg-background/40 px-3 transition-colors hover:bg-card focus-within:bg-card sm:w-60",
+                    "group relative inline-flex h-8 w-32 min-w-0 cursor-text items-center gap-2 rounded-full border border-transparent bg-muted/55 px-3 transition-all duration-300 hover:bg-card focus-within:bg-card sm:w-44",
                     projectNameError
                       ? "border-destructive focus-within:border-destructive focus-within:shadow-[0_0_0_4px_rgba(239,68,68,0.12)]"
                       : "border-border focus-within:border-foreground focus-within:shadow-[0_0_0_4px_rgba(24,24,27,0.05)] dark:focus-within:shadow-[0_0_0_4px_rgba(255,255,255,0.06)]",
                   )}
                 >
-                  <span className="pointer-events-none absolute -top-[7px] left-3 bg-fd-background px-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                    {m.builderProjectName()}
-                  </span>
+                  <span className="sr-only">{m.builderProjectName()}</span>
                   <input
                     id="project-name"
                     value={stack.projectName || ""}
@@ -2537,78 +2850,119 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                   <Pencil className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50 transition-colors group-focus-within:text-foreground" />
                 </label>
 
-                <div className="mx-1 h-6 w-px shrink-0 bg-border sm:mx-2" aria-hidden="true" />
+                <div
+                  className="mx-0.5 hidden h-6 w-px shrink-0 bg-border sm:block"
+                  aria-hidden="true"
+                />
 
-                <button
-                  type="button"
-                  onClick={() => setViewMode("command")}
-                  data-testid="tab-builder"
-                  aria-pressed={viewMode === "command"}
-                  data-state={viewMode === "command" ? "active" : "inactive"}
-                  className={cn(
-                    "flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
-                    viewMode === "command"
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                  )}
+                <fieldset
+                  aria-label="Builder views"
+                  className="flex min-w-0 items-center gap-0.5 rounded-full border border-border/50 bg-muted/25 p-0.5"
                 >
-                  <Hammer className="h-3 w-3" />
-                  <span className="hidden min-[480px]:inline">{m.builderTabBuilder()}</span>
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("command")}
+                    data-testid="tab-builder"
+                    aria-pressed={viewMode === "command"}
+                    data-state={viewMode === "command" ? "active" : "inactive"}
+                    className={getToolbarTabClass(viewMode === "command")}
+                  >
+                    <Hammer className="h-3 w-3" />
+                    <span className="hidden min-[480px]:inline">{m.builderTabBuilder()}</span>
+                  </button>
+                  {!isMultiMode && (
+                    <button
+                      type="button"
+                      onClick={() => setViewMode("presets")}
+                      data-testid="tab-presets"
+                      aria-pressed={viewMode === "presets"}
+                      data-state={viewMode === "presets" ? "active" : "inactive"}
+                      className={getToolbarTabClass(viewMode === "presets")}
+                    >
+                      <Zap className="h-3 w-3" />
+                      <span className="hidden min-[480px]:inline">{m.builderTabPresets()}</span>
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("preview")}
+                    data-testid="tab-preview"
+                    aria-pressed={viewMode === "preview"}
+                    data-state={viewMode === "preview" ? "active" : "inactive"}
+                    className={getToolbarTabClass(viewMode === "preview")}
+                  >
+                    <Eye className="h-3 w-3" />
+                    <span className="hidden min-[480px]:inline">{m.builderTabPreview()}</span>
+                  </button>
+                  {!isMultiMode && (
+                    <button
+                      type="button"
+                      onClick={() => setViewMode("saved")}
+                      data-testid="tab-saved"
+                      aria-pressed={viewMode === "saved"}
+                      data-state={viewMode === "saved" ? "active" : "inactive"}
+                      className={getToolbarTabClass(viewMode === "saved")}
+                    >
+                      <Bookmark className="h-3 w-3" />
+                      <span className="hidden min-[480px]:inline">{m.builderTabSaved()}</span>
+                    </button>
+                  )}
+                </fieldset>
+
+                {!isMultiMode && (
+                  <BuilderSearchField
+                    scope={builderSearchScope}
+                    placeholder={m.builderSearchPlaceholder({
+                      ecosystem: builderSearchEcosystemName,
+                    })}
+                    ariaLabel={m.builderSearchLabel({
+                      ecosystem: builderSearchEcosystemName,
+                    })}
+                    clearLabel={m.builderClearSearch()}
+                    emptyLabel={(query) => m.builderNoSearchResults({ query })}
+                    lookup={builderSearchData.lookup}
+                    onSelect={goToBuilderSearchResult}
+                    onFocus={() => setViewMode("command")}
+                  />
+                )}
+
                 {!isMultiMode && (
                   <button
                     type="button"
-                    onClick={() => setViewMode("presets")}
-                    data-testid="tab-presets"
-                    aria-pressed={viewMode === "presets"}
-                    data-state={viewMode === "presets" ? "active" : "inactive"}
+                    data-testid="builder-new-filter"
+                    aria-pressed={showNewOptionsOnly}
+                    title={m.builderNewFilterTitle({
+                      count: builderSearchData.availableNewOptionCount,
+                      ecosystem: builderSearchEcosystemName,
+                    })}
+                    onClick={() => {
+                      setShowNewOptionsOnly((current) => !current);
+                      setViewMode("command");
+                    }}
                     className={cn(
-                      "flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
-                      viewMode === "presets"
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                      "inline-flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-2.5 font-mono text-[9px] font-semibold uppercase tracking-[0.12em] transition-all",
+                      showNewOptionsOnly
+                        ? "border-[#18D5FF]/50 bg-[#18D5FF]/10 text-foreground shadow-[0_0_14px_rgba(24,213,255,0.1)]"
+                        : "border-border/55 bg-muted/30 text-muted-foreground hover:border-foreground/30 hover:text-foreground",
                     )}
                   >
-                    <Zap className="h-3 w-3" />
-                    <span className="hidden min-[480px]:inline">{m.builderTabPresets()}</span>
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => setViewMode("preview")}
-                  data-testid="tab-preview"
-                  aria-pressed={viewMode === "preview"}
-                  data-state={viewMode === "preview" ? "active" : "inactive"}
-                  className={cn(
-                    "flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
-                    viewMode === "preview"
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                  )}
-                >
-                  <Eye className="h-3 w-3" />
-                  <span className="hidden min-[480px]:inline">{m.builderTabPreview()}</span>
-                </button>
-                {!isMultiMode && (
-                  <button
-                    type="button"
-                    onClick={() => setViewMode("saved")}
-                    data-testid="tab-saved"
-                    aria-pressed={viewMode === "saved"}
-                    data-state={viewMode === "saved" ? "active" : "inactive"}
-                    className={cn(
-                      "flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
-                      viewMode === "saved"
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                    )}
-                  >
-                    <Bookmark className="h-3 w-3" />
-                    <span className="hidden min-[480px]:inline">{m.builderTabSaved()}</span>
+                    <Sparkles
+                      className={cn("size-3", showNewOptionsOnly && "text-[#FF5C8A]")}
+                      aria-hidden
+                    />
+                    <span className="hidden 2xl:inline">{m.builderNewFilter()}</span>
+                    <span className="tabular-nums">
+                      {builderSearchData.availableNewOptionCount}
+                    </span>
                   </button>
                 )}
 
-                <div className="ml-auto flex items-center gap-1">
+                <div
+                  className={cn(
+                    "flex items-center gap-1 rounded-full bg-muted/35 p-0.5",
+                    isMultiMode && "ml-auto",
+                  )}
+                >
                   {/* Desktop action buttons */}
                   <AnimatePresence initial={false}>
                     {!isMultiMode && isSaveInputVisible && (
@@ -2653,7 +3007,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                       </motion.div>
                     )}
                   </AnimatePresence>
-                  <div className="hidden items-center gap-1 sm:flex">
+                  <div className="hidden items-center gap-1">
                     {!isMultiMode && (
                       <>
                         <Tooltip>
@@ -2747,7 +3101,9 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                           type="button"
                           aria-label={m.builderMoreActions()}
                           title={m.builderMoreActions()}
-                          className="flex items-center justify-center cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:hidden"
+                          className={cn(
+                            "flex items-center justify-center cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+                          )}
                         />
                       }
                     >
@@ -2791,6 +3147,11 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                         <Link className="h-3.5 w-3.5" />
                         {m.builderCopyShareLink()}
                       </DropdownMenuItem>
+                      {!isMultiMode && (
+                        <div className="mt-1 border-border/60 border-t pt-1">
+                          <YoloToggle stack={stack} onToggle={(yolo) => setStack({ yolo })} />
+                        </div>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -2805,6 +3166,17 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                     onActiveStepChange={handleMultiActiveStepChange}
                   />
 
+                  {showNewOptionsOnly && builderSearchData.availableNewOptionCount === 0 ? (
+                    <div className="flex min-h-64 flex-col items-center justify-center px-5 text-center">
+                      <span className="flex size-11 items-center justify-center rounded-full bg-[#18D5FF]/10 text-[#06647A] dark:text-[#18D5FF]">
+                        <Sparkles className="size-5" aria-hidden />
+                      </span>
+                      <p className="mt-4 max-w-sm font-mono text-xs text-muted-foreground">
+                        {m.builderNewEmpty({ ecosystem: builderSearchEcosystemName })}
+                      </p>
+                    </div>
+                  ) : null}
+
                   {/* Category sections - all options for each category.
                       In multi mode these general settings are the final "Finalize" step. */}
                   {(stack.stackMode !== "multi" || multiActiveStep === "finalize") &&
@@ -2817,14 +3189,12 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
 
                       if (stack.ecosystem === "go" && categoryKey === "auth") return null;
 
-                      const categoryOptionGroups = getCategoryRenderGroups(
-                        stack,
-                        categoryKey as keyof typeof TECH_OPTIONS,
-                      );
                       const categoryDisplayName = getLocalizedCategoryDisplayName(
                         categoryKey,
                         getCategoryDisplayName(categoryKey),
                       );
+                      const categoryOptionGroups =
+                        builderSearchData.groupsByCategory.get(categoryKey) ?? [];
                       const sectionCompatibilityNotes =
                         stack.ecosystem === "go" && categoryKey === "goAuth"
                           ? mergeCompatibilityNotes(
@@ -2915,6 +3285,10 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                                                   tech.id,
                                                 )
                                               : null;
+                                            const isNewOption = isLaunchRadarNewOption(
+                                              group.category,
+                                              tech.id,
+                                            );
 
                                             return (
                                               <motion.div
@@ -2935,6 +3309,11 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                                                 title={disabledReason || undefined}
                                               >
                                                 <div className="absolute top-2 right-2 flex items-center gap-1">
+                                                  {isNewOption && (
+                                                    <span className="rounded-full bg-[#18D5FF]/10 px-2 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-[#06647A] dark:text-[#18D5FF]">
+                                                      {m.builderNewBadge()}
+                                                    </span>
+                                                  )}
                                                   <TechResourceButtons
                                                     category={group.category}
                                                     techId={tech.id}

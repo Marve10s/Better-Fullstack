@@ -22,6 +22,24 @@ import {
   BetterFullstackConfigSchema,
   BetterTStackConfigSchema,
   InitResultSchema,
+  GoWebFrameworkSchema,
+  GoOrmSchema,
+  GoApiSchema,
+  GoCliSchema,
+  GoLoggingSchema,
+  GoAuthSchema,
+  GoTestingSchema,
+  GoRealtimeSchema,
+  GoMessageQueueSchema,
+  GoCachingSchema,
+  GoConfigSchema,
+  GoObservabilitySchema,
+  GoValidationSchema,
+  GoQualitySchema,
+  GoMigrationsSchema,
+  GoTemplatingSchema,
+  GoProtoToolingSchema,
+  GoDISchema,
   ElixirApiSchema,
   ElixirAuthSchema,
   ElixirCachingSchema,
@@ -151,6 +169,78 @@ export function getJavaAuthJsonSchema() {
   return z.toJSONSchema(JavaAuthSchema);
 }
 
+export function getGoWebFrameworkJsonSchema() {
+  return z.toJSONSchema(GoWebFrameworkSchema);
+}
+
+export function getGoOrmJsonSchema() {
+  return z.toJSONSchema(GoOrmSchema);
+}
+
+export function getGoApiJsonSchema() {
+  return z.toJSONSchema(GoApiSchema);
+}
+
+export function getGoCliJsonSchema() {
+  return z.toJSONSchema(GoCliSchema);
+}
+
+export function getGoLoggingJsonSchema() {
+  return z.toJSONSchema(GoLoggingSchema);
+}
+
+export function getGoAuthJsonSchema() {
+  return z.toJSONSchema(GoAuthSchema);
+}
+
+export function getGoTestingJsonSchema() {
+  return z.toJSONSchema(GoTestingSchema);
+}
+
+export function getGoRealtimeJsonSchema() {
+  return z.toJSONSchema(GoRealtimeSchema);
+}
+
+export function getGoMessageQueueJsonSchema() {
+  return z.toJSONSchema(GoMessageQueueSchema);
+}
+
+export function getGoCachingJsonSchema() {
+  return z.toJSONSchema(GoCachingSchema);
+}
+
+export function getGoConfigJsonSchema() {
+  return z.toJSONSchema(GoConfigSchema);
+}
+
+export function getGoObservabilityJsonSchema() {
+  return z.toJSONSchema(GoObservabilitySchema);
+}
+
+export function getGoValidationJsonSchema() {
+  return z.toJSONSchema(GoValidationSchema);
+}
+
+export function getGoQualityJsonSchema() {
+  return z.toJSONSchema(GoQualitySchema);
+}
+
+export function getGoMigrationsJsonSchema() {
+  return z.toJSONSchema(GoMigrationsSchema);
+}
+
+export function getGoTemplatingJsonSchema() {
+  return z.toJSONSchema(GoTemplatingSchema);
+}
+
+export function getGoProtoToolingJsonSchema() {
+  return z.toJSONSchema(GoProtoToolingSchema);
+}
+
+export function getGoDIJsonSchema() {
+  return z.toJSONSchema(GoDISchema);
+}
+
 export function getJavaLibrariesJsonSchema() {
   return z.toJSONSchema(JavaLibrariesSchema);
 }
@@ -258,6 +348,24 @@ export function getAllJsonSchemas() {
     serverDeploy: getServerDeployJsonSchema(),
     directoryConflict: getDirectoryConflictJsonSchema(),
     template: getTemplateJsonSchema(),
+    goWebFramework: getGoWebFrameworkJsonSchema(),
+    goOrm: getGoOrmJsonSchema(),
+    goApi: getGoApiJsonSchema(),
+    goCli: getGoCliJsonSchema(),
+    goLogging: getGoLoggingJsonSchema(),
+    goAuth: getGoAuthJsonSchema(),
+    goTesting: getGoTestingJsonSchema(),
+    goRealtime: getGoRealtimeJsonSchema(),
+    goMessageQueue: getGoMessageQueueJsonSchema(),
+    goCaching: getGoCachingJsonSchema(),
+    goConfig: getGoConfigJsonSchema(),
+    goObservability: getGoObservabilityJsonSchema(),
+    goValidation: getGoValidationJsonSchema(),
+    goQuality: getGoQualityJsonSchema(),
+    goMigrations: getGoMigrationsJsonSchema(),
+    goTemplating: getGoTemplatingJsonSchema(),
+    goProtoTooling: getGoProtoToolingJsonSchema(),
+    goDI: getGoDIJsonSchema(),
     javaWebFramework: getJavaWebFrameworkJsonSchema(),
     javaBuildTool: getJavaBuildToolJsonSchema(),
     javaOrm: getJavaOrmJsonSchema(),

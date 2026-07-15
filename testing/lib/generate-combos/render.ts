@@ -76,6 +76,12 @@ export function formatNameFromFingerprint(fingerprint: TemplateFingerprint): str
       typeof fingerprint.goCli === "string" ? fingerprint.goCli : undefined,
       typeof fingerprint.goLogging === "string" ? fingerprint.goLogging : undefined,
       typeof fingerprint.goAuth === "string" ? fingerprint.goAuth : undefined,
+      typeof fingerprint.goValidation === "string" ? fingerprint.goValidation : undefined,
+      typeof fingerprint.goQuality === "string" ? fingerprint.goQuality : undefined,
+      typeof fingerprint.goMigrations === "string" ? fingerprint.goMigrations : undefined,
+      typeof fingerprint.goTemplating === "string" ? fingerprint.goTemplating : undefined,
+      typeof fingerprint.goProtoTooling === "string" ? fingerprint.goProtoTooling : undefined,
+      typeof fingerprint.goDI === "string" ? fingerprint.goDI : undefined,
     ],
     java: [
       typeof fingerprint.javaWebFramework === "string" ? fingerprint.javaWebFramework : undefined,
@@ -241,6 +247,12 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["go-caching", config.goCaching],
     ["go-config", config.goConfig],
     ["go-observability", config.goObservability],
+    ["go-validation", config.goValidation],
+    ["go-quality", config.goQuality],
+    ["go-migrations", config.goMigrations],
+    ["go-templating", config.goTemplating],
+    ["go-proto-tooling", config.goProtoTooling],
+    ["go-di", config.goDI],
   ];
 
   const javaFlags: Array<[string, string | readonly string[]]> = [

@@ -1,7 +1,7 @@
 import type { CodegenConfig } from "@graphql-codegen/cli";
 
 const config: CodegenConfig = {
-  schema: "http://localhost:{{#if (includes frontend "redwood")}}8911{{else}}{{#if (eq backend "self")}}3001/api{{else}}3000{{/if}}{{/if}}/graphql",
+  schema: "http://localhost:{{#if (includes frontend "redwood")}}8911{{else}}{{#if (eq backend "self")}}{{#if (includes frontend "astro")}}4321{{else}}3001{{/if}}/api{{else}}3000{{/if}}{{/if}}/graphql",
   documents: ["src/**/*.{ts,tsx,vue,svelte}"],
   generates: {
     "src/gql/": {

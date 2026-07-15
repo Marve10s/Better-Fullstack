@@ -9,6 +9,10 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { dependencyVersionMap } from "./add-deps";
+import {
+  getPinnedDependencyVersion,
+  isMajorUpdateAllowlisted,
+} from "./dependency-update-policy";
 
 // Types
 export type UpdateType = "downgrade" | "major" | "minor" | "patch" | "none";
@@ -35,6 +39,25 @@ export type CheckResult = {
   errors: { name: string; error: string }[];
   versionMismatches?: VersionMismatch[];
 };
+
+export type AutomatedUpdateMode = "patch-minor" | "all";
+
+/**
+ * Select updates automation may apply. Downgrades are never automatic, and
+ * majors require an explicit per-package allowlist even in `all` mode.
+ */
+export function selectAutomatedUpdates(
+  updates: VersionInfo[],
+  mode: AutomatedUpdateMode,
+): VersionInfo[] {
+  return updates.filter((update) => {
+    if (update.updateType === "downgrade" || update.updateType === "none") return false;
+    if (update.updateType === "major") {
+      return mode === "all" && isMajorUpdateAllowlisted(update.name);
+    }
+    return update.updateType === "minor" || update.updateType === "patch";
+  });
+}
 
 export type NpmPackageInfo = {
   name: string;
@@ -461,6 +484,19 @@ export function getUpdateType(current: string, latest: string): UpdateType {
   if (comparison < 0) return "downgrade";
   if (comparison === 0) return "patch";
   if (lat.major > curr.major) return "major";
+  // SemVer does not promise compatibility before 1.0. A caret range can cross
+  // neither a 0.x minor boundary nor a 0.0.x patch boundary, so automation
+  // treats both as breaking-equivalent and requires explicit major approval.
+  if (curr.major === 0 && lat.major === 0 && lat.minor > curr.minor) return "major";
+  if (
+    curr.major === 0 &&
+    lat.major === 0 &&
+    curr.minor === 0 &&
+    lat.minor === 0 &&
+    lat.patch > curr.patch
+  ) {
+    return "major";
+  }
   if (lat.minor > curr.minor) return "minor";
   if (lat.patch > curr.patch) return "patch";
   if (comparison > 0) return "patch";
@@ -731,13 +767,14 @@ export async function checkAllVersions(options: {
         const entry = allPackages[pkg]!;
         try {
           const ecosystem = getEcosystem(pkg);
-          const latest = await resolveLatestVersion(pkg, ecosystem);
+          const pinnedVersion = getPinnedDependencyVersion(pkg);
+          const latest = pinnedVersion ?? `^${await resolveLatestVersion(pkg, ecosystem)}`;
           const updateType = getUpdateType(entry.version, latest);
 
           return {
             name: pkg,
             current: entry.version,
-            latest: `^${latest}`,
+            latest,
             updateType,
             ecosystem,
             source: entry.source,

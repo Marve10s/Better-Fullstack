@@ -20,6 +20,7 @@ function processCSSFrameworkDeps(vfs: VirtualFileSystem, config: ProjectConfig):
       "vue",
       "tanstack-start",
       "next",
+      "vinext",
       "nuxt",
       "svelte",
       "solid",
@@ -73,7 +74,15 @@ function processUILibraryDeps(vfs: VirtualFileSystem, config: ProjectConfig): vo
   const { uiLibrary, frontend, backend } = config;
 
   const hasReactWeb = frontend.some((f) =>
-    ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "redwood"].includes(f),
+    [
+      "tanstack-router",
+      "react-router",
+      "react-vite",
+      "tanstack-start",
+      "next",
+      "vinext",
+      "redwood",
+    ].includes(f),
   );
   const hasNuxt = frontend.includes("nuxt");
   const hasSolid = frontend.includes("solid") || frontend.includes("solid-start");
@@ -148,7 +157,14 @@ function processUILibraryDeps(vfs: VirtualFileSystem, config: ProjectConfig): vo
 
     case "shadcn-svelte":
       if (hasSvelte || hasAstroSvelte) {
-        deps.push("shadcn-svelte", "bits-ui", "clsx", "tailwind-merge", "tw-animate-css", "lucide-svelte");
+        deps.push(
+          "shadcn-svelte",
+          "bits-ui",
+          "clsx",
+          "tailwind-merge",
+          "tw-animate-css",
+          "lucide-svelte",
+        );
       }
       break;
 

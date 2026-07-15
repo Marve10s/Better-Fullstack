@@ -1063,6 +1063,12 @@ function getGoFlags(config: ProjectConfig) {
   flags.push(`--go-caching ${config.goCaching}`);
   flags.push(`--go-config ${config.goConfig}`);
   flags.push(`--go-observability ${config.goObservability}`);
+  flags.push(`--go-validation ${config.goValidation ?? "none"}`);
+  flags.push(`--go-quality ${config.goQuality ?? "none"}`);
+  flags.push(`--go-migrations ${config.goMigrations ?? "none"}`);
+  flags.push(`--go-templating ${config.goTemplating ?? "none"}`);
+  flags.push(`--go-proto-tooling ${config.goProtoTooling ?? "none"}`);
+  flags.push(`--go-di ${config.goDI ?? "none"}`);
   flags.push(`--auth ${config.auth}`);
   appendSharedNonTypeScriptFlags(flags, config);
 

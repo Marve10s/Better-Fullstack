@@ -1,7 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
 
-import { ChangelogModal } from "@/components/changelog-modal";
+import { requestLaunchRadarOpen } from "@/lib/launch-radar";
 import { m } from "@/paraglide/messages.js";
 
 const GUIDE_LINKS = [
@@ -14,8 +13,6 @@ const GUIDE_LINKS = [
 ] as const;
 
 export default function Footer() {
-  const [isChangelogOpen, setIsChangelogOpen] = useState(false);
-
   return (
     <footer className="border-t border-border">
       <div className="mx-auto max-w-3xl px-4 py-12">
@@ -54,13 +51,14 @@ export default function Footer() {
           >
             {m.navBlog()}
           </Link>
-          <button
-            type="button"
-            onClick={() => setIsChangelogOpen(true)}
-            className="cursor-pointer text-muted-foreground transition-colors hover:text-foreground"
+          <Link
+            to="/"
+            hash="whats-new"
+            onClick={requestLaunchRadarOpen}
+            className="text-muted-foreground transition-colors hover:text-foreground"
           >
-            {m.footerChangelog()}
-          </button>
+            {m.navUpdates()}
+          </Link>
           <a
             href="https://github.com/Marve10s/Better-Fullstack/blob/main/LICENSE"
             target="_blank"
@@ -113,8 +111,6 @@ export default function Footer() {
           </a>
         </p>
       </div>
-
-      <ChangelogModal open={isChangelogOpen} onOpenChange={setIsChangelogOpen} />
     </footer>
   );
 }

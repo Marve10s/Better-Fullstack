@@ -1,3 +1,5 @@
+import { log } from "@clack/prompts";
+
 import type {
   Addons,
   AI,
@@ -59,12 +61,18 @@ import type {
   GoCaching,
   GoCli,
   GoConfig,
+  GoDI,
   GoLogging,
+  GoMigrations,
   GoMessageQueue,
   GoObservability,
   GoOrm,
+  GoProtoTooling,
+  GoQuality,
   GoRealtime,
+  GoTemplating,
   GoTesting,
+  GoValidation,
   GoWebFramework,
   JavaAuth,
   JavaApi,
@@ -139,8 +147,6 @@ import type {
   WebDeploy,
 } from "../types";
 
-import { log } from "@clack/prompts";
-
 import { getKotlinJavaIncompatibilityReason } from "../types";
 import { hasWebStyling, requiresChatSdkVercelAI } from "../utils/compatibility-rules";
 import { exitCancelled } from "../utils/errors";
@@ -179,6 +185,8 @@ import {
   getDotnetTestingChoice,
   getDotnetWebFrameworkChoice,
 } from "./dotnet-ecosystem";
+import { getEcosystemChoice } from "./ecosystem";
+import { getEffectChoice } from "./effect";
 import {
   getElixirApiChoice,
   getElixirAuthChoice,
@@ -202,8 +210,6 @@ import {
   getElixirValidationChoice,
   getElixirWebFrameworkChoice,
 } from "./elixir-ecosystem";
-import { getEcosystemChoice } from "./ecosystem";
-import { getEffectChoice } from "./effect";
 import { getEmailChoice } from "./email";
 import { getExamplesChoice } from "./examples";
 import { getFileStorageChoice } from "./file-storage";
@@ -217,12 +223,18 @@ import {
   getGoCachingChoice,
   getGoCliChoice,
   getGoConfigChoice,
+  getGoDIChoice,
   getGoLoggingChoice,
+  getGoMigrationsChoice,
   getGoMessageQueueChoice,
   getGoObservabilityChoice,
   getGoOrmChoice,
+  getGoProtoToolingChoice,
+  getGoQualityChoice,
   getGoRealtimeChoice,
+  getGoTemplatingChoice,
   getGoTestingChoice,
+  getGoValidationChoice,
   getGoWebFrameworkChoice,
 } from "./go-ecosystem";
 import { getI18nChoice } from "./i18n";
@@ -249,17 +261,12 @@ import {
   getMobileTestingChoice,
   getMobileUIChoice,
 } from "./mobile";
-import {
-  gatherMultiEcosystemConfig,
-  getCompositionModeChoice,
-} from "./multi-ecosystem-composer";
+import { gatherMultiEcosystemConfig, getCompositionModeChoice } from "./multi-ecosystem-composer";
 import { navigableGroup, type NavigablePromptGroup } from "./navigable-group";
 import { getObservabilityChoice } from "./observability";
 import { getORMChoice } from "./orm";
 import { getPackageManagerChoice } from "./package-manager";
-import { getWorkspaceShapeChoice } from "./workspace-shape";
 import { getPaymentsChoice } from "./payments";
-import { getRateLimitChoice } from "./rate-limit";
 import { PROMPT_RESOLVER_REGISTRY } from "./prompt-resolver-registry";
 import {
   getPythonAiChoice,
@@ -284,6 +291,7 @@ import {
   getPythonValidationChoice,
   getPythonWebFrameworkChoice,
 } from "./python-ecosystem";
+import { getRateLimitChoice } from "./rate-limit";
 import { getRealtimeChoice } from "./realtime";
 import { getRuntimeChoice } from "./runtime";
 import {
@@ -303,14 +311,15 @@ import {
   getRustWebFrameworkChoice,
 } from "./rust-ecosystem";
 import { getSearchChoice } from "./search";
-import { getVectorDbChoice } from "./vector-db";
 import { getServerDeploymentChoice } from "./server-deploy";
 import { getShadcnOptions, type ShadcnOptions } from "./shadcn-options";
 import { getStateManagementChoice } from "./state-management";
 import { getTestingChoice } from "./testing";
 import { getUILibraryChoice } from "./ui-library";
 import { getValidationChoice } from "./validation";
+import { getVectorDbChoice } from "./vector-db";
 import { getDeploymentChoice } from "./web-deploy";
+import { getWorkspaceShapeChoice } from "./workspace-shape";
 
 type PromptGroupResults = {
   // Ecosystem choice first
@@ -415,6 +424,12 @@ type PromptGroupResults = {
   goCaching: GoCaching;
   goConfig: GoConfig;
   goObservability: GoObservability;
+  goValidation: GoValidation;
+  goQuality: GoQuality;
+  goMigrations: GoMigrations;
+  goTemplating: GoTemplating;
+  goProtoTooling: GoProtoTooling;
+  goDI: GoDI;
   // Java ecosystem
   javaWebFramework: JavaWebFramework;
   javaLanguage: JavaLanguage;
@@ -586,6 +601,12 @@ const CONFIG_PROMPT_ENTRY_KEY_MAP = {
   goCaching: true,
   goConfig: true,
   goObservability: true,
+  goValidation: true,
+  goQuality: true,
+  goMigrations: true,
+  goTemplating: true,
+  goProtoTooling: true,
+  goDI: true,
   javaWebFramework: true,
   javaLanguage: true,
   javaBuildTool: true,
@@ -646,7 +667,11 @@ export function hasStackPromptFlags(flags: Partial<ProjectConfig>) {
   });
 }
 
-function getPromptResolutionValue(key: ConfigPromptKey, results: Partial<PromptGroupResults>, flags: Partial<ProjectConfig>) {
+function getPromptResolutionValue(
+  key: ConfigPromptKey,
+  results: Partial<PromptGroupResults>,
+  flags: Partial<ProjectConfig>,
+) {
   const resolver = PROMPT_RESOLVER_REGISTRY[key];
   if (!resolver) return undefined;
 
@@ -731,7 +756,8 @@ export async function getScopedDefaultPromptValue<K extends PromptGroupKey>(
   }
 
   if (key === "effect" && results.ecosystem === "typescript") {
-    return (flags.effect ?? (results.backend === "effect" ? "effect-full" : "none")) as PromptGroupResults[K];
+    return (flags.effect ??
+      (results.backend === "effect" ? "effect-full" : "none")) as PromptGroupResults[K];
   }
 
   if (key === "validation" && results.ecosystem === "typescript" && results.backend === "effect") {
@@ -783,803 +809,828 @@ export async function gatherConfig(
 
   const shouldPromptForScope = !hasStackPromptFlags(flags);
   const promptEntries = {
-      // Ecosystem choice first
-      ecosystem: () => getEcosystemChoice(flags.ecosystem),
-      configScope: () => (shouldPromptForScope ? getConfigScopeChoice() : Promise.resolve("full")),
-      configSections: ({ results }) => {
-        if (!shouldPromptForScope || results.configScope !== "custom") {
-          return Promise.resolve([] as string[]);
+    // Ecosystem choice first
+    ecosystem: () => getEcosystemChoice(flags.ecosystem),
+    configScope: () => (shouldPromptForScope ? getConfigScopeChoice() : Promise.resolve("full")),
+    configSections: ({ results }) => {
+      if (!shouldPromptForScope || results.configScope !== "custom") {
+        return Promise.resolve([] as string[]);
+      }
+      return getConfigSectionsChoice(results.ecosystem ?? "typescript");
+    },
+    // TypeScript ecosystem prompts (skip if Rust or Python)
+    frontend: ({ results }) => {
+      if (results.ecosystem === "react-native") {
+        return getNativeFrontendChoice(flags.frontend);
+      }
+      if (results.ecosystem !== "typescript") return Promise.resolve([] as Frontend[]);
+      return getFrontendChoice(flags.frontend, flags.backend, flags.auth);
+    },
+    astroIntegration: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve(undefined);
+      if (results.frontend?.includes("astro")) {
+        return getAstroIntegrationChoice(flags.astroIntegration);
+      }
+      return Promise.resolve(undefined);
+    },
+    appPlatforms: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve([] as Addons[]);
+      return getAppPlatformsChoice(flags.addons, results.frontend);
+    },
+    uiLibrary: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve("none" as UILibrary);
+      if (hasWebStyling(results.frontend)) {
+        return getUILibraryChoice(flags.uiLibrary, results.frontend, results.astroIntegration);
+      }
+      return Promise.resolve("none" as UILibrary);
+    },
+    shadcnOptions: ({ results }) => {
+      if (results.uiLibrary !== "shadcn-ui") return Promise.resolve(undefined);
+      return getShadcnOptions({
+        shadcnBase: flags.shadcnBase,
+        shadcnStyle: flags.shadcnStyle,
+        shadcnIconLibrary: flags.shadcnIconLibrary,
+        shadcnColorTheme: flags.shadcnColorTheme,
+        shadcnBaseColor: flags.shadcnBaseColor,
+        shadcnFont: flags.shadcnFont,
+        shadcnRadius: flags.shadcnRadius,
+      });
+    },
+    cssFramework: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve("none" as CSSFramework);
+      if (hasWebStyling(results.frontend)) {
+        return getCSSFrameworkChoice(flags.cssFramework, results.uiLibrary, results.frontend);
+      }
+      return Promise.resolve("none" as CSSFramework);
+    },
+    backend: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve("none" as Backend);
+      return getBackendFrameworkChoice(flags.backend, results.frontend);
+    },
+    runtime: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve("none" as Runtime);
+      return getRuntimeChoice(flags.runtime, results.backend);
+    },
+    database: ({ results }) => {
+      if (results.ecosystem !== "typescript") {
+        if (results.ecosystem === "python" || results.ecosystem === "dotnet") {
+          return Promise.resolve((flags.database ?? "none") as Database);
         }
-        return getConfigSectionsChoice(results.ecosystem ?? "typescript");
-      },
-      // TypeScript ecosystem prompts (skip if Rust or Python)
-      frontend: ({ results }) => {
-        if (results.ecosystem === "react-native") {
-          return getNativeFrontendChoice(flags.frontend);
-        }
-        if (results.ecosystem !== "typescript") return Promise.resolve([] as Frontend[]);
-        return getFrontendChoice(flags.frontend, flags.backend, flags.auth);
-      },
-      astroIntegration: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve(undefined);
-        if (results.frontend?.includes("astro")) {
-          return getAstroIntegrationChoice(flags.astroIntegration);
-        }
-        return Promise.resolve(undefined);
-      },
-      appPlatforms: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve([] as Addons[]);
-        return getAppPlatformsChoice(flags.addons, results.frontend);
-      },
-      uiLibrary: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as UILibrary);
-        if (hasWebStyling(results.frontend)) {
-          return getUILibraryChoice(flags.uiLibrary, results.frontend, results.astroIntegration);
-        }
-        return Promise.resolve("none" as UILibrary);
-      },
-      shadcnOptions: ({ results }) => {
-        if (results.uiLibrary !== "shadcn-ui") return Promise.resolve(undefined);
-        return getShadcnOptions({
-          shadcnBase: flags.shadcnBase,
-          shadcnStyle: flags.shadcnStyle,
-          shadcnIconLibrary: flags.shadcnIconLibrary,
-          shadcnColorTheme: flags.shadcnColorTheme,
-          shadcnBaseColor: flags.shadcnBaseColor,
-          shadcnFont: flags.shadcnFont,
-          shadcnRadius: flags.shadcnRadius,
-        });
-      },
-      cssFramework: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as CSSFramework);
-        if (hasWebStyling(results.frontend)) {
-          return getCSSFrameworkChoice(flags.cssFramework, results.uiLibrary, results.frontend);
-        }
-        return Promise.resolve("none" as CSSFramework);
-      },
-      backend: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as Backend);
-        return getBackendFrameworkChoice(flags.backend, results.frontend);
-      },
-      runtime: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as Runtime);
-        return getRuntimeChoice(flags.runtime, results.backend);
-      },
-      database: ({ results }) => {
-        if (results.ecosystem !== "typescript") {
-          if (results.ecosystem === "python" || results.ecosystem === "dotnet") {
-            return Promise.resolve((flags.database ?? "none") as Database);
-          }
-          return Promise.resolve("none" as Database);
-        }
-        return getDatabaseChoice(flags.database, results.backend, results.runtime);
-      },
-      orm: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as ORM);
-        return getORMChoice(
-          flags.orm,
-          results.database !== "none",
-          results.database,
-          results.backend,
-          results.runtime,
+        return Promise.resolve("none" as Database);
+      }
+      return getDatabaseChoice(flags.database, results.backend, results.runtime);
+    },
+    orm: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve("none" as ORM);
+      return getORMChoice(
+        flags.orm,
+        results.database !== "none",
+        results.database,
+        results.backend,
+        results.runtime,
+      );
+    },
+    api: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve("none" as API);
+      return getApiChoice(
+        flags.api,
+        results.frontend,
+        results.backend,
+        results.astroIntegration,
+      ) as Promise<API>;
+    },
+    auth: ({ results }) => {
+      if (results.ecosystem === "typescript") {
+        return getAuthChoice(flags.auth, results.backend, results.frontend, "typescript");
+      }
+      if (results.ecosystem === "react-native") {
+        return Promise.resolve((flags.auth ?? "none") as Auth);
+      }
+      if (results.ecosystem === "go") {
+        return getAuthChoice(flags.auth, undefined, undefined, "go");
+      }
+      return Promise.resolve("none" as Auth);
+    },
+    payments: ({ results }) => {
+      if (results.ecosystem !== "typescript" && results.ecosystem !== "react-native") {
+        return Promise.resolve("none" as Payments);
+      }
+      return getPaymentsChoice(flags.payments, results.auth, results.backend, results.frontend);
+    },
+    email: ({ results }) => {
+      if (results.ecosystem === "react-native" || results.ecosystem === "elixir") {
+        return Promise.resolve("none" as Email);
+      }
+      return getEmailChoice(flags.email, results.backend, results.ecosystem);
+    },
+    effect: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve("none" as Effect);
+      if (results.backend === "effect" && flags.effect === undefined) {
+        return Promise.resolve("effect-full" as Effect);
+      }
+      return getEffectChoice(flags.effect);
+    },
+    addons: ({ results }) => {
+      if (results.ecosystem !== "typescript") {
+        const nonTypeScriptAddons = (flags.addons ?? []).filter(
+          (addon): addon is Addons =>
+            addon === "docker-compose" || addon === "devcontainer" || addon === "github-actions",
         );
-      },
-      api: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as API);
-        return getApiChoice(
-          flags.api,
-          results.frontend,
-          results.backend,
-          results.astroIntegration,
-        ) as Promise<API>;
-      },
-      auth: ({ results }) => {
-        if (results.ecosystem === "typescript") {
-          return getAuthChoice(flags.auth, results.backend, results.frontend, "typescript");
+        return Promise.resolve(nonTypeScriptAddons);
+      }
+      return getAddonsChoice(
+        flags.addons,
+        results.frontend,
+        results.auth,
+        results.backend,
+        results.runtime,
+        results.api,
+      );
+    },
+    examples: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve([] as Examples[]);
+      return getExamplesChoice(
+        flags.examples,
+        results.frontend,
+        results.backend,
+        results.runtime,
+      ) as Promise<Examples[]>;
+    },
+    dbSetup: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve("none" as DatabaseSetup);
+      return getDBSetupChoice(
+        results.database ?? "none",
+        flags.dbSetup,
+        results.orm,
+        results.backend,
+        results.runtime,
+      );
+    },
+    webDeploy: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve("none" as WebDeploy);
+      return getDeploymentChoice(
+        flags.webDeploy,
+        results.runtime,
+        results.backend,
+        results.frontend,
+      );
+    },
+    serverDeploy: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve("none" as ServerDeploy);
+      return getServerDeploymentChoice(
+        flags.serverDeploy,
+        results.runtime,
+        results.backend,
+        results.webDeploy,
+      );
+    },
+    // TypeScript-specific prompts
+    ai: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve("none" as AI);
+      if (
+        flags.ai === undefined &&
+        results.examples?.includes("chat-sdk") &&
+        requiresChatSdkVercelAI(results.backend, results.frontend, results.runtime)
+      ) {
+        return Promise.resolve("vercel-ai" as AI);
+      }
+      return getAIChoice(flags.ai, results.backend);
+    },
+    validation: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve("none" as Validation);
+      if (results.backend === "effect" && flags.validation === undefined) {
+        return Promise.resolve("effect-schema" as Validation);
+      }
+      return getValidationChoice(flags.validation);
+    },
+    forms: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve("none" as Forms);
+      return getFormsChoice(flags.forms, results.frontend);
+    },
+    stateManagement: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve("none" as StateManagement);
+      return getStateManagementChoice(flags.stateManagement, results.frontend);
+    },
+    animation: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve("none" as Animation);
+      return getAnimationChoice(flags.animation, results.frontend);
+    },
+    testing: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve("none" as Testing);
+      return getTestingChoice(flags.testing);
+    },
+    realtime: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve("none" as Realtime);
+      return getRealtimeChoice(flags.realtime, results.backend);
+    },
+    jobQueue: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve("none" as JobQueue);
+      return getJobQueueChoice(flags.jobQueue, results.backend);
+    },
+    fileUpload: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve("none" as FileUpload);
+      return getFileUploadChoice(flags.fileUpload, results.backend);
+    },
+    logging: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve("none" as Logging);
+      return getLoggingChoice(flags.logging, results.backend);
+    },
+    observability: ({ results }) => {
+      if (results.ecosystem === "react-native" || results.ecosystem === "elixir") {
+        return Promise.resolve("none" as Observability);
+      }
+      return getObservabilityChoice(flags.observability, results.backend, results.ecosystem);
+    },
+    featureFlags: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve("none" as FeatureFlags);
+      return Promise.resolve(flags.featureFlags || "none") as Promise<FeatureFlags>;
+    },
+    analytics: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve("none" as Analytics);
+      return Promise.resolve(flags.analytics || "none") as Promise<Analytics>;
+    },
+    cms: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve("none" as CMS);
+      return getCMSChoice(flags.cms, results.backend, results.frontend);
+    },
+    caching: ({ results }) => {
+      if (results.ecosystem === "react-native" || results.ecosystem === "elixir") {
+        return Promise.resolve("none" as Caching);
+      }
+      return getCachingChoice(flags.caching, results.backend, results.ecosystem);
+    },
+    rateLimit: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve("none" as RateLimit);
+      return getRateLimitChoice(flags.rateLimit, results.backend);
+    },
+    i18n: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve("none" as I18n);
+      return getI18nChoice(flags.i18n, results.frontend);
+    },
+    search: ({ results }) => {
+      if (results.ecosystem === "react-native" || results.ecosystem === "elixir") {
+        return Promise.resolve("none" as Search);
+      }
+      return getSearchChoice(flags.search, results.backend, results.ecosystem);
+    },
+    vectorDb: ({ results }) => {
+      if (results.ecosystem !== "typescript") {
+        return Promise.resolve("none" as VectorDb);
+      }
+      return getVectorDbChoice(flags.vectorDb, results.backend, results.ecosystem);
+    },
+    fileStorage: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve("none" as FileStorage);
+      return getFileStorageChoice(flags.fileStorage, results.backend);
+    },
+    mobileNavigation: ({ results }) => {
+      if (results.ecosystem !== "typescript" && results.ecosystem !== "react-native") {
+        return Promise.resolve("none" as MobileNavigation);
+      }
+      if (!results.frontend?.some((frontend) => frontend.startsWith("native-"))) {
+        return Promise.resolve("none" as MobileNavigation);
+      }
+      return getMobileNavigationChoice(flags.mobileNavigation);
+    },
+    mobileUI: ({ results }) => {
+      if (results.ecosystem !== "typescript" && results.ecosystem !== "react-native") {
+        return Promise.resolve("none" as MobileUI);
+      }
+      if (!results.frontend?.some((frontend) => frontend.startsWith("native-"))) {
+        return Promise.resolve("none" as MobileUI);
+      }
+      if (results.frontend.includes("native-uniwind"))
+        return Promise.resolve("uniwind" as MobileUI);
+      if (results.frontend.includes("native-unistyles")) {
+        return Promise.resolve("unistyles" as MobileUI);
+      }
+      return getMobileUIChoice(flags.mobileUI);
+    },
+    mobileStorage: ({ results }) => {
+      if (results.ecosystem !== "typescript" && results.ecosystem !== "react-native") {
+        return Promise.resolve("none" as MobileStorage);
+      }
+      if (!results.frontend?.some((frontend) => frontend.startsWith("native-"))) {
+        return Promise.resolve("none" as MobileStorage);
+      }
+      return getMobileStorageChoice(flags.mobileStorage);
+    },
+    mobileTesting: ({ results }) => {
+      if (results.ecosystem !== "typescript" && results.ecosystem !== "react-native") {
+        return Promise.resolve("none" as MobileTesting);
+      }
+      if (!results.frontend?.some((frontend) => frontend.startsWith("native-"))) {
+        return Promise.resolve("none" as MobileTesting);
+      }
+      return getMobileTestingChoice(flags.mobileTesting);
+    },
+    mobilePush: ({ results }) => {
+      if (results.ecosystem !== "typescript" && results.ecosystem !== "react-native") {
+        return Promise.resolve("none" as MobilePush);
+      }
+      if (!results.frontend?.some((frontend) => frontend.startsWith("native-"))) {
+        return Promise.resolve("none" as MobilePush);
+      }
+      return getMobilePushChoice(flags.mobilePush);
+    },
+    mobileOTA: ({ results }) => {
+      if (results.ecosystem !== "typescript" && results.ecosystem !== "react-native") {
+        return Promise.resolve("none" as MobileOTA);
+      }
+      if (!results.frontend?.some((frontend) => frontend.startsWith("native-"))) {
+        return Promise.resolve("none" as MobileOTA);
+      }
+      return getMobileOTAChoice(flags.mobileOTA);
+    },
+    mobileDeepLinking: ({ results }) => {
+      if (results.ecosystem !== "typescript" && results.ecosystem !== "react-native") {
+        return Promise.resolve("none" as MobileDeepLinking);
+      }
+      if (!results.frontend?.some((frontend) => frontend.startsWith("native-"))) {
+        return Promise.resolve("none" as MobileDeepLinking);
+      }
+      return getMobileDeepLinkingChoice(flags.mobileDeepLinking);
+    },
+    // Rust ecosystem prompts (skip if TypeScript or Python)
+    rustWebFramework: ({ results }) => {
+      if (results.ecosystem !== "rust") return Promise.resolve("none" as RustWebFramework);
+      return getRustWebFrameworkChoice(flags.rustWebFramework);
+    },
+    rustFrontend: ({ results }) => {
+      if (results.ecosystem !== "rust") return Promise.resolve("none" as RustFrontend);
+      return getRustFrontendChoice(flags.rustFrontend);
+    },
+    rustOrm: ({ results }) => {
+      if (results.ecosystem !== "rust") return Promise.resolve("none" as RustOrm);
+      return getRustOrmChoice(flags.rustOrm);
+    },
+    rustApi: ({ results }) => {
+      if (results.ecosystem !== "rust") return Promise.resolve("none" as RustApi);
+      return getRustApiChoice(flags.rustApi);
+    },
+    rustCli: ({ results }) => {
+      if (results.ecosystem !== "rust") return Promise.resolve("none" as RustCli);
+      return getRustCliChoice(flags.rustCli);
+    },
+    rustLibraries: ({ results }) => {
+      if (results.ecosystem !== "rust") return Promise.resolve([] as RustLibraries[]);
+      return getRustLibrariesChoice(flags.rustLibraries);
+    },
+    rustLogging: ({ results }) => {
+      if (results.ecosystem !== "rust") return Promise.resolve("none" as RustLogging);
+      return getRustLoggingChoice(flags.rustLogging);
+    },
+    rustErrorHandling: ({ results }) => {
+      if (results.ecosystem !== "rust") return Promise.resolve("none" as RustErrorHandling);
+      return getRustErrorHandlingChoice(flags.rustErrorHandling);
+    },
+    rustCaching: ({ results }) => {
+      if (results.ecosystem !== "rust") return Promise.resolve("none" as RustCaching);
+      return getRustCachingChoice(flags.rustCaching);
+    },
+    rustAuth: ({ results }) => {
+      if (results.ecosystem !== "rust") return Promise.resolve("none" as RustAuth);
+      return getRustAuthChoice(flags.rustAuth);
+    },
+    rustRealtime: ({ results }) => {
+      if (results.ecosystem !== "rust") return Promise.resolve("none" as RustRealtime);
+      return getRustRealtimeChoice(flags.rustRealtime);
+    },
+    rustMessageQueue: ({ results }) => {
+      if (results.ecosystem !== "rust") return Promise.resolve("none" as RustMessageQueue);
+      return getRustMessageQueueChoice(flags.rustMessageQueue);
+    },
+    rustObservability: ({ results }) => {
+      if (results.ecosystem !== "rust") return Promise.resolve("none" as RustObservability);
+      return getRustObservabilityChoice(flags.rustObservability);
+    },
+    rustTemplating: ({ results }) => {
+      if (results.ecosystem !== "rust") return Promise.resolve("none" as RustTemplating);
+      return getRustTemplatingChoice(flags.rustTemplating);
+    },
+    // Python ecosystem prompts (skip if TypeScript or Rust)
+    pythonWebFramework: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve("none" as PythonWebFramework);
+      return getPythonWebFrameworkChoice(flags.pythonWebFramework);
+    },
+    pythonOrm: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve("none" as PythonOrm);
+      return getPythonOrmChoice(flags.pythonOrm);
+    },
+    pythonValidation: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve("none" as PythonValidation);
+      return getPythonValidationChoice(flags.pythonValidation);
+    },
+    pythonAi: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve([] as PythonAi[]);
+      return getPythonAiChoice(flags.pythonAi);
+    },
+    pythonAuth: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve("none" as PythonAuth);
+      return getPythonAuthChoice(flags.pythonAuth);
+    },
+    pythonApi: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve("none" as PythonApi);
+      if (results.pythonWebFramework !== "django") {
+        return Promise.resolve("none" as PythonApi);
+      }
+      return getPythonApiChoice(flags.pythonApi);
+    },
+    pythonTaskQueue: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve("none" as PythonTaskQueue);
+      return getPythonTaskQueueChoice(flags.pythonTaskQueue);
+    },
+    pythonGraphql: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve("none" as PythonGraphql);
+      return getPythonGraphqlChoice(flags.pythonGraphql);
+    },
+    pythonQuality: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve("none" as PythonQuality);
+      return getPythonQualityChoice(flags.pythonQuality);
+    },
+    pythonTesting: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve([] as PythonTesting[]);
+      return getPythonTestingChoice(flags.pythonTesting);
+    },
+    pythonCaching: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve("none" as PythonCaching);
+      return getPythonCachingChoice(flags.pythonCaching);
+    },
+    pythonRealtime: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve("none" as PythonRealtime);
+      return getPythonRealtimeChoice(flags.pythonRealtime);
+    },
+    pythonObservability: ({ results }) => {
+      if (results.ecosystem !== "python") {
+        return Promise.resolve("none" as PythonObservability);
+      }
+      return getPythonObservabilityChoice(flags.pythonObservability);
+    },
+    pythonCli: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve([] as PythonCli[]);
+      return getPythonCliChoice(flags.pythonCli);
+    },
+    pythonCloudSdk: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve("none" as PythonCloudSdk);
+      return getPythonCloudSdkChoice(flags.pythonCloudSdk);
+    },
+    pythonHttpClient: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve("none" as PythonHttpClient);
+      return getPythonHttpClientChoice(flags.pythonHttpClient);
+    },
+    pythonData: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve([] as PythonData[]);
+      return getPythonDataChoice(flags.pythonData);
+    },
+    pythonMedia: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve("none" as PythonMedia);
+      return getPythonMediaChoice(flags.pythonMedia);
+    },
+    pythonServer: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve("none" as PythonServer);
+      return getPythonServerChoice(flags.pythonServer);
+    },
+    pythonPackageManager: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve("uv" as PythonPackageManager);
+      return getPythonPackageManagerChoice(flags.pythonPackageManager);
+    },
+    pythonMessageQueue: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve("none" as PythonMessageQueue);
+      return getPythonMessageQueueChoice(flags.pythonMessageQueue);
+    },
+    // Go ecosystem prompts (skip if not Go)
+    goWebFramework: ({ results }) => {
+      if (results.ecosystem !== "go") return Promise.resolve("none" as GoWebFramework);
+      return getGoWebFrameworkChoice(flags.goWebFramework);
+    },
+    goOrm: ({ results }) => {
+      if (results.ecosystem !== "go") return Promise.resolve("none" as GoOrm);
+      return getGoOrmChoice(flags.goOrm);
+    },
+    goApi: ({ results }) => {
+      if (results.ecosystem !== "go") return Promise.resolve("none" as GoApi);
+      return getGoApiChoice(flags.goApi);
+    },
+    goCli: ({ results }) => {
+      if (results.ecosystem !== "go") return Promise.resolve("none" as GoCli);
+      return getGoCliChoice(flags.goCli);
+    },
+    goLogging: ({ results }) => {
+      if (results.ecosystem !== "go") return Promise.resolve("none" as GoLogging);
+      return getGoLoggingChoice(flags.goLogging);
+    },
+    goAuth: ({ results }) => {
+      if (results.ecosystem !== "go") return Promise.resolve("none" as GoAuth);
+      return getGoAuthChoice(flags.goAuth);
+    },
+    goTesting: ({ results }) => {
+      if (results.ecosystem !== "go") return Promise.resolve([] as GoTesting[]);
+      return getGoTestingChoice(flags.goTesting);
+    },
+    goRealtime: ({ results }) => {
+      if (results.ecosystem !== "go") return Promise.resolve("none" as GoRealtime);
+      return getGoRealtimeChoice(flags.goRealtime);
+    },
+    goMessageQueue: ({ results }) => {
+      if (results.ecosystem !== "go") return Promise.resolve("none" as GoMessageQueue);
+      return getGoMessageQueueChoice(flags.goMessageQueue);
+    },
+    goCaching: ({ results }) => {
+      if (results.ecosystem !== "go") return Promise.resolve("none" as GoCaching);
+      return getGoCachingChoice(flags.goCaching);
+    },
+    goConfig: ({ results }) => {
+      if (results.ecosystem !== "go") return Promise.resolve("none" as GoConfig);
+      return getGoConfigChoice(flags.goConfig);
+    },
+    goObservability: ({ results }) => {
+      if (results.ecosystem !== "go") return Promise.resolve("none" as GoObservability);
+      return getGoObservabilityChoice(flags.goObservability);
+    },
+    goValidation: ({ results }) => {
+      if (results.ecosystem !== "go") return Promise.resolve("none" as GoValidation);
+      return getGoValidationChoice(flags.goValidation);
+    },
+    goQuality: ({ results }) => {
+      if (results.ecosystem !== "go") return Promise.resolve("none" as GoQuality);
+      return getGoQualityChoice(flags.goQuality);
+    },
+    goMigrations: ({ results }) => {
+      if (
+        results.ecosystem !== "go" ||
+        !results.database ||
+        !["sqlite", "postgres", "mysql"].includes(results.database)
+      ) {
+        return Promise.resolve("none" as GoMigrations);
+      }
+      return getGoMigrationsChoice(flags.goMigrations);
+    },
+    goTemplating: ({ results }) => {
+      if (results.ecosystem !== "go") return Promise.resolve("none" as GoTemplating);
+      return getGoTemplatingChoice(flags.goTemplating);
+    },
+    goProtoTooling: ({ results }) => {
+      if (results.ecosystem !== "go") return Promise.resolve("none" as GoProtoTooling);
+      return getGoProtoToolingChoice(flags.goProtoTooling);
+    },
+    goDI: ({ results }) => {
+      if (results.ecosystem !== "go") return Promise.resolve("none" as GoDI);
+      return getGoDIChoice(flags.goDI);
+    },
+    // Java ecosystem prompts (skip if not Java)
+    javaWebFramework: ({ results }) => {
+      if (results.ecosystem !== "java") return Promise.resolve("none" as JavaWebFramework);
+      return getJavaWebFrameworkChoice(flags.javaWebFramework);
+    },
+    javaLanguage: ({ results }) => {
+      if (results.ecosystem !== "java") return Promise.resolve("java" as JavaLanguage);
+      // Kotlin is only wired for the Spring Boot scaffold; keep Java otherwise.
+      if (results.javaWebFramework !== "spring-boot") {
+        return Promise.resolve("java" as JavaLanguage);
+      }
+      // The shared capability prompts (email/search/caching/observability)
+      // run before this one; if an already-chosen integration is Java-only,
+      // resolve to Java instead of offering a Kotlin option that would be
+      // normalized away. The build tool is prompted after the language, so a
+      // Maven stand-in satisfies that gate check here — the build-tool prompt
+      // itself hides 'none' when Kotlin is selected.
+      const kotlinBlocker = getKotlinJavaIncompatibilityReason({
+        javaWebFramework: results.javaWebFramework,
+        javaBuildTool: "maven",
+        email: results.email,
+        search: results.search,
+        caching: results.caching,
+        observability: results.observability,
+      });
+      if (kotlinBlocker) {
+        if (flags.javaLanguage === "kotlin") {
+          log.warn(`JVM language set to Java: ${kotlinBlocker}`);
+        } else if (flags.javaLanguage === undefined && flags.javaWebFramework === undefined) {
+          log.info(`Kotlin not offered: ${kotlinBlocker}`);
         }
-        if (results.ecosystem === "react-native") {
-          return Promise.resolve((flags.auth ?? "none") as Auth);
-        }
-        if (results.ecosystem === "go") {
-          return getAuthChoice(flags.auth, undefined, undefined, "go");
-        }
-        return Promise.resolve("none" as Auth);
-      },
-      payments: ({ results }) => {
-        if (results.ecosystem !== "typescript" && results.ecosystem !== "react-native") {
-          return Promise.resolve("none" as Payments);
-        }
-        return getPaymentsChoice(flags.payments, results.auth, results.backend, results.frontend);
-      },
-      email: ({ results }) => {
-        if (results.ecosystem === "react-native" || results.ecosystem === "elixir") {
-          return Promise.resolve("none" as Email);
-        }
-        return getEmailChoice(flags.email, results.backend, results.ecosystem);
-      },
-      effect: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as Effect);
-        if (results.backend === "effect" && flags.effect === undefined) {
-          return Promise.resolve("effect-full" as Effect);
-        }
-        return getEffectChoice(flags.effect);
-      },
-        addons: ({ results }) => {
-          if (results.ecosystem !== "typescript") {
-            const nonTypeScriptAddons = (flags.addons ?? []).filter(
-              (addon): addon is Addons =>
-                addon === "docker-compose" ||
-                addon === "devcontainer" ||
-                addon === "github-actions",
-            );
-            return Promise.resolve(nonTypeScriptAddons);
-          }
-        return getAddonsChoice(
-          flags.addons,
-          results.frontend,
-          results.auth,
-          results.backend,
-          results.runtime,
-          results.api,
-        );
-      },
-      examples: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve([] as Examples[]);
-        return getExamplesChoice(
-          flags.examples,
-          results.frontend,
-          results.backend,
-          results.runtime,
-        ) as Promise<Examples[]>;
-      },
-      dbSetup: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as DatabaseSetup);
-        return getDBSetupChoice(
-          results.database ?? "none",
-          flags.dbSetup,
-          results.orm,
-          results.backend,
-          results.runtime,
-        );
-      },
-      webDeploy: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as WebDeploy);
-        return getDeploymentChoice(
-          flags.webDeploy,
-          results.runtime,
-          results.backend,
-          results.frontend,
-        );
-      },
-      serverDeploy: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as ServerDeploy);
-        return getServerDeploymentChoice(
-          flags.serverDeploy,
-          results.runtime,
-          results.backend,
-          results.webDeploy,
-        );
-      },
-      // TypeScript-specific prompts
-      ai: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as AI);
-        if (
-          flags.ai === undefined &&
-          results.examples?.includes("chat-sdk") &&
-          requiresChatSdkVercelAI(results.backend, results.frontend, results.runtime)
-        ) {
-          return Promise.resolve("vercel-ai" as AI);
-        }
-        return getAIChoice(flags.ai, results.backend);
-      },
-      validation: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as Validation);
-        if (results.backend === "effect" && flags.validation === undefined) {
-          return Promise.resolve("effect-schema" as Validation);
-        }
-        return getValidationChoice(flags.validation);
-      },
-      forms: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as Forms);
-        return getFormsChoice(flags.forms, results.frontend);
-      },
-      stateManagement: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as StateManagement);
-        return getStateManagementChoice(flags.stateManagement, results.frontend);
-      },
-      animation: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as Animation);
-        return getAnimationChoice(flags.animation, results.frontend);
-      },
-      testing: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as Testing);
-        return getTestingChoice(flags.testing);
-      },
-      realtime: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as Realtime);
-        return getRealtimeChoice(flags.realtime, results.backend);
-      },
-      jobQueue: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as JobQueue);
-        return getJobQueueChoice(flags.jobQueue, results.backend);
-      },
-      fileUpload: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as FileUpload);
-        return getFileUploadChoice(flags.fileUpload, results.backend);
-      },
-      logging: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as Logging);
-        return getLoggingChoice(flags.logging, results.backend);
-      },
-      observability: ({ results }) => {
-        if (results.ecosystem === "react-native" || results.ecosystem === "elixir") {
-          return Promise.resolve("none" as Observability);
-        }
-        return getObservabilityChoice(
-          flags.observability,
-          results.backend,
-          results.ecosystem,
-        );
-      },
-      featureFlags: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as FeatureFlags);
-        return Promise.resolve(flags.featureFlags || "none") as Promise<FeatureFlags>;
-      },
-      analytics: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as Analytics);
-        return Promise.resolve(flags.analytics || "none") as Promise<Analytics>;
-      },
-      cms: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as CMS);
-        return getCMSChoice(flags.cms, results.backend, results.frontend);
-      },
-      caching: ({ results }) => {
-        if (results.ecosystem === "react-native" || results.ecosystem === "elixir") {
-          return Promise.resolve("none" as Caching);
-        }
-        return getCachingChoice(flags.caching, results.backend, results.ecosystem);
-      },
-      rateLimit: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as RateLimit);
-        return getRateLimitChoice(flags.rateLimit, results.backend);
-      },
-      i18n: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as I18n);
-        return getI18nChoice(flags.i18n, results.frontend);
-      },
-      search: ({ results }) => {
-        if (results.ecosystem === "react-native" || results.ecosystem === "elixir") {
-          return Promise.resolve("none" as Search);
-        }
-        return getSearchChoice(flags.search, results.backend, results.ecosystem);
-      },
-      vectorDb: ({ results }) => {
-        if (results.ecosystem !== "typescript") {
-          return Promise.resolve("none" as VectorDb);
-        }
-        return getVectorDbChoice(flags.vectorDb, results.backend, results.ecosystem);
-      },
-      fileStorage: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as FileStorage);
-        return getFileStorageChoice(flags.fileStorage, results.backend);
-      },
-      mobileNavigation: ({ results }) => {
-        if (results.ecosystem !== "typescript" && results.ecosystem !== "react-native") {
-          return Promise.resolve("none" as MobileNavigation);
-        }
-        if (!results.frontend?.some((frontend) => frontend.startsWith("native-"))) {
-          return Promise.resolve("none" as MobileNavigation);
-        }
-        return getMobileNavigationChoice(flags.mobileNavigation);
-      },
-      mobileUI: ({ results }) => {
-        if (results.ecosystem !== "typescript" && results.ecosystem !== "react-native") {
-          return Promise.resolve("none" as MobileUI);
-        }
-        if (!results.frontend?.some((frontend) => frontend.startsWith("native-"))) {
-          return Promise.resolve("none" as MobileUI);
-        }
-        if (results.frontend.includes("native-uniwind")) return Promise.resolve("uniwind" as MobileUI);
-        if (results.frontend.includes("native-unistyles")) {
-          return Promise.resolve("unistyles" as MobileUI);
-        }
-        return getMobileUIChoice(flags.mobileUI);
-      },
-      mobileStorage: ({ results }) => {
-        if (results.ecosystem !== "typescript" && results.ecosystem !== "react-native") {
-          return Promise.resolve("none" as MobileStorage);
-        }
-        if (!results.frontend?.some((frontend) => frontend.startsWith("native-"))) {
-          return Promise.resolve("none" as MobileStorage);
-        }
-        return getMobileStorageChoice(flags.mobileStorage);
-      },
-      mobileTesting: ({ results }) => {
-        if (results.ecosystem !== "typescript" && results.ecosystem !== "react-native") {
-          return Promise.resolve("none" as MobileTesting);
-        }
-        if (!results.frontend?.some((frontend) => frontend.startsWith("native-"))) {
-          return Promise.resolve("none" as MobileTesting);
-        }
-        return getMobileTestingChoice(flags.mobileTesting);
-      },
-      mobilePush: ({ results }) => {
-        if (results.ecosystem !== "typescript" && results.ecosystem !== "react-native") {
-          return Promise.resolve("none" as MobilePush);
-        }
-        if (!results.frontend?.some((frontend) => frontend.startsWith("native-"))) {
-          return Promise.resolve("none" as MobilePush);
-        }
-        return getMobilePushChoice(flags.mobilePush);
-      },
-      mobileOTA: ({ results }) => {
-        if (results.ecosystem !== "typescript" && results.ecosystem !== "react-native") {
-          return Promise.resolve("none" as MobileOTA);
-        }
-        if (!results.frontend?.some((frontend) => frontend.startsWith("native-"))) {
-          return Promise.resolve("none" as MobileOTA);
-        }
-        return getMobileOTAChoice(flags.mobileOTA);
-      },
-      mobileDeepLinking: ({ results }) => {
-        if (results.ecosystem !== "typescript" && results.ecosystem !== "react-native") {
-          return Promise.resolve("none" as MobileDeepLinking);
-        }
-        if (!results.frontend?.some((frontend) => frontend.startsWith("native-"))) {
-          return Promise.resolve("none" as MobileDeepLinking);
-        }
-        return getMobileDeepLinkingChoice(flags.mobileDeepLinking);
-      },
-      // Rust ecosystem prompts (skip if TypeScript or Python)
-      rustWebFramework: ({ results }) => {
-        if (results.ecosystem !== "rust") return Promise.resolve("none" as RustWebFramework);
-        return getRustWebFrameworkChoice(flags.rustWebFramework);
-      },
-      rustFrontend: ({ results }) => {
-        if (results.ecosystem !== "rust") return Promise.resolve("none" as RustFrontend);
-        return getRustFrontendChoice(flags.rustFrontend);
-      },
-      rustOrm: ({ results }) => {
-        if (results.ecosystem !== "rust") return Promise.resolve("none" as RustOrm);
-        return getRustOrmChoice(flags.rustOrm);
-      },
-      rustApi: ({ results }) => {
-        if (results.ecosystem !== "rust") return Promise.resolve("none" as RustApi);
-        return getRustApiChoice(flags.rustApi);
-      },
-      rustCli: ({ results }) => {
-        if (results.ecosystem !== "rust") return Promise.resolve("none" as RustCli);
-        return getRustCliChoice(flags.rustCli);
-      },
-      rustLibraries: ({ results }) => {
-        if (results.ecosystem !== "rust") return Promise.resolve([] as RustLibraries[]);
-        return getRustLibrariesChoice(flags.rustLibraries);
-      },
-      rustLogging: ({ results }) => {
-        if (results.ecosystem !== "rust") return Promise.resolve("none" as RustLogging);
-        return getRustLoggingChoice(flags.rustLogging);
-      },
-      rustErrorHandling: ({ results }) => {
-        if (results.ecosystem !== "rust") return Promise.resolve("none" as RustErrorHandling);
-        return getRustErrorHandlingChoice(flags.rustErrorHandling);
-      },
-      rustCaching: ({ results }) => {
-        if (results.ecosystem !== "rust") return Promise.resolve("none" as RustCaching);
-        return getRustCachingChoice(flags.rustCaching);
-      },
-      rustAuth: ({ results }) => {
-        if (results.ecosystem !== "rust") return Promise.resolve("none" as RustAuth);
-        return getRustAuthChoice(flags.rustAuth);
-      },
-      rustRealtime: ({ results }) => {
-        if (results.ecosystem !== "rust") return Promise.resolve("none" as RustRealtime);
-        return getRustRealtimeChoice(flags.rustRealtime);
-      },
-      rustMessageQueue: ({ results }) => {
-        if (results.ecosystem !== "rust") return Promise.resolve("none" as RustMessageQueue);
-        return getRustMessageQueueChoice(flags.rustMessageQueue);
-      },
-      rustObservability: ({ results }) => {
-        if (results.ecosystem !== "rust") return Promise.resolve("none" as RustObservability);
-        return getRustObservabilityChoice(flags.rustObservability);
-      },
-      rustTemplating: ({ results }) => {
-        if (results.ecosystem !== "rust") return Promise.resolve("none" as RustTemplating);
-        return getRustTemplatingChoice(flags.rustTemplating);
-      },
-      // Python ecosystem prompts (skip if TypeScript or Rust)
-      pythonWebFramework: ({ results }) => {
-        if (results.ecosystem !== "python") return Promise.resolve("none" as PythonWebFramework);
-        return getPythonWebFrameworkChoice(flags.pythonWebFramework);
-      },
-      pythonOrm: ({ results }) => {
-        if (results.ecosystem !== "python") return Promise.resolve("none" as PythonOrm);
-        return getPythonOrmChoice(flags.pythonOrm);
-      },
-      pythonValidation: ({ results }) => {
-        if (results.ecosystem !== "python") return Promise.resolve("none" as PythonValidation);
-        return getPythonValidationChoice(flags.pythonValidation);
-      },
-      pythonAi: ({ results }) => {
-        if (results.ecosystem !== "python") return Promise.resolve([] as PythonAi[]);
-        return getPythonAiChoice(flags.pythonAi);
-      },
-      pythonAuth: ({ results }) => {
-        if (results.ecosystem !== "python") return Promise.resolve("none" as PythonAuth);
-        return getPythonAuthChoice(flags.pythonAuth);
-      },
-      pythonApi: ({ results }) => {
-        if (results.ecosystem !== "python") return Promise.resolve("none" as PythonApi);
-        if (results.pythonWebFramework !== "django") {
-          return Promise.resolve("none" as PythonApi);
-        }
-        return getPythonApiChoice(flags.pythonApi);
-      },
-      pythonTaskQueue: ({ results }) => {
-        if (results.ecosystem !== "python") return Promise.resolve("none" as PythonTaskQueue);
-        return getPythonTaskQueueChoice(flags.pythonTaskQueue);
-      },
-      pythonGraphql: ({ results }) => {
-        if (results.ecosystem !== "python") return Promise.resolve("none" as PythonGraphql);
-        return getPythonGraphqlChoice(flags.pythonGraphql);
-      },
-      pythonQuality: ({ results }) => {
-        if (results.ecosystem !== "python") return Promise.resolve("none" as PythonQuality);
-        return getPythonQualityChoice(flags.pythonQuality);
-      },
-      pythonTesting: ({ results }) => {
-        if (results.ecosystem !== "python") return Promise.resolve([] as PythonTesting[]);
-        return getPythonTestingChoice(flags.pythonTesting);
-      },
-      pythonCaching: ({ results }) => {
-        if (results.ecosystem !== "python") return Promise.resolve("none" as PythonCaching);
-        return getPythonCachingChoice(flags.pythonCaching);
-      },
-      pythonRealtime: ({ results }) => {
-        if (results.ecosystem !== "python") return Promise.resolve("none" as PythonRealtime);
-        return getPythonRealtimeChoice(flags.pythonRealtime);
-      },
-      pythonObservability: ({ results }) => {
-        if (results.ecosystem !== "python") {
-          return Promise.resolve("none" as PythonObservability);
-        }
-        return getPythonObservabilityChoice(flags.pythonObservability);
-      },
-      pythonCli: ({ results }) => {
-        if (results.ecosystem !== "python") return Promise.resolve([] as PythonCli[]);
-        return getPythonCliChoice(flags.pythonCli);
-      },
-      pythonCloudSdk: ({ results }) => {
-        if (results.ecosystem !== "python") return Promise.resolve("none" as PythonCloudSdk);
-        return getPythonCloudSdkChoice(flags.pythonCloudSdk);
-      },
-      pythonHttpClient: ({ results }) => {
-        if (results.ecosystem !== "python") return Promise.resolve("none" as PythonHttpClient);
-        return getPythonHttpClientChoice(flags.pythonHttpClient);
-      },
-      pythonData: ({ results }) => {
-        if (results.ecosystem !== "python") return Promise.resolve([] as PythonData[]);
-        return getPythonDataChoice(flags.pythonData);
-      },
-      pythonMedia: ({ results }) => {
-        if (results.ecosystem !== "python") return Promise.resolve("none" as PythonMedia);
-        return getPythonMediaChoice(flags.pythonMedia);
-      },
-      pythonServer: ({ results }) => {
-        if (results.ecosystem !== "python") return Promise.resolve("none" as PythonServer);
-        return getPythonServerChoice(flags.pythonServer);
-      },
-      pythonPackageManager: ({ results }) => {
-        if (results.ecosystem !== "python") return Promise.resolve("uv" as PythonPackageManager);
-        return getPythonPackageManagerChoice(flags.pythonPackageManager);
-      },
-      pythonMessageQueue: ({ results }) => {
-        if (results.ecosystem !== "python") return Promise.resolve("none" as PythonMessageQueue);
-        return getPythonMessageQueueChoice(flags.pythonMessageQueue);
-      },
-      // Go ecosystem prompts (skip if not Go)
-      goWebFramework: ({ results }) => {
-        if (results.ecosystem !== "go") return Promise.resolve("none" as GoWebFramework);
-        return getGoWebFrameworkChoice(flags.goWebFramework);
-      },
-      goOrm: ({ results }) => {
-        if (results.ecosystem !== "go") return Promise.resolve("none" as GoOrm);
-        return getGoOrmChoice(flags.goOrm);
-      },
-      goApi: ({ results }) => {
-        if (results.ecosystem !== "go") return Promise.resolve("none" as GoApi);
-        return getGoApiChoice(flags.goApi);
-      },
-      goCli: ({ results }) => {
-        if (results.ecosystem !== "go") return Promise.resolve("none" as GoCli);
-        return getGoCliChoice(flags.goCli);
-      },
-      goLogging: ({ results }) => {
-        if (results.ecosystem !== "go") return Promise.resolve("none" as GoLogging);
-        return getGoLoggingChoice(flags.goLogging);
-      },
-      goAuth: ({ results }) => {
-        if (results.ecosystem !== "go") return Promise.resolve("none" as GoAuth);
-        return getGoAuthChoice(flags.goAuth);
-      },
-      goTesting: ({ results }) => {
-        if (results.ecosystem !== "go") return Promise.resolve([] as GoTesting[]);
-        return getGoTestingChoice(flags.goTesting);
-      },
-      goRealtime: ({ results }) => {
-        if (results.ecosystem !== "go") return Promise.resolve("none" as GoRealtime);
-        return getGoRealtimeChoice(flags.goRealtime);
-      },
-      goMessageQueue: ({ results }) => {
-        if (results.ecosystem !== "go") return Promise.resolve("none" as GoMessageQueue);
-        return getGoMessageQueueChoice(flags.goMessageQueue);
-      },
-      goCaching: ({ results }) => {
-        if (results.ecosystem !== "go") return Promise.resolve("none" as GoCaching);
-        return getGoCachingChoice(flags.goCaching);
-      },
-      goConfig: ({ results }) => {
-        if (results.ecosystem !== "go") return Promise.resolve("none" as GoConfig);
-        return getGoConfigChoice(flags.goConfig);
-      },
-      goObservability: ({ results }) => {
-        if (results.ecosystem !== "go") return Promise.resolve("none" as GoObservability);
-        return getGoObservabilityChoice(flags.goObservability);
-      },
-      // Java ecosystem prompts (skip if not Java)
-      javaWebFramework: ({ results }) => {
-        if (results.ecosystem !== "java") return Promise.resolve("none" as JavaWebFramework);
-        return getJavaWebFrameworkChoice(flags.javaWebFramework);
-      },
-      javaLanguage: ({ results }) => {
-        if (results.ecosystem !== "java") return Promise.resolve("java" as JavaLanguage);
-        // Kotlin is only wired for the Spring Boot scaffold; keep Java otherwise.
-        if (results.javaWebFramework !== "spring-boot") {
-          return Promise.resolve("java" as JavaLanguage);
-        }
-        // The shared capability prompts (email/search/caching/observability)
-        // run before this one; if an already-chosen integration is Java-only,
-        // resolve to Java instead of offering a Kotlin option that would be
-        // normalized away. The build tool is prompted after the language, so a
-        // Maven stand-in satisfies that gate check here — the build-tool prompt
-        // itself hides 'none' when Kotlin is selected.
-        const kotlinBlocker = getKotlinJavaIncompatibilityReason({
-          javaWebFramework: results.javaWebFramework,
-          javaBuildTool: "maven",
-          email: results.email,
-          search: results.search,
-          caching: results.caching,
-          observability: results.observability,
-        });
-        if (kotlinBlocker) {
-          if (flags.javaLanguage === "kotlin") {
-            log.warn(`JVM language set to Java: ${kotlinBlocker}`);
-          } else if (flags.javaLanguage === undefined && flags.javaWebFramework === undefined) {
-            log.info(`Kotlin not offered: ${kotlinBlocker}`);
-          }
-          return Promise.resolve("java" as JavaLanguage);
-        }
-        // Honor an explicit --java-language flag (resolves without prompting).
-        if (flags.javaLanguage !== undefined) {
-          return getJavaLanguageChoice(flags.javaLanguage);
-        }
-        // Flag-driven run (framework was passed as a flag) without --java-language:
-        // default to Java without prompting so existing non-interactive Java
-        // scaffolds stay byte-identical and never hang on a new prompt. The JVM
-        // language prompt only appears in the fully interactive flow.
-        if (flags.javaWebFramework !== undefined) {
-          return Promise.resolve("java" as JavaLanguage);
-        }
+        return Promise.resolve("java" as JavaLanguage);
+      }
+      // Honor an explicit --java-language flag (resolves without prompting).
+      if (flags.javaLanguage !== undefined) {
         return getJavaLanguageChoice(flags.javaLanguage);
-      },
-      javaBuildTool: ({ results }) => {
-        if (results.ecosystem !== "java") return Promise.resolve("none" as JavaBuildTool);
-        return getJavaBuildToolChoice(flags.javaBuildTool, results.javaLanguage);
-      },
-      javaOrm: ({ results }) => {
-        if (results.ecosystem !== "java") return Promise.resolve("none" as JavaOrm);
-        if (results.javaWebFramework !== "spring-boot" || results.javaBuildTool === "none") {
-          return Promise.resolve("none" as JavaOrm);
-        }
-        return getJavaOrmChoice(flags.javaOrm, results.javaLanguage);
-      },
-      javaAuth: ({ results }) => {
-        if (results.ecosystem !== "java") return Promise.resolve("none" as JavaAuth);
-        if (results.javaWebFramework !== "spring-boot" || results.javaBuildTool === "none") {
-          return Promise.resolve("none" as JavaAuth);
-        }
-        return getJavaAuthChoice(flags.javaAuth);
-      },
-      javaApi: ({ results }) => {
-        if (results.ecosystem !== "java") return Promise.resolve("none" as JavaApi);
-        if (results.javaWebFramework !== "spring-boot") {
-          return Promise.resolve("none" as JavaApi);
-        }
-        return getJavaApiChoice(flags.javaApi, results.javaLanguage);
-      },
-      javaLogging: ({ results }) => {
-        if (results.ecosystem !== "java") return Promise.resolve("none" as JavaLogging);
-        if (results.javaWebFramework !== "spring-boot") {
-          return Promise.resolve("none" as JavaLogging);
-        }
-        return getJavaLoggingChoice(flags.javaLogging);
-      },
-      javaLibraries: ({ results }) => {
-        if (results.ecosystem !== "java") return Promise.resolve([] as JavaLibraries[]);
-        if (results.javaWebFramework !== "spring-boot" || results.javaBuildTool === "none") {
-          return Promise.resolve([] as JavaLibraries[]);
-        }
-        return getJavaLibrariesChoice(flags.javaLibraries, results.javaLanguage);
-      },
-      javaTestingLibraries: ({ results }) => {
-        if (results.ecosystem !== "java") return Promise.resolve([] as JavaTestingLibraries[]);
-        if (results.javaBuildTool === "none") {
-          return Promise.resolve([] as JavaTestingLibraries[]);
-        }
-        return getJavaTestingLibrariesChoice(flags.javaTestingLibraries, results.javaLanguage);
-      },
-      // .NET ecosystem prompts (skip if not .NET)
-      dotnetWebFramework: ({ results }) => {
-        if (results.ecosystem !== "dotnet") {
-          return Promise.resolve("none" as DotnetWebFramework);
-        }
-        return getDotnetWebFrameworkChoice(flags.dotnetWebFramework);
-      },
-      dotnetOrm: ({ results }) => {
-        if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetOrm);
-        if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetOrm);
-        return getDotnetOrmChoice(flags.dotnetOrm);
-      },
-      dotnetAuth: ({ results }) => {
-        if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetAuth);
-        if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetAuth);
-        return getDotnetAuthChoice(flags.dotnetAuth);
-      },
-      dotnetApi: ({ results }) => {
-        if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetApi);
-        if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetApi);
-        return getDotnetApiChoice(flags.dotnetApi);
-      },
-      dotnetTesting: ({ results }) => {
-        if (results.ecosystem !== "dotnet") return Promise.resolve([] as DotnetTesting[]);
-        return getDotnetTestingChoice(flags.dotnetTesting);
-      },
-      dotnetJobQueue: ({ results }) => {
-        if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetJobQueue);
-        if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetJobQueue);
-        return getDotnetJobQueueChoice(flags.dotnetJobQueue);
-      },
-      dotnetRealtime: ({ results }) => {
-        if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetRealtime);
-        if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetRealtime);
-        return getDotnetRealtimeChoice(flags.dotnetRealtime);
-      },
-      dotnetObservability: ({ results }) => {
-        if (results.ecosystem !== "dotnet") return Promise.resolve([] as DotnetObservability[]);
-        return getDotnetObservabilityChoice(flags.dotnetObservability);
-      },
-      dotnetValidation: ({ results }) => {
-        if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetValidation);
-        return getDotnetValidationChoice(flags.dotnetValidation);
-      },
-      dotnetCaching: ({ results }) => {
-        if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetCaching);
-        if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetCaching);
-        return getDotnetCachingChoice(flags.dotnetCaching);
-      },
-      dotnetDeploy: ({ results }) => {
-        if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetDeploy);
-        if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetDeploy);
-        return getDotnetDeployChoice(flags.dotnetDeploy);
-      },
-      // Elixir ecosystem prompts (skip if not Elixir)
-      elixirWebFramework: ({ results }) => {
-        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirWebFramework);
-        return getElixirWebFrameworkChoice(flags.elixirWebFramework);
-      },
-      elixirOrm: ({ results }) => {
-        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirOrm);
-        return getElixirOrmChoice(flags.elixirOrm);
-      },
-      elixirAuth: ({ results }) => {
-        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirAuth);
-        return getElixirAuthChoice(flags.elixirAuth);
-      },
-      elixirApi: ({ results }) => {
-        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirApi);
-        return getElixirApiChoice(flags.elixirApi);
-      },
-      elixirRealtime: ({ results }) => {
-        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirRealtime);
-        return getElixirRealtimeChoice(flags.elixirRealtime);
-      },
-      elixirJobs: ({ results }) => {
-        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirJobs);
-        return getElixirJobsChoice(flags.elixirJobs);
-      },
-      elixirValidation: ({ results }) => {
-        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirValidation);
-        return getElixirValidationChoice(flags.elixirValidation);
-      },
-      elixirHttp: ({ results }) => {
-        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirHttp);
-        return getElixirHttpChoice(flags.elixirHttp);
-      },
-      elixirJson: ({ results }) => {
-        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirJson);
-        return getElixirJsonChoice(flags.elixirJson);
-      },
-      elixirEmail: ({ results }) => {
-        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirEmail);
-        return getElixirEmailChoice(flags.elixirEmail);
-      },
-      elixirCaching: ({ results }) => {
-        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirCaching);
-        return getElixirCachingChoice(flags.elixirCaching);
-      },
-      elixirObservability: ({ results }) => {
-        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirObservability);
-        return getElixirObservabilityChoice(flags.elixirObservability);
-      },
-      elixirTesting: ({ results }) => {
-        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirTesting);
-        return getElixirTestingChoice(flags.elixirTesting);
-      },
-      elixirQuality: ({ results }) => {
-        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirQuality);
-        return getElixirQualityChoice(flags.elixirQuality);
-      },
-      elixirI18n: ({ results }) => {
-        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirI18n);
-        return getElixirI18nChoice(flags.elixirI18n);
-      },
-      elixirHttpServer: ({ results }) => {
-        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirHttpServer);
-        return getElixirHttpServerChoice(flags.elixirHttpServer);
-      },
-      elixirApplicationFramework: ({ results }) => {
-        if (results.ecosystem !== "elixir") {
-          return Promise.resolve("none" as ElixirApplicationFramework);
-        }
-        return getElixirApplicationFrameworkChoice(flags.elixirApplicationFramework);
-      },
-      elixirDocumentation: ({ results }) => {
-        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirDocumentation);
-        return getElixirDocumentationChoice(flags.elixirDocumentation);
-      },
-      elixirClustering: ({ results }) => {
-        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirClustering);
-        return getElixirClusteringChoice(flags.elixirClustering);
-      },
-      elixirDeploy: ({ results }) => {
-        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirDeploy);
-        return getElixirDeployChoice(flags.elixirDeploy);
-      },
-      elixirLibraries: ({ results }) => {
-        if (results.ecosystem !== "elixir") return Promise.resolve([] as ElixirLibraries[]);
-        return getElixirLibrariesChoice(flags.elixirLibraries);
-      },
-      // Keep at end
-      aiDocs: () => getAiDocsChoice(flags.aiDocs),
-      git: () => getGitChoice(flags.git),
-      workspaceShape: ({ results }) =>
-        getWorkspaceShapeChoice(flags.workspaceShape, results.backend, results.frontend),
-      packageManager: ({ results }) => {
-        // Skip package manager prompt for non-JS ecosystems.
-        if (
-          results.ecosystem === "rust" ||
-          results.ecosystem === "python" ||
-          results.ecosystem === "go" ||
-          results.ecosystem === "java" ||
-          results.ecosystem === "dotnet" ||
-          results.ecosystem === "elixir"
-        )
-          return Promise.resolve(flags.packageManager ?? getUserPkgManager());
-        return getPackageManagerChoice(flags.packageManager);
-      },
-      install: ({ results }) =>
-        getinstallChoice(flags.install, results.ecosystem, results.javaBuildTool),
-    } satisfies NavigablePromptGroup<PromptGroupResults>;
+      }
+      // Flag-driven run (framework was passed as a flag) without --java-language:
+      // default to Java without prompting so existing non-interactive Java
+      // scaffolds stay byte-identical and never hang on a new prompt. The JVM
+      // language prompt only appears in the fully interactive flow.
+      if (flags.javaWebFramework !== undefined) {
+        return Promise.resolve("java" as JavaLanguage);
+      }
+      return getJavaLanguageChoice(flags.javaLanguage);
+    },
+    javaBuildTool: ({ results }) => {
+      if (results.ecosystem !== "java") return Promise.resolve("none" as JavaBuildTool);
+      return getJavaBuildToolChoice(flags.javaBuildTool, results.javaLanguage);
+    },
+    javaOrm: ({ results }) => {
+      if (results.ecosystem !== "java") return Promise.resolve("none" as JavaOrm);
+      if (results.javaWebFramework !== "spring-boot" || results.javaBuildTool === "none") {
+        return Promise.resolve("none" as JavaOrm);
+      }
+      return getJavaOrmChoice(flags.javaOrm, results.javaLanguage);
+    },
+    javaAuth: ({ results }) => {
+      if (results.ecosystem !== "java") return Promise.resolve("none" as JavaAuth);
+      if (results.javaWebFramework !== "spring-boot" || results.javaBuildTool === "none") {
+        return Promise.resolve("none" as JavaAuth);
+      }
+      return getJavaAuthChoice(flags.javaAuth);
+    },
+    javaApi: ({ results }) => {
+      if (results.ecosystem !== "java") return Promise.resolve("none" as JavaApi);
+      if (results.javaWebFramework !== "spring-boot") {
+        return Promise.resolve("none" as JavaApi);
+      }
+      return getJavaApiChoice(flags.javaApi, results.javaLanguage);
+    },
+    javaLogging: ({ results }) => {
+      if (results.ecosystem !== "java") return Promise.resolve("none" as JavaLogging);
+      if (results.javaWebFramework !== "spring-boot") {
+        return Promise.resolve("none" as JavaLogging);
+      }
+      return getJavaLoggingChoice(flags.javaLogging);
+    },
+    javaLibraries: ({ results }) => {
+      if (results.ecosystem !== "java") return Promise.resolve([] as JavaLibraries[]);
+      if (results.javaWebFramework !== "spring-boot" || results.javaBuildTool === "none") {
+        return Promise.resolve([] as JavaLibraries[]);
+      }
+      return getJavaLibrariesChoice(flags.javaLibraries, results.javaLanguage);
+    },
+    javaTestingLibraries: ({ results }) => {
+      if (results.ecosystem !== "java") return Promise.resolve([] as JavaTestingLibraries[]);
+      if (results.javaBuildTool === "none") {
+        return Promise.resolve([] as JavaTestingLibraries[]);
+      }
+      return getJavaTestingLibrariesChoice(flags.javaTestingLibraries, results.javaLanguage);
+    },
+    // .NET ecosystem prompts (skip if not .NET)
+    dotnetWebFramework: ({ results }) => {
+      if (results.ecosystem !== "dotnet") {
+        return Promise.resolve("none" as DotnetWebFramework);
+      }
+      return getDotnetWebFrameworkChoice(flags.dotnetWebFramework);
+    },
+    dotnetOrm: ({ results }) => {
+      if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetOrm);
+      if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetOrm);
+      return getDotnetOrmChoice(flags.dotnetOrm);
+    },
+    dotnetAuth: ({ results }) => {
+      if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetAuth);
+      if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetAuth);
+      return getDotnetAuthChoice(flags.dotnetAuth);
+    },
+    dotnetApi: ({ results }) => {
+      if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetApi);
+      if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetApi);
+      return getDotnetApiChoice(flags.dotnetApi);
+    },
+    dotnetTesting: ({ results }) => {
+      if (results.ecosystem !== "dotnet") return Promise.resolve([] as DotnetTesting[]);
+      return getDotnetTestingChoice(flags.dotnetTesting);
+    },
+    dotnetJobQueue: ({ results }) => {
+      if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetJobQueue);
+      if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetJobQueue);
+      return getDotnetJobQueueChoice(flags.dotnetJobQueue);
+    },
+    dotnetRealtime: ({ results }) => {
+      if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetRealtime);
+      if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetRealtime);
+      return getDotnetRealtimeChoice(flags.dotnetRealtime);
+    },
+    dotnetObservability: ({ results }) => {
+      if (results.ecosystem !== "dotnet") return Promise.resolve([] as DotnetObservability[]);
+      return getDotnetObservabilityChoice(flags.dotnetObservability);
+    },
+    dotnetValidation: ({ results }) => {
+      if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetValidation);
+      return getDotnetValidationChoice(flags.dotnetValidation);
+    },
+    dotnetCaching: ({ results }) => {
+      if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetCaching);
+      if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetCaching);
+      return getDotnetCachingChoice(flags.dotnetCaching);
+    },
+    dotnetDeploy: ({ results }) => {
+      if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetDeploy);
+      if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetDeploy);
+      return getDotnetDeployChoice(flags.dotnetDeploy);
+    },
+    // Elixir ecosystem prompts (skip if not Elixir)
+    elixirWebFramework: ({ results }) => {
+      if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirWebFramework);
+      return getElixirWebFrameworkChoice(flags.elixirWebFramework);
+    },
+    elixirOrm: ({ results }) => {
+      if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirOrm);
+      return getElixirOrmChoice(flags.elixirOrm);
+    },
+    elixirAuth: ({ results }) => {
+      if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirAuth);
+      return getElixirAuthChoice(flags.elixirAuth);
+    },
+    elixirApi: ({ results }) => {
+      if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirApi);
+      return getElixirApiChoice(flags.elixirApi);
+    },
+    elixirRealtime: ({ results }) => {
+      if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirRealtime);
+      return getElixirRealtimeChoice(flags.elixirRealtime);
+    },
+    elixirJobs: ({ results }) => {
+      if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirJobs);
+      return getElixirJobsChoice(flags.elixirJobs);
+    },
+    elixirValidation: ({ results }) => {
+      if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirValidation);
+      return getElixirValidationChoice(flags.elixirValidation);
+    },
+    elixirHttp: ({ results }) => {
+      if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirHttp);
+      return getElixirHttpChoice(flags.elixirHttp);
+    },
+    elixirJson: ({ results }) => {
+      if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirJson);
+      return getElixirJsonChoice(flags.elixirJson);
+    },
+    elixirEmail: ({ results }) => {
+      if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirEmail);
+      return getElixirEmailChoice(flags.elixirEmail);
+    },
+    elixirCaching: ({ results }) => {
+      if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirCaching);
+      return getElixirCachingChoice(flags.elixirCaching);
+    },
+    elixirObservability: ({ results }) => {
+      if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirObservability);
+      return getElixirObservabilityChoice(flags.elixirObservability);
+    },
+    elixirTesting: ({ results }) => {
+      if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirTesting);
+      return getElixirTestingChoice(flags.elixirTesting);
+    },
+    elixirQuality: ({ results }) => {
+      if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirQuality);
+      return getElixirQualityChoice(flags.elixirQuality);
+    },
+    elixirI18n: ({ results }) => {
+      if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirI18n);
+      return getElixirI18nChoice(flags.elixirI18n);
+    },
+    elixirHttpServer: ({ results }) => {
+      if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirHttpServer);
+      return getElixirHttpServerChoice(flags.elixirHttpServer);
+    },
+    elixirApplicationFramework: ({ results }) => {
+      if (results.ecosystem !== "elixir") {
+        return Promise.resolve("none" as ElixirApplicationFramework);
+      }
+      return getElixirApplicationFrameworkChoice(flags.elixirApplicationFramework);
+    },
+    elixirDocumentation: ({ results }) => {
+      if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirDocumentation);
+      return getElixirDocumentationChoice(flags.elixirDocumentation);
+    },
+    elixirClustering: ({ results }) => {
+      if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirClustering);
+      return getElixirClusteringChoice(flags.elixirClustering);
+    },
+    elixirDeploy: ({ results }) => {
+      if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirDeploy);
+      return getElixirDeployChoice(flags.elixirDeploy);
+    },
+    elixirLibraries: ({ results }) => {
+      if (results.ecosystem !== "elixir") return Promise.resolve([] as ElixirLibraries[]);
+      return getElixirLibrariesChoice(flags.elixirLibraries);
+    },
+    // Keep at end
+    aiDocs: () => getAiDocsChoice(flags.aiDocs),
+    git: () => getGitChoice(flags.git),
+    workspaceShape: ({ results }) =>
+      getWorkspaceShapeChoice(flags.workspaceShape, results.backend, results.frontend),
+    packageManager: ({ results }) => {
+      // Skip package manager prompt for non-JS ecosystems.
+      if (
+        results.ecosystem === "rust" ||
+        results.ecosystem === "python" ||
+        results.ecosystem === "go" ||
+        results.ecosystem === "java" ||
+        results.ecosystem === "dotnet" ||
+        results.ecosystem === "elixir"
+      )
+        return Promise.resolve(flags.packageManager ?? getUserPkgManager());
+      return getPackageManagerChoice(flags.packageManager);
+    },
+    install: ({ results }) =>
+      getinstallChoice(flags.install, results.ecosystem, results.javaBuildTool),
+  } satisfies NavigablePromptGroup<PromptGroupResults>;
 
   const scopedPromptEntries = Object.fromEntries(
     Object.entries(promptEntries).map(([key, prompt]) => [
@@ -1588,12 +1639,9 @@ export async function gatherConfig(
     ]),
   ) as NavigablePromptGroup<PromptGroupResults>;
 
-  const result = await navigableGroup<PromptGroupResults>(
-    scopedPromptEntries,
-    {
-      onCancel: () => exitCancelled("Operation cancelled"),
-    },
-  );
+  const result = await navigableGroup<PromptGroupResults>(scopedPromptEntries, {
+    onCancel: () => exitCancelled("Operation cancelled"),
+  });
 
   return {
     projectName: projectName,
@@ -1702,6 +1750,12 @@ export async function gatherConfig(
     goCaching: result.goCaching,
     goConfig: result.goConfig,
     goObservability: result.goObservability,
+    goValidation: result.goValidation,
+    goQuality: result.goQuality,
+    goMigrations: result.goMigrations,
+    goTemplating: result.goTemplating,
+    goProtoTooling: result.goProtoTooling,
+    goDI: result.goDI,
     // Java ecosystem options
     javaWebFramework: result.javaWebFramework,
     javaLanguage: result.javaLanguage,

@@ -1,4 +1,4 @@
-{{#if (eq serverDeploy "cloudflare")}}
+{{#if (or (eq serverDeploy "cloudflare") (and (eq webDeploy "cloudflare") (eq backend "self")))}}
 /// <reference types="@cloudflare/workers-types" />
 /// <reference path="../env.d.ts" />
 // For Cloudflare Workers, env is accessed via cloudflare:workers module.
@@ -55,6 +55,11 @@ export const env = createEnv({
 		POLAR_ACCESS_TOKEN: z.string().min(1),
 		POLAR_SUCCESS_URL: z.url(),
 {{/if}}
+{{#if (eq payments "paypal")}}
+		PAYPAL_CLIENT_ID: z.string().min(1),
+		PAYPAL_CLIENT_SECRET: z.string().min(1),
+		PAYPAL_ENVIRONMENT: z.enum(["sandbox", "production"]).default("sandbox"),
+{{/if}}
 {{#if (eq payments "stripe")}}
 		STRIPE_SECRET_KEY: z.string().min(1),
 		STRIPE_WEBHOOK_SECRET: z.string().min(1),
@@ -106,6 +111,14 @@ export const env = createEnv({
 {{#if (eq rateLimit "upstash-ratelimit")}}
 		UPSTASH_REDIS_REST_URL: z.url(),
 		UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
+{{/if}}
+{{#if (eq ai "openai-sdk")}}
+		OPENAI_API_KEY: z.string().min(1),
+		OPENAI_MODEL: z.string().min(1).default("gpt-5-mini"),
+{{/if}}
+{{#if (eq ai "anthropic-sdk")}}
+		ANTHROPIC_API_KEY: z.string().min(1),
+		ANTHROPIC_MODEL: z.string().min(1).default("claude-sonnet-4-6"),
 {{/if}}
 		CORS_ORIGIN: z.url(),
 		NODE_ENV: z.enum(["development", "production", "test"]).default("development"),

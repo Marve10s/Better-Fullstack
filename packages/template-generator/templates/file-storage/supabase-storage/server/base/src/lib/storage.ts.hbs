@@ -17,6 +17,15 @@ const BUCKET_NAME = process.env.SUPABASE_STORAGE_BUCKET ?? "uploads";
 
 const bucket = () => supabase.storage.from(BUCKET_NAME);
 
+type SupabaseStorageFile = {
+  name: string;
+  id: string | null;
+  updated_at: string | null;
+  created_at: string | null;
+  last_accessed_at: string | null;
+  metadata: Record<string, unknown> | null;
+};
+
 /**
  * Upload a file to Supabase Storage.
  */
@@ -70,7 +79,7 @@ export function getPublicUrl(path: string): string {
 /**
  * List objects under a prefix.
  */
-export async function listFiles(prefix = "") {
+export async function listFiles(prefix = ""): Promise<SupabaseStorageFile[]> {
   const { data, error } = await bucket().list(prefix);
   if (error) throw error;
   return data;

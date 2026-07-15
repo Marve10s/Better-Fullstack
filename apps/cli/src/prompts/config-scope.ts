@@ -240,13 +240,23 @@ export const CONFIG_SCOPE_REGISTRY = {
     ],
   },
   go: {
-    core: ["goWebFramework", "database", "dbSetup", "goOrm", "goApi", "goAuth"],
+    core: [
+      "goWebFramework",
+      "database",
+      "dbSetup",
+      "goOrm",
+      "goApi",
+      "goAuth",
+      "goValidation",
+      "goMigrations",
+      "goDI",
+    ],
     sections: [
       sharedServiceSection,
       {
         id: "cli-config",
         label: "CLI, Config & Logging",
-        promptKeys: ["goCli", "goConfig", "goLogging"],
+        promptKeys: ["goCli", "goConfig", "goLogging", "goTemplating", "goProtoTooling"],
       },
       {
         id: "backend-extras",
@@ -255,8 +265,8 @@ export const CONFIG_SCOPE_REGISTRY = {
       },
       {
         id: "quality",
-        label: "Testing & Observability",
-        promptKeys: ["goTesting", "goObservability"],
+        label: "Quality, Testing & Observability",
+        promptKeys: ["goQuality", "goTesting", "goObservability"],
       },
     ],
   },

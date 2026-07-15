@@ -40,6 +40,24 @@ config({ path: "../../apps/server/.env" });
 
 const app = await alchemy("{{projectName}}");
 
+{{#if (or (or (eq ai "openai-sdk") (eq ai "anthropic-sdk")) (eq payments "paypal"))}}
+const serviceBindings = {
+  {{#if (eq ai "openai-sdk")}}
+  OPENAI_API_KEY: alchemy.secret.env.OPENAI_API_KEY!,
+  OPENAI_MODEL: alchemy.env.OPENAI_MODEL ?? "gpt-5-mini",
+  {{/if}}
+  {{#if (eq ai "anthropic-sdk")}}
+  ANTHROPIC_API_KEY: alchemy.secret.env.ANTHROPIC_API_KEY!,
+  ANTHROPIC_MODEL: alchemy.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-6",
+  {{/if}}
+  {{#if (eq payments "paypal")}}
+  PAYPAL_CLIENT_ID: alchemy.env.PAYPAL_CLIENT_ID!,
+  PAYPAL_CLIENT_SECRET: alchemy.secret.env.PAYPAL_CLIENT_SECRET!,
+  PAYPAL_ENVIRONMENT: alchemy.env.PAYPAL_ENVIRONMENT ?? "sandbox",
+  {{/if}}
+};
+{{/if}}
+
 {{#if (and (or (eq serverDeploy "cloudflare") (and (eq webDeploy "cloudflare") (eq backend "self"))) (eq dbSetup "d1"))}}
 const db = await D1Database("database", {
 	{{#if (eq orm "prisma")}}
@@ -55,6 +73,9 @@ const db = await D1Database("database", {
 export const web = await Nextjs("web", {
   cwd: "../../apps/web",
   bindings: {
+    {{#if (and (eq backend "self") (or (or (eq ai "openai-sdk") (eq ai "anthropic-sdk")) (eq payments "paypal")))}}
+    ...serviceBindings,
+    {{/if}}
     {{#if (eq backend "convex")}}
     NEXT_PUBLIC_CONVEX_URL: alchemy.env.NEXT_PUBLIC_CONVEX_URL!,
     {{#if (isBetterAuth auth)}}
@@ -106,6 +127,9 @@ export const web = await Nextjs("web", {
 export const web = await Nuxt("web", {
   cwd: "../../apps/web",
   bindings: {
+    {{#if (and (eq backend "self") (or (or (eq ai "openai-sdk") (eq ai "anthropic-sdk")) (eq payments "paypal")))}}
+    ...serviceBindings,
+    {{/if}}
     {{#if (eq backend "convex")}}
     NUXT_PUBLIC_CONVEX_URL: alchemy.env.NUXT_PUBLIC_CONVEX_URL!,
     {{#if (isBetterAuth auth)}}
@@ -154,6 +178,9 @@ export const web = await Nuxt("web", {
 export const web = await SvelteKit("web", {
   cwd: "../../apps/web",
   bindings: {
+    {{#if (and (eq backend "self") (or (or (eq ai "openai-sdk") (eq ai "anthropic-sdk")) (eq payments "paypal")))}}
+    ...serviceBindings,
+    {{/if}}
     {{#if (eq backend "convex")}}
     PUBLIC_CONVEX_URL: alchemy.env.PUBLIC_CONVEX_URL!,
     {{#if (isBetterAuth auth)}}
@@ -168,6 +195,9 @@ export const web = await SvelteKit("web", {
 export const web = await TanStackStart("web", {
   cwd: "../../apps/web",
   bindings: {
+    {{#if (and (eq backend "self") (or (or (eq ai "openai-sdk") (eq ai "anthropic-sdk")) (eq payments "paypal")))}}
+    ...serviceBindings,
+    {{/if}}
     {{#if (eq backend "convex")}}
     VITE_CONVEX_URL: alchemy.env.VITE_CONVEX_URL!,
     {{#if (isBetterAuth auth)}}
@@ -215,6 +245,9 @@ export const web = await Vite("web", {
   cwd: "../../apps/web",
   assets: "dist",
   bindings: {
+    {{#if (and (eq backend "self") (or (or (eq ai "openai-sdk") (eq ai "anthropic-sdk")) (eq payments "paypal")))}}
+    ...serviceBindings,
+    {{/if}}
     {{#if (eq backend "convex")}}
     VITE_CONVEX_URL: alchemy.env.VITE_CONVEX_URL!,
     {{#if (isBetterAuth auth)}}
@@ -229,6 +262,9 @@ export const web = await Vite("web", {
 export const web = await ReactRouter("web", {
   cwd: "../../apps/web",
   bindings: {
+    {{#if (and (eq backend "self") (or (or (eq ai "openai-sdk") (eq ai "anthropic-sdk")) (eq payments "paypal")))}}
+    ...serviceBindings,
+    {{/if}}
     {{#if (eq backend "convex")}}
     VITE_CONVEX_URL: alchemy.env.VITE_CONVEX_URL!,
     {{#if (isBetterAuth auth)}}
@@ -244,6 +280,9 @@ export const web = await Vite("web", {
   cwd: "../../apps/web",
   assets: "dist",
   bindings: {
+    {{#if (and (eq backend "self") (or (or (eq ai "openai-sdk") (eq ai "anthropic-sdk")) (eq payments "paypal")))}}
+    ...serviceBindings,
+    {{/if}}
     {{#if (eq backend "convex")}}
     VITE_CONVEX_URL: alchemy.env.VITE_CONVEX_URL!,
     {{#if (isBetterAuth auth)}}
@@ -258,6 +297,9 @@ export const web = await Vite("web", {
 export const web = await Astro("web", {
   cwd: "../../apps/web",
   bindings: {
+    {{#if (and (eq backend "self") (or (or (eq ai "openai-sdk") (eq ai "anthropic-sdk")) (eq payments "paypal")))}}
+    ...serviceBindings,
+    {{/if}}
     {{#if (ne backend "self")}}
     PUBLIC_SERVER_URL: alchemy.env.PUBLIC_SERVER_URL!,
     {{/if}}
@@ -298,6 +340,9 @@ export const server = await Worker("server", {
   entrypoint: "src/index.ts",
   compatibility: "node",
   bindings: {
+    {{#if (or (or (eq ai "openai-sdk") (eq ai "anthropic-sdk")) (eq payments "paypal"))}}
+    ...serviceBindings,
+    {{/if}}
     {{#if (eq dbSetup "d1")}}
     DB: db,
     {{else if (ne database "none")}}

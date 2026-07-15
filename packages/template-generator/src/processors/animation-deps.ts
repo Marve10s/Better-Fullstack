@@ -17,6 +17,8 @@ const REACT_WEB_FRAMEWORKS: Frontend[] = [
 
 // Non-React frameworks that support framework-agnostic animations
 const OTHER_WEB_FRAMEWORKS: Frontend[] = [
+  "vanilla-vite",
+  "vue",
   "solid",
   "svelte",
   "nuxt",

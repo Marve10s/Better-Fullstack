@@ -71,6 +71,12 @@ import {
   GO_CACHING_VALUES,
   GO_CONFIG_VALUES,
   GO_OBSERVABILITY_VALUES,
+  GO_VALIDATION_VALUES,
+  GO_QUALITY_VALUES,
+  GO_MIGRATIONS_VALUES,
+  GO_TEMPLATING_VALUES,
+  GO_PROTO_TOOLING_VALUES,
+  GO_DI_VALUES,
   JAVA_AUTH_VALUES,
   JAVA_API_VALUES,
   JAVA_LANGUAGE_VALUES,
@@ -254,6 +260,12 @@ export type OptionCategory =
   | "goCaching"
   | "goConfig"
   | "goObservability"
+  | "goValidation"
+  | "goQuality"
+  | "goMigrations"
+  | "goTemplating"
+  | "goProtoTooling"
+  | "goDI"
   | "javaLanguage"
   | "javaWebFramework"
   | "javaBuildTool"
@@ -450,6 +462,12 @@ export const GO_CATEGORY_ORDER = [
   "goCaching",
   "goConfig",
   "goObservability",
+  "goValidation",
+  "goQuality",
+  "goMigrations",
+  "goTemplating",
+  "goProtoTooling",
+  "goDI",
   "auth",
   "email",
   "observability",
@@ -619,6 +637,12 @@ export function getCategoryDisplayName(categoryKey: string): string {
     goCaching: "Go Caching",
     goConfig: "Go Config",
     goObservability: "Go Observability",
+    goValidation: "Go Validation",
+    goQuality: "Go Code Quality",
+    goMigrations: "Go Database Migrations",
+    goTemplating: "Go Templating",
+    goProtoTooling: "Go Protobuf Tooling",
+    goDI: "Go Dependency Injection",
     javaLanguage: "Java Language",
     javaWebFramework: "Java Web Framework",
     javaBuildTool: "Java Build Tool",
@@ -906,6 +930,12 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   goCaching: GO_CACHING_VALUES,
   goConfig: GO_CONFIG_VALUES,
   goObservability: GO_OBSERVABILITY_VALUES,
+  goValidation: GO_VALIDATION_VALUES,
+  goQuality: GO_QUALITY_VALUES,
+  goMigrations: GO_MIGRATIONS_VALUES,
+  goTemplating: GO_TEMPLATING_VALUES,
+  goProtoTooling: GO_PROTO_TOOLING_VALUES,
+  goDI: GO_DI_VALUES,
   javaLanguage: JAVA_LANGUAGE_VALUES,
   javaWebFramework: JAVA_WEB_FRAMEWORK_VALUES,
   javaBuildTool: JAVA_BUILD_TOOL_VALUES,
@@ -1500,16 +1530,23 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     fiber: "Fiber",
     chi: "Chi",
     stdlib: "net/http",
+    "go-zero": "go-zero",
+    kratos: "Kratos",
+    httprouter: "HttpRouter",
   },
   goOrm: {
     gorm: "GORM",
     sqlc: "sqlc",
     ent: "Ent",
     bun: "Bun",
+    sqlx: "sqlx",
   },
   goApi: {
     "grpc-go": "gRPC-Go",
     gqlgen: "gqlgen",
+    "grpc-gateway": "grpc-gateway",
+    "connect-go": "Connect-Go",
+    "oapi-codegen": "oapi-codegen",
   },
   goCli: {
     cobra: "Cobra",
@@ -1526,10 +1563,14 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     casbin: "Casbin",
     jwt: "golang-jwt",
     goth: "Goth",
+    oauth2: "golang.org/x/oauth2",
   },
   goTesting: {
     testify: "Testify",
     gomock: "GoMock",
+    testcontainers: "Testcontainers for Go",
+    "ginkgo-gomega": "Ginkgo + Gomega",
+    mockery: "mockery",
   },
   goRealtime: {
     "gorilla-websocket": "Gorilla WebSocket",
@@ -1538,6 +1579,8 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   goMessageQueue: {
     nats: "NATS",
     watermill: "Watermill",
+    "kafka-go": "kafka-go",
+    asynq: "Asynq",
   },
   goCaching: {
     redis: "go-redis",
@@ -1549,6 +1592,25 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   goObservability: {
     opentelemetry: "OpenTelemetry",
+    prometheus: "Prometheus",
+  },
+  goValidation: {
+    validator: "go-playground/validator",
+  },
+  goQuality: {
+    "golangci-lint": "golangci-lint",
+  },
+  goMigrations: {
+    "golang-migrate": "golang-migrate",
+  },
+  goTemplating: {
+    templ: "templ",
+  },
+  goProtoTooling: {
+    buf: "Buf",
+  },
+  goDI: {
+    fx: "Uber Fx",
   },
   javaLanguage: {
     java: "Java",
@@ -1959,6 +2021,12 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   goCaching: buildCategoryMetadata("goCaching"),
   goConfig: buildCategoryMetadata("goConfig"),
   goObservability: buildCategoryMetadata("goObservability"),
+  goValidation: buildCategoryMetadata("goValidation"),
+  goQuality: buildCategoryMetadata("goQuality"),
+  goMigrations: buildCategoryMetadata("goMigrations"),
+  goTemplating: buildCategoryMetadata("goTemplating"),
+  goProtoTooling: buildCategoryMetadata("goProtoTooling"),
+  goDI: buildCategoryMetadata("goDI"),
   javaLanguage: buildCategoryMetadata("javaLanguage"),
   javaWebFramework: buildCategoryMetadata("javaWebFramework"),
   javaBuildTool: buildCategoryMetadata("javaBuildTool"),

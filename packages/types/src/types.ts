@@ -107,6 +107,12 @@ import type {
   GoCachingSchema,
   GoConfigSchema,
   GoObservabilitySchema,
+  GoValidationSchema,
+  GoQualitySchema,
+  GoMigrationsSchema,
+  GoTemplatingSchema,
+  GoProtoToolingSchema,
+  GoDISchema,
   JavaLanguageSchema,
   JavaWebFrameworkSchema,
   JavaBuildToolSchema,
@@ -262,6 +268,12 @@ export type GoMessageQueue = z.infer<typeof GoMessageQueueSchema>;
 export type GoCaching = z.infer<typeof GoCachingSchema>;
 export type GoConfig = z.infer<typeof GoConfigSchema>;
 export type GoObservability = z.infer<typeof GoObservabilitySchema>;
+export type GoValidation = z.infer<typeof GoValidationSchema>;
+export type GoQuality = z.infer<typeof GoQualitySchema>;
+export type GoMigrations = z.infer<typeof GoMigrationsSchema>;
+export type GoTemplating = z.infer<typeof GoTemplatingSchema>;
+export type GoProtoTooling = z.infer<typeof GoProtoToolingSchema>;
+export type GoDI = z.infer<typeof GoDISchema>;
 export type JavaLanguage = z.infer<typeof JavaLanguageSchema>;
 export type JavaWebFramework = z.infer<typeof JavaWebFrameworkSchema>;
 export type JavaBuildTool = z.infer<typeof JavaBuildToolSchema>;

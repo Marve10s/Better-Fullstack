@@ -1,0 +1,17 @@
+{{#if (eq goMessageQueue "asynq")}}
+package messaging
+
+import (
+	"os"
+
+	"github.com/hibiken/asynq"
+)
+
+func NewAsynqClient() *asynq.Client {
+	address := os.Getenv("REDIS_ADDR")
+	if address == "" {
+		address = "127.0.0.1:6379"
+	}
+	return asynq.NewClient(asynq.RedisClientOpt{Addr: address})
+}
+{{/if}}

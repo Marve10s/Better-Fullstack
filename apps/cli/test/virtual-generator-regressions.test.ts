@@ -1,9 +1,9 @@
-import { describe, expect, it } from "bun:test";
 import {
   getLocalWebDevPort,
   parseStackPartSpecs,
   type ProjectConfig,
 } from "@better-fullstack/types";
+import { describe, expect, it } from "bun:test";
 
 import { createVirtual } from "../src/index";
 import { validateConfigForProgrammaticUse } from "../src/utils/config-validation";
@@ -50,6 +50,18 @@ function packageHasDependency(packageJson: PackageJsonShape | undefined, name: s
 
 describe("Virtual Generator Regressions", () => {
   const packageManagers = ["npm", "pnpm", "bun", "yarn"] as const;
+
+  it("rejects unsupported Warp APIs through programmatic validation", () => {
+    expect(() =>
+      runWithContext({ silent: true }, () =>
+        validateConfigForProgrammaticUse({
+          ecosystem: "rust",
+          rustWebFramework: "warp",
+          rustApi: "tonic",
+        }),
+      ),
+    ).toThrow("Warp and Salvo currently support REST");
+  });
 
   it("uses the canonical TanStack Router dev port in the generated Vite config", async () => {
     const result = await createVirtual({
@@ -484,8 +496,9 @@ describe("Virtual Generator Regressions", () => {
     expect(workflow).toContain("run: bun run test");
     expect(rootPackageJson?.scripts?.test).toBe("bun run --filter native test");
     expect(nativePackageJson?.scripts?.test).toBe("jest");
-    expect(readTextFromTree(result.tree!, "apps/native/__tests__/mobile-ui-provider.test.tsx"))
-      .toContain("renders children inside the mobile provider");
+    expect(
+      readTextFromTree(result.tree!, "apps/native/__tests__/mobile-ui-provider.test.tsx"),
+    ).toContain("renders children inside the mobile provider");
   });
 
   const graphOnlyBackendCiCases = [

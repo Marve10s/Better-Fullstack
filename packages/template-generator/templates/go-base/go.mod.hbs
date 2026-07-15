@@ -1,6 +1,6 @@
 module {{projectName}}
 
-go 1.22
+go 1.25.0
 
 require (
 {{#if (eq auth "go-better-auth")}}
@@ -20,6 +20,15 @@ require (
 {{/if}}
 {{#if (eq goWebFramework "chi")}}
 	github.com/go-chi/chi/v5 v5.2.1
+{{/if}}
+{{#if (eq goWebFramework "go-zero")}}
+	github.com/zeromicro/go-zero v1.10.2
+{{/if}}
+{{#if (eq goWebFramework "kratos")}}
+	github.com/go-kratos/kratos/v2 v2.9.2
+{{/if}}
+{{#if (eq goWebFramework "httprouter")}}
+	github.com/julienschmidt/httprouter v1.3.0
 {{/if}}
 {{#if (eq goOrm "gorm")}}
 	gorm.io/gorm v1.31.1
@@ -42,9 +51,28 @@ require (
 	github.com/uptrace/bun/extra/bundebug v1.2.18
 	github.com/mattn/go-sqlite3 v1.14.24
 {{/if}}
+{{#if (eq goOrm "sqlx")}}
+{{#if (eq database "mysql")}}
+	github.com/go-sql-driver/mysql v1.9.3
+{{/if}}
+	github.com/jmoiron/sqlx v1.4.0
+	github.com/lib/pq v1.10.9
+	github.com/mattn/go-sqlite3 v1.14.24
+{{/if}}
 {{#if (eq goApi "grpc-go")}}
 	google.golang.org/grpc v1.80.0
 	google.golang.org/protobuf v1.36.11
+{{/if}}
+{{#if (eq goApi "grpc-gateway")}}
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.29.0
+	google.golang.org/grpc v1.80.0
+	google.golang.org/protobuf v1.36.11
+{{/if}}
+{{#if (eq goApi "connect-go")}}
+	connectrpc.com/connect v1.20.0
+{{/if}}
+{{#if (eq goApi "oapi-codegen")}}
+	github.com/oapi-codegen/oapi-codegen/v2 v2.7.2
 {{/if}}
 {{#if (eq goCli "cobra")}}
 	github.com/spf13/cobra v1.10.2
@@ -74,11 +102,24 @@ require (
 {{#if (eq goAuth "goth")}}
 	github.com/markbates/goth v1.82.0
 {{/if}}
+{{#if (eq goAuth "oauth2")}}
+	golang.org/x/oauth2 v0.36.0
+{{/if}}
 {{#if (includes goTesting "testify")}}
 	github.com/stretchr/testify v1.11.1
 {{/if}}
 {{#if (includes goTesting "gomock")}}
 	go.uber.org/mock v0.6.0
+{{/if}}
+{{#if (includes goTesting "testcontainers")}}
+	github.com/testcontainers/testcontainers-go v0.43.0
+{{/if}}
+{{#if (includes goTesting "ginkgo-gomega")}}
+	github.com/onsi/ginkgo/v2 v2.32.0
+	github.com/onsi/gomega v1.42.1
+{{/if}}
+{{#if (includes goTesting "mockery")}}
+	github.com/vektra/mockery/v3 v3.7.1
 {{/if}}
 {{#if (eq goRealtime "gorilla-websocket")}}
 	github.com/gorilla/websocket v1.5.3
@@ -91,6 +132,12 @@ require (
 {{/if}}
 {{#if (eq goMessageQueue "watermill")}}
 	github.com/ThreeDotsLabs/watermill v1.5.2
+{{/if}}
+{{#if (eq goMessageQueue "kafka-go")}}
+	github.com/segmentio/kafka-go v0.4.51
+{{/if}}
+{{#if (eq goMessageQueue "asynq")}}
+	github.com/hibiken/asynq v0.26.0
 {{/if}}
 {{#if (eq goCaching "ristretto")}}
 	github.com/dgraph-io/ristretto/v2 v2.4.0
@@ -108,6 +155,27 @@ require (
 	go.opentelemetry.io/otel v1.44.0
 	go.opentelemetry.io/otel/sdk v1.44.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.44.0
+{{/if}}
+{{#if (eq goObservability "prometheus")}}
+	github.com/prometheus/client_golang v1.23.2
+{{/if}}
+{{#if (eq goValidation "validator")}}
+	github.com/go-playground/validator/v10 v10.30.3
+{{/if}}
+{{#if (eq goQuality "golangci-lint")}}
+	github.com/golangci/golangci-lint/v2 v2.12.2
+{{/if}}
+{{#if (eq goMigrations "golang-migrate")}}
+	github.com/golang-migrate/migrate/v4 v4.19.1
+{{/if}}
+{{#if (eq goTemplating "templ")}}
+	github.com/a-h/templ v0.3.1020
+{{/if}}
+{{#if (eq goProtoTooling "buf")}}
+	github.com/bufbuild/buf v1.71.0
+{{/if}}
+{{#if (eq goDI "fx")}}
+	go.uber.org/fx v1.24.0
 {{/if}}
 {{#if (eq goApi "gqlgen")}}
 	github.com/99designs/gqlgen v0.17.90

@@ -16,9 +16,8 @@ import {
   TECH_OPTIONS,
   type StackState,
 } from "../src/lib/constant";
-import {
-  generateStackCommand,
-} from "../src/lib/stack-utils";
+import { ICON_REGISTRY } from "../src/lib/tech-icons";
+import { generateStackCommand } from "../src/lib/stack-utils";
 
 describe("Go Ecosystem Tab", () => {
   describe("Ecosystem Type", () => {
@@ -55,6 +54,12 @@ describe("Go Ecosystem Tab", () => {
       expect(goCategories).toContain("goApi");
       expect(goCategories).toContain("goCli");
       expect(goCategories).toContain("goLogging");
+      expect(goCategories).toContain("goValidation");
+      expect(goCategories).toContain("goQuality");
+      expect(goCategories).toContain("goMigrations");
+      expect(goCategories).toContain("goTemplating");
+      expect(goCategories).toContain("goProtoTooling");
+      expect(goCategories).toContain("goDI");
     });
 
     it("should include git and install in go ecosystem", () => {
@@ -79,7 +84,19 @@ describe("Go Ecosystem Tab", () => {
   });
 
   describe("TECH_OPTIONS - Go Categories", () => {
-    const goCategories: TechCategory[] = ["goWebFramework", "goOrm", "goApi", "goCli", "goLogging"];
+    const goCategories: TechCategory[] = [
+      "goWebFramework",
+      "goOrm",
+      "goApi",
+      "goCli",
+      "goLogging",
+      "goValidation",
+      "goQuality",
+      "goMigrations",
+      "goTemplating",
+      "goProtoTooling",
+      "goDI",
+    ];
 
     for (const category of goCategories) {
       it(`should have options for ${category}`, () => {
@@ -183,6 +200,38 @@ describe("Go Ecosystem Tab", () => {
       expect(logrusOption).toBeDefined();
       expect(logrusOption?.name).toBe("Logrus");
     });
+
+    it("should expose all twenty Go expansion libraries", () => {
+      const expected: Partial<Record<TechCategory, string[]>> = {
+        goWebFramework: ["go-zero", "kratos", "httprouter"],
+        goOrm: ["sqlx"],
+        goApi: ["grpc-gateway", "connect-go", "oapi-codegen"],
+        goAuth: ["oauth2"],
+        goTesting: ["testcontainers", "ginkgo-gomega", "mockery"],
+        goMessageQueue: ["kafka-go", "asynq"],
+        goObservability: ["prometheus"],
+        goValidation: ["validator"],
+        goQuality: ["golangci-lint"],
+        goMigrations: ["golang-migrate"],
+        goTemplating: ["templ"],
+        goProtoTooling: ["buf"],
+        goDI: ["fx"],
+      };
+
+      for (const [category, ids] of Object.entries(expected)) {
+        const actual = TECH_OPTIONS[category as TechCategory].map((option) => option.id);
+        expect(actual).toEqual(expect.arrayContaining(ids));
+      }
+    });
+
+    it("should keep shared and unsupported Go tool icons out of the global registry", () => {
+      expect(ICON_REGISTRY.oauth2).toBeUndefined();
+      expect(TECH_OPTIONS.goAuth.find((option) => option.id === "oauth2")?.icon).toBe(
+        "https://cdn.simpleicons.org/go/00ADD8",
+      );
+      expect(ICON_REGISTRY.buf).toBeUndefined();
+      expect(TECH_OPTIONS.goProtoTooling.find((option) => option.id === "buf")?.icon).toBe("");
+    });
   });
 
   describe("DEFAULT_STACK", () => {
@@ -249,6 +298,12 @@ describe("Go Ecosystem Tab", () => {
       expect(GO_CATEGORY_ORDER).toContain("goApi");
       expect(GO_CATEGORY_ORDER).toContain("goCli");
       expect(GO_CATEGORY_ORDER).toContain("goLogging");
+      expect(GO_CATEGORY_ORDER).toContain("goValidation");
+      expect(GO_CATEGORY_ORDER).toContain("goQuality");
+      expect(GO_CATEGORY_ORDER).toContain("goMigrations");
+      expect(GO_CATEGORY_ORDER).toContain("goTemplating");
+      expect(GO_CATEGORY_ORDER).toContain("goProtoTooling");
+      expect(GO_CATEGORY_ORDER).toContain("goDI");
     });
 
     it("GO_CATEGORY_ORDER should contain git and install", () => {

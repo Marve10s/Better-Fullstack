@@ -1170,7 +1170,10 @@ const BASE_LINKS: LinkMap = {
     githubUrl: "https://github.com/poem-web/poem",
   },
   loco: { docsUrl: "https://loco.rs/docs/", githubUrl: "https://github.com/loco-rs/loco" },
-  warp: { docsUrl: "https://docs.rs/warp/latest/warp/", githubUrl: "https://github.com/seanmonstar/warp" },
+  warp: {
+    docsUrl: "https://docs.rs/warp/latest/warp/",
+    githubUrl: "https://github.com/seanmonstar/warp",
+  },
   salvo: { docsUrl: "https://salvo.rs/guide/", githubUrl: "https://github.com/salvo-rs/salvo" },
   leptos: { docsUrl: "https://book.leptos.dev/", githubUrl: "https://github.com/leptos-rs/leptos" },
   dioxus: {
@@ -1210,13 +1213,34 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://docs.rs/jsonrpsee/latest/jsonrpsee/",
     githubUrl: "https://github.com/paritytech/jsonrpsee",
   },
-  rand: { docsUrl: "https://rust-random.github.io/book/", githubUrl: "https://github.com/rust-random/rand" },
-  regex: { docsUrl: "https://docs.rs/regex/latest/regex/", githubUrl: "https://github.com/rust-lang/regex" },
-  rayon: { docsUrl: "https://docs.rs/rayon/latest/rayon/", githubUrl: "https://github.com/rayon-rs/rayon" },
-  itertools: { docsUrl: "https://docs.rs/itertools/latest/itertools/", githubUrl: "https://github.com/rust-itertools/itertools" },
-  rstest: { docsUrl: "https://docs.rs/rstest/latest/rstest/", githubUrl: "https://github.com/la10736/rstest" },
-  "cargo-nextest": { docsUrl: "https://nexte.st/docs/", githubUrl: "https://github.com/nextest-rs/nextest" },
-  "cargo-audit": { docsUrl: "https://rustsec.org/", githubUrl: "https://github.com/rustsec/rustsec" },
+  rand: {
+    docsUrl: "https://rust-random.github.io/book/",
+    githubUrl: "https://github.com/rust-random/rand",
+  },
+  regex: {
+    docsUrl: "https://docs.rs/regex/latest/regex/",
+    githubUrl: "https://github.com/rust-lang/regex",
+  },
+  rayon: {
+    docsUrl: "https://docs.rs/rayon/latest/rayon/",
+    githubUrl: "https://github.com/rayon-rs/rayon",
+  },
+  itertools: {
+    docsUrl: "https://docs.rs/itertools/latest/itertools/",
+    githubUrl: "https://github.com/rust-itertools/itertools",
+  },
+  rstest: {
+    docsUrl: "https://docs.rs/rstest/latest/rstest/",
+    githubUrl: "https://github.com/la10736/rstest",
+  },
+  "cargo-nextest": {
+    docsUrl: "https://nexte.st/docs/",
+    githubUrl: "https://github.com/nextest-rs/nextest",
+  },
+  "cargo-audit": {
+    docsUrl: "https://rustsec.org/",
+    githubUrl: "https://github.com/rustsec/rustsec",
+  },
   tracing: {
     docsUrl: "https://docs.rs/tracing/latest/tracing/",
     githubUrl: "https://github.com/tokio-rs/tracing",
@@ -1533,10 +1557,22 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://docs.rs/lapin",
     githubUrl: "https://github.com/amqp-rs/lapin",
   },
-  rdkafka: { docsUrl: "https://docs.rs/rdkafka/latest/rdkafka/", githubUrl: "https://github.com/fede1024/rust-rdkafka" },
-  "async-nats": { docsUrl: "https://docs.rs/async-nats/latest/async_nats/", githubUrl: "https://github.com/nats-io/nats.rs" },
-  openidconnect: { docsUrl: "https://docs.rs/openidconnect/latest/openidconnect/", githubUrl: "https://github.com/ramosbugs/openidconnect-rs" },
-  "tower-sessions": { docsUrl: "https://docs.rs/tower-sessions/latest/tower_sessions/", githubUrl: "https://github.com/maxcountryman/tower-sessions" },
+  rdkafka: {
+    docsUrl: "https://docs.rs/rdkafka/latest/rdkafka/",
+    githubUrl: "https://github.com/fede1024/rust-rdkafka",
+  },
+  "async-nats": {
+    docsUrl: "https://docs.rs/async-nats/latest/async_nats/",
+    githubUrl: "https://github.com/nats-io/nats.rs",
+  },
+  openidconnect: {
+    docsUrl: "https://docs.rs/openidconnect/latest/openidconnect/",
+    githubUrl: "https://github.com/ramosbugs/openidconnect-rs",
+  },
+  "tower-sessions": {
+    docsUrl: "https://docs.rs/tower-sessions/latest/tower_sessions/",
+    githubUrl: "https://github.com/maxcountryman/tower-sessions",
+  },
   metrics: { docsUrl: "https://metrics.rs/", githubUrl: "https://github.com/metrics-rs/metrics" },
   askama: {
     docsUrl: "https://askama.readthedocs.io/",
@@ -1546,7 +1582,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://keats.github.io/tera/docs/",
     githubUrl: "https://github.com/Keats/tera",
   },
-  minijinja: { docsUrl: "https://docs.rs/minijinja/latest/minijinja/", githubUrl: "https://github.com/mitsuhiko/minijinja" },
+  minijinja: {
+    docsUrl: "https://docs.rs/minijinja/latest/minijinja/",
+    githubUrl: "https://github.com/mitsuhiko/minijinja",
+  },
   starlette: {
     docsUrl: "https://www.starlette.io/",
     githubUrl: "https://github.com/encode/starlette",
@@ -1606,6 +1645,86 @@ const BASE_LINKS: LinkMap = {
 };
 
 const CATEGORY_LINKS: LinkMap = {
+  "goWebFramework:go-zero": {
+    docsUrl: "https://go-zero.dev/en/docs/introduction/overview",
+    githubUrl: "https://github.com/zeromicro/go-zero",
+  },
+  "goWebFramework:kratos": {
+    docsUrl: "https://go-kratos.dev/en/docs/",
+    githubUrl: "https://github.com/go-kratos/kratos",
+  },
+  "goWebFramework:httprouter": {
+    docsUrl: "https://pkg.go.dev/github.com/julienschmidt/httprouter",
+    githubUrl: "https://github.com/julienschmidt/httprouter",
+  },
+  "goOrm:sqlx": {
+    docsUrl: "https://pkg.go.dev/github.com/jmoiron/sqlx",
+    githubUrl: "https://github.com/jmoiron/sqlx",
+  },
+  "goApi:grpc-gateway": {
+    docsUrl: "https://grpc-ecosystem.github.io/grpc-gateway/",
+    githubUrl: "https://github.com/grpc-ecosystem/grpc-gateway",
+  },
+  "goApi:connect-go": {
+    docsUrl: "https://connectrpc.com/docs/go/getting-started/",
+    githubUrl: "https://github.com/connectrpc/connect-go",
+  },
+  "goApi:oapi-codegen": {
+    docsUrl: "https://github.com/oapi-codegen/oapi-codegen#readme",
+    githubUrl: "https://github.com/oapi-codegen/oapi-codegen",
+  },
+  "goTesting:testcontainers": {
+    docsUrl: "https://golang.testcontainers.org/",
+    githubUrl: "https://github.com/testcontainers/testcontainers-go",
+  },
+  "goTesting:ginkgo-gomega": {
+    docsUrl: "https://onsi.github.io/ginkgo/",
+    githubUrl: "https://github.com/onsi/ginkgo",
+  },
+  "goTesting:mockery": {
+    docsUrl: "https://vektra.github.io/mockery/latest/",
+    githubUrl: "https://github.com/vektra/mockery",
+  },
+  "goObservability:prometheus": {
+    docsUrl: "https://prometheus.io/docs/guides/go-application/",
+    githubUrl: "https://github.com/prometheus/client_golang",
+  },
+  "goMessageQueue:kafka-go": {
+    docsUrl: "https://pkg.go.dev/github.com/segmentio/kafka-go",
+    githubUrl: "https://github.com/segmentio/kafka-go",
+  },
+  "goMessageQueue:asynq": {
+    docsUrl: "https://github.com/hibiken/asynq/wiki",
+    githubUrl: "https://github.com/hibiken/asynq",
+  },
+  "goAuth:oauth2": {
+    docsUrl: "https://pkg.go.dev/golang.org/x/oauth2",
+    githubUrl: "https://github.com/golang/oauth2",
+  },
+  "goValidation:validator": {
+    docsUrl: "https://pkg.go.dev/github.com/go-playground/validator/v10",
+    githubUrl: "https://github.com/go-playground/validator",
+  },
+  "goQuality:golangci-lint": {
+    docsUrl: "https://golangci-lint.run/docs/",
+    githubUrl: "https://github.com/golangci/golangci-lint",
+  },
+  "goMigrations:golang-migrate": {
+    docsUrl: "https://github.com/golang-migrate/migrate#readme",
+    githubUrl: "https://github.com/golang-migrate/migrate",
+  },
+  "goTemplating:templ": {
+    docsUrl: "https://templ.guide/",
+    githubUrl: "https://github.com/a-h/templ",
+  },
+  "goProtoTooling:buf": {
+    docsUrl: "https://buf.build/docs/",
+    githubUrl: "https://github.com/bufbuild/buf",
+  },
+  "goDI:fx": {
+    docsUrl: "https://uber-go.github.io/fx/",
+    githubUrl: "https://github.com/uber-go/fx",
+  },
   "goOrm:bun": {
     docsUrl: "https://bun.uptrace.dev/",
     githubUrl: "https://github.com/uptrace/bun",

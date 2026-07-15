@@ -72,12 +72,19 @@ export default defineConfig({
       // from the client bundle entirely (~1.4MB gzip savings).
       external: ["ts-morph"],
       output: {
-        // Localized MDX bodies are lazy-loaded per locale. Stamp those chunks
-        // with a stable localized-content prefix so the performance-budget check
-        // can exclude this non-critical-path content from initial-load JS.
+        // Stamp known on-demand payloads with stable prefixes so the
+        // performance-budget check can keep them out of initial-load JS totals.
         chunkFileNames(chunkInfo) {
           const id = chunkInfo.facadeModuleId;
           if (id) {
+            const shikiLanguage = /\/shiki\/dist\/langs\/([^/?]+)\.mjs(?:\?|$)/.exec(id);
+            if (shikiLanguage) {
+              return `assets/lazy-syntax-language-${shikiLanguage[1]}-[hash].js`;
+            }
+            const shikiTheme = /\/shiki\/dist\/themes\/([^/?]+)\.mjs(?:\?|$)/.exec(id);
+            if (shikiTheme) {
+              return `assets/lazy-syntax-theme-${shikiTheme[1]}-[hash].js`;
+            }
             const bundle = /virtual:localized-content-mdx-bundle\/(docs|guides|blog)\/([^/]+)/.exec(
               id,
             );

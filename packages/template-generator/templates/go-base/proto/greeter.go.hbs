@@ -1,4 +1,4 @@
-{{#if (eq goApi "grpc-go")}}
+{{#if (or (eq goApi "grpc-go") (eq goApi "grpc-gateway"))}}
 package proto
 
 import (

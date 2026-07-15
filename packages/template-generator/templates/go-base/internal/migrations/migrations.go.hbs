@@ -1,0 +1,33 @@
+{{#if (eq goMigrations "golang-migrate")}}
+{{#if (or (or (eq database "sqlite") (eq database "postgres")) (eq database "mysql"))}}
+package migrations
+
+import (
+	"errors"
+
+	"github.com/golang-migrate/migrate/v4"
+{{#if (eq database "sqlite")}}
+	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
+{{/if}}
+{{#if (eq database "postgres")}}
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+{{/if}}
+{{#if (eq database "mysql")}}
+	_ "github.com/golang-migrate/migrate/v4/database/mysql"
+{{/if}}
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+)
+
+func Up(databaseURL string) error {
+	migration, err := migrate.New("file://migrations", databaseURL)
+	if err != nil {
+		return err
+	}
+	defer migration.Close()
+	if err := migration.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		return err
+	}
+	return nil
+}
+{{/if}}
+{{/if}}

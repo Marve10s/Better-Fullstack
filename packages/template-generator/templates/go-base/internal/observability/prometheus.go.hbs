@@ -1,0 +1,19 @@
+{{#if (eq goObservability "prometheus")}}
+package observability
+
+import (
+	"net/http"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+)
+
+var HTTPRequests = prometheus.NewCounterVec(
+	prometheus.CounterOpts{Name: "http_requests_total", Help: "Total HTTP requests."},
+	[]string{"method", "path", "status"},
+)
+
+func init() { prometheus.MustRegister(HTTPRequests) }
+
+func MetricsHandler() http.Handler { return promhttp.Handler() }
+{{/if}}

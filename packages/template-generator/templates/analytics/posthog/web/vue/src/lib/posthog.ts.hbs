@@ -3,6 +3,9 @@ import posthog from "posthog-js";
 {{#if (eq frontend.[0] "nuxt")}}
 const posthogKey = process.env.NUXT_PUBLIC_POSTHOG_KEY || "";
 const posthogHost = process.env.NUXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com";
+{{else}}
+const posthogKey = import.meta.env.VITE_POSTHOG_KEY || "";
+const posthogHost = import.meta.env.VITE_POSTHOG_HOST || "https://us.i.posthog.com";
 {{/if}}
 
 // Initialize PostHog only once
@@ -85,6 +88,9 @@ export { posthog };
 {{#if (eq frontend.[0] "nuxt")}}
  * NUXT_PUBLIC_POSTHOG_KEY - PostHog project API key (required)
  * NUXT_PUBLIC_POSTHOG_HOST - PostHog API host (default: https://us.i.posthog.com)
+{{else}}
+ * VITE_POSTHOG_KEY - PostHog project API key (required)
+ * VITE_POSTHOG_HOST - PostHog API host (default: https://us.i.posthog.com)
 {{/if}}
  *
  * Getting started:

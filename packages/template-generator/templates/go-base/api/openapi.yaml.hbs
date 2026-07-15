@@ -1,0 +1,25 @@
+{{#if (eq goApi "oapi-codegen")}}
+openapi: 3.0.3
+info:
+  title: {{projectName}} API
+  version: 1.0.0
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Health"
+components:
+  schemas:
+    Health:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+{{/if}}

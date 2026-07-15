@@ -21,6 +21,7 @@ import {
   listEcosystems,
   scanTemplateVersions,
   findTemplateFilesWithPackage,
+  selectAutomatedUpdates,
   type VersionInfo,
 } from "../src/utils/dependency-checker";
 
@@ -249,12 +250,14 @@ async function main() {
 
   // Apply updates if requested
   if (options.applyPatch || options.applyAll) {
-    let toApply: VersionInfo[];
+    const toApply: VersionInfo[] = selectAutomatedUpdates(
+      result.outdated,
+      options.applyPatch ? "patch-minor" : "all",
+    );
 
-    if (options.applyPatch) {
-      toApply = result.outdated.filter((u) => u.updateType === "patch" || u.updateType === "minor");
-    } else {
-      toApply = result.outdated;
+    const blocked = result.outdated.filter((update) => !toApply.includes(update));
+    if (blocked.length > 0) {
+      console.log(`\nSkipped ${blocked.length} policy-blocked major or downgrade update(s).`);
     }
 
     if (toApply.length === 0) {
@@ -306,7 +309,12 @@ async function main() {
     const outputFile = process.env.GITHUB_OUTPUT;
     const outdatedCount = result.outdated.length;
     const downgradeCount = result.outdated.filter((u) => u.updateType === "downgrade").length;
-    const majorUpdates = result.outdated.filter((u) => u.updateType === "major");
+    const majorUpdates = selectAutomatedUpdates(result.outdated, "all").filter(
+      (u) => u.updateType === "major",
+    );
+    const blockedMajorCount = result.outdated.filter(
+      (u) => u.updateType === "major" && !majorUpdates.includes(u),
+    ).length;
     const hasUpdates = outdatedCount > 0 ? "true" : "false";
     const hasMajorUpdates = majorUpdates.length > 0 ? "true" : "false";
     const majorPackageNames = majorUpdates.map((u) => u.name).join(",");
@@ -319,6 +327,7 @@ async function main() {
         `uptodate_count=${result.upToDate.length}\n` +
         `error_count=${result.errors.length}\n` +
         `has_major_updates=${hasMajorUpdates}\n` +
+        `blocked_major_count=${blockedMajorCount}\n` +
         `major_packages=${majorPackageNames}\n`,
     );
   }

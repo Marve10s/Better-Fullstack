@@ -1,0 +1,26 @@
+{{#if (eq goMigrations "golang-migrate")}}
+{{#if (eq database "postgres")}}
+CREATE TABLE IF NOT EXISTS users (
+  id BIGSERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+{{/if}}
+{{#if (eq database "mysql")}}
+CREATE TABLE IF NOT EXISTS users (
+  id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  name TEXT NOT NULL,
+  email VARCHAR(320) NOT NULL UNIQUE,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+{{/if}}
+{{#if (eq database "sqlite")}}
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+{{/if}}
+{{/if}}

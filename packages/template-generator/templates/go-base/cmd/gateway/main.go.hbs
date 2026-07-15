@@ -1,0 +1,41 @@
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"net/http"
+	"os"
+
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+
+	"{{projectName}}/proto"
+)
+
+func main() {
+	mux := runtime.NewServeMux()
+	greeter := &proto.GreeterService{}
+	if err := mux.HandlePath(http.MethodPost, "/v1/hello", func(w http.ResponseWriter, r *http.Request, _ map[string]string) {
+		var request proto.HelloRequest
+		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		response, err := greeter.SayHello(context.Background(), &request)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(response)
+	}); err != nil {
+		panic(err)
+	}
+
+	addr := os.Getenv("GATEWAY_ADDR")
+	if addr == "" {
+		addr = ":8081"
+	}
+	if err := http.ListenAndServe(addr, mux); err != nil && err != http.ErrServerClosed {
+		panic(err)
+	}
+}

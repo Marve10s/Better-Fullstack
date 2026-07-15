@@ -71,6 +71,12 @@ function createTestCoreDefaults(): Partial<CreateInput> {
     mobilePush: SHARED_TEST_DEFAULTS.mobilePush,
     mobileOTA: SHARED_TEST_DEFAULTS.mobileOTA,
     mobileDeepLinking: SHARED_TEST_DEFAULTS.mobileDeepLinking,
+    goValidation: SHARED_TEST_DEFAULTS.goValidation,
+    goQuality: SHARED_TEST_DEFAULTS.goQuality,
+    goMigrations: SHARED_TEST_DEFAULTS.goMigrations,
+    goTemplating: SHARED_TEST_DEFAULTS.goTemplating,
+    goProtoTooling: SHARED_TEST_DEFAULTS.goProtoTooling,
+    goDI: SHARED_TEST_DEFAULTS.goDI,
     aiDocs: [],
   };
 }

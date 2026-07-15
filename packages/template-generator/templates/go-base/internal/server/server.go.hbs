@@ -1,0 +1,116 @@
+package server
+
+import (
+	"encoding/json"
+{{#if (eq goWebFramework "go-zero")}}
+	"net"
+{{/if}}
+	"net/http"
+{{#if (eq goWebFramework "go-zero")}}
+	"strconv"
+{{/if}}
+{{#if (and (eq goWebFramework "go-zero") (eq auth "go-better-auth"))}}
+	"strings"
+{{/if}}
+{{#if (eq goWebFramework "go-zero")}}
+
+	"github.com/zeromicro/go-zero/rest"
+{{/if}}
+{{#if (eq goWebFramework "kratos")}}
+
+	kratoshttp "github.com/go-kratos/kratos/v2/transport/http"
+{{/if}}
+{{#if (eq goWebFramework "httprouter")}}
+
+	"github.com/julienschmidt/httprouter"
+{{/if}}
+)
+
+func writeJSON(w http.ResponseWriter, status int, payload map[string]string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	_ = json.NewEncoder(w).Encode(payload)
+}
+
+func health(w http.ResponseWriter, _ *http.Request) {
+	writeJSON(w, http.StatusOK, map[string]string{"status": "ok", "message": "Server is running"})
+}
+
+func root(w http.ResponseWriter, _ *http.Request) {
+	writeJSON(w, http.StatusOK, map[string]string{"message": "Welcome to {{projectName}}!"})
+}
+
+{{#if (eq goWebFramework "go-zero")}}
+func Run(addr string{{#if (eq auth "go-better-auth")}}, authHandler http.Handler{{/if}}) {
+	host, rawPort, err := net.SplitHostPort(addr)
+	if err != nil {
+		panic(err)
+	}
+	port, err := strconv.Atoi(rawPort)
+	if err != nil {
+		panic(err)
+	}
+
+{{#if (eq auth "go-better-auth")}}
+	srv := rest.MustNewServer(
+		rest.RestConf{Host: host, Port: port},
+		rest.WithNotFoundHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if strings.HasPrefix(r.URL.Path, "/api/auth/") {
+				authHandler.ServeHTTP(w, r)
+				return
+			}
+			http.NotFound(w, r)
+		})),
+	)
+{{else}}
+	srv := rest.MustNewServer(rest.RestConf{Host: host, Port: port})
+{{/if}}
+	defer srv.Stop()
+	srv.AddRoutes([]rest.Route{
+		{Method: http.MethodGet, Path: "/", Handler: root},
+		{Method: http.MethodGet, Path: "/health", Handler: health},
+	})
+{{#if (eq auth "go-better-auth")}}
+	for _, method := range []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete, http.MethodOptions} {
+		srv.AddRoute(rest.Route{Method: method, Path: "/api/auth", Handler: authHandler.ServeHTTP})
+	}
+{{/if}}
+	srv.Start()
+}
+{{/if}}
+
+{{#if (eq goWebFramework "kratos")}}
+func Run(addr string{{#if (eq auth "go-better-auth")}}, authHandler http.Handler{{/if}}) {
+	srv := kratoshttp.NewServer()
+	router := srv.Route("/")
+	router.GET("/", func(ctx kratoshttp.Context) error {
+		return ctx.JSON(http.StatusOK, map[string]string{"message": "Welcome to {{projectName}}!"})
+	})
+	router.GET("/health", func(ctx kratoshttp.Context) error {
+		return ctx.JSON(http.StatusOK, map[string]string{"status": "ok", "message": "Server is running"})
+	})
+{{#if (eq auth "go-better-auth")}}
+	srv.HandlePrefix("/api/auth", authHandler)
+{{/if}}
+	if err := http.ListenAndServe(addr, srv); err != nil && err != http.ErrServerClosed {
+		panic(err)
+	}
+}
+{{/if}}
+
+{{#if (eq goWebFramework "httprouter")}}
+func Run(addr string{{#if (eq auth "go-better-auth")}}, authHandler http.Handler{{/if}}) {
+	router := httprouter.New()
+	router.HandlerFunc(http.MethodGet, "/", root)
+	router.HandlerFunc(http.MethodGet, "/health", health)
+{{#if (eq auth "go-better-auth")}}
+	router.Handler(http.MethodGet, "/api/auth", authHandler)
+	for _, method := range []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete, http.MethodOptions} {
+		router.Handler(method, "/api/auth/*path", authHandler)
+	}
+{{/if}}
+	if err := http.ListenAndServe(addr, router); err != nil && err != http.ErrServerClosed {
+		panic(err)
+	}
+}
+{{/if}}

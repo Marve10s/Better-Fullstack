@@ -1,0 +1,21 @@
+{{#if (includes goTesting "ginkgo-gomega")}}
+package testsupport_test
+
+import (
+	"testing"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+)
+
+func TestSupport(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Support Suite")
+}
+
+var _ = Describe("generated project", func() {
+	It("has a project name", func() {
+		Expect("{{projectName}}").NotTo(BeEmpty())
+	})
+})
+{{/if}}

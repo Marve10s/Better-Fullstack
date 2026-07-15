@@ -215,6 +215,21 @@ describe("stack graph", () => {
     expect(lowered.elixirObservability).toBe("telemetry");
   });
 
+  it("owns Go migrations on the Go backend instead of the database setup scope", () => {
+    const stackParts = parseStackPartSpecs([
+      "backend:go:gin",
+      "backend.migrations:go:golang-migrate",
+      "database:universal:postgres",
+    ]);
+    const result = validateStackParts(stackParts);
+    const lowered = stackPartsToLegacyProjectConfigPartial(stackParts);
+
+    expect(result.issues).toEqual([]);
+    expect(stackParts.find((part) => part.toolId === "golang-migrate")?.role).toBe("migrations");
+    expect(lowered.goMigrations).toBe("golang-migrate");
+    expect(lowered.dbSetup).toBeUndefined();
+  });
+
   it("accepts native dotnet caching and observability tools as scoped capability parts", () => {
     const stackParts = parseStackPartSpecs([
       "backend:dotnet:aspnet-minimal",
@@ -987,7 +1002,10 @@ describe("stack graph", () => {
     );
 
     expect(diagnostics).toEqual([
-      expect.objectContaining({ code: "LEGACY_CONFIG_MISMATCH", path: "frontend" }),
+      expect.objectContaining({
+        code: "LEGACY_CONFIG_MISMATCH",
+        path: "frontend",
+      }),
     ]);
   });
 
@@ -1001,7 +1019,10 @@ describe("stack graph", () => {
 
     expect(lowered.logging).toBe("none");
     expect(diagnostics).toEqual([
-      expect.objectContaining({ code: "LEGACY_CONFIG_MISMATCH", path: "logging" }),
+      expect.objectContaining({
+        code: "LEGACY_CONFIG_MISMATCH",
+        path: "logging",
+      }),
     ]);
   });
 });
@@ -1169,7 +1190,10 @@ describe("stack graph structural round-trip (phase 0)", () => {
       cssFramework: { role: "css", values: CSS_FRAMEWORK_VALUES },
       uiLibrary: { role: "ui", values: UI_LIBRARY_VALUES },
       forms: { role: "forms", values: FORMS_VALUES },
-      stateManagement: { role: "stateManagement", values: STATE_MANAGEMENT_VALUES },
+      stateManagement: {
+        role: "stateManagement",
+        values: STATE_MANAGEMENT_VALUES,
+      },
       animation: { role: "animation", values: ANIMATION_VALUES },
       fileUpload: { role: "fileUpload", values: FILE_UPLOAD_VALUES },
       i18n: { role: "i18n", values: I18N_VALUES },

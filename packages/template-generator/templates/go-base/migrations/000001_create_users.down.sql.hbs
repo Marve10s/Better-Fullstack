@@ -1,0 +1,5 @@
+{{#if (eq goMigrations "golang-migrate")}}
+{{#if (or (or (eq database "sqlite") (eq database "postgres")) (eq database "mysql"))}}
+DROP TABLE IF EXISTS users;
+{{/if}}
+{{/if}}

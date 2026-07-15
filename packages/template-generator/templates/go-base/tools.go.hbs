@@ -1,10 +1,27 @@
-{{#if (eq goApi "gqlgen")}}
+{{#if (or (or (or (or (or (eq goApi "gqlgen") (eq goApi "oapi-codegen")) (eq goQuality "golangci-lint")) (eq goTemplating "templ")) (eq goProtoTooling "buf")) (includes goTesting "mockery"))}}
 //go:build tools
 
 // Tool dependencies tracked for `go generate` — never built into the binary.
 package main
 
 import (
+{{#if (eq goApi "gqlgen")}}
 	_ "github.com/99designs/gqlgen"
+{{/if}}
+{{#if (eq goApi "oapi-codegen")}}
+	_ "github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen"
+{{/if}}
+{{#if (eq goQuality "golangci-lint")}}
+	_ "github.com/golangci/golangci-lint/v2/cmd/golangci-lint"
+{{/if}}
+{{#if (eq goTemplating "templ")}}
+	_ "github.com/a-h/templ/cmd/templ"
+{{/if}}
+{{#if (eq goProtoTooling "buf")}}
+	_ "github.com/bufbuild/buf/cmd/buf"
+{{/if}}
+{{#if (includes goTesting "mockery")}}
+	_ "github.com/vektra/mockery/v3"
+{{/if}}
 )
 {{/if}}

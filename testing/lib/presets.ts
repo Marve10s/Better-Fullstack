@@ -94,6 +94,12 @@ export function makeBaseConfig(name: string, ecosystem: Ecosystem): ProjectConfi
     goCaching: "none",
     goConfig: "none",
     goObservability: "none",
+    goValidation: "none",
+    goQuality: "none",
+    goMigrations: "none",
+    goTemplating: "none",
+    goProtoTooling: "none",
+    goDI: "none",
     javaWebFramework: "none",
     javaBuildTool: "none",
     javaOrm: "none",
@@ -578,6 +584,39 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
       goTesting: ["testify"],
     },
   },
+  "go-library-expansion-primary": {
+    ecosystem: "go",
+    overrides: {
+      goWebFramework: "go-zero",
+      goOrm: "sqlx",
+      goApi: "grpc-gateway",
+      goAuth: "oauth2",
+      goTesting: ["testcontainers", "ginkgo-gomega", "mockery"],
+      goMessageQueue: "kafka-go",
+      goObservability: "prometheus",
+      goValidation: "validator",
+      goQuality: "golangci-lint",
+      goMigrations: "golang-migrate",
+      goTemplating: "templ",
+      goProtoTooling: "buf",
+      goDI: "fx",
+    },
+  },
+  "go-library-expansion-connect": {
+    ecosystem: "go",
+    overrides: {
+      goWebFramework: "kratos",
+      goApi: "connect-go",
+      goMessageQueue: "asynq",
+    },
+  },
+  "go-library-expansion-openapi": {
+    ecosystem: "go",
+    overrides: {
+      goWebFramework: "httprouter",
+      goApi: "oapi-codegen",
+    },
+  },
 
   // === PYTHON PRESETS ===
   "python-fastapi-sqlalchemy": {
@@ -811,6 +850,9 @@ const PRESET_GROUPS = {
     "python-elasticsearch",
     "go-echo-sqlc",
     "go-stdlib-bun-bleve",
+    "go-library-expansion-primary",
+    "go-library-expansion-connect",
+    "go-library-expansion-openapi",
     "java-spring-gradle-jpa",
     "java-plain-cli",
     "java-spring-log4j2",

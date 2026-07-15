@@ -139,6 +139,12 @@ export const DEFAULT_STACK_SELECTION: StackSelectionState = {
   goCaching: "none",
   goConfig: "none",
   goObservability: "none",
+  goValidation: "none",
+  goQuality: "none",
+  goMigrations: "none",
+  goTemplating: "none",
+  goProtoTooling: "none",
+  goDI: "none",
   javaLanguage: "java",
   javaWebFramework: "spring-boot",
   javaBuildTool: "maven",
@@ -307,6 +313,12 @@ export const STACK_SELECTION_OPTION_CATEGORY_BY_KEY: Record<
   goCaching: "goCaching",
   goConfig: "goConfig",
   goObservability: "goObservability",
+  goValidation: "goValidation",
+  goQuality: "goQuality",
+  goMigrations: "goMigrations",
+  goTemplating: "goTemplating",
+  goProtoTooling: "goProtoTooling",
+  goDI: "goDI",
   javaLanguage: "javaLanguage",
   javaWebFramework: "javaWebFramework",
   javaBuildTool: "javaBuildTool",
@@ -485,6 +497,12 @@ export const STACK_SELECTION_URL_KEYS = {
   goCaching: "gcache",
   goConfig: "gcfg",
   goObservability: "gobs",
+  goValidation: "gval",
+  goQuality: "gqual",
+  goMigrations: "gmig",
+  goTemplating: "gtpl",
+  goProtoTooling: "gproto",
+  goDI: "gdi",
   javaLanguage: "jlang",
   javaWebFramework: "jwf",
   javaBuildTool: "jbt",
@@ -816,6 +834,12 @@ const CLI_SCALAR_CONFIG_FIELDS = [
   ["goCaching", "goCaching"],
   ["goConfig", "goConfig"],
   ["goObservability", "goObservability"],
+  ["goValidation", "goValidation"],
+  ["goQuality", "goQuality"],
+  ["goMigrations", "goMigrations"],
+  ["goTemplating", "goTemplating"],
+  ["goProtoTooling", "goProtoTooling"],
+  ["goDI", "goDI"],
   ["javaLanguage", "javaLanguage"],
   ["javaWebFramework", "javaWebFramework"],
   ["javaBuildTool", "javaBuildTool"],
@@ -946,6 +970,12 @@ const GO_CONFIG_KEYS = [
   "goCaching",
   "goConfig",
   "goObservability",
+  "goValidation",
+  "goQuality",
+  "goMigrations",
+  "goTemplating",
+  "goProtoTooling",
+  "goDI",
 ] as const satisfies readonly (keyof CliDefaultProjectConfigBase)[];
 
 const JAVA_CONFIG_KEYS = [
@@ -1098,7 +1128,12 @@ function formatChangedStringFlags(
 }
 
 function hasGraphPrimaryPart(
-  parts: readonly { role: string; ecosystem: string; toolId?: string; ownerPartId?: string }[],
+  parts: readonly {
+    role: string;
+    ecosystem: string;
+    toolId?: string;
+    ownerPartId?: string;
+  }[],
   role: "frontend" | "backend" | "mobile" | "database",
   ecosystem?: string,
   toolId?: string,
@@ -1214,6 +1249,12 @@ const GRAPH_PYTHON_BACKEND_ARRAY_PART_SELECTION_KEYS = [
 const GRAPH_GO_BACKEND_PART_SELECTION_KEYS = [
   ["goCli", "cli"],
   ["goLogging", "logging"],
+  ["goValidation", "validation"],
+  ["goQuality", "codeQuality"],
+  ["goMigrations", "migrations"],
+  ["goTemplating", "templating"],
+  ["goProtoTooling", "buildTool"],
+  ["goDI", "libraries"],
   ["caching", "caching"],
   ["search", "search"],
 ] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
@@ -1339,6 +1380,12 @@ const GRAPH_PYTHON_BACKEND_ARRAY_PART_CLI_KEYS = [["pythonAi", "ai"]] as const s
 const GRAPH_GO_BACKEND_PART_CLI_KEYS = [
   ["goCli", "cli"],
   ["goLogging", "logging"],
+  ["goValidation", "validation"],
+  ["goQuality", "codeQuality"],
+  ["goMigrations", "migrations"],
+  ["goTemplating", "templating"],
+  ["goProtoTooling", "buildTool"],
+  ["goDI", "libraries"],
   ["caching", "caching"],
   ["search", "search"],
 ] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
@@ -1780,7 +1827,9 @@ export function cliInputToProjectConfigPartial(
 
   if (Array.isArray(input.part) && input.part.length > 0) {
     const stackParts = getCliGraphStackParts(input);
-    Object.assign(config, stackPartsToLegacyProjectConfigPartial(stackParts), { stackParts });
+    Object.assign(config, stackPartsToLegacyProjectConfigPartial(stackParts), {
+      stackParts,
+    });
   }
 
   return config;
@@ -1987,6 +2036,12 @@ function buildProjectConfigBase(
     goCaching: stack.goCaching as ProjectConfig["goCaching"],
     goConfig: stack.goConfig as ProjectConfig["goConfig"],
     goObservability: stack.goObservability as ProjectConfig["goObservability"],
+    goValidation: stack.goValidation as ProjectConfig["goValidation"],
+    goQuality: stack.goQuality as ProjectConfig["goQuality"],
+    goMigrations: stack.goMigrations as ProjectConfig["goMigrations"],
+    goTemplating: stack.goTemplating as ProjectConfig["goTemplating"],
+    goProtoTooling: stack.goProtoTooling as ProjectConfig["goProtoTooling"],
+    goDI: stack.goDI as ProjectConfig["goDI"],
     javaLanguage: stack.javaLanguage as ProjectConfig["javaLanguage"],
     javaWebFramework: stack.javaWebFramework as ProjectConfig["javaWebFramework"],
     javaBuildTool: stack.javaBuildTool as ProjectConfig["javaBuildTool"],
@@ -2397,6 +2452,12 @@ function generateGoCommand(selection: StackSelectionInput, projectName: string) 
     `--go-caching ${selection.goCaching}`,
     `--go-config ${selection.goConfig}`,
     `--go-observability ${selection.goObservability}`,
+    `--go-validation ${selection.goValidation}`,
+    `--go-quality ${selection.goQuality}`,
+    `--go-migrations ${selection.goMigrations}`,
+    `--go-templating ${selection.goTemplating}`,
+    `--go-proto-tooling ${selection.goProtoTooling}`,
+    `--go-di ${selection.goDI}`,
     `--auth ${selection.auth}`,
     `--email ${selection.email}`,
     `--observability ${selection.observability}`,

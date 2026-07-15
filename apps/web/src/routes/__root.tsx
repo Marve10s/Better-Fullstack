@@ -51,11 +51,6 @@ const THEME_INIT_SCRIPT = `
 `;
 const themeInitMarkup = { __html: THEME_INIT_SCRIPT };
 
-const ChangelogWidget = lazy(async () => {
-  const mod = await import("@/components/changelog-widget");
-  return { default: mod.ChangelogWidget };
-});
-
 const PatreonButton = lazy(async () => {
   const mod = await import("@/components/patreon-button");
   return { default: mod.PatreonButton };
@@ -161,7 +156,6 @@ function RootComponent() {
       <Navbar />
       <Outlet />
       <Suspense fallback={null}>
-        <ChangelogWidget />
         <PatreonButton />
       </Suspense>
     </RootDocument>

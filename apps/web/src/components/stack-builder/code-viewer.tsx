@@ -21,18 +21,35 @@ interface CodeViewerProps {
   extension: string;
 }
 
-// Map file extensions to Shiki language IDs
-export function getLanguage(extension: string): BundledLanguage {
+// Map generated file names and extensions to Shiki language IDs.
+export function getLanguage(extension: string, filePath = ""): BundledLanguage {
+  const filename = filePath.split("/").pop()?.toLowerCase() ?? "";
+
+  if (filename === "dockerfile" || filename.startsWith("dockerfile.")) return "dockerfile";
+  if (filename === ".env" || filename.startsWith(".env.")) return "dotenv";
+  if (filename === "nginx.conf") return "nginx";
+  if (filename === "go.mod") return "go";
+  if (filename.endsWith(".gradle.kts")) return "kotlin";
+
   const languageMap: Record<string, BundledLanguage> = {
     ts: "typescript",
+    mts: "typescript",
+    cts: "typescript",
     tsx: "tsx",
     js: "javascript",
+    mjs: "javascript",
+    cjs: "javascript",
     jsx: "jsx",
     json: "json",
+    jsonc: "jsonc",
+    webmanifest: "json",
+    app: "json",
     md: "markdown",
+    mdoc: "markdown",
     mdx: "mdx",
     css: "css",
     scss: "scss",
+    less: "less",
     html: "html",
     astro: "astro",
     vue: "vue",
@@ -41,18 +58,44 @@ export function getLanguage(extension: string): BundledLanguage {
     yml: "yaml",
     toml: "toml",
     sql: "sql",
+    rs: "rust",
+    go: "go",
+    templ: "templ",
+    py: "python",
+    pyi: "python",
+    mako: "jinja",
+    java: "java",
+    kt: "kotlin",
+    kts: "kotlin",
+    gradle: "groovy",
+    cs: "csharp",
+    csproj: "xml",
+    fsproj: "xml",
+    vbproj: "xml",
+    props: "xml",
+    targets: "xml",
+    xml: "xml",
+    razor: "razor",
     ex: "elixir",
     exs: "elixir",
     eex: "elixir",
     heex: "elixir",
     prisma: "prisma",
     graphql: "graphql",
+    graphqls: "graphql",
+    proto: "protobuf",
+    esdl: "edge",
+    http: "http",
+    properties: "properties",
+    ini: "ini",
+    cfg: "ini",
+    conf: "ini",
+    csv: "csv",
     sh: "bash",
     bash: "bash",
     zsh: "bash",
     fish: "bash",
-    dockerfile: "dockerfile",
-    env: "shellscript",
+    env: "dotenv",
     hbs: "handlebars",
   };
   return languageMap[extension.toLowerCase()] || "text";
@@ -63,7 +106,7 @@ export const CodeViewer = memo(function CodeViewer({
   content,
   extension,
 }: CodeViewerProps) {
-  const language = useMemo(() => getLanguage(extension), [extension]);
+  const language = useMemo(() => getLanguage(extension, filePath), [extension, filePath]);
   const filename = useMemo(() => filePath.split("/").pop() || filePath, [filePath]);
 
   const codeData = useMemo(

@@ -1,0 +1,8 @@
+{{#if (includes goTesting "mockery")}}
+with-expecter: true
+dir: internal/testsupport/mocks
+packages:
+  {{projectName}}/internal/testsupport:
+    interfaces:
+      Service:
+{{/if}}

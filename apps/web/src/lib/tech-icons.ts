@@ -312,7 +312,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   grafana: { type: "si", slug: "grafana", hex: "F46800" },
   opentelemetry: { type: "si", slug: "opentelemetry", hex: "000000" },
   datadog: { type: "si", slug: "datadog", hex: "632CA6" },
-  axiom: { type: "local", src: "https://axiom.co/favicon.ico" },
+  axiom: { type: "local", src: "https://axiom.co/favicon.svg" },
   betterstack: { type: "si", slug: "betterstack", hex: "111827" },
 
   // ─── Feature Flags ─────────────────────────────────────────────────────────
@@ -532,6 +532,24 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   grpc: { type: "local", src: "/icon/grpc.svg" },
   "urfave-cli": { type: "si", slug: "go", hex: "00ADD8" },
   logrus: { type: "si", slug: "go", hex: "00ADD8" },
+  "go-zero": { type: "si", slug: "go", hex: "00ADD8" },
+  kratos: { type: "si", slug: "go", hex: "00ADD8" },
+  httprouter: { type: "si", slug: "go", hex: "00ADD8" },
+  sqlx: { type: "si", slug: "go", hex: "00ADD8" },
+  "grpc-gateway": { type: "local", src: "/icon/grpc.svg" },
+  "connect-go": { type: "si", slug: "go", hex: "00ADD8" },
+  "oapi-codegen": { type: "si", slug: "openapiinitiative", hex: "6BA539" },
+  testcontainers: { type: "si", slug: "docker", hex: "2496ED" },
+  "ginkgo-gomega": { type: "si", slug: "go", hex: "00ADD8" },
+  mockery: { type: "si", slug: "go", hex: "00ADD8" },
+  prometheus: { type: "si", slug: "prometheus", hex: "E6522C" },
+  "kafka-go": { type: "si", slug: "apachekafka", hex: "231F20" },
+  asynq: { type: "si", slug: "redis", hex: "DC382D" },
+  validator: { type: "si", slug: "go", hex: "00ADD8" },
+  "golangci-lint": { type: "si", slug: "go", hex: "00ADD8" },
+  "golang-migrate": { type: "si", slug: "go", hex: "00ADD8" },
+  templ: { type: "si", slug: "go", hex: "00ADD8" },
+  fx: { type: "si", slug: "uber", hex: "000000" },
 
   // ─── Java ──────────────────────────────────────────────────────────────────
   kotlin: { type: "si", slug: "kotlin", hex: "7F52FF" },

@@ -188,12 +188,7 @@ function isSelfBackend(backend?: string): boolean {
 function getNextOnlyAuthLabel(
   optionId: Exclude<
     Auth,
-    | "none"
-    | "better-auth"
-    | "better-auth-organizations"
-    | "go-better-auth"
-    | "clerk"
-    | "passport"
+    "none" | "better-auth" | "better-auth-organizations" | "go-better-auth" | "clerk" | "passport"
   >,
 ): string {
   switch (optionId) {
@@ -236,6 +231,10 @@ function getAuthDisabledReason(context: CapabilityStackContext, optionId: Auth):
 
   if (ecosystem !== "typescript") {
     return `${capitalizeFirst(ecosystem)} stacks do not support auth integrations yet`;
+  }
+
+  if (webFrontend.some((frontend) => ["vanilla-vite", "vue"].includes(frontend))) {
+    return "Auth client integrations are not yet wired for standalone Vue or Vanilla Vite frontends";
   }
 
   if (backend === "none") {

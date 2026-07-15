@@ -43,6 +43,7 @@ describe("File Storage Options", () => {
       const env = await readFile(`${result.projectDir}/apps/server/.env`, "utf-8");
 
       expect(storage).toContain("@supabase/supabase-js");
+      expect(storage).toContain("Promise<SupabaseStorageFile[]>");
       expect(pkg).toContain('"@supabase/supabase-js"');
       expect(env).toContain("SUPABASE_URL");
       expect(env).toContain("SUPABASE_SERVICE_ROLE_KEY");

@@ -37,8 +37,6 @@ export function processCMSDeps(vfs: VirtualFileSystem, config: ProjectConfig): v
     frontend.includes("astro") ||
     frontend.includes("nuxt") ||
     frontend.includes("svelte") ||
-    frontend.includes("vanilla-vite") ||
-    frontend.includes("vue") ||
     frontend.some((f) => REACT_CMS_FRONTENDS.has(f));
 
   if (cms === "payload") {
@@ -125,7 +123,8 @@ export function processCMSDeps(vfs: VirtualFileSystem, config: ProjectConfig): v
 
       const existingCheckTypes = pkgJson.scripts["check-types"];
       if (existingCheckTypes) {
-        pkgJson.scripts["check-types"] = `tinacms build --local --skip-cloud-checks && ${existingCheckTypes}`;
+        pkgJson.scripts["check-types"] =
+          `tinacms build --local --skip-cloud-checks && ${existingCheckTypes}`;
       }
 
       vfs.writeJson(webPath, pkgJson);
@@ -143,7 +142,11 @@ export function processCMSDeps(vfs: VirtualFileSystem, config: ProjectConfig): v
 }
 
 function getPayloadDeps(database: ProjectConfig["database"]): AvailableDependencies[] {
-  const deps: AvailableDependencies[] = ["payload", "@payloadcms/next", "@payloadcms/richtext-lexical"];
+  const deps: AvailableDependencies[] = [
+    "payload",
+    "@payloadcms/next",
+    "@payloadcms/richtext-lexical",
+  ];
 
   switch (database) {
     case "postgres":

@@ -1,7 +1,7 @@
 import { Suspense, lazy } from "react";
 
-import { BuilderShareModal } from "@/components/stack-builder/builder-share-modal";
 import type { StackState } from "@/lib/stack-defaults";
+
 import { m } from "@/paraglide/messages.js";
 
 const StackBuilder = lazy(() => import("@/components/stack-builder/stack-builder"));
@@ -16,13 +16,10 @@ function BuilderFallback() {
 
 export function StackBuilderPage({ initialStack }: { initialStack?: StackState }) {
   return (
-    <>
-      <Suspense fallback={<BuilderFallback />}>
-        <div className="grid h-[calc(100vh-64px)] w-full flex-1 grid-cols-1 overflow-hidden">
-          <StackBuilder initialStack={initialStack} />
-        </div>
-      </Suspense>
-      <BuilderShareModal />
-    </>
+    <Suspense fallback={<BuilderFallback />}>
+      <div className="grid h-[calc(100vh-64px)] w-full flex-1 grid-cols-1 overflow-hidden">
+        <StackBuilder initialStack={initialStack} />
+      </div>
+    </Suspense>
   );
 }

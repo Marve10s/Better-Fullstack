@@ -33,7 +33,8 @@ function getTanStackFrameworkAdapter(
   if (frontend.some((f) => REACT_FRONTENDS.includes(f))) return `@tanstack/react-${lib}`;
   if (frontend.includes("nuxt") || frontend.includes("vue")) return `@tanstack/vue-${lib}`;
   if (frontend.includes("svelte")) return `@tanstack/svelte-${lib}`;
-  if (frontend.includes("solid") || frontend.includes("solid-start")) return `@tanstack/solid-${lib}`;
+  if (frontend.includes("solid") || frontend.includes("solid-start"))
+    return `@tanstack/solid-${lib}`;
   if (frontend.includes("angular")) return `@tanstack/angular-${lib}`;
   if (frontend.includes("astro")) {
     if (astroIntegration === "react") return `@tanstack/react-${lib}`;
@@ -79,10 +80,13 @@ function getTanStackQueryDeps(config: ProjectConfig): AvailableDependencies[] {
     return ["@tanstack/angular-query-experimental"];
   }
   if (frontend.includes("astro")) {
-    if (astroIntegration === "react") return ["@tanstack/react-query", "@tanstack/react-query-devtools"];
+    if (astroIntegration === "react")
+      return ["@tanstack/react-query", "@tanstack/react-query-devtools"];
     if (astroIntegration === "vue") return ["@tanstack/vue-query", "@tanstack/vue-query-devtools"];
-    if (astroIntegration === "svelte") return ["@tanstack/svelte-query", "@tanstack/svelte-query-devtools"];
-    if (astroIntegration === "solid") return ["@tanstack/solid-query", "@tanstack/solid-query-devtools"];
+    if (astroIntegration === "svelte")
+      return ["@tanstack/svelte-query", "@tanstack/svelte-query-devtools"];
+    if (astroIntegration === "solid")
+      return ["@tanstack/solid-query", "@tanstack/solid-query-devtools"];
   }
   return [];
 }
@@ -204,11 +208,16 @@ export function processAddonsDeps(vfs: VirtualFileSystem, config: ProjectConfig)
       webPkg.main = "electron/main.mjs";
       const rendererUrl = `http://localhost:${getLocalWebDevPort(config.frontend)}`;
       const devCommand = `${config.packageManager} run dev`;
+      const electronDev = `concurrently -k "${devCommand}" "wait-on ${rendererUrl} && cross-env ELECTRON_RENDERER_URL=${rendererUrl} electron electron/main.mjs"`;
+      const electronBuild = `${config.packageManager} run build && electron-builder`;
       webPkg.scripts = {
         ...webPkg.scripts,
-        "desktop:dev":
-          `concurrently -k "${devCommand}" "wait-on ${rendererUrl} && cross-env ELECTRON_RENDERER_URL=${rendererUrl} electron electron/main.mjs"`,
-        "desktop:build": `${config.packageManager} run build && electron-builder`,
+        "electron:dev": electronDev,
+        "electron:build": electronBuild,
+        ...(!config.addons.includes("tauri") && {
+          "desktop:dev": electronDev,
+          "desktop:build": electronBuild,
+        }),
       };
       vfs.writeJson(webPkgPath, webPkg);
     }
@@ -281,8 +290,12 @@ export function processAddonsDeps(vfs: VirtualFileSystem, config: ProjectConfig)
         webPkg.scripts = {
           ...webPkg.scripts,
           tauri: "tauri",
-          "desktop:dev": "tauri dev",
-          "desktop:build": "tauri build",
+          "tauri:dev": "tauri dev",
+          "tauri:build": "tauri build",
+          ...(!config.addons.includes("electron") && {
+            "desktop:dev": "tauri dev",
+            "desktop:build": "tauri build",
+          }),
         };
         vfs.writeJson(webPkgPath, webPkg);
       }
@@ -407,9 +420,17 @@ export function processAddonsDeps(vfs: VirtualFileSystem, config: ProjectConfig)
   if (config.addons.includes("tanstack-pacer")) {
     if (vfs.exists(webPkgPath)) {
       if (hasReactFrontend || hasAstroReact) {
-        addPackageDependency({ vfs, packagePath: webPkgPath, dependencies: ["@tanstack/react-pacer"] });
+        addPackageDependency({
+          vfs,
+          packagePath: webPkgPath,
+          dependencies: ["@tanstack/react-pacer"],
+        });
       } else if (hasSolidFrontend || hasAstroSolid) {
-        addPackageDependency({ vfs, packagePath: webPkgPath, dependencies: ["@tanstack/solid-pacer"] });
+        addPackageDependency({
+          vfs,
+          packagePath: webPkgPath,
+          dependencies: ["@tanstack/solid-pacer"],
+        });
       } else {
         // Core package for Vue, Svelte, Angular (no framework-specific adapter yet)
         addPackageDependency({ vfs, packagePath: webPkgPath, dependencies: ["@tanstack/pacer"] });

@@ -1,0 +1,7 @@
+{{#if (eq goApi "oapi-codegen")}}
+package: api
+output: openapi.gen.go
+generate:
+  models: true
+  std-http-server: true
+{{/if}}

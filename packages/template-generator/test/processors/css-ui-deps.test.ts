@@ -11,6 +11,17 @@ function expectIncludesAll(actual: readonly string[], expected: readonly string[
 }
 
 describe("processCSSAndUILibraryDeps", () => {
+  it("adds styled-components for Vinext", () => {
+    const vfs = createSeededVFS(["apps/web/package.json"]);
+
+    processCSSAndUILibraryDeps(
+      vfs,
+      makeConfig({ frontend: ["vinext"], backend: "self", cssFramework: "styled-components" }),
+    );
+
+    expect(getDeps(vfs, "apps/web/package.json").deps).toContain("styled-components");
+  });
+
   it("adds CSS preprocessor dev dependencies for web frontends", () => {
     const scssVfs = createSeededVFS(["apps/web/package.json"]);
     const lessVfs = createSeededVFS(["apps/web/package.json"]);

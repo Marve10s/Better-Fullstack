@@ -62,12 +62,18 @@ import {
   getGoCachingChoice,
   getGoCliChoice,
   getGoConfigChoice,
+  getGoDIChoice,
   getGoLoggingChoice,
+  getGoMigrationsChoice,
   getGoMessageQueueChoice,
   getGoObservabilityChoice,
   getGoOrmChoice,
+  getGoProtoToolingChoice,
+  getGoQualityChoice,
   getGoRealtimeChoice,
+  getGoTemplatingChoice,
   getGoTestingChoice,
+  getGoValidationChoice,
   getGoWebFrameworkChoice,
 } from "./go-ecosystem";
 import { getinstallChoice } from "./install";
@@ -373,6 +379,42 @@ export async function gatherMultiEcosystemConfig(
         : await scopedPromptValue("go", "goObservability", configScope, backendSections, () =>
             getGoObservabilityChoice(flags.goObservability),
           );
+    const goValidation =
+      goWebFramework === "none"
+        ? "none"
+        : await scopedPromptValue("go", "goValidation", configScope, backendSections, () =>
+            getGoValidationChoice(flags.goValidation),
+          );
+    const goQuality =
+      goWebFramework === "none"
+        ? "none"
+        : await scopedPromptValue("go", "goQuality", configScope, backendSections, () =>
+            getGoQualityChoice(flags.goQuality),
+          );
+    const goMigrations =
+      goWebFramework === "none" || !["sqlite", "postgres", "mysql"].includes(database)
+        ? "none"
+        : await scopedPromptValue("go", "goMigrations", configScope, backendSections, () =>
+            getGoMigrationsChoice(flags.goMigrations),
+          );
+    const goTemplating =
+      goWebFramework === "none"
+        ? "none"
+        : await scopedPromptValue("go", "goTemplating", configScope, backendSections, () =>
+            getGoTemplatingChoice(flags.goTemplating),
+          );
+    const goProtoTooling =
+      goWebFramework === "none"
+        ? "none"
+        : await scopedPromptValue("go", "goProtoTooling", configScope, backendSections, () =>
+            getGoProtoToolingChoice(flags.goProtoTooling),
+          );
+    const goDI =
+      goWebFramework === "none"
+        ? "none"
+        : await scopedPromptValue("go", "goDI", configScope, backendSections, () =>
+            getGoDIChoice(flags.goDI),
+          );
     Object.assign(backendChoices, {
       goWebFramework,
       goOrm,
@@ -386,6 +428,12 @@ export async function gatherMultiEcosystemConfig(
       goCaching,
       goConfig,
       goObservability,
+      goValidation,
+      goQuality,
+      goMigrations,
+      goTemplating,
+      goProtoTooling,
+      goDI,
     });
     if (goWebFramework !== "none") stackPartSpecs.push(`backend:go:${goWebFramework}`);
     if (goOrm !== "none") stackPartSpecs.push(`backend.orm:go:${goOrm}`);
@@ -403,6 +451,12 @@ export async function gatherMultiEcosystemConfig(
     if (goObservability !== "none") {
       stackPartSpecs.push(`backend.observability:go:${goObservability}`);
     }
+    if (goValidation !== "none") stackPartSpecs.push(`backend.validation:go:${goValidation}`);
+    if (goQuality !== "none") stackPartSpecs.push(`backend.codeQuality:go:${goQuality}`);
+    if (goMigrations !== "none") stackPartSpecs.push(`backend.migrations:go:${goMigrations}`);
+    if (goTemplating !== "none") stackPartSpecs.push(`backend.templating:go:${goTemplating}`);
+    if (goProtoTooling !== "none") stackPartSpecs.push(`backend.buildTool:go:${goProtoTooling}`);
+    if (goDI !== "none") stackPartSpecs.push(`backend.libraries:go:${goDI}`);
   }
 
   if (backendEcosystem === "rust") {

@@ -68,11 +68,12 @@ jobs:
         run: |
           cd packages/template-generator
 
-          # Scheduled runs should keep dependency update PRs aligned with the newest stable versions.
+          # Scheduled runs apply compatible patch/minor updates. Majors require
+          # an explicit policy allowlist and a manual `all` dispatch.
           EFFECTIVE_UPDATE_MODE="${{ inputs.update_mode }}"
           if [ -z "$EFFECTIVE_UPDATE_MODE" ]; then
             if [ "${{ github.event_name }}" = "schedule" ]; then
-              EFFECTIVE_UPDATE_MODE="all"
+              EFFECTIVE_UPDATE_MODE="patch-minor"
             else
               EFFECTIVE_UPDATE_MODE="check-only"
             fi
@@ -95,6 +96,9 @@ jobs:
           fi
           if ! grep -q "^has_major_updates=" "$GITHUB_OUTPUT"; then
             echo "has_major_updates=false" >> "$GITHUB_OUTPUT"
+          fi
+          if ! grep -q "^blocked_major_count=" "$GITHUB_OUTPUT"; then
+            echo "blocked_major_count=0" >> "$GITHUB_OUTPUT"
           fi
           if ! grep -q "^major_packages=" "$GITHUB_OUTPUT"; then
             echo "major_packages=" >> "$GITHUB_OUTPUT"
@@ -143,7 +147,9 @@ jobs:
       - name: Determine Pending Changes
         id: pending
         run: |
-          if git diff --quiet; then
+          # A refreshed report alone is informational and must not create an
+          # empty weekly dependency PR.
+          if git diff --quiet -- . ':(exclude)packages/deps-report.md'; then
             echo "has_changes=false" >> "$GITHUB_OUTPUT"
           else
             echo "has_changes=true" >> "$GITHUB_OUTPUT"
@@ -177,7 +183,8 @@ jobs:
             - Mode: `${{ steps.check.outputs.effective_update_mode }}`
             - Downgrades detected in check report: `${{ steps.check.outputs.downgrade_count }}`
             - Note: Template versions, snapshots, and the dependency report were regenerated after applying updates.
-            - Note: `all` mode includes major-version changes; the major dependency smoke test runs automatically when majors are detected.
+            - Policy-blocked major updates: `${{ steps.check.outputs.blocked_major_count }}`
+            - Note: `all` mode only applies major changes explicitly allowlisted in the repository policy; their smoke test runs automatically.
 
             ${{ steps.final-report.outputs.report }}
 

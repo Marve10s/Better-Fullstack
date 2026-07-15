@@ -22,6 +22,16 @@ const WEB_FRAMEWORKS: readonly Frontend[] = [
 ] as const;
 
 const WEB_DEPLOY_COMPATIBLE_FRONTENDS = {
+  cloudflare: [
+    "tanstack-router",
+    "react-router",
+    "tanstack-start",
+    "next",
+    "nuxt",
+    "svelte",
+    "solid",
+    "astro",
+  ],
   render: [
     "tanstack-router",
     "react-router",

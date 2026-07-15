@@ -1,6 +1,9 @@
 {{#if (eq frontend.[0] "nuxt")}}
 const umamiWebsiteId = process.env.NUXT_PUBLIC_UMAMI_WEBSITE_ID || "";
 const umamiScriptUrl = process.env.NUXT_PUBLIC_UMAMI_SCRIPT_URL || "https://cloud.umami.is/script.js";
+{{else}}
+const umamiWebsiteId = import.meta.env.VITE_UMAMI_WEBSITE_ID || "";
+const umamiScriptUrl = import.meta.env.VITE_UMAMI_SCRIPT_URL || "https://cloud.umami.is/script.js";
 {{/if}}
 
 declare global {

@@ -23,6 +23,7 @@ export const StackPartRoleSchema = z
     "runtime",
     "deploy",
     "dbSetup",
+    "migrations",
     "realtime",
     "navigation",
     "caching",
@@ -633,15 +634,15 @@ export const PythonMessageQueueSchema = z
 
 // Go ecosystem schemas
 export const GoWebFrameworkSchema = z
-  .enum(["gin", "echo", "fiber", "chi", "stdlib", "none"])
+  .enum(["gin", "echo", "fiber", "chi", "stdlib", "go-zero", "kratos", "httprouter", "none"])
   .describe("Go web framework");
 
 export const GoOrmSchema = z
-  .enum(["gorm", "sqlc", "ent", "bun", "none"])
+  .enum(["gorm", "sqlc", "ent", "bun", "sqlx", "none"])
   .describe("Go ORM/database layer");
 
 export const GoApiSchema = z
-  .enum(["grpc-go", "gqlgen", "none"])
+  .enum(["grpc-go", "gqlgen", "grpc-gateway", "connect-go", "oapi-codegen", "none"])
   .describe("Go API layer (gRPC, GraphQL)");
 
 export const GoCliSchema = z
@@ -653,11 +654,11 @@ export const GoLoggingSchema = z
   .describe("Go logging library");
 
 export const GoAuthSchema = z
-  .enum(["casbin", "jwt", "goth", "none"])
+  .enum(["casbin", "jwt", "goth", "oauth2", "none"])
   .describe("Go authentication library");
 
 export const GoTestingSchema = z
-  .enum(["testify", "gomock", "none"])
+  .enum(["testify", "gomock", "testcontainers", "ginkgo-gomega", "mockery", "none"])
   .describe("Go testing libraries");
 
 export const GoRealtimeSchema = z
@@ -665,7 +666,7 @@ export const GoRealtimeSchema = z
   .describe("Go realtime/WebSocket library");
 
 export const GoMessageQueueSchema = z
-  .enum(["nats", "watermill", "none"])
+  .enum(["nats", "watermill", "kafka-go", "asynq", "none"])
   .describe("Go message queue/eventing library");
 
 export const GoCachingSchema = z
@@ -677,8 +678,24 @@ export const GoConfigSchema = z
   .describe("Go configuration management library");
 
 export const GoObservabilitySchema = z
-  .enum(["opentelemetry", "none"])
+  .enum(["opentelemetry", "prometheus", "none"])
   .describe("Go observability/tracing library");
+
+export const GoValidationSchema = z.enum(["validator", "none"]).describe("Go validation library");
+
+export const GoQualitySchema = z
+  .enum(["golangci-lint", "none"])
+  .describe("Go code quality tooling");
+
+export const GoMigrationsSchema = z
+  .enum(["golang-migrate", "none"])
+  .describe("Go database migration tooling");
+
+export const GoTemplatingSchema = z.enum(["templ", "none"]).describe("Go templating library");
+
+export const GoProtoToolingSchema = z.enum(["buf", "none"]).describe("Go Protocol Buffers tooling");
+
+export const GoDISchema = z.enum(["fx", "none"]).describe("Go dependency injection library");
 
 // Java ecosystem schemas
 export const JavaLanguageSchema = z
@@ -1099,6 +1116,12 @@ export const CreateInputSchema = z.object({
   goCaching: GoCachingSchema.optional(),
   goConfig: GoConfigSchema.optional(),
   goObservability: GoObservabilitySchema.optional(),
+  goValidation: GoValidationSchema.optional(),
+  goQuality: GoQualitySchema.optional(),
+  goMigrations: GoMigrationsSchema.optional(),
+  goTemplating: GoTemplatingSchema.optional(),
+  goProtoTooling: GoProtoToolingSchema.optional(),
+  goDI: GoDISchema.optional(),
   // Java ecosystem options
   javaLanguage: JavaLanguageSchema.optional(),
   javaWebFramework: JavaWebFrameworkSchema.optional(),
@@ -1281,6 +1304,12 @@ export const ProjectConfigSchema = z.object({
   goCaching: GoCachingSchema,
   goConfig: GoConfigSchema,
   goObservability: GoObservabilitySchema,
+  goValidation: GoValidationSchema,
+  goQuality: GoQualitySchema,
+  goMigrations: GoMigrationsSchema,
+  goTemplating: GoTemplatingSchema,
+  goProtoTooling: GoProtoToolingSchema,
+  goDI: GoDISchema,
   // Java ecosystem options
   javaLanguage: JavaLanguageSchema.optional(),
   javaWebFramework: JavaWebFrameworkSchema,
@@ -1450,6 +1479,12 @@ export const BetterTStackConfigSchema = z.object({
   goCaching: GoCachingSchema,
   goConfig: GoConfigSchema,
   goObservability: GoObservabilitySchema,
+  goValidation: GoValidationSchema,
+  goQuality: GoQualitySchema,
+  goMigrations: GoMigrationsSchema,
+  goTemplating: GoTemplatingSchema,
+  goProtoTooling: GoProtoToolingSchema,
+  goDI: GoDISchema,
   // Java ecosystem options
   javaLanguage: JavaLanguageSchema.optional(),
   javaWebFramework: JavaWebFrameworkSchema,
@@ -1630,6 +1665,12 @@ export const GO_MESSAGE_QUEUE_VALUES = GoMessageQueueSchema.options;
 export const GO_CACHING_VALUES = GoCachingSchema.options;
 export const GO_CONFIG_VALUES = GoConfigSchema.options;
 export const GO_OBSERVABILITY_VALUES = GoObservabilitySchema.options;
+export const GO_VALIDATION_VALUES = GoValidationSchema.options;
+export const GO_QUALITY_VALUES = GoQualitySchema.options;
+export const GO_MIGRATIONS_VALUES = GoMigrationsSchema.options;
+export const GO_TEMPLATING_VALUES = GoTemplatingSchema.options;
+export const GO_PROTO_TOOLING_VALUES = GoProtoToolingSchema.options;
+export const GO_DI_VALUES = GoDISchema.options;
 export const JAVA_LANGUAGE_VALUES = JavaLanguageSchema.options;
 export const JAVA_WEB_FRAMEWORK_VALUES = JavaWebFrameworkSchema.options;
 export const JAVA_BUILD_TOOL_VALUES = JavaBuildToolSchema.options;

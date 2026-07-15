@@ -5,15 +5,20 @@ import type { VirtualFileSystem } from "../core/virtual-fs";
 import { addPackageDependency } from "../utils/add-deps";
 import { getWebPackagePath } from "../utils/project-paths";
 
+const REACT_FEATURE_FLAG_FRONTENDS = new Set([
+  "tanstack-router",
+  "react-router",
+  "react-vite",
+  "tanstack-start",
+  "next",
+]);
+
 export function processFeatureFlagsDeps(vfs: VirtualFileSystem, config: ProjectConfig): void {
   const { featureFlags, frontend, backend } = config;
   if (!featureFlags || featureFlags === "none") return;
 
   // Check if we have a web frontend
-  const hasWebFrontend = frontend.some(
-    (f) =>
-      f !== "none" && f !== "native-bare" && f !== "native-uniwind" && f !== "native-unistyles",
-  );
+  const hasWebFrontend = frontend.some((f) => REACT_FEATURE_FLAG_FRONTENDS.has(f));
 
   const webPath = getWebPackagePath(frontend, backend);
 

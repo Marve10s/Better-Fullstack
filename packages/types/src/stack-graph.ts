@@ -62,6 +62,12 @@ import {
   GO_MESSAGE_QUEUE_VALUES,
   GO_OBSERVABILITY_VALUES,
   GO_ORM_VALUES,
+  GO_VALIDATION_VALUES,
+  GO_QUALITY_VALUES,
+  GO_MIGRATIONS_VALUES,
+  GO_TEMPLATING_VALUES,
+  GO_PROTO_TOOLING_VALUES,
+  GO_DI_VALUES,
   GO_REALTIME_VALUES,
   GO_TESTING_VALUES,
   GO_WEB_FRAMEWORK_VALUES,
@@ -476,16 +482,32 @@ export function getAddonStackPartBinding(toolId: string): AddonStackPartBinding 
     return { role: "documentation", ecosystem: "universal" };
   }
   if (FRONTEND_APP_PLATFORM_ADDONS.has(toolId)) {
-    return { role: "appPlatform", ecosystem: "typescript", ownerRole: "frontend" };
+    return {
+      role: "appPlatform",
+      ecosystem: "typescript",
+      ownerRole: "frontend",
+    };
   }
   if (FRONTEND_DATA_FETCHING_ADDONS.has(toolId)) {
-    return { role: "dataFetching", ecosystem: "typescript", ownerRole: "frontend" };
+    return {
+      role: "dataFetching",
+      ecosystem: "typescript",
+      ownerRole: "frontend",
+    };
   }
   if (FRONTEND_HTTP_CLIENT_ADDONS.has(toolId)) {
-    return { role: "httpClient", ecosystem: "typescript", ownerRole: "frontend" };
+    return {
+      role: "httpClient",
+      ecosystem: "typescript",
+      ownerRole: "frontend",
+    };
   }
   if (FRONTEND_LIBRARY_ADDONS.has(toolId)) {
-    return { role: "libraries", ecosystem: "typescript", ownerRole: "frontend" };
+    return {
+      role: "libraries",
+      ecosystem: "typescript",
+      ownerRole: "frontend",
+    };
   }
   if (FRONTEND_TESTING_ADDONS.has(toolId)) {
     return { role: "testing", ecosystem: "typescript", ownerRole: "frontend" };
@@ -511,6 +533,7 @@ const OWNER_ROLES_BY_SCOPED_ROLE = {
   ),
   deploy: ["frontend", "backend"],
   dbSetup: ["database"],
+  migrations: ["backend"],
   ui: ["frontend", "mobile"],
   graphql: ["backend"],
   appPlatform: ["frontend"],
@@ -677,6 +700,12 @@ const LEGACY_EXTRA_CATEGORIES_BY_ECOSYSTEM = {
     caching: "goCaching",
     config: "goConfig",
     observability: "goObservability",
+    validation: "goValidation",
+    codeQuality: "goQuality",
+    migrations: "goMigrations",
+    templating: "goTemplating",
+    buildTool: "goProtoTooling",
+    libraries: "goDI",
   },
   java: { buildTool: "javaBuildTool", logging: "javaLogging" },
   dotnet: {
@@ -919,7 +948,9 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(PYTHON_WEB_FRAMEWORK_VALUES, "backend", "python", "pythonWebFramework"),
   ...defineTools(PYTHON_ORM_VALUES, "orm", "python", "pythonOrm"),
   ...defineTools(PYTHON_VALIDATION_VALUES, "validation", "python", "pythonValidation"),
-  ...defineTools(PYTHON_AI_VALUES, "ai", "python", "pythonAi", { allowMultiple: true }),
+  ...defineTools(PYTHON_AI_VALUES, "ai", "python", "pythonAi", {
+    allowMultiple: true,
+  }),
   ...defineTools(PYTHON_API_VALUES, "api", "python", "pythonApi"),
   ...defineTools(PYTHON_AUTH_VALUES, "auth", "python", "pythonAuth"),
   ...defineTools(["resend"], "email", "python", "email"),
@@ -975,6 +1006,12 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(["meilisearch", "bleve"], "search", "go", "search"),
   ...defineTools(GO_CONFIG_VALUES, "config", "go", "goConfig"),
   ...defineTools(GO_OBSERVABILITY_VALUES, "observability", "go", "goObservability"),
+  ...defineTools(GO_VALIDATION_VALUES, "validation", "go", "goValidation"),
+  ...defineTools(GO_QUALITY_VALUES, "codeQuality", "go", "goQuality"),
+  ...defineTools(GO_MIGRATIONS_VALUES, "migrations", "go", "goMigrations"),
+  ...defineTools(GO_TEMPLATING_VALUES, "templating", "go", "goTemplating"),
+  ...defineTools(GO_PROTO_TOOLING_VALUES, "buildTool", "go", "goProtoTooling"),
+  ...defineTools(GO_DI_VALUES, "libraries", "go", "goDI"),
   ...defineTools(JAVA_WEB_FRAMEWORK_VALUES, "backend", "java", "javaWebFramework"),
   ...defineTools(JAVA_LANGUAGE_VALUES, "language", "java", "javaLanguage"),
   ...defineTools(JAVA_BUILD_TOOL_VALUES, "buildTool", "java", "javaBuildTool"),
@@ -1043,8 +1080,18 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
     ecosystems: ["typescript"],
     legacyCategory: "backend",
     provides: [
-      { role: "database", toolId: "convex", ecosystem: "typescript", overrideable: false },
-      { role: "api", toolId: "convex", ecosystem: "typescript", overrideable: false },
+      {
+        role: "database",
+        toolId: "convex",
+        ecosystem: "typescript",
+        overrideable: false,
+      },
+      {
+        role: "api",
+        toolId: "convex",
+        ecosystem: "typescript",
+        overrideable: false,
+      },
     ],
   },
   {
@@ -2314,6 +2361,19 @@ function getStackPartCompatibilityIssue(
   const javaCompatibilityIssue = createJavaCompatibilityIssue(part, context);
   if (javaCompatibilityIssue) return javaCompatibilityIssue;
 
+  if (part.ecosystem === "go" && part.role === "migrations" && part.toolId === "golang-migrate") {
+    const databaseTool = context.primaryToolIdsByRole?.database ?? "none";
+    if (!["sqlite", "postgres", "mysql"].includes(databaseTool)) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Go migrations require SQLite, PostgreSQL, or MySQL",
+      });
+    }
+  }
+
   if (part.ecosystem === "python" && part.role === "api" && DJANGO_API_TOOLS.has(part.toolId)) {
     if (context.ownerToolId !== "django") {
       return createStackGraphIssue({
@@ -2593,7 +2653,10 @@ function allowsMultipleSelectedParts(parts: readonly StackPart[]) {
   return selectedParts.every((part) => findDefinition(part)?.allowMultiple === true);
 }
 
-function parseRolePath(rolePath: string): { role: StackPartRole; ownerRole?: StackPrimaryRole } {
+function parseRolePath(rolePath: string): {
+  role: StackPartRole;
+  ownerRole?: StackPrimaryRole;
+} {
   const segments = rolePath.split(".");
   const rawRole = segments.length === 1 ? segments[0] : segments[segments.length - 1];
   const rawOwnerRole = segments.length > 1 ? segments[0] : undefined;
@@ -2791,7 +2854,14 @@ function addLegacyPart(
   settings?: Record<string, unknown>,
 ) {
   if (!toolId || toolId === "none") return undefined;
-  const part = createStackPart({ role, ecosystem, toolId, source, ownerPartId, settings });
+  const part = createStackPart({
+    role,
+    ecosystem,
+    toolId,
+    source,
+    ownerPartId,
+    settings,
+  });
   parts.push(part);
   return part;
 }

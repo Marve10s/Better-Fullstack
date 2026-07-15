@@ -1,7 +1,7 @@
 import { CircleDot, Download, GitPullRequest, Star } from "lucide-react";
 import { useEffect, useState } from "react";
 
-type HeroStatsData = {
+export type ProjectStatsData = {
   github: {
     stars: number;
     openIssues: number;
@@ -18,16 +18,16 @@ const REPO = "Marve10s/Better-Fullstack";
 const CACHE_KEY = "navbar-stats-cache-v2";
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
-let memoryCache: { data: HeroStatsData; timestamp: number } | null = null;
-let inflight: Promise<HeroStatsData> | null = null;
+let memoryCache: { data: ProjectStatsData; timestamp: number } | null = null;
+let inflight: Promise<ProjectStatsData> | null = null;
 
-function formatCompact(num: number): string {
+export function formatCompactStat(num: number): string {
   if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`;
   if (num >= 1_000) return `${(num / 1_000).toFixed(1)}k`;
   return num.toString();
 }
 
-function readCachedStats(): HeroStatsData | null {
+function readCachedStats(): ProjectStatsData | null {
   if (memoryCache && Date.now() - memoryCache.timestamp < CACHE_TTL_MS) {
     return memoryCache.data;
   }
@@ -37,7 +37,7 @@ function readCachedStats(): HeroStatsData | null {
   try {
     const raw = localStorage.getItem(CACHE_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as { data: HeroStatsData; timestamp: number };
+    const parsed = JSON.parse(raw) as { data: ProjectStatsData; timestamp: number };
     if (Date.now() - parsed.timestamp >= CACHE_TTL_MS) return null;
     memoryCache = parsed;
     return parsed.data;
@@ -46,7 +46,7 @@ function readCachedStats(): HeroStatsData | null {
   }
 }
 
-function writeCachedStats(data: HeroStatsData) {
+function writeCachedStats(data: ProjectStatsData) {
   const value = { data, timestamp: Date.now() };
   memoryCache = value;
   if (typeof window === "undefined") return;
@@ -55,7 +55,7 @@ function writeCachedStats(data: HeroStatsData) {
   } catch {}
 }
 
-async function fetchHeroStats(): Promise<HeroStatsData> {
+async function fetchProjectStats(): Promise<ProjectStatsData> {
   const cached = readCachedStats();
   if (cached) return cached;
 
@@ -63,7 +63,7 @@ async function fetchHeroStats(): Promise<HeroStatsData> {
     inflight = fetch("/api/stats")
       .then((res) => {
         if (!res.ok) throw new Error(`Failed to fetch hero stats (${res.status})`);
-        return res.json() as Promise<HeroStatsData>;
+        return res.json() as Promise<ProjectStatsData>;
       })
       .then((data) => {
         writeCachedStats(data);
@@ -77,12 +77,12 @@ async function fetchHeroStats(): Promise<HeroStatsData> {
   return inflight;
 }
 
-export function HeroStats() {
-  const [stats, setStats] = useState<HeroStatsData | null>(() => readCachedStats());
+export function useProjectStats() {
+  const [stats, setStats] = useState<ProjectStatsData | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    void fetchHeroStats()
+    void fetchProjectStats()
       .then((data) => {
         if (!cancelled) setStats(data);
         return;
@@ -92,6 +92,12 @@ export function HeroStats() {
       cancelled = true;
     };
   }, []);
+
+  return stats;
+}
+
+export function HeroStats() {
+  const stats = useProjectStats();
 
   if (!stats) {
     return (
@@ -114,7 +120,7 @@ export function HeroStats() {
         title={`${stats.github.stars} stars`}
       >
         <Star className="h-3.5 w-3.5" />
-        <span className="tabular-nums">{formatCompact(stats.github.stars)}</span>
+        <span className="tabular-nums">{formatCompactStat(stats.github.stars)}</span>
       </a>
 
       <a
@@ -151,7 +157,7 @@ export function HeroStats() {
         title={`${stats.npm.downloads.toLocaleString()} downloads this month`}
       >
         <Download className="h-3.5 w-3.5" />
-        <span className="tabular-nums">{formatCompact(stats.npm.downloads)}/mo</span>
+        <span className="tabular-nums">{formatCompactStat(stats.npm.downloads)}/mo</span>
       </a>
     </div>
   );

@@ -1,0 +1,15 @@
+{{#if (eq goDI "fx")}}
+package app
+
+import "go.uber.org/fx"
+
+type Config struct {
+	Name string
+}
+
+func NewConfig() Config { return Config{Name: "{{projectName}}"} }
+
+func New() *fx.App {
+	return fx.New(fx.Provide(NewConfig))
+}
+{{/if}}

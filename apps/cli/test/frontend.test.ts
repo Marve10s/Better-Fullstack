@@ -263,9 +263,14 @@ describe("Frontend Configurations", () => {
         webDeploy: "none",
         serverDeploy: "none",
         install: false,
+        testing: "mocha",
       });
 
       expectSuccess(result);
+      expect(await Bun.file(`${result.projectDir}/apps/web/test/smoke.test.ts`).exists()).toBe(true);
+      expect(await Bun.file(`${result.projectDir}/apps/web/package.json`).text()).toContain(
+        "mocha --import=tsx",
+      );
     });
 
     it("should fail Angular with tRPC API", async () => {
@@ -497,7 +502,9 @@ describe("Frontend Configurations", () => {
         );
         expect(denoJson).toContain('"preact/": "npm:preact@^10.29.2/"');
         expect(denoJson).toContain('"preact/jsx-runtime": "npm:preact@^10.29.2/jsx-runtime"');
-        expect(denoJson).toContain('"preact/jsx-dev-runtime": "npm:preact@^10.29.2/jsx-dev-runtime"');
+        expect(denoJson).toContain(
+          '"preact/jsx-dev-runtime": "npm:preact@^10.29.2/jsx-dev-runtime"',
+        );
         expect(denoJson).toContain('"@preact/signals/": "npm:@preact/signals@^2.9.1/"');
         expect(webPkg.scripts["check-types"]).toBe(
           "deno check --node-modules-dir=auto main.ts client.ts",

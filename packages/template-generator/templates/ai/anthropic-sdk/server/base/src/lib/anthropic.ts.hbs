@@ -1,12 +1,13 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { env } from "@{{projectName}}/env/server";
 
 export const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+  apiKey: env.ANTHROPIC_API_KEY,
 });
 
 export async function createAnthropicMessage(prompt: string) {
   return anthropic.messages.create({
-    model: process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-6",
+    model: env.ANTHROPIC_MODEL,
     max_tokens: 1024,
     messages: [{ role: "user", content: prompt }],
   });

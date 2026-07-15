@@ -1,0 +1,21 @@
+package main
+
+import (
+	"net/http"
+	"os"
+
+	"{{projectName}}/internal/api"
+)
+
+func main() {
+	mux := http.NewServeMux()
+	path, handler := api.NewConnectGreeterHandler()
+	mux.Handle(path, handler)
+	addr := os.Getenv("CONNECT_ADDR")
+	if addr == "" {
+		addr = ":8081"
+	}
+	if err := http.ListenAndServe(addr, mux); err != nil && err != http.ErrServerClosed {
+		panic(err)
+	}
+}

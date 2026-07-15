@@ -6,6 +6,7 @@ import ContributorsSection from "@/components/home/contributors-section";
 import FeaturesSection from "@/components/home/features-section";
 import Footer from "@/components/home/footer";
 import HeroSection from "@/components/home/hero-section";
+import LaunchRadarStrip from "@/components/home/launch-radar-strip";
 import TestimonialsSection from "@/components/home/testimonials-section";
 import {
   DEFAULT_OG_IMAGE_ALT,
@@ -53,6 +54,7 @@ function HomePage() {
   return (
     <main className="min-h-svh">
       <div className="mx-auto max-w-[1480px] border-x border-border">
+        <LaunchRadarStrip />
         <HeroSection />
         <FeaturesSection />
         <BenchmarkTeaser />
