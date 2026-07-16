@@ -43,25 +43,16 @@ const HY3_GOOD = [
 // (multi-root manifest discovery, no vacuous install-only passes). Rows whose
 // artifacts are gone keep their old-validator numbers; see the blog note.
 const RUN_SOURCES: { dir: string; specs?: string[] }[] = [
-  { dir: "testing/llm-benchmarks/v2-codex-sol/gpt-5-6-sol-high-2026-07-09" },
-  { dir: "testing/llm-benchmarks/v2-codex/gpt-5-6-luna-medium-2026-07-09" },
-  { dir: "testing/llm-benchmarks/v2-codex-terra/gpt-5-6-terra-medium-2026-07-09" },
-  { dir: "testing/llm-benchmarks/v2-f/hy3-free-2026-07-09", specs: HY3_GOOD },
-  { dir: "testing/llm-benchmarks/v2/gpt-5-5-high-prompt-2026-07-03" },
-  { dir: "testing/llm-benchmarks/v2/fable5-low-prompt-2026-07-06" },
-  { dir: "testing/llm-benchmarks/v2/fable5-high-prompt-2026-07-06" },
-  // Max-effort ablation (2026-07-10).
-  { dir: "testing/llm-benchmarks/v2-codex-sol/gpt-5-6-sol-max-2026-07-10" },
-  { dir: "testing/llm-benchmarks/v2-codex/gpt-5-6-luna-max-2026-07-10" },
+  // Max-effort ablation completion (2026-07-16): Terra@max. Earlier batches'
+  // source dirs are gone from disk; their rows live in the committed data.
+  { dir: "testing/llm-benchmarks/v2/terra-max-2026-07-16" },
 ];
 
 // Extra-lane runs merged into EXISTING rows: their cells are appended under the
 // row's modelKey (replacing any same-path cells) but the board row itself —
 // label, effort, sortIndex — is left untouched, so the main leaderboard stays a
 // prompt-only comparison. These cells feed the MCP tab.
-const MERGE_SOURCES: { dir: string; specs?: string[] }[] = [
-  { dir: "testing/llm-benchmarks/v2-codex/gpt-5-6-luna-medium-mcp-2026-07-10" },
-];
+const MERGE_SOURCES: { dir: string; specs?: string[] }[] = [];
 
 const MODEL_LABELS: Record<string, string> = {
   "gpt-5.6-sol": "GPT-5.6 Sol",
