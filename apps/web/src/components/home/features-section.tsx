@@ -9,6 +9,7 @@ import type { TechCategory } from "@/lib/types";
 import { ContainerScroll } from "@/components/effects/container-scroll";
 import { TechIcon } from "@/components/ui/tech-icon";
 import { ECOSYSTEMS, TECH_OPTIONS } from "@/lib/constant";
+import { OPTION_ENTRY_COUNT } from "@/lib/project-stats";
 import { m } from "@/paraglide/messages.js";
 
 const WebGLShader = lazy(async () => {
@@ -294,7 +295,7 @@ function TotalBlock() {
             >
               <span style={{ fontSize: "clamp(5rem, 18vw, 14rem)" }}>
                 <NumberFlow
-                  value={inView ? 437 : 0}
+                  value={inView ? OPTION_ENTRY_COUNT : 0}
                   transformTiming={{ duration: 1100, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" }}
                 />
               </span>

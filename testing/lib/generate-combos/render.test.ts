@@ -1,9 +1,42 @@
 import { createCliDefaultProjectConfigBase, type ProjectConfig } from "@better-fullstack/types";
 import { describe, expect, it } from "bun:test";
 
-import { buildCommand } from "./render";
+import { buildCommand, formatNameFromFingerprint } from "./render";
 
 describe("smoke combo command rendering", () => {
+  it("keeps generated names safe for Phoenix test database identifiers", () => {
+    const name = formatNameFromFingerprint({
+      ecosystem: "elixir",
+      elixirWebFramework: "phoenix-live-view",
+      elixirOrm: "myxql",
+      elixirApi: "grpc",
+      elixirRealtime: "channels",
+      elixirDeploy: "mix-release",
+    });
+
+    expect(name.length).toBeLessThanOrEqual(58);
+    expect(`${name.replaceAll("-", "_")}_test`.length).toBeLessThanOrEqual(63);
+    expect(name).toMatch(/-[a-z0-9]{6}$/);
+  });
+
+  it("preserves unique digests when long generated names are truncated", () => {
+    const commonFingerprint = {
+      ecosystem: "elixir",
+      elixirWebFramework: "phoenix-live-view",
+      elixirOrm: "myxql",
+      elixirApi: "grpc",
+      elixirRealtime: "channels",
+      elixirDeploy: "mix-release",
+    } as const;
+
+    const first = formatNameFromFingerprint({ ...commonFingerprint, elixirJobs: "oban" });
+    const second = formatNameFromFingerprint({ ...commonFingerprint, elixirJobs: "broadway" });
+
+    expect(first).not.toBe(second);
+    expect(first.length).toBeLessThanOrEqual(58);
+    expect(second.length).toBeLessThanOrEqual(58);
+  });
+
   it("includes mobile flags for React Native commands", () => {
     const config: ProjectConfig = {
       ...createCliDefaultProjectConfigBase("bun"),

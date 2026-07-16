@@ -4,6 +4,10 @@ import type { TemplateFingerprint } from "./types";
 
 import { fingerprintToKey } from "./fingerprint";
 
+// Phoenix derives test database names by appending `_test`. Keep generated
+// project names within PostgreSQL's 63-byte identifier limit after that suffix.
+const MAX_SMOKE_PROJECT_NAME_LENGTH = 58;
+
 function withExplicitNone(values: readonly string[]): string[] {
   return values.length === 0 ? ["none"] : [...values];
 }
@@ -118,7 +122,13 @@ export function formatNameFromFingerprint(fingerprint: TemplateFingerprint): str
     .map((value) => value.replace(/[^a-z0-9]+/gi, "-"));
 
   const digest = Bun.hash(fingerprintToKey(fingerprint)).toString(36).slice(0, 6);
-  return [...tokens.slice(0, 8), digest].join("-").replace(/-+/g, "-");
+  const suffix = `-${digest}`;
+  const readableName = tokens.slice(0, 8).join("-").replace(/-+/g, "-");
+  const truncatedName = readableName
+    .slice(0, MAX_SMOKE_PROJECT_NAME_LENGTH - suffix.length)
+    .replace(/-+$/g, "");
+
+  return `${truncatedName}${suffix}`;
 }
 
 export function buildCommand(name: string, config: ProjectConfig): string {

@@ -39,7 +39,7 @@ export function LaunchRadarButton({ compact = false }: { compact?: boolean }) {
           unread ? m.launchRadarOpenUnread({ count: LAUNCH_RADAR_TOTAL }) : m.navUpdates()
         }
         className={cn(
-          "group relative isolate inline-flex h-8 items-center gap-1.5 overflow-hidden rounded-full border px-2.5 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] transition-colors",
+          "group relative isolate inline-flex h-8 items-center gap-1.5 overflow-hidden rounded-full border px-2.5 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] transition-colors lg:h-7 lg:gap-1 lg:px-2 lg:text-[9px] lg:tracking-[0.1em] xl:h-8 xl:gap-1.5 xl:px-2.5 xl:text-[10px] xl:tracking-[0.14em]",
           unread
             ? "border-[#18D5FF]/45 bg-[#18D5FF]/8 text-foreground shadow-[0_0_18px_rgba(24,213,255,0.12)] hover:border-[#FF5C8A]/55"
             : "border-border/60 bg-muted/25 text-muted-foreground hover:text-foreground",

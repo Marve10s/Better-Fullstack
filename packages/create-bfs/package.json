@@ -1,6 +1,6 @@
 {
   "name": "create-bfs",
-  "version": "2.1.8",
+  "version": "2.2.0",
   "description": "Alias for create-better-fullstack - A CLI-first toolkit for building fullstack applications.",
   "keywords": [
     "algolia",
@@ -80,6 +80,6 @@
     "lint": "oxlint ."
   },
   "dependencies": {
-    "create-better-fullstack": "^2.1.8"
+    "create-better-fullstack": "^2.2.0"
   }
 }
