@@ -1805,6 +1805,116 @@ const BASE_LINKS: LinkMap = {
 };
 
 const CATEGORY_LINKS: LinkMap = {
+  // ─── React Native optional Expo modules ───────────────────────────────────
+  ...Object.fromEntries(
+    [
+      ["expo-sqlite", "sqlite"],
+      ["expo-camera", "camera"],
+      ["expo-image-picker", "imagepicker"],
+      ["expo-location", "location"],
+      ["expo-sensors", "sensors"],
+      ["expo-file-system", "filesystem"],
+      ["expo-image", "image"],
+      ["expo-audio", "audio"],
+      ["expo-video", "video"],
+      ["expo-contacts", "contacts"],
+      ["expo-calendar", "calendar"],
+      ["expo-local-authentication", "local-authentication"],
+      ["expo-sharing", "sharing"],
+      ["expo-clipboard", "clipboard"],
+      ["expo-task-manager", "task-manager"],
+      ["expo-background-task", "background-task"],
+      ["expo-maps", "maps"],
+      ["expo-brightness", "brightness"],
+      ["expo-battery", "battery"],
+      ["expo-screen-capture", "screen-capture"],
+    ].map(([id, docsSlug]) => [
+      `mobileLibraries:${id}`,
+      {
+        docsUrl: `https://docs.expo.dev/versions/latest/sdk/${docsSlug}/`,
+        githubUrl: `https://github.com/expo/expo/tree/main/packages/${id}`,
+      },
+    ]),
+  ),
+
+  // ─── .NET optional application libraries ─────────────────────────────────
+  "dotnetLibraries:automapper": {
+    docsUrl: "https://docs.automapper.io/en/stable/",
+    githubUrl: "https://github.com/LuckyPennySoftware/AutoMapper",
+  },
+  "dotnetLibraries:mediatr": {
+    docsUrl: "https://github.com/LuckyPennySoftware/MediatR/wiki",
+    githubUrl: "https://github.com/LuckyPennySoftware/MediatR",
+  },
+  "dotnetLibraries:fastendpoints": {
+    docsUrl: "https://fast-endpoints.com/docs/get-started",
+    githubUrl: "https://github.com/FastEndpoints/FastEndpoints",
+  },
+  "dotnetLibraries:api-versioning": {
+    docsUrl: "https://github.com/dotnet/aspnet-api-versioning/wiki",
+    githubUrl: "https://github.com/dotnet/aspnet-api-versioning",
+  },
+  "dotnetLibraries:scalar": {
+    docsUrl:
+      "https://guides.scalar.com/scalar/scalar-api-references/integrations/aspnetcore-integration",
+    githubUrl: "https://github.com/scalar/scalar",
+  },
+  "dotnetLibraries:polly": {
+    docsUrl: "https://www.pollydocs.org/",
+    githubUrl: "https://github.com/App-vNext/Polly",
+  },
+  "dotnetLibraries:masstransit": {
+    docsUrl: "https://masstransit.io/documentation/configuration",
+    githubUrl: "https://github.com/MassTransit/MassTransit",
+  },
+  "dotnetLibraries:rebus": {
+    docsUrl: "https://github.com/rebus-org/Rebus/wiki",
+    githubUrl: "https://github.com/rebus-org/Rebus",
+  },
+  "dotnetLibraries:coravel": {
+    docsUrl: "https://docs.coravel.net/",
+    githubUrl: "https://github.com/jamesmh/coravel",
+  },
+  "dotnetLibraries:magic-onion": {
+    docsUrl: "https://cysharp.github.io/MagicOnion/",
+    githubUrl: "https://github.com/Cysharp/MagicOnion",
+  },
+  "dotnetLibraries:prometheus-net": {
+    docsUrl: "https://github.com/prometheus-net/prometheus-net#readme",
+    githubUrl: "https://github.com/prometheus-net/prometheus-net",
+  },
+  "dotnetLibraries:seq": {
+    docsUrl: "https://docs.datalust.co/docs/using-serilog",
+    githubUrl: "https://github.com/datalust/serilog-sinks-seq",
+  },
+  "dotnetLibraries:application-insights": {
+    docsUrl: "https://learn.microsoft.com/azure/azure-monitor/app/asp-net-core",
+    githubUrl: "https://github.com/microsoft/ApplicationInsights-dotnet",
+  },
+  "dotnetLibraries:mongodb-driver": {
+    docsUrl: "https://www.mongodb.com/docs/drivers/csharp/current/",
+    githubUrl: "https://github.com/mongodb/mongo-csharp-driver",
+  },
+  "dotnetLibraries:nhibernate": {
+    docsUrl: "https://nhibernate.info/doc/",
+    githubUrl: "https://github.com/nhibernate/nhibernate-core",
+  },
+  "dotnetLibraries:mapster": {
+    docsUrl: "https://github.com/MapsterMapper/Mapster/wiki",
+    githubUrl: "https://github.com/MapsterMapper/Mapster",
+  },
+  "dotnetLibraries:scrutor": {
+    docsUrl: "https://github.com/khellang/Scrutor#readme",
+    githubUrl: "https://github.com/khellang/Scrutor",
+  },
+  "dotnetLibraries:refit": {
+    docsUrl: "https://reactiveui.github.io/refit/",
+    githubUrl: "https://github.com/reactiveui/refit",
+  },
+  "dotnetLibraries:fluent-email": {
+    docsUrl: "https://github.com/lukencode/FluentEmail#readme",
+    githubUrl: "https://github.com/lukencode/FluentEmail",
+  },
   "goWebFramework:go-zero": {
     docsUrl: "https://go-zero.dev/en/docs/introduction/overview",
     githubUrl: "https://github.com/zeromicro/go-zero",

@@ -17,6 +17,8 @@ const ARRAY_OPTION_KEYS = new Set([
   "pythonAi",
   "javaLibraries",
   "javaTestingLibraries",
+  "mobileLibraries",
+  "dotnetLibraries",
   "aiDocs",
 ] as const);
 

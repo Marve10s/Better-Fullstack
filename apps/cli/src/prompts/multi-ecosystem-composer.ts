@@ -25,6 +25,7 @@ import {
   getDotnetValidationChoice,
   getDotnetDeployChoice,
   getDotnetJobQueueChoice,
+  getDotnetLibrariesChoice,
   getDotnetObservabilityChoice,
   getDotnetOrmChoice,
   getDotnetRealtimeChoice,
@@ -883,6 +884,12 @@ export async function gatherMultiEcosystemConfig(
         : await scopedPromptValue("dotnet", "dotnetDeploy", configScope, backendSections, () =>
             getDotnetDeployChoice(flags.dotnetDeploy),
           );
+    const dotnetLibraries =
+      dotnetWebFramework === "none"
+        ? []
+        : await scopedPromptValue("dotnet", "dotnetLibraries", configScope, backendSections, () =>
+            getDotnetLibrariesChoice(flags.dotnetLibraries),
+          );
     Object.assign(backendChoices, {
       dotnetWebFramework,
       dotnetOrm,
@@ -895,6 +902,7 @@ export async function gatherMultiEcosystemConfig(
       dotnetValidation,
       dotnetCaching,
       dotnetDeploy,
+      dotnetLibraries,
     });
     if (dotnetWebFramework !== "none") {
       stackPartSpecs.push(`backend:dotnet:${dotnetWebFramework}`);
@@ -923,6 +931,9 @@ export async function gatherMultiEcosystemConfig(
       stackPartSpecs.push(`backend.caching:dotnet:${dotnetCaching}`);
     }
     if (dotnetDeploy !== "none") stackPartSpecs.push(`backend.deploy:dotnet:${dotnetDeploy}`);
+    for (const library of dotnetLibraries) {
+      if (library !== "none") stackPartSpecs.push(`backend.libraries:dotnet:${library}`);
+    }
   }
 
   if (backendEcosystem === "elixir") {

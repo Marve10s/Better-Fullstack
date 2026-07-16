@@ -10,6 +10,10 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+import type { StackState } from "@/lib/constant";
+import type { SavedStackEntry } from "@/lib/saved-stacks";
+
+import { TechIcon } from "@/components/stack-builder/tech-icon";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -25,22 +29,35 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import type { StackState } from "@/lib/constant";
-import type { SavedStackEntry } from "@/lib/saved-stacks";
-import { getStackKeyForCategory } from "@/lib/stack-utils";
-import { TechIcon } from "@/components/stack-builder/tech-icon";
 import { getLocalizedCategoryDisplayName } from "@/lib/i18n/builder-copy";
+import { getStackKeyForCategory } from "@/lib/stack-utils";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages.js";
 
 /** Subset of keys used for the card highlight badges. */
 const HIGHLIGHT_KEYS_BY_ECOSYSTEM: Record<string, readonly (keyof StackState)[]> = {
   typescript: ["backend", "database", "orm", "api", "auth", "uiLibrary", "runtime"],
+  "react-native": ["mobileNavigation", "mobileUI", "mobileStorage", "mobileLibraries"],
   rust: ["rustWebFramework", "rustFrontend", "rustOrm", "rustApi", "rustCli"],
   python: ["pythonWebFramework", "pythonOrm", "pythonAi", "pythonApi", "pythonTaskQueue"],
   go: ["goWebFramework", "goOrm", "goApi", "goCli"],
-  java: ["javaWebFramework", "javaBuildTool", "javaOrm", "javaAuth", "javaLibraries", "javaTestingLibraries"],
-  elixir: ["elixirWebFramework", "elixirOrm", "elixirAuth", "elixirApi", "elixirRealtime", "elixirJobs"],
+  java: [
+    "javaWebFramework",
+    "javaBuildTool",
+    "javaOrm",
+    "javaAuth",
+    "javaLibraries",
+    "javaTestingLibraries",
+  ],
+  dotnet: ["dotnetWebFramework", "dotnetOrm", "dotnetAuth", "dotnetApi", "dotnetLibraries"],
+  elixir: [
+    "elixirWebFramework",
+    "elixirOrm",
+    "elixirAuth",
+    "elixirApi",
+    "elixirRealtime",
+    "elixirJobs",
+  ],
 };
 
 interface SavedStacksPanelProps {
@@ -85,7 +102,8 @@ function getStackHighlights(stack: StackState) {
     }
   }
 
-  const scalarKeys = HIGHLIGHT_KEYS_BY_ECOSYSTEM[ecosystem] || HIGHLIGHT_KEYS_BY_ECOSYSTEM.typescript;
+  const scalarKeys =
+    HIGHLIGHT_KEYS_BY_ECOSYSTEM[ecosystem] || HIGHLIGHT_KEYS_BY_ECOSYSTEM.typescript;
   for (const key of scalarKeys) {
     const value = stack[key];
     if (typeof value === "string" && value !== "none") {
@@ -157,7 +175,10 @@ export function SavedStacksPanel({
 
   return (
     <>
-      <Dialog open={pendingDeleteEntry !== null} onOpenChange={(open) => !open && setPendingDeleteId(null)}>
+      <Dialog
+        open={pendingDeleteEntry !== null}
+        onOpenChange={(open) => !open && setPendingDeleteId(null)}
+      >
         <DialogContent className="sm:max-w-sm" showCloseButton={false}>
           <DialogHeader>
             <DialogTitle>{m.savedDeletePreset()}</DialogTitle>
@@ -184,7 +205,10 @@ export function SavedStacksPanel({
           </div>
         </DialogContent>
       </Dialog>
-      <Dialog open={viewingEntry !== null} onOpenChange={(open) => !open && setViewingEntryId(null)}>
+      <Dialog
+        open={viewingEntry !== null}
+        onOpenChange={(open) => !open && setViewingEntryId(null)}
+      >
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -221,9 +245,7 @@ export function SavedStacksPanel({
         <div className="border-b border-border bg-muted/20 px-3 py-3">
           <div className="space-y-1">
             <div className="font-mono text-xs text-foreground">{m.savedTitle()}</div>
-            <p className="text-xs text-muted-foreground">
-              {m.savedDescription()}
-            </p>
+            <p className="text-xs text-muted-foreground">{m.savedDescription()}</p>
           </div>
         </div>
 
@@ -350,7 +372,8 @@ export function SavedStacksPanel({
                           key={tech}
                           className={cn(
                             "inline-flex items-center gap-1 px-0 py-0 font-mono text-[10px] text-muted-foreground/50",
-                            i < highlights.length - 1 && "after:content-['/'] after:ml-1.5 after:text-border/60",
+                            i < highlights.length - 1 &&
+                              "after:content-['/'] after:ml-1.5 after:text-border/60",
                           )}
                         >
                           <TechIcon techId={tech} name={tech} className="h-3 w-3" />

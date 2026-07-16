@@ -15,6 +15,7 @@ import {
   DOTNET_CACHING_VALUES,
   DOTNET_DEPLOY_VALUES,
   DOTNET_JOB_QUEUE_VALUES,
+  DOTNET_LIBRARIES_VALUES,
   DOTNET_OBSERVABILITY_VALUES,
   DOTNET_ORM_VALUES,
   DOTNET_REALTIME_VALUES,
@@ -45,6 +46,7 @@ import {
   FORMS_VALUES,
   FRONTEND_VALUES,
   MOBILE_DEEP_LINKING_VALUES,
+  MOBILE_LIBRARIES_VALUES,
   MOBILE_NAVIGATION_VALUES,
   MOBILE_OTA_VALUES,
   MOBILE_PUSH_VALUES,
@@ -124,6 +126,7 @@ import {
   resolveDotnetCachingPrompt,
   resolveDotnetDeployPrompt,
   resolveDotnetJobQueuePrompt,
+  resolveDotnetLibrariesPrompt,
   resolveDotnetObservabilityPrompt,
   resolveDotnetOrmPrompt,
   resolveDotnetRealtimePrompt,
@@ -182,6 +185,7 @@ import { resolveJobQueuePrompt } from "./job-queue";
 import { resolveLoggingPrompt } from "./logging";
 import {
   resolveMobileDeepLinkingPrompt,
+  resolveMobileLibrariesPrompt,
   resolveMobileNavigationPrompt,
   resolveMobileOTAPrompt,
   resolveMobilePushPrompt,
@@ -423,6 +427,11 @@ export const PROMPT_RESOLVER_REGISTRY: ResolverRegistry = {
     resolve: ({ value }: { value?: string } = {}) => resolveMobileDeepLinkingPrompt(value as any),
     coverageContexts: [{}],
   },
+  mobileLibraries: {
+    schemaValues: MOBILE_LIBRARIES_VALUES,
+    resolve: ({ value }: { value?: string[] } = {}) => resolveMobileLibrariesPrompt(value as any),
+    coverageContexts: [{}, { value: ["none"] }],
+  },
   uiLibrary: {
     schemaValues: UI_LIBRARY_VALUES,
     resolve: resolveUILibraryPrompt,
@@ -566,8 +575,7 @@ export const PROMPT_RESOLVER_REGISTRY: ResolverRegistry = {
   },
   pythonMessageQueue: {
     schemaValues: PYTHON_MESSAGE_QUEUE_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolvePythonMessageQueuePrompt(value as any),
+    resolve: ({ value }: { value?: string } = {}) => resolvePythonMessageQueuePrompt(value as any),
     coverageContexts: [{}],
   },
   goWebFramework: {
@@ -711,6 +719,11 @@ export const PROMPT_RESOLVER_REGISTRY: ResolverRegistry = {
     schemaValues: DOTNET_DEPLOY_VALUES,
     resolve: ({ value }: { value?: string } = {}) => resolveDotnetDeployPrompt(value as any),
     coverageContexts: [{}],
+  },
+  dotnetLibraries: {
+    schemaValues: DOTNET_LIBRARIES_VALUES,
+    resolve: ({ value }: { value?: string[] } = {}) => resolveDotnetLibrariesPrompt(value as any),
+    coverageContexts: [{}, { value: ["none"] }],
   },
   elixirWebFramework: {
     schemaValues: ELIXIR_WEB_FRAMEWORK_VALUES,

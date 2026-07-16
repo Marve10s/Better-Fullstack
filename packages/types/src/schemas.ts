@@ -455,6 +455,32 @@ export const MobileDeepLinkingSchema = z
   .enum(["expo-linking", "none"])
   .describe("Mobile deep linking setup");
 
+export const MobileLibrariesSchema = z
+  .enum([
+    "expo-sqlite",
+    "expo-camera",
+    "expo-image-picker",
+    "expo-location",
+    "expo-sensors",
+    "expo-file-system",
+    "expo-image",
+    "expo-audio",
+    "expo-video",
+    "expo-contacts",
+    "expo-calendar",
+    "expo-local-authentication",
+    "expo-sharing",
+    "expo-clipboard",
+    "expo-task-manager",
+    "expo-background-task",
+    "expo-maps",
+    "expo-brightness",
+    "expo-battery",
+    "expo-screen-capture",
+    "none",
+  ])
+  .describe("Expo and React Native application libraries");
+
 // Rust ecosystem schemas
 export const RustWebFrameworkSchema = z
   .enum(["axum", "actix-web", "rocket", "poem", "loco", "warp", "salvo", "none"])
@@ -610,9 +636,7 @@ export const PythonCliSchema = z
 
 export const PythonCloudSdkSchema = z.enum(["boto3", "none"]).describe("Python cloud SDK");
 
-export const PythonHttpClientSchema = z
-  .enum(["requests", "none"])
-  .describe("Python HTTP client");
+export const PythonHttpClientSchema = z.enum(["requests", "none"]).describe("Python HTTP client");
 
 export const PythonDataSchema = z
   .enum(["numpy", "pandas", "scipy", "none"])
@@ -620,9 +644,7 @@ export const PythonDataSchema = z
 
 export const PythonMediaSchema = z.enum(["pillow", "none"]).describe("Python media library");
 
-export const PythonServerSchema = z
-  .enum(["gunicorn", "none"])
-  .describe("Python production server");
+export const PythonServerSchema = z.enum(["gunicorn", "none"]).describe("Python production server");
 
 export const PythonPackageManagerSchema = z
   .enum(["uv", "poetry", "none"])
@@ -825,6 +847,32 @@ export const DotnetCachingSchema = z
 export const DotnetDeploySchema = z
   .enum(["docker", "azure", "aws", "none"])
   .describe(".NET deployment target");
+
+export const DotnetLibrariesSchema = z
+  .enum([
+    "automapper",
+    "mediatr",
+    "fastendpoints",
+    "api-versioning",
+    "scalar",
+    "polly",
+    "masstransit",
+    "rebus",
+    "coravel",
+    "magic-onion",
+    "prometheus-net",
+    "seq",
+    "application-insights",
+    "sentry",
+    "mongodb-driver",
+    "nhibernate",
+    "mapster",
+    "scrutor",
+    "refit",
+    "fluent-email",
+    "none",
+  ])
+  .describe(".NET application libraries");
 
 // Elixir ecosystem schemas
 export const ElixirWebFrameworkSchema = z
@@ -1086,6 +1134,7 @@ export const CreateInputSchema = z.object({
   mobilePush: MobilePushSchema.optional(),
   mobileOTA: MobileOTASchema.optional(),
   mobileDeepLinking: MobileDeepLinkingSchema.optional(),
+  mobileLibraries: z.array(MobileLibrariesSchema).optional(),
   // Rust ecosystem options
   rustWebFramework: RustWebFrameworkSchema.optional(),
   rustFrontend: RustFrontendSchema.optional(),
@@ -1164,6 +1213,7 @@ export const CreateInputSchema = z.object({
   dotnetValidation: DotnetValidationSchema.optional(),
   dotnetCaching: DotnetCachingSchema.optional(),
   dotnetDeploy: DotnetDeploySchema.optional(),
+  dotnetLibraries: z.array(DotnetLibrariesSchema).optional(),
   // Elixir ecosystem options
   elixirWebFramework: ElixirWebFrameworkSchema.optional(),
   elixirOrm: ElixirOrmSchema.optional(),
@@ -1274,6 +1324,7 @@ export const ProjectConfigSchema = z.object({
   mobilePush: MobilePushSchema,
   mobileOTA: MobileOTASchema,
   mobileDeepLinking: MobileDeepLinkingSchema,
+  mobileLibraries: z.array(MobileLibrariesSchema),
   // Rust ecosystem options
   rustWebFramework: RustWebFrameworkSchema,
   rustFrontend: RustFrontendSchema,
@@ -1352,6 +1403,7 @@ export const ProjectConfigSchema = z.object({
   dotnetValidation: DotnetValidationSchema,
   dotnetCaching: DotnetCachingSchema,
   dotnetDeploy: DotnetDeploySchema,
+  dotnetLibraries: z.array(DotnetLibrariesSchema),
   // Elixir ecosystem options
   elixirWebFramework: ElixirWebFrameworkSchema,
   elixirOrm: ElixirOrmSchema,
@@ -1449,6 +1501,7 @@ export const BetterTStackConfigSchema = z.object({
   mobilePush: MobilePushSchema,
   mobileOTA: MobileOTASchema,
   mobileDeepLinking: MobileDeepLinkingSchema,
+  mobileLibraries: z.array(MobileLibrariesSchema),
   // Rust ecosystem options
   rustWebFramework: RustWebFrameworkSchema,
   rustFrontend: RustFrontendSchema,
@@ -1527,6 +1580,7 @@ export const BetterTStackConfigSchema = z.object({
   dotnetValidation: DotnetValidationSchema,
   dotnetCaching: DotnetCachingSchema,
   dotnetDeploy: DotnetDeploySchema,
+  dotnetLibraries: z.array(DotnetLibrariesSchema),
   // Elixir ecosystem options
   elixirWebFramework: ElixirWebFrameworkSchema,
   elixirOrm: ElixirOrmSchema,
@@ -1630,6 +1684,7 @@ export const MOBILE_TESTING_VALUES = MobileTestingSchema.options;
 export const MOBILE_PUSH_VALUES = MobilePushSchema.options;
 export const MOBILE_OTA_VALUES = MobileOTASchema.options;
 export const MOBILE_DEEP_LINKING_VALUES = MobileDeepLinkingSchema.options;
+export const MOBILE_LIBRARIES_VALUES = MobileLibrariesSchema.options;
 export const CMS_VALUES = CMSSchema.options;
 export const CACHING_VALUES = CachingSchema.options;
 export const RATE_LIMIT_VALUES = RateLimitSchema.options;
@@ -1711,6 +1766,7 @@ export const DOTNET_OBSERVABILITY_VALUES = DotnetObservabilitySchema.options;
 export const DOTNET_VALIDATION_VALUES = DotnetValidationSchema.options;
 export const DOTNET_CACHING_VALUES = DotnetCachingSchema.options;
 export const DOTNET_DEPLOY_VALUES = DotnetDeploySchema.options;
+export const DOTNET_LIBRARIES_VALUES = DotnetLibrariesSchema.options;
 export const ELIXIR_WEB_FRAMEWORK_VALUES = ElixirWebFrameworkSchema.options;
 export const ELIXIR_ORM_VALUES = ElixirOrmSchema.options;
 export const ELIXIR_AUTH_VALUES = ElixirAuthSchema.options;

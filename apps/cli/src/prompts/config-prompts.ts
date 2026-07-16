@@ -19,6 +19,7 @@ import type {
   DotnetValidation,
   DotnetDeploy,
   DotnetJobQueue,
+  DotnetLibraries,
   DotnetObservability,
   DotnetOrm,
   DotnetRealtime,
@@ -86,6 +87,7 @@ import type {
   JobQueue,
   Logging,
   MobileDeepLinking,
+  MobileLibraries,
   MobileNavigation,
   MobileOTA,
   MobilePush,
@@ -179,6 +181,7 @@ import {
   getDotnetValidationChoice,
   getDotnetDeployChoice,
   getDotnetJobQueueChoice,
+  getDotnetLibrariesChoice,
   getDotnetObservabilityChoice,
   getDotnetOrmChoice,
   getDotnetRealtimeChoice,
@@ -254,6 +257,7 @@ import { getJobQueueChoice } from "./job-queue";
 import { getLoggingChoice } from "./logging";
 import {
   getMobileDeepLinkingChoice,
+  getMobileLibrariesChoice,
   getMobileNavigationChoice,
   getMobileOTAChoice,
   getMobilePushChoice,
@@ -374,6 +378,7 @@ type PromptGroupResults = {
   mobilePush: MobilePush;
   mobileOTA: MobileOTA;
   mobileDeepLinking: MobileDeepLinking;
+  mobileLibraries: MobileLibraries[];
   // Rust ecosystem
   rustWebFramework: RustWebFramework;
   rustFrontend: RustFrontend;
@@ -452,6 +457,7 @@ type PromptGroupResults = {
   dotnetValidation: DotnetValidation;
   dotnetCaching: DotnetCaching;
   dotnetDeploy: DotnetDeploy;
+  dotnetLibraries: DotnetLibraries[];
   // Elixir ecosystem
   elixirWebFramework: ElixirWebFramework;
   elixirOrm: ElixirOrm;
@@ -554,6 +560,7 @@ const CONFIG_PROMPT_ENTRY_KEY_MAP = {
   mobilePush: true,
   mobileOTA: true,
   mobileDeepLinking: true,
+  mobileLibraries: true,
   rustWebFramework: true,
   rustFrontend: true,
   rustOrm: true,
@@ -627,6 +634,7 @@ const CONFIG_PROMPT_ENTRY_KEY_MAP = {
   dotnetValidation: true,
   dotnetCaching: true,
   dotnetDeploy: true,
+  dotnetLibraries: true,
   elixirWebFramework: true,
   elixirOrm: true,
   elixirAuth: true,
@@ -1151,6 +1159,15 @@ export async function gatherConfig(
       }
       return getMobileDeepLinkingChoice(flags.mobileDeepLinking);
     },
+    mobileLibraries: ({ results }) => {
+      if (results.ecosystem !== "typescript" && results.ecosystem !== "react-native") {
+        return Promise.resolve([] as MobileLibraries[]);
+      }
+      if (!results.frontend?.some((frontend) => frontend.startsWith("native-"))) {
+        return Promise.resolve([] as MobileLibraries[]);
+      }
+      return getMobileLibrariesChoice(flags.mobileLibraries);
+    },
     // Rust ecosystem prompts (skip if TypeScript or Python)
     rustWebFramework: ({ results }) => {
       if (results.ecosystem !== "rust") return Promise.resolve("none" as RustWebFramework);
@@ -1523,6 +1540,11 @@ export async function gatherConfig(
       if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetDeploy);
       return getDotnetDeployChoice(flags.dotnetDeploy);
     },
+    dotnetLibraries: ({ results }) => {
+      if (results.ecosystem !== "dotnet") return Promise.resolve([] as DotnetLibraries[]);
+      if (results.dotnetWebFramework === "none") return Promise.resolve([] as DotnetLibraries[]);
+      return getDotnetLibrariesChoice(flags.dotnetLibraries);
+    },
     // Elixir ecosystem prompts (skip if not Elixir)
     elixirWebFramework: ({ results }) => {
       if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirWebFramework);
@@ -1698,6 +1720,7 @@ export async function gatherConfig(
     mobilePush: result.mobilePush,
     mobileOTA: result.mobileOTA,
     mobileDeepLinking: result.mobileDeepLinking,
+    mobileLibraries: result.mobileLibraries,
     // Ecosystem
     ecosystem: result.ecosystem,
     // Rust ecosystem options
@@ -1778,6 +1801,7 @@ export async function gatherConfig(
     dotnetValidation: result.dotnetValidation,
     dotnetCaching: result.dotnetCaching,
     dotnetDeploy: result.dotnetDeploy,
+    dotnetLibraries: result.dotnetLibraries,
     // Elixir ecosystem options
     elixirWebFramework: result.elixirWebFramework,
     elixirOrm: result.elixirOrm,

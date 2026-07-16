@@ -1,5 +1,6 @@
-import { ProjectConfigSchema } from "@better-fullstack/types/schemas";
 import type { ProjectConfig } from "@better-fullstack/types/types";
+
+import { ProjectConfigSchema } from "@better-fullstack/types/schemas";
 import {
   normalizeStackSelection as normalizeStackStateSelections,
   stackSelectionToProjectConfig,
@@ -21,6 +22,8 @@ function normalizeInputStack(input: Partial<StackState>): StackState {
     aiDocs: input.aiDocs ?? DEFAULT_STACK.aiDocs,
     javaLibraries: input.javaLibraries ?? DEFAULT_STACK.javaLibraries,
     javaTestingLibraries: input.javaTestingLibraries ?? DEFAULT_STACK.javaTestingLibraries,
+    mobileLibraries: input.mobileLibraries ?? DEFAULT_STACK.mobileLibraries,
+    dotnetLibraries: input.dotnetLibraries ?? DEFAULT_STACK.dotnetLibraries,
   });
 }
 

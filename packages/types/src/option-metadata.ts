@@ -15,6 +15,7 @@ import {
   DOTNET_CACHING_VALUES,
   DOTNET_DEPLOY_VALUES,
   DOTNET_JOB_QUEUE_VALUES,
+  DOTNET_LIBRARIES_VALUES,
   DOTNET_OBSERVABILITY_VALUES,
   DOTNET_ORM_VALUES,
   DOTNET_REALTIME_VALUES,
@@ -53,6 +54,7 @@ import {
   FILE_UPLOAD_VALUES,
   FORMS_VALUES,
   MOBILE_DEEP_LINKING_VALUES,
+  MOBILE_LIBRARIES_VALUES,
   MOBILE_NAVIGATION_VALUES,
   MOBILE_OTA_VALUES,
   MOBILE_PUSH_VALUES,
@@ -193,6 +195,7 @@ export type OptionCategory =
   | "mobilePush"
   | "mobileOTA"
   | "mobileDeepLinking"
+  | "mobileLibraries"
   | "codeQuality"
   | "documentation"
   | "appShells"
@@ -286,6 +289,7 @@ export type OptionCategory =
   | "dotnetValidation"
   | "dotnetCaching"
   | "dotnetDeploy"
+  | "dotnetLibraries"
   | "elixirWebFramework"
   | "elixirOrm"
   | "elixirAuth"
@@ -386,6 +390,7 @@ export const REACT_NATIVE_CATEGORY_ORDER = [
   "mobilePush",
   "mobileOTA",
   "mobileDeepLinking",
+  "mobileLibraries",
   "auth",
   "payments",
   "packageManager",
@@ -509,6 +514,7 @@ export const DOTNET_CATEGORY_ORDER = [
   "dotnetValidation",
   "dotnetCaching",
   "dotnetDeploy",
+  "dotnetLibraries",
   "aiDocs",
   "git",
   "install",
@@ -589,6 +595,7 @@ export function getCategoryDisplayName(categoryKey: string): string {
     mobilePush: "Mobile Push",
     mobileOTA: "Mobile OTA",
     mobileDeepLinking: "Mobile Deep Linking",
+    mobileLibraries: "Mobile Libraries",
     backendLibraries: "Effect Services",
     rustWebFramework: "Rust Web Framework",
     rustFrontend: "Rust Frontend (WASM)",
@@ -663,6 +670,7 @@ export function getCategoryDisplayName(categoryKey: string): string {
     dotnetValidation: ".NET Validation",
     dotnetCaching: ".NET Caching",
     dotnetDeploy: ".NET Deploy",
+    dotnetLibraries: ".NET Libraries",
     elixirWebFramework: "Elixir Web Framework",
     elixirOrm: "Elixir ORM / Database",
     elixirAuth: "Elixir Auth",
@@ -810,6 +818,8 @@ const MULTI_SELECT_CATEGORIES = new Set<OptionCategory>([
   "pythonAi",
   "javaLibraries",
   "javaTestingLibraries",
+  "mobileLibraries",
+  "dotnetLibraries",
   "dotnetTesting",
   "dotnetObservability",
   "goTesting",
@@ -863,6 +873,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   mobilePush: MOBILE_PUSH_VALUES,
   mobileOTA: MOBILE_OTA_VALUES,
   mobileDeepLinking: MOBILE_DEEP_LINKING_VALUES,
+  mobileLibraries: MOBILE_LIBRARIES_VALUES,
   codeQuality: CODE_QUALITY_VALUES,
   documentation: DOCUMENTATION_VALUES,
   appShells: APP_SHELL_VALUES,
@@ -956,6 +967,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   dotnetValidation: DOTNET_VALIDATION_VALUES,
   dotnetCaching: DOTNET_CACHING_VALUES,
   dotnetDeploy: DOTNET_DEPLOY_VALUES,
+  dotnetLibraries: DOTNET_LIBRARIES_VALUES,
   elixirWebFramework: ELIXIR_WEB_FRAMEWORK_VALUES,
   elixirOrm: ELIXIR_ORM_VALUES,
   elixirAuth: ELIXIR_AUTH_VALUES,
@@ -1204,6 +1216,28 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   mobileDeepLinking: {
     "expo-linking": "Expo Linking",
+  },
+  mobileLibraries: {
+    "expo-sqlite": "Expo SQLite",
+    "expo-camera": "Expo Camera",
+    "expo-image-picker": "Expo Image Picker",
+    "expo-location": "Expo Location",
+    "expo-sensors": "Expo Sensors",
+    "expo-file-system": "Expo File System",
+    "expo-image": "Expo Image",
+    "expo-audio": "Expo Audio",
+    "expo-video": "Expo Video",
+    "expo-contacts": "Expo Contacts",
+    "expo-calendar": "Expo Calendar",
+    "expo-local-authentication": "Expo Local Authentication",
+    "expo-sharing": "Expo Sharing",
+    "expo-clipboard": "Expo Clipboard",
+    "expo-task-manager": "Expo Task Manager",
+    "expo-background-task": "Expo Background Task",
+    "expo-maps": "Expo Maps",
+    "expo-brightness": "Expo Brightness",
+    "expo-battery": "Expo Battery",
+    "expo-screen-capture": "Expo Screen Capture",
   },
   codeQuality: {
     biome: "Biome",
@@ -1746,6 +1780,28 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     azure: "Azure",
     aws: "AWS",
   },
+  dotnetLibraries: {
+    automapper: "AutoMapper",
+    mediatr: "MediatR",
+    fastendpoints: "FastEndpoints",
+    "api-versioning": "ASP.NET API Versioning",
+    scalar: "Scalar",
+    polly: "Polly",
+    masstransit: "MassTransit",
+    rebus: "Rebus",
+    coravel: "Coravel",
+    "magic-onion": "MagicOnion",
+    "prometheus-net": "prometheus-net",
+    seq: "Seq",
+    "application-insights": "Application Insights",
+    sentry: "Sentry",
+    "mongodb-driver": "MongoDB Driver",
+    nhibernate: "NHibernate",
+    mapster: "Mapster",
+    scrutor: "Scrutor",
+    refit: "Refit",
+    "fluent-email": "FluentEmail",
+  },
   elixirWebFramework: {
     phoenix: "Phoenix",
     "phoenix-live-view": "Phoenix LiveView",
@@ -1974,6 +2030,7 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   mobilePush: buildCategoryMetadata("mobilePush"),
   mobileOTA: buildCategoryMetadata("mobileOTA"),
   mobileDeepLinking: buildCategoryMetadata("mobileDeepLinking"),
+  mobileLibraries: buildCategoryMetadata("mobileLibraries"),
   codeQuality: buildCategoryMetadata("codeQuality"),
   documentation: buildCategoryMetadata("documentation"),
   appShells: buildCategoryMetadata("appShells"),
@@ -2067,6 +2124,7 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   dotnetValidation: buildCategoryMetadata("dotnetValidation"),
   dotnetCaching: buildCategoryMetadata("dotnetCaching"),
   dotnetDeploy: buildCategoryMetadata("dotnetDeploy"),
+  dotnetLibraries: buildCategoryMetadata("dotnetLibraries"),
   elixirWebFramework: buildCategoryMetadata("elixirWebFramework"),
   elixirOrm: buildCategoryMetadata("elixirOrm"),
   elixirAuth: buildCategoryMetadata("elixirAuth"),

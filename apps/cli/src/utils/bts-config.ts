@@ -170,6 +170,7 @@ function normalizeGraphConfigForPersistence(
     normalized.dotnetValidation = "none";
     normalized.dotnetCaching = "none";
     normalized.dotnetDeploy = "none";
+    normalized.dotnetLibraries = [];
   }
 
   if (!selectedEcosystems.has("elixir")) {
@@ -222,6 +223,7 @@ function normalizeGraphConfigForPersistence(
     normalized.mobilePush = "none";
     normalized.mobileOTA = "none";
     normalized.mobileDeepLinking = "none";
+    normalized.mobileLibraries = [];
   }
 
   return normalized;
@@ -396,6 +398,7 @@ export function buildBtsConfigForPersistence(
     mobilePush: persistedConfig.mobilePush,
     mobileOTA: persistedConfig.mobileOTA,
     mobileDeepLinking: persistedConfig.mobileDeepLinking,
+    mobileLibraries: persistedConfig.mobileLibraries,
     cms: persistedConfig.cms,
     caching: persistedConfig.caching,
     rateLimit: persistedConfig.rateLimit,
@@ -476,6 +479,7 @@ export function buildBtsConfigForPersistence(
     dotnetValidation: persistedConfig.dotnetValidation,
     dotnetCaching: persistedConfig.dotnetCaching,
     dotnetDeploy: persistedConfig.dotnetDeploy,
+    dotnetLibraries: persistedConfig.dotnetLibraries,
     elixirWebFramework: persistedConfig.elixirWebFramework,
     elixirOrm: persistedConfig.elixirOrm,
     elixirAuth: persistedConfig.elixirAuth,
@@ -585,6 +589,7 @@ export async function writeBtsConfig(
     mobilePush: btsConfig.mobilePush,
     mobileOTA: btsConfig.mobileOTA,
     mobileDeepLinking: btsConfig.mobileDeepLinking,
+    mobileLibraries: btsConfig.mobileLibraries,
     cms: btsConfig.cms,
     caching: btsConfig.caching,
     rateLimit: btsConfig.rateLimit,
@@ -665,6 +670,7 @@ export async function writeBtsConfig(
     dotnetValidation: btsConfig.dotnetValidation,
     dotnetCaching: btsConfig.dotnetCaching,
     dotnetDeploy: btsConfig.dotnetDeploy,
+    dotnetLibraries: btsConfig.dotnetLibraries,
     elixirWebFramework: btsConfig.elixirWebFramework,
     elixirOrm: btsConfig.elixirOrm,
     elixirAuth: btsConfig.elixirAuth,

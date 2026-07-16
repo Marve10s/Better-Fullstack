@@ -148,7 +148,7 @@ export const CONFIG_SCOPE_REGISTRY = {
       {
         id: "mobile-experience",
         label: "Mobile Experience",
-        promptKeys: ["mobileUI", "mobileStorage", "mobileDeepLinking"],
+        promptKeys: ["mobileUI", "mobileStorage", "mobileDeepLinking", "mobileLibraries"],
       },
       {
         id: "mobile-delivery",
@@ -312,7 +312,7 @@ export const CONFIG_SCOPE_REGISTRY = {
       {
         id: "validation-deploy",
         label: "Validation & Deployment",
-        promptKeys: ["dotnetValidation", "dotnetDeploy"],
+        promptKeys: ["dotnetValidation", "dotnetDeploy", "dotnetLibraries"],
       },
     ],
   },

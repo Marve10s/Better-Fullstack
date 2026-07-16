@@ -191,6 +191,7 @@ export type CompatibilityInput = {
   mobilePush: string;
   mobileOTA: string;
   mobileDeepLinking: string;
+  mobileLibraries: string[];
   codeQuality: string[];
   documentation: string[];
   appPlatforms: string[];
@@ -279,6 +280,7 @@ export type CompatibilityInput = {
   dotnetValidation: string;
   dotnetCaching: string;
   dotnetDeploy: string;
+  dotnetLibraries: string[];
   elixirWebFramework: string;
   elixirOrm: string;
   elixirAuth: string;
@@ -1352,6 +1354,14 @@ export const analyzeStackCompatibility = (
         changes.push({ category, message });
       }
     }
+    if ((nextStack.mobileLibraries?.length ?? 0) > 0) {
+      nextStack.mobileLibraries = [];
+      changed = true;
+      changes.push({
+        category: "mobileLibraries",
+        message: "Mobile libraries cleared (no native frontend)",
+      });
+    }
   } else {
     if (nextStack.mobileNavigation === "none") {
       nextStack.mobileNavigation = "expo-router";
@@ -2163,6 +2173,7 @@ export const getDisabledReason = (
       "mobilePush",
       "mobileOTA",
       "mobileDeepLinking",
+      "mobileLibraries",
       "auth",
       "payments",
       "packageManager",
@@ -2980,6 +2991,7 @@ export const getDisabledReason = (
     "mobilePush",
     "mobileOTA",
     "mobileDeepLinking",
+    "mobileLibraries",
   ]);
 
   if (mobileCategories.has(category)) {
@@ -3763,6 +3775,15 @@ const GRAPH_DISABLED_REASON_BINDINGS: Partial<
     authoritative: true,
     missingOwnerReason: "Mobile deep linking requires a native Expo frontend",
   },
+  mobileLibraries: {
+    role: "libraries",
+    ecosystem: "react-native",
+    ownerRole: "mobile",
+    ownerEcosystem: "react-native",
+    authoritative: true,
+    missingOwnerReason: "Mobile libraries require a native Expo frontend",
+    candidateIdPrefix: "candidate:native",
+  },
   javaBuildTool: {
     role: "buildTool",
     ecosystem: "java",
@@ -4111,6 +4132,15 @@ const GRAPH_DISABLED_REASON_BINDINGS: Partial<
     ownerEcosystem: "dotnet",
     currentEcosystem: "dotnet",
     authoritative: true,
+  },
+  dotnetLibraries: {
+    role: "libraries",
+    ecosystem: "dotnet",
+    ownerRole: "backend",
+    ownerEcosystem: "dotnet",
+    currentEcosystem: "dotnet",
+    authoritative: true,
+    candidateIdPrefix: "candidate:native",
   },
 };
 
@@ -4971,6 +5001,18 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
     }
   }
 
+  for (const mobileLibrary of input.mobileLibraries ?? []) {
+    const reason = getDisabledReason(input, "mobileLibraries", mobileLibrary);
+    if (reason) {
+      issues.push({
+        code: "INCOMPATIBLE_MOBILE_LIBRARY",
+        message: reason,
+        category: "mobileLibraries",
+        optionId: mobileLibrary,
+      });
+    }
+  }
+
   for (const testingLibrary of input.javaTestingLibraries) {
     const reason = getDisabledReason(input, "javaTestingLibraries", testingLibrary);
     if (reason) {
@@ -5003,6 +5045,18 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
         message: reason,
         category: "dotnetObservability",
         optionId: observabilityLibrary,
+      });
+    }
+  }
+
+  for (const dotnetLibrary of input.dotnetLibraries ?? []) {
+    const reason = getDisabledReason(input, "dotnetLibraries", dotnetLibrary);
+    if (reason) {
+      issues.push({
+        code: "INCOMPATIBLE_DOTNET_LIBRARY",
+        message: reason,
+        category: "dotnetLibraries",
+        optionId: dotnetLibrary,
       });
     }
   }
