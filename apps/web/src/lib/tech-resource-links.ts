@@ -1625,6 +1625,86 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://opentelemetry.io/docs/languages/java/",
     githubUrl: "https://github.com/open-telemetry/opentelemetry-java",
   },
+  "spring-data-redis": {
+    docsUrl: "https://docs.spring.io/spring-data/redis/reference/",
+    githubUrl: "https://github.com/spring-projects/spring-data-redis",
+  },
+  "spring-data-mongodb": {
+    docsUrl: "https://docs.spring.io/spring-data/mongodb/reference/",
+    githubUrl: "https://github.com/spring-projects/spring-data-mongodb",
+  },
+  "spring-data-elasticsearch": {
+    docsUrl: "https://docs.spring.io/spring-data/elasticsearch/reference/",
+    githubUrl: "https://github.com/spring-projects/spring-data-elasticsearch",
+  },
+  "spring-data-neo4j": {
+    docsUrl: "https://docs.spring.io/spring-data/neo4j/reference/",
+    githubUrl: "https://github.com/spring-projects/spring-data-neo4j",
+  },
+  "spring-data-cassandra": {
+    docsUrl: "https://docs.spring.io/spring-data/cassandra/reference/",
+    githubUrl: "https://github.com/spring-projects/spring-data-cassandra",
+  },
+  "spring-data-couchbase": {
+    docsUrl: "https://docs.spring.io/spring-data/couchbase/reference/",
+    githubUrl: "https://github.com/spring-projects/spring-data-couchbase",
+  },
+  "spring-data-jdbc": {
+    docsUrl: "https://docs.spring.io/spring-data/relational/reference/jdbc.html",
+    githubUrl: "https://github.com/spring-projects/spring-data-relational",
+  },
+  "spring-data-rest": {
+    docsUrl: "https://docs.spring.io/spring-data/rest/reference/",
+    githubUrl: "https://github.com/spring-projects/spring-data-rest",
+  },
+  "spring-quartz": {
+    docsUrl: "https://docs.spring.io/spring-boot/reference/io/quartz.html",
+    githubUrl: "https://github.com/quartz-scheduler/quartz",
+  },
+  "spring-pulsar": {
+    docsUrl: "https://docs.spring.io/spring-pulsar/reference/",
+    githubUrl: "https://github.com/spring-projects/spring-pulsar",
+  },
+  "spring-integration": {
+    docsUrl: "https://docs.spring.io/spring-integration/reference/",
+    githubUrl: "https://github.com/spring-projects/spring-integration",
+  },
+  "spring-websocket": {
+    docsUrl: "https://docs.spring.io/spring-framework/reference/web/websocket.html",
+    githubUrl: "https://github.com/spring-projects/spring-framework",
+  },
+  "spring-rsocket": {
+    docsUrl: "https://docs.spring.io/spring-framework/reference/rsocket.html",
+    githubUrl: "https://github.com/spring-projects/spring-framework",
+  },
+  "spring-hateoas": {
+    docsUrl: "https://docs.spring.io/spring-hateoas/docs/current/reference/html/",
+    githubUrl: "https://github.com/spring-projects/spring-hateoas",
+  },
+  "spring-session-redis": {
+    docsUrl: "https://docs.spring.io/spring-session/reference/configuration/redis.html",
+    githubUrl: "https://github.com/spring-projects/spring-session",
+  },
+  "spring-session-jdbc": {
+    docsUrl: "https://docs.spring.io/spring-session/reference/configuration/jdbc.html",
+    githubUrl: "https://github.com/spring-projects/spring-session",
+  },
+  "spring-ldap": {
+    docsUrl: "https://docs.spring.io/spring-ldap/reference/",
+    githubUrl: "https://github.com/spring-projects/spring-ldap",
+  },
+  "spring-oauth2-client": {
+    docsUrl: "https://docs.spring.io/spring-security/reference/servlet/oauth2/client/index.html",
+    githubUrl: "https://github.com/spring-projects/spring-security",
+  },
+  "spring-saml2": {
+    docsUrl: "https://docs.spring.io/spring-security/reference/servlet/saml2/index.html",
+    githubUrl: "https://github.com/spring-projects/spring-security",
+  },
+  "spring-restclient": {
+    docsUrl: "https://docs.spring.io/spring-framework/reference/integration/rest-clients.html",
+    githubUrl: "https://github.com/spring-projects/spring-framework",
+  },
   torii: {
     docsUrl: "https://docs.rs/torii",
     githubUrl: "https://github.com/cmackenzie1/torii-rs",
