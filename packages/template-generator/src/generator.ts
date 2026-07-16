@@ -239,10 +239,21 @@ async function processGraphTemplates(
   for (const part of nonTypeScriptBackends) {
     const targetPath = part.targetPath ?? getRoleTargetPath("backend") ?? "apps/server";
     const ecosystem = part.ecosystem as NonTypeScriptTemplateEcosystem;
+    const projectedConfig = stackGraphToLegacyProjectConfigForEcosystem(config, ecosystem);
+    const backendConfig =
+      ecosystem === "python" && !getScopedPart(config, part, "packageManager")
+        ? {
+            ...projectedConfig,
+            // Manual and legacy graphs may not contain the newer package-manager
+            // part. Preserve the flat selection so generated files agree with
+            // graph-level setup and run commands.
+            pythonPackageManager: config.pythonPackageManager ?? "uv",
+          }
+        : projectedConfig;
     await ECOSYSTEM_BASE_TEMPLATE_PROCESSORS[ecosystem](
       vfs,
       templates,
-      stackGraphToLegacyProjectConfigForEcosystem(config, ecosystem),
+      backendConfig,
       targetPath,
     );
   }

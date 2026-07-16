@@ -1598,7 +1598,34 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
     pythonApi,
     pythonTaskQueue,
     pythonQuality,
+    pythonTesting,
+    pythonCloudSdk,
+    pythonHttpClient,
+    pythonData,
+    pythonMedia,
+    pythonServer,
+    pythonPackageManager: configuredPythonPackageManager,
+    pythonMessageQueue,
+    pythonObservability,
   } = config;
+
+  // Graph-derived and legacy configs may omit this recently introduced field.
+  // Keep generated docs aligned with the CLI's canonical Python default.
+  const pythonPackageManager = configuredPythonPackageManager ?? "uv";
+
+  const runPrefix =
+    pythonPackageManager === "poetry"
+      ? "poetry run "
+      : pythonPackageManager === "uv"
+        ? "uv run "
+        : "";
+  const runCommand = (command: string) => `${runPrefix}${command}`;
+  const installCommand =
+    pythonPackageManager === "poetry"
+      ? "poetry install --extras dev"
+      : pythonPackageManager === "uv"
+        ? "uv sync --extra dev"
+        : "python -m venv .venv && pip install -e .";
 
   const features: string[] = ["- **Python** - Modern, readable programming language"];
 
@@ -1609,6 +1636,14 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
     features.push("- **Django** - High-level Python web framework with batteries included");
   } else if (pythonWebFramework === "flask") {
     features.push("- **Flask** - Lightweight WSGI web framework with minimal boilerplate");
+  } else if (pythonWebFramework === "litestar") {
+    features.push("- **Litestar** - High-performance ASGI framework with typed handlers");
+  } else if (pythonWebFramework === "starlette") {
+    features.push("- **Starlette** - Lightweight ASGI toolkit for async services");
+  } else if (pythonWebFramework === "aiohttp") {
+    features.push("- **aiohttp** - Async HTTP server and client framework");
+  } else if (pythonWebFramework === "streamlit") {
+    features.push("- **Streamlit** - Interactive data and AI application framework");
   }
 
   // ORM
@@ -1621,6 +1656,10 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
   } else if (pythonOrm === "tortoise-orm") {
     features.push("- **Tortoise ORM** - Async-first Python ORM with Django-like API");
     features.push("- **Aerich** - Database migrations for Tortoise ORM");
+  } else if (pythonOrm === "peewee") {
+    features.push("- **Peewee** - Small, expressive relational ORM");
+  } else if (pythonOrm === "pymongo") {
+    features.push("- **PyMongo** - Official MongoDB driver and database helpers");
   }
 
   // Validation
@@ -1649,6 +1688,43 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
   }
   if (aiLibs.includes("crewai")) {
     features.push("- **CrewAI** - Multi-agent orchestration framework");
+  }
+  if (aiLibs.includes("pytorch")) {
+    features.push("- **PyTorch** - Tensor computation and neural-network toolkit");
+  }
+  if (aiLibs.includes("transformers")) {
+    features.push("- **Transformers** - Hugging Face pretrained model pipelines");
+  }
+  if (aiLibs.includes("scikit-learn")) {
+    features.push("- **scikit-learn** - Classical machine-learning pipelines");
+  }
+  if (aiLibs.includes("tensorflow")) {
+    features.push("- **TensorFlow** - Keras-based deep-learning workflows");
+  }
+  if (aiLibs.includes("mcp")) {
+    features.push("- **MCP Python SDK** - Model Context Protocol server starter");
+  }
+
+  if (pythonCloudSdk === "boto3") features.push("- **Boto3** - AWS SDK with an S3 helper");
+  if (pythonHttpClient === "requests") {
+    features.push("- **Requests** - Retrying synchronous HTTP session helper");
+  }
+  if (pythonData.includes("numpy")) features.push("- **NumPy** - Numerical array utilities");
+  if (pythonData.includes("pandas")) features.push("- **pandas** - DataFrame utilities");
+  if (pythonData.includes("scipy")) features.push("- **SciPy** - Scientific statistics utilities");
+  if (pythonMedia === "pillow") features.push("- **Pillow** - Image thumbnail helper");
+  if (pythonServer === "gunicorn") features.push("- **Gunicorn** - Production process manager");
+  if (pythonPackageManager === "poetry") {
+    features.push("- **Poetry** - Dependency and environment management");
+  }
+  if (pythonMessageQueue === "confluent-kafka") {
+    features.push("- **Confluent Kafka** - JSON event producer helper");
+  }
+  if (pythonObservability === "prometheus-client") {
+    features.push("- **Prometheus Client** - Metrics counters and exposition helper");
+  }
+  if (pythonTesting.includes("pytest-cov")) {
+    features.push("- **pytest-cov** - Coverage reports for the generated test suite");
   }
 
   // API framework
@@ -1723,6 +1799,10 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
     structure.push("│       └── crud.py       # CRUD operations");
   }
 
+  if (pythonOrm === "pymongo") {
+    structure.push("│       └── database.py   # MongoDB client and health helper");
+  }
+
   // Add standalone Pydantic schemas (no ORM)
   if (pythonOrm === "none" && pythonValidation === "pydantic") {
     structure.push("│       └── schemas.py    # Pydantic validation schemas");
@@ -1764,6 +1844,32 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
     structure.push("│       └── crewai_schemas.py # CrewAI request/response models");
   }
 
+  if (aiLibs.includes("pytorch"))
+    structure.push("│       ├── pytorch_model.py # PyTorch model factory");
+  if (aiLibs.includes("transformers")) {
+    structure.push("│       ├── transformers_client.py # Hugging Face text generation");
+  }
+  if (aiLibs.includes("scikit-learn")) {
+    structure.push("│       ├── sklearn_model.py # scikit-learn pipeline factory");
+  }
+  if (aiLibs.includes("tensorflow")) {
+    structure.push("│       ├── tensorflow_model.py # TensorFlow model factory");
+  }
+  if (aiLibs.includes("mcp")) structure.push("│       ├── mcp_server.py # MCP tool server");
+  if (pythonCloudSdk === "boto3")
+    structure.push("│       ├── aws.py        # Boto3 service helpers");
+  if (pythonHttpClient === "requests") {
+    structure.push("│       ├── http_client.py # Retrying Requests session");
+  }
+  if (pythonData.length > 0) structure.push("│       ├── data_tools.py # Data/scientific helpers");
+  if (pythonMedia === "pillow") structure.push("│       ├── media.py      # Pillow image helpers");
+  if (pythonMessageQueue === "confluent-kafka") {
+    structure.push("│       ├── kafka.py      # Confluent Kafka producer");
+  }
+  if (pythonObservability === "prometheus-client") {
+    structure.push("│       ├── metrics.py    # Prometheus metrics helpers");
+  }
+
   structure.push("├── tests/");
   structure.push("│   ├── __init__.py");
   structure.push("│   └── test_main.py      # Test suite");
@@ -1776,46 +1882,60 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
   structure.push("└── .gitignore");
 
   // Scripts
-  let scripts = `- \`uv run python -m app.main\`: Run the application`;
+  let scripts = `- \`${runCommand("python -m app.main")}\`: Run the application`;
 
   if (pythonWebFramework === "fastapi") {
-    scripts = `- \`uv run uvicorn app.main:app --reload --host 0.0.0.0 --port \${PORT:-8000}\`: Start FastAPI dev server
-- \`uv run uvicorn app.main:app --host 0.0.0.0 --port \${PORT:-8000}\`: Start FastAPI production server`;
+    scripts = `- \`${runCommand("uvicorn app.main:app --reload --host 0.0.0.0 --port 8000")}\`: Start FastAPI dev server`;
   } else if (pythonWebFramework === "django") {
-    scripts = `- \`uv run python -m app.main\`: Start Django dev server`;
+    scripts = `- \`${runCommand("python -m app.main")}\`: Start Django dev server`;
   } else if (pythonWebFramework === "flask") {
-    scripts = `- \`uv run flask --app app.main run --reload\`: Start Flask dev server
-- \`uv run flask --app app.main run\`: Start Flask production server`;
+    scripts = `- \`${runCommand("flask --app app.main run --reload")}\`: Start Flask dev server`;
+  } else if (pythonWebFramework === "litestar") {
+    scripts = `- \`${runCommand("litestar --app src.app.main:app run --reload --port 8000")}\`: Start Litestar dev server`;
+  } else if (pythonWebFramework === "streamlit") {
+    scripts = `- \`${runCommand("streamlit run src/app/main.py")}\`: Start Streamlit`;
   }
 
   scripts += `
-- \`uv run --extra dev pytest\`: Run tests`;
+- \`${runCommand("pytest")}\`: Run tests`;
+
+  if (pythonServer === "gunicorn") {
+    const target =
+      pythonWebFramework === "aiohttp"
+        ? "gunicorn app.main:app --worker-class aiohttp.GunicornWebWorker"
+        : pythonWebFramework === "django"
+          ? "gunicorn app.main:application"
+          : pythonWebFramework === "flask"
+            ? "gunicorn app.main:app"
+            : "gunicorn app.main:app --worker-class uvicorn.workers.UvicornWorker";
+    scripts += `\n- \`${runCommand(target)}\`: Start the production server`;
+  }
 
   if (pythonQuality === "ruff") {
     scripts += `
-- \`uv run --extra dev ruff check .\`: Run linter
-- \`uv run --extra dev ruff format .\`: Format code`;
+- \`${runCommand("ruff check .")}\`: Run linter
+- \`${runCommand("ruff format .")}\`: Format code`;
   } else if (pythonQuality === "mypy") {
     scripts += `
-- \`uv run mypy src/app tests\`: Run type checks`;
+- \`${runCommand("mypy src/app tests")}\`: Run type checks`;
   } else if (pythonQuality === "pyright") {
     scripts += `
-- \`uv run pyright\`: Run type checks`;
+- \`${runCommand("pyright")}\`: Run type checks`;
   }
 
   if (pythonOrm === "sqlalchemy" || pythonOrm === "sqlmodel") {
     scripts += `
-- \`uv run alembic revision --autogenerate -m "description"\`: Generate migration
-- \`uv run alembic upgrade head\`: Apply migrations
-- \`uv run alembic downgrade -1\`: Rollback last migration`;
+- \`${runCommand('alembic revision --autogenerate -m "description"')}\`: Generate migration
+- \`${runCommand("alembic upgrade head")}\`: Apply migrations
+- \`${runCommand("alembic downgrade -1")}\`: Rollback last migration`;
   }
 
   if (pythonOrm === "tortoise-orm") {
     scripts += `
-- \`uv run aerich init -t app.database.TORTOISE_ORM\`: Initialize Aerich
-- \`uv run aerich init-db\`: Create initial migration
-- \`uv run aerich migrate\`: Generate migration
-- \`uv run aerich upgrade\`: Apply migrations`;
+- \`${runCommand("aerich init -t app.database.TORTOISE_ORM")}\`: Initialize Aerich
+- \`${runCommand("aerich init-db")}\`: Create initial migration
+- \`${runCommand("aerich migrate")}\`: Generate migration
+- \`${runCommand("aerich upgrade")}\`: Apply migrations`;
   }
 
   return `# ${projectName}
@@ -1829,7 +1949,13 @@ ${features.join("\n")}
 ## Prerequisites
 
 - [Python](https://www.python.org/) 3.11 or higher
-- [uv](https://docs.astral.sh/uv/) (Recommended package manager)
+${
+  pythonPackageManager === "poetry"
+    ? "- [Poetry](https://python-poetry.org/docs/)"
+    : pythonPackageManager === "uv"
+      ? "- [uv](https://docs.astral.sh/uv/)"
+      : "- pip and venv"
+}
 
 ## Getting Started
 
@@ -1839,10 +1965,10 @@ First, copy the environment file:
 cp .env.example .env
 \`\`\`
 
-Then, install dependencies using uv:
+Then, install dependencies:
 
 \`\`\`bash
-uv sync --extra dev
+${installCommand}
 \`\`\`
 
 ${
@@ -1850,7 +1976,7 @@ ${
     ? `Start the FastAPI development server:
 
 \`\`\`bash
-uv run uvicorn app.main:app --reload
+${runCommand("uvicorn app.main:app --reload")}
 \`\`\`
 
 The API will be running at [http://localhost:8000](http://localhost:8000).
@@ -1859,7 +1985,7 @@ The API will be running at [http://localhost:8000](http://localhost:8000).
       ? `Start the Django development server:
 
 \`\`\`bash
-uv run python -m app.main
+${runCommand("python -m app.main")}
 \`\`\`
 
 The application will be running at [http://localhost:8000](http://localhost:8000).
@@ -1868,7 +1994,7 @@ The application will be running at [http://localhost:8000](http://localhost:8000
         ? `Start the Flask development server:
 
 \`\`\`bash
-uv run flask --app app.main run --reload
+${runCommand("flask --app app.main run --reload")}
 \`\`\`
 
 The API will be running at [http://localhost:5000](http://localhost:5000).
@@ -1877,15 +2003,24 @@ The API will be running at [http://localhost:5000](http://localhost:5000).
           ? `Start the Litestar development server:
 
 \`\`\`bash
-litestar --app src.app.main:app run --reload --port 3001
+${runCommand("litestar --app src.app.main:app run --reload --port 8000")}
 \`\`\`
 
-The API will be running at [http://localhost:3001](http://localhost:3001).
+The API will be running at [http://localhost:8000](http://localhost:8000).
 `
-          : `Run the application:
+          : pythonWebFramework === "streamlit"
+            ? `Start Streamlit:
 
 \`\`\`bash
-uv run python -m app.main
+${runCommand("streamlit run src/app/main.py")}
+\`\`\`
+
+The application will be running at [http://localhost:8501](http://localhost:8501).
+`
+            : `Run the application:
+
+\`\`\`bash
+${runCommand("python -m app.main")}
 \`\`\`
 `
 }

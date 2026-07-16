@@ -1,0 +1,28 @@
+{{#if (eq pythonHttpClient "requests")}}
+"""Reusable Requests HTTP client."""
+
+from functools import lru_cache
+from typing import Any
+
+import requests
+from requests import Session
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
+
+@lru_cache
+def get_http_session() -> Session:
+    """Create a session with sensible timeouts supplied by each request call."""
+    retry = Retry(total=3, backoff_factor=0.25, status_forcelist=(429, 500, 502, 503, 504))
+    session = requests.Session()
+    session.mount("https://", HTTPAdapter(max_retries=retry))
+    session.headers.update({"User-Agent": "{{projectName}}/0.1.0"})
+    return session
+
+
+def get_json(url: str, *, timeout: float = 10.0) -> Any:
+    """Fetch and decode a JSON response, raising for non-success statuses."""
+    response = get_http_session().get(url, timeout=timeout)
+    response.raise_for_status()
+    return response.json()
+{{/if}}

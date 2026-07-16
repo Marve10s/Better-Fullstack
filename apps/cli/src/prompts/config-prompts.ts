@@ -109,6 +109,13 @@ import type {
   PythonRealtime,
   PythonObservability,
   PythonCli,
+  PythonCloudSdk,
+  PythonData,
+  PythonHttpClient,
+  PythonMedia,
+  PythonMessageQueue,
+  PythonPackageManager,
+  PythonServer,
   PythonGraphql,
   PythonTaskQueue,
   PythonValidation,
@@ -273,6 +280,13 @@ import {
   getPythonRealtimeChoice,
   getPythonObservabilityChoice,
   getPythonCliChoice,
+  getPythonCloudSdkChoice,
+  getPythonDataChoice,
+  getPythonHttpClientChoice,
+  getPythonMediaChoice,
+  getPythonMessageQueueChoice,
+  getPythonPackageManagerChoice,
+  getPythonServerChoice,
   getPythonTaskQueueChoice,
   getPythonValidationChoice,
   getPythonWebFrameworkChoice,
@@ -390,6 +404,13 @@ type PromptGroupResults = {
   pythonRealtime: PythonRealtime;
   pythonObservability: PythonObservability;
   pythonCli: PythonCli[];
+  pythonCloudSdk: PythonCloudSdk;
+  pythonHttpClient: PythonHttpClient;
+  pythonData: PythonData[];
+  pythonMedia: PythonMedia;
+  pythonServer: PythonServer;
+  pythonPackageManager: PythonPackageManager;
+  pythonMessageQueue: PythonMessageQueue;
   // Go ecosystem
   goWebFramework: GoWebFramework;
   goOrm: GoOrm;
@@ -561,6 +582,13 @@ const CONFIG_PROMPT_ENTRY_KEY_MAP = {
   pythonRealtime: true,
   pythonObservability: true,
   pythonCli: true,
+  pythonCloudSdk: true,
+  pythonHttpClient: true,
+  pythonData: true,
+  pythonMedia: true,
+  pythonServer: true,
+  pythonPackageManager: true,
+  pythonMessageQueue: true,
   goWebFramework: true,
   goOrm: true,
   goApi: true,
@@ -1242,6 +1270,34 @@ export async function gatherConfig(
       if (results.ecosystem !== "python") return Promise.resolve([] as PythonCli[]);
       return getPythonCliChoice(flags.pythonCli);
     },
+    pythonCloudSdk: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve("none" as PythonCloudSdk);
+      return getPythonCloudSdkChoice(flags.pythonCloudSdk);
+    },
+    pythonHttpClient: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve("none" as PythonHttpClient);
+      return getPythonHttpClientChoice(flags.pythonHttpClient);
+    },
+    pythonData: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve([] as PythonData[]);
+      return getPythonDataChoice(flags.pythonData);
+    },
+    pythonMedia: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve("none" as PythonMedia);
+      return getPythonMediaChoice(flags.pythonMedia);
+    },
+    pythonServer: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve("none" as PythonServer);
+      return getPythonServerChoice(flags.pythonServer);
+    },
+    pythonPackageManager: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve("uv" as PythonPackageManager);
+      return getPythonPackageManagerChoice(flags.pythonPackageManager);
+    },
+    pythonMessageQueue: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve("none" as PythonMessageQueue);
+      return getPythonMessageQueueChoice(flags.pythonMessageQueue);
+    },
     // Go ecosystem prompts (skip if not Go)
     goWebFramework: ({ results }) => {
       if (results.ecosystem !== "go") return Promise.resolve("none" as GoWebFramework);
@@ -1674,6 +1730,13 @@ export async function gatherConfig(
     pythonRealtime: result.pythonRealtime,
     pythonObservability: result.pythonObservability,
     pythonCli: result.pythonCli,
+    pythonCloudSdk: result.pythonCloudSdk,
+    pythonHttpClient: result.pythonHttpClient,
+    pythonData: result.pythonData,
+    pythonMedia: result.pythonMedia,
+    pythonServer: result.pythonServer,
+    pythonPackageManager: result.pythonPackageManager,
+    pythonMessageQueue: result.pythonMessageQueue,
     // Go ecosystem options
     goWebFramework: result.goWebFramework,
     goOrm: result.goOrm,

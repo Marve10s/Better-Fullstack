@@ -1,0 +1,22 @@
+{{#if (includes pythonAi "mcp")}}
+"""Model Context Protocol server for project-specific tools."""
+
+from mcp.server.fastmcp import FastMCP
+
+mcp = FastMCP("{{projectName}}")
+
+
+@mcp.tool()
+def health() -> dict[str, str]:
+    """Report whether the generated MCP server is ready."""
+    return {"status": "healthy", "service": "{{projectName}}"}
+
+
+def main() -> None:
+    """Run the MCP server over stdio."""
+    mcp.run(transport="stdio")
+
+
+if __name__ == "__main__":
+    main()
+{{/if}}

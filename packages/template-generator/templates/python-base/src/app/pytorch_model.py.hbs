@@ -1,0 +1,15 @@
+{{#if (includes pythonAi "pytorch")}}
+"""Minimal PyTorch model factory."""
+
+from torch import nn
+
+
+def build_classifier(input_features: int, classes: int) -> nn.Module:
+    """Build a compact feed-forward classifier ready for a training loop."""
+    return nn.Sequential(
+        nn.Linear(input_features, 64),
+        nn.ReLU(),
+        nn.Dropout(0.2),
+        nn.Linear(64, classes),
+    )
+{{/if}}

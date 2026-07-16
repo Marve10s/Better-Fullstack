@@ -1120,6 +1120,41 @@ export function validatePythonApiConstraints(config: Partial<ProjectConfig>) {
   }
 }
 
+export function validatePythonExpansionConstraints(config: Partial<ProjectConfig>) {
+  if (config.ecosystem !== "python") return;
+
+  if (config.pythonOrm === "pymongo" && config.database !== "mongodb") {
+    incompatibilityError({
+      message: "PyMongo requires --database mongodb.",
+      provided: {
+        database: config.database || "none",
+        "python-orm": "pymongo",
+      },
+      suggestions: [
+        "Add --database mongodb when using --python-orm pymongo",
+        "Choose another --python-orm for relational databases",
+      ],
+    });
+  }
+
+  if (
+    config.pythonServer === "gunicorn" &&
+    (config.pythonWebFramework === "streamlit" || config.pythonWebFramework === "none")
+  ) {
+    incompatibilityError({
+      message: "Gunicorn requires a WSGI, ASGI, or aiohttp Python application.",
+      provided: {
+        "python-web-framework": config.pythonWebFramework,
+        "python-server": "gunicorn",
+      },
+      suggestions: [
+        "Use FastAPI, Django, Flask, Litestar, or aiohttp with --python-server gunicorn",
+        "Set --python-server none for Streamlit or framework-free projects",
+      ],
+    });
+  }
+}
+
 function validateI18nConstraints(config: Partial<ProjectConfig>) {
   if (config.i18n !== "intlayer") return;
 
@@ -1170,6 +1205,7 @@ export function validateFullConfig(
 
   validateApiConstraints(config, options);
   validatePythonApiConstraints(config);
+  validatePythonExpansionConstraints(config);
   validateRustExpansionCompatibility(config);
   validateEmailConstraints(config);
   validateObservabilityConstraints(config);
@@ -1327,6 +1363,7 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
 
     validateApiFrontendCompatibility(config.api, config.frontend, config.astroIntegration);
     validatePythonApiConstraints(config);
+    validatePythonExpansionConstraints(config);
     validateEmailConstraints(config);
     validateObservabilityConstraints(config);
     validateCachingConstraints(config);

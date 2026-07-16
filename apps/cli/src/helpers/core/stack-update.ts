@@ -106,6 +106,7 @@ const ARRAY_UPDATE_KEYS = new Set<keyof ProjectConfig>([
   "pythonAi",
   "pythonTesting",
   "pythonCli",
+  "pythonData",
   "goTesting",
   "javaLibraries",
   "javaTestingLibraries",

@@ -234,6 +234,13 @@ export type CompatibilityInput = {
   pythonRealtime: string;
   pythonObservability: string;
   pythonCli: string[];
+  pythonCloudSdk: string;
+  pythonHttpClient: string;
+  pythonData: string[];
+  pythonMedia: string;
+  pythonServer: string;
+  pythonPackageManager: string;
+  pythonMessageQueue: string;
   goWebFramework: string;
   goOrm: string;
   goApi: string;
@@ -1712,6 +1719,25 @@ export const analyzeStackCompatibility = (
         message: "Python API framework set to 'None' (DRF and Django Ninja require Django)",
       });
     }
+    if (nextStack.pythonOrm === "pymongo" && nextStack.database !== "mongodb") {
+      nextStack.database = "mongodb";
+      changed = true;
+      changes.push({
+        category: "pythonOrm",
+        message: "Database set to MongoDB (required by PyMongo)",
+      });
+    }
+    if (
+      nextStack.pythonServer === "gunicorn" &&
+      (nextStack.pythonWebFramework === "streamlit" || nextStack.pythonWebFramework === "none")
+    ) {
+      nextStack.pythonServer = "none";
+      changed = true;
+      changes.push({
+        category: "pythonServer",
+        message: "Production server set to 'None' (Gunicorn requires a WSGI, ASGI, or aiohttp app)",
+      });
+    }
   }
 
   // ============================================
@@ -2307,6 +2333,20 @@ export const getDisabledReason = (
     ) {
       return "tower-sessions requires the generated Axum middleware stack";
     }
+  }
+
+  // Python prerequisites must run before graph-owned category handling returns.
+  if (category === "pythonApi") {
+    if (optionId !== "none" && currentStack.pythonWebFramework !== "django") {
+      return "Python API frameworks currently require Django";
+    }
+  }
+  if (
+    category === "pythonServer" &&
+    optionId === "gunicorn" &&
+    (currentStack.pythonWebFramework === "streamlit" || currentStack.pythonWebFramework === "none")
+  ) {
+    return "Gunicorn requires a WSGI, ASGI, or aiohttp application";
   }
 
   const graphDisabledReason =
@@ -3182,15 +3222,6 @@ export const getDisabledReason = (
   }
 
   // ============================================
-  // PYTHON ECOSYSTEM RULES
-  // ============================================
-  if (category === "pythonApi") {
-    if (optionId !== "none" && currentStack.pythonWebFramework !== "django") {
-      return "Python API frameworks currently require Django";
-    }
-  }
-
-  // ============================================
   // GO ECOSYSTEM RULES
   // ============================================
   if (
@@ -3845,6 +3876,62 @@ const GRAPH_DISABLED_REASON_BINDINGS: Partial<
   },
   pythonCli: {
     role: "cli",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  pythonCloudSdk: {
+    role: "cloudSdk",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  pythonHttpClient: {
+    role: "httpClient",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  pythonData: {
+    role: "data",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  pythonMedia: {
+    role: "media",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  pythonServer: {
+    role: "server",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  pythonPackageManager: {
+    role: "packageManager",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  pythonMessageQueue: {
+    role: "messageQueue",
     ecosystem: "python",
     ownerRole: "backend",
     ownerEcosystem: "python",

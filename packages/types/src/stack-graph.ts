@@ -103,6 +103,13 @@ import {
   PYTHON_REALTIME_VALUES,
   PYTHON_OBSERVABILITY_VALUES,
   PYTHON_CLI_VALUES,
+  PYTHON_CLOUD_SDK_VALUES,
+  PYTHON_DATA_VALUES,
+  PYTHON_HTTP_CLIENT_VALUES,
+  PYTHON_MEDIA_VALUES,
+  PYTHON_MESSAGE_QUEUE_VALUES,
+  PYTHON_PACKAGE_MANAGER_VALUES,
+  PYTHON_SERVER_VALUES,
   PYTHON_TASK_QUEUE_VALUES,
   PYTHON_VALIDATION_VALUES,
   PYTHON_WEB_FRAMEWORK_VALUES,
@@ -382,7 +389,7 @@ const LEGACY_MOBILE_SINGLE_CATEGORIES = {
 
 const LEGACY_BACKEND_ARRAY_CATEGORIES_BY_ECOSYSTEM = {
   rust: { libraries: "rustLibraries" },
-  python: { ai: "pythonAi", testing: "pythonTesting", cli: "pythonCli" },
+  python: { ai: "pythonAi", testing: "pythonTesting", cli: "pythonCli", data: "pythonData" },
   go: { testing: "goTesting" },
   java: { libraries: "javaLibraries", testing: "javaTestingLibraries" },
   dotnet: { testing: "dotnetTesting", observability: "dotnetObservability" },
@@ -457,6 +464,7 @@ const LEGACY_ARRAY_CATEGORIES = new Set<keyof ProjectConfig>([
   "goTesting",
   "pythonTesting",
   "pythonCli",
+  "pythonData",
   "elixirLibraries",
 ]);
 
@@ -537,6 +545,12 @@ const OWNER_ROLES_BY_SCOPED_ROLE = {
   errorHandling: ["backend"],
   httpClient: ["frontend", "backend"],
   libraries: ["frontend", "backend"],
+  cloudSdk: ["backend"],
+  data: ["backend"],
+  media: ["backend"],
+  server: ["backend"],
+  packageManager: ["backend"],
+  messageQueue: ["backend"],
 } as Partial<Record<StackPartRole, readonly StackPrimaryRole[]>>;
 
 const FRESH_UNSUPPORTED_STATE_MANAGEMENT_TOOLS = new Set([
@@ -671,6 +685,12 @@ const LEGACY_EXTRA_CATEGORIES_BY_ECOSYSTEM = {
     caching: "pythonCaching",
     realtime: "pythonRealtime",
     observability: "pythonObservability",
+    cloudSdk: "pythonCloudSdk",
+    httpClient: "pythonHttpClient",
+    media: "pythonMedia",
+    server: "pythonServer",
+    packageManager: "pythonPackageManager",
+    messageQueue: "pythonMessageQueue",
   },
   go: {
     cli: "goCli",
@@ -949,6 +969,25 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(PYTHON_CLI_VALUES, "cli", "python", "pythonCli", {
     allowMultiple: true,
   }),
+  ...defineTools(PYTHON_CLOUD_SDK_VALUES, "cloudSdk", "python", "pythonCloudSdk"),
+  ...defineTools(PYTHON_HTTP_CLIENT_VALUES, "httpClient", "python", "pythonHttpClient"),
+  ...defineTools(PYTHON_DATA_VALUES, "data", "python", "pythonData", {
+    allowMultiple: true,
+  }),
+  ...defineTools(PYTHON_MEDIA_VALUES, "media", "python", "pythonMedia"),
+  ...defineTools(PYTHON_SERVER_VALUES, "server", "python", "pythonServer"),
+  ...defineTools(
+    PYTHON_PACKAGE_MANAGER_VALUES,
+    "packageManager",
+    "python",
+    "pythonPackageManager",
+  ),
+  ...defineTools(
+    PYTHON_MESSAGE_QUEUE_VALUES,
+    "messageQueue",
+    "python",
+    "pythonMessageQueue",
+  ),
   ...defineTools(GO_WEB_FRAMEWORK_VALUES, "backend", "go", "goWebFramework"),
   ...defineTools(GO_ORM_VALUES, "orm", "go", "goOrm"),
   ...defineTools(GO_API_VALUES, "api", "go", "goApi"),

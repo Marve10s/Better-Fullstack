@@ -1,0 +1,27 @@
+{{#if (eq pythonMessageQueue "confluent-kafka")}}
+"""Confluent Kafka producer helpers."""
+
+import json
+import os
+from functools import lru_cache
+
+from confluent_kafka import Producer
+
+
+@lru_cache
+def get_producer() -> Producer:
+    """Return a cached producer configured from KAFKA_BOOTSTRAP_SERVERS."""
+    return Producer(
+        {
+            "bootstrap.servers": os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092"),
+            "client.id": "{{projectName}}",
+        }
+    )
+
+
+def publish_json(topic: str, payload: dict[str, object], *, key: str | None = None) -> None:
+    """Publish a JSON event and surface delivery errors before returning."""
+    producer = get_producer()
+    producer.produce(topic, key=key, value=json.dumps(payload).encode())
+    producer.flush()
+{{/if}}

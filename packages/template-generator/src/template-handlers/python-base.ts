@@ -14,6 +14,12 @@ export async function processPythonBaseTemplate(
   if (config.ecosystem !== "python") return;
 
   const prefix = "python-base/";
+  const templateContext: ProjectConfig = {
+    ...config,
+    // Graph-derived and legacy configs may omit this recently introduced field.
+    // Python projects still use uv by default, matching CLI commands and docs.
+    pythonPackageManager: config.pythonPackageManager ?? "uv",
+  };
 
   for (const [templatePath, content] of templates) {
     if (!templatePath.startsWith(prefix)) continue;
@@ -26,7 +32,7 @@ export async function processPythonBaseTemplate(
     if (isBinaryFile(templatePath)) {
       processedContent = "[Binary file]";
     } else if (templatePath.endsWith(".hbs")) {
-      processedContent = processTemplateString(content, config);
+      processedContent = processTemplateString(content, templateContext);
     } else {
       processedContent = content;
     }

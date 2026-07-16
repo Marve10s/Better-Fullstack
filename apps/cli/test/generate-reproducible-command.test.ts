@@ -85,6 +85,13 @@ function makeConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
     pythonRealtime: "none",
     pythonObservability: "none",
     pythonCli: [],
+    pythonCloudSdk: "none",
+    pythonHttpClient: "none",
+    pythonData: [],
+    pythonMedia: "none",
+    pythonServer: "none",
+    pythonPackageManager: "uv",
+    pythonMessageQueue: "none",
     goWebFramework: "none",
     goOrm: "none",
     goApi: "none",
@@ -207,6 +214,13 @@ describe("generateReproducibleCommand", () => {
         "--python-realtime none " +
         "--python-observability none " +
         "--python-cli none " +
+        "--python-cloud-sdk none " +
+        "--python-http-client none " +
+        "--python-data none " +
+        "--python-media none " +
+        "--python-server none " +
+        "--python-package-manager uv " +
+        "--python-message-queue none " +
         "--email none " +
         "--observability none " +
         "--caching none " +
@@ -266,6 +280,13 @@ describe("generateReproducibleCommand", () => {
       pythonTaskQueue: "celery",
       pythonGraphql: "none",
       pythonQuality: "ruff",
+      pythonCloudSdk: "boto3",
+      pythonHttpClient: "requests",
+      pythonData: ["numpy", "pandas", "scipy"],
+      pythonMedia: "pillow",
+      pythonServer: "gunicorn",
+      pythonPackageManager: "poetry",
+      pythonMessageQueue: "confluent-kafka",
       aiDocs: ["claude-md", "agents-md"],
     });
 
@@ -288,6 +309,13 @@ describe("generateReproducibleCommand", () => {
         "--python-realtime none " +
         "--python-observability none " +
         "--python-cli none " +
+        "--python-cloud-sdk boto3 " +
+        "--python-http-client requests " +
+        "--python-data numpy pandas scipy " +
+        "--python-media pillow " +
+        "--python-server gunicorn " +
+        "--python-package-manager poetry " +
+        "--python-message-queue confluent-kafka " +
         "--email none " +
         "--observability none " +
         "--caching none " +

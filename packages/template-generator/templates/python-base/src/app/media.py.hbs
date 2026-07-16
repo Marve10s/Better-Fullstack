@@ -1,0 +1,16 @@
+{{#if (eq pythonMedia "pillow")}}
+"""Image processing helpers powered by Pillow."""
+
+from io import BytesIO
+
+from PIL import Image
+
+
+def create_thumbnail(image_bytes: bytes, size: tuple[int, int] = (320, 320)) -> bytes:
+    """Return a web-friendly JPEG thumbnail without mutating the source image."""
+    with Image.open(BytesIO(image_bytes)) as image:
+        image.thumbnail(size)
+        output = BytesIO()
+        image.convert("RGB").save(output, format="JPEG", quality=85, optimize=True)
+        return output.getvalue()
+{{/if}}

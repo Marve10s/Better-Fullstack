@@ -191,6 +191,14 @@ describe("Addon Configurations", () => {
 
           const result = await runTRPCTest(config);
           expectSuccess(result);
+
+          if (frontend === "vinext") {
+            const manifest = readFileSync(
+              join(result.projectDir!, "apps/web/src/app/manifest.ts"),
+              "utf-8",
+            );
+            expect(manifest).not.toContain('from "next"');
+          }
         });
       }
 

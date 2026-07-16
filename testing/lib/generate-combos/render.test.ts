@@ -63,4 +63,27 @@ describe("smoke combo command rendering", () => {
       "--elixir-web-framework phoenix --elixir-orm ecto-sql --elixir-auth none --elixir-api rest --elixir-realtime channels --elixir-jobs none --elixir-validation ecto-changesets --elixir-http req --elixir-json jason --elixir-email none --elixir-caching none --elixir-observability telemetry --elixir-testing ex_unit --elixir-quality credo --elixir-i18n gettext --elixir-http-server bandit --elixir-application-framework ash --elixir-documentation ex_doc --elixir-clustering libcluster --elixir-deploy none",
     );
   });
+
+  it("includes every expanded Python flag for non-interactive smoke commands", () => {
+    const config: ProjectConfig = {
+      ...createCliDefaultProjectConfigBase("bun"),
+      projectName: "python-smoke",
+      relativePath: "python-smoke",
+      projectDir: "/tmp/python-smoke",
+      ecosystem: "python",
+      pythonCloudSdk: "boto3",
+      pythonHttpClient: "requests",
+      pythonData: ["numpy", "pandas"],
+      pythonMedia: "pillow",
+      pythonServer: "gunicorn",
+      pythonPackageManager: "poetry",
+      pythonMessageQueue: "confluent-kafka",
+      git: false,
+      install: false,
+    };
+
+    expect(buildCommand("python-smoke", config)).toContain(
+      "--python-cloud-sdk boto3 --python-http-client requests --python-data numpy pandas --python-media pillow --python-server gunicorn --python-package-manager poetry --python-message-queue confluent-kafka",
+    );
+  });
 });

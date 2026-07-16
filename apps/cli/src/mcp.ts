@@ -116,6 +116,13 @@ import {
   PythonRealtimeSchema,
   PythonObservabilitySchema,
   PythonCliSchema,
+  PythonCloudSdkSchema,
+  PythonDataSchema,
+  PythonHttpClientSchema,
+  PythonMediaSchema,
+  PythonMessageQueueSchema,
+  PythonPackageManagerSchema,
+  PythonServerSchema,
   PythonGraphqlSchema,
   PythonTaskQueueSchema,
   PythonValidationSchema,
@@ -195,7 +202,7 @@ For existing projects:
 
 CRITICAL RULES:
 - Dependency installation is ALWAYS skipped in MCP mode (timeout risk). After scaffolding, tell the user to run install manually.
-- Array fields: "frontend", "addons", "examples", "aiDocs", "rustLibraries", "pythonAi", "pythonTesting", "pythonCli", "goTesting", "javaLibraries", "javaTestingLibraries", "dotnetTesting", "dotnetObservability", and "elixirLibraries". Most other option fields are strings.
+- Array fields: "frontend", "addons", "examples", "aiDocs", "rustLibraries", "pythonAi", "pythonTesting", "pythonCli", "pythonData", "goTesting", "javaLibraries", "javaTestingLibraries", "dotnetTesting", "dotnetObservability", and "elixirLibraries". Most other option fields are strings.
 - "none" means "skip this feature entirely", not "use the default".
 - Always specify "ecosystem" first — it determines which other fields are relevant.
 - TypeScript web-specific fields (web frontend, backend, orm, etc.) are IGNORED for react-native/rust/python/go/java/dotnet/elixir ecosystems.
@@ -233,7 +240,7 @@ function getGuidance() {
       frontend:
         "ARRAY of strings. TypeScript only. Supports multiple frontends in one monorepo. Use [] for API-only.",
       arrayFields:
-        'Use arrays for frontend, addons, examples, aiDocs, rustLibraries, pythonAi, pythonTesting, pythonCli, goTesting, javaLibraries, javaTestingLibraries, dotnetTesting, dotnetObservability, and elixirLibraries. Use [] for "none" on multi-select fields.',
+        'Use arrays for frontend, addons, examples, aiDocs, rustLibraries, pythonAi, pythonTesting, pythonCli, pythonData, goTesting, javaLibraries, javaTestingLibraries, dotnetTesting, dotnetObservability, and elixirLibraries. Use [] for "none" on multi-select fields.',
       backend:
         'String. "self" means fullstack mode (Next.js/Vinext/TanStack Start/Nuxt/Astro API routes). "none" for frontend-only.',
       runtime: '"bun" or "node". Must be "none" when backend is "self" or "convex".',
@@ -395,12 +402,18 @@ function getInstallCommand(
   packageManager?: string,
   javaBuildTool?: string,
   javaWebFramework?: string,
+  pythonPackageManager?: string,
 ): string {
   switch (ecosystem) {
     case "rust":
       return `cd ${projectName} && cargo build`;
     case "python":
-      return `cd ${projectName} && uv sync`;
+      if (pythonPackageManager === "poetry")
+        return `cd ${projectName} && poetry install --extras dev`;
+      if (pythonPackageManager === "none") {
+        return `cd ${projectName} && python -m venv .venv && pip install -e .`;
+      }
+      return `cd ${projectName} && uv sync --extra dev`;
     case "go":
       return `cd ${projectName} && go mod tidy`;
     case "elixir":
@@ -540,6 +553,13 @@ const MCP_COMPATIBILITY_DEFAULTS = {
   pythonRealtime: "none",
   pythonObservability: "none",
   pythonCli: [],
+  pythonCloudSdk: "none",
+  pythonHttpClient: "none",
+  pythonData: [],
+  pythonMedia: "none",
+  pythonServer: "none",
+  pythonPackageManager: "uv",
+  pythonMessageQueue: "none",
   goWebFramework: "none",
   goOrm: "none",
   goApi: "none",
@@ -1356,6 +1376,13 @@ const crossEcosystemInputSchema = {
   pythonRealtime: PythonRealtimeSchema.optional().describe("Python realtime library"),
   pythonObservability: PythonObservabilitySchema.optional().describe("Python observability"),
   pythonCli: z.array(PythonCliSchema).optional().describe("Python CLI tooling"),
+  pythonCloudSdk: PythonCloudSdkSchema.optional().describe("Python cloud SDK"),
+  pythonHttpClient: PythonHttpClientSchema.optional().describe("Python HTTP client"),
+  pythonData: z.array(PythonDataSchema).optional().describe("Python data/scientific libraries"),
+  pythonMedia: PythonMediaSchema.optional().describe("Python media library"),
+  pythonServer: PythonServerSchema.optional().describe("Python production server"),
+  pythonPackageManager: PythonPackageManagerSchema.optional().describe("Python package manager"),
+  pythonMessageQueue: PythonMessageQueueSchema.optional().describe("Python message queue client"),
   goWebFramework: GoWebFrameworkSchema.optional().describe("Go web framework"),
   goOrm: GoOrmSchema.optional().describe("Go ORM"),
   goApi: GoApiSchema.optional().describe("Go API layer"),
@@ -1967,6 +1994,7 @@ export async function startMcpServer() {
           input.packageManager as string | undefined,
           input.javaBuildTool as string | undefined,
           input.javaWebFramework as string | undefined,
+          input.pythonPackageManager as string | undefined,
         );
         await trackProjectCreation(config, false, {
           source: "mcp",
@@ -2307,6 +2335,7 @@ export async function startMcpServer() {
             input.packageManager as string | undefined,
             existingConfig?.javaBuildTool,
             existingConfig?.javaWebFramework,
+            existingConfig?.pythonPackageManager,
           );
           const payload = {
             success: true as const,

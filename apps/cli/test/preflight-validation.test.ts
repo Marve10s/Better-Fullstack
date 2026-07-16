@@ -326,6 +326,19 @@ describe("preflight validation", () => {
       );
     });
 
+    test("passes for Python databases with a Python ORM selected", () => {
+      expect(
+        ruleIds(
+          config({
+            ecosystem: "python",
+            database: "mongodb",
+            orm: "none",
+            pythonOrm: "pymongo",
+          }),
+        ),
+      ).not.toContain("database-no-orm");
+    });
+
     test("passes for EdgeDB without ORM", () => {
       expect(ruleIds(config({ database: "edgedb", orm: "none" }))).not.toContain("database-no-orm");
     });

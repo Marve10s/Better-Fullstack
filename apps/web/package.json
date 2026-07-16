@@ -8,7 +8,7 @@
     "i18n:compile": "bun run scripts/compile-paraglide.ts",
     "docs:cli-flags": "bun run scripts/generate-cli-flags-data.ts",
     "prebuild": "bun run i18n:compile && cd ../../packages/types && bun run build && cd ../template-generator && bun run build && cd ../../apps/web && bun run docs:cli-flags",
-    "build": "NODE_OPTIONS=\"${NODE_OPTIONS:---max-old-space-size=7168}\" vite build",
+    "build": "NODE_OPTIONS=\"${NODE_OPTIONS:---max-old-space-size=6144}\" vite build",
     "dev": "bun run i18n:compile && vite dev --port 3333",
     "start": "node .output/server/index.mjs",
     "lint": "bun run i18n:compile && oxlint -c ../../.oxlintrc.json . && tsc --noEmit",

@@ -162,6 +162,13 @@ export async function createVirtual(
       pythonRealtime: options.pythonRealtime || "none",
       pythonObservability: options.pythonObservability || "none",
       pythonCli: options.pythonCli || [],
+      pythonCloudSdk: options.pythonCloudSdk || "none",
+      pythonHttpClient: options.pythonHttpClient || "none",
+      pythonData: options.pythonData || [],
+      pythonMedia: options.pythonMedia || "none",
+      pythonServer: options.pythonServer || "none",
+      pythonPackageManager: options.pythonPackageManager || "uv",
+      pythonMessageQueue: options.pythonMessageQueue || "none",
       // Go ecosystem options
       goWebFramework: options.goWebFramework || "none",
       goOrm: options.goOrm || "none",

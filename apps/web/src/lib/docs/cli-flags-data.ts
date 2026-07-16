@@ -68,12 +68,14 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "flag": "--addons",
         "summary": "Repo tooling and platform addons.",
         "values": [
-          "turborepo",
-          "nx",
           "pwa",
           "tauri",
+          "electron",
+          "capacitor",
           "wxt",
           "opentui",
+          "turborepo",
+          "nx",
           "mcp",
           "skills",
           "msw",
@@ -88,7 +90,14 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "devcontainer",
           "docker-compose",
           "github-actions",
+          "axios",
+          "firebase",
+          "graphql-codegen",
+          "openapi-typescript",
+          "apollo-client",
           "biome",
+          "eslint",
+          "prettier",
           "oxlint",
           "ultracite",
           "lefthook",
@@ -290,6 +299,8 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "tanstack-router",
           "react-router",
           "react-vite",
+          "vanilla-vite",
+          "vue",
           "tanstack-start",
           "next",
           "vinext",
@@ -409,6 +420,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "auth0",
           "workos",
           "kinde",
+          "passport",
           "none"
         ],
         "valueHint": null,
@@ -470,6 +482,8 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "voltagent",
           "langgraph",
           "openai-agents",
+          "openai-sdk",
+          "anthropic-sdk",
           "google-adk",
           "modelfusion",
           "langchain",
@@ -491,6 +505,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "stripe",
           "lemon-squeezy",
           "paddle",
+          "paypal",
           "dodo",
           "creem",
           "autumn",
@@ -524,6 +539,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "summary": "Realtime transport.",
         "values": [
           "socket-io",
+          "ws",
           "partykit",
           "ably",
           "pusher",
@@ -559,6 +575,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "tinacms",
           "directus",
           "keystatic",
+          "contentful",
           "none"
         ],
         "valueHint": null,
@@ -627,6 +644,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "plausible",
           "umami",
           "posthog",
+          "ga4",
           "none"
         ],
         "valueHint": null,
@@ -744,6 +762,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "scss",
           "less",
           "postcss-only",
+          "styled-components",
           "none"
         ],
         "valueHint": null,
@@ -834,6 +853,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "playwright",
           "vitest-playwright",
           "jest",
+          "mocha",
           "cypress",
           "none"
         ],
@@ -1103,6 +1123,8 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "rocket",
           "poem",
           "loco",
+          "warp",
+          "salvo",
           "none"
         ],
         "valueHint": null,
@@ -1115,6 +1137,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "values": [
           "leptos",
           "dioxus",
+          "yew",
           "none"
         ],
         "valueHint": null,
@@ -1128,6 +1151,9 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "sea-orm",
           "sqlx",
           "diesel",
+          "mongodb",
+          "rusqlite",
+          "tokio-postgres",
           "none"
         ],
         "valueHint": null,
@@ -1140,6 +1166,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "values": [
           "tonic",
           "async-graphql",
+          "jsonrpsee",
           "none"
         ],
         "valueHint": null,
@@ -1179,6 +1206,13 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "mockall",
           "proptest",
           "insta",
+          "rand",
+          "regex",
+          "rayon",
+          "itertools",
+          "rstest",
+          "cargo-nextest",
+          "cargo-audit",
           "none"
         ],
         "valueHint": null,
@@ -1227,6 +1261,8 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "values": [
           "oauth2",
           "torii",
+          "openidconnect",
+          "tower-sessions",
           "none"
         ],
         "valueHint": null,
@@ -1249,6 +1285,8 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "summary": "Rust message queue.",
         "values": [
           "lapin",
+          "rdkafka",
+          "async-nats",
           "none"
         ],
         "valueHint": null,
@@ -1260,6 +1298,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "summary": "Rust observability.",
         "values": [
           "opentelemetry",
+          "metrics",
           "none"
         ],
         "valueHint": null,
@@ -1272,6 +1311,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "values": [
           "askama",
           "tera",
+          "minijinja",
           "none"
         ],
         "valueHint": null,
@@ -1294,6 +1334,8 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "flask",
           "litestar",
           "starlette",
+          "aiohttp",
+          "streamlit",
           "none"
         ],
         "valueHint": null,
@@ -1308,6 +1350,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "sqlmodel",
           "tortoise-orm",
           "peewee",
+          "pymongo",
           "none"
         ],
         "valueHint": null,
@@ -1339,6 +1382,11 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "pydantic-ai",
           "google-adk",
           "smolagents",
+          "pytorch",
+          "transformers",
+          "scikit-learn",
+          "tensorflow",
+          "mcp",
           "none"
         ],
         "valueHint": null,
@@ -1351,6 +1399,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "values": [
           "authlib",
           "jwt",
+          "pyjwt",
           "fastapi-users",
           "none"
         ],
@@ -1416,6 +1465,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "values": [
           "pytest",
           "hypothesis",
+          "pytest-cov",
           "none"
         ],
         "valueHint": null,
@@ -1451,6 +1501,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "summary": "Python observability.",
         "values": [
           "opentelemetry",
+          "prometheus-client",
           "none"
         ],
         "valueHint": null,
@@ -1469,6 +1520,86 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "valueHint": null,
         "defaultValue": "none",
         "multiple": true
+      },
+      {
+        "flag": "--python-cloud-sdk",
+        "summary": "Python cloud SDK.",
+        "values": [
+          "boto3",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--python-http-client",
+        "summary": "Python HTTP client.",
+        "values": [
+          "requests",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--python-data",
+        "summary": "Python data and scientific libraries.",
+        "values": [
+          "numpy",
+          "pandas",
+          "scipy",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": true
+      },
+      {
+        "flag": "--python-media",
+        "summary": "Python media library.",
+        "values": [
+          "pillow",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--python-server",
+        "summary": "Python production server.",
+        "values": [
+          "gunicorn",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--python-package-manager",
+        "summary": "Python package manager.",
+        "values": [
+          "uv",
+          "poetry",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "uv",
+        "multiple": false
+      },
+      {
+        "flag": "--python-message-queue",
+        "summary": "Python message queue client.",
+        "values": [
+          "confluent-kafka",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
       }
     ]
   },
@@ -1486,6 +1617,9 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "fiber",
           "chi",
           "stdlib",
+          "go-zero",
+          "kratos",
+          "httprouter",
           "none"
         ],
         "valueHint": null,
@@ -1500,6 +1634,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "sqlc",
           "ent",
           "bun",
+          "sqlx",
           "none"
         ],
         "valueHint": null,
@@ -1512,6 +1647,9 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "values": [
           "grpc-go",
           "gqlgen",
+          "grpc-gateway",
+          "connect-go",
+          "oapi-codegen",
           "none"
         ],
         "valueHint": null,
@@ -1552,6 +1690,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "casbin",
           "jwt",
           "goth",
+          "oauth2",
           "none"
         ],
         "valueHint": null,
@@ -1564,6 +1703,9 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "values": [
           "testify",
           "gomock",
+          "testcontainers",
+          "ginkgo-gomega",
+          "mockery",
           "none"
         ],
         "valueHint": null,
@@ -1588,6 +1730,8 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "values": [
           "nats",
           "watermill",
+          "kafka-go",
+          "asynq",
           "none"
         ],
         "valueHint": null,
@@ -1623,6 +1767,73 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "summary": "Go observability.",
         "values": [
           "opentelemetry",
+          "prometheus",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--go-validation",
+        "summary": "Go validation.",
+        "values": [
+          "validator",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--go-quality",
+        "summary": "Go code quality.",
+        "values": [
+          "golangci-lint",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--go-migrations",
+        "summary": "Go database migrations.",
+        "values": [
+          "golang-migrate",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--go-templating",
+        "summary": "Go templating.",
+        "values": [
+          "templ",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--go-proto-tooling",
+        "summary": "Go protobuf tooling.",
+        "values": [
+          "buf",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--go-di",
+        "summary": "Go dependency injection.",
+        "values": [
+          "fx",
           "none"
         ],
         "valueHint": null,
@@ -1942,6 +2153,8 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "values": [
           "ecto",
           "ecto-sql",
+          "myxql",
+          "ecto_sqlite3",
           "none"
         ],
         "valueHint": null,
@@ -1955,6 +2168,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "phx-gen-auth",
           "ueberauth",
           "guardian",
+          "pow",
           "none"
         ],
         "valueHint": null,
@@ -1968,6 +2182,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "rest",
           "absinthe",
           "grpc",
+          "open_api_spex",
           "none"
         ],
         "valueHint": null,
@@ -2018,6 +2233,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "values": [
           "req",
           "finch",
+          "tesla",
           "none"
         ],
         "valueHint": null,
@@ -2040,6 +2256,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "summary": "Elixir email.",
         "values": [
           "swoosh",
+          "bamboo",
           "none"
         ],
         "valueHint": null,
@@ -2052,6 +2269,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "values": [
           "cachex",
           "nebulex",
+          "redix",
           "none"
         ],
         "valueHint": null,
@@ -2065,6 +2283,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "telemetry",
           "opentelemetry",
           "prom_ex",
+          "sentry",
           "none"
         ],
         "valueHint": null,
@@ -2079,6 +2298,8 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "mox",
           "bypass",
           "wallaby",
+          "stream_data",
+          "ex_machina",
           "none"
         ],
         "valueHint": null,
@@ -2092,10 +2313,68 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "credo",
           "dialyxir",
           "sobelow",
+          "excoveralls",
+          "mix_audit",
           "none"
         ],
         "valueHint": null,
         "defaultValue": "credo",
+        "multiple": false
+      },
+      {
+        "flag": "--elixir-i18n",
+        "summary": "Elixir internationalization.",
+        "values": [
+          "gettext",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--elixir-http-server",
+        "summary": "Elixir HTTP server.",
+        "values": [
+          "bandit",
+          "cowboy",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "cowboy",
+        "multiple": false
+      },
+      {
+        "flag": "--elixir-application-framework",
+        "summary": "Elixir application framework.",
+        "values": [
+          "ash",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--elixir-documentation",
+        "summary": "Elixir documentation.",
+        "values": [
+          "ex_doc",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--elixir-clustering",
+        "summary": "Elixir clustering.",
+        "values": [
+          "libcluster",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
         "multiple": false
       },
       {
@@ -2118,6 +2397,9 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "values": [
           "broadway",
           "nx",
+          "ex_aws",
+          "floki",
+          "rustler",
           "none"
         ],
         "valueHint": null,
