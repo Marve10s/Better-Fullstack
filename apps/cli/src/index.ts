@@ -124,6 +124,7 @@ export async function createVirtual(
       mobilePush: options.mobilePush || "none",
       mobileOTA: options.mobileOTA || "none",
       mobileDeepLinking: options.mobileDeepLinking || (hasNativeFrontend ? "expo-linking" : "none"),
+      mobileLibraries: options.mobileLibraries || [],
       cms: options.cms || "none",
       caching: options.caching || "none",
       rateLimit: options.rateLimit || "none",
@@ -214,6 +215,7 @@ export async function createVirtual(
       dotnetValidation: options.dotnetValidation || "none",
       dotnetCaching: options.dotnetCaching || "none",
       dotnetDeploy: options.dotnetDeploy || (options.ecosystem === "dotnet" ? "docker" : "none"),
+      dotnetLibraries: options.dotnetLibraries || [],
       elixirWebFramework:
         options.elixirWebFramework || (options.ecosystem === "elixir" ? "phoenix" : "none"),
       elixirOrm: options.elixirOrm || (options.ecosystem === "elixir" ? "ecto-sql" : "none"),

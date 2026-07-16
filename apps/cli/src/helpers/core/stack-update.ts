@@ -112,6 +112,8 @@ const ARRAY_UPDATE_KEYS = new Set<keyof ProjectConfig>([
   "javaTestingLibraries",
   "dotnetTesting",
   "dotnetObservability",
+  "mobileLibraries",
+  "dotnetLibraries",
   "elixirLibraries",
 ]);
 
@@ -687,7 +689,8 @@ function getDefaultNativeFrontendForRequestedUpdate(
     hasRequestedNonNoneValue(requestedChanges, "mobileTesting") ||
     hasRequestedNonNoneValue(requestedChanges, "mobilePush") ||
     hasRequestedNonNoneValue(requestedChanges, "mobileOTA") ||
-    hasRequestedNonNoneValue(requestedChanges, "mobileDeepLinking");
+    hasRequestedNonNoneValue(requestedChanges, "mobileDeepLinking") ||
+    (requestedChanges.mobileLibraries?.some((value) => value !== "none") ?? false);
 
   return needsNativeFrontend ? "native-bare" : undefined;
 }

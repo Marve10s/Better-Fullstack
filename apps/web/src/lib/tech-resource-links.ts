@@ -1625,6 +1625,86 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://opentelemetry.io/docs/languages/java/",
     githubUrl: "https://github.com/open-telemetry/opentelemetry-java",
   },
+  "spring-data-redis": {
+    docsUrl: "https://docs.spring.io/spring-data/redis/reference/",
+    githubUrl: "https://github.com/spring-projects/spring-data-redis",
+  },
+  "spring-data-mongodb": {
+    docsUrl: "https://docs.spring.io/spring-data/mongodb/reference/",
+    githubUrl: "https://github.com/spring-projects/spring-data-mongodb",
+  },
+  "spring-data-elasticsearch": {
+    docsUrl: "https://docs.spring.io/spring-data/elasticsearch/reference/",
+    githubUrl: "https://github.com/spring-projects/spring-data-elasticsearch",
+  },
+  "spring-data-neo4j": {
+    docsUrl: "https://docs.spring.io/spring-data/neo4j/reference/",
+    githubUrl: "https://github.com/spring-projects/spring-data-neo4j",
+  },
+  "spring-data-cassandra": {
+    docsUrl: "https://docs.spring.io/spring-data/cassandra/reference/",
+    githubUrl: "https://github.com/spring-projects/spring-data-cassandra",
+  },
+  "spring-data-couchbase": {
+    docsUrl: "https://docs.spring.io/spring-data/couchbase/reference/",
+    githubUrl: "https://github.com/spring-projects/spring-data-couchbase",
+  },
+  "spring-data-jdbc": {
+    docsUrl: "https://docs.spring.io/spring-data/relational/reference/jdbc.html",
+    githubUrl: "https://github.com/spring-projects/spring-data-relational",
+  },
+  "spring-data-rest": {
+    docsUrl: "https://docs.spring.io/spring-data/rest/reference/",
+    githubUrl: "https://github.com/spring-projects/spring-data-rest",
+  },
+  "spring-quartz": {
+    docsUrl: "https://docs.spring.io/spring-boot/reference/io/quartz.html",
+    githubUrl: "https://github.com/quartz-scheduler/quartz",
+  },
+  "spring-pulsar": {
+    docsUrl: "https://docs.spring.io/spring-pulsar/reference/",
+    githubUrl: "https://github.com/spring-projects/spring-pulsar",
+  },
+  "spring-integration": {
+    docsUrl: "https://docs.spring.io/spring-integration/reference/",
+    githubUrl: "https://github.com/spring-projects/spring-integration",
+  },
+  "spring-websocket": {
+    docsUrl: "https://docs.spring.io/spring-framework/reference/web/websocket.html",
+    githubUrl: "https://github.com/spring-projects/spring-framework",
+  },
+  "spring-rsocket": {
+    docsUrl: "https://docs.spring.io/spring-framework/reference/rsocket.html",
+    githubUrl: "https://github.com/spring-projects/spring-framework",
+  },
+  "spring-hateoas": {
+    docsUrl: "https://docs.spring.io/spring-hateoas/docs/current/reference/html/",
+    githubUrl: "https://github.com/spring-projects/spring-hateoas",
+  },
+  "spring-session-redis": {
+    docsUrl: "https://docs.spring.io/spring-session/reference/configuration/redis.html",
+    githubUrl: "https://github.com/spring-projects/spring-session",
+  },
+  "spring-session-jdbc": {
+    docsUrl: "https://docs.spring.io/spring-session/reference/configuration/jdbc.html",
+    githubUrl: "https://github.com/spring-projects/spring-session",
+  },
+  "spring-ldap": {
+    docsUrl: "https://docs.spring.io/spring-ldap/reference/",
+    githubUrl: "https://github.com/spring-projects/spring-ldap",
+  },
+  "spring-oauth2-client": {
+    docsUrl: "https://docs.spring.io/spring-security/reference/servlet/oauth2/client/index.html",
+    githubUrl: "https://github.com/spring-projects/spring-security",
+  },
+  "spring-saml2": {
+    docsUrl: "https://docs.spring.io/spring-security/reference/servlet/saml2/index.html",
+    githubUrl: "https://github.com/spring-projects/spring-security",
+  },
+  "spring-restclient": {
+    docsUrl: "https://docs.spring.io/spring-framework/reference/integration/rest-clients.html",
+    githubUrl: "https://github.com/spring-projects/spring-framework",
+  },
   torii: {
     docsUrl: "https://docs.rs/torii",
     githubUrl: "https://github.com/cmackenzie1/torii-rs",
@@ -1725,6 +1805,120 @@ const BASE_LINKS: LinkMap = {
 };
 
 const CATEGORY_LINKS: LinkMap = {
+  // ─── React Native optional Expo modules ───────────────────────────────────
+  ...Object.fromEntries(
+    [
+      ["expo-sqlite", "sqlite"],
+      ["expo-camera", "camera"],
+      ["expo-image-picker", "imagepicker"],
+      ["expo-location", "location"],
+      ["expo-sensors", "sensors"],
+      ["expo-file-system", "filesystem"],
+      ["expo-image", "image"],
+      ["expo-audio", "audio"],
+      ["expo-video", "video"],
+      ["expo-contacts", "contacts"],
+      ["expo-calendar", "calendar"],
+      ["expo-local-authentication", "local-authentication"],
+      ["expo-sharing", "sharing"],
+      ["expo-clipboard", "clipboard"],
+      ["expo-task-manager", "task-manager"],
+      ["expo-background-task", "background-task"],
+      ["expo-maps", "maps"],
+      ["expo-brightness", "brightness"],
+      ["expo-battery", "battery"],
+      ["expo-screen-capture", "screen-capture"],
+    ].map(([id, docsSlug]) => [
+      `mobileLibraries:${id}`,
+      {
+        docsUrl: `https://docs.expo.dev/versions/latest/sdk/${docsSlug}/`,
+        githubUrl: `https://github.com/expo/expo/tree/main/packages/${id}`,
+      },
+    ]),
+  ),
+
+  // ─── .NET optional application libraries ─────────────────────────────────
+  "dotnetLibraries:automapper": {
+    docsUrl: "https://docs.automapper.io/en/stable/",
+    githubUrl: "https://github.com/LuckyPennySoftware/AutoMapper",
+  },
+  "dotnetLibraries:mediatr": {
+    docsUrl: "https://github.com/LuckyPennySoftware/MediatR/wiki",
+    githubUrl: "https://github.com/LuckyPennySoftware/MediatR",
+  },
+  "dotnetLibraries:fastendpoints": {
+    docsUrl: "https://fast-endpoints.com/docs/get-started",
+    githubUrl: "https://github.com/FastEndpoints/FastEndpoints",
+  },
+  "dotnetLibraries:api-versioning": {
+    docsUrl: "https://github.com/dotnet/aspnet-api-versioning/wiki",
+    githubUrl: "https://github.com/dotnet/aspnet-api-versioning",
+  },
+  "dotnetLibraries:scalar": {
+    docsUrl:
+      "https://guides.scalar.com/scalar/scalar-api-references/integrations/aspnetcore-integration",
+    githubUrl: "https://github.com/scalar/scalar",
+  },
+  "dotnetLibraries:polly": {
+    docsUrl: "https://www.pollydocs.org/",
+    githubUrl: "https://github.com/App-vNext/Polly",
+  },
+  "dotnetLibraries:masstransit": {
+    docsUrl: "https://masstransit.io/documentation/configuration",
+    githubUrl: "https://github.com/MassTransit/MassTransit",
+  },
+  "dotnetLibraries:rebus": {
+    docsUrl: "https://github.com/rebus-org/Rebus/wiki",
+    githubUrl: "https://github.com/rebus-org/Rebus",
+  },
+  "dotnetLibraries:coravel": {
+    docsUrl: "https://docs.coravel.net/",
+    githubUrl: "https://github.com/jamesmh/coravel",
+  },
+  "dotnetLibraries:magic-onion": {
+    docsUrl: "https://cysharp.github.io/MagicOnion/",
+    githubUrl: "https://github.com/Cysharp/MagicOnion",
+  },
+  "dotnetLibraries:prometheus-net": {
+    docsUrl: "https://github.com/prometheus-net/prometheus-net#readme",
+    githubUrl: "https://github.com/prometheus-net/prometheus-net",
+  },
+  "dotnetLibraries:seq": {
+    docsUrl: "https://docs.datalust.co/docs/using-serilog",
+    githubUrl: "https://github.com/datalust/serilog-sinks-seq",
+  },
+  "dotnetLibraries:application-insights": {
+    docsUrl: "https://learn.microsoft.com/azure/azure-monitor/app/asp-net-core",
+    githubUrl: "https://github.com/microsoft/ApplicationInsights-dotnet",
+  },
+  "dotnetLibraries:sentry": {
+    docsUrl: "https://docs.sentry.io/platforms/dotnet/guides/aspnetcore/",
+    githubUrl: "https://github.com/getsentry/sentry-dotnet",
+  },
+  "dotnetLibraries:mongodb-driver": {
+    docsUrl: "https://www.mongodb.com/docs/drivers/csharp/current/",
+    githubUrl: "https://github.com/mongodb/mongo-csharp-driver",
+  },
+  "dotnetLibraries:nhibernate": {
+    docsUrl: "https://nhibernate.info/doc/",
+    githubUrl: "https://github.com/nhibernate/nhibernate-core",
+  },
+  "dotnetLibraries:mapster": {
+    docsUrl: "https://github.com/MapsterMapper/Mapster/wiki",
+    githubUrl: "https://github.com/MapsterMapper/Mapster",
+  },
+  "dotnetLibraries:scrutor": {
+    docsUrl: "https://github.com/khellang/Scrutor#readme",
+    githubUrl: "https://github.com/khellang/Scrutor",
+  },
+  "dotnetLibraries:refit": {
+    docsUrl: "https://reactiveui.github.io/refit/",
+    githubUrl: "https://github.com/reactiveui/refit",
+  },
+  "dotnetLibraries:fluent-email": {
+    docsUrl: "https://github.com/lukencode/FluentEmail#readme",
+    githubUrl: "https://github.com/lukencode/FluentEmail",
+  },
   "goWebFramework:go-zero": {
     docsUrl: "https://go-zero.dev/en/docs/introduction/overview",
     githubUrl: "https://github.com/zeromicro/go-zero",

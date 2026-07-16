@@ -51,6 +51,27 @@ type JavaTemplateContext = ProjectConfig & {
   hasJavaDevtools: boolean;
   hasJavaMicrometerPrometheus: boolean;
   hasJavaThymeleaf: boolean;
+  hasJavaDataRedis: boolean;
+  hasJavaDataMongodb: boolean;
+  hasJavaDataElasticsearch: boolean;
+  hasJavaDataNeo4j: boolean;
+  hasJavaDataCassandra: boolean;
+  hasJavaDataCouchbase: boolean;
+  hasJavaDataJdbc: boolean;
+  hasJavaDataRest: boolean;
+  hasJavaQuartz: boolean;
+  hasJavaPulsar: boolean;
+  hasJavaIntegration: boolean;
+  hasJavaWebsocket: boolean;
+  hasJavaRsocket: boolean;
+  hasJavaHateoas: boolean;
+  hasJavaSessionRedis: boolean;
+  hasJavaSessionJdbc: boolean;
+  hasJavaLdap: boolean;
+  hasJavaOauth2Client: boolean;
+  hasJavaSaml2: boolean;
+  hasJavaRestclient: boolean;
+  hasJavaJdbcInfrastructure: boolean;
   hasJavaAnnotationProcessors: boolean;
   hasJavaMockito: boolean;
   hasJavaTestcontainers: boolean;
@@ -271,6 +292,29 @@ function createJavaTemplateContext(config: ProjectConfig): JavaTemplateContext {
     hasJavaDevtools: javaLibraries.includes("spring-devtools"),
     hasJavaMicrometerPrometheus: javaLibraries.includes("micrometer-prometheus"),
     hasJavaThymeleaf: javaLibraries.includes("thymeleaf"),
+    hasJavaDataRedis: javaLibraries.includes("spring-data-redis"),
+    hasJavaDataMongodb: javaLibraries.includes("spring-data-mongodb"),
+    hasJavaDataElasticsearch: javaLibraries.includes("spring-data-elasticsearch"),
+    hasJavaDataNeo4j: javaLibraries.includes("spring-data-neo4j"),
+    hasJavaDataCassandra: javaLibraries.includes("spring-data-cassandra"),
+    hasJavaDataCouchbase: javaLibraries.includes("spring-data-couchbase"),
+    hasJavaDataJdbc: javaLibraries.includes("spring-data-jdbc"),
+    hasJavaDataRest: javaLibraries.includes("spring-data-rest"),
+    hasJavaQuartz: javaLibraries.includes("spring-quartz"),
+    hasJavaPulsar: javaLibraries.includes("spring-pulsar"),
+    hasJavaIntegration: javaLibraries.includes("spring-integration"),
+    hasJavaWebsocket: javaLibraries.includes("spring-websocket"),
+    hasJavaRsocket: javaLibraries.includes("spring-rsocket"),
+    hasJavaHateoas: javaLibraries.includes("spring-hateoas"),
+    hasJavaSessionRedis: javaLibraries.includes("spring-session-redis"),
+    hasJavaSessionJdbc: javaLibraries.includes("spring-session-jdbc"),
+    hasJavaLdap: javaLibraries.includes("spring-ldap"),
+    hasJavaOauth2Client: javaLibraries.includes("spring-oauth2-client"),
+    hasJavaSaml2: javaLibraries.includes("spring-saml2"),
+    hasJavaRestclient: javaLibraries.includes("spring-restclient"),
+    hasJavaJdbcInfrastructure:
+      javaLibraries.includes("spring-data-jdbc") ||
+      javaLibraries.includes("spring-session-jdbc"),
     hasJavaAnnotationProcessors:
       javaLibraries.includes("lombok") || javaLibraries.includes("mapstruct"),
     hasJavaMockito,

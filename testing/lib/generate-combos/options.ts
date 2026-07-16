@@ -69,6 +69,7 @@ import {
   JOB_QUEUE_VALUES,
   LOGGING_VALUES,
   MOBILE_DEEP_LINKING_VALUES,
+  MOBILE_LIBRARIES_VALUES,
   MOBILE_NAVIGATION_VALUES,
   MOBILE_OTA_VALUES,
   MOBILE_PUSH_VALUES,
@@ -403,6 +404,7 @@ function makeReactNativeDraft(args: GeneratorArgs): CandidateDraft {
       mobilePush: sampleScalar(MOBILE_PUSH_VALUES, 0.7, "mobilePush"),
       mobileOTA: sampleScalar(MOBILE_OTA_VALUES, 0.7, "mobileOTA"),
       mobileDeepLinking: sampleScalar(MOBILE_DEEP_LINKING_VALUES, 0.35, "mobileDeepLinking"),
+      mobileLibraries: sampleArray(MOBILE_LIBRARIES_VALUES, 0.65, 3, "mobileLibraries"),
     },
   };
 }
@@ -638,6 +640,7 @@ function makeDotnetDraft(args: GeneratorArgs): CandidateDraft {
         "dotnetValidation",
       ),
       dotnetCaching: sampleScalar(["memory-cache", "none"] as const, 0.5, "dotnetCaching"),
+      dotnetLibraries: [],
       dotnetDeploy: sampleScalar(["docker", "none"] as const, 0.4, "dotnetDeploy"),
     },
   };
@@ -774,6 +777,8 @@ function createValidationBase(projectName: string, draft: CandidateDraft): Proje
     javaLogging: "none",
     javaLibraries: [],
     javaTestingLibraries: [],
+    mobileLibraries: [],
+    dotnetLibraries: [],
     elixirWebFramework: "none",
     elixirOrm: "none",
     elixirAuth: "none",
@@ -814,6 +819,7 @@ function applyDerivedMobileDefaults(config: ProjectConfig, providedFlags: Set<st
     config.mobilePush = "none";
     config.mobileOTA = "none";
     config.mobileDeepLinking = "none";
+    config.mobileLibraries = [];
     return;
   }
 

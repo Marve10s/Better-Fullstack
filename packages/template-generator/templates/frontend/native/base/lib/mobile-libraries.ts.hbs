@@ -1,0 +1,49 @@
+{{#if mobileLibraries.length}}
+{{#if (includes mobileLibraries "expo-sqlite")}}import * as ExpoSQLite from "expo-sqlite";
+{{/if}}{{#if (includes mobileLibraries "expo-camera")}}import * as ExpoCamera from "expo-camera";
+{{/if}}{{#if (includes mobileLibraries "expo-image-picker")}}import * as ExpoImagePicker from "expo-image-picker";
+{{/if}}{{#if (includes mobileLibraries "expo-location")}}import * as ExpoLocation from "expo-location";
+{{/if}}{{#if (includes mobileLibraries "expo-sensors")}}import * as ExpoSensors from "expo-sensors";
+{{/if}}{{#if (includes mobileLibraries "expo-file-system")}}import * as ExpoFileSystem from "expo-file-system";
+{{/if}}{{#if (includes mobileLibraries "expo-image")}}import * as ExpoImage from "expo-image";
+{{/if}}{{#if (includes mobileLibraries "expo-audio")}}import * as ExpoAudio from "expo-audio";
+{{/if}}{{#if (includes mobileLibraries "expo-video")}}import * as ExpoVideo from "expo-video";
+{{/if}}{{#if (includes mobileLibraries "expo-contacts")}}import * as ExpoContacts from "expo-contacts";
+{{/if}}{{#if (includes mobileLibraries "expo-calendar")}}import * as ExpoCalendar from "expo-calendar";
+{{/if}}{{#if (includes mobileLibraries "expo-local-authentication")}}import * as ExpoLocalAuthentication from "expo-local-authentication";
+{{/if}}{{#if (includes mobileLibraries "expo-sharing")}}import * as ExpoSharing from "expo-sharing";
+{{/if}}{{#if (includes mobileLibraries "expo-clipboard")}}import * as ExpoClipboard from "expo-clipboard";
+{{/if}}{{#if (includes mobileLibraries "expo-task-manager")}}import * as ExpoTaskManager from "expo-task-manager";
+{{/if}}{{#if (includes mobileLibraries "expo-background-task")}}import * as ExpoBackgroundTask from "expo-background-task";
+{{/if}}{{#if (includes mobileLibraries "expo-maps")}}import * as ExpoMaps from "expo-maps";
+{{/if}}{{#if (includes mobileLibraries "expo-brightness")}}import * as ExpoBrightness from "expo-brightness";
+{{/if}}{{#if (includes mobileLibraries "expo-battery")}}import * as ExpoBattery from "expo-battery";
+{{/if}}{{#if (includes mobileLibraries "expo-screen-capture")}}import * as ExpoScreenCapture from "expo-screen-capture";
+{{/if}}
+
+// Central import surface for the optional Expo modules selected at scaffold time.
+// Import the relevant namespace from this object when wiring app-specific permissions and flows.
+export const mobileLibraries = {
+{{#if (includes mobileLibraries "expo-sqlite")}}  ExpoSQLite,
+{{/if}}{{#if (includes mobileLibraries "expo-camera")}}  ExpoCamera,
+{{/if}}{{#if (includes mobileLibraries "expo-image-picker")}}  ExpoImagePicker,
+{{/if}}{{#if (includes mobileLibraries "expo-location")}}  ExpoLocation,
+{{/if}}{{#if (includes mobileLibraries "expo-sensors")}}  ExpoSensors,
+{{/if}}{{#if (includes mobileLibraries "expo-file-system")}}  ExpoFileSystem,
+{{/if}}{{#if (includes mobileLibraries "expo-image")}}  ExpoImage,
+{{/if}}{{#if (includes mobileLibraries "expo-audio")}}  ExpoAudio,
+{{/if}}{{#if (includes mobileLibraries "expo-video")}}  ExpoVideo,
+{{/if}}{{#if (includes mobileLibraries "expo-contacts")}}  ExpoContacts,
+{{/if}}{{#if (includes mobileLibraries "expo-calendar")}}  ExpoCalendar,
+{{/if}}{{#if (includes mobileLibraries "expo-local-authentication")}}  ExpoLocalAuthentication,
+{{/if}}{{#if (includes mobileLibraries "expo-sharing")}}  ExpoSharing,
+{{/if}}{{#if (includes mobileLibraries "expo-clipboard")}}  ExpoClipboard,
+{{/if}}{{#if (includes mobileLibraries "expo-task-manager")}}  ExpoTaskManager,
+{{/if}}{{#if (includes mobileLibraries "expo-background-task")}}  ExpoBackgroundTask,
+{{/if}}{{#if (includes mobileLibraries "expo-maps")}}  ExpoMaps,
+{{/if}}{{#if (includes mobileLibraries "expo-brightness")}}  ExpoBrightness,
+{{/if}}{{#if (includes mobileLibraries "expo-battery")}}  ExpoBattery,
+{{/if}}{{#if (includes mobileLibraries "expo-screen-capture")}}  ExpoScreenCapture,
+{{/if}}
+} as const;
+{{/if}}

@@ -1,5 +1,6 @@
 import type {
   MobileDeepLinking,
+  MobileLibraries,
   MobileNavigation,
   MobileOTA,
   MobilePush,
@@ -8,17 +9,22 @@ import type {
   MobileUI,
 } from "../types";
 
+import { exitCancelled } from "../utils/errors";
+import { canPromptInteractively } from "../utils/prompt-environment";
+import { isCancel, navigableMultiselect, navigableSelect } from "./navigable";
 import {
+  createStaticMultiPromptResolution,
   createStaticSinglePromptResolution,
   type PromptOption,
 } from "./prompt-contract";
-import { exitCancelled } from "../utils/errors";
-import { canPromptInteractively } from "../utils/prompt-environment";
-import { isCancel, navigableSelect } from "./navigable";
 
 const MOBILE_NAVIGATION_OPTIONS: PromptOption<MobileNavigation>[] = [
   { value: "expo-router", label: "Expo Router", hint: "File-based routing for Expo apps" },
-  { value: "react-navigation", label: "React Navigation", hint: "Code-defined native stacks and tabs" },
+  {
+    value: "react-navigation",
+    label: "React Navigation",
+    hint: "Code-defined native stacks and tabs",
+  },
   { value: "none", label: "None", hint: "Skip navigation setup" },
 ];
 
@@ -63,6 +69,42 @@ const MOBILE_OTA_OPTIONS: PromptOption<MobileOTA>[] = [
 const MOBILE_DEEP_LINKING_OPTIONS: PromptOption<MobileDeepLinking>[] = [
   { value: "expo-linking", label: "Expo Linking", hint: "Scheme config and redirect URI helpers" },
   { value: "none", label: "None", hint: "Skip deep link helpers" },
+];
+
+const MOBILE_LIBRARIES_OPTIONS: PromptOption<MobileLibraries>[] = [
+  { value: "expo-sqlite", label: "Expo SQLite", hint: "Persistent SQLite database" },
+  { value: "expo-camera", label: "Expo Camera", hint: "Camera preview and capture" },
+  { value: "expo-image-picker", label: "Expo Image Picker", hint: "System media picker" },
+  { value: "expo-location", label: "Expo Location", hint: "Geolocation and geocoding" },
+  { value: "expo-sensors", label: "Expo Sensors", hint: "Device motion and sensors" },
+  { value: "expo-file-system", label: "Expo File System", hint: "Local file access" },
+  { value: "expo-image", label: "Expo Image", hint: "Performant image component" },
+  { value: "expo-audio", label: "Expo Audio", hint: "Audio playback and recording" },
+  { value: "expo-video", label: "Expo Video", hint: "Cross-platform video playback" },
+  { value: "expo-contacts", label: "Expo Contacts", hint: "Device contacts access" },
+  { value: "expo-calendar", label: "Expo Calendar", hint: "Device calendars and events" },
+  {
+    value: "expo-local-authentication",
+    label: "Expo Local Authentication",
+    hint: "Biometric authentication",
+  },
+  { value: "expo-sharing", label: "Expo Sharing", hint: "Native share sheet" },
+  { value: "expo-clipboard", label: "Expo Clipboard", hint: "System clipboard access" },
+  { value: "expo-task-manager", label: "Expo Task Manager", hint: "Background task registry" },
+  {
+    value: "expo-background-task",
+    label: "Expo Background Task",
+    hint: "Deferrable background work",
+  },
+  { value: "expo-maps", label: "Expo Maps", hint: "Native Apple and Google maps" },
+  { value: "expo-brightness", label: "Expo Brightness", hint: "Screen brightness control" },
+  { value: "expo-battery", label: "Expo Battery", hint: "Battery status monitoring" },
+  {
+    value: "expo-screen-capture",
+    label: "Expo Screen Capture",
+    hint: "Screen capture detection and prevention",
+  },
+  { value: "none", label: "None", hint: "No additional mobile libraries" },
 ];
 
 async function promptMobileOption<T extends string>(
@@ -121,6 +163,10 @@ export function resolveMobileDeepLinkingPrompt(mobileDeepLinking?: MobileDeepLin
   );
 }
 
+export function resolveMobileLibrariesPrompt(mobileLibraries?: MobileLibraries[]) {
+  return createStaticMultiPromptResolution(MOBILE_LIBRARIES_OPTIONS, [], mobileLibraries);
+}
+
 export function getMobileNavigationChoice(mobileNavigation?: MobileNavigation) {
   return promptMobileOption(
     MOBILE_NAVIGATION_OPTIONS,
@@ -157,4 +203,19 @@ export function getMobileDeepLinkingChoice(mobileDeepLinking?: MobileDeepLinking
     mobileDeepLinking,
     "Select mobile deep linking",
   );
+}
+
+export async function getMobileLibrariesChoice(mobileLibraries?: MobileLibraries[]) {
+  const resolution = resolveMobileLibrariesPrompt(mobileLibraries);
+  if (!resolution.shouldPrompt) return resolution.autoValue ?? [];
+  if (!canPromptInteractively()) return [];
+
+  const response = await navigableMultiselect<MobileLibraries>({
+    message: "Select mobile application libraries",
+    options: resolution.options,
+    required: false,
+    initialValues: resolution.initialValue,
+  });
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+  return response.includes("none") ? [] : response;
 }

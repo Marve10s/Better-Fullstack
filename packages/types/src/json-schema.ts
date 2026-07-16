@@ -66,6 +66,8 @@ import {
   JavaOrmSchema,
   JavaTestingLibrariesSchema,
   JavaWebFrameworkSchema,
+  MobileLibrariesSchema,
+  DotnetLibrariesSchema,
 } from "./schemas";
 
 // Generate JSON schemas for each type
@@ -249,6 +251,14 @@ export function getJavaTestingLibrariesJsonSchema() {
   return z.toJSONSchema(JavaTestingLibrariesSchema);
 }
 
+export function getMobileLibrariesJsonSchema() {
+  return z.toJSONSchema(MobileLibrariesSchema);
+}
+
+export function getDotnetLibrariesJsonSchema() {
+  return z.toJSONSchema(DotnetLibrariesSchema);
+}
+
 export function getElixirWebFrameworkJsonSchema() {
   return z.toJSONSchema(ElixirWebFrameworkSchema);
 }
@@ -372,6 +382,8 @@ export function getAllJsonSchemas() {
     javaAuth: getJavaAuthJsonSchema(),
     javaLibraries: getJavaLibrariesJsonSchema(),
     javaTestingLibraries: getJavaTestingLibrariesJsonSchema(),
+    mobileLibraries: getMobileLibrariesJsonSchema(),
+    dotnetLibraries: getDotnetLibrariesJsonSchema(),
     elixirWebFramework: getElixirWebFrameworkJsonSchema(),
     elixirOrm: getElixirOrmJsonSchema(),
     elixirAuth: getElixirAuthJsonSchema(),

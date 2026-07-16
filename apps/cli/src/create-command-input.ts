@@ -22,6 +22,7 @@ import {
   DotnetValidationSchema,
   DotnetDeploySchema,
   DotnetJobQueueSchema,
+  DotnetLibrariesSchema,
   DotnetObservabilitySchema,
   DotnetOrmSchema,
   DotnetRealtimeSchema,
@@ -57,6 +58,7 @@ import {
   FileUploadSchema,
   FormsSchema,
   MobileDeepLinkingSchema,
+  MobileLibrariesSchema,
   MobileNavigationSchema,
   MobileOTASchema,
   MobilePushSchema,
@@ -236,6 +238,10 @@ export const CreateCommandOptionsSchema = z.object({
   mobileDeepLinking: MobileDeepLinkingSchema.optional().describe(
     "Mobile deep linking (expo-linking)",
   ),
+  mobileLibraries: z
+    .array(MobileLibrariesSchema)
+    .optional()
+    .describe("Mobile application libraries"),
   frontend: z.array(FrontendSchema).optional(),
   astroIntegration: AstroIntegrationSchema.optional().describe(
     "Astro UI framework integration (react, vue, svelte, solid)",
@@ -410,6 +416,7 @@ export const CreateCommandOptionsSchema = z.object({
   dotnetDeploy: DotnetDeploySchema.optional().describe(
     ".NET deploy target (docker, azure, aws, none)",
   ),
+  dotnetLibraries: z.array(DotnetLibrariesSchema).optional().describe(".NET application libraries"),
   elixirWebFramework: ElixirWebFrameworkSchema.optional().describe(
     "Elixir web framework (phoenix, phoenix-live-view, none)",
   ),

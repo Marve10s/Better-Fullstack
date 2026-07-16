@@ -282,6 +282,14 @@ export function displayConfig(config: Partial<ProjectConfig>) {
     configDisplay.push(`${pc.blue("Mobile Deep Linking:")} ${String(config.mobileDeepLinking)}`);
   }
 
+  if (config.mobileLibraries && config.mobileLibraries.length > 0) {
+    configDisplay.push(`${pc.blue("Mobile Libraries:")} ${config.mobileLibraries.join(", ")}`);
+  }
+
+  if (config.dotnetLibraries && config.dotnetLibraries.length > 0) {
+    configDisplay.push(`${pc.blue(".NET Libraries:")} ${config.dotnetLibraries.join(", ")}`);
+  }
+
   if (config.caching !== undefined) {
     configDisplay.push(`${pc.blue("Caching:")} ${String(config.caching)}`);
   }

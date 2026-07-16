@@ -524,6 +524,13 @@ export const CLI_FLAG_GROUP_DEFINITIONS: readonly CliFlagGroupDefinition[] = [
         source: { kind: "category", category: "mobileDeepLinking" },
         configKey: "mobileDeepLinking",
       },
+      {
+        flag: "mobile-libraries",
+        summary: "Optional Expo modules.",
+        source: { kind: "category", category: "mobileLibraries" },
+        configKey: "mobileLibraries",
+        multiple: true,
+      },
     ],
   },
   {
@@ -1011,6 +1018,13 @@ export const CLI_FLAG_GROUP_DEFINITIONS: readonly CliFlagGroupDefinition[] = [
         summary: ".NET deploy target.",
         source: { kind: "category", category: "dotnetDeploy" },
         configKey: "dotnetDeploy",
+      },
+      {
+        flag: "dotnet-libraries",
+        summary: "Optional .NET libraries.",
+        source: { kind: "category", category: "dotnetLibraries" },
+        configKey: "dotnetLibraries",
+        multiple: true,
       },
     ],
   },

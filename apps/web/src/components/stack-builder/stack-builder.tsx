@@ -568,6 +568,7 @@ const MULTI_MOBILE_LIBRARY_GROUPS: Array<keyof typeof TECH_OPTIONS> = [
   "mobilePush",
   "mobileOTA",
   "mobileDeepLinking",
+  "mobileLibraries",
 ];
 
 const GRAPH_BACKEND_ADVANCED_CATEGORY_ORDER_BY_ECOSYSTEM = {
@@ -664,6 +665,7 @@ const GRAPH_BACKEND_ADVANCED_CATEGORY_ORDER_BY_ECOSYSTEM = {
     "dotnetValidation",
     "dotnetCaching",
     "dotnetDeploy",
+    "dotnetLibraries",
   ],
 } as const satisfies Record<GraphBackendEcosystem, readonly (keyof typeof TECH_OPTIONS)[]>;
 

@@ -23,6 +23,7 @@ import {
   DotnetValidationSchema,
   DotnetDeploySchema,
   DotnetJobQueueSchema,
+  DotnetLibrariesSchema,
   DotnetObservabilitySchema,
   DotnetOrmSchema,
   DotnetRealtimeSchema,
@@ -60,6 +61,7 @@ import {
   FormsSchema,
   FrontendSchema,
   MobileDeepLinkingSchema,
+  MobileLibrariesSchema,
   MobileNavigationSchema,
   MobileOTASchema,
   MobilePushSchema,
@@ -513,6 +515,7 @@ const MCP_COMPATIBILITY_DEFAULTS = {
   mobileTesting: "none",
   mobilePush: "none",
   mobileOTA: "none",
+  mobileLibraries: [],
   packageManager: "bun",
   workspaceShape: "monorepo",
   versionChannel: "stable",
@@ -598,6 +601,7 @@ const MCP_COMPATIBILITY_DEFAULTS = {
   dotnetValidation: "none",
   dotnetCaching: "none",
   dotnetDeploy: "docker",
+  dotnetLibraries: [],
   elixirWebFramework: "phoenix",
   elixirOrm: "ecto-sql",
   elixirAuth: "none",
@@ -1339,6 +1343,10 @@ const mobileInputSchema = {
   mobilePush: MobilePushSchema.optional().describe("Mobile push notifications"),
   mobileOTA: MobileOTASchema.optional().describe("Mobile OTA updates"),
   mobileDeepLinking: MobileDeepLinkingSchema.optional().describe("Mobile deep linking"),
+  mobileLibraries: z
+    .array(MobileLibrariesSchema)
+    .optional()
+    .describe("Mobile application libraries"),
 };
 
 const deploymentInputSchema = {
@@ -1427,6 +1435,7 @@ const crossEcosystemInputSchema = {
   dotnetValidation: DotnetValidationSchema.optional().describe(".NET validation"),
   dotnetCaching: DotnetCachingSchema.optional().describe(".NET caching library"),
   dotnetDeploy: DotnetDeploySchema.optional().describe(".NET deployment target"),
+  dotnetLibraries: z.array(DotnetLibrariesSchema).optional().describe(".NET application libraries"),
   elixirWebFramework: ElixirWebFrameworkSchema.optional().describe("Elixir web framework"),
   elixirOrm: ElixirOrmSchema.optional().describe("Elixir persistence layer"),
   elixirAuth: ElixirAuthSchema.optional().describe("Elixir authentication"),

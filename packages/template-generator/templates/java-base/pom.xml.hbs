@@ -194,6 +194,16 @@
 {{/if}}
 {{/if}}
 	</properties>
+{{#if hasJavaSaml2}}
+	<!-- OpenSAML artifacts used by Spring Security SAML2 are published here. -->
+	<repositories>
+		<repository>
+			<id>shibboleth-releases</id>
+			<url>https://build.shibboleth.net/maven/releases/</url>
+			<snapshots><enabled>false</enabled></snapshots>
+		</repository>
+	</repositories>
+{{/if}}
 {{#if isJavaQuarkus}}
 	<dependencyManagement>
 		<dependencies>
@@ -609,6 +619,287 @@
 {{/if}}
 		</dependency>
 {{/if}}
+{{#if hasJavaDataRedis}}
+		<!-- Spring Boot manages these starter versions and activates their auto-configuration. -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-redis</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
+		</dependency>
+{{/if}}
+{{#if hasJavaDataMongodb}}
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-mongodb</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
+		</dependency>
+{{/if}}
+{{#if hasJavaDataElasticsearch}}
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
+		</dependency>
+{{/if}}
+{{#if hasJavaDataNeo4j}}
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-neo4j</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
+		</dependency>
+{{/if}}
+{{#if hasJavaDataCassandra}}
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-cassandra</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
+		</dependency>
+{{/if}}
+{{#if hasJavaDataCouchbase}}
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-couchbase</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
+		</dependency>
+{{/if}}
+{{#if hasJavaDataJdbc}}
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jdbc</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
+		</dependency>
+{{/if}}
+{{#if hasJavaDataRest}}
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-rest</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
+		</dependency>
+{{/if}}
+{{#if hasJavaQuartz}}
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-quartz</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
+		</dependency>
+{{/if}}
+{{#if hasJavaPulsar}}
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-pulsar</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
+		</dependency>
+{{/if}}
+{{#if hasJavaIntegration}}
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-integration</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
+		</dependency>
+{{/if}}
+{{#if hasJavaWebsocket}}
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
+		</dependency>
+{{/if}}
+{{#if hasJavaRsocket}}
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-rsocket</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
+		</dependency>
+{{/if}}
+{{#if hasJavaHateoas}}
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-hateoas</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
+		</dependency>
+{{/if}}
+{{#if hasJavaSessionRedis}}
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-session-data-redis</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
+		</dependency>
+{{/if}}
+{{#if hasJavaSessionJdbc}}
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-session-jdbc</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
+		</dependency>
+{{/if}}
+{{#if hasJavaLdap}}
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-ldap</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
+		</dependency>
+{{/if}}
+{{#if hasJavaOauth2Client}}
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security-oauth2-client</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
+		</dependency>
+{{/if}}
+{{#if hasJavaSaml2}}
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security-saml2</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
+		</dependency>
+{{/if}}
+{{#if hasJavaRestclient}}
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-restclient</artifactId>
+{{#if hasJavaLog4j2}}
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+{{/if}}
+		</dependency>
+{{/if}}
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webmvc</artifactId>
@@ -638,6 +929,13 @@
 		</dependency>
 {{/if}}
 {{#if hasJavaJpa}}
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+{{/if}}
+{{#if (and hasJavaJdbcInfrastructure (not hasJavaJpa))}}
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>

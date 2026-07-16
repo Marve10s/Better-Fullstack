@@ -30,6 +30,66 @@
     {{/if}}
     "expo": "^56.0.12",
     "expo-constants": "^56.0.18",
+    {{#if (includes mobileLibraries "expo-audio")}}
+    "expo-audio": "~56.0.12",
+    {{/if}}
+    {{#if (includes mobileLibraries "expo-background-task")}}
+    "expo-background-task": "~56.0.22",
+    {{/if}}
+    {{#if (includes mobileLibraries "expo-battery")}}
+    "expo-battery": "~56.0.4",
+    {{/if}}
+    {{#if (includes mobileLibraries "expo-brightness")}}
+    "expo-brightness": "~56.0.5",
+    {{/if}}
+    {{#if (includes mobileLibraries "expo-calendar")}}
+    "expo-calendar": "~56.0.9",
+    {{/if}}
+    {{#if (includes mobileLibraries "expo-camera")}}
+    "expo-camera": "~56.0.8",
+    {{/if}}
+    {{#if (includes mobileLibraries "expo-clipboard")}}
+    "expo-clipboard": "~56.0.4",
+    {{/if}}
+    {{#if (includes mobileLibraries "expo-contacts")}}
+    "expo-contacts": "~56.0.10",
+    {{/if}}
+    {{#if (includes mobileLibraries "expo-file-system")}}
+    "expo-file-system": "~56.0.8",
+    {{/if}}
+    {{#if (includes mobileLibraries "expo-image")}}
+    "expo-image": "~56.0.11",
+    {{/if}}
+    {{#if (includes mobileLibraries "expo-image-picker")}}
+    "expo-image-picker": "~56.0.21",
+    {{/if}}
+    {{#if (includes mobileLibraries "expo-local-authentication")}}
+    "expo-local-authentication": "~56.0.4",
+    {{/if}}
+    {{#if (includes mobileLibraries "expo-location")}}
+    "expo-location": "~56.0.21",
+    {{/if}}
+    {{#if (includes mobileLibraries "expo-maps")}}
+    "expo-maps": "~56.0.7",
+    {{/if}}
+    {{#if (includes mobileLibraries "expo-screen-capture")}}
+    "expo-screen-capture": "~56.0.4",
+    {{/if}}
+    {{#if (includes mobileLibraries "expo-sensors")}}
+    "expo-sensors": "~56.0.6",
+    {{/if}}
+    {{#if (includes mobileLibraries "expo-sharing")}}
+    "expo-sharing": "~56.0.22",
+    {{/if}}
+    {{#if (includes mobileLibraries "expo-sqlite")}}
+    "expo-sqlite": "~56.0.5",
+    {{/if}}
+    {{#if (includes mobileLibraries "expo-task-manager")}}
+    "expo-task-manager": "~56.0.22",
+    {{/if}}
+    {{#if (includes mobileLibraries "expo-video")}}
+    "expo-video": "~56.1.4",
+    {{/if}}
     {{#if (eq mobilePush "expo-notifications")}}
     "expo-device": "^56.0.4",
     {{/if}}

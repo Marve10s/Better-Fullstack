@@ -1,12 +1,8 @@
 import { expect } from "bun:test";
 import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
-import { SMOKE_DIR } from "./setup";
 
-import type {
-  CreateInput,
-  InitResult,
-} from "../src/types";
+import type { CreateInput, InitResult } from "../src/types";
 
 import { create } from "../src/index";
 import {
@@ -19,6 +15,7 @@ import {
   WebDeploySchema,
   createCliDefaultProjectConfigBase,
 } from "../src/types";
+import { SMOKE_DIR } from "./setup";
 
 // Default smoke directory path - keep in sync with setup preload.
 const DEFAULT_SMOKE_DIR = SMOKE_DIR;
@@ -71,6 +68,7 @@ function createTestCoreDefaults(): Partial<CreateInput> {
     mobilePush: SHARED_TEST_DEFAULTS.mobilePush,
     mobileOTA: SHARED_TEST_DEFAULTS.mobileOTA,
     mobileDeepLinking: SHARED_TEST_DEFAULTS.mobileDeepLinking,
+    mobileLibraries: [...SHARED_TEST_DEFAULTS.mobileLibraries],
     pythonWebFramework: SHARED_TEST_DEFAULTS.pythonWebFramework,
     pythonOrm: SHARED_TEST_DEFAULTS.pythonOrm,
     pythonValidation: SHARED_TEST_DEFAULTS.pythonValidation,
@@ -98,6 +96,7 @@ function createTestCoreDefaults(): Partial<CreateInput> {
     goTemplating: SHARED_TEST_DEFAULTS.goTemplating,
     goProtoTooling: SHARED_TEST_DEFAULTS.goProtoTooling,
     goDI: SHARED_TEST_DEFAULTS.goDI,
+    dotnetLibraries: [...SHARED_TEST_DEFAULTS.dotnetLibraries],
     aiDocs: [],
   };
 }
@@ -145,9 +144,7 @@ export async function runTRPCTest(config: TestConfig): Promise<TestResult> {
 
   // Provide defaults for missing core stack options to avoid prompts
   // But don't provide core stack defaults when yes: true is explicitly set
-  const coreStackDefaults = willUseYesFlag
-    ? {}
-    : createTestCoreDefaults();
+  const coreStackDefaults = willUseYesFlag ? {} : createTestCoreDefaults();
 
   // Build options object - let the CLI handle all validation
   // Remove test-specific properties before passing to create()
