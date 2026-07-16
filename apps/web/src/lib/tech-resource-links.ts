@@ -1891,6 +1891,10 @@ const CATEGORY_LINKS: LinkMap = {
     docsUrl: "https://learn.microsoft.com/azure/azure-monitor/app/asp-net-core",
     githubUrl: "https://github.com/microsoft/ApplicationInsights-dotnet",
   },
+  "dotnetLibraries:sentry": {
+    docsUrl: "https://docs.sentry.io/platforms/dotnet/guides/aspnetcore/",
+    githubUrl: "https://github.com/getsentry/sentry-dotnet",
+  },
   "dotnetLibraries:mongodb-driver": {
     docsUrl: "https://www.mongodb.com/docs/drivers/csharp/current/",
     githubUrl: "https://github.com/mongodb/mongo-csharp-driver",

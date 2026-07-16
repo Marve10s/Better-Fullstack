@@ -1106,6 +1106,36 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "valueHint": null,
         "defaultValue": "none",
         "multiple": false
+      },
+      {
+        "flag": "--mobile-libraries",
+        "summary": "Optional Expo modules.",
+        "values": [
+          "expo-sqlite",
+          "expo-camera",
+          "expo-image-picker",
+          "expo-location",
+          "expo-sensors",
+          "expo-file-system",
+          "expo-image",
+          "expo-audio",
+          "expo-video",
+          "expo-contacts",
+          "expo-calendar",
+          "expo-local-authentication",
+          "expo-sharing",
+          "expo-clipboard",
+          "expo-task-manager",
+          "expo-background-task",
+          "expo-maps",
+          "expo-brightness",
+          "expo-battery",
+          "expo-screen-capture",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": true
       }
     ]
   },
@@ -2147,6 +2177,36 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "valueHint": null,
         "defaultValue": "docker",
         "multiple": false
+      },
+      {
+        "flag": "--dotnet-libraries",
+        "summary": "Optional .NET libraries.",
+        "values": [
+          "automapper",
+          "mediatr",
+          "fastendpoints",
+          "api-versioning",
+          "scalar",
+          "polly",
+          "masstransit",
+          "rebus",
+          "coravel",
+          "magic-onion",
+          "prometheus-net",
+          "seq",
+          "application-insights",
+          "sentry",
+          "mongodb-driver",
+          "nhibernate",
+          "mapster",
+          "scrutor",
+          "refit",
+          "fluent-email",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": true
       }
     ]
   },
