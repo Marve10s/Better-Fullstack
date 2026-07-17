@@ -60,6 +60,15 @@ const NOTES: Record<string, NoteByPath> = {
   },
 };
 
+/** Rows scored under the pre-2026-07-10 validator / smaller suite whose
+ *  artifacts are gone. The board marks them with a † badge; cross-comparisons
+ *  against newer rows are approximate. */
+export const SCAFFBENCH21_HISTORICAL_KEYS: ReadonlySet<string> = new Set(
+  Object.entries(NOTES)
+    .filter(([, entry]) => entry.all === OLD_VALIDATOR_NOTE)
+    .map(([key]) => key),
+);
+
 /** The note for a row on the given leaderboard path, if any. Path-specific
  *  notes win; "all" doubles as the pooled view's note and the fallback. */
 export function scaffbenchNoteFor(

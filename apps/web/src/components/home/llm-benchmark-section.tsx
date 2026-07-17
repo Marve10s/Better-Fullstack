@@ -46,7 +46,7 @@ import {
   SCAFFBENCH21_MODELS,
   SCAFFBENCH21_SPECS,
 } from "./scaffbench-2-1-data";
-import { scaffbenchNoteFor } from "./scaffbench-2-1-notes";
+import { SCAFFBENCH21_HISTORICAL_KEYS, scaffbenchNoteFor } from "./scaffbench-2-1-notes";
 import { OpenAIMark, ProviderLogo, type ProviderLogoId } from "./provider-marks";
 
 /**
@@ -951,6 +951,53 @@ interface ModelLeaderRow {
   steps: string;
   /** curated explanation for a surprising result, shown as a hover tooltip. */
   note?: string;
+  /** scored cells backing this row — powers the tie-band noise radius (v2 only). */
+  scoredCount?: number;
+  /** scored under the pre-2026-07-10 validator / smaller suite († badge). */
+  historical?: boolean;
+  /** competition rank after tie-banding; assigned by annotateTieBands. */
+  rank?: number;
+  /** true when this row is within single-trial noise of the row(s) above it. */
+  tied?: boolean;
+}
+
+// Single-trial rows carry real sampling noise: at n specs, the standard error
+// of a pass-rate difference between two rows easily spans a one-to-two-spec
+// gap. Rows whose pass-rate difference is within one combined standard error
+// share a competition rank and get a "=" marker — the board refuses to imply
+// an ordering the data can't support.
+function annotateTieBands(rows: ModelLeaderRow[]): ModelLeaderRow[] {
+  let groupStart = 0;
+  for (let i = 0; i < rows.length; i += 1) {
+    const row = rows[i];
+    if (i === 0) {
+      row.rank = 1;
+      row.tied = false;
+      continue;
+    }
+    const prev = rows[i - 1];
+    const nA = prev.scoredCount ?? 0;
+    const nB = row.scoredCount ?? 0;
+    if (nA === 0 || nB === 0) {
+      row.rank = i + 1;
+      row.tied = false;
+      groupStart = i;
+      continue;
+    }
+    const pA = prev.pass / 100;
+    const pB = row.pass / 100;
+    const radius = 100 * Math.sqrt((pA * (1 - pA)) / nA + (pB * (1 - pB)) / nB);
+    if (prev.pass - row.pass <= radius) {
+      row.rank = rows[groupStart].rank;
+      row.tied = true;
+      if (!prev.tied) prev.tied = true;
+    } else {
+      row.rank = i + 1;
+      row.tied = false;
+      groupStart = i;
+    }
+  }
+  return rows;
 }
 
 function formatPercent(passing: number, total: number): number {
@@ -1027,6 +1074,8 @@ function computeV2ModelRows(
       label: model.label,
       effort: model.effort,
       note: scaffbenchNoteFor(model.key, leaderPath),
+      scoredCount: scored.length,
+      historical: SCAFFBENCH21_HISTORICAL_KEYS.has(model.key),
       color: PROVIDER_BAR_COLOR[model.provider],
       logo: PROVIDER_LOGO[model.provider],
       pass: formatPercent(passing, scored.length),
@@ -2599,8 +2648,10 @@ function ScaffbenchLeaderboardCard() {
   const rows = useMemo(
     () =>
       isV2
-        ? computeV2ModelRows(dataset, effectiveLeaderPath, MODE, specsSet).filter((row) =>
-            modelKeysSet.has(row.key),
+        ? annotateTieBands(
+            computeV2ModelRows(dataset, effectiveLeaderPath, MODE, specsSet).filter((row) =>
+              modelKeysSet.has(row.key),
+            ),
           )
         : computeV1ModelRows(effectiveLeaderPath),
     [isV2, dataset, effectiveLeaderPath, specsSet, modelKeysSet],
@@ -2905,12 +2956,52 @@ function ModelLeaderRow({ row }: { row: ModelLeaderRow }) {
   return (
     <div className={cn(LEADERBOARD_GRID, "py-2.5")}>
       <span className="flex min-w-0 items-center gap-1.5">
+        {row.rank !== undefined ? (
+          row.tied ? (
+            <Tooltip delay={0}>
+              <TooltipTrigger
+                type="button"
+                aria-label="Statistically tied with adjacent rows"
+                className="w-6 shrink-0 cursor-help text-right font-mono text-[11px] tabular-nums text-[#9c9a93] dark:text-[#6c6a61]"
+              >
+                {row.rank}=
+              </TooltipTrigger>
+              <TooltipContent className="max-w-[16rem] normal-case tracking-normal">
+                <p className="font-normal">
+                  Within single-run noise of the adjacent row(s) — the data doesn't support a strict
+                  ordering here, so tied rows share a rank.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            <span className="w-6 shrink-0 text-right font-mono text-[11px] tabular-nums text-[#9c9a93] dark:text-[#6c6a61]">
+              {row.rank}
+            </span>
+          )
+        ) : null}
         <ProviderLogo logo={row.logo} />
         <span className="truncate font-mono text-sm font-bold">{row.label}</span>
         {row.effort ? (
           <span className="shrink-0 font-mono text-[11px] text-[#9c9a93] dark:text-[#6c6a61]">
             [{row.effort}]
           </span>
+        ) : null}
+        {row.historical ? (
+          <Tooltip delay={0}>
+            <TooltipTrigger
+              type="button"
+              aria-label={`${row.label} was scored under an older validator`}
+              className="shrink-0 cursor-help font-mono text-[11px] text-[#9c9a93] transition-colors hover:text-[#1b1a17] dark:text-[#6c6a61] dark:hover:text-[#dad8d0]"
+            >
+              †
+            </TooltipTrigger>
+            <TooltipContent className="max-w-[16rem] normal-case tracking-normal">
+              <p className="font-normal">
+                Scored under the pre-2026-07-10 validator on a smaller suite; artifacts are gone, so
+                it can't be re-scored. Comparisons with newer rows are approximate.
+              </p>
+            </TooltipContent>
+          </Tooltip>
         ) : null}
         {row.note ? (
           <Tooltip delay={0}>
