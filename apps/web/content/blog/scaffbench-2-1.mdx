@@ -1,7 +1,7 @@
 ---
 title: "ScaffBench 2.1: GPT-5.6 picks the right libraries — and builds fewer of them than GPT-5.5"
-description: "OpenAI's newest models land below GPT-5.5 on prompt-only scaffolding — until max effort. The gap is dependency hallucination, not design. Nineteen configs, one board."
-date: 2026-07-10
+description: "OpenAI's newest models land below GPT-5.5 on prompt-only scaffolding — until max effort. The gap is dependency hallucination, not design. Twenty configs, one board."
+date: 2026-07-15
 authors:
   - Ibrahim Elkamali
 tags:
@@ -24,7 +24,7 @@ keywords:
 hand-write a real full-stack project from a prompt, with no scaffolder, and have it build? The answer
 was "rarely."
 
-ScaffBench 2.1 now covers **nineteen configs** on that test — **13 hard specs across eight
+ScaffBench 2.1 now covers **twenty configs** on that test — **13 hard specs across eight
 ecosystems**, prompt-only, where the agent reads the spec and writes every file itself. One rule
 defines the lane: **agents may not install dependencies, start dev servers, or initialize git**
 during generation. It's a closed-book exam — every manifest is written from the model's own
@@ -33,7 +33,8 @@ afterward. Keep that in mind before comparing these numbers to in-repo SWE bench
 the opposite regime: iterating against live feedback in a codebase whose dependencies humans already
 pinned. This update
 adds the **GPT-5.6 family in five configs** (Sol at high and max, Terra at medium, Luna at medium and
-max) and **Hy3** (via opencode's free endpoint). It also ships a **hardened validator** — while
+max), **Hy3** (via opencode's free endpoint), and **GLM 5.2** (via the paid OpenCode Go tier). It also
+ships a **hardened validator** — while
 scoring the 5.6 family we found and fixed real gaps in our own harness (details in
 [The honest part](#the-honest-part)), and re-scored every config whose run artifacts we still have.
 The headline survived the re-score, with a twist:
@@ -68,6 +69,7 @@ original scores (their run artifacts are gone, so they can't be re-scored until 
 | DeepSeek V4 Flash (opencode) † | 1 / 10 (10%) | free | 83% |
 | Claude Sonnet 4.6 · **high** † | 1 / 11 (9%) | $1.53 | 94% |
 | GPT-5.3 Codex Spark · **high** † | 1 / 11 (9%) | — | 92% |
+| GLM 5.2 (OpenCode Go) | **1 / 13** (8%) | $0.88 | 95% |
 | MiMo V2.5 (opencode) † | 0 / 9 | free | 82% |
 | Nemotron 3 Nano 30B (Kilo) † | 0 / 1 | free | 7% |
 | Nemotron 3 Ultra 550B (Kilo) † | 0 / 3 | free | 19% |
@@ -90,8 +92,9 @@ original scores (their run artifacts are gone, so they can't be re-scored until 
     { label: "Hy3 (opencode, free)", value: 11, display: "1 / 9 · 11%", highlight: true },
     { label: "Sonnet 4.6 · high †", value: 9, display: "1 / 11 · 9%" },
     { label: "Codex Spark · high †", value: 9, display: "1 / 11 · 9%" },
+    { label: "GLM 5.2 (OpenCode Go)", value: 8, display: "1 / 13 · 8%", highlight: true },
   ]}
-  caption="New entrants highlighted; † rows keep pre-fix scores until rerun. Gemini (via Antigravity) and the Codex plan runs don't report cost; opencode models are free. Zero-build configs (MiMo, both Nemotrons) omitted from the chart."
+  caption="New entrants highlighted; † rows keep pre-fix scores until rerun. Gemini (via Antigravity) and the Codex plan runs don't report cost; OpenCode Go is a paid subscription while explicitly labeled free endpoints cost $0. Zero-build configs (MiMo, both Nemotrons) omitted from the chart."
 />
 
 <Callout kind="info">
@@ -275,6 +278,10 @@ isn't a shortage of deliberation, it's confidently wrong dependency facts.
   The Claude models fail differently: they install fine, then don't compile.
 - **Sonnet 4.6 (high)** is the lightweight Claude: 46 steps, $1.53/project, 1/11 — python-only, same
   as Codex Spark, at a fraction of Sonnet 5's cost.
+- **GLM 5.2 (OpenCode Go)** is an unusually strong stack selector and weak closed-book assembler:
+  **95% wired**, 100% command discipline, but only **1/13 CORE builds** (Python). Every generation
+  returned cleanly and all 13 specs were measurable; nine failed at build, six at typecheck, and
+  three at install. It averaged $0.88 and 30.7k output tokens per project, with a 7.4-minute median.
 
 ## One board: free models rank on merit now
 
@@ -397,10 +404,14 @@ The other disclosures:
   intelligence problem.
 - **Free models rank on merit now, and one earns it.** Hy3 wires 95% of the right stack — frontier
   territory — and places mid-board despite a free endpoint that killed two of its runs.
+- **GLM 5.2 reinforces the selection/assembly gap.** The paid OpenCode Go run wired 95% of the
+  requested libraries and completed every generation, yet only Python passed CORE validation. Its
+  failures are delivered artifacts that do not build, not endpoint deaths or missing toolchains.
 - **Stack selection is solved; closed-book assembly is not.** 88–97% wired at a 9–38% build rate is
   the whole story in one line. "Knows the right library" and "produces a project that builds without
   ever running an install" are different skills — and the gap between them is exactly what a
   scaffolder closes. (An "open" lane that lets agents install and verify during generation is the
   natural next experiment.)
 
-We'll keep the leaderboard growing as more models land — Terra at max is the obvious next cell.
+We'll keep the leaderboard growing as more models land. Terra at max and Kimi K2.7 Code remain
+useful next cells, but are not part of this update.

@@ -10,7 +10,7 @@
  *
  * Run with `bun run scripts/splice-scaffbench-2-1.ts`.
  */
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 import { corePass, fullPass } from "./build-scaffbench-data";
@@ -43,8 +43,11 @@ const HY3_GOOD = [
 // (multi-root manifest discovery, no vacuous install-only passes). Rows whose
 // artifacts are gone keep their old-validator numbers; see the blog note.
 const RUN_SOURCES: { dir: string; specs?: string[] }[] = [
-  // Max-effort ablation completion (2026-07-16): Terra@max. Earlier batches'
-  // source dirs are gone from disk; their rows live in the committed data.
+  // Sources whose run dirs still exist on disk. Earlier batches' dirs are gone;
+  // their rows live only in the committed data (splice merges, never regenerates).
+  // Paid OpenCode Go subscription run (2026-07-15).
+  { dir: "testing/llm-benchmarks/v2-go/glm-5-2-default-2026-07-15" },
+  // Max-effort ablation completion (2026-07-16): Terra@max.
   { dir: "testing/llm-benchmarks/v2/terra-max-2026-07-16" },
 ];
 
@@ -59,6 +62,7 @@ const MODEL_LABELS: Record<string, string> = {
   "gpt-5.6-luna": "GPT-5.6 Luna",
   "gpt-5.6-terra": "GPT-5.6 Terra",
   "opencode/hy3-free": "Hy3",
+  "opencode-go/glm-5.2": "GLM 5.2",
 };
 
 const PATH_ORDER = ["prompt", "mcp", "cli"] as const;
@@ -154,9 +158,21 @@ function computeSource(source: { dir: string; specs?: string[] }): {
     const coreMacro = coreFlags.length
       ? (100 * coreFlags.filter(Boolean).length) / coreFlags.length
       : 0;
-    const sortIndex = Math.round(
+    const recomputedIndex = Math.round(
       W.macroPass * coreMacro + W.wired * mean(wiredAll) + W.cmd * mean(cmdAll),
     );
+    // Full-suite rows use the harness headline verbatim so the committed
+    // summary and web board cannot differ by one due to intermediate rounding.
+    // Curated subsets (for example HY3_GOOD) still need a local recomputation.
+    const sortIndex =
+      (source.specs
+        ? undefined
+        : s.aggregates.leaderboard.find(
+            (aggregate: any) =>
+              aggregate.model === model &&
+              aggregate.effort === effort &&
+              aggregate.path === "prompt",
+          )?.index) ?? recomputedIndex;
     return {
       model: {
         key: modelKey,
@@ -176,6 +192,10 @@ function computeNew() {
   const models: Model[] = [];
   const cells: Cell[] = [];
   for (const source of RUN_SOURCES) {
+    if (!existsSync(path.join(source.dir, "summary.json"))) {
+      console.error(`Skipping missing run source: ${source.dir}`);
+      continue;
+    }
     const computed = computeSource(source);
     models.push(computed.model);
     cells.push(...computed.cells);
@@ -194,6 +214,10 @@ function main() {
   // Extra lanes: append cells under an existing row (replacing same-path cells)
   // without recomputing that row — the board stays prompt-ranked.
   for (const source of MERGE_SOURCES) {
+    if (!existsSync(path.join(source.dir, "summary.json"))) {
+      console.error(`Skipping missing merge source: ${source.dir}`);
+      continue;
+    }
     const merged = computeSource(source);
     if (!models.some((m) => m.key === merged.model.key)) {
       throw new Error(
