@@ -25,9 +25,20 @@ export type ScaffbenchCell = {
   /** false when the run was infra-inconclusive (timed-out toolchain) — excluded from rates. */
   scored: boolean;
   corePass: boolean;
-  fullPass: boolean;
+  /** null = quality gates were never run for this cell (Full unmeasured). */
+  fullPass: boolean | null;
   wiredPct: number;
   cmdPct: number;
+  /** Repeat-aware fields (harness 2.2.0+). Absent on single-trial legacy cells:
+   *  consumers fall back to trials=1 semantics derived from scored/corePass. */
+  trials?: number;
+  scoredTrials?: number;
+  passCount?: number;
+  passRate?: number;
+  passAny?: boolean;
+  passAll?: boolean;
+  qualityPassCount?: number | null;
+  qualityPassRate?: number | null;
   costUsd: number | null;
   outTokens: number | null;
   steps: number;

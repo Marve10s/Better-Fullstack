@@ -95,7 +95,8 @@ const PATHS: Record<PathId, { glyph: string; short: string; detail: string }> = 
   prompt: {
     glyph: "●",
     short: "Prompt",
-    detail: "no Better-Fullstack — agent hand-writes every file, closed-book (no installs, no dev server)",
+    detail:
+      "no Better-Fullstack — agent hand-writes every file; free to install and build to self-verify, graded cold afterward",
   },
 };
 
@@ -845,7 +846,6 @@ const blogPostParams = { _splat: "scaffbench-2-1" } as const;
 // ScaffBench 2 run, with a v1 fallback that reuses the cross-vendor COMBOS sweep.
 
 type LeaderboardVersion = "v2.1" | "v2" | "v1";
-type ValidationMode = "core" | "full";
 
 // The "v2-family" views (v2 = original 5-spec ablation, v2.1 = expanded 13-spec
 // suite) share all rendering machinery — they differ only in the underlying run
@@ -913,9 +913,9 @@ const PROVIDER_BAR_COLOR: Record<"claude" | "codex" | "opencode" | "kilo" | "agy
 
 const BAR_TRACK_STYLE: CSSProperties = { backgroundColor: "var(--bar-track)" };
 
-// One row per model: Model · bar · Core · Full · Wired · Time · Avg cost · Out tok · Steps.
+// One row per model: Model · bar · Pass · Wired · Time · Avg cost · Out tok · Steps.
 const LEADERBOARD_GRID =
-  "grid grid-cols-[minmax(9rem,13rem)_minmax(0,1fr)_4.25rem_4.25rem_4.5rem_4rem_4.5rem_4rem_3rem] items-center gap-x-3";
+  "grid grid-cols-[minmax(9rem,13rem)_minmax(0,1fr)_4.25rem_4.5rem_4rem_4.5rem_4rem_3rem] items-center gap-x-3";
 
 const PASS_AXIS_TICKS: readonly number[] = [0, 20, 40, 60, 80, 100] as const;
 
@@ -936,10 +936,15 @@ interface ModelLeaderRow {
   color: string;
   /** brand logo shown to the left of the model name (undefined = no logo). */
   logo?: ProviderLogoId;
-  /** Core pass 1 as a 0–100 percentage; doubles as the bar fill width. */
+  /** Pass 1 as a 0–100 percentage; doubles as the bar fill width. Full
+   *  (quality-gated) tier when measured, build-level otherwise (buildOnly). */
   pass: number;
-  /** Full (core + quality gate) pass as a percentage; null when not measured (v1). */
-  full: number | null;
+  /** integer successes/trials behind `pass` — powers tie-band intervals (v2). */
+  passSuccesses?: number;
+  passTrials?: number;
+  /** true when this row's sweeps never ran quality gates: `pass` is the
+   *  build-level rate pending a quality-gated re-run. */
+  buildOnly?: boolean;
   /** mean wired-libs percentage across scored cells, preformatted ("93%" / "—"). */
   wired: string;
   /** mean scaffold wall-clock, preformatted ("47s" / "4.5m" / "—"). */
@@ -961,11 +966,27 @@ interface ModelLeaderRow {
   tied?: boolean;
 }
 
-// Single-trial rows carry real sampling noise: at n specs, the standard error
-// of a pass-rate difference between two rows easily spans a one-to-two-spec
-// gap. Rows whose pass-rate difference is within one combined standard error
-// share a competition rank and get a "=" marker — the board refuses to imply
-// an ordering the data can't support.
+// Wilson score interval at z=1 (~68%) on the row's integer successes/trials.
+// Wilson stays sane at 0% and 100%, where the plug-in (Wald) variance
+// collapses to zero and would fake certainty.
+function wilsonInterval(successes: number, trials: number): { low: number; high: number } {
+  if (trials === 0) return { low: 0, high: 1 };
+  const z = 1;
+  const p = successes / trials;
+  const z2 = z * z;
+  const denom = 1 + z2 / trials;
+  const center = (p + z2 / (2 * trials)) / denom;
+  const half = (z * Math.sqrt((p * (1 - p)) / trials + z2 / (4 * trials * trials))) / denom;
+  return { low: Math.max(0, center - half), high: Math.min(1, center + half) };
+}
+
+// Single-trial rows carry real sampling noise: at n specs, a one-to-two-spec
+// pass gap is within the interval. Each row is compared against its GROUP
+// LEADER (not just the previous row, which would chain unrelated rows into one
+// band): while the leader's Wilson interval still overlaps the candidate's,
+// they share a competition rank and get a "=" marker — the board refuses to
+// imply an ordering the data can't support. Rows without integer trial counts
+// (v1, unscored) always break the band.
 function annotateTieBands(rows: ModelLeaderRow[]): ModelLeaderRow[] {
   let groupStart = 0;
   for (let i = 0; i < rows.length; i += 1) {
@@ -975,22 +996,21 @@ function annotateTieBands(rows: ModelLeaderRow[]): ModelLeaderRow[] {
       row.tied = false;
       continue;
     }
-    const prev = rows[i - 1];
-    const nA = prev.scoredCount ?? 0;
-    const nB = row.scoredCount ?? 0;
-    if (nA === 0 || nB === 0) {
+    const leader = rows[groupStart];
+    const leaderTrials = leader.passTrials ?? 0;
+    const rowTrials = row.passTrials ?? 0;
+    if (leaderTrials === 0 || rowTrials === 0) {
       row.rank = i + 1;
       row.tied = false;
       groupStart = i;
       continue;
     }
-    const pA = prev.pass / 100;
-    const pB = row.pass / 100;
-    const radius = 100 * Math.sqrt((pA * (1 - pA)) / nA + (pB * (1 - pB)) / nB);
-    if (prev.pass - row.pass <= radius) {
-      row.rank = rows[groupStart].rank;
+    const leaderCi = wilsonInterval(leader.passSuccesses ?? 0, leaderTrials);
+    const rowCi = wilsonInterval(row.passSuccesses ?? 0, rowTrials);
+    if (leaderCi.low <= rowCi.high) {
+      row.rank = leader.rank;
       row.tied = true;
-      if (!prev.tied) prev.tied = true;
+      if (!leader.tied) leader.tied = true;
     } else {
       row.rank = i + 1;
       row.tied = false;
@@ -1045,7 +1065,6 @@ const V1_MODEL_LOGO: Partial<Record<ModelId, ProviderLogoId>> = {
 function computeV2ModelRows(
   dataset: ScaffbenchDataset,
   leaderPath: LeaderPath,
-  mode: ValidationMode,
   specs: ReadonlySet<string>,
 ): ModelLeaderRow[] {
   const rows = dataset.models.flatMap((model) => {
@@ -1060,10 +1079,27 @@ function computeV2ModelRows(
     // fake 0% row. This is what keeps the MCP tab to just the models we swept.
     if (leaderPath !== "all" && cells.length === 0) return [];
     const scored = cells.filter((cell) => cell.scored);
-    const passing = scored.filter((cell) =>
-      mode === "core" ? cell.corePass : cell.fullPass,
-    ).length;
-    const fullPassing = scored.filter((cell) => cell.fullPass).length;
+    // Repeat-aware pass counting: 2.2.0+ cells carry integer passCount /
+    // scoredTrials; legacy single-trial cells fall back to the booleans
+    // (corePass is pass-ALL-trials on new cells, so booleans alone would
+    // render a 2-of-3-trials model as 0%).
+    const coreTrials = scored.reduce((sum, cell) => sum + (cell.scoredTrials ?? 1), 0);
+    const coreSuccesses = scored.reduce(
+      (sum, cell) => sum + (cell.passCount ?? (cell.corePass ? 1 : 0)),
+      0,
+    );
+    // The published metric is the FULL (quality-gated) tier. Rows whose sweeps
+    // never ran the quality gates (fullPass === null) fall back to build-level
+    // pass and are marked buildOnly until a quality-gated re-run lands.
+    const fullMeasured = scored.filter((cell) => cell.fullPass !== null);
+    const fullTrials = fullMeasured.reduce((sum, cell) => sum + (cell.scoredTrials ?? 1), 0);
+    const fullSuccesses = fullMeasured.reduce(
+      (sum, cell) => sum + (cell.qualityPassCount ?? (cell.fullPass ? 1 : 0)),
+      0,
+    );
+    const qualityMeasured = scored.length > 0 && fullMeasured.length === scored.length;
+    const passSuccesses = qualityMeasured ? fullSuccesses : coreSuccesses;
+    const passTrials = qualityMeasured ? fullTrials : coreTrials;
     const costs = scored.map((cell) => cell.costUsd).filter((v): v is number => v !== null);
     const tokens = scored.map((cell) => cell.outTokens).filter((v): v is number => v !== null);
     const durations = scored
@@ -1078,8 +1114,10 @@ function computeV2ModelRows(
       historical: SCAFFBENCH21_HISTORICAL_KEYS.has(model.key),
       color: PROVIDER_BAR_COLOR[model.provider],
       logo: PROVIDER_LOGO[model.provider],
-      pass: formatPercent(passing, scored.length),
-      full: scored.length > 0 ? formatPercent(fullPassing, scored.length) : null,
+      pass: formatPercent(passSuccesses, passTrials),
+      passSuccesses,
+      passTrials,
+      buildOnly: scored.length > 0 && !qualityMeasured,
       wired: scored.length > 0 ? `${Math.round(mean(scored.map((cell) => cell.wiredPct)))}%` : "—",
       time: durations.length > 0 ? formatDuration(mean(durations)) : "—",
       costNum: costs.length > 0 ? mean(costs) : Number.POSITIVE_INFINITY,
@@ -1105,7 +1143,6 @@ function computeV1ModelRows(leaderPath: LeaderPath): ModelLeaderRow[] {
       color: CHART_PALETTE.models[m],
       logo: V1_MODEL_LOGO[m],
       pass: combos.length > 0 ? Math.round(mean(combos.map((combo) => combo.pass))) : 0,
-      full: null,
       wired: "—",
       time: "—",
       costNum: Number.POSITIVE_INFINITY,
@@ -1208,7 +1245,14 @@ function aggregatePathMetrics(
     .filter((value): value is number => value !== null);
   const steps = scored.map((cell) => cell.steps).filter((value) => value > 0);
   return {
-    pass: formatPercent(scored.filter((cell) => cell.corePass).length, scored.length),
+    // Repeat-aware build-level pass: integer counts when present, boolean
+    // fallback for legacy cells. Identical to the table's number today (no
+    // published row has quality-gated trials); align to the Full tier when
+    // quality-gated re-runs land.
+    pass: formatPercent(
+      scored.reduce((sum, cell) => sum + (cell.passCount ?? (cell.corePass ? 1 : 0)), 0),
+      scored.reduce((sum, cell) => sum + (cell.scoredTrials ?? 1), 0),
+    ),
     tokens: tokens.length > 0 ? mean(tokens) / 1000 : null,
     cost: costs.length > 0 ? mean(costs) : null,
     steps: steps.length > 0 ? mean(steps) : null,
@@ -2626,12 +2670,6 @@ function ScaffbenchLeaderboardCard() {
     setSelectedModelKeys(v2Dataset(version).models.map((model) => model.key));
   }, [version]);
 
-  // We publish a single metric — Core pass (install/build/typecheck). The Full /
-  // quality-gate pass is withheld until a re-run with the corrected gate produces
-  // honest numbers (the old gate skipped lint/test and auto-fixed format, which
-  // overstated Full). computeV2ModelRows still takes a mode so Full can return
-  // with one line once that re-run lands.
-  const MODE = "core" as const;
   // V2-family exposes a restricted tab set (pathTabsFor): v2 legacy is Prompt-only;
   // v2.1 adds the assisted MCP path. Clamp to a tab this version offers so the
   // pooled "all" default (or a stale v1 selection) resolves to Prompt.
@@ -2649,7 +2687,7 @@ function ScaffbenchLeaderboardCard() {
     () =>
       isV2
         ? annotateTieBands(
-            computeV2ModelRows(dataset, effectiveLeaderPath, MODE, specsSet).filter((row) =>
+            computeV2ModelRows(dataset, effectiveLeaderPath, specsSet).filter((row) =>
               modelKeysSet.has(row.key),
             ),
           )
@@ -2770,7 +2808,7 @@ function ScaffbenchLeaderboardCard() {
                 {effectiveLeaderPath === "all"
                   ? "All creation paths"
                   : LEADERBOARD_LABELS[effectiveLeaderPath]}
-                {isV2 ? " · Core + Full pass, wired libs & time" : ""}
+                {isV2 ? " · Full pass, wired libs & time" : ""}
               </p>
             </div>
 
@@ -2783,19 +2821,13 @@ function ScaffbenchLeaderboardCard() {
               <span>Model</span>
               <span aria-hidden />
               <span className="flex items-center justify-end gap-1">
-                Core
-                <MetricHelp label="Core pass@1">
-                  The project installs, builds, type-checks, and native-compiles from the prompt — the
-                  real "does it actually run" pass. Closed-book: agents may not run installs or dev
-                  servers while generating, so every manifest is written from model knowledge; our
-                  validator runs the real toolchains afterward.
-                </MetricHelp>
-              </span>
-              <span className="flex items-center justify-end gap-1">
-                Full
-                <MetricHelp label="Full pass">
-                  Core, plus every applicable quality gate (lint, format, tests). Stricter than Core —
-                  a project can build green yet still fail Full.
+                Pass
+                <MetricHelp label="Full pass@1">
+                  The project installs, builds, type-checks, AND clears every applicable quality gate
+                  (lint, format, tests) on a clean machine. Rows marked with a small asterisk predate
+                  quality-gated sweeps: their number is build-level pass until a re-run lands. Agents
+                  may install and build to self-verify while generating; grading happens cold
+                  afterward.
                 </MetricHelp>
               </span>
               <span className="flex items-center justify-end gap-1">
@@ -3025,8 +3057,26 @@ function ModelLeaderRow({ row }: { row: ModelLeaderRow }) {
           style={fillStyle}
         />
       </div>
-      <span className="text-right font-mono text-sm font-bold">{row.pass}%</span>
-      <span className="text-right font-mono text-xs">{row.full === null ? "—" : `${row.full}%`}</span>
+      <span className="text-right font-mono text-sm font-bold">
+        {row.pass}%
+        {row.buildOnly ? (
+          <Tooltip delay={0}>
+            <TooltipTrigger
+              type="button"
+              aria-label="Build-level pass; quality gates pending"
+              className="cursor-help align-super text-[9px] font-semibold text-[#9c9a93] dark:text-[#6c6a61]"
+            >
+              *
+            </TooltipTrigger>
+            <TooltipContent className="max-w-[16rem] normal-case tracking-normal">
+              <p className="font-normal">
+                Build-level pass (install/build/typecheck). This row's sweeps predate quality-gated
+                runs; the Full number lands with its re-run.
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        ) : null}
+      </span>
       <span className="text-right font-mono text-xs">{row.wired}</span>
       <span className="text-right font-mono text-xs">{row.time}</span>
       <span className="text-right font-mono text-xs">{row.cost}</span>
