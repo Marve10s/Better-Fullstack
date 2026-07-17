@@ -26,3 +26,41 @@ export const ECOSYSTEM_NAMES = ECOSYSTEM_VALUES.map((value) => ECOSYSTEM_DISPLAY
 export const OPTION_COUNT_LABEL = `${OPTION_ENTRY_COUNT}`;
 
 export const ECOSYSTEM_COUNT_LABEL = `${ECOSYSTEM_NAMES.length}`;
+
+export const PROJECT_ECOSYSTEM_COPY = {
+  ecosystemCount: ECOSYSTEM_COUNT_LABEL,
+  ecosystemNames: ECOSYSTEM_NAMES.join(", "),
+  ecosystemSlugs: ECOSYSTEM_VALUES.join(" · "),
+};
+
+function countUniqueSelectableOptions(categoryMatches: (category: string) => boolean): number {
+  const optionIds = new Set<string>();
+
+  for (const [category, metadata] of Object.entries(OPTION_CATEGORY_METADATA)) {
+    if (!categoryMatches(category)) continue;
+
+    for (const option of metadata.options) {
+      if (option.id !== "none") optionIds.add(option.id);
+    }
+  }
+
+  return optionIds.size;
+}
+
+function matchesCategoryFamily(category: string, family: string): boolean {
+  const familySuffix = `${family.charAt(0).toUpperCase()}${family.slice(1)}`;
+  return category === family || category.endsWith(familySuffix);
+}
+
+export const COMPARISON_COUNTS = {
+  databases: countUniqueSelectableOptions((category) => category === "database"),
+  orms: countUniqueSelectableOptions((category) => matchesCategoryFamily(category, "orm")),
+  apis: countUniqueSelectableOptions((category) => matchesCategoryFamily(category, "api")),
+  authProviders: countUniqueSelectableOptions((category) => matchesCategoryFamily(category, "auth")),
+  paymentProviders: countUniqueSelectableOptions((category) => category === "payments"),
+  aiIntegrations: countUniqueSelectableOptions((category) => matchesCategoryFamily(category, "ai")),
+  deployTargets: countUniqueSelectableOptions((category) => category.endsWith("Deploy")),
+  uiLibraries: countUniqueSelectableOptions(
+    (category) => category === "uiLibrary" || category === "mobileUI",
+  ),
+};

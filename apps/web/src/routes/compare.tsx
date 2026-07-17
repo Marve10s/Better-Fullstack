@@ -11,7 +11,12 @@ import {
   DEFAULT_X_IMAGE_URL,
   canonicalUrl,
 } from "@/lib/seo";
-import { ECOSYSTEM_COUNT_LABEL, OPTION_COUNT_LABEL } from "@/lib/project-stats";
+import {
+  COMPARISON_COUNTS,
+  ECOSYSTEM_COUNT_LABEL,
+  ECOSYSTEM_NAMES,
+  OPTION_COUNT_LABEL,
+} from "@/lib/project-stats";
 import { m } from "@/paraglide/messages.js";
 
 export const Route = createFileRoute("/compare")({
@@ -69,51 +74,25 @@ const tools: Tool[] = [
   { name: "create-turbo", url: "https://turbo.build/repo/docs" },
 ];
 
+const ecosystemFeatures: Feature[] = ECOSYSTEM_NAMES.map((ecosystem) => {
+  const isTypeScript = ecosystem === "TypeScript";
+
+  return {
+    label: ecosystem,
+    values: {
+      "Better Fullstack": "yes",
+      "create-t3-app": isTypeScript ? "yes" : "no",
+      "create-next-app": isTypeScript ? "yes" : "no",
+      "create-vite": isTypeScript ? "yes" : "no",
+      "create-turbo": isTypeScript ? "yes" : "no",
+    },
+  };
+});
+
 const featureGroups: FeatureGroup[] = [
   {
     title: "Ecosystems",
-    features: [
-      {
-        label: "TypeScript",
-        values: {
-          "Better Fullstack": "yes",
-          "create-t3-app": "yes",
-          "create-next-app": "yes",
-          "create-vite": "yes",
-          "create-turbo": "yes",
-        },
-      },
-      {
-        label: "Rust",
-        values: {
-          "Better Fullstack": "yes",
-          "create-t3-app": "no",
-          "create-next-app": "no",
-          "create-vite": "no",
-          "create-turbo": "no",
-        },
-      },
-      {
-        label: "Python",
-        values: {
-          "Better Fullstack": "yes",
-          "create-t3-app": "no",
-          "create-next-app": "no",
-          "create-vite": "no",
-          "create-turbo": "no",
-        },
-      },
-      {
-        label: "Go",
-        values: {
-          "Better Fullstack": "yes",
-          "create-t3-app": "no",
-          "create-next-app": "no",
-          "create-vite": "no",
-          "create-turbo": "no",
-        },
-      },
-    ],
+    features: ecosystemFeatures,
   },
   {
     title: "Frontend",
@@ -261,7 +240,7 @@ const featureGroups: FeatureGroup[] = [
       {
         label: "Database integrations",
         values: {
-          "Better Fullstack": "6 databases",
+          "Better Fullstack": `${COMPARISON_COUNTS.databases} databases`,
           "create-t3-app": "partial",
           "create-next-app": "no",
           "create-vite": "no",
@@ -271,7 +250,7 @@ const featureGroups: FeatureGroup[] = [
       {
         label: "ORM support (Drizzle, Prisma, etc.)",
         values: {
-          "Better Fullstack": "13 ORMs",
+          "Better Fullstack": `${COMPARISON_COUNTS.orms} ORMs`,
           "create-t3-app": "yes",
           "create-next-app": "no",
           "create-vite": "no",
@@ -281,7 +260,7 @@ const featureGroups: FeatureGroup[] = [
       {
         label: "Type-safe APIs (tRPC, oRPC, GraphQL)",
         values: {
-          "Better Fullstack": "7 options",
+          "Better Fullstack": `${COMPARISON_COUNTS.apis} options`,
           "create-t3-app": "yes",
           "create-next-app": "no",
           "create-vite": "no",
@@ -296,7 +275,7 @@ const featureGroups: FeatureGroup[] = [
       {
         label: "Authentication",
         values: {
-          "Better Fullstack": "7 providers",
+          "Better Fullstack": `${COMPARISON_COUNTS.authProviders} providers`,
           "create-t3-app": "yes",
           "create-next-app": "no",
           "create-vite": "no",
@@ -306,7 +285,7 @@ const featureGroups: FeatureGroup[] = [
       {
         label: "Payment integrations",
         values: {
-          "Better Fullstack": "5 providers",
+          "Better Fullstack": `${COMPARISON_COUNTS.paymentProviders} providers`,
           "create-t3-app": "no",
           "create-next-app": "no",
           "create-vite": "no",
@@ -316,7 +295,7 @@ const featureGroups: FeatureGroup[] = [
       {
         label: "AI / LLM integrations",
         values: {
-          "Better Fullstack": "12 options",
+          "Better Fullstack": `${COMPARISON_COUNTS.aiIntegrations} options`,
           "create-t3-app": "no",
           "create-next-app": "no",
           "create-vite": "no",
@@ -371,7 +350,7 @@ const featureGroups: FeatureGroup[] = [
       {
         label: "Deploy targets (Vercel, CF, Docker, etc.)",
         values: {
-          "Better Fullstack": "5 targets",
+          "Better Fullstack": `${COMPARISON_COUNTS.deployTargets} targets`,
           "create-t3-app": "partial",
           "create-next-app": "partial",
           "create-vite": "no",
@@ -381,7 +360,7 @@ const featureGroups: FeatureGroup[] = [
       {
         label: "UI library choices",
         values: {
-          "Better Fullstack": "11 libraries",
+          "Better Fullstack": `${COMPARISON_COUNTS.uiLibraries} libraries`,
           "create-t3-app": "partial",
           "create-next-app": "partial",
           "create-vite": "no",
@@ -449,23 +428,23 @@ function getCompareFeatureLabel(label: string) {
 }
 
 function getCompareValue(value: string) {
-  switch (value) {
-    case "6 databases":
-      return m.compareDatabaseCount({ count: 6 });
-    case "13 ORMs":
-      return m.compareOrmCount({ count: 13 });
-    case "7 options":
-      return m.compareOptionCount({ count: 7 });
-    case "12 options":
-      return m.compareOptionCount({ count: 12 });
-    case "7 providers":
-      return m.compareProviderCount({ count: 7 });
-    case "5 providers":
-      return m.compareProviderCount({ count: 5 });
-    case "5 targets":
-      return m.compareTargetCount({ count: 5 });
-    case "11 libraries":
-      return m.compareLibraryCount({ count: 11 });
+  const countMatch = /^(\d+) (databases|ORMs|options|providers|targets|libraries)$/.exec(value);
+  if (!countMatch) return value;
+
+  const count = Number(countMatch[1]);
+  switch (countMatch[2]) {
+    case "databases":
+      return m.compareDatabaseCount({ count });
+    case "ORMs":
+      return m.compareOrmCount({ count });
+    case "options":
+      return m.compareOptionCount({ count });
+    case "providers":
+      return m.compareProviderCount({ count });
+    case "targets":
+      return m.compareTargetCount({ count });
+    case "libraries":
+      return m.compareLibraryCount({ count });
     default:
       return value;
   }

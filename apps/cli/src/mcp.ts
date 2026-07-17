@@ -187,8 +187,9 @@ const OPTION_ENTRY_COUNT = Object.values(OPTION_CATEGORY_METADATA).reduce(
   (sum, metadata) => sum + metadata.options.length,
   0,
 );
+const ECOSYSTEM_LIST = EcosystemSchema.options.join(", ");
 
-const INSTRUCTIONS = `Better-Fullstack scaffolds fullstack projects across TypeScript, React Native, Rust, Go, Python, Java, .NET, and Elixir ecosystems with ${OPTION_ENTRY_COUNT} configurable options.
+const INSTRUCTIONS = `Better-Fullstack scaffolds fullstack projects across ${ECOSYSTEM_LIST} ecosystems with ${OPTION_ENTRY_COUNT} configurable options.
 
 RECOMMENDED WORKFLOW:
 1. Call bfs_get_guidance to understand field semantics, required fields, and workflow rules.

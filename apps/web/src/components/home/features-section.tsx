@@ -9,7 +9,7 @@ import type { TechCategory } from "@/lib/types";
 import { ContainerScroll } from "@/components/effects/container-scroll";
 import { TechIcon } from "@/components/ui/tech-icon";
 import { ECOSYSTEMS, TECH_OPTIONS } from "@/lib/constant";
-import { OPTION_ENTRY_COUNT } from "@/lib/project-stats";
+import { OPTION_ENTRY_COUNT, PROJECT_ECOSYSTEM_COPY } from "@/lib/project-stats";
 import { m } from "@/paraglide/messages.js";
 
 const WebGLShader = lazy(async () => {
@@ -94,7 +94,7 @@ export default function FeaturesSection() {
         <div className="grid grid-cols-12 gap-x-6 gap-y-10 px-4 py-20 sm:px-8 sm:py-24">
           <div className="col-span-12 lg:col-span-7">
             <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink dark:text-brand">
-              ✦ {m.homeSevenEcosystems()}
+              ✦ {m.homeEcosystemCount(PROJECT_ECOSYSTEM_COPY)}
             </p>
             <h2
               className="mt-4 max-w-[24ch] text-balance font-mono font-bold tracking-[-0.045em]"
@@ -107,7 +107,7 @@ export default function FeaturesSection() {
               <span className="italic text-muted-foreground">{m.homeEverything()}</span>
             </h2>
             <p className="mt-8 max-w-md text-pretty text-base text-muted-foreground sm:text-lg">
-              {m.homeFeaturesDescription()}
+              {m.homeFeaturesDescription(PROJECT_ECOSYSTEM_COPY)}
             </p>
           </div>
 
@@ -304,7 +304,7 @@ function TotalBlock() {
               </span>
             </motion.div>
             <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.22em] text-background/70">
-              {m.homeTotalOptions()}
+              {m.homeTotalOptions(PROJECT_ECOSYSTEM_COPY)}
             </p>
           </div>
         </div>

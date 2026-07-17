@@ -22,7 +22,7 @@
 
 <br>
 
-**Scaffold production-ready fullstack apps in seconds. Browse 450+ tools across seven ecosystems — the CLI wires everything together.**
+**Scaffold configurable fullstack apps across web, mobile, and backend ecosystems — the CLI wires your selected stack together.**
 
 <br>
 
@@ -40,8 +40,8 @@
 
 Most scaffolding tools lock you into one framework and one opinion. Better Fullstack doesn't.
 
-- **450+ tools** — frontend, backend, database, auth, payments, AI, DevOps, and more
-- **7 ecosystems** — TypeScript, React Native, Rust, Python, Go, Java, Elixir — with more coming
+- **Broad stack catalog** — frontend, backend, database, auth, payments, AI, DevOps, and more
+- **Multi-ecosystem projects** — compose web, mobile, and backend stacks across supported ecosystems
 - **Visual builder** — configure your stack in the browser, get a ready-to-run CLI command
 - **Wired for you** — no manual glue code; every picked integration is preconfigured and working out of the box
 
@@ -96,7 +96,7 @@ yarn create better-fullstack@latest
 --yes              # Accept all defaults
 --yolo             # Scaffold a random stack — good for exploring
 --template <name>  # Use a preset (t3, mern, pern, uniwind)
---ecosystem <lang> # Start in typescript, react-native, rust, python, go, java, or elixir mode
+--ecosystem <lang> # Choose the primary project ecosystem
 --part <binding>   # Add a multi-ecosystem stack part, e.g. frontend:typescript:next
 --version-channel  # Dependency channel: stable, latest, beta
 --no-git           # Skip git initialization
