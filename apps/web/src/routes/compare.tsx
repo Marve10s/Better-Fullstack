@@ -68,6 +68,7 @@ interface FeatureGroup {
 
 const tools: Tool[] = [
   { name: "Better Fullstack", url: "https://better-fullstack.dev" },
+  { name: "Better-T-Stack", url: "https://better-t-stack.dev" },
   { name: "create-t3-app", url: "https://create.t3.gg" },
   { name: "create-next-app", url: "https://nextjs.org/docs/getting-started/installation" },
   { name: "create-vite", url: "https://vite.dev/guide/" },
@@ -81,6 +82,7 @@ const ecosystemFeatures: Feature[] = ECOSYSTEM_NAMES.map((ecosystem) => {
     label: ecosystem,
     values: {
       "Better Fullstack": "yes",
+      "Better-T-Stack": isTypeScript ? "yes" : "no",
       "create-t3-app": isTypeScript ? "yes" : "no",
       "create-next-app": isTypeScript ? "yes" : "no",
       "create-vite": isTypeScript ? "yes" : "no",
@@ -101,6 +103,7 @@ const featureGroups: FeatureGroup[] = [
         label: "Next.js",
         values: {
           "Better Fullstack": "yes",
+          "Better-T-Stack": "yes",
           "create-t3-app": "yes",
           "create-next-app": "yes",
           "create-vite": "no",
@@ -111,6 +114,7 @@ const featureGroups: FeatureGroup[] = [
         label: "React + Vite",
         values: {
           "Better Fullstack": "yes",
+          "Better-T-Stack": "yes",
           "create-t3-app": "no",
           "create-next-app": "no",
           "create-vite": "yes",
@@ -121,6 +125,7 @@ const featureGroups: FeatureGroup[] = [
         label: "Nuxt / Vue",
         values: {
           "Better Fullstack": "yes",
+          "Better-T-Stack": "yes",
           "create-t3-app": "no",
           "create-next-app": "no",
           "create-vite": "yes",
@@ -131,6 +136,7 @@ const featureGroups: FeatureGroup[] = [
         label: "SvelteKit",
         values: {
           "Better Fullstack": "yes",
+          "Better-T-Stack": "yes",
           "create-t3-app": "no",
           "create-next-app": "no",
           "create-vite": "yes",
@@ -141,6 +147,7 @@ const featureGroups: FeatureGroup[] = [
         label: "Astro",
         values: {
           "Better Fullstack": "yes",
+          "Better-T-Stack": "yes",
           "create-t3-app": "no",
           "create-next-app": "no",
           "create-vite": "no",
@@ -151,6 +158,7 @@ const featureGroups: FeatureGroup[] = [
         label: "Angular",
         values: {
           "Better Fullstack": "yes",
+          "Better-T-Stack": "no",
           "create-t3-app": "no",
           "create-next-app": "no",
           "create-vite": "no",
@@ -161,6 +169,7 @@ const featureGroups: FeatureGroup[] = [
         label: "Solid / SolidStart",
         values: {
           "Better Fullstack": "yes",
+          "Better-T-Stack": "yes",
           "create-t3-app": "no",
           "create-next-app": "no",
           "create-vite": "yes",
@@ -171,6 +180,7 @@ const featureGroups: FeatureGroup[] = [
         label: "React Native / Expo",
         values: {
           "Better Fullstack": "yes",
+          "Better-T-Stack": "yes",
           "create-t3-app": "no",
           "create-next-app": "no",
           "create-vite": "no",
@@ -186,6 +196,7 @@ const featureGroups: FeatureGroup[] = [
         label: "Hono / Elysia / Express",
         values: {
           "Better Fullstack": "yes",
+          "Better-T-Stack": "yes",
           "create-t3-app": "partial",
           "create-next-app": "partial",
           "create-vite": "no",
@@ -196,6 +207,7 @@ const featureGroups: FeatureGroup[] = [
         label: "Convex",
         values: {
           "Better Fullstack": "yes",
+          "Better-T-Stack": "yes",
           "create-t3-app": "no",
           "create-next-app": "no",
           "create-vite": "no",
@@ -206,6 +218,7 @@ const featureGroups: FeatureGroup[] = [
         label: "Rust backends (Axum, Actix, Rocket)",
         values: {
           "Better Fullstack": "yes",
+          "Better-T-Stack": "no",
           "create-t3-app": "no",
           "create-next-app": "no",
           "create-vite": "no",
@@ -216,6 +229,7 @@ const featureGroups: FeatureGroup[] = [
         label: "Python backends (FastAPI, Django)",
         values: {
           "Better Fullstack": "yes",
+          "Better-T-Stack": "no",
           "create-t3-app": "no",
           "create-next-app": "no",
           "create-vite": "no",
@@ -226,6 +240,7 @@ const featureGroups: FeatureGroup[] = [
         label: "Go backends (Gin, Echo)",
         values: {
           "Better Fullstack": "yes",
+          "Better-T-Stack": "no",
           "create-t3-app": "no",
           "create-next-app": "no",
           "create-vite": "no",
@@ -241,6 +256,7 @@ const featureGroups: FeatureGroup[] = [
         label: "Database integrations",
         values: {
           "Better Fullstack": `${COMPARISON_COUNTS.databases} databases`,
+          "Better-T-Stack": "yes",
           "create-t3-app": "partial",
           "create-next-app": "no",
           "create-vite": "no",
@@ -251,6 +267,7 @@ const featureGroups: FeatureGroup[] = [
         label: "ORM support (Drizzle, Prisma, etc.)",
         values: {
           "Better Fullstack": `${COMPARISON_COUNTS.orms} ORMs`,
+          "Better-T-Stack": "yes",
           "create-t3-app": "yes",
           "create-next-app": "no",
           "create-vite": "no",
@@ -261,6 +278,7 @@ const featureGroups: FeatureGroup[] = [
         label: "Type-safe APIs (tRPC, oRPC, GraphQL)",
         values: {
           "Better Fullstack": `${COMPARISON_COUNTS.apis} options`,
+          "Better-T-Stack": "partial",
           "create-t3-app": "yes",
           "create-next-app": "no",
           "create-vite": "no",
@@ -276,6 +294,7 @@ const featureGroups: FeatureGroup[] = [
         label: "Authentication",
         values: {
           "Better Fullstack": `${COMPARISON_COUNTS.authProviders} providers`,
+          "Better-T-Stack": "yes",
           "create-t3-app": "yes",
           "create-next-app": "no",
           "create-vite": "no",
@@ -286,6 +305,7 @@ const featureGroups: FeatureGroup[] = [
         label: "Payment integrations",
         values: {
           "Better Fullstack": `${COMPARISON_COUNTS.paymentProviders} providers`,
+          "Better-T-Stack": "partial",
           "create-t3-app": "no",
           "create-next-app": "no",
           "create-vite": "no",
@@ -296,6 +316,7 @@ const featureGroups: FeatureGroup[] = [
         label: "AI / LLM integrations",
         values: {
           "Better Fullstack": `${COMPARISON_COUNTS.aiIntegrations} options`,
+          "Better-T-Stack": "partial",
           "create-t3-app": "no",
           "create-next-app": "no",
           "create-vite": "no",
@@ -311,6 +332,7 @@ const featureGroups: FeatureGroup[] = [
         label: "Visual web builder",
         values: {
           "Better Fullstack": "yes",
+          "Better-T-Stack": "yes",
           "create-t3-app": "no",
           "create-next-app": "no",
           "create-vite": "no",
@@ -321,6 +343,7 @@ const featureGroups: FeatureGroup[] = [
         label: "Monorepo (Turborepo)",
         values: {
           "Better Fullstack": "yes",
+          "Better-T-Stack": "yes",
           "create-t3-app": "no",
           "create-next-app": "no",
           "create-vite": "no",
@@ -331,6 +354,7 @@ const featureGroups: FeatureGroup[] = [
         label: "Desktop app (Tauri)",
         values: {
           "Better Fullstack": "yes",
+          "Better-T-Stack": "yes",
           "create-t3-app": "no",
           "create-next-app": "no",
           "create-vite": "no",
@@ -341,6 +365,7 @@ const featureGroups: FeatureGroup[] = [
         label: "PWA support",
         values: {
           "Better Fullstack": "yes",
+          "Better-T-Stack": "yes",
           "create-t3-app": "no",
           "create-next-app": "partial",
           "create-vite": "no",
@@ -351,6 +376,7 @@ const featureGroups: FeatureGroup[] = [
         label: "Deploy targets (Vercel, CF, Docker, etc.)",
         values: {
           "Better Fullstack": `${COMPARISON_COUNTS.deployTargets} targets`,
+          "Better-T-Stack": "partial",
           "create-t3-app": "partial",
           "create-next-app": "partial",
           "create-vite": "no",
@@ -361,6 +387,7 @@ const featureGroups: FeatureGroup[] = [
         label: "UI library choices",
         values: {
           "Better Fullstack": `${COMPARISON_COUNTS.uiLibraries} libraries`,
+          "Better-T-Stack": "partial",
           "create-t3-app": "partial",
           "create-next-app": "partial",
           "create-vite": "no",
@@ -510,6 +537,42 @@ function ComparePage() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+
+        {/* Deep-dive comparisons */}
+        <div className="border-b border-border px-4 py-10">
+          <div className="mx-auto max-w-3xl">
+            <h2 className="font-mono text-lg font-bold sm:text-xl">In-depth comparisons</h2>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <Link
+                to="/compare/$slug"
+                params={{ slug: "create-t3-app" }}
+                className="group rounded-lg border border-border p-4 transition-colors hover:bg-muted/30"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold">Better Fullstack vs create-t3-app</span>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                </div>
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                  One curated Next.js stack vs a configurable catalog — philosophy, maintenance
+                  status, and when each fits.
+                </p>
+              </Link>
+              <Link
+                to="/compare/$slug"
+                params={{ slug: "better-t-stack" }}
+                className="group rounded-lg border border-border p-4 transition-colors hover:bg-muted/30"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold">Better Fullstack vs Better-T-Stack</span>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                </div>
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                  Shared DNA, different scope: TypeScript-only vs eight language ecosystems.
+                </p>
+              </Link>
+            </div>
           </div>
         </div>
 
