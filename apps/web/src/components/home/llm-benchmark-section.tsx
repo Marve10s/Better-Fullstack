@@ -46,6 +46,7 @@ import {
   SCAFFBENCH21_MODELS,
   SCAFFBENCH21_SPECS,
 } from "./scaffbench-2-1-data";
+import { scaffbenchNoteFor } from "./scaffbench-2-1-notes";
 import { OpenAIMark, ProviderLogo, type ProviderLogoId } from "./provider-marks";
 
 /**
@@ -948,6 +949,8 @@ interface ModelLeaderRow {
   cost: string;
   outTok: string;
   steps: string;
+  /** curated explanation for a surprising result, shown as a hover tooltip. */
+  note?: string;
 }
 
 function formatPercent(passing: number, total: number): number {
@@ -1023,6 +1026,7 @@ function computeV2ModelRows(
       key: model.key,
       label: model.label,
       effort: model.effort,
+      note: scaffbenchNoteFor(model.key, leaderPath),
       color: PROVIDER_BAR_COLOR[model.provider],
       logo: PROVIDER_LOGO[model.provider],
       pass: formatPercent(passing, scored.length),
@@ -2857,6 +2861,21 @@ function ModelLeaderRow({ row }: { row: ModelLeaderRow }) {
           <span className="shrink-0 font-mono text-[11px] text-[#9c9a93] dark:text-[#6c6a61]">
             [{row.effort}]
           </span>
+        ) : null}
+        {row.note ? (
+          <Tooltip delay={0}>
+            <TooltipTrigger
+              type="button"
+              aria-label={`Why does ${row.label} score this way?`}
+              className="flex size-3.5 shrink-0 cursor-help items-center justify-center rounded-full border border-[#d9d8d2] font-serif text-[9px] font-bold italic leading-none text-[#71706a] transition-colors hover:border-[#1b1a17] hover:text-[#1b1a17] dark:border-[rgba(237,235,228,0.2)] dark:text-[#8f8d84] dark:hover:border-[#dad8d0] dark:hover:text-[#dad8d0]"
+            >
+              i
+            </TooltipTrigger>
+            <TooltipContent className="max-w-[19rem] normal-case tracking-normal">
+              <p className="font-semibold">About this result</p>
+              <p className="mt-1 font-normal">{row.note}</p>
+            </TooltipContent>
+          </Tooltip>
         ) : null}
       </span>
       <div className="h-2.5 w-full overflow-hidden rounded-full" style={BAR_TRACK_STYLE}>
