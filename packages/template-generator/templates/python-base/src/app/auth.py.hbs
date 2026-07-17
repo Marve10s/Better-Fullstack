@@ -60,3 +60,32 @@ def verify_token(token: str) -> dict | None:
     except JWTError:
         return None
 {{/if}}
+{{#if (eq pythonAuth "pyjwt")}}
+"""Authentication module using PyJWT."""
+
+import os
+from datetime import UTC, datetime, timedelta
+
+import jwt
+from jwt import InvalidTokenError
+
+SECRET_KEY = os.getenv("SECRET_KEY", "change-me-in-production")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+
+def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
+    """Create a signed JWT access token."""
+    to_encode = data.copy()
+    expire = datetime.now(UTC) + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    to_encode.update({"exp": expire, "iat": datetime.now(UTC)})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def verify_token(token: str) -> dict | None:
+    """Verify and decode a PyJWT token."""
+    try:
+        return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    except InvalidTokenError:
+        return None
+{{/if}}

@@ -125,6 +125,26 @@ describe("Java Ecosystem", () => {
         "thymeleaf",
         "spring-amqp",
         "opentelemetry-java",
+        "spring-data-redis",
+        "spring-data-mongodb",
+        "spring-data-elasticsearch",
+        "spring-data-neo4j",
+        "spring-data-cassandra",
+        "spring-data-couchbase",
+        "spring-data-jdbc",
+        "spring-data-rest",
+        "spring-quartz",
+        "spring-pulsar",
+        "spring-integration",
+        "spring-websocket",
+        "spring-rsocket",
+        "spring-hateoas",
+        "spring-session-redis",
+        "spring-session-jdbc",
+        "spring-ldap",
+        "spring-oauth2-client",
+        "spring-saml2",
+        "spring-restclient",
         "none",
       ]);
       expect(JAVA_ORMS).toEqual(["spring-data-jpa", "jooq", "mybatis", "none"]);
@@ -307,6 +327,28 @@ describe("Java Ecosystem", () => {
     });
 
     it("should wire log4j2 for a Spring Boot Maven project", async () => {
+      const starterLibraries = [
+        "spring-data-redis",
+        "spring-data-mongodb",
+        "spring-data-elasticsearch",
+        "spring-data-neo4j",
+        "spring-data-cassandra",
+        "spring-data-couchbase",
+        "spring-data-jdbc",
+        "spring-data-rest",
+        "spring-quartz",
+        "spring-pulsar",
+        "spring-integration",
+        "spring-websocket",
+        "spring-rsocket",
+        "spring-hateoas",
+        "spring-session-redis",
+        "spring-session-jdbc",
+        "spring-ldap",
+        "spring-oauth2-client",
+        "spring-saml2",
+        "spring-restclient",
+      ] as const;
       const result = await createVirtual({
         projectName: "java-log4j2-maven",
         ecosystem: "java",
@@ -315,7 +357,7 @@ describe("Java Ecosystem", () => {
         javaOrm: "none",
         javaAuth: "none",
         javaLogging: "log4j2",
-        javaLibraries: [],
+        javaLibraries: [...starterLibraries],
         javaTestingLibraries: ["junit5"],
         aiDocs: ["claude-md"],
       });
@@ -325,6 +367,20 @@ describe("Java Ecosystem", () => {
 
       const pomContent = getFileContent(root, "pom.xml");
       expect(pomContent).toContain("spring-boot-starter-log4j2");
+      const dependencyBlocks = pomContent.match(/<dependency>[\s\S]*?<\/dependency>/g) ?? [];
+      for (const library of starterLibraries) {
+        const artifact = library
+          .replace("spring-data-", "spring-boot-starter-data-")
+          .replace("spring-session-redis", "spring-boot-starter-session-data-redis")
+          .replace("spring-session-jdbc", "spring-boot-starter-session-jdbc")
+          .replace("spring-oauth2-client", "spring-boot-starter-security-oauth2-client")
+          .replace("spring-saml2", "spring-boot-starter-security-saml2")
+          .replace(/^spring-(?!boot-starter)/, "spring-boot-starter-");
+        const dependency = dependencyBlocks.find((block) =>
+          block.includes(`<artifactId>${artifact}</artifactId>`),
+        );
+        expect(dependency).toContain("<artifactId>spring-boot-starter-logging</artifactId>");
+      }
       expect(hasFile(root, "src/main/resources/log4j2-spring.xml")).toBe(true);
       expect(hasFile(root, "src/main/resources/logback-spring.xml")).toBe(false);
     });

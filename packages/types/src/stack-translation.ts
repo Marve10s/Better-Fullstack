@@ -53,6 +53,7 @@ export const DEFAULT_STACK_SELECTION: StackSelectionState = {
   mobilePush: "none",
   mobileOTA: "none",
   mobileDeepLinking: "none",
+  mobileLibraries: [],
   backendLibraries: "none",
   stateManagement: "none",
   forms: "react-hook-form",
@@ -120,6 +121,13 @@ export const DEFAULT_STACK_SELECTION: StackSelectionState = {
   pythonRealtime: "none",
   pythonObservability: "none",
   pythonCli: [],
+  pythonCloudSdk: "none",
+  pythonHttpClient: "none",
+  pythonData: [],
+  pythonMedia: "none",
+  pythonServer: "none",
+  pythonPackageManager: "uv",
+  pythonMessageQueue: "none",
   goWebFramework: "gin",
   goOrm: "gorm",
   goApi: "none",
@@ -158,6 +166,7 @@ export const DEFAULT_STACK_SELECTION: StackSelectionState = {
   dotnetValidation: "none",
   dotnetCaching: "none",
   dotnetDeploy: "docker",
+  dotnetLibraries: [],
   elixirWebFramework: "phoenix",
   elixirOrm: "ecto-sql",
   elixirAuth: "none",
@@ -221,6 +230,7 @@ export const STACK_SELECTION_OPTION_CATEGORY_BY_KEY: Record<
   mobilePush: "mobilePush",
   mobileOTA: "mobileOTA",
   mobileDeepLinking: "mobileDeepLinking",
+  mobileLibraries: "mobileLibraries",
   backendLibraries: "backendLibraries",
   stateManagement: "stateManagement",
   forms: "forms",
@@ -287,6 +297,13 @@ export const STACK_SELECTION_OPTION_CATEGORY_BY_KEY: Record<
   pythonRealtime: "pythonRealtime",
   pythonObservability: "pythonObservability",
   pythonCli: "pythonCli",
+  pythonCloudSdk: "pythonCloudSdk",
+  pythonHttpClient: "pythonHttpClient",
+  pythonData: "pythonData",
+  pythonMedia: "pythonMedia",
+  pythonServer: "pythonServer",
+  pythonPackageManager: "pythonPackageManager",
+  pythonMessageQueue: "pythonMessageQueue",
   goWebFramework: "goWebFramework",
   goOrm: "goOrm",
   goApi: "goApi",
@@ -325,6 +342,7 @@ export const STACK_SELECTION_OPTION_CATEGORY_BY_KEY: Record<
   dotnetValidation: "dotnetValidation",
   dotnetCaching: "dotnetCaching",
   dotnetDeploy: "dotnetDeploy",
+  dotnetLibraries: "dotnetLibraries",
   elixirWebFramework: "elixirWebFramework",
   elixirOrm: "elixirOrm",
   elixirAuth: "elixirAuth",
@@ -358,6 +376,7 @@ export const VIRTUAL_NONE_MULTI_SELECT_STACK_SELECTION_KEYS = [
   "goTesting",
   "pythonTesting",
   "pythonCli",
+  "pythonData",
   "elixirLibraries",
   "aiDocs",
 ] as const;
@@ -396,6 +415,7 @@ export const STACK_SELECTION_URL_KEYS = {
   mobilePush: "mpu",
   mobileOTA: "mota",
   mobileDeepLinking: "mdl",
+  mobileLibraries: "mlib",
   backendLibraries: "bl",
   stateManagement: "sm",
   forms: "frm",
@@ -463,6 +483,13 @@ export const STACK_SELECTION_URL_KEYS = {
   pythonRealtime: "prt",
   pythonObservability: "pobs",
   pythonCli: "pcli",
+  pythonCloudSdk: "pcloud",
+  pythonHttpClient: "phttp",
+  pythonData: "pdata",
+  pythonMedia: "pmedia",
+  pythonServer: "pserver",
+  pythonPackageManager: "ppm",
+  pythonMessageQueue: "pmq",
   goWebFramework: "gwf",
   goOrm: "gorm",
   goApi: "gapi",
@@ -501,6 +528,7 @@ export const STACK_SELECTION_URL_KEYS = {
   dotnetValidation: "dnval",
   dotnetCaching: "dncache",
   dotnetDeploy: "dndeploy",
+  dotnetLibraries: "dnlib",
   elixirWebFramework: "ewf",
   elixirOrm: "eorm",
   elixirAuth: "eauth",
@@ -795,6 +823,12 @@ const CLI_SCALAR_CONFIG_FIELDS = [
   ["pythonCaching", "pythonCaching"],
   ["pythonRealtime", "pythonRealtime"],
   ["pythonObservability", "pythonObservability"],
+  ["pythonCloudSdk", "pythonCloudSdk"],
+  ["pythonHttpClient", "pythonHttpClient"],
+  ["pythonMedia", "pythonMedia"],
+  ["pythonServer", "pythonServer"],
+  ["pythonPackageManager", "pythonPackageManager"],
+  ["pythonMessageQueue", "pythonMessageQueue"],
   ["goWebFramework", "goWebFramework"],
   ["goOrm", "goOrm"],
   ["goApi", "goApi"],
@@ -858,15 +892,18 @@ const CLI_NON_EMPTY_ARRAY_CONFIG_FIELDS = [
 
 const CLI_DEFINED_ARRAY_CONFIG_FIELDS = [
   ["aiDocs", "aiDocs"],
+  ["mobileLibraries", "mobileLibraries"],
   ["rustLibraries", "rustLibraries"],
   ["pythonAi", "pythonAi"],
   ["javaLibraries", "javaLibraries"],
   ["javaTestingLibraries", "javaTestingLibraries"],
   ["dotnetTesting", "dotnetTesting"],
   ["dotnetObservability", "dotnetObservability"],
+  ["dotnetLibraries", "dotnetLibraries"],
   ["goTesting", "goTesting"],
   ["pythonTesting", "pythonTesting"],
   ["pythonCli", "pythonCli"],
+  ["pythonData", "pythonData"],
   ["elixirLibraries", "elixirLibraries"],
 ] as const satisfies readonly (readonly [keyof CLIInput, keyof ProjectConfig])[];
 
@@ -919,6 +956,13 @@ const PYTHON_CONFIG_KEYS = [
   "pythonRealtime",
   "pythonObservability",
   "pythonCli",
+  "pythonCloudSdk",
+  "pythonHttpClient",
+  "pythonData",
+  "pythonMedia",
+  "pythonServer",
+  "pythonPackageManager",
+  "pythonMessageQueue",
 ] as const satisfies readonly (keyof CliDefaultProjectConfigBase)[];
 
 const GO_CONFIG_KEYS = [
@@ -966,6 +1010,7 @@ const DOTNET_CONFIG_KEYS = [
   "dotnetValidation",
   "dotnetCaching",
   "dotnetDeploy",
+  "dotnetLibraries",
 ] as const satisfies readonly (keyof CliDefaultProjectConfigBase)[];
 
 const ELIXIR_CONFIG_KEYS = [
@@ -1000,6 +1045,7 @@ const REACT_NATIVE_CONFIG_KEYS = [
   "mobilePush",
   "mobileOTA",
   "mobileDeepLinking",
+  "mobileLibraries",
 ] as const satisfies readonly (keyof CliDefaultProjectConfigBase)[];
 
 function withoutNone(values: readonly string[]): string[] {
@@ -1184,6 +1230,10 @@ const GRAPH_MOBILE_PART_SELECTION_KEYS = [
   ["mobileDeepLinking", "deepLinking"],
 ] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
 
+const GRAPH_MOBILE_ARRAY_PART_SELECTION_KEYS = [
+  ["mobileLibraries", "libraries"],
+] as const satisfies readonly [StackSelectionArrayKey, ScopedStackPartRole][];
+
 const GRAPH_RUST_BACKEND_PART_SELECTION_KEYS = [
   ["rustCli", "cli"],
   ["rustLogging", "logging"],
@@ -1248,6 +1298,7 @@ const GRAPH_DOTNET_BACKEND_PART_SELECTION_KEYS = [
 const GRAPH_DOTNET_BACKEND_ARRAY_PART_SELECTION_KEYS = [
   ["dotnetTesting", "testing"],
   ["dotnetObservability", "observability"],
+  ["dotnetLibraries", "libraries"],
 ] as const satisfies readonly [StackSelectionArrayKey, ScopedStackPartRole][];
 
 const GRAPH_TYPESCRIPT_FRONTEND_PART_CLI_KEYS = [
@@ -1314,6 +1365,10 @@ const GRAPH_MOBILE_PART_CLI_KEYS = [
   ["mobileDeepLinking", "deepLinking"],
 ] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
 
+const GRAPH_MOBILE_ARRAY_PART_CLI_KEYS = [
+  ["mobileLibraries", "libraries"],
+] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
+
 const GRAPH_RUST_BACKEND_PART_CLI_KEYS = [
   ["rustCli", "cli"],
   ["rustLogging", "logging"],
@@ -1378,6 +1433,7 @@ const GRAPH_DOTNET_BACKEND_PART_CLI_KEYS = [
 const GRAPH_DOTNET_BACKEND_ARRAY_PART_CLI_KEYS = [
   ["dotnetTesting", "testing"],
   ["dotnetObservability", "observability"],
+  ["dotnetLibraries", "libraries"],
 ] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
 
 function getAddonScopedPartFields(addons: readonly string[] | undefined): ScopedStackPartField[] {
@@ -1497,6 +1553,13 @@ function getSelectionScopedPartFields(selection: StackSelectionInput): ScopedSta
       role,
       value: selection[key],
     })),
+    ...GRAPH_MOBILE_ARRAY_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ownerRole: "mobile" as const,
+      ecosystem: "react-native" as const,
+      role,
+      value: selection[key],
+      allowMultiple: true,
+    })),
     ...GRAPH_RUST_BACKEND_PART_SELECTION_KEYS.map(([key, role]) => ({
       ownerRole: "backend" as const,
       ecosystem: "rust" as const,
@@ -1606,6 +1669,13 @@ function getCliScopedPartFields(input: CLIInput): ScopedStackPartField[] {
       ecosystem: "react-native" as const,
       role,
       value: getValue(key),
+    })),
+    ...GRAPH_MOBILE_ARRAY_PART_CLI_KEYS.map(([key, role]) => ({
+      ownerRole: "mobile" as const,
+      ecosystem: "react-native" as const,
+      role,
+      value: getArrayValue(key),
+      allowMultiple: true,
     })),
     ...GRAPH_RUST_BACKEND_PART_CLI_KEYS.map(([key, role]) => ({
       ownerRole: "backend" as const,
@@ -1946,6 +2016,9 @@ function buildProjectConfigBase(
     mobilePush: stack.mobilePush as ProjectConfig["mobilePush"],
     mobileOTA: stack.mobileOTA as ProjectConfig["mobileOTA"],
     mobileDeepLinking: stack.mobileDeepLinking as ProjectConfig["mobileDeepLinking"],
+    mobileLibraries: toUniqueNonNoneArray(
+      stack.mobileLibraries,
+    ) as ProjectConfig["mobileLibraries"],
     cms: stack.cms as ProjectConfig["cms"],
     caching: stack.caching as ProjectConfig["caching"],
     rateLimit: stack.rateLimit as ProjectConfig["rateLimit"],
@@ -1981,6 +2054,13 @@ function buildProjectConfigBase(
     pythonRealtime: stack.pythonRealtime as ProjectConfig["pythonRealtime"],
     pythonObservability: stack.pythonObservability as ProjectConfig["pythonObservability"],
     pythonCli: toUniqueNonNoneArray(stack.pythonCli) as ProjectConfig["pythonCli"],
+    pythonCloudSdk: stack.pythonCloudSdk as ProjectConfig["pythonCloudSdk"],
+    pythonHttpClient: stack.pythonHttpClient as ProjectConfig["pythonHttpClient"],
+    pythonData: toUniqueNonNoneArray(stack.pythonData) as ProjectConfig["pythonData"],
+    pythonMedia: stack.pythonMedia as ProjectConfig["pythonMedia"],
+    pythonServer: stack.pythonServer as ProjectConfig["pythonServer"],
+    pythonPackageManager: stack.pythonPackageManager as ProjectConfig["pythonPackageManager"],
+    pythonMessageQueue: stack.pythonMessageQueue as ProjectConfig["pythonMessageQueue"],
     goWebFramework: stack.goWebFramework as ProjectConfig["goWebFramework"],
     goOrm: stack.goOrm as ProjectConfig["goOrm"],
     goApi: stack.goApi as ProjectConfig["goApi"],
@@ -2023,6 +2103,9 @@ function buildProjectConfigBase(
     dotnetValidation: stack.dotnetValidation as ProjectConfig["dotnetValidation"],
     dotnetCaching: stack.dotnetCaching as ProjectConfig["dotnetCaching"],
     dotnetDeploy: stack.dotnetDeploy as ProjectConfig["dotnetDeploy"],
+    dotnetLibraries: toUniqueNonNoneArray(
+      stack.dotnetLibraries,
+    ) as ProjectConfig["dotnetLibraries"],
     elixirWebFramework: stack.elixirWebFramework as ProjectConfig["elixirWebFramework"],
     elixirOrm: stack.elixirOrm as ProjectConfig["elixirOrm"],
     elixirAuth: stack.elixirAuth as ProjectConfig["elixirAuth"],
@@ -2314,6 +2397,7 @@ function generateReactNativeCommand(selection: StackSelectionInput, projectName:
     `--mobile-push ${selection.mobilePush}`,
     `--mobile-ota ${selection.mobileOTA}`,
     `--mobile-deep-linking ${selection.mobileDeepLinking}`,
+    formatArrayFlag("mobile-libraries", selection.mobileLibraries),
     `--package-manager ${selection.packageManager}`,
     selection.git === "false" ? "--no-git" : "--git",
     selection.install === "false" ? "--no-install" : "--install",
@@ -2374,6 +2458,13 @@ function generatePythonCommand(selection: StackSelectionInput, projectName: stri
     `--python-realtime ${selection.pythonRealtime}`,
     `--python-observability ${selection.pythonObservability}`,
     formatArrayFlag("python-cli", selection.pythonCli),
+    `--python-cloud-sdk ${selection.pythonCloudSdk}`,
+    `--python-http-client ${selection.pythonHttpClient}`,
+    formatArrayFlag("python-data", selection.pythonData),
+    `--python-media ${selection.pythonMedia}`,
+    `--python-server ${selection.pythonServer}`,
+    `--python-package-manager ${selection.pythonPackageManager}`,
+    `--python-message-queue ${selection.pythonMessageQueue}`,
     `--email ${selection.email}`,
     `--observability ${selection.observability}`,
     `--caching ${selection.caching}`,
@@ -2463,6 +2554,7 @@ function generateDotnetCommand(selection: StackSelectionInput, projectName: stri
     `--dotnet-validation ${selection.dotnetValidation}`,
     `--dotnet-caching ${selection.dotnetCaching}`,
     `--dotnet-deploy ${selection.dotnetDeploy}`,
+    formatArrayFlag("dotnet-libraries", selection.dotnetLibraries),
     formatArrayFlag("ai-docs", selection.aiDocs),
   ];
 

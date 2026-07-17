@@ -197,6 +197,7 @@ const PREFLIGHT_RULES: readonly PreflightRule[] = [
       c.database !== "redis" &&
       c.backend !== "convex" &&
       c.orm === "none" &&
+      !(c.ecosystem === "python" && c.pythonOrm !== "none") &&
       !hasGraphOrm(c),
     reason: "This database requires an ORM to generate setup templates. EdgeDB and Redis work without one.",
     suggestions: ["Select an ORM like Drizzle or Prisma", "Use EdgeDB or Redis instead", "Remove database"],

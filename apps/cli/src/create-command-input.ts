@@ -22,6 +22,7 @@ import {
   DotnetValidationSchema,
   DotnetDeploySchema,
   DotnetJobQueueSchema,
+  DotnetLibrariesSchema,
   DotnetObservabilitySchema,
   DotnetOrmSchema,
   DotnetRealtimeSchema,
@@ -57,6 +58,7 @@ import {
   FileUploadSchema,
   FormsSchema,
   MobileDeepLinkingSchema,
+  MobileLibrariesSchema,
   MobileNavigationSchema,
   MobileOTASchema,
   MobilePushSchema,
@@ -111,6 +113,13 @@ import {
   PythonRealtimeSchema,
   PythonObservabilitySchema,
   PythonCliSchema,
+  PythonCloudSdkSchema,
+  PythonDataSchema,
+  PythonHttpClientSchema,
+  PythonMediaSchema,
+  PythonMessageQueueSchema,
+  PythonPackageManagerSchema,
+  PythonServerSchema,
   PythonTaskQueueSchema,
   PythonValidationSchema,
   PythonWebFrameworkSchema,
@@ -229,6 +238,10 @@ export const CreateCommandOptionsSchema = z.object({
   mobileDeepLinking: MobileDeepLinkingSchema.optional().describe(
     "Mobile deep linking (expo-linking)",
   ),
+  mobileLibraries: z
+    .array(MobileLibrariesSchema)
+    .optional()
+    .describe("Mobile application libraries"),
   frontend: z.array(FrontendSchema).optional(),
   astroIntegration: AstroIntegrationSchema.optional().describe(
     "Astro UI framework integration (react, vue, svelte, solid)",
@@ -327,6 +340,20 @@ export const CreateCommandOptionsSchema = z.object({
     .array(PythonCliSchema)
     .optional()
     .describe("Python CLI tooling (typer, click, rich)"),
+  pythonCloudSdk: PythonCloudSdkSchema.optional().describe("Python cloud SDK (boto3)"),
+  pythonHttpClient: PythonHttpClientSchema.optional().describe("Python HTTP client (requests)"),
+  pythonData: z
+    .array(PythonDataSchema)
+    .optional()
+    .describe("Python data and scientific libraries (numpy, pandas, scipy)"),
+  pythonMedia: PythonMediaSchema.optional().describe("Python media library (pillow)"),
+  pythonServer: PythonServerSchema.optional().describe("Python production server (gunicorn)"),
+  pythonPackageManager: PythonPackageManagerSchema.optional().describe(
+    "Python package manager (uv, poetry)",
+  ),
+  pythonMessageQueue: PythonMessageQueueSchema.optional().describe(
+    "Python message queue client (confluent-kafka)",
+  ),
   goWebFramework: GoWebFrameworkSchema.optional().describe("Go web framework"),
   goOrm: GoOrmSchema.optional().describe("Go ORM/database layer"),
   goApi: GoApiSchema.optional().describe("Go API layer"),
@@ -389,6 +416,7 @@ export const CreateCommandOptionsSchema = z.object({
   dotnetDeploy: DotnetDeploySchema.optional().describe(
     ".NET deploy target (docker, azure, aws, none)",
   ),
+  dotnetLibraries: z.array(DotnetLibrariesSchema).optional().describe(".NET application libraries"),
   elixirWebFramework: ElixirWebFrameworkSchema.optional().describe(
     "Elixir web framework (phoenix, phoenix-live-view, none)",
   ),

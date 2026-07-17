@@ -11,6 +11,8 @@ import { getPrimaryGraphPart } from "./graph-summary";
 type VerifyTarget = {
   ecosystem: Exclude<StackPart["ecosystem"], "typescript" | "react-native" | "universal">;
   projectDir: string;
+  pythonPackageManager?: ProjectConfig["pythonPackageManager"];
+  pythonQuality?: ProjectConfig["pythonQuality"];
 };
 
 function getGraphTarget(config: ProjectConfig): VerifyTarget | null {
@@ -27,6 +29,8 @@ function getGraphTarget(config: ProjectConfig): VerifyTarget | null {
   return {
     ecosystem: backend.ecosystem,
     projectDir: path.join(config.projectDir, backend.targetPath ?? "apps/server"),
+    pythonPackageManager: config.pythonPackageManager,
+    pythonQuality: config.pythonQuality,
   };
 }
 
@@ -42,6 +46,8 @@ function getSingleEcosystemTarget(config: ProjectConfig): VerifyTarget | null {
   return {
     ecosystem: config.ecosystem,
     projectDir: config.projectDir,
+    pythonPackageManager: config.pythonPackageManager,
+    pythonQuality: config.pythonQuality,
   };
 }
 
@@ -71,8 +77,19 @@ async function verifyTarget(target: VerifyTarget) {
       return;
     case "python":
       s.start("Verifying generated Python server...");
-      await runCommand(cwd, "uv", ["sync"]);
-      await runCommand(cwd, "uv", ["run", "ruff", "check", "."]);
+      if (target.pythonPackageManager === "poetry") {
+        await runCommand(cwd, "poetry", ["install", "--extras", "dev"]);
+        if (target.pythonQuality === "ruff") {
+          await runCommand(cwd, "poetry", ["run", "ruff", "check", "."]);
+        }
+      } else if (target.pythonPackageManager === "none") {
+        await runCommand(cwd, "python", ["-m", "compileall", "src"]);
+      } else {
+        await runCommand(cwd, "uv", ["sync", "--extra", "dev"]);
+        if (target.pythonQuality === "ruff") {
+          await runCommand(cwd, "uv", ["run", "ruff", "check", "."]);
+        }
+      }
       s.stop("Generated Python server checks passed");
       return;
     case "elixir":

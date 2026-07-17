@@ -68,6 +68,12 @@ export const StackPartRoleSchema = z
     "libraries",
     "config",
     "templating",
+    "cloudSdk",
+    "data",
+    "media",
+    "server",
+    "packageManager",
+    "messageQueue",
   ])
   .describe("Role a selected tool plays in the stack graph");
 
@@ -449,6 +455,32 @@ export const MobileDeepLinkingSchema = z
   .enum(["expo-linking", "none"])
   .describe("Mobile deep linking setup");
 
+export const MobileLibrariesSchema = z
+  .enum([
+    "expo-sqlite",
+    "expo-camera",
+    "expo-image-picker",
+    "expo-location",
+    "expo-sensors",
+    "expo-file-system",
+    "expo-image",
+    "expo-audio",
+    "expo-video",
+    "expo-contacts",
+    "expo-calendar",
+    "expo-local-authentication",
+    "expo-sharing",
+    "expo-clipboard",
+    "expo-task-manager",
+    "expo-background-task",
+    "expo-maps",
+    "expo-brightness",
+    "expo-battery",
+    "expo-screen-capture",
+    "none",
+  ])
+  .describe("Expo and React Native application libraries");
+
 // Rust ecosystem schemas
 export const RustWebFrameworkSchema = z
   .enum(["axum", "actix-web", "rocket", "poem", "loco", "warp", "salvo", "none"])
@@ -530,11 +562,11 @@ export const RustTemplatingSchema = z
 
 // Python ecosystem schemas
 export const PythonWebFrameworkSchema = z
-  .enum(["fastapi", "django", "flask", "litestar", "starlette", "none"])
+  .enum(["fastapi", "django", "flask", "litestar", "starlette", "aiohttp", "streamlit", "none"])
   .describe("Python web framework");
 
 export const PythonOrmSchema = z
-  .enum(["sqlalchemy", "sqlmodel", "tortoise-orm", "peewee", "none"])
+  .enum(["sqlalchemy", "sqlmodel", "tortoise-orm", "peewee", "pymongo", "none"])
   .describe("Python ORM/database layer");
 
 export const PythonValidationSchema = z
@@ -553,12 +585,17 @@ export const PythonAiSchema = z
     "pydantic-ai",
     "google-adk",
     "smolagents",
+    "pytorch",
+    "transformers",
+    "scikit-learn",
+    "tensorflow",
+    "mcp",
     "none",
   ])
   .describe("Python AI/ML framework");
 
 export const PythonAuthSchema = z
-  .enum(["authlib", "jwt", "fastapi-users", "none"])
+  .enum(["authlib", "jwt", "pyjwt", "fastapi-users", "none"])
   .describe("Python authentication library");
 
 export const PythonApiSchema = z
@@ -578,7 +615,7 @@ export const PythonQualitySchema = z
   .describe("Python code quality tool");
 
 export const PythonTestingSchema = z
-  .enum(["pytest", "hypothesis", "none"])
+  .enum(["pytest", "hypothesis", "pytest-cov", "none"])
   .describe("Python testing libraries");
 
 export const PythonCachingSchema = z
@@ -590,12 +627,32 @@ export const PythonRealtimeSchema = z
   .describe("Python realtime/WebSocket library");
 
 export const PythonObservabilitySchema = z
-  .enum(["opentelemetry", "none"])
+  .enum(["opentelemetry", "prometheus-client", "none"])
   .describe("Python observability/tracing library");
 
 export const PythonCliSchema = z
   .enum(["typer", "click", "rich", "none"])
   .describe("Python CLI tooling libraries");
+
+export const PythonCloudSdkSchema = z.enum(["boto3", "none"]).describe("Python cloud SDK");
+
+export const PythonHttpClientSchema = z.enum(["requests", "none"]).describe("Python HTTP client");
+
+export const PythonDataSchema = z
+  .enum(["numpy", "pandas", "scipy", "none"])
+  .describe("Python data/scientific libraries");
+
+export const PythonMediaSchema = z.enum(["pillow", "none"]).describe("Python media library");
+
+export const PythonServerSchema = z.enum(["gunicorn", "none"]).describe("Python production server");
+
+export const PythonPackageManagerSchema = z
+  .enum(["uv", "poetry", "none"])
+  .describe("Python package manager");
+
+export const PythonMessageQueueSchema = z
+  .enum(["confluent-kafka", "none"])
+  .describe("Python message queue/streaming client");
 
 // Go ecosystem schemas
 export const GoWebFrameworkSchema = z
@@ -709,6 +766,26 @@ export const JavaLibrariesSchema = z
     "thymeleaf",
     "spring-amqp",
     "opentelemetry-java",
+    "spring-data-redis",
+    "spring-data-mongodb",
+    "spring-data-elasticsearch",
+    "spring-data-neo4j",
+    "spring-data-cassandra",
+    "spring-data-couchbase",
+    "spring-data-jdbc",
+    "spring-data-rest",
+    "spring-quartz",
+    "spring-pulsar",
+    "spring-integration",
+    "spring-websocket",
+    "spring-rsocket",
+    "spring-hateoas",
+    "spring-session-redis",
+    "spring-session-jdbc",
+    "spring-ldap",
+    "spring-oauth2-client",
+    "spring-saml2",
+    "spring-restclient",
     "none",
   ])
   .describe("Java application libraries");
@@ -770,6 +847,32 @@ export const DotnetCachingSchema = z
 export const DotnetDeploySchema = z
   .enum(["docker", "azure", "aws", "none"])
   .describe(".NET deployment target");
+
+export const DotnetLibrariesSchema = z
+  .enum([
+    "automapper",
+    "mediatr",
+    "fastendpoints",
+    "api-versioning",
+    "scalar",
+    "polly",
+    "masstransit",
+    "rebus",
+    "coravel",
+    "magic-onion",
+    "prometheus-net",
+    "seq",
+    "application-insights",
+    "sentry",
+    "mongodb-driver",
+    "nhibernate",
+    "mapster",
+    "scrutor",
+    "refit",
+    "fluent-email",
+    "none",
+  ])
+  .describe(".NET application libraries");
 
 // Elixir ecosystem schemas
 export const ElixirWebFrameworkSchema = z
@@ -1031,6 +1134,7 @@ export const CreateInputSchema = z.object({
   mobilePush: MobilePushSchema.optional(),
   mobileOTA: MobileOTASchema.optional(),
   mobileDeepLinking: MobileDeepLinkingSchema.optional(),
+  mobileLibraries: z.array(MobileLibrariesSchema).optional(),
   // Rust ecosystem options
   rustWebFramework: RustWebFrameworkSchema.optional(),
   rustFrontend: RustFrontendSchema.optional(),
@@ -1061,6 +1165,13 @@ export const CreateInputSchema = z.object({
   pythonRealtime: PythonRealtimeSchema.optional(),
   pythonObservability: PythonObservabilitySchema.optional(),
   pythonCli: z.array(PythonCliSchema).optional(),
+  pythonCloudSdk: PythonCloudSdkSchema.optional(),
+  pythonHttpClient: PythonHttpClientSchema.optional(),
+  pythonData: z.array(PythonDataSchema).optional(),
+  pythonMedia: PythonMediaSchema.optional(),
+  pythonServer: PythonServerSchema.optional(),
+  pythonPackageManager: PythonPackageManagerSchema.optional(),
+  pythonMessageQueue: PythonMessageQueueSchema.optional(),
   // Go ecosystem options
   goWebFramework: GoWebFrameworkSchema.optional(),
   goOrm: GoOrmSchema.optional(),
@@ -1102,6 +1213,7 @@ export const CreateInputSchema = z.object({
   dotnetValidation: DotnetValidationSchema.optional(),
   dotnetCaching: DotnetCachingSchema.optional(),
   dotnetDeploy: DotnetDeploySchema.optional(),
+  dotnetLibraries: z.array(DotnetLibrariesSchema).optional(),
   // Elixir ecosystem options
   elixirWebFramework: ElixirWebFrameworkSchema.optional(),
   elixirOrm: ElixirOrmSchema.optional(),
@@ -1212,6 +1324,7 @@ export const ProjectConfigSchema = z.object({
   mobilePush: MobilePushSchema,
   mobileOTA: MobileOTASchema,
   mobileDeepLinking: MobileDeepLinkingSchema,
+  mobileLibraries: z.array(MobileLibrariesSchema),
   // Rust ecosystem options
   rustWebFramework: RustWebFrameworkSchema,
   rustFrontend: RustFrontendSchema,
@@ -1242,6 +1355,13 @@ export const ProjectConfigSchema = z.object({
   pythonRealtime: PythonRealtimeSchema,
   pythonObservability: PythonObservabilitySchema,
   pythonCli: z.array(PythonCliSchema),
+  pythonCloudSdk: PythonCloudSdkSchema,
+  pythonHttpClient: PythonHttpClientSchema,
+  pythonData: z.array(PythonDataSchema),
+  pythonMedia: PythonMediaSchema,
+  pythonServer: PythonServerSchema,
+  pythonPackageManager: PythonPackageManagerSchema,
+  pythonMessageQueue: PythonMessageQueueSchema,
   // Go ecosystem options
   goWebFramework: GoWebFrameworkSchema,
   goOrm: GoOrmSchema,
@@ -1283,6 +1403,7 @@ export const ProjectConfigSchema = z.object({
   dotnetValidation: DotnetValidationSchema,
   dotnetCaching: DotnetCachingSchema,
   dotnetDeploy: DotnetDeploySchema,
+  dotnetLibraries: z.array(DotnetLibrariesSchema),
   // Elixir ecosystem options
   elixirWebFramework: ElixirWebFrameworkSchema,
   elixirOrm: ElixirOrmSchema,
@@ -1380,6 +1501,7 @@ export const BetterTStackConfigSchema = z.object({
   mobilePush: MobilePushSchema,
   mobileOTA: MobileOTASchema,
   mobileDeepLinking: MobileDeepLinkingSchema,
+  mobileLibraries: z.array(MobileLibrariesSchema),
   // Rust ecosystem options
   rustWebFramework: RustWebFrameworkSchema,
   rustFrontend: RustFrontendSchema,
@@ -1410,6 +1532,13 @@ export const BetterTStackConfigSchema = z.object({
   pythonRealtime: PythonRealtimeSchema,
   pythonObservability: PythonObservabilitySchema,
   pythonCli: z.array(PythonCliSchema),
+  pythonCloudSdk: PythonCloudSdkSchema,
+  pythonHttpClient: PythonHttpClientSchema,
+  pythonData: z.array(PythonDataSchema),
+  pythonMedia: PythonMediaSchema,
+  pythonServer: PythonServerSchema,
+  pythonPackageManager: PythonPackageManagerSchema,
+  pythonMessageQueue: PythonMessageQueueSchema,
   // Go ecosystem options
   goWebFramework: GoWebFrameworkSchema,
   goOrm: GoOrmSchema,
@@ -1451,6 +1580,7 @@ export const BetterTStackConfigSchema = z.object({
   dotnetValidation: DotnetValidationSchema,
   dotnetCaching: DotnetCachingSchema,
   dotnetDeploy: DotnetDeploySchema,
+  dotnetLibraries: z.array(DotnetLibrariesSchema),
   // Elixir ecosystem options
   elixirWebFramework: ElixirWebFrameworkSchema,
   elixirOrm: ElixirOrmSchema,
@@ -1554,6 +1684,7 @@ export const MOBILE_TESTING_VALUES = MobileTestingSchema.options;
 export const MOBILE_PUSH_VALUES = MobilePushSchema.options;
 export const MOBILE_OTA_VALUES = MobileOTASchema.options;
 export const MOBILE_DEEP_LINKING_VALUES = MobileDeepLinkingSchema.options;
+export const MOBILE_LIBRARIES_VALUES = MobileLibrariesSchema.options;
 export const CMS_VALUES = CMSSchema.options;
 export const CACHING_VALUES = CachingSchema.options;
 export const RATE_LIMIT_VALUES = RateLimitSchema.options;
@@ -1590,6 +1721,13 @@ export const PYTHON_CACHING_VALUES = PythonCachingSchema.options;
 export const PYTHON_REALTIME_VALUES = PythonRealtimeSchema.options;
 export const PYTHON_OBSERVABILITY_VALUES = PythonObservabilitySchema.options;
 export const PYTHON_CLI_VALUES = PythonCliSchema.options;
+export const PYTHON_CLOUD_SDK_VALUES = PythonCloudSdkSchema.options;
+export const PYTHON_HTTP_CLIENT_VALUES = PythonHttpClientSchema.options;
+export const PYTHON_DATA_VALUES = PythonDataSchema.options;
+export const PYTHON_MEDIA_VALUES = PythonMediaSchema.options;
+export const PYTHON_SERVER_VALUES = PythonServerSchema.options;
+export const PYTHON_PACKAGE_MANAGER_VALUES = PythonPackageManagerSchema.options;
+export const PYTHON_MESSAGE_QUEUE_VALUES = PythonMessageQueueSchema.options;
 export const GO_WEB_FRAMEWORK_VALUES = GoWebFrameworkSchema.options;
 export const GO_ORM_VALUES = GoOrmSchema.options;
 export const GO_API_VALUES = GoApiSchema.options;
@@ -1628,6 +1766,7 @@ export const DOTNET_OBSERVABILITY_VALUES = DotnetObservabilitySchema.options;
 export const DOTNET_VALIDATION_VALUES = DotnetValidationSchema.options;
 export const DOTNET_CACHING_VALUES = DotnetCachingSchema.options;
 export const DOTNET_DEPLOY_VALUES = DotnetDeploySchema.options;
+export const DOTNET_LIBRARIES_VALUES = DotnetLibrariesSchema.options;
 export const ELIXIR_WEB_FRAMEWORK_VALUES = ElixirWebFrameworkSchema.options;
 export const ELIXIR_ORM_VALUES = ElixirOrmSchema.options;
 export const ELIXIR_AUTH_VALUES = ElixirAuthSchema.options;

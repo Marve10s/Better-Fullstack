@@ -6,24 +6,38 @@ import type { StackState } from "@/lib/stack-defaults";
  * compatibility engine / stack-translation bundle into the app entry chunk.
  */
 export const ECOSYSTEM_SHARE_SLUGS = {
-  typescript: "TypeScript",
-  "react-native": "React-Native",
-  rust: "Rust",
-  python: "Python",
-  go: "Go",
-  java: "Java",
-  elixir: "Elixir",
-} as const satisfies Partial<Record<StackState["ecosystem"], string>>;
+  typescript: "typescript",
+  "react-native": "react-native",
+  rust: "rust",
+  python: "python",
+  go: "go",
+  java: "java",
+  elixir: "elixir",
+  dotnet: "dotnet",
+} as const satisfies Record<StackState["ecosystem"], string>;
 
-export function isStackShareSlug(slug: string): boolean {
+export type StackShareSlug =
+  | (typeof ECOSYSTEM_SHARE_SLUGS)[keyof typeof ECOSYSTEM_SHARE_SLUGS]
+  | "multi-ecosystem";
+
+export function normalizeStackShareSlug(slug: string): StackShareSlug | null {
   const normalizedSlug = slug.toLowerCase();
-  if (normalizedSlug === "multi-ecosystem") return true;
+  if (normalizedSlug === "multi-ecosystem") return "multi-ecosystem";
 
   for (const [ecosystem, shareSlug] of Object.entries(ECOSYSTEM_SHARE_SLUGS)) {
-    if (shareSlug.toLowerCase() === normalizedSlug || ecosystem === normalizedSlug) {
-      return true;
+    if (shareSlug === normalizedSlug || ecosystem === normalizedSlug) {
+      return shareSlug;
     }
   }
 
-  return false;
+  return null;
+}
+
+export function getCanonicalStackSharePath(slug: string): string | null {
+  const canonicalSlug = normalizeStackShareSlug(slug);
+  return canonicalSlug ? `/${canonicalSlug}` : null;
+}
+
+export function isStackShareSlug(slug: string): boolean {
+  return normalizeStackShareSlug(slug) !== null;
 }

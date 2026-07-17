@@ -75,6 +75,10 @@ allOpen {
 {{/if}}
 repositories {
 	mavenCentral()
+{{#if hasJavaSaml2}}
+	// OpenSAML artifacts used by Spring Security SAML2 are published here.
+	maven { url = uri("https://build.shibboleth.net/maven/releases/") }
+{{/if}}
 }
 
 {{#if hasJavaLog4j2}}
@@ -204,6 +208,67 @@ dependencies {
 {{#if hasJavaThymeleaf}}
 	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 {{/if}}
+{{#if hasJavaDataRedis}}
+	// Spring Boot manages this starter's version and activates its auto-configuration.
+	implementation("org.springframework.boot:spring-boot-starter-data-redis")
+{{/if}}
+{{#if hasJavaDataMongodb}}
+	implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
+{{/if}}
+{{#if hasJavaDataElasticsearch}}
+	implementation("org.springframework.boot:spring-boot-starter-data-elasticsearch")
+{{/if}}
+{{#if hasJavaDataNeo4j}}
+	implementation("org.springframework.boot:spring-boot-starter-data-neo4j")
+{{/if}}
+{{#if hasJavaDataCassandra}}
+	implementation("org.springframework.boot:spring-boot-starter-data-cassandra")
+{{/if}}
+{{#if hasJavaDataCouchbase}}
+	implementation("org.springframework.boot:spring-boot-starter-data-couchbase")
+{{/if}}
+{{#if hasJavaDataJdbc}}
+	implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
+{{/if}}
+{{#if hasJavaDataRest}}
+	implementation("org.springframework.boot:spring-boot-starter-data-rest")
+{{/if}}
+{{#if hasJavaQuartz}}
+	implementation("org.springframework.boot:spring-boot-starter-quartz")
+{{/if}}
+{{#if hasJavaPulsar}}
+	implementation("org.springframework.boot:spring-boot-starter-pulsar")
+{{/if}}
+{{#if hasJavaIntegration}}
+	implementation("org.springframework.boot:spring-boot-starter-integration")
+{{/if}}
+{{#if hasJavaWebsocket}}
+	implementation("org.springframework.boot:spring-boot-starter-websocket")
+{{/if}}
+{{#if hasJavaRsocket}}
+	implementation("org.springframework.boot:spring-boot-starter-rsocket")
+{{/if}}
+{{#if hasJavaHateoas}}
+	implementation("org.springframework.boot:spring-boot-starter-hateoas")
+{{/if}}
+{{#if hasJavaSessionRedis}}
+	implementation("org.springframework.boot:spring-boot-starter-session-data-redis")
+{{/if}}
+{{#if hasJavaSessionJdbc}}
+	implementation("org.springframework.boot:spring-boot-starter-session-jdbc")
+{{/if}}
+{{#if hasJavaLdap}}
+	implementation("org.springframework.boot:spring-boot-starter-ldap")
+{{/if}}
+{{#if hasJavaOauth2Client}}
+	implementation("org.springframework.boot:spring-boot-starter-security-oauth2-client")
+{{/if}}
+{{#if hasJavaSaml2}}
+	implementation("org.springframework.boot:spring-boot-starter-security-saml2")
+{{/if}}
+{{#if hasJavaRestclient}}
+	implementation("org.springframework.boot:spring-boot-starter-restclient")
+{{/if}}
 {{#if hasJavaLog4j2}}
 	implementation("org.springframework.boot:spring-boot-starter-webmvc") {
 		exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
@@ -217,6 +282,9 @@ dependencies {
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 {{/if}}
 {{#if hasJavaJpa}}
+	runtimeOnly("com.h2database:h2")
+{{/if}}
+{{#if (and hasJavaJdbcInfrastructure (not hasJavaJpa))}}
 	runtimeOnly("com.h2database:h2")
 {{/if}}
 

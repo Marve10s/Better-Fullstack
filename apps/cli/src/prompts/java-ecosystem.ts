@@ -262,6 +262,106 @@ const JAVA_LIBRARY_PROMPT_OPTIONS: PromptOption<JavaLibraries>[] = [
     hint: "OpenTelemetry SDK with OTLP export",
   },
   {
+    value: "spring-data-redis",
+    label: "Spring Data Redis",
+    hint: "Redis repositories and template-based data access",
+  },
+  {
+    value: "spring-data-mongodb",
+    label: "Spring Data MongoDB",
+    hint: "MongoDB repositories and document mapping",
+  },
+  {
+    value: "spring-data-elasticsearch",
+    label: "Spring Data Elasticsearch",
+    hint: "Elasticsearch repositories and search operations",
+  },
+  {
+    value: "spring-data-neo4j",
+    label: "Spring Data Neo4j",
+    hint: "Neo4j graph mapping and repositories",
+  },
+  {
+    value: "spring-data-cassandra",
+    label: "Spring Data Cassandra",
+    hint: "Apache Cassandra mapping and repositories",
+  },
+  {
+    value: "spring-data-couchbase",
+    label: "Spring Data Couchbase",
+    hint: "Couchbase document mapping and repositories",
+  },
+  {
+    value: "spring-data-jdbc",
+    label: "Spring Data JDBC",
+    hint: "Aggregate-oriented relational persistence without JPA",
+  },
+  {
+    value: "spring-data-rest",
+    label: "Spring Data REST",
+    hint: "REST endpoints backed by Spring Data repositories",
+  },
+  {
+    value: "spring-quartz",
+    label: "Quartz Scheduler",
+    hint: "Durable scheduling and background jobs",
+  },
+  {
+    value: "spring-pulsar",
+    label: "Spring for Apache Pulsar",
+    hint: "Apache Pulsar producers, consumers, and listeners",
+  },
+  {
+    value: "spring-integration",
+    label: "Spring Integration",
+    hint: "Enterprise integration flows and messaging adapters",
+  },
+  {
+    value: "spring-websocket",
+    label: "Spring WebSocket",
+    hint: "Real-time bidirectional WebSocket messaging",
+  },
+  {
+    value: "spring-rsocket",
+    label: "Spring RSocket",
+    hint: "Reactive messaging over the RSocket protocol",
+  },
+  {
+    value: "spring-hateoas",
+    label: "Spring HATEOAS",
+    hint: "Hypermedia links and representations for REST APIs",
+  },
+  {
+    value: "spring-session-redis",
+    label: "Spring Session Redis",
+    hint: "Distributed HTTP sessions backed by Redis",
+  },
+  {
+    value: "spring-session-jdbc",
+    label: "Spring Session JDBC",
+    hint: "Database-backed HTTP sessions through JDBC",
+  },
+  {
+    value: "spring-ldap",
+    label: "Spring LDAP",
+    hint: "LDAP directory access and authentication support",
+  },
+  {
+    value: "spring-oauth2-client",
+    label: "Spring OAuth2 Client",
+    hint: "OAuth2 login and authorized client support",
+  },
+  {
+    value: "spring-saml2",
+    label: "Spring SAML2",
+    hint: "SAML 2.0 relying-party authentication",
+  },
+  {
+    value: "spring-restclient",
+    label: "Spring REST Client",
+    hint: "Synchronous HTTP client with Spring RestClient",
+  },
+  {
     value: "none",
     label: "None",
     hint: "No extra Java libraries",

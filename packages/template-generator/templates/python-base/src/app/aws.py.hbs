@@ -1,0 +1,21 @@
+{{#if (eq pythonCloudSdk "boto3")}}
+"""AWS service clients powered by Boto3."""
+
+import os
+from functools import lru_cache
+
+import boto3
+from botocore.client import BaseClient
+
+
+@lru_cache
+def s3_client() -> BaseClient:
+    """Return a cached S3 client using the standard AWS credential chain."""
+    return boto3.client("s3", region_name=os.getenv("AWS_DEFAULT_REGION", "us-east-1"))
+
+
+def list_bucket_names() -> list[str]:
+    """List S3 bucket names available to the configured AWS identity."""
+    response = s3_client().list_buckets()
+    return [bucket["Name"] for bucket in response.get("Buckets", [])]
+{{/if}}

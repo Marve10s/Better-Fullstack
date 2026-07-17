@@ -25,6 +25,7 @@ import {
   getDotnetValidationChoice,
   getDotnetDeployChoice,
   getDotnetJobQueueChoice,
+  getDotnetLibrariesChoice,
   getDotnetObservabilityChoice,
   getDotnetOrmChoice,
   getDotnetRealtimeChoice,
@@ -101,6 +102,13 @@ import {
   getPythonRealtimeChoice,
   getPythonObservabilityChoice,
   getPythonCliChoice,
+  getPythonCloudSdkChoice,
+  getPythonDataChoice,
+  getPythonHttpClientChoice,
+  getPythonMediaChoice,
+  getPythonMessageQueueChoice,
+  getPythonPackageManagerChoice,
+  getPythonServerChoice,
   getPythonTaskQueueChoice,
   getPythonValidationChoice,
   getPythonWebFrameworkChoice,
@@ -636,6 +644,56 @@ export async function gatherMultiEcosystemConfig(
         : await scopedPromptValue("python", "pythonCli", configScope, backendSections, () =>
             getPythonCliChoice(flags.pythonCli),
           );
+    const pythonCloudSdk =
+      pythonWebFramework === "none"
+        ? "none"
+        : await scopedPromptValue("python", "pythonCloudSdk", configScope, backendSections, () =>
+            getPythonCloudSdkChoice(flags.pythonCloudSdk),
+          );
+    const pythonHttpClient =
+      pythonWebFramework === "none"
+        ? "none"
+        : await scopedPromptValue("python", "pythonHttpClient", configScope, backendSections, () =>
+            getPythonHttpClientChoice(flags.pythonHttpClient),
+          );
+    const pythonData =
+      pythonWebFramework === "none"
+        ? []
+        : await scopedPromptValue("python", "pythonData", configScope, backendSections, () =>
+            getPythonDataChoice(flags.pythonData),
+          );
+    const pythonMedia =
+      pythonWebFramework === "none"
+        ? "none"
+        : await scopedPromptValue("python", "pythonMedia", configScope, backendSections, () =>
+            getPythonMediaChoice(flags.pythonMedia),
+          );
+    const pythonServer =
+      pythonWebFramework === "none"
+        ? "none"
+        : await scopedPromptValue("python", "pythonServer", configScope, backendSections, () =>
+            getPythonServerChoice(flags.pythonServer),
+          );
+    const pythonPackageManager =
+      pythonWebFramework === "none"
+        ? "uv"
+        : await scopedPromptValue(
+            "python",
+            "pythonPackageManager",
+            configScope,
+            backendSections,
+            () => getPythonPackageManagerChoice(flags.pythonPackageManager),
+          );
+    const pythonMessageQueue =
+      pythonWebFramework === "none"
+        ? "none"
+        : await scopedPromptValue(
+            "python",
+            "pythonMessageQueue",
+            configScope,
+            backendSections,
+            () => getPythonMessageQueueChoice(flags.pythonMessageQueue),
+          );
     Object.assign(backendChoices, {
       pythonWebFramework,
       pythonOrm,
@@ -650,6 +708,13 @@ export async function gatherMultiEcosystemConfig(
       pythonRealtime,
       pythonObservability,
       pythonCli,
+      pythonCloudSdk,
+      pythonHttpClient,
+      pythonData,
+      pythonMedia,
+      pythonServer,
+      pythonPackageManager,
+      pythonMessageQueue,
     });
     if (pythonWebFramework !== "none") stackPartSpecs.push(`backend:python:${pythonWebFramework}`);
     if (pythonOrm !== "none") stackPartSpecs.push(`backend.orm:python:${pythonOrm}`);
@@ -670,6 +735,18 @@ export async function gatherMultiEcosystemConfig(
     for (const cli of pythonCli) {
       if (cli !== "none") stackPartSpecs.push(`backend.cli:python:${cli}`);
     }
+    if (pythonCloudSdk !== "none") stackPartSpecs.push(`backend.cloudSdk:python:${pythonCloudSdk}`);
+    if (pythonHttpClient !== "none")
+      stackPartSpecs.push(`backend.httpClient:python:${pythonHttpClient}`);
+    for (const data of pythonData) {
+      if (data !== "none") stackPartSpecs.push(`backend.data:python:${data}`);
+    }
+    if (pythonMedia !== "none") stackPartSpecs.push(`backend.media:python:${pythonMedia}`);
+    if (pythonServer !== "none") stackPartSpecs.push(`backend.server:python:${pythonServer}`);
+    if (pythonPackageManager !== "none")
+      stackPartSpecs.push(`backend.packageManager:python:${pythonPackageManager}`);
+    if (pythonMessageQueue !== "none")
+      stackPartSpecs.push(`backend.messageQueue:python:${pythonMessageQueue}`);
   }
 
   if (backendEcosystem === "java") {
@@ -807,6 +884,12 @@ export async function gatherMultiEcosystemConfig(
         : await scopedPromptValue("dotnet", "dotnetDeploy", configScope, backendSections, () =>
             getDotnetDeployChoice(flags.dotnetDeploy),
           );
+    const dotnetLibraries =
+      dotnetWebFramework === "none"
+        ? []
+        : await scopedPromptValue("dotnet", "dotnetLibraries", configScope, backendSections, () =>
+            getDotnetLibrariesChoice(flags.dotnetLibraries),
+          );
     Object.assign(backendChoices, {
       dotnetWebFramework,
       dotnetOrm,
@@ -819,6 +902,7 @@ export async function gatherMultiEcosystemConfig(
       dotnetValidation,
       dotnetCaching,
       dotnetDeploy,
+      dotnetLibraries,
     });
     if (dotnetWebFramework !== "none") {
       stackPartSpecs.push(`backend:dotnet:${dotnetWebFramework}`);
@@ -847,6 +931,9 @@ export async function gatherMultiEcosystemConfig(
       stackPartSpecs.push(`backend.caching:dotnet:${dotnetCaching}`);
     }
     if (dotnetDeploy !== "none") stackPartSpecs.push(`backend.deploy:dotnet:${dotnetDeploy}`);
+    for (const library of dotnetLibraries) {
+      if (library !== "none") stackPartSpecs.push(`backend.libraries:dotnet:${library}`);
+    }
   }
 
   if (backendEcosystem === "elixir") {

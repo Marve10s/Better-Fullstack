@@ -19,6 +19,7 @@ import type {
   DotnetValidation,
   DotnetDeploy,
   DotnetJobQueue,
+  DotnetLibraries,
   DotnetObservability,
   DotnetOrm,
   DotnetRealtime,
@@ -86,6 +87,7 @@ import type {
   JobQueue,
   Logging,
   MobileDeepLinking,
+  MobileLibraries,
   MobileNavigation,
   MobileOTA,
   MobilePush,
@@ -109,6 +111,13 @@ import type {
   PythonRealtime,
   PythonObservability,
   PythonCli,
+  PythonCloudSdk,
+  PythonData,
+  PythonHttpClient,
+  PythonMedia,
+  PythonMessageQueue,
+  PythonPackageManager,
+  PythonServer,
   PythonGraphql,
   PythonTaskQueue,
   PythonValidation,
@@ -172,6 +181,7 @@ import {
   getDotnetValidationChoice,
   getDotnetDeployChoice,
   getDotnetJobQueueChoice,
+  getDotnetLibrariesChoice,
   getDotnetObservabilityChoice,
   getDotnetOrmChoice,
   getDotnetRealtimeChoice,
@@ -247,6 +257,7 @@ import { getJobQueueChoice } from "./job-queue";
 import { getLoggingChoice } from "./logging";
 import {
   getMobileDeepLinkingChoice,
+  getMobileLibrariesChoice,
   getMobileNavigationChoice,
   getMobileOTAChoice,
   getMobilePushChoice,
@@ -273,6 +284,13 @@ import {
   getPythonRealtimeChoice,
   getPythonObservabilityChoice,
   getPythonCliChoice,
+  getPythonCloudSdkChoice,
+  getPythonDataChoice,
+  getPythonHttpClientChoice,
+  getPythonMediaChoice,
+  getPythonMessageQueueChoice,
+  getPythonPackageManagerChoice,
+  getPythonServerChoice,
   getPythonTaskQueueChoice,
   getPythonValidationChoice,
   getPythonWebFrameworkChoice,
@@ -360,6 +378,7 @@ type PromptGroupResults = {
   mobilePush: MobilePush;
   mobileOTA: MobileOTA;
   mobileDeepLinking: MobileDeepLinking;
+  mobileLibraries: MobileLibraries[];
   // Rust ecosystem
   rustWebFramework: RustWebFramework;
   rustFrontend: RustFrontend;
@@ -390,6 +409,13 @@ type PromptGroupResults = {
   pythonRealtime: PythonRealtime;
   pythonObservability: PythonObservability;
   pythonCli: PythonCli[];
+  pythonCloudSdk: PythonCloudSdk;
+  pythonHttpClient: PythonHttpClient;
+  pythonData: PythonData[];
+  pythonMedia: PythonMedia;
+  pythonServer: PythonServer;
+  pythonPackageManager: PythonPackageManager;
+  pythonMessageQueue: PythonMessageQueue;
   // Go ecosystem
   goWebFramework: GoWebFramework;
   goOrm: GoOrm;
@@ -431,6 +457,7 @@ type PromptGroupResults = {
   dotnetValidation: DotnetValidation;
   dotnetCaching: DotnetCaching;
   dotnetDeploy: DotnetDeploy;
+  dotnetLibraries: DotnetLibraries[];
   // Elixir ecosystem
   elixirWebFramework: ElixirWebFramework;
   elixirOrm: ElixirOrm;
@@ -533,6 +560,7 @@ const CONFIG_PROMPT_ENTRY_KEY_MAP = {
   mobilePush: true,
   mobileOTA: true,
   mobileDeepLinking: true,
+  mobileLibraries: true,
   rustWebFramework: true,
   rustFrontend: true,
   rustOrm: true,
@@ -561,6 +589,13 @@ const CONFIG_PROMPT_ENTRY_KEY_MAP = {
   pythonRealtime: true,
   pythonObservability: true,
   pythonCli: true,
+  pythonCloudSdk: true,
+  pythonHttpClient: true,
+  pythonData: true,
+  pythonMedia: true,
+  pythonServer: true,
+  pythonPackageManager: true,
+  pythonMessageQueue: true,
   goWebFramework: true,
   goOrm: true,
   goApi: true,
@@ -599,6 +634,7 @@ const CONFIG_PROMPT_ENTRY_KEY_MAP = {
   dotnetValidation: true,
   dotnetCaching: true,
   dotnetDeploy: true,
+  dotnetLibraries: true,
   elixirWebFramework: true,
   elixirOrm: true,
   elixirAuth: true,
@@ -1123,6 +1159,15 @@ export async function gatherConfig(
       }
       return getMobileDeepLinkingChoice(flags.mobileDeepLinking);
     },
+    mobileLibraries: ({ results }) => {
+      if (results.ecosystem !== "typescript" && results.ecosystem !== "react-native") {
+        return Promise.resolve([] as MobileLibraries[]);
+      }
+      if (!results.frontend?.some((frontend) => frontend.startsWith("native-"))) {
+        return Promise.resolve([] as MobileLibraries[]);
+      }
+      return getMobileLibrariesChoice(flags.mobileLibraries);
+    },
     // Rust ecosystem prompts (skip if TypeScript or Python)
     rustWebFramework: ({ results }) => {
       if (results.ecosystem !== "rust") return Promise.resolve("none" as RustWebFramework);
@@ -1241,6 +1286,34 @@ export async function gatherConfig(
     pythonCli: ({ results }) => {
       if (results.ecosystem !== "python") return Promise.resolve([] as PythonCli[]);
       return getPythonCliChoice(flags.pythonCli);
+    },
+    pythonCloudSdk: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve("none" as PythonCloudSdk);
+      return getPythonCloudSdkChoice(flags.pythonCloudSdk);
+    },
+    pythonHttpClient: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve("none" as PythonHttpClient);
+      return getPythonHttpClientChoice(flags.pythonHttpClient);
+    },
+    pythonData: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve([] as PythonData[]);
+      return getPythonDataChoice(flags.pythonData);
+    },
+    pythonMedia: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve("none" as PythonMedia);
+      return getPythonMediaChoice(flags.pythonMedia);
+    },
+    pythonServer: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve("none" as PythonServer);
+      return getPythonServerChoice(flags.pythonServer);
+    },
+    pythonPackageManager: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve("uv" as PythonPackageManager);
+      return getPythonPackageManagerChoice(flags.pythonPackageManager);
+    },
+    pythonMessageQueue: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve("none" as PythonMessageQueue);
+      return getPythonMessageQueueChoice(flags.pythonMessageQueue);
     },
     // Go ecosystem prompts (skip if not Go)
     goWebFramework: ({ results }) => {
@@ -1467,6 +1540,11 @@ export async function gatherConfig(
       if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetDeploy);
       return getDotnetDeployChoice(flags.dotnetDeploy);
     },
+    dotnetLibraries: ({ results }) => {
+      if (results.ecosystem !== "dotnet") return Promise.resolve([] as DotnetLibraries[]);
+      if (results.dotnetWebFramework === "none") return Promise.resolve([] as DotnetLibraries[]);
+      return getDotnetLibrariesChoice(flags.dotnetLibraries);
+    },
     // Elixir ecosystem prompts (skip if not Elixir)
     elixirWebFramework: ({ results }) => {
       if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirWebFramework);
@@ -1642,6 +1720,7 @@ export async function gatherConfig(
     mobilePush: result.mobilePush,
     mobileOTA: result.mobileOTA,
     mobileDeepLinking: result.mobileDeepLinking,
+    mobileLibraries: result.mobileLibraries,
     // Ecosystem
     ecosystem: result.ecosystem,
     // Rust ecosystem options
@@ -1674,6 +1753,13 @@ export async function gatherConfig(
     pythonRealtime: result.pythonRealtime,
     pythonObservability: result.pythonObservability,
     pythonCli: result.pythonCli,
+    pythonCloudSdk: result.pythonCloudSdk,
+    pythonHttpClient: result.pythonHttpClient,
+    pythonData: result.pythonData,
+    pythonMedia: result.pythonMedia,
+    pythonServer: result.pythonServer,
+    pythonPackageManager: result.pythonPackageManager,
+    pythonMessageQueue: result.pythonMessageQueue,
     // Go ecosystem options
     goWebFramework: result.goWebFramework,
     goOrm: result.goOrm,
@@ -1715,6 +1801,7 @@ export async function gatherConfig(
     dotnetValidation: result.dotnetValidation,
     dotnetCaching: result.dotnetCaching,
     dotnetDeploy: result.dotnetDeploy,
+    dotnetLibraries: result.dotnetLibraries,
     // Elixir ecosystem options
     elixirWebFramework: result.elixirWebFramework,
     elixirOrm: result.elixirOrm,

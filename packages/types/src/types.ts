@@ -52,6 +52,7 @@ import type {
   MobilePushSchema,
   MobileOTASchema,
   MobileDeepLinkingSchema,
+  MobileLibrariesSchema,
   CMSSchema,
   CachingSchema,
   RateLimitSchema,
@@ -88,6 +89,13 @@ import type {
   PythonRealtimeSchema,
   PythonObservabilitySchema,
   PythonCliSchema,
+  PythonCloudSdkSchema,
+  PythonHttpClientSchema,
+  PythonDataSchema,
+  PythonMediaSchema,
+  PythonServerSchema,
+  PythonPackageManagerSchema,
+  PythonMessageQueueSchema,
   GoWebFrameworkSchema,
   GoOrmSchema,
   GoApiSchema,
@@ -126,6 +134,7 @@ import type {
   DotnetValidationSchema,
   DotnetCachingSchema,
   DotnetDeploySchema,
+  DotnetLibrariesSchema,
   ElixirWebFrameworkSchema,
   ElixirOrmSchema,
   ElixirAuthSchema,
@@ -206,6 +215,7 @@ export type MobileTesting = z.infer<typeof MobileTestingSchema>;
 export type MobilePush = z.infer<typeof MobilePushSchema>;
 export type MobileOTA = z.infer<typeof MobileOTASchema>;
 export type MobileDeepLinking = z.infer<typeof MobileDeepLinkingSchema>;
+export type MobileLibraries = z.infer<typeof MobileLibrariesSchema>;
 export type CMS = z.infer<typeof CMSSchema>;
 export type Caching = z.infer<typeof CachingSchema>;
 export type RateLimit = z.infer<typeof RateLimitSchema>;
@@ -242,6 +252,13 @@ export type PythonCaching = z.infer<typeof PythonCachingSchema>;
 export type PythonRealtime = z.infer<typeof PythonRealtimeSchema>;
 export type PythonObservability = z.infer<typeof PythonObservabilitySchema>;
 export type PythonCli = z.infer<typeof PythonCliSchema>;
+export type PythonCloudSdk = z.infer<typeof PythonCloudSdkSchema>;
+export type PythonHttpClient = z.infer<typeof PythonHttpClientSchema>;
+export type PythonData = z.infer<typeof PythonDataSchema>;
+export type PythonMedia = z.infer<typeof PythonMediaSchema>;
+export type PythonServer = z.infer<typeof PythonServerSchema>;
+export type PythonPackageManager = z.infer<typeof PythonPackageManagerSchema>;
+export type PythonMessageQueue = z.infer<typeof PythonMessageQueueSchema>;
 export type GoWebFramework = z.infer<typeof GoWebFrameworkSchema>;
 export type GoOrm = z.infer<typeof GoOrmSchema>;
 export type GoApi = z.infer<typeof GoApiSchema>;
@@ -280,6 +297,7 @@ export type DotnetObservability = z.infer<typeof DotnetObservabilitySchema>;
 export type DotnetValidation = z.infer<typeof DotnetValidationSchema>;
 export type DotnetCaching = z.infer<typeof DotnetCachingSchema>;
 export type DotnetDeploy = z.infer<typeof DotnetDeploySchema>;
+export type DotnetLibraries = z.infer<typeof DotnetLibrariesSchema>;
 export type ElixirWebFramework = z.infer<typeof ElixirWebFrameworkSchema>;
 export type ElixirOrm = z.infer<typeof ElixirOrmSchema>;
 export type ElixirAuth = z.infer<typeof ElixirAuthSchema>;

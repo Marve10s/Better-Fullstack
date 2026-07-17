@@ -1,0 +1,21 @@
+{{#if (eq pythonObservability "prometheus-client")}}
+"""Prometheus application metrics."""
+
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, generate_latest
+
+REQUESTS = Counter(
+    "app_http_requests_total",
+    "Total HTTP requests handled by the application",
+    ("method", "route", "status"),
+)
+
+
+def record_request(method: str, route: str, status: int) -> None:
+    """Increment the HTTP request counter."""
+    REQUESTS.labels(method=method, route=route, status=str(status)).inc()
+
+
+def render_metrics() -> tuple[bytes, str]:
+    """Render the Prometheus text exposition format and content type."""
+    return generate_latest(), CONTENT_TYPE_LATEST
+{{/if}}

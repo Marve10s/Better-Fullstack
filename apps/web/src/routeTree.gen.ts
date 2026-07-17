@@ -22,8 +22,10 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as GuidesIndexRouteImport } from './routes/guides/index'
 import { Route as DocsIndexRouteImport } from './routes/docs/index'
 import { Route as BlogIndexRouteImport } from './routes/blog/index'
+import { Route as StackComboSlugRouteImport } from './routes/stack_.$comboSlug'
 import { Route as GuidesSplatRouteImport } from './routes/guides/$'
 import { Route as DocsSplatRouteImport } from './routes/docs/$'
+import { Route as CompareSlugRouteImport } from './routes/compare_.$slug'
 import { Route as BlogChar123postChar125DotmdRouteImport } from './routes/blog/{$post}[.]md'
 import { Route as BlogSplatRouteImport } from './routes/blog/$'
 import { Route as ApiVerifiedCombinationsRouteImport } from './routes/api/verified-combinations'
@@ -95,6 +97,11 @@ const BlogIndexRoute = BlogIndexRouteImport.update({
   path: '/blog/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StackComboSlugRoute = StackComboSlugRouteImport.update({
+  id: '/stack_/$comboSlug',
+  path: '/stack/$comboSlug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GuidesSplatRoute = GuidesSplatRouteImport.update({
   id: '/guides/$',
   path: '/guides/$',
@@ -103,6 +110,11 @@ const GuidesSplatRoute = GuidesSplatRouteImport.update({
 const DocsSplatRoute = DocsSplatRouteImport.update({
   id: '/docs/$',
   path: '/docs/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompareSlugRoute = CompareSlugRouteImport.update({
+  id: '/compare_/$slug',
+  path: '/compare/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlogChar123postChar125DotmdRoute =
@@ -148,8 +160,10 @@ export interface FileRoutesByFullPath {
   '/api/verified-combinations': typeof ApiVerifiedCombinationsRoute
   '/blog/$': typeof BlogSplatRoute
   '/blog/{$post}.md': typeof BlogChar123postChar125DotmdRoute
+  '/compare/$slug': typeof CompareSlugRoute
   '/docs/$': typeof DocsSplatRoute
   '/guides/$': typeof GuidesSplatRoute
+  '/stack/$comboSlug': typeof StackComboSlugRoute
   '/blog/': typeof BlogIndexRoute
   '/docs/': typeof DocsIndexRoute
   '/guides/': typeof GuidesIndexRoute
@@ -170,8 +184,10 @@ export interface FileRoutesByTo {
   '/api/verified-combinations': typeof ApiVerifiedCombinationsRoute
   '/blog/$': typeof BlogSplatRoute
   '/blog/{$post}.md': typeof BlogChar123postChar125DotmdRoute
+  '/compare/$slug': typeof CompareSlugRoute
   '/docs/$': typeof DocsSplatRoute
   '/guides/$': typeof GuidesSplatRoute
+  '/stack/$comboSlug': typeof StackComboSlugRoute
   '/blog': typeof BlogIndexRoute
   '/docs': typeof DocsIndexRoute
   '/guides': typeof GuidesIndexRoute
@@ -193,8 +209,10 @@ export interface FileRoutesById {
   '/api/verified-combinations': typeof ApiVerifiedCombinationsRoute
   '/blog/$': typeof BlogSplatRoute
   '/blog/{$post}.md': typeof BlogChar123postChar125DotmdRoute
+  '/compare_/$slug': typeof CompareSlugRoute
   '/docs/$': typeof DocsSplatRoute
   '/guides/$': typeof GuidesSplatRoute
+  '/stack_/$comboSlug': typeof StackComboSlugRoute
   '/blog/': typeof BlogIndexRoute
   '/docs/': typeof DocsIndexRoute
   '/guides/': typeof GuidesIndexRoute
@@ -217,8 +235,10 @@ export interface FileRouteTypes {
     | '/api/verified-combinations'
     | '/blog/$'
     | '/blog/{$post}.md'
+    | '/compare/$slug'
     | '/docs/$'
     | '/guides/$'
+    | '/stack/$comboSlug'
     | '/blog/'
     | '/docs/'
     | '/guides/'
@@ -239,8 +259,10 @@ export interface FileRouteTypes {
     | '/api/verified-combinations'
     | '/blog/$'
     | '/blog/{$post}.md'
+    | '/compare/$slug'
     | '/docs/$'
     | '/guides/$'
+    | '/stack/$comboSlug'
     | '/blog'
     | '/docs'
     | '/guides'
@@ -261,8 +283,10 @@ export interface FileRouteTypes {
     | '/api/verified-combinations'
     | '/blog/$'
     | '/blog/{$post}.md'
+    | '/compare_/$slug'
     | '/docs/$'
     | '/guides/$'
+    | '/stack_/$comboSlug'
     | '/blog/'
     | '/docs/'
     | '/guides/'
@@ -284,8 +308,10 @@ export interface RootRouteChildren {
   ApiVerifiedCombinationsRoute: typeof ApiVerifiedCombinationsRoute
   BlogSplatRoute: typeof BlogSplatRoute
   BlogChar123postChar125DotmdRoute: typeof BlogChar123postChar125DotmdRoute
+  CompareSlugRoute: typeof CompareSlugRoute
   DocsSplatRoute: typeof DocsSplatRoute
   GuidesSplatRoute: typeof GuidesSplatRoute
+  StackComboSlugRoute: typeof StackComboSlugRoute
   BlogIndexRoute: typeof BlogIndexRoute
   DocsIndexRoute: typeof DocsIndexRoute
   GuidesIndexRoute: typeof GuidesIndexRoute
@@ -384,6 +410,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/stack_/$comboSlug': {
+      id: '/stack_/$comboSlug'
+      path: '/stack/$comboSlug'
+      fullPath: '/stack/$comboSlug'
+      preLoaderRoute: typeof StackComboSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/guides/$': {
       id: '/guides/$'
       path: '/guides/$'
@@ -396,6 +429,13 @@ declare module '@tanstack/react-router' {
       path: '/docs/$'
       fullPath: '/docs/$'
       preLoaderRoute: typeof DocsSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compare_/$slug': {
+      id: '/compare_/$slug'
+      path: '/compare/$slug'
+      fullPath: '/compare/$slug'
+      preLoaderRoute: typeof CompareSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/blog/{$post}.md': {
@@ -452,8 +492,10 @@ const rootRouteChildren: RootRouteChildren = {
   ApiVerifiedCombinationsRoute: ApiVerifiedCombinationsRoute,
   BlogSplatRoute: BlogSplatRoute,
   BlogChar123postChar125DotmdRoute: BlogChar123postChar125DotmdRoute,
+  CompareSlugRoute: CompareSlugRoute,
   DocsSplatRoute: DocsSplatRoute,
   GuidesSplatRoute: GuidesSplatRoute,
+  StackComboSlugRoute: StackComboSlugRoute,
   BlogIndexRoute: BlogIndexRoute,
   DocsIndexRoute: DocsIndexRoute,
   GuidesIndexRoute: GuidesIndexRoute,

@@ -5,6 +5,7 @@ import type {
   DotnetValidation,
   DotnetDeploy,
   DotnetJobQueue,
+  DotnetLibraries,
   DotnetObservability,
   DotnetOrm,
   DotnetRealtime,
@@ -13,12 +14,12 @@ import type {
 } from "../types";
 
 import { exitCancelled } from "../utils/errors";
+import { isCancel, navigableMultiselect, navigableSelect } from "./navigable";
 import {
   createStaticMultiPromptResolution,
   createStaticSinglePromptResolution,
   type PromptOption,
 } from "./prompt-contract";
-import { isCancel, navigableMultiselect, navigableSelect } from "./navigable";
 
 function makeChoice<T extends string>(
   message: string,
@@ -123,7 +124,11 @@ const TESTING_OPTIONS: PromptOption<DotnetTesting>[] = [
 const JOB_QUEUE_OPTIONS: PromptOption<DotnetJobQueue>[] = [
   { value: "hangfire", label: "Hangfire", hint: "Persistent background jobs and dashboard" },
   { value: "quartz-net", label: "Quartz.NET", hint: "Enterprise scheduling" },
-  { value: "hosted-services", label: "Hosted Services", hint: "Built-in BackgroundService pattern" },
+  {
+    value: "hosted-services",
+    label: "Hosted Services",
+    hint: "Built-in BackgroundService pattern",
+  },
   { value: "none", label: "None", hint: "No .NET background jobs" },
 ];
 
@@ -171,6 +176,34 @@ const DEPLOY_OPTIONS: PromptOption<DotnetDeploy>[] = [
   { value: "none", label: "None", hint: "No .NET deploy target" },
 ];
 
+const LIBRARIES_OPTIONS: PromptOption<DotnetLibraries>[] = [
+  { value: "automapper", label: "AutoMapper", hint: "Convention-based object mapping" },
+  { value: "mediatr", label: "MediatR", hint: "In-process request and notification dispatch" },
+  { value: "fastendpoints", label: "FastEndpoints", hint: "REPR-style endpoint framework" },
+  { value: "api-versioning", label: "ASP.NET API Versioning", hint: "Versioned HTTP APIs" },
+  { value: "scalar", label: "Scalar", hint: "Interactive OpenAPI reference UI" },
+  { value: "polly", label: "Polly", hint: "Resilience and transient-fault handling" },
+  { value: "masstransit", label: "MassTransit", hint: "Distributed messaging abstraction" },
+  { value: "rebus", label: "Rebus", hint: "Service bus and message workflows" },
+  { value: "coravel", label: "Coravel", hint: "Task scheduling and queuing" },
+  { value: "magic-onion", label: "MagicOnion", hint: "Realtime RPC over gRPC" },
+  { value: "prometheus-net", label: "prometheus-net", hint: "Prometheus metrics endpoint" },
+  { value: "seq", label: "Seq", hint: "Structured log sink for Seq" },
+  {
+    value: "application-insights",
+    label: "Application Insights",
+    hint: "Azure application telemetry",
+  },
+  { value: "sentry", label: "Sentry", hint: "Error and performance monitoring" },
+  { value: "mongodb-driver", label: "MongoDB Driver", hint: "Official MongoDB client" },
+  { value: "nhibernate", label: "NHibernate", hint: "Mature object-relational mapper" },
+  { value: "mapster", label: "Mapster", hint: "Fast object mapping with DI" },
+  { value: "scrutor", label: "Scrutor", hint: "Assembly scanning and decoration" },
+  { value: "refit", label: "Refit", hint: "Type-safe REST clients" },
+  { value: "fluent-email", label: "FluentEmail", hint: "Fluent email composition" },
+  { value: "none", label: "None", hint: "No additional .NET libraries" },
+];
+
 export const resolveDotnetWebFrameworkPrompt = (value?: DotnetWebFramework) =>
   createStaticSinglePromptResolution(WEB_FRAMEWORK_OPTIONS, "aspnet-minimal", value);
 export const resolveDotnetOrmPrompt = (value?: DotnetOrm) =>
@@ -193,6 +226,8 @@ export const resolveDotnetCachingPrompt = (value?: DotnetCaching) =>
   createStaticSinglePromptResolution(CACHING_OPTIONS, "none", value);
 export const resolveDotnetDeployPrompt = (value?: DotnetDeploy) =>
   createStaticSinglePromptResolution(DEPLOY_OPTIONS, "docker", value);
+export const resolveDotnetLibrariesPrompt = (value?: DotnetLibraries[]) =>
+  createStaticMultiPromptResolution(LIBRARIES_OPTIONS, [], value);
 
 export const getDotnetWebFrameworkChoice = (value?: DotnetWebFramework) =>
   makeChoice("Select .NET web framework", WEB_FRAMEWORK_OPTIONS, "aspnet-minimal", value);
@@ -216,3 +251,5 @@ export const getDotnetCachingChoice = (value?: DotnetCaching) =>
   makeChoice("Select .NET caching", CACHING_OPTIONS, "none", value);
 export const getDotnetDeployChoice = (value?: DotnetDeploy) =>
   makeChoice("Select .NET deploy target", DEPLOY_OPTIONS, "docker", value);
+export const getDotnetLibrariesChoice = (value?: DotnetLibraries[]) =>
+  makeMultiChoice("Select .NET application libraries", LIBRARIES_OPTIONS, [], value);

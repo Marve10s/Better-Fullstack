@@ -22,6 +22,7 @@ import {
   getStackSharePath,
   parseStackShareSlug,
 } from "../src/lib/stack-share-paths";
+import { getCanonicalStackSharePath } from "../src/lib/stack-share-slugs";
 import { getInitialBuilderState } from "../src/lib/stack-url-state";
 import { generateStackSharingUrl } from "../src/lib/stack-utils";
 
@@ -124,9 +125,20 @@ describe("StackState contract", () => {
     const multiStack = createDefaultMultiEcosystemShareStack();
 
     expect(elixirStack?.ecosystem).toBe("elixir");
-    expect(getStackSharePath(elixirStack as typeof DEFAULT_STACK)).toBe("/Elixir");
+    expect(getStackSharePath(elixirStack as typeof DEFAULT_STACK)).toBe("/elixir");
     expect(getStackSharePath(multiStack)).toBe("/multi-ecosystem");
     expect(parseStackShareSlug("multi-ecosystem")).toEqual(multiStack);
+  });
+
+  it("canonicalizes compact ecosystem share paths to lowercase", () => {
+    const dotnetStack = parseStackShareSlug("DotNet");
+
+    expect(getCanonicalStackSharePath("TypeScript")).toBe("/typescript");
+    expect(getCanonicalStackSharePath("React-Native")).toBe("/react-native");
+    expect(getCanonicalStackSharePath("Elixir")).toBe("/elixir");
+    expect(getCanonicalStackSharePath("DotNet")).toBe("/dotnet");
+    expect(dotnetStack?.ecosystem).toBe("dotnet");
+    expect(getStackSharePath(dotnetStack as typeof DEFAULT_STACK)).toBe("/dotnet");
   });
 
   it("keeps compact share paths out of default generated share URLs", () => {

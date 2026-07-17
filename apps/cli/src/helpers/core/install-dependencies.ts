@@ -3,7 +3,7 @@ import consola from "consola";
 import { $ } from "execa";
 import pc from "picocolors";
 
-import type { Addons, PackageManager } from "../../types";
+import type { Addons, PackageManager, PythonPackageManager } from "../../types";
 
 /**
  * Result of a post-scaffold setup step (dependency install, native build, db setup).
@@ -128,6 +128,39 @@ export async function runUvSync({ projectDir }: { projectDir: string }): Promise
     s.stop(pc.red("uv sync failed"));
     const errorMessage = toErrorMessage(error);
     consola.error(pc.red(`uv sync error: ${errorMessage}`));
+    return { step, success: false, errorMessage };
+  }
+}
+
+export async function runPythonInstall({
+  projectDir,
+  packageManager,
+}: {
+  projectDir: string;
+  packageManager: PythonPackageManager;
+}): Promise<SetupStepResult> {
+  if (packageManager === "uv") return runUvSync({ projectDir });
+
+  const s = spinner();
+  const step = `${packageManager} install (Python dependencies)`;
+
+  try {
+    if (packageManager === "poetry") {
+      s.start("Running poetry install...");
+      await $({ cwd: projectDir, stderr: "inherit" })`poetry install --extras dev`;
+    } else {
+      s.start("Creating a virtual environment and installing with pip...");
+      await $({ cwd: projectDir, stderr: "inherit" })`python -m venv .venv`;
+      const pip = process.platform === "win32" ? ".venv/Scripts/pip.exe" : ".venv/bin/pip";
+      await $({ cwd: projectDir, stderr: "inherit" })`${pip} install -e .`;
+    }
+
+    s.stop("Python dependencies installed successfully");
+    return { step, success: true };
+  } catch (error) {
+    s.stop(pc.red("Python dependency installation failed"));
+    const errorMessage = toErrorMessage(error);
+    consola.error(pc.red(`Python installation error: ${errorMessage}`));
     return { step, success: false, errorMessage };
   }
 }

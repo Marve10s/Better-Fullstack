@@ -18,4 +18,11 @@ dotnet run
 - API style: {{dotnetApi}}
 - Realtime: {{dotnetRealtime}}
 - Observability: {{#if dotnetObservability.length}}{{dotnetObservability}}{{else}}none{{/if}}
+- Libraries: {{#if dotnetLibraries.length}}{{dotnetLibraries}}{{else}}none{{/if}}
 - Deploy: {{dotnetDeploy}}
+{{#if dotnetLibraries.length}}
+
+The selected application libraries are restored as pinned NuGet references. They are intentionally
+left unregistered until you supply the app-specific transports, credentials, endpoints, and domain
+types their production configuration requires.
+{{/if}}

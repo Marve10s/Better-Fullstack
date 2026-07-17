@@ -3,43 +3,15 @@ import { ArrowRight, ArrowUpRight, Check, Copy } from "lucide-react";
 import { useCallback, useState, type CSSProperties } from "react";
 
 import Footer from "@/components/home/footer";
-import {
-  DEFAULT_OG_IMAGE_ALT,
-  DEFAULT_OG_IMAGE_HEIGHT,
-  DEFAULT_OG_IMAGE_URL,
-  DEFAULT_OG_IMAGE_WIDTH,
-  DEFAULT_ROBOTS,
-  DEFAULT_X_IMAGE_URL,
-  canonicalUrl,
-} from "@/lib/seo";
+import { buildPageHead, SITE_NAME } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages.js";
 
 export const Route = createFileRoute("/run")({
   head: () => {
-    const title = m.runSeoTitle();
+    const title = `${m.runSeoTitle()} | ${SITE_NAME}`;
     const description = m.runSeoDescription();
-    return {
-      meta: [
-        { title: `${title} — Better-Fullstack` },
-        { name: "description", content: description },
-        { name: "robots", content: DEFAULT_ROBOTS },
-        { property: "og:title", content: title },
-        { property: "og:description", content: description },
-        { property: "og:type", content: "website" },
-        { property: "og:url", content: canonicalUrl("/run") },
-        { property: "og:image", content: DEFAULT_OG_IMAGE_URL },
-        { property: "og:image:alt", content: DEFAULT_OG_IMAGE_ALT },
-        { property: "og:image:width", content: String(DEFAULT_OG_IMAGE_WIDTH) },
-        { property: "og:image:height", content: String(DEFAULT_OG_IMAGE_HEIGHT) },
-        { name: "twitter:card", content: "summary_large_image" },
-        { name: "twitter:title", content: title },
-        { name: "twitter:description", content: description },
-        { name: "twitter:image", content: DEFAULT_X_IMAGE_URL },
-        { name: "twitter:image:alt", content: DEFAULT_OG_IMAGE_ALT },
-      ],
-      links: [{ rel: "canonical", href: canonicalUrl("/run") }],
-    };
+    return buildPageHead({ title, description, path: "/run" });
   },
   component: RunPage,
 });

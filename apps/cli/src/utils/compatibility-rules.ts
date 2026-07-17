@@ -549,11 +549,15 @@ export function validateAddonCompatibility(
     if (ecosystem === "typescript" && !hasDockerComposeCompatibleFrontend(frontend)) {
       return {
         isCompatible: false,
-        reason:
-          `${title} currently supports Next.js, Vinext, TanStack Router, React Router, React Vite, Solid, or Astro`,
+        reason: `${title} currently supports Next.js, Vinext, TanStack Router, React Router, React Vite, Solid, or Astro`,
       };
     }
-    if (ecosystem === "typescript" && backend === "self" && !frontend.includes("next") && !frontend.includes("vinext")) {
+    if (
+      ecosystem === "typescript" &&
+      backend === "self" &&
+      !frontend.includes("next") &&
+      !frontend.includes("vinext")
+    ) {
       return {
         isCompatible: false,
         reason: `${title} self-backend support currently requires Next.js or Vinext`,
@@ -576,11 +580,12 @@ export function validateAddonCompatibility(
       database &&
       database !== "none" &&
       database !== "sqlite" &&
-      database !== "postgres"
+      database !== "postgres" &&
+      database !== "mongodb"
     ) {
       return {
         isCompatible: false,
-        reason: `${title} for Python ORM projects currently supports SQLite defaults or Postgres`,
+        reason: `${title} for Python ORM projects currently supports SQLite, Postgres, or MongoDB`,
       };
     }
   }
@@ -795,10 +800,7 @@ export function validateExamplesCompatibility(
  * Validates that TanStack AI is only used with compatible frontends (React or Solid).
  * Server-side @tanstack/ai core works anywhere, but client adapters only exist for React and Solid.
  */
-export function validateAIFrontendCompatibility(
-  ai: AI | undefined,
-  frontends: Frontend[] = [],
-) {
+export function validateAIFrontendCompatibility(ai: AI | undefined, frontends: Frontend[] = []) {
   const issue = getAIFrontendCompatibilityIssue(ai, frontends);
   if (!issue) return;
 
@@ -955,7 +957,8 @@ export function validateRustExpansionCompatibility(config: Partial<ProjectConfig
 
   if (framework === "loco" && api === "jsonrpsee") {
     incompatibilityError({
-      message: "Loco owns the server boot sequence and cannot start the generated jsonrpsee server.",
+      message:
+        "Loco owns the server boot sequence and cannot start the generated jsonrpsee server.",
       provided: { "rust-web-framework": framework, "rust-api": api },
       suggestions: ["Use --rust-api none", "Choose Axum, Actix Web, Rocket, Poem, Warp, or Salvo"],
     });
