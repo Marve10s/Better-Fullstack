@@ -32,7 +32,7 @@ function matchesCategoryFamily(category: string, family: string) {
 }
 
 describe("SEO contracts", () => {
-  it("includes docs, guides, MCP, and the benchmark runner in the dynamic sitemap", () => {
+  it("includes docs, guides, stack pages, MCP, and the benchmark runner in the dynamic sitemap", () => {
     const entries = getSitemapEntriesFromPages({
       docsPages: [
         { slug: [], frontmatter: { updated: "2026-05-12" } },
@@ -45,6 +45,12 @@ describe("SEO contracts", () => {
           frontmatter: { updated: "2026-05-12" },
         },
       ],
+      stackPages: [
+        {
+          slug: "nextjs-hono-drizzle-better-auth",
+          updated: "2026-07-17",
+        },
+      ],
     });
     const xml = generateSitemapXmlFromEntries(entries);
     const paths = new Set(entries.map((entry) => entry.path));
@@ -54,9 +60,11 @@ describe("SEO contracts", () => {
     expect(paths).toContain("/mcp");
     expect(paths).toContain("/run");
     expect(paths).not.toContain("/stack");
+    expect(paths).toContain("/stack/nextjs-hono-drizzle-better-auth");
     expect(paths).not.toContain("/analytics");
     expect(xml).toContain(canonicalUrl("/docs/cli/create"));
     expect(xml).toContain(canonicalUrl("/guides/typescript/create-tanstack-start-project"));
+    expect(xml).toContain(canonicalUrl("/stack/nextjs-hono-drizzle-better-auth"));
     expect(xml).not.toContain(canonicalUrl("/analytics"));
   });
 
@@ -195,11 +203,21 @@ describe("SEO contracts", () => {
           },
         },
       ],
+      stackPages: [
+        {
+          slug: "nextjs-hono-drizzle-better-auth",
+          title: "Next.js + Hono + Drizzle + Better Auth Starter",
+          description: "Compatibility-checked generated stack.",
+          ecosystem: "typescript",
+        },
+      ],
     });
 
     expect(llms).toContain(`${OPTION_COUNT_LABEL} options`);
     expect(llms).toContain("https://better-fullstack.dev/guides/typescript/create-tanstack-start-project");
     expect(llms).toContain("https://better-fullstack.dev/docs/ai/mcp-tools");
+    expect(llms).toContain("## Stack Templates");
+    expect(llms).toContain("https://better-fullstack.dev/stack/nextjs-hono-drizzle-better-auth");
   });
 
   it("uses existing manifest icon paths", async () => {

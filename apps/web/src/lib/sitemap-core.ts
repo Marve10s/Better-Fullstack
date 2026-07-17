@@ -14,6 +14,11 @@ type SitemapContentPage = {
   };
 };
 
+type SitemapStackPage = {
+  slug: string;
+  updated: string;
+};
+
 const staticSitemapEntries: SitemapEntry[] = [
   { path: "/", changefreq: "daily", priority: 1 },
   { path: "/new", changefreq: "daily", priority: 0.9 },
@@ -50,10 +55,12 @@ export function getSitemapEntriesFromPages({
   docsPages,
   guidePages,
   blogPages = [],
+  stackPages = [],
 }: {
   docsPages: SitemapContentPage[];
   guidePages: SitemapContentPage[];
   blogPages?: SitemapContentPage[];
+  stackPages?: SitemapStackPage[];
 }): SitemapEntry[] {
   const docsEntries = docsPages.map((page): SitemapEntry => {
     return {
@@ -85,8 +92,23 @@ export function getSitemapEntriesFromPages({
     ),
   ];
 
+  const stackEntries = stackPages.map(
+    (page): SitemapEntry => ({
+      path: `/stack/${page.slug}`,
+      changefreq: "weekly",
+      lastmod: page.updated,
+      priority: 0.75,
+    }),
+  );
+
   const entriesByUrl = new Map<string, SitemapEntry>();
-  for (const entry of [...staticSitemapEntries, ...docsEntries, ...guideEntries, ...blogEntries]) {
+  for (const entry of [
+    ...staticSitemapEntries,
+    ...docsEntries,
+    ...guideEntries,
+    ...blogEntries,
+    ...stackEntries,
+  ]) {
     entriesByUrl.set(canonicalUrl(entry.path), entry);
   }
 

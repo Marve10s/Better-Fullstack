@@ -10,6 +10,13 @@ type LlmsPage = {
   };
 };
 
+type LlmsStackPage = {
+  slug: string;
+  title: string;
+  description: string;
+  ecosystem: string;
+};
+
 function pageLine(title: string | undefined, url: string, description?: string) {
   const label = title ?? url;
   const suffix = description ? ` - ${description}` : "";
@@ -20,10 +27,12 @@ export function generateLlmsTxt({
   docsPages,
   guidePages,
   blogPages = [],
+  stackPages = [],
 }: {
   docsPages: LlmsPage[];
   guidePages: LlmsPage[];
   blogPages?: LlmsPage[];
+  stackPages?: LlmsStackPage[];
 }) {
   const visibleGuidePages = guidePages.filter((page) => page.slug.length > 0);
   const featuredDocs = docsPages.filter((page) =>
@@ -45,6 +54,21 @@ export function generateLlmsTxt({
       "/docs/ecosystems/elixir",
     ].includes(page.url),
   );
+  const stackPagesByEcosystem = new Map<string, LlmsStackPage[]>();
+  for (const page of stackPages) {
+    const ecosystemPages = stackPagesByEcosystem.get(page.ecosystem);
+    if (ecosystemPages) ecosystemPages.push(page);
+    else stackPagesByEcosystem.set(page.ecosystem, [page]);
+  }
+  const stackTemplateLines: string[] = [];
+  for (const [ecosystem, pages] of stackPagesByEcosystem) {
+    stackTemplateLines.push(
+      `### ${ecosystem === "typescript" ? "TypeScript" : ecosystem[0].toUpperCase() + ecosystem.slice(1)}`,
+      "",
+      ...pages.map((page) => pageLine(page.title, `/stack/${page.slug}`, page.description)),
+      "",
+    );
+  }
 
   return [
     `# ${SITE_NAME}`,
@@ -89,6 +113,9 @@ export function generateLlmsTxt({
       pageLine(page.frontmatter.title, page.url, page.frontmatter.description),
     ),
     "",
+    ...(stackPages.length
+      ? ["## Stack Templates", "", ...stackTemplateLines]
+      : []),
     ...(blogPages.length
       ? [
           "## Blog",
