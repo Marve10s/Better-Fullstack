@@ -88,6 +88,18 @@ describe("stack selection translation", () => {
     );
   });
 
+  it("serializes the shared database for server ecosystem commands", () => {
+    for (const ecosystem of ["rust", "python", "go", "java", "dotnet", "elixir"] as const) {
+      expect(
+        generateStackSelectionCommand({
+          ...DEFAULT_SELECTION,
+          ecosystem,
+          database: "postgres",
+        }),
+      ).toContain("--database postgres");
+    }
+  });
+
   it("emits canonical graph --part flags for multi-ecosystem selections", () => {
     const command = generateStackSelectionCommand({
       ...DEFAULT_SELECTION,

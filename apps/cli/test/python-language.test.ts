@@ -419,6 +419,30 @@ describe("Python Language Support", () => {
         ),
       ).toThrow("Gunicorn requires a WSGI, ASGI, or aiohttp Python application.");
     });
+
+    it("rejects auth selections whose routes are not wired for Starlette", () => {
+      expect(() =>
+        runWithContext({ silent: true }, () =>
+          validateConfigForProgrammaticUse({
+            ecosystem: "python",
+            pythonWebFramework: "starlette",
+            pythonAuth: "pyjwt",
+          }),
+        ),
+      ).toThrow("Python auth routes are not wired for starlette.");
+    });
+
+    it("rejects GraphQL selections whose routes are not wired for Starlette", () => {
+      expect(() =>
+        runWithContext({ silent: true }, () =>
+          validateConfigForProgrammaticUse({
+            ecosystem: "python",
+            pythonWebFramework: "starlette",
+            pythonGraphql: "strawberry",
+          }),
+        ),
+      ).toThrow("Python GraphQL is only wired for FastAPI, Django, Flask, and Litestar.");
+    });
   });
 
   describe("Flask Web Framework", () => {

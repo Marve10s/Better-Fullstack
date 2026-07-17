@@ -1194,7 +1194,9 @@ export function validatePythonExpansionConstraints(config: Partial<ProjectConfig
   }
 
   if (
-    (config.pythonWebFramework === "aiohttp" || config.pythonWebFramework === "streamlit") &&
+    (config.pythonWebFramework === "aiohttp" ||
+      config.pythonWebFramework === "starlette" ||
+      config.pythonWebFramework === "streamlit") &&
     config.pythonGraphql !== undefined &&
     config.pythonGraphql !== "none"
   ) {
@@ -1212,7 +1214,9 @@ export function validatePythonExpansionConstraints(config: Partial<ProjectConfig
   }
 
   if (
-    (config.pythonWebFramework === "aiohttp" || config.pythonWebFramework === "streamlit") &&
+    (config.pythonWebFramework === "aiohttp" ||
+      config.pythonWebFramework === "starlette" ||
+      config.pythonWebFramework === "streamlit") &&
     config.pythonAuth !== undefined &&
     config.pythonAuth !== "none"
   ) {

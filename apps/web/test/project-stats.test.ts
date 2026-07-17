@@ -4,6 +4,7 @@ import path from "node:path";
 
 import { ECOSYSTEM_VALUES, OPTION_CATEGORY_METADATA } from "@better-fullstack/types";
 
+import { COMPETITOR_COMPARISONS } from "../src/lib/compare-tools";
 import {
   COMPARISON_COUNTS,
   ECOSYSTEM_COUNT_LABEL,
@@ -45,6 +46,16 @@ describe("dynamic project statistics", () => {
     expect(COMPARISON_COUNTS.databases).toBe(
       OPTION_CATEGORY_METADATA.database.options.filter((option) => option.id !== "none").length,
     );
+  });
+
+  it("does not describe supported Polar and Workers options as missing", () => {
+    const betterTStack = COMPETITOR_COMPARISONS.find(
+      (comparison) => comparison.slug === "better-t-stack",
+    );
+    const copy = JSON.stringify(betterTStack);
+
+    expect(copy).not.toContain("Better Fullstack currently lacks, such as Polar payments");
+    expect(copy).not.toContain("Better Fullstack currently lacks, such as Cloudflare Workers");
   });
 
   it("derives application frontend and backend counts across every ecosystem", () => {

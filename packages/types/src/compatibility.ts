@@ -1766,6 +1766,7 @@ export const analyzeStackCompatibility = (
     }
     if (
       (nextStack.pythonWebFramework === "aiohttp" ||
+        nextStack.pythonWebFramework === "starlette" ||
         nextStack.pythonWebFramework === "streamlit") &&
       nextStack.pythonGraphql !== "none"
     ) {
@@ -1778,6 +1779,7 @@ export const analyzeStackCompatibility = (
     }
     if (
       (nextStack.pythonWebFramework === "aiohttp" ||
+        nextStack.pythonWebFramework === "starlette" ||
         nextStack.pythonWebFramework === "streamlit") &&
       nextStack.pythonAuth !== "none"
     ) {

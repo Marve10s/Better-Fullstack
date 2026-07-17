@@ -254,7 +254,7 @@ const betterTStack: CompetitorComparison = {
     {
       heading: "Where Better-T-Stack shines",
       paragraphs: [
-        "It is a focused, very actively developed tool — multiple releases per week as of July 2026 — and its narrower scope means fewer templates to maintain per option, a tight default path (Hono + tRPC + Drizzle + Better Auth), and options Better Fullstack currently lacks, such as Polar payments and a Cloudflare Workers runtime target. As of July 2026 it is also the more downloaded of the two (roughly 11,900 npm downloads/month vs roughly 3,000 for Better Fullstack).",
+        "It is a focused, very actively developed tool — multiple releases per week as of July 2026 — and its narrower scope means fewer templates to maintain per option and a tight default path (Hono + tRPC + Drizzle + Better Auth). As of July 2026 it is also the more downloaded of the two (roughly 11,900 npm downloads/month vs roughly 3,000 for Better Fullstack).",
         "If your work is entirely TypeScript and its menu covers your stack, Better-T-Stack is an excellent choice — that focus is exactly what it optimizes for.",
       ],
     },

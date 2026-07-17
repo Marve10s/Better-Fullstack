@@ -1240,6 +1240,18 @@ describe("compatibility issue helpers", () => {
     expect(getDisabledReason(streamlitStack, "pythonServer", "gunicorn")).toBe(
       "Gunicorn requires a WSGI, ASGI, or aiohttp application",
     );
+
+    const starletteResult = analyzeStackCompatibility({
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "python",
+      pythonWebFramework: "starlette",
+      pythonAuth: "pyjwt",
+      pythonGraphql: "strawberry",
+    });
+    expect(starletteResult.adjustedStack).toMatchObject({
+      pythonAuth: "none",
+      pythonGraphql: "none",
+    });
   });
 
   it("locks Effect backend services and validation without blocking compatible tools", () => {

@@ -2427,6 +2427,7 @@ function generateReactNativeCommand(selection: StackSelectionInput, projectName:
 function generateRustCommand(selection: StackSelectionInput, projectName: string) {
   const flags: string[] = [
     "--ecosystem rust",
+    `--database ${selection.database}`,
     `--rust-web-framework ${selection.rustWebFramework}`,
     `--rust-frontend ${selection.rustFrontend}`,
     `--rust-orm ${selection.rustOrm}`,
@@ -2457,6 +2458,7 @@ function generateRustCommand(selection: StackSelectionInput, projectName: string
 function generatePythonCommand(selection: StackSelectionInput, projectName: string) {
   const flags: string[] = [
     "--ecosystem python",
+    `--database ${selection.database}`,
     `--python-web-framework ${selection.pythonWebFramework}`,
     `--python-orm ${selection.pythonOrm}`,
     `--python-validation ${selection.pythonValidation}`,
@@ -2494,6 +2496,7 @@ function generatePythonCommand(selection: StackSelectionInput, projectName: stri
 function generateGoCommand(selection: StackSelectionInput, projectName: string) {
   const flags: string[] = [
     "--ecosystem go",
+    `--database ${selection.database}`,
     `--go-web-framework ${selection.goWebFramework}`,
     `--go-orm ${selection.goOrm}`,
     `--go-api ${selection.goApi}`,
@@ -2529,6 +2532,7 @@ function generateGoCommand(selection: StackSelectionInput, projectName: string) 
 function generateJavaCommand(selection: StackSelectionInput, projectName: string) {
   const flags: string[] = [
     "--ecosystem java",
+    `--database ${selection.database}`,
     `--java-web-framework ${selection.javaWebFramework}`,
     // Emit the language flag only for the non-default (Kotlin) variant so the
     // command for every existing Java selection stays byte-identical.
@@ -2556,6 +2560,7 @@ function generateJavaCommand(selection: StackSelectionInput, projectName: string
 function generateDotnetCommand(selection: StackSelectionInput, projectName: string) {
   const flags: string[] = [
     "--ecosystem dotnet",
+    `--database ${selection.database}`,
     `--dotnet-web-framework ${selection.dotnetWebFramework}`,
     `--dotnet-orm ${selection.dotnetOrm}`,
     `--dotnet-auth ${selection.dotnetAuth}`,
@@ -2580,6 +2585,7 @@ function generateDotnetCommand(selection: StackSelectionInput, projectName: stri
 function generateElixirCommand(selection: StackSelectionInput, projectName: string) {
   const flags: string[] = [
     "--ecosystem elixir",
+    `--database ${selection.database}`,
     `--elixir-web-framework ${selection.elixirWebFramework}`,
     `--elixir-orm ${selection.elixirOrm}`,
     `--elixir-auth ${selection.elixirAuth}`,

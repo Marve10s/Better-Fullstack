@@ -48,6 +48,12 @@ describe("programmatic stack pages", () => {
     }
   });
 
+  it("keeps copied commands faithful to the selected database", () => {
+    for (const page of pages.filter((candidate) => candidate.ecosystem !== "typescript")) {
+      expect(page.command).toContain(`--database ${page.selection.database}`);
+    }
+  });
+
   it("filters inert cross-ecosystem parts before graph validation for Rust", () => {
     const page = getStackPage("rust-axum-leptos-seaorm");
     expect(page).toBeDefined();
