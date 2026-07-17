@@ -22,6 +22,7 @@ const staticSitemapEntries: SitemapEntry[] = [
   { path: "/compare/create-t3-app", changefreq: "weekly", priority: 0.7 },
   { path: "/compare/better-t-stack", changefreq: "weekly", priority: 0.7 },
   { path: "/mcp", changefreq: "weekly", priority: 0.7 },
+  { path: "/run", changefreq: "weekly", priority: 0.7 },
 ];
 
 function escapeXml(value: string) {

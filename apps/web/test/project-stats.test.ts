@@ -10,7 +10,21 @@ import {
   ECOSYSTEM_NAMES,
   OPTION_ENTRY_COUNT,
   PROJECT_ECOSYSTEM_COPY,
+  SOFTWARE_APPLICATION_COUNTS,
 } from "../src/lib/project-stats";
+
+function countUniqueOptions(categoryMatches: (category: string) => boolean) {
+  const optionIds = new Set<string>();
+
+  for (const [category, metadata] of Object.entries(OPTION_CATEGORY_METADATA)) {
+    if (!categoryMatches(category)) continue;
+    for (const option of metadata.options) {
+      if (option.id !== "none") optionIds.add(option.id);
+    }
+  }
+
+  return optionIds.size;
+}
 
 describe("dynamic project statistics", () => {
   it("derives ecosystem and option totals from canonical metadata", () => {
@@ -30,6 +44,17 @@ describe("dynamic project statistics", () => {
     expect(Object.values(COMPARISON_COUNTS).every((count) => count > 0)).toBe(true);
     expect(COMPARISON_COUNTS.databases).toBe(
       OPTION_CATEGORY_METADATA.database.options.filter((option) => option.id !== "none").length,
+    );
+  });
+
+  it("derives application frontend and backend counts across every ecosystem", () => {
+    expect(SOFTWARE_APPLICATION_COUNTS.frontendFrameworks).toBe(
+      countUniqueOptions((category) => category.endsWith("Frontend")),
+    );
+    expect(SOFTWARE_APPLICATION_COUNTS.backendFrameworks).toBe(
+      countUniqueOptions(
+        (category) => category === "backend" || category.endsWith("WebFramework"),
+      ),
     );
   });
 

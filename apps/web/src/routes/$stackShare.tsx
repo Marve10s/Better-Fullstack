@@ -1,9 +1,24 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 
 import { StackBuilderPage } from "@/components/stack-builder/stack-builder-page";
-import { canonicalUrl, SITE_NAME } from "@/lib/seo";
+import { buildPageHead, SITE_NAME } from "@/lib/seo";
 import { parseStackShareSlug } from "@/lib/stack-share-paths";
-import { m } from "@/paraglide/messages.js";
+import {
+  getCanonicalStackSharePath,
+  normalizeStackShareSlug,
+} from "@/lib/stack-share-slugs";
+
+const STACK_SHARE_LABELS = {
+  typescript: "TypeScript",
+  "react-native": "React Native",
+  rust: "Rust",
+  python: "Python",
+  go: "Go",
+  java: "Java",
+  elixir: "Elixir",
+  dotnet: ".NET",
+  "multi-ecosystem": "Multi-ecosystem",
+} as const;
 
 export const Route = createFileRoute("/$stackShare")({
   loader: ({ params }) => {
@@ -12,25 +27,16 @@ export const Route = createFileRoute("/$stackShare")({
     return { stack };
   },
   head: ({ params }) => {
-    const title = `${params.stackShare} Stack | ${SITE_NAME}`;
-    const description = m.shortStackSeoDescription();
+    const canonicalSlug = normalizeStackShareSlug(params.stackShare);
+    const label = canonicalSlug ? STACK_SHARE_LABELS[canonicalSlug] : "Shared";
+    const title = `${label} Stack | ${SITE_NAME}`;
+    const description = `Open the Better Fullstack ${label} builder configuration.`;
 
-    return {
-      meta: [
-        { title },
-        {
-          name: "description",
-          content: description,
-        },
-        { property: "og:title", content: title },
-        {
-          property: "og:description",
-          content: description,
-        },
-        { property: "og:url", content: canonicalUrl(`/${params.stackShare}`) },
-      ],
-      links: [{ rel: "canonical", href: canonicalUrl(`/${params.stackShare}`) }],
-    };
+    return buildPageHead({
+      title,
+      description,
+      path: getCanonicalStackSharePath(params.stackShare) ?? `/${params.stackShare.toLowerCase()}`,
+    });
   },
   component: StackSharePage,
 });
