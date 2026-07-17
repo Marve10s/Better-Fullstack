@@ -24,11 +24,30 @@ export type FailureTag =
   | "validation-failed"
   | "build-failed"
   | "budget-exhausted"
+  | "deadline-exhausted"
+  | "timeout-progressing"
+  | "timeout-stuck"
+  | "provider-infra"
+  | "harness-infra"
+  | "validation-infra"
   | "toolchain-missing"
   | "stack-unwired"
   | "validation-deferred";
 
-export type RunOutcome = "success" | "model-failure" | "infra-inconclusive";
+/** Evidence-backed terminal category persisted on every new run. */
+export type RunOutcome =
+  | "success"
+  | "model-failure"
+  | "provider-infra"
+  | "harness-infra"
+  | "validation-infra"
+  | "budget-exhausted"
+  | "deadline-exhausted";
+
+/** Backward-compatible aggregate rollup. Only infrastructure is inconclusive. */
+export type RunOutcomeRollup = "success" | "model-failure" | "infra-inconclusive";
+export type TimeoutProgress = "timeout-progressing" | "timeout-stuck";
+export type PublicationEligibility = "ranked" | "exploratory";
 
 export type StrictMarker = {
   id: string;
@@ -42,6 +61,8 @@ export type StrictMarker = {
 
 export type BenchmarkSpec = {
   id: string;
+  /** ISO date of the commit that introduced this benchmark cohort. */
+  introducedAt: string;
   title: string;
   lane: "core" | "extended";
   family:
@@ -76,6 +97,10 @@ export type BenchmarkSpec = {
    * wired, so a reasonable alternative (pgvector for semantic search) is not
    * penalised the way the strict canonical markers would. */
   acceptanceSets?: Record<string, readonly string[]>;
+  /** Multiplies the generation hard ceiling for unusually large specs. */
+  timeoutMultiplier?: number;
+  /** Ordered code-generation/setup commands that must run before builds. */
+  prerequisiteCommands?: readonly (readonly string[])[];
   validationProfile: {
     packageManager?: "bun";
     native?: readonly ("cargo" | "dotnet" | "go" | "python" | "java" | "elixir")[];
@@ -93,6 +118,12 @@ export type StepResult = {
    * environment problem, distinct from a child process that ran and exited
    * non-zero (e.g. a generated `bun run build` whose script is broken). */
   spawnError?: boolean;
+  /** Normalized spawn error code/reason (for example ENOENT/NotFound). */
+  spawnErrorCode?: string;
+  /** A transient install failure recurred after the single retry. */
+  transientNetwork?: boolean;
+  /** Number of automatic transient-network retries performed. */
+  retryCount?: number;
   /**
    * How to read this step when scoring:
    * - "ran" (or absent): a real command executed — judge it by exitCode.
@@ -112,6 +143,11 @@ export type StepResult = {
 export type CommandResult = StepResult & {
   stdout: string;
   stderr: string;
+  timeoutKind?: "hard" | "idle";
+  timeoutProgress?: TimeoutProgress;
+  startedAtMs?: number;
+  lastStdoutActivityAtMs?: number;
+  lastProgressActivityAtMs?: number;
 };
 
 export type CommandDisciplineCheck = {
@@ -128,6 +164,8 @@ export type ToolCompliance = {
 
 export type ProjectValidation = {
   projectExists: boolean;
+  /** Whether advisory quality checks were requested for this validation. */
+  qualityGateRequested?: boolean;
   /** Project generation finished, but validation is intentionally queued for a
    * later phase. Deferred validation is excluded from the pass-rate denominator
    * until the runner validates the archived project. */
@@ -144,6 +182,49 @@ export type ProjectValidation = {
   test?: StepResult;
   doctor?: StepResult;
   route?: StepResult;
+};
+
+export type AgentRunAccounting = {
+  exitCode: number | null;
+  timedOut: boolean;
+  durationMs: number;
+  resultDurationMs?: number;
+  outputTokens?: number;
+  totalCostUsd?: number;
+  sessionId?: string;
+  terminalReason?: string;
+  spawnError?: boolean;
+  spawnErrorCode?: string;
+  timeoutKind?: "hard" | "idle";
+  timeoutProgress?: TimeoutProgress;
+  stderrTail?: string;
+};
+
+export type BudgetPolicy = {
+  /** Only the Claude CLI enforces the cap during generation. */
+  budgetEnforced: boolean;
+  maxBudgetUsd: number;
+};
+
+export type RunProvenance = {
+  suiteVersion: string;
+  harnessVersion: string;
+  validationCacheVersion: number;
+  promptVersion: string;
+  agentAdapter: string;
+  configuredTrials: number;
+  specOrderSeed: number;
+};
+
+export type RepairResult = {
+  attemptedAt: string;
+  failingStep: string;
+  prompt: string;
+  claude: AgentRunAccounting;
+  validation: ProjectValidation;
+  stackScore: StackScore;
+  outcome: RunOutcome;
+  failureTags: FailureTag[];
 };
 
 export type StackScore = {
@@ -166,16 +247,13 @@ export type RunResult = {
   runDir: string;
   projectName: string;
   projectDir: string | null;
-  claude: {
-    exitCode: number | null;
-    timedOut: boolean;
-    durationMs: number;
-    resultDurationMs?: number;
-    outputTokens?: number;
-    totalCostUsd?: number;
-    sessionId?: string;
-    terminalReason?: string;
-  };
+  claude: AgentRunAccounting;
+  /** Fine-grained outcome; optional only for loading pre-2.2 summaries. */
+  outcome?: RunOutcome;
+  /** Per-run policy, including caps adapters cannot enforce in-process. */
+  budgetPolicy?: BudgetPolicy;
+  /** Version/adapter integrity stamps used for ranked publication eligibility. */
+  provenance?: RunProvenance;
   validation: ProjectValidation;
   /** Primary "right libs" signal: libraries actually wired in the generated tree. */
   stackScore: StackScore;
@@ -185,9 +263,12 @@ export type RunResult = {
   acceptanceScore?: StackScore;
   toolCompliance: ToolCompliance;
   failureTags: FailureTag[];
+  /** Optional second attempt; the original fields remain the pass@1 result. */
+  repair?: RepairResult;
 };
 
 export type ScaffbenchOptions = {
+  command?: "run" | "calibrate";
   model: string;
   efforts: Effort[];
   paths: CreationPath[];
@@ -205,6 +286,7 @@ export type ScaffbenchOptions = {
   promptStyle: PromptStyle;
   listSpecs: boolean;
   writeMatrixOnly: boolean;
+  repair?: boolean;
 };
 
 export type SummaryAggregate = {
@@ -225,6 +307,7 @@ export type SummaryAggregate = {
    * A separate signal — it never demotes passRate, so a formatting failure is a
    * quality metric, not a brokenness verdict. */
   qualityPassCount: number;
+  qualityScoredRuns: number;
   qualityPassRate: number;
   passCi95: { low: number; high: number };
   /** True when scoredRuns >= MIN_CI_RUNS, so the Wilson interval is worth showing. */
@@ -251,6 +334,8 @@ export type SummaryAggregate = {
   avgOutputTokens?: number;
   avgCostUsd?: number;
   failureTags: Record<string, number>;
+  outcomeCounts: Partial<Record<RunOutcome, number>>;
+  publicationEligibility: PublicationEligibility;
 };
 
 export type ScaffbenchSummary = {

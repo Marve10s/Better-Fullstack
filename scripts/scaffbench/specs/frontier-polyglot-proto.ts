@@ -2,6 +2,7 @@ import type { BenchmarkSpec } from "@/types";
 
 export const FrontierPolyglotProtoSpec: BenchmarkSpec = {
     id: "frontier-polyglot-proto",
+    introducedAt: "2026-07-10",
     title: "Frontier: polyglot monorepo — shared protobuf across a Rust gRPC service, a Go gateway, and a TS client",
     lane: "core",
     family: "multi-ecosystem",
@@ -33,6 +34,7 @@ export const FrontierPolyglotProtoSpec: BenchmarkSpec = {
       { id: "go:grpc", text: ["google.golang.org/grpc"] },
       { id: "ts:protobuf", text: ["protobuf"] },
     ],
+    prerequisiteCommands: [["buf", "generate"]],
     validationProfile: { packageManager: "bun", native: ["cargo", "go"] },
   };
 

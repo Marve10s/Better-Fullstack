@@ -2,6 +2,7 @@ import type { BenchmarkSpec } from "@/types";
 
 export const ReactNativeExpoSpec: BenchmarkSpec = {
     id: "react-native-expo",
+    introducedAt: "2026-07-10",
     title: "React Native Expo app with Expo Router, Uniwind, MMKV, and Maestro + RNTL",
     lane: "core",
     family: "react-native",

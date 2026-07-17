@@ -1,6 +1,7 @@
 import * as Effect from "effect/Effect";
 import { existsSync, readdirSync } from "node:fs";
-import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 
 import type {
@@ -15,14 +16,46 @@ import type {
 import { runCommand, tail } from "@/agents/command";
 import { bfSpec, VALIDATION_TIMEOUT_MS } from "@/constants";
 import { typecheckGate } from "@/scoring";
+import { hasTransientNetworkSignature } from "@/validation/classification";
 import { parseJsonc, walk } from "@/validation/shared";
 
 function fromPromise<A>(evaluate: () => Promise<A>) {
   return Effect.tryPromise({ try: evaluate, catch: (cause) => cause });
 }
 
-function commandStep(command: string, args: readonly string[], cwd: string) {
-  return runCommand(command, args, cwd, VALIDATION_TIMEOUT_MS).pipe(Effect.map(toStep));
+type CommandStepOptions = {
+  retryTransientNetwork?: boolean;
+  env?: Record<string, string>;
+};
+
+export function commandStep(
+  command: string,
+  args: readonly string[],
+  cwd: string,
+  options: CommandStepOptions = {},
+) {
+  return Effect.gen(function* () {
+    const first = toStep(
+      yield* runCommand(command, args, cwd, VALIDATION_TIMEOUT_MS, { env: options.env }),
+    );
+    if (
+      !options.retryTransientNetwork ||
+      first.exitCode === 0 ||
+      !hasTransientNetworkSignature(first)
+    ) {
+      return first;
+    }
+    const retry = toStep(
+      yield* runCommand(command, args, cwd, VALIDATION_TIMEOUT_MS, { env: options.env }),
+    );
+    return {
+      ...retry,
+      durationMs: first.durationMs + retry.durationMs,
+      retryCount: 1,
+      transientNetwork:
+        retry.exitCode !== 0 && hasTransientNetworkSignature(retry) ? true : undefined,
+    };
+  });
 }
 
 // Every manifest the validators understand — Java/Gradle, Elixir, and .NET
@@ -43,7 +76,9 @@ const PROJECT_MANIFESTS = [
 
 function hasDotnetManifest(dir: string) {
   try {
-    return readdirSync(dir).some((name) => name.endsWith(".csproj") || name.endsWith(".sln"));
+    return readdirSync(dir).some(
+      (name) => name.endsWith(".csproj") || name.endsWith(".sln") || name.endsWith(".slnx"),
+    );
   } catch {
     return false;
   }
@@ -120,18 +155,16 @@ function dropNestedRoots(roots: string[]) {
   return kept;
 }
 
-// Sub-roots beyond the first get their steps namespaced "<rel>:<step>" so one
-// ecosystem's verdict can never clobber another's (pre-fix, Object.assign let a
-// later ecosystem's install/build keys silently overwrite an earlier one's).
-const SUBROOT_CAP = 3;
-
 export function validateProject(
   spec: BenchmarkSpec,
   projectDir: string | null,
   options: ScaffbenchOptions,
 ) {
   return Effect.gen(function* () {
-    if (!projectDir) return { projectExists: false, steps: {} } as ProjectValidation;
+    const qualityGateRequested = options.qualityGate;
+    if (!projectDir) {
+      return { projectExists: false, qualityGateRequested, steps: {} } as ProjectValidation;
+    }
     const steps: Record<string, StepResult | undefined> = {};
 
     const prefixFor = (root: string) =>
@@ -141,6 +174,7 @@ export function validateProject(
       prefix: string,
       eco: string,
     ) => {
+      let merged = 0;
       for (const [key, step] of Object.entries(incoming)) {
         if (!step) continue;
         const target = prefix ? `${prefix}:${key}` : key;
@@ -148,26 +182,34 @@ export function validateProject(
         // Cargo.toml both produce "build"): namespace by ecosystem instead of
         // overwriting the earlier verdict.
         steps[steps[target] === undefined ? target : `${eco}:${key}`] = step;
+        merged += 1;
+      }
+      if (merged === 0) {
+        steps[prefix ? `${prefix}:unvalidated` : `${eco}:unvalidated`] = skipStep(
+          `${eco} manifest discovered but no validator step ran`,
+        );
       }
     };
     // Sub-roots never run the project-level doctor/route checks (bfs metadata and
     // the dev server are root concerns).
     const subOptions = { ...options, doctorCheck: false, routeCheck: false };
-    // Roots beyond the cap are disclosed as "na" marker steps (visible in the
-    // step record, excluded from scoring) instead of being silently ignored.
-    const capRoots = (roots: string[], eco: string) => {
-      for (const dropped of roots.slice(SUBROOT_CAP)) {
-        steps[`${prefixFor(dropped)}:unvalidated`] = naStep(
-          `${eco} root over the ${SUBROOT_CAP}-root cap — not validated`,
-        );
+
+    // Spec-declared code generation/setup runs in order and gates every build.
+    for (const [index, prerequisite] of (spec.prerequisiteCommands ?? []).entries()) {
+      const [command, ...args] = prerequisite;
+      const key = `prerequisite:${String(index + 1).padStart(2, "0")}:${command ?? "missing"}`;
+      steps[key] = command
+        ? yield* commandStep(command, args, projectDir)
+        : skipStep("empty prerequisite command");
+      if (!steps[key] || !stepGreen(steps[key])) {
+        return buildProjectValidation(steps, qualityGateRequested);
       }
-      return roots.slice(0, SUBROOT_CAP);
-    };
+    }
+    const prerequisiteStepCount = Object.keys(steps).length;
 
     // TS/bun — workspace-shaped: the shallowest package.json drives its members.
-    const bunRoots = capRoots(
-      dropNestedRoots(yield* fromPromise(() => findManifestRoots(projectDir, ["package.json"]))),
-      "bun",
+    const bunRoots = dropNestedRoots(
+      yield* fromPromise(() => findManifestRoots(projectDir, ["package.json"])),
     );
     for (const root of bunRoots) {
       const isRoot = root === projectDir;
@@ -181,7 +223,7 @@ export function validateProject(
           (yield* fromPromise(() => findManifestRoots(projectDir, ["package.json"]))).filter(
             (r) => r !== projectDir,
           ),
-        ).slice(0, SUBROOT_CAP);
+        );
         for (const member of members) {
           merge(yield* validateBunProject(member, subOptions), prefixFor(member), "bun");
         }
@@ -190,9 +232,8 @@ export function validateProject(
 
     const nativeProfiles = new Set(spec.validationProfile.native ?? []);
     // Rust/Python — workspace-shaped like bun: shallowest manifest wins.
-    const cargoRoots = capRoots(
-      dropNestedRoots(yield* fromPromise(() => findManifestRoots(projectDir, ["Cargo.toml"]))),
-      "cargo",
+    const cargoRoots = dropNestedRoots(
+      yield* fromPromise(() => findManifestRoots(projectDir, ["Cargo.toml"])),
     );
     for (const root of cargoRoots) {
       merge(
@@ -201,9 +242,8 @@ export function validateProject(
         "cargo",
       );
     }
-    const pythonRoots = capRoots(
-      dropNestedRoots(yield* fromPromise(() => findManifestRoots(projectDir, ["pyproject.toml"]))),
-      "python",
+    const pythonRoots = dropNestedRoots(
+      yield* fromPromise(() => findManifestRoots(projectDir, ["pyproject.toml"])),
     );
     for (const root of pythonRoots) {
       merge(
@@ -214,10 +254,7 @@ export function validateProject(
     }
     // Go — every go.mod is an independent module: `go build ./...` in a parent
     // module never descends into a nested module, so validate each root.
-    const goRoots = capRoots(
-      yield* fromPromise(() => findManifestRoots(projectDir, ["go.mod"])),
-      "go",
-    );
+    const goRoots = yield* fromPromise(() => findManifestRoots(projectDir, ["go.mod"]));
     for (const root of goRoots) {
       merge(
         yield* validateGoProject(root, root === projectDir ? options : subOptions),
@@ -240,19 +277,10 @@ export function validateProject(
       merge(yield* validateElixirProject(projectDir, options), "", "elixir");
     }
 
-    const validation: ProjectValidation = {
-      projectExists: true,
-      steps,
-      install: steps.install ?? steps.dotnetRestore,
-      build: steps.build ?? steps.dotnetBuild ?? steps.cargoCheck,
-      checkTypes: steps.typecheck,
-      lint: steps.lint,
-      format: steps.format,
-      test: steps.test,
-      doctor: steps.doctor,
-      route: steps.route,
-    };
-    return validation;
+    if (Object.keys(steps).length === prerequisiteStepCount) {
+      steps["project:unvalidated"] = skipStep("project directory has no recognized build manifest");
+    }
+    return buildProjectValidation(steps, qualityGateRequested);
   });
 }
 
@@ -265,11 +293,21 @@ export function validateBunProject(projectDir: string, options: ScaffbenchOption
     const bun = existsSync(`${process.env.HOME}/.bun/bin/bun`)
       ? `${process.env.HOME}/.bun/bin/bun`
       : "bun";
-    steps.install = yield* commandStep(bun, ["install"], projectDir);
+    steps.install = yield* commandStep(bun, ["install"], projectDir, {
+      retryTransientNetwork: true,
+    });
     if (steps.install.exitCode !== 0 || steps.install.timedOut) return steps;
 
-    const scripts = yield* fromPromise(() => readPackageScripts(packageJsonPath));
-    if (scripts.build) steps.build = yield* commandStep(bun, ["run", "build"], projectDir);
+    const packageJson = yield* fromPromise(() => readPackageJson(packageJsonPath));
+    const scripts = (packageJson.scripts ?? {}) as Record<string, string>;
+    const expoCommand = expoExportCommand(packageJson);
+    if (expoCommand) {
+      steps.build = yield* commandStep(expoCommand.command, expoCommand.args, projectDir, {
+        env: { CI: "1", EXPO_NO_TELEMETRY: "1" },
+      });
+    } else if (scripts.build) {
+      steps.build = yield* commandStep(bun, ["run", "build"], projectDir);
+    }
     const gate = typecheckGate(scripts, existsSync(path.join(projectDir, "tsconfig.json")));
     if (gate === "tsc") {
       // No typecheck script shipped: fall back to `tsc --build` so a TS project
@@ -423,7 +461,11 @@ export function validateCargoProject(projectDir: string, options: ScaffbenchOpti
   return Effect.gen(function* () {
     const steps: Record<string, StepResult | undefined> = {};
     if (!existsSync(path.join(projectDir, "Cargo.toml"))) return steps;
-    steps.cargoCheck = yield* commandStep("cargo", ["check"], projectDir);
+    steps.cargoCheck = yield* commandStep(
+      "cargo",
+      ["check", "--workspace", "--all-targets"],
+      projectDir,
+    );
     if (options.qualityGate) {
       steps.format = yield* commandStep("cargo", ["fmt", "--check"], projectDir);
       steps.lint = yield* commandStep("cargo", ["clippy", "--", "-D", "warnings"], projectDir);
@@ -438,14 +480,28 @@ export function validatePythonProject(projectDir: string, options: ScaffbenchOpt
     const steps: Record<string, StepResult | undefined> = {};
     if (!existsSync(path.join(projectDir, "pyproject.toml"))) return steps;
     steps.install =
-      steps.install ?? (yield* commandStep("uv", ["sync", "--all-extras"], projectDir));
+      steps.install ??
+      (yield* commandStep("uv", ["sync", "--all-extras"], projectDir, {
+        retryTransientNetwork: true,
+      }));
     if (steps.install.exitCode !== 0 || steps.install.timedOut) return steps;
     const srcDir = existsSync(path.join(projectDir, "src")) ? "src/" : ".";
-    steps.typecheck = yield* commandStep(
+    steps.compile = yield* commandStep(
       "uv",
       ["run", "python", "-m", "compileall", "-q", srcDir],
       projectDir,
     );
+    const typechecker = yield* fromPromise(() => configuredPythonTypechecker(projectDir));
+    if (typechecker === "mypy") {
+      steps.typecheck = yield* commandStep("uv", ["run", "mypy", "."], projectDir);
+    } else if (typechecker === "pyright") {
+      steps.typecheck = yield* commandStep("uv", ["run", "pyright"], projectDir);
+    } else {
+      const entryModule = yield* fromPromise(() => findPythonEntryModule(projectDir));
+      steps.typecheck = entryModule
+        ? yield* commandStep("uv", ["run", "python", "-c", `import ${entryModule}`], projectDir)
+        : skipStep("python import smoke (no importable package found)");
+    }
     if (options.qualityGate) {
       steps.lint = yield* commandStep("uv", ["run", "ruff", "check", "."], projectDir);
       // Read-only format check, for parity with the TS/Rust/Go gates (was missing).
@@ -468,9 +524,16 @@ export function validateGoProject(projectDir: string, options: ScaffbenchOptions
   return Effect.gen(function* () {
     const steps: Record<string, StepResult | undefined> = {};
     if (!existsSync(path.join(projectDir, "go.mod"))) return steps;
-    steps.install = steps.install ?? (yield* commandStep("go", ["mod", "tidy"], projectDir));
+    steps.install =
+      steps.install ??
+      (yield* commandStep("go", ["mod", "download"], projectDir, {
+        retryTransientNetwork: true,
+      }));
     if (steps.install.exitCode !== 0 || steps.install.timedOut) return steps;
     steps.build = steps.build ?? (yield* commandStep("go", ["build", "./..."], projectDir));
+    // Tidy is intentionally advisory and runs against a disposable copy so the
+    // validator reports dependency-file drift without mutating the scaffold.
+    steps.tidy = yield* runGoTidyAdvisory(projectDir);
     if (options.qualityGate) {
       steps.lint = yield* commandStep("go", ["vet", "./..."], projectDir);
       // Read-only format check, for parity with the other gates (was missing).
@@ -499,16 +562,40 @@ export function validateGoProject(projectDir: string, options: ScaffbenchOptions
 export function validateDotnetProject(projectDir: string, options: ScaffbenchOptions) {
   return Effect.gen(function* () {
     const steps: Record<string, StepResult | undefined> = {};
-    const roots = yield* fromPromise(() => findDotnetRoots(projectDir));
-    if (roots.length === 0) return steps;
+    const targets = yield* fromPromise(() => dotnetValidationTargets(projectDir));
+    if (targets.kind === "solution") {
+      const solution = targets.targets[0]!;
+      const root = path.dirname(solution);
+      const target = path.basename(solution);
+      steps.dotnetRestore = yield* commandStep("dotnet", ["restore", target], root, {
+        retryTransientNetwork: true,
+      });
+      if (!stepGreen(steps.dotnetRestore)) return steps;
+      steps.dotnetBuild = yield* commandStep("dotnet", ["build", target, "--no-restore"], root);
+      if (options.qualityGate) {
+        steps.test = yield* commandStep("dotnet", ["test", target, "--no-build"], root);
+      }
+      return steps;
+    }
 
-    const serverRoot = roots.find((root) => root.endsWith(path.join("apps", "server"))) ?? roots[0];
-    if (!serverRoot) return steps;
-    steps.dotnetRestore = yield* commandStep("dotnet", ["restore"], serverRoot);
-    if (steps.dotnetRestore.exitCode !== 0 || steps.dotnetRestore.timedOut) return steps;
-    steps.dotnetBuild = yield* commandStep("dotnet", ["build", "--no-restore"], serverRoot);
-    if (options.qualityGate) {
-      steps.test = yield* commandStep("dotnet", ["test", "--no-build"], serverRoot);
+    for (const project of targets.targets) {
+      const root = path.dirname(project);
+      const target = path.basename(project);
+      const namespace = dotnetStepNamespace(projectDir, project);
+      const restoreKey = `${namespace}:dotnetRestore`;
+      const buildKey = `${namespace}:dotnetBuild`;
+      steps[restoreKey] = yield* commandStep("dotnet", ["restore", target], root, {
+        retryTransientNetwork: true,
+      });
+      if (!stepGreen(steps[restoreKey])) continue;
+      steps[buildKey] = yield* commandStep("dotnet", ["build", target, "--no-restore"], root);
+      if (options.qualityGate) {
+        steps[`${namespace}:test`] = yield* commandStep(
+          "dotnet",
+          ["test", target, "--no-build"],
+          root,
+        );
+      }
     }
     return steps;
   });
@@ -573,7 +660,9 @@ export function validateElixirProject(projectDir: string, options: ScaffbenchOpt
     const steps: Record<string, StepResult | undefined> = {};
     const root = yield* fromPromise(() => findBuildRoot(projectDir, ["mix.exs"]));
     if (!root) return steps;
-    steps.install = yield* commandStep("mix", ["deps.get"], root);
+    steps.install = yield* commandStep("mix", ["deps.get"], root, {
+      retryTransientNetwork: true,
+    });
     if (steps.install.exitCode !== 0 || steps.install.timedOut) return steps;
     steps.build = yield* commandStep("mix", ["compile"], root);
     if (steps.build.exitCode !== 0 || steps.build.timedOut) return steps;
@@ -587,20 +676,79 @@ export function validateElixirProject(projectDir: string, options: ScaffbenchOpt
 }
 
 async function hasDotnetProject(projectDir: string) {
-  return (await findDotnetRoots(projectDir)).length > 0;
+  return (
+    (await findDotnetProjects(projectDir)).length > 0 ||
+    (await findDotnetSolutions(projectDir)).length > 0
+  );
 }
 
 export async function findDotnetRoots(projectDir: string) {
-  const roots = new Set<string>();
+  return [...new Set((await findDotnetProjects(projectDir)).map(path.dirname))];
+}
+
+export async function findDotnetProjects(projectDir: string) {
+  const projects: string[] = [];
   await walk(projectDir, async (filePath) => {
-    if (filePath.endsWith(".csproj")) roots.add(path.dirname(filePath));
+    if (filePath.endsWith(".csproj")) projects.push(filePath);
   });
-  return [...roots];
+  return projects.sort((a, b) => a.localeCompare(b));
+}
+
+export async function findDotnetSolutions(projectDir: string) {
+  const solutions: string[] = [];
+  await walk(projectDir, async (filePath) => {
+    if (filePath.endsWith(".sln") || filePath.endsWith(".slnx")) solutions.push(filePath);
+  });
+  return solutions.sort(
+    (a, b) =>
+      path.relative(projectDir, a).split(path.sep).length -
+        path.relative(projectDir, b).split(path.sep).length || a.localeCompare(b),
+  );
+}
+
+export async function dotnetValidationTargets(projectDir: string) {
+  const solutions = await findDotnetSolutions(projectDir);
+  if (solutions.length > 0) return { kind: "solution" as const, targets: [solutions[0]!] };
+  return { kind: "projects" as const, targets: await findDotnetProjects(projectDir) };
+}
+
+function dotnetStepNamespace(projectDir: string, project: string) {
+  const relative = path.relative(projectDir, project).split(path.sep).join("/");
+  return relative.replace(/\.csproj$/i, "");
 }
 
 function toStep(result: CommandResult): StepResult {
   const { stdout: _stdout, stderr: _stderr, ...step } = result;
   return step;
+}
+
+function stepGreen(step: StepResult | undefined) {
+  return Boolean(
+    step && step.status !== "skip" && step.exitCode === 0 && !step.timedOut && !step.spawnError,
+  );
+}
+
+function buildProjectValidation(
+  steps: Record<string, StepResult | undefined>,
+  qualityGateRequested: boolean,
+): ProjectValidation {
+  const firstByBase = (...names: string[]) =>
+    Object.entries(steps).find(
+      ([key, step]) => step && names.includes(key.slice(key.lastIndexOf(":") + 1)),
+    )?.[1];
+  return {
+    projectExists: true,
+    qualityGateRequested,
+    steps,
+    install: steps.install ?? firstByBase("install", "dotnetRestore"),
+    build: steps.build ?? firstByBase("build", "dotnetBuild", "cargoCheck", "compile"),
+    checkTypes: steps.typecheck ?? firstByBase("typecheck"),
+    lint: steps.lint ?? firstByBase("lint"),
+    format: steps.format ?? firstByBase("format"),
+    test: steps.test ?? firstByBase("test"),
+    doctor: steps.doctor,
+    route: steps.route,
+  };
 }
 
 // A quality-gate check that SHOULD have run but no tool was configured/detected.
@@ -642,11 +790,118 @@ function localBin(projectDir: string, name: string): string | null {
 }
 
 async function readPackageScripts(packageJsonPath: string) {
+  return ((await readPackageJson(packageJsonPath)).scripts ?? {}) as Record<string, string>;
+}
+
+async function readPackageJson(packageJsonPath: string): Promise<Record<string, any>> {
   try {
-    const parsed = JSON.parse(await readFile(packageJsonPath, "utf8"));
-    return (parsed.scripts ?? {}) as Record<string, string>;
+    return JSON.parse(await readFile(packageJsonPath, "utf8"));
   } catch {
     return {};
+  }
+}
+
+export function isExpoPackage(packageJson: Record<string, any>) {
+  const dependencies = { ...packageJson.dependencies, ...packageJson.devDependencies };
+  return typeof dependencies.expo === "string";
+}
+
+export function expoWebConfigured(packageJson: Record<string, any>, _projectDir?: string) {
+  const dependencies = { ...packageJson.dependencies, ...packageJson.devDependencies };
+  return Boolean(dependencies["react-dom"] || dependencies["react-native-web"]);
+}
+
+export function expoExportCommand(packageJson: Record<string, any>) {
+  if (!isExpoPackage(packageJson)) return null;
+  return {
+    command: "npx",
+    args: expoWebConfigured(packageJson)
+      ? ["expo", "export", "--platform", "web"]
+      : ["expo", "export"],
+    env: { CI: "1", EXPO_NO_TELEMETRY: "1" },
+  } as const;
+}
+
+export async function configuredPythonTypechecker(
+  projectDir: string,
+): Promise<"mypy" | "pyright" | null> {
+  if (
+    existsSync(path.join(projectDir, "mypy.ini")) ||
+    existsSync(path.join(projectDir, ".mypy.ini"))
+  ) {
+    return "mypy";
+  }
+  if (existsSync(path.join(projectDir, "pyrightconfig.json"))) return "pyright";
+  const pyprojectPath = path.join(projectDir, "pyproject.toml");
+  const pyproject = existsSync(pyprojectPath) ? await readFile(pyprojectPath, "utf8") : "";
+  if (/^\s*\[tool\.mypy\]\s*$/m.test(pyproject)) return "mypy";
+  if (/^\s*\[tool\.pyright\]\s*$/m.test(pyproject)) return "pyright";
+  return null;
+}
+
+export async function findPythonEntryModule(projectDir: string): Promise<string | null> {
+  const root = existsSync(path.join(projectDir, "src")) ? path.join(projectDir, "src") : projectDir;
+  const entries = await readdir(root, { withFileTypes: true });
+  for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
+    if (!/^[A-Za-z_]\w*$/.test(entry.name.replace(/\.py$/, ""))) continue;
+    if (
+      entry.isFile() &&
+      entry.name.endsWith(".py") &&
+      !/^(__init__|setup|conftest)\.py$/.test(entry.name)
+    ) {
+      return entry.name.slice(0, -3);
+    }
+    if (
+      entry.isDirectory() &&
+      (existsSync(path.join(root, entry.name, "__init__.py")) ||
+        (await readdir(path.join(root, entry.name))).some((name) => name.endsWith(".py")))
+    ) {
+      return entry.name;
+    }
+  }
+  return null;
+}
+
+function runGoTidyAdvisory(projectDir: string) {
+  return Effect.gen(function* () {
+    const tempRoot = yield* fromPromise(() =>
+      mkdtemp(path.join(os.tmpdir(), "scaffbench-go-tidy-")),
+    );
+    const copyDir = path.join(tempRoot, "project");
+    const cleanup = fromPromise(() => rm(tempRoot, { recursive: true, force: true })).pipe(
+      Effect.ignore,
+    );
+    return yield* Effect.gen(function* () {
+      yield* fromPromise(() =>
+        cp(projectDir, copyDir, {
+          recursive: true,
+          filter: (source) => ![".git", "vendor", "node_modules"].includes(path.basename(source)),
+        }),
+      );
+      const beforeMod = yield* fromPromise(() => readOptional(path.join(copyDir, "go.mod")));
+      const beforeSum = yield* fromPromise(() => readOptional(path.join(copyDir, "go.sum")));
+      const tidy = yield* commandStep("go", ["mod", "tidy"], copyDir);
+      const afterMod = yield* fromPromise(() => readOptional(path.join(copyDir, "go.mod")));
+      const afterSum = yield* fromPromise(() => readOptional(path.join(copyDir, "go.sum")));
+      if (!stepGreen(tidy)) return { ...tidy, command: "go mod tidy (advisory diff)" };
+      if (beforeMod !== afterMod || beforeSum !== afterSum) {
+        return {
+          ...tidy,
+          command: "go mod tidy (advisory diff)",
+          exitCode: 1,
+          stderrTail: tail("go mod tidy would change go.mod/go.sum"),
+        };
+      }
+      return { ...tidy, command: "go mod tidy (advisory diff)" };
+    }).pipe(Effect.ensuring(cleanup));
+  });
+}
+
+async function readOptional(filePath: string) {
+  try {
+    return await readFile(filePath, "utf8");
+  } catch {
+    return null;
   }
 }
 

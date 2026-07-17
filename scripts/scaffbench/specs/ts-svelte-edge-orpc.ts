@@ -2,6 +2,7 @@ import type { BenchmarkSpec } from "@/types";
 
 export const TsSvelteEdgeOrpcSpec: BenchmarkSpec = {
     id: "ts-svelte-edge-orpc",
+    introducedAt: "2026-07-10",
     title: "SvelteKit edge app on Cloudflare Workers with Hono + oRPC and D1",
     lane: "core",
     family: "typescript",

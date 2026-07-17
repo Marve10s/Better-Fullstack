@@ -3,6 +3,7 @@ import { AI_SEARCH_ADDONS, AI_SEARCH_FLAGS, AI_SEARCH_STACK } from "@/constants"
 
 export const AiSearchWorkbenchSpec: BenchmarkSpec = {
     id: "ai-search-workbench",
+    introducedAt: "2026-07-10",
     title: "AI search workbench with separate semantic and full-text search",
     lane: "core",
     family: "typescript",

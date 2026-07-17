@@ -2,6 +2,7 @@ import type { BenchmarkSpec } from "@/types";
 
 export const FrontierEffectEventsourcingSpec: BenchmarkSpec = {
     id: "frontier-effect-eventsourcing",
+    introducedAt: "2026-07-10",
     title: "Frontier: TypeScript Effect service with event-sourcing/CQRS and tRPC-over-WebSocket subscriptions",
     lane: "core",
     family: "typescript",

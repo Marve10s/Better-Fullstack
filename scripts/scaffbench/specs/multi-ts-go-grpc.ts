@@ -2,6 +2,7 @@ import type { BenchmarkSpec } from "@/types";
 
 export const MultiTsGoGrpcSpec: BenchmarkSpec = {
     id: "multi-ts-go-grpc",
+    introducedAt: "2026-07-10",
     title: "Multi-ecosystem app: Nuxt (Vue) frontend with a Go Chi + gRPC backend",
     lane: "core",
     family: "multi-ecosystem",

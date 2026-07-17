@@ -5,4 +5,4 @@ export { runCodex, codexCostUsd, parseCodexResult } from "@/agents/codex";
 export { runAgy, parseAgyResult } from "@/agents/agy";
 export { runOpencode, parseOpencodeResult } from "@/agents/opencode";
 export { runKilo } from "@/agents/kilo";
-export { runCommand, quoteArg, tail } from "@/agents/command";
+export { runCommand, quoteArg, tail, progressEventTime, spawnErrorCode } from "@/agents/command";

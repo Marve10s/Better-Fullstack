@@ -2,6 +2,7 @@ import type { BenchmarkSpec } from "@/types";
 
 export const RustLeptosAxumSpec: BenchmarkSpec = {
     id: "rust-leptos-axum",
+    introducedAt: "2026-07-10",
     title: "Rust Axum API with a Leptos WASM frontend and typed service libraries",
     lane: "core",
     family: "rust",

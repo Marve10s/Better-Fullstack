@@ -1,8 +1,26 @@
 import { existsSync } from "node:fs";
 import { readFile, readdir, stat } from "node:fs/promises";
 import path from "node:path";
+
+import type {
+  BenchmarkSpec,
+  CommandDisciplineCheck,
+  CommandResult,
+  CreationPath,
+  FailureTag,
+  ProjectIndex,
+  PromptStyle,
+  RunOutcome,
+  RunOutcomeRollup,
+  RunResult,
+  ScaffbenchOptions,
+  StackScore,
+  StepResult,
+  ToolCompliance,
+} from "@/types";
+
+import { isRecurringTransientFailure } from "@/validation/classification";
 import { walk, parseJsonc } from "@/validation/shared";
-import type { BenchmarkSpec, CommandDisciplineCheck, CommandResult, CreationPath, FailureTag, ProjectIndex, PromptStyle, RunOutcome, RunResult, ScaffbenchOptions, StackScore, StepResult, ToolCompliance } from "@/types";
 
 export function typecheckGate(
   scripts: Record<string, string>,
@@ -367,7 +385,7 @@ export async function scoreToolCompliance(
     (cmd) => isBfsCli(cmd) && !/--help|--version/.test(cmd),
   );
   const dryRanFirst =
-    bfsScaffoldCommands.length > 0 && bfsScaffoldCommands[0].includes("--dry-run");
+    bfsScaffoldCommands.length > 0 && bfsScaffoldCommands[0]!.includes("--dry-run");
 
   const checks: CommandDisciplineCheck[] = [];
   if (pathMode === "prompt") {
@@ -420,7 +438,7 @@ export async function scoreToolCompliance(
 // solvability gate's ADVISORY_STEPS. CORE steps (install/build/typecheck/native
 // compile) decide whether a scaffold actually builds and runs — a formatting
 // nit or a style-lint warning must never read as a broken project.
-const ADVISORY_STEP_KEYS = new Set(["lint", "format", "test", "doctor", "route"]);
+const ADVISORY_STEP_KEYS = new Set(["lint", "format", "test", "doctor", "route", "tidy"]);
 // Step keys may be namespaced "<subroot>:<step>" (multi-root projects); the
 // advisory/core split is decided by the base step name after the last ":".
 export function stepBaseName(name: string) {
@@ -475,68 +493,82 @@ export function validationPassed(result: RunResult) {
  * quality metric rather than a brokenness verdict.
  */
 export function qualityPassed(result: RunResult) {
+  if (result.validation.qualityGateRequested !== true) return "na" as const;
   if (!validationPassed(result)) return false;
   return stepsAllGreen(applicableSteps(result, isAdvisoryStep));
 }
 
-function isBudgetExhausted(terminalReason: string | undefined) {
-  return terminalReason ? /budget|cost[_-]?limit|max[_-]?cost|spend/i.test(terminalReason) : false;
-}
-
-/**
- * Three-way run outcome so the headline pass rate reflects model capability,
- * not the test machine. An "infra-inconclusive" run is one where the harness or
- * environment — not the model — prevented a clean measurement (a missing
- * toolchain binary, a validation step that timed out, an exhausted token
- * budget, or a generation that crashed without producing anything). These are
- * excluded from the pass-rate denominator by `aggregateBy`.
- */
-export function classifyOutcome(result: RunResult): RunOutcome {
-  if (result.validation.deferred) return "infra-inconclusive";
-  if (isInfraInconclusive(result)) return "infra-inconclusive";
-  return validationPassed(result) ? "success" : "model-failure";
-}
-
-function isInfraInconclusive(result: RunResult): boolean {
-  // NOTE: a generation timeout (claude.timedOut) is intentionally NOT here — an
-  // agent that cannot finish within the generous gen budget is a real failure
-  // (cf. SWE-bench, which scores agent-loop timeouts as unresolved). Only
-  // environment/harness problems below are excluded from the pass denominator.
-  if (isBudgetExhausted(result.claude.terminalReason)) return true;
-  // claude crashed/blipped (e.g. MCP startup failure) without producing anything
+export function isBudgetExhausted(result: RunResult) {
   if (
-    result.claude.exitCode !== 0 &&
-    !result.validation.projectExists &&
-    !result.claude.outputTokens
+    result.claude.terminalReason &&
+    /budget|cost[_-]?limit|max[_-]?cost|spend/i.test(result.claude.terminalReason)
   ) {
     return true;
   }
-  let sdkGap = false;
-  for (const step of Object.values(result.validation.steps)) {
-    if (!step) continue;
-    if (step.timedOut) return true;
-    if (step.spawnError) return true; // validator binary itself could not be spawned
-    // dotnet SDK-version resolution failure: the muxer exists but the SDK pinned
-    // by the project's global.json is not installed on this machine — a missing
-    // toolchain (environment gap), not a model-authored break.
-    if (isDotnetSdkNotFound(step)) sdkGap = true;
+  const policy = result.budgetPolicy;
+  return Boolean(
+    policy &&
+    !policy.budgetEnforced &&
+    typeof result.claude.totalCostUsd === "number" &&
+    result.claude.totalCostUsd > policy.maxBudgetUsd,
+  );
+}
+
+/**
+ * Fine-grained, evidence-backed outcome. Aggregate callers use `rollupOutcome`
+ * to retain the historic success/model-failure/infra-inconclusive denominator.
+ */
+export function classifyOutcome(result: RunResult): RunOutcome {
+  if (isBudgetExhausted(result)) return "budget-exhausted";
+  if (result.claude.timedOut) return "deadline-exhausted";
+  if (result.claude.spawnError) return "harness-infra";
+  if (hasProviderInfraEvidence(result)) return "provider-infra";
+  if (result.validation.deferred) return "validation-infra";
+
+  const coreEntries = Object.entries(result.validation.steps).filter(
+    ([name, step]) => step && step.status !== "na" && !isAdvisoryStep(name),
+  ) as [string, StepResult][];
+  if (coreEntries.some(([name, step]) => isRecurringTransientFailure(name, step))) {
+    return "validation-infra";
   }
-  if (sdkGap) {
-    // Inconclusive only when the SDK gap is the SOLE blocker: a run whose other
-    // core steps already failed on their own is broken regardless of the missing
-    // SDK, and excluding it from the denominator would flatter the model.
-    const otherCoreFailure = Object.entries(result.validation.steps).some(
-      ([name, step]) =>
-        step &&
-        !isAdvisoryStep(name) &&
-        step.status !== "na" &&
-        !isDotnetSdkNotFound(step) &&
-        step.exitCode !== null &&
-        step.exitCode !== 0,
-    );
-    if (!otherCoreFailure) return true;
+  if (hasSoleHarnessBlocker(coreEntries)) return "harness-infra";
+  return validationPassed(result) ? "success" : "model-failure";
+}
+
+export function rollupOutcome(outcome: RunOutcome): RunOutcomeRollup {
+  if (outcome === "success") return "success";
+  if (["provider-infra", "harness-infra", "validation-infra"].includes(outcome)) {
+    return "infra-inconclusive";
   }
-  return false;
+  return "model-failure";
+}
+
+export function scoredOutcome(result: RunResult) {
+  return rollupOutcome(classifyOutcome(result)) !== "infra-inconclusive";
+}
+
+function hasProviderInfraEvidence(result: RunResult) {
+  if (result.validation.projectExists) return false;
+  const reason = `${result.claude.terminalReason ?? ""}\n${result.claude.stderrTail ?? ""}`;
+  if (/opencode-unknown-zero-usage-no-tools/.test(reason) && !result.claude.outputTokens) {
+    return true;
+  }
+  return /(?:provider|upstream|endpoint|gateway).*(?:error|unavailable|timeout)|(?:429|rate.?limit|overloaded|capacity|authentication|unauthori[sz]ed|ECONNRESET|ETIMEDOUT)/i.test(
+    reason,
+  );
+}
+
+function hasSoleHarnessBlocker(core: readonly [string, StepResult][]) {
+  const blockers = core.filter(([, step]) => step.spawnError || isDotnetSdkNotFound(step));
+  if (blockers.length === 0) return false;
+  return !core.some(
+    ([, step]) =>
+      !step.spawnError &&
+      !isDotnetSdkNotFound(step) &&
+      step.status !== "skip" &&
+      step.exitCode !== null &&
+      step.exitCode !== 0,
+  );
 }
 
 const DOTNET_SDK_NOT_FOUND =
@@ -554,7 +586,13 @@ export function deriveFailureTags(result: RunResult): FailureTag[] {
   if (result.validation.deferred) tags.add("validation-deferred");
   if (result.claude.timedOut) tags.add("claude-timeout");
   if (result.claude.exitCode !== 0) tags.add("claude-error");
-  if (isBudgetExhausted(result.claude.terminalReason)) tags.add("budget-exhausted");
+  const outcome = classifyOutcome(result);
+  if (outcome === "budget-exhausted") tags.add("budget-exhausted");
+  if (outcome === "deadline-exhausted") tags.add("deadline-exhausted");
+  if (outcome === "provider-infra") tags.add("provider-infra");
+  if (outcome === "harness-infra") tags.add("harness-infra");
+  if (outcome === "validation-infra") tags.add("validation-infra");
+  if (result.claude.timeoutProgress) tags.add(result.claude.timeoutProgress);
   if (!result.validation.projectExists) tags.add("project-not-found");
   if (result.stackScore.matched < result.stackScore.total) tags.add("stack-mismatch");
   // bts.jsonc records the full stack but the artifact does not wire it (e.g. an
@@ -586,6 +624,7 @@ export function deriveFailureTags(result: RunResult): FailureTag[] {
       tags.add("toolchain-missing");
       continue;
     }
+    if (isRecurringTransientFailure(name, step)) continue;
     // Match on the lowercased base name (after any "<subroot>:" namespace) so
     // camelCase keys tag correctly — pre-fix, "dotnetBuild" never matched
     // "build" and .NET build breaks were untagged.
@@ -600,7 +639,12 @@ export function deriveFailureTags(result: RunResult): FailureTag[] {
     if (base.includes("route")) tags.add("route-failed");
   }
 
-  if (!result.validation.deferred && !validationPassed(result)) tags.add("validation-failed");
+  if (
+    !result.validation.deferred &&
+    !validationPassed(result) &&
+    rollupOutcome(outcome) === "model-failure"
+  ) {
+    tags.add("validation-failed");
+  }
   return [...tags].sort();
 }
-

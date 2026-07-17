@@ -2,6 +2,7 @@ import type { BenchmarkSpec } from "@/types";
 
 export const PythonIngestionApiSpec: BenchmarkSpec = {
     id: "python-ingestion-api",
+    introducedAt: "2026-07-10",
     title: "Python FastAPI ingestion API with AI, queues, realtime, and quality gates",
     lane: "core",
     family: "python",

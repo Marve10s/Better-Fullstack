@@ -2,6 +2,7 @@ import type { BenchmarkSpec } from "@/types";
 
 export const ElixirBroadwayAbsintheSpec: BenchmarkSpec = {
     id: "elixir-broadway-absinthe",
+    introducedAt: "2026-07-10",
     title: "Elixir Phoenix LiveView app with Absinthe, Broadway, Oban, and Nx",
     lane: "core",
     family: "elixir",

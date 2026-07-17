@@ -2,6 +2,7 @@ import type { BenchmarkSpec } from "@/types";
 
 export const GoRealtimeApiSpec: BenchmarkSpec = {
     id: "go-realtime-api",
+    introducedAt: "2026-07-10",
     title: "Go realtime API with Chi, Ent, gRPC, NATS, Redis, and OpenTelemetry",
     lane: "core",
     family: "go",

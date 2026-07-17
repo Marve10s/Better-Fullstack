@@ -69,6 +69,7 @@ function makeRun(overrides: Partial<RunResult> = {}): RunResult {
     },
     validation: {
       projectExists: true,
+      qualityGateRequested: true,
       steps: {
         install: {
           command: "bun install",
@@ -285,6 +286,7 @@ describe("ScaffBench 2 scoring", () => {
     const failed = makeRun({
       validation: {
         projectExists: true,
+        qualityGateRequested: true,
         steps: {
           install: {
             command: "bun install",
@@ -340,6 +342,7 @@ describe("ScaffBench 2 scoring", () => {
     const run = makeRun({
       validation: {
         projectExists: true,
+        qualityGateRequested: true,
         steps: {
           install: okStep("bun install"),
           build: okStep("bun run build"),
@@ -366,6 +369,7 @@ describe("ScaffBench 2 scoring", () => {
     const run = makeRun({
       validation: {
         projectExists: true,
+        qualityGateRequested: true,
         steps: {
           install: okStep("bun install"),
           build: okStep("bun run build"),
@@ -525,7 +529,7 @@ describe("ScaffBench 2 run outcomes", () => {
       validation: { projectExists: true, deferred: true, steps: {} },
     });
 
-    expect(classifyOutcome(run)).toBe("infra-inconclusive");
+    expect(classifyOutcome(run)).toBe("validation-infra");
     expect(deriveFailureTags(run)).toContain("validation-deferred");
     expect(deriveFailureTags(run)).not.toContain("validation-failed");
   });
@@ -538,7 +542,7 @@ describe("ScaffBench 2 run outcomes", () => {
       },
     });
 
-    expect(classifyOutcome(run)).toBe("infra-inconclusive");
+    expect(classifyOutcome(run)).toBe("harness-infra");
     const tags = deriveFailureTags(run);
     expect(tags).toContain("toolchain-missing");
     expect(tags).not.toContain("build-failed");
@@ -562,7 +566,7 @@ describe("ScaffBench 2 run outcomes", () => {
     expect(tags).not.toContain("toolchain-missing");
   });
 
-  it("classifies an exhausted token budget as infra-inconclusive", () => {
+  it("classifies an exhausted token budget as a scored budget failure", () => {
     const run = makeRun({
       claude: {
         exitCode: 1,
@@ -573,7 +577,7 @@ describe("ScaffBench 2 run outcomes", () => {
       validation: { projectExists: false, steps: {} },
     });
 
-    expect(classifyOutcome(run)).toBe("infra-inconclusive");
+    expect(classifyOutcome(run)).toBe("budget-exhausted");
     expect(deriveFailureTags(run)).toContain("budget-exhausted");
   });
 

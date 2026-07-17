@@ -2,6 +2,7 @@ import type { BenchmarkSpec } from "@/types";
 
 export const JavaSpringJooqKeycloakSpec: BenchmarkSpec = {
     id: "java-spring-jooq-keycloak",
+    introducedAt: "2026-07-10",
     title: "Java Spring Boot API with jOOQ, Keycloak, GraphQL, and property/architecture tests",
     lane: "core",
     family: "java",

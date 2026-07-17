@@ -2,6 +2,7 @@ import type { BenchmarkSpec } from "@/types";
 
 export const MultiDotnetOpsSpec: BenchmarkSpec = {
     id: "multi-dotnet-ops",
+    introducedAt: "2026-07-10",
     title: "Multi-ecosystem ops portal with TypeScript frontend and .NET Minimal API backend",
     lane: "core",
     family: "multi-ecosystem",

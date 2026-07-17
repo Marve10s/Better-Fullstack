@@ -2,6 +2,7 @@ import type { BenchmarkSpec } from "@/types";
 
 export const TsMinimalRestraintSpec: BenchmarkSpec = {
     id: "ts-minimal-restraint",
+    introducedAt: "2026-07-10",
     title: "Minimal React + Tailwind SPA with no backend, data, or auth (restraint test)",
     lane: "extended",
     family: "typescript",

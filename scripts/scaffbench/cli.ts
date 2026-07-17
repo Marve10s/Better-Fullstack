@@ -1,7 +1,9 @@
 import path from "node:path";
+
+import type { ScaffbenchOptions } from "@/types";
+
 import { CORE_SPEC_IDS, DEFAULT_EFFORTS, DEFAULT_PATHS } from "@/constants";
 import { SCAFFBENCH_2_SPECS } from "@/specs";
-import type { ScaffbenchOptions } from "@/types";
 
 export function parseList<T extends string>(
   value: string | undefined,
@@ -17,10 +19,11 @@ export function parseList<T extends string>(
 }
 
 export function parseArgs(argv: string[]): ScaffbenchOptions {
+  const command = argv[0] === "calibrate" ? "calibrate" : "run";
   const args = new Map<string, string>();
   for (let i = 0; i < argv.length; i += 1) {
     const token = argv[i];
-    if (!token.startsWith("--")) continue;
+    if (!token || !token.startsWith("--")) continue;
     const key = token.slice(2);
     const next = argv[i + 1];
     if (next && !next.startsWith("--")) {
@@ -42,6 +45,7 @@ export function parseArgs(argv: string[]): ScaffbenchOptions {
   const repeats = Math.max(1, Number.parseInt(args.get("repeats") ?? "1", 10) || 1);
 
   return {
+    command,
     model: args.get("model") ?? "opus",
     efforts: parseList(
       args.get("efforts"),
@@ -69,6 +73,7 @@ export function parseArgs(argv: string[]): ScaffbenchOptions {
     promptStyle,
     listSpecs: args.has("list-specs"),
     writeMatrixOnly: args.has("write-matrix-only"),
+    repair: args.has("repair"),
   };
 }
 
@@ -76,4 +81,3 @@ export function selectedSpecs(specIds: readonly string[]) {
   const requested = new Set(specIds);
   return SCAFFBENCH_2_SPECS.filter((spec) => requested.has(spec.id));
 }
-
