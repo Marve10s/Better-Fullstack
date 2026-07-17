@@ -22,7 +22,7 @@
 
 <br>
 
-**Scaffold configurable fullstack apps across web, mobile, and backend ecosystems — the CLI wires your selected stack together.**
+**Scaffold production-ready fullstack apps in TypeScript, React Native, Rust, Go, Python, Java, .NET, and Elixir — pick your stack, the CLI wires it together.**
 
 <br>
 
@@ -40,10 +40,29 @@
 
 Most scaffolding tools lock you into one framework and one opinion. Better Fullstack doesn't.
 
-- **Broad stack catalog** — frontend, backend, database, auth, payments, AI, DevOps, and more
-- **Multi-ecosystem projects** — compose web, mobile, and backend stacks across supported ecosystems
+- **Broad stack catalog** — frontend, backend, database, ORM, auth, API layer, payments, AI, DevOps, and more
+- **Multi-ecosystem projects** — compose web, mobile, and backend stacks across TypeScript, React Native, Rust, Go, Python, Java, .NET, and Elixir
 - **Visual builder** — configure your stack in the browser, get a ready-to-run CLI command
 - **Wired for you** — no manual glue code; every picked integration is preconfigured and working out of the box
+- **Compatibility-checked** — an engine validates every combination, so generated projects build and type-check
+
+<details>
+<summary><strong>What's in the catalog?</strong></summary>
+<br>
+
+| Category | Examples |
+|---|---|
+| Web frontends | Next.js, Nuxt, SvelteKit, SolidStart, Angular, Qwik, Astro, TanStack Start, TanStack Router, React Router |
+| Backends | Hono, Elysia, Fastify, Express, NestJS, AdonisJS, Axum, Rocket, FastAPI, Flask, Litestar, Spring Boot |
+| Mobile | Expo / React Native with navigation, UI, storage, push, OTA options |
+| Databases & ORMs | PostgreSQL, MySQL, SQLite, MongoDB — Drizzle, Prisma, MikroORM, TypeORM, Sequelize, SQLx, Diesel |
+| API layer | tRPC, oRPC, ts-rest, OpenAPI, GraphQL |
+| Auth & payments | Better-Auth, Clerk, Auth.js, Auth0, Supabase Auth, WorkOS — Stripe, Paddle, LemonSqueezy, RevenueCat |
+| Extras | AI SDKs, job queues, realtime, caching, search, file storage, i18n, feature flags, vector DBs, observability |
+
+Explore every option in the **[App Builder →](https://better-fullstack.dev/new)**
+
+</details>
 
 <br>
 
