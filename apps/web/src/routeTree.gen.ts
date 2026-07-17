@@ -22,6 +22,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as GuidesIndexRouteImport } from './routes/guides/index'
 import { Route as DocsIndexRouteImport } from './routes/docs/index'
 import { Route as BlogIndexRouteImport } from './routes/blog/index'
+import { Route as StackComboSlugRouteImport } from './routes/stack_.$comboSlug'
 import { Route as GuidesSplatRouteImport } from './routes/guides/$'
 import { Route as DocsSplatRouteImport } from './routes/docs/$'
 import { Route as CompareSlugRouteImport } from './routes/compare_.$slug'
@@ -96,6 +97,11 @@ const BlogIndexRoute = BlogIndexRouteImport.update({
   path: '/blog/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StackComboSlugRoute = StackComboSlugRouteImport.update({
+  id: '/stack_/$comboSlug',
+  path: '/stack/$comboSlug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GuidesSplatRoute = GuidesSplatRouteImport.update({
   id: '/guides/$',
   path: '/guides/$',
@@ -157,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/compare/$slug': typeof CompareSlugRoute
   '/docs/$': typeof DocsSplatRoute
   '/guides/$': typeof GuidesSplatRoute
+  '/stack/$comboSlug': typeof StackComboSlugRoute
   '/blog/': typeof BlogIndexRoute
   '/docs/': typeof DocsIndexRoute
   '/guides/': typeof GuidesIndexRoute
@@ -180,6 +187,7 @@ export interface FileRoutesByTo {
   '/compare/$slug': typeof CompareSlugRoute
   '/docs/$': typeof DocsSplatRoute
   '/guides/$': typeof GuidesSplatRoute
+  '/stack/$comboSlug': typeof StackComboSlugRoute
   '/blog': typeof BlogIndexRoute
   '/docs': typeof DocsIndexRoute
   '/guides': typeof GuidesIndexRoute
@@ -204,6 +212,7 @@ export interface FileRoutesById {
   '/compare_/$slug': typeof CompareSlugRoute
   '/docs/$': typeof DocsSplatRoute
   '/guides/$': typeof GuidesSplatRoute
+  '/stack_/$comboSlug': typeof StackComboSlugRoute
   '/blog/': typeof BlogIndexRoute
   '/docs/': typeof DocsIndexRoute
   '/guides/': typeof GuidesIndexRoute
@@ -229,6 +238,7 @@ export interface FileRouteTypes {
     | '/compare/$slug'
     | '/docs/$'
     | '/guides/$'
+    | '/stack/$comboSlug'
     | '/blog/'
     | '/docs/'
     | '/guides/'
@@ -252,6 +262,7 @@ export interface FileRouteTypes {
     | '/compare/$slug'
     | '/docs/$'
     | '/guides/$'
+    | '/stack/$comboSlug'
     | '/blog'
     | '/docs'
     | '/guides'
@@ -275,6 +286,7 @@ export interface FileRouteTypes {
     | '/compare_/$slug'
     | '/docs/$'
     | '/guides/$'
+    | '/stack_/$comboSlug'
     | '/blog/'
     | '/docs/'
     | '/guides/'
@@ -299,6 +311,7 @@ export interface RootRouteChildren {
   CompareSlugRoute: typeof CompareSlugRoute
   DocsSplatRoute: typeof DocsSplatRoute
   GuidesSplatRoute: typeof GuidesSplatRoute
+  StackComboSlugRoute: typeof StackComboSlugRoute
   BlogIndexRoute: typeof BlogIndexRoute
   DocsIndexRoute: typeof DocsIndexRoute
   GuidesIndexRoute: typeof GuidesIndexRoute
@@ -397,6 +410,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/stack_/$comboSlug': {
+      id: '/stack_/$comboSlug'
+      path: '/stack/$comboSlug'
+      fullPath: '/stack/$comboSlug'
+      preLoaderRoute: typeof StackComboSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/guides/$': {
       id: '/guides/$'
       path: '/guides/$'
@@ -475,6 +495,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompareSlugRoute: CompareSlugRoute,
   DocsSplatRoute: DocsSplatRoute,
   GuidesSplatRoute: GuidesSplatRoute,
+  StackComboSlugRoute: StackComboSlugRoute,
   BlogIndexRoute: BlogIndexRoute,
   DocsIndexRoute: DocsIndexRoute,
   GuidesIndexRoute: GuidesIndexRoute,
