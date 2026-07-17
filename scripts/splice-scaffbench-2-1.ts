@@ -43,19 +43,23 @@ const HY3_GOOD = [
 // (multi-root manifest discovery, no vacuous install-only passes). Rows whose
 // artifacts are gone keep their old-validator numbers; see the blog note.
 const RUN_SOURCES: { dir: string; specs?: string[] }[] = [
-  // Sources whose run dirs still exist on disk. Earlier batches' dirs are gone;
-  // their rows live only in the committed data (splice merges, never regenerates).
-  // Paid OpenCode Go subscription run (2026-07-15).
-  { dir: "testing/llm-benchmarks/v2-go/glm-5-2-default-2026-07-15" },
-  // Max-effort ablation completion (2026-07-16): Terra@max.
-  { dir: "testing/llm-benchmarks/v2/terra-max-2026-07-16" },
+  // Empty: every published row lives in the committed data (source dirs for
+  // older batches are gone from disk; splice merges, never regenerates).
 ];
 
 // Extra-lane runs merged into EXISTING rows: their cells are appended under the
 // row's modelKey (replacing any same-path cells) but the board row itself —
 // label, effort, sortIndex — is left untouched, so the main leaderboard stays a
 // prompt-only comparison. These cells feed the MCP tab.
-const MERGE_SOURCES: { dir: string; specs?: string[] }[] = [];
+// `createRow: true` lets an assisted-lane source add its (model, effort) row when
+// the board has none: the row's sortIndex derives from PROMPT cells only (0 when
+// the source is MCP-only), so it sorts last on the prompt-ranked main board and
+// surfaces only on tabs whose path it was actually swept on.
+const MERGE_SOURCES: { dir: string; specs?: string[]; createRow?: boolean }[] = [
+  // MCP lane, GPT-5.6 high ablation (2026-07-17).
+  { dir: "testing/llm-benchmarks/v2-codex-terra/gpt-5-6-terra-high-mcp-2026-07-17", createRow: true },
+  { dir: "testing/llm-benchmarks/v2-codex-sol/gpt-5-6-sol-high-mcp-2026-07-17" },
+];
 
 const MODEL_LABELS: Record<string, string> = {
   "gpt-5.6-sol": "GPT-5.6 Sol",
@@ -220,9 +224,23 @@ function main() {
     }
     const merged = computeSource(source);
     if (!models.some((m) => m.key === merged.model.key)) {
-      throw new Error(
-        `${source.dir}: merge target row ${merged.model.key} is not on the board; splice it via RUN_SOURCES first`,
-      );
+      if (!source.createRow) {
+        throw new Error(
+          `${source.dir}: merge target row ${merged.model.key} is not on the board; splice it via RUN_SOURCES first (or set createRow)`,
+        );
+      }
+      const promptCells = merged.cells.filter((c) => c.path === "prompt" && c.scored);
+      const promptMacro = promptCells.length
+        ? (100 * promptCells.filter((c) => c.corePass).length) / promptCells.length
+        : 0;
+      models.push({
+        ...merged.model,
+        sortIndex: Math.round(
+          W.macroPass * promptMacro +
+            W.wired * mean(promptCells.map((c) => c.wiredPct)) +
+            W.cmd * mean(promptCells.map((c) => c.cmdPct)),
+        ),
+      });
     }
     const replaced = new Set(merged.cells.map((c) => `${c.modelKey}|${c.path}`));
     cells = cells.filter((c) => !replaced.has(`${c.modelKey}|${c.path}`)).concat(merged.cells);
