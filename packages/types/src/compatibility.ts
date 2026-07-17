@@ -1738,6 +1738,68 @@ export const analyzeStackCompatibility = (
       });
     }
     if (
+      nextStack.pythonOrm === "pymongo" &&
+      nextStack.dbSetup !== "mongodb-atlas" &&
+      nextStack.dbSetup !== "none" &&
+      nextStack.dbSetup !== "docker"
+    ) {
+      // This runs after the generic DB-setup normalization, so clear setups
+      // that only support relational databases (Neon, Supabase, Turso, ...).
+      nextStack.dbSetup = "none";
+      changed = true;
+      changes.push({
+        category: "pythonOrm",
+        message: "DB Setup set to 'None' (incompatible with MongoDB)",
+      });
+    }
+    if (
+      nextStack.database === "mongodb" &&
+      nextStack.pythonOrm !== "pymongo" &&
+      nextStack.pythonOrm !== "none"
+    ) {
+      nextStack.database = "sqlite";
+      changed = true;
+      changes.push({
+        category: "database",
+        message: `Database set to SQLite (MongoDB requires PyMongo, not ${nextStack.pythonOrm})`,
+      });
+    }
+    if (
+      (nextStack.pythonWebFramework === "aiohttp" ||
+        nextStack.pythonWebFramework === "streamlit") &&
+      nextStack.pythonGraphql !== "none"
+    ) {
+      nextStack.pythonGraphql = "none";
+      changed = true;
+      changes.push({
+        category: "pythonGraphql",
+        message: "GraphQL set to 'None' (only wired for FastAPI, Django, Flask, and Litestar)",
+      });
+    }
+    if (
+      (nextStack.pythonWebFramework === "aiohttp" ||
+        nextStack.pythonWebFramework === "streamlit") &&
+      nextStack.pythonAuth !== "none"
+    ) {
+      nextStack.pythonAuth = "none";
+      changed = true;
+      changes.push({
+        category: "pythonAuth",
+        message: `Auth set to 'None' (auth routes are not wired for ${nextStack.pythonWebFramework})`,
+      });
+    }
+    if (
+      (nextStack.pythonWebFramework === "streamlit" || nextStack.pythonWebFramework === "none") &&
+      nextStack.pythonObservability === "prometheus-client"
+    ) {
+      nextStack.pythonObservability = "none";
+      changed = true;
+      changes.push({
+        category: "pythonObservability",
+        message: "Observability set to 'None' (prometheus-client needs an HTTP server to expose /metrics)",
+      });
+    }
+    if (
       nextStack.pythonServer === "gunicorn" &&
       (nextStack.pythonWebFramework === "streamlit" || nextStack.pythonWebFramework === "none")
     ) {

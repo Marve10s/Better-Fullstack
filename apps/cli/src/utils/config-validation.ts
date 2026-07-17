@@ -718,6 +718,43 @@ function validateEffectBackendConstraints(config: Partial<ProjectConfig>) {
   }
 }
 
+function validateScopedLibraryFlags(config: Partial<ProjectConfig>) {
+  const mobileLibraries = (config.mobileLibraries ?? []).filter((lib) => lib !== "none");
+  const hasNativeFrontend =
+    (config.frontend ?? []).some((f) => String(f).startsWith("native-")) ||
+    config.stackParts?.some((part) => part.ecosystem === "react-native");
+  if (mobileLibraries.length > 0 && !hasNativeFrontend) {
+    incompatibilityError({
+      message: "Mobile libraries require a native Expo frontend.",
+      provided: {
+        frontend: (config.frontend ?? []).join(" ") || "none",
+        "mobile-libraries": mobileLibraries.join(" "),
+      },
+      suggestions: [
+        "Add a native frontend (native-bare, native-uniwind, native-unistyles)",
+        "Remove --mobile-libraries for web-only stacks",
+      ],
+    });
+  }
+
+  const dotnetLibraries = (config.dotnetLibraries ?? []).filter((lib) => lib !== "none");
+  const hasDotnetPart =
+    config.ecosystem === "dotnet" || config.stackParts?.some((part) => part.ecosystem === "dotnet");
+  if (dotnetLibraries.length > 0 && !hasDotnetPart) {
+    incompatibilityError({
+      message: ".NET libraries require a .NET backend.",
+      provided: {
+        ecosystem: config.ecosystem ?? "none",
+        "dotnet-libraries": dotnetLibraries.join(" "),
+      },
+      suggestions: [
+        "Use --ecosystem dotnet (or add a .NET graph part) with --dotnet-libraries",
+        "Remove --dotnet-libraries for non-.NET stacks",
+      ],
+    });
+  }
+}
+
 function validateJavaConstraints(
   config: Partial<ProjectConfig>,
   providedFlags: Set<string> = new Set(),
@@ -1138,6 +1175,78 @@ export function validatePythonExpansionConstraints(config: Partial<ProjectConfig
   }
 
   if (
+    config.database === "mongodb" &&
+    config.pythonOrm !== "pymongo" &&
+    config.pythonOrm !== "none" &&
+    config.pythonOrm !== undefined
+  ) {
+    incompatibilityError({
+      message: "MongoDB requires --python-orm pymongo (relational ORMs cannot use it).",
+      provided: {
+        database: "mongodb",
+        "python-orm": config.pythonOrm,
+      },
+      suggestions: [
+        "Use --python-orm pymongo with --database mongodb",
+        "Choose a relational database (postgres, sqlite, mysql) for this ORM",
+      ],
+    });
+  }
+
+  if (
+    (config.pythonWebFramework === "aiohttp" || config.pythonWebFramework === "streamlit") &&
+    config.pythonGraphql !== undefined &&
+    config.pythonGraphql !== "none"
+  ) {
+    incompatibilityError({
+      message: "Python GraphQL is only wired for FastAPI, Django, Flask, and Litestar.",
+      provided: {
+        "python-web-framework": config.pythonWebFramework,
+        "python-graphql": config.pythonGraphql,
+      },
+      suggestions: [
+        "Use FastAPI, Django, Flask, or Litestar with --python-graphql",
+        "Set --python-graphql none",
+      ],
+    });
+  }
+
+  if (
+    (config.pythonWebFramework === "aiohttp" || config.pythonWebFramework === "streamlit") &&
+    config.pythonAuth !== undefined &&
+    config.pythonAuth !== "none"
+  ) {
+    incompatibilityError({
+      message: `Python auth routes are not wired for ${config.pythonWebFramework}.`,
+      provided: {
+        "python-web-framework": config.pythonWebFramework,
+        "python-auth": config.pythonAuth,
+      },
+      suggestions: [
+        "Use FastAPI, Django, Flask, or Litestar with --python-auth",
+        "Set --python-auth none",
+      ],
+    });
+  }
+
+  if (
+    (config.pythonWebFramework === "streamlit" || config.pythonWebFramework === "none") &&
+    config.pythonObservability === "prometheus-client"
+  ) {
+    incompatibilityError({
+      message: "prometheus-client needs an HTTP server framework to expose /metrics.",
+      provided: {
+        "python-web-framework": config.pythonWebFramework,
+        "python-observability": "prometheus-client",
+      },
+      suggestions: [
+        "Use FastAPI, Django, Flask, Litestar, Starlette, or aiohttp",
+        "Set --python-observability none",
+      ],
+    });
+  }
+
+  if (
     config.pythonServer === "gunicorn" &&
     (config.pythonWebFramework === "streamlit" || config.pythonWebFramework === "none")
   ) {
@@ -1214,6 +1323,7 @@ export function validateFullConfig(
   validateSearchConstraints(config);
   validateJavaConstraints(config, providedFlags);
   validateElixirConstraints(config);
+  validateScopedLibraryFlags(config);
   validateI18nConstraints(config);
 
   const hasGraphBackend = config.stackParts?.some(

@@ -1252,12 +1252,19 @@ const GRAPH_PYTHON_BACKEND_PART_SELECTION_KEYS = [
   ["pythonTaskQueue", "jobQueue"],
   ["pythonGraphql", "graphql"],
   ["pythonQuality", "codeQuality"],
+  ["pythonCloudSdk", "cloudSdk"],
+  ["pythonHttpClient", "httpClient"],
+  ["pythonMedia", "media"],
+  ["pythonServer", "server"],
+  ["pythonPackageManager", "packageManager"],
+  ["pythonMessageQueue", "messageQueue"],
   ["caching", "caching"],
   ["search", "search"],
 ] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
 
 const GRAPH_PYTHON_BACKEND_ARRAY_PART_SELECTION_KEYS = [
   ["pythonAi", "ai"],
+  ["pythonData", "data"],
 ] as const satisfies readonly [StackSelectionArrayKey, ScopedStackPartRole][];
 
 const GRAPH_GO_BACKEND_PART_SELECTION_KEYS = [
@@ -1387,14 +1394,20 @@ const GRAPH_PYTHON_BACKEND_PART_CLI_KEYS = [
   ["pythonTaskQueue", "jobQueue"],
   ["pythonGraphql", "graphql"],
   ["pythonQuality", "codeQuality"],
+  ["pythonCloudSdk", "cloudSdk"],
+  ["pythonHttpClient", "httpClient"],
+  ["pythonMedia", "media"],
+  ["pythonServer", "server"],
+  ["pythonPackageManager", "packageManager"],
+  ["pythonMessageQueue", "messageQueue"],
   ["caching", "caching"],
   ["search", "search"],
 ] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
 
-const GRAPH_PYTHON_BACKEND_ARRAY_PART_CLI_KEYS = [["pythonAi", "ai"]] as const satisfies readonly [
-  keyof CLIInput,
-  ScopedStackPartRole,
-][];
+const GRAPH_PYTHON_BACKEND_ARRAY_PART_CLI_KEYS = [
+  ["pythonAi", "ai"],
+  ["pythonData", "data"],
+] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
 
 const GRAPH_GO_BACKEND_PART_CLI_KEYS = [
   ["goCli", "cli"],

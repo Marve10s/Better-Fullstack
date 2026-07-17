@@ -403,6 +403,8 @@ def test_graphql_endpoint(client):
 import pytest
 from django.test import Client
 
+import app.main  # noqa: F401  (configures Django settings and the URLconf on import)
+
 
 @pytest.fixture
 def client():
@@ -497,6 +499,46 @@ def test_health():
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
+{{/if}}
+{{#if (eq pythonWebFramework "aiohttp")}}
+from aiohttp.test_utils import TestClient, TestServer
+
+from app.main import create_app
+
+
+async def test_root():
+    """Test root endpoint."""
+    async with TestClient(TestServer(create_app())) as client:
+        response = await client.get("/")
+        assert response.status == 200
+        assert await response.json() == {"message": "Welcome to {{projectName}}!"}
+
+
+async def test_health():
+    """Test health endpoint."""
+    async with TestClient(TestServer(create_app())) as client:
+        response = await client.get("/health")
+        assert response.status == 200
+        assert await response.json() == {"status": "healthy"}
+{{/if}}
+{{#if (eq pythonWebFramework "streamlit")}}
+from pathlib import Path
+
+from streamlit.testing.v1 import AppTest
+
+APP_PATH = Path(__file__).resolve().parent.parent / "src" / "app" / "main.py"
+
+
+def test_app_runs():
+    """The Streamlit app script runs without raising."""
+    at = AppTest.from_file(str(APP_PATH)).run()
+    assert not at.exception
+
+
+def test_app_title():
+    """The Streamlit app renders the project title."""
+    at = AppTest.from_file(str(APP_PATH)).run()
+    assert at.title[0].value == "{{projectName}}"
 {{/if}}
 {{#if (eq pythonWebFramework "none")}}
 def test_main():

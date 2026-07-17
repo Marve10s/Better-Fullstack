@@ -111,6 +111,9 @@ dependencies = [
 {{/if}}
 {{#if (includes pythonAi "transformers")}}
     "transformers>=4.45.0",
+{{#unless (includes pythonAi "pytorch")}}
+    "torch>=2.5.0",
+{{/unless}}
 {{/if}}
 {{#if (includes pythonAi "scikit-learn")}}
     "scikit-learn>=1.5.2",
@@ -274,6 +277,9 @@ dev = [
 {{/if}}
 {{#if (eq pythonWebFramework "fastapi")}}
     "httpx>=0.28.0",
+{{/if}}
+{{#if (eq pythonWebFramework "starlette")}}
+    "httpx2>=2.0.0",
 {{/if}}
 ]
 

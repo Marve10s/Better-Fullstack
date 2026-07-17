@@ -152,7 +152,9 @@ export async function runPythonInstall({
       s.start("Creating a virtual environment and installing with pip...");
       await $({ cwd: projectDir, stderr: "inherit" })`python -m venv .venv`;
       const pip = process.platform === "win32" ? ".venv/Scripts/pip.exe" : ".venv/bin/pip";
-      await $({ cwd: projectDir, stderr: "inherit" })`${pip} install -e .`;
+      // Include the dev extra: pytest and the selected quality tools live there,
+      // and the printed next-step commands advertise them.
+      await $({ cwd: projectDir, stderr: "inherit" })`${pip} install -e .[dev]`;
     }
 
     s.stop("Python dependencies installed successfully");

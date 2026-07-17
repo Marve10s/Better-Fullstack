@@ -1,8 +1,16 @@
 {{#if (or (includes pythonData "numpy") (or (includes pythonData "pandas") (includes pythonData "scipy")))}}
 """Small, composable examples for the selected data libraries."""
-{{#if (includes pythonData "numpy")}}
 
+{{#if (includes pythonData "numpy")}}
 import numpy as np
+{{/if}}
+{{#if (includes pythonData "pandas")}}
+import pandas as pd
+{{/if}}
+{{#if (includes pythonData "scipy")}}
+from scipy import stats
+{{/if}}
+{{#if (includes pythonData "numpy")}}
 
 
 def normalize(values: list[float]) -> list[float]:
@@ -15,16 +23,12 @@ def normalize(values: list[float]) -> list[float]:
 {{/if}}
 {{#if (includes pythonData "pandas")}}
 
-import pandas as pd
-
 
 def records_to_dataframe(records: list[dict[str, object]]) -> pd.DataFrame:
     """Create a pandas DataFrame from API or database records."""
     return pd.DataFrame.from_records(records)
 {{/if}}
 {{#if (includes pythonData "scipy")}}
-
-from scipy import stats
 
 
 def z_scores(values: list[float]) -> list[float]:

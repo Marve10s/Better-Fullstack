@@ -261,10 +261,13 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-ldap")
 {{/if}}
 {{#if hasJavaOauth2Client}}
-	implementation("org.springframework.boot:spring-boot-starter-security-oauth2-client")
+	implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 {{/if}}
 {{#if hasJavaSaml2}}
-	implementation("org.springframework.boot:spring-boot-starter-security-saml2")
+{{#unless hasJavaSecurity}}
+	implementation("org.springframework.boot:spring-boot-starter-security")
+{{/unless}}
+	implementation("org.springframework.security:spring-security-saml2-service-provider")
 {{/if}}
 {{#if hasJavaRestclient}}
 	implementation("org.springframework.boot:spring-boot-starter-restclient")

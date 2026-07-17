@@ -1,7 +1,9 @@
 """Main application entry point."""
 # ruff: noqa: I001
 
+{{#unless (or (eq pythonWebFramework "streamlit") (eq pythonWebFramework "none"))}}
 import os
+{{/unless}}
 
 {{#if (eq pythonWebFramework "fastapi")}}
 from contextlib import asynccontextmanager
@@ -17,8 +19,13 @@ from app.observability import init_sentry
 
 {{/if}}
 {{#if (eq pythonWebFramework "fastapi")}}
-from fastapi import {{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel"))}}Depends, {{/if}}FastAPI{{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel"))}}, HTTPException{{/if}}{{#if (or (eq pythonOrm "tortoise-orm") (eq pythonOrm "pymongo"))}}, HTTPException{{/if}}{{#if (and (eq pythonOrm "none") (or (eq pythonValidation "pydantic") (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))))}}, HTTPException{{/if}}
+from fastapi import {{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel"))}}Depends, {{/if}}FastAPI{{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel"))}}, HTTPException{{/if}}{{#if (eq pythonOrm "tortoise-orm")}}, HTTPException{{/if}}{{#if (and (eq pythonOrm "none") (or (eq pythonValidation "pydantic") (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))))}}, HTTPException{{/if}}
 from fastapi.middleware.cors import CORSMiddleware
+{{#if (eq pythonObservability "prometheus-client")}}
+from fastapi.responses import Response
+
+from app.metrics import render_metrics
+{{/if}}
 {{#if (eq pythonOrm "sqlalchemy")}}
 from sqlalchemy.orm import Session
 
@@ -255,6 +262,15 @@ async def root():
 async def health():
     """Health check endpoint."""
     return {"status": "healthy"}
+{{#if (eq pythonObservability "prometheus-client")}}
+
+
+@app.get("/metrics")
+async def metrics() -> Response:
+    """Prometheus metrics endpoint."""
+    payload, content_type = render_metrics()
+    return Response(content=payload, media_type=content_type)
+{{/if}}
 {{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}
 
 
@@ -1079,10 +1095,15 @@ if __name__ == "__main__":
 {{/if}}
 {{#if (eq pythonWebFramework "django")}}
 import django
+{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}
 import json
+{{/if}}
 from django.conf import settings
-from django.http import JsonResponse
+from django.http import {{#if (eq pythonObservability "prometheus-client")}}HttpResponse, {{/if}}JsonResponse
 from django.urls import path
+{{#if (eq pythonObservability "prometheus-client")}}
+from app.metrics import render_metrics
+{{/if}}
 {{#if (eq pythonApi "django-rest-framework")}}
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -1141,6 +1162,14 @@ def health(request):
     """Health check endpoint."""
     return JsonResponse({"status": "healthy"})
 
+{{#if (eq pythonObservability "prometheus-client")}}
+
+def metrics(request):
+    """Prometheus metrics endpoint."""
+    payload, content_type = render_metrics()
+    return HttpResponse(payload, content_type=content_type)
+
+{{/if}}
 {{#if (eq pythonApi "django-rest-framework")}}
 
 @api_view(["GET"])
@@ -1189,6 +1218,9 @@ def auth_me(request):
 urlpatterns = [
     path("", root),
     path("health", health),
+{{#if (eq pythonObservability "prometheus-client")}}
+    path("metrics", metrics),
+{{/if}}
 {{#if (eq pythonApi "django-rest-framework")}}
     path("api/status", api_status),
 {{/if}}
@@ -1222,7 +1254,7 @@ if __name__ == "__main__":
     execute_from_command_line(sys.argv)
 {{/if}}
 {{#if (eq pythonWebFramework "flask")}}
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}, request{{/if}}
 from flask_cors import CORS
 {{#if (eq pythonGraphql "ariadne")}}
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
@@ -1242,6 +1274,9 @@ from app.graphql_schema import schema as graphql_schema
 from ariadne.wsgi import GraphQL
 
 from app.ariadne_schema import schema as ariadne_schema
+{{/if}}
+{{#if (eq pythonObservability "prometheus-client")}}
+from app.metrics import render_metrics
 {{/if}}
 
 load_dotenv()
@@ -1274,6 +1309,15 @@ def health():
     """Health check endpoint."""
     return jsonify({"status": "healthy"})
 
+{{#if (eq pythonObservability "prometheus-client")}}
+
+@app.route("/metrics")
+def metrics():
+    """Prometheus metrics endpoint."""
+    payload, content_type = render_metrics()
+    return payload, 200, {"Content-Type": content_type}
+
+{{/if}}
 {{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}
 
 @app.route("/auth/token", methods=["POST"])
@@ -1309,8 +1353,11 @@ if __name__ == "__main__":
     )
 {{/if}}
 {{#if (eq pythonWebFramework "litestar")}}
-from litestar import Litestar, get, post{{#if (eq pythonGraphql "ariadne")}}, asgi{{/if}}
+from litestar import Litestar, {{#if (eq pythonObservability "prometheus-client")}}Response, {{/if}}get{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}, post{{/if}}{{#if (eq pythonGraphql "ariadne")}}, asgi{{/if}}
 from litestar.config.cors import CORSConfig
+{{#if (eq pythonObservability "prometheus-client")}}
+from app.metrics import render_metrics
+{{/if}}
 {{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}
 from litestar.exceptions import HTTPException
 
@@ -1341,6 +1388,15 @@ async def index() -> dict[str, str]:
 async def health() -> dict[str, str]:
     """Health check endpoint."""
     return {"status": "ok"}
+{{#if (eq pythonObservability "prometheus-client")}}
+
+
+@get("/metrics")
+async def metrics() -> Response:
+    """Prometheus metrics endpoint."""
+    payload, content_type = render_metrics()
+    return Response(content=payload, media_type=content_type)
+{{/if}}
 
 
 {{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}
@@ -1382,7 +1438,7 @@ async def graphql(scope: Scope, receive: Receive, send: Send) -> None:
     await ariadne_app(scope, receive, send)
 {{/if}}
 app = Litestar(
-    route_handlers=[index, health{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}, auth_token, auth_me{{/if}}{{#if (eq pythonGraphql "strawberry")}}, GraphQLController{{/if}}{{#if (eq pythonGraphql "ariadne")}}, graphql{{/if}}],
+    route_handlers=[index, health{{#if (eq pythonObservability "prometheus-client")}}, metrics{{/if}}{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}, auth_token, auth_me{{/if}}{{#if (eq pythonGraphql "strawberry")}}, GraphQLController{{/if}}{{#if (eq pythonGraphql "ariadne")}}, graphql{{/if}}],
     cors_config=cors_config,
 )
 {{/if}}
@@ -1391,8 +1447,11 @@ from starlette.applications import Starlette
 from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse{{#if (eq pythonObservability "prometheus-client")}}, Response{{/if}}
 from starlette.routing import Route
+{{#if (eq pythonObservability "prometheus-client")}}
+from app.metrics import render_metrics
+{{/if}}
 
 load_dotenv()
 
@@ -1405,6 +1464,14 @@ async def index(request: Request) -> JSONResponse:
 async def health(request: Request) -> JSONResponse:
     """Health check endpoint."""
     return JSONResponse({"status": "ok"})
+{{#if (eq pythonObservability "prometheus-client")}}
+
+
+async def metrics(request: Request) -> Response:
+    """Prometheus metrics endpoint."""
+    payload, content_type = render_metrics()
+    return Response(payload, media_type=content_type)
+{{/if}}
 
 
 middleware = [
@@ -1420,6 +1487,9 @@ app = Starlette(
     routes=[
         Route("/", index),
         Route("/health", health),
+{{#if (eq pythonObservability "prometheus-client")}}
+        Route("/metrics", metrics),
+{{/if}}
     ],
     middleware=middleware,
 )
@@ -1432,6 +1502,10 @@ if __name__ == "__main__":
 {{/if}}
 {{#if (eq pythonWebFramework "aiohttp")}}
 from aiohttp import web
+{{#if (eq pythonObservability "prometheus-client")}}
+
+from app.metrics import render_metrics
+{{/if}}
 
 load_dotenv()
 
@@ -1444,6 +1518,14 @@ async def index(request: web.Request) -> web.Response:
 async def health(request: web.Request) -> web.Response:
     """Health check endpoint."""
     return web.json_response({"status": "healthy"})
+{{#if (eq pythonObservability "prometheus-client")}}
+
+
+async def metrics(request: web.Request) -> web.Response:
+    """Prometheus metrics endpoint."""
+    payload, content_type = render_metrics()
+    return web.Response(body=payload, headers={"Content-Type": content_type})
+{{/if}}
 
 
 def create_app() -> web.Application:
@@ -1451,6 +1533,9 @@ def create_app() -> web.Application:
     application = web.Application()
     application.router.add_get("/", index)
     application.router.add_get("/health", health)
+{{#if (eq pythonObservability "prometheus-client")}}
+    application.router.add_get("/metrics", metrics)
+{{/if}}
     return application
 
 
@@ -1478,6 +1563,9 @@ with st.expander("Next step"):
     st.write("Replace this starter with your data, charts, forms, or AI workflow.")
 {{/if}}
 {{#if (eq pythonWebFramework "none")}}
+load_dotenv()
+
+
 def main():
     """Main entry point."""
     print("Welcome to {{projectName}}!")

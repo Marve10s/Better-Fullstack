@@ -861,7 +861,7 @@
 {{#if hasJavaOauth2Client}}
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security-oauth2-client</artifactId>
+			<artifactId>spring-boot-starter-oauth2-client</artifactId>
 {{#if hasJavaLog4j2}}
 			<exclusions>
 				<exclusion>
@@ -873,9 +873,10 @@
 		</dependency>
 {{/if}}
 {{#if hasJavaSaml2}}
+{{#unless hasJavaSecurity}}
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security-saml2</artifactId>
+			<artifactId>spring-boot-starter-security</artifactId>
 {{#if hasJavaLog4j2}}
 			<exclusions>
 				<exclusion>
@@ -884,6 +885,11 @@
 				</exclusion>
 			</exclusions>
 {{/if}}
+		</dependency>
+{{/unless}}
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-saml2-service-provider</artifactId>
 		</dependency>
 {{/if}}
 {{#if hasJavaRestclient}}

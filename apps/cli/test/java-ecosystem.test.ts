@@ -369,18 +369,22 @@ describe("Java Ecosystem", () => {
       expect(pomContent).toContain("spring-boot-starter-log4j2");
       const dependencyBlocks = pomContent.match(/<dependency>[\s\S]*?<\/dependency>/g) ?? [];
       for (const library of starterLibraries) {
+        // spring-saml2 maps to spring-security-saml2-service-provider (not a
+        // Boot starter, so no logging exclusion needed) plus a security
+        // starter, which is asserted below like the other starters.
         const artifact = library
           .replace("spring-data-", "spring-boot-starter-data-")
           .replace("spring-session-redis", "spring-boot-starter-session-data-redis")
           .replace("spring-session-jdbc", "spring-boot-starter-session-jdbc")
-          .replace("spring-oauth2-client", "spring-boot-starter-security-oauth2-client")
-          .replace("spring-saml2", "spring-boot-starter-security-saml2")
+          .replace("spring-oauth2-client", "spring-boot-starter-oauth2-client")
+          .replace("spring-saml2", "spring-boot-starter-security")
           .replace(/^spring-(?!boot-starter)/, "spring-boot-starter-");
         const dependency = dependencyBlocks.find((block) =>
           block.includes(`<artifactId>${artifact}</artifactId>`),
         );
         expect(dependency).toContain("<artifactId>spring-boot-starter-logging</artifactId>");
       }
+      expect(pomContent).toContain("<artifactId>spring-security-saml2-service-provider</artifactId>");
       expect(hasFile(root, "src/main/resources/log4j2-spring.xml")).toBe(true);
       expect(hasFile(root, "src/main/resources/logback-spring.xml")).toBe(false);
     });

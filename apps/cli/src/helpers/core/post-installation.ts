@@ -1391,18 +1391,19 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
   } = config;
 
   const cdCmd = `cd ${relativePath}`;
+  const venvBin = process.platform === "win32" ? ".venv\\Scripts\\" : ".venv/bin/";
   const runPrefix =
     pythonPackageManager === "poetry"
       ? "poetry run "
       : pythonPackageManager === "uv"
         ? "uv run "
-        : "";
+        : venvBin;
   const installCommand =
     pythonPackageManager === "poetry"
       ? "poetry install --extras dev"
       : pythonPackageManager === "uv"
         ? "uv sync"
-        : "python -m venv .venv && pip install -e .";
+        : `python -m venv .venv && ${venvBin}pip install -e ".[dev]"`;
 
   // Determine run command based on framework
   let runCommand = `${runPrefix}uvicorn app.main:app --reload`;
@@ -1413,7 +1414,8 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
   } else if (pythonWebFramework === "litestar") {
     runCommand = `${runPrefix}litestar --app src.app.main:app run --reload --port 8000`;
   } else if (pythonWebFramework === "streamlit") {
-    runCommand = `${runPrefix}streamlit run src/app/main.py`;
+    // --server.port keeps the app on the URL advertised below (localhost:8000)
+    runCommand = `${runPrefix}streamlit run src/app/main.py --server.port 8000`;
   } else if (pythonWebFramework !== "fastapi") {
     runCommand = `${runPrefix}python -m app.main`;
   }

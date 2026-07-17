@@ -1086,12 +1086,25 @@ async function findPythonEntryTarget(projectDir: string): Promise<PythonEntryTar
   const entries = (await readdir(root, { withFileTypes: true })).sort((a, b) =>
     a.name.localeCompare(b.name),
   );
-  // A real package __init__ is the strongest import smoke: it exercises the
-  // package surface and supports relative imports. Prefer it over loose modules.
+  // A real package is the strongest import smoke. Generated __init__ files are
+  // often trivial (just __version__), so prefer a conventional entry submodule
+  // (main.py, app.py, __main__.py) — importing pkg.main exercises the actual
+  // runtime imports of the entrypoint, which importing the bare package skips.
   for (const entry of entries) {
     if (!entry.isDirectory() || !/^[A-Za-z_]\w*$/.test(entry.name)) continue;
     const init = path.join(root, entry.name, "__init__.py");
     if (existsSync(init)) {
+      const entryModule = ["main.py", "app.py", "__main__.py"].find((name) =>
+        existsSync(path.join(root, entry.name, name)),
+      );
+      if (entryModule) {
+        return {
+          moduleName: `${entry.name}.${entryModule.slice(0, -3)}`,
+          filePath: path.join(root, entry.name, entryModule),
+          importRoot: root,
+          packageDirectory: path.dirname(init),
+        };
+      }
       return {
         moduleName: entry.name,
         filePath: init,
@@ -1133,6 +1146,15 @@ function pythonFileImportCommand(target: PythonEntryTarget) {
   const moduleName = JSON.stringify(target.moduleName);
   const filePath = JSON.stringify(target.filePath);
   const importRoot = JSON.stringify(target.importRoot);
+  if (target.moduleName.includes(".")) {
+    // Dotted package entry (e.g. app.main): the import root is on sys.path, so
+    // the regular import system resolves the package and executes the module.
+    return [
+      "import importlib, sys",
+      `sys.path.insert(0, ${importRoot})`,
+      `importlib.import_module(${moduleName})`,
+    ].join("; ");
+  }
   const packageLocations = target.packageDirectory
     ? `, submodule_search_locations=[${JSON.stringify(target.packageDirectory)}]`
     : "";

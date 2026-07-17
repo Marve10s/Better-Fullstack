@@ -197,7 +197,13 @@ const PREFLIGHT_RULES: readonly PreflightRule[] = [
       c.database !== "redis" &&
       c.backend !== "convex" &&
       c.orm === "none" &&
-      !(c.ecosystem === "python" && c.pythonOrm !== "none") &&
+      // A Python ORM only satisfies the database when they match: PyMongo is
+      // the only ORM that can drive MongoDB, and it cannot drive anything else.
+      !(
+        c.ecosystem === "python" &&
+        c.pythonOrm !== "none" &&
+        (c.database === "mongodb") === (c.pythonOrm === "pymongo")
+      ) &&
       !hasGraphOrm(c),
     reason: "This database requires an ORM to generate setup templates. EdgeDB and Redis work without one.",
     suggestions: ["Select an ORM like Drizzle or Prisma", "Use EdgeDB or Redis instead", "Remove database"],
