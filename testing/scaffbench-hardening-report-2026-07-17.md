@@ -59,3 +59,65 @@ The focused TypeScript config is under `scripts/scaffbench/` and uses a dependen
 - Did not modify `apps/web/**`.
 - Did not modify any `testing/llm-benchmarks/**` run directory.
 - Did not run a benchmark sweep or start a development server.
+
+## Round 2 (2026-07-17)
+
+Implemented every item in `testing/scaffbench-hardening-fixes-spec-2026-07-17.md`. Round 2 keeps all implementation and regression-test changes under `scripts/**`; this report append is the only requested change outside that tree. No file under `apps/web/**` or `testing/llm-benchmarks/**` was modified, and no benchmark sweep or development server was run.
+
+Round-2 version stamps:
+
+- `HARNESS_VERSION`: `2.2.1`
+- `VALIDATION_CACHE_VERSION`: `5`
+- `PROMPT_VERSION`: `2026-07-17-round-2`
+- Total project-validation deadline: 45 minutes
+- Validation root cap: 12
+- Estimated-budget tolerance: 1.25× the configured cap
+
+### A–O fixes and regressions
+
+| Item | Files | Fix | Failure-scenario regression |
+| --- | --- | --- | --- |
+| A | `scripts/build-scaffbench-2-1-data.ts` | Derives scored/pass counts from each raw result's persisted outcome plus raw Core evidence. A scored stepless/no-project failure remains in the denominator. Summary `scoredRuns`/`passCount` mismatches now throw instead of being repaired with `min`. | `A counts a scored stepless failure and rejects aggregate mismatches` covers `{no project/no steps fail, pass, pass}` → `2/3`, plus corrupt aggregate rejection. |
+| B | `scripts/splice-scaffbench-2-1.ts` | Null-propagates both quality count and rate when `fullPass` is `null`. | `B preserves null quality through splice normalization`. |
+| C | `scripts/scaffbench/specs/*.ts` | Removes the contradictory dependency-install prohibition from every spec body while retaining the CLI scaffold's explicit `--no-install` policy. Self-verification installs remain allowed. | `C snapshots a non-contradictory install policy for every path mode` generates every spec under prompt/MCP/CLI modes, rejects prohibition wording, and snapshots the allowed install lines. |
+| D | `scripts/scaffbench/agents/{command,agy,claude,codex,opencode}.ts`, `agents/index.ts`, `types.ts` | Makes idle enforcement an explicit adapter capability: Claude/Codex/opencode/Kilo only; agy disabled. Both stdout and stderr count as activity. JSONL tool-start/completion state suspends idle enforcement while a tool call is in flight; the hard deadline remains active. | `D treats stderr as activity and suspends idle kill during an in-flight tool` also verifies the buffered-adapter capability map and delayed buffered output. |
+| E | `scripts/scaffbench/validation/classification.ts`, `scoring.ts` | Requires adjacent HTTP/status/error context for 429/5xx, package-fetch/registry context for HTTP transients, and line-distinct transient evidence when 404/version-not-found is also present. Recurrence now requires `retryCount > 0` plus `transientNetwork: true`; raw signatures remain available to cache exclusion. Provider-infra tokens are word-bounded and error-contextual. | `E rejects adversarial transient/provider false positives and requires retry evidence` covers `531 packages installed`, `0.429.1`, mixed 404+503, real 429, repeated raw lifecycle noise without retry evidence, genuine retry recurrence, capacity prose, and `14293`. |
+| F | `scripts/scaffbench/agents/opencode.ts` | Tracks non-empty assistant text and refusal/moderation parts. The unknown/zero-usage/no-tool provider signature now additionally requires no assistant text. | `F keeps an opencode zero-usage refusal with assistant text model-owned`. |
+| G | `scripts/scaffbench/validation/index.ts` | Parses bun/npm workspace globs (including object form, braces, exclusions), Cargo `[workspace]` members/excludes, and preferred-solution `.sln`/`.slnx` project membership. Nested manifests not actually covered by a parent are independently validated. A preferred .NET solution is built together with all uncovered `.csproj` files. Unhandled discovered roots emit failing `unvalidated:*` evidence. | `G builds a preferred .NET solution plus an uncovered orphan project` and `G validates broken nested bun and Cargo roots outside parent membership`. |
+| H | `scripts/scaffbench/constants.ts`, `validation/index.ts` | Adds the 45-minute total deadline and 12-root cap across multi-root validation. Deadline and overflow paths emit explicit failing `unvalidated:*` steps. | `H caps validation roots and emits a failing step for overflow` and `H enforces a total validation deadline with explicit failure evidence`. |
+| I | `scripts/scaffbench/runner.ts`, `types.ts` | New IDs always end in `-rNN`. Resume matching recognizes the legacy unsuffixed ID only as trial 1 without renaming/regenerating it. Summaries persist `{repeats, seed}` as `runProtocol`; conflicting resumes are rejected unless every existing artifact aligns with the current schedule. Round-boundary shuffles avoid same-spec adjacency when another runnable spec exists. | `I always suffixes run IDs and prevents same-spec cross-round adjacency` and `I resumes a legacy trial 1 when repeat count grows and rejects unaligned artifacts`. |
+| J | `scripts/scaffbench/{constants,scoring,summary,runner,types}.ts` | Post-hoc estimated cost exhausts budget only above 1.25×. Estimated budget outcomes persist `outcomeEvidence.budgetEstimated: true`; directly reported budget terminal reasons are not mislabeled estimated. | `J tolerates estimated cost through 1.25x and persists estimated evidence above it`. |
+| K | `scripts/scaffbench/agents/{claude,codex}.ts` | Claude partial accounting sums per-message usage. Codex uses the final usage snapshot when events are monotonically non-decreasing field-wise supersets; otherwise it sums per-turn deltas. | `K sums partial Claude messages and detects cumulative versus delta Codex usage`. |
+| L | `scripts/scaffbench/{runner,scoring,summary,types}.ts` | `--skip-validation` persists `validation.skipped: true` and outcome `skipped`; skipped runs are excluded from scored and quality denominators and remain eligible for later validation. | `L persists skip-validation as skipped and excludes it from denominators`. |
+| M | `scripts/scaffbench/validation/index.ts` | Prefers a package `__init__.py`, then loads the selected project source with `importlib.util.spec_from_file_location`, registers that exact module, and executes it from its file path. Configured mypy/pyright still take precedence. | `M imports the project package by file path so an installed-name collision cannot pass` uses a project package named `pip` whose source imports a missing dependency. |
+| N | `scripts/scaffbench/specs/*.ts` | Replaces the file-split date with each spec content's first historical commit date. | `N uses content-introduction dates from git history instead of the file-split date`. |
+| O | `scripts/scaffbench-hardening-round-2.test.ts` plus the implementation files above | Adds the requested stepless aggregation, prompt, idle, adversarial classification/refusal, workspace/Cargo/.NET, Python end-to-end, cross-round/resume, and Expo-ordering coverage. | `O executes Expo install before export in the actual validation plan` asserts `install` precedes Expo `build/export`; the other O gaps are asserted by their corresponding A, C, D, E, F, G, I, and M regressions above. |
+
+### `introducedAt` provenance
+
+Each command below was run against the deleted monolith's history. The author date of the first `-S` hit supplies the ISO day. PR history corroborates the cohorts: original ScaffBench 2.1 content merged in PR #252 on 2026-06-25, the restraint spec in PR #260 on 2026-06-25, and expansion batches 1–3 in PR #282 on 2026-06-30.
+
+| Spec | Date | First content commit | Command used |
+| --- | --- | --- | --- |
+| `ai-search-workbench` | 2026-06-25 | `c1596178d` | `git log --all -S 'ai-search-workbench' --reverse --format='%h %aI %s' -- scripts/scaffbench-v2-lib.ts` |
+| `rust-leptos-axum` | 2026-06-25 | `c1596178d` | `git log --all -S 'rust-leptos-axum' --reverse --format='%h %aI %s' -- scripts/scaffbench-v2-lib.ts` |
+| `python-ingestion-api` | 2026-06-25 | `c1596178d` | `git log --all -S 'python-ingestion-api' --reverse --format='%h %aI %s' -- scripts/scaffbench-v2-lib.ts` |
+| `go-realtime-api` | 2026-06-25 | `c1596178d` | `git log --all -S 'go-realtime-api' --reverse --format='%h %aI %s' -- scripts/scaffbench-v2-lib.ts` |
+| `multi-dotnet-ops` | 2026-06-25 | `c1596178d` | `git log --all -S 'multi-dotnet-ops' --reverse --format='%h %aI %s' -- scripts/scaffbench-v2-lib.ts` |
+| `ts-minimal-restraint` | 2026-06-25 | `3b083e2ed` | `git log --all -S 'ts-minimal-restraint' --reverse --format='%h %aI %s' -- scripts/scaffbench-v2-lib.ts` |
+| `ts-svelte-edge-orpc` | 2026-06-30 | `24299a5e2` | `git log --all -S 'ts-svelte-edge-orpc' --reverse --format='%h %aI %s' -- scripts/scaffbench-v2-lib.ts` |
+| `dotnet-blazor-cqrs` | 2026-06-30 | `24299a5e2` | `git log --all -S 'dotnet-blazor-cqrs' --reverse --format='%h %aI %s' -- scripts/scaffbench-v2-lib.ts` |
+| `multi-ts-go-grpc` | 2026-06-30 | `24299a5e2` | `git log --all -S 'multi-ts-go-grpc' --reverse --format='%h %aI %s' -- scripts/scaffbench-v2-lib.ts` |
+| `java-spring-jooq-keycloak` | 2026-06-30 | `877ccbaf9` | `git log --all -S 'java-spring-jooq-keycloak' --reverse --format='%h %aI %s' -- scripts/scaffbench-v2-lib.ts` |
+| `elixir-broadway-absinthe` | 2026-06-30 | `877ccbaf9` | `git log --all -S 'elixir-broadway-absinthe' --reverse --format='%h %aI %s' -- scripts/scaffbench-v2-lib.ts` |
+| `react-native-expo` | 2026-06-30 | `b6ce0efc1` | `git log --all -S 'react-native-expo' --reverse --format='%h %aI %s' -- scripts/scaffbench-v2-lib.ts` |
+| `frontier-polyglot-proto` | 2026-06-30 | `b6ce0efc1` | `git log --all -S 'frontier-polyglot-proto' --reverse --format='%h %aI %s' -- scripts/scaffbench-v2-lib.ts` |
+| `frontier-effect-eventsourcing` | 2026-06-30 | `b6ce0efc1` | `git log --all -S 'frontier-effect-eventsourcing' --reverse --format='%h %aI %s' -- scripts/scaffbench-v2-lib.ts` |
+
+### Round-2 verification
+
+- `bun test scripts/scaffbench-hardening-round-2.test.ts` — **18 passed, 0 failed** (134 assertions).
+- `bun test scripts/` — **123 passed, 0 failed** (414 assertions).
+- `bunx tsc --noEmit -p scripts/scaffbench/tsconfig.json` — **clean**.
+- Install-policy contradiction grep across `scripts/scaffbench/specs` and `prompts.ts` — **no matches**.
+- `git diff --check` — **clean**.

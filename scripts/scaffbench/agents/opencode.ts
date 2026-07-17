@@ -6,8 +6,8 @@ import path from "node:path";
 
 import type { CommandResult, Effort } from "@/types";
 
-import { runCommand } from "@/agents/command";
-import { bfSpec, GEN_IDLE_TIMEOUT_MS, GEN_TIMEOUT_MS } from "@/constants";
+import { agentRunCommandOptions, runCommand } from "@/agents/command";
+import { bfSpec, GEN_TIMEOUT_MS } from "@/constants";
 
 // opencode / Kilo Code adapter — both ship the same CLI, so one function (binary =
 // "opencode" | "kilo") drives both. Runs `<bin> run --format json` in the isolated
@@ -63,7 +63,7 @@ export function runOpencode(input: {
       ],
       input.cwd,
       input.timeoutMs ?? GEN_TIMEOUT_MS,
-      { idleTimeoutMs: GEN_IDLE_TIMEOUT_MS },
+      agentRunCommandOptions(input.binary),
     );
   });
 }
@@ -77,6 +77,7 @@ export function parseOpencodeResult(stdout: string): any | null {
   let cost = 0;
   let sawStep = false;
   let sawTool = false;
+  let sawAssistantText = false;
   let stepReason: string | undefined;
   let errorReason: string | undefined;
   for (const line of stdout.split("\n")) {
@@ -91,6 +92,18 @@ export function parseOpencodeResult(stdout: string): any | null {
     if (typeof event?.sessionID === "string") sessionId = event.sessionID;
     const part = event?.part;
     if (part?.type === "tool") sawTool = true;
+    const assistantText =
+      part?.type === "text"
+        ? (part.text ?? part.content)
+        : event?.role === "assistant" || event?.message?.role === "assistant"
+          ? (event.text ?? event.content ?? event.message?.content)
+          : undefined;
+    if (
+      (typeof assistantText === "string" && assistantText.trim().length > 0) ||
+      ["refusal", "moderation"].includes(part?.type)
+    ) {
+      sawAssistantText = true;
+    }
     if (part?.type === "step-finish" || part?.type === "step_finish") {
       sawStep = true;
       outputTokens += (part.tokens?.output ?? 0) + (part.tokens?.reasoning ?? 0);
@@ -105,7 +118,7 @@ export function parseOpencodeResult(stdout: string): any | null {
   if (!sawStep && sessionId === undefined && !errorReason) return null;
   const terminalReason = errorReason
     ? `error:${errorReason}`
-    : stepReason === "unknown" && outputTokens === 0 && !sawTool
+    : stepReason === "unknown" && outputTokens === 0 && !sawTool && !sawAssistantText
       ? "opencode-unknown-zero-usage-no-tools"
       : stepReason;
   return {
@@ -116,5 +129,6 @@ export function parseOpencodeResult(stdout: string): any | null {
     duration_ms: undefined,
     terminal_reason: terminalReason,
     tool_events: sawTool,
+    assistant_text: sawAssistantText,
   };
 }

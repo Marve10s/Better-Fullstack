@@ -2,7 +2,7 @@ import type { BenchmarkSpec } from "@/types";
 
 export const TsSvelteEdgeOrpcSpec: BenchmarkSpec = {
     id: "ts-svelte-edge-orpc",
-    introducedAt: "2026-07-10",
+    introducedAt: "2026-06-30",
     title: "SvelteKit edge app on Cloudflare Workers with Hono + oRPC and D1",
     lane: "core",
     family: "typescript",
@@ -16,7 +16,7 @@ export const TsSvelteEdgeOrpcSpec: BenchmarkSpec = {
       "Use Better Auth for accounts and Valibot for validation.",
       "Deploy both the web app and the server to Cloudflare.",
       "Do not add payments, email, realtime, search, vector DB, jobs, CMS, file storage/upload, analytics, or i18n.",
-      "Do not install dependencies, do not initialize git, and do not start a dev server.",
+      "Do not initialize git or start a dev server.",
     ],
     naturalPrompt:
       "Build an edge-first starter that runs on Cloudflare. It needs a Svelte web app, a lightweight server on the Workers runtime, a type-safe app API, an edge SQL database with a typed ORM, account auth, and validation. Pick libraries that actually run on Workers and deploy to Cloudflare.",
@@ -99,4 +99,3 @@ export const TsSvelteEdgeOrpcSpec: BenchmarkSpec = {
     ],
     validationProfile: { packageManager: "bun" },
   };
-

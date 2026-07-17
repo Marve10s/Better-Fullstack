@@ -3,8 +3,8 @@ import type * as Effect from "effect/Effect";
 
 import type { CommandResult, Effort } from "@/types";
 
-import { runCommand } from "@/agents/command";
-import { GEN_IDLE_TIMEOUT_MS, GEN_TIMEOUT_MS } from "@/constants";
+import { agentRunCommandOptions, runCommand } from "@/agents/command";
+import { GEN_TIMEOUT_MS } from "@/constants";
 
 export function runClaude(input: {
   cwd: string;
@@ -43,7 +43,7 @@ export function runClaude(input: {
     ],
     input.cwd,
     input.timeoutMs ?? GEN_TIMEOUT_MS,
-    { idleTimeoutMs: GEN_IDLE_TIMEOUT_MS },
+    agentRunCommandOptions("claude"),
   );
 }
 // Published token pricing (USD per 1M tokens) for Claude models. The Claude Code
@@ -110,29 +110,39 @@ export function claudeCostUsd(model: string, usage: ClaudeUsage | undefined): nu
 export function parseClaudeResult(stdout: string): any | null {
   // stream-json: the final {"type":"result",...} line carries cost/usage/session.
   const lines = stdout.trim().split("\n");
-  let lastUsageBearing: any | null = null;
-  for (let i = lines.length - 1; i >= 0; i -= 1) {
-    const candidate = lines[i]?.trim() ?? "";
+  let partialUsage: ClaudeUsage | undefined;
+  let partialMetadata: any | null = null;
+  for (const line of lines) {
+    const candidate = line.trim();
     if (!candidate.startsWith("{")) continue;
     try {
       const event = JSON.parse(candidate);
       if (event?.type === "result") return event;
-      const usage = event?.usage ?? event?.message?.usage;
-      if (!lastUsageBearing && usage) {
-        lastUsageBearing = {
+      // Assistant stream messages report per-message deltas. Summing every
+      // usage-bearing message preserves timeout accounting; taking only the
+      // last message undercounts a multi-message partial trajectory.
+      const usage = event?.message?.usage ?? (event?.type === "assistant" ? event?.usage : null);
+      if (usage) {
+        partialUsage = addClaudeUsage(partialUsage, usage);
+        partialMetadata = {
           type: "partial-result",
-          usage,
-          total_cost_usd: event?.total_cost_usd ?? event?.message?.total_cost_usd,
-          session_id: event?.session_id ?? event?.message?.session_id,
-          duration_ms: event?.duration_ms,
-          terminal_reason: event?.terminal_reason ?? event?.stop_reason,
+          total_cost_usd:
+            event?.total_cost_usd ??
+            event?.message?.total_cost_usd ??
+            partialMetadata?.total_cost_usd,
+          session_id:
+            event?.session_id ?? event?.message?.session_id ?? partialMetadata?.session_id,
+          duration_ms: event?.duration_ms ?? partialMetadata?.duration_ms,
+          terminal_reason:
+            event?.terminal_reason ?? event?.stop_reason ?? partialMetadata?.terminal_reason,
         };
       }
     } catch {}
   }
   // A SIGTERM can arrive before Claude emits its final result envelope. Salvage
-  // the last usage-bearing stream event rather than dropping accounting to zero.
-  if (lastUsageBearing) return lastUsageBearing;
+  // the sum of every usage-bearing assistant event instead of dropping or
+  // undercounting the partial trajectory.
+  if (partialUsage) return { ...partialMetadata, usage: partialUsage };
   // Fallback for --output-format json (single object) or noisy output.
   try {
     return JSON.parse(stdout);
@@ -158,4 +168,15 @@ export function parseClaudeResult(stdout: string): any | null {
       return null;
     }
   }
+}
+
+function addClaudeUsage(current: ClaudeUsage | undefined, next: ClaudeUsage): ClaudeUsage {
+  return {
+    input_tokens: (current?.input_tokens ?? 0) + (next.input_tokens ?? 0),
+    output_tokens: (current?.output_tokens ?? 0) + (next.output_tokens ?? 0),
+    cache_creation_input_tokens:
+      (current?.cache_creation_input_tokens ?? 0) + (next.cache_creation_input_tokens ?? 0),
+    cache_read_input_tokens:
+      (current?.cache_read_input_tokens ?? 0) + (next.cache_read_input_tokens ?? 0),
+  };
 }

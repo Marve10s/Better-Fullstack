@@ -10,7 +10,7 @@ import * as Stream from "effect/Stream";
 
 import type { CommandResult } from "@/types";
 
-import { TIMEOUT_PROGRESS_WINDOW_MS } from "@/constants";
+import { GEN_IDLE_TIMEOUT_MS, TIMEOUT_PROGRESS_WINDOW_MS } from "@/constants";
 
 export class AgentSpawnError extends Data.TaggedError("AgentSpawnError")<{
   readonly command: string;
@@ -29,6 +29,17 @@ export type RunCommandOptions = {
   env?: Record<string, string>;
 };
 
+export type IdleCapableAdapter = "claude" | "codex" | "opencode" | "kilo" | "agy";
+
+/** Idle enforcement is safe only when the adapter emits streaming JSONL. agy
+ * buffers its response until completion, so silence is not evidence of a stall. */
+export function agentRunCommandOptions(
+  adapter: IdleCapableAdapter,
+  idleTimeoutMs = GEN_IDLE_TIMEOUT_MS,
+): RunCommandOptions {
+  return adapter === "agy" ? {} : { idleTimeoutMs };
+}
+
 export function runCommand(
   command: string,
   args: readonly string[],
@@ -40,19 +51,31 @@ export function runCommand(
 
   return Effect.gen(function* () {
     const started = yield* Effect.clockWith((clock) => clock.currentTimeMillis);
+    let lastActivityAtMs = started;
     let lastStdoutActivityAtMs = started;
+    let lastStderrActivityAtMs = started;
     let lastProgressActivityAtMs: number | undefined;
     let stdoutLineRemainder = "";
+    let stderrLineRemainder = "";
+    const inFlightToolIds = new Set<string>();
 
-    const appendStdout = (output: string, chunk: Uint8Array) => {
+    const appendOutput = (stream: "stdout" | "stderr", output: string, chunk: Uint8Array) => {
       const receivedAt = Date.now();
-      lastStdoutActivityAtMs = receivedAt;
+      lastActivityAtMs = receivedAt;
+      if (stream === "stdout") lastStdoutActivityAtMs = receivedAt;
+      else lastStderrActivityAtMs = receivedAt;
       const text = Buffer.from(chunk).toString();
-      const lines = `${stdoutLineRemainder}${text}`.split("\n");
-      stdoutLineRemainder = lines.pop() ?? "";
+      const remainder = stream === "stdout" ? stdoutLineRemainder : stderrLineRemainder;
+      const lines = `${remainder}${text}`.split("\n");
+      if (stream === "stdout") stdoutLineRemainder = lines.pop() ?? "";
+      else stderrLineRemainder = lines.pop() ?? "";
       for (const line of lines) {
-        const eventTime = progressEventTime(line, receivedAt);
-        if (eventTime !== undefined) lastProgressActivityAtMs = eventTime;
+        const activity = streamEventActivity(line, receivedAt);
+        if (activity.progressAtMs !== undefined) {
+          lastProgressActivityAtMs = activity.progressAtMs;
+        }
+        for (const id of activity.startedToolIds) inFlightToolIds.add(id);
+        for (const id of activity.completedToolIds) inFlightToolIds.delete(id);
       }
       return output + text;
     };
@@ -70,11 +93,11 @@ export function runCommand(
         );
 
         const stdoutFiber = yield* child.stdout.pipe(
-          Stream.runFold("", appendStdout),
+          Stream.runFold("", (output, chunk) => appendOutput("stdout", output, chunk)),
           Effect.forkScoped,
         );
         const stderrFiber = yield* child.stderr.pipe(
-          Stream.runFold("", appendChunk),
+          Stream.runFold("", (output, chunk) => appendOutput("stderr", output, chunk)),
           Effect.forkScoped,
         );
 
@@ -93,7 +116,8 @@ export function runCommand(
               waitForIdleTimeout(
                 displayCommand,
                 options.idleTimeoutMs,
-                () => lastStdoutActivityAtMs,
+                () => lastActivityAtMs,
+                () => inFlightToolIds.size > 0,
               ),
             )
           : hardTimeout;
@@ -160,22 +184,31 @@ export function runCommand(
       timeoutProgress: outcome.timedOut
         ? ("timeoutKind" in outcome && outcome.timeoutKind === "idle") ||
           lastProgressActivityAtMs === undefined ||
-          finished - lastProgressActivityAtMs > TIMEOUT_PROGRESS_WINDOW_MS
+          (inFlightToolIds.size === 0 &&
+            finished - lastProgressActivityAtMs > TIMEOUT_PROGRESS_WINDOW_MS)
           ? "timeout-stuck"
           : "timeout-progressing"
         : undefined,
       startedAtMs: started,
+      lastActivityAtMs,
       lastStdoutActivityAtMs,
+      lastStderrActivityAtMs,
       lastProgressActivityAtMs,
     };
   });
 }
 
-function waitForIdleTimeout(command: string, idleTimeoutMs: number, lastActivity: () => number) {
+function waitForIdleTimeout(
+  command: string,
+  idleTimeoutMs: number,
+  lastActivity: () => number,
+  idleSuspended: () => boolean,
+) {
   return Effect.gen(function* () {
     const pollMs = Math.max(10, Math.min(1_000, Math.floor(idleTimeoutMs / 4)));
     while (true) {
       yield* Effect.sleep(Duration.millis(pollMs));
+      if (idleSuspended()) continue;
       const now = yield* Effect.clockWith((clock) => clock.currentTimeMillis);
       if (now - lastActivity() >= idleTimeoutMs) {
         return new ValidationTimeout({
@@ -190,34 +223,74 @@ function waitForIdleTimeout(command: string, idleTimeoutMs: number, lastActivity
 
 /** Recognize tool/file trajectory events and prefer their embedded timestamps. */
 export function progressEventTime(line: string, receivedAtMs: number): number | undefined {
+  return streamEventActivity(line, receivedAtMs).progressAtMs;
+}
+
+function streamEventActivity(line: string, receivedAtMs: number) {
+  const empty = {
+    progressAtMs: undefined as number | undefined,
+    startedToolIds: [] as string[],
+    completedToolIds: [] as string[],
+  };
   const trimmed = line.trim();
-  if (!trimmed.startsWith("{")) return undefined;
+  if (!trimmed.startsWith("{")) return empty;
   let event: any;
   try {
     event = JSON.parse(trimmed);
   } catch {
-    return undefined;
+    return empty;
   }
-  const claudeTool = Array.isArray(event?.message?.content)
-    ? event.message.content.some((block: any) => block?.type === "tool_use")
-    : false;
-  const codexTool =
+  const content = Array.isArray(event?.message?.content) ? event.message.content : [];
+  const claudeStarts = content
+    .filter((block: any) => block?.type === "tool_use")
+    .map((block: any) => String(block.id ?? "claude:anonymous"));
+  const claudeCompletions = content
+    .filter((block: any) => block?.type === "tool_result")
+    .map((block: any) => String(block.tool_use_id ?? "claude:anonymous"));
+  const itemType = event?.item?.type ?? "";
+  const codexTool = /command|file|mcp_tool|tool/.test(itemType);
+  const itemId = String(event?.item?.id ?? event?.item_id ?? "codex:anonymous");
+  const codexStarts = event?.type === "item.started" && codexTool ? [itemId] : [];
+  const codexCompletions =
+    /^(?:item\.(?:completed|failed)|tool\.(?:completed|failed))$/.test(event?.type ?? "") &&
+    codexTool
+      ? [itemId]
+      : [];
+  const part = event?.part;
+  const opencodeTool = part?.type === "tool";
+  const opencodeStatus = String(part?.state?.status ?? part?.status ?? "").toLowerCase();
+  const opencodeId = String(part?.callID ?? part?.id ?? part?.toolCallId ?? "opencode:anonymous");
+  const opencodeStarts =
+    opencodeTool && /^(?:pending|running|started|in_progress)$/.test(opencodeStatus)
+      ? [opencodeId]
+      : [];
+  const opencodeCompletions =
+    opencodeTool && /^(?:completed|failed|error|cancelled)$/.test(opencodeStatus)
+      ? [opencodeId]
+      : [];
+  const codexProgress =
     /^(item\.(started|completed)|tool\.)/.test(event?.type ?? "") &&
     /command|file|mcp_tool|tool/.test(event?.item?.type ?? event?.type ?? "");
-  const opencodeTool = ["tool", "file", "patch"].includes(event?.part?.type);
-  if (!claudeTool && !codexTool && !opencodeTool) return undefined;
+  const progress =
+    claudeStarts.length > 0 ||
+    claudeCompletions.length > 0 ||
+    codexCompletions.length > 0 ||
+    codexProgress ||
+    ["tool", "file", "patch"].includes(part?.type);
+  if (!progress) return empty;
 
   const raw = event.timestamp ?? event.time ?? event.created_at ?? event.createdAt;
-  if (typeof raw === "number") return raw < 10_000_000_000 ? raw * 1_000 : raw;
+  let progressAtMs = receivedAtMs;
+  if (typeof raw === "number") progressAtMs = raw < 10_000_000_000 ? raw * 1_000 : raw;
   if (typeof raw === "string") {
     const parsed = Date.parse(raw);
-    if (Number.isFinite(parsed)) return parsed;
+    if (Number.isFinite(parsed)) progressAtMs = parsed;
   }
-  return receivedAtMs;
-}
-
-function appendChunk(output: string, chunk: Uint8Array) {
-  return output + Buffer.from(chunk).toString();
+  return {
+    progressAtMs,
+    startedToolIds: [...claudeStarts, ...codexStarts, ...opencodeStarts],
+    completedToolIds: [...claudeCompletions, ...codexCompletions, ...opencodeCompletions],
+  };
 }
 
 function formatSpawnError(error: unknown) {

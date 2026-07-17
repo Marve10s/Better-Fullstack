@@ -27,7 +27,13 @@ import {
   VALIDATION_CACHE_VERSION,
   tryCommandText,
 } from "@/constants";
-import { validationPassed, qualityPassed, classifyOutcome, scoredOutcome } from "@/scoring";
+import {
+  validationPassed,
+  qualityPassed,
+  classifyOutcome,
+  outcomeEvidenceFor,
+  scoredOutcome,
+} from "@/scoring";
 
 export function aggregateResults(results: readonly RunResult[]) {
   return {
@@ -257,6 +263,7 @@ export async function writeSummary(
   const persistedResults = results.map((result) => ({
     ...result,
     outcome: classifyOutcome(result),
+    outcomeEvidence: outcomeEvidenceFor(result),
   }));
   const aggregates = aggregateResults(persistedResults);
   const summary: ScaffbenchSummary = {

@@ -314,7 +314,7 @@ describe("ScaffBench hardening 2: timeout and accounting", () => {
         `{"type":"turn.completed","usage":{"output_tokens":5,"reasoning_output_tokens":7}}`,
       ].join("\n"),
     );
-    expect(codex?.usage.output_tokens).toBe(17);
+    expect(codex?.usage.output_tokens).toBe(12);
     const opencode = parseOpencodeResult(
       `{"part":{"type":"step-finish","reason":"tool-calls","tokens":{"output":4,"reasoning":6},"cost":1}}`,
     );
@@ -362,7 +362,7 @@ describe("ScaffBench hardening 2: timeout and accounting", () => {
   it("2e records enforcement policy and detects post-hoc non-Claude budget exhaustion", () => {
     const overBudget = run({
       budgetPolicy: { budgetEnforced: false, maxBudgetUsd: 2 },
-      claude: { exitCode: 0, timedOut: false, durationMs: 1, totalCostUsd: 2.01 },
+      claude: { exitCode: 0, timedOut: false, durationMs: 1, totalCostUsd: 2.51 },
     });
     expect(classifyOutcome(overBudget)).toBe("budget-exhausted");
     expect(overBudget.budgetPolicy).toEqual({ budgetEnforced: false, maxBudgetUsd: 2 });
@@ -508,6 +508,7 @@ describe("ScaffBench hardening 5: validator v4", () => {
       expect(await dotnetValidationTargets(dir)).toEqual({
         kind: "solution",
         targets: [path.join(dir, "All.slnx")],
+        uncoveredProjects: [path.join(dir, "a", "A.csproj"), path.join(dir, "b", "B.csproj")],
       });
     } finally {
       await rm(dir, { recursive: true, force: true });

@@ -96,7 +96,7 @@ function prettyModel(model: string): string {
 type Cell = PublishedCell & { path: (typeof PATH_ORDER)[number] };
 type Model = (typeof EXISTING_MODELS)[number];
 
-function normalizeExistingCell(cell: (typeof EXISTING_CELLS)[number]): Cell {
+export function normalizeExistingCell(cell: (typeof EXISTING_CELLS)[number]): Cell {
   const existing = cell as typeof cell & Partial<PublishedCell>;
   const scoredTrials = existing.scoredTrials ?? (cell.scored ? 1 : 0);
   const passCount = existing.passCount ?? (cell.corePass ? 1 : 0);
@@ -110,8 +110,10 @@ function normalizeExistingCell(cell: (typeof EXISTING_CELLS)[number]): Cell {
     passRate: existing.passRate ?? (scoredTrials > 0 ? passCount * 100 : 0),
     passAny: existing.passAny ?? passCount > 0,
     passAll: existing.passAll ?? (scoredTrials === 1 && passCount === 1),
-    qualityPassCount: existing.qualityPassCount ?? (cell.fullPass ? 1 : 0),
-    qualityPassRate: existing.qualityPassRate ?? (cell.fullPass ? 100 : 0),
+    qualityPassCount:
+      cell.fullPass === null ? null : (existing.qualityPassCount ?? (cell.fullPass ? 1 : 0)),
+    qualityPassRate:
+      cell.fullPass === null ? null : (existing.qualityPassRate ?? (cell.fullPass ? 100 : 0)),
     durationMs: existing.durationMs ?? null,
   };
 }

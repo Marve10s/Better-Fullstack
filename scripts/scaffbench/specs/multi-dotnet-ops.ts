@@ -2,7 +2,7 @@ import type { BenchmarkSpec } from "@/types";
 
 export const MultiDotnetOpsSpec: BenchmarkSpec = {
     id: "multi-dotnet-ops",
-    introducedAt: "2026-07-10",
+    introducedAt: "2026-06-25",
     title: "Multi-ecosystem ops portal with TypeScript frontend and .NET Minimal API backend",
     lane: "core",
     family: "multi-ecosystem",
@@ -14,7 +14,7 @@ export const MultiDotnetOpsSpec: BenchmarkSpec = {
       "Use EF Core, ASP.NET Identity, Minimal API endpoints, xUnit, Testcontainers for .NET, Serilog, SignalR, FluentValidation, Hangfire, memory cache, and Docker output.",
       "Use PostgreSQL as the shared database.",
       "Include Turborepo, Biome, and GitHub Actions.",
-      "Do not install dependencies, do not initialize git, and do not start a dev server.",
+      "Do not initialize git or start a dev server.",
     ],
     naturalPrompt:
       "Build a multi-ecosystem ops portal starter: a TypeScript web frontend and a .NET backend. It needs Postgres-backed identity, API endpoints, validation, background jobs, realtime notifications, observability/logging, tests, containers, and CI. Use the project graph instead of forcing everything into one ecosystem.",
@@ -124,4 +124,3 @@ export const MultiDotnetOpsSpec: BenchmarkSpec = {
       doctorCheck: true,
     },
   };
-

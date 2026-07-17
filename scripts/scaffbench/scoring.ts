@@ -10,6 +10,7 @@ import type {
   FailureTag,
   ProjectIndex,
   PromptStyle,
+  OutcomeEvidence,
   RunOutcome,
   RunOutcomeRollup,
   RunResult,
@@ -19,6 +20,7 @@ import type {
   ToolCompliance,
 } from "@/types";
 
+import { ESTIMATED_BUDGET_TOLERANCE } from "@/constants";
 import { isRecurringTransientFailure } from "@/validation/classification";
 import { walk, parseJsonc } from "@/validation/shared";
 
@@ -493,15 +495,19 @@ export function validationPassed(result: RunResult) {
  * quality metric rather than a brokenness verdict.
  */
 export function qualityPassed(result: RunResult) {
-  if (result.validation.qualityGateRequested !== true) return "na" as const;
+  if (result.validation.skipped || result.validation.qualityGateRequested !== true) {
+    return "na" as const;
+  }
   if (!validationPassed(result)) return false;
   return stepsAllGreen(applicableSteps(result, isAdvisoryStep));
 }
 
+const BUDGET_TERMINAL_REASON = /budget|cost[_-]?limit|max[_-]?cost|spend/i;
+
 export function isBudgetExhausted(result: RunResult) {
   if (
     result.claude.terminalReason &&
-    /budget|cost[_-]?limit|max[_-]?cost|spend/i.test(result.claude.terminalReason)
+    BUDGET_TERMINAL_REASON.test(result.claude.terminalReason)
   ) {
     return true;
   }
@@ -510,8 +516,23 @@ export function isBudgetExhausted(result: RunResult) {
     policy &&
     !policy.budgetEnforced &&
     typeof result.claude.totalCostUsd === "number" &&
-    result.claude.totalCostUsd > policy.maxBudgetUsd,
+    result.claude.totalCostUsd > policy.maxBudgetUsd * ESTIMATED_BUDGET_TOLERANCE,
   );
+}
+
+export function outcomeEvidenceFor(result: RunResult): OutcomeEvidence | undefined {
+  if (result.validation.skipped) return undefined;
+  const policy = result.budgetPolicy;
+  if (
+    policy &&
+    !policy.budgetEnforced &&
+    !BUDGET_TERMINAL_REASON.test(result.claude.terminalReason ?? "") &&
+    typeof result.claude.totalCostUsd === "number" &&
+    result.claude.totalCostUsd > policy.maxBudgetUsd * ESTIMATED_BUDGET_TOLERANCE
+  ) {
+    return { budgetEstimated: true };
+  }
+  return undefined;
 }
 
 /**
@@ -519,6 +540,7 @@ export function isBudgetExhausted(result: RunResult) {
  * to retain the historic success/model-failure/infra-inconclusive denominator.
  */
 export function classifyOutcome(result: RunResult): RunOutcome {
+  if (result.validation.skipped) return "skipped";
   if (isBudgetExhausted(result)) return "budget-exhausted";
   if (result.claude.timedOut) return "deadline-exhausted";
   if (result.claude.spawnError) return "harness-infra";
@@ -537,13 +559,14 @@ export function classifyOutcome(result: RunResult): RunOutcome {
 
 export function rollupOutcome(outcome: RunOutcome): RunOutcomeRollup {
   if (outcome === "success") return "success";
-  if (["provider-infra", "harness-infra", "validation-infra"].includes(outcome)) {
+  if (["provider-infra", "harness-infra", "validation-infra", "skipped"].includes(outcome)) {
     return "infra-inconclusive";
   }
   return "model-failure";
 }
 
 export function scoredOutcome(result: RunResult) {
+  if (classifyOutcome(result) === "skipped") return false;
   return rollupOutcome(classifyOutcome(result)) !== "infra-inconclusive";
 }
 
@@ -553,8 +576,16 @@ function hasProviderInfraEvidence(result: RunResult) {
   if (/opencode-unknown-zero-usage-no-tools/.test(reason) && !result.claude.outputTokens) {
     return true;
   }
-  return /(?:provider|upstream|endpoint|gateway).*(?:error|unavailable|timeout)|(?:429|rate.?limit|overloaded|capacity|authentication|unauthori[sz]ed|ECONNRESET|ETIMEDOUT)/i.test(
-    reason,
+  const providerWithError =
+    /\b(?:provider|upstream|endpoint|gateway)\b[^\n]{0,80}\b(?:error|fail(?:ed|ure)?|unavailable|timeout|timed out|rejected|denied)\b|\b(?:error|fail(?:ed|ure)?|unavailable|timeout|timed out|rejected|denied)\b[^\n]{0,80}\b(?:provider|upstream|endpoint|gateway)\b/i;
+  const explicitInfraError =
+    /\b(?:HTTP(?:\/\d(?:\.\d)?)?\s*429|status(?:\s+code)?\D{0,10}429|too many requests|rate.?limit(?:ed)?[\s:_-]+(?:error|exceeded|reached|hit)|unauthori[sz]ed|ECONNRESET|ETIMEDOUT)\b/i;
+  const contextualCapacity =
+    /\b(?:overloaded|capacity|authentication)\b[^\n]{0,40}\b(?:error|fail(?:ed|ure)?|unavailable|exhausted|exceeded|rejected|denied)\b|\b(?:error|fail(?:ed|ure)?|unavailable|exhausted|exceeded|rejected|denied)\b[^\n]{0,40}\b(?:overloaded|capacity|authentication)\b/i;
+  return (
+    providerWithError.test(reason) ||
+    explicitInfraError.test(reason) ||
+    contextualCapacity.test(reason)
   );
 }
 

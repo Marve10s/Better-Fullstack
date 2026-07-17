@@ -2,7 +2,7 @@ import type { BenchmarkSpec } from "@/types";
 
 export const PythonIngestionApiSpec: BenchmarkSpec = {
     id: "python-ingestion-api",
-    introducedAt: "2026-07-10",
+    introducedAt: "2026-06-25",
     title: "Python FastAPI ingestion API with AI, queues, realtime, and quality gates",
     lane: "core",
     family: "python",
@@ -13,7 +13,7 @@ export const PythonIngestionApiSpec: BenchmarkSpec = {
       "Use LangGraph and OpenAI SDK for AI workflows.",
       "Use JWT auth, Celery task queues, WebSockets realtime, Redis caching, OpenTelemetry, Typer, Rich, Ruff, Pytest, and Hypothesis.",
       "Do not choose Django REST Framework or Django Ninja because this is not a Django project.",
-      "Do not install dependencies, do not initialize git, and do not start a dev server.",
+      "Do not initialize git or start a dev server.",
     ],
     naturalPrompt:
       "Build a Python ingestion API starter for AI document processing. It needs FastAPI, SQL-backed models, strict validation, AI workflow libraries, queued workers, realtime job updates, Redis cache, tracing, CLI tools, and real test/quality tooling. Avoid Django-only API libraries.",
@@ -107,4 +107,3 @@ export const PythonIngestionApiSpec: BenchmarkSpec = {
     ],
     validationProfile: { native: ["python"] },
   };
-

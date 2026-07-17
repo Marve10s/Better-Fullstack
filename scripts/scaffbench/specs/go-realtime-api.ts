@@ -2,7 +2,7 @@ import type { BenchmarkSpec } from "@/types";
 
 export const GoRealtimeApiSpec: BenchmarkSpec = {
     id: "go-realtime-api",
-    introducedAt: "2026-07-10",
+    introducedAt: "2026-06-25",
     title: "Go realtime API with Chi, Ent, gRPC, NATS, Redis, and OpenTelemetry",
     lane: "core",
     family: "go",
@@ -12,7 +12,7 @@ export const GoRealtimeApiSpec: BenchmarkSpec = {
       "Use PostgreSQL with Ent.",
       "Use gRPC for typed service contracts.",
       "Use Cobra CLI tooling, Zap logging, JWT auth, Testify + GoMock tests, Gorilla WebSocket realtime, NATS messaging, Redis caching, Viper config, and OpenTelemetry.",
-      "Do not install dependencies, do not initialize git, and do not start a dev server.",
+      "Do not initialize git or start a dev server.",
     ],
     naturalPrompt:
       "Build a Go backend starter for a realtime admin API. It needs a lightweight router, Ent/Postgres models, typed gRPC service contracts, CLI/admin commands, structured logging, auth, websocket updates, event messaging, Redis cache, configuration, tracing, and test doubles.",
@@ -101,4 +101,3 @@ export const GoRealtimeApiSpec: BenchmarkSpec = {
     ],
     validationProfile: { native: ["go"] },
   };
-

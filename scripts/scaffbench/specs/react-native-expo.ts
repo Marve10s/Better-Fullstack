@@ -2,7 +2,7 @@ import type { BenchmarkSpec } from "@/types";
 
 export const ReactNativeExpoSpec: BenchmarkSpec = {
     id: "react-native-expo",
-    introducedAt: "2026-07-10",
+    introducedAt: "2026-06-30",
     title: "React Native Expo app with Expo Router, Uniwind, MMKV, and Maestro + RNTL",
     lane: "core",
     family: "react-native",
@@ -14,7 +14,7 @@ export const ReactNativeExpoSpec: BenchmarkSpec = {
       "Use Maestro plus React Native Testing Library for testing.",
       "Use Expo Notifications for push, Expo Updates for OTA, and Expo Linking for deep linking.",
       "This is a mobile-only project: no backend, database, or auth.",
-      "Do not install dependencies, do not initialize git, and do not start a dev server.",
+      "Do not initialize git or start a dev server.",
     ],
     naturalPrompt:
       "Build a React Native mobile starter on Expo. It needs file-based navigation, Tailwind-style styling, fast on-device key-value storage, push notifications, over-the-air updates, deep linking, and both end-to-end and unit testing. It is a standalone mobile app with no server, database, or accounts.",
@@ -62,4 +62,3 @@ export const ReactNativeExpoSpec: BenchmarkSpec = {
     ],
     validationProfile: { packageManager: "bun" },
   };
-

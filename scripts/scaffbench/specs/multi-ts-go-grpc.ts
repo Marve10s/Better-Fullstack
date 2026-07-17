@@ -2,7 +2,7 @@ import type { BenchmarkSpec } from "@/types";
 
 export const MultiTsGoGrpcSpec: BenchmarkSpec = {
     id: "multi-ts-go-grpc",
-    introducedAt: "2026-07-10",
+    introducedAt: "2026-06-30",
     title: "Multi-ecosystem app: Nuxt (Vue) frontend with a Go Chi + gRPC backend",
     lane: "core",
     family: "multi-ecosystem",
@@ -16,7 +16,7 @@ export const MultiTsGoGrpcSpec: BenchmarkSpec = {
       "Use goth for auth, Centrifuge for realtime, Watermill for messaging, Ristretto for caching, koanf for config, and zerolog for logging.",
       "Use OpenTelemetry and Testify + GoMock.",
       "Use PostgreSQL as the shared database.",
-      "Do not install dependencies, do not initialize git, and do not start a dev server.",
+      "Do not initialize git or start a dev server.",
     ],
     naturalPrompt:
       "Build a multi-ecosystem starter: a Vue/Nuxt web frontend and a Go backend. The Go side needs a lightweight router, type-safe SQL, typed gRPC contracts, social auth, scalable realtime, a messaging abstraction, an in-process cache, config management, structured logging, tracing, and test doubles. Use the project graph instead of one ecosystem.",
@@ -85,4 +85,3 @@ export const MultiTsGoGrpcSpec: BenchmarkSpec = {
     ],
     validationProfile: { packageManager: "bun", native: ["go"] },
   };
-

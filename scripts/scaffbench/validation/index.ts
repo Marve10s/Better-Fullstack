@@ -1,4 +1,6 @@
 import * as Effect from "effect/Effect";
+import * as Duration from "effect/Duration";
+import * as Option from "effect/Option";
 import { existsSync, readdirSync } from "node:fs";
 import { cp, mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import os from "node:os";
@@ -14,7 +16,12 @@ import type {
 } from "@/types";
 
 import { runCommand, tail } from "@/agents/command";
-import { bfSpec, VALIDATION_TIMEOUT_MS } from "@/constants";
+import {
+  bfSpec,
+  VALIDATION_PROJECT_TIMEOUT_MS,
+  VALIDATION_ROOT_CAP,
+  VALIDATION_TIMEOUT_MS,
+} from "@/constants";
 import { typecheckGate } from "@/scoring";
 import { hasTransientNetworkSignature } from "@/validation/classification";
 import { parseJsonc, walk } from "@/validation/shared";
@@ -144,9 +151,9 @@ async function findManifestRoots(projectDir: string, manifests: readonly string[
   return [...roots].sort((a, b) => a.length - b.length || a.localeCompare(b));
 }
 
-// Keep only roots not contained in another kept root: for workspace-based
-// ecosystems (bun/cargo/uv) the shallowest manifest drives its members' builds,
-// so validating members separately would double-count the workspace.
+// Python has no workspace-membership syntax we can reliably recover here, so
+// retain its existing shallowest-manifest heuristic. Bun and Cargo use the
+// membership-aware helpers below instead.
 function dropNestedRoots(roots: string[]) {
   const kept: string[] = [];
   for (const root of roots) {
@@ -155,18 +162,138 @@ function dropNestedRoots(roots: string[]) {
   return kept;
 }
 
+function isNestedRoot(parent: string, candidate: string) {
+  return candidate !== parent && candidate.startsWith(`${parent}${path.sep}`);
+}
+
+function expandBraces(pattern: string): string[] {
+  const match = pattern.match(/\{([^{}]+)\}/);
+  if (!match || match.index === undefined) return [pattern];
+  return match[1]!.split(",").flatMap((choice) =>
+    expandBraces(
+      `${pattern.slice(0, match.index)}${choice}${pattern.slice(match.index! + match[0].length)}`,
+    ),
+  );
+}
+
+function workspaceGlobMatches(pattern: string, relativeRoot: string) {
+  const normalizedPattern = pattern.replace(/^\.\//, "").replace(/\/$/, "");
+  const normalizedRoot = relativeRoot.split(path.sep).join("/").replace(/^\.\//, "");
+  let source = "";
+  for (let index = 0; index < normalizedPattern.length; index += 1) {
+    const character = normalizedPattern[index]!;
+    if (character === "*") {
+      if (normalizedPattern[index + 1] === "*") {
+        index += 1;
+        if (normalizedPattern[index + 1] === "/") {
+          index += 1;
+          source += "(?:.*/)?";
+        } else {
+          source += ".*";
+        }
+      } else {
+        source += "[^/]*";
+      }
+    } else if (character === "?") {
+      source += "[^/]";
+    } else {
+      source += character.replace(/[|\\{}()[\]^$+?.-]/g, "\\$&");
+    }
+  }
+  return new RegExp(`^${source}$`).test(normalizedRoot);
+}
+
+function workspacePatternsCover(patterns: readonly string[], relativeRoot: string) {
+  let covered = false;
+  for (const rawPattern of patterns) {
+    const excluded = rawPattern.startsWith("!");
+    const pattern = excluded ? rawPattern.slice(1) : rawPattern;
+    if (expandBraces(pattern).some((candidate) => workspaceGlobMatches(candidate, relativeRoot))) {
+      covered = !excluded;
+    }
+  }
+  return covered;
+}
+
+async function bunWorkspacePatterns(root: string) {
+  const packageJson = await readPackageJson(path.join(root, "package.json"));
+  const workspaces = Array.isArray(packageJson.workspaces)
+    ? packageJson.workspaces
+    : packageJson.workspaces?.packages;
+  return Array.isArray(workspaces)
+    ? workspaces.filter((entry): entry is string => typeof entry === "string")
+    : [];
+}
+
+async function cargoWorkspacePatterns(root: string) {
+  const manifest = await readOptional(path.join(root, "Cargo.toml"));
+  if (!manifest) return [];
+  const workspace = manifest.match(
+    /^\s*\[workspace\]\s*$([\s\S]*?)(?=^\s*\[[^\]]+\]\s*$|(?![\s\S]))/m,
+  )?.[1];
+  if (!workspace) return [];
+  const values = (field: "members" | "exclude") => {
+    const body = workspace.match(new RegExp(`\\b${field}\\s*=\\s*\\[([\\s\\S]*?)\\]`))?.[1] ?? "";
+    return [...body.matchAll(/["']([^"']+)["']/g)].map((match) => match[1]!);
+  };
+  return [...values("members"), ...values("exclude").map((entry) => `!${entry}`)];
+}
+
+async function membershipAwareRoots(
+  roots: readonly string[],
+  patternsFor: (root: string) => Promise<readonly string[]>,
+) {
+  const patterns = new Map<string, readonly string[]>();
+  for (const root of roots) patterns.set(root, await patternsFor(root));
+  return roots.filter(
+    (candidate) =>
+      !roots.some((parent) => {
+        if (!isNestedRoot(parent, candidate)) return false;
+        return workspacePatternsCover(
+          patterns.get(parent) ?? [],
+          path.relative(parent, candidate),
+        );
+      }),
+  );
+}
+
+async function coveredWorkspaceMembers(
+  parent: string,
+  roots: readonly string[],
+  patternsFor: (root: string) => Promise<readonly string[]>,
+) {
+  const patterns = await patternsFor(parent);
+  return roots.filter(
+    (candidate) =>
+      isNestedRoot(parent, candidate) &&
+      workspacePatternsCover(patterns, path.relative(parent, candidate)),
+  );
+}
+
+export type ValidationLimits = {
+  deadlineMs?: number;
+  rootCap?: number;
+};
+
 export function validateProject(
   spec: BenchmarkSpec,
   projectDir: string | null,
   options: ScaffbenchOptions,
+  limits: ValidationLimits = {},
 ) {
-  return Effect.gen(function* () {
-    const qualityGateRequested = options.qualityGate;
-    if (!projectDir) {
-      return { projectExists: false, qualityGateRequested, steps: {} } as ProjectValidation;
-    }
-    const steps: Record<string, StepResult | undefined> = {};
+  const qualityGateRequested = options.qualityGate;
+  if (!projectDir) {
+    return Effect.succeed({
+      projectExists: false,
+      qualityGateRequested,
+      steps: {},
+    } as ProjectValidation);
+  }
+  const steps: Record<string, StepResult | undefined> = {};
+  const rootCap = limits.rootCap ?? VALIDATION_ROOT_CAP;
+  let rootsUsed = 0;
 
+  const validation = Effect.gen(function* () {
     const prefixFor = (root: string) =>
       root === projectDir ? "" : path.relative(projectDir, root).split(path.sep).join("/");
     const merge = (
@@ -185,10 +312,25 @@ export function validateProject(
         merged += 1;
       }
       if (merged === 0) {
-        steps[prefix ? `${prefix}:unvalidated` : `${eco}:unvalidated`] = skipStep(
-          `${eco} manifest discovered but no validator step ran`,
+        steps[`unvalidated:${eco}:${prefix || "."}`] = unvalidatedStep(
+          `${eco} manifest discovered at ${prefix || "."} but no validator step ran`,
         );
       }
+    };
+    const takeRoots = (roots: readonly string[], eco: string) => {
+      const accepted: string[] = [];
+      for (const root of roots) {
+        if (rootsUsed < rootCap) {
+          rootsUsed += 1;
+          accepted.push(root);
+          continue;
+        }
+        const relative = prefixFor(root) || ".";
+        steps[`unvalidated:${eco}:${relative}`] = unvalidatedStep(
+          `${eco} root ${relative} exceeded validation root cap ${rootCap}`,
+        );
+      }
+      return accepted;
     };
     // Sub-roots never run the project-level doctor/route checks (bfs metadata and
     // the dev server are root concerns).
@@ -208,10 +350,11 @@ export function validateProject(
     const prerequisiteStepCount = Object.keys(steps).length;
 
     // TS/bun — workspace-shaped: the shallowest package.json drives its members.
-    const bunRoots = dropNestedRoots(
-      yield* fromPromise(() => findManifestRoots(projectDir, ["package.json"])),
+    const allBunRoots = yield* fromPromise(() => findManifestRoots(projectDir, ["package.json"]));
+    const bunRoots = yield* fromPromise(() =>
+      membershipAwareRoots(allBunRoots, bunWorkspacePatterns),
     );
-    for (const root of bunRoots) {
+    for (const root of takeRoots(bunRoots, "bun")) {
       const isRoot = root === projectDir;
       const bunSteps = yield* validateBunProject(root, isRoot ? options : subOptions);
       merge(bunSteps, prefixFor(root), "bun");
@@ -219,12 +362,10 @@ export function validateProject(
       // surface) measures ~nothing — the near-vacuous-pass shape. Descend into the
       // member apps so the verdict reflects code, not the root manifest's scripts.
       if (isRoot && bunSteps.install?.exitCode === 0 && !bunSteps.build && !bunSteps.typecheck) {
-        const members = dropNestedRoots(
-          (yield* fromPromise(() => findManifestRoots(projectDir, ["package.json"]))).filter(
-            (r) => r !== projectDir,
-          ),
+        const members = yield* fromPromise(() =>
+          coveredWorkspaceMembers(root, allBunRoots, bunWorkspacePatterns),
         );
-        for (const member of members) {
+        for (const member of takeRoots(members, "bun")) {
           merge(yield* validateBunProject(member, subOptions), prefixFor(member), "bun");
         }
       }
@@ -232,10 +373,11 @@ export function validateProject(
 
     const nativeProfiles = new Set(spec.validationProfile.native ?? []);
     // Rust/Python — workspace-shaped like bun: shallowest manifest wins.
-    const cargoRoots = dropNestedRoots(
-      yield* fromPromise(() => findManifestRoots(projectDir, ["Cargo.toml"])),
+    const allCargoRoots = yield* fromPromise(() => findManifestRoots(projectDir, ["Cargo.toml"]));
+    const cargoRoots = yield* fromPromise(() =>
+      membershipAwareRoots(allCargoRoots, cargoWorkspacePatterns),
     );
-    for (const root of cargoRoots) {
+    for (const root of takeRoots(cargoRoots, "cargo")) {
       merge(
         yield* validateCargoProject(root, root === projectDir ? options : subOptions),
         prefixFor(root),
@@ -245,7 +387,7 @@ export function validateProject(
     const pythonRoots = dropNestedRoots(
       yield* fromPromise(() => findManifestRoots(projectDir, ["pyproject.toml"])),
     );
-    for (const root of pythonRoots) {
+    for (const root of takeRoots(pythonRoots, "python")) {
       merge(
         yield* validatePythonProject(root, root === projectDir ? options : subOptions),
         prefixFor(root),
@@ -255,7 +397,7 @@ export function validateProject(
     // Go — every go.mod is an independent module: `go build ./...` in a parent
     // module never descends into a nested module, so validate each root.
     const goRoots = yield* fromPromise(() => findManifestRoots(projectDir, ["go.mod"]));
-    for (const root of goRoots) {
+    for (const root of takeRoots(goRoots, "go")) {
       merge(
         yield* validateGoProject(root, root === projectDir ? options : subOptions),
         prefixFor(root),
@@ -263,7 +405,13 @@ export function validateProject(
       );
     }
     if (nativeProfiles.has("dotnet") || (yield* fromPromise(() => hasDotnetProject(projectDir)))) {
-      merge(yield* validateDotnetProject(projectDir, options), "", "dotnet");
+      merge(
+        yield* validateDotnetProject(projectDir, options, {
+          targetCap: Math.max(0, rootCap - rootsUsed),
+        }),
+        "",
+        "dotnet",
+      );
     }
     // Java/Elixir run ONLY on an explicit native profile — NOT file autodetect.
     // A React Native app ships an Android `build.gradle` (apps/native/android), and
@@ -278,10 +426,24 @@ export function validateProject(
     }
 
     if (Object.keys(steps).length === prerequisiteStepCount) {
-      steps["project:unvalidated"] = skipStep("project directory has no recognized build manifest");
+      steps["unvalidated:project"] = unvalidatedStep(
+        "project directory has no recognized build manifest",
+      );
     }
     return buildProjectValidation(steps, qualityGateRequested);
   });
+
+  return validation.pipe(
+    Effect.timeoutOption(Duration.millis(limits.deadlineMs ?? VALIDATION_PROJECT_TIMEOUT_MS)),
+    Effect.map(
+      Option.getOrElse(() => {
+        steps["unvalidated:deadline"] = unvalidatedStep(
+          `project validation exceeded ${limits.deadlineMs ?? VALIDATION_PROJECT_TIMEOUT_MS}ms deadline`,
+        );
+        return buildProjectValidation(steps, qualityGateRequested);
+      }),
+    ),
+  );
 }
 
 export function validateBunProject(projectDir: string, options: ScaffbenchOptions) {
@@ -497,9 +659,13 @@ export function validatePythonProject(projectDir: string, options: ScaffbenchOpt
     } else if (typechecker === "pyright") {
       steps.typecheck = yield* commandStep("uv", ["run", "pyright"], projectDir);
     } else {
-      const entryModule = yield* fromPromise(() => findPythonEntryModule(projectDir));
-      steps.typecheck = entryModule
-        ? yield* commandStep("uv", ["run", "python", "-c", `import ${entryModule}`], projectDir)
+      const entryTarget = yield* fromPromise(() => findPythonEntryTarget(projectDir));
+      steps.typecheck = entryTarget
+        ? yield* commandStep(
+            "uv",
+            ["run", "python", "-c", pythonFileImportCommand(entryTarget)],
+            projectDir,
+          )
         : skipStep("python import smoke (no importable package found)");
     }
     if (options.qualityGate) {
@@ -559,26 +725,54 @@ export function validateGoProject(projectDir: string, options: ScaffbenchOptions
   });
 }
 
-export function validateDotnetProject(projectDir: string, options: ScaffbenchOptions) {
+export function validateDotnetProject(
+  projectDir: string,
+  options: ScaffbenchOptions,
+  limits: { targetCap?: number } = {},
+) {
   return Effect.gen(function* () {
     const steps: Record<string, StepResult | undefined> = {};
     const targets = yield* fromPromise(() => dotnetValidationTargets(projectDir));
+    const targetCap = limits.targetCap ?? Number.POSITIVE_INFINITY;
+    let targetsUsed = 0;
+    const acceptTarget = (target: string) => {
+      if (targetsUsed < targetCap) {
+        targetsUsed += 1;
+        return true;
+      }
+      const namespace = target.endsWith(".csproj")
+        ? dotnetStepNamespace(projectDir, target)
+        : path.relative(projectDir, target).split(path.sep).join("/");
+      steps[`unvalidated:dotnet:${namespace}`] = unvalidatedStep(
+        `dotnet target ${namespace} exceeded validation root cap ${targetCap}`,
+      );
+      return false;
+    };
     if (targets.kind === "solution") {
       const solution = targets.targets[0]!;
-      const root = path.dirname(solution);
-      const target = path.basename(solution);
-      steps.dotnetRestore = yield* commandStep("dotnet", ["restore", target], root, {
-        retryTransientNetwork: true,
-      });
-      if (!stepGreen(steps.dotnetRestore)) return steps;
-      steps.dotnetBuild = yield* commandStep("dotnet", ["build", target, "--no-restore"], root);
-      if (options.qualityGate) {
-        steps.test = yield* commandStep("dotnet", ["test", target, "--no-build"], root);
+      if (acceptTarget(solution)) {
+        const root = path.dirname(solution);
+        const target = path.basename(solution);
+        steps.dotnetRestore = yield* commandStep("dotnet", ["restore", target], root, {
+          retryTransientNetwork: true,
+        });
+        if (stepGreen(steps.dotnetRestore)) {
+          steps.dotnetBuild = yield* commandStep(
+            "dotnet",
+            ["build", target, "--no-restore"],
+            root,
+          );
+          if (options.qualityGate && stepGreen(steps.dotnetBuild)) {
+            steps.test = yield* commandStep("dotnet", ["test", target, "--no-build"], root);
+          }
+        }
       }
-      return steps;
     }
 
-    for (const project of targets.targets) {
+    const projects =
+      targets.kind === "solution" ? targets.uncoveredProjects : targets.targets;
+    for (const project of projects) {
+      if (!acceptTarget(project)) continue;
       const root = path.dirname(project);
       const target = path.basename(project);
       const namespace = dotnetStepNamespace(projectDir, project);
@@ -708,8 +902,33 @@ export async function findDotnetSolutions(projectDir: string) {
 
 export async function dotnetValidationTargets(projectDir: string) {
   const solutions = await findDotnetSolutions(projectDir);
-  if (solutions.length > 0) return { kind: "solution" as const, targets: [solutions[0]!] };
+  if (solutions.length > 0) {
+    const solution = solutions[0]!;
+    const covered = await dotnetSolutionProjects(solution);
+    const uncoveredProjects = (await findDotnetProjects(projectDir)).filter(
+      (project) => !covered.has(path.resolve(project)),
+    );
+    return { kind: "solution" as const, targets: [solution], uncoveredProjects };
+  }
   return { kind: "projects" as const, targets: await findDotnetProjects(projectDir) };
+}
+
+async function dotnetSolutionProjects(solution: string) {
+  const text = await readOptional(solution);
+  const projects = new Set<string>();
+  if (!text) return projects;
+  const root = path.dirname(solution);
+  const references = solution.endsWith(".slnx")
+    ? [...text.matchAll(/<Project\b[^>]*\bPath=["']([^"']+\.csproj)["']/gi)].map(
+        (match) => match[1]!,
+      )
+    : [...text.matchAll(/Project\([^)]*\)\s*=\s*"[^"]*"\s*,\s*"([^"]+\.csproj)"/gi)].map(
+        (match) => match[1]!,
+      );
+  for (const reference of references) {
+    projects.add(path.resolve(root, reference.replace(/[\\/]+/g, path.sep)));
+  }
+  return projects;
 }
 
 function dotnetStepNamespace(projectDir: string, project: string) {
@@ -763,6 +982,18 @@ function skipStep(command: string): StepResult {
     durationMs: 0,
     stdoutTail: "skipped (tool not configured)",
     stderrTail: "",
+  };
+}
+
+function unvalidatedStep(command: string): StepResult {
+  return {
+    command,
+    exitCode: 1,
+    timedOut: false,
+    status: "ran",
+    durationMs: 0,
+    stdoutTail: "",
+    stderrTail: command,
   };
 }
 
@@ -840,26 +1071,81 @@ export async function configuredPythonTypechecker(
 }
 
 export async function findPythonEntryModule(projectDir: string): Promise<string | null> {
+  return (await findPythonEntryTarget(projectDir))?.moduleName ?? null;
+}
+
+type PythonEntryTarget = {
+  moduleName: string;
+  filePath: string;
+  importRoot: string;
+  packageDirectory?: string;
+};
+
+async function findPythonEntryTarget(projectDir: string): Promise<PythonEntryTarget | null> {
   const root = existsSync(path.join(projectDir, "src")) ? path.join(projectDir, "src") : projectDir;
-  const entries = await readdir(root, { withFileTypes: true });
-  for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
+  const entries = (await readdir(root, { withFileTypes: true })).sort((a, b) =>
+    a.name.localeCompare(b.name),
+  );
+  // A real package __init__ is the strongest import smoke: it exercises the
+  // package surface and supports relative imports. Prefer it over loose modules.
+  for (const entry of entries) {
+    if (!entry.isDirectory() || !/^[A-Za-z_]\w*$/.test(entry.name)) continue;
+    const init = path.join(root, entry.name, "__init__.py");
+    if (existsSync(init)) {
+      return {
+        moduleName: entry.name,
+        filePath: init,
+        importRoot: root,
+        packageDirectory: path.dirname(init),
+      };
+    }
+  }
+  for (const entry of entries) {
     if (!/^[A-Za-z_]\w*$/.test(entry.name.replace(/\.py$/, ""))) continue;
     if (
       entry.isFile() &&
       entry.name.endsWith(".py") &&
       !/^(__init__|setup|conftest)\.py$/.test(entry.name)
     ) {
-      return entry.name.slice(0, -3);
+      return {
+        moduleName: entry.name.slice(0, -3),
+        filePath: path.join(root, entry.name),
+        importRoot: root,
+      };
     }
-    if (
-      entry.isDirectory() &&
-      (existsSync(path.join(root, entry.name, "__init__.py")) ||
-        (await readdir(path.join(root, entry.name))).some((name) => name.endsWith(".py")))
-    ) {
-      return entry.name;
+    if (entry.isDirectory()) {
+      const module = (await readdir(path.join(root, entry.name)))
+        .filter((name) => /^[A-Za-z_]\w*\.py$/.test(name) && name !== "__init__.py")
+        .sort()[0];
+      if (module) {
+        return {
+          moduleName: `${entry.name}_${module.slice(0, -3)}`,
+          filePath: path.join(root, entry.name, module),
+          importRoot: path.join(root, entry.name),
+        };
+      }
     }
   }
   return null;
+}
+
+function pythonFileImportCommand(target: PythonEntryTarget) {
+  const moduleName = JSON.stringify(target.moduleName);
+  const filePath = JSON.stringify(target.filePath);
+  const importRoot = JSON.stringify(target.importRoot);
+  const packageLocations = target.packageDirectory
+    ? `, submodule_search_locations=[${JSON.stringify(target.packageDirectory)}]`
+    : "";
+  return [
+    "import importlib.util, pathlib, sys",
+    `p = pathlib.Path(${filePath})`,
+    `sys.path.insert(0, ${importRoot})`,
+    `s = importlib.util.spec_from_file_location(${moduleName}, p${packageLocations})`,
+    "assert s is not None and s.loader is not None",
+    "m = importlib.util.module_from_spec(s)",
+    `sys.modules[${moduleName}] = m`,
+    "s.loader.exec_module(m)",
+  ].join("; ");
 }
 
 function runGoTidyAdvisory(projectDir: string) {

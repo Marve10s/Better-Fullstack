@@ -2,7 +2,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
-import { extractToolUses, providerForModel } from "@/index";
+import { classifyOutcome, extractToolUses, providerForModel } from "@/index";
 
 import { corePass, fullPass, scaffbenchIndex } from "./build-scaffbench-data";
 
@@ -67,6 +67,26 @@ function resultCellKey(result: any) {
   return [result.model, result.effort, result.path, result.specId].join("|");
 }
 
+function resultIsScored(result: any) {
+  const outcome = result.outcome ?? classifyOutcome(result);
+  return !["provider-infra", "harness-infra", "validation-infra", "skipped"].includes(outcome);
+}
+
+function assertAggregateCount(
+  sourceDir: string,
+  aggregate: any,
+  field: "scoredRuns" | "passCount",
+  actual: number,
+) {
+  if (aggregate[field] !== actual) {
+    throw new Error(
+      `${sourceDir}: ${aggregateCellKey(aggregate)} ${field} mismatch (summary=${String(
+        aggregate[field],
+      )}, raw=${actual})`,
+    );
+  }
+}
+
 export type PublishedCell = {
   modelKey: string;
   path: string;
@@ -109,10 +129,15 @@ export function buildPublishedCells(summary: any, sourceDir: string, specs?: rea
       (a, b) => a.trial - b.trial,
     );
     if (trials.length === 0) continue;
-    const measurable = trials.filter((result) => coreStepCount(result) > 0);
-    const scoredTrials = Math.min(aggregate.scoredRuns ?? 0, measurable.length);
-    const passCount = Math.min(aggregate.passCount ?? 0, scoredTrials);
     const trialCount = trials.length;
+    const scoredResults = trials.filter(resultIsScored);
+    const scoredTrials = scoredResults.length;
+    const passCount = scoredResults.filter(corePass).length;
+    // Publication integrity is deliberately strict: raw persisted outcomes and
+    // raw Core evidence are authoritative. Never repair a corrupt summary with
+    // min/max because that can erase stepless scored failures.
+    assertAggregateCount(sourceDir, aggregate, "scoredRuns", scoredTrials);
+    assertAggregateCount(sourceDir, aggregate, "passCount", passCount);
     const qualityRequested = trials.map(
       (result) =>
         result.validation?.qualityGateRequested ?? Boolean(summary.options?.qualityGate),

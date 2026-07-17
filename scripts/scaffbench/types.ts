@@ -37,6 +37,7 @@ export type FailureTag =
 /** Evidence-backed terminal category persisted on every new run. */
 export type RunOutcome =
   | "success"
+  | "skipped"
   | "model-failure"
   | "provider-infra"
   | "harness-infra"
@@ -146,7 +147,9 @@ export type CommandResult = StepResult & {
   timeoutKind?: "hard" | "idle";
   timeoutProgress?: TimeoutProgress;
   startedAtMs?: number;
+  lastActivityAtMs?: number;
   lastStdoutActivityAtMs?: number;
+  lastStderrActivityAtMs?: number;
   lastProgressActivityAtMs?: number;
 };
 
@@ -170,6 +173,9 @@ export type ProjectValidation = {
    * later phase. Deferred validation is excluded from the pass-rate denominator
    * until the runner validates the archived project. */
   deferred?: boolean;
+  /** Validation was explicitly disabled with --skip-validation. Such a run is
+   * persisted for later validation but is excluded from scored denominators. */
+  skipped?: boolean;
   sourceHash?: string;
   cacheKey?: string;
   cacheHit?: boolean;
@@ -216,6 +222,16 @@ export type RunProvenance = {
   specOrderSeed: number;
 };
 
+export type RunProtocol = {
+  repeats: number;
+  seed: number;
+};
+
+export type OutcomeEvidence = {
+  /** The adapter could not enforce the budget; its post-hoc cost is estimated. */
+  budgetEstimated?: true;
+};
+
 export type RepairResult = {
   attemptedAt: string;
   failingStep: string;
@@ -224,6 +240,7 @@ export type RepairResult = {
   validation: ProjectValidation;
   stackScore: StackScore;
   outcome: RunOutcome;
+  outcomeEvidence?: OutcomeEvidence;
   failureTags: FailureTag[];
 };
 
@@ -250,6 +267,8 @@ export type RunResult = {
   claude: AgentRunAccounting;
   /** Fine-grained outcome; optional only for loading pre-2.2 summaries. */
   outcome?: RunOutcome;
+  /** Evidence specific to the persisted fine-grained outcome. */
+  outcomeEvidence?: OutcomeEvidence;
   /** Per-run policy, including caps adapters cannot enforce in-process. */
   budgetPolicy?: BudgetPolicy;
   /** Version/adapter integrity stamps used for ranked publication eligibility. */

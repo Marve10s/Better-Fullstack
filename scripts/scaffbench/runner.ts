@@ -12,6 +12,7 @@ import type {
   Effort,
   ProjectValidation,
   RepairResult,
+  RunProtocol,
   RunResult,
   ScaffbenchOptions,
   StepResult,
@@ -54,6 +55,7 @@ import {
   scoreToolCompliance,
   validationPassed,
   classifyOutcome,
+  outcomeEvidenceFor,
   rollupOutcome,
   stepBaseName,
 } from "@/scoring";
@@ -124,12 +126,30 @@ function runScaffbenchUnlocked(options: ScaffbenchOptions, log: Log) {
     }
 
     yield* fs.makeDirectory(options.outDir, { recursive: true });
+    const specOrderSeed = specShuffleSeed(options);
+    const runProtocol = { repeats: options.repeats, seed: specOrderSeed } satisfies RunProtocol;
+    const existingSummary = yield* readExistingSummary(options.outDir);
+    const results = completedResults(existingSummary);
+    const recordedResults = Array.isArray(existingSummary?.results)
+      ? (existingSummary.results as RunResult[])
+      : [];
+    if (recordedResults.length > 0) {
+      assertResumeProtocol({
+        recorded: recordedRunProtocol(existingSummary),
+        current: runProtocol,
+        results: recordedResults,
+        schedule: buildGenerationSchedule(specs, options, specOrderSeed),
+        model: options.model,
+      });
+    }
     // Pin once so commands, MCP config, doctor, prompts, and metadata agree.
     setResolvedBfVersion(yield* resolveBfVersion());
     yield* writeHarnessFiles(options.outDir, options, specs);
+    const metadata: Record<string, unknown> = yield* collectMetadata(options);
+    metadata.specOrderSeed = specOrderSeed;
+    metadata.runProtocol = runProtocol;
 
     if (options.writeMatrixOnly) {
-      const metadata = yield* collectMetadata(options);
       yield* writeSummaryEffect(options.outDir, [], options, specs, metadata);
       log(`Wrote ScaffBench 2 matrix to ${options.outDir}`);
       return;
@@ -143,10 +163,6 @@ function runScaffbenchUnlocked(options: ScaffbenchOptions, log: Log) {
     yield* writeMcpConfigs(emptyMcpPath, bfsMcpPath, bunx);
 
     const provider = providerForModel(options.model);
-    const metadata: Record<string, unknown> = yield* collectMetadata(options);
-    const specOrderSeed = specShuffleSeed(options);
-    metadata.specOrderSeed = specOrderSeed;
-    const results = yield* readExistingResults(options.outDir);
     const workspaceRoot = path.join(
       os.tmpdir(),
       "scaffbench21-work",
@@ -233,12 +249,14 @@ function runOneGeneration(input: {
     const id = buildRunId(spec, options.model, effort, pathMode, trial, options.repeats);
     const runDir = path.join(options.outDir, "runs", id);
     const workDir = path.join(input.workspaceRoot, id);
-    yield* fs.makeDirectory(runDir, { recursive: true });
 
-    if (results.some((result) => result.id === id)) {
-      log(`SKIP ${id} already present`);
+    const existing = findCompletedTrial(results, spec, options.model, effort, pathMode, trial);
+    if (existing) {
+      log(`SKIP ${existing.id} already present`);
       return;
     }
+
+    yield* fs.makeDirectory(runDir, { recursive: true });
 
     yield* fs.remove(workDir, { recursive: true, force: true });
     yield* fs.makeDirectory(workDir, { recursive: true });
@@ -305,6 +323,7 @@ function runOneGeneration(input: {
       ? {
           projectExists: generatedDir !== null,
           qualityGateRequested: qualityGateRequested(options),
+          skipped: true,
           steps: {},
         }
       : deferredValidation(generatedDir !== null, options);
@@ -391,6 +410,7 @@ function runOneGeneration(input: {
       failureTags: [],
     };
     result.outcome = classifyOutcome(result);
+    result.outcomeEvidence = outcomeEvidenceFor(result);
     result.failureTags = deriveFailureTags(result);
     results.push(result);
     yield* writeSummaryEffect(options.outDir, results, options, input.specs, input.metadata);
@@ -558,6 +578,7 @@ function repairFailedResults(input: {
             failureTags: [],
           };
           repairedRun.outcome = classifyOutcome(repairedRun);
+          repairedRun.outcomeEvidence = outcomeEvidenceFor(repairedRun);
           repairedRun.failureTags = deriveFailureTags(repairedRun);
           result.repair = {
             attemptedAt: new Date().toISOString(),
@@ -567,6 +588,7 @@ function repairFailedResults(input: {
             validation,
             stackScore: scored.artifact,
             outcome: repairedRun.outcome,
+            outcomeEvidence: repairedRun.outcomeEvidence,
             failureTags: repairedRun.failureTags,
           } satisfies RepairResult;
           yield* writeSummaryEffect(
@@ -732,6 +754,7 @@ function validatePendingResults(
               steps: {},
             };
             result.outcome = classifyOutcome(result);
+            result.outcomeEvidence = outcomeEvidenceFor(result);
             result.failureTags = deriveFailureTags(result);
             yield* writeSummaryEffect(options.outDir, results, options, specs, metadata);
             log(`VALIDATE ${result.id} missing archived project`);
@@ -741,6 +764,7 @@ function validatePendingResults(
           log(`VALIDATE ${result.id}`);
           result.validation = yield* validateProjectCached(spec, result.projectDir, options);
           result.outcome = classifyOutcome(result);
+          result.outcomeEvidence = outcomeEvidenceFor(result);
           result.failureTags = deriveFailureTags(result);
           yield* writeSummaryEffect(options.outDir, results, options, specs, metadata);
           log(
@@ -824,11 +848,26 @@ export function buildGenerationSchedule(
   }> = [];
   // Repeat is deliberately outermost: trial 2 of a spec cannot immediately
   // follow trial 1, and every trial gets an independently seeded spec order.
+  let lastScheduledSpecId: string | undefined;
   for (let trial = 1; trial <= options.repeats; trial += 1) {
-    for (const spec of seededShuffle(specs, seed + trial - 1)) {
+    const ordered = seededShuffle(specs, seed + trial - 1);
+    const firstRunnable = ordered.findIndex((spec) => resolveSpecPaths(spec, options.paths).length);
+    if (firstRunnable >= 0 && ordered[firstRunnable]?.id === lastScheduledSpecId) {
+      const swap = ordered.findIndex(
+        (spec, index) =>
+          index > firstRunnable &&
+          spec.id !== lastScheduledSpecId &&
+          resolveSpecPaths(spec, options.paths).length > 0,
+      );
+      if (swap >= 0) {
+        [ordered[firstRunnable], ordered[swap]] = [ordered[swap]!, ordered[firstRunnable]!];
+      }
+    }
+    for (const spec of ordered) {
       for (const effort of options.efforts) {
         for (const pathMode of resolveSpecPaths(spec, options.paths)) {
           schedule.push({ spec, effort, pathMode, trial });
+          lastScheduledSpecId = spec.id;
         }
       }
     }
@@ -872,16 +911,83 @@ function qualityGateRequested(options: ScaffbenchOptions) {
   return options.qualityGate;
 }
 
-function buildRunId(
+export function buildRunId(
   spec: BenchmarkSpec,
   model: string,
   effort: Effort,
   pathMode: CreationPath,
   trial: number,
-  repeats: number,
+  _repeats: number,
 ) {
   const base = `${spec.id}-${model}-${effort}-${pathMode}`;
-  return repeats === 1 ? base : `${base}-r${String(trial).padStart(2, "0")}`;
+  return `${base}-r${String(trial).padStart(2, "0")}`;
+}
+
+function legacyRunId(
+  spec: BenchmarkSpec,
+  model: string,
+  effort: Effort,
+  pathMode: CreationPath,
+) {
+  return `${spec.id}-${model}-${effort}-${pathMode}`;
+}
+
+export function findCompletedTrial(
+  results: readonly RunResult[],
+  spec: BenchmarkSpec,
+  model: string,
+  effort: Effort,
+  pathMode: CreationPath,
+  trial: number,
+) {
+  const currentId = buildRunId(spec, model, effort, pathMode, trial, 1);
+  const oldId = legacyRunId(spec, model, effort, pathMode);
+  return results.find((result) => result.id === currentId || (trial === 1 && result.id === oldId));
+}
+
+export function assertResumeProtocol(input: {
+  recorded?: RunProtocol;
+  current: RunProtocol;
+  results: readonly RunResult[];
+  schedule: ReturnType<typeof buildGenerationSchedule>;
+  model: string;
+}) {
+  const protocolChanged =
+    input.recorded !== undefined &&
+    (input.recorded.repeats !== input.current.repeats || input.recorded.seed !== input.current.seed);
+  if (!protocolChanged) return;
+
+  const aligned = input.results.every((result) => {
+    const scheduled = input.schedule.find(
+      (entry) =>
+        entry.spec.id === result.specId &&
+        entry.effort === result.effort &&
+        entry.pathMode === result.path &&
+        entry.trial === (result.trial ?? 1),
+    );
+    if (!scheduled || result.model !== input.model) return false;
+    const expected = buildRunId(
+      scheduled.spec,
+      input.model,
+      scheduled.effort,
+      scheduled.pathMode,
+      scheduled.trial,
+      input.current.repeats,
+    );
+    return (
+      result.id === expected ||
+      (scheduled.trial === 1 &&
+        result.id ===
+          legacyRunId(scheduled.spec, input.model, scheduled.effort, scheduled.pathMode))
+    );
+  });
+  if (!aligned) {
+    throw new Error(
+      `runProtocol conflict: recorded repeats=${String(input.recorded?.repeats)} seed=${String(
+        input.recorded?.seed,
+      )}; current repeats=${input.current.repeats} seed=${input.current.seed}; existing artifacts do not align`,
+    );
+  }
 }
 
 function buildProjectName(
@@ -895,20 +1001,40 @@ function buildProjectName(
   return repeats === 1 ? base : `${base}-r${String(trial).padStart(2, "0")}`;
 }
 
-function readExistingResults(outDir: string) {
+function readExistingSummary(outDir: string) {
   return Effect.gen(function* () {
     const fs = yield* FileSystem.FileSystem;
     const summaryPath = path.join(outDir, "summary.json");
-    if (!(yield* fs.exists(summaryPath))) return [];
+    if (!(yield* fs.exists(summaryPath))) return null;
     return yield* fs.readFileString(summaryPath).pipe(
-      Effect.map((text) => {
-        const parsed = JSON.parse(text);
-        if (!Array.isArray(parsed.results)) return [];
-        return parsed.results.filter(isCompletedHarnessRun) as RunResult[];
-      }),
-      Effect.catchAll(() => Effect.succeed([] as RunResult[])),
+      Effect.map((text) => JSON.parse(text)),
+      Effect.catchAll(() => Effect.succeed(null)),
     );
   });
+}
+
+function completedResults(summary: any): RunResult[] {
+  return Array.isArray(summary?.results)
+    ? (summary.results.filter(isCompletedHarnessRun) as RunResult[])
+    : [];
+}
+
+function recordedRunProtocol(summary: any): RunProtocol | undefined {
+  const protocol = summary?.metadata?.runProtocol;
+  if (Number.isInteger(protocol?.repeats) && Number.isInteger(protocol?.seed)) {
+    return { repeats: protocol.repeats, seed: protocol.seed };
+  }
+  if (
+    Number.isInteger(summary?.options?.repeats) &&
+    Number.isInteger(summary?.metadata?.specOrderSeed)
+  ) {
+    return { repeats: summary.options.repeats, seed: summary.metadata.specOrderSeed };
+  }
+  return undefined;
+}
+
+function readExistingResults(outDir: string) {
+  return readExistingSummary(outDir).pipe(Effect.map(completedResults));
 }
 
 function isCompletedHarnessRun(result: RunResult) {

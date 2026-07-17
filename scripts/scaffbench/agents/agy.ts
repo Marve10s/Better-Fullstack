@@ -3,8 +3,8 @@ import type * as Effect from "effect/Effect";
 
 import type { CommandResult, Effort } from "@/types";
 
-import { runCommand } from "@/agents/command";
-import { GEN_IDLE_TIMEOUT_MS, GEN_TIMEOUT_MS } from "@/constants";
+import { agentRunCommandOptions, runCommand } from "@/agents/command";
+import { GEN_TIMEOUT_MS } from "@/constants";
 
 // Antigravity (Gemini) adapter. Google sunset the standalone gemini CLI for
 // individual tiers ("migrate to Antigravity"), so Gemini is driven through the
@@ -46,7 +46,7 @@ export function runAgy(input: {
     ],
     input.cwd,
     input.timeoutMs ?? GEN_TIMEOUT_MS,
-    { idleTimeoutMs: GEN_IDLE_TIMEOUT_MS },
+    agentRunCommandOptions("agy"),
   );
 }
 // agy emits a plain-text response (no JSON usage stream), so there is nothing to

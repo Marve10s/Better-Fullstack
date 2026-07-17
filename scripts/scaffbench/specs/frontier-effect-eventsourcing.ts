@@ -2,7 +2,7 @@ import type { BenchmarkSpec } from "@/types";
 
 export const FrontierEffectEventsourcingSpec: BenchmarkSpec = {
     id: "frontier-effect-eventsourcing",
-    introducedAt: "2026-07-10",
+    introducedAt: "2026-06-30",
     title: "Frontier: TypeScript Effect service with event-sourcing/CQRS and tRPC-over-WebSocket subscriptions",
     lane: "core",
     family: "typescript",
@@ -16,7 +16,7 @@ export const FrontierEffectEventsourcingSpec: BenchmarkSpec = {
       "Expose the API via tRPC, including a subscription over WebSockets for the read model.",
       "Include an outbox pattern for reliable event publication.",
       "Provide build and type-check scripts.",
-      "Do not install dependencies, do not initialize git, and do not start a dev server.",
+      "Do not initialize git or start a dev server.",
     ],
     naturalPrompt:
       "Build a TypeScript backend on the Effect ecosystem that uses event sourcing with CQRS — an append-only event store, command handlers on the write side, projections on the read side, and an outbox for reliable publishing. Expose it through tRPC, including a WebSocket subscription that streams read-model updates.",
@@ -35,4 +35,3 @@ export const FrontierEffectEventsourcingSpec: BenchmarkSpec = {
     ],
     validationProfile: { packageManager: "bun" },
   };
-
