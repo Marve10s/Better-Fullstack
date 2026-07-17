@@ -1,6 +1,10 @@
 import { m } from "@/paraglide/messages.js";
 
-import { ECOSYSTEM_NAMES, OPTION_COUNT_LABEL } from "./project-stats";
+import {
+  ECOSYSTEM_NAMES,
+  OPTION_COUNT_LABEL,
+  SOFTWARE_APPLICATION_COUNTS,
+} from "./project-stats";
 
 export const SITE_NAME = "Better Fullstack";
 export const SITE_URL = "https://better-fullstack.dev";
@@ -20,6 +24,52 @@ export const DEFAULT_ROBOTS =
 export function canonicalUrl(path = "/") {
   const normalized = path.startsWith("/") ? path : `/${path}`;
   return new URL(normalized, SITE_URL).toString();
+}
+
+type PageHeadOptions = {
+  title: string;
+  description: string;
+  path: string;
+  image?: string;
+  twitterImage?: string;
+  imageAlt?: string;
+  ogType?: "article" | "website";
+  robots?: string;
+};
+
+export function buildPageHead({
+  title,
+  description,
+  path,
+  image = DEFAULT_OG_IMAGE_URL,
+  twitterImage = DEFAULT_X_IMAGE_URL,
+  imageAlt = DEFAULT_OG_IMAGE_ALT,
+  ogType = "website",
+  robots = DEFAULT_ROBOTS,
+}: PageHeadOptions) {
+  const url = canonicalUrl(path);
+
+  return {
+    meta: [
+      { title },
+      { name: "description", content: description },
+      { name: "robots", content: robots },
+      { property: "og:title", content: title },
+      { property: "og:description", content: description },
+      { property: "og:type", content: ogType },
+      { property: "og:url", content: url },
+      { property: "og:image", content: image },
+      { property: "og:image:alt", content: imageAlt },
+      { property: "og:image:width", content: String(DEFAULT_OG_IMAGE_WIDTH) },
+      { property: "og:image:height", content: String(DEFAULT_OG_IMAGE_HEIGHT) },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: title },
+      { name: "twitter:description", content: description },
+      { name: "twitter:image", content: twitterImage },
+      { name: "twitter:image:alt", content: imageAlt },
+    ],
+    links: [{ rel: "canonical", href: url }],
+  };
 }
 
 export function getDefaultDescription() {
@@ -94,20 +144,20 @@ export function getSiteJsonLd() {
         description,
         programmingLanguage: ECOSYSTEM_NAMES,
         featureList: [
-          "15 frontend frameworks",
-          "17 backend frameworks",
-          "6 databases",
-          "13 ORMs",
-          "7 auth providers",
-          "5 payment integrations",
-          "13 AI integrations",
-          "7 type-safe API options",
+          `${SOFTWARE_APPLICATION_COUNTS.frontendFrameworks} frontend frameworks`,
+          `${SOFTWARE_APPLICATION_COUNTS.backendFrameworks} backend frameworks`,
+          `${SOFTWARE_APPLICATION_COUNTS.databases} databases`,
+          `${SOFTWARE_APPLICATION_COUNTS.orms} ORMs`,
+          `${SOFTWARE_APPLICATION_COUNTS.authProviders} auth providers`,
+          `${SOFTWARE_APPLICATION_COUNTS.paymentIntegrations} payment integrations`,
+          `${SOFTWARE_APPLICATION_COUNTS.aiIntegrations} AI integrations`,
+          `${SOFTWARE_APPLICATION_COUNTS.apiOptions} type-safe API options`,
           "Visual web stack builder",
           "Monorepo support via Turborepo",
           "Desktop apps via Tauri",
           "Mobile apps via Expo / React Native",
           "PWA support",
-          "5 deployment targets",
+          `${SOFTWARE_APPLICATION_COUNTS.deploymentTargets} deployment targets`,
         ],
         image: DEFAULT_OG_IMAGE_URL,
         screenshot: DEFAULT_OG_IMAGE_URL,

@@ -64,3 +64,17 @@ export const COMPARISON_COUNTS = {
     (category) => category === "uiLibrary" || category === "mobileUI",
   ),
 };
+
+export const SOFTWARE_APPLICATION_COUNTS = {
+  frontendFrameworks: countUniqueSelectableOptions((category) => category.endsWith("Frontend")),
+  backendFrameworks: countUniqueSelectableOptions(
+    (category) => category === "backend" || category.endsWith("WebFramework"),
+  ),
+  databases: COMPARISON_COUNTS.databases,
+  orms: COMPARISON_COUNTS.orms,
+  authProviders: COMPARISON_COUNTS.authProviders,
+  paymentIntegrations: COMPARISON_COUNTS.paymentProviders,
+  aiIntegrations: COMPARISON_COUNTS.aiIntegrations,
+  apiOptions: COMPARISON_COUNTS.apis,
+  deploymentTargets: COMPARISON_COUNTS.deployTargets,
+};

@@ -20,6 +20,7 @@ const staticSitemapEntries: SitemapEntry[] = [
   { path: "/benchmark", changefreq: "weekly", priority: 0.8 },
   { path: "/compare", changefreq: "weekly", priority: 0.8 },
   { path: "/mcp", changefreq: "weekly", priority: 0.7 },
+  { path: "/run", changefreq: "weekly", priority: 0.7 },
 ];
 
 function escapeXml(value: string) {

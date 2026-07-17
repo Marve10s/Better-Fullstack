@@ -91,7 +91,7 @@ export function parseStackShareSlug(slug: string): StackState | null {
   }
 
   for (const [ecosystem, shareSlug] of Object.entries(ECOSYSTEM_SHARE_SLUGS)) {
-    if (shareSlug.toLowerCase() === normalizedSlug || ecosystem === normalizedSlug) {
+    if (shareSlug === normalizedSlug || ecosystem === normalizedSlug) {
       return createEcosystemShareStack(ecosystem as StackState["ecosystem"]);
     }
   }
