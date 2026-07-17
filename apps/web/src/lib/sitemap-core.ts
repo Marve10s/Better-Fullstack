@@ -19,6 +19,8 @@ const staticSitemapEntries: SitemapEntry[] = [
   { path: "/new", changefreq: "daily", priority: 0.9 },
   { path: "/benchmark", changefreq: "weekly", priority: 0.8 },
   { path: "/compare", changefreq: "weekly", priority: 0.8 },
+  { path: "/compare/create-t3-app", changefreq: "weekly", priority: 0.7 },
+  { path: "/compare/better-t-stack", changefreq: "weekly", priority: 0.7 },
   { path: "/mcp", changefreq: "weekly", priority: 0.7 },
 ];
 
