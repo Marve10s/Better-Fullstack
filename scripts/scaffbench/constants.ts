@@ -4,7 +4,11 @@ import type { BenchmarkSpec, CreationPath, Effort } from "@/types";
 
 import { runCommand } from "@/agents/command";
 
-export const HARNESS_VERSION = "2.0.0";
+// 2.1.0 (2026-07-17): the generation prompt now explicitly permits installing
+// deps, querying registries, and running builds/typechecks to self-verify —
+// this was always allowed, but models often assumed scaffolding etiquette
+// forbade it. Rows benched before this may under-verify relative to newer rows.
+export const HARNESS_VERSION = "2.1.0";
 // Below this many scored runs a Wilson interval is too wide to be informative
 // (e.g. at n=3, 3/3 → [44,100] overlaps 0/3 → [0,56]); the report suppresses it.
 export const MIN_CI_RUNS = 8;

@@ -1278,11 +1278,61 @@ export default function LLMBenchmarkSection() {
     <section id="benchmark" className="relative scroll-mt-16 border-t border-border bg-muted/20">
       <div className="px-4 py-20 sm:px-8 sm:py-24">
         <Masthead />
+        <MethodologyCard />
         <BenchmarkChartCard />
         <ScaffbenchLeaderboardCard />
         <AgentInstallPanel />
       </div>
     </section>
+  );
+}
+
+// The four ground rules that make the scores below readable — shown ahead of
+// the graph and table so "weird" results are interpreted against the actual
+// methodology instead of assumed harness restrictions.
+const METHODOLOGY_ITEMS = [
+  {
+    title: "One-shot, not iterate-to-green",
+    body: "Each model gets a spec and a full shell — network, installs, and builds are all allowed. What it hands back is final: no grading inside its own sandbox, no retries against the verdict. The only bounds are a wall-clock ceiling and a budget cap.",
+  },
+  {
+    title: "Validated cold, on a clean machine",
+    body: "Every project is installed, built, and type-checked afterward on the same machine, with the same toolchains and registry state for every model. “Works in my scratch dir” doesn't count.",
+  },
+  {
+    title: "Failures are choices, not handcuffs",
+    body: "Models are free to verify anything before finishing — check a registry before pinning a version, run the build they were asked to leave green. A run that dies on a dependency version that doesn't exist chose not to look.",
+  },
+  {
+    title: "Assisted lanes measure restraint",
+    body: "With the scaffolder driving (MCP), generation quality saturates — even small models wire nearly everything. What separates models there is whether their edits on top of a working project keep it working.",
+  },
+] as const;
+
+function MethodologyCard() {
+  return (
+    <div className="mx-auto mt-12 max-w-[1180px] rounded-2xl border border-[#e1e0d8] bg-[#faf9f5] px-6 py-6 text-[#1b1a17] [color-scheme:light] dark:border-[rgba(237,235,228,0.10)] dark:bg-[#161614] dark:text-[#dad8d0] dark:[color-scheme:dark] sm:px-8 sm:py-7">
+      <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[#71706a] dark:text-[#8f8d84]">
+        How ScaffBench tests models
+      </p>
+      <div className="mt-4 grid gap-x-8 gap-y-4 sm:grid-cols-2">
+        {METHODOLOGY_ITEMS.map((item) => (
+          <div key={item.title}>
+            <p className="text-sm font-semibold">{item.title}</p>
+            <p className="mt-1 text-sm leading-relaxed text-[#71706a] dark:text-[#8f8d84]">
+              {item.body}
+            </p>
+          </div>
+        ))}
+      </div>
+      <p className="mt-5 border-t border-[#e1e0d8] pt-4 text-xs leading-relaxed text-[#71706a] dark:border-[rgba(237,235,228,0.10)] dark:text-[#8f8d84]">
+        Where other benchmarks differ: SWE-bench and Terminal-Bench grade iterate-to-green inside
+        the model's own environment; Aider's polyglot suite allows bounded retries against a test
+        suite; HumanEval-style suites never execute in a real environment at all. ScaffBench grades
+        the artifact, after the fact, under identical conditions — which is why a model can top
+        agentic leaderboards and still lose here to a smaller sibling that verifies before it pins.
+      </p>
+    </div>
   );
 }
 
