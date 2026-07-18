@@ -18,7 +18,7 @@
 
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/main/.github/media/hero.gif" alt="Better Fullstack" width="100%" />
+<img src="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/main/apps/web/public/og/better-fullstack-terminal-preview-1200x630.png" alt="Better Fullstack terminal-style preview showing CLI scaffolding output" width="100%" />
 
 <br>
 
