@@ -15,6 +15,9 @@ export type ScaffbenchModel = {
   label: string;
   /** overall ScaffBench Index across all scored cells — the group sort key. */
   sortIndex: number;
+  /** publication eligibility from run provenance (2.2+): "ranked" needs >=3
+   *  consistent trials per cell; absent on older boards. */
+  eligibility?: "ranked" | "exploratory";
 };
 
 export type ScaffbenchCell = {

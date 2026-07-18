@@ -47,6 +47,11 @@ import {
   SCAFFBENCH21_SPECS,
 } from "./scaffbench-2-1-data";
 import { SCAFFBENCH21_HISTORICAL_KEYS, scaffbenchNoteFor } from "./scaffbench-2-1-notes";
+import {
+  SCAFFBENCH22_CELLS,
+  SCAFFBENCH22_MODELS,
+  SCAFFBENCH22_SPECS,
+} from "./scaffbench-2-2-data";
 import { OpenAIMark, ProviderLogo, type ProviderLogoId } from "./provider-marks";
 
 /**
@@ -64,7 +69,7 @@ import { OpenAIMark, ProviderLogo, type ProviderLogoId } from "./provider-marks"
  * ScaffBench blog post scoring policy.
  */
 
-type BenchmarkVersionId = "v1" | "v2" | "v2.1";
+type BenchmarkVersionId = "v1" | "v2" | "v2.1" | "v2.2";
 type PathId = "mcp" | "cli" | "prompt";
 
 const PATH_TAB_ORDER: readonly PathId[] = ["prompt", "mcp", "cli"] as const;
@@ -193,6 +198,7 @@ const DEFAULT_MODELS_BY_VERSION: Record<BenchmarkVersionId, readonly ModelId[]> 
   // so these entries exist only to satisfy the version-keyed record.
   v2: ["opus"],
   "v2.1": ["opus"],
+  "v2.2": ["opus"],
 } as const;
 
 interface ChartPalette {
@@ -839,13 +845,13 @@ const headingStyle: CSSProperties = {
   lineHeight: 0.98,
 };
 
-const blogPostParams = { _splat: "scaffbench-2-1" } as const;
+const blogPostParams = { _splat: "scaffbench-2-2" } as const;
 
 // ── ScaffBench 2 leaderboard ────────────────────────────────────────────────
 // A pass-rate bar chart + data table for the per-path (MCP / CLI / Prompt)
 // ScaffBench 2 run, with a v1 fallback that reuses the cross-vendor COMBOS sweep.
 
-type LeaderboardVersion = "v2.1" | "v2" | "v1";
+type LeaderboardVersion = "v2.2" | "v2.1" | "v2" | "v1";
 
 // The "v2-family" views (v2 = original 5-spec ablation, v2.1 = expanded 13-spec
 // suite) share all rendering machinery — they differ only in the underlying run
@@ -867,10 +873,18 @@ const SCAFFBENCH_V2_1: ScaffbenchDataset = {
   models: SCAFFBENCH21_MODELS,
   specs: SCAFFBENCH21_SPECS,
 };
+const SCAFFBENCH_V2_2: ScaffbenchDataset = {
+  cells: SCAFFBENCH22_CELLS,
+  models: SCAFFBENCH22_MODELS,
+  specs: SCAFFBENCH22_SPECS,
+};
 
-// v2.1 is the current default; only the literal "v2" maps to the legacy dataset.
+// v2.2 is the current default (fresh cohort under harness 2.2.1: self-verify
+// prompt, quality gates on, 3 trials/spec); v2.1 and v2 are kept as history.
 function v2Dataset(version: BenchmarkVersionId | LeaderboardVersion): ScaffbenchDataset {
-  return version === "v2" ? SCAFFBENCH_V2 : SCAFFBENCH_V2_1;
+  if (version === "v2") return SCAFFBENCH_V2;
+  if (version === "v2.1") return SCAFFBENCH_V2_1;
+  return SCAFFBENCH_V2_2;
 }
 
 // Free endpoint status belongs to the model route, not the driving CLI. OpenCode
@@ -880,7 +894,7 @@ function isFreeModel(model: ScaffbenchModel): boolean {
   return /(?:-free$|:free$|\/free$)/i.test(model.model);
 }
 
-type V2Version = "v2" | "v2.1";
+type V2Version = "v2" | "v2.1" | "v2.2";
 
 // Default graph selection: paid models only; free-tier dots are opt-in.
 function v2DefaultModelKeys(version: V2Version): string[] {
@@ -1066,6 +1080,10 @@ function computeV2ModelRows(
   dataset: ScaffbenchDataset,
   leaderPath: LeaderPath,
   specs: ReadonlySet<string>,
+  // The curated notes + † badges describe the 2.1-era boards; they key on
+  // model|effort, so without this gate a fresh v2.2 row (same key, different
+  // protocol) would inherit stale annotations that 2.2 specifically fixed.
+  annotated = true,
 ): ModelLeaderRow[] {
   const rows = dataset.models.flatMap((model) => {
     const cells = dataset.cells.filter(
@@ -1109,9 +1127,9 @@ function computeV2ModelRows(
       key: model.key,
       label: model.label,
       effort: model.effort,
-      note: scaffbenchNoteFor(model.key, leaderPath),
+      note: annotated ? scaffbenchNoteFor(model.key, leaderPath) : undefined,
       scoredCount: scored.length,
-      historical: SCAFFBENCH21_HISTORICAL_KEYS.has(model.key),
+      historical: annotated && SCAFFBENCH21_HISTORICAL_KEYS.has(model.key),
       color: PROVIDER_BAR_COLOR[model.provider],
       logo: PROVIDER_LOGO[model.provider],
       pass: formatPercent(passSuccesses, passTrials),
@@ -1591,7 +1609,7 @@ function ScaffBenchMark({ className }: { className?: string }) {
 }
 
 function BenchmarkChartCard() {
-  const [version, setVersion] = useState<BenchmarkVersionId>("v2.1");
+  const [version, setVersion] = useState<BenchmarkVersionId>("v2.2");
   const [activePath, setActivePath] = useState<PathId>("prompt");
   const [tabId, setTabId] = useState<TabId>("speed");
   const [v2Metric, setV2Metric] = useState<V2Metric>("tokens");
@@ -1623,7 +1641,7 @@ function BenchmarkChartCard() {
   // into an unreadable corner with no room for labels.
   // "v2-family" = the v2 (legacy 5-spec) and v2.1 (current 13-spec) prompt-only
   // ablation views; both share this chart's rendering and differ only in dataset.
-  const isV2 = version === "v2" || version === "v2.1";
+  const isV2 = version === "v2" || version === "v2.1" || version === "v2.2";
   const v2DatasetValue = useMemo(() => v2Dataset(version), [version]);
   // V2-family exposes a restricted tab set (pathTabsFor): v2 legacy is Prompt-only;
   // v2.1 adds MCP. Clamp to a tab this version actually offers so a stale v1
@@ -1637,11 +1655,16 @@ function BenchmarkChartCard() {
   // Per-version graph selection; free-tier models start OFF (opt-in via the
   // model picker). Kept per version so a v2.1 toggle doesn't leak into v2.
   const [v2SelectedKeys, setV2SelectedKeys] = useState<Record<V2Version, readonly string[]>>(
-    () => ({ "v2": v2DefaultModelKeys("v2"), "v2.1": v2DefaultModelKeys("v2.1") }),
+    () => ({
+      "v2": v2DefaultModelKeys("v2"),
+      "v2.1": v2DefaultModelKeys("v2.1"),
+      "v2.2": v2DefaultModelKeys("v2.2"),
+    }),
   );
   // On v1 this reads (and ignores) the v2.1 selection — keeps the reference
   // stable so the derived memos don't recompute every render.
-  const v2ActiveSelection = v2SelectedKeys[version === "v2" ? "v2" : "v2.1"];
+  const v2ActiveSelection =
+    v2SelectedKeys[version === "v2" ? "v2" : version === "v2.1" ? "v2.1" : "v2.2"];
   const toggleV2Model = useCallback(
     (key: string) => {
       if (version === "v1") return;
@@ -2650,7 +2673,7 @@ function AgentTabIcon({ tab, active }: { tab: AgentTab; active: boolean }) {
 }
 
 function ScaffbenchLeaderboardCard() {
-  const [version, setVersion] = useState<LeaderboardVersion>("v2.1");
+  const [version, setVersion] = useState<LeaderboardVersion>("v2.2");
   const [leaderPath, setLeaderPath] = useState<LeaderPath>("all");
   const [selectedSpecs, setSelectedSpecs] = useState<readonly string[]>(SCAFFBENCH21_SPECS);
   const [selectedModelKeys, setSelectedModelKeys] = useState<readonly string[]>(() =>
@@ -2659,14 +2682,20 @@ function ScaffbenchLeaderboardCard() {
 
   // "v2-family" = the v2 (legacy 5-spec) and v2.1 (current 13-spec) prompt-only
   // leaderboards; both share rendering and differ only in dataset.
-  const isV2 = version === "v2" || version === "v2.1";
+  const isV2 = version === "v2" || version === "v2.1" || version === "v2.2";
   const dataset = useMemo(() => v2Dataset(version), [version]);
 
   // The two v2-family versions track different spec suites (5 vs 13), so reset the
   // spec filter to the active version's full spec list whenever the version flips.
   useEffect(() => {
     if (version === "v1") return;
-    setSelectedSpecs(version === "v2" ? SCAFFBENCH2_SPECS : SCAFFBENCH21_SPECS);
+    setSelectedSpecs(
+      version === "v2"
+        ? SCAFFBENCH2_SPECS
+        : version === "v2.1"
+          ? SCAFFBENCH21_SPECS
+          : SCAFFBENCH22_SPECS,
+    );
     setSelectedModelKeys(v2Dataset(version).models.map((model) => model.key));
   }, [version]);
 
@@ -2687,7 +2716,7 @@ function ScaffbenchLeaderboardCard() {
     () =>
       isV2
         ? annotateTieBands(
-            computeV2ModelRows(dataset, effectiveLeaderPath, specsSet).filter((row) =>
+            computeV2ModelRows(dataset, effectiveLeaderPath, specsSet, version !== "v2.2").filter((row) =>
               modelKeysSet.has(row.key),
             ),
           )
@@ -2967,6 +2996,7 @@ function VersionDropdown({
         className={cn("w-44 max-w-[calc(100vw-2rem)]", CHART_THEME_VARS)}
       >
         <DropdownMenuRadioGroup value={value} onValueChange={handleChange}>
+          <DropdownMenuRadioItem value="v2.2">v2.2</DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="v2.1">v2.1</DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="v2">
             v2

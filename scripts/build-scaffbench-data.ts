@@ -44,7 +44,9 @@ const PATH_ORDER = ["prompt", "mcp", "cli"] as const;
 // dead alternatives were removed.)
 // Step keys may be namespaced "<subroot>:<step>" (multi-root validation);
 // the advisory/core split is decided by the base name after the last ":".
-const GATE = /(?:^|:)(lint|format|test|doctor|route)$/i;
+// `tidy` (go mod tidy diff) is advisory since harness 2.2.1 — it must not gate
+// core pass here either, or the publisher disagrees with the harness verdicts.
+const GATE = /(?:^|:)(lint|format|test|doctor|route|tidy)$/i;
 const mean = (a: number[]) => (a.length ? a.reduce((s, v) => s + v, 0) / a.length : 0);
 const W = {
   prompt: { macroPass: 0.75, wired: 0.25, cmd: 0 },
