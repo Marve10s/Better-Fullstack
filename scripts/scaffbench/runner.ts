@@ -133,7 +133,12 @@ function runScaffbenchUnlocked(options: ScaffbenchOptions, log: Log) {
     const recordedResults = Array.isArray(existingSummary?.results)
       ? (existingSummary.results as RunResult[])
       : [];
-    if (recordedResults.length > 0) {
+    // The protocol guard protects a GENERATION resume from a seed/repeat-count
+    // mismatch that would interleave incompatible trials. `--validate-existing`
+    // generates nothing (it only re-scores existing project dirs), so the
+    // generation seed is irrelevant there and the guard must not fire — a
+    // spec-filtered re-validation legitimately carries a fresh seed.
+    if (recordedResults.length > 0 && !options.validateExisting) {
       assertResumeProtocol({
         recorded: recordedRunProtocol(existingSummary),
         current: runProtocol,
