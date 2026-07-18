@@ -20,14 +20,17 @@ import {
   Check,
   ChevronDown,
   ClipboardCopy,
+  Download,
   EllipsisVertical,
   Eye,
   Github,
   Hammer,
   InfoIcon,
   Link,
+  Loader2,
   PanelLeft,
   Pencil,
+  Play,
   RefreshCw,
   Save,
   Search,
@@ -1309,6 +1312,11 @@ const PreviewPanel = lazy(async () => {
   return { default: module.PreviewPanel };
 });
 
+const RunPanel = lazy(async () => {
+  const module = await import("./run-panel");
+  return { default: module.RunPanel };
+});
+
 function GraphOptionButton({
   option,
   selected,
@@ -2190,6 +2198,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
   const [isSaveInputVisible, setIsSaveInputVisible] = useState(false);
   const [savePresetName, setSavePresetName] = useState("");
   const [showNewOptionsOnly, setShowNewOptionsOnly] = useState(false);
+  const [isDownloadingProject, setIsDownloadingProject] = useState(false);
   const [pendingUpdateEntryId, setPendingUpdateEntryId] = useState<string | null>(null);
   const [multiActiveStep, setMultiActiveStep] = useState<MultiStackStepId>("frontend");
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
@@ -2226,6 +2235,24 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
     return { ...stack, ...compatibilityAnalysis.adjustedStack };
   }, [stack, compatibilityAnalysis.adjustedStack]);
   const projectNameError = validateProjectName(stack.projectName || "");
+
+  const handleDownloadProject = async () => {
+    if (isDownloadingProject) return;
+
+    setIsDownloadingProject(true);
+    try {
+      const { createStackProjectArchive, downloadProjectArchive } =
+        await import("@/lib/project-download");
+      const archive = await createStackProjectArchive(adjustedStack || stack);
+      downloadProjectArchive(archive);
+      toast.success(m.builderDownloadComplete({ fileName: archive.fileName }));
+    } catch (downloadError) {
+      console.error("Project ZIP download failed", downloadError);
+      toast.error(m.builderDownloadFailed());
+    } finally {
+      setIsDownloadingProject(false);
+    }
+  };
 
   // ─── Derived state ──────────────────────────────────────────────────────
 
@@ -2896,6 +2923,17 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                     <Eye className="h-3 w-3" />
                     <span className="hidden min-[480px]:inline">{m.builderTabPreview()}</span>
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("run")}
+                    data-testid="tab-run"
+                    aria-pressed={viewMode === "run"}
+                    data-state={viewMode === "run" ? "active" : "inactive"}
+                    className={getToolbarTabClass(viewMode === "run")}
+                  >
+                    <Play className="h-3 w-3" />
+                    <span className="hidden lg:inline">{m.builderTabRun()}</span>
+                  </button>
                   {!isMultiMode && (
                     <button
                       type="button"
@@ -2927,6 +2965,34 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                     onFocus={() => setViewMode("command")}
                   />
                 )}
+
+                <div className="relative shrink-0">
+                  <span className="pointer-events-none absolute -top-2 right-1 z-10 rounded-full border border-[#18D5FF]/35 bg-fd-background px-1.5 py-px font-mono text-[7px] font-bold uppercase leading-none tracking-[0.14em] text-[#067087] shadow-sm dark:text-[#18D5FF]">
+                    {m.builderNewBadge()}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleDownloadProject}
+                    disabled={isDownloadingProject}
+                    data-testid="download-project-zip"
+                    aria-label={
+                      isDownloadingProject ? m.builderDownloadingZip() : m.builderDownloadZip()
+                    }
+                    title={
+                      isDownloadingProject ? m.builderDownloadingZip() : m.builderDownloadZip()
+                    }
+                    className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full border border-border/55 bg-muted/30 px-2.5 font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-all hover:border-foreground/30 hover:bg-background hover:text-foreground disabled:cursor-wait disabled:opacity-60"
+                  >
+                    {isDownloadingProject ? (
+                      <Loader2 className="size-3 animate-spin" aria-hidden />
+                    ) : (
+                      <Download className="size-3" aria-hidden />
+                    )}
+                    <span className="hidden xl:inline">
+                      {isDownloadingProject ? m.builderDownloadingZip() : m.builderDownloadZip()}
+                    </span>
+                  </button>
+                </div>
 
                 {!isMultiMode && (
                   <button
@@ -3735,6 +3801,22 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                     }
                   >
                     <PreviewPanel
+                      stack={adjustedStack || stack}
+                      selectedFilePath={selectedFile || null}
+                      onSelectFile={setSelectedFile}
+                    />
+                  </Suspense>
+                </div>
+              ) : viewMode === "run" ? (
+                <div className="min-h-0 flex-1 overflow-hidden">
+                  <Suspense
+                    fallback={
+                      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                        {m.builderRunBooting()}
+                      </div>
+                    }
+                  >
+                    <RunPanel
                       stack={adjustedStack || stack}
                       selectedFilePath={selectedFile || null}
                       onSelectFile={setSelectedFile}

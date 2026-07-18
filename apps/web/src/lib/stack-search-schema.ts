@@ -13,7 +13,7 @@ type StackSearchParamShape = {
 };
 
 export type StackSearchParams = Partial<StackSearchParamShape> & {
-  view?: "command" | "preview" | "presets" | "saved";
+  view?: "command" | "preview" | "run" | "presets" | "saved";
   file?: string;
   preset?: string;
   newOptions?: "1";

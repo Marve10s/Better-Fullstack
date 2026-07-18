@@ -1,9 +1,9 @@
-import { useSearch } from "@tanstack/react-router";
 import {
   createStackSelectionSearchParams as createStackSearchParams,
   normalizeStackSelection as normalizeStackStateSelections,
   parseStackSelectionFromSearch as parseStackFromSearch,
 } from "@better-fullstack/types/stack-translation";
+import { useSearch } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { StackSearchParams } from "@/lib/stack-search-schema";
@@ -12,7 +12,7 @@ import { PRESET_TEMPLATES } from "@/lib/constant";
 import { DEFAULT_STACK, type StackState } from "@/lib/stack-defaults";
 import { getStackSharePath } from "@/lib/stack-share-paths";
 
-type BuilderViewMode = "command" | "preview" | "presets" | "saved";
+type BuilderViewMode = "command" | "preview" | "run" | "presets" | "saved";
 
 type InitialBuilderState = {
   stack: StackState;
@@ -53,7 +53,7 @@ export function getInitialBuilderState(
 
 function createLiveBuilderSearchParams(
   stack: StackState,
-  viewMode: "command" | "preview" | "presets" | "saved",
+  viewMode: BuilderViewMode,
   selectedFile: string,
 ): URLSearchParams {
   const params = createStackSearchParams(normalizeStackStateSelections(stack));
@@ -135,7 +135,7 @@ export function useStackState(fallbackStack?: StackState) {
     [],
   );
 
-  const setViewMode = useCallback((mode: "command" | "preview" | "presets" | "saved") => {
+  const setViewMode = useCallback((mode: BuilderViewMode) => {
     setViewModeState(mode);
   }, []);
 

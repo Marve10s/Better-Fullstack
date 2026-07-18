@@ -26,6 +26,11 @@ const buildDate = new Intl.DateTimeFormat("en-US", {
   .format(new Date())
   .toLowerCase();
 
+const webContainerHeaders = {
+  "Cross-Origin-Embedder-Policy": "credentialless",
+  "Cross-Origin-Opener-Policy": "same-origin",
+};
+
 const ssrMdxLoaderAliases = new Map([
   [
     "@/lib/docs/mdx-loaders",
@@ -79,6 +84,7 @@ function ssrTemplateGeneratorAliasPlugin(): PluginOption {
 export default defineConfig({
   server: {
     port: 3333,
+    headers: webContainerHeaders,
   },
   envPrefix: ["VITE_", "BFS_ENABLE_STACK_PREVIEW"],
   define: {
@@ -186,8 +192,11 @@ export default defineConfig({
           "/new": {
             headers: {
               "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
+              ...webContainerHeaders,
             },
           },
+          "/typescript": { headers: webContainerHeaders },
+          "/multi-ecosystem": { headers: webContainerHeaders },
           "/stack/**": {
             headers: {
               "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
