@@ -9,18 +9,31 @@
  */
 import { readFileSync, writeFileSync } from "node:fs";
 
+import { providerForModel } from "@/index";
+
 import { buildPublishedCells } from "./build-scaffbench-2-1-data";
 
 const RUN_SOURCES = [
   "testing/llm-benchmarks/v2-codex-sol/gpt-5-6-sol-high-r3-2026-07-17",
   "testing/llm-benchmarks/v2-codex-terra/gpt-5-6-terra-high-r3-2026-07-17",
   "testing/llm-benchmarks/v2-codex-luna/gpt-5-6-luna-high-r3-2026-07-17",
+  // Cross-harness ablation (2026-07-18): the SAME Luna@high through three more
+  // agent harnesses, single trial each (exploratory). Same specs, same
+  // validator — the harness is the only variable.
+  "testing/llm-benchmarks/xharness-oc-luna-high-2026-07-18",
+  "testing/llm-benchmarks/xh-kilo/luna-high-2026-07-18",
+  "testing/llm-benchmarks/xh-pi/luna-high-2026-07-18",
 ] as const;
 
 const MODEL_LABELS: Record<string, string> = {
   "gpt-5.6-sol": "GPT-5.6 Sol",
   "gpt-5.6-terra": "GPT-5.6 Terra",
   "gpt-5.6-luna": "GPT-5.6 Luna",
+  // Cross-harness Luna rows: same display label — the board shows the harness
+  // via icon/label separately (provider comes from providerForModel).
+  "openai/gpt-5.6-luna": "GPT-5.6 Luna",
+  "kilocode/openai/gpt-5.6-luna": "GPT-5.6 Luna",
+  "pi/openai-codex/gpt-5.6-luna": "GPT-5.6 Luna",
 };
 
 function prettyModel(model: string): string {
@@ -64,7 +77,7 @@ function main() {
       model,
       effort,
       effectiveReasoning: first.effectiveReasoning ?? effort,
-      provider: "codex",
+      provider: providerForModel(model),
       label: prettyModel(model),
       sortIndex: lb.index,
       eligibility: lb.publicationEligibility ?? "exploratory",

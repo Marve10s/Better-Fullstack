@@ -3,7 +3,7 @@
 // reuse the exact marks without pulling in the full chart component.
 
 /** Provider brands we render a logo for. */
-export type ProviderLogoId = "anthropic" | "openai" | "google";
+export type ProviderLogoId = "anthropic" | "openai" | "google" | "opencode" | "kilo" | "pi";
 
 // OpenAI logomark (from simple-icons; renders in currentColor).
 export function OpenAIMark({ className }: { className?: string }) {
@@ -48,6 +48,32 @@ export function GoogleMark({ className }: { className?: string }) {
   );
 }
 
+// Harness marks (not official brand logos): simple currentColor monograms in
+// the house geometry so cross-harness rows are tellable apart at a glance.
+export function OpencodeMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden className={className} xmlns="http://www.w3.org/2000/svg">
+      <path fill="currentColor" d="M3 3h18v18H3V3Zm2 2v14h14V5H5Zm3 3 4 4-4 4-1.4-1.4L9.2 12 6.6 9.4 8 8Zm5 7h5v2h-5v-2Z" />
+    </svg>
+  );
+}
+
+export function KiloMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden className={className} xmlns="http://www.w3.org/2000/svg">
+      <path fill="currentColor" d="M4 3h4v8.2L15.6 3H21l-7.8 9L21 21h-5.4L8 12.8V21H4V3Z" />
+    </svg>
+  );
+}
+
+export function PiHarnessMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden className={className} xmlns="http://www.w3.org/2000/svg">
+      <path fill="currentColor" d="M3 5h18v3H18v9.5c0 .9.5 1.5 1.4 1.5.6 0 1.1-.2 1.6-.5v2.6c-.7.4-1.5.6-2.4.6-2.2 0-3.6-1.4-3.6-3.7V8h-6v13H6V8H3V5Z" />
+    </svg>
+  );
+}
+
 // Brand logo shown to the left of a leaderboard model name. Inherits the row's
 // text color via currentColor, so it stays legible in both themes.
 export function ProviderLogo({ logo }: { logo?: ProviderLogoId }) {
@@ -59,6 +85,15 @@ export function ProviderLogo({ logo }: { logo?: ProviderLogoId }) {
   }
   if (logo === "google") {
     return <GoogleMark className="size-3.5 shrink-0" />;
+  }
+  if (logo === "opencode") {
+    return <OpencodeMark className="size-3.5 shrink-0" />;
+  }
+  if (logo === "kilo") {
+    return <KiloMark className="size-3.5 shrink-0" />;
+  }
+  if (logo === "pi") {
+    return <PiHarnessMark className="size-3.5 shrink-0" />;
   }
   return null;
 }

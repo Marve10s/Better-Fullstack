@@ -913,16 +913,17 @@ const LEADERBOARD_LABELS: Record<PathId, string> = {
 // claude = burnt orange, codex = green, opencode = violet, kilo = cyan
 // (the two free-tier agents get cooler hues so they read as a separate group).
 const LEADERBOARD_THEME_VARS = cn(
-  "[--bar-claude:#c2410c] [--bar-codex:#15803d] [--bar-opencode:#6d28d9] [--bar-kilo:#0891b2] [--bar-agy:#1a73e8] [--bar-track:#ececec]",
-  "dark:[--bar-claude:#fb923c] dark:[--bar-codex:#4ade80] dark:[--bar-opencode:#a78bfa] dark:[--bar-kilo:#22d3ee] dark:[--bar-agy:#8ab4f8] dark:[--bar-track:#edebe414]",
+  "[--bar-claude:#c2410c] [--bar-codex:#15803d] [--bar-opencode:#6d28d9] [--bar-kilo:#0891b2] [--bar-agy:#1a73e8] [--bar-pi:#b45309] [--bar-track:#ececec]",
+  "dark:[--bar-claude:#fb923c] dark:[--bar-codex:#4ade80] dark:[--bar-opencode:#a78bfa] dark:[--bar-kilo:#22d3ee] dark:[--bar-agy:#8ab4f8] dark:[--bar-pi:#fbbf24] dark:[--bar-track:#edebe414]",
 );
 
-const PROVIDER_BAR_COLOR: Record<"claude" | "codex" | "opencode" | "kilo" | "agy", string> = {
+const PROVIDER_BAR_COLOR: Record<"claude" | "codex" | "opencode" | "kilo" | "agy" | "pi", string> = {
   claude: "var(--bar-claude)",
   codex: "var(--bar-codex)",
   opencode: "var(--bar-opencode)",
   kilo: "var(--bar-kilo)",
   agy: "var(--bar-agy)",
+  pi: "var(--bar-pi)",
 };
 
 const BAR_TRACK_STYLE: CSSProperties = { backgroundColor: "var(--bar-track)" };
@@ -948,8 +949,10 @@ interface ModelLeaderRow {
   effort: string;
   /** bar fill color. */
   color: string;
-  /** brand logo shown to the left of the model name (undefined = no logo). */
+  /** harness logo shown to the left of the model name (undefined = no logo). */
   logo?: ProviderLogoId;
+  /** harness display name — hover title on the row label (icons alone are ambiguous). */
+  harness?: string;
   /** Pass 1 as a 0–100 percentage; doubles as the bar fill width. Full
    *  (quality-gated) tier when measured, build-level otherwise (buildOnly). */
   pass: number;
@@ -1019,11 +1022,25 @@ function sortLeaderRows(rows: ModelLeaderRow[]): ModelLeaderRow[] {
 // Brand logos shown left of the model name. Only Anthropic + OpenAI marks are
 // wired (the current v2.1 field); other providers render no logo.
 const PROVIDER_LOGO: Partial<
-  Record<"claude" | "codex" | "opencode" | "kilo" | "agy", ProviderLogoId>
+  Record<"claude" | "codex" | "opencode" | "kilo" | "agy" | "pi", ProviderLogoId>
 > = {
   claude: "anthropic",
   codex: "openai",
   agy: "google",
+  opencode: "opencode",
+  kilo: "kilo",
+  pi: "pi",
+};
+
+// Display name of the agent harness that drove a row — the same model now runs
+// through several harnesses, so the model label alone no longer identifies a row.
+const HARNESS_LABEL: Record<"claude" | "codex" | "opencode" | "kilo" | "agy" | "pi", string> = {
+  claude: "Claude Code",
+  codex: "Codex",
+  opencode: "opencode",
+  kilo: "Kilo",
+  agy: "Antigravity",
+  pi: "Pi",
 };
 const V1_MODEL_LOGO: Partial<Record<ModelId, ProviderLogoId>> = {
   fable: "anthropic",
@@ -1095,6 +1112,7 @@ function computeV2ModelRows(
       historical: annotated && SCAFFBENCH21_HISTORICAL_KEYS.has(model.key),
       color: PROVIDER_BAR_COLOR[model.provider],
       logo: PROVIDER_LOGO[model.provider],
+      harness: HARNESS_LABEL[model.provider],
       pass: formatPercent(passSuccesses, passTrials),
       passSuccesses,
       passTrials,
@@ -1319,8 +1337,11 @@ interface V2ModelPoint extends PathMetrics {
   key: string;
   /** model name shown on hover + in the legend, e.g. "Opus 4.8". */
   label: string;
-  /** reasoning effort, shown on the dot label/tooltip. */
+  /** reasoning effort, kept in the aria detail. */
   reasoning: string;
+  /** agent harness that drove the row (Codex/opencode/Kilo/Pi/...) — the same
+   *  model runs through several harnesses, so dot labels show model · harness. */
+  harness: string;
   color: string;
   /** free-endpoint run (opencode/Kilo) — grouped under "Free tier" in the picker. */
   free: boolean;
@@ -1347,6 +1368,7 @@ function computeV2ModelPoints(dataset: ScaffbenchDataset, path: PathId): V2Model
       key: model.key,
       label: model.label,
       reasoning: model.effort,
+      harness: HARNESS_LABEL[model.provider],
       color: V2_MODEL_COLORS[index % V2_MODEL_COLORS.length],
       free,
       ...metrics,
@@ -1554,7 +1576,7 @@ function BenchmarkChartCard() {
     () =>
       v2VisiblePoints
         .filter((point) => v2MetricValue(point, v2Metric) === null)
-        .map((point) => `${point.label} · ${point.reasoning}`),
+        .map((point) => `${point.label} · ${point.harness}`),
     [v2VisiblePoints, v2Metric],
   );
   const v2Axis = useMemo(() => buildV2Axis(v2Metric, v2PlottedPoints), [v2Metric, v2PlottedPoints]);
@@ -1947,7 +1969,8 @@ function V2ModelMenuItem({
     <DropdownMenuCheckboxItem checked={checked} onCheckedChange={handleChange} closeOnClick={false}>
       <span className="size-2.5 shrink-0 rounded-[2px]" style={swatchStyle} />
       <span className="min-w-0 flex-1">
-        {point.label} · {point.reasoning}
+        {point.label} · {point.harness}{" "}
+        <span className="text-[10px] opacity-70">[{point.reasoning}]</span>
       </span>
     </DropdownMenuCheckboxItem>
   );
@@ -2235,7 +2258,7 @@ function computeV2LabelPlacements(
     // Callers pass only plotted points (metric value non-null); `?? 0` narrows.
     x: plotX(v2MetricValue(point, metric) ?? 0, axis),
     y: plotY(point.pass, PASS_AXIS, false),
-    width: (`${point.label} · ${point.reasoning}`.length + 1) * LABEL_CHAR_W,
+    width: (`${point.label} · ${point.harness}`.length + 1) * LABEL_CHAR_W,
   }));
   const obstacles: LabelBox[] = mapped.map((p) => ({
     x1: p.x - DOT_PAD,
@@ -2317,7 +2340,7 @@ function V2Dot({
       onBlur={deactivate}
       className="outline-none"
       focusable="true"
-      aria-label={`${point.label} · ${point.reasoning} · ${point.pass}% Core pass · ${metricLabel}`}
+      aria-label={`${point.label} · ${point.harness} · ${point.reasoning} · ${point.pass}% pass · ${metricLabel}`}
     >
       <HoverGuides active={active} hex={point.color} x={x} y={y} />
       <ChartMarker hex={point.color} cardBg={cardBg} />
@@ -2335,7 +2358,7 @@ function V2Dot({
           strokeWidth={3}
           paintOrder="stroke"
         >
-          {point.label} · {point.reasoning}
+          {point.label} · {point.harness}
         </text>
       ) : active ? (
         <text
@@ -2349,7 +2372,7 @@ function V2Dot({
           strokeWidth={3}
           paintOrder="stroke"
         >
-          {point.label} · {point.reasoning}
+          {point.label} · {point.harness}
         </text>
       ) : null}
       {/* On hover, project the dot's value onto each axis in its own color,
@@ -2875,7 +2898,12 @@ function ModelLeaderRow({ row }: { row: ModelLeaderRow }) {
           </span>
         ) : null}
         <ProviderLogo logo={row.logo} />
-        <span className="truncate font-mono text-sm font-bold">{row.label}</span>
+        <span
+          className="truncate font-mono text-sm font-bold"
+          title={row.harness ? `${row.label} — ${row.harness}` : row.label}
+        >
+          {row.label}
+        </span>
         {row.effort ? (
           <span className="shrink-0 font-mono text-[11px] text-[#9c9a93] dark:text-[#6c6a61]">
             [{row.effort}]
