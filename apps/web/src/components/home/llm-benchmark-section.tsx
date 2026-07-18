@@ -927,9 +927,9 @@ const PROVIDER_BAR_COLOR: Record<"claude" | "codex" | "opencode" | "kilo" | "agy
 
 const BAR_TRACK_STYLE: CSSProperties = { backgroundColor: "var(--bar-track)" };
 
-// One row per model: Model · bar · Pass · Wired · Time · Avg cost · Out tok · Steps.
+// One row per model: Model · bar · Pass · Wired · Time · Avg cost · Out tok · Steps · LoC.
 const LEADERBOARD_GRID =
-  "grid grid-cols-[minmax(9rem,13rem)_minmax(0,1fr)_4.25rem_4.5rem_4rem_4.5rem_4rem_3rem] items-center gap-x-3";
+  "grid grid-cols-[minmax(9rem,13rem)_minmax(0,1fr)_4.25rem_4.5rem_4rem_4.5rem_4rem_3rem_3.5rem] items-center gap-x-3";
 
 const PASS_AXIS_TICKS: readonly number[] = [0, 20, 40, 60, 80, 100] as const;
 
@@ -968,6 +968,8 @@ interface ModelLeaderRow {
   cost: string;
   outTok: string;
   steps: string;
+  /** mean lines of code written per scaffold, preformatted ("8.2k" / "—"). */
+  loc: string;
   /** curated explanation for a surprising result, shown as a hover tooltip. */
   note?: string;
   /** scored cells backing this row — powers the tie-band noise radius (v2 only). */
@@ -1081,6 +1083,9 @@ function computeV2ModelRows(
     const durations = scored
       .map((cell) => cell.durationMs)
       .filter((v): v is number => v !== null && v !== undefined && v > 0);
+    const locValues = scored
+      .map((cell) => cell.lines)
+      .filter((v): v is number => v !== null && v !== undefined && v > 0);
     return {
       key: model.key,
       label: model.label,
@@ -1100,6 +1105,7 @@ function computeV2ModelRows(
       cost: costs.length > 0 ? `$${mean(costs).toFixed(2)}` : "—",
       outTok: tokens.length > 0 ? `${(mean(tokens) / 1000).toFixed(1)}k` : "—",
       steps: scored.length > 0 ? String(Math.round(mean(scored.map((cell) => cell.steps)))) : "—",
+      loc: locValues.length > 0 ? `${(mean(locValues) / 1000).toFixed(1)}k` : "—",
     };
   });
   return sortLeaderRows(rows);
@@ -1124,6 +1130,7 @@ function computeV1ModelRows(leaderPath: LeaderPath): ModelLeaderRow[] {
       costNum: Number.POSITIVE_INFINITY,
       cost: "—",
       outTok: combos.length > 0 ? `${mean(combos.map((combo) => combo.tokens)).toFixed(1)}k` : "—",
+      loc: "—",
       steps: "—",
     };
   });
@@ -1139,7 +1146,7 @@ function computeV1ModelRows(leaderPath: LeaderPath): ModelLeaderRow[] {
 // leaderboard table's Core column. There is no per-cell duration in the V2
 // dataset, so "Speed"/time tabs are intentionally absent here.
 
-type V2Metric = "tokens" | "cost" | "steps";
+type V2Metric = "tokens" | "cost" | "steps" | "lines";
 
 interface V2ChartTabSpec {
   id: V2Metric;
@@ -1172,6 +1179,13 @@ const V2_CHART_TABS: readonly V2ChartTabSpec[] = [
     unit: "",
     axisLabel: "Avg tool steps per scaffold",
   },
+  {
+    id: "lines",
+    label: "Code",
+    note: "lean + reliable ↗",
+    unit: "k",
+    axisLabel: "Avg lines of code per scaffold",
+  },
 ] as const;
 
 // V2 dots are colored per MODEL (like v1), one color per model group in order.
@@ -1198,6 +1212,9 @@ interface PathMetrics {
   cost: number | null;
   /** avg tool steps over scored cells. null = no readable trajectory. */
   steps: number | null;
+  /** avg lines of code written per scaffold, thousands. null = not measured
+   *  (rows benched before the code-volume metric landed). */
+  lines: number | null;
   /** scored cells on this path. 0 = the model was never swept on this path. */
   scoredCount: number;
 }
@@ -1220,6 +1237,9 @@ function aggregatePathMetrics(
     .map((cell) => cell.costUsd)
     .filter((value): value is number => value !== null);
   const steps = scored.map((cell) => cell.steps).filter((value) => value > 0);
+  const lines = scored
+    .map((cell) => cell.lines)
+    .filter((value): value is number => value !== null && value !== undefined && value > 0);
   return {
     // Repeat-aware build-level pass: integer counts when present, boolean
     // fallback for legacy cells. Identical to the table's number today (no
@@ -1232,21 +1252,29 @@ function aggregatePathMetrics(
     tokens: tokens.length > 0 ? mean(tokens) / 1000 : null,
     cost: costs.length > 0 ? mean(costs) : null,
     steps: steps.length > 0 ? mean(steps) : null,
+    lines: lines.length > 0 ? mean(lines) / 1000 : null,
     scoredCount: scored.length,
   };
 }
 
-type MetricBearing = { tokens: number | null; cost: number | null; steps: number | null };
+type MetricBearing = {
+  tokens: number | null;
+  cost: number | null;
+  steps: number | null;
+  lines: number | null;
+};
 
 function v2MetricValue(point: MetricBearing, metric: V2Metric): number | null {
   if (metric === "cost") return point.cost;
   if (metric === "steps") return point.steps;
+  if (metric === "lines") return point.lines;
   return point.tokens;
 }
 
 function formatV2Metric(point: MetricBearing, metric: V2Metric): string {
   if (metric === "cost") return point.cost === null ? "—" : `$${point.cost.toFixed(2)}`;
   if (metric === "steps") return point.steps === null ? "—" : `${Math.round(point.steps)} steps`;
+  if (metric === "lines") return point.lines === null ? "—" : `${point.lines.toFixed(1)}k lines`;
   return point.tokens === null ? "—" : `${point.tokens.toFixed(1)}k tokens`;
 }
 
@@ -1255,6 +1283,7 @@ function formatV2Metric(point: MetricBearing, metric: V2Metric): string {
 function formatV2MetricCompact(point: MetricBearing, metric: V2Metric): string {
   if (metric === "cost") return point.cost === null ? "—" : `$${point.cost.toFixed(2)}`;
   if (metric === "steps") return point.steps === null ? "—" : `${Math.round(point.steps)}`;
+  if (metric === "lines") return point.lines === null ? "—" : `${point.lines.toFixed(1)}k`;
   return point.tokens === null ? "—" : `${point.tokens.toFixed(1)}k`;
 }
 
@@ -1339,6 +1368,9 @@ function v2PointEligible(point: V2ModelPoint, metric: V2Metric, path: PathId): b
     if (path === "prompt" && point.free) return false;
     return point.cost !== null;
   }
+  // Rows benched before the code-volume metric have no measurement — drop
+  // them from the Code axis rather than plotting a fake 0 ("least code").
+  if (metric === "lines") return point.lines !== null;
   return true;
 }
 
@@ -1412,13 +1444,7 @@ const drawNone = { duration: 0 } as const;
 // single lime keystone. Inherits text color; the accent is fixed brand lime.
 function ScaffBenchMark({ className }: { className?: string }) {
   return (
-    <svg
-      viewBox="0 0 48 48"
-      role="img"
-      aria-label="ScaffBench mark"
-      className={className}
-      xmlns="http://www.w3.org/2000/svg"
-    >
+    <svg viewBox="0 0 48 48" aria-hidden className={className} xmlns="http://www.w3.org/2000/svg">
       <path fill="currentColor" d="M6 4h36v8H14v8h28v24H6v-8h28v-8H6V4Z" />
       <rect x="6" y="20" width="8" height="8" fill="#C6E853" />
     </svg>
@@ -2538,7 +2564,7 @@ function ScaffbenchLeaderboardCard() {
             ),
           )
         : computeV1ModelRows(effectiveLeaderPath),
-    [isV2, dataset, effectiveLeaderPath, specsSet, modelKeysSet],
+    [isV2, dataset, effectiveLeaderPath, specsSet, modelKeysSet, version],
   );
 
   const toggleSpec = useCallback(
@@ -2687,6 +2713,14 @@ function ScaffbenchLeaderboardCard() {
               <span className="text-right">Avg cost</span>
               <span className="text-right">Out tok</span>
               <span className="text-right">Steps</span>
+              <span className="flex items-center justify-end gap-1">
+                LoC
+                <MetricHelp label="Lines of code">
+                  Mean lines the model actually wrote per scaffold (lockfiles and binaries
+                  excluded). Not part of any score — two green runs can differ 10x in how much
+                  code they took, and that difference is worth seeing.
+                </MetricHelp>
+              </span>
             </div>
 
             <AnimatePresence mode="wait" initial={false}>
@@ -2911,6 +2945,7 @@ function ModelLeaderRow({ row }: { row: ModelLeaderRow }) {
       <span className="text-right font-mono text-xs">{row.cost}</span>
       <span className="text-right font-mono text-xs">{row.outTok}</span>
       <span className="text-right font-mono text-xs">{row.steps}</span>
+      <span className="text-right font-mono text-xs">{row.loc}</span>
     </div>
   );
 }
