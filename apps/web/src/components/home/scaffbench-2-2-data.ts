@@ -73,7 +73,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 0.6259674666666667,
     "outTokens": 42677,
     "steps": 33,
-    "durationMs": 672179
+    "durationMs": 672179,
+    "lines": 1106
   },
   {
     "modelKey": "gpt-5.6-luna|high",
@@ -95,7 +96,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 0.3890149333333333,
     "outTokens": 24915,
     "steps": 14,
-    "durationMs": 516723
+    "durationMs": 516723,
+    "lines": 558
   },
   {
     "modelKey": "gpt-5.6-luna|high",
@@ -117,7 +119,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 0.25746386666666665,
     "outTokens": 21262,
     "steps": 21,
-    "durationMs": 360615
+    "durationMs": 360615,
+    "lines": 752
   },
   {
     "modelKey": "gpt-5.6-luna|high",
@@ -139,7 +142,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 0.33865966666666675,
     "outTokens": 28047,
     "steps": 21,
-    "durationMs": 491243
+    "durationMs": 491243,
+    "lines": 5574
   },
   {
     "modelKey": "gpt-5.6-luna|high",
@@ -161,7 +165,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 0.4684007333333333,
     "outTokens": 35071,
     "steps": 26,
-    "durationMs": 619662
+    "durationMs": 619662,
+    "lines": 1160
   },
   {
     "modelKey": "gpt-5.6-luna|high",
@@ -183,7 +188,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 0.3995279,
     "outTokens": 30214,
     "steps": 34,
-    "durationMs": 570858
+    "durationMs": 570858,
+    "lines": 23267
   },
   {
     "modelKey": "gpt-5.6-luna|high",
@@ -205,7 +211,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 0.44606026666666665,
     "outTokens": 31378,
     "steps": 30,
-    "durationMs": 528822
+    "durationMs": 528822,
+    "lines": 1051
   },
   {
     "modelKey": "gpt-5.6-luna|high",
@@ -227,7 +234,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 0.41194420000000004,
     "outTokens": 30075,
     "steps": 27,
-    "durationMs": 535307
+    "durationMs": 535307,
+    "lines": 8178
   },
   {
     "modelKey": "gpt-5.6-luna|high",
@@ -249,7 +257,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 0.3254803333333333,
     "outTokens": 24632,
     "steps": 14,
-    "durationMs": 419945
+    "durationMs": 419945,
+    "lines": 564
   },
   {
     "modelKey": "gpt-5.6-luna|high",
@@ -271,7 +280,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 0.44696106666666663,
     "outTokens": 32158,
     "steps": 23,
-    "durationMs": 594178
+    "durationMs": 594178,
+    "lines": 1557
   },
   {
     "modelKey": "gpt-5.6-luna|high",
@@ -293,7 +303,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 0.5701920666666667,
     "outTokens": 35710,
     "steps": 54,
-    "durationMs": 639526
+    "durationMs": 639526,
+    "lines": 1104
   },
   {
     "modelKey": "gpt-5.6-luna|high",
@@ -315,7 +326,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 0.3551718666666666,
     "outTokens": 28114,
     "steps": 24,
-    "durationMs": 495022
+    "durationMs": 495022,
+    "lines": 914
   },
   {
     "modelKey": "gpt-5.6-luna|high",
@@ -337,7 +349,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 0.35035013333333337,
     "outTokens": 30963,
     "steps": 19,
-    "durationMs": 515570
+    "durationMs": 515570,
+    "lines": 503
   },
   {
     "modelKey": "gpt-5.6-sol|high",
@@ -359,7 +372,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 3.9929473333333334,
     "outTokens": 42966,
     "steps": 31,
-    "durationMs": 841874
+    "durationMs": 841874,
+    "lines": 7859
   },
   {
     "modelKey": "gpt-5.6-sol|high",
@@ -381,7 +395,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 1.396316,
     "outTokens": 20419,
     "steps": 9,
-    "durationMs": 468649
+    "durationMs": 468649,
+    "lines": 889
   },
   {
     "modelKey": "gpt-5.6-sol|high",
@@ -403,7 +418,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 1.4051763333333334,
     "outTokens": 22340,
     "steps": 15,
-    "durationMs": 451344
+    "durationMs": 451344,
+    "lines": 1198
   },
   {
     "modelKey": "gpt-5.6-sol|high",
@@ -425,7 +441,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 1.7287306666666666,
     "outTokens": 26433,
     "steps": 19,
-    "durationMs": 546431
+    "durationMs": 546431,
+    "lines": 6383
   },
   {
     "modelKey": "gpt-5.6-sol|high",
@@ -447,7 +464,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 2.645091,
     "outTokens": 35756,
     "steps": 24,
-    "durationMs": 847365
+    "durationMs": 847365,
+    "lines": 1398
   },
   {
     "modelKey": "gpt-5.6-sol|high",
@@ -469,7 +487,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 3.522418666666667,
     "outTokens": 37433,
     "steps": 28,
-    "durationMs": 786371
+    "durationMs": 786371,
+    "lines": 38620
   },
   {
     "modelKey": "gpt-5.6-sol|high",
@@ -491,7 +510,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 1.474833,
     "outTokens": 24597,
     "steps": 14,
-    "durationMs": 513354
+    "durationMs": 513354,
+    "lines": 1085
   },
   {
     "modelKey": "gpt-5.6-sol|high",
@@ -513,7 +533,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 2.5075076666666667,
     "outTokens": 31904,
     "steps": 21,
-    "durationMs": 622989
+    "durationMs": 622989,
+    "lines": 5109
   },
   {
     "modelKey": "gpt-5.6-sol|high",
@@ -535,7 +556,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 1.6771855,
     "outTokens": 25911,
     "steps": 11,
-    "durationMs": 481261
+    "durationMs": 481261,
+    "lines": 1036
   },
   {
     "modelKey": "gpt-5.6-sol|high",
@@ -557,7 +579,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 2.895477,
     "outTokens": 36251,
     "steps": 23,
-    "durationMs": 860740
+    "durationMs": 860740,
+    "lines": 1253
   },
   {
     "modelKey": "gpt-5.6-sol|high",
@@ -579,7 +602,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 2.264329,
     "outTokens": 25564,
     "steps": 46,
-    "durationMs": 543484
+    "durationMs": 543484,
+    "lines": 892
   },
   {
     "modelKey": "gpt-5.6-sol|high",
@@ -601,7 +625,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 1.4725746666666668,
     "outTokens": 24497,
     "steps": 17,
-    "durationMs": 512244
+    "durationMs": 512244,
+    "lines": 1550
   },
   {
     "modelKey": "gpt-5.6-sol|high",
@@ -623,7 +648,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 0.9832886666666667,
     "outTokens": 19190,
     "steps": 11,
-    "durationMs": 356954
+    "durationMs": 356954,
+    "lines": 877
   },
   {
     "modelKey": "gpt-5.6-terra|high",
@@ -645,7 +671,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 0.993214,
     "outTokens": 27448,
     "steps": 19,
-    "durationMs": 430672
+    "durationMs": 430672,
+    "lines": 1099
   },
   {
     "modelKey": "gpt-5.6-terra|high",
@@ -667,7 +694,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 0.5610858333333333,
     "outTokens": 13953,
     "steps": 16,
-    "durationMs": 304966
+    "durationMs": 304966,
+    "lines": 475
   },
   {
     "modelKey": "gpt-5.6-terra|high",
@@ -689,7 +717,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 0.46535375,
     "outTokens": 12938,
     "steps": 9,
-    "durationMs": 334196
+    "durationMs": 334196,
+    "lines": 630
   },
   {
     "modelKey": "gpt-5.6-terra|high",
@@ -711,7 +740,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 0.5250713333333333,
     "outTokens": 17851,
     "steps": 14,
-    "durationMs": 411167
+    "durationMs": 411167,
+    "lines": 4415
   },
   {
     "modelKey": "gpt-5.6-terra|high",
@@ -733,7 +763,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 0.5800255,
     "outTokens": 16544,
     "steps": 14,
-    "durationMs": 356622
+    "durationMs": 356622,
+    "lines": 746
   },
   {
     "modelKey": "gpt-5.6-terra|high",
@@ -755,7 +786,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 0.8165203333333334,
     "outTokens": 19300,
     "steps": 18,
-    "durationMs": 378653
+    "durationMs": 378653,
+    "lines": 23777
   },
   {
     "modelKey": "gpt-5.6-terra|high",
@@ -777,7 +809,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 0.5943468333333334,
     "outTokens": 17457,
     "steps": 12,
-    "durationMs": 328840
+    "durationMs": 328840,
+    "lines": 1597
   },
   {
     "modelKey": "gpt-5.6-terra|high",
@@ -799,7 +832,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 0.5196891666666666,
     "outTokens": 16252,
     "steps": 17,
-    "durationMs": 326911
+    "durationMs": 326911,
+    "lines": 7967
   },
   {
     "modelKey": "gpt-5.6-terra|high",
@@ -821,7 +855,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 0.489417,
     "outTokens": 13906,
     "steps": 13,
-    "durationMs": 263707
+    "durationMs": 263707,
+    "lines": 376
   },
   {
     "modelKey": "gpt-5.6-terra|high",
@@ -843,7 +878,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 0.7842288333333333,
     "outTokens": 20780,
     "steps": 19,
-    "durationMs": 451452
+    "durationMs": 451452,
+    "lines": 629
   },
   {
     "modelKey": "gpt-5.6-terra|high",
@@ -865,7 +901,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 1.0675993333333333,
     "outTokens": 23192,
     "steps": 33,
-    "durationMs": 473574
+    "durationMs": 473574,
+    "lines": 968
   },
   {
     "modelKey": "gpt-5.6-terra|high",
@@ -887,7 +924,8 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 0.499245,
     "outTokens": 15328,
     "steps": 16,
-    "durationMs": 267279
+    "durationMs": 267279,
+    "lines": 714
   },
   {
     "modelKey": "gpt-5.6-terra|high",
@@ -909,6 +947,7 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 0.38242766666666667,
     "outTokens": 14877,
     "steps": 9,
-    "durationMs": 191217
+    "durationMs": 191217,
+    "lines": 425
   }
 ];

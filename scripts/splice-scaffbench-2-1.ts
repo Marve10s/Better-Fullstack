@@ -115,6 +115,7 @@ export function normalizeExistingCell(cell: (typeof EXISTING_CELLS)[number]): Ce
     qualityPassRate:
       cell.fullPass === null ? null : (existing.qualityPassRate ?? (cell.fullPass ? 100 : 0)),
     durationMs: existing.durationMs ?? null,
+    lines: typeof existing.lines === "number" ? existing.lines : null,
   };
 }
 

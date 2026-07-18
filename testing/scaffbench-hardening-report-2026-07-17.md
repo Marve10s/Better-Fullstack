@@ -121,3 +121,33 @@ Each command below was run against the deleted monolith's history. The author da
 - `bunx tsc --noEmit -p scripts/scaffbench/tsconfig.json` — **clean**.
 - Install-policy contradiction grep across `scripts/scaffbench/specs` and `prompts.ts` — **no matches**.
 - `git diff --check` — **clean**.
+
+## Code-volume metric (LoC) (2026-07-18)
+
+Implemented all six items in `testing/scaffbench-loc-spec-2026-07-18.md`. Implementation and regression-test changes are confined to `scripts/**`; this report append is the only source change outside that tree. No `apps/web/**` file was edited or regenerated, and no benchmark sweep or development server was run.
+
+| Item | Files | Result |
+| --- | --- | --- |
+| 1 | `scripts/scaffbench/code-metrics.ts`, `validation/shared.ts` | Adds `measureProjectCode`, sharing the project-tree directory exclusions with validation while excluding named lockfiles, binary extensions, and NUL-sniffed files. Counts bytes and newline-based lines, including an unterminated final line. |
+| 2 | `scripts/scaffbench/{runner,types,index}.ts` | Measures the generated directory during scoring, before deferred validation installs/builds, and persists optional per-result `{files, lines, bytes}` metrics. |
+| 3 | `scripts/scaffbench/summary.ts` | Adds scored-trial `avgLines` to per-spec cells and macro-averages scored cells for leaderboard rows; unavailable metrics remain `null`. |
+| 4 | `scripts/build-scaffbench-2-1-data.ts`, `scripts/splice-scaffbench-2-1.ts`, `scripts/build-scaffbench-2-2-data.ts` via the shared publisher | Publishes `lines`, falls back to scored raw result metrics for legacy summaries, and preserves `null` for existing cells with no LoC evidence. |
+| 5 | `scripts/backfill-scaffbench-code-metrics.ts` | Adds an idempotent, `--force`-aware backfill with repository-relative defaults and recomputes per-spec `avgLines`. The comment records that already-pruned archives make dependency/build-tree exclusions a no-op difference. |
+| 6 | `scripts/scaffbench-code-metrics.test.ts`, `scripts/scaffbench-hardening.test.ts` | Covers named lockfiles, extension and sniffed binaries, nested excluded directories, unterminated lines, scored-only/macro aggregation, legacy publisher null propagation and raw fallback, and backfill idempotency. |
+
+### Cohort backfill
+
+Ran the backfill against the three required 2.2 cohort directories. Each summary now has `codeMetrics` on all 39 results and `avgLines` on all 13 per-spec cells:
+
+- Sol: 39 projects measured; 13 cells aggregated.
+- Terra: 39 projects measured; 13 cells aggregated.
+- Luna: 39 projects measured; 13 cells aggregated.
+- Immediate second run: 0 projects measured and all three summaries unchanged.
+
+The web 2.2 data generator was intentionally not run; the operator remains responsible for regenerating that file.
+
+### LoC verification
+
+- `bun test scripts/scaffbench-code-metrics.test.ts` — **4 passed, 0 failed** (12 assertions).
+- `bun x tsc --noEmit -p scripts/scaffbench/tsconfig.json` — **clean**.
+- `cd scripts && bun test .` — **127 passed, 0 failed** (426 assertions across 7 files).

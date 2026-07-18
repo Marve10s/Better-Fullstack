@@ -36,14 +36,24 @@ import {
 } from "@/scoring";
 
 export function aggregateResults(results: readonly RunResult[]) {
-  return {
-    bySpecCell: aggregateBy(results, (result) =>
-      [result.specId, result.model, result.effort, result.path].join("|"),
-    ),
-    leaderboard: aggregateBy(results, (result) =>
-      [result.model, result.effort, result.path].join("|"),
-    ),
-  };
+  const bySpecCell = aggregateBy(results, (result) =>
+    [result.specId, result.model, result.effort, result.path].join("|"),
+  );
+  const leaderboard = aggregateBy(results, (result) =>
+    [result.model, result.effort, result.path].join("|"),
+  );
+  for (const row of leaderboard) {
+    const scoredCells = bySpecCell.filter(
+      (cell) =>
+        cell.model === row.model &&
+        cell.effort === row.effort &&
+        cell.path === row.path &&
+        cell.scoredRuns > 0 &&
+        cell.avgLines !== null,
+    );
+    row.avgLines = nullableAverage(scoredCells.map((cell) => cell.avgLines!));
+  }
+  return { bySpecCell, leaderboard };
 }
 
 function aggregateBy(
@@ -148,6 +158,11 @@ function aggregateBy(
         p95DurationMs: percentile(durations, 95),
         avgOutputTokens: maybeAverage(group.map((result) => result.claude.outputTokens)),
         avgCostUsd: maybeAveragePrecise(group.map((result) => result.claude.totalCostUsd)),
+        avgLines: nullableAverage(
+          scored.flatMap((result) =>
+            result.codeMetrics ? [result.codeMetrics.lines] : [],
+          ),
+        ),
         failureTags: countFailureTags(group),
         outcomeCounts: countOutcomes(group),
         publicationEligibility: publicationEligibility(group),
@@ -211,6 +226,10 @@ function wilsonInterval(successes: number, total: number) {
 function average(values: readonly number[]) {
   if (values.length === 0) return 0;
   return Math.round(averagePrecise(values));
+}
+
+function nullableAverage(values: readonly number[]) {
+  return values.length > 0 ? average(values) : null;
 }
 
 /** Unrounded mean — used for sub-unit quantities like USD cost, where rounding

@@ -16,6 +16,9 @@
     "../build-scaffbench-data.ts",
     "../build-scaffbench-data.test.ts",
     "../build-scaffbench-2-1-data.ts",
+    "../build-scaffbench-2-2-data.ts",
+    "../backfill-scaffbench-code-metrics.ts",
+    "../scaffbench-code-metrics.test.ts",
     "../splice-scaffbench-2-1.ts"
   ]
 }

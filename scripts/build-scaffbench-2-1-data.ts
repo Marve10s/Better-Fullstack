@@ -108,6 +108,7 @@ export type PublishedCell = {
   outTokens: number | null;
   steps: number;
   durationMs: number | null;
+  lines: number | null;
 };
 
 export function buildPublishedCells(summary: any, sourceDir: string, specs?: readonly string[]) {
@@ -133,6 +134,9 @@ export function buildPublishedCells(summary: any, sourceDir: string, specs?: rea
     const scoredResults = trials.filter(resultIsScored);
     const scoredTrials = scoredResults.length;
     const passCount = scoredResults.filter(corePass).length;
+    const rawLines = scoredResults.flatMap((result) =>
+      typeof result.codeMetrics?.lines === "number" ? [result.codeMetrics.lines] : [],
+    );
     // Publication integrity is deliberately strict: raw persisted outcomes and
     // raw Core evidence are authoritative. Never repair a corrupt summary with
     // min/max because that can erase stepless scored failures.
@@ -198,6 +202,12 @@ export function buildPublishedCells(summary: any, sourceDir: string, specs?: rea
         aggregate.medianDurationMs && aggregate.medianDurationMs > 0
           ? Math.round(aggregate.medianDurationMs)
           : null,
+      lines:
+        typeof aggregate.avgLines === "number"
+          ? aggregate.avgLines
+          : rawLines.length > 0
+            ? Math.round(mean(rawLines))
+            : null,
     });
   }
   return cells;

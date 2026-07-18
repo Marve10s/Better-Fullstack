@@ -764,6 +764,7 @@ describe("ScaffBench hardening 6: opt-in batch-4 features", () => {
       outTokens: null,
       steps: 0,
       durationMs: null,
+      lines: null,
     });
     const rows = discriminationRows([
       cell("ceiling", "a", 100),

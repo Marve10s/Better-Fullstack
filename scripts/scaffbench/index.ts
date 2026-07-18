@@ -8,6 +8,7 @@ export * from "@/validation";
 export * from "@/validation/cache";
 export * from "@/validation/classification";
 export * from "@/scoring";
+export * from "@/code-metrics";
 export * from "@/summary";
 export * from "@/runner";
 export * from "@/calibrate";

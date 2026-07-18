@@ -33,6 +33,7 @@ import {
 } from "@/agents";
 import { calibrationOptions, calibrationVerdict, formatCalibrationVerdict } from "@/calibrate";
 import { selectedSpecs } from "@/cli";
+import { measureProjectCode } from "@/code-metrics";
 import {
   HARNESS_VERSION,
   PROMPT_VERSION,
@@ -342,6 +343,9 @@ function runOneGeneration(input: {
               ? emptyAcceptanceScore(spec)
               : undefined,
         };
+    const codeMetrics = generatedDir
+      ? yield* fromPromise(() => measureProjectCode(generatedDir))
+      : undefined;
     const toolCompliance = yield* fromPromise(() =>
       scoreToolCompliance(pathMode, generatedDir, agentResult),
     );
@@ -379,6 +383,7 @@ function runOneGeneration(input: {
       runDir,
       projectName,
       projectDir,
+      codeMetrics,
       claude: {
         exitCode: agentResult.exitCode,
         timedOut: agentResult.timedOut,

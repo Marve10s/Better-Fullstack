@@ -1,6 +1,27 @@
 import { readdir } from "node:fs/promises";
 import path from "node:path";
 
+/** Dependency/build trees shared by validation discovery and source metrics. */
+export const PROJECT_WALK_SKIP_DIRECTORIES = new Set([
+  "node_modules",
+  "target",
+  ".git",
+  "deps",
+  "_build",
+  "vendor",
+  "Pods",
+  ".venv",
+  ".dart_tool",
+  ".gradle",
+  "obj",
+  "bin",
+  "dist",
+  "build",
+  ".next",
+  ".expo",
+  "coverage",
+]);
+
 export function parseJsonc(raw: string) {
   const withoutLineComments = raw
     .split("\n")
@@ -15,26 +36,9 @@ export function parseJsonc(raw: string) {
 }
 
 export async function walk(dir: string, visit: (filePath: string) => Promise<void>) {
-  const skip = new Set([
-    "node_modules",
-    ".git",
-    "dist",
-    "build",
-    ".next",
-    ".turbo",
-    "coverage",
-    "target",
-    ".venv",
-    "bin",
-    "obj",
-    // Vendored-dependency trees. Hex packages ship their own package.json
-    // (deps/phoenix_live_view has a FAILING npm build), and Go vendor trees ship
-    // go.mod files — manifest discovery must never validate someone else's code.
-    "deps",
-    "_build",
-    "vendor",
-    "Pods",
-  ]);
+  // Validation also ignores Turbo's cache. Source metrics intentionally do not:
+  // their exclusion contract is the exact shared set above.
+  const skip = new Set([...PROJECT_WALK_SKIP_DIRECTORIES, ".turbo"]);
   let entries;
   try {
     entries = await readdir(dir, { withFileTypes: true });

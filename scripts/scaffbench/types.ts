@@ -251,6 +251,12 @@ export type StackScore = {
   misses: string[];
 };
 
+export type CodeMetrics = {
+  files: number;
+  lines: number;
+  bytes: number;
+};
+
 export type RunResult = {
   id: string;
   specId: string;
@@ -264,6 +270,8 @@ export type RunResult = {
   runDir: string;
   projectName: string;
   projectDir: string | null;
+  /** Authored project volume measured before validation installs/builds. */
+  codeMetrics?: CodeMetrics;
   claude: AgentRunAccounting;
   /** Fine-grained outcome; optional only for loading pre-2.2 summaries. */
   outcome?: RunOutcome;
@@ -352,6 +360,8 @@ export type SummaryAggregate = {
   p95DurationMs: number;
   avgOutputTokens?: number;
   avgCostUsd?: number;
+  /** Mean authored lines; null when no scored run has code metrics. */
+  avgLines: number | null;
   failureTags: Record<string, number>;
   outcomeCounts: Partial<Record<RunOutcome, number>>;
   publicationEligibility: PublicationEligibility;
