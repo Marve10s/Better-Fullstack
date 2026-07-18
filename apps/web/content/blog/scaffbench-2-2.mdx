@@ -64,6 +64,21 @@ toolchains, and network flakes are classified as infrastructure and excluded —
 the evidence recorded. And rows whose scores are within single-cohort sampling noise share a rank on
 the board instead of pretending an order exists.
 
+## How this compares to other benchmarks
+
+ScaffBench is **one-shot, not iterate-to-green**. The agent gets a spec and a full shell; what it
+hands back is final — no grading inside its own sandbox, no retries against the verdict, bounded
+only by a wall-clock ceiling and a budget cap. SWE-bench and Terminal-Bench grade iteration inside
+the model's own environment; Aider's polyglot suite allows bounded retries against a test suite;
+HumanEval-style suites never execute in a real environment at all. ScaffBench grades the artifact,
+after the fact, under identical conditions — which is why a model can top agentic leaderboards and
+still lose here to a smaller sibling that verifies before it pins.
+
+Two consequences of that design: **failures are choices, not handcuffs** — a run that dies on a
+dependency version that doesn't exist chose not to look it up — and the assisted lanes (where our
+MCP scaffolder drives) measure something different from raw capability: **restraint**, because with
+a working project handed to it, what separates models is whether their edits keep it working.
+
 ## First 2.2 cohort: the GPT-5.6 family at high effort
 
 | Model | Full pass | Builds | Index |

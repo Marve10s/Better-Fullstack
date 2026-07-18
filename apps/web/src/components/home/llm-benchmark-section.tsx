@@ -974,62 +974,20 @@ interface ModelLeaderRow {
   scoredCount?: number;
   /** scored under the pre-2026-07-10 validator / smaller suite († badge). */
   historical?: boolean;
-  /** competition rank after tie-banding; assigned by annotateTieBands. */
+  /** 1-based rank in displayed Pass order; assigned by annotateRanks. */
   rank?: number;
   /** true when this row is within single-trial noise of the row(s) above it. */
   tied?: boolean;
 }
 
-// Wilson score interval at z=1 (~68%) on the row's integer successes/trials.
-// Wilson stays sane at 0% and 100%, where the plug-in (Wald) variance
-// collapses to zero and would fake certainty.
-function wilsonInterval(successes: number, trials: number): { low: number; high: number } {
-  if (trials === 0) return { low: 0, high: 1 };
-  const z = 1;
-  const p = successes / trials;
-  const z2 = z * z;
-  const denom = 1 + z2 / trials;
-  const center = (p + z2 / (2 * trials)) / denom;
-  const half = (z * Math.sqrt((p * (1 - p)) / trials + z2 / (4 * trials * trials))) / denom;
-  return { low: Math.max(0, center - half), high: Math.min(1, center + half) };
-}
-
-// Single-trial rows carry real sampling noise: at n specs, a one-to-two-spec
-// pass gap is within the interval. Each row is compared against its GROUP
-// LEADER (not just the previous row, which would chain unrelated rows into one
-// band): while the leader's Wilson interval still overlaps the candidate's,
-// they share a competition rank and get a "=" marker — the board refuses to
-// imply an ordering the data can't support. Rows without integer trial counts
-// (v1, unscored) always break the band.
-function annotateTieBands(rows: ModelLeaderRow[]): ModelLeaderRow[] {
-  let groupStart = 0;
+// Rows are ranked strictly by their displayed Pass rate (sortLeaderRows already
+// orders by pass, cheapest-as-tiebreak); ranks are plain positions. Sampling
+// noise on close rows is documented in the blog rather than encoded in the rank
+// column (operator call, 2026-07-18).
+function annotateRanks(rows: ModelLeaderRow[]): ModelLeaderRow[] {
   for (let i = 0; i < rows.length; i += 1) {
-    const row = rows[i];
-    if (i === 0) {
-      row.rank = 1;
-      row.tied = false;
-      continue;
-    }
-    const leader = rows[groupStart];
-    const leaderTrials = leader.passTrials ?? 0;
-    const rowTrials = row.passTrials ?? 0;
-    if (leaderTrials === 0 || rowTrials === 0) {
-      row.rank = i + 1;
-      row.tied = false;
-      groupStart = i;
-      continue;
-    }
-    const leaderCi = wilsonInterval(leader.passSuccesses ?? 0, leaderTrials);
-    const rowCi = wilsonInterval(row.passSuccesses ?? 0, rowTrials);
-    if (leaderCi.low <= rowCi.high) {
-      row.rank = leader.rank;
-      row.tied = true;
-      if (!leader.tied) leader.tied = true;
-    } else {
-      row.rank = i + 1;
-      row.tied = false;
-      groupStart = i;
-    }
+    rows[i].rank = i + 1;
+    rows[i].tied = false;
   }
   return rows;
 }
@@ -1389,61 +1347,11 @@ export default function LLMBenchmarkSection() {
     <section id="benchmark" className="relative scroll-mt-16 border-t border-border bg-muted/20">
       <div className="px-4 py-20 sm:px-8 sm:py-24">
         <Masthead />
-        <MethodologyCard />
         <BenchmarkChartCard />
         <ScaffbenchLeaderboardCard />
         <AgentInstallPanel />
       </div>
     </section>
-  );
-}
-
-// The four ground rules that make the scores below readable — shown ahead of
-// the graph and table so "weird" results are interpreted against the actual
-// methodology instead of assumed harness restrictions.
-const METHODOLOGY_ITEMS = [
-  {
-    title: "One-shot, not iterate-to-green",
-    body: "Each model gets a spec and a full shell — network, installs, and builds are all allowed. What it hands back is final: no grading inside its own sandbox, no retries against the verdict. The only bounds are a wall-clock ceiling and a budget cap.",
-  },
-  {
-    title: "Validated cold, on a clean machine",
-    body: "Every project is installed, built, and type-checked afterward on the same machine, with the same toolchains and registry state for every model. “Works in my scratch dir” doesn't count.",
-  },
-  {
-    title: "Failures are choices, not handcuffs",
-    body: "Models are free to verify anything before finishing — check a registry before pinning a version, run the build they were asked to leave green. A run that dies on a dependency version that doesn't exist chose not to look.",
-  },
-  {
-    title: "Assisted lanes measure restraint",
-    body: "With the scaffolder driving (MCP), generation quality saturates — even small models wire nearly everything. What separates models there is whether their edits on top of a working project keep it working.",
-  },
-] as const;
-
-function MethodologyCard() {
-  return (
-    <div className="mx-auto mt-12 max-w-[1180px] rounded-2xl border border-[#e1e0d8] bg-[#faf9f5] px-6 py-6 text-[#1b1a17] [color-scheme:light] dark:border-[rgba(237,235,228,0.10)] dark:bg-[#161614] dark:text-[#dad8d0] dark:[color-scheme:dark] sm:px-8 sm:py-7">
-      <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[#71706a] dark:text-[#8f8d84]">
-        How ScaffBench tests models
-      </p>
-      <div className="mt-4 grid gap-x-8 gap-y-4 sm:grid-cols-2">
-        {METHODOLOGY_ITEMS.map((item) => (
-          <div key={item.title}>
-            <p className="text-sm font-semibold">{item.title}</p>
-            <p className="mt-1 text-sm leading-relaxed text-[#71706a] dark:text-[#8f8d84]">
-              {item.body}
-            </p>
-          </div>
-        ))}
-      </div>
-      <p className="mt-5 border-t border-[#e1e0d8] pt-4 text-xs leading-relaxed text-[#71706a] dark:border-[rgba(237,235,228,0.10)] dark:text-[#8f8d84]">
-        Where other benchmarks differ: SWE-bench and Terminal-Bench grade iterate-to-green inside
-        the model's own environment; Aider's polyglot suite allows bounded retries against a test
-        suite; HumanEval-style suites never execute in a real environment at all. ScaffBench grades
-        the artifact, after the fact, under identical conditions — which is why a model can top
-        agentic leaderboards and still lose here to a smaller sibling that verifies before it pins.
-      </p>
-    </div>
   );
 }
 
@@ -1498,112 +1406,21 @@ const drawNone = { duration: 0 } as const;
 
 // Hammer-strike pose angles (degrees): rest → wind-up → strike-down → settle.
 // After the icon draws in, the hammer slams once and rests (no loop).
-const HAMMER_REST = -6;
-const HAMMER_WIND = -34;
-const HAMMER_STRIKE = 43;
-const HAMMER_SLAM_DELAY = 1.3; // fires after the draw-in finishes (~1.2s)
-const HAMMER_SLAM_DUR = 0.62;
-const SPARK_HIDDEN_STYLE: CSSProperties = { opacity: 0 };
 
+// Block-S monogram (GPT-5.6 Sol design, 2026-07-18): a modular S of stacked
+// block layers — generated layers snapping into a complete stack — with a
+// single lime keystone. Inherits text color; the accent is fixed brand lime.
 function ScaffBenchMark({ className }: { className?: string }) {
-  const ref = useRef<SVGSVGElement>(null);
-  const hammerRef = useRef<SVGGElement>(null);
-  const sparkRef = useRef<SVGGElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-10%" });
-  const reduceMotion = useReducedMotion() === true;
-  const drawn = inView || reduceMotion;
-
-  // Drive the hammer's pivot rotation as a motion value written straight into the
-  // SVG transform string (translate to the pivot, then rotate) — the design's
-  // exact formula, no transform-origin guesswork.
-  const angle = useMotionValue(HAMMER_REST);
-  const sparkOpacity = useMotionValue(0);
-  useEffect(() => {
-    const unsubAngle = angle.on("change", (value) => {
-      hammerRef.current?.setAttribute("transform", `translate(8.5 7) rotate(${value.toFixed(2)})`);
-    });
-    const unsubSpark = sparkOpacity.on("change", (value) => {
-      if (sparkRef.current) sparkRef.current.style.opacity = String(value);
-    });
-    return () => {
-      unsubAngle();
-      unsubSpark();
-    };
-  }, [angle, sparkOpacity]);
-
-  // Slam once, after the icon has fully drawn in.
-  useEffect(() => {
-    if (!inView || reduceMotion) return;
-    const slam = animate(angle, [HAMMER_REST, HAMMER_WIND, HAMMER_STRIKE, HAMMER_REST], {
-      delay: HAMMER_SLAM_DELAY,
-      duration: HAMMER_SLAM_DUR,
-      times: [0, 0.32, 0.5, 1],
-      ease: ["easeOut", "easeIn", "easeOut"],
-    });
-    const spark = animate(sparkOpacity, [0, 1, 0], {
-      delay: HAMMER_SLAM_DELAY + HAMMER_SLAM_DUR * 0.5,
-      duration: 0.28,
-      times: [0, 0.18, 1],
-      ease: "easeOut",
-    });
-    return () => {
-      slam.stop();
-      spark.stop();
-    };
-  }, [inView, reduceMotion, angle, sparkOpacity]);
-
   return (
     <svg
-      ref={ref}
-      viewBox="0 0 32 32"
-      aria-hidden
+      viewBox="0 0 48 48"
+      role="img"
+      aria-label="ScaffBench mark"
       className={className}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      xmlns="http://www.w3.org/2000/svg"
     >
-      {/* Anvil. */}
-      <motion.path
-        d="M5 18.5 L19.5 18.5 L24.5 20.4 L19.5 22.3 L5 22.3 Z"
-        initial={pathHidden}
-        animate={drawn ? pathDrawn : pathHidden}
-        transition={reduceMotion ? drawNone : stairsDraw}
-      />
-      <motion.path
-        d="M9.5 22.3 L8 28 L16.5 28 L15 22.3"
-        initial={pathHidden}
-        animate={drawn ? pathDrawn : pathHidden}
-        transition={reduceMotion ? drawNone : stairsDraw}
-      />
-      {/* Hammer — drawn in at rest, then the pivot rotation (ref) slams it down. */}
-      <g ref={hammerRef} transform="translate(8.5 7) rotate(-6)">
-        <motion.path
-          d="M-4.5 0 L11.5 0"
-          initial={pathHidden}
-          animate={drawn ? pathDrawn : pathHidden}
-          transition={reduceMotion ? drawNone : diagonalDraw}
-        />
-        <motion.rect
-          x="9.7"
-          y="-4.8"
-          width="4.6"
-          height="9.6"
-          rx="1.3"
-          initial={pathHidden}
-          animate={drawn ? pathDrawn : pathHidden}
-          transition={reduceMotion ? drawNone : diagonalDraw}
-        />
-      </g>
-      {/* Impact spark — a brief lime flash at the strike point on the slam. */}
-      <g ref={sparkRef} stroke="#C6E853" strokeWidth={1.2} style={SPARK_HIDDEN_STYLE} aria-hidden>
-        <circle cx="14" cy="18.2" r="1.5" fill="#C6E853" stroke="none" />
-        <line x1="14" y1="18.2" x2="9.8" y2="15.6" />
-        <line x1="14" y1="18.2" x2="11.2" y2="13.8" />
-        <line x1="14" y1="18.2" x2="16" y2="13.4" />
-        <line x1="14" y1="18.2" x2="18.2" y2="15.4" />
-      </g>
+      <path fill="currentColor" d="M6 4h36v8H14v8h28v24H6v-8h28v-8H6V4Z" />
+      <rect x="6" y="20" width="8" height="8" fill="#C6E853" />
     </svg>
   );
 }
@@ -2715,7 +2532,7 @@ function ScaffbenchLeaderboardCard() {
   const rows = useMemo(
     () =>
       isV2
-        ? annotateTieBands(
+        ? annotateRanks(
             computeV2ModelRows(dataset, effectiveLeaderPath, specsSet, version !== "v2.2").filter((row) =>
               modelKeysSet.has(row.key),
             ),
@@ -3019,27 +2836,9 @@ function ModelLeaderRow({ row }: { row: ModelLeaderRow }) {
     <div className={cn(LEADERBOARD_GRID, "py-2.5")}>
       <span className="flex min-w-0 items-center gap-1.5">
         {row.rank !== undefined ? (
-          row.tied ? (
-            <Tooltip delay={0}>
-              <TooltipTrigger
-                type="button"
-                aria-label="Statistically tied with adjacent rows"
-                className="w-6 shrink-0 cursor-help text-right font-mono text-[11px] tabular-nums text-[#9c9a93] dark:text-[#6c6a61]"
-              >
-                {row.rank}=
-              </TooltipTrigger>
-              <TooltipContent className="max-w-[16rem] normal-case tracking-normal">
-                <p className="font-normal">
-                  Within single-run noise of the adjacent row(s) — the data doesn't support a strict
-                  ordering here, so tied rows share a rank.
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          ) : (
-            <span className="w-6 shrink-0 text-right font-mono text-[11px] tabular-nums text-[#9c9a93] dark:text-[#6c6a61]">
-              {row.rank}
-            </span>
-          )
+          <span className="w-6 shrink-0 text-right font-mono text-[11px] tabular-nums text-[#9c9a93] dark:text-[#6c6a61]">
+            {row.rank}
+          </span>
         ) : null}
         <ProviderLogo logo={row.logo} />
         <span className="truncate font-mono text-sm font-bold">{row.label}</span>

@@ -1,4 +1,4 @@
-export const LAUNCH_RADAR_RELEASE_ID = "development-library-expansion-2026-07";
+export const LAUNCH_RADAR_RELEASE_ID = "development-library-expansion-2026-07b";
 export const LAUNCH_RADAR_SEEN_EVENT = "better-fullstack:launch-radar-seen";
 export const LAUNCH_RADAR_OPEN_EVENT = "better-fullstack:launch-radar-open";
 
@@ -14,6 +14,28 @@ export const NEW_OPTION_IDS_BY_CATEGORY = {
   codeQuality: ["eslint", "prettier"],
   appShells: ["electron", "tauri", "capacitor", "pwa", "wxt", "opentui"],
   appPlatforms: ["axios", "firebase", "graphql-codegen", "openapi-typescript", "apollo-client"],
+  mobileLibraries: [
+    "expo-sqlite",
+    "expo-camera",
+    "expo-image-picker",
+    "expo-location",
+    "expo-sensors",
+    "expo-file-system",
+    "expo-image",
+    "expo-audio",
+    "expo-video",
+    "expo-contacts",
+    "expo-calendar",
+    "expo-local-authentication",
+    "expo-sharing",
+    "expo-clipboard",
+    "expo-task-manager",
+    "expo-background-task",
+    "expo-maps",
+    "expo-brightness",
+    "expo-battery",
+    "expo-screen-capture",
+  ],
   ai: ["openai-sdk", "anthropic-sdk"],
   realtime: ["ws"],
   testing: ["mocha"],
@@ -55,6 +77,63 @@ export const NEW_OPTION_IDS_BY_CATEGORY = {
   elixirDocumentation: ["ex_doc"],
   elixirClustering: ["libcluster"],
   elixirLibraries: ["ex_aws", "floki", "rustler"],
+  pythonWebFramework: ["aiohttp", "streamlit"],
+  pythonOrm: ["pymongo"],
+  pythonAi: ["pytorch", "transformers", "scikit-learn", "tensorflow", "mcp"],
+  pythonAuth: ["pyjwt"],
+  pythonTesting: ["pytest-cov"],
+  pythonObservability: ["prometheus-client"],
+  pythonCloudSdk: ["boto3"],
+  pythonHttpClient: ["requests"],
+  pythonData: ["numpy", "pandas", "scipy"],
+  pythonMedia: ["pillow"],
+  pythonServer: ["gunicorn"],
+  pythonPackageManager: ["poetry"],
+  pythonMessageQueue: ["confluent-kafka"],
+  javaLibraries: [
+    "spring-data-redis",
+    "spring-data-mongodb",
+    "spring-data-elasticsearch",
+    "spring-data-neo4j",
+    "spring-data-cassandra",
+    "spring-data-couchbase",
+    "spring-data-jdbc",
+    "spring-data-rest",
+    "spring-quartz",
+    "spring-pulsar",
+    "spring-integration",
+    "spring-websocket",
+    "spring-rsocket",
+    "spring-hateoas",
+    "spring-session-redis",
+    "spring-session-jdbc",
+    "spring-ldap",
+    "spring-oauth2-client",
+    "spring-saml2",
+    "spring-restclient",
+  ],
+  dotnetLibraries: [
+    "automapper",
+    "mediatr",
+    "fastendpoints",
+    "api-versioning",
+    "scalar",
+    "polly",
+    "masstransit",
+    "rebus",
+    "coravel",
+    "magic-onion",
+    "prometheus-net",
+    "seq",
+    "application-insights",
+    "sentry",
+    "mongodb-driver",
+    "nhibernate",
+    "mapster",
+    "scrutor",
+    "refit",
+    "fluent-email",
+  ],
 } as const satisfies Record<string, readonly string[]>;
 
 type NewOptionCategory = keyof typeof NEW_OPTION_IDS_BY_CATEGORY;
@@ -64,7 +143,7 @@ const NEW_OPTION_LOOKUP = new Map<string, ReadonlySet<string>>(
 );
 
 export type LaunchRadarGroup = {
-  id: "typescript" | "rust" | "go" | "elixir";
+  id: "typescript" | "rust" | "python" | "go" | "java" | "elixir" | "dotnet";
   name: string;
   count: number;
   accent: string;
@@ -88,6 +167,7 @@ const TYPESCRIPT_CATEGORIES = [
   "codeQuality",
   "appShells",
   "appPlatforms",
+  "mobileLibraries",
   "ai",
   "realtime",
   "testing",
@@ -104,6 +184,21 @@ const RUST_CATEGORIES = [
   "rustObservability",
   "rustTemplating",
 ] as const;
+const PYTHON_CATEGORIES = [
+  "pythonWebFramework",
+  "pythonOrm",
+  "pythonAi",
+  "pythonAuth",
+  "pythonTesting",
+  "pythonObservability",
+  "pythonCloudSdk",
+  "pythonHttpClient",
+  "pythonData",
+  "pythonMedia",
+  "pythonServer",
+  "pythonPackageManager",
+  "pythonMessageQueue",
+] as const;
 const GO_CATEGORIES = [
   "goWebFramework",
   "goOrm",
@@ -119,6 +214,7 @@ const GO_CATEGORIES = [
   "goProtoTooling",
   "goDI",
 ] as const;
+const JAVA_CATEGORIES = ["javaLibraries"] as const;
 const ELIXIR_CATEGORIES = [
   "elixirOrm",
   "elixirAuth",
@@ -136,6 +232,7 @@ const ELIXIR_CATEGORIES = [
   "elixirClustering",
   "elixirLibraries",
 ] as const;
+const DOTNET_CATEGORIES = ["dotnetLibraries"] as const;
 
 export const LAUNCH_RADAR_GROUPS: readonly LaunchRadarGroup[] = [
   {
@@ -144,9 +241,9 @@ export const LAUNCH_RADAR_GROUPS: readonly LaunchRadarGroup[] = [
     count: countCategories(TYPESCRIPT_CATEGORIES),
     accent: "#18D5FF",
     description:
-      "New frontends, desktop and mobile shells, SDKs, GraphQL tooling, payments, testing, and code quality.",
+      "New frontends, desktop and mobile shells, Expo modules, SDKs, GraphQL tooling, payments, testing, and code quality.",
     categories: TYPESCRIPT_CATEGORIES,
-    featuredOptionIds: ["vue", "vanilla-vite", "electron", "apollo-client", "openai-sdk", "paypal"],
+    featuredOptionIds: ["vue", "electron", "expo-camera", "apollo-client", "openai-sdk", "paypal"],
   },
   {
     id: "rust",
@@ -157,6 +254,16 @@ export const LAUNCH_RADAR_GROUPS: readonly LaunchRadarGroup[] = [
       "Yew joins Warp and Salvo alongside new data, auth, messaging, observability, and test tooling.",
     categories: RUST_CATEGORIES,
     featuredOptionIds: ["yew", "warp", "salvo", "mongodb", "jsonrpsee", "cargo-nextest"],
+  },
+  {
+    id: "python",
+    name: "Python",
+    count: countCategories(PYTHON_CATEGORIES),
+    accent: "#FFD43B",
+    description:
+      "New async and data apps, plus ML, cloud, metrics, Kafka, packaging, and production serving.",
+    categories: PYTHON_CATEGORIES,
+    featuredOptionIds: ["streamlit", "pytorch", "transformers", "numpy", "pymongo", "mcp"],
   },
   {
     id: "go",
@@ -176,6 +283,23 @@ export const LAUNCH_RADAR_GROUPS: readonly LaunchRadarGroup[] = [
     ],
   },
   {
+    id: "java",
+    name: "Java",
+    count: countCategories(JAVA_CATEGORIES),
+    accent: "#F97316",
+    description:
+      "A deeper Spring toolbox spanning data stores, messaging, realtime, sessions, security, and resilient HTTP.",
+    categories: JAVA_CATEGORIES,
+    featuredOptionIds: [
+      "spring-data-mongodb",
+      "spring-quartz",
+      "spring-pulsar",
+      "spring-websocket",
+      "spring-oauth2-client",
+      "spring-restclient",
+    ],
+  },
+  {
     id: "elixir",
     name: "Elixir",
     count: countCategories(ELIXIR_CATEGORIES),
@@ -184,6 +308,23 @@ export const LAUNCH_RADAR_GROUPS: readonly LaunchRadarGroup[] = [
       "A broader Phoenix toolbox spanning data, auth, OpenAPI, caching, quality, clustering, and native extensions.",
     categories: ELIXIR_CATEGORIES,
     featuredOptionIds: ["ash", "bandit", "open_api_spex", "sentry", "libcluster", "rustler"],
+  },
+  {
+    id: "dotnet",
+    name: ".NET",
+    count: countCategories(DOTNET_CATEGORIES),
+    accent: "#8B5CF6",
+    description:
+      "Twenty production-ready additions spanning endpoints, messaging, observability, data access, mapping, and email.",
+    categories: DOTNET_CATEGORIES,
+    featuredOptionIds: [
+      "fastendpoints",
+      "polly",
+      "masstransit",
+      "magic-onion",
+      "application-insights",
+      "mongodb-driver",
+    ],
   },
 ];
 
@@ -194,8 +335,8 @@ export const LAUNCH_RADAR_TOTAL = LAUNCH_RADAR_GROUPS.reduce(
 
 const FEATURED_OPTION_LABELS: Readonly<Record<string, string>> = {
   vue: "Vue",
-  "vanilla-vite": "Vanilla Vite",
   electron: "Electron",
+  "expo-camera": "Expo Camera",
   "apollo-client": "Apollo Client",
   "openai-sdk": "OpenAI SDK",
   paypal: "PayPal",
@@ -205,18 +346,36 @@ const FEATURED_OPTION_LABELS: Readonly<Record<string, string>> = {
   mongodb: "MongoDB",
   jsonrpsee: "jsonrpsee",
   "cargo-nextest": "cargo-nextest",
+  streamlit: "Streamlit",
+  pytorch: "PyTorch",
+  transformers: "Transformers",
+  numpy: "NumPy",
+  pymongo: "PyMongo",
+  mcp: "MCP Python SDK",
   "go-zero": "go-zero",
   kratos: "Kratos",
   "connect-go": "Connect",
   testcontainers: "Testcontainers",
   "kafka-go": "kafka-go",
   "golangci-lint": "golangci-lint",
+  "spring-data-mongodb": "Spring Data MongoDB",
+  "spring-quartz": "Quartz Scheduler",
+  "spring-pulsar": "Spring for Apache Pulsar",
+  "spring-websocket": "Spring WebSocket",
+  "spring-oauth2-client": "Spring OAuth2 Client",
+  "spring-restclient": "Spring REST Client",
   ash: "Ash",
   bandit: "Bandit",
   open_api_spex: "OpenApiSpex",
   sentry: "Sentry",
   libcluster: "libcluster",
   rustler: "Rustler",
+  fastendpoints: "FastEndpoints",
+  polly: "Polly",
+  masstransit: "MassTransit",
+  "magic-onion": "MagicOnion",
+  "application-insights": "Application Insights",
+  "mongodb-driver": "MongoDB Driver",
 };
 
 export function getLaunchRadarOptionLabel(optionId: string): string {
