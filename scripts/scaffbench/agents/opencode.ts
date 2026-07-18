@@ -43,6 +43,11 @@ export function runOpencode(input: {
       );
     }
     const effortArgs = input.effort === "default" ? [] : ["--variant", input.effort];
+    // Harness-side disambiguation prefix: `kilocode/<id>` means "drive the Kilo
+    // binary with <id>" (e.g. kilocode/openai/gpt-5.6-luna → Kilo's OpenAI
+    // oauth), distinct from Kilo's own credit-gated `kilo/*` catalog ids which
+    // pass through unchanged.
+    const modelId = input.model.replace(/^kilocode\//i, "");
     return yield* runCommand(
       input.binary,
       [
@@ -55,7 +60,7 @@ export function runOpencode(input: {
         // --dangerously-skip-permissions and codex's --full-auto.
         "--dangerously-skip-permissions",
         "-m",
-        input.model,
+        modelId,
         ...effortArgs,
         "--dir",
         input.cwd,

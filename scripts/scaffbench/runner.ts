@@ -24,11 +24,13 @@ import {
   parseClaudeResult,
   parseCodexResult,
   parseOpencodeResult,
+  parsePiResult,
   providerForModel,
   runAgy,
   runClaude,
   runCodex,
   runOpencode,
+  runPi,
   tail,
 } from "@/agents";
 import { calibrationOptions, calibrationVerdict, formatCalibrationVerdict } from "@/calibrate";
@@ -290,26 +292,28 @@ function runOneGeneration(input: {
           })
         : provider === "agy"
           ? yield* runAgy({ cwd: workDir, prompt, model: options.model, effort, timeoutMs })
-          : provider === "opencode" || provider === "kilo"
-            ? yield* runOpencode({
-                binary: provider,
-                cwd: workDir,
-                prompt,
-                model: options.model,
-                effort,
-                useMcp: pathMode === "mcp",
-                bunx: input.bunx,
-                timeoutMs,
-              })
-            : yield* runClaude({
-                cwd: workDir,
-                prompt,
-                model: options.model,
-                effort,
-                maxBudgetUsd: options.maxBudgetUsd,
-                mcpConfig: pathMode === "mcp" ? input.bfsMcpPath : input.emptyMcpPath,
-                timeoutMs,
-              });
+          : provider === "pi"
+            ? yield* runPi({ cwd: workDir, prompt, model: options.model, effort, timeoutMs })
+            : provider === "opencode" || provider === "kilo"
+              ? yield* runOpencode({
+                  binary: provider,
+                  cwd: workDir,
+                  prompt,
+                  model: options.model,
+                  effort,
+                  useMcp: pathMode === "mcp",
+                  bunx: input.bunx,
+                  timeoutMs,
+                })
+              : yield* runClaude({
+                  cwd: workDir,
+                  prompt,
+                  model: options.model,
+                  effort,
+                  maxBudgetUsd: options.maxBudgetUsd,
+                  mcpConfig: pathMode === "mcp" ? input.bfsMcpPath : input.emptyMcpPath,
+                  timeoutMs,
+                });
     const finished = yield* Effect.clockWith((clock) => clock.currentTimeMillis);
     const durationMs = finished - started;
 
@@ -321,9 +325,11 @@ function runOneGeneration(input: {
         ? parseCodexResult(agentResult.stdout, options.model)
         : provider === "agy"
           ? parseAgyResult(agentResult.stdout)
-          : provider === "opencode" || provider === "kilo"
-            ? parseOpencodeResult(agentResult.stdout)
-            : parseClaudeResult(agentResult.stdout);
+          : provider === "pi"
+            ? parsePiResult(agentResult.stdout)
+            : provider === "opencode" || provider === "kilo"
+              ? parseOpencodeResult(agentResult.stdout)
+              : parseClaudeResult(agentResult.stdout);
     const generatedDir = yield* fromPromise(() => findProjectDir(workDir, projectName));
     const validation = options.skipValidation
       ? {
@@ -519,26 +525,34 @@ function repairFailedResults(input: {
                     effort: result.effort,
                     timeoutMs,
                   })
-                : repairProvider === "opencode" || repairProvider === "kilo"
-                  ? yield* runOpencode({
-                      binary: repairProvider,
+                : repairProvider === "pi"
+                  ? yield* runPi({
                       cwd: result.projectDir,
                       prompt,
                       model: result.model,
                       effort: result.effort,
-                      useMcp: false,
-                      bunx: input.bunx,
                       timeoutMs,
                     })
-                  : yield* runClaude({
-                      cwd: result.projectDir,
-                      prompt,
-                      model: result.model,
-                      effort: result.effort,
-                      maxBudgetUsd: input.options.maxBudgetUsd,
-                      mcpConfig: input.emptyMcpPath,
-                      timeoutMs,
-                    });
+                  : repairProvider === "opencode" || repairProvider === "kilo"
+                    ? yield* runOpencode({
+                        binary: repairProvider,
+                        cwd: result.projectDir,
+                        prompt,
+                        model: result.model,
+                        effort: result.effort,
+                        useMcp: false,
+                        bunx: input.bunx,
+                        timeoutMs,
+                      })
+                    : yield* runClaude({
+                        cwd: result.projectDir,
+                        prompt,
+                        model: result.model,
+                        effort: result.effort,
+                        maxBudgetUsd: input.options.maxBudgetUsd,
+                        mcpConfig: input.emptyMcpPath,
+                        timeoutMs,
+                      });
           const finished = yield* Effect.clockWith((clock) => clock.currentTimeMillis);
           yield* fs.writeFileString(
             path.join(result.runDir, "repair.stdout.json"),
@@ -554,9 +568,11 @@ function repairFailedResults(input: {
               ? parseCodexResult(agentResult.stdout, result.model)
               : repairProvider === "agy"
                 ? parseAgyResult(agentResult.stdout)
-                : repairProvider === "opencode" || repairProvider === "kilo"
-                  ? parseOpencodeResult(agentResult.stdout)
-                  : parseClaudeResult(agentResult.stdout);
+                : repairProvider === "pi"
+                  ? parsePiResult(agentResult.stdout)
+                  : repairProvider === "opencode" || repairProvider === "kilo"
+                    ? parseOpencodeResult(agentResult.stdout)
+                    : parseClaudeResult(agentResult.stdout);
           const accounting = {
             exitCode: agentResult.exitCode,
             timedOut: agentResult.timedOut,
@@ -933,12 +949,7 @@ export function buildRunId(
   return `${base}-r${String(trial).padStart(2, "0")}`;
 }
 
-function legacyRunId(
-  spec: BenchmarkSpec,
-  model: string,
-  effort: Effort,
-  pathMode: CreationPath,
-) {
+function legacyRunId(spec: BenchmarkSpec, model: string, effort: Effort, pathMode: CreationPath) {
   return `${spec.id}-${model}-${effort}-${pathMode}`;
 }
 
@@ -964,7 +975,8 @@ export function assertResumeProtocol(input: {
 }) {
   const protocolChanged =
     input.recorded !== undefined &&
-    (input.recorded.repeats !== input.current.repeats || input.recorded.seed !== input.current.seed);
+    (input.recorded.repeats !== input.current.repeats ||
+      input.recorded.seed !== input.current.seed);
   if (!protocolChanged) return;
 
   const aligned = input.results.every((result) => {

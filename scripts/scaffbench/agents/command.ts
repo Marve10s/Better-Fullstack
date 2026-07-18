@@ -29,7 +29,7 @@ export type RunCommandOptions = {
   env?: Record<string, string>;
 };
 
-export type IdleCapableAdapter = "claude" | "codex" | "opencode" | "kilo" | "agy";
+export type IdleCapableAdapter = "claude" | "codex" | "opencode" | "kilo" | "agy" | "pi";
 
 /** Idle enforcement is safe only when the adapter emits streaming JSONL. agy
  * buffers its response until completion, so silence is not evidence of a stall. */
@@ -268,6 +268,9 @@ function streamEventActivity(line: string, receivedAtMs: number) {
     opencodeTool && /^(?:completed|failed|error|cancelled)$/.test(opencodeStatus)
       ? [opencodeId]
       : [];
+  const piId = String(event?.toolCallId ?? "pi:anonymous");
+  const piStarts = event?.type === "tool_execution_start" ? [piId] : [];
+  const piCompletions = event?.type === "tool_execution_end" ? [piId] : [];
   const codexProgress =
     /^(item\.(started|completed)|tool\.)/.test(event?.type ?? "") &&
     /command|file|mcp_tool|tool/.test(event?.item?.type ?? event?.type ?? "");
@@ -276,7 +279,8 @@ function streamEventActivity(line: string, receivedAtMs: number) {
     claudeCompletions.length > 0 ||
     codexCompletions.length > 0 ||
     codexProgress ||
-    ["tool", "file", "patch"].includes(part?.type);
+    ["tool", "file", "patch"].includes(part?.type) ||
+    /^tool_execution_(?:start|update|end)$/.test(event?.type ?? "");
   if (!progress) return empty;
 
   const raw = event.timestamp ?? event.time ?? event.created_at ?? event.createdAt;
@@ -288,8 +292,13 @@ function streamEventActivity(line: string, receivedAtMs: number) {
   }
   return {
     progressAtMs,
-    startedToolIds: [...claudeStarts, ...codexStarts, ...opencodeStarts],
-    completedToolIds: [...claudeCompletions, ...codexCompletions, ...opencodeCompletions],
+    startedToolIds: [...claudeStarts, ...codexStarts, ...opencodeStarts, ...piStarts],
+    completedToolIds: [
+      ...claudeCompletions,
+      ...codexCompletions,
+      ...opencodeCompletions,
+      ...piCompletions,
+    ],
   };
 }
 

@@ -6,6 +6,13 @@ export { runAgy, parseAgyResult } from "@/agents/agy";
 export { runOpencode, parseOpencodeResult } from "@/agents/opencode";
 export { runKilo } from "@/agents/kilo";
 export {
+  runPi,
+  parsePiResult,
+  piCommandArgs,
+  piProviderAndModel,
+  piThinkingArgs,
+} from "@/agents/pi";
+export {
   agentRunCommandOptions,
   runCommand,
   quoteArg,

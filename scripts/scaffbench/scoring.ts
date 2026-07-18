@@ -360,6 +360,11 @@ export function extractToolUses(stdout: string): { name: string; command?: strin
           : undefined;
       uses.push({ name: event.part.tool, command });
     }
+    // Pi JSONL: execution starts carry the stable tool name and finalized args.
+    if (event?.type === "tool_execution_start" && typeof event.toolName === "string") {
+      const command = typeof event.args?.command === "string" ? event.args.command : undefined;
+      uses.push({ name: event.toolName, command });
+    }
   }
   return uses;
 }
@@ -505,10 +510,7 @@ export function qualityPassed(result: RunResult) {
 const BUDGET_TERMINAL_REASON = /budget|cost[_-]?limit|max[_-]?cost|spend/i;
 
 export function isBudgetExhausted(result: RunResult) {
-  if (
-    result.claude.terminalReason &&
-    BUDGET_TERMINAL_REASON.test(result.claude.terminalReason)
-  ) {
+  if (result.claude.terminalReason && BUDGET_TERMINAL_REASON.test(result.claude.terminalReason)) {
     return true;
   }
   const policy = result.budgetPolicy;
@@ -573,7 +575,7 @@ export function scoredOutcome(result: RunResult) {
 function hasProviderInfraEvidence(result: RunResult) {
   if (result.validation.projectExists) return false;
   const reason = `${result.claude.terminalReason ?? ""}\n${result.claude.stderrTail ?? ""}`;
-  if (/opencode-unknown-zero-usage-no-tools/.test(reason) && !result.claude.outputTokens) {
+  if (/(?:opencode-unknown|pi)-zero-usage-no-tools/.test(reason) && !result.claude.outputTokens) {
     return true;
   }
   const providerWithError =

@@ -36,6 +36,7 @@ import {
   parseCodexResult,
   parseOpencodeResult,
   progressEventTime,
+  providerForModel,
   publicationEligibility,
   qualityPassed,
   repairPromptFor,
@@ -778,4 +779,10 @@ describe("ScaffBench hardening 6: opt-in batch-4 features", () => {
     expect(rows.find((row) => row.spec === "floor")?.flag).toBe("floor");
     expect(rows.find((row) => row.spec === "spread")?.spread).toBe(100);
   });
+});
+
+it("routes kilocode/ ids to the kilo binary with the prefix stripped at invocation", () => {
+  expect(providerForModel("kilocode/openai/gpt-5.6-luna")).toBe("kilo");
+  expect(providerForModel("kilo/openai/gpt-5.6-luna")).toBe("kilo");
+  expect(providerForModel("openai/gpt-5.6-luna")).toBe("opencode");
 });
