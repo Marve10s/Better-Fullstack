@@ -1,4 +1,6 @@
-import { AlertTriangle, Loader2, FolderTree, FileCode2, Info, ChevronLeft } from "lucide-react";
+import type { PreflightWarning } from "@better-fullstack/template-generator/browser";
+
+import { AlertTriangle, ChevronLeft, FileCode2, FolderTree, Info, Loader2 } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 
 import type { StackState } from "@/lib/constant";
@@ -7,8 +9,6 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip
 import { stackStateToProjectConfig } from "@/lib/preview-config";
 import { cn } from "@/lib/utils";
 import * as m from "@/paraglide/messages";
-
-import type { PreflightWarning } from "@better-fullstack/template-generator/browser";
 
 import { CodeViewer, CodeViewerEmpty } from "./code-viewer";
 import { FileExplorer, type VirtualFile, type VirtualDirectory } from "./file-explorer";
@@ -136,7 +136,10 @@ export function PreviewPanel({ stack, selectedFilePath, onSelectFile }: PreviewP
 
   if (error && !tree) {
     return (
-      <div data-testid="preview-error" className="flex h-full items-center justify-center text-destructive">
+      <div
+        data-testid="preview-error"
+        className="flex h-full items-center justify-center text-destructive"
+      >
         <p className="text-sm">{error}</p>
       </div>
     );
@@ -144,7 +147,10 @@ export function PreviewPanel({ stack, selectedFilePath, onSelectFile }: PreviewP
 
   if (!tree) {
     return (
-      <div data-testid="preview-pending" className="flex h-full items-center justify-center text-muted-foreground">
+      <div
+        data-testid="preview-pending"
+        className="flex h-full items-center justify-center text-muted-foreground"
+      >
         <p className="text-sm">{m.builderPreviewGenerating()}</p>
       </div>
     );
