@@ -42,6 +42,9 @@ export type ScaffbenchCell = {
   passAll?: boolean;
   qualityPassCount?: number | null;
   qualityPassRate?: number | null;
+  /** mean lines of code the model wrote per scaffold (lockfiles/binaries
+   *  excluded); null/absent on rows benched before the metric landed. */
+  lines?: number | null;
   costUsd: number | null;
   outTokens: number | null;
   steps: number;
