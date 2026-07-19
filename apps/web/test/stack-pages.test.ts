@@ -54,6 +54,14 @@ describe("programmatic stack pages", () => {
     }
   });
 
+  it("removes inert TypeScript defaults from non-TypeScript commands and URLs", () => {
+    for (const page of pages.filter((candidate) => candidate.ecosystem !== "typescript")) {
+      expect(page.command).not.toContain("--auth better-auth");
+      expect(page.builderUrl).not.toContain("auth=better-auth");
+      expect(page.selection.auth).toBe("none");
+    }
+  });
+
   it("filters inert cross-ecosystem parts before graph validation for Rust", () => {
     const page = getStackPage("rust-axum-leptos-seaorm");
     expect(page).toBeDefined();

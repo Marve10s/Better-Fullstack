@@ -1287,7 +1287,7 @@ function getInstallCommand(config: ProjectConfig): string {
     case "rust":
       return "cargo build";
     case "python":
-      return "uv sync";
+      return "uv sync --extra dev";
     case "go":
       return "go mod tidy";
     case "java":

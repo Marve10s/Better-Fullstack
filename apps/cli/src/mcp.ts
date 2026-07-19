@@ -414,7 +414,8 @@ function getInstallCommand(
       if (pythonPackageManager === "poetry")
         return `cd ${projectName} && poetry install --extras dev`;
       if (pythonPackageManager === "none") {
-        return `cd ${projectName} && python -m venv .venv && pip install -e .`;
+        const pip = process.platform === "win32" ? ".venv/Scripts/pip.exe" : ".venv/bin/pip";
+        return `cd ${projectName} && python -m venv .venv && ${pip} install -e ".[dev]"`;
       }
       return `cd ${projectName} && uv sync --extra dev`;
     case "go":
@@ -912,7 +913,7 @@ const GETTING_STARTED_MD = `# Getting Started with Better-Fullstack MCP
    - pythonOrm: "sqlalchemy"
    - email: "resend" (optional)
    - observability: "sentry" (optional)
-2. Tell the user to run: cd my-python-app && uv sync
+2. Tell the user to run: cd my-python-app && uv sync --extra dev
 
 ## Quick Start — Go Project
 1. Call bfs_create_project with:

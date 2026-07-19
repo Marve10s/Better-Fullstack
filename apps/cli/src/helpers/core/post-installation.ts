@@ -1402,7 +1402,7 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
     pythonPackageManager === "poetry"
       ? "poetry install --extras dev"
       : pythonPackageManager === "uv"
-        ? "uv sync"
+        ? "uv sync --extra dev"
         : `python -m venv .venv && ${venvBin}pip install -e ".[dev]"`;
 
   // Determine run command based on framework

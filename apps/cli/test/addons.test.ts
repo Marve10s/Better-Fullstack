@@ -524,6 +524,40 @@ describe("Addon Configurations", () => {
         expect(compose).toContain("PORT=8000");
       });
 
+      it("should run Streamlit on the Python compose port", async () => {
+        const result = await runTRPCTest({
+          projectName: "docker-compose-python-streamlit",
+          ecosystem: "python",
+          addons: ["docker-compose"],
+          pythonWebFramework: "streamlit",
+          pythonOrm: "none",
+          pythonValidation: "none",
+          pythonAi: [],
+          pythonAuth: "none",
+          pythonApi: "none",
+          pythonTaskQueue: "none",
+          pythonGraphql: "none",
+          pythonQuality: "ruff",
+          pythonTesting: [],
+          pythonCaching: "none",
+          pythonRealtime: "none",
+          pythonObservability: "none",
+          pythonCli: [],
+          install: false,
+        });
+
+        expectSuccess(result);
+        expect(result.projectDir).toBeDefined();
+
+        const dockerfile = readFileSync(join(result.projectDir!, "Dockerfile"), "utf8");
+        const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
+
+        expect(dockerfile).toContain(
+          'CMD ["streamlit", "run", "src/app/main.py", "--server.address", "0.0.0.0", "--server.port", "8000"]',
+        );
+        expect(compose).toContain('      - "8000:8000"');
+      });
+
       it("should wire Postgres for Python ORM projects when selected", async () => {
         const result = await runTRPCTest({
           projectName: "docker-compose-python-postgres",

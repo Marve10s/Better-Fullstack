@@ -159,7 +159,7 @@ async function generateBasePage(
   }
 
   const effectiveSelection = compatibilityAdjustedSelection(normalizedSelection, seed);
-  const projectName = normalizedSelection.projectName ?? "my-app";
+  const projectName = effectiveSelection.projectName ?? "my-app";
   const config = ProjectConfigSchema.parse(
     stackSelectionToProjectConfig(effectiveSelection, {
       projectDir: `/virtual/${projectName}`,
@@ -170,7 +170,7 @@ async function generateBasePage(
   const legacyParts = legacyProjectConfigToStackParts(config);
   const ecosystemParts = filterStackPartsForSelectedEcosystem(
     legacyParts,
-    normalizedSelection.ecosystem,
+    effectiveSelection.ecosystem,
   );
   const graphValidation = validateStackParts(ecosystemParts);
   if (graphValidation.issues.length) {
@@ -185,16 +185,16 @@ async function generateBasePage(
   }
 
   const canonicalParts = deriveCanonicalParts(
-    normalizedSelection,
+    effectiveSelection,
     ecosystemParts,
     seed,
   );
   const architecture = deriveArchitecture(
-    normalizedSelection,
+    effectiveSelection,
     canonicalParts,
     ecosystemParts,
   );
-  const params = createStackSelectionSearchParams(normalizedSelection);
+  const params = createStackSelectionSearchParams(effectiveSelection);
   const files = collectFiles(generated.tree.root).sort();
   const topLevelEntries = generated.tree.root.children.map((node) => node.name).sort();
   const labels = canonicalParts
@@ -209,13 +209,13 @@ async function generateBasePage(
     priority: seed.priority,
     primaryKeyword: seed.primaryKeyword,
     keywordAliases: [...seed.keywordAliases],
-    ecosystem: normalizedSelection.ecosystem,
+    ecosystem: effectiveSelection.ecosystem,
     title: seed.primaryKeyword,
     description,
-    selection: normalizedSelection,
+    selection: effectiveSelection,
     canonicalParts,
     architecture,
-    command: generateStackSelectionCommand(normalizedSelection),
+    command: generateStackSelectionCommand(effectiveSelection),
     builderUrl: `/new?${params.toString()}`,
     meaningfulParameters: [...params.entries()].map(([key, value]) => ({ key, value })),
     output: {
@@ -232,7 +232,7 @@ async function generateBasePage(
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
       typesPackageVersion,
-      constraints: deriveCompatibilityConstraints(normalizedSelection, seed),
+      constraints: deriveCompatibilityConstraints(effectiveSelection, seed),
       runtimeVerified: false,
     },
     relatedSlugs: [],

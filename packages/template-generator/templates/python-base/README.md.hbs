@@ -13,9 +13,13 @@ poetry install --extras dev
 uv sync --extra dev
 {{else}}
 python -m venv .venv
-pip install -e .
+.venv/bin/pip install -e ".[dev]"
 {{/if}}
 ```
+{{#if (eq pythonPackageManager "none")}}
+
+On Windows, use `.venv\Scripts\pip.exe install -e ".[dev]"` for the second command.
+{{/if}}
 
 Run the application:
 

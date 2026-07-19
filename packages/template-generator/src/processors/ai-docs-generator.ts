@@ -433,18 +433,20 @@ function generateCommandsSection(config: ProjectConfig): string {
     lines.push(`- \`cargo fmt\` - Format code`);
   } else if (config.ecosystem === "python") {
     const pythonPackageManager = config.pythonPackageManager ?? "uv";
+    const venvBin = process.platform === "win32" ? ".venv\\Scripts\\" : ".venv/bin/";
+    const venvPip = process.platform === "win32" ? ".venv/Scripts/pip.exe" : ".venv/bin/pip";
     const pythonRun =
       pythonPackageManager === "poetry"
         ? "poetry run "
         : pythonPackageManager === "uv"
           ? "uv run "
-          : "";
+          : venvBin;
     const pythonInstall =
       pythonPackageManager === "poetry"
         ? "poetry install --extras dev"
         : pythonPackageManager === "uv"
           ? "uv sync --extra dev"
-          : "python -m venv .venv && pip install -e .";
+          : `python -m venv .venv && ${venvPip} install -e ".[dev]"`;
     lines.push(`- \`${pythonInstall}\` - Install dependencies`);
     if (config.pythonWebFramework === "fastapi") {
       lines.push(`- \`${pythonRun}uvicorn app.main:app --reload\` - Start dev server`);

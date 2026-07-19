@@ -263,6 +263,13 @@ dev = [
 {{/if}}
 {{#if (eq pythonQuality "mypy")}}
     "mypy>=1.20.2",
+{{#if (eq pythonHttpClient "requests")}}
+    "types-requests>=2.32.0",
+{{/if}}
+{{#if (includes pythonData "pandas")}}
+    "pandas-stubs>=2.2.3",
+    "numpy<2.5",
+{{/if}}
 {{/if}}
 {{#if (eq pythonQuality "pyright")}}
     "pyright>=1.1.409",
@@ -279,7 +286,7 @@ dev = [
     "httpx>=0.28.0",
 {{/if}}
 {{#if (eq pythonWebFramework "starlette")}}
-    "httpx2>=2.0.0",
+    "httpx>=0.27.0",
 {{/if}}
 ]
 
@@ -336,6 +343,12 @@ warn_return_any = true
 warn_unused_configs = true
 check_untyped_defs = true
 files = ["src/app", "tests"]
+{{#if (eq pythonCloudSdk "boto3")}}
+
+[[tool.mypy.overrides]]
+module = ["boto3", "boto3.*", "botocore", "botocore.*"]
+ignore_missing_imports = true
+{{/if}}
 {{/if}}
 
 {{#if (eq pythonQuality "pyright")}}

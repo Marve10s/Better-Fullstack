@@ -1612,20 +1612,22 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
   // Graph-derived and legacy configs may omit this recently introduced field.
   // Keep generated docs aligned with the CLI's canonical Python default.
   const pythonPackageManager = configuredPythonPackageManager ?? "uv";
+  const venvBin = process.platform === "win32" ? ".venv\\Scripts\\" : ".venv/bin/";
+  const venvPip = process.platform === "win32" ? ".venv/Scripts/pip.exe" : ".venv/bin/pip";
 
   const runPrefix =
     pythonPackageManager === "poetry"
       ? "poetry run "
       : pythonPackageManager === "uv"
         ? "uv run "
-        : "";
+        : venvBin;
   const runCommand = (command: string) => `${runPrefix}${command}`;
   const installCommand =
     pythonPackageManager === "poetry"
       ? "poetry install --extras dev"
       : pythonPackageManager === "uv"
         ? "uv sync --extra dev"
-        : "python -m venv .venv && pip install -e .";
+        : `python -m venv .venv && ${venvPip} install -e ".[dev]"`;
 
   const features: string[] = ["- **Python** - Modern, readable programming language"];
 

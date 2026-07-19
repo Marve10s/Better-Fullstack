@@ -12,6 +12,10 @@ from typing import Annotated
 {{/if}}
 
 {{/if}}
+{{#if (and (eq pythonWebFramework "litestar") (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt"))))}}
+from typing import Annotated
+
+{{/if}}
 from dotenv import load_dotenv
 
 {{#if (eq observability "sentry")}}
@@ -19,7 +23,7 @@ from app.observability import init_sentry
 
 {{/if}}
 {{#if (eq pythonWebFramework "fastapi")}}
-from fastapi import {{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel"))}}Depends, {{/if}}FastAPI{{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel"))}}, HTTPException{{/if}}{{#if (eq pythonOrm "tortoise-orm")}}, HTTPException{{/if}}{{#if (and (eq pythonOrm "none") (or (eq pythonValidation "pydantic") (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))))}}, HTTPException{{/if}}
+from fastapi import {{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel"))}}Depends, {{/if}}FastAPI{{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel") (eq pythonOrm "tortoise-orm") (and (eq pythonOrm "none") (eq pythonValidation "pydantic")) (eq pythonAuth "authlib") (eq pythonAuth "jwt") (eq pythonAuth "pyjwt"))}}, HTTPException{{/if}}{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}, Header{{/if}}
 from fastapi.middleware.cors import CORSMiddleware
 {{#if (eq pythonObservability "prometheus-client")}}
 from fastapi.responses import Response
@@ -285,7 +289,7 @@ async def login(username: str = "", password: str = ""):
 
 
 @app.get("/auth/me")
-async def get_current_user(authorization: str = ""):
+async def get_current_user(authorization: str = Header(default="")):
     """Get the current authenticated user from a Bearer token."""
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Missing or invalid authorization header")
@@ -1360,6 +1364,7 @@ from app.metrics import render_metrics
 {{/if}}
 {{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}
 from litestar.exceptions import HTTPException
+from litestar.params import Parameter
 
 from app.auth import create_access_token, verify_token
 {{/if}}
@@ -1412,7 +1417,9 @@ async def auth_token(data: dict) -> dict:
 
 
 @get("/auth/me")
-async def auth_me(authorization: str = "") -> dict:
+async def auth_me(
+    authorization: Annotated[str, Parameter(header="Authorization")] = "",
+) -> dict:
     """Get current authenticated user from Bearer token."""
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Missing or invalid authorization header")

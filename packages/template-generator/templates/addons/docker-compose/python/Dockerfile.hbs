@@ -27,6 +27,8 @@ EXPOSE 8000
 
 {{#if (eq pythonWebFramework "litestar")}}
 CMD ["litestar", "--app", "app.main:app", "run", "--host", "0.0.0.0", "--port", "8000"]
+{{else if (eq pythonWebFramework "streamlit")}}
+CMD ["streamlit", "run", "src/app/main.py", "--server.address", "0.0.0.0", "--server.port", "8000"]
 {{else}}
 CMD ["python", "-m", "app.main"]
 {{/if}}

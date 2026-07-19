@@ -155,4 +155,127 @@ describe("Python library expansion", () => {
     expect(getFileContent(root, "src/app/main.py")).toContain("st.set_page_config(");
     expect(getFileContent(root, "README.md")).toContain("uv run streamlit run src/app/main.py");
   });
+
+  it("binds FastAPI and Litestar auth tokens from the Authorization header", async () => {
+    const fastapi = await createVirtual({
+      projectName: "python-fastapi-pymongo-auth",
+      ecosystem: "python",
+      database: "mongodb",
+      pythonWebFramework: "fastapi",
+      pythonOrm: "pymongo",
+      pythonValidation: "none",
+      pythonAi: [],
+      pythonAuth: "pyjwt",
+    });
+    const litestar = await createVirtual({
+      projectName: "python-litestar-auth",
+      ecosystem: "python",
+      pythonWebFramework: "litestar",
+      pythonOrm: "none",
+      pythonValidation: "none",
+      pythonAi: [],
+      pythonAuth: "pyjwt",
+    });
+
+    expect(fastapi.success).toBe(true);
+    expect(litestar.success).toBe(true);
+
+    const fastapiMain = getFileContent(fastapi.tree!.root, "src/app/main.py");
+    expect(fastapiMain).toContain("from fastapi import FastAPI, HTTPException, Header");
+    expect(fastapiMain).toContain('authorization: str = Header(default="")');
+
+    const litestarMain = getFileContent(litestar.tree!.root, "src/app/main.py");
+    expect(litestarMain).toContain("from typing import Annotated");
+    expect(litestarMain).toContain("from litestar.params import Parameter");
+    expect(litestarMain).toContain(
+      'authorization: Annotated[str, Parameter(header="Authorization")] = ""',
+    );
+  });
+
+  it("keeps the PyMongo-only FastAPI import free of unused auth exceptions", async () => {
+    const result = await createVirtual({
+      projectName: "python-fastapi-pymongo",
+      ecosystem: "python",
+      database: "mongodb",
+      pythonWebFramework: "fastapi",
+      pythonOrm: "pymongo",
+      pythonValidation: "none",
+      pythonAi: [],
+      pythonAuth: "none",
+    });
+
+    expect(result.success).toBe(true);
+    expect(getFileContent(result.tree!.root, "src/app/main.py")).toContain(
+      "from fastapi import FastAPI",
+    );
+    expect(getFileContent(result.tree!.root, "src/app/main.py")).not.toContain("HTTPException");
+  });
+
+  it("installs Starlette's real test client and mypy integration support", async () => {
+    const starlette = await createVirtual({
+      projectName: "python-starlette",
+      ecosystem: "python",
+      pythonWebFramework: "starlette",
+      pythonOrm: "none",
+      pythonValidation: "none",
+      pythonAi: [],
+      pythonAuth: "none",
+    });
+    const mypy = await createVirtual({
+      projectName: "python-mypy-integrations",
+      ecosystem: "python",
+      pythonWebFramework: "none",
+      pythonOrm: "none",
+      pythonValidation: "none",
+      pythonAi: [],
+      pythonAuth: "none",
+      pythonQuality: "mypy",
+      pythonCloudSdk: "boto3",
+      pythonHttpClient: "requests",
+      pythonData: ["pandas"],
+    });
+
+    expect(starlette.success).toBe(true);
+    expect(mypy.success).toBe(true);
+
+    const starlettePyproject = getFileContent(starlette.tree!.root, "pyproject.toml");
+    expect(starlettePyproject).toContain('"httpx>=0.27.0"');
+    expect(starlettePyproject).not.toContain("httpx2");
+
+    const mypyPyproject = getFileContent(mypy.tree!.root, "pyproject.toml");
+    expect(mypyPyproject).toContain('"types-requests>=2.32.0"');
+    expect(mypyPyproject).toContain('"pandas-stubs>=2.2.3"');
+    expect(mypyPyproject).toContain('"numpy<2.5"');
+    expect(mypyPyproject).toContain('module = ["boto3", "boto3.*", "botocore", "botocore.*"]');
+    expect(mypyPyproject).toContain("ignore_missing_imports = true");
+  });
+
+  it("documents dev-extra installation for uv and package-manager none", async () => {
+    const uv = await createVirtual({
+      projectName: "python-uv-readme",
+      ecosystem: "python",
+      pythonWebFramework: "none",
+      pythonOrm: "none",
+      pythonValidation: "none",
+      pythonAi: [],
+      pythonPackageManager: "uv",
+    });
+    const none = await createVirtual({
+      projectName: "python-none-readme",
+      ecosystem: "python",
+      pythonWebFramework: "none",
+      pythonOrm: "none",
+      pythonValidation: "none",
+      pythonAi: [],
+      pythonPackageManager: "none",
+    });
+
+    expect(uv.success).toBe(true);
+    expect(none.success).toBe(true);
+    expect(getFileContent(uv.tree!.root, "README.md")).toContain("uv sync --extra dev");
+    expect(getFileContent(none.tree!.root, "README.md")).toContain(
+      'python -m venv .venv && .venv/bin/pip install -e ".[dev]"',
+    );
+    expect(getFileContent(none.tree!.root, "README.md")).toContain(".venv/bin/pytest");
+  });
 });

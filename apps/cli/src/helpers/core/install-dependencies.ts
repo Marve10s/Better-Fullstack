@@ -112,22 +112,22 @@ export async function runCargoBuild({
 
 export async function runUvSync({ projectDir }: { projectDir: string }): Promise<SetupStepResult> {
   const s = spinner();
-  const step = "uv sync (Python dependencies)";
+  const step = "uv sync --extra dev (Python dependencies)";
 
   try {
-    s.start("Running uv sync...");
+    s.start("Running uv sync --extra dev...");
 
     await $({
       cwd: projectDir,
       stderr: "inherit",
-    })`uv sync`;
+    })`uv sync --extra dev`;
 
     s.stop("Python dependencies installed successfully");
     return { step, success: true };
   } catch (error) {
-    s.stop(pc.red("uv sync failed"));
+    s.stop(pc.red("uv sync --extra dev failed"));
     const errorMessage = toErrorMessage(error);
-    consola.error(pc.red(`uv sync error: ${errorMessage}`));
+    consola.error(pc.red(`uv sync --extra dev error: ${errorMessage}`));
     return { step, success: false, errorMessage };
   }
 }
