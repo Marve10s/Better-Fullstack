@@ -3727,7 +3727,7 @@ export default defineNuxtConfig({
     "@nuxt/ui": "^4.9.0",
     "@nuxt/content": "^3.15.0",
     "@nuxtjs/mdc": "^0.22.1",
-    "nuxt": "^4.4.8",
+    "nuxt": "4.4.8",
     "vue": "^3.5.39",
     "vue-router": "^5.1.0",
     "dotenv": "catalog:",
