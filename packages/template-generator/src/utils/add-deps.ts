@@ -14,6 +14,10 @@ type PackageJson = {
 export const dependencyVersionMap = {
   typescript: "^6.0.3",
 
+  // Exact pin: nuxt 4.5.0 needs @unhead/vue ^3 while @nuxt/ui 4.10.0 pins ^2
+  // (nitro dev/build crash). Unpin when @nuxt/ui supports nuxt 4.5.
+  nuxt: "4.4.8",
+
   // Keep Better Auth pinned until the Kysely adapter supports Kysely 0.29+
   // and the 1.6.13 adapter packages are no longer quarantined by Yarn.
   "better-auth": "^1.6.22",
