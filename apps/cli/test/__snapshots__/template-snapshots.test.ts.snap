@@ -1661,7 +1661,7 @@ export default app;
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
     "@tanstack/router-cli": "^1.167.21",
-    "@tanstack/router-plugin": "^1.168.23",
+    "@tanstack/router-plugin": "^1.168.22",
     "@types/node": "^26.1.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
@@ -3727,7 +3727,7 @@ export default defineNuxtConfig({
     "@nuxt/ui": "^4.10.0",
     "@nuxt/content": "^3.15.0",
     "@nuxtjs/mdc": "^0.22.2",
-    "nuxt": "^4.5.0",
+    "nuxt": "4.4.8",
     "vue": "^3.5.40",
     "vue-router": "^5.2.0",
     "dotenv": "catalog:",
@@ -4308,7 +4308,7 @@ app.listen(3000, () => {
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
     "@tanstack/router-cli": "^1.167.21",
-    "@tanstack/router-plugin": "^1.168.23",
+    "@tanstack/router-plugin": "^1.168.22",
     "@types/node": "catalog:",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
@@ -5102,7 +5102,7 @@ export default app;
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
     "@tanstack/router-cli": "^1.167.21",
-    "@tanstack/router-plugin": "^1.168.23",
+    "@tanstack/router-plugin": "^1.168.22",
     "@types/node": "^26.1.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
@@ -5945,7 +5945,7 @@ export default app;
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
     "@tanstack/router-cli": "^1.167.21",
-    "@tanstack/router-plugin": "^1.168.23",
+    "@tanstack/router-plugin": "^1.168.22",
     "@types/node": "^26.1.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
@@ -7025,7 +7025,7 @@ export default app;
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
     "@tanstack/router-cli": "^1.167.21",
-    "@tanstack/router-plugin": "^1.168.23",
+    "@tanstack/router-plugin": "^1.168.22",
     "@types/node": "^26.1.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
@@ -8121,7 +8121,7 @@ export default app;
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
     "@tanstack/router-cli": "^1.167.21",
-    "@tanstack/router-plugin": "^1.168.23",
+    "@tanstack/router-plugin": "^1.168.22",
     "@types/node": "^26.1.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
@@ -9030,7 +9030,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: convex-clerk 1
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
     "@tanstack/router-cli": "^1.167.21",
-    "@tanstack/router-plugin": "^1.168.23",
+    "@tanstack/router-plugin": "^1.168.22",
     "@types/node": "catalog:",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
@@ -10164,8 +10164,8 @@ exports[`Template Snapshots Key File Content Snapshots key files: self-tanstack-
     "@tanstack/react-query": "^5.101.2",
     "@tanstack/react-router": "^1.170.18",
     "@tanstack/react-router-with-query": "^1.130.17",
-    "@tanstack/react-start": "^1.168.32",
-    "@tanstack/router-plugin": "^1.168.23",
+    "@tanstack/react-start": "^1.168.30",
+    "@tanstack/router-plugin": "^1.168.22",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "vite-tsconfig-paths": "^6.1.1",
@@ -10985,7 +10985,7 @@ export default app;
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
     "@tanstack/router-cli": "^1.167.21",
-    "@tanstack/router-plugin": "^1.168.23",
+    "@tanstack/router-plugin": "^1.168.22",
     "@types/node": "^26.1.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
@@ -11717,7 +11717,7 @@ export default app;
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
     "@tanstack/router-cli": "^1.167.21",
-    "@tanstack/router-plugin": "^1.168.23",
+    "@tanstack/router-plugin": "^1.168.22",
     "@types/node": "^26.1.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
@@ -12476,7 +12476,7 @@ export default app;
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
     "@tanstack/router-cli": "^1.167.21",
-    "@tanstack/router-plugin": "^1.168.23",
+    "@tanstack/router-plugin": "^1.168.22",
     "@types/node": "^26.1.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
@@ -13262,7 +13262,7 @@ export default app;
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
     "@tanstack/router-cli": "^1.167.21",
-    "@tanstack/router-plugin": "^1.168.23",
+    "@tanstack/router-plugin": "^1.168.22",
     "@types/node": "^26.1.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
@@ -14681,7 +14681,7 @@ export default app;
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
     "@tanstack/router-cli": "^1.167.21",
-    "@tanstack/router-plugin": "^1.168.23",
+    "@tanstack/router-plugin": "^1.168.22",
     "@types/node": "^26.1.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
@@ -15477,7 +15477,7 @@ export default app;
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
     "@tanstack/router-cli": "^1.167.21",
-    "@tanstack/router-plugin": "^1.168.23",
+    "@tanstack/router-plugin": "^1.168.22",
     "@types/node": "^26.1.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
@@ -16264,7 +16264,7 @@ export default app;
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
     "@tanstack/router-cli": "^1.167.21",
-    "@tanstack/router-plugin": "^1.168.23",
+    "@tanstack/router-plugin": "^1.168.22",
     "@types/node": "^26.1.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
@@ -16939,7 +16939,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: frontend-only-
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
     "@tanstack/router-cli": "^1.167.21",
-    "@tanstack/router-plugin": "^1.168.23",
+    "@tanstack/router-plugin": "^1.168.22",
     "@types/node": "^26.1.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",

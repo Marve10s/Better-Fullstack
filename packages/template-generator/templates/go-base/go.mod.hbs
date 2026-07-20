@@ -80,6 +80,9 @@ require (
 {{#if (eq goCli "bubbletea")}}
 	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/lipgloss v1.1.0
+	// Floor for the cellbuf pseudo-version lipgloss v1 pins: golangci-lint v2.12+
+	// pulls charm.land/lipgloss/v2 → x/ansi v0.11, which old cellbuf can't compile against.
+	github.com/charmbracelet/x/cellbuf v0.0.15
 {{/if}}
 {{#if (eq goCli "urfave-cli")}}
 	github.com/urfave/cli/v3 v3.8.0

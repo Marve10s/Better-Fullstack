@@ -11,6 +11,11 @@ export type DependencyUpdatePolicy = {
  * package-manager constraints that cannot be inferred from npm's latest tag.
  */
 export const DEPENDENCY_UPDATE_POLICIES: Readonly<Record<string, DependencyUpdatePolicy>> = {
+  nuxt: {
+    pinnedVersion: "4.4.8",
+    reason:
+      "nuxt 4.5.0 requires @unhead/vue ^3 while @nuxt/ui 4.10.0 still pins ^2 — nitro dev/build crash. Exact pin; unpin when @nuxt/ui supports nuxt 4.5.",
+  },
   typescript: {
     pinnedVersion: "^6.0.3",
     reason: "TypeScript 7 currently breaks generated database package type portability (TS2883).",

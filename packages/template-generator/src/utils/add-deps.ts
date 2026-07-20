@@ -64,7 +64,7 @@ export const dependencyVersionMap = {
   "@types/ws": "^8.18.1",
   ws: "^8.21.1",
 
-  mysql2: "^3.23.1",
+  mysql2: "^3.23.0",
 
   "@prisma/client": "^7.8.0",
   prisma: "^7.8.0",
@@ -112,7 +112,7 @@ export const dependencyVersionMap = {
 
   husky: "^9.1.7",
   lefthook: "^2.1.10",
-  "lint-staged": "^17.1.0",
+  "lint-staged": "^17.0.8",
 
   tsx: "^4.23.1",
   "@types/node": "^26.1.1",
@@ -300,10 +300,10 @@ export const dependencyVersionMap = {
   "@tanstack/angular-table": "^8.21.4",
 
   // TanStack Virtual adapters
-  "@tanstack/react-virtual": "^3.14.7",
-  "@tanstack/vue-virtual": "^3.13.33",
-  "@tanstack/svelte-virtual": "^3.13.33",
-  "@tanstack/solid-virtual": "^3.13.34",
+  "@tanstack/react-virtual": "^3.14.6",
+  "@tanstack/vue-virtual": "^3.13.32",
+  "@tanstack/svelte-virtual": "^3.13.32",
+  "@tanstack/solid-virtual": "^3.13.33",
   "@tanstack/angular-virtual": "^5.0.8",
 
   // TanStack DB adapters (each adapter has its own versioning)
@@ -336,7 +336,7 @@ export const dependencyVersionMap = {
   // SST (Serverless Stack)
   sst: "^4.17.1",
   "aws-cdk-lib": "^2.261.0",
-  constructs: "^10.7.1",
+  constructs: "^10.7.0",
   "@opennextjs/aws": "^4.0.3",
 
   dotenv: "^17.4.2",
@@ -399,8 +399,8 @@ export const dependencyVersionMap = {
 
   // CSS preprocessors
   sass: "^1.101.0",
-  less: "^4.7.0",
-  "styled-components": "^6.4.4",
+  less: "^4.6.7",
+  "styled-components": "^6.4.3",
 
   // TypeScript ecosystem expansion addons
   eslint: "^10.7.0",
@@ -437,23 +437,23 @@ export const dependencyVersionMap = {
   "@paypal/paypal-server-sdk": "^2.4.0",
 
   // UI libraries
-  "@radix-ui/react-dialog": "^1.1.20",
-  "@radix-ui/react-dropdown-menu": "^2.1.21",
+  "@radix-ui/react-dialog": "^1.1.19",
+  "@radix-ui/react-dropdown-menu": "^2.1.20",
   "@radix-ui/react-slot": "^1.3.0",
-  "@radix-ui/react-label": "^2.1.12",
-  "@radix-ui/react-checkbox": "^1.3.8",
-  "@radix-ui/react-select": "^2.3.4",
-  "@radix-ui/react-toast": "^1.2.20",
-  "@radix-ui/react-popover": "^1.1.20",
-  "@radix-ui/react-switch": "^1.3.4",
-  "@radix-ui/react-tabs": "^1.1.18",
+  "@radix-ui/react-label": "^2.1.11",
+  "@radix-ui/react-checkbox": "^1.3.7",
+  "@radix-ui/react-select": "^2.3.3",
+  "@radix-ui/react-toast": "^1.2.19",
+  "@radix-ui/react-popover": "^1.1.19",
+  "@radix-ui/react-switch": "^1.3.3",
+  "@radix-ui/react-tabs": "^1.1.17",
 
   "@headlessui/react": "^2.2.10",
   "@headlessui/vue": "^1.7.23",
 
   "@park-ui/panda-preset": "^0.43.1",
 
-  "@chakra-ui/react": "^3.36.1",
+  "@chakra-ui/react": "^3.36.0",
   "@emotion/react": "^11.14.0",
   "@emotion/styled": "^11.14.1",
 
@@ -473,7 +473,7 @@ export const dependencyVersionMap = {
 
   // shadcn/ui core and unified packages
   shadcn: "^4.13.1",
-  "radix-ui": "^1.6.4",
+  "radix-ui": "^1.6.2",
   "class-variance-authority": "^0.7.1",
   clsx: "^2.1.1",
   "tailwind-merge": "^3.6.0",
@@ -490,16 +490,16 @@ export const dependencyVersionMap = {
   "react-icons": "^5.7.0",
 
   // Font packages (fontsource variable fonts)
-  "@fontsource-variable/inter": "^5.3.0",
-  "@fontsource-variable/figtree": "^5.3.0",
-  "@fontsource-variable/noto-sans": "^5.3.0",
-  "@fontsource-variable/nunito-sans": "^5.3.0",
-  "@fontsource-variable/raleway": "^5.3.0",
-  "@fontsource-variable/dm-sans": "^5.3.0",
-  "@fontsource-variable/outfit": "^5.3.0",
-  "@fontsource-variable/jetbrains-mono": "^5.3.0",
-  "@fontsource/roboto": "^5.3.0",
-  "@fontsource/public-sans": "^5.3.0",
+  "@fontsource-variable/inter": "^5.2.8",
+  "@fontsource-variable/figtree": "^5.2.10",
+  "@fontsource-variable/noto-sans": "^5.2.10",
+  "@fontsource-variable/nunito-sans": "^5.2.7",
+  "@fontsource-variable/raleway": "^5.2.8",
+  "@fontsource-variable/dm-sans": "^5.2.8",
+  "@fontsource-variable/outfit": "^5.2.8",
+  "@fontsource-variable/jetbrains-mono": "^5.2.8",
+  "@fontsource/roboto": "^5.2.10",
+  "@fontsource/public-sans": "^5.2.7",
   geist: "^1.7.2",
 
   // Ark UI (headless components for React/Vue/Solid/Svelte)
@@ -562,8 +562,8 @@ export const dependencyVersionMap = {
   yup: "^1.7.1",
   "final-form": "^5.0.1",
   "react-final-form": "^7.0.1",
-  "@conform-to/react": "^1.20.0",
-  "@conform-to/zod": "^1.20.0",
+  "@conform-to/react": "^1.19.4",
+  "@conform-to/zod": "^1.19.4",
   "@modular-forms/solid": "^0.25.1",
   "@modular-forms/qwik": "^0.29.1",
   "@tanstack/react-form": "^1.33.0",
@@ -589,7 +589,7 @@ export const dependencyVersionMap = {
   "@y-sweet/react": "^0.9.1",
 
   // Job Queues / Background Workers
-  bullmq: "^5.80.9",
+  bullmq: "^5.80.8",
   ioredis: "^5.11.1",
   "@trigger.dev/sdk": "^4.5.4",
   inngest: "^4.13.0",
@@ -615,7 +615,7 @@ export const dependencyVersionMap = {
   "@vitest/ui": "4.1.8",
   "@vitest/coverage-v8": "4.1.8",
   jsdom: "^29.1.1",
-  "happy-dom": "^20.11.0",
+  "happy-dom": "^20.10.6",
 
   // Testing - Playwright
   "@playwright/test": "^1.61.1",
@@ -773,7 +773,7 @@ export const dependencyVersionMap = {
   "next-sanity": "^13.1.3",
   "@sanity/image-url": "^2.1.1",
   "@sanity/vision": "^6.5.0",
-  "@sanity/client": "^7.24.0",
+  "@sanity/client": "^7.23.2",
 
   // Headless CMS - Strapi
   "@strapi/client": "^1.6.2",
