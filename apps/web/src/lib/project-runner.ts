@@ -4,10 +4,7 @@ import type { FileSystemTree } from "@webcontainer/api";
 import type { StackState } from "@/lib/stack-defaults";
 
 import { stackStateToProjectConfig } from "@/lib/preview-config";
-
-export type RunSupport =
-  | { supported: true }
-  | { supported: false; reason: "native-runtime" | "no-web-frontend" };
+import { getStackRunSupport } from "@/lib/run-support";
 
 export interface RunnableProject {
   files: FileSystemTree;
@@ -26,18 +23,6 @@ export interface RunnableSourceFile {
 }
 
 type BinaryTemplateLoader = (sourcePath: string) => Promise<Uint8Array>;
-
-export function getStackRunSupport(stack: StackState): RunSupport {
-  if (stack.ecosystem !== "typescript" || stack.stackMode !== "solo") {
-    return { supported: false, reason: "native-runtime" };
-  }
-
-  if (!stack.webFrontend.some((frontend) => frontend !== "none")) {
-    return { supported: false, reason: "no-web-frontend" };
-  }
-
-  return { supported: true };
-}
 
 async function fileContents(
   file: VirtualFile,

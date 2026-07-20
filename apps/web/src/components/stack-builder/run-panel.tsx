@@ -25,11 +25,11 @@ import type { StackState } from "@/lib/stack-defaults";
 import {
   createRunnableProject,
   getDefaultRunnableFile,
-  getStackRunSupport,
   hasDependencyManifestChanges,
   type RunnableProject,
   type RunnableSourceFile,
 } from "@/lib/project-runner";
+import { getStackRunSupport } from "@/lib/run-support";
 import { cn } from "@/lib/utils";
 import * as m from "@/paraglide/messages";
 

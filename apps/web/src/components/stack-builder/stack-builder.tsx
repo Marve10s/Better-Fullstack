@@ -100,6 +100,7 @@ import {
   saveSavedStacks,
   type SavedStackEntry,
 } from "@/lib/saved-stacks";
+import { getStackRunSupport } from "@/lib/run-support";
 import { useStackState } from "@/lib/stack-url-state";
 import {
   generateStackCommand,
@@ -2420,6 +2421,17 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
     }
   }, [isMultiMode, setViewMode, viewMode]);
 
+  const runSupported = useMemo(
+    () => getStackRunSupport(adjustedStack || stack).supported,
+    [adjustedStack, stack],
+  );
+
+  useEffect(() => {
+    if (!runSupported && viewMode === "run") {
+      setViewMode("preview");
+    }
+  }, [runSupported, setViewMode, viewMode]);
+
   // ─── Handlers ───────────────────────────────────────────────────────────
 
   const copyToClipboard = () => {
@@ -2923,17 +2935,19 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                     <Eye className="h-3 w-3" />
                     <span className="hidden min-[480px]:inline">{m.builderTabPreview()}</span>
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setViewMode("run")}
-                    data-testid="tab-run"
-                    aria-pressed={viewMode === "run"}
-                    data-state={viewMode === "run" ? "active" : "inactive"}
-                    className={getToolbarTabClass(viewMode === "run")}
-                  >
-                    <Play className="h-3 w-3" />
-                    <span className="hidden lg:inline">{m.builderTabRun()}</span>
-                  </button>
+                  {runSupported && (
+                    <button
+                      type="button"
+                      onClick={() => setViewMode("run")}
+                      data-testid="tab-run"
+                      aria-pressed={viewMode === "run"}
+                      data-state={viewMode === "run" ? "active" : "inactive"}
+                      className={getToolbarTabClass(viewMode === "run")}
+                    >
+                      <Play className="h-3 w-3" />
+                      <span className="hidden lg:inline">{m.builderTabRun()}</span>
+                    </button>
+                  )}
                   {!isMultiMode && (
                     <button
                       type="button"
