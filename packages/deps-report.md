@@ -1,13 +1,13 @@
 # Dependency Version Check Report
 
-Generated: 2026-07-13T20:58:09.490Z
+Generated: 2026-07-20T10:08:39.462Z
 
 ## Summary
 
-- **Outdated**: 64
-- **Template-only** (not in version map): 21
+- **Outdated**: 70
+- **Template-only** (not in version map): 22
 - **Downgrades detected**: 0
-- **Up to date**: 612
+- **Up to date**: 643
 - **Errors**: 0
 
 ## Outdated Packages
@@ -16,18 +16,24 @@ Generated: 2026-07-13T20:58:09.490Z
 
 | Package | Current | Latest | Ecosystem | Source |
 |---------|---------|--------|-----------|--------|
-| expo-linking | ^56.0.14 | ^57.0.2 | - | map |
-| expo-constants | ^56.0.18 | ^57.0.3 | - | map |
-| expo-web-browser | ^56.0.5 | ^57.0.0 | - | map |
-| expo-network | ^56.0.5 | ^57.0.0 | - | map |
-| oxfmt | ^0.56.0 | ^0.58.0 | - | map |
-| vercel | ^54.18.2 | ^56.0.0 | - | map |
-| @openai/agents | ^0.12.0 | ^0.13.2 | - | map |
+| expo-linking | ^56.0.14 | ^57.0.3 | - | map |
+| expo-constants | ^56.0.18 | ^57.0.6 | - | map |
+| expo-web-browser | ^56.0.5 | ^57.0.1 | - | map |
+| expo-network | ^56.0.5 | ^57.0.1 | - | map |
+| oxfmt | ^0.56.0 | ^0.59.0 | - | map |
+| vercel | ^54.18.2 | ^56.3.2 | - | map |
+| @openai/agents | ^0.12.0 | ^0.13.5 | - | map |
+| @anthropic-ai/sdk | ^0.110.0 | ^0.112.3 | - | map |
 | ai-cli | ^0.3.1 | ^0.4.2 | - | map |
-| @tanstack/vue-db | ^0.0.123 | ^0.0.125 | - | map |
-| @tanstack/ai | ^0.38.0 | ^0.40.0 | - | map |
-| @cloudflare/workers-types | ^4.20260629.1 | ^5.20260713.1 | cloudflare | map |
+| @asteasolutions/zod-to-openapi | ^8.5.0 | ^9.1.0 | openapi | map |
+| @tanstack/angular-virtual | ^5.0.8 | ^6.0.0 | - | map |
+| @tanstack/vue-db | ^0.0.123 | ^0.0.127 | - | map |
+| @tanstack/ai | ^0.38.0 | ^0.42.0 | - | map |
+| @tanstack/ai-react | ^0.16.4 | ^0.18.1 | - | map |
+| @tanstack/ai-solid | ^0.14.3 | ^0.15.1 | - | map |
+| @cloudflare/workers-types | ^4.20260629.1 | ^5.20260719.1 | cloudflare | map |
 | @polar-sh/checkout | ^0.3.0 | ^0.4.0 | - | map |
+| @polar-sh/sdk | ^0.48.1 | ^0.49.0 | - | map |
 | postmark | ^4.0.7 | ^5.1.0 | - | map |
 | @effect/platform | ^0.96.2 | ^0.97.0 | effect | map |
 | @effect/platform-node | ^0.107.0 | ^0.108.0 | effect | map |
@@ -49,34 +55,35 @@ Generated: 2026-07-13T20:58:09.490Z
 | @effect/ai | ^0.36.0 | ^0.37.0 | effect | map |
 | @effect/ai-openai | ^0.40.1 | ^0.41.0 | effect | map |
 | @effect/ai-anthropic | ^0.26.0 | ^0.27.0 | effect | map |
-| typia | ^12.1.1 | ^13.1.0 | - | map |
+| concurrently | ^9.2.1 | ^10.0.3 | - | map |
+| cross-env | ^7.0.3 | ^10.1.0 | - | map |
+| typia | ^12.1.1 | ^13.1.19 | - | map |
 | @formkit/auto-animate | ^0.9.0 | ^0.10.0 | - | map |
-| react-native-purchases | ^9.10.5 | ^10.4.2 | - | map |
-| @opentelemetry/sdk-node | ^0.219.0 | ^0.220.0 | opentelemetry | map |
-| @opentelemetry/auto-instrumentations-node | ^0.77.0 | ^0.78.0 | opentelemetry | map |
-| @opentelemetry/exporter-trace-otlp-http | ^0.219.0 | ^0.220.0 | opentelemetry | map |
-| @opentelemetry/exporter-metrics-otlp-http | ^0.219.0 | ^0.220.0 | opentelemetry | map |
-| dd-trace | ^5.110.0 | ^6.2.0 | - | map |
+| react-native-purchases | ^9.10.5 | ^10.4.3 | - | map |
+| dd-trace | ^5.110.0 | ^6.4.0 | - | map |
 | @directus/sdk | ^22.0.0 | ^23.0.0 | - | map |
+| @keystatic/core | ^0.5.51 | ^0.6.0 | - | map |
 | meilisearch | ^0.58.0 | ^0.59.0 | - | map |
-| expo | ^56.0.12 | ^57.0.4 | - | template |
-| expo-device | ^56.0.4 | ^57.0.0 | - | template |
-| expo-crypto | ^56.0.4 | ^57.0.0 | - | template |
-| expo-navigation-bar | ^56.0.3 | ^57.0.1 | - | template |
-| expo-notifications | ^56.0.18 | ^57.0.3 | - | template |
-| expo-router | ^56.2.11 | ^57.0.4 | - | template |
-| expo-secure-store | ^56.0.4 | ^57.0.0 | - | template |
-| expo-splash-screen | ^56.0.10 | ^57.0.2 | - | template |
-| expo-status-bar | ^56.0.4 | ^57.0.0 | - | template |
-| expo-system-ui | ^56.0.5 | ^57.0.0 | - | template |
-| expo-updates | ^56.0.19 | ^57.0.6 | - | template |
+| @expo/metro-runtime | ^56.0.15 | ^57.0.6 | - | template |
+| expo | ^56.0.12 | ^57.0.7 | - | template |
+| expo-device | ^56.0.4 | ^57.0.1 | - | template |
+| expo-font | ^56.0.7 | ^57.0.1 | - | template |
+| expo-haptics | ^56.0.3 | ^57.0.1 | - | template |
+| expo-notifications | ^56.0.18 | ^57.0.6 | - | template |
+| expo-router | ^56.2.11 | ^57.0.7 | - | template |
+| expo-secure-store | ^56.0.4 | ^57.0.1 | - | template |
+| expo-splash-screen | ^56.0.10 | ^57.0.4 | - | template |
+| expo-status-bar | ^56.0.4 | ^57.0.1 | - | template |
+| expo-system-ui | ^56.0.5 | ^57.0.1 | - | template |
+| expo-updates | ^56.0.19 | ^57.0.8 | - | template |
 | @babel/runtime | ^7.26.0 | ^8.0.0 | - | template |
+| react-native-worklets | ^0.10.2 | ^0.11.1 | - | template |
+| babel-preset-expo | ^56.0.15 | ^57.0.3 | - | template |
+| jest-expo | ^56.0.5 | ^57.0.2 | - | template |
+| expo-crypto | ^56.0.4 | ^57.0.1 | - | template |
+| expo-navigation-bar | ^56.0.3 | ^57.0.2 | - | template |
 | @babel/core | ^7.26.0 | ^8.0.1 | - | template |
-| babel-preset-expo | ^56.0.15 | ^57.0.2 | - | template |
-| jest-expo | ^56.0.5 | ^57.0.1 | - | template |
-| @expo/metro-runtime | ^56.0.15 | ^57.0.3 | - | template |
-| expo-font | ^56.0.7 | ^57.0.0 | - | template |
-| expo-haptics | ^56.0.3 | ^57.0.0 | - | template |
-| expo-dev-client | ^56.0.20 | ^57.0.5 | - | template |
+| expo-dev-client | ^56.0.20 | ^57.0.7 | - | template |
 | react-native-nitro-modules | ^0.35.10 | ^0.36.1 | - | template |
 | vinext | ^0.1.8 | ^0.2.1 | - | template |
+
