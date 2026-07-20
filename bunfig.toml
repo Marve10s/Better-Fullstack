@@ -1,5 +1,9 @@
 [install]
 linker = "isolated"
+# Refuse to resolve registry versions younger than 48h: day-zero
+# supply-chain margin, and keeps `bun update --latest` (codebase-deps
+# workflow) off releases Yarn hardened mode would quarantine anyway.
+minimumReleaseAge = 172800
 
 [test]
 coverage = true
