@@ -6,10 +6,10 @@ import {
   collectRunnableSourceFiles,
   getDefaultRunnableFile,
   getDevelopmentTarget,
-  getStackRunSupport,
   hasDependencyManifestChanges,
   virtualDirectoryToWebContainerTree,
 } from "../src/lib/project-runner";
+import { getStackRunSupport } from "../src/lib/run-support";
 import {
   mountRunnableProject,
   installRunnableProject,
