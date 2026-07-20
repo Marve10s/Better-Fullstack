@@ -252,10 +252,16 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-hateoas")
 {{/if}}
 {{#if hasJavaSessionRedis}}
-	implementation("org.springframework.boot:spring-boot-starter-session-data-redis")
+	implementation("org.springframework.session:spring-session-data-redis")
+{{#unless hasJavaDataRedis}}
+	implementation("org.springframework.boot:spring-boot-starter-data-redis")
+{{/unless}}
 {{/if}}
 {{#if hasJavaSessionJdbc}}
-	implementation("org.springframework.boot:spring-boot-starter-session-jdbc")
+	implementation("org.springframework.session:spring-session-jdbc")
+{{#unless (or hasJavaJpa (or hasJavaJooq (or hasJavaMybatis hasJavaDataJdbc)))}}
+	implementation("org.springframework.boot:spring-boot-starter-jdbc")
+{{/unless}}
 {{/if}}
 {{#if hasJavaLdap}}
 	implementation("org.springframework.boot:spring-boot-starter-ldap")

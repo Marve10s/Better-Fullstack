@@ -303,7 +303,7 @@
   "builderRunStopped": "執行階段已停止",
   "builderRunFailed": "執行失敗",
   "builderRunUnsupportedTitle": "此技術棧暫時無法在瀏覽器中執行",
-  "builderRunUnsupportedDescription": "Live Run 目前支援含 Web 前端的單一 TypeScript 技術棧。請下載專案以在本機執行。",
+  "builderRunUnsupportedDescription": "Live Run 目前支援含 Web 前端的相容單一 TypeScript 技術棧。請下載專案以在本機執行。",
   "builderRunBrowserUnsupportedTitle": "此瀏覽器無法啟動執行階段",
   "builderRunBrowserUnsupportedDescription": "請使用最新的 Chromium 瀏覽器，允許 WebContainer 網域的跨網站 Cookie，然後重新載入此頁面。",
   "builderRunLocalNotice": "在此瀏覽器中本機執行，不會上傳任何內容。",

@@ -368,14 +368,14 @@ describe("Java Ecosystem", () => {
       const pomContent = getFileContent(root, "pom.xml");
       expect(pomContent).toContain("spring-boot-starter-log4j2");
       const dependencyBlocks = pomContent.match(/<dependency>[\s\S]*?<\/dependency>/g) ?? [];
-      for (const library of starterLibraries) {
+      for (const library of starterLibraries.filter(
+        (library) => library !== "spring-session-redis" && library !== "spring-session-jdbc",
+      )) {
         // spring-saml2 maps to spring-security-saml2-service-provider (not a
         // Boot starter, so no logging exclusion needed) plus a security
         // starter, which is asserted below like the other starters.
         const artifact = library
           .replace("spring-data-", "spring-boot-starter-data-")
-          .replace("spring-session-redis", "spring-boot-starter-session-data-redis")
-          .replace("spring-session-jdbc", "spring-boot-starter-session-jdbc")
           .replace("spring-oauth2-client", "spring-boot-starter-oauth2-client")
           .replace("spring-saml2", "spring-boot-starter-security")
           .replace(/^spring-(?!boot-starter)/, "spring-boot-starter-");
@@ -384,9 +384,45 @@ describe("Java Ecosystem", () => {
         );
         expect(dependency).toContain("<artifactId>spring-boot-starter-logging</artifactId>");
       }
-      expect(pomContent).toContain("<artifactId>spring-security-saml2-service-provider</artifactId>");
+      expect(pomContent).toContain("<artifactId>spring-session-data-redis</artifactId>");
+      expect(pomContent).toContain("<artifactId>spring-session-jdbc</artifactId>");
+      expect(pomContent).not.toContain("spring-boot-starter-session-data-redis");
+      expect(pomContent).not.toContain("spring-boot-starter-session-jdbc");
+      expect(pomContent).toContain(
+        "<artifactId>spring-security-saml2-service-provider</artifactId>",
+      );
       expect(hasFile(root, "src/main/resources/log4j2-spring.xml")).toBe(true);
       expect(hasFile(root, "src/main/resources/logback-spring.xml")).toBe(false);
+    });
+
+    it("uses resolvable Spring Session modules and their connection starters", async () => {
+      await Promise.all(
+        (["maven", "gradle"] as const).map(async (javaBuildTool) => {
+          const result = await createVirtual({
+            projectName: `java-session-${javaBuildTool}`,
+            ecosystem: "java",
+            javaWebFramework: "spring-boot",
+            javaBuildTool,
+            javaOrm: "none",
+            javaAuth: "none",
+            javaLibraries: ["spring-session-redis", "spring-session-jdbc"],
+            javaTestingLibraries: [],
+          });
+
+          expect(result.success).toBe(true);
+          const buildFile = getFileContent(
+            result.tree!.root,
+            javaBuildTool === "maven" ? "pom.xml" : "build.gradle.kts",
+          );
+          expect(buildFile).toContain("org.springframework.session");
+          expect(buildFile).toContain("spring-session-data-redis");
+          expect(buildFile).toContain("spring-session-jdbc");
+          expect(buildFile).toContain("spring-boot-starter-data-redis");
+          expect(buildFile).toContain("spring-boot-starter-jdbc");
+          expect(buildFile).not.toContain("spring-boot-starter-session-data-redis");
+          expect(buildFile).not.toContain("spring-boot-starter-session-jdbc");
+        }),
+      );
     });
 
     it("should wire OpenAPI Generator for a Spring Boot Maven project", async () => {

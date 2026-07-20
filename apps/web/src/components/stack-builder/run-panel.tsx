@@ -11,14 +11,7 @@ import {
   TerminalSquare,
   Undo2,
 } from "lucide-react";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type KeyboardEvent,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 
 import type { StackState } from "@/lib/stack-defaults";
 
@@ -224,8 +217,8 @@ export function RunPanel({ stack, selectedFilePath, onSelectFile }: RunPanelProp
         runtimeMountedRef.current = true;
       } else {
         runtimeModule.stopDevelopmentServer();
-        await runtimeModule.syncRunnableSourceFiles(runtime, currentFiles);
       }
+      await runtimeModule.syncRunnableSourceFiles(runtime, currentFiles);
       ensureCurrentRun();
 
       const dependenciesChanged = hasDependencyManifestChanges(currentFiles, syncedContents);
@@ -297,8 +290,7 @@ export function RunPanel({ stack, selectedFilePath, onSelectFile }: RunPanelProp
           className={cn(
             "size-2 rounded-full bg-muted-foreground/45",
             busy && "animate-pulse bg-amber-400",
-            status === "ready" &&
-              "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.55)]",
+            status === "ready" && "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.55)]",
             status === "error" && "bg-destructive",
           )}
           aria-hidden

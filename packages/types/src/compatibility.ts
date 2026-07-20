@@ -1778,7 +1778,8 @@ export const analyzeStackCompatibility = (
       });
     }
     if (
-      (nextStack.pythonWebFramework === "aiohttp" ||
+      (nextStack.pythonWebFramework === "none" ||
+        nextStack.pythonWebFramework === "aiohttp" ||
         nextStack.pythonWebFramework === "starlette" ||
         nextStack.pythonWebFramework === "streamlit") &&
       nextStack.pythonAuth !== "none"
@@ -1798,7 +1799,8 @@ export const analyzeStackCompatibility = (
       changed = true;
       changes.push({
         category: "pythonObservability",
-        message: "Observability set to 'None' (prometheus-client needs an HTTP server to expose /metrics)",
+        message:
+          "Observability set to 'None' (prometheus-client needs an HTTP server to expose /metrics)",
       });
     }
     if (

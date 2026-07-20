@@ -197,9 +197,16 @@ export default defineConfig({
           },
           "/typescript": { headers: webContainerHeaders },
           "/multi-ecosystem": { headers: webContainerHeaders },
+          "/stack": {
+            headers: {
+              "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
+              ...webContainerHeaders,
+            },
+          },
           "/stack/**": {
             headers: {
               "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
+              ...webContainerHeaders,
             },
           },
           "/benchmark": {

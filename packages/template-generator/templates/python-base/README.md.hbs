@@ -18,20 +18,20 @@ python -m venv .venv
 ```
 {{#if (eq pythonPackageManager "none")}}
 
-On Windows, use `.venv\Scripts\pip.exe install -e ".[dev]"` for the second command.
+On Windows, use `.venv\Scripts\pip.exe install -e ".[dev]"` for the second command and replace `.venv/bin/` below with `.venv\Scripts\`.
 {{/if}}
 
 Run the application:
 
 ```sh
 {{#if (eq pythonWebFramework "fastapi")}}
-{{#if (eq pythonPackageManager "poetry")}}poetry run {{else if (eq pythonPackageManager "uv")}}uv run {{/if}}uvicorn app.main:app --reload --host 0.0.0.0 --port ${PORT:-8000}
+{{#if (eq pythonPackageManager "poetry")}}poetry run {{else if (eq pythonPackageManager "uv")}}uv run {{else}}.venv/bin/{{/if}}uvicorn app.main:app --reload --host 0.0.0.0 --port ${PORT:-8000}
 {{else if (eq pythonWebFramework "streamlit")}}
-{{#if (eq pythonPackageManager "poetry")}}poetry run {{else if (eq pythonPackageManager "uv")}}uv run {{/if}}streamlit run src/app/main.py
+{{#if (eq pythonPackageManager "poetry")}}poetry run {{else if (eq pythonPackageManager "uv")}}uv run {{else}}.venv/bin/{{/if}}streamlit run src/app/main.py
 {{else if (eq pythonWebFramework "litestar")}}
-{{#if (eq pythonPackageManager "poetry")}}poetry run {{else if (eq pythonPackageManager "uv")}}uv run {{/if}}litestar --app src.app.main:app run --reload --host 0.0.0.0 --port ${PORT:-8000}
+{{#if (eq pythonPackageManager "poetry")}}poetry run {{else if (eq pythonPackageManager "uv")}}uv run {{else}}.venv/bin/{{/if}}litestar --app src.app.main:app run --reload --host 0.0.0.0 --port ${PORT:-8000}
 {{else}}
-{{#if (eq pythonPackageManager "poetry")}}poetry run {{else if (eq pythonPackageManager "uv")}}uv run {{/if}}python -m app.main
+{{#if (eq pythonPackageManager "poetry")}}poetry run {{else if (eq pythonPackageManager "uv")}}uv run {{else}}.venv/bin/{{/if}}python -m app.main
 {{/if}}
 ```
 {{#if (eq pythonServer "gunicorn")}}
@@ -39,7 +39,7 @@ Run the application:
 Production with Gunicorn:
 
 ```sh
-{{#if (eq pythonPackageManager "poetry")}}poetry run {{else if (eq pythonPackageManager "uv")}}uv run {{/if}}{{#if (eq pythonWebFramework "aiohttp")}}gunicorn app.main:app --worker-class aiohttp.GunicornWebWorker{{else if (eq pythonWebFramework "django")}}gunicorn app.main:application{{else if (eq pythonWebFramework "flask")}}gunicorn app.main:app{{else}}gunicorn app.main:app --worker-class uvicorn.workers.UvicornWorker{{/if}}
+{{#if (eq pythonPackageManager "poetry")}}poetry run {{else if (eq pythonPackageManager "uv")}}uv run {{else}}.venv/bin/{{/if}}{{#if (eq pythonWebFramework "aiohttp")}}gunicorn app.main:app --worker-class aiohttp.GunicornWebWorker{{else if (eq pythonWebFramework "django")}}gunicorn app.main:application{{else if (eq pythonWebFramework "flask")}}gunicorn app.main:app{{else}}gunicorn app.main:app --worker-class uvicorn.workers.UvicornWorker{{/if}}
 ```
 {{/if}}
 

@@ -303,7 +303,7 @@
   "builderRunStopped": "运行时已停止",
   "builderRunFailed": "运行失败",
   "builderRunUnsupportedTitle": "此技术栈暂时无法在浏览器中运行",
-  "builderRunUnsupportedDescription": "Live Run 目前支持带 Web 前端的单一 TypeScript 技术栈。请下载项目以在本地运行。",
+  "builderRunUnsupportedDescription": "Live Run 目前支持带 Web 前端的兼容单一 TypeScript 技术栈。请下载项目以在本地运行。",
   "builderRunBrowserUnsupportedTitle": "此浏览器无法启动运行时",
   "builderRunBrowserUnsupportedDescription": "请使用最新的 Chromium 浏览器，允许 WebContainer 域的跨站 Cookie，然后重新加载此页面。",
   "builderRunLocalNotice": "在此浏览器中本地运行，不会上传任何内容。",

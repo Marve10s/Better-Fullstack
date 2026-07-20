@@ -215,6 +215,26 @@ describe("stack graph", () => {
     expect(lowered.elixirObservability).toBe("telemetry");
   });
 
+  it("does not erase flag-provided mobile libraries when graph parts omit them", () => {
+    const stackParts = parseStackPartSpecs(["mobile:react-native:native-bare"]);
+    const lowered = stackPartsToLegacyProjectConfigPartial(stackParts);
+    const merged = {
+      mobileLibraries: ["expo-camera"],
+      ...lowered,
+    };
+
+    expect(lowered.mobileLibraries).toBeUndefined();
+    expect(merged.mobileLibraries).toEqual(["expo-camera"]);
+
+    const explicitLibraries = stackPartsToLegacyProjectConfigPartial(
+      parseStackPartSpecs([
+        "mobile:react-native:native-bare",
+        "mobile.libraries:react-native:expo-camera",
+      ]),
+    );
+    expect(explicitLibraries.mobileLibraries).toEqual(["expo-camera"]);
+  });
+
   it("owns Go migrations on the Go backend instead of the database setup scope", () => {
     const stackParts = parseStackPartSpecs([
       "backend:go:gin",

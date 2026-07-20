@@ -11,6 +11,10 @@ export function getStackRunSupport(stack: StackState): RunSupport {
     return { supported: false, reason: "native-runtime" };
   }
 
+  if (stack.webFrontend.includes("fresh")) {
+    return { supported: false, reason: "native-runtime" };
+  }
+
   if (!stack.webFrontend.some((frontend) => frontend !== "none")) {
     return { supported: false, reason: "no-web-frontend" };
   }

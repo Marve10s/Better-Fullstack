@@ -270,6 +270,9 @@ dev = [
     "pandas-stubs>=2.2.3",
     "numpy<2.5",
 {{/if}}
+{{#if (eq pythonMessageQueue "confluent-kafka")}}
+    "types-confluent-kafka>=1.4.1",
+{{/if}}
 {{/if}}
 {{#if (eq pythonQuality "pyright")}}
     "pyright>=1.1.409",

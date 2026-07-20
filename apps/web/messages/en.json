@@ -316,7 +316,7 @@
   "builderRunStopped": "Runtime stopped",
   "builderRunFailed": "Run failed",
   "builderRunUnsupportedTitle": "This stack cannot run in-browser yet",
-  "builderRunUnsupportedDescription": "Live Run currently supports solo TypeScript stacks with a web frontend. Download this project to run it locally.",
+  "builderRunUnsupportedDescription": "Live Run currently supports compatible solo TypeScript stacks with a web frontend. Download this project to run it locally.",
   "builderRunBrowserUnsupportedTitle": "This browser cannot start the runtime",
   "builderRunBrowserUnsupportedDescription": "Use a current Chromium browser, allow cross-site cookies for WebContainer domains, and reload this page.",
   "builderRunLocalNotice": "Runs locally in this browser. Nothing is uploaded.",

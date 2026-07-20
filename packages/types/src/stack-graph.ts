@@ -3210,9 +3210,6 @@ export function stackPartsToLegacyProjectConfigPartial(
     for (const category of Object.values(LEGACY_MOBILE_SINGLE_CATEGORIES)) {
       (config as Record<string, unknown>)[category] = "none";
     }
-    for (const category of Object.values(LEGACY_MOBILE_ARRAY_CATEGORIES)) {
-      (config as Record<string, unknown>)[category] = [];
-    }
   }
 
   for (const part of parts) {

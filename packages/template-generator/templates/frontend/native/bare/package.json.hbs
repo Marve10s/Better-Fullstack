@@ -88,7 +88,7 @@
     {{#if (includes mobileLibraries "expo-sqlite")}}
     "expo-sqlite": "~56.0.5",
     {{/if}}
-    {{#if (includes mobileLibraries "expo-task-manager")}}
+    {{#if (or (includes mobileLibraries "expo-task-manager") (includes mobileLibraries "expo-background-task"))}}
     "expo-task-manager": "~56.0.22",
     {{/if}}
     {{#if (includes mobileLibraries "expo-video")}}

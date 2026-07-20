@@ -818,8 +818,13 @@
 {{/if}}
 {{#if hasJavaSessionRedis}}
 		<dependency>
+			<groupId>org.springframework.session</groupId>
+			<artifactId>spring-session-data-redis</artifactId>
+		</dependency>
+{{#unless hasJavaDataRedis}}
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-session-data-redis</artifactId>
+			<artifactId>spring-boot-starter-data-redis</artifactId>
 {{#if hasJavaLog4j2}}
 			<exclusions>
 				<exclusion>
@@ -829,11 +834,17 @@
 			</exclusions>
 {{/if}}
 		</dependency>
+{{/unless}}
 {{/if}}
 {{#if hasJavaSessionJdbc}}
 		<dependency>
+			<groupId>org.springframework.session</groupId>
+			<artifactId>spring-session-jdbc</artifactId>
+		</dependency>
+{{#unless (or hasJavaJpa (or hasJavaJooq (or hasJavaMybatis hasJavaDataJdbc)))}}
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-session-jdbc</artifactId>
+			<artifactId>spring-boot-starter-jdbc</artifactId>
 {{#if hasJavaLog4j2}}
 			<exclusions>
 				<exclusion>
@@ -843,6 +854,7 @@
 			</exclusions>
 {{/if}}
 		</dependency>
+{{/unless}}
 {{/if}}
 {{#if hasJavaLdap}}
 		<dependency>

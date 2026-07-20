@@ -1252,6 +1252,14 @@ describe("compatibility issue helpers", () => {
       pythonAuth: "none",
       pythonGraphql: "none",
     });
+
+    const frameworkFreeResult = analyzeStackCompatibility({
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "python",
+      pythonWebFramework: "none",
+      pythonAuth: "authlib",
+    });
+    expect(frameworkFreeResult.adjustedStack?.pythonAuth).toBe("none");
   });
 
   it("locks Effect backend services and validation without blocking compatible tools", () => {

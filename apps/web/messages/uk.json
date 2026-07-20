@@ -304,7 +304,7 @@
   "builderRunStopped": "Середовище зупинено",
   "builderRunFailed": "Помилка запуску",
   "builderRunUnsupportedTitle": "Цей стек поки не можна запустити у браузері",
-  "builderRunUnsupportedDescription": "Live Run наразі підтримує окремі TypeScript-стеки з вебфронтендом. Завантажте проєкт, щоб запустити його локально.",
+  "builderRunUnsupportedDescription": "Live Run наразі підтримує сумісні окремі TypeScript-стеки з вебфронтендом. Завантажте проєкт, щоб запустити його локально.",
   "builderRunBrowserUnsupportedTitle": "Цей браузер не може запустити середовище",
   "builderRunBrowserUnsupportedDescription": "Використовуйте сучасний Chromium-браузер, дозвольте міжсайтові cookie для доменів WebContainer і перезавантажте сторінку.",
   "builderRunLocalNotice": "Працює локально у цьому браузері. Нічого не завантажується.",

@@ -303,7 +303,7 @@
   "builderRunStopped": "Entorno detenido",
   "builderRunFailed": "La ejecución falló",
   "builderRunUnsupportedTitle": "Este stack todavía no puede ejecutarse en el navegador",
-  "builderRunUnsupportedDescription": "Live Run admite por ahora stacks TypeScript individuales con frontend web. Descarga el proyecto para ejecutarlo localmente.",
+  "builderRunUnsupportedDescription": "Live Run admite por ahora stacks TypeScript individuales compatibles con frontend web. Descarga el proyecto para ejecutarlo localmente.",
   "builderRunBrowserUnsupportedTitle": "Este navegador no puede iniciar el entorno",
   "builderRunBrowserUnsupportedDescription": "Usa un navegador Chromium actual, permite cookies entre sitios para los dominios WebContainer y recarga la página.",
   "builderRunLocalNotice": "Se ejecuta localmente en este navegador. No se sube nada.",

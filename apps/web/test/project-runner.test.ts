@@ -10,14 +10,14 @@ import {
   virtualDirectoryToWebContainerTree,
 } from "../src/lib/project-runner";
 import { getStackRunSupport } from "../src/lib/run-support";
+import { DEFAULT_STACK } from "../src/lib/stack-defaults";
+import { getInitialBuilderState } from "../src/lib/stack-url-state";
 import {
   mountRunnableProject,
   installRunnableProject,
   normalizeRuntimeOutput,
   syncRunnableSourceFiles,
 } from "../src/lib/webcontainer-runtime";
-import { DEFAULT_STACK } from "../src/lib/stack-defaults";
-import { getInitialBuilderState } from "../src/lib/stack-url-state";
 
 describe("project runner", () => {
   it("supports solo TypeScript web stacks", () => {
@@ -32,6 +32,10 @@ describe("project runner", () => {
     expect(getStackRunSupport({ ...DEFAULT_STACK, webFrontend: ["none"] })).toEqual({
       supported: false,
       reason: "no-web-frontend",
+    });
+    expect(getStackRunSupport({ ...DEFAULT_STACK, webFrontend: ["fresh"] })).toEqual({
+      supported: false,
+      reason: "native-runtime",
     });
   });
 

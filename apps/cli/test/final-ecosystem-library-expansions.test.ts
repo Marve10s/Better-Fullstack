@@ -120,4 +120,28 @@ describe("final ecosystem library expansions", () => {
       Object.keys(packageJson.dependencies).filter((name) => libraries.includes(name)),
     ).toHaveLength(20);
   });
+
+  it("adds Expo Task Manager whenever Expo Background Task is selected", async () => {
+    await Promise.all(
+      (["native-bare", "native-uniwind", "native-unistyles"] as const).map(async (frontend) => {
+        const result = await createVirtual({
+          projectName: `background-task-${frontend}`,
+          ecosystem: "react-native",
+          frontend: [frontend],
+          backend: "none",
+          runtime: "none",
+          api: "none",
+          database: "none",
+          orm: "none",
+          auth: "none",
+          mobileLibraries: ["expo-background-task"],
+        });
+
+        expect(result.success).toBe(true);
+        const packageJson = JSON.parse(getFile(result.tree!.root, "apps/native/package.json"));
+        expect(packageJson.dependencies["expo-background-task"]).toBe("~56.0.22");
+        expect(packageJson.dependencies["expo-task-manager"]).toBe("~56.0.22");
+      }),
+    );
+  });
 });

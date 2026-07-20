@@ -303,7 +303,7 @@
   "builderRunStopped": "ランタイムを停止しました",
   "builderRunFailed": "実行に失敗しました",
   "builderRunUnsupportedTitle": "このスタックはまだブラウザ内で実行できません",
-  "builderRunUnsupportedDescription": "現在の Live Run は、Web フロントエンドを含む単独の TypeScript スタックに対応しています。ローカルで実行するにはプロジェクトをダウンロードしてください。",
+  "builderRunUnsupportedDescription": "現在の Live Run は、Web フロントエンドを含む互換性のある単独の TypeScript スタックに対応しています。ローカルで実行するにはプロジェクトをダウンロードしてください。",
   "builderRunBrowserUnsupportedTitle": "このブラウザではランタイムを起動できません",
   "builderRunBrowserUnsupportedDescription": "最新の Chromium ブラウザを使用し、WebContainer ドメインのサイト間 Cookie を許可してからページを再読み込みしてください。",
   "builderRunLocalNotice": "このブラウザ内でローカル実行されます。アップロードはありません。",

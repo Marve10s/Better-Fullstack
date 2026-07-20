@@ -3,7 +3,11 @@ import pc from "picocolors";
 
 import type { CLIInput, Database, DatabaseSetup, Frontend, ProjectConfig, Runtime } from "../types";
 
-import { normalizeCapabilitySelection, validateStackParts } from "../types";
+import {
+  normalizeCapabilitySelection,
+  stackGraphToLegacyProjectConfigForEcosystem,
+  validateStackParts,
+} from "../types";
 import {
   ensureSingleWebAndNative,
   isWebFrontend,
@@ -1158,7 +1162,18 @@ export function validatePythonApiConstraints(config: Partial<ProjectConfig>) {
 }
 
 export function validatePythonExpansionConstraints(config: Partial<ProjectConfig>) {
-  if (config.ecosystem !== "python") return;
+  const pythonConfig =
+    config.ecosystem === "python"
+      ? config
+      : config.stackParts?.some(
+            (part) =>
+              part.role === "backend" && part.ecosystem === "python" && part.source !== "provided",
+          )
+        ? stackGraphToLegacyProjectConfigForEcosystem(config as ProjectConfig, "python")
+        : undefined;
+  if (!pythonConfig) return;
+
+  config = pythonConfig;
 
   if (config.pythonOrm === "pymongo" && config.database !== "mongodb") {
     incompatibilityError({
@@ -1214,7 +1229,8 @@ export function validatePythonExpansionConstraints(config: Partial<ProjectConfig
   }
 
   if (
-    (config.pythonWebFramework === "aiohttp" ||
+    (config.pythonWebFramework === "none" ||
+      config.pythonWebFramework === "aiohttp" ||
       config.pythonWebFramework === "starlette" ||
       config.pythonWebFramework === "streamlit") &&
     config.pythonAuth !== undefined &&
@@ -1486,6 +1502,7 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
     validateJavaConstraints(config);
     validateElixirConstraints(config);
     validateRustExpansionCompatibility(config);
+    validateScopedLibraryFlags(config);
     validateI18nConstraints(config);
 
     validatePaymentsCompatibility(config.payments, config.auth, config.backend, config.frontend);

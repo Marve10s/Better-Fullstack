@@ -15,6 +15,7 @@ import {
   PythonServerSchema,
   PythonTestingSchema,
   PythonWebFrameworkSchema,
+  parseStackPartSpecs,
 } from "../src/types";
 import {
   getVirtualFileContent as getFileContent,
@@ -233,6 +234,7 @@ describe("Python library expansion", () => {
       pythonCloudSdk: "boto3",
       pythonHttpClient: "requests",
       pythonData: ["pandas"],
+      pythonMessageQueue: "confluent-kafka",
     });
 
     expect(starlette.success).toBe(true);
@@ -248,6 +250,7 @@ describe("Python library expansion", () => {
     expect(mypyPyproject).toContain('"numpy<2.5"');
     expect(mypyPyproject).toContain('module = ["boto3", "boto3.*", "botocore", "botocore.*"]');
     expect(mypyPyproject).toContain("ignore_missing_imports = true");
+    expect(mypyPyproject).toContain('"types-confluent-kafka>=1.4.1"');
   });
 
   it("documents dev-extra installation for uv and package-manager none", async () => {
@@ -277,5 +280,23 @@ describe("Python library expansion", () => {
       'python -m venv .venv && .venv/bin/pip install -e ".[dev]"',
     );
     expect(getFileContent(none.tree!.root, "README.md")).toContain(".venv/bin/pytest");
+  });
+
+  it("uses the virtualenv executables in graph backend READMEs without a package manager", async () => {
+    const result = await createVirtual({
+      projectName: "python-none-graph-readme",
+      ecosystem: "typescript",
+      frontend: ["react-vite"],
+      backend: "none",
+      api: "none",
+      runtime: "none",
+      pythonPackageManager: "none",
+      stackParts: parseStackPartSpecs(["frontend:typescript:react-vite", "backend:python:fastapi"]),
+    });
+
+    expect(result.success).toBe(true);
+    const readme = getFileContent(result.tree!.root, "apps/server/README.md");
+    expect(readme).toContain(".venv/bin/uvicorn app.main:app");
+    expect(readme).toContain("replace `.venv/bin/` below with `.venv\\Scripts\\`");
   });
 });

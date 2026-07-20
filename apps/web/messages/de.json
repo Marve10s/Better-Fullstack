@@ -303,7 +303,7 @@
   "builderRunStopped": "Laufzeit gestoppt",
   "builderRunFailed": "Ausführung fehlgeschlagen",
   "builderRunUnsupportedTitle": "Dieser Stack kann noch nicht im Browser ausgeführt werden",
-  "builderRunUnsupportedDescription": "Live Run unterstützt derzeit einzelne TypeScript-Stacks mit Web-Frontend. Lade das Projekt herunter, um es lokal auszuführen.",
+  "builderRunUnsupportedDescription": "Live Run unterstützt derzeit kompatible einzelne TypeScript-Stacks mit Web-Frontend. Lade das Projekt herunter, um es lokal auszuführen.",
   "builderRunBrowserUnsupportedTitle": "Dieser Browser kann die Laufzeit nicht starten",
   "builderRunBrowserUnsupportedDescription": "Verwende einen aktuellen Chromium-Browser, erlaube websiteübergreifende Cookies für WebContainer-Domains und lade die Seite neu.",
   "builderRunLocalNotice": "Läuft lokal in diesem Browser. Es wird nichts hochgeladen.",
