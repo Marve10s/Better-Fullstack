@@ -66,7 +66,24 @@ export type NpmPackageInfo = {
     [tag: string]: string;
   };
   versions: Record<string, unknown>;
+  time?: Record<string, string>;
 };
+
+/**
+ * Never bump a template floor onto a release younger than this. Yarn's
+ * hardened mode quarantines versions below its npmMinimalAgeGate (24h by
+ * default), so a fresher floor makes every yarn scaffold fail resolution;
+ * the margin also keeps generated projects off day-zero supply-chain risk.
+ */
+export const MIN_RELEASE_AGE_MS = 48 * 60 * 60 * 1000;
+
+function isOldEnough(info: NpmPackageInfo, version: string): boolean {
+  const published = info.time?.[version];
+  if (!published) return true; // no timestamp data — don't block the update
+  const publishedMs = Date.parse(published);
+  if (Number.isNaN(publishedMs)) return true;
+  return Date.now() - publishedMs >= MIN_RELEASE_AGE_MS;
+}
 
 // Ecosystem groups for organizing related packages
 export const ECOSYSTEM_GROUPS: Record<string, string[]> = {
@@ -532,6 +549,7 @@ async function fetchPackageInfo(packageName: string): Promise<NpmPackageInfo> {
 function getStableVersionsDescending(info: NpmPackageInfo): string[] {
   return Object.keys(info.versions || {})
     .filter((version) => !/-(alpha|beta|rc|next|canary)/.test(version))
+    .filter((version) => isOldEnough(info, version))
     .sort((a, b) => compareVersions(b, a));
 }
 
@@ -576,9 +594,13 @@ export async function fetchLatestVersion(
   const data = await fetchPackageInfo(packageName);
   let latest = data["dist-tags"]?.latest;
 
-  // If the latest is a prerelease and we want to skip prereleases,
-  // find the highest stable version
-  if (skipPrerelease && latest && /-(alpha|beta|rc|next|canary)/.test(latest)) {
+  // If the latest is a prerelease (and we want to skip prereleases) or is
+  // younger than the minimum release age, fall back to the highest stable
+  // version that clears both filters.
+  if (
+    latest &&
+    ((skipPrerelease && /-(alpha|beta|rc|next|canary)/.test(latest)) || !isOldEnough(data, latest))
+  ) {
     const versions = getStableVersionsDescending(data);
     if (versions.length > 0 && versions[0]) {
       latest = versions[0];
