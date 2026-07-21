@@ -48,28 +48,37 @@ export function GoogleMark({ className }: { className?: string }) {
   );
 }
 
-// Harness marks (not official brand logos): simple currentColor monograms in
-// the house geometry so cross-harness rows are tellable apart at a glance.
+// Official harness logomarks, flattened to currentColor for benchmark rows.
 export function OpencodeMark({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden className={className} xmlns="http://www.w3.org/2000/svg">
-      <path fill="currentColor" d="M3 3h18v18H3V3Zm2 2v14h14V5H5Zm3 3 4 4-4 4-1.4-1.4L9.2 12 6.6 9.4 8 8Zm5 7h5v2h-5v-2Z" />
+    <svg viewBox="0 0 300 300" aria-hidden className={className} xmlns="http://www.w3.org/2000/svg">
+      <g transform="translate(30 0)">
+        <path fill="currentColor" d="M180 60H60V240H180V60ZM240 300H0V0H240V300Z" />
+      </g>
     </svg>
   );
 }
 
 export function KiloMark({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden className={className} xmlns="http://www.w3.org/2000/svg">
-      <path fill="currentColor" d="M4 3h4v8.2L15.6 3H21l-7.8 9L21 21h-5.4L8 12.8V21H4V3Z" />
+    <svg viewBox="64 64 384 384" aria-hidden className={className} xmlns="http://www.w3.org/2000/svg">
+      <path
+        fill="currentColor"
+        d="M322 377H377V421H307.857L278 391.143V322H322V377ZM421 307.857L391.143 278H322V322L377 322V377H421V307.857ZM234 278H190V322H234V278ZM91 391.143L120.857 421H234V377H135V278H91V391.143ZM371.172 189.999V120.856L341.315 90.9995H278V135H327.172V189.999H278V233.999H421V189.999H371.172ZM135 91H91V233.999H135V184.5H190V233.999H234V184.5L190 140.5H135V91ZM234 91H190V140.5H234V91Z"
+      />
     </svg>
   );
 }
 
 export function PiHarnessMark({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden className={className} xmlns="http://www.w3.org/2000/svg">
-      <path fill="currentColor" d="M3 5h18v3H18v9.5c0 .9.5 1.5 1.4 1.5.6 0 1.1-.2 1.6-.5v2.6c-.7.4-1.5.6-2.4.6-2.2 0-3.6-1.4-3.6-3.7V8h-6v13H6V8H3V5Z" />
+    <svg viewBox="125 125 550 550" aria-hidden className={className} xmlns="http://www.w3.org/2000/svg">
+      <path
+        fill="currentColor"
+        fillRule="evenodd"
+        d="M165.29 165.29H517.36V400H400V517.36H282.65V634.72H165.29ZM282.65 282.65V400H400V282.65Z"
+      />
+      <path fill="currentColor" d="M517.36 400H634.72V634.72H517.36Z" />
     </svg>
   );
 }

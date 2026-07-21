@@ -1053,6 +1053,32 @@ const V1_MODEL_LOGO: Partial<Record<ModelId, ProviderLogoId>> = {
 };
 
 // V2: one row per (model, effort), pooled over the chosen path's scored cells.
+// Single source of truth for the published pass number: the FULL
+// (quality-gated) tier when every scored cell measured it, build-level
+// otherwise. The table and the scatter MUST agree — they both call this.
+function passTally(scored: readonly ScaffbenchCell[]): {
+  successes: number;
+  trials: number;
+  buildOnly: boolean;
+} {
+  const coreTrials = scored.reduce((sum, cell) => sum + (cell.scoredTrials ?? 1), 0);
+  const coreSuccesses = scored.reduce(
+    (sum, cell) => sum + (cell.passCount ?? (cell.corePass ? 1 : 0)),
+    0,
+  );
+  const fullMeasured = scored.filter((cell) => cell.fullPass !== null);
+  const qualityMeasured = scored.length > 0 && fullMeasured.length === scored.length;
+  if (!qualityMeasured) return { successes: coreSuccesses, trials: coreTrials, buildOnly: true };
+  return {
+    successes: fullMeasured.reduce(
+      (sum, cell) => sum + (cell.qualityPassCount ?? (cell.fullPass ? 1 : 0)),
+      0,
+    ),
+    trials: fullMeasured.reduce((sum, cell) => sum + (cell.scoredTrials ?? 1), 0),
+    buildOnly: false,
+  };
+}
+
 function computeV2ModelRows(
   dataset: ScaffbenchDataset,
   leaderPath: LeaderPath,
@@ -1074,27 +1100,11 @@ function computeV2ModelRows(
     // fake 0% row. This is what keeps the MCP tab to just the models we swept.
     if (leaderPath !== "all" && cells.length === 0) return [];
     const scored = cells.filter((cell) => cell.scored);
-    // Repeat-aware pass counting: 2.2.0+ cells carry integer passCount /
-    // scoredTrials; legacy single-trial cells fall back to the booleans
-    // (corePass is pass-ALL-trials on new cells, so booleans alone would
-    // render a 2-of-3-trials model as 0%).
-    const coreTrials = scored.reduce((sum, cell) => sum + (cell.scoredTrials ?? 1), 0);
-    const coreSuccesses = scored.reduce(
-      (sum, cell) => sum + (cell.passCount ?? (cell.corePass ? 1 : 0)),
-      0,
-    );
-    // The published metric is the FULL (quality-gated) tier. Rows whose sweeps
-    // never ran the quality gates (fullPass === null) fall back to build-level
-    // pass and are marked buildOnly until a quality-gated re-run lands.
-    const fullMeasured = scored.filter((cell) => cell.fullPass !== null);
-    const fullTrials = fullMeasured.reduce((sum, cell) => sum + (cell.scoredTrials ?? 1), 0);
-    const fullSuccesses = fullMeasured.reduce(
-      (sum, cell) => sum + (cell.qualityPassCount ?? (cell.fullPass ? 1 : 0)),
-      0,
-    );
-    const qualityMeasured = scored.length > 0 && fullMeasured.length === scored.length;
-    const passSuccesses = qualityMeasured ? fullSuccesses : coreSuccesses;
-    const passTrials = qualityMeasured ? fullTrials : coreTrials;
+    // Shared Full-tier tally — identical numbers on the table and the scatter.
+    const tally = passTally(scored);
+    const passSuccesses = tally.successes;
+    const passTrials = tally.trials;
+    const qualityMeasured = !tally.buildOnly;
     const costs = scored.map((cell) => cell.costUsd).filter((v): v is number => v !== null);
     const tokens = scored.map((cell) => cell.outTokens).filter((v): v is number => v !== null);
     const durations = scored
@@ -1259,14 +1269,12 @@ function aggregatePathMetrics(
     .map((cell) => cell.lines)
     .filter((value): value is number => value !== null && value !== undefined && value > 0);
   return {
-    // Repeat-aware build-level pass: integer counts when present, boolean
-    // fallback for legacy cells. Identical to the table's number today (no
-    // published row has quality-gated trials); align to the Full tier when
-    // quality-gated re-runs land.
-    pass: formatPercent(
-      scored.reduce((sum, cell) => sum + (cell.passCount ?? (cell.corePass ? 1 : 0)), 0),
-      scored.reduce((sum, cell) => sum + (cell.scoredTrials ?? 1), 0),
-    ),
+    // Same Full-tier-when-measured number the leaderboard table shows —
+    // the graph and table must never disagree on "pass".
+    pass: (() => {
+      const tally = passTally(scored);
+      return formatPercent(tally.successes, tally.trials);
+    })(),
     tokens: tokens.length > 0 ? mean(tokens) / 1000 : null,
     cost: costs.length > 0 ? mean(costs) : null,
     steps: steps.length > 0 ? mean(steps) : null,
