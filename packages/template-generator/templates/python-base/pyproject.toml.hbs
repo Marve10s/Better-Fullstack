@@ -352,6 +352,14 @@ files = ["src/app", "tests"]
 module = ["boto3", "boto3.*", "botocore", "botocore.*"]
 ignore_missing_imports = true
 {{/if}}
+{{#if (includes pythonAi "scikit-learn")}}
+
+# scikit-learn ships no py.typed marker; without this override the scaffolded
+# sklearn_model.py fails mypy before the user edits anything.
+[[tool.mypy.overrides]]
+module = ["sklearn", "sklearn.*"]
+ignore_missing_imports = true
+{{/if}}
 {{/if}}
 
 {{#if (eq pythonQuality "pyright")}}

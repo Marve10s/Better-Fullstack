@@ -27,7 +27,7 @@ Run the application:
 {{#if (eq pythonWebFramework "fastapi")}}
 {{#if (eq pythonPackageManager "poetry")}}poetry run {{else if (eq pythonPackageManager "uv")}}uv run {{else}}.venv/bin/{{/if}}uvicorn app.main:app --reload --host 0.0.0.0 --port ${PORT:-8000}
 {{else if (eq pythonWebFramework "streamlit")}}
-{{#if (eq pythonPackageManager "poetry")}}poetry run {{else if (eq pythonPackageManager "uv")}}uv run {{else}}.venv/bin/{{/if}}streamlit run src/app/main.py
+{{#if (eq pythonPackageManager "poetry")}}poetry run {{else if (eq pythonPackageManager "uv")}}uv run {{else}}.venv/bin/{{/if}}streamlit run src/app/main.py --server.port ${PORT:-8000}
 {{else if (eq pythonWebFramework "litestar")}}
 {{#if (eq pythonPackageManager "poetry")}}poetry run {{else if (eq pythonPackageManager "uv")}}uv run {{else}}.venv/bin/{{/if}}litestar --app src.app.main:app run --reload --host 0.0.0.0 --port ${PORT:-8000}
 {{else}}

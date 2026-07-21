@@ -655,7 +655,14 @@ export function validatePythonProject(projectDir: string, options: ScaffbenchOpt
     );
     const typechecker = yield* fromPromise(() => configuredPythonTypechecker(projectDir));
     if (typechecker === "mypy") {
-      steps.typecheck = yield* commandStep("uv", ["run", "mypy", "."], projectDir);
+      // An explicit "." would override a [tool.mypy] files/packages list and
+      // drag in support files (e.g. Alembic migrations) the scaffold never
+      // promises to type-check; only fall back to "." when the config names
+      // no targets of its own.
+      const mypyArguments = (yield* fromPromise(() => pythonMypyHasConfiguredTargets(projectDir)))
+        ? []
+        : ["."];
+      steps.typecheck = yield* commandStep("uv", ["run", "mypy", ...mypyArguments], projectDir);
     } else if (typechecker === "pyright") {
       steps.typecheck = yield* commandStep("uv", ["run", "pyright"], projectDir);
     } else {
@@ -1068,6 +1075,28 @@ export async function configuredPythonTypechecker(
   if (/^\s*\[tool\.mypy\]\s*$/m.test(pyproject)) return "mypy";
   if (/^\s*\[tool\.pyright\]\s*$/m.test(pyproject)) return "pyright";
   return null;
+}
+
+/** True when the project's mypy config declares its own targets (files/
+ *  packages/modules), meaning bare `mypy` runs exactly what the scaffold
+ *  intends and an explicit path argument would widen the check. */
+export async function pythonMypyHasConfiguredTargets(projectDir: string): Promise<boolean> {
+  const targetPattern = /^\s*(files|packages|modules)\s*=/m;
+  for (const name of ["mypy.ini", ".mypy.ini"]) {
+    const iniPath = path.join(projectDir, name);
+    if (existsSync(iniPath) && targetPattern.test(await readFile(iniPath, "utf8"))) return true;
+  }
+  const pyprojectPath = path.join(projectDir, "pyproject.toml");
+  if (!existsSync(pyprojectPath)) return false;
+  const pyproject = await readFile(pyprojectPath, "utf8");
+  // Only look inside the [tool.mypy] table — `packages =` under other tables
+  // (e.g. [tool.setuptools]) must not count.
+  const headerMatch = /^\s*\[tool\.mypy\]\s*$/m.exec(pyproject);
+  if (!headerMatch) return false;
+  const afterHeader = pyproject.slice(headerMatch.index + headerMatch[0].length);
+  const nextTable = afterHeader.search(/^\s*\[/m);
+  const section = nextTable === -1 ? afterHeader : afterHeader.slice(0, nextTable);
+  return targetPattern.test(section);
 }
 
 export async function findPythonEntryModule(projectDir: string): Promise<string | null> {

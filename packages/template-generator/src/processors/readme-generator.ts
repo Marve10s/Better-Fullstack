@@ -1891,11 +1891,11 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
   } else if (pythonWebFramework === "django") {
     scripts = `- \`${runCommand("python -m app.main")}\`: Start Django dev server`;
   } else if (pythonWebFramework === "flask") {
-    scripts = `- \`${runCommand("flask --app app.main run --reload")}\`: Start Flask dev server`;
+    scripts = `- \`${runCommand("flask --app app.main run --reload --port 8000")}\`: Start Flask dev server`;
   } else if (pythonWebFramework === "litestar") {
     scripts = `- \`${runCommand("litestar --app src.app.main:app run --reload --port 8000")}\`: Start Litestar dev server`;
   } else if (pythonWebFramework === "streamlit") {
-    scripts = `- \`${runCommand("streamlit run src/app/main.py")}\`: Start Streamlit`;
+    scripts = `- \`${runCommand("streamlit run src/app/main.py --server.port 8000")}\`: Start Streamlit`;
   }
 
   scripts += `
@@ -1996,10 +1996,10 @@ The application will be running at [http://localhost:8000](http://localhost:8000
         ? `Start the Flask development server:
 
 \`\`\`bash
-${runCommand("flask --app app.main run --reload")}
+${runCommand("flask --app app.main run --reload --port 8000")}
 \`\`\`
 
-The API will be running at [http://localhost:5000](http://localhost:5000).
+The API will be running at [http://localhost:8000](http://localhost:8000).
 `
         : pythonWebFramework === "litestar"
           ? `Start the Litestar development server:
@@ -2014,10 +2014,10 @@ The API will be running at [http://localhost:8000](http://localhost:8000).
             ? `Start Streamlit:
 
 \`\`\`bash
-${runCommand("streamlit run src/app/main.py")}
+${runCommand("streamlit run src/app/main.py --server.port 8000")}
 \`\`\`
 
-The application will be running at [http://localhost:8501](http://localhost:8501).
+The application will be running at [http://localhost:8000](http://localhost:8000).
 `
             : `Run the application:
 

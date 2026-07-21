@@ -1410,7 +1410,8 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
   if (pythonWebFramework === "django") {
     runCommand = `${runPrefix}python -m app.main`;
   } else if (pythonWebFramework === "flask") {
-    runCommand = `${runPrefix}flask --app app.main run --reload`;
+    // --port keeps the app on the URL advertised below (flask defaults to 5000)
+    runCommand = `${runPrefix}flask --app app.main run --reload --port 8000`;
   } else if (pythonWebFramework === "litestar") {
     runCommand = `${runPrefix}litestar --app src.app.main:app run --reload --port 8000`;
   } else if (pythonWebFramework === "streamlit") {

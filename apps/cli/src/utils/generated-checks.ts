@@ -5,6 +5,7 @@ import pc from "picocolors";
 
 import type { ProjectConfig, StackPart } from "../types";
 
+import { stackGraphToLegacyProjectConfigForEcosystem } from "../types";
 import { commandExists } from "./command-exists";
 import { getPrimaryGraphPart } from "./graph-summary";
 
@@ -26,11 +27,19 @@ function getGraphTarget(config: ProjectConfig): VerifyTarget | null {
     return null;
   }
 
+  // Graph parts can scope the package manager / quality tool to the backend
+  // (backend.packageManager:python:poetry); the top-level config still holds
+  // the defaults, so project the stack parts the same way the generator does.
+  const projected =
+    backend.ecosystem === "python"
+      ? stackGraphToLegacyProjectConfigForEcosystem(config, "python")
+      : config;
+
   return {
     ecosystem: backend.ecosystem,
     projectDir: path.join(config.projectDir, backend.targetPath ?? "apps/server"),
-    pythonPackageManager: config.pythonPackageManager,
-    pythonQuality: config.pythonQuality,
+    pythonPackageManager: projected.pythonPackageManager,
+    pythonQuality: projected.pythonQuality,
   };
 }
 
@@ -59,6 +68,21 @@ async function runCommand(cwd: string, command: string, args: string[]) {
   })`${command} ${args}`;
 }
 
+async function runPythonQualityCheck(
+  cwd: string,
+  runner: "poetry" | "uv",
+  quality: ProjectConfig["pythonQuality"] | undefined,
+) {
+  if (quality === "ruff") {
+    await runCommand(cwd, runner, ["run", "ruff", "check", "."]);
+  } else if (quality === "mypy") {
+    // Bare mypy uses the scaffold's [tool.mypy] files list.
+    await runCommand(cwd, runner, ["run", "mypy"]);
+  } else if (quality === "pyright") {
+    await runCommand(cwd, runner, ["run", "pyright"]);
+  }
+}
+
 async function verifyTarget(target: VerifyTarget) {
   const s = spinner();
   const cwd = target.projectDir;
@@ -79,16 +103,12 @@ async function verifyTarget(target: VerifyTarget) {
       s.start("Verifying generated Python server...");
       if (target.pythonPackageManager === "poetry") {
         await runCommand(cwd, "poetry", ["install", "--extras", "dev"]);
-        if (target.pythonQuality === "ruff") {
-          await runCommand(cwd, "poetry", ["run", "ruff", "check", "."]);
-        }
+        await runPythonQualityCheck(cwd, "poetry", target.pythonQuality);
       } else if (target.pythonPackageManager === "none") {
         await runCommand(cwd, "python", ["-m", "compileall", "src"]);
       } else {
         await runCommand(cwd, "uv", ["sync", "--extra", "dev"]);
-        if (target.pythonQuality === "ruff") {
-          await runCommand(cwd, "uv", ["run", "ruff", "check", "."]);
-        }
+        await runPythonQualityCheck(cwd, "uv", target.pythonQuality);
       }
       s.stop("Generated Python server checks passed");
       return;
