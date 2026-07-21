@@ -8,6 +8,7 @@ import type { ProjectConfig } from "@better-fullstack/types";
 import type { VirtualFileSystem } from "../core/virtual-fs";
 
 import { getGraphBackendConnection } from "../utils/graph-backend";
+import { getServerPackagePath } from "../utils/project-paths";
 
 type PackageJson = {
   name?: string;
@@ -42,6 +43,8 @@ const VIRTUAL_PACKAGE_MANAGER_VERSIONS: Record<ProjectConfig["packageManager"], 
 };
 
 const BETTER_AUTH_KYSELY_OVERRIDE = "0.28.17";
+
+const TSDOWN_VITEJS_DEVTOOLS_OVERRIDE = "0.4.1";
 
 /**
  * Update all package.json files with proper names, scripts, and workspaces
@@ -203,6 +206,7 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
   pkgJson.packageManager = `${packageManager}@${VIRTUAL_PACKAGE_MANAGER_VERSIONS[packageManager]}`;
 
   applyBetterAuthKyselyOverride(pkgJson, config);
+  applyTsdownDevtoolsOverride(vfs, pkgJson, config);
 
   if (backend === "convex") {
     if (!workspaces.includes("packages/*")) {
@@ -337,6 +341,29 @@ function applyBetterAuthKyselyOverride(pkgJson: PackageJson, config: ProjectConf
       throw new Error(`Unknown package manager: ${_exhaustive}`);
     }
   }
+}
+
+function applyTsdownDevtoolsOverride(
+  vfs: VirtualFileSystem,
+  pkgJson: PackageJson,
+  config: ProjectConfig,
+): void {
+  // npm 10's arborist crashes ("Cannot read properties of null (reading
+  // 'edgesOut')") while resolving tsdown's optional peer @vitejs/devtools@*
+  // against devtools 0.4.2 (published 2026-07-21). The peer is never actually
+  // installed, so pinning it to 0.4.1 has no runtime effect — it only gives
+  // arborist a manifest it can resolve. Remove once npm 10 users can install
+  // tsdown's peer graph again (upstream fix in tsdown, devtools, or npm).
+  // tsdown ships with every server workspace (see workspace-deps), which is
+  // injected AFTER this post-processor runs — so gate on the workspace
+  // existing rather than on the dep being present.
+  if (config.packageManager !== "npm") return;
+  if (!vfs.exists(getServerPackagePath(config.frontend, config.backend))) return;
+
+  pkgJson.overrides = {
+    ...pkgJson.overrides,
+    "@vitejs/devtools": TSDOWN_VITEJS_DEVTOOLS_OVERRIDE,
+  };
 }
 
 function getPackageManagerConfig(

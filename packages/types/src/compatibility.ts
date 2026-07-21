@@ -2410,6 +2410,15 @@ export const getDisabledReason = (
     ) {
       return "tower-sessions requires the generated Axum middleware stack";
     }
+    // Torii's SQLite storage pins sqlx 0.8.0 (libsqlite3-sys 0.28) while
+    // rusqlite uses libsqlite3-sys 0.36 — cargo permits only one crate to link
+    // the native sqlite3 library, so this pair can never resolve.
+    if (category === "rustAuth" && optionId === "torii" && currentStack.rustOrm === "rusqlite") {
+      return "Torii's sqlx-based storage conflicts with rusqlite (both link the native sqlite3 library)";
+    }
+    if (category === "rustOrm" && optionId === "rusqlite" && currentStack.rustAuth === "torii") {
+      return "rusqlite conflicts with Torii's sqlx-based storage (both link the native sqlite3 library)";
+    }
   }
 
   // Python prerequisites must run before graph-owned category handling returns.

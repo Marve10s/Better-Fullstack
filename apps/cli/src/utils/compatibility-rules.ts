@@ -971,4 +971,18 @@ export function validateRustExpansionCompatibility(config: Partial<ProjectConfig
       suggestions: ["Use --rust-web-framework axum", "Choose --rust-auth openidconnect or none"],
     });
   }
+
+  const orm = config.rustOrm ?? "none";
+  if (auth === "torii" && orm === "rusqlite") {
+    // Torii's SQLite storage pins sqlx 0.8.0 (libsqlite3-sys 0.28) while the
+    // rusqlite template uses libsqlite3-sys 0.36; cargo allows only one crate
+    // in the graph to link the native sqlite3 library, so this pair can never
+    // resolve.
+    incompatibilityError({
+      message:
+        "Torii's sqlx-based SQLite storage conflicts with rusqlite: both link the native sqlite3 library and cargo permits only one linker.",
+      provided: { "rust-orm": orm, "rust-auth": auth },
+      suggestions: ["Use --rust-orm sqlx, sea-orm, or diesel with Torii", "Choose --rust-auth none"],
+    });
+  }
 }
