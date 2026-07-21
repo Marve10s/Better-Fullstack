@@ -1,5 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, ArrowUpRight, Check, ChevronDown, Copy } from "lucide-react";
+import {
+  TbArrowRight as ArrowRight,
+  TbArrowUpRight as ArrowUpRight,
+  TbCheck as Check,
+  TbChevronDown as ChevronDown,
+  TbCopy as Copy,
+} from "react-icons/tb";
 import {
   AnimatePresence,
   animate,

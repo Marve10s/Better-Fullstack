@@ -1,4 +1,4 @@
-import { Heart } from "lucide-react";
+import { TbHeart as Heart } from "react-icons/tb";
 
 const PATREON_URL = "https://www.patreon.com/cw/marve10s";
 

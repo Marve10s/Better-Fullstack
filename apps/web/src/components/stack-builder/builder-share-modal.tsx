@@ -1,4 +1,10 @@
-import { Check, Copy, Github, Share2, Twitter } from "lucide-react";
+import {
+  TbCheck as Check,
+  TbCopy as Copy,
+  TbBrandGithub as Github,
+  TbShare2 as Share2,
+  TbBrandTwitter as Twitter,
+} from "react-icons/tb";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 

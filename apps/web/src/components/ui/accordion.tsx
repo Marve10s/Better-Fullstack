@@ -1,6 +1,6 @@
 
 import { Accordion as AccordionPrimitive } from "@base-ui/react/accordion";
-import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
+import { TbChevronDown as ChevronDownIcon, TbChevronUp as ChevronUpIcon } from "react-icons/tb";
 
 import { cn } from "@/lib/utils";
 

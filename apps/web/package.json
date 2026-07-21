@@ -52,7 +52,6 @@
     "fflate": "^0.8.2",
     "geist": "^1.7.2",
     "gray-matter": "^4.0.3",
-    "lucide-react": "^0.562.0",
     "mdast-util-to-string": "^4.0.0",
     "mdast-util-toc": "^7.1.0",
     "motion": "^12.42.2",

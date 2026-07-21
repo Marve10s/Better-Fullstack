@@ -1,4 +1,4 @@
-import { Github, Globe, Star } from "lucide-react";
+import { TbBrandGithub as Github, TbGlobe as Globe, TbStar as Star } from "react-icons/tb";
 
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import type { Sponsor, SponsorsData } from "@/lib/types";

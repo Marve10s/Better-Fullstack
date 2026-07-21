@@ -1,6 +1,13 @@
 import type { PreflightWarning } from "@better-fullstack/template-generator/browser";
 
-import { AlertTriangle, ChevronLeft, FileCode2, FolderTree, Info, Loader2 } from "lucide-react";
+import {
+  TbAlertTriangle as AlertTriangle,
+  TbChevronLeft as ChevronLeft,
+  TbFileCode as FileCode2,
+  TbFolderRoot as FolderTree,
+  TbInfoCircle as Info,
+  TbLoader2 as Loader2,
+} from "react-icons/tb";
 import { useEffect, useState, useCallback } from "react";
 
 import type { StackState } from "@/lib/constant";

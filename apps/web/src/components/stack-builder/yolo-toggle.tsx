@@ -1,5 +1,5 @@
 
-import { AlertTriangle } from "lucide-react";
+import { TbAlertTriangle as AlertTriangle } from "react-icons/tb";
 
 import type { StackState } from "@/lib/constant";
 

@@ -1,6 +1,6 @@
 import NumberFlow from "@number-flow/react";
 import { Link } from "@tanstack/react-router";
-import { ArrowRight } from "lucide-react";
+import { TbArrowRight as ArrowRight } from "react-icons/tb";
 import { motion, useInView } from "motion/react";
 import { lazy, Suspense, useMemo, useRef } from "react";
 

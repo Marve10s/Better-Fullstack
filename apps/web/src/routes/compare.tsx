@@ -1,5 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ArrowRight, Check, Minus, X } from "lucide-react";
+import { TbArrowRight as ArrowRight, TbCheck as Check, TbMinus as Minus, TbX as X } from "react-icons/tb";
 
 import Footer from "@/components/home/footer";
 import {

@@ -1,4 +1,4 @@
-import { Code2, GitPullRequest, Heart } from "lucide-react";
+import { TbCode as Code2, TbGitPullRequest as GitPullRequest, TbHeart as Heart } from "react-icons/tb";
 import { motion } from "motion/react";
 
 import { m } from "@/paraglide/messages.js";

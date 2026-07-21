@@ -1,4 +1,4 @@
-import { CheckCircle2, CircleAlert, Clock3, ExternalLink } from "lucide-react";
+import { TbCircleCheck as CheckCircle2, TbAlertCircle as CircleAlert, TbClockHour3 as Clock3, TbExternalLink as ExternalLink } from "react-icons/tb";
 
 import {
   type VerifiedCombinationActionLink,

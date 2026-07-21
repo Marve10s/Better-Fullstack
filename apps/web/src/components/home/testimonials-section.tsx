@@ -1,4 +1,4 @@
-import { Quote } from "lucide-react";
+import { TbQuote as Quote } from "react-icons/tb";
 import { motion } from "motion/react";
 
 import { cn } from "@/lib/utils";

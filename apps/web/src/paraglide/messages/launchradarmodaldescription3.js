@@ -6,7 +6,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{ count: NonNullable<unknown> }} Launchradarmodaldescription3Inputs */
 
 const en_launchradarmodaldescription3 = /** @type {(inputs: Launchradarmodaldescription3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} new libraries and tools across four ecosystems, organized so you can jump straight to what matters.`)
+	return /** @type {LocalizedString} */ (`${i?.count} new libraries and tools across seven ecosystems, organized so you can jump straight to what matters.`)
 };
 
 /** @type {(inputs: Launchradarmodaldescription3Inputs) => LocalizedString} */
@@ -36,7 +36,7 @@ const uk_launchradarmodaldescription3 = en_launchradarmodaldescription3;
 /**
 * | output |
 * | --- |
-* | "{count} new libraries and tools across four ecosystems, organized so you can jump straight to what matters." |
+* | "{count} new libraries and tools across seven ecosystems, organized so you can jump straight to what matters." |
 *
 * @param {Launchradarmodaldescription3Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options

@@ -3,7 +3,7 @@ import "@fontsource/opendyslexic/700.css";
 
 import { MDXProvider } from "@mdx-js/react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
+import { TbArrowLeft as ArrowLeft } from "react-icons/tb";
 import { Fragment, Suspense } from "react";
 
 import { ReadingControls } from "@/components/blog/reading-controls";

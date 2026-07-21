@@ -10,7 +10,7 @@ import {
   transformerNotationHighlight,
   transformerNotationWordHighlight,
 } from "@shikijs/transformers";
-import { CheckIcon, CopyIcon } from "lucide-react";
+import { TbCheck as CheckIcon, TbCopy as CopyIcon } from "react-icons/tb";
 import { createContext, useContext, useEffect, useState } from "react";
 import {
   SiAstro,
@@ -471,10 +471,12 @@ async function ensureThemeLoaded(
   }
 }
 
-const highlight = async (
+// Also consumed by the Edit & Run editor overlay (run-panel.tsx), which layers
+// this output behind a transparent textarea.
+export const highlight = async (
   code: string,
   language?: BundledLanguage,
-  themes?: ThemePair,
+  themes?: { light: string; dark: string },
 ): Promise<string | null> => {
   const languageToUse = language ?? "typescript";
   if (!isSupportedLanguage(languageToUse)) {

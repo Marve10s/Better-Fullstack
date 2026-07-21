@@ -1,4 +1,4 @@
-import { ArrowRight } from "lucide-react";
+import { TbArrowRight as ArrowRight } from "react-icons/tb";
 import { type CSSProperties, useCallback, useEffect, useState } from "react";
 
 import { Card } from "@/components/ui/card";

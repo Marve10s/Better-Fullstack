@@ -1,5 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { TbArrowRight as ArrowRight, TbArrowUpRight as ArrowUpRight } from "react-icons/tb";
 import type { CSSProperties } from "react";
 
 import { formatPostDate } from "@/components/blog/blog-page";

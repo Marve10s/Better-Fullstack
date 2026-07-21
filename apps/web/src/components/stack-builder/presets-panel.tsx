@@ -1,4 +1,4 @@
-import { Check, Pencil, Zap } from "lucide-react";
+import { TbCheck as Check, TbPencil as Pencil, TbBolt as Zap } from "react-icons/tb";
 
 import type { StackState } from "@/lib/constant";
 import { PRESET_CATEGORIES, PRESET_TEMPLATES } from "@/lib/constant";

@@ -1,4 +1,4 @@
-import { Zap } from "lucide-react";
+import { TbBolt as Zap } from "react-icons/tb";
 
 import {
   DropdownMenu,

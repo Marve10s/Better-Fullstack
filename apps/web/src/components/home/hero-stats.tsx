@@ -1,4 +1,4 @@
-import { CircleDot, Download, GitPullRequest, Star } from "lucide-react";
+import { TbCircleDot as CircleDot, TbDownload as Download, TbGitPullRequest as GitPullRequest, TbStar as Star } from "react-icons/tb";
 import { useEffect, useState } from "react";
 
 export type ProjectStatsData = {

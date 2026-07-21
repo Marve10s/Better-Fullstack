@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 import { useLocation } from "@tanstack/react-router";
-import { Menu, X } from "lucide-react";
+import { TbMenu2 as Menu, TbX as X } from "react-icons/tb";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 

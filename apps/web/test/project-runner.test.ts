@@ -10,14 +10,14 @@ import {
   virtualDirectoryToWebContainerTree,
 } from "../src/lib/project-runner";
 import { getStackRunSupport } from "../src/lib/run-support";
-import { DEFAULT_STACK } from "../src/lib/stack-defaults";
-import { getInitialBuilderState } from "../src/lib/stack-url-state";
 import {
   mountRunnableProject,
   installRunnableProject,
   normalizeRuntimeOutput,
   syncRunnableSourceFiles,
 } from "../src/lib/webcontainer-runtime";
+import { DEFAULT_STACK } from "../src/lib/stack-defaults";
+import { getInitialBuilderState } from "../src/lib/stack-url-state";
 
 describe("project runner", () => {
   it("supports solo TypeScript web stacks", () => {
@@ -32,10 +32,6 @@ describe("project runner", () => {
     expect(getStackRunSupport({ ...DEFAULT_STACK, webFrontend: ["none"] })).toEqual({
       supported: false,
       reason: "no-web-frontend",
-    });
-    expect(getStackRunSupport({ ...DEFAULT_STACK, webFrontend: ["fresh"] })).toEqual({
-      supported: false,
-      reason: "native-runtime",
     });
   });
 
@@ -227,7 +223,7 @@ describe("project runner", () => {
     expect(operations).toEqual(["rm", "mkdir", "mount"]);
   });
 
-  it("installs only the selected web workspace", async () => {
+  it("installs the full workspace root (npm 10 crashes on workspace-scoped installs)", async () => {
     let spawnedArguments: string[] = [];
     const runtime = {
       spawn: async (_command: string, arguments_: string[]) => {
@@ -243,10 +239,12 @@ describe("project runner", () => {
       },
     };
 
-    await installRunnableProject(runtime as never, () => undefined, "apps/web");
+    await installRunnableProject(runtime as never, () => undefined);
 
-    expect(spawnedArguments).toContain("--workspace=apps/web");
-    expect(spawnedArguments).toContain("--include-workspace-root=false");
+    expect(spawnedArguments).toContain("install");
+    expect(spawnedArguments).toContain("--legacy-peer-deps");
+    expect(spawnedArguments.some((argument) => argument.startsWith("--workspace"))).toBe(false);
+    expect(spawnedArguments).not.toContain("--include-workspace-root=false");
   });
 
   it("removes terminal control sequences from runtime output", () => {

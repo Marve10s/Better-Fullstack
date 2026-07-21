@@ -1,4 +1,4 @@
-import { Loader2Icon } from "lucide-react";
+import { TbLoader2 as Loader2Icon } from "react-icons/tb";
 
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages.js";

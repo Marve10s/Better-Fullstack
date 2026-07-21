@@ -1,4 +1,4 @@
-import { ChevronRight } from "lucide-react";
+import { TbChevronRight as ChevronRight } from "react-icons/tb";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 

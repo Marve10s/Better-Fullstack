@@ -1,4 +1,4 @@
-import { Check, FileText, Link2 } from "lucide-react";
+import { TbCheck as Check, TbFileText as FileText, TbLink as Link2 } from "react-icons/tb";
 import { useState } from "react";
 
 import { m } from "@/paraglide/messages.js";

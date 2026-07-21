@@ -1,13 +1,13 @@
 import { getCategoryOrderForEcosystem } from "@better-fullstack/types";
 import {
-  Copy,
-  EllipsisVertical,
-  FolderOpen,
-  Pencil,
-  Save,
-  SlidersHorizontal,
-  Trash2,
-} from "lucide-react";
+  TbCopy as Copy,
+  TbDotsVertical as EllipsisVertical,
+  TbFolderOpen as FolderOpen,
+  TbPencil as Pencil,
+  TbDeviceFloppy as Save,
+  TbAdjustmentsHorizontal as SlidersHorizontal,
+  TbTrash as Trash2,
+} from "react-icons/tb";
 import { useState } from "react";
 
 import type { StackState } from "@/lib/constant";

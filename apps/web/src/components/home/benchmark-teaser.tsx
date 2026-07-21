@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight } from "lucide-react";
+import { TbArrowRight as ArrowRight } from "react-icons/tb";
 import { motion } from "motion/react";
 import type { CSSProperties } from "react";
 

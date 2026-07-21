@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { ArrowRight, FileText, Hash, Search as SearchIcon } from "lucide-react";
+import { TbArrowRight as ArrowRight, TbFileText as FileText, TbHash as Hash, TbSearch as SearchIcon } from "react-icons/tb";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 

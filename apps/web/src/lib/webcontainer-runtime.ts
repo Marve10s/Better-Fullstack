@@ -68,16 +68,20 @@ async function pipeOutput(
 export async function installRunnableProject(
   runtime: WebContainer,
   onOutput: (chunk: string) => void,
-  workspace: string | null = null,
 ): Promise<void> {
-  const workspaceArguments = workspace
-    ? [`--workspace=${workspace}`, "--include-workspace-root=false"]
-    : [];
+  // Tuned for the WebContainer's bundled npm 10, whose arborist crashes with
+  // "Cannot read properties of null (reading 'edgesOut')" on this tree:
+  // workspace-scoped installs (--workspace) trip it when workspaces depend on
+  // each other, and even root installs trip it in #loadPeerSet while resolving
+  // vite/tsdown peer sets (fixed in npm 11). Hence a full root install with
+  // --legacy-peer-deps, which skips peer-set resolution entirely — generated
+  // projects declare their real deps directly, so nothing relies on
+  // auto-installed peers.
   const process = await runtime.spawn(
     "npm",
     [
       "install",
-      ...workspaceArguments,
+      "--legacy-peer-deps",
       "--no-audit",
       "--no-fund",
       "--prefer-offline",

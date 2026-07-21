@@ -1,23 +1,23 @@
 import { Link, useMatchRoute, useRouterState } from "@tanstack/react-router";
 import {
-  ArrowRight,
-  Blocks,
-  BookOpen,
-  Check,
-  ChevronDown,
-  ClipboardCopy,
-  Gauge,
-  Github,
-  Layers3,
-  Languages,
-  Menu,
-  Moon,
-  Newspaper,
-  Plug,
-  Sparkles,
-  Star,
-  Sun,
-} from "lucide-react";
+  TbArrowRight as ArrowRight,
+  TbBlocks as Blocks,
+  TbBook as BookOpen,
+  TbCheck as Check,
+  TbChevronDown as ChevronDown,
+  TbClipboardCopy as ClipboardCopy,
+  TbGauge as Gauge,
+  TbBrandGithub as Github,
+  TbStack3 as Layers3,
+  TbLanguage as Languages,
+  TbMenu2 as Menu,
+  TbMoon as Moon,
+  TbNews as Newspaper,
+  TbPlug as Plug,
+  TbSparkles as Sparkles,
+  TbStar as Star,
+  TbSun as Sun,
+} from "react-icons/tb";
 import { motion, LayoutGroup, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 

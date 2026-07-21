@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, Check, Copy } from "lucide-react";
+import { TbArrowRight as ArrowRight, TbCheck as Check, TbCopy as Copy } from "react-icons/tb";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 
