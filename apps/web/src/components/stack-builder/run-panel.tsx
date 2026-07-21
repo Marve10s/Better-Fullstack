@@ -224,15 +224,10 @@ export function RunPanel({
   onSelectFileRef.current = onSelectFile;
 
   const prepareWorkspace = useCallback(async () => {
-    if (!support.supported) return;
-
-    const stackToRun = JSON.parse(stackSignature) as StackState;
-
     const runId = runIdRef.current + 1;
     runIdRef.current = runId;
     runtimeMountedRef.current = false;
     dependenciesInstalledRef.current = false;
-    setStatus("generating");
     setProject(null);
     setDrafts({});
     setSyncedContents({});
@@ -240,6 +235,15 @@ export function RunPanel({
     setPreviewUrl(null);
     setError(null);
     setBrowserUnsupported(false);
+
+    if (!support.supported) {
+      onSelectFileRef.current(null);
+      setStatus("idle");
+      return;
+    }
+
+    setStatus("generating");
+    const stackToRun = JSON.parse(stackSignature) as StackState;
 
     try {
       const nextProject = await createRunnableProject(stackToRun);

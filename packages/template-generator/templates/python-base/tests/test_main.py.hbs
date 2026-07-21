@@ -8,19 +8,19 @@ from app.main import app
 
 
 @pytest.fixture
-def client():
+def client() -> TestClient:
     """Create a test client."""
     return TestClient(app)
 
 
-def test_root(client):
+def test_root(client: TestClient):
     """Test root endpoint."""
     response = client.get("/")
     assert response.status_code == 200
     assert response.json() == {"message": "Welcome to {{projectName}}!"}
 
 
-def test_health(client):
+def test_health(client: TestClient):
     """Test health endpoint."""
     response = client.get("/health")
     assert response.status_code == 200
@@ -28,14 +28,14 @@ def test_health(client):
 {{#if (includes pythonAi "langchain")}}
 
 
-def test_langchain_chat_endpoint_validation(client):
+def test_langchain_chat_endpoint_validation(client: TestClient):
     """Test LangChain chat endpoint validates request body."""
     # Test missing message field
     response = client.post("/ai/chat", json={})
     assert response.status_code == 422
 
 
-def test_langchain_chat_endpoint_with_history_validation(client):
+def test_langchain_chat_endpoint_with_history_validation(client: TestClient):
     """Test LangChain chat endpoint validates history format."""
     # Test with invalid history format (missing required fields)
     response = client.post(
@@ -48,14 +48,14 @@ def test_langchain_chat_endpoint_with_history_validation(client):
     assert response.status_code == 422
 
 
-def test_langchain_completion_endpoint_validation(client):
+def test_langchain_completion_endpoint_validation(client: TestClient):
     """Test LangChain completion endpoint validates request body."""
     # Test missing prompt field
     response = client.post("/ai/completion", json={})
     assert response.status_code == 422
 
 
-def test_langchain_completion_temperature_validation(client):
+def test_langchain_completion_temperature_validation(client: TestClient):
     """Test LangChain completion endpoint validates temperature range."""
     # Test temperature out of range
     response = client.post(
@@ -67,14 +67,14 @@ def test_langchain_completion_temperature_validation(client):
 {{#if (includes pythonAi "llamaindex")}}
 
 
-def test_llamaindex_chat_endpoint_validation(client):
+def test_llamaindex_chat_endpoint_validation(client: TestClient):
     """Test LlamaIndex chat endpoint validates request body."""
     # Test missing message field
     response = client.post("/ai/llamaindex/chat", json={})
     assert response.status_code == 422
 
 
-def test_llamaindex_chat_endpoint_with_history_validation(client):
+def test_llamaindex_chat_endpoint_with_history_validation(client: TestClient):
     """Test LlamaIndex chat endpoint validates history format."""
     # Test with invalid history format (missing required fields)
     response = client.post(
@@ -87,14 +87,14 @@ def test_llamaindex_chat_endpoint_with_history_validation(client):
     assert response.status_code == 422
 
 
-def test_llamaindex_completion_endpoint_validation(client):
+def test_llamaindex_completion_endpoint_validation(client: TestClient):
     """Test LlamaIndex completion endpoint validates request body."""
     # Test missing prompt field
     response = client.post("/ai/llamaindex/completion", json={})
     assert response.status_code == 422
 
 
-def test_llamaindex_completion_temperature_validation(client):
+def test_llamaindex_completion_temperature_validation(client: TestClient):
     """Test LlamaIndex completion endpoint validates temperature range."""
     # Test temperature out of range
     response = client.post(
@@ -106,14 +106,14 @@ def test_llamaindex_completion_temperature_validation(client):
 {{#if (includes pythonAi "openai-sdk")}}
 
 
-def test_openai_chat_endpoint_validation(client):
+def test_openai_chat_endpoint_validation(client: TestClient):
     """Test OpenAI chat endpoint validates request body."""
     # Test missing message field
     response = client.post("/ai/openai/chat", json={})
     assert response.status_code == 422
 
 
-def test_openai_chat_endpoint_with_history_validation(client):
+def test_openai_chat_endpoint_with_history_validation(client: TestClient):
     """Test OpenAI chat endpoint validates history format."""
     # Test with invalid history format (missing required fields)
     response = client.post(
@@ -126,14 +126,14 @@ def test_openai_chat_endpoint_with_history_validation(client):
     assert response.status_code == 422
 
 
-def test_openai_completion_endpoint_validation(client):
+def test_openai_completion_endpoint_validation(client: TestClient):
     """Test OpenAI completion endpoint validates request body."""
     # Test missing prompt field
     response = client.post("/ai/openai/completion", json={})
     assert response.status_code == 422
 
 
-def test_openai_completion_temperature_validation(client):
+def test_openai_completion_temperature_validation(client: TestClient):
     """Test OpenAI completion endpoint validates temperature range."""
     # Test temperature out of range
     response = client.post(
@@ -145,14 +145,14 @@ def test_openai_completion_temperature_validation(client):
 {{#if (includes pythonAi "anthropic-sdk")}}
 
 
-def test_anthropic_chat_endpoint_validation(client):
+def test_anthropic_chat_endpoint_validation(client: TestClient):
     """Test Anthropic chat endpoint validates request body."""
     # Test missing message field
     response = client.post("/ai/anthropic/chat", json={})
     assert response.status_code == 422
 
 
-def test_anthropic_chat_endpoint_with_history_validation(client):
+def test_anthropic_chat_endpoint_with_history_validation(client: TestClient):
     """Test Anthropic chat endpoint validates history format."""
     # Test with invalid history format (missing required fields)
     response = client.post(
@@ -165,14 +165,14 @@ def test_anthropic_chat_endpoint_with_history_validation(client):
     assert response.status_code == 422
 
 
-def test_anthropic_completion_endpoint_validation(client):
+def test_anthropic_completion_endpoint_validation(client: TestClient):
     """Test Anthropic completion endpoint validates request body."""
     # Test missing prompt field
     response = client.post("/ai/anthropic/completion", json={})
     assert response.status_code == 422
 
 
-def test_anthropic_completion_temperature_validation(client):
+def test_anthropic_completion_temperature_validation(client: TestClient):
     """Test Anthropic completion endpoint validates temperature range."""
     # Test temperature out of range (Anthropic max is 1.0)
     response = client.post(
@@ -184,14 +184,14 @@ def test_anthropic_completion_temperature_validation(client):
 {{#if (includes pythonAi "langgraph")}}
 
 
-def test_langgraph_chat_endpoint_validation(client):
+def test_langgraph_chat_endpoint_validation(client: TestClient):
     """Test LangGraph chat endpoint validates request body."""
     # Test missing message field
     response = client.post("/ai/langgraph/chat", json={})
     assert response.status_code == 422
 
 
-def test_langgraph_chat_endpoint_with_history_validation(client):
+def test_langgraph_chat_endpoint_with_history_validation(client: TestClient):
     """Test LangGraph chat endpoint validates history format."""
     # Test with invalid history format (missing required fields)
     response = client.post(
@@ -204,14 +204,14 @@ def test_langgraph_chat_endpoint_with_history_validation(client):
     assert response.status_code == 422
 
 
-def test_langgraph_agent_endpoint_validation(client):
+def test_langgraph_agent_endpoint_validation(client: TestClient):
     """Test LangGraph agent endpoint validates request body."""
     # Test missing message field
     response = client.post("/ai/langgraph/agent", json={})
     assert response.status_code == 422
 
 
-def test_langgraph_agent_max_iterations_validation(client):
+def test_langgraph_agent_max_iterations_validation(client: TestClient):
     """Test LangGraph agent endpoint validates max_iterations range."""
     # Test max_iterations out of range
     response = client.post(
@@ -221,14 +221,14 @@ def test_langgraph_agent_max_iterations_validation(client):
     assert response.status_code == 422
 
 
-def test_langgraph_completion_endpoint_validation(client):
+def test_langgraph_completion_endpoint_validation(client: TestClient):
     """Test LangGraph completion endpoint validates request body."""
     # Test missing prompt field
     response = client.post("/ai/langgraph/completion", json={})
     assert response.status_code == 422
 
 
-def test_langgraph_completion_temperature_validation(client):
+def test_langgraph_completion_temperature_validation(client: TestClient):
     """Test LangGraph completion endpoint validates temperature range."""
     # Test temperature out of range
     response = client.post(
@@ -240,14 +240,14 @@ def test_langgraph_completion_temperature_validation(client):
 {{#if (includes pythonAi "crewai")}}
 
 
-def test_crewai_research_endpoint_validation(client):
+def test_crewai_research_endpoint_validation(client: TestClient):
     """Test CrewAI research endpoint validates request body."""
     # Test missing topic field
     response = client.post("/ai/crewai/research", json={})
     assert response.status_code == 422
 
 
-def test_crewai_research_endpoint_empty_topic_validation(client):
+def test_crewai_research_endpoint_empty_topic_validation(client: TestClient):
     """Test CrewAI research endpoint validates topic is not empty."""
     # Test with empty topic
     response = client.post(
@@ -257,14 +257,14 @@ def test_crewai_research_endpoint_empty_topic_validation(client):
     assert response.status_code == 422
 
 
-def test_crewai_analysis_endpoint_validation(client):
+def test_crewai_analysis_endpoint_validation(client: TestClient):
     """Test CrewAI analysis endpoint validates request body."""
     # Test missing data field
     response = client.post("/ai/crewai/analysis", json={})
     assert response.status_code == 422
 
 
-def test_crewai_analysis_endpoint_empty_data_validation(client):
+def test_crewai_analysis_endpoint_empty_data_validation(client: TestClient):
     """Test CrewAI analysis endpoint validates data is not empty."""
     # Test with empty data
     response = client.post(
@@ -274,14 +274,14 @@ def test_crewai_analysis_endpoint_empty_data_validation(client):
     assert response.status_code == 422
 
 
-def test_crewai_custom_endpoint_validation(client):
+def test_crewai_custom_endpoint_validation(client: TestClient):
     """Test CrewAI custom endpoint validates request body."""
     # Test missing required fields
     response = client.post("/ai/crewai/custom", json={})
     assert response.status_code == 422
 
 
-def test_crewai_custom_endpoint_missing_expected_output_validation(client):
+def test_crewai_custom_endpoint_missing_expected_output_validation(client: TestClient):
     """Test CrewAI custom endpoint validates expected_output is required."""
     # Test missing expected_output
     response = client.post(
@@ -291,14 +291,14 @@ def test_crewai_custom_endpoint_missing_expected_output_validation(client):
     assert response.status_code == 422
 
 
-def test_crewai_completion_endpoint_validation(client):
+def test_crewai_completion_endpoint_validation(client: TestClient):
     """Test CrewAI completion endpoint validates request body."""
     # Test missing prompt field
     response = client.post("/ai/crewai/completion", json={})
     assert response.status_code == 422
 
 
-def test_crewai_completion_endpoint_empty_prompt_validation(client):
+def test_crewai_completion_endpoint_empty_prompt_validation(client: TestClient):
     """Test CrewAI completion endpoint validates prompt is not empty."""
     # Test with empty prompt
     response = client.post(
@@ -310,7 +310,7 @@ def test_crewai_completion_endpoint_empty_prompt_validation(client):
 {{#if (and (eq pythonOrm "none") (eq pythonValidation "pydantic"))}}
 
 
-def test_create_item(client):
+def test_create_item(client: TestClient):
     """Test creating an item with valid data."""
     response = client.post(
         "/items",
@@ -324,7 +324,7 @@ def test_create_item(client):
     assert "id" in data
 
 
-def test_create_item_validation_error(client):
+def test_create_item_validation_error(client: TestClient):
     """Test validation error for invalid item data."""
     # Price must be positive
     response = client.post(
@@ -334,7 +334,7 @@ def test_create_item_validation_error(client):
     assert response.status_code == 422
 
 
-def test_create_item_missing_required_field(client):
+def test_create_item_missing_required_field(client: TestClient):
     """Test validation error for missing required field."""
     response = client.post(
         "/items",
@@ -343,7 +343,7 @@ def test_create_item_missing_required_field(client):
     assert response.status_code == 422
 
 
-def test_list_items(client):
+def test_list_items(client: TestClient):
     """Test listing items."""
     # Create an item first
     client.post("/items", json={"name": "Item 1", "price": 10.0})
@@ -352,13 +352,13 @@ def test_list_items(client):
     assert isinstance(response.json(), list)
 
 
-def test_get_item_not_found(client):
+def test_get_item_not_found(client: TestClient):
     """Test getting non-existent item."""
     response = client.get("/items/99999")
     assert response.status_code == 404
 
 
-def test_send_message(client):
+def test_send_message(client: TestClient):
     """Test sending a contact message with validated email."""
     response = client.post(
         "/contact",
@@ -374,7 +374,7 @@ def test_send_message(client):
     assert "test@example.com" in data["message"]
 
 
-def test_send_message_invalid_email(client):
+def test_send_message_invalid_email(client: TestClient):
     """Test validation error for invalid email."""
     response = client.post(
         "/contact",
@@ -389,7 +389,7 @@ def test_send_message_invalid_email(client):
 {{#if (eq pythonGraphql "strawberry")}}
 
 
-def test_graphql_endpoint(client):
+def test_graphql_endpoint(client: TestClient):
     """Test GraphQL endpoint returns data."""
     query = '{ "query": "{ books { title author } }" }'
     response = client.post("/graphql", content=query, headers={"Content-Type": "application/json"})

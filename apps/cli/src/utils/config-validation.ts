@@ -1209,7 +1209,8 @@ export function validatePythonExpansionConstraints(config: Partial<ProjectConfig
   }
 
   if (
-    (config.pythonWebFramework === "aiohttp" ||
+    (config.pythonWebFramework === "none" ||
+      config.pythonWebFramework === "aiohttp" ||
       config.pythonWebFramework === "starlette" ||
       config.pythonWebFramework === "streamlit") &&
     config.pythonGraphql !== undefined &&

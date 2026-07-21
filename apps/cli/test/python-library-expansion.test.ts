@@ -240,9 +240,11 @@ describe("Python library expansion", () => {
     expect(starlette.success).toBe(true);
     expect(mypy.success).toBe(true);
 
+    // Starlette 1.3+ prefers the httpx2 package for its TestClient, both at
+    // runtime and under type checking — legacy httpx leaves pyright with
+    // unresolved annotations (Unknown) in strict mode.
     const starlettePyproject = getFileContent(starlette.tree!.root, "pyproject.toml");
-    expect(starlettePyproject).toContain('"httpx>=0.27.0"');
-    expect(starlettePyproject).not.toContain("httpx2");
+    expect(starlettePyproject).toContain('"httpx2>=2.0.0"');
 
     const mypyPyproject = getFileContent(mypy.tree!.root, "pyproject.toml");
     expect(mypyPyproject).toContain('"types-requests>=2.32.0"');
