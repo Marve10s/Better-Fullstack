@@ -22,7 +22,7 @@
 
 <br>
 
-**Scaffold production-ready fullstack apps in seconds. Browse 450+ tools across seven ecosystems — the CLI wires everything together.**
+**Scaffold production-ready fullstack apps in TypeScript, React Native, Rust, Go, Python, Java, .NET, and Elixir — pick your stack, the CLI wires it together.**
 
 <br>
 
@@ -40,10 +40,29 @@
 
 Most scaffolding tools lock you into one framework and one opinion. Better Fullstack doesn't.
 
-- **450+ tools** — frontend, backend, database, auth, payments, AI, DevOps, and more
-- **7 ecosystems** — TypeScript, React Native, Rust, Python, Go, Java, Elixir — with more coming
+- **Broad stack catalog** — frontend, backend, database, ORM, auth, API layer, payments, AI, DevOps, and more
+- **Multi-ecosystem projects** — compose web, mobile, and backend stacks across TypeScript, React Native, Rust, Go, Python, Java, .NET, and Elixir
 - **Visual builder** — configure your stack in the browser, get a ready-to-run CLI command
 - **Wired for you** — no manual glue code; every picked integration is preconfigured and working out of the box
+- **Compatibility-checked** — an engine validates every combination, so generated projects build and type-check
+
+<details>
+<summary><strong>What's in the catalog?</strong></summary>
+<br>
+
+| Category | Examples |
+|---|---|
+| Web frontends | Next.js, Nuxt, SvelteKit, SolidStart, Angular, Qwik, Astro, TanStack Start, TanStack Router, React Router |
+| Backends | Hono, Elysia, Fastify, Express, NestJS, AdonisJS, Axum, Rocket, FastAPI, Flask, Litestar, Spring Boot |
+| Mobile | Expo / React Native with navigation, UI, storage, push, OTA options |
+| Databases & ORMs | PostgreSQL, MySQL, SQLite, MongoDB — Drizzle, Prisma, MikroORM, TypeORM, Sequelize, SQLx, Diesel |
+| API layer | tRPC, oRPC, ts-rest, OpenAPI, GraphQL |
+| Auth & payments | Better-Auth, Clerk, Auth.js, Auth0, Supabase Auth, WorkOS — Stripe, Paddle, LemonSqueezy, RevenueCat |
+| Extras | AI SDKs, job queues, realtime, caching, search, file storage, i18n, feature flags, vector DBs, observability |
+
+Explore every option in the **[App Builder →](https://better-fullstack.dev/new)**
+
+</details>
 
 <br>
 
@@ -96,7 +115,7 @@ yarn create better-fullstack@latest
 --yes              # Accept all defaults
 --yolo             # Scaffold a random stack — good for exploring
 --template <name>  # Use a preset (t3, mern, pern, uniwind)
---ecosystem <lang> # Start in typescript, react-native, rust, python, go, java, or elixir mode
+--ecosystem <lang> # Choose the primary project ecosystem
 --part <binding>   # Add a multi-ecosystem stack part, e.g. frontend:typescript:next
 --version-channel  # Dependency channel: stable, latest, beta
 --no-git           # Skip git initialization

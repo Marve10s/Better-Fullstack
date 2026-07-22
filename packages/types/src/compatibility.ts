@@ -191,6 +191,7 @@ export type CompatibilityInput = {
   mobilePush: string;
   mobileOTA: string;
   mobileDeepLinking: string;
+  mobileLibraries: string[];
   codeQuality: string[];
   documentation: string[];
   appPlatforms: string[];
@@ -234,6 +235,13 @@ export type CompatibilityInput = {
   pythonRealtime: string;
   pythonObservability: string;
   pythonCli: string[];
+  pythonCloudSdk: string;
+  pythonHttpClient: string;
+  pythonData: string[];
+  pythonMedia: string;
+  pythonServer: string;
+  pythonPackageManager: string;
+  pythonMessageQueue: string;
   goWebFramework: string;
   goOrm: string;
   goApi: string;
@@ -272,6 +280,7 @@ export type CompatibilityInput = {
   dotnetValidation: string;
   dotnetCaching: string;
   dotnetDeploy: string;
+  dotnetLibraries: string[];
   elixirWebFramework: string;
   elixirOrm: string;
   elixirAuth: string;
@@ -1345,6 +1354,14 @@ export const analyzeStackCompatibility = (
         changes.push({ category, message });
       }
     }
+    if ((nextStack.mobileLibraries?.length ?? 0) > 0) {
+      nextStack.mobileLibraries = [];
+      changed = true;
+      changes.push({
+        category: "mobileLibraries",
+        message: "Mobile libraries cleared (no native frontend)",
+      });
+    }
   } else {
     if (nextStack.mobileNavigation === "none") {
       nextStack.mobileNavigation = "expo-router";
@@ -1710,6 +1727,92 @@ export const analyzeStackCompatibility = (
       changes.push({
         category: "pythonWebFramework",
         message: "Python API framework set to 'None' (DRF and Django Ninja require Django)",
+      });
+    }
+    if (nextStack.pythonOrm === "pymongo" && nextStack.database !== "mongodb") {
+      nextStack.database = "mongodb";
+      changed = true;
+      changes.push({
+        category: "pythonOrm",
+        message: "Database set to MongoDB (required by PyMongo)",
+      });
+    }
+    if (
+      nextStack.pythonOrm === "pymongo" &&
+      nextStack.dbSetup !== "mongodb-atlas" &&
+      nextStack.dbSetup !== "none" &&
+      nextStack.dbSetup !== "docker"
+    ) {
+      // This runs after the generic DB-setup normalization, so clear setups
+      // that only support relational databases (Neon, Supabase, Turso, ...).
+      nextStack.dbSetup = "none";
+      changed = true;
+      changes.push({
+        category: "pythonOrm",
+        message: "DB Setup set to 'None' (incompatible with MongoDB)",
+      });
+    }
+    if (
+      nextStack.database === "mongodb" &&
+      nextStack.pythonOrm !== "pymongo" &&
+      nextStack.pythonOrm !== "none"
+    ) {
+      nextStack.database = "sqlite";
+      changed = true;
+      changes.push({
+        category: "database",
+        message: `Database set to SQLite (MongoDB requires PyMongo, not ${nextStack.pythonOrm})`,
+      });
+    }
+    if (
+      (nextStack.pythonWebFramework === "none" ||
+        nextStack.pythonWebFramework === "aiohttp" ||
+        nextStack.pythonWebFramework === "starlette" ||
+        nextStack.pythonWebFramework === "streamlit") &&
+      nextStack.pythonGraphql !== "none"
+    ) {
+      nextStack.pythonGraphql = "none";
+      changed = true;
+      changes.push({
+        category: "pythonGraphql",
+        message: "GraphQL set to 'None' (only wired for FastAPI, Django, Flask, and Litestar)",
+      });
+    }
+    if (
+      (nextStack.pythonWebFramework === "none" ||
+        nextStack.pythonWebFramework === "aiohttp" ||
+        nextStack.pythonWebFramework === "starlette" ||
+        nextStack.pythonWebFramework === "streamlit") &&
+      nextStack.pythonAuth !== "none"
+    ) {
+      nextStack.pythonAuth = "none";
+      changed = true;
+      changes.push({
+        category: "pythonAuth",
+        message: `Auth set to 'None' (auth routes are not wired for ${nextStack.pythonWebFramework})`,
+      });
+    }
+    if (
+      (nextStack.pythonWebFramework === "streamlit" || nextStack.pythonWebFramework === "none") &&
+      nextStack.pythonObservability === "prometheus-client"
+    ) {
+      nextStack.pythonObservability = "none";
+      changed = true;
+      changes.push({
+        category: "pythonObservability",
+        message:
+          "Observability set to 'None' (prometheus-client needs an HTTP server to expose /metrics)",
+      });
+    }
+    if (
+      nextStack.pythonServer === "gunicorn" &&
+      (nextStack.pythonWebFramework === "streamlit" || nextStack.pythonWebFramework === "none")
+    ) {
+      nextStack.pythonServer = "none";
+      changed = true;
+      changes.push({
+        category: "pythonServer",
+        message: "Production server set to 'None' (Gunicorn requires a WSGI, ASGI, or aiohttp app)",
       });
     }
   }
@@ -2137,6 +2240,7 @@ export const getDisabledReason = (
       "mobilePush",
       "mobileOTA",
       "mobileDeepLinking",
+      "mobileLibraries",
       "auth",
       "payments",
       "packageManager",
@@ -2307,6 +2411,29 @@ export const getDisabledReason = (
     ) {
       return "tower-sessions requires the generated Axum middleware stack";
     }
+    // Torii's SQLite storage pins sqlx 0.8.0 (libsqlite3-sys 0.28) while
+    // rusqlite uses libsqlite3-sys 0.36 — cargo permits only one crate to link
+    // the native sqlite3 library, so this pair can never resolve.
+    if (category === "rustAuth" && optionId === "torii" && currentStack.rustOrm === "rusqlite") {
+      return "Torii's sqlx-based storage conflicts with rusqlite (both link the native sqlite3 library)";
+    }
+    if (category === "rustOrm" && optionId === "rusqlite" && currentStack.rustAuth === "torii") {
+      return "rusqlite conflicts with Torii's sqlx-based storage (both link the native sqlite3 library)";
+    }
+  }
+
+  // Python prerequisites must run before graph-owned category handling returns.
+  if (category === "pythonApi") {
+    if (optionId !== "none" && currentStack.pythonWebFramework !== "django") {
+      return "Python API frameworks currently require Django";
+    }
+  }
+  if (
+    category === "pythonServer" &&
+    optionId === "gunicorn" &&
+    (currentStack.pythonWebFramework === "streamlit" || currentStack.pythonWebFramework === "none")
+  ) {
+    return "Gunicorn requires a WSGI, ASGI, or aiohttp application";
   }
 
   const graphDisabledReason =
@@ -2940,6 +3067,7 @@ export const getDisabledReason = (
     "mobilePush",
     "mobileOTA",
     "mobileDeepLinking",
+    "mobileLibraries",
   ]);
 
   if (mobileCategories.has(category)) {
@@ -3178,15 +3306,6 @@ export const getDisabledReason = (
       if (unsupportedFrontend) {
         return `Intlayer is not yet wired for the '${unsupportedFrontend}' frontend`;
       }
-    }
-  }
-
-  // ============================================
-  // PYTHON ECOSYSTEM RULES
-  // ============================================
-  if (category === "pythonApi") {
-    if (optionId !== "none" && currentStack.pythonWebFramework !== "django") {
-      return "Python API frameworks currently require Django";
     }
   }
 
@@ -3732,6 +3851,15 @@ const GRAPH_DISABLED_REASON_BINDINGS: Partial<
     authoritative: true,
     missingOwnerReason: "Mobile deep linking requires a native Expo frontend",
   },
+  mobileLibraries: {
+    role: "libraries",
+    ecosystem: "react-native",
+    ownerRole: "mobile",
+    ownerEcosystem: "react-native",
+    authoritative: true,
+    missingOwnerReason: "Mobile libraries require a native Expo frontend",
+    candidateIdPrefix: "candidate:native",
+  },
   javaBuildTool: {
     role: "buildTool",
     ecosystem: "java",
@@ -3845,6 +3973,62 @@ const GRAPH_DISABLED_REASON_BINDINGS: Partial<
   },
   pythonCli: {
     role: "cli",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  pythonCloudSdk: {
+    role: "cloudSdk",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  pythonHttpClient: {
+    role: "httpClient",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  pythonData: {
+    role: "data",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  pythonMedia: {
+    role: "media",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  pythonServer: {
+    role: "server",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  pythonPackageManager: {
+    role: "packageManager",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  pythonMessageQueue: {
+    role: "messageQueue",
     ecosystem: "python",
     ownerRole: "backend",
     ownerEcosystem: "python",
@@ -4024,6 +4208,15 @@ const GRAPH_DISABLED_REASON_BINDINGS: Partial<
     ownerEcosystem: "dotnet",
     currentEcosystem: "dotnet",
     authoritative: true,
+  },
+  dotnetLibraries: {
+    role: "libraries",
+    ecosystem: "dotnet",
+    ownerRole: "backend",
+    ownerEcosystem: "dotnet",
+    currentEcosystem: "dotnet",
+    authoritative: true,
+    candidateIdPrefix: "candidate:native",
   },
 };
 
@@ -4884,6 +5077,18 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
     }
   }
 
+  for (const mobileLibrary of input.mobileLibraries ?? []) {
+    const reason = getDisabledReason(input, "mobileLibraries", mobileLibrary);
+    if (reason) {
+      issues.push({
+        code: "INCOMPATIBLE_MOBILE_LIBRARY",
+        message: reason,
+        category: "mobileLibraries",
+        optionId: mobileLibrary,
+      });
+    }
+  }
+
   for (const testingLibrary of input.javaTestingLibraries) {
     const reason = getDisabledReason(input, "javaTestingLibraries", testingLibrary);
     if (reason) {
@@ -4916,6 +5121,18 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
         message: reason,
         category: "dotnetObservability",
         optionId: observabilityLibrary,
+      });
+    }
+  }
+
+  for (const dotnetLibrary of input.dotnetLibraries ?? []) {
+    const reason = getDisabledReason(input, "dotnetLibraries", dotnetLibrary);
+    if (reason) {
+      issues.push({
+        code: "INCOMPATIBLE_DOTNET_LIBRARY",
+        message: reason,
+        category: "dotnetLibraries",
+        optionId: dotnetLibrary,
       });
     }
   }

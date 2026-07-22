@@ -2,6 +2,7 @@ import type { BenchmarkSpec } from "@/types";
 
 export const FrontierPolyglotProtoSpec: BenchmarkSpec = {
     id: "frontier-polyglot-proto",
+    introducedAt: "2026-06-30",
     title: "Frontier: polyglot monorepo — shared protobuf across a Rust gRPC service, a Go gateway, and a TS client",
     lane: "core",
     family: "multi-ecosystem",
@@ -15,7 +16,7 @@ export const FrontierPolyglotProtoSpec: BenchmarkSpec = {
       "Implement an edge gateway in Go that speaks gRPC to the Rust service and exposes HTTP/JSON.",
       "Implement a TypeScript web client generated from the same proto contract.",
       "Wire codegen so all three consume the one .proto definition; provide build scripts per package.",
-      "Do not install dependencies, do not initialize git, and do not start a dev server.",
+      "Do not initialize git or start a dev server.",
     ],
     naturalPrompt:
       "Build a polyglot monorepo around a single service contract: a Rust gRPC core service, a Go gateway that bridges gRPC to HTTP/JSON, and a TypeScript client — all generated from one shared Protocol Buffers definition. Set up the codegen and per-package builds so the three stay in sync.",
@@ -33,6 +34,6 @@ export const FrontierPolyglotProtoSpec: BenchmarkSpec = {
       { id: "go:grpc", text: ["google.golang.org/grpc"] },
       { id: "ts:protobuf", text: ["protobuf"] },
     ],
+    prerequisiteCommands: [["buf", "generate"]],
     validationProfile: { packageManager: "bun", native: ["cargo", "go"] },
   };
-

@@ -148,7 +148,7 @@ export const CONFIG_SCOPE_REGISTRY = {
       {
         id: "mobile-experience",
         label: "Mobile Experience",
-        promptKeys: ["mobileUI", "mobileStorage", "mobileDeepLinking"],
+        promptKeys: ["mobileUI", "mobileStorage", "mobileDeepLinking", "mobileLibraries"],
       },
       {
         id: "mobile-delivery",
@@ -212,18 +212,30 @@ export const CONFIG_SCOPE_REGISTRY = {
       },
       {
         id: "api-jobs",
-        label: "GraphQL, Tasks & CLI",
-        promptKeys: ["pythonGraphql", "pythonTaskQueue", "pythonCli"],
+        label: "GraphQL, Queues & CLI",
+        promptKeys: ["pythonGraphql", "pythonTaskQueue", "pythonMessageQueue", "pythonCli"],
       },
       {
         id: "data-realtime",
-        label: "Caching & Realtime",
-        promptKeys: ["pythonCaching", "pythonRealtime"],
+        label: "Data, Media & Integrations",
+        promptKeys: [
+          "pythonData",
+          "pythonMedia",
+          "pythonCloudSdk",
+          "pythonHttpClient",
+          "pythonCaching",
+          "pythonRealtime",
+        ],
       },
       {
         id: "quality",
         label: "Quality, Testing & Observability",
         promptKeys: ["pythonQuality", "pythonTesting", "pythonObservability"],
+      },
+      {
+        id: "runtime-tooling",
+        label: "Server & Package Manager",
+        promptKeys: ["pythonServer", "pythonPackageManager"],
       },
     ],
   },
@@ -300,7 +312,7 @@ export const CONFIG_SCOPE_REGISTRY = {
       {
         id: "validation-deploy",
         label: "Validation & Deployment",
-        promptKeys: ["dotnetValidation", "dotnetDeploy"],
+        promptKeys: ["dotnetValidation", "dotnetDeploy", "dotnetLibraries"],
       },
     ],
   },

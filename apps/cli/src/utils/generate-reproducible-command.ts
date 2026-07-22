@@ -16,7 +16,7 @@ function getBaseCommand(packageManager: ProjectConfig["packageManager"]) {
   }
 }
 
-function formatArrayFlag(flag: string, values: string[]) {
+function formatArrayFlag(flag: string, values: string[] = []) {
   const normalizedValues = values.filter((value) => value !== "none");
 
   if (normalizedValues.length === 0) {
@@ -205,11 +205,11 @@ function appendChangedOwnedGraphArrayFlag(
   role: StackPartRole,
   ecosystem: string,
   flag: string,
-  values: string[],
+  values: string[] | undefined,
   defaultValues: string[],
 ) {
   if (hasAnyOwnedGraphArrayPart(config, ownerRole, role, ecosystem)) return;
-  appendChangedArrayFlag(flags, flag, values, defaultValues);
+  appendChangedArrayFlag(flags, flag, values ?? [], defaultValues);
 }
 
 function appendChangedArrayFlag(
@@ -574,6 +574,16 @@ function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
       "mobile-deep-linking",
       config.mobileDeepLinking,
       "none",
+    );
+    appendChangedOwnedGraphArrayFlag(
+      flags,
+      config,
+      "mobile",
+      "libraries",
+      "react-native",
+      "mobile-libraries",
+      config.mobileLibraries,
+      [],
     );
   }
 
@@ -948,6 +958,9 @@ function getTypeScriptFlags(config: ProjectConfig) {
   flags.push(`--mobile-push ${config.mobilePush}`);
   flags.push(`--mobile-ota ${config.mobileOTA}`);
   flags.push(`--mobile-deep-linking ${config.mobileDeepLinking}`);
+  if (config.mobileLibraries) {
+    flags.push(formatArrayFlag("mobile-libraries", config.mobileLibraries));
+  }
 
   if (config.addons && config.addons.length > 0) {
     flags.push(`--addons ${config.addons.join(" ")}`);
@@ -987,6 +1000,7 @@ function getReactNativeFlags(config: ProjectConfig) {
   flags.push(`--mobile-push ${config.mobilePush}`);
   flags.push(`--mobile-ota ${config.mobileOTA}`);
   flags.push(`--mobile-deep-linking ${config.mobileDeepLinking}`);
+  flags.push(formatArrayFlag("mobile-libraries", config.mobileLibraries));
 
   appendCommonFlags(flags, config);
 
@@ -1034,6 +1048,13 @@ function getPythonFlags(config: ProjectConfig) {
   flags.push(`--python-realtime ${config.pythonRealtime}`);
   flags.push(`--python-observability ${config.pythonObservability}`);
   flags.push(formatArrayFlag("python-cli", config.pythonCli));
+  flags.push(`--python-cloud-sdk ${config.pythonCloudSdk}`);
+  flags.push(`--python-http-client ${config.pythonHttpClient}`);
+  flags.push(formatArrayFlag("python-data", config.pythonData));
+  flags.push(`--python-media ${config.pythonMedia}`);
+  flags.push(`--python-server ${config.pythonServer}`);
+  flags.push(`--python-package-manager ${config.pythonPackageManager}`);
+  flags.push(`--python-message-queue ${config.pythonMessageQueue}`);
   appendSharedNonTypeScriptFlags(flags, config);
 
   appendCommonFlags(flags, config);
@@ -1107,6 +1128,9 @@ function getDotnetFlags(config: ProjectConfig) {
   flags.push(`--dotnet-validation ${config.dotnetValidation}`);
   flags.push(`--dotnet-caching ${config.dotnetCaching}`);
   flags.push(`--dotnet-deploy ${config.dotnetDeploy}`);
+  if (config.dotnetLibraries) {
+    flags.push(formatArrayFlag("dotnet-libraries", config.dotnetLibraries));
+  }
 
   appendCommonFlags(flags, config);
 

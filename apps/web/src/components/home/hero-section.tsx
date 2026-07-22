@@ -1,10 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, Check, Copy } from "lucide-react";
+import { TbArrowRight as ArrowRight, TbCheck as Check, TbCopy as Copy } from "react-icons/tb";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 
 import { AsciiHeroBackground } from "@/components/ui/ascii-hero-background";
 import { latestChangelogRelease } from "@/lib/changelog";
+import { PROJECT_ECOSYSTEM_COPY } from "@/lib/project-stats";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages.js";
 
@@ -177,7 +178,7 @@ export default function HeroSection() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="relative z-10 mt-7 max-w-lg text-pretty text-base text-soft sm:text-lg"
         >
-          {m.homeHeroDescription()}
+          {m.homeHeroDescription(PROJECT_ECOSYSTEM_COPY)}
         </motion.p>
 
         <motion.div

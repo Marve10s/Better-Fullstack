@@ -3,7 +3,8 @@ import consola from "consola";
 import { $ } from "execa";
 import pc from "picocolors";
 
-import type { Addons, PackageManager } from "../../types";
+import type { Addons, PackageManager, PythonPackageManager } from "../../types";
+import { commandExists } from "../../utils/command-exists";
 
 /**
  * Result of a post-scaffold setup step (dependency install, native build, db setup).
@@ -112,22 +113,58 @@ export async function runCargoBuild({
 
 export async function runUvSync({ projectDir }: { projectDir: string }): Promise<SetupStepResult> {
   const s = spinner();
-  const step = "uv sync (Python dependencies)";
+  const step = "uv sync --extra dev (Python dependencies)";
 
   try {
-    s.start("Running uv sync...");
+    s.start("Running uv sync --extra dev...");
 
     await $({
       cwd: projectDir,
       stderr: "inherit",
-    })`uv sync`;
+    })`uv sync --extra dev`;
 
     s.stop("Python dependencies installed successfully");
     return { step, success: true };
   } catch (error) {
-    s.stop(pc.red("uv sync failed"));
+    s.stop(pc.red("uv sync --extra dev failed"));
     const errorMessage = toErrorMessage(error);
-    consola.error(pc.red(`uv sync error: ${errorMessage}`));
+    consola.error(pc.red(`uv sync --extra dev error: ${errorMessage}`));
+    return { step, success: false, errorMessage };
+  }
+}
+
+export async function runPythonInstall({
+  projectDir,
+  packageManager,
+}: {
+  projectDir: string;
+  packageManager: PythonPackageManager;
+}): Promise<SetupStepResult> {
+  if (packageManager === "uv") return runUvSync({ projectDir });
+
+  const s = spinner();
+  const step = `${packageManager} install (Python dependencies)`;
+
+  try {
+    if (packageManager === "poetry") {
+      s.start("Running poetry install...");
+      await $({ cwd: projectDir, stderr: "inherit" })`poetry install --extras dev`;
+    } else {
+      s.start("Creating a virtual environment and installing with pip...");
+      const python = (await commandExists("python")) ? "python" : "python3";
+      await $({ cwd: projectDir, stderr: "inherit" })`${python} -m venv .venv`;
+      const pip = process.platform === "win32" ? ".venv/Scripts/pip.exe" : ".venv/bin/pip";
+      // Include the dev extra: pytest and the selected quality tools live there,
+      // and the printed next-step commands advertise them.
+      await $({ cwd: projectDir, stderr: "inherit" })`${pip} install -e .[dev]`;
+    }
+
+    s.stop("Python dependencies installed successfully");
+    return { step, success: true };
+  } catch (error) {
+    s.stop(pc.red("Python dependency installation failed"));
+    const errorMessage = toErrorMessage(error);
+    consola.error(pc.red(`Python installation error: ${errorMessage}`));
     return { step, success: false, errorMessage };
   }
 }

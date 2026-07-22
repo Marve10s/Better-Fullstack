@@ -69,6 +69,7 @@ import {
   JOB_QUEUE_VALUES,
   LOGGING_VALUES,
   MOBILE_DEEP_LINKING_VALUES,
+  MOBILE_LIBRARIES_VALUES,
   MOBILE_NAVIGATION_VALUES,
   MOBILE_OTA_VALUES,
   MOBILE_PUSH_VALUES,
@@ -89,6 +90,13 @@ import {
   PYTHON_REALTIME_VALUES,
   PYTHON_OBSERVABILITY_VALUES,
   PYTHON_CLI_VALUES,
+  PYTHON_CLOUD_SDK_VALUES,
+  PYTHON_DATA_VALUES,
+  PYTHON_HTTP_CLIENT_VALUES,
+  PYTHON_MEDIA_VALUES,
+  PYTHON_MESSAGE_QUEUE_VALUES,
+  PYTHON_PACKAGE_MANAGER_VALUES,
+  PYTHON_SERVER_VALUES,
   PYTHON_TASK_QUEUE_VALUES,
   PYTHON_VALIDATION_VALUES,
   PYTHON_WEB_FRAMEWORK_VALUES,
@@ -396,6 +404,7 @@ function makeReactNativeDraft(args: GeneratorArgs): CandidateDraft {
       mobilePush: sampleScalar(MOBILE_PUSH_VALUES, 0.7, "mobilePush"),
       mobileOTA: sampleScalar(MOBILE_OTA_VALUES, 0.7, "mobileOTA"),
       mobileDeepLinking: sampleScalar(MOBILE_DEEP_LINKING_VALUES, 0.35, "mobileDeepLinking"),
+      mobileLibraries: sampleArray(MOBILE_LIBRARIES_VALUES, 0.65, 3, "mobileLibraries"),
     },
   };
 }
@@ -446,6 +455,13 @@ function makePythonDraft(args: GeneratorArgs): CandidateDraft {
       pythonRealtime: sampleScalar(PYTHON_REALTIME_VALUES, 0.5),
       pythonObservability: sampleScalar(PYTHON_OBSERVABILITY_VALUES, 0.5),
       pythonCli: sampleArray(PYTHON_CLI_VALUES, 0.4, 2, "pythonCli"),
+      pythonCloudSdk: sampleScalar(PYTHON_CLOUD_SDK_VALUES, 0.55),
+      pythonHttpClient: sampleScalar(PYTHON_HTTP_CLIENT_VALUES, 0.55),
+      pythonData: sampleArray(PYTHON_DATA_VALUES, 0.45, 2, "pythonData"),
+      pythonMedia: sampleScalar(PYTHON_MEDIA_VALUES, 0.65),
+      pythonServer: sampleScalar(PYTHON_SERVER_VALUES, 0.6),
+      pythonPackageManager: sampleScalar(PYTHON_PACKAGE_MANAGER_VALUES, 0.1),
+      pythonMessageQueue: sampleScalar(PYTHON_MESSAGE_QUEUE_VALUES, 0.65),
       email: sampleScalar(CROSS_ECOSYSTEM_EMAIL_VALUES, 0.75, "email"),
       observability: sampleScalar(CROSS_ECOSYSTEM_OBSERVABILITY_VALUES, 0.75, "observability"),
       caching: sampleScalar(CROSS_ECOSYSTEM_CACHING_VALUES, 0.75, "caching"),
@@ -624,6 +640,7 @@ function makeDotnetDraft(args: GeneratorArgs): CandidateDraft {
         "dotnetValidation",
       ),
       dotnetCaching: sampleScalar(["memory-cache", "none"] as const, 0.5, "dotnetCaching"),
+      dotnetLibraries: [],
       dotnetDeploy: sampleScalar(["docker", "none"] as const, 0.4, "dotnetDeploy"),
     },
   };
@@ -728,6 +745,18 @@ function createValidationBase(projectName: string, draft: CandidateDraft): Proje
     pythonTaskQueue: "none",
     pythonGraphql: "none",
     pythonQuality: "none",
+    pythonTesting: [],
+    pythonCaching: "none",
+    pythonRealtime: "none",
+    pythonObservability: "none",
+    pythonCli: [],
+    pythonCloudSdk: "none",
+    pythonHttpClient: "none",
+    pythonData: [],
+    pythonMedia: "none",
+    pythonServer: "none",
+    pythonPackageManager: "uv",
+    pythonMessageQueue: "none",
     goWebFramework: "none",
     goOrm: "none",
     goApi: "none",
@@ -748,6 +777,8 @@ function createValidationBase(projectName: string, draft: CandidateDraft): Proje
     javaLogging: "none",
     javaLibraries: [],
     javaTestingLibraries: [],
+    mobileLibraries: [],
+    dotnetLibraries: [],
     elixirWebFramework: "none",
     elixirOrm: "none",
     elixirAuth: "none",
@@ -788,6 +819,7 @@ function applyDerivedMobileDefaults(config: ProjectConfig, providedFlags: Set<st
     config.mobilePush = "none";
     config.mobileOTA = "none";
     config.mobileDeepLinking = "none";
+    config.mobileLibraries = [];
     return;
   }
 

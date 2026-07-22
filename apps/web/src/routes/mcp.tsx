@@ -1,18 +1,18 @@
+import type { IconType } from "react-icons";
 import NumberFlow from "@number-flow/react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
-  ArrowRight,
-  ArrowUpRight,
-  Check,
-  Copy,
-  FileCode2,
-  Layers,
-  SearchCheck,
-  Settings2,
-  Sparkles,
-  Wrench,
-  type LucideIcon,
-} from "lucide-react";
+  TbArrowRight as ArrowRight,
+  TbArrowUpRight as ArrowUpRight,
+  TbCheck as Check,
+  TbCopy as Copy,
+  TbFileCode as FileCode2,
+  TbStack2 as Layers,
+  TbZoomCheck as SearchCheck,
+  TbAdjustments as Settings2,
+  TbSparkles as Sparkles,
+  TbTool as Wrench,
+} from "react-icons/tb";
 import { motion, useInView } from "motion/react";
 import { useCallback, useMemo, useRef, useState, type CSSProperties } from "react";
 
@@ -193,7 +193,7 @@ type ToolId =
 interface ToolInfo {
   id: ToolId;
   name: string;
-  icon: LucideIcon;
+  icon: IconType;
 }
 
 const TOOLS: readonly ToolInfo[] = [

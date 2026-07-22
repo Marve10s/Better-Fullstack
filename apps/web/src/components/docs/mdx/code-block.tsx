@@ -1,4 +1,4 @@
-import { Check, Copy } from "lucide-react";
+import { TbCheck as Check, TbCopy as Copy } from "react-icons/tb";
 import { useEffect, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";

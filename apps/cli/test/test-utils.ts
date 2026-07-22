@@ -1,12 +1,8 @@
 import { expect } from "bun:test";
 import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
-import { SMOKE_DIR } from "./setup";
 
-import type {
-  CreateInput,
-  InitResult,
-} from "../src/types";
+import type { CreateInput, InitResult } from "../src/types";
 
 import { create } from "../src/index";
 import {
@@ -19,6 +15,7 @@ import {
   WebDeploySchema,
   createCliDefaultProjectConfigBase,
 } from "../src/types";
+import { SMOKE_DIR } from "./setup";
 
 // Default smoke directory path - keep in sync with setup preload.
 const DEFAULT_SMOKE_DIR = SMOKE_DIR;
@@ -71,12 +68,35 @@ function createTestCoreDefaults(): Partial<CreateInput> {
     mobilePush: SHARED_TEST_DEFAULTS.mobilePush,
     mobileOTA: SHARED_TEST_DEFAULTS.mobileOTA,
     mobileDeepLinking: SHARED_TEST_DEFAULTS.mobileDeepLinking,
+    mobileLibraries: [...SHARED_TEST_DEFAULTS.mobileLibraries],
+    pythonWebFramework: SHARED_TEST_DEFAULTS.pythonWebFramework,
+    pythonOrm: SHARED_TEST_DEFAULTS.pythonOrm,
+    pythonValidation: SHARED_TEST_DEFAULTS.pythonValidation,
+    pythonAi: [...SHARED_TEST_DEFAULTS.pythonAi],
+    pythonAuth: SHARED_TEST_DEFAULTS.pythonAuth,
+    pythonApi: SHARED_TEST_DEFAULTS.pythonApi,
+    pythonTaskQueue: SHARED_TEST_DEFAULTS.pythonTaskQueue,
+    pythonGraphql: SHARED_TEST_DEFAULTS.pythonGraphql,
+    pythonQuality: SHARED_TEST_DEFAULTS.pythonQuality,
+    pythonTesting: [...SHARED_TEST_DEFAULTS.pythonTesting],
+    pythonCaching: SHARED_TEST_DEFAULTS.pythonCaching,
+    pythonRealtime: SHARED_TEST_DEFAULTS.pythonRealtime,
+    pythonObservability: SHARED_TEST_DEFAULTS.pythonObservability,
+    pythonCli: [...SHARED_TEST_DEFAULTS.pythonCli],
+    pythonCloudSdk: SHARED_TEST_DEFAULTS.pythonCloudSdk,
+    pythonHttpClient: SHARED_TEST_DEFAULTS.pythonHttpClient,
+    pythonData: [...SHARED_TEST_DEFAULTS.pythonData],
+    pythonMedia: SHARED_TEST_DEFAULTS.pythonMedia,
+    pythonServer: SHARED_TEST_DEFAULTS.pythonServer,
+    pythonPackageManager: SHARED_TEST_DEFAULTS.pythonPackageManager,
+    pythonMessageQueue: SHARED_TEST_DEFAULTS.pythonMessageQueue,
     goValidation: SHARED_TEST_DEFAULTS.goValidation,
     goQuality: SHARED_TEST_DEFAULTS.goQuality,
     goMigrations: SHARED_TEST_DEFAULTS.goMigrations,
     goTemplating: SHARED_TEST_DEFAULTS.goTemplating,
     goProtoTooling: SHARED_TEST_DEFAULTS.goProtoTooling,
     goDI: SHARED_TEST_DEFAULTS.goDI,
+    dotnetLibraries: [...SHARED_TEST_DEFAULTS.dotnetLibraries],
     aiDocs: [],
   };
 }
@@ -124,9 +144,7 @@ export async function runTRPCTest(config: TestConfig): Promise<TestResult> {
 
   // Provide defaults for missing core stack options to avoid prompts
   // But don't provide core stack defaults when yes: true is explicitly set
-  const coreStackDefaults = willUseYesFlag
-    ? {}
-    : createTestCoreDefaults();
+  const coreStackDefaults = willUseYesFlag ? {} : createTestCoreDefaults();
 
   // Build options object - let the CLI handle all validation
   // Remove test-specific properties before passing to create()

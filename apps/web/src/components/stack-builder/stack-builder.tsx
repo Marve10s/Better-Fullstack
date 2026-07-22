@@ -12,32 +12,35 @@ import {
 } from "@better-fullstack/types";
 import { usesVirtualNoneStackSelection as usesVirtualNoneSelection } from "@better-fullstack/types/stack-translation";
 import {
-  ArrowLeft,
-  ArrowRight,
-  ArrowUp,
-  Bookmark,
-  BookOpen,
-  Check,
-  ChevronDown,
-  ClipboardCopy,
-  EllipsisVertical,
-  Eye,
-  Github,
-  Hammer,
-  InfoIcon,
-  Link,
-  PanelLeft,
-  Pencil,
-  RefreshCw,
-  Save,
-  Search,
-  Settings,
-  Shuffle,
-  Sparkles,
-  Terminal,
-  X,
-  Zap,
-} from "lucide-react";
+  TbArrowLeft as ArrowLeft,
+  TbArrowRight as ArrowRight,
+  TbArrowUp as ArrowUp,
+  TbBookmark as Bookmark,
+  TbBook as BookOpen,
+  TbCheck as Check,
+  TbChevronDown as ChevronDown,
+  TbClipboardCopy as ClipboardCopy,
+  TbDownload as Download,
+  TbDotsVertical as EllipsisVertical,
+  TbEye as Eye,
+  TbBrandGithub as Github,
+  TbHammer as Hammer,
+  TbInfoCircle as InfoIcon,
+  TbLink as Link,
+  TbLoader2 as Loader2,
+  TbLayoutSidebar as PanelLeft,
+  TbPencil as Pencil,
+  TbPlayerPlay as Play,
+  TbRefresh as RefreshCw,
+  TbDeviceFloppy as Save,
+  TbSearch as Search,
+  TbSettings as Settings,
+  TbArrowsShuffle as Shuffle,
+  TbSparkles as Sparkles,
+  TbTerminal as Terminal,
+  TbX as X,
+  TbBolt as Zap,
+} from "react-icons/tb";
 import { AnimatePresence, motion } from "motion/react";
 import {
   Fragment,
@@ -97,6 +100,7 @@ import {
   saveSavedStacks,
   type SavedStackEntry,
 } from "@/lib/saved-stacks";
+import { getStackRunSupport } from "@/lib/run-support";
 import { useStackState } from "@/lib/stack-url-state";
 import {
   generateStackCommand,
@@ -568,6 +572,7 @@ const MULTI_MOBILE_LIBRARY_GROUPS: Array<keyof typeof TECH_OPTIONS> = [
   "mobilePush",
   "mobileOTA",
   "mobileDeepLinking",
+  "mobileLibraries",
 ];
 
 const GRAPH_BACKEND_ADVANCED_CATEGORY_ORDER_BY_ECOSYSTEM = {
@@ -612,6 +617,13 @@ const GRAPH_BACKEND_ADVANCED_CATEGORY_ORDER_BY_ECOSYSTEM = {
     "pythonRealtime",
     "pythonObservability",
     "pythonCli",
+    "pythonCloudSdk",
+    "pythonHttpClient",
+    "pythonData",
+    "pythonMedia",
+    "pythonServer",
+    "pythonPackageManager",
+    "pythonMessageQueue",
   ],
   go: [
     "goCli",
@@ -657,6 +669,7 @@ const GRAPH_BACKEND_ADVANCED_CATEGORY_ORDER_BY_ECOSYSTEM = {
     "dotnetValidation",
     "dotnetCaching",
     "dotnetDeploy",
+    "dotnetLibraries",
   ],
 } as const satisfies Record<GraphBackendEcosystem, readonly (keyof typeof TECH_OPTIONS)[]>;
 
@@ -1298,6 +1311,11 @@ const SHADCN_SUB_CATEGORIES = new Set([
 const PreviewPanel = lazy(async () => {
   const module = await import("./preview-panel");
   return { default: module.PreviewPanel };
+});
+
+const RunPanel = lazy(async () => {
+  const module = await import("./run-panel");
+  return { default: module.RunPanel };
 });
 
 function GraphOptionButton({
@@ -2181,6 +2199,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
   const [isSaveInputVisible, setIsSaveInputVisible] = useState(false);
   const [savePresetName, setSavePresetName] = useState("");
   const [showNewOptionsOnly, setShowNewOptionsOnly] = useState(false);
+  const [isDownloadingProject, setIsDownloadingProject] = useState(false);
   const [pendingUpdateEntryId, setPendingUpdateEntryId] = useState<string | null>(null);
   const [multiActiveStep, setMultiActiveStep] = useState<MultiStackStepId>("frontend");
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
@@ -2217,6 +2236,24 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
     return { ...stack, ...compatibilityAnalysis.adjustedStack };
   }, [stack, compatibilityAnalysis.adjustedStack]);
   const projectNameError = validateProjectName(stack.projectName || "");
+
+  const handleDownloadProject = async () => {
+    if (isDownloadingProject) return;
+
+    setIsDownloadingProject(true);
+    try {
+      const { createStackProjectArchive, downloadProjectArchive } =
+        await import("@/lib/project-download");
+      const archive = await createStackProjectArchive(adjustedStack || stack);
+      downloadProjectArchive(archive);
+      toast.success(m.builderDownloadComplete({ fileName: archive.fileName }));
+    } catch (downloadError) {
+      console.error("Project ZIP download failed", downloadError);
+      toast.error(m.builderDownloadFailed());
+    } finally {
+      setIsDownloadingProject(false);
+    }
+  };
 
   // ─── Derived state ──────────────────────────────────────────────────────
 
@@ -2383,6 +2420,24 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
       setViewMode("command");
     }
   }, [isMultiMode, setViewMode, viewMode]);
+
+  const runSupported = useMemo(
+    () => getStackRunSupport(adjustedStack || stack).supported,
+    [adjustedStack, stack],
+  );
+
+  useEffect(() => {
+    if (!runSupported && viewMode === "run") {
+      setViewMode("preview");
+    }
+  }, [runSupported, setViewMode, viewMode]);
+
+  // Warm the run-panel chunk so the first switch to the Run tab mounts it
+  // synchronously — a suspended mount would delay the copy button's
+  // shared-layout landing target past the command bar's exit.
+  useEffect(() => {
+    if (runSupported) void import("./run-panel");
+  }, [runSupported]);
 
   // ─── Handlers ───────────────────────────────────────────────────────────
 
@@ -2745,12 +2800,22 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                       type="button"
                       data-testid={`ecosystem-${eco.id}`}
                       onClick={() => {
+                        if (isActive) return;
                         startTransition(() => {
+                          // Fresh defaults per ecosystem: carrying the previous
+                          // selection through the compat engine persists zeroed
+                          // fields (e.g. react-native nulls webFrontend, hiding
+                          // the Run tab back on TS) and stale foreign-ecosystem
+                          // params in the URL.
                           setStack({
+                            ...DEFAULT_STACK,
+                            projectName: stack.projectName,
+                            packageManager: stack.packageManager,
+                            git: stack.git,
+                            install: stack.install,
+                            yolo: stack.yolo,
                             ecosystem: (isKotlin ? "java" : eco.id) as Ecosystem,
-                            ...(isKotlin || eco.id === "java"
-                              ? { javaLanguage: isKotlin ? "kotlin" : "java" }
-                              : {}),
+                            ...(isKotlin ? { javaLanguage: "kotlin" as const } : {}),
                             stackMode: "solo",
                             stackPartSpecs: [],
                           });
@@ -2808,12 +2873,16 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                 viewMode === "command" ? "" : "overflow-hidden",
               )}
             >
-              <div className="relative flex shrink-0 items-center gap-1 bg-fd-background px-2 py-2 sm:gap-2 sm:px-4">
-                {/* ─── Project name field ─────────────────────────────────────── */}
+              <div className="relative flex shrink-0 items-center gap-1 bg-fd-background py-2 pr-2 pl-2 sm:gap-2 sm:pr-4 sm:pl-0">
+                {/* ─── Project name field ─────────────────────────────────────
+                    The wrapper mirrors the Preview/Run file-sidebar widths
+                    (sm:w-48 md:w-56 lg:w-64) so its trailing separator lines
+                    up with the sidebar border in the panels below. */}
+                <div className="flex min-w-0 shrink-0 items-center gap-2 sm:w-48 sm:pl-4 md:w-56 lg:w-64">
                 <label
                   htmlFor="project-name"
                   className={cn(
-                    "group relative inline-flex h-8 w-32 min-w-0 cursor-text items-center gap-2 rounded-full border border-transparent bg-muted/55 px-3 transition-all duration-300 hover:bg-card focus-within:bg-card sm:w-44",
+                    "group relative inline-flex h-8 w-32 min-w-0 cursor-text items-center gap-2 rounded-full border border-transparent bg-muted/55 px-3 transition-all duration-300 hover:bg-card focus-within:bg-card sm:w-auto sm:flex-1",
                     projectNameError
                       ? "border-destructive focus-within:border-destructive focus-within:shadow-[0_0_0_4px_rgba(239,68,68,0.12)]"
                       : "border-border focus-within:border-foreground focus-within:shadow-[0_0_0_4px_rgba(24,24,27,0.05)] dark:focus-within:shadow-[0_0_0_4px_rgba(255,255,255,0.06)]",
@@ -2843,10 +2912,8 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                   <Pencil className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50 transition-colors group-focus-within:text-foreground" />
                 </label>
 
-                <div
-                  className="mx-0.5 hidden h-6 w-px shrink-0 bg-border sm:block"
-                  aria-hidden="true"
-                />
+                <div className="hidden h-6 w-px shrink-0 bg-border sm:block" aria-hidden="true" />
+                </div>
 
                 <fieldset
                   aria-label="Builder views"
@@ -2887,6 +2954,19 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                     <Eye className="h-3 w-3" />
                     <span className="hidden min-[480px]:inline">{m.builderTabPreview()}</span>
                   </button>
+                  {runSupported && (
+                    <button
+                      type="button"
+                      onClick={() => setViewMode("run")}
+                      data-testid="tab-run"
+                      aria-pressed={viewMode === "run"}
+                      data-state={viewMode === "run" ? "active" : "inactive"}
+                      className={getToolbarTabClass(viewMode === "run")}
+                    >
+                      <Play className="h-3 w-3" />
+                      <span className="hidden lg:inline">{m.builderTabRun()}</span>
+                    </button>
+                  )}
                   {!isMultiMode && (
                     <button
                       type="button"
@@ -2918,6 +2998,34 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                     onFocus={() => setViewMode("command")}
                   />
                 )}
+
+                <div className="relative shrink-0">
+                  <span className="pointer-events-none absolute -top-2 right-1 z-10 rounded-full border border-[#18D5FF]/35 bg-fd-background px-1.5 py-px font-mono text-[7px] font-bold uppercase leading-none tracking-[0.14em] text-[#067087] shadow-sm dark:text-[#18D5FF]">
+                    {m.builderNewBadge()}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleDownloadProject}
+                    disabled={isDownloadingProject}
+                    data-testid="download-project-zip"
+                    aria-label={
+                      isDownloadingProject ? m.builderDownloadingZip() : m.builderDownloadZip()
+                    }
+                    title={
+                      isDownloadingProject ? m.builderDownloadingZip() : m.builderDownloadZip()
+                    }
+                    className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full border border-border/55 bg-muted/30 px-2.5 font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-all hover:border-foreground/30 hover:bg-background hover:text-foreground disabled:cursor-wait disabled:opacity-60"
+                  >
+                    {isDownloadingProject ? (
+                      <Loader2 className="size-3 animate-spin" aria-hidden />
+                    ) : (
+                      <Download className="size-3" aria-hidden />
+                    )}
+                    <span className="hidden xl:inline">
+                      {isDownloadingProject ? m.builderDownloadingZip() : m.builderDownloadZip()}
+                    </span>
+                  </button>
+                </div>
 
                 {!isMultiMode && (
                   <button
@@ -3732,6 +3840,25 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                     />
                   </Suspense>
                 </div>
+              ) : viewMode === "run" ? (
+                <div className="min-h-0 flex-1 overflow-hidden">
+                  <Suspense
+                    fallback={
+                      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                        {m.builderRunBooting()}
+                      </div>
+                    }
+                  >
+                    <RunPanel
+                      stack={adjustedStack || stack}
+                      selectedFilePath={selectedFile || null}
+                      onSelectFile={setSelectedFile}
+                      command={command}
+                      copied={copied}
+                      onCopy={copyToClipboard}
+                    />
+                  </Suspense>
+                </div>
               ) : viewMode === "presets" ? (
                 <div className="min-h-0 flex-1 overflow-hidden">
                   <PresetsPanel
@@ -3760,8 +3887,18 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
           </div>
         </div>
 
-        {/* ─── Floating command bar ─────────────────────────────────────────── */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40 bg-gradient-to-t from-background via-background/85 to-transparent px-4 pt-6 pb-4 sm:px-6 sm:pb-5">
+        {/* ─── Floating command bar ───────────────────────────────────────────
+            Hidden on the Edit & Run tab: the bar retracts to the right (as if
+            tucking behind its copy button) and the button itself flies to the
+            run sidebar via the shared "bf-copy-command" layoutId. */}
+        <AnimatePresence initial={false}>
+        {viewMode !== "run" && (
+        <motion.div
+          key="floating-command-bar"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1, transition: { duration: 0.3 } }}
+          exit={{ opacity: 0, transition: { duration: 0.3, delay: 0.75 } }}
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-40 bg-gradient-to-t from-background via-background/85 to-transparent px-4 pt-6 pb-4 sm:px-6 sm:pb-5">
           <div className="pointer-events-auto mx-auto flex w-full max-w-5xl items-center">
             {viewMode === "command" && (
               <button
@@ -3775,9 +3912,38 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                 <PanelLeft className="h-4 w-4" />
               </button>
             )}
-            <div
+            <motion.div
+              initial={{
+                // Collapsed width must fit the widest copy button (sm:w-48 =
+                // 192px) plus pl-4 + two gaps + the $ glyph + pr-1.5 (~242px),
+                // or the capsule's overflow-hidden clips the button's right edge.
+                maxWidth: 246,
+                backgroundColor: "rgba(24, 24, 27, 0)",
+                borderColor: "rgba(255, 255, 255, 0)",
+                boxShadow: "0 0 0 rgba(0, 0, 0, 0)",
+              }}
+              animate={{
+                maxWidth: 1024,
+                backgroundColor: "rgba(24, 24, 27, 1)",
+                borderColor: "rgba(255, 255, 255, 0.08)",
+                boxShadow: "0 6px 18px rgba(24, 24, 27, 0.06)",
+                transition: {
+                  maxWidth: { duration: 0.75, delay: 0.65, ease: [0.22, 1, 0.36, 1] },
+                  default: { duration: 0.2, delay: 0.6 },
+                },
+              }}
+              exit={{
+                maxWidth: 246,
+                backgroundColor: "rgba(24, 24, 27, 0)",
+                borderColor: "rgba(255, 255, 255, 0)",
+                boxShadow: "0 0 0 rgba(0, 0, 0, 0)",
+                transition: {
+                  maxWidth: { duration: 0.7, ease: [0.4, 0, 0.2, 1] },
+                  default: { duration: 0.2, delay: 0.52 },
+                },
+              }}
               className={cn(
-                "flex h-12 min-w-0 flex-1 items-center rounded-[14px] border border-transparent bg-[#18181B] font-mono text-[12.5px] text-[#FAFAF7] shadow-[0_1px_0_rgba(24,24,27,0.05),0_6px_18px_rgba(24,24,27,0.06)] dark:border-white/10 dark:bg-[#1a1a1a]",
+                "ml-auto flex h-12 min-w-0 flex-1 items-center overflow-hidden rounded-[14px] border border-transparent bg-[#18181B] font-mono text-[12.5px] text-[#FAFAF7] shadow-[0_1px_0_rgba(24,24,27,0.05),0_6px_18px_rgba(24,24,27,0.06)] dark:border-white/10 dark:bg-[#1a1a1a]",
                 isMultiCreationInProgress ? "gap-2 pr-1.5 pl-2" : "gap-2.5 pr-1.5 pl-4",
               )}
             >
@@ -3803,7 +3969,14 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                   <span className="mx-0.5 h-5 w-px shrink-0 bg-white/10" aria-hidden="true" />
                 </>
               )}
-              <span className="shrink-0 font-medium text-[#C6E853] select-none">$</span>
+              <motion.span
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1, transition: { duration: 0.2, delay: 0.95 } }}
+                exit={{ opacity: 0, transition: { duration: 0.18 } }}
+                className="shrink-0 font-medium text-[#C6E853] select-none"
+              >
+                $
+              </motion.span>
               <code
                 data-testid="command-output"
                 className={cn(
@@ -3820,6 +3993,8 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                   <button
                     type="button"
                     onClick={copyToClipboard}
+                    data-analytics-event="builder_command_copied"
+                    data-analytics-source="builder_partial"
                     aria-label={copied ? m.builderCommandCopied() : m.builderCopyCommand()}
                     title={m.builderCopyPartialCommand()}
                     className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-[9px] text-[rgba(250,250,247,0.7)] transition-colors hover:bg-white/10 hover:text-[#FAFAF7]"
@@ -3844,9 +4019,15 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                   </button>
                 </>
               ) : (
-                <button
+                <motion.button
+                  layoutId="bf-copy-command"
+                  layout
+                  style={{ zIndex: 70 }}
+                  transition={{ layout: { type: "spring", stiffness: 150, damping: 25, delay: 0.05 } }}
                   type="button"
                   onClick={copyToClipboard}
+                  data-analytics-event="builder_command_copied"
+                  data-analytics-source={isMultiMode ? "builder_multi" : "builder_solo"}
                   aria-label={copied ? m.builderCommandCopied() : m.builderCopyCommand()}
                   className={cn(
                     "inline-flex h-10 w-32 shrink-0 cursor-pointer items-center justify-center rounded-[11px] p-px text-[11.5px] font-semibold text-[#2A3303] transition-transform hover:scale-[1.02] min-[420px]:w-40 sm:w-48",
@@ -3865,9 +4046,9 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                     )}
                     <span>{copied ? m.navCopied() : m.navCopy()}</span>
                   </span>
-                </button>
+                </motion.button>
               )}
-            </div>
+            </motion.div>
             {viewMode === "command" && (
               <button
                 type="button"
@@ -3887,7 +4068,9 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
               </button>
             )}
           </div>
-        </div>
+        </motion.div>
+        )}
+        </AnimatePresence>
 
         {/* ─── Section navigation drawer (toggled, builder view only) ──────── */}
         {viewMode === "command" && (

@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Sparkles } from "lucide-react";
+import { TbSparkles as Sparkles } from "react-icons/tb";
 import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 

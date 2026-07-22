@@ -44,9 +44,19 @@ const PATH_ORDER = ["prompt", "mcp", "cli"] as const;
 // dead alternatives were removed.)
 // Step keys may be namespaced "<subroot>:<step>" (multi-root validation);
 // the advisory/core split is decided by the base name after the last ":".
-const GATE = /(?:^|:)(lint|format|test|doctor|route)$/i;
+// `tidy` (go mod tidy diff) is advisory since harness 2.2.1 — it must not gate
+// core pass here either, or the publisher disagrees with the harness verdicts.
+const GATE = /(?:^|:)(lint|format|test|doctor|route|tidy)$/i;
 const mean = (a: number[]) => (a.length ? a.reduce((s, v) => s + v, 0) / a.length : 0);
-const W = { macroPass: 0.6, wired: 0.25, cmd: 0.15 };
+const W = {
+  prompt: { macroPass: 0.75, wired: 0.25, cmd: 0 },
+  assisted: { macroPass: 0.6, wired: 0.25, cmd: 0.15 },
+} as const;
+
+export function scaffbenchIndex(pathMode: string, validation: number, wired: number, cmd: number) {
+  const weights = pathMode === "prompt" ? W.prompt : W.assisted;
+  return weights.macroPass * validation + weights.wired * wired + weights.cmd * cmd;
+}
 
 function prettyModel(model: string): string {
   if (MODEL_LABELS[model]) return MODEL_LABELS[model];
@@ -82,7 +92,8 @@ export function corePass(result: any): boolean {
 // and skipped lint/test / a `biome check --write` format step exited 0 and passed
 // silently (the Finding-1 inflation). "na" steps (genuinely testless scaffolds)
 // are excluded; a "skip" disqualifies. This also keeps fullPass ⊆ corePass.
-export function fullPass(result: any): boolean {
+export function fullPass(result: any): boolean | null {
+  if (result?.validation?.qualityGateRequested !== true) return null;
   if (!corePass(result)) return false;
   const v = result.validation;
   const applicable = Object.entries(v.steps || {}).filter(([, s]: any) => s.status !== "na");
@@ -96,7 +107,7 @@ type Cell = {
   spec: string;
   scored: boolean;
   corePass: boolean;
-  fullPass: boolean;
+  fullPass: boolean | null;
   wiredPct: number;
   cmdPct: number;
   costUsd: number | null;
@@ -126,9 +137,7 @@ for (const dir of RUNS) {
   }
   const resByCell = new Map(s.results.map((r: any) => [`${r.path}|${r.specId}`, r]));
 
-  const coreFlags: boolean[] = [];
-  const wiredAll: number[] = [];
-  const cmdAll: number[] = [];
+  const indexTerms: number[] = [];
   for (const c of s.aggregates.bySpecCell) {
     const result: any = resByCell.get(`${c.path}|${c.specId}`);
     let stdout = "";
@@ -156,7 +165,7 @@ for (const dir of RUNS) {
       spec: c.specId,
       scored,
       corePass: core,
-      fullPass: scored ? fullPass(result) : false,
+      fullPass: fullPass(result),
       wiredPct: c.stackPercent ?? 0,
       cmdPct: c.commandDisciplinePercent ?? 0,
       costUsd: cost,
@@ -164,15 +173,17 @@ for (const dir of RUNS) {
       steps: extractToolUses(stdout).length,
     });
     if (scored) {
-      coreFlags.push(core);
-      wiredAll.push(c.stackPercent ?? 0);
-      cmdAll.push(c.commandDisciplinePercent ?? 0);
+      indexTerms.push(
+        scaffbenchIndex(
+          c.path,
+          core ? 100 : 0,
+          c.stackPercent ?? 0,
+          c.commandDisciplinePercent ?? 0,
+        ),
+      );
     }
   }
-  const coreMacro = coreFlags.length ? (100 * coreFlags.filter(Boolean).length) / coreFlags.length : 0;
-  const sortIndex = Math.round(
-    W.macroPass * coreMacro + W.wired * mean(wiredAll) + W.cmd * mean(cmdAll),
-  );
+  const sortIndex = Math.round(mean(indexTerms));
   models.push({
     key: modelKey,
     model,
@@ -222,7 +233,8 @@ export type ScaffbenchCell = {
   /** false when the run was infra-inconclusive (timed-out toolchain) — excluded from rates. */
   scored: boolean;
   corePass: boolean;
-  fullPass: boolean;
+  /** null when the quality gate was not requested. */
+  fullPass: boolean | null;
   wiredPct: number;
   cmdPct: number;
   costUsd: number | null;
@@ -234,7 +246,7 @@ export const SCAFFBENCH2_META = {
   harnessVersion: ${JSON.stringify(meta.harnessVersion)},
   generatorVersion: ${JSON.stringify(meta.generatorVersion)},
   generatedAt: ${JSON.stringify(meta.generatedAt)},
-  indexWeights: { macroPass: ${W.macroPass}, wired: ${W.wired}, cmd: ${W.cmd} },
+  indexWeights: ${JSON.stringify(W)},
 } as const;
 
 export const SCAFFBENCH2_SPECS = ${JSON.stringify(specIds)} as const;

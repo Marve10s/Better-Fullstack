@@ -4,12 +4,19 @@ export const Route = createFileRoute("/llms.txt")({
   server: {
     handlers: {
       GET: async () => {
-        const [{ getAllPages }, { getAllGuidePages }, { getAllBlogPosts }, { generateLlmsTxt }] =
+        const [
+          { getAllPages },
+          { getAllGuidePages },
+          { getAllBlogPosts },
+          { generateLlmsTxt },
+          { getPublishedStackPageSummaries },
+        ] =
           await Promise.all([
             import("@/lib/docs/source"),
             import("@/lib/guides/source"),
             import("@/lib/blog/source"),
             import("@/lib/llms"),
+            import("@/lib/stack-pages/source"),
           ]);
 
         return new Response(
@@ -17,6 +24,7 @@ export const Route = createFileRoute("/llms.txt")({
             docsPages: getAllPages(),
             guidePages: getAllGuidePages(),
             blogPages: getAllBlogPosts(),
+            stackPages: getPublishedStackPageSummaries(),
           }),
           {
             headers: {

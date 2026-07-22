@@ -225,6 +225,7 @@ function getYesBaseConfig(flagConfig: Partial<ProjectConfig>): ProjectConfig {
     mobilePush: "none",
     mobileOTA: "none",
     mobileDeepLinking: "none",
+    mobileLibraries: [],
   };
 }
 
@@ -463,6 +464,7 @@ export async function createProjectHandler(
               mobilePush: "none",
               mobileOTA: "none",
               mobileDeepLinking: "none",
+              mobileLibraries: [],
               pythonWebFramework: "none",
               pythonOrm: "none",
               pythonValidation: "none",
@@ -477,6 +479,13 @@ export async function createProjectHandler(
               pythonRealtime: "none",
               pythonObservability: "none",
               pythonCli: [],
+              pythonCloudSdk: "none",
+              pythonHttpClient: "none",
+              pythonData: [],
+              pythonMedia: "none",
+              pythonServer: "none",
+              pythonPackageManager: "uv",
+              pythonMessageQueue: "none",
               goWebFramework: "none",
               goOrm: "none",
               goApi: "none",
@@ -514,6 +523,7 @@ export async function createProjectHandler(
               dotnetValidation: "none",
               dotnetCaching: "none",
               dotnetDeploy: "none",
+              dotnetLibraries: [],
               elixirWebFramework: "none",
               elixirOrm: "none",
               elixirAuth: "none",

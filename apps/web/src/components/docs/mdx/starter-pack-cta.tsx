@@ -1,5 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, BookOpen, Check, Copy, Terminal } from "lucide-react";
+import {
+  TbArrowRight as ArrowRight,
+  TbBook as BookOpen,
+  TbCheck as Check,
+  TbCopy as Copy,
+  TbTerminal as Terminal,
+} from "react-icons/tb";
 import { useState } from "react";
 
 import { TechIcon } from "@/components/ui/tech-icon";

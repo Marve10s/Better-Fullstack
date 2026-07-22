@@ -1513,6 +1513,7 @@ describe("Go Language Support", () => {
       expect(goModContent).toBeDefined();
       expect(goModContent).toContain("github.com/charmbracelet/bubbletea");
       expect(goModContent).toContain("github.com/charmbracelet/lipgloss");
+      expect(goModContent).toContain("github.com/charmbracelet/x/cellbuf v0.0.15");
     });
 
     it("should generate cmd/tui directory when Bubble Tea selected", async () => {

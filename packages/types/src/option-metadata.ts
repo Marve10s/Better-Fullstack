@@ -15,6 +15,7 @@ import {
   DOTNET_CACHING_VALUES,
   DOTNET_DEPLOY_VALUES,
   DOTNET_JOB_QUEUE_VALUES,
+  DOTNET_LIBRARIES_VALUES,
   DOTNET_OBSERVABILITY_VALUES,
   DOTNET_ORM_VALUES,
   DOTNET_REALTIME_VALUES,
@@ -53,6 +54,7 @@ import {
   FILE_UPLOAD_VALUES,
   FORMS_VALUES,
   MOBILE_DEEP_LINKING_VALUES,
+  MOBILE_LIBRARIES_VALUES,
   MOBILE_NAVIGATION_VALUES,
   MOBILE_OTA_VALUES,
   MOBILE_PUSH_VALUES,
@@ -105,6 +107,13 @@ import {
   PYTHON_REALTIME_VALUES,
   PYTHON_OBSERVABILITY_VALUES,
   PYTHON_CLI_VALUES,
+  PYTHON_CLOUD_SDK_VALUES,
+  PYTHON_DATA_VALUES,
+  PYTHON_HTTP_CLIENT_VALUES,
+  PYTHON_MEDIA_VALUES,
+  PYTHON_MESSAGE_QUEUE_VALUES,
+  PYTHON_PACKAGE_MANAGER_VALUES,
+  PYTHON_SERVER_VALUES,
   PYTHON_TASK_QUEUE_VALUES,
   PYTHON_VALIDATION_VALUES,
   PYTHON_WEB_FRAMEWORK_VALUES,
@@ -186,6 +195,7 @@ export type OptionCategory =
   | "mobilePush"
   | "mobileOTA"
   | "mobileDeepLinking"
+  | "mobileLibraries"
   | "codeQuality"
   | "documentation"
   | "appShells"
@@ -234,6 +244,13 @@ export type OptionCategory =
   | "pythonRealtime"
   | "pythonObservability"
   | "pythonCli"
+  | "pythonCloudSdk"
+  | "pythonHttpClient"
+  | "pythonData"
+  | "pythonMedia"
+  | "pythonServer"
+  | "pythonPackageManager"
+  | "pythonMessageQueue"
   | "goWebFramework"
   | "goOrm"
   | "goApi"
@@ -272,6 +289,7 @@ export type OptionCategory =
   | "dotnetValidation"
   | "dotnetCaching"
   | "dotnetDeploy"
+  | "dotnetLibraries"
   | "elixirWebFramework"
   | "elixirOrm"
   | "elixirAuth"
@@ -372,6 +390,7 @@ export const REACT_NATIVE_CATEGORY_ORDER = [
   "mobilePush",
   "mobileOTA",
   "mobileDeepLinking",
+  "mobileLibraries",
   "auth",
   "payments",
   "packageManager",
@@ -419,6 +438,13 @@ export const PYTHON_CATEGORY_ORDER = [
   "pythonRealtime",
   "pythonObservability",
   "pythonCli",
+  "pythonCloudSdk",
+  "pythonHttpClient",
+  "pythonData",
+  "pythonMedia",
+  "pythonServer",
+  "pythonPackageManager",
+  "pythonMessageQueue",
   "email",
   "observability",
   "caching",
@@ -488,6 +514,7 @@ export const DOTNET_CATEGORY_ORDER = [
   "dotnetValidation",
   "dotnetCaching",
   "dotnetDeploy",
+  "dotnetLibraries",
   "aiDocs",
   "git",
   "install",
@@ -568,6 +595,7 @@ export function getCategoryDisplayName(categoryKey: string): string {
     mobilePush: "Mobile Push",
     mobileOTA: "Mobile OTA",
     mobileDeepLinking: "Mobile Deep Linking",
+    mobileLibraries: "Mobile Libraries",
     backendLibraries: "Effect Services",
     rustWebFramework: "Rust Web Framework",
     rustFrontend: "Rust Frontend (WASM)",
@@ -597,6 +625,13 @@ export function getCategoryDisplayName(categoryKey: string): string {
     pythonRealtime: "Python Realtime",
     pythonObservability: "Python Observability",
     pythonCli: "Python CLI Tooling",
+    pythonCloudSdk: "Python Cloud SDK",
+    pythonHttpClient: "Python HTTP Client",
+    pythonData: "Python Data & Scientific Computing",
+    pythonMedia: "Python Media",
+    pythonServer: "Python Production Server",
+    pythonPackageManager: "Python Package Manager",
+    pythonMessageQueue: "Python Message Queue",
     goWebFramework: "Go Web Framework",
     goOrm: "Go ORM / Database",
     goApi: "Go API Layer",
@@ -635,6 +670,7 @@ export function getCategoryDisplayName(categoryKey: string): string {
     dotnetValidation: ".NET Validation",
     dotnetCaching: ".NET Caching",
     dotnetDeploy: ".NET Deploy",
+    dotnetLibraries: ".NET Libraries",
     elixirWebFramework: "Elixir Web Framework",
     elixirOrm: "Elixir ORM / Database",
     elixirAuth: "Elixir Auth",
@@ -782,11 +818,14 @@ const MULTI_SELECT_CATEGORIES = new Set<OptionCategory>([
   "pythonAi",
   "javaLibraries",
   "javaTestingLibraries",
+  "mobileLibraries",
+  "dotnetLibraries",
   "dotnetTesting",
   "dotnetObservability",
   "goTesting",
   "pythonTesting",
   "pythonCli",
+  "pythonData",
   "elixirLibraries",
 ]);
 
@@ -834,6 +873,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   mobilePush: MOBILE_PUSH_VALUES,
   mobileOTA: MOBILE_OTA_VALUES,
   mobileDeepLinking: MOBILE_DEEP_LINKING_VALUES,
+  mobileLibraries: MOBILE_LIBRARIES_VALUES,
   codeQuality: CODE_QUALITY_VALUES,
   documentation: DOCUMENTATION_VALUES,
   appShells: APP_SHELL_VALUES,
@@ -882,6 +922,13 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   pythonRealtime: PYTHON_REALTIME_VALUES,
   pythonObservability: PYTHON_OBSERVABILITY_VALUES,
   pythonCli: PYTHON_CLI_VALUES,
+  pythonCloudSdk: PYTHON_CLOUD_SDK_VALUES,
+  pythonHttpClient: PYTHON_HTTP_CLIENT_VALUES,
+  pythonData: PYTHON_DATA_VALUES,
+  pythonMedia: PYTHON_MEDIA_VALUES,
+  pythonServer: PYTHON_SERVER_VALUES,
+  pythonPackageManager: PYTHON_PACKAGE_MANAGER_VALUES,
+  pythonMessageQueue: PYTHON_MESSAGE_QUEUE_VALUES,
   goWebFramework: GO_WEB_FRAMEWORK_VALUES,
   goOrm: GO_ORM_VALUES,
   goApi: GO_API_VALUES,
@@ -920,6 +967,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   dotnetValidation: DOTNET_VALIDATION_VALUES,
   dotnetCaching: DOTNET_CACHING_VALUES,
   dotnetDeploy: DOTNET_DEPLOY_VALUES,
+  dotnetLibraries: DOTNET_LIBRARIES_VALUES,
   elixirWebFramework: ELIXIR_WEB_FRAMEWORK_VALUES,
   elixirOrm: ELIXIR_ORM_VALUES,
   elixirAuth: ELIXIR_AUTH_VALUES,
@@ -1169,6 +1217,28 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   mobileDeepLinking: {
     "expo-linking": "Expo Linking",
   },
+  mobileLibraries: {
+    "expo-sqlite": "Expo SQLite",
+    "expo-camera": "Expo Camera",
+    "expo-image-picker": "Expo Image Picker",
+    "expo-location": "Expo Location",
+    "expo-sensors": "Expo Sensors",
+    "expo-file-system": "Expo File System",
+    "expo-image": "Expo Image",
+    "expo-audio": "Expo Audio",
+    "expo-video": "Expo Video",
+    "expo-contacts": "Expo Contacts",
+    "expo-calendar": "Expo Calendar",
+    "expo-local-authentication": "Expo Local Authentication",
+    "expo-sharing": "Expo Sharing",
+    "expo-clipboard": "Expo Clipboard",
+    "expo-task-manager": "Expo Task Manager",
+    "expo-background-task": "Expo Background Task",
+    "expo-maps": "Expo Maps",
+    "expo-brightness": "Expo Brightness",
+    "expo-battery": "Expo Battery",
+    "expo-screen-capture": "Expo Screen Capture",
+  },
   codeQuality: {
     biome: "Biome",
     eslint: "ESLint",
@@ -1386,12 +1456,15 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     flask: "Flask",
     litestar: "Litestar",
     starlette: "Starlette",
+    aiohttp: "aiohttp",
+    streamlit: "Streamlit",
   },
   pythonOrm: {
     sqlalchemy: "SQLAlchemy",
     sqlmodel: "SQLModel",
     "tortoise-orm": "Tortoise ORM",
     peewee: "Peewee",
+    pymongo: "PyMongo",
   },
   pythonValidation: {
     pydantic: "Pydantic",
@@ -1407,10 +1480,16 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     "pydantic-ai": "Pydantic AI",
     "google-adk": "Google ADK",
     smolagents: "smolagents",
+    pytorch: "PyTorch",
+    transformers: "Transformers",
+    "scikit-learn": "scikit-learn",
+    tensorflow: "TensorFlow",
+    mcp: "MCP Python SDK",
   },
   pythonAuth: {
     authlib: "Authlib",
     jwt: "JWT (python-jose)",
+    pyjwt: "PyJWT",
     "fastapi-users": "FastAPI Users",
   },
   pythonApi: {
@@ -1436,6 +1515,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   pythonTesting: {
     pytest: "pytest",
     hypothesis: "Hypothesis",
+    "pytest-cov": "pytest-cov",
   },
   pythonCaching: {
     redis: "redis-py",
@@ -1447,11 +1527,36 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   pythonObservability: {
     opentelemetry: "OpenTelemetry",
+    "prometheus-client": "Prometheus Client",
   },
   pythonCli: {
     typer: "Typer",
     click: "Click",
     rich: "Rich",
+  },
+  pythonCloudSdk: {
+    boto3: "Boto3",
+  },
+  pythonHttpClient: {
+    requests: "Requests",
+  },
+  pythonData: {
+    numpy: "NumPy",
+    pandas: "pandas",
+    scipy: "SciPy",
+  },
+  pythonMedia: {
+    pillow: "Pillow",
+  },
+  pythonServer: {
+    gunicorn: "Gunicorn",
+  },
+  pythonPackageManager: {
+    uv: "uv",
+    poetry: "Poetry",
+  },
+  pythonMessageQueue: {
+    "confluent-kafka": "Confluent Kafka",
   },
   goWebFramework: {
     gin: "Gin",
@@ -1590,6 +1695,26 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     thymeleaf: "Thymeleaf",
     "spring-amqp": "Spring AMQP (RabbitMQ)",
     "opentelemetry-java": "OpenTelemetry",
+    "spring-data-redis": "Spring Data Redis",
+    "spring-data-mongodb": "Spring Data MongoDB",
+    "spring-data-elasticsearch": "Spring Data Elasticsearch",
+    "spring-data-neo4j": "Spring Data Neo4j",
+    "spring-data-cassandra": "Spring Data Cassandra",
+    "spring-data-couchbase": "Spring Data Couchbase",
+    "spring-data-jdbc": "Spring Data JDBC",
+    "spring-data-rest": "Spring Data REST",
+    "spring-quartz": "Quartz Scheduler",
+    "spring-pulsar": "Spring for Apache Pulsar",
+    "spring-integration": "Spring Integration",
+    "spring-websocket": "Spring WebSocket",
+    "spring-rsocket": "Spring RSocket",
+    "spring-hateoas": "Spring HATEOAS",
+    "spring-session-redis": "Spring Session Redis",
+    "spring-session-jdbc": "Spring Session JDBC",
+    "spring-ldap": "Spring LDAP",
+    "spring-oauth2-client": "Spring Security OAuth2 Client",
+    "spring-saml2": "Spring Security SAML2",
+    "spring-restclient": "Spring REST Client",
   },
   javaTestingLibraries: {
     junit5: "JUnit 5",
@@ -1654,6 +1779,28 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     docker: "Docker",
     azure: "Azure",
     aws: "AWS",
+  },
+  dotnetLibraries: {
+    automapper: "AutoMapper",
+    mediatr: "MediatR",
+    fastendpoints: "FastEndpoints",
+    "api-versioning": "ASP.NET API Versioning",
+    scalar: "Scalar",
+    polly: "Polly",
+    masstransit: "MassTransit",
+    rebus: "Rebus",
+    coravel: "Coravel",
+    "magic-onion": "MagicOnion",
+    "prometheus-net": "prometheus-net",
+    seq: "Seq",
+    "application-insights": "Application Insights",
+    sentry: "Sentry",
+    "mongodb-driver": "MongoDB Driver",
+    nhibernate: "NHibernate",
+    mapster: "Mapster",
+    scrutor: "Scrutor",
+    refit: "Refit",
+    "fluent-email": "FluentEmail",
   },
   elixirWebFramework: {
     phoenix: "Phoenix",
@@ -1883,6 +2030,7 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   mobilePush: buildCategoryMetadata("mobilePush"),
   mobileOTA: buildCategoryMetadata("mobileOTA"),
   mobileDeepLinking: buildCategoryMetadata("mobileDeepLinking"),
+  mobileLibraries: buildCategoryMetadata("mobileLibraries"),
   codeQuality: buildCategoryMetadata("codeQuality"),
   documentation: buildCategoryMetadata("documentation"),
   appShells: buildCategoryMetadata("appShells"),
@@ -1931,6 +2079,13 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   pythonRealtime: buildCategoryMetadata("pythonRealtime"),
   pythonObservability: buildCategoryMetadata("pythonObservability"),
   pythonCli: buildCategoryMetadata("pythonCli"),
+  pythonCloudSdk: buildCategoryMetadata("pythonCloudSdk"),
+  pythonHttpClient: buildCategoryMetadata("pythonHttpClient"),
+  pythonData: buildCategoryMetadata("pythonData"),
+  pythonMedia: buildCategoryMetadata("pythonMedia"),
+  pythonServer: buildCategoryMetadata("pythonServer"),
+  pythonPackageManager: buildCategoryMetadata("pythonPackageManager"),
+  pythonMessageQueue: buildCategoryMetadata("pythonMessageQueue"),
   goWebFramework: buildCategoryMetadata("goWebFramework"),
   goOrm: buildCategoryMetadata("goOrm"),
   goApi: buildCategoryMetadata("goApi"),
@@ -1969,6 +2124,7 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   dotnetValidation: buildCategoryMetadata("dotnetValidation"),
   dotnetCaching: buildCategoryMetadata("dotnetCaching"),
   dotnetDeploy: buildCategoryMetadata("dotnetDeploy"),
+  dotnetLibraries: buildCategoryMetadata("dotnetLibraries"),
   elixirWebFramework: buildCategoryMetadata("elixirWebFramework"),
   elixirOrm: buildCategoryMetadata("elixirOrm"),
   elixirAuth: buildCategoryMetadata("elixirAuth"),

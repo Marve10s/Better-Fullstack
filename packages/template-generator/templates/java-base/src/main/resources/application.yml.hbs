@@ -34,12 +34,17 @@ spring:
     console:
       enabled: true
 {{/if}}
-{{#if (or hasJavaJooq hasJavaMybatis)}}
+{{#if (and (not hasJavaJpa) (or hasJavaJooq (or hasJavaMybatis hasJavaJdbcInfrastructure)))}}
   datasource:
     url: jdbc:h2:file:./data/{{javaArtifactId}};MODE=PostgreSQL;AUTO_SERVER=TRUE
     driver-class-name: org.h2.Driver
     username: sa
     password:
+{{/if}}
+{{#if hasJavaSessionJdbc}}
+  session:
+    jdbc:
+      initialize-schema: always
 {{/if}}
 {{#if hasJavaKeycloak}}
   security:

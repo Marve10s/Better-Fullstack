@@ -1,8 +1,12 @@
-import assert from "node:assert/strict";
 import { describe, it } from "mocha";
 
+// Plain throw instead of node:assert — web tsconfigs with an explicit
+// "types" array (solid-start, vue, vanilla-vite) exclude @types/node.
 describe("web scaffold", () => {
   it("runs TypeScript tests", () => {
-    assert.equal(1 + 1, 2);
+    const sum: number = 1 + 1;
+    if (sum !== 2) {
+      throw new Error(`expected 2, received ${sum}`);
+    }
   });
 });

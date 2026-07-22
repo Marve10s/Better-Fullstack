@@ -106,11 +106,14 @@ const ARRAY_UPDATE_KEYS = new Set<keyof ProjectConfig>([
   "pythonAi",
   "pythonTesting",
   "pythonCli",
+  "pythonData",
   "goTesting",
   "javaLibraries",
   "javaTestingLibraries",
   "dotnetTesting",
   "dotnetObservability",
+  "mobileLibraries",
+  "dotnetLibraries",
   "elixirLibraries",
 ]);
 
@@ -686,7 +689,8 @@ function getDefaultNativeFrontendForRequestedUpdate(
     hasRequestedNonNoneValue(requestedChanges, "mobileTesting") ||
     hasRequestedNonNoneValue(requestedChanges, "mobilePush") ||
     hasRequestedNonNoneValue(requestedChanges, "mobileOTA") ||
-    hasRequestedNonNoneValue(requestedChanges, "mobileDeepLinking");
+    hasRequestedNonNoneValue(requestedChanges, "mobileDeepLinking") ||
+    (requestedChanges.mobileLibraries?.some((value) => value !== "none") ?? false);
 
   return needsNativeFrontend ? "native-bare" : undefined;
 }
@@ -1282,8 +1286,15 @@ function getInstallCommand(config: ProjectConfig): string {
   switch (config.ecosystem) {
     case "rust":
       return "cargo build";
-    case "python":
-      return "uv sync";
+    case "python": {
+      if (config.pythonPackageManager === "poetry") return "poetry install --extras dev";
+      if (config.pythonPackageManager === "none") {
+        const python = process.platform === "win32" ? "python" : "python3";
+        const pip = process.platform === "win32" ? ".venv\\Scripts\\pip" : ".venv/bin/pip";
+        return `${python} -m venv .venv && ${pip} install -e ".[dev]"`;
+      }
+      return "uv sync --extra dev";
+    }
     case "go":
       return "go mod tidy";
     case "java":

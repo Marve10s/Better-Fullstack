@@ -1,4 +1,4 @@
-import { Check, Link } from "lucide-react";
+import { TbCheck as Check, TbLink as Link } from "react-icons/tb";
 import { useState } from "react";
 
 import { m } from "@/paraglide/messages.js";

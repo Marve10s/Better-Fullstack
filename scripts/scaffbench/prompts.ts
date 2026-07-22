@@ -38,6 +38,7 @@ ${runDir}
 
 Create exactly one project directory named \`${projectName}\`.
 Do not ask questions. Do not start a dev server. Do not write outside the current working directory.
+You may install dependencies, query package registries, and run builds or type checks to verify your work before finishing — the project is graded by whether it installs and builds on a clean machine.
 At the end, report the commands you ran and any errors you hit.
 
 ${body}${libraryGuidance}`;

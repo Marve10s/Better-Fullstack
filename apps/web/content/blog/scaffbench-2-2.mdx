@@ -1,0 +1,114 @@
+---
+title: "ScaffBench 2.2: one number, three trials, no excuses"
+description: "One quality-gated pass metric, three cold trials per spec, permission to self-verify. First cohort: GPT-5.6 — and the smallest model ties the flagship."
+date: 2026-07-18
+authors:
+  - Ibrahim Elkamali
+tags:
+  - benchmark
+  - agents
+keywords:
+  - llm benchmark
+  - ai scaffolding
+  - gpt-5.6
+  - project generation
+  - scaffbench
+  - full pass
+  - repeatability
+---
+
+![ScaffBench 2.2 — prompt to project, validated cold](/blog-images/scaffbench-2-2.svg)
+
+## What this bench is
+
+ScaffBench asks one question: **can a coding agent turn a prompt into an entire full-stack project
+that actually works?** Not a snippet, not a patch to an existing repo — the whole thing: manifests,
+configs, wiring, code, across eight ecosystems (TypeScript, Rust, Go, Python, Java, .NET, Elixir,
+React Native, and polyglot combinations).
+
+The agent hands back a folder. We grade the folder. Nothing the agent claims counts — only what
+builds.
+
+## What we run
+
+**13 specs × 3 trials × each model.** Every spec is a realistic project brief — the stack, the
+required libraries, the features — for things like an AI search workbench (Hono + oRPC + Drizzle +
+Qdrant + OpenSearch), a Spring Boot + jOOQ + Keycloak API, a Go realtime service, a gRPC contract
+shared by a TypeScript web app and a Go service, or a pure-engineering "frontier" spec no scaffolder
+could produce.
+
+The prompt rules are short: create exactly one project directory, don't ask questions, don't start
+dev servers — and, new in 2.2, **you may install dependencies, query package registries, and run
+builds to verify your work before finishing.** Earlier versions were closed-book; models kept
+inventing dependency versions that don't exist. Now checking is allowed. Not checking is a choice.
+
+Each spec runs **three times, independently** — fresh workspace, no memory between attempts, spec
+order shuffled per round. Models don't produce the same project twice, so one attempt tells you what
+happened; three tell you what's true. A spec scored 2/3 isn't a pass or a fail — it's a 67%.
+
+## How we check results
+
+Every generated project is validated **cold, on a clean machine**, the same way for every model:
+
+1. **Install** — real package managers against live registries. Invented versions die here.
+2. **Build + typecheck** — the ecosystem's real toolchain (`cargo check --workspace`, `dotnet build`
+   on the solution, `tsc`, `go build ./...`, Expo export, protobuf codegen…).
+3. **Quality gates** — lint, format, tests. All of it, every run.
+
+The published number is the **Full pass rate**: the share of trials that clear *everything*. A
+project that compiles but fails its own lint or tests doesn't fully pass — that's the difference
+between "builds" and "done."
+
+The harness also refuses to blame models for our problems: provider rate-limit deaths, missing
+toolchains, and network flakes are classified as infrastructure and excluded — automatically, with
+the evidence recorded. And rows whose scores are within single-cohort sampling noise share a rank on
+the board instead of pretending an order exists.
+
+## How this compares to other benchmarks
+
+ScaffBench is **one-shot, not iterate-to-green**. The agent gets a spec and a full shell; what it
+hands back is final — no grading inside its own sandbox, no retries against the verdict, bounded
+only by a wall-clock ceiling and a budget cap. SWE-bench and Terminal-Bench grade iteration inside
+the model's own environment; Aider's polyglot suite allows bounded retries against a test suite;
+HumanEval-style suites never execute in a real environment at all. ScaffBench grades the artifact,
+after the fact, under identical conditions — which is why a model can top agentic leaderboards and
+still lose here to a smaller sibling that verifies before it pins.
+
+Two consequences of that design: **failures are choices, not handcuffs** — a run that dies on a
+dependency version that doesn't exist chose not to look it up — and the assisted lanes (where our
+MCP scaffolder drives) measure something different from raw capability: **restraint**, because with
+a working project handed to it, what separates models is whether their edits keep it working.
+
+## First 2.2 cohort: the GPT-5.6 family at high effort
+
+| Model | Full pass | Builds | Index |
+| --- | --- | --- | --- |
+| GPT-5.6 Luna | **44%** (17/39) | 72% | 78 |
+| GPT-5.6 Sol | **41%** (16/39) | 67% | 74 |
+| GPT-5.6 Terra | **38%** (15/39) | 67% | 74 |
+
+Three things worth knowing behind those numbers:
+
+- **The smallest model ties the flagship.** The gap between Luna and Sol is two cells out of 39 —
+  statistical noise — and that's the finding: scaffolding rewards restraint and convention, and
+  Sol's extra capability doesn't convert. It does show *somewhere*: Sol swept
+  `ai-search-workbench` 3/3, the hardest TypeScript spec, which no model had ever passed. It gave
+  those cells back by breaking its own build scripts on the polyglot gRPC spec that Luna passed 3/3.
+- **Self-verification works.** The Keycloak spec — failed by every previous GPT run on hallucinated
+  dependency versions — now passes for all three models. Given permission to check the registry,
+  they check.
+- **The Full tier bites.** All three models build roughly two-thirds of their projects; barely
+  half of those survive lint, format, and tests. That drop is the space between "it compiles" and
+  "you'd keep it."
+
+## Honest notes
+
+- Three trials beat one, but 39 samples still carry ±8pp of noise — treat close rows as tied,
+  because the board does.
+- These three rows are one vendor family. Claude and the free-tier endpoints run next; nothing
+  from older harness versions is mixed into this board.
+- Every 2.2 row is `ranked`-eligible: same harness (2.2.1), same prompt, same validator, three
+  consistent trials per cell. Older boards stay published as history, clearly marked.
+
+The bench runs [in the open](https://github.com/Marve10s/Better-Fullstack) — specs, harness,
+validator, and every number's provenance.

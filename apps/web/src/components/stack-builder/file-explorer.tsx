@@ -1,24 +1,14 @@
+import type {
+  VirtualDirectory,
+  VirtualFile,
+  VirtualNode,
+} from "@better-fullstack/template-generator/browser";
 
 import { useMemo } from "react";
 
 import { Tree, Folder, File } from "@/components/ui/file-tree";
 
-export interface VirtualFile {
-  type: "file";
-  path: string;
-  name: string;
-  content: string;
-  extension: string;
-}
-
-export interface VirtualDirectory {
-  type: "directory";
-  path: string;
-  name: string;
-  children: VirtualNode[];
-}
-
-export type VirtualNode = VirtualFile | VirtualDirectory;
+export type { VirtualDirectory, VirtualFile, VirtualNode };
 
 interface FileExplorerProps {
   root: VirtualDirectory;

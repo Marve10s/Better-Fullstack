@@ -1,5 +1,5 @@
 
-import { RefreshCw, Shuffle } from "lucide-react";
+import { TbRefresh as RefreshCw, TbArrowsShuffle as Shuffle } from "react-icons/tb";
 
 import { m } from "@/paraglide/messages.js";
 

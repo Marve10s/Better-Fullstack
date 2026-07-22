@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 
 import { combinationsMetrics } from "@/lib/combinations-count";
+import { PROJECT_ECOSYSTEM_COPY } from "@/lib/project-stats";
 import { m } from "@/paraglide/messages.js";
 
 const { totalScientific, yearsAtOneMillisecondScientific, universeLifetimesScientific } =
@@ -18,7 +19,7 @@ export default function CombinationsSection() {
         mantissa: combinationsMetrics.universeSandRatioScientific.mantissa,
         exponent: combinationsMetrics.universeSandRatioScientific.exponent,
       }),
-      m.homeFactEcosystems(),
+      m.homeFactEcosystems(PROJECT_ECOSYSTEM_COPY),
       m.homeFactUnique(),
       m.homeFactYolo(),
     ],

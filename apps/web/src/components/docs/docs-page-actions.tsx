@@ -1,4 +1,10 @@
-import { Check, ChevronDown, Copy, ExternalLink, FileText } from "lucide-react";
+import {
+  TbCheck as Check,
+  TbChevronDown as ChevronDown,
+  TbCopy as Copy,
+  TbExternalLink as ExternalLink,
+  TbFileText as FileText,
+} from "react-icons/tb";
 import { useState } from "react";
 
 const GITHUB_BRANCH = "docs";

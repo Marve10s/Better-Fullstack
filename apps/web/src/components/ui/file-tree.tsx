@@ -1,6 +1,6 @@
 
 import { Accordion as AccordionPrimitive } from "@base-ui/react/accordion";
-import { FileIcon, FolderIcon, FolderOpenIcon } from "lucide-react";
+import { TbFile as FileIcon, TbFolder as FolderIcon, TbFolderOpen as FolderOpenIcon } from "react-icons/tb";
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";

@@ -1,11 +1,11 @@
 
 import {
-  CircleCheckIcon,
-  InfoIcon,
-  TriangleAlertIcon,
-  OctagonXIcon,
-  Loader2Icon,
-} from "lucide-react";
+  TbCircleCheck as CircleCheckIcon,
+  TbInfoCircle as InfoIcon,
+  TbAlertTriangle as TriangleAlertIcon,
+  TbCircleX as OctagonXIcon,
+  TbLoader2 as Loader2Icon,
+} from "react-icons/tb";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
 
 import { useTheme } from "@/lib/theme";

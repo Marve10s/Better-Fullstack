@@ -2,6 +2,7 @@ import type { BenchmarkSpec } from "@/types";
 
 export const ElixirBroadwayAbsintheSpec: BenchmarkSpec = {
     id: "elixir-broadway-absinthe",
+    introducedAt: "2026-06-30",
     title: "Elixir Phoenix LiveView app with Absinthe, Broadway, Oban, and Nx",
     lane: "core",
     family: "elixir",
@@ -14,7 +15,7 @@ export const ElixirBroadwayAbsintheSpec: BenchmarkSpec = {
       "Include Broadway and Nx as libraries.",
       "Use Phoenix Presence for realtime, Oban for jobs, Finch as the HTTP client, Jason for JSON, Swoosh for email, Nebulex for caching, and PromEx for observability.",
       "Use Wallaby for testing, Dialyxir for code quality, and Fly for deploy output.",
-      "Do not install dependencies, do not initialize git, and do not start a dev server.",
+      "Do not initialize git or start a dev server.",
     ],
     naturalPrompt:
       "Build an Elixir Phoenix starter for a realtime data-ingestion app. It needs server-rendered live views, Postgres via Ecto, a dedicated JWT auth library, a GraphQL API, data pipelines, numerical/ML support, presence tracking, durable background jobs, a pooled HTTP client, caching, Prometheus metrics, browser-based tests, static analysis, and a deploy target. Pick the right BEAM libraries rather than the framework defaults.",
@@ -88,4 +89,3 @@ export const ElixirBroadwayAbsintheSpec: BenchmarkSpec = {
     ],
     validationProfile: { native: ["elixir"] },
   };
-

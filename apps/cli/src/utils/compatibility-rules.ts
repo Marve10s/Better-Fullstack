@@ -549,11 +549,15 @@ export function validateAddonCompatibility(
     if (ecosystem === "typescript" && !hasDockerComposeCompatibleFrontend(frontend)) {
       return {
         isCompatible: false,
-        reason:
-          `${title} currently supports Next.js, Vinext, TanStack Router, React Router, React Vite, Solid, or Astro`,
+        reason: `${title} currently supports Next.js, Vinext, TanStack Router, React Router, React Vite, Solid, or Astro`,
       };
     }
-    if (ecosystem === "typescript" && backend === "self" && !frontend.includes("next") && !frontend.includes("vinext")) {
+    if (
+      ecosystem === "typescript" &&
+      backend === "self" &&
+      !frontend.includes("next") &&
+      !frontend.includes("vinext")
+    ) {
       return {
         isCompatible: false,
         reason: `${title} self-backend support currently requires Next.js or Vinext`,
@@ -576,11 +580,12 @@ export function validateAddonCompatibility(
       database &&
       database !== "none" &&
       database !== "sqlite" &&
-      database !== "postgres"
+      database !== "postgres" &&
+      database !== "mongodb"
     ) {
       return {
         isCompatible: false,
-        reason: `${title} for Python ORM projects currently supports SQLite defaults or Postgres`,
+        reason: `${title} for Python ORM projects currently supports SQLite, Postgres, or MongoDB`,
       };
     }
   }
@@ -795,10 +800,7 @@ export function validateExamplesCompatibility(
  * Validates that TanStack AI is only used with compatible frontends (React or Solid).
  * Server-side @tanstack/ai core works anywhere, but client adapters only exist for React and Solid.
  */
-export function validateAIFrontendCompatibility(
-  ai: AI | undefined,
-  frontends: Frontend[] = [],
-) {
+export function validateAIFrontendCompatibility(ai: AI | undefined, frontends: Frontend[] = []) {
   const issue = getAIFrontendCompatibilityIssue(ai, frontends);
   if (!issue) return;
 
@@ -955,7 +957,8 @@ export function validateRustExpansionCompatibility(config: Partial<ProjectConfig
 
   if (framework === "loco" && api === "jsonrpsee") {
     incompatibilityError({
-      message: "Loco owns the server boot sequence and cannot start the generated jsonrpsee server.",
+      message:
+        "Loco owns the server boot sequence and cannot start the generated jsonrpsee server.",
       provided: { "rust-web-framework": framework, "rust-api": api },
       suggestions: ["Use --rust-api none", "Choose Axum, Actix Web, Rocket, Poem, Warp, or Salvo"],
     });
@@ -966,6 +969,20 @@ export function validateRustExpansionCompatibility(config: Partial<ProjectConfig
       message: "The generated tower-sessions middleware is wired specifically for Axum.",
       provided: { "rust-web-framework": framework, "rust-auth": auth },
       suggestions: ["Use --rust-web-framework axum", "Choose --rust-auth openidconnect or none"],
+    });
+  }
+
+  const orm = config.rustOrm ?? "none";
+  if (auth === "torii" && orm === "rusqlite") {
+    // Torii's SQLite storage pins sqlx 0.8.0 (libsqlite3-sys 0.28) while the
+    // rusqlite template uses libsqlite3-sys 0.36; cargo allows only one crate
+    // in the graph to link the native sqlite3 library, so this pair can never
+    // resolve.
+    incompatibilityError({
+      message:
+        "Torii's sqlx-based SQLite storage conflicts with rusqlite: both link the native sqlite3 library and cargo permits only one linker.",
+      provided: { "rust-orm": orm, "rust-auth": auth },
+      suggestions: ["Use --rust-orm sqlx, sea-orm, or diesel with Torii", "Choose --rust-auth none"],
     });
   }
 }

@@ -2,6 +2,7 @@ import type { BenchmarkSpec } from "@/types";
 
 export const JavaSpringJooqKeycloakSpec: BenchmarkSpec = {
     id: "java-spring-jooq-keycloak",
+    introducedAt: "2026-06-30",
     title: "Java Spring Boot API with jOOQ, Keycloak, GraphQL, and property/architecture tests",
     lane: "core",
     family: "java",
@@ -14,7 +15,7 @@ export const JavaSpringJooqKeycloakSpec: BenchmarkSpec = {
       "Use PostgreSQL.",
       "Include MapStruct, Resilience4j, Spring for Kafka, Spring Batch, Micrometer Prometheus, Caffeine, springdoc-openapi, OpenTelemetry, Spring Validation, and Spring Actuator.",
       "Include JUnit 5, Mockito, Testcontainers, AssertJ, REST Assured, WireMock, Awaitility, ArchUnit, and jqwik for testing.",
-      "Do not install dependencies, do not initialize git, and do not start a dev server.",
+      "Do not initialize git or start a dev server.",
     ],
     naturalPrompt:
       "Build a Java Spring Boot starter for an event-driven service. It needs Postgres data access with a type-safe SQL layer, a dedicated identity server for auth, a GraphQL API, fault tolerance, event streaming, batch jobs, metrics, mapping, API docs, and tracing — plus a serious test stack with mocks, containers, HTTP stubs, architecture rules, and property-based tests. Choose the right Java libraries rather than the Spring defaults.",
@@ -83,4 +84,3 @@ export const JavaSpringJooqKeycloakSpec: BenchmarkSpec = {
     ],
     validationProfile: { native: ["java"] },
   };
-

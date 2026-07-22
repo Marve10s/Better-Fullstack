@@ -48,7 +48,7 @@ const JS_LOCKFILES = ["bun.lock", "bun.lockb", "pnpm-lock.yaml", "package-lock.j
 const NATIVE_LOCKFILES: Record<string, { file: string; hint: string }> = {
   rust: { file: "Cargo.lock", hint: "cargo build" },
   go: { file: "go.sum", hint: "go mod tidy" },
-  python: { file: "uv.lock", hint: "uv sync" },
+  python: { file: "uv.lock", hint: "uv sync --extra dev" },
   elixir: { file: "mix.lock", hint: "mix deps.get" },
 };
 

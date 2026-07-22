@@ -248,6 +248,16 @@ jobs:
           --health-timeout 5s
           --health-retries 10
     steps:
+      # The broad matrix scaffolds and installs many projects across every
+      # ecosystem and has exhausted the runner disk (run 29582988254 died with
+      # "No space left on device"). Drop the big preinstalled toolchains this
+      # job never uses (~25GB: Android SDK, GHC, CodeQL, Swift, boost).
+      - name: Free runner disk space
+        run: |
+          sudo rm -rf /usr/local/lib/android /opt/ghc /usr/local/.ghcup \
+            /opt/hostedtoolcache/CodeQL /usr/share/swift /usr/local/share/boost
+          docker image prune -af >/dev/null 2>&1 || true
+          df -h /
       - uses: actions/checkout@v4
 
       - uses: oven-sh/setup-bun@v2

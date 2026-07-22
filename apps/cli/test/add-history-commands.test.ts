@@ -338,6 +338,13 @@ describe("CLI history command", () => {
       "--python-realtime none " +
       "--python-observability none " +
       "--python-cli none " +
+      "--python-cloud-sdk none " +
+      "--python-http-client none " +
+      "--python-data none " +
+      "--python-media none " +
+      "--python-server none " +
+      "--python-package-manager uv " +
+      "--python-message-queue none " +
       "--email none " +
       "--observability none " +
       "--caching none " +
@@ -385,6 +392,20 @@ describe("CLI history command", () => {
         "--python-observability",
         "none",
         "--python-cli",
+        "none",
+        "--python-cloud-sdk",
+        "none",
+        "--python-http-client",
+        "none",
+        "--python-data",
+        "none",
+        "--python-media",
+        "none",
+        "--python-server",
+        "none",
+        "--python-package-manager",
+        "uv",
+        "--python-message-queue",
         "none",
         "--email",
         "none",

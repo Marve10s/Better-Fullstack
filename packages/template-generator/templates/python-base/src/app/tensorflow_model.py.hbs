@@ -1,0 +1,19 @@
+{{#if (includes pythonAi "tensorflow")}}
+"""Minimal TensorFlow/Keras model factory."""
+
+from tensorflow import keras
+
+
+def build_classifier(input_features: int, classes: int) -> keras.Model:
+    """Build and compile a compact dense classifier."""
+    model = keras.Sequential(
+        [
+            keras.layers.Input(shape=(input_features,)),
+            keras.layers.Dense(64, activation="relu"),
+            keras.layers.Dropout(0.2),
+            keras.layers.Dense(classes, activation="softmax"),
+        ]
+    )
+    model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
+    return model
+{{/if}}

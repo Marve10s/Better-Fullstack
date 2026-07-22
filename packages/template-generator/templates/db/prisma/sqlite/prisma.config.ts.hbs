@@ -1,5 +1,5 @@
 import path from "node:path";
-import { defineConfig, env } from "prisma/config";
+import { defineConfig{{#unless (eq dbSetup "turso")}}, env{{/unless}} } from "prisma/config";
 import dotenv from "dotenv";
 
 dotenv.config({

@@ -17,11 +17,16 @@ type Step = {
 
 const ok = (command: string): Step => ({ command, exitCode: 0, timedOut: false });
 const failed = (command: string): Step => ({ command, exitCode: 1, timedOut: false });
-const skip = (command: string): Step => ({ command, exitCode: null, timedOut: false, status: "skip" });
+const skip = (command: string): Step => ({
+  command,
+  exitCode: null,
+  timedOut: false,
+  status: "skip",
+});
 const na = (command: string): Step => ({ command, exitCode: null, timedOut: false, status: "na" });
 
 const run = (steps: Record<string, Step>, projectExists = true) => ({
-  validation: { projectExists, steps },
+  validation: { projectExists, qualityGateRequested: true, steps },
 });
 
 describe("stepGreen", () => {
@@ -44,8 +49,19 @@ describe("corePass / fullPass gate logic", () => {
   });
 
   it("does not pass when the project does not exist", () => {
-    expect(corePass({ validation: { projectExists: false, steps: {} } })).toBe(false);
-    expect(fullPass({ validation: { projectExists: false, steps: {} } })).toBe(false);
+    expect(
+      corePass({ validation: { projectExists: false, qualityGateRequested: true, steps: {} } }),
+    ).toBe(false);
+    expect(
+      fullPass({ validation: { projectExists: false, qualityGateRequested: true, steps: {} } }),
+    ).toBe(false);
+  });
+
+  it("reports quality as unavailable when the quality gate was not requested", () => {
+    const result = run({ install: ok("bun install"), build: ok("bun run build") });
+    result.validation.qualityGateRequested = false;
+    expect(corePass(result)).toBe(true);
+    expect(fullPass(result)).toBeNull();
   });
 
   it("passes a normal all-green run (core + gate steps)", () => {

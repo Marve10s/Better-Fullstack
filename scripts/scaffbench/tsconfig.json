@@ -1,0 +1,24 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "..",
+    "paths": {
+      "@/*": ["./scaffbench/*"],
+      "@better-fullstack/types": ["./scaffbench/typecheck-shims.d.ts"]
+    }
+  },
+  "include": [
+    "./**/*.ts",
+    "../scaffbench-v2.ts",
+    "../scaffbench-v2-lib.test.ts",
+    "../scaffbench-hardening.test.ts",
+    "../scaffbench-hardening-round-2.test.ts",
+    "../build-scaffbench-data.ts",
+    "../build-scaffbench-data.test.ts",
+    "../build-scaffbench-2-1-data.ts",
+    "../build-scaffbench-2-2-data.ts",
+    "../backfill-scaffbench-code-metrics.ts",
+    "../scaffbench-code-metrics.test.ts",
+    "../splice-scaffbench-2-1.ts"
+  ]
+}

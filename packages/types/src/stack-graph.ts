@@ -27,6 +27,7 @@ import {
   DOTNET_CACHING_VALUES,
   DOTNET_DEPLOY_VALUES,
   DOTNET_JOB_QUEUE_VALUES,
+  DOTNET_LIBRARIES_VALUES,
   DOTNET_OBSERVABILITY_VALUES,
   DOTNET_ORM_VALUES,
   DOTNET_REALTIME_VALUES,
@@ -83,6 +84,7 @@ import {
   JOB_QUEUE_VALUES,
   LOGGING_VALUES,
   MOBILE_NAVIGATION_VALUES,
+  MOBILE_LIBRARIES_VALUES,
   MOBILE_DEEP_LINKING_VALUES,
   MOBILE_OTA_VALUES,
   MOBILE_PUSH_VALUES,
@@ -103,6 +105,13 @@ import {
   PYTHON_REALTIME_VALUES,
   PYTHON_OBSERVABILITY_VALUES,
   PYTHON_CLI_VALUES,
+  PYTHON_CLOUD_SDK_VALUES,
+  PYTHON_DATA_VALUES,
+  PYTHON_HTTP_CLIENT_VALUES,
+  PYTHON_MEDIA_VALUES,
+  PYTHON_MESSAGE_QUEUE_VALUES,
+  PYTHON_PACKAGE_MANAGER_VALUES,
+  PYTHON_SERVER_VALUES,
   PYTHON_TASK_QUEUE_VALUES,
   PYTHON_VALIDATION_VALUES,
   PYTHON_WEB_FRAMEWORK_VALUES,
@@ -380,12 +389,20 @@ const LEGACY_MOBILE_SINGLE_CATEGORIES = {
   deepLinking: "mobileDeepLinking",
 } as const satisfies Partial<Record<StackPartRole, keyof ProjectConfig>>;
 
+const LEGACY_MOBILE_ARRAY_CATEGORIES = {
+  libraries: "mobileLibraries",
+} as const satisfies Partial<Record<StackPartRole, keyof ProjectConfig>>;
+
 const LEGACY_BACKEND_ARRAY_CATEGORIES_BY_ECOSYSTEM = {
   rust: { libraries: "rustLibraries" },
-  python: { ai: "pythonAi", testing: "pythonTesting", cli: "pythonCli" },
+  python: { ai: "pythonAi", testing: "pythonTesting", cli: "pythonCli", data: "pythonData" },
   go: { testing: "goTesting" },
   java: { libraries: "javaLibraries", testing: "javaTestingLibraries" },
-  dotnet: { testing: "dotnetTesting", observability: "dotnetObservability" },
+  dotnet: {
+    testing: "dotnetTesting",
+    observability: "dotnetObservability",
+    libraries: "dotnetLibraries",
+  },
   elixir: { libraries: "elixirLibraries" },
 } as const satisfies Record<
   LegacyBackendEcosystem,
@@ -452,11 +469,14 @@ const LEGACY_ARRAY_CATEGORIES = new Set<keyof ProjectConfig>([
   "pythonAi",
   "javaLibraries",
   "javaTestingLibraries",
+  "mobileLibraries",
+  "dotnetLibraries",
   "dotnetTesting",
   "dotnetObservability",
   "goTesting",
   "pythonTesting",
   "pythonCli",
+  "pythonData",
   "elixirLibraries",
 ]);
 
@@ -521,7 +541,10 @@ const OWNER_ROLES_BY_SCOPED_ROLE = {
     Object.keys(LEGACY_TYPESCRIPT_FRONTEND_SINGLE_CATEGORIES).map((role) => [role, ["frontend"]]),
   ),
   ...Object.fromEntries(
-    Object.keys(LEGACY_MOBILE_SINGLE_CATEGORIES).map((role) => [role, ["mobile"]]),
+    [
+      ...Object.keys(LEGACY_MOBILE_SINGLE_CATEGORIES),
+      ...Object.keys(LEGACY_MOBILE_ARRAY_CATEGORIES),
+    ].map((role) => [role, ["mobile"]]),
   ),
   deploy: ["frontend", "backend"],
   dbSetup: ["database"],
@@ -536,7 +559,13 @@ const OWNER_ROLES_BY_SCOPED_ROLE = {
   cli: ["backend"],
   errorHandling: ["backend"],
   httpClient: ["frontend", "backend"],
-  libraries: ["frontend", "backend"],
+  libraries: ["frontend", "mobile", "backend"],
+  cloudSdk: ["backend"],
+  data: ["backend"],
+  media: ["backend"],
+  server: ["backend"],
+  packageManager: ["backend"],
+  messageQueue: ["backend"],
 } as Partial<Record<StackPartRole, readonly StackPrimaryRole[]>>;
 
 const FRESH_UNSUPPORTED_STATE_MANAGEMENT_TOOLS = new Set([
@@ -671,6 +700,12 @@ const LEGACY_EXTRA_CATEGORIES_BY_ECOSYSTEM = {
     caching: "pythonCaching",
     realtime: "pythonRealtime",
     observability: "pythonObservability",
+    cloudSdk: "pythonCloudSdk",
+    httpClient: "pythonHttpClient",
+    media: "pythonMedia",
+    server: "pythonServer",
+    packageManager: "pythonPackageManager",
+    messageQueue: "pythonMessageQueue",
   },
   go: {
     cli: "goCli",
@@ -758,6 +793,7 @@ const GRAPH_PROJECTION_DEFAULT_LEGACY_CATEGORIES = [
   ...Object.values(LEGACY_TYPESCRIPT_FRONTEND_SINGLE_CATEGORIES),
   ...Object.values(LEGACY_DATABASE_SINGLE_CATEGORIES),
   ...Object.values(LEGACY_MOBILE_SINGLE_CATEGORIES),
+  ...Object.values(LEGACY_MOBILE_ARRAY_CATEGORIES),
   ...Object.values(LEGACY_EXTRA_CATEGORIES_BY_ECOSYSTEM).flatMap((categories) =>
     Object.values(categories),
   ),
@@ -905,6 +941,9 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(MOBILE_PUSH_VALUES, "push", "react-native", "mobilePush"),
   ...defineTools(MOBILE_OTA_VALUES, "ota", "react-native", "mobileOTA"),
   ...defineTools(MOBILE_DEEP_LINKING_VALUES, "deepLinking", "react-native", "mobileDeepLinking"),
+  ...defineTools(MOBILE_LIBRARIES_VALUES, "libraries", "react-native", "mobileLibraries", {
+    allowMultiple: true,
+  }),
   ...defineTools(RUST_WEB_FRAMEWORK_VALUES, "backend", "rust", "rustWebFramework"),
   ...defineTools(RUST_FRONTEND_VALUES, "frontend", "rust", "rustFrontend"),
   ...defineTools(RUST_ORM_VALUES, "orm", "rust", "rustOrm"),
@@ -949,6 +988,15 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(PYTHON_CLI_VALUES, "cli", "python", "pythonCli", {
     allowMultiple: true,
   }),
+  ...defineTools(PYTHON_CLOUD_SDK_VALUES, "cloudSdk", "python", "pythonCloudSdk"),
+  ...defineTools(PYTHON_HTTP_CLIENT_VALUES, "httpClient", "python", "pythonHttpClient"),
+  ...defineTools(PYTHON_DATA_VALUES, "data", "python", "pythonData", {
+    allowMultiple: true,
+  }),
+  ...defineTools(PYTHON_MEDIA_VALUES, "media", "python", "pythonMedia"),
+  ...defineTools(PYTHON_SERVER_VALUES, "server", "python", "pythonServer"),
+  ...defineTools(PYTHON_PACKAGE_MANAGER_VALUES, "packageManager", "python", "pythonPackageManager"),
+  ...defineTools(PYTHON_MESSAGE_QUEUE_VALUES, "messageQueue", "python", "pythonMessageQueue"),
   ...defineTools(GO_WEB_FRAMEWORK_VALUES, "backend", "go", "goWebFramework"),
   ...defineTools(GO_ORM_VALUES, "orm", "go", "goOrm"),
   ...defineTools(GO_API_VALUES, "api", "go", "goApi"),
@@ -1005,6 +1053,9 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(DOTNET_VALIDATION_VALUES, "validation", "dotnet", "dotnetValidation"),
   ...defineTools(DOTNET_CACHING_VALUES, "caching", "dotnet", "dotnetCaching"),
   ...defineTools(DOTNET_DEPLOY_VALUES, "deploy", "dotnet", "dotnetDeploy"),
+  ...defineTools(DOTNET_LIBRARIES_VALUES, "libraries", "dotnet", "dotnetLibraries", {
+    allowMultiple: true,
+  }),
   ...defineTools(ELIXIR_WEB_FRAMEWORK_VALUES, "backend", "elixir", "elixirWebFramework"),
   ...defineTools(ELIXIR_ORM_VALUES, "orm", "elixir", "elixirOrm"),
   ...defineTools(ELIXIR_AUTH_VALUES, "auth", "elixir", "elixirAuth"),
@@ -2984,6 +3035,17 @@ export function legacyProjectConfigToStackParts(
           mobilePart.id,
         );
       }
+
+      for (const [role, category] of Object.entries(LEGACY_MOBILE_ARRAY_CATEGORIES) as Array<
+        [StackPartRole, keyof ProjectConfig]
+      >) {
+        const values = config[category];
+        if (!Array.isArray(values)) continue;
+        for (const toolId of values) {
+          if (typeof toolId !== "string") continue;
+          addLegacyPart(parts, role, "react-native", toolId, source, mobilePart.id);
+        }
+      }
     }
 
     if (backendPart?.ecosystem === "typescript") {
@@ -3349,7 +3411,12 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
   };
 
   for (const category of GRAPH_PROJECTION_DEFAULT_LEGACY_CATEGORIES) {
-    (projected as Record<string, unknown>)[category] = "none";
+    // Array-valued categories (e.g. mobileLibraries) must reset to [] — a "none"
+    // string would later be spread character-by-character by
+    // appendUniqueLegacyArrayValue and read as truthy by templates.
+    (projected as Record<string, unknown>)[category] = LEGACY_ARRAY_CATEGORIES.has(category)
+      ? []
+      : "none";
   }
   projected.addons = [];
   projected.examples = [];

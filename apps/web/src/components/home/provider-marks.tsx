@@ -3,7 +3,7 @@
 // reuse the exact marks without pulling in the full chart component.
 
 /** Provider brands we render a logo for. */
-export type ProviderLogoId = "anthropic" | "openai" | "google";
+export type ProviderLogoId = "anthropic" | "openai" | "google" | "opencode" | "kilo" | "pi";
 
 // OpenAI logomark (from simple-icons; renders in currentColor).
 export function OpenAIMark({ className }: { className?: string }) {
@@ -48,6 +48,41 @@ export function GoogleMark({ className }: { className?: string }) {
   );
 }
 
+// Official harness logomarks, flattened to currentColor for benchmark rows.
+export function OpencodeMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 300 300" aria-hidden className={className} xmlns="http://www.w3.org/2000/svg">
+      <g transform="translate(30 0)">
+        <path fill="currentColor" d="M180 60H60V240H180V60ZM240 300H0V0H240V300Z" />
+      </g>
+    </svg>
+  );
+}
+
+export function KiloMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="64 64 384 384" aria-hidden className={className} xmlns="http://www.w3.org/2000/svg">
+      <path
+        fill="currentColor"
+        d="M322 377H377V421H307.857L278 391.143V322H322V377ZM421 307.857L391.143 278H322V322L377 322V377H421V307.857ZM234 278H190V322H234V278ZM91 391.143L120.857 421H234V377H135V278H91V391.143ZM371.172 189.999V120.856L341.315 90.9995H278V135H327.172V189.999H278V233.999H421V189.999H371.172ZM135 91H91V233.999H135V184.5H190V233.999H234V184.5L190 140.5H135V91ZM234 91H190V140.5H234V91Z"
+      />
+    </svg>
+  );
+}
+
+export function PiHarnessMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="125 125 550 550" aria-hidden className={className} xmlns="http://www.w3.org/2000/svg">
+      <path
+        fill="currentColor"
+        fillRule="evenodd"
+        d="M165.29 165.29H517.36V400H400V517.36H282.65V634.72H165.29ZM282.65 282.65V400H400V282.65Z"
+      />
+      <path fill="currentColor" d="M517.36 400H634.72V634.72H517.36Z" />
+    </svg>
+  );
+}
+
 // Brand logo shown to the left of a leaderboard model name. Inherits the row's
 // text color via currentColor, so it stays legible in both themes.
 export function ProviderLogo({ logo }: { logo?: ProviderLogoId }) {
@@ -59,6 +94,15 @@ export function ProviderLogo({ logo }: { logo?: ProviderLogoId }) {
   }
   if (logo === "google") {
     return <GoogleMark className="size-3.5 shrink-0" />;
+  }
+  if (logo === "opencode") {
+    return <OpencodeMark className="size-3.5 shrink-0" />;
+  }
+  if (logo === "kilo") {
+    return <KiloMark className="size-3.5 shrink-0" />;
+  }
+  if (logo === "pi") {
+    return <PiHarnessMark className="size-3.5 shrink-0" />;
   }
   return null;
 }

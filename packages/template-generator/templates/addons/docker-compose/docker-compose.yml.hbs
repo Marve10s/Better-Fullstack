@@ -171,6 +171,9 @@ volumes:
       - DATABASE_URL=postgresql+psycopg://postgres:postgres@db:5432/{{projectName}}
 {{/if}}
 {{/if}}
+{{#if (and (ne pythonOrm "none") (eq database "mongodb"))}}
+      - MONGODB_URI=mongodb://root:password@db:27017/{{projectName}}?authSource=admin
+{{/if}}
 {{else if (eq ecosystem "go")}}
       - HOST=0.0.0.0
       - PORT=8080
@@ -200,7 +203,7 @@ volumes:
       - PORT=8080
       - SPRING_PROFILES_ACTIVE=prod
 {{/if}}
-{{#if (or (or (and (eq ecosystem "python") (and (ne pythonOrm "none") (eq database "postgres"))) (and (eq ecosystem "go") (ne goOrm "none"))) (and (eq ecosystem "rust") (and (ne rustOrm "none") (ne rustOrm "rusqlite"))))}}
+{{#if (or (or (and (eq ecosystem "python") (and (ne pythonOrm "none") (or (eq database "postgres") (eq database "mongodb")))) (and (eq ecosystem "go") (ne goOrm "none"))) (and (eq ecosystem "rust") (and (ne rustOrm "none") (ne rustOrm "rusqlite"))))}}
     depends_on:
       db:
         condition: service_healthy
@@ -211,9 +214,9 @@ volumes:
 {{/if}}
     restart: unless-stopped
 
-{{#if (or (or (and (eq ecosystem "python") (and (ne pythonOrm "none") (eq database "postgres"))) (and (eq ecosystem "go") (ne goOrm "none"))) (and (eq ecosystem "rust") (and (ne rustOrm "none") (ne rustOrm "rusqlite"))))}}
+{{#if (or (or (and (eq ecosystem "python") (and (ne pythonOrm "none") (or (eq database "postgres") (eq database "mongodb")))) (and (eq ecosystem "go") (ne goOrm "none"))) (and (eq ecosystem "rust") (and (ne rustOrm "none") (ne rustOrm "rusqlite"))))}}
   db:
-{{#if (and (eq ecosystem "rust") (eq rustOrm "mongodb"))}}
+{{#if (or (and (eq ecosystem "rust") (eq rustOrm "mongodb")) (and (eq ecosystem "python") (eq database "mongodb")))}}
     image: mongo:7
     container_name: {{projectName}}-mongodb
     environment:
@@ -250,7 +253,7 @@ volumes:
 {{/if}}
 
 volumes:
-{{#if (and (eq ecosystem "rust") (eq rustOrm "mongodb"))}}
+{{#if (or (and (eq ecosystem "rust") (eq rustOrm "mongodb")) (and (eq ecosystem "python") (eq database "mongodb")))}}
   mongodb_data:
 {{else}}
   postgres_data:

@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 // Project standardizes on `motion/react` (Motion); `framer-motion` is its
 // legacy package name and is not installed here. The API used below is identical.
 import { motion } from "motion/react";
-import { BookOpen, Clock } from "lucide-react";
+import { TbBook as BookOpen, TbClock as Clock } from "react-icons/tb";
 
 interface GlassBlogCardProps {
   title?: string;

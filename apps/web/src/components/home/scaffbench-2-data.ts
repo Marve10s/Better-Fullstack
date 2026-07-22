@@ -11,10 +11,13 @@ export type ScaffbenchModel = {
   model: string;
   effort: string;
   effectiveReasoning: string;
-  provider: "claude" | "codex" | "opencode" | "kilo" | "agy";
+  provider: "claude" | "codex" | "opencode" | "kilo" | "agy" | "pi";
   label: string;
   /** overall ScaffBench Index across all scored cells — the group sort key. */
   sortIndex: number;
+  /** publication eligibility from run provenance (2.2+): "ranked" needs >=3
+   *  consistent trials per cell; absent on older boards. */
+  eligibility?: "ranked" | "exploratory";
 };
 
 export type ScaffbenchCell = {
@@ -25,9 +28,23 @@ export type ScaffbenchCell = {
   /** false when the run was infra-inconclusive (timed-out toolchain) — excluded from rates. */
   scored: boolean;
   corePass: boolean;
-  fullPass: boolean;
+  /** null = quality gates were never run for this cell (Full unmeasured). */
+  fullPass: boolean | null;
   wiredPct: number;
   cmdPct: number;
+  /** Repeat-aware fields (harness 2.2.0+). Absent on single-trial legacy cells:
+   *  consumers fall back to trials=1 semantics derived from scored/corePass. */
+  trials?: number;
+  scoredTrials?: number;
+  passCount?: number;
+  passRate?: number;
+  passAny?: boolean;
+  passAll?: boolean;
+  qualityPassCount?: number | null;
+  qualityPassRate?: number | null;
+  /** mean lines of code the model wrote per scaffold (lockfiles/binaries
+   *  excluded); null/absent on rows benched before the metric landed. */
+  lines?: number | null;
   costUsd: number | null;
   outTokens: number | null;
   steps: number;

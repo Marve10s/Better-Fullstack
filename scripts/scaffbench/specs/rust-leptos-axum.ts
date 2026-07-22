@@ -2,6 +2,7 @@ import type { BenchmarkSpec } from "@/types";
 
 export const RustLeptosAxumSpec: BenchmarkSpec = {
     id: "rust-leptos-axum",
+    introducedAt: "2026-06-25",
     title: "Rust Axum API with a Leptos WASM frontend and typed service libraries",
     lane: "core",
     family: "rust",
@@ -13,7 +14,7 @@ export const RustLeptosAxumSpec: BenchmarkSpec = {
       "Use Tonic for a typed API boundary.",
       "Include Clap CLI support, tracing, anyhow/thiserror, Moka caching, OAuth2 auth, Lapin jobs, OpenTelemetry, and Askama templates.",
       "Include serde, uuid, chrono, reqwest, config, utoipa, validator, and tokio-test libraries.",
-      "Do not install dependencies, do not initialize git, and do not start a dev server.",
+      "Do not initialize git or start a dev server.",
     ],
     naturalPrompt:
       "Build a Rust starter for an internal product console. It should have an Axum server, a Rust WASM frontend, Postgres access, typed service/API boundaries, CLI/admin utilities, tracing, auth, cache, jobs, and template rendering. Choose the right Rust libraries rather than swapping in web defaults.",
@@ -123,4 +124,3 @@ export const RustLeptosAxumSpec: BenchmarkSpec = {
     ],
     validationProfile: { native: ["cargo"] },
   };
-

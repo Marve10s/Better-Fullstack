@@ -88,6 +88,18 @@ describe("stack selection translation", () => {
     );
   });
 
+  it("serializes the shared database for server ecosystem commands", () => {
+    for (const ecosystem of ["rust", "python", "go", "java", "dotnet", "elixir"] as const) {
+      expect(
+        generateStackSelectionCommand({
+          ...DEFAULT_SELECTION,
+          ecosystem,
+          database: "postgres",
+        }),
+      ).toContain("--database postgres");
+    }
+  });
+
   it("emits canonical graph --part flags for multi-ecosystem selections", () => {
     const command = generateStackSelectionCommand({
       ...DEFAULT_SELECTION,
@@ -375,11 +387,26 @@ describe("stack selection translation", () => {
       pythonAi: ["langchain", "openai-sdk"],
       pythonGraphql: "strawberry",
       pythonQuality: "ruff",
+      pythonCloudSdk: "boto3",
+      pythonHttpClient: "requests",
+      pythonData: ["numpy", "pandas"],
+      pythonMedia: "pillow",
+      pythonServer: "gunicorn",
+      pythonPackageManager: "uv",
+      pythonMessageQueue: "confluent-kafka",
     });
     expect(pythonCommand).toContain("--part backend.ai:python:langchain");
     expect(pythonCommand).toContain("--part backend.ai:python:openai-sdk");
     expect(pythonCommand).toContain("--part backend.graphql:python:strawberry");
     expect(pythonCommand).toContain("--part backend.codeQuality:python:ruff");
+    expect(pythonCommand).toContain("--part backend.cloudSdk:python:boto3");
+    expect(pythonCommand).toContain("--part backend.httpClient:python:requests");
+    expect(pythonCommand).toContain("--part backend.data:python:numpy");
+    expect(pythonCommand).toContain("--part backend.data:python:pandas");
+    expect(pythonCommand).toContain("--part backend.media:python:pillow");
+    expect(pythonCommand).toContain("--part backend.server:python:gunicorn");
+    expect(pythonCommand).toContain("--part backend.packageManager:python:uv");
+    expect(pythonCommand).toContain("--part backend.messageQueue:python:confluent-kafka");
     expect(pythonCommand).not.toContain("--python-ai");
     expect(pythonCommand).not.toContain("--python-graphql strawberry");
 

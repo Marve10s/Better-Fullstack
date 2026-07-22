@@ -1,0 +1,17 @@
+{{#if (includes pythonAi "scikit-learn")}}
+"""scikit-learn classification pipeline."""
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+
+
+def build_classifier() -> Pipeline:
+    """Build a preprocessing and logistic-regression pipeline."""
+    return Pipeline(
+        [
+            ("scale", StandardScaler()),
+            ("classifier", LogisticRegression(max_iter=1_000)),
+        ]
+    )
+{{/if}}

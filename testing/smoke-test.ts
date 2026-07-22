@@ -527,8 +527,9 @@ for (const combo of combos) {
   }
   console.log(`  ${result.overallSuccess ? "PASSED" : "FAILED"}`);
 
-  // Clean up successful projects to save disk
-  if (result.overallSuccess && existsSync(scaffoldResult.projectDir)) {
+  // Clean up successful projects to save disk. In CI also remove failed ones —
+  // nothing uploads them, and keeping them has exhausted the runner disk.
+  if ((result.overallSuccess || process.env.CI) && existsSync(scaffoldResult.projectDir)) {
     await rm(scaffoldResult.projectDir, { recursive: true, force: true });
   }
 }

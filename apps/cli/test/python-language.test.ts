@@ -1,12 +1,6 @@
 import { describe, expect, it } from "bun:test";
 
 import { createVirtual } from "../src/index";
-import { runWithContext } from "../src/utils/context";
-import {
-  validateConfigForProgrammaticUse,
-  validateFullConfig,
-  validatePythonApiConstraints,
-} from "../src/utils/config-validation";
 import {
   EcosystemSchema,
   PythonWebFrameworkSchema,
@@ -17,10 +11,16 @@ import {
   PythonTaskQueueSchema,
   PythonGraphqlSchema,
   PythonQualitySchema,
+  parseStackPartSpecs,
 } from "../src/types";
 import {
-  extractEnumValues,
-} from "./test-utils";
+  validateConfigForProgrammaticUse,
+  validateFullConfig,
+  validatePythonApiConstraints,
+  validatePythonExpansionConstraints,
+} from "../src/utils/config-validation";
+import { runWithContext } from "../src/utils/context";
+import { extractEnumValues } from "./test-utils";
 import {
   getVirtualFileContent as getFileContent,
   hasVirtualFile as hasFile,
@@ -391,6 +391,85 @@ describe("Python Language Support", () => {
           }),
         ),
       ).toThrow("Python API frameworks require --python-web-framework django.");
+    });
+  });
+
+  describe("Python expansion compatibility", () => {
+    it("requires MongoDB when PyMongo is selected", () => {
+      expect(() =>
+        runWithContext({ silent: true }, () =>
+          validatePythonExpansionConstraints({
+            ecosystem: "python",
+            database: "postgres",
+            pythonOrm: "pymongo",
+          }),
+        ),
+      ).toThrow("PyMongo requires --database mongodb.");
+    });
+
+    it("rejects Gunicorn for Streamlit applications", () => {
+      expect(() =>
+        runWithContext({ silent: true }, () =>
+          validateConfigForProgrammaticUse({
+            ecosystem: "python",
+            pythonWebFramework: "streamlit",
+            pythonServer: "gunicorn",
+          }),
+        ),
+      ).toThrow("Gunicorn requires a WSGI, ASGI, or aiohttp Python application.");
+    });
+
+    it("rejects auth selections whose routes are not wired for Starlette", () => {
+      expect(() =>
+        runWithContext({ silent: true }, () =>
+          validateConfigForProgrammaticUse({
+            ecosystem: "python",
+            pythonWebFramework: "starlette",
+            pythonAuth: "pyjwt",
+          }),
+        ),
+      ).toThrow("Python auth routes are not wired for starlette.");
+    });
+
+    it("rejects GraphQL selections whose routes are not wired for Starlette", () => {
+      expect(() =>
+        runWithContext({ silent: true }, () =>
+          validateConfigForProgrammaticUse({
+            ecosystem: "python",
+            pythonWebFramework: "starlette",
+            pythonGraphql: "strawberry",
+          }),
+        ),
+      ).toThrow("Python GraphQL is only wired for FastAPI, Django, Flask, and Litestar.");
+    });
+
+    it("validates Python expansion constraints for graph-selected backends", () => {
+      expect(() =>
+        runWithContext({ silent: true }, () =>
+          validateConfigForProgrammaticUse({
+            ecosystem: "typescript",
+            stackParts: parseStackPartSpecs([
+              "frontend:typescript:react-vite",
+              "backend:python:aiohttp",
+              "backend.graphql:python:strawberry",
+            ]),
+          }),
+        ),
+      ).toThrow("Python GraphQL is only wired for FastAPI, Django, Flask, and Litestar.");
+    });
+
+    it("rejects every Python auth provider without a web framework", () => {
+      for (const pythonAuth of ["pyjwt", "jwt", "authlib"] as const) {
+        expect(() =>
+          runWithContext({ silent: true }, () =>
+            validateConfigForProgrammaticUse({
+              ecosystem: "python",
+              pythonWebFramework: "none",
+              pythonAuth,
+            }),
+          ),
+        ).toThrow("Python auth routes are not wired for none.");
+      }
     });
   });
 
@@ -3055,7 +3134,8 @@ describe("Python Language Support", () => {
           pythonWebFramework: "flask",
           dependency: "ariadne[asgi]",
           importStatement: "from ariadne.wsgi import GraphQL",
-          mountStatement: 'app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {"/graphql": GraphQL(ariadne_schema, debug=True)})',
+          mountStatement:
+            'app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {"/graphql": GraphQL(ariadne_schema, debug=True)})',
         },
         {
           pythonWebFramework: "litestar",
@@ -3109,7 +3189,9 @@ describe("Python Language Support", () => {
       expect(pyprojectContent).toContain("ruff");
       expect(pyprojectContent).toContain("[tool.ruff]");
       expect(pyprojectContent).toContain("[tool.ruff.lint]");
-      expect(pyprojectContent).toContain('"B008",   # FastAPI intentionally uses Depends() in argument defaults');
+      expect(pyprojectContent).toContain(
+        '"B008",   # FastAPI intentionally uses Depends() in argument defaults',
+      );
       expect(pyprojectContent).toContain("[tool.ruff.format]");
     });
 
@@ -3131,15 +3213,25 @@ describe("Python Language Support", () => {
       const root = result.tree!.root;
 
       expect(getFileContent(root, "src/app/main.py")).toContain("# ruff: noqa: I001");
-      expect(getFileContent(root, "migrations/env.py")).toContain("from app.models import Base  # noqa: E402");
-      expect(getFileContent(root, "src/app/auth.py")).toContain("from datetime import UTC, datetime, timedelta");
+      expect(getFileContent(root, "migrations/env.py")).toContain(
+        "from app.models import Base  # noqa: E402",
+      );
+      expect(getFileContent(root, "src/app/auth.py")).toContain(
+        "from datetime import UTC, datetime, timedelta",
+      );
       expect(getFileContent(root, "src/app/auth.py")).toContain("datetime.now(UTC)");
-      expect(getFileContent(root, "src/app/anthropic_client.py")).toContain("from collections.abc import AsyncIterator");
-      expect(getFileContent(root, "src/app/rq_tasks.py")).toContain("from datetime import UTC, datetime");
+      expect(getFileContent(root, "src/app/anthropic_client.py")).toContain(
+        "from collections.abc import AsyncIterator",
+      );
+      expect(getFileContent(root, "src/app/rq_tasks.py")).toContain(
+        "from datetime import UTC, datetime",
+      );
       expect(getFileContent(root, "src/app/rq_tasks.py")).toContain("datetime.now(UTC)");
 
       const cacheContent = getFileContent(root, "src/app/cache.py");
-      expect(cacheContent).toContain("from upstash_redis.asyncio import Redis\n\nredis = Redis.from_env()");
+      expect(cacheContent).toContain(
+        "from upstash_redis.asyncio import Redis\n\nredis = Redis.from_env()",
+      );
     });
   });
 

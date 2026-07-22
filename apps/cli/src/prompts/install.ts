@@ -41,7 +41,7 @@ export async function getinstallChoice(
     }
 
     const response = await navigableConfirm({
-      message: "Run uv sync?",
+      message: "Run uv sync --extra dev?",
       initialValue: DEFAULT_CONFIG.install,
     });
 

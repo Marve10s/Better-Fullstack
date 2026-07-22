@@ -183,6 +183,7 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["mobile-push", withExplicitScalar(config.mobilePush)],
     ["mobile-ota", withExplicitScalar(config.mobileOTA)],
     ["mobile-deep-linking", withExplicitScalar(config.mobileDeepLinking)],
+    ["mobile-libraries", withExplicitNone(config.mobileLibraries)],
     ["web-deploy", config.webDeploy],
     ["server-deploy", config.serverDeploy],
   ];
@@ -207,6 +208,7 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["mobile-push", withExplicitScalar(config.mobilePush)],
     ["mobile-ota", withExplicitScalar(config.mobileOTA)],
     ["mobile-deep-linking", withExplicitScalar(config.mobileDeepLinking)],
+    ["mobile-libraries", withExplicitNone(config.mobileLibraries)],
   ];
 
   const rustFlags: Array<[string, string | readonly string[]]> = [
@@ -241,6 +243,13 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["python-realtime", config.pythonRealtime],
     ["python-observability", config.pythonObservability],
     ["python-cli", withExplicitNone(config.pythonCli)],
+    ["python-cloud-sdk", config.pythonCloudSdk],
+    ["python-http-client", config.pythonHttpClient],
+    ["python-data", withExplicitNone(config.pythonData)],
+    ["python-media", config.pythonMedia],
+    ["python-server", config.pythonServer],
+    ["python-package-manager", config.pythonPackageManager],
+    ["python-message-queue", config.pythonMessageQueue],
   ];
 
   const goFlags: Array<[string, string | readonly string[]]> = [
@@ -313,6 +322,7 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["dotnet-validation", config.dotnetValidation],
     ["dotnet-caching", config.dotnetCaching],
     ["dotnet-deploy", config.dotnetDeploy],
+    ["dotnet-libraries", withExplicitNone(config.dotnetLibraries)],
   ];
 
   const orderedFlags = [...commonFlags];

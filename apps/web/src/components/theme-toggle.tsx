@@ -1,4 +1,4 @@
-import { Moon, Sun } from "lucide-react";
+import { TbMoon as Moon, TbSun as Sun } from "react-icons/tb";
 import * as React from "react";
 
 import { useTheme } from "@/lib/theme";

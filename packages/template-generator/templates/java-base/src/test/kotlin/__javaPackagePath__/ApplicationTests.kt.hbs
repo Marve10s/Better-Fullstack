@@ -6,7 +6,13 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 
+{{#if hasJavaDataCassandra}}
+// Keep the generated context smoke test hermetic; production startup still
+// uses Cassandra auto-configuration.
+@SpringBootTest(properties = ["spring.autoconfigure.exclude=org.springframework.boot.cassandra.autoconfigure.CassandraAutoConfiguration"])
+{{else}}
 @SpringBootTest
+{{/if}}
 class ApplicationTests {
 
     @Test

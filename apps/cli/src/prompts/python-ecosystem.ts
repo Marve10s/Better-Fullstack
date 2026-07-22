@@ -4,6 +4,13 @@ import type {
   PythonAuth,
   PythonCaching,
   PythonCli,
+  PythonCloudSdk,
+  PythonData,
+  PythonHttpClient,
+  PythonMedia,
+  PythonMessageQueue,
+  PythonPackageManager,
+  PythonServer,
   PythonGraphql,
   PythonObservability,
   PythonOrm,
@@ -50,6 +57,16 @@ const PYTHON_WEB_FRAMEWORK_PROMPT_OPTIONS: PromptOption<PythonWebFramework>[] = 
     hint: "Minimal ASGI toolkit that powers FastAPI — great for lean async apps",
   },
   {
+    value: "aiohttp",
+    label: "aiohttp",
+    hint: "Async HTTP server and client framework",
+  },
+  {
+    value: "streamlit",
+    label: "Streamlit",
+    hint: "Turn Python data scripts into interactive web apps",
+  },
+  {
     value: "none",
     label: "None",
     hint: "No web framework",
@@ -76,6 +93,11 @@ const PYTHON_ORM_PROMPT_OPTIONS: PromptOption<PythonOrm>[] = [
     value: "peewee",
     label: "Peewee",
     hint: "Small, expressive ORM for SQLite, MySQL, and PostgreSQL",
+  },
+  {
+    value: "pymongo",
+    label: "PyMongo",
+    hint: "Official MongoDB driver for Python",
   },
   {
     value: "none",
@@ -153,6 +175,31 @@ const PYTHON_AI_PROMPT_OPTIONS: PromptOption<PythonAi>[] = [
     label: "smolagents",
     hint: "HuggingFace's minimal, hackable agent library",
   },
+  {
+    value: "pytorch",
+    label: "PyTorch",
+    hint: "Tensor computation and deep learning platform",
+  },
+  {
+    value: "transformers",
+    label: "Transformers",
+    hint: "Hugging Face pretrained model toolkit",
+  },
+  {
+    value: "scikit-learn",
+    label: "scikit-learn",
+    hint: "Classical machine learning algorithms and pipelines",
+  },
+  {
+    value: "tensorflow",
+    label: "TensorFlow",
+    hint: "End-to-end machine learning platform",
+  },
+  {
+    value: "mcp",
+    label: "MCP Python SDK",
+    hint: "Official Model Context Protocol SDK",
+  },
 ];
 
 const PYTHON_AUTH_PROMPT_OPTIONS: PromptOption<PythonAuth>[] = [
@@ -165,6 +212,11 @@ const PYTHON_AUTH_PROMPT_OPTIONS: PromptOption<PythonAuth>[] = [
     value: "jwt",
     label: "JWT (python-jose)",
     hint: "Simple JWT token creation and verification",
+  },
+  {
+    value: "pyjwt",
+    label: "PyJWT",
+    hint: "Focused JSON Web Token encoding and decoding",
   },
   {
     value: "fastapi-users",
@@ -506,6 +558,11 @@ const PYTHON_TESTING_PROMPT_OPTIONS: PromptOption<PythonTesting>[] = [
     hint: "Property-based testing that generates edge-case inputs",
   },
   {
+    value: "pytest-cov",
+    label: "pytest-cov",
+    hint: "Coverage reporting for pytest",
+  },
+  {
     value: "none",
     label: "None",
     hint: "No extra testing scaffolding",
@@ -555,6 +612,11 @@ const PYTHON_OBSERVABILITY_PROMPT_OPTIONS: PromptOption<PythonObservability>[] =
     hint: "Official OTel SDK with OTLP export and auto-instrumentation",
   },
   {
+    value: "prometheus-client",
+    label: "Prometheus Client",
+    hint: "Prometheus metrics instrumentation and exposition",
+  },
+  {
     value: "none",
     label: "None",
     hint: "No tracing/metrics SDK",
@@ -582,6 +644,48 @@ const PYTHON_CLI_PROMPT_OPTIONS: PromptOption<PythonCli>[] = [
     label: "None",
     hint: "No CLI tooling",
   },
+];
+
+const PYTHON_CLOUD_SDK_PROMPT_OPTIONS: PromptOption<PythonCloudSdk>[] = [
+  { value: "boto3", label: "Boto3", hint: "Official AWS SDK for Python" },
+  { value: "none", label: "None", hint: "No cloud SDK" },
+];
+
+const PYTHON_HTTP_CLIENT_PROMPT_OPTIONS: PromptOption<PythonHttpClient>[] = [
+  { value: "requests", label: "Requests", hint: "Simple, widely adopted synchronous HTTP client" },
+  { value: "none", label: "None", hint: "No HTTP client" },
+];
+
+const PYTHON_DATA_PROMPT_OPTIONS: PromptOption<PythonData>[] = [
+  { value: "numpy", label: "NumPy", hint: "N-dimensional arrays and numerical computing" },
+  { value: "pandas", label: "pandas", hint: "DataFrames and data analysis tools" },
+  { value: "scipy", label: "SciPy", hint: "Scientific algorithms for optimization, statistics, and signals" },
+  { value: "none", label: "None", hint: "No data/scientific libraries" },
+];
+
+const PYTHON_MEDIA_PROMPT_OPTIONS: PromptOption<PythonMedia>[] = [
+  { value: "pillow", label: "Pillow", hint: "Image loading, processing, and export" },
+  { value: "none", label: "None", hint: "No media library" },
+];
+
+const PYTHON_SERVER_PROMPT_OPTIONS: PromptOption<PythonServer>[] = [
+  { value: "gunicorn", label: "Gunicorn", hint: "Production WSGI/ASGI process manager" },
+  { value: "none", label: "None", hint: "No production server" },
+];
+
+const PYTHON_PACKAGE_MANAGER_PROMPT_OPTIONS: PromptOption<PythonPackageManager>[] = [
+  { value: "uv", label: "uv", hint: "Fast Python package and project manager" },
+  { value: "poetry", label: "Poetry", hint: "Dependency management and packaging workflow" },
+  { value: "none", label: "None", hint: "Do not configure a Python package manager" },
+];
+
+const PYTHON_MESSAGE_QUEUE_PROMPT_OPTIONS: PromptOption<PythonMessageQueue>[] = [
+  {
+    value: "confluent-kafka",
+    label: "Confluent Kafka",
+    hint: "High-performance Apache Kafka producer and consumer client",
+  },
+  { value: "none", label: "None", hint: "No message queue client" },
 ];
 
 export function resolvePythonTestingPrompt(pythonTesting?: PythonTesting[]) {
@@ -697,4 +801,117 @@ export async function getPythonCliChoice(pythonCli?: PythonCli[]) {
   if (isCancel(response)) return exitCancelled("Operation cancelled");
 
   return response.includes("none") ? [] : response;
+}
+
+export function resolvePythonCloudSdkPrompt(value?: PythonCloudSdk) {
+  return createStaticSinglePromptResolution(PYTHON_CLOUD_SDK_PROMPT_OPTIONS, "none", value);
+}
+
+export async function getPythonCloudSdkChoice(value?: PythonCloudSdk) {
+  const resolution = resolvePythonCloudSdkPrompt(value);
+  if (!resolution.shouldPrompt) return resolution.autoValue ?? "none";
+  const response = await navigableSelect<PythonCloudSdk>({
+    message: "Select Python cloud SDK",
+    options: resolution.options,
+    initialValue: resolution.initialValue as PythonCloudSdk,
+  });
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+  return response;
+}
+
+export function resolvePythonHttpClientPrompt(value?: PythonHttpClient) {
+  return createStaticSinglePromptResolution(PYTHON_HTTP_CLIENT_PROMPT_OPTIONS, "none", value);
+}
+
+export async function getPythonHttpClientChoice(value?: PythonHttpClient) {
+  const resolution = resolvePythonHttpClientPrompt(value);
+  if (!resolution.shouldPrompt) return resolution.autoValue ?? "none";
+  const response = await navigableSelect<PythonHttpClient>({
+    message: "Select Python HTTP client",
+    options: resolution.options,
+    initialValue: resolution.initialValue as PythonHttpClient,
+  });
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+  return response;
+}
+
+export function resolvePythonDataPrompt(value?: PythonData[]) {
+  return createStaticMultiPromptResolution(PYTHON_DATA_PROMPT_OPTIONS, [], value);
+}
+
+export async function getPythonDataChoice(value?: PythonData[]) {
+  const resolution = resolvePythonDataPrompt(value);
+  if (!resolution.shouldPrompt) return (resolution.autoValue as PythonData[]) ?? [];
+  const response = await navigableMultiselect<PythonData>({
+    message: "Select Python data and scientific libraries",
+    options: resolution.options,
+    required: false,
+    initialValues: resolution.initialValue as PythonData[],
+  });
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+  return response.includes("none") ? [] : response;
+}
+
+export function resolvePythonMediaPrompt(value?: PythonMedia) {
+  return createStaticSinglePromptResolution(PYTHON_MEDIA_PROMPT_OPTIONS, "none", value);
+}
+
+export async function getPythonMediaChoice(value?: PythonMedia) {
+  const resolution = resolvePythonMediaPrompt(value);
+  if (!resolution.shouldPrompt) return resolution.autoValue ?? "none";
+  const response = await navigableSelect<PythonMedia>({
+    message: "Select Python media library",
+    options: resolution.options,
+    initialValue: resolution.initialValue as PythonMedia,
+  });
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+  return response;
+}
+
+export function resolvePythonServerPrompt(value?: PythonServer) {
+  return createStaticSinglePromptResolution(PYTHON_SERVER_PROMPT_OPTIONS, "none", value);
+}
+
+export async function getPythonServerChoice(value?: PythonServer) {
+  const resolution = resolvePythonServerPrompt(value);
+  if (!resolution.shouldPrompt) return resolution.autoValue ?? "none";
+  const response = await navigableSelect<PythonServer>({
+    message: "Select Python production server",
+    options: resolution.options,
+    initialValue: resolution.initialValue as PythonServer,
+  });
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+  return response;
+}
+
+export function resolvePythonPackageManagerPrompt(value?: PythonPackageManager) {
+  return createStaticSinglePromptResolution(PYTHON_PACKAGE_MANAGER_PROMPT_OPTIONS, "uv", value);
+}
+
+export async function getPythonPackageManagerChoice(value?: PythonPackageManager) {
+  const resolution = resolvePythonPackageManagerPrompt(value);
+  if (!resolution.shouldPrompt) return resolution.autoValue ?? "uv";
+  const response = await navigableSelect<PythonPackageManager>({
+    message: "Select Python package manager",
+    options: resolution.options,
+    initialValue: resolution.initialValue as PythonPackageManager,
+  });
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+  return response;
+}
+
+export function resolvePythonMessageQueuePrompt(value?: PythonMessageQueue) {
+  return createStaticSinglePromptResolution(PYTHON_MESSAGE_QUEUE_PROMPT_OPTIONS, "none", value);
+}
+
+export async function getPythonMessageQueueChoice(value?: PythonMessageQueue) {
+  const resolution = resolvePythonMessageQueuePrompt(value);
+  if (!resolution.shouldPrompt) return resolution.autoValue ?? "none";
+  const response = await navigableSelect<PythonMessageQueue>({
+    message: "Select Python message queue client",
+    options: resolution.options,
+    initialValue: resolution.initialValue as PythonMessageQueue,
+  });
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+  return response;
 }

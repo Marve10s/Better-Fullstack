@@ -6,8 +6,8 @@ import path from "node:path";
 
 import type { CommandResult, Effort } from "@/types";
 
-import { runCommand } from "@/agents/command";
-import { bfSpec, CLAUDE_TIMEOUT_MS } from "@/constants";
+import { agentRunCommandOptions, runCommand } from "@/agents/command";
+import { bfSpec, GEN_TIMEOUT_MS } from "@/constants";
 
 // opencode / Kilo Code adapter — both ship the same CLI, so one function (binary =
 // "opencode" | "kilo") drives both. Runs `<bin> run --format json` in the isolated
@@ -23,6 +23,7 @@ export function runOpencode(input: {
   effort: Effort;
   useMcp: boolean;
   bunx: string;
+  timeoutMs?: number;
 }): Effect.Effect<CommandResult, unknown, CommandExecutor | FileSystem.FileSystem> {
   return Effect.gen(function* () {
     if (input.useMcp) {
@@ -42,6 +43,11 @@ export function runOpencode(input: {
       );
     }
     const effortArgs = input.effort === "default" ? [] : ["--variant", input.effort];
+    // Harness-side disambiguation prefix: `kilocode/<id>` means "drive the Kilo
+    // binary with <id>" (e.g. kilocode/openai/gpt-5.6-luna → Kilo's OpenAI
+    // oauth), distinct from Kilo's own credit-gated `kilo/*` catalog ids which
+    // pass through unchanged.
+    const modelId = input.model.replace(/^kilocode\//i, "");
     return yield* runCommand(
       input.binary,
       [
@@ -54,14 +60,15 @@ export function runOpencode(input: {
         // --dangerously-skip-permissions and codex's --full-auto.
         "--dangerously-skip-permissions",
         "-m",
-        input.model,
+        modelId,
         ...effortArgs,
         "--dir",
         input.cwd,
         input.prompt,
       ],
       input.cwd,
-      CLAUDE_TIMEOUT_MS,
+      input.timeoutMs ?? GEN_TIMEOUT_MS,
+      agentRunCommandOptions(input.binary),
     );
   });
 }
@@ -74,6 +81,10 @@ export function parseOpencodeResult(stdout: string): any | null {
   let outputTokens = 0;
   let cost = 0;
   let sawStep = false;
+  let sawTool = false;
+  let sawAssistantText = false;
+  let stepReason: string | undefined;
+  let errorReason: string | undefined;
   for (const line of stdout.split("\n")) {
     const trimmed = line.trim();
     if (!trimmed.startsWith("{")) continue;
@@ -85,19 +96,44 @@ export function parseOpencodeResult(stdout: string): any | null {
     }
     if (typeof event?.sessionID === "string") sessionId = event.sessionID;
     const part = event?.part;
-    if (part?.type === "step-finish") {
+    if (part?.type === "tool") sawTool = true;
+    const assistantText =
+      part?.type === "text"
+        ? (part.text ?? part.content)
+        : event?.role === "assistant" || event?.message?.role === "assistant"
+          ? (event.text ?? event.content ?? event.message?.content)
+          : undefined;
+    if (
+      (typeof assistantText === "string" && assistantText.trim().length > 0) ||
+      ["refusal", "moderation"].includes(part?.type)
+    ) {
+      sawAssistantText = true;
+    }
+    if (part?.type === "step-finish" || part?.type === "step_finish") {
       sawStep = true;
       outputTokens += (part.tokens?.output ?? 0) + (part.tokens?.reasoning ?? 0);
       if (typeof part.cost === "number") cost += part.cost;
+      if (typeof part.reason === "string") stepReason = part.reason;
+    }
+    if (event?.type === "error" || part?.type === "error") {
+      const error = event?.error ?? part?.error ?? event?.message ?? part?.message;
+      errorReason = typeof error === "string" ? error : JSON.stringify(error ?? "unknown");
     }
   }
-  if (!sawStep && sessionId === undefined) return null;
+  if (!sawStep && sessionId === undefined && !errorReason) return null;
+  const terminalReason = errorReason
+    ? `error:${errorReason}`
+    : stepReason === "unknown" && outputTokens === 0 && !sawTool && !sawAssistantText
+      ? "opencode-unknown-zero-usage-no-tools"
+      : stepReason;
   return {
     type: "result",
     usage: sawStep ? { output_tokens: outputTokens } : undefined,
     total_cost_usd: sawStep ? cost : undefined,
     session_id: sessionId,
     duration_ms: undefined,
-    terminal_reason: undefined,
+    terminal_reason: terminalReason,
+    tool_events: sawTool,
+    assistant_text: sawAssistantText,
   };
 }

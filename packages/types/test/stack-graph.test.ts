@@ -215,6 +215,54 @@ describe("stack graph", () => {
     expect(lowered.elixirObservability).toBe("telemetry");
   });
 
+  it("does not erase flag-provided mobile libraries when graph parts omit them", () => {
+    const stackParts = parseStackPartSpecs(["mobile:react-native:native-bare"]);
+    const lowered = stackPartsToLegacyProjectConfigPartial(stackParts);
+    const merged = {
+      mobileLibraries: ["expo-camera"],
+      ...lowered,
+    };
+
+    expect(lowered.mobileLibraries).toBeUndefined();
+    expect(merged.mobileLibraries).toEqual(["expo-camera"]);
+
+    const explicitLibraries = stackPartsToLegacyProjectConfigPartial(
+      parseStackPartSpecs([
+        "mobile:react-native:native-bare",
+        "mobile.libraries:react-native:expo-camera",
+      ]),
+    );
+    expect(explicitLibraries.mobileLibraries).toEqual(["expo-camera"]);
+  });
+
+  it("resets array categories to empty arrays when projecting graph stacks", () => {
+    const base = {
+      ...createCliDefaultProjectConfigBase(),
+      projectDir: "/virtual",
+    };
+
+    const withLibraries = stackGraphToLegacyProjectConfigForEcosystem(
+      {
+        ...base,
+        stackParts: parseStackPartSpecs([
+          "mobile:react-native:native-bare",
+          "mobile.libraries:react-native:expo-camera",
+        ]),
+      },
+      "react-native",
+    );
+    expect(withLibraries.mobileLibraries).toEqual(["expo-camera"]);
+
+    const withoutLibraries = stackGraphToLegacyProjectConfigForEcosystem(
+      {
+        ...base,
+        stackParts: parseStackPartSpecs(["mobile:react-native:native-bare"]),
+      },
+      "react-native",
+    );
+    expect(withoutLibraries.mobileLibraries).toEqual([]);
+  });
+
   it("owns Go migrations on the Go backend instead of the database setup scope", () => {
     const stackParts = parseStackPartSpecs([
       "backend:go:gin",

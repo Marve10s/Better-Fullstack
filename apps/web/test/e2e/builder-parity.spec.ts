@@ -40,6 +40,16 @@ test.describe("Builder parity", () => {
     await expect(commandOutput(page)).toContainText("--yes");
   });
 
+  test("run tab only shows for browser-runnable TypeScript stacks", async ({ page }) => {
+    await expect(visibleTestId(page, "tab-run")).toBeVisible();
+
+    await clickVisibleTestId(page, "ecosystem-python");
+    await expect(page.getByTestId("tab-run")).toHaveCount(0);
+
+    await clickVisibleTestId(page, "ecosystem-typescript");
+    await expect(visibleTestId(page, "tab-run")).toBeVisible();
+  });
+
   test("python ecosystem exposes multi-select pythonAi and updates the command", async ({
     page,
   }) => {

@@ -20,7 +20,7 @@ import {
   runCargoBuild,
   runGradleTests,
   runMavenTests,
-  runUvSync,
+  runPythonInstall,
   runGoModTidy,
   runMixCompile,
   type SetupStepResult,
@@ -112,9 +112,12 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
       if (!result.success) setupFailures.push(result);
     }
 
-    // Run uv sync for Python projects
+    // Install Python dependencies with the selected Python package manager.
     if (options.install && options.ecosystem === "python") {
-      const result = await runUvSync({ projectDir });
+      const result = await runPythonInstall({
+        projectDir,
+        packageManager: options.pythonPackageManager,
+      });
       if (!result.success) setupFailures.push(result);
     }
 

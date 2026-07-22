@@ -2,6 +2,7 @@ import type { BenchmarkSpec } from "@/types";
 
 export const TsMinimalRestraintSpec: BenchmarkSpec = {
     id: "ts-minimal-restraint",
+    introducedAt: "2026-06-25",
     title: "Minimal React + Tailwind SPA with no backend, data, or auth (restraint test)",
     lane: "extended",
     family: "typescript",
@@ -11,7 +12,7 @@ export const TsMinimalRestraintSpec: BenchmarkSpec = {
       "It is a static marketing/landing page only.",
       "Do NOT add a backend, database, ORM, API layer, auth, payments, email, file storage, jobs, CMS, or analytics.",
       "Include Turborepo tooling.",
-      "Do not install dependencies, do not initialize git, and do not start a dev server.",
+      "Do not initialize git or start a dev server.",
     ],
     naturalPrompt:
       "Build a small static marketing landing page as a React single-page app with Tailwind. It has no accounts, no database, and no server — just a clean front end. Keep it lean and do not add backend or data tooling.",
@@ -93,4 +94,3 @@ export const TsMinimalRestraintSpec: BenchmarkSpec = {
     ],
     validationProfile: { packageManager: "bun" },
   };
-

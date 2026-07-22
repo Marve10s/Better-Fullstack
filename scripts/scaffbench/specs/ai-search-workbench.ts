@@ -3,6 +3,7 @@ import { AI_SEARCH_ADDONS, AI_SEARCH_FLAGS, AI_SEARCH_STACK } from "@/constants"
 
 export const AiSearchWorkbenchSpec: BenchmarkSpec = {
     id: "ai-search-workbench",
+    introducedAt: "2026-06-25",
     title: "AI search workbench with separate semantic and full-text search",
     lane: "core",
     family: "typescript",
@@ -22,7 +23,7 @@ export const AiSearchWorkbenchSpec: BenchmarkSpec = {
       "Use TanStack Store, TanStack Form, Valibot, Vitest + Playwright, and Paraglide.",
       "Include Turborepo, Biome, DevContainer, and GitHub Actions CI output.",
       "Do not add payments, email, realtime, CMS, file upload, file storage, feature flags, or deploy targets.",
-      "Do not install dependencies, do not initialize git, and do not start a dev server.",
+      "Do not initialize git or start a dev server.",
     ],
     naturalPrompt:
       "Build a production-grade AI support search starter. It needs account auth, relational app data, background indexing, semantic search for embeddings, full-text/admin search for documents, observability, tests, i18n, and CI. Keep it deploy-target neutral and do not include commerce/email/storage extras.",
@@ -111,4 +112,3 @@ export const AiSearchWorkbenchSpec: BenchmarkSpec = {
       routeCheckCandidate: true,
     },
   };
-

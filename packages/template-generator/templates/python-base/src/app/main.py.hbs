@@ -1,13 +1,19 @@
 """Main application entry point."""
 # ruff: noqa: I001
 
+{{#unless (or (eq pythonWebFramework "streamlit") (eq pythonWebFramework "none"))}}
 import os
+{{/unless}}
 
 {{#if (eq pythonWebFramework "fastapi")}}
 from contextlib import asynccontextmanager
 {{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel"))}}
 from typing import Annotated
 {{/if}}
+
+{{/if}}
+{{#if (and (eq pythonWebFramework "litestar") (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt"))))}}
+from typing import Annotated
 
 {{/if}}
 from dotenv import load_dotenv
@@ -17,8 +23,13 @@ from app.observability import init_sentry
 
 {{/if}}
 {{#if (eq pythonWebFramework "fastapi")}}
-from fastapi import {{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel"))}}Depends, {{/if}}FastAPI{{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel"))}}, HTTPException{{/if}}{{#if (eq pythonOrm "tortoise-orm")}}, HTTPException{{/if}}{{#if (and (eq pythonOrm "none") (or (eq pythonValidation "pydantic") (or (eq pythonAuth "authlib") (eq pythonAuth "jwt"))))}}, HTTPException{{/if}}
+from fastapi import {{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel"))}}Depends, {{/if}}FastAPI{{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel") (eq pythonOrm "tortoise-orm") (and (eq pythonOrm "none") (eq pythonValidation "pydantic")) (eq pythonAuth "authlib") (eq pythonAuth "jwt") (eq pythonAuth "pyjwt"))}}, HTTPException{{/if}}{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}, Header{{/if}}
 from fastapi.middleware.cors import CORSMiddleware
+{{#if (eq pythonObservability "prometheus-client")}}
+from fastapi.responses import Response
+
+from app.metrics import render_metrics
+{{/if}}
 {{#if (eq pythonOrm "sqlalchemy")}}
 from sqlalchemy.orm import Session
 
@@ -161,7 +172,7 @@ from app.celery_schemas import (
     TaskRevokeResponse,
 )
 {{/if}}
-{{#if (or (eq pythonAuth "authlib") (eq pythonAuth "jwt"))}}
+{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}
 from app.auth import create_access_token, verify_token
 {{/if}}
 {{#if (eq pythonAuth "fastapi-users")}}
@@ -255,7 +266,16 @@ async def root():
 async def health():
     """Health check endpoint."""
     return {"status": "healthy"}
-{{#if (or (eq pythonAuth "authlib") (eq pythonAuth "jwt"))}}
+{{#if (eq pythonObservability "prometheus-client")}}
+
+
+@app.get("/metrics")
+async def metrics() -> Response:
+    """Prometheus metrics endpoint."""
+    payload, content_type = render_metrics()
+    return Response(content=payload, media_type=content_type)
+{{/if}}
+{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}
 
 
 # Auth endpoints
@@ -269,7 +289,7 @@ async def login(username: str = "", password: str = ""):
 
 
 @app.get("/auth/me")
-async def get_current_user(authorization: str = ""):
+async def get_current_user(authorization: str = Header(default="")):
     """Get the current authenticated user from a Bearer token."""
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Missing or invalid authorization header")
@@ -1079,10 +1099,15 @@ if __name__ == "__main__":
 {{/if}}
 {{#if (eq pythonWebFramework "django")}}
 import django
+{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}
 import json
+{{/if}}
 from django.conf import settings
-from django.http import JsonResponse
+from django.http import {{#if (eq pythonObservability "prometheus-client")}}HttpResponse, {{/if}}JsonResponse
 from django.urls import path
+{{#if (eq pythonObservability "prometheus-client")}}
+from app.metrics import render_metrics
+{{/if}}
 {{#if (eq pythonApi "django-rest-framework")}}
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -1090,7 +1115,7 @@ from rest_framework.response import Response
 {{#if (eq pythonApi "django-ninja")}}
 from ninja import NinjaAPI
 {{/if}}
-{{#if (or (eq pythonAuth "authlib") (eq pythonAuth "jwt"))}}
+{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}
 from app.auth import create_access_token, verify_token
 {{/if}}
 {{#if (eq pythonGraphql "strawberry")}}
@@ -1141,6 +1166,14 @@ def health(request):
     """Health check endpoint."""
     return JsonResponse({"status": "healthy"})
 
+{{#if (eq pythonObservability "prometheus-client")}}
+
+def metrics(request):
+    """Prometheus metrics endpoint."""
+    payload, content_type = render_metrics()
+    return HttpResponse(payload, content_type=content_type)
+
+{{/if}}
 {{#if (eq pythonApi "django-rest-framework")}}
 
 @api_view(["GET"])
@@ -1160,7 +1193,7 @@ def api_status(request):
 {{/if}}
 
 
-{{#if (or (eq pythonAuth "authlib") (eq pythonAuth "jwt"))}}
+{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}
 def auth_token(request):
     """Create an access token."""
     if request.method != "POST":
@@ -1189,13 +1222,16 @@ def auth_me(request):
 urlpatterns = [
     path("", root),
     path("health", health),
+{{#if (eq pythonObservability "prometheus-client")}}
+    path("metrics", metrics),
+{{/if}}
 {{#if (eq pythonApi "django-rest-framework")}}
     path("api/status", api_status),
 {{/if}}
 {{#if (eq pythonApi "django-ninja")}}
     path("api/", ninja_api.urls),
 {{/if}}
-{{#if (or (eq pythonAuth "authlib") (eq pythonAuth "jwt"))}}
+{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}
     path("auth/token", auth_token),
     path("auth/me", auth_me),
 {{/if}}
@@ -1207,6 +1243,12 @@ urlpatterns = [
 {{/if}}
 ]
 
+{{#if (eq pythonServer "gunicorn")}}
+from django.core.wsgi import get_wsgi_application
+
+application = get_wsgi_application()
+{{/if}}
+
 
 if __name__ == "__main__":
     from django.core.management import execute_from_command_line
@@ -1216,7 +1258,7 @@ if __name__ == "__main__":
     execute_from_command_line(sys.argv)
 {{/if}}
 {{#if (eq pythonWebFramework "flask")}}
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}, request{{/if}}
 from flask_cors import CORS
 {{#if (eq pythonGraphql "ariadne")}}
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
@@ -1224,7 +1266,7 @@ from werkzeug.middleware.dispatcher import DispatcherMiddleware
 {{#if (eq pythonValidation "pydantic")}}
 from app.settings import get_settings
 {{/if}}
-{{#if (or (eq pythonAuth "authlib") (eq pythonAuth "jwt"))}}
+{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}
 from app.auth import create_access_token, verify_token
 {{/if}}
 {{#if (eq pythonGraphql "strawberry")}}
@@ -1236,6 +1278,9 @@ from app.graphql_schema import schema as graphql_schema
 from ariadne.wsgi import GraphQL
 
 from app.ariadne_schema import schema as ariadne_schema
+{{/if}}
+{{#if (eq pythonObservability "prometheus-client")}}
+from app.metrics import render_metrics
 {{/if}}
 
 load_dotenv()
@@ -1268,7 +1313,16 @@ def health():
     """Health check endpoint."""
     return jsonify({"status": "healthy"})
 
-{{#if (or (eq pythonAuth "authlib") (eq pythonAuth "jwt"))}}
+{{#if (eq pythonObservability "prometheus-client")}}
+
+@app.route("/metrics")
+def metrics():
+    """Prometheus metrics endpoint."""
+    payload, content_type = render_metrics()
+    return payload, 200, {"Content-Type": content_type}
+
+{{/if}}
+{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}
 
 @app.route("/auth/token", methods=["POST"])
 def auth_token():
@@ -1303,10 +1357,14 @@ if __name__ == "__main__":
     )
 {{/if}}
 {{#if (eq pythonWebFramework "litestar")}}
-from litestar import Litestar, get, post{{#if (eq pythonGraphql "ariadne")}}, asgi{{/if}}
+from litestar import Litestar, {{#if (eq pythonObservability "prometheus-client")}}Response, {{/if}}get{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}, post{{/if}}{{#if (eq pythonGraphql "ariadne")}}, asgi{{/if}}
 from litestar.config.cors import CORSConfig
-{{#if (or (eq pythonAuth "authlib") (eq pythonAuth "jwt"))}}
+{{#if (eq pythonObservability "prometheus-client")}}
+from app.metrics import render_metrics
+{{/if}}
+{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}
 from litestar.exceptions import HTTPException
+from litestar.params import Parameter
 
 from app.auth import create_access_token, verify_token
 {{/if}}
@@ -1335,9 +1393,18 @@ async def index() -> dict[str, str]:
 async def health() -> dict[str, str]:
     """Health check endpoint."""
     return {"status": "ok"}
+{{#if (eq pythonObservability "prometheus-client")}}
 
 
-{{#if (or (eq pythonAuth "authlib") (eq pythonAuth "jwt"))}}
+@get("/metrics")
+async def metrics() -> Response:
+    """Prometheus metrics endpoint."""
+    payload, content_type = render_metrics()
+    return Response(content=payload, media_type=content_type)
+{{/if}}
+
+
+{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}
 
 @post("/auth/token")
 async def auth_token(data: dict) -> dict:
@@ -1350,7 +1417,9 @@ async def auth_token(data: dict) -> dict:
 
 
 @get("/auth/me")
-async def auth_me(authorization: str = "") -> dict:
+async def auth_me(
+    authorization: Annotated[str, Parameter(header="Authorization")] = "",
+) -> dict:
     """Get current authenticated user from Bearer token."""
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Missing or invalid authorization header")
@@ -1376,7 +1445,7 @@ async def graphql(scope: Scope, receive: Receive, send: Send) -> None:
     await ariadne_app(scope, receive, send)
 {{/if}}
 app = Litestar(
-    route_handlers=[index, health{{#if (or (eq pythonAuth "authlib") (eq pythonAuth "jwt"))}}, auth_token, auth_me{{/if}}{{#if (eq pythonGraphql "strawberry")}}, GraphQLController{{/if}}{{#if (eq pythonGraphql "ariadne")}}, graphql{{/if}}],
+    route_handlers=[index, health{{#if (eq pythonObservability "prometheus-client")}}, metrics{{/if}}{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}, auth_token, auth_me{{/if}}{{#if (eq pythonGraphql "strawberry")}}, GraphQLController{{/if}}{{#if (eq pythonGraphql "ariadne")}}, graphql{{/if}}],
     cors_config=cors_config,
 )
 {{/if}}
@@ -1385,8 +1454,11 @@ from starlette.applications import Starlette
 from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse{{#if (eq pythonObservability "prometheus-client")}}, Response{{/if}}
 from starlette.routing import Route
+{{#if (eq pythonObservability "prometheus-client")}}
+from app.metrics import render_metrics
+{{/if}}
 
 load_dotenv()
 
@@ -1399,6 +1471,14 @@ async def index(request: Request) -> JSONResponse:
 async def health(request: Request) -> JSONResponse:
     """Health check endpoint."""
     return JSONResponse({"status": "ok"})
+{{#if (eq pythonObservability "prometheus-client")}}
+
+
+async def metrics(request: Request) -> Response:
+    """Prometheus metrics endpoint."""
+    payload, content_type = render_metrics()
+    return Response(payload, media_type=content_type)
+{{/if}}
 
 
 middleware = [
@@ -1414,6 +1494,9 @@ app = Starlette(
     routes=[
         Route("/", index),
         Route("/health", health),
+{{#if (eq pythonObservability "prometheus-client")}}
+        Route("/metrics", metrics),
+{{/if}}
     ],
     middleware=middleware,
 )
@@ -1424,7 +1507,72 @@ if __name__ == "__main__":
 
     uvicorn.run(app, host=os.getenv("HOST", "0.0.0.0"), port=int(os.getenv("PORT", "8000")))
 {{/if}}
+{{#if (eq pythonWebFramework "aiohttp")}}
+from aiohttp import web
+{{#if (eq pythonObservability "prometheus-client")}}
+
+from app.metrics import render_metrics
+{{/if}}
+
+load_dotenv()
+
+
+async def index(request: web.Request) -> web.Response:
+    """Root endpoint."""
+    return web.json_response({"message": "Welcome to {{projectName}}!"})
+
+
+async def health(request: web.Request) -> web.Response:
+    """Health check endpoint."""
+    return web.json_response({"status": "healthy"})
+{{#if (eq pythonObservability "prometheus-client")}}
+
+
+async def metrics(request: web.Request) -> web.Response:
+    """Prometheus metrics endpoint."""
+    payload, content_type = render_metrics()
+    return web.Response(body=payload, headers={"Content-Type": content_type})
+{{/if}}
+
+
+def create_app() -> web.Application:
+    """Build the aiohttp application and register routes."""
+    application = web.Application()
+    application.router.add_get("/", index)
+    application.router.add_get("/health", health)
+{{#if (eq pythonObservability "prometheus-client")}}
+    application.router.add_get("/metrics", metrics)
+{{/if}}
+    return application
+
+
+app = create_app()
+
+
+if __name__ == "__main__":
+    web.run_app(
+        app,
+        host=os.getenv("HOST", "0.0.0.0"),
+        port=int(os.getenv("PORT", "8000")),
+    )
+{{/if}}
+{{#if (eq pythonWebFramework "streamlit")}}
+import streamlit as st
+
+load_dotenv()
+
+st.set_page_config(page_title="{{projectName}}", page_icon="🐍", layout="wide")
+st.title("{{projectName}}")
+st.caption("Generated with Better Fullstack")
+st.success("Your Streamlit application is ready.")
+
+with st.expander("Next step"):
+    st.write("Replace this starter with your data, charts, forms, or AI workflow.")
+{{/if}}
 {{#if (eq pythonWebFramework "none")}}
+load_dotenv()
+
+
 def main():
     """Main entry point."""
     print("Welcome to {{projectName}}!")

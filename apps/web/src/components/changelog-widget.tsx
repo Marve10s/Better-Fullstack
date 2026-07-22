@@ -1,4 +1,4 @@
-import { History, X } from "lucide-react";
+import { TbHistory as History, TbX as X } from "react-icons/tb";
 import { useCallback, useEffect, useState } from "react";
 
 import { ChangelogModal } from "@/components/changelog-modal";

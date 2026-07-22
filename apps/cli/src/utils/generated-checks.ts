@@ -5,12 +5,15 @@ import pc from "picocolors";
 
 import type { ProjectConfig, StackPart } from "../types";
 
+import { stackGraphToLegacyProjectConfigForEcosystem } from "../types";
 import { commandExists } from "./command-exists";
 import { getPrimaryGraphPart } from "./graph-summary";
 
 type VerifyTarget = {
   ecosystem: Exclude<StackPart["ecosystem"], "typescript" | "react-native" | "universal">;
   projectDir: string;
+  pythonPackageManager?: ProjectConfig["pythonPackageManager"];
+  pythonQuality?: ProjectConfig["pythonQuality"];
 };
 
 function getGraphTarget(config: ProjectConfig): VerifyTarget | null {
@@ -24,9 +27,19 @@ function getGraphTarget(config: ProjectConfig): VerifyTarget | null {
     return null;
   }
 
+  // Graph parts can scope the package manager / quality tool to the backend
+  // (backend.packageManager:python:poetry); the top-level config still holds
+  // the defaults, so project the stack parts the same way the generator does.
+  const projected =
+    backend.ecosystem === "python"
+      ? stackGraphToLegacyProjectConfigForEcosystem(config, "python")
+      : config;
+
   return {
     ecosystem: backend.ecosystem,
     projectDir: path.join(config.projectDir, backend.targetPath ?? "apps/server"),
+    pythonPackageManager: projected.pythonPackageManager,
+    pythonQuality: projected.pythonQuality,
   };
 }
 
@@ -42,6 +55,8 @@ function getSingleEcosystemTarget(config: ProjectConfig): VerifyTarget | null {
   return {
     ecosystem: config.ecosystem,
     projectDir: config.projectDir,
+    pythonPackageManager: config.pythonPackageManager,
+    pythonQuality: config.pythonQuality,
   };
 }
 
@@ -51,6 +66,29 @@ async function runCommand(cwd: string, command: string, args: string[]) {
     stdout: "inherit",
     stderr: "inherit",
   })`${command} ${args}`;
+}
+
+function venvBin(tool: string) {
+  return process.platform === "win32" ? `.venv\\Scripts\\${tool}` : `.venv/bin/${tool}`;
+}
+
+async function runPythonQualityCheck(
+  cwd: string,
+  runner: "poetry" | "uv" | "venv",
+  quality: ProjectConfig["pythonQuality"] | undefined,
+) {
+  const run = (tool: string, args: string[]) =>
+    runner === "venv"
+      ? runCommand(cwd, venvBin(tool), args)
+      : runCommand(cwd, runner, ["run", tool, ...args]);
+  if (quality === "ruff") {
+    await run("ruff", ["check", "."]);
+  } else if (quality === "mypy") {
+    // Bare mypy uses the scaffold's [tool.mypy] files list.
+    await run("mypy", []);
+  } else if (quality === "pyright") {
+    await run("pyright", []);
+  }
 }
 
 async function verifyTarget(target: VerifyTarget) {
@@ -71,8 +109,21 @@ async function verifyTarget(target: VerifyTarget) {
       return;
     case "python":
       s.start("Verifying generated Python server...");
-      await runCommand(cwd, "uv", ["sync"]);
-      await runCommand(cwd, "uv", ["run", "ruff", "check", "."]);
+      if (target.pythonPackageManager === "poetry") {
+        await runCommand(cwd, "poetry", ["install", "--extras", "dev"]);
+        await runPythonQualityCheck(cwd, "poetry", target.pythonQuality);
+      } else if (target.pythonPackageManager === "none") {
+        // Mirror the create path: install the dev extra into .venv so the
+        // selected quality tool actually runs instead of only compileall.
+        const python = (await commandExists("python")) ? "python" : "python3";
+        await runCommand(cwd, python, ["-m", "venv", ".venv"]);
+        await runCommand(cwd, venvBin("pip"), ["install", "-e", ".[dev]"]);
+        await runCommand(cwd, venvBin("python"), ["-m", "compileall", "src"]);
+        await runPythonQualityCheck(cwd, "venv", target.pythonQuality);
+      } else {
+        await runCommand(cwd, "uv", ["sync", "--extra", "dev"]);
+        await runPythonQualityCheck(cwd, "uv", target.pythonQuality);
+      }
       s.stop("Generated Python server checks passed");
       return;
     case "elixir":

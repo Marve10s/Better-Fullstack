@@ -23,6 +23,7 @@ import {
   DotnetValidationSchema,
   DotnetDeploySchema,
   DotnetJobQueueSchema,
+  DotnetLibrariesSchema,
   DotnetObservabilitySchema,
   DotnetOrmSchema,
   DotnetRealtimeSchema,
@@ -60,6 +61,7 @@ import {
   FormsSchema,
   FrontendSchema,
   MobileDeepLinkingSchema,
+  MobileLibrariesSchema,
   MobileNavigationSchema,
   MobileOTASchema,
   MobilePushSchema,
@@ -116,6 +118,13 @@ import {
   PythonRealtimeSchema,
   PythonObservabilitySchema,
   PythonCliSchema,
+  PythonCloudSdkSchema,
+  PythonDataSchema,
+  PythonHttpClientSchema,
+  PythonMediaSchema,
+  PythonMessageQueueSchema,
+  PythonPackageManagerSchema,
+  PythonServerSchema,
   PythonGraphqlSchema,
   PythonTaskQueueSchema,
   PythonValidationSchema,
@@ -178,8 +187,9 @@ const OPTION_ENTRY_COUNT = Object.values(OPTION_CATEGORY_METADATA).reduce(
   (sum, metadata) => sum + metadata.options.length,
   0,
 );
+const ECOSYSTEM_LIST = EcosystemSchema.options.join(", ");
 
-const INSTRUCTIONS = `Better-Fullstack scaffolds fullstack projects across TypeScript, React Native, Rust, Go, Python, Java, .NET, and Elixir ecosystems with ${OPTION_ENTRY_COUNT} configurable options.
+const INSTRUCTIONS = `Better-Fullstack scaffolds fullstack projects across ${ECOSYSTEM_LIST} ecosystems with ${OPTION_ENTRY_COUNT} configurable options.
 
 RECOMMENDED WORKFLOW:
 1. Call bfs_get_guidance to understand field semantics, required fields, and workflow rules.
@@ -195,7 +205,7 @@ For existing projects:
 
 CRITICAL RULES:
 - Dependency installation is ALWAYS skipped in MCP mode (timeout risk). After scaffolding, tell the user to run install manually.
-- Array fields: "frontend", "addons", "examples", "aiDocs", "rustLibraries", "pythonAi", "pythonTesting", "pythonCli", "goTesting", "javaLibraries", "javaTestingLibraries", "dotnetTesting", "dotnetObservability", and "elixirLibraries". Most other option fields are strings.
+- Array fields: "frontend", "addons", "examples", "aiDocs", "rustLibraries", "pythonAi", "pythonTesting", "pythonCli", "pythonData", "goTesting", "javaLibraries", "javaTestingLibraries", "dotnetTesting", "dotnetObservability", "elixirLibraries", "mobileLibraries", and "dotnetLibraries". Most other option fields are strings.
 - "none" means "skip this feature entirely", not "use the default".
 - Always specify "ecosystem" first — it determines which other fields are relevant.
 - TypeScript web-specific fields (web frontend, backend, orm, etc.) are IGNORED for react-native/rust/python/go/java/dotnet/elixir ecosystems.
@@ -233,7 +243,7 @@ function getGuidance() {
       frontend:
         "ARRAY of strings. TypeScript only. Supports multiple frontends in one monorepo. Use [] for API-only.",
       arrayFields:
-        'Use arrays for frontend, addons, examples, aiDocs, rustLibraries, pythonAi, pythonTesting, pythonCli, goTesting, javaLibraries, javaTestingLibraries, dotnetTesting, dotnetObservability, and elixirLibraries. Use [] for "none" on multi-select fields.',
+        'Use arrays for frontend, addons, examples, aiDocs, rustLibraries, pythonAi, pythonTesting, pythonCli, pythonData, goTesting, javaLibraries, javaTestingLibraries, dotnetTesting, dotnetObservability, elixirLibraries, mobileLibraries, and dotnetLibraries. Use [] for "none" on multi-select fields.',
       backend:
         'String. "self" means fullstack mode (Next.js/Vinext/TanStack Start/Nuxt/Astro API routes). "none" for frontend-only.',
       runtime: '"bun" or "node". Must be "none" when backend is "self" or "convex".',
@@ -395,12 +405,20 @@ function getInstallCommand(
   packageManager?: string,
   javaBuildTool?: string,
   javaWebFramework?: string,
+  pythonPackageManager?: string,
 ): string {
   switch (ecosystem) {
     case "rust":
       return `cd ${projectName} && cargo build`;
     case "python":
-      return `cd ${projectName} && uv sync`;
+      if (pythonPackageManager === "poetry")
+        return `cd ${projectName} && poetry install --extras dev`;
+      if (pythonPackageManager === "none") {
+        const python = process.platform === "win32" ? "python" : "python3";
+        const pip = process.platform === "win32" ? ".venv/Scripts/pip.exe" : ".venv/bin/pip";
+        return `cd ${projectName} && ${python} -m venv .venv && ${pip} install -e ".[dev]"`;
+      }
+      return `cd ${projectName} && uv sync --extra dev`;
     case "go":
       return `cd ${projectName} && go mod tidy`;
     case "elixir":
@@ -500,6 +518,7 @@ const MCP_COMPATIBILITY_DEFAULTS = {
   mobileTesting: "none",
   mobilePush: "none",
   mobileOTA: "none",
+  mobileLibraries: [],
   packageManager: "bun",
   workspaceShape: "monorepo",
   versionChannel: "stable",
@@ -540,6 +559,13 @@ const MCP_COMPATIBILITY_DEFAULTS = {
   pythonRealtime: "none",
   pythonObservability: "none",
   pythonCli: [],
+  pythonCloudSdk: "none",
+  pythonHttpClient: "none",
+  pythonData: [],
+  pythonMedia: "none",
+  pythonServer: "none",
+  pythonPackageManager: "uv",
+  pythonMessageQueue: "none",
   goWebFramework: "none",
   goOrm: "none",
   goApi: "none",
@@ -578,6 +604,7 @@ const MCP_COMPATIBILITY_DEFAULTS = {
   dotnetValidation: "none",
   dotnetCaching: "none",
   dotnetDeploy: "docker",
+  dotnetLibraries: [],
   elixirWebFramework: "phoenix",
   elixirOrm: "ecto-sql",
   elixirAuth: "none",
@@ -887,7 +914,7 @@ const GETTING_STARTED_MD = `# Getting Started with Better-Fullstack MCP
    - pythonOrm: "sqlalchemy"
    - email: "resend" (optional)
    - observability: "sentry" (optional)
-2. Tell the user to run: cd my-python-app && uv sync
+2. Tell the user to run: cd my-python-app && uv sync --extra dev
 
 ## Quick Start — Go Project
 1. Call bfs_create_project with:
@@ -1319,6 +1346,10 @@ const mobileInputSchema = {
   mobilePush: MobilePushSchema.optional().describe("Mobile push notifications"),
   mobileOTA: MobileOTASchema.optional().describe("Mobile OTA updates"),
   mobileDeepLinking: MobileDeepLinkingSchema.optional().describe("Mobile deep linking"),
+  mobileLibraries: z
+    .array(MobileLibrariesSchema)
+    .optional()
+    .describe("Mobile application libraries"),
 };
 
 const deploymentInputSchema = {
@@ -1356,6 +1387,13 @@ const crossEcosystemInputSchema = {
   pythonRealtime: PythonRealtimeSchema.optional().describe("Python realtime library"),
   pythonObservability: PythonObservabilitySchema.optional().describe("Python observability"),
   pythonCli: z.array(PythonCliSchema).optional().describe("Python CLI tooling"),
+  pythonCloudSdk: PythonCloudSdkSchema.optional().describe("Python cloud SDK"),
+  pythonHttpClient: PythonHttpClientSchema.optional().describe("Python HTTP client"),
+  pythonData: z.array(PythonDataSchema).optional().describe("Python data/scientific libraries"),
+  pythonMedia: PythonMediaSchema.optional().describe("Python media library"),
+  pythonServer: PythonServerSchema.optional().describe("Python production server"),
+  pythonPackageManager: PythonPackageManagerSchema.optional().describe("Python package manager"),
+  pythonMessageQueue: PythonMessageQueueSchema.optional().describe("Python message queue client"),
   goWebFramework: GoWebFrameworkSchema.optional().describe("Go web framework"),
   goOrm: GoOrmSchema.optional().describe("Go ORM"),
   goApi: GoApiSchema.optional().describe("Go API layer"),
@@ -1400,6 +1438,7 @@ const crossEcosystemInputSchema = {
   dotnetValidation: DotnetValidationSchema.optional().describe(".NET validation"),
   dotnetCaching: DotnetCachingSchema.optional().describe(".NET caching library"),
   dotnetDeploy: DotnetDeploySchema.optional().describe(".NET deployment target"),
+  dotnetLibraries: z.array(DotnetLibrariesSchema).optional().describe(".NET application libraries"),
   elixirWebFramework: ElixirWebFrameworkSchema.optional().describe("Elixir web framework"),
   elixirOrm: ElixirOrmSchema.optional().describe("Elixir persistence layer"),
   elixirAuth: ElixirAuthSchema.optional().describe("Elixir authentication"),
@@ -1967,6 +2006,7 @@ export async function startMcpServer() {
           input.packageManager as string | undefined,
           input.javaBuildTool as string | undefined,
           input.javaWebFramework as string | undefined,
+          input.pythonPackageManager as string | undefined,
         );
         await trackProjectCreation(config, false, {
           source: "mcp",
@@ -2307,6 +2347,7 @@ export async function startMcpServer() {
             input.packageManager as string | undefined,
             existingConfig?.javaBuildTool,
             existingConfig?.javaWebFramework,
+            existingConfig?.pythonPackageManager,
           );
           const payload = {
             success: true as const,

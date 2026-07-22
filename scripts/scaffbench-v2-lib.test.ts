@@ -18,6 +18,9 @@ import {
   parseClaudeResult,
   parseCodexResult,
   parseOpencodeResult,
+  parsePiResult,
+  piCommandArgs,
+  piThinkingArgs,
   promptFor,
   providerForModel,
   runCommand,
@@ -69,6 +72,7 @@ function makeRun(overrides: Partial<RunResult> = {}): RunResult {
     },
     validation: {
       projectExists: true,
+      qualityGateRequested: true,
       steps: {
         install: {
           command: "bun install",
@@ -285,6 +289,7 @@ describe("ScaffBench 2 scoring", () => {
     const failed = makeRun({
       validation: {
         projectExists: true,
+        qualityGateRequested: true,
         steps: {
           install: {
             command: "bun install",
@@ -340,6 +345,7 @@ describe("ScaffBench 2 scoring", () => {
     const run = makeRun({
       validation: {
         projectExists: true,
+        qualityGateRequested: true,
         steps: {
           install: okStep("bun install"),
           build: okStep("bun run build"),
@@ -366,6 +372,7 @@ describe("ScaffBench 2 scoring", () => {
     const run = makeRun({
       validation: {
         projectExists: true,
+        qualityGateRequested: true,
         steps: {
           install: okStep("bun install"),
           build: okStep("bun run build"),
@@ -525,7 +532,7 @@ describe("ScaffBench 2 run outcomes", () => {
       validation: { projectExists: true, deferred: true, steps: {} },
     });
 
-    expect(classifyOutcome(run)).toBe("infra-inconclusive");
+    expect(classifyOutcome(run)).toBe("validation-infra");
     expect(deriveFailureTags(run)).toContain("validation-deferred");
     expect(deriveFailureTags(run)).not.toContain("validation-failed");
   });
@@ -538,7 +545,7 @@ describe("ScaffBench 2 run outcomes", () => {
       },
     });
 
-    expect(classifyOutcome(run)).toBe("infra-inconclusive");
+    expect(classifyOutcome(run)).toBe("harness-infra");
     const tags = deriveFailureTags(run);
     expect(tags).toContain("toolchain-missing");
     expect(tags).not.toContain("build-failed");
@@ -562,7 +569,7 @@ describe("ScaffBench 2 run outcomes", () => {
     expect(tags).not.toContain("toolchain-missing");
   });
 
-  it("classifies an exhausted token budget as infra-inconclusive", () => {
+  it("classifies an exhausted token budget as a scored budget failure", () => {
     const run = makeRun({
       claude: {
         exitCode: 1,
@@ -573,7 +580,7 @@ describe("ScaffBench 2 run outcomes", () => {
       validation: { projectExists: false, steps: {} },
     });
 
-    expect(classifyOutcome(run)).toBe("infra-inconclusive");
+    expect(classifyOutcome(run)).toBe("budget-exhausted");
     expect(deriveFailureTags(run)).toContain("budget-exhausted");
   });
 
@@ -1146,6 +1153,154 @@ describe("opencode / Kilo Code agent adapter", () => {
     const bash = uses.filter((u) => /(^|_)bash$/i.test(u.name)).map((u) => u.command ?? "");
     expect(bash.some((c) => /create\s+better-fullstack/.test(c))).toBe(true);
     expect(bash.some((c) => c.includes("--dry-run"))).toBe(true);
+  });
+});
+
+describe("Pi agent adapter", () => {
+  it("routes bare OpenAI ids through opencode and pi/* ids through Pi", () => {
+    expect(providerForModel("openai/gpt-5.6-luna")).toBe("opencode");
+    expect(providerForModel("OPENAI/gpt-5.6-luna")).toBe("opencode");
+    expect(providerForModel("pi/openai-codex/gpt-5.6-luna")).toBe("pi");
+    expect(agentLabelForModel("pi/openai-codex/gpt-5.6-luna")).toBe("Pi");
+    expect(providerForModel("gpt-5.5")).toBe("codex");
+    expect(providerForModel("claude-opus-4-8")).toBe("claude");
+  });
+
+  it("maps effort to --thinking and keeps default omitted", () => {
+    expect(piThinkingArgs("default")).toEqual([]);
+    for (const effort of ["low", "medium", "high", "xhigh", "max"] as const) {
+      expect(piThinkingArgs(effort)).toEqual(["--thinking", effort]);
+    }
+    expect(
+      piCommandArgs({
+        prompt: "build it",
+        model: "pi/openai-codex/gpt-5.6-luna",
+        effort: "low",
+      }),
+    ).toEqual([
+      "-p",
+      "--mode",
+      "json",
+      "--provider",
+      "openai-codex",
+      "--model",
+      "gpt-5.6-luna",
+      "--thinking",
+      "low",
+      "--no-session",
+      "--no-extensions",
+      "--no-context-files",
+      "build it",
+    ]);
+  });
+
+  it("parses a trimmed real Pi 0.80.10 JSON capture without double-counting summaries", () => {
+    const first = {
+      role: "assistant",
+      content: [{ type: "toolCall", id: "call_1", name: "bash", arguments: { command: "pwd" } }],
+      usage: {
+        input: 3689,
+        output: 18,
+        cacheRead: 0,
+        cacheWrite: 0,
+        reasoning: 0,
+        totalTokens: 3707,
+        cost: { input: 0.003689, output: 0.000108, cacheRead: 0, cacheWrite: 0, total: 0.003797 },
+      },
+      stopReason: "toolUse",
+    };
+    const second = {
+      role: "assistant",
+      content: [{ type: "text", text: "OK" }],
+      usage: {
+        input: 151,
+        output: 5,
+        cacheRead: 3584,
+        cacheWrite: 0,
+        reasoning: 0,
+        totalTokens: 3740,
+        cost: {
+          input: 0.000151,
+          output: 0.00003,
+          cacheRead: 0.0003584,
+          cacheWrite: 0,
+          total: 0.0005394,
+        },
+      },
+      stopReason: "stop",
+    };
+    const jsonl = [
+      { type: "session", version: 3, id: "019f74be-26b1-74bf-86c7-ba67026aa61e" },
+      { type: "message_end", message: first },
+      {
+        type: "tool_execution_start",
+        toolCallId: "call_1",
+        toolName: "bash",
+        args: { command: "pwd" },
+      },
+      { type: "message_end", message: second },
+      // Real Pi streams repeat completed messages here; the parser must ignore it.
+      { type: "agent_end", messages: [first, second], willRetry: false },
+    ]
+      .map((event) => JSON.stringify(event))
+      .join("\n");
+
+    const parsed = parsePiResult(jsonl);
+    expect(parsed?.session_id).toBe("019f74be-26b1-74bf-86c7-ba67026aa61e");
+    expect(parsed?.usage?.output_tokens).toBe(23);
+    expect(parsed?.total_cost_usd).toBeCloseTo(0.0043364, 10);
+    expect(parsed?.tool_events).toBe(1);
+    expect(extractToolUses(jsonl)).toContainEqual({ name: "bash", command: "pwd" });
+    expect(parsePiResult("not json")).toBeNull();
+  });
+
+  it("adds reasoning tokens and classifies zero-usage/no-tool runs as provider infra", () => {
+    const withReasoning = parsePiResult(
+      [
+        JSON.stringify({ type: "session", version: 3, id: "pi-reasoning" }),
+        JSON.stringify({
+          type: "message_end",
+          message: {
+            role: "assistant",
+            content: [{ type: "text", text: "done" }],
+            usage: { output: 7, reasoning: 3, cost: { total: 0.01 } },
+            stopReason: "stop",
+          },
+        }),
+      ].join("\n"),
+    );
+    expect(withReasoning?.usage?.output_tokens).toBe(10);
+
+    const zeroUsage = parsePiResult(
+      [
+        JSON.stringify({ type: "session", version: 3, id: "pi-zero" }),
+        JSON.stringify({
+          type: "message_end",
+          message: {
+            role: "assistant",
+            content: [],
+            usage: { output: 0, reasoning: 0, cost: { total: 0 } },
+            stopReason: "stop",
+          },
+        }),
+      ].join("\n"),
+    );
+    expect(zeroUsage?.terminal_reason).toBe("pi-zero-usage-no-tools");
+    expect(
+      classifyOutcome(
+        makeRun({
+          projectDir: null,
+          claude: {
+            exitCode: 1,
+            timedOut: false,
+            durationMs: 1,
+            outputTokens: zeroUsage?.usage?.output_tokens,
+            terminalReason: zeroUsage?.terminal_reason,
+          },
+          validation: { projectExists: false, qualityGateRequested: false, steps: {} },
+        }),
+      ),
+    ).toBe("provider-infra");
   });
 });
 

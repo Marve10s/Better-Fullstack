@@ -63,6 +63,41 @@ describe("Virtual Generator Regressions", () => {
     ).toThrow("Warp and Salvo currently support REST");
   });
 
+  it("rejects scoped libraries without their owning ecosystem in programmatic validation", () => {
+    expect(() =>
+      runWithContext({ silent: true }, () =>
+        validateConfigForProgrammaticUse({
+          ecosystem: "typescript",
+          frontend: ["react-vite"],
+          mobileLibraries: ["expo-camera"],
+        }),
+      ),
+    ).toThrow("Mobile libraries require a native Expo frontend.");
+
+    expect(() =>
+      runWithContext({ silent: true }, () =>
+        validateConfigForProgrammaticUse({
+          ecosystem: "typescript",
+          dotnetLibraries: ["automapper"],
+        }),
+      ),
+    ).toThrow(".NET libraries require a .NET backend.");
+
+    expect(() =>
+      runWithContext({ silent: true }, () =>
+        validateConfigForProgrammaticUse({
+          ecosystem: "typescript",
+          stackParts: parseStackPartSpecs([
+            "mobile:react-native:native-bare",
+            "backend:dotnet:aspnet-minimal",
+          ]),
+          mobileLibraries: ["expo-camera"],
+          dotnetLibraries: ["automapper"],
+        }),
+      ),
+    ).not.toThrow();
+  });
+
   it("uses the canonical TanStack Router dev port in the generated Vite config", async () => {
     const result = await createVirtual({
       projectName: "tanstack-router-dev-port",

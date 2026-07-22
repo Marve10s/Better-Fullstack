@@ -26,6 +26,11 @@ const buildDate = new Intl.DateTimeFormat("en-US", {
   .format(new Date())
   .toLowerCase();
 
+const webContainerHeaders = {
+  "Cross-Origin-Embedder-Policy": "credentialless",
+  "Cross-Origin-Opener-Policy": "same-origin",
+};
+
 const ssrMdxLoaderAliases = new Map([
   [
     "@/lib/docs/mdx-loaders",
@@ -41,6 +46,10 @@ const ssrMdxLoaderAliases = new Map([
   ],
 ]);
 
+const ssrTemplateGeneratorStub = fileURLToPath(
+  new URL("./src/lib/template-generator-browser.ssr.ts", import.meta.url),
+);
+
 function ssrMdxLoaderAliasPlugin(): PluginOption {
   return {
     name: "better-fullstack:ssr-mdx-loader-alias",
@@ -54,9 +63,28 @@ function ssrMdxLoaderAliasPlugin(): PluginOption {
   };
 }
 
+function ssrTemplateGeneratorAliasPlugin(): PluginOption {
+  return {
+    name: "better-fullstack:ssr-template-generator-alias",
+    enforce: "pre",
+    resolveId(source, _importer, options) {
+      const environmentName = (this as { environment?: { name?: string } }).environment?.name;
+      const isServerEnvironment =
+        options.ssr || environmentName === "ssr" || environmentName === "nitro";
+
+      if (isServerEnvironment && source === "@better-fullstack/template-generator/browser") {
+        return ssrTemplateGeneratorStub;
+      }
+
+      return undefined;
+    },
+  };
+}
+
 export default defineConfig({
   server: {
     port: 3333,
+    headers: webContainerHeaders,
   },
   envPrefix: ["VITE_", "BFS_ENABLE_STACK_PREVIEW"],
   define: {
@@ -108,6 +136,9 @@ export default defineConfig({
   plugins: [
     contentMetaPlugin(),
     ssrMdxLoaderAliasPlugin(),
+    // Preview generation runs from a browser-only dynamic import inside an
+    // effect. Keep its large embedded-template bundle out of Nitro's SSR graph.
+    ssrTemplateGeneratorAliasPlugin(),
     paraglideVitePlugin(paraglideCompilerOptions),
     tsconfigPaths({
       projects: ["./tsconfig.json"],
@@ -161,6 +192,21 @@ export default defineConfig({
           "/new": {
             headers: {
               "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
+              ...webContainerHeaders,
+            },
+          },
+          "/typescript": { headers: webContainerHeaders },
+          "/multi-ecosystem": { headers: webContainerHeaders },
+          "/stack": {
+            headers: {
+              "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
+              ...webContainerHeaders,
+            },
+          },
+          "/stack/**": {
+            headers: {
+              "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
+              ...webContainerHeaders,
             },
           },
           "/benchmark": {

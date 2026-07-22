@@ -108,6 +108,13 @@ function normalizeGraphConfigForPersistence(
     normalized.pythonRealtime = "none";
     normalized.pythonObservability = "none";
     normalized.pythonCli = [];
+    normalized.pythonCloudSdk = "none";
+    normalized.pythonHttpClient = "none";
+    normalized.pythonData = [];
+    normalized.pythonMedia = "none";
+    normalized.pythonServer = "none";
+    normalized.pythonPackageManager = "uv";
+    normalized.pythonMessageQueue = "none";
   }
 
   if (!selectedEcosystems.has("go")) {
@@ -163,6 +170,7 @@ function normalizeGraphConfigForPersistence(
     normalized.dotnetValidation = "none";
     normalized.dotnetCaching = "none";
     normalized.dotnetDeploy = "none";
+    normalized.dotnetLibraries = [];
   }
 
   if (!selectedEcosystems.has("elixir")) {
@@ -215,6 +223,7 @@ function normalizeGraphConfigForPersistence(
     normalized.mobilePush = "none";
     normalized.mobileOTA = "none";
     normalized.mobileDeepLinking = "none";
+    normalized.mobileLibraries = [];
   }
 
   return normalized;
@@ -389,6 +398,7 @@ export function buildBtsConfigForPersistence(
     mobilePush: persistedConfig.mobilePush,
     mobileOTA: persistedConfig.mobileOTA,
     mobileDeepLinking: persistedConfig.mobileDeepLinking,
+    mobileLibraries: persistedConfig.mobileLibraries,
     cms: persistedConfig.cms,
     caching: persistedConfig.caching,
     rateLimit: persistedConfig.rateLimit,
@@ -424,6 +434,13 @@ export function buildBtsConfigForPersistence(
     pythonRealtime: persistedConfig.pythonRealtime,
     pythonObservability: persistedConfig.pythonObservability,
     pythonCli: persistedConfig.pythonCli,
+    pythonCloudSdk: persistedConfig.pythonCloudSdk,
+    pythonHttpClient: persistedConfig.pythonHttpClient,
+    pythonData: persistedConfig.pythonData,
+    pythonMedia: persistedConfig.pythonMedia,
+    pythonServer: persistedConfig.pythonServer,
+    pythonPackageManager: persistedConfig.pythonPackageManager,
+    pythonMessageQueue: persistedConfig.pythonMessageQueue,
     goWebFramework: persistedConfig.goWebFramework,
     goOrm: persistedConfig.goOrm,
     goApi: persistedConfig.goApi,
@@ -462,6 +479,7 @@ export function buildBtsConfigForPersistence(
     dotnetValidation: persistedConfig.dotnetValidation,
     dotnetCaching: persistedConfig.dotnetCaching,
     dotnetDeploy: persistedConfig.dotnetDeploy,
+    dotnetLibraries: persistedConfig.dotnetLibraries,
     elixirWebFramework: persistedConfig.elixirWebFramework,
     elixirOrm: persistedConfig.elixirOrm,
     elixirAuth: persistedConfig.elixirAuth,
@@ -571,6 +589,7 @@ export async function writeBtsConfig(
     mobilePush: btsConfig.mobilePush,
     mobileOTA: btsConfig.mobileOTA,
     mobileDeepLinking: btsConfig.mobileDeepLinking,
+    mobileLibraries: btsConfig.mobileLibraries,
     cms: btsConfig.cms,
     caching: btsConfig.caching,
     rateLimit: btsConfig.rateLimit,
@@ -606,6 +625,13 @@ export async function writeBtsConfig(
     pythonRealtime: btsConfig.pythonRealtime,
     pythonObservability: btsConfig.pythonObservability,
     pythonCli: btsConfig.pythonCli,
+    pythonCloudSdk: btsConfig.pythonCloudSdk,
+    pythonHttpClient: btsConfig.pythonHttpClient,
+    pythonData: btsConfig.pythonData,
+    pythonMedia: btsConfig.pythonMedia,
+    pythonServer: btsConfig.pythonServer,
+    pythonPackageManager: btsConfig.pythonPackageManager,
+    pythonMessageQueue: btsConfig.pythonMessageQueue,
     goWebFramework: btsConfig.goWebFramework,
     goOrm: btsConfig.goOrm,
     goApi: btsConfig.goApi,
@@ -644,6 +670,7 @@ export async function writeBtsConfig(
     dotnetValidation: btsConfig.dotnetValidation,
     dotnetCaching: btsConfig.dotnetCaching,
     dotnetDeploy: btsConfig.dotnetDeploy,
+    dotnetLibraries: btsConfig.dotnetLibraries,
     elixirWebFramework: btsConfig.elixirWebFramework,
     elixirOrm: btsConfig.elixirOrm,
     elixirAuth: btsConfig.elixirAuth,

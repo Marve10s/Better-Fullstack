@@ -1,12 +1,17 @@
 import * as FileSystem from "@effect/platform/FileSystem";
 import * as Effect from "effect/Effect";
 import { createHash } from "node:crypto";
-import { readdir } from "node:fs/promises";
+import { lstat, readFile, readdir, readlink } from "node:fs/promises";
 import path from "node:path";
 
 import type { BenchmarkSpec, ProjectValidation, ScaffbenchOptions } from "@/types";
 
 import { HARNESS_VERSION, VALIDATION_CACHE_VERSION } from "@/constants";
+import { collectToolchainVersions } from "@/summary";
+import {
+  hasTransientNetworkSignature,
+  isRecurringTransientFailure,
+} from "@/validation/classification";
 import { validateProject } from "@/validation/index";
 
 const HASH_SKIP_DIRECTORIES = new Set([
@@ -31,7 +36,8 @@ export function validateProjectCached(
   return Effect.gen(function* () {
     const fs = yield* FileSystem.FileSystem;
     const sourceHash = yield* hashProjectSource(projectDir);
-    const cacheKey = validationCacheKey(spec, options, sourceHash);
+    const toolchains = yield* collectToolchainVersions();
+    const cacheKey = validationCacheKey(spec, options, sourceHash, toolchains);
     const cacheDir = path.join(options.outDir, "validation-cache");
     const cachePath = path.join(cacheDir, `${cacheKey}.json`);
 
@@ -76,6 +82,7 @@ function readCachedValidation(cachePath: string, sourceHash: string, cacheKey: s
     if (!cached?.validation?.projectExists) return null;
     return {
       ...cached.validation,
+      qualityGateRequested: cached.validation.qualityGateRequested === true,
       sourceHash,
       cacheKey,
       cacheHit: true,
@@ -84,11 +91,30 @@ function readCachedValidation(cachePath: string, sourceHash: string, cacheKey: s
   }).pipe(Effect.catchAll(() => Effect.succeed(null)));
 }
 
-function cacheableValidation(validation: ProjectValidation) {
-  return !Object.values(validation.steps).some((step) => step?.timedOut || step?.spawnError);
+export function cacheableValidation(validation: ProjectValidation) {
+  return !Object.entries(validation.steps).some(
+    ([name, step]) =>
+      step?.timedOut ||
+      step?.spawnError ||
+      (step !== undefined &&
+        step.exitCode !== 0 &&
+        (isRecurringTransientFailure(name, step) || hasTransientNetworkSignature(step))),
+  );
 }
 
-function validationCacheKey(spec: BenchmarkSpec, options: ScaffbenchOptions, sourceHash: string) {
+export function validationCacheKey(
+  spec: BenchmarkSpec,
+  options: ScaffbenchOptions,
+  sourceHash: string,
+  toolchains: Record<string, string | undefined>,
+  environment: { platform: string; arch: string } = {
+    platform: process.platform,
+    arch: process.arch,
+  },
+) {
+  const toolchainHash = createHash("sha256")
+    .update(JSON.stringify(Object.entries(toolchains).sort(([a], [b]) => a.localeCompare(b))))
+    .digest("hex");
   const hash = createHash("sha256");
   hash.update(
     JSON.stringify({
@@ -99,24 +125,39 @@ function validationCacheKey(spec: BenchmarkSpec, options: ScaffbenchOptions, sou
       qualityGate: options.qualityGate,
       doctorCheck: options.doctorCheck,
       routeCheck: options.routeCheck,
+      platform: environment.platform,
+      arch: environment.arch,
+      toolchainHash,
     }),
   );
   return hash.digest("hex");
 }
 
-function hashProjectSource(projectDir: string) {
+type HashEntry = {
+  path: string;
+  kind: "file" | "symlink" | "directory";
+  mode: number;
+  target?: string;
+};
+
+export function hashProjectSource(projectDir: string) {
   return Effect.gen(function* () {
-    const fs = yield* FileSystem.FileSystem;
     const hash = createHash("sha256");
-    const files = yield* listHashableFiles(projectDir);
+    const entries = yield* listHashableEntries(projectDir);
     yield* Effect.forEach(
-      files,
-      (filePath) =>
+      entries,
+      (entry) =>
         Effect.gen(function* () {
-          const relative = path.relative(projectDir, filePath).split(path.sep).join("/");
+          const relative = path.relative(projectDir, entry.path).split(path.sep).join("/");
+          hash.update(entry.kind);
+          hash.update("\0");
           hash.update(relative);
           hash.update("\0");
-          hash.update(yield* fs.readFile(filePath));
+          hash.update(entry.mode.toString(8));
+          hash.update("\0");
+          if (entry.kind === "file")
+            hash.update(yield* Effect.tryPromise(() => readFile(entry.path)));
+          if (entry.kind === "symlink") hash.update(entry.target ?? "");
           hash.update("\0");
         }),
       { concurrency: 1, discard: true },
@@ -125,29 +166,39 @@ function hashProjectSource(projectDir: string) {
   });
 }
 
-function listHashableFiles(root: string) {
+function listHashableEntries(root: string) {
   return Effect.gen(function* () {
-    const files: string[] = [];
+    const entries: HashEntry[] = [];
 
     const visit = (directory: string): Effect.Effect<void, unknown> =>
       Effect.gen(function* () {
-        // Dirent preserves the old cache contract: symbolic links are ignored
-        // rather than followed into the source hash.
-        const entries = yield* Effect.tryPromise(() => readdir(directory, { withFileTypes: true }));
+        const children = yield* Effect.tryPromise(() =>
+          readdir(directory, { withFileTypes: true }),
+        );
         yield* Effect.forEach(
-          entries,
+          children,
           (entry) => {
             if (HASH_SKIP_DIRECTORIES.has(entry.name)) return Effect.void;
             const entryPath = path.join(directory, entry.name);
-            if (entry.isDirectory()) return visit(entryPath);
-            if (entry.isFile()) files.push(entryPath);
-            return Effect.void;
+            return Effect.gen(function* () {
+              const info = yield* Effect.tryPromise(() => lstat(entryPath));
+              const mode = info.mode & 0o7777;
+              if (entry.isSymbolicLink()) {
+                const target = yield* Effect.tryPromise(() => readlink(entryPath));
+                entries.push({ path: entryPath, kind: "symlink", mode, target });
+              } else if (entry.isDirectory()) {
+                entries.push({ path: entryPath, kind: "directory", mode });
+                yield* visit(entryPath);
+              } else if (entry.isFile()) {
+                entries.push({ path: entryPath, kind: "file", mode });
+              }
+            });
           },
           { concurrency: 1, discard: true },
         );
       });
 
     yield* visit(root);
-    return files.sort();
+    return entries.sort((a, b) => a.path.localeCompare(b.path));
   });
 }

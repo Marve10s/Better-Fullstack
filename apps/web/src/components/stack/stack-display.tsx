@@ -1,6 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import { CATEGORY_ORDER } from "@better-fullstack/types";
-import { Check, Copy, Edit, Share2, Terminal } from "lucide-react";
+import {
+  TbCheck as Check,
+  TbCopy as Copy,
+  TbEdit as Edit,
+  TbShare2 as Share2,
+  TbTerminal as Terminal,
+} from "react-icons/tb";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 

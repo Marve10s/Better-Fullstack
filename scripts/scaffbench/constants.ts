@@ -4,7 +4,14 @@ import type { BenchmarkSpec, CreationPath, Effort } from "@/types";
 
 import { runCommand } from "@/agents/command";
 
-export const HARNESS_VERSION = "2.0.0";
+// 2.2.1 (2026-07-17): round-2 evidence integrity, adapter-safe idle handling,
+// protocol-stable repeats, and membership/deadline-aware validation.
+export const HARNESS_VERSION = "2.2.1";
+export const SCAFFBENCH_SUITE_VERSION = "2.1";
+// Version the generation wording independently from the harness/validator so
+// publication code can reject rows assembled from unlike prompts.
+export const PROMPT_VERSION = "2026-07-17-round-2";
+export const MIN_RANKED_TRIALS = 3;
 // Below this many scored runs a Wilson interval is too wide to be informative
 // (e.g. at n=3, 3/3 → [44,100] overlaps 0/3 → [0,56]); the report suppresses it.
 export const MIN_CI_RUNS = 8;
@@ -14,11 +21,26 @@ export const MIN_CI_RUNS = 8;
 // command discipline saturate fast on assisted paths so they are weighted down.
 // Weights sum to 1.
 export const SCAFFBENCH_INDEX_WEIGHTS = {
-  validation: 0.6,
-  wiredLibs: 0.25,
-  discipline: 0.15,
+  prompt: {
+    validation: 0.75,
+    wiredLibs: 0.25,
+    discipline: 0,
+  },
+  assisted: {
+    validation: 0.6,
+    wiredLibs: 0.25,
+    discipline: 0.15,
+  },
 } as const;
-export const VALIDATION_CACHE_VERSION = 3;
+// v5: membership-aware roots, complete .NET coverage, safe Python file imports,
+// and explicit deadline/root-cap failures.
+export const VALIDATION_CACHE_VERSION = 5;
+
+export function indexWeightsForPath(pathMode: CreationPath) {
+  return pathMode === "prompt"
+    ? SCAFFBENCH_INDEX_WEIGHTS.prompt
+    : SCAFFBENCH_INDEX_WEIGHTS.assisted;
+}
 
 // Resolved once at the start of a run so every assisted invocation (canonical
 // command, MCP config, doctor, CLI prompt) pins the SAME generator version that
@@ -80,11 +102,24 @@ export function resolveSpecPaths(
 // enough that only a genuinely stuck agent ever hits it. The $25/spec budget cap
 // is the real cost backstop. Note: this only takes effect for NEWLY spawned runs;
 // a run already in flight keeps the value it started with.
-export const CLAUDE_TIMEOUT_MS = 90 * 60_000;
+export const GEN_TIMEOUT_MS = 90 * 60_000;
+/** @deprecated Use GEN_TIMEOUT_MS; retained for external script compatibility. */
+export const CLAUDE_TIMEOUT_MS = GEN_TIMEOUT_MS;
+export const GEN_IDLE_TIMEOUT_MS = 20 * 60_000;
+export const TIMEOUT_PROGRESS_WINDOW_MS = 10 * 60_000;
 export const VALIDATION_TIMEOUT_MS = 10 * 60_000;
+export const VALIDATION_PROJECT_TIMEOUT_MS = 45 * 60_000;
+export const VALIDATION_ROOT_CAP = 12;
+export const ESTIMATED_BUDGET_TOLERANCE = 1.25;
 export const FAST_TIMEOUT_MS = 60_000;
 export const QUEUE_POLL_MS = 5_000;
 export const STALE_LOCK_MS = 6 * 60 * 60_000;
+export const CALIBRATION_WEAK_MODEL = "opencode/deepseek-v4-flash-free";
+
+export function generationTimeoutMs(spec: Pick<BenchmarkSpec, "timeoutMultiplier">) {
+  const multiplier = spec.timeoutMultiplier ?? 1;
+  return GEN_TIMEOUT_MS * (Number.isFinite(multiplier) && multiplier > 0 ? multiplier : 1);
+}
 export const CORE_SPEC_IDS = [
   "ai-search-workbench",
   "rust-leptos-axum",

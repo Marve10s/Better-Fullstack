@@ -1,6 +1,6 @@
 
 import { CATEGORY_ORDER } from "@better-fullstack/types";
-import { Check, Copy, Terminal, Twitter } from "lucide-react";
+import { TbCheck as Check, TbCopy as Copy, TbTerminal as Terminal, TbBrandTwitter as Twitter } from "react-icons/tb";
 import QRCode from "qrcode";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";

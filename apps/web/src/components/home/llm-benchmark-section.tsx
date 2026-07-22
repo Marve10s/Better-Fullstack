@@ -1,5 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, ArrowUpRight, Check, ChevronDown, Copy } from "lucide-react";
+import {
+  TbArrowRight as ArrowRight,
+  TbArrowUpRight as ArrowUpRight,
+  TbCheck as Check,
+  TbChevronDown as ChevronDown,
+  TbCopy as Copy,
+} from "react-icons/tb";
 import {
   AnimatePresence,
   animate,
@@ -46,6 +52,12 @@ import {
   SCAFFBENCH21_MODELS,
   SCAFFBENCH21_SPECS,
 } from "./scaffbench-2-1-data";
+import { SCAFFBENCH21_HISTORICAL_KEYS, scaffbenchNoteFor } from "./scaffbench-2-1-notes";
+import {
+  SCAFFBENCH22_CELLS,
+  SCAFFBENCH22_MODELS,
+  SCAFFBENCH22_SPECS,
+} from "./scaffbench-2-2-data";
 import { OpenAIMark, ProviderLogo, type ProviderLogoId } from "./provider-marks";
 
 /**
@@ -63,7 +75,7 @@ import { OpenAIMark, ProviderLogo, type ProviderLogoId } from "./provider-marks"
  * ScaffBench blog post scoring policy.
  */
 
-type BenchmarkVersionId = "v1" | "v2" | "v2.1";
+type BenchmarkVersionId = "v1" | "v2" | "v2.1" | "v2.2";
 type PathId = "mcp" | "cli" | "prompt";
 
 const PATH_TAB_ORDER: readonly PathId[] = ["prompt", "mcp", "cli"] as const;
@@ -94,7 +106,8 @@ const PATHS: Record<PathId, { glyph: string; short: string; detail: string }> = 
   prompt: {
     glyph: "●",
     short: "Prompt",
-    detail: "no Better-Fullstack — agent hand-writes every file, closed-book (no installs, no dev server)",
+    detail:
+      "no Better-Fullstack — agent hand-writes every file; free to install and build to self-verify, graded cold afterward",
   },
 };
 
@@ -191,6 +204,7 @@ const DEFAULT_MODELS_BY_VERSION: Record<BenchmarkVersionId, readonly ModelId[]> 
   // so these entries exist only to satisfy the version-keyed record.
   v2: ["opus"],
   "v2.1": ["opus"],
+  "v2.2": ["opus"],
 } as const;
 
 interface ChartPalette {
@@ -837,14 +851,13 @@ const headingStyle: CSSProperties = {
   lineHeight: 0.98,
 };
 
-const blogPostParams = { _splat: "scaffbench-2-1" } as const;
+const blogPostParams = { _splat: "scaffbench-2-2" } as const;
 
 // ── ScaffBench 2 leaderboard ────────────────────────────────────────────────
 // A pass-rate bar chart + data table for the per-path (MCP / CLI / Prompt)
 // ScaffBench 2 run, with a v1 fallback that reuses the cross-vendor COMBOS sweep.
 
-type LeaderboardVersion = "v2.1" | "v2" | "v1";
-type ValidationMode = "core" | "full";
+type LeaderboardVersion = "v2.2" | "v2.1" | "v2" | "v1";
 
 // The "v2-family" views (v2 = original 5-spec ablation, v2.1 = expanded 13-spec
 // suite) share all rendering machinery — they differ only in the underlying run
@@ -866,24 +879,33 @@ const SCAFFBENCH_V2_1: ScaffbenchDataset = {
   models: SCAFFBENCH21_MODELS,
   specs: SCAFFBENCH21_SPECS,
 };
+const SCAFFBENCH_V2_2: ScaffbenchDataset = {
+  cells: SCAFFBENCH22_CELLS,
+  models: SCAFFBENCH22_MODELS,
+  specs: SCAFFBENCH22_SPECS,
+};
 
-// v2.1 is the current default; only the literal "v2" maps to the legacy dataset.
+// v2.2 is the current default (fresh cohort under harness 2.2.1: self-verify
+// prompt, quality gates on, 3 trials/spec); v2.1 and v2 are kept as history.
 function v2Dataset(version: BenchmarkVersionId | LeaderboardVersion): ScaffbenchDataset {
-  return version === "v2" ? SCAFFBENCH_V2 : SCAFFBENCH_V2_1;
+  if (version === "v2") return SCAFFBENCH_V2;
+  if (version === "v2.1") return SCAFFBENCH_V2_1;
+  return SCAFFBENCH_V2_2;
 }
 
-// opencode / Kilo runs hit free endpoints — the leaderboard pins them below the
-// paid tier and the graph hides them by default (opt-in via the model picker).
-function isFreeProvider(provider: ScaffbenchModel["provider"]): boolean {
-  return provider === "opencode" || provider === "kilo";
+// Free endpoint status belongs to the model route, not the driving CLI. OpenCode
+// also serves paid Go-subscription models (opencode-go/*), so treating every
+// opencode/Kilo provider as free would hide paid rows from the default graph.
+function isFreeModel(model: ScaffbenchModel): boolean {
+  return /(?:-free$|:free$|\/free$)/i.test(model.model);
 }
 
-type V2Version = "v2" | "v2.1";
+type V2Version = "v2" | "v2.1" | "v2.2";
 
 // Default graph selection: paid models only; free-tier dots are opt-in.
 function v2DefaultModelKeys(version: V2Version): string[] {
   return v2Dataset(version)
-    .models.filter((model) => !isFreeProvider(model.provider))
+    .models.filter((model) => !isFreeModel(model))
     .map((model) => model.key);
 }
 
@@ -897,23 +919,24 @@ const LEADERBOARD_LABELS: Record<PathId, string> = {
 // claude = burnt orange, codex = green, opencode = violet, kilo = cyan
 // (the two free-tier agents get cooler hues so they read as a separate group).
 const LEADERBOARD_THEME_VARS = cn(
-  "[--bar-claude:#c2410c] [--bar-codex:#15803d] [--bar-opencode:#6d28d9] [--bar-kilo:#0891b2] [--bar-agy:#1a73e8] [--bar-track:#ececec]",
-  "dark:[--bar-claude:#fb923c] dark:[--bar-codex:#4ade80] dark:[--bar-opencode:#a78bfa] dark:[--bar-kilo:#22d3ee] dark:[--bar-agy:#8ab4f8] dark:[--bar-track:#edebe414]",
+  "[--bar-claude:#c2410c] [--bar-codex:#15803d] [--bar-opencode:#6d28d9] [--bar-kilo:#0891b2] [--bar-agy:#1a73e8] [--bar-pi:#b45309] [--bar-track:#ececec]",
+  "dark:[--bar-claude:#fb923c] dark:[--bar-codex:#4ade80] dark:[--bar-opencode:#a78bfa] dark:[--bar-kilo:#22d3ee] dark:[--bar-agy:#8ab4f8] dark:[--bar-pi:#fbbf24] dark:[--bar-track:#edebe414]",
 );
 
-const PROVIDER_BAR_COLOR: Record<"claude" | "codex" | "opencode" | "kilo" | "agy", string> = {
+const PROVIDER_BAR_COLOR: Record<"claude" | "codex" | "opencode" | "kilo" | "agy" | "pi", string> = {
   claude: "var(--bar-claude)",
   codex: "var(--bar-codex)",
   opencode: "var(--bar-opencode)",
   kilo: "var(--bar-kilo)",
   agy: "var(--bar-agy)",
+  pi: "var(--bar-pi)",
 };
 
 const BAR_TRACK_STYLE: CSSProperties = { backgroundColor: "var(--bar-track)" };
 
-// One row per model: Model · bar · Core · Full · Wired · Time · Avg cost · Out tok · Steps.
+// One row per model: Model · bar · Pass · Wired · Time · Avg cost · Out tok · Steps · LoC.
 const LEADERBOARD_GRID =
-  "grid grid-cols-[minmax(9rem,13rem)_minmax(0,1fr)_4.25rem_4.25rem_4.5rem_4rem_4.5rem_4rem_3rem] items-center gap-x-3";
+  "grid grid-cols-[minmax(9rem,13rem)_minmax(0,1fr)_4.25rem_4.5rem_4rem_4.5rem_4rem_3rem_3.5rem] items-center gap-x-3";
 
 const PASS_AXIS_TICKS: readonly number[] = [0, 20, 40, 60, 80, 100] as const;
 
@@ -932,12 +955,19 @@ interface ModelLeaderRow {
   effort: string;
   /** bar fill color. */
   color: string;
-  /** brand logo shown to the left of the model name (undefined = no logo). */
+  /** harness logo shown to the left of the model name (undefined = no logo). */
   logo?: ProviderLogoId;
-  /** Core pass 1 as a 0–100 percentage; doubles as the bar fill width. */
+  /** harness display name — hover title on the row label (icons alone are ambiguous). */
+  harness?: string;
+  /** Pass 1 as a 0–100 percentage; doubles as the bar fill width. Full
+   *  (quality-gated) tier when measured, build-level otherwise (buildOnly). */
   pass: number;
-  /** Full (core + quality gate) pass as a percentage; null when not measured (v1). */
-  full: number | null;
+  /** integer successes/trials behind `pass` — powers tie-band intervals (v2). */
+  passSuccesses?: number;
+  passTrials?: number;
+  /** true when this row's sweeps never ran quality gates: `pass` is the
+   *  build-level rate pending a quality-gated re-run. */
+  buildOnly?: boolean;
   /** mean wired-libs percentage across scored cells, preformatted ("93%" / "—"). */
   wired: string;
   /** mean scaffold wall-clock, preformatted ("47s" / "4.5m" / "—"). */
@@ -947,6 +977,30 @@ interface ModelLeaderRow {
   cost: string;
   outTok: string;
   steps: string;
+  /** mean lines of code written per scaffold, preformatted ("8.2k" / "—"). */
+  loc: string;
+  /** curated explanation for a surprising result, shown as a hover tooltip. */
+  note?: string;
+  /** scored cells backing this row — powers the tie-band noise radius (v2 only). */
+  scoredCount?: number;
+  /** scored under the pre-2026-07-10 validator / smaller suite († badge). */
+  historical?: boolean;
+  /** 1-based rank in displayed Pass order; assigned by annotateRanks. */
+  rank?: number;
+  /** true when this row is within single-trial noise of the row(s) above it. */
+  tied?: boolean;
+}
+
+// Rows are ranked strictly by their displayed Pass rate (sortLeaderRows already
+// orders by pass, cheapest-as-tiebreak); ranks are plain positions. Sampling
+// noise on close rows is documented in the blog rather than encoded in the rank
+// column (operator call, 2026-07-18).
+function annotateRanks(rows: ModelLeaderRow[]): ModelLeaderRow[] {
+  for (let i = 0; i < rows.length; i += 1) {
+    rows[i].rank = i + 1;
+    rows[i].tied = false;
+  }
+  return rows;
 }
 
 function formatPercent(passing: number, total: number): number {
@@ -974,11 +1028,25 @@ function sortLeaderRows(rows: ModelLeaderRow[]): ModelLeaderRow[] {
 // Brand logos shown left of the model name. Only Anthropic + OpenAI marks are
 // wired (the current v2.1 field); other providers render no logo.
 const PROVIDER_LOGO: Partial<
-  Record<"claude" | "codex" | "opencode" | "kilo" | "agy", ProviderLogoId>
+  Record<"claude" | "codex" | "opencode" | "kilo" | "agy" | "pi", ProviderLogoId>
 > = {
   claude: "anthropic",
   codex: "openai",
   agy: "google",
+  opencode: "opencode",
+  kilo: "kilo",
+  pi: "pi",
+};
+
+// Display name of the agent harness that drove a row — the same model now runs
+// through several harnesses, so the model label alone no longer identifies a row.
+const HARNESS_LABEL: Record<"claude" | "codex" | "opencode" | "kilo" | "agy" | "pi", string> = {
+  claude: "Claude Code",
+  codex: "Codex",
+  opencode: "opencode",
+  kilo: "Kilo",
+  agy: "Antigravity",
+  pi: "Pi",
 };
 const V1_MODEL_LOGO: Partial<Record<ModelId, ProviderLogoId>> = {
   fable: "anthropic",
@@ -991,11 +1059,40 @@ const V1_MODEL_LOGO: Partial<Record<ModelId, ProviderLogoId>> = {
 };
 
 // V2: one row per (model, effort), pooled over the chosen path's scored cells.
+// Single source of truth for the published pass number: the FULL
+// (quality-gated) tier when every scored cell measured it, build-level
+// otherwise. The table and the scatter MUST agree — they both call this.
+function passTally(scored: readonly ScaffbenchCell[]): {
+  successes: number;
+  trials: number;
+  buildOnly: boolean;
+} {
+  const coreTrials = scored.reduce((sum, cell) => sum + (cell.scoredTrials ?? 1), 0);
+  const coreSuccesses = scored.reduce(
+    (sum, cell) => sum + (cell.passCount ?? (cell.corePass ? 1 : 0)),
+    0,
+  );
+  const fullMeasured = scored.filter((cell) => cell.fullPass !== null);
+  const qualityMeasured = scored.length > 0 && fullMeasured.length === scored.length;
+  if (!qualityMeasured) return { successes: coreSuccesses, trials: coreTrials, buildOnly: true };
+  return {
+    successes: fullMeasured.reduce(
+      (sum, cell) => sum + (cell.qualityPassCount ?? (cell.fullPass ? 1 : 0)),
+      0,
+    ),
+    trials: fullMeasured.reduce((sum, cell) => sum + (cell.scoredTrials ?? 1), 0),
+    buildOnly: false,
+  };
+}
+
 function computeV2ModelRows(
   dataset: ScaffbenchDataset,
   leaderPath: LeaderPath,
-  mode: ValidationMode,
   specs: ReadonlySet<string>,
+  // The curated notes + † badges describe the 2.1-era boards; they key on
+  // model|effort, so without this gate a fresh v2.2 row (same key, different
+  // protocol) would inherit stale annotations that 2.2 specifically fixed.
+  annotated = true,
 ): ModelLeaderRow[] {
   const rows = dataset.models.flatMap((model) => {
     const cells = dataset.cells.filter(
@@ -1009,29 +1106,40 @@ function computeV2ModelRows(
     // fake 0% row. This is what keeps the MCP tab to just the models we swept.
     if (leaderPath !== "all" && cells.length === 0) return [];
     const scored = cells.filter((cell) => cell.scored);
-    const passing = scored.filter((cell) =>
-      mode === "core" ? cell.corePass : cell.fullPass,
-    ).length;
-    const fullPassing = scored.filter((cell) => cell.fullPass).length;
+    // Shared Full-tier tally — identical numbers on the table and the scatter.
+    const tally = passTally(scored);
+    const passSuccesses = tally.successes;
+    const passTrials = tally.trials;
+    const qualityMeasured = !tally.buildOnly;
     const costs = scored.map((cell) => cell.costUsd).filter((v): v is number => v !== null);
     const tokens = scored.map((cell) => cell.outTokens).filter((v): v is number => v !== null);
     const durations = scored
       .map((cell) => cell.durationMs)
       .filter((v): v is number => v !== null && v !== undefined && v > 0);
+    const locValues = scored
+      .map((cell) => cell.lines)
+      .filter((v): v is number => v !== null && v !== undefined && v > 0);
     return {
       key: model.key,
       label: model.label,
       effort: model.effort,
+      note: annotated ? scaffbenchNoteFor(model.key, leaderPath) : undefined,
+      scoredCount: scored.length,
+      historical: annotated && SCAFFBENCH21_HISTORICAL_KEYS.has(model.key),
       color: PROVIDER_BAR_COLOR[model.provider],
       logo: PROVIDER_LOGO[model.provider],
-      pass: formatPercent(passing, scored.length),
-      full: scored.length > 0 ? formatPercent(fullPassing, scored.length) : null,
+      harness: HARNESS_LABEL[model.provider],
+      pass: formatPercent(passSuccesses, passTrials),
+      passSuccesses,
+      passTrials,
+      buildOnly: scored.length > 0 && !qualityMeasured,
       wired: scored.length > 0 ? `${Math.round(mean(scored.map((cell) => cell.wiredPct)))}%` : "—",
       time: durations.length > 0 ? formatDuration(mean(durations)) : "—",
       costNum: costs.length > 0 ? mean(costs) : Number.POSITIVE_INFINITY,
       cost: costs.length > 0 ? `$${mean(costs).toFixed(2)}` : "—",
       outTok: tokens.length > 0 ? `${(mean(tokens) / 1000).toFixed(1)}k` : "—",
       steps: scored.length > 0 ? String(Math.round(mean(scored.map((cell) => cell.steps)))) : "—",
+      loc: locValues.length > 0 ? `${(mean(locValues) / 1000).toFixed(1)}k` : "—",
     };
   });
   return sortLeaderRows(rows);
@@ -1051,12 +1159,12 @@ function computeV1ModelRows(leaderPath: LeaderPath): ModelLeaderRow[] {
       color: CHART_PALETTE.models[m],
       logo: V1_MODEL_LOGO[m],
       pass: combos.length > 0 ? Math.round(mean(combos.map((combo) => combo.pass))) : 0,
-      full: null,
       wired: "—",
       time: "—",
       costNum: Number.POSITIVE_INFINITY,
       cost: "—",
       outTok: combos.length > 0 ? `${mean(combos.map((combo) => combo.tokens)).toFixed(1)}k` : "—",
+      loc: "—",
       steps: "—",
     };
   });
@@ -1072,7 +1180,7 @@ function computeV1ModelRows(leaderPath: LeaderPath): ModelLeaderRow[] {
 // leaderboard table's Core column. There is no per-cell duration in the V2
 // dataset, so "Speed"/time tabs are intentionally absent here.
 
-type V2Metric = "tokens" | "cost" | "steps";
+type V2Metric = "tokens" | "cost" | "steps" | "lines";
 
 interface V2ChartTabSpec {
   id: V2Metric;
@@ -1105,6 +1213,13 @@ const V2_CHART_TABS: readonly V2ChartTabSpec[] = [
     unit: "",
     axisLabel: "Avg tool steps per scaffold",
   },
+  {
+    id: "lines",
+    label: "Code",
+    note: "lean + reliable ↗",
+    unit: "k",
+    axisLabel: "Avg lines of code per scaffold",
+  },
 ] as const;
 
 // V2 dots are colored per MODEL (like v1), one color per model group in order.
@@ -1131,6 +1246,9 @@ interface PathMetrics {
   cost: number | null;
   /** avg tool steps over scored cells. null = no readable trajectory. */
   steps: number | null;
+  /** avg lines of code written per scaffold, thousands. null = not measured
+   *  (rows benched before the code-volume metric landed). */
+  lines: number | null;
   /** scored cells on this path. 0 = the model was never swept on this path. */
   scoredCount: number;
 }
@@ -1153,26 +1271,42 @@ function aggregatePathMetrics(
     .map((cell) => cell.costUsd)
     .filter((value): value is number => value !== null);
   const steps = scored.map((cell) => cell.steps).filter((value) => value > 0);
+  const lines = scored
+    .map((cell) => cell.lines)
+    .filter((value): value is number => value !== null && value !== undefined && value > 0);
   return {
-    pass: formatPercent(scored.filter((cell) => cell.corePass).length, scored.length),
+    // Same Full-tier-when-measured number the leaderboard table shows —
+    // the graph and table must never disagree on "pass".
+    pass: (() => {
+      const tally = passTally(scored);
+      return formatPercent(tally.successes, tally.trials);
+    })(),
     tokens: tokens.length > 0 ? mean(tokens) / 1000 : null,
     cost: costs.length > 0 ? mean(costs) : null,
     steps: steps.length > 0 ? mean(steps) : null,
+    lines: lines.length > 0 ? mean(lines) / 1000 : null,
     scoredCount: scored.length,
   };
 }
 
-type MetricBearing = { tokens: number | null; cost: number | null; steps: number | null };
+type MetricBearing = {
+  tokens: number | null;
+  cost: number | null;
+  steps: number | null;
+  lines: number | null;
+};
 
 function v2MetricValue(point: MetricBearing, metric: V2Metric): number | null {
   if (metric === "cost") return point.cost;
   if (metric === "steps") return point.steps;
+  if (metric === "lines") return point.lines;
   return point.tokens;
 }
 
 function formatV2Metric(point: MetricBearing, metric: V2Metric): string {
   if (metric === "cost") return point.cost === null ? "—" : `$${point.cost.toFixed(2)}`;
   if (metric === "steps") return point.steps === null ? "—" : `${Math.round(point.steps)} steps`;
+  if (metric === "lines") return point.lines === null ? "—" : `${point.lines.toFixed(1)}k lines`;
   return point.tokens === null ? "—" : `${point.tokens.toFixed(1)}k tokens`;
 }
 
@@ -1181,6 +1315,7 @@ function formatV2Metric(point: MetricBearing, metric: V2Metric): string {
 function formatV2MetricCompact(point: MetricBearing, metric: V2Metric): string {
   if (metric === "cost") return point.cost === null ? "—" : `$${point.cost.toFixed(2)}`;
   if (metric === "steps") return point.steps === null ? "—" : `${Math.round(point.steps)}`;
+  if (metric === "lines") return point.lines === null ? "—" : `${point.lines.toFixed(1)}k`;
   return point.tokens === null ? "—" : `${point.tokens.toFixed(1)}k`;
 }
 
@@ -1216,8 +1351,11 @@ interface V2ModelPoint extends PathMetrics {
   key: string;
   /** model name shown on hover + in the legend, e.g. "Opus 4.8". */
   label: string;
-  /** reasoning effort, shown on the dot label/tooltip. */
+  /** reasoning effort, kept in the aria detail. */
   reasoning: string;
+  /** agent harness that drove the row (Codex/opencode/Kilo/Pi/...) — the same
+   *  model runs through several harnesses, so dot labels show model · harness. */
+  harness: string;
   color: string;
   /** free-endpoint run (opencode/Kilo) — grouped under "Free tier" in the picker. */
   free: boolean;
@@ -1231,7 +1369,7 @@ interface V2ModelPoint extends PathMetrics {
 function computeV2ModelPoints(dataset: ScaffbenchDataset, path: PathId): V2ModelPoint[] {
   return dataset.models.map((model, index) => {
     const metrics = aggregatePathMetrics(dataset, model.key, path);
-    const free = isFreeProvider(model.provider);
+    const free = isFreeModel(model);
     // Free endpoints (opencode / Kilo) genuinely cost $0 — plot them at zero,
     // but ONLY when the model was actually swept on this path (an unswept model
     // must not materialize on the Cost axis just because $0 is coercible). A
@@ -1244,6 +1382,7 @@ function computeV2ModelPoints(dataset: ScaffbenchDataset, path: PathId): V2Model
       key: model.key,
       label: model.label,
       reasoning: model.effort,
+      harness: HARNESS_LABEL[model.provider],
       color: V2_MODEL_COLORS[index % V2_MODEL_COLORS.length],
       free,
       ...metrics,
@@ -1265,6 +1404,9 @@ function v2PointEligible(point: V2ModelPoint, metric: V2Metric, path: PathId): b
     if (path === "prompt" && point.free) return false;
     return point.cost !== null;
   }
+  // Rows benched before the code-volume metric have no measurement — drop
+  // them from the Code axis rather than plotting a fake 0 ("least code").
+  if (metric === "lines") return point.lines !== null;
   return true;
 }
 
@@ -1332,118 +1474,21 @@ const drawNone = { duration: 0 } as const;
 
 // Hammer-strike pose angles (degrees): rest → wind-up → strike-down → settle.
 // After the icon draws in, the hammer slams once and rests (no loop).
-const HAMMER_REST = -6;
-const HAMMER_WIND = -34;
-const HAMMER_STRIKE = 43;
-const HAMMER_SLAM_DELAY = 1.3; // fires after the draw-in finishes (~1.2s)
-const HAMMER_SLAM_DUR = 0.62;
-const SPARK_HIDDEN_STYLE: CSSProperties = { opacity: 0 };
 
+// Block-S monogram (GPT-5.6 Sol design, 2026-07-18): a modular S of stacked
+// block layers — generated layers snapping into a complete stack — with a
+// single lime keystone. Inherits text color; the accent is fixed brand lime.
 function ScaffBenchMark({ className }: { className?: string }) {
-  const ref = useRef<SVGSVGElement>(null);
-  const hammerRef = useRef<SVGGElement>(null);
-  const sparkRef = useRef<SVGGElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-10%" });
-  const reduceMotion = useReducedMotion() === true;
-  const drawn = inView || reduceMotion;
-
-  // Drive the hammer's pivot rotation as a motion value written straight into the
-  // SVG transform string (translate to the pivot, then rotate) — the design's
-  // exact formula, no transform-origin guesswork.
-  const angle = useMotionValue(HAMMER_REST);
-  const sparkOpacity = useMotionValue(0);
-  useEffect(() => {
-    const unsubAngle = angle.on("change", (value) => {
-      hammerRef.current?.setAttribute("transform", `translate(8.5 7) rotate(${value.toFixed(2)})`);
-    });
-    const unsubSpark = sparkOpacity.on("change", (value) => {
-      if (sparkRef.current) sparkRef.current.style.opacity = String(value);
-    });
-    return () => {
-      unsubAngle();
-      unsubSpark();
-    };
-  }, [angle, sparkOpacity]);
-
-  // Slam once, after the icon has fully drawn in.
-  useEffect(() => {
-    if (!inView || reduceMotion) return;
-    const slam = animate(angle, [HAMMER_REST, HAMMER_WIND, HAMMER_STRIKE, HAMMER_REST], {
-      delay: HAMMER_SLAM_DELAY,
-      duration: HAMMER_SLAM_DUR,
-      times: [0, 0.32, 0.5, 1],
-      ease: ["easeOut", "easeIn", "easeOut"],
-    });
-    const spark = animate(sparkOpacity, [0, 1, 0], {
-      delay: HAMMER_SLAM_DELAY + HAMMER_SLAM_DUR * 0.5,
-      duration: 0.28,
-      times: [0, 0.18, 1],
-      ease: "easeOut",
-    });
-    return () => {
-      slam.stop();
-      spark.stop();
-    };
-  }, [inView, reduceMotion, angle, sparkOpacity]);
-
   return (
-    <svg
-      ref={ref}
-      viewBox="0 0 32 32"
-      aria-hidden
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      {/* Anvil. */}
-      <motion.path
-        d="M5 18.5 L19.5 18.5 L24.5 20.4 L19.5 22.3 L5 22.3 Z"
-        initial={pathHidden}
-        animate={drawn ? pathDrawn : pathHidden}
-        transition={reduceMotion ? drawNone : stairsDraw}
-      />
-      <motion.path
-        d="M9.5 22.3 L8 28 L16.5 28 L15 22.3"
-        initial={pathHidden}
-        animate={drawn ? pathDrawn : pathHidden}
-        transition={reduceMotion ? drawNone : stairsDraw}
-      />
-      {/* Hammer — drawn in at rest, then the pivot rotation (ref) slams it down. */}
-      <g ref={hammerRef} transform="translate(8.5 7) rotate(-6)">
-        <motion.path
-          d="M-4.5 0 L11.5 0"
-          initial={pathHidden}
-          animate={drawn ? pathDrawn : pathHidden}
-          transition={reduceMotion ? drawNone : diagonalDraw}
-        />
-        <motion.rect
-          x="9.7"
-          y="-4.8"
-          width="4.6"
-          height="9.6"
-          rx="1.3"
-          initial={pathHidden}
-          animate={drawn ? pathDrawn : pathHidden}
-          transition={reduceMotion ? drawNone : diagonalDraw}
-        />
-      </g>
-      {/* Impact spark — a brief lime flash at the strike point on the slam. */}
-      <g ref={sparkRef} stroke="#C6E853" strokeWidth={1.2} style={SPARK_HIDDEN_STYLE} aria-hidden>
-        <circle cx="14" cy="18.2" r="1.5" fill="#C6E853" stroke="none" />
-        <line x1="14" y1="18.2" x2="9.8" y2="15.6" />
-        <line x1="14" y1="18.2" x2="11.2" y2="13.8" />
-        <line x1="14" y1="18.2" x2="16" y2="13.4" />
-        <line x1="14" y1="18.2" x2="18.2" y2="15.4" />
-      </g>
+    <svg viewBox="0 0 48 48" aria-hidden className={className} xmlns="http://www.w3.org/2000/svg">
+      <path fill="currentColor" d="M6 4h36v8H14v8h28v24H6v-8h28v-8H6V4Z" />
+      <rect x="6" y="20" width="8" height="8" fill="#C6E853" />
     </svg>
   );
 }
 
 function BenchmarkChartCard() {
-  const [version, setVersion] = useState<BenchmarkVersionId>("v2.1");
+  const [version, setVersion] = useState<BenchmarkVersionId>("v2.2");
   const [activePath, setActivePath] = useState<PathId>("prompt");
   const [tabId, setTabId] = useState<TabId>("speed");
   const [v2Metric, setV2Metric] = useState<V2Metric>("tokens");
@@ -1475,7 +1520,7 @@ function BenchmarkChartCard() {
   // into an unreadable corner with no room for labels.
   // "v2-family" = the v2 (legacy 5-spec) and v2.1 (current 13-spec) prompt-only
   // ablation views; both share this chart's rendering and differ only in dataset.
-  const isV2 = version === "v2" || version === "v2.1";
+  const isV2 = version === "v2" || version === "v2.1" || version === "v2.2";
   const v2DatasetValue = useMemo(() => v2Dataset(version), [version]);
   // V2-family exposes a restricted tab set (pathTabsFor): v2 legacy is Prompt-only;
   // v2.1 adds MCP. Clamp to a tab this version actually offers so a stale v1
@@ -1489,11 +1534,16 @@ function BenchmarkChartCard() {
   // Per-version graph selection; free-tier models start OFF (opt-in via the
   // model picker). Kept per version so a v2.1 toggle doesn't leak into v2.
   const [v2SelectedKeys, setV2SelectedKeys] = useState<Record<V2Version, readonly string[]>>(
-    () => ({ "v2": v2DefaultModelKeys("v2"), "v2.1": v2DefaultModelKeys("v2.1") }),
+    () => ({
+      "v2": v2DefaultModelKeys("v2"),
+      "v2.1": v2DefaultModelKeys("v2.1"),
+      "v2.2": v2DefaultModelKeys("v2.2"),
+    }),
   );
   // On v1 this reads (and ignores) the v2.1 selection — keeps the reference
   // stable so the derived memos don't recompute every render.
-  const v2ActiveSelection = v2SelectedKeys[version === "v2" ? "v2" : "v2.1"];
+  const v2ActiveSelection =
+    v2SelectedKeys[version === "v2" ? "v2" : version === "v2.1" ? "v2.1" : "v2.2"];
   const toggleV2Model = useCallback(
     (key: string) => {
       if (version === "v1") return;
@@ -1540,7 +1590,7 @@ function BenchmarkChartCard() {
     () =>
       v2VisiblePoints
         .filter((point) => v2MetricValue(point, v2Metric) === null)
-        .map((point) => `${point.label} · ${point.reasoning}`),
+        .map((point) => `${point.label} · ${point.harness}`),
     [v2VisiblePoints, v2Metric],
   );
   const v2Axis = useMemo(() => buildV2Axis(v2Metric, v2PlottedPoints), [v2Metric, v2PlottedPoints]);
@@ -1933,7 +1983,8 @@ function V2ModelMenuItem({
     <DropdownMenuCheckboxItem checked={checked} onCheckedChange={handleChange} closeOnClick={false}>
       <span className="size-2.5 shrink-0 rounded-[2px]" style={swatchStyle} />
       <span className="min-w-0 flex-1">
-        {point.label} · {point.reasoning}
+        {point.label} · {point.harness}{" "}
+        <span className="text-[10px] opacity-70">[{point.reasoning}]</span>
       </span>
     </DropdownMenuCheckboxItem>
   );
@@ -2221,7 +2272,7 @@ function computeV2LabelPlacements(
     // Callers pass only plotted points (metric value non-null); `?? 0` narrows.
     x: plotX(v2MetricValue(point, metric) ?? 0, axis),
     y: plotY(point.pass, PASS_AXIS, false),
-    width: (`${point.label} · ${point.reasoning}`.length + 1) * LABEL_CHAR_W,
+    width: (`${point.label} · ${point.harness}`.length + 1) * LABEL_CHAR_W,
   }));
   const obstacles: LabelBox[] = mapped.map((p) => ({
     x1: p.x - DOT_PAD,
@@ -2303,7 +2354,7 @@ function V2Dot({
       onBlur={deactivate}
       className="outline-none"
       focusable="true"
-      aria-label={`${point.label} · ${point.reasoning} · ${point.pass}% Core pass · ${metricLabel}`}
+      aria-label={`${point.label} · ${point.harness} · ${point.reasoning} · ${point.pass}% pass · ${metricLabel}`}
     >
       <HoverGuides active={active} hex={point.color} x={x} y={y} />
       <ChartMarker hex={point.color} cardBg={cardBg} />
@@ -2321,7 +2372,7 @@ function V2Dot({
           strokeWidth={3}
           paintOrder="stroke"
         >
-          {point.label} · {point.reasoning}
+          {point.label} · {point.harness}
         </text>
       ) : active ? (
         <text
@@ -2335,7 +2386,7 @@ function V2Dot({
           strokeWidth={3}
           paintOrder="stroke"
         >
-          {point.label} · {point.reasoning}
+          {point.label} · {point.harness}
         </text>
       ) : null}
       {/* On hover, project the dot's value onto each axis in its own color,
@@ -2502,7 +2553,7 @@ function AgentTabIcon({ tab, active }: { tab: AgentTab; active: boolean }) {
 }
 
 function ScaffbenchLeaderboardCard() {
-  const [version, setVersion] = useState<LeaderboardVersion>("v2.1");
+  const [version, setVersion] = useState<LeaderboardVersion>("v2.2");
   const [leaderPath, setLeaderPath] = useState<LeaderPath>("all");
   const [selectedSpecs, setSelectedSpecs] = useState<readonly string[]>(SCAFFBENCH21_SPECS);
   const [selectedModelKeys, setSelectedModelKeys] = useState<readonly string[]>(() =>
@@ -2511,23 +2562,23 @@ function ScaffbenchLeaderboardCard() {
 
   // "v2-family" = the v2 (legacy 5-spec) and v2.1 (current 13-spec) prompt-only
   // leaderboards; both share rendering and differ only in dataset.
-  const isV2 = version === "v2" || version === "v2.1";
+  const isV2 = version === "v2" || version === "v2.1" || version === "v2.2";
   const dataset = useMemo(() => v2Dataset(version), [version]);
 
   // The two v2-family versions track different spec suites (5 vs 13), so reset the
   // spec filter to the active version's full spec list whenever the version flips.
   useEffect(() => {
     if (version === "v1") return;
-    setSelectedSpecs(version === "v2" ? SCAFFBENCH2_SPECS : SCAFFBENCH21_SPECS);
+    setSelectedSpecs(
+      version === "v2"
+        ? SCAFFBENCH2_SPECS
+        : version === "v2.1"
+          ? SCAFFBENCH21_SPECS
+          : SCAFFBENCH22_SPECS,
+    );
     setSelectedModelKeys(v2Dataset(version).models.map((model) => model.key));
   }, [version]);
 
-  // We publish a single metric — Core pass (install/build/typecheck). The Full /
-  // quality-gate pass is withheld until a re-run with the corrected gate produces
-  // honest numbers (the old gate skipped lint/test and auto-fixed format, which
-  // overstated Full). computeV2ModelRows still takes a mode so Full can return
-  // with one line once that re-run lands.
-  const MODE = "core" as const;
   // V2-family exposes a restricted tab set (pathTabsFor): v2 legacy is Prompt-only;
   // v2.1 adds the assisted MCP path. Clamp to a tab this version offers so the
   // pooled "all" default (or a stale v1 selection) resolves to Prompt.
@@ -2544,11 +2595,13 @@ function ScaffbenchLeaderboardCard() {
   const rows = useMemo(
     () =>
       isV2
-        ? computeV2ModelRows(dataset, effectiveLeaderPath, MODE, specsSet).filter((row) =>
-            modelKeysSet.has(row.key),
+        ? annotateRanks(
+            computeV2ModelRows(dataset, effectiveLeaderPath, specsSet, version !== "v2.2").filter((row) =>
+              modelKeysSet.has(row.key),
+            ),
           )
         : computeV1ModelRows(effectiveLeaderPath),
-    [isV2, dataset, effectiveLeaderPath, specsSet, modelKeysSet],
+    [isV2, dataset, effectiveLeaderPath, specsSet, modelKeysSet, version],
   );
 
   const toggleSpec = useCallback(
@@ -2664,7 +2717,7 @@ function ScaffbenchLeaderboardCard() {
                 {effectiveLeaderPath === "all"
                   ? "All creation paths"
                   : LEADERBOARD_LABELS[effectiveLeaderPath]}
-                {isV2 ? " · Core + Full pass, wired libs & time" : ""}
+                {isV2 ? " · Full pass, wired libs & time" : ""}
               </p>
             </div>
 
@@ -2677,19 +2730,13 @@ function ScaffbenchLeaderboardCard() {
               <span>Model</span>
               <span aria-hidden />
               <span className="flex items-center justify-end gap-1">
-                Core
-                <MetricHelp label="Core pass@1">
-                  The project installs, builds, type-checks, and native-compiles from the prompt — the
-                  real "does it actually run" pass. Closed-book: agents may not run installs or dev
-                  servers while generating, so every manifest is written from model knowledge; our
-                  validator runs the real toolchains afterward.
-                </MetricHelp>
-              </span>
-              <span className="flex items-center justify-end gap-1">
-                Full
-                <MetricHelp label="Full pass">
-                  Core, plus every applicable quality gate (lint, format, tests). Stricter than Core —
-                  a project can build green yet still fail Full.
+                Pass
+                <MetricHelp label="Full pass@1">
+                  The project installs, builds, type-checks, AND clears every applicable quality gate
+                  (lint, format, tests) on a clean machine. Rows marked with a small asterisk predate
+                  quality-gated sweeps: their number is build-level pass until a re-run lands. Agents
+                  may install and build to self-verify while generating; grading happens cold
+                  afterward.
                 </MetricHelp>
               </span>
               <span className="flex items-center justify-end gap-1">
@@ -2703,6 +2750,14 @@ function ScaffbenchLeaderboardCard() {
               <span className="text-right">Avg cost</span>
               <span className="text-right">Out tok</span>
               <span className="text-right">Steps</span>
+              <span className="flex items-center justify-end gap-1">
+                LoC
+                <MetricHelp label="Lines of code">
+                  Mean lines the model actually wrote per scaffold (lockfiles and binaries
+                  excluded). Not part of any score — two green runs can differ 10x in how much
+                  code they took, and that difference is worth seeing.
+                </MetricHelp>
+              </span>
             </div>
 
             <AnimatePresence mode="wait" initial={false}>
@@ -2829,6 +2884,7 @@ function VersionDropdown({
         className={cn("w-44 max-w-[calc(100vw-2rem)]", CHART_THEME_VARS)}
       >
         <DropdownMenuRadioGroup value={value} onValueChange={handleChange}>
+          <DropdownMenuRadioItem value="v2.2">v2.2</DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="v2.1">v2.1</DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="v2">
             v2
@@ -2850,12 +2906,54 @@ function ModelLeaderRow({ row }: { row: ModelLeaderRow }) {
   return (
     <div className={cn(LEADERBOARD_GRID, "py-2.5")}>
       <span className="flex min-w-0 items-center gap-1.5">
+        {row.rank !== undefined ? (
+          <span className="w-6 shrink-0 text-right font-mono text-[11px] tabular-nums text-[#9c9a93] dark:text-[#6c6a61]">
+            {row.rank}
+          </span>
+        ) : null}
         <ProviderLogo logo={row.logo} />
-        <span className="truncate font-mono text-sm font-bold">{row.label}</span>
+        <span
+          className="truncate font-mono text-sm font-bold"
+          title={row.harness ? `${row.label} — ${row.harness}` : row.label}
+        >
+          {row.label}
+        </span>
         {row.effort ? (
           <span className="shrink-0 font-mono text-[11px] text-[#9c9a93] dark:text-[#6c6a61]">
             [{row.effort}]
           </span>
+        ) : null}
+        {row.historical ? (
+          <Tooltip delay={0}>
+            <TooltipTrigger
+              type="button"
+              aria-label={`${row.label} was scored under an older validator`}
+              className="shrink-0 cursor-help font-mono text-[11px] text-[#9c9a93] transition-colors hover:text-[#1b1a17] dark:text-[#6c6a61] dark:hover:text-[#dad8d0]"
+            >
+              †
+            </TooltipTrigger>
+            <TooltipContent className="max-w-[16rem] normal-case tracking-normal">
+              <p className="font-normal">
+                Scored under the pre-2026-07-10 validator on a smaller suite; artifacts are gone, so
+                it can't be re-scored. Comparisons with newer rows are approximate.
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        ) : null}
+        {row.note ? (
+          <Tooltip delay={0}>
+            <TooltipTrigger
+              type="button"
+              aria-label={`Why does ${row.label} score this way?`}
+              className="flex size-3.5 shrink-0 cursor-help items-center justify-center rounded-full border border-[#d9d8d2] font-serif text-[9px] font-bold italic leading-none text-[#71706a] transition-colors hover:border-[#1b1a17] hover:text-[#1b1a17] dark:border-[rgba(237,235,228,0.2)] dark:text-[#8f8d84] dark:hover:border-[#dad8d0] dark:hover:text-[#dad8d0]"
+            >
+              i
+            </TooltipTrigger>
+            <TooltipContent className="max-w-[19rem] normal-case tracking-normal">
+              <p className="font-semibold">About this result</p>
+              <p className="mt-1 font-normal">{row.note}</p>
+            </TooltipContent>
+          </Tooltip>
         ) : null}
       </span>
       <div className="h-2.5 w-full overflow-hidden rounded-full" style={BAR_TRACK_STYLE}>
@@ -2864,13 +2962,32 @@ function ModelLeaderRow({ row }: { row: ModelLeaderRow }) {
           style={fillStyle}
         />
       </div>
-      <span className="text-right font-mono text-sm font-bold">{row.pass}%</span>
-      <span className="text-right font-mono text-xs">{row.full === null ? "—" : `${row.full}%`}</span>
+      <span className="text-right font-mono text-sm font-bold">
+        {row.pass}%
+        {row.buildOnly ? (
+          <Tooltip delay={0}>
+            <TooltipTrigger
+              type="button"
+              aria-label="Build-level pass; quality gates pending"
+              className="cursor-help align-super text-[9px] font-semibold text-[#9c9a93] dark:text-[#6c6a61]"
+            >
+              *
+            </TooltipTrigger>
+            <TooltipContent className="max-w-[16rem] normal-case tracking-normal">
+              <p className="font-normal">
+                Build-level pass (install/build/typecheck). This row's sweeps predate quality-gated
+                runs; the Full number lands with its re-run.
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        ) : null}
+      </span>
       <span className="text-right font-mono text-xs">{row.wired}</span>
       <span className="text-right font-mono text-xs">{row.time}</span>
       <span className="text-right font-mono text-xs">{row.cost}</span>
       <span className="text-right font-mono text-xs">{row.outTok}</span>
       <span className="text-right font-mono text-xs">{row.steps}</span>
+      <span className="text-right font-mono text-xs">{row.loc}</span>
     </div>
   );
 }
