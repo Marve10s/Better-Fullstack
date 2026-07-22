@@ -3411,7 +3411,12 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
   };
 
   for (const category of GRAPH_PROJECTION_DEFAULT_LEGACY_CATEGORIES) {
-    (projected as Record<string, unknown>)[category] = "none";
+    // Array-valued categories (e.g. mobileLibraries) must reset to [] — a "none"
+    // string would later be spread character-by-character by
+    // appendUniqueLegacyArrayValue and read as truthy by templates.
+    (projected as Record<string, unknown>)[category] = LEGACY_ARRAY_CATEGORIES.has(category)
+      ? []
+      : "none";
   }
   projected.addons = [];
   projected.examples = [];
