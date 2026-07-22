@@ -1627,7 +1627,7 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
       ? "poetry install --extras dev"
       : pythonPackageManager === "uv"
         ? "uv sync --extra dev"
-        : `python -m venv .venv && ${venvPip} install -e ".[dev]"`;
+        : `${process.platform === "win32" ? "python" : "python3"} -m venv .venv && ${venvPip} install -e ".[dev]"`;
 
   const features: string[] = ["- **Python** - Modern, readable programming language"];
 

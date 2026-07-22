@@ -1403,7 +1403,7 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
       ? "poetry install --extras dev"
       : pythonPackageManager === "uv"
         ? "uv sync --extra dev"
-        : `python -m venv .venv && ${venvBin}pip install -e ".[dev]"`;
+        : `${process.platform === "win32" ? "python" : "python3"} -m venv .venv && ${venvBin}pip install -e ".[dev]"`;
 
   // Determine run command based on framework
   let runCommand = `${runPrefix}uvicorn app.main:app --reload`;

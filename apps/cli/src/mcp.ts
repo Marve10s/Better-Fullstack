@@ -414,8 +414,9 @@ function getInstallCommand(
       if (pythonPackageManager === "poetry")
         return `cd ${projectName} && poetry install --extras dev`;
       if (pythonPackageManager === "none") {
+        const python = process.platform === "win32" ? "python" : "python3";
         const pip = process.platform === "win32" ? ".venv/Scripts/pip.exe" : ".venv/bin/pip";
-        return `cd ${projectName} && python -m venv .venv && ${pip} install -e ".[dev]"`;
+        return `cd ${projectName} && ${python} -m venv .venv && ${pip} install -e ".[dev]"`;
       }
       return `cd ${projectName} && uv sync --extra dev`;
     case "go":

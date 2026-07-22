@@ -4,6 +4,7 @@ import { $ } from "execa";
 import pc from "picocolors";
 
 import type { Addons, PackageManager, PythonPackageManager } from "../../types";
+import { commandExists } from "../../utils/command-exists";
 
 /**
  * Result of a post-scaffold setup step (dependency install, native build, db setup).
@@ -150,7 +151,8 @@ export async function runPythonInstall({
       await $({ cwd: projectDir, stderr: "inherit" })`poetry install --extras dev`;
     } else {
       s.start("Creating a virtual environment and installing with pip...");
-      await $({ cwd: projectDir, stderr: "inherit" })`python -m venv .venv`;
+      const python = (await commandExists("python")) ? "python" : "python3";
+      await $({ cwd: projectDir, stderr: "inherit" })`${python} -m venv .venv`;
       const pip = process.platform === "win32" ? ".venv/Scripts/pip.exe" : ".venv/bin/pip";
       // Include the dev extra: pytest and the selected quality tools live there,
       // and the printed next-step commands advertise them.

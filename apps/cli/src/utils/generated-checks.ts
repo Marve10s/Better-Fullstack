@@ -68,18 +68,26 @@ async function runCommand(cwd: string, command: string, args: string[]) {
   })`${command} ${args}`;
 }
 
+function venvBin(tool: string) {
+  return process.platform === "win32" ? `.venv\\Scripts\\${tool}` : `.venv/bin/${tool}`;
+}
+
 async function runPythonQualityCheck(
   cwd: string,
-  runner: "poetry" | "uv",
+  runner: "poetry" | "uv" | "venv",
   quality: ProjectConfig["pythonQuality"] | undefined,
 ) {
+  const run = (tool: string, args: string[]) =>
+    runner === "venv"
+      ? runCommand(cwd, venvBin(tool), args)
+      : runCommand(cwd, runner, ["run", tool, ...args]);
   if (quality === "ruff") {
-    await runCommand(cwd, runner, ["run", "ruff", "check", "."]);
+    await run("ruff", ["check", "."]);
   } else if (quality === "mypy") {
     // Bare mypy uses the scaffold's [tool.mypy] files list.
-    await runCommand(cwd, runner, ["run", "mypy"]);
+    await run("mypy", []);
   } else if (quality === "pyright") {
-    await runCommand(cwd, runner, ["run", "pyright"]);
+    await run("pyright", []);
   }
 }
 
@@ -105,7 +113,13 @@ async function verifyTarget(target: VerifyTarget) {
         await runCommand(cwd, "poetry", ["install", "--extras", "dev"]);
         await runPythonQualityCheck(cwd, "poetry", target.pythonQuality);
       } else if (target.pythonPackageManager === "none") {
-        await runCommand(cwd, "python", ["-m", "compileall", "src"]);
+        // Mirror the create path: install the dev extra into .venv so the
+        // selected quality tool actually runs instead of only compileall.
+        const python = (await commandExists("python")) ? "python" : "python3";
+        await runCommand(cwd, python, ["-m", "venv", ".venv"]);
+        await runCommand(cwd, venvBin("pip"), ["install", "-e", ".[dev]"]);
+        await runCommand(cwd, venvBin("python"), ["-m", "compileall", "src"]);
+        await runPythonQualityCheck(cwd, "venv", target.pythonQuality);
       } else {
         await runCommand(cwd, "uv", ["sync", "--extra", "dev"]);
         await runPythonQualityCheck(cwd, "uv", target.pythonQuality);

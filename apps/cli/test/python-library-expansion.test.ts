@@ -279,7 +279,7 @@ describe("Python library expansion", () => {
     expect(none.success).toBe(true);
     expect(getFileContent(uv.tree!.root, "README.md")).toContain("uv sync --extra dev");
     expect(getFileContent(none.tree!.root, "README.md")).toContain(
-      'python -m venv .venv && .venv/bin/pip install -e ".[dev]"',
+      'python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"',
     );
     expect(getFileContent(none.tree!.root, "README.md")).toContain(".venv/bin/pytest");
   });
