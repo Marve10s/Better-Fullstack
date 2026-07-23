@@ -1,0 +1,57 @@
+/* eslint-disable */
+import { getLocale, experimentalStaticLocale } from '../runtime.js';
+
+/** @typedef {import('../runtime.js').LocalizedString} LocalizedString */
+
+/** @typedef {{}} Campaignsharecopied2Inputs */
+
+const en_campaignsharecopied2 = /** @type {(inputs: Campaignsharecopied2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Share message copied`)
+};
+
+/** @type {(inputs: Campaignsharecopied2Inputs) => LocalizedString} */
+const es_campaignsharecopied2 = en_campaignsharecopied2;
+
+/** @type {(inputs: Campaignsharecopied2Inputs) => LocalizedString} */
+const zh_campaignsharecopied2 = en_campaignsharecopied2;
+
+/** @type {(inputs: Campaignsharecopied2Inputs) => LocalizedString} */
+const ja_campaignsharecopied2 = en_campaignsharecopied2;
+
+/** @type {(inputs: Campaignsharecopied2Inputs) => LocalizedString} */
+const ko_campaignsharecopied2 = en_campaignsharecopied2;
+
+/** @type {(inputs: Campaignsharecopied2Inputs) => LocalizedString} */
+const zh_hant1_campaignsharecopied2 = zh_campaignsharecopied2;
+
+/** @type {(inputs: Campaignsharecopied2Inputs) => LocalizedString} */
+const de_campaignsharecopied2 = en_campaignsharecopied2;
+
+/** @type {(inputs: Campaignsharecopied2Inputs) => LocalizedString} */
+const fr_campaignsharecopied2 = en_campaignsharecopied2;
+
+/** @type {(inputs: Campaignsharecopied2Inputs) => LocalizedString} */
+const uk_campaignsharecopied2 = en_campaignsharecopied2;
+
+/**
+* | output |
+* | --- |
+* | "Share message copied" |
+*
+* @param {Campaignsharecopied2Inputs} inputs
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
+* @returns {LocalizedString}
+*/
+const campaignsharecopied2 = /** @type {((inputs?: Campaignsharecopied2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Campaignsharecopied2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return en_campaignsharecopied2(inputs)
+	if (locale === "es") return es_campaignsharecopied2(inputs)
+	if (locale === "zh") return zh_campaignsharecopied2(inputs)
+	if (locale === "ja") return ja_campaignsharecopied2(inputs)
+	if (locale === "ko") return ko_campaignsharecopied2(inputs)
+	if (locale === "zh-Hant") return zh_hant1_campaignsharecopied2(inputs)
+	if (locale === "de") return de_campaignsharecopied2(inputs)
+	if (locale === "fr") return fr_campaignsharecopied2(inputs)
+	return uk_campaignsharecopied2(inputs)
+});
+export { campaignsharecopied2 as "campaignShareCopied" }

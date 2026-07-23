@@ -1,5 +1,5 @@
 export const BUILDER_SHARE_MODAL_STORAGE_KEY =
-  "better-fullstack.builder-share-modal.v1";
+  "better-fullstack.builder-share-modal.v2";
 
 type BuilderShareReadableStorage = Pick<Storage, "getItem">;
 type BuilderShareWritableStorage = Pick<Storage, "setItem">;

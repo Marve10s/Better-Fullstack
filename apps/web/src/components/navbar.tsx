@@ -14,6 +14,7 @@ import {
   TbMoon as Moon,
   TbNews as Newspaper,
   TbPlug as Plug,
+  TbPlayerPlay as Play,
   TbSparkles as Sparkles,
   TbStar as Star,
   TbSun as Sun,
@@ -464,6 +465,13 @@ function MobileNavMenu({ onBuilder }: { onBuilder: boolean }) {
                 <Layers3 className="size-4" />
                 {m.navPresets()}
               </DropdownMenuItem>
+              <DropdownMenuItem
+                render={<Link to="/run-before-you-clone" />}
+                className={MOBILE_MENU_ITEM_CLASS}
+              >
+                <Play className="size-4 text-[#C6E853]" />
+                {m.navLiveRun()}
+              </DropdownMenuItem>
             </div>
           </DropdownMenuGroup>
         ) : null}
@@ -592,6 +600,13 @@ export function Navbar() {
                   activeProps={DOCS_ACTIVE_PROPS}
                 >
                   {m.navPresets()}
+                </Link>
+                <Link
+                  to="/run-before-you-clone"
+                  className={NAV_LINK_CLASS}
+                  activeProps={DOCS_ACTIVE_PROPS}
+                >
+                  {m.navLiveRun()}
                 </Link>
                 <Link to="/benchmark" className={NAV_LINK_CLASS} activeProps={DOCS_ACTIVE_PROPS}>
                   {m.navBenchmark()}

@@ -196,8 +196,15 @@ export default function HeroSection() {
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </Link>
           <Link
+            to="/run-before-you-clone"
+            className="group inline-flex items-center gap-1.5 rounded-md border border-edge px-5 py-2.5 text-sm font-medium text-ink transition-all hover:gap-2.5"
+          >
+            {m.navLiveRun()}
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+          <Link
             to="/docs"
-            className="rounded-md border border-edge px-5 py-2.5 text-sm font-medium text-ink transition-colors"
+            className="px-2 py-2.5 text-sm font-medium text-soft transition-colors hover:text-ink"
           >
             {m.homeReadDocs()}
           </Link>

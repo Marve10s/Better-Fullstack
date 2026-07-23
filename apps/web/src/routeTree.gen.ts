@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StackRouteImport } from './routes/stack'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as RunBeforeYouCloneRouteImport } from './routes/run-before-you-clone'
 import { Route as RunRouteImport } from './routes/run'
 import { Route as NewRouteImport } from './routes/new'
 import { Route as McpRouteImport } from './routes/mcp'
@@ -40,6 +41,11 @@ const StackRoute = StackRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RunBeforeYouCloneRoute = RunBeforeYouCloneRouteImport.update({
+  id: '/run-before-you-clone',
+  path: '/run-before-you-clone',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RunRoute = RunRouteImport.update({
@@ -153,6 +159,7 @@ export interface FileRoutesByFullPath {
   '/mcp': typeof McpRoute
   '/new': typeof NewRoute
   '/run': typeof RunRoute
+  '/run-before-you-clone': typeof RunBeforeYouCloneRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stack': typeof StackRoute
   '/api/preview': typeof ApiPreviewRoute
@@ -177,6 +184,7 @@ export interface FileRoutesByTo {
   '/mcp': typeof McpRoute
   '/new': typeof NewRoute
   '/run': typeof RunRoute
+  '/run-before-you-clone': typeof RunBeforeYouCloneRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stack': typeof StackRoute
   '/api/preview': typeof ApiPreviewRoute
@@ -202,6 +210,7 @@ export interface FileRoutesById {
   '/mcp': typeof McpRoute
   '/new': typeof NewRoute
   '/run': typeof RunRoute
+  '/run-before-you-clone': typeof RunBeforeYouCloneRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stack': typeof StackRoute
   '/api/preview': typeof ApiPreviewRoute
@@ -228,6 +237,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/new'
     | '/run'
+    | '/run-before-you-clone'
     | '/sitemap.xml'
     | '/stack'
     | '/api/preview'
@@ -252,6 +262,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/new'
     | '/run'
+    | '/run-before-you-clone'
     | '/sitemap.xml'
     | '/stack'
     | '/api/preview'
@@ -276,6 +287,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/new'
     | '/run'
+    | '/run-before-you-clone'
     | '/sitemap.xml'
     | '/stack'
     | '/api/preview'
@@ -301,6 +313,7 @@ export interface RootRouteChildren {
   McpRoute: typeof McpRoute
   NewRoute: typeof NewRoute
   RunRoute: typeof RunRoute
+  RunBeforeYouCloneRoute: typeof RunBeforeYouCloneRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StackRoute: typeof StackRoute
   ApiPreviewRoute: typeof ApiPreviewRoute
@@ -331,6 +344,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/run-before-you-clone': {
+      id: '/run-before-you-clone'
+      path: '/run-before-you-clone'
+      fullPath: '/run-before-you-clone'
+      preLoaderRoute: typeof RunBeforeYouCloneRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/run': {
@@ -485,6 +505,7 @@ const rootRouteChildren: RootRouteChildren = {
   McpRoute: McpRoute,
   NewRoute: NewRoute,
   RunRoute: RunRoute,
+  RunBeforeYouCloneRoute: RunBeforeYouCloneRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StackRoute: StackRoute,
   ApiPreviewRoute: ApiPreviewRoute,

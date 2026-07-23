@@ -50,7 +50,7 @@ export function generateStackCommand(stack: StackState) {
 }
 
 export function generateStackUrlFromState(stack: StackState, baseUrl?: string) {
-  const origin = baseUrl || "https://better-fullstack-web.vercel.app";
+  const origin = baseUrl || "https://better-fullstack.dev";
 
   const stackParams = createStackSearchParams(stack, { includeDefaults: true });
   const searchString = stackParams.toString();
@@ -58,7 +58,7 @@ export function generateStackUrlFromState(stack: StackState, baseUrl?: string) {
 }
 
 export function generateStackSharingUrl(stack: StackState, baseUrl?: string) {
-  const origin = baseUrl || "https://better-fullstack-web.vercel.app";
+  const origin = baseUrl || "https://better-fullstack.dev";
 
   const stackParams = createStackSearchParams(stack);
   const searchString = stackParams.toString();

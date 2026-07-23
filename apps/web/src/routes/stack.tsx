@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { StackBuilderPage } from "@/components/stack-builder/stack-builder-page";
-import { buildPageHead } from "@/lib/seo";
+import { buildPageHead, EDIT_AND_RUN_OG_IMAGE_URL } from "@/lib/seo";
 import { m } from "@/paraglide/messages.js";
 
 export const Route = createFileRoute("/stack")({
@@ -9,7 +9,13 @@ export const Route = createFileRoute("/stack")({
     const title = m.sharedStackSeoTitle();
     const description = m.sharedStackSeoDescription();
 
-    return buildPageHead({ title, description, path: "/stack" });
+    return buildPageHead({
+      title,
+      description,
+      path: "/stack",
+      image: EDIT_AND_RUN_OG_IMAGE_URL,
+      twitterImage: EDIT_AND_RUN_OG_IMAGE_URL,
+    });
   },
   component: StackBuilderPage,
 });
