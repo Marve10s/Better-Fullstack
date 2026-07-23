@@ -52,7 +52,7 @@ const AVAILABLE_AGENTS: AgentOption[] = [
   { value: "opencode", label: "OpenCode" },
   { value: "windsurf", label: "Windsurf" },
   { value: "goose", label: "Goose" },
-  { value: "roo", label: "Roo Code" },
+  { value: "roo", label: "Zoo Code" },
   { value: "kilo", label: "Kilo Code" },
   { value: "gemini-cli", label: "Gemini CLI" },
   { value: "antigravity", label: "Antigravity" },

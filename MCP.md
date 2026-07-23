@@ -83,7 +83,7 @@ claude mcp add --transport stdio better-fullstack -- npx create-better-fullstack
 }
 ```
 
-**Cline / Roo Code** (MCP settings):
+**Cline / [Zoo Code](https://github.com/Zoo-Code-Org/Zoo-Code)** (MCP settings):
 
 ```json
 {
