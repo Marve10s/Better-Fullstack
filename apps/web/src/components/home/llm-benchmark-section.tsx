@@ -902,10 +902,20 @@ function isFreeModel(model: ScaffbenchModel): boolean {
 
 type V2Version = "v2" | "v2.1" | "v2.2";
 
+// The v2.2 GRAPH is a single-harness comparison: only Codex-driven rows are
+// plotted. The same model run through other harnesses (opencode/Kilo/Pi) stays
+// on the leaderboard table but is excluded from the graph and its model picker.
+// Earlier versions keep their full cross-harness model lists.
+function v2GraphModels(version: BenchmarkVersionId | LeaderboardVersion): readonly ScaffbenchModel[] {
+  const { models } = v2Dataset(version);
+  if (version === "v2" || version === "v2.1") return models;
+  return models.filter((model) => model.provider === "codex");
+}
+
 // Default graph selection: paid models only; free-tier dots are opt-in.
 function v2DefaultModelKeys(version: V2Version): string[] {
-  return v2Dataset(version)
-    .models.filter((model) => !isFreeModel(model))
+  return v2GraphModels(version)
+    .filter((model) => !isFreeModel(model))
     .map((model) => model.key);
 }
 
@@ -1521,7 +1531,12 @@ function BenchmarkChartCard() {
   // "v2-family" = the v2 (legacy 5-spec) and v2.1 (current 13-spec) prompt-only
   // ablation views; both share this chart's rendering and differ only in dataset.
   const isV2 = version === "v2" || version === "v2.1" || version === "v2.2";
-  const v2DatasetValue = useMemo(() => v2Dataset(version), [version]);
+  // Graph dataset: the version's cells/specs with the graph's (possibly
+  // harness-filtered) model list — see v2GraphModels.
+  const v2DatasetValue = useMemo(
+    () => ({ ...v2Dataset(version), models: v2GraphModels(version) }),
+    [version],
+  );
   // V2-family exposes a restricted tab set (pathTabsFor): v2 legacy is Prompt-only;
   // v2.1 adds MCP. Clamp to a tab this version actually offers so a stale v1
   // selection (e.g. cli) can't leak the wrong data into the v2 chart.
@@ -1554,8 +1569,8 @@ function BenchmarkChartCard() {
           ? current.length > 1
             ? current.filter((k) => k !== key)
             : current // keep at least one model selected
-          : v2Dataset(v)
-              .models.map((model) => model.key)
+          : v2GraphModels(v)
+              .map((model) => model.key)
               .filter((k) => k === key || current.includes(k));
         return { ...prev, [v]: next };
       });

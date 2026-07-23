@@ -15,6 +15,7 @@ import { GEN_TIMEOUT_MS } from "@/constants";
 // tools (no human to approve). agy prints a plain-text response with no usage/cost
 // stream, so tokens/cost/steps surface as "—".
 const AGY_MODEL_LABELS: Record<string, string> = {
+  "gemini-3.6-flash": "Gemini 3.6 Flash",
   "gemini-3.5-flash": "Gemini 3.5 Flash",
   "gemini-3.1-pro": "Gemini 3.1 Pro",
 };
