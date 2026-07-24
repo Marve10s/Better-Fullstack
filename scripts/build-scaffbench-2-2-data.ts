@@ -23,6 +23,11 @@ const RUN_SOURCES = [
   "testing/llm-benchmarks/xharness-oc-luna-high-2026-07-18",
   "testing/llm-benchmarks/xh-kilo/luna-high-2026-07-18",
   "testing/llm-benchmarks/xh-pi/luna-high-2026-07-18",
+  // Gemini 3.6 Flash via Antigravity (2026-07-23): single trial (exploratory),
+  // same specs/validator/gates. agy reports no usage stream — cost/tokens "—".
+  // Spliced in with scripts/splice-scaffbench-2-2-row.ts: the older cohort dirs
+  // above were already cleaned up, so a wholesale regen was not possible.
+  "testing/llm-benchmarks/v2/gemini-3.6-flash-high-20260723",
 ] as const;
 
 const MODEL_LABELS: Record<string, string> = {
