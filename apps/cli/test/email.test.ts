@@ -2,10 +2,45 @@ import { describe, it, expect } from "bun:test";
 
 import type { Backend, Frontend, Email } from "../src/types";
 
+import { createVirtual } from "../src/index";
 import { expectSuccess, runTRPCTest, type TestConfig } from "./test-utils";
+import { readVirtualFileContent } from "./virtual-tree-utils";
 
 describe("Email Configurations", () => {
   describe("Resend Email", () => {
+    it("adds React types for the frontend-less Fastify smoke stack", async () => {
+      const result = await createVirtual({
+        projectName: "typescript-fastify-ts-rest-scss-1e1ww1",
+        frontend: ["none"],
+        backend: "fastify",
+        runtime: "bun",
+        api: "ts-rest",
+        database: "none",
+        orm: "none",
+        auth: "none",
+        email: "resend",
+        logging: "winston",
+        analytics: "umami",
+        stateManagement: "zustand",
+        validation: "none",
+        testing: "vitest-playwright",
+        cssFramework: "scss",
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+      const serverPackage = JSON.parse(readVirtualFileContent(root, "apps/server/package.json"));
+      const emailSource = readVirtualFileContent(root, "apps/server/src/lib/email.ts");
+
+      expect(emailSource).toContain("React.ReactElement");
+      expect(serverPackage.devDependencies?.["@types/react"]).toBeDefined();
+    });
+
     it("should work with resend + hono backend", async () => {
       const result = await runTRPCTest({
         projectName: "resend-hono",

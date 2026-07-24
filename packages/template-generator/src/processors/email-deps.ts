@@ -36,6 +36,7 @@ export function processEmailDeps(vfs: VirtualFileSystem, config: ProjectConfig):
       vfs,
       packagePath: targetPath,
       dependencies: ["resend"],
+      devDependencies: ["@types/react"],
     });
   }
 
