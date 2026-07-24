@@ -30,7 +30,7 @@ export function processEmailDeps(vfs: VirtualFileSystem, config: ProjectConfig):
 
   if (!targetPath) return;
 
-  // Add Resend SDK for resend option
+  // Add Resend SDK and React types for resend option
   if (email === "resend") {
     addPackageDependency({
       vfs,
@@ -97,7 +97,15 @@ export function processEmailDeps(vfs: VirtualFileSystem, config: ProjectConfig):
 
   // Add React Email components for resend and react-email options (not nodemailer)
   const hasReactWeb = frontend.some((f) =>
-    ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "redwood"].includes(f),
+    [
+      "tanstack-router",
+      "react-router",
+      "react-vite",
+      "tanstack-start",
+      "next",
+      "vinext",
+      "redwood",
+    ].includes(f),
   );
 
   if (hasReactWeb && vfs.exists(targetPath) && (email === "resend" || email === "react-email")) {
