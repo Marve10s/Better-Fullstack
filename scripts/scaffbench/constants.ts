@@ -11,7 +11,12 @@ export const SCAFFBENCH_SUITE_VERSION = "2.1";
 // Version the generation wording independently from the harness/validator so
 // publication code can reject rows assembled from unlike prompts.
 export const PROMPT_VERSION = "2026-07-17-round-2";
-export const MIN_RANKED_TRIALS = 3;
+// 1 (2026-07-25): single-trial runs qualify as ranked. Lowered from 3 because
+// a 13-spec x 3-trial cohort is prohibitively long/expensive per row; the 2.2
+// board's existing GPT-5.6 rows were measured at 3 trials and later single-trial
+// rows sit in the same tier with less evidence behind them. Wilson intervals are
+// still suppressed below MIN_CI_RUNS, so no row over-claims precision.
+export const MIN_RANKED_TRIALS = 1;
 // Below this many scored runs a Wilson interval is too wide to be informative
 // (e.g. at n=3, 3/3 → [44,100] overlaps 0/3 → [0,56]); the report suppresses it.
 export const MIN_CI_RUNS = 8;

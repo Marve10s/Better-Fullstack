@@ -101,7 +101,10 @@ function main() {
   const out = `// AUTO-GENERATED from the ScaffBench 2.2 cohort summaries by
 // scripts/build-scaffbench-2-2-data.ts — regenerate, don't hand-edit.
 // 2.2 protocol: harness 2.2.1, self-verify prompt, quality gates ON (the board
-// metric is the Full tier natively), 13 specs x 3 interleaved trials per row.
+// metric is the Full tier natively), 13 specs per row. Trials per row VARY —
+// the original GPT-5.6 cohort ran 3 interleaved trials, later rows run 1. Read
+// the per-cell scoredTrials, never SCAFFBENCH22_META.trialsPerSpec (which only
+// reflects the first run source).
 import type { ScaffbenchCell, ScaffbenchModel } from "./scaffbench-2-data";
 
 export const SCAFFBENCH22_META = ${JSON.stringify(meta, null, 2)} as const;

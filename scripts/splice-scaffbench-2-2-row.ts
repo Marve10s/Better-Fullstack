@@ -14,6 +14,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 
 import { providerForModel } from "@/index";
+import { publicationEligibility } from "@/summary";
 
 import { buildPublishedCells } from "./build-scaffbench-2-1-data";
 import {
@@ -48,8 +49,12 @@ function main() {
   const effort: string = first.effort ?? summary.options.efforts[0];
   const key = `${model}|${effort}`;
 
-  if (SCAFFBENCH22_MODELS.some((m) => m.key === key)) {
-    throw new Error(`${key} is already published — nothing to splice`);
+  // Re-splicing an existing row is how a published row picks up a policy change
+  // (e.g. MIN_RANKED_TRIALS) or a re-validated summary; the row is replaced, not
+  // duplicated. Pass --replace so it can never happen by accident.
+  const replacing = SCAFFBENCH22_MODELS.some((m) => m.key === key);
+  if (replacing && !process.argv.includes("--replace")) {
+    throw new Error(`${key} is already published — pass --replace to update it`);
   }
   // The board compares rows cell-for-cell; a run on a different spec set is not
   // comparable and must not be spliced in silently.
@@ -65,8 +70,13 @@ function main() {
   );
   if (!lb) throw new Error(`${dir}: no prompt leaderboard row for ${key}`);
 
+  // Eligibility is recomputed from the raw runs under the CURRENT constants
+  // rather than read from summary.json, where it was frozen at run time. A
+  // policy change (MIN_RANKED_TRIALS) must move published rows, not just future
+  // ones — otherwise two rows with identical evidence carry different labels.
+  const eligibility = publicationEligibility(summary.results);
   const models = [
-    ...SCAFFBENCH22_MODELS,
+    ...SCAFFBENCH22_MODELS.filter((m) => m.key !== key),
     {
       key,
       model,
@@ -75,10 +85,13 @@ function main() {
       provider: providerForModel(model),
       label: prettyModel(model),
       sortIndex: lb.index,
-      eligibility: lb.publicationEligibility ?? "exploratory",
+      eligibility,
     },
   ];
-  const cells = [...SCAFFBENCH22_CELLS, ...buildPublishedCells(summary, dir)];
+  const cells = [
+    ...SCAFFBENCH22_CELLS.filter((c) => c.modelKey !== key),
+    ...buildPublishedCells(summary, dir),
+  ];
 
   models.sort((a, b) => b.sortIndex - a.sortIndex);
   const rank = new Map(models.map((m, i) => [m.key, i]));
@@ -92,7 +105,10 @@ function main() {
   const out = `// AUTO-GENERATED from the ScaffBench 2.2 cohort summaries by
 // scripts/build-scaffbench-2-2-data.ts — regenerate, don't hand-edit.
 // 2.2 protocol: harness 2.2.1, self-verify prompt, quality gates ON (the board
-// metric is the Full tier natively), 13 specs x 3 interleaved trials per row.
+// metric is the Full tier natively), 13 specs per row. Trials per row VARY —
+// the original GPT-5.6 cohort ran 3 interleaved trials, later rows run 1. Read
+// the per-cell scoredTrials, never SCAFFBENCH22_META.trialsPerSpec (which only
+// reflects the first run source).
 import type { ScaffbenchCell, ScaffbenchModel } from "./scaffbench-2-data";
 
 export const SCAFFBENCH22_META = ${JSON.stringify(SCAFFBENCH22_META, null, 2)} as const;
@@ -110,8 +126,11 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = ${JSON.stringify(ce
   const passes = mine.reduce((s, c) => s + (c.passCount ?? 0), 0);
   const quality = mine.reduce((s, c) => s + (c.qualityPassCount ?? 0), 0);
   console.error(
-    `Spliced ${prettyModel(model)} (${effort}) into ${target}: build ${passes}/${trials}, ` +
-      `quality ${quality}/${trials}, index ${lb.index}, ${lb.publicationEligibility}`,
+    `${replacing ? "Replaced" : "Spliced"} ${prettyModel(model)} (${effort}) in ${target}: ` +
+      `build ${passes}/${trials}, quality ${quality}/${trials}, index ${lb.index}, ${eligibility}` +
+      (eligibility === lb.publicationEligibility
+        ? ""
+        : ` (was ${lb.publicationEligibility} at run time)`),
   );
 }
 
