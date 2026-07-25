@@ -76,6 +76,11 @@ import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { clearBuilderMode, publishBuilderMode } from "@/lib/builder-mode-bridge";
 import {
+  stackAnalyticsProperties,
+  trackCampaignEvent,
+} from "@/lib/campaign-analytics";
+import type { ShareMoment } from "@/lib/campaign-share";
+import {
   buildBuilderSearchLookup,
   createBuilderSearchIndex,
   findBuilderSearchResults,
@@ -85,6 +90,7 @@ import {
   type BuilderSearchLookup,
   type BuilderSearchPreferences,
 } from "@/lib/builder-search-preferences";
+import { hasSeenBuilderShareModal } from "@/lib/builder-share-modal-visibility";
 import {
   DEFAULT_STACK,
   ECOSYSTEMS,
@@ -125,6 +131,7 @@ import {
   validateProjectName,
 } from "./utils";
 import { YoloToggle } from "./yolo-toggle";
+import { BuilderShareModal } from "./builder-share-modal";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -2200,6 +2207,8 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
   const [savePresetName, setSavePresetName] = useState("");
   const [showNewOptionsOnly, setShowNewOptionsOnly] = useState(false);
   const [isDownloadingProject, setIsDownloadingProject] = useState(false);
+  const [sharePromptOpen, setSharePromptOpen] = useState(false);
+  const [sharePromptMoment, setSharePromptMoment] = useState<ShareMoment>("run");
   const [pendingUpdateEntryId, setPendingUpdateEntryId] = useState<string | null>(null);
   const [multiActiveStep, setMultiActiveStep] = useState<MultiStackStepId>("frontend");
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
@@ -2237,6 +2246,25 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
   }, [stack, compatibilityAnalysis.adjustedStack]);
   const projectNameError = validateProjectName(stack.projectName || "");
 
+  const promptForShare = useCallback(
+    (moment: ShareMoment) => {
+      try {
+        if (hasSeenBuilderShareModal(window.localStorage)) return;
+      } catch {
+        return;
+      }
+
+      const stackToShare = adjustedStack || stack;
+      setSharePromptMoment(moment);
+      setSharePromptOpen(true);
+      trackCampaignEvent(
+        "builder_share_prompted",
+        stackAnalyticsProperties(stackToShare, { moment }),
+      );
+    },
+    [adjustedStack, stack],
+  );
+
   const handleDownloadProject = async () => {
     if (isDownloadingProject) return;
 
@@ -2246,7 +2274,12 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
         await import("@/lib/project-download");
       const archive = await createStackProjectArchive(adjustedStack || stack);
       downloadProjectArchive(archive);
+      trackCampaignEvent(
+        "builder_zip_downloaded",
+        stackAnalyticsProperties(adjustedStack || stack),
+      );
       toast.success(m.builderDownloadComplete({ fileName: archive.fileName }));
+      promptForShare("download");
     } catch (downloadError) {
       console.error("Project ZIP download failed", downloadError);
       toast.error(m.builderDownloadFailed());
@@ -2438,6 +2471,27 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
   useEffect(() => {
     if (runSupported) void import("./run-panel");
   }, [runSupported]);
+
+  const handleRunStarted = useCallback(
+    (rerun: boolean) => {
+      trackCampaignEvent(
+        "builder_run_started",
+        stackAnalyticsProperties(adjustedStack || stack, { rerun }),
+      );
+    },
+    [adjustedStack, stack],
+  );
+
+  const handleRunReady = useCallback(
+    (rerun: boolean) => {
+      trackCampaignEvent(
+        "builder_run_ready",
+        stackAnalyticsProperties(adjustedStack || stack, { rerun }),
+      );
+      promptForShare("run");
+    },
+    [adjustedStack, promptForShare, stack],
+  );
 
   // ─── Handlers ───────────────────────────────────────────────────────────
 
@@ -2774,6 +2828,12 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
           </div>
         </DialogContent>
       </Dialog>
+      <BuilderShareModal
+        open={sharePromptOpen}
+        onOpenChange={setSharePromptOpen}
+        stack={adjustedStack || stack}
+        moment={sharePromptMoment}
+      />
       <div className="relative flex h-full w-full flex-col overflow-hidden border-border text-foreground">
         {/* Single scroller: header + toolbar + content scroll together (header is not pinned) */}
         <div
@@ -3856,6 +3916,8 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                       command={command}
                       copied={copied}
                       onCopy={copyToClipboard}
+                      onRunStarted={handleRunStarted}
+                      onRunReady={handleRunReady}
                     />
                   </Suspense>
                 </div>

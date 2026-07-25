@@ -4,13 +4,12 @@ import { StackCombinationPage } from "@/components/stack-pages/stack-combination
 import {
   DEFAULT_OG_IMAGE_ALT,
   DEFAULT_OG_IMAGE_HEIGHT,
-  DEFAULT_OG_IMAGE_URL,
   DEFAULT_OG_IMAGE_WIDTH,
   DEFAULT_ROBOTS,
-  DEFAULT_X_IMAGE_URL,
   SITE_NAME,
   SITE_URL,
   canonicalUrl,
+  getEcosystemOgImage,
 } from "@/lib/seo";
 import { getStackPage } from "@/lib/stack-pages/source";
 import type { GeneratedStackPage } from "@/lib/stack-pages/types";
@@ -58,6 +57,7 @@ export const Route = createFileRoute("/stack_/$comboSlug")({
     if (!loaderData) return {};
     const title = `${loaderData.title} | ${SITE_NAME}`;
     const url = canonicalUrl(`/stack/${loaderData.slug}`);
+    const ecosystemImage = getEcosystemOgImage(loaderData.ecosystem);
     return {
       meta: [
         { title },
@@ -71,14 +71,14 @@ export const Route = createFileRoute("/stack_/$comboSlug")({
         { property: "og:description", content: loaderData.description },
         { property: "og:type", content: "website" },
         { property: "og:url", content: url },
-        { property: "og:image", content: DEFAULT_OG_IMAGE_URL },
+        { property: "og:image", content: ecosystemImage },
         { property: "og:image:alt", content: DEFAULT_OG_IMAGE_ALT },
         { property: "og:image:width", content: String(DEFAULT_OG_IMAGE_WIDTH) },
         { property: "og:image:height", content: String(DEFAULT_OG_IMAGE_HEIGHT) },
         { name: "twitter:card", content: "summary_large_image" },
         { name: "twitter:title", content: title },
         { name: "twitter:description", content: loaderData.description },
-        { name: "twitter:image", content: DEFAULT_X_IMAGE_URL },
+        { name: "twitter:image", content: ecosystemImage },
         { name: "twitter:image:alt", content: DEFAULT_OG_IMAGE_ALT },
         { "script:ld+json": stackPageJsonLd(loaderData) },
       ],
