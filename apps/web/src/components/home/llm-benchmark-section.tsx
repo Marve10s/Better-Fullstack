@@ -886,7 +886,9 @@ const SCAFFBENCH_V2_2: ScaffbenchDataset = {
 };
 
 // v2.2 is the current default (fresh cohort under harness 2.2.1: self-verify
-// prompt, quality gates on, 3 trials/spec); v2.1 and v2 are kept as history.
+// prompt, quality gates on). Trials/spec vary by row — the original GPT-5.6
+// cohort ran 3, later rows run 1 — so trial counts come from each cell's
+// scoredTrials. v2.1 and v2 are kept as history.
 function v2Dataset(version: BenchmarkVersionId | LeaderboardVersion): ScaffbenchDataset {
   if (version === "v2") return SCAFFBENCH_V2;
   if (version === "v2.1") return SCAFFBENCH_V2_1;

@@ -481,7 +481,7 @@ describe("ScaffBench hardening 4: trial integrity", () => {
     expect(specShuffleSeed(options())).toBe(specShuffleSeed(options()));
   });
 
-  it("4c marks only version-consistent rows with at least three trials as ranked", () => {
+  it("4c marks only version-consistent rows with at least MIN_RANKED_TRIALS trials as ranked", () => {
     const ranked = Array.from({ length: 3 }, (_, index) =>
       run({ id: `r${index}`, trial: index + 1, provenance: provenance() }),
     );
@@ -490,6 +490,25 @@ describe("ScaffBench hardening 4: trial integrity", () => {
       publicationEligibility([
         ...ranked.slice(0, 2),
         run({ id: "mixed", trial: 3, provenance: provenance({ promptVersion: "old" }) }),
+      ]),
+    ).toBe("exploratory");
+  });
+
+  it("4c ranks a single-trial row now that MIN_RANKED_TRIALS is 1", () => {
+    const single = [
+      run({ id: "solo", trial: 1, provenance: provenance({ configuredTrials: 1 }) }),
+    ];
+    expect(publicationEligibility(single)).toBe("ranked");
+    // Version consistency is still the gate that matters at any trial count.
+    expect(
+      publicationEligibility([
+        ...single,
+        run({
+          id: "solo-mixed",
+          specId: "other-spec",
+          trial: 1,
+          provenance: provenance({ configuredTrials: 1, harnessVersion: "0.0.0" }),
+        }),
       ]),
     ).toBe("exploratory");
   });

@@ -1,11 +1,15 @@
 import type { StackState } from "@/lib/stack-defaults";
 
-import { generateStackSharingUrl, generateStackSummary } from "@/lib/stack-utils";
+import { generateStackSharingUrl, summarizeStackForEcosystem } from "@/lib/stack-utils";
 
 export type ShareMoment = "run" | "download";
 
 function conciseStackName(stack: StackState) {
-  const selected = generateStackSummary(stack)
+  // Ecosystem-scoped: the global category order leads with the TypeScript web
+  // categories, and a Python/Rust/Go stack still carries default webFrontend /
+  // backend / runtime values — truncating that to four would describe someone's
+  // Python API as a TanStack Router + Hono + Bun app.
+  const selected = summarizeStackForEcosystem(stack)
     .split(" • ")
     .filter(Boolean)
     .slice(0, 4);

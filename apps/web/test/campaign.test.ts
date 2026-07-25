@@ -3,6 +3,7 @@ import { describe, expect, it } from "bun:test";
 import { CAMPAIGN_PRESETS, getCampaignPresetUrl } from "../src/lib/campaign";
 import {
   getCampaignShareMessage,
+  getCampaignShareTitle,
   getCampaignShareUrl,
 } from "../src/lib/campaign-share";
 import { PRESET_TEMPLATES } from "../src/lib/constant";
@@ -40,5 +41,23 @@ describe("Run Before You Clone campaign", () => {
     expect(parsed.searchParams.get("utm_campaign")).toBe("run-before-you-clone");
     expect(parsed.searchParams.get("fe-w")).toBe("tanstack-start");
     expect(getCampaignShareMessage(stack, "run", url)).toContain("I just ran");
+  });
+
+  // A non-TypeScript StackState still carries the default webFrontend/backend/
+  // runtime values, so a share summary built from the global category order
+  // described someone's Python API as "TanStack Router + Tailwind CSS + ...".
+  it("names a shared stack after its own ecosystem, not the TypeScript defaults", () => {
+    const stack = {
+      ...DEFAULT_STACK,
+      ecosystem: "python",
+      pythonBackend: "fastapi",
+    } as StackState;
+
+    const title = getCampaignShareTitle(stack);
+    expect(title).toContain("FastAPI");
+    expect(title).not.toContain("TanStack Router");
+    expect(getCampaignShareMessage(stack, "download", "https://x.test")).not.toContain(
+      "TanStack Router",
+    );
   });
 });

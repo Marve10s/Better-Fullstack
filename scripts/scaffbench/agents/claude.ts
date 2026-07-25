@@ -55,6 +55,7 @@ export function runClaude(input: {
 // 2026. Cache reads ≈ 0.1× input; cache writes (5-min TTL) ≈ 1.25× input.
 const CLAUDE_PRICING: Record<string, { input: number; output: number }> = {
   "claude-fable-5": { input: 10, output: 50 },
+  "claude-opus-5": { input: 5, output: 25 },
   "claude-opus-4-8": { input: 5, output: 25 },
   "claude-opus-4-7": { input: 5, output: 25 },
   "claude-opus-4-6": { input: 5, output: 25 },
