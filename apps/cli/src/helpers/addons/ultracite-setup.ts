@@ -82,7 +82,7 @@ const AGENTS = {
   augmentcode: { label: "AugmentCode" },
   "kilo-code": { label: "Kilo Code" },
   goose: { label: "Goose" },
-  "roo-code": { label: "Roo Code" },
+  "roo-code": { label: "Zoo Code" },
   warp: { label: "Warp" },
   droid: { label: "Droid" },
   opencode: { label: "OpenCode" },
