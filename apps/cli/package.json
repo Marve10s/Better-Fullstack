@@ -145,15 +145,15 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@better-fullstack/template-generator": "^2.2.0",
-    "@better-fullstack/types": "^2.2.0",
+    "@better-fullstack/template-generator": "^2.3.0",
+    "@better-fullstack/types": "^2.3.0",
     "@clack/core": "^0.5.0",
     "@clack/prompts": "^1.7.0",
     "@orpc/server": "^1.14.8",
     "consola": "^3.4.2",
     "env-paths": "^4.0.0",
     "execa": "^9.6.1",
-    "fs-extra": "^11.3.6",
+    "fs-extra": "^11.4.0",
     "gradient-string": "^3.0.0",
     "jsonc-parser": "^3.3.1",
     "oxfmt": "^0.19.0",
@@ -167,7 +167,7 @@
     "ts-morph": "^27.0.2",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^25.9.3",
-    "publint": "^0.3.21",
+    "publint": "^0.3.22",
     "tsdown": "^0.18.2",
     "typescript": "^5.9.3"
   }
