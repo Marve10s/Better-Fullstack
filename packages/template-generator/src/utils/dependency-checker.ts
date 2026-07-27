@@ -548,7 +548,7 @@ async function fetchPackageInfo(packageName: string): Promise<NpmPackageInfo> {
 
 function getStableVersionsDescending(info: NpmPackageInfo): string[] {
   return Object.keys(info.versions || {})
-    .filter((version) => !/-(alpha|beta|rc|next|canary)/.test(version))
+    .filter((version) => !/-(alpha|beta|rc|next|canary|pre|dev|snapshot|experimental)/.test(version))
     .filter((version) => isOldEnough(info, version))
     .sort((a, b) => compareVersions(b, a));
 }
@@ -599,7 +599,8 @@ export async function fetchLatestVersion(
   // version that clears both filters.
   if (
     latest &&
-    ((skipPrerelease && /-(alpha|beta|rc|next|canary)/.test(latest)) || !isOldEnough(data, latest))
+    ((skipPrerelease && /-(alpha|beta|rc|next|canary|pre|dev|snapshot|experimental)/.test(latest)) ||
+      !isOldEnough(data, latest))
   ) {
     const versions = getStableVersionsDescending(data);
     if (versions.length > 0 && versions[0]) {
