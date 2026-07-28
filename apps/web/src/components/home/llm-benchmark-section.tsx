@@ -1,9 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { motion } from "motion/react";
+import { motion, useInView, useReducedMotion } from "motion/react";
 import {
   Fragment,
   useCallback,
   useMemo,
+  useRef,
   useState,
   type CSSProperties,
   type ReactNode,
@@ -263,10 +264,789 @@ export default function LLMBenchmarkSection() {
     <section id="benchmark" className="relative scroll-mt-16 border-t border-border bg-muted/20">
       <div className="px-4 py-20 sm:px-8 sm:py-24">
         <Masthead />
+        <BenchmarkChartCard />
         <ScaffbenchLeaderboardCard />
         <AgentInstallPanel />
       </div>
     </section>
+  );
+}
+
+interface AxisSpec {
+  max: number;
+  ticks: readonly number[];
+  unit: string;
+  label: string;
+}
+
+const PASS_AXIS: AxisSpec = {
+  max: 110,
+  ticks: [0, 25, 50, 75, 100],
+  unit: "%",
+  label: "Full pass rate",
+};
+
+const VB_W = 1120;
+const VB_H = 470;
+const M_L = 56;
+const M_R = 30;
+const M_T = 20;
+const M_B = 52;
+const PLOT_W = VB_W - M_L - M_R;
+const PLOT_H = VB_H - M_T - M_B;
+const X_INSET = 18;
+
+function plotX(value: number, axis: AxisSpec): number {
+  return M_L + (1 - value / axis.max) * (PLOT_W - X_INSET);
+}
+
+function plotY(value: number, axis: AxisSpec): number {
+  return M_T + (1 - value / axis.max) * PLOT_H;
+}
+
+const barEase = [0.2, 0.8, 0.2, 1] as const;
+const chartMove = { duration: 0.7, ease: barEase } as const;
+
+interface ChartPalette {
+  grid: string;
+  axisTick: string;
+  axisLabel: string;
+  note: string;
+  circleStroke: string;
+}
+
+const CHART_PALETTE: ChartPalette = {
+  grid: "var(--ch-grid)",
+  axisTick: "var(--ch-tick)",
+  axisLabel: "var(--ch-label)",
+  note: "var(--ch-note)",
+  circleStroke: "var(--ch-stroke)",
+};
+
+const CHART_THEME_VARS = cn(
+  "[--ch-grid:#ececec] [--ch-tick:#9c9a93] [--ch-label:#71706a] [--ch-note:#9c9a93] [--ch-stroke:#ffffff]",
+  "[--ch-m1:#e85d11] [--ch-m2:#4c5fd5] [--ch-m3:#0d9488] [--ch-m4:#c13a6e] [--ch-m5:#9333ea] [--ch-m6:#b45309]",
+  "dark:[--ch-grid:#edebe414] dark:[--ch-tick:#6c6a61] dark:[--ch-label:#8f8d84] dark:[--ch-note:#8f8d84] dark:[--ch-stroke:#161614]",
+  "dark:[--ch-m1:#e0894f] dark:[--ch-m2:#98a6f2] dark:[--ch-m3:#4fd0c0] dark:[--ch-m4:#e887ad] dark:[--ch-m5:#c08ef5] dark:[--ch-m6:#dba05c]",
+);
+
+const V2_MODEL_COLORS: readonly string[] = [
+  "var(--ch-m1)",
+  "var(--ch-m2)",
+  "var(--ch-m3)",
+  "var(--ch-m4)",
+  "var(--ch-m5)",
+  "var(--ch-m6)",
+];
+
+interface LabelPlacement {
+  dx?: number;
+  dy?: number;
+  anchor?: "start" | "middle" | "end";
+  hidden?: boolean;
+}
+
+const PLACEMENT_CANDIDATES: readonly LabelPlacement[] = [
+  { anchor: "start", dx: 10, dy: 4 },
+  { anchor: "end", dx: -10, dy: 4 },
+  { anchor: "middle", dx: 0, dy: 22 },
+  { anchor: "middle", dx: 0, dy: -14 },
+  { anchor: "end", dx: -10, dy: 18 },
+  { anchor: "end", dx: -10, dy: -10 },
+  { anchor: "middle", dx: 0, dy: 36 },
+  { anchor: "middle", dx: 0, dy: -28 },
+  { anchor: "start", dx: 10, dy: 18 },
+  { anchor: "start", dx: 10, dy: -10 },
+  { anchor: "end", dx: -10, dy: 32 },
+  { anchor: "end", dx: -10, dy: 46 },
+  { anchor: "middle", dx: 0, dy: 50 },
+  { anchor: "middle", dx: 0, dy: -42 },
+];
+
+interface LabelBox {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+}
+
+const LABEL_CHAR_W = 6.2;
+const LABEL_ASCENT = 9;
+const LABEL_DESCENT = 3;
+const DOT_PAD = 8;
+
+function labelBox(x: number, y: number, width: number, p: LabelPlacement): LabelBox {
+  const anchorX = x + (p.dx ?? 10);
+  const x1 =
+    p.anchor === "end" ? anchorX - width : p.anchor === "middle" ? anchorX - width / 2 : anchorX;
+  const baseline = y + (p.dy ?? 4);
+  return { x1, y1: baseline - LABEL_ASCENT, x2: x1 + width, y2: baseline + LABEL_DESCENT };
+}
+
+function boxesOverlap(a: LabelBox, b: LabelBox): boolean {
+  return a.x1 < b.x2 && b.x1 < a.x2 && a.y1 < b.y2 && b.y1 < a.y2;
+}
+
+type V2Metric = "tokens" | "cost" | "steps" | "lines";
+
+interface V2ChartTabSpec {
+  id: V2Metric;
+  label: string;
+  note: string;
+  unit: string;
+  axisLabel: string;
+}
+
+const V2_CHART_TABS: readonly V2ChartTabSpec[] = [
+  {
+    id: "tokens",
+    label: "Tokens",
+    note: "cheap + reliable ↗",
+    unit: "k",
+    axisLabel: "Avg output tokens per scaffold",
+  },
+  {
+    id: "cost",
+    label: "Cost",
+    note: "cheap + reliable ↗",
+    unit: "",
+    axisLabel: "Avg cost per scaffold ($)",
+  },
+  {
+    id: "steps",
+    label: "Steps",
+    note: "cheap + reliable ↗",
+    unit: "",
+    axisLabel: "Avg tool steps per scaffold",
+  },
+  {
+    id: "lines",
+    label: "Code",
+    note: "lean + reliable ↗",
+    unit: "k",
+    axisLabel: "Avg lines of code per scaffold",
+  },
+] as const;
+
+interface PathMetrics {
+  pass: number;
+  tokens: number | null;
+  cost: number | null;
+  steps: number | null;
+  lines: number | null;
+  scoredCount: number;
+}
+
+function aggregatePathMetrics(modelKey: string): PathMetrics {
+  const cells = SCAFFBENCH22_CELLS.filter(
+    (cell) => cell.modelKey === modelKey && cell.path === "prompt",
+  );
+  const scored = cells.filter((cell) => cell.scored);
+  const tokens = scored
+    .map((cell) => cell.outTokens)
+    .filter((value): value is number => value !== null);
+  const costs = scored
+    .map((cell) => cell.costUsd)
+    .filter((value): value is number => value !== null);
+  const steps = scored.map((cell) => cell.steps).filter((value) => value > 0);
+  const lines = scored
+    .map((cell) => cell.lines)
+    .filter((value): value is number => value !== null && value !== undefined && value > 0);
+  const tally = passTally(scored);
+  return {
+    pass: formatPercent(tally.successes, tally.trials),
+    tokens: tokens.length > 0 ? mean(tokens) / 1000 : null,
+    cost: costs.length > 0 ? mean(costs) : null,
+    steps: steps.length > 0 ? mean(steps) : null,
+    lines: lines.length > 0 ? mean(lines) / 1000 : null,
+    scoredCount: scored.length,
+  };
+}
+
+type MetricBearing = {
+  tokens: number | null;
+  cost: number | null;
+  steps: number | null;
+  lines: number | null;
+};
+
+function v2MetricValue(point: MetricBearing, metric: V2Metric): number | null {
+  if (metric === "cost") return point.cost;
+  if (metric === "steps") return point.steps;
+  if (metric === "lines") return point.lines;
+  return point.tokens;
+}
+
+function formatV2Metric(point: MetricBearing, metric: V2Metric): string {
+  if (metric === "cost") return point.cost === null ? "—" : `$${point.cost.toFixed(2)}`;
+  if (metric === "steps") return point.steps === null ? "—" : `${Math.round(point.steps)} steps`;
+  if (metric === "lines") return point.lines === null ? "—" : `${point.lines.toFixed(1)}k lines`;
+  return point.tokens === null ? "—" : `${point.tokens.toFixed(1)}k tokens`;
+}
+
+function formatV2MetricCompact(point: MetricBearing, metric: V2Metric): string {
+  if (metric === "cost") return point.cost === null ? "—" : `$${point.cost.toFixed(2)}`;
+  if (metric === "steps") return point.steps === null ? "—" : `${Math.round(point.steps)}`;
+  if (metric === "lines") return point.lines === null ? "—" : `${point.lines.toFixed(1)}k`;
+  return point.tokens === null ? "—" : `${point.tokens.toFixed(1)}k`;
+}
+
+function niceStep(maxValue: number): number {
+  if (maxValue <= 0) return 1;
+  const target = maxValue / 3.5;
+  const magnitude = 10 ** Math.floor(Math.log10(target));
+  const normalized = target / magnitude;
+  const niceNormalized = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10;
+  return niceNormalized * magnitude;
+}
+
+function buildV2Axis(metric: V2Metric, points: readonly MetricBearing[]): AxisSpec {
+  const tab = V2_CHART_TABS.find((entry) => entry.id === metric) ?? V2_CHART_TABS[0];
+  const dataMax = Math.max(
+    0,
+    ...points
+      .map((point) => v2MetricValue(point, metric))
+      .filter((value): value is number => value !== null),
+  );
+  const step = niceStep(dataMax);
+  const max = Math.max(Math.ceil((dataMax * 1.12) / step) * step, step);
+  const ticks: number[] = [];
+  for (let tick = max; tick >= 0; tick -= step) {
+    ticks.push(Math.round(tick * 100) / 100);
+  }
+  return { max, ticks, unit: tab.unit, label: tab.axisLabel };
+}
+
+interface V2ModelPoint extends PathMetrics {
+  key: string;
+  label: string;
+  reasoning: string;
+  harness: string;
+  color: string;
+  free: boolean;
+}
+
+function computeV2ModelPoints(): V2ModelPoint[] {
+  return SCAFFBENCH22_MODELS.map((model, index) => {
+    const metrics = aggregatePathMetrics(model.key);
+    const free = isFreeModel(model);
+    if (metrics.cost === null && free && metrics.scoredCount > 0) {
+      metrics.cost = 0;
+    }
+    return {
+      key: model.key,
+      label: model.label,
+      reasoning: model.effort,
+      harness: HARNESS_LABEL[model.provider],
+      color: V2_MODEL_COLORS[index % V2_MODEL_COLORS.length],
+      free,
+      ...metrics,
+    };
+  });
+}
+
+function v2PointEligible(point: V2ModelPoint, metric: V2Metric): boolean {
+  if (point.scoredCount === 0) return false;
+  if (metric === "cost") {
+    if (point.free) return false;
+    return point.cost !== null;
+  }
+  if (metric === "lines") return point.lines !== null;
+  return true;
+}
+
+function computeV2LabelPlacements(
+  points: readonly V2ModelPoint[],
+  axis: AxisSpec,
+  metric: V2Metric,
+): Record<string, LabelPlacement> {
+  const mapped = points.map((point) => ({
+    point,
+    x: plotX(v2MetricValue(point, metric) ?? 0, axis),
+    y: plotY(point.pass, PASS_AXIS),
+    width: (`${point.label} · ${point.harness}`.length + 1) * LABEL_CHAR_W,
+  }));
+  const obstacles: LabelBox[] = mapped.map((p) => ({
+    x1: p.x - DOT_PAD,
+    y1: p.y - DOT_PAD,
+    x2: p.x + DOT_PAD,
+    y2: p.y + DOT_PAD,
+  }));
+  obstacles.push({
+    x1: M_L + PLOT_W - 8 - 18 * 6.4,
+    y1: M_T + 6,
+    x2: M_L + PLOT_W - 8,
+    y2: M_T + 22,
+  });
+
+  const placements: Record<string, LabelPlacement> = {};
+  const ordered = [...mapped].sort((a, b) => b.x - a.x || a.y - b.y);
+  for (const p of ordered) {
+    let placed: LabelPlacement = { hidden: true };
+    for (const candidate of PLACEMENT_CANDIDATES) {
+      const box = labelBox(p.x, p.y, p.width, candidate);
+      if (box.x1 < 2 || box.x2 > VB_W - 2 || box.y1 < 12 || box.y2 > M_T + PLOT_H + 16) continue;
+      if (obstacles.some((o) => boxesOverlap(box, o))) continue;
+      placed = candidate;
+      obstacles.push(box);
+      break;
+    }
+    placements[p.point.key] = placed;
+  }
+  return placements;
+}
+
+function BenchmarkChartCard() {
+  const [metric, setMetric] = useState<V2Metric>("tokens");
+  const [hoveredModel, setHoveredModel] = useState<string | null>(null);
+  const modelPoints = useMemo(() => computeV2ModelPoints(), []);
+  const eligiblePoints = useMemo(
+    () => modelPoints.filter((point) => v2PointEligible(point, metric)),
+    [modelPoints, metric],
+  );
+  const [selectedKeys, setSelectedKeys] = useState<readonly string[]>(() =>
+    modelPoints.filter((point) => !point.free).map((point) => point.key),
+  );
+  const toggleModel = useCallback((key: string) => {
+    setSelectedKeys((prev) =>
+      prev.includes(key)
+        ? prev.length > 1
+          ? prev.filter((k) => k !== key)
+          : prev
+        : [...prev, key],
+    );
+  }, []);
+  const visiblePoints = useMemo(
+    () => eligiblePoints.filter((point) => selectedKeys.includes(point.key)),
+    [eligiblePoints, selectedKeys],
+  );
+  const plottedPoints = useMemo(
+    () => visiblePoints.filter((point) => v2MetricValue(point, metric) !== null),
+    [visiblePoints, metric],
+  );
+  const unmeteredLabels = useMemo(
+    () =>
+      visiblePoints
+        .filter((point) => v2MetricValue(point, metric) === null)
+        .map((point) => `${point.label} · ${point.harness}`),
+    [visiblePoints, metric],
+  );
+  const axis = useMemo(() => buildV2Axis(metric, plottedPoints), [metric, plottedPoints]);
+  const labelPlacements = useMemo(
+    () => computeV2LabelPlacements(plottedPoints, axis, metric),
+    [plottedPoints, axis, metric],
+  );
+  const axisNote = (V2_CHART_TABS.find((t) => t.id === metric) ?? V2_CHART_TABS[0]).note;
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-10%" });
+  const reduceMotion = useReducedMotion();
+  const palette = CHART_PALETTE;
+
+  return (
+    <motion.div
+      initial={fadeUpInitial}
+      whileInView={fadeUpVisible}
+      viewport={viewportOnceNear}
+      transition={fadeUpTransition}
+      className={cn(
+        "mt-12 overflow-hidden rounded-2xl border border-[#e1e0d8] bg-[#faf9f5] text-[#1b1a17] [color-scheme:light] dark:border-[rgba(237,235,228,0.10)] dark:bg-[#161614] dark:text-[#dad8d0] dark:[color-scheme:dark]",
+        CHART_THEME_VARS,
+      )}
+    >
+      <div className="border-b border-[#e1e0d8] px-3 py-4 dark:border-[rgba(237,235,228,0.10)] sm:px-6">
+        <div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-center justify-between gap-4 px-3">
+          <p className="text-sm font-semibold">ScaffBench 2.2 · Prompt path</p>
+          <div className="flex flex-wrap items-center justify-end gap-2.5">
+            <div
+              className="inline-flex overflow-hidden rounded-md border border-[#d9d8d2] dark:border-[rgba(237,235,228,0.14)]"
+              role="tablist"
+              aria-label={m.llmBenchmarkMetric()}
+            >
+              {V2_CHART_TABS.map((t) => (
+                <MetricTabButton
+                  key={t.id}
+                  id={t.id}
+                  label={t.label}
+                  active={metric === t.id}
+                  onSelect={setMetric}
+                />
+              ))}
+            </div>
+            <V2ModelFilter
+              points={eligiblePoints}
+              selected={selectedKeys}
+              onToggle={toggleModel}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div ref={ref} className="px-3 pb-2 pt-5 sm:px-6">
+        <section aria-label={m.llmScatterAria()} className="overflow-x-auto" tabIndex={0}>
+          <div className="mx-auto w-full min-w-[560px] max-w-[1180px]">
+            <p className="px-3 text-sm font-semibold">{PASS_AXIS.label}</p>
+            <svg viewBox={`0 0 ${VB_W} ${VB_H}`} className="mt-2 h-auto w-full">
+              <AxisLayer key={`${metric}-${axis.max}`} x={axis} note={axisNote} palette={palette} />
+              {plottedPoints.map((point, index) => (
+                <V2Dot
+                  key={point.key}
+                  point={point}
+                  x={plotX(v2MetricValue(point, metric) ?? 0, axis)}
+                  y={plotY(point.pass, PASS_AXIS)}
+                  cardBg={palette.circleStroke}
+                  metricLabel={formatV2Metric(point, metric)}
+                  xAxisValue={formatV2MetricCompact(point, metric)}
+                  placement={labelPlacements[point.key]}
+                  index={index}
+                  inView={inView}
+                  reduceMotion={reduceMotion === true}
+                  active={hoveredModel === point.key}
+                  onActiveChange={setHoveredModel}
+                />
+              ))}
+            </svg>
+          </div>
+        </section>
+        {unmeteredLabels.length > 0 ? (
+          <p className="mx-auto w-full max-w-[1180px] px-3 pb-1 pt-1 text-xs text-[#71706a] dark:text-[#8f8d84]">
+            {m.llmScatterUnmetered({ models: unmeteredLabels.join(", ") })}
+          </p>
+        ) : null}
+      </div>
+    </motion.div>
+  );
+}
+
+function AxisLayer({
+  x,
+  note,
+  palette,
+}: {
+  x: AxisSpec;
+  note: string;
+  palette: ChartPalette;
+}) {
+  return (
+    <g>
+      {x.ticks.map((tick) => {
+        const tx = plotX(tick, x);
+        return (
+          <g key={`x-${tick}`}>
+            <line x1={tx} y1={M_T} x2={tx} y2={M_T + PLOT_H} stroke={palette.grid} />
+            <text
+              x={tx}
+              y={M_T + PLOT_H + 22}
+              textAnchor="middle"
+              fontSize={11}
+              fill={palette.axisTick}
+              className="font-mono"
+            >
+              {tick}
+              {x.unit}
+            </text>
+          </g>
+        );
+      })}
+      {PASS_AXIS.ticks.map((tick) => {
+        const y = plotY(tick, PASS_AXIS);
+        return (
+          <g key={`y-${tick}`}>
+            <line x1={M_L} y1={y} x2={M_L + PLOT_W} y2={y} stroke={palette.grid} />
+            <text
+              x={M_L - 10}
+              y={y + 4}
+              textAnchor="end"
+              fontSize={11}
+              fill={palette.axisTick}
+              className="font-mono"
+            >
+              {tick}
+              {PASS_AXIS.unit}
+            </text>
+          </g>
+        );
+      })}
+      <text
+        x={M_L + PLOT_W - 8}
+        y={M_T + 18}
+        textAnchor="end"
+        fontSize={12}
+        fontStyle="italic"
+        fill={palette.note}
+      >
+        {note}
+      </text>
+      <text
+        x={M_L + PLOT_W / 2}
+        y={VB_H - 6}
+        textAnchor="middle"
+        fontSize={12}
+        fill={palette.axisLabel}
+      >
+        {x.label}
+      </text>
+    </g>
+  );
+}
+
+function HoverGuides({
+  active,
+  hex,
+  x,
+  y,
+}: {
+  active: boolean;
+  hex: string;
+  x: number;
+  y: number;
+}) {
+  return (
+    <g opacity={active ? 0.85 : 0} className="pointer-events-none transition-opacity duration-150">
+      <line
+        x1={M_L - x}
+        y1={0}
+        x2={0}
+        y2={0}
+        stroke={hex}
+        strokeWidth={1.5}
+        strokeDasharray="8 8"
+      />
+      <line
+        x1={0}
+        y1={0}
+        x2={0}
+        y2={M_T + PLOT_H - y}
+        stroke={hex}
+        strokeWidth={1.5}
+        strokeDasharray="8 8"
+      />
+    </g>
+  );
+}
+
+function ChartMarker({ hex, cardBg }: { hex: string; cardBg: string }) {
+  return (
+    <>
+      <circle r={14} fill="transparent" stroke="transparent" />
+      <circle r={4.5} fill={hex} stroke={cardBg} strokeWidth={2} />
+    </>
+  );
+}
+
+function MetricTabButton<T extends string>({
+  id,
+  label,
+  active,
+  onSelect,
+}: {
+  id: T;
+  label: string;
+  active: boolean;
+  onSelect: (id: T) => void;
+}) {
+  const handleClick = useCallback(() => {
+    onSelect(id);
+  }, [onSelect, id]);
+
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      onClick={handleClick}
+      className={cn(
+        "cursor-pointer border-r border-[#d9d8d2] px-3.5 py-2 text-xs font-medium transition-colors last:border-r-0 dark:border-[rgba(237,235,228,0.14)]",
+        active
+          ? "bg-[#C6E853] text-[#0a0a0a]"
+          : "bg-transparent text-[#71706a] hover:text-[#1b1a17] dark:text-[#8f8d84] dark:hover:text-[#dad8d0]",
+      )}
+    >
+      {label}
+    </button>
+  );
+}
+
+function V2ModelFilter({
+  points,
+  selected,
+  onToggle,
+}: {
+  points: readonly V2ModelPoint[];
+  selected: readonly string[];
+  onToggle: (key: string) => void;
+}) {
+  const selectedShown = points.filter((point) => selected.includes(point.key)).length;
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        aria-label={m.llmFilterModels()}
+        className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-[#d9d8d2] px-3.5 py-2 text-xs font-medium text-[#71706a] transition-colors hover:text-[#1b1a17] dark:border-[rgba(237,235,228,0.14)] dark:text-[#8f8d84] dark:hover:text-[#dad8d0]"
+      >
+        {m.llmModels()}
+        <span className="rounded-sm bg-[#C6E853] px-1.5 font-mono text-[10px] font-semibold text-[#0a0a0a]">
+          {selectedShown}
+        </span>
+        <ChevronDown className="size-3.5" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        className={cn("w-80 max-w-[calc(100vw-2rem)]", CHART_THEME_VARS)}
+      >
+        <DropdownMenuGroup>
+          {points.map((point) => (
+            <V2ModelMenuItem
+              key={point.key}
+              point={point}
+              checked={selected.includes(point.key)}
+              onToggle={onToggle}
+            />
+          ))}
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function V2ModelMenuItem({
+  point,
+  checked,
+  onToggle,
+}: {
+  point: V2ModelPoint;
+  checked: boolean;
+  onToggle: (key: string) => void;
+}) {
+  const handleChange = useCallback(() => {
+    onToggle(point.key);
+  }, [onToggle, point.key]);
+  const swatchStyle = useMemo(() => ({ background: point.color }), [point.color]);
+
+  return (
+    <DropdownMenuCheckboxItem checked={checked} onCheckedChange={handleChange} closeOnClick={false}>
+      <span className="size-2.5 shrink-0 rounded-[2px]" style={swatchStyle} />
+      <span className="min-w-0 flex-1">
+        {point.label} · {point.harness}{" "}
+        <span className="text-[10px] opacity-70">[{point.reasoning}]</span>
+      </span>
+    </DropdownMenuCheckboxItem>
+  );
+}
+
+function V2Dot({
+  point,
+  x,
+  y,
+  cardBg,
+  metricLabel,
+  xAxisValue,
+  placement,
+  index,
+  inView,
+  reduceMotion,
+  active,
+  onActiveChange,
+}: {
+  point: V2ModelPoint;
+  x: number;
+  y: number;
+  cardBg: string;
+  metricLabel: string;
+  xAxisValue: string;
+  placement: LabelPlacement | undefined;
+  index: number;
+  inView: boolean;
+  reduceMotion: boolean;
+  active: boolean;
+  onActiveChange: (key: string | null) => void;
+}) {
+  const nearRightEdge = x > M_L + PLOT_W - 150;
+  const animate = useMemo(() => ({ x, y, opacity: inView ? 1 : 0 }), [x, y, inView]);
+  const transition = useMemo(
+    () =>
+      reduceMotion
+        ? { duration: 0 }
+        : { x: chartMove, y: chartMove, opacity: { duration: 0.45, delay: 0.1 + index * 0.08 } },
+    [index, reduceMotion],
+  );
+  const activate = useCallback(() => onActiveChange(point.key), [onActiveChange, point.key]);
+  const deactivate = useCallback(() => onActiveChange(null), [onActiveChange]);
+
+  return (
+    <motion.g
+      initial={false}
+      animate={animate}
+      transition={transition}
+      tabIndex={0}
+      onMouseEnter={activate}
+      onMouseLeave={deactivate}
+      onFocus={activate}
+      onBlur={deactivate}
+      className="outline-none"
+      focusable="true"
+      aria-label={`${point.label} · ${point.harness} · ${point.reasoning} · ${point.pass}% pass · ${metricLabel}`}
+    >
+      <HoverGuides active={active} hex={point.color} x={x} y={y} />
+      <ChartMarker hex={point.color} cardBg={cardBg} />
+      {placement && !placement.hidden ? (
+        <text
+          x={placement.dx ?? 10}
+          y={placement.dy ?? 4}
+          textAnchor={placement.anchor ?? "start"}
+          fontSize={11}
+          fontWeight={active ? 700 : 600}
+          fill={point.color}
+          stroke={cardBg}
+          strokeWidth={3}
+          paintOrder="stroke"
+        >
+          {point.label} · {point.harness}
+        </text>
+      ) : active ? (
+        <text
+          x={nearRightEdge ? -10 : 10}
+          y={-12}
+          textAnchor={nearRightEdge ? "end" : "start"}
+          fontSize={11}
+          fontWeight={700}
+          fill={point.color}
+          stroke={cardBg}
+          strokeWidth={3}
+          paintOrder="stroke"
+        >
+          {point.label} · {point.harness}
+        </text>
+      ) : null}
+      <g className="pointer-events-none transition-opacity duration-150" opacity={active ? 1 : 0}>
+        <text
+          x={M_L - x - 10}
+          y={4}
+          textAnchor="end"
+          fontSize={11}
+          fontWeight={700}
+          fill={point.color}
+          stroke={cardBg}
+          strokeWidth={3}
+          paintOrder="stroke"
+          className="font-mono"
+        >
+          {point.pass}%
+        </text>
+        <text
+          x={0}
+          y={M_T + PLOT_H - y + 22}
+          textAnchor="middle"
+          fontSize={11}
+          fontWeight={700}
+          fill={point.color}
+          stroke={cardBg}
+          strokeWidth={3}
+          paintOrder="stroke"
+          className="font-mono"
+        >
+          {xAxisValue}
+        </text>
+      </g>
+    </motion.g>
   );
 }
 
