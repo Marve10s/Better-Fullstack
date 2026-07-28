@@ -1,14 +1,18 @@
-import { CATEGORY_ORDER, getCategoryOrderForEcosystem } from "@better-fullstack/types";
-
+import {
+  CATEGORY_ORDER,
+  getCategoryOrderForEcosystem,
+  parseStackPartSpecs,
+} from "@better-fullstack/types";
 import {
   createStackSelectionSearchParams as createStackSearchParams,
   generateStackSelectionCommand,
   type StackSelectionInput,
 } from "@better-fullstack/types/stack-translation";
 
+import type { TechCategory } from "@/lib/types";
+
 import { TECH_OPTIONS } from "@/lib/constant";
 import { DEFAULT_STACK, type StackState } from "@/lib/stack-defaults";
-import type { TechCategory } from "@/lib/types";
 
 export function getStackKeyForCategory(category: TechCategory): keyof StackState {
   if (category === "ai") return "aiSdk";
@@ -57,12 +61,37 @@ export function generateStackSummary(
   return selectedTechs.length > 0 ? selectedTechs.join(" • ") : "Custom stack";
 }
 
+function summarizeStackParts(stack: StackState) {
+  const labels = parseStackPartSpecs(stack.stackPartSpecs, "selected")
+    .filter((part) => part.toolId !== "none")
+    .map((part) => {
+      const categories =
+        part.ecosystem === "universal"
+          ? CATEGORY_ORDER
+          : getCategoryOrderForEcosystem(part.ecosystem);
+      for (const category of categories) {
+        const option = TECH_OPTIONS[category]?.find((candidate) => candidate.id === part.toolId);
+        if (option) return option.name;
+      }
+      return part.toolId
+        .split("-")
+        .filter(Boolean)
+        .map((token) => token.charAt(0).toUpperCase() + token.slice(1))
+        .join(" ");
+    });
+
+  return [...new Set(labels)].join(" • ") || "Custom stack";
+}
+
 /**
  * Summary restricted to the categories that belong to the stack's own
  * ecosystem, so a Python/Rust/Go stack is never described by the TypeScript
  * defaults its state still carries.
  */
 export function summarizeStackForEcosystem(stack: StackState) {
+  if (stack.stackMode === "multi" && stack.stackPartSpecs.length > 0) {
+    return summarizeStackParts(stack);
+  }
   return generateStackSummary(
     stack,
     getCategoryOrderForEcosystem(stack.ecosystem) as readonly TechCategory[],

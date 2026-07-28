@@ -10,6 +10,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 
 import { providerForModel } from "@/index";
+import { publicationEligibility } from "@/summary";
 
 import { buildPublishedCells } from "./build-scaffbench-2-1-data";
 
@@ -68,7 +69,12 @@ function main() {
     if (!lb) throw new Error(`${dir}: no prompt leaderboard row for ${model}|${effort}`);
     if (!meta) {
       meta = {
+        suiteVersion: first.provenance?.suiteVersion ?? summary.metadata?.suiteVersion ?? null,
         harnessVersion: summary.harnessVersion,
+        validationCacheVersion:
+          first.provenance?.validationCacheVersion ??
+          summary.metadata?.validationCacheVersion ??
+          null,
         promptVersion: summary.metadata?.promptVersion ?? null,
         generatorVersion: summary.metadata?.bfGeneratorVersion ?? null,
         generatedAt: summary.generatedAt,
@@ -85,7 +91,12 @@ function main() {
       provider: providerForModel(model),
       label: prettyModel(model),
       sortIndex: lb.index,
-      eligibility: lb.publicationEligibility ?? "exploratory",
+      eligibility: publicationEligibility(
+        summary.results.filter(
+          (result: any) =>
+            result.model === model && result.effort === effort && result.path === "prompt",
+        ),
+      ),
     });
     cells.push(...buildPublishedCells(summary, dir));
   }

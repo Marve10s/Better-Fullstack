@@ -1131,6 +1131,7 @@ function computeV2ModelRows(
     const locValues = scored
       .map((cell) => cell.lines)
       .filter((v): v is number => v !== null && v !== undefined && v > 0);
+    const steps = scored.map((cell) => cell.steps).filter((value) => value > 0);
     return {
       key: model.key,
       label: model.label,
@@ -1150,7 +1151,7 @@ function computeV2ModelRows(
       costNum: costs.length > 0 ? mean(costs) : Number.POSITIVE_INFINITY,
       cost: costs.length > 0 ? `$${mean(costs).toFixed(2)}` : "—",
       outTok: tokens.length > 0 ? `${(mean(tokens) / 1000).toFixed(1)}k` : "—",
-      steps: scored.length > 0 ? String(Math.round(mean(scored.map((cell) => cell.steps)))) : "—",
+      steps: steps.length > 0 ? String(Math.round(mean(steps))) : "—",
       loc: locValues.length > 0 ? `${(mean(locValues) / 1000).toFixed(1)}k` : "—",
     };
   });

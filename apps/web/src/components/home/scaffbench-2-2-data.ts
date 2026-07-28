@@ -8,7 +8,9 @@
 import type { ScaffbenchCell, ScaffbenchModel } from "./scaffbench-2-data";
 
 export const SCAFFBENCH22_META = {
+  "suiteVersion": "2.1",
   "harnessVersion": "2.2.1",
+  "validationCacheVersion": 5,
   "promptVersion": "2026-07-17-round-2",
   "generatorVersion": "2.2.0",
   "generatedAt": "2026-07-18T01:55:06.035Z",
@@ -31,7 +33,7 @@ export const SCAFFBENCH22_MODELS: readonly ScaffbenchModel[] = [
     "provider": "opencode",
     "label": "GPT-5.6 Luna",
     "sortIndex": 82,
-    "eligibility": "exploratory"
+    "eligibility": "ranked"
   },
   {
     "key": "gemini-3.6-flash|high",
@@ -61,7 +63,7 @@ export const SCAFFBENCH22_MODELS: readonly ScaffbenchModel[] = [
     "provider": "kilo",
     "label": "GPT-5.6 Luna",
     "sortIndex": 76,
-    "eligibility": "exploratory"
+    "eligibility": "ranked"
   },
   {
     "key": "gpt-5.6-sol|high",
@@ -91,7 +93,7 @@ export const SCAFFBENCH22_MODELS: readonly ScaffbenchModel[] = [
     "provider": "pi",
     "label": "GPT-5.6 Luna",
     "sortIndex": 71,
-    "eligibility": "exploratory"
+    "eligibility": "ranked"
   }
 ];
 

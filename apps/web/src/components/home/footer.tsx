@@ -34,6 +34,12 @@ export default function Footer() {
             npm
           </a>
           <Link
+            to="/run-before-you-clone"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {m.navLiveRun()}
+          </Link>
+          <Link
             to="/compare"
             className="text-muted-foreground transition-colors hover:text-foreground"
           >

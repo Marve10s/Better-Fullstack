@@ -47,7 +47,7 @@ export function Wordmark({ size = 30 }: { size?: number }) {
       }}
     >
       <span style={{ color: BF_COLORS.foreground }}>better</span>
-      <span style={{ color: BF_COLORS.muted }}>/fullstack</span>
+      <span style={{ color: BF_COLORS.muted }}>fullstack</span>
     </div>
   );
 }

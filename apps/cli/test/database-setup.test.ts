@@ -1,4 +1,6 @@
-import { describe, it } from "bun:test";
+import { describe, expect, it } from "bun:test";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 
 import { DB_SETUPS, expectError, expectSuccess, runTRPCTest, type TestConfig } from "./test-utils";
 
@@ -204,6 +206,35 @@ describe("Database Setup Configurations", () => {
       });
 
       expectSuccess(result);
+    });
+
+    it("uses a connection URL for PlanetScale PostgreSQL", async () => {
+      const result = await runTRPCTest({
+        projectName: "planetscale-postgres-typeorm",
+        database: "postgres",
+        orm: "typeorm",
+        dbSetup: "planetscale",
+        backend: "hono",
+        runtime: "bun",
+        auth: "none",
+        api: "openapi",
+        frontend: ["next"],
+        addons: ["none"],
+        examples: ["none"],
+        webDeploy: "none",
+        serverDeploy: "none",
+        manualDb: true,
+        install: false,
+      });
+
+      expectSuccess(result);
+      expect(result.projectDir).toBeDefined();
+      const envServer = await readFile(
+        join(result.projectDir!, "packages/env/src/server.ts"),
+        "utf8",
+      );
+      expect(envServer).toContain("DATABASE_URL");
+      expect(envServer).not.toContain("DATABASE_HOST");
     });
   });
 

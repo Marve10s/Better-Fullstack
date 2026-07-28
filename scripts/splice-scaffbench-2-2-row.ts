@@ -16,13 +16,13 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { providerForModel } from "@/index";
 import { publicationEligibility } from "@/summary";
 
-import { buildPublishedCells } from "./build-scaffbench-2-1-data";
 import {
   SCAFFBENCH22_CELLS,
   SCAFFBENCH22_META,
   SCAFFBENCH22_MODELS,
   SCAFFBENCH22_SPECS,
 } from "../apps/web/src/components/home/scaffbench-2-2-data";
+import { buildPublishedCells } from "./build-scaffbench-2-1-data";
 
 const MODEL_LABELS: Record<string, string> = {
   "gemini-3.6-flash": "Gemini 3.6 Flash",
@@ -37,6 +37,95 @@ function prettyModel(model: string): string {
     .replace(/(\d)-(\d)/g, "$1.$2")
     .replace(/-/g, " ")
     .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+type SummaryResult = {
+  model?: string;
+  effort?: string;
+  path?: string;
+  specId?: string;
+  provenance?: {
+    suiteVersion?: string;
+    harnessVersion?: string;
+    validationCacheVersion?: number;
+    promptVersion?: string;
+  };
+};
+
+export function assertCompleteSpecList(
+  specs: readonly string[],
+  expectedSpecs: readonly string[],
+  source: string,
+) {
+  const counts = new Map<string, number>();
+  for (const spec of specs) counts.set(spec, (counts.get(spec) ?? 0) + 1);
+  const expected = new Set(expectedSpecs);
+  const missing = expectedSpecs.filter((spec) => !counts.has(spec));
+  const unknown = [...counts.keys()].filter((spec) => !expected.has(spec));
+  const duplicates = [...counts.entries()].filter(([, count]) => count > 1).map(([spec]) => spec);
+  if (missing.length > 0 || unknown.length > 0 || duplicates.length > 0) {
+    throw new Error(
+      `${source}: specs must exactly match the 2.2 board` +
+        (missing.length > 0 ? `; missing: ${missing.join(", ")}` : "") +
+        (unknown.length > 0 ? `; unknown: ${unknown.join(", ")}` : "") +
+        (duplicates.length > 0 ? `; duplicate: ${duplicates.join(", ")}` : ""),
+    );
+  }
+}
+
+export function assertSinglePromptRow(
+  results: readonly SummaryResult[],
+  model: string,
+  effort: string,
+  source: string,
+) {
+  const rowKeys = new Set(
+    results.map(
+      (result) =>
+        `${result.model ?? "unknown"}|${result.effort ?? "unknown"}|${result.path ?? "unknown"}`,
+    ),
+  );
+  const expectedKey = `${model}|${effort}|prompt`;
+  if (rowKeys.size !== 1 || !rowKeys.has(expectedKey)) {
+    throw new Error(
+      `${source}: expected exactly one model/effort prompt row (${expectedKey}); found ${[
+        ...rowKeys,
+      ].join(", ")}`,
+    );
+  }
+}
+
+export function assertBoardProtocol(
+  results: readonly SummaryResult[],
+  board: {
+    suiteVersion: string;
+    harnessVersion: string;
+    validationCacheVersion: number;
+    promptVersion: string;
+  },
+  source: string,
+) {
+  const expected = JSON.stringify([
+    board.suiteVersion,
+    board.harnessVersion,
+    board.validationCacheVersion,
+    board.promptVersion,
+  ]);
+  const mismatches = results.filter((result) => {
+    const provenance = result.provenance;
+    return (
+      !provenance ||
+      JSON.stringify([
+        provenance.suiteVersion,
+        provenance.harnessVersion,
+        provenance.validationCacheVersion,
+        provenance.promptVersion,
+      ]) !== expected
+    );
+  });
+  if (mismatches.length > 0) {
+    throw new Error(`${source}: run provenance does not match the ScaffBench 2.2 board protocol`);
+  }
 }
 
 function main() {
@@ -59,11 +148,16 @@ function main() {
   // The board compares rows cell-for-cell; a run on a different spec set is not
   // comparable and must not be spliced in silently.
   const specs: string[] = summary.options.specs;
-  const known = new Set(SCAFFBENCH22_SPECS as readonly string[]);
-  const unknown = specs.filter((s) => !known.has(s));
-  if (unknown.length > 0) {
-    throw new Error(`${dir}: specs not on the 2.2 board: ${unknown.join(", ")}`);
-  }
+  assertCompleteSpecList(specs, SCAFFBENCH22_SPECS, dir);
+  assertSinglePromptRow(summary.results, model, effort, dir);
+  assertCompleteSpecList(
+    [
+      ...new Set(summary.results.map((result: SummaryResult) => result.specId).filter(Boolean)),
+    ] as string[],
+    SCAFFBENCH22_SPECS,
+    `${dir} results`,
+  );
+  assertBoardProtocol(summary.results, SCAFFBENCH22_META, dir);
 
   const lb = summary.aggregates.leaderboard.find(
     (row: any) => row.model === model && row.effort === effort && row.path === "prompt",
@@ -134,4 +228,4 @@ export const SCAFFBENCH22_CELLS: readonly ScaffbenchCell[] = ${JSON.stringify(ce
   );
 }
 
-main();
+if (import.meta.main) main();

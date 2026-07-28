@@ -1,14 +1,15 @@
 import { describe, expect, it } from "bun:test";
 
 import { CAMPAIGN_PRESETS, getCampaignPresetUrl } from "../src/lib/campaign";
+import { stackAnalyticsProperties } from "../src/lib/campaign-analytics";
 import {
   getCampaignShareMessage,
   getCampaignShareTitle,
   getCampaignShareUrl,
 } from "../src/lib/campaign-share";
 import { PRESET_TEMPLATES } from "../src/lib/constant";
-import { DEFAULT_STACK, type StackState } from "../src/lib/stack-defaults";
 import { getStackRunSupport } from "../src/lib/run-support";
+import { DEFAULT_STACK, type StackState } from "../src/lib/stack-defaults";
 
 describe("Run Before You Clone campaign", () => {
   it("keeps every featured preset browser-runnable", () => {
@@ -59,5 +60,48 @@ describe("Run Before You Clone campaign", () => {
     expect(getCampaignShareMessage(stack, "download", "https://x.test")).not.toContain(
       "TanStack Router",
     );
+  });
+
+  it("names multi-ecosystem shares from their selected graph parts", () => {
+    const stack = {
+      ...DEFAULT_STACK,
+      stackMode: "multi",
+      stackPartSpecs: [
+        "frontend:typescript:next",
+        "backend:go:gin",
+        "backend.orm:go:gorm",
+        "database:universal:postgres",
+      ],
+    } as StackState;
+
+    const title = getCampaignShareTitle(stack);
+    expect(title).toContain("Next.js");
+    expect(title).toContain("Gin");
+    expect(title).toContain("GORM");
+    expect(title).not.toContain("Hono");
+  });
+
+  it("records the active ecosystem backend instead of TypeScript defaults", () => {
+    const properties = stackAnalyticsProperties({
+      ...DEFAULT_STACK,
+      ecosystem: "python",
+      pythonWebFramework: "fastapi",
+    } as StackState);
+
+    expect(properties.frontend).toBe("none");
+    expect(properties.backend).toBe("fastapi");
+  });
+
+  it("records multi-ecosystem analytics from primary graph parts", () => {
+    const properties = stackAnalyticsProperties({
+      ...DEFAULT_STACK,
+      stackMode: "multi",
+      stackPartSpecs: ["frontend:typescript:next", "backend:go:gin", "database:universal:postgres"],
+    } as StackState);
+
+    expect(properties.ecosystem).toBe("typescript,go");
+    expect(properties.frontend).toBe("next");
+    expect(properties.backend).toBe("gin");
+    expect(properties.database).toBe("postgres");
   });
 });

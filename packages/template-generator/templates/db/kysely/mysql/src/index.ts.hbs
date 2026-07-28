@@ -3,23 +3,9 @@ import { Kysely, MysqlDialect } from "kysely";
 import { createPool } from "mysql2";
 import type { Database as DB } from "./schema/index.js";
 
-{{#if (eq dbSetup "planetscale")}}
-const dialect = new MysqlDialect({
-	pool: createPool({
-		host: env.DATABASE_HOST,
-		user: env.DATABASE_USERNAME,
-		password: env.DATABASE_PASSWORD,
-		database: env.DATABASE_NAME,
-		ssl: {
-			rejectUnauthorized: true,
-		},
-	}),
-});
-{{else}}
 const dialect = new MysqlDialect({
 	pool: createPool(env.DATABASE_URL),
 });
-{{/if}}
 
 export const db = new Kysely<DB>({
 	dialect,
