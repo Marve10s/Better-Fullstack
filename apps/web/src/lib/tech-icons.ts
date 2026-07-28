@@ -312,7 +312,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   grafana: { type: "si", slug: "grafana", hex: "F46800" },
   opentelemetry: { type: "si", slug: "opentelemetry", hex: "000000" },
   datadog: { type: "si", slug: "datadog", hex: "632CA6" },
-  axiom: { type: "local", src: "https://axiom.co/favicon.svg" },
+  axiom: { type: "local", src: "https://axiom.co/favicon.ico" },
   betterstack: { type: "si", slug: "betterstack", hex: "111827" },
 
   // ─── Feature Flags ─────────────────────────────────────────────────────────
