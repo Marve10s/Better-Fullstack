@@ -1,16 +1,3 @@
-/**
- * Splice ONE cohort run into the published 2.2 board data.
- *
- * Why this exists: build-scaffbench-2-2-data.ts regenerates the board wholesale
- * from every dir in RUN_SOURCES, but those live under gitignored testing/ and
- * get cleaned up — once an older cohort dir is gone, a full regen is impossible
- * (and would silently publish a board missing those rows). This script adds a
- * single new run to the existing generated file, leaving published rows byte-
- * identical. The new run must still be listed in RUN_SOURCES so a future full
- * regen (with all artifacts present) reproduces the same board.
- *
- * Run with `bun run scripts/splice-scaffbench-2-2-row.ts <run-dir>`.
- */
 import { readFileSync, writeFileSync } from "node:fs";
 
 import { providerForModel } from "@/index";
@@ -199,15 +186,10 @@ function main() {
   const effort: string = first.effort ?? summary.options.efforts[0];
   const key = `${model}|${effort}`;
 
-  // Re-splicing an existing row is how a published row picks up a policy change
-  // (e.g. MIN_RANKED_TRIALS) or a re-validated summary; the row is replaced, not
-  // duplicated. Pass --replace so it can never happen by accident.
   const replacing = SCAFFBENCH22_MODELS.some((m) => m.key === key);
   if (replacing && !process.argv.includes("--replace")) {
     throw new Error(`${key} is already published — pass --replace to update it`);
   }
-  // The board compares rows cell-for-cell; a run on a different spec set is not
-  // comparable and must not be spliced in silently.
   const specs: string[] = summary.options.specs;
   assertCompleteSpecList(specs, SCAFFBENCH22_SPECS, dir);
   assertSinglePromptRow(summary.results, model, effort, dir);
@@ -227,10 +209,6 @@ function main() {
   );
   if (!lb) throw new Error(`${dir}: no prompt leaderboard row for ${key}`);
 
-  // Eligibility is recomputed from the raw runs under the CURRENT constants
-  // rather than read from summary.json, where it was frozen at run time. A
-  // policy change (MIN_RANKED_TRIALS) must move published rows, not just future
-  // ones — otherwise two rows with identical evidence carry different labels.
   const eligibility = publicationEligibility(summary.results);
   const models = [
     ...SCAFFBENCH22_MODELS.filter((m) => m.key !== key),
@@ -259,13 +237,7 @@ function main() {
       specOrder.indexOf(a.spec) - specOrder.indexOf(b.spec),
   );
 
-  const out = `// AUTO-GENERATED from the ScaffBench 2.2 cohort summaries by
-// scripts/build-scaffbench-2-2-data.ts — regenerate, don't hand-edit.
-// 2.2 protocol: harness 2.2.1, self-verify prompt, quality gates ON (the board
-// metric is the Full tier natively), 13 specs per row. Trials per row VARY —
-// the original GPT-5.6 cohort ran 3 interleaved trials, later rows run 1. Read
-// the per-cell scoredTrials, never SCAFFBENCH22_META.trialsPerSpec (which only
-// reflects the first run source).
+  const out = `
 import type { ScaffbenchCell, ScaffbenchModel } from "./scaffbench-2-data";
 
 export const SCAFFBENCH22_META = ${JSON.stringify(SCAFFBENCH22_META, null, 2)} as const;

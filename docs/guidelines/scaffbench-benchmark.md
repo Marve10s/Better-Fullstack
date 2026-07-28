@@ -1,109 +1,126 @@
 # ScaffBench Benchmark
 
-Read this when the task involves running ScaffBench, benchmarking a model/CLI, adding a spec, or publishing benchmark results to the site/blog.
+Read this before running ScaffBench, benchmarking a model/CLI, adding a spec, changing the harness, or publishing results. This document is the single home for harness rationale — the code stays comment-free; the "why" lives here.
 
-ScaffBench measures whether an LLM coding agent can scaffold a **working, correctly-wired fullstack project** from a spec. Each spec describes a target stack; the agent builds it; the harness installs, builds, type-checks, and native-compiles the result, then scores it.
+ScaffBench measures whether an LLM coding agent can scaffold a **working, correctly-wired fullstack project** from a spec. The agent builds the project; the harness installs, builds, type-checks, and native-compiles it, then scores it.
+
+## Current protocol (ScaffBench 2.2 — the baseline)
+
+2.2 is the reset baseline; everything older is archived history. A published row must match ALL of:
+
+| Field | Value |
+| --- | --- |
+| Harness | `2.2.2` |
+| Suite | `2.1` (13 core specs) |
+| Prompt version | `2026-07-17-round-2` (self-verify) |
+| Validator cache | v6 |
+| Quality gates | ON (the board metric is the Full tier) |
+| Path | `prompt` only |
+
+The published board is `apps/web/src/components/home/scaffbench-2-2-data.ts`; the publication guards (`assertBoardProtocol` et al. in `scripts/splice-scaffbench-2-2-row.ts`) reject rows assembled under any other protocol.
 
 ## Layout
 
-- `scripts/scaffbench-v2-lib.ts` — the harness (specs, adapters, scoring, reporting). All logic lives here.
 - `scripts/scaffbench-v2.ts` — thin entry point: `bun scripts/scaffbench-v2.ts <flags>`.
-- `scripts/scaffbench-v2-lib.test.ts` — harness unit tests. Run after any harness edit: `bun test scripts/scaffbench-v2-lib.test.ts`.
-- `scripts/build-scaffbench-2-1-data.ts` — turns raw run out-dirs into the web leaderboard data.
-- `benchmarks/{v1,v2,v2.1}/` — committed public result artifacts (summaries only).
-- `package.json` → `scaffbench:2*` scripts — convenience wrappers (they inherit the current defaults).
+- `scripts/scaffbench/` — the harness: `cli.ts` (flags), `runner.ts` (scheduling/generation/validation loop), `scoring.ts`, `summary.ts`, `validation/` (per-ecosystem validators + cache), `specs/`, `agents/` (per-CLI adapters + `routing.ts`).
+- Tests: `scripts/scaffbench-v2-lib.test.ts`, `scripts/scaffbench-hardening*.test.ts`, `scripts/scaffbench-2-2-publication.test.ts`. Run all of them after any harness edit.
+- `scripts/build-scaffbench-2-2-data.ts` — wholesale board regen from every dir in `RUN_SOURCES`.
+- `scripts/splice-scaffbench-2-2-row.ts` — adds ONE run to the board, leaving existing rows byte-identical.
 
-Current suite: **V2.1**, harness version `2.0.0`, 13 core specs.
+## Supported agents
 
-## Creation paths (how the agent is asked to build)
+The driving CLI is inferred from the model-id prefix by `providerForModel()` (`scripts/scaffbench/agents/routing.ts`):
 
-- **`prompt`** — hand-write the project from scratch, no Better-Fullstack tooling. **THE DEFAULT — the only path we run by default.** Tests raw model capability. The whole committed leaderboard is prompt-only.
-- **`mcp`** — drive the Better-Fullstack MCP server. **Opt-in** (`--paths mcp`); not run by default.
-- **`cli`** — map requirements to Better-Fullstack CLI flags. **Legacy** — still works, no longer part of the methodology.
+| Prefix / pattern | Provider | Notes |
+| --- | --- | --- |
+| `pi/*` | Pi | |
+| `kilocode/*`, `kilo/*` | Kilo Code | `kilocode/<id>` drives Kilo with an arbitrary provider id (disambiguates from opencode's `openai/*` and Kilo's credit-gated catalog). Adapter strips the prefix. |
+| `opencode/*`, `opencode-go/*`, `cloudflare-ai-gateway/*`, `openai/*` | opencode | Free tier, paid Go subscription, gateway passthrough. `--dangerously-skip-permissions` is baked into the adapter — without it headless runs scaffold nothing. |
+| `*gemini*` | Antigravity (`agy`) | Plain-text output: no token/cost/session data (fields show `—`). Effort is a name suffix, not a flag. |
+| `gpt*`, `o<digit>*`, `codex*` | Codex | Effort → `model_reasoning_effort`; runs with `--ignore-user-config`. |
+| anything else | Claude Code | Default. |
 
-`--paths` default is `prompt`. `mcp`/`cli` were the V2 (pre-2026-07) methodology; keep them out of default runs.
+Adding a CLI = prefix branch in `providerForModel()` + a `runX` adapter + `parseXResult` + a routing test.
 
-## Supported agents / CLIs
+## Running a benchmark — the rules
 
-The driving CLI is inferred from the **model-id prefix** by `providerForModel()`. Each needs its CLI installed and authenticated.
+**1. Serial only. Never run two benchmarks, or a benchmark plus other heavy work, on this machine at once.** The 2.2 GPT cohort ran three models in parallel and trial 1 scored systematically worst across all three (Full 11/39 vs 19 and 18 in later trials) — load contamination is real and indistinguishable from model quality after the fact. The harness itself is already serial (generation and validation both run at concurrency 1); keep the machine serial too. This includes other agent sessions mutating the repo mid-run.
 
-| Agent | CLI | Model-id prefix / examples | Notes |
-| --- | --- | --- | --- |
-| Claude Code | `claude` | `opus`, `claude-opus-4-8`, `sonnet` | Default provider. |
-| Codex (GPT/o-series) | `codex` | `gpt-5.5`, `o3`, `codex-*` | `runCodex` uses `--ignore-user-config`; effort → `model_reasoning_effort`. |
-| opencode | `opencode` | `opencode/*` (free), `opencode-go/*` (paid Go sub), `cloudflare-ai-gateway/*` | `--dangerously-skip-permissions` mandatory (baked in). `opencode models` lists ids. Auth via `opencode auth list`. |
-| Kilo Code | `kilo` | `kilo/*` | Same adapter as opencode; also reads `opencode.json`. |
-| Antigravity (Gemini) | `agy` | `gemini-3.5-flash`, `gemini-*` | Plain-text output → no token/cost/session data (fields show `—`). Effort is a name suffix, not a flag. |
+**2. Launch with `--repeats 3`; stop after round 1 if the row is exploratory.** Trials run in rounds (all trial-1s first, freshly seeded spec order per round), and `--repeats` is locked into the out-dir protocol at launch — you can stop early and resume later, but you cannot grow a repeats-1 dir into 3. Single-trial Full scores carry ±3–4 specs of noise (2026-07-28 analysis of the 3-trial cohort: ~40% of specs flip outcomes between trials; simulated single-trial boards produced three different winners). Coarse placement is fine at 1 trial; ranking claims against a neighbor within ~3 specs need 3.
 
-Adding a new CLI = add a prefix branch to `providerForModel()`, a `runX` adapter, and a `parseXResult`. Lock the routing with a test.
-
-## How to run
-
-Default one-pass run (prompt-only, 13 core specs, default effort, 1 repeat):
+**3. Detach long runs.** Background shells get killed ~20–30 min after last output. Pattern:
 
 ```bash
-bun scripts/scaffbench-v2.ts --model claude-opus-4-8
+nohup bun scripts/scaffbench-v2.ts --model <id> --efforts high --repeats 3 \
+  --out-dir testing/llm-benchmarks/v2/<slug>-high-<date> \
+  > testing/llm-benchmarks/v2/<slug>-high-<date>.log 2>&1 &
 ```
 
-Per-CLI examples:
+**4. Preflight checklist** (missing toolchains score specs inconclusive, silently weakening the row):
 
-```bash
-# Claude
-bun scripts/scaffbench-v2.ts --model claude-opus-4-8 --out-dir testing/llm-benchmarks/v2/opus48-<date>
-# Codex (GPT-5.5)
-bun scripts/scaffbench-v2.ts --model gpt-5.5 --efforts high --out-dir testing/llm-benchmarks/v2-codex/gpt55-<date>
-# opencode — free tier
-bun scripts/scaffbench-v2.ts --model opencode/deepseek-v4-flash-free --out-dir testing/llm-benchmarks/v2-f/<slug>-<date>
-# opencode — paid Go subscription
-bun scripts/scaffbench-v2.ts --model opencode-go/deepseek-v4-pro --out-dir testing/llm-benchmarks/v2-go/<slug>-<date>
-# Kilo Code
-bun scripts/scaffbench-v2.ts --model "kilo/nvidia/nemotron-3-super-120b-a12b:free" --out-dir testing/llm-benchmarks/v2-k/<slug>-<date>
-# Gemini via Antigravity
-bun scripts/scaffbench-v2.ts --model gemini-3.5-flash --efforts high --out-dir testing/llm-benchmarks/v2-gemini/<slug>-<date>
-```
+- `bun`, `cargo`, `go`, `dotnet`, `mix`, `java`, `uv` all on PATH.
+- The driving CLI installed and authenticated (`opencode auth list`, `codex login status`, …).
+- ≥20 GB free disk; broad sweeps have died on ENOSPC before.
+- No other benchmark, validation, or agent session running.
+- One run per out-dir, ever (runs are queue-locked per out-dir).
 
-Useful flags:
+**5. Post-run checks before believing a summary:**
 
-- `--paths prompt|mcp|cli` (comma list) — default `prompt`; add `mcp`/`cli` only for an assisted-path ablation.
-- `--specs core` (13 specs, default) | `extended` | comma list of ids. `--list-specs` prints them.
-- `--efforts default|low|medium|high|xhigh|max` (comma list).
-- `--repeats <n>`, `--out-dir <path>`, `--max-budget-usd <n>` (default 12).
-- `--prompt-style explicit|natural` — `natural` is the discovery lane (capabilities described, not libraries named).
-- Two-phase: `--generate-only` then later `--validate-existing` (validation is cached by source hash). Re-running the same `--out-dir` resumes safely (completed runs skipped).
-- `--quality-gate --doctor-check --route-check` — stricter advisory validation. `--skip-validation` / `--write-matrix-only` for dry structural checks.
+- Inconclusive count (`provider-infra`, `harness-infra`, `validation-infra`) — these are excluded from the pass denominator; more than a couple means the run needs repair, not publication.
+- `skip` steps inside Full-tier failures — a skip is a gate that should have run but couldn't; if it points at a generated/vendored directory, suspect the validator, not the model (that class of bug is what validator v6 fixed).
+- `deadline-exhausted` / `timeout-stuck` outcomes — real failures by classification, but eyeball whether the machine (not the model) was wedged.
+- Zero-usage results on opencode — the CLI masks 429s as `reason: unknown` with zero tokens; purge and re-run those trials.
+- `steps = 0` on opencode/Kilo rows is a known artifact (tool-steps are parsed from `claude.stdout.json` only).
 
-Runs are queued per out-dir (`scaffbench:2` scripts inherit this). Never point two runs at the same out-dir concurrently.
+## Flags reference
 
-## Scoring (headline)
+- `--model <id>` (default `opus`), `--efforts default|low|medium|high|xhigh|max` (comma list), `--repeats <n>`, `--out-dir <path>`, `--max-budget-usd <n>` (default 12/spec).
+- `--specs core` (13, default) | comma list | `--list-specs`.
+- `--paths prompt|mcp|cli` — default `prompt`. `mcp` is opt-in, `cli` legacy; neither is part of the methodology.
+- `--prompt-style explicit|natural` — `natural` is the discovery lane.
+- Two-phase: `--generate-only`, then `--validate-existing` (validation cached by source hash + cache version). `--force-revalidate` re-scores everything. Re-running the same out-dir resumes; completed trials are skipped.
+- `--no-quality-gate` opts OUT of quality gates (they default on; a board row without them is unpublishable). `--doctor-check --route-check` add root-level advisory checks.
+- `--skip-validation`, `--write-matrix-only`, `--repair`.
 
-- **Index** (0–100, the rankable composite): 60% macro validation + 25% wired-libs + 15% command discipline.
-- **Pass@1** = CORE pass: install + build + typecheck + native compile actually green.
-- **Quality** = stricter advisory tier (core + lint/format/test/doctor/route). Formatting never demotes Pass@1.
-- **Wired libs** = right libraries actually present in the artifact (deps + imports + files).
-- **Inconclusive** (missing toolchain, validation timeout, exhausted budget, no-output crash) is excluded from the pass-rate denominator.
+Timeouts and budgets (constants.ts): generation 90 min × spec multiplier (generous so only genuinely stuck agents hit it — a SIGTERM'd thoughtful run loses its cost accounting AND scores as a model failure), 20 min idle, validation 10 min/step, 45 min/project, root cap 12. The $/spec budget is the real cost backstop.
 
-## Publishing results + updating the blog
+## Scoring
 
-Publishing a run is a **multi-file** change — do all of it, not just the data:
+- **Index** (0–100): prompt path = 75% macro validation + 25% wired-libs (discipline saturates on the prompt path and is weighted 0); assisted paths = 60/25/15.
+- **Core pass** = install + build + typecheck + native compile green. **Full pass** = Core AND every applicable quality gate (lint/format/test) green — a `skip` (gate that should have run but no tool was configured) disqualifies; `na` steps are excluded. Full ⊆ Core always; `passRate === 100` from the raw harness is never trusted directly (it was vacuously 100 on zero-step runs once).
+- **Wired libs** = requested libraries actually present (deps + imports + files).
+- **Eligibility**: `MIN_RANKED_TRIALS = 1` — a single-trial row ranks (a 13×3 cohort per row is prohibitively expensive; lowered 2026-07-25). Wilson intervals are suppressed below `MIN_CI_RUNS = 8` scored runs so no row over-claims precision. Per-cell `scoredTrials` is authoritative; board-level `trialsPerSpec` only reflects the first run source.
+- Re-validation under a newer validator refreshes the result's `harnessVersion`/`validationCacheVersion` provenance (the verdict really was produced by the current validator); generation-side provenance (prompt version, adapter, trials, seed) is never touched.
 
-1. **Commit the summary** under `benchmarks/v2.1/<model-slug>/summary.md` (summaries only, not scaffolded trees).
-2. **Update the leaderboard data** `apps/web/src/components/home/scaffbench-2-1-data.ts` via `scripts/build-scaffbench-2-1-data.ts`. **Splice-merge the single new model — do NOT full-regen**: the builder reads gitignored `testing/` artifacts, most of which are gone, so a full regen drops existing rows. Add the model's label to `MODEL_LABELS` if the slug is ugly.
-3. **Set the tier correctly.** Leaderboard splits **paid** vs a **"Free tier"** divider. `opencode-go/*` and other subscription models report `cost = $0` but are **paid** — they must land in the paid tier, not the free divider. Only genuinely free ids (`*-free`, `:free`) go under the divider.
-4. **Update the blog.** `apps/web/content/blog/scaffbench-2-1.mdx` (and `scaffbench-2.mdx` for the V2 story) carries the narrative — add/adjust the leaderboard section and any "findings" prose when the standings change. A new model is not published until the blog reflects it.
+## Validator notes
 
-## History
+- Validation is membership-aware: nested `package.json`/`Cargo.toml` roots covered by a parent workspace validate through the parent; uncovered nested roots validate independently. Go modules always validate independently (`go build ./...` never descends into a nested module).
+- v6: a `package.json` with none of `name`/`scripts`/`dependencies`/`devDependencies`/`workspaces` is a module-format marker (paraglide's generated output, dist markers), never a root. v5 cost Sol a Full pass this way.
+- Java/Elixir validate only on an explicit `validationProfile.native` — file autodetect would run gradle on React Native's `android/` dir.
+- An install-only root (no build script, no typecheck surface) measures nothing — the validator descends into workspace members so the verdict reflects code.
+- Watcher-shaped builds can hang validation past every timeout (the per-step cap doesn't kill process trees). If `validate.log` mtime stalls >12 min, kill the tree. macOS has no `timeout`; use `gtimeout` or a PID kill loop.
+- .NET specs need the .NET SDK; Antigravity runs never report cost/tokens.
 
-- **V1** — original benchmark. Artifacts in `benchmarks/v1`, built by `scripts/build-scaffbench-data.ts`. Superseded.
-- **V2** (2026-06-26) — added the opencode + Kilo Code adapters (4th/5th backends). 5 core specs, ran all **three paths** (mcp/cli/prompt). First free-model study (North-mini, Nemotron). Caught + fixed the vacuous-pass scoring bug (a 0-step run read as 100% Full).
-- **V2.1** (2026-06-30 → 07-06) — 13-spec suite; frontier prompt-only specs; Java/Elixir validators; honest-pass fix (Full ⊆ Core). **Prompt-only became the methodology** — the committed leaderboard is 100% `prompt`. Added Codex (GPT), Antigravity (Gemini), and more free models.
-- **2026-07-09** — added `opencode-go/*` (paid OpenCode Go subscription) + Cloudflare-gateway routing to `providerForModel()`; made `--paths prompt` the default (mcp opt-in, cli legacy).
+## Publishing a row
 
-## Gotchas
+1. The run must satisfy the protocol table above and be Full-tier (quality gates on).
+2. Add the run dir to `RUN_SOURCES` in `build-scaffbench-2-2-data.ts` (and a `MODEL_LABELS` entry if the slug is ugly).
+3. **Wholesale regen** (`bun run scripts/build-scaffbench-2-2-data.ts`) when every `RUN_SOURCES` dir exists on disk — this is the preferred, byte-reproducible path. **Splice** (`bun run scripts/splice-scaffbench-2-2-row.ts <run-dir>`) only when older cohort artifacts are gone; the splice guards verify the new row matches the board protocol exactly.
+4. Commit the run's `summary.md` under `benchmarks/` (summaries only, never scaffolded trees). Archive the raw run dir as a tarball under `testing/llm-benchmarks/archives/` — re-validation after future validator fixes needs the project trees.
+5. Update the blog (`apps/web/content/blog/scaffbench-2-2.mdx`): new rows aren't published until the narrative reflects them. Blog frontmatter needs a ≤170-char description and all 8 i18n bundles.
+6. Tier placement: subscription models that report `cost = $0` (`opencode-go/*`) are PAID — only genuinely free ids (`*-free`, `:free`) go under the Free divider.
 
-- **opencode/Kilo need `--dangerously-skip-permissions`** (baked into the adapter). Without it, every tool call is auto-rejected in headless mode and the agent scaffolds nothing.
-- **Validation timeout doesn't kill the process tree.** A watcher/dev-server-style build (e.g. `ts-svelte-edge-orpc`) can hang a run indefinitely — the 10-min per-step cap never fires. Use a watchdog on `validate.log` mtime (>12 min stall = hang) or exclude the spec. Real fix TODO: detached/process-group kill in `runCommand`.
-- **macOS has no `timeout`** — use `gtimeout` or a background-PID kill loop.
-- **Cloudflare Workers AI models hang here** (dead/expired token) — uncallable regardless of routing.
-- **`build-scaffbench-2-1-data.ts` reads tool-steps from `claude.stdout.json`**, so opencode/kilo runs show `steps = 0` in the data.
-- **.NET specs** (`multi-dotnet-ops`, `dotnet-blazor-cqrs`) need the .NET SDK installed, or they score inconclusive.
-- **Adding a spec:** calibrate on a WEAK model AND a STRONG model — keep it only if the weak model fails while the strong one passes. Both-pass = saturated, cut it. "Fancy framework" is not "hard spec."
+## Adding a spec
+
+Calibration rule: run the candidate on a WEAK model (`opencode/deepseek-v4-flash-free`) and a STRONG model; keep it only if weak fails while strong passes. Both pass = saturated, cut it. "Fancy framework" is not "hard spec" — a free model once wired 100% of libs on 11/11 supported specs via MCP. Difficulty comes from traps (right-vs-plausible forks), restraint (penalize over-scaffolding), build-correctness, or pure engineering.
+
+Parked candidates (validated design, not yet implemented):
+
+- **Supported + traps** (needs canonicalFlags + expectedConfig + loose strictMarkers): `calcom-scheduling` (Next + tRPC + Prisma + Stripe; traps: tRPC not oRPC, Prisma not Drizzle, `self` backend, payments faithfulness), `twenty-crm` (NestJS + TypeORM + GraphQL; trap: TypeORM+better-auth has no adapter → auth:none), `novu-notifications` (NestJS + Mongoose + Redis; trap: Mongo not Postgres).
+- **Frontier / prompt-only** (`supportedByBetterFullstack: false`): `frontier-vite-bundler` (build tool, not app), `frontier-redis-clone` (RESP protocol, Rust/Go), `frontier-crdt-collab`, `frontier-clickhouse-analytics`.
+- **Rejected as saturating — do not re-propose**: convex-collab, astro-docs-site, qwik-storefront, umami-analytics.
+- Difficulty multipliers worth exploring on existing specs: restraint scoring, discovery lane (`naturalPrompt` + acceptanceSets).
+
+## History (archived — pre-reset)
+
+V1 (original) → V2 (2026-06-26: opencode/Kilo adapters, first free-model study, vacuous-pass fix) → V2.1 (2026-06-30: 13 specs, prompt-only methodology, honest-pass fix, Codex/Antigravity adapters) → 2.2 (2026-07-17: self-verify prompt, 7-outcome classification, trial-keyed repeats, quality gates default-on, Full-tier board metric) → **2.2.2 (2026-07-28: validator v6, provenance refresh on re-validation, comment-free harness — the reset baseline)**. Pre-2.2 boards, blogs, and build scripts are historical; do not extend them.

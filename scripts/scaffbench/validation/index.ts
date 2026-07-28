@@ -65,9 +65,6 @@ export function commandStep(
   });
 }
 
-// Every manifest the validators understand — Java/Gradle, Elixir, and .NET
-// included, so a real backend project is never scored project-not-found just
-// because a stray sibling directory forced disambiguation.
 const PROJECT_MANIFESTS = [
   "package.json",
   "Cargo.toml",
@@ -101,9 +98,6 @@ export async function findProjectDir(runDir: string, projectName: string) {
   );
   if (dirs.length === 1 && dirs[0]) return path.join(runDir, dirs[0].name);
 
-  // Multiple (or zero) candidate dirs: disambiguate by manifest presence so a
-  // stray directory the agent created does not shadow the real project, and an
-  // ambiguous tree resolves to null rather than a wrong guess.
   const withManifest = dirs.filter(
     (dir) =>
       PROJECT_MANIFESTS.some((manifest) => existsSync(path.join(runDir, dir.name, manifest))) ||
@@ -115,8 +109,6 @@ export async function findProjectDir(runDir: string, projectName: string) {
   return null;
 }
 
-/** Copy the generated project source (excluding heavy build/dependency dirs)
- * from the isolated workspace into the durable grading tree. */
 export async function archiveProjectSource(srcDir: string, destDir: string) {
   const skip = new Set([
     "node_modules",
@@ -139,10 +131,6 @@ export async function archiveProjectSource(srcDir: string, destDir: string) {
   });
 }
 
-// Prompt-path agents choose their own layout, so a manifest is NOT guaranteed to
-// sit at the project root (frontend/ + backend/ splits are common). Discover the
-// manifest roots for one ecosystem anywhere in the tree (walk() skips
-// node_modules/vendor dirs). Sorted shallowest-first so the container root wins.
 async function findManifestRoots(projectDir: string, manifests: readonly string[]) {
   const roots = new Set<string>();
   await walk(projectDir, async (filePath) => {
@@ -151,9 +139,6 @@ async function findManifestRoots(projectDir: string, manifests: readonly string[
   return [...roots].sort((a, b) => a.length - b.length || a.localeCompare(b));
 }
 
-// Python has no workspace-membership syntax we can reliably recover here, so
-// retain its existing shallowest-manifest heuristic. Bun and Cargo use the
-// membership-aware helpers below instead.
 function dropNestedRoots(roots: string[]) {
   const kept: string[] = [];
   for (const root of roots) {
@@ -239,6 +224,19 @@ async function cargoWorkspacePatterns(root: string) {
   return [...values("members"), ...values("exclude").map((entry) => `!${entry}`)];
 }
 
+const MANIFEST_FIELDS = ["name", "scripts", "dependencies", "devDependencies", "workspaces"];
+
+async function isRealBunManifest(root: string) {
+  const packageJson = await readPackageJson(path.join(root, "package.json"));
+  return MANIFEST_FIELDS.some((field) => packageJson[field] !== undefined);
+}
+
+async function findBunManifestRoots(projectDir: string) {
+  const roots = await findManifestRoots(projectDir, ["package.json"]);
+  const real = await Promise.all(roots.map(isRealBunManifest));
+  return roots.filter((_, index) => real[index]);
+}
+
 async function membershipAwareRoots(
   roots: readonly string[],
   patternsFor: (root: string) => Promise<readonly string[]>,
@@ -305,9 +303,6 @@ export function validateProject(
       for (const [key, step] of Object.entries(incoming)) {
         if (!step) continue;
         const target = prefix ? `${prefix}:${key}` : key;
-        // Same-directory ecosystem collision (e.g. root package.json + root
-        // Cargo.toml both produce "build"): namespace by ecosystem instead of
-        // overwriting the earlier verdict.
         steps[steps[target] === undefined ? target : `${eco}:${key}`] = step;
         merged += 1;
       }
@@ -332,11 +327,8 @@ export function validateProject(
       }
       return accepted;
     };
-    // Sub-roots never run the project-level doctor/route checks (bfs metadata and
-    // the dev server are root concerns).
     const subOptions = { ...options, doctorCheck: false, routeCheck: false };
 
-    // Spec-declared code generation/setup runs in order and gates every build.
     for (const [index, prerequisite] of (spec.prerequisiteCommands ?? []).entries()) {
       const [command, ...args] = prerequisite;
       const key = `prerequisite:${String(index + 1).padStart(2, "0")}:${command ?? "missing"}`;
@@ -349,8 +341,7 @@ export function validateProject(
     }
     const prerequisiteStepCount = Object.keys(steps).length;
 
-    // TS/bun — workspace-shaped: the shallowest package.json drives its members.
-    const allBunRoots = yield* fromPromise(() => findManifestRoots(projectDir, ["package.json"]));
+    const allBunRoots = yield* fromPromise(() => findBunManifestRoots(projectDir));
     const bunRoots = yield* fromPromise(() =>
       membershipAwareRoots(allBunRoots, bunWorkspacePatterns),
     );
@@ -358,9 +349,6 @@ export function validateProject(
       const isRoot = root === projectDir;
       const bunSteps = yield* validateBunProject(root, isRoot ? options : subOptions);
       merge(bunSteps, prefixFor(root), "bun");
-      // A root whose validation is install-only (no build script, no typecheck
-      // surface) measures ~nothing — the near-vacuous-pass shape. Descend into the
-      // member apps so the verdict reflects code, not the root manifest's scripts.
       if (isRoot && bunSteps.install?.exitCode === 0 && !bunSteps.build && !bunSteps.typecheck) {
         const members = yield* fromPromise(() =>
           coveredWorkspaceMembers(root, allBunRoots, bunWorkspacePatterns),
@@ -372,7 +360,6 @@ export function validateProject(
     }
 
     const nativeProfiles = new Set(spec.validationProfile.native ?? []);
-    // Rust/Python — workspace-shaped like bun: shallowest manifest wins.
     const allCargoRoots = yield* fromPromise(() => findManifestRoots(projectDir, ["Cargo.toml"]));
     const cargoRoots = yield* fromPromise(() =>
       membershipAwareRoots(allCargoRoots, cargoWorkspacePatterns),
@@ -394,8 +381,6 @@ export function validateProject(
         "python",
       );
     }
-    // Go — every go.mod is an independent module: `go build ./...` in a parent
-    // module never descends into a nested module, so validate each root.
     const goRoots = yield* fromPromise(() => findManifestRoots(projectDir, ["go.mod"]));
     for (const root of takeRoots(goRoots, "go")) {
       merge(
@@ -413,11 +398,6 @@ export function validateProject(
         "dotnet",
       );
     }
-    // Java/Elixir run ONLY on an explicit native profile — NOT file autodetect.
-    // A React Native app ships an Android `build.gradle` (apps/native/android), and
-    // a loose gradle autodetect would wrongly run `gradlew compileJava` on a
-    // TS/bun project and clobber its bun validation. Every Java/Elixir spec
-    // declares validationProfile.native, so the explicit gate is sufficient.
     if (nativeProfiles.has("java")) {
       merge(yield* validateJavaProject(projectDir, options), "", "java");
     }
@@ -472,10 +452,6 @@ export function validateBunProject(projectDir: string, options: ScaffbenchOption
     }
     const gate = typecheckGate(scripts, existsSync(path.join(projectDir, "tsconfig.json")));
     if (gate === "tsc") {
-      // No typecheck script shipped: fall back to `tsc --build` so a TS project
-      // cannot dodge type-checking by omitting the script. `--build` (unlike
-      // `--noEmit`) descends into project references, so a root tsconfig with
-      // `files: []` + `references` still type-checks the referenced app/packages.
       const bunx = existsSync(`${process.env.HOME}/.bun/bin/bunx`)
         ? `${process.env.HOME}/.bun/bin/bunx`
         : "bunx";
@@ -483,12 +459,6 @@ export function validateBunProject(projectDir: string, options: ScaffbenchOption
     } else if (gate) {
       steps.typecheck = yield* commandStep(bun, ["run", gate], projectDir);
     }
-    // Quality gate — every check is READ-ONLY (never mutates the scaffold) and runs
-    // the project-LOCAL, version-pinned tool (node_modules/.bin/*) after install, so
-    // the verdict is reproducible and a step can't launder a real problem into a
-    // pass by auto-fixing it. A missing tool is a `skipStep` (disqualifies Full),
-    // never a silent exit-0 pass — that exit-0 skip + the `biome check --write`
-    // fallback were the Finding-1 inflation that made Full == Core for TS cells.
     if (options.qualityGate || scripts.lint) {
       const biomeBin = localBin(projectDir, "biome");
       const eslintBin = localBin(projectDir, "eslint");
@@ -501,12 +471,6 @@ export function validateBunProject(projectDir: string, options: ScaffbenchOption
             : skipStep("lint (no linter configured)");
     }
     if (options.qualityGate) {
-      // Read-only format check — deliberately NOT the project's `format`/`check`
-      // scripts: generated BFS projects ship `check: biome check --write .`, which
-      // auto-fixes and always exits 0. `biome format` (no --write) / `prettier
-      // --check` report formatting drift without writing. NOTE: Biome 2.5.1 removed
-      // the `--check` flag ("--check is not expected in this context"); the default
-      // `biome format` is already read-only and exits non-zero on unformatted code.
       const biomeBin = localBin(projectDir, "biome");
       const prettierBin = localBin(projectDir, "prettier");
       steps.format = biomeBin
@@ -514,8 +478,6 @@ export function validateBunProject(projectDir: string, options: ScaffbenchOption
         : prettierBin
           ? yield* commandStep(prettierBin, ["--check", "."], projectDir)
           : skipStep("format (no formatter configured)");
-      // A scaffold with no test script is genuinely testless -> n/a (excluded from
-      // Full), neither a free pass nor a failure.
       steps.test = scripts.test
         ? yield* commandStep(bun, ["run", "test"], projectDir)
         : naStep("test (no test script)");
@@ -655,10 +617,6 @@ export function validatePythonProject(projectDir: string, options: ScaffbenchOpt
     );
     const typechecker = yield* fromPromise(() => configuredPythonTypechecker(projectDir));
     if (typechecker === "mypy") {
-      // An explicit "." would override a [tool.mypy] files/packages list and
-      // drag in support files (e.g. Alembic migrations) the scaffold never
-      // promises to type-check; only fall back to "." when the config names
-      // no targets of its own.
       const mypyArguments = (yield* fromPromise(() => pythonMypyHasConfiguredTargets(projectDir)))
         ? []
         : ["."];
@@ -677,15 +635,11 @@ export function validatePythonProject(projectDir: string, options: ScaffbenchOpt
     }
     if (options.qualityGate) {
       steps.lint = yield* commandStep("uv", ["run", "ruff", "check", "."], projectDir);
-      // Read-only format check, for parity with the TS/Rust/Go gates (was missing).
       steps.format = yield* commandStep(
         "uv",
         ["run", "ruff", "format", "--check", "."],
         projectDir,
       );
-      // pytest exit 5 = "no tests collected": a genuinely testless scaffold -> n/a
-      // (excluded from Full), not a failure (the old bare pytest would fail it) and
-      // not a pass. Any other non-zero stays a real test failure.
       const pytest = yield* commandStep("uv", ["run", "pytest"], projectDir);
       steps.test = pytest.exitCode === 5 ? naStep("pytest (no tests collected)") : pytest;
     }
@@ -704,14 +658,9 @@ export function validateGoProject(projectDir: string, options: ScaffbenchOptions
       }));
     if (steps.install.exitCode !== 0 || steps.install.timedOut) return steps;
     steps.build = steps.build ?? (yield* commandStep("go", ["build", "./..."], projectDir));
-    // Tidy is intentionally advisory and runs against a disposable copy so the
-    // validator reports dependency-file drift without mutating the scaffold.
     steps.tidy = yield* runGoTidyAdvisory(projectDir);
     if (options.qualityGate) {
       steps.lint = yield* commandStep("go", ["vet", "./..."], projectDir);
-      // Read-only format check, for parity with the other gates (was missing).
-      // `gofmt -l .` lists unformatted files but exits 0 regardless, so treat any
-      // listed file as a failure.
       const gofmt = yield* runCommand("gofmt", ["-l", "."], projectDir, VALIDATION_TIMEOUT_MS);
       const unformatted = gofmt.stdout.trim();
       steps.format = toStep(
@@ -723,9 +672,6 @@ export function validateGoProject(projectDir: string, options: ScaffbenchOptions
             }
           : gofmt,
       );
-      // go test reports "no test files" and exits 0 for a testless scaffold, which
-      // is an acceptable trivially-green test step (cf. cargo test). (TS/Python map
-      // their testless idioms to n/a; the Full outcome is the same either way.)
       steps.test = yield* commandStep("go", ["test", "./..."], projectDir);
     }
     return steps;
@@ -802,9 +748,6 @@ export function validateDotnetProject(
   });
 }
 
-// Locate the build root for a non-TS ecosystem by its manifest file. Prefers a
-// backend under apps/server (multi-ecosystem graph layout), else the shallowest
-// match. Returns null when no manifest is present (the validator then no-ops).
 export async function findBuildRoot(
   projectDir: string,
   manifests: readonly string[],
@@ -829,10 +772,6 @@ export function validateJavaProject(projectDir: string, options: ScaffbenchOptio
       findBuildRoot(projectDir, ["pom.xml", "build.gradle", "build.gradle.kts"]),
     );
     if (!root) return steps;
-    // Prefer the project's wrapper (pins the build-tool version and works even
-    // when the system binary is absent — e.g. gradle via ./gradlew); else the
-    // system binary. Tests stay an advisory step under the quality gate so the
-    // build verdict reflects compilation, not test outcomes.
     const hasPom = existsSync(path.join(root, "pom.xml"));
     const wrapper = hasPom ? "mvnw" : "gradlew";
     const usesWrapper = existsSync(path.join(root, wrapper));
@@ -868,7 +807,6 @@ export function validateElixirProject(projectDir: string, options: ScaffbenchOpt
     steps.build = yield* commandStep("mix", ["compile"], root);
     if (steps.build.exitCode !== 0 || steps.build.timedOut) return steps;
     if (options.qualityGate) {
-      // Read-only format check, for parity with the other ecosystem gates.
       steps.format = yield* commandStep("mix", ["format", "--check-formatted"], root);
       steps.test = yield* commandStep("mix", ["test"], root);
     }
@@ -977,9 +915,6 @@ function buildProjectValidation(
   };
 }
 
-// A quality-gate check that SHOULD have run but no tool was configured/detected.
-// NOT a pass — it disqualifies a Full pass. exitCode null (never 0) so the
-// steps.every(exitCode === 0) scoring can't read it as green (the Finding-1 bug).
 function skipStep(command: string): StepResult {
   return {
     command,
@@ -1004,9 +939,6 @@ function unvalidatedStep(command: string): StepResult {
   };
 }
 
-// A check that is legitimately not applicable (e.g. a scaffold with genuinely no
-// tests, or a route-check with no dev server). Excluded from scoring — neither
-// pass nor fail. exitCode null so it can never read as a green run either.
 function naStep(command: string): StepResult {
   return {
     command,
@@ -1019,9 +951,6 @@ function naStep(command: string): StepResult {
   };
 }
 
-// Resolve a project-local CLI binary (node_modules/.bin/<name>) so the gate runs
-// the version the project pins, not a bunx-latest download (which drifts the
-// verdict run-to-run). Returns null if the tool is not installed in the project.
 function localBin(projectDir: string, name: string): string | null {
   const p = path.join(projectDir, "node_modules", ".bin", name);
   return existsSync(p) ? p : null;
@@ -1077,9 +1006,6 @@ export async function configuredPythonTypechecker(
   return null;
 }
 
-/** True when the project's mypy config declares its own targets (files/
- *  packages/modules), meaning bare `mypy` runs exactly what the scaffold
- *  intends and an explicit path argument would widen the check. */
 export async function pythonMypyHasConfiguredTargets(projectDir: string): Promise<boolean> {
   const targetPattern = /^\s*(files|packages|modules)\s*=/m;
   for (const name of ["mypy.ini", ".mypy.ini"]) {
@@ -1089,8 +1015,6 @@ export async function pythonMypyHasConfiguredTargets(projectDir: string): Promis
   const pyprojectPath = path.join(projectDir, "pyproject.toml");
   if (!existsSync(pyprojectPath)) return false;
   const pyproject = await readFile(pyprojectPath, "utf8");
-  // Only look inside the [tool.mypy] table — `packages =` under other tables
-  // (e.g. [tool.setuptools]) must not count.
   const headerMatch = /^\s*\[tool\.mypy\]\s*$/m.exec(pyproject);
   if (!headerMatch) return false;
   const afterHeader = pyproject.slice(headerMatch.index + headerMatch[0].length);
@@ -1115,10 +1039,6 @@ async function findPythonEntryTarget(projectDir: string): Promise<PythonEntryTar
   const entries = (await readdir(root, { withFileTypes: true })).sort((a, b) =>
     a.name.localeCompare(b.name),
   );
-  // A real package is the strongest import smoke. Generated __init__ files are
-  // often trivial (just __version__), so prefer a conventional entry submodule
-  // (main.py, app.py, __main__.py) — importing pkg.main exercises the actual
-  // runtime imports of the entrypoint, which importing the bare package skips.
   for (const entry of entries) {
     if (!entry.isDirectory() || !/^[A-Za-z_]\w*$/.test(entry.name)) continue;
     const init = path.join(root, entry.name, "__init__.py");
@@ -1176,8 +1096,6 @@ function pythonFileImportCommand(target: PythonEntryTarget) {
   const filePath = JSON.stringify(target.filePath);
   const importRoot = JSON.stringify(target.importRoot);
   if (target.moduleName.includes(".")) {
-    // Dotted package entry (e.g. app.main): the import root is on sys.path, so
-    // the regular import system resolves the package and executes the module.
     return [
       "import importlib, sys",
       `sys.path.insert(0, ${importRoot})`,
@@ -1242,7 +1160,3 @@ async function readOptional(filePath: string) {
   }
 }
 
-/** Decide how a TS project is type-checked: prefer its own script, else fall
- * back to a direct `tsc --noEmit` when a tsconfig exists, so a project cannot
- * dodge type-checking by omitting the script. Returns null when there is
- * genuinely nothing to type-check (no script and no tsconfig). */
