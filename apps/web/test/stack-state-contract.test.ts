@@ -23,7 +23,7 @@ import {
   parseStackShareSlug,
 } from "../src/lib/stack-share-paths";
 import { getCanonicalStackSharePath } from "../src/lib/stack-share-slugs";
-import { getInitialBuilderState } from "../src/lib/stack-url-state";
+import { createLiveBuilderSearchParams, getInitialBuilderState } from "../src/lib/stack-url-state";
 import { generateStackSharingUrl } from "../src/lib/stack-utils";
 
 type MappedStackStateKey = keyof typeof STACK_STATE_OPTION_CATEGORY_BY_KEY;
@@ -118,6 +118,23 @@ describe("StackState contract", () => {
     ]);
     expect(initialState.viewMode).toBe("preview");
     expect(initialState.selectedFile).toBe("bts.jsonc");
+  });
+
+  it("preserves campaign attribution while synchronizing builder URL state", () => {
+    const initialState = getInitialBuilderState({
+      preset: "nextjs-minimal",
+      view: "run",
+      campaign: "run-before-you-clone",
+    });
+    const params = createLiveBuilderSearchParams(
+      initialState.stack,
+      initialState.viewMode,
+      initialState.selectedFile,
+      initialState.campaign,
+    );
+
+    expect(initialState.campaign).toBe("run-before-you-clone");
+    expect(params.get("campaign")).toBe("run-before-you-clone");
   });
 
   it("supports compact share paths for exact ecosystem and default multi stacks", () => {

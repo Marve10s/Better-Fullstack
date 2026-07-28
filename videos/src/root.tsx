@@ -19,6 +19,12 @@ const sharedOg = {
   accent: "#C6E853",
 } as const;
 
+const nonRunnableOg = {
+  body: "Inspect the generated code, configure the stack and download the real project.",
+  accent: "#C6E853",
+  actions: ["inspect", "configure", "download"],
+} as const;
+
 const ogCards: Array<{ id: string; fileName: string; props: OgCardProps }> = [
   {
     id: "OgRunBeforeYouClone",
@@ -81,7 +87,7 @@ const ogCards: Array<{ id: string; fileName: string; props: OgCardProps }> = [
     id: "OgReactNativeStack",
     fileName: "stack-react-native-1200x630.png",
     props: {
-      ...sharedOg,
+      ...nonRunnableOg,
       eyebrow: "react native stack",
       title: "Start a mobile stack without the wiring.",
       technologies: [
@@ -95,7 +101,7 @@ const ogCards: Array<{ id: string; fileName: string; props: OgCardProps }> = [
     id: "OgRustStack",
     fileName: "stack-rust-1200x630.png",
     props: {
-      ...sharedOg,
+      ...nonRunnableOg,
       eyebrow: "rust stack",
       title: "Scaffold Rust without hand-wiring the stack.",
       technologies: [
@@ -109,7 +115,7 @@ const ogCards: Array<{ id: string; fileName: string; props: OgCardProps }> = [
     id: "OgPythonStack",
     fileName: "stack-python-1200x630.png",
     props: {
-      ...sharedOg,
+      ...nonRunnableOg,
       eyebrow: "python stack",
       title: "Start the Python app, not the boilerplate.",
       technologies: [
@@ -123,7 +129,7 @@ const ogCards: Array<{ id: string; fileName: string; props: OgCardProps }> = [
     id: "OgGoStack",
     fileName: "stack-go-1200x630.png",
     props: {
-      ...sharedOg,
+      ...nonRunnableOg,
       eyebrow: "go stack",
       title: "Scaffold a Go service with the pieces connected.",
       technologies: [
@@ -137,7 +143,7 @@ const ogCards: Array<{ id: string; fileName: string; props: OgCardProps }> = [
     id: "OgJavaStack",
     fileName: "stack-java-1200x630.png",
     props: {
-      ...sharedOg,
+      ...nonRunnableOg,
       eyebrow: "java stack",
       title: "Generate the Java stack your team can own.",
       technologies: [
@@ -151,7 +157,7 @@ const ogCards: Array<{ id: string; fileName: string; props: OgCardProps }> = [
     id: "OgElixirStack",
     fileName: "stack-elixir-1200x630.png",
     props: {
-      ...sharedOg,
+      ...nonRunnableOg,
       eyebrow: "elixir stack",
       title: "Start with a wired Elixir application.",
       technologies: [
@@ -165,7 +171,7 @@ const ogCards: Array<{ id: string; fileName: string; props: OgCardProps }> = [
     id: "OgDotnetStack",
     fileName: "stack-dotnet-1200x630.png",
     props: {
-      ...sharedOg,
+      ...nonRunnableOg,
       eyebrow: ".net stack",
       title: "Start the .NET service with less ceremony.",
       technologies: [
@@ -179,7 +185,7 @@ const ogCards: Array<{ id: string; fileName: string; props: OgCardProps }> = [
     id: "OgMultiStack",
     fileName: "stack-multi-ecosystem-1200x630.png",
     props: {
-      ...sharedOg,
+      ...nonRunnableOg,
       accent: "#18D5FF",
       eyebrow: "multi-ecosystem",
       title: "One project. More than one language.",

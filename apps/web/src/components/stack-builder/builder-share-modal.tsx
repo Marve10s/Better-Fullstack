@@ -40,6 +40,7 @@ type BuilderShareModalProps = {
   onOpenChange: (open: boolean) => void;
   stack: StackState;
   moment: ShareMoment;
+  campaign?: string;
 };
 
 export function BuilderShareModal({
@@ -47,6 +48,7 @@ export function BuilderShareModal({
   onOpenChange,
   stack,
   moment,
+  campaign,
 }: BuilderShareModalProps) {
   const [copied, setCopied] = useState(false);
   const shareUrl = useMemo(() => getCampaignShareUrl(stack, moment), [moment, stack]);
@@ -61,10 +63,10 @@ export function BuilderShareModal({
     (target: string) => {
       trackCampaignEvent(
         "builder_stack_shared",
-        stackAnalyticsProperties(stack, { moment, target }),
+        stackAnalyticsProperties(stack, { campaign, moment, target }),
       );
     },
-    [moment, stack],
+    [campaign, moment, stack],
   );
 
   const handleOpenChange = useCallback(
@@ -173,7 +175,7 @@ export function BuilderShareModal({
             onClick={() =>
               trackCampaignEvent(
                 "builder_github_clicked",
-                stackAnalyticsProperties(stack, { moment }),
+                stackAnalyticsProperties(stack, { campaign, moment }),
               )
             }
           >

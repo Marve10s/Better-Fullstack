@@ -3,6 +3,7 @@ import { describe, expect, it } from "bun:test";
 import {
   assertBoardProtocol,
   assertCompleteSpecList,
+  assertFullTierValidation,
   assertSinglePromptRow,
 } from "./splice-scaffbench-2-2-row";
 
@@ -47,5 +48,24 @@ describe("ScaffBench 2.2 publication guards", () => {
         "run",
       ),
     ).toThrow("does not match");
+  });
+
+  it("requires Full-tier validation for every published result", () => {
+    expect(() =>
+      assertFullTierValidation(true, [{ validation: { qualityGateRequested: true } }], "run"),
+    ).not.toThrow();
+    expect(() =>
+      assertFullTierValidation(false, [{ validation: { qualityGateRequested: false } }], "run"),
+    ).toThrow("requires Full-tier validation");
+    expect(() =>
+      assertFullTierValidation(
+        true,
+        [
+          { validation: { qualityGateRequested: true } },
+          { validation: { qualityGateRequested: false } },
+        ],
+        "run",
+      ),
+    ).toThrow("requires Full-tier validation");
   });
 });

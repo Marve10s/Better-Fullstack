@@ -2194,7 +2194,7 @@ function CreationModeComposer({
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
-  const [stack, setStack, viewMode, setViewMode, selectedFile, setSelectedFile] =
+  const [stack, setStack, viewMode, setViewMode, selectedFile, setSelectedFile, campaign] =
     useStackState(initialStack);
 
   const [command, setCommand] = useState("");
@@ -2259,10 +2259,10 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
       setSharePromptOpen(true);
       trackCampaignEvent(
         "builder_share_prompted",
-        stackAnalyticsProperties(stackToShare, { moment }),
+        stackAnalyticsProperties(stackToShare, { campaign, moment }),
       );
     },
-    [adjustedStack, stack],
+    [adjustedStack, campaign, stack],
   );
 
   const handleDownloadProject = async () => {
@@ -2276,7 +2276,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
       downloadProjectArchive(archive);
       trackCampaignEvent(
         "builder_zip_downloaded",
-        stackAnalyticsProperties(adjustedStack || stack),
+        stackAnalyticsProperties(adjustedStack || stack, { campaign }),
       );
       toast.success(m.builderDownloadComplete({ fileName: archive.fileName }));
       promptForShare("download");
@@ -2476,21 +2476,21 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
     (rerun: boolean) => {
       trackCampaignEvent(
         "builder_run_started",
-        stackAnalyticsProperties(adjustedStack || stack, { rerun }),
+        stackAnalyticsProperties(adjustedStack || stack, { campaign, rerun }),
       );
     },
-    [adjustedStack, stack],
+    [adjustedStack, campaign, stack],
   );
 
   const handleRunReady = useCallback(
     (rerun: boolean) => {
       trackCampaignEvent(
         "builder_run_ready",
-        stackAnalyticsProperties(adjustedStack || stack, { rerun }),
+        stackAnalyticsProperties(adjustedStack || stack, { campaign, rerun }),
       );
       promptForShare("run");
     },
-    [adjustedStack, promptForShare, stack],
+    [adjustedStack, campaign, promptForShare, stack],
   );
 
   // ─── Handlers ───────────────────────────────────────────────────────────
@@ -2833,6 +2833,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
         onOpenChange={setSharePromptOpen}
         stack={adjustedStack || stack}
         moment={sharePromptMoment}
+        campaign={campaign}
       />
       <div className="relative flex h-full w-full flex-col overflow-hidden border-border text-foreground">
         {/* Single scroller: header + toolbar + content scroll together (header is not pinned) */}

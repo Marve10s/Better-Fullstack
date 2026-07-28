@@ -16,5 +16,6 @@ export type StackSearchParams = Partial<StackSearchParamShape> & {
   view?: "command" | "preview" | "run" | "presets" | "saved";
   file?: string;
   preset?: string;
+  campaign?: string;
   newOptions?: "1";
 };

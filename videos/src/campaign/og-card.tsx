@@ -2,12 +2,15 @@ import { Img } from "remotion";
 
 import { BF_COLORS, FONT_MONO, GridBackground, Wordmark } from "../styles";
 
+const DEFAULT_ACTIONS = ["inspect", "edit", "run", "download"] as const;
+
 export type OgCardProps = {
   eyebrow: string;
   title: string;
   body: string;
   technologies: Array<{ name: string; icon: string }>;
   accent?: string;
+  actions?: readonly string[];
 };
 
 export function OgCard({
@@ -16,6 +19,7 @@ export function OgCard({
   body,
   technologies,
   accent = BF_COLORS.lime,
+  actions = DEFAULT_ACTIONS,
 }: OgCardProps) {
   return (
     <GridBackground style={{ padding: 54 }}>
@@ -97,7 +101,7 @@ export function OgCard({
               fontSize: 13,
             }}
           >
-            inspect · edit · run · download
+            {actions.join(" · ")}
           </span>
         </div>
       </div>

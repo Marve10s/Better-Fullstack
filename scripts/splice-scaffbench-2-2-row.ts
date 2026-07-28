@@ -50,6 +50,9 @@ type SummaryResult = {
     validationCacheVersion?: number;
     promptVersion?: string;
   };
+  validation?: {
+    qualityGateRequested?: boolean;
+  };
 };
 
 export function assertCompleteSpecList(
@@ -128,6 +131,19 @@ export function assertBoardProtocol(
   }
 }
 
+export function assertFullTierValidation(
+  qualityGate: boolean | undefined,
+  results: readonly SummaryResult[],
+  source: string,
+) {
+  if (
+    qualityGate !== true ||
+    results.some((result) => result.validation?.qualityGateRequested !== true)
+  ) {
+    throw new Error(`${source}: ScaffBench 2.2 publication requires Full-tier validation`);
+  }
+}
+
 function main() {
   const dir = process.argv[2];
   if (!dir) throw new Error("usage: splice-scaffbench-2-2-row.ts <run-dir>");
@@ -158,6 +174,7 @@ function main() {
     `${dir} results`,
   );
   assertBoardProtocol(summary.results, SCAFFBENCH22_META, dir);
+  assertFullTierValidation(summary.options.qualityGate, summary.results, dir);
 
   const lb = summary.aggregates.leaderboard.find(
     (row: any) => row.model === model && row.effort === effort && row.path === "prompt",
