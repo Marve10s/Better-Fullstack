@@ -44,6 +44,7 @@ type SummaryResult = {
   effort?: string;
   path?: string;
   specId?: string;
+  trial?: number;
   provenance?: {
     suiteVersion?: string;
     harnessVersion?: string;
@@ -52,6 +53,8 @@ type SummaryResult = {
   };
   validation?: {
     qualityGateRequested?: boolean;
+    deferred?: boolean;
+    skipped?: boolean;
   };
 };
 
@@ -98,6 +101,43 @@ export function assertSinglePromptRow(
   }
 }
 
+export function assertCompleteTrialMatrix(
+  results: readonly SummaryResult[],
+  expectedSpecs: readonly string[],
+  configuredTrials: number | undefined,
+  source: string,
+) {
+  if (
+    !Number.isInteger(configuredTrials) ||
+    configuredTrials === undefined ||
+    configuredTrials < 1
+  ) {
+    throw new Error(`${source}: configuredTrials must be a positive integer`);
+  }
+
+  const expectedTrials = new Set(Array.from({ length: configuredTrials }, (_, index) => index + 1));
+  for (const spec of expectedSpecs) {
+    const trials = results.filter((result) => result.specId === spec).map((result) => result.trial);
+    const counts = new Map<number | undefined, number>();
+    for (const trial of trials) counts.set(trial, (counts.get(trial) ?? 0) + 1);
+    const missing = [...expectedTrials].filter((trial) => !counts.has(trial));
+    const unexpected = [...counts.keys()].filter(
+      (trial) => trial === undefined || !expectedTrials.has(trial),
+    );
+    const duplicates = [...counts.entries()]
+      .filter(([, count]) => count > 1)
+      .map(([trial]) => trial);
+    if (missing.length > 0 || unexpected.length > 0 || duplicates.length > 0) {
+      throw new Error(
+        `${source}: incomplete trial set for ${spec}` +
+          (missing.length > 0 ? `; missing: ${missing.join(", ")}` : "") +
+          (unexpected.length > 0 ? `; unexpected: ${unexpected.join(", ")}` : "") +
+          (duplicates.length > 0 ? `; duplicate: ${duplicates.join(", ")}` : ""),
+      );
+    }
+  }
+}
+
 export function assertBoardProtocol(
   results: readonly SummaryResult[],
   board: {
@@ -138,7 +178,12 @@ export function assertFullTierValidation(
 ) {
   if (
     qualityGate !== true ||
-    results.some((result) => result.validation?.qualityGateRequested !== true)
+    results.some(
+      (result) =>
+        result.validation?.qualityGateRequested !== true ||
+        result.validation.deferred === true ||
+        result.validation.skipped === true,
+    )
   ) {
     throw new Error(`${source}: ScaffBench 2.2 publication requires Full-tier validation`);
   }
@@ -173,6 +218,7 @@ function main() {
     SCAFFBENCH22_SPECS,
     `${dir} results`,
   );
+  assertCompleteTrialMatrix(summary.results, SCAFFBENCH22_SPECS, summary.options.repeats, dir);
   assertBoardProtocol(summary.results, SCAFFBENCH22_META, dir);
   assertFullTierValidation(summary.options.qualityGate, summary.results, dir);
 

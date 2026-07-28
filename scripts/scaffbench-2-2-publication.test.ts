@@ -3,6 +3,7 @@ import { describe, expect, it } from "bun:test";
 import {
   assertBoardProtocol,
   assertCompleteSpecList,
+  assertCompleteTrialMatrix,
   assertFullTierValidation,
   assertSinglePromptRow,
 } from "./splice-scaffbench-2-2-row";
@@ -50,6 +51,19 @@ describe("ScaffBench 2.2 publication guards", () => {
     ).toThrow("does not match");
   });
 
+  it("requires every configured trial for every benchmark spec", () => {
+    const complete = specs.flatMap((specId) => [1, 2, 3].map((trial) => ({ specId, trial })));
+    expect(() => assertCompleteTrialMatrix(complete, specs, 3, "run")).not.toThrow();
+    expect(() =>
+      assertCompleteTrialMatrix(
+        complete.filter((result) => !(result.specId === "two" && result.trial === 2)),
+        specs,
+        3,
+        "run",
+      ),
+    ).toThrow("incomplete trial set for two; missing: 2");
+  });
+
   it("requires Full-tier validation for every published result", () => {
     expect(() =>
       assertFullTierValidation(true, [{ validation: { qualityGateRequested: true } }], "run"),
@@ -64,6 +78,20 @@ describe("ScaffBench 2.2 publication guards", () => {
           { validation: { qualityGateRequested: true } },
           { validation: { qualityGateRequested: false } },
         ],
+        "run",
+      ),
+    ).toThrow("requires Full-tier validation");
+    expect(() =>
+      assertFullTierValidation(
+        true,
+        [{ validation: { qualityGateRequested: true, deferred: true } }],
+        "run",
+      ),
+    ).toThrow("requires Full-tier validation");
+    expect(() =>
+      assertFullTierValidation(
+        true,
+        [{ validation: { qualityGateRequested: true, skipped: true } }],
         "run",
       ),
     ).toThrow("requires Full-tier validation");
