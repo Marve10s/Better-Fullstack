@@ -9,11 +9,11 @@ import {
   TbCrosshair as Crosshair,
   TbStack3 as Layers3,
   TbLeaf as Leaf,
+  TbLibraryPlus as LibraryPlus,
   TbLink as Link2,
   TbNetwork as Network,
   TbRefresh as RefreshCw,
   TbShield as Shield,
-  TbSparkles as Sparkles,
   TbRipple as Waves,
   TbWand as Wand2,
   TbX as X,
@@ -167,7 +167,7 @@ export default function LaunchRadarStrip() {
               />
               <div className="relative">
                 <p className="flex items-center gap-2 font-pixel text-[10px] uppercase tracking-[0.18em] text-surface/60">
-                  <Sparkles className="size-3 text-[#18D5FF]" aria-hidden />
+                  <LibraryPlus className="size-3 text-[#18D5FF]" aria-hidden />
                   {m.launchRadarModalEyebrow()}
                 </p>
                 <p className="mt-6 font-pixel-grid text-[4.5rem] leading-[0.72] tracking-[-0.1em] text-surface sm:text-[5.5rem]">

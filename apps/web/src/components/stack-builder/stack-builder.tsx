@@ -27,6 +27,7 @@ import {
   TbHammer as Hammer,
   TbInfoCircle as InfoIcon,
   TbLink as Link,
+  TbLibraryPlus as LibraryPlus,
   TbLoader2 as Loader2,
   TbLayoutSidebar as PanelLeft,
   TbPencil as Pencil,
@@ -36,7 +37,6 @@ import {
   TbSearch as Search,
   TbSettings as Settings,
   TbArrowsShuffle as Shuffle,
-  TbSparkles as Sparkles,
   TbTerminal as Terminal,
   TbX as X,
   TbBolt as Zap,
@@ -3108,7 +3108,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                         : "border-border/55 bg-muted/30 text-muted-foreground hover:border-foreground/30 hover:text-foreground",
                     )}
                   >
-                    <Sparkles
+                    <LibraryPlus
                       className={cn("size-3", showNewOptionsOnly && "text-[#FF5C8A]")}
                       aria-hidden
                     />
@@ -3331,7 +3331,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                   {showNewOptionsOnly && builderSearchData.availableNewOptionCount === 0 ? (
                     <div className="flex min-h-64 flex-col items-center justify-center px-5 text-center">
                       <span className="flex size-11 items-center justify-center rounded-full bg-[#18D5FF]/10 text-[#06647A] dark:text-[#18D5FF]">
-                        <Sparkles className="size-5" aria-hidden />
+                        <LibraryPlus className="size-5" aria-hidden />
                       </span>
                       <p className="mt-4 max-w-sm font-mono text-xs text-muted-foreground">
                         {m.builderNewEmpty({ ecosystem: builderSearchEcosystemName })}

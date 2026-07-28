@@ -10,6 +10,7 @@ import {
   TbBrandGithub as Github,
   TbStack3 as Layers3,
   TbLanguage as Languages,
+  TbLibraryPlus as LibraryPlus,
   TbMenu2 as Menu,
   TbMoon as Moon,
   TbNews as Newspaper,
@@ -42,7 +43,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { type BuilderMode, useBuilderMode } from "@/lib/builder-mode-bridge";
 import { LOCALE_LABELS } from "@/lib/i18n/locales";
-import { requestLaunchRadarOpen } from "@/lib/launch-radar";
+import { LAUNCH_RADAR_TOTAL, requestLaunchRadarOpen } from "@/lib/launch-radar";
 import { isStackShareSlug } from "@/lib/stack-share-slugs";
 import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
@@ -485,10 +486,10 @@ function MobileNavMenu({ onBuilder }: { onBuilder: boolean }) {
               render={<Link to="/" hash="whats-new" onClick={requestLaunchRadarOpen} />}
               className={MOBILE_MENU_ITEM_CLASS}
             >
-              <Sparkles className="size-4 text-[#FF5C8A]" />
+              <LibraryPlus className="size-4 text-[#FF5C8A]" />
               <span>{m.navUpdates()}</span>
               <span className="ml-auto rounded-full bg-[#18D5FF]/10 px-2 py-0.5 font-mono text-[9px] text-[#06647A] dark:text-[#18D5FF]">
-                84 {m.builderNewBadge().toLowerCase()}
+                {LAUNCH_RADAR_TOTAL} {m.builderNewBadge().toLowerCase()}
               </span>
             </DropdownMenuItem>
           </div>
