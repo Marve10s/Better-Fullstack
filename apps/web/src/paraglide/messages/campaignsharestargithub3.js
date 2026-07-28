@@ -9,29 +9,37 @@ const en_campaignsharestargithub3 = /** @type {(inputs: Campaignsharestargithub3
 	return /** @type {LocalizedString} */ (`Star on GitHub`)
 };
 
-/** @type {(inputs: Campaignsharestargithub3Inputs) => LocalizedString} */
-const es_campaignsharestargithub3 = en_campaignsharestargithub3;
+const es_campaignsharestargithub3 = /** @type {(inputs: Campaignsharestargithub3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Dar una estrella en GitHub`)
+};
 
-/** @type {(inputs: Campaignsharestargithub3Inputs) => LocalizedString} */
-const zh_campaignsharestargithub3 = en_campaignsharestargithub3;
+const zh_campaignsharestargithub3 = /** @type {(inputs: Campaignsharestargithub3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`在 GitHub 上加星`)
+};
 
-/** @type {(inputs: Campaignsharestargithub3Inputs) => LocalizedString} */
-const ja_campaignsharestargithub3 = en_campaignsharestargithub3;
+const ja_campaignsharestargithub3 = /** @type {(inputs: Campaignsharestargithub3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`GitHub でスターを付ける`)
+};
 
-/** @type {(inputs: Campaignsharestargithub3Inputs) => LocalizedString} */
-const ko_campaignsharestargithub3 = en_campaignsharestargithub3;
+const ko_campaignsharestargithub3 = /** @type {(inputs: Campaignsharestargithub3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`GitHub에서 스타 누르기`)
+};
 
-/** @type {(inputs: Campaignsharestargithub3Inputs) => LocalizedString} */
-const zh_hant1_campaignsharestargithub3 = zh_campaignsharestargithub3;
+const zh_hant1_campaignsharestargithub3 = /** @type {(inputs: Campaignsharestargithub3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`在 GitHub 上按星星`)
+};
 
-/** @type {(inputs: Campaignsharestargithub3Inputs) => LocalizedString} */
-const de_campaignsharestargithub3 = en_campaignsharestargithub3;
+const de_campaignsharestargithub3 = /** @type {(inputs: Campaignsharestargithub3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Auf GitHub einen Stern geben`)
+};
 
-/** @type {(inputs: Campaignsharestargithub3Inputs) => LocalizedString} */
-const fr_campaignsharestargithub3 = en_campaignsharestargithub3;
+const fr_campaignsharestargithub3 = /** @type {(inputs: Campaignsharestargithub3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Mettre une étoile sur GitHub`)
+};
 
-/** @type {(inputs: Campaignsharestargithub3Inputs) => LocalizedString} */
-const uk_campaignsharestargithub3 = en_campaignsharestargithub3;
+const uk_campaignsharestargithub3 = /** @type {(inputs: Campaignsharestargithub3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Поставити зірку на GitHub`)
+};
 
 /**
 * | output |

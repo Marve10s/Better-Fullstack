@@ -9,29 +9,37 @@ const en_buildernewempty2 = /** @type {(inputs: Buildernewempty2Inputs) => Local
 	return /** @type {LocalizedString} */ (`There are no additions from this release in ${i?.ecosystem}.`)
 };
 
-/** @type {(inputs: Buildernewempty2Inputs) => LocalizedString} */
-const es_buildernewempty2 = en_buildernewempty2;
+const es_buildernewempty2 = /** @type {(inputs: Buildernewempty2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`No hay novedades de esta versión en ${i?.ecosystem}.`)
+};
 
-/** @type {(inputs: Buildernewempty2Inputs) => LocalizedString} */
-const zh_buildernewempty2 = en_buildernewempty2;
+const zh_buildernewempty2 = /** @type {(inputs: Buildernewempty2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.ecosystem} 中没有本次发布的新增内容。`)
+};
 
-/** @type {(inputs: Buildernewempty2Inputs) => LocalizedString} */
-const ja_buildernewempty2 = en_buildernewempty2;
+const ja_buildernewempty2 = /** @type {(inputs: Buildernewempty2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.ecosystem} にはこのリリースの追加項目はありません。`)
+};
 
-/** @type {(inputs: Buildernewempty2Inputs) => LocalizedString} */
-const ko_buildernewempty2 = en_buildernewempty2;
+const ko_buildernewempty2 = /** @type {(inputs: Buildernewempty2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.ecosystem}에는 이번 릴리스에서 추가된 항목이 없습니다.`)
+};
 
-/** @type {(inputs: Buildernewempty2Inputs) => LocalizedString} */
-const zh_hant1_buildernewempty2 = zh_buildernewempty2;
+const zh_hant1_buildernewempty2 = /** @type {(inputs: Buildernewempty2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.ecosystem} 中沒有本次發布的新內容。`)
+};
 
-/** @type {(inputs: Buildernewempty2Inputs) => LocalizedString} */
-const de_buildernewempty2 = en_buildernewempty2;
+const de_buildernewempty2 = /** @type {(inputs: Buildernewempty2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`In ${i?.ecosystem} gibt es keine Neuerungen aus diesem Release.`)
+};
 
-/** @type {(inputs: Buildernewempty2Inputs) => LocalizedString} */
-const fr_buildernewempty2 = en_buildernewempty2;
+const fr_buildernewempty2 = /** @type {(inputs: Buildernewempty2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Aucune nouveauté de cette version dans ${i?.ecosystem}.`)
+};
 
-/** @type {(inputs: Buildernewempty2Inputs) => LocalizedString} */
-const uk_buildernewempty2 = en_buildernewempty2;
+const uk_buildernewempty2 = /** @type {(inputs: Buildernewempty2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`У ${i?.ecosystem} немає новинок із цього релізу.`)
+};
 
 /**
 * | output |

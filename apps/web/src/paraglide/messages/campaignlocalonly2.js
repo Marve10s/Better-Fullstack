@@ -9,29 +9,37 @@ const en_campaignlocalonly2 = /** @type {(inputs: Campaignlocalonly2Inputs) => L
 	return /** @type {LocalizedString} */ (`Runs locally in your browser`)
 };
 
-/** @type {(inputs: Campaignlocalonly2Inputs) => LocalizedString} */
-const es_campaignlocalonly2 = en_campaignlocalonly2;
+const es_campaignlocalonly2 = /** @type {(inputs: Campaignlocalonly2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Se ejecuta localmente en tu navegador`)
+};
 
-/** @type {(inputs: Campaignlocalonly2Inputs) => LocalizedString} */
-const zh_campaignlocalonly2 = en_campaignlocalonly2;
+const zh_campaignlocalonly2 = /** @type {(inputs: Campaignlocalonly2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`在你的浏览器中本地运行`)
+};
 
-/** @type {(inputs: Campaignlocalonly2Inputs) => LocalizedString} */
-const ja_campaignlocalonly2 = en_campaignlocalonly2;
+const ja_campaignlocalonly2 = /** @type {(inputs: Campaignlocalonly2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`ブラウザ内でローカルに実行`)
+};
 
-/** @type {(inputs: Campaignlocalonly2Inputs) => LocalizedString} */
-const ko_campaignlocalonly2 = en_campaignlocalonly2;
+const ko_campaignlocalonly2 = /** @type {(inputs: Campaignlocalonly2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`브라우저에서 로컬로 실행`)
+};
 
-/** @type {(inputs: Campaignlocalonly2Inputs) => LocalizedString} */
-const zh_hant1_campaignlocalonly2 = zh_campaignlocalonly2;
+const zh_hant1_campaignlocalonly2 = /** @type {(inputs: Campaignlocalonly2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`在你的瀏覽器中本機執行`)
+};
 
-/** @type {(inputs: Campaignlocalonly2Inputs) => LocalizedString} */
-const de_campaignlocalonly2 = en_campaignlocalonly2;
+const de_campaignlocalonly2 = /** @type {(inputs: Campaignlocalonly2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Läuft lokal in deinem Browser`)
+};
 
-/** @type {(inputs: Campaignlocalonly2Inputs) => LocalizedString} */
-const fr_campaignlocalonly2 = en_campaignlocalonly2;
+const fr_campaignlocalonly2 = /** @type {(inputs: Campaignlocalonly2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`S'exécute localement dans votre navigateur`)
+};
 
-/** @type {(inputs: Campaignlocalonly2Inputs) => LocalizedString} */
-const uk_campaignlocalonly2 = en_campaignlocalonly2;
+const uk_campaignlocalonly2 = /** @type {(inputs: Campaignlocalonly2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Працює локально у вашому браузері`)
+};
 
 /**
 * | output |

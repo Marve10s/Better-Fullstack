@@ -9,29 +9,37 @@ const en_campaigncuratedeyebrow2 = /** @type {(inputs: Campaigncuratedeyebrow2In
 	return /** @type {LocalizedString} */ (`Five places to start`)
 };
 
-/** @type {(inputs: Campaigncuratedeyebrow2Inputs) => LocalizedString} */
-const es_campaigncuratedeyebrow2 = en_campaigncuratedeyebrow2;
+const es_campaigncuratedeyebrow2 = /** @type {(inputs: Campaigncuratedeyebrow2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Cinco puntos de partida`)
+};
 
-/** @type {(inputs: Campaigncuratedeyebrow2Inputs) => LocalizedString} */
-const zh_campaigncuratedeyebrow2 = en_campaigncuratedeyebrow2;
+const zh_campaigncuratedeyebrow2 = /** @type {(inputs: Campaigncuratedeyebrow2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`五个起点`)
+};
 
-/** @type {(inputs: Campaigncuratedeyebrow2Inputs) => LocalizedString} */
-const ja_campaigncuratedeyebrow2 = en_campaigncuratedeyebrow2;
+const ja_campaigncuratedeyebrow2 = /** @type {(inputs: Campaigncuratedeyebrow2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`5つのスタート地点`)
+};
 
-/** @type {(inputs: Campaigncuratedeyebrow2Inputs) => LocalizedString} */
-const ko_campaigncuratedeyebrow2 = en_campaigncuratedeyebrow2;
+const ko_campaigncuratedeyebrow2 = /** @type {(inputs: Campaigncuratedeyebrow2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`다섯 가지 시작점`)
+};
 
-/** @type {(inputs: Campaigncuratedeyebrow2Inputs) => LocalizedString} */
-const zh_hant1_campaigncuratedeyebrow2 = zh_campaigncuratedeyebrow2;
+const zh_hant1_campaigncuratedeyebrow2 = /** @type {(inputs: Campaigncuratedeyebrow2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`五個起點`)
+};
 
-/** @type {(inputs: Campaigncuratedeyebrow2Inputs) => LocalizedString} */
-const de_campaigncuratedeyebrow2 = en_campaigncuratedeyebrow2;
+const de_campaigncuratedeyebrow2 = /** @type {(inputs: Campaigncuratedeyebrow2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Fünf Startpunkte`)
+};
 
-/** @type {(inputs: Campaigncuratedeyebrow2Inputs) => LocalizedString} */
-const fr_campaigncuratedeyebrow2 = en_campaigncuratedeyebrow2;
+const fr_campaigncuratedeyebrow2 = /** @type {(inputs: Campaigncuratedeyebrow2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Cinq points de départ`)
+};
 
-/** @type {(inputs: Campaigncuratedeyebrow2Inputs) => LocalizedString} */
-const uk_campaigncuratedeyebrow2 = en_campaigncuratedeyebrow2;
+const uk_campaigncuratedeyebrow2 = /** @type {(inputs: Campaigncuratedeyebrow2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Пʼять точок старту`)
+};
 
 /**
 * | output |

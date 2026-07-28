@@ -9,29 +9,37 @@ const en_campaignsharecopylink3 = /** @type {(inputs: Campaignsharecopylink3Inpu
 	return /** @type {LocalizedString} */ (`Copy share text`)
 };
 
-/** @type {(inputs: Campaignsharecopylink3Inputs) => LocalizedString} */
-const es_campaignsharecopylink3 = en_campaignsharecopylink3;
+const es_campaignsharecopylink3 = /** @type {(inputs: Campaignsharecopylink3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Copiar texto para compartir`)
+};
 
-/** @type {(inputs: Campaignsharecopylink3Inputs) => LocalizedString} */
-const zh_campaignsharecopylink3 = en_campaignsharecopylink3;
+const zh_campaignsharecopylink3 = /** @type {(inputs: Campaignsharecopylink3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`复制分享文本`)
+};
 
-/** @type {(inputs: Campaignsharecopylink3Inputs) => LocalizedString} */
-const ja_campaignsharecopylink3 = en_campaignsharecopylink3;
+const ja_campaignsharecopylink3 = /** @type {(inputs: Campaignsharecopylink3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`共有テキストをコピー`)
+};
 
-/** @type {(inputs: Campaignsharecopylink3Inputs) => LocalizedString} */
-const ko_campaignsharecopylink3 = en_campaignsharecopylink3;
+const ko_campaignsharecopylink3 = /** @type {(inputs: Campaignsharecopylink3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`공유 텍스트 복사`)
+};
 
-/** @type {(inputs: Campaignsharecopylink3Inputs) => LocalizedString} */
-const zh_hant1_campaignsharecopylink3 = zh_campaignsharecopylink3;
+const zh_hant1_campaignsharecopylink3 = /** @type {(inputs: Campaignsharecopylink3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`複製分享文字`)
+};
 
-/** @type {(inputs: Campaignsharecopylink3Inputs) => LocalizedString} */
-const de_campaignsharecopylink3 = en_campaignsharecopylink3;
+const de_campaignsharecopylink3 = /** @type {(inputs: Campaignsharecopylink3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Share-Text kopieren`)
+};
 
-/** @type {(inputs: Campaignsharecopylink3Inputs) => LocalizedString} */
-const fr_campaignsharecopylink3 = en_campaignsharecopylink3;
+const fr_campaignsharecopylink3 = /** @type {(inputs: Campaignsharecopylink3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Copier le texte de partage`)
+};
 
-/** @type {(inputs: Campaignsharecopylink3Inputs) => LocalizedString} */
-const uk_campaignsharecopylink3 = en_campaignsharecopylink3;
+const uk_campaignsharecopylink3 = /** @type {(inputs: Campaignsharecopylink3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Скопіювати текст для шерингу`)
+};
 
 /**
 * | output |

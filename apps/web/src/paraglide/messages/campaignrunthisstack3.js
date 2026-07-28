@@ -9,29 +9,37 @@ const en_campaignrunthisstack3 = /** @type {(inputs: Campaignrunthisstack3Inputs
 	return /** @type {LocalizedString} */ (`Run this stack`)
 };
 
-/** @type {(inputs: Campaignrunthisstack3Inputs) => LocalizedString} */
-const es_campaignrunthisstack3 = en_campaignrunthisstack3;
+const es_campaignrunthisstack3 = /** @type {(inputs: Campaignrunthisstack3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Ejecutar este stack`)
+};
 
-/** @type {(inputs: Campaignrunthisstack3Inputs) => LocalizedString} */
-const zh_campaignrunthisstack3 = en_campaignrunthisstack3;
+const zh_campaignrunthisstack3 = /** @type {(inputs: Campaignrunthisstack3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`运行这个技术栈`)
+};
 
-/** @type {(inputs: Campaignrunthisstack3Inputs) => LocalizedString} */
-const ja_campaignrunthisstack3 = en_campaignrunthisstack3;
+const ja_campaignrunthisstack3 = /** @type {(inputs: Campaignrunthisstack3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`このスタックを実行`)
+};
 
-/** @type {(inputs: Campaignrunthisstack3Inputs) => LocalizedString} */
-const ko_campaignrunthisstack3 = en_campaignrunthisstack3;
+const ko_campaignrunthisstack3 = /** @type {(inputs: Campaignrunthisstack3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`이 스택 실행하기`)
+};
 
-/** @type {(inputs: Campaignrunthisstack3Inputs) => LocalizedString} */
-const zh_hant1_campaignrunthisstack3 = zh_campaignrunthisstack3;
+const zh_hant1_campaignrunthisstack3 = /** @type {(inputs: Campaignrunthisstack3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`執行這個技術棧`)
+};
 
-/** @type {(inputs: Campaignrunthisstack3Inputs) => LocalizedString} */
-const de_campaignrunthisstack3 = en_campaignrunthisstack3;
+const de_campaignrunthisstack3 = /** @type {(inputs: Campaignrunthisstack3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Diesen Stack ausführen`)
+};
 
-/** @type {(inputs: Campaignrunthisstack3Inputs) => LocalizedString} */
-const fr_campaignrunthisstack3 = en_campaignrunthisstack3;
+const fr_campaignrunthisstack3 = /** @type {(inputs: Campaignrunthisstack3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Exécuter ce stack`)
+};
 
-/** @type {(inputs: Campaignrunthisstack3Inputs) => LocalizedString} */
-const uk_campaignrunthisstack3 = en_campaignrunthisstack3;
+const uk_campaignrunthisstack3 = /** @type {(inputs: Campaignrunthisstack3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Запустити цей стек`)
+};
 
 /**
 * | output |

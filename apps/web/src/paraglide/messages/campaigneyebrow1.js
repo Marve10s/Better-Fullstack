@@ -9,29 +9,37 @@ const en_campaigneyebrow1 = /** @type {(inputs: Campaigneyebrow1Inputs) => Local
 	return /** @type {LocalizedString} */ (`Run before you clone`)
 };
 
-/** @type {(inputs: Campaigneyebrow1Inputs) => LocalizedString} */
-const es_campaigneyebrow1 = en_campaigneyebrow1;
+const es_campaigneyebrow1 = /** @type {(inputs: Campaigneyebrow1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Ejecuta antes de clonar`)
+};
 
-/** @type {(inputs: Campaigneyebrow1Inputs) => LocalizedString} */
-const zh_campaigneyebrow1 = en_campaigneyebrow1;
+const zh_campaigneyebrow1 = /** @type {(inputs: Campaigneyebrow1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`先运行，再克隆`)
+};
 
-/** @type {(inputs: Campaigneyebrow1Inputs) => LocalizedString} */
-const ja_campaigneyebrow1 = en_campaigneyebrow1;
+const ja_campaigneyebrow1 = /** @type {(inputs: Campaigneyebrow1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`クローンする前に実行`)
+};
 
-/** @type {(inputs: Campaigneyebrow1Inputs) => LocalizedString} */
-const ko_campaigneyebrow1 = en_campaigneyebrow1;
+const ko_campaigneyebrow1 = /** @type {(inputs: Campaigneyebrow1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`클론하기 전에 실행`)
+};
 
-/** @type {(inputs: Campaigneyebrow1Inputs) => LocalizedString} */
-const zh_hant1_campaigneyebrow1 = zh_campaigneyebrow1;
+const zh_hant1_campaigneyebrow1 = /** @type {(inputs: Campaigneyebrow1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`先執行，再複製`)
+};
 
-/** @type {(inputs: Campaigneyebrow1Inputs) => LocalizedString} */
-const de_campaigneyebrow1 = en_campaigneyebrow1;
+const de_campaigneyebrow1 = /** @type {(inputs: Campaigneyebrow1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Erst ausführen, dann klonen`)
+};
 
-/** @type {(inputs: Campaigneyebrow1Inputs) => LocalizedString} */
-const fr_campaigneyebrow1 = en_campaigneyebrow1;
+const fr_campaigneyebrow1 = /** @type {(inputs: Campaigneyebrow1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Exécutez avant de cloner`)
+};
 
-/** @type {(inputs: Campaigneyebrow1Inputs) => LocalizedString} */
-const uk_campaigneyebrow1 = en_campaigneyebrow1;
+const uk_campaigneyebrow1 = /** @type {(inputs: Campaigneyebrow1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Запусти перед клонуванням`)
+};
 
 /**
 * | output |

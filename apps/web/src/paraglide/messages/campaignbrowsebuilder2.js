@@ -9,29 +9,37 @@ const en_campaignbrowsebuilder2 = /** @type {(inputs: Campaignbrowsebuilder2Inpu
 	return /** @type {LocalizedString} */ (`Browse every stack`)
 };
 
-/** @type {(inputs: Campaignbrowsebuilder2Inputs) => LocalizedString} */
-const es_campaignbrowsebuilder2 = en_campaignbrowsebuilder2;
+const es_campaignbrowsebuilder2 = /** @type {(inputs: Campaignbrowsebuilder2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Explorar todos los stacks`)
+};
 
-/** @type {(inputs: Campaignbrowsebuilder2Inputs) => LocalizedString} */
-const zh_campaignbrowsebuilder2 = en_campaignbrowsebuilder2;
+const zh_campaignbrowsebuilder2 = /** @type {(inputs: Campaignbrowsebuilder2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`浏览所有技术栈`)
+};
 
-/** @type {(inputs: Campaignbrowsebuilder2Inputs) => LocalizedString} */
-const ja_campaignbrowsebuilder2 = en_campaignbrowsebuilder2;
+const ja_campaignbrowsebuilder2 = /** @type {(inputs: Campaignbrowsebuilder2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`すべてのスタックを見る`)
+};
 
-/** @type {(inputs: Campaignbrowsebuilder2Inputs) => LocalizedString} */
-const ko_campaignbrowsebuilder2 = en_campaignbrowsebuilder2;
+const ko_campaignbrowsebuilder2 = /** @type {(inputs: Campaignbrowsebuilder2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`모든 스택 둘러보기`)
+};
 
-/** @type {(inputs: Campaignbrowsebuilder2Inputs) => LocalizedString} */
-const zh_hant1_campaignbrowsebuilder2 = zh_campaignbrowsebuilder2;
+const zh_hant1_campaignbrowsebuilder2 = /** @type {(inputs: Campaignbrowsebuilder2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`瀏覽所有技術棧`)
+};
 
-/** @type {(inputs: Campaignbrowsebuilder2Inputs) => LocalizedString} */
-const de_campaignbrowsebuilder2 = en_campaignbrowsebuilder2;
+const de_campaignbrowsebuilder2 = /** @type {(inputs: Campaignbrowsebuilder2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Alle Stacks durchstöbern`)
+};
 
-/** @type {(inputs: Campaignbrowsebuilder2Inputs) => LocalizedString} */
-const fr_campaignbrowsebuilder2 = en_campaignbrowsebuilder2;
+const fr_campaignbrowsebuilder2 = /** @type {(inputs: Campaignbrowsebuilder2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Parcourir tous les stacks`)
+};
 
-/** @type {(inputs: Campaignbrowsebuilder2Inputs) => LocalizedString} */
-const uk_campaignbrowsebuilder2 = en_campaignbrowsebuilder2;
+const uk_campaignbrowsebuilder2 = /** @type {(inputs: Campaignbrowsebuilder2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Переглянути всі стеки`)
+};
 
 /**
 * | output |

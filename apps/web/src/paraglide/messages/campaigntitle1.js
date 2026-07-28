@@ -9,29 +9,37 @@ const en_campaigntitle1 = /** @type {(inputs: Campaigntitle1Inputs) => Localized
 	return /** @type {LocalizedString} */ (`Don't trust a starter you can't run.`)
 };
 
-/** @type {(inputs: Campaigntitle1Inputs) => LocalizedString} */
-const es_campaigntitle1 = en_campaigntitle1;
+const es_campaigntitle1 = /** @type {(inputs: Campaigntitle1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No confíes en un starter que no puedes ejecutar.`)
+};
 
-/** @type {(inputs: Campaigntitle1Inputs) => LocalizedString} */
-const zh_campaigntitle1 = en_campaigntitle1;
+const zh_campaigntitle1 = /** @type {(inputs: Campaigntitle1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`不要相信一个你无法运行的模板。`)
+};
 
-/** @type {(inputs: Campaigntitle1Inputs) => LocalizedString} */
-const ja_campaigntitle1 = en_campaigntitle1;
+const ja_campaigntitle1 = /** @type {(inputs: Campaigntitle1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`実行できないスターターを信用してはいけない。`)
+};
 
-/** @type {(inputs: Campaigntitle1Inputs) => LocalizedString} */
-const ko_campaigntitle1 = en_campaigntitle1;
+const ko_campaigntitle1 = /** @type {(inputs: Campaigntitle1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`실행해 볼 수 없는 스타터는 믿지 마세요.`)
+};
 
-/** @type {(inputs: Campaigntitle1Inputs) => LocalizedString} */
-const zh_hant1_campaigntitle1 = zh_campaigntitle1;
+const zh_hant1_campaigntitle1 = /** @type {(inputs: Campaigntitle1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`不要相信一個你無法執行的範本。`)
+};
 
-/** @type {(inputs: Campaigntitle1Inputs) => LocalizedString} */
-const de_campaigntitle1 = en_campaigntitle1;
+const de_campaigntitle1 = /** @type {(inputs: Campaigntitle1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Trau keinem Starter, den du nicht ausführen kannst.`)
+};
 
-/** @type {(inputs: Campaigntitle1Inputs) => LocalizedString} */
-const fr_campaigntitle1 = en_campaigntitle1;
+const fr_campaigntitle1 = /** @type {(inputs: Campaigntitle1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Ne faites pas confiance à un starter que vous ne pouvez pas exécuter.`)
+};
 
-/** @type {(inputs: Campaigntitle1Inputs) => LocalizedString} */
-const uk_campaigntitle1 = en_campaigntitle1;
+const uk_campaigntitle1 = /** @type {(inputs: Campaigntitle1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Не довіряйте стартеру, який не можете запустити.`)
+};
 
 /**
 * | output |

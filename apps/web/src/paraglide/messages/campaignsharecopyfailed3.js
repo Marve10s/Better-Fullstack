@@ -9,29 +9,37 @@ const en_campaignsharecopyfailed3 = /** @type {(inputs: Campaignsharecopyfailed3
 	return /** @type {LocalizedString} */ (`Could not copy the share message`)
 };
 
-/** @type {(inputs: Campaignsharecopyfailed3Inputs) => LocalizedString} */
-const es_campaignsharecopyfailed3 = en_campaignsharecopyfailed3;
+const es_campaignsharecopyfailed3 = /** @type {(inputs: Campaignsharecopyfailed3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No se pudo copiar el mensaje`)
+};
 
-/** @type {(inputs: Campaignsharecopyfailed3Inputs) => LocalizedString} */
-const zh_campaignsharecopyfailed3 = en_campaignsharecopyfailed3;
+const zh_campaignsharecopyfailed3 = /** @type {(inputs: Campaignsharecopyfailed3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`无法复制分享内容`)
+};
 
-/** @type {(inputs: Campaignsharecopyfailed3Inputs) => LocalizedString} */
-const ja_campaignsharecopyfailed3 = en_campaignsharecopyfailed3;
+const ja_campaignsharecopyfailed3 = /** @type {(inputs: Campaignsharecopyfailed3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`共有メッセージをコピーできませんでした`)
+};
 
-/** @type {(inputs: Campaignsharecopyfailed3Inputs) => LocalizedString} */
-const ko_campaignsharecopyfailed3 = en_campaignsharecopyfailed3;
+const ko_campaignsharecopyfailed3 = /** @type {(inputs: Campaignsharecopyfailed3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`공유 메시지를 복사하지 못했습니다`)
+};
 
-/** @type {(inputs: Campaignsharecopyfailed3Inputs) => LocalizedString} */
-const zh_hant1_campaignsharecopyfailed3 = zh_campaignsharecopyfailed3;
+const zh_hant1_campaignsharecopyfailed3 = /** @type {(inputs: Campaignsharecopyfailed3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`無法複製分享內容`)
+};
 
-/** @type {(inputs: Campaignsharecopyfailed3Inputs) => LocalizedString} */
-const de_campaignsharecopyfailed3 = en_campaignsharecopyfailed3;
+const de_campaignsharecopyfailed3 = /** @type {(inputs: Campaignsharecopyfailed3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Share-Nachricht konnte nicht kopiert werden`)
+};
 
-/** @type {(inputs: Campaignsharecopyfailed3Inputs) => LocalizedString} */
-const fr_campaignsharecopyfailed3 = en_campaignsharecopyfailed3;
+const fr_campaignsharecopyfailed3 = /** @type {(inputs: Campaignsharecopyfailed3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Impossible de copier le message de partage`)
+};
 
-/** @type {(inputs: Campaignsharecopyfailed3Inputs) => LocalizedString} */
-const uk_campaignsharecopyfailed3 = en_campaignsharecopyfailed3;
+const uk_campaignsharecopyfailed3 = /** @type {(inputs: Campaignsharecopyfailed3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Не вдалося скопіювати повідомлення`)
+};
 
 /**
 * | output |

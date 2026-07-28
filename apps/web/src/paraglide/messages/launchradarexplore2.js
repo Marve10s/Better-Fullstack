@@ -9,29 +9,37 @@ const en_launchradarexplore2 = /** @type {(inputs: Launchradarexplore2Inputs) =>
 	return /** @type {LocalizedString} */ (`See what landed`)
 };
 
-/** @type {(inputs: Launchradarexplore2Inputs) => LocalizedString} */
-const es_launchradarexplore2 = en_launchradarexplore2;
+const es_launchradarexplore2 = /** @type {(inputs: Launchradarexplore2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Ver lo nuevo`)
+};
 
-/** @type {(inputs: Launchradarexplore2Inputs) => LocalizedString} */
-const zh_launchradarexplore2 = en_launchradarexplore2;
+const zh_launchradarexplore2 = /** @type {(inputs: Launchradarexplore2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`看看新内容`)
+};
 
-/** @type {(inputs: Launchradarexplore2Inputs) => LocalizedString} */
-const ja_launchradarexplore2 = en_launchradarexplore2;
+const ja_launchradarexplore2 = /** @type {(inputs: Launchradarexplore2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`新着を見る`)
+};
 
-/** @type {(inputs: Launchradarexplore2Inputs) => LocalizedString} */
-const ko_launchradarexplore2 = en_launchradarexplore2;
+const ko_launchradarexplore2 = /** @type {(inputs: Launchradarexplore2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`새 항목 보기`)
+};
 
-/** @type {(inputs: Launchradarexplore2Inputs) => LocalizedString} */
-const zh_hant1_launchradarexplore2 = zh_launchradarexplore2;
+const zh_hant1_launchradarexplore2 = /** @type {(inputs: Launchradarexplore2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`看看新內容`)
+};
 
-/** @type {(inputs: Launchradarexplore2Inputs) => LocalizedString} */
-const de_launchradarexplore2 = en_launchradarexplore2;
+const de_launchradarexplore2 = /** @type {(inputs: Launchradarexplore2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Neuerungen ansehen`)
+};
 
-/** @type {(inputs: Launchradarexplore2Inputs) => LocalizedString} */
-const fr_launchradarexplore2 = en_launchradarexplore2;
+const fr_launchradarexplore2 = /** @type {(inputs: Launchradarexplore2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Voir les nouveautés`)
+};
 
-/** @type {(inputs: Launchradarexplore2Inputs) => LocalizedString} */
-const uk_launchradarexplore2 = en_launchradarexplore2;
+const uk_launchradarexplore2 = /** @type {(inputs: Launchradarexplore2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Подивитися новинки`)
+};
 
 /**
 * | output |

@@ -9,29 +9,37 @@ const en_campaignsharetitle2 = /** @type {(inputs: Campaignsharetitle2Inputs) =>
 	return /** @type {LocalizedString} */ (`This stack is ready to share`)
 };
 
-/** @type {(inputs: Campaignsharetitle2Inputs) => LocalizedString} */
-const es_campaignsharetitle2 = en_campaignsharetitle2;
+const es_campaignsharetitle2 = /** @type {(inputs: Campaignsharetitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Este stack está listo para compartir`)
+};
 
-/** @type {(inputs: Campaignsharetitle2Inputs) => LocalizedString} */
-const zh_campaignsharetitle2 = en_campaignsharetitle2;
+const zh_campaignsharetitle2 = /** @type {(inputs: Campaignsharetitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`这个技术栈已可分享`)
+};
 
-/** @type {(inputs: Campaignsharetitle2Inputs) => LocalizedString} */
-const ja_campaignsharetitle2 = en_campaignsharetitle2;
+const ja_campaignsharetitle2 = /** @type {(inputs: Campaignsharetitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`このスタックを共有できます`)
+};
 
-/** @type {(inputs: Campaignsharetitle2Inputs) => LocalizedString} */
-const ko_campaignsharetitle2 = en_campaignsharetitle2;
+const ko_campaignsharetitle2 = /** @type {(inputs: Campaignsharetitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`이 스택을 공유할 준비가 되었습니다`)
+};
 
-/** @type {(inputs: Campaignsharetitle2Inputs) => LocalizedString} */
-const zh_hant1_campaignsharetitle2 = zh_campaignsharetitle2;
+const zh_hant1_campaignsharetitle2 = /** @type {(inputs: Campaignsharetitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`這個技術棧已可分享`)
+};
 
-/** @type {(inputs: Campaignsharetitle2Inputs) => LocalizedString} */
-const de_campaignsharetitle2 = en_campaignsharetitle2;
+const de_campaignsharetitle2 = /** @type {(inputs: Campaignsharetitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Dieser Stack ist bereit zum Teilen`)
+};
 
-/** @type {(inputs: Campaignsharetitle2Inputs) => LocalizedString} */
-const fr_campaignsharetitle2 = en_campaignsharetitle2;
+const fr_campaignsharetitle2 = /** @type {(inputs: Campaignsharetitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Ce stack est prêt à être partagé`)
+};
 
-/** @type {(inputs: Campaignsharetitle2Inputs) => LocalizedString} */
-const uk_campaignsharetitle2 = en_campaignsharetitle2;
+const uk_campaignsharetitle2 = /** @type {(inputs: Campaignsharetitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Цей стек готовий, щоб ним поділитися`)
+};
 
 /**
 * | output |

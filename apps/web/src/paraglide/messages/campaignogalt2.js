@@ -9,29 +9,37 @@ const en_campaignogalt2 = /** @type {(inputs: Campaignogalt2Inputs) => Localized
 	return /** @type {LocalizedString} */ (`Run Before You Clone with Better Fullstack`)
 };
 
-/** @type {(inputs: Campaignogalt2Inputs) => LocalizedString} */
-const es_campaignogalt2 = en_campaignogalt2;
+const es_campaignogalt2 = /** @type {(inputs: Campaignogalt2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Ejecuta antes de clonar con Better Fullstack`)
+};
 
-/** @type {(inputs: Campaignogalt2Inputs) => LocalizedString} */
-const zh_campaignogalt2 = en_campaignogalt2;
+const zh_campaignogalt2 = /** @type {(inputs: Campaignogalt2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`使用 Better Fullstack，先运行再克隆`)
+};
 
-/** @type {(inputs: Campaignogalt2Inputs) => LocalizedString} */
-const ja_campaignogalt2 = en_campaignogalt2;
+const ja_campaignogalt2 = /** @type {(inputs: Campaignogalt2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Better Fullstack でクローンする前に実行`)
+};
 
-/** @type {(inputs: Campaignogalt2Inputs) => LocalizedString} */
-const ko_campaignogalt2 = en_campaignogalt2;
+const ko_campaignogalt2 = /** @type {(inputs: Campaignogalt2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Better Fullstack과 함께, 클론하기 전에 실행`)
+};
 
-/** @type {(inputs: Campaignogalt2Inputs) => LocalizedString} */
-const zh_hant1_campaignogalt2 = zh_campaignogalt2;
+const zh_hant1_campaignogalt2 = /** @type {(inputs: Campaignogalt2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`使用 Better Fullstack，先執行再複製`)
+};
 
-/** @type {(inputs: Campaignogalt2Inputs) => LocalizedString} */
-const de_campaignogalt2 = en_campaignogalt2;
+const de_campaignogalt2 = /** @type {(inputs: Campaignogalt2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Erst ausführen, dann klonen – mit Better Fullstack`)
+};
 
-/** @type {(inputs: Campaignogalt2Inputs) => LocalizedString} */
-const fr_campaignogalt2 = en_campaignogalt2;
+const fr_campaignogalt2 = /** @type {(inputs: Campaignogalt2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Exécutez avant de cloner avec Better Fullstack`)
+};
 
-/** @type {(inputs: Campaignogalt2Inputs) => LocalizedString} */
-const uk_campaignogalt2 = en_campaignogalt2;
+const uk_campaignogalt2 = /** @type {(inputs: Campaignogalt2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Запусти перед клонуванням із Better Fullstack`)
+};
 
 /**
 * | output |

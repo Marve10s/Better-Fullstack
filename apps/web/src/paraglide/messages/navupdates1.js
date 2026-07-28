@@ -9,29 +9,37 @@ const en_navupdates1 = /** @type {(inputs: Navupdates1Inputs) => LocalizedString
 	return /** @type {LocalizedString} */ (`Updates`)
 };
 
-/** @type {(inputs: Navupdates1Inputs) => LocalizedString} */
-const es_navupdates1 = en_navupdates1;
+const es_navupdates1 = /** @type {(inputs: Navupdates1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Novedades`)
+};
 
-/** @type {(inputs: Navupdates1Inputs) => LocalizedString} */
-const zh_navupdates1 = en_navupdates1;
+const zh_navupdates1 = /** @type {(inputs: Navupdates1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`更新`)
+};
 
-/** @type {(inputs: Navupdates1Inputs) => LocalizedString} */
-const ja_navupdates1 = en_navupdates1;
+const ja_navupdates1 = /** @type {(inputs: Navupdates1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`アップデート`)
+};
 
-/** @type {(inputs: Navupdates1Inputs) => LocalizedString} */
-const ko_navupdates1 = en_navupdates1;
+const ko_navupdates1 = /** @type {(inputs: Navupdates1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`업데이트`)
+};
 
-/** @type {(inputs: Navupdates1Inputs) => LocalizedString} */
-const zh_hant1_navupdates1 = zh_navupdates1;
+const zh_hant1_navupdates1 = /** @type {(inputs: Navupdates1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`更新`)
+};
 
-/** @type {(inputs: Navupdates1Inputs) => LocalizedString} */
-const de_navupdates1 = en_navupdates1;
+const de_navupdates1 = /** @type {(inputs: Navupdates1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Updates`)
+};
 
-/** @type {(inputs: Navupdates1Inputs) => LocalizedString} */
-const fr_navupdates1 = en_navupdates1;
+const fr_navupdates1 = /** @type {(inputs: Navupdates1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Nouveautés`)
+};
 
-/** @type {(inputs: Navupdates1Inputs) => LocalizedString} */
-const uk_navupdates1 = en_navupdates1;
+const uk_navupdates1 = /** @type {(inputs: Navupdates1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Оновлення`)
+};
 
 /**
 * | output |

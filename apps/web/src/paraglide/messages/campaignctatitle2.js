@@ -9,29 +9,37 @@ const en_campaignctatitle2 = /** @type {(inputs: Campaignctatitle2Inputs) => Loc
 	return /** @type {LocalizedString} */ (`Run it before you commit to it.`)
 };
 
-/** @type {(inputs: Campaignctatitle2Inputs) => LocalizedString} */
-const es_campaignctatitle2 = en_campaignctatitle2;
+const es_campaignctatitle2 = /** @type {(inputs: Campaignctatitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Ejecútalo antes de comprometerte.`)
+};
 
-/** @type {(inputs: Campaignctatitle2Inputs) => LocalizedString} */
-const zh_campaignctatitle2 = en_campaignctatitle2;
+const zh_campaignctatitle2 = /** @type {(inputs: Campaignctatitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`在决定之前，先运行它。`)
+};
 
-/** @type {(inputs: Campaignctatitle2Inputs) => LocalizedString} */
-const ja_campaignctatitle2 = en_campaignctatitle2;
+const ja_campaignctatitle2 = /** @type {(inputs: Campaignctatitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`決める前に、実行してみよう。`)
+};
 
-/** @type {(inputs: Campaignctatitle2Inputs) => LocalizedString} */
-const ko_campaignctatitle2 = en_campaignctatitle2;
+const ko_campaignctatitle2 = /** @type {(inputs: Campaignctatitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`결정하기 전에 실행해 보세요.`)
+};
 
-/** @type {(inputs: Campaignctatitle2Inputs) => LocalizedString} */
-const zh_hant1_campaignctatitle2 = zh_campaignctatitle2;
+const zh_hant1_campaignctatitle2 = /** @type {(inputs: Campaignctatitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`在決定之前，先執行它。`)
+};
 
-/** @type {(inputs: Campaignctatitle2Inputs) => LocalizedString} */
-const de_campaignctatitle2 = en_campaignctatitle2;
+const de_campaignctatitle2 = /** @type {(inputs: Campaignctatitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Führe es aus, bevor du dich festlegst.`)
+};
 
-/** @type {(inputs: Campaignctatitle2Inputs) => LocalizedString} */
-const fr_campaignctatitle2 = en_campaignctatitle2;
+const fr_campaignctatitle2 = /** @type {(inputs: Campaignctatitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Exécutez-le avant de vous engager.`)
+};
 
-/** @type {(inputs: Campaignctatitle2Inputs) => LocalizedString} */
-const uk_campaignctatitle2 = en_campaignctatitle2;
+const uk_campaignctatitle2 = /** @type {(inputs: Campaignctatitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Запустіть, перш ніж зупинитися на ньому.`)
+};
 
 /**
 * | output |

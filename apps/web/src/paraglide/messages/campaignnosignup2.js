@@ -9,29 +9,37 @@ const en_campaignnosignup2 = /** @type {(inputs: Campaignnosignup2Inputs) => Loc
 	return /** @type {LocalizedString} */ (`No signup`)
 };
 
-/** @type {(inputs: Campaignnosignup2Inputs) => LocalizedString} */
-const es_campaignnosignup2 = en_campaignnosignup2;
+const es_campaignnosignup2 = /** @type {(inputs: Campaignnosignup2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Sin registro`)
+};
 
-/** @type {(inputs: Campaignnosignup2Inputs) => LocalizedString} */
-const zh_campaignnosignup2 = en_campaignnosignup2;
+const zh_campaignnosignup2 = /** @type {(inputs: Campaignnosignup2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`无需注册`)
+};
 
-/** @type {(inputs: Campaignnosignup2Inputs) => LocalizedString} */
-const ja_campaignnosignup2 = en_campaignnosignup2;
+const ja_campaignnosignup2 = /** @type {(inputs: Campaignnosignup2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`登録不要`)
+};
 
-/** @type {(inputs: Campaignnosignup2Inputs) => LocalizedString} */
-const ko_campaignnosignup2 = en_campaignnosignup2;
+const ko_campaignnosignup2 = /** @type {(inputs: Campaignnosignup2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`가입 불필요`)
+};
 
-/** @type {(inputs: Campaignnosignup2Inputs) => LocalizedString} */
-const zh_hant1_campaignnosignup2 = zh_campaignnosignup2;
+const zh_hant1_campaignnosignup2 = /** @type {(inputs: Campaignnosignup2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`無需註冊`)
+};
 
-/** @type {(inputs: Campaignnosignup2Inputs) => LocalizedString} */
-const de_campaignnosignup2 = en_campaignnosignup2;
+const de_campaignnosignup2 = /** @type {(inputs: Campaignnosignup2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Keine Anmeldung`)
+};
 
-/** @type {(inputs: Campaignnosignup2Inputs) => LocalizedString} */
-const fr_campaignnosignup2 = en_campaignnosignup2;
+const fr_campaignnosignup2 = /** @type {(inputs: Campaignnosignup2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Sans inscription`)
+};
 
-/** @type {(inputs: Campaignnosignup2Inputs) => LocalizedString} */
-const uk_campaignnosignup2 = en_campaignnosignup2;
+const uk_campaignnosignup2 = /** @type {(inputs: Campaignnosignup2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Без реєстрації`)
+};
 
 /**
 * | output |

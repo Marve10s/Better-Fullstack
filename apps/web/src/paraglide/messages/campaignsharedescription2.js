@@ -9,29 +9,37 @@ const en_campaignsharedescription2 = /** @type {(inputs: Campaignsharedescriptio
 	return /** @type {LocalizedString} */ (`Send the exact configuration—not a generic homepage—so someone else can inspect, run and download it.`)
 };
 
-/** @type {(inputs: Campaignsharedescription2Inputs) => LocalizedString} */
-const es_campaignsharedescription2 = en_campaignsharedescription2;
+const es_campaignsharedescription2 = /** @type {(inputs: Campaignsharedescription2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Envía la configuración exacta —no una portada genérica— para que otra persona pueda inspeccionarla, ejecutarla y descargarla.`)
+};
 
-/** @type {(inputs: Campaignsharedescription2Inputs) => LocalizedString} */
-const zh_campaignsharedescription2 = en_campaignsharedescription2;
+const zh_campaignsharedescription2 = /** @type {(inputs: Campaignsharedescription2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`发送精确的配置——而不是一个通用主页——让对方可以直接查看、运行并下载它。`)
+};
 
-/** @type {(inputs: Campaignsharedescription2Inputs) => LocalizedString} */
-const ja_campaignsharedescription2 = en_campaignsharedescription2;
+const ja_campaignsharedescription2 = /** @type {(inputs: Campaignsharedescription2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`汎用のホームページではなく、正確な構成そのものを送りましょう。受け取った人はそのまま確認・実行・ダウンロードできます。`)
+};
 
-/** @type {(inputs: Campaignsharedescription2Inputs) => LocalizedString} */
-const ko_campaignsharedescription2 = en_campaignsharedescription2;
+const ko_campaignsharedescription2 = /** @type {(inputs: Campaignsharedescription2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`일반 홈페이지가 아니라 정확한 구성을 보내세요. 받는 사람이 그대로 확인하고 실행하고 다운로드할 수 있습니다.`)
+};
 
-/** @type {(inputs: Campaignsharedescription2Inputs) => LocalizedString} */
-const zh_hant1_campaignsharedescription2 = zh_campaignsharedescription2;
+const zh_hant1_campaignsharedescription2 = /** @type {(inputs: Campaignsharedescription2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`傳送精確的組態——而不是一個通用首頁——讓對方可以直接檢視、執行並下載它。`)
+};
 
-/** @type {(inputs: Campaignsharedescription2Inputs) => LocalizedString} */
-const de_campaignsharedescription2 = en_campaignsharedescription2;
+const de_campaignsharedescription2 = /** @type {(inputs: Campaignsharedescription2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Teile die exakte Konfiguration – keine generische Startseite –, damit andere sie untersuchen, ausführen und herunterladen können.`)
+};
 
-/** @type {(inputs: Campaignsharedescription2Inputs) => LocalizedString} */
-const fr_campaignsharedescription2 = en_campaignsharedescription2;
+const fr_campaignsharedescription2 = /** @type {(inputs: Campaignsharedescription2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Envoyez la configuration exacte — pas une page d'accueil générique — pour que quelqu'un d'autre puisse l'inspecter, l'exécuter et la télécharger.`)
+};
 
-/** @type {(inputs: Campaignsharedescription2Inputs) => LocalizedString} */
-const uk_campaignsharedescription2 = en_campaignsharedescription2;
+const uk_campaignsharedescription2 = /** @type {(inputs: Campaignsharedescription2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Надішліть точну конфігурацію — а не типову головну сторінку, — щоб інша людина могла її переглянути, запустити й завантажити.`)
+};
 
 /**
 * | output |

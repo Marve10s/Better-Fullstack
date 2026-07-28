@@ -32,6 +32,7 @@ type SummaryResult = {
   path?: string;
   specId?: string;
   trial?: number;
+  promptStyle?: string;
   provenance?: {
     suiteVersion?: string;
     harnessVersion?: string;
@@ -125,6 +126,14 @@ export function assertCompleteTrialMatrix(
   }
 }
 
+export function assertExplicitPromptStyle(results: readonly SummaryResult[], source: string) {
+  if (results.some((result) => result.promptStyle !== "explicit")) {
+    throw new Error(
+      `${source}: ScaffBench 2.2 publication requires explicit-prompt results; discovery-lane (natural) runs are not comparable to the board`,
+    );
+  }
+}
+
 export function assertBoardProtocol(
   results: readonly SummaryResult[],
   board: {
@@ -201,6 +210,7 @@ function main() {
     `${dir} results`,
   );
   assertCompleteTrialMatrix(summary.results, SCAFFBENCH22_SPECS, summary.options.repeats, dir);
+  assertExplicitPromptStyle(summary.results, dir);
   assertBoardProtocol(summary.results, SCAFFBENCH22_META, dir);
   assertFullTierValidation(summary.options.qualityGate, summary.results, dir);
 

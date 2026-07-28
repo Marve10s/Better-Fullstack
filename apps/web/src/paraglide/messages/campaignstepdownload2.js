@@ -9,29 +9,37 @@ const en_campaignstepdownload2 = /** @type {(inputs: Campaignstepdownload2Inputs
 	return /** @type {LocalizedString} */ (`Take the code`)
 };
 
-/** @type {(inputs: Campaignstepdownload2Inputs) => LocalizedString} */
-const es_campaignstepdownload2 = en_campaignstepdownload2;
+const es_campaignstepdownload2 = /** @type {(inputs: Campaignstepdownload2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Llévate el código`)
+};
 
-/** @type {(inputs: Campaignstepdownload2Inputs) => LocalizedString} */
-const zh_campaignstepdownload2 = en_campaignstepdownload2;
+const zh_campaignstepdownload2 = /** @type {(inputs: Campaignstepdownload2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`带走代码`)
+};
 
-/** @type {(inputs: Campaignstepdownload2Inputs) => LocalizedString} */
-const ja_campaignstepdownload2 = en_campaignstepdownload2;
+const ja_campaignstepdownload2 = /** @type {(inputs: Campaignstepdownload2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`コードを持ち帰る`)
+};
 
-/** @type {(inputs: Campaignstepdownload2Inputs) => LocalizedString} */
-const ko_campaignstepdownload2 = en_campaignstepdownload2;
+const ko_campaignstepdownload2 = /** @type {(inputs: Campaignstepdownload2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`코드 가져가기`)
+};
 
-/** @type {(inputs: Campaignstepdownload2Inputs) => LocalizedString} */
-const zh_hant1_campaignstepdownload2 = zh_campaignstepdownload2;
+const zh_hant1_campaignstepdownload2 = /** @type {(inputs: Campaignstepdownload2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`帶走程式碼`)
+};
 
-/** @type {(inputs: Campaignstepdownload2Inputs) => LocalizedString} */
-const de_campaignstepdownload2 = en_campaignstepdownload2;
+const de_campaignstepdownload2 = /** @type {(inputs: Campaignstepdownload2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Nimm den Code mit`)
+};
 
-/** @type {(inputs: Campaignstepdownload2Inputs) => LocalizedString} */
-const fr_campaignstepdownload2 = en_campaignstepdownload2;
+const fr_campaignstepdownload2 = /** @type {(inputs: Campaignstepdownload2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Emportez le code`)
+};
 
-/** @type {(inputs: Campaignstepdownload2Inputs) => LocalizedString} */
-const uk_campaignstepdownload2 = en_campaignstepdownload2;
+const uk_campaignstepdownload2 = /** @type {(inputs: Campaignstepdownload2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Заберіть код`)
+};
 
 /**
 * | output |

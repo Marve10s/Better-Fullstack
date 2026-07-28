@@ -9,29 +9,37 @@ const en_navliverun2 = /** @type {(inputs: Navliverun2Inputs) => LocalizedString
 	return /** @type {LocalizedString} */ (`Live Run`)
 };
 
-/** @type {(inputs: Navliverun2Inputs) => LocalizedString} */
-const es_navliverun2 = en_navliverun2;
+const es_navliverun2 = /** @type {(inputs: Navliverun2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Ejecución en vivo`)
+};
 
-/** @type {(inputs: Navliverun2Inputs) => LocalizedString} */
-const zh_navliverun2 = en_navliverun2;
+const zh_navliverun2 = /** @type {(inputs: Navliverun2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`在线运行`)
+};
 
-/** @type {(inputs: Navliverun2Inputs) => LocalizedString} */
-const ja_navliverun2 = en_navliverun2;
+const ja_navliverun2 = /** @type {(inputs: Navliverun2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`ライブ実行`)
+};
 
-/** @type {(inputs: Navliverun2Inputs) => LocalizedString} */
-const ko_navliverun2 = en_navliverun2;
+const ko_navliverun2 = /** @type {(inputs: Navliverun2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`라이브 실행`)
+};
 
-/** @type {(inputs: Navliverun2Inputs) => LocalizedString} */
-const zh_hant1_navliverun2 = zh_navliverun2;
+const zh_hant1_navliverun2 = /** @type {(inputs: Navliverun2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`線上執行`)
+};
 
-/** @type {(inputs: Navliverun2Inputs) => LocalizedString} */
-const de_navliverun2 = en_navliverun2;
+const de_navliverun2 = /** @type {(inputs: Navliverun2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Live-Run`)
+};
 
-/** @type {(inputs: Navliverun2Inputs) => LocalizedString} */
-const fr_navliverun2 = en_navliverun2;
+const fr_navliverun2 = /** @type {(inputs: Navliverun2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Exécution en direct`)
+};
 
-/** @type {(inputs: Navliverun2Inputs) => LocalizedString} */
-const uk_navliverun2 = en_navliverun2;
+const uk_navliverun2 = /** @type {(inputs: Navliverun2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Живий запуск`)
+};
 
 /**
 * | output |

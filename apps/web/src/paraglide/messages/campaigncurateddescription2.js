@@ -9,29 +9,37 @@ const en_campaigncurateddescription2 = /** @type {(inputs: Campaigncurateddescri
 	return /** @type {LocalizedString} */ (`These TypeScript presets are selected for the browser runtime. Every other ecosystem remains available through the builder and CLI.`)
 };
 
-/** @type {(inputs: Campaigncurateddescription2Inputs) => LocalizedString} */
-const es_campaigncurateddescription2 = en_campaigncurateddescription2;
+const es_campaigncurateddescription2 = /** @type {(inputs: Campaigncurateddescription2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Estos presets de TypeScript están seleccionados para el runtime del navegador. Todos los demás ecosistemas siguen disponibles en el builder y la CLI.`)
+};
 
-/** @type {(inputs: Campaigncurateddescription2Inputs) => LocalizedString} */
-const zh_campaigncurateddescription2 = en_campaigncurateddescription2;
+const zh_campaigncurateddescription2 = /** @type {(inputs: Campaigncurateddescription2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`这些 TypeScript 预设专为浏览器运行时挑选。其他生态仍可通过构建器和 CLI 使用。`)
+};
 
-/** @type {(inputs: Campaigncurateddescription2Inputs) => LocalizedString} */
-const ja_campaigncurateddescription2 = en_campaigncurateddescription2;
+const ja_campaigncurateddescription2 = /** @type {(inputs: Campaigncurateddescription2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`これらの TypeScript プリセットはブラウザランタイム向けに選ばれています。その他のエコシステムはビルダーと CLI から利用できます。`)
+};
 
-/** @type {(inputs: Campaigncurateddescription2Inputs) => LocalizedString} */
-const ko_campaigncurateddescription2 = en_campaigncurateddescription2;
+const ko_campaigncurateddescription2 = /** @type {(inputs: Campaigncurateddescription2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`이 TypeScript 프리셋들은 브라우저 런타임에 맞게 선별되었습니다. 다른 생태계는 빌더와 CLI에서 계속 사용할 수 있습니다.`)
+};
 
-/** @type {(inputs: Campaigncurateddescription2Inputs) => LocalizedString} */
-const zh_hant1_campaigncurateddescription2 = zh_campaigncurateddescription2;
+const zh_hant1_campaigncurateddescription2 = /** @type {(inputs: Campaigncurateddescription2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`這些 TypeScript 預設組合是為瀏覽器執行環境挑選的。其他生態系仍可透過建構器與 CLI 使用。`)
+};
 
-/** @type {(inputs: Campaigncurateddescription2Inputs) => LocalizedString} */
-const de_campaigncurateddescription2 = en_campaigncurateddescription2;
+const de_campaigncurateddescription2 = /** @type {(inputs: Campaigncurateddescription2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Diese TypeScript-Presets sind für die Browser-Laufzeit ausgewählt. Alle anderen Ökosysteme bleiben über Builder und CLI verfügbar.`)
+};
 
-/** @type {(inputs: Campaigncurateddescription2Inputs) => LocalizedString} */
-const fr_campaigncurateddescription2 = en_campaigncurateddescription2;
+const fr_campaigncurateddescription2 = /** @type {(inputs: Campaigncurateddescription2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Ces presets TypeScript sont sélectionnés pour le runtime navigateur. Tous les autres écosystèmes restent disponibles via le builder et la CLI.`)
+};
 
-/** @type {(inputs: Campaigncurateddescription2Inputs) => LocalizedString} */
-const uk_campaigncurateddescription2 = en_campaigncurateddescription2;
+const uk_campaigncurateddescription2 = /** @type {(inputs: Campaigncurateddescription2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Ці TypeScript-пресети відібрані для браузерного середовища. Решта екосистем доступні через білдер і CLI.`)
+};
 
 /**
 * | output |

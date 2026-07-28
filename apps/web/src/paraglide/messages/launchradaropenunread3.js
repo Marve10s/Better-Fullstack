@@ -9,29 +9,37 @@ const en_launchradaropenunread3 = /** @type {(inputs: Launchradaropenunread3Inpu
 	return /** @type {LocalizedString} */ (`Explore ${i?.count} new stack choices`)
 };
 
-/** @type {(inputs: Launchradaropenunread3Inputs) => LocalizedString} */
-const es_launchradaropenunread3 = en_launchradaropenunread3;
+const es_launchradaropenunread3 = /** @type {(inputs: Launchradaropenunread3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Explorar ${i?.count} nuevas opciones de stack`)
+};
 
-/** @type {(inputs: Launchradaropenunread3Inputs) => LocalizedString} */
-const zh_launchradaropenunread3 = en_launchradaropenunread3;
+const zh_launchradaropenunread3 = /** @type {(inputs: Launchradaropenunread3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`浏览 ${i?.count} 个新的技术栈选项`)
+};
 
-/** @type {(inputs: Launchradaropenunread3Inputs) => LocalizedString} */
-const ja_launchradaropenunread3 = en_launchradaropenunread3;
+const ja_launchradaropenunread3 = /** @type {(inputs: Launchradaropenunread3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} 件の新しいスタック選択肢を見る`)
+};
 
-/** @type {(inputs: Launchradaropenunread3Inputs) => LocalizedString} */
-const ko_launchradaropenunread3 = en_launchradaropenunread3;
+const ko_launchradaropenunread3 = /** @type {(inputs: Launchradaropenunread3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`새로운 스택 선택지 ${i?.count}개 살펴보기`)
+};
 
-/** @type {(inputs: Launchradaropenunread3Inputs) => LocalizedString} */
-const zh_hant1_launchradaropenunread3 = zh_launchradaropenunread3;
+const zh_hant1_launchradaropenunread3 = /** @type {(inputs: Launchradaropenunread3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`瀏覽 ${i?.count} 個新的技術棧選項`)
+};
 
-/** @type {(inputs: Launchradaropenunread3Inputs) => LocalizedString} */
-const de_launchradaropenunread3 = en_launchradaropenunread3;
+const de_launchradaropenunread3 = /** @type {(inputs: Launchradaropenunread3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} neue Stack-Optionen entdecken`)
+};
 
-/** @type {(inputs: Launchradaropenunread3Inputs) => LocalizedString} */
-const fr_launchradaropenunread3 = en_launchradaropenunread3;
+const fr_launchradaropenunread3 = /** @type {(inputs: Launchradaropenunread3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Explorer ${i?.count} nouveaux choix de stack`)
+};
 
-/** @type {(inputs: Launchradaropenunread3Inputs) => LocalizedString} */
-const uk_launchradaropenunread3 = en_launchradaropenunread3;
+const uk_launchradaropenunread3 = /** @type {(inputs: Launchradaropenunread3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Переглянути ${i?.count} нових варіантів стека`)
+};
 
 /**
 * | output |

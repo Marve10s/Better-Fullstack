@@ -4,6 +4,7 @@ import {
   assertBoardProtocol,
   assertCompleteSpecList,
   assertCompleteTrialMatrix,
+  assertExplicitPromptStyle,
   assertFullTierValidation,
   assertSinglePromptRow,
 } from "./splice-scaffbench-2-2-row";
@@ -38,6 +39,16 @@ describe("ScaffBench 2.2 publication guards", () => {
         "run",
       ),
     ).toThrow("expected exactly one model/effort prompt row");
+  });
+
+  it("rejects natural-prompt discovery runs", () => {
+    expect(() =>
+      assertExplicitPromptStyle([{ promptStyle: "explicit" }, { promptStyle: "explicit" }], "run"),
+    ).not.toThrow();
+    expect(() =>
+      assertExplicitPromptStyle([{ promptStyle: "explicit" }, { promptStyle: "natural" }], "run"),
+    ).toThrow("explicit-prompt");
+    expect(() => assertExplicitPromptStyle([{}], "run")).toThrow("explicit-prompt");
   });
 
   it("requires every result to match the board protocol", () => {

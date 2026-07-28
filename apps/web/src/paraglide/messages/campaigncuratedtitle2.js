@@ -9,29 +9,37 @@ const en_campaigncuratedtitle2 = /** @type {(inputs: Campaigncuratedtitle2Inputs
 	return /** @type {LocalizedString} */ (`Pick one. Break it. Keep it.`)
 };
 
-/** @type {(inputs: Campaigncuratedtitle2Inputs) => LocalizedString} */
-const es_campaigncuratedtitle2 = en_campaigncuratedtitle2;
+const es_campaigncuratedtitle2 = /** @type {(inputs: Campaigncuratedtitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Elige uno. Rómpelo. Quédatelo.`)
+};
 
-/** @type {(inputs: Campaigncuratedtitle2Inputs) => LocalizedString} */
-const zh_campaigncuratedtitle2 = en_campaigncuratedtitle2;
+const zh_campaigncuratedtitle2 = /** @type {(inputs: Campaigncuratedtitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`选一个。折腾它。留下它。`)
+};
 
-/** @type {(inputs: Campaigncuratedtitle2Inputs) => LocalizedString} */
-const ja_campaigncuratedtitle2 = en_campaigncuratedtitle2;
+const ja_campaigncuratedtitle2 = /** @type {(inputs: Campaigncuratedtitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`選んで、壊して、自分のものに。`)
+};
 
-/** @type {(inputs: Campaigncuratedtitle2Inputs) => LocalizedString} */
-const ko_campaigncuratedtitle2 = en_campaigncuratedtitle2;
+const ko_campaigncuratedtitle2 = /** @type {(inputs: Campaigncuratedtitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`하나 골라서, 부수고, 가지세요.`)
+};
 
-/** @type {(inputs: Campaigncuratedtitle2Inputs) => LocalizedString} */
-const zh_hant1_campaigncuratedtitle2 = zh_campaigncuratedtitle2;
+const zh_hant1_campaigncuratedtitle2 = /** @type {(inputs: Campaigncuratedtitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`選一個。玩壞它。留下它。`)
+};
 
-/** @type {(inputs: Campaigncuratedtitle2Inputs) => LocalizedString} */
-const de_campaigncuratedtitle2 = en_campaigncuratedtitle2;
+const de_campaigncuratedtitle2 = /** @type {(inputs: Campaigncuratedtitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Wähle einen. Zerlege ihn. Behalte ihn.`)
+};
 
-/** @type {(inputs: Campaigncuratedtitle2Inputs) => LocalizedString} */
-const fr_campaigncuratedtitle2 = en_campaigncuratedtitle2;
+const fr_campaigncuratedtitle2 = /** @type {(inputs: Campaigncuratedtitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Choisissez-en un. Cassez-le. Gardez-le.`)
+};
 
-/** @type {(inputs: Campaigncuratedtitle2Inputs) => LocalizedString} */
-const uk_campaigncuratedtitle2 = en_campaigncuratedtitle2;
+const uk_campaigncuratedtitle2 = /** @type {(inputs: Campaigncuratedtitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Оберіть один. Зламайте його. Залиште собі.`)
+};
 
 /**
 * | output |

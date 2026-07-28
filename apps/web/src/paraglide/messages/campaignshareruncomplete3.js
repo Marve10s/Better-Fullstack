@@ -9,29 +9,37 @@ const en_campaignshareruncomplete3 = /** @type {(inputs: Campaignshareruncomplet
 	return /** @type {LocalizedString} */ (`Stack running`)
 };
 
-/** @type {(inputs: Campaignshareruncomplete3Inputs) => LocalizedString} */
-const es_campaignshareruncomplete3 = en_campaignshareruncomplete3;
+const es_campaignshareruncomplete3 = /** @type {(inputs: Campaignshareruncomplete3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Stack en ejecución`)
+};
 
-/** @type {(inputs: Campaignshareruncomplete3Inputs) => LocalizedString} */
-const zh_campaignshareruncomplete3 = en_campaignshareruncomplete3;
+const zh_campaignshareruncomplete3 = /** @type {(inputs: Campaignshareruncomplete3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`技术栈运行中`)
+};
 
-/** @type {(inputs: Campaignshareruncomplete3Inputs) => LocalizedString} */
-const ja_campaignshareruncomplete3 = en_campaignshareruncomplete3;
+const ja_campaignshareruncomplete3 = /** @type {(inputs: Campaignshareruncomplete3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`スタック実行中`)
+};
 
-/** @type {(inputs: Campaignshareruncomplete3Inputs) => LocalizedString} */
-const ko_campaignshareruncomplete3 = en_campaignshareruncomplete3;
+const ko_campaignshareruncomplete3 = /** @type {(inputs: Campaignshareruncomplete3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`스택 실행 중`)
+};
 
-/** @type {(inputs: Campaignshareruncomplete3Inputs) => LocalizedString} */
-const zh_hant1_campaignshareruncomplete3 = zh_campaignshareruncomplete3;
+const zh_hant1_campaignshareruncomplete3 = /** @type {(inputs: Campaignshareruncomplete3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`技術棧執行中`)
+};
 
-/** @type {(inputs: Campaignshareruncomplete3Inputs) => LocalizedString} */
-const de_campaignshareruncomplete3 = en_campaignshareruncomplete3;
+const de_campaignshareruncomplete3 = /** @type {(inputs: Campaignshareruncomplete3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Stack läuft`)
+};
 
-/** @type {(inputs: Campaignshareruncomplete3Inputs) => LocalizedString} */
-const fr_campaignshareruncomplete3 = en_campaignshareruncomplete3;
+const fr_campaignshareruncomplete3 = /** @type {(inputs: Campaignshareruncomplete3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Stack en cours d'exécution`)
+};
 
-/** @type {(inputs: Campaignshareruncomplete3Inputs) => LocalizedString} */
-const uk_campaignshareruncomplete3 = en_campaignshareruncomplete3;
+const uk_campaignshareruncomplete3 = /** @type {(inputs: Campaignshareruncomplete3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Стек запущено`)
+};
 
 /**
 * | output |

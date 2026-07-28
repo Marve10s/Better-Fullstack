@@ -9,29 +9,37 @@ const en_campaignstepeditcopy3 = /** @type {(inputs: Campaignstepeditcopy3Inputs
 	return /** @type {LocalizedString} */ (`Open project files, edit the application and rerun it without leaving the builder.`)
 };
 
-/** @type {(inputs: Campaignstepeditcopy3Inputs) => LocalizedString} */
-const es_campaignstepeditcopy3 = en_campaignstepeditcopy3;
+const es_campaignstepeditcopy3 = /** @type {(inputs: Campaignstepeditcopy3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Abre los archivos del proyecto, edita la aplicación y vuelve a ejecutarla sin salir del builder.`)
+};
 
-/** @type {(inputs: Campaignstepeditcopy3Inputs) => LocalizedString} */
-const zh_campaignstepeditcopy3 = en_campaignstepeditcopy3;
+const zh_campaignstepeditcopy3 = /** @type {(inputs: Campaignstepeditcopy3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`打开项目文件，编辑应用，无需离开构建器即可重新运行。`)
+};
 
-/** @type {(inputs: Campaignstepeditcopy3Inputs) => LocalizedString} */
-const ja_campaignstepeditcopy3 = en_campaignstepeditcopy3;
+const ja_campaignstepeditcopy3 = /** @type {(inputs: Campaignstepeditcopy3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`プロジェクトのファイルを開き、アプリを編集して、ビルダーから離れずに再実行できます。`)
+};
 
-/** @type {(inputs: Campaignstepeditcopy3Inputs) => LocalizedString} */
-const ko_campaignstepeditcopy3 = en_campaignstepeditcopy3;
+const ko_campaignstepeditcopy3 = /** @type {(inputs: Campaignstepeditcopy3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`프로젝트 파일을 열어 애플리케이션을 수정하고, 빌더를 떠나지 않고 다시 실행하세요.`)
+};
 
-/** @type {(inputs: Campaignstepeditcopy3Inputs) => LocalizedString} */
-const zh_hant1_campaignstepeditcopy3 = zh_campaignstepeditcopy3;
+const zh_hant1_campaignstepeditcopy3 = /** @type {(inputs: Campaignstepeditcopy3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`開啟專案檔案，編輯應用程式，無需離開建構器即可重新執行。`)
+};
 
-/** @type {(inputs: Campaignstepeditcopy3Inputs) => LocalizedString} */
-const de_campaignstepeditcopy3 = en_campaignstepeditcopy3;
+const de_campaignstepeditcopy3 = /** @type {(inputs: Campaignstepeditcopy3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Öffne die Projektdateien, bearbeite die Anwendung und führe sie erneut aus, ohne den Builder zu verlassen.`)
+};
 
-/** @type {(inputs: Campaignstepeditcopy3Inputs) => LocalizedString} */
-const fr_campaignstepeditcopy3 = en_campaignstepeditcopy3;
+const fr_campaignstepeditcopy3 = /** @type {(inputs: Campaignstepeditcopy3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Ouvrez les fichiers du projet, modifiez l'application et relancez-la sans quitter le builder.`)
+};
 
-/** @type {(inputs: Campaignstepeditcopy3Inputs) => LocalizedString} */
-const uk_campaignstepeditcopy3 = en_campaignstepeditcopy3;
+const uk_campaignstepeditcopy3 = /** @type {(inputs: Campaignstepeditcopy3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Відкрийте файли проєкту, відредагуйте застосунок і перезапустіть його, не виходячи з білдера.`)
+};
 
 /**
 * | output |

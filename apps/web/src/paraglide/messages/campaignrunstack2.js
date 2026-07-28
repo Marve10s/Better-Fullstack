@@ -9,29 +9,37 @@ const en_campaignrunstack2 = /** @type {(inputs: Campaignrunstack2Inputs) => Loc
 	return /** @type {LocalizedString} */ (`Run a stack`)
 };
 
-/** @type {(inputs: Campaignrunstack2Inputs) => LocalizedString} */
-const es_campaignrunstack2 = en_campaignrunstack2;
+const es_campaignrunstack2 = /** @type {(inputs: Campaignrunstack2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Ejecutar un stack`)
+};
 
-/** @type {(inputs: Campaignrunstack2Inputs) => LocalizedString} */
-const zh_campaignrunstack2 = en_campaignrunstack2;
+const zh_campaignrunstack2 = /** @type {(inputs: Campaignrunstack2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`运行一个技术栈`)
+};
 
-/** @type {(inputs: Campaignrunstack2Inputs) => LocalizedString} */
-const ja_campaignrunstack2 = en_campaignrunstack2;
+const ja_campaignrunstack2 = /** @type {(inputs: Campaignrunstack2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`スタックを実行`)
+};
 
-/** @type {(inputs: Campaignrunstack2Inputs) => LocalizedString} */
-const ko_campaignrunstack2 = en_campaignrunstack2;
+const ko_campaignrunstack2 = /** @type {(inputs: Campaignrunstack2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`스택 실행하기`)
+};
 
-/** @type {(inputs: Campaignrunstack2Inputs) => LocalizedString} */
-const zh_hant1_campaignrunstack2 = zh_campaignrunstack2;
+const zh_hant1_campaignrunstack2 = /** @type {(inputs: Campaignrunstack2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`執行一個技術棧`)
+};
 
-/** @type {(inputs: Campaignrunstack2Inputs) => LocalizedString} */
-const de_campaignrunstack2 = en_campaignrunstack2;
+const de_campaignrunstack2 = /** @type {(inputs: Campaignrunstack2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Stack ausführen`)
+};
 
-/** @type {(inputs: Campaignrunstack2Inputs) => LocalizedString} */
-const fr_campaignrunstack2 = en_campaignrunstack2;
+const fr_campaignrunstack2 = /** @type {(inputs: Campaignrunstack2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Exécuter un stack`)
+};
 
-/** @type {(inputs: Campaignrunstack2Inputs) => LocalizedString} */
-const uk_campaignrunstack2 = en_campaignrunstack2;
+const uk_campaignrunstack2 = /** @type {(inputs: Campaignrunstack2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Запустити стек`)
+};
 
 /**
 * | output |

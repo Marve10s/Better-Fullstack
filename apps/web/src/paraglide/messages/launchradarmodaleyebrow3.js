@@ -9,29 +9,37 @@ const en_launchradarmodaleyebrow3 = /** @type {(inputs: Launchradarmodaleyebrow3
 	return /** @type {LocalizedString} */ (`July drop / Development`)
 };
 
-/** @type {(inputs: Launchradarmodaleyebrow3Inputs) => LocalizedString} */
-const es_launchradarmodaleyebrow3 = en_launchradarmodaleyebrow3;
+const es_launchradarmodaleyebrow3 = /** @type {(inputs: Launchradarmodaleyebrow3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Drop de julio / Development`)
+};
 
-/** @type {(inputs: Launchradarmodaleyebrow3Inputs) => LocalizedString} */
-const zh_launchradarmodaleyebrow3 = en_launchradarmodaleyebrow3;
+const zh_launchradarmodaleyebrow3 = /** @type {(inputs: Launchradarmodaleyebrow3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`七月上新 / Development`)
+};
 
-/** @type {(inputs: Launchradarmodaleyebrow3Inputs) => LocalizedString} */
-const ja_launchradarmodaleyebrow3 = en_launchradarmodaleyebrow3;
+const ja_launchradarmodaleyebrow3 = /** @type {(inputs: Launchradarmodaleyebrow3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`7月ドロップ / Development`)
+};
 
-/** @type {(inputs: Launchradarmodaleyebrow3Inputs) => LocalizedString} */
-const ko_launchradarmodaleyebrow3 = en_launchradarmodaleyebrow3;
+const ko_launchradarmodaleyebrow3 = /** @type {(inputs: Launchradarmodaleyebrow3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`7월 드롭 / Development`)
+};
 
-/** @type {(inputs: Launchradarmodaleyebrow3Inputs) => LocalizedString} */
-const zh_hant1_launchradarmodaleyebrow3 = zh_launchradarmodaleyebrow3;
+const zh_hant1_launchradarmodaleyebrow3 = /** @type {(inputs: Launchradarmodaleyebrow3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`七月上新 / Development`)
+};
 
-/** @type {(inputs: Launchradarmodaleyebrow3Inputs) => LocalizedString} */
-const de_launchradarmodaleyebrow3 = en_launchradarmodaleyebrow3;
+const de_launchradarmodaleyebrow3 = /** @type {(inputs: Launchradarmodaleyebrow3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Juli-Drop / Development`)
+};
 
-/** @type {(inputs: Launchradarmodaleyebrow3Inputs) => LocalizedString} */
-const fr_launchradarmodaleyebrow3 = en_launchradarmodaleyebrow3;
+const fr_launchradarmodaleyebrow3 = /** @type {(inputs: Launchradarmodaleyebrow3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Drop de juillet / Development`)
+};
 
-/** @type {(inputs: Launchradarmodaleyebrow3Inputs) => LocalizedString} */
-const uk_launchradarmodaleyebrow3 = en_launchradarmodaleyebrow3;
+const uk_launchradarmodaleyebrow3 = /** @type {(inputs: Launchradarmodaleyebrow3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Липневий дроп / Development`)
+};
 
 /**
 * | output |

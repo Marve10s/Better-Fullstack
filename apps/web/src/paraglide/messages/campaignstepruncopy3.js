@@ -9,29 +9,37 @@ const en_campaignstepruncopy3 = /** @type {(inputs: Campaignstepruncopy3Inputs) 
 	return /** @type {LocalizedString} */ (`Start the generated development server in an isolated browser runtime—not a simulated preview.`)
 };
 
-/** @type {(inputs: Campaignstepruncopy3Inputs) => LocalizedString} */
-const es_campaignstepruncopy3 = en_campaignstepruncopy3;
+const es_campaignstepruncopy3 = /** @type {(inputs: Campaignstepruncopy3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Arranca el servidor de desarrollo generado en un runtime aislado del navegador, no en una vista previa simulada.`)
+};
 
-/** @type {(inputs: Campaignstepruncopy3Inputs) => LocalizedString} */
-const zh_campaignstepruncopy3 = en_campaignstepruncopy3;
+const zh_campaignstepruncopy3 = /** @type {(inputs: Campaignstepruncopy3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`在隔离的浏览器运行时中启动生成的开发服务器——不是模拟预览。`)
+};
 
-/** @type {(inputs: Campaignstepruncopy3Inputs) => LocalizedString} */
-const ja_campaignstepruncopy3 = en_campaignstepruncopy3;
+const ja_campaignstepruncopy3 = /** @type {(inputs: Campaignstepruncopy3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`生成された開発サーバーを、疑似プレビューではなく隔離されたブラウザランタイムで起動します。`)
+};
 
-/** @type {(inputs: Campaignstepruncopy3Inputs) => LocalizedString} */
-const ko_campaignstepruncopy3 = en_campaignstepruncopy3;
+const ko_campaignstepruncopy3 = /** @type {(inputs: Campaignstepruncopy3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`생성된 개발 서버를 시뮬레이션 미리보기가 아닌 격리된 브라우저 런타임에서 시작합니다.`)
+};
 
-/** @type {(inputs: Campaignstepruncopy3Inputs) => LocalizedString} */
-const zh_hant1_campaignstepruncopy3 = zh_campaignstepruncopy3;
+const zh_hant1_campaignstepruncopy3 = /** @type {(inputs: Campaignstepruncopy3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`在隔離的瀏覽器執行環境中啟動產生的開發伺服器——不是模擬預覽。`)
+};
 
-/** @type {(inputs: Campaignstepruncopy3Inputs) => LocalizedString} */
-const de_campaignstepruncopy3 = en_campaignstepruncopy3;
+const de_campaignstepruncopy3 = /** @type {(inputs: Campaignstepruncopy3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Starte den generierten Dev-Server in einer isolierten Browser-Laufzeit – keine simulierte Vorschau.`)
+};
 
-/** @type {(inputs: Campaignstepruncopy3Inputs) => LocalizedString} */
-const fr_campaignstepruncopy3 = en_campaignstepruncopy3;
+const fr_campaignstepruncopy3 = /** @type {(inputs: Campaignstepruncopy3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Lancez le serveur de développement généré dans un runtime navigateur isolé — pas un aperçu simulé.`)
+};
 
-/** @type {(inputs: Campaignstepruncopy3Inputs) => LocalizedString} */
-const uk_campaignstepruncopy3 = en_campaignstepruncopy3;
+const uk_campaignstepruncopy3 = /** @type {(inputs: Campaignstepruncopy3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Запустіть згенерований дев-сервер в ізольованому браузерному середовищі — це не симульоване превʼю.`)
+};
 
 /**
 * | output |

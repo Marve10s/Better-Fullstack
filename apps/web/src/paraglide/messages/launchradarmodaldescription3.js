@@ -9,29 +9,37 @@ const en_launchradarmodaldescription3 = /** @type {(inputs: Launchradarmodaldesc
 	return /** @type {LocalizedString} */ (`${i?.count} new libraries and tools across seven ecosystems, organized so you can jump straight to what matters.`)
 };
 
-/** @type {(inputs: Launchradarmodaldescription3Inputs) => LocalizedString} */
-const es_launchradarmodaldescription3 = en_launchradarmodaldescription3;
+const es_launchradarmodaldescription3 = /** @type {(inputs: Launchradarmodaldescription3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} nuevas librerías y herramientas en siete ecosistemas, organizadas para que vayas directo a lo que importa.`)
+};
 
-/** @type {(inputs: Launchradarmodaldescription3Inputs) => LocalizedString} */
-const zh_launchradarmodaldescription3 = en_launchradarmodaldescription3;
+const zh_launchradarmodaldescription3 = /** @type {(inputs: Launchradarmodaldescription3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`横跨七大生态的 ${i?.count} 个新库和新工具，已经整理妥当，让你直达最关心的部分。`)
+};
 
-/** @type {(inputs: Launchradarmodaldescription3Inputs) => LocalizedString} */
-const ja_launchradarmodaldescription3 = en_launchradarmodaldescription3;
+const ja_launchradarmodaldescription3 = /** @type {(inputs: Launchradarmodaldescription3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`7つのエコシステムにわたる ${i?.count} 件の新しいライブラリとツールを、必要なものへすぐたどり着けるよう整理しました。`)
+};
 
-/** @type {(inputs: Launchradarmodaldescription3Inputs) => LocalizedString} */
-const ko_launchradarmodaldescription3 = en_launchradarmodaldescription3;
+const ko_launchradarmodaldescription3 = /** @type {(inputs: Launchradarmodaldescription3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`일곱 개 생태계에 걸친 새 라이브러리와 도구 ${i?.count}개를 필요한 것부터 바로 찾을 수 있도록 정리했습니다.`)
+};
 
-/** @type {(inputs: Launchradarmodaldescription3Inputs) => LocalizedString} */
-const zh_hant1_launchradarmodaldescription3 = zh_launchradarmodaldescription3;
+const zh_hant1_launchradarmodaldescription3 = /** @type {(inputs: Launchradarmodaldescription3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`橫跨七大生態系的 ${i?.count} 個新函式庫與工具，已妥善整理，讓你直達最在意的部分。`)
+};
 
-/** @type {(inputs: Launchradarmodaldescription3Inputs) => LocalizedString} */
-const de_launchradarmodaldescription3 = en_launchradarmodaldescription3;
+const de_launchradarmodaldescription3 = /** @type {(inputs: Launchradarmodaldescription3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} neue Bibliotheken und Tools in sieben Ökosystemen – so organisiert, dass du direkt zum Wesentlichen springst.`)
+};
 
-/** @type {(inputs: Launchradarmodaldescription3Inputs) => LocalizedString} */
-const fr_launchradarmodaldescription3 = en_launchradarmodaldescription3;
+const fr_launchradarmodaldescription3 = /** @type {(inputs: Launchradarmodaldescription3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} nouvelles bibliothèques et nouveaux outils dans sept écosystèmes, organisés pour aller droit à l'essentiel.`)
+};
 
-/** @type {(inputs: Launchradarmodaldescription3Inputs) => LocalizedString} */
-const uk_launchradarmodaldescription3 = en_launchradarmodaldescription3;
+const uk_launchradarmodaldescription3 = /** @type {(inputs: Launchradarmodaldescription3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} нових бібліотек та інструментів у семи екосистемах, упорядкованих так, щоб одразу перейти до головного.`)
+};
 
 /**
 * | output |

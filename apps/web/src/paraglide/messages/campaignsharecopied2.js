@@ -9,29 +9,37 @@ const en_campaignsharecopied2 = /** @type {(inputs: Campaignsharecopied2Inputs) 
 	return /** @type {LocalizedString} */ (`Share message copied`)
 };
 
-/** @type {(inputs: Campaignsharecopied2Inputs) => LocalizedString} */
-const es_campaignsharecopied2 = en_campaignsharecopied2;
+const es_campaignsharecopied2 = /** @type {(inputs: Campaignsharecopied2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Mensaje para compartir copiado`)
+};
 
-/** @type {(inputs: Campaignsharecopied2Inputs) => LocalizedString} */
-const zh_campaignsharecopied2 = en_campaignsharecopied2;
+const zh_campaignsharecopied2 = /** @type {(inputs: Campaignsharecopied2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`分享内容已复制`)
+};
 
-/** @type {(inputs: Campaignsharecopied2Inputs) => LocalizedString} */
-const ja_campaignsharecopied2 = en_campaignsharecopied2;
+const ja_campaignsharecopied2 = /** @type {(inputs: Campaignsharecopied2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`共有メッセージをコピーしました`)
+};
 
-/** @type {(inputs: Campaignsharecopied2Inputs) => LocalizedString} */
-const ko_campaignsharecopied2 = en_campaignsharecopied2;
+const ko_campaignsharecopied2 = /** @type {(inputs: Campaignsharecopied2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`공유 메시지를 복사했습니다`)
+};
 
-/** @type {(inputs: Campaignsharecopied2Inputs) => LocalizedString} */
-const zh_hant1_campaignsharecopied2 = zh_campaignsharecopied2;
+const zh_hant1_campaignsharecopied2 = /** @type {(inputs: Campaignsharecopied2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`分享內容已複製`)
+};
 
-/** @type {(inputs: Campaignsharecopied2Inputs) => LocalizedString} */
-const de_campaignsharecopied2 = en_campaignsharecopied2;
+const de_campaignsharecopied2 = /** @type {(inputs: Campaignsharecopied2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Share-Nachricht kopiert`)
+};
 
-/** @type {(inputs: Campaignsharecopied2Inputs) => LocalizedString} */
-const fr_campaignsharecopied2 = en_campaignsharecopied2;
+const fr_campaignsharecopied2 = /** @type {(inputs: Campaignsharecopied2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Message de partage copié`)
+};
 
-/** @type {(inputs: Campaignsharecopied2Inputs) => LocalizedString} */
-const uk_campaignsharecopied2 = en_campaignsharecopied2;
+const uk_campaignsharecopied2 = /** @type {(inputs: Campaignsharecopied2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Повідомлення для шерингу скопійовано`)
+};
 
 /**
 * | output |

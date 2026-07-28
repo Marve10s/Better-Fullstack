@@ -9,29 +9,37 @@ const en_buildernewbadge2 = /** @type {(inputs: Buildernewbadge2Inputs) => Local
 	return /** @type {LocalizedString} */ (`New`)
 };
 
-/** @type {(inputs: Buildernewbadge2Inputs) => LocalizedString} */
-const es_buildernewbadge2 = en_buildernewbadge2;
+const es_buildernewbadge2 = /** @type {(inputs: Buildernewbadge2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Nuevo`)
+};
 
-/** @type {(inputs: Buildernewbadge2Inputs) => LocalizedString} */
-const zh_buildernewbadge2 = en_buildernewbadge2;
+const zh_buildernewbadge2 = /** @type {(inputs: Buildernewbadge2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`新`)
+};
 
-/** @type {(inputs: Buildernewbadge2Inputs) => LocalizedString} */
-const ja_buildernewbadge2 = en_buildernewbadge2;
+const ja_buildernewbadge2 = /** @type {(inputs: Buildernewbadge2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`New`)
+};
 
-/** @type {(inputs: Buildernewbadge2Inputs) => LocalizedString} */
-const ko_buildernewbadge2 = en_buildernewbadge2;
+const ko_buildernewbadge2 = /** @type {(inputs: Buildernewbadge2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`New`)
+};
 
-/** @type {(inputs: Buildernewbadge2Inputs) => LocalizedString} */
-const zh_hant1_buildernewbadge2 = zh_buildernewbadge2;
+const zh_hant1_buildernewbadge2 = /** @type {(inputs: Buildernewbadge2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`新`)
+};
 
-/** @type {(inputs: Buildernewbadge2Inputs) => LocalizedString} */
-const de_buildernewbadge2 = en_buildernewbadge2;
+const de_buildernewbadge2 = /** @type {(inputs: Buildernewbadge2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Neu`)
+};
 
-/** @type {(inputs: Buildernewbadge2Inputs) => LocalizedString} */
-const fr_buildernewbadge2 = en_buildernewbadge2;
+const fr_buildernewbadge2 = /** @type {(inputs: Buildernewbadge2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Nouveau`)
+};
 
-/** @type {(inputs: Buildernewbadge2Inputs) => LocalizedString} */
-const uk_buildernewbadge2 = en_buildernewbadge2;
+const uk_buildernewbadge2 = /** @type {(inputs: Buildernewbadge2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Нове`)
+};
 
 /**
 * | output |

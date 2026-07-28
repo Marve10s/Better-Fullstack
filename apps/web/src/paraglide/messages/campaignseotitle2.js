@@ -9,29 +9,37 @@ const en_campaignseotitle2 = /** @type {(inputs: Campaignseotitle2Inputs) => Loc
 	return /** @type {LocalizedString} */ (`Run Before You Clone | Better Fullstack`)
 };
 
-/** @type {(inputs: Campaignseotitle2Inputs) => LocalizedString} */
-const es_campaignseotitle2 = en_campaignseotitle2;
+const es_campaignseotitle2 = /** @type {(inputs: Campaignseotitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Ejecuta antes de clonar | Better Fullstack`)
+};
 
-/** @type {(inputs: Campaignseotitle2Inputs) => LocalizedString} */
-const zh_campaignseotitle2 = en_campaignseotitle2;
+const zh_campaignseotitle2 = /** @type {(inputs: Campaignseotitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`先运行，再克隆 | Better Fullstack`)
+};
 
-/** @type {(inputs: Campaignseotitle2Inputs) => LocalizedString} */
-const ja_campaignseotitle2 = en_campaignseotitle2;
+const ja_campaignseotitle2 = /** @type {(inputs: Campaignseotitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`クローンする前に実行 | Better Fullstack`)
+};
 
-/** @type {(inputs: Campaignseotitle2Inputs) => LocalizedString} */
-const ko_campaignseotitle2 = en_campaignseotitle2;
+const ko_campaignseotitle2 = /** @type {(inputs: Campaignseotitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`클론하기 전에 실행하세요 | Better Fullstack`)
+};
 
-/** @type {(inputs: Campaignseotitle2Inputs) => LocalizedString} */
-const zh_hant1_campaignseotitle2 = zh_campaignseotitle2;
+const zh_hant1_campaignseotitle2 = /** @type {(inputs: Campaignseotitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`先執行，再複製 | Better Fullstack`)
+};
 
-/** @type {(inputs: Campaignseotitle2Inputs) => LocalizedString} */
-const de_campaignseotitle2 = en_campaignseotitle2;
+const de_campaignseotitle2 = /** @type {(inputs: Campaignseotitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Erst ausführen, dann klonen | Better Fullstack`)
+};
 
-/** @type {(inputs: Campaignseotitle2Inputs) => LocalizedString} */
-const fr_campaignseotitle2 = en_campaignseotitle2;
+const fr_campaignseotitle2 = /** @type {(inputs: Campaignseotitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Exécutez avant de cloner | Better Fullstack`)
+};
 
-/** @type {(inputs: Campaignseotitle2Inputs) => LocalizedString} */
-const uk_campaignseotitle2 = en_campaignseotitle2;
+const uk_campaignseotitle2 = /** @type {(inputs: Campaignseotitle2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Запусти перед клонуванням | Better Fullstack`)
+};
 
 /**
 * | output |

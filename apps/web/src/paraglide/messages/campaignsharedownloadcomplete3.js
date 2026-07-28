@@ -9,29 +9,37 @@ const en_campaignsharedownloadcomplete3 = /** @type {(inputs: Campaignsharedownl
 	return /** @type {LocalizedString} */ (`ZIP downloaded`)
 };
 
-/** @type {(inputs: Campaignsharedownloadcomplete3Inputs) => LocalizedString} */
-const es_campaignsharedownloadcomplete3 = en_campaignsharedownloadcomplete3;
+const es_campaignsharedownloadcomplete3 = /** @type {(inputs: Campaignsharedownloadcomplete3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`ZIP descargado`)
+};
 
-/** @type {(inputs: Campaignsharedownloadcomplete3Inputs) => LocalizedString} */
-const zh_campaignsharedownloadcomplete3 = en_campaignsharedownloadcomplete3;
+const zh_campaignsharedownloadcomplete3 = /** @type {(inputs: Campaignsharedownloadcomplete3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`ZIP 已下载`)
+};
 
-/** @type {(inputs: Campaignsharedownloadcomplete3Inputs) => LocalizedString} */
-const ja_campaignsharedownloadcomplete3 = en_campaignsharedownloadcomplete3;
+const ja_campaignsharedownloadcomplete3 = /** @type {(inputs: Campaignsharedownloadcomplete3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`ZIP をダウンロードしました`)
+};
 
-/** @type {(inputs: Campaignsharedownloadcomplete3Inputs) => LocalizedString} */
-const ko_campaignsharedownloadcomplete3 = en_campaignsharedownloadcomplete3;
+const ko_campaignsharedownloadcomplete3 = /** @type {(inputs: Campaignsharedownloadcomplete3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`ZIP 다운로드 완료`)
+};
 
-/** @type {(inputs: Campaignsharedownloadcomplete3Inputs) => LocalizedString} */
-const zh_hant1_campaignsharedownloadcomplete3 = zh_campaignsharedownloadcomplete3;
+const zh_hant1_campaignsharedownloadcomplete3 = /** @type {(inputs: Campaignsharedownloadcomplete3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`ZIP 已下載`)
+};
 
-/** @type {(inputs: Campaignsharedownloadcomplete3Inputs) => LocalizedString} */
-const de_campaignsharedownloadcomplete3 = en_campaignsharedownloadcomplete3;
+const de_campaignsharedownloadcomplete3 = /** @type {(inputs: Campaignsharedownloadcomplete3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`ZIP heruntergeladen`)
+};
 
-/** @type {(inputs: Campaignsharedownloadcomplete3Inputs) => LocalizedString} */
-const fr_campaignsharedownloadcomplete3 = en_campaignsharedownloadcomplete3;
+const fr_campaignsharedownloadcomplete3 = /** @type {(inputs: Campaignsharedownloadcomplete3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`ZIP téléchargé`)
+};
 
-/** @type {(inputs: Campaignsharedownloadcomplete3Inputs) => LocalizedString} */
-const uk_campaignsharedownloadcomplete3 = en_campaignsharedownloadcomplete3;
+const uk_campaignsharedownloadcomplete3 = /** @type {(inputs: Campaignsharedownloadcomplete3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`ZIP завантажено`)
+};
 
 /**
 * | output |

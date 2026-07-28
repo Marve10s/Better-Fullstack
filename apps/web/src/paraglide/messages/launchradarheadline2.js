@@ -9,29 +9,37 @@ const en_launchradarheadline2 = /** @type {(inputs: Launchradarheadline2Inputs) 
 	return /** @type {LocalizedString} */ (`${i?.count} new stack choices, now in the builder.`)
 };
 
-/** @type {(inputs: Launchradarheadline2Inputs) => LocalizedString} */
-const es_launchradarheadline2 = en_launchradarheadline2;
+const es_launchradarheadline2 = /** @type {(inputs: Launchradarheadline2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} nuevas opciones de stack, ya en el builder.`)
+};
 
-/** @type {(inputs: Launchradarheadline2Inputs) => LocalizedString} */
-const zh_launchradarheadline2 = en_launchradarheadline2;
+const zh_launchradarheadline2 = /** @type {(inputs: Launchradarheadline2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} 个全新的技术栈选项，现已加入构建器。`)
+};
 
-/** @type {(inputs: Launchradarheadline2Inputs) => LocalizedString} */
-const ja_launchradarheadline2 = en_launchradarheadline2;
+const ja_launchradarheadline2 = /** @type {(inputs: Launchradarheadline2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} 件の新しいスタック選択肢がビルダーに登場。`)
+};
 
-/** @type {(inputs: Launchradarheadline2Inputs) => LocalizedString} */
-const ko_launchradarheadline2 = en_launchradarheadline2;
+const ko_launchradarheadline2 = /** @type {(inputs: Launchradarheadline2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`새로운 스택 선택지 ${i?.count}개가 빌더에 추가되었습니다.`)
+};
 
-/** @type {(inputs: Launchradarheadline2Inputs) => LocalizedString} */
-const zh_hant1_launchradarheadline2 = zh_launchradarheadline2;
+const zh_hant1_launchradarheadline2 = /** @type {(inputs: Launchradarheadline2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} 個全新的技術棧選項，現已加入建構器。`)
+};
 
-/** @type {(inputs: Launchradarheadline2Inputs) => LocalizedString} */
-const de_launchradarheadline2 = en_launchradarheadline2;
+const de_launchradarheadline2 = /** @type {(inputs: Launchradarheadline2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} neue Stack-Optionen, jetzt im Builder.`)
+};
 
-/** @type {(inputs: Launchradarheadline2Inputs) => LocalizedString} */
-const fr_launchradarheadline2 = en_launchradarheadline2;
+const fr_launchradarheadline2 = /** @type {(inputs: Launchradarheadline2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} nouveaux choix de stack, désormais dans le builder.`)
+};
 
-/** @type {(inputs: Launchradarheadline2Inputs) => LocalizedString} */
-const uk_launchradarheadline2 = en_launchradarheadline2;
+const uk_launchradarheadline2 = /** @type {(inputs: Launchradarheadline2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} нових варіантів стека — вже в білдері.`)
+};
 
 /**
 * | output |

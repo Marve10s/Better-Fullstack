@@ -9,29 +9,37 @@ const en_campaignsharepostonx4 = /** @type {(inputs: Campaignsharepostonx4Inputs
 	return /** @type {LocalizedString} */ (`Post on X`)
 };
 
-/** @type {(inputs: Campaignsharepostonx4Inputs) => LocalizedString} */
-const es_campaignsharepostonx4 = en_campaignsharepostonx4;
+const es_campaignsharepostonx4 = /** @type {(inputs: Campaignsharepostonx4Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Publicar en X`)
+};
 
-/** @type {(inputs: Campaignsharepostonx4Inputs) => LocalizedString} */
-const zh_campaignsharepostonx4 = en_campaignsharepostonx4;
+const zh_campaignsharepostonx4 = /** @type {(inputs: Campaignsharepostonx4Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`发布到 X`)
+};
 
-/** @type {(inputs: Campaignsharepostonx4Inputs) => LocalizedString} */
-const ja_campaignsharepostonx4 = en_campaignsharepostonx4;
+const ja_campaignsharepostonx4 = /** @type {(inputs: Campaignsharepostonx4Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`X に投稿`)
+};
 
-/** @type {(inputs: Campaignsharepostonx4Inputs) => LocalizedString} */
-const ko_campaignsharepostonx4 = en_campaignsharepostonx4;
+const ko_campaignsharepostonx4 = /** @type {(inputs: Campaignsharepostonx4Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`X에 게시`)
+};
 
-/** @type {(inputs: Campaignsharepostonx4Inputs) => LocalizedString} */
-const zh_hant1_campaignsharepostonx4 = zh_campaignsharepostonx4;
+const zh_hant1_campaignsharepostonx4 = /** @type {(inputs: Campaignsharepostonx4Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`發布到 X`)
+};
 
-/** @type {(inputs: Campaignsharepostonx4Inputs) => LocalizedString} */
-const de_campaignsharepostonx4 = en_campaignsharepostonx4;
+const de_campaignsharepostonx4 = /** @type {(inputs: Campaignsharepostonx4Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Auf X posten`)
+};
 
-/** @type {(inputs: Campaignsharepostonx4Inputs) => LocalizedString} */
-const fr_campaignsharepostonx4 = en_campaignsharepostonx4;
+const fr_campaignsharepostonx4 = /** @type {(inputs: Campaignsharepostonx4Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Publier sur X`)
+};
 
-/** @type {(inputs: Campaignsharepostonx4Inputs) => LocalizedString} */
-const uk_campaignsharepostonx4 = en_campaignsharepostonx4;
+const uk_campaignsharepostonx4 = /** @type {(inputs: Campaignsharepostonx4Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Опублікувати в X`)
+};
 
 /**
 * | output |

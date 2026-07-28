@@ -9,29 +9,37 @@ const en_campaignctaeyebrow2 = /** @type {(inputs: Campaignctaeyebrow2Inputs) =>
 	return /** @type {LocalizedString} */ (`Your next project is one click away`)
 };
 
-/** @type {(inputs: Campaignctaeyebrow2Inputs) => LocalizedString} */
-const es_campaignctaeyebrow2 = en_campaignctaeyebrow2;
+const es_campaignctaeyebrow2 = /** @type {(inputs: Campaignctaeyebrow2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Tu próximo proyecto está a un clic`)
+};
 
-/** @type {(inputs: Campaignctaeyebrow2Inputs) => LocalizedString} */
-const zh_campaignctaeyebrow2 = en_campaignctaeyebrow2;
+const zh_campaignctaeyebrow2 = /** @type {(inputs: Campaignctaeyebrow2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`你的下一个项目只需一次点击`)
+};
 
-/** @type {(inputs: Campaignctaeyebrow2Inputs) => LocalizedString} */
-const ja_campaignctaeyebrow2 = en_campaignctaeyebrow2;
+const ja_campaignctaeyebrow2 = /** @type {(inputs: Campaignctaeyebrow2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`次のプロジェクトはワンクリック先に`)
+};
 
-/** @type {(inputs: Campaignctaeyebrow2Inputs) => LocalizedString} */
-const ko_campaignctaeyebrow2 = en_campaignctaeyebrow2;
+const ko_campaignctaeyebrow2 = /** @type {(inputs: Campaignctaeyebrow2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`다음 프로젝트가 클릭 한 번 거리에`)
+};
 
-/** @type {(inputs: Campaignctaeyebrow2Inputs) => LocalizedString} */
-const zh_hant1_campaignctaeyebrow2 = zh_campaignctaeyebrow2;
+const zh_hant1_campaignctaeyebrow2 = /** @type {(inputs: Campaignctaeyebrow2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`你的下一個專案只差一次點擊`)
+};
 
-/** @type {(inputs: Campaignctaeyebrow2Inputs) => LocalizedString} */
-const de_campaignctaeyebrow2 = en_campaignctaeyebrow2;
+const de_campaignctaeyebrow2 = /** @type {(inputs: Campaignctaeyebrow2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Dein nächstes Projekt ist einen Klick entfernt`)
+};
 
-/** @type {(inputs: Campaignctaeyebrow2Inputs) => LocalizedString} */
-const fr_campaignctaeyebrow2 = en_campaignctaeyebrow2;
+const fr_campaignctaeyebrow2 = /** @type {(inputs: Campaignctaeyebrow2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Votre prochain projet est à un clic`)
+};
 
-/** @type {(inputs: Campaignctaeyebrow2Inputs) => LocalizedString} */
-const uk_campaignctaeyebrow2 = en_campaignctaeyebrow2;
+const uk_campaignctaeyebrow2 = /** @type {(inputs: Campaignctaeyebrow2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Ваш наступний проєкт — за один клік`)
+};
 
 /**
 * | output |

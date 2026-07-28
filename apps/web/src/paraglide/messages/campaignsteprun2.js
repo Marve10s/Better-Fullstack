@@ -9,29 +9,37 @@ const en_campaignsteprun2 = /** @type {(inputs: Campaignsteprun2Inputs) => Local
 	return /** @type {LocalizedString} */ (`Run the real project`)
 };
 
-/** @type {(inputs: Campaignsteprun2Inputs) => LocalizedString} */
-const es_campaignsteprun2 = en_campaignsteprun2;
+const es_campaignsteprun2 = /** @type {(inputs: Campaignsteprun2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Ejecuta el proyecto real`)
+};
 
-/** @type {(inputs: Campaignsteprun2Inputs) => LocalizedString} */
-const zh_campaignsteprun2 = en_campaignsteprun2;
+const zh_campaignsteprun2 = /** @type {(inputs: Campaignsteprun2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`运行真实项目`)
+};
 
-/** @type {(inputs: Campaignsteprun2Inputs) => LocalizedString} */
-const ja_campaignsteprun2 = en_campaignsteprun2;
+const ja_campaignsteprun2 = /** @type {(inputs: Campaignsteprun2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`本物のプロジェクトを実行`)
+};
 
-/** @type {(inputs: Campaignsteprun2Inputs) => LocalizedString} */
-const ko_campaignsteprun2 = en_campaignsteprun2;
+const ko_campaignsteprun2 = /** @type {(inputs: Campaignsteprun2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`실제 프로젝트 실행`)
+};
 
-/** @type {(inputs: Campaignsteprun2Inputs) => LocalizedString} */
-const zh_hant1_campaignsteprun2 = zh_campaignsteprun2;
+const zh_hant1_campaignsteprun2 = /** @type {(inputs: Campaignsteprun2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`執行真實專案`)
+};
 
-/** @type {(inputs: Campaignsteprun2Inputs) => LocalizedString} */
-const de_campaignsteprun2 = en_campaignsteprun2;
+const de_campaignsteprun2 = /** @type {(inputs: Campaignsteprun2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Führe das echte Projekt aus`)
+};
 
-/** @type {(inputs: Campaignsteprun2Inputs) => LocalizedString} */
-const fr_campaignsteprun2 = en_campaignsteprun2;
+const fr_campaignsteprun2 = /** @type {(inputs: Campaignsteprun2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Exécutez le vrai projet`)
+};
 
-/** @type {(inputs: Campaignsteprun2Inputs) => LocalizedString} */
-const uk_campaignsteprun2 = en_campaignsteprun2;
+const uk_campaignsteprun2 = /** @type {(inputs: Campaignsteprun2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Запустіть справжній проєкт`)
+};
 
 /**
 * | output |

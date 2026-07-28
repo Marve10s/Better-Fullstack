@@ -9,29 +9,37 @@ const en_campaignstepedit2 = /** @type {(inputs: Campaignstepedit2Inputs) => Loc
 	return /** @type {LocalizedString} */ (`Change the source`)
 };
 
-/** @type {(inputs: Campaignstepedit2Inputs) => LocalizedString} */
-const es_campaignstepedit2 = en_campaignstepedit2;
+const es_campaignstepedit2 = /** @type {(inputs: Campaignstepedit2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Cambia el código`)
+};
 
-/** @type {(inputs: Campaignstepedit2Inputs) => LocalizedString} */
-const zh_campaignstepedit2 = en_campaignstepedit2;
+const zh_campaignstepedit2 = /** @type {(inputs: Campaignstepedit2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`修改源码`)
+};
 
-/** @type {(inputs: Campaignstepedit2Inputs) => LocalizedString} */
-const ja_campaignstepedit2 = en_campaignstepedit2;
+const ja_campaignstepedit2 = /** @type {(inputs: Campaignstepedit2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`ソースを変更`)
+};
 
-/** @type {(inputs: Campaignstepedit2Inputs) => LocalizedString} */
-const ko_campaignstepedit2 = en_campaignstepedit2;
+const ko_campaignstepedit2 = /** @type {(inputs: Campaignstepedit2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`소스 수정`)
+};
 
-/** @type {(inputs: Campaignstepedit2Inputs) => LocalizedString} */
-const zh_hant1_campaignstepedit2 = zh_campaignstepedit2;
+const zh_hant1_campaignstepedit2 = /** @type {(inputs: Campaignstepedit2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`修改原始碼`)
+};
 
-/** @type {(inputs: Campaignstepedit2Inputs) => LocalizedString} */
-const de_campaignstepedit2 = en_campaignstepedit2;
+const de_campaignstepedit2 = /** @type {(inputs: Campaignstepedit2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Ändere den Quellcode`)
+};
 
-/** @type {(inputs: Campaignstepedit2Inputs) => LocalizedString} */
-const fr_campaignstepedit2 = en_campaignstepedit2;
+const fr_campaignstepedit2 = /** @type {(inputs: Campaignstepedit2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Modifiez le code source`)
+};
 
-/** @type {(inputs: Campaignstepedit2Inputs) => LocalizedString} */
-const uk_campaignstepedit2 = en_campaignstepedit2;
+const uk_campaignstepedit2 = /** @type {(inputs: Campaignstepedit2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Змініть код`)
+};
 
 /**
 * | output |
