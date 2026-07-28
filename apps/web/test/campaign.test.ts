@@ -1,6 +1,10 @@
 import { describe, expect, it } from "bun:test";
 
-import { CAMPAIGN_PRESETS, getCampaignPresetUrl } from "../src/lib/campaign";
+import {
+  CAMPAIGN_BUILDER_SEARCH,
+  CAMPAIGN_PRESETS,
+  getCampaignPresetUrl,
+} from "../src/lib/campaign";
 import { stackAnalyticsProperties } from "../src/lib/campaign-analytics";
 import {
   getCampaignShareMessage,
@@ -25,6 +29,14 @@ describe("Run Before You Clone campaign", () => {
     expect(getCampaignPresetUrl("nextjs-minimal")).toBe(
       "/new?preset=nextjs-minimal&view=run&campaign=run-before-you-clone",
     );
+  });
+
+  it("keeps campaign attribution when browsing every stack", () => {
+    expect(CAMPAIGN_BUILDER_SEARCH).toEqual({
+      view: "presets",
+      file: "",
+      campaign: "run-before-you-clone",
+    });
   });
 
   it("shares the exact stack with campaign attribution", () => {

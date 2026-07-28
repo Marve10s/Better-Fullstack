@@ -14,6 +14,7 @@ import { useEffect } from "react";
 
 import { TechIcon } from "@/components/ui/tech-icon";
 import {
+  CAMPAIGN_BUILDER_SEARCH,
   CAMPAIGN_PRESETS,
   CAMPAIGN_SLUG,
   getCampaignPresetUrl,
@@ -202,7 +203,7 @@ export function RunBeforeClonePage() {
               </a>
               <Link
                 to="/new"
-                search={{ view: "presets", file: "" }}
+                search={CAMPAIGN_BUILDER_SEARCH}
                 className="rounded-md border border-white/15 px-5 py-3 font-mono text-sm text-white/75 transition-colors hover:border-white/30 hover:text-white"
               >
                 {m.campaignBrowseBuilder()}

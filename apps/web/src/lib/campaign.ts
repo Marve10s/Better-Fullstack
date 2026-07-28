@@ -1,5 +1,10 @@
 export const CAMPAIGN_SLUG = "run-before-you-clone";
 export const CAMPAIGN_PATH = `/${CAMPAIGN_SLUG}` as const;
+export const CAMPAIGN_BUILDER_SEARCH = {
+  view: "presets",
+  file: "",
+  campaign: CAMPAIGN_SLUG,
+} as const;
 
 export type CampaignPreset = {
   id: string;
