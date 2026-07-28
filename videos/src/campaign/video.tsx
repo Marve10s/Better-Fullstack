@@ -47,7 +47,7 @@ function HookScene() {
         >
           Don&apos;t trust a starter
           <br />
-          <span style={{ color: BF_COLORS.lime }}>you can&apos;t run.</span>
+          <span style={{ color: BF_COLORS.foreground }}>you can&apos;t run.</span>
         </h1>
       </div>
     </GridBackground>
@@ -67,7 +67,7 @@ function ProductScene() {
         <div style={{ width: 460 }}>
           <div
             style={{
-              color: BF_COLORS.cyan,
+              color: BF_COLORS.purple,
               fontFamily: FONT_MONO,
               fontSize: 14,
               letterSpacing: "0.22em",
@@ -175,9 +175,9 @@ export function RunBeforeYouCloneVideo() {
 
 export function FeatureClip({ mode }: { mode: BrowserWindowMode }) {
   const labels: Record<BrowserWindowMode, { title: string; color: string }> = {
-    run: { title: "Run the real project.", color: BF_COLORS.lime },
-    edit: { title: "Edit. Save. Rerun.", color: BF_COLORS.cyan },
-    download: { title: "Take the ZIP.", color: BF_COLORS.pink },
+    run: { title: "Run the real project.", color: BF_COLORS.foreground },
+    edit: { title: "Edit. Save. Rerun.", color: BF_COLORS.foreground },
+    download: { title: "Take the ZIP.", color: BF_COLORS.foreground },
   };
   const label = labels[mode];
 

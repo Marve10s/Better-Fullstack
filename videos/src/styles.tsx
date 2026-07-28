@@ -8,9 +8,6 @@ export const BF_COLORS = {
   border: "#2a2a2a",
   panel: "#1a1a1a",
   purple: "#8839ef",
-  lime: "#C6E853",
-  cyan: "#18D5FF",
-  pink: "#FF5C8A",
 } as const;
 
 export const FONT_SANS = "Geist Sans";

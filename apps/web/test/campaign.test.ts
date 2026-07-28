@@ -51,6 +51,7 @@ describe("Run Before You Clone campaign", () => {
     expect(parsed.origin).toBe("https://better-fullstack.dev");
     expect(parsed.pathname).toBe("/stack");
     expect(parsed.searchParams.get("view")).toBe("run");
+    expect(parsed.searchParams.get("campaign")).toBe("run-before-you-clone");
     expect(parsed.searchParams.get("utm_campaign")).toBe("run-before-you-clone");
     expect(parsed.searchParams.get("fe-w")).toBe("tanstack-start");
     expect(getCampaignShareMessage(stack, "run", url)).toContain("I just ran");

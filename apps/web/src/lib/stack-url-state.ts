@@ -110,9 +110,7 @@ export function useStackState(fallbackStack?: StackState) {
   }, [search?.view]);
 
   useEffect(() => {
-    if (search?.campaign) {
-      setCampaign(search.campaign);
-    }
+    setCampaign(search?.campaign);
   }, [search?.campaign]);
 
   useEffect(() => {

@@ -18,7 +18,7 @@ export function OgCard({
   title,
   body,
   technologies,
-  accent = BF_COLORS.lime,
+  accent = BF_COLORS.purple,
   actions = DEFAULT_ACTIONS,
 }: OgCardProps) {
   return (

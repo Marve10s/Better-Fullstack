@@ -1,5 +1,6 @@
 import type { StackState } from "@/lib/stack-defaults";
 
+import { CAMPAIGN_SLUG } from "@/lib/campaign";
 import { generateStackSharingUrl, summarizeStackForEcosystem } from "@/lib/stack-utils";
 
 export type ShareMoment = "run" | "download";
@@ -23,9 +24,10 @@ export function getCampaignShareUrl(
 ) {
   const url = new URL(generateStackSharingUrl(stack, baseUrl));
   if (moment === "run") url.searchParams.set("view", "run");
+  url.searchParams.set("campaign", CAMPAIGN_SLUG);
   url.searchParams.set("utm_source", "builder");
   url.searchParams.set("utm_medium", "share");
-  url.searchParams.set("utm_campaign", "run-before-you-clone");
+  url.searchParams.set("utm_campaign", CAMPAIGN_SLUG);
   return url.toString();
 }
 

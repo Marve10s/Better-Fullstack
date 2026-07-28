@@ -64,7 +64,7 @@ export function BrowserWindow({
           background: "#171719",
         }}
       >
-        {[BF_COLORS.pink, BF_COLORS.lime, BF_COLORS.cyan].map((color) => (
+        {[BF_COLORS.muted, BF_COLORS.border, BF_COLORS.purple].map((color) => (
           <span
             key={color}
             style={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: color }}
@@ -149,7 +149,7 @@ export function BrowserWindow({
               >
                 {mode === "edit" ? CODE.slice(0, typedLength) : CODE}
                 {mode === "edit" && typedLength < CODE.length ? (
-                  <span style={{ color: BF_COLORS.lime }}>|</span>
+                  <span style={{ color: BF_COLORS.foreground }}>|</span>
                 ) : null}
               </pre>
             </div>
@@ -193,7 +193,8 @@ export function BrowserWindow({
                       marginTop: 18,
                       padding: "10px 15px",
                       borderRadius: 6,
-                      background: BF_COLORS.lime,
+                      background: BF_COLORS.purple,
+                      color: BF_COLORS.foreground,
                       fontFamily: FONT_MONO,
                       fontSize: 11,
                       fontWeight: 700,
@@ -217,12 +218,12 @@ export function BrowserWindow({
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-              <span style={{ color: "#34d399" }}>&gt;_</span>
+              <span style={{ color: BF_COLORS.purple }}>&gt;_</span>
               runtime output
               <span
                 style={{
                   marginLeft: "auto",
-                  color: ready ? "#34d399" : BF_COLORS.muted,
+                  color: ready ? BF_COLORS.foreground : BF_COLORS.muted,
                   textTransform: "uppercase",
                   letterSpacing: "0.12em",
                 }}

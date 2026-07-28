@@ -10,18 +10,19 @@ import {
 } from "./campaign/video";
 import { OgCard, type OgCardProps } from "./campaign/og-card";
 import { OG_CARD_OUTPUTS } from "./campaign/og-outputs";
+import { BF_COLORS } from "./styles";
 
 const icon = (slug: string, color: string) =>
   `https://cdn.simpleicons.org/${slug}/${color}`;
 
 const sharedOg = {
   body: "Inspect the generated code, run it in your browser and download the real project.",
-  accent: "#C6E853",
+  accent: BF_COLORS.purple,
 } as const;
 
 const nonRunnableOg = {
   body: "Inspect the generated code, configure the stack and download the real project.",
-  accent: "#C6E853",
+  accent: BF_COLORS.purple,
   actions: ["inspect", "configure", "download"],
 } as const;
 
@@ -59,7 +60,6 @@ const ogCards: Array<{ id: string; fileName: string; props: OgCardProps }> = [
     fileName: "download-zip-1200x630.png",
     props: {
       ...sharedOg,
-      accent: "#FF5C8A",
       eyebrow: "your code stays yours",
       title: "Generate it. Inspect it. Take the ZIP.",
       technologies: [
@@ -186,7 +186,6 @@ const ogCards: Array<{ id: string; fileName: string; props: OgCardProps }> = [
     fileName: "stack-multi-ecosystem-1200x630.png",
     props: {
       ...nonRunnableOg,
-      accent: "#18D5FF",
       eyebrow: "multi-ecosystem",
       title: "One project. More than one language.",
       technologies: [
