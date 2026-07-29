@@ -30,12 +30,13 @@ export function processEmailDeps(vfs: VirtualFileSystem, config: ProjectConfig):
 
   if (!targetPath) return;
 
-  // Add Resend SDK for resend option
+  // Add Resend SDK and React types for resend option
   if (email === "resend") {
     addPackageDependency({
       vfs,
       packagePath: targetPath,
       dependencies: ["resend"],
+      devDependencies: ["@types/react"],
     });
   }
 

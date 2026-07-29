@@ -67,9 +67,6 @@ export function parseArgs(argv: string[]): ScaffbenchOptions {
     generateOnly: args.has("generate-only"),
     validateExisting: args.has("validate-existing"),
     forceRevalidate: args.has("force-revalidate"),
-    // Quality gates default ON (2026-07-17): the board publishes a single
-    // Full-tier pass metric, so every sweep must measure it. Opt out with
-    // --no-quality-gate (e.g. quick exploratory generation checks).
     qualityGate: args.has("no-quality-gate") ? false : true,
     doctorCheck: args.has("doctor-check"),
     routeCheck: args.has("route-check"),

@@ -54,6 +54,8 @@ interface RunPanelProps {
   command: string;
   copied: boolean;
   onCopy: () => void;
+  onRunStarted?: (rerun: boolean) => void;
+  onRunReady?: (rerun: boolean) => void;
 }
 
 const MAX_LOG_LENGTH = 60_000;
@@ -199,6 +201,8 @@ export function RunPanel({
   command,
   copied,
   onCopy,
+  onRunStarted,
+  onRunReady,
 }: RunPanelProps) {
   const support = useMemo(() => getStackRunSupport(stack), [stack]);
   const stackSignature = JSON.stringify(stack);
@@ -217,6 +221,7 @@ export function RunPanel({
   const runIdRef = useRef(0);
   const runtimeMountedRef = useRef(false);
   const dependenciesInstalledRef = useRef(false);
+  const hasCompletedRunRef = useRef(false);
   const consoleRef = useRef<HTMLPreElement>(null);
   const selectedFilePathRef = useRef(selectedFilePath);
   const onSelectFileRef = useRef(onSelectFile);
@@ -228,6 +233,7 @@ export function RunPanel({
     runIdRef.current = runId;
     runtimeMountedRef.current = false;
     dependenciesInstalledRef.current = false;
+    hasCompletedRunRef.current = false;
     setProject(null);
     setDrafts({});
     setSyncedContents({});
@@ -327,6 +333,8 @@ export function RunPanel({
   const runProject = async () => {
     if (!support.supported || !project || busy) return;
 
+    const isRerun = hasCompletedRunRef.current;
+    onRunStarted?.(isRerun);
     const runId = runIdRef.current + 1;
     runIdRef.current = runId;
     setLogs("");
@@ -385,6 +393,8 @@ export function RunPanel({
       setSyncedContents(contentsByPath(currentFiles));
       setPreviewUrl(url);
       setStatus("ready");
+      hasCompletedRunRef.current = true;
+      onRunReady?.(isRerun);
     } catch (runError) {
       if (runIdRef.current !== runId) return;
       setError(errorMessage(runError));

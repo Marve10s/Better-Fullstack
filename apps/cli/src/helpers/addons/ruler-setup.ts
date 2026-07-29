@@ -52,7 +52,7 @@ export async function setupRuler(config: ProjectConfig) {
       opencode: { label: "OpenCode" },
       openhands: { label: "Open Hands" },
       qwen: { label: "Qwen" },
-      roo: { label: "RooCode" },
+      roo: { label: "Zoo Code" },
       trae: { label: "Trae AI" },
       warp: { label: "Warp" },
       windsurf: { label: "Windsurf" },

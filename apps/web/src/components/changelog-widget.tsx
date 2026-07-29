@@ -2,10 +2,6 @@ import { TbHistory as History, TbX as X } from "react-icons/tb";
 import { useCallback, useEffect, useState } from "react";
 
 import { ChangelogModal } from "@/components/changelog-modal";
-import {
-  hasSeenBuilderShareModal,
-  isBuilderRoute,
-} from "@/lib/builder-share-modal-visibility";
 import { latestChangelogRelease } from "@/lib/changelog";
 import {
   type ChangelogInteractionState,
@@ -36,14 +32,11 @@ export function ChangelogWidget() {
     if (!latestChangelogRelease) return;
 
     try {
-      if (
-        isBuilderRoute(window.location.pathname) &&
-        !hasSeenBuilderShareModal(window.localStorage)
-      ) {
-        setIsVisible(false);
-        return;
-      }
-
+      // Deliberately NOT gated on the builder-share modal. That key is only
+      // written when the share modal is dismissed, which requires completing a
+      // run or a ZIP download — so anyone who just opens /new or /stack and
+      // browses would never write it and would never see a release note again.
+      // The share modal is a focused dialog and sits above this widget anyway.
       setIsVisible(
         shouldShowChangelogRelease(window.localStorage, latestChangelogRelease.version),
       );

@@ -136,11 +136,6 @@ function runScaffbenchUnlocked(options: ScaffbenchOptions, log: Log) {
     const recordedResults = Array.isArray(existingSummary?.results)
       ? (existingSummary.results as RunResult[])
       : [];
-    // The protocol guard protects a GENERATION resume from a seed/repeat-count
-    // mismatch that would interleave incompatible trials. `--validate-existing`
-    // generates nothing (it only re-scores existing project dirs), so the
-    // generation seed is irrelevant there and the guard must not fire — a
-    // spec-filtered re-validation legitimately carries a fresh seed.
     if (recordedResults.length > 0 && !options.validateExisting) {
       assertResumeProtocol({
         recorded: recordedRunProtocol(existingSummary),
@@ -150,7 +145,6 @@ function runScaffbenchUnlocked(options: ScaffbenchOptions, log: Log) {
         model: options.model,
       });
     }
-    // Pin once so commands, MCP config, doctor, prompts, and metadata agree.
     setResolvedBfVersion(yield* resolveBfVersion());
     yield* writeHarnessFiles(options.outDir, options, specs);
     const metadata: Record<string, unknown> = yield* collectMetadata(options);
@@ -789,6 +783,10 @@ function validatePendingResults(
 
           log(`VALIDATE ${result.id}`);
           result.validation = yield* validateProjectCached(spec, result.projectDir, options);
+          if (result.provenance) {
+            result.provenance.harnessVersion = HARNESS_VERSION;
+            result.provenance.validationCacheVersion = VALIDATION_CACHE_VERSION;
+          }
           result.outcome = classifyOutcome(result);
           result.outcomeEvidence = outcomeEvidenceFor(result);
           result.failureTags = deriveFailureTags(result);
@@ -872,8 +870,6 @@ export function buildGenerationSchedule(
     pathMode: CreationPath;
     trial: number;
   }> = [];
-  // Repeat is deliberately outermost: trial 2 of a spec cannot immediately
-  // follow trial 1, and every trial gets an independently seeded spec order.
   let lastScheduledSpecId: string | undefined;
   for (let trial = 1; trial <= options.repeats; trial += 1) {
     const ordered = seededShuffle(specs, seed + trial - 1);

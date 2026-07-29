@@ -443,12 +443,6 @@ export let setLocale = (newLocale, options) => {
         reload: true,
         ...options,
     };
-    if (experimentalStaticLocale !== undefined &&
-        newLocale !== experimentalStaticLocale &&
-        optionsWithDefaults.reload === false) {
-        console.warn(`Paraglide: setLocale(${JSON.stringify(newLocale)}, { reload: false }) cannot switch away from the statically built locale ${JSON.stringify(experimentalStaticLocale)}. A document navigation is required; reload has been forced to true.`);
-        optionsWithDefaults.reload = true;
-    }
     // locale is already set
     // https://github.com/opral/inlang-paraglide-js/issues/430
     /** @type {Locale | undefined} */

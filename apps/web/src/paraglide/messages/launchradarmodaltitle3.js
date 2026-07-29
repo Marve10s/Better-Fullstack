@@ -9,29 +9,37 @@ const en_launchradarmodaltitle3 = /** @type {(inputs: Launchradarmodaltitle3Inpu
 	return /** @type {LocalizedString} */ (`The builder just got much bigger.`)
 };
 
-/** @type {(inputs: Launchradarmodaltitle3Inputs) => LocalizedString} */
-const es_launchradarmodaltitle3 = en_launchradarmodaltitle3;
+const es_launchradarmodaltitle3 = /** @type {(inputs: Launchradarmodaltitle3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`El builder acaba de crecer mucho.`)
+};
 
-/** @type {(inputs: Launchradarmodaltitle3Inputs) => LocalizedString} */
-const zh_launchradarmodaltitle3 = en_launchradarmodaltitle3;
+const zh_launchradarmodaltitle3 = /** @type {(inputs: Launchradarmodaltitle3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`构建器刚刚大幅扩容。`)
+};
 
-/** @type {(inputs: Launchradarmodaltitle3Inputs) => LocalizedString} */
-const ja_launchradarmodaltitle3 = en_launchradarmodaltitle3;
+const ja_launchradarmodaltitle3 = /** @type {(inputs: Launchradarmodaltitle3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`ビルダーが大幅に拡充されました。`)
+};
 
-/** @type {(inputs: Launchradarmodaltitle3Inputs) => LocalizedString} */
-const ko_launchradarmodaltitle3 = en_launchradarmodaltitle3;
+const ko_launchradarmodaltitle3 = /** @type {(inputs: Launchradarmodaltitle3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`빌더가 크게 확장되었습니다.`)
+};
 
-/** @type {(inputs: Launchradarmodaltitle3Inputs) => LocalizedString} */
-const zh_hant1_launchradarmodaltitle3 = zh_launchradarmodaltitle3;
+const zh_hant1_launchradarmodaltitle3 = /** @type {(inputs: Launchradarmodaltitle3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`建構器剛剛大幅擴充。`)
+};
 
-/** @type {(inputs: Launchradarmodaltitle3Inputs) => LocalizedString} */
-const de_launchradarmodaltitle3 = en_launchradarmodaltitle3;
+const de_launchradarmodaltitle3 = /** @type {(inputs: Launchradarmodaltitle3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Der Builder ist gerade deutlich gewachsen.`)
+};
 
-/** @type {(inputs: Launchradarmodaltitle3Inputs) => LocalizedString} */
-const fr_launchradarmodaltitle3 = en_launchradarmodaltitle3;
+const fr_launchradarmodaltitle3 = /** @type {(inputs: Launchradarmodaltitle3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Le builder vient de beaucoup grandir.`)
+};
 
-/** @type {(inputs: Launchradarmodaltitle3Inputs) => LocalizedString} */
-const uk_launchradarmodaltitle3 = en_launchradarmodaltitle3;
+const uk_launchradarmodaltitle3 = /** @type {(inputs: Launchradarmodaltitle3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Білдер щойно суттєво виріс.`)
+};
 
 /**
 * | output |

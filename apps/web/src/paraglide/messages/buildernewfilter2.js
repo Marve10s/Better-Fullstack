@@ -9,29 +9,37 @@ const en_buildernewfilter2 = /** @type {(inputs: Buildernewfilter2Inputs) => Loc
 	return /** @type {LocalizedString} */ (`New in this release`)
 };
 
-/** @type {(inputs: Buildernewfilter2Inputs) => LocalizedString} */
-const es_buildernewfilter2 = en_buildernewfilter2;
+const es_buildernewfilter2 = /** @type {(inputs: Buildernewfilter2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Nuevo en esta versión`)
+};
 
-/** @type {(inputs: Buildernewfilter2Inputs) => LocalizedString} */
-const zh_buildernewfilter2 = en_buildernewfilter2;
+const zh_buildernewfilter2 = /** @type {(inputs: Buildernewfilter2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`本次发布的新增内容`)
+};
 
-/** @type {(inputs: Buildernewfilter2Inputs) => LocalizedString} */
-const ja_buildernewfilter2 = en_buildernewfilter2;
+const ja_buildernewfilter2 = /** @type {(inputs: Buildernewfilter2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`このリリースの新機能`)
+};
 
-/** @type {(inputs: Buildernewfilter2Inputs) => LocalizedString} */
-const ko_buildernewfilter2 = en_buildernewfilter2;
+const ko_buildernewfilter2 = /** @type {(inputs: Buildernewfilter2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`이번 릴리스의 새 기능`)
+};
 
-/** @type {(inputs: Buildernewfilter2Inputs) => LocalizedString} */
-const zh_hant1_buildernewfilter2 = zh_buildernewfilter2;
+const zh_hant1_buildernewfilter2 = /** @type {(inputs: Buildernewfilter2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`本次發布的新內容`)
+};
 
-/** @type {(inputs: Buildernewfilter2Inputs) => LocalizedString} */
-const de_buildernewfilter2 = en_buildernewfilter2;
+const de_buildernewfilter2 = /** @type {(inputs: Buildernewfilter2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Neu in diesem Release`)
+};
 
-/** @type {(inputs: Buildernewfilter2Inputs) => LocalizedString} */
-const fr_buildernewfilter2 = en_buildernewfilter2;
+const fr_buildernewfilter2 = /** @type {(inputs: Buildernewfilter2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Nouveau dans cette version`)
+};
 
-/** @type {(inputs: Buildernewfilter2Inputs) => LocalizedString} */
-const uk_buildernewfilter2 = en_buildernewfilter2;
+const uk_buildernewfilter2 = /** @type {(inputs: Buildernewfilter2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Нове в цьому релізі`)
+};
 
 /**
 * | output |

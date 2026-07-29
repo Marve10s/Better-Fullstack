@@ -15,7 +15,7 @@ import { z } from "zod";
 export const env = createEnv({
 	server: {
 {{#if (ne database "none")}}
-{{#if (eq dbSetup "planetscale")}}
+{{#if (and (eq dbSetup "planetscale") (eq database "mysql") (eq orm "drizzle"))}}
 		DATABASE_HOST: z.string().min(1),
 		DATABASE_USERNAME: z.string().min(1),
 		DATABASE_PASSWORD: z.string().min(1),

@@ -9,29 +9,37 @@ const en_buildernewfiltertitle3 = /** @type {(inputs: Buildernewfiltertitle3Inpu
 	return /** @type {LocalizedString} */ (`Show ${i?.count} new options available in ${i?.ecosystem}`)
 };
 
-/** @type {(inputs: Buildernewfiltertitle3Inputs) => LocalizedString} */
-const es_buildernewfiltertitle3 = en_buildernewfiltertitle3;
+const es_buildernewfiltertitle3 = /** @type {(inputs: Buildernewfiltertitle3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Mostrar ${i?.count} opciones nuevas disponibles en ${i?.ecosystem}`)
+};
 
-/** @type {(inputs: Buildernewfiltertitle3Inputs) => LocalizedString} */
-const zh_buildernewfiltertitle3 = en_buildernewfiltertitle3;
+const zh_buildernewfiltertitle3 = /** @type {(inputs: Buildernewfiltertitle3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`显示 ${i?.ecosystem} 中 ${i?.count} 个可用的新选项`)
+};
 
-/** @type {(inputs: Buildernewfiltertitle3Inputs) => LocalizedString} */
-const ja_buildernewfiltertitle3 = en_buildernewfiltertitle3;
+const ja_buildernewfiltertitle3 = /** @type {(inputs: Buildernewfiltertitle3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.ecosystem} で利用できる ${i?.count} 件の新オプションを表示`)
+};
 
-/** @type {(inputs: Buildernewfiltertitle3Inputs) => LocalizedString} */
-const ko_buildernewfiltertitle3 = en_buildernewfiltertitle3;
+const ko_buildernewfiltertitle3 = /** @type {(inputs: Buildernewfiltertitle3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.ecosystem}에서 사용할 수 있는 새 옵션 ${i?.count}개 보기`)
+};
 
-/** @type {(inputs: Buildernewfiltertitle3Inputs) => LocalizedString} */
-const zh_hant1_buildernewfiltertitle3 = zh_buildernewfiltertitle3;
+const zh_hant1_buildernewfiltertitle3 = /** @type {(inputs: Buildernewfiltertitle3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`顯示 ${i?.ecosystem} 中 ${i?.count} 個可用的新選項`)
+};
 
-/** @type {(inputs: Buildernewfiltertitle3Inputs) => LocalizedString} */
-const de_buildernewfiltertitle3 = en_buildernewfiltertitle3;
+const de_buildernewfiltertitle3 = /** @type {(inputs: Buildernewfiltertitle3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} neue Optionen in ${i?.ecosystem} anzeigen`)
+};
 
-/** @type {(inputs: Buildernewfiltertitle3Inputs) => LocalizedString} */
-const fr_buildernewfiltertitle3 = en_buildernewfiltertitle3;
+const fr_buildernewfiltertitle3 = /** @type {(inputs: Buildernewfiltertitle3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Afficher ${i?.count} nouvelles options disponibles dans ${i?.ecosystem}`)
+};
 
-/** @type {(inputs: Buildernewfiltertitle3Inputs) => LocalizedString} */
-const uk_buildernewfiltertitle3 = en_buildernewfiltertitle3;
+const uk_buildernewfiltertitle3 = /** @type {(inputs: Buildernewfiltertitle3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Показати ${i?.count} нових опцій, доступних в ${i?.ecosystem}`)
+};
 
 /**
 * | output |

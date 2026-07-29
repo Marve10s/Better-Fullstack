@@ -386,6 +386,35 @@ describe("ScaffBench hardening round 2", () => {
     }
   });
 
+  it("G2 ignores module-format marker package.json files as bun roots", async () => {
+    const dir = await tempDirectory("sb-r2-marker-root-");
+    try {
+      const markerDir = path.join(dir, "apps", "web", "src", "paraglide", "messages");
+      await mkdir(markerDir, { recursive: true });
+      await mkdir(path.join(dir, "apps", "web"), { recursive: true });
+      await writeFile(
+        path.join(dir, "package.json"),
+        JSON.stringify({ private: true, workspaces: ["apps/*"], scripts: { build: "true" } }),
+      );
+      await writeFile(
+        path.join(dir, "apps", "web", "package.json"),
+        JSON.stringify({ name: "web", version: "1.0.0", scripts: { build: "true" } }),
+      );
+      await writeFile(
+        path.join(markerDir, "package.json"),
+        JSON.stringify({ type: "module", sideEffects: false }),
+      );
+      const validation = await effectPromise(
+        validateProject(aiSpec, dir, { ...options(dir), qualityGate: true }),
+      );
+      expect(
+        Object.keys(validation.steps).some((key) => key.includes("paraglide")),
+      ).toBe(false);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
   it("G validates broken nested bun and Cargo roots outside parent membership", async () => {
     const bunDir = await tempDirectory("sb-r2-bun-members-");
     const cargoDir = await tempDirectory("sb-r2-cargo-members-");

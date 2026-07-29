@@ -1,15 +1,7 @@
-/**
- * Build apps/web/src/components/home/scaffbench-2-2-data.ts from the 2.2 cohort
- * run summaries (harness 2.2.1, prompt 2026-07-17-round-2, quality gates on,
- * 13 specs x 3 trials per model). Unlike the 2.1 board there is no splice:
- * the 2.2 board is regenerated wholesale from the cohort dirs listed here —
- * every row's artifacts exist under identical protocol, that's the point.
- *
- * Run with `bun run scripts/build-scaffbench-2-2-data.ts`.
- */
 import { readFileSync, writeFileSync } from "node:fs";
 
 import { providerForModel } from "@/index";
+import { publicationEligibility } from "@/summary";
 
 import { buildPublishedCells } from "./build-scaffbench-2-1-data";
 
@@ -17,23 +9,12 @@ const RUN_SOURCES = [
   "testing/llm-benchmarks/v2-codex-sol/gpt-5-6-sol-high-r3-2026-07-17",
   "testing/llm-benchmarks/v2-codex-terra/gpt-5-6-terra-high-r3-2026-07-17",
   "testing/llm-benchmarks/v2-codex-luna/gpt-5-6-luna-high-r3-2026-07-17",
-  // Cross-harness ablation (2026-07-18): the SAME Luna@high through three more
-  // agent harnesses, single trial each (exploratory). Same specs, same
-  // validator — the harness is the only variable.
-  "testing/llm-benchmarks/xharness-oc-luna-high-2026-07-18",
-  "testing/llm-benchmarks/xh-kilo/luna-high-2026-07-18",
-  "testing/llm-benchmarks/xh-pi/luna-high-2026-07-18",
 ] as const;
 
 const MODEL_LABELS: Record<string, string> = {
   "gpt-5.6-sol": "GPT-5.6 Sol",
   "gpt-5.6-terra": "GPT-5.6 Terra",
   "gpt-5.6-luna": "GPT-5.6 Luna",
-  // Cross-harness Luna rows: same display label — the board shows the harness
-  // via icon/label separately (provider comes from providerForModel).
-  "openai/gpt-5.6-luna": "GPT-5.6 Luna",
-  "kilocode/openai/gpt-5.6-luna": "GPT-5.6 Luna",
-  "pi/openai-codex/gpt-5.6-luna": "GPT-5.6 Luna",
 };
 
 function prettyModel(model: string): string {
@@ -63,7 +44,12 @@ function main() {
     if (!lb) throw new Error(`${dir}: no prompt leaderboard row for ${model}|${effort}`);
     if (!meta) {
       meta = {
+        suiteVersion: first.provenance?.suiteVersion ?? summary.metadata?.suiteVersion ?? null,
         harnessVersion: summary.harnessVersion,
+        validationCacheVersion:
+          first.provenance?.validationCacheVersion ??
+          summary.metadata?.validationCacheVersion ??
+          null,
         promptVersion: summary.metadata?.promptVersion ?? null,
         generatorVersion: summary.metadata?.bfGeneratorVersion ?? null,
         generatedAt: summary.generatedAt,
@@ -80,7 +66,12 @@ function main() {
       provider: providerForModel(model),
       label: prettyModel(model),
       sortIndex: lb.index,
-      eligibility: lb.publicationEligibility ?? "exploratory",
+      eligibility: publicationEligibility(
+        summary.results.filter(
+          (result: any) =>
+            result.model === model && result.effort === effort && result.path === "prompt",
+        ),
+      ),
     });
     cells.push(...buildPublishedCells(summary, dir));
   }
@@ -93,10 +84,7 @@ function main() {
       specIds.indexOf(a.spec) - specIds.indexOf(b.spec),
   );
 
-  const out = `// AUTO-GENERATED from the ScaffBench 2.2 cohort summaries by
-// scripts/build-scaffbench-2-2-data.ts — regenerate, don't hand-edit.
-// 2.2 protocol: harness 2.2.1, self-verify prompt, quality gates ON (the board
-// metric is the Full tier natively), 13 specs x 3 interleaved trials per row.
+  const out = `
 import type { ScaffbenchCell, ScaffbenchModel } from "./scaffbench-2-data";
 
 export const SCAFFBENCH22_META = ${JSON.stringify(meta, null, 2)} as const;

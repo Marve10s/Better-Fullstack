@@ -27,6 +27,7 @@ import {
   TbHammer as Hammer,
   TbInfoCircle as InfoIcon,
   TbLink as Link,
+  TbLibraryPlus as LibraryPlus,
   TbLoader2 as Loader2,
   TbLayoutSidebar as PanelLeft,
   TbPencil as Pencil,
@@ -36,7 +37,6 @@ import {
   TbSearch as Search,
   TbSettings as Settings,
   TbArrowsShuffle as Shuffle,
-  TbSparkles as Sparkles,
   TbTerminal as Terminal,
   TbX as X,
   TbBolt as Zap,
@@ -76,6 +76,11 @@ import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { clearBuilderMode, publishBuilderMode } from "@/lib/builder-mode-bridge";
 import {
+  stackAnalyticsProperties,
+  trackCampaignEvent,
+} from "@/lib/campaign-analytics";
+import type { ShareMoment } from "@/lib/campaign-share";
+import {
   buildBuilderSearchLookup,
   createBuilderSearchIndex,
   findBuilderSearchResults,
@@ -85,6 +90,7 @@ import {
   type BuilderSearchLookup,
   type BuilderSearchPreferences,
 } from "@/lib/builder-search-preferences";
+import { hasSeenBuilderShareModal } from "@/lib/builder-share-modal-visibility";
 import {
   DEFAULT_STACK,
   ECOSYSTEMS,
@@ -125,6 +131,7 @@ import {
   validateProjectName,
 } from "./utils";
 import { YoloToggle } from "./yolo-toggle";
+import { BuilderShareModal } from "./builder-share-modal";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -2187,7 +2194,7 @@ function CreationModeComposer({
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
-  const [stack, setStack, viewMode, setViewMode, selectedFile, setSelectedFile] =
+  const [stack, setStack, viewMode, setViewMode, selectedFile, setSelectedFile, campaign] =
     useStackState(initialStack);
 
   const [command, setCommand] = useState("");
@@ -2200,6 +2207,8 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
   const [savePresetName, setSavePresetName] = useState("");
   const [showNewOptionsOnly, setShowNewOptionsOnly] = useState(false);
   const [isDownloadingProject, setIsDownloadingProject] = useState(false);
+  const [sharePromptOpen, setSharePromptOpen] = useState(false);
+  const [sharePromptMoment, setSharePromptMoment] = useState<ShareMoment>("run");
   const [pendingUpdateEntryId, setPendingUpdateEntryId] = useState<string | null>(null);
   const [multiActiveStep, setMultiActiveStep] = useState<MultiStackStepId>("frontend");
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
@@ -2237,6 +2246,25 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
   }, [stack, compatibilityAnalysis.adjustedStack]);
   const projectNameError = validateProjectName(stack.projectName || "");
 
+  const promptForShare = useCallback(
+    (moment: ShareMoment) => {
+      try {
+        if (hasSeenBuilderShareModal(window.localStorage)) return;
+      } catch {
+        return;
+      }
+
+      const stackToShare = adjustedStack || stack;
+      setSharePromptMoment(moment);
+      setSharePromptOpen(true);
+      trackCampaignEvent(
+        "builder_share_prompted",
+        stackAnalyticsProperties(stackToShare, { campaign, moment }),
+      );
+    },
+    [adjustedStack, campaign, stack],
+  );
+
   const handleDownloadProject = async () => {
     if (isDownloadingProject) return;
 
@@ -2246,7 +2274,12 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
         await import("@/lib/project-download");
       const archive = await createStackProjectArchive(adjustedStack || stack);
       downloadProjectArchive(archive);
+      trackCampaignEvent(
+        "builder_zip_downloaded",
+        stackAnalyticsProperties(adjustedStack || stack, { campaign }),
+      );
       toast.success(m.builderDownloadComplete({ fileName: archive.fileName }));
+      promptForShare("download");
     } catch (downloadError) {
       console.error("Project ZIP download failed", downloadError);
       toast.error(m.builderDownloadFailed());
@@ -2438,6 +2471,27 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
   useEffect(() => {
     if (runSupported) void import("./run-panel");
   }, [runSupported]);
+
+  const handleRunStarted = useCallback(
+    (rerun: boolean) => {
+      trackCampaignEvent(
+        "builder_run_started",
+        stackAnalyticsProperties(adjustedStack || stack, { campaign, rerun }),
+      );
+    },
+    [adjustedStack, campaign, stack],
+  );
+
+  const handleRunReady = useCallback(
+    (rerun: boolean) => {
+      trackCampaignEvent(
+        "builder_run_ready",
+        stackAnalyticsProperties(adjustedStack || stack, { campaign, rerun }),
+      );
+      promptForShare("run");
+    },
+    [adjustedStack, campaign, promptForShare, stack],
+  );
 
   // ─── Handlers ───────────────────────────────────────────────────────────
 
@@ -2774,6 +2828,13 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
           </div>
         </DialogContent>
       </Dialog>
+      <BuilderShareModal
+        open={sharePromptOpen}
+        onOpenChange={setSharePromptOpen}
+        stack={adjustedStack || stack}
+        moment={sharePromptMoment}
+        campaign={campaign}
+      />
       <div className="relative flex h-full w-full flex-col overflow-hidden border-border text-foreground">
         {/* Single scroller: header + toolbar + content scroll together (header is not pinned) */}
         <div
@@ -3047,7 +3108,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                         : "border-border/55 bg-muted/30 text-muted-foreground hover:border-foreground/30 hover:text-foreground",
                     )}
                   >
-                    <Sparkles
+                    <LibraryPlus
                       className={cn("size-3", showNewOptionsOnly && "text-[#FF5C8A]")}
                       aria-hidden
                     />
@@ -3270,7 +3331,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                   {showNewOptionsOnly && builderSearchData.availableNewOptionCount === 0 ? (
                     <div className="flex min-h-64 flex-col items-center justify-center px-5 text-center">
                       <span className="flex size-11 items-center justify-center rounded-full bg-[#18D5FF]/10 text-[#06647A] dark:text-[#18D5FF]">
-                        <Sparkles className="size-5" aria-hidden />
+                        <LibraryPlus className="size-5" aria-hidden />
                       </span>
                       <p className="mt-4 max-w-sm font-mono text-xs text-muted-foreground">
                         {m.builderNewEmpty({ ecosystem: builderSearchEcosystemName })}
@@ -3856,6 +3917,8 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                       command={command}
                       copied={copied}
                       onCopy={copyToClipboard}
+                      onRunStarted={handleRunStarted}
+                      onRunReady={handleRunReady}
                     />
                   </Suspense>
                 </div>

@@ -18,6 +18,7 @@ type InitialBuilderState = {
   stack: StackState;
   viewMode: BuilderViewMode;
   selectedFile: string;
+  campaign?: string;
   initialized: boolean;
 };
 
@@ -36,6 +37,7 @@ export function getInitialBuilderState(
       stack: fallbackStack ?? DEFAULT_STACK,
       viewMode: "command",
       selectedFile: "",
+      campaign: undefined,
       initialized: Boolean(fallbackStack),
     };
   }
@@ -47,14 +49,16 @@ export function getInitialBuilderState(
     stack: preset ? ({ ...DEFAULT_STACK, ...preset.stack } as StackState) : searchToStack(search),
     viewMode: search.view || "command",
     selectedFile: search.file || "",
+    campaign: search.campaign,
     initialized: true,
   };
 }
 
-function createLiveBuilderSearchParams(
+export function createLiveBuilderSearchParams(
   stack: StackState,
   viewMode: BuilderViewMode,
   selectedFile: string,
+  campaign?: string,
 ): URLSearchParams {
   const params = createStackSearchParams(normalizeStackStateSelections(stack));
 
@@ -64,6 +68,10 @@ function createLiveBuilderSearchParams(
 
   if (selectedFile) {
     params.set("file", selectedFile);
+  }
+
+  if (campaign) {
+    params.set("campaign", campaign);
   }
 
   return params;
@@ -79,6 +87,7 @@ export function useStackState(fallbackStack?: StackState) {
   const [stack, setStackState] = useState<StackState>(initialState.current.stack);
   const [viewMode, setViewModeState] = useState<BuilderViewMode>(initialState.current.viewMode);
   const [selectedFile, setSelectedFileState] = useState<string>(initialState.current.selectedFile);
+  const [campaign, setCampaign] = useState<string | undefined>(initialState.current.campaign);
   const initialized = useRef(initialState.current.initialized);
 
   useEffect(() => {
@@ -89,6 +98,7 @@ export function useStackState(fallbackStack?: StackState) {
       setStackState(nextInitialState.stack);
       setViewModeState(nextInitialState.viewMode);
       setSelectedFileState(nextInitialState.selectedFile);
+      setCampaign(nextInitialState.campaign);
     }
   }, [fallbackStack, search]);
 
@@ -98,6 +108,10 @@ export function useStackState(fallbackStack?: StackState) {
       setViewModeState(search.view);
     }
   }, [search?.view]);
+
+  useEffect(() => {
+    setCampaign(search?.campaign);
+  }, [search?.campaign]);
 
   useEffect(() => {
     if (!initialized.current) return;
@@ -114,7 +128,7 @@ export function useStackState(fallbackStack?: StackState) {
       return;
     }
 
-    const nextParams = createLiveBuilderSearchParams(stack, viewMode, selectedFile);
+    const nextParams = createLiveBuilderSearchParams(stack, viewMode, selectedFile, campaign);
     const nextSearch = nextParams.toString();
     const basePath = url.pathname === "/stack" || url.pathname === "/new" ? url.pathname : "/new";
     const nextUrl = nextSearch ? `${basePath}?${nextSearch}` : basePath;
@@ -123,7 +137,7 @@ export function useStackState(fallbackStack?: StackState) {
     if (nextUrl !== currentUrl) {
       window.history.replaceState(window.history.state, "", nextUrl);
     }
-  }, [stack, viewMode, selectedFile]);
+  }, [campaign, stack, viewMode, selectedFile]);
 
   const updateStack = useCallback(
     (updates: Partial<StackState> | ((prev: StackState) => Partial<StackState>)) => {
@@ -143,5 +157,13 @@ export function useStackState(fallbackStack?: StackState) {
     setSelectedFileState(filePath || "");
   }, []);
 
-  return [stack, updateStack, viewMode, setViewMode, selectedFile, setSelectedFile] as const;
+  return [
+    stack,
+    updateStack,
+    viewMode,
+    setViewMode,
+    selectedFile,
+    setSelectedFile,
+    campaign,
+  ] as const;
 }

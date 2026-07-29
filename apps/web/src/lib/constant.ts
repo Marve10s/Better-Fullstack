@@ -1278,7 +1278,7 @@ export const TECH_OPTIONS: Record<
       id: "axiom",
       name: "Axiom",
       description: "Structured logs and event analytics",
-      icon: "https://cdn.simpleicons.org/axiom/7A5CFF",
+      icon: "https://axiom.co/favicon.ico",
       color: "from-indigo-500 to-blue-700",
       default: false,
     },

@@ -1,0 +1,26 @@
+{
+  "name": "better-fullstack-videos",
+  "private": true,
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "studio": "remotion studio src/index.ts",
+    "compositions": "remotion compositions src/index.ts",
+    "render:campaign": "remotion render src/index.ts RunBeforeYouClone out/run-before-you-clone.mp4",
+    "render:clips": "remotion render src/index.ts RunFeature out/run-feature.mp4 && remotion render src/index.ts EditFeature out/edit-feature.mp4 && remotion render src/index.ts DownloadFeature out/download-feature.mp4",
+    "render:og": "bun run scripts/render-og.ts"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.487",
+    "@remotion/transitions": "4.0.487",
+    "@remotion/zod-types": "4.0.487",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "remotion": "4.0.487",
+    "zod": "4.3.6"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "typescript": "5.9.3"
+  }
+}

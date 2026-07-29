@@ -1,7 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 
 import { StackBuilderPage } from "@/components/stack-builder/stack-builder-page";
-import { buildPageHead, SITE_NAME } from "@/lib/seo";
+import { buildPageHead, getEcosystemOgImage, SITE_NAME } from "@/lib/seo";
 import { parseStackShareSlug } from "@/lib/stack-share-paths";
 import {
   getCanonicalStackSharePath,
@@ -32,10 +32,13 @@ export const Route = createFileRoute("/$stackShare")({
     const title = `${label} Stack | ${SITE_NAME}`;
     const description = `Open the Better Fullstack ${label} builder configuration.`;
 
+    const image = getEcosystemOgImage(canonicalSlug ?? "typescript");
     return buildPageHead({
       title,
       description,
       path: getCanonicalStackSharePath(params.stackShare) ?? `/${params.stackShare.toLowerCase()}`,
+      image,
+      twitterImage: image,
     });
   },
   component: StackSharePage,

@@ -9,29 +9,37 @@ const en_launchradaropenbuilder3 = /** @type {(inputs: Launchradaropenbuilder3In
 	return /** @type {LocalizedString} */ (`Open ${i?.ecosystem} additions`)
 };
 
-/** @type {(inputs: Launchradaropenbuilder3Inputs) => LocalizedString} */
-const es_launchradaropenbuilder3 = en_launchradaropenbuilder3;
+const es_launchradaropenbuilder3 = /** @type {(inputs: Launchradaropenbuilder3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Abrir las novedades de ${i?.ecosystem}`)
+};
 
-/** @type {(inputs: Launchradaropenbuilder3Inputs) => LocalizedString} */
-const zh_launchradaropenbuilder3 = en_launchradaropenbuilder3;
+const zh_launchradaropenbuilder3 = /** @type {(inputs: Launchradaropenbuilder3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`打开 ${i?.ecosystem} 的新增内容`)
+};
 
-/** @type {(inputs: Launchradaropenbuilder3Inputs) => LocalizedString} */
-const ja_launchradaropenbuilder3 = en_launchradaropenbuilder3;
+const ja_launchradaropenbuilder3 = /** @type {(inputs: Launchradaropenbuilder3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.ecosystem} の追加項目を開く`)
+};
 
-/** @type {(inputs: Launchradaropenbuilder3Inputs) => LocalizedString} */
-const ko_launchradaropenbuilder3 = en_launchradaropenbuilder3;
+const ko_launchradaropenbuilder3 = /** @type {(inputs: Launchradaropenbuilder3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.ecosystem} 추가 항목 열기`)
+};
 
-/** @type {(inputs: Launchradaropenbuilder3Inputs) => LocalizedString} */
-const zh_hant1_launchradaropenbuilder3 = zh_launchradaropenbuilder3;
+const zh_hant1_launchradaropenbuilder3 = /** @type {(inputs: Launchradaropenbuilder3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`開啟 ${i?.ecosystem} 的新內容`)
+};
 
-/** @type {(inputs: Launchradaropenbuilder3Inputs) => LocalizedString} */
-const de_launchradaropenbuilder3 = en_launchradaropenbuilder3;
+const de_launchradaropenbuilder3 = /** @type {(inputs: Launchradaropenbuilder3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Neuerungen für ${i?.ecosystem} öffnen`)
+};
 
-/** @type {(inputs: Launchradaropenbuilder3Inputs) => LocalizedString} */
-const fr_launchradaropenbuilder3 = en_launchradaropenbuilder3;
+const fr_launchradaropenbuilder3 = /** @type {(inputs: Launchradaropenbuilder3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Ouvrir les nouveautés ${i?.ecosystem}`)
+};
 
-/** @type {(inputs: Launchradaropenbuilder3Inputs) => LocalizedString} */
-const uk_launchradaropenbuilder3 = en_launchradaropenbuilder3;
+const uk_launchradaropenbuilder3 = /** @type {(inputs: Launchradaropenbuilder3Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Відкрити новинки ${i?.ecosystem}`)
+};
 
 /**
 * | output |

@@ -10,10 +10,29 @@ export const SITE_NAME = "Better Fullstack";
 export const SITE_URL = "https://better-fullstack.dev";
 export const DEFAULT_OG_IMAGE_URL = `${SITE_URL}/og/better-fullstack-terminal-preview-1200x630.png`;
 export const DEFAULT_X_IMAGE_URL = `${SITE_URL}/og/better-fullstack-terminal-preview-x-1200x630.png`;
+export const EDIT_AND_RUN_OG_IMAGE_URL = `${SITE_URL}/og/edit-and-run-1200x630.png`;
+export const DOWNLOAD_ZIP_OG_IMAGE_URL = `${SITE_URL}/og/download-zip-1200x630.png`;
+export const RUN_BEFORE_CLONE_OG_IMAGE_URL = `${SITE_URL}/og/run-before-you-clone-1200x630.png`;
 export const DEFAULT_OG_IMAGE_ALT =
   "Better Fullstack terminal-style preview showing CLI scaffolding output";
 export const DEFAULT_OG_IMAGE_WIDTH = 1200;
 export const DEFAULT_OG_IMAGE_HEIGHT = 630;
+
+const ECOSYSTEM_OG_IMAGES: Record<string, string> = {
+  typescript: `${SITE_URL}/og/stack-typescript-1200x630.png`,
+  "react-native": `${SITE_URL}/og/stack-react-native-1200x630.png`,
+  rust: `${SITE_URL}/og/stack-rust-1200x630.png`,
+  python: `${SITE_URL}/og/stack-python-1200x630.png`,
+  go: `${SITE_URL}/og/stack-go-1200x630.png`,
+  java: `${SITE_URL}/og/stack-java-1200x630.png`,
+  elixir: `${SITE_URL}/og/stack-elixir-1200x630.png`,
+  dotnet: `${SITE_URL}/og/stack-dotnet-1200x630.png`,
+  "multi-ecosystem": `${SITE_URL}/og/stack-multi-ecosystem-1200x630.png`,
+};
+
+export function getEcosystemOgImage(ecosystem: string) {
+  return ECOSYSTEM_OG_IMAGES[ecosystem] ?? DEFAULT_OG_IMAGE_URL;
+}
 
 export const DEFAULT_DESCRIPTION =
   `Scaffold production-ready fullstack apps in seconds. Pick your stack from ${OPTION_COUNT_LABEL} options across ${ECOSYSTEM_NAMES.join(", ")} — frameworks, databases, auth, payments, AI, and deployment — all wired together by one CLI.`;

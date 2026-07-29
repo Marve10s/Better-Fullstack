@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { TbSparkles as Sparkles } from "react-icons/tb";
+import { TbLibraryPlus as LibraryPlus } from "react-icons/tb";
 import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 
@@ -54,7 +54,10 @@ export function LaunchRadarButton({ compact = false }: { compact?: boolean }) {
             transition={{ duration: 1.2, delay: 1, repeat: 1, repeatDelay: 3 }}
           />
         ) : null}
-        <Sparkles className={cn("relative size-3", unread && "text-[#FF5C8A]")} aria-hidden />
+        <LibraryPlus
+          className={cn("relative size-3", unread && "text-[#FF5C8A]")}
+          aria-hidden
+        />
         <span className="relative">{unread ? `${LAUNCH_RADAR_TOTAL} new` : m.navUpdates()}</span>
         {unread ? (
           <span className="relative flex size-1.5" aria-hidden>
