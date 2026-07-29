@@ -1,6 +1,6 @@
 {
   "name": "create-better-fullstack",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "Scaffold production-ready fullstack apps in TypeScript, React Native, Rust, Go, Python, Java, .NET, and Elixir — visual builder, CLI, and MCP server, with every integration wired together.",
   "keywords": [
     "ai-agent",
@@ -145,8 +145,8 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@better-fullstack/template-generator": "^2.3.0",
-    "@better-fullstack/types": "^2.3.0",
+    "@better-fullstack/template-generator": "^2.3.1",
+    "@better-fullstack/types": "^2.3.1",
     "@clack/core": "^0.5.0",
     "@clack/prompts": "^1.7.0",
     "@orpc/server": "^1.14.8",
