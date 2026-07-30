@@ -8,7 +8,9 @@ export type CampaignEvent =
   | "campaign_preset_opened"
   | "builder_run_started"
   | "builder_run_ready"
+  | "builder_run_failed"
   | "builder_zip_downloaded"
+  | "builder_zip_failed"
   | "builder_share_prompted"
   | "builder_stack_shared"
   | "builder_github_clicked";

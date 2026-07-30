@@ -76,6 +76,12 @@ import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { clearBuilderMode, publishBuilderMode } from "@/lib/builder-mode-bridge";
 import {
+  classifyBuilderZipFailure,
+  failureDurationMs,
+  type BuilderRunFailure,
+  type BuilderZipFailureStage,
+} from "@/lib/builder-failure-analytics";
+import {
   stackAnalyticsProperties,
   trackCampaignEvent,
 } from "@/lib/campaign-analytics";
@@ -2224,6 +2230,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
 
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const downloadAttemptRef = useRef(0);
   const lastAppliedStackString = useRef<string>("");
   const lastAppliedEcosystemRef = useRef<Ecosystem>(stack.ecosystem);
   const suppressCompatibilityToastRef = useRef(false);
@@ -2268,11 +2275,16 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
   const handleDownloadProject = async () => {
     if (isDownloadingProject) return;
 
+    const startedAt = Date.now();
+    const isRetry = downloadAttemptRef.current > 0;
+    downloadAttemptRef.current += 1;
+    let failureStage: BuilderZipFailureStage = "archive_generation";
     setIsDownloadingProject(true);
     try {
       const { createStackProjectArchive, downloadProjectArchive } =
         await import("@/lib/project-download");
       const archive = await createStackProjectArchive(adjustedStack || stack);
+      failureStage = "browser_download";
       downloadProjectArchive(archive);
       trackCampaignEvent(
         "builder_zip_downloaded",
@@ -2281,6 +2293,17 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
       toast.success(m.builderDownloadComplete({ fileName: archive.fileName }));
       promptForShare("download");
     } catch (downloadError) {
+      const failure = classifyBuilderZipFailure(failureStage);
+      trackCampaignEvent(
+        "builder_zip_failed",
+        stackAnalyticsProperties(adjustedStack || stack, {
+          campaign,
+          stage: failure.stage,
+          reason: failure.reason,
+          duration_ms: failureDurationMs(startedAt),
+          rerun: isRetry,
+        }),
+      );
       console.error("Project ZIP download failed", downloadError);
       toast.error(m.builderDownloadFailed());
     } finally {
@@ -2491,6 +2514,22 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
       promptForShare("run");
     },
     [adjustedStack, campaign, promptForShare, stack],
+  );
+
+  const handleRunFailed = useCallback(
+    (failure: BuilderRunFailure) => {
+      trackCampaignEvent(
+        "builder_run_failed",
+        stackAnalyticsProperties(adjustedStack || stack, {
+          campaign,
+          stage: failure.stage,
+          reason: failure.reason,
+          duration_ms: failure.durationMs,
+          rerun: failure.rerun,
+        }),
+      );
+    },
+    [adjustedStack, campaign, stack],
   );
 
   // ─── Handlers ───────────────────────────────────────────────────────────
@@ -3919,6 +3958,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                       onCopy={copyToClipboard}
                       onRunStarted={handleRunStarted}
                       onRunReady={handleRunReady}
+                      onRunFailed={handleRunFailed}
                     />
                   </Suspense>
                 </div>

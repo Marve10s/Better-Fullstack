@@ -27,6 +27,13 @@ import {
   type RunnableProject,
   type RunnableSourceFile,
 } from "@/lib/project-runner";
+import {
+  classifyBuilderRunFailure,
+  failureDurationMs,
+  shouldReportBuilderRunFailure,
+  type BuilderRunFailure,
+  type BuilderRunFailureStage,
+} from "@/lib/builder-failure-analytics";
 import { getStackRunSupport } from "@/lib/run-support";
 import { cn } from "@/lib/utils";
 import * as m from "@/paraglide/messages";
@@ -56,6 +63,7 @@ interface RunPanelProps {
   onCopy: () => void;
   onRunStarted?: (rerun: boolean) => void;
   onRunReady?: (rerun: boolean) => void;
+  onRunFailed?: (failure: BuilderRunFailure) => void;
 }
 
 const MAX_LOG_LENGTH = 60_000;
@@ -203,6 +211,7 @@ export function RunPanel({
   onCopy,
   onRunStarted,
   onRunReady,
+  onRunFailed,
 }: RunPanelProps) {
   const support = useMemo(() => getStackRunSupport(stack), [stack]);
   const stackSignature = JSON.stringify(stack);
@@ -222,13 +231,36 @@ export function RunPanel({
   const runtimeMountedRef = useRef(false);
   const dependenciesInstalledRef = useRef(false);
   const hasCompletedRunRef = useRef(false);
+  const lastReportedFailureRunIdRef = useRef(-1);
+  const generationSignatureRef = useRef<string | null>(null);
+  const generationAttemptRef = useRef(0);
   const consoleRef = useRef<HTMLPreElement>(null);
   const selectedFilePathRef = useRef(selectedFilePath);
   const onSelectFileRef = useRef(onSelectFile);
+  const onRunFailedRef = useRef(onRunFailed);
   selectedFilePathRef.current = selectedFilePath;
   onSelectFileRef.current = onSelectFile;
+  onRunFailedRef.current = onRunFailed;
+
+  const reportRunFailure = useCallback(
+    (runId: number, failure: BuilderRunFailure) => {
+      if (
+        !shouldReportBuilderRunFailure(
+          runIdRef.current,
+          runId,
+          lastReportedFailureRunIdRef.current,
+        )
+      ) {
+        return;
+      }
+      lastReportedFailureRunIdRef.current = runId;
+      onRunFailedRef.current?.(failure);
+    },
+    [],
+  );
 
   const prepareWorkspace = useCallback(async () => {
+    const startedAt = Date.now();
     const runId = runIdRef.current + 1;
     runIdRef.current = runId;
     runtimeMountedRef.current = false;
@@ -241,6 +273,13 @@ export function RunPanel({
     setPreviewUrl(null);
     setError(null);
     setBrowserUnsupported(false);
+
+    if (generationSignatureRef.current !== stackSignature) {
+      generationSignatureRef.current = stackSignature;
+      generationAttemptRef.current = 0;
+    }
+    const isRegeneration = generationAttemptRef.current > 0;
+    generationAttemptRef.current += 1;
 
     if (!support.supported) {
       onSelectFileRef.current(null);
@@ -268,10 +307,16 @@ export function RunPanel({
       setStatus("idle");
     } catch (generationError) {
       if (runIdRef.current !== runId) return;
+      const failure = classifyBuilderRunFailure("generation", generationError);
+      reportRunFailure(runId, {
+        ...failure,
+        durationMs: failureDurationMs(startedAt),
+        rerun: isRegeneration,
+      });
       setError(errorMessage(generationError));
       setStatus("error");
     }
-  }, [stackSignature, support.supported]);
+  }, [reportRunFailure, stackSignature, support.supported]);
 
   useEffect(() => {
     void import("@/lib/webcontainer-runtime").then(({ stopDevelopmentServer }) => {
@@ -333,6 +378,7 @@ export function RunPanel({
   const runProject = async () => {
     if (!support.supported || !project || busy) return;
 
+    const startedAt = Date.now();
     const isRerun = hasCompletedRunRef.current;
     onRunStarted?.(isRerun);
     const runId = runIdRef.current + 1;
@@ -346,23 +392,35 @@ export function RunPanel({
       if (runIdRef.current !== runId) throw new Error("Run cancelled");
     };
 
+    let failureStage: BuilderRunFailureStage = "runtime_boot";
+
     try {
       const runtimeModule = await import("@/lib/webcontainer-runtime");
+      failureStage = "browser_support";
       if (!runtimeModule.canBootBrowserRuntime()) {
+        const failure = classifyBuilderRunFailure(failureStage);
+        reportRunFailure(runId, {
+          ...failure,
+          durationMs: failureDurationMs(startedAt),
+          rerun: isRerun,
+        });
         setBrowserUnsupported(true);
         setStatus("error");
         return;
       }
 
       setStatus("booting");
+      failureStage = "runtime_boot";
       const runtime = await runtimeModule.getBrowserRuntime();
       ensureCurrentRun();
 
       if (!runtimeMountedRef.current) {
+        failureStage = "project_mount";
         await runtimeModule.mountRunnableProject(runtime, project.files);
         runtimeMountedRef.current = true;
       } else {
         runtimeModule.stopDevelopmentServer();
+        failureStage = "source_sync";
         await runtimeModule.syncRunnableSourceFiles(runtime, currentFiles);
       }
       ensureCurrentRun();
@@ -371,12 +429,14 @@ export function RunPanel({
       if (!dependenciesInstalledRef.current || dependenciesChanged) {
         dependenciesInstalledRef.current = false;
         setStatus("installing");
+        failureStage = "dependency_install";
         await runtimeModule.installRunnableProject(runtime, appendOutput);
         dependenciesInstalledRef.current = true;
         ensureCurrentRun();
       }
 
       setStatus("starting");
+      failureStage = "server_start";
       const url = await runtimeModule.startDevelopmentServer(
         runtime,
         project.script,
@@ -384,6 +444,12 @@ export function RunPanel({
         appendOutput,
         (exitCode) => {
           if (runIdRef.current !== runId) return;
+          const failure = classifyBuilderRunFailure("server_exit");
+          reportRunFailure(runId, {
+            ...failure,
+            durationMs: failureDurationMs(startedAt),
+            rerun: isRerun,
+          });
           setPreviewUrl(null);
           setError(`Development server exited with code ${exitCode}.`);
           setStatus("error");
@@ -397,6 +463,12 @@ export function RunPanel({
       onRunReady?.(isRerun);
     } catch (runError) {
       if (runIdRef.current !== runId) return;
+      const failure = classifyBuilderRunFailure(failureStage, runError);
+      reportRunFailure(runId, {
+        ...failure,
+        durationMs: failureDurationMs(startedAt),
+        rerun: isRerun,
+      });
       setError(errorMessage(runError));
       setStatus("error");
     }
