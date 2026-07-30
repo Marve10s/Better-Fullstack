@@ -11,6 +11,21 @@ let runtimePromise: Promise<WebContainer> | null = null;
 let activeServerProcess: WebContainerProcess | null = null;
 let activeInstallProcess: WebContainerProcess | null = null;
 
+export type BrowserRuntimeFailureCode =
+  | "dependency_install_exit"
+  | "server_ready_timeout"
+  | "server_process_exit";
+
+export class BrowserRuntimeError extends Error {
+  readonly code: BrowserRuntimeFailureCode;
+
+  constructor(code: BrowserRuntimeFailureCode, message: string) {
+    super(message);
+    this.name = "BrowserRuntimeError";
+    this.code = code;
+  }
+}
+
 export function normalizeRuntimeOutput(chunk: string): string {
   return chunk
     .replace(ANSI_OSC_SEQUENCE, "")
@@ -97,7 +112,10 @@ export async function installRunnableProject(
   await output;
 
   if (exitCode !== 0) {
-    throw new Error(`Dependency installation exited with code ${exitCode}.`);
+    throw new BrowserRuntimeError(
+      "dependency_install_exit",
+      `Dependency installation exited with code ${exitCode}.`,
+    );
   }
 }
 
@@ -141,7 +159,12 @@ export async function startDevelopmentServer(
       settled = true;
       unsubscribe();
       process.kill();
-      reject(new Error("The development server did not become ready in time."));
+      reject(
+        new BrowserRuntimeError(
+          "server_ready_timeout",
+          "The development server did not become ready in time.",
+        ),
+      );
     }, 120_000);
 
     unsubscribe = runtime.on("server-ready", (_port, url) => {
@@ -157,7 +180,12 @@ export async function startDevelopmentServer(
         settled = true;
         clearTimeout(timeoutId);
         unsubscribe();
-        reject(new Error(`The development server exited with code ${exitCode}.`));
+        reject(
+          new BrowserRuntimeError(
+            "server_process_exit",
+            `The development server exited with code ${exitCode}.`,
+          ),
+        );
         return undefined;
       }
       onExit(exitCode);
