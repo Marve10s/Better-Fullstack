@@ -19,6 +19,8 @@ export type BlogFrontmatter = {
   date?: string;
   authors?: string[];
   image?: string;
+  video?: string;
+  translationStatus?: "pending";
   tags?: string[];
   keywords?: string[];
 };

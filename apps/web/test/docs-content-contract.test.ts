@@ -28,6 +28,18 @@ const BUILDER_URL_KEYS = new Set([
   "preset",
   "view",
 ]);
+const PENDING_TRANSLATION_PATHS = [
+  "content/blog/better-auth-architecture.mdx",
+  "content/blog/drizzle-vs-prisma.mdx",
+  "content/blog/self-backend-vs-separate-api.mdx",
+  "content/blog/tanstack-start-vs-nextjs.mdx",
+  "content/guides/python/fastapi-postgres-sqlmodel.mdx",
+  "content/guides/typescript/hono-better-auth.mdx",
+  "content/guides/typescript/hono-openapi-drizzle.mdx",
+  "content/guides/typescript/nextjs-hono-api.mdx",
+  "content/guides/typescript/nextjs-prisma-better-auth.mdx",
+  "content/guides/typescript/tanstack-start-postgres-drizzle.mdx",
+] as const;
 
 type ContentFile = {
   path: string;
@@ -181,6 +193,7 @@ describe("docs content contract", () => {
     );
     const missingLocalizedContent = baseContentFiles
       .filter((file) => !isLocalizedMdxFile(file.path))
+      .filter((file) => parseFrontmatter(file.source).get("translationStatus") !== "pending")
       .flatMap((file) =>
         LOCALIZED_CONTENT_LOCALES.flatMap((locale) => {
           const section = getContentSection(file.path);
@@ -200,6 +213,24 @@ describe("docs content contract", () => {
       );
 
     expect(missingLocalizedContent).toEqual([]);
+  });
+
+  it("keeps translation fallbacks explicit and limited to the reviewed pending list", () => {
+    const pendingPaths: string[] = [];
+    const invalidStatuses: string[] = [];
+
+    for (const file of contentFiles.filter((candidate) => !isLocalizedMdxFile(candidate.path))) {
+      const status = parseFrontmatter(file.source).get("translationStatus");
+      if (!status) continue;
+      if (status !== "pending") {
+        invalidStatuses.push(`${file.relativePath}: ${status}`);
+        continue;
+      }
+      pendingPaths.push(file.relativePath);
+    }
+
+    expect(invalidStatuses).toEqual([]);
+    expect(pendingPaths.sort()).toEqual([...PENDING_TRANSLATION_PATHS].sort());
   });
 
   it("keeps docs sidebar metadata complete", () => {

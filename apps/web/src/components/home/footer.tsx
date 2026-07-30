@@ -52,6 +52,12 @@ export default function Footer() {
             {m.navGuides()}
           </Link>
           <Link
+            to="/templates"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Templates
+          </Link>
+          <Link
             to="/blog"
             className="text-muted-foreground transition-colors hover:text-foreground"
           >

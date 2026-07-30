@@ -59,6 +59,7 @@ describe("SEO contracts", () => {
     expect(paths).toContain("/guides/typescript/create-tanstack-start-project");
     expect(paths).toContain("/mcp");
     expect(paths).toContain("/run");
+    expect(paths).toContain("/templates");
     expect(paths).not.toContain("/stack");
     expect(paths).toContain("/stack/nextjs-hono-drizzle-better-auth");
     expect(paths).not.toContain("/analytics");
@@ -66,6 +67,31 @@ describe("SEO contracts", () => {
     expect(xml).toContain(canonicalUrl("/guides/typescript/create-tanstack-start-project"));
     expect(xml).toContain(canonicalUrl("/stack/nextjs-hono-drizzle-better-auth"));
     expect(xml).not.toContain(canonicalUrl("/analytics"));
+  });
+
+  it("adds video discovery metadata when content declares an MP4", () => {
+    const videoPath = "/search-media/tanstack-start-fullstack-1200x630.mp4";
+    const head = guidePageHead({
+      url: "/guides/typescript/tanstack-start-postgres-drizzle",
+      frontmatter: {
+        title: "TanStack Start with PostgreSQL and Drizzle",
+        description: "A compatibility-checked TanStack Start guide.",
+        updated: "2026-07-30",
+        image: "/search-media/tanstack-start-fullstack-1200x630.png",
+        video: videoPath,
+      },
+    });
+
+    expect(head.meta).toContainEqual({
+      property: "og:video",
+      content: canonicalUrl(videoPath),
+    });
+    const structuredData = head.meta.find((meta) => "script:ld+json" in meta) as {
+      "script:ld+json": { "@graph": Array<{ "@type": string }> };
+    };
+    expect(structuredData["script:ld+json"]["@graph"]).toContainEqual(
+      expect.objectContaining({ "@type": "VideoObject" }),
+    );
   });
 
   it("builds complete page heads with matching canonical and social metadata", () => {

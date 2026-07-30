@@ -35,8 +35,16 @@ function postImage(post: Pick<BlogPost, "frontmatter">) {
   return canonicalUrl(image);
 }
 
+function postVideo(post: Pick<BlogPost, "frontmatter">) {
+  const video = post.frontmatter.video;
+  if (!video) return undefined;
+  if (video.startsWith("http://") || video.startsWith("https://")) return video;
+  return canonicalUrl(video);
+}
+
 function postJsonLd(post: Pick<BlogPost, "url" | "frontmatter">) {
   const url = canonicalUrl(post.url);
+  const video = postVideo(post);
   const article: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -107,9 +115,20 @@ function postJsonLd(post: Pick<BlogPost, "url" | "frontmatter">) {
     ],
   };
 
+  const videoObject = video
+    ? {
+        "@type": "VideoObject",
+        name: post.frontmatter.title ?? SITE_NAME,
+        description: postDescription(post),
+        contentUrl: video,
+        thumbnailUrl: postImage(post),
+        uploadDate: post.frontmatter.date,
+      }
+    : undefined;
+
   return {
     "@context": "https://schema.org",
-    "@graph": [article, breadcrumbs],
+    "@graph": [article, breadcrumbs, ...(videoObject ? [videoObject] : [])],
   };
 }
 
@@ -119,6 +138,7 @@ export function blogPostHead(post: Pick<BlogPost, "url" | "frontmatter">) {
   const url = canonicalUrl(post.url);
   const image = postImage(post);
   const twitterImage = image === DEFAULT_OG_IMAGE_URL ? DEFAULT_X_IMAGE_URL : image;
+  const video = postVideo(post);
 
   return {
     meta: [
@@ -136,6 +156,12 @@ export function blogPostHead(post: Pick<BlogPost, "url" | "frontmatter">) {
       { property: "og:image:alt", content: DEFAULT_OG_IMAGE_ALT },
       { property: "og:image:width", content: String(DEFAULT_OG_IMAGE_WIDTH) },
       { property: "og:image:height", content: String(DEFAULT_OG_IMAGE_HEIGHT) },
+      ...(video
+        ? [
+            { property: "og:video", content: video },
+            { property: "og:video:type", content: "video/mp4" },
+          ]
+        : []),
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: title },
       { name: "twitter:description", content: description },

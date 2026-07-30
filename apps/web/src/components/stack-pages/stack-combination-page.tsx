@@ -59,10 +59,10 @@ export function StackCombinationPage({ page }: { page: GeneratedStackPage }) {
         <header className="grid gap-10 pb-12 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end">
           <div className="max-w-4xl">
             <a
-              href="/stack"
+              href="/templates"
               className="font-mono text-[0.7rem] text-muted-foreground uppercase tracking-[0.2em] hover:text-foreground"
             >
-              Stack template / {page.ecosystem}
+              Templates / {page.ecosystem}
             </a>
             <h1 className="mt-6 text-balance font-mono font-bold text-2xl tracking-tight sm:text-4xl">
               {page.title}
