@@ -40,6 +40,11 @@ export interface BuilderZipFailure {
   durationMs: number;
 }
 
+export interface BuilderZipAttemptState {
+  stackSignature: string;
+  attemptCount: number;
+}
+
 type BrowserRuntimeFailureCode =
   | "dependency_install_exit"
   | "server_ready_timeout"
@@ -109,6 +114,17 @@ export function classifyBuilderZipFailure(
   return {
     stage,
     reason: stage === "archive_generation" ? "archive_generation_failed" : "browser_download_failed",
+  };
+}
+
+export function beginBuilderZipAttempt(
+  state: BuilderZipAttemptState,
+  stackSignature: string,
+): { isRetry: boolean; nextState: BuilderZipAttemptState } {
+  const attemptCount = state.stackSignature === stackSignature ? state.attemptCount : 0;
+  return {
+    isRetry: attemptCount > 0,
+    nextState: { stackSignature, attemptCount: attemptCount + 1 },
   };
 }
 

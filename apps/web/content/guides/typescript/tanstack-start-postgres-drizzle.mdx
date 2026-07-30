@@ -36,7 +36,14 @@ bun create better-fullstack@latest my-tanstack-app \
   --auth better-auth \
   --api trpc \
   --css-framework tailwind \
-  --ui-library shadcn-ui
+  --ui-library shadcn-ui \
+  --shadcn-base radix \
+  --shadcn-style nova \
+  --shadcn-icon-library lucide \
+  --shadcn-color-theme neutral \
+  --shadcn-base-color neutral \
+  --shadcn-font inter \
+  --shadcn-radius default
 ```
 
 ## What this creates
@@ -52,19 +59,23 @@ The generated selection is also available as the [TanStack Start PostgreSQL temp
 
 ## Architecture boundary
 
-This is a single-app shape. “Single app” does not mean every concern belongs in one file. Keep request parsing in routes or server functions, database access in a small data layer, and auth session resolution at the server edge.
+This is one deployable app inside a generated workspace. “Single app” does not mean every concern belongs in one package. Keep request parsing in routes or server functions, database access in the shared database package, and auth session resolution at the server edge.
 
 ```txt
 my-tanstack-app/
-  bts.jsonc
   package.json
-  src/
-    routes/
-    components/
-    lib/
-      auth/
-      db/
-      trpc/
+  apps/
+    web/
+      src/
+        routes/
+        components/
+        functions/
+        middleware/
+  packages/
+    api/
+    auth/
+    db/
+    env/
 ```
 
 TanStack Start owns rendering and request handling. Drizzle owns schema and queries. PostgreSQL owns durable relational state. That separation makes it possible to test application operations without coupling every test to a route component.

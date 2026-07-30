@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 
 import {
+  beginBuilderZipAttempt,
   classifyBuilderRunFailure,
   classifyBuilderZipFailure,
   failureDurationMs,
@@ -67,6 +68,21 @@ describe("builder failure analytics", () => {
       stage: "browser_download",
       reason: "browser_download_failed",
     });
+  });
+
+  it("tracks ZIP retries independently for each effective stack", () => {
+    const firstAlpha = beginBuilderZipAttempt(
+      { stackSignature: "", attemptCount: 0 },
+      "stack-alpha",
+    );
+    expect(firstAlpha.isRetry).toBe(false);
+
+    const retryAlpha = beginBuilderZipAttempt(firstAlpha.nextState, "stack-alpha");
+    expect(retryAlpha.isRetry).toBe(true);
+
+    const firstBeta = beginBuilderZipAttempt(retryAlpha.nextState, "stack-beta");
+    expect(firstBeta.isRetry).toBe(false);
+    expect(firstBeta.nextState).toEqual({ stackSignature: "stack-beta", attemptCount: 1 });
   });
 
   it("normalizes duration and rejects stale or duplicate run failures", () => {

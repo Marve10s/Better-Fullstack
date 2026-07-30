@@ -215,6 +215,24 @@ describe("docs content contract", () => {
     expect(missingLocalizedContent).toEqual([]);
   });
 
+  it("keeps localized guide indexes in sync with base navigation links", () => {
+    const baseIndex = readFileSync(join(GUIDES_ROOT, "index.mdx"), "utf8");
+    const expectedLinks = new Set(
+      collectLinks(baseIndex).filter(
+        (link) => link.startsWith("/guides/") || link === "/templates",
+      ),
+    );
+    const missingLinks = LOCALIZED_CONTENT_LOCALES.flatMap((locale) => {
+      const localizedBody = readLocalizedContent(locale).guides?.["index.mdx"]?.body ?? "";
+      const localizedLinks = new Set(collectLinks(localizedBody));
+      return [...expectedLinks]
+        .filter((link) => !localizedLinks.has(link))
+        .map((link) => `${locale}: ${link}`);
+    });
+
+    expect(missingLinks).toEqual([]);
+  });
+
   it("keeps translation fallbacks explicit and limited to the reviewed pending list", () => {
     const pendingPaths: string[] = [];
     const invalidStatuses: string[] = [];

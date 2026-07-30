@@ -76,6 +76,7 @@ import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { clearBuilderMode, publishBuilderMode } from "@/lib/builder-mode-bridge";
 import {
+  beginBuilderZipAttempt,
   classifyBuilderZipFailure,
   failureDurationMs,
   type BuilderRunFailure,
@@ -2230,7 +2231,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
 
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-  const downloadAttemptRef = useRef(0);
+  const downloadAttemptRef = useRef({ stackSignature: "", attemptCount: 0 });
   const lastAppliedStackString = useRef<string>("");
   const lastAppliedEcosystemRef = useRef<Ecosystem>(stack.ecosystem);
   const suppressCompatibilityToastRef = useRef(false);
@@ -2275,20 +2276,26 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
   const handleDownloadProject = async () => {
     if (isDownloadingProject) return;
 
+    const stackToDownload = adjustedStack || stack;
+    const projectName = formatProjectName(stackToDownload.projectName || "my-app");
+    const stackSignature = generateStackSharingUrl({
+      ...stackToDownload,
+      projectName,
+    });
+    const attempt = beginBuilderZipAttempt(downloadAttemptRef.current, stackSignature);
+    downloadAttemptRef.current = attempt.nextState;
     const startedAt = Date.now();
-    const isRetry = downloadAttemptRef.current > 0;
-    downloadAttemptRef.current += 1;
     let failureStage: BuilderZipFailureStage = "archive_generation";
     setIsDownloadingProject(true);
     try {
       const { createStackProjectArchive, downloadProjectArchive } =
         await import("@/lib/project-download");
-      const archive = await createStackProjectArchive(adjustedStack || stack);
+      const archive = await createStackProjectArchive(stackToDownload);
       failureStage = "browser_download";
       downloadProjectArchive(archive);
       trackCampaignEvent(
         "builder_zip_downloaded",
-        stackAnalyticsProperties(adjustedStack || stack, { campaign }),
+        stackAnalyticsProperties(stackToDownload, { campaign }),
       );
       toast.success(m.builderDownloadComplete({ fileName: archive.fileName }));
       promptForShare("download");
@@ -2296,12 +2303,12 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
       const failure = classifyBuilderZipFailure(failureStage);
       trackCampaignEvent(
         "builder_zip_failed",
-        stackAnalyticsProperties(adjustedStack || stack, {
+        stackAnalyticsProperties(stackToDownload, {
           campaign,
           stage: failure.stage,
           reason: failure.reason,
           duration_ms: failureDurationMs(startedAt),
-          rerun: isRetry,
+          rerun: attempt.isRetry,
         }),
       );
       console.error("Project ZIP download failed", downloadError);
