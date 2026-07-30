@@ -1,0 +1,108 @@
+---
+title: "Better Auth architecture: place sessions at the real server boundary"
+description: "Plan Better Auth around server ownership, cookies, database adapters, callbacks, multiple clients, and deployment origins before choosing a starter."
+date: 2026-07-30
+authors:
+  - Ibrahim Elkamali
+image: /search-media/nextjs-fullstack-1200x630.png
+video: /search-media/nextjs-fullstack-1200x630.mp4
+translationStatus: pending
+tags:
+  - better-auth
+  - authentication
+  - architecture
+keywords:
+  - better auth architecture
+  - better auth nextjs
+  - better auth hono
+  - better auth tanstack start
+  - fullstack auth starter
+---
+
+![Better Auth placed at the fullstack server boundary](/search-media/nextjs-fullstack-1200x630.png)
+
+Authentication should live where trusted server code can read secrets, manage session persistence, and enforce authorization. In a framework-owned stack that boundary is Next.js or TanStack Start. In a split stack it is usually the Hono API.
+
+The library selection matters. The boundary matters first.
+
+## Separate authentication from authorization
+
+Authentication answers who the caller is. Authorization answers whether that caller can perform one operation on one resource.
+
+Resolve the session at the request edge, then pass a narrow actor identity into application code. Keep ownership checks close to the data operation.
+
+```ts
+export async function renameProject(actorId: string, projectId: string, name: string) {
+  const project = await projectRepository.findById(projectId);
+  if (!project) throw new NotFoundError("Project");
+  if (project.ownerId !== actorId) throw new ForbiddenError();
+  return projectRepository.rename(projectId, name);
+}
+```
+
+Do not treat “the route requires a session” as complete authorization. A signed-in user can still request another user’s resource.
+
+## Framework-owned server
+
+Next.js and TanStack Start can keep auth routes, session resolution, application operations, and database access inside one application deployment.
+
+This reduces cross-origin configuration and is usually the clearest default for one browser product. It also makes the framework’s public origin the natural callback and cookie origin.
+
+Relevant generated stacks:
+
+- [TanStack Start + Drizzle + Better Auth](/stack/tanstack-start-postgres-drizzle-better-auth)
+- [Next.js + Drizzle + Better Auth](/stack/nextjs-drizzle-better-auth)
+- [Next.js + Prisma + Better Auth](/stack/nextjs-prisma-better-auth)
+
+## Separate Hono API
+
+When Hono owns the backend, mount auth and resolve sessions in that service. The browser frontend should not own auth secrets or connect to the auth database.
+
+The split becomes operationally meaningful:
+
+- configure the exact frontend origin in CORS;
+- decide whether cookies span subdomains;
+- make browser requests include credentials when required;
+- set secure cookie behavior for HTTPS;
+- verify proxies preserve the public host and protocol;
+- keep callback URLs aligned with the deployed service.
+
+Read [Hono with Better Auth and Drizzle](/guides/typescript/hono-better-auth/) for that project shape.
+
+## Database ownership
+
+Auth adapters may create or expect tables for users, sessions, accounts, and verification records. Keep that schema under a clearly owned migration workflow. Product tables can reference the auth user identifier without duplicating credentials or session data.
+
+When changing ORM, inspect how the auth adapter schema is generated and migrated. Do not assume moving product queries from Drizzle to Prisma automatically migrates auth-owned tables.
+
+## Environment checklist
+
+Every environment should define and verify:
+
+1. a high-entropy auth secret;
+2. the canonical public application or API origin;
+3. OAuth provider callback URLs, when providers are enabled;
+4. the server-only database connection;
+5. trusted origins;
+6. cookie security settings;
+7. email delivery and verification behavior, if email flows are used.
+
+Preview deployments deserve an explicit policy. Either provision matching callbacks and trusted origins, or deliberately disable flows that cannot be secured there.
+
+## Sessions for multiple clients
+
+Browser cookie sessions are a natural fit for same-site web apps. Native clients and third-party consumers may require a different transport and lifecycle. If multiple clients are a real requirement, design that contract before selecting the topology.
+
+Do not split the backend only because multiple clients might exist someday. Do not lock auth into web-only assumptions when a mobile client is already committed. Architecture should reflect actual product commitments.
+
+## Failure handling
+
+Return stable public errors for unauthenticated and forbidden operations. Log enough server-side context to diagnose failures without logging passwords, tokens, raw cookies, or provider secrets.
+
+Auth failures are also deployment signals. Track callback errors, database adapter failures, invalid origin rejections, and session resolution latency separately from ordinary validation failures.
+
+## Choosing the starter
+
+Use a framework-owned Better Auth stack for one web product and one deployment boundary. Use a Hono-owned Better Auth stack when the API is independently meaningful.
+
+Then choose Drizzle or Prisma based on the database workflow your team will maintain; see [Drizzle vs Prisma](/blog/drizzle-vs-prisma/). Browse [all compatibility-checked templates](/templates) to compare exact generated selections instead of starting from a generic auth diagram.

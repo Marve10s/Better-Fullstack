@@ -17,6 +17,8 @@ export type GuideFrontmatter = {
   description?: string;
   updated?: string;
   image?: string;
+  video?: string;
+  translationStatus?: "pending";
   category?: string;
   tags?: string[];
   keywords?: string[];

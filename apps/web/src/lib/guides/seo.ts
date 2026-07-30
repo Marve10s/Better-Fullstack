@@ -35,8 +35,16 @@ function guideImage(page: Pick<GuidePage, "frontmatter">) {
   return canonicalUrl(image);
 }
 
+function guideVideo(page: Pick<GuidePage, "frontmatter">) {
+  const video = page.frontmatter.video;
+  if (!video) return undefined;
+  if (video.startsWith("http://") || video.startsWith("https://")) return video;
+  return canonicalUrl(video);
+}
+
 function guideJsonLd(page: Pick<GuidePage, "url" | "frontmatter">) {
   const url = canonicalUrl(page.url);
+  const video = guideVideo(page);
   const article: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "TechArticle",
@@ -100,9 +108,20 @@ function guideJsonLd(page: Pick<GuidePage, "url" | "frontmatter">) {
     ],
   };
 
+  const videoObject = video
+    ? {
+        "@type": "VideoObject",
+        name: page.frontmatter.title ?? SITE_NAME,
+        description: guideDescription(page),
+        contentUrl: video,
+        thumbnailUrl: guideImage(page),
+        uploadDate: page.frontmatter.updated,
+      }
+    : undefined;
+
   return {
     "@context": "https://schema.org",
-    "@graph": [article, breadcrumbs],
+    "@graph": [article, breadcrumbs, ...(videoObject ? [videoObject] : [])],
   };
 }
 
@@ -112,6 +131,7 @@ export function guidePageHead(page: Pick<GuidePage, "url" | "frontmatter">) {
   const url = canonicalUrl(page.url);
   const image = guideImage(page);
   const twitterImage = image === DEFAULT_OG_IMAGE_URL ? DEFAULT_X_IMAGE_URL : image;
+  const video = guideVideo(page);
 
   return {
     meta: [
@@ -129,6 +149,12 @@ export function guidePageHead(page: Pick<GuidePage, "url" | "frontmatter">) {
       { property: "og:image:alt", content: DEFAULT_OG_IMAGE_ALT },
       { property: "og:image:width", content: String(DEFAULT_OG_IMAGE_WIDTH) },
       { property: "og:image:height", content: String(DEFAULT_OG_IMAGE_HEIGHT) },
+      ...(video
+        ? [
+            { property: "og:video", content: video },
+            { property: "og:video:type", content: "video/mp4" },
+          ]
+        : []),
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: title },
       { name: "twitter:description", content: description },

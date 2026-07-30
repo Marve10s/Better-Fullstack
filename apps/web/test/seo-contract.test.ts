@@ -32,6 +32,24 @@ function matchesCategoryFamily(category: string, family: string) {
 }
 
 describe("SEO contracts", () => {
+  it("redirects the public Vercel alias to the canonical domain", async () => {
+    const config = (await Bun.file("vercel.json").json()) as {
+      redirects?: Array<{
+        source: string;
+        destination: string;
+        permanent?: boolean;
+        has?: Array<{ type: string; value?: string }>;
+      }>;
+    };
+
+    expect(config.redirects).toContainEqual({
+      source: "/:path*",
+      has: [{ type: "host", value: "better-fullstack-web.vercel.app" }],
+      destination: "https://better-fullstack.dev/:path*",
+      permanent: true,
+    });
+  });
+
   it("includes docs, guides, stack pages, MCP, and the benchmark runner in the dynamic sitemap", () => {
     const entries = getSitemapEntriesFromPages({
       docsPages: [
@@ -59,6 +77,7 @@ describe("SEO contracts", () => {
     expect(paths).toContain("/guides/typescript/create-tanstack-start-project");
     expect(paths).toContain("/mcp");
     expect(paths).toContain("/run");
+    expect(paths).toContain("/templates");
     expect(paths).not.toContain("/stack");
     expect(paths).toContain("/stack/nextjs-hono-drizzle-better-auth");
     expect(paths).not.toContain("/analytics");
@@ -66,6 +85,31 @@ describe("SEO contracts", () => {
     expect(xml).toContain(canonicalUrl("/guides/typescript/create-tanstack-start-project"));
     expect(xml).toContain(canonicalUrl("/stack/nextjs-hono-drizzle-better-auth"));
     expect(xml).not.toContain(canonicalUrl("/analytics"));
+  });
+
+  it("adds video discovery metadata when content declares an MP4", () => {
+    const videoPath = "/search-media/tanstack-start-fullstack-1200x630.mp4";
+    const head = guidePageHead({
+      url: "/guides/typescript/tanstack-start-postgres-drizzle",
+      frontmatter: {
+        title: "TanStack Start with PostgreSQL and Drizzle",
+        description: "A compatibility-checked TanStack Start guide.",
+        updated: "2026-07-30",
+        image: "/search-media/tanstack-start-fullstack-1200x630.png",
+        video: videoPath,
+      },
+    });
+
+    expect(head.meta).toContainEqual({
+      property: "og:video",
+      content: canonicalUrl(videoPath),
+    });
+    const structuredData = head.meta.find((meta) => "script:ld+json" in meta) as {
+      "script:ld+json": { "@graph": Array<{ "@type": string }> };
+    };
+    expect(structuredData["script:ld+json"]["@graph"]).toContainEqual(
+      expect.objectContaining({ "@type": "VideoObject" }),
+    );
   });
 
   it("builds complete page heads with matching canonical and social metadata", () => {
@@ -222,6 +266,8 @@ describe("SEO contracts", () => {
 
   it("uses existing manifest icon paths", async () => {
     const manifest = (await Bun.file("public/favicon/site.webmanifest").json()) as {
+      theme_color: string;
+      background_color: string;
       icons: Array<{ src: string }>;
     };
 
@@ -230,6 +276,26 @@ describe("SEO contracts", () => {
     );
 
     expect(iconExists).toEqual(manifest.icons.map(() => true));
+    expect(manifest.theme_color).toBe("#0e0e10");
+    expect(manifest.background_color).toBe("#0e0e10");
+
+    const faviconFiles = [
+      "public/favicon.ico",
+      "public/favicon/favicon.svg",
+      "public/favicon/favicon-16x16.png",
+      "public/favicon/favicon-32x32.png",
+      "public/favicon/favicon-48x48.png",
+      "public/favicon/favicon-96x96.png",
+      "public/favicon/apple-touch-icon.png",
+    ];
+    expect(await Promise.all(faviconFiles.map((path) => Bun.file(path).exists()))).toEqual(
+      faviconFiles.map(() => true),
+    );
+
+    const faviconSvg = await Bun.file("public/favicon/favicon.svg").text();
+    expect(faviconSvg).toContain("#0E0E10");
+    expect(faviconSvg).toContain("#F2EEEE");
+    expect(faviconSvg).toContain("#C6E853");
   });
 
   it("keeps non-content API responses out of search indexes", async () => {

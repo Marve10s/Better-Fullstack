@@ -37,8 +37,8 @@ function stackPageJsonLd(page: GeneratedStackPage) {
           {
             "@type": "ListItem",
             position: 2,
-            name: "Stack Builder",
-            item: canonicalUrl("/stack"),
+            name: "Templates",
+            item: canonicalUrl("/templates"),
           },
           { "@type": "ListItem", position: 3, name: page.title, item: url },
         ],

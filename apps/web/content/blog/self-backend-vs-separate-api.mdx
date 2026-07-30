@@ -1,0 +1,110 @@
+---
+title: "Self backend vs separate API: when fullstack should split"
+description: "A decision framework for choosing framework-owned server routes or a separate Hono API, including clients, deployment, auth, CORS, contracts, and operational cost."
+date: 2026-07-30
+authors:
+  - Ibrahim Elkamali
+image: /search-media/hono-api-1200x630.png
+video: /search-media/hono-api-1200x630.mp4
+translationStatus: pending
+tags:
+  - hono
+  - architecture
+  - api
+keywords:
+  - self backend vs separate api
+  - hono vs nextjs api routes
+  - separate backend for nextjs
+  - fullstack architecture
+  - hono fullstack starter
+---
+
+![Framework-owned backend compared with a separate Hono API](/search-media/hono-api-1200x630.png)
+
+<video controls muted playsInline preload="metadata" poster="/search-media/hono-api-1200x630.png" src="/search-media/hono-api-1200x630.mp4"></video>
+
+A self backend means the web framework owns server routes, rendering, and application operations. A separate API gives that network boundary to another service such as Hono.
+
+Neither is automatically more scalable or more “production ready.” The split is useful when it represents a real ownership, consumer, or deployment boundary. Otherwise it creates infrastructure work without creating product leverage.
+
+## Start with consumers
+
+List who calls the backend.
+
+If the only caller is one web application, a framework-owned backend is the smallest coherent architecture. TanStack Start and Next.js can keep rendering, auth sessions, and database operations in one deployable application.
+
+If mobile apps, third parties, automation, or multiple web products consume the same operations, a separate API becomes easier to justify. The contract now has a life beyond one route tree.
+
+```txt
+Self backend                    Separate API
+
+Browser                         Browser   Mobile   Partner
+   ↓                               \        |       /
+Web framework                         Hono API
+   ↓                                     ↓
+Database                              Database
+```
+
+## What the split costs
+
+A separate API adds concrete responsibilities:
+
+- a second deployment target and health signal;
+- service origin configuration;
+- browser CORS policy;
+- cookie or token strategy across origins;
+- independent logging and error investigation;
+- contract versioning concerns;
+- network failures between the web server and API;
+- local orchestration for both services.
+
+Those costs are manageable. They should buy something explicit: independent ownership, independent scaling, more than one client, or a public contract.
+
+## Authentication is where vague diagrams fail
+
+In a self backend, the browser and server usually share one application origin. Cookie sessions and callbacks have fewer cross-origin variables.
+
+In a split architecture, decide whether browsers call the API directly or the web server calls it on their behalf. Direct browser calls require exact CORS origins and deliberate credential policy. Server-to-server calls avoid browser CORS, but they require a secure way to propagate user identity or service credentials.
+
+Do not choose “JWT” as a reflex. Write down revocation, audience, expiration, refresh, and storage behavior. Do not choose cross-subdomain cookies without verifying domain, `sameSite`, `secure`, proxy, and callback configuration.
+
+The [Hono with Better Auth guide](/guides/typescript/hono-better-auth/) focuses on those boundaries.
+
+## Contract choices
+
+A self backend may expose server functions or a typed procedure router used only by its own React app. That is a useful private interface.
+
+A separate API often benefits from a contract that is understandable outside the web repository. OpenAPI is a strong fit for HTTP clients across languages. tRPC and oRPC remain valid when all important consumers share TypeScript conventions.
+
+Inspect the distinct generator records:
+
+- [TanStack Start framework-owned backend](/stack/tanstack-start-postgres-drizzle-better-auth)
+- [Next.js framework-owned backend](/stack/nextjs-drizzle-better-auth)
+- [TanStack Router + Hono + OpenAPI](/stack/tanstack-router-hono-openapi-drizzle)
+- [Next.js + separate Hono OpenAPI service](/stack/nextjs-hono-openapi-drizzle)
+
+## Deployment and failure domains
+
+Independent services can deploy and fail independently only if the organization operates them independently. If one person deploys both together, shares one repository, and cannot investigate two sets of logs, the theoretical separation may not help.
+
+A self backend can still have clear internal modules. A separate API can still become tightly coupled to one frontend. Process boundaries do not create good architecture by themselves.
+
+## A practical decision test
+
+Answer these questions in order:
+
+1. Are there multiple real clients now or in the committed near-term roadmap?
+2. Does the API need an externally documented lifecycle?
+3. Must backend deployments happen independently from web deployments?
+4. Does a different team own backend operations?
+5. Does the web framework’s runtime prevent a required backend capability?
+
+If most answers are no, start with a framework-owned backend. If several are yes, generate a split stack and accept its operational cost intentionally.
+
+## Keep the choice reversible
+
+Even in a self backend, place application operations behind narrow server-only functions. Even in a separate API, keep transport handlers thin. Those habits make later movement possible.
+
+The irreversible mistake is usually not choosing one process or two. It is mixing route objects, database clients, auth parsing, and business rules so thoroughly that no boundary can be changed safely.
+
+Browse [all validated starter templates](/templates) or use the [builder](/new) to compare the exact commands before creating either shape.
