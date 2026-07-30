@@ -32,6 +32,24 @@ function matchesCategoryFamily(category: string, family: string) {
 }
 
 describe("SEO contracts", () => {
+  it("redirects the public Vercel alias to the canonical domain", async () => {
+    const config = (await Bun.file("vercel.json").json()) as {
+      redirects?: Array<{
+        source: string;
+        destination: string;
+        permanent?: boolean;
+        has?: Array<{ type: string; value?: string }>;
+      }>;
+    };
+
+    expect(config.redirects).toContainEqual({
+      source: "/:path*",
+      has: [{ type: "host", value: "better-fullstack-web.vercel.app" }],
+      destination: "https://better-fullstack.dev/:path*",
+      permanent: true,
+    });
+  });
+
   it("includes docs, guides, stack pages, MCP, and the benchmark runner in the dynamic sitemap", () => {
     const entries = getSitemapEntriesFromPages({
       docsPages: [
