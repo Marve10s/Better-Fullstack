@@ -266,6 +266,8 @@ describe("SEO contracts", () => {
 
   it("uses existing manifest icon paths", async () => {
     const manifest = (await Bun.file("public/favicon/site.webmanifest").json()) as {
+      theme_color: string;
+      background_color: string;
       icons: Array<{ src: string }>;
     };
 
@@ -274,6 +276,26 @@ describe("SEO contracts", () => {
     );
 
     expect(iconExists).toEqual(manifest.icons.map(() => true));
+    expect(manifest.theme_color).toBe("#0e0e10");
+    expect(manifest.background_color).toBe("#0e0e10");
+
+    const faviconFiles = [
+      "public/favicon.ico",
+      "public/favicon/favicon.svg",
+      "public/favicon/favicon-16x16.png",
+      "public/favicon/favicon-32x32.png",
+      "public/favicon/favicon-48x48.png",
+      "public/favicon/favicon-96x96.png",
+      "public/favicon/apple-touch-icon.png",
+    ];
+    expect(await Promise.all(faviconFiles.map((path) => Bun.file(path).exists()))).toEqual(
+      faviconFiles.map(() => true),
+    );
+
+    const faviconSvg = await Bun.file("public/favicon/favicon.svg").text();
+    expect(faviconSvg).toContain("#0E0E10");
+    expect(faviconSvg).toContain("#F2EEEE");
+    expect(faviconSvg).toContain("#C6E853");
   });
 
   it("keeps non-content API responses out of search indexes", async () => {
