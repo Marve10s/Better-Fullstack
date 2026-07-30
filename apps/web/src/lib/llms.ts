@@ -95,6 +95,11 @@ export function generateLlmsTxt({
     "",
     pageLine("Homepage", "/", "Product overview and primary CLI install path"),
     pageLine("Stack Builder", "/new", "Visual compatible stack builder and command generator"),
+    pageLine(
+      "Starter Templates",
+      "/templates",
+      "Crawlable catalog of compatibility-checked generated stack selections",
+    ),
     pageLine("Compare", "/compare", "Comparison against other scaffolders and starter kits"),
     pageLine("MCP", "/mcp", "AI agent integration overview"),
     pageLine("Docs", "/docs", "Documentation index"),

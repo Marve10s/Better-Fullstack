@@ -1,0 +1,105 @@
+---
+title: Hono OpenAPI Starter with Drizzle
+description: Create a Hono OpenAPI backend with PostgreSQL and Drizzle, a separate TanStack Router frontend, and an explicit HTTP contract.
+updated: 2026-07-30
+image: /search-media/hono-api-1200x630.png
+video: /search-media/hono-api-1200x630.mp4
+translationStatus: pending
+category: TypeScript
+tags:
+  - hono
+  - openapi
+  - drizzle
+  - postgres
+keywords:
+  - hono openapi starter
+  - hono openapi drizzle
+  - typescript openapi backend
+  - hono postgres api
+  - openapi fullstack template
+---
+
+Choose this stack when HTTP is a product boundary: other applications, generated clients, or external consumers need a documented contract rather than TypeScript-only procedure inference.
+
+![Hono OpenAPI service connected to a web client and PostgreSQL](/search-media/hono-api-1200x630.png)
+
+```bash
+bun create better-fullstack@latest my-openapi-app \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime bun \
+  --database postgres \
+  --orm drizzle \
+  --api openapi \
+  --auth none
+```
+
+The exact validated selection and generated file inventory are published in the [Hono OpenAPI template record](/stack/tanstack-router-hono-openapi-drizzle).
+
+## What changes when OpenAPI is the contract
+
+With tRPC or oRPC, the TypeScript router is usually the primary contract. With OpenAPI, request parameters, bodies, responses, and error statuses must be representable in the HTTP schema. That creates extra discipline and makes cross-language clients practical.
+
+Keep the layers separate:
+
+1. Route schema describes transport input and output.
+2. Route handler converts the transport request into an application operation.
+3. Application code enforces authorization and business rules.
+4. Drizzle queries persist data without depending on Hono request objects.
+
+```ts
+const createProjectSchema = z.object({
+  name: z.string().min(2).max(80),
+});
+
+export async function createProject(rawInput: unknown, actorId: string) {
+  const input = createProjectSchema.parse(rawInput);
+  return projectRepository.create({ ...input, ownerId: actorId });
+}
+```
+
+## Design errors deliberately
+
+Do not document only success responses. A useful contract distinguishes validation failures, unauthenticated requests, forbidden operations, missing records, and conflicts. Keep the public error shape stable even if internal exceptions change.
+
+```json
+{
+  "error": {
+    "code": "PROJECT_NAME_TAKEN",
+    "message": "A project with this name already exists."
+  }
+}
+```
+
+Avoid returning raw database errors or stack traces. They are unstable contracts and can expose implementation details.
+
+## Database and migration workflow
+
+PostgreSQL is the selected durable store and Drizzle is the selected TypeScript data layer. Review generated migrations, apply them before new application instances start, and keep destructive schema changes separate from application rollout when possible.
+
+OpenAPI describes the network contract; it does not replace database constraints. Preserve unique constraints, foreign keys, and transaction boundaries in PostgreSQL.
+
+## Authentication is intentionally omitted
+
+This guide sets `--auth none` so the contract structure is visible without pretending one authentication model fits every API. Add an auth option in the builder when the consumer and session model are known. For browser cookie sessions, see [Hono with Better Auth](/guides/typescript/hono-better-auth/).
+
+<GuideCompatibilityNote
+  kind="supported"
+  title="OpenAPI selection"
+  items={[
+    "OpenAPI server scaffolding requires a standalone supported TypeScript backend such as Hono.",
+    "This guide removes the default React Native placeholder so the selection represents a web frontend only.",
+    "The generated record passes option checks, graph validation, schema parsing, and virtual project generation.",
+  ]}
+/>
+
+## When not to choose it
+
+If one TypeScript web app is the only consumer and end-to-end procedure inference is the main goal, tRPC or oRPC may be a smaller contract surface. If third parties or non-TypeScript clients consume the API, OpenAPI makes the boundary legible outside the monorepo.
+
+## Next steps
+
+- Inspect the [Hono OpenAPI template](/stack/tanstack-router-hono-openapi-drizzle).
+- Compare [Hono and framework-owned API routes](/blog/self-backend-vs-separate-api/).
+- Browse [all generated templates](/templates).

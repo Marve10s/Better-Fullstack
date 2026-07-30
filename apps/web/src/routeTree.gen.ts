@@ -9,73 +9,34 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as StackRouteImport } from './routes/stack'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as RunBeforeYouCloneRouteImport } from './routes/run-before-you-clone'
-import { Route as RunRouteImport } from './routes/run'
-import { Route as NewRouteImport } from './routes/new'
-import { Route as McpRouteImport } from './routes/mcp'
-import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
-import { Route as CompareRouteImport } from './routes/compare'
-import { Route as BenchmarkRouteImport } from './routes/benchmark'
-import { Route as StackShareRouteImport } from './routes/$stackShare'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as GuidesIndexRouteImport } from './routes/guides/index'
-import { Route as DocsIndexRouteImport } from './routes/docs/index'
-import { Route as BlogIndexRouteImport } from './routes/blog/index'
-import { Route as StackComboSlugRouteImport } from './routes/stack_.$comboSlug'
-import { Route as GuidesSplatRouteImport } from './routes/guides/$'
-import { Route as DocsSplatRouteImport } from './routes/docs/$'
-import { Route as CompareSlugRouteImport } from './routes/compare_.$slug'
-import { Route as BlogChar123postChar125DotmdRouteImport } from './routes/blog/{$post}[.]md'
-import { Route as BlogSplatRouteImport } from './routes/blog/$'
-import { Route as ApiVerifiedCombinationsRouteImport } from './routes/api/verified-combinations'
-import { Route as ApiStatsRouteImport } from './routes/api/stats'
+import { Route as StackShareRouteImport } from './routes/$stackShare'
+import { Route as BenchmarkRouteImport } from './routes/benchmark'
+import { Route as CompareRouteImport } from './routes/compare'
+import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
+import { Route as McpRouteImport } from './routes/mcp'
+import { Route as NewRouteImport } from './routes/new'
+import { Route as RunRouteImport } from './routes/run'
+import { Route as RunBeforeYouCloneRouteImport } from './routes/run-before-you-clone'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as StackRouteImport } from './routes/stack'
+import { Route as TemplatesRouteImport } from './routes/templates'
 import { Route as ApiPreviewRouteImport } from './routes/api/preview'
+import { Route as ApiStatsRouteImport } from './routes/api/stats'
+import { Route as ApiVerifiedCombinationsRouteImport } from './routes/api/verified-combinations'
+import { Route as BlogIndexRouteImport } from './routes/blog/index'
+import { Route as BlogSplatRouteImport } from './routes/blog/$'
+import { Route as BlogChar123postChar125DotmdRouteImport } from './routes/blog/{$post}[.]md'
+import { Route as CompareSlugRouteImport } from './routes/compare_.$slug'
+import { Route as DocsIndexRouteImport } from './routes/docs/index'
+import { Route as DocsSplatRouteImport } from './routes/docs/$'
+import { Route as GuidesIndexRouteImport } from './routes/guides/index'
+import { Route as GuidesSplatRouteImport } from './routes/guides/$'
+import { Route as StackComboSlugRouteImport } from './routes/stack_.$comboSlug'
 
-const StackRoute = StackRouteImport.update({
-  id: '/stack',
-  path: '/stack',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RunBeforeYouCloneRoute = RunBeforeYouCloneRouteImport.update({
-  id: '/run-before-you-clone',
-  path: '/run-before-you-clone',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RunRoute = RunRouteImport.update({
-  id: '/run',
-  path: '/run',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NewRoute = NewRouteImport.update({
-  id: '/new',
-  path: '/new',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const McpRoute = McpRouteImport.update({
-  id: '/mcp',
-  path: '/mcp',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
-  id: '/llms.txt',
-  path: '/llms.txt',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CompareRoute = CompareRouteImport.update({
-  id: '/compare',
-  path: '/compare',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BenchmarkRoute = BenchmarkRouteImport.update({
-  id: '/benchmark',
-  path: '/benchmark',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StackShareRoute = StackShareRouteImport.update({
@@ -83,19 +44,69 @@ const StackShareRoute = StackShareRouteImport.update({
   path: '/$stackShare',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const BenchmarkRoute = BenchmarkRouteImport.update({
+  id: '/benchmark',
+  path: '/benchmark',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GuidesIndexRoute = GuidesIndexRouteImport.update({
-  id: '/guides/',
-  path: '/guides/',
+const CompareRoute = CompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DocsIndexRoute = DocsIndexRouteImport.update({
-  id: '/docs/',
-  path: '/docs/',
+const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
+  id: '/llms.txt',
+  path: '/llms.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewRoute = NewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RunRoute = RunRouteImport.update({
+  id: '/run',
+  path: '/run',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RunBeforeYouCloneRoute = RunBeforeYouCloneRouteImport.update({
+  id: '/run-before-you-clone',
+  path: '/run-before-you-clone',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StackRoute = StackRouteImport.update({
+  id: '/stack',
+  path: '/stack',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TemplatesRoute = TemplatesRouteImport.update({
+  id: '/templates',
+  path: '/templates',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPreviewRoute = ApiPreviewRouteImport.update({
+  id: '/api/preview',
+  path: '/api/preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStatsRoute = ApiStatsRouteImport.update({
+  id: '/api/stats',
+  path: '/api/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiVerifiedCombinationsRoute = ApiVerifiedCombinationsRouteImport.update({
+  id: '/api/verified-combinations',
+  path: '/api/verified-combinations',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlogIndexRoute = BlogIndexRouteImport.update({
@@ -103,24 +114,9 @@ const BlogIndexRoute = BlogIndexRouteImport.update({
   path: '/blog/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const StackComboSlugRoute = StackComboSlugRouteImport.update({
-  id: '/stack_/$comboSlug',
-  path: '/stack/$comboSlug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GuidesSplatRoute = GuidesSplatRouteImport.update({
-  id: '/guides/$',
-  path: '/guides/$',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocsSplatRoute = DocsSplatRouteImport.update({
-  id: '/docs/$',
-  path: '/docs/$',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CompareSlugRoute = CompareSlugRouteImport.update({
-  id: '/compare_/$slug',
-  path: '/compare/$slug',
+const BlogSplatRoute = BlogSplatRouteImport.update({
+  id: '/blog/$',
+  path: '/blog/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlogChar123postChar125DotmdRoute =
@@ -129,24 +125,34 @@ const BlogChar123postChar125DotmdRoute =
     path: '/blog/{$post}.md',
     getParentRoute: () => rootRouteImport,
   } as any)
-const BlogSplatRoute = BlogSplatRouteImport.update({
-  id: '/blog/$',
-  path: '/blog/$',
+const CompareSlugRoute = CompareSlugRouteImport.update({
+  id: '/compare_/$slug',
+  path: '/compare/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiVerifiedCombinationsRoute = ApiVerifiedCombinationsRouteImport.update({
-  id: '/api/verified-combinations',
-  path: '/api/verified-combinations',
+const DocsIndexRoute = DocsIndexRouteImport.update({
+  id: '/docs/',
+  path: '/docs/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiStatsRoute = ApiStatsRouteImport.update({
-  id: '/api/stats',
-  path: '/api/stats',
+const DocsSplatRoute = DocsSplatRouteImport.update({
+  id: '/docs/$',
+  path: '/docs/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPreviewRoute = ApiPreviewRouteImport.update({
-  id: '/api/preview',
-  path: '/api/preview',
+const GuidesIndexRoute = GuidesIndexRouteImport.update({
+  id: '/guides/',
+  path: '/guides/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GuidesSplatRoute = GuidesSplatRouteImport.update({
+  id: '/guides/$',
+  path: '/guides/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StackComboSlugRoute = StackComboSlugRouteImport.update({
+  id: '/stack_/$comboSlug',
+  path: '/stack/$comboSlug',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -162,6 +168,7 @@ export interface FileRoutesByFullPath {
   '/run-before-you-clone': typeof RunBeforeYouCloneRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stack': typeof StackRoute
+  '/templates': typeof TemplatesRoute
   '/api/preview': typeof ApiPreviewRoute
   '/api/stats': typeof ApiStatsRoute
   '/api/verified-combinations': typeof ApiVerifiedCombinationsRoute
@@ -187,6 +194,7 @@ export interface FileRoutesByTo {
   '/run-before-you-clone': typeof RunBeforeYouCloneRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stack': typeof StackRoute
+  '/templates': typeof TemplatesRoute
   '/api/preview': typeof ApiPreviewRoute
   '/api/stats': typeof ApiStatsRoute
   '/api/verified-combinations': typeof ApiVerifiedCombinationsRoute
@@ -213,6 +221,7 @@ export interface FileRoutesById {
   '/run-before-you-clone': typeof RunBeforeYouCloneRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stack': typeof StackRoute
+  '/templates': typeof TemplatesRoute
   '/api/preview': typeof ApiPreviewRoute
   '/api/stats': typeof ApiStatsRoute
   '/api/verified-combinations': typeof ApiVerifiedCombinationsRoute
@@ -240,6 +249,7 @@ export interface FileRouteTypes {
     | '/run-before-you-clone'
     | '/sitemap.xml'
     | '/stack'
+    | '/templates'
     | '/api/preview'
     | '/api/stats'
     | '/api/verified-combinations'
@@ -265,6 +275,7 @@ export interface FileRouteTypes {
     | '/run-before-you-clone'
     | '/sitemap.xml'
     | '/stack'
+    | '/templates'
     | '/api/preview'
     | '/api/stats'
     | '/api/verified-combinations'
@@ -290,6 +301,7 @@ export interface FileRouteTypes {
     | '/run-before-you-clone'
     | '/sitemap.xml'
     | '/stack'
+    | '/templates'
     | '/api/preview'
     | '/api/stats'
     | '/api/verified-combinations'
@@ -316,6 +328,7 @@ export interface RootRouteChildren {
   RunBeforeYouCloneRoute: typeof RunBeforeYouCloneRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StackRoute: typeof StackRoute
+  TemplatesRoute: typeof TemplatesRoute
   ApiPreviewRoute: typeof ApiPreviewRoute
   ApiStatsRoute: typeof ApiStatsRoute
   ApiVerifiedCombinationsRoute: typeof ApiVerifiedCombinationsRoute
@@ -332,67 +345,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/stack': {
-      id: '/stack'
-      path: '/stack'
-      fullPath: '/stack'
-      preLoaderRoute: typeof StackRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/run-before-you-clone': {
-      id: '/run-before-you-clone'
-      path: '/run-before-you-clone'
-      fullPath: '/run-before-you-clone'
-      preLoaderRoute: typeof RunBeforeYouCloneRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/run': {
-      id: '/run'
-      path: '/run'
-      fullPath: '/run'
-      preLoaderRoute: typeof RunRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/new': {
-      id: '/new'
-      path: '/new'
-      fullPath: '/new'
-      preLoaderRoute: typeof NewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mcp': {
-      id: '/mcp'
-      path: '/mcp'
-      fullPath: '/mcp'
-      preLoaderRoute: typeof McpRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/llms.txt': {
-      id: '/llms.txt'
-      path: '/llms.txt'
-      fullPath: '/llms.txt'
-      preLoaderRoute: typeof LlmsDottxtRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/compare': {
-      id: '/compare'
-      path: '/compare'
-      fullPath: '/compare'
-      preLoaderRoute: typeof CompareRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/benchmark': {
-      id: '/benchmark'
-      path: '/benchmark'
-      fullPath: '/benchmark'
-      preLoaderRoute: typeof BenchmarkRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/$stackShare': {
@@ -402,81 +359,81 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StackShareRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/benchmark': {
+      id: '/benchmark'
+      path: '/benchmark'
+      fullPath: '/benchmark'
+      preLoaderRoute: typeof BenchmarkRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/guides/': {
-      id: '/guides/'
-      path: '/guides'
-      fullPath: '/guides/'
-      preLoaderRoute: typeof GuidesIndexRouteImport
+    '/compare': {
+      id: '/compare'
+      path: '/compare'
+      fullPath: '/compare'
+      preLoaderRoute: typeof CompareRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/docs/': {
-      id: '/docs/'
-      path: '/docs'
-      fullPath: '/docs/'
-      preLoaderRoute: typeof DocsIndexRouteImport
+    '/llms.txt': {
+      id: '/llms.txt'
+      path: '/llms.txt'
+      fullPath: '/llms.txt'
+      preLoaderRoute: typeof LlmsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/blog/': {
-      id: '/blog/'
-      path: '/blog'
-      fullPath: '/blog/'
-      preLoaderRoute: typeof BlogIndexRouteImport
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/stack_/$comboSlug': {
-      id: '/stack_/$comboSlug'
-      path: '/stack/$comboSlug'
-      fullPath: '/stack/$comboSlug'
-      preLoaderRoute: typeof StackComboSlugRouteImport
+    '/new': {
+      id: '/new'
+      path: '/new'
+      fullPath: '/new'
+      preLoaderRoute: typeof NewRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/guides/$': {
-      id: '/guides/$'
-      path: '/guides/$'
-      fullPath: '/guides/$'
-      preLoaderRoute: typeof GuidesSplatRouteImport
+    '/run': {
+      id: '/run'
+      path: '/run'
+      fullPath: '/run'
+      preLoaderRoute: typeof RunRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/docs/$': {
-      id: '/docs/$'
-      path: '/docs/$'
-      fullPath: '/docs/$'
-      preLoaderRoute: typeof DocsSplatRouteImport
+    '/run-before-you-clone': {
+      id: '/run-before-you-clone'
+      path: '/run-before-you-clone'
+      fullPath: '/run-before-you-clone'
+      preLoaderRoute: typeof RunBeforeYouCloneRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/compare_/$slug': {
-      id: '/compare_/$slug'
-      path: '/compare/$slug'
-      fullPath: '/compare/$slug'
-      preLoaderRoute: typeof CompareSlugRouteImport
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/blog/{$post}.md': {
-      id: '/blog/{$post}.md'
-      path: '/blog/{$post}.md'
-      fullPath: '/blog/{$post}.md'
-      preLoaderRoute: typeof BlogChar123postChar125DotmdRouteImport
+    '/stack': {
+      id: '/stack'
+      path: '/stack'
+      fullPath: '/stack'
+      preLoaderRoute: typeof StackRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/blog/$': {
-      id: '/blog/$'
-      path: '/blog/$'
-      fullPath: '/blog/$'
-      preLoaderRoute: typeof BlogSplatRouteImport
+    '/templates': {
+      id: '/templates'
+      path: '/templates'
+      fullPath: '/templates'
+      preLoaderRoute: typeof TemplatesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/verified-combinations': {
-      id: '/api/verified-combinations'
-      path: '/api/verified-combinations'
-      fullPath: '/api/verified-combinations'
-      preLoaderRoute: typeof ApiVerifiedCombinationsRouteImport
+    '/api/preview': {
+      id: '/api/preview'
+      path: '/api/preview'
+      fullPath: '/api/preview'
+      preLoaderRoute: typeof ApiPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/stats': {
@@ -486,11 +443,74 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiStatsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/preview': {
-      id: '/api/preview'
-      path: '/api/preview'
-      fullPath: '/api/preview'
-      preLoaderRoute: typeof ApiPreviewRouteImport
+    '/api/verified-combinations': {
+      id: '/api/verified-combinations'
+      path: '/api/verified-combinations'
+      fullPath: '/api/verified-combinations'
+      preLoaderRoute: typeof ApiVerifiedCombinationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/': {
+      id: '/blog/'
+      path: '/blog'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/$': {
+      id: '/blog/$'
+      path: '/blog/$'
+      fullPath: '/blog/$'
+      preLoaderRoute: typeof BlogSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/{$post}.md': {
+      id: '/blog/{$post}.md'
+      path: '/blog/{$post}.md'
+      fullPath: '/blog/{$post}.md'
+      preLoaderRoute: typeof BlogChar123postChar125DotmdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compare_/$slug': {
+      id: '/compare_/$slug'
+      path: '/compare/$slug'
+      fullPath: '/compare/$slug'
+      preLoaderRoute: typeof CompareSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/': {
+      id: '/docs/'
+      path: '/docs'
+      fullPath: '/docs/'
+      preLoaderRoute: typeof DocsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/$': {
+      id: '/docs/$'
+      path: '/docs/$'
+      fullPath: '/docs/$'
+      preLoaderRoute: typeof DocsSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guides/': {
+      id: '/guides/'
+      path: '/guides'
+      fullPath: '/guides/'
+      preLoaderRoute: typeof GuidesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guides/$': {
+      id: '/guides/$'
+      path: '/guides/$'
+      fullPath: '/guides/$'
+      preLoaderRoute: typeof GuidesSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/stack_/$comboSlug': {
+      id: '/stack_/$comboSlug'
+      path: '/stack/$comboSlug'
+      fullPath: '/stack/$comboSlug'
+      preLoaderRoute: typeof StackComboSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -508,6 +528,7 @@ const rootRouteChildren: RootRouteChildren = {
   RunBeforeYouCloneRoute: RunBeforeYouCloneRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StackRoute: StackRoute,
+  TemplatesRoute: TemplatesRoute,
   ApiPreviewRoute: ApiPreviewRoute,
   ApiStatsRoute: ApiStatsRoute,
   ApiVerifiedCombinationsRoute: ApiVerifiedCombinationsRoute,

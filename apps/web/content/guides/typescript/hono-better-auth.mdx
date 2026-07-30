@@ -1,0 +1,134 @@
+---
+title: Hono with Better Auth and Drizzle
+description: Scaffold a Hono backend with Better Auth, Drizzle, PostgreSQL, and a TanStack Router frontend, then keep cookies, CORS, and database access on clear boundaries.
+updated: 2026-07-30
+image: /search-media/hono-api-1200x630.png
+video: /search-media/hono-api-1200x630.mp4
+translationStatus: pending
+category: TypeScript
+tags:
+  - hono
+  - better-auth
+  - drizzle
+  - postgres
+keywords:
+  - hono better auth
+  - hono auth starter
+  - hono drizzle postgres
+  - hono fullstack starter
+  - better auth hono template
+---
+
+Use this stack when the API should be a separate Hono service and authentication should live beside that API, not in browser code.
+
+![Hono API architecture with Better Auth and a separate web frontend](/search-media/hono-api-1200x630.png)
+
+<video controls muted playsInline preload="metadata" poster="/search-media/hono-api-1200x630.png" src="/search-media/hono-api-1200x630.mp4"></video>
+
+```bash
+bun create better-fullstack@latest my-hono-app \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime bun \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api orpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+  --shadcn-base radix \
+  --shadcn-style nova \
+  --shadcn-icon-library lucide \
+  --shadcn-color-theme neutral \
+  --shadcn-base-color neutral \
+  --shadcn-font inter \
+  --shadcn-radius default
+```
+
+## Generated shape
+
+The frontend and server are separate primary parts inside one generated workspace. The browser app owns presentation. Hono owns HTTP, auth context, and API middleware. Drizzle stays on the server side.
+
+```txt
+my-hono-app/
+  bts.jsonc
+  apps/
+    web/
+    server/
+  packages/
+    api/
+    auth/
+    db/
+```
+
+Workspace names can evolve, but the important decision is stable: this stack exposes an explicit network boundary. Inspect the [Hono + Prisma + Better Auth record](/stack/tanstack-router-hono-prisma-better-auth) or the [Hono + oRPC + Drizzle record](/stack/tanstack-router-hono-orpc-drizzle) to see the exact current output.
+
+## Put auth at the server boundary
+
+Resolve the session once in Hono middleware or a request context, then pass the user identity into application operations. Do not let downstream code repeatedly parse cookies.
+
+```ts
+import { Hono } from "hono";
+
+type Variables = { userId: string | null };
+const app = new Hono<{ Variables: Variables }>();
+
+app.use("/api/*", async (c, next) => {
+  const session = await resolveSession(c.req.raw.headers);
+  c.set("userId", session?.user.id ?? null);
+  await next();
+});
+```
+
+The exact Better Auth adapter code depends on generated templates and selected options. The architectural rule is simpler: credentials and session storage stay on the API side; the frontend receives only the session data it needs.
+
+## Cookies and CORS
+
+Most “auth library bugs” in split apps are actually origin or cookie configuration problems. Decide early whether the web and API use the same site.
+
+For `app.example.com` and `api.example.com`, verify:
+
+- the API allows the exact web origin rather than a wildcard with credentials;
+- browser requests opt into credentials;
+- cookie `secure`, `sameSite`, domain, and path values match the deployment;
+- callback URLs use the public HTTPS origins, not local defaults;
+- reverse proxies preserve forwarded host and protocol headers correctly.
+
+Keep local and production origins in validated environment configuration. Avoid scattering fallback URLs through route files.
+
+## Drizzle ownership
+
+Database modules should not import UI types. Define product tables and queries in the server-owned database package, then expose use-case-shaped operations through oRPC or tRPC.
+
+```ts
+export async function listProjectsForUser(userId: string) {
+  return db.query.projects.findMany({
+    where: (project, { eq }) => eq(project.ownerId, userId),
+  });
+}
+```
+
+This prevents the API contract from becoming a thin mirror of tables and makes authorization visible at the operation boundary.
+
+## oRPC or tRPC?
+
+Both are supported in React-oriented Hono stacks. Choose based on the contract model your team wants, not a generic claim that one is faster.
+
+| Decision | oRPC | tRPC |
+| --- | --- | --- |
+| Contract style | Router and contract-oriented tooling | Procedure router with mature React usage |
+| Existing code | Useful when the project already uses oRPC conventions | Useful when the team already uses tRPC clients and middleware |
+| Generator page | [Hono + oRPC](/stack/tanstack-router-hono-orpc-drizzle) | [Hono + tRPC](/stack/tanstack-router-hono-trpc-drizzle) |
+
+## When to choose a separate Hono service
+
+Choose this shape when the API must serve more than one client, deploy independently, or expose middleware and transport concerns explicitly. Choose a framework-owned backend when one web app is the only client and a single deployment is more valuable than service separation.
+
+For the latter path, compare [TanStack Start with PostgreSQL](/guides/typescript/tanstack-start-postgres-drizzle/) and [Next.js with Drizzle](/guides/typescript/nextjs-drizzle-better-auth/).
+
+## Next steps
+
+- Read the [self backend versus separate API decision guide](/blog/self-backend-vs-separate-api/).
+- Inspect all [fullstack starter templates](/templates).
+- Open the [builder with Hono selected](/new?fe-w=tanstack-router&be=hono&db=postgres&orm=drizzle&au=better-auth&api=orpc).

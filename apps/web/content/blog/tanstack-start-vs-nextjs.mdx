@@ -1,0 +1,122 @@
+---
+title: "TanStack Start vs Next.js: choose the application boundary first"
+description: "A practical comparison of TanStack Start and Next.js for fullstack React projects, centered on routing, server ownership, data access, deployment, and team constraints."
+date: 2026-07-30
+authors:
+  - Ibrahim Elkamali
+image: /search-media/tanstack-start-fullstack-1200x630.png
+video: /search-media/tanstack-start-fullstack-1200x630.mp4
+translationStatus: pending
+tags:
+  - tanstack-start
+  - nextjs
+  - architecture
+keywords:
+  - tanstack start vs nextjs
+  - tanstack start full stack
+  - nextjs alternative
+  - react fullstack framework
+  - tanstack start starter
+---
+
+![TanStack Start fullstack application boundary](/search-media/tanstack-start-fullstack-1200x630.png)
+
+<video controls muted playsInline preload="metadata" poster="/search-media/tanstack-start-fullstack-1200x630.png" src="/search-media/tanstack-start-fullstack-1200x630.mp4"></video>
+
+TanStack Start and Next.js can both own a React frontend and its server boundary. The useful question is not “which framework wins?” It is “which application model should the team make ordinary?”
+
+Choose Next.js when its rendering model, deployment ecosystem, and conventions are already assets for the team. Choose TanStack Start when TanStack Router’s route model and a TanStack-first application surface are the stronger constraint.
+
+That answer is less exciting than a feature score, but it survives contact with a real codebase.
+
+## The shared ground
+
+Both stacks can be generated as a single application boundary with:
+
+- React UI routes;
+- framework-owned server behavior;
+- PostgreSQL or SQLite;
+- Drizzle or Prisma;
+- Better Auth;
+- a typed API layer;
+- Tailwind CSS and shadcn/ui.
+
+Better Fullstack therefore treats them as different compatible selections, not different levels of “fullstack.” Compare the exact [TanStack Start PostgreSQL template](/stack/tanstack-start-postgres-drizzle-better-auth) with the [Next.js Drizzle template](/stack/nextjs-drizzle-better-auth).
+
+## Routing is the daily interface
+
+Framework comparisons often begin with rendering acronyms. Developers spend more time editing routes, reading loader boundaries, handling errors, and navigating types.
+
+TanStack Start is the direct choice when TanStack Router is already the desired application model. Route definitions, search parameter typing, and the broader TanStack tool family become the center of the app.
+
+Next.js is the direct choice when the team wants its filesystem conventions and React framework model. Its app structure is also familiar to many hosting guides and third-party examples.
+
+Do a small route exercise before deciding:
+
+1. Create an authenticated dashboard route.
+2. Parse one search parameter.
+3. Load server data.
+4. Submit one mutation.
+5. Add a route-level error state.
+
+The framework whose code your team can explain most clearly after that exercise is usually the better fit.
+
+## Server ownership
+
+Both can use a framework-owned backend. That keeps one deployable application and removes cross-origin configuration between the web UI and its own operations.
+
+```txt
+Browser
+   ↓
+React framework
+   ├── routes and rendering
+   ├── auth/session boundary
+   ├── application operations
+   └── database adapter → PostgreSQL
+```
+
+This shape is valuable when the web app is the only meaningful client. If mobile apps, partners, or other services need a stable API, the framework comparison becomes secondary. You may want a separate Hono or other backend boundary instead; read [self backend vs separate API](/blog/self-backend-vs-separate-api/).
+
+## Data access does not belong in components
+
+Whichever framework you choose, keep database code behind server-only modules and use-case functions. “Fullstack React” is not permission to import the ORM everywhere.
+
+The framework should make server calls convenient. The application architecture should still keep auth, validation, operations, and persistence legible.
+
+For PostgreSQL with Drizzle, the [TanStack Start guide](/guides/typescript/tanstack-start-postgres-drizzle/) and [Next.js guide](/guides/typescript/nextjs-drizzle-better-auth/) show the same principle through different route systems.
+
+## Deployment is an input, not an afterthought
+
+Before selecting either framework, write down:
+
+- where the server runtime will run;
+- whether the database connection needs pooling;
+- where migrations execute;
+- whether auth callbacks use one stable public origin;
+- whether the host supports every runtime API the selected adapter uses;
+- how logs and failed deploys are inspected.
+
+Do not assume a framework name implies one hosting vendor. Evaluate the actual generated adapter and runtime target.
+
+## Decision table
+
+| If this is the stronger constraint | Start with |
+| --- | --- |
+| TanStack Router is the desired route model | TanStack Start |
+| Existing Next.js code and deployment knowledge | Next.js |
+| One web client, one deployment | Either framework-owned backend |
+| Stable API for multiple clients | Separate backend; then choose the web framework |
+| TypeScript schema-first SQL workflow | Either with Drizzle |
+| Prisma schema and client workflow | Either with Prisma, after verifying the exact selection |
+
+## A reversible way to decide
+
+Generate both projects. Inspect the route tree, server entry points, auth placement, database package, and deployment configuration. Do not compare empty hello-world pages; implement the same vertical slice.
+
+Better Fullstack publishes both exact records and lets you open their selections in the builder:
+
+- [TanStack Start + PostgreSQL + Drizzle + Better Auth](/stack/tanstack-start-postgres-drizzle-better-auth)
+- [Next.js + PostgreSQL + Drizzle + Better Auth](/stack/nextjs-drizzle-better-auth)
+- [Next.js + PostgreSQL + Prisma + Better Auth](/stack/nextjs-prisma-better-auth)
+
+The goal is not to predict every future requirement. It is to choose the boundary that makes today’s important work obvious and tomorrow’s likely changes possible.

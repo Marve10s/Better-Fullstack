@@ -1,0 +1,136 @@
+---
+title: Next.js with Prisma and Better Auth
+description: Scaffold a Next.js fullstack app with PostgreSQL, Prisma, Better Auth, tRPC, Tailwind CSS, and shadcn/ui, with clear server and database boundaries.
+updated: 2026-07-30
+image: /search-media/nextjs-fullstack-1200x630.png
+video: /search-media/nextjs-fullstack-1200x630.mp4
+translationStatus: pending
+category: TypeScript
+tags:
+  - nextjs
+  - prisma
+  - better-auth
+  - postgres
+keywords:
+  - nextjs prisma better auth
+  - nextjs prisma starter
+  - nextjs postgres boilerplate
+  - nextjs authentication starter
+  - nextjs fullstack template
+---
+
+This stack keeps UI, server routes, authentication, and application operations inside Next.js while using Prisma as the database access layer for PostgreSQL.
+
+![Next.js fullstack architecture with Prisma and Better Auth](/search-media/nextjs-fullstack-1200x630.png)
+
+<video controls muted playsInline preload="metadata" poster="/search-media/nextjs-fullstack-1200x630.png" src="/search-media/nextjs-fullstack-1200x630.mp4"></video>
+
+```bash
+bun create better-fullstack@latest my-next-app \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --runtime none \
+  --database postgres \
+  --orm prisma \
+  --auth better-auth \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+  --shadcn-base radix \
+  --shadcn-style nova \
+  --shadcn-icon-library lucide \
+  --shadcn-color-theme neutral \
+  --shadcn-base-color neutral \
+  --shadcn-font inter \
+  --shadcn-radius default
+```
+
+## What the generator owns
+
+- Next.js as both the React frontend and framework-owned server boundary.
+- Prisma schema and client wiring for PostgreSQL.
+- Better Auth integration on the server side.
+- tRPC procedures for typed application operations.
+- Tailwind CSS and shadcn/ui in the web app.
+- A reproducible configuration and generated workspace structure.
+
+See the exact [Next.js Prisma Better Auth template](/stack/nextjs-prisma-better-auth) for its current command, parameters, and output inventory.
+
+## Keep Prisma server-only
+
+React Server Components can make server and browser code look close together. The runtime boundary still matters. Keep Prisma client creation in server-only modules and expose use-case-shaped functions rather than importing the client broadly.
+
+```ts
+export async function getDashboardProjects(userId: string) {
+  return prisma.project.findMany({
+    where: { ownerId: userId },
+    orderBy: { updatedAt: "desc" },
+    select: { id: true, name: true, updatedAt: true },
+  });
+}
+```
+
+This query returns the fields the dashboard needs and makes ownership part of the query. It does not expose a generic `findMany` operation to the client.
+
+## Model auth relationships deliberately
+
+Let Better Auth own session and credential details. Product tables should reference the stable user identifier.
+
+```prisma
+model Project {
+  id        String   @id @default(cuid())
+  ownerId   String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ownerId])
+}
+```
+
+Whether you declare a direct relation to an auth-owned user model depends on the generated adapter schema and migration ownership. Avoid guessing; inspect the generated schema and decide which package owns changes.
+
+## Migration and deployment workflow
+
+Treat schema generation and migration application as different steps. A safe deployment pipeline usually:
+
+1. installs the exact locked dependencies;
+2. generates the Prisma client;
+3. builds and typechecks the application;
+4. applies reviewed production migrations;
+5. starts the new application version.
+
+Keep `DATABASE_URL`, auth secrets, and trusted callback origins out of public Next.js environment variables.
+
+## Prisma or Drizzle?
+
+Choose based on preferred schema and query workflow.
+
+| Preference | Prisma | Drizzle |
+| --- | --- | --- |
+| Schema source | Prisma schema language | TypeScript schema definitions |
+| Query style | Generated client API | SQL-oriented TypeScript API |
+| Migration workflow | Prisma tooling | Drizzle tooling |
+| Better Fullstack record | [Prisma template](/stack/nextjs-prisma-better-auth) | [Drizzle template](/stack/nextjs-drizzle-better-auth) |
+
+Neither choice removes the need for indexes, constraints, transactions, or reviewed migrations. For a longer decision framework, read [Drizzle vs Prisma for a fullstack starter](/blog/drizzle-vs-prisma/).
+
+## Compatibility notes
+
+<GuideCompatibilityNote
+  kind="supported"
+  title="Framework-owned stack"
+  items={[
+    "Next.js owns the server boundary through the self backend selection.",
+    "Prisma is scoped to that backend and PostgreSQL is the selected database.",
+    "Better Auth must use server-only secrets and the final deployment origin.",
+    "Compatibility checks do not replace a deployment-specific runtime smoke test.",
+  ]}
+/>
+
+## Next steps
+
+- Inspect the [Next.js Prisma template](/stack/nextjs-prisma-better-auth).
+- Compare [TanStack Start and Next.js](/blog/tanstack-start-vs-nextjs/).
+- Browse [all starter templates](/templates).

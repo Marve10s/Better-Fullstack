@@ -7,7 +7,8 @@
     "compositions": "remotion compositions src/index.ts",
     "render:campaign": "remotion render src/index.ts RunBeforeYouClone out/run-before-you-clone.mp4",
     "render:clips": "remotion render src/index.ts RunFeature out/run-feature.mp4 && remotion render src/index.ts EditFeature out/edit-feature.mp4 && remotion render src/index.ts DownloadFeature out/download-feature.mp4",
-    "render:og": "bun run scripts/render-og.ts"
+    "render:og": "bun run scripts/render-og.ts",
+    "render:search-media": "bun run scripts/render-search-media.ts"
   },
   "dependencies": {
     "@remotion/cli": "4.0.487",

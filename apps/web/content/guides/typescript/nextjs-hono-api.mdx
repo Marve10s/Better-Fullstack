@@ -1,0 +1,110 @@
+---
+title: Next.js with a Separate Hono API
+description: Scaffold Next.js with a separate Hono OpenAPI backend, PostgreSQL, and Drizzle when the web app and API need independent boundaries.
+updated: 2026-07-30
+image: /search-media/nextjs-fullstack-1200x630.png
+video: /search-media/nextjs-fullstack-1200x630.mp4
+translationStatus: pending
+category: TypeScript
+tags:
+  - nextjs
+  - hono
+  - openapi
+  - drizzle
+keywords:
+  - nextjs hono starter
+  - nextjs separate backend
+  - nextjs hono api
+  - nextjs openapi starter
+  - nextjs fullstack monorepo
+---
+
+Next.js can own server routes itself. A separate Hono API is still useful when the backend has other clients, a different deployment lifecycle, or an HTTP contract that should stand independently from the web framework.
+
+![Next.js web app with a separate Hono API service](/search-media/nextjs-fullstack-1200x630.png)
+
+```bash
+bun create better-fullstack@latest my-split-app \
+  --ecosystem typescript \
+  --frontend next \
+  --backend hono \
+  --runtime bun \
+  --database postgres \
+  --orm drizzle \
+  --api openapi \
+  --auth none
+```
+
+Inspect the generator-derived [Next.js Hono OpenAPI template](/stack/nextjs-hono-openapi-drizzle) before scaffolding.
+
+## The decision in one sentence
+
+Use Next.js server routes when they are implementation details of the web app. Use a separate Hono service when the API is a product boundary of its own.
+
+The split shape usually looks like:
+
+```txt
+my-split-app/
+  bts.jsonc
+  apps/
+    web/       # Next.js
+    server/    # Hono
+  packages/
+    db/
+    shared/
+```
+
+The generated file names may evolve. The primary ownership should not: Next.js renders the web experience, Hono owns public HTTP behavior, and Drizzle owns server-side PostgreSQL access.
+
+## Avoid a second backend by accident
+
+A common failure mode is generating Hono and then continuing to add business endpoints to Next.js route handlers. Decide what remains in Next.js:
+
+- rendering and page data that is private to the web experience;
+- callbacks that must terminate at the web deployment, when required;
+- thin proxy behavior only when there is a deliberate browser security reason.
+
+Put reusable business endpoints, public contracts, and multi-client operations in Hono. Document exceptions so the boundary stays comprehensible.
+
+## Configure origins once
+
+Create one validated server-only API origin for Next.js server calls and one public API origin only if the browser must call Hono directly. Browser access requires deliberate CORS and credential handling.
+
+```ts
+const apiOrigin = process.env.API_ORIGIN;
+if (!apiOrigin) throw new Error("API_ORIGIN is required");
+
+export async function getProjects() {
+  const response = await fetch(new URL("/projects", apiOrigin), { cache: "no-store" });
+  if (!response.ok) throw new Error(`Projects request failed: ${response.status}`);
+  return response.json();
+}
+```
+
+Do not pass internal service URLs or secrets into `NEXT_PUBLIC_*` variables.
+
+## Why this guide omits auth
+
+The sample uses `--auth none` so it does not silently choose between browser cookies, bearer tokens, and service credentials. Those models produce different cross-origin requirements. Add auth after deciding who calls the API.
+
+For a browser-first split app using cookie sessions, read [Hono with Better Auth](/guides/typescript/hono-better-auth/). For a framework-owned auth boundary, use [Next.js with Prisma and Better Auth](/guides/typescript/nextjs-prisma-better-auth/).
+
+## Deployment tradeoffs
+
+Two primary services mean two health checks, deployment targets, logs, and environment configurations. They also allow independent scaling and failure isolation. That tradeoff is worthwhile only when the boundary has a concrete purpose.
+
+<GuideCompatibilityNote
+  kind="supported"
+  title="Split application selection"
+  items={[
+    "Hono is selected as a standalone backend rather than the Next.js self backend.",
+    "OpenAPI is valid for the standalone Hono server and a web-only frontend selection.",
+    "PostgreSQL and Drizzle stay scoped to the backend service.",
+  ]}
+/>
+
+## Next steps
+
+- Read [self backend vs separate API](/blog/self-backend-vs-separate-api/).
+- Inspect the [Next.js + Hono template](/stack/nextjs-hono-openapi-drizzle).
+- Open [all fullstack starter templates](/templates).

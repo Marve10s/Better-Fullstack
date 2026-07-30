@@ -20,10 +20,10 @@ import {
 describe("programmatic stack pages", () => {
   const pages = getPublishedStackPages();
 
-  it("publishes 15 unique, compatibility-checked combinations", () => {
-    expect(pages).toHaveLength(15);
-    expect(new Set(pages.map((page) => page.slug)).size).toBe(15);
-    expect(new Set(pages.map((page) => page.contentHash)).size).toBe(15);
+  it("publishes 30 unique, compatibility-checked combinations", () => {
+    expect(pages).toHaveLength(30);
+    expect(new Set(pages.map((page) => page.slug)).size).toBe(30);
+    expect(new Set(pages.map((page) => page.contentHash)).size).toBe(30);
 
     for (const page of pages) {
       expect(page.status).toBe("published");
@@ -33,6 +33,21 @@ describe("programmatic stack pages", () => {
       expect(page.output.representativeFiles.length).toBeGreaterThan(0);
       expect(page.relatedSlugs).toHaveLength(3);
     }
+  });
+
+  it("covers the priority search clusters with distinct generated selections", () => {
+    const requiredSlugs = [
+      "tanstack-start-postgres-drizzle-better-auth",
+      "tanstack-router-hono-openapi-drizzle",
+      "nextjs-hono-openapi-drizzle",
+      "python-fastapi-postgres-sqlmodel",
+      "go-echo-postgres-sqlc",
+    ];
+
+    for (const slug of requiredSlugs) expect(getStackPage(slug)).toBeDefined();
+    expect(new Set(requiredSlugs.map((slug) => getStackPage(slug)?.contentHash)).size).toBe(
+      requiredSlugs.length,
+    );
   });
 
   it("uses the shared URL serializer and command generator", () => {

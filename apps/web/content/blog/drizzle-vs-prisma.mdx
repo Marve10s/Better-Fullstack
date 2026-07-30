@@ -1,0 +1,127 @@
+---
+title: "Drizzle vs Prisma for a fullstack starter"
+description: "Choose Drizzle or Prisma by schema ownership, query style, migration workflow, deployment constraints, and team habits—not by a generic winner."
+date: 2026-07-30
+authors:
+  - Ibrahim Elkamali
+image: /search-media/stack-decisions-1200x630.png
+video: /search-media/stack-decisions-1200x630.mp4
+translationStatus: pending
+tags:
+  - drizzle
+  - prisma
+  - database
+keywords:
+  - drizzle vs prisma
+  - drizzle or prisma nextjs
+  - typescript orm comparison
+  - fullstack database starter
+  - nextjs prisma drizzle
+---
+
+![Fullstack stack decision map for database tooling](/search-media/stack-decisions-1200x630.png)
+
+<video controls muted playsInline preload="metadata" poster="/search-media/stack-decisions-1200x630.png" src="/search-media/stack-decisions-1200x630.mp4"></video>
+
+Drizzle and Prisma both give TypeScript applications structured database access and migration tooling. They optimize for different authoring models.
+
+Drizzle keeps schema definitions and a SQL-oriented query API in TypeScript. Prisma centers a dedicated schema language and generated client. The best starter is the one whose source of truth your team will maintain carefully.
+
+## Compare the workflow, not the logo
+
+Before choosing, run the same change through both tools:
+
+1. Add a required project owner.
+2. Create a unique constraint.
+3. Generate a migration.
+4. Review the SQL.
+5. Write a filtered, paginated query.
+6. Test it against a real database.
+
+That exercise reveals more than an abstract feature list because it touches the work repeated over the life of the application.
+
+## Schema ownership
+
+With Drizzle, the TypeScript schema is close to the types and query builder used by application code.
+
+```ts
+export const projects = pgTable("projects", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  ownerId: text("owner_id").notNull(),
+  name: text("name").notNull(),
+});
+```
+
+With Prisma, the dedicated schema is the input for client generation.
+
+```prisma
+model Project {
+  id      String @id @default(cuid())
+  ownerId String
+  name    String
+
+  @@index([ownerId])
+}
+```
+
+Neither representation automatically produces a good database. Teams still need to understand indexes, nullability, referential actions, transactions, and the SQL emitted by migrations.
+
+## Query style
+
+Drizzle is attractive when developers want SQL concepts to remain visible in TypeScript. Prisma is attractive when developers prefer its generated model client and relation query conventions.
+
+Do not evaluate only simple CRUD. Test one transaction, one aggregate, one relation-heavy read, and one query where selecting too many columns would be costly.
+
+## Migration discipline matters more than generation speed
+
+For either tool:
+
+- commit migration files;
+- review destructive changes;
+- test migrations against production-like data volume;
+- separate application compatibility from destructive cleanup;
+- define who applies migrations during deployment;
+- keep backups and rollback strategy outside the ORM.
+
+The ORM generates a proposal. The database accepts the consequences.
+
+## Runtime and deployment constraints
+
+Check the generated client, database driver, connection pooling, and target runtime. Edge-style and short-lived runtimes can impose different connection constraints from a long-running server. Verify the exact deployment adapter rather than assuming every TypeScript runtime behaves alike.
+
+Better Fullstack’s stack records are compatibility and virtual-generation evidence. They deliberately do not claim that every combination has been runtime-smoked on every provider.
+
+## Decision table
+
+| Stronger preference | Start with |
+| --- | --- |
+| TypeScript schema and SQL-visible queries | Drizzle |
+| Dedicated schema and generated model client | Prisma |
+| Existing reviewed migrations in one tool | Keep that tool unless there is a concrete migration reason |
+| Team already knows one deeply | Usually that one |
+| Unsure | Implement one vertical slice in both generated starters |
+
+## Compare real generated stacks
+
+Next.js:
+
+- [Next.js + Drizzle + Better Auth](/stack/nextjs-drizzle-better-auth)
+- [Next.js + Prisma + Better Auth](/stack/nextjs-prisma-better-auth)
+
+TanStack Start:
+
+- [TanStack Start + PostgreSQL + Drizzle](/stack/tanstack-start-postgres-drizzle-better-auth)
+- [TanStack Start + SQLite + Prisma](/stack/tanstack-start-sqlite-prisma-better-auth)
+
+Hono:
+
+- [Hono + tRPC + Drizzle](/stack/tanstack-router-hono-trpc-drizzle)
+- [Hono + Prisma + Better Auth](/stack/tanstack-router-hono-prisma-better-auth)
+
+## The actual recommendation
+
+If the team is experienced with one tool, use that advantage unless a real requirement rules it out. If the team is undecided, generate two small projects and compare the exact schema, migration, query, test, and deploy loop.
+
+Then record the choice in the scaffold configuration and keep database access behind application operations. Switching ORMs later is possible; leaking either client through the entire codebase is what makes it expensive.
+
+See the [Next.js Prisma guide](/guides/typescript/nextjs-prisma-better-auth/) and [TanStack Start PostgreSQL guide](/guides/typescript/tanstack-start-postgres-drizzle/) for concrete project shapes.

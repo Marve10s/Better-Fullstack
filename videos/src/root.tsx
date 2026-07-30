@@ -10,6 +10,14 @@ import {
 } from "./campaign/video";
 import { OgCard, type OgCardProps } from "./campaign/og-card";
 import { OG_CARD_OUTPUTS } from "./campaign/og-outputs";
+import { SearchMediaStill, SearchMediaVideo } from "./search-media/search-media";
+import {
+  SEARCH_MEDIA_DURATION,
+  SEARCH_MEDIA_FPS,
+  SEARCH_MEDIA_HEIGHT,
+  SEARCH_MEDIA_SPECS,
+  SEARCH_MEDIA_WIDTH,
+} from "./search-media/specs";
 import { BF_COLORS } from "./styles";
 
 const icon = (slug: string, color: string) =>
@@ -241,6 +249,28 @@ export function RemotionRoot() {
           width={1200}
           height={630}
           defaultProps={props}
+        />
+      ))}
+      {SEARCH_MEDIA_SPECS.map((spec) => (
+        <Still
+          key={spec.stillId}
+          id={spec.stillId}
+          component={SearchMediaStill}
+          width={SEARCH_MEDIA_WIDTH}
+          height={SEARCH_MEDIA_HEIGHT}
+          defaultProps={{ spec }}
+        />
+      ))}
+      {SEARCH_MEDIA_SPECS.map((spec) => (
+        <Composition
+          key={spec.id}
+          id={spec.id}
+          component={SearchMediaVideo}
+          durationInFrames={SEARCH_MEDIA_DURATION}
+          fps={SEARCH_MEDIA_FPS}
+          width={SEARCH_MEDIA_WIDTH}
+          height={SEARCH_MEDIA_HEIGHT}
+          defaultProps={{ spec }}
         />
       ))}
     </>

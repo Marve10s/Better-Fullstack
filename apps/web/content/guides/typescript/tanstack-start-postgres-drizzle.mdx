@@ -1,0 +1,148 @@
+---
+title: TanStack Start with PostgreSQL and Drizzle
+description: Build a TanStack Start fullstack app with PostgreSQL, Drizzle, Better Auth, tRPC, Tailwind CSS, and shadcn/ui using one reproducible Better Fullstack command.
+updated: 2026-07-30
+image: /search-media/tanstack-start-fullstack-1200x630.png
+video: /search-media/tanstack-start-fullstack-1200x630.mp4
+translationStatus: pending
+category: TypeScript
+tags:
+  - tanstack-start
+  - postgres
+  - drizzle
+  - better-auth
+keywords:
+  - tanstack start postgres
+  - tanstack start drizzle
+  - tanstack start full stack
+  - tanstack start better auth
+  - tanstack start starter
+---
+
+Use this stack when TanStack Start should own the React UI and server boundary, while PostgreSQL provides the production data store. It keeps one application deployment without treating database code as route code.
+
+![TanStack Start fullstack architecture with PostgreSQL and Drizzle](/search-media/tanstack-start-fullstack-1200x630.png)
+
+<video controls muted playsInline preload="metadata" poster="/search-media/tanstack-start-fullstack-1200x630.png" src="/search-media/tanstack-start-fullstack-1200x630.mp4"></video>
+
+```bash
+bun create better-fullstack@latest my-tanstack-app \
+  --ecosystem typescript \
+  --frontend tanstack-start \
+  --backend self \
+  --runtime none \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+  --shadcn-base radix \
+  --shadcn-style nova \
+  --shadcn-icon-library lucide \
+  --shadcn-color-theme neutral \
+  --shadcn-base-color neutral \
+  --shadcn-font inter \
+  --shadcn-radius default
+```
+
+## What this creates
+
+- A TanStack Start app with file-based React routes and server functions.
+- PostgreSQL access through Drizzle rather than direct SQL inside route handlers.
+- Better Auth at the framework-owned server boundary.
+- A tRPC layer for typed application operations.
+- Tailwind CSS and shadcn/ui for the web interface.
+- `bts.jsonc`, which records the selected architecture for future changes.
+
+The generated selection is also available as the [TanStack Start PostgreSQL template](/stack/tanstack-start-postgres-drizzle-better-auth).
+
+## Architecture boundary
+
+This is one deployable app inside a generated workspace. “Single app” does not mean every concern belongs in one package. Keep request parsing in routes or server functions, database access in the shared database package, and auth session resolution at the server edge.
+
+```txt
+my-tanstack-app/
+  package.json
+  apps/
+    web/
+      src/
+        routes/
+        components/
+        functions/
+        middleware/
+  packages/
+    api/
+    auth/
+    db/
+    env/
+```
+
+TanStack Start owns rendering and request handling. Drizzle owns schema and queries. PostgreSQL owns durable relational state. That separation makes it possible to test application operations without coupling every test to a route component.
+
+## PostgreSQL configuration
+
+Keep the database URL server-only. A representative environment value looks like:
+
+```bash
+DATABASE_URL="postgresql://app:password@localhost:5432/app"
+```
+
+Use a separate database or schema for automated tests. In deployed environments, confirm whether the provider expects pooled and direct connection URLs; migrations often need a direct connection even when application traffic uses a pooler.
+
+Drizzle schema files should describe product data explicitly:
+
+```ts
+import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+
+export const projects = pgTable("projects", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  ownerId: text("owner_id").notNull(),
+  name: text("name").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+```
+
+Reference the auth user identifier from product tables. Do not duplicate password, session, or verification state into your own project schema.
+
+## Server operation pattern
+
+Use narrow operations that parse input, resolve the current user, and call the data layer. Avoid exporting a generic database client to browser code.
+
+```ts
+import { z } from "zod";
+
+const createProjectInput = z.object({ name: z.string().trim().min(2).max(80) });
+
+export async function createProject(rawInput: unknown, ownerId: string) {
+  const input = createProjectInput.parse(rawInput);
+  return { ownerId, name: input.name };
+}
+```
+
+## When to choose PostgreSQL instead of SQLite
+
+Choose PostgreSQL when the deployed app needs a managed network database, concurrent writers, mature backup tooling, or extensions. SQLite is often simpler for local-first or single-instance deployments with persistent disk.
+
+This is an operational choice, not a quality ranking. The existing [TanStack Start project guide](/guides/typescript/create-tanstack-start-project/) uses SQLite to optimize the local loop. This guide uses PostgreSQL to make the production database boundary explicit.
+
+## Compatibility and deployment notes
+
+<GuideCompatibilityNote
+  kind="supported"
+  title="Validated selection"
+  items={[
+    "TanStack Start uses its framework-owned self backend, so no separate Hono process is generated.",
+    "PostgreSQL and Drizzle are selected together and pass the generator's compatibility checks.",
+    "Better Auth secrets and database credentials must remain server-only.",
+    "The generated page records compatibility and virtual output; it does not claim a runtime smoke test for every deployment provider.",
+  ]}
+/>
+
+Run migrations as an explicit deployment step. Set the public application origin used by auth callbacks, and verify secure cookie behavior on the final HTTPS domain.
+
+## Next steps
+
+- Inspect the exact [generated template record](/stack/tanstack-start-postgres-drizzle-better-auth).
+- Compare [TanStack Start and Next.js](/blog/tanstack-start-vs-nextjs/).
+- Open the [visual builder](/new?fe-w=tanstack-start&rt=none&be=self-tanstack-start&db=postgres).

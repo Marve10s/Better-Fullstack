@@ -1,0 +1,124 @@
+---
+title: FastAPI with PostgreSQL and SQLModel
+description: Scaffold a FastAPI API with PostgreSQL, SQLModel, Pydantic, Ruff, and pytest using Better Fullstack, with explicit model and migration boundaries.
+updated: 2026-07-30
+image: /search-media/stack-decisions-1200x630.png
+video: /search-media/stack-decisions-1200x630.mp4
+translationStatus: pending
+category: Python
+tags:
+  - fastapi
+  - postgres
+  - sqlmodel
+  - pytest
+keywords:
+  - fastapi sqlmodel starter
+  - fastapi sqlmodel postgres
+  - python api starter
+  - fastapi postgres template
+  - sqlmodel boilerplate
+---
+
+Use SQLModel with FastAPI when you want SQLAlchemy-backed persistence and Pydantic-shaped models to sit close together in a compact Python API service.
+
+![Better Fullstack cross-ecosystem starter decision map](/search-media/stack-decisions-1200x630.png)
+
+```bash
+bun create better-fullstack@latest my-fastapi-app \
+  --ecosystem python \
+  --python-web-framework fastapi \
+  --database postgres \
+  --python-orm sqlmodel \
+  --python-validation pydantic \
+  --python-quality ruff \
+  --python-testing pytest
+```
+
+The [FastAPI PostgreSQL SQLModel template](/stack/python-fastapi-postgres-sqlmodel) records the exact normalized selection and generated files.
+
+## Generated responsibility map
+
+- FastAPI owns HTTP routing and dependency injection.
+- SQLModel describes database-backed models and query sessions.
+- PostgreSQL owns durable relational data.
+- Pydantic validates data at the API edge.
+- Ruff and pytest provide fast quality checks.
+- `uv` is the default generated Python package manager.
+
+Keep route functions small. Put session management in a dependency and persistence behavior in narrow repository or service functions.
+
+```python
+from collections.abc import Generator
+
+from sqlmodel import Session
+
+
+def get_session() -> Generator[Session, None, None]:
+    with Session(engine) as session:
+        yield session
+```
+
+## Table models and public schemas
+
+SQLModel makes it possible to share fields, but a database table and a public response are not automatically the same contract. Separate creation and response schemas when fields have different trust levels.
+
+```python
+from sqlmodel import Field, SQLModel
+
+
+class ProjectBase(SQLModel):
+    name: str = Field(min_length=2, max_length=80)
+
+
+class Project(ProjectBase, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    owner_id: str = Field(index=True)
+
+
+class ProjectCreate(ProjectBase):
+    pass
+
+
+class ProjectPublic(ProjectBase):
+    id: int
+```
+
+Do not accept `owner_id` from a browser payload. Resolve it from authentication when auth is added.
+
+## PostgreSQL and migrations
+
+Set the deployed `DATABASE_URL` explicitly and use Alembic migrations as reviewed schema history. Creating tables at startup is convenient for a local demonstration but is not a substitute for production migrations.
+
+```bash
+uv run alembic upgrade head
+uv run pytest
+uv run ruff check .
+```
+
+Use a separate database or transaction strategy for tests. Assertions should cover status codes and response contracts as well as persistence behavior.
+
+## SQLModel or SQLAlchemy?
+
+SQLModel reduces repetition for conventional CRUD-shaped APIs. SQLAlchemy is the more direct choice when the domain uses advanced mappings or when the team wants persistence models clearly separate from validation schemas.
+
+| Decision | SQLModel | SQLAlchemy |
+| --- | --- | --- |
+| Model style | Pydantic and SQLAlchemy concepts combined | Explicit ORM mapping, separate Pydantic schemas |
+| Best fit | Compact services and straightforward resources | Complex persistence models and established SQLAlchemy patterns |
+| Template | [SQLModel starter](/stack/python-fastapi-postgres-sqlmodel) | [SQLAlchemy starter](/stack/python-fastapi-postgres-sqlalchemy) |
+
+<GuideCompatibilityNote
+  kind="supported"
+  title="Python API selection"
+  items={[
+    "FastAPI, PostgreSQL, SQLModel, Pydantic, Ruff, and pytest pass the generator's selected-option checks.",
+    "The generated record validates the project graph and virtual output, not a live PostgreSQL deployment.",
+    "Authentication is intentionally omitted until the caller and token or session model are known.",
+  ]}
+/>
+
+## Next steps
+
+- Inspect the [SQLModel template record](/stack/python-fastapi-postgres-sqlmodel).
+- Compare the existing [FastAPI SQLAlchemy guide](/guides/python/fastapi-postgres-sqlalchemy/).
+- Browse [all starter templates](/templates).

@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="92" height="92" viewBox="0 0 92 92" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect x="4" y="4" width="84" height="84" rx="8" fill="#0a0a0a"/>
-  <text x="46" y="62" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="42" fill="#ffffff">BF</text>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>Better Fullstack</title>
+  <rect width="512" height="512" rx="84" fill="#0E0E10"/>
+  <path
+    fill-rule="evenodd"
+    clip-rule="evenodd"
+    d="M88 88H220L288 156V220L252 256L288 292V356L220 424H88V88ZM160 160V224H220V160H160ZM160 288V352H220V288H160Z"
+    fill="#F2EEEE"
+  />
+  <path
+    d="M280 148H424V220H336V260H408V332H336V424H264V304L216 256L264 208V148H280Z"
+    fill="#C6E853"
+    stroke="#0E0E10"
+    stroke-width="8"
+    stroke-linejoin="miter"
+  />
 </svg>

@@ -118,9 +118,13 @@ export const Route = createRootRoute({
         { name: "twitter:image:alt", content: DEFAULT_OG_IMAGE_ALT },
       ],
       links: [
+        { rel: "icon", href: "/favicon.ico", sizes: "32x32" },
         { rel: "icon", href: "/favicon/favicon.svg", type: "image/svg+xml" },
+        { rel: "icon", href: "/favicon/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+        { rel: "icon", href: "/favicon/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+        { rel: "icon", href: "/favicon/favicon-48x48.png", sizes: "48x48", type: "image/png" },
         { rel: "icon", href: "/favicon/favicon-96x96.png", sizes: "96x96", type: "image/png" },
-        { rel: "apple-touch-icon", href: "/favicon/apple-touch-icon.png" },
+        { rel: "apple-touch-icon", href: "/favicon/apple-touch-icon.png", sizes: "180x180" },
         { rel: "manifest", href: "/favicon/site.webmanifest" },
         {
           rel: "preload",
