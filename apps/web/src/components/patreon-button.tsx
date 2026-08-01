@@ -1,6 +1,39 @@
 import { TbHeart as Heart } from "react-icons/tb";
 
+import { cn } from "@/lib/utils";
+
 const PATREON_URL = "https://www.patreon.com/cw/marve10s";
+
+// Spider-Man: Brand New Day campaign skin — set to false to restore the heart.
+const SPIDER_DAY: boolean = true;
+
+function SpiderFace({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 48 48" aria-hidden="true" className={className}>
+      <g stroke="#140f0f" strokeWidth="0.8" opacity="0.45" fill="none">
+        {Array.from({ length: 12 }, (_, i) => {
+          const a = (i * Math.PI) / 6;
+          return (
+            <line
+              key={a}
+              x1="24"
+              y1="24"
+              x2={Number((24 + 26 * Math.cos(a)).toFixed(1))}
+              y2={Number((24 + 26 * Math.sin(a)).toFixed(1))}
+            />
+          );
+        })}
+        <circle cx="24" cy="24" r="7.5" />
+        <circle cx="24" cy="24" r="14" />
+        <circle cx="24" cy="24" r="20.5" />
+      </g>
+      <g fill="#fff" stroke="#140f0f" strokeWidth="2.2" strokeLinejoin="round">
+        <path d="M21.5 32C13 30 5.5 24 4.8 18C4.4 14.2 8 12.4 12 14.6C17.5 17.8 21 24.5 21.5 32Z" />
+        <path d="M26.5 32C35 30 42.5 24 43.2 18C43.6 14.2 40 12.4 36 14.6C30.5 17.8 27 24.5 26.5 32Z" />
+      </g>
+    </svg>
+  );
+}
 
 // Official Patreon logomark (the column + circle), drawn as a single path so it
 // inherits currentColor and stays crisp at any size.
@@ -44,14 +77,23 @@ export function PatreonButton() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Support us on Patreon"
-        className="flex h-12 items-center overflow-hidden rounded-full border border-border bg-foreground text-background shadow-2xl shadow-black/10 outline-none transition-[background-color,box-shadow] duration-300 group-hover:bg-[#ff424d] group-hover:text-white group-focus-within:bg-[#ff424d] group-focus-within:text-white focus-visible:ring-2 focus-visible:ring-[#ff424d]/40"
+        className={cn(
+          "flex h-12 items-center overflow-hidden rounded-full border shadow-2xl shadow-black/10 outline-none transition-[background-color,box-shadow] duration-300 group-hover:bg-[#ff424d] group-hover:text-white group-focus-within:bg-[#ff424d] group-focus-within:text-white focus-visible:ring-2 focus-visible:ring-[#ff424d]/40",
+          SPIDER_DAY
+            ? "border-black/25 bg-[#e62429] text-white"
+            : "border-border bg-foreground text-background",
+        )}
       >
         <span className="relative flex size-12 shrink-0 items-center justify-center">
-          <Heart
-            className="size-5 transition-all duration-300 group-hover:scale-50 group-hover:opacity-0 group-focus-within:scale-50 group-focus-within:opacity-0"
-            fill="currentColor"
-            aria-hidden="true"
-          />
+          {SPIDER_DAY ? (
+            <SpiderFace className="absolute inset-0 size-full transition-all duration-300 group-hover:scale-50 group-hover:opacity-0 group-focus-within:scale-50 group-focus-within:opacity-0" />
+          ) : (
+            <Heart
+              className="size-5 transition-all duration-300 group-hover:scale-50 group-hover:opacity-0 group-focus-within:scale-50 group-focus-within:opacity-0"
+              fill="currentColor"
+              aria-hidden="true"
+            />
+          )}
           <PatreonMark className="absolute size-5 scale-50 opacity-0 transition-all duration-300 group-hover:scale-100 group-hover:opacity-100 group-focus-within:scale-100 group-focus-within:opacity-100" />
         </span>
         <span

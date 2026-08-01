@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages.js";
 
 import PackageIcon from "./icons";
+import { SpiderDaySurprises, ThwipBurst } from "./spider-day-surprises";
 
 const PMS = ["bun", "pnpm", "npm", "yarn"] as const;
 type PM = (typeof PMS)[number];
@@ -137,10 +138,11 @@ export default function HeroSection() {
               onClick={copy}
               aria-label={m.homeCopyCommand()}
               className={cn(
-                "flex size-8 cursor-pointer items-center justify-center rounded-md bg-transparent transition-colors active:translate-y-[1px]",
+                "relative flex size-8 cursor-pointer items-center justify-center rounded-md bg-transparent transition-colors active:translate-y-[1px]",
                 copied ? "text-ink dark:text-brand" : "text-soft",
               )}
             >
+              <ThwipBurst show={copied} />
               {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
             </button>
           </div>
@@ -154,6 +156,8 @@ export default function HeroSection() {
         >
           <AsciiHeroBackground className="size-full" variant="stack" />
         </div>
+
+        <SpiderDaySurprises />
 
         <motion.h1
           initial={{ opacity: 0, y: 16 }}
