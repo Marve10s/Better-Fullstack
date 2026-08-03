@@ -72,6 +72,16 @@ function finishSpan(event: object, statusCode: number, error?: unknown): void {
   span.end();
 }
 
+function getErrorStatusCode(error: unknown): number {
+  if (typeof error !== "object" || error === null) return 500;
+
+  for (const key of ["statusCode", "status"] as const) {
+    const value = Reflect.get(error, key);
+    if (typeof value === "number" && value >= 400 && value <= 599) return value;
+  }
+  return 500;
+}
+
 export default defineNitroPlugin((nitroApp) => {
   const handleRequest = nitroApp.h3App.handler;
   nitroApp.h3App.handler = async (event) => {
@@ -91,15 +101,24 @@ export default defineNitroPlugin((nitroApp) => {
     );
     requestSpans.set(event, span);
     const requestContext = trace.setSpan(parentContext, span);
+    let requestError: unknown;
+    const endRequestSpan = () => {
+      const responseStatus = event.node.res.statusCode;
+      const statusCode =
+        requestError === undefined || responseStatus >= 400
+          ? responseStatus
+          : getErrorStatusCode(requestError);
+      context.with(requestContext, () => finishSpan(event, statusCode, requestError));
+    };
+    event.node.res.once("finish", endRequestSpan);
+    event.node.res.once("close", endRequestSpan);
 
     return context.with(requestContext, async () => {
       try {
         return await handleRequest(event);
       } catch (error) {
-        finishSpan(event, event.node.res.statusCode || 500, error);
+        requestError = error;
         throw error;
-      } finally {
-        finishSpan(event, event.node.res.statusCode);
       }
     });
   };

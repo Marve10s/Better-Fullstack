@@ -191,6 +191,10 @@ describe("Observability Configurations", () => {
         expect(plugin).toContain("trace.setSpan(parentContext, span)");
         expect(plugin).toContain("context.with(requestContext");
         expect(plugin).toContain("await handleRequest(event)");
+        expect(plugin).toContain('event.node.res.once("finish", endRequestSpan)');
+        expect(plugin).toContain('event.node.res.once("close", endRequestSpan)');
+        expect(plugin).toContain('for (const key of ["statusCode", "status"] as const)');
+        expect(plugin).toContain("getErrorStatusCode(requestError)");
         expect(plugin).toContain("requestSpans.delete(event)");
       }
     });
