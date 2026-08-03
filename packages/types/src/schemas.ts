@@ -51,6 +51,7 @@ export const StackPartRoleSchema = z
     "payments",
     "logging",
     "featureFlags",
+    "ecommerce",
     "analytics",
     "cms",
     "i18n",
@@ -423,6 +424,8 @@ export const ObservabilitySchema = z
 export const FeatureFlagsSchema = z
   .enum(["growthbook", "posthog", "launchdarkly", "flagsmith", "unleash", "none"])
   .describe("Feature flags provider for A/B testing and feature management");
+
+export const EcommerceSchema = z.enum(["medusa", "none"]).describe("E-commerce platform SDK");
 
 export const AnalyticsSchema = z
   .enum(["plausible", "umami", "posthog", "ga4", "none"])
@@ -1120,6 +1123,7 @@ export const CreateInputSchema = z.object({
   logging: LoggingSchema.optional(),
   observability: ObservabilitySchema.optional(),
   featureFlags: FeatureFlagsSchema.optional(),
+  ecommerce: EcommerceSchema.optional(),
   analytics: AnalyticsSchema.optional(),
   cms: CMSSchema.optional(),
   caching: CachingSchema.optional(),
@@ -1310,6 +1314,7 @@ export const ProjectConfigSchema = z.object({
   logging: LoggingSchema,
   observability: ObservabilitySchema,
   featureFlags: FeatureFlagsSchema,
+  ecommerce: EcommerceSchema.default("none"),
   analytics: AnalyticsSchema,
   cms: CMSSchema,
   caching: CachingSchema,
@@ -1487,6 +1492,7 @@ export const BetterTStackConfigSchema = z.object({
   logging: LoggingSchema,
   observability: ObservabilitySchema,
   featureFlags: FeatureFlagsSchema,
+  ecommerce: EcommerceSchema.default("none"),
   analytics: AnalyticsSchema,
   cms: CMSSchema,
   caching: CachingSchema,
@@ -1677,6 +1683,7 @@ export const FILE_UPLOAD_VALUES = FileUploadSchema.options;
 export const LOGGING_VALUES = LoggingSchema.options;
 export const OBSERVABILITY_VALUES = ObservabilitySchema.options;
 export const FEATURE_FLAGS_VALUES = FeatureFlagsSchema.options;
+export const ECOMMERCE_VALUES = EcommerceSchema.options;
 export const ANALYTICS_VALUES = AnalyticsSchema.options;
 export const MOBILE_NAVIGATION_VALUES = MobileNavigationSchema.options;
 export const MOBILE_UI_VALUES = MobileUISchema.options;

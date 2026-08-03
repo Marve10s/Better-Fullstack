@@ -637,6 +637,24 @@ describe("compatibility issue helpers", () => {
     expect(result.adjustedStack.nativeFrontend).toEqual(["native-bare"]);
   });
 
+  it("clears e-commerce when normalizing React Native stacks", () => {
+    const result = analyzeStackCompatibility({
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "react-native",
+      webFrontend: ["none"],
+      nativeFrontend: ["native-bare"],
+      backend: "hono",
+      ecommerce: "medusa",
+    });
+
+    expect(result.adjustedStack.backend).toBe("none");
+    expect(result.adjustedStack.ecommerce).toBe("none");
+    expect(result.changes).toContainEqual({
+      category: "ecommerce",
+      message: "E-commerce set to 'None' (React Native ecosystem)",
+    });
+  });
+
   it("routes promoted backend library disabled reasons through graph checks", () => {
     expect(
       getDisabledReason(

@@ -332,6 +332,12 @@ export const CLI_FLAG_GROUP_DEFINITIONS: readonly CliFlagGroupDefinition[] = [
         configKey: "featureFlags",
       },
       {
+        flag: "ecommerce",
+        summary: "E-commerce platform SDK.",
+        source: { kind: "category", category: "ecommerce" },
+        configKey: "ecommerce",
+      },
+      {
         flag: "vector-db",
         summary: "Vector database.",
         source: { kind: "category", category: "vectorDb" },
