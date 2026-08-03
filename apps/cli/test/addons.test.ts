@@ -251,6 +251,40 @@ describe("Addon Configurations", () => {
       expect(packageJson).not.toContain('"**/*.{js,mjs,cjs,jsx,ts,mts,cts,tsx,vue,astro,svelte}": ""');
     });
 
+    it("refreshes existing Lefthook config when a linter is added later", async () => {
+      const result = await runTRPCTest({
+        projectName: "linter-added-after-lefthook",
+        addons: ["lefthook"],
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "trpc",
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      await setupAddons(
+        {
+          ...result.result!.projectConfig,
+          projectDir: result.projectDir!,
+          addons: ["lefthook", "biome"],
+        },
+        ["biome"],
+      );
+
+      const lefthook = readFileSync(join(result.projectDir!, "lefthook.yml"), "utf-8");
+      expect(lefthook).toContain("name: biome");
+      expect(lefthook).toContain("biome check --write");
+      expect(lefthook).not.toContain("Add your pre-commit commands here");
+    });
+
     it("does not treat a commented Husky command as configured", async () => {
       const result = await runTRPCTest({
         projectName: "gitleaks-commented-husky",
