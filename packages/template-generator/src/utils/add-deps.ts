@@ -32,9 +32,9 @@ export const dependencyVersionMap = {
   "@better-auth/prisma-adapter": "^1.6.22",
   "@better-auth/mongo-adapter": "^1.6.22",
 
-  "@clerk/nextjs": "^7.6.1",
+  "@clerk/nextjs": "^7.6.4",
   "@clerk/clerk-react": "^5.61.3",
-  "@clerk/tanstack-react-start": "^1.4.23",
+  "@clerk/tanstack-react-start": "^1.4.26",
   "@clerk/clerk-expo": "^2.19.31",
 
   // Auth.js (NextAuth v5)
@@ -47,12 +47,12 @@ export const dependencyVersionMap = {
   "@stackframe/stack": "^2.8.108",
 
   // Supabase Auth
-  "@supabase/supabase-js": "^2.110.8",
-  "@supabase/ssr": "^0.12.3",
+  "@supabase/supabase-js": "^2.111.0",
+  "@supabase/ssr": "^0.12.4",
 
   // Auth0 v4 handles auth routes through middleware and the Auth0Client.
   "@auth0/nextjs-auth0": "^4.23.0",
-  "@workos-inc/authkit-nextjs": "^4.3.0",
+  "@workos-inc/authkit-nextjs": "^4.3.1",
   "@kinde-oss/kinde-auth-nextjs": "^2.13.0",
 
   "drizzle-orm": "^0.45.2",
@@ -64,23 +64,23 @@ export const dependencyVersionMap = {
 
   "@neondatabase/serverless": "^1.1.0",
   pg: "^8.22.0",
-  "@types/pg": "^8.20.0",
+  "@types/pg": "^8.20.3",
   "@types/ws": "^8.18.1",
   ws: "^8.21.1",
 
-  mysql2: "^3.23.1",
+  mysql2: "^3.23.2",
 
-  "@prisma/client": "^7.9.0",
-  prisma: "^7.9.0",
-  "@prisma/adapter-d1": "^7.9.0",
-  "@prisma/adapter-neon": "^7.9.0",
-  "@prisma/adapter-mariadb": "^7.9.0",
-  "@prisma/adapter-libsql": "^7.9.0",
-  "@prisma/adapter-better-sqlite3": "^7.9.0",
-  "@prisma/adapter-pg": "^7.9.0",
-  "@prisma/adapter-planetscale": "^7.9.0",
+  "@prisma/client": "^7.9.1",
+  prisma: "^7.9.1",
+  "@prisma/adapter-d1": "^7.9.1",
+  "@prisma/adapter-neon": "^7.9.1",
+  "@prisma/adapter-mariadb": "^7.9.1",
+  "@prisma/adapter-libsql": "^7.9.1",
+  "@prisma/adapter-better-sqlite3": "^7.9.1",
+  "@prisma/adapter-pg": "^7.9.1",
+  "@prisma/adapter-planetscale": "^7.9.1",
 
-  mongoose: "^9.8.0",
+  mongoose: "^9.9.1",
 
   // TypeORM
   typeorm: "^1.1.0",
@@ -91,10 +91,10 @@ export const dependencyVersionMap = {
   kysely: "^0.29.4",
 
   // MikroORM
-  "@mikro-orm/core": "^7.1.7",
-  "@mikro-orm/sqlite": "^7.1.7",
-  "@mikro-orm/postgresql": "^7.1.7",
-  "@mikro-orm/mysql": "^7.1.7",
+  "@mikro-orm/core": "^7.1.9",
+  "@mikro-orm/sqlite": "^7.1.9",
+  "@mikro-orm/postgresql": "^7.1.9",
+  "@mikro-orm/mysql": "^7.1.9",
   "@mikro-orm/better-sqlite": "^6.6.14",
 
   // Sequelize
@@ -108,18 +108,18 @@ export const dependencyVersionMap = {
   "@tauri-apps/cli": "^2.11.4",
   "@tauri-apps/api": "^2.11.1",
 
-  "@biomejs/biome": "^2.5.5",
+  "@biomejs/biome": "^2.5.6",
   ultracite: "^7.9.4",
 
-  oxlint: "^1.75.0",
+  oxlint: "^1.76.0",
   oxfmt: "^0.56.0",
 
   husky: "^9.1.7",
   lefthook: "^2.1.10",
-  "lint-staged": "^17.2.0",
+  "lint-staged": "^17.3.0",
 
   tsx: "^4.23.1",
-  "@types/node": "^26.1.1",
+  "@types/node": "^26.1.2",
 
   "@types/bun": "^1.3.14",
 
@@ -130,13 +130,13 @@ export const dependencyVersionMap = {
   "@elysiajs/trpc": "^1.1.0",
   elysia: "^1.4.29",
 
-  "@hono/node-server": "^2.0.11",
+  "@hono/node-server": "^2.0.12",
   "@hono/trpc-server": "^0.4.2",
   "@hono/zod-openapi": "^1.5.1",
   hono: "^4.12.27",
   "@netlify/functions": "^5.3.0",
   "@octokit/rest": "^22.0.1",
-  "@vercel/sandbox": "^2.9.0",
+  "@vercel/sandbox": "^2.9.2",
   vercel: "^54.18.2",
   "@sveltejs/adapter-vercel": "^6.3.4",
   "bash-tool": "^1.3.18",
@@ -146,7 +146,7 @@ export const dependencyVersionMap = {
   "@types/express": "^5.0.6",
   "@types/cors": "^2.8.19",
 
-  fastify: "^5.10.0",
+  fastify: "^5.11.0",
   "@fastify/cors": "^11.3.0",
   "@fastify/swagger": "^9.8.1",
   "fastify-type-provider-zod": "^7.0.0",
@@ -174,29 +174,29 @@ export const dependencyVersionMap = {
   fets: "^0.8.7",
 
   turbo: "^2.10.0",
-  nx: "^23.1.0",
+  nx: "^23.1.1",
 
   // Chat SDK (Vercel)
-  chat: "^4.35.0",
-  "@chat-adapter/slack": "^4.35.0",
-  "@chat-adapter/discord": "^4.35.0",
-  "@chat-adapter/github": "^4.35.0",
-  "@chat-adapter/state-memory": "^4.35.0",
-  "@chat-adapter/state-redis": "^4.35.0",
+  chat: "^4.36.0",
+  "@chat-adapter/slack": "^4.36.0",
+  "@chat-adapter/discord": "^4.36.0",
+  "@chat-adapter/github": "^4.36.0",
+  "@chat-adapter/state-memory": "^4.36.0",
+  "@chat-adapter/state-redis": "^4.36.0",
 
-  ai: "^7.0.37",
-  "@ai-sdk/anthropic": "^4.0.20",
-  "@ai-sdk/google": "^4.0.24",
-  "@ai-sdk/vue": "^4.0.37",
-  "@ai-sdk/svelte": "^5.0.37",
-  "@ai-sdk/react": "^4.0.40",
-  "@ai-sdk/devtools": "^1.0.7",
+  ai: "^7.0.47",
+  "@ai-sdk/anthropic": "^4.0.27",
+  "@ai-sdk/google": "^4.0.31",
+  "@ai-sdk/vue": "^4.0.47",
+  "@ai-sdk/svelte": "^5.0.47",
+  "@ai-sdk/react": "^4.0.50",
+  "@ai-sdk/devtools": "^1.0.9",
   streamdown: "^2.5.0",
-  shiki: "^4.3.1",
+  shiki: "^4.4.1",
 
   // Mastra AI Framework
-  mastra: "^1.20.1",
-  "@mastra/core": "^1.52.1",
+  mastra: "^1.21.0",
+  "@mastra/core": "^1.55.0",
 
   // VoltAgent AI Framework
   "@voltagent/core": "^2.9.0",
@@ -206,7 +206,7 @@ export const dependencyVersionMap = {
 
   // LangGraph.js AI Framework
   "@langchain/langgraph": "^1.4.8",
-  "@langchain/core": "^1.2.3",
+  "@langchain/core": "^1.2.4",
   "@langchain/google-genai": "^2.2.0",
 
   // OpenAI Agents SDK
@@ -215,7 +215,7 @@ export const dependencyVersionMap = {
   "@anthropic-ai/sdk": "^0.110.0",
 
   // Google ADK (Agent Development Kit)
-  "@google/adk": "^1.4.0",
+  "@google/adk": "^1.5.0",
 
   // ModelFusion AI Library
   modelfusion: "^0.137.0",
@@ -229,11 +229,11 @@ export const dependencyVersionMap = {
   // AI CLI
   "ai-cli": "^0.3.1",
 
-  "@orpc/server": "^1.14.8",
-  "@orpc/client": "^1.14.8",
-  "@orpc/openapi": "^1.14.8",
-  "@orpc/zod": "^1.14.8",
-  "@orpc/tanstack-query": "^1.14.8",
+  "@orpc/server": "^1.14.13",
+  "@orpc/client": "^1.14.13",
+  "@orpc/openapi": "^1.14.13",
+  "@orpc/zod": "^1.14.13",
+  "@orpc/tanstack-query": "^1.14.13",
 
   // ts-rest
   "@ts-rest/core": "^3.52.1",
@@ -260,17 +260,17 @@ export const dependencyVersionMap = {
 
   // OpenAPI
   "@asteasolutions/zod-to-openapi": "^8.5.0",
-  "@scalar/express-api-reference": "^0.10.11",
-  "@scalar/fastify-api-reference": "^1.63.0",
-  "@scalar/hono-api-reference": "^0.11.11",
+  "@scalar/express-api-reference": "^0.10.12",
+  "@scalar/fastify-api-reference": "^1.64.0",
+  "@scalar/hono-api-reference": "^0.11.12",
 
   "@trpc/tanstack-react-query": "^11.18.0",
   "@trpc/server": "^11.18.0",
   "@trpc/client": "^11.18.0",
 
-  next: "^16.2.10",
+  next: "^16.2.12",
 
-  convex: "^1.42.3",
+  convex: "^1.43.0",
   "@convex-dev/react-query": "^0.1.0",
   "@convex-dev/agent": "^0.6.4",
   "@convex-dev/polar": "^0.9.2",
@@ -304,10 +304,10 @@ export const dependencyVersionMap = {
   "@tanstack/angular-table": "^8.21.4",
 
   // TanStack Virtual adapters
-  "@tanstack/react-virtual": "^3.14.8",
-  "@tanstack/vue-virtual": "^3.13.34",
-  "@tanstack/svelte-virtual": "^3.13.34",
-  "@tanstack/solid-virtual": "^3.13.35",
+  "@tanstack/react-virtual": "^3.14.9",
+  "@tanstack/vue-virtual": "^3.13.35",
+  "@tanstack/svelte-virtual": "^3.13.35",
+  "@tanstack/solid-virtual": "^3.13.36",
   "@tanstack/angular-virtual": "^5.0.8",
 
   // TanStack DB adapters (each adapter has its own versioning)
@@ -327,8 +327,8 @@ export const dependencyVersionMap = {
   "@tanstack/ai-react": "^0.16.4",
   "@tanstack/ai-solid": "^0.14.3",
 
-  wrangler: "^4.114.0",
-  "@cloudflare/vite-plugin": "^1.47.0",
+  wrangler: "^4.118.0",
+  "@cloudflare/vite-plugin": "^1.50.0",
   "@opennextjs/cloudflare": "^1.20.2",
   "nitro-cloudflare-dev": "^0.2.2",
   "@sveltejs/adapter-cloudflare": "^7.2.9",
@@ -339,8 +339,8 @@ export const dependencyVersionMap = {
 
   // SST (Serverless Stack)
   sst: "^4.17.1",
-  "aws-cdk-lib": "^2.262.1",
-  constructs: "^10.7.1",
+  "aws-cdk-lib": "^2.263.0",
+  constructs: "^10.7.2",
   "@opennextjs/aws": "^4.1.0",
 
   dotenv: "^17.4.2",
@@ -356,29 +356,29 @@ export const dependencyVersionMap = {
   "@polar-sh/sdk": "^0.48.1",
 
   // Email
-  resend: "^6.18.0",
+  resend: "^6.18.1",
   "@react-email/components": "^1.0.12",
   "react-email": "^6.9.1",
   react: "^19.2.8",
   "react-dom": "^19.2.8",
-  "@types/react": "^19.2.17",
+  "@types/react": "^19.2.18",
   "@wxt-dev/module-react": "^1.2.2",
   wxt: "^0.20.27",
   "@opentui/core": "^0.4.5",
   nodemailer: "^9.0.3",
-  "@types/react-dom": "^19.2.3",
+  "@types/react-dom": "^19.2.4",
   "@types/nodemailer": "^8.0.1",
   postmark: "^4.0.7",
   "@sendgrid/mail": "^8.1.6",
-  "@aws-sdk/client-ses": "^3.1095.0",
-  "@aws-sdk/client-s3": "^3.1095.0",
-  "@aws-sdk/s3-request-presigner": "^3.1095.0",
+  "@aws-sdk/client-ses": "^3.1101.0",
+  "@aws-sdk/client-s3": "^3.1101.0",
+  "@aws-sdk/s3-request-presigner": "^3.1101.0",
   "mailgun.js": "^13.3.0",
   "form-data": "^4.0.6",
   "@plunk/node": "^3.0.3",
 
   // Effect ecosystem (updated 2026-01-21)
-  effect: "^3.22.0",
+  effect: "^3.22.1",
   "@effect/platform": "^0.96.2",
   "@effect/platform-node": "^0.107.0",
   "@effect/platform-bun": "^0.90.0",
@@ -403,30 +403,30 @@ export const dependencyVersionMap = {
 
   // CSS preprocessors
   sass: "^1.102.0",
-  less: "^4.8.0",
+  less: "^4.8.1",
   "styled-components": "^6.4.4",
 
   // TypeScript ecosystem expansion addons
   eslint: "^10.8.0",
   "@eslint/js": "^10.0.1",
   "typescript-eslint": "^8.65.0",
-  globals: "^17.7.0",
+  globals: "^17.8.0",
   prettier: "^3.9.6",
-  axios: "^1.18.1",
-  firebase: "^12.16.0",
+  axios: "^1.19.0",
+  firebase: "^12.17.0",
   "@graphql-codegen/cli": "^7.2.0",
   "@graphql-codegen/client-preset": "^6.1.0",
   "openapi-typescript": "^7.13.0",
-  "@apollo/client": "^4.2.8",
+  "@apollo/client": "^4.2.9",
   electron: "^43.2.0",
   "electron-builder": "^26.15.3",
   concurrently: "^9.2.1",
   "cross-env": "^7.0.3",
   "wait-on": "^9.1.0",
-  "@capacitor/core": "^8.4.2",
-  "@capacitor/cli": "^8.4.2",
-  "@capacitor/ios": "^8.4.2",
-  "@capacitor/android": "^8.4.2",
+  "@capacitor/core": "^8.5.0",
+  "@capacitor/cli": "^8.5.0",
+  "@capacitor/ios": "^8.5.0",
+  "@capacitor/android": "^8.5.0",
   passport: "^0.7.0",
   "passport-github2": "^0.1.12",
   "express-session": "^1.19.0",
@@ -436,8 +436,8 @@ export const dependencyVersionMap = {
   mocha: "^11.7.6",
   "@types/mocha": "^10.0.10",
   contentful: "^11.12.7",
-  "@paypal/paypal-js": "^10.0.3",
-  "@paypal/react-paypal-js": "^10.1.2",
+  "@paypal/paypal-js": "^10.1.0",
+  "@paypal/react-paypal-js": "^10.3.0",
   "@paypal/paypal-server-sdk": "^2.4.0",
 
   // UI libraries
@@ -461,22 +461,22 @@ export const dependencyVersionMap = {
   "@emotion/react": "^11.14.0",
   "@emotion/styled": "^11.14.1",
 
-  "@heroui/react": "^3.2.2",
-  "framer-motion": "^12.42.2",
+  "@heroui/react": "^3.2.3",
+  "framer-motion": "^12.43.0",
 
   // Mantine
-  "@mantine/core": "^9.4.2",
-  "@mantine/hooks": "^9.4.2",
+  "@mantine/core": "^9.5.0",
+  "@mantine/hooks": "^9.5.0",
 
   // MUI / Ant Design
   "@mui/material": "^9.2.0",
-  antd: "^6.5.2",
+  antd: "^6.5.3",
 
   // Base UI
   "@base-ui-components/react": "^1.0.0-rc.0",
 
   // shadcn/ui core and unified packages
-  shadcn: "^4.14.1",
+  shadcn: "^4.16.1",
   "radix-ui": "^1.6.7",
   "class-variance-authority": "^0.7.1",
   clsx: "^2.1.1",
@@ -485,7 +485,7 @@ export const dependencyVersionMap = {
   // Keep on 1.21 until Yarn hardened mode stops quarantining 1.22.
   "lucide-react": "^1.21.0",
   "lucide-solid": "^1.21.0",
-  "@tabler/icons-react": "^3.45.0",
+  "@tabler/icons-react": "^3.46.0",
   "@hugeicons/react": "^1.1.9",
   "@hugeicons/core-free-icons": "^4.2.3",
   "@phosphor-icons/react": "^2.1.10",
@@ -513,9 +513,9 @@ export const dependencyVersionMap = {
   "@ark-ui/svelte": "^5.22.1",
 
   // React Aria (Adobe's accessible components for React)
-  "react-aria-components": "^1.19.0",
+  "react-aria-components": "^1.20.0",
 
-  daisyui: "^5.7.1",
+  daisyui: "^5.7.9",
   "shadcn-svelte": "^1.4.2",
   "bits-ui": "^2.18.1",
   "lucide-svelte": "^1.0.1",
@@ -526,22 +526,22 @@ export const dependencyVersionMap = {
   "@builder.io/qwik-react": "^0.5.8",
 
   // Angular
-  "@angular/core": "^22.0.8",
-  "@angular/common": "^22.0.8",
-  "@angular/compiler": "^22.0.8",
-  "@angular/platform-browser": "^22.0.8",
-  "@angular/platform-browser-dynamic": "^22.0.8",
-  "@angular/router": "^22.0.8",
-  "@angular/forms": "^22.0.8",
-  "@angular/animations": "^22.0.8",
-  "@angular-devkit/build-angular": "^22.0.8",
-  "@angular/cli": "^22.0.8",
-  "@angular/compiler-cli": "^22.0.8",
+  "@angular/core": "^22.1.0",
+  "@angular/common": "^22.1.0",
+  "@angular/compiler": "^22.1.0",
+  "@angular/platform-browser": "^22.1.0",
+  "@angular/platform-browser-dynamic": "^22.1.0",
+  "@angular/router": "^22.1.0",
+  "@angular/forms": "^22.1.0",
+  "@angular/animations": "^22.1.0",
+  "@angular-devkit/build-angular": "^22.1.2",
+  "@angular/cli": "^22.1.2",
+  "@angular/compiler-cli": "^22.1.0",
 
   // State management
   zustand: "^5.0.14",
   jotai: "^2.20.2",
-  nanostores: "^1.4.1",
+  nanostores: "^1.4.2",
   "@nanostores/react": "^1.1.0",
   "@reduxjs/toolkit": "^2.12.0",
   "react-redux": "^9.3.0",
@@ -566,8 +566,8 @@ export const dependencyVersionMap = {
   yup: "^1.7.1",
   "final-form": "^5.0.1",
   "react-final-form": "^7.0.1",
-  "@conform-to/react": "^1.20.0",
-  "@conform-to/zod": "^1.20.0",
+  "@conform-to/react": "^1.20.2",
+  "@conform-to/zod": "^1.20.2",
   "@modular-forms/solid": "^0.25.1",
   "@modular-forms/qwik": "^0.29.1",
   "@tanstack/react-form": "^1.33.0",
@@ -595,8 +595,8 @@ export const dependencyVersionMap = {
   // Job Queues / Background Workers
   bullmq: "^5.81.2",
   ioredis: "^5.11.1",
-  "@trigger.dev/sdk": "^4.5.7",
-  inngest: "^4.13.0",
+  "@trigger.dev/sdk": "^4.5.9",
+  inngest: "^4.14.0",
   "@temporalio/client": "^1.21.1",
   "@temporalio/worker": "^1.21.1",
   "@temporalio/workflow": "^1.21.1",
@@ -622,8 +622,8 @@ export const dependencyVersionMap = {
   "happy-dom": "^20.11.1",
 
   // Testing - Playwright
-  "@playwright/test": "^1.62.0",
-  playwright: "^1.62.0",
+  "@playwright/test": "^1.62.1",
+  playwright: "^1.62.1",
 
   // Testing Library
   "@testing-library/dom": "^10.4.1",
@@ -640,9 +640,9 @@ export const dependencyVersionMap = {
   storybook: "^8.6.18",
   "@storybook/react": "^8.6.18",
   "@storybook/react-vite": "^8.6.18",
-  "@storybook/vue3": "^10.5.4",
+  "@storybook/vue3": "^10.5.5",
   "@storybook/vue3-vite": "^8.6.18",
-  "@storybook/svelte": "^10.5.4",
+  "@storybook/svelte": "^10.5.5",
   "@storybook/svelte-vite": "^8.6.18",
   "@storybook/nextjs": "^8.6.18",
   "@storybook/addon-essentials": "^8.6.18",
@@ -650,7 +650,7 @@ export const dependencyVersionMap = {
   "@storybook/test": "^8.6.18",
 
   // Animation
-  motion: "^12.42.2",
+  motion: "^12.43.0",
   gsap: "^3.15.0",
   "@react-spring/web": "^10.1.2",
   "@react-spring/native": "^10.1.2",
@@ -659,8 +659,8 @@ export const dependencyVersionMap = {
   "lottie-react-native": "^7.3.8",
 
   // Payments - Stripe
-  stripe: "^22.3.2",
-  "@stripe/stripe-js": "^9.12.0",
+  stripe: "^22.4.0",
+  "@stripe/stripe-js": "^9.12.1",
   "@stripe/react-stripe-js": "^6.8.0",
 
   // Payments - Lemon Squeezy
@@ -671,7 +671,7 @@ export const dependencyVersionMap = {
   "@paddle/paddle-js": "^1.6.4",
 
   // Payments - Dodo Payments
-  dodopayments: "^2.43.0",
+  dodopayments: "^2.44.0",
   "dodopayments-checkout": "^1.9.5",
 
   // Payments - RevenueCat
@@ -683,7 +683,7 @@ export const dependencyVersionMap = {
   "@creem_io/better-auth": "^1.1.3",
 
   // Payments - Autumn
-  "autumn-js": "^1.2.44",
+  "autumn-js": "^1.2.45",
 
   // Payments - Commet
   "@commet/node": "^7.10.0",
@@ -730,7 +730,7 @@ export const dependencyVersionMap = {
 
   // Fresh (Deno-native framework - uses JSR/deno.json, not npm)
   // These are reference versions for Fresh ecosystem
-  preact: "^10.29.7",
+  preact: "^10.29.8",
   "preact-render-to-string": "^6.7.0",
 
   // Logging
@@ -738,7 +738,7 @@ export const dependencyVersionMap = {
   "pino-pretty": "^13.1.3",
   "pino-http": "^11.0.0",
   winston: "^3.19.0",
-  evlog: "^2.22.3",
+  evlog: "^2.22.4",
 
   // OpenTelemetry
   "@opentelemetry/api": "^1.9.1",
@@ -751,8 +751,8 @@ export const dependencyVersionMap = {
   "@opentelemetry/semantic-conventions": "^1.43.0",
 
   // Sentry
-  "@sentry/node": "^10.68.0",
-  "@sentry/profiling-node": "^10.68.0",
+  "@sentry/node": "^10.69.0",
+  "@sentry/profiling-node": "^10.69.0",
 
   // Grafana (Prometheus metrics)
   "prom-client": "^15.1.3",
@@ -763,21 +763,21 @@ export const dependencyVersionMap = {
   "@logtail/node": "^0.5.8",
 
   // Headless CMS - Payload
-  payload: "^3.86.0",
-  "@payloadcms/next": "^3.86.0",
-  "@payloadcms/richtext-lexical": "^3.86.0",
-  "@payloadcms/db-postgres": "^3.86.0",
-  "@payloadcms/db-mongodb": "^3.86.0",
-  "@payloadcms/db-sqlite": "^3.86.0",
-  "@payloadcms/plugin-seo": "^3.86.0",
-  "@payloadcms/storage-s3": "^3.86.0",
+  payload: "^3.87.0",
+  "@payloadcms/next": "^3.87.0",
+  "@payloadcms/richtext-lexical": "^3.87.0",
+  "@payloadcms/db-postgres": "^3.87.0",
+  "@payloadcms/db-mongodb": "^3.87.0",
+  "@payloadcms/db-sqlite": "^3.87.0",
+  "@payloadcms/plugin-seo": "^3.87.0",
+  "@payloadcms/storage-s3": "^3.87.0",
 
   // Headless CMS - Sanity
-  sanity: "^6.6.0",
-  "next-sanity": "^13.2.1",
+  sanity: "^6.8.0",
+  "next-sanity": "^13.2.3",
   "@sanity/image-url": "^2.1.1",
-  "@sanity/vision": "^6.6.0",
-  "@sanity/client": "^7.25.0",
+  "@sanity/vision": "^6.8.0",
+  "@sanity/client": "^7.26.0",
 
   // Headless CMS - Strapi
   "@strapi/client": "^1.6.2",
@@ -795,9 +795,9 @@ export const dependencyVersionMap = {
   "@keystatic/core": "^0.5.51",
   "@keystatic/next": "^5.0.4",
   "@markdoc/markdoc": "^0.5.8",
-  "@astrojs/react": "^6.0.1",
-  "@astrojs/markdoc": "^2.0.4",
-  "@astrojs/node": "^11.0.2",
+  "@astrojs/react": "^6.0.2",
+  "@astrojs/markdoc": "^2.0.6",
+  "@astrojs/node": "^11.0.3",
 
   // File Storage - Cloudinary
   cloudinary: "^2.10.0",
@@ -806,7 +806,7 @@ export const dependencyVersionMap = {
   swr: "^2.4.2",
 
   // Caching - Upstash Redis
-  "@upstash/redis": "^1.38.0",
+  "@upstash/redis": "^1.38.1",
 
   // Rate limiting
   "@arcjet/next": "^1.9.1",
@@ -817,10 +817,10 @@ export const dependencyVersionMap = {
   i18next: "^26.3.6",
   "react-i18next": "^17.0.11",
   "i18next-browser-languagedetector": "^8.2.1",
-  "i18next-http-backend": "^4.0.0",
+  "i18next-http-backend": "^4.0.1",
 
   // i18n - Paraglide
-  "@inlang/paraglide-js": "^2.22.0",
+  "@inlang/paraglide-js": "^2.23.0",
 
   // i18n - next-intl
   "next-intl": "^4.13.4",
@@ -838,7 +838,7 @@ export const dependencyVersionMap = {
   typesense: "^3.0.6",
 
   // Search - Elasticsearch
-  "@elastic/elasticsearch": "^9.4.2",
+  "@elastic/elasticsearch": "^9.4.3",
 
   // Search - OpenSearch
   "@opensearch-project/opensearch": "^3.6.0",
@@ -856,7 +856,7 @@ export const dependencyVersionMap = {
   chromadb: "^3.5.0",
 
   // Vector DB - Pinecone
-  "@pinecone-database/pinecone": "^8.1.0",
+  "@pinecone-database/pinecone": "^8.2.0",
 
   // EdgeDB
   edgedb: "^2.0.1",
@@ -867,20 +867,20 @@ export const dependencyVersionMap = {
   "@growthbook/growthbook-react": "^1.6.5",
 
   // Feature Flags + Analytics - PostHog
-  "posthog-js": "^1.407.2",
-  "posthog-node": "^5.46.1",
+  "posthog-js": "^1.409.5",
+  "posthog-node": "^5.47.3",
 
   // Feature Flags - LaunchDarkly
   "@launchdarkly/js-client-sdk": "^4.9.3",
-  "@launchdarkly/node-server-sdk": "^9.12.3",
+  "@launchdarkly/node-server-sdk": "^9.13.0",
 
   // Feature Flags - Flagsmith
   "@flagsmith/flagsmith": "^12.1.2",
   "flagsmith-nodejs": "^8.1.2",
 
   // Feature Flags - Unleash
-  "@unleash/proxy-client-react": "^6.0.0",
-  "unleash-proxy-client": "^3.8.0",
+  "@unleash/proxy-client-react": "^6.0.1",
+  "unleash-proxy-client": "^3.8.2",
   "unleash-client": "^6.11.1",
 
   // Analytics - Plausible
