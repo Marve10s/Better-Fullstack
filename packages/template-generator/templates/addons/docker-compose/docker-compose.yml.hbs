@@ -54,8 +54,10 @@ services:
 {{#if (includes frontend "astro")}}
 {{#if (includes addons "kong")}}
         PUBLIC_SERVER_URL: http://localhost:8000
+        VITE_SERVER_URL: http://localhost:8000
 {{else}}
         PUBLIC_SERVER_URL: http://localhost:3000
+        VITE_SERVER_URL: http://localhost:3000
 {{/if}}
 {{else}}
 {{#if (includes addons "kong")}}
@@ -87,6 +89,9 @@ services:
 {{else if (eq database "mongodb")}}
       - DATABASE_URL=mongodb://root:password@db:27017/{{projectName}}?authSource=admin
 {{/if}}
+{{#if (or (eq database "redis") (eq caching "redis"))}}
+      - REDIS_URL=redis://redis:6379
+{{/if}}
 {{/if}}
 {{#unless (eq backend "self")}}
 {{#unless (eq backend "none")}}
@@ -95,10 +100,16 @@ services:
 {{/unless}}
 {{/unless}}
 {{#if (eq backend "self")}}
-{{#if (or (or (eq database "postgres") (eq database "mysql")) (eq database "mongodb"))}}
+{{#if (or (or (or (eq database "postgres") (eq database "mysql")) (eq database "mongodb")) (or (eq database "redis") (eq caching "redis")))}}
     depends_on:
+{{#if (or (or (eq database "postgres") (eq database "mysql")) (eq database "mongodb"))}}
       db:
         condition: service_healthy
+{{/if}}
+{{#if (or (eq database "redis") (eq caching "redis"))}}
+      redis:
+        condition: service_healthy
+{{/if}}
 {{/if}}
 {{/if}}
     restart: unless-stopped
@@ -132,10 +143,19 @@ services:
 {{else if (eq database "mongodb")}}
       - DATABASE_URL=mongodb://root:password@db:27017/{{projectName}}?authSource=admin
 {{/if}}
-{{#if (or (or (eq database "postgres") (eq database "mysql")) (eq database "mongodb"))}}
+{{#if (or (eq database "redis") (eq caching "redis"))}}
+      - REDIS_URL=redis://redis:6379
+{{/if}}
+{{#if (or (or (or (eq database "postgres") (eq database "mysql")) (eq database "mongodb")) (or (eq database "redis") (eq caching "redis")))}}
     depends_on:
+{{#if (or (or (eq database "postgres") (eq database "mysql")) (eq database "mongodb"))}}
       db:
         condition: service_healthy
+{{/if}}
+{{#if (or (eq database "redis") (eq caching "redis"))}}
+      redis:
+        condition: service_healthy
+{{/if}}
 {{/if}}
     restart: unless-stopped
 {{/unless}}
@@ -161,8 +181,6 @@ services:
       retries: 5
     restart: unless-stopped
 
-volumes:
-  postgres_data:
 {{/if}}
 {{#if (eq database "mysql")}}
   db:
@@ -185,8 +203,6 @@ volumes:
       retries: 5
     restart: unless-stopped
 
-volumes:
-  mysql_data:
 {{/if}}
 {{#if (eq database "mongodb")}}
   db:
@@ -208,8 +224,35 @@ volumes:
       retries: 5
     restart: unless-stopped
 
+{{/if}}
+{{#if (or (eq database "redis") (eq caching "redis"))}}
+  redis:
+    image: redis:7-alpine
+    container_name: {{projectName}}-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+{{/if}}
+{{#if (or (or (or (eq database "postgres") (eq database "mysql")) (eq database "mongodb")) (or (eq database "redis") (eq caching "redis")))}}
 volumes:
+{{#if (eq database "postgres")}}
+  postgres_data:
+{{else if (eq database "mysql")}}
+  mysql_data:
+{{else if (eq database "mongodb")}}
   mongo_data:
+{{/if}}
+{{#if (or (eq database "redis") (eq caching "redis"))}}
+  redis_data:
+{{/if}}
 {{/if}}
 {{else}}
 {{#if graphWebFrontend}}
@@ -246,12 +289,16 @@ volumes:
 {{#if (includes frontend "astro")}}
 {{#if (includes addons "kong")}}
         PUBLIC_SERVER_URL: http://localhost:8000
+        VITE_SERVER_URL: http://localhost:8000
 {{else if (eq ecosystem "python")}}
         PUBLIC_SERVER_URL: http://localhost:8000
+        VITE_SERVER_URL: http://localhost:8000
 {{else if (eq ecosystem "rust")}}
         PUBLIC_SERVER_URL: http://localhost:3000
+        VITE_SERVER_URL: http://localhost:3000
 {{else}}
         PUBLIC_SERVER_URL: http://localhost:8080
+        VITE_SERVER_URL: http://localhost:8080
 {{/if}}
 {{else}}
 {{#if (includes addons "kong")}}
@@ -300,9 +347,14 @@ volumes:
 {{else}}
       - "8080"
 {{/if}}
-{{#if (and (eq ecosystem "rust") (eq rustObservability "metrics"))}}
+{{#if (and (eq ecosystem "rust") (or (eq rustObservability "metrics") (eq rustRealtime "tokio-tungstenite")))}}
     ports:
+{{#if (eq rustRealtime "tokio-tungstenite")}}
+      - "8765:8765"
+{{/if}}
+{{#if (eq rustObservability "metrics")}}
       - "9000:9000"
+{{/if}}
 {{/if}}
 {{else}}
     ports:
@@ -318,6 +370,9 @@ volumes:
 {{/if}}
 {{#if (eq rustObservability "metrics")}}
       - "9000:9000"
+{{/if}}
+{{#if (eq rustRealtime "tokio-tungstenite")}}
+      - "8765:8765"
 {{/if}}
 {{else}}
       - "8080:8080"
@@ -340,15 +395,25 @@ volumes:
 {{#if (and (ne pythonOrm "none") (eq database "mongodb"))}}
       - MONGODB_URI=mongodb://root:password@db:27017/{{projectName}}?authSource=admin
 {{/if}}
+{{#if (eq pythonCaching "redis")}}
+      - REDIS_URL=redis://redis:6379
+{{/if}}
 {{else if (eq ecosystem "go")}}
       - HOST=0.0.0.0
       - PORT=8080
 {{#if (ne goOrm "none")}}
       - DATABASE_URL=postgres://postgres:postgres@db:5432/{{projectName}}?sslmode=disable
 {{/if}}
+{{#if (eq goCaching "redis")}}
+      - REDIS_URL=redis://redis:6379
+{{/if}}
 {{else if (eq ecosystem "rust")}}
       - HOST=0.0.0.0
       - PORT=3000
+{{#if (eq rustWebFramework "rocket")}}
+      - ROCKET_ADDRESS=0.0.0.0
+      - ROCKET_PORT=3000
+{{/if}}
 {{#if (eq rustApi "tonic")}}
       - GRPC_PORT=50051
 {{/if}}
@@ -365,14 +430,23 @@ volumes:
 {{else if (ne rustOrm "none")}}
       - DATABASE_URL=postgres://postgres:postgres@db:5432/{{projectName}}
 {{/if}}
+{{#if (eq rustCaching "redis")}}
+      - REDIS_URL=redis://redis:6379
+{{/if}}
 {{else if (eq ecosystem "java")}}
       - PORT=8080
       - SPRING_PROFILES_ACTIVE=prod
 {{/if}}
-{{#if (or (or (and (eq ecosystem "python") (and (ne pythonOrm "none") (or (eq database "postgres") (eq database "mongodb")))) (and (eq ecosystem "go") (ne goOrm "none"))) (and (eq ecosystem "rust") (and (ne rustOrm "none") (ne rustOrm "rusqlite"))))}}
+{{#if (or (or (or (and (eq ecosystem "python") (and (ne pythonOrm "none") (or (eq database "postgres") (eq database "mongodb")))) (and (eq ecosystem "go") (ne goOrm "none"))) (and (eq ecosystem "rust") (and (ne rustOrm "none") (ne rustOrm "rusqlite")))) (or (or (eq pythonCaching "redis") (eq goCaching "redis")) (eq rustCaching "redis")))}}
     depends_on:
+{{#if (or (or (and (eq ecosystem "python") (and (ne pythonOrm "none") (or (eq database "postgres") (eq database "mongodb")))) (and (eq ecosystem "go") (ne goOrm "none"))) (and (eq ecosystem "rust") (and (ne rustOrm "none") (ne rustOrm "rusqlite"))))}}
       db:
         condition: service_healthy
+{{/if}}
+{{#if (or (or (eq pythonCaching "redis") (eq goCaching "redis")) (eq rustCaching "redis"))}}
+      redis:
+        condition: service_healthy
+{{/if}}
 {{/if}}
 {{#if (and (eq ecosystem "rust") (eq rustOrm "rusqlite"))}}
     volumes:
@@ -424,6 +498,22 @@ volumes:
 {{else}}
   postgres_data:
 {{/if}}
+{{/if}}
+{{#if (or (or (eq pythonCaching "redis") (eq goCaching "redis")) (eq rustCaching "redis"))}}
+  redis:
+    image: redis:7-alpine
+    container_name: {{projectName}}-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - /data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
 {{/if}}
 {{#if (and (eq ecosystem "rust") (eq rustOrm "rusqlite"))}}
 volumes:

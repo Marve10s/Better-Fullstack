@@ -2183,6 +2183,15 @@ export const getDisabledReason = (
   category: CompatibilityCategory,
   optionId: string,
 ): string | null => {
+  if (
+    category === "appPlatforms" &&
+    optionId === "kong" &&
+    currentStack.ecosystem === "typescript" &&
+    currentStack.backend === "encore"
+  ) {
+    return "Kong Gateway does not yet support Encore's container workflow";
+  }
+
   const hasStandaloneViteFrontend = currentStack.webFrontend.some((frontend) =>
     ["vanilla-vite", "vue"].includes(frontend),
   );

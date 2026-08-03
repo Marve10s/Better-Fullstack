@@ -841,6 +841,24 @@ describe("compatibility issue helpers", () => {
       ),
     ).toBe("Kong Gateway does not yet support Loco's container configuration.");
 
+    expect(
+      getDisabledReason(
+        {
+          ...DEFAULT_STACK_SELECTION,
+          backend: "encore",
+        },
+        "appPlatforms",
+        "kong",
+      ),
+    ).toBe("Kong Gateway does not yet support Encore's container workflow");
+
+    const encoreKong = analyzeStackCompatibility({
+      ...DEFAULT_STACK_SELECTION,
+      backend: "encore",
+      appPlatforms: ["kong"],
+    });
+    expect(encoreKong.adjustedStack?.appPlatforms).not.toContain("kong");
+
     const convexKong = analyzeStackCompatibility({
       ...DEFAULT_STACK_SELECTION,
       backend: "convex",

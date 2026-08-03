@@ -559,6 +559,12 @@ export function validateAddonCompatibility(
         reason: "Kong Gateway requires a TypeScript backend service",
       };
     }
+    if (addon === "kong" && ecosystem === "typescript" && backend === "encore") {
+      return {
+        isCompatible: false,
+        reason: "Kong Gateway does not yet support Encore's container workflow",
+      };
+    }
     if (addon === "kong" && ecosystem === "python" && pythonWebFramework === "none") {
       return {
         isCompatible: false,

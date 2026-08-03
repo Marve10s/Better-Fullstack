@@ -397,7 +397,7 @@ describe("Addon Configurations", () => {
           database: "sqlite",
           orm: "drizzle",
           auth: "none",
-          api: "none",
+          api: "graphql-yoga",
           examples: ["none"],
           dbSetup: "none",
           webDeploy: "none",
@@ -411,10 +411,17 @@ describe("Addon Configurations", () => {
           join(result.projectDir!, "apps", "web", "Dockerfile.vite"),
           "utf8",
         );
+        const graphqlClient = readFileSync(
+          join(result.projectDir!, "apps", "web", "src", "utils", "graphql.ts"),
+          "utf8",
+        );
         expect(compose).toContain("PUBLIC_SERVER_URL: http://localhost:8000");
-        expect(compose).not.toContain("VITE_SERVER_URL: http://localhost:8000");
+        expect(compose).toContain("VITE_SERVER_URL: http://localhost:8000");
         expect(dockerfile).toContain("ARG PUBLIC_SERVER_URL=http://localhost:3000");
         expect(dockerfile).toContain("ENV PUBLIC_SERVER_URL=${PUBLIC_SERVER_URL}");
+        expect(dockerfile).toContain("ARG VITE_SERVER_URL=http://localhost:3000");
+        expect(dockerfile).toContain("ENV VITE_SERVER_URL=${VITE_SERVER_URL}");
+        expect(graphqlClient).toContain("env.VITE_SERVER_URL");
       });
 
       it("loads runtime env and exposes Better Auth through the gateway URL", async () => {
@@ -439,6 +446,48 @@ describe("Addon Configurations", () => {
         const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
         expect(compose).toContain("env_file:\n      - apps/server/.env");
         expect(compose).toContain("BETTER_AUTH_URL=http://localhost:8000");
+      });
+
+      it("provisions Redis for database and self-hosted cache selections", async () => {
+        for (const { projectName, database, orm, caching } of [
+          {
+            projectName: "kong-redis-database",
+            database: "redis" as const,
+            orm: "none" as const,
+            caching: "none" as const,
+          },
+          {
+            projectName: "kong-redis-cache",
+            database: "sqlite" as const,
+            orm: "drizzle" as const,
+            caching: "redis" as const,
+          },
+        ]) {
+          const result = await runTRPCTest({
+            projectName,
+            addons: ["kong"],
+            frontend: ["react-vite"],
+            backend: "hono",
+            runtime: "bun",
+            database,
+            orm,
+            caching,
+            auth: "none",
+            api: "none",
+            examples: ["none"],
+            dbSetup: "none",
+            webDeploy: "none",
+            serverDeploy: "none",
+            install: false,
+          });
+
+          expectSuccess(result);
+          const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
+          expect(compose).toContain("redis:\n    image: redis:7-alpine");
+          expect(compose).toContain("REDIS_URL=redis://redis:6379");
+          expect(compose).toContain("redis:\n        condition: service_healthy");
+          expect(compose).toContain("redis_data:/data");
+        }
       });
 
       it("routes co-generated native clients through Kong", async () => {
@@ -483,6 +532,28 @@ describe("Addon Configurations", () => {
         });
 
         expectError(result, "Kong Gateway requires a TypeScript backend service");
+      });
+
+      it("should reject Kong for Encore's incompatible container output", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-encore",
+          addons: ["kong"],
+          frontend: ["react-vite"],
+          backend: "encore",
+          runtime: "none",
+          database: "none",
+          orm: "none",
+          auth: "none",
+          api: "none",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+          expectError: true,
+        });
+
+        expectError(result, "Kong Gateway does not yet support Encore's container workflow");
       });
 
       it("should build Next.js with the browser gateway URL and standalone output", async () => {
@@ -806,6 +877,63 @@ describe("Addon Configurations", () => {
         const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
         expect(compose).toContain('expose:\n      - "3000"');
         expect(compose).toContain('ports:\n      - "9000:9000"');
+      });
+
+      it("should bind Rocket to Kong's container upstream", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-rust-rocket",
+          ecosystem: "rust",
+          addons: ["kong"],
+          rustWebFramework: "rocket",
+          rustFrontend: "none",
+          rustOrm: "none",
+          rustApi: "none",
+          rustCli: "none",
+          rustLibraries: [],
+          rustLogging: "tracing",
+          rustErrorHandling: "anyhow-thiserror",
+          rustCaching: "redis",
+          rustAuth: "none",
+          rustRealtime: "none",
+          rustMessageQueue: "none",
+          rustObservability: "none",
+          rustTemplating: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
+        expect(compose).toContain("ROCKET_ADDRESS=0.0.0.0");
+        expect(compose).toContain("ROCKET_PORT=3000");
+        expect(compose).toContain("REDIS_URL=redis://redis:6379");
+        expect(compose).toContain("redis:\n    image: redis:7-alpine");
+      });
+
+      it("should publish Rust's standalone WebSocket listener alongside Kong", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-rust-websocket",
+          ecosystem: "rust",
+          addons: ["kong"],
+          rustWebFramework: "axum",
+          rustFrontend: "none",
+          rustOrm: "none",
+          rustApi: "none",
+          rustCli: "none",
+          rustLibraries: [],
+          rustLogging: "tracing",
+          rustErrorHandling: "anyhow-thiserror",
+          rustCaching: "none",
+          rustAuth: "none",
+          rustRealtime: "tokio-tungstenite",
+          rustMessageQueue: "none",
+          rustObservability: "none",
+          rustTemplating: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
+        expect(compose).toContain('- "8765:8765"');
       });
 
       it("should reject Kong for Go APIs that do not use the primary HTTP server", async () => {
