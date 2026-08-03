@@ -231,6 +231,7 @@ function validateAddonCompatibilityForPrompt(
   backend?: Backend,
   runtime?: Runtime,
   api?: API,
+  context: Partial<ProjectConfig> = { ecosystem: "typescript" },
 ) {
   return validateAddonCompatibility(
     addon,
@@ -238,11 +239,17 @@ function validateAddonCompatibilityForPrompt(
     auth,
     backend,
     runtime,
-    "typescript",
-    undefined,
-    undefined,
-    undefined,
+    context.ecosystem ?? "typescript",
+    context.rustFrontend,
+    context.javaWebFramework,
+    context.database,
     api,
+    context.pythonWebFramework,
+    context.goWebFramework,
+    context.rustWebFramework,
+    context.rustApi,
+    context.goApi,
+    context.javaApi,
   );
 }
 
@@ -308,6 +315,7 @@ export async function getAddonsChoice(
   backend?: Backend,
   runtime?: Runtime,
   api?: API,
+  context: Partial<ProjectConfig> = { ecosystem: "typescript" },
 ) {
   if (addons !== undefined) return addons;
 
@@ -326,6 +334,7 @@ export async function getAddonsChoice(
       backend,
       runtime,
       api,
+      context,
     );
     if (!isCompatible) continue;
 

@@ -482,6 +482,7 @@ export function validateAddonCompatibility(
   rustWebFramework?: ProjectConfig["rustWebFramework"],
   rustApi?: ProjectConfig["rustApi"],
   goApi?: ProjectConfig["goApi"],
+  javaApi?: ProjectConfig["javaApi"],
 ): { isCompatible: boolean; reason?: string } {
   const baseCompatibility = validateAddonCompatibilityShared(addon, frontend, _auth);
   if (!baseCompatibility.isCompatible) return baseCompatibility;
@@ -597,6 +598,12 @@ export function validateAddonCompatibility(
         reason: "Kong Gateway currently requires the primary Go HTTP server API",
       };
     }
+    if (addon === "kong" && ecosystem === "java" && javaApi === "grpc") {
+      return {
+        isCompatible: false,
+        reason: "Kong Gateway currently requires the primary Java HTTP API",
+      };
+    }
     if (
       ecosystem !== undefined &&
       !["typescript", "python", "go", "rust", "java"].includes(ecosystem)
@@ -683,6 +690,7 @@ export function getCompatibleAddons(
       context?.rustWebFramework,
       context?.rustApi,
       context?.goApi,
+      context?.javaApi,
     );
     return isCompatible;
   });
@@ -704,6 +712,7 @@ export function validateAddonsAgainstFrontends(
   rustWebFramework?: ProjectConfig["rustWebFramework"],
   rustApi?: ProjectConfig["rustApi"],
   goApi?: ProjectConfig["goApi"],
+  javaApi?: ProjectConfig["javaApi"],
 ) {
   if (addons.includes("nx") && addons.includes("turborepo")) {
     exitWithError("Nx and Turborepo are alternative workspace runners. Choose one addon.");
@@ -727,6 +736,7 @@ export function validateAddonsAgainstFrontends(
       rustWebFramework,
       rustApi,
       goApi,
+      javaApi,
     );
     if (!isCompatible) {
       exitWithError(`Incompatible addon/frontend combination: ${reason}`);

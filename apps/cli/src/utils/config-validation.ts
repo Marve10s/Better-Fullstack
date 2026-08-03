@@ -1472,6 +1472,7 @@ export function validateFullConfig(
       addonConfig.rustWebFramework,
       addonConfig.rustApi,
       addonConfig.goApi,
+      addonConfig.javaApi,
     );
     config.addons = [...new Set(config.addons)];
   }
@@ -1559,6 +1560,7 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
         addonConfig.rustWebFramework,
         addonConfig.rustApi,
         addonConfig.goApi,
+        addonConfig.javaApi,
       );
     }
 

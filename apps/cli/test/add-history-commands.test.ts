@@ -202,8 +202,29 @@ describe("CLI add command", () => {
     expect(sourceCreateResult.exitCode).toBe(0);
 
     const btsConfigPath = join(root, configSourceName, "bts.jsonc");
-    const btsConfig = await readFile(btsConfigPath, "utf8");
-    await writeFile(btsConfigPath, btsConfig.replaceAll("tanstack-router", "next"));
+    const btsConfig = JSONC.parse(
+      (await readFile(btsConfigPath, "utf8")).replaceAll("tanstack-router", "next"),
+    ) as {
+      frontend?: string[];
+      stackParts?: Array<{
+        id: string;
+        role: string;
+        toolId: string;
+        ecosystem: string;
+        source: string;
+      }>;
+    };
+    btsConfig.stackParts = [
+      ...(btsConfig.stackParts ?? []),
+      {
+        id: "workspacetooling:universal:devcontainer",
+        role: "workspaceTooling",
+        toolId: "devcontainer",
+        ecosystem: "universal",
+        source: "legacy",
+      },
+    ];
+    await writeFile(btsConfigPath, `${JSON.stringify(btsConfig, null, 2)}\n`);
 
     const createResult = await runCli(
       [
@@ -236,11 +257,16 @@ describe("CLI add command", () => {
     const compose = await Bun.file(join(projectDir, "docker-compose.yml")).text();
     const kongConfig = await Bun.file(join(projectDir, "kong", "kong.yml")).text();
     const nextConfig = await Bun.file(join(projectDir, "apps", "web", "next.config.ts")).text();
+    const devcontainer = JSON.parse(
+      await Bun.file(join(projectDir, ".devcontainer", "devcontainer.json")).text(),
+    );
 
     expect(config.addons).toContain("kong");
     expect(compose).toContain("kong/kong-gateway:3.15.0.1");
     expect(kongConfig).toContain("url: http://server:3000");
     expect(nextConfig).toContain('output: "standalone"');
+    expect(devcontainer.runServices).toContain("kong");
+    expect(devcontainer.forwardPorts).toEqual(expect.arrayContaining([8000, 8001]));
 
     const secondAddResult = await runCli(
       ["add", "--project-dir", projectDir, "--addons", "kong"],

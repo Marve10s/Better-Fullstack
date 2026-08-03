@@ -372,11 +372,59 @@ describe("Addon Configurations", () => {
         expect(compose).toContain('KONG_DATABASE: "off"');
         expect(compose).toContain("./kong/kong.yml:/kong/declarative/kong.yml:ro");
         expect(compose).toContain("VITE_SERVER_URL: http://localhost:8000");
+        expect(compose).toContain("env_file:\n      - apps/server/.env");
         expect(compose).toContain("- server");
         expect(compose).toContain('expose:\n      - "3000"');
         expect(compose).not.toContain('"3000:3000"');
         expect(kongConfig).toContain("url: http://server:3000");
         expect(kongConfig).toContain("strip_path: false");
+      });
+
+      it("loads runtime env and exposes Better Auth through the gateway URL", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-better-auth",
+          addons: ["kong"],
+          frontend: ["react-vite"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "better-auth",
+          api: "trpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
+        expect(compose).toContain("env_file:\n      - apps/server/.env");
+        expect(compose).toContain("BETTER_AUTH_URL=http://localhost:8000");
+      });
+
+      it("routes co-generated native clients through Kong", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-native-client",
+          addons: ["kong"],
+          frontend: ["react-vite", "native-uniwind"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "trpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        const nativeEnv = readFileSync(join(result.projectDir!, "apps/native/.env"), "utf8");
+        expect(nativeEnv).toContain("EXPO_PUBLIC_SERVER_URL=http://localhost:8000");
       });
 
       it("should reject Kong when a TypeScript stack has no backend", async () => {
@@ -572,6 +620,20 @@ describe("Addon Configurations", () => {
 
           expectError(result, "Kong Gateway currently requires the primary Go HTTP server API");
         }
+      });
+
+      it("should reject Kong for Java gRPC APIs that use a separate listener", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-java-grpc",
+          ecosystem: "java",
+          addons: ["kong"],
+          javaWebFramework: "spring-boot",
+          javaApi: "grpc",
+          install: false,
+          expectError: true,
+        });
+
+        expectError(result, "Kong Gateway currently requires the primary Java HTTP API");
       });
     });
 

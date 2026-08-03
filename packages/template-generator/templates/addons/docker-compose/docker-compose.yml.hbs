@@ -57,6 +57,8 @@ services:
         VITE_SERVER_URL: http://localhost:3000
 {{/if}}
 {{/if}}
+    env_file:
+      - apps/web/.env
 {{#if (and (includes addons "kong") (eq backend "self"))}}
     expose:
       - "3000"
@@ -66,6 +68,9 @@ services:
 {{/if}}
     environment:
       - NODE_ENV=production
+{{#if (and (includes addons "kong") (isBetterAuth auth))}}
+      - BETTER_AUTH_URL=http://localhost:8000
+{{/if}}
 {{#if (eq backend "self")}}
 {{#if (eq database "postgres")}}
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/{{projectName}}
@@ -96,6 +101,8 @@ services:
     build:
       context: .
       dockerfile: apps/server/Dockerfile
+    env_file:
+      - apps/server/.env
 {{#if (includes addons "kong")}}
     expose:
       - "3000"
@@ -107,6 +114,9 @@ services:
       - NODE_ENV=production
       - PORT=3000
       - CORS_ORIGIN=http://localhost:3001
+{{#if (and (includes addons "kong") (isBetterAuth auth))}}
+      - BETTER_AUTH_URL=http://localhost:8000
+{{/if}}
 {{#if (eq database "postgres")}}
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/{{projectName}}
 {{else if (eq database "mysql")}}
@@ -235,6 +245,8 @@ volumes:
         VITE_SERVER_URL: http://localhost:8080
 {{/if}}
 {{/if}}
+    env_file:
+      - apps/web/.env
     ports:
       - "3001:3000"
     environment:
@@ -252,6 +264,12 @@ volumes:
 {{else}}
       context: .
       dockerfile: Dockerfile
+{{/if}}
+    env_file:
+{{#if graphBackendTargetPath}}
+      - apps/server/.env
+{{else}}
+      - .env
 {{/if}}
 {{#if (includes addons "kong")}}
     expose:
