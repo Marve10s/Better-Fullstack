@@ -405,6 +405,7 @@ export type CompatibilityAnalysisResult = {
  * Nuxt is intentionally excluded from the MVP (different alias convention).
  */
 const SINGLE_APP_SELF_BACKENDS = new Set(["self-next", "self-tanstack-start"]);
+const SINGLE_APP_CONTAINER_ADDONS = new Set(["docker-compose", "devcontainer", "kong"]);
 const SINGLE_APP_WEB_FRONTEND_BY_BACKEND: Record<string, string> = {
   "self-next": "next",
   "self-tanstack-start": "tanstack-start",
@@ -420,6 +421,9 @@ const SINGLE_APP_WEB_FRONTEND_BY_BACKEND: Record<string, string> = {
  */
 export function stackQualifiesForSingleApp(stack: CompatibilityInput): boolean {
   if (!SINGLE_APP_SELF_BACKENDS.has(stack.backend)) return false;
+  if ((stack.appPlatforms ?? []).some((addon) => SINGLE_APP_CONTAINER_ADDONS.has(addon))) {
+    return false;
+  }
 
   const nativeFrontends = (stack.nativeFrontend ?? []).filter((f) => f && f !== "none");
   if (nativeFrontends.length > 0) return false;
