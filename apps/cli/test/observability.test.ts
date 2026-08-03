@@ -127,6 +127,34 @@ describe("Observability Configurations", () => {
       expectError(result, "Cloudflare-hosted fullstack apps");
     });
 
+    it("loads Next.js tracing only in the Node runtime", async () => {
+      const result = await runTRPCTest({
+        projectName: "signoz-next",
+        observability: "signoz",
+        frontend: ["next"],
+        backend: "self",
+        runtime: "none",
+        database: "sqlite",
+        orm: "drizzle",
+        api: "trpc",
+        auth: "none",
+        addons: ["turborepo"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const instrumentation = await readFile(
+        join(result.projectDir!, "apps/web/src/instrumentation.ts"),
+        "utf-8",
+      );
+      expect(instrumentation).toContain('process.env.NEXT_RUNTIME === "nodejs"');
+      expect(instrumentation).toContain('await import("./lib/tracing")');
+    });
+
     it("rejects SigNoz when no generated server target exists", async () => {
       for (const backend of ["none", "convex"] as const) {
         const result = await runTRPCTest({

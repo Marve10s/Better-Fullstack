@@ -63,6 +63,9 @@ require (
 	google.golang.org/grpc v1.80.0
 	google.golang.org/protobuf v1.36.11
 {{/if}}
+{{#if (and (eq goApi "grpc-go") (eq goObservability "signoz"))}}
+	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.69.0
+{{/if}}
 {{#if (eq goApi "grpc-gateway")}}
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.29.0
 	google.golang.org/grpc v1.80.0

@@ -162,6 +162,8 @@ describe("Go Language Support", () => {
       expect(tracing).toContain("tracingCtx, cancelTracing");
       const server = getFileContent(root, "cmd/server/main.go");
       expect(server).toContain("appobservability.InitTracing(context.Background())");
+      expect(server).toContain("context.WithTimeout(context.Background(), 10*time.Second)");
+      expect(server).toContain("shutdownTracing(shutdownCtx)");
       expect(server).toContain("appobservability.TraceHTTP(r)");
       expect(server).toContain("appobservability.RunWithGracefulShutdown(");
       expect(getFileContent(root, ".env.example")).toContain("OTEL_EXPORTER_OTLP_HEADERS=");
@@ -1519,6 +1521,32 @@ describe("Go Language Support", () => {
       expect(mainContent).toContain("google.golang.org/grpc");
       expect(mainContent).toContain("grpc.NewServer()");
       expect(mainContent).toContain("RegisterGreeterServer");
+    });
+
+    it("instruments gRPC server requests when SigNoz is selected", async () => {
+      const result = await createVirtual({
+        projectName: "go-grpc-signoz-check",
+        ecosystem: "go",
+        goWebFramework: "none",
+        goOrm: "none",
+        goApi: "grpc-go",
+        goCli: "none",
+        goLogging: "none",
+        goObservability: "signoz",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+      expect(getFileContent(root, "go.mod")).toContain(
+        "go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc",
+      );
+      const mainContent = getFileContent(root, "cmd/server/main.go");
+      expect(mainContent).toContain(
+        '"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"',
+      );
+      expect(mainContent).toContain(
+        "grpc.NewServer(grpc.StatsHandler(otelgrpc.NewServerHandler()))",
+      );
     });
   });
 

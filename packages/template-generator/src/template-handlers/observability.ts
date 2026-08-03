@@ -61,7 +61,7 @@ function activateSignozTracing(
   if (config.frontend.includes("next") || config.frontend.includes("vinext")) {
     vfs.writeFile(
       `${targetDir}/src/instrumentation.ts`,
-      'export async function register() {\n  await import("./lib/tracing");\n}\n',
+      'export async function register() {\n  if (process.env.NEXT_RUNTIME === "nodejs") {\n    await import("./lib/tracing");\n  }\n}\n',
     );
     return;
   }
