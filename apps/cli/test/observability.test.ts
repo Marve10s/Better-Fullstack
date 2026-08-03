@@ -184,11 +184,13 @@ describe("Observability Configurations", () => {
             ? "apps/server/plugins/signoz.ts"
             : "apps/web/server/plugins/signoz.ts";
         const plugin = await readFile(join(result.projectDir!, pluginPath), "utf-8");
-        expect(plugin).toContain('nitroApp.hooks.hook("request"');
-        expect(plugin).toContain('nitroApp.hooks.hook("afterResponse"');
-        expect(plugin).toContain('nitroApp.hooks.hook("error"');
+        expect(plugin).toContain("const handleRequest = nitroApp.h3App.handler");
+        expect(plugin).toContain("nitroApp.h3App.handler = async (event)");
         expect(plugin).toContain("propagation.extract");
         expect(plugin).toContain("SpanKind.SERVER");
+        expect(plugin).toContain("trace.setSpan(parentContext, span)");
+        expect(plugin).toContain("context.with(requestContext");
+        expect(plugin).toContain("await handleRequest(event)");
         expect(plugin).toContain("requestSpans.delete(event)");
       }
     });

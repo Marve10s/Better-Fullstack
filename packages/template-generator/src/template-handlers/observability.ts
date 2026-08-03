@@ -57,14 +57,14 @@ const headerGetter = {
   },
 };
 
-function finishSpan(event: object, statusCode: number, error?: Error): void {
+function finishSpan(event: object, statusCode: number, error?: unknown): void {
   const span = requestSpans.get(event);
   if (!span) return;
   requestSpans.delete(event);
 
   span.setAttribute("http.response.status_code", statusCode);
   if (error) {
-    span.recordException(error);
+    span.recordException(error instanceof Error ? error : String(error));
     span.setStatus({ code: SpanStatusCode.ERROR });
   } else if (statusCode >= 500) {
     span.setStatus({ code: SpanStatusCode.ERROR });
@@ -73,7 +73,8 @@ function finishSpan(event: object, statusCode: number, error?: Error): void {
 }
 
 export default defineNitroPlugin((nitroApp) => {
-  nitroApp.hooks.hook("request", (event) => {
+  const handleRequest = nitroApp.h3App.handler;
+  nitroApp.h3App.handler = async (event) => {
     const request = event.node.req;
     const url = new URL(request.url ?? "/", "http://localhost");
     const parentContext = propagation.extract(context.active(), request.headers, headerGetter);
@@ -89,16 +90,19 @@ export default defineNitroPlugin((nitroApp) => {
       parentContext,
     );
     requestSpans.set(event, span);
-  });
+    const requestContext = trace.setSpan(parentContext, span);
 
-  nitroApp.hooks.hook("afterResponse", (event) => {
-    finishSpan(event, event.node.res.statusCode);
-  });
-
-  nitroApp.hooks.hook("error", (error, errorContext) => {
-    const event = errorContext.event;
-    if (event) finishSpan(event, event.node.res.statusCode || 500, error);
-  });
+    return context.with(requestContext, async () => {
+      try {
+        return await handleRequest(event);
+      } catch (error) {
+        finishSpan(event, event.node.res.statusCode || 500, error);
+        throw error;
+      } finally {
+        finishSpan(event, event.node.res.statusCode);
+      }
+    });
+  };
 });
 `;
 }

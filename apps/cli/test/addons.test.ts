@@ -462,6 +462,60 @@ describe("Addon Configurations", () => {
       expect(lefthook.match(/biome:/g)).toHaveLength(1);
     });
 
+    it("preserves anchored Lefthook job and command collections", async () => {
+      for (const fixture of [
+        {
+          projectName: "gitleaks-anchored-jobs",
+          alias: "shared-jobs",
+          yaml:
+            "shared-jobs: &shared-jobs\n  - name: existing\n    run: bun run existing\npre-commit:\n  jobs: *shared-jobs\n",
+        },
+        {
+          projectName: "gitleaks-anchored-commands",
+          alias: "shared-commands",
+          yaml:
+            "shared-commands: &shared-commands\n  existing:\n    run: bun run existing\npre-commit:\n  commands: *shared-commands\n",
+        },
+      ]) {
+        const result = await runTRPCTest({
+          projectName: fixture.projectName,
+          addons: ["lefthook"],
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "trpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        const lefthookPath = join(result.projectDir!, "lefthook.yml");
+        writeFileSync(lefthookPath, fixture.yaml);
+        const config = {
+          ...result.result!.projectConfig,
+          projectDir: result.projectDir!,
+          addons: ["lefthook", "biome", "gitleaks"] as const,
+        };
+
+        await setupAddons(config, ["biome", "gitleaks"]);
+        await setupAddons(config, ["biome", "gitleaks"]);
+
+        const lefthook = readFileSync(lefthookPath, "utf-8");
+        expect(lefthook).toContain(`*${fixture.alias}`);
+        expect(lefthook).toContain("run: bun run existing");
+        expect(lefthook.match(/gitleaks git --pre-commit --redact --staged --verbose/g)).toHaveLength(
+          1,
+        );
+        expect(lefthook.match(/(?:name: biome|biome:)/g)).toHaveLength(1);
+      }
+    });
+
     it("scopes Lefthook idempotency to the pre-commit hook", async () => {
       const result = await runTRPCTest({
         projectName: "gitleaks-scoped-lefthook",

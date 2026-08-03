@@ -45,7 +45,7 @@ export async function displayPostInstallInstructions(
   } = config;
 
   if (ecosystem !== "typescript" && addons?.includes("gitleaks")) {
-    consola.box(getGitleaksInstructions("gitleaks", false));
+    consola.box(getGitleaksInstructions("gitleaks", false, config.git));
   }
 
   // Handle Rust projects with different instructions
@@ -369,8 +369,12 @@ function getKnipInstructions(runCmd: string) {
   )} Scan the workspace: ${`${runCmd} knip`}\n`;
 }
 
-function getGitleaksInstructions(runCmd: string, hasPackageScript = true) {
-  const scanCommand = hasPackageScript ? `${runCmd} secrets:scan` : "gitleaks git --redact --verbose";
+function getGitleaksInstructions(runCmd: string, hasPackageScript = true, gitEnabled = true) {
+  const scanCommand = hasPackageScript
+    ? `${runCmd} secrets:scan`
+    : gitEnabled
+      ? "gitleaks git --redact --verbose"
+      : "gitleaks dir . --redact --verbose";
   return (
     `${pc.bold("Secret scanning with Gitleaks:")}\n` +
     `${pc.cyan("•")} Install the Gitleaks binary: ${pc.underline("https://github.com/gitleaks/gitleaks#installing")}\n` +

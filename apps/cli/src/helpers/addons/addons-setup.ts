@@ -229,7 +229,7 @@ function hasGitleaksLefthookCommand(content: string): boolean {
   const preCommit = resolveLefthookMap(document, document.get("pre-commit", true));
   if (!isMap(preCommit)) return false;
 
-  const jobs = preCommit.get("jobs", true);
+  const jobs = resolveLefthookSeq(document, preCommit.get("jobs", true));
   if (
     isSeq(jobs) &&
     jobs.items.some((job) => isMap(job) && job.get("run") === GITLEAKS_HOOK_COMMAND)
@@ -237,7 +237,7 @@ function hasGitleaksLefthookCommand(content: string): boolean {
     return true;
   }
 
-  const commands = preCommit.get("commands", true);
+  const commands = resolveLefthookMap(document, preCommit.get("commands", true));
   return (
     isMap(commands) &&
     commands.items.some(
@@ -252,6 +252,14 @@ function resolveLefthookMap(document: ReturnType<typeof parseDocument>, node: un
 
   const resolved = node.resolve(document);
   return isMap(resolved) ? resolved : undefined;
+}
+
+function resolveLefthookSeq(document: ReturnType<typeof parseDocument>, node: unknown) {
+  if (isSeq(node)) return node;
+  if (!isAlias(node)) return undefined;
+
+  const resolved = node.resolve(document);
+  return isSeq(resolved) ? resolved : undefined;
 }
 
 export async function isGitleaksSetupComplete(
@@ -318,11 +326,11 @@ async function ensureGitleaksLefthookHook(projectDir: string) {
 
   if (hasGitleaksLefthookCommand(content)) return;
 
-  const jobs = preCommit.get("jobs", true);
+  const jobs = resolveLefthookSeq(document, preCommit.get("jobs", true));
   if (isSeq(jobs)) {
     jobs.add({ name: "gitleaks", run: GITLEAKS_HOOK_COMMAND });
   } else {
-    const commands = preCommit.get("commands", true);
+    const commands = resolveLefthookMap(document, preCommit.get("commands", true));
     if (isMap(commands)) {
       commands.set("gitleaks", { run: GITLEAKS_HOOK_COMMAND });
     } else {
@@ -361,7 +369,7 @@ async function ensureLinterLefthookHook(
   }
   if (!isMap(preCommit)) return;
 
-  const jobs = preCommit.get("jobs", true);
+  const jobs = resolveLefthookSeq(document, preCommit.get("jobs", true));
   if (isSeq(jobs)) {
     for (const definition of definitions) {
       const existing = jobs.items.find(
@@ -374,7 +382,7 @@ async function ensureLinterLefthookHook(
       }
     }
   } else {
-    const commands = preCommit.get("commands", true);
+    const commands = resolveLefthookMap(document, preCommit.get("commands", true));
     if (isMap(commands)) {
       for (const { name, ...definition } of definitions) commands.set(name, definition);
     } else {
@@ -428,7 +436,7 @@ export async function isLinterLefthookSetupComplete(
   if (!isMap(preCommit)) return false;
 
   const definitions = getLefthookLinterDefinitions(linter, packageManager);
-  const jobs = preCommit.get("jobs", true);
+  const jobs = resolveLefthookSeq(document, preCommit.get("jobs", true));
   if (isSeq(jobs)) {
     return definitions.every((definition) =>
       jobs.items.some(
@@ -440,7 +448,7 @@ export async function isLinterLefthookSetupComplete(
     );
   }
 
-  const commands = preCommit.get("commands", true);
+  const commands = resolveLefthookMap(document, preCommit.get("commands", true));
   if (!isMap(commands)) return false;
   return definitions.every((definition) => {
     const command = commands.get(definition.name, true);
