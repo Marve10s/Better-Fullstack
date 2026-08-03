@@ -252,6 +252,11 @@ export async function createVirtual(
     }
     applyEffectBackendDefaults(config, new Set(Object.keys(options)));
 
+    if (config.integrations === "nango") {
+      const { validateConfigForProgrammaticUse } = await import("./utils/config-validation");
+      validateConfigForProgrammaticUse(config);
+    }
+
     const { generateVirtualProject: generate, EMBEDDED_TEMPLATES } =
       await import("@better-fullstack/template-generator");
 

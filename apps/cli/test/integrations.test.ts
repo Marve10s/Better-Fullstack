@@ -2,13 +2,16 @@ import {
   analyzeStackCompatibility,
   getDisabledReason,
   IntegrationsSchema,
+  parseStackPartSpecs,
 } from "@better-fullstack/types";
 import { describe, expect, test } from "bun:test";
 import { readFile } from "node:fs/promises";
 
+import { createVirtual } from "../src/index";
 import { resolveIntegrationsPrompt } from "../src/prompts/integrations";
 import { buildCompatibilityInputFromConfig } from "../src/utils/stack-compatibility";
 import { createCustomConfig, expectSuccess, runTRPCTest } from "./test-utils";
+import { readVirtualFileContent } from "./virtual-tree-utils";
 
 describe("third-party integrations", () => {
   test("keeps the Nango option in the canonical schema", () => {
@@ -100,8 +103,77 @@ describe("third-party integrations", () => {
     expect(result.adjustedStack?.integrations).toBe("none");
     expect(result.changes.some((change) => change.category === "integrations")).toBe(true);
     expect(getDisabledReason(input, "integrations", "nango")).toContain("Cloudflare Workers");
-    expect(
-      getDisabledReason({ ...input, webDeploy: "none" }, "webDeploy", "cloudflare"),
-    ).toContain("Cloudflare Workers");
+    expect(getDisabledReason({ ...input, webDeploy: "none" }, "webDeploy", "cloudflare")).toContain(
+      "Cloudflare Workers",
+    );
+  });
+
+  test("rejects unsupported Nango requests through createVirtual", async () => {
+    const cases = [
+      {
+        options: { ecosystem: "python" as const, integrations: "nango" as const },
+        error: "only available for the TypeScript ecosystem",
+      },
+      {
+        options: { backend: "none" as const, integrations: "nango" as const },
+        error: "No backend selected",
+      },
+      {
+        options: { backend: "convex" as const, integrations: "nango" as const },
+        error: "not available with Convex backend",
+      },
+      {
+        options: {
+          backend: "hono" as const,
+          runtime: "workers" as const,
+          integrations: "nango" as const,
+        },
+        error: "not available on Cloudflare Workers",
+      },
+      {
+        options: {
+          frontend: ["next" as const],
+          backend: "self" as const,
+          runtime: "none" as const,
+          webDeploy: "cloudflare" as const,
+          integrations: "nango" as const,
+        },
+        error: "not available on Cloudflare Workers",
+      },
+    ];
+
+    const results = await Promise.all(cases.map(({ options }) => createVirtual(options)));
+
+    for (const [index, { error }] of cases.entries()) {
+      const result = results[index];
+      expect(result).toBeDefined();
+      if (!result) continue;
+      expect(result.success).toBe(false);
+      expect(result.error).toContain(error);
+    }
+  });
+
+  test("accepts createVirtual Nango owned by a graph TypeScript backend", async () => {
+    const result = await createVirtual({
+      projectName: "nango-native-graph",
+      ecosystem: "react-native",
+      frontend: ["native-bare"],
+      backend: "none",
+      runtime: "none",
+      api: "none",
+      integrations: "nango",
+      stackParts: parseStackPartSpecs([
+        "mobile:react-native:native-bare",
+        "backend:typescript:hono",
+        "backend.runtime:typescript:bun",
+        "backend.integrations:typescript:nango",
+      ]),
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.tree).toBeDefined();
+    expect(readVirtualFileContent(result.tree!.root, "apps/server/src/lib/nango.ts")).toContain(
+      'import { Nango } from "@nangohq/node"',
+    );
   });
 });
