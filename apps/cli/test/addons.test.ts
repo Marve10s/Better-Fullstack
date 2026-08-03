@@ -517,6 +517,7 @@ describe("Addon Configurations", () => {
         expect(compose).toContain("NEXT_PUBLIC_SERVER_URL: http://localhost:8000");
         expect(dockerfile).toContain("ARG NEXT_PUBLIC_SERVER_URL=http://localhost:3000");
         expect(nextConfig).toContain('output: "standalone"');
+        expect(nextConfig).toContain("outputFileTracingRoot: workspaceRoot");
         expect(existsSync(join(result.projectDir!, "apps", "web", "public", ".gitkeep"))).toBe(
           true,
         );
