@@ -158,6 +158,8 @@ describe("Go Language Support", () => {
       expect(tracing).toContain('otelhttp.NewHandler(next, "http.server")');
       expect(tracing).toContain("trace.WithSpanKind(trace.SpanKindServer)");
       expect(tracing).toContain("RunWithGracefulShutdown");
+      expect(tracing).toContain("serverCtx, cancelServer");
+      expect(tracing).toContain("tracingCtx, cancelTracing");
       const server = getFileContent(root, "cmd/server/main.go");
       expect(server).toContain("appobservability.InitTracing(context.Background())");
       expect(server).toContain("appobservability.TraceHTTP(r)");

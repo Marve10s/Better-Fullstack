@@ -141,14 +141,19 @@ startTracing();
 // Flush pending spans and metrics on normal container/process termination.
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
   process.once(signal, () => {
+    // EventEmitter removes this once-listener before invoking it, so any
+    // remaining listener belongs to the generated framework/application.
+    const hasApplicationShutdownHandler = process.listenerCount(signal) > 0;
     void shutdownTracing()
       .catch((error) => console.error(`[SigNoz] Failed to flush telemetry on ${signal}`, error))
       .finally(() => {
-        // Re-raise with the original signal after the telemetry flush. Removing
-        // signal listeners restores Node's default termination behavior instead
-        // of leaving persistent HTTP servers alive after SIGINT or SIGTERM.
-        process.removeAllListeners(signal);
-        process.kill(process.pid, signal);
+        // Framework handlers own process termination while they drain open
+        // connections. Only restore the default signal behavior when no
+        // application shutdown handler exists.
+        if (!hasApplicationShutdownHandler) {
+          process.removeAllListeners(signal);
+          process.kill(process.pid, signal);
+        }
       });
   });
 }

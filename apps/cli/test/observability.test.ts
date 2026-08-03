@@ -44,6 +44,8 @@ describe("Observability Configurations", () => {
       expect(tracing).toContain("startTracing();");
       expect(tracing).toContain("export function withTracing");
       expect(tracing).toContain("process.once(signal");
+      expect(tracing).toContain("hasApplicationShutdownHandler");
+      expect(tracing).toContain("if (!hasApplicationShutdownHandler)");
       expect(tracing).toContain("process.kill(process.pid, signal)");
       expect(tracing).not.toContain("process.exit(0)");
       expect(serverEntry.startsWith('import "./lib/tracing";')).toBe(true);

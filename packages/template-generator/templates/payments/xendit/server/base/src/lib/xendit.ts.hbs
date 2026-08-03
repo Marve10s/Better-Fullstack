@@ -66,6 +66,7 @@ export async function createXenditPaymentSession(
     method: "POST",
     headers: {
       Authorization: `Basic ${btoa(`${env.XENDIT_SECRET_KEY}:`)}`,
+      "api-version": "2024-11-11",
       "Content-Type": "application/json",
     },
     body: JSON.stringify({

@@ -929,6 +929,7 @@ describe("Payments Options", () => {
 
       expect(helper).toContain('import { env } from "@xendit-hono/env/server"');
       expect(helper).toContain("fetch(`${apiUrl}/sessions`");
+      expect(helper).toContain('"api-version": "2024-11-11"');
       expect(helper).toContain('session_type: "PAY"');
       expect(helper).toContain("payment_link_url");
       expect(helper).toContain("verifyXenditWebhookToken");

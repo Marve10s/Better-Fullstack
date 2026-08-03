@@ -138,9 +138,17 @@ func RunWithGracefulShutdown(
 	case err := <-serverErrors:
 		return err
 	case <-shutdownSignals:
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-		return errors.Join(shutdownServer(shutdownCtx), shutdownTracing(shutdownCtx))
+		serverCtx, cancelServer := context.WithTimeout(context.Background(), 10*time.Second)
+		serverErr := shutdownServer(serverCtx)
+		cancelServer()
+
+		// Give telemetry its own deadline so a slow server drain cannot consume
+		// the time reserved for flushing the final spans and metrics.
+		tracingCtx, cancelTracing := context.WithTimeout(context.Background(), 10*time.Second)
+		tracingErr := shutdownTracing(tracingCtx)
+		cancelTracing()
+
+		return errors.Join(serverErr, tracingErr)
 	}
 }
 {{/if}}
