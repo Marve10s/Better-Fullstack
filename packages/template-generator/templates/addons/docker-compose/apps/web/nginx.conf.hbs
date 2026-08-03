@@ -10,7 +10,7 @@ server {
     add_header X-Frame-Options "DENY" always;
     add_header X-XSS-Protection "0" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'{{#if (includes addons "kong")}} http://localhost:8000{{/if}}; object-src 'none'; base-uri 'self'; frame-ancestors 'none'" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'{{#if (includes addons "kong")}} http://localhost:8000{{else if graphWebFrontend}}{{#if (eq ecosystem "python")}} http://localhost:8000{{else if (eq ecosystem "rust")}} http://localhost:3000{{else}} http://localhost:8080{{/if}}{{/if}}; object-src 'none'; base-uri 'self'; frame-ancestors 'none'" always;
     add_header Permissions-Policy "camera=(), geolocation=(), microphone=(), payment=(), usb=()" always;
 
     # Gzip compression

@@ -49,6 +49,32 @@ USER nextjs
 EXPOSE 3000
 ENV PORT=3000
 CMD ["node", "apps/web/server.js"]
+{{else if (eq packageManager "yarn")}}
+FROM node:20-alpine AS base
+RUN corepack enable && corepack prepare yarn@4.12.0 --activate
+WORKDIR /app
+
+FROM base AS builder
+COPY . .
+RUN if [ -f yarn.lock ]; then yarn install --immutable; else yarn install; fi
+ARG NEXT_PUBLIC_SERVER_URL=http://localhost:3000
+ENV NEXT_PUBLIC_SERVER_URL=${NEXT_PUBLIC_SERVER_URL}
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN yarn workspace web build
+
+FROM base AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/public ./apps/web/public
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
+USER nextjs
+EXPOSE 3000
+ENV PORT=3000
+CMD ["node", "apps/web/server.js"]
 {{else}}
 FROM node:20-alpine AS base
 WORKDIR /app

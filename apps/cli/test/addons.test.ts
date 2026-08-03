@@ -583,6 +583,82 @@ describe("Addon Configurations", () => {
         expect(dockerfile).not.toContain("npm run build --workspace=apps/web");
       });
 
+      it("should build Next.js and Vite frontends with Yarn workspace commands", async () => {
+        for (const frontend of ["next", "react-vite"] as const) {
+          const result = await runTRPCTest({
+            projectName: `kong-${frontend}-yarn`,
+            packageManager: "yarn",
+            addons: ["kong"],
+            frontend: [frontend],
+            backend: "hono",
+            runtime: "node",
+            database: "sqlite",
+            orm: "drizzle",
+            auth: "none",
+            api: "trpc",
+            examples: ["none"],
+            dbSetup: "none",
+            webDeploy: "none",
+            serverDeploy: "none",
+            install: false,
+          });
+
+          expectSuccess(result);
+          const dockerfileName = frontend === "next" ? "Dockerfile.next" : "Dockerfile.vite";
+          const dockerfile = readFileSync(
+            join(result.projectDir!, "apps", "web", dockerfileName),
+            "utf8",
+          );
+          expect(dockerfile).toContain("corepack prepare yarn@4.12.0 --activate");
+          expect(dockerfile).toContain("yarn install --immutable");
+          expect(dockerfile).toContain("RUN yarn workspace web build");
+          expect(dockerfile).not.toContain("npm run build --workspace=apps/web");
+        }
+      });
+
+      it("should use backend-specific production output for AdonisJS and Nitro", async () => {
+        for (const { backend, runtime, output, command } of [
+          {
+            backend: "adonisjs" as const,
+            runtime: "node" as const,
+            output: "/app/apps/server/build ./apps/server/build",
+            command: 'CMD ["node", "bin/server.js"]',
+          },
+          {
+            backend: "nitro" as const,
+            runtime: "node" as const,
+            output: "/app/apps/server/.output ./apps/server/.output",
+            command: 'CMD ["node", ".output/server/index.mjs"]',
+          },
+        ]) {
+          const result = await runTRPCTest({
+            projectName: `kong-${backend}`,
+            addons: ["kong"],
+            frontend: ["react-vite"],
+            backend,
+            runtime,
+            database: "sqlite",
+            orm: "drizzle",
+            auth: "none",
+            api: "trpc",
+            examples: ["none"],
+            dbSetup: "none",
+            webDeploy: "none",
+            serverDeploy: "none",
+            install: false,
+          });
+
+          expectSuccess(result);
+          const dockerfile = readFileSync(
+            join(result.projectDir!, "apps", "server", "Dockerfile"),
+            "utf8",
+          );
+          expect(dockerfile).toContain(output);
+          expect(dockerfile).toContain(command);
+          expect(dockerfile).not.toContain("/app/apps/server/dist ./apps/server/dist");
+        }
+      });
+
       it("should copy React Router's client build into the web image", async () => {
         const result = await runTRPCTest({
           projectName: "kong-react-router",

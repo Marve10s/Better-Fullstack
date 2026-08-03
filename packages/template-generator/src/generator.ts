@@ -86,6 +86,7 @@ type EcosystemBaseTemplateProcessor = (
 type ProjectConfigWithCiWorkingDirectory = ProjectConfig & {
   ciWorkingDirectory?: string;
   ciHasTestScript?: boolean;
+  graphBackendTargetPath?: string;
 };
 
 const ECOSYSTEM_BASE_TEMPLATE_PROCESSORS = {
@@ -319,6 +320,7 @@ async function processGraphTemplates(
       } as ProjectConfigWithCiWorkingDirectory;
       if (addonConfig.addons.some((addon) => addon !== "none")) {
         addonConfig.ciWorkingDirectory = targetPath;
+        addonConfig.graphBackendTargetPath = targetPath;
         await processAddonTemplates(vfs, templates, addonConfig);
       }
     }

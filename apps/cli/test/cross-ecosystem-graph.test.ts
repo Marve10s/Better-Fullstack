@@ -167,6 +167,32 @@ describe("Cross-ecosystem graph generation", () => {
     expect(compose).toContain("VITE_SERVER_URL: http://localhost:3000");
     expect(compose).not.toContain("VITE_SERVER_URL: http://localhost:8000");
     expect(compose).toContain('"3000:3000"');
+    expect(fileContent(result.tree!.root, "apps/web/nginx.conf")).toContain(
+      "connect-src 'self' http://localhost:3000",
+    );
+  });
+
+  it("keeps server-only graph containers in the backend target path", async () => {
+    const result = await createVirtual({
+      projectName: "python-kong-server-only",
+      frontend: [],
+      backend: "none",
+      api: "none",
+      runtime: "none",
+      addons: ["kong"],
+      stackParts: graphParts([
+        "backend:python:fastapi",
+        "workspaceTooling:universal:kong",
+      ]),
+    });
+
+    expect(result.success).toBe(true);
+    const root = result.tree!.root;
+    const compose = fileContent(root, "docker-compose.yml");
+    expect(compose).toContain("context: apps/server");
+    expect(compose).toContain("- apps/server/.env");
+    expect(fileContent(root, "apps/server/Dockerfile")).toContain("FROM python:3.12-slim");
+    expect(fileContent(root, "apps/server/.dockerignore")).toContain(".env*");
   });
 
   it("connects a TypeScript Next frontend to an Elixir Phoenix backend", async () => {

@@ -29,6 +29,22 @@ ARG VITE_SERVER_URL=http://localhost:3000
 ENV VITE_SERVER_URL=${VITE_SERVER_URL}
 {{/if}}
 RUN pnpm --filter web build
+{{else if (eq packageManager "yarn")}}
+FROM node:20-alpine AS base
+RUN corepack enable && corepack prepare yarn@4.12.0 --activate
+WORKDIR /app
+
+FROM base AS builder
+COPY . .
+RUN if [ -f yarn.lock ]; then yarn install --immutable; else yarn install; fi
+{{#if (includes frontend "astro")}}
+ARG PUBLIC_SERVER_URL=http://localhost:3000
+ENV PUBLIC_SERVER_URL=${PUBLIC_SERVER_URL}
+{{else}}
+ARG VITE_SERVER_URL=http://localhost:3000
+ENV VITE_SERVER_URL=${VITE_SERVER_URL}
+{{/if}}
+RUN yarn workspace web build
 {{else}}
 FROM node:20-alpine AS builder
 WORKDIR /app
