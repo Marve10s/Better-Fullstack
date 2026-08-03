@@ -1442,6 +1442,7 @@ export function validateFullConfig(
       config.pythonWebFramework,
       config.goWebFramework,
       config.rustWebFramework,
+      config.rustApi,
     );
     config.addons = [...new Set(config.addons)];
   }
@@ -1526,6 +1527,7 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
         config.pythonWebFramework,
         config.goWebFramework,
         config.rustWebFramework,
+        config.rustApi,
       );
     }
 

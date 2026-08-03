@@ -1,6 +1,5 @@
-import { describe, expect, it } from "bun:test";
-
 import { cliInputToProjectConfigPartial, getLocalWebDevPort } from "@better-fullstack/types";
+import { describe, expect, it } from "bun:test";
 
 import { createVirtual } from "../src/index";
 import { displayConfig } from "../src/utils/display-config";
@@ -90,6 +89,34 @@ function componentEnvReferenceFor(frontend: string) {
 }
 
 describe("Cross-ecosystem graph generation", () => {
+  it("routes a TypeScript web app through Kong to its Python graph backend", async () => {
+    const result = await createVirtual({
+      projectName: "vite-python-kong",
+      frontend: ["react-vite"],
+      backend: "none",
+      api: "none",
+      runtime: "none",
+      addons: ["kong"],
+      stackParts: graphParts([
+        "frontend:typescript:react-vite",
+        "backend:python:fastapi",
+        "workspaceTooling:universal:kong",
+      ]),
+    });
+
+    expect(result.success).toBe(true);
+    const root = result.tree!.root;
+    const compose = fileContent(root, "docker-compose.yml");
+    const kong = fileContent(root, "kong/kong.yml");
+
+    expect(compose).toContain("dockerfile: apps/web/Dockerfile.vite");
+    expect(compose).toContain("VITE_SERVER_URL: http://localhost:8000");
+    expect(compose).toContain("context: apps/server");
+    expect(compose).toContain("- app");
+    expect(kong).toContain("url: http://app:8000");
+    expect(fileContent(root, "apps/server/Dockerfile")).toContain("FROM python:3.12-slim");
+  });
+
   it("connects a TypeScript Next frontend to an Elixir Phoenix backend", async () => {
     const result = await createVirtual({
       projectName: "next-phoenix",
@@ -167,80 +194,74 @@ describe("Cross-ecosystem graph generation", () => {
     expect(fileContent(root, "README.md")).toContain("Astro frontends can be generated with Rust");
   });
 
-  it(
-    "dry-runs every TypeScript web frontend with every non-TypeScript backend",
-    async () => {
-      for (const frontend of WEB_FRONTENDS) {
-        for (const [ecosystem, backend] of NON_TYPESCRIPT_BACKENDS) {
-          const result = await createVirtual({
-            projectName: `graph-${frontend}-${ecosystem}-${backend}`.replaceAll(
-              /[^a-z0-9-]/g,
-              "-",
-            ),
-            frontend: [frontend],
-            backend: "none",
-            api: "none",
-            runtime: "none",
-            astroIntegration: frontend === "astro" ? "react" : "none",
-            javaBuildTool: ecosystem === "java" ? "maven" : "none",
-            dotnetTesting: ecosystem === "dotnet" ? [] : undefined,
-            stackParts: graphParts([
-              `frontend:typescript:${frontend}`,
-              `backend:${ecosystem}:${backend}`,
-              ...(ecosystem === "java" ? ["backend.buildTool:java:maven"] : []),
-            ]),
-          });
+  it("dry-runs every TypeScript web frontend with every non-TypeScript backend", async () => {
+    for (const frontend of WEB_FRONTENDS) {
+      for (const [ecosystem, backend] of NON_TYPESCRIPT_BACKENDS) {
+        const result = await createVirtual({
+          projectName: `graph-${frontend}-${ecosystem}-${backend}`.replaceAll(/[^a-z0-9-]/g, "-"),
+          frontend: [frontend],
+          backend: "none",
+          api: "none",
+          runtime: "none",
+          astroIntegration: frontend === "astro" ? "react" : "none",
+          javaBuildTool: ecosystem === "java" ? "maven" : "none",
+          dotnetTesting: ecosystem === "dotnet" ? [] : undefined,
+          stackParts: graphParts([
+            `frontend:typescript:${frontend}`,
+            `backend:${ecosystem}:${backend}`,
+            ...(ecosystem === "java" ? ["backend.buildTool:java:maven"] : []),
+          ]),
+        });
 
-          expect(result.success, `${frontend} + ${ecosystem}:${backend}`).toBe(true);
-          const root = result.tree!.root;
-          const env = fileContent(root, envPathFor(frontend));
-          expect(env).toContain(
-            `${envVarNameFor(frontend)}=${serverUrlFor(ecosystem, backend)}`,
+        expect(result.success, `${frontend} + ${ecosystem}:${backend}`).toBe(true);
+        const root = result.tree!.root;
+        const env = fileContent(root, envPathFor(frontend));
+        expect(env).toContain(`${envVarNameFor(frontend)}=${serverUrlFor(ecosystem, backend)}`);
+
+        // The backend env pins CORS to the web frontend's dev origin.
+        const corsLine = `CORS_ORIGIN=${webOriginFor(frontend)}`;
+        expect(
+          fileContent(root, "apps/server/.env"),
+          `${frontend} + ${ecosystem}:${backend}`,
+        ).toContain(corsLine);
+        expect(
+          fileContent(root, "apps/server/.env.example"),
+          `${frontend} + ${ecosystem}:${backend}`,
+        ).toContain(corsLine);
+
+        expect(fileContent(root, graphDocPathFor(frontend))).toContain("Health URL:");
+        expect(fileContent(root, "README.md")).toContain("multi-ecosystem project graph");
+
+        if (ecosystem === "python") {
+          const backendReadme = fileContent(root, "apps/server/README.md");
+          expect(backendReadme).toContain("Python backend");
+          const rootPackage = JSON.parse(fileContent(root, "package.json")) as {
+            scripts?: Record<string, string>;
+          };
+          expect(rootPackage.scripts?.["setup:server"]).toBe(
+            "cd apps/server && uv sync --extra dev",
           );
-
-          // The backend env pins CORS to the web frontend's dev origin.
-          const corsLine = `CORS_ORIGIN=${webOriginFor(frontend)}`;
-          expect(fileContent(root, "apps/server/.env"), `${frontend} + ${ecosystem}:${backend}`).toContain(corsLine);
-          expect(
-            fileContent(root, "apps/server/.env.example"),
-            `${frontend} + ${ecosystem}:${backend}`,
-          ).toContain(corsLine);
-
-          expect(fileContent(root, graphDocPathFor(frontend))).toContain("Health URL:");
-          expect(fileContent(root, "README.md")).toContain("multi-ecosystem project graph");
-
-          if (ecosystem === "python") {
-            const backendReadme = fileContent(root, "apps/server/README.md");
-            expect(backendReadme).toContain("Python backend");
-            const rootPackage = JSON.parse(fileContent(root, "package.json")) as {
-              scripts?: Record<string, string>;
-            };
-            expect(rootPackage.scripts?.["setup:server"]).toBe(
-              "cd apps/server && uv sync --extra dev",
+          if (backend === "fastapi") {
+            expect(rootPackage.scripts?.["dev:server"]).toBe(
+              "cd apps/server && uv run uvicorn app.main:app --reload --host 0.0.0.0 --port ${PORT:-8000}",
             );
-            if (backend === "fastapi") {
-              expect(rootPackage.scripts?.["dev:server"]).toBe(
-                "cd apps/server && uv run uvicorn app.main:app --reload --host 0.0.0.0 --port ${PORT:-8000}",
-              );
-              expect(backendReadme).toContain("uv run uvicorn app.main:app");
-            } else if (backend === "litestar") {
-              expect(rootPackage.scripts?.["dev:server"]).toBe(
-                "cd apps/server && uv run litestar --app src.app.main:app run --reload --host 0.0.0.0 --port ${PORT:-8000}",
-              );
-              expect(backendReadme).toContain("uv run litestar --app src.app.main:app run");
-            }
-            expect(rootPackage.scripts?.["check:server"]).toBe(
-              "cd apps/server && uv run --extra dev ruff check .",
+            expect(backendReadme).toContain("uv run uvicorn app.main:app");
+          } else if (backend === "litestar") {
+            expect(rootPackage.scripts?.["dev:server"]).toBe(
+              "cd apps/server && uv run litestar --app src.app.main:app run --reload --host 0.0.0.0 --port ${PORT:-8000}",
             );
-            expect(rootPackage.scripts?.["test:server"]).toBe(
-              "cd apps/server && uv run --extra dev pytest",
-            );
+            expect(backendReadme).toContain("uv run litestar --app src.app.main:app run");
           }
+          expect(rootPackage.scripts?.["check:server"]).toBe(
+            "cd apps/server && uv run --extra dev ruff check .",
+          );
+          expect(rootPackage.scripts?.["test:server"]).toBe(
+            "cd apps/server && uv run --extra dev pytest",
+          );
         }
       }
-    },
-    30_000,
-  );
+    }
+  }, 30_000);
 
   it("uses the selected package manager in graph README app commands", async () => {
     const result = await createVirtual({
@@ -284,10 +305,7 @@ describe("Cross-ecosystem graph generation", () => {
     const output = displayConfig({
       backend: "none",
       auth: "none",
-      stackParts: graphParts([
-        "backend:elixir:phoenix",
-        "backend.auth:elixir:phx-gen-auth",
-      ]),
+      stackParts: graphParts(["backend:elixir:phoenix", "backend.auth:elixir:phx-gen-auth"]),
     });
 
     expect(output).toContain("Backend:");
@@ -465,9 +483,7 @@ describe("Cross-ecosystem graph generation", () => {
     expect(fileContent(root, "apps/web/.env")).toContain(
       "NEXT_PUBLIC_SERVER_URL=http://localhost:8080",
     );
-    expect(fileContent(root, "apps/server/.env")).toContain(
-      "CORS_ORIGIN=http://localhost:3001",
-    );
+    expect(fileContent(root, "apps/server/.env")).toContain("CORS_ORIGIN=http://localhost:3001");
     const backendEnvExample = fileContent(root, "apps/server/.env.example");
     expect(backendEnvExample).toContain("CORS_ORIGIN=http://localhost:3001");
     // The port in the frontend's server URL matches the backend's env-driven PORT.

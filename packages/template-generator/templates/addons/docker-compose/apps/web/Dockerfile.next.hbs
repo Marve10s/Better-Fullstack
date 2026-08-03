@@ -5,6 +5,8 @@ WORKDIR /app
 FROM base AS builder
 COPY . .
 RUN if [ -f bun.lock ]; then bun install --frozen-lockfile; else bun install; fi
+ARG NEXT_PUBLIC_SERVER_URL=http://localhost:3000
+ENV NEXT_PUBLIC_SERVER_URL=${NEXT_PUBLIC_SERVER_URL}
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN bun run --filter web build
 
@@ -29,6 +31,8 @@ WORKDIR /app
 FROM base AS builder
 COPY . .
 RUN if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile; else pnpm install; fi
+ARG NEXT_PUBLIC_SERVER_URL=http://localhost:3000
+ENV NEXT_PUBLIC_SERVER_URL=${NEXT_PUBLIC_SERVER_URL}
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN pnpm --filter web build
 
@@ -52,6 +56,8 @@ WORKDIR /app
 FROM base AS builder
 COPY . .
 RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
+ARG NEXT_PUBLIC_SERVER_URL=http://localhost:3000
+ENV NEXT_PUBLIC_SERVER_URL=${NEXT_PUBLIC_SERVER_URL}
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build --workspace=apps/web
 

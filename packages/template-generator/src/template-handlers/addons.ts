@@ -1,12 +1,75 @@
 import { isBackendUtilsCompatibleBackend, type ProjectConfig } from "@better-fullstack/types";
 
 import type { VirtualFileSystem } from "../core/virtual-fs";
+
 import { type TemplateData, processSingleTemplate, processTemplatesFromPrefix } from "./utils";
+
+type DockerComposeProjectConfig = ProjectConfig & {
+  graphWebFrontend?: boolean;
+  graphBackendTargetPath?: string;
+};
+
+function processWebDockerfileTemplates(
+  vfs: VirtualFileSystem,
+  templates: TemplateData,
+  config: ProjectConfig,
+): void {
+  if (config.frontend.includes("next") || config.frontend.includes("vinext")) {
+    processSingleTemplate(
+      vfs,
+      templates,
+      "addons/docker-compose/apps/web/.dockerignore",
+      "apps/web/.dockerignore",
+      config,
+    );
+    processSingleTemplate(
+      vfs,
+      templates,
+      "addons/docker-compose/apps/web/Dockerfile.next",
+      "apps/web/Dockerfile.next",
+      config,
+    );
+  } else if (
+    config.frontend.some((f) =>
+      [
+        "tanstack-router",
+        "react-router",
+        "react-vite",
+        "vanilla-vite",
+        "vue",
+        "solid",
+        "astro",
+      ].includes(f),
+    )
+  ) {
+    processSingleTemplate(
+      vfs,
+      templates,
+      "addons/docker-compose/apps/web/.dockerignore",
+      "apps/web/.dockerignore",
+      config,
+    );
+    processSingleTemplate(
+      vfs,
+      templates,
+      "addons/docker-compose/apps/web/Dockerfile.vite",
+      "apps/web/Dockerfile.vite",
+      config,
+    );
+    processSingleTemplate(
+      vfs,
+      templates,
+      "addons/docker-compose/apps/web/nginx.conf",
+      "apps/web/nginx.conf",
+      config,
+    );
+  }
+}
 
 function processDockerComposeTemplates(
   vfs: VirtualFileSystem,
   templates: TemplateData,
-  config: ProjectConfig,
+  config: DockerComposeProjectConfig,
 ): void {
   if (config.ecosystem !== "typescript") {
     processSingleTemplate(
@@ -27,9 +90,12 @@ function processDockerComposeTemplates(
       vfs,
       templates,
       `addons/docker-compose/${config.ecosystem}/Dockerfile`,
-      "Dockerfile",
+      config.graphBackendTargetPath ? `${config.graphBackendTargetPath}/Dockerfile` : "Dockerfile",
       config,
     );
+    if (config.graphWebFrontend) {
+      processWebDockerfileTemplates(vfs, templates, config);
+    }
     return;
   }
 
@@ -55,48 +121,7 @@ function processDockerComposeTemplates(
   }
 
   // Place web Dockerfile based on frontend
-  if (config.frontend.includes("next") || config.frontend.includes("vinext")) {
-    processSingleTemplate(
-      vfs,
-      templates,
-      "addons/docker-compose/apps/web/.dockerignore",
-      "apps/web/.dockerignore",
-      config,
-    );
-    processSingleTemplate(
-      vfs,
-      templates,
-      "addons/docker-compose/apps/web/Dockerfile.next",
-      "apps/web/Dockerfile.next",
-      config,
-    );
-  } else if (
-    config.frontend.some((f) =>
-      ["tanstack-router", "react-router", "react-vite", "vanilla-vite", "vue", "solid", "astro"].includes(f),
-    )
-  ) {
-    processSingleTemplate(
-      vfs,
-      templates,
-      "addons/docker-compose/apps/web/.dockerignore",
-      "apps/web/.dockerignore",
-      config,
-    );
-    processSingleTemplate(
-      vfs,
-      templates,
-      "addons/docker-compose/apps/web/Dockerfile.vite",
-      "apps/web/Dockerfile.vite",
-      config,
-    );
-    processSingleTemplate(
-      vfs,
-      templates,
-      "addons/docker-compose/apps/web/nginx.conf",
-      "apps/web/nginx.conf",
-      config,
-    );
-  }
+  processWebDockerfileTemplates(vfs, templates, config);
 }
 
 function processDevcontainerTemplates(
@@ -126,7 +151,14 @@ export async function processAddonTemplates(
         processTemplatesFromPrefix(vfs, templates, "addons/pwa/apps/web/next", "apps/web", config);
       } else if (
         config.frontend.some((f) =>
-          ["tanstack-router", "react-router", "react-vite", "vanilla-vite", "vue", "solid"].includes(f),
+          [
+            "tanstack-router",
+            "react-router",
+            "react-vite",
+            "vanilla-vite",
+            "vue",
+            "solid",
+          ].includes(f),
         )
       ) {
         processTemplatesFromPrefix(vfs, templates, "addons/pwa/apps/web/vite", "apps/web", config);

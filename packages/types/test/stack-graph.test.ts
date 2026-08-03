@@ -833,6 +833,30 @@ describe("stack graph", () => {
     expect(validateStackParts(parts).issues).toEqual([]);
   });
 
+  it("allows Kong with a Vinext self backend", () => {
+    const parts = parseStackPartSpecs([
+      "frontend:typescript:vinext",
+      "backend:typescript:self",
+      "workspaceTooling:universal:kong",
+    ]);
+
+    expect(validateStackParts(parts).issues).toEqual([]);
+  });
+
+  it("rejects Kong with Rust gRPC and JSON-RPC APIs", () => {
+    for (const api of ["tonic", "jsonrpsee"]) {
+      const parts = parseStackPartSpecs([
+        "backend:rust:axum",
+        `backend.api:rust:${api}`,
+        "workspaceTooling:universal:kong",
+      ]);
+
+      expect(validateStackParts(parts).issues.map((issue) => issue.message)).toContain(
+        "Kong Gateway currently requires an HTTP Rust API.",
+      );
+    }
+  });
+
   it("rejects shared non-TypeScript backend service candidates through graph checks", () => {
     const javaParts = parseStackPartSpecs([
       "backend:java:spring-boot",

@@ -157,6 +157,14 @@ async function processGraphTemplates(
   templates: TemplateData,
   config: ProjectConfig,
 ): Promise<void> {
+  const nonTypeScriptBackends = (config.stackParts ?? []).filter(
+    (part) => part.role === "backend" && !part.ownerPartId && part.ecosystem !== "typescript",
+  );
+  const hasCrossEcosystemWebBackend =
+    nonTypeScriptBackends.length > 0 &&
+    (config.stackParts ?? []).some(
+      (part) => part.role === "frontend" && !part.ownerPartId && part.ecosystem === "typescript",
+    );
   const tsConfig = withGraphAddonSelections(
     config,
     stackGraphToLegacyProjectConfigForEcosystem(config, "typescript"),
@@ -172,7 +180,15 @@ async function processGraphTemplates(
     await processAuthTemplates(vfs, templates, tsConfig);
     await processPaymentsTemplates(vfs, templates, tsConfig);
     await processEmailTemplates(vfs, templates, tsConfig);
-    await processAddonTemplates(vfs, templates, withCiTemplateFlags(tsConfig));
+    const initialTsAddonConfig = hasCrossEcosystemWebBackend
+      ? {
+          ...tsConfig,
+          // Kong must be rendered from the non-TypeScript backend projection so
+          // its Compose service, Dockerfile, and upstream port agree with the graph.
+          addons: tsConfig.addons.filter((addon) => addon !== "kong"),
+        }
+      : tsConfig;
+    await processAddonTemplates(vfs, templates, withCiTemplateFlags(initialTsAddonConfig));
     await processExampleTemplates(vfs, templates, tsConfig);
     await processExtrasTemplates(vfs, templates, tsConfig);
     await processDeployTemplates(vfs, templates, tsConfig);
@@ -232,10 +248,6 @@ async function processGraphTemplates(
     }
   }
 
-  const nonTypeScriptBackends = (config.stackParts ?? []).filter(
-    (part) => part.role === "backend" && !part.ownerPartId && part.ecosystem !== "typescript",
-  );
-
   for (const part of nonTypeScriptBackends) {
     const targetPath = part.targetPath ?? getRoleTargetPath("backend") ?? "apps/server";
     const ecosystem = part.ecosystem as NonTypeScriptTemplateEcosystem;
@@ -250,17 +262,34 @@ async function processGraphTemplates(
             pythonPackageManager: config.pythonPackageManager ?? "uv",
           }
         : projectedConfig;
-    await ECOSYSTEM_BASE_TEMPLATE_PROCESSORS[ecosystem](
-      vfs,
-      templates,
-      backendConfig,
-      targetPath,
-    );
+    await ECOSYSTEM_BASE_TEMPLATE_PROCESSORS[ecosystem](vfs, templates, backendConfig, targetPath);
   }
 
   // Pin the backend's CORS to the web frontend's dev origin (must run after the
   // backend templates above so the backend .env.example exists).
   processGraphBackendEnv(vfs, tsConfig);
+
+  if (hasCrossEcosystemWebBackend && tsConfig.addons.includes("kong")) {
+    const backendPart = nonTypeScriptBackends[0];
+    if (backendPart) {
+      const targetPath = backendPart.targetPath ?? getRoleTargetPath("backend") ?? "apps/server";
+      const backendConfig = withGraphAddonSelections(
+        config,
+        stackGraphToLegacyProjectConfigForEcosystem(
+          config,
+          backendPart.ecosystem as NonTypeScriptTemplateEcosystem,
+        ),
+      );
+      await processAddonTemplates(vfs, templates, {
+        ...backendConfig,
+        addons: ["kong"],
+        frontend: tsConfig.frontend,
+        packageManager: tsConfig.packageManager,
+        graphWebFrontend: true,
+        graphBackendTargetPath: targetPath,
+      } as ProjectConfig);
+    }
+  }
 
   if (
     tsConfig.frontend.length === 0 &&

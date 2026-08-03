@@ -2088,13 +2088,31 @@ function createAddonCompatibilityIssue(
           message: `${title} currently supports Next.js, TanStack Router, React Router, React Vite, Solid, or Astro.`,
         });
       }
-      if (backendEcosystem === "typescript" && backendTool === "self" && frontendTool !== "next") {
+      if (
+        backendEcosystem === "typescript" &&
+        backendTool === "self" &&
+        frontendTool !== "next" &&
+        frontendTool !== "vinext"
+      ) {
         return createStackGraphIssue({
           code: "INCOMPATIBLE_GRAPH_SELECTION",
           partId: part.id,
           role: part.role,
           toolId: part.toolId,
-          message: `${title} self-backend support currently requires Next.js.`,
+          message: `${title} self-backend support currently requires Next.js or Vinext.`,
+        });
+      }
+      if (
+        part.toolId === "kong" &&
+        primaryEcosystem === "rust" &&
+        (apiTool === "tonic" || apiTool === "jsonrpsee")
+      ) {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: "Kong Gateway currently requires an HTTP Rust API.",
         });
       }
       if (frontendEcosystem === "rust" && frontendTool && frontendTool !== "none") {

@@ -480,6 +480,7 @@ export function validateAddonCompatibility(
   pythonWebFramework?: ProjectConfig["pythonWebFramework"],
   goWebFramework?: ProjectConfig["goWebFramework"],
   rustWebFramework?: ProjectConfig["rustWebFramework"],
+  rustApi?: ProjectConfig["rustApi"],
 ): { isCompatible: boolean; reason?: string } {
   const baseCompatibility = validateAddonCompatibilityShared(addon, frontend, _auth);
   if (!baseCompatibility.isCompatible) return baseCompatibility;
@@ -526,9 +527,17 @@ export function validateAddonCompatibility(
   // Docker Compose-backed addons target containerized/self-hosted stacks only.
   if (addon === "docker-compose" || addon === "devcontainer" || addon === "kong") {
     const label =
-      addon === "devcontainer" ? "DevContainer" : addon === "kong" ? "Kong Gateway" : "docker-compose";
+      addon === "devcontainer"
+        ? "DevContainer"
+        : addon === "kong"
+          ? "Kong Gateway"
+          : "docker-compose";
     const title =
-      addon === "devcontainer" ? "DevContainer" : addon === "kong" ? "Kong Gateway" : "Docker Compose";
+      addon === "devcontainer"
+        ? "DevContainer"
+        : addon === "kong"
+          ? "Kong Gateway"
+          : "Docker Compose";
 
     if (backend === "convex") {
       return {
@@ -564,6 +573,16 @@ export function validateAddonCompatibility(
       return {
         isCompatible: false,
         reason: "Kong Gateway requires a Rust HTTP server",
+      };
+    }
+    if (
+      addon === "kong" &&
+      ecosystem === "rust" &&
+      (rustApi === "tonic" || rustApi === "jsonrpsee")
+    ) {
+      return {
+        isCompatible: false,
+        reason: "Kong Gateway currently requires an HTTP Rust API",
       };
     }
     if (
@@ -664,6 +683,7 @@ export function validateAddonsAgainstFrontends(
   pythonWebFramework?: ProjectConfig["pythonWebFramework"],
   goWebFramework?: ProjectConfig["goWebFramework"],
   rustWebFramework?: ProjectConfig["rustWebFramework"],
+  rustApi?: ProjectConfig["rustApi"],
 ) {
   if (addons.includes("nx") && addons.includes("turborepo")) {
     exitWithError("Nx and Turborepo are alternative workspace runners. Choose one addon.");
@@ -685,6 +705,7 @@ export function validateAddonsAgainstFrontends(
       pythonWebFramework,
       goWebFramework,
       rustWebFramework,
+      rustApi,
     );
     if (!isCompatible) {
       exitWithError(`Incompatible addon/frontend combination: ${reason}`);
@@ -1017,7 +1038,10 @@ export function validateRustExpansionCompatibility(config: Partial<ProjectConfig
       message:
         "Torii's sqlx-based SQLite storage conflicts with rusqlite: both link the native sqlite3 library and cargo permits only one linker.",
       provided: { "rust-orm": orm, "rust-auth": auth },
-      suggestions: ["Use --rust-orm sqlx, sea-orm, or diesel with Torii", "Choose --rust-auth none"],
+      suggestions: [
+        "Use --rust-orm sqlx, sea-orm, or diesel with Torii",
+        "Choose --rust-auth none",
+      ],
     });
   }
 }

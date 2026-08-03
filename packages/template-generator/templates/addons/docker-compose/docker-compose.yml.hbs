@@ -36,6 +36,10 @@ services:
       context: .
 {{#if (or (includes frontend "next") (includes frontend "vinext"))}}
       dockerfile: apps/web/Dockerfile.next
+{{#if (includes addons "kong")}}
+      args:
+        NEXT_PUBLIC_SERVER_URL: http://localhost:8000
+{{/if}}
 {{else}}
       dockerfile: apps/web/Dockerfile.vite
       args:
@@ -172,10 +176,37 @@ volumes:
   mongo_data:
 {{/if}}
 {{else}}
-  app:
+{{#if graphWebFrontend}}
+  web:
     build:
       context: .
+{{#if (or (includes frontend "next") (includes frontend "vinext"))}}
+      dockerfile: apps/web/Dockerfile.next
+      args:
+        NEXT_PUBLIC_SERVER_URL: http://localhost:8000
+{{else}}
+      dockerfile: apps/web/Dockerfile.vite
+      args:
+        VITE_SERVER_URL: http://localhost:8000
+{{/if}}
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - app
+    restart: unless-stopped
+
+{{/if}}
+  app:
+    build:
+{{#if graphBackendTargetPath}}
+      context: {{graphBackendTargetPath}}
       dockerfile: Dockerfile
+{{else}}
+      context: .
+      dockerfile: Dockerfile
+{{/if}}
     ports:
 {{#if (eq ecosystem "python")}}
 {{#unless (includes addons "kong")}}
@@ -196,6 +227,9 @@ volumes:
       - "8080:8080"
 {{/if}}
     environment:
+{{#if graphWebFrontend}}
+      - CORS_ORIGIN=http://localhost:3001
+{{/if}}
 {{#if (eq ecosystem "python")}}
       - HOST=0.0.0.0
       - PORT=8000
