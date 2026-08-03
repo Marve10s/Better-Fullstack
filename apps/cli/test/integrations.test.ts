@@ -153,6 +153,22 @@ describe("third-party integrations", () => {
     }
   });
 
+  test("rejects unsupported Nango requests through the public create API", async () => {
+    const result = await runTRPCTest(
+      createCustomConfig({
+        projectName: "nango-cloudflare-invalid",
+        frontend: ["next"],
+        backend: "self",
+        runtime: "none",
+        webDeploy: "cloudflare",
+        integrations: "nango",
+      }),
+    );
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("not available on Cloudflare Workers");
+  });
+
   test("accepts createVirtual Nango owned by a graph TypeScript backend", async () => {
     const result = await createVirtual({
       projectName: "nango-native-graph",

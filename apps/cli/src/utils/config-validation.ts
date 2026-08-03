@@ -1371,6 +1371,7 @@ export function validateFullConfig(
   validateElixirConstraints(config);
   validateScopedLibraryFlags(config);
   validateI18nConstraints(config);
+  validateIntegrationsConstraints(config);
 
   const hasGraphBackend = config.stackParts?.some(
     (part) =>
