@@ -31,6 +31,41 @@ describe("compatibility issue helpers", () => {
     ).toContain("Node.js or Bun");
   });
 
+  it("keeps SigNoz off fullstack frontends without a tracing bootstrap", () => {
+    for (const backend of ["self-tanstack-start", "self-astro"] as const) {
+      const stack = {
+        ...DEFAULT_STACK_SELECTION,
+        backend,
+        observability: "signoz" as const,
+      };
+
+      expect(analyzeStackCompatibility(stack).adjustedStack?.observability).toBe("none");
+      expect(getDisabledReason(stack, "observability", "signoz")).toContain(
+        "not yet bootstrapped",
+      );
+    }
+  });
+
+  it("restricts Knip to JavaScript workspaces", () => {
+    const goStack = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "go" as const,
+      codeQuality: ["knip"],
+    };
+
+    expect(analyzeStackCompatibility(goStack).adjustedStack?.codeQuality).not.toContain("knip");
+    expect(getDisabledReason(goStack, "appPlatforms", "knip")).toContain(
+      "TypeScript or React Native",
+    );
+    expect(
+      getDisabledReason(
+        { ...DEFAULT_STACK_SELECTION, ecosystem: "react-native" },
+        "appPlatforms",
+        "knip",
+      ),
+    ).toBeNull();
+  });
+
   it("disables SigNoz when native request instrumentation is not wired", () => {
     const unsupportedGo = {
       ...DEFAULT_STACK_SELECTION,

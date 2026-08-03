@@ -417,9 +417,9 @@ const CODE_QUALITY_ADDONS = new Set([
   "ultracite",
   "lefthook",
   "husky",
-  "knip",
   "gitleaks",
 ]);
+const TYPESCRIPT_CODE_QUALITY_ADDONS = new Set(["knip"]);
 const DOCUMENTATION_ADDONS = new Set(["starlight", "fumadocs"]);
 const FRONTEND_APP_PLATFORM_ADDONS = new Set<string>(APP_PLATFORM_ADDON_VALUES);
 const FRONTEND_DATA_FETCHING_ADDONS = new Set([
@@ -489,6 +489,9 @@ export type AddonStackPartBinding = {
 };
 
 export function getAddonStackPartBinding(toolId: string): AddonStackPartBinding | undefined {
+  if (TYPESCRIPT_CODE_QUALITY_ADDONS.has(toolId)) {
+    return { role: "codeQuality", ecosystem: "typescript" };
+  }
   if (CODE_QUALITY_ADDONS.has(toolId)) {
     return { role: "codeQuality", ecosystem: "universal" };
   }
@@ -860,6 +863,13 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
     ADDONS_VALUES.filter((value) => CODE_QUALITY_ADDONS.has(value)),
     "codeQuality",
     "universal",
+    undefined,
+    { allowMultiple: true, ownerless: true },
+  ),
+  ...defineTools(
+    ADDONS_VALUES.filter((value) => TYPESCRIPT_CODE_QUALITY_ADDONS.has(value)),
+    "codeQuality",
+    "typescript",
     undefined,
     { allowMultiple: true, ownerless: true },
   ),

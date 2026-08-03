@@ -204,12 +204,64 @@ async function setupLefthook(projectDir: string, hasGitleaks = false) {
 
 const GITLEAKS_HOOK_COMMAND = "gitleaks git --pre-commit --redact --staged --verbose";
 
+function hasActiveShellCommand(content: string, command: string): boolean {
+  return content.split(/\r?\n/).some((line) => {
+    const trimmed = line.trim();
+    return trimmed !== "" && !trimmed.startsWith("#") && trimmed === command;
+  });
+}
+
+function hasGitleaksLefthookCommand(content: string): boolean {
+  const document = parseDocument(content);
+  if (document.errors.length > 0) return false;
+
+  const preCommit = document.get("pre-commit", true);
+  if (!isMap(preCommit)) return false;
+
+  const jobs = preCommit.get("jobs", true);
+  if (
+    isSeq(jobs) &&
+    jobs.items.some((job) => isMap(job) && job.get("run") === GITLEAKS_HOOK_COMMAND)
+  ) {
+    return true;
+  }
+
+  const commands = preCommit.get("commands", true);
+  return (
+    isMap(commands) &&
+    commands.items.some(
+      (command) => isMap(command.value) && command.value.get("run") === GITLEAKS_HOOK_COMMAND,
+    )
+  );
+}
+
+export async function isGitleaksSetupComplete(
+  projectDir: string,
+  addons: ProjectConfig["addons"],
+): Promise<boolean> {
+  if (addons.includes("husky")) {
+    const huskyPath = path.join(projectDir, ".husky", "pre-commit");
+    if (!(await fs.pathExists(huskyPath))) return false;
+    const husky = await fs.readFile(huskyPath, "utf8");
+    if (!hasActiveShellCommand(husky, GITLEAKS_HOOK_COMMAND)) return false;
+  }
+
+  if (addons.includes("lefthook")) {
+    const lefthookPath = path.join(projectDir, "lefthook.yml");
+    if (!(await fs.pathExists(lefthookPath))) return false;
+    const lefthook = await fs.readFile(lefthookPath, "utf8");
+    if (!hasGitleaksLefthookCommand(lefthook)) return false;
+  }
+
+  return true;
+}
+
 async function ensureGitleaksHuskyHook(projectDir: string) {
   const hookPath = path.join(projectDir, ".husky", "pre-commit");
   if (!(await fs.pathExists(hookPath))) return;
 
   const content = await fs.readFile(hookPath, "utf8");
-  if (content.includes(GITLEAKS_HOOK_COMMAND)) return;
+  if (hasActiveShellCommand(content, GITLEAKS_HOOK_COMMAND)) return;
 
   const nextContent = content.includes("\nlint-staged")
     ? content.replace("\nlint-staged", `\n${GITLEAKS_HOOK_COMMAND}\nlint-staged`)
@@ -234,20 +286,14 @@ async function ensureGitleaksLefthookHook(projectDir: string) {
   }
   if (!isMap(preCommit)) return;
 
+  if (hasGitleaksLefthookCommand(content)) return;
+
   const jobs = preCommit.get("jobs", true);
   if (isSeq(jobs)) {
-    const alreadyConfigured = jobs.items.some(
-      (job) => isMap(job) && job.get("run") === GITLEAKS_HOOK_COMMAND,
-    );
-    if (alreadyConfigured) return;
     jobs.add({ name: "gitleaks", run: GITLEAKS_HOOK_COMMAND });
   } else {
     const commands = preCommit.get("commands", true);
     if (isMap(commands)) {
-      const alreadyConfigured = commands.items.some(
-        (command) => isMap(command.value) && command.value.get("run") === GITLEAKS_HOOK_COMMAND,
-      );
-      if (alreadyConfigured) return;
       commands.set("gitleaks", { run: GITLEAKS_HOOK_COMMAND });
     } else {
       preCommit.set("jobs", [{ name: "gitleaks", run: GITLEAKS_HOOK_COMMAND }]);

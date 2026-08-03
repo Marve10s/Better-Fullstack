@@ -501,6 +501,32 @@ export const analyzeStackCompatibility = (
   const notes: CompatibilityAnalysisResult["notes"] = {};
   const changes: CompatibilityAdjustment[] = [];
 
+  if (
+    nextStack.observability === "signoz" &&
+    (nextStack.backend === "self-tanstack-start" || nextStack.backend === "self-astro")
+  ) {
+    nextStack.observability = "none";
+    changed = true;
+    changes.push({
+      category: "observability",
+      message:
+        "Observability set to 'None' (SigNoz tracing is not yet bootstrapped for this fullstack frontend)",
+    });
+  }
+
+  if (
+    nextStack.ecosystem !== "typescript" &&
+    nextStack.ecosystem !== "react-native" &&
+    nextStack.codeQuality.includes("knip")
+  ) {
+    nextStack.codeQuality = nextStack.codeQuality.filter((addon) => addon !== "knip");
+    changed = true;
+    changes.push({
+      category: "codeQuality",
+      message: "Removed Knip (Knip requires a TypeScript or React Native workspace)",
+    });
+  }
+
   for (const cat of CATEGORY_ORDER) {
     notes[cat] = { notes: [], hasIssue: false };
   }
@@ -2215,6 +2241,25 @@ export const getDisabledReason = (
   category: CompatibilityCategory,
   optionId: string,
 ): string | null => {
+  if (
+    category === "appPlatforms" &&
+    optionId === "knip" &&
+    currentStack.ecosystem !== "typescript" &&
+    currentStack.ecosystem !== "react-native"
+  ) {
+    return "Knip requires a TypeScript or React Native workspace";
+  }
+
+  if (
+    ((category === "observability" && optionId === "signoz") ||
+      (category === "backend" && currentStack.observability === "signoz")) &&
+    (category === "backend"
+      ? optionId === "self-tanstack-start" || optionId === "self-astro"
+      : currentStack.backend === "self-tanstack-start" || currentStack.backend === "self-astro")
+  ) {
+    return "SigNoz tracing is not yet bootstrapped for TanStack Start or Astro fullstack apps";
+  }
+
   const hasStandaloneViteFrontend = currentStack.webFrontend.some((frontend) =>
     ["vanilla-vite", "vue"].includes(frontend),
   );
@@ -2316,7 +2361,13 @@ export const getDisabledReason = (
       return "React Native payments currently support RevenueCat only";
     }
 
-    if (!reactNativeCategories.has(category) && optionId !== "none" && optionId !== "false") {
+    const isReactNativeKnip = category === "appPlatforms" && optionId === "knip";
+    if (
+      !reactNativeCategories.has(category) &&
+      !isReactNativeKnip &&
+      optionId !== "none" &&
+      optionId !== "false"
+    ) {
       return "React Native ecosystem only supports native mobile options";
     }
   }

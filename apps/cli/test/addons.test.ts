@@ -178,6 +178,47 @@ describe("Addon Configurations", () => {
       expect(lefthook.match(/name: gitleaks/g)).toHaveLength(1);
     });
 
+    it("does not treat a commented Husky command as configured", async () => {
+      const result = await runTRPCTest({
+        projectName: "gitleaks-commented-husky",
+        addons: ["husky"],
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "trpc",
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const huskyPath = join(result.projectDir!, ".husky", "pre-commit");
+      writeFileSync(
+        huskyPath,
+        "# gitleaks git --pre-commit --redact --staged --verbose\nlint-staged\n",
+      );
+
+      await setupAddons(
+        {
+          ...result.result!.projectConfig,
+          projectDir: result.projectDir!,
+          addons: ["husky", "gitleaks"],
+        },
+        ["gitleaks"],
+      );
+
+      const husky = readFileSync(huskyPath, "utf-8");
+      expect(husky.match(/gitleaks git --pre-commit/g)).toHaveLength(2);
+      expect(husky).toContain(
+        "gitleaks git --pre-commit --redact --staged --verbose\nlint-staged",
+      );
+    });
+
     it("merges into a customized Lefthook commands configuration", async () => {
       const result = await runTRPCTest({
         projectName: "gitleaks-custom-lefthook",

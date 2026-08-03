@@ -2,7 +2,7 @@ import { afterAll, describe, expect, it } from "bun:test";
 import * as JSONC from "jsonc-parser";
 import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
-import { mkdtemp, mkdir, readFile, rm } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { homedir, tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -230,6 +230,55 @@ describe("CLI add command", () => {
         addons?: string[];
       };
       expect(config.addons).toEqual(expect.arrayContaining(["husky", "lefthook", "gitleaks"]));
+    },
+    CLI_COMMAND_TEST_TIMEOUT_MS,
+  );
+
+  it(
+    "repairs Gitleaks setup when config already records an incomplete addon",
+    async () => {
+      const root = await makeTempRoot("bfs-add-gitleaks-retry-test-");
+      const projectName = "app";
+      const projectDir = join(root, projectName);
+
+      const createResult = await runCli(
+        ["create", projectName, "--yes", "--no-install", "--no-git", "--disable-analytics"],
+        { cwd: root },
+      );
+      expect(createResult.exitCode).toBe(0);
+
+      const hooksResult = await runCli(
+        ["add", "--project-dir", projectDir, "--addons", "lefthook"],
+        { cwd: root },
+      );
+      expect(hooksResult.exitCode).toBe(0);
+
+      const lefthookPath = join(projectDir, "lefthook.yml");
+      const initialAdd = await runCli(
+        ["add", "--project-dir", projectDir, "--addons", "gitleaks"],
+        { cwd: root },
+      );
+      expect(initialAdd.exitCode).toBe(0);
+
+      await writeFile(lefthookPath, "pre-commit: [\n");
+      const failedAdd = await runCli(
+        ["add", "--project-dir", projectDir, "--addons", "gitleaks"],
+        { cwd: root },
+      );
+      expect(failedAdd.exitCode).not.toBe(0);
+
+      await writeFile(
+        lefthookPath,
+        "pre-commit:\n  commands:\n    lint:\n      run: bun run lint\n",
+      );
+      const retry = await runCli(
+        ["add", "--project-dir", projectDir, "--addons", "gitleaks"],
+        { cwd: root },
+      );
+      expect(retry.exitCode, `retry failed\n${retry.all}`).toBe(0);
+      expect(await readFile(lefthookPath, "utf8")).toContain(
+        "gitleaks git --pre-commit --redact --staged --verbose",
+      );
     },
     CLI_COMMAND_TEST_TIMEOUT_MS,
   );

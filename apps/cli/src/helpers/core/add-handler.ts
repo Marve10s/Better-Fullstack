@@ -20,7 +20,7 @@ import { isSilent, runWithContextAsync } from "../../utils/context";
 import { applyDependencyVersionChannel } from "../../utils/dependency-version-channel";
 import { CLIError, UserCancelledError } from "../../utils/errors";
 import { renderTitle } from "../../utils/render-title";
-import { setupAddons } from "../addons/addons-setup";
+import { isGitleaksSetupComplete, setupAddons } from "../addons/addons-setup";
 import { installDependencies } from "./install-dependencies";
 import { applyStackUpdate, planStackUpdate, type StackUpdatePlan } from "./stack-update";
 
@@ -50,10 +50,24 @@ function buildStackUpdateRequest(input: AddInput): Record<string, unknown> {
   return request;
 }
 
-function getNewAddons(input: AddInput, currentConfig: BetterTStackConfig): Addons[] {
+async function getAddonsToSetup(
+  input: AddInput,
+  currentConfig: BetterTStackConfig,
+  projectDir: string,
+): Promise<Addons[]> {
   const requestedAddons = (input.addons ?? []).filter((addon): addon is Addons => addon !== "none");
   const existingAddons = new Set(currentConfig.addons ?? []);
-  return requestedAddons.filter((addon) => !existingAddons.has(addon));
+  const addonsToSetup = requestedAddons.filter((addon) => !existingAddons.has(addon));
+
+  if (
+    requestedAddons.includes("gitleaks") &&
+    existingAddons.has("gitleaks") &&
+    !(await isGitleaksSetupComplete(projectDir, currentConfig.addons ?? []))
+  ) {
+    addonsToSetup.push("gitleaks");
+  }
+
+  return addonsToSetup;
 }
 
 function formatCount(count: number, noun: string): string {
@@ -162,6 +176,28 @@ function buildAddonSetupConfig(
   } as ProjectConfig;
 }
 
+function buildCurrentAddonSetupConfig(
+  projectDir: string,
+  projectName: string,
+  currentConfig: BetterTStackConfig,
+): ProjectConfig {
+  const baseConfig = getDefaultConfig();
+  return {
+    ...baseConfig,
+    ...currentConfig,
+    projectName,
+    projectDir,
+    relativePath: ".",
+    packageManager: currentConfig.packageManager || baseConfig.packageManager,
+    addons: currentConfig.addons ?? [],
+    frontend: currentConfig.frontend || baseConfig.frontend,
+    examples: currentConfig.examples || [],
+    rustLibraries: currentConfig.rustLibraries || [],
+    pythonAi: currentConfig.pythonAi || [],
+    aiDocs: currentConfig.aiDocs || [],
+  } as ProjectConfig;
+}
+
 async function runStackUpdateAdd(
   input: AddInput,
   projectDir: string,
@@ -170,6 +206,34 @@ async function runStackUpdateAdd(
   request: Record<string, unknown>,
 ): Promise<AddResult> {
   const dryRun = input.dryRun ?? false;
+  const requestedAddons = (input.addons ?? []).filter(
+    (addon): addon is Addons => addon !== "none",
+  );
+  const existingAddons = new Set(currentConfig.addons ?? []);
+  const addonsToRepair = await getAddonsToSetup(input, currentConfig, projectDir);
+  const isExistingAddonRepair =
+    !dryRun &&
+    Object.keys(request).every((key) => key === "addons") &&
+    requestedAddons.length > 0 &&
+    requestedAddons.every((addon) => existingAddons.has(addon)) &&
+    addonsToRepair.length > 0;
+
+  if (isExistingAddonRepair) {
+    const setupConfig = buildCurrentAddonSetupConfig(projectDir, projectName, currentConfig);
+    const setupWarnings = await setupAddons(setupConfig, addonsToRepair);
+    await applyDependencyVersionChannel(projectDir, setupConfig.versionChannel);
+    if (!isSilent()) {
+      log.success(pc.green(`Repaired addon setup: ${addonsToRepair.join(", ")}`));
+      outro(pc.magenta("Project updated successfully!"));
+    }
+    return {
+      success: true,
+      addedAddons: [],
+      projectDir,
+      setupWarnings: setupWarnings.length > 0 ? setupWarnings : undefined,
+    };
+  }
+
   const result = dryRun
     ? await planStackUpdate(projectDir, request)
     : await applyStackUpdate(projectDir, request);
@@ -191,7 +255,7 @@ async function runStackUpdateAdd(
     };
   }
 
-  const addonsToSetup = getNewAddons(input, currentConfig);
+  const addonsToSetup = await getAddonsToSetup(input, currentConfig, projectDir);
   const setupConfig = buildAddonSetupConfig(projectDir, projectName, currentConfig, result);
   const setupWarnings =
     addonsToSetup.length > 0 ? await setupAddons(setupConfig, addonsToSetup) : [];
