@@ -155,8 +155,20 @@ export function withTracing<TArgs extends unknown[]>(
             }
           },
           async cancel(reason) {
+            const cancellationError =
+              reason instanceof Error
+                ? reason
+                : new Error(
+                    reason === undefined
+                      ? "Response stream cancelled before completion"
+                      : `Response stream cancelled before completion: ${String(reason)}`,
+                  );
+            recordStreamError(cancellationError);
             try {
               await context.with(requestContext, () => reader.cancel(reason));
+            } catch (error) {
+              if (error !== cancellationError) recordStreamError(error);
+              throw error;
             } finally {
               endSpan();
             }

@@ -47,6 +47,8 @@ describe("Observability Configurations", () => {
       expect(tracing).toContain("async pull(controller)");
       expect(tracing).toContain("recordStreamError(error)");
       expect(tracing).toContain("async cancel(reason)");
+      expect(tracing).toContain("Response stream cancelled before completion");
+      expect(tracing).toContain("recordStreamError(cancellationError)");
       expect(tracing).toContain("process.once(signal");
       expect(tracing).toContain("hasApplicationShutdownHandler");
       expect(tracing).toContain("if (!hasApplicationShutdownHandler)");
