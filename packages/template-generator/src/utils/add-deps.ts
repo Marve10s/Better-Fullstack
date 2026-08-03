@@ -846,6 +846,9 @@ export const dependencyVersionMap = {
   // Search - Algolia
   algoliasearch: "^5.56.0",
 
+  // Integrations - Nango
+  "@nangohq/node": "^0.71.3",
+
   // E-commerce - Medusa
   "@medusajs/js-sdk": "^2.18.0",
 

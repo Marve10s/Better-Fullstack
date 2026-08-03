@@ -250,6 +250,10 @@ export function displayConfig(config: Partial<ProjectConfig>) {
     configDisplay.push(`${pc.blue("Feature Flags:")} ${String(config.featureFlags)}`);
   }
 
+  if (config.integrations !== undefined) {
+    configDisplay.push(`${pc.blue("Integrations:")} ${String(config.integrations)}`);
+  }
+
   if (config.ecommerce !== undefined) {
     configDisplay.push(`${pc.blue("E-commerce:")} ${String(config.ecommerce)}`);
   }

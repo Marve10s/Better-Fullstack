@@ -51,6 +51,7 @@ export function createCliDefaultProjectConfigBase(
     logging: "none",
     observability: "none",
     featureFlags: "none",
+    integrations: "none",
     ecommerce: "none",
     analytics: "none",
     mobileNavigation: "none",

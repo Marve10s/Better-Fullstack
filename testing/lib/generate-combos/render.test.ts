@@ -61,6 +61,21 @@ describe("smoke combo command rendering", () => {
     );
   });
 
+  it("includes integrations for non-interactive TypeScript smoke commands", () => {
+    const config: ProjectConfig = {
+      ...createCliDefaultProjectConfigBase("bun"),
+      projectName: "nango-smoke",
+      relativePath: "nango-smoke",
+      projectDir: "/tmp/nango-smoke",
+      ecosystem: "typescript",
+      integrations: "nango",
+      git: false,
+      install: false,
+    };
+
+    expect(buildCommand("nango-smoke", config)).toContain("--integrations nango");
+  });
+
   it("includes e-commerce for non-interactive TypeScript smoke commands", () => {
     const config: ProjectConfig = {
       ...createCliDefaultProjectConfigBase("bun"),

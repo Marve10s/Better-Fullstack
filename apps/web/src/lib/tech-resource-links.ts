@@ -804,6 +804,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://docs.growthbook.io/",
     githubUrl: "https://github.com/growthbook/growthbook",
   },
+  nango: {
+    docsUrl: "https://nango.dev/docs/reference/backend/backend-sdk/node",
+    githubUrl: "https://github.com/NangoHQ/nango",
+  },
   medusa: {
     docsUrl: "https://docs.medusajs.com/resources/js-sdk",
     githubUrl: "https://github.com/medusajs/medusa",

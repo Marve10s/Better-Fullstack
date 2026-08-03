@@ -186,6 +186,20 @@ describe("preflight validation", () => {
     }
   });
 
+  test("Nango warns for fullstack Cloudflare deployments", () => {
+    expect(
+      ruleIds(
+        config({
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          webDeploy: "cloudflare",
+          integrations: "nango",
+        }),
+      ),
+    ).toContain("integrations-workers-runtime");
+  });
+
   describe("CMS requires Next.js", () => {
     for (const cms of ["payload", "sanity", "strapi", "tinacms"] as const) {
       const ruleId = `cms-${cms}-requires-nextjs`;

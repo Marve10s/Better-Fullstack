@@ -51,6 +51,7 @@ import {
   ECOMMERCE_VALUES,
   EXAMPLES_VALUES,
   FEATURE_FLAGS_VALUES,
+  INTEGRATIONS_VALUES,
   FILE_STORAGE_VALUES,
   FILE_UPLOAD_VALUES,
   FORMS_VALUES,
@@ -345,6 +346,7 @@ const LEGACY_TYPESCRIPT_BACKEND_SINGLE_CATEGORIES = {
   rateLimit: "rateLimit",
   fileStorage: "fileStorage",
   featureFlags: "featureFlags",
+  integrations: "integrations",
   ecommerce: "ecommerce",
   payments: "payments",
   realtime: "realtime",
@@ -927,6 +929,7 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(RATE_LIMIT_VALUES, "rateLimit", "typescript", "rateLimit"),
   ...defineTools(FILE_STORAGE_VALUES, "fileStorage", "typescript", "fileStorage"),
   ...defineTools(FEATURE_FLAGS_VALUES, "featureFlags", "typescript", "featureFlags"),
+  ...defineTools(INTEGRATIONS_VALUES, "integrations", "typescript", "integrations"),
   ...defineTools(ECOMMERCE_VALUES, "ecommerce", "typescript", "ecommerce"),
   ...defineTools(PAYMENTS_VALUES, "payments", "typescript", "payments"),
   ...defineTools(REALTIME_VALUES, "realtime", "typescript", "realtime"),
@@ -1466,6 +1469,42 @@ function createTypeScriptBackendCompatibilityIssue(
       toolId: part.toolId,
       message: "Rate limiting helpers are not generated with Convex backend",
     });
+  }
+
+  if (part.role === "integrations" && part.toolId === "nango") {
+    if (context.ownerToolId === "none") {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_OWNER_TOOL",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Nango integrations require a generated backend.",
+      });
+    }
+    if (context.ownerToolId === "convex") {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_OWNER_TOOL",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Nango integrations are not available with the Convex backend.",
+      });
+    }
+
+    const runtimeTool = context.siblingToolIdsByRole?.runtime;
+    const deployTools = context.selectedToolIdsByRoleList?.deploy ?? [];
+    if (
+      runtimeTool === "workers" ||
+      (context.ownerToolId === "self" && deployTools.includes("cloudflare"))
+    ) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Nango's Node SDK is not available on Cloudflare Workers.",
+      });
+    }
   }
 
   if (part.role === "cms" && part.toolId === "payload") {
