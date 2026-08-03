@@ -1,12 +1,17 @@
 import { describe, expect, it } from "bun:test";
 
 import {
+  analyzeStackCompatibility,
   createCliDefaultProjectConfigBase,
   parseStackPartSpecs,
   type ProjectConfig,
 } from "@better-fullstack/types";
 
-import { getMcpGraphPreview, validateMcpProjectConfigCompatibility } from "../src/mcp";
+import {
+  buildMcpCompatibilityInput,
+  getMcpGraphPreview,
+  validateMcpProjectConfigCompatibility,
+} from "../src/mcp";
 
 function makeProjectConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
   return {
@@ -35,6 +40,43 @@ describe("MCP graph preview", () => {
         webDeploy: "none",
       }),
     ).not.toThrow();
+  });
+
+  it("accepts Nango owned by a graph TypeScript backend", () => {
+    const stackParts = parseStackPartSpecs([
+      "mobile:react-native:native-bare",
+      "backend:typescript:hono",
+      "backend.runtime:typescript:bun",
+      "backend.integrations:typescript:nango",
+    ]);
+
+    expect(() =>
+      validateMcpProjectConfigCompatibility({
+        ecosystem: "react-native",
+        integrations: "nango",
+        backend: "hono",
+        runtime: "bun",
+        webDeploy: "none",
+        stackParts,
+      }),
+    ).not.toThrow();
+  });
+
+  it("normalizes MCP self backends before Nango compatibility checks", () => {
+    const input = buildMcpCompatibilityInput({
+      ecosystem: "typescript",
+      frontend: ["next"],
+      backend: "self",
+      integrations: "nango",
+      webDeploy: "cloudflare",
+    });
+
+    expect(input.backend).toBe("self-next");
+    const result = analyzeStackCompatibility(input);
+    expect(result.adjustedStack?.integrations).toBe("none");
+    expect(result.changes.some((change) => change.message.includes("Cloudflare Workers"))).toBe(
+      true,
+    );
   });
 
   it("rejects Nango MCP input when its SDK would be skipped", () => {

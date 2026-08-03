@@ -3492,6 +3492,18 @@ describe("stack update planner", () => {
     }
   });
 
+  it("rejects Nango updates when no TypeScript backend owns the integration", async () => {
+    const root = await makeTempRoot("bfs-stack-update-python-nango-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir, PYTHON_BASE_CONFIG));
+
+    const plan = await planStackUpdate(projectDir, { integrations: "nango" });
+
+    expect(plan.success).toBe(false);
+    if (plan.success) return;
+    expect(plan.error).toContain("Nango integrations require a TypeScript backend");
+  });
+
   it("applies shared backend services across non-TypeScript ecosystems", async () => {
     const baseConfigs: Array<{
       name: string;

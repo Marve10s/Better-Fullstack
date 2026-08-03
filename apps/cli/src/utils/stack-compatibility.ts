@@ -34,7 +34,7 @@ function getProjectBackendFromCompatibility(backend: string): string {
   return backend.startsWith("self-") ? "self" : backend;
 }
 
-function hasSelectedTypeScriptBackendPart(config: Partial<ProjectConfig>): boolean {
+export function hasSelectedTypeScriptBackendPart(config: Partial<ProjectConfig>): boolean {
   return (
     config.stackParts?.some(
       (part) =>

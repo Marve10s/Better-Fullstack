@@ -40,6 +40,7 @@ import {
   buildCompatibilityInputFromConfig,
   compatibilityChangesToProjectConfig,
   getCompatibilityBackend,
+  hasSelectedTypeScriptBackendPart,
 } from "../../utils/stack-compatibility";
 
 type JsonObject = Record<string, unknown>;
@@ -1350,6 +1351,18 @@ export async function planStackUpdate(
       success: false,
       projectDir,
       error: `Unsupported stack update field(s): ${unsupportedKeys.sort().join(", ")}`,
+    };
+  }
+
+  if (
+    requestedChanges.integrations === "nango" &&
+    currentConfig.ecosystem !== "typescript" &&
+    !hasSelectedTypeScriptBackendPart(currentConfig)
+  ) {
+    return {
+      success: false,
+      projectDir,
+      error: "Invalid stack update: Nango integrations require a TypeScript backend",
     };
   }
 
