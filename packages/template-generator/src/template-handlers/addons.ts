@@ -9,6 +9,24 @@ type DockerComposeProjectConfig = ProjectConfig & {
   graphBackendTargetPath?: string;
 };
 
+const CONTAINER_ADDONS = new Set(["docker-compose", "devcontainer", "kong"]);
+
+function ensureNextStandaloneOutput(vfs: VirtualFileSystem): void {
+  const nextConfigPath = "apps/web/next.config.ts";
+  if (!vfs.exists(nextConfigPath)) return;
+
+  const content = vfs.readFile(nextConfigPath);
+  if (!content || /\boutput\s*:\s*["']standalone["']/.test(content)) return;
+
+  const nextConfigStart = /const\s+nextConfig(?:\s*:\s*NextConfig)?\s*=\s*{/;
+  if (!nextConfigStart.test(content)) return;
+
+  vfs.writeFile(
+    nextConfigPath,
+    content.replace(nextConfigStart, (match) => `${match}\n  output: "standalone",`),
+  );
+}
+
 function processWebDockerfileTemplates(
   vfs: VirtualFileSystem,
   templates: TemplateData,
@@ -154,6 +172,13 @@ export async function processAddonTemplates(
   config: ProjectConfig,
 ): Promise<void> {
   if (!config.addons || config.addons.length === 0) return;
+
+  if (
+    config.frontend.includes("next") &&
+    config.addons.some((addon) => CONTAINER_ADDONS.has(addon))
+  ) {
+    ensureNextStandaloneOutput(vfs);
+  }
 
   for (const addon of config.addons) {
     if (addon === "none") continue;

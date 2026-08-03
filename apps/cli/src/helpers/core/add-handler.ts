@@ -436,7 +436,7 @@ async function addHandlerInternal(input: AddInput): Promise<AddResult> {
   };
 
   const vfs = new VirtualFileSystem();
-  const packageJsonPaths = await collectPackageJsonPaths(projectDir);
+  const packageJsonPaths = await collectAddonProjectPaths(projectDir);
 
   for (const pkgPath of packageJsonPaths) {
     const fullPath = path.join(projectDir, pkgPath);
@@ -511,7 +511,7 @@ async function addHandlerInternal(input: AddInput): Promise<AddResult> {
   };
 }
 
-async function collectPackageJsonPaths(projectDir: string): Promise<string[]> {
+async function collectAddonProjectPaths(projectDir: string): Promise<string[]> {
   const results: string[] = [];
 
   async function walk(currentDir: string) {
@@ -540,6 +540,11 @@ async function collectPackageJsonPaths(projectDir: string): Promise<string[]> {
     (await fs.pathExists(path.join(projectDir, "package.json")))
   ) {
     results.push("package.json");
+  }
+
+  const nextConfigPath = "apps/web/next.config.ts";
+  if (await fs.pathExists(path.join(projectDir, nextConfigPath))) {
+    results.push(nextConfigPath);
   }
 
   return results;

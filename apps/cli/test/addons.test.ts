@@ -468,6 +468,35 @@ describe("Addon Configurations", () => {
         expect(dockerfile).not.toContain(".next/standalone");
       });
 
+      it("should copy React Router's client build into the web image", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-react-router",
+          addons: ["kong"],
+          frontend: ["react-router"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "trpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        const dockerfile = readFileSync(
+          join(result.projectDir!, "apps", "web", "Dockerfile.vite"),
+          "utf8",
+        );
+        expect(dockerfile).toContain(
+          "COPY --from=builder /app/apps/web/build/client /usr/share/nginx/html",
+        );
+        expect(dockerfile).not.toContain("/app/apps/web/dist /usr/share/nginx/html");
+      });
+
       it("should preserve Kong for Python and avoid publishing the upstream port", async () => {
         const result = await runTRPCTest({
           projectName: "kong-python",

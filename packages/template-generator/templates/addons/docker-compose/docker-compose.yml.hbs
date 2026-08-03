@@ -201,15 +201,39 @@ volumes:
 {{#if (includes frontend "next")}}
       dockerfile: apps/web/Dockerfile.next
       args:
+{{#if (includes addons "kong")}}
         NEXT_PUBLIC_SERVER_URL: http://localhost:8000
+{{else if (eq ecosystem "python")}}
+        NEXT_PUBLIC_SERVER_URL: http://localhost:8000
+{{else if (eq ecosystem "rust")}}
+        NEXT_PUBLIC_SERVER_URL: http://localhost:3000
+{{else}}
+        NEXT_PUBLIC_SERVER_URL: http://localhost:8080
+{{/if}}
 {{else if (includes frontend "vinext")}}
       dockerfile: apps/web/Dockerfile.vinext
       args:
+{{#if (includes addons "kong")}}
         VITE_SERVER_URL: http://localhost:8000
+{{else if (eq ecosystem "python")}}
+        VITE_SERVER_URL: http://localhost:8000
+{{else if (eq ecosystem "rust")}}
+        VITE_SERVER_URL: http://localhost:3000
+{{else}}
+        VITE_SERVER_URL: http://localhost:8080
+{{/if}}
 {{else}}
       dockerfile: apps/web/Dockerfile.vite
       args:
+{{#if (includes addons "kong")}}
         VITE_SERVER_URL: http://localhost:8000
+{{else if (eq ecosystem "python")}}
+        VITE_SERVER_URL: http://localhost:8000
+{{else if (eq ecosystem "rust")}}
+        VITE_SERVER_URL: http://localhost:3000
+{{else}}
+        VITE_SERVER_URL: http://localhost:8080
+{{/if}}
 {{/if}}
     ports:
       - "3001:3000"

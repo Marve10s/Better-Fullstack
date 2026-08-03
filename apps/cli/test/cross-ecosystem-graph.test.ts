@@ -2,6 +2,8 @@ import { cliInputToProjectConfigPartial, getLocalWebDevPort } from "@better-full
 import { describe, expect, it } from "bun:test";
 
 import { createVirtual } from "../src/index";
+import { validateConfigForProgrammaticUse } from "../src/utils/config-validation";
+import { runWithContext } from "../src/utils/context";
 import { displayConfig } from "../src/utils/display-config";
 import { readVirtualFileContent as fileContent } from "./virtual-tree-utils";
 
@@ -90,6 +92,27 @@ function componentEnvReferenceFor(frontend: string) {
 
 describe("Cross-ecosystem graph generation", () => {
   it("routes a TypeScript web app through Kong to its Python graph backend", async () => {
+    const stackParts = graphParts([
+      "frontend:typescript:react-vite",
+      "backend:python:fastapi",
+      "workspaceTooling:universal:devcontainer",
+      "workspaceTooling:universal:kong",
+    ]);
+
+    expect(() =>
+      runWithContext({ silent: true }, () =>
+        validateConfigForProgrammaticUse({
+          ecosystem: "typescript",
+          frontend: ["react-vite"],
+          backend: "none",
+          api: "none",
+          runtime: "none",
+          addons: ["devcontainer", "kong"],
+          stackParts,
+        }),
+      ),
+    ).not.toThrow();
+
     const result = await createVirtual({
       projectName: "vite-python-kong",
       frontend: ["react-vite"],
@@ -97,12 +120,7 @@ describe("Cross-ecosystem graph generation", () => {
       api: "none",
       runtime: "none",
       addons: ["devcontainer", "kong"],
-      stackParts: graphParts([
-        "frontend:typescript:react-vite",
-        "backend:python:fastapi",
-        "workspaceTooling:universal:devcontainer",
-        "workspaceTooling:universal:kong",
-      ]),
+      stackParts,
     });
 
     expect(result.success).toBe(true);
@@ -119,6 +137,28 @@ describe("Cross-ecosystem graph generation", () => {
     expect(fileContent(root, "apps/server/Dockerfile")).toContain("FROM python:3.12-slim");
     expect(devcontainer.runServices).toEqual(["devcontainer", "kong", "web", "app"]);
     expect(devcontainer.forwardPorts).toEqual(expect.arrayContaining([3001, 8000, 8001]));
+  });
+
+  it("uses the published graph backend port when Compose does not include Kong", async () => {
+    const result = await createVirtual({
+      projectName: "vite-rust-compose",
+      frontend: ["react-vite"],
+      backend: "none",
+      api: "none",
+      runtime: "none",
+      addons: ["docker-compose"],
+      stackParts: graphParts([
+        "frontend:typescript:react-vite",
+        "backend:rust:axum",
+        "workspaceTooling:universal:docker-compose",
+      ]),
+    });
+
+    expect(result.success).toBe(true);
+    const compose = fileContent(result.tree!.root, "docker-compose.yml");
+    expect(compose).toContain("VITE_SERVER_URL: http://localhost:3000");
+    expect(compose).not.toContain("VITE_SERVER_URL: http://localhost:8000");
+    expect(compose).toContain('"3000:3000"');
   });
 
   it("connects a TypeScript Next frontend to an Elixir Phoenix backend", async () => {

@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it } from "bun:test";
 import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
-import { mkdtemp, mkdir, readFile, rm } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { homedir, tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import * as JSONC from "jsonc-parser";
@@ -187,11 +187,37 @@ describe("CLI add command", () => {
     const projectName = "app";
     const projectDir = join(root, projectName);
 
-    const createResult = await runCli(
-      ["create", projectName, "--yes", "--no-install", "--no-git", "--disable-analytics"],
+    const configSourceName = "config-source";
+    const sourceCreateResult = await runCli(
+      [
+        "create",
+        configSourceName,
+        "--yes",
+        "--no-install",
+        "--no-git",
+        "--disable-analytics",
+      ],
       { cwd: root },
     );
-    expect(createResult.exitCode).toBe(0);
+    expect(sourceCreateResult.exitCode).toBe(0);
+
+    const btsConfigPath = join(root, configSourceName, "bts.jsonc");
+    const btsConfig = await readFile(btsConfigPath, "utf8");
+    await writeFile(btsConfigPath, btsConfig.replaceAll("tanstack-router", "next"));
+
+    const createResult = await runCli(
+      [
+        "create",
+        projectName,
+        "--config",
+        btsConfigPath,
+        "--no-install",
+        "--no-git",
+        "--disable-analytics",
+      ],
+      { cwd: root },
+    );
+    expect(createResult.exitCode, cliOutput(createResult)).toBe(0);
 
     const addResult = await runCli(
       ["add", "--project-dir", projectDir, "--addons", "kong"],
@@ -209,10 +235,12 @@ describe("CLI add command", () => {
     };
     const compose = await Bun.file(join(projectDir, "docker-compose.yml")).text();
     const kongConfig = await Bun.file(join(projectDir, "kong", "kong.yml")).text();
+    const nextConfig = await Bun.file(join(projectDir, "apps", "web", "next.config.ts")).text();
 
     expect(config.addons).toContain("kong");
     expect(compose).toContain("kong/kong-gateway:3.15.0.1");
     expect(kongConfig).toContain("url: http://server:3000");
+    expect(nextConfig).toContain('output: "standalone"');
 
     const secondAddResult = await runCli(
       ["add", "--project-dir", projectDir, "--addons", "kong"],
