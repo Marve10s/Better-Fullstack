@@ -1425,6 +1425,33 @@ function validateI18nConstraints(config: Partial<ProjectConfig>) {
   }
 }
 
+function getAddonValidationConfig(config: Partial<ProjectConfig>): Partial<ProjectConfig> {
+  const graphBackend = config.stackParts?.find(
+    (part) =>
+      part.role === "backend" &&
+      !part.ownerPartId &&
+      part.source !== "provided" &&
+      part.ecosystem !== "typescript" &&
+      part.ecosystem !== "react-native" &&
+      part.ecosystem !== "universal",
+  );
+  if (!graphBackend) return config;
+  const backendEcosystem = graphBackend.ecosystem;
+  if (backendEcosystem === "universal") return config;
+
+  const projected = stackGraphToLegacyProjectConfigForEcosystem(
+    config as ProjectConfig,
+    backendEcosystem,
+  );
+  return {
+    ...projected,
+    // Infrastructure validation belongs to the projected backend, while the
+    // frontend compatibility checks still describe the TypeScript web app.
+    frontend: config.frontend ?? projected.frontend,
+    addons: config.addons ?? projected.addons,
+  };
+}
+
 export function validateFullConfig(
   config: Partial<ProjectConfig>,
   providedFlags: Set<string>,
@@ -1548,17 +1575,24 @@ export function validateFullConfig(
   }
 
   if (config.addons && config.addons.length > 0) {
+    const addonConfig = getAddonValidationConfig(config);
     validateAddonsAgainstFrontends(
       config.addons,
-      config.frontend,
-      config.auth,
-      config.backend,
-      config.runtime,
-      config.ecosystem,
-      config.rustFrontend,
-      config.javaWebFramework,
-      config.database,
-      config.api,
+      addonConfig.frontend,
+      addonConfig.auth,
+      addonConfig.backend,
+      addonConfig.runtime,
+      addonConfig.ecosystem,
+      addonConfig.rustFrontend,
+      addonConfig.javaWebFramework,
+      addonConfig.database,
+      addonConfig.api,
+      addonConfig.pythonWebFramework,
+      addonConfig.goWebFramework,
+      addonConfig.rustWebFramework,
+      addonConfig.rustApi,
+      addonConfig.goApi,
+      addonConfig.javaApi,
     );
     config.addons = [...new Set(config.addons)];
   }
@@ -1631,17 +1665,24 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
     validatePaymentsCompatibility(config.payments, config.auth, config.backend, config.frontend);
 
     if (config.addons && config.addons.length > 0) {
+      const addonConfig = getAddonValidationConfig(config);
       validateAddonsAgainstFrontends(
         config.addons,
-        config.frontend,
-        config.auth,
-        config.backend,
-        config.runtime,
-        config.ecosystem,
-        config.rustFrontend,
-        config.javaWebFramework,
-        config.database,
-        config.api,
+        addonConfig.frontend,
+        addonConfig.auth,
+        addonConfig.backend,
+        addonConfig.runtime,
+        addonConfig.ecosystem,
+        addonConfig.rustFrontend,
+        addonConfig.javaWebFramework,
+        addonConfig.database,
+        addonConfig.api,
+        addonConfig.pythonWebFramework,
+        addonConfig.goWebFramework,
+        addonConfig.rustWebFramework,
+        addonConfig.rustApi,
+        addonConfig.goApi,
+        addonConfig.javaApi,
       );
     }
 

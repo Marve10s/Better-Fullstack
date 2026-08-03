@@ -18,8 +18,9 @@ const nextConfig: NextConfig = {
 	turbopack: {
 		root: turbopackRoot,
 	},
-	{{#if (or (eq webDeploy "fly") (eq webDeploy "railway") (eq webDeploy "render") (includes addons "docker-compose"))}}
+	{{#if (or (eq webDeploy "fly") (eq webDeploy "railway") (eq webDeploy "render") (includes addons "docker-compose") (includes addons "devcontainer") (includes addons "kong"))}}
 	output: "standalone",
+	outputFileTracingRoot: workspaceRoot,
 	{{/if}}
 	{{#if (includes examples "ai")}}
 	transpilePackages: ["shiki"],

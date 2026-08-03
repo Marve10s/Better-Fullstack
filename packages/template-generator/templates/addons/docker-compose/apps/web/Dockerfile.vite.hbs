@@ -5,8 +5,15 @@ WORKDIR /app
 FROM base AS builder
 COPY . .
 RUN if [ -f bun.lock ]; then bun install --frozen-lockfile; else bun install; fi
+{{#if (includes frontend "astro")}}
+ARG PUBLIC_SERVER_URL=http://localhost:3000
+ENV PUBLIC_SERVER_URL=${PUBLIC_SERVER_URL}
 ARG VITE_SERVER_URL=http://localhost:3000
 ENV VITE_SERVER_URL=${VITE_SERVER_URL}
+{{else}}
+ARG VITE_SERVER_URL=http://localhost:3000
+ENV VITE_SERVER_URL=${VITE_SERVER_URL}
+{{/if}}
 RUN bun run --filter web build
 {{else if (eq packageManager "pnpm")}}
 FROM node:20-alpine AS base
@@ -16,21 +23,57 @@ WORKDIR /app
 FROM base AS builder
 COPY . .
 RUN if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile; else pnpm install; fi
+{{#if (includes frontend "astro")}}
+ARG PUBLIC_SERVER_URL=http://localhost:3000
+ENV PUBLIC_SERVER_URL=${PUBLIC_SERVER_URL}
 ARG VITE_SERVER_URL=http://localhost:3000
 ENV VITE_SERVER_URL=${VITE_SERVER_URL}
+{{else}}
+ARG VITE_SERVER_URL=http://localhost:3000
+ENV VITE_SERVER_URL=${VITE_SERVER_URL}
+{{/if}}
 RUN pnpm --filter web build
+{{else if (eq packageManager "yarn")}}
+FROM node:20-alpine AS base
+RUN corepack enable && corepack prepare yarn@4.12.0 --activate
+WORKDIR /app
+
+FROM base AS builder
+COPY . .
+RUN if [ -f yarn.lock ]; then yarn install --immutable; else yarn install; fi
+{{#if (includes frontend "astro")}}
+ARG PUBLIC_SERVER_URL=http://localhost:3000
+ENV PUBLIC_SERVER_URL=${PUBLIC_SERVER_URL}
+ARG VITE_SERVER_URL=http://localhost:3000
+ENV VITE_SERVER_URL=${VITE_SERVER_URL}
+{{else}}
+ARG VITE_SERVER_URL=http://localhost:3000
+ENV VITE_SERVER_URL=${VITE_SERVER_URL}
+{{/if}}
+RUN yarn workspace web build
 {{else}}
 FROM node:20-alpine AS builder
 WORKDIR /app
 COPY . .
 RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
+{{#if (includes frontend "astro")}}
+ARG PUBLIC_SERVER_URL=http://localhost:3000
+ENV PUBLIC_SERVER_URL=${PUBLIC_SERVER_URL}
 ARG VITE_SERVER_URL=http://localhost:3000
 ENV VITE_SERVER_URL=${VITE_SERVER_URL}
+{{else}}
+ARG VITE_SERVER_URL=http://localhost:3000
+ENV VITE_SERVER_URL=${VITE_SERVER_URL}
+{{/if}}
 RUN npm run build --workspace=apps/web
 {{/if}}
 
 FROM nginx:alpine AS runner
+{{#if (includes frontend "react-router")}}
+COPY --from=builder /app/apps/web/build/client /usr/share/nginx/html
+{{else}}
 COPY --from=builder /app/apps/web/dist /usr/share/nginx/html
+{{/if}}
 COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 3000
 CMD ["nginx", "-g", "daemon off;"]

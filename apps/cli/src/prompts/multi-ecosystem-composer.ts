@@ -1139,7 +1139,16 @@ export async function gatherMultiEcosystemConfig(
     "addons",
     configScope,
     typeScriptSections,
-    () => getAddonsChoice(flags.addons, frontendList, "none", "none", "bun", "none"),
+    () =>
+      getAddonsChoice(
+        flags.addons,
+        frontendList,
+        "none",
+        undefined,
+        undefined,
+        undefined,
+        { ...graphPartial, ecosystem: backendEcosystem },
+      ),
   );
   const webDeploy = await scopedPromptValue(
     "typescript",

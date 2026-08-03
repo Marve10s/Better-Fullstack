@@ -11,14 +11,22 @@ FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
+{{#if (eq backend "nitro")}}
+COPY --from=builder /app/apps/server/.output ./apps/server/.output
+{{else}}
 COPY --from=builder /app/apps/server/dist ./apps/server/dist
+{{/if}}
 COPY --from=builder /app/apps/server/package.json ./apps/server/package.json
 COPY --from=builder /app/packages ./packages
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 WORKDIR /app/apps/server
 EXPOSE 3000
+{{#if (eq backend "nitro")}}
+CMD ["bun", "run", ".output/server/index.mjs"]
+{{else}}
 CMD ["bun", "run", "dist/index.js"]
+{{/if}}
 {{else}}
 FROM node:20-alpine AS base
 {{#if (eq packageManager "pnpm")}}
@@ -50,12 +58,28 @@ FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
+{{#if (eq backend "adonisjs")}}
+COPY --from=builder /app/apps/server/build ./apps/server/build
+{{else if (eq backend "nitro")}}
+COPY --from=builder /app/apps/server/.output ./apps/server/.output
+{{else}}
 COPY --from=builder /app/apps/server/dist ./apps/server/dist
+{{/if}}
 COPY --from=builder /app/apps/server/package.json ./apps/server/package.json
 COPY --from=builder /app/packages ./packages
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
+{{#if (eq backend "adonisjs")}}
+WORKDIR /app/apps/server/build
+{{else}}
 WORKDIR /app/apps/server
+{{/if}}
 EXPOSE 3000
+{{#if (eq backend "adonisjs")}}
+CMD ["node", "bin/server.js"]
+{{else if (eq backend "nitro")}}
+CMD ["node", ".output/server/index.mjs"]
+{{else}}
 CMD ["node", "dist/index.js"]
+{{/if}}
 {{/if}}

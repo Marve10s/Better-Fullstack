@@ -1,12 +1,4 @@
-import {
-  EMBEDDED_TEMPLATES,
-  processAddonTemplates,
-  processAddonsDeps,
-  VirtualFileSystem,
-} from "@better-fullstack/template-generator";
-import { writeTreeToFilesystem } from "@better-fullstack/template-generator/fs-writer";
 import { intro, log, outro } from "@clack/prompts";
-import fs from "fs-extra";
 import path from "node:path";
 import pc from "picocolors";
 
@@ -15,7 +7,7 @@ import type { AddInput, Addons, BetterTStackConfig, ProjectConfig } from "../../
 import { getDefaultConfig } from "../../constants";
 import { getAddonsToAdd } from "../../prompts/addons";
 import { maybeShowTelemetryNotice, type TelemetrySource, trackEvent } from "../../utils/analytics";
-import { readBtsConfig, updateBtsConfig } from "../../utils/bts-config";
+import { readBtsConfig } from "../../utils/bts-config";
 import { isSilent, runWithContextAsync } from "../../utils/context";
 import { applyDependencyVersionChannel } from "../../utils/dependency-version-channel";
 import { CLIError, UserCancelledError } from "../../utils/errors";
@@ -473,6 +465,7 @@ async function addHandlerInternal(input: AddInput): Promise<AddResult> {
       btsConfig.backend,
       btsConfig.runtime,
       btsConfig.api ?? "none",
+      btsConfig,
     );
     addonsToAdd = selectedAddons.filter((addon) => addon !== "none");
   }
@@ -493,129 +486,11 @@ async function addHandlerInternal(input: AddInput): Promise<AddResult> {
     log.info(pc.cyan(`Adding addons: ${addonsToAdd.join(", ")}`));
   }
 
-  const baseConfig = getDefaultConfig();
-  const updatedAddons = [...new Set([...existingAddons, ...addonsToAdd])];
-  const config: ProjectConfig = {
-    ...baseConfig,
-    ...btsConfig,
-    projectName,
-    projectDir,
-    relativePath: ".",
-    packageManager: input.packageManager || btsConfig.packageManager || baseConfig.packageManager,
+  // Interactive additions must use the graph-aware update pipeline too. This
+  // preserves the actual backend projection and re-renders dependent addons
+  // such as DevContainer when infrastructure like Kong is added.
+  const interactiveInput: AddInput = { ...input, addons: addonsToAdd };
+  return runStackUpdateAdd(interactiveInput, projectDir, projectName, btsConfig, {
     addons: addonsToAdd,
-    frontend: btsConfig.frontend || baseConfig.frontend,
-    examples: btsConfig.examples || [],
-    rustLibraries: btsConfig.rustLibraries || [],
-    pythonAi: btsConfig.pythonAi || [],
-    aiDocs: btsConfig.aiDocs || [],
-  };
-  const setupConfig: ProjectConfig = { ...config, addons: updatedAddons };
-
-  const vfs = new VirtualFileSystem();
-  const packageJsonPaths = await collectPackageJsonPaths(projectDir);
-
-  for (const pkgPath of packageJsonPaths) {
-    const fullPath = path.join(projectDir, pkgPath);
-    const content = await fs.readFile(fullPath, "utf-8");
-    vfs.writeFile(pkgPath, content);
-  }
-
-  await processAddonTemplates(vfs, EMBEDDED_TEMPLATES, config);
-  processAddonsDeps(vfs, config);
-
-  const tree = {
-    root: vfs.toTree(projectName),
-    fileCount: vfs.getFileCount(),
-    directoryCount: vfs.getDirectoryCount(),
-    config,
-  };
-
-  await writeTreeToFilesystem(tree, projectDir);
-
-  const setupWarnings = await setupAddons(setupConfig, addonsToAdd);
-  await applyDependencyVersionChannel(projectDir, config.versionChannel);
-
-  const configUpdates: Partial<Pick<ProjectConfig, "webDeploy" | "serverDeploy">> & {
-    addons: Addons[];
-  } = {
-    addons: updatedAddons,
-  };
-
-  if (input.webDeploy !== undefined) {
-    configUpdates.webDeploy = input.webDeploy;
-  }
-  if (input.serverDeploy !== undefined) {
-    configUpdates.serverDeploy = input.serverDeploy;
-  }
-
-  await updateBtsConfig(projectDir, configUpdates);
-
-  let addonInstallFailed = false;
-  if (input.install) {
-    const installResult = await installDependencies({
-      projectDir,
-      packageManager: config.packageManager,
-    });
-    addonInstallFailed = !installResult.success;
-  }
-
-  if (!isSilent()) {
-    log.success(pc.green(`Successfully added: ${addonsToAdd.join(", ")}`));
-    for (const warning of setupWarnings) {
-      log.warn(pc.yellow(warning));
-    }
-    const installCmd =
-      config.packageManager === "npm" ? "npm install" : `${config.packageManager} install`;
-    if (!input.install) {
-      log.info(pc.yellow(`Run '${installCmd}' to install new dependencies.`));
-    } else if (addonInstallFailed) {
-      log.warn(
-        pc.yellow(
-          `Dependency installation failed. Run '${installCmd}' after resolving the error above.`,
-        ),
-      );
-    }
-    outro(pc.magenta("Addons added successfully!"));
-  }
-
-  return {
-    success: true,
-    addedAddons: addonsToAdd,
-    projectDir,
-    setupWarnings: setupWarnings.length > 0 ? setupWarnings : undefined,
-  };
-}
-
-async function collectPackageJsonPaths(projectDir: string): Promise<string[]> {
-  const results: string[] = [];
-
-  async function walk(currentDir: string) {
-    const entries = await fs.readdir(currentDir, { withFileTypes: true });
-    for (const entry of entries) {
-      if (entry.name === "node_modules" || entry.name === ".git" || entry.name === ".turbo") {
-        continue;
-      }
-
-      const fullPath = path.join(currentDir, entry.name);
-      if (entry.isDirectory()) {
-        await walk(fullPath);
-        continue;
-      }
-
-      if (entry.isFile() && entry.name === "package.json") {
-        results.push(path.relative(projectDir, fullPath).replaceAll(path.sep, "/"));
-      }
-    }
-  }
-
-  await walk(projectDir);
-
-  if (
-    !results.includes("package.json") &&
-    (await fs.pathExists(path.join(projectDir, "package.json")))
-  ) {
-    results.push("package.json");
-  }
-
-  return results;
+  });
 }

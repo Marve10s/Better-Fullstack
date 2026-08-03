@@ -443,6 +443,7 @@ const WORKSPACE_TOOLING_ADDONS = new Set([
   "nx",
   "docker-compose",
   "devcontainer",
+  "kong",
   "github-actions",
   "ruler",
   "mcp",
@@ -2075,8 +2076,17 @@ function createAddonCompatibilityIssue(
       });
     }
 
-    if (part.toolId === "docker-compose" || part.toolId === "devcontainer") {
-      const title = part.toolId === "devcontainer" ? "DevContainer" : "Docker Compose";
+    if (
+      part.toolId === "docker-compose" ||
+      part.toolId === "devcontainer" ||
+      part.toolId === "kong"
+    ) {
+      const title =
+        part.toolId === "devcontainer"
+          ? "DevContainer"
+          : part.toolId === "kong"
+            ? "Kong Gateway"
+            : "Docker Compose";
       const databaseTool = context.primaryToolIdsByRole?.database;
       const primaryEcosystem = backendEcosystem ?? frontendEcosystem ?? context.settings?.ecosystem;
       const selectedEcosystems = [backendEcosystem, frontendEcosystem, context.settings?.ecosystem];
@@ -2102,6 +2112,45 @@ function createAddonCompatibilityIssue(
           message: `${title} is not compatible with Cloudflare Workers runtime.`,
         });
       }
+      if (
+        backendEcosystem &&
+        !DOCKER_COMPOSE_COMPATIBLE_ECOSYSTEMS.has(backendEcosystem)
+      ) {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: `${title} does not yet provide a container template for ${backendEcosystem} backends.`,
+        });
+      }
+      if (
+        part.toolId === "kong" &&
+        primaryEcosystem === "typescript" &&
+        (!backendTool || backendTool === "none")
+      ) {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: "Kong Gateway requires a TypeScript backend service.",
+        });
+      }
+      if (
+        part.toolId === "kong" &&
+        primaryEcosystem !== "typescript" &&
+        primaryEcosystem !== "java" &&
+        (!backendTool || backendTool === "none")
+      ) {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: `Kong Gateway requires a ${primaryEcosystem ?? "supported"} HTTP server.`,
+        });
+      }
       if (!hasCompatibleEcosystem) {
         return createStackGraphIssue({
           code: "INCOMPATIBLE_GRAPH_SELECTION",
@@ -2123,13 +2172,67 @@ function createAddonCompatibilityIssue(
           message: `${title} currently supports Next.js, TanStack Router, React Router, React Vite, Solid, or Astro.`,
         });
       }
-      if (backendEcosystem === "typescript" && backendTool === "self" && frontendTool !== "next") {
+      if (
+        backendEcosystem === "typescript" &&
+        backendTool === "self" &&
+        frontendTool !== "next" &&
+        frontendTool !== "vinext"
+      ) {
         return createStackGraphIssue({
           code: "INCOMPATIBLE_GRAPH_SELECTION",
           partId: part.id,
           role: part.role,
           toolId: part.toolId,
-          message: `${title} self-backend support currently requires Next.js.`,
+          message: `${title} self-backend support currently requires Next.js or Vinext.`,
+        });
+      }
+      if (
+        part.toolId === "kong" &&
+        primaryEcosystem === "rust" &&
+        (apiTool === "tonic" || apiTool === "jsonrpsee")
+      ) {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: "Kong Gateway currently requires an HTTP Rust API.",
+        });
+      }
+      if (
+        part.toolId === "kong" &&
+        primaryEcosystem === "rust" &&
+        backendTool === "loco"
+      ) {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: "Kong Gateway does not yet support Loco's container configuration.",
+        });
+      }
+      if (
+        part.toolId === "kong" &&
+        primaryEcosystem === "go" &&
+        apiTool !== undefined &&
+        ["connect-go", "grpc-gateway", "oapi-codegen", "grpc-go"].includes(apiTool)
+      ) {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: "Kong Gateway currently requires the primary Go HTTP server API.",
+        });
+      }
+      if (part.toolId === "kong" && primaryEcosystem === "java" && apiTool === "grpc") {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: "Kong Gateway currently requires the primary Java HTTP API.",
         });
       }
       if (frontendEcosystem === "rust" && frontendTool && frontendTool !== "none") {
@@ -2155,14 +2258,15 @@ function createAddonCompatibilityIssue(
         databaseTool &&
         databaseTool !== "none" &&
         databaseTool !== "sqlite" &&
-        databaseTool !== "postgres"
+        databaseTool !== "postgres" &&
+        databaseTool !== "mongodb"
       ) {
         return createStackGraphIssue({
           code: "INCOMPATIBLE_GRAPH_SELECTION",
           partId: part.id,
           role: part.role,
           toolId: part.toolId,
-          message: `${title} for Python ORM projects currently supports SQLite defaults or Postgres.`,
+          message: `${title} for Python ORM projects currently supports SQLite, Postgres, or MongoDB.`,
         });
       }
     }

@@ -1,21 +1,86 @@
 name: {{projectName}}
 
 services:
+{{#if (includes addons "kong")}}
+  kong:
+    image: kong/kong-gateway:3.15.0.1
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /kong/declarative/kong.yml
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+    ports:
+      - "8000:8000"
+      - "127.0.0.1:8001:8001"
+    volumes:
+      - ./kong/kong.yml:/kong/declarative/kong.yml:ro
+    depends_on:
+{{#if (eq ecosystem "typescript")}}
+{{#if (eq backend "self")}}
+      - web
+{{else}}
+      - server
+{{/if}}
+{{else}}
+      - app
+{{/if}}
+    restart: unless-stopped
+
+{{/if}}
 {{#if (eq ecosystem "typescript")}}
   web:
     build:
       context: .
-{{#if (or (includes frontend "next") (includes frontend "vinext"))}}
+{{#if (includes frontend "next")}}
       dockerfile: apps/web/Dockerfile.next
+{{#if (includes addons "kong")}}
+      args:
+        NEXT_PUBLIC_SERVER_URL: http://localhost:8000
+{{/if}}
+{{else if (includes frontend "vinext")}}
+      dockerfile: apps/web/Dockerfile.vinext
+      args:
+{{#if (includes addons "kong")}}
+        VITE_SERVER_URL: http://localhost:8000
+{{else}}
+        VITE_SERVER_URL: http://localhost:3000
+{{/if}}
 {{else}}
       dockerfile: apps/web/Dockerfile.vite
       args:
+{{#if (includes frontend "astro")}}
+{{#if (includes addons "kong")}}
+        PUBLIC_SERVER_URL: http://localhost:8000
+        VITE_SERVER_URL: http://localhost:8000
+{{else}}
+        PUBLIC_SERVER_URL: http://localhost:3000
         VITE_SERVER_URL: http://localhost:3000
 {{/if}}
+{{else}}
+{{#if (includes addons "kong")}}
+        VITE_SERVER_URL: http://localhost:8000
+{{else}}
+        VITE_SERVER_URL: http://localhost:3000
+{{/if}}
+{{/if}}
+{{/if}}
+    env_file:
+      - apps/web/.env
+{{#if (and (includes addons "kong") (eq backend "self"))}}
+    expose:
+      - "3000"
+{{else}}
     ports:
       - "3001:3000"
+{{/if}}
     environment:
       - NODE_ENV=production
+{{#if (and (includes addons "kong") (isBetterAuth auth))}}
+      - BETTER_AUTH_URL=http://localhost:8000
+{{/if}}
 {{#if (eq backend "self")}}
 {{#if (eq database "postgres")}}
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/{{projectName}}
@@ -23,6 +88,9 @@ services:
       - DATABASE_URL=mysql://root:rootpassword@db:3306/{{projectName}}
 {{else if (eq database "mongodb")}}
       - DATABASE_URL=mongodb://root:password@db:27017/{{projectName}}?authSource=admin
+{{/if}}
+{{#if (or (eq database "redis") (eq caching "redis"))}}
+      - REDIS_URL=redis://redis:6379
 {{/if}}
 {{/if}}
 {{#unless (eq backend "self")}}
@@ -32,10 +100,16 @@ services:
 {{/unless}}
 {{/unless}}
 {{#if (eq backend "self")}}
-{{#if (or (or (eq database "postgres") (eq database "mysql")) (eq database "mongodb"))}}
+{{#if (or (or (or (eq database "postgres") (eq database "mysql")) (eq database "mongodb")) (or (eq database "redis") (eq caching "redis")))}}
     depends_on:
+{{#if (or (or (eq database "postgres") (eq database "mysql")) (eq database "mongodb"))}}
       db:
         condition: service_healthy
+{{/if}}
+{{#if (or (eq database "redis") (eq caching "redis"))}}
+      redis:
+        condition: service_healthy
+{{/if}}
 {{/if}}
 {{/if}}
     restart: unless-stopped
@@ -46,12 +120,22 @@ services:
     build:
       context: .
       dockerfile: apps/server/Dockerfile
+    env_file:
+      - apps/server/.env
+{{#if (includes addons "kong")}}
+    expose:
+      - "3000"
+{{else}}
     ports:
       - "3000:3000"
+{{/if}}
     environment:
       - NODE_ENV=production
       - PORT=3000
       - CORS_ORIGIN=http://localhost:3001
+{{#if (and (includes addons "kong") (isBetterAuth auth))}}
+      - BETTER_AUTH_URL=http://localhost:8000
+{{/if}}
 {{#if (eq database "postgres")}}
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/{{projectName}}
 {{else if (eq database "mysql")}}
@@ -59,10 +143,19 @@ services:
 {{else if (eq database "mongodb")}}
       - DATABASE_URL=mongodb://root:password@db:27017/{{projectName}}?authSource=admin
 {{/if}}
-{{#if (or (or (eq database "postgres") (eq database "mysql")) (eq database "mongodb"))}}
+{{#if (or (eq database "redis") (eq caching "redis"))}}
+      - REDIS_URL=redis://redis:6379
+{{/if}}
+{{#if (or (or (or (eq database "postgres") (eq database "mysql")) (eq database "mongodb")) (or (eq database "redis") (eq caching "redis")))}}
     depends_on:
+{{#if (or (or (eq database "postgres") (eq database "mysql")) (eq database "mongodb"))}}
       db:
         condition: service_healthy
+{{/if}}
+{{#if (or (eq database "redis") (eq caching "redis"))}}
+      redis:
+        condition: service_healthy
+{{/if}}
 {{/if}}
     restart: unless-stopped
 {{/unless}}
@@ -88,8 +181,6 @@ services:
       retries: 5
     restart: unless-stopped
 
-volumes:
-  postgres_data:
 {{/if}}
 {{#if (eq database "mysql")}}
   db:
@@ -112,8 +203,6 @@ volumes:
       retries: 5
     restart: unless-stopped
 
-volumes:
-  mysql_data:
 {{/if}}
 {{#if (eq database "mongodb")}}
   db:
@@ -135,14 +224,139 @@ volumes:
       retries: 5
     restart: unless-stopped
 
+{{/if}}
+{{#if (or (eq database "redis") (eq caching "redis"))}}
+  redis:
+    image: redis:7-alpine
+    container_name: {{projectName}}-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+{{/if}}
+{{#if (or (or (or (eq database "postgres") (eq database "mysql")) (eq database "mongodb")) (or (eq database "redis") (eq caching "redis")))}}
 volumes:
+{{#if (eq database "postgres")}}
+  postgres_data:
+{{else if (eq database "mysql")}}
+  mysql_data:
+{{else if (eq database "mongodb")}}
   mongo_data:
 {{/if}}
+{{#if (or (eq database "redis") (eq caching "redis"))}}
+  redis_data:
+{{/if}}
+{{/if}}
 {{else}}
-  app:
+{{#if graphWebFrontend}}
+  web:
     build:
       context: .
+{{#if (includes frontend "next")}}
+      dockerfile: apps/web/Dockerfile.next
+      args:
+{{#if (includes addons "kong")}}
+        NEXT_PUBLIC_SERVER_URL: http://localhost:8000
+{{else if (eq ecosystem "python")}}
+        NEXT_PUBLIC_SERVER_URL: http://localhost:8000
+{{else if (eq ecosystem "rust")}}
+        NEXT_PUBLIC_SERVER_URL: http://localhost:3000
+{{else}}
+        NEXT_PUBLIC_SERVER_URL: http://localhost:8080
+{{/if}}
+{{else if (includes frontend "vinext")}}
+      dockerfile: apps/web/Dockerfile.vinext
+      args:
+{{#if (includes addons "kong")}}
+        VITE_SERVER_URL: http://localhost:8000
+{{else if (eq ecosystem "python")}}
+        VITE_SERVER_URL: http://localhost:8000
+{{else if (eq ecosystem "rust")}}
+        VITE_SERVER_URL: http://localhost:3000
+{{else}}
+        VITE_SERVER_URL: http://localhost:8080
+{{/if}}
+{{else}}
+      dockerfile: apps/web/Dockerfile.vite
+      args:
+{{#if (includes frontend "astro")}}
+{{#if (includes addons "kong")}}
+        PUBLIC_SERVER_URL: http://localhost:8000
+        VITE_SERVER_URL: http://localhost:8000
+{{else if (eq ecosystem "python")}}
+        PUBLIC_SERVER_URL: http://localhost:8000
+        VITE_SERVER_URL: http://localhost:8000
+{{else if (eq ecosystem "rust")}}
+        PUBLIC_SERVER_URL: http://localhost:3000
+        VITE_SERVER_URL: http://localhost:3000
+{{else}}
+        PUBLIC_SERVER_URL: http://localhost:8080
+        VITE_SERVER_URL: http://localhost:8080
+{{/if}}
+{{else}}
+{{#if (includes addons "kong")}}
+        VITE_SERVER_URL: http://localhost:8000
+{{else if (eq ecosystem "python")}}
+        VITE_SERVER_URL: http://localhost:8000
+{{else if (eq ecosystem "rust")}}
+        VITE_SERVER_URL: http://localhost:3000
+{{else}}
+        VITE_SERVER_URL: http://localhost:8080
+{{/if}}
+{{/if}}
+{{/if}}
+    env_file:
+      - apps/web/.env
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - app
+    restart: unless-stopped
+
+{{/if}}
+  app:
+    build:
+{{#if graphBackendTargetPath}}
+      context: {{graphBackendTargetPath}}
       dockerfile: Dockerfile
+{{else}}
+      context: .
+      dockerfile: Dockerfile
+{{/if}}
+    env_file:
+{{#if graphBackendTargetPath}}
+      - {{graphBackendTargetPath}}/.env
+{{else}}
+      - .env
+{{/if}}
+{{#if (includes addons "kong")}}
+    expose:
+{{#if (eq ecosystem "python")}}
+      - "8000"
+{{else if (eq ecosystem "rust")}}
+      - "3000"
+{{else}}
+      - "8080"
+{{/if}}
+{{#if (and (eq ecosystem "rust") (or (eq rustObservability "metrics") (eq rustRealtime "tokio-tungstenite")))}}
+    ports:
+{{#if (eq rustRealtime "tokio-tungstenite")}}
+      - "8765:8765"
+{{/if}}
+{{#if (eq rustObservability "metrics")}}
+      - "9000:9000"
+{{/if}}
+{{/if}}
+{{else}}
     ports:
 {{#if (eq ecosystem "python")}}
       - "8000:8000"
@@ -157,10 +371,17 @@ volumes:
 {{#if (eq rustObservability "metrics")}}
       - "9000:9000"
 {{/if}}
+{{#if (eq rustRealtime "tokio-tungstenite")}}
+      - "8765:8765"
+{{/if}}
 {{else}}
       - "8080:8080"
 {{/if}}
+{{/if}}
     environment:
+{{#if graphWebFrontend}}
+      - CORS_ORIGIN=http://localhost:3001
+{{/if}}
 {{#if (eq ecosystem "python")}}
       - HOST=0.0.0.0
       - PORT=8000
@@ -174,15 +395,25 @@ volumes:
 {{#if (and (ne pythonOrm "none") (eq database "mongodb"))}}
       - MONGODB_URI=mongodb://root:password@db:27017/{{projectName}}?authSource=admin
 {{/if}}
+{{#if (eq pythonCaching "redis")}}
+      - REDIS_URL=redis://redis:6379
+{{/if}}
 {{else if (eq ecosystem "go")}}
       - HOST=0.0.0.0
       - PORT=8080
 {{#if (ne goOrm "none")}}
       - DATABASE_URL=postgres://postgres:postgres@db:5432/{{projectName}}?sslmode=disable
 {{/if}}
+{{#if (eq goCaching "redis")}}
+      - REDIS_URL=redis://redis:6379
+{{/if}}
 {{else if (eq ecosystem "rust")}}
       - HOST=0.0.0.0
       - PORT=3000
+{{#if (eq rustWebFramework "rocket")}}
+      - ROCKET_ADDRESS=0.0.0.0
+      - ROCKET_PORT=3000
+{{/if}}
 {{#if (eq rustApi "tonic")}}
       - GRPC_PORT=50051
 {{/if}}
@@ -199,14 +430,23 @@ volumes:
 {{else if (ne rustOrm "none")}}
       - DATABASE_URL=postgres://postgres:postgres@db:5432/{{projectName}}
 {{/if}}
+{{#if (eq rustCaching "redis")}}
+      - REDIS_URL=redis://redis:6379
+{{/if}}
 {{else if (eq ecosystem "java")}}
       - PORT=8080
       - SPRING_PROFILES_ACTIVE=prod
 {{/if}}
-{{#if (or (or (and (eq ecosystem "python") (and (ne pythonOrm "none") (or (eq database "postgres") (eq database "mongodb")))) (and (eq ecosystem "go") (ne goOrm "none"))) (and (eq ecosystem "rust") (and (ne rustOrm "none") (ne rustOrm "rusqlite"))))}}
+{{#if (or (or (or (and (eq ecosystem "python") (and (ne pythonOrm "none") (or (eq database "postgres") (eq database "mongodb")))) (and (eq ecosystem "go") (ne goOrm "none"))) (and (eq ecosystem "rust") (and (ne rustOrm "none") (ne rustOrm "rusqlite")))) (or (or (eq pythonCaching "redis") (eq goCaching "redis")) (eq rustCaching "redis")))}}
     depends_on:
+{{#if (or (or (and (eq ecosystem "python") (and (ne pythonOrm "none") (or (eq database "postgres") (eq database "mongodb")))) (and (eq ecosystem "go") (ne goOrm "none"))) (and (eq ecosystem "rust") (and (ne rustOrm "none") (ne rustOrm "rusqlite"))))}}
       db:
         condition: service_healthy
+{{/if}}
+{{#if (or (or (eq pythonCaching "redis") (eq goCaching "redis")) (eq rustCaching "redis"))}}
+      redis:
+        condition: service_healthy
+{{/if}}
 {{/if}}
 {{#if (and (eq ecosystem "rust") (eq rustOrm "rusqlite"))}}
     volumes:
@@ -258,6 +498,22 @@ volumes:
 {{else}}
   postgres_data:
 {{/if}}
+{{/if}}
+{{#if (or (or (eq pythonCaching "redis") (eq goCaching "redis")) (eq rustCaching "redis"))}}
+  redis:
+    image: redis:7-alpine
+    container_name: {{projectName}}-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - /data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
 {{/if}}
 {{#if (and (eq ecosystem "rust") (eq rustOrm "rusqlite"))}}
 volumes:

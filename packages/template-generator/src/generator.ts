@@ -2,7 +2,9 @@ import type { ProjectConfig, StackPart } from "@better-fullstack/types";
 
 import {
   getRoleTargetPath,
+  parseStackPartSpecs,
   stackGraphToLegacyProjectConfigForEcosystem,
+  validateStackParts,
 } from "@better-fullstack/types";
 
 import type { GeneratorOptions, GeneratorResult, VirtualFileTree } from "./types";
@@ -87,6 +89,7 @@ type EcosystemBaseTemplateProcessor = (
 type ProjectConfigWithCiWorkingDirectory = ProjectConfig & {
   ciWorkingDirectory?: string;
   ciHasTestScript?: boolean;
+  graphBackendTargetPath?: string;
 };
 
 const ECOSYSTEM_BASE_TEMPLATE_PROCESSORS = {
@@ -97,6 +100,42 @@ const ECOSYSTEM_BASE_TEMPLATE_PROCESSORS = {
   dotnet: processDotnetBaseTemplate,
   elixir: processElixirBaseTemplate,
 } satisfies Record<NonTypeScriptTemplateEcosystem, EcosystemBaseTemplateProcessor>;
+
+const GRAPH_CONTAINER_ADDONS = new Set(["docker-compose", "devcontainer", "kong"]);
+
+function validateGraphContainerAddons(config: ProjectConfig): string[] {
+  if (!config.stackParts || config.stackParts.length === 0) return [];
+
+  const explicitContainerAddons = new Set(
+    config.stackParts
+      .filter(
+        (part) =>
+          part.role === "workspaceTooling" && GRAPH_CONTAINER_ADDONS.has(part.toolId),
+      )
+      .map((part) => part.toolId),
+  );
+  const legacyContainerAddons = (config.addons ?? []).filter(
+    (addon) => GRAPH_CONTAINER_ADDONS.has(addon) && !explicitContainerAddons.has(addon),
+  );
+  const effectiveParts = [
+    ...config.stackParts,
+    ...parseStackPartSpecs(
+      legacyContainerAddons.map((addon) => `workspaceTooling:universal:${addon}`),
+    ),
+  ];
+  const containerPartIds = new Set(
+    effectiveParts
+      .filter(
+        (part) =>
+          part.role === "workspaceTooling" && GRAPH_CONTAINER_ADDONS.has(part.toolId),
+      )
+      .map((part) => part.id),
+  );
+
+  return validateStackParts(effectiveParts).issues
+    .filter((issue) => issue.partId !== undefined && containerPartIds.has(issue.partId))
+    .map((issue) => issue.message);
+}
 
 function hasGeneratedJavascriptTestScript(config: ProjectConfig): boolean {
   return (
@@ -159,6 +198,15 @@ async function processGraphTemplates(
   templates: TemplateData,
   config: ProjectConfig,
 ): Promise<void> {
+  const nonTypeScriptBackends = (config.stackParts ?? []).filter(
+    (part) => part.role === "backend" && !part.ownerPartId && part.ecosystem !== "typescript",
+  );
+  const hasCrossEcosystemWebBackend =
+    nonTypeScriptBackends.length > 0 &&
+    (config.stackParts ?? []).some(
+      (part) => part.role === "frontend" && !part.ownerPartId && part.ecosystem === "typescript",
+    );
+  const crossEcosystemInfrastructureAddons = new Set(["docker-compose", "devcontainer", "kong"]);
   const tsConfig = withGraphAddonSelections(
     config,
     stackGraphToLegacyProjectConfigForEcosystem(config, "typescript"),
@@ -174,7 +222,18 @@ async function processGraphTemplates(
     await processAuthTemplates(vfs, templates, tsConfig);
     await processPaymentsTemplates(vfs, templates, tsConfig);
     await processEmailTemplates(vfs, templates, tsConfig);
-    await processAddonTemplates(vfs, templates, withCiTemplateFlags(tsConfig));
+    const initialTsAddonConfig = hasCrossEcosystemWebBackend
+      ? {
+          ...tsConfig,
+          // Compose-backed infrastructure must be rendered from the non-TypeScript
+          // backend projection so every selected service shares one graph-aware
+          // Compose file and DevContainer configuration.
+          addons: tsConfig.addons.filter(
+            (addon) => !crossEcosystemInfrastructureAddons.has(addon),
+          ),
+        }
+      : tsConfig;
+    await processAddonTemplates(vfs, templates, withCiTemplateFlags(initialTsAddonConfig));
     await processExampleTemplates(vfs, templates, tsConfig);
     await processExtrasTemplates(vfs, templates, tsConfig);
     await processDeployTemplates(vfs, templates, tsConfig);
@@ -236,10 +295,6 @@ async function processGraphTemplates(
     }
   }
 
-  const nonTypeScriptBackends = (config.stackParts ?? []).filter(
-    (part) => part.role === "backend" && !part.ownerPartId && part.ecosystem !== "typescript",
-  );
-
   for (const part of nonTypeScriptBackends) {
     const targetPath = part.targetPath ?? getRoleTargetPath("backend") ?? "apps/server";
     const ecosystem = part.ecosystem as NonTypeScriptTemplateEcosystem;
@@ -254,17 +309,37 @@ async function processGraphTemplates(
             pythonPackageManager: config.pythonPackageManager ?? "uv",
           }
         : projectedConfig;
-    await ECOSYSTEM_BASE_TEMPLATE_PROCESSORS[ecosystem](
-      vfs,
-      templates,
-      backendConfig,
-      targetPath,
-    );
+    await ECOSYSTEM_BASE_TEMPLATE_PROCESSORS[ecosystem](vfs, templates, backendConfig, targetPath);
   }
 
   // Pin the backend's CORS to the web frontend's dev origin (must run after the
   // backend templates above so the backend .env.example exists).
   processGraphBackendEnv(vfs, tsConfig);
+
+  const selectedCrossEcosystemInfrastructureAddons = tsConfig.addons.filter((addon) =>
+    crossEcosystemInfrastructureAddons.has(addon),
+  );
+  if (hasCrossEcosystemWebBackend && selectedCrossEcosystemInfrastructureAddons.length > 0) {
+    const backendPart = nonTypeScriptBackends[0];
+    if (backendPart) {
+      const targetPath = backendPart.targetPath ?? getRoleTargetPath("backend") ?? "apps/server";
+      const backendConfig = withGraphAddonSelections(
+        config,
+        stackGraphToLegacyProjectConfigForEcosystem(
+          config,
+          backendPart.ecosystem as NonTypeScriptTemplateEcosystem,
+        ),
+      );
+      await processAddonTemplates(vfs, templates, {
+        ...backendConfig,
+        addons: selectedCrossEcosystemInfrastructureAddons,
+        frontend: tsConfig.frontend,
+        packageManager: tsConfig.packageManager,
+        graphWebFrontend: true,
+        graphBackendTargetPath: targetPath,
+      } as ProjectConfig);
+    }
+  }
 
   if (
     tsConfig.frontend.length === 0 &&
@@ -285,6 +360,7 @@ async function processGraphTemplates(
       } as ProjectConfigWithCiWorkingDirectory;
       if (addonConfig.addons.some((addon) => addon !== "none")) {
         addonConfig.ciWorkingDirectory = targetPath;
+        addonConfig.graphBackendTargetPath = targetPath;
         await processAddonTemplates(vfs, templates, addonConfig);
       }
     }
@@ -304,6 +380,16 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
         success: false,
         error: "No templates provided. Templates must be passed via the templates option.",
       };
+    }
+
+    if (config.stackParts && config.stackParts.length > 0) {
+      const containerAddonIssues = validateGraphContainerAddons(config);
+      if (containerAddonIssues.length > 0) {
+        return {
+          success: false,
+          error: containerAddonIssues.join("\n"),
+        };
+      }
     }
 
     const vfs = new VirtualFileSystem();

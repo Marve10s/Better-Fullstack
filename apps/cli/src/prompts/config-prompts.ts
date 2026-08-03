@@ -953,6 +953,7 @@ export async function gatherConfig(
             addon === "docker-compose" ||
             addon === "devcontainer" ||
             addon === "gitleaks" ||
+            addon === "kong" ||
             addon === "github-actions" ||
             (results.ecosystem === "react-native" && addon === "knip"),
         );

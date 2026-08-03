@@ -1,12 +1,14 @@
 import { describe, it, expect } from "bun:test";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { parseStackPartSpecs } from "@better-fullstack/types";
 
-import type { Addons, Frontend } from "../src";
+import { createVirtual, type Addons, type Frontend } from "../src";
 
 import { setupAddons } from "../src/helpers/addons/addons-setup";
-import { getAddonGroup } from "../src/prompts/addons";
+import { getAddonGroup, getCompatibleAddonsForPrompt } from "../src/prompts/addons";
 import { APP_PLATFORM_ADDON_VALUES } from "../src/types";
+import { getCompatibleAddons } from "../src/utils/compatibility-rules";
 import { expectError, expectSuccess, runTRPCTest, type TestConfig } from "./test-utils";
 
 describe("Addon Configurations", () => {
@@ -664,7 +666,7 @@ describe("Addon Configurations", () => {
           database: "sqlite",
           orm: "drizzle",
           auth: "none",
-          api: "none",
+          api: "trpc",
           examples: ["none"],
           dbSetup: "none",
           webDeploy: "none",
@@ -858,6 +860,692 @@ describe("Addon Configurations", () => {
           expectError(result, "tauri addon requires one of these frontends");
         });
       }
+    });
+
+    describe("Kong Gateway Addon", () => {
+      it("keeps infrastructure addons visible when adding to a Python project", () => {
+        expect(
+          getCompatibleAddonsForPrompt(
+            ["docker-compose", "devcontainer", "kong"],
+            [],
+            [],
+            "none",
+            undefined,
+            undefined,
+            undefined,
+            {
+              ecosystem: "python",
+              pythonWebFramework: "fastapi",
+            },
+          ),
+        ).toEqual(["docker-compose", "devcontainer", "kong"]);
+      });
+
+      it("hides Kong from TypeScript prompts without a backend", () => {
+        expect(
+          getCompatibleAddons(
+            ["kong"],
+            ["react-vite"],
+            [],
+            "none",
+            "none",
+            "none",
+            "none",
+            "typescript",
+          ),
+        ).toEqual([]);
+      });
+
+      it("should generate a runnable DB-less gateway for a Hono server", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-hono",
+          addons: ["kong"],
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "none",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        expect(result.projectDir).toBeDefined();
+
+        const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
+        const kongConfig = readFileSync(join(result.projectDir!, "kong", "kong.yml"), "utf8");
+        const nginxConfig = readFileSync(
+          join(result.projectDir!, "apps", "web", "nginx.conf"),
+          "utf8",
+        );
+
+        expect(compose).toContain("kong/kong-gateway:3.15.0.1");
+        expect(compose).toContain('KONG_DATABASE: "off"');
+        expect(compose).toContain("./kong/kong.yml:/kong/declarative/kong.yml:ro");
+        expect(compose).toContain("VITE_SERVER_URL: http://localhost:8000");
+        expect(compose).toContain("env_file:\n      - apps/server/.env");
+        expect(compose).toContain("- server");
+        expect(compose).toContain('expose:\n      - "3000"');
+        expect(compose).not.toContain('"3000:3000"');
+        expect(kongConfig).toContain("url: http://server:3000");
+        expect(kongConfig).toContain("strip_path: false");
+        expect(nginxConfig).toContain("connect-src 'self' http://localhost:8000");
+      });
+
+      it("should build Astro with its public gateway URL", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-astro",
+          addons: ["kong"],
+          frontend: ["astro"],
+          astroIntegration: "none",
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "graphql-yoga",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
+        const dockerfile = readFileSync(
+          join(result.projectDir!, "apps", "web", "Dockerfile.vite"),
+          "utf8",
+        );
+        const graphqlClient = readFileSync(
+          join(result.projectDir!, "apps", "web", "src", "utils", "graphql.ts"),
+          "utf8",
+        );
+        expect(compose).toContain("PUBLIC_SERVER_URL: http://localhost:8000");
+        expect(compose).toContain("VITE_SERVER_URL: http://localhost:8000");
+        expect(dockerfile).toContain("ARG PUBLIC_SERVER_URL=http://localhost:3000");
+        expect(dockerfile).toContain("ENV PUBLIC_SERVER_URL=${PUBLIC_SERVER_URL}");
+        expect(dockerfile).toContain("ARG VITE_SERVER_URL=http://localhost:3000");
+        expect(dockerfile).toContain("ENV VITE_SERVER_URL=${VITE_SERVER_URL}");
+        expect(graphqlClient).toContain("env.VITE_SERVER_URL");
+      });
+
+      it("loads runtime env and exposes Better Auth through the gateway URL", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-better-auth",
+          addons: ["kong"],
+          frontend: ["react-vite"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "better-auth",
+          api: "trpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
+        expect(compose).toContain("env_file:\n      - apps/server/.env");
+        expect(compose).toContain("BETTER_AUTH_URL=http://localhost:8000");
+      });
+
+      it("provisions Redis for database and self-hosted cache selections", async () => {
+        for (const { projectName, database, orm, caching } of [
+          {
+            projectName: "kong-redis-database",
+            database: "redis" as const,
+            orm: "none" as const,
+            caching: "none" as const,
+          },
+          {
+            projectName: "kong-redis-cache",
+            database: "sqlite" as const,
+            orm: "drizzle" as const,
+            caching: "redis" as const,
+          },
+        ]) {
+          const result = await runTRPCTest({
+            projectName,
+            addons: ["kong"],
+            frontend: ["react-vite"],
+            backend: "hono",
+            runtime: "bun",
+            database,
+            orm,
+            caching,
+            auth: "none",
+            api: "none",
+            examples: ["none"],
+            dbSetup: "none",
+            webDeploy: "none",
+            serverDeploy: "none",
+            install: false,
+          });
+
+          expectSuccess(result);
+          const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
+          expect(compose).toContain("redis:\n    image: redis:7-alpine");
+          expect(compose).toContain("REDIS_URL=redis://redis:6379");
+          expect(compose).toContain("redis:\n        condition: service_healthy");
+          expect(compose).toContain("redis_data:/data");
+        }
+      });
+
+      it("routes co-generated native clients through Kong", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-native-client",
+          addons: ["kong"],
+          frontend: ["react-vite", "native-uniwind"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "trpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        const nativeEnv = readFileSync(join(result.projectDir!, "apps/native/.env"), "utf8");
+        expect(nativeEnv).toContain("EXPO_PUBLIC_SERVER_URL=http://localhost:8000");
+      });
+
+      it("should reject Kong when a TypeScript stack has no backend", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-no-backend",
+          addons: ["kong"],
+          frontend: ["react-vite"],
+          backend: "none",
+          runtime: "none",
+          database: "none",
+          orm: "none",
+          auth: "none",
+          api: "none",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          expectError: true,
+        });
+
+        expectError(result, "Kong Gateway requires a TypeScript backend service");
+      });
+
+      it("should reject Kong for Encore's incompatible container output", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-encore",
+          addons: ["kong"],
+          frontend: ["react-vite"],
+          backend: "encore",
+          runtime: "none",
+          database: "none",
+          orm: "none",
+          auth: "none",
+          api: "none",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+          expectError: true,
+        });
+
+        expectError(result, "Kong Gateway does not yet support Encore's container workflow");
+      });
+
+      it("should build Next.js with the browser gateway URL and standalone output", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-next",
+          addons: ["kong"],
+          frontend: ["next"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "trpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
+        const dockerfile = readFileSync(
+          join(result.projectDir!, "apps", "web", "Dockerfile.next"),
+          "utf8",
+        );
+        const nextConfig = readFileSync(
+          join(result.projectDir!, "apps", "web", "next.config.ts"),
+          "utf8",
+        );
+
+        expect(compose).toContain("NEXT_PUBLIC_SERVER_URL: http://localhost:8000");
+        expect(dockerfile).toContain("ARG NEXT_PUBLIC_SERVER_URL=http://localhost:3000");
+        expect(nextConfig).toContain('output: "standalone"');
+        expect(nextConfig).toContain("outputFileTracingRoot: workspaceRoot");
+        expect(existsSync(join(result.projectDir!, "apps", "web", "public", ".gitkeep"))).toBe(
+          true,
+        );
+        expect(compose).not.toContain('"3000:3000"');
+      });
+
+      it("binds Fastify to the container network behind Kong", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-fastify",
+          addons: ["kong"],
+          frontend: ["react-vite"],
+          backend: "fastify",
+          runtime: "node",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "none",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        const server = readFileSync(
+          join(result.projectDir!, "apps", "server", "src", "index.ts"),
+          "utf8",
+        );
+        expect(server).toContain('fastify.listen({ port: 3000, host: "0.0.0.0" }');
+      });
+
+      it("should build Vinext with its own server runtime and Vite gateway URL", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-vinext",
+          addons: ["kong"],
+          frontend: ["vinext"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "trpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
+        const dockerfile = readFileSync(
+          join(result.projectDir!, "apps", "web", "Dockerfile.vinext"),
+          "utf8",
+        );
+
+        expect(compose).toContain("dockerfile: apps/web/Dockerfile.vinext");
+        expect(compose).toContain("VITE_SERVER_URL: http://localhost:8000");
+        expect(compose).not.toContain("Dockerfile.next");
+        expect(dockerfile).toContain("ARG VITE_SERVER_URL=http://localhost:3000");
+        expect(dockerfile).toContain('"start", "--", "--hostname", "0.0.0.0"');
+        expect(dockerfile).not.toContain(".next/standalone");
+      });
+
+      it("should build Vinext with Yarn workspace commands", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-vinext-yarn",
+          packageManager: "yarn",
+          addons: ["kong"],
+          frontend: ["vinext"],
+          backend: "hono",
+          runtime: "node",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "trpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        const dockerfile = readFileSync(
+          join(result.projectDir!, "apps", "web", "Dockerfile.vinext"),
+          "utf8",
+        );
+        expect(dockerfile).toContain("corepack prepare yarn@4.12.0 --activate");
+        expect(dockerfile).toContain("yarn install --immutable");
+        expect(dockerfile).toContain("RUN yarn workspace web build");
+        expect(dockerfile).toContain('["yarn", "run", "start"');
+        expect(dockerfile).not.toContain("npm run build --workspace=apps/web");
+      });
+
+      it("should build Next.js and Vite frontends with Yarn workspace commands", async () => {
+        for (const frontend of ["next", "react-vite"] as const) {
+          const result = await runTRPCTest({
+            projectName: `kong-${frontend}-yarn`,
+            packageManager: "yarn",
+            addons: ["kong"],
+            frontend: [frontend],
+            backend: "hono",
+            runtime: "node",
+            database: "sqlite",
+            orm: "drizzle",
+            auth: "none",
+            api: "trpc",
+            examples: ["none"],
+            dbSetup: "none",
+            webDeploy: "none",
+            serverDeploy: "none",
+            install: false,
+          });
+
+          expectSuccess(result);
+          const dockerfileName = frontend === "next" ? "Dockerfile.next" : "Dockerfile.vite";
+          const dockerfile = readFileSync(
+            join(result.projectDir!, "apps", "web", dockerfileName),
+            "utf8",
+          );
+          expect(dockerfile).toContain("corepack prepare yarn@4.12.0 --activate");
+          expect(dockerfile).toContain("yarn install --immutable");
+          expect(dockerfile).toContain("RUN yarn workspace web build");
+          expect(dockerfile).not.toContain("npm run build --workspace=apps/web");
+        }
+      });
+
+      it("should use backend-specific production output for AdonisJS and Nitro", async () => {
+        for (const { backend, runtime, output, command } of [
+          {
+            backend: "adonisjs" as const,
+            runtime: "node" as const,
+            output: "/app/apps/server/build ./apps/server/build",
+            command: 'CMD ["node", "bin/server.js"]',
+          },
+          {
+            backend: "nitro" as const,
+            runtime: "node" as const,
+            output: "/app/apps/server/.output ./apps/server/.output",
+            command: 'CMD ["node", ".output/server/index.mjs"]',
+          },
+        ]) {
+          const result = await runTRPCTest({
+            projectName: `kong-${backend}`,
+            addons: ["kong"],
+            frontend: ["react-vite"],
+            backend,
+            runtime,
+            database: "sqlite",
+            orm: "drizzle",
+            auth: "none",
+            api: "trpc",
+            examples: ["none"],
+            dbSetup: "none",
+            webDeploy: "none",
+            serverDeploy: "none",
+            install: false,
+          });
+
+          expectSuccess(result);
+          const dockerfile = readFileSync(
+            join(result.projectDir!, "apps", "server", "Dockerfile"),
+            "utf8",
+          );
+          expect(dockerfile).toContain(output);
+          expect(dockerfile).toContain(command);
+          expect(dockerfile).not.toContain("/app/apps/server/dist ./apps/server/dist");
+        }
+      });
+
+      it("should copy React Router's client build into the web image", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-react-router",
+          addons: ["kong"],
+          frontend: ["react-router"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "trpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        const dockerfile = readFileSync(
+          join(result.projectDir!, "apps", "web", "Dockerfile.vite"),
+          "utf8",
+        );
+        expect(dockerfile).toContain(
+          "COPY --from=builder /app/apps/web/build/client /usr/share/nginx/html",
+        );
+        expect(dockerfile).not.toContain("/app/apps/web/dist /usr/share/nginx/html");
+      });
+
+      it("should preserve Kong for Python and avoid publishing the upstream port", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-python",
+          ecosystem: "python",
+          addons: ["kong"],
+          pythonWebFramework: "fastapi",
+          pythonOrm: "none",
+          pythonValidation: "pydantic",
+          pythonAi: [],
+          pythonAuth: "none",
+          pythonApi: "none",
+          pythonTaskQueue: "none",
+          pythonGraphql: "none",
+          pythonQuality: "ruff",
+          pythonTesting: [],
+          pythonCaching: "none",
+          pythonRealtime: "none",
+          pythonObservability: "none",
+          pythonCli: [],
+          install: false,
+        });
+
+        expectSuccess(result);
+        expect(result.projectDir).toBeDefined();
+
+        const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
+        const kongConfig = readFileSync(join(result.projectDir!, "kong", "kong.yml"), "utf8");
+
+        expect(compose.match(/"8000:8000"/g)).toHaveLength(1);
+        expect(kongConfig).toContain("url: http://app:8000");
+      });
+
+      it("should reject Kong when a Python stack has no HTTP server", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-python-no-server",
+          ecosystem: "python",
+          addons: ["kong"],
+          pythonWebFramework: "none",
+          pythonOrm: "none",
+          install: false,
+          expectError: true,
+        });
+
+        expectError(result, "Kong Gateway requires a Python HTTP server");
+      });
+
+      it("should reject Kong for Rust APIs that do not expose its HTTP upstream", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-rust-tonic",
+          ecosystem: "rust",
+          addons: ["kong"],
+          rustWebFramework: "axum",
+          rustApi: "tonic",
+          rustFrontend: "none",
+          install: false,
+          expectError: true,
+        });
+
+        expectError(result, "Kong Gateway currently requires an HTTP Rust API");
+      });
+
+      it("should preserve the Rust metrics port behind Kong", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-rust-metrics",
+          ecosystem: "rust",
+          addons: ["kong"],
+          rustWebFramework: "axum",
+          rustFrontend: "none",
+          rustOrm: "none",
+          rustApi: "none",
+          rustCli: "none",
+          rustLibraries: [],
+          rustLogging: "tracing",
+          rustErrorHandling: "anyhow-thiserror",
+          rustCaching: "none",
+          rustAuth: "none",
+          rustRealtime: "none",
+          rustMessageQueue: "none",
+          rustObservability: "metrics",
+          rustTemplating: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
+        expect(compose).toContain('expose:\n      - "3000"');
+        expect(compose).toContain('ports:\n      - "9000:9000"');
+      });
+
+      it("should bind Rocket to Kong's container upstream", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-rust-rocket",
+          ecosystem: "rust",
+          addons: ["kong"],
+          rustWebFramework: "rocket",
+          rustFrontend: "none",
+          rustOrm: "none",
+          rustApi: "none",
+          rustCli: "none",
+          rustLibraries: [],
+          rustLogging: "tracing",
+          rustErrorHandling: "anyhow-thiserror",
+          rustCaching: "redis",
+          rustAuth: "none",
+          rustRealtime: "none",
+          rustMessageQueue: "none",
+          rustObservability: "none",
+          rustTemplating: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
+        expect(compose).toContain("ROCKET_ADDRESS=0.0.0.0");
+        expect(compose).toContain("ROCKET_PORT=3000");
+        expect(compose).toContain("REDIS_URL=redis://redis:6379");
+        expect(compose).toContain("redis:\n    image: redis:7-alpine");
+      });
+
+      it("should publish Rust's standalone WebSocket listener alongside Kong", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-rust-websocket",
+          ecosystem: "rust",
+          addons: ["kong"],
+          rustWebFramework: "axum",
+          rustFrontend: "none",
+          rustOrm: "none",
+          rustApi: "none",
+          rustCli: "none",
+          rustLibraries: [],
+          rustLogging: "tracing",
+          rustErrorHandling: "anyhow-thiserror",
+          rustCaching: "none",
+          rustAuth: "none",
+          rustRealtime: "tokio-tungstenite",
+          rustMessageQueue: "none",
+          rustObservability: "none",
+          rustTemplating: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
+        expect(compose).toContain('- "8765:8765"');
+      });
+
+      it("should reject Kong for Go APIs that do not use the primary HTTP server", async () => {
+        for (const goApi of ["connect-go", "grpc-gateway", "oapi-codegen", "grpc-go"] as const) {
+          const result = await runTRPCTest({
+            projectName: `kong-go-${goApi}`,
+            ecosystem: "go",
+            addons: ["kong"],
+            goWebFramework: "gin",
+            goApi,
+            install: false,
+            expectError: true,
+          });
+
+          expectError(result, "Kong Gateway currently requires the primary Go HTTP server API");
+        }
+      });
+
+      it("should reject Kong for Java gRPC APIs that use a separate listener", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-java-grpc",
+          ecosystem: "java",
+          addons: ["kong"],
+          javaWebFramework: "spring-boot",
+          javaApi: "grpc",
+          install: false,
+          expectError: true,
+        });
+
+        expectError(result, "Kong Gateway currently requires the primary Java HTTP API");
+      });
+
+      it("should reject Kong when a graph backend has no container template", async () => {
+        for (const backendPart of ["backend:dotnet:aspnet-minimal", "backend:elixir:phoenix"]) {
+          for (const includeGraphPart of [true, false]) {
+            const result = await createVirtual({
+              projectName: `kong-unsupported-${backendPart.split(":")[1]}`,
+              addons: ["kong"],
+              frontend: ["next"],
+              backend: "none",
+              runtime: "none",
+              database: "none",
+              orm: "none",
+              auth: "none",
+              api: "none",
+              examples: ["none"],
+              dbSetup: "none",
+              webDeploy: "none",
+              serverDeploy: "none",
+              stackParts: parseStackPartSpecs([
+                "frontend:typescript:next",
+                backendPart,
+                ...(includeGraphPart ? ["workspaceTooling:universal:kong"] : []),
+              ]),
+            });
+
+            expect(result.success).toBe(false);
+            expect(result.error).toContain("does not yet provide a container template");
+          }
+        }
+      });
     });
 
     describe("Docker Compose Addon", () => {
@@ -1672,6 +2360,34 @@ describe("Addon Configurations", () => {
           'image: "mcr.microsoft.com/devcontainers/python:1-3.12-bookworm"',
         );
         expect(override).toContain("- .:/workspaces/devcontainer-python-postgres:cached");
+      });
+
+      it("should start and forward Kong in a DevContainer stack", async () => {
+        const result = await runTRPCTest({
+          projectName: "devcontainer-kong",
+          addons: ["devcontainer", "kong"],
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "trpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        expect(result.projectDir).toBeDefined();
+
+        const devcontainer = JSON.parse(
+          readFileSync(join(result.projectDir!, ".devcontainer", "devcontainer.json"), "utf8"),
+        );
+        expect(devcontainer.runServices).toEqual(["devcontainer", "kong", "web", "server"]);
+        expect(devcontainer.forwardPorts).toEqual([8000, 8001, 3001, 3000]);
       });
     });
 
