@@ -515,6 +515,20 @@ export const analyzeStackCompatibility = (
   }
 
   if (
+    nextStack.observability === "signoz" &&
+    nextStack.webDeploy === "cloudflare" &&
+    (nextStack.backend === "self" || nextStack.backend.startsWith("self-"))
+  ) {
+    nextStack.observability = "none";
+    changed = true;
+    changes.push({
+      category: "observability",
+      message:
+        "Observability set to 'None' (SigNoz's Node SDK is incompatible with Cloudflare-hosted fullstack apps)",
+    });
+  }
+
+  if (
     nextStack.ecosystem !== "typescript" &&
     nextStack.ecosystem !== "react-native" &&
     nextStack.codeQuality.includes("knip")
@@ -2258,6 +2272,19 @@ export const getDisabledReason = (
       : currentStack.backend === "self-tanstack-start" || currentStack.backend === "self-astro")
   ) {
     return "SigNoz tracing is not yet bootstrapped for TanStack Start or Astro fullstack apps";
+  }
+
+  const signozBackend = category === "backend" ? optionId : currentStack.backend;
+  const signozWebDeploy = category === "webDeploy" ? optionId : currentStack.webDeploy;
+  const signozSelected =
+    (category === "observability" && optionId === "signoz") ||
+    currentStack.observability === "signoz";
+  if (
+    signozSelected &&
+    signozWebDeploy === "cloudflare" &&
+    (signozBackend === "self" || signozBackend.startsWith("self-"))
+  ) {
+    return "SigNoz's Node SDK is incompatible with Cloudflare-hosted fullstack apps";
   }
 
   const hasStandaloneViteFrontend = currentStack.webFrontend.some((frontend) =>

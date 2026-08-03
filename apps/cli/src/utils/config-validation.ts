@@ -1009,6 +1009,17 @@ function validateObservabilityConstraints(config: Partial<ProjectConfig>) {
   }
   if (
     config.observability === "signoz" &&
+    config.backend === "self" &&
+    config.webDeploy === "cloudflare"
+  ) {
+    incompatibilityError({
+      message: "SigNoz's Node SDK is incompatible with Cloudflare-hosted fullstack apps.",
+      provided: { observability: "signoz", backend: "self", "web-deploy": "cloudflare" },
+      suggestions: ["Use a Node.js-compatible web deployment", "Use --observability none"],
+    });
+  }
+  if (
+    config.observability === "signoz" &&
     (config.backend === "none" || config.backend === "convex")
   ) {
     incompatibilityError({

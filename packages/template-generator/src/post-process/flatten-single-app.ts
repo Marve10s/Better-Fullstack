@@ -217,22 +217,28 @@ function buildFlatPackageJson(
     ...resolveDeps(envPkg?.dependencies, catalog, projectScope),
   };
   const devDependencies = resolveDeps(webPkg.devDependencies, catalog, projectScope);
-const rootKnipVersion = rootPkg.devDependencies?.knip;
-if (config.addons.includes("knip") && rootKnipVersion) {
-  const resolvedKnipVersion = resolveDeps(
-    { knip: rootKnipVersion },
-    catalog,
-    projectScope,
-  ).knip;
+  const rootKnipVersion = rootPkg.devDependencies?.knip;
+  if (config.addons.includes("knip") && rootKnipVersion) {
+    const resolvedKnipVersion = resolveDeps(
+      { knip: rootKnipVersion },
+      catalog,
+      projectScope,
+    ).knip;
 
-  if (resolvedKnipVersion) {
-    devDependencies.knip = resolvedKnipVersion;
+    if (resolvedKnipVersion) {
+      devDependencies.knip = resolvedKnipVersion;
+    }
   }
-}
 
   const scripts = { ...webPkg.scripts };
   if (config.addons.includes("knip")) {
     for (const scriptName of ["knip", "knip:production"]) {
+      const script = rootPkg.scripts?.[scriptName];
+      if (script) scripts[scriptName] = script;
+    }
+  }
+  if (config.addons.includes("gitleaks")) {
+    for (const scriptName of ["secrets:scan", "secrets:scan:staged"]) {
       const script = rootPkg.scripts?.[scriptName];
       if (script) scripts[scriptName] = script;
     }

@@ -46,6 +46,38 @@ describe("compatibility issue helpers", () => {
     }
   });
 
+  it("keeps the Node SDK-based SigNoz scaffold off Cloudflare-hosted self apps", () => {
+    const cloudflareSelfStack = {
+      ...DEFAULT_STACK_SELECTION,
+      backend: "self-next" as const,
+      webFrontend: ["next" as const],
+      runtime: "none" as const,
+      webDeploy: "cloudflare" as const,
+      observability: "signoz" as const,
+    };
+
+    expect(analyzeStackCompatibility(cloudflareSelfStack).adjustedStack?.observability).toBe(
+      "none",
+    );
+    expect(getDisabledReason(cloudflareSelfStack, "observability", "signoz")).toContain(
+      "Cloudflare-hosted fullstack apps",
+    );
+    expect(
+      getDisabledReason(
+        { ...cloudflareSelfStack, webDeploy: "none" },
+        "webDeploy",
+        "cloudflare",
+      ),
+    ).toContain("Cloudflare-hosted fullstack apps");
+    expect(
+      getDisabledReason(
+        { ...cloudflareSelfStack, backend: "self" },
+        "observability",
+        "signoz",
+      ),
+    ).toContain("Cloudflare-hosted fullstack apps");
+  });
+
   it("restricts Knip to JavaScript workspaces", () => {
     const goStack = {
       ...DEFAULT_STACK_SELECTION,

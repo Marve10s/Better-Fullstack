@@ -38,6 +38,7 @@ describe("Observability Configurations", () => {
       const env = await readFile(join(result.projectDir!, "apps/server/.env"), "utf-8");
 
       expect(pkg).toContain("@opentelemetry/sdk-node");
+      expect(tracing.startsWith('import "dotenv/config";')).toBe(true);
       expect(tracing).toContain("OTEL_EXPORTER_OTLP_HEADERS");
       expect(tracing).toContain("signoz");
       expect(tracing).toContain("startTracing();");
@@ -99,6 +100,29 @@ describe("Observability Configurations", () => {
 
         expectError(result, "SigNoz tracing is not yet bootstrapped");
       }
+    });
+
+    it("rejects SigNoz for Cloudflare-hosted Next.js fullstack apps", async () => {
+      const result = await runTRPCTest({
+        projectName: "signoz-next-cloudflare",
+        observability: "signoz",
+        frontend: ["next"],
+        backend: "self",
+        runtime: "none",
+        database: "none",
+        orm: "none",
+        api: "none",
+        auth: "none",
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "cloudflare",
+        serverDeploy: "none",
+        install: false,
+        expectError: true,
+      });
+
+      expectError(result, "Cloudflare-hosted fullstack apps");
     });
 
     it("rejects SigNoz when no generated server target exists", async () => {
