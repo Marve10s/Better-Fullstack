@@ -1301,6 +1301,7 @@ export const analyzeStackCompatibility = (
       ["caching", "none", "Caching set to 'None' (React Native ecosystem)"],
       ["i18n", "none", "i18n set to 'None' (React Native ecosystem)"],
       ["featureFlags", "none", "Feature flags set to 'None' (React Native ecosystem)"],
+      ["ecommerce", "none", "E-commerce set to 'None' (React Native ecosystem)"],
       ["analytics", "none", "Analytics set to 'None' (React Native ecosystem)"],
       ["aiSdk", "none", "AI SDK set to 'None' (React Native ecosystem)"],
       ["backendLibraries", "none", "Backend libraries set to 'None' (React Native ecosystem)"],
