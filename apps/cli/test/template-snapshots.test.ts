@@ -263,6 +263,18 @@ const SNAPSHOT_CONFIGS: Array<{
       search: "opensearch",
     },
   },
+  {
+    name: "medusa-ecommerce-hono",
+    config: {
+      frontend: ["tanstack-router"],
+      backend: "hono",
+      api: "trpc",
+      database: "sqlite",
+      orm: "drizzle",
+      auth: "none",
+      ecommerce: "medusa",
+    },
+  },
 
   // === CMS VARIATIONS ===
   {
@@ -400,6 +412,7 @@ const KEY_FILE_SNAPSHOT_CONFIGS = SNAPSHOT_CONFIGS.filter(
       "typescript-library-expansion-react",
       "vanilla-vite-openapi-capacitor",
       "vue-anthropic-sdk",
+      "medusa-ecommerce-hono",
     ].includes(name),
 );
 
@@ -426,6 +439,7 @@ const DEFAULT_CONFIG: Partial<ProjectConfig> = {
   animation: "none",
   logging: "none",
   observability: "none",
+  ecommerce: "none",
   caching: "none",
   cms: "none",
   ai: "none",

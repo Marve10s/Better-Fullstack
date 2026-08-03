@@ -27,6 +27,7 @@ export function makeBaseConfig(name: string, ecosystem: Ecosystem): ProjectConfi
     logging: "none",
     observability: "none",
     featureFlags: "none",
+    ecommerce: "none",
     analytics: "none",
     effect: "none",
     stateManagement: "none",

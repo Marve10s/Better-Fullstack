@@ -800,6 +800,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://docs.growthbook.io/",
     githubUrl: "https://github.com/growthbook/growthbook",
   },
+  medusa: {
+    docsUrl: "https://docs.medusajs.com/resources/js-sdk",
+    githubUrl: "https://github.com/medusajs/medusa",
+  },
   posthog: { docsUrl: "https://posthog.com/docs", githubUrl: "https://github.com/PostHog/posthog" },
   launchdarkly: {
     docsUrl: "https://launchdarkly.com/docs/sdk",
