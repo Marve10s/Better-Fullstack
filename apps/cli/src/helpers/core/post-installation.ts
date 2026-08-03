@@ -44,6 +44,10 @@ export async function displayPostInstallInstructions(
     ecosystem,
   } = config;
 
+  if (ecosystem !== "typescript" && addons?.includes("gitleaks")) {
+    consola.box(getGitleaksInstructions("gitleaks", false));
+  }
+
   // Handle Rust projects with different instructions
   if (ecosystem === "rust") {
     displayRustInstructions(config);
@@ -116,7 +120,14 @@ export async function displayPostInstallInstructions(
   const lintingInstructions = hasGitHooksOrLinting ? getLintingInstructions(runCmd) : "";
   const knipInstructions = addons?.includes("knip") ? getKnipInstructions(runCmd) : "";
   const gitleaksInstructions = addons?.includes("gitleaks") ? getGitleaksInstructions(runCmd) : "";
-  const signozInstructions = config.observability === "signoz" ? getSigNozInstructions(".env") : "";
+  const signozEnvFile =
+    config.workspaceShape === "single-app"
+      ? ".env"
+      : backend === "self"
+        ? "apps/web/.env"
+        : "apps/server/.env";
+  const signozInstructions =
+    config.observability === "signoz" ? getSigNozInstructions(signozEnvFile) : "";
   const nativeInstructions =
     (frontend?.includes("native-bare") ||
       frontend?.includes("native-uniwind") ||
@@ -358,11 +369,12 @@ function getKnipInstructions(runCmd: string) {
   )} Scan the workspace: ${`${runCmd} knip`}\n`;
 }
 
-function getGitleaksInstructions(runCmd: string) {
+function getGitleaksInstructions(runCmd: string, hasPackageScript = true) {
+  const scanCommand = hasPackageScript ? `${runCmd} secrets:scan` : "gitleaks git --redact --verbose";
   return (
     `${pc.bold("Secret scanning with Gitleaks:")}\n` +
     `${pc.cyan("•")} Install the Gitleaks binary: ${pc.underline("https://github.com/gitleaks/gitleaks#installing")}\n` +
-    `${pc.cyan("•")} Scan Git history: ${`${runCmd} secrets:scan`}\n`
+    `${pc.cyan("•")} Scan Git history: ${scanCommand}\n`
   );
 }
 

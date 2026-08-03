@@ -43,6 +43,7 @@ describe("Observability Configurations", () => {
       expect(tracing).toContain("startTracing();");
       expect(tracing).toContain("export function withTracing");
       expect(tracing).toContain("process.once(signal");
+      expect(tracing).not.toContain("process.exit(0)");
       expect(serverEntry.startsWith('import "./lib/tracing";')).toBe(true);
       expect(serverEntry).toContain('import { withTracing } from "./lib/tracing";');
       expect(serverEntry).toContain("export default { fetch: withTracing(app.fetch) };");
@@ -96,6 +97,31 @@ describe("Observability Configurations", () => {
         });
 
         expectError(result, "SigNoz tracing is not yet bootstrapped");
+      }
+    });
+
+    it("rejects SigNoz when no generated server target exists", async () => {
+      for (const backend of ["none", "convex"] as const) {
+        const result = await runTRPCTest({
+          projectName: `signoz-${backend}`,
+          observability: "signoz",
+          frontend: ["react-vite"],
+          backend,
+          runtime: "none",
+          database: "none",
+          orm: "none",
+          api: "none",
+          auth: "none",
+          addons: ["none"],
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+          expectError: true,
+        });
+
+        expectError(result, "SigNoz tracing requires a generated server target");
       }
     });
 

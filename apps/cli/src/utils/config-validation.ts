@@ -1009,6 +1009,16 @@ function validateObservabilityConstraints(config: Partial<ProjectConfig>) {
   }
   if (
     config.observability === "signoz" &&
+    (config.backend === "none" || config.backend === "convex")
+  ) {
+    incompatibilityError({
+      message: "SigNoz tracing requires a generated server target.",
+      provided: { observability: "signoz", backend: config.backend },
+      suggestions: ["Use a standalone backend", "Use --observability none"],
+    });
+  }
+  if (
+    config.observability === "signoz" &&
     config.backend === "self" &&
     config.frontend?.some((frontend) => frontend === "tanstack-start" || frontend === "astro")
   ) {

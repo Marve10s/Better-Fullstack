@@ -112,6 +112,19 @@ describe("Addon Configurations", () => {
       expect(rootPackage).toContain('"knip": "knip"');
       expect(rootPackage).toContain('"knip:production": "knip --production"');
     });
+
+    it("rejects Knip for non-TypeScript ecosystems", async () => {
+      const result = await runTRPCTest({
+        projectName: "knip-go",
+        ecosystem: "go",
+        addons: ["knip"],
+        goWebFramework: "gin",
+        install: false,
+        expectError: true,
+      });
+
+      expectError(result, "Knip currently supports TypeScript and React Native projects only");
+    });
   });
 
   describe("Gitleaks Addon", () => {
@@ -166,6 +179,7 @@ describe("Addon Configurations", () => {
 
       expect(husky).toContain("gitleaks git --pre-commit --redact --staged --verbose");
       expect(husky).toContain("lint-staged");
+      expect(husky).not.toContain("{{");
       expect(lefthook).toContain("name: gitleaks");
       expect(lefthook).toContain("gitleaks git --pre-commit --redact --staged --verbose");
     });

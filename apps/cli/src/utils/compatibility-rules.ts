@@ -482,6 +482,18 @@ export function validateAddonCompatibility(
   if (!baseCompatibility.isCompatible) return baseCompatibility;
 
   if (
+    addon === "knip" &&
+    ecosystem !== undefined &&
+    ecosystem !== "typescript" &&
+    ecosystem !== "react-native"
+  ) {
+    return {
+      isCompatible: false,
+      reason: "Knip currently supports TypeScript and React Native projects only",
+    };
+  }
+
+  if (
     (addon === "graphql-codegen" || addon === "apollo-client") &&
     api !== undefined &&
     !["garph", "graphql-yoga", "apollo-server"].includes(api) &&

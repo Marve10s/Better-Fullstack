@@ -140,7 +140,6 @@ startTracing();
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
   process.once(signal, () => {
     void shutdownTracing()
-      .catch((error) => console.error(`[SigNoz] Failed to flush telemetry on ${signal}`, error))
-      .finally(() => process.exit(0));
+      .catch((error) => console.error(`[SigNoz] Failed to flush telemetry on ${signal}`, error));
   });
 }

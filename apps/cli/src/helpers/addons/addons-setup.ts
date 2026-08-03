@@ -258,7 +258,12 @@ export async function isGitleaksSetupComplete(
 
 async function ensureGitleaksHuskyHook(projectDir: string) {
   const hookPath = path.join(projectDir, ".husky", "pre-commit");
-  if (!(await fs.pathExists(hookPath))) return;
+  if (!(await fs.pathExists(hookPath))) {
+    await fs.ensureDir(path.dirname(hookPath));
+    await fs.writeFile(hookPath, `#!/usr/bin/env sh\n${GITLEAKS_HOOK_COMMAND}\n`);
+    await fs.chmod(hookPath, 0o755);
+    return;
+  }
 
   const content = await fs.readFile(hookPath, "utf8");
   if (hasActiveShellCommand(content, GITLEAKS_HOOK_COMMAND)) return;
@@ -271,7 +276,13 @@ async function ensureGitleaksHuskyHook(projectDir: string) {
 
 async function ensureGitleaksLefthookHook(projectDir: string) {
   const hookPath = path.join(projectDir, "lefthook.yml");
-  if (!(await fs.pathExists(hookPath))) return;
+  if (!(await fs.pathExists(hookPath))) {
+    await fs.writeFile(
+      hookPath,
+      `pre-commit:\n  parallel: true\n  jobs:\n    - name: gitleaks\n      run: ${GITLEAKS_HOOK_COMMAND}\n`,
+    );
+    return;
+  }
 
   const content = await fs.readFile(hookPath, "utf8");
   const document = parseDocument(content);

@@ -248,7 +248,7 @@ describe("CLI add command", () => {
       expect(createResult.exitCode).toBe(0);
 
       const hooksResult = await runCli(
-        ["add", "--project-dir", projectDir, "--addons", "lefthook"],
+        ["add", "--project-dir", projectDir, "--addons", "husky", "lefthook"],
         { cwd: root },
       );
       expect(hooksResult.exitCode).toBe(0);
@@ -276,6 +276,20 @@ describe("CLI add command", () => {
         { cwd: root },
       );
       expect(retry.exitCode, `retry failed\n${retry.all}`).toBe(0);
+      expect(await readFile(lefthookPath, "utf8")).toContain(
+        "gitleaks git --pre-commit --redact --staged --verbose",
+      );
+
+      const huskyPath = join(projectDir, ".husky", "pre-commit");
+      await Promise.all([rm(huskyPath), rm(lefthookPath)]);
+      const recreate = await runCli(
+        ["add", "--project-dir", projectDir, "--addons", "gitleaks"],
+        { cwd: root },
+      );
+      expect(recreate.exitCode, `recreate failed\n${recreate.all}`).toBe(0);
+      expect(await readFile(huskyPath, "utf8")).toContain(
+        "gitleaks git --pre-commit --redact --staged --verbose",
+      );
       expect(await readFile(lefthookPath, "utf8")).toContain(
         "gitleaks git --pre-commit --redact --staged --verbose",
       );
