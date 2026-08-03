@@ -27,6 +27,21 @@ WORKDIR /app/apps/web
 ENV NODE_ENV=production
 EXPOSE 3000
 CMD ["pnpm", "run", "start", "--", "--hostname", "0.0.0.0", "--port", "3000"]
+{{else if (eq packageManager "yarn")}}
+FROM node:20-alpine AS builder
+RUN corepack enable && corepack prepare yarn@4.12.0 --activate
+WORKDIR /app
+COPY . .
+RUN if [ -f yarn.lock ]; then yarn install --immutable; else yarn install; fi
+ARG VITE_SERVER_URL=http://localhost:3000
+ENV VITE_SERVER_URL=${VITE_SERVER_URL}
+RUN yarn workspace web build
+
+FROM builder AS runner
+WORKDIR /app/apps/web
+ENV NODE_ENV=production
+EXPOSE 3000
+CMD ["yarn", "run", "start", "--", "--hostname", "0.0.0.0", "--port", "3000"]
 {{else}}
 FROM node:20-alpine AS builder
 WORKDIR /app

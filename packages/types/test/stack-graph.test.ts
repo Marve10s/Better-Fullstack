@@ -883,6 +883,18 @@ describe("stack graph", () => {
     }
   });
 
+  it("rejects Kong when Java gRPC uses a separate listener", () => {
+    const parts = parseStackPartSpecs([
+      "backend:java:spring-boot",
+      "backend.api:java:grpc",
+      "workspaceTooling:universal:kong",
+    ]);
+
+    expect(validateStackParts(parts).issues.map((issue) => issue.message)).toContain(
+      "Kong Gateway currently requires the primary Java HTTP API.",
+    );
+  });
+
   it("rejects shared non-TypeScript backend service candidates through graph checks", () => {
     const javaParts = parseStackPartSpecs([
       "backend:java:spring-boot",

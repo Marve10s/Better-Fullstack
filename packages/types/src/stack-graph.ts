@@ -2136,6 +2136,15 @@ function createAddonCompatibilityIssue(
           message: "Kong Gateway currently requires the primary Go HTTP server API.",
         });
       }
+      if (part.toolId === "kong" && primaryEcosystem === "java" && apiTool === "grpc") {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: "Kong Gateway currently requires the primary Java HTTP API.",
+        });
+      }
       if (frontendEcosystem === "rust" && frontendTool && frontendTool !== "none") {
         return createStackGraphIssue({
           code: "INCOMPATIBLE_GRAPH_SELECTION",

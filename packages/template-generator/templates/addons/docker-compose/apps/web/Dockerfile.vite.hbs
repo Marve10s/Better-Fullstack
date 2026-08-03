@@ -5,8 +5,13 @@ WORKDIR /app
 FROM base AS builder
 COPY . .
 RUN if [ -f bun.lock ]; then bun install --frozen-lockfile; else bun install; fi
+{{#if (includes frontend "astro")}}
+ARG PUBLIC_SERVER_URL=http://localhost:3000
+ENV PUBLIC_SERVER_URL=${PUBLIC_SERVER_URL}
+{{else}}
 ARG VITE_SERVER_URL=http://localhost:3000
 ENV VITE_SERVER_URL=${VITE_SERVER_URL}
+{{/if}}
 RUN bun run --filter web build
 {{else if (eq packageManager "pnpm")}}
 FROM node:20-alpine AS base
@@ -16,16 +21,26 @@ WORKDIR /app
 FROM base AS builder
 COPY . .
 RUN if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile; else pnpm install; fi
+{{#if (includes frontend "astro")}}
+ARG PUBLIC_SERVER_URL=http://localhost:3000
+ENV PUBLIC_SERVER_URL=${PUBLIC_SERVER_URL}
+{{else}}
 ARG VITE_SERVER_URL=http://localhost:3000
 ENV VITE_SERVER_URL=${VITE_SERVER_URL}
+{{/if}}
 RUN pnpm --filter web build
 {{else}}
 FROM node:20-alpine AS builder
 WORKDIR /app
 COPY . .
 RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
+{{#if (includes frontend "astro")}}
+ARG PUBLIC_SERVER_URL=http://localhost:3000
+ENV PUBLIC_SERVER_URL=${PUBLIC_SERVER_URL}
+{{else}}
 ARG VITE_SERVER_URL=http://localhost:3000
 ENV VITE_SERVER_URL=${VITE_SERVER_URL}
+{{/if}}
 RUN npm run build --workspace=apps/web
 {{/if}}
 

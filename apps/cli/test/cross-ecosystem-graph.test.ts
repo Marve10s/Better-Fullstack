@@ -98,6 +98,9 @@ describe("Cross-ecosystem graph generation", () => {
       "workspaceTooling:universal:devcontainer",
       "workspaceTooling:universal:kong",
     ]);
+    const backendPart = stackParts?.find((part) => part.role === "backend");
+    expect(backendPart).toBeDefined();
+    if (backendPart) backendPart.targetPath = "services/api";
 
     expect(() =>
       runWithContext({ silent: true }, () =>
@@ -131,12 +134,17 @@ describe("Cross-ecosystem graph generation", () => {
 
     expect(compose).toContain("dockerfile: apps/web/Dockerfile.vite");
     expect(compose).toContain("VITE_SERVER_URL: http://localhost:8000");
-    expect(compose).toContain("context: apps/server");
+    expect(compose).toContain("context: services/api");
+    expect(compose).toContain("- services/api/.env");
     expect(compose).toContain("- app");
     expect(kong).toContain("url: http://app:8000");
-    expect(fileContent(root, "apps/server/Dockerfile")).toContain("FROM python:3.12-slim");
+    expect(fileContent(root, "services/api/Dockerfile")).toContain("FROM python:3.12-slim");
+    expect(fileContent(root, "services/api/.dockerignore")).toContain(".env*");
     expect(devcontainer.runServices).toEqual(["devcontainer", "kong", "web", "app"]);
     expect(devcontainer.forwardPorts).toEqual(expect.arrayContaining([3001, 8000, 8001]));
+    expect(devcontainer.postCreateCommand).toBe(
+      `bun install && cd "services/api" && python -m pip install -e '.[dev]'`,
+    );
   });
 
   it("uses the published graph backend port when Compose does not include Kong", async () => {

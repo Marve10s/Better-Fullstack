@@ -112,6 +112,15 @@ function processDockerComposeTemplates(
       ".dockerignore",
       config,
     );
+    if (config.graphBackendTargetPath) {
+      processSingleTemplate(
+        vfs,
+        templates,
+        "addons/docker-compose/.dockerignore",
+        `${config.graphBackendTargetPath}/.dockerignore`,
+        config,
+      );
+    }
     processSingleTemplate(
       vfs,
       templates,

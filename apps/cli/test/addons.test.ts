@@ -114,7 +114,7 @@ describe("Addon Configurations", () => {
           database: "sqlite",
           orm: "drizzle",
           auth: "none",
-          api: "none",
+          api: "trpc",
           examples: ["none"],
           dbSetup: "none",
           webDeploy: "none",
@@ -354,7 +354,7 @@ describe("Addon Configurations", () => {
           database: "sqlite",
           orm: "drizzle",
           auth: "none",
-          api: "trpc",
+          api: "none",
           examples: ["none"],
           dbSetup: "none",
           webDeploy: "none",
@@ -367,6 +367,10 @@ describe("Addon Configurations", () => {
 
         const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
         const kongConfig = readFileSync(join(result.projectDir!, "kong", "kong.yml"), "utf8");
+        const nginxConfig = readFileSync(
+          join(result.projectDir!, "apps", "web", "nginx.conf"),
+          "utf8",
+        );
 
         expect(compose).toContain("kong/kong-gateway:3.15.0.1");
         expect(compose).toContain('KONG_DATABASE: "off"');
@@ -378,6 +382,38 @@ describe("Addon Configurations", () => {
         expect(compose).not.toContain('"3000:3000"');
         expect(kongConfig).toContain("url: http://server:3000");
         expect(kongConfig).toContain("strip_path: false");
+        expect(nginxConfig).toContain("connect-src 'self' http://localhost:8000");
+      });
+
+      it("should build Astro with its public gateway URL", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-astro",
+          addons: ["kong"],
+          frontend: ["astro"],
+          astroIntegration: "none",
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "none",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
+        const dockerfile = readFileSync(
+          join(result.projectDir!, "apps", "web", "Dockerfile.vite"),
+          "utf8",
+        );
+        expect(compose).toContain("PUBLIC_SERVER_URL: http://localhost:8000");
+        expect(compose).not.toContain("VITE_SERVER_URL: http://localhost:8000");
+        expect(dockerfile).toContain("ARG PUBLIC_SERVER_URL=http://localhost:3000");
+        expect(dockerfile).toContain("ENV PUBLIC_SERVER_URL=${PUBLIC_SERVER_URL}");
       });
 
       it("loads runtime env and exposes Better Auth through the gateway URL", async () => {
@@ -514,6 +550,37 @@ describe("Addon Configurations", () => {
         expect(dockerfile).toContain("ARG VITE_SERVER_URL=http://localhost:3000");
         expect(dockerfile).toContain('"start", "--", "--hostname", "0.0.0.0"');
         expect(dockerfile).not.toContain(".next/standalone");
+      });
+
+      it("should build Vinext with Yarn workspace commands", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-vinext-yarn",
+          packageManager: "yarn",
+          addons: ["kong"],
+          frontend: ["vinext"],
+          backend: "hono",
+          runtime: "node",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "trpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        const dockerfile = readFileSync(
+          join(result.projectDir!, "apps", "web", "Dockerfile.vinext"),
+          "utf8",
+        );
+        expect(dockerfile).toContain("corepack prepare yarn@4.12.0 --activate");
+        expect(dockerfile).toContain("yarn install --immutable");
+        expect(dockerfile).toContain("RUN yarn workspace web build");
+        expect(dockerfile).toContain('["yarn", "run", "start"');
+        expect(dockerfile).not.toContain("npm run build --workspace=apps/web");
       });
 
       it("should copy React Router's client build into the web image", async () => {

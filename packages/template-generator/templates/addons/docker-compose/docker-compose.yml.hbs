@@ -51,10 +51,18 @@ services:
 {{else}}
       dockerfile: apps/web/Dockerfile.vite
       args:
+{{#if (includes frontend "astro")}}
+{{#if (includes addons "kong")}}
+        PUBLIC_SERVER_URL: http://localhost:8000
+{{else}}
+        PUBLIC_SERVER_URL: http://localhost:3000
+{{/if}}
+{{else}}
 {{#if (includes addons "kong")}}
         VITE_SERVER_URL: http://localhost:8000
 {{else}}
         VITE_SERVER_URL: http://localhost:3000
+{{/if}}
 {{/if}}
 {{/if}}
     env_file:
@@ -235,6 +243,17 @@ volumes:
 {{else}}
       dockerfile: apps/web/Dockerfile.vite
       args:
+{{#if (includes frontend "astro")}}
+{{#if (includes addons "kong")}}
+        PUBLIC_SERVER_URL: http://localhost:8000
+{{else if (eq ecosystem "python")}}
+        PUBLIC_SERVER_URL: http://localhost:8000
+{{else if (eq ecosystem "rust")}}
+        PUBLIC_SERVER_URL: http://localhost:3000
+{{else}}
+        PUBLIC_SERVER_URL: http://localhost:8080
+{{/if}}
+{{else}}
 {{#if (includes addons "kong")}}
         VITE_SERVER_URL: http://localhost:8000
 {{else if (eq ecosystem "python")}}
@@ -243,6 +262,7 @@ volumes:
         VITE_SERVER_URL: http://localhost:3000
 {{else}}
         VITE_SERVER_URL: http://localhost:8080
+{{/if}}
 {{/if}}
 {{/if}}
     env_file:
@@ -267,7 +287,7 @@ volumes:
 {{/if}}
     env_file:
 {{#if graphBackendTargetPath}}
-      - apps/server/.env
+      - {{graphBackendTargetPath}}/.env
 {{else}}
       - .env
 {{/if}}

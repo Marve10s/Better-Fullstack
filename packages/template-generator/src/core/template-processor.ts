@@ -1,4 +1,5 @@
 import type { ProjectConfig } from "@better-fullstack/types";
+
 import Handlebars from "handlebars";
 import { extname } from "pathe";
 
@@ -238,24 +239,36 @@ function getTypeScriptPostCreateCommand(packageManager: ProjectConfig["packageMa
 }
 
 function getDevcontainerPostCreateCommand(config: ProjectConfig) {
-  if (config.ecosystem === "typescript") {
+  const graphConfig = config as ProjectConfig & {
+    graphWebFrontend?: boolean;
+    graphBackendTargetPath?: string;
+  };
+  let backendCommand = "";
+
+  if (config.ecosystem === "typescript")
     return getTypeScriptPostCreateCommand(config.packageManager);
-  }
   if (config.ecosystem === "python") {
-    return "python -m pip install -e '.[dev]'";
+    backendCommand = "python -m pip install -e '.[dev]'";
   }
   if (config.ecosystem === "go") {
-    return "go mod download";
+    backendCommand = "go mod download";
   }
   if (config.ecosystem === "rust") {
-    return "cargo fetch";
+    backendCommand = "cargo fetch";
   }
   if (config.ecosystem === "java") {
-    return config.javaBuildTool === "gradle"
-      ? "./gradlew dependencies"
-      : "./mvnw -DskipTests dependency:go-offline";
+    backendCommand =
+      config.javaBuildTool === "gradle"
+        ? "./gradlew dependencies"
+        : "./mvnw -DskipTests dependency:go-offline";
   }
-  return "";
+
+  if (graphConfig.graphWebFrontend && graphConfig.graphBackendTargetPath && backendCommand) {
+    const webInstall = getTypeScriptPostCreateCommand(config.packageManager);
+    return `${webInstall} && cd ${JSON.stringify(graphConfig.graphBackendTargetPath)} && ${backendCommand}`;
+  }
+
+  return backendCommand;
 }
 
 Handlebars.registerHelper("devcontainerExtensions", function (this: ProjectConfig) {
