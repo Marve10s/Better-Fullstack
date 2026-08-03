@@ -1,4 +1,5 @@
 import { parseStackPartSpecs, type Ecosystem } from "@better-fullstack/types";
+import { track } from "@vercel/analytics";
 
 import type { StackState } from "@/lib/stack-defaults";
 
@@ -46,17 +47,7 @@ function soloBackend(stack: StackState) {
 }
 
 export function trackCampaignEvent(event: CampaignEvent, properties?: CampaignProperties) {
-  // Analytics should never become part of the builder's critical module graph.
-  // In development Vite can invalidate optimized-dependency URLs while the app
-  // is open; loading analytics on demand keeps that harmless cache churn from
-  // preventing the builder route itself from mounting.
-  if (!import.meta.env.PROD) return;
-
-  void import("@vercel/analytics")
-    .then(({ track }) => track(event, properties))
-    .catch(() => {
-      // Analytics is best-effort and must never interrupt the builder flow.
-    });
+  track(event, properties);
 }
 
 export function stackAnalyticsProperties(

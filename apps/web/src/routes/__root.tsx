@@ -3,7 +3,6 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { lazy, Suspense, type ReactNode } from "react";
 
-import { NotFoundWeb, SpiderCornerWebs } from "@/components/home/spider-day-surprises";
 import { Navbar } from "@/components/navbar";
 import Providers from "@/components/providers";
 import {
@@ -59,13 +58,12 @@ const PatreonButton = lazy(async () => {
 
 function NotFoundComponent() {
   return (
-    <div className="relative flex min-h-[60vh] flex-col items-center justify-center gap-4 overflow-hidden p-8 text-center">
-      <NotFoundWeb />
-      <h1 className="relative font-bold text-4xl text-foreground">404</h1>
-      <p className="relative text-muted-foreground">{m.notFoundText()}</p>
+    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 p-8 text-center">
+      <h1 className="font-bold text-4xl text-foreground">404</h1>
+      <p className="text-muted-foreground">{m.notFoundText()}</p>
       <Link
         to="/"
-        className="relative rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground text-sm transition-colors hover:bg-primary/90"
+        className="rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground text-sm transition-colors hover:bg-primary/90"
       >
         {m.goHome()}
       </Link>
@@ -161,7 +159,6 @@ function RootComponent() {
     <RootDocument>
       <Navbar />
       <Outlet />
-      <SpiderCornerWebs />
       <Suspense fallback={null}>
         <PatreonButton />
       </Suspense>

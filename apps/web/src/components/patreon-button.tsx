@@ -7,29 +7,16 @@ const PATREON_URL = "https://www.patreon.com/cw/marve10s";
 // Spider-Man: Brand New Day campaign skin — set to false to restore the heart.
 const SPIDER_DAY: boolean = true;
 
-function SpiderFace({ className }: { className?: string }) {
+function SpiderLenses({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 48 48" aria-hidden="true" className={className}>
-      <g stroke="#140f0f" strokeWidth="0.8" opacity="0.45" fill="none">
-        {Array.from({ length: 12 }, (_, i) => {
-          const a = (i * Math.PI) / 6;
-          return (
-            <line
-              key={a}
-              x1="24"
-              y1="24"
-              x2={Number((24 + 26 * Math.cos(a)).toFixed(1))}
-              y2={Number((24 + 26 * Math.sin(a)).toFixed(1))}
-            />
-          );
-        })}
-        <circle cx="24" cy="24" r="7.5" />
-        <circle cx="24" cy="24" r="14" />
-        <circle cx="24" cy="24" r="20.5" />
+    <svg viewBox="0 0 48 48" aria-hidden="true" className={className} fill="none">
+      <g fill="#08090a" stroke="#fff" strokeWidth="1.1" strokeLinejoin="round">
+        <path d="M5.8 6.2C8.4 12.3 14.6 18.1 21.1 24.6L23 23.8C23.3 31.9 18.6 40.4 12.2 39.2C5.3 37.9 1.8 20.1 5.8 6.2Z" />
+        <path d="M42.2 6.2C39.6 12.3 33.4 18.1 26.9 24.6L25 23.8C24.7 31.9 29.4 40.4 35.8 39.2C42.7 37.9 46.2 20.1 42.2 6.2Z" />
       </g>
-      <g fill="#fff" stroke="#140f0f" strokeWidth="2.2" strokeLinejoin="round">
-        <path d="M21.5 32C13 30 5.5 24 4.8 18C4.4 14.2 8 12.4 12 14.6C17.5 17.8 21 24.5 21.5 32Z" />
-        <path d="M26.5 32C35 30 42.5 24 43.2 18C43.6 14.2 40 12.4 36 14.6C30.5 17.8 27 24.5 26.5 32Z" />
+      <g fill="#fff">
+        <path d="M8.4 15.4C11.2 19.2 15.3 22.4 19.4 26.6C19.4 31.6 16.8 35.8 13.2 35.1C9.2 34.3 6.8 24.4 8.4 15.4Z" />
+        <path d="M39.6 15.4C36.8 19.2 32.7 22.4 28.6 26.6C28.6 31.6 31.2 35.8 34.8 35.1C38.8 34.3 41.2 24.4 39.6 15.4Z" />
       </g>
     </svg>
   );
@@ -86,7 +73,7 @@ export function PatreonButton() {
       >
         <span className="relative flex size-12 shrink-0 items-center justify-center">
           {SPIDER_DAY ? (
-            <SpiderFace className="absolute inset-0 size-full transition-all duration-300 group-hover:scale-50 group-hover:opacity-0 group-focus-within:scale-50 group-focus-within:opacity-0" />
+            <SpiderLenses className="absolute inset-0 size-full transition-all duration-300 group-hover:scale-50 group-hover:opacity-0 group-focus-within:scale-50 group-focus-within:opacity-0" />
           ) : (
             <Heart
               className="size-5 transition-all duration-300 group-hover:scale-50 group-hover:opacity-0 group-focus-within:scale-50 group-focus-within:opacity-0"
@@ -98,7 +85,11 @@ export function PatreonButton() {
         </span>
         <span
           className="max-w-0 whitespace-nowrap pr-0 text-lg leading-none opacity-0 transition-all duration-300 group-hover:max-w-[10rem] group-hover:pr-5 group-hover:opacity-100 group-focus-within:max-w-[10rem] group-focus-within:pr-5 group-focus-within:opacity-100"
-          style={{ fontFamily: '"Figtree", system-ui, sans-serif', fontWeight: 700, letterSpacing: "-0.01em" }}
+          style={{
+            fontFamily: '"Figtree", system-ui, sans-serif',
+            fontWeight: 700,
+            letterSpacing: "-0.01em",
+          }}
         >
           Patreon
         </span>

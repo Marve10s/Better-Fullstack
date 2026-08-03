@@ -58,7 +58,6 @@ import { toast } from "sonner";
 
 import type { Ecosystem } from "@/lib/types";
 
-import { ThwipBurst } from "@/components/home/spider-day-surprises";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -4108,9 +4107,8 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                     data-analytics-source="builder_partial"
                     aria-label={copied ? m.builderCommandCopied() : m.builderCopyCommand()}
                     title={m.builderCopyPartialCommand()}
-                    className="relative flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-[9px] text-[rgba(250,250,247,0.7)] transition-colors hover:bg-white/10 hover:text-[#FAFAF7]"
+                    className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-[9px] text-[rgba(250,250,247,0.7)] transition-colors hover:bg-white/10 hover:text-[#FAFAF7]"
                   >
-                    <ThwipBurst show={copied} />
                     {copied ? (
                       <Check className="h-3.5 w-3.5" />
                     ) : (
@@ -4150,8 +4148,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                       : "bg-[#C6E853] hover:bg-[#d2ee72]",
                   )}
                 >
-                  <span className="relative flex h-full w-full items-center justify-center gap-2 rounded-[10px] bg-[#C6E853] px-4 transition-colors hover:bg-[#d2ee72]">
-                    <ThwipBurst show={copied} />
+                  <span className="flex h-full w-full items-center justify-center gap-2 rounded-[10px] bg-[#C6E853] px-4 transition-colors hover:bg-[#d2ee72]">
                     {copied ? (
                       <Check className="h-3.5 w-3.5" />
                     ) : (

@@ -23,7 +23,6 @@ import { motion, LayoutGroup, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 
 import { formatCompactStat, useProjectStats } from "@/components/home/hero-stats";
-import { ThwipBurst } from "@/components/home/spider-day-surprises";
 import { LaunchRadarButton } from "@/components/launch-radar-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
@@ -157,8 +156,9 @@ function HeaderCopyButton() {
         record[key] = values.length > 1 ? values : (values[0] ?? "");
       }
       const pathSlug = getFirstPathSegment(window.location.pathname);
-      const slugStack = sp.size === 0 && pathSlug ? parseStackShareSlug(pathSlug) : null;
-      const stack = slugStack ?? parseStackFromUrlRecord(record);
+      const stack =
+        sp.size === 0 && pathSlug ? parseStackShareSlug(pathSlug) : parseStackFromUrlRecord(record);
+      if (!stack) return;
       await navigator.clipboard.writeText(generateStackCommand(stack));
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -172,9 +172,8 @@ function HeaderCopyButton() {
       type="button"
       onClick={handleCopy}
       aria-label={copied ? m.navCommandCopied() : m.navCopyInstallCommand()}
-      className="relative inline-flex cursor-pointer items-center gap-1.5 rounded-md bg-[#C6E853] px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-black transition-colors hover:bg-[#d2ee72] sm:px-4 sm:py-2 sm:text-[12px]"
+      className="inline-flex cursor-pointer items-center gap-1.5 rounded-md bg-[#C6E853] px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-black transition-colors hover:bg-[#d2ee72] sm:px-4 sm:py-2 sm:text-[12px]"
     >
-      <ThwipBurst show={copied} />
       {copied ? (
         <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
       ) : (

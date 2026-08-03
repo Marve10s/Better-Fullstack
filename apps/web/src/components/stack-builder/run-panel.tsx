@@ -19,7 +19,6 @@ import {
 
 import type { StackState } from "@/lib/stack-defaults";
 
-import { ThwipBurst } from "@/components/home/spider-day-surprises";
 import { highlight } from "@/components/ui/kibo-ui/code-block";
 import {
   createRunnableProject,
@@ -569,7 +568,6 @@ export function RunPanel({
               aria-label={copied ? m.builderCommandCopied() : m.builderCopyCommand()}
               className="flex h-9 w-full cursor-pointer items-center justify-center gap-2 rounded-[9px] bg-[#C6E853] font-mono text-[11px] font-semibold text-[#2A3303] transition-colors hover:bg-[#d2ee72]"
             >
-              <ThwipBurst show={copied} />
               {copied ? (
                 <Check className="h-3.5 w-3.5" />
               ) : (
