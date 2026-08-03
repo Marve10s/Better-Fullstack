@@ -52,6 +52,7 @@ import type {
   Ecosystem,
   Effect,
   Email,
+  Ecommerce,
   Examples,
   FeatureFlags,
   FileUpload,
@@ -188,6 +189,7 @@ import {
   getDotnetTestingChoice,
   getDotnetWebFrameworkChoice,
 } from "./dotnet-ecosystem";
+import { getEcommerceChoice } from "./ecommerce";
 import { getEcosystemChoice } from "./ecosystem";
 import { getEffectChoice } from "./effect";
 import {
@@ -363,6 +365,7 @@ type PromptGroupResults = {
   logging: Logging;
   observability: Observability;
   featureFlags: FeatureFlags;
+  ecommerce: Ecommerce;
   analytics: Analytics;
   cms: CMS;
   caching: Caching;
@@ -545,6 +548,7 @@ const CONFIG_PROMPT_ENTRY_KEY_MAP = {
   logging: true,
   observability: true,
   featureFlags: true,
+  ecommerce: true,
   analytics: true,
   cms: true,
   caching: true,
@@ -1053,6 +1057,8 @@ export async function gatherConfig(
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as FeatureFlags);
       return Promise.resolve(flags.featureFlags || "none") as Promise<FeatureFlags>;
     },
+    ecommerce: ({ results }) =>
+      getEcommerceChoice(flags.ecommerce, results.backend, results.ecosystem),
     analytics: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as Analytics);
       return Promise.resolve(flags.analytics || "none") as Promise<Analytics>;
@@ -1705,6 +1711,7 @@ export async function gatherConfig(
     logging: result.logging,
     observability: result.observability,
     featureFlags: result.featureFlags,
+    ecommerce: result.ecommerce,
     analytics: result.analytics,
     cms: result.cms,
     caching: result.caching,

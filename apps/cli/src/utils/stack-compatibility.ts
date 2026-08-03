@@ -94,6 +94,7 @@ export function buildCompatibilityInputFromConfig(
     logging: asString(config.logging),
     observability: asString(config.observability),
     featureFlags: asString(config.featureFlags),
+    ecommerce: asString(config.ecommerce),
     analytics: asString(config.analytics),
     backendLibraries: asString(config.effect),
     stateManagement: asString(config.stateManagement),

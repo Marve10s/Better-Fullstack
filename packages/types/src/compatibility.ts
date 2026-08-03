@@ -159,6 +159,7 @@ export type CompatibilityInput = {
   logging: string;
   observability: string;
   featureFlags: string;
+  ecommerce: string;
   analytics: string;
   backendLibraries: string;
   stateManagement: string;
@@ -447,6 +448,7 @@ export function stackQualifiesForSingleApp(stack: CompatibilityInput): boolean {
     stack.aiSdk,
     stack.analytics,
     stack.featureFlags,
+    stack.ecommerce,
     stack.observability,
     stack.logging,
     stack.webDeploy,
@@ -504,6 +506,7 @@ export const analyzeStackCompatibility = (
       vectorDb: "none",
       rateLimit: "none",
       fileStorage: "none",
+      ecommerce: "none",
     };
 
     for (const [key, value] of Object.entries(convexOverrides)) {
@@ -583,6 +586,7 @@ export const analyzeStackCompatibility = (
       vectorDb: "none",
       rateLimit: "none",
       fileStorage: "none",
+      ecommerce: "none",
     };
 
     if (nextStack.ecosystem !== "go") {
@@ -2295,6 +2299,9 @@ export const getDisabledReason = (
     if (category === "fileStorage" && optionId !== "none") {
       return "No backend selected";
     }
+    if (category === "ecommerce" && optionId !== "none") {
+      return "No backend selected";
+    }
     if (category === "examples" && optionId !== "none") {
       return "No backend selected";
     }
@@ -2876,6 +2883,18 @@ export const getDisabledReason = (
     }
     if (currentStack.backend === "none") {
       return "Email integration requires a backend";
+    }
+  }
+
+  if (category === "ecommerce" && optionId !== "none") {
+    if (currentStack.ecosystem !== "typescript") {
+      return "MedusaJS SDK generation is only available for the TypeScript ecosystem";
+    }
+    if (currentStack.backend === "convex") {
+      return "MedusaJS SDK generation is not available with Convex backend";
+    }
+    if (currentStack.backend === "none") {
+      return "MedusaJS SDK generation requires a backend";
     }
   }
 
@@ -4965,6 +4984,7 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
     ["animation", input.animation],
     ["cms", input.cms],
     ["featureFlags", input.featureFlags],
+    ["ecommerce", input.ecommerce],
     ["pythonApi", input.pythonApi],
     ["javaWebFramework", input.javaWebFramework],
     ["javaBuildTool", input.javaBuildTool],
