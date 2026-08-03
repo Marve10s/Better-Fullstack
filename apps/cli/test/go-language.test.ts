@@ -166,6 +166,22 @@ describe("Go Language Support", () => {
       expect(getFileContent(root, ".env.example")).toContain("signoz-ingestion-key=<your-key>");
     });
 
+    it("does not import net/http for a SigNoz project without an HTTP server", async () => {
+      const result = await createVirtual({
+        projectName: "go-signoz-no-server",
+        ecosystem: "go",
+        goWebFramework: "none",
+        goOrm: "none",
+        goApi: "none",
+        goCli: "none",
+        goLogging: "none",
+        goObservability: "signoz",
+      });
+
+      expect(result.success).toBe(true);
+      expect(getFileContent(result.tree!.root, "cmd/server/main.go")).not.toContain('"net/http"');
+    });
+
     it("generates propagated SigNoz request spans for Fiber", async () => {
       const result = await createVirtual({
         projectName: "go-signoz-fiber",

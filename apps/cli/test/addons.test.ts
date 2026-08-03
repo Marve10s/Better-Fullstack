@@ -86,6 +86,32 @@ describe("Addon Configurations", () => {
       expect(rootPackage).toContain('"knip:production": "knip --production"');
       expect(config).toContain("https://unpkg.com/knip@6/schema-jsonc.json");
     });
+
+    it("preserves Knip dependency and scripts in single-app output", async () => {
+      const result = await runTRPCTest({
+        projectName: "knip-single-app",
+        workspaceShape: "single-app",
+        addons: ["knip"],
+        frontend: ["next"],
+        backend: "self",
+        runtime: "none",
+        database: "none",
+        orm: "none",
+        auth: "none",
+        api: "none",
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const rootPackage = readFileSync(join(result.projectDir!, "package.json"), "utf-8");
+      expect(rootPackage).toContain('"knip": "^6.29.0"');
+      expect(rootPackage).toContain('"knip": "knip"');
+      expect(rootPackage).toContain('"knip:production": "knip --production"');
+    });
   });
 
   describe("Gitleaks Addon", () => {

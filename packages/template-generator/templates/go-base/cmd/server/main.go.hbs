@@ -13,7 +13,7 @@ import (
 {{#if (or (eq goWebFramework "stdlib") (eq goObservability "signoz"))}}
 	"context"
 {{/if}}
-{{#if (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (or (eq goWebFramework "chi") (eq goWebFramework "stdlib"))) (and (eq auth "go-better-auth") (eq goWebFramework "none"))) (eq goObservability "signoz"))}}
+{{#if (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (or (eq goWebFramework "chi") (eq goWebFramework "stdlib"))) (and (eq auth "go-better-auth") (eq goWebFramework "none"))) (and (eq goObservability "signoz") (eq goWebFramework "fiber")))}}
 	"net/http"
 {{/if}}
 {{#if (eq goWebFramework "stdlib")}}

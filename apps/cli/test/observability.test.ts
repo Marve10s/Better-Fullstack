@@ -74,6 +74,31 @@ describe("Observability Configurations", () => {
       expectError(result, "SigNoz tracing currently requires");
     });
 
+    it("rejects self backends without a SigNoz bootstrap", async () => {
+      for (const frontend of ["tanstack-start", "astro"] as const) {
+        const result = await runTRPCTest({
+          projectName: `signoz-${frontend}`,
+          observability: "signoz",
+          frontend: [frontend],
+          backend: "self",
+          runtime: "none",
+          database: "none",
+          orm: "none",
+          api: "none",
+          auth: "none",
+          addons: ["none"],
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+          expectError: true,
+        });
+
+        expectError(result, "SigNoz tracing is not yet bootstrapped");
+      }
+    });
+
     it("wraps Elysia's Bun fetch handler with request tracing", async () => {
       const result = await runTRPCTest({
         projectName: "signoz-elysia",

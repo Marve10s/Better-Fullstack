@@ -217,13 +217,33 @@ function buildFlatPackageJson(
     ...resolveDeps(envPkg?.dependencies, catalog, projectScope),
   };
   const devDependencies = resolveDeps(webPkg.devDependencies, catalog, projectScope);
+const rootKnipVersion = rootPkg.devDependencies?.knip;
+if (config.addons.includes("knip") && rootKnipVersion) {
+  const resolvedKnipVersion = resolveDeps(
+    { knip: rootKnipVersion },
+    catalog,
+    projectScope,
+  ).knip;
+
+  if (resolvedKnipVersion) {
+    devDependencies.knip = resolvedKnipVersion;
+  }
+}
+
+  const scripts = { ...webPkg.scripts };
+  if (config.addons.includes("knip")) {
+    for (const scriptName of ["knip", "knip:production"]) {
+      const script = rootPkg.scripts?.[scriptName];
+      if (script) scripts[scriptName] = script;
+    }
+  }
 
   const flatPkg: PackageJson = {
     name: config.projectName,
     version: webPkg.version ?? "0.1.0",
     private: true,
     type: "module",
-    scripts: { ...webPkg.scripts },
+    scripts,
   };
 
   if (Object.keys(dependencies).length > 0) flatPkg.dependencies = dependencies;

@@ -54,13 +54,13 @@ describe("compatibility issue helpers", () => {
     };
 
     expect(analyzeStackCompatibility(goStack).adjustedStack?.codeQuality).not.toContain("knip");
-    expect(getDisabledReason(goStack, "appPlatforms", "knip")).toContain(
+    expect(getDisabledReason(goStack, "codeQuality", "knip")).toContain(
       "TypeScript or React Native",
     );
     expect(
       getDisabledReason(
         { ...DEFAULT_STACK_SELECTION, ecosystem: "react-native" },
-        "appPlatforms",
+        "codeQuality",
         "knip",
       ),
     ).toBeNull();
@@ -969,6 +969,23 @@ describe("compatibility issue helpers", () => {
         "chat-sdk",
       ),
     ).toBe("Chat SDK example is not compatible with the selected graph stack.");
+  });
+
+  it("gates Knip through the code quality category", () => {
+    expect(
+      getDisabledReason(
+        { ...DEFAULT_STACK_SELECTION, ecosystem: "go" },
+        "codeQuality",
+        "knip",
+      ),
+    ).toBe("Knip requires a TypeScript or React Native workspace");
+    expect(
+      getDisabledReason(
+        { ...DEFAULT_STACK_SELECTION, ecosystem: "react-native" },
+        "codeQuality",
+        "knip",
+      ),
+    ).toBeNull();
   });
 
   it("routes promoted Java ecosystem disabled reasons through graph checks", () => {

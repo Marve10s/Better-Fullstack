@@ -1007,6 +1007,22 @@ function validateObservabilityConstraints(config: Partial<ProjectConfig>) {
       suggestions: ["Use --runtime bun", "Use --runtime node", "Use --observability none"],
     });
   }
+  if (
+    config.observability === "signoz" &&
+    config.backend === "self" &&
+    config.frontend?.some((frontend) => frontend === "tanstack-start" || frontend === "astro")
+  ) {
+    incompatibilityError({
+      message:
+        "SigNoz tracing is not yet bootstrapped for TanStack Start or Astro fullstack apps.",
+      provided: {
+        observability: "signoz",
+        backend: "self",
+        frontend: config.frontend.join(" "),
+      },
+      suggestions: ["Use a standalone backend", "Use --observability none"],
+    });
+  }
   if (config.ecosystem !== "typescript" && config.observability !== "sentry") {
     incompatibilityError({
       message: "Only Sentry observability is available for non-TypeScript ecosystems.",

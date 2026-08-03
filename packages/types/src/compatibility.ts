@@ -2242,7 +2242,7 @@ export const getDisabledReason = (
   optionId: string,
 ): string | null => {
   if (
-    category === "appPlatforms" &&
+    category === "codeQuality" &&
     optionId === "knip" &&
     currentStack.ecosystem !== "typescript" &&
     currentStack.ecosystem !== "react-native"
@@ -2355,16 +2355,15 @@ export const getDisabledReason = (
       "aiDocs",
       "git",
       "install",
+      "codeQuality",
     ]);
 
     if (category === "payments" && optionId !== "none" && optionId !== "revenuecat") {
       return "React Native payments currently support RevenueCat only";
     }
 
-    const isReactNativeKnip = category === "appPlatforms" && optionId === "knip";
     if (
       !reactNativeCategories.has(category) &&
-      !isReactNativeKnip &&
       optionId !== "none" &&
       optionId !== "false"
     ) {
