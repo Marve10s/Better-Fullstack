@@ -155,6 +155,44 @@ describe("Observability Configurations", () => {
       expect(instrumentation).toContain('await import("./lib/tracing")');
     });
 
+    it("creates propagated request lifecycle spans for Nitro and Nuxt", async () => {
+      for (const target of [
+        { projectName: "signoz-nitro", frontend: ["react-vite"] as const, backend: "nitro" as const },
+        { projectName: "signoz-nuxt", frontend: ["nuxt"] as const, backend: "self" as const },
+      ]) {
+        const result = await runTRPCTest({
+          projectName: target.projectName,
+          observability: "signoz",
+          frontend: [...target.frontend],
+          backend: target.backend,
+          runtime: target.backend === "nitro" ? "node" : "none",
+          database: "sqlite",
+          orm: "drizzle",
+          api: "none",
+          auth: "none",
+          addons: ["turborepo"],
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        const pluginPath =
+          target.backend === "nitro"
+            ? "apps/server/plugins/signoz.ts"
+            : "apps/web/server/plugins/signoz.ts";
+        const plugin = await readFile(join(result.projectDir!, pluginPath), "utf-8");
+        expect(plugin).toContain('nitroApp.hooks.hook("request"');
+        expect(plugin).toContain('nitroApp.hooks.hook("afterResponse"');
+        expect(plugin).toContain('nitroApp.hooks.hook("error"');
+        expect(plugin).toContain("propagation.extract");
+        expect(plugin).toContain("SpanKind.SERVER");
+        expect(plugin).toContain("requestSpans.delete(event)");
+      }
+    });
+
     it("rejects SigNoz when no generated server target exists", async () => {
       for (const backend of ["none", "convex"] as const) {
         const result = await runTRPCTest({

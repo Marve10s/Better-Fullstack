@@ -1,6 +1,6 @@
 import fs from "fs-extra";
 import path from "node:path";
-import { isMap, isSeq, parseDocument } from "yaml";
+import { isAlias, isMap, isSeq, parseDocument } from "yaml";
 
 import type { ProjectConfig } from "../../types";
 
@@ -226,7 +226,7 @@ function hasGitleaksLefthookCommand(content: string): boolean {
   const document = parseDocument(content);
   if (document.errors.length > 0) return false;
 
-  const preCommit = document.get("pre-commit", true);
+  const preCommit = resolveLefthookMap(document, document.get("pre-commit", true));
   if (!isMap(preCommit)) return false;
 
   const jobs = preCommit.get("jobs", true);
@@ -244,6 +244,14 @@ function hasGitleaksLefthookCommand(content: string): boolean {
       (command) => isMap(command.value) && command.value.get("run") === GITLEAKS_HOOK_COMMAND,
     )
   );
+}
+
+function resolveLefthookMap(document: ReturnType<typeof parseDocument>, node: unknown) {
+  if (isMap(node)) return node;
+  if (!isAlias(node)) return undefined;
+
+  const resolved = node.resolve(document);
+  return isMap(resolved) ? resolved : undefined;
 }
 
 export async function isGitleaksSetupComplete(
@@ -301,10 +309,10 @@ async function ensureGitleaksLefthookHook(projectDir: string) {
     throw new Error(`Cannot add Gitleaks to invalid Lefthook YAML: ${document.errors[0]?.message}`);
   }
 
-  let preCommit = document.get("pre-commit", true);
+  let preCommit = resolveLefthookMap(document, document.get("pre-commit", true));
   if (!isMap(preCommit)) {
     document.set("pre-commit", { parallel: true, jobs: [] });
-    preCommit = document.get("pre-commit", true);
+    preCommit = resolveLefthookMap(document, document.get("pre-commit", true));
   }
   if (!isMap(preCommit)) return;
 
@@ -346,10 +354,10 @@ async function ensureLinterLefthookHook(
     throw new Error(`Cannot configure ${linter} in invalid Lefthook YAML: ${document.errors[0]?.message}`);
   }
 
-  let preCommit = document.get("pre-commit", true);
+  let preCommit = resolveLefthookMap(document, document.get("pre-commit", true));
   if (!isMap(preCommit)) {
     document.set("pre-commit", { parallel: true, jobs: [] });
-    preCommit = document.get("pre-commit", true);
+    preCommit = resolveLefthookMap(document, document.get("pre-commit", true));
   }
   if (!isMap(preCommit)) return;
 
@@ -416,7 +424,7 @@ export async function isLinterLefthookSetupComplete(
   const document = parseDocument(await fs.readFile(hookPath, "utf8"));
   if (document.errors.length > 0) return false;
 
-  const preCommit = document.get("pre-commit", true);
+  const preCommit = resolveLefthookMap(document, document.get("pre-commit", true));
   if (!isMap(preCommit)) return false;
 
   const definitions = getLefthookLinterDefinitions(linter, packageManager);

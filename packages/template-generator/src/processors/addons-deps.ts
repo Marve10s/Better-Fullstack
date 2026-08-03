@@ -282,9 +282,12 @@ export function processAddonsDeps(vfs: VirtualFileSystem, config: ProjectConfig)
   if (config.addons.includes("gitleaks")) {
     const rootPkg = vfs.readJson<PackageJson>("package.json");
     if (rootPkg) {
+      const fullScanCommand = config.git
+        ? "gitleaks git --redact --verbose"
+        : "gitleaks dir . --redact --verbose";
       rootPkg.scripts = {
         ...rootPkg.scripts,
-        "secrets:scan": rootPkg.scripts?.["secrets:scan"] ?? "gitleaks git --redact --verbose",
+        "secrets:scan": rootPkg.scripts?.["secrets:scan"] ?? fullScanCommand,
         "secrets:scan:staged":
           rootPkg.scripts?.["secrets:scan:staged"] ??
           "gitleaks git --pre-commit --redact --staged --verbose",
