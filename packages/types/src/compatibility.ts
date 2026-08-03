@@ -475,11 +475,14 @@ export const analyzeStackCompatibility = (
   }
 
   const nextStack = { ...stack };
-  // vectorDb is a newer optional field; callers and fixtures that predate it omit
-  // it entirely. Treat a missing value as "none" up front so that defaulting it is
-  // not reported as an adjustment (e.g. by the no-backend service override below).
+  // vectorDb and ecommerce are newer optional fields; callers and fixtures that
+  // predate them omit the fields entirely. Treat missing values as "none" up
+  // front so service overrides do not report schema defaults as adjustments.
   if (nextStack.vectorDb === undefined) {
     nextStack.vectorDb = "none";
+  }
+  if (nextStack.ecommerce === undefined) {
+    nextStack.ecommerce = "none";
   }
   let changed = false;
   const notes: CompatibilityAnalysisResult["notes"] = {};
