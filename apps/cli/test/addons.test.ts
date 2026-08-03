@@ -1,8 +1,9 @@
 import { describe, it, expect } from "bun:test";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { parseStackPartSpecs } from "@better-fullstack/types";
 
-import type { Addons, Frontend } from "../src";
+import { createVirtual, type Addons, type Frontend } from "../src";
 
 import { getAddonGroup, getCompatibleAddonsForPrompt } from "../src/prompts/addons";
 import { APP_PLATFORM_ADDON_VALUES } from "../src/types";
@@ -516,7 +517,36 @@ describe("Addon Configurations", () => {
         expect(compose).toContain("NEXT_PUBLIC_SERVER_URL: http://localhost:8000");
         expect(dockerfile).toContain("ARG NEXT_PUBLIC_SERVER_URL=http://localhost:3000");
         expect(nextConfig).toContain('output: "standalone"');
+        expect(existsSync(join(result.projectDir!, "apps", "web", "public", ".gitkeep"))).toBe(
+          true,
+        );
         expect(compose).not.toContain('"3000:3000"');
+      });
+
+      it("binds Fastify to the container network behind Kong", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-fastify",
+          addons: ["kong"],
+          frontend: ["react-vite"],
+          backend: "fastify",
+          runtime: "node",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "none",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        const server = readFileSync(
+          join(result.projectDir!, "apps", "server", "src", "index.ts"),
+          "utf8",
+        );
+        expect(server).toContain('fastify.listen({ port: 3000, host: "0.0.0.0" }');
       });
 
       it("should build Vinext with its own server runtime and Vite gateway URL", async () => {
@@ -749,6 +779,34 @@ describe("Addon Configurations", () => {
         expectError(result, "Kong Gateway currently requires an HTTP Rust API");
       });
 
+      it("should preserve the Rust metrics port behind Kong", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-rust-metrics",
+          ecosystem: "rust",
+          addons: ["kong"],
+          rustWebFramework: "axum",
+          rustFrontend: "none",
+          rustOrm: "none",
+          rustApi: "none",
+          rustCli: "none",
+          rustLibraries: [],
+          rustLogging: "tracing",
+          rustErrorHandling: "anyhow-thiserror",
+          rustCaching: "none",
+          rustAuth: "none",
+          rustRealtime: "none",
+          rustMessageQueue: "none",
+          rustObservability: "metrics",
+          rustTemplating: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
+        expect(compose).toContain('expose:\n      - "3000"');
+        expect(compose).toContain('ports:\n      - "9000:9000"');
+      });
+
       it("should reject Kong for Go APIs that do not use the primary HTTP server", async () => {
         for (const goApi of ["connect-go", "grpc-gateway", "oapi-codegen", "grpc-go"] as const) {
           const result = await runTRPCTest({
@@ -777,6 +835,34 @@ describe("Addon Configurations", () => {
         });
 
         expectError(result, "Kong Gateway currently requires the primary Java HTTP API");
+      });
+
+      it("should reject Kong when a graph backend has no container template", async () => {
+        for (const backendPart of ["backend:dotnet:aspnet-minimal", "backend:elixir:phoenix"]) {
+          const result = await createVirtual({
+            projectName: `kong-unsupported-${backendPart.split(":")[1]}`,
+            addons: ["kong"],
+            frontend: ["next"],
+            backend: "none",
+            runtime: "none",
+            database: "none",
+            orm: "none",
+            auth: "none",
+            api: "none",
+            examples: ["none"],
+            dbSetup: "none",
+            webDeploy: "none",
+            serverDeploy: "none",
+            stackParts: parseStackPartSpecs([
+              "frontend:typescript:next",
+              backendPart,
+              "workspaceTooling:universal:kong",
+            ]),
+          });
+
+          expect(result.success).toBe(false);
+          expect(result.error).toContain("does not yet provide a container template");
+        }
       });
     });
 

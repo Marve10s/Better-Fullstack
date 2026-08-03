@@ -3,6 +3,7 @@ import type { ProjectConfig, StackPart } from "@better-fullstack/types";
 import {
   getRoleTargetPath,
   stackGraphToLegacyProjectConfigForEcosystem,
+  validateStackParts,
 } from "@better-fullstack/types";
 
 import type { GeneratorOptions, GeneratorResult, VirtualFileTree } from "./types";
@@ -340,6 +341,16 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
         success: false,
         error: "No templates provided. Templates must be passed via the templates option.",
       };
+    }
+
+    if (config.stackParts && config.stackParts.length > 0) {
+      const validation = validateStackParts(config.stackParts);
+      if (validation.issues.length > 0) {
+        return {
+          success: false,
+          error: validation.issues.map((issue) => issue.message).join("\n"),
+        };
+      }
     }
 
     const vfs = new VirtualFileSystem();

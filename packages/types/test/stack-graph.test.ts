@@ -895,6 +895,20 @@ describe("stack graph", () => {
     );
   });
 
+  it("rejects Kong when the graph backend has no container template", () => {
+    for (const backend of ["backend:dotnet:aspnet-minimal", "backend:elixir:phoenix"]) {
+      const parts = parseStackPartSpecs([
+        "frontend:typescript:next",
+        backend,
+        "workspaceTooling:universal:kong",
+      ]);
+
+      expect(validateStackParts(parts).issues.map((issue) => issue.message)).toContainEqual(
+        expect.stringContaining("does not yet provide a container template"),
+      );
+    }
+  });
+
   it("rejects shared non-TypeScript backend service candidates through graph checks", () => {
     const javaParts = parseStackPartSpecs([
       "backend:java:spring-boot",

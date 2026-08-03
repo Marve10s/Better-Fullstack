@@ -2048,6 +2048,18 @@ function createAddonCompatibilityIssue(
         });
       }
       if (
+        backendEcosystem &&
+        !DOCKER_COMPOSE_COMPATIBLE_ECOSYSTEMS.has(backendEcosystem)
+      ) {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: `${title} does not yet provide a container template for ${backendEcosystem} backends.`,
+        });
+      }
+      if (
         part.toolId === "kong" &&
         primaryEcosystem === "typescript" &&
         (!backendTool || backendTool === "none")

@@ -27,6 +27,12 @@ function ensureNextStandaloneOutput(vfs: VirtualFileSystem): void {
   );
 }
 
+function ensureNextPublicDirectory(vfs: VirtualFileSystem): void {
+  if (!vfs.directoryExists("apps/web/public")) {
+    vfs.writeFile("apps/web/public/.gitkeep", "");
+  }
+}
+
 function processWebDockerfileTemplates(
   vfs: VirtualFileSystem,
   templates: TemplateData,
@@ -187,6 +193,7 @@ export async function processAddonTemplates(
     config.addons.some((addon) => CONTAINER_ADDONS.has(addon))
   ) {
     ensureNextStandaloneOutput(vfs);
+    ensureNextPublicDirectory(vfs);
   }
 
   for (const addon of config.addons) {

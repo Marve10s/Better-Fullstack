@@ -300,6 +300,10 @@ volumes:
 {{else}}
       - "8080"
 {{/if}}
+{{#if (and (eq ecosystem "rust") (eq rustObservability "metrics"))}}
+    ports:
+      - "9000:9000"
+{{/if}}
 {{else}}
     ports:
 {{#if (eq ecosystem "python")}}
