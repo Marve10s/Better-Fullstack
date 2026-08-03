@@ -1391,6 +1391,24 @@ export const TECH_OPTIONS: Record<
       default: true,
     },
   ],
+  ecommerce: [
+    {
+      id: "medusa",
+      name: "MedusaJS",
+      description: "Official SDK for connecting to a Medusa commerce backend",
+      icon: "https://cdn.simpleicons.org/medusa/000000",
+      color: "from-violet-500 to-purple-700",
+      default: false,
+    },
+    {
+      id: "none",
+      name: "No E-commerce SDK",
+      description: "Skip e-commerce platform setup",
+      icon: "",
+      color: "from-gray-400 to-gray-600",
+      default: true,
+    },
+  ],
   analytics: [
     {
       id: "ga4",

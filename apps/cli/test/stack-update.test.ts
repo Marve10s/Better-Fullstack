@@ -1351,6 +1351,13 @@ describe("stack update planner", () => {
           expectedPath: "apps/server/src/lib/email.ts",
         },
         {
+          name: "ecommerce-medusa",
+          update: { ecommerce: "medusa" },
+          field: "ecommerce",
+          expected: "medusa",
+          expectedPath: "apps/server/src/lib/medusa.ts",
+        },
+        {
           name: "rate-limit-arcjet",
           update: { rateLimit: "arcjet" },
           field: "rateLimit",

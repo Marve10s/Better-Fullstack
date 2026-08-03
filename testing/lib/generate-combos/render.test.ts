@@ -61,6 +61,21 @@ describe("smoke combo command rendering", () => {
     );
   });
 
+  it("includes e-commerce for non-interactive TypeScript smoke commands", () => {
+    const config: ProjectConfig = {
+      ...createCliDefaultProjectConfigBase("bun"),
+      projectName: "medusa-smoke",
+      relativePath: "medusa-smoke",
+      projectDir: "/tmp/medusa-smoke",
+      ecosystem: "typescript",
+      ecommerce: "medusa",
+      git: false,
+      install: false,
+    };
+
+    expect(buildCommand("medusa-smoke", config)).toContain("--ecommerce medusa");
+  });
+
   it("includes Elixir flags for Elixir commands", () => {
     const config: ProjectConfig = {
       ...createCliDefaultProjectConfigBase("bun"),

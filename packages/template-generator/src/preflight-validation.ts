@@ -124,6 +124,7 @@ const PREFLIGHT_RULES: readonly PreflightRule[] = [
   backendFeature("email-no-backend", "email", "Email"),
   backendFeature("logging-no-backend", "logging", "Logging"),
   backendFeature("observability-no-backend", "observability", "Observability"),
+  backendFeature("ecommerce-no-backend", "ecommerce", "E-commerce"),
 
   ...["payload", "sanity", "strapi", "tinacms"].map(
     (name): PreflightRule => ({

@@ -231,6 +231,12 @@ describe("Payments Options", () => {
         }),
       );
       expectSuccess(result);
+      const successRoute = await readFile(
+        join(result.projectDir!, "apps/web/src/routes/success.tsx"),
+        "utf8",
+      );
+      expect(successRoute).toContain("validateSearch");
+      expect(successRoute).toContain("checkout_id: search.checkout_id as string | undefined");
     });
 
     test("lemon-squeezy with React Router", async () => {
@@ -279,6 +285,12 @@ describe("Payments Options", () => {
         }),
       );
       expectSuccess(result);
+      const successRoute = await readFile(
+        join(result.projectDir!, "apps/web/src/routes/success.tsx"),
+        "utf8",
+      );
+      expect(successRoute).toContain("validateSearch");
+      expect(successRoute).toContain("checkout_id: search.checkout_id as string | undefined");
     });
   });
 
