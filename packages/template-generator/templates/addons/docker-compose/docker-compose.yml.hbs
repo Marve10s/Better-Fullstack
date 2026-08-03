@@ -49,8 +49,13 @@ services:
         VITE_SERVER_URL: http://localhost:3000
 {{/if}}
 {{/if}}
+{{#if (and (includes addons "kong") (eq backend "self"))}}
+    expose:
+      - "3000"
+{{else}}
     ports:
       - "3001:3000"
+{{/if}}
     environment:
       - NODE_ENV=production
 {{#if (eq backend "self")}}
@@ -83,8 +88,13 @@ services:
     build:
       context: .
       dockerfile: apps/server/Dockerfile
+{{#if (includes addons "kong")}}
+    expose:
+      - "3000"
+{{else}}
     ports:
       - "3000:3000"
+{{/if}}
     environment:
       - NODE_ENV=production
       - PORT=3000
@@ -207,11 +217,19 @@ volumes:
       context: .
       dockerfile: Dockerfile
 {{/if}}
+{{#if (includes addons "kong")}}
+    expose:
+{{#if (eq ecosystem "python")}}
+      - "8000"
+{{else if (eq ecosystem "rust")}}
+      - "3000"
+{{else}}
+      - "8080"
+{{/if}}
+{{else}}
     ports:
 {{#if (eq ecosystem "python")}}
-{{#unless (includes addons "kong")}}
       - "8000:8000"
-{{/unless}}
 {{else if (eq ecosystem "rust")}}
       - "3000:3000"
 {{#if (eq rustApi "tonic")}}
@@ -225,6 +243,7 @@ volumes:
 {{/if}}
 {{else}}
       - "8080:8080"
+{{/if}}
 {{/if}}
     environment:
 {{#if graphWebFrontend}}

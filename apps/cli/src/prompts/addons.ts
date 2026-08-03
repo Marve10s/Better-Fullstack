@@ -204,7 +204,13 @@ const ADDON_GROUPS: Record<string, Addons[]> = {
   "AI Agents": ["mcp", "skills"],
   "App Platforms": [...APP_PLATFORM_ADDON_VALUES],
   "Data Fetching": ["swr", "apollo-client"],
-  TanStack: ["tanstack-query", "tanstack-table", "tanstack-virtual", "tanstack-db", "tanstack-pacer"],
+  TanStack: [
+    "tanstack-query",
+    "tanstack-table",
+    "tanstack-virtual",
+    "tanstack-db",
+    "tanstack-pacer",
+  ],
 };
 
 function createGroupedAddonOptions() {
@@ -231,7 +237,7 @@ function validateAddonCompatibilityForPrompt(
     auth,
     backend,
     runtime,
-    undefined,
+    "typescript",
     undefined,
     undefined,
     undefined,
@@ -248,7 +254,16 @@ function getCompatibleAddonsForPrompt(
   runtime?: Runtime,
   api?: API,
 ) {
-  return getCompatibleAddons(allAddons, frontends, existingAddons, auth, backend, runtime, api);
+  return getCompatibleAddons(
+    allAddons,
+    frontends,
+    existingAddons,
+    auth,
+    backend,
+    runtime,
+    api,
+    "typescript",
+  );
 }
 
 const APP_PLATFORM_ADDONS = new Set<Addons>(APP_PLATFORM_ADDON_VALUES);

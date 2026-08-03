@@ -649,6 +649,7 @@ export function getCompatibleAddons(
   backend?: Backend,
   runtime?: Runtime,
   api?: API,
+  ecosystem?: Ecosystem,
 ) {
   const compatibleAddons = getCompatibleAddonsShared(allAddons, frontend, existingAddons, auth);
 
@@ -659,7 +660,7 @@ export function getCompatibleAddons(
       auth,
       backend,
       runtime,
-      undefined,
+      ecosystem,
       undefined,
       undefined,
       undefined,

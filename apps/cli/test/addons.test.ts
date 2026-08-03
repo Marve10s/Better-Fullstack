@@ -6,6 +6,7 @@ import type { Addons, Frontend } from "../src";
 
 import { getAddonGroup } from "../src/prompts/addons";
 import { APP_PLATFORM_ADDON_VALUES } from "../src/types";
+import { getCompatibleAddons } from "../src/utils/compatibility-rules";
 import { expectError, expectSuccess, runTRPCTest, type TestConfig } from "./test-utils";
 
 describe("Addon Configurations", () => {
@@ -310,6 +311,21 @@ describe("Addon Configurations", () => {
     });
 
     describe("Kong Gateway Addon", () => {
+      it("hides Kong from TypeScript prompts without a backend", () => {
+        expect(
+          getCompatibleAddons(
+            ["kong"],
+            ["react-vite"],
+            [],
+            "none",
+            "none",
+            "none",
+            "none",
+            "typescript",
+          ),
+        ).toEqual([]);
+      });
+
       it("should generate a runnable DB-less gateway for a Hono server", async () => {
         const result = await runTRPCTest({
           projectName: "kong-hono",
@@ -339,6 +355,8 @@ describe("Addon Configurations", () => {
         expect(compose).toContain("./kong/kong.yml:/kong/declarative/kong.yml:ro");
         expect(compose).toContain("VITE_SERVER_URL: http://localhost:8000");
         expect(compose).toContain("- server");
+        expect(compose).toContain('expose:\n      - "3000"');
+        expect(compose).not.toContain('"3000:3000"');
         expect(kongConfig).toContain("url: http://server:3000");
         expect(kongConfig).toContain("strip_path: false");
       });
@@ -396,6 +414,7 @@ describe("Addon Configurations", () => {
         expect(compose).toContain("NEXT_PUBLIC_SERVER_URL: http://localhost:8000");
         expect(dockerfile).toContain("ARG NEXT_PUBLIC_SERVER_URL=http://localhost:3000");
         expect(nextConfig).toContain('output: "standalone"');
+        expect(compose).not.toContain('"3000:3000"');
       });
 
       it("should preserve Kong for Python and avoid publishing the upstream port", async () => {
