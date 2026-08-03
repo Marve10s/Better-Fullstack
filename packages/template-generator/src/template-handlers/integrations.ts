@@ -12,6 +12,7 @@ export async function processIntegrationsTemplates(
   if (config.integrations !== "nango") return;
   if (config.backend === "none" || config.backend === "convex") return;
   if (config.runtime === "workers") return;
+  if (config.backend === "self" && config.webDeploy === "cloudflare") return;
 
   const destination = config.backend === "self" ? "apps/web" : "apps/server";
   processTemplatesFromPrefix(vfs, templates, "integrations/nango/server/base", destination, config);

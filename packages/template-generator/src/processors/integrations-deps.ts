@@ -8,6 +8,7 @@ export function processIntegrationsDeps(vfs: VirtualFileSystem, config: ProjectC
   if (config.integrations !== "nango") return;
   if (config.backend === "none" || config.backend === "convex") return;
   if (config.runtime === "workers") return;
+  if (config.backend === "self" && config.webDeploy === "cloudflare") return;
 
   const packagePath =
     config.backend === "self" ? "apps/web/package.json" : "apps/server/package.json";
