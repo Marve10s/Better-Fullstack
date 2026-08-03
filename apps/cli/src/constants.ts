@@ -82,6 +82,7 @@ export const ADDON_COMPATIBILITY = {
   wxt: [],
   devcontainer: [],
   "docker-compose": [],
+  kong: [],
   "github-actions": [],
   msw: [],
   storybook: [

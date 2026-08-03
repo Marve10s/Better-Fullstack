@@ -182,6 +182,46 @@ describe("CLI add command", () => {
     expect(cliOutput(secondAddResult)).toContain("No new addons selected.");
   }, CLI_COMMAND_TEST_TIMEOUT_MS);
 
+  it("adds Kong with its Compose scaffold and remains idempotent", async () => {
+    const root = await makeTempRoot("bfs-add-kong-test-");
+    const projectName = "app";
+    const projectDir = join(root, projectName);
+
+    const createResult = await runCli(
+      ["create", projectName, "--yes", "--no-install", "--no-git", "--disable-analytics"],
+      { cwd: root },
+    );
+    expect(createResult.exitCode).toBe(0);
+
+    const addResult = await runCli(
+      ["add", "--project-dir", projectDir, "--addons", "kong"],
+      { cwd: root, env: { BFS_SKIP_EXTERNAL_COMMANDS: "1" } },
+    );
+
+    expect(
+      addResult.exitCode,
+      `add failed\nstdout:\n${addResult.stdout}\nstderr:\n${addResult.stderr}`,
+    ).toBe(0);
+    expect(cliOutput(addResult)).toContain("Successfully added: kong");
+
+    const config = (await readJsoncFile(join(projectDir, "bts.jsonc"))) as {
+      addons?: string[];
+    };
+    const compose = await Bun.file(join(projectDir, "docker-compose.yml")).text();
+    const kongConfig = await Bun.file(join(projectDir, "kong", "kong.yml")).text();
+
+    expect(config.addons).toContain("kong");
+    expect(compose).toContain("kong/kong-gateway:3.15.0.1");
+    expect(kongConfig).toContain("url: http://server:3000");
+
+    const secondAddResult = await runCli(
+      ["add", "--project-dir", projectDir, "--addons", "kong"],
+      { cwd: root, env: { BFS_SKIP_EXTERNAL_COMMANDS: "1" } },
+    );
+    expect(secondAddResult.exitCode).toBe(0);
+    expect(cliOutput(secondAddResult)).toContain("No new addons selected.");
+  }, CLI_COMMAND_TEST_TIMEOUT_MS);
+
   it("plans and applies stack capability flags", async () => {
     const root = await makeTempRoot("bfs-add-stack-test-");
     const projectName = "app";

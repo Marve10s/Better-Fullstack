@@ -1,6 +1,35 @@
 name: {{projectName}}
 
 services:
+{{#if (includes addons "kong")}}
+  kong:
+    image: kong/kong-gateway:3.15.0.1
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /kong/declarative/kong.yml
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+    ports:
+      - "8000:8000"
+      - "127.0.0.1:8001:8001"
+    volumes:
+      - ./kong/kong.yml:/kong/declarative/kong.yml:ro
+    depends_on:
+{{#if (eq ecosystem "typescript")}}
+{{#if (eq backend "self")}}
+      - web
+{{else}}
+      - server
+{{/if}}
+{{else}}
+      - app
+{{/if}}
+    restart: unless-stopped
+
+{{/if}}
 {{#if (eq ecosystem "typescript")}}
   web:
     build:

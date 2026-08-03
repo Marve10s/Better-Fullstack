@@ -509,6 +509,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://docs.docker.com/compose/",
     githubUrl: "https://github.com/docker/compose",
   },
+  kong: {
+    docsUrl: "https://developer.konghq.com/gateway/db-less-mode/",
+    githubUrl: "https://github.com/Kong/kong",
+  },
   devcontainer: {
     docsUrl: "https://containers.dev/",
     githubUrl: "https://github.com/devcontainers/spec",

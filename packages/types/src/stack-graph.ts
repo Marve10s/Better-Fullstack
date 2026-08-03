@@ -437,6 +437,7 @@ const WORKSPACE_TOOLING_ADDONS = new Set([
   "nx",
   "docker-compose",
   "devcontainer",
+  "kong",
   "github-actions",
   "ruler",
   "mcp",
@@ -2007,8 +2008,17 @@ function createAddonCompatibilityIssue(
       });
     }
 
-    if (part.toolId === "docker-compose" || part.toolId === "devcontainer") {
-      const title = part.toolId === "devcontainer" ? "DevContainer" : "Docker Compose";
+    if (
+      part.toolId === "docker-compose" ||
+      part.toolId === "devcontainer" ||
+      part.toolId === "kong"
+    ) {
+      const title =
+        part.toolId === "devcontainer"
+          ? "DevContainer"
+          : part.toolId === "kong"
+            ? "Kong Gateway"
+            : "Docker Compose";
       const databaseTool = context.primaryToolIdsByRole?.database;
       const primaryEcosystem = backendEcosystem ?? frontendEcosystem ?? context.settings?.ecosystem;
       const selectedEcosystems = [backendEcosystem, frontendEcosystem, context.settings?.ecosystem];
@@ -2032,6 +2042,15 @@ function createAddonCompatibilityIssue(
           role: part.role,
           toolId: part.toolId,
           message: `${title} is not compatible with Cloudflare Workers runtime.`,
+        });
+      }
+      if (part.toolId === "kong" && primaryEcosystem === "typescript" && !backendTool) {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: "Kong Gateway requires a TypeScript backend service.",
         });
       }
       if (!hasCompatibleEcosystem) {

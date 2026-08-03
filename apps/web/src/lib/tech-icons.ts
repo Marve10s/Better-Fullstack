@@ -251,6 +251,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   upstash: { type: "si", slug: "upstash", hex: "00E9A3" },
   docker: { type: "si", slug: "docker", hex: "2496ED" },
   "docker-compose": { type: "si", slug: "docker", hex: "2496ED" },
+  kong: { type: "si", slug: "kong", hex: "003459" },
   devcontainer: { type: "si", slug: "docker", hex: "2496ED" },
   "github-actions": { type: "si", slug: "githubactions", hex: "2088FF" },
   nx: { type: "si", slug: "nx", hex: "143055", needsInvert: "dark" },

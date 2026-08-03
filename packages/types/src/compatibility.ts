@@ -4531,6 +4531,7 @@ const ADDON_COMPATIBILITY: Record<Addons, readonly Frontend[]> = {
   ],
   "backend-utils": [],
   "docker-compose": [],
+  kong: [],
   devcontainer: [],
   "github-actions": [],
   none: [],

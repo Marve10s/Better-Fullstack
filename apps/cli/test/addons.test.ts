@@ -309,6 +309,61 @@ describe("Addon Configurations", () => {
       }
     });
 
+    describe("Kong Gateway Addon", () => {
+      it("should generate a runnable DB-less gateway for a Hono server", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-hono",
+          addons: ["kong"],
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "trpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        expect(result.projectDir).toBeDefined();
+
+        const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
+        const kongConfig = readFileSync(join(result.projectDir!, "kong", "kong.yml"), "utf8");
+
+        expect(compose).toContain("kong/kong-gateway:3.15.0.1");
+        expect(compose).toContain('KONG_DATABASE: "off"');
+        expect(compose).toContain("./kong/kong.yml:/kong/declarative/kong.yml:ro");
+        expect(compose).toContain("- server");
+        expect(kongConfig).toContain("url: http://server:3000");
+        expect(kongConfig).toContain("strip_path: false");
+      });
+
+      it("should reject Kong when a TypeScript stack has no backend", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-no-backend",
+          addons: ["kong"],
+          frontend: ["react-vite"],
+          backend: "none",
+          runtime: "none",
+          database: "none",
+          orm: "none",
+          auth: "none",
+          api: "none",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          expectError: true,
+        });
+
+        expectError(result, "Kong Gateway requires a TypeScript backend service");
+      });
+    });
+
     describe("Docker Compose Addon", () => {
       it("should work with docker-compose + Hono + postgres + drizzle", async () => {
         const result = await runTRPCTest({

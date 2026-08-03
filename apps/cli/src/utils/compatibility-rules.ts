@@ -521,9 +521,11 @@ export function validateAddonCompatibility(
   }
 
   // Docker Compose-backed addons target containerized/self-hosted stacks only.
-  if (addon === "docker-compose" || addon === "devcontainer") {
-    const label = addon === "devcontainer" ? "DevContainer" : "docker-compose";
-    const title = addon === "devcontainer" ? "DevContainer" : "Docker Compose";
+  if (addon === "docker-compose" || addon === "devcontainer" || addon === "kong") {
+    const label =
+      addon === "devcontainer" ? "DevContainer" : addon === "kong" ? "Kong Gateway" : "docker-compose";
+    const title =
+      addon === "devcontainer" ? "DevContainer" : addon === "kong" ? "Kong Gateway" : "Docker Compose";
 
     if (backend === "convex") {
       return {
@@ -535,6 +537,12 @@ export function validateAddonCompatibility(
       return {
         isCompatible: false,
         reason: `${label} is not compatible with Cloudflare Workers runtime`,
+      };
+    }
+    if (addon === "kong" && ecosystem === "typescript" && backend === "none") {
+      return {
+        isCompatible: false,
+        reason: "Kong Gateway requires a TypeScript backend service",
       };
     }
     if (

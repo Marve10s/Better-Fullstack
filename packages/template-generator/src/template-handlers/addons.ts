@@ -205,6 +205,12 @@ export async function processAddonTemplates(
       continue;
     }
 
+    if (addon === "kong") {
+      processDockerComposeTemplates(vfs, templates, config);
+      processTemplatesFromPrefix(vfs, templates, "addons/kong", "", config);
+      continue;
+    }
+
     if (addon === "devcontainer") {
       processDevcontainerTemplates(vfs, templates, config);
       continue;

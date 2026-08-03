@@ -182,6 +182,7 @@ export const AddonsSchema = z
     "backend-utils",
     "devcontainer",
     "docker-compose",
+    "kong",
     "github-actions",
     "eslint",
     "prettier",

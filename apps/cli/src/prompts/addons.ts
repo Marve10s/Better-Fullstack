@@ -132,6 +132,10 @@ function getAddonDisplay(addon: Addons): { label: string; hint: string } {
       label = "Docker Compose";
       hint = "Containerize your app for deployment";
       break;
+    case "kong":
+      label = "Kong Gateway";
+      hint = "DB-less API gateway with declarative Docker configuration";
+      break;
     case "github-actions":
       label = "GitHub Actions";
       hint = "Ship a CI workflow (install, lint, type-check, build)";
@@ -194,7 +198,7 @@ const ADDON_GROUPS: Record<string, Addons[]> = {
     "lefthook",
   ],
   Documentation: ["starlight", "fumadocs"],
-  Extensions: ["ruler", "devcontainer", "docker-compose"],
+  Extensions: ["ruler", "devcontainer", "docker-compose", "kong"],
   Integrations: ["msw", "storybook", "backend-utils", "axios", "firebase"],
   "API Tooling": ["graphql-codegen", "openapi-typescript"],
   "AI Agents": ["mcp", "skills"],
