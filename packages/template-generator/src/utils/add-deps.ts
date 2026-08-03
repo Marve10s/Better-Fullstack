@@ -340,7 +340,7 @@ export const dependencyVersionMap = {
   // SST (Serverless Stack)
   sst: "^4.17.1",
   "aws-cdk-lib": "^2.263.0",
-  constructs: "^10.8.0",
+  constructs: "^10.7.2",
   "@opennextjs/aws": "^4.1.0",
 
   dotenv: "^17.4.2",

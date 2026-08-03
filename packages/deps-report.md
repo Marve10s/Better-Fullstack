@@ -4,19 +4,13 @@ Generated: 2026-08-03T10:24:03.819Z
 
 ## Summary
 
-- **Outdated**: 111
+- **Outdated**: 110
 - **Template-only** (not in version map): 44
-- **Downgrades detected**: 1
-- **Up to date**: 622
+- **Downgrades detected**: 0
+- **Up to date**: 623
 - **Errors**: 0
 
 ## Outdated Packages
-
-### Downgrades Detected (Manual Review Required)
-
-| Package | Current | Latest | Ecosystem | Source |
-|---------|---------|--------|-----------|--------|
-| constructs | ^10.8.0 | ^10.7.2 | - | map |
 
 ### Major Updates (Breaking Changes Possible)
 
@@ -132,4 +126,3 @@ Generated: 2026-08-03T10:24:03.819Z
 | @solidjs/router | ^0.16.2 | ^1.0.0 | - | template |
 | vinext | ^0.1.8 | ^0.2.1 | - | template |
 | web-vitals | ^5.3.0 | ^6.0.1 | - | template |
-
