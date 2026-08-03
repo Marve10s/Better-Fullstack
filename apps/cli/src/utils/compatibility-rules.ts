@@ -481,6 +481,7 @@ export function validateAddonCompatibility(
   goWebFramework?: ProjectConfig["goWebFramework"],
   rustWebFramework?: ProjectConfig["rustWebFramework"],
   rustApi?: ProjectConfig["rustApi"],
+  goApi?: ProjectConfig["goApi"],
 ): { isCompatible: boolean; reason?: string } {
   const baseCompatibility = validateAddonCompatibilityShared(addon, frontend, _auth);
   if (!baseCompatibility.isCompatible) return baseCompatibility;
@@ -586,6 +587,17 @@ export function validateAddonCompatibility(
       };
     }
     if (
+      addon === "kong" &&
+      ecosystem === "go" &&
+      goApi !== undefined &&
+      ["connect-go", "grpc-gateway", "oapi-codegen", "grpc-go"].includes(goApi)
+    ) {
+      return {
+        isCompatible: false,
+        reason: "Kong Gateway currently requires the primary Go HTTP server API",
+      };
+    }
+    if (
       ecosystem !== undefined &&
       !["typescript", "python", "go", "rust", "java"].includes(ecosystem)
     ) {
@@ -650,6 +662,7 @@ export function getCompatibleAddons(
   runtime?: Runtime,
   api?: API,
   ecosystem?: Ecosystem,
+  context?: Partial<ProjectConfig>,
 ) {
   const compatibleAddons = getCompatibleAddonsShared(allAddons, frontend, existingAddons, auth);
 
@@ -661,10 +674,15 @@ export function getCompatibleAddons(
       backend,
       runtime,
       ecosystem,
-      undefined,
-      undefined,
-      undefined,
+      context?.rustFrontend,
+      context?.javaWebFramework,
+      context?.database,
       api,
+      context?.pythonWebFramework,
+      context?.goWebFramework,
+      context?.rustWebFramework,
+      context?.rustApi,
+      context?.goApi,
     );
     return isCompatible;
   });
@@ -685,6 +703,7 @@ export function validateAddonsAgainstFrontends(
   goWebFramework?: ProjectConfig["goWebFramework"],
   rustWebFramework?: ProjectConfig["rustWebFramework"],
   rustApi?: ProjectConfig["rustApi"],
+  goApi?: ProjectConfig["goApi"],
 ) {
   if (addons.includes("nx") && addons.includes("turborepo")) {
     exitWithError("Nx and Turborepo are alternative workspace runners. Choose one addon.");
@@ -707,6 +726,7 @@ export function validateAddonsAgainstFrontends(
       goWebFramework,
       rustWebFramework,
       rustApi,
+      goApi,
     );
     if (!isCompatible) {
       exitWithError(`Incompatible addon/frontend combination: ${reason}`);

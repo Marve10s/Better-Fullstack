@@ -1,0 +1,44 @@
+{{#if (eq packageManager "bun")}}
+FROM oven/bun:1 AS builder
+WORKDIR /app
+COPY . .
+RUN if [ -f bun.lock ]; then bun install --frozen-lockfile; else bun install; fi
+ARG VITE_SERVER_URL=http://localhost:3000
+ENV VITE_SERVER_URL=${VITE_SERVER_URL}
+RUN bun run --filter web build
+
+FROM builder AS runner
+WORKDIR /app/apps/web
+ENV NODE_ENV=production
+EXPOSE 3000
+CMD ["bun", "run", "start", "--", "--hostname", "0.0.0.0", "--port", "3000"]
+{{else if (eq packageManager "pnpm")}}
+FROM node:20-alpine AS builder
+RUN corepack enable && corepack prepare pnpm@10.17.1 --activate
+WORKDIR /app
+COPY . .
+RUN if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile; else pnpm install; fi
+ARG VITE_SERVER_URL=http://localhost:3000
+ENV VITE_SERVER_URL=${VITE_SERVER_URL}
+RUN pnpm --filter web build
+
+FROM builder AS runner
+WORKDIR /app/apps/web
+ENV NODE_ENV=production
+EXPOSE 3000
+CMD ["pnpm", "run", "start", "--", "--hostname", "0.0.0.0", "--port", "3000"]
+{{else}}
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY . .
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
+ARG VITE_SERVER_URL=http://localhost:3000
+ENV VITE_SERVER_URL=${VITE_SERVER_URL}
+RUN npm run build --workspace=apps/web
+
+FROM builder AS runner
+WORKDIR /app/apps/web
+ENV NODE_ENV=production
+EXPOSE 3000
+CMD ["npm", "run", "start", "--", "--hostname", "0.0.0.0", "--port", "3000"]
+{{/if}}

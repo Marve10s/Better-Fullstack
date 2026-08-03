@@ -7,6 +7,7 @@ import {
   type Auth,
   type Backend,
   type Frontend,
+  type ProjectConfig,
   type Runtime,
 } from "../types";
 import { getCompatibleAddons, validateAddonCompatibility } from "../utils/compatibility-rules";
@@ -245,7 +246,7 @@ function validateAddonCompatibilityForPrompt(
   );
 }
 
-function getCompatibleAddonsForPrompt(
+export function getCompatibleAddonsForPrompt(
   allAddons: Addons[],
   frontends: Frontend[],
   existingAddons: Addons[] = [],
@@ -253,6 +254,7 @@ function getCompatibleAddonsForPrompt(
   backend?: Backend,
   runtime?: Runtime,
   api?: API,
+  context: Partial<ProjectConfig> = { ecosystem: "typescript" },
 ) {
   return getCompatibleAddons(
     allAddons,
@@ -262,7 +264,8 @@ function getCompatibleAddonsForPrompt(
     backend,
     runtime,
     api,
-    "typescript",
+    context.ecosystem ?? "typescript",
+    context,
   );
 }
 
@@ -371,6 +374,7 @@ export async function getAddonsToAdd(
   backend?: Backend,
   runtime?: Runtime,
   api?: API,
+  context?: Partial<ProjectConfig>,
 ) {
   const groupedOptions: Record<string, AddonOption[]> = createGroupedAddonOptions();
 
@@ -384,6 +388,7 @@ export async function getAddonsToAdd(
     backend,
     runtime,
     api,
+    context,
   );
 
   for (const addon of compatibleAddons) {

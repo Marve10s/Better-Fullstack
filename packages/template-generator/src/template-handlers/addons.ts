@@ -14,7 +14,7 @@ function processWebDockerfileTemplates(
   templates: TemplateData,
   config: ProjectConfig,
 ): void {
-  if (config.frontend.includes("next") || config.frontend.includes("vinext")) {
+  if (config.frontend.includes("next")) {
     processSingleTemplate(
       vfs,
       templates,
@@ -27,6 +27,21 @@ function processWebDockerfileTemplates(
       templates,
       "addons/docker-compose/apps/web/Dockerfile.next",
       "apps/web/Dockerfile.next",
+      config,
+    );
+  } else if (config.frontend.includes("vinext")) {
+    processSingleTemplate(
+      vfs,
+      templates,
+      "addons/docker-compose/apps/web/.dockerignore",
+      "apps/web/.dockerignore",
+      config,
+    );
+    processSingleTemplate(
+      vfs,
+      templates,
+      "addons/docker-compose/apps/web/Dockerfile.vinext",
+      "apps/web/Dockerfile.vinext",
       config,
     );
   } else if (

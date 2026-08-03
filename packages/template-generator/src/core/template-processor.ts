@@ -127,10 +127,15 @@ function getDevcontainerExtensions(config: ProjectConfig) {
 
 function getDevcontainerForwardPorts(config: ProjectConfig) {
   const ports = new Set<number>();
+  const graphConfig = config as ProjectConfig & { graphWebFrontend?: boolean };
 
   if (config.addons.includes("kong")) {
     ports.add(8000);
     ports.add(8001);
+  }
+
+  if (graphConfig.graphWebFrontend) {
+    ports.add(3001);
   }
 
   if (config.ecosystem === "typescript") {
@@ -166,9 +171,14 @@ function getDevcontainerForwardPorts(config: ProjectConfig) {
 
 function getDevcontainerRunServices(config: ProjectConfig) {
   const services = new Set<string>(["devcontainer"]);
+  const graphConfig = config as ProjectConfig & { graphWebFrontend?: boolean };
 
   if (config.addons.includes("kong")) {
     services.add("kong");
+  }
+
+  if (graphConfig.graphWebFrontend) {
+    services.add("web");
   }
 
   if (config.ecosystem === "typescript") {

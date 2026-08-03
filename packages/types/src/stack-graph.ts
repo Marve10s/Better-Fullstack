@@ -2044,7 +2044,11 @@ function createAddonCompatibilityIssue(
           message: `${title} is not compatible with Cloudflare Workers runtime.`,
         });
       }
-      if (part.toolId === "kong" && primaryEcosystem === "typescript" && !backendTool) {
+      if (
+        part.toolId === "kong" &&
+        primaryEcosystem === "typescript" &&
+        (!backendTool || backendTool === "none")
+      ) {
         return createStackGraphIssue({
           code: "INCOMPATIBLE_GRAPH_SELECTION",
           partId: part.id,
@@ -2113,6 +2117,20 @@ function createAddonCompatibilityIssue(
           role: part.role,
           toolId: part.toolId,
           message: "Kong Gateway currently requires an HTTP Rust API.",
+        });
+      }
+      if (
+        part.toolId === "kong" &&
+        primaryEcosystem === "go" &&
+        apiTool !== undefined &&
+        ["connect-go", "grpc-gateway", "oapi-codegen", "grpc-go"].includes(apiTool)
+      ) {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: "Kong Gateway currently requires the primary Go HTTP server API.",
         });
       }
       if (frontendEcosystem === "rust" && frontendTool && frontendTool !== "none") {

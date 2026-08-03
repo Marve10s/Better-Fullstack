@@ -96,10 +96,11 @@ describe("Cross-ecosystem graph generation", () => {
       backend: "none",
       api: "none",
       runtime: "none",
-      addons: ["kong"],
+      addons: ["devcontainer", "kong"],
       stackParts: graphParts([
         "frontend:typescript:react-vite",
         "backend:python:fastapi",
+        "workspaceTooling:universal:devcontainer",
         "workspaceTooling:universal:kong",
       ]),
     });
@@ -108,6 +109,7 @@ describe("Cross-ecosystem graph generation", () => {
     const root = result.tree!.root;
     const compose = fileContent(root, "docker-compose.yml");
     const kong = fileContent(root, "kong/kong.yml");
+    const devcontainer = JSON.parse(fileContent(root, ".devcontainer/devcontainer.json"));
 
     expect(compose).toContain("dockerfile: apps/web/Dockerfile.vite");
     expect(compose).toContain("VITE_SERVER_URL: http://localhost:8000");
@@ -115,6 +117,8 @@ describe("Cross-ecosystem graph generation", () => {
     expect(compose).toContain("- app");
     expect(kong).toContain("url: http://app:8000");
     expect(fileContent(root, "apps/server/Dockerfile")).toContain("FROM python:3.12-slim");
+    expect(devcontainer.runServices).toEqual(["devcontainer", "kong", "web", "app"]);
+    expect(devcontainer.forwardPorts).toEqual(expect.arrayContaining([3001, 8000, 8001]));
   });
 
   it("connects a TypeScript Next frontend to an Elixir Phoenix backend", async () => {

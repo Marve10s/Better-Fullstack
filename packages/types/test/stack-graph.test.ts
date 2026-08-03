@@ -843,6 +843,18 @@ describe("stack graph", () => {
     expect(validateStackParts(parts).issues).toEqual([]);
   });
 
+  it("rejects Kong when an explicit TypeScript none backend is selected", () => {
+    const parts = parseStackPartSpecs([
+      "frontend:typescript:react-vite",
+      "backend:typescript:none",
+      "workspaceTooling:universal:kong",
+    ]);
+
+    expect(validateStackParts(parts).issues.map((issue) => issue.message)).toContain(
+      "Kong Gateway requires a TypeScript backend service.",
+    );
+  });
+
   it("rejects Kong with Rust gRPC and JSON-RPC APIs", () => {
     for (const api of ["tonic", "jsonrpsee"]) {
       const parts = parseStackPartSpecs([
@@ -853,6 +865,20 @@ describe("stack graph", () => {
 
       expect(validateStackParts(parts).issues.map((issue) => issue.message)).toContain(
         "Kong Gateway currently requires an HTTP Rust API.",
+      );
+    }
+  });
+
+  it("rejects Kong when a Go API bypasses the primary HTTP server", () => {
+    for (const api of ["connect-go", "grpc-gateway", "oapi-codegen", "grpc-go"]) {
+      const parts = parseStackPartSpecs([
+        "backend:go:gin",
+        `backend.api:go:${api}`,
+        "workspaceTooling:universal:kong",
+      ]);
+
+      expect(validateStackParts(parts).issues.map((issue) => issue.message)).toContain(
+        "Kong Gateway currently requires the primary Go HTTP server API.",
       );
     }
   });

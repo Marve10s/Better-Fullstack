@@ -34,11 +34,19 @@ services:
   web:
     build:
       context: .
-{{#if (or (includes frontend "next") (includes frontend "vinext"))}}
+{{#if (includes frontend "next")}}
       dockerfile: apps/web/Dockerfile.next
 {{#if (includes addons "kong")}}
       args:
         NEXT_PUBLIC_SERVER_URL: http://localhost:8000
+{{/if}}
+{{else if (includes frontend "vinext")}}
+      dockerfile: apps/web/Dockerfile.vinext
+      args:
+{{#if (includes addons "kong")}}
+        VITE_SERVER_URL: http://localhost:8000
+{{else}}
+        VITE_SERVER_URL: http://localhost:3000
 {{/if}}
 {{else}}
       dockerfile: apps/web/Dockerfile.vite
@@ -190,10 +198,14 @@ volumes:
   web:
     build:
       context: .
-{{#if (or (includes frontend "next") (includes frontend "vinext"))}}
+{{#if (includes frontend "next")}}
       dockerfile: apps/web/Dockerfile.next
       args:
         NEXT_PUBLIC_SERVER_URL: http://localhost:8000
+{{else if (includes frontend "vinext")}}
+      dockerfile: apps/web/Dockerfile.vinext
+      args:
+        VITE_SERVER_URL: http://localhost:8000
 {{else}}
       dockerfile: apps/web/Dockerfile.vite
       args:

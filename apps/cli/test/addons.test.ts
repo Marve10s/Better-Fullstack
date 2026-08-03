@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import type { Addons, Frontend } from "../src";
 
-import { getAddonGroup } from "../src/prompts/addons";
+import { getAddonGroup, getCompatibleAddonsForPrompt } from "../src/prompts/addons";
 import { APP_PLATFORM_ADDON_VALUES } from "../src/types";
 import { getCompatibleAddons } from "../src/utils/compatibility-rules";
 import { expectError, expectSuccess, runTRPCTest, type TestConfig } from "./test-utils";
@@ -311,6 +311,24 @@ describe("Addon Configurations", () => {
     });
 
     describe("Kong Gateway Addon", () => {
+      it("keeps infrastructure addons visible when adding to a Python project", () => {
+        expect(
+          getCompatibleAddonsForPrompt(
+            ["docker-compose", "devcontainer", "kong"],
+            [],
+            [],
+            "none",
+            undefined,
+            undefined,
+            undefined,
+            {
+              ecosystem: "python",
+              pythonWebFramework: "fastapi",
+            },
+          ),
+        ).toEqual(["docker-compose", "devcontainer", "kong"]);
+      });
+
       it("hides Kong from TypeScript prompts without a backend", () => {
         expect(
           getCompatibleAddons(
@@ -417,6 +435,39 @@ describe("Addon Configurations", () => {
         expect(compose).not.toContain('"3000:3000"');
       });
 
+      it("should build Vinext with its own server runtime and Vite gateway URL", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-vinext",
+          addons: ["kong"],
+          frontend: ["vinext"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "trpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
+        const dockerfile = readFileSync(
+          join(result.projectDir!, "apps", "web", "Dockerfile.vinext"),
+          "utf8",
+        );
+
+        expect(compose).toContain("dockerfile: apps/web/Dockerfile.vinext");
+        expect(compose).toContain("VITE_SERVER_URL: http://localhost:8000");
+        expect(compose).not.toContain("Dockerfile.next");
+        expect(dockerfile).toContain("ARG VITE_SERVER_URL=http://localhost:3000");
+        expect(dockerfile).toContain('"start", "--", "--hostname", "0.0.0.0"');
+        expect(dockerfile).not.toContain(".next/standalone");
+      });
+
       it("should preserve Kong for Python and avoid publishing the upstream port", async () => {
         const result = await runTRPCTest({
           projectName: "kong-python",
@@ -476,6 +527,22 @@ describe("Addon Configurations", () => {
         });
 
         expectError(result, "Kong Gateway currently requires an HTTP Rust API");
+      });
+
+      it("should reject Kong for Go APIs that do not use the primary HTTP server", async () => {
+        for (const goApi of ["connect-go", "grpc-gateway", "oapi-codegen", "grpc-go"] as const) {
+          const result = await runTRPCTest({
+            projectName: `kong-go-${goApi}`,
+            ecosystem: "go",
+            addons: ["kong"],
+            goWebFramework: "gin",
+            goApi,
+            install: false,
+            expectError: true,
+          });
+
+          expectError(result, "Kong Gateway currently requires the primary Go HTTP server API");
+        }
       });
     });
 

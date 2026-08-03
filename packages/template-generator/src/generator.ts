@@ -165,6 +165,7 @@ async function processGraphTemplates(
     (config.stackParts ?? []).some(
       (part) => part.role === "frontend" && !part.ownerPartId && part.ecosystem === "typescript",
     );
+  const crossEcosystemInfrastructureAddons = new Set(["docker-compose", "devcontainer", "kong"]);
   const tsConfig = withGraphAddonSelections(
     config,
     stackGraphToLegacyProjectConfigForEcosystem(config, "typescript"),
@@ -183,9 +184,12 @@ async function processGraphTemplates(
     const initialTsAddonConfig = hasCrossEcosystemWebBackend
       ? {
           ...tsConfig,
-          // Kong must be rendered from the non-TypeScript backend projection so
-          // its Compose service, Dockerfile, and upstream port agree with the graph.
-          addons: tsConfig.addons.filter((addon) => addon !== "kong"),
+          // Compose-backed infrastructure must be rendered from the non-TypeScript
+          // backend projection so every selected service shares one graph-aware
+          // Compose file and DevContainer configuration.
+          addons: tsConfig.addons.filter(
+            (addon) => !crossEcosystemInfrastructureAddons.has(addon),
+          ),
         }
       : tsConfig;
     await processAddonTemplates(vfs, templates, withCiTemplateFlags(initialTsAddonConfig));
@@ -269,7 +273,10 @@ async function processGraphTemplates(
   // backend templates above so the backend .env.example exists).
   processGraphBackendEnv(vfs, tsConfig);
 
-  if (hasCrossEcosystemWebBackend && tsConfig.addons.includes("kong")) {
+  const selectedCrossEcosystemInfrastructureAddons = tsConfig.addons.filter((addon) =>
+    crossEcosystemInfrastructureAddons.has(addon),
+  );
+  if (hasCrossEcosystemWebBackend && selectedCrossEcosystemInfrastructureAddons.length > 0) {
     const backendPart = nonTypeScriptBackends[0];
     if (backendPart) {
       const targetPath = backendPart.targetPath ?? getRoleTargetPath("backend") ?? "apps/server";
@@ -282,7 +289,7 @@ async function processGraphTemplates(
       );
       await processAddonTemplates(vfs, templates, {
         ...backendConfig,
-        addons: ["kong"],
+        addons: selectedCrossEcosystemInfrastructureAddons,
         frontend: tsConfig.frontend,
         packageManager: tsConfig.packageManager,
         graphWebFrontend: true,

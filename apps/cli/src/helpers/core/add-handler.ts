@@ -398,6 +398,7 @@ async function addHandlerInternal(input: AddInput): Promise<AddResult> {
       btsConfig.backend,
       btsConfig.runtime,
       btsConfig.api ?? "none",
+      btsConfig,
     );
     addonsToAdd = selectedAddons.filter((addon) => addon !== "none");
   }
