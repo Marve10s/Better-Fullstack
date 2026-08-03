@@ -839,29 +839,31 @@ describe("Addon Configurations", () => {
 
       it("should reject Kong when a graph backend has no container template", async () => {
         for (const backendPart of ["backend:dotnet:aspnet-minimal", "backend:elixir:phoenix"]) {
-          const result = await createVirtual({
-            projectName: `kong-unsupported-${backendPart.split(":")[1]}`,
-            addons: ["kong"],
-            frontend: ["next"],
-            backend: "none",
-            runtime: "none",
-            database: "none",
-            orm: "none",
-            auth: "none",
-            api: "none",
-            examples: ["none"],
-            dbSetup: "none",
-            webDeploy: "none",
-            serverDeploy: "none",
-            stackParts: parseStackPartSpecs([
-              "frontend:typescript:next",
-              backendPart,
-              "workspaceTooling:universal:kong",
-            ]),
-          });
+          for (const includeGraphPart of [true, false]) {
+            const result = await createVirtual({
+              projectName: `kong-unsupported-${backendPart.split(":")[1]}`,
+              addons: ["kong"],
+              frontend: ["next"],
+              backend: "none",
+              runtime: "none",
+              database: "none",
+              orm: "none",
+              auth: "none",
+              api: "none",
+              examples: ["none"],
+              dbSetup: "none",
+              webDeploy: "none",
+              serverDeploy: "none",
+              stackParts: parseStackPartSpecs([
+                "frontend:typescript:next",
+                backendPart,
+                ...(includeGraphPart ? ["workspaceTooling:universal:kong"] : []),
+              ]),
+            });
 
-          expect(result.success).toBe(false);
-          expect(result.error).toContain("does not yet provide a container template");
+            expect(result.success).toBe(false);
+            expect(result.error).toContain("does not yet provide a container template");
+          }
         }
       });
     });

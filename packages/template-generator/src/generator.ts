@@ -2,6 +2,7 @@ import type { ProjectConfig, StackPart } from "@better-fullstack/types";
 
 import {
   getRoleTargetPath,
+  parseStackPartSpecs,
   stackGraphToLegacyProjectConfigForEcosystem,
   validateStackParts,
 } from "@better-fullstack/types";
@@ -98,6 +99,42 @@ const ECOSYSTEM_BASE_TEMPLATE_PROCESSORS = {
   dotnet: processDotnetBaseTemplate,
   elixir: processElixirBaseTemplate,
 } satisfies Record<NonTypeScriptTemplateEcosystem, EcosystemBaseTemplateProcessor>;
+
+const GRAPH_CONTAINER_ADDONS = new Set(["docker-compose", "devcontainer", "kong"]);
+
+function validateGraphContainerAddons(config: ProjectConfig): string[] {
+  if (!config.stackParts || config.stackParts.length === 0) return [];
+
+  const explicitContainerAddons = new Set(
+    config.stackParts
+      .filter(
+        (part) =>
+          part.role === "workspaceTooling" && GRAPH_CONTAINER_ADDONS.has(part.toolId),
+      )
+      .map((part) => part.toolId),
+  );
+  const legacyContainerAddons = (config.addons ?? []).filter(
+    (addon) => GRAPH_CONTAINER_ADDONS.has(addon) && !explicitContainerAddons.has(addon),
+  );
+  const effectiveParts = [
+    ...config.stackParts,
+    ...parseStackPartSpecs(
+      legacyContainerAddons.map((addon) => `workspaceTooling:universal:${addon}`),
+    ),
+  ];
+  const containerPartIds = new Set(
+    effectiveParts
+      .filter(
+        (part) =>
+          part.role === "workspaceTooling" && GRAPH_CONTAINER_ADDONS.has(part.toolId),
+      )
+      .map((part) => part.id),
+  );
+
+  return validateStackParts(effectiveParts).issues
+    .filter((issue) => issue.partId !== undefined && containerPartIds.has(issue.partId))
+    .map((issue) => issue.message);
+}
 
 function hasGeneratedJavascriptTestScript(config: ProjectConfig): boolean {
   return (
@@ -344,11 +381,11 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
     }
 
     if (config.stackParts && config.stackParts.length > 0) {
-      const validation = validateStackParts(config.stackParts);
-      if (validation.issues.length > 0) {
+      const containerAddonIssues = validateGraphContainerAddons(config);
+      if (containerAddonIssues.length > 0) {
         return {
           success: false,
-          error: validation.issues.map((issue) => issue.message).join("\n"),
+          error: containerAddonIssues.join("\n"),
         };
       }
     }
