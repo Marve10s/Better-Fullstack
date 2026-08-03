@@ -2136,6 +2136,19 @@ function createAddonCompatibilityIssue(
       }
       if (
         part.toolId === "kong" &&
+        primaryEcosystem === "rust" &&
+        backendTool === "loco"
+      ) {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: "Kong Gateway does not yet support Loco's container configuration.",
+        });
+      }
+      if (
+        part.toolId === "kong" &&
         primaryEcosystem === "go" &&
         apiTool !== undefined &&
         ["connect-go", "grpc-gateway", "oapi-codegen", "grpc-go"].includes(apiTool)

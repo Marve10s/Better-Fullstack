@@ -768,7 +768,7 @@ describe("compatibility issue helpers", () => {
         "appPlatforms",
         "docker-compose",
       ),
-    ).toBe("Docker Compose currently supports TypeScript, Python, Go, Rust, or Java projects.");
+    ).toBe("Docker Compose does not yet provide a container template for elixir backends.");
 
     expect(
       getDisabledReason(
@@ -783,7 +783,7 @@ describe("compatibility issue helpers", () => {
         "appPlatforms",
         "devcontainer",
       ),
-    ).toBe("DevContainer currently supports TypeScript, Python, Go, Rust, or Java projects.");
+    ).toBe("DevContainer does not yet provide a container template for dotnet backends.");
 
     expect(
       getDisabledReason(
@@ -819,6 +819,42 @@ describe("compatibility issue helpers", () => {
       getDisabledReason(
         {
           ...DEFAULT_STACK_SELECTION,
+          backend: "convex",
+        },
+        "appPlatforms",
+        "kong",
+      ),
+    ).toBe("Kong Gateway is not compatible with Convex backend.");
+
+    expect(
+      getDisabledReason(
+        {
+          ...DEFAULT_STACK_SELECTION,
+          ecosystem: "rust",
+          webFrontend: ["none"],
+          nativeFrontend: [],
+          backend: "none",
+          rustWebFramework: "loco",
+        },
+        "appPlatforms",
+        "kong",
+      ),
+    ).toBe("Kong Gateway does not yet support Loco's container configuration.");
+
+    const convexKong = analyzeStackCompatibility({
+      ...DEFAULT_STACK_SELECTION,
+      backend: "convex",
+      appPlatforms: ["kong"],
+    });
+    expect(convexKong.adjustedStack?.appPlatforms).not.toContain("kong");
+    expect(convexKong.changes).toContainEqual(
+      expect.objectContaining({ category: "appPlatforms", message: expect.stringContaining("Kong") }),
+    );
+
+    expect(
+      getDisabledReason(
+        {
+          ...DEFAULT_STACK_SELECTION,
           ecosystem: "python",
           webFrontend: ["none"],
           nativeFrontend: [],
@@ -830,9 +866,7 @@ describe("compatibility issue helpers", () => {
         "appPlatforms",
         "docker-compose",
       ),
-    ).toBe(
-      "Docker Compose for Python ORM projects currently supports SQLite defaults or Postgres.",
-    );
+    ).toBeNull();
 
     expect(
       getDisabledReason(

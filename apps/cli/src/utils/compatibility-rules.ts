@@ -587,6 +587,12 @@ export function validateAddonCompatibility(
         reason: "Kong Gateway currently requires an HTTP Rust API",
       };
     }
+    if (addon === "kong" && ecosystem === "rust" && rustWebFramework === "loco") {
+      return {
+        isCompatible: false,
+        reason: "Kong Gateway does not yet support Loco's container configuration",
+      };
+    }
     if (
       addon === "kong" &&
       ecosystem === "go" &&

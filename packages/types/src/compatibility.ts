@@ -1567,6 +1567,25 @@ export const analyzeStackCompatibility = (
     }
   }
 
+  for (const platform of ["docker-compose", "devcontainer", "kong"] as const) {
+    if (!nextStack.appPlatforms.includes(platform)) continue;
+    const reason = getDisabledReason(nextStack, "appPlatforms", platform);
+    if (!reason) continue;
+
+    nextStack.appPlatforms = nextStack.appPlatforms.filter((addon) => addon !== platform);
+    changed = true;
+    const label =
+      platform === "docker-compose"
+        ? "Docker Compose"
+        : platform === "devcontainer"
+          ? "DevContainer"
+          : "Kong Gateway";
+    changes.push({
+      category: "appPlatforms",
+      message: `${label} removed (${reason})`,
+    });
+  }
+
   if (
     nextStack.appPlatforms.includes("graphql-codegen") &&
     !["garph", "graphql-yoga", "apollo-server"].includes(nextStack.api) &&

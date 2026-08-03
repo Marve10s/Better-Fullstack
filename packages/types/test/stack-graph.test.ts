@@ -869,6 +869,17 @@ describe("stack graph", () => {
     }
   });
 
+  it("rejects Kong with Loco until its container configuration is supported", () => {
+    const parts = parseStackPartSpecs([
+      "backend:rust:loco",
+      "workspaceTooling:universal:kong",
+    ]);
+
+    expect(validateStackParts(parts).issues.map((issue) => issue.message)).toContain(
+      "Kong Gateway does not yet support Loco's container configuration.",
+    );
+  });
+
   it("rejects Kong when a Go API bypasses the primary HTTP server", () => {
     for (const api of ["connect-go", "grpc-gateway", "oapi-codegen", "grpc-go"]) {
       const parts = parseStackPartSpecs([
