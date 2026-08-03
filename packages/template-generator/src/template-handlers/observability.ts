@@ -162,9 +162,12 @@ function activateSignozTracing(
   if (config.frontend.includes("svelte")) {
     const hookPath = `${targetDir}/src/hooks.server.ts`;
     const content = vfs.readFile(hookPath) ?? "";
-    const statement = 'import "./lib/tracing";';
-    if (!content.includes(statement)) {
-      vfs.writeFile(hookPath, `${statement}\n${content}`);
+    const statement = 'import { withTracing } from "./lib/tracing";';
+    if (!content.includes(statement) && !content.includes("withTracing(")) {
+      vfs.writeFile(
+        hookPath,
+        `${statement}\nimport type { Handle } from "@sveltejs/kit";\n\n${content}export const handle: Handle = ({ event, resolve }) =>\n  withTracing(() => resolve(event))(event.request);\n`,
+      );
     }
     return;
   }

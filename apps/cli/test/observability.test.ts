@@ -43,6 +43,10 @@ describe("Observability Configurations", () => {
       expect(tracing).toContain("signoz");
       expect(tracing).toContain("startTracing();");
       expect(tracing).toContain("export function withTracing");
+      expect(tracing).toContain("const reader = response.body.getReader()");
+      expect(tracing).toContain("async pull(controller)");
+      expect(tracing).toContain("recordStreamError(error)");
+      expect(tracing).toContain("async cancel(reason)");
       expect(tracing).toContain("process.once(signal");
       expect(tracing).toContain("hasApplicationShutdownHandler");
       expect(tracing).toContain("if (!hasApplicationShutdownHandler)");
@@ -153,6 +157,35 @@ describe("Observability Configurations", () => {
       );
       expect(instrumentation).toContain('process.env.NEXT_RUNTIME === "nodejs"');
       expect(instrumentation).toContain('await import("./lib/tracing")');
+    });
+
+    it("wraps the SvelteKit request lifecycle explicitly", async () => {
+      const result = await runTRPCTest({
+        projectName: "signoz-svelte",
+        observability: "signoz",
+        frontend: ["svelte"],
+        backend: "self",
+        runtime: "none",
+        database: "none",
+        orm: "none",
+        api: "none",
+        auth: "none",
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const hooks = await readFile(
+        join(result.projectDir!, "apps/web/src/hooks.server.ts"),
+        "utf-8",
+      );
+      expect(hooks).toContain('import { withTracing } from "./lib/tracing";');
+      expect(hooks).toContain("export const handle: Handle");
+      expect(hooks).toContain("withTracing(() => resolve(event))(event.request)");
     });
 
     it("creates propagated request lifecycle spans for Nitro and Nuxt", async () => {

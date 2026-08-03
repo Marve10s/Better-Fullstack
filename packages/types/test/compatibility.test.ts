@@ -12,6 +12,28 @@ import {
 import { DEFAULT_STACK_SELECTION } from "../src/stack-translation";
 
 describe("compatibility issue helpers", () => {
+  it("keeps SigNoz off stacks without a generated server target", () => {
+    for (const backend of ["none", "convex"] as const) {
+      const stack = {
+        ...DEFAULT_STACK_SELECTION,
+        backend,
+        observability: "signoz" as const,
+      };
+
+      expect(analyzeStackCompatibility(stack).adjustedStack?.observability).toBe("none");
+      expect(getDisabledReason(stack, "observability", "signoz")).toContain(
+        "generated server target",
+      );
+      expect(
+        getDisabledReason(
+          { ...DEFAULT_STACK_SELECTION, backend: "hono", observability: "signoz" },
+          "backend",
+          backend,
+        ),
+      ).toContain("generated server target");
+    }
+  });
+
   it("keeps the Node SDK-based SigNoz scaffold off Workers", () => {
     const workersStack = {
       ...DEFAULT_STACK_SELECTION,

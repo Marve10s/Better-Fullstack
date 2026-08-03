@@ -508,6 +508,18 @@ export const analyzeStackCompatibility = (
 
   if (
     nextStack.observability === "signoz" &&
+    (nextStack.backend === "none" || nextStack.backend === "convex")
+  ) {
+    nextStack.observability = "none";
+    changed = true;
+    changes.push({
+      category: "observability",
+      message: "Observability set to 'None' (SigNoz tracing requires a generated server target)",
+    });
+  }
+
+  if (
+    nextStack.observability === "signoz" &&
     (nextStack.backend === "self-tanstack-start" || nextStack.backend === "self-astro")
   ) {
     nextStack.observability = "none";
@@ -2270,6 +2282,16 @@ export const getDisabledReason = (
     currentStack.ecosystem !== "react-native"
   ) {
     return "Knip requires a TypeScript or React Native workspace";
+  }
+
+  if (
+    ((category === "observability" && optionId === "signoz") ||
+      (category === "backend" && currentStack.observability === "signoz")) &&
+    (category === "backend"
+      ? optionId === "none" || optionId === "convex"
+      : currentStack.backend === "none" || currentStack.backend === "convex")
+  ) {
+    return "SigNoz tracing requires a generated server target";
   }
 
   if (
