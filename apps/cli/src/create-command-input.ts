@@ -338,7 +338,7 @@ export const CreateCommandOptionsSchema = z.object({
     "Python realtime (python-socketio, websockets)",
   ),
   pythonObservability: PythonObservabilitySchema.optional().describe(
-    "Python observability (opentelemetry)",
+    "Python observability (opentelemetry, signoz)",
   ),
   pythonCli: z
     .array(PythonCliSchema)
@@ -371,7 +371,9 @@ export const CreateCommandOptionsSchema = z.object({
   goMessageQueue: GoMessageQueueSchema.optional().describe("Go message queue"),
   goCaching: GoCachingSchema.optional().describe("Go caching library (redis, ristretto)"),
   goConfig: GoConfigSchema.optional().describe("Go config management (viper, koanf)"),
-  goObservability: GoObservabilitySchema.optional().describe("Go observability"),
+  goObservability: GoObservabilitySchema.optional().describe(
+    "Go observability (opentelemetry, signoz, prometheus)",
+  ),
   goValidation: GoValidationSchema.optional().describe("Go validation"),
   goQuality: GoQualitySchema.optional().describe("Go code quality"),
   goMigrations: GoMigrationsSchema.optional().describe("Go database migrations"),

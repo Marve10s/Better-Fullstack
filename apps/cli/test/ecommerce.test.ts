@@ -26,6 +26,8 @@ describe("e-commerce integrations", () => {
     const env = await readFile(`${result.projectDir}/apps/server/.env`, "utf8");
 
     expect(helper).toContain('from "@medusajs/js-sdk"');
+    expect(helper).toContain('"default" in Medusa ? Medusa.default : Medusa');
+    expect(helper).toContain("new MedusaClient");
     expect(helper).toContain("publishableKey");
     expect(packageJson).toContain('"@medusajs/js-sdk": "^2.18.0"');
     expect(env).toContain("MEDUSA_BACKEND_URL=http://localhost:9000");
@@ -47,7 +49,7 @@ describe("e-commerce integrations", () => {
     const helper = await readFile(`${result.projectDir}/apps/web/src/lib/medusa.ts`, "utf8");
     const packageJson = await readFile(`${result.projectDir}/apps/web/package.json`, "utf8");
 
-    expect(helper).toContain("new Medusa");
+    expect(helper).toContain("new MedusaClient");
     expect(packageJson).toContain('"@medusajs/js-sdk"');
   });
 

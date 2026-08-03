@@ -17,6 +17,9 @@ from typing import Annotated
 
 {{/if}}
 from dotenv import load_dotenv
+{{#if (eq pythonObservability "signoz")}}
+from app import otel as _otel  # noqa: F401 - importing activates SigNoz tracing
+{{/if}}
 
 {{#if (eq observability "sentry")}}
 from app.observability import init_sentry
@@ -25,6 +28,9 @@ from app.observability import init_sentry
 {{#if (eq pythonWebFramework "fastapi")}}
 from fastapi import {{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel"))}}Depends, {{/if}}FastAPI{{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel") (eq pythonOrm "tortoise-orm") (and (eq pythonOrm "none") (eq pythonValidation "pydantic")) (eq pythonAuth "authlib") (eq pythonAuth "jwt") (eq pythonAuth "pyjwt"))}}, HTTPException{{/if}}{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}, Header{{/if}}
 from fastapi.middleware.cors import CORSMiddleware
+{{#if (eq pythonObservability "signoz")}}
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+{{/if}}
 {{#if (eq pythonObservability "prometheus-client")}}
 from fastapi.responses import Response
 
@@ -243,6 +249,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+{{#if (eq pythonObservability "signoz")}}
+FastAPIInstrumentor.instrument_app(app)
+{{/if}}
 
 {{#if (eq pythonAuth "fastapi-users")}}
 app.include_router(auth_router, prefix="/auth/jwt", tags=["auth"])

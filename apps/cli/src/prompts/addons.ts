@@ -73,6 +73,14 @@ function getAddonDisplay(addon: Addons): { label: string; hint: string } {
       label = "Husky";
       hint = "Modern native Git hooks made easy";
       break;
+    case "knip":
+      label = "Knip";
+      hint = "Find unused files, dependencies, and exports";
+      break;
+    case "gitleaks":
+      label = "Gitleaks";
+      hint = "Detect hardcoded secrets in Git history and staged changes";
+      break;
     case "starlight":
       label = "Starlight";
       hint = "Build stellar docs with astro";
@@ -197,6 +205,8 @@ const ADDON_GROUPS: Record<string, Addons[]> = {
     "ultracite",
     "husky",
     "lefthook",
+    "knip",
+    "gitleaks",
   ],
   Documentation: ["starlight", "fumadocs"],
   Extensions: ["ruler", "devcontainer", "docker-compose", "kong"],

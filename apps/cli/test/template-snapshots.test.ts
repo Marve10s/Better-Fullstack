@@ -140,6 +140,21 @@ const SNAPSHOT_CONFIGS: Array<{
     },
   },
   {
+    name: "xendit-signoz-code-quality",
+    config: {
+      frontend: ["tanstack-router"],
+      backend: "hono",
+      runtime: "bun",
+      api: "trpc",
+      database: "sqlite",
+      orm: "drizzle",
+      auth: "none",
+      payments: "xendit",
+      observability: "signoz",
+      addons: ["knip", "gitleaks", "husky"],
+    },
+  },
+  {
     name: "vanilla-vite-openapi-capacitor",
     config: {
       frontend: ["vanilla-vite"],
@@ -423,6 +438,7 @@ const KEY_FILE_SNAPSHOT_CONFIGS = SNAPSHOT_CONFIGS.filter(
     name !== "java-spring-boot-extended-libraries" &&
     ![
       "typescript-library-expansion-react",
+      "xendit-signoz-code-quality",
       "vanilla-vite-openapi-capacitor",
       "vue-anthropic-sdk",
       "nango-integrations-hono",
@@ -686,6 +702,19 @@ describe("Template Snapshots - Go Ecosystem", () => {
       },
     },
     {
+      name: "gin-signoz",
+      config: {
+        ecosystem: "go" as const,
+        goWebFramework: "gin" as const,
+        goOrm: "none" as const,
+        goApi: "none" as const,
+        goCli: "none" as const,
+        goLogging: "none" as const,
+        goAuth: "none" as const,
+        goObservability: "signoz" as const,
+      },
+    },
+    {
       name: "echo-sqlc-grpc",
       config: {
         ecosystem: "go" as const,
@@ -831,6 +860,20 @@ describe("Template Snapshots - Python Ecosystem", () => {
         pythonTaskQueue: "celery" as const,
         pythonGraphql: "none" as const,
         pythonQuality: "ruff" as const,
+      },
+    },
+    {
+      name: "fastapi-signoz",
+      config: {
+        ecosystem: "python" as const,
+        pythonWebFramework: "fastapi" as const,
+        pythonOrm: "none" as const,
+        pythonValidation: "none" as const,
+        pythonAi: [] as const,
+        pythonTaskQueue: "none" as const,
+        pythonGraphql: "none" as const,
+        pythonQuality: "none" as const,
+        pythonObservability: "signoz" as const,
       },
     },
     {

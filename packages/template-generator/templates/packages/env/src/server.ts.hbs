@@ -60,6 +60,11 @@ export const env = createEnv({
 		PAYPAL_CLIENT_SECRET: z.string().min(1),
 		PAYPAL_ENVIRONMENT: z.enum(["sandbox", "production"]).default("sandbox"),
 {{/if}}
+{{#if (eq payments "xendit")}}
+		XENDIT_SECRET_KEY: z.string().min(1),
+		XENDIT_WEBHOOK_TOKEN: z.string().min(1),
+		XENDIT_API_URL: z.url().default("https://api.xendit.co"),
+{{/if}}
 {{#if (eq payments "stripe")}}
 		STRIPE_SECRET_KEY: z.string().min(1),
 		STRIPE_WEBHOOK_SECRET: z.string().min(1),

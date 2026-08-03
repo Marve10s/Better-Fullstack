@@ -9,10 +9,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { dependencyVersionMap } from "./add-deps";
-import {
-  getPinnedDependencyVersion,
-  isMajorUpdateAllowlisted,
-} from "./dependency-update-policy";
+import { getPinnedDependencyVersion, isMajorUpdateAllowlisted } from "./dependency-update-policy";
 
 // Types
 export type UpdateType = "downgrade" | "major" | "minor" | "patch" | "none";
@@ -164,6 +161,15 @@ export const ECOSYSTEM_GROUPS: Record<string, string[]> = {
     "@opentelemetry/resources",
     "@opentelemetry/semantic-conventions",
   ],
+  signoz: [
+    "@opentelemetry/api",
+    "@opentelemetry/sdk-node",
+    "@opentelemetry/auto-instrumentations-node",
+    "@opentelemetry/exporter-trace-otlp-http",
+    "@opentelemetry/exporter-metrics-otlp-http",
+    "@opentelemetry/resources",
+    "@opentelemetry/semantic-conventions",
+  ],
   testing: [
     "vitest",
     "@vitest/ui",
@@ -293,11 +299,32 @@ export const ECOSYSTEM_GROUPS: Record<string, string[]> = {
 };
 
 const SKIP_FIELDS = new Set([
-  "name", "version", "private", "type", "main", "module", "types",
-  "exports", "scripts", "workspaces", "engines", "packageManager",
-  "author", "license", "description", "homepage", "repository",
-  "bugs", "keywords", "files", "sideEffects", "browserslist",
-  "eslintConfig", "prettier", "jest", "babel",
+  "name",
+  "version",
+  "private",
+  "type",
+  "main",
+  "module",
+  "types",
+  "exports",
+  "scripts",
+  "workspaces",
+  "engines",
+  "packageManager",
+  "author",
+  "license",
+  "description",
+  "homepage",
+  "repository",
+  "bugs",
+  "keywords",
+  "files",
+  "sideEffects",
+  "browserslist",
+  "eslintConfig",
+  "prettier",
+  "jest",
+  "babel",
 ]);
 
 const DEP_PATTERN = /"(@?[a-z][a-z0-9._-]*(?:\/[a-z][a-z0-9._-]*)?)"\s*:\s*"([~^]?[\d][^"]+)"/g;
@@ -307,7 +334,12 @@ export function scanTemplateVersions(templatesDir: string): {
   versionMismatches: { name: string; mapVersion: string; templateVersion: string; file: string }[];
 } {
   const templateOnly: Record<string, string> = {};
-  const versionMismatches: { name: string; mapVersion: string; templateVersion: string; file: string }[] = [];
+  const versionMismatches: {
+    name: string;
+    mapVersion: string;
+    templateVersion: string;
+    file: string;
+  }[] = [];
   const seenMismatches = new Set<string>();
 
   function walkDir(dir: string) {
@@ -345,7 +377,12 @@ export function scanTemplateVersions(templatesDir: string): {
         const mismatchKey = `${relPath}|${pkg}|${version}`;
         if (mapVersion !== version && !seenMismatches.has(mismatchKey)) {
           seenMismatches.add(mismatchKey);
-          versionMismatches.push({ name: pkg, mapVersion, templateVersion: version, file: relPath });
+          versionMismatches.push({
+            name: pkg,
+            mapVersion,
+            templateVersion: version,
+            file: relPath,
+          });
         }
       } else {
         const existing = templateOnly[pkg];
@@ -548,12 +585,16 @@ async function fetchPackageInfo(packageName: string): Promise<NpmPackageInfo> {
 
 function getStableVersionsDescending(info: NpmPackageInfo): string[] {
   return Object.keys(info.versions || {})
-    .filter((version) => !/-(alpha|beta|rc|next|canary|pre|dev|snapshot|experimental)/.test(version))
+    .filter(
+      (version) => !/-(alpha|beta|rc|next|canary|pre|dev|snapshot|experimental)/.test(version),
+    )
     .filter((version) => isOldEnough(info, version))
     .sort((a, b) => compareVersions(b, a));
 }
 
-async function fetchLatestCompatibleEcosystemVersion(ecosystem: string): Promise<string | undefined> {
+async function fetchLatestCompatibleEcosystemVersion(
+  ecosystem: string,
+): Promise<string | undefined> {
   const cached = lockstepVersionCache.get(ecosystem);
   if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
     return cached.latest;
@@ -599,7 +640,8 @@ export async function fetchLatestVersion(
   // version that clears both filters.
   if (
     latest &&
-    ((skipPrerelease && /-(alpha|beta|rc|next|canary|pre|dev|snapshot|experimental)/.test(latest)) ||
+    ((skipPrerelease &&
+      /-(alpha|beta|rc|next|canary|pre|dev|snapshot|experimental)/.test(latest)) ||
       !isOldEnough(data, latest))
   ) {
     const versions = getStableVersionsDescending(data);
@@ -1021,7 +1063,9 @@ export function generateCliReport(result: CheckResult): string {
   if (result.versionMismatches && result.versionMismatches.length > 0) {
     lines.push("\nVersion Mismatches (map vs template):");
     for (const m of result.versionMismatches) {
-      lines.push(`  ${m.name.padEnd(45)} map: ${m.mapVersion.padEnd(15)} template: ${m.templateVersion.padEnd(15)} ${m.file}`);
+      lines.push(
+        `  ${m.name.padEnd(45)} map: ${m.mapVersion.padEnd(15)} template: ${m.templateVersion.padEnd(15)} ${m.file}`,
+      );
     }
   }
 

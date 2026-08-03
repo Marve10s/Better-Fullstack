@@ -74,6 +74,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   "apollo-client": { type: "si", slug: "apollographql", hex: "311C87" },
   ga4: { type: "si", slug: "googleanalytics", hex: "E37400" },
   paypal: { type: "si", slug: "paypal", hex: "003087" },
+  xendit: { type: "local", src: "https://www.xendit.co/favicon.ico" },
   medusa: { type: "si", slug: "medusa", hex: "000000" },
   electron: { type: "si", slug: "electron", hex: "47848F" },
   capacitor: { type: "si", slug: "capacitor", hex: "119EFF" },
@@ -314,6 +315,10 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   sentry: { type: "si", slug: "sentry", hex: "362D59" },
   grafana: { type: "si", slug: "grafana", hex: "F46800" },
   opentelemetry: { type: "si", slug: "opentelemetry", hex: "000000" },
+  signoz: {
+    type: "local",
+    src: "https://raw.githubusercontent.com/SigNoz/signoz/main/frontend/public/favicon.ico",
+  },
   datadog: { type: "si", slug: "datadog", hex: "632CA6" },
   axiom: { type: "local", src: "https://axiom.co/favicon.ico" },
   betterstack: { type: "si", slug: "betterstack", hex: "111827" },
@@ -377,6 +382,8 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
 
   // ─── Code Quality ──────────────────────────────────────────────────────────
   biome: { type: "si", slug: "biome", hex: "60A5FA" },
+  knip: { type: "local", src: "https://knip.dev/favicon.svg" },
+  gitleaks: { type: "local", src: "https://github.com/gitleaks.png" },
   oxlint: { type: "si", slug: "oxc", hex: "FF915C" },
   ultracite: { type: "local", src: "/icon/ultracite.svg", needsInvert: "dark" }, // currentColor
 

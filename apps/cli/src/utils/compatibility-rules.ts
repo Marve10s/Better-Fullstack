@@ -488,6 +488,18 @@ export function validateAddonCompatibility(
   if (!baseCompatibility.isCompatible) return baseCompatibility;
 
   if (
+    addon === "knip" &&
+    ecosystem !== undefined &&
+    ecosystem !== "typescript" &&
+    ecosystem !== "react-native"
+  ) {
+    return {
+      isCompatible: false,
+      reason: "Knip currently supports TypeScript and React Native projects only",
+    };
+  }
+
+  if (
     (addon === "graphql-codegen" || addon === "apollo-client") &&
     api !== undefined &&
     !["garph", "graphql-yoga", "apollo-server"].includes(api) &&
@@ -776,6 +788,12 @@ export function validatePaymentsCompatibility(
   if (payments === "paypal" && (backend === "none" || backend === "convex")) {
     exitWithError(
       "PayPal checkout requires a standalone or fullstack backend. Please choose a server backend or a different payments provider.",
+    );
+  }
+
+  if (payments === "xendit" && (backend === "none" || backend === "convex")) {
+    exitWithError(
+      "Xendit Payment Sessions require a standalone or fullstack backend. Please choose a server backend or a different payments provider.",
     );
   }
 

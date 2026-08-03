@@ -12,6 +12,181 @@ import {
 import { DEFAULT_STACK_SELECTION } from "../src/stack-translation";
 
 describe("compatibility issue helpers", () => {
+  it("keeps SigNoz off stacks without a generated server target", () => {
+    for (const backend of ["none", "convex"] as const) {
+      const stack = {
+        ...DEFAULT_STACK_SELECTION,
+        backend,
+        observability: "signoz" as const,
+      };
+
+      expect(analyzeStackCompatibility(stack).adjustedStack?.observability).toBe("none");
+      expect(getDisabledReason(stack, "observability", "signoz")).toContain(
+        "generated server target",
+      );
+      expect(
+        getDisabledReason(
+          { ...DEFAULT_STACK_SELECTION, backend: "hono", observability: "signoz" },
+          "backend",
+          backend,
+        ),
+      ).toContain("generated server target");
+    }
+  });
+
+  it("keeps the Node SDK-based SigNoz scaffold off Workers", () => {
+    const workersStack = {
+      ...DEFAULT_STACK_SELECTION,
+      backend: "hono" as const,
+      runtime: "workers" as const,
+      observability: "signoz" as const,
+    };
+
+    expect(analyzeStackCompatibility(workersStack).adjustedStack?.observability).toBe("none");
+    expect(getDisabledReason(workersStack, "observability", "signoz")).toContain("Node.js or Bun");
+    expect(
+      getDisabledReason(
+        { ...DEFAULT_STACK_SELECTION, observability: "signoz" },
+        "runtime",
+        "workers",
+      ),
+    ).toContain("Node.js or Bun");
+  });
+
+  it("keeps SigNoz off fullstack frontends without a tracing bootstrap", () => {
+    for (const backend of ["self-tanstack-start", "self-astro"] as const) {
+      const stack = {
+        ...DEFAULT_STACK_SELECTION,
+        backend,
+        observability: "signoz" as const,
+      };
+
+      expect(analyzeStackCompatibility(stack).adjustedStack?.observability).toBe("none");
+      expect(getDisabledReason(stack, "observability", "signoz")).toContain(
+        "not yet bootstrapped",
+      );
+    }
+  });
+
+  it("keeps the Node SDK-based SigNoz scaffold off Cloudflare-hosted self apps", () => {
+    const cloudflareSelfStack = {
+      ...DEFAULT_STACK_SELECTION,
+      backend: "self-next" as const,
+      webFrontend: ["next" as const],
+      runtime: "none" as const,
+      webDeploy: "cloudflare" as const,
+      observability: "signoz" as const,
+    };
+
+    expect(analyzeStackCompatibility(cloudflareSelfStack).adjustedStack?.observability).toBe(
+      "none",
+    );
+    expect(getDisabledReason(cloudflareSelfStack, "observability", "signoz")).toContain(
+      "Cloudflare-hosted fullstack apps",
+    );
+    expect(
+      getDisabledReason(
+        { ...cloudflareSelfStack, webDeploy: "none" },
+        "webDeploy",
+        "cloudflare",
+      ),
+    ).toContain("Cloudflare-hosted fullstack apps");
+    expect(
+      getDisabledReason(
+        { ...cloudflareSelfStack, backend: "self" },
+        "observability",
+        "signoz",
+      ),
+    ).toContain("Cloudflare-hosted fullstack apps");
+  });
+
+  it("restricts Knip to JavaScript workspaces", () => {
+    const goStack = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "go" as const,
+      codeQuality: ["knip"],
+    };
+
+    expect(analyzeStackCompatibility(goStack).adjustedStack?.codeQuality).not.toContain("knip");
+    expect(getDisabledReason(goStack, "codeQuality", "knip")).toContain(
+      "TypeScript or React Native",
+    );
+    expect(
+      getDisabledReason(
+        { ...DEFAULT_STACK_SELECTION, ecosystem: "react-native" },
+        "codeQuality",
+        "knip",
+      ),
+    ).toBeNull();
+  });
+
+  it("keeps React Native code-quality options aligned with the CLI", () => {
+    const nativeStack = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "react-native" as const,
+      codeQuality: ["biome", "knip", "gitleaks"],
+    };
+
+    expect(analyzeStackCompatibility(nativeStack).adjustedStack?.codeQuality).toEqual([
+      "knip",
+      "gitleaks",
+    ]);
+    expect(getDisabledReason(nativeStack, "codeQuality", "biome")).toContain(
+      "Knip and Gitleaks only",
+    );
+    expect(getDisabledReason(nativeStack, "codeQuality", "knip")).toBeNull();
+    expect(getDisabledReason(nativeStack, "codeQuality", "gitleaks")).toBeNull();
+  });
+
+  it("disables SigNoz when native request instrumentation is not wired", () => {
+    const unsupportedGo = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "go" as const,
+      goWebFramework: "go-zero" as const,
+      goObservability: "signoz" as const,
+    };
+    expect(analyzeStackCompatibility(unsupportedGo).adjustedStack?.goObservability).toBe("none");
+    expect(getDisabledReason(unsupportedGo, "goObservability", "signoz")).toContain(
+      "Gin, Echo, Fiber, Chi",
+    );
+
+    const noServerGo = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "go" as const,
+      goWebFramework: "none" as const,
+      goApi: "none" as const,
+      auth: "none" as const,
+      goObservability: "signoz" as const,
+    };
+    expect(analyzeStackCompatibility(noServerGo).adjustedStack?.goObservability).toBe("none");
+    expect(getDisabledReason(noServerGo, "goObservability", "signoz")).toContain(
+      "server target",
+    );
+    expect(
+      getDisabledReason({ ...noServerGo, goApi: "grpc-go" }, "goObservability", "signoz"),
+    ).toBeNull();
+    expect(
+      getDisabledReason(
+        { ...noServerGo, auth: "go-better-auth" },
+        "goObservability",
+        "signoz",
+      ),
+    ).toBeNull();
+
+    const unsupportedPython = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "python" as const,
+      pythonWebFramework: "django" as const,
+      pythonObservability: "signoz" as const,
+    };
+    expect(analyzeStackCompatibility(unsupportedPython).adjustedStack?.pythonObservability).toBe(
+      "none",
+    );
+    expect(getDisabledReason(unsupportedPython, "pythonObservability", "signoz")).toContain(
+      "FastAPI",
+    );
+  });
+
   it("returns structured API/frontend issues for React-only APIs", () => {
     const issue = getApiFrontendCompatibilityIssue("trpc", ["svelte"]);
 
@@ -959,6 +1134,23 @@ describe("compatibility issue helpers", () => {
         "chat-sdk",
       ),
     ).toBe("Chat SDK example is not compatible with the selected graph stack.");
+  });
+
+  it("gates Knip through the code quality category", () => {
+    expect(
+      getDisabledReason(
+        { ...DEFAULT_STACK_SELECTION, ecosystem: "go" },
+        "codeQuality",
+        "knip",
+      ),
+    ).toBe("Knip requires a TypeScript or React Native workspace");
+    expect(
+      getDisabledReason(
+        { ...DEFAULT_STACK_SELECTION, ecosystem: "react-native" },
+        "codeQuality",
+        "knip",
+      ),
+    ).toBeNull();
   });
 
   it("routes promoted Java ecosystem disabled reasons through graph checks", () => {

@@ -1041,6 +1041,14 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
     {
+      id: "xendit",
+      name: "Xendit",
+      description: "Payment Sessions for Southeast Asian payment methods and currencies",
+      icon: "https://www.xendit.co/favicon.ico",
+      color: "from-blue-500 to-indigo-700",
+      default: false,
+    },
+    {
       id: "paypal",
       name: "PayPal",
       description: "PayPal JavaScript SDK buttons with server-side Orders API helpers",
@@ -1248,6 +1256,14 @@ export const TECH_OPTIONS: Record<
       description: "Observability framework for traces, metrics, and logs",
       icon: "",
       color: "from-blue-400 to-cyan-500",
+      default: false,
+    },
+    {
+      id: "signoz",
+      name: "SigNoz",
+      description: "OpenTelemetry-native observability with cloud and self-hosted options",
+      icon: "https://raw.githubusercontent.com/SigNoz/signoz/main/frontend/public/favicon.ico",
+      color: "from-orange-500 to-amber-600",
       default: false,
     },
     {
@@ -2409,6 +2425,22 @@ export const TECH_OPTIONS: Record<
       description: "Modern native Git hooks made easy",
       icon: "",
       color: "from-purple-500 to-purple-700",
+      default: false,
+    },
+    {
+      id: "knip",
+      name: "Knip",
+      description: "Find unused files, dependencies, and exports",
+      icon: "",
+      color: "from-emerald-500 to-teal-700",
+      default: false,
+    },
+    {
+      id: "gitleaks",
+      name: "Gitleaks",
+      description: "Detect hardcoded secrets in Git history and staged changes",
+      icon: "https://github.com/gitleaks.png",
+      color: "from-teal-500 to-cyan-700",
       default: false,
     },
     {
@@ -4647,6 +4679,14 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
     {
+      id: "signoz",
+      name: "SigNoz",
+      description: "OpenTelemetry tracing configured for SigNoz Cloud or self-hosting",
+      icon: "https://raw.githubusercontent.com/SigNoz/signoz/main/frontend/public/favicon.ico",
+      color: "from-orange-500 to-amber-600",
+      default: false,
+    },
+    {
       id: "prometheus-client",
       name: "Prometheus Client",
       description: "Prometheus metrics instrumentation and exposition",
@@ -5342,6 +5382,14 @@ export const TECH_OPTIONS: Record<
       description: "Official OTel SDK: traces and metrics with OTLP export",
       icon: "https://cdn.simpleicons.org/opentelemetry/000000",
       color: "from-slate-500 to-gray-700",
+      default: false,
+    },
+    {
+      id: "signoz",
+      name: "SigNoz",
+      description: "OpenTelemetry tracing configured for SigNoz Cloud or self-hosting",
+      icon: "https://raw.githubusercontent.com/SigNoz/signoz/main/frontend/public/favicon.ico",
+      color: "from-orange-500 to-amber-600",
       default: false,
     },
     {

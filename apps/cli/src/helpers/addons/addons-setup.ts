@@ -1,5 +1,6 @@
 import fs from "fs-extra";
 import path from "node:path";
+import { isAlias, isMap, isSeq, parseDocument } from "yaml";
 
 import type { ProjectConfig } from "../../types";
 
@@ -15,9 +16,13 @@ import { setupTui } from "./tui-setup";
 import { setupUltracite } from "./ultracite-setup";
 import { setupWxt } from "./wxt-setup";
 
-export async function setupAddons(config: ProjectConfig): Promise<string[]> {
+export async function setupAddons(
+  config: ProjectConfig,
+  addonsToSetup: ProjectConfig["addons"] = config.addons,
+): Promise<string[]> {
   const warnings: string[] = [];
   const { addons, frontend, projectDir } = config;
+  const setupSet = new Set(addonsToSetup);
   const hasReactWebFrontend =
     frontend.includes("react-router") ||
     frontend.includes("react-vite") ||
@@ -30,7 +35,7 @@ export async function setupAddons(config: ProjectConfig): Promise<string[]> {
   const hasNextFrontend = frontend.includes("next") || frontend.includes("vinext");
 
   if (
-    addons.includes("tauri") &&
+    setupSet.has("tauri") &&
     (hasReactWebFrontend ||
       hasNuxtFrontend ||
       hasSvelteFrontend ||
@@ -45,58 +50,75 @@ export async function setupAddons(config: ProjectConfig): Promise<string[]> {
   const hasHusky = addons.includes("husky");
   const hasLefthook = addons.includes("lefthook");
   const hasOxlint = addons.includes("oxlint");
+  const hasGitleaks = addons.includes("gitleaks");
 
-  if (hasUltracite) {
+  if (
+    hasUltracite &&
+    (setupSet.has("ultracite") || setupSet.has("husky") || setupSet.has("lefthook"))
+  ) {
     const gitHooks: string[] = [];
     if (hasHusky) gitHooks.push("husky");
     if (hasLefthook) gitHooks.push("lefthook");
     await setupUltracite(config, gitHooks);
-  } else {
-    if (hasBiome) {
+  } else if (!hasUltracite) {
+    if (hasBiome && setupSet.has("biome")) {
       await setupBiome(projectDir);
     }
 
-    if (hasOxlint) {
+    if (hasOxlint && setupSet.has("oxlint")) {
       await setupOxlint(projectDir, config.packageManager);
     }
 
-    if (hasHusky || hasLefthook) {
-      let linter: "biome" | "oxlint" | undefined;
-      if (hasOxlint) {
-        linter = "oxlint";
-      } else if (hasBiome) {
-        linter = "biome";
-      }
-      if (hasHusky) {
-        await setupHusky(projectDir, linter);
-      }
-      if (hasLefthook) {
-        await setupLefthook(projectDir);
-      }
+    let linter: "biome" | "oxlint" | undefined;
+    if (hasOxlint) {
+      linter = "oxlint";
+    } else if (hasBiome) {
+      linter = "biome";
+    }
+    if (
+      hasHusky &&
+      (setupSet.has("husky") || setupSet.has("biome") || setupSet.has("oxlint"))
+    ) {
+      await setupHusky(projectDir, linter, hasGitleaks);
+    }
+    if (
+      hasLefthook &&
+      (setupSet.has("lefthook") || setupSet.has("biome") || setupSet.has("oxlint"))
+    ) {
+      await setupLefthook(projectDir, linter, config.packageManager, hasGitleaks);
     }
   }
 
-  if (addons.includes("starlight")) {
+  if (hasGitleaks) {
+    if (hasHusky && (setupSet.has("gitleaks") || setupSet.has("husky"))) {
+      await ensureGitleaksHuskyHook(projectDir);
+    }
+    if (hasLefthook && (setupSet.has("gitleaks") || setupSet.has("lefthook"))) {
+      await ensureGitleaksLefthookHook(projectDir);
+    }
+  }
+
+  if (setupSet.has("starlight")) {
     await setupStarlight(config);
   }
 
-  if (addons.includes("fumadocs")) {
+  if (setupSet.has("fumadocs")) {
     await setupFumadocs(config);
   }
 
-  if (addons.includes("opentui")) {
+  if (setupSet.has("opentui")) {
     await setupTui(config);
   }
 
-  if (addons.includes("wxt")) {
+  if (setupSet.has("wxt")) {
     await setupWxt(config);
   }
 
-  if (addons.includes("ruler")) {
+  if (setupSet.has("ruler")) {
     await setupRuler(config);
   }
 
-  if (addons.includes("mcp")) {
+  if (setupSet.has("mcp")) {
     try {
       await setupMcp(config);
     } catch (error) {
@@ -104,11 +126,13 @@ export async function setupAddons(config: ProjectConfig): Promise<string[]> {
     }
   }
 
-  if (addons.includes("skills")) {
+  if (setupSet.has("skills")) {
     try {
       await setupSkills(config);
     } catch (error) {
-      warnings.push(`Skills setup failed: ${error instanceof Error ? error.message : String(error)}`);
+      warnings.push(
+        `Skills setup failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -134,7 +158,7 @@ async function setupBiome(projectDir: string) {
   }
 }
 
-async function setupHusky(projectDir: string, linter?: "biome" | "oxlint") {
+async function setupHusky(projectDir: string, linter?: "biome" | "oxlint", hasGitleaks = false) {
   await addPackageDependency({
     devDependencies: ["husky", "lint-staged"],
     projectDir,
@@ -165,12 +189,315 @@ async function setupHusky(projectDir: string, linter?: "biome" | "oxlint") {
 
     await fs.writeJson(packageJsonPath, packageJson, { spaces: 2 });
   }
+
+  if (hasGitleaks) {
+    await ensureGitleaksHuskyHook(projectDir);
+  }
 }
 
-async function setupLefthook(projectDir: string) {
+async function setupLefthook(
+  projectDir: string,
+  linter: "biome" | "oxlint" | undefined,
+  packageManager: ProjectConfig["packageManager"],
+  hasGitleaks = false,
+) {
   await addPackageDependency({
     devDependencies: ["lefthook"],
     projectDir,
   });
-  // lefthook.yml is generated by template-generator from templates/addons/lefthook/
+  if (linter) {
+    await ensureLinterLefthookHook(projectDir, linter, packageManager);
+  }
+  if (hasGitleaks) {
+    await ensureGitleaksLefthookHook(projectDir);
+  }
+}
+
+const GITLEAKS_HOOK_COMMAND = "gitleaks git --pre-commit --redact --staged --verbose";
+
+function hasActiveShellCommand(content: string, command: string): boolean {
+  return content.split(/\r?\n/).some((line) => {
+    const trimmed = line.trim();
+    return trimmed !== "" && !trimmed.startsWith("#") && trimmed === command;
+  });
+}
+
+function hasGitleaksLefthookCommand(content: string): boolean {
+  const document = parseDocument(content);
+  if (document.errors.length > 0) return false;
+
+  const preCommit = resolveLefthookMap(document, document.get("pre-commit", true));
+  if (!isMap(preCommit)) return false;
+
+  const jobs = resolveLefthookSeq(document, preCommit.get("jobs", true));
+  if (
+    isSeq(jobs) &&
+    jobs.items.some((job) => isMap(job) && job.get("run") === GITLEAKS_HOOK_COMMAND)
+  ) {
+    return true;
+  }
+
+  const commands = resolveLefthookMap(document, preCommit.get("commands", true));
+  return (
+    isMap(commands) &&
+    commands.items.some(
+      (command) => isMap(command.value) && command.value.get("run") === GITLEAKS_HOOK_COMMAND,
+    )
+  );
+}
+
+function resolveLefthookMap(document: ReturnType<typeof parseDocument>, node: unknown) {
+  if (isMap(node)) return node;
+  if (!isAlias(node)) return undefined;
+
+  const resolved = node.resolve(document);
+  return isMap(resolved) ? resolved : undefined;
+}
+
+function resolveLefthookSeq(document: ReturnType<typeof parseDocument>, node: unknown) {
+  if (isSeq(node)) return node;
+  if (!isAlias(node)) return undefined;
+
+  const resolved = node.resolve(document);
+  return isSeq(resolved) ? resolved : undefined;
+}
+
+function detachLefthookMapAlias(
+  document: ReturnType<typeof parseDocument>,
+  node: unknown,
+) {
+  if (!isAlias(node)) return resolveLefthookMap(document, node);
+
+  const resolved = resolveLefthookMap(document, node);
+  if (!isMap(resolved)) return undefined;
+  const detached = resolved.clone(document.schema);
+  if (!isMap(detached)) return undefined;
+  detached.anchor = undefined;
+  return detached;
+}
+
+function detachLefthookSeqAlias(
+  document: ReturnType<typeof parseDocument>,
+  node: unknown,
+) {
+  if (!isAlias(node)) return resolveLefthookSeq(document, node);
+
+  const resolved = resolveLefthookSeq(document, node);
+  if (!isSeq(resolved)) return undefined;
+  const detached = resolved.clone(document.schema);
+  if (!isSeq(detached)) return undefined;
+  detached.anchor = undefined;
+  return detached;
+}
+
+export async function isGitleaksSetupComplete(
+  projectDir: string,
+  addons: ProjectConfig["addons"],
+): Promise<boolean> {
+  if (addons.includes("husky")) {
+    const huskyPath = path.join(projectDir, ".husky", "pre-commit");
+    if (!(await fs.pathExists(huskyPath))) return false;
+    const husky = await fs.readFile(huskyPath, "utf8");
+    if (!hasActiveShellCommand(husky, GITLEAKS_HOOK_COMMAND)) return false;
+  }
+
+  if (addons.includes("lefthook")) {
+    const lefthookPath = path.join(projectDir, "lefthook.yml");
+    if (!(await fs.pathExists(lefthookPath))) return false;
+    const lefthook = await fs.readFile(lefthookPath, "utf8");
+    if (!hasGitleaksLefthookCommand(lefthook)) return false;
+  }
+
+  return true;
+}
+
+async function ensureGitleaksHuskyHook(projectDir: string) {
+  const hookPath = path.join(projectDir, ".husky", "pre-commit");
+  if (!(await fs.pathExists(hookPath))) {
+    await fs.ensureDir(path.dirname(hookPath));
+    await fs.writeFile(hookPath, `#!/usr/bin/env sh\n${GITLEAKS_HOOK_COMMAND}\n`);
+    await fs.chmod(hookPath, 0o755);
+    return;
+  }
+
+  const content = await fs.readFile(hookPath, "utf8");
+  if (hasActiveShellCommand(content, GITLEAKS_HOOK_COMMAND)) return;
+
+  const nextContent = content.includes("\nlint-staged")
+    ? content.replace("\nlint-staged", `\n${GITLEAKS_HOOK_COMMAND}\nlint-staged`)
+    : `${content.trimEnd()}\n${GITLEAKS_HOOK_COMMAND}\n`;
+  await fs.writeFile(hookPath, nextContent);
+}
+
+async function ensureGitleaksLefthookHook(projectDir: string) {
+  const hookPath = path.join(projectDir, "lefthook.yml");
+  if (!(await fs.pathExists(hookPath))) {
+    await fs.writeFile(
+      hookPath,
+      `pre-commit:\n  parallel: true\n  jobs:\n    - name: gitleaks\n      run: ${GITLEAKS_HOOK_COMMAND}\n`,
+    );
+    return;
+  }
+
+  const content = await fs.readFile(hookPath, "utf8");
+  const document = parseDocument(content);
+  if (document.errors.length > 0) {
+    throw new Error(`Cannot add Gitleaks to invalid Lefthook YAML: ${document.errors[0]?.message}`);
+  }
+
+  let preCommitNode = document.get("pre-commit", true);
+  let preCommit = detachLefthookMapAlias(document, preCommitNode);
+  if (isAlias(preCommitNode) && isMap(preCommit)) {
+    document.set("pre-commit", preCommit);
+  }
+  if (!isMap(preCommit)) {
+    document.set("pre-commit", { parallel: true, jobs: [] });
+    preCommitNode = document.get("pre-commit", true);
+    preCommit = detachLefthookMapAlias(document, preCommitNode);
+  }
+  if (!isMap(preCommit)) return;
+
+  if (hasGitleaksLefthookCommand(content)) return;
+
+  const jobsNode = preCommit.get("jobs", true);
+  const jobs = detachLefthookSeqAlias(document, jobsNode);
+  if (isAlias(jobsNode) && isSeq(jobs)) preCommit.set("jobs", jobs);
+  if (isSeq(jobs)) {
+    jobs.add({ name: "gitleaks", run: GITLEAKS_HOOK_COMMAND });
+  } else {
+    const commandsNode = preCommit.get("commands", true);
+    const commands = detachLefthookMapAlias(document, commandsNode);
+    if (isAlias(commandsNode) && isMap(commands)) preCommit.set("commands", commands);
+    if (isMap(commands)) {
+      commands.set("gitleaks", { run: GITLEAKS_HOOK_COMMAND });
+    } else {
+      preCommit.set("jobs", [{ name: "gitleaks", run: GITLEAKS_HOOK_COMMAND }]);
+    }
+  }
+
+  await fs.writeFile(hookPath, document.toString());
+}
+
+async function ensureLinterLefthookHook(
+  projectDir: string,
+  linter: "biome" | "oxlint",
+  packageManager: ProjectConfig["packageManager"],
+) {
+  const hookPath = path.join(projectDir, "lefthook.yml");
+  const definitions = getLefthookLinterDefinitions(linter, packageManager);
+
+  if (!(await fs.pathExists(hookPath))) {
+    const document = parseDocument("pre-commit:\n  parallel: true\n  jobs: []\n");
+    const preCommit = document.get("pre-commit", true);
+    if (isMap(preCommit)) preCommit.set("jobs", definitions);
+    await fs.writeFile(hookPath, document.toString());
+    return;
+  }
+
+  const document = parseDocument(await fs.readFile(hookPath, "utf8"));
+  if (document.errors.length > 0) {
+    throw new Error(`Cannot configure ${linter} in invalid Lefthook YAML: ${document.errors[0]?.message}`);
+  }
+
+  let preCommitNode = document.get("pre-commit", true);
+  let preCommit = detachLefthookMapAlias(document, preCommitNode);
+  if (isAlias(preCommitNode) && isMap(preCommit)) {
+    document.set("pre-commit", preCommit);
+  }
+  if (!isMap(preCommit)) {
+    document.set("pre-commit", { parallel: true, jobs: [] });
+    preCommitNode = document.get("pre-commit", true);
+    preCommit = detachLefthookMapAlias(document, preCommitNode);
+  }
+  if (!isMap(preCommit)) return;
+
+  const jobsNode = preCommit.get("jobs", true);
+  const jobs = detachLefthookSeqAlias(document, jobsNode);
+  if (isAlias(jobsNode) && isSeq(jobs)) preCommit.set("jobs", jobs);
+  if (isSeq(jobs)) {
+    for (const definition of definitions) {
+      const existing = jobs.items.find(
+        (job) => isMap(job) && job.get("name") === definition.name,
+      );
+      if (isMap(existing)) {
+        for (const [key, value] of Object.entries(definition)) existing.set(key, value);
+      } else {
+        jobs.add(definition);
+      }
+    }
+  } else {
+    const commandsNode = preCommit.get("commands", true);
+    const commands = detachLefthookMapAlias(document, commandsNode);
+    if (isAlias(commandsNode) && isMap(commands)) preCommit.set("commands", commands);
+    if (isMap(commands)) {
+      for (const { name, ...definition } of definitions) commands.set(name, definition);
+    } else {
+      preCommit.set("jobs", definitions);
+    }
+  }
+
+  await fs.writeFile(hookPath, document.toString());
+}
+
+function getLefthookLinterDefinitions(
+  linter: "biome" | "oxlint",
+  packageManager: ProjectConfig["packageManager"],
+) {
+  const packageBinaryRunner = packageManager === "npm" ? "npm exec" : packageManager;
+  return linter === "biome"
+    ? [
+        {
+          name: "biome",
+          glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}",
+          run: `${packageBinaryRunner} biome check --write --no-errors-on-unmatched --files-ignore-unknown=true {staged_files}`,
+          stage_fixed: true,
+        },
+      ]
+    : [
+        {
+          name: "oxlint",
+          run: `${packageBinaryRunner} oxlint --fix {staged_files}`,
+          stage_fixed: true,
+        },
+        {
+          name: "oxfmt",
+          run: `${packageBinaryRunner} oxfmt --write {staged_files}`,
+          stage_fixed: true,
+        },
+      ];
+}
+
+export async function isLinterLefthookSetupComplete(
+  projectDir: string,
+  linter: "biome" | "oxlint",
+  packageManager: ProjectConfig["packageManager"],
+): Promise<boolean> {
+  const hookPath = path.join(projectDir, "lefthook.yml");
+  if (!(await fs.pathExists(hookPath))) return false;
+
+  const document = parseDocument(await fs.readFile(hookPath, "utf8"));
+  if (document.errors.length > 0) return false;
+
+  const preCommit = resolveLefthookMap(document, document.get("pre-commit", true));
+  if (!isMap(preCommit)) return false;
+
+  const definitions = getLefthookLinterDefinitions(linter, packageManager);
+  const jobs = resolveLefthookSeq(document, preCommit.get("jobs", true));
+  if (isSeq(jobs)) {
+    return definitions.every((definition) =>
+      jobs.items.some(
+        (job) =>
+          isMap(job) &&
+          job.get("name") === definition.name &&
+          job.get("run") === definition.run,
+      ),
+    );
+  }
+
+  const commands = resolveLefthookMap(document, preCommit.get("commands", true));
+  if (!isMap(commands)) return false;
+  return definitions.every((definition) => {
+    const command = commands.get(definition.name, true);
+    return isMap(command) && command.get("run") === definition.run;
+  });
 }

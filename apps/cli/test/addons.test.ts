@@ -1,10 +1,11 @@
 import { describe, it, expect } from "bun:test";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { parseStackPartSpecs } from "@better-fullstack/types";
 
 import { createVirtual, type Addons, type Frontend } from "../src";
 
+import { setupAddons } from "../src/helpers/addons/addons-setup";
 import { getAddonGroup, getCompatibleAddonsForPrompt } from "../src/prompts/addons";
 import { APP_PLATFORM_ADDON_VALUES } from "../src/types";
 import { getCompatibleAddons } from "../src/utils/compatibility-rules";
@@ -18,7 +19,17 @@ describe("Addon Configurations", () => {
   });
 
   describe("Universal Addons (no frontend restrictions)", () => {
-    const universalAddons = ["biome", "lefthook", "husky", "turborepo", "nx", "oxlint", "msw"];
+    const universalAddons = [
+      "biome",
+      "lefthook",
+      "husky",
+      "knip",
+      "gitleaks",
+      "turborepo",
+      "nx",
+      "oxlint",
+      "msw",
+    ];
     const universalAddonTimeoutMs = 60_000;
 
     for (const addon of universalAddons) {
@@ -47,6 +58,546 @@ describe("Addon Configurations", () => {
         { timeout: universalAddonTimeoutMs },
       );
     }
+
+    it("uses npm exec for generated Lefthook linter jobs", async () => {
+      const result = await runTRPCTest({
+        projectName: "npm-lefthook-biome",
+        packageManager: "npm",
+        addons: ["lefthook", "biome"],
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "node",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "trpc",
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const lefthook = readFileSync(join(result.projectDir!, "lefthook.yml"), "utf-8");
+      expect(lefthook).toContain("npm exec biome check --write");
+      expect(lefthook).not.toContain("run: npm biome");
+    });
+  });
+
+  describe("Knip Addon", () => {
+    it("generates workspace config, dependency, and scripts", async () => {
+      const result = await runTRPCTest({
+        projectName: "knip-workspace",
+        addons: ["knip"],
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "trpc",
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const rootPackage = readFileSync(join(result.projectDir!, "package.json"), "utf-8");
+      const config = readFileSync(join(result.projectDir!, "knip.jsonc"), "utf-8");
+
+      expect(rootPackage).toContain('"knip": "^6.29.0"');
+      expect(rootPackage).toContain('"knip": "knip"');
+      expect(rootPackage).toContain('"knip:production": "knip --production"');
+      expect(config).toContain("https://unpkg.com/knip@6/schema-jsonc.json");
+    });
+
+    it("preserves Knip dependency and scripts in single-app output", async () => {
+      const result = await runTRPCTest({
+        projectName: "knip-single-app",
+        workspaceShape: "single-app",
+        addons: ["knip"],
+        frontend: ["next"],
+        backend: "self",
+        runtime: "none",
+        database: "none",
+        orm: "none",
+        auth: "none",
+        api: "none",
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const rootPackage = readFileSync(join(result.projectDir!, "package.json"), "utf-8");
+      expect(rootPackage).toContain('"knip": "^6.29.0"');
+      expect(rootPackage).toContain('"knip": "knip"');
+      expect(rootPackage).toContain('"knip:production": "knip --production"');
+    });
+
+    it("rejects Knip for non-TypeScript ecosystems", async () => {
+      const result = await runTRPCTest({
+        projectName: "knip-go",
+        ecosystem: "go",
+        addons: ["knip"],
+        goWebFramework: "gin",
+        install: false,
+        expectError: true,
+      });
+
+      expectError(result, "Knip currently supports TypeScript and React Native projects only");
+    });
+  });
+
+  describe("Gitleaks Addon", () => {
+    it("generates standalone configuration and scan scripts", async () => {
+      const result = await runTRPCTest({
+        projectName: "gitleaks-workspace",
+        addons: ["gitleaks"],
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "trpc",
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        git: true,
+        install: false,
+      });
+
+      expectSuccess(result);
+      const rootPackage = readFileSync(join(result.projectDir!, "package.json"), "utf-8");
+      const config = readFileSync(join(result.projectDir!, ".gitleaks.toml"), "utf-8");
+
+      expect(rootPackage).toContain('"secrets:scan": "gitleaks git --redact --verbose"');
+      expect(rootPackage).toContain("gitleaks git --pre-commit --redact --staged --verbose");
+      expect(config).toContain("useDefault = true");
+    });
+
+    it("uses directory scanning when Git initialization is disabled", async () => {
+      const result = await runTRPCTest({
+        projectName: "gitleaks-no-git",
+        addons: ["gitleaks"],
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "trpc",
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        git: false,
+        install: false,
+      });
+
+      expectSuccess(result);
+      const rootPackage = readFileSync(join(result.projectDir!, "package.json"), "utf-8");
+      expect(rootPackage).toContain('"secrets:scan": "gitleaks dir . --redact --verbose"');
+      expect(rootPackage).not.toContain('"secrets:scan": "gitleaks git');
+    });
+
+    it("adds secret scanning to Husky and Lefthook when selected", async () => {
+      const result = await runTRPCTest({
+        projectName: "gitleaks-hooks",
+        addons: ["gitleaks", "husky", "lefthook"],
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "trpc",
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const husky = readFileSync(join(result.projectDir!, ".husky/pre-commit"), "utf-8");
+      const lefthook = readFileSync(join(result.projectDir!, "lefthook.yml"), "utf-8");
+
+      expect(husky).toContain("gitleaks git --pre-commit --redact --staged --verbose");
+      expect(husky).toContain("lint-staged");
+      expect(husky).not.toContain("{{");
+      expect(lefthook).toContain("name: gitleaks");
+      expect(lefthook).toContain("gitleaks git --pre-commit --redact --staged --verbose");
+    });
+
+    it("updates existing Husky and Lefthook hooks when Gitleaks is added later", async () => {
+      const result = await runTRPCTest({
+        projectName: "gitleaks-added-later",
+        addons: ["husky", "lefthook"],
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "trpc",
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      await setupAddons(
+        {
+          ...result.result!.projectConfig,
+          projectDir: result.projectDir!,
+          addons: ["husky", "lefthook", "gitleaks"],
+        },
+        ["gitleaks"],
+      );
+
+      const husky = readFileSync(join(result.projectDir!, ".husky/pre-commit"), "utf-8");
+      const lefthook = readFileSync(join(result.projectDir!, "lefthook.yml"), "utf-8");
+      expect(husky.match(/gitleaks git --pre-commit/g)).toHaveLength(1);
+      expect(lefthook.match(/name: gitleaks/g)).toHaveLength(1);
+    });
+
+    it("refreshes existing Husky lint-staged config when a linter is added later", async () => {
+      const result = await runTRPCTest({
+        projectName: "linter-added-after-husky",
+        addons: ["husky"],
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "trpc",
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      await setupAddons(
+        {
+          ...result.result!.projectConfig,
+          projectDir: result.projectDir!,
+          addons: ["husky", "biome"],
+        },
+        ["biome"],
+      );
+
+      const packageJson = readFileSync(join(result.projectDir!, "package.json"), "utf-8");
+      expect(packageJson).toContain('"biome check --write ."');
+      expect(packageJson).not.toContain('"**/*.{js,mjs,cjs,jsx,ts,mts,cts,tsx,vue,astro,svelte}": ""');
+    });
+
+    it("refreshes existing Lefthook config when a linter is added later", async () => {
+      const result = await runTRPCTest({
+        projectName: "linter-added-after-lefthook",
+        packageManager: "npm",
+        addons: ["lefthook"],
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "trpc",
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      await setupAddons(
+        {
+          ...result.result!.projectConfig,
+          projectDir: result.projectDir!,
+          addons: ["lefthook", "biome"],
+        },
+        ["biome"],
+      );
+
+      const lefthook = readFileSync(join(result.projectDir!, "lefthook.yml"), "utf-8");
+      expect(lefthook).toContain("name: biome");
+      expect(lefthook).toContain("npm exec biome check --write");
+      expect(lefthook).not.toContain("run: npm biome");
+      expect(lefthook).not.toContain("Add your pre-commit commands here");
+    });
+
+    it("does not treat a commented Husky command as configured", async () => {
+      const result = await runTRPCTest({
+        projectName: "gitleaks-commented-husky",
+        addons: ["husky"],
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "trpc",
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const huskyPath = join(result.projectDir!, ".husky", "pre-commit");
+      writeFileSync(
+        huskyPath,
+        "# gitleaks git --pre-commit --redact --staged --verbose\nlint-staged\n",
+      );
+
+      await setupAddons(
+        {
+          ...result.result!.projectConfig,
+          projectDir: result.projectDir!,
+          addons: ["husky", "gitleaks"],
+        },
+        ["gitleaks"],
+      );
+
+      const husky = readFileSync(huskyPath, "utf-8");
+      expect(husky.match(/gitleaks git --pre-commit/g)).toHaveLength(2);
+      expect(husky).toContain(
+        "gitleaks git --pre-commit --redact --staged --verbose\nlint-staged",
+      );
+    });
+
+    it("merges into a customized Lefthook commands configuration", async () => {
+      const result = await runTRPCTest({
+        projectName: "gitleaks-custom-lefthook",
+        addons: ["lefthook"],
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "trpc",
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const lefthookPath = join(result.projectDir!, "lefthook.yml");
+      writeFileSync(
+        lefthookPath,
+        "pre-commit:\n    parallel: false\n    commands:\n        lint:\n            run: bun run lint\n",
+      );
+
+      await setupAddons(
+        {
+          ...result.result!.projectConfig,
+          projectDir: result.projectDir!,
+          addons: ["lefthook", "gitleaks"],
+        },
+        ["gitleaks"],
+      );
+
+      const lefthook = readFileSync(lefthookPath, "utf-8");
+      expect(lefthook.match(/^pre-commit:/gm)).toHaveLength(1);
+      expect(lefthook).toContain("commands:");
+      expect(lefthook).toContain("gitleaks:");
+      expect(lefthook).toContain("gitleaks git --pre-commit --redact --staged --verbose");
+    });
+
+    it("preserves anchored Lefthook jobs while adding linters and Gitleaks", async () => {
+      const result = await runTRPCTest({
+        projectName: "gitleaks-anchored-lefthook",
+        addons: ["lefthook"],
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "trpc",
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const lefthookPath = join(result.projectDir!, "lefthook.yml");
+      writeFileSync(
+        lefthookPath,
+        "shared-hooks: &shared-hooks\n  parallel: false\n  commands:\n    existing:\n      run: bun run existing\npre-commit: *shared-hooks\npre-push: *shared-hooks\n",
+      );
+
+      const config = {
+        ...result.result!.projectConfig,
+        projectDir: result.projectDir!,
+        addons: ["lefthook", "biome", "gitleaks"] as const,
+      };
+      await setupAddons(config, ["biome", "gitleaks"]);
+      await setupAddons(config, ["biome", "gitleaks"]);
+
+      const lefthook = readFileSync(lefthookPath, "utf-8");
+      expect(lefthook).not.toContain("pre-commit: *shared-hooks");
+      expect(lefthook).toContain("pre-push: *shared-hooks");
+      expect(lefthook).toContain("existing:");
+      expect(lefthook).toContain("run: bun run existing");
+      expect(lefthook.match(/gitleaks:/g)).toHaveLength(1);
+      expect(lefthook.match(/name: biome/g) ?? []).toHaveLength(0);
+      expect(lefthook.match(/biome:/g)).toHaveLength(1);
+    });
+
+    it("preserves anchored Lefthook job and command collections", async () => {
+      for (const fixture of [
+        {
+          projectName: "gitleaks-anchored-jobs",
+          alias: "shared-jobs",
+          yaml:
+            "shared-jobs: &shared-jobs\n  - name: existing\n    run: bun run existing\npre-commit:\n  jobs: *shared-jobs\npre-push:\n  jobs: *shared-jobs\n",
+        },
+        {
+          projectName: "gitleaks-anchored-commands",
+          alias: "shared-commands",
+          yaml:
+            "shared-commands: &shared-commands\n  existing:\n    run: bun run existing\npre-commit:\n  commands: *shared-commands\npre-push:\n  commands: *shared-commands\n",
+        },
+      ]) {
+        const result = await runTRPCTest({
+          projectName: fixture.projectName,
+          addons: ["lefthook"],
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "trpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        const lefthookPath = join(result.projectDir!, "lefthook.yml");
+        writeFileSync(lefthookPath, fixture.yaml);
+        const config = {
+          ...result.result!.projectConfig,
+          projectDir: result.projectDir!,
+          addons: ["lefthook", "biome", "gitleaks"] as const,
+        };
+
+        await setupAddons(config, ["biome", "gitleaks"]);
+        await setupAddons(config, ["biome", "gitleaks"]);
+
+        const lefthook = readFileSync(lefthookPath, "utf-8");
+        expect(lefthook).toContain(`*${fixture.alias}`);
+        expect(lefthook).not.toContain(`pre-commit:\n  jobs: *${fixture.alias}`);
+        expect(lefthook).not.toContain(`pre-commit:\n  commands: *${fixture.alias}`);
+        expect(lefthook).toContain("run: bun run existing");
+        expect(lefthook.match(/gitleaks git --pre-commit --redact --staged --verbose/g)).toHaveLength(
+          1,
+        );
+        expect(lefthook.match(/(?:name: biome|biome:)/g)).toHaveLength(1);
+      }
+    });
+
+    it("scopes Lefthook idempotency to the pre-commit hook", async () => {
+      const result = await runTRPCTest({
+        projectName: "gitleaks-scoped-lefthook",
+        addons: ["lefthook"],
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "trpc",
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const lefthookPath = join(result.projectDir!, "lefthook.yml");
+      writeFileSync(
+        lefthookPath,
+        "# gitleaks git --pre-commit --redact --staged --verbose\npre-push:\n  commands:\n    existing-scan:\n      run: gitleaks git --pre-commit --redact --staged --verbose\npre-commit:\n  commands:\n    lint:\n      run: bun run lint\n",
+      );
+
+      await setupAddons(
+        {
+          ...result.result!.projectConfig,
+          projectDir: result.projectDir!,
+          addons: ["lefthook", "gitleaks"],
+        },
+        ["gitleaks"],
+      );
+
+      const lefthook = readFileSync(lefthookPath, "utf-8");
+      expect(lefthook.match(/gitleaks git --pre-commit --redact --staged --verbose/g)).toHaveLength(
+        3,
+      );
+      expect(lefthook).toContain("pre-commit:\n  commands:\n    lint:");
+      expect(lefthook).toContain("    gitleaks:");
+    });
+
+    it("rejects invalid Lefthook YAML even when it mentions the Gitleaks command", async () => {
+      const result = await runTRPCTest({
+        projectName: "gitleaks-invalid-lefthook",
+        addons: ["lefthook"],
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "trpc",
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      writeFileSync(
+        join(result.projectDir!, "lefthook.yml"),
+        "# gitleaks git --pre-commit --redact --staged --verbose\npre-commit: [\n",
+      );
+
+      await expect(
+        setupAddons(
+          {
+            ...result.result!.projectConfig,
+            projectDir: result.projectDir!,
+            addons: ["lefthook", "gitleaks"],
+          },
+          ["gitleaks"],
+        ),
+      ).rejects.toThrow("Cannot add Gitleaks to invalid Lefthook YAML");
+    });
   });
 
   describe("Nx Addon", () => {

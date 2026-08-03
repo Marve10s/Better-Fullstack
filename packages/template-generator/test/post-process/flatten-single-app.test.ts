@@ -261,6 +261,27 @@ describe("flattenSingleApp", () => {
     }
   });
 
+  it("preserves Gitleaks scan scripts in a flat app", () => {
+    const vfs = seedThinSelfMonorepo("flatapp");
+    const rootPkg = vfs.readJson<Record<string, unknown>>("package.json") ?? {};
+    vfs.writeJson("package.json", {
+      ...rootPkg,
+      scripts: {
+        dev: "bun run --filter '*' dev",
+        "secrets:scan": "gitleaks git --redact --verbose",
+        "secrets:scan:staged": "gitleaks git --pre-commit --redact --staged --verbose",
+      },
+    });
+
+    flattenSingleApp(vfs, makeConfig({ ...SINGLE_APP_NEXT, addons: ["gitleaks"] }));
+
+    const pkg = vfs.readJson<{ scripts?: Record<string, string> }>("package.json");
+    expect(pkg?.scripts?.["secrets:scan"]).toBe("gitleaks git --redact --verbose");
+    expect(pkg?.scripts?.["secrets:scan:staged"]).toBe(
+      "gitleaks git --pre-commit --redact --staged --verbose",
+    );
+  });
+
   it("removes workspace tooling files", () => {
     const vfs = seedThinSelfMonorepo("flatapp");
     vfs.writeJson("turbo.json", { tasks: {} });

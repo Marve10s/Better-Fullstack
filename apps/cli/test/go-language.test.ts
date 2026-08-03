@@ -21,6 +21,8 @@ import {
   GoProtoToolingSchema,
   GoDISchema,
 } from "../src/types";
+import { validateGoExpansionConstraints } from "../src/utils/config-validation";
+import { runWithContext } from "../src/utils/context";
 import { extractEnumValues } from "./test-utils";
 import {
   getVirtualFileContent as getFileContent,
@@ -105,6 +107,7 @@ describe("Go Language Support", () => {
       );
       expect(GO_MESSAGE_QUEUES).toEqual(expect.arrayContaining(["kafka-go", "asynq"]));
       expect(GO_OBSERVABILITY).toContain("prometheus");
+      expect(GO_OBSERVABILITY).toContain("signoz");
       expect(extractEnumValues(GoValidationSchema)).toContain("validator");
       expect(extractEnumValues(GoQualitySchema)).toContain("golangci-lint");
       expect(extractEnumValues(GoMigrationsSchema)).toContain("golang-migrate");
@@ -115,6 +118,111 @@ describe("Go Language Support", () => {
   });
 
   describe("Go Base Template Structure", () => {
+    it("rejects SigNoz for Go server variants without request instrumentation", () => {
+      for (const goWebFramework of ["none", "go-zero", "kratos", "httprouter"] as const) {
+        expect(() =>
+          runWithContext({ silent: true }, () =>
+            validateGoExpansionConstraints({
+              ecosystem: "go",
+              goWebFramework,
+              goApi: "none",
+              auth: "none",
+              goObservability: "signoz",
+            }),
+          ),
+        ).toThrow("SigNoz request tracing for Go requires an instrumented");
+      }
+    });
+
+    it("allows SigNoz without an HTTP framework when gRPC supplies the server target", () => {
+      expect(() =>
+        runWithContext({ silent: true }, () =>
+          validateGoExpansionConstraints({
+            ecosystem: "go",
+            goWebFramework: "none",
+            goApi: "grpc-go",
+            auth: "none",
+            goObservability: "signoz",
+          }),
+        ),
+      ).not.toThrow();
+    });
+
+    it("should generate SigNoz-ready OpenTelemetry tracing", async () => {
+      const result = await createVirtual({
+        projectName: "go-signoz-check",
+        ecosystem: "go",
+        goWebFramework: "gin",
+        goOrm: "none",
+        goApi: "none",
+        goCli: "none",
+        goLogging: "none",
+        goObservability: "signoz",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+      expect(getFileContent(root, "go.mod")).toContain(
+        "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp",
+      );
+      expect(getFileContent(root, "go.mod")).toContain(
+        "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp",
+      );
+      const tracing = getFileContent(root, "internal/observability/otel.go");
+      expect(tracing).toContain("SigNoz Cloud");
+      expect(tracing).toContain("otel.SetTextMapPropagator");
+      expect(tracing).toContain('otelhttp.NewHandler(next, "http.server")');
+      expect(tracing).toContain("trace.WithSpanKind(trace.SpanKindServer)");
+      expect(tracing).toContain("RunWithGracefulShutdown");
+      expect(tracing).toContain("serverCtx, cancelServer");
+      expect(tracing).toContain("tracingCtx, cancelTracing");
+      const server = getFileContent(root, "cmd/server/main.go");
+      expect(server).toContain("appobservability.InitTracing(context.Background())");
+      expect(server).toContain("context.WithTimeout(context.Background(), 10*time.Second)");
+      expect(server).toContain("shutdownTracing(shutdownCtx)");
+      expect(server).toContain("appobservability.TraceHTTP(r)");
+      expect(server).toContain("appobservability.RunWithGracefulShutdown(");
+      expect(getFileContent(root, ".env.example")).toContain("OTEL_EXPORTER_OTLP_HEADERS=");
+      expect(getFileContent(root, ".env.example")).toContain("signoz-ingestion-key=<your-key>");
+    });
+
+    it("does not import net/http for a SigNoz project without an HTTP server", async () => {
+      const result = await createVirtual({
+        projectName: "go-signoz-no-server",
+        ecosystem: "go",
+        goWebFramework: "none",
+        goOrm: "none",
+        goApi: "none",
+        goCli: "none",
+        goLogging: "none",
+        goObservability: "signoz",
+      });
+
+      expect(result.success).toBe(true);
+      expect(getFileContent(result.tree!.root, "cmd/server/main.go")).not.toContain('"net/http"');
+    });
+
+    it("generates propagated SigNoz request spans for Fiber", async () => {
+      const result = await createVirtual({
+        projectName: "go-signoz-fiber",
+        ecosystem: "go",
+        goWebFramework: "fiber",
+        goOrm: "none",
+        goApi: "none",
+        goCli: "none",
+        goLogging: "none",
+        goObservability: "signoz",
+      });
+
+      expect(result.success).toBe(true);
+      const server = getFileContent(result.tree!.root, "cmd/server/main.go");
+      expect(server).toContain("appobservability.StartHTTPSpan(");
+      expect(server).toContain("finishSpan(c.Response().StatusCode(), err)");
+      expect(server).toContain("appobservability.RunWithGracefulShutdown(");
+      expect(server).toContain("app.ShutdownWithContext(ctx)");
+      expect(server).not.toContain("func(context.Context) error { return app.Shutdown() }");
+    });
+
     it("should create a Go project with proper go.mod structure", async () => {
       const result = await createVirtual({
         projectName: "go-project",
@@ -1431,6 +1539,35 @@ describe("Go Language Support", () => {
       expect(mainContent).toContain("google.golang.org/grpc");
       expect(mainContent).toContain("grpc.NewServer()");
       expect(mainContent).toContain("RegisterGreeterServer");
+    });
+
+    it("instruments gRPC server requests when SigNoz is selected", async () => {
+      const result = await createVirtual({
+        projectName: "go-grpc-signoz-check",
+        ecosystem: "go",
+        goWebFramework: "none",
+        goOrm: "none",
+        goApi: "grpc-go",
+        goCli: "none",
+        goLogging: "none",
+        goObservability: "signoz",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+      expect(getFileContent(root, "go.mod")).toContain(
+        "go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc",
+      );
+      const mainContent = getFileContent(root, "cmd/server/main.go");
+      expect(mainContent).toContain(
+        '"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"',
+      );
+      expect(mainContent).toContain(
+        "grpc.NewServer(grpc.StatsHandler(otelgrpc.NewServerHandler()))",
+      );
+      expect(mainContent).toContain("grpcServer.GracefulStop()");
+      expect(mainContent).toContain("grpcServer.Stop()");
+      expect(mainContent).toContain("shutdownGRPC(shutdownCtx)");
     });
   });
 

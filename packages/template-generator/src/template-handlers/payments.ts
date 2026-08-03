@@ -12,7 +12,9 @@ export async function processPaymentsTemplates(
   if (!config.payments || config.payments === "none") return;
 
   const hasReactWeb = config.frontend.some((f) =>
-    ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext"].includes(f),
+    ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext"].includes(
+      f,
+    ),
   );
   const hasNuxtWeb = config.frontend.includes("nuxt");
   const hasSvelteWeb = config.frontend.includes("svelte");
@@ -27,25 +29,21 @@ export async function processPaymentsTemplates(
         ? "unistyles"
         : null;
 
+  if (config.payments === "xendit") {
+    if (config.backend !== "none" && config.backend !== "convex") {
+      const serverDir = config.backend === "self" ? "apps/web" : "apps/server";
+      processTemplatesFromPrefix(vfs, templates, "payments/xendit/server/base", serverDir, config);
+    }
+    return;
+  }
+
   if (config.payments === "paypal") {
     if (config.backend !== "none" && config.backend !== "convex") {
       const serverDir = config.backend === "self" ? "apps/web" : "apps/server";
-      processTemplatesFromPrefix(
-        vfs,
-        templates,
-        "payments/paypal/server/base",
-        serverDir,
-        config,
-      );
+      processTemplatesFromPrefix(vfs, templates, "payments/paypal/server/base", serverDir, config);
     }
     if (vfs.exists("apps/web/package.json")) {
-      processTemplatesFromPrefix(
-        vfs,
-        templates,
-        "payments/paypal/web/base",
-        "apps/web",
-        config,
-      );
+      processTemplatesFromPrefix(vfs, templates, "payments/paypal/web/base", "apps/web", config);
     }
     return;
   }
@@ -95,13 +93,12 @@ export async function processPaymentsTemplates(
     );
   }
 
-
   if (hasReactWeb) {
     const reactFramework = config.frontend.includes("react-vite")
       ? "react-router"
       : config.frontend.find((f) =>
-        ["tanstack-router", "react-router", "tanstack-start", "next", "vinext"].includes(f),
-      );
+          ["tanstack-router", "react-router", "tanstack-start", "next", "vinext"].includes(f),
+        );
     if (reactFramework) {
       processTemplatesFromPrefix(
         vfs,

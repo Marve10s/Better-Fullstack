@@ -173,9 +173,12 @@ dependencies = [
 {{#if (eq pythonRealtime "websockets")}}
     "websockets>=15.0",
 {{/if}}
-{{#if (eq pythonObservability "opentelemetry")}}
+{{#if (or (eq pythonObservability "opentelemetry") (eq pythonObservability "signoz"))}}
     "opentelemetry-sdk>=1.34.0",
     "opentelemetry-exporter-otlp-proto-http>=1.34.0",
+{{/if}}
+{{#if (and (eq pythonObservability "signoz") (eq pythonWebFramework "fastapi"))}}
+    "opentelemetry-instrumentation-fastapi>=0.55b0",
 {{/if}}
 {{#if (eq pythonObservability "prometheus-client")}}
     "prometheus-client>=0.21.0",

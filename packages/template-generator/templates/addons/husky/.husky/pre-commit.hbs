@@ -1,0 +1,4 @@
+{{#if (includes addons "gitleaks")}}
+gitleaks git --pre-commit --redact --staged --verbose
+{{/if}}
+lint-staged

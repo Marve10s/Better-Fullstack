@@ -777,6 +777,8 @@ const CODE_QUALITY_VALUES = [
   "ultracite",
   "lefthook",
   "husky",
+  "knip",
+  "gitleaks",
   "ruler",
 ] as const satisfies readonly string[];
 
@@ -1085,6 +1087,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     "lemon-squeezy": "Lemon Squeezy",
     dodo: "Dodo Payments",
     paypal: "PayPal",
+    xendit: "Xendit",
   },
   email: {
     "react-email": "React Email",
@@ -1098,6 +1101,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   observability: {
     opentelemetry: "OpenTelemetry",
+    signoz: "SigNoz",
     datadog: "Datadog",
     axiom: "Axiom",
     betterstack: "Better Stack",
@@ -1262,6 +1266,8 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     ultracite: "Ultracite",
     lefthook: "Lefthook",
     husky: "Husky",
+    knip: "Knip",
+    gitleaks: "Gitleaks",
     ruler: "Ruler",
   },
   documentation: {
@@ -1543,6 +1549,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   pythonObservability: {
     opentelemetry: "OpenTelemetry",
+    signoz: "SigNoz",
     "prometheus-client": "Prometheus Client",
   },
   pythonCli: {
@@ -1642,6 +1649,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   goObservability: {
     opentelemetry: "OpenTelemetry",
+    signoz: "SigNoz",
     prometheus: "Prometheus",
   },
   goValidation: {

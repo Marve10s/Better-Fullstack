@@ -1631,6 +1631,14 @@ describe("stack graph structural round-trip (phase 0)", () => {
     }
   });
 
+  it("models Knip as TypeScript tooling instead of a universal addon", () => {
+    expect(getAddonStackPartBinding("knip")).toEqual({
+      role: "codeQuality",
+      ecosystem: "typescript",
+    });
+    expect(getAddonStackPartBinding("gitleaks")?.ecosystem).toBe("universal");
+  });
+
   it("round-trips every native mobile frontend without drift", () => {
     for (const frontend of NATIVE_FRONTENDS) {
       const derived = expectNoDrift({

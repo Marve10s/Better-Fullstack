@@ -1,0 +1,175 @@
+import { env } from "@{{projectName}}/env/server";
+
+const apiUrl = env.XENDIT_API_URL || "https://api.xendit.co";
+
+export type XenditCurrency = "IDR" | "PHP" | "VND" | "THB" | "SGD" | "MYR" | "USD";
+export type XenditCountry = "ID" | "PH" | "VN" | "TH" | "SG" | "MY";
+
+export interface CreatePaymentSessionParams {
+  referenceId: string;
+  amount: number;
+  currency: XenditCurrency;
+  country: XenditCountry;
+  customer?: {
+    referenceId: string;
+    type: "INDIVIDUAL";
+    email?: string;
+    mobileNumber?: string;
+    individualDetail: {
+      givenNames: string;
+      surname?: string;
+    };
+  };
+  successReturnUrl?: string;
+  cancelReturnUrl?: string;
+  description?: string;
+  metadata?: Record<string, string>;
+}
+
+export interface XenditPaymentSession {
+  payment_session_id: string;
+  reference_id: string;
+  session_type: "PAY";
+  mode: "PAYMENT_LINK";
+  amount: number;
+  currency: XenditCurrency;
+  country: XenditCountry;
+  payment_link_url: string;
+  customer_id?: string;
+  payment_request_id?: string | null;
+  payment_token_id?: string | null;
+  payment_id?: string | null;
+  expires_at?: string;
+  status?: "ACTIVE" | "COMPLETED" | "EXPIRED" | "CANCELED";
+}
+
+export interface XenditPaymentSessionWebhook {
+  event: "payment_session.completed" | "payment_session.expired";
+  business_id: string;
+  created: string;
+  data: XenditPaymentSession;
+}
+
+export interface XenditWebhookHandlers {
+  onEvent: (event: XenditPaymentSessionWebhook, webhookId: string) => void | Promise<void>;
+  hasProcessedWebhookId?: (webhookId: string) => boolean | Promise<boolean>;
+}
+
+/**
+ * Creates a hosted Xendit Payment Session. Call this from trusted server code,
+ * persist the reference ID, then redirect the customer to payment_link_url.
+ */
+export async function createXenditPaymentSession(
+  params: CreatePaymentSessionParams,
+): Promise<XenditPaymentSession> {
+  const response = await fetch(`${apiUrl}/sessions`, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${btoa(`${env.XENDIT_SECRET_KEY}:`)}`,
+      "api-version": "2024-11-11",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      reference_id: params.referenceId,
+      session_type: "PAY",
+      mode: "PAYMENT_LINK",
+      amount: params.amount,
+      currency: params.currency,
+      country: params.country,
+      customer: params.customer
+        ? {
+            reference_id: params.customer.referenceId,
+            type: params.customer.type,
+            email: params.customer.email,
+            mobile_number: params.customer.mobileNumber,
+            individual_detail: params.customer.individualDetail
+              ? {
+                  given_names: params.customer.individualDetail.givenNames,
+                  surname: params.customer.individualDetail.surname,
+                }
+              : undefined,
+          }
+        : undefined,
+      success_return_url: params.successReturnUrl,
+      cancel_return_url: params.cancelReturnUrl,
+      description: params.description,
+      metadata: params.metadata,
+    }),
+  });
+
+  if (!response.ok) {
+    const details = await response.text();
+    throw new Error(`Xendit session creation failed (${response.status}): ${details}`);
+  }
+
+  return (await response.json()) as XenditPaymentSession;
+}
+
+/**
+ * Validate the x-callback-token header before processing a Xendit webhook.
+ * Also persist webhook-id values in your application to make handlers idempotent.
+ */
+export function verifyXenditWebhookToken(callbackToken: string | null): boolean {
+  const expectedToken = env.XENDIT_WEBHOOK_TOKEN;
+  if (!callbackToken || callbackToken.length !== expectedToken.length) {
+    return false;
+  }
+
+  let mismatch = 0;
+  for (let index = 0; index < expectedToken.length; index += 1) {
+    mismatch |= callbackToken.charCodeAt(index) ^ expectedToken.charCodeAt(index);
+  }
+  return mismatch === 0;
+}
+
+function isPaymentSessionWebhook(value: unknown): value is XenditPaymentSessionWebhook {
+  if (!value || typeof value !== "object") return false;
+  const event = (value as { event?: unknown }).event;
+  const data = (value as { data?: unknown }).data;
+  return (
+    (event === "payment_session.completed" || event === "payment_session.expired") &&
+    Boolean(data) &&
+    typeof data === "object" &&
+    typeof (data as { payment_session_id?: unknown }).payment_session_id === "string" &&
+    typeof (data as { reference_id?: unknown }).reference_id === "string"
+  );
+}
+
+/**
+ * Framework-neutral Payment Session webhook handler.
+ *
+ * Persist webhook IDs before returning success so repeated deliveries can be
+ * rejected by hasProcessedWebhookId. Keep onEvent idempotent as a second layer
+ * of protection against retries.
+ */
+export async function handleXenditPaymentSessionWebhook(
+  request: Request,
+  handlers: XenditWebhookHandlers,
+): Promise<Response> {
+  if (!verifyXenditWebhookToken(request.headers.get("x-callback-token"))) {
+    return new Response("Invalid Xendit callback token", { status: 401 });
+  }
+
+  const webhookId = request.headers.get("webhook-id");
+  if (!webhookId) {
+    return new Response("Missing webhook-id", { status: 400 });
+  }
+
+  if (await handlers.hasProcessedWebhookId?.(webhookId)) {
+    return new Response(null, { status: 200 });
+  }
+
+  let payload: unknown;
+  try {
+    payload = await request.json();
+  } catch {
+    return new Response("Invalid JSON payload", { status: 400 });
+  }
+
+  if (!isPaymentSessionWebhook(payload)) {
+    return new Response("Unsupported Xendit webhook payload", { status: 400 });
+  }
+
+  await handlers.onEvent(payload, webhookId);
+  return new Response(null, { status: 204 });
+}

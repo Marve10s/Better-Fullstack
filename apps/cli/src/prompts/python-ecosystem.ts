@@ -23,12 +23,12 @@ import type {
 } from "../types";
 
 import { exitCancelled } from "../utils/errors";
+import { isCancel, navigableMultiselect, navigableSelect } from "./navigable";
 import {
   createStaticMultiPromptResolution,
   createStaticSinglePromptResolution,
   type PromptOption,
 } from "./prompt-contract";
-import { isCancel, navigableMultiselect, navigableSelect } from "./navigable";
 
 const PYTHON_WEB_FRAMEWORK_PROMPT_OPTIONS: PromptOption<PythonWebFramework>[] = [
   {
@@ -348,11 +348,7 @@ export async function getPythonWebFrameworkChoice(pythonWebFramework?: PythonWeb
 }
 
 export function resolvePythonOrmPrompt(pythonOrm?: PythonOrm) {
-  return createStaticSinglePromptResolution(
-    PYTHON_ORM_PROMPT_OPTIONS,
-    "sqlalchemy",
-    pythonOrm,
-  );
+  return createStaticSinglePromptResolution(PYTHON_ORM_PROMPT_OPTIONS, "sqlalchemy", pythonOrm);
 }
 
 export async function getPythonOrmChoice(pythonOrm?: PythonOrm) {
@@ -422,11 +418,7 @@ export async function getPythonAiChoice(pythonAi?: PythonAi[]) {
 }
 
 export function resolvePythonAuthPrompt(pythonAuth?: PythonAuth) {
-  return createStaticSinglePromptResolution(
-    PYTHON_AUTH_PROMPT_OPTIONS,
-    "none",
-    pythonAuth,
-  );
+  return createStaticSinglePromptResolution(PYTHON_AUTH_PROMPT_OPTIONS, "none", pythonAuth);
 }
 
 export async function getPythonAuthChoice(pythonAuth?: PythonAuth) {
@@ -447,11 +439,7 @@ export async function getPythonAuthChoice(pythonAuth?: PythonAuth) {
 }
 
 export function resolvePythonApiPrompt(pythonApi?: PythonApi) {
-  return createStaticSinglePromptResolution(
-    PYTHON_API_PROMPT_OPTIONS,
-    "none",
-    pythonApi,
-  );
+  return createStaticSinglePromptResolution(PYTHON_API_PROMPT_OPTIONS, "none", pythonApi);
 }
 
 export async function getPythonApiChoice(pythonApi?: PythonApi) {
@@ -497,11 +485,7 @@ export async function getPythonTaskQueueChoice(pythonTaskQueue?: PythonTaskQueue
 }
 
 export function resolvePythonGraphqlPrompt(pythonGraphql?: PythonGraphql) {
-  return createStaticSinglePromptResolution(
-    PYTHON_GRAPHQL_PROMPT_OPTIONS,
-    "none",
-    pythonGraphql,
-  );
+  return createStaticSinglePromptResolution(PYTHON_GRAPHQL_PROMPT_OPTIONS, "none", pythonGraphql);
 }
 
 export async function getPythonGraphqlChoice(pythonGraphql?: PythonGraphql) {
@@ -522,11 +506,7 @@ export async function getPythonGraphqlChoice(pythonGraphql?: PythonGraphql) {
 }
 
 export function resolvePythonQualityPrompt(pythonQuality?: PythonQuality) {
-  return createStaticSinglePromptResolution(
-    PYTHON_QUALITY_PROMPT_OPTIONS,
-    "ruff",
-    pythonQuality,
-  );
+  return createStaticSinglePromptResolution(PYTHON_QUALITY_PROMPT_OPTIONS, "ruff", pythonQuality);
 }
 
 export async function getPythonQualityChoice(pythonQuality?: PythonQuality) {
@@ -612,6 +592,11 @@ const PYTHON_OBSERVABILITY_PROMPT_OPTIONS: PromptOption<PythonObservability>[] =
     hint: "Official OTel SDK with OTLP export and auto-instrumentation",
   },
   {
+    value: "signoz",
+    label: "SigNoz",
+    hint: "OpenTelemetry tracing configured for SigNoz Cloud or self-hosting",
+  },
+  {
     value: "prometheus-client",
     label: "Prometheus Client",
     hint: "Prometheus metrics instrumentation and exposition",
@@ -659,7 +644,11 @@ const PYTHON_HTTP_CLIENT_PROMPT_OPTIONS: PromptOption<PythonHttpClient>[] = [
 const PYTHON_DATA_PROMPT_OPTIONS: PromptOption<PythonData>[] = [
   { value: "numpy", label: "NumPy", hint: "N-dimensional arrays and numerical computing" },
   { value: "pandas", label: "pandas", hint: "DataFrames and data analysis tools" },
-  { value: "scipy", label: "SciPy", hint: "Scientific algorithms for optimization, statistics, and signals" },
+  {
+    value: "scipy",
+    label: "SciPy",
+    hint: "Scientific algorithms for optimization, statistics, and signals",
+  },
   { value: "none", label: "None", hint: "No data/scientific libraries" },
 ];
 
@@ -732,11 +721,7 @@ export async function getPythonCachingChoice(pythonCaching?: PythonCaching) {
 }
 
 export function resolvePythonRealtimePrompt(pythonRealtime?: PythonRealtime) {
-  return createStaticSinglePromptResolution(
-    PYTHON_REALTIME_PROMPT_OPTIONS,
-    "none",
-    pythonRealtime,
-  );
+  return createStaticSinglePromptResolution(PYTHON_REALTIME_PROMPT_OPTIONS, "none", pythonRealtime);
 }
 
 export async function getPythonRealtimeChoice(pythonRealtime?: PythonRealtime) {

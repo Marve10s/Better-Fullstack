@@ -317,11 +317,28 @@ describe("Elixir library expansion", () => {
     const tree = result.tree!;
     const mix = getVirtualTreeFileContent(tree, "mix.exs");
     expect(mix).toContain('{:ecto_sqlite3, "~> 0.24"}');
+    expect(mix).toContain('{:stream_data, "~> 1.3", only: :test}');
     expect(mix).toContain("test_coverage: [tool: ExCoveralls]");
     expect(mix).not.toContain(":postgrex");
     expect(getVirtualTreeFileContent(tree, "lib/elixir_sqlite_quality/repo.ex")).toContain(
       "Ecto.Adapters.SQLite3",
     );
     expect(hasVirtualFile(tree.root, "test/elixir_sqlite_quality/property_test.exs")).toBe(true);
+  });
+
+  it("keeps StreamData available to Ash outside the test environment", async () => {
+    const result = await createVirtual({
+      ...base,
+      projectName: "elixir-ash-stream-data",
+      elixirOrm: "ecto_sqlite3",
+      elixirTesting: "stream_data",
+      elixirApplicationFramework: "ash",
+    });
+
+    expect(result.success).toBe(true);
+    const mix = getVirtualTreeFileContent(result.tree!, "mix.exs");
+    expect(mix).toContain('{:stream_data, "~> 1.3"}');
+    expect(mix).not.toContain('{:stream_data, "~> 1.3", only: :test}');
+    expect(mix).toContain('{:ash, "~> 3.29"}');
   });
 });

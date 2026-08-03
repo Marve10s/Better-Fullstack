@@ -47,6 +47,35 @@ export {
 
 export type CompatibilityCategory = OptionCategory;
 
+const SIGNOZ_SUPPORTED_GO_WEB_FRAMEWORKS = new Set([
+  "gin",
+  "echo",
+  "fiber",
+  "chi",
+  "stdlib",
+]);
+const SIGNOZ_SUPPORTED_PYTHON_WEB_FRAMEWORKS = new Set(["fastapi"]);
+
+export function isSignozSupportedGoWebFramework(framework: string): boolean {
+  return SIGNOZ_SUPPORTED_GO_WEB_FRAMEWORKS.has(framework);
+}
+
+export function hasSignozSupportedGoServerTarget(stack: {
+  goWebFramework?: string;
+  goApi?: string;
+  auth?: string;
+}): boolean {
+  return (
+    isSignozSupportedGoWebFramework(stack.goWebFramework ?? "none") ||
+    ((stack.goWebFramework ?? "none") === "none" &&
+      (stack.goApi === "grpc-go" || stack.auth === "go-better-auth"))
+  );
+}
+
+export function isSignozSupportedPythonWebFramework(framework: string): boolean {
+  return SIGNOZ_SUPPORTED_PYTHON_WEB_FRAMEWORKS.has(framework);
+}
+
 // ============================================
 // KOTLIN (JAVA ECOSYSTEM) SUPPORT GATE
 // ============================================
@@ -508,6 +537,73 @@ export const analyzeStackCompatibility = (
   const notes: CompatibilityAnalysisResult["notes"] = {};
   const changes: CompatibilityAdjustment[] = [];
 
+  if (
+    nextStack.observability === "signoz" &&
+    (nextStack.backend === "none" || nextStack.backend === "convex")
+  ) {
+    nextStack.observability = "none";
+    changed = true;
+    changes.push({
+      category: "observability",
+      message: "Observability set to 'None' (SigNoz tracing requires a generated server target)",
+    });
+  }
+
+  if (
+    nextStack.observability === "signoz" &&
+    (nextStack.backend === "self-tanstack-start" || nextStack.backend === "self-astro")
+  ) {
+    nextStack.observability = "none";
+    changed = true;
+    changes.push({
+      category: "observability",
+      message:
+        "Observability set to 'None' (SigNoz tracing is not yet bootstrapped for this fullstack frontend)",
+    });
+  }
+
+  if (
+    nextStack.observability === "signoz" &&
+    nextStack.webDeploy === "cloudflare" &&
+    (nextStack.backend === "self" || nextStack.backend.startsWith("self-"))
+  ) {
+    nextStack.observability = "none";
+    changed = true;
+    changes.push({
+      category: "observability",
+      message:
+        "Observability set to 'None' (SigNoz's Node SDK is incompatible with Cloudflare-hosted fullstack apps)",
+    });
+  }
+
+  if (
+    nextStack.ecosystem !== "typescript" &&
+    nextStack.ecosystem !== "react-native" &&
+    nextStack.codeQuality.includes("knip")
+  ) {
+    nextStack.codeQuality = nextStack.codeQuality.filter((addon) => addon !== "knip");
+    changed = true;
+    changes.push({
+      category: "codeQuality",
+      message: "Removed Knip (Knip requires a TypeScript or React Native workspace)",
+    });
+  }
+
+  if (nextStack.ecosystem === "react-native") {
+    const supportedCodeQuality = new Set(["knip", "gitleaks"]);
+    const filteredCodeQuality = nextStack.codeQuality.filter((addon) =>
+      supportedCodeQuality.has(addon),
+    );
+    if (filteredCodeQuality.length !== nextStack.codeQuality.length) {
+      nextStack.codeQuality = filteredCodeQuality;
+      changed = true;
+      changes.push({
+        category: "codeQuality",
+        message: "Removed code-quality tools that are not supported by React Native projects",
+      });
+    }
+  }
+
   for (const cat of CATEGORY_ORDER) {
     notes[cat] = { notes: [], hasIssue: false };
   }
@@ -779,6 +875,17 @@ export const analyzeStackCompatibility = (
     changes.push({
       category: "runtime",
       message: "Backend set to 'Hono' (required for Workers)",
+    });
+  }
+
+  // The SigNoz TypeScript scaffold uses the OpenTelemetry Node SDK. Bun/fetch
+  // is instrumented explicitly, but the SDK itself is not Workers-compatible.
+  if (nextStack.runtime === "workers" && nextStack.observability === "signoz") {
+    nextStack.observability = "none";
+    changed = true;
+    changes.push({
+      category: "observability",
+      message: "Observability set to 'None' (SigNoz requires the Node.js or Bun runtime)",
     });
   }
 
@@ -1235,6 +1342,15 @@ export const analyzeStackCompatibility = (
           : "Payments set to 'None' (PayPal requires a web frontend)",
       });
     }
+  }
+
+  if (nextStack.payments === "xendit" && ["none", "convex"].includes(nextStack.backend)) {
+    nextStack.payments = "none";
+    changed = true;
+    changes.push({
+      category: "payments",
+      message: "Payments set to 'None' (Xendit Payment Sessions require a server backend)",
+    });
   }
 
   if (
@@ -1783,6 +1899,17 @@ export const analyzeStackCompatibility = (
   // ============================================
 
   if (nextStack.ecosystem === "python") {
+    if (
+      nextStack.pythonObservability === "signoz" &&
+      !isSignozSupportedPythonWebFramework(nextStack.pythonWebFramework)
+    ) {
+      nextStack.pythonObservability = "none";
+      changed = true;
+      changes.push({
+        category: "pythonObservability",
+        message: "Python observability set to 'None' (SigNoz request tracing is wired for FastAPI)",
+      });
+    }
     if (nextStack.pythonWebFramework !== "django" && nextStack.pythonApi !== "none") {
       nextStack.pythonApi = "none";
       changed = true;
@@ -1877,6 +2004,20 @@ export const analyzeStackCompatibility = (
         message: "Production server set to 'None' (Gunicorn requires a WSGI, ASGI, or aiohttp app)",
       });
     }
+  }
+
+  if (
+    nextStack.ecosystem === "go" &&
+    nextStack.goObservability === "signoz" &&
+    !hasSignozSupportedGoServerTarget(nextStack)
+  ) {
+    nextStack.goObservability = "none";
+    changed = true;
+    changes.push({
+      category: "goObservability",
+      message:
+        "Go observability set to 'None' (SigNoz requires an instrumented HTTP, gRPC, or Go Better Auth server target)",
+    });
   }
 
   // ============================================
@@ -2215,6 +2356,57 @@ export const getDisabledReason = (
   optionId: string,
 ): string | null => {
   if (
+    currentStack.ecosystem === "react-native" &&
+    category === "codeQuality" &&
+    optionId !== "knip" &&
+    optionId !== "gitleaks"
+  ) {
+    return "React Native code quality currently supports Knip and Gitleaks only";
+  }
+
+  if (
+    category === "codeQuality" &&
+    optionId === "knip" &&
+    currentStack.ecosystem !== "typescript" &&
+    currentStack.ecosystem !== "react-native"
+  ) {
+    return "Knip requires a TypeScript or React Native workspace";
+  }
+
+  if (
+    ((category === "observability" && optionId === "signoz") ||
+      (category === "backend" && currentStack.observability === "signoz")) &&
+    (category === "backend"
+      ? optionId === "none" || optionId === "convex"
+      : currentStack.backend === "none" || currentStack.backend === "convex")
+  ) {
+    return "SigNoz tracing requires a generated server target";
+  }
+
+  if (
+    ((category === "observability" && optionId === "signoz") ||
+      (category === "backend" && currentStack.observability === "signoz")) &&
+    (category === "backend"
+      ? optionId === "self-tanstack-start" || optionId === "self-astro"
+      : currentStack.backend === "self-tanstack-start" || currentStack.backend === "self-astro")
+  ) {
+    return "SigNoz tracing is not yet bootstrapped for TanStack Start or Astro fullstack apps";
+  }
+
+  const signozBackend = category === "backend" ? optionId : currentStack.backend;
+  const signozWebDeploy = category === "webDeploy" ? optionId : currentStack.webDeploy;
+  const signozSelected =
+    (category === "observability" && optionId === "signoz") ||
+    currentStack.observability === "signoz";
+  if (
+    signozSelected &&
+    signozWebDeploy === "cloudflare" &&
+    (signozBackend === "self" || signozBackend.startsWith("self-"))
+  ) {
+    return "SigNoz's Node SDK is incompatible with Cloudflare-hosted fullstack apps";
+  }
+
+  if (
     category === "appPlatforms" &&
     optionId === "kong" &&
     currentStack.ecosystem === "typescript" &&
@@ -2318,13 +2510,18 @@ export const getDisabledReason = (
       "aiDocs",
       "git",
       "install",
+      "codeQuality",
     ]);
 
     if (category === "payments" && optionId !== "none" && optionId !== "revenuecat") {
       return "React Native payments currently support RevenueCat only";
     }
 
-    if (!reactNativeCategories.has(category) && optionId !== "none" && optionId !== "false") {
+    if (
+      !reactNativeCategories.has(category) &&
+      optionId !== "none" &&
+      optionId !== "false"
+    ) {
       return "React Native ecosystem only supports native mobile options";
     }
   }
@@ -2513,8 +2710,37 @@ export const getDisabledReason = (
     return "Gunicorn requires a WSGI, ASGI, or aiohttp application";
   }
 
-  // Cross-category runtime constraints must run before graph-owned categories
-  // return authoritatively.
+  // Runtime-specific observability gates must run before graph-owned category
+  // handling returns an authoritative result.
+  if (
+    (category === "observability" && optionId === "signoz" && currentStack.runtime === "workers") ||
+    (category === "runtime" && optionId === "workers" && currentStack.observability === "signoz")
+  ) {
+    return "SigNoz tracing currently requires the Node.js or Bun runtime";
+  }
+  if (
+    ((category === "goObservability" && optionId === "signoz") ||
+      (category === "goWebFramework" && currentStack.goObservability === "signoz") ||
+      (category === "goApi" && currentStack.goObservability === "signoz") ||
+      (category === "auth" && currentStack.goObservability === "signoz")) &&
+    !hasSignozSupportedGoServerTarget({
+      ...currentStack,
+      ...(category === "goWebFramework" ? { goWebFramework: optionId } : {}),
+      ...(category === "goApi" ? { goApi: optionId } : {}),
+      ...(category === "auth" ? { auth: optionId } : {}),
+    })
+  ) {
+    return "SigNoz requires Gin, Echo, Fiber, Chi, net/http, gRPC, or Go Better Auth to provide a server target";
+  }
+  if (
+    ((category === "pythonObservability" && optionId === "signoz") ||
+      (category === "pythonWebFramework" && currentStack.pythonObservability === "signoz")) &&
+    !isSignozSupportedPythonWebFramework(
+      category === "pythonWebFramework" ? optionId : currentStack.pythonWebFramework,
+    )
+  ) {
+    return "SigNoz request tracing is currently wired for FastAPI";
+  }
   if (
     category === "integrations" &&
     optionId === "nango" &&
@@ -2677,6 +2903,9 @@ export const getDisabledReason = (
   // RUNTIME CONSTRAINTS
   // ============================================
   if (category === "runtime") {
+    if (optionId === "workers" && currentStack.observability === "signoz") {
+      return "SigNoz tracing currently requires the Node.js or Bun runtime";
+    }
     if (optionId === "workers" && currentStack.integrations === "nango") {
       return "Nango's Node SDK is not available on Workers runtime";
     }
@@ -2942,6 +3171,14 @@ export const getDisabledReason = (
     if (["none", "convex"].includes(currentStack.backend)) {
       return "PayPal checkout requires a standalone or fullstack backend";
     }
+  }
+
+  if (
+    category === "payments" &&
+    optionId === "xendit" &&
+    ["none", "convex"].includes(currentStack.backend)
+  ) {
+    return "Xendit Payment Sessions require a standalone or fullstack backend";
   }
 
   // ============================================
@@ -4513,6 +4750,8 @@ const ADDON_COMPATIBILITY: Record<Addons, readonly Frontend[]> = {
   prettier: [],
   husky: [],
   lefthook: [],
+  knip: [],
+  gitleaks: [],
   turborepo: [],
   nx: [],
   starlight: [],
