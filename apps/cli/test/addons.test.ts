@@ -56,6 +56,31 @@ describe("Addon Configurations", () => {
         { timeout: universalAddonTimeoutMs },
       );
     }
+
+    it("uses npm exec for generated Lefthook linter jobs", async () => {
+      const result = await runTRPCTest({
+        projectName: "npm-lefthook-biome",
+        packageManager: "npm",
+        addons: ["lefthook", "biome"],
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "node",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "trpc",
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const lefthook = readFileSync(join(result.projectDir!, "lefthook.yml"), "utf-8");
+      expect(lefthook).toContain("npm exec biome check --write");
+      expect(lefthook).not.toContain("run: npm biome");
+    });
   });
 
   describe("Knip Addon", () => {
@@ -254,6 +279,7 @@ describe("Addon Configurations", () => {
     it("refreshes existing Lefthook config when a linter is added later", async () => {
       const result = await runTRPCTest({
         projectName: "linter-added-after-lefthook",
+        packageManager: "npm",
         addons: ["lefthook"],
         frontend: ["tanstack-router"],
         backend: "hono",
@@ -281,7 +307,8 @@ describe("Addon Configurations", () => {
 
       const lefthook = readFileSync(join(result.projectDir!, "lefthook.yml"), "utf-8");
       expect(lefthook).toContain("name: biome");
-      expect(lefthook).toContain("biome check --write");
+      expect(lefthook).toContain("npm exec biome check --write");
+      expect(lefthook).not.toContain("run: npm biome");
       expect(lefthook).not.toContain("Add your pre-commit commands here");
     });
 

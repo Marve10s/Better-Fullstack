@@ -331,25 +331,26 @@ async function ensureLinterLefthookHook(
   packageManager: ProjectConfig["packageManager"],
 ) {
   const hookPath = path.join(projectDir, "lefthook.yml");
+  const packageBinaryRunner = packageManager === "npm" ? "npm exec" : packageManager;
   const definitions =
     linter === "biome"
       ? [
           {
             name: "biome",
             glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}",
-            run: `${packageManager} biome check --write --no-errors-on-unmatched --files-ignore-unknown=true {staged_files}`,
+            run: `${packageBinaryRunner} biome check --write --no-errors-on-unmatched --files-ignore-unknown=true {staged_files}`,
             stage_fixed: true,
           },
         ]
       : [
           {
             name: "oxlint",
-            run: `${packageManager} oxlint --fix {staged_files}`,
+            run: `${packageBinaryRunner} oxlint --fix {staged_files}`,
             stage_fixed: true,
           },
           {
             name: "oxfmt",
-            run: `${packageManager} oxfmt --write {staged_files}`,
+            run: `${packageBinaryRunner} oxfmt --write {staged_files}`,
             stage_fixed: true,
           },
         ];
