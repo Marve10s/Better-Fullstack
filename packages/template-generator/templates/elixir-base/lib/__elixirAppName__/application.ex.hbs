@@ -4,7 +4,13 @@ defmodule {{elixirModuleName}}.Application do
   @impl true
   def start(_type, _args) do
 {{#if (and (eq elixirObservability "opentelemetry") (ne elixirWebFramework "none"))}}
-    OpentelemetryPhoenix.setup()
+{{#if (eq elixirHttpServer "bandit")}}
+    OpentelemetryBandit.setup()
+    OpentelemetryPhoenix.setup(adapter: :bandit)
+{{else}}
+    :opentelemetry_cowboy.setup()
+    OpentelemetryPhoenix.setup(adapter: :cowboy2)
+{{/if}}
 
 {{/if}}
     children = [
