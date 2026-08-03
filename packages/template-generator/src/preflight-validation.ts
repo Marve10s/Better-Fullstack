@@ -87,6 +87,9 @@ const needsStandaloneServer = (config: ProjectConfig) =>
 const needsAnyServer = (config: ProjectConfig) =>
   !hasGraphBackend(config) && (config.backend === "convex" || config.backend === "none");
 
+const usesCloudflareFullstackRuntime = (config: ProjectConfig) =>
+  config.backend === "self" && config.webDeploy === "cloudflare";
+
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 const serverFeature = (
@@ -129,8 +132,10 @@ const PREFLIGHT_RULES: readonly PreflightRule[] = [
     id: "integrations-workers-runtime",
     featureKey: "integrations",
     displayName: "Integrations (Nango)",
-    willSkip: (c) => c.integrations === "nango" && c.runtime === "workers",
-    reason: "Nango's Node SDK is not available on the Workers runtime.",
+    willSkip: (c) =>
+      c.integrations === "nango" &&
+      (c.runtime === "workers" || usesCloudflareFullstackRuntime(c)),
+    reason: "Nango's Node SDK is not available on the Cloudflare Workers runtime.",
     suggestions: ["Switch to the Node or Bun runtime", "Remove Nango integrations"],
   },
 

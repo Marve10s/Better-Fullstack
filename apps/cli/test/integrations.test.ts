@@ -1,4 +1,8 @@
-import { analyzeStackCompatibility, IntegrationsSchema } from "@better-fullstack/types";
+import {
+  analyzeStackCompatibility,
+  getDisabledReason,
+  IntegrationsSchema,
+} from "@better-fullstack/types";
 import { describe, expect, test } from "bun:test";
 import { readFile } from "node:fs/promises";
 
@@ -80,5 +84,24 @@ describe("third-party integrations", () => {
 
     expect(result.adjustedStack?.integrations).toBe("none");
     expect(result.changes.some((change) => change.category === "integrations")).toBe(true);
+  });
+
+  test("normalizes Nango away from fullstack Cloudflare deployments", () => {
+    const config = createCustomConfig({
+      frontend: ["next"],
+      backend: "self",
+      runtime: "none",
+      webDeploy: "cloudflare",
+      integrations: "nango",
+    });
+    const input = buildCompatibilityInputFromConfig(config);
+    const result = analyzeStackCompatibility(input);
+
+    expect(result.adjustedStack?.integrations).toBe("none");
+    expect(result.changes.some((change) => change.category === "integrations")).toBe(true);
+    expect(getDisabledReason(input, "integrations", "nango")).toContain("Cloudflare Workers");
+    expect(
+      getDisabledReason({ ...input, webDeploy: "none" }, "webDeploy", "cloudflare"),
+    ).toContain("Cloudflare Workers");
   });
 });

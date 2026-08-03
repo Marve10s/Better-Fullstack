@@ -1364,6 +1364,13 @@ describe("stack update planner", () => {
           expected: "s3",
           expectedPath: "apps/server/src/lib/storage.ts",
         },
+        {
+          name: "integrations-nango",
+          update: { integrations: "nango" },
+          field: "integrations",
+          expected: "nango",
+          expectedPath: "apps/server/src/lib/nango.ts",
+        },
       ];
 
       for (const testCase of cases) {

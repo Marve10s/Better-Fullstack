@@ -405,6 +405,15 @@ export type CompatibilityAnalysisResult = {
  * Nuxt is intentionally excluded from the MVP (different alias convention).
  */
 const SINGLE_APP_SELF_BACKENDS = new Set(["self-next", "self-tanstack-start"]);
+const FULLSTACK_SELF_BACKENDS = new Set([
+  "self-next",
+  "self-vinext",
+  "self-tanstack-start",
+  "self-astro",
+  "self-nuxt",
+  "self-svelte",
+  "self-solid-start",
+]);
 const SINGLE_APP_WEB_FRONTEND_BY_BACKEND: Record<string, string> = {
   "self-next": "next",
   "self-tanstack-start": "tanstack-start",
@@ -461,6 +470,9 @@ export function stackQualifiesForSingleApp(stack: CompatibilityInput): boolean {
 
   return true;
 }
+
+const usesCloudflareFullstackRuntime = (stack: CompatibilityInput): boolean =>
+  stack.webDeploy === "cloudflare" && FULLSTACK_SELF_BACKENDS.has(stack.backend);
 
 export const analyzeStackCompatibility = (
   stack: CompatibilityInput,
@@ -783,12 +795,16 @@ export const analyzeStackCompatibility = (
     });
   }
 
-  if (nextStack.runtime === "workers" && nextStack.integrations !== "none") {
+  if (
+    (nextStack.runtime === "workers" || usesCloudflareFullstackRuntime(nextStack)) &&
+    nextStack.integrations !== "none"
+  ) {
     nextStack.integrations = "none";
     changed = true;
     changes.push({
       category: "integrations",
-      message: "Integrations set to 'none' (Nango's Node SDK is not available on Workers)",
+      message:
+        "Integrations set to 'none' (Nango's Node SDK is not available on Cloudflare Workers)",
     });
   }
 
@@ -2455,6 +2471,24 @@ export const getDisabledReason = (
     return "Gunicorn requires a WSGI, ASGI, or aiohttp application";
   }
 
+  // Cross-category runtime constraints must run before graph-owned categories
+  // return authoritatively.
+  if (
+    category === "integrations" &&
+    optionId === "nango" &&
+    usesCloudflareFullstackRuntime(currentStack)
+  ) {
+    return "Nango's Node SDK is not available on Cloudflare Workers";
+  }
+  if (
+    category === "webDeploy" &&
+    optionId === "cloudflare" &&
+    currentStack.integrations === "nango" &&
+    FULLSTACK_SELF_BACKENDS.has(currentStack.backend)
+  ) {
+    return "Nango's Node SDK is not available on Cloudflare Workers";
+  }
+
   const graphDisabledReason =
     (category === "payments" && optionId === "revenuecat") ||
     (category === "i18n" && optionId === "intlayer")
@@ -2920,8 +2954,8 @@ export const getDisabledReason = (
     if (currentStack.backend === "none") {
       return "Nango SDK generation requires a backend";
     }
-    if (currentStack.runtime === "workers") {
-      return "Nango's Node SDK is not available on Workers runtime";
+    if (currentStack.runtime === "workers" || usesCloudflareFullstackRuntime(currentStack)) {
+      return "Nango's Node SDK is not available on Cloudflare Workers";
     }
   }
 

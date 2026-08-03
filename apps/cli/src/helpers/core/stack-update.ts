@@ -638,6 +638,7 @@ function needsStandaloneBackendForRequestedUpdate(
     hasRequestedNonNoneValue(requestedChanges, "email") ||
     hasRequestedNonNoneValue(requestedChanges, "logging") ||
     hasRequestedNonNoneValue(requestedChanges, "observability") ||
+    hasRequestedNonNoneValue(requestedChanges, "integrations") ||
     hasRequestedNonNoneValue(requestedChanges, "caching") ||
     hasRequestedNonNoneValue(requestedChanges, "rateLimit") ||
     hasRequestedNonNoneValue(requestedChanges, "jobQueue") ||
