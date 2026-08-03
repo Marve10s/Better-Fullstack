@@ -849,6 +849,9 @@ export const dependencyVersionMap = {
   // Integrations - Nango
   "@nangohq/node": "^0.71.3",
 
+  // E-commerce - Medusa
+  "@medusajs/js-sdk": "^2.18.0",
+
   // Vector DB - pgvector (Postgres driver)
   postgres: "^3.4.9",
 

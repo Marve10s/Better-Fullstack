@@ -74,6 +74,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   "apollo-client": { type: "si", slug: "apollographql", hex: "311C87" },
   ga4: { type: "si", slug: "googleanalytics", hex: "E37400" },
   paypal: { type: "si", slug: "paypal", hex: "003087" },
+  medusa: { type: "si", slug: "medusa", hex: "000000" },
   electron: { type: "si", slug: "electron", hex: "47848F" },
   capacitor: { type: "si", slug: "capacitor", hex: "119EFF" },
   "styled-components": { type: "si", slug: "styledcomponents", hex: "DB7093" },

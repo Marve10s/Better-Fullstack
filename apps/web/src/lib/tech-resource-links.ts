@@ -804,6 +804,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://nango.dev/docs/reference/backend/backend-sdk/node",
     githubUrl: "https://github.com/NangoHQ/nango",
   },
+  medusa: {
+    docsUrl: "https://docs.medusajs.com/resources/js-sdk",
+    githubUrl: "https://github.com/medusajs/medusa",
+  },
   posthog: { docsUrl: "https://posthog.com/docs", githubUrl: "https://github.com/PostHog/posthog" },
   launchdarkly: {
     docsUrl: "https://launchdarkly.com/docs/sdk",

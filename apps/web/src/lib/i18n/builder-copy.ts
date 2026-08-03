@@ -183,6 +183,16 @@ const CATEGORY_NAMES: Record<string, LocalizedMap> = {
     "fr": "Intégrations",
     "uk": "Інтеграції",
   },
+  ecommerce: {
+    "es": "Comercio electrónico",
+    "zh": "电子商务",
+    "ja": "Eコマース",
+    "ko": "전자상거래",
+    "zh-Hant": "電子商務",
+    "de": "E-Commerce",
+    "fr": "Commerce électronique",
+    "uk": "Електронна комерція",
+  },
   analytics: {
     "es": "Analítica",
     "zh": "分析",

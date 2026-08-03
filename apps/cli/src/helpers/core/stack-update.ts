@@ -635,6 +635,7 @@ function needsStandaloneBackendForRequestedUpdate(
     hasRequestedNonNoneValue(requestedChanges, "api") ||
     isBetterAuth(requestedChanges.auth) ||
     hasRequestedNonNoneValue(requestedChanges, "payments") ||
+    hasRequestedNonNoneValue(requestedChanges, "ecommerce") ||
     hasRequestedNonNoneValue(requestedChanges, "email") ||
     hasRequestedNonNoneValue(requestedChanges, "logging") ||
     hasRequestedNonNoneValue(requestedChanges, "observability") ||

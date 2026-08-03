@@ -49,6 +49,7 @@ import {
   DATABASE_VALUES,
   EFFECT_VALUES,
   EMAIL_VALUES,
+  ECOMMERCE_VALUES,
   FEATURE_FLAGS_VALUES,
   INTEGRATIONS_VALUES,
   FILE_STORAGE_VALUES,
@@ -189,6 +190,7 @@ export type OptionCategory =
   | "cms"
   | "featureFlags"
   | "integrations"
+  | "ecommerce"
   | "analytics"
   | "mobileNavigation"
   | "mobileUI"
@@ -355,6 +357,7 @@ export const TYPESCRIPT_CATEGORY_ORDER = [
   "observability",
   "featureFlags",
   "integrations",
+  "ecommerce",
   "analytics",
   "ai",
   "stateManagement",
@@ -869,6 +872,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   cms: CMS_VALUES,
   featureFlags: FEATURE_FLAGS_VALUES,
   integrations: INTEGRATIONS_VALUES,
+  ecommerce: ECOMMERCE_VALUES,
   analytics: ANALYTICS_VALUES,
   mobileNavigation: MOBILE_NAVIGATION_VALUES,
   mobileUI: MOBILE_UI_VALUES,
@@ -1191,6 +1195,9 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   integrations: {
     nango: "Nango",
+  },
+  ecommerce: {
+    medusa: "MedusaJS",
   },
   analytics: {
     plausible: "Plausible",
@@ -2030,6 +2037,7 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   cms: buildCategoryMetadata("cms"),
   featureFlags: buildCategoryMetadata("featureFlags"),
   integrations: buildCategoryMetadata("integrations"),
+  ecommerce: buildCategoryMetadata("ecommerce"),
   analytics: buildCategoryMetadata("analytics"),
   mobileNavigation: buildCategoryMetadata("mobileNavigation"),
   mobileUI: buildCategoryMetadata("mobileUI"),

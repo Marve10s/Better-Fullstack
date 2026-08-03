@@ -254,6 +254,10 @@ export function displayConfig(config: Partial<ProjectConfig>) {
     configDisplay.push(`${pc.blue("Integrations:")} ${String(config.integrations)}`);
   }
 
+  if (config.ecommerce !== undefined) {
+    configDisplay.push(`${pc.blue("E-commerce:")} ${String(config.ecommerce)}`);
+  }
+
   if (config.analytics !== undefined) {
     configDisplay.push(`${pc.blue("Analytics:")} ${String(config.analytics)}`);
   }

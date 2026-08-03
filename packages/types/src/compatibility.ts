@@ -160,6 +160,7 @@ export type CompatibilityInput = {
   observability: string;
   featureFlags: string;
   integrations: string;
+  ecommerce: string;
   analytics: string;
   backendLibraries: string;
   stateManagement: string;
@@ -458,6 +459,7 @@ export function stackQualifiesForSingleApp(stack: CompatibilityInput): boolean {
     stack.analytics,
     stack.featureFlags,
     stack.integrations,
+    stack.ecommerce,
     stack.observability,
     stack.logging,
     stack.webDeploy,
@@ -487,14 +489,16 @@ export const analyzeStackCompatibility = (
   }
 
   const nextStack = { ...stack };
-  // vectorDb and integrations are newer optional fields; callers and fixtures
-  // that predate them omit the fields entirely. Treat missing values as "none"
-  // up front so service overrides do not report schema defaults as adjustments.
+  // Newer optional fields may be absent from older callers and fixtures. Treat
+  // them as "none" before service overrides report schema-default adjustments.
   if (nextStack.vectorDb === undefined) {
     nextStack.vectorDb = "none";
   }
   if (nextStack.integrations === undefined) {
     nextStack.integrations = "none";
+  }
+  if (nextStack.ecommerce === undefined) {
+    nextStack.ecommerce = "none";
   }
   let changed = false;
   const notes: CompatibilityAnalysisResult["notes"] = {};
@@ -522,6 +526,7 @@ export const analyzeStackCompatibility = (
       rateLimit: "none",
       fileStorage: "none",
       integrations: "none",
+      ecommerce: "none",
     };
 
     for (const [key, value] of Object.entries(convexOverrides)) {
@@ -602,6 +607,7 @@ export const analyzeStackCompatibility = (
       rateLimit: "none",
       fileStorage: "none",
       integrations: "none",
+      ecommerce: "none",
     };
 
     if (nextStack.ecosystem !== "go") {
@@ -1326,6 +1332,7 @@ export const analyzeStackCompatibility = (
       ["caching", "none", "Caching set to 'None' (React Native ecosystem)"],
       ["i18n", "none", "i18n set to 'None' (React Native ecosystem)"],
       ["featureFlags", "none", "Feature flags set to 'None' (React Native ecosystem)"],
+      ["ecommerce", "none", "E-commerce set to 'None' (React Native ecosystem)"],
       ["analytics", "none", "Analytics set to 'None' (React Native ecosystem)"],
       ["aiSdk", "none", "AI SDK set to 'None' (React Native ecosystem)"],
       ["backendLibraries", "none", "Backend libraries set to 'None' (React Native ecosystem)"],
@@ -2330,6 +2337,9 @@ export const getDisabledReason = (
     if (category === "integrations" && optionId !== "none") {
       return "No backend selected";
     }
+    if (category === "ecommerce" && optionId !== "none") {
+      return "No backend selected";
+    }
     if (category === "examples" && optionId !== "none") {
       return "No backend selected";
     }
@@ -2932,6 +2942,18 @@ export const getDisabledReason = (
     }
     if (currentStack.backend === "none") {
       return "Email integration requires a backend";
+    }
+  }
+
+  if (category === "ecommerce" && optionId !== "none") {
+    if (currentStack.ecosystem !== "typescript") {
+      return "MedusaJS SDK generation is only available for the TypeScript ecosystem";
+    }
+    if (currentStack.backend === "convex") {
+      return "MedusaJS SDK generation is not available with Convex backend";
+    }
+    if (currentStack.backend === "none") {
+      return "MedusaJS SDK generation requires a backend";
     }
   }
 
@@ -5037,6 +5059,7 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
     ["cms", input.cms],
     ["featureFlags", input.featureFlags],
     ["integrations", input.integrations],
+    ["ecommerce", input.ecommerce],
     ["pythonApi", input.pythonApi],
     ["javaWebFramework", input.javaWebFramework],
     ["javaBuildTool", input.javaBuildTool],

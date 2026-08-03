@@ -138,6 +138,7 @@ const PREFLIGHT_RULES: readonly PreflightRule[] = [
     reason: "Nango's Node SDK is not available on the Cloudflare Workers runtime.",
     suggestions: ["Switch to the Node or Bun runtime", "Remove Nango integrations"],
   },
+  backendFeature("ecommerce-no-backend", "ecommerce", "E-commerce"),
 
   ...["payload", "sanity", "strapi", "tinacms"].map(
     (name): PreflightRule => ({

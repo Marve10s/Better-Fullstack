@@ -45,6 +45,7 @@ import type {
   ObservabilitySchema,
   FeatureFlagsSchema,
   IntegrationsSchema,
+  EcommerceSchema,
   AnalyticsSchema,
   MobileNavigationSchema,
   MobileUISchema,
@@ -209,6 +210,7 @@ export type Logging = z.infer<typeof LoggingSchema>;
 export type Observability = z.infer<typeof ObservabilitySchema>;
 export type FeatureFlags = z.infer<typeof FeatureFlagsSchema>;
 export type Integrations = z.infer<typeof IntegrationsSchema>;
+export type Ecommerce = z.infer<typeof EcommerceSchema>;
 export type Analytics = z.infer<typeof AnalyticsSchema>;
 export type MobileNavigation = z.infer<typeof MobileNavigationSchema>;
 export type MobileUI = z.infer<typeof MobileUISchema>;

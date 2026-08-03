@@ -18,6 +18,7 @@ import { processCSSAndUILibraryDeps } from "./css-ui-deps";
 import { processDatabaseDeps } from "./db-deps";
 import { processDeployDeps } from "./deploy-deps";
 import { processEffectDeps } from "./effect-deps";
+import { processEcommerceDeps } from "./ecommerce-deps";
 import { processEmailDeps } from "./email-deps";
 import { processEnvDeps } from "./env-deps";
 import { processEnvVariables } from "./env-vars";
@@ -76,6 +77,7 @@ export function processDependencies(vfs: VirtualFileSystem, config: ProjectConfi
   processRateLimitDeps(vfs, config);
   processFeatureFlagsDeps(vfs, config);
   processIntegrationsDeps(vfs, config);
+  processEcommerceDeps(vfs, config);
   processAnalyticsDeps(vfs, config);
   processCSSAndUILibraryDeps(vfs, config);
   processCMSDeps(vfs, config);
@@ -117,6 +119,7 @@ export {
   processObservabilityDeps,
   processFeatureFlagsDeps,
   processIntegrationsDeps,
+  processEcommerceDeps,
   processPaymentsDeps,
   processRateLimitDeps,
   processReadme,

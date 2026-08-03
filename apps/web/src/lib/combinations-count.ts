@@ -81,6 +81,7 @@ const typescriptSingleSelectCategories = [
   "observability",
   "featureFlags",
   "integrations",
+  "ecommerce",
   "analytics",
   "search",
   "fileStorage",

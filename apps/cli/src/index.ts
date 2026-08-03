@@ -117,6 +117,7 @@ export async function createVirtual(
       observability: options.observability || "none",
       featureFlags: options.featureFlags || "none",
       integrations: options.integrations || "none",
+      ecommerce: options.ecommerce || "none",
       analytics: options.analytics || "none",
       mobileNavigation: options.mobileNavigation || (hasNativeFrontend ? "expo-router" : "none"),
       mobileUI: options.mobileUI || "none",

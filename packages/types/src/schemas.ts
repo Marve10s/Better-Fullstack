@@ -52,6 +52,7 @@ export const StackPartRoleSchema = z
     "logging",
     "featureFlags",
     "integrations",
+    "ecommerce",
     "analytics",
     "cms",
     "i18n",
@@ -427,6 +428,7 @@ export const FeatureFlagsSchema = z
 export const IntegrationsSchema = z
   .enum(["nango", "none"])
   .describe("Third-party integrations platform SDK");
+export const EcommerceSchema = z.enum(["medusa", "none"]).describe("E-commerce platform SDK");
 
 export const AnalyticsSchema = z
   .enum(["plausible", "umami", "posthog", "ga4", "none"])
@@ -1125,6 +1127,7 @@ export const CreateInputSchema = z.object({
   observability: ObservabilitySchema.optional(),
   featureFlags: FeatureFlagsSchema.optional(),
   integrations: IntegrationsSchema.optional(),
+  ecommerce: EcommerceSchema.optional(),
   analytics: AnalyticsSchema.optional(),
   cms: CMSSchema.optional(),
   caching: CachingSchema.optional(),
@@ -1316,6 +1319,7 @@ export const ProjectConfigSchema = z.object({
   observability: ObservabilitySchema,
   featureFlags: FeatureFlagsSchema,
   integrations: IntegrationsSchema.default("none"),
+  ecommerce: EcommerceSchema.default("none"),
   analytics: AnalyticsSchema,
   cms: CMSSchema,
   caching: CachingSchema,
@@ -1494,6 +1498,7 @@ export const BetterTStackConfigSchema = z.object({
   observability: ObservabilitySchema,
   featureFlags: FeatureFlagsSchema,
   integrations: IntegrationsSchema.default("none"),
+  ecommerce: EcommerceSchema.default("none"),
   analytics: AnalyticsSchema,
   cms: CMSSchema,
   caching: CachingSchema,
@@ -1685,6 +1690,7 @@ export const LOGGING_VALUES = LoggingSchema.options;
 export const OBSERVABILITY_VALUES = ObservabilitySchema.options;
 export const FEATURE_FLAGS_VALUES = FeatureFlagsSchema.options;
 export const INTEGRATIONS_VALUES = IntegrationsSchema.options;
+export const ECOMMERCE_VALUES = EcommerceSchema.options;
 export const ANALYTICS_VALUES = AnalyticsSchema.options;
 export const MOBILE_NAVIGATION_VALUES = MobileNavigationSchema.options;
 export const MOBILE_UI_VALUES = MobileUISchema.options;
