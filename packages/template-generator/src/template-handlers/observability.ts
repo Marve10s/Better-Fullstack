@@ -110,8 +110,13 @@ export default defineNitroPlugin((nitroApp) => {
           : getErrorStatusCode(requestError);
       context.with(requestContext, () => finishSpan(event, statusCode, requestError));
     };
+    const endAbortedRequestSpan = () => {
+      if (event.node.res.writableFinished) return;
+      const error = requestError ?? new Error("Response closed before completion");
+      context.with(requestContext, () => finishSpan(event, 499, error));
+    };
     event.node.res.once("finish", endRequestSpan);
-    event.node.res.once("close", endRequestSpan);
+    event.node.res.once("close", endAbortedRequestSpan);
 
     return context.with(requestContext, async () => {
       try {
