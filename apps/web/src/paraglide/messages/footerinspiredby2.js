@@ -6,45 +6,45 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Footerinspiredby2Inputs */
 
 const en_footerinspiredby2 = /** @type {(inputs: Footerinspiredby2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Originally inspired by`)
+	return /** @type {LocalizedString} */ (`Originally forked from`)
 };
 
 const es_footerinspiredby2 = /** @type {(inputs: Footerinspiredby2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Inspirado originalmente por`)
+	return /** @type {LocalizedString} */ (`Bifurcado originalmente de`)
 };
 
 const zh_footerinspiredby2 = /** @type {(inputs: Footerinspiredby2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`最初灵感来自`)
+	return /** @type {LocalizedString} */ (`最初分叉自`)
 };
 
 const ja_footerinspiredby2 = /** @type {(inputs: Footerinspiredby2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`もともとインスピレーションを得たのは、`)
+	return /** @type {LocalizedString} */ (`元々フォークしたプロジェクト:`)
 };
 
 const ko_footerinspiredby2 = /** @type {(inputs: Footerinspiredby2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`원래 영감을 준`)
+	return /** @type {LocalizedString} */ (`원래 다음 프로젝트에서 포크됨:`)
 };
 
 const zh_hant1_footerinspiredby2 = /** @type {(inputs: Footerinspiredby2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`最初靈感來自`)
+	return /** @type {LocalizedString} */ (`最初分叉自`)
 };
 
 const de_footerinspiredby2 = /** @type {(inputs: Footerinspiredby2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ursprünglich inspiriert von`)
+	return /** @type {LocalizedString} */ (`Ursprünglich geforkt von`)
 };
 
 const fr_footerinspiredby2 = /** @type {(inputs: Footerinspiredby2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Inspiré à l'origine par`)
+	return /** @type {LocalizedString} */ (`Initialement forké depuis`)
 };
 
 const uk_footerinspiredby2 = /** @type {(inputs: Footerinspiredby2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Спочатку натхнено`)
+	return /** @type {LocalizedString} */ (`Спочатку розгалужено з`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Originally inspired by" |
+* | "Originally forked from" |
 *
 * @param {Footerinspiredby2Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options

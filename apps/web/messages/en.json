@@ -96,7 +96,7 @@
   "footerChangelog": "Changelog",
   "footerMitLicense": "MIT License",
   "footerPopularGuides": "Popular guides",
-  "footerInspiredBy": "Originally inspired by",
+  "footerInspiredBy": "Originally forked from",
   "footerBuiltBy": "Built by",
   "blogTitle": "Notes from the workshop.",
   "blogDescription": "Benchmarks, releases, and what we learn building a fullstack scaffolder — written up with the data attached.",
