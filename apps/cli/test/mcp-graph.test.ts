@@ -6,7 +6,7 @@ import {
   type ProjectConfig,
 } from "@better-fullstack/types";
 
-import { getMcpGraphPreview } from "../src/mcp";
+import { getMcpGraphPreview, validateMcpProjectConfigCompatibility } from "../src/mcp";
 
 function makeProjectConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
   return {
@@ -19,6 +19,18 @@ function makeProjectConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfi
 }
 
 describe("MCP graph preview", () => {
+  it("rejects Nango for non-TypeScript MCP project input", () => {
+    expect(() =>
+      validateMcpProjectConfigCompatibility({ ecosystem: "python", integrations: "nango" }),
+    ).toThrow("Nango integrations are supported only for TypeScript projects");
+  });
+
+  it("accepts Nango for TypeScript MCP project input", () => {
+    expect(() =>
+      validateMcpProjectConfigCompatibility({ ecosystem: "typescript", integrations: "nango" }),
+    ).not.toThrow();
+  });
+
   it("exposes graph metadata for flat MCP project input", () => {
     const preview = getMcpGraphPreview(
       makeProjectConfig({

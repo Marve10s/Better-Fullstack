@@ -676,6 +676,14 @@ function getMcpProjectConfigDefaults(input: Record<string, unknown>) {
   >;
 }
 
+export function validateMcpProjectConfigCompatibility(
+  config: Pick<ProjectConfig, "ecosystem" | "integrations">,
+): void {
+  if (config.integrations === "nango" && config.ecosystem !== "typescript") {
+    throw new Error("Nango integrations are supported only for TypeScript projects");
+  }
+}
+
 function buildProjectConfig(
   input: Record<string, unknown>,
   overrides?: { projectDir: string },
@@ -736,6 +744,7 @@ function buildProjectConfig(
   }
 
   applyEffectBackendDefaults(config, new Set(Object.keys(input)));
+  validateMcpProjectConfigCompatibility(config);
 
   return config;
 }
