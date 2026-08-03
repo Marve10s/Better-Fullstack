@@ -262,6 +262,34 @@ function resolveLefthookSeq(document: ReturnType<typeof parseDocument>, node: un
   return isSeq(resolved) ? resolved : undefined;
 }
 
+function detachLefthookMapAlias(
+  document: ReturnType<typeof parseDocument>,
+  node: unknown,
+) {
+  if (!isAlias(node)) return resolveLefthookMap(document, node);
+
+  const resolved = resolveLefthookMap(document, node);
+  if (!isMap(resolved)) return undefined;
+  const detached = resolved.clone(document.schema);
+  if (!isMap(detached)) return undefined;
+  detached.anchor = undefined;
+  return detached;
+}
+
+function detachLefthookSeqAlias(
+  document: ReturnType<typeof parseDocument>,
+  node: unknown,
+) {
+  if (!isAlias(node)) return resolveLefthookSeq(document, node);
+
+  const resolved = resolveLefthookSeq(document, node);
+  if (!isSeq(resolved)) return undefined;
+  const detached = resolved.clone(document.schema);
+  if (!isSeq(detached)) return undefined;
+  detached.anchor = undefined;
+  return detached;
+}
+
 export async function isGitleaksSetupComplete(
   projectDir: string,
   addons: ProjectConfig["addons"],
@@ -317,20 +345,29 @@ async function ensureGitleaksLefthookHook(projectDir: string) {
     throw new Error(`Cannot add Gitleaks to invalid Lefthook YAML: ${document.errors[0]?.message}`);
   }
 
-  let preCommit = resolveLefthookMap(document, document.get("pre-commit", true));
+  let preCommitNode = document.get("pre-commit", true);
+  let preCommit = detachLefthookMapAlias(document, preCommitNode);
+  if (isAlias(preCommitNode) && isMap(preCommit)) {
+    document.set("pre-commit", preCommit);
+  }
   if (!isMap(preCommit)) {
     document.set("pre-commit", { parallel: true, jobs: [] });
-    preCommit = resolveLefthookMap(document, document.get("pre-commit", true));
+    preCommitNode = document.get("pre-commit", true);
+    preCommit = detachLefthookMapAlias(document, preCommitNode);
   }
   if (!isMap(preCommit)) return;
 
   if (hasGitleaksLefthookCommand(content)) return;
 
-  const jobs = resolveLefthookSeq(document, preCommit.get("jobs", true));
+  const jobsNode = preCommit.get("jobs", true);
+  const jobs = detachLefthookSeqAlias(document, jobsNode);
+  if (isAlias(jobsNode) && isSeq(jobs)) preCommit.set("jobs", jobs);
   if (isSeq(jobs)) {
     jobs.add({ name: "gitleaks", run: GITLEAKS_HOOK_COMMAND });
   } else {
-    const commands = resolveLefthookMap(document, preCommit.get("commands", true));
+    const commandsNode = preCommit.get("commands", true);
+    const commands = detachLefthookMapAlias(document, commandsNode);
+    if (isAlias(commandsNode) && isMap(commands)) preCommit.set("commands", commands);
     if (isMap(commands)) {
       commands.set("gitleaks", { run: GITLEAKS_HOOK_COMMAND });
     } else {
@@ -362,14 +399,21 @@ async function ensureLinterLefthookHook(
     throw new Error(`Cannot configure ${linter} in invalid Lefthook YAML: ${document.errors[0]?.message}`);
   }
 
-  let preCommit = resolveLefthookMap(document, document.get("pre-commit", true));
+  let preCommitNode = document.get("pre-commit", true);
+  let preCommit = detachLefthookMapAlias(document, preCommitNode);
+  if (isAlias(preCommitNode) && isMap(preCommit)) {
+    document.set("pre-commit", preCommit);
+  }
   if (!isMap(preCommit)) {
     document.set("pre-commit", { parallel: true, jobs: [] });
-    preCommit = resolveLefthookMap(document, document.get("pre-commit", true));
+    preCommitNode = document.get("pre-commit", true);
+    preCommit = detachLefthookMapAlias(document, preCommitNode);
   }
   if (!isMap(preCommit)) return;
 
-  const jobs = resolveLefthookSeq(document, preCommit.get("jobs", true));
+  const jobsNode = preCommit.get("jobs", true);
+  const jobs = detachLefthookSeqAlias(document, jobsNode);
+  if (isAlias(jobsNode) && isSeq(jobs)) preCommit.set("jobs", jobs);
   if (isSeq(jobs)) {
     for (const definition of definitions) {
       const existing = jobs.items.find(
@@ -382,7 +426,9 @@ async function ensureLinterLefthookHook(
       }
     }
   } else {
-    const commands = resolveLefthookMap(document, preCommit.get("commands", true));
+    const commandsNode = preCommit.get("commands", true);
+    const commands = detachLefthookMapAlias(document, commandsNode);
+    if (isAlias(commandsNode) && isMap(commands)) preCommit.set("commands", commands);
     if (isMap(commands)) {
       for (const { name, ...definition } of definitions) commands.set(name, definition);
     } else {

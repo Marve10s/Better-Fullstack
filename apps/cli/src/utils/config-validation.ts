@@ -4,7 +4,7 @@ import pc from "picocolors";
 import type { CLIInput, Database, DatabaseSetup, Frontend, ProjectConfig, Runtime } from "../types";
 
 import {
-  isSignozSupportedGoWebFramework,
+  hasSignozSupportedGoServerTarget,
   isSignozSupportedPythonWebFramework,
   normalizeCapabilitySelection,
   stackGraphToLegacyProjectConfigForEcosystem,
@@ -1359,11 +1359,11 @@ export function validateGoExpansionConstraints(config: Partial<ProjectConfig>) {
 
   if (
     goConfig.goObservability === "signoz" &&
-    !isSignozSupportedGoWebFramework(goConfig.goWebFramework ?? "none")
+    !hasSignozSupportedGoServerTarget(goConfig)
   ) {
     incompatibilityError({
       message:
-        "SigNoz request tracing for Go supports Gin, Echo, Fiber, Chi, and the standard library.",
+        "SigNoz request tracing for Go requires an instrumented HTTP, gRPC, or Go Better Auth server target.",
       provided: {
         "go-web-framework": goConfig.goWebFramework ?? "none",
         "go-observability": "signoz",
@@ -1371,6 +1371,7 @@ export function validateGoExpansionConstraints(config: Partial<ProjectConfig>) {
       suggestions: [
         "Use --go-web-framework gin",
         "Use --go-web-framework stdlib",
+        "Use --go-api grpc-go",
         "Set --go-observability none",
       ],
     });

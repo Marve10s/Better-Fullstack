@@ -120,6 +120,24 @@ describe("compatibility issue helpers", () => {
     ).toBeNull();
   });
 
+  it("keeps React Native code-quality options aligned with the CLI", () => {
+    const nativeStack = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "react-native" as const,
+      codeQuality: ["biome", "knip", "gitleaks"],
+    };
+
+    expect(analyzeStackCompatibility(nativeStack).adjustedStack?.codeQuality).toEqual([
+      "knip",
+      "gitleaks",
+    ]);
+    expect(getDisabledReason(nativeStack, "codeQuality", "biome")).toContain(
+      "Knip and Gitleaks only",
+    );
+    expect(getDisabledReason(nativeStack, "codeQuality", "knip")).toBeNull();
+    expect(getDisabledReason(nativeStack, "codeQuality", "gitleaks")).toBeNull();
+  });
+
   it("disables SigNoz when native request instrumentation is not wired", () => {
     const unsupportedGo = {
       ...DEFAULT_STACK_SELECTION,
@@ -131,6 +149,29 @@ describe("compatibility issue helpers", () => {
     expect(getDisabledReason(unsupportedGo, "goObservability", "signoz")).toContain(
       "Gin, Echo, Fiber, Chi",
     );
+
+    const noServerGo = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "go" as const,
+      goWebFramework: "none" as const,
+      goApi: "none" as const,
+      auth: "none" as const,
+      goObservability: "signoz" as const,
+    };
+    expect(analyzeStackCompatibility(noServerGo).adjustedStack?.goObservability).toBe("none");
+    expect(getDisabledReason(noServerGo, "goObservability", "signoz")).toContain(
+      "server target",
+    );
+    expect(
+      getDisabledReason({ ...noServerGo, goApi: "grpc-go" }, "goObservability", "signoz"),
+    ).toBeNull();
+    expect(
+      getDisabledReason(
+        { ...noServerGo, auth: "go-better-auth" },
+        "goObservability",
+        "signoz",
+      ),
+    ).toBeNull();
 
     const unsupportedPython = {
       ...DEFAULT_STACK_SELECTION,

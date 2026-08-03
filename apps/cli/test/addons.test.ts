@@ -442,7 +442,7 @@ describe("Addon Configurations", () => {
       const lefthookPath = join(result.projectDir!, "lefthook.yml");
       writeFileSync(
         lefthookPath,
-        "shared-hooks: &shared-hooks\n  parallel: false\n  commands:\n    existing:\n      run: bun run existing\npre-commit: *shared-hooks\n",
+        "shared-hooks: &shared-hooks\n  parallel: false\n  commands:\n    existing:\n      run: bun run existing\npre-commit: *shared-hooks\npre-push: *shared-hooks\n",
       );
 
       const config = {
@@ -454,7 +454,8 @@ describe("Addon Configurations", () => {
       await setupAddons(config, ["biome", "gitleaks"]);
 
       const lefthook = readFileSync(lefthookPath, "utf-8");
-      expect(lefthook).toContain("pre-commit: *shared-hooks");
+      expect(lefthook).not.toContain("pre-commit: *shared-hooks");
+      expect(lefthook).toContain("pre-push: *shared-hooks");
       expect(lefthook).toContain("existing:");
       expect(lefthook).toContain("run: bun run existing");
       expect(lefthook.match(/gitleaks:/g)).toHaveLength(1);
@@ -468,13 +469,13 @@ describe("Addon Configurations", () => {
           projectName: "gitleaks-anchored-jobs",
           alias: "shared-jobs",
           yaml:
-            "shared-jobs: &shared-jobs\n  - name: existing\n    run: bun run existing\npre-commit:\n  jobs: *shared-jobs\n",
+            "shared-jobs: &shared-jobs\n  - name: existing\n    run: bun run existing\npre-commit:\n  jobs: *shared-jobs\npre-push:\n  jobs: *shared-jobs\n",
         },
         {
           projectName: "gitleaks-anchored-commands",
           alias: "shared-commands",
           yaml:
-            "shared-commands: &shared-commands\n  existing:\n    run: bun run existing\npre-commit:\n  commands: *shared-commands\n",
+            "shared-commands: &shared-commands\n  existing:\n    run: bun run existing\npre-commit:\n  commands: *shared-commands\npre-push:\n  commands: *shared-commands\n",
         },
       ]) {
         const result = await runTRPCTest({
@@ -508,6 +509,8 @@ describe("Addon Configurations", () => {
 
         const lefthook = readFileSync(lefthookPath, "utf-8");
         expect(lefthook).toContain(`*${fixture.alias}`);
+        expect(lefthook).not.toContain(`pre-commit:\n  jobs: *${fixture.alias}`);
+        expect(lefthook).not.toContain(`pre-commit:\n  commands: *${fixture.alias}`);
         expect(lefthook).toContain("run: bun run existing");
         expect(lefthook.match(/gitleaks git --pre-commit --redact --staged --verbose/g)).toHaveLength(
           1,

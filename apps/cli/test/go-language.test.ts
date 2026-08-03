@@ -119,17 +119,33 @@ describe("Go Language Support", () => {
 
   describe("Go Base Template Structure", () => {
     it("rejects SigNoz for Go server variants without request instrumentation", () => {
-      for (const goWebFramework of ["go-zero", "kratos", "httprouter"] as const) {
+      for (const goWebFramework of ["none", "go-zero", "kratos", "httprouter"] as const) {
         expect(() =>
           runWithContext({ silent: true }, () =>
             validateGoExpansionConstraints({
               ecosystem: "go",
               goWebFramework,
+              goApi: "none",
+              auth: "none",
               goObservability: "signoz",
             }),
           ),
-        ).toThrow("SigNoz request tracing for Go supports Gin, Echo, Fiber, Chi");
+        ).toThrow("SigNoz request tracing for Go requires an instrumented");
       }
+    });
+
+    it("allows SigNoz without an HTTP framework when gRPC supplies the server target", () => {
+      expect(() =>
+        runWithContext({ silent: true }, () =>
+          validateGoExpansionConstraints({
+            ecosystem: "go",
+            goWebFramework: "none",
+            goApi: "grpc-go",
+            auth: "none",
+            goObservability: "signoz",
+          }),
+        ),
+      ).not.toThrow();
     });
 
     it("should generate SigNoz-ready OpenTelemetry tracing", async () => {

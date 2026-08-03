@@ -53,12 +53,23 @@ const SIGNOZ_SUPPORTED_GO_WEB_FRAMEWORKS = new Set([
   "fiber",
   "chi",
   "stdlib",
-  "none",
 ]);
 const SIGNOZ_SUPPORTED_PYTHON_WEB_FRAMEWORKS = new Set(["fastapi"]);
 
 export function isSignozSupportedGoWebFramework(framework: string): boolean {
   return SIGNOZ_SUPPORTED_GO_WEB_FRAMEWORKS.has(framework);
+}
+
+export function hasSignozSupportedGoServerTarget(stack: {
+  goWebFramework?: string;
+  goApi?: string;
+  auth?: string;
+}): boolean {
+  return (
+    isSignozSupportedGoWebFramework(stack.goWebFramework ?? "none") ||
+    ((stack.goWebFramework ?? "none") === "none" &&
+      (stack.goApi === "grpc-go" || stack.auth === "go-better-auth"))
+  );
 }
 
 export function isSignozSupportedPythonWebFramework(framework: string): boolean {
@@ -556,6 +567,21 @@ export const analyzeStackCompatibility = (
       category: "codeQuality",
       message: "Removed Knip (Knip requires a TypeScript or React Native workspace)",
     });
+  }
+
+  if (nextStack.ecosystem === "react-native") {
+    const supportedCodeQuality = new Set(["knip", "gitleaks"]);
+    const filteredCodeQuality = nextStack.codeQuality.filter((addon) =>
+      supportedCodeQuality.has(addon),
+    );
+    if (filteredCodeQuality.length !== nextStack.codeQuality.length) {
+      nextStack.codeQuality = filteredCodeQuality;
+      changed = true;
+      changes.push({
+        category: "codeQuality",
+        message: "Removed code-quality tools that are not supported by React Native projects",
+      });
+    }
   }
 
   for (const cat of CATEGORY_ORDER) {
@@ -1929,14 +1955,14 @@ export const analyzeStackCompatibility = (
   if (
     nextStack.ecosystem === "go" &&
     nextStack.goObservability === "signoz" &&
-    !isSignozSupportedGoWebFramework(nextStack.goWebFramework)
+    !hasSignozSupportedGoServerTarget(nextStack)
   ) {
     nextStack.goObservability = "none";
     changed = true;
     changes.push({
       category: "goObservability",
       message:
-        "Go observability set to 'None' (SigNoz request tracing supports Gin, Echo, Fiber, Chi, and net/http)",
+        "Go observability set to 'None' (SigNoz requires an instrumented HTTP, gRPC, or Go Better Auth server target)",
     });
   }
 
@@ -2275,6 +2301,15 @@ export const getDisabledReason = (
   category: CompatibilityCategory,
   optionId: string,
 ): string | null => {
+  if (
+    currentStack.ecosystem === "react-native" &&
+    category === "codeQuality" &&
+    optionId !== "knip" &&
+    optionId !== "gitleaks"
+  ) {
+    return "React Native code quality currently supports Knip and Gitleaks only";
+  }
+
   if (
     category === "codeQuality" &&
     optionId === "knip" &&
@@ -2619,12 +2654,17 @@ export const getDisabledReason = (
   }
   if (
     ((category === "goObservability" && optionId === "signoz") ||
-      (category === "goWebFramework" && currentStack.goObservability === "signoz")) &&
-    !isSignozSupportedGoWebFramework(
-      category === "goWebFramework" ? optionId : currentStack.goWebFramework,
-    )
+      (category === "goWebFramework" && currentStack.goObservability === "signoz") ||
+      (category === "goApi" && currentStack.goObservability === "signoz") ||
+      (category === "auth" && currentStack.goObservability === "signoz")) &&
+    !hasSignozSupportedGoServerTarget({
+      ...currentStack,
+      ...(category === "goWebFramework" ? { goWebFramework: optionId } : {}),
+      ...(category === "goApi" ? { goApi: optionId } : {}),
+      ...(category === "auth" ? { auth: optionId } : {}),
+    })
   ) {
-    return "SigNoz request tracing supports Gin, Echo, Fiber, Chi, and net/http";
+    return "SigNoz requires Gin, Echo, Fiber, Chi, net/http, gRPC, or Go Better Auth to provide a server target";
   }
   if (
     ((category === "pythonObservability" && optionId === "signoz") ||
