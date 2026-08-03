@@ -140,6 +140,13 @@ startTracing();
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
   process.once(signal, () => {
     void shutdownTracing()
-      .catch((error) => console.error(`[SigNoz] Failed to flush telemetry on ${signal}`, error));
+      .catch((error) => console.error(`[SigNoz] Failed to flush telemetry on ${signal}`, error))
+      .finally(() => {
+        // Re-raise with the original signal after the telemetry flush. Removing
+        // signal listeners restores Node's default termination behavior instead
+        // of leaving persistent HTTP servers alive after SIGINT or SIGTERM.
+        process.removeAllListeners(signal);
+        process.kill(process.pid, signal);
+      });
   });
 }

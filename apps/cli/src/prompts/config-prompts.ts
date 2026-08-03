@@ -945,7 +945,8 @@ export async function gatherConfig(
             addon === "docker-compose" ||
             addon === "devcontainer" ||
             addon === "gitleaks" ||
-            addon === "github-actions",
+            addon === "github-actions" ||
+            (results.ecosystem === "react-native" && addon === "knip"),
         );
         return Promise.resolve(nonTypeScriptAddons);
       }
