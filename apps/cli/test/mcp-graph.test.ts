@@ -27,8 +27,33 @@ describe("MCP graph preview", () => {
 
   it("accepts Nango for TypeScript MCP project input", () => {
     expect(() =>
-      validateMcpProjectConfigCompatibility({ ecosystem: "typescript", integrations: "nango" }),
+      validateMcpProjectConfigCompatibility({
+        ecosystem: "typescript",
+        integrations: "nango",
+        backend: "hono",
+        runtime: "bun",
+        webDeploy: "none",
+      }),
     ).not.toThrow();
+  });
+
+  it("rejects Nango MCP input when its SDK would be skipped", () => {
+    const unsupported = [
+      { backend: "none", runtime: "bun", webDeploy: "none" },
+      { backend: "convex", runtime: "bun", webDeploy: "none" },
+      { backend: "hono", runtime: "workers", webDeploy: "none" },
+      { backend: "self", runtime: "none", webDeploy: "cloudflare" },
+    ] as const;
+
+    for (const selection of unsupported) {
+      expect(() =>
+        validateMcpProjectConfigCompatibility({
+          ecosystem: "typescript",
+          integrations: "nango",
+          ...selection,
+        }),
+      ).toThrow();
+    }
   });
 
   it("exposes graph metadata for flat MCP project input", () => {

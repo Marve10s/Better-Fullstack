@@ -677,10 +677,25 @@ function getMcpProjectConfigDefaults(input: Record<string, unknown>) {
 }
 
 export function validateMcpProjectConfigCompatibility(
-  config: Pick<ProjectConfig, "ecosystem" | "integrations">,
+  config: Pick<ProjectConfig, "ecosystem" | "integrations"> &
+    Partial<Pick<ProjectConfig, "backend" | "runtime" | "webDeploy">>,
 ): void {
-  if (config.integrations === "nango" && config.ecosystem !== "typescript") {
+  if (config.integrations !== "nango") return;
+
+  if (config.ecosystem !== "typescript") {
     throw new Error("Nango integrations are supported only for TypeScript projects");
+  }
+  if (config.backend === "none") {
+    throw new Error("Nango integrations require a generated backend");
+  }
+  if (config.backend === "convex") {
+    throw new Error("Nango integrations are not available with the Convex backend");
+  }
+  if (
+    config.runtime === "workers" ||
+    (config.backend === "self" && config.webDeploy === "cloudflare")
+  ) {
+    throw new Error("Nango's Node SDK is not available on Cloudflare Workers");
   }
 }
 

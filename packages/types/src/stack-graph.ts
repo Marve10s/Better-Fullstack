@@ -1467,6 +1467,42 @@ function createTypeScriptBackendCompatibilityIssue(
     });
   }
 
+  if (part.role === "integrations" && part.toolId === "nango") {
+    if (context.ownerToolId === "none") {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_OWNER_TOOL",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Nango integrations require a generated backend.",
+      });
+    }
+    if (context.ownerToolId === "convex") {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_OWNER_TOOL",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Nango integrations are not available with the Convex backend.",
+      });
+    }
+
+    const runtimeTool = context.siblingToolIdsByRole?.runtime;
+    const deployTools = context.selectedToolIdsByRoleList?.deploy ?? [];
+    if (
+      runtimeTool === "workers" ||
+      (context.ownerToolId === "self" && deployTools.includes("cloudflare"))
+    ) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Nango's Node SDK is not available on Cloudflare Workers.",
+      });
+    }
+  }
+
   if (part.role === "cms" && part.toolId === "payload") {
     const frontendTool = context.primaryToolIdsByRole?.frontend;
     if (frontendTool !== "next") {
