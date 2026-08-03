@@ -1,5 +1,9 @@
-import { TbCode as Code2, TbGitPullRequest as GitPullRequest, TbHeart as Heart } from "react-icons/tb";
 import { motion } from "motion/react";
+import {
+  TbCode as Code2,
+  TbGitPullRequest as GitPullRequest,
+  TbHeart as Heart,
+} from "react-icons/tb";
 
 import { m } from "@/paraglide/messages.js";
 
@@ -34,6 +38,12 @@ const contributors: Contributor[] = [
     name: "Kavin B",
     role: "Elasticsearch search engine support",
     github: "https://github.com/Kavin-Bakyaraj",
+  },
+  {
+    username: "taltas",
+    name: "T",
+    role: "Zoo Code docs, Resend React types",
+    github: "https://github.com/taltas",
   },
 ];
 
