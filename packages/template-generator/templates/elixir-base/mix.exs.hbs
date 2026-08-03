@@ -143,7 +143,11 @@ defmodule {{elixirModuleName}}.MixProject do
       {:wallaby, "~> 0.30", only: :test, runtime: false},
 {{/if}}
 {{#if (eq elixirTesting "stream_data")}}
+{{#if (eq elixirApplicationFramework "ash")}}
+      {:stream_data, "~> 1.3"},
+{{else}}
       {:stream_data, "~> 1.3", only: :test},
+{{/if}}
 {{/if}}
 {{#if (eq elixirTesting "ex_machina")}}
       {:ex_machina, "~> 2.8", only: :test},
