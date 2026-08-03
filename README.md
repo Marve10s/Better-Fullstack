@@ -196,4 +196,4 @@ If Better Fullstack saves you time, consider supporting:
 
 ## License
 
-MIT. Better Fullstack is now maintained as a standalone project, with original inspiration from [create-better-t-stack](https://github.com/AmanVarshney01/create-better-t-stack) by [Aman Varshney](https://github.com/AmanVarshney01).
+MIT. Better Fullstack was originally forked from [Better T Stack](https://github.com/AmanVarshney01/create-better-t-stack) by [Aman Varshney](https://github.com/AmanVarshney01) and is now independently maintained with its own direction.

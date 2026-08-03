@@ -58,7 +58,8 @@
   "files": [
     "cli.js",
     "index.d.ts",
-    "index.js"
+    "index.js",
+    "LICENSE"
   ],
   "type": "module",
   "main": "./index.js",

@@ -18,7 +18,8 @@
     "directory": "packages/types"
   },
   "files": [
-    "dist"
+    "dist",
+    "LICENSE"
   ],
   "type": "module",
   "exports": {

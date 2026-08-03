@@ -104,7 +104,8 @@
     "create-better-fullstack": "dist/cli.mjs"
   },
   "files": [
-    "dist"
+    "dist",
+    "LICENSE"
   ],
   "type": "module",
   "exports": {
