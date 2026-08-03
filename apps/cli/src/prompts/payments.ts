@@ -1,9 +1,9 @@
 import type { Auth, Backend, Frontend, Payments } from "../types";
+import type { PromptSingleResolution } from "./prompt-contract";
 
 import { DEFAULT_CONFIG } from "../constants";
 import { splitFrontends } from "../utils/compatibility-rules";
 import { exitCancelled } from "../utils/errors";
-import type { PromptSingleResolution } from "./prompt-contract";
 import { isCancel, navigableSelect } from "./navigable";
 
 type PaymentsPromptContext = {
@@ -122,11 +122,20 @@ export function resolvePaymentsPrompt(
 
   if (context.backend !== "convex") {
     const insertAt = options.findIndex((option) => option.value === "dodo");
-    options.splice(insertAt, 0, {
-      value: "paypal" as Payments,
-      label: "PayPal",
-      hint: "PayPal JavaScript SDK buttons with server-side Orders API helpers.",
-    });
+    options.splice(
+      insertAt,
+      0,
+      {
+        value: "xendit" as Payments,
+        label: "Xendit",
+        hint: "Payment Sessions for Southeast Asian payment methods and currencies.",
+      },
+      {
+        value: "paypal" as Payments,
+        label: "PayPal",
+        hint: "PayPal JavaScript SDK buttons with server-side Orders API helpers.",
+      },
+    );
   }
 
   if (isRevenueCatCompatible) {
@@ -136,8 +145,6 @@ export function resolvePaymentsPrompt(
       hint: "In-app subscriptions and cross-platform monetization for mobile.",
     });
   }
-
-
   return {
     shouldPrompt: true,
     mode: "single",

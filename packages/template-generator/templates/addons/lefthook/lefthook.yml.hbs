@@ -4,6 +4,10 @@
 pre-commit:
   parallel: true
   jobs:
+{{#if (includes addons "gitleaks")}}
+    - name: gitleaks
+      run: gitleaks git --pre-commit --redact --staged --verbose
+{{/if}}
 {{#if (includes addons "biome")}}
     - name: biome
       glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"

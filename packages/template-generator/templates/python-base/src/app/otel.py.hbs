@@ -1,27 +1,49 @@
-{{#if (eq pythonObservability "opentelemetry")}}
-"""OpenTelemetry tracing with OTLP/HTTP export.
+{{#if (or (eq pythonObservability "opentelemetry") (eq pythonObservability "signoz"))}}
+"""OpenTelemetry tracing with OTLP/HTTP export{{#if (eq pythonObservability "signoz")}} to SigNoz{{/if}}.
 
-Set OTEL_EXPORTER_OTLP_ENDPOINT (defaults to http://localhost:4318) and call
-`init_tracing()` once at startup.
+Set OTEL_SERVICE_NAME and OTEL_EXPORTER_OTLP_ENDPOINT (defaults to
+http://localhost:4318). SigNoz Cloud also requires OTEL_EXPORTER_OTLP_HEADERS
+with a signoz-ingestion-key. Call `init_tracing()` once at startup.
 """
 
+import os
+
+from dotenv import load_dotenv
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
+load_dotenv()
+
+_provider: TracerProvider | None = None
+
 
 def init_tracing() -> TracerProvider:
     """Install a global tracer provider that exports spans via OTLP."""
-    resource = Resource.create({"service.name": "{{projectName}}"})
+    global _provider
+    if _provider is not None:
+        return _provider
+
+    service_name = os.getenv("OTEL_SERVICE_NAME", "{{projectName}}")
+    resource = Resource.create({"service.name": service_name})
     provider = TracerProvider(resource=resource)
     provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter()))
     trace.set_tracer_provider(provider)
+    with provider.get_tracer("{{projectName}}.startup").start_as_current_span(
+        "application.startup"
+    ):
+        pass
+    _provider = provider
     return provider
 
 
 def get_tracer(name: str) -> trace.Tracer:
     """Return a named tracer from the global provider."""
     return trace.get_tracer(name)
+
+
+# The generated entry point imports this module before it creates the app.
+init_tracing()
 {{/if}}

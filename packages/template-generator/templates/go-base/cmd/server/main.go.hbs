@@ -10,11 +10,13 @@ import (
 {{#if (eq goApi "grpc-go")}}
 	"net"
 {{/if}}
-{{#if (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (or (eq goWebFramework "chi") (eq goWebFramework "stdlib"))) (and (eq auth "go-better-auth") (eq goWebFramework "none")))}}
+{{#if (or (eq goWebFramework "stdlib") (eq goObservability "signoz"))}}
+	"context"
+{{/if}}
+{{#if (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (or (eq goWebFramework "chi") (eq goWebFramework "stdlib"))) (and (eq auth "go-better-auth") (eq goWebFramework "none"))) (eq goObservability "signoz"))}}
 	"net/http"
 {{/if}}
 {{#if (eq goWebFramework "stdlib")}}
-	"context"
 	"os/signal"
 	"syscall"
 	"time"
@@ -61,7 +63,7 @@ import (
 {{#if (eq goApi "grpc-go")}}
 	"google.golang.org/grpc"
 {{/if}}
-{{#if (or (eq auth "go-better-auth") (ne goAuth "none") (eq goOrm "gorm") (eq goOrm "sqlc") (eq goOrm "ent") (eq goOrm "bun") (eq goOrm "sqlx") (eq observability "sentry") (eq goApi "grpc-go"))}}
+{{#if (or (eq auth "go-better-auth") (ne goAuth "none") (eq goOrm "gorm") (eq goOrm "sqlc") (eq goOrm "ent") (eq goOrm "bun") (eq goOrm "sqlx") (eq observability "sentry") (eq goObservability "signoz") (eq goApi "grpc-go"))}}
 
 {{/if}}
 {{#if (or (eq auth "go-better-auth") (ne goAuth "none"))}}
@@ -76,7 +78,7 @@ import (
 {{#if (and (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (or (eq goWebFramework "chi") (eq goWebFramework "stdlib"))) (or (or (or (eq goOrm "gorm") (eq goOrm "sqlc")) (eq goOrm "ent")) (eq goOrm "bun")))}}
 	"{{projectName}}/internal/handlers"
 {{/if}}
-{{#if (eq observability "sentry")}}
+{{#if (or (eq observability "sentry") (eq goObservability "signoz"))}}
 	appobservability "{{projectName}}/internal/observability"
 {{/if}}
 {{#if (eq goApi "grpc-go")}}
@@ -147,6 +149,15 @@ func main() {
 	// Initialize Sentry if configured
 	appobservability.InitSentry()
 	defer appobservability.FlushSentry()
+{{/if}}
+{{#if (eq goObservability "signoz")}}
+
+	// Start OTLP tracing before the HTTP framework is initialized.
+	shutdownTracing, err := appobservability.InitTracing(context.Background())
+	if err != nil {
+		panic("Failed to initialize SigNoz tracing: " + err.Error())
+	}
+	defer shutdownTracing(context.Background())
 {{/if}}
 {{#if (eq goLogging "zap")}}
 
@@ -515,7 +526,16 @@ func main() {
 {{/if}}
 
 	// Start server
+{{#if (eq goObservability "signoz")}}
+	server := &http.Server{Addr: addr, Handler: appobservability.TraceHTTP(r)}
+	if err := appobservability.RunWithGracefulShutdown(
+		server.ListenAndServe,
+		server.Shutdown,
+		shutdownTracing,
+	); err != nil && err != http.ErrServerClosed {
+{{else}}
 	if err := r.Run(addr); err != nil {
+{{/if}}
 {{#if (eq goLogging "zap")}}
 		logger.Fatal("Failed to start server", zap.Error(err))
 {{else if (eq goLogging "zerolog")}}
@@ -598,7 +618,16 @@ func main() {
 {{/if}}
 
 	// Start server
+{{#if (eq goObservability "signoz")}}
+	server := &http.Server{Addr: addr, Handler: appobservability.TraceHTTP(e)}
+	if err := appobservability.RunWithGracefulShutdown(
+		server.ListenAndServe,
+		server.Shutdown,
+		shutdownTracing,
+	); err != nil && err != http.ErrServerClosed {
+{{else}}
 	if err := e.Start(addr); err != nil && err != http.ErrServerClosed {
+{{/if}}
 {{#if (eq goLogging "zap")}}
 		logger.Fatal("Failed to start server", zap.Error(err))
 {{else if (eq goLogging "zerolog")}}
@@ -632,6 +661,24 @@ func main() {
 
 	// Create Fiber app
 	app := fiber.New()
+{{#if (eq goObservability "signoz")}}
+	app.Use(func(c *fiber.Ctx) error {
+		headers := make(http.Header)
+		c.Context().Request.Header.VisitAll(func(key, value []byte) {
+			headers.Add(string(key), string(value))
+		})
+		requestCtx, finishSpan := appobservability.StartHTTPSpan(
+			c.UserContext(),
+			headers,
+			c.Method(),
+			c.Path(),
+		)
+		c.SetUserContext(requestCtx)
+		err := c.Next()
+		finishSpan(c.Response().StatusCode(), err)
+		return err
+	})
+{{/if}}
 
 	// Middleware
 	app.Use(fiberlogger.New())
@@ -681,7 +728,15 @@ func main() {
 {{/if}}
 
 	// Start server
+{{#if (eq goObservability "signoz")}}
+	if err := appobservability.RunWithGracefulShutdown(
+		func() error { return app.Listen(addr) },
+		func(context.Context) error { return app.Shutdown() },
+		shutdownTracing,
+	); err != nil {
+{{else}}
 	if err := app.Listen(addr); err != nil {
+{{/if}}
 {{#if (eq goLogging "zap")}}
 		logger.Fatal("Failed to start server", zap.Error(err))
 {{else if (eq goLogging "zerolog")}}
@@ -777,7 +832,16 @@ func main() {
 {{/if}}
 
 	// Start server
+{{#if (eq goObservability "signoz")}}
+	server := &http.Server{Addr: addr, Handler: appobservability.TraceHTTP(r)}
+	if err := appobservability.RunWithGracefulShutdown(
+		server.ListenAndServe,
+		server.Shutdown,
+		shutdownTracing,
+	); err != nil && err != http.ErrServerClosed {
+{{else}}
 	if err := http.ListenAndServe(addr, r); err != nil && err != http.ErrServerClosed {
+{{/if}}
 {{#if (eq goLogging "zap")}}
 		logger.Fatal("Failed to start server", zap.Error(err))
 {{else if (eq goLogging "zerolog")}}
@@ -872,7 +936,7 @@ func main() {
 
 	server := &http.Server{
 		Addr:    addr,
-		Handler: corsMiddleware(mux),
+		Handler: {{#if (eq goObservability "signoz")}}appobservability.TraceHTTP(corsMiddleware(mux)){{else}}corsMiddleware(mux){{/if}},
 	}
 
 	// Start the server in a goroutine so shutdown can be handled gracefully.
@@ -946,10 +1010,18 @@ func main() {
 
 	server := &http.Server{
 		Addr:    addr,
-		Handler: mux,
+		Handler: {{#if (eq goObservability "signoz")}}appobservability.TraceHTTP(mux){{else}}mux{{/if}},
 	}
 
+{{#if (eq goObservability "signoz")}}
+	if err := appobservability.RunWithGracefulShutdown(
+		server.ListenAndServe,
+		server.Shutdown,
+		shutdownTracing,
+	); err != nil && err != http.ErrServerClosed {
+{{else}}
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+{{/if}}
 {{#if (eq goLogging "zap")}}
 		logger.Fatal("Failed to start server", zap.Error(err))
 {{else if (eq goLogging "zerolog")}}

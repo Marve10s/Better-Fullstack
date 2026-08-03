@@ -417,6 +417,8 @@ const CODE_QUALITY_ADDONS = new Set([
   "ultracite",
   "lefthook",
   "husky",
+  "knip",
+  "gitleaks",
 ]);
 const DOCUMENTATION_ADDONS = new Set(["starlight", "fumadocs"]);
 const FRONTEND_APP_PLATFORM_ADDONS = new Set<string>(APP_PLATFORM_ADDON_VALUES);
@@ -1442,6 +1444,20 @@ function createTypeScriptBackendCompatibilityIssue(
         message: "Dodo Payments are not yet supported for React + Vite projects.",
       });
     }
+  }
+
+  if (
+    part.role === "payments" &&
+    part.toolId === "xendit" &&
+    (context.ownerToolId === "none" || context.ownerToolId === "convex")
+  ) {
+    return createStackGraphIssue({
+      code: "INCOMPATIBLE_OWNER_TOOL",
+      partId: part.id,
+      role: part.role,
+      toolId: part.toolId,
+      message: "Xendit Payment Sessions require a server backend.",
+    });
   }
 
   if (part.role === "email" && part.toolId !== "none" && context.ownerToolId === "convex") {

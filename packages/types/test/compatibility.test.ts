@@ -12,6 +12,51 @@ import {
 import { DEFAULT_STACK_SELECTION } from "../src/stack-translation";
 
 describe("compatibility issue helpers", () => {
+  it("keeps the Node SDK-based SigNoz scaffold off Workers", () => {
+    const workersStack = {
+      ...DEFAULT_STACK_SELECTION,
+      backend: "hono" as const,
+      runtime: "workers" as const,
+      observability: "signoz" as const,
+    };
+
+    expect(analyzeStackCompatibility(workersStack).adjustedStack?.observability).toBe("none");
+    expect(getDisabledReason(workersStack, "observability", "signoz")).toContain("Node.js or Bun");
+    expect(
+      getDisabledReason(
+        { ...DEFAULT_STACK_SELECTION, observability: "signoz" },
+        "runtime",
+        "workers",
+      ),
+    ).toContain("Node.js or Bun");
+  });
+
+  it("disables SigNoz when native request instrumentation is not wired", () => {
+    const unsupportedGo = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "go" as const,
+      goWebFramework: "go-zero" as const,
+      goObservability: "signoz" as const,
+    };
+    expect(analyzeStackCompatibility(unsupportedGo).adjustedStack?.goObservability).toBe("none");
+    expect(getDisabledReason(unsupportedGo, "goObservability", "signoz")).toContain(
+      "Gin, Echo, Fiber, Chi",
+    );
+
+    const unsupportedPython = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "python" as const,
+      pythonWebFramework: "django" as const,
+      pythonObservability: "signoz" as const,
+    };
+    expect(analyzeStackCompatibility(unsupportedPython).adjustedStack?.pythonObservability).toBe(
+      "none",
+    );
+    expect(getDisabledReason(unsupportedPython, "pythonObservability", "signoz")).toContain(
+      "FastAPI",
+    );
+  });
+
   it("returns structured API/frontend issues for React-only APIs", () => {
     const issue = getApiFrontendCompatibilityIssue("trpc", ["svelte"]);
 

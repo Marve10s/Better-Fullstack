@@ -1,3 +1,6 @@
+{{#if (and (eq observability "signoz") (eq runtime "bun"))}}
+import { withTracing } from "./lib/tracing";
+{{/if}}
 import { env } from "@{{projectName}}/env/server";
 {{#if (eq runtime "node")}}
 import { node } from "@elysiajs/node";
@@ -55,9 +58,9 @@ const apiHandler = new OpenAPIHandler(appRouter, {
 {{/if}}
 
 {{#if (eq runtime "node")}}
-new Elysia({ adapter: node() })
+const app = new Elysia({ adapter: node() })
 {{else}}
-new Elysia()
+const app = new Elysia()
 {{/if}}
 {{#if (eq api "openapi")}}
 	.use(
@@ -223,7 +226,15 @@ new Elysia()
 		return result.toUIMessageStreamResponse();
 	})
 {{/if}}
-	.get("/", () => "OK")
+	.get("/", () => "OK"){{#if (and (eq observability "signoz") (eq runtime "bun"))}};
+Bun.serve({
+	port: 3000,
+	fetch: withTracing(app.fetch),
+});
+
+console.log("Server is running on http://localhost:3000");
+{{else}}
 	.listen(3000, () => {
 		console.log("Server is running on http://localhost:3000");
 	});
+{{/if}}

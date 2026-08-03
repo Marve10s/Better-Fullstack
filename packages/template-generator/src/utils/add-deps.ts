@@ -110,6 +110,7 @@ export const dependencyVersionMap = {
 
   "@biomejs/biome": "^2.5.5",
   ultracite: "^7.9.4",
+  knip: "^6.29.0",
 
   oxlint: "^1.75.0",
   oxfmt: "^0.56.0",

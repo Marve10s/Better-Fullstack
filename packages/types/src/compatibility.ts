@@ -47,6 +47,24 @@ export {
 
 export type CompatibilityCategory = OptionCategory;
 
+const SIGNOZ_SUPPORTED_GO_WEB_FRAMEWORKS = new Set([
+  "gin",
+  "echo",
+  "fiber",
+  "chi",
+  "stdlib",
+  "none",
+]);
+const SIGNOZ_SUPPORTED_PYTHON_WEB_FRAMEWORKS = new Set(["fastapi"]);
+
+export function isSignozSupportedGoWebFramework(framework: string): boolean {
+  return SIGNOZ_SUPPORTED_GO_WEB_FRAMEWORKS.has(framework);
+}
+
+export function isSignozSupportedPythonWebFramework(framework: string): boolean {
+  return SIGNOZ_SUPPORTED_PYTHON_WEB_FRAMEWORKS.has(framework);
+}
+
 // ============================================
 // KOTLIN (JAVA ECOSYSTEM) SUPPORT GATE
 // ============================================
@@ -753,6 +771,17 @@ export const analyzeStackCompatibility = (
     });
   }
 
+  // The SigNoz TypeScript scaffold uses the OpenTelemetry Node SDK. Bun/fetch
+  // is instrumented explicitly, but the SDK itself is not Workers-compatible.
+  if (nextStack.runtime === "workers" && nextStack.observability === "signoz") {
+    nextStack.observability = "none";
+    changed = true;
+    changes.push({
+      category: "observability",
+      message: "Observability set to 'None' (SigNoz requires the Node.js or Bun runtime)",
+    });
+  }
+
   // Workers runtime requires server deployment
   if (nextStack.runtime === "workers" && nextStack.serverDeploy === "none") {
     nextStack.serverDeploy = "cloudflare";
@@ -1193,6 +1222,15 @@ export const analyzeStackCompatibility = (
           : "Payments set to 'None' (PayPal requires a web frontend)",
       });
     }
+  }
+
+  if (nextStack.payments === "xendit" && ["none", "convex"].includes(nextStack.backend)) {
+    nextStack.payments = "none";
+    changed = true;
+    changes.push({
+      category: "payments",
+      message: "Payments set to 'None' (Xendit Payment Sessions require a server backend)",
+    });
   }
 
   if (
@@ -1721,6 +1759,17 @@ export const analyzeStackCompatibility = (
   // ============================================
 
   if (nextStack.ecosystem === "python") {
+    if (
+      nextStack.pythonObservability === "signoz" &&
+      !isSignozSupportedPythonWebFramework(nextStack.pythonWebFramework)
+    ) {
+      nextStack.pythonObservability = "none";
+      changed = true;
+      changes.push({
+        category: "pythonObservability",
+        message: "Python observability set to 'None' (SigNoz request tracing is wired for FastAPI)",
+      });
+    }
     if (nextStack.pythonWebFramework !== "django" && nextStack.pythonApi !== "none") {
       nextStack.pythonApi = "none";
       changed = true;
@@ -1815,6 +1864,20 @@ export const analyzeStackCompatibility = (
         message: "Production server set to 'None' (Gunicorn requires a WSGI, ASGI, or aiohttp app)",
       });
     }
+  }
+
+  if (
+    nextStack.ecosystem === "go" &&
+    nextStack.goObservability === "signoz" &&
+    !isSignozSupportedGoWebFramework(nextStack.goWebFramework)
+  ) {
+    nextStack.goObservability = "none";
+    changed = true;
+    changes.push({
+      category: "goObservability",
+      message:
+        "Go observability set to 'None' (SigNoz request tracing supports Gin, Echo, Fiber, Chi, and net/http)",
+    });
   }
 
   // ============================================
@@ -2436,6 +2499,33 @@ export const getDisabledReason = (
     return "Gunicorn requires a WSGI, ASGI, or aiohttp application";
   }
 
+  // Runtime-specific observability gates must run before graph-owned category
+  // handling returns an authoritative result.
+  if (
+    (category === "observability" && optionId === "signoz" && currentStack.runtime === "workers") ||
+    (category === "runtime" && optionId === "workers" && currentStack.observability === "signoz")
+  ) {
+    return "SigNoz tracing currently requires the Node.js or Bun runtime";
+  }
+  if (
+    ((category === "goObservability" && optionId === "signoz") ||
+      (category === "goWebFramework" && currentStack.goObservability === "signoz")) &&
+    !isSignozSupportedGoWebFramework(
+      category === "goWebFramework" ? optionId : currentStack.goWebFramework,
+    )
+  ) {
+    return "SigNoz request tracing supports Gin, Echo, Fiber, Chi, and net/http";
+  }
+  if (
+    ((category === "pythonObservability" && optionId === "signoz") ||
+      (category === "pythonWebFramework" && currentStack.pythonObservability === "signoz")) &&
+    !isSignozSupportedPythonWebFramework(
+      category === "pythonWebFramework" ? optionId : currentStack.pythonWebFramework,
+    )
+  ) {
+    return "SigNoz request tracing is currently wired for FastAPI";
+  }
+
   const graphDisabledReason =
     (category === "payments" && optionId === "revenuecat") ||
     (category === "i18n" && optionId === "intlayer")
@@ -2582,6 +2672,9 @@ export const getDisabledReason = (
   // RUNTIME CONSTRAINTS
   // ============================================
   if (category === "runtime") {
+    if (optionId === "workers" && currentStack.observability === "signoz") {
+      return "SigNoz tracing currently requires the Node.js or Bun runtime";
+    }
     if (optionId === "workers" && currentStack.backend !== "hono") {
       return "In Better-Fullstack, Workers runtime currently requires the Hono backend";
     }
@@ -2844,6 +2937,14 @@ export const getDisabledReason = (
     if (["none", "convex"].includes(currentStack.backend)) {
       return "PayPal checkout requires a standalone or fullstack backend";
     }
+  }
+
+  if (
+    category === "payments" &&
+    optionId === "xendit" &&
+    ["none", "convex"].includes(currentStack.backend)
+  ) {
+    return "Xendit Payment Sessions require a standalone or fullstack backend";
   }
 
   // ============================================
@@ -4388,6 +4489,8 @@ const ADDON_COMPATIBILITY: Record<Addons, readonly Frontend[]> = {
   prettier: [],
   husky: [],
   lefthook: [],
+  knip: [],
+  gitleaks: [],
   turborepo: [],
   nx: [],
   starlight: [],

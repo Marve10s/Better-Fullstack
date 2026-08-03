@@ -261,6 +261,38 @@ export function processAddonsDeps(vfs: VirtualFileSystem, config: ProjectConfig)
     }
   }
 
+  if (config.addons.includes("knip")) {
+    addPackageDependency({
+      vfs,
+      packagePath: "package.json",
+      devDependencies: ["knip"],
+    });
+
+    const rootPkg = vfs.readJson<PackageJson>("package.json");
+    if (rootPkg) {
+      rootPkg.scripts = {
+        ...rootPkg.scripts,
+        knip: rootPkg.scripts?.knip ?? "knip",
+        "knip:production": rootPkg.scripts?.["knip:production"] ?? "knip --production",
+      };
+      vfs.writeJson("package.json", rootPkg);
+    }
+  }
+
+  if (config.addons.includes("gitleaks")) {
+    const rootPkg = vfs.readJson<PackageJson>("package.json");
+    if (rootPkg) {
+      rootPkg.scripts = {
+        ...rootPkg.scripts,
+        "secrets:scan": rootPkg.scripts?.["secrets:scan"] ?? "gitleaks git --redact --verbose",
+        "secrets:scan:staged":
+          rootPkg.scripts?.["secrets:scan:staged"] ??
+          "gitleaks git --pre-commit --redact --staged --verbose",
+      };
+      vfs.writeJson("package.json", rootPkg);
+    }
+  }
+
   if (config.addons.includes("pwa") && hasPwaCompatibleFrontend) {
     if (vfs.exists(webPkgPath)) {
       addPackageDependency({

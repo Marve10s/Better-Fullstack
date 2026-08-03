@@ -252,7 +252,7 @@ function getGuidance() {
       email:
         "String. TypeScript supports multiple providers; Rust, Python, Go, and Java currently support resend or none.",
       observability:
-        "String. TypeScript supports multiple providers; Rust, Python, Go, and Java currently support sentry or none.",
+        "Shared service field. TypeScript supports multiple providers; Rust, Python, Go, and Java support sentry or none here. Python and Go also expose ecosystem-native pythonObservability/goObservability fields, including SigNoz.",
       search:
         "String. TypeScript supports multiple providers; Rust, Python, Go, and Java currently support meilisearch or none.",
       vectorDb:
@@ -277,6 +277,7 @@ function getGuidance() {
       "Sequelize + better-auth: unsupported (no adapter). Use auth='none' or orm='drizzle'.",
       "Non-TypeScript ecosystems only support email='resend' or email='none'.",
       "Non-TypeScript ecosystems only support observability='sentry' or observability='none'.",
+      "Use pythonObservability='signoz' or goObservability='signoz' for SigNoz-native OTLP scaffolding in those ecosystems.",
       "Non-TypeScript ecosystems only support search='meilisearch' or search='none'.",
       "Java email='resend' and observability='sentry' require javaBuildTool='maven' or javaBuildTool='gradle'.",
       "Java search='meilisearch' requires javaBuildTool='maven' or javaBuildTool='gradle'.",
@@ -470,6 +471,8 @@ const MCP_CODE_QUALITY_ADDONS = new Set([
   "ultracite",
   "lefthook",
   "husky",
+  "knip",
+  "gitleaks",
   "ruler",
 ]);
 const MCP_DOCUMENTATION_ADDONS = new Set(["starlight", "fumadocs"]);
@@ -876,6 +879,7 @@ const COMPATIBILITY_RULES_MD = `# Better-Fullstack Compatibility Rules
 
 ## Observability
 - Rust, Python, Go, and Java currently support only Sentry for observability (\`observability=sentry\`) or no observability (\`observability=none\`).
+- Python and Go additionally support SigNoz through their native fields (\`pythonObservability=signoz\` and \`goObservability=signoz\`).
 - Java Sentry requires Maven or Gradle so the generated project can manage the SDK dependency.
 
 ## Ecosystem Isolation
@@ -912,6 +916,7 @@ const GETTING_STARTED_MD = `# Getting Started with Better-Fullstack MCP
    - ecosystem: "python"
    - pythonWebFramework: "fastapi"
    - pythonOrm: "sqlalchemy"
+   - pythonObservability: "signoz" (optional)
    - email: "resend" (optional)
    - observability: "sentry" (optional)
 2. Tell the user to run: cd my-python-app && uv sync --extra dev
@@ -922,6 +927,7 @@ const GETTING_STARTED_MD = `# Getting Started with Better-Fullstack MCP
    - ecosystem: "go"
    - goWebFramework: "gin"
    - goOrm: "gorm"
+   - goObservability: "signoz" (optional)
    - email: "resend" (optional)
    - observability: "sentry" (optional)
 2. Tell the user to run: cd my-go-app && go mod tidy && go run cmd/server/main.go
@@ -1385,7 +1391,9 @@ const crossEcosystemInputSchema = {
   pythonTesting: z.array(PythonTestingSchema).optional().describe("Python testing libraries"),
   pythonCaching: PythonCachingSchema.optional().describe("Python caching library"),
   pythonRealtime: PythonRealtimeSchema.optional().describe("Python realtime library"),
-  pythonObservability: PythonObservabilitySchema.optional().describe("Python observability"),
+  pythonObservability: PythonObservabilitySchema.optional().describe(
+    "Python observability (OpenTelemetry, SigNoz, or Prometheus)",
+  ),
   pythonCli: z.array(PythonCliSchema).optional().describe("Python CLI tooling"),
   pythonCloudSdk: PythonCloudSdkSchema.optional().describe("Python cloud SDK"),
   pythonHttpClient: PythonHttpClientSchema.optional().describe("Python HTTP client"),
@@ -1405,7 +1413,9 @@ const crossEcosystemInputSchema = {
   goMessageQueue: GoMessageQueueSchema.optional().describe("Go message queue"),
   goCaching: GoCachingSchema.optional().describe("Go caching library"),
   goConfig: GoConfigSchema.optional().describe("Go config management"),
-  goObservability: GoObservabilitySchema.optional().describe("Go observability"),
+  goObservability: GoObservabilitySchema.optional().describe(
+    "Go observability (OpenTelemetry, SigNoz, or Prometheus)",
+  ),
   goValidation: GoValidationSchema.optional().describe("Go validation"),
   goQuality: GoQualitySchema.optional().describe("Go code quality"),
   goMigrations: GoMigrationsSchema.optional().describe("Go database migrations"),

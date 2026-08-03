@@ -1,3 +1,6 @@
+{{#if (and (eq observability "signoz") (or (ne runtime "node") (eq serverDeploy "netlify")))}}
+import { withTracing } from "./lib/tracing";
+{{/if}}
 import { env } from "@{{projectName}}/env/server";
 {{#if (eq api "orpc")}}
 import { OpenAPIHandler } from "@orpc/openapi/fetch";
@@ -264,5 +267,9 @@ serve(
 	}
 );
 {{else}}
+{{#if (and (eq observability "signoz") (or (ne runtime "node") (eq serverDeploy "netlify")))}}
+export default { fetch: withTracing(app.fetch) };
+{{else}}
 export default app;
+{{/if}}
 {{/if}}

@@ -1,8 +1,9 @@
-{{#if (eq goObservability "opentelemetry")}}
-// Package observability configures OpenTelemetry tracing with OTLP export.
+{{#if (or (eq goObservability "opentelemetry") (eq goObservability "signoz"))}}
+// Package observability configures OpenTelemetry tracing with OTLP export{{#if (eq goObservability "signoz")}} to SigNoz{{/if}}.
 //
-// Set OTEL_EXPORTER_OTLP_ENDPOINT (defaults to http://localhost:4318) and
-// call InitTracing early in main:
+// Set OTEL_SERVICE_NAME and OTEL_EXPORTER_OTLP_ENDPOINT (defaults to
+// http://localhost:4318). SigNoz Cloud also requires OTEL_EXPORTER_OTLP_HEADERS
+// with a signoz-ingestion-key. Call InitTracing early in main:
 //
 //	shutdown, err := observability.InitTracing(context.Background())
 //	if err != nil { ... }
@@ -11,12 +12,24 @@ package observability
 
 import (
 	"context"
+	"errors"
+	"net/http"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
+	"time"
 
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
+	"go.opentelemetry.io/otel/propagation"
 	sdkresource "go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // InitTracing installs a global OTLP/HTTP tracer provider and returns a
@@ -27,11 +40,16 @@ func InitTracing(ctx context.Context) (func(context.Context) error, error) {
 		return nil, err
 	}
 
+	serviceName := os.Getenv("OTEL_SERVICE_NAME")
+	if serviceName == "" {
+		serviceName = "{{projectName}}"
+	}
+
 	res, err := sdkresource.Merge(
 		sdkresource.Default(),
 		sdkresource.NewWithAttributes(
 			semconv.SchemaURL,
-			semconv.ServiceName("{{projectName}}"),
+			semconv.ServiceName(serviceName),
 		),
 	)
 	if err != nil {
@@ -43,7 +61,86 @@ func InitTracing(ctx context.Context) (func(context.Context) error, error) {
 		sdktrace.WithResource(res),
 	)
 	otel.SetTracerProvider(provider)
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
+		propagation.TraceContext{},
+		propagation.Baggage{},
+	))
+	_, startupSpan := provider.Tracer("{{projectName}}/startup").Start(ctx, "application.startup")
+	startupSpan.End()
 
-	return provider.Shutdown, nil
+	var shutdownOnce sync.Once
+	var shutdownErr error
+	shutdown := func(ctx context.Context) error {
+		shutdownOnce.Do(func() {
+			shutdownErr = provider.Shutdown(ctx)
+		})
+		return shutdownErr
+	}
+
+	return shutdown, nil
+}
+
+// TraceHTTP records propagator-aware server spans and HTTP response status.
+func TraceHTTP(next http.Handler) http.Handler {
+	return otelhttp.NewHandler(next, "http.server")
+}
+
+// StartHTTPSpan provides equivalent W3C propagation for fetch-style Go servers
+// such as Fiber, whose request type is not compatible with net/http middleware.
+func StartHTTPSpan(
+	ctx context.Context,
+	headers http.Header,
+	method string,
+	path string,
+) (context.Context, func(int, error)) {
+	parentCtx := otel.GetTextMapPropagator().Extract(ctx, propagation.HeaderCarrier(headers))
+	requestCtx, span := otel.Tracer("{{projectName}}/http").Start(
+		parentCtx,
+		method+" "+path,
+		trace.WithSpanKind(trace.SpanKindServer),
+		trace.WithAttributes(
+			attribute.String("http.request.method", method),
+			attribute.String("url.path", path),
+		),
+	)
+
+	finish := func(statusCode int, requestErr error) {
+		span.SetAttributes(attribute.Int("http.response.status_code", statusCode))
+		if requestErr != nil {
+			span.RecordError(requestErr)
+			span.SetStatus(codes.Error, requestErr.Error())
+		} else if statusCode >= http.StatusInternalServerError {
+			span.SetStatus(codes.Error, http.StatusText(statusCode))
+		}
+		span.End()
+	}
+
+	return requestCtx, finish
+}
+
+// RunWithGracefulShutdown stops accepting requests and flushes telemetry on
+// SIGINT/SIGTERM before the process exits.
+func RunWithGracefulShutdown(
+	runServer func() error,
+	shutdownServer func(context.Context) error,
+	shutdownTracing func(context.Context) error,
+) error {
+	serverErrors := make(chan error, 1)
+	go func() {
+		serverErrors <- runServer()
+	}()
+
+	shutdownSignals := make(chan os.Signal, 1)
+	signal.Notify(shutdownSignals, syscall.SIGINT, syscall.SIGTERM)
+	defer signal.Stop(shutdownSignals)
+
+	select {
+	case err := <-serverErrors:
+		return err
+	case <-shutdownSignals:
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		return errors.Join(shutdownServer(shutdownCtx), shutdownTracing(shutdownCtx))
+	}
 }
 {{/if}}

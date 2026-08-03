@@ -680,6 +680,12 @@ export function validatePaymentsCompatibility(
     );
   }
 
+  if (payments === "xendit" && (backend === "none" || backend === "convex")) {
+    exitWithError(
+      "Xendit Payment Sessions require a standalone or fullstack backend. Please choose a server backend or a different payments provider.",
+    );
+  }
+
   if (payments === "dodo" && frontends.includes("react-vite")) {
     exitWithError("Dodo Payments are not yet supported for React + Vite projects.");
   }
@@ -982,7 +988,10 @@ export function validateRustExpansionCompatibility(config: Partial<ProjectConfig
       message:
         "Torii's sqlx-based SQLite storage conflicts with rusqlite: both link the native sqlite3 library and cargo permits only one linker.",
       provided: { "rust-orm": orm, "rust-auth": auth },
-      suggestions: ["Use --rust-orm sqlx, sea-orm, or diesel with Torii", "Choose --rust-auth none"],
+      suggestions: [
+        "Use --rust-orm sqlx, sea-orm, or diesel with Torii",
+        "Choose --rust-auth none",
+      ],
     });
   }
 }

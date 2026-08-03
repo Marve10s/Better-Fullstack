@@ -1,8 +1,110 @@
 import { describe, it, expect } from "bun:test";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 
-import { expectSuccess, runTRPCTest } from "./test-utils";
+import { expectError, expectSuccess, runTRPCTest } from "./test-utils";
 
 describe("Observability Configurations", () => {
+  describe("SigNoz", () => {
+    it("generates an OTLP setup with SigNoz endpoint and ingestion headers", async () => {
+      const result = await runTRPCTest({
+        projectName: "signoz-hono",
+        observability: "signoz",
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        api: "trpc",
+        auth: "none",
+        frontend: ["tanstack-router"],
+        addons: ["turborepo"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const pkg = await readFile(join(result.projectDir!, "apps/server/package.json"), "utf-8");
+      const tracing = await readFile(
+        join(result.projectDir!, "apps/server/src/lib/tracing.ts"),
+        "utf-8",
+      );
+      const serverEntry = await readFile(
+        join(result.projectDir!, "apps/server/src/index.ts"),
+        "utf-8",
+      );
+      const env = await readFile(join(result.projectDir!, "apps/server/.env"), "utf-8");
+
+      expect(pkg).toContain("@opentelemetry/sdk-node");
+      expect(tracing).toContain("OTEL_EXPORTER_OTLP_HEADERS");
+      expect(tracing).toContain("signoz");
+      expect(tracing).toContain("startTracing();");
+      expect(tracing).toContain("export function withTracing");
+      expect(tracing).toContain("process.once(signal");
+      expect(serverEntry.startsWith('import "./lib/tracing";')).toBe(true);
+      expect(serverEntry).toContain('import { withTracing } from "./lib/tracing";');
+      expect(serverEntry).toContain("export default { fetch: withTracing(app.fetch) };");
+      expect(env).toContain("OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318");
+      expect(env).toContain("OTEL_EXPORTER_OTLP_HEADERS=");
+      expect(env).toContain("SigNoz Cloud: signoz-ingestion-key=<your-key>");
+    });
+
+    it("rejects the Node SDK scaffold on Cloudflare Workers", async () => {
+      const result = await runTRPCTest({
+        projectName: "signoz-workers",
+        observability: "signoz",
+        backend: "hono",
+        runtime: "workers",
+        database: "sqlite",
+        orm: "drizzle",
+        api: "trpc",
+        auth: "none",
+        frontend: ["tanstack-router"],
+        addons: ["turborepo"],
+        examples: ["none"],
+        dbSetup: "d1",
+        webDeploy: "none",
+        serverDeploy: "cloudflare",
+        install: false,
+        expectError: true,
+      });
+
+      expectError(result, "SigNoz tracing currently requires");
+    });
+
+    it("wraps Elysia's Bun fetch handler with request tracing", async () => {
+      const result = await runTRPCTest({
+        projectName: "signoz-elysia",
+        observability: "signoz",
+        backend: "elysia",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        api: "trpc",
+        auth: "none",
+        frontend: ["tanstack-router"],
+        addons: ["turborepo"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const serverEntry = await readFile(
+        join(result.projectDir!, "apps/server/src/index.ts"),
+        "utf-8",
+      );
+      expect(serverEntry.startsWith('import "./lib/tracing";')).toBe(true);
+      expect(serverEntry).toContain('import { withTracing } from "./lib/tracing";');
+      expect(serverEntry).toContain("fetch: withTracing(app.fetch)");
+      expect(serverEntry).not.toContain(".listen(3000");
+    });
+  });
+
   describe("OpenTelemetry", () => {
     it("should work with opentelemetry + hono backend", async () => {
       const result = await runTRPCTest({

@@ -161,6 +161,8 @@ export const AddonsSchema = z
     "biome",
     "lefthook",
     "husky",
+    "knip",
+    "gitleaks",
     "ruler",
     "mcp",
     "skills",
@@ -275,6 +277,7 @@ export const PaymentsSchema = z
     "creem",
     "autumn",
     "commet",
+    "xendit",
     "none",
   ])
   .describe("Payments provider");
@@ -416,7 +419,7 @@ export const LoggingSchema = z
   .describe("Server-side logging framework");
 
 export const ObservabilitySchema = z
-  .enum(["opentelemetry", "sentry", "grafana", "datadog", "axiom", "betterstack", "none"])
+  .enum(["opentelemetry", "signoz", "sentry", "grafana", "datadog", "axiom", "betterstack", "none"])
   .describe("Observability and distributed tracing");
 
 export const FeatureFlagsSchema = z
@@ -627,7 +630,7 @@ export const PythonRealtimeSchema = z
   .describe("Python realtime/WebSocket library");
 
 export const PythonObservabilitySchema = z
-  .enum(["opentelemetry", "prometheus-client", "none"])
+  .enum(["opentelemetry", "signoz", "prometheus-client", "none"])
   .describe("Python observability/tracing library");
 
 export const PythonCliSchema = z
@@ -700,7 +703,7 @@ export const GoConfigSchema = z
   .describe("Go configuration management library");
 
 export const GoObservabilitySchema = z
-  .enum(["opentelemetry", "prometheus", "none"])
+  .enum(["opentelemetry", "signoz", "prometheus", "none"])
   .describe("Go observability/tracing library");
 
 export const GoValidationSchema = z.enum(["validator", "none"]).describe("Go validation library");

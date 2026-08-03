@@ -40,7 +40,7 @@ config({ path: "../../apps/server/.env" });
 
 const app = await alchemy("{{projectName}}");
 
-{{#if (or (or (eq ai "openai-sdk") (eq ai "anthropic-sdk")) (eq payments "paypal"))}}
+{{#if (or (or (or (eq ai "openai-sdk") (eq ai "anthropic-sdk")) (eq payments "paypal")) (eq payments "xendit"))}}
 const serviceBindings = {
   {{#if (eq ai "openai-sdk")}}
   OPENAI_API_KEY: alchemy.secret.env.OPENAI_API_KEY!,
@@ -54,6 +54,11 @@ const serviceBindings = {
   PAYPAL_CLIENT_ID: alchemy.env.PAYPAL_CLIENT_ID!,
   PAYPAL_CLIENT_SECRET: alchemy.secret.env.PAYPAL_CLIENT_SECRET!,
   PAYPAL_ENVIRONMENT: alchemy.env.PAYPAL_ENVIRONMENT ?? "sandbox",
+  {{/if}}
+  {{#if (eq payments "xendit")}}
+  XENDIT_SECRET_KEY: alchemy.secret.env.XENDIT_SECRET_KEY!,
+  XENDIT_WEBHOOK_TOKEN: alchemy.secret.env.XENDIT_WEBHOOK_TOKEN!,
+  XENDIT_API_URL: alchemy.env.XENDIT_API_URL ?? "https://api.xendit.co",
   {{/if}}
 };
 {{/if}}
@@ -73,7 +78,7 @@ const db = await D1Database("database", {
 export const web = await Nextjs("web", {
   cwd: "../../apps/web",
   bindings: {
-    {{#if (and (eq backend "self") (or (or (eq ai "openai-sdk") (eq ai "anthropic-sdk")) (eq payments "paypal")))}}
+    {{#if (and (eq backend "self") (or (or (or (eq ai "openai-sdk") (eq ai "anthropic-sdk")) (eq payments "paypal")) (eq payments "xendit")))}}
     ...serviceBindings,
     {{/if}}
     {{#if (eq backend "convex")}}
@@ -127,7 +132,7 @@ export const web = await Nextjs("web", {
 export const web = await Nuxt("web", {
   cwd: "../../apps/web",
   bindings: {
-    {{#if (and (eq backend "self") (or (or (eq ai "openai-sdk") (eq ai "anthropic-sdk")) (eq payments "paypal")))}}
+    {{#if (and (eq backend "self") (or (or (or (eq ai "openai-sdk") (eq ai "anthropic-sdk")) (eq payments "paypal")) (eq payments "xendit")))}}
     ...serviceBindings,
     {{/if}}
     {{#if (eq backend "convex")}}
@@ -178,7 +183,7 @@ export const web = await Nuxt("web", {
 export const web = await SvelteKit("web", {
   cwd: "../../apps/web",
   bindings: {
-    {{#if (and (eq backend "self") (or (or (eq ai "openai-sdk") (eq ai "anthropic-sdk")) (eq payments "paypal")))}}
+    {{#if (and (eq backend "self") (or (or (or (eq ai "openai-sdk") (eq ai "anthropic-sdk")) (eq payments "paypal")) (eq payments "xendit")))}}
     ...serviceBindings,
     {{/if}}
     {{#if (eq backend "convex")}}
@@ -195,7 +200,7 @@ export const web = await SvelteKit("web", {
 export const web = await TanStackStart("web", {
   cwd: "../../apps/web",
   bindings: {
-    {{#if (and (eq backend "self") (or (or (eq ai "openai-sdk") (eq ai "anthropic-sdk")) (eq payments "paypal")))}}
+    {{#if (and (eq backend "self") (or (or (or (eq ai "openai-sdk") (eq ai "anthropic-sdk")) (eq payments "paypal")) (eq payments "xendit")))}}
     ...serviceBindings,
     {{/if}}
     {{#if (eq backend "convex")}}
@@ -245,7 +250,7 @@ export const web = await Vite("web", {
   cwd: "../../apps/web",
   assets: "dist",
   bindings: {
-    {{#if (and (eq backend "self") (or (or (eq ai "openai-sdk") (eq ai "anthropic-sdk")) (eq payments "paypal")))}}
+    {{#if (and (eq backend "self") (or (or (or (eq ai "openai-sdk") (eq ai "anthropic-sdk")) (eq payments "paypal")) (eq payments "xendit")))}}
     ...serviceBindings,
     {{/if}}
     {{#if (eq backend "convex")}}
@@ -262,7 +267,7 @@ export const web = await Vite("web", {
 export const web = await ReactRouter("web", {
   cwd: "../../apps/web",
   bindings: {
-    {{#if (and (eq backend "self") (or (or (eq ai "openai-sdk") (eq ai "anthropic-sdk")) (eq payments "paypal")))}}
+    {{#if (and (eq backend "self") (or (or (or (eq ai "openai-sdk") (eq ai "anthropic-sdk")) (eq payments "paypal")) (eq payments "xendit")))}}
     ...serviceBindings,
     {{/if}}
     {{#if (eq backend "convex")}}
@@ -280,7 +285,7 @@ export const web = await Vite("web", {
   cwd: "../../apps/web",
   assets: "dist",
   bindings: {
-    {{#if (and (eq backend "self") (or (or (eq ai "openai-sdk") (eq ai "anthropic-sdk")) (eq payments "paypal")))}}
+    {{#if (and (eq backend "self") (or (or (or (eq ai "openai-sdk") (eq ai "anthropic-sdk")) (eq payments "paypal")) (eq payments "xendit")))}}
     ...serviceBindings,
     {{/if}}
     {{#if (eq backend "convex")}}
@@ -297,7 +302,7 @@ export const web = await Vite("web", {
 export const web = await Astro("web", {
   cwd: "../../apps/web",
   bindings: {
-    {{#if (and (eq backend "self") (or (or (eq ai "openai-sdk") (eq ai "anthropic-sdk")) (eq payments "paypal")))}}
+    {{#if (and (eq backend "self") (or (or (or (eq ai "openai-sdk") (eq ai "anthropic-sdk")) (eq payments "paypal")) (eq payments "xendit")))}}
     ...serviceBindings,
     {{/if}}
     {{#if (ne backend "self")}}
@@ -340,7 +345,7 @@ export const server = await Worker("server", {
   entrypoint: "src/index.ts",
   compatibility: "node",
   bindings: {
-    {{#if (or (or (eq ai "openai-sdk") (eq ai "anthropic-sdk")) (eq payments "paypal"))}}
+    {{#if (or (or (or (eq ai "openai-sdk") (eq ai "anthropic-sdk")) (eq payments "paypal")) (eq payments "xendit"))}}
     ...serviceBindings,
     {{/if}}
     {{#if (eq dbSetup "d1")}}

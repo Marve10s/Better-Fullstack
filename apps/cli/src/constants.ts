@@ -70,6 +70,8 @@ export const ADDON_COMPATIBILITY = {
   biome: [],
   husky: [],
   lefthook: [],
+  knip: [],
+  gitleaks: [],
   turborepo: [],
   starlight: [],
   ultracite: [],

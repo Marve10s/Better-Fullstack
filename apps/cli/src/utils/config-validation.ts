@@ -4,6 +4,8 @@ import pc from "picocolors";
 import type { CLIInput, Database, DatabaseSetup, Frontend, ProjectConfig, Runtime } from "../types";
 
 import {
+  isSignozSupportedGoWebFramework,
+  isSignozSupportedPythonWebFramework,
   normalizeCapabilitySelection,
   stackGraphToLegacyProjectConfigForEcosystem,
   validateStackParts,
@@ -998,6 +1000,13 @@ function validateEmailConstraints(config: Partial<ProjectConfig>) {
 
 function validateObservabilityConstraints(config: Partial<ProjectConfig>) {
   if (!config.observability || config.observability === "none") return;
+  if (config.observability === "signoz" && config.runtime === "workers") {
+    incompatibilityError({
+      message: "SigNoz tracing currently requires the Node.js or Bun runtime.",
+      provided: { observability: "signoz", runtime: "workers" },
+      suggestions: ["Use --runtime bun", "Use --runtime node", "Use --observability none"],
+    });
+  }
   if (config.ecosystem !== "typescript" && config.observability !== "sentry") {
     incompatibilityError({
       message: "Only Sentry observability is available for non-TypeScript ecosystems.",
@@ -1175,6 +1184,20 @@ export function validatePythonExpansionConstraints(config: Partial<ProjectConfig
 
   config = pythonConfig;
 
+  if (
+    config.pythonObservability === "signoz" &&
+    !isSignozSupportedPythonWebFramework(config.pythonWebFramework ?? "none")
+  ) {
+    incompatibilityError({
+      message: "SigNoz request tracing for Python is currently wired for FastAPI.",
+      provided: {
+        "python-web-framework": config.pythonWebFramework ?? "none",
+        "python-observability": "signoz",
+      },
+      suggestions: ["Use --python-web-framework fastapi", "Set --python-observability none"],
+    });
+  }
+
   if (config.pythonOrm === "pymongo" && config.database !== "mongodb") {
     incompatibilityError({
       message: "PyMongo requires --database mongodb.",
@@ -1285,6 +1308,38 @@ export function validatePythonExpansionConstraints(config: Partial<ProjectConfig
   }
 }
 
+export function validateGoExpansionConstraints(config: Partial<ProjectConfig>) {
+  const goConfig =
+    config.ecosystem === "go"
+      ? config
+      : config.stackParts?.some(
+            (part) =>
+              part.role === "backend" && part.ecosystem === "go" && part.source !== "provided",
+          )
+        ? stackGraphToLegacyProjectConfigForEcosystem(config as ProjectConfig, "go")
+        : undefined;
+  if (!goConfig) return;
+
+  if (
+    goConfig.goObservability === "signoz" &&
+    !isSignozSupportedGoWebFramework(goConfig.goWebFramework ?? "none")
+  ) {
+    incompatibilityError({
+      message:
+        "SigNoz request tracing for Go supports Gin, Echo, Fiber, Chi, and the standard library.",
+      provided: {
+        "go-web-framework": goConfig.goWebFramework ?? "none",
+        "go-observability": "signoz",
+      },
+      suggestions: [
+        "Use --go-web-framework gin",
+        "Use --go-web-framework stdlib",
+        "Set --go-observability none",
+      ],
+    });
+  }
+}
+
 function validateI18nConstraints(config: Partial<ProjectConfig>) {
   if (config.i18n !== "intlayer") return;
 
@@ -1336,6 +1391,7 @@ export function validateFullConfig(
   validateApiConstraints(config, options);
   validatePythonApiConstraints(config);
   validatePythonExpansionConstraints(config);
+  validateGoExpansionConstraints(config);
   validateRustExpansionCompatibility(config);
   validateEmailConstraints(config);
   validateObservabilityConstraints(config);
@@ -1495,6 +1551,7 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
     validateApiFrontendCompatibility(config.api, config.frontend, config.astroIntegration);
     validatePythonApiConstraints(config);
     validatePythonExpansionConstraints(config);
+    validateGoExpansionConstraints(config);
     validateEmailConstraints(config);
     validateObservabilityConstraints(config);
     validateCachingConstraints(config);

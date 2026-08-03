@@ -1,0 +1,146 @@
+import { context, propagation, SpanKind, SpanStatusCode, trace } from "@opentelemetry/api";
+import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node";
+import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-http";
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
+import { resourceFromAttributes } from "@opentelemetry/resources";
+import { PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
+import { NodeSDK } from "@opentelemetry/sdk-node";
+import {
+  ATTR_SERVICE_NAME,
+  ATTR_SERVICE_VERSION,
+} from "@opentelemetry/semantic-conventions";
+
+const serviceName = process.env.OTEL_SERVICE_NAME || "{{projectName}}-server";
+const serviceVersion = process.env.OTEL_SERVICE_VERSION || "1.0.0";
+const otlpEndpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT || "http://localhost:4318";
+
+function parseOtlpHeaders(value: string | undefined): Record<string, string> {
+  if (!value) return {};
+
+  return Object.fromEntries(
+    value
+      .split(",")
+      .map((entry) => entry.trim())
+      .filter(Boolean)
+      .map((entry) => {
+        const separator = entry.indexOf("=");
+        if (separator === -1) return [entry, ""];
+        return [entry.slice(0, separator), entry.slice(separator + 1)];
+      }),
+  );
+}
+
+const headers = parseOtlpHeaders(process.env.OTEL_EXPORTER_OTLP_HEADERS);
+const resource = resourceFromAttributes({
+  [ATTR_SERVICE_NAME]: serviceName,
+  [ATTR_SERVICE_VERSION]: serviceVersion,
+  "deployment.environment.name": process.env.NODE_ENV || "development",
+});
+
+const sdk = new NodeSDK({
+  resource,
+  traceExporter: new OTLPTraceExporter({
+    url: `${otlpEndpoint}/v1/traces`,
+    headers,
+  }),
+  metricReader: new PeriodicExportingMetricReader({
+    exporter: new OTLPMetricExporter({
+      url: `${otlpEndpoint}/v1/metrics`,
+      headers,
+    }),
+    exportIntervalMillis: 30000,
+  }),
+  instrumentations: [
+    getNodeAutoInstrumentations({
+      "@opentelemetry/instrumentation-fs": { enabled: false },
+      "@opentelemetry/instrumentation-http": { enabled: true },
+    }),
+  ],
+});
+
+let started = false;
+let shuttingDown: Promise<void> | undefined;
+
+/** Start this before importing the rest of your server application. */
+export function startTracing(): void {
+  if (started) return;
+  sdk.start();
+  started = true;
+  console.log(`[SigNoz] OpenTelemetry started for ${serviceName}`);
+  console.log(`[SigNoz] Exporting OTLP data to ${otlpEndpoint}`);
+}
+
+/** Flush pending telemetry during graceful server shutdown. */
+export async function shutdownTracing(): Promise<void> {
+  if (!started) return;
+  shuttingDown ??= sdk.shutdown().then(() => {
+    started = false;
+  });
+  await shuttingDown;
+}
+
+type FetchHandler<TArgs extends unknown[]> = (
+  request: Request,
+  ...args: TArgs
+) => Response | Promise<Response>;
+
+/** Add W3C-context-aware server spans to Bun and other fetch-style runtimes. */
+export function withTracing<TArgs extends unknown[]>(
+  handler: FetchHandler<TArgs>,
+): FetchHandler<TArgs> {
+  return async (request, ...args) => {
+    const parentContext = propagation.extract(context.active(), request.headers, {
+      get(carrier, key) {
+        return carrier.get(key) ?? undefined;
+      },
+      keys(carrier) {
+        return [...carrier.keys()];
+      },
+    });
+    const span = trace.getTracer(`${serviceName}/http`).startSpan(
+      `${request.method} ${new URL(request.url).pathname}`,
+      {
+        kind: SpanKind.SERVER,
+        attributes: {
+          "http.request.method": request.method,
+          "url.path": new URL(request.url).pathname,
+        },
+      },
+      parentContext,
+    );
+    const requestContext = trace.setSpan(parentContext, span);
+
+    try {
+      return await context.with(requestContext, async () => {
+        const response = await handler(request, ...args);
+        span.setAttribute("http.response.status_code", response.status);
+        if (response.status >= 500) {
+          span.setStatus({ code: SpanStatusCode.ERROR });
+        }
+        return response;
+      });
+    } catch (error) {
+      span.recordException(error instanceof Error ? error : String(error));
+      span.setStatus({ code: SpanStatusCode.ERROR });
+      throw error;
+    } finally {
+      span.end();
+    }
+  };
+}
+
+export { context, SpanStatusCode, trace };
+
+// This module is loaded as the first server entry import by the generator.
+// Starting at module evaluation time lets auto-instrumentations patch modules
+// before the application imports and initializes its HTTP framework.
+startTracing();
+
+// Flush pending spans and metrics on normal container/process termination.
+for (const signal of ["SIGINT", "SIGTERM"] as const) {
+  process.once(signal, () => {
+    void shutdownTracing()
+      .catch((error) => console.error(`[SigNoz] Failed to flush telemetry on ${signal}`, error))
+      .finally(() => process.exit(0));
+  });
+}

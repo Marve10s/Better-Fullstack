@@ -140,7 +140,6 @@ function buildAddonSetupConfig(
   projectName: string,
   currentConfig: BetterTStackConfig,
   plan: StackUpdatePlan,
-  addonsToSetup: Addons[],
 ): ProjectConfig {
   const baseConfig = getDefaultConfig();
   return {
@@ -154,7 +153,7 @@ function buildAddonSetupConfig(
       plan.proposedConfig.packageManager ||
       currentConfig.packageManager ||
       baseConfig.packageManager,
-    addons: addonsToSetup,
+    addons: plan.proposedConfig.addons,
     frontend: plan.proposedConfig.frontend || currentConfig.frontend || baseConfig.frontend,
     examples: plan.proposedConfig.examples || currentConfig.examples || [],
     rustLibraries: plan.proposedConfig.rustLibraries || currentConfig.rustLibraries || [],
@@ -193,14 +192,9 @@ async function runStackUpdateAdd(
   }
 
   const addonsToSetup = getNewAddons(input, currentConfig);
-  const setupConfig = buildAddonSetupConfig(
-    projectDir,
-    projectName,
-    currentConfig,
-    result,
-    addonsToSetup,
-  );
-  const setupWarnings = addonsToSetup.length > 0 ? await setupAddons(setupConfig) : [];
+  const setupConfig = buildAddonSetupConfig(projectDir, projectName, currentConfig, result);
+  const setupWarnings =
+    addonsToSetup.length > 0 ? await setupAddons(setupConfig, addonsToSetup) : [];
   await applyDependencyVersionChannel(projectDir, result.proposedConfig.versionChannel);
 
   let installFailed = false;
@@ -282,16 +276,12 @@ async function trackAddEvent(
       : Object.keys(request).length > 0
         ? "cli-flags"
         : "cli-interactive");
-  await trackEvent(
-    eventType,
-    stackPayload,
-    {
-      source,
-      success: outcome.success,
-      errorName: outcome.errorName,
-      durationMs: outcome.durationMs,
-    },
-  );
+  await trackEvent(eventType, stackPayload, {
+    source,
+    success: outcome.success,
+    errorName: outcome.errorName,
+    durationMs: outcome.durationMs,
+  });
 }
 
 export async function addHandler(
@@ -419,6 +409,7 @@ async function addHandlerInternal(input: AddInput): Promise<AddResult> {
   }
 
   const baseConfig = getDefaultConfig();
+  const updatedAddons = [...new Set([...existingAddons, ...addonsToAdd])];
   const config: ProjectConfig = {
     ...baseConfig,
     ...btsConfig,
@@ -433,6 +424,7 @@ async function addHandlerInternal(input: AddInput): Promise<AddResult> {
     pythonAi: btsConfig.pythonAi || [],
     aiDocs: btsConfig.aiDocs || [],
   };
+  const setupConfig: ProjectConfig = { ...config, addons: updatedAddons };
 
   const vfs = new VirtualFileSystem();
   const packageJsonPaths = await collectPackageJsonPaths(projectDir);
@@ -455,10 +447,9 @@ async function addHandlerInternal(input: AddInput): Promise<AddResult> {
 
   await writeTreeToFilesystem(tree, projectDir);
 
-  const setupWarnings = await setupAddons(config);
+  const setupWarnings = await setupAddons(setupConfig, addonsToAdd);
   await applyDependencyVersionChannel(projectDir, config.versionChannel);
 
-  const updatedAddons = [...new Set([...existingAddons, ...addonsToAdd])];
   const configUpdates: Partial<Pick<ProjectConfig, "webDeploy" | "serverDeploy">> & {
     addons: Addons[];
   } = {

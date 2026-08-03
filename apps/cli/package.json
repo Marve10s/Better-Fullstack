@@ -160,6 +160,7 @@
     "picocolors": "^1.1.1",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "trpc-cli": "^0.12.1",
+    "yaml": "^2.9.0",
     "zod": "4.4.3"
   },
   "devDependencies": {
