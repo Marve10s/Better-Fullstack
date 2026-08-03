@@ -298,6 +298,59 @@ describe("CLI add command", () => {
   );
 
   it(
+    "repairs Lefthook linter setup after invalid YAML is corrected",
+    async () => {
+      const root = await makeTempRoot("bfs-add-linter-retry-test-");
+      const projectName = "app";
+      const projectDir = join(root, projectName);
+
+      const createResult = await runCli(
+        ["create", projectName, "--yes", "--no-install", "--no-git", "--disable-analytics"],
+        { cwd: root },
+      );
+      expect(createResult.exitCode).toBe(0);
+
+      const hookResult = await runCli(
+        ["add", "--project-dir", projectDir, "--addons", "lefthook"],
+        { cwd: root },
+      );
+      expect(hookResult.exitCode).toBe(0);
+
+      const initialLinterAdd = await runCli(
+        ["add", "--project-dir", projectDir, "--addons", "biome"],
+        { cwd: root },
+      );
+      expect(initialLinterAdd.exitCode).toBe(0);
+
+      const lefthookPath = join(projectDir, "lefthook.yml");
+      await writeFile(lefthookPath, "pre-commit: [\n");
+      const failedAdd = await runCli(
+        ["add", "--project-dir", projectDir, "--addons", "biome"],
+        { cwd: root },
+      );
+      expect(failedAdd.exitCode).not.toBe(0);
+
+      const configAfterFailure = (await readJsoncFile(join(projectDir, "bts.jsonc"))) as {
+        addons?: string[];
+      };
+      expect(configAfterFailure.addons).toContain("biome");
+
+      await writeFile(
+        lefthookPath,
+        "pre-commit:\n  commands:\n    existing:\n      run: bun run lint\n",
+      );
+      const retry = await runCli(
+        ["add", "--project-dir", projectDir, "--addons", "biome"],
+        { cwd: root },
+      );
+      expect(retry.exitCode, `retry failed\n${retry.all}`).toBe(0);
+      expect(cliOutput(retry)).toContain("Repaired addon setup: biome");
+      expect(await readFile(lefthookPath, "utf8")).toContain("biome check --write");
+    },
+    CLI_COMMAND_TEST_TIMEOUT_MS,
+  );
+
+  it(
     "plans and applies stack capability flags",
     async () => {
       const root = await makeTempRoot("bfs-add-stack-test-");

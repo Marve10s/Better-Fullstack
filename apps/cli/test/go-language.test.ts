@@ -203,6 +203,8 @@ describe("Go Language Support", () => {
       expect(server).toContain("appobservability.StartHTTPSpan(");
       expect(server).toContain("finishSpan(c.Response().StatusCode(), err)");
       expect(server).toContain("appobservability.RunWithGracefulShutdown(");
+      expect(server).toContain("app.ShutdownWithContext(ctx)");
+      expect(server).not.toContain("func(context.Context) error { return app.Shutdown() }");
     });
 
     it("should create a Go project with proper go.mod structure", async () => {

@@ -20,7 +20,11 @@ import { isSilent, runWithContextAsync } from "../../utils/context";
 import { applyDependencyVersionChannel } from "../../utils/dependency-version-channel";
 import { CLIError, UserCancelledError } from "../../utils/errors";
 import { renderTitle } from "../../utils/render-title";
-import { isGitleaksSetupComplete, setupAddons } from "../addons/addons-setup";
+import {
+  isGitleaksSetupComplete,
+  isLinterLefthookSetupComplete,
+  setupAddons,
+} from "../addons/addons-setup";
 import { installDependencies } from "./install-dependencies";
 import { applyStackUpdate, planStackUpdate, type StackUpdatePlan } from "./stack-update";
 
@@ -65,6 +69,23 @@ async function getAddonsToSetup(
     !(await isGitleaksSetupComplete(projectDir, currentConfig.addons ?? []))
   ) {
     addonsToSetup.push("gitleaks");
+  }
+
+  if (existingAddons.has("lefthook")) {
+    for (const linter of ["biome", "oxlint"] as const) {
+      if (
+        requestedAddons.includes(linter) &&
+        existingAddons.has(linter) &&
+        !(await isLinterLefthookSetupComplete(
+          projectDir,
+          linter,
+          currentConfig.packageManager ?? "bun",
+        )) &&
+        !addonsToSetup.includes(linter)
+      ) {
+        addonsToSetup.push(linter);
+      }
+    }
   }
 
   return addonsToSetup;

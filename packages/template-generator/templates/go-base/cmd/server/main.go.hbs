@@ -763,7 +763,7 @@ func main() {
 {{#if (eq goObservability "signoz")}}
 	if err := appobservability.RunWithGracefulShutdown(
 		func() error { return app.Listen(addr) },
-		{{#if (eq goApi "grpc-go")}}withGRPCShutdown({{/if}}func(context.Context) error { return app.Shutdown() }{{#if (eq goApi "grpc-go")}}){{/if}},
+		{{#if (eq goApi "grpc-go")}}withGRPCShutdown({{/if}}func(ctx context.Context) error { return app.ShutdownWithContext(ctx) }{{#if (eq goApi "grpc-go")}}){{/if}},
 		shutdownTracing,
 	); err != nil {
 {{else}}

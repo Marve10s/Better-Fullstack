@@ -331,29 +331,7 @@ async function ensureLinterLefthookHook(
   packageManager: ProjectConfig["packageManager"],
 ) {
   const hookPath = path.join(projectDir, "lefthook.yml");
-  const packageBinaryRunner = packageManager === "npm" ? "npm exec" : packageManager;
-  const definitions =
-    linter === "biome"
-      ? [
-          {
-            name: "biome",
-            glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}",
-            run: `${packageBinaryRunner} biome check --write --no-errors-on-unmatched --files-ignore-unknown=true {staged_files}`,
-            stage_fixed: true,
-          },
-        ]
-      : [
-          {
-            name: "oxlint",
-            run: `${packageBinaryRunner} oxlint --fix {staged_files}`,
-            stage_fixed: true,
-          },
-          {
-            name: "oxfmt",
-            run: `${packageBinaryRunner} oxfmt --write {staged_files}`,
-            stage_fixed: true,
-          },
-        ];
+  const definitions = getLefthookLinterDefinitions(linter, packageManager);
 
   if (!(await fs.pathExists(hookPath))) {
     const document = parseDocument("pre-commit:\n  parallel: true\n  jobs: []\n");
@@ -397,4 +375,67 @@ async function ensureLinterLefthookHook(
   }
 
   await fs.writeFile(hookPath, document.toString());
+}
+
+function getLefthookLinterDefinitions(
+  linter: "biome" | "oxlint",
+  packageManager: ProjectConfig["packageManager"],
+) {
+  const packageBinaryRunner = packageManager === "npm" ? "npm exec" : packageManager;
+  return linter === "biome"
+    ? [
+        {
+          name: "biome",
+          glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}",
+          run: `${packageBinaryRunner} biome check --write --no-errors-on-unmatched --files-ignore-unknown=true {staged_files}`,
+          stage_fixed: true,
+        },
+      ]
+    : [
+        {
+          name: "oxlint",
+          run: `${packageBinaryRunner} oxlint --fix {staged_files}`,
+          stage_fixed: true,
+        },
+        {
+          name: "oxfmt",
+          run: `${packageBinaryRunner} oxfmt --write {staged_files}`,
+          stage_fixed: true,
+        },
+      ];
+}
+
+export async function isLinterLefthookSetupComplete(
+  projectDir: string,
+  linter: "biome" | "oxlint",
+  packageManager: ProjectConfig["packageManager"],
+): Promise<boolean> {
+  const hookPath = path.join(projectDir, "lefthook.yml");
+  if (!(await fs.pathExists(hookPath))) return false;
+
+  const document = parseDocument(await fs.readFile(hookPath, "utf8"));
+  if (document.errors.length > 0) return false;
+
+  const preCommit = document.get("pre-commit", true);
+  if (!isMap(preCommit)) return false;
+
+  const definitions = getLefthookLinterDefinitions(linter, packageManager);
+  const jobs = preCommit.get("jobs", true);
+  if (isSeq(jobs)) {
+    return definitions.every((definition) =>
+      jobs.items.some(
+        (job) =>
+          isMap(job) &&
+          job.get("name") === definition.name &&
+          job.get("run") === definition.run,
+      ),
+    );
+  }
+
+  const commands = preCommit.get("commands", true);
+  if (!isMap(commands)) return false;
+  return definitions.every((definition) => {
+    const command = commands.get(definition.name, true);
+    return isMap(command) && command.get("run") === definition.run;
+  });
 }
