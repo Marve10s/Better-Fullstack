@@ -459,6 +459,15 @@ function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
     appendChangedGraphStringFlag(
       flags,
       config,
+      "integrations",
+      "typescript",
+      "integrations",
+      config.integrations,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
       "caching",
       "typescript",
       "caching",
@@ -944,6 +953,7 @@ function getTypeScriptFlags(config: ProjectConfig) {
   flags.push(`--logging ${config.logging}`);
   flags.push(`--observability ${config.observability}`);
   flags.push(`--feature-flags ${config.featureFlags}`);
+  flags.push(`--integrations ${config.integrations}`);
   flags.push(`--caching ${config.caching}`);
   flags.push(`--rate-limit ${config.rateLimit}`);
   flags.push(`--i18n ${config.i18n}`);

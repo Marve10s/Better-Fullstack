@@ -800,6 +800,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://docs.growthbook.io/",
     githubUrl: "https://github.com/growthbook/growthbook",
   },
+  nango: {
+    docsUrl: "https://nango.dev/docs/reference/backend/backend-sdk/node",
+    githubUrl: "https://github.com/NangoHQ/nango",
+  },
   posthog: { docsUrl: "https://posthog.com/docs", githubUrl: "https://github.com/PostHog/posthog" },
   launchdarkly: {
     docsUrl: "https://launchdarkly.com/docs/sdk",

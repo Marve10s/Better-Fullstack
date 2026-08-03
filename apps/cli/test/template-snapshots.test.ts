@@ -263,6 +263,19 @@ const SNAPSHOT_CONFIGS: Array<{
       search: "opensearch",
     },
   },
+  {
+    name: "nango-integrations-hono",
+    config: {
+      frontend: ["tanstack-router"],
+      backend: "hono",
+      runtime: "node",
+      api: "trpc",
+      database: "sqlite",
+      orm: "drizzle",
+      auth: "none",
+      integrations: "nango",
+    },
+  },
 
   // === CMS VARIATIONS ===
   {
@@ -400,6 +413,7 @@ const KEY_FILE_SNAPSHOT_CONFIGS = SNAPSHOT_CONFIGS.filter(
       "typescript-library-expansion-react",
       "vanilla-vite-openapi-capacitor",
       "vue-anthropic-sdk",
+      "nango-integrations-hono",
     ].includes(name),
 );
 

@@ -124,6 +124,15 @@ const PREFLIGHT_RULES: readonly PreflightRule[] = [
   backendFeature("email-no-backend", "email", "Email"),
   backendFeature("logging-no-backend", "logging", "Logging"),
   backendFeature("observability-no-backend", "observability", "Observability"),
+  backendFeature("integrations-no-backend", "integrations", "Integrations"),
+  {
+    id: "integrations-workers-runtime",
+    featureKey: "integrations",
+    displayName: "Integrations (Nango)",
+    willSkip: (c) => c.integrations === "nango" && c.runtime === "workers",
+    reason: "Nango's Node SDK is not available on the Workers runtime.",
+    suggestions: ["Switch to the Node or Bun runtime", "Remove Nango integrations"],
+  },
 
   ...["payload", "sanity", "strapi", "tinacms"].map(
     (name): PreflightRule => ({

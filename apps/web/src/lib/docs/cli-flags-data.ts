@@ -667,6 +667,17 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "multiple": false
       },
       {
+        "flag": "--integrations",
+        "summary": "Third-party integrations SDK.",
+        "values": [
+          "nango",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
         "flag": "--vector-db",
         "summary": "Vector database.",
         "values": [

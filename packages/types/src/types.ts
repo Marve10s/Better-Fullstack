@@ -44,6 +44,7 @@ import type {
   LoggingSchema,
   ObservabilitySchema,
   FeatureFlagsSchema,
+  IntegrationsSchema,
   AnalyticsSchema,
   MobileNavigationSchema,
   MobileUISchema,
@@ -207,6 +208,7 @@ export type FileUpload = z.infer<typeof FileUploadSchema>;
 export type Logging = z.infer<typeof LoggingSchema>;
 export type Observability = z.infer<typeof ObservabilitySchema>;
 export type FeatureFlags = z.infer<typeof FeatureFlagsSchema>;
+export type Integrations = z.infer<typeof IntegrationsSchema>;
 export type Analytics = z.infer<typeof AnalyticsSchema>;
 export type MobileNavigation = z.infer<typeof MobileNavigationSchema>;
 export type MobileUI = z.infer<typeof MobileUISchema>;

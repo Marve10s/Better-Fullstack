@@ -332,6 +332,12 @@ export const CLI_FLAG_GROUP_DEFINITIONS: readonly CliFlagGroupDefinition[] = [
         configKey: "featureFlags",
       },
       {
+        flag: "integrations",
+        summary: "Third-party integrations SDK.",
+        source: { kind: "category", category: "integrations" },
+        configKey: "integrations",
+      },
+      {
         flag: "vector-db",
         summary: "Vector database.",
         source: { kind: "category", category: "vectorDb" },

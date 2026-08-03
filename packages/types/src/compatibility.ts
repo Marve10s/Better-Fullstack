@@ -159,6 +159,7 @@ export type CompatibilityInput = {
   logging: string;
   observability: string;
   featureFlags: string;
+  integrations: string;
   analytics: string;
   backendLibraries: string;
   stateManagement: string;
@@ -447,6 +448,7 @@ export function stackQualifiesForSingleApp(stack: CompatibilityInput): boolean {
     stack.aiSdk,
     stack.analytics,
     stack.featureFlags,
+    stack.integrations,
     stack.observability,
     stack.logging,
     stack.webDeploy,
@@ -504,6 +506,7 @@ export const analyzeStackCompatibility = (
       vectorDb: "none",
       rateLimit: "none",
       fileStorage: "none",
+      integrations: "none",
     };
 
     for (const [key, value] of Object.entries(convexOverrides)) {
@@ -583,6 +586,7 @@ export const analyzeStackCompatibility = (
       vectorDb: "none",
       rateLimit: "none",
       fileStorage: "none",
+      integrations: "none",
     };
 
     if (nextStack.ecosystem !== "go") {
@@ -773,6 +777,15 @@ export const analyzeStackCompatibility = (
       category: "runtime",
       message:
         "Database changed to SQLite with D1 (Better-Fullstack doesn't support MongoDB with Workers)",
+    });
+  }
+
+  if (nextStack.runtime === "workers" && nextStack.integrations !== "none") {
+    nextStack.integrations = "none";
+    changed = true;
+    changes.push({
+      category: "integrations",
+      message: "Integrations set to 'none' (Nango's Node SDK is not available on Workers)",
     });
   }
 
@@ -2295,6 +2308,9 @@ export const getDisabledReason = (
     if (category === "fileStorage" && optionId !== "none") {
       return "No backend selected";
     }
+    if (category === "integrations" && optionId !== "none") {
+      return "No backend selected";
+    }
     if (category === "examples" && optionId !== "none") {
       return "No backend selected";
     }
@@ -2582,6 +2598,9 @@ export const getDisabledReason = (
   // RUNTIME CONSTRAINTS
   // ============================================
   if (category === "runtime") {
+    if (optionId === "workers" && currentStack.integrations === "nango") {
+      return "Nango's Node SDK is not available on Workers runtime";
+    }
     if (optionId === "workers" && currentStack.backend !== "hono") {
       return "In Better-Fullstack, Workers runtime currently requires the Hono backend";
     }
@@ -2885,6 +2904,21 @@ export const getDisabledReason = (
   if (category === "observability" && optionId !== "none") {
     if (currentStack.ecosystem !== "typescript") {
       return null;
+    }
+  }
+
+  if (category === "integrations" && optionId !== "none") {
+    if (currentStack.ecosystem !== "typescript") {
+      return "Nango SDK generation is only available for the TypeScript ecosystem";
+    }
+    if (currentStack.backend === "convex") {
+      return "Nango SDK generation is not available with Convex backend";
+    }
+    if (currentStack.backend === "none") {
+      return "Nango SDK generation requires a backend";
+    }
+    if (currentStack.runtime === "workers") {
+      return "Nango's Node SDK is not available on Workers runtime";
     }
   }
 
@@ -4965,6 +4999,7 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
     ["animation", input.animation],
     ["cms", input.cms],
     ["featureFlags", input.featureFlags],
+    ["integrations", input.integrations],
     ["pythonApi", input.pythonApi],
     ["javaWebFramework", input.javaWebFramework],
     ["javaBuildTool", input.javaBuildTool],

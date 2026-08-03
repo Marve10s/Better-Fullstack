@@ -173,6 +173,16 @@ const CATEGORY_NAMES: Record<string, LocalizedMap> = {
     "fr": "Indicateurs de fonctionnalités",
     "uk": "Feature flags",
   },
+  integrations: {
+    "es": "Integraciones",
+    "zh": "集成",
+    "ja": "連携",
+    "ko": "통합",
+    "zh-Hant": "整合",
+    "de": "Integrationen",
+    "fr": "Intégrations",
+    "uk": "Інтеграції",
+  },
   analytics: {
     "es": "Analítica",
     "zh": "分析",

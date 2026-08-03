@@ -21,6 +21,7 @@ import { processEffectDeps } from "./effect-deps";
 import { processEmailDeps } from "./email-deps";
 import { processEnvDeps } from "./env-deps";
 import { processEnvVariables } from "./env-vars";
+import { processIntegrationsDeps } from "./integrations-deps";
 import { processExamplesDeps } from "./examples-deps";
 import { processFeatureFlagsDeps } from "./feature-flags-deps";
 import { processFileStorageDeps } from "./file-storage-deps";
@@ -74,6 +75,7 @@ export function processDependencies(vfs: VirtualFileSystem, config: ProjectConfi
   processObservabilityDeps(vfs, config);
   processRateLimitDeps(vfs, config);
   processFeatureFlagsDeps(vfs, config);
+  processIntegrationsDeps(vfs, config);
   processAnalyticsDeps(vfs, config);
   processCSSAndUILibraryDeps(vfs, config);
   processCMSDeps(vfs, config);
@@ -114,6 +116,7 @@ export {
   processLoggingDeps,
   processObservabilityDeps,
   processFeatureFlagsDeps,
+  processIntegrationsDeps,
   processPaymentsDeps,
   processRateLimitDeps,
   processReadme,

@@ -87,6 +87,7 @@ export function qualifiesForSingleApp(config: ProjectConfig): boolean {
     config.ai,
     config.analytics,
     config.featureFlags,
+    config.integrations,
     config.observability,
     config.logging,
     config.webDeploy,
