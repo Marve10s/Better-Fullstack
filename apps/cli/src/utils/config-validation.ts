@@ -1439,6 +1439,9 @@ export function validateFullConfig(
       config.javaWebFramework,
       config.database,
       config.api,
+      config.pythonWebFramework,
+      config.goWebFramework,
+      config.rustWebFramework,
     );
     config.addons = [...new Set(config.addons)];
   }
@@ -1520,6 +1523,9 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
         config.javaWebFramework,
         config.database,
         config.api,
+        config.pythonWebFramework,
+        config.goWebFramework,
+        config.rustWebFramework,
       );
     }
 

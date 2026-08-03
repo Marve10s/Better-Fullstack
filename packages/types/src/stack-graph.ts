@@ -2053,6 +2053,20 @@ function createAddonCompatibilityIssue(
           message: "Kong Gateway requires a TypeScript backend service.",
         });
       }
+      if (
+        part.toolId === "kong" &&
+        primaryEcosystem !== "typescript" &&
+        primaryEcosystem !== "java" &&
+        (!backendTool || backendTool === "none")
+      ) {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: `Kong Gateway requires a ${primaryEcosystem ?? "supported"} HTTP server.`,
+        });
+      }
       if (!hasCompatibleEcosystem) {
         return createStackGraphIssue({
           code: "INCOMPATIBLE_GRAPH_SELECTION",
@@ -2106,14 +2120,15 @@ function createAddonCompatibilityIssue(
         databaseTool &&
         databaseTool !== "none" &&
         databaseTool !== "sqlite" &&
-        databaseTool !== "postgres"
+        databaseTool !== "postgres" &&
+        databaseTool !== "mongodb"
       ) {
         return createStackGraphIssue({
           code: "INCOMPATIBLE_GRAPH_SELECTION",
           partId: part.id,
           role: part.role,
           toolId: part.toolId,
-          message: `${title} for Python ORM projects currently supports SQLite defaults or Postgres.`,
+          message: `${title} for Python ORM projects currently supports SQLite, Postgres, or MongoDB.`,
         });
       }
     }

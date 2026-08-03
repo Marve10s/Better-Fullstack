@@ -942,7 +942,10 @@ export async function gatherConfig(
       if (results.ecosystem !== "typescript") {
         const nonTypeScriptAddons = (flags.addons ?? []).filter(
           (addon): addon is Addons =>
-            addon === "docker-compose" || addon === "devcontainer" || addon === "github-actions",
+            addon === "docker-compose" ||
+            addon === "devcontainer" ||
+            addon === "kong" ||
+            addon === "github-actions",
         );
         return Promise.resolve(nonTypeScriptAddons);
       }

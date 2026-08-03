@@ -477,6 +477,9 @@ export function validateAddonCompatibility(
   javaWebFramework?: string,
   database?: Database,
   api?: API,
+  pythonWebFramework?: ProjectConfig["pythonWebFramework"],
+  goWebFramework?: ProjectConfig["goWebFramework"],
+  rustWebFramework?: ProjectConfig["rustWebFramework"],
 ): { isCompatible: boolean; reason?: string } {
   const baseCompatibility = validateAddonCompatibilityShared(addon, frontend, _auth);
   if (!baseCompatibility.isCompatible) return baseCompatibility;
@@ -543,6 +546,24 @@ export function validateAddonCompatibility(
       return {
         isCompatible: false,
         reason: "Kong Gateway requires a TypeScript backend service",
+      };
+    }
+    if (addon === "kong" && ecosystem === "python" && pythonWebFramework === "none") {
+      return {
+        isCompatible: false,
+        reason: "Kong Gateway requires a Python HTTP server",
+      };
+    }
+    if (addon === "kong" && ecosystem === "go" && goWebFramework === "none") {
+      return {
+        isCompatible: false,
+        reason: "Kong Gateway requires a Go HTTP server",
+      };
+    }
+    if (addon === "kong" && ecosystem === "rust" && rustWebFramework === "none") {
+      return {
+        isCompatible: false,
+        reason: "Kong Gateway requires a Rust HTTP server",
       };
     }
     if (
@@ -640,6 +661,9 @@ export function validateAddonsAgainstFrontends(
   javaWebFramework?: string,
   database?: Database,
   api?: API,
+  pythonWebFramework?: ProjectConfig["pythonWebFramework"],
+  goWebFramework?: ProjectConfig["goWebFramework"],
+  rustWebFramework?: ProjectConfig["rustWebFramework"],
 ) {
   if (addons.includes("nx") && addons.includes("turborepo")) {
     exitWithError("Nx and Turborepo are alternative workspace runners. Choose one addon.");
@@ -658,6 +682,9 @@ export function validateAddonsAgainstFrontends(
       javaWebFramework,
       database,
       api,
+      pythonWebFramework,
+      goWebFramework,
+      rustWebFramework,
     );
     if (!isCompatible) {
       exitWithError(`Incompatible addon/frontend combination: ${reason}`);

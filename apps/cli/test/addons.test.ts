@@ -337,6 +337,7 @@ describe("Addon Configurations", () => {
         expect(compose).toContain("kong/kong-gateway:3.15.0.1");
         expect(compose).toContain('KONG_DATABASE: "off"');
         expect(compose).toContain("./kong/kong.yml:/kong/declarative/kong.yml:ro");
+        expect(compose).toContain("VITE_SERVER_URL: http://localhost:8000");
         expect(compose).toContain("- server");
         expect(kongConfig).toContain("url: http://server:3000");
         expect(kongConfig).toContain("strip_path: false");
@@ -361,6 +362,52 @@ describe("Addon Configurations", () => {
         });
 
         expectError(result, "Kong Gateway requires a TypeScript backend service");
+      });
+
+      it("should preserve Kong for Python and avoid publishing the upstream port", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-python",
+          ecosystem: "python",
+          addons: ["kong"],
+          pythonWebFramework: "fastapi",
+          pythonOrm: "none",
+          pythonValidation: "pydantic",
+          pythonAi: [],
+          pythonAuth: "none",
+          pythonApi: "none",
+          pythonTaskQueue: "none",
+          pythonGraphql: "none",
+          pythonQuality: "ruff",
+          pythonTesting: [],
+          pythonCaching: "none",
+          pythonRealtime: "none",
+          pythonObservability: "none",
+          pythonCli: [],
+          install: false,
+        });
+
+        expectSuccess(result);
+        expect(result.projectDir).toBeDefined();
+
+        const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
+        const kongConfig = readFileSync(join(result.projectDir!, "kong", "kong.yml"), "utf8");
+
+        expect(compose.match(/"8000:8000"/g)).toHaveLength(1);
+        expect(kongConfig).toContain("url: http://app:8000");
+      });
+
+      it("should reject Kong when a Python stack has no HTTP server", async () => {
+        const result = await runTRPCTest({
+          projectName: "kong-python-no-server",
+          ecosystem: "python",
+          addons: ["kong"],
+          pythonWebFramework: "none",
+          pythonOrm: "none",
+          install: false,
+          expectError: true,
+        });
+
+        expectError(result, "Kong Gateway requires a Python HTTP server");
       });
     });
 
@@ -1155,6 +1202,34 @@ describe("Addon Configurations", () => {
         ]);
         expect(override).toContain('image: "mcr.microsoft.com/devcontainers/python:1-3.12-bookworm"');
         expect(override).toContain("- .:/workspaces/devcontainer-python-postgres:cached");
+      });
+
+      it("should start and forward Kong in a DevContainer stack", async () => {
+        const result = await runTRPCTest({
+          projectName: "devcontainer-kong",
+          addons: ["devcontainer", "kong"],
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "trpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        expect(result.projectDir).toBeDefined();
+
+        const devcontainer = JSON.parse(
+          readFileSync(join(result.projectDir!, ".devcontainer", "devcontainer.json"), "utf8"),
+        );
+        expect(devcontainer.runServices).toEqual(["devcontainer", "kong", "web", "server"]);
+        expect(devcontainer.forwardPorts).toEqual([8000, 8001, 3001, 3000]);
       });
     });
 

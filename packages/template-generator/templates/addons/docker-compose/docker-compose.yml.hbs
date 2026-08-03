@@ -39,7 +39,11 @@ services:
 {{else}}
       dockerfile: apps/web/Dockerfile.vite
       args:
+{{#if (includes addons "kong")}}
+        VITE_SERVER_URL: http://localhost:8000
+{{else}}
         VITE_SERVER_URL: http://localhost:3000
+{{/if}}
 {{/if}}
     ports:
       - "3001:3000"
@@ -174,7 +178,9 @@ volumes:
       dockerfile: Dockerfile
     ports:
 {{#if (eq ecosystem "python")}}
+{{#unless (includes addons "kong")}}
       - "8000:8000"
+{{/unless}}
 {{else if (eq ecosystem "rust")}}
       - "3000:3000"
 {{#if (eq rustApi "tonic")}}

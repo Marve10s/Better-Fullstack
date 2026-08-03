@@ -128,6 +128,11 @@ function getDevcontainerExtensions(config: ProjectConfig) {
 function getDevcontainerForwardPorts(config: ProjectConfig) {
   const ports = new Set<number>();
 
+  if (config.addons.includes("kong")) {
+    ports.add(8000);
+    ports.add(8001);
+  }
+
   if (config.ecosystem === "typescript") {
     ports.add(3001);
     if (config.backend !== "self" && config.backend !== "none") {
@@ -161,6 +166,10 @@ function getDevcontainerForwardPorts(config: ProjectConfig) {
 
 function getDevcontainerRunServices(config: ProjectConfig) {
   const services = new Set<string>(["devcontainer"]);
+
+  if (config.addons.includes("kong")) {
+    services.add("kong");
+  }
 
   if (config.ecosystem === "typescript") {
     services.add("web");
