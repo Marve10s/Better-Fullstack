@@ -4,6 +4,7 @@ import pc from "picocolors";
 import type { CLIInput, Database, DatabaseSetup, Frontend, ProjectConfig, Runtime } from "../types";
 
 import {
+  getDisabledReason,
   hasSignozSupportedGoServerTarget,
   isSignozSupportedPythonWebFramework,
   normalizeCapabilitySelection,
@@ -35,6 +36,10 @@ import { isSilent } from "./context";
 import { constraintError, incompatibilityError, missingRequirementError } from "./error-formatter";
 import { exitWithError } from "./errors";
 import { validatePeerDependencies } from "./peer-dependency-validator";
+import {
+  buildCompatibilityInputFromConfig,
+  hasSelectedTypeScriptBackendPart,
+} from "./stack-compatibility";
 
 const INTLAYER_COMPATIBLE_FRONTENDS = new Set<Frontend>([
   "next",
@@ -44,6 +49,26 @@ const INTLAYER_COMPATIBLE_FRONTENDS = new Set<Frontend>([
   "react-router",
   "react-vite",
 ]);
+
+function validateIntegrationsConstraints(config: Partial<ProjectConfig>) {
+  if (config.integrations !== "nango") return;
+
+  const compatibilityConfig =
+    config.stackParts && hasSelectedTypeScriptBackendPart(config)
+      ? {
+          ...config,
+          ...stackGraphToLegacyProjectConfigForEcosystem(config as ProjectConfig, "typescript"),
+          ecosystem: "typescript" as const,
+        }
+      : config;
+  const reason = getDisabledReason(
+    buildCompatibilityInputFromConfig(compatibilityConfig),
+    "integrations",
+    "nango",
+  );
+
+  if (reason) throw new Error(reason);
+}
 
 function validateDatabaseOrmAuth(cfg: Partial<ProjectConfig>, flags?: Set<string>) {
   const db = cfg.database;
@@ -1440,6 +1465,7 @@ export function validateFullConfig(
   validateElixirConstraints(config);
   validateScopedLibraryFlags(config);
   validateI18nConstraints(config);
+  validateIntegrationsConstraints(config);
 
   const hasGraphBackend = config.stackParts?.some(
     (part) =>
@@ -1578,6 +1604,7 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
       }
     }
 
+    validateIntegrationsConstraints(config);
     validateEcosystemAuthCompatibility(config);
     validateDatabaseOrmAuth(config);
     validateEffectBackendConstraints(config);

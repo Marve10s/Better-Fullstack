@@ -672,6 +672,31 @@ describe("stack graph", () => {
     );
   });
 
+  it("rejects Nango graph selections that cannot generate its Node SDK", () => {
+    const unsupportedSpecs = [
+      ["backend:typescript:none", "backend.integrations:typescript:nango"],
+      ["backend:typescript:convex", "backend.integrations:typescript:nango"],
+      [
+        "backend:typescript:hono",
+        "backend.runtime:typescript:workers",
+        "backend.integrations:typescript:nango",
+      ],
+      [
+        "frontend:typescript:next",
+        "frontend.deploy:typescript:cloudflare",
+        "backend:typescript:self",
+        "backend.integrations:typescript:nango",
+      ],
+    ];
+
+    for (const specs of unsupportedSpecs) {
+      const issues = validateStackParts(parseStackPartSpecs(specs)).issues;
+      expect(issues).toContainEqual(
+        expect.objectContaining({ role: "integrations", toolId: "nango" }),
+      );
+    }
+  });
+
   it("rejects incompatible frontend-owned TypeScript graph selections", () => {
     const shadcnScssParts = parseStackPartSpecs([
       "frontend:typescript:next",

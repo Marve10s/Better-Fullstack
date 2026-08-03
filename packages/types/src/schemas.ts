@@ -51,6 +51,7 @@ export const StackPartRoleSchema = z
     "payments",
     "logging",
     "featureFlags",
+    "integrations",
     "ecommerce",
     "analytics",
     "cms",
@@ -427,6 +428,9 @@ export const FeatureFlagsSchema = z
   .enum(["growthbook", "posthog", "launchdarkly", "flagsmith", "unleash", "none"])
   .describe("Feature flags provider for A/B testing and feature management");
 
+export const IntegrationsSchema = z
+  .enum(["nango", "none"])
+  .describe("Third-party integrations platform SDK");
 export const EcommerceSchema = z.enum(["medusa", "none"]).describe("E-commerce platform SDK");
 
 export const AnalyticsSchema = z
@@ -1125,6 +1129,7 @@ export const CreateInputSchema = z.object({
   logging: LoggingSchema.optional(),
   observability: ObservabilitySchema.optional(),
   featureFlags: FeatureFlagsSchema.optional(),
+  integrations: IntegrationsSchema.optional(),
   ecommerce: EcommerceSchema.optional(),
   analytics: AnalyticsSchema.optional(),
   cms: CMSSchema.optional(),
@@ -1316,6 +1321,7 @@ export const ProjectConfigSchema = z.object({
   logging: LoggingSchema,
   observability: ObservabilitySchema,
   featureFlags: FeatureFlagsSchema,
+  integrations: IntegrationsSchema.default("none"),
   ecommerce: EcommerceSchema.default("none"),
   analytics: AnalyticsSchema,
   cms: CMSSchema,
@@ -1494,6 +1500,7 @@ export const BetterTStackConfigSchema = z.object({
   logging: LoggingSchema,
   observability: ObservabilitySchema,
   featureFlags: FeatureFlagsSchema,
+  integrations: IntegrationsSchema.default("none"),
   ecommerce: EcommerceSchema.default("none"),
   analytics: AnalyticsSchema,
   cms: CMSSchema,
@@ -1685,6 +1692,7 @@ export const FILE_UPLOAD_VALUES = FileUploadSchema.options;
 export const LOGGING_VALUES = LoggingSchema.options;
 export const OBSERVABILITY_VALUES = ObservabilitySchema.options;
 export const FEATURE_FLAGS_VALUES = FeatureFlagsSchema.options;
+export const INTEGRATIONS_VALUES = IntegrationsSchema.options;
 export const ECOMMERCE_VALUES = EcommerceSchema.options;
 export const ANALYTICS_VALUES = AnalyticsSchema.options;
 export const MOBILE_NAVIGATION_VALUES = MobileNavigationSchema.options;

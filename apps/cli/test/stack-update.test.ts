@@ -1371,6 +1371,13 @@ describe("stack update planner", () => {
           expected: "s3",
           expectedPath: "apps/server/src/lib/storage.ts",
         },
+        {
+          name: "integrations-nango",
+          update: { integrations: "nango" },
+          field: "integrations",
+          expected: "nango",
+          expectedPath: "apps/server/src/lib/nango.ts",
+        },
       ];
 
       for (const testCase of cases) {
@@ -3483,6 +3490,18 @@ describe("stack update planner", () => {
         await expectFileContains(join(projectDir, assertion.path), assertion.content);
       }
     }
+  });
+
+  it("rejects Nango updates when no TypeScript backend owns the integration", async () => {
+    const root = await makeTempRoot("bfs-stack-update-python-nango-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir, PYTHON_BASE_CONFIG));
+
+    const plan = await planStackUpdate(projectDir, { integrations: "nango" });
+
+    expect(plan.success).toBe(false);
+    if (plan.success) return;
+    expect(plan.error).toContain("Nango integrations require a TypeScript backend");
   });
 
   it("applies shared backend services across non-TypeScript ecosystems", async () => {

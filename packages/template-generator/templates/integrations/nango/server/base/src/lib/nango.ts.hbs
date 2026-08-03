@@ -1,0 +1,14 @@
+import { Nango } from "@nangohq/node";
+
+const secretKey = process.env.NANGO_SECRET_KEY;
+const host = process.env.NANGO_HOST;
+
+if (!secretKey) {
+  throw new Error("NANGO_SECRET_KEY is required");
+}
+
+/** Official Nango backend SDK client. */
+export const nango = new Nango({
+  secretKey,
+  ...(host ? { host } : {}),
+});

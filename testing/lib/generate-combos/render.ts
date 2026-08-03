@@ -157,6 +157,7 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["logging", config.logging],
     ["observability", config.observability],
     ["feature-flags", config.featureFlags],
+    ["integrations", config.integrations],
     ["ecommerce", config.ecommerce],
     ["analytics", config.analytics],
     ["effect", config.effect],

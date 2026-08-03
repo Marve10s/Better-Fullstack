@@ -188,6 +188,7 @@ export type CompatibilityInput = {
   logging: string;
   observability: string;
   featureFlags: string;
+  integrations: string;
   ecommerce: string;
   analytics: string;
   backendLibraries: string;
@@ -434,6 +435,15 @@ export type CompatibilityAnalysisResult = {
  * Nuxt is intentionally excluded from the MVP (different alias convention).
  */
 const SINGLE_APP_SELF_BACKENDS = new Set(["self-next", "self-tanstack-start"]);
+const FULLSTACK_SELF_BACKENDS = new Set([
+  "self-next",
+  "self-vinext",
+  "self-tanstack-start",
+  "self-astro",
+  "self-nuxt",
+  "self-svelte",
+  "self-solid-start",
+]);
 const SINGLE_APP_WEB_FRONTEND_BY_BACKEND: Record<string, string> = {
   "self-next": "next",
   "self-tanstack-start": "tanstack-start",
@@ -477,6 +487,7 @@ export function stackQualifiesForSingleApp(stack: CompatibilityInput): boolean {
     stack.aiSdk,
     stack.analytics,
     stack.featureFlags,
+    stack.integrations,
     stack.ecommerce,
     stack.observability,
     stack.logging,
@@ -491,6 +502,9 @@ export function stackQualifiesForSingleApp(stack: CompatibilityInput): boolean {
   return true;
 }
 
+const usesCloudflareFullstackRuntime = (stack: CompatibilityInput): boolean =>
+  stack.webDeploy === "cloudflare" && FULLSTACK_SELF_BACKENDS.has(stack.backend);
+
 export const analyzeStackCompatibility = (
   stack: CompatibilityInput,
 ): CompatibilityAnalysisResult => {
@@ -504,11 +518,13 @@ export const analyzeStackCompatibility = (
   }
 
   const nextStack = { ...stack };
-  // vectorDb and ecommerce are newer optional fields; callers and fixtures that
-  // predate them omit the fields entirely. Treat missing values as "none" up
-  // front so service overrides do not report schema defaults as adjustments.
+  // Newer optional fields may be absent from older callers and fixtures. Treat
+  // them as "none" before service overrides report schema-default adjustments.
   if (nextStack.vectorDb === undefined) {
     nextStack.vectorDb = "none";
+  }
+  if (nextStack.integrations === undefined) {
+    nextStack.integrations = "none";
   }
   if (nextStack.ecommerce === undefined) {
     nextStack.ecommerce = "none";
@@ -605,6 +621,7 @@ export const analyzeStackCompatibility = (
       vectorDb: "none",
       rateLimit: "none",
       fileStorage: "none",
+      integrations: "none",
       ecommerce: "none",
     };
 
@@ -685,6 +702,7 @@ export const analyzeStackCompatibility = (
       vectorDb: "none",
       rateLimit: "none",
       fileStorage: "none",
+      integrations: "none",
       ecommerce: "none",
     };
 
@@ -887,6 +905,19 @@ export const analyzeStackCompatibility = (
       category: "runtime",
       message:
         "Database changed to SQLite with D1 (Better-Fullstack doesn't support MongoDB with Workers)",
+    });
+  }
+
+  if (
+    (nextStack.runtime === "workers" || usesCloudflareFullstackRuntime(nextStack)) &&
+    nextStack.integrations !== "none"
+  ) {
+    nextStack.integrations = "none";
+    changed = true;
+    changes.push({
+      category: "integrations",
+      message:
+        "Integrations set to 'none' (Nango's Node SDK is not available on Cloudflare Workers)",
     });
   }
 
@@ -2500,6 +2531,9 @@ export const getDisabledReason = (
     if (category === "fileStorage" && optionId !== "none") {
       return "No backend selected";
     }
+    if (category === "integrations" && optionId !== "none") {
+      return "No backend selected";
+    }
     if (category === "ecommerce" && optionId !== "none") {
       return "No backend selected";
     }
@@ -2675,6 +2709,21 @@ export const getDisabledReason = (
   ) {
     return "SigNoz request tracing is currently wired for FastAPI";
   }
+  if (
+    category === "integrations" &&
+    optionId === "nango" &&
+    usesCloudflareFullstackRuntime(currentStack)
+  ) {
+    return "Nango's Node SDK is not available on Cloudflare Workers";
+  }
+  if (
+    category === "webDeploy" &&
+    optionId === "cloudflare" &&
+    currentStack.integrations === "nango" &&
+    FULLSTACK_SELF_BACKENDS.has(currentStack.backend)
+  ) {
+    return "Nango's Node SDK is not available on Cloudflare Workers";
+  }
 
   const graphDisabledReason =
     (category === "payments" && optionId === "revenuecat") ||
@@ -2824,6 +2873,9 @@ export const getDisabledReason = (
   if (category === "runtime") {
     if (optionId === "workers" && currentStack.observability === "signoz") {
       return "SigNoz tracing currently requires the Node.js or Bun runtime";
+    }
+    if (optionId === "workers" && currentStack.integrations === "nango") {
+      return "Nango's Node SDK is not available on Workers runtime";
     }
     if (optionId === "workers" && currentStack.backend !== "hono") {
       return "In Better-Fullstack, Workers runtime currently requires the Hono backend";
@@ -3148,6 +3200,21 @@ export const getDisabledReason = (
   if (category === "observability" && optionId !== "none") {
     if (currentStack.ecosystem !== "typescript") {
       return null;
+    }
+  }
+
+  if (category === "integrations" && optionId !== "none") {
+    if (currentStack.ecosystem !== "typescript") {
+      return "Nango SDK generation is only available for the TypeScript ecosystem";
+    }
+    if (currentStack.backend === "convex") {
+      return "Nango SDK generation is not available with Convex backend";
+    }
+    if (currentStack.backend === "none") {
+      return "Nango SDK generation requires a backend";
+    }
+    if (currentStack.runtime === "workers" || usesCloudflareFullstackRuntime(currentStack)) {
+      return "Nango's Node SDK is not available on Cloudflare Workers";
     }
   }
 
@@ -5230,6 +5297,7 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
     ["animation", input.animation],
     ["cms", input.cms],
     ["featureFlags", input.featureFlags],
+    ["integrations", input.integrations],
     ["ecommerce", input.ecommerce],
     ["pythonApi", input.pythonApi],
     ["javaWebFramework", input.javaWebFramework],

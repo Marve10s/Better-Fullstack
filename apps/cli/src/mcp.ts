@@ -56,6 +56,7 @@ import {
   EcommerceSchema,
   ExamplesSchema,
   FeatureFlagsSchema,
+  IntegrationsSchema,
   FileStorageSchema,
   FileUploadSchema,
   formatStackPartSpec,
@@ -182,6 +183,7 @@ import { applyEffectBackendDefaults } from "./utils/config-processing";
 import { generateReproducibleCommand } from "./utils/generate-reproducible-command";
 import { getLatestCLIVersion } from "./utils/get-latest-cli-version";
 import { getEffectiveStack, getGraphSummary } from "./utils/graph-summary";
+import { getCompatibilityBackend } from "./utils/stack-compatibility";
 import { getTemplateConfig, getTemplateDescription } from "./utils/templates";
 
 const OPTION_ENTRY_COUNT = Object.values(OPTION_CATEGORY_METADATA).reduce(
@@ -492,6 +494,7 @@ const MCP_COMPATIBILITY_DEFAULTS = {
   logging: "none",
   observability: "none",
   featureFlags: "none",
+  integrations: "none",
   ecommerce: "none",
   analytics: "none",
   backendLibraries: "none",
@@ -679,6 +682,38 @@ function getMcpProjectConfigDefaults(input: Record<string, unknown>) {
   >;
 }
 
+export function validateMcpProjectConfigCompatibility(
+  config: Pick<ProjectConfig, "ecosystem" | "integrations"> &
+    Partial<Pick<ProjectConfig, "backend" | "runtime" | "webDeploy" | "stackParts">>,
+): void {
+  if (config.integrations !== "nango") return;
+
+  const nangoPart = config.stackParts?.find(
+    (part) => part.role === "integrations" && part.toolId === "nango",
+  );
+  const nangoOwner = nangoPart?.ownerPartId
+    ? config.stackParts?.find((part) => part.id === nangoPart.ownerPartId)
+    : undefined;
+  const hasTypeScriptNangoOwner =
+    nangoOwner?.role === "backend" && nangoOwner.ecosystem === "typescript";
+
+  if (config.ecosystem !== "typescript" && !hasTypeScriptNangoOwner) {
+    throw new Error("Nango integrations are supported only for TypeScript projects");
+  }
+  if (config.backend === "none") {
+    throw new Error("Nango integrations require a generated backend");
+  }
+  if (config.backend === "convex") {
+    throw new Error("Nango integrations are not available with the Convex backend");
+  }
+  if (
+    config.runtime === "workers" ||
+    (config.backend === "self" && config.webDeploy === "cloudflare")
+  ) {
+    throw new Error("Nango's Node SDK is not available on Cloudflare Workers");
+  }
+}
+
 function buildProjectConfig(
   input: Record<string, unknown>,
   overrides?: { projectDir: string },
@@ -739,6 +774,7 @@ function buildProjectConfig(
   }
 
   applyEffectBackendDefaults(config, new Set(Object.keys(input)));
+  validateMcpProjectConfigCompatibility(config);
 
   return config;
 }
@@ -755,7 +791,7 @@ function sanitizePath(input: string): string {
   return input;
 }
 
-function buildCompatibilityInput(input: Record<string, unknown>): CompatibilityInput {
+export function buildMcpCompatibilityInput(input: Record<string, unknown>): CompatibilityInput {
   const frontend = input.frontend as string[] | undefined;
   const webFrontend = (frontend ?? []).filter((item) => !item.startsWith("native-"));
   const nativeFrontend = (frontend ?? []).filter((item) => item.startsWith("native-"));
@@ -785,6 +821,11 @@ function buildCompatibilityInput(input: Record<string, unknown>): CompatibilityI
     appPlatforms,
     aiSdk: (input.ai as string) ?? defaults.aiSdk,
   };
+
+  result.backend = getCompatibilityBackend(
+    { backend: result.backend as ProjectConfig["backend"] },
+    webFrontend,
+  );
 
   if (result.backend === "effect") {
     if (input.effect === undefined) {
@@ -1517,6 +1558,7 @@ export const MCP_PLAN_CREATE_SCHEMA = {
   logging: LoggingSchema.optional().describe("Logging library"),
   observability: ObservabilitySchema.optional().describe("Observability"),
   featureFlags: FeatureFlagsSchema.optional().describe("Feature flag provider"),
+  integrations: IntegrationsSchema.optional().describe("Third-party integrations SDK"),
   ecommerce: EcommerceSchema.optional().describe("E-commerce platform SDK"),
   search: SearchSchema.optional().describe("Search engine"),
   vectorDb: VectorDbSchema.optional().describe("Vector database (TypeScript only)"),
@@ -1713,7 +1755,7 @@ export async function startMcpServer() {
           projectName: projectName ?? "my-app",
           ...recommended,
         };
-        const compatResult = analyzeStackCompatibility(buildCompatibilityInput(baseInput));
+        const compatResult = analyzeStackCompatibility(buildMcpCompatibilityInput(baseInput));
         const normalizedInput = compatResult.adjustedStack
           ? normalizeAdjustedToInput(
               compatResult.adjustedStack as unknown as Record<string, unknown>,
@@ -1802,6 +1844,7 @@ export async function startMcpServer() {
         logging: LoggingSchema.optional().describe("Logging library"),
         observability: ObservabilitySchema.optional().describe("Observability provider"),
         featureFlags: FeatureFlagsSchema.optional().describe("Feature flags provider"),
+        integrations: IntegrationsSchema.optional().describe("Third-party integrations SDK"),
         ecommerce: EcommerceSchema.optional().describe("E-commerce platform SDK"),
         analytics: AnalyticsSchema.optional().describe("Analytics provider"),
         cms: CMSSchema.optional().describe("CMS"),
@@ -1833,7 +1876,7 @@ export async function startMcpServer() {
     },
     async (input: Record<string, unknown>) => {
       try {
-        const compatInput = buildCompatibilityInput(input);
+        const compatInput = buildMcpCompatibilityInput(input);
         const result = analyzeStackCompatibility(compatInput);
         const filtered = filterCompatibilityResult(result, input.ecosystem as string);
         const evaluation = evaluateCompatibility(compatInput);
@@ -2067,7 +2110,7 @@ export async function startMcpServer() {
   function compatibilityWarningsForStackUpdate(
     proposedConfig: BetterTStackConfig,
   ): string[] | undefined {
-    const compatResult = analyzeStackCompatibility(buildCompatibilityInput(proposedConfig));
+    const compatResult = analyzeStackCompatibility(buildMcpCompatibilityInput(proposedConfig));
     return compatResult.changes.length > 0
       ? compatResult.changes.map((change) => change.message)
       : undefined;
@@ -2264,7 +2307,7 @@ export async function startMcpServer() {
         });
         const existingGraphPreview = getMcpGraphPreview(config);
         const proposedGraphPreview = getMcpGraphPreview(updatePreview);
-        const compatInput = buildCompatibilityInput({
+        const compatInput = buildMcpCompatibilityInput({
           ...config,
           addons: mergedAddons,
           webDeploy: webDeploy ?? config.webDeploy,
