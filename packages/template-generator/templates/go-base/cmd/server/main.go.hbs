@@ -16,7 +16,7 @@ import (
 {{#if (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (or (eq goWebFramework "chi") (eq goWebFramework "stdlib"))) (and (eq auth "go-better-auth") (eq goWebFramework "none"))) (and (eq goObservability "signoz") (eq goWebFramework "fiber")))}}
 	"net/http"
 {{/if}}
-{{#if (eq goWebFramework "stdlib")}}
+{{#if (or (eq goWebFramework "stdlib") (and (and (eq goApi "grpc-go") (eq goObservability "signoz")) (and (eq goWebFramework "none") (ne auth "go-better-auth"))))}}
 	"os/signal"
 	"syscall"
 {{/if}}
@@ -410,6 +410,30 @@ func main() {
 	// Start the gRPC server in the background; the HTTP server runs in the main goroutine.
 	var wg sync.WaitGroup
 	wg.Add(1)
+	grpcServer := grpc.NewServer({{#if (eq goObservability "signoz")}}grpc.StatsHandler(otelgrpc.NewServerHandler()){{/if}})
+{{#if (eq goObservability "signoz")}}
+	shutdownGRPC := func(ctx context.Context) {
+		stopped := make(chan struct{})
+		go func() {
+			grpcServer.GracefulStop()
+			close(stopped)
+		}()
+		select {
+		case <-stopped:
+		case <-ctx.Done():
+			grpcServer.Stop()
+		}
+	}
+{{#if (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (or (eq goWebFramework "fiber") (eq goWebFramework "chi"))) (and (eq auth "go-better-auth") (eq goWebFramework "none")))}}
+	withGRPCShutdown := func(shutdownHTTP func(context.Context) error) func(context.Context) error {
+		return func(ctx context.Context) error {
+			httpErr := shutdownHTTP(ctx)
+			shutdownGRPC(ctx)
+			return httpErr
+		}
+	}
+{{/if}}
+{{/if}}
 
 	// Start gRPC server
 	go func() {
@@ -443,7 +467,6 @@ func main() {
 {{/if}}
 		}
 
-		grpcServer := grpc.NewServer({{#if (eq goObservability "signoz")}}grpc.StatsHandler(otelgrpc.NewServerHandler()){{/if}})
 		proto.RegisterGreeterServer(grpcServer, &proto.GreeterService{})
 		if err := grpcServer.Serve(lis); err != nil {
 {{#if (eq goLogging "zap")}}
@@ -539,7 +562,7 @@ func main() {
 	server := &http.Server{Addr: addr, Handler: appobservability.TraceHTTP(r)}
 	if err := appobservability.RunWithGracefulShutdown(
 		server.ListenAndServe,
-		server.Shutdown,
+		{{#if (eq goApi "grpc-go")}}withGRPCShutdown(server.Shutdown){{else}}server.Shutdown{{/if}},
 		shutdownTracing,
 	); err != nil && err != http.ErrServerClosed {
 {{else}}
@@ -631,7 +654,7 @@ func main() {
 	server := &http.Server{Addr: addr, Handler: appobservability.TraceHTTP(e)}
 	if err := appobservability.RunWithGracefulShutdown(
 		server.ListenAndServe,
-		server.Shutdown,
+		{{#if (eq goApi "grpc-go")}}withGRPCShutdown(server.Shutdown){{else}}server.Shutdown{{/if}},
 		shutdownTracing,
 	); err != nil && err != http.ErrServerClosed {
 {{else}}
@@ -740,7 +763,7 @@ func main() {
 {{#if (eq goObservability "signoz")}}
 	if err := appobservability.RunWithGracefulShutdown(
 		func() error { return app.Listen(addr) },
-		func(context.Context) error { return app.Shutdown() },
+		{{#if (eq goApi "grpc-go")}}withGRPCShutdown({{/if}}func(context.Context) error { return app.Shutdown() }{{#if (eq goApi "grpc-go")}}){{/if}},
 		shutdownTracing,
 	); err != nil {
 {{else}}
@@ -845,7 +868,7 @@ func main() {
 	server := &http.Server{Addr: addr, Handler: appobservability.TraceHTTP(r)}
 	if err := appobservability.RunWithGracefulShutdown(
 		server.ListenAndServe,
-		server.Shutdown,
+		{{#if (eq goApi "grpc-go")}}withGRPCShutdown(server.Shutdown){{else}}server.Shutdown{{/if}},
 		shutdownTracing,
 	); err != nil && err != http.ErrServerClosed {
 {{else}}
@@ -983,6 +1006,9 @@ func main() {
 		panic("Failed to gracefully shut down server: " + err.Error())
 {{/if}}
 	}
+{{#if (and (eq goApi "grpc-go") (eq goObservability "signoz"))}}
+	shutdownGRPC(shutdownCtx)
+{{/if}}
 {{/if}}
 {{#if (eq goWebFramework "none")}}
 {{#if (eq auth "go-better-auth")}}
@@ -1025,7 +1051,7 @@ func main() {
 {{#if (eq goObservability "signoz")}}
 	if err := appobservability.RunWithGracefulShutdown(
 		server.ListenAndServe,
-		server.Shutdown,
+		{{#if (eq goApi "grpc-go")}}withGRPCShutdown(server.Shutdown){{else}}server.Shutdown{{/if}},
 		shutdownTracing,
 	); err != nil && err != http.ErrServerClosed {
 {{else}}
@@ -1075,6 +1101,15 @@ func main() {
 {{/if}}
 {{/if}}
 {{#if (eq goApi "grpc-go")}}
+
+{{#if (and (and (eq goObservability "signoz") (eq goWebFramework "none")) (ne auth "go-better-auth"))}}
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	shutdownGRPC(shutdownCtx)
+{{/if}}
 
 	wg.Wait()
 {{/if}}

@@ -69,19 +69,20 @@ export async function setupAddons(
       await setupOxlint(projectDir, config.packageManager);
     }
 
-    if (setupSet.has("husky") || setupSet.has("lefthook")) {
-      let linter: "biome" | "oxlint" | undefined;
-      if (hasOxlint) {
-        linter = "oxlint";
-      } else if (hasBiome) {
-        linter = "biome";
-      }
-      if (hasHusky && setupSet.has("husky")) {
-        await setupHusky(projectDir, linter, hasGitleaks);
-      }
-      if (hasLefthook && setupSet.has("lefthook")) {
-        await setupLefthook(projectDir, hasGitleaks);
-      }
+    let linter: "biome" | "oxlint" | undefined;
+    if (hasOxlint) {
+      linter = "oxlint";
+    } else if (hasBiome) {
+      linter = "biome";
+    }
+    if (
+      hasHusky &&
+      (setupSet.has("husky") || setupSet.has("biome") || setupSet.has("oxlint"))
+    ) {
+      await setupHusky(projectDir, linter, hasGitleaks);
+    }
+    if (hasLefthook && setupSet.has("lefthook")) {
+      await setupLefthook(projectDir, hasGitleaks);
     }
   }
 

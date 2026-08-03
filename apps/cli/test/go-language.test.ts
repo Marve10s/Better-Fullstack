@@ -1547,6 +1547,9 @@ describe("Go Language Support", () => {
       expect(mainContent).toContain(
         "grpc.NewServer(grpc.StatsHandler(otelgrpc.NewServerHandler()))",
       );
+      expect(mainContent).toContain("grpcServer.GracefulStop()");
+      expect(mainContent).toContain("grpcServer.Stop()");
+      expect(mainContent).toContain("shutdownGRPC(shutdownCtx)");
     });
   });
 
