@@ -116,6 +116,7 @@ export async function createVirtual(
       logging: options.logging || "none",
       observability: options.observability || "none",
       featureFlags: options.featureFlags || "none",
+      integrations: options.integrations || "none",
       ecommerce: options.ecommerce || "none",
       analytics: options.analytics || "none",
       mobileNavigation: options.mobileNavigation || (hasNativeFrontend ? "expo-router" : "none"),
@@ -250,6 +251,11 @@ export async function createVirtual(
       config.stackParts = options.stackParts;
     }
     applyEffectBackendDefaults(config, new Set(Object.keys(options)));
+
+    if (config.integrations === "nango") {
+      const { validateConfigForProgrammaticUse } = await import("./utils/config-validation");
+      validateConfigForProgrammaticUse(config);
+    }
 
     const { generateVirtualProject: generate, EMBEDDED_TEMPLATES } =
       await import("@better-fullstack/template-generator");

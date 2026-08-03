@@ -9,6 +9,7 @@ import {
   BACKEND_VALUES,
   CACHING_VALUES,
   I18N_VALUES,
+  INTEGRATIONS_VALUES,
   CMS_VALUES,
   CSS_FRAMEWORK_VALUES,
   DATABASE_SETUP_VALUES,
@@ -326,6 +327,10 @@ function makeTypeScriptDraft(args: GeneratorArgs): CandidateDraft {
         ["growthbook", "posthog", "launchdarkly", "flagsmith", "unleash", "none"] as const,
         0.85,
       ),
+      integrations:
+        backend === "none" || backend === "convex" || runtime === "workers"
+          ? "none"
+          : sampleScalar(INTEGRATIONS_VALUES, 0.9),
       ecommerce:
         backend === "none" || backend === "convex"
           ? "none"
@@ -709,6 +714,7 @@ function createValidationBase(projectName: string, draft: CandidateDraft): Proje
     logging: "none",
     observability: "none",
     featureFlags: "none",
+    integrations: "none",
     ecommerce: "none",
     analytics: "none",
     cms: "none",

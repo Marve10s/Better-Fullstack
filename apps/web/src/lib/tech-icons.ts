@@ -81,6 +81,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   passport: { type: "si", slug: "passport", hex: "34E27A" },
   mocha: { type: "si", slug: "mocha", hex: "8D6748" },
   contentful: { type: "si", slug: "contentful", hex: "2478CC" },
+  nango: { type: "local", src: "/icon/nango.svg", needsInvert: "dark" },
   // ─── Ecosystems ────────────────────────────────────────────────────────────
   typescript: { type: "si", slug: "typescript", hex: "3178C6" },
   "react-native": { type: "si", slug: "react", hex: "61DAFB", fixedColor: true },

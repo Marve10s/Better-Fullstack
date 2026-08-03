@@ -1375,6 +1375,24 @@ export const TECH_OPTIONS: Record<
       default: true,
     },
   ],
+  integrations: [
+    {
+      id: "nango",
+      name: "Nango",
+      description: "Backend SDK for unified third-party API integrations",
+      icon: "",
+      color: "from-emerald-500 to-teal-700",
+      default: false,
+    },
+    {
+      id: "none",
+      name: "No Integrations SDK",
+      description: "Skip third-party integrations platform setup",
+      icon: "",
+      color: "from-gray-400 to-gray-600",
+      default: true,
+    },
+  ],
   ecommerce: [
     {
       id: "medusa",

@@ -55,6 +55,7 @@ import type {
   Ecommerce,
   Examples,
   FeatureFlags,
+  Integrations,
   FileUpload,
   Forms,
   Frontend,
@@ -191,6 +192,7 @@ import {
 } from "./dotnet-ecosystem";
 import { getEcommerceChoice } from "./ecommerce";
 import { getEcosystemChoice } from "./ecosystem";
+import { getIntegrationsChoice } from "./integrations";
 import { getEffectChoice } from "./effect";
 import {
   getElixirApiChoice,
@@ -365,6 +367,7 @@ type PromptGroupResults = {
   logging: Logging;
   observability: Observability;
   featureFlags: FeatureFlags;
+  integrations: Integrations;
   ecommerce: Ecommerce;
   analytics: Analytics;
   cms: CMS;
@@ -548,6 +551,7 @@ const CONFIG_PROMPT_ENTRY_KEY_MAP = {
   logging: true,
   observability: true,
   featureFlags: true,
+  integrations: true,
   ecommerce: true,
   analytics: true,
   cms: true,
@@ -1057,6 +1061,13 @@ export async function gatherConfig(
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as FeatureFlags);
       return Promise.resolve(flags.featureFlags || "none") as Promise<FeatureFlags>;
     },
+    integrations: ({ results }) =>
+      getIntegrationsChoice(
+        flags.integrations,
+        results.backend,
+        results.ecosystem,
+        results.runtime,
+      ),
     ecommerce: ({ results }) =>
       getEcommerceChoice(flags.ecommerce, results.backend, results.ecosystem),
     analytics: ({ results }) => {
@@ -1711,6 +1722,7 @@ export async function gatherConfig(
     logging: result.logging,
     observability: result.observability,
     featureFlags: result.featureFlags,
+    integrations: result.integrations,
     ecommerce: result.ecommerce,
     analytics: result.analytics,
     cms: result.cms,

@@ -56,6 +56,7 @@ import {
   processObservabilityTemplates,
   processRateLimitTemplates,
   processFeatureFlagsTemplates,
+  processIntegrationsTemplates,
   processEcommerceTemplates,
   processAnalyticsTemplates,
   processAITemplates,
@@ -181,6 +182,7 @@ async function processGraphTemplates(
     await processObservabilityTemplates(vfs, templates, tsConfig);
     await processRateLimitTemplates(vfs, templates, tsConfig);
     await processFeatureFlagsTemplates(vfs, templates, tsConfig);
+    await processIntegrationsTemplates(vfs, templates, tsConfig);
     await processEcommerceTemplates(vfs, templates, tsConfig);
     await processAnalyticsTemplates(vfs, templates, tsConfig);
     await processAITemplates(vfs, templates, tsConfig);
@@ -334,6 +336,7 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
       await processObservabilityTemplates(vfs, templates, config);
       await processRateLimitTemplates(vfs, templates, config);
       await processFeatureFlagsTemplates(vfs, templates, config);
+      await processIntegrationsTemplates(vfs, templates, config);
       await processEcommerceTemplates(vfs, templates, config);
       await processAnalyticsTemplates(vfs, templates, config);
       await processAITemplates(vfs, templates, config);
