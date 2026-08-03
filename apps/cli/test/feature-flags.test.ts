@@ -487,7 +487,7 @@ describe("Feature Flags Configurations", () => {
         expect(packageJson(result, "apps/web").dependencies?.[provider.webPackage]).toBeDefined();
         if (provider.id === "unleash") {
           expect(packageJson(result, "apps/web").dependencies?.["unleash-proxy-client"]).toBe(
-            "^3.8.0",
+            "^3.8.2",
           );
         }
         expect(fileContent(result, provider.serverFile)).toContain(provider.serverPackage);
