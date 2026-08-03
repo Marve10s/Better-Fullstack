@@ -77,6 +77,16 @@ describe("stackQualifiesForSingleApp", () => {
       ),
     ).toBe(false);
   });
+
+  it("does not qualify when a container addon requires the monorepo layout", () => {
+    for (const addon of ["docker-compose", "devcontainer", "kong"] as const) {
+      expect(
+        stackQualifiesForSingleApp(
+          makeStack({ ...THIN_SELF_NEXT, appPlatforms: [addon] }),
+        ),
+      ).toBe(false);
+    }
+  });
 });
 
 describe("analyzeStackCompatibility workspace shape normalization", () => {
@@ -104,6 +114,17 @@ describe("analyzeStackCompatibility workspace shape normalization", () => {
     const shape = result.adjustedStack?.workspaceShape ?? "single-app";
     expect(shape).toBe("single-app");
     expect(result.changes.some((change) => change.category === "workspaceShape")).toBe(false);
+  });
+
+  it("normalizes container-addon stacks to monorepo", () => {
+    for (const addon of ["docker-compose", "devcontainer", "kong"] as const) {
+      const result = analyzeStackCompatibility(
+        makeStack({ ...THIN_SELF_NEXT, appPlatforms: [addon] }),
+      );
+
+      expect(result.adjustedStack?.workspaceShape).toBe("monorepo");
+      expect(result.changes.some((change) => change.category === "workspaceShape")).toBe(true);
+    }
   });
 
   it("leaves monorepo untouched (the default shape)", () => {

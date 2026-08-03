@@ -89,6 +89,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "backend-utils",
           "devcontainer",
           "docker-compose",
+          "kong",
           "github-actions",
           "axios",
           "firebase",

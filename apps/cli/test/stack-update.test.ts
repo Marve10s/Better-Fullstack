@@ -3345,7 +3345,11 @@ describe("stack update planner", () => {
         filesToPatch: ["apps/server/lib/app/application.ex", "apps/server/mix.exs"],
         assertions: [
           { path: "apps/server/mix.exs", content: ":opentelemetry_phoenix" },
-          { path: "apps/server/lib/app/application.ex", content: "OpentelemetryPhoenix.setup()" },
+          { path: "apps/server/lib/app/application.ex", content: ":opentelemetry_cowboy.setup()" },
+          {
+            path: "apps/server/lib/app/application.ex",
+            content: "OpentelemetryPhoenix.setup(adapter: :cowboy2)",
+          },
         ],
       },
       {

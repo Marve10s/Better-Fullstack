@@ -571,6 +571,7 @@ function buildClientVars(
 function buildNativeVars(
   frontend: string[],
   backend: ProjectConfig["backend"],
+  addons: ProjectConfig["addons"],
   auth: ProjectConfig["auth"],
   payments: ProjectConfig["payments"],
   mobilePush: ProjectConfig["mobilePush"],
@@ -582,6 +583,10 @@ function buildNativeVars(
   if (backend === "self") {
     // Both TanStack Start and Next.js use port 3001 for fullstack
     serverUrl = "http://localhost:3001";
+  }
+
+  if (addons.includes("kong") && backend !== "convex") {
+    serverUrl = "http://localhost:8000";
   }
 
   if (backend === "convex") {
@@ -2162,6 +2167,7 @@ export function processEnvVariables(vfs: VirtualFileSystem, config: ProjectConfi
       const nativeVars = buildNativeVars(
         frontend,
         backend,
+        config.addons,
         auth,
         payments,
         config.mobilePush,

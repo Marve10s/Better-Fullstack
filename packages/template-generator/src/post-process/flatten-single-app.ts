@@ -22,6 +22,7 @@ import type { VirtualFileSystem } from "../core/virtual-fs";
 
 /** Web frameworks whose flat layout is supported (both expose `@/*` -> ./src). */
 const SINGLE_APP_WEB_FRONTENDS = new Set(["next", "tanstack-start"]);
+const CONTAINER_ADDONS = new Set(["docker-compose", "devcontainer", "kong"]);
 
 /** Only these directories may exist under apps/ and packages/ to be flattenable. */
 const ALLOWED_APP_DIRS = new Set(["web"]);
@@ -59,6 +60,7 @@ export interface WorkspaceLayout {
  */
 export function qualifiesForSingleApp(config: ProjectConfig): boolean {
   if (config.workspaceShape !== "single-app") return false;
+  if (config.addons.some((addon) => CONTAINER_ADDONS.has(addon))) return false;
   if (config.stackParts && config.stackParts.length > 0) return false;
   if (config.ecosystem !== "typescript") return false;
   if (config.backend !== "self") return false;

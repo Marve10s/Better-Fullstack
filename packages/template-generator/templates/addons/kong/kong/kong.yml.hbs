@@ -1,0 +1,23 @@
+_format_version: "3.0"
+_transform: true
+
+services:
+  - name: {{projectName}}-application
+{{#if (eq ecosystem "typescript")}}
+{{#if (eq backend "self")}}
+    url: http://web:3000
+{{else}}
+    url: http://server:3000
+{{/if}}
+{{else if (eq ecosystem "python")}}
+    url: http://app:8000
+{{else if (eq ecosystem "rust")}}
+    url: http://app:3000
+{{else}}
+    url: http://app:8080
+{{/if}}
+    routes:
+      - name: {{projectName}}-route
+        paths:
+          - /
+        strip_path: false

@@ -847,6 +847,104 @@ describe("stack graph", () => {
     expect(validateStackParts(parts).issues).toEqual([]);
   });
 
+  it("allows Kong with a Python PyMongo server", () => {
+    const parts = parseStackPartSpecs([
+      "backend:python:fastapi",
+      "backend.orm:python:pymongo",
+      "database:universal:mongodb",
+      "workspaceTooling:universal:kong",
+    ]);
+
+    expect(validateStackParts(parts).issues).toEqual([]);
+  });
+
+  it("allows Kong with a Vinext self backend", () => {
+    const parts = parseStackPartSpecs([
+      "frontend:typescript:vinext",
+      "backend:typescript:self",
+      "workspaceTooling:universal:kong",
+    ]);
+
+    expect(validateStackParts(parts).issues).toEqual([]);
+  });
+
+  it("rejects Kong when an explicit TypeScript none backend is selected", () => {
+    const parts = parseStackPartSpecs([
+      "frontend:typescript:react-vite",
+      "backend:typescript:none",
+      "workspaceTooling:universal:kong",
+    ]);
+
+    expect(validateStackParts(parts).issues.map((issue) => issue.message)).toContain(
+      "Kong Gateway requires a TypeScript backend service.",
+    );
+  });
+
+  it("rejects Kong with Rust gRPC and JSON-RPC APIs", () => {
+    for (const api of ["tonic", "jsonrpsee"]) {
+      const parts = parseStackPartSpecs([
+        "backend:rust:axum",
+        `backend.api:rust:${api}`,
+        "workspaceTooling:universal:kong",
+      ]);
+
+      expect(validateStackParts(parts).issues.map((issue) => issue.message)).toContain(
+        "Kong Gateway currently requires an HTTP Rust API.",
+      );
+    }
+  });
+
+  it("rejects Kong with Loco until its container configuration is supported", () => {
+    const parts = parseStackPartSpecs([
+      "backend:rust:loco",
+      "workspaceTooling:universal:kong",
+    ]);
+
+    expect(validateStackParts(parts).issues.map((issue) => issue.message)).toContain(
+      "Kong Gateway does not yet support Loco's container configuration.",
+    );
+  });
+
+  it("rejects Kong when a Go API bypasses the primary HTTP server", () => {
+    for (const api of ["connect-go", "grpc-gateway", "oapi-codegen", "grpc-go"]) {
+      const parts = parseStackPartSpecs([
+        "backend:go:gin",
+        `backend.api:go:${api}`,
+        "workspaceTooling:universal:kong",
+      ]);
+
+      expect(validateStackParts(parts).issues.map((issue) => issue.message)).toContain(
+        "Kong Gateway currently requires the primary Go HTTP server API.",
+      );
+    }
+  });
+
+  it("rejects Kong when Java gRPC uses a separate listener", () => {
+    const parts = parseStackPartSpecs([
+      "backend:java:spring-boot",
+      "backend.api:java:grpc",
+      "workspaceTooling:universal:kong",
+    ]);
+
+    expect(validateStackParts(parts).issues.map((issue) => issue.message)).toContain(
+      "Kong Gateway currently requires the primary Java HTTP API.",
+    );
+  });
+
+  it("rejects Kong when the graph backend has no container template", () => {
+    for (const backend of ["backend:dotnet:aspnet-minimal", "backend:elixir:phoenix"]) {
+      const parts = parseStackPartSpecs([
+        "frontend:typescript:next",
+        backend,
+        "workspaceTooling:universal:kong",
+      ]);
+
+      expect(validateStackParts(parts).issues.map((issue) => issue.message)).toContainEqual(
+        expect.stringContaining("does not yet provide a container template"),
+      );
+    }
+  });
+
   it("rejects shared non-TypeScript backend service candidates through graph checks", () => {
     const javaParts = parseStackPartSpecs([
       "backend:java:spring-boot",

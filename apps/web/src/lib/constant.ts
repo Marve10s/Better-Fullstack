@@ -2555,6 +2555,14 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
     {
+      id: "kong",
+      name: "Kong Gateway",
+      description: "Run a DB-less API gateway with declarative Docker configuration",
+      icon: "https://cdn.simpleicons.org/kong/003459",
+      color: "from-cyan-600 to-slate-800",
+      default: false,
+    },
+    {
       id: "devcontainer",
       name: "DevContainer",
       description: "VS Code container config with forwarded services",

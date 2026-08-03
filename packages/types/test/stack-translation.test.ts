@@ -280,7 +280,7 @@ describe("stack selection translation", () => {
       elixirRealtime: "presence",
       elixirJson: "none",
       elixirDeploy: "docker",
-      appPlatforms: ["turborepo", "docker-compose"],
+      appPlatforms: ["turborepo"],
       examples: ["ai"],
     });
 
@@ -293,9 +293,8 @@ describe("stack selection translation", () => {
     expect(command).toContain("--part backend.deploy:elixir:docker");
     expect(command).not.toContain("--elixir-deploy docker");
     expect(command).toContain("--part workspaceTooling:universal:turborepo");
-    expect(command).toContain("--part workspaceTooling:universal:docker-compose");
     expect(command).toContain("--part examples:universal:ai");
-    expect(command).not.toContain("--addons turborepo docker-compose");
+    expect(command).not.toContain("--addons turborepo");
     expect(command).not.toContain("--examples ai");
   });
 

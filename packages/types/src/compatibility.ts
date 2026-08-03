@@ -406,6 +406,7 @@ export type CompatibilityAnalysisResult = {
  * Nuxt is intentionally excluded from the MVP (different alias convention).
  */
 const SINGLE_APP_SELF_BACKENDS = new Set(["self-next", "self-tanstack-start"]);
+const SINGLE_APP_CONTAINER_ADDONS = new Set(["docker-compose", "devcontainer", "kong"]);
 const FULLSTACK_SELF_BACKENDS = new Set([
   "self-next",
   "self-vinext",
@@ -430,6 +431,9 @@ const SINGLE_APP_WEB_FRONTEND_BY_BACKEND: Record<string, string> = {
  */
 export function stackQualifiesForSingleApp(stack: CompatibilityInput): boolean {
   if (!SINGLE_APP_SELF_BACKENDS.has(stack.backend)) return false;
+  if ((stack.appPlatforms ?? []).some((addon) => SINGLE_APP_CONTAINER_ADDONS.has(addon))) {
+    return false;
+  }
 
   const nativeFrontends = (stack.nativeFrontend ?? []).filter((f) => f && f !== "none");
   if (nativeFrontends.length > 0) return false;
@@ -1598,6 +1602,25 @@ export const analyzeStackCompatibility = (
     }
   }
 
+  for (const platform of ["docker-compose", "devcontainer", "kong"] as const) {
+    if (!nextStack.appPlatforms.includes(platform)) continue;
+    const reason = getDisabledReason(nextStack, "appPlatforms", platform);
+    if (!reason) continue;
+
+    nextStack.appPlatforms = nextStack.appPlatforms.filter((addon) => addon !== platform);
+    changed = true;
+    const label =
+      platform === "docker-compose"
+        ? "Docker Compose"
+        : platform === "devcontainer"
+          ? "DevContainer"
+          : "Kong Gateway";
+    changes.push({
+      category: "appPlatforms",
+      message: `${label} removed (${reason})`,
+    });
+  }
+
   if (
     nextStack.appPlatforms.includes("graphql-codegen") &&
     !["garph", "graphql-yoga", "apollo-server"].includes(nextStack.api) &&
@@ -2191,6 +2214,15 @@ export const getDisabledReason = (
   category: CompatibilityCategory,
   optionId: string,
 ): string | null => {
+  if (
+    category === "appPlatforms" &&
+    optionId === "kong" &&
+    currentStack.ecosystem === "typescript" &&
+    currentStack.backend === "encore"
+  ) {
+    return "Kong Gateway does not yet support Encore's container workflow";
+  }
+
   const hasStandaloneViteFrontend = currentStack.webFrontend.some((frontend) =>
     ["vanilla-vite", "vue"].includes(frontend),
   );
@@ -4624,6 +4656,7 @@ const ADDON_COMPATIBILITY: Record<Addons, readonly Frontend[]> = {
   ],
   "backend-utils": [],
   "docker-compose": [],
+  kong: [],
   devcontainer: [],
   "github-actions": [],
   none: [],
