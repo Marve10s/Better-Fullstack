@@ -125,7 +125,13 @@ defmodule {{elixirModuleName}}.MixProject do
 {{#if (eq elixirObservability "opentelemetry")}}
       {:opentelemetry_api, "~> 1.4"},
       {:opentelemetry, "~> 1.5"},
-      {:opentelemetry_phoenix, "~> 1.2"},
+      {:opentelemetry_phoenix, "~> 2.0"},
+{{#if (and (ne elixirWebFramework "none") (eq elixirHttpServer "bandit"))}}
+      {:opentelemetry_bandit, "~> 0.3"},
+{{/if}}
+{{#if (and (ne elixirWebFramework "none") (eq elixirHttpServer "cowboy"))}}
+      {:opentelemetry_cowboy, "~> 1.0"},
+{{/if}}
 {{/if}}
 {{#if (eq elixirObservability "prom_ex")}}
       {:prom_ex, "~> 1.11"},
@@ -143,7 +149,11 @@ defmodule {{elixirModuleName}}.MixProject do
       {:wallaby, "~> 0.30", only: :test, runtime: false},
 {{/if}}
 {{#if (eq elixirTesting "stream_data")}}
+{{#if (eq elixirApplicationFramework "ash")}}
+      {:stream_data, "~> 1.3"},
+{{else}}
       {:stream_data, "~> 1.3", only: :test},
+{{/if}}
 {{/if}}
 {{#if (eq elixirTesting "ex_machina")}}
       {:ex_machina, "~> 2.8", only: :test},

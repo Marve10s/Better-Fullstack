@@ -22,6 +22,7 @@ import type { VirtualFileSystem } from "../core/virtual-fs";
 
 /** Web frameworks whose flat layout is supported (both expose `@/*` -> ./src). */
 const SINGLE_APP_WEB_FRONTENDS = new Set(["next", "tanstack-start"]);
+const CONTAINER_ADDONS = new Set(["docker-compose", "devcontainer", "kong"]);
 
 /** Only these directories may exist under apps/ and packages/ to be flattenable. */
 const ALLOWED_APP_DIRS = new Set(["web"]);
@@ -59,6 +60,7 @@ export interface WorkspaceLayout {
  */
 export function qualifiesForSingleApp(config: ProjectConfig): boolean {
   if (config.workspaceShape !== "single-app") return false;
+  if (config.addons.some((addon) => CONTAINER_ADDONS.has(addon))) return false;
   if (config.stackParts && config.stackParts.length > 0) return false;
   if (config.ecosystem !== "typescript") return false;
   if (config.backend !== "self") return false;
@@ -87,6 +89,8 @@ export function qualifiesForSingleApp(config: ProjectConfig): boolean {
     config.ai,
     config.analytics,
     config.featureFlags,
+    config.integrations,
+    config.ecommerce,
     config.observability,
     config.logging,
     config.webDeploy,
@@ -217,13 +221,39 @@ function buildFlatPackageJson(
     ...resolveDeps(envPkg?.dependencies, catalog, projectScope),
   };
   const devDependencies = resolveDeps(webPkg.devDependencies, catalog, projectScope);
+  const rootKnipVersion = rootPkg.devDependencies?.knip;
+  if (config.addons.includes("knip") && rootKnipVersion) {
+    const resolvedKnipVersion = resolveDeps(
+      { knip: rootKnipVersion },
+      catalog,
+      projectScope,
+    ).knip;
+
+    if (resolvedKnipVersion) {
+      devDependencies.knip = resolvedKnipVersion;
+    }
+  }
+
+  const scripts = { ...webPkg.scripts };
+  if (config.addons.includes("knip")) {
+    for (const scriptName of ["knip", "knip:production"]) {
+      const script = rootPkg.scripts?.[scriptName];
+      if (script) scripts[scriptName] = script;
+    }
+  }
+  if (config.addons.includes("gitleaks")) {
+    for (const scriptName of ["secrets:scan", "secrets:scan:staged"]) {
+      const script = rootPkg.scripts?.[scriptName];
+      if (script) scripts[scriptName] = script;
+    }
+  }
 
   const flatPkg: PackageJson = {
     name: config.projectName,
     version: webPkg.version ?? "0.1.0",
     private: true,
     type: "module",
-    scripts: { ...webPkg.scripts },
+    scripts,
   };
 
   if (Object.keys(dependencies).length > 0) flatPkg.dependencies = dependencies;

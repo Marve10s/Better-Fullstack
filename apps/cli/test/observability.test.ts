@@ -1,8 +1,298 @@
 import { describe, it, expect } from "bun:test";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 
-import { expectSuccess, runTRPCTest } from "./test-utils";
+import { expectError, expectSuccess, runTRPCTest } from "./test-utils";
 
 describe("Observability Configurations", () => {
+  describe("SigNoz", () => {
+    it("generates an OTLP setup with SigNoz endpoint and ingestion headers", async () => {
+      const result = await runTRPCTest({
+        projectName: "signoz-hono",
+        observability: "signoz",
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        api: "trpc",
+        auth: "none",
+        frontend: ["tanstack-router"],
+        addons: ["turborepo"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const pkg = await readFile(join(result.projectDir!, "apps/server/package.json"), "utf-8");
+      const tracing = await readFile(
+        join(result.projectDir!, "apps/server/src/lib/tracing.ts"),
+        "utf-8",
+      );
+      const serverEntry = await readFile(
+        join(result.projectDir!, "apps/server/src/index.ts"),
+        "utf-8",
+      );
+      const env = await readFile(join(result.projectDir!, "apps/server/.env"), "utf-8");
+
+      expect(pkg).toContain("@opentelemetry/sdk-node");
+      expect(tracing.startsWith('import "dotenv/config";')).toBe(true);
+      expect(tracing).toContain("OTEL_EXPORTER_OTLP_HEADERS");
+      expect(tracing).toContain("signoz");
+      expect(tracing).toContain("startTracing();");
+      expect(tracing).toContain("export function withTracing");
+      expect(tracing).toContain("const reader = response.body.getReader()");
+      expect(tracing).toContain("async pull(controller)");
+      expect(tracing).toContain("recordStreamError(error)");
+      expect(tracing).toContain("async cancel(reason)");
+      expect(tracing).toContain("Response stream cancelled before completion");
+      expect(tracing).toContain("recordStreamError(cancellationError)");
+      expect(tracing).toContain("process.once(signal");
+      expect(tracing).toContain("hasApplicationShutdownHandler");
+      expect(tracing).toContain("if (!hasApplicationShutdownHandler)");
+      expect(tracing).toContain("process.kill(process.pid, signal)");
+      expect(tracing).not.toContain("process.exit(0)");
+      expect(serverEntry.startsWith('import "./lib/tracing";')).toBe(true);
+      expect(serverEntry).toContain('import { withTracing } from "./lib/tracing";');
+      expect(serverEntry).toContain("export default { fetch: withTracing(app.fetch) };");
+      expect(env).toContain("OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318");
+      expect(env).toContain("OTEL_EXPORTER_OTLP_HEADERS=");
+      expect(env).toContain("SigNoz Cloud: signoz-ingestion-key=<your-key>");
+    });
+
+    it("rejects the Node SDK scaffold on Cloudflare Workers", async () => {
+      const result = await runTRPCTest({
+        projectName: "signoz-workers",
+        observability: "signoz",
+        backend: "hono",
+        runtime: "workers",
+        database: "sqlite",
+        orm: "drizzle",
+        api: "trpc",
+        auth: "none",
+        frontend: ["tanstack-router"],
+        addons: ["turborepo"],
+        examples: ["none"],
+        dbSetup: "d1",
+        webDeploy: "none",
+        serverDeploy: "cloudflare",
+        install: false,
+        expectError: true,
+      });
+
+      expectError(result, "SigNoz tracing currently requires");
+    });
+
+    it("rejects self backends without a SigNoz bootstrap", async () => {
+      for (const frontend of ["tanstack-start", "astro"] as const) {
+        const result = await runTRPCTest({
+          projectName: `signoz-${frontend}`,
+          observability: "signoz",
+          frontend: [frontend],
+          backend: "self",
+          runtime: "none",
+          database: "none",
+          orm: "none",
+          api: "none",
+          auth: "none",
+          addons: ["none"],
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+          expectError: true,
+        });
+
+        expectError(result, "SigNoz tracing is not yet bootstrapped");
+      }
+    });
+
+    it("rejects SigNoz for Cloudflare-hosted Next.js fullstack apps", async () => {
+      const result = await runTRPCTest({
+        projectName: "signoz-next-cloudflare",
+        observability: "signoz",
+        frontend: ["next"],
+        backend: "self",
+        runtime: "none",
+        database: "none",
+        orm: "none",
+        api: "none",
+        auth: "none",
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "cloudflare",
+        serverDeploy: "none",
+        install: false,
+        expectError: true,
+      });
+
+      expectError(result, "Cloudflare-hosted fullstack apps");
+    });
+
+    it("loads Next.js tracing only in the Node runtime", async () => {
+      const result = await runTRPCTest({
+        projectName: "signoz-next",
+        observability: "signoz",
+        frontend: ["next"],
+        backend: "self",
+        runtime: "none",
+        database: "sqlite",
+        orm: "drizzle",
+        api: "trpc",
+        auth: "none",
+        addons: ["turborepo"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const instrumentation = await readFile(
+        join(result.projectDir!, "apps/web/src/instrumentation.ts"),
+        "utf-8",
+      );
+      expect(instrumentation).toContain('process.env.NEXT_RUNTIME === "nodejs"');
+      expect(instrumentation).toContain('await import("./lib/tracing")');
+    });
+
+    it("wraps the SvelteKit request lifecycle explicitly", async () => {
+      const result = await runTRPCTest({
+        projectName: "signoz-svelte",
+        observability: "signoz",
+        frontend: ["svelte"],
+        backend: "self",
+        runtime: "none",
+        database: "none",
+        orm: "none",
+        api: "none",
+        auth: "none",
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const hooks = await readFile(
+        join(result.projectDir!, "apps/web/src/hooks.server.ts"),
+        "utf-8",
+      );
+      expect(hooks).toContain('import { withTracing } from "./lib/tracing";');
+      expect(hooks).toContain("export const handle: Handle");
+      expect(hooks).toContain("withTracing(() => resolve(event))(event.request)");
+    });
+
+    it("creates propagated request lifecycle spans for Nitro and Nuxt", async () => {
+      for (const target of [
+        { projectName: "signoz-nitro", frontend: ["react-vite"] as const, backend: "nitro" as const },
+        { projectName: "signoz-nuxt", frontend: ["nuxt"] as const, backend: "self" as const },
+      ]) {
+        const result = await runTRPCTest({
+          projectName: target.projectName,
+          observability: "signoz",
+          frontend: [...target.frontend],
+          backend: target.backend,
+          runtime: target.backend === "nitro" ? "node" : "none",
+          database: "sqlite",
+          orm: "drizzle",
+          api: "none",
+          auth: "none",
+          addons: ["turborepo"],
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        const pluginPath =
+          target.backend === "nitro"
+            ? "apps/server/plugins/signoz.ts"
+            : "apps/web/server/plugins/signoz.ts";
+        const plugin = await readFile(join(result.projectDir!, pluginPath), "utf-8");
+        expect(plugin).toContain("const handleRequest = nitroApp.h3App.handler");
+        expect(plugin).toContain("nitroApp.h3App.handler = async (event)");
+        expect(plugin).toContain("propagation.extract");
+        expect(plugin).toContain("SpanKind.SERVER");
+        expect(plugin).toContain("trace.setSpan(parentContext, span)");
+        expect(plugin).toContain("context.with(requestContext");
+        expect(plugin).toContain("await handleRequest(event)");
+        expect(plugin).toContain('event.node.res.once("finish", endRequestSpan)');
+        expect(plugin).toContain('event.node.res.once("close", endAbortedRequestSpan)');
+        expect(plugin).toContain("if (event.node.res.writableFinished) return");
+        expect(plugin).toContain('new Error("Response closed before completion")');
+        expect(plugin).toContain("finishSpan(event, 499, error)");
+        expect(plugin).toContain('for (const key of ["statusCode", "status"] as const)');
+        expect(plugin).toContain("getErrorStatusCode(requestError)");
+        expect(plugin).toContain("requestSpans.delete(event)");
+      }
+    });
+
+    it("rejects SigNoz when no generated server target exists", async () => {
+      for (const backend of ["none", "convex"] as const) {
+        const result = await runTRPCTest({
+          projectName: `signoz-${backend}`,
+          observability: "signoz",
+          frontend: ["react-vite"],
+          backend,
+          runtime: "none",
+          database: "none",
+          orm: "none",
+          api: "none",
+          auth: "none",
+          addons: ["none"],
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+          expectError: true,
+        });
+
+        expectError(result, "SigNoz tracing requires a generated server target");
+      }
+    });
+
+    it("wraps Elysia's Bun fetch handler with request tracing", async () => {
+      const result = await runTRPCTest({
+        projectName: "signoz-elysia",
+        observability: "signoz",
+        backend: "elysia",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        api: "trpc",
+        auth: "none",
+        frontend: ["tanstack-router"],
+        addons: ["turborepo"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const serverEntry = await readFile(
+        join(result.projectDir!, "apps/server/src/index.ts"),
+        "utf-8",
+      );
+      expect(serverEntry.startsWith('import "./lib/tracing";')).toBe(true);
+      expect(serverEntry).toContain('import { withTracing } from "./lib/tracing";');
+      expect(serverEntry).toContain("fetch: withTracing(app.fetch)");
+      expect(serverEntry).not.toContain(".listen(3000");
+    });
+  });
+
   describe("OpenTelemetry", () => {
     it("should work with opentelemetry + hono backend", async () => {
       const result = await runTRPCTest({

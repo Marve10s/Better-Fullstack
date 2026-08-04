@@ -477,9 +477,27 @@ export function validateAddonCompatibility(
   javaWebFramework?: string,
   database?: Database,
   api?: API,
+  pythonWebFramework?: ProjectConfig["pythonWebFramework"],
+  goWebFramework?: ProjectConfig["goWebFramework"],
+  rustWebFramework?: ProjectConfig["rustWebFramework"],
+  rustApi?: ProjectConfig["rustApi"],
+  goApi?: ProjectConfig["goApi"],
+  javaApi?: ProjectConfig["javaApi"],
 ): { isCompatible: boolean; reason?: string } {
   const baseCompatibility = validateAddonCompatibilityShared(addon, frontend, _auth);
   if (!baseCompatibility.isCompatible) return baseCompatibility;
+
+  if (
+    addon === "knip" &&
+    ecosystem !== undefined &&
+    ecosystem !== "typescript" &&
+    ecosystem !== "react-native"
+  ) {
+    return {
+      isCompatible: false,
+      reason: "Knip currently supports TypeScript and React Native projects only",
+    };
+  }
 
   if (
     (addon === "graphql-codegen" || addon === "apollo-client") &&
@@ -521,9 +539,19 @@ export function validateAddonCompatibility(
   }
 
   // Docker Compose-backed addons target containerized/self-hosted stacks only.
-  if (addon === "docker-compose" || addon === "devcontainer") {
-    const label = addon === "devcontainer" ? "DevContainer" : "docker-compose";
-    const title = addon === "devcontainer" ? "DevContainer" : "Docker Compose";
+  if (addon === "docker-compose" || addon === "devcontainer" || addon === "kong") {
+    const label =
+      addon === "devcontainer"
+        ? "DevContainer"
+        : addon === "kong"
+          ? "Kong Gateway"
+          : "docker-compose";
+    const title =
+      addon === "devcontainer"
+        ? "DevContainer"
+        : addon === "kong"
+          ? "Kong Gateway"
+          : "Docker Compose";
 
     if (backend === "convex") {
       return {
@@ -535,6 +563,69 @@ export function validateAddonCompatibility(
       return {
         isCompatible: false,
         reason: `${label} is not compatible with Cloudflare Workers runtime`,
+      };
+    }
+    if (addon === "kong" && ecosystem === "typescript" && backend === "none") {
+      return {
+        isCompatible: false,
+        reason: "Kong Gateway requires a TypeScript backend service",
+      };
+    }
+    if (addon === "kong" && ecosystem === "typescript" && backend === "encore") {
+      return {
+        isCompatible: false,
+        reason: "Kong Gateway does not yet support Encore's container workflow",
+      };
+    }
+    if (addon === "kong" && ecosystem === "python" && pythonWebFramework === "none") {
+      return {
+        isCompatible: false,
+        reason: "Kong Gateway requires a Python HTTP server",
+      };
+    }
+    if (addon === "kong" && ecosystem === "go" && goWebFramework === "none") {
+      return {
+        isCompatible: false,
+        reason: "Kong Gateway requires a Go HTTP server",
+      };
+    }
+    if (addon === "kong" && ecosystem === "rust" && rustWebFramework === "none") {
+      return {
+        isCompatible: false,
+        reason: "Kong Gateway requires a Rust HTTP server",
+      };
+    }
+    if (
+      addon === "kong" &&
+      ecosystem === "rust" &&
+      (rustApi === "tonic" || rustApi === "jsonrpsee")
+    ) {
+      return {
+        isCompatible: false,
+        reason: "Kong Gateway currently requires an HTTP Rust API",
+      };
+    }
+    if (addon === "kong" && ecosystem === "rust" && rustWebFramework === "loco") {
+      return {
+        isCompatible: false,
+        reason: "Kong Gateway does not yet support Loco's container configuration",
+      };
+    }
+    if (
+      addon === "kong" &&
+      ecosystem === "go" &&
+      goApi !== undefined &&
+      ["connect-go", "grpc-gateway", "oapi-codegen", "grpc-go"].includes(goApi)
+    ) {
+      return {
+        isCompatible: false,
+        reason: "Kong Gateway currently requires the primary Go HTTP server API",
+      };
+    }
+    if (addon === "kong" && ecosystem === "java" && javaApi === "grpc") {
+      return {
+        isCompatible: false,
+        reason: "Kong Gateway currently requires the primary Java HTTP API",
       };
     }
     if (
@@ -601,6 +692,8 @@ export function getCompatibleAddons(
   backend?: Backend,
   runtime?: Runtime,
   api?: API,
+  ecosystem?: Ecosystem,
+  context?: Partial<ProjectConfig>,
 ) {
   const compatibleAddons = getCompatibleAddonsShared(allAddons, frontend, existingAddons, auth);
 
@@ -611,11 +704,17 @@ export function getCompatibleAddons(
       auth,
       backend,
       runtime,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
+      ecosystem,
+      context?.rustFrontend,
+      context?.javaWebFramework,
+      context?.database,
       api,
+      context?.pythonWebFramework,
+      context?.goWebFramework,
+      context?.rustWebFramework,
+      context?.rustApi,
+      context?.goApi,
+      context?.javaApi,
     );
     return isCompatible;
   });
@@ -632,6 +731,12 @@ export function validateAddonsAgainstFrontends(
   javaWebFramework?: string,
   database?: Database,
   api?: API,
+  pythonWebFramework?: ProjectConfig["pythonWebFramework"],
+  goWebFramework?: ProjectConfig["goWebFramework"],
+  rustWebFramework?: ProjectConfig["rustWebFramework"],
+  rustApi?: ProjectConfig["rustApi"],
+  goApi?: ProjectConfig["goApi"],
+  javaApi?: ProjectConfig["javaApi"],
 ) {
   if (addons.includes("nx") && addons.includes("turborepo")) {
     exitWithError("Nx and Turborepo are alternative workspace runners. Choose one addon.");
@@ -650,6 +755,12 @@ export function validateAddonsAgainstFrontends(
       javaWebFramework,
       database,
       api,
+      pythonWebFramework,
+      goWebFramework,
+      rustWebFramework,
+      rustApi,
+      goApi,
+      javaApi,
     );
     if (!isCompatible) {
       exitWithError(`Incompatible addon/frontend combination: ${reason}`);
@@ -677,6 +788,12 @@ export function validatePaymentsCompatibility(
   if (payments === "paypal" && (backend === "none" || backend === "convex")) {
     exitWithError(
       "PayPal checkout requires a standalone or fullstack backend. Please choose a server backend or a different payments provider.",
+    );
+  }
+
+  if (payments === "xendit" && (backend === "none" || backend === "convex")) {
+    exitWithError(
+      "Xendit Payment Sessions require a standalone or fullstack backend. Please choose a server backend or a different payments provider.",
     );
   }
 
@@ -982,7 +1099,10 @@ export function validateRustExpansionCompatibility(config: Partial<ProjectConfig
       message:
         "Torii's sqlx-based SQLite storage conflicts with rusqlite: both link the native sqlite3 library and cargo permits only one linker.",
       provided: { "rust-orm": orm, "rust-auth": auth },
-      suggestions: ["Use --rust-orm sqlx, sea-orm, or diesel with Torii", "Choose --rust-auth none"],
+      suggestions: [
+        "Use --rust-orm sqlx, sea-orm, or diesel with Torii",
+        "Choose --rust-auth none",
+      ],
     });
   }
 }

@@ -9,11 +9,13 @@ import {
   BACKEND_VALUES,
   CACHING_VALUES,
   I18N_VALUES,
+  INTEGRATIONS_VALUES,
   CMS_VALUES,
   CSS_FRAMEWORK_VALUES,
   DATABASE_SETUP_VALUES,
   DATABASE_VALUES,
   EFFECT_VALUES,
+  ECOMMERCE_VALUES,
   ELIXIR_API_VALUES,
   ELIXIR_LIBRARIES_VALUES,
   ELIXIR_AUTH_VALUES,
@@ -325,6 +327,14 @@ function makeTypeScriptDraft(args: GeneratorArgs): CandidateDraft {
         ["growthbook", "posthog", "launchdarkly", "flagsmith", "unleash", "none"] as const,
         0.85,
       ),
+      integrations:
+        backend === "none" || backend === "convex" || runtime === "workers"
+          ? "none"
+          : sampleScalar(INTEGRATIONS_VALUES, 0.9),
+      ecommerce:
+        backend === "none" || backend === "convex"
+          ? "none"
+          : sampleScalar(ECOMMERCE_VALUES, 0.9),
       analytics: sampleScalar(ANALYTICS_VALUES, 0.9),
       effect: sampleScalar(EFFECT_VALUES, 0.82),
       stateManagement: sampleScalar(STATE_MANAGEMENT_VALUES, 0.7),
@@ -704,6 +714,8 @@ function createValidationBase(projectName: string, draft: CandidateDraft): Proje
     logging: "none",
     observability: "none",
     featureFlags: "none",
+    integrations: "none",
+    ecommerce: "none",
     analytics: "none",
     cms: "none",
     addons: [],

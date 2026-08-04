@@ -1,3 +1,6 @@
+{{#if (and (eq observability "signoz") (eq runtime "bun"))}}
+import { withTracing } from "./lib/tracing";
+{{/if}}
 {{#if (or (or (eq runtime "node") (eq runtime "bun")) (and (includes examples "ai") (eq runtime "workers")))}}
 import { env } from "@{{projectName}}/env/server";
 {{/if}}
@@ -342,7 +345,11 @@ const corsMiddleware = (handler: typeof router) => {
 
 const server = Bun.serve({
 	port: 3000,
+	{{#if (eq observability "signoz")}}
+	fetch: withTracing(corsMiddleware(router)),
+	{{else}}
 	fetch: corsMiddleware(router),
+	{{/if}}
 });
 
 console.log(`Server is running on http://localhost:${server.port}`);

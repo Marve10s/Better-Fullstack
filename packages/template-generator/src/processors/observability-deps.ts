@@ -31,7 +31,7 @@ export function processObservabilityDeps(vfs: VirtualFileSystem, config: Project
   if (!targetPath) return;
 
   // Add OpenTelemetry packages
-  if (observability === "opentelemetry") {
+  if (observability === "opentelemetry" || observability === "signoz") {
     addPackageDependency({
       vfs,
       packagePath: targetPath,

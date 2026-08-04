@@ -52,8 +52,10 @@ import {
   ElixirWebFrameworkSchema,
   EffectSchema,
   EmailSchema,
+  EcommerceSchema,
   ExamplesSchema,
   FeatureFlagsSchema,
+  IntegrationsSchema,
   FileStorageSchema,
   FileUploadSchema,
   FormsSchema,
@@ -211,6 +213,8 @@ export const CreateCommandOptionsSchema = z.object({
   logging: LoggingSchema.optional(),
   observability: ObservabilitySchema.optional(),
   featureFlags: FeatureFlagsSchema.optional().describe("Feature flags provider"),
+  integrations: IntegrationsSchema.optional().describe("Third-party integrations SDK"),
+  ecommerce: EcommerceSchema.optional().describe("E-commerce platform SDK"),
   analytics: AnalyticsSchema.optional().describe("Privacy-focused analytics"),
   cms: CMSSchema.optional().describe("Headless CMS solution"),
   caching: CachingSchema.optional().describe("Caching solution"),
@@ -334,7 +338,7 @@ export const CreateCommandOptionsSchema = z.object({
     "Python realtime (python-socketio, websockets)",
   ),
   pythonObservability: PythonObservabilitySchema.optional().describe(
-    "Python observability (opentelemetry)",
+    "Python observability (opentelemetry, signoz)",
   ),
   pythonCli: z
     .array(PythonCliSchema)
@@ -367,7 +371,9 @@ export const CreateCommandOptionsSchema = z.object({
   goMessageQueue: GoMessageQueueSchema.optional().describe("Go message queue"),
   goCaching: GoCachingSchema.optional().describe("Go caching library (redis, ristretto)"),
   goConfig: GoConfigSchema.optional().describe("Go config management (viper, koanf)"),
-  goObservability: GoObservabilitySchema.optional().describe("Go observability"),
+  goObservability: GoObservabilitySchema.optional().describe(
+    "Go observability (opentelemetry, signoz, prometheus)",
+  ),
   goValidation: GoValidationSchema.optional().describe("Go validation"),
   goQuality: GoQualitySchema.optional().describe("Go code quality"),
   goMigrations: GoMigrationsSchema.optional().describe("Go database migrations"),

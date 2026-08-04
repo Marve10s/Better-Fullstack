@@ -1724,6 +1724,10 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
   }
   if (pythonObservability === "prometheus-client") {
     features.push("- **Prometheus Client** - Metrics counters and exposition helper");
+  } else if (pythonObservability === "signoz") {
+    features.push("- **SigNoz** - OpenTelemetry tracing with SigNoz-ready OTLP configuration");
+  } else if (pythonObservability === "opentelemetry") {
+    features.push("- **OpenTelemetry** - OTLP tracing and exporter configuration");
   }
   if (pythonTesting.includes("pytest-cov")) {
     features.push("- **pytest-cov** - Coverage reports for the generated test suite");
@@ -1870,6 +1874,8 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
   }
   if (pythonObservability === "prometheus-client") {
     structure.push("│       ├── metrics.py    # Prometheus metrics helpers");
+  } else if (pythonObservability === "signoz" || pythonObservability === "opentelemetry") {
+    structure.push("│       ├── otel.py       # OpenTelemetry tracing helpers");
   }
 
   structure.push("├── tests/");

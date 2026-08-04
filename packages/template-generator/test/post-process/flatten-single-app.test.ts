@@ -1,10 +1,7 @@
 import { describe, expect, it } from "bun:test";
 
-import {
-  flattenSingleApp,
-  qualifiesForSingleApp,
-} from "../../src/post-process/flatten-single-app";
 import { VirtualFileSystem } from "../../src/core/virtual-fs";
+import { flattenSingleApp, qualifiesForSingleApp } from "../../src/post-process/flatten-single-app";
 import { makeConfig } from "../_fixtures/config-factory";
 
 /**
@@ -39,7 +36,10 @@ function seedThinSelfMonorepo(projectName = "flatapp"): VirtualFileSystem {
   });
 
   vfs.writeFile("bunfig.toml", '[install]\nlinker = "isolated"\n');
-  vfs.writeFile("tsconfig.json", `{\n  "extends": "@${projectName}/config/tsconfig.base.json",\n}\n`);
+  vfs.writeFile(
+    "tsconfig.json",
+    `{\n  "extends": "@${projectName}/config/tsconfig.base.json",\n}\n`,
+  );
   vfs.writeFile("README.md", "# flatapp\n");
 
   vfs.writeJson("apps/web/package.json", {
@@ -76,7 +76,10 @@ function seedThinSelfMonorepo(projectName = "flatapp"): VirtualFileSystem {
   vfs.writeFile("apps/web/.gitignore", "/node_modules\n/.next/\n");
 
   vfs.writeJson("packages/config/package.json", { name: `@${projectName}/config`, private: true });
-  vfs.writeFile("packages/config/tsconfig.base.json", '{\n  "compilerOptions": { "strict": true }\n}\n');
+  vfs.writeFile(
+    "packages/config/tsconfig.base.json",
+    '{\n  "compilerOptions": { "strict": true }\n}\n',
+  );
 
   vfs.writeJson("packages/env/package.json", {
     name: `@${projectName}/env`,
@@ -104,7 +107,10 @@ function seedThinSelfMonorepo(projectName = "flatapp"): VirtualFileSystem {
     "packages/env/src/server.ts",
     'import "dotenv/config";\nimport { createEnv } from "@t3-oss/env-core";\n\nexport const env = createEnv({ server: {}, runtimeEnv: process.env, emptyStringAsUndefined: true });\n',
   );
-  vfs.writeFile("packages/env/tsconfig.json", `{\n  "extends": "@${projectName}/config/tsconfig.base.json",\n}\n`);
+  vfs.writeFile(
+    "packages/env/tsconfig.json",
+    `{\n  "extends": "@${projectName}/config/tsconfig.base.json",\n}\n`,
+  );
 
   return vfs;
 }
@@ -131,9 +137,7 @@ describe("qualifiesForSingleApp", () => {
 
   it("qualifies a thin self tanstack-start app", () => {
     expect(
-      qualifiesForSingleApp(
-        makeConfig({ ...SINGLE_APP_NEXT, frontend: ["tanstack-start"] }),
-      ),
+      qualifiesForSingleApp(makeConfig({ ...SINGLE_APP_NEXT, frontend: ["tanstack-start"] })),
     ).toBe(true);
   });
 
@@ -152,27 +156,35 @@ describe("qualifiesForSingleApp", () => {
   });
 
   it("does NOT qualify when a sibling package capability is present (auth/db/api)", () => {
+    expect(qualifiesForSingleApp(makeConfig({ ...SINGLE_APP_NEXT, auth: "better-auth" }))).toBe(
+      false,
+    );
     expect(
-      qualifiesForSingleApp(makeConfig({ ...SINGLE_APP_NEXT, auth: "better-auth" })),
-    ).toBe(false);
-    expect(
-      qualifiesForSingleApp(makeConfig({ ...SINGLE_APP_NEXT, database: "postgres", orm: "drizzle" })),
+      qualifiesForSingleApp(
+        makeConfig({ ...SINGLE_APP_NEXT, database: "postgres", orm: "drizzle" }),
+      ),
     ).toBe(false);
     expect(qualifiesForSingleApp(makeConfig({ ...SINGLE_APP_NEXT, api: "trpc" }))).toBe(false);
   });
 
   it("does NOT qualify self-nuxt (deferred; different alias convention)", () => {
-    expect(
-      qualifiesForSingleApp(makeConfig({ ...SINGLE_APP_NEXT, frontend: ["nuxt"] })),
-    ).toBe(false);
+    expect(qualifiesForSingleApp(makeConfig({ ...SINGLE_APP_NEXT, frontend: ["nuxt"] }))).toBe(
+      false,
+    );
   });
 
   it("does NOT qualify when a native frontend is added", () => {
     expect(
-      qualifiesForSingleApp(
-        makeConfig({ ...SINGLE_APP_NEXT, frontend: ["next", "native-bare"] }),
-      ),
+      qualifiesForSingleApp(makeConfig({ ...SINGLE_APP_NEXT, frontend: ["next", "native-bare"] })),
     ).toBe(false);
+  });
+
+  it("does NOT qualify when a container addon requires monorepo paths", () => {
+    for (const addon of ["docker-compose", "devcontainer", "kong"] as const) {
+      expect(qualifiesForSingleApp(makeConfig({ ...SINGLE_APP_NEXT, addons: [addon] }))).toBe(
+        false,
+      );
+    }
   });
 });
 
@@ -247,6 +259,27 @@ describe("flattenSingleApp", () => {
       expect(version.startsWith("catalog:")).toBe(false);
       expect(version.startsWith("workspace:")).toBe(false);
     }
+  });
+
+  it("preserves Gitleaks scan scripts in a flat app", () => {
+    const vfs = seedThinSelfMonorepo("flatapp");
+    const rootPkg = vfs.readJson<Record<string, unknown>>("package.json") ?? {};
+    vfs.writeJson("package.json", {
+      ...rootPkg,
+      scripts: {
+        dev: "bun run --filter '*' dev",
+        "secrets:scan": "gitleaks git --redact --verbose",
+        "secrets:scan:staged": "gitleaks git --pre-commit --redact --staged --verbose",
+      },
+    });
+
+    flattenSingleApp(vfs, makeConfig({ ...SINGLE_APP_NEXT, addons: ["gitleaks"] }));
+
+    const pkg = vfs.readJson<{ scripts?: Record<string, string> }>("package.json");
+    expect(pkg?.scripts?.["secrets:scan"]).toBe("gitleaks git --redact --verbose");
+    expect(pkg?.scripts?.["secrets:scan:staged"]).toBe(
+      "gitleaks git --pre-commit --redact --staged --verbose",
+    );
   });
 
   it("removes workspace tooling files", () => {

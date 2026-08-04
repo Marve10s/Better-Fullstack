@@ -819,6 +819,7 @@ describe("Virtual Generator Regressions", () => {
     expect(tuiPackageJson?.devDependencies?.["@types/bun"]).toBeDefined();
     expect(tuiEntry).toContain("createCliRenderer");
     expect(tuiEntry).toContain("Better Fullstack + OpenTUI");
+    expect(tsconfig).toContain('"skipLibCheck": true');
     expect(tsconfig).toContain('"types": ["bun"]');
   });
 

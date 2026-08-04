@@ -7,6 +7,7 @@ import {
   type Auth,
   type Backend,
   type Frontend,
+  type ProjectConfig,
   type Runtime,
 } from "../types";
 import { getCompatibleAddons, validateAddonCompatibility } from "../utils/compatibility-rules";
@@ -72,6 +73,14 @@ function getAddonDisplay(addon: Addons): { label: string; hint: string } {
       label = "Husky";
       hint = "Modern native Git hooks made easy";
       break;
+    case "knip":
+      label = "Knip";
+      hint = "Find unused files, dependencies, and exports";
+      break;
+    case "gitleaks":
+      label = "Gitleaks";
+      hint = "Detect hardcoded secrets in Git history and staged changes";
+      break;
     case "starlight":
       label = "Starlight";
       hint = "Build stellar docs with astro";
@@ -131,6 +140,10 @@ function getAddonDisplay(addon: Addons): { label: string; hint: string } {
     case "docker-compose":
       label = "Docker Compose";
       hint = "Containerize your app for deployment";
+      break;
+    case "kong":
+      label = "Kong Gateway";
+      hint = "DB-less API gateway with declarative Docker configuration";
       break;
     case "github-actions":
       label = "GitHub Actions";
@@ -192,15 +205,23 @@ const ADDON_GROUPS: Record<string, Addons[]> = {
     "ultracite",
     "husky",
     "lefthook",
+    "knip",
+    "gitleaks",
   ],
   Documentation: ["starlight", "fumadocs"],
-  Extensions: ["ruler", "devcontainer", "docker-compose"],
+  Extensions: ["ruler", "devcontainer", "docker-compose", "kong"],
   Integrations: ["msw", "storybook", "backend-utils", "axios", "firebase"],
   "API Tooling": ["graphql-codegen", "openapi-typescript"],
   "AI Agents": ["mcp", "skills"],
   "App Platforms": [...APP_PLATFORM_ADDON_VALUES],
   "Data Fetching": ["swr", "apollo-client"],
-  TanStack: ["tanstack-query", "tanstack-table", "tanstack-virtual", "tanstack-db", "tanstack-pacer"],
+  TanStack: [
+    "tanstack-query",
+    "tanstack-table",
+    "tanstack-virtual",
+    "tanstack-db",
+    "tanstack-pacer",
+  ],
 };
 
 function createGroupedAddonOptions() {
@@ -220,6 +241,7 @@ function validateAddonCompatibilityForPrompt(
   backend?: Backend,
   runtime?: Runtime,
   api?: API,
+  context: Partial<ProjectConfig> = { ecosystem: "typescript" },
 ) {
   return validateAddonCompatibility(
     addon,
@@ -227,15 +249,21 @@ function validateAddonCompatibilityForPrompt(
     auth,
     backend,
     runtime,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
+    context.ecosystem ?? "typescript",
+    context.rustFrontend,
+    context.javaWebFramework,
+    context.database,
     api,
+    context.pythonWebFramework,
+    context.goWebFramework,
+    context.rustWebFramework,
+    context.rustApi,
+    context.goApi,
+    context.javaApi,
   );
 }
 
-function getCompatibleAddonsForPrompt(
+export function getCompatibleAddonsForPrompt(
   allAddons: Addons[],
   frontends: Frontend[],
   existingAddons: Addons[] = [],
@@ -243,8 +271,19 @@ function getCompatibleAddonsForPrompt(
   backend?: Backend,
   runtime?: Runtime,
   api?: API,
+  context: Partial<ProjectConfig> = { ecosystem: "typescript" },
 ) {
-  return getCompatibleAddons(allAddons, frontends, existingAddons, auth, backend, runtime, api);
+  return getCompatibleAddons(
+    allAddons,
+    frontends,
+    existingAddons,
+    auth,
+    backend,
+    runtime,
+    api,
+    context.ecosystem ?? "typescript",
+    context,
+  );
 }
 
 const APP_PLATFORM_ADDONS = new Set<Addons>(APP_PLATFORM_ADDON_VALUES);
@@ -286,6 +325,7 @@ export async function getAddonsChoice(
   backend?: Backend,
   runtime?: Runtime,
   api?: API,
+  context: Partial<ProjectConfig> = { ecosystem: "typescript" },
 ) {
   if (addons !== undefined) return addons;
 
@@ -304,6 +344,7 @@ export async function getAddonsChoice(
       backend,
       runtime,
       api,
+      context,
     );
     if (!isCompatible) continue;
 
@@ -352,6 +393,7 @@ export async function getAddonsToAdd(
   backend?: Backend,
   runtime?: Runtime,
   api?: API,
+  context?: Partial<ProjectConfig>,
 ) {
   const groupedOptions: Record<string, AddonOption[]> = createGroupedAddonOptions();
 
@@ -365,6 +407,7 @@ export async function getAddonsToAdd(
     backend,
     runtime,
     api,
+    context,
   );
 
   for (const addon of compatibleAddons) {

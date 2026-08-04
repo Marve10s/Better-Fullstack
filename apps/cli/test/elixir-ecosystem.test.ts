@@ -131,6 +131,75 @@ describe("Elixir library expansion", () => {
     expect(hasVirtualFile(tree.root, "lib/elixir_ash_ets/catalog.ex")).toBe(false);
   });
 
+  it("keeps Tesla and Phoenix OpenTelemetry on compatible semantic conventions", async () => {
+    const result = await createVirtual({
+      ...base,
+      projectName: "elixir-tesla-opentelemetry",
+      elixirOrm: "none",
+      elixirAuth: "none",
+      elixirApi: "rest",
+      elixirHttp: "tesla",
+      elixirEmail: "none",
+      elixirCaching: "none",
+      elixirObservability: "opentelemetry",
+      elixirTesting: "ex_unit",
+      elixirQuality: "none",
+      elixirI18n: "gettext",
+      elixirHttpServer: "cowboy",
+      elixirApplicationFramework: "none",
+      elixirDocumentation: "none",
+      elixirClustering: "none",
+      elixirLibraries: [],
+    });
+
+    expect(result.success).toBe(true);
+    const mix = getVirtualTreeFileContent(result.tree!, "mix.exs");
+    expect(mix).toContain('{:tesla, "~> 1.20"}');
+    expect(mix).toContain('{:opentelemetry_phoenix, "~> 2.0"}');
+    expect(mix).toContain('{:opentelemetry_cowboy, "~> 1.0"}');
+    expect(mix).not.toContain('{:opentelemetry_phoenix, "~> 1.2"}');
+    const application = getVirtualTreeFileContent(
+      result.tree!,
+      "lib/elixir_tesla_opentelemetry/application.ex",
+    );
+    expect(application).toContain(":opentelemetry_cowboy.setup()");
+    expect(application).toContain(
+      "OpentelemetryPhoenix.setup(adapter: :cowboy2)",
+    );
+
+    const banditResult = await createVirtual({
+      ...base,
+      projectName: "elixir-bandit-opentelemetry",
+      elixirOrm: "none",
+      elixirAuth: "none",
+      elixirApi: "rest",
+      elixirHttp: "req",
+      elixirEmail: "none",
+      elixirCaching: "none",
+      elixirObservability: "opentelemetry",
+      elixirTesting: "ex_unit",
+      elixirQuality: "none",
+      elixirI18n: "gettext",
+      elixirHttpServer: "bandit",
+      elixirApplicationFramework: "none",
+      elixirDocumentation: "none",
+      elixirClustering: "none",
+      elixirLibraries: [],
+    });
+
+    expect(banditResult.success).toBe(true);
+    const banditMix = getVirtualTreeFileContent(banditResult.tree!, "mix.exs");
+    expect(banditMix).toContain('{:opentelemetry_bandit, "~> 0.3"}');
+    const banditApplication = getVirtualTreeFileContent(
+      banditResult.tree!,
+      "lib/elixir_bandit_opentelemetry/application.ex",
+    );
+    expect(banditApplication).toContain("OpentelemetryBandit.setup()");
+    expect(banditApplication).toContain(
+      "OpentelemetryPhoenix.setup(adapter: :bandit)",
+    );
+  });
+
   it("includes Rustler sources and toolchains in deploy images", async () => {
     const result = await createVirtual({
       ...base,
@@ -248,11 +317,28 @@ describe("Elixir library expansion", () => {
     const tree = result.tree!;
     const mix = getVirtualTreeFileContent(tree, "mix.exs");
     expect(mix).toContain('{:ecto_sqlite3, "~> 0.24"}');
+    expect(mix).toContain('{:stream_data, "~> 1.3", only: :test}');
     expect(mix).toContain("test_coverage: [tool: ExCoveralls]");
     expect(mix).not.toContain(":postgrex");
     expect(getVirtualTreeFileContent(tree, "lib/elixir_sqlite_quality/repo.ex")).toContain(
       "Ecto.Adapters.SQLite3",
     );
     expect(hasVirtualFile(tree.root, "test/elixir_sqlite_quality/property_test.exs")).toBe(true);
+  });
+
+  it("keeps StreamData available to Ash outside the test environment", async () => {
+    const result = await createVirtual({
+      ...base,
+      projectName: "elixir-ash-stream-data",
+      elixirOrm: "ecto_sqlite3",
+      elixirTesting: "stream_data",
+      elixirApplicationFramework: "ash",
+    });
+
+    expect(result.success).toBe(true);
+    const mix = getVirtualTreeFileContent(result.tree!, "mix.exs");
+    expect(mix).toContain('{:stream_data, "~> 1.3"}');
+    expect(mix).not.toContain('{:stream_data, "~> 1.3", only: :test}');
+    expect(mix).toContain('{:ash, "~> 3.29"}');
   });
 });

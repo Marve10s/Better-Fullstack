@@ -44,6 +44,10 @@ export async function displayPostInstallInstructions(
     ecosystem,
   } = config;
 
+  if (ecosystem !== "typescript" && addons?.includes("gitleaks")) {
+    consola.box(getGitleaksInstructions("gitleaks", false, config.git));
+  }
+
   // Handle Rust projects with different instructions
   if (ecosystem === "rust") {
     displayRustInstructions(config);
@@ -114,6 +118,16 @@ export async function displayPostInstallInstructions(
   const huskyInstructions = hasHusky ? getHuskyInstructions(runCmd) : "";
   const lefthookInstructions = hasLefthook ? getLefthookInstructions(packageManager) : "";
   const lintingInstructions = hasGitHooksOrLinting ? getLintingInstructions(runCmd) : "";
+  const knipInstructions = addons?.includes("knip") ? getKnipInstructions(runCmd) : "";
+  const gitleaksInstructions = addons?.includes("gitleaks") ? getGitleaksInstructions(runCmd) : "";
+  const signozEnvFile =
+    config.workspaceShape === "single-app"
+      ? ".env"
+      : backend === "self"
+        ? "apps/web/.env"
+        : "apps/server/.env";
+  const signozInstructions =
+    config.observability === "signoz" ? getSigNozInstructions(signozEnvFile) : "";
   const nativeInstructions =
     (frontend?.includes("native-bare") ||
       frontend?.includes("native-uniwind") ||
@@ -274,6 +288,9 @@ export async function displayPostInstallInstructions(
   if (huskyInstructions) output += `\n${huskyInstructions.trim()}\n`;
   if (lefthookInstructions) output += `\n${lefthookInstructions.trim()}\n`;
   if (lintingInstructions) output += `\n${lintingInstructions.trim()}\n`;
+  if (knipInstructions) output += `\n${knipInstructions.trim()}\n`;
+  if (gitleaksInstructions) output += `\n${gitleaksInstructions.trim()}\n`;
+  if (signozInstructions) output += `\n${signozInstructions.trim()}\n`;
   if (pwaInstructions) output += `\n${pwaInstructions.trim()}\n`;
   if (alchemyDeployInstructions) output += `\n${alchemyDeployInstructions.trim()}\n`;
   if (vercelDeployInstructions) output += `\n${vercelDeployInstructions.trim()}\n`;
@@ -344,6 +361,35 @@ function getLintingInstructions(runCmd: string) {
   return `${pc.bold("Linting and formatting:")}\n${pc.cyan(
     "•",
   )} Format and lint fix: ${`${runCmd} check`}\n`;
+}
+
+function getKnipInstructions(runCmd: string) {
+  return `${pc.bold("Unused code checks with Knip:")}\n${pc.cyan(
+    "•",
+  )} Scan the workspace: ${`${runCmd} knip`}\n`;
+}
+
+function getGitleaksInstructions(runCmd: string, hasPackageScript = true, gitEnabled = true) {
+  const scanCommand = hasPackageScript
+    ? `${runCmd} secrets:scan`
+    : gitEnabled
+      ? "gitleaks git --redact --verbose"
+      : "gitleaks dir . --redact --verbose";
+  return (
+    `${pc.bold("Secret scanning with Gitleaks:")}\n` +
+    `${pc.cyan("•")} Install the Gitleaks binary: ${pc.underline("https://github.com/gitleaks/gitleaks#installing")}\n` +
+    `${pc.cyan("•")} Scan Git history: ${scanCommand}\n`
+  );
+}
+
+function getSigNozInstructions(envFile: string) {
+  return (
+    `${pc.bold("SigNoz telemetry setup:")}\n` +
+    `${pc.cyan("•")} Self-hosted: keep OTEL_EXPORTER_OTLP_ENDPOINT pointed at your collector\n` +
+    `${pc.cyan("•")} SigNoz Cloud: set the regional endpoint and ` +
+    `OTEL_EXPORTER_OTLP_HEADERS=signoz-ingestion-key=<your-key> in ${envFile}\n` +
+    `${pc.cyan("•")} Start tracing before importing the rest of your application\n`
+  );
 }
 
 function getLefthookInstructions(packageManager: string) {
@@ -653,6 +699,15 @@ function getPaymentSetupInstructions(
       `${pc.bold("Paddle Setup:")}\n` +
       `${pc.cyan("•")} Get API keys from ${pc.underline("https://vendors.paddle.com")}\n` +
       `${pc.cyan("•")} Set ${pc.white("PADDLE_API_KEY")} and ${pc.white("PADDLE_WEBHOOK_SECRET")} in ${pc.white(envPath)}`
+    );
+  }
+
+  if (payments === "xendit") {
+    return (
+      `${pc.bold("Xendit Setup:")}\n` +
+      `${pc.cyan("•")} Create a secret API key and webhook verification token in ${pc.underline("https://dashboard.xendit.co")}\n` +
+      `${pc.cyan("•")} Set ${pc.white("XENDIT_SECRET_KEY")} and ${pc.white("XENDIT_WEBHOOK_TOKEN")} in ${pc.white(envPath)}\n` +
+      `${pc.cyan("•")} Create Payment Sessions on the server and redirect customers to the returned ${pc.white("payment_link_url")}`
     );
   }
 
@@ -1069,6 +1124,10 @@ function displayGoInstructions(config: ProjectConfig & { depsInstalled: boolean 
     }
   }
 
+  if (goObservability === "signoz") {
+    output += `\n${getSigNozInstructions(".env").trim()}\n`;
+  }
+
   output += `\n${pc.bold("Common Go commands:")}\n`;
   output += `${pc.cyan("•")} Build: go build ./...\n`;
   output += `${pc.cyan("•")} Run: go run cmd/server/main.go\n`;
@@ -1388,6 +1447,7 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
     pythonTaskQueue,
     pythonQuality,
     pythonPackageManager,
+    pythonObservability,
   } = config;
 
   const cdCmd = `cd ${relativePath}`;
@@ -1506,6 +1566,14 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
       pyright: "Pyright",
     };
     output += `${pc.cyan("•")} Code Quality: ${qualityNames[pythonQuality] || pythonQuality}\n`;
+  }
+
+  if (pythonObservability && pythonObservability !== "none") {
+    output += `${pc.cyan("•")} Observability: ${pythonObservability === "signoz" ? "SigNoz" : pythonObservability}\n`;
+  }
+
+  if (pythonObservability === "signoz") {
+    output += `\n${getSigNozInstructions(".env").trim()}\n`;
   }
 
   output += `\n${pc.bold("Common Python commands:")}\n`;

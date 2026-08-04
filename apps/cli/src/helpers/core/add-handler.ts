@@ -1,12 +1,4 @@
-import {
-  EMBEDDED_TEMPLATES,
-  processAddonTemplates,
-  processAddonsDeps,
-  VirtualFileSystem,
-} from "@better-fullstack/template-generator";
-import { writeTreeToFilesystem } from "@better-fullstack/template-generator/fs-writer";
 import { intro, log, outro } from "@clack/prompts";
-import fs from "fs-extra";
 import path from "node:path";
 import pc from "picocolors";
 
@@ -15,12 +7,16 @@ import type { AddInput, Addons, BetterTStackConfig, ProjectConfig } from "../../
 import { getDefaultConfig } from "../../constants";
 import { getAddonsToAdd } from "../../prompts/addons";
 import { maybeShowTelemetryNotice, type TelemetrySource, trackEvent } from "../../utils/analytics";
-import { readBtsConfig, updateBtsConfig } from "../../utils/bts-config";
+import { readBtsConfig } from "../../utils/bts-config";
 import { isSilent, runWithContextAsync } from "../../utils/context";
 import { applyDependencyVersionChannel } from "../../utils/dependency-version-channel";
 import { CLIError, UserCancelledError } from "../../utils/errors";
 import { renderTitle } from "../../utils/render-title";
-import { setupAddons } from "../addons/addons-setup";
+import {
+  isGitleaksSetupComplete,
+  isLinterLefthookSetupComplete,
+  setupAddons,
+} from "../addons/addons-setup";
 import { installDependencies } from "./install-dependencies";
 import { applyStackUpdate, planStackUpdate, type StackUpdatePlan } from "./stack-update";
 
@@ -50,10 +46,41 @@ function buildStackUpdateRequest(input: AddInput): Record<string, unknown> {
   return request;
 }
 
-function getNewAddons(input: AddInput, currentConfig: BetterTStackConfig): Addons[] {
+async function getAddonsToSetup(
+  input: AddInput,
+  currentConfig: BetterTStackConfig,
+  projectDir: string,
+): Promise<Addons[]> {
   const requestedAddons = (input.addons ?? []).filter((addon): addon is Addons => addon !== "none");
   const existingAddons = new Set(currentConfig.addons ?? []);
-  return requestedAddons.filter((addon) => !existingAddons.has(addon));
+  const addonsToSetup = requestedAddons.filter((addon) => !existingAddons.has(addon));
+
+  if (
+    requestedAddons.includes("gitleaks") &&
+    existingAddons.has("gitleaks") &&
+    !(await isGitleaksSetupComplete(projectDir, currentConfig.addons ?? []))
+  ) {
+    addonsToSetup.push("gitleaks");
+  }
+
+  if (existingAddons.has("lefthook")) {
+    for (const linter of ["biome", "oxlint"] as const) {
+      if (
+        requestedAddons.includes(linter) &&
+        existingAddons.has(linter) &&
+        !(await isLinterLefthookSetupComplete(
+          projectDir,
+          linter,
+          currentConfig.packageManager ?? "bun",
+        )) &&
+        !addonsToSetup.includes(linter)
+      ) {
+        addonsToSetup.push(linter);
+      }
+    }
+  }
+
+  return addonsToSetup;
 }
 
 function formatCount(count: number, noun: string): string {
@@ -140,7 +167,6 @@ function buildAddonSetupConfig(
   projectName: string,
   currentConfig: BetterTStackConfig,
   plan: StackUpdatePlan,
-  addonsToSetup: Addons[],
 ): ProjectConfig {
   const baseConfig = getDefaultConfig();
   return {
@@ -154,12 +180,34 @@ function buildAddonSetupConfig(
       plan.proposedConfig.packageManager ||
       currentConfig.packageManager ||
       baseConfig.packageManager,
-    addons: addonsToSetup,
+    addons: plan.proposedConfig.addons,
     frontend: plan.proposedConfig.frontend || currentConfig.frontend || baseConfig.frontend,
     examples: plan.proposedConfig.examples || currentConfig.examples || [],
     rustLibraries: plan.proposedConfig.rustLibraries || currentConfig.rustLibraries || [],
     pythonAi: plan.proposedConfig.pythonAi || currentConfig.pythonAi || [],
     aiDocs: plan.proposedConfig.aiDocs || currentConfig.aiDocs || [],
+  } as ProjectConfig;
+}
+
+function buildCurrentAddonSetupConfig(
+  projectDir: string,
+  projectName: string,
+  currentConfig: BetterTStackConfig,
+): ProjectConfig {
+  const baseConfig = getDefaultConfig();
+  return {
+    ...baseConfig,
+    ...currentConfig,
+    projectName,
+    projectDir,
+    relativePath: ".",
+    packageManager: currentConfig.packageManager || baseConfig.packageManager,
+    addons: currentConfig.addons ?? [],
+    frontend: currentConfig.frontend || baseConfig.frontend,
+    examples: currentConfig.examples || [],
+    rustLibraries: currentConfig.rustLibraries || [],
+    pythonAi: currentConfig.pythonAi || [],
+    aiDocs: currentConfig.aiDocs || [],
   } as ProjectConfig;
 }
 
@@ -171,6 +219,34 @@ async function runStackUpdateAdd(
   request: Record<string, unknown>,
 ): Promise<AddResult> {
   const dryRun = input.dryRun ?? false;
+  const requestedAddons = (input.addons ?? []).filter(
+    (addon): addon is Addons => addon !== "none",
+  );
+  const existingAddons = new Set(currentConfig.addons ?? []);
+  const addonsToRepair = await getAddonsToSetup(input, currentConfig, projectDir);
+  const isExistingAddonRepair =
+    !dryRun &&
+    Object.keys(request).every((key) => key === "addons") &&
+    requestedAddons.length > 0 &&
+    requestedAddons.every((addon) => existingAddons.has(addon)) &&
+    addonsToRepair.length > 0;
+
+  if (isExistingAddonRepair) {
+    const setupConfig = buildCurrentAddonSetupConfig(projectDir, projectName, currentConfig);
+    const setupWarnings = await setupAddons(setupConfig, addonsToRepair);
+    await applyDependencyVersionChannel(projectDir, setupConfig.versionChannel);
+    if (!isSilent()) {
+      log.success(pc.green(`Repaired addon setup: ${addonsToRepair.join(", ")}`));
+      outro(pc.magenta("Project updated successfully!"));
+    }
+    return {
+      success: true,
+      addedAddons: [],
+      projectDir,
+      setupWarnings: setupWarnings.length > 0 ? setupWarnings : undefined,
+    };
+  }
+
   const result = dryRun
     ? await planStackUpdate(projectDir, request)
     : await applyStackUpdate(projectDir, request);
@@ -192,15 +268,10 @@ async function runStackUpdateAdd(
     };
   }
 
-  const addonsToSetup = getNewAddons(input, currentConfig);
-  const setupConfig = buildAddonSetupConfig(
-    projectDir,
-    projectName,
-    currentConfig,
-    result,
-    addonsToSetup,
-  );
-  const setupWarnings = addonsToSetup.length > 0 ? await setupAddons(setupConfig) : [];
+  const addonsToSetup = await getAddonsToSetup(input, currentConfig, projectDir);
+  const setupConfig = buildAddonSetupConfig(projectDir, projectName, currentConfig, result);
+  const setupWarnings =
+    addonsToSetup.length > 0 ? await setupAddons(setupConfig, addonsToSetup) : [];
   await applyDependencyVersionChannel(projectDir, result.proposedConfig.versionChannel);
 
   let installFailed = false;
@@ -282,16 +353,12 @@ async function trackAddEvent(
       : Object.keys(request).length > 0
         ? "cli-flags"
         : "cli-interactive");
-  await trackEvent(
-    eventType,
-    stackPayload,
-    {
-      source,
-      success: outcome.success,
-      errorName: outcome.errorName,
-      durationMs: outcome.durationMs,
-    },
-  );
+  await trackEvent(eventType, stackPayload, {
+    source,
+    success: outcome.success,
+    errorName: outcome.errorName,
+    durationMs: outcome.durationMs,
+  });
 }
 
 export async function addHandler(
@@ -398,6 +465,7 @@ async function addHandlerInternal(input: AddInput): Promise<AddResult> {
       btsConfig.backend,
       btsConfig.runtime,
       btsConfig.api ?? "none",
+      btsConfig,
     );
     addonsToAdd = selectedAddons.filter((addon) => addon !== "none");
   }
@@ -418,128 +486,11 @@ async function addHandlerInternal(input: AddInput): Promise<AddResult> {
     log.info(pc.cyan(`Adding addons: ${addonsToAdd.join(", ")}`));
   }
 
-  const baseConfig = getDefaultConfig();
-  const config: ProjectConfig = {
-    ...baseConfig,
-    ...btsConfig,
-    projectName,
-    projectDir,
-    relativePath: ".",
-    packageManager: input.packageManager || btsConfig.packageManager || baseConfig.packageManager,
+  // Interactive additions must use the graph-aware update pipeline too. This
+  // preserves the actual backend projection and re-renders dependent addons
+  // such as DevContainer when infrastructure like Kong is added.
+  const interactiveInput: AddInput = { ...input, addons: addonsToAdd };
+  return runStackUpdateAdd(interactiveInput, projectDir, projectName, btsConfig, {
     addons: addonsToAdd,
-    frontend: btsConfig.frontend || baseConfig.frontend,
-    examples: btsConfig.examples || [],
-    rustLibraries: btsConfig.rustLibraries || [],
-    pythonAi: btsConfig.pythonAi || [],
-    aiDocs: btsConfig.aiDocs || [],
-  };
-
-  const vfs = new VirtualFileSystem();
-  const packageJsonPaths = await collectPackageJsonPaths(projectDir);
-
-  for (const pkgPath of packageJsonPaths) {
-    const fullPath = path.join(projectDir, pkgPath);
-    const content = await fs.readFile(fullPath, "utf-8");
-    vfs.writeFile(pkgPath, content);
-  }
-
-  await processAddonTemplates(vfs, EMBEDDED_TEMPLATES, config);
-  processAddonsDeps(vfs, config);
-
-  const tree = {
-    root: vfs.toTree(projectName),
-    fileCount: vfs.getFileCount(),
-    directoryCount: vfs.getDirectoryCount(),
-    config,
-  };
-
-  await writeTreeToFilesystem(tree, projectDir);
-
-  const setupWarnings = await setupAddons(config);
-  await applyDependencyVersionChannel(projectDir, config.versionChannel);
-
-  const updatedAddons = [...new Set([...existingAddons, ...addonsToAdd])];
-  const configUpdates: Partial<Pick<ProjectConfig, "webDeploy" | "serverDeploy">> & {
-    addons: Addons[];
-  } = {
-    addons: updatedAddons,
-  };
-
-  if (input.webDeploy !== undefined) {
-    configUpdates.webDeploy = input.webDeploy;
-  }
-  if (input.serverDeploy !== undefined) {
-    configUpdates.serverDeploy = input.serverDeploy;
-  }
-
-  await updateBtsConfig(projectDir, configUpdates);
-
-  let addonInstallFailed = false;
-  if (input.install) {
-    const installResult = await installDependencies({
-      projectDir,
-      packageManager: config.packageManager,
-    });
-    addonInstallFailed = !installResult.success;
-  }
-
-  if (!isSilent()) {
-    log.success(pc.green(`Successfully added: ${addonsToAdd.join(", ")}`));
-    for (const warning of setupWarnings) {
-      log.warn(pc.yellow(warning));
-    }
-    const installCmd =
-      config.packageManager === "npm" ? "npm install" : `${config.packageManager} install`;
-    if (!input.install) {
-      log.info(pc.yellow(`Run '${installCmd}' to install new dependencies.`));
-    } else if (addonInstallFailed) {
-      log.warn(
-        pc.yellow(
-          `Dependency installation failed. Run '${installCmd}' after resolving the error above.`,
-        ),
-      );
-    }
-    outro(pc.magenta("Addons added successfully!"));
-  }
-
-  return {
-    success: true,
-    addedAddons: addonsToAdd,
-    projectDir,
-    setupWarnings: setupWarnings.length > 0 ? setupWarnings : undefined,
-  };
-}
-
-async function collectPackageJsonPaths(projectDir: string): Promise<string[]> {
-  const results: string[] = [];
-
-  async function walk(currentDir: string) {
-    const entries = await fs.readdir(currentDir, { withFileTypes: true });
-    for (const entry of entries) {
-      if (entry.name === "node_modules" || entry.name === ".git" || entry.name === ".turbo") {
-        continue;
-      }
-
-      const fullPath = path.join(currentDir, entry.name);
-      if (entry.isDirectory()) {
-        await walk(fullPath);
-        continue;
-      }
-
-      if (entry.isFile() && entry.name === "package.json") {
-        results.push(path.relative(projectDir, fullPath).replaceAll(path.sep, "/"));
-      }
-    }
-  }
-
-  await walk(projectDir);
-
-  if (
-    !results.includes("package.json") &&
-    (await fs.pathExists(path.join(projectDir, "package.json")))
-  ) {
-    results.push("package.json");
-  }
-
-  return results;
+  });
 }

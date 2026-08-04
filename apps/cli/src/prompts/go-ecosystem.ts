@@ -468,6 +468,11 @@ const GO_OBSERVABILITY_PROMPT_OPTIONS: PromptOption<GoObservability>[] = [
     hint: "Official OTel SDK: traces and metrics with OTLP export",
   },
   {
+    value: "signoz",
+    label: "SigNoz",
+    hint: "OpenTelemetry tracing configured for SigNoz Cloud or self-hosting",
+  },
+  {
     value: "prometheus",
     label: "Prometheus",
     hint: "Standard Prometheus metrics collectors and HTTP exposition",

@@ -1,0 +1,24 @@
+import Medusa from "@medusajs/js-sdk";
+
+// Medusa 2.18's package exports resolve its default class through an extra
+// `default` layer under NodeNext, while bundlers expose the class directly.
+const MedusaClient = (
+  "default" in Medusa ? Medusa.default : Medusa
+) as typeof import("@medusajs/js-sdk").default;
+
+const baseUrl = process.env.MEDUSA_BACKEND_URL;
+const publishableKey = process.env.MEDUSA_PUBLISHABLE_KEY;
+
+if (!baseUrl) {
+  throw new Error("MEDUSA_BACKEND_URL is required");
+}
+
+if (!publishableKey) {
+  throw new Error("MEDUSA_PUBLISHABLE_KEY is required");
+}
+
+/** Official Medusa JS SDK client for an existing Medusa backend. */
+export const medusa = new MedusaClient({
+  baseUrl,
+  publishableKey,
+});

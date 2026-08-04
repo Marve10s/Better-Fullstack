@@ -672,6 +672,31 @@ describe("stack graph", () => {
     );
   });
 
+  it("rejects Nango graph selections that cannot generate its Node SDK", () => {
+    const unsupportedSpecs = [
+      ["backend:typescript:none", "backend.integrations:typescript:nango"],
+      ["backend:typescript:convex", "backend.integrations:typescript:nango"],
+      [
+        "backend:typescript:hono",
+        "backend.runtime:typescript:workers",
+        "backend.integrations:typescript:nango",
+      ],
+      [
+        "frontend:typescript:next",
+        "frontend.deploy:typescript:cloudflare",
+        "backend:typescript:self",
+        "backend.integrations:typescript:nango",
+      ],
+    ];
+
+    for (const specs of unsupportedSpecs) {
+      const issues = validateStackParts(parseStackPartSpecs(specs)).issues;
+      expect(issues).toContainEqual(
+        expect.objectContaining({ role: "integrations", toolId: "nango" }),
+      );
+    }
+  });
+
   it("rejects incompatible frontend-owned TypeScript graph selections", () => {
     const shadcnScssParts = parseStackPartSpecs([
       "frontend:typescript:next",
@@ -820,6 +845,104 @@ describe("stack graph", () => {
     ]);
 
     expect(validateStackParts(parts).issues).toEqual([]);
+  });
+
+  it("allows Kong with a Python PyMongo server", () => {
+    const parts = parseStackPartSpecs([
+      "backend:python:fastapi",
+      "backend.orm:python:pymongo",
+      "database:universal:mongodb",
+      "workspaceTooling:universal:kong",
+    ]);
+
+    expect(validateStackParts(parts).issues).toEqual([]);
+  });
+
+  it("allows Kong with a Vinext self backend", () => {
+    const parts = parseStackPartSpecs([
+      "frontend:typescript:vinext",
+      "backend:typescript:self",
+      "workspaceTooling:universal:kong",
+    ]);
+
+    expect(validateStackParts(parts).issues).toEqual([]);
+  });
+
+  it("rejects Kong when an explicit TypeScript none backend is selected", () => {
+    const parts = parseStackPartSpecs([
+      "frontend:typescript:react-vite",
+      "backend:typescript:none",
+      "workspaceTooling:universal:kong",
+    ]);
+
+    expect(validateStackParts(parts).issues.map((issue) => issue.message)).toContain(
+      "Kong Gateway requires a TypeScript backend service.",
+    );
+  });
+
+  it("rejects Kong with Rust gRPC and JSON-RPC APIs", () => {
+    for (const api of ["tonic", "jsonrpsee"]) {
+      const parts = parseStackPartSpecs([
+        "backend:rust:axum",
+        `backend.api:rust:${api}`,
+        "workspaceTooling:universal:kong",
+      ]);
+
+      expect(validateStackParts(parts).issues.map((issue) => issue.message)).toContain(
+        "Kong Gateway currently requires an HTTP Rust API.",
+      );
+    }
+  });
+
+  it("rejects Kong with Loco until its container configuration is supported", () => {
+    const parts = parseStackPartSpecs([
+      "backend:rust:loco",
+      "workspaceTooling:universal:kong",
+    ]);
+
+    expect(validateStackParts(parts).issues.map((issue) => issue.message)).toContain(
+      "Kong Gateway does not yet support Loco's container configuration.",
+    );
+  });
+
+  it("rejects Kong when a Go API bypasses the primary HTTP server", () => {
+    for (const api of ["connect-go", "grpc-gateway", "oapi-codegen", "grpc-go"]) {
+      const parts = parseStackPartSpecs([
+        "backend:go:gin",
+        `backend.api:go:${api}`,
+        "workspaceTooling:universal:kong",
+      ]);
+
+      expect(validateStackParts(parts).issues.map((issue) => issue.message)).toContain(
+        "Kong Gateway currently requires the primary Go HTTP server API.",
+      );
+    }
+  });
+
+  it("rejects Kong when Java gRPC uses a separate listener", () => {
+    const parts = parseStackPartSpecs([
+      "backend:java:spring-boot",
+      "backend.api:java:grpc",
+      "workspaceTooling:universal:kong",
+    ]);
+
+    expect(validateStackParts(parts).issues.map((issue) => issue.message)).toContain(
+      "Kong Gateway currently requires the primary Java HTTP API.",
+    );
+  });
+
+  it("rejects Kong when the graph backend has no container template", () => {
+    for (const backend of ["backend:dotnet:aspnet-minimal", "backend:elixir:phoenix"]) {
+      const parts = parseStackPartSpecs([
+        "frontend:typescript:next",
+        backend,
+        "workspaceTooling:universal:kong",
+      ]);
+
+      expect(validateStackParts(parts).issues.map((issue) => issue.message)).toContainEqual(
+        expect.stringContaining("does not yet provide a container template"),
+      );
+    }
   });
 
   it("rejects shared non-TypeScript backend service candidates through graph checks", () => {
@@ -1506,6 +1629,14 @@ describe("stack graph structural round-trip (phase 0)", () => {
       }
       expect(validateStackParts(parts).issues).toEqual([]);
     }
+  });
+
+  it("models Knip as TypeScript tooling instead of a universal addon", () => {
+    expect(getAddonStackPartBinding("knip")).toEqual({
+      role: "codeQuality",
+      ecosystem: "typescript",
+    });
+    expect(getAddonStackPartBinding("gitleaks")?.ecosystem).toBe("universal");
   });
 
   it("round-trips every native mobile frontend without drift", () => {

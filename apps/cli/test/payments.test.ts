@@ -231,6 +231,12 @@ describe("Payments Options", () => {
         }),
       );
       expectSuccess(result);
+      const successRoute = await readFile(
+        join(result.projectDir!, "apps/web/src/routes/success.tsx"),
+        "utf8",
+      );
+      expect(successRoute).toContain("validateSearch");
+      expect(successRoute).toContain("checkout_id: search.checkout_id as string | undefined");
     });
 
     test("lemon-squeezy with React Router", async () => {
@@ -279,6 +285,12 @@ describe("Payments Options", () => {
         }),
       );
       expectSuccess(result);
+      const successRoute = await readFile(
+        join(result.projectDir!, "apps/web/src/routes/success.tsx"),
+        "utf8",
+      );
+      expect(successRoute).toContain("validateSearch");
+      expect(successRoute).toContain("checkout_id: search.checkout_id as string | undefined");
     });
   });
 
@@ -901,6 +913,101 @@ describe("Payments Options", () => {
         }),
       );
       expectSuccess(result);
+    });
+  });
+
+  describe("Xendit provider", () => {
+    test("generates server-side Payment Sessions and webhook helpers", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "xendit-hono",
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          auth: "none",
+          payments: "xendit",
+        }),
+      );
+      expectSuccess(result);
+
+      const helper = await readFile(
+        join(result.projectDir!, "apps/server/src/lib/xendit.ts"),
+        "utf-8",
+      );
+      const env = await readFile(join(result.projectDir!, "apps/server/.env"), "utf-8");
+      const envContract = await readFile(
+        join(result.projectDir!, "packages/env/src/server.ts"),
+        "utf-8",
+      );
+
+      expect(helper).toContain('import { env } from "@xendit-hono/env/server"');
+      expect(helper).toContain("fetch(`${apiUrl}/sessions`");
+      expect(helper).toContain('"api-version": "2024-11-11"');
+      expect(helper).toContain('session_type: "PAY"');
+      expect(helper).toContain("payment_link_url");
+      expect(helper).toContain("verifyXenditWebhookToken");
+      expect(helper).toContain("handleXenditPaymentSessionWebhook");
+      expect(helper).toContain("x-callback-token");
+      expect(helper).toContain('type: "INDIVIDUAL"');
+      expect(helper).not.toContain('"INDIVIDUAL" | "BUSINESS"');
+      expect(env).toContain("XENDIT_SECRET_KEY=");
+      expect(env).toContain("XENDIT_WEBHOOK_TOKEN=");
+      expect(envContract).toContain("XENDIT_SECRET_KEY: z.string().min(1)");
+      expect(envContract).toContain("XENDIT_WEBHOOK_TOKEN: z.string().min(1)");
+    });
+
+    test("binds Xendit secrets for Cloudflare Workers", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "xendit-workers",
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          runtime: "workers",
+          database: "none",
+          orm: "none",
+          dbSetup: "none",
+          api: "none",
+          auth: "none",
+          payments: "xendit",
+          serverDeploy: "cloudflare",
+        }),
+      );
+      expectSuccess(result);
+
+      const helper = await readFile(
+        join(result.projectDir!, "apps/server/src/lib/xendit.ts"),
+        "utf-8",
+      );
+      const alchemy = await readFile(
+        join(result.projectDir!, "packages/infra/alchemy.run.ts"),
+        "utf-8",
+      );
+
+      expect(helper).toContain('import { env } from "@xendit-workers/env/server"');
+      expect(helper).not.toContain("process.env");
+      expect(alchemy).toContain("XENDIT_SECRET_KEY: alchemy.secret.env.XENDIT_SECRET_KEY!");
+      expect(alchemy).toContain("XENDIT_WEBHOOK_TOKEN: alchemy.secret.env.XENDIT_WEBHOOK_TOKEN!");
+      expect(alchemy).toContain(
+        'XENDIT_API_URL: alchemy.env.XENDIT_API_URL ?? "https://api.xendit.co"',
+      );
+    });
+
+    test("rejects Convex because Payment Sessions require server secrets", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "xendit-convex-invalid",
+          frontend: ["tanstack-router"],
+          backend: "convex",
+          runtime: "none",
+          database: "none",
+          orm: "none",
+          dbSetup: "none",
+          api: "none",
+          payments: "xendit",
+          expectError: true,
+        }),
+      );
+
+      expectError(result, "Xendit Payment Sessions require a standalone or fullstack backend");
     });
   });
 

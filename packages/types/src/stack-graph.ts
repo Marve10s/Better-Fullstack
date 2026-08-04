@@ -48,8 +48,10 @@ import {
   ELIXIR_WEB_FRAMEWORK_VALUES,
   EFFECT_VALUES,
   EMAIL_VALUES,
+  ECOMMERCE_VALUES,
   EXAMPLES_VALUES,
   FEATURE_FLAGS_VALUES,
+  INTEGRATIONS_VALUES,
   FILE_STORAGE_VALUES,
   FILE_UPLOAD_VALUES,
   FORMS_VALUES,
@@ -344,6 +346,8 @@ const LEGACY_TYPESCRIPT_BACKEND_SINGLE_CATEGORIES = {
   rateLimit: "rateLimit",
   fileStorage: "fileStorage",
   featureFlags: "featureFlags",
+  integrations: "integrations",
+  ecommerce: "ecommerce",
   payments: "payments",
   realtime: "realtime",
   ai: "ai",
@@ -417,7 +421,9 @@ const CODE_QUALITY_ADDONS = new Set([
   "ultracite",
   "lefthook",
   "husky",
+  "gitleaks",
 ]);
+const TYPESCRIPT_CODE_QUALITY_ADDONS = new Set(["knip"]);
 const DOCUMENTATION_ADDONS = new Set(["starlight", "fumadocs"]);
 const FRONTEND_APP_PLATFORM_ADDONS = new Set<string>(APP_PLATFORM_ADDON_VALUES);
 const FRONTEND_DATA_FETCHING_ADDONS = new Set([
@@ -437,6 +443,7 @@ const WORKSPACE_TOOLING_ADDONS = new Set([
   "nx",
   "docker-compose",
   "devcontainer",
+  "kong",
   "github-actions",
   "ruler",
   "mcp",
@@ -487,6 +494,9 @@ export type AddonStackPartBinding = {
 };
 
 export function getAddonStackPartBinding(toolId: string): AddonStackPartBinding | undefined {
+  if (TYPESCRIPT_CODE_QUALITY_ADDONS.has(toolId)) {
+    return { role: "codeQuality", ecosystem: "typescript" };
+  }
   if (CODE_QUALITY_ADDONS.has(toolId)) {
     return { role: "codeQuality", ecosystem: "universal" };
   }
@@ -862,6 +872,13 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
     { allowMultiple: true, ownerless: true },
   ),
   ...defineTools(
+    ADDONS_VALUES.filter((value) => TYPESCRIPT_CODE_QUALITY_ADDONS.has(value)),
+    "codeQuality",
+    "typescript",
+    undefined,
+    { allowMultiple: true, ownerless: true },
+  ),
+  ...defineTools(
     ADDONS_VALUES.filter((value) => DOCUMENTATION_ADDONS.has(value)),
     "documentation",
     "universal",
@@ -924,6 +941,8 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(RATE_LIMIT_VALUES, "rateLimit", "typescript", "rateLimit"),
   ...defineTools(FILE_STORAGE_VALUES, "fileStorage", "typescript", "fileStorage"),
   ...defineTools(FEATURE_FLAGS_VALUES, "featureFlags", "typescript", "featureFlags"),
+  ...defineTools(INTEGRATIONS_VALUES, "integrations", "typescript", "integrations"),
+  ...defineTools(ECOMMERCE_VALUES, "ecommerce", "typescript", "ecommerce"),
   ...defineTools(PAYMENTS_VALUES, "payments", "typescript", "payments"),
   ...defineTools(REALTIME_VALUES, "realtime", "typescript", "realtime"),
   ...defineTools(AI_VALUES, "ai", "typescript", "ai"),
@@ -1444,6 +1463,20 @@ function createTypeScriptBackendCompatibilityIssue(
     }
   }
 
+  if (
+    part.role === "payments" &&
+    part.toolId === "xendit" &&
+    (context.ownerToolId === "none" || context.ownerToolId === "convex")
+  ) {
+    return createStackGraphIssue({
+      code: "INCOMPATIBLE_OWNER_TOOL",
+      partId: part.id,
+      role: part.role,
+      toolId: part.toolId,
+      message: "Xendit Payment Sessions require a server backend.",
+    });
+  }
+
   if (part.role === "email" && part.toolId !== "none" && context.ownerToolId === "convex") {
     return createStackGraphIssue({
       code: "INCOMPATIBLE_OWNER_TOOL",
@@ -1462,6 +1495,42 @@ function createTypeScriptBackendCompatibilityIssue(
       toolId: part.toolId,
       message: "Rate limiting helpers are not generated with Convex backend",
     });
+  }
+
+  if (part.role === "integrations" && part.toolId === "nango") {
+    if (context.ownerToolId === "none") {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_OWNER_TOOL",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Nango integrations require a generated backend.",
+      });
+    }
+    if (context.ownerToolId === "convex") {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_OWNER_TOOL",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Nango integrations are not available with the Convex backend.",
+      });
+    }
+
+    const runtimeTool = context.siblingToolIdsByRole?.runtime;
+    const deployTools = context.selectedToolIdsByRoleList?.deploy ?? [];
+    if (
+      runtimeTool === "workers" ||
+      (context.ownerToolId === "self" && deployTools.includes("cloudflare"))
+    ) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Nango's Node SDK is not available on Cloudflare Workers.",
+      });
+    }
   }
 
   if (part.role === "cms" && part.toolId === "payload") {
@@ -2007,8 +2076,17 @@ function createAddonCompatibilityIssue(
       });
     }
 
-    if (part.toolId === "docker-compose" || part.toolId === "devcontainer") {
-      const title = part.toolId === "devcontainer" ? "DevContainer" : "Docker Compose";
+    if (
+      part.toolId === "docker-compose" ||
+      part.toolId === "devcontainer" ||
+      part.toolId === "kong"
+    ) {
+      const title =
+        part.toolId === "devcontainer"
+          ? "DevContainer"
+          : part.toolId === "kong"
+            ? "Kong Gateway"
+            : "Docker Compose";
       const databaseTool = context.primaryToolIdsByRole?.database;
       const primaryEcosystem = backendEcosystem ?? frontendEcosystem ?? context.settings?.ecosystem;
       const selectedEcosystems = [backendEcosystem, frontendEcosystem, context.settings?.ecosystem];
@@ -2034,6 +2112,45 @@ function createAddonCompatibilityIssue(
           message: `${title} is not compatible with Cloudflare Workers runtime.`,
         });
       }
+      if (
+        backendEcosystem &&
+        !DOCKER_COMPOSE_COMPATIBLE_ECOSYSTEMS.has(backendEcosystem)
+      ) {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: `${title} does not yet provide a container template for ${backendEcosystem} backends.`,
+        });
+      }
+      if (
+        part.toolId === "kong" &&
+        primaryEcosystem === "typescript" &&
+        (!backendTool || backendTool === "none")
+      ) {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: "Kong Gateway requires a TypeScript backend service.",
+        });
+      }
+      if (
+        part.toolId === "kong" &&
+        primaryEcosystem !== "typescript" &&
+        primaryEcosystem !== "java" &&
+        (!backendTool || backendTool === "none")
+      ) {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: `Kong Gateway requires a ${primaryEcosystem ?? "supported"} HTTP server.`,
+        });
+      }
       if (!hasCompatibleEcosystem) {
         return createStackGraphIssue({
           code: "INCOMPATIBLE_GRAPH_SELECTION",
@@ -2055,13 +2172,67 @@ function createAddonCompatibilityIssue(
           message: `${title} currently supports Next.js, TanStack Router, React Router, React Vite, Solid, or Astro.`,
         });
       }
-      if (backendEcosystem === "typescript" && backendTool === "self" && frontendTool !== "next") {
+      if (
+        backendEcosystem === "typescript" &&
+        backendTool === "self" &&
+        frontendTool !== "next" &&
+        frontendTool !== "vinext"
+      ) {
         return createStackGraphIssue({
           code: "INCOMPATIBLE_GRAPH_SELECTION",
           partId: part.id,
           role: part.role,
           toolId: part.toolId,
-          message: `${title} self-backend support currently requires Next.js.`,
+          message: `${title} self-backend support currently requires Next.js or Vinext.`,
+        });
+      }
+      if (
+        part.toolId === "kong" &&
+        primaryEcosystem === "rust" &&
+        (apiTool === "tonic" || apiTool === "jsonrpsee")
+      ) {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: "Kong Gateway currently requires an HTTP Rust API.",
+        });
+      }
+      if (
+        part.toolId === "kong" &&
+        primaryEcosystem === "rust" &&
+        backendTool === "loco"
+      ) {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: "Kong Gateway does not yet support Loco's container configuration.",
+        });
+      }
+      if (
+        part.toolId === "kong" &&
+        primaryEcosystem === "go" &&
+        apiTool !== undefined &&
+        ["connect-go", "grpc-gateway", "oapi-codegen", "grpc-go"].includes(apiTool)
+      ) {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: "Kong Gateway currently requires the primary Go HTTP server API.",
+        });
+      }
+      if (part.toolId === "kong" && primaryEcosystem === "java" && apiTool === "grpc") {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: "Kong Gateway currently requires the primary Java HTTP API.",
         });
       }
       if (frontendEcosystem === "rust" && frontendTool && frontendTool !== "none") {
@@ -2087,14 +2258,15 @@ function createAddonCompatibilityIssue(
         databaseTool &&
         databaseTool !== "none" &&
         databaseTool !== "sqlite" &&
-        databaseTool !== "postgres"
+        databaseTool !== "postgres" &&
+        databaseTool !== "mongodb"
       ) {
         return createStackGraphIssue({
           code: "INCOMPATIBLE_GRAPH_SELECTION",
           partId: part.id,
           role: part.role,
           toolId: part.toolId,
-          message: `${title} for Python ORM projects currently supports SQLite defaults or Postgres.`,
+          message: `${title} for Python ORM projects currently supports SQLite, Postgres, or MongoDB.`,
         });
       }
     }

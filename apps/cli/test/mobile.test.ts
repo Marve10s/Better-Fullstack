@@ -1,6 +1,8 @@
 import { describe, expect, test } from "bun:test";
 
 import { create, createVirtual } from "../src/index";
+import { DEFAULT_CONFIG } from "../src/constants";
+import { gatherConfig } from "../src/prompts/config-prompts";
 import {
   findVirtualFile as findFile,
   readVirtualFileContent as getFile,
@@ -25,6 +27,33 @@ describe("mobile native scaffolding", () => {
     expect(result.projectConfig.api).toBe("none");
     expect(result.projectConfig.cssFramework).toBe("none");
     expect(result.projectConfig.uiLibrary).toBe("none");
+  });
+
+  test("preserves Knip from React Native CLI flags", async () => {
+    const result = await gatherConfig(
+      {
+        ...DEFAULT_CONFIG,
+        projectName: "mobile-knip",
+        projectDir: "/tmp/mobile-knip",
+        relativePath: "mobile-knip",
+        frontend: ["native-bare"],
+        backend: "none",
+        runtime: "none",
+        api: "none",
+        database: "none",
+        orm: "none",
+        cssFramework: "none",
+        uiLibrary: "none",
+        ecosystem: "react-native",
+        addons: ["knip"],
+      },
+      "mobile-knip",
+      "/tmp/mobile-knip",
+      "mobile-knip",
+    );
+
+    expect(result.ecosystem).toBe("react-native");
+    expect(result.addons).toContain("knip");
   });
 
   test("generates React Navigation with production mobile integrations", async () => {

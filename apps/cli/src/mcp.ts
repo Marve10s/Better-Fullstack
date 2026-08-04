@@ -53,8 +53,10 @@ import {
   ElixirWebFrameworkSchema,
   EffectSchema,
   EmailSchema,
+  EcommerceSchema,
   ExamplesSchema,
   FeatureFlagsSchema,
+  IntegrationsSchema,
   FileStorageSchema,
   FileUploadSchema,
   formatStackPartSpec,
@@ -181,6 +183,7 @@ import { applyEffectBackendDefaults } from "./utils/config-processing";
 import { generateReproducibleCommand } from "./utils/generate-reproducible-command";
 import { getLatestCLIVersion } from "./utils/get-latest-cli-version";
 import { getEffectiveStack, getGraphSummary } from "./utils/graph-summary";
+import { getCompatibilityBackend } from "./utils/stack-compatibility";
 import { getTemplateConfig, getTemplateDescription } from "./utils/templates";
 
 const OPTION_ENTRY_COUNT = Object.values(OPTION_CATEGORY_METADATA).reduce(
@@ -252,7 +255,7 @@ function getGuidance() {
       email:
         "String. TypeScript supports multiple providers; Rust, Python, Go, and Java currently support resend or none.",
       observability:
-        "String. TypeScript supports multiple providers; Rust, Python, Go, and Java currently support sentry or none.",
+        "Shared service field. TypeScript supports multiple providers; Rust, Python, Go, and Java support sentry or none here. Python and Go also expose ecosystem-native pythonObservability/goObservability fields, including SigNoz.",
       search:
         "String. TypeScript supports multiple providers; Rust, Python, Go, and Java currently support meilisearch or none.",
       vectorDb:
@@ -277,6 +280,7 @@ function getGuidance() {
       "Sequelize + better-auth: unsupported (no adapter). Use auth='none' or orm='drizzle'.",
       "Non-TypeScript ecosystems only support email='resend' or email='none'.",
       "Non-TypeScript ecosystems only support observability='sentry' or observability='none'.",
+      "Use pythonObservability='signoz' or goObservability='signoz' for SigNoz-native OTLP scaffolding in those ecosystems.",
       "Non-TypeScript ecosystems only support search='meilisearch' or search='none'.",
       "Java email='resend' and observability='sentry' require javaBuildTool='maven' or javaBuildTool='gradle'.",
       "Java search='meilisearch' requires javaBuildTool='maven' or javaBuildTool='gradle'.",
@@ -470,6 +474,8 @@ const MCP_CODE_QUALITY_ADDONS = new Set([
   "ultracite",
   "lefthook",
   "husky",
+  "knip",
+  "gitleaks",
   "ruler",
 ]);
 const MCP_DOCUMENTATION_ADDONS = new Set(["starlight", "fumadocs"]);
@@ -488,6 +494,8 @@ const MCP_COMPATIBILITY_DEFAULTS = {
   logging: "none",
   observability: "none",
   featureFlags: "none",
+  integrations: "none",
+  ecommerce: "none",
   analytics: "none",
   backendLibraries: "none",
   stateManagement: "none",
@@ -674,6 +682,38 @@ function getMcpProjectConfigDefaults(input: Record<string, unknown>) {
   >;
 }
 
+export function validateMcpProjectConfigCompatibility(
+  config: Pick<ProjectConfig, "ecosystem" | "integrations"> &
+    Partial<Pick<ProjectConfig, "backend" | "runtime" | "webDeploy" | "stackParts">>,
+): void {
+  if (config.integrations !== "nango") return;
+
+  const nangoPart = config.stackParts?.find(
+    (part) => part.role === "integrations" && part.toolId === "nango",
+  );
+  const nangoOwner = nangoPart?.ownerPartId
+    ? config.stackParts?.find((part) => part.id === nangoPart.ownerPartId)
+    : undefined;
+  const hasTypeScriptNangoOwner =
+    nangoOwner?.role === "backend" && nangoOwner.ecosystem === "typescript";
+
+  if (config.ecosystem !== "typescript" && !hasTypeScriptNangoOwner) {
+    throw new Error("Nango integrations are supported only for TypeScript projects");
+  }
+  if (config.backend === "none") {
+    throw new Error("Nango integrations require a generated backend");
+  }
+  if (config.backend === "convex") {
+    throw new Error("Nango integrations are not available with the Convex backend");
+  }
+  if (
+    config.runtime === "workers" ||
+    (config.backend === "self" && config.webDeploy === "cloudflare")
+  ) {
+    throw new Error("Nango's Node SDK is not available on Cloudflare Workers");
+  }
+}
+
 function buildProjectConfig(
   input: Record<string, unknown>,
   overrides?: { projectDir: string },
@@ -734,6 +774,7 @@ function buildProjectConfig(
   }
 
   applyEffectBackendDefaults(config, new Set(Object.keys(input)));
+  validateMcpProjectConfigCompatibility(config);
 
   return config;
 }
@@ -750,7 +791,7 @@ function sanitizePath(input: string): string {
   return input;
 }
 
-function buildCompatibilityInput(input: Record<string, unknown>): CompatibilityInput {
+export function buildMcpCompatibilityInput(input: Record<string, unknown>): CompatibilityInput {
   const frontend = input.frontend as string[] | undefined;
   const webFrontend = (frontend ?? []).filter((item) => !item.startsWith("native-"));
   const nativeFrontend = (frontend ?? []).filter((item) => item.startsWith("native-"));
@@ -780,6 +821,11 @@ function buildCompatibilityInput(input: Record<string, unknown>): CompatibilityI
     appPlatforms,
     aiSdk: (input.ai as string) ?? defaults.aiSdk,
   };
+
+  result.backend = getCompatibilityBackend(
+    { backend: result.backend as ProjectConfig["backend"] },
+    webFrontend,
+  );
 
   if (result.backend === "effect") {
     if (input.effect === undefined) {
@@ -876,6 +922,7 @@ const COMPATIBILITY_RULES_MD = `# Better-Fullstack Compatibility Rules
 
 ## Observability
 - Rust, Python, Go, and Java currently support only Sentry for observability (\`observability=sentry\`) or no observability (\`observability=none\`).
+- Python and Go additionally support SigNoz through their native fields (\`pythonObservability=signoz\` and \`goObservability=signoz\`).
 - Java Sentry requires Maven or Gradle so the generated project can manage the SDK dependency.
 
 ## Ecosystem Isolation
@@ -912,6 +959,7 @@ const GETTING_STARTED_MD = `# Getting Started with Better-Fullstack MCP
    - ecosystem: "python"
    - pythonWebFramework: "fastapi"
    - pythonOrm: "sqlalchemy"
+   - pythonObservability: "signoz" (optional)
    - email: "resend" (optional)
    - observability: "sentry" (optional)
 2. Tell the user to run: cd my-python-app && uv sync --extra dev
@@ -922,6 +970,7 @@ const GETTING_STARTED_MD = `# Getting Started with Better-Fullstack MCP
    - ecosystem: "go"
    - goWebFramework: "gin"
    - goOrm: "gorm"
+   - goObservability: "signoz" (optional)
    - email: "resend" (optional)
    - observability: "sentry" (optional)
 2. Tell the user to run: cd my-go-app && go mod tidy && go run cmd/server/main.go
@@ -1385,7 +1434,9 @@ const crossEcosystemInputSchema = {
   pythonTesting: z.array(PythonTestingSchema).optional().describe("Python testing libraries"),
   pythonCaching: PythonCachingSchema.optional().describe("Python caching library"),
   pythonRealtime: PythonRealtimeSchema.optional().describe("Python realtime library"),
-  pythonObservability: PythonObservabilitySchema.optional().describe("Python observability"),
+  pythonObservability: PythonObservabilitySchema.optional().describe(
+    "Python observability (OpenTelemetry, SigNoz, or Prometheus)",
+  ),
   pythonCli: z.array(PythonCliSchema).optional().describe("Python CLI tooling"),
   pythonCloudSdk: PythonCloudSdkSchema.optional().describe("Python cloud SDK"),
   pythonHttpClient: PythonHttpClientSchema.optional().describe("Python HTTP client"),
@@ -1405,7 +1456,9 @@ const crossEcosystemInputSchema = {
   goMessageQueue: GoMessageQueueSchema.optional().describe("Go message queue"),
   goCaching: GoCachingSchema.optional().describe("Go caching library"),
   goConfig: GoConfigSchema.optional().describe("Go config management"),
-  goObservability: GoObservabilitySchema.optional().describe("Go observability"),
+  goObservability: GoObservabilitySchema.optional().describe(
+    "Go observability (OpenTelemetry, SigNoz, or Prometheus)",
+  ),
   goValidation: GoValidationSchema.optional().describe("Go validation"),
   goQuality: GoQualitySchema.optional().describe("Go code quality"),
   goMigrations: GoMigrationsSchema.optional().describe("Go database migrations"),
@@ -1505,6 +1558,8 @@ export const MCP_PLAN_CREATE_SCHEMA = {
   logging: LoggingSchema.optional().describe("Logging library"),
   observability: ObservabilitySchema.optional().describe("Observability"),
   featureFlags: FeatureFlagsSchema.optional().describe("Feature flag provider"),
+  integrations: IntegrationsSchema.optional().describe("Third-party integrations SDK"),
+  ecommerce: EcommerceSchema.optional().describe("E-commerce platform SDK"),
   search: SearchSchema.optional().describe("Search engine"),
   vectorDb: VectorDbSchema.optional().describe("Vector database (TypeScript only)"),
   caching: CachingSchema.optional().describe("Caching solution"),
@@ -1700,7 +1755,7 @@ export async function startMcpServer() {
           projectName: projectName ?? "my-app",
           ...recommended,
         };
-        const compatResult = analyzeStackCompatibility(buildCompatibilityInput(baseInput));
+        const compatResult = analyzeStackCompatibility(buildMcpCompatibilityInput(baseInput));
         const normalizedInput = compatResult.adjustedStack
           ? normalizeAdjustedToInput(
               compatResult.adjustedStack as unknown as Record<string, unknown>,
@@ -1789,6 +1844,8 @@ export async function startMcpServer() {
         logging: LoggingSchema.optional().describe("Logging library"),
         observability: ObservabilitySchema.optional().describe("Observability provider"),
         featureFlags: FeatureFlagsSchema.optional().describe("Feature flags provider"),
+        integrations: IntegrationsSchema.optional().describe("Third-party integrations SDK"),
+        ecommerce: EcommerceSchema.optional().describe("E-commerce platform SDK"),
         analytics: AnalyticsSchema.optional().describe("Analytics provider"),
         cms: CMSSchema.optional().describe("CMS"),
         caching: CachingSchema.optional().describe("Caching solution"),
@@ -1819,7 +1876,7 @@ export async function startMcpServer() {
     },
     async (input: Record<string, unknown>) => {
       try {
-        const compatInput = buildCompatibilityInput(input);
+        const compatInput = buildMcpCompatibilityInput(input);
         const result = analyzeStackCompatibility(compatInput);
         const filtered = filterCompatibilityResult(result, input.ecosystem as string);
         const evaluation = evaluateCompatibility(compatInput);
@@ -2053,7 +2110,7 @@ export async function startMcpServer() {
   function compatibilityWarningsForStackUpdate(
     proposedConfig: BetterTStackConfig,
   ): string[] | undefined {
-    const compatResult = analyzeStackCompatibility(buildCompatibilityInput(proposedConfig));
+    const compatResult = analyzeStackCompatibility(buildMcpCompatibilityInput(proposedConfig));
     return compatResult.changes.length > 0
       ? compatResult.changes.map((change) => change.message)
       : undefined;
@@ -2250,7 +2307,7 @@ export async function startMcpServer() {
         });
         const existingGraphPreview = getMcpGraphPreview(config);
         const proposedGraphPreview = getMcpGraphPreview(updatePreview);
-        const compatInput = buildCompatibilityInput({
+        const compatInput = buildMcpCompatibilityInput({
           ...config,
           addons: mergedAddons,
           webDeploy: webDeploy ?? config.webDeploy,

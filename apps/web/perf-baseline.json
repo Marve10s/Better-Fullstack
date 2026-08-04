@@ -1,11 +1,11 @@
 {
-  "updatedAt": "2026-07-17T08:44:59.031Z",
+  "updatedAt": "2026-08-03T20:35:00.443Z",
   "metrics": {
     "mainJsGzip": 258,
-    "mainCssGzip": 33909,
-    "stackBuilderJsGzip": 70589,
-    "largestJsGzip": 712934,
-    "totalJsGzip": 1885109
+    "mainCssGzip": 34923,
+    "stackBuilderJsGzip": 77059,
+    "largestJsGzip": 665363,
+    "totalJsGzip": 1978679
   },
   "budgets": {
     "mainJsGzip": 4096,

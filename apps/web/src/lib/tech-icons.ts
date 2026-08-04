@@ -74,12 +74,15 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   "apollo-client": { type: "si", slug: "apollographql", hex: "311C87" },
   ga4: { type: "si", slug: "googleanalytics", hex: "E37400" },
   paypal: { type: "si", slug: "paypal", hex: "003087" },
+  xendit: { type: "local", src: "https://www.xendit.co/favicon.ico" },
+  medusa: { type: "si", slug: "medusa", hex: "000000" },
   electron: { type: "si", slug: "electron", hex: "47848F" },
   capacitor: { type: "si", slug: "capacitor", hex: "119EFF" },
   "styled-components": { type: "si", slug: "styledcomponents", hex: "DB7093" },
   passport: { type: "si", slug: "passport", hex: "34E27A" },
   mocha: { type: "si", slug: "mocha", hex: "8D6748" },
   contentful: { type: "si", slug: "contentful", hex: "2478CC" },
+  nango: { type: "local", src: "/icon/nango.svg", needsInvert: "dark" },
   // ─── Ecosystems ────────────────────────────────────────────────────────────
   typescript: { type: "si", slug: "typescript", hex: "3178C6" },
   "react-native": { type: "si", slug: "react", hex: "61DAFB", fixedColor: true },
@@ -251,6 +254,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   upstash: { type: "si", slug: "upstash", hex: "00E9A3" },
   docker: { type: "si", slug: "docker", hex: "2496ED" },
   "docker-compose": { type: "si", slug: "docker", hex: "2496ED" },
+  kong: { type: "si", slug: "kong", hex: "003459" },
   devcontainer: { type: "si", slug: "docker", hex: "2496ED" },
   "github-actions": { type: "si", slug: "githubactions", hex: "2088FF" },
   nx: { type: "si", slug: "nx", hex: "143055", needsInvert: "dark" },
@@ -311,6 +315,10 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   sentry: { type: "si", slug: "sentry", hex: "362D59" },
   grafana: { type: "si", slug: "grafana", hex: "F46800" },
   opentelemetry: { type: "si", slug: "opentelemetry", hex: "000000" },
+  signoz: {
+    type: "local",
+    src: "https://raw.githubusercontent.com/SigNoz/signoz/main/frontend/public/favicon.ico",
+  },
   datadog: { type: "si", slug: "datadog", hex: "632CA6" },
   axiom: { type: "local", src: "https://axiom.co/favicon.ico" },
   betterstack: { type: "si", slug: "betterstack", hex: "111827" },
@@ -374,6 +382,8 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
 
   // ─── Code Quality ──────────────────────────────────────────────────────────
   biome: { type: "si", slug: "biome", hex: "60A5FA" },
+  knip: { type: "local", src: "https://knip.dev/favicon.svg" },
+  gitleaks: { type: "local", src: "https://github.com/gitleaks.png" },
   oxlint: { type: "si", slug: "oxc", hex: "FF915C" },
   ultracite: { type: "local", src: "/icon/ultracite.svg", needsInvert: "dark" }, // currentColor
 

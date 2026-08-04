@@ -11,6 +11,7 @@ import {
   PythonTaskQueueSchema,
   PythonGraphqlSchema,
   PythonQualitySchema,
+  PythonObservabilitySchema,
   parseStackPartSpecs,
 } from "../src/types";
 import {
@@ -36,6 +37,7 @@ const PYTHON_APIS = extractEnumValues(PythonApiSchema);
 const PYTHON_TASK_QUEUES = extractEnumValues(PythonTaskQueueSchema);
 const PYTHON_GRAPHQLS = extractEnumValues(PythonGraphqlSchema);
 const PYTHON_QUALITIES = extractEnumValues(PythonQualitySchema);
+const PYTHON_OBSERVABILITY = extractEnumValues(PythonObservabilitySchema);
 
 describe("Python Language Support", () => {
   describe("Schema Definitions", () => {
@@ -105,6 +107,10 @@ describe("Python Language Support", () => {
       expect(PYTHON_QUALITIES).toContain("mypy");
       expect(PYTHON_QUALITIES).toContain("pyright");
       expect(PYTHON_QUALITIES).toContain("none");
+    });
+
+    it("should expose SigNoz as Python observability", () => {
+      expect(PYTHON_OBSERVABILITY).toContain("signoz");
     });
   });
 
@@ -213,6 +219,36 @@ describe("Python Language Support", () => {
       expect(envContent).toContain("DEBUG");
       expect(envContent).toContain("HOST");
       expect(envContent).toContain("PORT");
+    });
+
+    it("should generate SigNoz-ready OpenTelemetry tracing", async () => {
+      const result = await createVirtual({
+        projectName: "python-signoz-check",
+        ecosystem: "python",
+        pythonWebFramework: "fastapi",
+        pythonOrm: "none",
+        pythonValidation: "none",
+        pythonAi: [],
+        pythonTaskQueue: "none",
+        pythonQuality: "none",
+        pythonObservability: "signoz",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+      expect(getFileContent(root, "pyproject.toml")).toContain(
+        "opentelemetry-exporter-otlp-proto-http",
+      );
+      expect(getFileContent(root, "pyproject.toml")).toContain(
+        "opentelemetry-instrumentation-fastapi",
+      );
+      expect(getFileContent(root, "src/app/otel.py")).toContain("SigNoz Cloud");
+      expect(getFileContent(root, "src/app/otel.py")).toContain("init_tracing()\n");
+      expect(getFileContent(root, "src/app/main.py")).toContain(
+        "FastAPIInstrumentor.instrument_app(app)",
+      );
+      expect(getFileContent(root, ".env.example")).toContain("OTEL_EXPORTER_OTLP_HEADERS=");
+      expect(getFileContent(root, ".env.example")).toContain("signoz-ingestion-key=<your-key>");
     });
   });
 
@@ -395,6 +431,18 @@ describe("Python Language Support", () => {
   });
 
   describe("Python expansion compatibility", () => {
+    it("rejects SigNoz request tracing outside FastAPI", () => {
+      expect(() =>
+        runWithContext({ silent: true }, () =>
+          validatePythonExpansionConstraints({
+            ecosystem: "python",
+            pythonWebFramework: "django",
+            pythonObservability: "signoz",
+          }),
+        ),
+      ).toThrow("SigNoz request tracing for Python is currently wired for FastAPI.");
+    });
+
     it("requires MongoDB when PyMongo is selected", () => {
       expect(() =>
         runWithContext({ silent: true }, () =>

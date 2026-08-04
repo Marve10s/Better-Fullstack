@@ -89,6 +89,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "backend-utils",
           "devcontainer",
           "docker-compose",
+          "kong",
           "github-actions",
           "axios",
           "firebase",
@@ -102,6 +103,8 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "ultracite",
           "lefthook",
           "husky",
+          "knip",
+          "gitleaks",
           "ruler",
           "starlight",
           "fumadocs",
@@ -510,6 +513,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "creem",
           "autumn",
           "commet",
+          "xendit",
           "none"
         ],
         "valueHint": null,
@@ -667,6 +671,28 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "multiple": false
       },
       {
+        "flag": "--integrations",
+        "summary": "Third-party integrations SDK.",
+        "values": [
+          "nango",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--ecommerce",
+        "summary": "E-commerce platform SDK.",
+        "values": [
+          "medusa",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
         "flag": "--vector-db",
         "summary": "Vector database.",
         "values": [
@@ -736,6 +762,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "summary": "Observability provider.",
         "values": [
           "opentelemetry",
+          "signoz",
           "sentry",
           "grafana",
           "datadog",
@@ -1531,6 +1558,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "summary": "Python observability.",
         "values": [
           "opentelemetry",
+          "signoz",
           "prometheus-client",
           "none"
         ],
@@ -1797,6 +1825,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "summary": "Go observability.",
         "values": [
           "opentelemetry",
+          "signoz",
           "prometheus",
           "none"
         ],

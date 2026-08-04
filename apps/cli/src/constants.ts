@@ -70,6 +70,8 @@ export const ADDON_COMPATIBILITY = {
   biome: [],
   husky: [],
   lefthook: [],
+  knip: [],
+  gitleaks: [],
   turborepo: [],
   starlight: [],
   ultracite: [],
@@ -82,6 +84,7 @@ export const ADDON_COMPATIBILITY = {
   wxt: [],
   devcontainer: [],
   "docker-compose": [],
+  kong: [],
   "github-actions": [],
   msw: [],
   storybook: [

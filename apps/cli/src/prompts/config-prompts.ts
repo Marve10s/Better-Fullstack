@@ -52,8 +52,10 @@ import type {
   Ecosystem,
   Effect,
   Email,
+  Ecommerce,
   Examples,
   FeatureFlags,
+  Integrations,
   FileUpload,
   Forms,
   Frontend,
@@ -188,7 +190,9 @@ import {
   getDotnetTestingChoice,
   getDotnetWebFrameworkChoice,
 } from "./dotnet-ecosystem";
+import { getEcommerceChoice } from "./ecommerce";
 import { getEcosystemChoice } from "./ecosystem";
+import { getIntegrationsChoice } from "./integrations";
 import { getEffectChoice } from "./effect";
 import {
   getElixirApiChoice,
@@ -363,6 +367,8 @@ type PromptGroupResults = {
   logging: Logging;
   observability: Observability;
   featureFlags: FeatureFlags;
+  integrations: Integrations;
+  ecommerce: Ecommerce;
   analytics: Analytics;
   cms: CMS;
   caching: Caching;
@@ -545,6 +551,8 @@ const CONFIG_PROMPT_ENTRY_KEY_MAP = {
   logging: true,
   observability: true,
   featureFlags: true,
+  integrations: true,
+  ecommerce: true,
   analytics: true,
   cms: true,
   caching: true,
@@ -942,7 +950,12 @@ export async function gatherConfig(
       if (results.ecosystem !== "typescript") {
         const nonTypeScriptAddons = (flags.addons ?? []).filter(
           (addon): addon is Addons =>
-            addon === "docker-compose" || addon === "devcontainer" || addon === "github-actions",
+            addon === "docker-compose" ||
+            addon === "devcontainer" ||
+            addon === "gitleaks" ||
+            addon === "kong" ||
+            addon === "github-actions" ||
+            (results.ecosystem === "react-native" && addon === "knip"),
         );
         return Promise.resolve(nonTypeScriptAddons);
       }
@@ -1053,6 +1066,15 @@ export async function gatherConfig(
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as FeatureFlags);
       return Promise.resolve(flags.featureFlags || "none") as Promise<FeatureFlags>;
     },
+    integrations: ({ results }) =>
+      getIntegrationsChoice(
+        flags.integrations,
+        results.backend,
+        results.ecosystem,
+        results.runtime,
+      ),
+    ecommerce: ({ results }) =>
+      getEcommerceChoice(flags.ecommerce, results.backend, results.ecosystem),
     analytics: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as Analytics);
       return Promise.resolve(flags.analytics || "none") as Promise<Analytics>;
@@ -1705,6 +1727,8 @@ export async function gatherConfig(
     logging: result.logging,
     observability: result.observability,
     featureFlags: result.featureFlags,
+    integrations: result.integrations,
+    ecommerce: result.ecommerce,
     analytics: result.analytics,
     cms: result.cms,
     caching: result.caching,

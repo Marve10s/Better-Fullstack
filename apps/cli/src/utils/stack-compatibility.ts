@@ -34,7 +34,7 @@ function getProjectBackendFromCompatibility(backend: string): string {
   return backend.startsWith("self-") ? "self" : backend;
 }
 
-function hasSelectedTypeScriptBackendPart(config: Partial<ProjectConfig>): boolean {
+export function hasSelectedTypeScriptBackendPart(config: Partial<ProjectConfig>): boolean {
   return (
     config.stackParts?.some(
       (part) =>
@@ -94,6 +94,8 @@ export function buildCompatibilityInputFromConfig(
     logging: asString(config.logging),
     observability: asString(config.observability),
     featureFlags: asString(config.featureFlags),
+    integrations: asString(config.integrations),
+    ecommerce: asString(config.ecommerce),
     analytics: asString(config.analytics),
     backendLibraries: asString(config.effect),
     stateManagement: asString(config.stateManagement),

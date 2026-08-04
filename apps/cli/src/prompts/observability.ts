@@ -1,7 +1,7 @@
 import type { Backend, Ecosystem, Observability } from "../types";
+import type { PromptSingleResolution } from "./prompt-contract";
 
 import { exitCancelled } from "../utils/errors";
-import type { PromptSingleResolution } from "./prompt-contract";
 import { isCancel, navigableSelect } from "./navigable";
 
 const OBSERVABILITY_PROMPT_OPTIONS = [
@@ -9,6 +9,11 @@ const OBSERVABILITY_PROMPT_OPTIONS = [
     value: "opentelemetry" as const,
     label: "OpenTelemetry",
     hint: "Observability framework for traces, metrics, and logs",
+  },
+  {
+    value: "signoz" as const,
+    label: "SigNoz",
+    hint: "OpenTelemetry-native observability with SigNoz Cloud or self-hosting",
   },
   {
     value: "sentry" as const,

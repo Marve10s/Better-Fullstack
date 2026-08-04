@@ -1,6 +1,7 @@
 import { getLocalWebDevPort, type ProjectConfig } from "@better-fullstack/types";
 
 import type { VirtualFileSystem } from "../core/virtual-fs";
+
 import { getGraphBackendConnection, hasWebFrontend } from "../utils/graph-backend";
 
 export interface EnvVariable {
@@ -176,7 +177,13 @@ function buildClientVars(
           condition: true,
         },
       );
-    } else if (hasVinext || hasReactRouter || hasReactVite || hasTanStackRouter || hasTanStackStart) {
+    } else if (
+      hasVinext ||
+      hasReactRouter ||
+      hasReactVite ||
+      hasTanStackRouter ||
+      hasTanStackStart
+    ) {
       vars.push({
         key: "VITE_CLERK_PUBLISHABLE_KEY",
         value: "",
@@ -571,6 +578,7 @@ function buildClientVars(
 function buildNativeVars(
   frontend: string[],
   backend: ProjectConfig["backend"],
+  addons: ProjectConfig["addons"],
   auth: ProjectConfig["auth"],
   payments: ProjectConfig["payments"],
   mobilePush: ProjectConfig["mobilePush"],
@@ -582,6 +590,10 @@ function buildNativeVars(
   if (backend === "self") {
     // Both TanStack Start and Next.js use port 3001 for fullstack
     serverUrl = "http://localhost:3001";
+  }
+
+  if (addons.includes("kong") && backend !== "convex") {
+    serverUrl = "http://localhost:8000";
   }
 
   if (backend === "convex") {
@@ -836,6 +848,8 @@ function buildServerVars(
   observability: ProjectConfig["observability"],
   rateLimit: ProjectConfig["rateLimit"],
   featureFlags: ProjectConfig["featureFlags"],
+  integrations: ProjectConfig["integrations"],
+  ecommerce: ProjectConfig["ecommerce"],
   jobQueue: ProjectConfig["jobQueue"],
   caching: ProjectConfig["caching"],
   search: ProjectConfig["search"],
@@ -1166,6 +1180,24 @@ function buildServerVars(
       comment: "PayPal environment - use 'sandbox' or 'production'",
     },
     {
+      key: "XENDIT_SECRET_KEY",
+      value: "xnd_development_your_secret_key",
+      condition: payments === "xendit",
+      comment: "Xendit server API key - never expose this value to the browser",
+    },
+    {
+      key: "XENDIT_WEBHOOK_TOKEN",
+      value: "",
+      condition: payments === "xendit",
+      comment: "Xendit webhook verification token from Webhook settings",
+    },
+    {
+      key: "XENDIT_API_URL",
+      value: "https://api.xendit.co",
+      condition: payments === "xendit",
+      comment: "Xendit API base URL",
+    },
+    {
       key: "DODO_PAYMENTS_API_KEY",
       value: "",
       condition: payments === "dodo",
@@ -1482,6 +1514,25 @@ function buildServerVars(
       comment: "OTLP exporter endpoint (Jaeger, OTEL Collector, Tempo, etc.)",
     },
     {
+      key: "OTEL_SERVICE_NAME",
+      value: `${projectName}-server`,
+      condition: observability === "signoz",
+      comment: "Service name shown in SigNoz",
+    },
+    {
+      key: "OTEL_EXPORTER_OTLP_ENDPOINT",
+      value: "http://localhost:4318",
+      condition: observability === "signoz",
+      comment: "SigNoz OTLP endpoint; use the regional cloud ingestion endpoint for SigNoz Cloud",
+    },
+    {
+      key: "OTEL_EXPORTER_OTLP_HEADERS",
+      value: "",
+      condition: observability === "signoz",
+      comment:
+        "SigNoz Cloud: signoz-ingestion-key=<your-key>; leave empty for self-hosted SigNoz",
+    },
+    {
       key: "SENTRY_DSN",
       value: "",
       condition: observability === "sentry",
@@ -1582,6 +1633,30 @@ function buildServerVars(
       value: "https://cdn.growthbook.io",
       condition: featureFlags === "growthbook",
       comment: "GrowthBook API host URL",
+    },
+    {
+      key: "NANGO_SECRET_KEY",
+      value: "nango_secret_your_key",
+      condition: integrations === "nango",
+      comment: "Nango environment secret key",
+    },
+    {
+      key: "NANGO_HOST",
+      value: "",
+      condition: integrations === "nango",
+      comment: "Optional Nango self-hosted instance URL (omit for Nango Cloud)",
+    },
+    {
+      key: "MEDUSA_BACKEND_URL",
+      value: "http://localhost:9000",
+      condition: ecommerce === "medusa",
+      comment: "URL of the existing Medusa backend",
+    },
+    {
+      key: "MEDUSA_PUBLISHABLE_KEY",
+      value: "pk_your_publishable_key",
+      condition: ecommerce === "medusa",
+      comment: "Medusa store publishable API key",
     },
     {
       key: "GROWTHBOOK_CLIENT_KEY",
@@ -2136,6 +2211,7 @@ export function processEnvVariables(vfs: VirtualFileSystem, config: ProjectConfi
       const nativeVars = buildNativeVars(
         frontend,
         backend,
+        config.addons,
         auth,
         payments,
         config.mobilePush,
@@ -2196,6 +2272,8 @@ export function processEnvVariables(vfs: VirtualFileSystem, config: ProjectConfi
     observability,
     config.rateLimit,
     config.featureFlags,
+    config.integrations,
+    config.ecommerce,
     config.jobQueue,
     config.caching,
     config.search,

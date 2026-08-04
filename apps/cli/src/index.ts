@@ -116,6 +116,8 @@ export async function createVirtual(
       logging: options.logging || "none",
       observability: options.observability || "none",
       featureFlags: options.featureFlags || "none",
+      integrations: options.integrations || "none",
+      ecommerce: options.ecommerce || "none",
       analytics: options.analytics || "none",
       mobileNavigation: options.mobileNavigation || (hasNativeFrontend ? "expo-router" : "none"),
       mobileUI: options.mobileUI || "none",
@@ -249,6 +251,21 @@ export async function createVirtual(
       config.stackParts = options.stackParts;
     }
     applyEffectBackendDefaults(config, new Set(Object.keys(options)));
+
+    const hasLegacyContainerAddon =
+      !config.stackParts &&
+      (config.addons ?? []).some(
+        (addon) => addon === "docker-compose" || addon === "devcontainer" || addon === "kong",
+      );
+    if (config.integrations === "nango" || config.payments !== "none" || hasLegacyContainerAddon) {
+      const [{ validateConfigForProgrammaticUse }, { runWithContextAsync }] = await Promise.all([
+        import("./utils/config-validation"),
+        import("./utils/context"),
+      ]);
+      await runWithContextAsync({ silent: true }, async () =>
+        validateConfigForProgrammaticUse(config),
+      );
+    }
 
     const { generateVirtualProject: generate, EMBEDDED_TEMPLATES } =
       await import("@better-fullstack/template-generator");

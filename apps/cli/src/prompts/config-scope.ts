@@ -103,7 +103,7 @@ const typescriptSections = [
   {
     id: "content",
     label: "Content, Analytics & i18n",
-    promptKeys: ["cms", "analytics", "i18n", "featureFlags"],
+    promptKeys: ["cms", "analytics", "i18n", "featureFlags", "integrations", "ecommerce"],
   },
   {
     id: "deploy",

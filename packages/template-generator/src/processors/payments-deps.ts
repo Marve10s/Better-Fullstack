@@ -32,6 +32,14 @@ export function processPaymentsDeps(vfs: VirtualFileSystem, config: ProjectConfi
   const webPath = getWebPackagePath(frontend, backend);
   const serverPath = getServerPackagePath(frontend, backend);
 
+  if (payments === "xendit") {
+    // The official xendit-node SDK does not currently expose Payment Sessions.
+    // The generated integration uses the documented REST endpoint and Web APIs,
+    // so it works in both Node-compatible servers and Cloudflare Workers without
+    // adding an unrelated SDK dependency.
+    return;
+  }
+
   if (payments === "polar") {
     if (backend === "convex") {
       if (vfs.exists(backendPath)) {
@@ -57,7 +65,7 @@ export function processPaymentsDeps(vfs: VirtualFileSystem, config: ProjectConfi
 
       return;
     }
-    
+
     if (vfs.exists(authPath)) {
       addPackageDependency({
         vfs,

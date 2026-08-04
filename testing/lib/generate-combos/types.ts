@@ -51,6 +51,8 @@ export const TEMPLATE_FINGERPRINT_KEYS = [
   "logging",
   "observability",
   "featureFlags",
+  "integrations",
+  "ecommerce",
   "analytics",
   "effect",
   "stateManagement",

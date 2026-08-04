@@ -58,6 +58,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://developer.paypal.com/sdk/js/",
     githubUrl: "https://github.com/paypal/paypal-js",
   },
+  xendit: {
+    docsUrl: "https://docs.xendit.co/apidocs/create-session",
+    githubUrl: "https://github.com/xendit/xendit-node",
+  },
   electron: {
     docsUrl: "https://www.electronjs.org/docs/latest/",
     githubUrl: "https://github.com/electron/electron",
@@ -509,6 +513,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://docs.docker.com/compose/",
     githubUrl: "https://github.com/docker/compose",
   },
+  kong: {
+    docsUrl: "https://developer.konghq.com/gateway/db-less-mode/",
+    githubUrl: "https://github.com/Kong/kong",
+  },
   devcontainer: {
     docsUrl: "https://containers.dev/",
     githubUrl: "https://github.com/devcontainers/spec",
@@ -775,6 +783,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://opentelemetry.io/docs/",
     githubUrl: "https://github.com/open-telemetry/opentelemetry-js",
   },
+  signoz: {
+    docsUrl: "https://signoz.io/docs/instrumentation/javascript/opentelemetry-nodejs/",
+    githubUrl: "https://github.com/SigNoz/signoz",
+  },
   sentry: {
     docsUrl: "https://docs.sentry.io/",
     githubUrl: "https://github.com/getsentry/sentry-javascript",
@@ -799,6 +811,14 @@ const BASE_LINKS: LinkMap = {
   growthbook: {
     docsUrl: "https://docs.growthbook.io/",
     githubUrl: "https://github.com/growthbook/growthbook",
+  },
+  nango: {
+    docsUrl: "https://nango.dev/docs/reference/backend/backend-sdk/node",
+    githubUrl: "https://github.com/NangoHQ/nango",
+  },
+  medusa: {
+    docsUrl: "https://docs.medusajs.com/resources/js-sdk",
+    githubUrl: "https://github.com/medusajs/medusa",
   },
   posthog: { docsUrl: "https://posthog.com/docs", githubUrl: "https://github.com/PostHog/posthog" },
   launchdarkly: {
@@ -1002,6 +1022,11 @@ const BASE_LINKS: LinkMap = {
   biome: {
     docsUrl: "https://biomejs.dev/guides/getting-started/",
     githubUrl: "https://github.com/biomejs/biome",
+  },
+  knip: { docsUrl: "https://knip.dev/", githubUrl: "https://github.com/webpro-nl/knip" },
+  gitleaks: {
+    docsUrl: "https://gitleaks.io/",
+    githubUrl: "https://github.com/gitleaks/gitleaks",
   },
   oxlint: {
     docsUrl: "https://oxc.rs/docs/guide/usage/linter.html",

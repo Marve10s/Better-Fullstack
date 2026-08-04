@@ -4,6 +4,9 @@ import pc from "picocolors";
 import type { CLIInput, Database, DatabaseSetup, Frontend, ProjectConfig, Runtime } from "../types";
 
 import {
+  getDisabledReason,
+  hasSignozSupportedGoServerTarget,
+  isSignozSupportedPythonWebFramework,
   normalizeCapabilitySelection,
   stackGraphToLegacyProjectConfigForEcosystem,
   validateStackParts,
@@ -11,6 +14,7 @@ import {
 import {
   ensureSingleWebAndNative,
   isWebFrontend,
+  validateAddonCompatibility,
   validateAddonsAgainstFrontends,
   validateApiFrontendCompatibility,
   validateExamplesCompatibility,
@@ -33,6 +37,10 @@ import { isSilent } from "./context";
 import { constraintError, incompatibilityError, missingRequirementError } from "./error-formatter";
 import { exitWithError } from "./errors";
 import { validatePeerDependencies } from "./peer-dependency-validator";
+import {
+  buildCompatibilityInputFromConfig,
+  hasSelectedTypeScriptBackendPart,
+} from "./stack-compatibility";
 
 const INTLAYER_COMPATIBLE_FRONTENDS = new Set<Frontend>([
   "next",
@@ -42,6 +50,61 @@ const INTLAYER_COMPATIBLE_FRONTENDS = new Set<Frontend>([
   "react-router",
   "react-vite",
 ]);
+
+function validateIntegrationsConstraints(config: Partial<ProjectConfig>) {
+  if (config.integrations !== "nango") return;
+
+  const compatibilityConfig =
+    config.stackParts && hasSelectedTypeScriptBackendPart(config)
+      ? {
+          ...config,
+          ...stackGraphToLegacyProjectConfigForEcosystem(config as ProjectConfig, "typescript"),
+          ecosystem: "typescript" as const,
+        }
+      : config;
+  const reason = getDisabledReason(
+    buildCompatibilityInputFromConfig(compatibilityConfig),
+    "integrations",
+    "nango",
+  );
+
+  if (reason) throw new Error(reason);
+}
+
+const CONTAINER_ADDON_VALUES = ["docker-compose", "devcontainer", "kong"] as const;
+
+function validateContainerAddonConstraints(config: Partial<ProjectConfig>) {
+  if (config.stackParts && config.stackParts.length > 0) return;
+  const containerAddons = (config.addons ?? []).filter((addon) =>
+    (CONTAINER_ADDON_VALUES as readonly string[]).includes(addon),
+  );
+  if (containerAddons.length === 0) return;
+
+  const addonConfig = getAddonValidationConfig(config);
+  for (const addon of containerAddons) {
+    const { isCompatible, reason } = validateAddonCompatibility(
+      addon,
+      addonConfig.frontend ?? [],
+      addonConfig.auth,
+      addonConfig.backend,
+      addonConfig.runtime,
+      addonConfig.ecosystem,
+      addonConfig.rustFrontend,
+      addonConfig.javaWebFramework,
+      addonConfig.database,
+      addonConfig.api,
+      addonConfig.pythonWebFramework,
+      addonConfig.goWebFramework,
+      addonConfig.rustWebFramework,
+      addonConfig.rustApi,
+      addonConfig.goApi,
+      addonConfig.javaApi,
+    );
+    if (!isCompatible) {
+      throw new Error(reason ?? `${addon} is not compatible with this configuration`);
+    }
+  }
+}
 
 function validateDatabaseOrmAuth(cfg: Partial<ProjectConfig>, flags?: Set<string>) {
   const db = cfg.database;
@@ -998,20 +1061,72 @@ function validateEmailConstraints(config: Partial<ProjectConfig>) {
 
 function validateObservabilityConstraints(config: Partial<ProjectConfig>) {
   if (!config.observability || config.observability === "none") return;
-  if (config.ecosystem !== "typescript" && config.observability !== "sentry") {
+  const effective =
+    config.stackParts && hasSelectedTypeScriptBackendPart(config)
+      ? {
+          ...config,
+          ...stackGraphToLegacyProjectConfigForEcosystem(config as ProjectConfig, "typescript"),
+          ecosystem: "typescript" as const,
+        }
+      : config;
+  if (effective.observability === "signoz" && effective.runtime === "workers") {
+    incompatibilityError({
+      message: "SigNoz tracing currently requires the Node.js or Bun runtime.",
+      provided: { observability: "signoz", runtime: "workers" },
+      suggestions: ["Use --runtime bun", "Use --runtime node", "Use --observability none"],
+    });
+  }
+  if (
+    effective.observability === "signoz" &&
+    effective.backend === "self" &&
+    effective.webDeploy === "cloudflare"
+  ) {
+    incompatibilityError({
+      message: "SigNoz's Node SDK is incompatible with Cloudflare-hosted fullstack apps.",
+      provided: { observability: "signoz", backend: "self", "web-deploy": "cloudflare" },
+      suggestions: ["Use a Node.js-compatible web deployment", "Use --observability none"],
+    });
+  }
+  if (
+    effective.observability === "signoz" &&
+    (effective.backend === "none" || effective.backend === "convex")
+  ) {
+    incompatibilityError({
+      message: "SigNoz tracing requires a generated server target.",
+      provided: { observability: "signoz", backend: effective.backend },
+      suggestions: ["Use a standalone backend", "Use --observability none"],
+    });
+  }
+  if (
+    effective.observability === "signoz" &&
+    effective.backend === "self" &&
+    effective.frontend?.some((frontend) => frontend === "tanstack-start" || frontend === "astro")
+  ) {
+    incompatibilityError({
+      message:
+        "SigNoz tracing is not yet bootstrapped for TanStack Start or Astro fullstack apps.",
+      provided: {
+        observability: "signoz",
+        backend: "self",
+        frontend: effective.frontend.join(" "),
+      },
+      suggestions: ["Use a standalone backend", "Use --observability none"],
+    });
+  }
+  if (effective.ecosystem !== "typescript" && effective.observability !== "sentry") {
     incompatibilityError({
       message: "Only Sentry observability is available for non-TypeScript ecosystems.",
       provided: {
-        ecosystem: config.ecosystem ?? "typescript",
-        observability: config.observability,
+        ecosystem: effective.ecosystem ?? "typescript",
+        observability: effective.observability ?? config.observability,
       },
       suggestions: ["Use --observability sentry", "Use --observability none"],
     });
   }
   if (
-    config.ecosystem === "java" &&
-    config.observability === "sentry" &&
-    config.javaBuildTool === "none"
+    effective.ecosystem === "java" &&
+    effective.observability === "sentry" &&
+    effective.javaBuildTool === "none"
   ) {
     incompatibilityError({
       message:
@@ -1175,6 +1290,20 @@ export function validatePythonExpansionConstraints(config: Partial<ProjectConfig
 
   config = pythonConfig;
 
+  if (
+    config.pythonObservability === "signoz" &&
+    !isSignozSupportedPythonWebFramework(config.pythonWebFramework ?? "none")
+  ) {
+    incompatibilityError({
+      message: "SigNoz request tracing for Python is currently wired for FastAPI.",
+      provided: {
+        "python-web-framework": config.pythonWebFramework ?? "none",
+        "python-observability": "signoz",
+      },
+      suggestions: ["Use --python-web-framework fastapi", "Set --python-observability none"],
+    });
+  }
+
   if (config.pythonOrm === "pymongo" && config.database !== "mongodb") {
     incompatibilityError({
       message: "PyMongo requires --database mongodb.",
@@ -1285,6 +1414,39 @@ export function validatePythonExpansionConstraints(config: Partial<ProjectConfig
   }
 }
 
+export function validateGoExpansionConstraints(config: Partial<ProjectConfig>) {
+  const goConfig =
+    config.ecosystem === "go"
+      ? config
+      : config.stackParts?.some(
+            (part) =>
+              part.role === "backend" && part.ecosystem === "go" && part.source !== "provided",
+          )
+        ? stackGraphToLegacyProjectConfigForEcosystem(config as ProjectConfig, "go")
+        : undefined;
+  if (!goConfig) return;
+
+  if (
+    goConfig.goObservability === "signoz" &&
+    !hasSignozSupportedGoServerTarget(goConfig)
+  ) {
+    incompatibilityError({
+      message:
+        "SigNoz request tracing for Go requires an instrumented HTTP, gRPC, or Go Better Auth server target.",
+      provided: {
+        "go-web-framework": goConfig.goWebFramework ?? "none",
+        "go-observability": "signoz",
+      },
+      suggestions: [
+        "Use --go-web-framework gin",
+        "Use --go-web-framework stdlib",
+        "Use --go-api grpc-go",
+        "Set --go-observability none",
+      ],
+    });
+  }
+}
+
 function validateI18nConstraints(config: Partial<ProjectConfig>) {
   if (config.i18n !== "intlayer") return;
 
@@ -1305,6 +1467,33 @@ function validateI18nConstraints(config: Partial<ProjectConfig>) {
       ],
     });
   }
+}
+
+function getAddonValidationConfig(config: Partial<ProjectConfig>): Partial<ProjectConfig> {
+  const graphBackend = config.stackParts?.find(
+    (part) =>
+      part.role === "backend" &&
+      !part.ownerPartId &&
+      part.source !== "provided" &&
+      part.ecosystem !== "typescript" &&
+      part.ecosystem !== "react-native" &&
+      part.ecosystem !== "universal",
+  );
+  if (!graphBackend) return config;
+  const backendEcosystem = graphBackend.ecosystem;
+  if (backendEcosystem === "universal") return config;
+
+  const projected = stackGraphToLegacyProjectConfigForEcosystem(
+    config as ProjectConfig,
+    backendEcosystem,
+  );
+  return {
+    ...projected,
+    // Infrastructure validation belongs to the projected backend, while the
+    // frontend compatibility checks still describe the TypeScript web app.
+    frontend: config.frontend ?? projected.frontend,
+    addons: config.addons ?? projected.addons,
+  };
 }
 
 export function validateFullConfig(
@@ -1336,6 +1525,7 @@ export function validateFullConfig(
   validateApiConstraints(config, options);
   validatePythonApiConstraints(config);
   validatePythonExpansionConstraints(config);
+  validateGoExpansionConstraints(config);
   validateRustExpansionCompatibility(config);
   validateEmailConstraints(config);
   validateObservabilityConstraints(config);
@@ -1346,6 +1536,7 @@ export function validateFullConfig(
   validateElixirConstraints(config);
   validateScopedLibraryFlags(config);
   validateI18nConstraints(config);
+  validateIntegrationsConstraints(config);
 
   const hasGraphBackend = config.stackParts?.some(
     (part) =>
@@ -1428,17 +1619,24 @@ export function validateFullConfig(
   }
 
   if (config.addons && config.addons.length > 0) {
+    const addonConfig = getAddonValidationConfig(config);
     validateAddonsAgainstFrontends(
       config.addons,
-      config.frontend,
-      config.auth,
-      config.backend,
-      config.runtime,
-      config.ecosystem,
-      config.rustFrontend,
-      config.javaWebFramework,
-      config.database,
-      config.api,
+      addonConfig.frontend,
+      addonConfig.auth,
+      addonConfig.backend,
+      addonConfig.runtime,
+      addonConfig.ecosystem,
+      addonConfig.rustFrontend,
+      addonConfig.javaWebFramework,
+      addonConfig.database,
+      addonConfig.api,
+      addonConfig.pythonWebFramework,
+      addonConfig.goWebFramework,
+      addonConfig.rustWebFramework,
+      addonConfig.rustApi,
+      addonConfig.goApi,
+      addonConfig.javaApi,
     );
     config.addons = [...new Set(config.addons)];
   }
@@ -1484,6 +1682,8 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
       }
     }
 
+    validateIntegrationsConstraints(config);
+    validateContainerAddonConstraints(config);
     validateEcosystemAuthCompatibility(config);
     validateDatabaseOrmAuth(config);
     validateEffectBackendConstraints(config);
@@ -1495,6 +1695,7 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
     validateApiFrontendCompatibility(config.api, config.frontend, config.astroIntegration);
     validatePythonApiConstraints(config);
     validatePythonExpansionConstraints(config);
+    validateGoExpansionConstraints(config);
     validateEmailConstraints(config);
     validateObservabilityConstraints(config);
     validateCachingConstraints(config);
@@ -1509,17 +1710,24 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
     validatePaymentsCompatibility(config.payments, config.auth, config.backend, config.frontend);
 
     if (config.addons && config.addons.length > 0) {
+      const addonConfig = getAddonValidationConfig(config);
       validateAddonsAgainstFrontends(
         config.addons,
-        config.frontend,
-        config.auth,
-        config.backend,
-        config.runtime,
-        config.ecosystem,
-        config.rustFrontend,
-        config.javaWebFramework,
-        config.database,
-        config.api,
+        addonConfig.frontend,
+        addonConfig.auth,
+        addonConfig.backend,
+        addonConfig.runtime,
+        addonConfig.ecosystem,
+        addonConfig.rustFrontend,
+        addonConfig.javaWebFramework,
+        addonConfig.database,
+        addonConfig.api,
+        addonConfig.pythonWebFramework,
+        addonConfig.goWebFramework,
+        addonConfig.rustWebFramework,
+        addonConfig.rustApi,
+        addonConfig.goApi,
+        addonConfig.javaApi,
       );
     }
 
