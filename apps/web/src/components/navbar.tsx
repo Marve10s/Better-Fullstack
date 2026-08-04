@@ -10,10 +10,8 @@ import {
   TbBrandGithub as Github,
   TbStack3 as Layers3,
   TbLanguage as Languages,
-  TbLibraryPlus as LibraryPlus,
   TbMenu2 as Menu,
   TbMoon as Moon,
-  TbNews as Newspaper,
   TbPlug as Plug,
   TbSparkles as Sparkles,
   TbStar as Star,
@@ -23,7 +21,6 @@ import { motion, LayoutGroup, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 
 import { formatCompactStat, useProjectStats } from "@/components/home/hero-stats";
-import { LaunchRadarButton } from "@/components/launch-radar-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
   CREATION_MODE_INDICATOR_ID,
@@ -43,7 +40,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { type BuilderMode, useBuilderMode } from "@/lib/builder-mode-bridge";
 import { LOCALE_LABELS } from "@/lib/i18n/locales";
-import { LAUNCH_RADAR_TOTAL, requestLaunchRadarOpen } from "@/lib/launch-radar";
 import { isStackShareSlug } from "@/lib/stack-share-slugs";
 import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
@@ -478,20 +474,6 @@ function MobileNavMenu({ onBuilder }: { onBuilder: boolean }) {
               <Gauge className="size-4" />
               {m.navBenchmark()}
             </DropdownMenuItem>
-            <DropdownMenuItem render={<Link to="/blog" />} className={MOBILE_MENU_ITEM_CLASS}>
-              <Newspaper className="size-4" />
-              {m.navBlog()}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              render={<Link to="/" hash="whats-new" onClick={requestLaunchRadarOpen} />}
-              className={MOBILE_MENU_ITEM_CLASS}
-            >
-              <LibraryPlus className="size-4 text-[#FF5C8A]" />
-              <span>{m.navUpdates()}</span>
-              <span className="ml-auto rounded-full bg-[#18D5FF]/10 px-2 py-0.5 font-mono text-[9px] text-[#06647A] dark:text-[#18D5FF]">
-                {LAUNCH_RADAR_TOTAL} {m.builderNewBadge().toLowerCase()}
-              </span>
-            </DropdownMenuItem>
           </div>
         </DropdownMenuGroup>
 
@@ -597,9 +579,6 @@ export function Navbar() {
                 <Link to="/benchmark" className={NAV_LINK_CLASS} activeProps={DOCS_ACTIVE_PROPS}>
                   {m.navBenchmark()}
                 </Link>
-                <Link to="/blog" className={NAV_LINK_CLASS} activeProps={DOCS_ACTIVE_PROPS}>
-                  {m.navBlog()}
-                </Link>
                 <DocsMenu />
               </div>
             </>
@@ -621,7 +600,6 @@ export function Navbar() {
         )}
 
         <div className="hidden shrink-0 items-center gap-3 lg:flex">
-          <LaunchRadarButton />
           <GithubStarButton />
           <ThemeToggle />
           <LocaleMenu />
