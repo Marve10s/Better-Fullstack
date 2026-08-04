@@ -4,6 +4,9 @@ import (
 {{#if (or (eq goWebFramework "chi") (eq goWebFramework "stdlib"))}}
 	"encoding/json"
 {{/if}}
+{{#if (eq goApi "grpc-go")}}
+	"errors"
+{{/if}}
 {{#if (eq goLogging "slog")}}
 	"log/slog"
 {{/if}}
@@ -468,7 +471,7 @@ func main() {
 		}
 
 		proto.RegisterGreeterServer(grpcServer, &proto.GreeterService{})
-		if err := grpcServer.Serve(lis); err != nil {
+		if err := grpcServer.Serve(lis); err != nil && !errors.Is(err, grpc.ErrServerStopped) {
 {{#if (eq goLogging "zap")}}
 			logger.Fatal("Failed to serve gRPC", zap.Error(err))
 {{else if (eq goLogging "zerolog")}}
