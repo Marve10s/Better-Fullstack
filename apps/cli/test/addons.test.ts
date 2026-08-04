@@ -1546,6 +1546,27 @@ describe("Addon Configurations", () => {
           }
         }
       });
+
+      it("should reject Kong for legacy virtual configs without a backend service", async () => {
+        const result = await createVirtual({
+          projectName: "kong-legacy-no-backend",
+          addons: ["kong"],
+          frontend: ["next"],
+          backend: "none",
+          runtime: "none",
+          database: "none",
+          orm: "none",
+          auth: "none",
+          api: "none",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+        });
+
+        expect(result.success).toBe(false);
+        expect(result.error).toContain("Kong Gateway requires a TypeScript backend service");
+      });
     });
 
     describe("Docker Compose Addon", () => {

@@ -143,8 +143,9 @@ describe("Cross-ecosystem graph generation", () => {
     expect(devcontainer.runServices).toEqual(["devcontainer", "kong", "web", "app"]);
     expect(devcontainer.forwardPorts).toEqual(expect.arrayContaining([3001, 8000, 8001]));
     expect(devcontainer.postCreateCommand).toBe(
-      `bun install && cd "services/api" && python -m pip install -e '.[dev]'`,
+      `npm install -g bun && bun install && cd "services/api" && python -m pip install -e '.[dev]'`,
     );
+    expect(devcontainer.features).toEqual({ "ghcr.io/devcontainers/features/node:1": {} });
   });
 
   it("uses the published graph backend port when Compose does not include Kong", async () => {

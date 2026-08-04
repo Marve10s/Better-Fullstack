@@ -14,6 +14,7 @@ import {
 import {
   ensureSingleWebAndNative,
   isWebFrontend,
+  validateAddonCompatibility,
   validateAddonsAgainstFrontends,
   validateApiFrontendCompatibility,
   validateExamplesCompatibility,
@@ -68,6 +69,41 @@ function validateIntegrationsConstraints(config: Partial<ProjectConfig>) {
   );
 
   if (reason) throw new Error(reason);
+}
+
+const CONTAINER_ADDON_VALUES = ["docker-compose", "devcontainer", "kong"] as const;
+
+function validateContainerAddonConstraints(config: Partial<ProjectConfig>) {
+  if (config.stackParts && config.stackParts.length > 0) return;
+  const containerAddons = (config.addons ?? []).filter((addon) =>
+    (CONTAINER_ADDON_VALUES as readonly string[]).includes(addon),
+  );
+  if (containerAddons.length === 0) return;
+
+  const addonConfig = getAddonValidationConfig(config);
+  for (const addon of containerAddons) {
+    const { isCompatible, reason } = validateAddonCompatibility(
+      addon,
+      addonConfig.frontend ?? [],
+      addonConfig.auth,
+      addonConfig.backend,
+      addonConfig.runtime,
+      addonConfig.ecosystem,
+      addonConfig.rustFrontend,
+      addonConfig.javaWebFramework,
+      addonConfig.database,
+      addonConfig.api,
+      addonConfig.pythonWebFramework,
+      addonConfig.goWebFramework,
+      addonConfig.rustWebFramework,
+      addonConfig.rustApi,
+      addonConfig.goApi,
+      addonConfig.javaApi,
+    );
+    if (!isCompatible) {
+      throw new Error(reason ?? `${addon} is not compatible with this configuration`);
+    }
+  }
 }
 
 function validateDatabaseOrmAuth(cfg: Partial<ProjectConfig>, flags?: Set<string>) {
@@ -1639,6 +1675,7 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
     }
 
     validateIntegrationsConstraints(config);
+    validateContainerAddonConstraints(config);
     validateEcosystemAuthCompatibility(config);
     validateDatabaseOrmAuth(config);
     validateEffectBackendConstraints(config);

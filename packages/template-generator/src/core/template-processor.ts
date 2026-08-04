@@ -238,6 +238,25 @@ function getTypeScriptPostCreateCommand(packageManager: ProjectConfig["packageMa
   return "npm install";
 }
 
+function isGraphWebOnBackendImage(config: ProjectConfig): boolean {
+  const graphConfig = config as ProjectConfig & { graphWebFrontend?: boolean };
+  return config.ecosystem !== "typescript" && graphConfig.graphWebFrontend === true;
+}
+
+function getDevcontainerFeatures(config: ProjectConfig): Record<string, Record<string, never>> {
+  if (isGraphWebOnBackendImage(config)) {
+    return { "ghcr.io/devcontainers/features/node:1": {} };
+  }
+  return {};
+}
+
+function getGraphWebInstallCommand(packageManager: ProjectConfig["packageManager"]) {
+  if (packageManager === "bun") {
+    return "npm install -g bun && bun install";
+  }
+  return getTypeScriptPostCreateCommand(packageManager);
+}
+
 function getDevcontainerPostCreateCommand(config: ProjectConfig) {
   const graphConfig = config as ProjectConfig & {
     graphWebFrontend?: boolean;
@@ -264,7 +283,7 @@ function getDevcontainerPostCreateCommand(config: ProjectConfig) {
   }
 
   if (graphConfig.graphWebFrontend && graphConfig.graphBackendTargetPath && backendCommand) {
-    const webInstall = getTypeScriptPostCreateCommand(config.packageManager);
+    const webInstall = getGraphWebInstallCommand(config.packageManager);
     return `${webInstall} && cd ${JSON.stringify(graphConfig.graphBackendTargetPath)} && ${backendCommand}`;
   }
 
@@ -285,6 +304,10 @@ Handlebars.registerHelper("devcontainerRunServices", function (this: ProjectConf
 
 Handlebars.registerHelper("devcontainerImage", function (this: ProjectConfig) {
   return getDevcontainerImage(this);
+});
+
+Handlebars.registerHelper("devcontainerFeatures", function (this: ProjectConfig) {
+  return jsonHelper(getDevcontainerFeatures(this));
 });
 
 Handlebars.registerHelper("devcontainerPostCreateCommand", function (this: ProjectConfig) {

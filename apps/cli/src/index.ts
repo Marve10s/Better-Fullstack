@@ -252,9 +252,19 @@ export async function createVirtual(
     }
     applyEffectBackendDefaults(config, new Set(Object.keys(options)));
 
-    if (config.integrations === "nango") {
-      const { validateConfigForProgrammaticUse } = await import("./utils/config-validation");
-      validateConfigForProgrammaticUse(config);
+    const hasLegacyContainerAddon =
+      !config.stackParts &&
+      (config.addons ?? []).some(
+        (addon) => addon === "docker-compose" || addon === "devcontainer" || addon === "kong",
+      );
+    if (config.integrations === "nango" || hasLegacyContainerAddon) {
+      const [{ validateConfigForProgrammaticUse }, { runWithContextAsync }] = await Promise.all([
+        import("./utils/config-validation"),
+        import("./utils/context"),
+      ]);
+      await runWithContextAsync({ silent: true }, async () =>
+        validateConfigForProgrammaticUse(config),
+      );
     }
 
     const { generateVirtualProject: generate, EMBEDDED_TEMPLATES } =
