@@ -257,7 +257,7 @@ export async function createVirtual(
       (config.addons ?? []).some(
         (addon) => addon === "docker-compose" || addon === "devcontainer" || addon === "kong",
       );
-    if (config.integrations === "nango" || hasLegacyContainerAddon) {
+    if (config.integrations === "nango" || config.payments !== "none" || hasLegacyContainerAddon) {
       const [{ validateConfigForProgrammaticUse }, { runWithContextAsync }] = await Promise.all([
         import("./utils/config-validation"),
         import("./utils/context"),

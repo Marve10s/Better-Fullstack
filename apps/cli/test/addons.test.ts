@@ -1567,6 +1567,20 @@ describe("Addon Configurations", () => {
         expect(result.success).toBe(false);
         expect(result.error).toContain("Kong Gateway requires a TypeScript backend service");
       });
+
+      it("should reject Xendit payments for virtual configs without a backend", async () => {
+        const result = await createVirtual({
+          projectName: "xendit-legacy-no-backend",
+          frontend: ["next"],
+          backend: "none",
+          runtime: "none",
+          api: "none",
+          payments: "xendit",
+        });
+
+        expect(result.success).toBe(false);
+        expect(result.error).toContain("Xendit Payment Sessions require a standalone");
+      });
     });
 
     describe("Docker Compose Addon", () => {

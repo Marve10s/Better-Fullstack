@@ -830,6 +830,23 @@ describe("compatibility issue helpers", () => {
     });
   });
 
+  it("clears integrations when normalizing React Native stacks", () => {
+    const result = analyzeStackCompatibility({
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "react-native",
+      webFrontend: ["none"],
+      nativeFrontend: ["native-bare"],
+      backend: "hono",
+      integrations: "nango",
+    });
+
+    expect(result.adjustedStack.integrations).toBe("none");
+    expect(result.changes).toContainEqual({
+      category: "integrations",
+      message: "Integrations set to 'None' (React Native ecosystem)",
+    });
+  });
+
   it("routes promoted backend library disabled reasons through graph checks", () => {
     expect(
       getDisabledReason(

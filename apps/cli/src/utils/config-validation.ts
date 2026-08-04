@@ -1061,7 +1061,15 @@ function validateEmailConstraints(config: Partial<ProjectConfig>) {
 
 function validateObservabilityConstraints(config: Partial<ProjectConfig>) {
   if (!config.observability || config.observability === "none") return;
-  if (config.observability === "signoz" && config.runtime === "workers") {
+  const effective =
+    config.stackParts && hasSelectedTypeScriptBackendPart(config)
+      ? {
+          ...config,
+          ...stackGraphToLegacyProjectConfigForEcosystem(config as ProjectConfig, "typescript"),
+          ecosystem: "typescript" as const,
+        }
+      : config;
+  if (effective.observability === "signoz" && effective.runtime === "workers") {
     incompatibilityError({
       message: "SigNoz tracing currently requires the Node.js or Bun runtime.",
       provided: { observability: "signoz", runtime: "workers" },
@@ -1069,9 +1077,9 @@ function validateObservabilityConstraints(config: Partial<ProjectConfig>) {
     });
   }
   if (
-    config.observability === "signoz" &&
-    config.backend === "self" &&
-    config.webDeploy === "cloudflare"
+    effective.observability === "signoz" &&
+    effective.backend === "self" &&
+    effective.webDeploy === "cloudflare"
   ) {
     incompatibilityError({
       message: "SigNoz's Node SDK is incompatible with Cloudflare-hosted fullstack apps.",
@@ -1080,19 +1088,19 @@ function validateObservabilityConstraints(config: Partial<ProjectConfig>) {
     });
   }
   if (
-    config.observability === "signoz" &&
-    (config.backend === "none" || config.backend === "convex")
+    effective.observability === "signoz" &&
+    (effective.backend === "none" || effective.backend === "convex")
   ) {
     incompatibilityError({
       message: "SigNoz tracing requires a generated server target.",
-      provided: { observability: "signoz", backend: config.backend },
+      provided: { observability: "signoz", backend: effective.backend },
       suggestions: ["Use a standalone backend", "Use --observability none"],
     });
   }
   if (
-    config.observability === "signoz" &&
-    config.backend === "self" &&
-    config.frontend?.some((frontend) => frontend === "tanstack-start" || frontend === "astro")
+    effective.observability === "signoz" &&
+    effective.backend === "self" &&
+    effective.frontend?.some((frontend) => frontend === "tanstack-start" || frontend === "astro")
   ) {
     incompatibilityError({
       message:
@@ -1100,25 +1108,25 @@ function validateObservabilityConstraints(config: Partial<ProjectConfig>) {
       provided: {
         observability: "signoz",
         backend: "self",
-        frontend: config.frontend.join(" "),
+        frontend: effective.frontend.join(" "),
       },
       suggestions: ["Use a standalone backend", "Use --observability none"],
     });
   }
-  if (config.ecosystem !== "typescript" && config.observability !== "sentry") {
+  if (effective.ecosystem !== "typescript" && effective.observability !== "sentry") {
     incompatibilityError({
       message: "Only Sentry observability is available for non-TypeScript ecosystems.",
       provided: {
-        ecosystem: config.ecosystem ?? "typescript",
-        observability: config.observability,
+        ecosystem: effective.ecosystem ?? "typescript",
+        observability: effective.observability ?? config.observability,
       },
       suggestions: ["Use --observability sentry", "Use --observability none"],
     });
   }
   if (
-    config.ecosystem === "java" &&
-    config.observability === "sentry" &&
-    config.javaBuildTool === "none"
+    effective.ecosystem === "java" &&
+    effective.observability === "sentry" &&
+    effective.javaBuildTool === "none"
   ) {
     incompatibilityError({
       message:
