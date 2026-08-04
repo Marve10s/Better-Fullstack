@@ -27,7 +27,6 @@ import {
   TbHammer as Hammer,
   TbInfoCircle as InfoIcon,
   TbLink as Link,
-  TbLibraryPlus as LibraryPlus,
   TbLoader2 as Loader2,
   TbLayoutSidebar as PanelLeft,
   TbPencil as Pencil,
@@ -106,7 +105,6 @@ import {
   TECH_OPTIONS,
 } from "@/lib/constant";
 import { getLocalizedCategoryDisplayName, getLocalizedTechOption } from "@/lib/i18n/builder-copy";
-import { isLaunchRadarNewOption } from "@/lib/launch-radar";
 import {
   buildSavedStackEntry,
   loadSavedStacks,
@@ -162,7 +160,6 @@ type BuilderSearchEntry = {
   categoryKey: string;
   optionCategory?: keyof typeof TECH_OPTIONS;
   optionId?: string;
-  isNew?: boolean;
   searchIndex: string;
 };
 type GraphOptionContext = Omit<StackPartOptionContext, "role" | "ecosystem">;
@@ -359,11 +356,6 @@ function BuilderSearchField({
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-mono text-xs">{entry.name}</span>
-                  {entry.isNew ? (
-                    <span className="mt-1 inline-flex rounded-full bg-[#18D5FF]/10 px-1.5 py-0.5 font-mono text-[8px] font-semibold uppercase tracking-[0.12em] text-[#06647A] dark:text-[#18D5FF]">
-                      {m.builderNewBadge()}
-                    </span>
-                  ) : null}
                   {entry.context && (
                     <span className="mt-0.5 block truncate font-mono text-[10px] text-muted-foreground">
                       {entry.context}
@@ -2216,7 +2208,6 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
   const [, setLastChanges] = useState<Array<{ category: string; message: string }>>([]);
   const [isSaveInputVisible, setIsSaveInputVisible] = useState(false);
   const [savePresetName, setSavePresetName] = useState("");
-  const [showNewOptionsOnly, setShowNewOptionsOnly] = useState(false);
   const [isDownloadingProject, setIsDownloadingProject] = useState(false);
   const [sharePromptOpen, setSharePromptOpen] = useState(false);
   const [sharePromptMoment, setSharePromptMoment] = useState<ShareMoment>("run");
@@ -2239,13 +2230,6 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
   const lastAppliedStackString = useRef<string>("");
   const lastAppliedEcosystemRef = useRef<Ecosystem>(stack.ecosystem);
   const suppressCompatibilityToastRef = useRef(false);
-
-  useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("newOptions") === "1") {
-      setShowNewOptionsOnly(true);
-      setViewMode("command");
-    }
-  }, [setViewMode]);
 
   const scrollToTop = () => {
     scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
@@ -2348,7 +2332,6 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
   const builderSearchData = useMemo(() => {
     const groupsByCategory = new Map<string, RenderOptionGroup[]>();
     const entries: BuilderSearchEntry[] = [];
-    let availableNewOptionCount = 0;
 
     for (const categoryKey of displayedCategoryOrder) {
       if (categoryKey === "astroIntegration" || SHADCN_SUB_CATEGORIES.has(categoryKey)) {
@@ -2356,24 +2339,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
       }
       if (stack.ecosystem === "go" && categoryKey === "auth") continue;
 
-      const allGroups = getCategoryRenderGroups(stack, categoryKey as keyof typeof TECH_OPTIONS);
-      availableNewOptionCount += allGroups.reduce(
-        (total, group) =>
-          total +
-          group.options.filter((option) => isLaunchRadarNewOption(group.category, option.id))
-            .length,
-        0,
-      );
-      const groups = showNewOptionsOnly
-        ? allGroups
-            .map((group) => ({
-              ...group,
-              options: group.options.filter((option) =>
-                isLaunchRadarNewOption(group.category, option.id),
-              ),
-            }))
-            .filter((group) => group.options.length > 0)
-        : allGroups;
+      const groups = getCategoryRenderGroups(stack, categoryKey as keyof typeof TECH_OPTIONS);
       const categoryName = getLocalizedCategoryDisplayName(
         categoryKey,
         getCategoryDisplayName(categoryKey),
@@ -2401,7 +2367,6 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
             categoryKey,
             optionCategory: group.category,
             optionId: option.id,
-            isNew: isLaunchRadarNewOption(group.category, option.id),
             searchIndex: createBuilderSearchIndex([option.id, option.name, localizedOption.name]),
           });
         }
@@ -2411,9 +2376,8 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
     return {
       groupsByCategory,
       lookup: buildBuilderSearchLookup(entries),
-      availableNewOptionCount,
     };
-  }, [displayedCategoryOrder, showNewOptionsOnly, stack]);
+  }, [displayedCategoryOrder, stack]);
 
   // ─── URL generation ──────────────────────────────────────────────────────
 
@@ -3111,9 +3075,6 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                 )}
 
                 <div className="relative shrink-0">
-                  <span className="pointer-events-none absolute -top-2 right-1 z-10 rounded-full border border-[#18D5FF]/35 bg-fd-background px-1.5 py-px font-mono text-[7px] font-bold uppercase leading-none tracking-[0.14em] text-[#067087] shadow-sm dark:text-[#18D5FF]">
-                    {m.builderNewBadge()}
-                  </span>
                   <button
                     type="button"
                     onClick={handleDownloadProject}
@@ -3137,37 +3098,6 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                     </span>
                   </button>
                 </div>
-
-                {!isMultiMode && (
-                  <button
-                    type="button"
-                    data-testid="builder-new-filter"
-                    aria-pressed={showNewOptionsOnly}
-                    title={m.builderNewFilterTitle({
-                      count: builderSearchData.availableNewOptionCount,
-                      ecosystem: builderSearchEcosystemName,
-                    })}
-                    onClick={() => {
-                      setShowNewOptionsOnly((current) => !current);
-                      setViewMode("command");
-                    }}
-                    className={cn(
-                      "inline-flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-2.5 font-mono text-[9px] font-semibold uppercase tracking-[0.12em] transition-all",
-                      showNewOptionsOnly
-                        ? "border-[#18D5FF]/50 bg-[#18D5FF]/10 text-foreground shadow-[0_0_14px_rgba(24,213,255,0.1)]"
-                        : "border-border/55 bg-muted/30 text-muted-foreground hover:border-foreground/30 hover:text-foreground",
-                    )}
-                  >
-                    <LibraryPlus
-                      className={cn("size-3", showNewOptionsOnly && "text-[#FF5C8A]")}
-                      aria-hidden
-                    />
-                    <span className="hidden 2xl:inline">{m.builderNewFilter()}</span>
-                    <span className="tabular-nums">
-                      {builderSearchData.availableNewOptionCount}
-                    </span>
-                  </button>
-                )}
 
                 <div
                   className={cn(
@@ -3378,17 +3308,6 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                     onActiveStepChange={handleMultiActiveStepChange}
                   />
 
-                  {showNewOptionsOnly && builderSearchData.availableNewOptionCount === 0 ? (
-                    <div className="flex min-h-64 flex-col items-center justify-center px-5 text-center">
-                      <span className="flex size-11 items-center justify-center rounded-full bg-[#18D5FF]/10 text-[#06647A] dark:text-[#18D5FF]">
-                        <LibraryPlus className="size-5" aria-hidden />
-                      </span>
-                      <p className="mt-4 max-w-sm font-mono text-xs text-muted-foreground">
-                        {m.builderNewEmpty({ ecosystem: builderSearchEcosystemName })}
-                      </p>
-                    </div>
-                  ) : null}
-
                   {/* Category sections - all options for each category.
                       In multi mode these general settings are the final "Finalize" step. */}
                   {(stack.stackMode !== "multi" || multiActiveStep === "finalize") &&
@@ -3497,10 +3416,6 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                                                   tech.id,
                                                 )
                                               : null;
-                                            const isNewOption = isLaunchRadarNewOption(
-                                              group.category,
-                                              tech.id,
-                                            );
 
                                             return (
                                               <motion.div
@@ -3521,11 +3436,6 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                                                 title={disabledReason || undefined}
                                               >
                                                 <div className="absolute top-2 right-2 flex items-center gap-1">
-                                                  {isNewOption && (
-                                                    <span className="rounded-full bg-[#18D5FF]/10 px-2 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-[#06647A] dark:text-[#18D5FF]">
-                                                      {m.builderNewBadge()}
-                                                    </span>
-                                                  )}
                                                   <TechResourceButtons
                                                     category={group.category}
                                                     techId={tech.id}

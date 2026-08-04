@@ -220,7 +220,6 @@ export default function LaunchRadarStrip() {
                           ecosystem: group.id,
                           view: "command",
                           file: "",
-                          newOptions: "1",
                         }}
                         className="ml-auto inline-flex items-center gap-1 font-mono text-[9px] font-semibold uppercase tracking-[0.12em] text-ink underline decoration-transparent underline-offset-4 transition-all hover:gap-2 hover:decoration-current"
                         aria-label={m.launchRadarOpenBuilder({ ecosystem: group.name })}
