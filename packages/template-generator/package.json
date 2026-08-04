@@ -19,6 +19,7 @@
   },
   "files": [
     "dist",
+    "LICENSE",
     "templates-binary"
   ],
   "type": "module",

@@ -107,7 +107,7 @@ export default function Footer() {
             rel="noopener noreferrer"
             className="text-foreground underline underline-offset-4"
           >
-            Aman Varshney's original upstream project
+            Better T Stack by Aman Varshney
           </a>
         </p>
 

@@ -94,7 +94,7 @@
   "footerChangelog": "Changelog",
   "footerMitLicense": "Licencia MIT",
   "footerPopularGuides": "Guías populares",
-  "footerInspiredBy": "Inspirado originalmente por",
+  "footerInspiredBy": "Bifurcado originalmente de",
   "footerBuiltBy": "Construido por",
   "blogTitle": "Notas desde el taller.",
   "blogDescription": "Benchmarks, lanzamientos y aprendizajes al construir un generador fullstack, escritos con los datos incluidos.",
