@@ -136,6 +136,7 @@ function processStandardAuthDeps(vfs: VirtualFileSystem, config: ProjectConfig):
       "tanstack-router",
       "tanstack-start",
       "next",
+      "vinext",
       "nuxt",
       "svelte",
       "solid",
