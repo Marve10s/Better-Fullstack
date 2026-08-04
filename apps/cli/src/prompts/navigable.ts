@@ -20,7 +20,15 @@ import {
   setIsFirstPrompt as ctxSetIsFirstPrompt,
   setLastPromptShownUI as ctxSetLastPromptShownUI,
 } from "../utils/context";
+import { CLIError } from "../utils/errors";
 import { GO_BACK_SYMBOL } from "../utils/navigation";
+import { canPromptInteractively } from "../utils/prompt-environment";
+
+function nonInteractivePromptError(message: string): CLIError {
+  return new CLIError(
+    `"${message}" needs an interactive terminal and has no default; pass the matching flag instead.`,
+  );
+}
 
 const unicode = process.platform !== "win32";
 const S_STEP_ACTIVE = unicode ? "◆" : "*";
@@ -107,6 +115,13 @@ export interface NavigableSelectOptions<T> {
 }
 
 export async function navigableSelect<T>(opts: NavigableSelectOptions<T>): Promise<T | symbol> {
+  if (!canPromptInteractively()) {
+    if (opts.initialValue !== undefined) return opts.initialValue;
+    const fallback = opts.options.find((option) => !option.disabled);
+    if (fallback) return fallback.value;
+    throw nonInteractivePromptError(opts.message);
+  }
+
   const opt = (
     option: SelectOption<T>,
     state: "inactive" | "active" | "selected" | "cancelled" | "disabled",
@@ -165,6 +180,8 @@ export interface NavigableMultiselectOptions<T> {
 export async function navigableMultiselect<T>(
   opts: NavigableMultiselectOptions<T>,
 ): Promise<T[] | symbol> {
+  if (!canPromptInteractively()) return opts.initialValues ?? [];
+
   const required = opts.required ?? true;
 
   const opt = (
@@ -275,6 +292,8 @@ export interface NavigableConfirmOptions {
 }
 
 export async function navigableConfirm(opts: NavigableConfirmOptions): Promise<boolean | symbol> {
+  if (!canPromptInteractively()) return opts.initialValue ?? true;
+
   const active = opts.active ?? "Yes";
   const inactive = opts.inactive ?? "No";
 
@@ -319,6 +338,12 @@ export interface NavigableTextOptions {
 }
 
 export async function navigableText(opts: NavigableTextOptions): Promise<string | symbol> {
+  if (!canPromptInteractively()) {
+    const fallback = opts.initialValue ?? opts.defaultValue;
+    if (fallback !== undefined) return fallback;
+    throw nonInteractivePromptError(opts.message);
+  }
+
   const prompt = new TextPrompt({
     validate: opts.validate,
     placeholder: opts.placeholder,
@@ -375,6 +400,8 @@ export interface NavigableGroupMultiselectOptions<T> {
 export async function navigableGroupMultiselect<T>(
   opts: NavigableGroupMultiselectOptions<T>,
 ): Promise<T[] | symbol> {
+  if (!canPromptInteractively()) return opts.initialValues ?? [];
+
   const required = opts.required ?? true;
 
   const opt = (
