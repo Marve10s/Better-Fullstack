@@ -1,0 +1,93 @@
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+
+plugins {
+    id("org.jetbrains.kotlin.multiplatform")
+    id("com.android.kotlin.multiplatform.library")
+    id("org.jetbrains.compose")
+    id("org.jetbrains.kotlin.plugin.compose")
+{{#if (or (includes kotlinMobileLibraries "ktor-client") (includes kotlinMobileLibraries "kotlinx-serialization-json"))}}
+    id("org.jetbrains.kotlin.plugin.serialization")
+{{/if}}
+}
+
+kotlin {
+    android {
+        namespace = "com.betterfullstack.app.shared"
+        compileSdk = 37
+        minSdk = 26
+        withHostTestBuilder {}
+        compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17) }
+    }
+    iosX64()
+    iosArm64()
+    iosSimulatorArm64()
+    jvm("desktop")
+
+    targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>().configureEach {
+        binaries.framework { baseName = "ComposeApp"; isStatic = true }
+    }
+
+    sourceSets {
+        commonMain.dependencies {
+            implementation(compose.runtime)
+            implementation(compose.foundation)
+            implementation(compose.material3)
+            implementation(compose.ui)
+            implementation(compose.components.resources)
+{{#if (includes kotlinMobileLibraries "voyager")}}
+            implementation("cafe.adriel.voyager:voyager-navigator:1.1.0-beta03")
+{{/if}}
+{{#if (includes kotlinMobileLibraries "koin")}}
+            implementation("io.insert-koin:koin-compose:4.1.1")
+{{/if}}
+{{#if (includes kotlinMobileLibraries "ktor-client")}}
+            implementation("io.ktor:ktor-client-core:3.4.0")
+            implementation("io.ktor:ktor-client-content-negotiation:3.4.0")
+            implementation("io.ktor:ktor-serialization-kotlinx-json:3.4.0")
+{{/if}}
+{{#if (includes kotlinMobileLibraries "kotlinx-serialization-json")}}
+            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+{{/if}}
+{{#if (includes kotlinMobileLibraries "coil")}}
+            implementation("io.coil-kt.coil3:coil-compose:3.3.0")
+{{/if}}
+        }
+        androidMain.dependencies {
+{{#if (includes kotlinMobileLibraries "navigation-compose")}}
+            implementation("androidx.navigation:navigation-compose:2.9.6")
+{{/if}}
+{{#if (includes kotlinMobileLibraries "datastore")}}
+            implementation("androidx.datastore:datastore-preferences:1.1.7")
+{{/if}}
+{{#if (includes kotlinMobileLibraries "ktor-client")}}
+            implementation("io.ktor:ktor-client-okhttp:3.4.0")
+{{/if}}
+{{#if (includes kotlinMobileLibraries "coil")}}
+            implementation("io.coil-kt.coil3:coil-network-okhttp:3.3.0")
+{{/if}}
+        }
+{{#if (includes kotlinMobileLibraries "turbine")}}
+        commonTest.dependencies { implementation("app.cash.turbine:turbine:1.2.1") }
+{{/if}}
+{{#if (or (includes kotlinMobileLibraries "mockk") (includes kotlinMobileLibraries "junit5"))}}
+        val androidHostTest by getting {
+            dependencies {
+{{#if (includes kotlinMobileLibraries "mockk")}}
+                implementation("io.mockk:mockk:1.14.6")
+{{/if}}
+{{#if (includes kotlinMobileLibraries "junit5")}}
+                implementation("org.junit.jupiter:junit-jupiter:5.13.4")
+{{/if}}
+            }
+        }
+{{/if}}
+        val desktopMain by getting { dependencies { implementation(compose.desktop.currentOs) } }
+    }
+}
+
+compose.desktop {
+    application {
+        mainClass = "com.betterfullstack.app.MainKt"
+        nativeDistributions { targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb); packageName = "{{projectName}}"; packageVersion = "1.0.0" }
+    }
+}

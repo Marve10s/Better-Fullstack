@@ -1,12 +1,44 @@
-import type { Database, Ecosystem, Frontend, ProjectConfig, ServerDeploy } from "../types";
+import type {
+  Database,
+  Ecosystem,
+  Frontend,
+  KotlinMobileLibraries,
+  ProjectConfig,
+  ServerDeploy,
+} from "../types";
 
 import { getDefaultConfig } from "../constants";
-import { parseStackPartSpecs, stackPartsToLegacyProjectConfigPartial } from "../types";
+import {
+  getAddonStackPartBinding,
+  parseStackPartSpecs,
+  stackPartsToLegacyProjectConfigPartial,
+} from "../types";
 import { hasWebStyling } from "../utils/compatibility-rules";
 import { exitCancelled } from "../utils/errors";
 import { getAddonsChoice, getAppPlatformsChoice } from "./addons";
 import { getAiDocsChoice } from "./ai-docs";
 import { getAstroIntegrationChoice } from "./astro-integration";
+import { getBackendFrameworkChoice } from "./backend";
+import { getApiChoice } from "./api";
+import { getAuthChoice } from "./auth";
+import { getORMChoice } from "./orm";
+import { getRuntimeChoice } from "./runtime";
+import { getPaymentsChoice } from "./payments";
+import { getEmailChoice } from "./email";
+import { getFileUploadChoice } from "./file-upload";
+import { getLoggingChoice } from "./logging";
+import { getObservabilityChoice } from "./observability";
+import { getAIChoice } from "./ai";
+import { getRealtimeChoice } from "./realtime";
+import { getJobQueueChoice } from "./job-queue";
+import { getCachingChoice } from "./caching";
+import { getRateLimitChoice } from "./rate-limit";
+import { getCMSChoice } from "./cms";
+import { getSearchChoice } from "./search";
+import { getVectorDbChoice } from "./vector-db";
+import { getFileStorageChoice } from "./file-storage";
+import { getIntegrationsChoice } from "./integrations";
+import { getEcommerceChoice } from "./ecommerce";
 import {
   type ConfigPromptKey,
   type ConfigScope,
@@ -89,7 +121,7 @@ import {
   getJavaTestingLibrariesChoice,
   getJavaWebFrameworkChoice,
 } from "./java-ecosystem";
-import { isCancel, isGoBack, navigableSelect } from "./navigable";
+import { isCancel, isGoBack, navigableMultiselect, navigableSelect } from "./navigable";
 import { getPackageManagerChoice } from "./package-manager";
 import {
   getPythonAiChoice,
@@ -134,7 +166,12 @@ import { getUILibraryChoice } from "./ui-library";
 import { getDeploymentChoice } from "./web-deploy";
 
 type CompositionMode = "single" | "multi";
-type BackendEcosystem = Extract<Ecosystem, "go" | "rust" | "python" | "java" | "dotnet" | "elixir">;
+type BackendEcosystem = Extract<
+  Ecosystem,
+  "typescript" | "go" | "rust" | "python" | "java" | "dotnet" | "elixir"
+>;
+type FrontendEcosystem = "typescript" | "rust" | "dotnet";
+type MobileEcosystem = "none" | "react-native" | "kotlin" | "swift" | "dart";
 
 export async function getCompositionModeChoice(): Promise<CompositionMode> {
   const response = await navigableSelect<CompositionMode>({
@@ -148,7 +185,7 @@ export async function getCompositionModeChoice(): Promise<CompositionMode> {
       {
         value: "multi",
         label: "Multi ecosystem",
-        hint: "Compose a TypeScript frontend with another backend ecosystem",
+        hint: "Compose web, backend, database, and mobile parts across ecosystems",
       },
     ],
     initialValue: "single",
@@ -162,10 +199,11 @@ async function selectBackendEcosystem(): Promise<BackendEcosystem> {
   const response = await navigableSelect<BackendEcosystem>({
     message: "Select backend ecosystem",
     options: [
+      { value: "typescript", label: "TypeScript", hint: "Hono, Elysia, Fastify, and more" },
       { value: "go", label: "Go", hint: "Gin, Echo, Fiber, Chi" },
       { value: "rust", label: "Rust", hint: "Axum, Actix Web, Rocket" },
       { value: "python", label: "Python", hint: "FastAPI, Django, Flask" },
-      { value: "java", label: "Java", hint: "Spring Boot, Quarkus" },
+      { value: "java", label: "Java / Kotlin", hint: "Spring Boot, Ktor, Quarkus" },
       { value: "dotnet", label: ".NET", hint: "ASP.NET Core, EF Core, SignalR" },
       { value: "elixir", label: "Elixir", hint: "Phoenix, LiveView" },
     ],
@@ -174,6 +212,67 @@ async function selectBackendEcosystem(): Promise<BackendEcosystem> {
 
   if (isCancel(response) || isGoBack(response)) return exitCancelled("Operation cancelled");
   return response;
+}
+
+async function selectFrontendEcosystem(): Promise<FrontendEcosystem> {
+  const response = await navigableSelect<FrontendEcosystem>({
+    message: "Select frontend ecosystem",
+    options: [
+      { value: "typescript", label: "TypeScript", hint: "React, Vue, Svelte, Astro, and more" },
+      { value: "rust", label: "Rust", hint: "Leptos, Dioxus, or Yew" },
+      { value: "dotnet", label: ".NET", hint: "Blazor Web App or WebAssembly" },
+    ],
+    initialValue: "typescript",
+  });
+
+  if (isCancel(response) || isGoBack(response)) return exitCancelled("Operation cancelled");
+  return response;
+}
+
+async function selectMobileEcosystem(): Promise<MobileEcosystem> {
+  const response = await navigableSelect<MobileEcosystem>({
+    message: "Add a mobile app?",
+    options: [
+      { value: "none", label: "None", hint: "Skip mobile app generation" },
+      { value: "react-native", label: "React Native", hint: "Expo and React Native" },
+      { value: "kotlin", label: "Kotlin", hint: "Jetpack Compose or Compose Multiplatform" },
+      { value: "swift", label: "Swift", hint: "Native iOS with SwiftUI" },
+      { value: "dart", label: "Flutter", hint: "Cross-platform iOS and Android with Dart" },
+    ],
+    initialValue: "none",
+  });
+
+  if (isCancel(response) || isGoBack(response)) return exitCancelled("Operation cancelled");
+  return response;
+}
+
+async function selectKotlinMobileLibraries(
+  selected?: KotlinMobileLibraries[],
+): Promise<KotlinMobileLibraries[]> {
+  if (selected !== undefined) return selected.filter((library) => library !== "none");
+  const response = await navigableMultiselect<KotlinMobileLibraries>({
+    message: "Select Kotlin mobile libraries",
+    required: false,
+    initialValues: [],
+    options: [
+      { value: "navigation-compose", label: "Navigation Compose", hint: "Official Android navigation" },
+      { value: "voyager", label: "Voyager", hint: "Multiplatform navigation" },
+      { value: "koin", label: "Koin", hint: "Dependency injection" },
+      { value: "ktor-client", label: "Ktor Client", hint: "Multiplatform HTTP client" },
+      {
+        value: "kotlinx-serialization-json",
+        label: "Kotlinx Serialization JSON",
+        hint: "Kotlin-first JSON serialization",
+      },
+      { value: "datastore", label: "DataStore", hint: "Local preferences storage" },
+      { value: "coil", label: "Coil", hint: "Compose image loading" },
+      { value: "mockk", label: "MockK", hint: "Kotlin mocking" },
+      { value: "turbine", label: "Turbine", hint: "Flow testing" },
+      { value: "junit5", label: "JUnit 5", hint: "JVM test engine" },
+    ],
+  });
+  if (isCancel(response) || isGoBack(response)) return exitCancelled("Operation cancelled");
+  return response.filter((library) => library !== "none");
 }
 
 async function selectServerDeployment(deployment?: ServerDeploy): Promise<ServerDeploy> {
@@ -250,28 +349,87 @@ export async function gatherMultiEcosystemConfig(
         )
       : [];
 
-  const frontend = promptValue(
-    await navigableSelect<Frontend>({
-      message: "Select TypeScript web frontend",
-      options: WEB_FRONTEND_PROMPT_OPTIONS,
-      initialValue: flags.frontend?.[0] ?? "next",
-    }),
-  );
+  const frontendEcosystem = await selectFrontendEcosystem();
+  const frontend =
+    frontendEcosystem === "typescript"
+      ? promptValue(
+          await navigableSelect<Frontend>({
+            message: "Select TypeScript web frontend",
+            options: WEB_FRONTEND_PROMPT_OPTIONS,
+            initialValue: flags.frontend?.[0] ?? "next",
+          }),
+        )
+      : "none";
+  const selectedRustFrontend =
+    frontendEcosystem === "rust"
+      ? promptValue(await getRustFrontendChoice(flags.rustFrontend))
+      : "none";
+  const selectedDotnetFrontend =
+    frontendEcosystem === "dotnet"
+      ? promptValue(
+          await navigableSelect<"blazor-webassembly" | "blazor-web-app" | "none">({
+            message: "Select .NET web frontend",
+            options: [
+              {
+                value: "blazor-web-app",
+                label: "Blazor Web App",
+                hint: "Interactive server rendering on .NET 10",
+              },
+              {
+                value: "blazor-webassembly",
+                label: "Blazor WebAssembly",
+                hint: "Client-side Razor components on .NET 10",
+              },
+              { value: "none", label: "None", hint: "Skip web frontend generation" },
+            ],
+            initialValue: flags.dotnetFrontend ?? "blazor-webassembly",
+          }),
+        )
+      : "none";
   const frontendList = [frontend];
   const astroIntegration =
     frontend === "astro"
       ? promptValue(await getAstroIntegrationChoice(flags.astroIntegration))
       : undefined;
-  const nativeFrontend = promptValue(
-    await navigableSelect<Frontend | "none">({
-      message: "Add a native mobile app? (React Native ecosystem)",
-      options: [
-        { value: "none", label: "None", hint: "web app only" },
-        ...NATIVE_FRONTEND_PROMPT_OPTIONS,
-      ],
-      initialValue: "none",
-    }),
-  );
+  const mobileEcosystem = await selectMobileEcosystem();
+  const nativeFrontend =
+    mobileEcosystem === "react-native"
+      ? promptValue(
+          await navigableSelect<Frontend>({
+            message: "Select React Native app",
+            options: NATIVE_FRONTEND_PROMPT_OPTIONS,
+            initialValue: "native-bare",
+          }),
+        )
+      : "none";
+  const kotlinMobile =
+    mobileEcosystem === "kotlin"
+      ? promptValue(
+          await navigableSelect<"jetpack-compose" | "compose-multiplatform" | "none">({
+            message: "Select Kotlin app",
+            options: [
+              {
+                value: "compose-multiplatform",
+                label: "Compose Multiplatform",
+                hint: "Shared UI for Android, iOS, and desktop",
+              },
+              {
+                value: "jetpack-compose",
+                label: "Jetpack Compose",
+                hint: "Native Android application",
+              },
+              { value: "none", label: "None", hint: "Skip Kotlin app generation" },
+            ],
+            initialValue: flags.kotlinMobile ?? "jetpack-compose",
+          }),
+        )
+      : "none";
+  const swiftMobile = mobileEcosystem === "swift" ? "swiftui" : "none";
+  const dartMobile = mobileEcosystem === "dart" ? "flutter" : "none";
+  const kotlinMobileLibraries =
+    kotlinMobile !== "none"
+      ? await selectKotlinMobileLibraries(flags.kotlinMobileLibraries)
+      : [];
   const uiLibrary = hasWebStyling(frontendList)
     ? await scopedPromptValue("typescript", "uiLibrary", configScope, typeScriptSections, () =>
         getUILibraryChoice(flags.uiLibrary, frontendList, astroIntegration),
@@ -302,7 +460,16 @@ export async function gatherMultiEcosystemConfig(
   const backendEcosystem = await selectBackendEcosystem();
   const backendSections =
     configScope === "custom" ? promptValue(await getConfigSectionsChoice(backendEcosystem)) : [];
-  const stackPartSpecs = [`frontend:typescript:${frontend}`];
+  const stackPartSpecs: string[] = [];
+  if (frontendEcosystem === "rust" && selectedRustFrontend !== "none") {
+    stackPartSpecs.push(`frontend:rust:${selectedRustFrontend}`);
+  }
+  if (frontendEcosystem === "typescript" && frontend !== "none") {
+    stackPartSpecs.push(`frontend:typescript:${frontend}`);
+  }
+  if (frontendEcosystem === "dotnet" && selectedDotnetFrontend !== "none") {
+    stackPartSpecs.push(`frontend:dotnet:${selectedDotnetFrontend}`);
+  }
   if (nativeFrontend !== "none") {
     stackPartSpecs.push(`mobile:react-native:${nativeFrontend}`);
     stackPartSpecs.push("mobile.navigation:react-native:expo-router");
@@ -313,11 +480,198 @@ export async function gatherMultiEcosystemConfig(
       stackPartSpecs.push("mobile.ui:react-native:unistyles");
     }
   }
+  if (kotlinMobile !== "none") {
+    stackPartSpecs.push(`mobile:kotlin:${kotlinMobile}`);
+    for (const library of kotlinMobileLibraries) {
+      stackPartSpecs.push(`mobile.libraries:kotlin:${library}`);
+    }
+  }
+  if (swiftMobile !== "none") {
+    stackPartSpecs.push(`mobile:swift:${swiftMobile}`);
+  }
+  if (dartMobile !== "none") {
+    stackPartSpecs.push(`mobile:dart:${dartMobile}`);
+  }
   const backendChoices: Partial<ProjectConfig> = {};
   let database: Database = "none";
   let dbSetup: ProjectConfig["dbSetup"] = "none";
 
-  if (backendEcosystem === "go") {
+  if (backendEcosystem === "typescript") {
+    const backend = promptValue(await getBackendFrameworkChoice(flags.backend, frontendList));
+    const runtime =
+      backend === "none" ? "none" : promptValue(await getRuntimeChoice(flags.runtime, backend));
+    if (backend !== "none") {
+      database = promptValue(await getDatabaseChoice(flags.database, backend, runtime));
+      dbSetup = promptValue(
+        await getDBSetupChoice(database, flags.dbSetup, flags.orm, backend, runtime),
+      );
+    }
+    const orm =
+      backend === "none" || database === "none"
+        ? "none"
+        : promptValue(await getORMChoice(flags.orm, true, database, backend, runtime));
+    const api =
+      backend === "none"
+        ? "none"
+        : promptValue(await getApiChoice(flags.api, frontendList, backend, astroIntegration));
+    const auth =
+      backend === "none"
+        ? "none"
+        : promptValue(await getAuthChoice(flags.auth, backend, frontendList));
+    const payments =
+      backend === "none"
+        ? "none"
+        : await scopedPromptValue("typescript", "payments", configScope, backendSections, () =>
+            getPaymentsChoice(flags.payments, auth, backend, frontendList),
+          );
+    const email =
+      backend === "none"
+        ? "none"
+        : await scopedPromptValue("typescript", "email", configScope, backendSections, () =>
+            getEmailChoice(flags.email, backend, "typescript"),
+          );
+    const fileUpload =
+      backend === "none"
+        ? "none"
+        : await scopedPromptValue("typescript", "fileUpload", configScope, backendSections, () =>
+            getFileUploadChoice(flags.fileUpload, backend),
+          );
+    const logging =
+      backend === "none"
+        ? "none"
+        : await scopedPromptValue("typescript", "logging", configScope, backendSections, () =>
+            getLoggingChoice(flags.logging, backend),
+          );
+    const observability =
+      backend === "none"
+        ? "none"
+        : await scopedPromptValue(
+            "typescript",
+            "observability",
+            configScope,
+            backendSections,
+            () => getObservabilityChoice(flags.observability, backend, "typescript"),
+          );
+    const ai =
+      backend === "none"
+        ? "none"
+        : await scopedPromptValue("typescript", "ai", configScope, backendSections, () =>
+            getAIChoice(flags.ai, backend),
+          );
+    const realtime =
+      backend === "none"
+        ? "none"
+        : await scopedPromptValue("typescript", "realtime", configScope, backendSections, () =>
+            getRealtimeChoice(flags.realtime, backend),
+          );
+    const jobQueue =
+      backend === "none"
+        ? "none"
+        : await scopedPromptValue("typescript", "jobQueue", configScope, backendSections, () =>
+            getJobQueueChoice(flags.jobQueue, backend),
+          );
+    const caching =
+      backend === "none"
+        ? "none"
+        : await scopedPromptValue("typescript", "caching", configScope, backendSections, () =>
+            getCachingChoice(flags.caching, backend, "typescript"),
+          );
+    const rateLimit =
+      backend === "none"
+        ? "none"
+        : await scopedPromptValue("typescript", "rateLimit", configScope, backendSections, () =>
+            getRateLimitChoice(flags.rateLimit, backend),
+          );
+    const cms =
+      backend === "none"
+        ? "none"
+        : await scopedPromptValue("typescript", "cms", configScope, backendSections, () =>
+            getCMSChoice(flags.cms, backend, frontendList),
+          );
+    const search =
+      backend === "none"
+        ? "none"
+        : await scopedPromptValue("typescript", "search", configScope, backendSections, () =>
+            getSearchChoice(flags.search, backend, "typescript"),
+          );
+    const vectorDb =
+      backend === "none"
+        ? "none"
+        : await scopedPromptValue("typescript", "vectorDb", configScope, backendSections, () =>
+            getVectorDbChoice(flags.vectorDb, backend),
+          );
+    const fileStorage =
+      backend === "none"
+        ? "none"
+        : await scopedPromptValue("typescript", "fileStorage", configScope, backendSections, () =>
+            getFileStorageChoice(flags.fileStorage, backend),
+          );
+    const integrations =
+      backend === "none"
+        ? "none"
+        : await scopedPromptValue(
+            "typescript",
+            "integrations",
+            configScope,
+            backendSections,
+            () => getIntegrationsChoice(flags.integrations, backend, "typescript", runtime),
+          );
+    const ecommerce =
+      backend === "none"
+        ? "none"
+        : await scopedPromptValue("typescript", "ecommerce", configScope, backendSections, () =>
+            getEcommerceChoice(flags.ecommerce, backend, "typescript"),
+          );
+
+    Object.assign(backendChoices, {
+      backend,
+      runtime,
+      orm,
+      api,
+      auth,
+      payments,
+      email,
+      fileUpload,
+      logging,
+      observability,
+      ai,
+      realtime,
+      jobQueue,
+      caching,
+      rateLimit,
+      cms,
+      search,
+      vectorDb,
+      fileStorage,
+      integrations,
+      ecommerce,
+    });
+    if (backend !== "none") stackPartSpecs.push(`backend:typescript:${backend}`);
+    if (orm !== "none") stackPartSpecs.push(`backend.orm:typescript:${orm}`);
+    if (api !== "none") stackPartSpecs.push(`backend.api:typescript:${api}`);
+    if (auth !== "none") stackPartSpecs.push(`backend.auth:typescript:${auth}`);
+    for (const [role, value] of [
+      ["runtime", runtime],
+      ["payments", payments],
+      ["email", email],
+      ["fileUpload", fileUpload],
+      ["logging", logging],
+      ["observability", observability],
+      ["ai", ai],
+      ["realtime", realtime],
+      ["jobQueue", jobQueue],
+      ["caching", caching],
+      ["rateLimit", rateLimit],
+      ["cms", cms],
+      ["search", search],
+      ["vectorDb", vectorDb],
+      ["fileStorage", fileStorage],
+      ["integrations", integrations],
+      ["ecommerce", ecommerce],
+    ] as const) {
+      if (value !== "none") stackPartSpecs.push(`backend.${role}:typescript:${value}`);
+    }
+  } else if (backendEcosystem === "go") {
     const goWebFramework = promptValue(await getGoWebFrameworkChoice(flags.goWebFramework));
     if (goWebFramework !== "none") {
       const databaseConfig = await selectDatabaseConfig(flags);
@@ -475,7 +829,6 @@ export async function gatherMultiEcosystemConfig(
       rustWebFramework === "none" ? "none" : promptValue(await getRustApiChoice(flags.rustApi));
     const rustAuth =
       rustWebFramework === "none" ? "none" : promptValue(await getRustAuthChoice(flags.rustAuth));
-    const rustFrontend = "none";
     const rustCli =
       rustWebFramework === "none"
         ? "none"
@@ -536,7 +889,6 @@ export async function gatherMultiEcosystemConfig(
       rustOrm,
       rustApi,
       rustAuth,
-      rustFrontend,
       rustCli,
       rustLibraries,
       rustLogging,
@@ -752,7 +1104,9 @@ export async function gatherMultiEcosystemConfig(
   if (backendEcosystem === "java") {
     const javaWebFramework = promptValue(await getJavaWebFrameworkChoice(flags.javaWebFramework));
     const javaLanguage =
-      javaWebFramework !== "spring-boot"
+      javaWebFramework === "ktor"
+        ? "kotlin"
+        : javaWebFramework !== "spring-boot"
         ? "java"
         : flags.javaLanguage !== undefined
           ? promptValue(await getJavaLanguageChoice(flags.javaLanguage))
@@ -1125,8 +1479,8 @@ export async function gatherMultiEcosystemConfig(
 
   if (database !== "none") stackPartSpecs.push(`database:universal:${database}`);
 
-  const stackParts = parseStackPartSpecs(stackPartSpecs, "selected");
-  const graphPartial = stackPartsToLegacyProjectConfigPartial(stackParts);
+  const baseStackParts = parseStackPartSpecs(stackPartSpecs, "selected");
+  const graphPartial = stackPartsToLegacyProjectConfigPartial(baseStackParts);
   const appPlatforms = await scopedPromptValue(
     "typescript",
     "appPlatforms",
@@ -1169,6 +1523,25 @@ export async function gatherMultiEcosystemConfig(
   const git = promptValue(await getGitChoice(flags.git));
   const packageManager = promptValue(await getPackageManagerChoice(flags.packageManager));
   const install = promptValue(await getinstallChoice(flags.install, "typescript", "none"));
+  const selectedAddons = Array.from(new Set([...appPlatforms, ...addons]));
+
+  if (frontendEcosystem === "typescript" && frontendList[0] !== "none" && webDeploy !== "none") {
+    stackPartSpecs.push(`frontend.deploy:typescript:${webDeploy}`);
+  }
+  if (
+    backendEcosystem === "typescript" &&
+    backendChoices.backend !== "none" &&
+    serverDeploy !== "none"
+  ) {
+    stackPartSpecs.push(`backend.deploy:typescript:${serverDeploy}`);
+  }
+  for (const addon of selectedAddons) {
+    const binding = getAddonStackPartBinding(addon);
+    if (!binding) continue;
+    const rolePath = binding.ownerRole ? `${binding.ownerRole}.${binding.role}` : binding.role;
+    stackPartSpecs.push(`${rolePath}:${binding.ecosystem}:${addon}`);
+  }
+  const stackParts = parseStackPartSpecs(Array.from(new Set(stackPartSpecs)), "selected");
 
   return {
     ...baseConfig,
@@ -1179,18 +1552,31 @@ export async function gatherMultiEcosystemConfig(
     projectDir,
     relativePath,
     ecosystem: "typescript",
-    frontend: nativeFrontend === "none" ? frontendList : [...frontendList, nativeFrontend],
-    backend: "none",
-    runtime: "none",
+    frontend:
+      frontendEcosystem === "typescript"
+        ? nativeFrontend === "none"
+          ? frontendList
+          : [...frontendList, nativeFrontend]
+        : nativeFrontend === "none"
+          ? ["none"]
+          : [nativeFrontend],
+    backend: backendEcosystem === "typescript" ? (backendChoices.backend ?? "none") : "none",
+    runtime: backendEcosystem === "typescript" ? (backendChoices.runtime ?? "none") : "none",
     database,
-    orm: "none",
-    api: "none",
-    auth: "none",
+    orm: backendEcosystem === "typescript" ? (backendChoices.orm ?? "none") : "none",
+    api: backendEcosystem === "typescript" ? (backendChoices.api ?? "none") : "none",
+    auth: backendEcosystem === "typescript" ? (backendChoices.auth ?? "none") : "none",
+    rustFrontend: selectedRustFrontend,
+    dotnetFrontend: selectedDotnetFrontend,
+    kotlinMobile,
+    kotlinMobileLibraries,
+    swiftMobile,
+    dartMobile,
     astroIntegration,
     uiLibrary,
     ...shadcnOptions,
     cssFramework,
-    addons: Array.from(new Set([...appPlatforms, ...addons])),
+    addons: selectedAddons,
     examples: [],
     dbSetup,
     webDeploy,

@@ -68,7 +68,13 @@ function summarizeStackParts(stack: StackState) {
       const categories =
         part.ecosystem === "universal"
           ? CATEGORY_ORDER
-          : getCategoryOrderForEcosystem(part.ecosystem);
+          : part.ecosystem === "kotlin"
+            ? (["kotlinMobile"] as const)
+            : part.ecosystem === "swift"
+              ? (["swiftMobile"] as const)
+              : part.ecosystem === "dart"
+                ? (["dartMobile"] as const)
+                : getCategoryOrderForEcosystem(part.ecosystem);
       for (const category of categories) {
         const option = TECH_OPTIONS[category]?.find((candidate) => candidate.id === part.toolId);
         if (option) return option.name;

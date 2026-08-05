@@ -11,6 +11,7 @@ import {
   CACHING_VALUES,
   DOTNET_API_VALUES,
   DOTNET_AUTH_VALUES,
+  DOTNET_FRONTEND_VALUES,
   DOTNET_VALIDATION_VALUES,
   DOTNET_CACHING_VALUES,
   DOTNET_DEPLOY_VALUES,
@@ -63,6 +64,10 @@ import {
   MOBILE_STORAGE_VALUES,
   MOBILE_TESTING_VALUES,
   MOBILE_UI_VALUES,
+  KOTLIN_MOBILE_VALUES,
+  KOTLIN_MOBILE_LIBRARIES_VALUES,
+  SWIFT_MOBILE_VALUES,
+  DART_MOBILE_VALUES,
   GO_API_VALUES,
   GO_CLI_VALUES,
   GO_AUTH_VALUES,
@@ -222,6 +227,11 @@ export type OptionCategory =
   | "shadcnRadius"
   | "rustWebFramework"
   | "rustFrontend"
+  | "dotnetFrontend"
+  | "kotlinMobile"
+  | "kotlinMobileLibraries"
+  | "swiftMobile"
+  | "dartMobile"
   | "rustOrm"
   | "rustApi"
   | "rustCli"
@@ -389,6 +399,10 @@ export const TYPESCRIPT_CATEGORY_ORDER = [
 
 export const REACT_NATIVE_CATEGORY_ORDER = [
   "nativeFrontend",
+  "kotlinMobile",
+  "kotlinMobileLibraries",
+  "swiftMobile",
+  "dartMobile",
   "mobileNavigation",
   "mobileUI",
   "mobileStorage",
@@ -509,6 +523,7 @@ export const JAVA_CATEGORY_ORDER = [
 ] as const satisfies readonly OptionCategory[];
 
 export const DOTNET_CATEGORY_ORDER = [
+  "dotnetFrontend",
   "dotnetWebFramework",
   "dotnetOrm",
   "dotnetAuth",
@@ -605,6 +620,11 @@ export function getCategoryDisplayName(categoryKey: string): string {
     backendLibraries: "Effect Services",
     rustWebFramework: "Rust Web Framework",
     rustFrontend: "Rust Frontend (WASM)",
+    dotnetFrontend: ".NET Frontend",
+    kotlinMobile: "Kotlin Mobile",
+    kotlinMobileLibraries: "Kotlin Mobile Libraries",
+    swiftMobile: "Swift Mobile",
+    dartMobile: "Flutter / Dart Mobile",
     rustOrm: "Rust ORM / Database",
     rustApi: "Rust API Layer",
     rustCli: "Rust CLI Tools",
@@ -828,6 +848,7 @@ const MULTI_SELECT_CATEGORIES = new Set<OptionCategory>([
   "javaLibraries",
   "javaTestingLibraries",
   "mobileLibraries",
+  "kotlinMobileLibraries",
   "dotnetLibraries",
   "dotnetTesting",
   "dotnetObservability",
@@ -907,6 +928,11 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   shadcnRadius: SHADCN_RADIUS_VALUES,
   rustWebFramework: RUST_WEB_FRAMEWORK_VALUES,
   rustFrontend: RUST_FRONTEND_VALUES,
+  dotnetFrontend: DOTNET_FRONTEND_VALUES,
+  kotlinMobile: KOTLIN_MOBILE_VALUES,
+  kotlinMobileLibraries: KOTLIN_MOBILE_LIBRARIES_VALUES,
+  swiftMobile: SWIFT_MOBILE_VALUES,
+  dartMobile: DART_MOBILE_VALUES,
   rustOrm: RUST_ORM_VALUES,
   rustApi: RUST_API_VALUES,
   rustCli: RUST_CLI_VALUES,
@@ -1394,6 +1420,32 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     dioxus: "Dioxus",
     yew: "Yew",
   },
+  dotnetFrontend: {
+    "blazor-webassembly": "Blazor WebAssembly",
+    "blazor-web-app": "Blazor Web App",
+  },
+  kotlinMobile: {
+    "jetpack-compose": "Jetpack Compose",
+    "compose-multiplatform": "Compose Multiplatform",
+  },
+  kotlinMobileLibraries: {
+    "navigation-compose": "Navigation Compose",
+    voyager: "Voyager",
+    koin: "Koin",
+    "ktor-client": "Ktor Client",
+    "kotlinx-serialization-json": "Kotlinx Serialization JSON",
+    datastore: "DataStore",
+    coil: "Coil",
+    mockk: "MockK",
+    turbine: "Turbine",
+    junit5: "JUnit 5",
+  },
+  swiftMobile: {
+    swiftui: "SwiftUI",
+  },
+  dartMobile: {
+    flutter: "Flutter",
+  },
   rustOrm: {
     "sea-orm": "SeaORM",
     sqlx: "SQLx",
@@ -1676,6 +1728,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   javaWebFramework: {
     "spring-boot": "Spring Boot",
+    ktor: "Ktor",
     quarkus: "Quarkus",
     micronaut: "Micronaut",
   },
@@ -2079,6 +2132,11 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   shadcnRadius: buildCategoryMetadata("shadcnRadius"),
   rustWebFramework: buildCategoryMetadata("rustWebFramework"),
   rustFrontend: buildCategoryMetadata("rustFrontend"),
+  dotnetFrontend: buildCategoryMetadata("dotnetFrontend"),
+  kotlinMobile: buildCategoryMetadata("kotlinMobile"),
+  kotlinMobileLibraries: buildCategoryMetadata("kotlinMobileLibraries"),
+  swiftMobile: buildCategoryMetadata("swiftMobile"),
+  dartMobile: buildCategoryMetadata("dartMobile"),
   rustOrm: buildCategoryMetadata("rustOrm"),
   rustApi: buildCategoryMetadata("rustApi"),
   rustCli: buildCategoryMetadata("rustCli"),

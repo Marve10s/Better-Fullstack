@@ -1,0 +1,14 @@
+import SwiftUI
+
+struct ContentView: View {
+    var body: some View {
+        VStack(spacing: 12) {
+            Text("BETTER FULLSTACK").font(.caption.monospaced().bold()).foregroundStyle(.purple)
+            Text("{{projectName}}").font(.largeTitle.bold())
+            Text("SwiftUI is ready for iPhone and iPad.").foregroundStyle(.secondary)
+        }
+        .padding(24)
+    }
+}
+
+#Preview { ContentView() }

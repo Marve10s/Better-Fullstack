@@ -42,6 +42,7 @@ import {
   processDotnetBaseTemplate,
   processElixirBaseTemplate,
   processFrontendTemplates,
+  processGraphNativeAppTemplates,
   processBackendTemplates,
   processDbTemplates,
   processApiTemplates,
@@ -137,6 +138,12 @@ function validateGraphContainerAddons(config: ProjectConfig): string[] {
     .map((issue) => issue.message);
 }
 
+function validateGraphRenderingSupport(config: ProjectConfig): string[] {
+  return validateStackParts(config.stackParts ?? []).issues
+    .filter((issue) => issue.code === "UNSUPPORTED_REPEATED_PRIMARY")
+    .map((issue) => issue.message);
+}
+
 function hasGeneratedJavascriptTestScript(config: ProjectConfig): boolean {
   return (
     config.testing === "vitest" ||
@@ -193,6 +200,29 @@ function getScopedPart(
   );
 }
 
+function focusGraphOnPrimaryBackend(config: ProjectConfig, backend: StackPart): ProjectConfig {
+  const otherBackendIds = new Set(
+    (config.stackParts ?? [])
+      .filter(
+        (part) =>
+          part.role === "backend" &&
+          !part.ownerPartId &&
+          part.source !== "provided" &&
+          part.id !== backend.id,
+      )
+      .map((part) => part.id),
+  );
+  return {
+    ...config,
+    stackParts: (config.stackParts ?? []).filter(
+      (part) =>
+        !otherBackendIds.has(part.id) &&
+        !otherBackendIds.has(part.ownerPartId ?? "") &&
+        !otherBackendIds.has(part.providedByPartId ?? ""),
+    ),
+  };
+}
+
 async function processGraphTemplates(
   vfs: VirtualFileSystem,
   templates: TemplateData,
@@ -201,6 +231,14 @@ async function processGraphTemplates(
   const nonTypeScriptBackends = (config.stackParts ?? []).filter(
     (part) => part.role === "backend" && !part.ownerPartId && part.ecosystem !== "typescript",
   );
+  const rustFrontend = (config.stackParts ?? []).find(
+    (part) =>
+      part.role === "frontend" &&
+      !part.ownerPartId &&
+      part.source !== "provided" &&
+      part.ecosystem === "rust",
+  );
+  const hasRustBackend = nonTypeScriptBackends.some((part) => part.ecosystem === "rust");
   const hasCrossEcosystemWebBackend =
     nonTypeScriptBackends.length > 0 &&
     (config.stackParts ?? []).some(
@@ -212,6 +250,17 @@ async function processGraphTemplates(
     stackGraphToLegacyProjectConfigForEcosystem(config, "typescript"),
   );
   await processBaseTemplate(vfs, templates, tsConfig);
+  await processGraphNativeAppTemplates(vfs, templates, config);
+
+  if (rustFrontend && !hasRustBackend) {
+    const rustFrontendConfig = stackGraphToLegacyProjectConfigForEcosystem(config, "rust");
+    await processRustBaseTemplate(
+      vfs,
+      templates,
+      rustFrontendConfig,
+      rustFrontend.targetPath ?? getRoleTargetPath("frontend") ?? "apps/web",
+    );
+  }
 
   if (tsConfig.frontend.length > 0 || tsConfig.backend !== "none") {
     await processFrontendTemplates(vfs, templates, tsConfig);
@@ -256,7 +305,6 @@ async function processGraphTemplates(
     processPackageConfigs(vfs, tsConfig);
     processDependencies(vfs, tsConfig);
     processEnvVariables(vfs, tsConfig);
-    processGraphBackendConnection(vfs, tsConfig);
     await processAuthPlugins(vfs, tsConfig);
     await processAlchemyPlugins(vfs, tsConfig);
     await processParaglidePlugins(vfs, tsConfig);
@@ -298,7 +346,10 @@ async function processGraphTemplates(
   for (const part of nonTypeScriptBackends) {
     const targetPath = part.targetPath ?? getRoleTargetPath("backend") ?? "apps/server";
     const ecosystem = part.ecosystem as NonTypeScriptTemplateEcosystem;
-    const projectedConfig = stackGraphToLegacyProjectConfigForEcosystem(config, ecosystem);
+    const projectedConfig = stackGraphToLegacyProjectConfigForEcosystem(
+      focusGraphOnPrimaryBackend(config, part),
+      ecosystem,
+    );
     const backendConfig =
       ecosystem === "python" && !getScopedPart(config, part, "packageManager")
         ? {
@@ -314,7 +365,8 @@ async function processGraphTemplates(
 
   // Pin the backend's CORS to the web frontend's dev origin (must run after the
   // backend templates above so the backend .env.example exists).
-  processGraphBackendEnv(vfs, tsConfig);
+  processGraphBackendEnv(vfs, config);
+  processGraphBackendConnection(vfs, config);
 
   const selectedCrossEcosystemInfrastructureAddons = tsConfig.addons.filter((addon) =>
     crossEcosystemInfrastructureAddons.has(addon),
@@ -383,11 +435,14 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
     }
 
     if (config.stackParts && config.stackParts.length > 0) {
-      const containerAddonIssues = validateGraphContainerAddons(config);
-      if (containerAddonIssues.length > 0) {
+      const graphIssues = [
+        ...validateGraphContainerAddons(config),
+        ...validateGraphRenderingSupport(config),
+      ];
+      if (graphIssues.length > 0) {
         return {
           success: false,
-          error: containerAddonIssues.join("\n"),
+          error: graphIssues.join("\n"),
         };
       }
     }

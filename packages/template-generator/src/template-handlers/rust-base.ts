@@ -21,12 +21,35 @@ export async function processRustBaseTemplate(
   const hasAsyncGraphql = config.rustApi === "async-graphql";
   const hasClap = config.rustCli === "clap";
   const hasRatatui = config.rustCli === "ratatui";
+  const isGraphClientOnly =
+    (config.stackParts?.length ?? 0) > 0 &&
+    config.stackParts?.some(
+      (part) =>
+        part.role === "frontend" &&
+        part.ecosystem === "rust" &&
+        !part.ownerPartId &&
+        part.source !== "provided",
+    ) &&
+    !config.stackParts?.some(
+      (part) =>
+        part.role === "backend" &&
+        part.ecosystem === "rust" &&
+        !part.ownerPartId &&
+        part.source !== "provided",
+    );
+  const hasServer = !isGraphClientOnly;
+  const renderConfig = { ...config, graphRustClientOnly: isGraphClientOnly };
   // `loco` is added to RustWebFrameworkSchema separately; the cast keeps this
   // handler self-contained so it type-checks before that schema change lands.
   const hasLoco = config.rustWebFramework === "loco";
 
   for (const [templatePath, content] of templates) {
     if (!templatePath.startsWith(prefix)) continue;
+
+    // A Rust frontend can be paired with a backend from another ecosystem. In
+    // that shape this workspace is a client-only app and must not contain an
+    // empty, unbuildable server crate.
+    if (!hasServer && templatePath.includes("crates/server/")) continue;
 
     // Skip client crate templates if Leptos is not selected
     if (!hasLeptos && templatePath.includes("crates/client/")) continue;
@@ -99,7 +122,7 @@ export async function processRustBaseTemplate(
     if (isBinaryFile(templatePath)) {
       processedContent = "[Binary file]";
     } else if (templatePath.endsWith(".hbs")) {
-      processedContent = processTemplateString(content, config);
+      processedContent = processTemplateString(content, renderConfig);
     } else {
       processedContent = content;
     }

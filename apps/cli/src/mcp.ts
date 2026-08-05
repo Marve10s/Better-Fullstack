@@ -812,6 +812,13 @@ export function buildMcpCompatibilityInput(input: Record<string, unknown>): Comp
     webFrontend,
     nativeFrontend,
     ...defaults,
+    dotnetFrontend: (input.dotnetFrontend as string) ?? "none",
+    kotlinMobile: (input.kotlinMobile as string) ?? "none",
+    kotlinMobileLibraries: Array.isArray(input.kotlinMobileLibraries)
+      ? (input.kotlinMobileLibraries as string[])
+      : [],
+    swiftMobile: (input.swiftMobile as string) ?? "none",
+    dartMobile: (input.dartMobile as string) ?? "none",
     mobileNavigation:
       (input.mobileNavigation as string) ?? (hasMobileProject ? "expo-router" : "none"),
     mobileDeepLinking:

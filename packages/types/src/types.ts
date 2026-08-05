@@ -65,6 +65,11 @@ import type {
   EcosystemSchema,
   RustWebFrameworkSchema,
   RustFrontendSchema,
+  DotnetFrontendSchema,
+  KotlinMobileSchema,
+  KotlinMobileLibrariesSchema,
+  SwiftMobileSchema,
+  DartMobileSchema,
   RustOrmSchema,
   RustApiSchema,
   RustCliSchema,
@@ -230,6 +235,11 @@ export type FileStorage = z.infer<typeof FileStorageSchema>;
 export type Ecosystem = z.infer<typeof EcosystemSchema>;
 export type RustWebFramework = z.infer<typeof RustWebFrameworkSchema>;
 export type RustFrontend = z.infer<typeof RustFrontendSchema>;
+export type DotnetFrontend = z.infer<typeof DotnetFrontendSchema>;
+export type KotlinMobile = z.infer<typeof KotlinMobileSchema>;
+export type KotlinMobileLibraries = z.infer<typeof KotlinMobileLibrariesSchema>;
+export type SwiftMobile = z.infer<typeof SwiftMobileSchema>;
+export type DartMobile = z.infer<typeof DartMobileSchema>;
 export type RustOrm = z.infer<typeof RustOrmSchema>;
 export type RustApi = z.infer<typeof RustApiSchema>;
 export type RustCli = z.infer<typeof RustCliSchema>;

@@ -1,0 +1,19 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.betterfullstack</groupId><artifactId>{{projectName}}-server</artifactId><version>0.1.0</version>
+  <properties><kotlin.version>2.3.21</kotlin.version><ktor.version>3.4.0</ktor.version><maven.compiler.release>21</maven.compiler.release></properties>
+  <dependencies>
+    <dependency><groupId>io.ktor</groupId><artifactId>ktor-server-core-jvm</artifactId><version>${ktor.version}</version></dependency>
+    <dependency><groupId>io.ktor</groupId><artifactId>ktor-server-netty-jvm</artifactId><version>${ktor.version}</version></dependency>
+    <dependency><groupId>io.ktor</groupId><artifactId>ktor-server-content-negotiation-jvm</artifactId><version>${ktor.version}</version></dependency>
+    <dependency><groupId>io.ktor</groupId><artifactId>ktor-serialization-kotlinx-json-jvm</artifactId><version>${ktor.version}</version></dependency>
+    <dependency><groupId>io.ktor</groupId><artifactId>ktor-server-cors-jvm</artifactId><version>${ktor.version}</version></dependency>
+    <dependency><groupId>io.ktor</groupId><artifactId>ktor-server-test-host-jvm</artifactId><version>${ktor.version}</version><scope>test</scope></dependency>
+    <dependency><groupId>org.jetbrains.kotlin</groupId><artifactId>kotlin-test-junit5</artifactId><version>${kotlin.version}</version><scope>test</scope></dependency>
+    <dependency><groupId>ch.qos.logback</groupId><artifactId>logback-classic</artifactId><version>1.5.32</version></dependency>
+  </dependencies>
+  <build><sourceDirectory>src/main/kotlin</sourceDirectory><testSourceDirectory>src/test/kotlin</testSourceDirectory><plugins>
+    <plugin><groupId>org.jetbrains.kotlin</groupId><artifactId>kotlin-maven-plugin</artifactId><version>${kotlin.version}</version><executions><execution><id>compile</id><goals><goal>compile</goal></goals></execution><execution><id>test-compile</id><goals><goal>test-compile</goal></goals></execution></executions></plugin>
+    <plugin><groupId>org.codehaus.mojo</groupId><artifactId>exec-maven-plugin</artifactId><version>3.5.0</version><configuration><mainClass>com.betterfullstack.server.ApplicationKt</mainClass></configuration></plugin>
+  </plugins></build>
+</project>

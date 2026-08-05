@@ -163,7 +163,11 @@ type BuilderSearchEntry = {
   searchIndex: string;
 };
 type GraphOptionContext = Omit<StackPartOptionContext, "role" | "ecosystem">;
-type GraphFrontendEcosystem = Extract<StackPartEcosystem, "typescript" | "rust">;
+type GraphFrontendEcosystem = Extract<StackPartEcosystem, "typescript" | "rust" | "dotnet">;
+type GraphMobileEcosystem = Extract<
+  StackPartEcosystem,
+  "react-native" | "kotlin" | "swift" | "dart"
+>;
 type GraphBackendEcosystem = Extract<
   StackPartEcosystem,
   "typescript" | "rust" | "python" | "go" | "java" | "elixir" | "dotnet"
@@ -171,6 +175,7 @@ type GraphBackendEcosystem = Extract<
 type GraphSelection = {
   frontendEcosystem: GraphFrontendEcosystem;
   frontend: string;
+  mobileEcosystem: GraphMobileEcosystem;
   mobile: string;
   backendEcosystem: GraphBackendEcosystem;
   backendLanguage: "java" | "kotlin";
@@ -401,7 +406,44 @@ const GRAPH_FRONTEND_CONFIGS: GraphFrontendConfig[] = [
     label: "Rust",
     frameworkCategory: "rustFrontend",
   },
+  {
+    ecosystem: "dotnet",
+    label: ".NET",
+    frameworkCategory: "dotnetFrontend",
+  },
 ];
+
+const GRAPH_MOBILE_CONFIGS = [
+  {
+    ecosystem: "react-native" as const,
+    label: "React Native",
+    frameworkCategory: "nativeFrontend" as const,
+    icon: "https://cdn.simpleicons.org/react/61DAFB",
+  },
+  {
+    ecosystem: "kotlin" as const,
+    label: "Kotlin",
+    frameworkCategory: "kotlinMobile" as const,
+    icon: "https://cdn.simpleicons.org/kotlin/7F52FF",
+  },
+  {
+    ecosystem: "swift" as const,
+    label: "Swift",
+    frameworkCategory: "swiftMobile" as const,
+    icon: "https://cdn.simpleicons.org/swift/F05138",
+  },
+  {
+    ecosystem: "dart" as const,
+    label: "Flutter",
+    frameworkCategory: "dartMobile" as const,
+    icon: "https://cdn.simpleicons.org/flutter/02569B",
+  },
+] satisfies Array<{
+  ecosystem: GraphMobileEcosystem;
+  label: string;
+  frameworkCategory: keyof typeof TECH_OPTIONS;
+  icon: string;
+}>;
 
 const APP_PLATFORM_OPTION_GROUPS = [
   {
@@ -568,9 +610,15 @@ const MULTI_FRONTEND_LIBRARY_GROUPS: Array<keyof typeof TECH_OPTIONS> = [
   "validation",
   "testing",
   "animation",
+  "fileUpload",
+  "i18n",
+  "analytics",
+  "webDeploy",
 ];
 
 const MULTI_MOBILE_LIBRARY_GROUPS: Array<keyof typeof TECH_OPTIONS> = [
+  "auth",
+  "payments",
   "mobileNavigation",
   "mobileUI",
   "mobileStorage",
@@ -581,11 +629,16 @@ const MULTI_MOBILE_LIBRARY_GROUPS: Array<keyof typeof TECH_OPTIONS> = [
   "mobileLibraries",
 ];
 
+const MULTI_KOTLIN_MOBILE_LIBRARY_GROUPS: Array<keyof typeof TECH_OPTIONS> = [
+  "kotlinMobileLibraries",
+];
+
 const GRAPH_BACKEND_ADVANCED_CATEGORY_ORDER_BY_ECOSYSTEM = {
   typescript: [
+    "runtime",
+    "serverDeploy",
     "payments",
     "email",
-    "fileUpload",
     "backendLibraries",
     "ai",
     "realtime",
@@ -597,7 +650,6 @@ const GRAPH_BACKEND_ADVANCED_CATEGORY_ORDER_BY_ECOSYSTEM = {
     "ecommerce",
     "caching",
     "rateLimit",
-    "i18n",
     "cms",
     "search",
     "vectorDb",
@@ -613,6 +665,10 @@ const GRAPH_BACKEND_ADVANCED_CATEGORY_ORDER_BY_ECOSYSTEM = {
     "rustMessageQueue",
     "rustObservability",
     "rustTemplating",
+    "email",
+    "observability",
+    "caching",
+    "search",
   ],
   python: [
     "pythonValidation",
@@ -632,6 +688,10 @@ const GRAPH_BACKEND_ADVANCED_CATEGORY_ORDER_BY_ECOSYSTEM = {
     "pythonServer",
     "pythonPackageManager",
     "pythonMessageQueue",
+    "email",
+    "observability",
+    "caching",
+    "search",
   ],
   go: [
     "goCli",
@@ -648,8 +708,22 @@ const GRAPH_BACKEND_ADVANCED_CATEGORY_ORDER_BY_ECOSYSTEM = {
     "goTemplating",
     "goProtoTooling",
     "goDI",
+    "email",
+    "observability",
+    "caching",
+    "search",
   ],
-  java: ["javaBuildTool", "javaApi", "javaLogging", "javaLibraries", "javaTestingLibraries"],
+  java: [
+    "javaBuildTool",
+    "javaApi",
+    "javaLogging",
+    "javaLibraries",
+    "javaTestingLibraries",
+    "email",
+    "observability",
+    "caching",
+    "search",
+  ],
   elixir: [
     "elixirRealtime",
     "elixirJobs",
@@ -689,9 +763,31 @@ const GRAPH_TYPESCRIPT_SHARED_BACKEND_CATEGORY_SET = new Set<keyof typeof TECH_O
   "search",
 ]);
 
+const GRAPH_NATIVE_BACKEND_ALTERNATIVES = {
+  rust: {
+    caching: "rustCaching",
+    observability: "rustObservability",
+  },
+  python: {
+    caching: "pythonCaching",
+    observability: "pythonObservability",
+  },
+  go: {
+    caching: "goCaching",
+    observability: "goObservability",
+  },
+} as const satisfies Partial<
+  Record<
+    GraphBackendEcosystem,
+    Partial<Record<"caching" | "observability", keyof typeof TECH_OPTIONS>>
+  >
+>;
+
 const GRAPH_COMMON_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
   "codeQuality",
   "documentation",
+  "workspaceShape",
+  "examples",
   "packageManager",
   "aiDocs",
   "versionChannel",
@@ -778,15 +874,36 @@ function getSoloBackendSelection(stack: StackState): GraphSelection {
     ? stack[getStackKeyForCategory(backendConfig.authCategory)]
     : "none";
   const frontendEcosystem =
-    stack.ecosystem === "rust" && stack.rustFrontend !== "none" ? "rust" : "typescript";
+    (stack.dotnetFrontend ?? "none") !== "none"
+      ? "dotnet"
+      : stack.ecosystem === "rust" && stack.rustFrontend !== "none"
+        ? "rust"
+        : "typescript";
 
   return {
     frontendEcosystem,
     frontend:
       frontendEcosystem === "rust"
         ? stack.rustFrontend
-        : getSelectedOptionId(stack.webFrontend, "tanstack-router"),
-    mobile: getSelectedOptionId(stack.nativeFrontend),
+        : frontendEcosystem === "dotnet"
+          ? (stack.dotnetFrontend ?? "none")
+          : getSelectedOptionId(stack.webFrontend, "tanstack-router"),
+    mobileEcosystem:
+      (stack.swiftMobile ?? "none") !== "none"
+        ? "swift"
+        : (stack.dartMobile ?? "none") !== "none"
+          ? "dart"
+          : (stack.kotlinMobile ?? "none") !== "none"
+            ? "kotlin"
+            : "react-native",
+    mobile:
+      (stack.swiftMobile ?? "none") !== "none"
+        ? (stack.swiftMobile ?? "none")
+        : (stack.dartMobile ?? "none") !== "none"
+          ? (stack.dartMobile ?? "none")
+          : (stack.kotlinMobile ?? "none") !== "none"
+        ? (stack.kotlinMobile ?? "none")
+        : getSelectedOptionId(stack.nativeFrontend),
     backendEcosystem: currentEcosystem,
     backendLanguage: stack.javaLanguage === "kotlin" ? "kotlin" : "java",
     backend:
@@ -815,6 +932,10 @@ function getGraphSelection(stack: StackState): GraphSelection {
     const frontendEcosystem =
       frontend && isGraphFrontendEcosystem(frontend.ecosystem) ? frontend.ecosystem : "typescript";
     const mobile = selectedParts.find((part) => part.role === "mobile" && !part.ownerPartId);
+    const mobileEcosystem: GraphMobileEcosystem =
+      mobile?.ecosystem === "kotlin" || mobile?.ecosystem === "swift" || mobile?.ecosystem === "dart"
+        ? mobile.ecosystem
+        : "react-native";
     const backend = selectedParts.find((part) => part.role === "backend" && !part.ownerPartId);
     const backendEcosystem =
       backend && isGraphBackendEcosystem(backend.ecosystem) ? backend.ecosystem : "typescript";
@@ -835,6 +956,7 @@ function getGraphSelection(stack: StackState): GraphSelection {
     return {
       frontendEcosystem,
       frontend: frontend?.toolId ?? "none",
+      mobileEcosystem,
       mobile: mobile?.toolId ?? "none",
       backendEcosystem,
       backendLanguage:
@@ -859,7 +981,7 @@ function graphSelectionToSpecs(selection: GraphSelection): string[] {
     specs.push(`frontend:${selection.frontendEcosystem}:${selection.frontend}`);
   }
   if (selection.mobile !== "none") {
-    specs.push(`mobile:react-native:${selection.mobile}`);
+    specs.push(`mobile:${selection.mobileEcosystem}:${selection.mobile}`);
   }
   if (selection.backend !== "none") {
     specs.push(`backend:${selection.backendEcosystem}:${selection.backend}`);
@@ -933,13 +1055,21 @@ function stackPatchFromGraphSpecs(specs: string[]): Partial<StackState> {
     patch.javaLanguage = lowered.javaLanguage ?? "java";
     patch.webFrontend = ["none"];
     patch.rustFrontend = "none";
+    patch.dotnetFrontend = "none";
     if (frontend?.ecosystem === "typescript") {
       patch.webFrontend = [frontend.toolId];
     }
     if (frontend?.ecosystem === "rust") {
       patch.rustFrontend = frontend.toolId;
     }
-    patch.nativeFrontend = [mobile?.toolId ?? "none"];
+    if (frontend?.ecosystem === "dotnet") {
+      patch.dotnetFrontend = frontend.toolId;
+    }
+    patch.nativeFrontend = [mobile?.ecosystem === "react-native" ? mobile.toolId : "none"];
+    patch.kotlinMobile = mobile?.ecosystem === "kotlin" ? mobile.toolId : "none";
+    patch.swiftMobile = mobile?.ecosystem === "swift" ? mobile.toolId : "none";
+    patch.dartMobile = mobile?.ecosystem === "dart" ? mobile.toolId : "none";
+    patch.kotlinMobileLibraries = lowered.kotlinMobileLibraries ?? [];
     patch.database = database?.toolId ?? "none";
 
     for (const config of GRAPH_BACKEND_CONFIGS) {
@@ -1308,7 +1438,7 @@ const INITIALLY_COLLAPSED_SET = new Set([
   "appPlatforms",
 ]);
 
-const SHADCN_SUB_CATEGORIES = new Set([
+const SHADCN_SUB_CATEGORIES = new Set<keyof typeof TECH_OPTIONS>([
   "shadcnBase",
   "shadcnStyle",
   "shadcnIconLibrary",
@@ -1489,6 +1619,9 @@ function CreationModeComposer({
 }) {
   const graphSelection = useMemo(() => getGraphSelection(stack), [stack]);
   const frontendConfig = GRAPH_FRONTEND_CONFIG_BY_ECOSYSTEM[graphSelection.frontendEcosystem];
+  const mobileConfig = GRAPH_MOBILE_CONFIGS.find(
+    (config) => config.ecosystem === graphSelection.mobileEcosystem,
+  )!;
   const backendConfig = GRAPH_BACKEND_CONFIG_BY_ECOSYSTEM[graphSelection.backendEcosystem];
   const backendLabel =
     graphSelection.backendEcosystem === "java" && graphSelection.backendLanguage === "kotlin"
@@ -1516,7 +1649,11 @@ function CreationModeComposer({
     "frontend",
     graphSelection.frontendEcosystem,
   );
-  const mobileOptions = getGraphToolOptions("nativeFrontend", "mobile", "react-native");
+  const mobileOptions = getGraphToolOptions(
+    mobileConfig.frameworkCategory,
+    "mobile",
+    mobileConfig.ecosystem,
+  );
   const allBackendOptions = getGraphToolOptions(
     backendConfig.frameworkCategory,
     "backend",
@@ -1524,7 +1661,9 @@ function CreationModeComposer({
   );
   const backendOptions =
     graphSelection.backendEcosystem === "java" && graphSelection.backendLanguage === "kotlin"
-      ? allBackendOptions.filter((option) => option.id === "spring-boot" || option.id === "none")
+      ? allBackendOptions.filter(
+          (option) => option.id === "spring-boot" || option.id === "ktor" || option.id === "none",
+        )
       : allBackendOptions;
   const databaseOptions = getGraphToolOptions("database", "database", "universal");
   const allBackendOrmOptions = getGraphToolOptions(
@@ -1569,6 +1708,10 @@ function CreationModeComposer({
     ...stack,
     ecosystem: graphSelection.backendEcosystem as Ecosystem,
   };
+  const mobileCompatibilityStack: StackState = {
+    ...stack,
+    ecosystem: "react-native",
+  };
 
   const applyGraphSelection = useCallback(
     (nextSelection: GraphSelection) => {
@@ -1589,7 +1732,26 @@ function CreationModeComposer({
   );
 
   const updateStackOption = (category: keyof typeof TECH_OPTIONS, optionId: string) => {
-    onChange((current) => getStackOptionUpdate(current, category, optionId));
+    onChange((current) => {
+      const patch = getStackOptionUpdate(current, category, optionId);
+      if (optionId === "none") return patch;
+
+      const nativeAlternatives = GRAPH_NATIVE_BACKEND_ALTERNATIVES[
+        graphSelection.backendEcosystem as keyof typeof GRAPH_NATIVE_BACKEND_ALTERNATIVES
+      ] as Partial<Record<"caching" | "observability", keyof typeof TECH_OPTIONS>> | undefined;
+
+      for (const sharedCategory of ["caching", "observability"] as const) {
+        const nativeCategory = nativeAlternatives?.[sharedCategory];
+        if (!nativeCategory) continue;
+        if (category === sharedCategory) {
+          (patch as Record<string, unknown>)[getStackKeyForCategory(nativeCategory)] = "none";
+        } else if (category === nativeCategory) {
+          (patch as Record<string, unknown>)[getStackKeyForCategory(sharedCategory)] = "none";
+        }
+      }
+
+      return patch;
+    });
   };
 
   const getPrimaryToolIdsForSelection = (
@@ -1751,9 +1913,9 @@ function CreationModeComposer({
         return graphSelection.mobile === "none"
           ? null
           : {
-              scopeLabel: "React Native",
+              scopeLabel: mobileConfig.label,
               toolId: graphSelection.mobile,
-              toolName: getOptionName("nativeFrontend", graphSelection.mobile),
+              toolName: getOptionName(mobileConfig.frameworkCategory, graphSelection.mobile),
             };
       case "finalize":
         return null;
@@ -1924,6 +2086,17 @@ function CreationModeComposer({
             />
 
             {graphSelection.frontendEcosystem === "typescript" &&
+              graphSelection.frontend === "astro" &&
+              renderStackOptionGroup({
+                label: getLocalizedCategoryDisplayName(
+                  "astroIntegration",
+                  getCategoryDisplayName("astroIntegration"),
+                ),
+                category: "astroIntegration",
+                testIdPrefix: "multi-frontend-astroIntegration",
+              })}
+
+            {graphSelection.frontendEcosystem === "typescript" &&
               graphSelection.frontend !== "none" &&
               MULTI_FRONTEND_LIBRARY_GROUPS.map((category) => (
                 <div key={category}>
@@ -1934,6 +2107,23 @@ function CreationModeComposer({
                     ),
                     category,
                     testIdPrefix: `multi-frontend-${category}`,
+                  })}
+                </div>
+              ))}
+
+            {graphSelection.frontendEcosystem === "typescript" &&
+              graphSelection.frontend !== "none" &&
+              stack.uiLibrary === "shadcn-ui" &&
+              [...SHADCN_SUB_CATEGORIES].map((category) => (
+                <div key={category}>
+                  {renderStackOptionGroup({
+                    label: getLocalizedCategoryDisplayName(
+                      category,
+                      getCategoryDisplayName(category),
+                    ),
+                    category,
+                    testIdPrefix: `multi-frontend-${category}`,
+                    defaultCollapsed: true,
                   })}
                 </div>
               ))}
@@ -2075,20 +2265,43 @@ function CreationModeComposer({
                 })
               }
             />
+
+            {graphSelection.database !== "none" &&
+              renderStackOptionGroup({
+                label: getLocalizedCategoryDisplayName(
+                  "dbSetup",
+                  getCategoryDisplayName("dbSetup"),
+                ),
+                category: "dbSetup",
+                testIdPrefix: "multi-database-dbSetup",
+              })}
           </div>
         );
       case "mobile":
         return (
           <div className="space-y-5">
             {renderLanguagePicker({
-              optionCount: 1,
-              children: renderLanguageButton({
-                selected: true,
-                testId: "multi-mobile-language-react-native",
-                label: "React Native",
-                icon: "https://cdn.simpleicons.org/react/61DAFB",
-                onClick: () => undefined,
-              }),
+              optionCount: GRAPH_MOBILE_CONFIGS.length,
+              children: GRAPH_MOBILE_CONFIGS.map((config) =>
+                renderLanguageButton({
+                  selected: graphSelection.mobileEcosystem === config.ecosystem,
+                  testId: `multi-mobile-language-${config.ecosystem}`,
+                  label: config.label,
+                  icon: config.icon,
+                  onClick: () => {
+                    const mobile = getDefaultGraphTool(
+                      config.frameworkCategory,
+                      "mobile",
+                      config.ecosystem,
+                      "none",
+                    );
+                    updateGraphSelection({
+                      mobileEcosystem: config.ecosystem,
+                      mobile,
+                    });
+                  },
+                }),
+              ),
             })}
 
             <GraphOptionGroup
@@ -2099,7 +2312,8 @@ function CreationModeComposer({
               onSelect={(mobile) => updateGraphSelection({ mobile })}
             />
 
-            {graphSelection.mobile !== "none" &&
+            {graphSelection.mobileEcosystem === "react-native" &&
+              graphSelection.mobile !== "none" &&
               MULTI_MOBILE_LIBRARY_GROUPS.map((category) => (
                 <div key={category}>
                   {renderStackOptionGroup({
@@ -2109,6 +2323,23 @@ function CreationModeComposer({
                     ),
                     category,
                     testIdPrefix: `multi-mobile-${category}`,
+                    compatibilityStack: mobileCompatibilityStack,
+                  })}
+                </div>
+              ))}
+
+            {graphSelection.mobileEcosystem === "kotlin" &&
+              graphSelection.mobile !== "none" &&
+              MULTI_KOTLIN_MOBILE_LIBRARY_GROUPS.map((category) => (
+                <div key={category}>
+                  {renderStackOptionGroup({
+                    label: getLocalizedCategoryDisplayName(
+                      category,
+                      getCategoryDisplayName(category),
+                    ),
+                    category,
+                    testIdPrefix: `multi-mobile-${category}`,
+                    compatibilityStack: mobileCompatibilityStack,
                   })}
                 </div>
               ))}
