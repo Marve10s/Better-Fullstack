@@ -180,8 +180,8 @@ export const TECH_OPTIONS: Record<
     },
     {
       id: "solid-start",
-      name: "SolidStart",
-      description: "Full-stack Solid framework with SSR",
+      name: "SolidStart 2",
+      description: "Vite-native full-stack Solid framework with SSR",
       icon: "/icon/solid.svg",
       color: "from-blue-600 to-blue-800",
       default: false,
@@ -7890,8 +7890,8 @@ export const PRESET_TEMPLATES: {
   },
   {
     id: "solidstart-fullstack",
-    name: "SolidStart Fullstack",
-    description: "SolidStart + oRPC + Drizzle + SQLite + Better Auth",
+    name: "SolidStart 2 Fullstack",
+    description: "SolidStart 2 + oRPC + Drizzle + SQLite + Better Auth",
     category: "solid",
     stack: {
       projectName: "my-app",

@@ -1,8 +1,8 @@
 node_modules
 .DS_Store
 dist
+.nitro
 .output
-.vinxi
 *.local
 .env
 .env.*
