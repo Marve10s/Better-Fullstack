@@ -147,13 +147,11 @@ test.describe("Builder parity", () => {
 
     await clickVisibleTestId(page, "multi-step-mobile");
     await clickVisibleTestId(page, "multi-mobile-tool-native-bare");
-    await expect(page.getByTestId("multi-mobile-auth-auth0")).toBeVisible();
+    await expect(page.getByTestId("multi-mobile-auth-auth0")).toHaveCount(0);
     await expect(page.getByTestId("multi-mobile-payments-revenuecat")).toBeVisible();
-    await clickVisibleTestId(page, "multi-mobile-auth-auth0");
     await clickVisibleTestId(page, "multi-mobile-payments-revenuecat");
 
     const command = commandOutput(page);
-    await expect(command).toContainText("--part mobile.auth:react-native:auth0");
     await expect(command).toContainText("--part mobile.payments:react-native:revenuecat");
 
     await clickVisibleTestId(page, "multi-mobile-language-kotlin");

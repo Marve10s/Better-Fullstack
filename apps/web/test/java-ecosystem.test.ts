@@ -100,6 +100,7 @@ describe("Java Ecosystem Tab", () => {
 
     it("should expose Java framework and library options", () => {
       expect(TECH_OPTIONS.javaWebFramework.map((option) => option.id)).toEqual([
+        "ktor",
         "spring-boot",
         "quarkus",
         "micronaut",
