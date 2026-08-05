@@ -51,9 +51,9 @@ const THEME_INIT_SCRIPT = `
 `;
 const themeInitMarkup = { __html: THEME_INIT_SCRIPT };
 
-const PatreonButton = lazy(async () => {
-  const mod = await import("@/components/patreon-button");
-  return { default: mod.PatreonButton };
+const SponsorButton = lazy(async () => {
+  const mod = await import("@/components/sponsor-button");
+  return { default: mod.SponsorButton };
 });
 
 function NotFoundComponent() {
@@ -160,7 +160,7 @@ function RootComponent() {
       <Navbar />
       <Outlet />
       <Suspense fallback={null}>
-        <PatreonButton />
+        <SponsorButton />
       </Suspense>
     </RootDocument>
   );

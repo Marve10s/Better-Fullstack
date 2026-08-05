@@ -142,7 +142,7 @@ export function ReadingControls({ readingStats }: { readingStats?: BlogReadingSt
   };
 
   return (
-    // right offset clears the floating Patreon button pinned in the corner
+    // right offset clears the floating sponsorship button pinned in the corner
     <div className="fixed right-16 bottom-3 z-40 flex items-center gap-2 sm:right-[4.5rem] sm:bottom-4">
       {hasLongSections ? (
         <fieldset
