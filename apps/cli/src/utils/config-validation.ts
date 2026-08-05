@@ -532,6 +532,7 @@ function validateBackendNoneConstraints(
       part.source !== "provided" &&
       part.ecosystem !== "typescript" &&
       part.ecosystem !== "react-native" &&
+      part.ecosystem !== "kotlin" &&
       part.ecosystem !== "universal",
   );
   const hasEcosystemBackend = getEcosystemBackend(config) !== undefined;
@@ -1481,7 +1482,14 @@ function getAddonValidationConfig(config: Partial<ProjectConfig>): Partial<Proje
   );
   if (!graphBackend) return config;
   const backendEcosystem = graphBackend.ecosystem;
-  if (backendEcosystem === "universal") return config;
+  if (
+    backendEcosystem === "universal" ||
+    backendEcosystem === "kotlin" ||
+    backendEcosystem === "swift" ||
+    backendEcosystem === "dart"
+  ) {
+    return config;
+  }
 
   const projected = stackGraphToLegacyProjectConfigForEcosystem(
     config as ProjectConfig,

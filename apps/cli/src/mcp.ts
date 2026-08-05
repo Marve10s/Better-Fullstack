@@ -17,9 +17,11 @@ import {
   CSSFrameworkSchema,
   DatabaseSchema,
   DatabaseSetupSchema,
+  DartMobileSchema,
   DotnetApiSchema,
   DotnetAuthSchema,
   DotnetCachingSchema,
+  DotnetFrontendSchema,
   DotnetValidationSchema,
   DotnetDeploySchema,
   DotnetJobQueueSchema,
@@ -99,6 +101,8 @@ import {
   JavaWebFrameworkSchema,
   I18nSchema,
   JobQueueSchema,
+  KotlinMobileLibrariesSchema,
+  KotlinMobileSchema,
   legacyProjectConfigToStackParts,
   LoggingSchema,
   ObservabilitySchema,
@@ -160,6 +164,7 @@ import {
   ShadcnStyleSchema,
   stackPartsToLegacyProjectConfigPartial,
   StateManagementSchema,
+  SwiftMobileSchema,
   TestingSchema,
   UILibrarySchema,
   ValidationSchema,
@@ -208,7 +213,7 @@ For existing projects:
 
 CRITICAL RULES:
 - Dependency installation is ALWAYS skipped in MCP mode (timeout risk). After scaffolding, tell the user to run install manually.
-- Array fields: "frontend", "addons", "examples", "aiDocs", "rustLibraries", "pythonAi", "pythonTesting", "pythonCli", "pythonData", "goTesting", "javaLibraries", "javaTestingLibraries", "dotnetTesting", "dotnetObservability", "elixirLibraries", "mobileLibraries", and "dotnetLibraries". Most other option fields are strings.
+- Array fields: "frontend", "addons", "examples", "aiDocs", "rustLibraries", "pythonAi", "pythonTesting", "pythonCli", "pythonData", "goTesting", "javaLibraries", "javaTestingLibraries", "dotnetTesting", "dotnetObservability", "elixirLibraries", "mobileLibraries", "kotlinMobileLibraries", and "dotnetLibraries". Most other option fields are strings.
 - "none" means "skip this feature entirely", not "use the default".
 - Always specify "ecosystem" first — it determines which other fields are relevant.
 - TypeScript web-specific fields (web frontend, backend, orm, etc.) are IGNORED for react-native/rust/python/go/java/dotnet/elixir ecosystems.
@@ -812,6 +817,13 @@ export function buildMcpCompatibilityInput(input: Record<string, unknown>): Comp
     webFrontend,
     nativeFrontend,
     ...defaults,
+    dotnetFrontend: (input.dotnetFrontend as string) ?? "none",
+    kotlinMobile: (input.kotlinMobile as string) ?? "none",
+    kotlinMobileLibraries: Array.isArray(input.kotlinMobileLibraries)
+      ? (input.kotlinMobileLibraries as string[])
+      : [],
+    swiftMobile: (input.swiftMobile as string) ?? "none",
+    dartMobile: (input.dartMobile as string) ?? "none",
     mobileNavigation:
       (input.mobileNavigation as string) ?? (hasMobileProject ? "expo-router" : "none"),
     mobileDeepLinking:
@@ -1410,6 +1422,14 @@ const deploymentInputSchema = {
 const crossEcosystemInputSchema = {
   rustWebFramework: RustWebFrameworkSchema.optional().describe("Rust web framework"),
   rustFrontend: RustFrontendSchema.optional().describe("Rust frontend (WASM)"),
+  dotnetFrontend: DotnetFrontendSchema.optional().describe(".NET frontend (Blazor WebAssembly)"),
+  kotlinMobile: KotlinMobileSchema.optional().describe("Kotlin mobile app"),
+  kotlinMobileLibraries: z
+    .array(KotlinMobileLibrariesSchema)
+    .optional()
+    .describe("Kotlin mobile libraries"),
+  swiftMobile: SwiftMobileSchema.optional().describe("Swift mobile app"),
+  dartMobile: DartMobileSchema.optional().describe("Dart mobile app"),
   rustOrm: RustOrmSchema.optional().describe("Rust ORM"),
   rustApi: RustApiSchema.optional().describe("Rust API layer"),
   rustCli: RustCliSchema.optional().describe("Rust CLI framework"),

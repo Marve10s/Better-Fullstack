@@ -132,6 +132,7 @@ import {
   getAddonStackPartBinding,
   getStackPartCompatibilityIssueForPart,
   getStackPartOptions,
+  formatStackPartSpec,
   legacyProjectConfigToStackParts,
   parseStackPartSpecs,
   stackGraphToLegacyProjectConfigForEcosystem,
@@ -172,6 +173,57 @@ function getTypeScriptApiOptionsForFrontend(frontend: string) {
 }
 
 describe("stack graph", () => {
+  it("round-trips named primary services and resolves capabilities by owner ID", () => {
+    const stackParts = parseStackPartSpecs([
+      "backend:go:gin:api",
+      "backend:go:echo:admin",
+      "api.orm:go:gorm",
+      "admin.orm:go:sqlc",
+    ]);
+
+    expect(stackParts.filter((part) => part.role === "backend").map((part) => part.id)).toEqual([
+      "api",
+      "admin",
+    ]);
+    expect(stackParts.find((part) => part.toolId === "gorm")?.ownerPartId).toBe("api");
+    expect(stackParts.find((part) => part.toolId === "sqlc")?.ownerPartId).toBe("admin");
+    expect(stackParts.find((part) => part.id === "api")?.targetPath).toBe("services/api");
+    expect(stackParts.find((part) => part.id === "admin")?.targetPath).toBe("services/admin");
+    expect(
+      stackParts
+        .filter((part) => part.source !== "provided")
+        .map((part) => formatStackPartSpec(part, stackParts)),
+    ).toEqual([
+      "backend:go:gin:api",
+      "backend:go:echo:admin",
+      "api.orm:go:gorm",
+      "admin.orm:go:sqlc",
+    ]);
+    expect(validateStackParts(stackParts).issues).toEqual([]);
+  });
+
+  it("requires stable IDs when the same primary service is repeated", () => {
+    const stackParts = parseStackPartSpecs(["backend:go:gin", "backend:go:gin"]);
+
+    expect(validateStackParts(stackParts).issues).toContainEqual(
+      expect.objectContaining({ code: "DUPLICATE_PART_ID", partId: "backend:go:gin" }),
+    );
+  });
+
+  it("rejects repeated primary projections that cannot be rendered independently", () => {
+    const stackParts = parseStackPartSpecs([
+      "backend:typescript:hono:public-api",
+      "backend:typescript:elysia:admin-api",
+      "database:universal:postgres:primary-db",
+      "database:universal:mysql:analytics-db",
+    ]);
+
+    const issues = validateStackParts(stackParts).issues.filter(
+      (issue) => issue.code === "UNSUPPORTED_REPEATED_PRIMARY",
+    );
+    expect(issues.map((issue) => issue.partId)).toEqual(["admin-api", "analytics-db"]);
+  });
+
   it("parses repeated part bindings and lowers them to legacy compatibility fields", () => {
     const stackParts = parseStackPartSpecs([
       "frontend:typescript:next",
@@ -2082,5 +2134,24 @@ describe("stack graph structural round-trip (phase 0)", () => {
 
     const reimported = legacyProjectConfigToStackParts(lowered);
     expect(reimported.some((part) => part.role === "backend")).toBe(false);
+  });
+
+  it("registers and lowers every graph-native frontend and mobile application", () => {
+    const parts = parseStackPartSpecs([
+      "frontend:dotnet:blazor-web-app",
+      "mobile:kotlin:compose-multiplatform:shared",
+      "shared.libraries:kotlin:voyager",
+      "shared.libraries:kotlin:koin",
+      "mobile:swift:swiftui:ios",
+      "mobile:dart:flutter:flutter",
+    ]);
+    const lowered = stackPartsToLegacyProjectConfigPartial(parts);
+
+    expect(validateStackParts(parts).issues).toEqual([]);
+    expect(lowered.dotnetFrontend).toBe("blazor-web-app");
+    expect(lowered.kotlinMobile).toBe("compose-multiplatform");
+    expect(lowered.kotlinMobileLibraries).toEqual(["voyager", "koin"]);
+    expect(lowered.swiftMobile).toBe("swiftui");
+    expect(lowered.dartMobile).toBe("flutter");
   });
 });

@@ -5,7 +5,8 @@ import {
   type StackPart,
 } from "@better-fullstack/types";
 
-type GraphBackendConnection = {
+export type GraphBackendConnection = {
+  partId: string;
   ecosystem: Exclude<StackPart["ecosystem"], "typescript" | "react-native" | "universal">;
   toolId: string;
   label: string;
@@ -20,6 +21,16 @@ type GraphBackendConnection = {
   checkCommand: string | null;
   testCommand: string | null;
 };
+
+function getGraphWebFrontend(config: ProjectConfig): StackPart | undefined {
+  return (config.stackParts ?? []).find(
+    (part) =>
+      part.role === "frontend" &&
+      !part.ownerPartId &&
+      part.source !== "provided" &&
+      part.toolId !== "none",
+  );
+}
 
 const BACKEND_LABELS: Record<string, string> = {
   axum: "Rust Axum",
@@ -38,6 +49,7 @@ const BACKEND_LABELS: Record<string, string> = {
   chi: "Go Chi",
   "net-http": "Go net/http",
   "spring-boot": "Java Spring Boot",
+  ktor: "Kotlin Ktor",
   quarkus: "Java Quarkus",
   "aspnet-minimal": ".NET ASP.NET Core Minimal APIs",
   "aspnet-mvc": ".NET ASP.NET Core MVC",
@@ -61,9 +73,19 @@ export function getGraphBackendConnection(config: ProjectConfig): GraphBackendCo
 
   const targetPath = backend.targetPath ?? getRoleTargetPath("backend") ?? "apps/server";
   const label = BACKEND_LABELS[backend.toolId] ?? `${backend.ecosystem} ${backend.toolId}`;
-  const webOrigin = hasWebFrontend(config)
-    ? `http://localhost:${getLocalWebDevPort(config.frontend)}`
-    : null;
+  const graphFrontend = getGraphWebFrontend(config);
+  const webPort = graphFrontend
+    ? graphFrontend.ecosystem === "dotnet"
+      ? 5173
+      : graphFrontend.ecosystem === "rust"
+        ? 8080
+        : graphFrontend.ecosystem === "typescript"
+          ? getLocalWebDevPort([graphFrontend.toolId] as ProjectConfig["frontend"])
+          : null
+    : hasWebFrontend(config)
+      ? getLocalWebDevPort(config.frontend)
+      : null;
+  const webOrigin = webPort ? `http://localhost:${webPort}` : null;
 
   switch (backend.ecosystem) {
     case "elixir": {
@@ -72,6 +94,7 @@ export function getGraphBackendConnection(config: ProjectConfig): GraphBackendCo
         (part) => part.ownerPartId === backend.id && part.role === "orm" && part.toolId === "ecto-sql",
       );
       return {
+        partId: backend.id,
         ecosystem: backend.ecosystem,
         toolId: backend.toolId,
         label,
@@ -90,6 +113,7 @@ export function getGraphBackendConnection(config: ProjectConfig): GraphBackendCo
     }
     case "rust":
       return {
+        partId: backend.id,
         ecosystem: backend.ecosystem,
         toolId: backend.toolId,
         label,
@@ -111,6 +135,7 @@ export function getGraphBackendConnection(config: ProjectConfig): GraphBackendCo
             ? `cd ${targetPath} && uv run litestar --app src.app.main:app run --reload --host 0.0.0.0 --port \${PORT:-8000}`
             : `cd ${targetPath} && uv run python src/app/main.py`;
       return {
+        partId: backend.id,
         ecosystem: backend.ecosystem,
         toolId: backend.toolId,
         label,
@@ -127,6 +152,7 @@ export function getGraphBackendConnection(config: ProjectConfig): GraphBackendCo
     }
     case "go":
       return {
+        partId: backend.id,
         ecosystem: backend.ecosystem,
         toolId: backend.toolId,
         label,
@@ -143,16 +169,22 @@ export function getGraphBackendConnection(config: ProjectConfig): GraphBackendCo
     case "java": {
       const buildTool = config.javaBuildTool === "gradle" ? "./gradlew" : "./mvnw";
       const isQuarkus = backend.toolId === "quarkus";
+      const isKtor = backend.toolId === "ktor";
       const devTask =
         config.javaBuildTool === "gradle"
-          ? isQuarkus
+          ? isKtor
+            ? "run"
+            : isQuarkus
             ? "quarkusDev"
             : "bootRun"
-          : isQuarkus
+          : isKtor
+            ? "compile exec:java"
+            : isQuarkus
             ? "quarkus:dev"
             : "spring-boot:run";
       const buildTask = config.javaBuildTool === "gradle" ? "build" : "package";
       return {
+        partId: backend.id,
         ecosystem: backend.ecosystem,
         toolId: backend.toolId,
         label,
@@ -185,6 +217,7 @@ export function getGraphBackendConnection(config: ProjectConfig): GraphBackendCo
         );
       const healthPath = hasHealthChecks ? "/health" : "/";
       return {
+        partId: backend.id,
         ecosystem: backend.ecosystem,
         toolId: backend.toolId,
         label,
@@ -204,6 +237,56 @@ export function getGraphBackendConnection(config: ProjectConfig): GraphBackendCo
   }
 }
 
-export function hasWebFrontend(config: Pick<ProjectConfig, "frontend">): boolean {
+/** Resolve every generated non-TypeScript service while preserving graph order. */
+export function getGraphBackendConnections(config: ProjectConfig): GraphBackendConnection[] {
+  const backendParts = (config.stackParts ?? []).filter(
+    (part) =>
+      part.role === "backend" &&
+      !part.ownerPartId &&
+      part.source !== "provided" &&
+      part.ecosystem !== "typescript" &&
+      part.ecosystem !== "react-native" &&
+      part.ecosystem !== "universal",
+  );
+
+  const connections = backendParts.flatMap((backend) => {
+    const connection = getGraphBackendConnection({
+      ...config,
+      stackParts: [backend, ...(config.stackParts ?? []).filter((part) => part.id !== backend.id)],
+    });
+    return connection ? [connection] : [];
+  });
+
+  const usedPorts = new Set<number>();
+  return connections.map((connection) => {
+    const url = new URL(connection.serverUrl);
+    const defaultPort = Number(url.port);
+    let port = defaultPort;
+    while (usedPorts.has(port)) port += 1;
+    usedPorts.add(port);
+    if (port === defaultPort) return connection;
+
+    const serverUrl = `${url.protocol}//${url.hostname}:${port}`;
+    return {
+      ...connection,
+      serverUrl,
+      healthUrl: `${serverUrl}${connection.healthPath}`,
+      devCommand: connection.devCommand.replace(
+        `cd ${connection.targetPath} && `,
+        `cd ${connection.targetPath} && PORT=${port} `,
+      ),
+    };
+  });
+}
+
+export function hasWebFrontend(
+  config: Pick<ProjectConfig, "frontend"> & Partial<Pick<ProjectConfig, "stackParts">>,
+): boolean {
+  const graphFrontends = (config.stackParts ?? []).filter(
+    (part) => part.role === "frontend" && !part.ownerPartId && part.source !== "provided",
+  );
+  if (graphFrontends.length > 0) {
+    return graphFrontends.some((part) => part.toolId !== "none");
+  }
   return config.frontend.some((entry) => entry !== "none" && !entry.startsWith("native-"));
 }

@@ -23,6 +23,8 @@ function normalizeInputStack(input: Partial<StackState>): StackState {
     javaLibraries: input.javaLibraries ?? DEFAULT_STACK.javaLibraries,
     javaTestingLibraries: input.javaTestingLibraries ?? DEFAULT_STACK.javaTestingLibraries,
     mobileLibraries: input.mobileLibraries ?? DEFAULT_STACK.mobileLibraries,
+    kotlinMobileLibraries:
+      input.kotlinMobileLibraries ?? DEFAULT_STACK.kotlinMobileLibraries,
     dotnetLibraries: input.dotnetLibraries ?? DEFAULT_STACK.dotnetLibraries,
   });
 }

@@ -88,10 +88,9 @@ function compatibilityAdjustedSelection(
 }
 
 /**
- * Legacy flat conversion can retain inert defaults from other ecosystems. In
- * particular, Rust + Leptos receives a TypeScript TanStack Router frontend.
- * Validate only the selected ecosystem and universal parts so those inert
- * defaults cannot create duplicate primary roles (pSEO spec verdict E1).
+ * Legacy flat conversion retains inert defaults from other ecosystems. Keep
+ * generated page facts and output scoped to the selected ecosystem even though
+ * the ownership-aware graph can now validate those dormant defaults safely.
  */
 export function filterStackPartsForSelectedEcosystem(
   parts: readonly StackPart[],

@@ -1,0 +1,26 @@
+name: BetterFullstackIOS
+options:
+  bundleIdPrefix: com.betterfullstack
+settings:
+  base:
+    SWIFT_VERSION: 6.0
+    IPHONEOS_DEPLOYMENT_TARGET: 16.0
+targets:
+  BetterFullstackIOS:
+    type: application
+    platform: iOS
+    sources:
+      - iosApp
+    info:
+      path: iosApp/Info.plist
+      properties:
+        CFBundleDisplayName: "{{projectName}}"
+        UILaunchScreen: {}
+    preBuildScripts:
+      - name: Build Compose framework
+        script: |
+          cd "$SRCROOT/.."
+          ./gradlew :composeApp:embedAndSignAppleFrameworkForXcode
+    dependencies:
+      - framework: ../composeApp/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)/ComposeApp.framework
+        embed: true

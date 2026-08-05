@@ -1,0 +1,16 @@
+# {{projectName}} multiplatform app
+
+Shared Compose UI targets Android, iOS, and desktop.
+
+```bash
+./gradlew :androidApp:assembleDebug
+./gradlew :composeApp:run
+```
+
+`composeApp` contains the shared Android, iOS, and desktop UI. `androidApp` is the
+Android application entry point; keeping it separate uses the supported Android
+Gradle Plugin 9 Kotlin Multiplatform project structure.
+
+For iOS, run `xcodegen generate --spec iosApp/project.yml`, then open
+`iosApp/BetterFullstackIOS.xcodeproj`. The Xcode target builds and embeds the shared
+`ComposeApp` framework before each application build.

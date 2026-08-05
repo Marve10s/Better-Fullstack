@@ -6,7 +6,7 @@ export { processGoBaseTemplate } from "./go-base";
 export { processJavaBaseTemplate } from "./java-base";
 export { processDotnetBaseTemplate } from "./dotnet-base";
 export { processElixirBaseTemplate } from "./elixir-base";
-export { processFrontendTemplates } from "./frontend";
+export { processFrontendTemplates, processGraphNativeAppTemplates } from "./frontend";
 export { processBackendTemplates } from "./backend";
 export { processDbTemplates } from "./database";
 export { processApiTemplates } from "./api";

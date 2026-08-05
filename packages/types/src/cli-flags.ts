@@ -543,6 +543,31 @@ export const CLI_FLAG_GROUP_DEFINITIONS: readonly CliFlagGroupDefinition[] = [
         configKey: "mobileLibraries",
         multiple: true,
       },
+      {
+        flag: "kotlin-mobile",
+        summary: "Kotlin mobile app.",
+        source: { kind: "category", category: "kotlinMobile" },
+        configKey: "kotlinMobile",
+      },
+      {
+        flag: "kotlin-mobile-libraries",
+        summary: "Optional Kotlin mobile libraries.",
+        source: { kind: "category", category: "kotlinMobileLibraries" },
+        configKey: "kotlinMobileLibraries",
+        multiple: true,
+      },
+      {
+        flag: "swift-mobile",
+        summary: "Swift mobile app.",
+        source: { kind: "category", category: "swiftMobile" },
+        configKey: "swiftMobile",
+      },
+      {
+        flag: "dart-mobile",
+        summary: "Flutter / Dart mobile app.",
+        source: { kind: "category", category: "dartMobile" },
+        configKey: "dartMobile",
+      },
     ],
   },
   {
@@ -963,6 +988,12 @@ export const CLI_FLAG_GROUP_DEFINITIONS: readonly CliFlagGroupDefinition[] = [
     description: "Flags for `--ecosystem dotnet`.",
     ecosystem: "dotnet",
     flags: [
+      {
+        flag: "dotnet-frontend",
+        summary: ".NET frontend.",
+        source: { kind: "category", category: "dotnetFrontend" },
+        configKey: "dotnetFrontend",
+      },
       {
         flag: "dotnet-web-framework",
         summary: ".NET web framework.",

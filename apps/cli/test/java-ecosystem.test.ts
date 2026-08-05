@@ -98,7 +98,13 @@ describe("Java Ecosystem", () => {
     });
 
     it("should expose scaffolded Java web framework values", () => {
-      expect(JAVA_WEB_FRAMEWORKS).toEqual(["spring-boot", "quarkus", "micronaut", "none"]);
+      expect(JAVA_WEB_FRAMEWORKS).toEqual([
+        "spring-boot",
+        "ktor",
+        "quarkus",
+        "micronaut",
+        "none",
+      ]);
     });
 
     it("should only expose scaffolded Java build tool values", () => {

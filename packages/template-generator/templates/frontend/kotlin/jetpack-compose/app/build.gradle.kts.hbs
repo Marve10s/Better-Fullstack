@@ -1,0 +1,88 @@
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
+{{#if (or (includes kotlinMobileLibraries "ktor-client") (includes kotlinMobileLibraries "kotlinx-serialization-json"))}}
+    id("org.jetbrains.kotlin.plugin.serialization")
+{{/if}}
+}
+
+android {
+    namespace = "com.betterfullstack.app"
+    compileSdk = 37
+
+    defaultConfig {
+        applicationId = "com.betterfullstack.app"
+        minSdk = 26
+        targetSdk = 37
+        versionCode = 1
+        versionName = "1.0"
+    }
+
+    buildFeatures {
+        compose = true
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+{{#if (includes kotlinMobileLibraries "junit5")}}
+
+    testOptions {
+        unitTests.all { it.useJUnitPlatform() }
+    }
+{{/if}}
+}
+
+dependencies {
+    val composeBom = platform("androidx.compose:compose-bom:2026.06.00")
+
+    implementation(composeBom)
+    androidTestImplementation(composeBom)
+    implementation("androidx.activity:activity-compose:1.13.0")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
+{{#if (includes kotlinMobileLibraries "navigation-compose")}}
+    implementation("androidx.navigation:navigation-compose:2.9.6")
+{{/if}}
+{{#if (includes kotlinMobileLibraries "voyager")}}
+    implementation("cafe.adriel.voyager:voyager-navigator:1.1.0-beta03")
+{{/if}}
+{{#if (includes kotlinMobileLibraries "koin")}}
+    implementation("io.insert-koin:koin-androidx-compose:4.1.1")
+{{/if}}
+{{#if (includes kotlinMobileLibraries "ktor-client")}}
+    implementation("io.ktor:ktor-client-core:3.4.0")
+    implementation("io.ktor:ktor-client-okhttp:3.4.0")
+    implementation("io.ktor:ktor-client-content-negotiation:3.4.0")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:3.4.0")
+{{/if}}
+{{#if (includes kotlinMobileLibraries "kotlinx-serialization-json")}}
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+{{/if}}
+{{#if (includes kotlinMobileLibraries "datastore")}}
+    implementation("androidx.datastore:datastore-preferences:1.1.7")
+{{/if}}
+{{#if (includes kotlinMobileLibraries "coil")}}
+    implementation("io.coil-kt.coil3:coil-compose:3.3.0")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.3.0")
+{{/if}}
+{{#if (includes kotlinMobileLibraries "mockk")}}
+    testImplementation("io.mockk:mockk:1.14.6")
+{{/if}}
+{{#if (includes kotlinMobileLibraries "turbine")}}
+    testImplementation("app.cash.turbine:turbine:1.2.1")
+{{/if}}
+{{#if (includes kotlinMobileLibraries "junit5")}}
+    testImplementation("org.junit.jupiter:junit-jupiter:5.13.4")
+{{/if}}
+}

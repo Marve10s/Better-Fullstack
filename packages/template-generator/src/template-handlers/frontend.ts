@@ -130,3 +130,102 @@ export async function processFrontendTemplates(
     }
   }
 }
+
+/** Render graph-native frontends and mobile apps that do not use the TypeScript base. */
+export async function processGraphNativeAppTemplates(
+  vfs: VirtualFileSystem,
+  templates: TemplateData,
+  config: ProjectConfig,
+): Promise<void> {
+  const selectedParts = (config.stackParts ?? []).filter(
+    (part) => !part.ownerPartId && part.source !== "provided",
+  );
+  const dotnetFrontends = selectedParts.filter(
+    (part) => part.role === "frontend" && part.ecosystem === "dotnet",
+  );
+  const kotlinMobiles = selectedParts.filter(
+    (part) => part.role === "mobile" && part.ecosystem === "kotlin",
+  );
+  const swiftMobiles = selectedParts.filter(
+    (part) => part.role === "mobile" && part.ecosystem === "swift",
+  );
+  const dartMobiles = selectedParts.filter(
+    (part) => part.role === "mobile" && part.ecosystem === "dart",
+  );
+
+  for (const frontend of dotnetFrontends) {
+    if (frontend.toolId !== "blazor-webassembly" && frontend.toolId !== "blazor-web-app") continue;
+    processTemplatesFromPrefix(
+      vfs,
+      templates,
+      `frontend/dotnet/${frontend.toolId}`,
+      frontend.targetPath ?? "apps/web",
+      config,
+    );
+  }
+
+  for (const mobile of kotlinMobiles) {
+    if (mobile.toolId !== "jetpack-compose" && mobile.toolId !== "compose-multiplatform") continue;
+    const targetPath = mobile.targetPath ?? "apps/mobile";
+    const mobileConfig: ProjectConfig = {
+      ...config,
+      kotlinMobile: mobile.toolId as ProjectConfig["kotlinMobile"],
+      kotlinMobileLibraries: (config.stackParts ?? [])
+        .filter(
+          (part) =>
+            part.ownerPartId === mobile.id &&
+            part.role === "libraries" &&
+            part.ecosystem === "kotlin" &&
+            part.toolId !== "none",
+        )
+        .map((part) => part.toolId) as NonNullable<ProjectConfig["kotlinMobileLibraries"]>,
+    };
+    processTemplatesFromPrefix(
+      vfs,
+      templates,
+      `frontend/kotlin/${mobile.toolId}`,
+      targetPath,
+      mobileConfig,
+    );
+    // Reuse the repository's maintained Gradle wrapper rather than carrying a
+    // second binary copy for Kotlin projects.
+    for (const relativePath of [
+      "gradlew",
+      "gradlew.bat",
+      "gradle/wrapper/gradle-wrapper.jar",
+      "gradle/wrapper/gradle-wrapper.properties",
+    ]) {
+      const sourcePath = `java-base/${relativePath}`;
+      const content = templates.get(sourcePath);
+      if (content === undefined) continue;
+      const binarySource = relativePath.endsWith(".jar") ? sourcePath : undefined;
+      vfs.writeFile(
+        `${targetPath}/${relativePath}`,
+        binarySource ? "[Binary file]" : content,
+        binarySource,
+      );
+    }
+  }
+
+  for (const mobile of swiftMobiles) {
+    if (mobile.toolId !== "swiftui") continue;
+    processTemplatesFromPrefix(
+      vfs,
+      templates,
+      "frontend/swift/swiftui",
+      mobile.targetPath ?? "apps/mobile",
+      config,
+    );
+  }
+
+  for (const mobile of dartMobiles) {
+    if (mobile.toolId !== "flutter") continue;
+    processTemplatesFromPrefix(
+      vfs,
+      templates,
+      "frontend/dart/flutter",
+      mobile.targetPath ?? "apps/mobile",
+      config,
+    );
+  }
+}

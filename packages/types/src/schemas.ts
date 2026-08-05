@@ -7,7 +7,13 @@ export const EcosystemSchema = z
   );
 
 export const StackPartEcosystemSchema = z
-  .union([EcosystemSchema, z.literal("universal")])
+  .union([
+    EcosystemSchema,
+    z.literal("kotlin"),
+    z.literal("swift"),
+    z.literal("dart"),
+    z.literal("universal"),
+  ])
   .describe("Ecosystem adapter for a selected stack part");
 
 export const StackPartRoleSchema = z
@@ -501,6 +507,34 @@ export const RustFrontendSchema = z
   .enum(["leptos", "dioxus", "yew", "none"])
   .describe("Rust WASM frontend framework");
 
+export const DotnetFrontendSchema = z
+  .enum(["blazor-webassembly", "blazor-web-app", "none"])
+  .describe(".NET frontend framework");
+
+export const KotlinMobileSchema = z
+  .enum(["jetpack-compose", "compose-multiplatform", "none"])
+  .describe("Kotlin mobile application framework");
+
+export const KotlinMobileLibrariesSchema = z
+  .enum([
+    "navigation-compose",
+    "voyager",
+    "koin",
+    "ktor-client",
+    "kotlinx-serialization-json",
+    "datastore",
+    "coil",
+    "mockk",
+    "turbine",
+    "junit5",
+    "none",
+  ])
+  .describe("Kotlin and Compose application libraries");
+
+export const SwiftMobileSchema = z.enum(["swiftui", "none"]).describe("Swift mobile framework");
+
+export const DartMobileSchema = z.enum(["flutter", "none"]).describe("Dart mobile framework");
+
 export const RustOrmSchema = z
   .enum(["sea-orm", "sqlx", "diesel", "mongodb", "rusqlite", "tokio-postgres", "none"])
   .describe("Rust ORM/database layer");
@@ -736,7 +770,7 @@ export const JavaLanguageSchema = z
   .describe("JVM language variant for the Java ecosystem (java or kotlin)");
 
 export const JavaWebFrameworkSchema = z
-  .enum(["spring-boot", "quarkus", "micronaut", "none"])
+  .enum(["spring-boot", "ktor", "quarkus", "micronaut", "none"])
   .describe("Java web framework");
 
 export const JavaBuildToolSchema = z.enum(["maven", "gradle", "none"]).describe("Java build tool");
@@ -1151,6 +1185,11 @@ export const CreateInputSchema = z.object({
   // Rust ecosystem options
   rustWebFramework: RustWebFrameworkSchema.optional(),
   rustFrontend: RustFrontendSchema.optional(),
+  dotnetFrontend: DotnetFrontendSchema.optional(),
+  kotlinMobile: KotlinMobileSchema.optional(),
+  kotlinMobileLibraries: z.array(KotlinMobileLibrariesSchema).optional(),
+  swiftMobile: SwiftMobileSchema.optional(),
+  dartMobile: DartMobileSchema.optional(),
   rustOrm: RustOrmSchema.optional(),
   rustApi: RustApiSchema.optional(),
   rustCli: RustCliSchema.optional(),
@@ -1343,6 +1382,11 @@ export const ProjectConfigSchema = z.object({
   // Rust ecosystem options
   rustWebFramework: RustWebFrameworkSchema,
   rustFrontend: RustFrontendSchema,
+  dotnetFrontend: DotnetFrontendSchema.optional(),
+  kotlinMobile: KotlinMobileSchema.optional(),
+  kotlinMobileLibraries: z.array(KotlinMobileLibrariesSchema).optional(),
+  swiftMobile: SwiftMobileSchema.optional(),
+  dartMobile: DartMobileSchema.optional(),
   rustOrm: RustOrmSchema,
   rustApi: RustApiSchema,
   rustCli: RustCliSchema,
@@ -1522,6 +1566,11 @@ export const BetterTStackConfigSchema = z.object({
   // Rust ecosystem options
   rustWebFramework: RustWebFrameworkSchema,
   rustFrontend: RustFrontendSchema,
+  dotnetFrontend: DotnetFrontendSchema.optional(),
+  kotlinMobile: KotlinMobileSchema.optional(),
+  kotlinMobileLibraries: z.array(KotlinMobileLibrariesSchema).optional(),
+  swiftMobile: SwiftMobileSchema.optional(),
+  dartMobile: DartMobileSchema.optional(),
   rustOrm: RustOrmSchema,
   rustApi: RustApiSchema,
   rustCli: RustCliSchema,
@@ -1714,6 +1763,11 @@ export const FILE_STORAGE_VALUES = FileStorageSchema.options;
 export const ECOSYSTEM_VALUES = EcosystemSchema.options;
 export const RUST_WEB_FRAMEWORK_VALUES = RustWebFrameworkSchema.options;
 export const RUST_FRONTEND_VALUES = RustFrontendSchema.options;
+export const DOTNET_FRONTEND_VALUES = DotnetFrontendSchema.options;
+export const KOTLIN_MOBILE_VALUES = KotlinMobileSchema.options;
+export const KOTLIN_MOBILE_LIBRARIES_VALUES = KotlinMobileLibrariesSchema.options;
+export const SWIFT_MOBILE_VALUES = SwiftMobileSchema.options;
+export const DART_MOBILE_VALUES = DartMobileSchema.options;
 export const RUST_ORM_VALUES = RustOrmSchema.options;
 export const RUST_API_VALUES = RustApiSchema.options;
 export const RUST_CLI_VALUES = RustCliSchema.options;

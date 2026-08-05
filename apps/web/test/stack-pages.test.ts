@@ -77,7 +77,7 @@ describe("programmatic stack pages", () => {
     }
   });
 
-  it("filters inert cross-ecosystem parts before graph validation for Rust", () => {
+  it("filters inert cross-ecosystem parts before generating Rust stack pages", () => {
     const page = getStackPage("rust-axum-leptos-seaorm");
     expect(page).toBeDefined();
     if (!page) return;
@@ -93,7 +93,8 @@ describe("programmatic stack pages", () => {
       page.selection.ecosystem,
     );
 
-    expect(validateStackParts(unfilteredParts).issues.length).toBeGreaterThan(0);
+    expect(validateStackParts(unfilteredParts).issues).toEqual([]);
+    expect(filteredParts.length).toBeLessThan(unfilteredParts.length);
     expect(filteredParts.some((part) => part.ecosystem === "typescript")).toBe(false);
     expect(validateStackParts(filteredParts).issues).toEqual([]);
     expect(page.compatibility.graphIssueCount).toBe(0);

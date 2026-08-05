@@ -111,8 +111,8 @@ export type KotlinJavaGateInput = {
 };
 
 export function getKotlinJavaIncompatibilityReason(stack: KotlinJavaGateInput): string | null {
-  if (stack.javaWebFramework !== "spring-boot") {
-    return "Kotlin sources are only wired for the Spring Boot scaffold";
+  if (stack.javaWebFramework !== "spring-boot" && stack.javaWebFramework !== "ktor") {
+    return "Kotlin sources are only wired for the Spring Boot and Ktor scaffolds";
   }
   if (!stack.javaBuildTool || stack.javaBuildTool === "none") {
     return "Kotlin requires Maven or Gradle";
@@ -240,6 +240,11 @@ export type CompatibilityInput = {
   yolo: string;
   rustWebFramework: string;
   rustFrontend: string;
+  dotnetFrontend?: string;
+  kotlinMobile?: string;
+  kotlinMobileLibraries?: string[];
+  swiftMobile?: string;
+  dartMobile?: string;
   rustOrm: string;
   rustApi: string;
   rustCli: string;
@@ -1563,6 +1568,18 @@ export const analyzeStackCompatibility = (
     }
   }
 
+  if (
+    (nextStack.kotlinMobile === undefined || nextStack.kotlinMobile === "none") &&
+    (nextStack.kotlinMobileLibraries?.length ?? 0) > 0
+  ) {
+    nextStack.kotlinMobileLibraries = [];
+    changed = true;
+    changes.push({
+      category: "kotlinMobileLibraries",
+      message: "Kotlin mobile libraries cleared (no Kotlin mobile app)",
+    });
+  }
+
   // UI libraries requiring Tailwind - auto-adjust CSS framework or clear UI library
   const styledComponentsFrontends = new Set([
     "tanstack-router",
@@ -2603,8 +2620,12 @@ export const getDisabledReason = (
   }
 
   if (currentStack.ecosystem === "java" && currentStack.javaLanguage === "kotlin") {
-    if (category === "javaWebFramework" && optionId !== "spring-boot") {
-      return "Kotlin sources are only wired for the Spring Boot scaffold";
+    if (
+      category === "javaWebFramework" &&
+      optionId !== "spring-boot" &&
+      optionId !== "ktor"
+    ) {
+      return "Kotlin sources are only wired for the Spring Boot and Ktor scaffolds";
     }
     if (category === "javaBuildTool" && optionId === "none") {
       return "Kotlin requires Maven or Gradle";

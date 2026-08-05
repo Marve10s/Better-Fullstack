@@ -6,6 +6,70 @@ type TechResourceLinks = {
 type LinkMap = Record<string, TechResourceLinks>;
 
 const BASE_LINKS: LinkMap = {
+  "blazor-webassembly": {
+    docsUrl: "https://learn.microsoft.com/aspnet/core/blazor/hosting-models",
+    githubUrl: "https://github.com/dotnet/aspnetcore",
+  },
+  "blazor-web-app": {
+    docsUrl: "https://learn.microsoft.com/aspnet/core/blazor/",
+    githubUrl: "https://github.com/dotnet/aspnetcore",
+  },
+  "jetpack-compose": {
+    docsUrl: "https://developer.android.com/compose",
+    githubUrl: "https://github.com/androidx/androidx/tree/androidx-main/compose",
+  },
+  "compose-multiplatform": {
+    docsUrl: "https://kotlinlang.org/docs/multiplatform/compose-multiplatform.html",
+    githubUrl: "https://github.com/JetBrains/compose-multiplatform",
+  },
+  swiftui: {
+    docsUrl: "https://developer.apple.com/documentation/swiftui/",
+    githubUrl: "https://github.com/apple-sample-code/SwiftUI-Tutorials",
+  },
+  flutter: {
+    docsUrl: "https://docs.flutter.dev/",
+    githubUrl: "https://github.com/flutter/flutter",
+  },
+  ktor: {
+    docsUrl: "https://ktor.io/docs/",
+    githubUrl: "https://github.com/ktorio/ktor",
+  },
+  "navigation-compose": {
+    docsUrl: "https://developer.android.com/develop/ui/compose/navigation",
+    githubUrl: "https://github.com/androidx/androidx/tree/androidx-main/navigation",
+  },
+  voyager: {
+    docsUrl: "https://voyager.adriel.cafe/",
+    githubUrl: "https://github.com/adrielcafe/voyager",
+  },
+  koin: {
+    docsUrl: "https://insert-koin.io/docs/quickstart/android-compose/",
+    githubUrl: "https://github.com/InsertKoinIO/koin",
+  },
+  "ktor-client": {
+    docsUrl: "https://ktor.io/docs/client-create-new-application.html",
+    githubUrl: "https://github.com/ktorio/ktor",
+  },
+  "kotlinx-serialization-json": {
+    docsUrl: "https://kotlinlang.org/docs/serialization.html",
+    githubUrl: "https://github.com/Kotlin/kotlinx.serialization",
+  },
+  datastore: {
+    docsUrl: "https://developer.android.com/topic/libraries/architecture/datastore",
+    githubUrl: "https://github.com/androidx/androidx/tree/androidx-main/datastore",
+  },
+  coil: {
+    docsUrl: "https://coil-kt.github.io/coil/",
+    githubUrl: "https://github.com/coil-kt/coil",
+  },
+  mockk: {
+    docsUrl: "https://mockk.io/",
+    githubUrl: "https://github.com/mockk/mockk",
+  },
+  turbine: {
+    docsUrl: "https://cashapp.github.io/turbine/docs/1.x/",
+    githubUrl: "https://github.com/cashapp/turbine",
+  },
   eslint: {
     docsUrl: "https://eslint.org/docs/latest/",
     githubUrl: "https://github.com/eslint/eslint",

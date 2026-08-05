@@ -24,6 +24,11 @@ import {
 
 const JAVA_WEB_FRAMEWORK_PROMPT_OPTIONS: PromptOption<JavaWebFramework>[] = [
   {
+    value: "ktor",
+    label: "Ktor",
+    hint: "Coroutine-native Kotlin framework from JetBrains",
+  },
+  {
     value: "spring-boot",
     label: "Spring Boot",
     hint: "Production-grade Java framework with embedded server and auto-configuration",
@@ -54,7 +59,7 @@ const JAVA_LANGUAGE_PROMPT_OPTIONS: PromptOption<JavaLanguage>[] = [
   {
     value: "kotlin",
     label: "Kotlin",
-    hint: "Idiomatic Kotlin sources (Spring Boot only)",
+    hint: "Idiomatic Kotlin sources (Spring Boot or Ktor)",
   },
 ];
 

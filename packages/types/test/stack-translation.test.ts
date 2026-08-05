@@ -338,6 +338,8 @@ describe("stack selection translation", () => {
       mobilePush: "expo-notifications",
       mobileOTA: "expo-updates",
       mobileDeepLinking: "expo-linking",
+      auth: "auth0",
+      payments: "revenuecat",
     });
 
     expect(command).toContain("--part mobile:react-native:native-bare");
@@ -348,6 +350,8 @@ describe("stack selection translation", () => {
     expect(command).toContain("--part mobile.push:react-native:expo-notifications");
     expect(command).toContain("--part mobile.ota:react-native:expo-updates");
     expect(command).toContain("--part mobile.deepLinking:react-native:expo-linking");
+    expect(command).toContain("--part mobile.auth:react-native:auth0");
+    expect(command).toContain("--part mobile.payments:react-native:revenuecat");
     expect(command).not.toContain("--mobile-navigation react-navigation");
     expect(command).not.toContain("--mobile-ui gluestack-ui");
     expect(command).not.toContain("--mobile-storage mmkv");
@@ -437,6 +441,137 @@ describe("stack selection translation", () => {
     expect(javaCommand).not.toContain("--java-build-tool gradle");
     expect(javaCommand).not.toContain("--java-libraries");
     expect(javaCommand).not.toContain("--java-testing-libraries");
+  });
+
+  it("preserves every advanced multi-ecosystem field that previously fell out of commands", () => {
+    const cases: Array<{
+      ecosystem: "rust" | "python" | "go" | "java" | "dotnet" | "elixir";
+      backend: string;
+      selection: Partial<StackSelectionInput>;
+      expectedParts: string[];
+    }> = [
+      {
+        ecosystem: "rust",
+        backend: "axum",
+        selection: {
+          rustRealtime: "tokio-tungstenite",
+          rustMessageQueue: "async-nats",
+          rustObservability: "opentelemetry",
+          rustTemplating: "askama",
+        },
+        expectedParts: [
+          "backend.realtime:rust:tokio-tungstenite",
+          "backend.jobQueue:rust:async-nats",
+          "backend.observability:rust:opentelemetry",
+          "backend.templating:rust:askama",
+        ],
+      },
+      {
+        ecosystem: "python",
+        backend: "fastapi",
+        selection: {
+          pythonTesting: ["pytest", "hypothesis"],
+          pythonCaching: "aiocache",
+          pythonRealtime: "websockets",
+          pythonObservability: "prometheus-client",
+          pythonCli: ["typer", "rich"],
+        },
+        expectedParts: [
+          "backend.testing:python:pytest",
+          "backend.testing:python:hypothesis",
+          "backend.caching:python:aiocache",
+          "backend.realtime:python:websockets",
+          "backend.observability:python:prometheus-client",
+          "backend.cli:python:typer",
+          "backend.cli:python:rich",
+        ],
+      },
+      {
+        ecosystem: "go",
+        backend: "gin",
+        selection: {
+          goTesting: ["testify", "gomock"],
+          goRealtime: "gorilla-websocket",
+          goMessageQueue: "nats",
+          goCaching: "ristretto",
+          goConfig: "viper",
+          goObservability: "prometheus",
+        },
+        expectedParts: [
+          "backend.testing:go:testify",
+          "backend.testing:go:gomock",
+          "backend.realtime:go:gorilla-websocket",
+          "backend.jobQueue:go:nats",
+          "backend.caching:go:ristretto",
+          "backend.config:go:viper",
+          "backend.observability:go:prometheus",
+        ],
+      },
+      {
+        ecosystem: "java",
+        backend: "spring-boot",
+        selection: { javaLogging: "log4j2" },
+        expectedParts: ["backend.logging:java:log4j2"],
+      },
+      {
+        ecosystem: "dotnet",
+        backend: "aspnet-minimal",
+        selection: { dotnetValidation: "fluentvalidation" },
+        expectedParts: ["backend.validation:dotnet:fluentvalidation"],
+      },
+      {
+        ecosystem: "elixir",
+        backend: "phoenix",
+        selection: { elixirLibraries: ["broadway", "floki"] },
+        expectedParts: [
+          "backend.libraries:elixir:broadway",
+          "backend.libraries:elixir:floki",
+        ],
+      },
+    ];
+
+    for (const testCase of cases) {
+      const command = generateStackSelectionCommand({
+        ...DEFAULT_SELECTION,
+        ...testCase.selection,
+        stackMode: "multi",
+        projectName: `${testCase.ecosystem}-advanced-graph-app`,
+        stackPartSpecs: [`backend:${testCase.ecosystem}:${testCase.backend}`],
+      });
+
+      for (const expectedPart of testCase.expectedParts) {
+        expect(command).toContain(`--part ${expectedPart}`);
+      }
+    }
+  });
+
+  it("scopes shared native-backend services to the selected backend", () => {
+    for (const [ecosystem, backend] of [
+      ["rust", "axum"],
+      ["python", "fastapi"],
+      ["go", "gin"],
+      ["java", "spring-boot"],
+    ] as const) {
+      const command = generateStackSelectionCommand({
+        ...DEFAULT_SELECTION,
+        stackMode: "multi",
+        projectName: `${ecosystem}-services-app`,
+        stackPartSpecs: [`backend:${ecosystem}:${backend}`],
+        email: "resend",
+        observability: "sentry",
+        caching: "upstash-redis",
+        search: "meilisearch",
+      });
+
+      expect(command).toContain(`--part backend.email:${ecosystem}:resend`);
+      expect(command).toContain(`--part backend.observability:${ecosystem}:sentry`);
+      expect(command).toContain(`--part backend.caching:${ecosystem}:upstash-redis`);
+      expect(command).toContain(`--part backend.search:${ecosystem}:meilisearch`);
+      expect(command).not.toContain("--email resend");
+      expect(command).not.toContain("--observability sentry");
+      expect(command).not.toContain("--caching upstash-redis");
+      expect(command).not.toContain("--search meilisearch");
+    }
   });
 
   it("emits changed TypeScript backend singles as scoped graph parts", () => {
@@ -788,5 +923,39 @@ describe("stack selection translation", () => {
     expect(withoutShadcn).not.toContain("--shadcn-style");
     expect(betaWithYolo).toContain("--version-channel beta");
     expect(betaWithYolo).toContain("--yolo");
+  });
+
+  it("preserves graph-native application parts and Kotlin mobile libraries", () => {
+    const selection = {
+      ...DEFAULT_SELECTION,
+      stackMode: "multi",
+      stackPartSpecs: [
+        "frontend:dotnet:blazor-webassembly",
+        "mobile:kotlin:jetpack-compose",
+        "mobile.libraries:kotlin:koin",
+        "mobile.libraries:kotlin:ktor-client",
+        "mobile:swift:swiftui:ios",
+        "mobile:dart:flutter:flutter",
+      ],
+      dotnetFrontend: "blazor-webassembly",
+      kotlinMobile: "jetpack-compose",
+      kotlinMobileLibraries: ["koin", "ktor-client"],
+      swiftMobile: "swiftui",
+      dartMobile: "flutter",
+    } satisfies StackSelectionInput;
+    const config = toProjectConfig(selection);
+    const command = generateStackSelectionCommand(selection);
+
+    expect(config.dotnetFrontend).toBe("blazor-webassembly");
+    expect(config.kotlinMobile).toBe("jetpack-compose");
+    expect(config.kotlinMobileLibraries).toEqual(["koin", "ktor-client"]);
+    expect(config.swiftMobile).toBe("swiftui");
+    expect(config.dartMobile).toBe("flutter");
+    expect(command).toContain("--part frontend:dotnet:blazor-webassembly");
+    expect(command).toContain("--part mobile:kotlin:jetpack-compose");
+    expect(command).toContain("--part mobile.libraries:kotlin:koin");
+    expect(command).toContain("--part mobile.libraries:kotlin:ktor-client");
+    expect(command).toContain("--part mobile:swift:swiftui:ios");
+    expect(command).toContain("--part mobile:dart:flutter:flutter");
   });
 });

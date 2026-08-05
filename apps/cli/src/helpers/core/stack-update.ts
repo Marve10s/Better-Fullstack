@@ -14,6 +14,7 @@ import { getDefaultConfig } from "../../constants";
 import { CreateCommandOptionsSchema } from "../../create-command-input";
 import {
   analyzeStackCompatibility,
+  createStackPart,
   formatStackPartSpec,
   legacyProjectConfigToStackParts,
   parseStackPartSpecs,
@@ -371,7 +372,22 @@ function getUpdatedSpecForChangedPart(
     if (!changedKeys.has(key)) continue;
     const value = proposedConfig[key];
     if (typeof value !== "string" || value === "none") continue;
-    return formatStackPartSpec({ ...part, toolId: value }, parts);
+    const currentCanonicalId = createStackPart({
+      role: part.role,
+      ecosystem: part.ecosystem,
+      toolId: part.toolId,
+    }).id;
+    const updatedPart = {
+      ...part,
+      toolId: value,
+      // Canonical primary IDs include the selected tool. Recompute those IDs
+      // on replacement, while preserving explicit IDs for named services.
+      id:
+        !part.ownerPartId && part.id === currentCanonicalId
+          ? createStackPart({ role: part.role, ecosystem: part.ecosystem, toolId: value }).id
+          : part.id,
+    };
+    return formatStackPartSpec(updatedPart, parts);
   }
   return undefined;
 }
