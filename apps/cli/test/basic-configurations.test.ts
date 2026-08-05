@@ -120,6 +120,10 @@ describe("Basic Configurations", () => {
         dryRun: true,
         dbSetup: "docker",
         serverDeploy: "railway",
+        // The shared test harness otherwise injects TypeScript backend defaults,
+        // but this graph deliberately uses Go as its only backend owner.
+        validation: "none",
+        testing: "none",
         install: false,
       });
 

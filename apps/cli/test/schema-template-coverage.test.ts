@@ -362,10 +362,6 @@ const ALLOWLIST = new Map<string, string>([
     "forms:react-hook-form",
     "Baseline: default React forms lib bundled in templates; not gated on literal.",
   ],
-  [
-    "javaTestingLibraries:junit5",
-    "Baseline: JUnit5 always-on via starter-test; never gated on the literal.",
-  ],
   // .NET: dotnet-base only implements a subset of each enum.
   [
     "dotnetWebFramework:aspnet-minimal",
