@@ -1,0 +1,28 @@
+import { solidStart } from "@solidjs/start/config";
+import { nitro } from "nitro/vite";
+{{#if (eq cssFramework "tailwind")}}
+import tailwindcss from "@tailwindcss/vite";
+{{/if}}
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  plugins: [
+    solidStart(),
+    nitro(),
+    {{#if (eq cssFramework "tailwind")}}
+    tailwindcss(),
+    {{/if}}
+  ],
+  resolve: {
+    tsconfigPaths: true,
+  },
+  nitro: {
+    {{#if (eq webDeploy "netlify")}}
+    preset: "netlify",
+    {{else if (eq webDeploy "vercel")}}
+    preset: "vercel",
+    {{else}}
+    preset: "node_server",
+    {{/if}}
+  },
+});

@@ -54,8 +54,8 @@ export async function searchPoints(
   vector: number[],
   limit = 5,
 ): Promise<SearchHit[]> {
-  const results = await vectorClient.search(collection, { vector, limit });
-  return results.map((r) => ({
+  const { points } = await vectorClient.query(collection, { query: vector, limit });
+  return points.map((r) => ({
     id: r.id,
     score: r.score,
     payload: (r.payload ?? null) as Record<string, unknown> | null,

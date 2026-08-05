@@ -1029,16 +1029,17 @@ describe("Frontend Configurations", () => {
       expectSuccess(result);
 
       const projectDir = result.result?.projectDirectory ?? result.projectDir;
-      const appConfig = await Bun.file(`${projectDir}/apps/web/app.config.ts`).text();
+      const appConfig = Bun.file(`${projectDir}/apps/web/app.config.ts`);
+      const viteConfig = await Bun.file(`${projectDir}/apps/web/vite.config.ts`).text();
       const packageJson = JSON.parse(
         await Bun.file(`${projectDir}/apps/web/package.json`).text(),
       ) as {
         devDependencies?: Record<string, string>;
       };
 
-      expect(appConfig).toContain('import tsconfigPaths from "vite-tsconfig-paths";');
-      expect(appConfig).toContain("tsconfigPaths()");
-      expect(packageJson.devDependencies?.["vite-tsconfig-paths"]).toBeDefined();
+      expect(await appConfig.exists()).toBe(false);
+      expect(viteConfig).toContain("tsconfigPaths: true");
+      expect(packageJson.devDependencies?.["vite-tsconfig-paths"]).toBeUndefined();
     });
   });
 

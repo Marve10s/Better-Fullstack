@@ -61,6 +61,18 @@ const SNAPSHOT_CONFIGS: Array<{
       auth: "none",
     },
   },
+  {
+    name: "solid-start-v2-fullstack",
+    config: {
+      frontend: ["solid-start"],
+      backend: "self",
+      runtime: "none",
+      api: "orpc",
+      database: "sqlite",
+      orm: "drizzle",
+      auth: "better-auth",
+    },
+  },
 
   // === BACKEND VARIATIONS ===
   {
