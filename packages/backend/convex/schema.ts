@@ -202,6 +202,9 @@ export default defineSchema({
     actionFailureStages: v.optional(distributionValidator),
     actionFailureReasons: v.optional(distributionValidator),
     setupFailureStats: v.optional(distributionValidator),
+    setupOutcomes: v.optional(distributionValidator),
+    installSelections: v.optional(distributionValidator),
+    decisionEvents: v.optional(v.number()),
     durationBuckets: v.optional(distributionValidator),
     fileCountBuckets: v.optional(distributionValidator),
     changedFileCountBuckets: v.optional(distributionValidator),
@@ -224,6 +227,21 @@ export default defineSchema({
     totalEvents: v.optional(v.number()),
     successfulEvents: v.optional(v.number()),
     failedEvents: v.optional(v.number()),
+    // Optional for compatibility with rows created before decision-window
+    // aggregates shipped. `decisionEvents / totalEvents` exposes coverage.
+    decisionEvents: v.optional(v.number()),
+    actions: v.optional(distributionValidator),
+    actionStatuses: v.optional(distributionValidator),
+    actionOutcomes: v.optional(distributionValidator),
+    clients: v.optional(distributionValidator),
+    sources: v.optional(distributionValidator),
+    ecosystems: v.optional(distributionValidator),
+    setupOutcomes: v.optional(distributionValidator),
+    installSelections: v.optional(distributionValidator),
+    failureStages: v.optional(distributionValidator),
+    failureReasons: v.optional(distributionValidator),
+    actionFailureStages: v.optional(distributionValidator),
+    actionFailureReasons: v.optional(distributionValidator),
   }).index("by_date", ["date"]),
 
   analyticsMachines: defineTable({

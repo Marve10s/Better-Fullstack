@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 
 import {
   applyFailureClassifications,
+  classifyProjectSetupOutcome,
   countReturningMachinesFromActivity,
   type FailureAggregates,
 } from "../convex/analytics-core";
@@ -48,5 +49,62 @@ describe("analytics aggregate helpers", () => {
       actionFailureStages: { "builder-generate:request": 1 },
       actionFailureReasons: { "builder-generate:network": 1 },
     });
+  });
+
+  it("separates completed setup from skipped and generation-only creation", () => {
+    expect(
+      classifyProjectSetupOutcome({
+        eventType: "project_created",
+        success: true,
+        install: true,
+        setupFailures: [],
+      }),
+    ).toBe("complete");
+    expect(
+      classifyProjectSetupOutcome({
+        eventType: "project_created",
+        success: true,
+        install: true,
+        setupFailures: ["install-dependencies"],
+      }),
+    ).toBe("incomplete");
+    expect(
+      classifyProjectSetupOutcome({
+        eventType: "project_created",
+        success: true,
+        install: false,
+        setupFailures: [],
+      }),
+    ).toBe("not-requested");
+    expect(
+      classifyProjectSetupOutcome({
+        eventType: "project_created",
+        success: true,
+        source: "mcp",
+        install: true,
+      }),
+    ).toBe("generation-only");
+    expect(
+      classifyProjectSetupOutcome({
+        eventType: "project_created",
+        success: true,
+        install: true,
+      }),
+    ).toBe("unknown");
+    expect(
+      classifyProjectSetupOutcome({
+        eventType: "project_created",
+        success: false,
+        install: true,
+        setupFailures: [],
+      }),
+    ).toBeUndefined();
+    expect(
+      classifyProjectSetupOutcome({
+        eventType: "command_used",
+        success: true,
+        setupFailures: [],
+      }),
+    ).toBeUndefined();
   });
 });
