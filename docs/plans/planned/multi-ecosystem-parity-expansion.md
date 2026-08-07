@@ -1,6 +1,6 @@
 # Multi-Ecosystem Parity Expansion (Tier 1 + Tier 2)
 
-**Status: In progress — started 2026-06-10 on `feat/stack-graph-phase0-batch0` (PR #220).**
+**Status: Historical implementation plan — shipped surface re-audited 2026-08-07.**
 
 Master plan for closing the category-asymmetry gap between ecosystems (Tier 1) and deepening
 existing categories (Tier 2), plus the next new language (Kotlin). The remaining checklist is the deferred edge-case work.
@@ -55,39 +55,33 @@ Every library/category must land across ALL of these layers (the .NET foundation
 
 ## Batch 1 — Go parity
 
-- [ ] `goWebFramework` += `stdlib` — DEFERRED: requires a full new branch in the ~2,200-line
-      per-framework `handlers.go.hbs` (chi handlers use `chi.URLParam`; stdlib needs
-      `r.PathValue` + Go 1.22 mux patterns)
-- [ ] `goOrm` += `bun` (uptrace/bun) — DEFERRED: requires new ORM branches in
-      `database.go.hbs` + every framework section of `handlers.go.hbs`
+- [x] `goWebFramework` += `stdlib` with Go 1.22 mux handlers
+- [x] `goOrm` += `bun` (uptrace/bun) with database and handler branches
 
 ## Batch 3 — Rust parity
 
-- [ ] `rustMessageQueue` += `rdkafka` — DEFERRED: requires a native librdkafka/cmake toolchain in every smoke lane
-      (compiles C via cmake-build); revisit when the lanes install cmake
+- [x] `rustMessageQueue` += `rdkafka` generation and focused tests
+- [ ] Add native `rdkafka` build evidence when smoke lanes install librdkafka/cmake
 
-- [ ] `rustWebFramework` += `loco`, `poem` — DEFERRED: every framework value needs a full branch
-      in the 1,100-line `main.rs.hbs` plus async-graphql/auth/email/ORM-CRUD integrations
-      (loco additionally imposes its own Rails-style project layout)
+- [x] `rustWebFramework` += `loco`, `poem` with framework branches and tests
 
 Note: Rust testing is already covered as `rustLibraries` entries (tokio-test, mockall, proptest,
 insta) — no new category; do not duplicate.
 
 ## Batch 4 — Java parity
 
-- [ ] `javaWebFramework` += `micronaut` — DEFERRED: a second full framework with its own build
-      plugins and source layout (same class as quarkus, which has its own branch today)
+- [x] `javaWebFramework` += `micronaut`
 
 ## Batch 6 — Kotlin (new language)
 
 Decision (per `new-ecosystems.md`): Kotlin ships as a **Java-ecosystem extension**, not a
 standalone ecosystem — it shares Maven/Gradle, Spring, and the JVM toolchain.
 
-- [ ] `javaLanguage` field: `java` (default) | `kotlin` — switches templates to `.kt` sources,
+- [x] `javaLanguage` field: `java` (default) | `kotlin` — switches templates to `.kt` sources,
       Kotlin Gradle/Maven plugins, kotlinx dependencies
-- [ ] `javaWebFramework` += `ktor` (Kotlin-native; only valid with `javaLanguage: kotlin`)
-- [ ] Compatibility rules: ktor ⇒ kotlin; spring-boot/quarkus/micronaut work with either language
-- [ ] Smoke preset `java-kotlin-ktor` + docs section on the java ecosystem page
+- [x] `javaWebFramework` += `ktor` (Kotlin-native; only valid with `javaLanguage: kotlin`)
+- [x] Compatibility rules: ktor ⇒ kotlin; spring-boot/quarkus/micronaut work with either language
+- [x] Smoke preset and Java ecosystem docs for Kotlin/Ktor
 
 Zig stays on the watch list (web ecosystem still premature).
 

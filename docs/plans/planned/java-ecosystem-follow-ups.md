@@ -1,17 +1,18 @@
 # Java Ecosystem Follow-Ups
 
-Status was refreshed on 2026-06-30; only unfinished Java follow-ups remain here.
+> **Status refreshed 2026-08-07.** Micronaut, OpenAPI Generator, and Log4j2 have shipped. This file
+> now tracks only the remaining JVM depth work.
 
 ---
 
 ## Web Frameworks
 
-- [ ] Add `micronaut` — compile-time DI, low memory footprint, GraalVM native-image support.
+- [x] Add `micronaut` — compile-time DI, low memory footprint, GraalVM native-image support.
 
 ## API Styles
 
-- [ ] Add `grpc-java`
-- [ ] Add `openapi-generator`
+- [x] Add Java gRPC as the `grpc` Java API value
+- [x] Add `openapi-generator`
 
 ## Observability
 
@@ -19,7 +20,7 @@ Status was refreshed on 2026-06-30; only unfinished Java follow-ups remain here.
 
 ## Logging
 
-- [ ] Add `log4j2` as an alternative logger
+- [x] Add `log4j2` as an alternative logger
 
 ## Runtime Validation
 
@@ -36,7 +37,4 @@ Status was refreshed on 2026-06-30; only unfinished Java follow-ups remain here.
 ## Priority Order
 
 1. **Generated Maven/Gradle runtime validation** — make the existing Java surface trustworthy under smoke/ScaffBench.
-2. **Micronaut** — only major Java framework candidate still listed.
-3. **gRPC Java** — deferred because protoc/build-plugin work needs a careful vertical slice.
-4. **Actuator example depth** — go beyond dependency wiring.
-5. **Log4j2** — optional logging alternative if user demand appears.
+2. **Actuator example depth** — go beyond dependency wiring.

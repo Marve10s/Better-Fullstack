@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   TbCheck as Check,
   TbChevronDown as ChevronDown,
@@ -5,11 +6,9 @@ import {
   TbExternalLink as ExternalLink,
   TbFileText as FileText,
 } from "react-icons/tb";
-import { useState } from "react";
 
-const GITHUB_BRANCH = "docs";
+const GITHUB_BRANCH = "main";
 const GITHUB_DOCS_BASE = `https://github.com/Marve10s/Better-Fullstack/blob/${GITHUB_BRANCH}/apps/web/content/docs`;
-const RAW_DOCS_BASE = `https://raw.githubusercontent.com/Marve10s/Better-Fullstack/${GITHUB_BRANCH}/apps/web/content/docs`;
 
 export type DocsPageActionsProps = {
   path: string;
@@ -20,11 +19,16 @@ function encodePath(path: string) {
   return path.split("/").map(encodeURIComponent).join("/");
 }
 
+export function markdownUrlForDocsPath(path: string): string {
+  const slug = path.replace(/\.mdx$/, "").replace(/\/index$/, "");
+  return slug === "index" ? "/docs.md" : `/docs/${slug}.md`;
+}
+
 export function DocsPageActions({ path, markdown }: DocsPageActionsProps) {
   const [copied, setCopied] = useState(false);
   const encodedPath = encodePath(path);
   const githubUrl = `${GITHUB_DOCS_BASE}/${encodedPath}`;
-  const rawUrl = `${RAW_DOCS_BASE}/${encodedPath}`;
+  const markdownUrl = markdownUrlForDocsPath(path);
 
   const copyMarkdown = () => {
     navigator.clipboard
@@ -56,13 +60,13 @@ export function DocsPageActions({ path, markdown }: DocsPageActionsProps) {
         </summary>
         <div className="absolute top-9 right-0 z-20 min-w-40 rounded-md border border-[var(--docs-border-subtle)] bg-popover p-1 text-popover-foreground shadow-lg">
           <a
-            href={rawUrl}
+            href={markdownUrl}
             target="_blank"
             rel="noreferrer"
             className="flex items-center gap-2 rounded-sm px-2.5 py-2 font-mono text-[0.72rem] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <FileText className="size-3.5" />
-            Raw MDX
+            View Markdown
           </a>
           <a
             href={githubUrl}

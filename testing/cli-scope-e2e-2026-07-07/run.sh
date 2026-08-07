@@ -88,7 +88,7 @@ validate_scenario() {
       ;;
     s4)
       contains "$transcript" "Prefer a visual builder?" &&
-        { contains "$transcript" "Opened Web Builder in your browser." || contains "$transcript" "Please visit https://better-fullstack-web.vercel.app/new"; } &&
+        { contains "$transcript" "Opened Web Builder in your browser." || contains "$transcript" "Please visit https://better-fullstack.dev/new"; } &&
         not_contains "$transcript" "Select ecosystem"
       ;;
     s5)

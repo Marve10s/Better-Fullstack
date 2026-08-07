@@ -1,0 +1,40 @@
+---
+title: Stack Builder
+description: Compose, preview, run, share, and download Better Fullstack projects in the browser.
+translationStatus: pending
+updated: 2026-08-07
+---
+
+The [Stack Builder](https://better-fullstack.dev/new) uses the same stack schemas, compatibility
+rules, and template generator as the CLI. Changes update the reproducible command and shareable URL.
+
+## Views
+
+| View       | Behavior                                                                            |
+| ---------- | ----------------------------------------------------------------------------------- |
+| Build      | Select compatible stack options and copy the generated CLI command.                 |
+| Preview    | Inspect the generated virtual file tree without writing to disk.                    |
+| Edit & Run | Generate, edit, install, and run supported TypeScript web stacks in a WebContainer. |
+| Presets    | Apply curated stack selections. Solo-mode only.                                     |
+| Saved      | Store named stack configurations in this browser. Solo-mode only.                   |
+
+## Solo and Multi-Ecosystem modes
+
+Solo mode exposes one ecosystem's complete category surface. Multi-Ecosystem mode composes primary
+frontend, backend, database, and mobile parts, then attaches capabilities to their owners. The
+generated command preserves this graph with repeated `--part role:ecosystem:tool` flags.
+
+Builder state is encoded in the URL, so a shared link restores the selection. Saved stacks remain in
+browser storage; they are not uploaded as projects.
+
+## Compatibility adjustments
+
+The builder analyzes each selection using the shared compatibility engine. When a choice requires
+another option or conflicts with the current stack, it explains or applies the compatible state
+before generating files. Always review the final command when accepting an adjustment.
+
+## Next
+
+- [Edit & Run](/docs/web-builder/edit-and-run/) explains browser execution and its limits.
+- [Download and Share](/docs/web-builder/download-and-share/) covers ZIPs, URLs, and moving to CLI.
+- [Multi-Ecosystem](/docs/ecosystems/multi-ecosystem/) explains Stack Parts and ownership.

@@ -192,7 +192,6 @@ import {
 } from "./dotnet-ecosystem";
 import { getEcommerceChoice } from "./ecommerce";
 import { getEcosystemChoice } from "./ecosystem";
-import { getIntegrationsChoice } from "./integrations";
 import { getEffectChoice } from "./effect";
 import {
   getElixirApiChoice,
@@ -246,6 +245,7 @@ import {
 } from "./go-ecosystem";
 import { getI18nChoice } from "./i18n";
 import { getinstallChoice } from "./install";
+import { getIntegrationsChoice } from "./integrations";
 import {
   getJavaAuthChoice,
   getJavaApiChoice,
@@ -683,6 +683,17 @@ export function hasStackPromptFlags(flags: Partial<ProjectConfig>) {
   });
 }
 
+const SERVER_ECOSYSTEMS = new Set<Ecosystem>(["rust", "python", "go", "java", "dotnet", "elixir"]);
+
+export function resolveDatabaseFlagForEcosystem(
+  ecosystem: Ecosystem | undefined,
+  database: Database | undefined,
+): Database | undefined {
+  if (ecosystem === undefined || ecosystem === "typescript") return undefined;
+  if (SERVER_ECOSYSTEMS.has(ecosystem)) return database ?? "none";
+  return "none";
+}
+
 function getPromptResolutionValue(
   key: ConfigPromptKey,
   results: Partial<PromptGroupResults>,
@@ -888,12 +899,8 @@ export async function gatherConfig(
       return getRuntimeChoice(flags.runtime, results.backend);
     },
     database: ({ results }) => {
-      if (results.ecosystem !== "typescript") {
-        if (results.ecosystem === "python" || results.ecosystem === "dotnet") {
-          return Promise.resolve((flags.database ?? "none") as Database);
-        }
-        return Promise.resolve("none" as Database);
-      }
+      const database = resolveDatabaseFlagForEcosystem(results.ecosystem, flags.database);
+      if (database !== undefined) return Promise.resolve(database);
       return getDatabaseChoice(flags.database, results.backend, results.runtime);
     },
     orm: ({ results }) => {

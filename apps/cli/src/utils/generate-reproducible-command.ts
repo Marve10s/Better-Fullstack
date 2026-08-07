@@ -1030,6 +1030,7 @@ function getReactNativeFlags(config: ProjectConfig) {
 function getRustFlags(config: ProjectConfig) {
   const flags = ["--ecosystem rust"];
 
+  flags.push(`--database ${config.database}`);
   flags.push(`--rust-web-framework ${config.rustWebFramework}`);
   flags.push(`--rust-frontend ${config.rustFrontend}`);
   flags.push(`--rust-orm ${config.rustOrm}`);
@@ -1054,6 +1055,7 @@ function getRustFlags(config: ProjectConfig) {
 function getPythonFlags(config: ProjectConfig) {
   const flags = ["--ecosystem python"];
 
+  flags.push(`--database ${config.database}`);
   flags.push(`--python-web-framework ${config.pythonWebFramework}`);
   flags.push(`--python-orm ${config.pythonOrm}`);
   flags.push(`--python-validation ${config.pythonValidation}`);
@@ -1085,6 +1087,7 @@ function getPythonFlags(config: ProjectConfig) {
 function getGoFlags(config: ProjectConfig) {
   const flags = ["--ecosystem go"];
 
+  flags.push(`--database ${config.database}`);
   flags.push(`--go-web-framework ${config.goWebFramework}`);
   flags.push(`--go-orm ${config.goOrm}`);
   flags.push(`--go-api ${config.goApi}`);
@@ -1114,6 +1117,7 @@ function getGoFlags(config: ProjectConfig) {
 function getJavaFlags(config: ProjectConfig) {
   const flags = ["--ecosystem java"];
 
+  flags.push(`--database ${config.database}`);
   flags.push(`--java-web-framework ${config.javaWebFramework}`);
   // Emit the language flag only for the non-default (Kotlin) variant so the
   // reproducible command for every existing Java project stays byte-identical.
@@ -1137,6 +1141,7 @@ function getJavaFlags(config: ProjectConfig) {
 function getDotnetFlags(config: ProjectConfig) {
   const flags = ["--ecosystem dotnet"];
 
+  flags.push(`--database ${config.database}`);
   flags.push(`--dotnet-web-framework ${config.dotnetWebFramework}`);
   flags.push(`--dotnet-orm ${config.dotnetOrm}`);
   flags.push(`--dotnet-auth ${config.dotnetAuth}`);
@@ -1160,6 +1165,7 @@ function getDotnetFlags(config: ProjectConfig) {
 function getElixirFlags(config: ProjectConfig) {
   const flags = ["--ecosystem elixir"];
 
+  flags.push(`--database ${config.database}`);
   flags.push(`--elixir-web-framework ${config.elixirWebFramework}`);
   flags.push(`--elixir-orm ${config.elixirOrm}`);
   flags.push(`--elixir-auth ${config.elixirAuth}`);

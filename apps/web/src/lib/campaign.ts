@@ -1,4 +1,5 @@
 export const CAMPAIGN_SLUG = "run-before-you-clone";
+export const CAMPAIGN_SLUGS = [CAMPAIGN_SLUG] as const;
 export const CAMPAIGN_PATH = `/${CAMPAIGN_SLUG}` as const;
 export const CAMPAIGN_BUILDER_SEARCH = {
   view: "presets",
@@ -13,6 +14,12 @@ export type CampaignPreset = {
   iconIds: string[];
   accent: "lime" | "cyan" | "pink";
 };
+
+export function normalizeCampaignSlug(value: unknown): (typeof CAMPAIGN_SLUGS)[number] | undefined {
+  return typeof value === "string" && CAMPAIGN_SLUGS.some((slug) => slug === value)
+    ? (value as (typeof CAMPAIGN_SLUGS)[number])
+    : undefined;
+}
 
 export const CAMPAIGN_PRESETS: CampaignPreset[] = [
   {

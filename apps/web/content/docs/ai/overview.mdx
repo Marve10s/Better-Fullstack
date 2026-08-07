@@ -1,6 +1,8 @@
 ---
 title: AI Agents
 description: How AI coding agents should use Better Fullstack safely and reliably.
+translationStatus: pending
+updated: 2026-08-07
 ---
 
 Better Fullstack supports three AI workflows:
@@ -11,7 +13,7 @@ Better Fullstack supports three AI workflows:
 
 ## Preferred workflow
 
-1. Choose the target ecosystem: `typescript`, `react-native`, `rust`, `python`, `go`, `java`, or `elixir`.
+1. Choose the target ecosystem from the schema-derived [Ecosystem reference](/docs/ecosystems/).
 2. Use the Better Fullstack agent skill, MCP server, or explicit CLI reference.
 3. Validate compatibility before scaffolding.
 4. Dry-run to inspect the file tree.
@@ -22,12 +24,12 @@ Better Fullstack supports three AI workflows:
 
 Use `--ai-docs` to generate project-local context files for coding agents:
 
-| Value | File generated |
-| --- | --- |
-| `claude-md` | `CLAUDE.md` |
-| `agents-md` | `Agents.md` |
+| Value         | File generated |
+| ------------- | -------------- |
+| `claude-md`   | `CLAUDE.md`    |
+| `agents-md`   | `AGENTS.md`    |
 | `cursorrules` | `.cursorrules` |
-| `none` | No AI docs |
+| `none`        | No AI docs     |
 
 Multiple values are accepted:
 
@@ -70,14 +72,17 @@ See the [agent skill setup guide](/docs/ai/skills/) for Codex, Claude Code, Curs
 
 ## AI provider options
 
-TypeScript projects can select one AI option with `--ai`: `vercel-ai`, `mastra`, `voltagent`, `langgraph`, `openai-agents`, `google-adk`, `modelfusion`, `langchain`, `llamaindex`, `tanstack-ai`, `ai-cli`, or `none`.
-
-Python projects use the separate multi-select `--python-ai` option with `langchain`, `llamaindex`, `openai-sdk`, `anthropic-sdk`, `langgraph`, `crewai`, or `none`.
+TypeScript projects use the single-select `--ai` field. Python projects use the separate
+multi-select `--python-ai` field. Do not copy provider inventories from this narrative page: use the
+schema-derived [TypeScript options](/docs/reference/options/typescript/) and [Python
+options](/docs/reference/options/python/) references so new providers are visible immediately.
 
 Dependency placement depends on the selected framework and backend. Server-side packages are added to the server package or self-backend app; supported frontend integrations receive their matching client hooks or packages.
 
 ## MCP workflow
 
-The Better Fullstack MCP server exposes schema lookup, compatibility checks, dry-run previews, project creation, and feature additions as structured tools. See the [MCP setup guide](/docs/ai/mcp/).
+The Better Fullstack MCP server exposes schema and preset discovery, deterministic recommendations,
+compatibility checks, dry-run previews, project creation, broad stack updates, and narrow
+addon/deployment additions as structured tools. See the [MCP setup guide](/docs/ai/mcp/).
 
 This is distinct from the generated-project `mcp` addon. The server helps an agent create Better Fullstack projects; the addon writes MCP configuration inside a generated project.

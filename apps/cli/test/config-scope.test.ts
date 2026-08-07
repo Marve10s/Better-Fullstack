@@ -4,6 +4,7 @@ import {
   CONFIG_PROMPT_ENTRY_KEYS,
   getScopedDefaultPromptValue,
   hasStackPromptFlags,
+  resolveDatabaseFlagForEcosystem,
 } from "../src/prompts/config-prompts";
 import {
   CONFIG_SCOPE_ALWAYS_KEYS,
@@ -83,9 +84,7 @@ describe("shouldAskConfigPromptKey", () => {
     expect(shouldAskConfigPromptKey("go", "email", "core", [])).toBe(false);
     expect(shouldAskConfigPromptKey("python", "search", "core", [])).toBe(false);
     expect(shouldAskConfigPromptKey("rust", "observability", "custom", [])).toBe(false);
-    expect(shouldAskConfigPromptKey("dotnet", "caching", "custom", ["shared-services"])).toBe(
-      true,
-    );
+    expect(shouldAskConfigPromptKey("dotnet", "caching", "custom", ["shared-services"])).toBe(true);
     expect(shouldAskConfigPromptKey("java", "email", "full", [])).toBe(true);
   });
 });
@@ -160,5 +159,14 @@ describe("scoped prompt defaults", () => {
 
   it("treats individual shadcn option flags as stack prompt intent", () => {
     expect(hasStackPromptFlags({ shadcnStyle: "vega" })).toBe(true);
+  });
+
+  it("preserves explicit database flags for every server ecosystem", () => {
+    for (const ecosystem of ["rust", "python", "go", "java", "dotnet", "elixir"] as const) {
+      expect(resolveDatabaseFlagForEcosystem(ecosystem, "postgres")).toBe("postgres");
+    }
+
+    expect(resolveDatabaseFlagForEcosystem("react-native", "postgres")).toBe("none");
+    expect(resolveDatabaseFlagForEcosystem("typescript", "postgres")).toBeUndefined();
   });
 });

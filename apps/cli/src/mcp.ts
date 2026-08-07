@@ -182,7 +182,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import z from "zod";
 
 import { applyStackUpdate, planStackUpdate } from "./helpers/core/stack-update";
-import { trackEvent, trackProjectCreation } from "./utils/analytics";
+import { trackEvent, trackProjectCreation, withCommandTelemetry } from "./utils/analytics";
 import { previewBtsConfigUpdate, readBtsConfig, writeBtsConfig } from "./utils/bts-config";
 import { applyEffectBackendDefaults } from "./utils/config-processing";
 import { generateReproducibleCommand } from "./utils/generate-reproducible-command";
@@ -1638,7 +1638,20 @@ export async function startMcpServer() {
         toolConfig: Record<string, unknown>,
         toolCb: (input: Input) => unknown,
       ) => void
-    )(name, config, cb);
+    )(name, config, async (input) =>
+      withCommandTelemetry(name, async () => cb(input), {
+        source: "mcp",
+        mode: config.annotations?.readOnlyHint ? "read" : "write",
+        dimensions: { mcpTool: name },
+        resultStatus: (result) =>
+          result &&
+          typeof result === "object" &&
+          "isError" in result &&
+          (result as { isError?: unknown }).isError === true
+            ? "failed"
+            : "succeeded",
+      }),
+    );
   };
 
   registerTool(

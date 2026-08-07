@@ -11,6 +11,19 @@ import {
   type StackPartRole,
 } from "@better-fullstack/types";
 import { usesVirtualNoneStackSelection as usesVirtualNoneSelection } from "@better-fullstack/types/stack-translation";
+import { AnimatePresence, motion } from "motion/react";
+import {
+  Fragment,
+  Suspense,
+  lazy,
+  startTransition,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   TbArrowLeft as ArrowLeft,
   TbArrowRight as ArrowRight,
@@ -40,21 +53,9 @@ import {
   TbX as X,
   TbBolt as Zap,
 } from "react-icons/tb";
-import { AnimatePresence, motion } from "motion/react";
-import {
-  Fragment,
-  Suspense,
-  lazy,
-  startTransition,
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
 import { toast } from "sonner";
 
+import type { ShareMoment } from "@/lib/campaign-share";
 import type { Ecosystem } from "@/lib/types";
 
 import { Button } from "@/components/ui/button";
@@ -73,7 +74,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { clearBuilderMode, publishBuilderMode } from "@/lib/builder-mode-bridge";
 import {
   beginBuilderZipAttempt,
   classifyBuilderZipFailure,
@@ -81,11 +81,7 @@ import {
   type BuilderRunFailure,
   type BuilderZipFailureStage,
 } from "@/lib/builder-failure-analytics";
-import {
-  stackAnalyticsProperties,
-  trackCampaignEvent,
-} from "@/lib/campaign-analytics";
-import type { ShareMoment } from "@/lib/campaign-share";
+import { clearBuilderMode, publishBuilderMode } from "@/lib/builder-mode-bridge";
 import {
   buildBuilderSearchLookup,
   createBuilderSearchIndex,
@@ -97,6 +93,7 @@ import {
   type BuilderSearchPreferences,
 } from "@/lib/builder-search-preferences";
 import { hasSeenBuilderShareModal } from "@/lib/builder-share-modal-visibility";
+import { stackAnalyticsProperties, trackCampaignEvent } from "@/lib/campaign-analytics";
 import {
   DEFAULT_STACK,
   ECOSYSTEMS,
@@ -105,13 +102,13 @@ import {
   TECH_OPTIONS,
 } from "@/lib/constant";
 import { getLocalizedCategoryDisplayName, getLocalizedTechOption } from "@/lib/i18n/builder-copy";
+import { getStackRunSupport } from "@/lib/run-support";
 import {
   buildSavedStackEntry,
   loadSavedStacks,
   saveSavedStacks,
   type SavedStackEntry,
 } from "@/lib/saved-stacks";
-import { getStackRunSupport } from "@/lib/run-support";
 import { useStackState } from "@/lib/stack-url-state";
 import {
   generateStackCommand,
@@ -123,6 +120,7 @@ import { getTechResourceLinks } from "@/lib/tech-resource-links";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages.js";
 
+import { BuilderShareModal } from "./builder-share-modal";
 import { PresetsPanel } from "./presets-panel";
 import { SavedStacksPanel } from "./saved-stacks-panel";
 import { ShareButton } from "./share-button";
@@ -136,7 +134,6 @@ import {
   validateProjectName,
 } from "./utils";
 import { YoloToggle } from "./yolo-toggle";
-import { BuilderShareModal } from "./builder-share-modal";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -902,8 +899,8 @@ function getSoloBackendSelection(stack: StackState): GraphSelection {
         : (stack.dartMobile ?? "none") !== "none"
           ? (stack.dartMobile ?? "none")
           : (stack.kotlinMobile ?? "none") !== "none"
-        ? (stack.kotlinMobile ?? "none")
-        : getSelectedOptionId(stack.nativeFrontend),
+            ? (stack.kotlinMobile ?? "none")
+            : getSelectedOptionId(stack.nativeFrontend),
     backendEcosystem: currentEcosystem,
     backendLanguage: stack.javaLanguage === "kotlin" ? "kotlin" : "java",
     backend:
@@ -933,7 +930,9 @@ function getGraphSelection(stack: StackState): GraphSelection {
       frontend && isGraphFrontendEcosystem(frontend.ecosystem) ? frontend.ecosystem : "typescript";
     const mobile = selectedParts.find((part) => part.role === "mobile" && !part.ownerPartId);
     const mobileEcosystem: GraphMobileEcosystem =
-      mobile?.ecosystem === "kotlin" || mobile?.ecosystem === "swift" || mobile?.ecosystem === "dart"
+      mobile?.ecosystem === "kotlin" ||
+      mobile?.ecosystem === "swift" ||
+      mobile?.ecosystem === "dart"
         ? mobile.ecosystem
         : "react-native";
     const backend = selectedParts.find((part) => part.role === "backend" && !part.ownerPartId);
@@ -2460,6 +2459,8 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
   const downloadAttemptRef = useRef({ stackSignature: "", attemptCount: 0 });
   const lastAppliedStackString = useRef<string>("");
   const lastAppliedEcosystemRef = useRef<Ecosystem>(stack.ecosystem);
+  const trackedBuilderViewRef = useRef(false);
+  const lastTrackedViewModeRef = useRef(viewMode);
   const suppressCompatibilityToastRef = useRef(false);
 
   const scrollToTop = () => {
@@ -2506,6 +2507,10 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
     const startedAt = Date.now();
     let failureStage: BuilderZipFailureStage = "archive_generation";
     setIsDownloadingProject(true);
+    trackCampaignEvent(
+      "builder_zip_started",
+      stackAnalyticsProperties(stackToDownload, { campaign, rerun: attempt.isRetry }),
+    );
     try {
       const { createStackProjectArchive, downloadProjectArchive } =
         await import("@/lib/project-download");
@@ -2514,7 +2519,12 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
       downloadProjectArchive(archive);
       trackCampaignEvent(
         "builder_zip_downloaded",
-        stackAnalyticsProperties(stackToDownload, { campaign }),
+        stackAnalyticsProperties(stackToDownload, {
+          campaign,
+          duration_ms: failureDurationMs(startedAt),
+          rerun: attempt.isRetry,
+          archive_bytes: archive.bytes.byteLength,
+        }),
       );
       toast.success(m.builderDownloadComplete({ fileName: archive.fileName }));
       promptForShare("download");
@@ -2672,6 +2682,24 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
   }, [stack, adjustedStack]);
 
   useEffect(() => {
+    if (!trackedBuilderViewRef.current) {
+      trackedBuilderViewRef.current = true;
+      trackCampaignEvent(
+        "builder_viewed",
+        stackAnalyticsProperties(adjustedStack || stack, { campaign, view: viewMode }),
+      );
+      return;
+    }
+    if (lastTrackedViewModeRef.current !== viewMode) {
+      lastTrackedViewModeRef.current = viewMode;
+      trackCampaignEvent(
+        "builder_view_changed",
+        stackAnalyticsProperties(adjustedStack || stack, { campaign, view: viewMode }),
+      );
+    }
+  }, [adjustedStack, campaign, stack, viewMode]);
+
+  useEffect(() => {
     if (!isMultiMode) {
       setMultiActiveStep("frontend");
     }
@@ -2738,10 +2766,28 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
     [adjustedStack, campaign, stack],
   );
 
+  const handleRunStopped = useCallback(() => {
+    trackCampaignEvent(
+      "builder_run_stopped",
+      stackAnalyticsProperties(adjustedStack || stack, { campaign }),
+    );
+  }, [adjustedStack, campaign, stack]);
+
+  const handleFileEdited = useCallback(() => {
+    trackCampaignEvent(
+      "builder_file_edited",
+      stackAnalyticsProperties(adjustedStack || stack, { campaign }),
+    );
+  }, [adjustedStack, campaign, stack]);
+
   // ─── Handlers ───────────────────────────────────────────────────────────
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(command);
+    trackCampaignEvent(
+      "builder_command_copied",
+      stackAnalyticsProperties(adjustedStack || stack, { campaign, view: viewMode }),
+    );
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -3185,40 +3231,40 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                     (sm:w-48 md:w-56 lg:w-64) so its trailing separator lines
                     up with the sidebar border in the panels below. */}
                 <div className="flex min-w-0 shrink-0 items-center gap-2 sm:w-48 sm:pl-4 md:w-56 lg:w-64">
-                <label
-                  htmlFor="project-name"
-                  className={cn(
-                    "group relative inline-flex h-8 w-32 min-w-0 cursor-text items-center gap-2 rounded-full border border-transparent bg-muted/55 px-3 transition-all duration-300 hover:bg-card focus-within:bg-card sm:w-auto sm:flex-1",
-                    projectNameError
-                      ? "border-destructive focus-within:border-destructive focus-within:shadow-[0_0_0_4px_rgba(239,68,68,0.12)]"
-                      : "border-border focus-within:border-foreground focus-within:shadow-[0_0_0_4px_rgba(24,24,27,0.05)] dark:focus-within:shadow-[0_0_0_4px_rgba(255,255,255,0.06)]",
-                  )}
-                >
-                  <span className="sr-only">{m.builderProjectName()}</span>
-                  <input
-                    id="project-name"
-                    value={stack.projectName || ""}
-                    onChange={(e) => setStack({ projectName: e.target.value })}
-                    placeholder="my-app"
-                    aria-label={m.builderProjectName()}
-                    aria-invalid={projectNameError ? true : undefined}
-                    title={
-                      projectNameError ||
-                      ((stack.projectName || "my-app").includes(" ")
-                        ? m.builderWillSaveAs({
-                            name: (stack.projectName || "my-app").replace(/\s+/g, "-"),
-                          })
-                        : undefined)
-                    }
+                  <label
+                    htmlFor="project-name"
                     className={cn(
-                      "min-w-0 flex-1 border-none bg-transparent p-0 font-mono text-sm text-foreground outline-none placeholder:text-muted-foreground/50",
-                      projectNameError && "text-destructive",
+                      "group relative inline-flex h-8 w-32 min-w-0 cursor-text items-center gap-2 rounded-full border border-transparent bg-muted/55 px-3 transition-all duration-300 hover:bg-card focus-within:bg-card sm:w-auto sm:flex-1",
+                      projectNameError
+                        ? "border-destructive focus-within:border-destructive focus-within:shadow-[0_0_0_4px_rgba(239,68,68,0.12)]"
+                        : "border-border focus-within:border-foreground focus-within:shadow-[0_0_0_4px_rgba(24,24,27,0.05)] dark:focus-within:shadow-[0_0_0_4px_rgba(255,255,255,0.06)]",
                     )}
-                  />
-                  <Pencil className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50 transition-colors group-focus-within:text-foreground" />
-                </label>
+                  >
+                    <span className="sr-only">{m.builderProjectName()}</span>
+                    <input
+                      id="project-name"
+                      value={stack.projectName || ""}
+                      onChange={(e) => setStack({ projectName: e.target.value })}
+                      placeholder="my-app"
+                      aria-label={m.builderProjectName()}
+                      aria-invalid={projectNameError ? true : undefined}
+                      title={
+                        projectNameError ||
+                        ((stack.projectName || "my-app").includes(" ")
+                          ? m.builderWillSaveAs({
+                              name: (stack.projectName || "my-app").replace(/\s+/g, "-"),
+                            })
+                          : undefined)
+                      }
+                      className={cn(
+                        "min-w-0 flex-1 border-none bg-transparent p-0 font-mono text-sm text-foreground outline-none placeholder:text-muted-foreground/50",
+                        projectNameError && "text-destructive",
+                      )}
+                    />
+                    <Pencil className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50 transition-colors group-focus-within:text-foreground" />
+                  </label>
 
-                <div className="hidden h-6 w-px shrink-0 bg-border sm:block" aria-hidden="true" />
+                  <div className="hidden h-6 w-px shrink-0 bg-border sm:block" aria-hidden="true" />
                 </div>
 
                 <fieldset
@@ -4111,6 +4157,8 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                       onRunStarted={handleRunStarted}
                       onRunReady={handleRunReady}
                       onRunFailed={handleRunFailed}
+                      onRunStopped={handleRunStopped}
+                      onFileEdited={handleFileEdited}
                     />
                   </Suspense>
                 </div>
@@ -4147,184 +4195,187 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
             tucking behind its copy button) and the button itself flies to the
             run sidebar via the shared "bf-copy-command" layoutId. */}
         <AnimatePresence initial={false}>
-        {viewMode !== "run" && (
-        <motion.div
-          key="floating-command-bar"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1, transition: { duration: 0.3 } }}
-          exit={{ opacity: 0, transition: { duration: 0.3, delay: 0.75 } }}
-          className="pointer-events-none absolute inset-x-0 bottom-0 z-40 bg-gradient-to-t from-background via-background/85 to-transparent px-4 pt-6 pb-4 sm:px-6 sm:pb-5">
-          <div className="pointer-events-auto mx-auto flex w-full max-w-5xl items-center">
-            {viewMode === "command" && (
-              <button
-                type="button"
-                onClick={() => setSidebarOpen((open) => !open)}
-                aria-label={m.builderToggleSectionNavigation()}
-                aria-pressed={sidebarOpen}
-                title={m.builderSectionNavigation()}
-                className="mr-2.5 flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center rounded-[14px] border border-transparent bg-[#18181B] text-[#FAFAF7] shadow-[0_1px_0_rgba(24,24,27,0.05),0_6px_18px_rgba(24,24,27,0.06)] transition-colors hover:bg-[#26262b] dark:border-white/10 dark:bg-[#1a1a1a] dark:hover:bg-[#242429]"
-              >
-                <PanelLeft className="h-4 w-4" />
-              </button>
-            )}
+          {viewMode !== "run" && (
             <motion.div
-              initial={{
-                // Collapsed width must fit the widest copy button (sm:w-48 =
-                // 192px) plus pl-4 + two gaps + the $ glyph + pr-1.5 (~242px),
-                // or the capsule's overflow-hidden clips the button's right edge.
-                maxWidth: 246,
-                backgroundColor: "rgba(24, 24, 27, 0)",
-                borderColor: "rgba(255, 255, 255, 0)",
-                boxShadow: "0 0 0 rgba(0, 0, 0, 0)",
-              }}
-              animate={{
-                maxWidth: 1024,
-                backgroundColor: "rgba(24, 24, 27, 1)",
-                borderColor: "rgba(255, 255, 255, 0.08)",
-                boxShadow: "0 6px 18px rgba(24, 24, 27, 0.06)",
-                transition: {
-                  maxWidth: { duration: 0.75, delay: 0.65, ease: [0.22, 1, 0.36, 1] },
-                  default: { duration: 0.2, delay: 0.6 },
-                },
-              }}
-              exit={{
-                maxWidth: 246,
-                backgroundColor: "rgba(24, 24, 27, 0)",
-                borderColor: "rgba(255, 255, 255, 0)",
-                boxShadow: "0 0 0 rgba(0, 0, 0, 0)",
-                transition: {
-                  maxWidth: { duration: 0.7, ease: [0.4, 0, 0.2, 1] },
-                  default: { duration: 0.2, delay: 0.52 },
-                },
-              }}
-              className={cn(
-                "ml-auto flex h-12 min-w-0 flex-1 items-center overflow-hidden rounded-[14px] border border-transparent bg-[#18181B] font-mono text-[12.5px] text-[#FAFAF7] shadow-[0_1px_0_rgba(24,24,27,0.05),0_6px_18px_rgba(24,24,27,0.06)] dark:border-white/10 dark:bg-[#1a1a1a]",
-                isMultiCreationInProgress ? "gap-2 pr-1.5 pl-2" : "gap-2.5 pr-1.5 pl-4",
-              )}
+              key="floating-command-bar"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1, transition: { duration: 0.3 } }}
+              exit={{ opacity: 0, transition: { duration: 0.3, delay: 0.75 } }}
+              className="pointer-events-none absolute inset-x-0 bottom-0 z-40 bg-gradient-to-t from-background via-background/85 to-transparent px-4 pt-6 pb-4 sm:px-6 sm:pb-5"
             >
-              {isMultiCreationInProgress && (
-                <>
-                  {multiActiveStepIndex > 0 && (
-                    <button
-                      type="button"
-                      data-testid="multi-step-back"
-                      aria-label={m.builderPreviousStep()}
-                      onClick={handleMultiPreviousStep}
-                      className="flex h-9 shrink-0 cursor-pointer items-center gap-1 rounded-[9px] px-2.5 text-[11.5px] font-medium text-[#FAFAF7] transition-colors hover:bg-white/10"
-                    >
-                      <ArrowLeft className="h-3.5 w-3.5" />
-                      <span className="hidden min-[420px]:inline">{m.builderBack()}</span>
-                    </button>
-                  )}
-                  {!isFinalMultiStep && (
-                    <span className="shrink-0 text-[11.5px] font-semibold text-[#C6E853] select-none">
-                      {multiActiveStepIndex + 1}/{MULTI_STACK_STEPS.length}
-                    </span>
-                  )}
-                  <span className="mx-0.5 h-5 w-px shrink-0 bg-white/10" aria-hidden="true" />
-                </>
-              )}
-              <motion.span
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1, transition: { duration: 0.2, delay: 0.95 } }}
-                exit={{ opacity: 0, transition: { duration: 0.18 } }}
-                className="shrink-0 font-medium text-[#C6E853] select-none"
-              >
-                $
-              </motion.span>
-              <code
-                data-testid="command-output"
-                className={cn(
-                  "no-scrollbar min-w-0 flex-1 overflow-x-auto whitespace-nowrap",
-                  isMultiCreationInProgress && !isFinalMultiStep
-                    ? "text-[11px] text-[rgba(250,250,247,0.5)]"
-                    : "text-[12.5px] text-[rgba(250,250,247,0.88)]",
+              <div className="pointer-events-auto mx-auto flex w-full max-w-5xl items-center">
+                {viewMode === "command" && (
+                  <button
+                    type="button"
+                    onClick={() => setSidebarOpen((open) => !open)}
+                    aria-label={m.builderToggleSectionNavigation()}
+                    aria-pressed={sidebarOpen}
+                    title={m.builderSectionNavigation()}
+                    className="mr-2.5 flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center rounded-[14px] border border-transparent bg-[#18181B] text-[#FAFAF7] shadow-[0_1px_0_rgba(24,24,27,0.05),0_6px_18px_rgba(24,24,27,0.06)] transition-colors hover:bg-[#26262b] dark:border-white/10 dark:bg-[#1a1a1a] dark:hover:bg-[#242429]"
+                  >
+                    <PanelLeft className="h-4 w-4" />
+                  </button>
                 )}
-              >
-                {command}
-              </code>
-              {isMultiCreationInProgress && !isFinalMultiStep ? (
-                <>
-                  <button
-                    type="button"
-                    onClick={copyToClipboard}
-                    data-analytics-event="builder_command_copied"
-                    data-analytics-source="builder_partial"
-                    aria-label={copied ? m.builderCommandCopied() : m.builderCopyCommand()}
-                    title={m.builderCopyPartialCommand()}
-                    className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-[9px] text-[rgba(250,250,247,0.7)] transition-colors hover:bg-white/10 hover:text-[#FAFAF7]"
-                  >
-                    {copied ? (
-                      <Check className="h-3.5 w-3.5" />
-                    ) : (
-                      <ClipboardCopy className="h-3.5 w-3.5" />
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    data-testid="multi-step-next"
-                    onClick={handleMultiNextStep}
-                    className="border-beam flex h-10 w-32 shrink-0 cursor-pointer items-center justify-center rounded-[11px] bg-[linear-gradient(90deg,#C6E853,#2f7df4,#C6E853)] bg-[length:200%_100%] p-px text-[11.5px] font-semibold text-[#2A3303] shadow-[0_0_24px_rgba(198,232,83,0.22)] transition-transform hover:scale-[1.02] min-[420px]:w-40 sm:w-48"
-                  >
-                    <span className="flex h-full w-full items-center justify-center gap-2 rounded-[10px] bg-[#C6E853] px-4 transition-colors hover:bg-[#d2ee72]">
-                      <span className="hidden min-[420px]:inline">{m.builderNextStep()}</span>
-                      <span className="min-[420px]:hidden">{m.builderNext()}</span>
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </span>
-                  </button>
-                </>
-              ) : (
-                <motion.button
-                  layoutId="bf-copy-command"
-                  layout
-                  style={{ zIndex: 70 }}
-                  transition={{ layout: { type: "spring", stiffness: 150, damping: 25, delay: 0.05 } }}
-                  type="button"
-                  onClick={copyToClipboard}
-                  data-analytics-event="builder_command_copied"
-                  data-analytics-source={isMultiMode ? "builder_multi" : "builder_solo"}
-                  aria-label={copied ? m.builderCommandCopied() : m.builderCopyCommand()}
+                <motion.div
+                  initial={{
+                    // Collapsed width must fit the widest copy button (sm:w-48 =
+                    // 192px) plus pl-4 + two gaps + the $ glyph + pr-1.5 (~242px),
+                    // or the capsule's overflow-hidden clips the button's right edge.
+                    maxWidth: 246,
+                    backgroundColor: "rgba(24, 24, 27, 0)",
+                    borderColor: "rgba(255, 255, 255, 0)",
+                    boxShadow: "0 0 0 rgba(0, 0, 0, 0)",
+                  }}
+                  animate={{
+                    maxWidth: 1024,
+                    backgroundColor: "rgba(24, 24, 27, 1)",
+                    borderColor: "rgba(255, 255, 255, 0.08)",
+                    boxShadow: "0 6px 18px rgba(24, 24, 27, 0.06)",
+                    transition: {
+                      maxWidth: { duration: 0.75, delay: 0.65, ease: [0.22, 1, 0.36, 1] },
+                      default: { duration: 0.2, delay: 0.6 },
+                    },
+                  }}
+                  exit={{
+                    maxWidth: 246,
+                    backgroundColor: "rgba(24, 24, 27, 0)",
+                    borderColor: "rgba(255, 255, 255, 0)",
+                    boxShadow: "0 0 0 rgba(0, 0, 0, 0)",
+                    transition: {
+                      maxWidth: { duration: 0.7, ease: [0.4, 0, 0.2, 1] },
+                      default: { duration: 0.2, delay: 0.52 },
+                    },
+                  }}
                   className={cn(
-                    "inline-flex h-10 w-32 shrink-0 cursor-pointer items-center justify-center rounded-[11px] p-px text-[11.5px] font-semibold text-[#2A3303] transition-transform hover:scale-[1.02] min-[420px]:w-40 sm:w-48",
-                    // The animated gradient border + glow is a multi-ecosystem
-                    // affordance; solo keeps a plain solid lime copy button.
-                    isMultiMode
-                      ? "border-beam bg-[linear-gradient(90deg,#C6E853,#2f7df4,#C6E853)] bg-[length:200%_100%] shadow-[0_0_24px_rgba(198,232,83,0.22)]"
-                      : "bg-[#C6E853] hover:bg-[#d2ee72]",
+                    "ml-auto flex h-12 min-w-0 flex-1 items-center overflow-hidden rounded-[14px] border border-transparent bg-[#18181B] font-mono text-[12.5px] text-[#FAFAF7] shadow-[0_1px_0_rgba(24,24,27,0.05),0_6px_18px_rgba(24,24,27,0.06)] dark:border-white/10 dark:bg-[#1a1a1a]",
+                    isMultiCreationInProgress ? "gap-2 pr-1.5 pl-2" : "gap-2.5 pr-1.5 pl-4",
                   )}
                 >
-                  <span className="flex h-full w-full items-center justify-center gap-2 rounded-[10px] bg-[#C6E853] px-4 transition-colors hover:bg-[#d2ee72]">
-                    {copied ? (
-                      <Check className="h-3.5 w-3.5" />
-                    ) : (
-                      <ClipboardCopy className="h-3.5 w-3.5" />
+                  {isMultiCreationInProgress && (
+                    <>
+                      {multiActiveStepIndex > 0 && (
+                        <button
+                          type="button"
+                          data-testid="multi-step-back"
+                          aria-label={m.builderPreviousStep()}
+                          onClick={handleMultiPreviousStep}
+                          className="flex h-9 shrink-0 cursor-pointer items-center gap-1 rounded-[9px] px-2.5 text-[11.5px] font-medium text-[#FAFAF7] transition-colors hover:bg-white/10"
+                        >
+                          <ArrowLeft className="h-3.5 w-3.5" />
+                          <span className="hidden min-[420px]:inline">{m.builderBack()}</span>
+                        </button>
+                      )}
+                      {!isFinalMultiStep && (
+                        <span className="shrink-0 text-[11.5px] font-semibold text-[#C6E853] select-none">
+                          {multiActiveStepIndex + 1}/{MULTI_STACK_STEPS.length}
+                        </span>
+                      )}
+                      <span className="mx-0.5 h-5 w-px shrink-0 bg-white/10" aria-hidden="true" />
+                    </>
+                  )}
+                  <motion.span
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1, transition: { duration: 0.2, delay: 0.95 } }}
+                    exit={{ opacity: 0, transition: { duration: 0.18 } }}
+                    className="shrink-0 font-medium text-[#C6E853] select-none"
+                  >
+                    $
+                  </motion.span>
+                  <code
+                    data-testid="command-output"
+                    className={cn(
+                      "no-scrollbar min-w-0 flex-1 overflow-x-auto whitespace-nowrap",
+                      isMultiCreationInProgress && !isFinalMultiStep
+                        ? "text-[11px] text-[rgba(250,250,247,0.5)]"
+                        : "text-[12.5px] text-[rgba(250,250,247,0.88)]",
                     )}
-                    <span>{copied ? m.navCopied() : m.navCopy()}</span>
-                  </span>
-                </motion.button>
-              )}
-            </motion.div>
-            {viewMode === "command" && (
-              <button
-                type="button"
-                onClick={scrollToTop}
-                aria-label={m.builderScrollToTop()}
-                title={m.builderScrollToTop()}
-                tabIndex={showScrollTop ? 0 : -1}
-                aria-hidden={!showScrollTop}
-                className={cn(
-                  "ml-2.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] border border-transparent bg-[#18181B] text-[#FAFAF7] shadow-[0_1px_0_rgba(24,24,27,0.05),0_6px_18px_rgba(24,24,27,0.06)] transition-all duration-200 ease-out dark:border-white/10 dark:bg-[#1a1a1a]",
-                  showScrollTop
-                    ? "scale-100 cursor-pointer opacity-100 hover:bg-[#26262b] dark:hover:bg-[#242429]"
-                    : "pointer-events-none scale-90 opacity-0",
+                  >
+                    {command}
+                  </code>
+                  {isMultiCreationInProgress && !isFinalMultiStep ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={copyToClipboard}
+                        data-analytics-event="builder_command_copied"
+                        data-analytics-source="builder_partial"
+                        aria-label={copied ? m.builderCommandCopied() : m.builderCopyCommand()}
+                        title={m.builderCopyPartialCommand()}
+                        className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-[9px] text-[rgba(250,250,247,0.7)] transition-colors hover:bg-white/10 hover:text-[#FAFAF7]"
+                      >
+                        {copied ? (
+                          <Check className="h-3.5 w-3.5" />
+                        ) : (
+                          <ClipboardCopy className="h-3.5 w-3.5" />
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        data-testid="multi-step-next"
+                        onClick={handleMultiNextStep}
+                        className="border-beam flex h-10 w-32 shrink-0 cursor-pointer items-center justify-center rounded-[11px] bg-[linear-gradient(90deg,#C6E853,#2f7df4,#C6E853)] bg-[length:200%_100%] p-px text-[11.5px] font-semibold text-[#2A3303] shadow-[0_0_24px_rgba(198,232,83,0.22)] transition-transform hover:scale-[1.02] min-[420px]:w-40 sm:w-48"
+                      >
+                        <span className="flex h-full w-full items-center justify-center gap-2 rounded-[10px] bg-[#C6E853] px-4 transition-colors hover:bg-[#d2ee72]">
+                          <span className="hidden min-[420px]:inline">{m.builderNextStep()}</span>
+                          <span className="min-[420px]:hidden">{m.builderNext()}</span>
+                          <ArrowRight className="h-3.5 w-3.5" />
+                        </span>
+                      </button>
+                    </>
+                  ) : (
+                    <motion.button
+                      layoutId="bf-copy-command"
+                      layout
+                      style={{ zIndex: 70 }}
+                      transition={{
+                        layout: { type: "spring", stiffness: 150, damping: 25, delay: 0.05 },
+                      }}
+                      type="button"
+                      onClick={copyToClipboard}
+                      data-analytics-event="builder_command_copied"
+                      data-analytics-source={isMultiMode ? "builder_multi" : "builder_solo"}
+                      aria-label={copied ? m.builderCommandCopied() : m.builderCopyCommand()}
+                      className={cn(
+                        "inline-flex h-10 w-32 shrink-0 cursor-pointer items-center justify-center rounded-[11px] p-px text-[11.5px] font-semibold text-[#2A3303] transition-transform hover:scale-[1.02] min-[420px]:w-40 sm:w-48",
+                        // The animated gradient border + glow is a multi-ecosystem
+                        // affordance; solo keeps a plain solid lime copy button.
+                        isMultiMode
+                          ? "border-beam bg-[linear-gradient(90deg,#C6E853,#2f7df4,#C6E853)] bg-[length:200%_100%] shadow-[0_0_24px_rgba(198,232,83,0.22)]"
+                          : "bg-[#C6E853] hover:bg-[#d2ee72]",
+                      )}
+                    >
+                      <span className="flex h-full w-full items-center justify-center gap-2 rounded-[10px] bg-[#C6E853] px-4 transition-colors hover:bg-[#d2ee72]">
+                        {copied ? (
+                          <Check className="h-3.5 w-3.5" />
+                        ) : (
+                          <ClipboardCopy className="h-3.5 w-3.5" />
+                        )}
+                        <span>{copied ? m.navCopied() : m.navCopy()}</span>
+                      </span>
+                    </motion.button>
+                  )}
+                </motion.div>
+                {viewMode === "command" && (
+                  <button
+                    type="button"
+                    onClick={scrollToTop}
+                    aria-label={m.builderScrollToTop()}
+                    title={m.builderScrollToTop()}
+                    tabIndex={showScrollTop ? 0 : -1}
+                    aria-hidden={!showScrollTop}
+                    className={cn(
+                      "ml-2.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] border border-transparent bg-[#18181B] text-[#FAFAF7] shadow-[0_1px_0_rgba(24,24,27,0.05),0_6px_18px_rgba(24,24,27,0.06)] transition-all duration-200 ease-out dark:border-white/10 dark:bg-[#1a1a1a]",
+                      showScrollTop
+                        ? "scale-100 cursor-pointer opacity-100 hover:bg-[#26262b] dark:hover:bg-[#242429]"
+                        : "pointer-events-none scale-90 opacity-0",
+                    )}
+                  >
+                    <ArrowUp className="h-4 w-4" />
+                  </button>
                 )}
-              >
-                <ArrowUp className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-        </motion.div>
-        )}
+              </div>
+            </motion.div>
+          )}
         </AnimatePresence>
 
         {/* ─── Section navigation drawer (toggled, builder view only) ──────── */}

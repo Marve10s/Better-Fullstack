@@ -1,29 +1,41 @@
 ---
 title: CLI Reference
 description: Commands for creating projects, updating generated apps, opening resources, and running AI-agent workflows.
+translationStatus: pending
+updated: 2026-08-07
 ---
 
-Better Fullstack has a small command surface. Most users only need `create`, `add`, `check`, and `history`; AI-agent workflows use `mcp`.
+Better Fullstack exposes a project lifecycle through the CLI: create, evolve, update, diagnose, and
+generate. Commands marked experimental have intentionally narrow support today.
+
+<Callout kind="info" title="Add changes the stack; update refreshes templates">
+Use `add` when you want a new selected capability. Use `update` when the selection stays the same
+and you want newer generator templates. Both expose a review-first workflow.
+</Callout>
 
 ## Commands
 
-| Command | Purpose |
-| --- | --- |
-| `create` | Scaffold a new project from a stack configuration. This is the default command. |
-| `add` | Add supported addons, deployment settings, or stack capabilities to an existing Better Fullstack project. |
-| `check` | Diagnose an existing project for config, dependency, env, and generated check issues. |
-| `doctor` | Compatibility alias for `check`. |
-| `recommend` | Suggest a stack from a natural-language brief (prompt-to-stack): prints the config, the rationale, and the nearest preset. Use `--brief "..."` and optionally `--ecosystem` or `--json`. |
-| `history` | Show, export, or clear local scaffold history and reproducible commands. |
-| `mcp` | Start the Better Fullstack MCP server over stdio for AI coding agents. |
+| Command     | Purpose                                                                                                   |
+| ----------- | --------------------------------------------------------------------------------------------------------- |
+| `create`    | Scaffold a new project from a stack configuration. This is the default command.                           |
+| `add`       | Add supported addons, deployment settings, or stack capabilities to an existing Better Fullstack project. |
+| `update`    | Plan or apply current template drift against the `bts.lock.json` scaffold baseline.                       |
+| `check`     | Diagnose an existing project for config, dependency, env, and generated check issues.                     |
+| `doctor`    | Compatibility alias for `check`.                                                                          |
+| `gen`       | Experimental: generate a TypeScript tRPC/oRPC resource router in an existing project.                     |
+| `registry`  | Experimental: add or list local capability packs. Remote URLs are not supported.                          |
+| `recommend` | Experimental: deterministic keyword/preset recommendation from a brief.                                   |
+| `history`   | Show, export, or clear local scaffold history and reproducible commands.                                  |
+| `mcp`       | Start the Better Fullstack MCP server over stdio for AI coding agents.                                    |
+| `telemetry` | Inspect, enable, or disable anonymous CLI telemetry.                                                      |
 
 ## Utility Commands
 
-| Command | Purpose |
-| --- | --- |
-| `docs` | Open the public Better Fullstack documentation site in your browser. |
-| `builder` | Open the interactive Stack Builder. |
-| `sponsors` | Show Better Fullstack sponsors. |
+| Command    | Purpose                                                              |
+| ---------- | -------------------------------------------------------------------- |
+| `docs`     | Open the public Better Fullstack documentation site in your browser. |
+| `builder`  | Open the interactive Stack Builder.                                  |
+| `sponsors` | Show Better Fullstack sponsors.                                      |
 
 ## Run utility commands
 
@@ -56,12 +68,18 @@ Show sponsors:
 
 ## Maintainer Commands
 
-`update-deps` is for maintainers checking and updating dependency versions. It is intentionally omitted from normal user workflows.
+`update-deps` is for repository maintainers checking and updating the generator's dependency
+catalog. It does not update a generated project; generated projects use `update`.
 
 ## Next
 
 - [Create command](/docs/cli/create/) covers all scaffold flags.
 - [Add command](/docs/cli/add/) covers existing-project updates.
+- [Update command](/docs/cli/update/) covers template drift and baseline adoption.
 - [Check command](/docs/cli/check/) covers project diagnostics.
+- [Generate command](/docs/cli/gen/) covers deterministic in-project generation.
+- [Registry command](/docs/cli/registry/) covers local capability packs.
+- [Recommend command](/docs/cli/recommend/) explains the deterministic recommender.
 - [History command](/docs/cli/history/) covers reproducible command history.
 - [MCP command](/docs/cli/mcp/) covers stdio MCP startup.
+- [Telemetry](/docs/cli/telemetry/) documents collection and opt-out controls.

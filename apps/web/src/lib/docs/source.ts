@@ -26,6 +26,7 @@ export type DocFrontmatter = {
   description?: string;
   updated?: string;
   image?: string;
+  translationStatus?: "pending";
 };
 
 /**
@@ -222,8 +223,12 @@ function localizedContentKey(filePath: string, locale: ContentLocale): string {
   return `${locale}:${filePath}`;
 }
 
-function hasLocalizedContent(filePath: string, locale: ContentLocale): boolean {
-  return locale !== "en" && localizedContentKey(filePath, locale) in localizedDocsMdxLoaders;
+function hasLocalizedContent(page: DocPage, locale: ContentLocale): boolean {
+  return (
+    page.frontmatter.translationStatus !== "pending" &&
+    locale !== "en" &&
+    localizedContentKey(page.filePath, locale) in localizedDocsMdxLoaders
+  );
 }
 
 function contentCacheKey(page: DocPage, locale: ContentLocale): string {
@@ -239,8 +244,13 @@ export function getLocalizedDocFrontmatter(
   page: Pick<DocPage, "frontmatter" | "localizedFrontmatter">,
   locale = currentContentLocale(),
 ): DocFrontmatter {
-  if (locale === "en") return page.frontmatter;
-  return page.localizedFrontmatter?.[locale] ?? page.frontmatter;
+  if (locale === "en" || page.frontmatter.translationStatus === "pending") {
+    return page.frontmatter;
+  }
+  return {
+    ...page.frontmatter,
+    ...page.localizedFrontmatter?.[locale],
+  };
 }
 
 export function localizeDocPage(page: DocPage): DocPage {
@@ -296,7 +306,7 @@ const contentCache = createSuspenseCache<DocPageContent>();
 async function loadPageContent(page: DocPage): Promise<DocPageContent> {
   const locale = currentContentLocale();
   const localizedKey = localizedContentKey(page.filePath, locale);
-  const hasLocalized = hasLocalizedContent(page.filePath, locale);
+  const hasLocalized = hasLocalizedContent(page, locale);
   const filePath = hasLocalized ? localizedFilePath(page.filePath, locale) : page.filePath;
   const moduleLoader = hasLocalized ? localizedDocsMdxLoaders[localizedKey] : mdxLoaders[filePath];
   const rawLoader = hasLocalized
@@ -338,7 +348,7 @@ export async function loadAllRawPages(): Promise<Map<string, string>> {
   const entries = await Promise.all(
     getAllPages().map(async (page) => {
       const localizedKey = localizedContentKey(page.filePath, locale);
-      const hasLocalized = hasLocalizedContent(page.filePath, locale);
+      const hasLocalized = hasLocalizedContent(page, locale);
       const filePath = hasLocalized ? localizedFilePath(page.filePath, locale) : page.filePath;
       const rawLoader = hasLocalized
         ? localizedDocsRawMdxLoaders[localizedKey]

@@ -1,9 +1,9 @@
+import { OPTION_CATEGORY_METADATA } from "@better-fullstack/types";
+import { STACK_SELECTION_URL_KEYS } from "@better-fullstack/types/stack-translation";
 import { describe, expect, it } from "bun:test";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-
-import { STACK_SELECTION_URL_KEYS } from "@better-fullstack/types/stack-translation";
 
 import { buildSearchSections } from "../src/lib/docs/search";
 import { LOCALIZED_CONTENT_LOCALES } from "../src/lib/i18n/locales";
@@ -14,6 +14,7 @@ const DOCS_ROOT = join(CONTENT_ROOT, "docs");
 const GUIDES_ROOT = join(CONTENT_ROOT, "guides");
 const BLOG_ROOT = join(CONTENT_ROOT, "blog");
 const LOCALIZED_CONTENT_ROOT = join(CONTENT_ROOT, "i18n");
+const PLANS_ROOT = join(WEB_ROOT, "../../docs/plans");
 const PUBLIC_ROUTE_ROOTS = new Map([
   ["/docs", DOCS_ROOT],
   ["/guides", GUIDES_ROOT],
@@ -23,12 +24,51 @@ const CONTENT_SECTION_ROOTS = new Map([
   ["guides", GUIDES_ROOT],
   ["blog", BLOG_ROOT],
 ] as const);
-const BUILDER_URL_KEYS = new Set([
-  ...Object.values(STACK_SELECTION_URL_KEYS),
-  "preset",
-  "view",
-]);
+const BUILDER_URL_KEYS = new Set([...Object.values(STACK_SELECTION_URL_KEYS), "preset", "view"]);
 const PENDING_TRANSLATION_PATHS = [
+  "content/docs/ai/mcp-tools.mdx",
+  "content/docs/ai/mcp.mdx",
+  "content/docs/ai/overview.mdx",
+  "content/docs/cli/add.mdx",
+  "content/docs/cli/check.mdx",
+  "content/docs/cli/create.mdx",
+  "content/docs/cli/gen.mdx",
+  "content/docs/cli/index.mdx",
+  "content/docs/cli/mcp.mdx",
+  "content/docs/cli/recommend.mdx",
+  "content/docs/cli/registry.mdx",
+  "content/docs/cli/telemetry.mdx",
+  "content/docs/cli/update.mdx",
+  "content/docs/cli/utilities.mdx",
+  "content/docs/ecosystems/dotnet.mdx",
+  "content/docs/ecosystems/elixir.mdx",
+  "content/docs/ecosystems/go.mdx",
+  "content/docs/ecosystems/index.mdx",
+  "content/docs/ecosystems/java.mdx",
+  "content/docs/ecosystems/multi-ecosystem.mdx",
+  "content/docs/ecosystems/native-mobile.mdx",
+  "content/docs/ecosystems/python.mdx",
+  "content/docs/ecosystems/react-native.mdx",
+  "content/docs/ecosystems/rust.mdx",
+  "content/docs/ecosystems/typescript.mdx",
+  "content/docs/getting-started/first-project.mdx",
+  "content/docs/getting-started/installation.mdx",
+  "content/docs/getting-started/lifecycle.mdx",
+  "content/docs/index.mdx",
+  "content/docs/recipes/browser-zip-workflow.mdx",
+  "content/docs/recipes/default-typescript-web.mdx",
+  "content/docs/recipes/dotnet-service.mdx",
+  "content/docs/recipes/index.mdx",
+  "content/docs/recipes/multi-ecosystem-product.mdx",
+  "content/docs/recipes/nextjs-self-backend.mdx",
+  "content/docs/recipes/python-api.mdx",
+  "content/docs/reference/options/dotnet.mdx",
+  "content/docs/reference/versioning.mdx",
+  "content/docs/sections/auth-and-payments.mdx",
+  "content/docs/sections/backend-and-api.mdx",
+  "content/docs/web-builder/download-and-share.mdx",
+  "content/docs/web-builder/edit-and-run.mdx",
+  "content/docs/web-builder/index.mdx",
   "content/blog/better-auth-architecture.mdx",
   "content/blog/drizzle-vs-prisma.mdx",
   "content/blog/self-backend-vs-separate-api.mdx",
@@ -51,7 +91,9 @@ type LocalizedContentEntry = {
   frontmatter?: Record<string, unknown>;
   body?: string;
 };
-type LocalizedContentBundle = Partial<Record<ContentSection, Record<string, LocalizedContentEntry>>>;
+type LocalizedContentBundle = Partial<
+  Record<ContentSection, Record<string, LocalizedContentEntry>>
+>;
 
 function walkFiles(root: string, predicate: (path: string) => boolean): string[] {
   const out: string[] = [];
@@ -83,7 +125,9 @@ function isLocalizedMdxFile(path: string): boolean {
   return LOCALIZED_CONTENT_LOCALES.some((locale) => path.endsWith(`.${locale}.mdx`));
 }
 
-function getContentSection(filePath: string): { section: ContentSection; path: string } | undefined {
+function getContentSection(
+  filePath: string,
+): { section: ContentSection; path: string } | undefined {
   for (const [section, root] of CONTENT_SECTION_ROOTS) {
     if (!filePath.startsWith(`${root}${sep}`)) continue;
     return {
@@ -157,8 +201,11 @@ function resolveContentRoute(pathname: string): string[] {
 
     const routePath = normalizedPathname.slice(routeRoot.length).replace(/^\//, "");
     if (!routePath) return [join(contentRoot, "index.mdx")];
+    if (routePath === "llms.txt") return [];
 
-    return [join(contentRoot, `${routePath}.mdx`), join(contentRoot, routePath, "index.mdx")];
+    const contentPath = routePath.endsWith(".md") ? routePath.slice(0, -3) : routePath;
+
+    return [join(contentRoot, `${contentPath}.mdx`), join(contentRoot, contentPath, "index.mdx")];
   }
 
   return [];
@@ -418,5 +465,81 @@ describe("docs content contract", () => {
         body: "",
       }),
     ]);
+  });
+
+  it("documents the exact live MCP tool surface", () => {
+    const mcpSource = readFileSync(join(WEB_ROOT, "../cli/src/mcp.ts"), "utf8");
+    const reference = readFileSync(join(DOCS_ROOT, "ai/mcp-tools.mdx"), "utf8");
+    const registeredTools = new Set(
+      [...mcpSource.matchAll(/registerTool\(\s*"(bfs_[a-z_]+)"/g)].map((match) => match[1]),
+    );
+    const documentedTools = new Set(
+      [...reference.matchAll(/`(bfs_[a-z_]+)`/g)].map((match) => match[1]),
+    );
+
+    expect([...documentedTools].sort()).toEqual([...registeredTools].sort());
+  });
+
+  it("keeps mutating CLI workflows explicit about their operational contract", () => {
+    for (const relativePath of [
+      "cli/create.mdx",
+      "cli/add.mdx",
+      "cli/update.mdx",
+      "cli/check.mdx",
+      "cli/gen.mdx",
+      "cli/registry.mdx",
+    ]) {
+      const source = readFileSync(join(DOCS_ROOT, relativePath), "utf8");
+      expect(source, relativePath).toContain("## Operational contract");
+    }
+  });
+
+  it("keeps option inventories schema-derived and agent filenames correctly cased", () => {
+    const ecosystemFiles = walkFiles(DOCS_ROOT + `${sep}ecosystems`, (path) =>
+      path.endsWith(".mdx"),
+    );
+    const manualInventories = ecosystemFiles
+      .filter((path) => readFileSync(path, "utf8").includes("| Category | Values |"))
+      .map((path) => relative(WEB_ROOT, path));
+    const misCasedAgentFiles = contentFiles
+      .filter((file) => /`Agents\.md`|\bAgents\.md\b/.test(file.source))
+      .map((file) => file.relativePath);
+
+    expect(manualInventories).toEqual([]);
+    expect(misCasedAgentFiles).toEqual([]);
+    expect(readFileSync(join(DOCS_ROOT, "getting-started/installation.mdx"), "utf8")).toContain(
+      ".NET SDK 10",
+    );
+  });
+
+  it("does not leave already-registered options as unchecked add work", () => {
+    const registeredOptions = new Set(
+      Object.values(OPTION_CATEGORY_METADATA).flatMap((metadata) =>
+        metadata.options.flatMap((option) => [option.id, option.cliValue]),
+      ),
+    );
+    const staleRows = walkFiles(PLANS_ROOT, (path) => path.endsWith(".md")).flatMap((path) => {
+      const source = readFileSync(path, "utf8");
+      return [...source.matchAll(/^- \[ \] Add `([^`]+)`/gm)]
+        .filter((match) => registeredOptions.has(match[1]))
+        .map(
+          (match) =>
+            `${relative(WEB_ROOT, path)}:${lineNumberForIndex(source, match.index)} ${match[1]}`,
+        );
+    });
+
+    expect(staleRows).toEqual([]);
+  });
+
+  it("makes pending translations fall back to current English content", () => {
+    const sources = [
+      readFileSync(join(WEB_ROOT, "src/lib/docs/source.ts"), "utf8"),
+      readFileSync(join(WEB_ROOT, "src/lib/guides/source.ts"), "utf8"),
+      readFileSync(join(WEB_ROOT, "src/lib/blog/source.ts"), "utf8"),
+    ];
+
+    for (const source of sources) {
+      expect(source).toContain('frontmatter.translationStatus !== "pending"');
+    }
   });
 });

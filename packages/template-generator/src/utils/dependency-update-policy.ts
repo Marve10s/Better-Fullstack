@@ -1,6 +1,8 @@
 export type DependencyUpdatePolicy = {
   /** Keep automation on this reviewed version until the hold is removed deliberately. */
   pinnedVersion?: string;
+  /** Keep the CLI's latest channel on pinnedVersion while the upstream latest tag is unsafe. */
+  holdLatestChannel?: boolean;
   /** Major updates are denied by default and must be explicitly reviewed here. */
   allowMajor?: boolean;
   reason: string;
@@ -59,6 +61,50 @@ export const DEPENDENCY_UPDATE_POLICIES: Readonly<Record<string, DependencyUpdat
   "@tanstack/svelte-form": {
     pinnedVersion: "^1.33.0",
     reason: "Keep the TanStack Form family aligned on the reviewed Yarn-compatible release.",
+  },
+  "@tanstack/react-router": {
+    pinnedVersion: "1.170.18",
+    holdLatestChannel: true,
+    reason: "The upstream latest tag depends on an unpublished @tanstack/router-core release.",
+  },
+  "@tanstack/react-router-devtools": {
+    pinnedVersion: "1.167.0",
+    holdLatestChannel: true,
+    reason:
+      "Keep Router Devtools on the reviewed release while the router latest train is incomplete.",
+  },
+  "@tanstack/react-router-with-query": {
+    pinnedVersion: "1.130.17",
+    holdLatestChannel: true,
+    reason:
+      "Keep the query integration on the reviewed release while the router latest train is incomplete.",
+  },
+  "@tanstack/react-start": {
+    pinnedVersion: "1.168.34",
+    holdLatestChannel: true,
+    reason:
+      "Keep TanStack Start on the reviewed release while the router latest train is incomplete.",
+  },
+  "@tanstack/router-cli": {
+    pinnedVersion: "1.167.21",
+    holdLatestChannel: true,
+    reason: "The upstream latest tag depends on an unpublished @tanstack/router-generator release.",
+  },
+  "@tanstack/router-plugin": {
+    pinnedVersion: "1.168.23",
+    holdLatestChannel: true,
+    reason: "Keep the router plugin on the latest reviewed installable release.",
+  },
+  "@tanstack/solid-router": {
+    pinnedVersion: "1.170.18",
+    holdLatestChannel: true,
+    reason: "The upstream latest tag depends on an unpublished @tanstack/router-core release.",
+  },
+  "@tanstack/solid-router-devtools": {
+    pinnedVersion: "1.167.0",
+    holdLatestChannel: true,
+    reason:
+      "The next devtools patch requires a newer Solid Router peer than the reviewed router release.",
   },
   "@auth0/nextjs-auth0": {
     pinnedVersion: "^4.23.0",
@@ -124,6 +170,11 @@ export const DEPENDENCY_UPDATE_POLICIES: Readonly<Record<string, DependencyUpdat
 
 export function getPinnedDependencyVersion(packageName: string): string | undefined {
   return DEPENDENCY_UPDATE_POLICIES[packageName]?.pinnedVersion;
+}
+
+export function getLatestChannelPinnedVersion(packageName: string): string | undefined {
+  const policy = DEPENDENCY_UPDATE_POLICIES[packageName];
+  return policy?.holdLatestChannel ? policy.pinnedVersion : undefined;
 }
 
 export function isMajorUpdateAllowlisted(packageName: string): boolean {

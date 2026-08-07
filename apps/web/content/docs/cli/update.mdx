@@ -1,0 +1,61 @@
+---
+title: Update Projects
+description: Plan and safely apply current Better Fullstack templates to an existing generated project.
+translationStatus: pending
+updated: 2026-08-07
+---
+
+`update` re-renders the stack recorded in `bts.jsonc` and compares it with the scaffold baseline in
+`bts.lock.json`. Its default behavior is a dry-run plan; it does not write files unless `--apply` or
+`--record-baseline` is explicit.
+
+```npm
+npm create better-fullstack@latest update
+```
+
+## Operational contract
+
+| Concern       | Contract                                                                                                 |
+| ------------- | -------------------------------------------------------------------------------------------------------- |
+| Preconditions | A generated project with `bts.jsonc`; safe patching also needs `bts.lock.json`. Commit local work first. |
+| Preview       | Plain `update` and `update --dry-run` only produce a plan.                                               |
+| Writes        | Only `--apply` and `--record-baseline` write files.                                                      |
+| Refuses       | Local edits, conflicts, secrets, lockfiles, and removals are not silently overwritten or deleted.        |
+| Recovery      | Apply on a clean Git worktree, inspect the diff, and revert the update commit if necessary.              |
+
+## Three-way classification
+
+The engine compares the baseline, current template render, and current disk contents. It classifies
+files as unchanged, safe template drift, structured merge, new, locally edited, conflict, removed,
+or manual review. `package.json` and `.env.example` can use structured merges. Lockfiles, secrets,
+conflicts, and local edits are never silently overwritten; removed template files are not deleted.
+
+## Modes
+
+| Flag                         | Behavior                                                                                    |
+| ---------------------------- | ------------------------------------------------------------------------------------------- |
+| no mode flag / `--dry-run`   | Print the plan without writing.                                                             |
+| `--apply`                    | Write safe drift patches, structured merges, and new files; refresh successful baselines.   |
+| `--check`                    | CI gate: exit non-zero when actionable template drift exists.                               |
+| `--record-baseline`          | Adopt the current on-disk project as a baseline for older projects without `bts.lock.json`. |
+| `--json`                     | Print the plan and counts as structured JSON.                                               |
+| positional project directory | Target directory; defaults to the current directory.                                        |
+
+The write/check/baseline modes are mutually exclusive. `--dry-run` cannot be combined with
+`--apply` or `--record-baseline`.
+
+## Recommended workflow
+
+1. Commit current work.
+2. Run `update` and review every conflict/manual entry.
+3. Run `update --apply` for the safe subset.
+4. Resolve remaining files manually.
+5. Run `check`, then the generated project's tests.
+
+<Callout kind="warning" title="Baseline adoption">
+`--record-baseline` records the current project state; it cannot reconstruct the exact historical
+template that created an older project. Review and commit the project before adopting a baseline.
+</Callout>
+
+`update` updates generated project templates. The maintainer-only `update-deps` command updates the
+generator repository's dependency catalog and is unrelated.

@@ -288,12 +288,18 @@ export const dependencyVersionMap = {
 
   "@tanstack/react-query-devtools": "^5.101.4",
   "@tanstack/react-query": "^5.101.4",
+  "@tanstack/react-router": "1.170.18",
+  "@tanstack/react-router-devtools": "1.167.0",
   "@tanstack/react-router-ssr-query": "^1.167.1",
-  "@tanstack/router-cli": "^1.167.21",
+  "@tanstack/react-router-with-query": "1.130.17",
+  "@tanstack/react-start": "1.168.34",
+  "@tanstack/router-cli": "1.167.21",
+  "@tanstack/router-plugin": "1.168.23",
 
   "@tanstack/solid-query": "^5.101.4",
   "@tanstack/solid-query-devtools": "^5.101.4",
-  "@tanstack/solid-router-devtools": "^1.167.0",
+  "@tanstack/solid-router": "1.170.18",
+  "@tanstack/solid-router-devtools": "1.167.0",
 
   "@tanstack/angular-query-experimental": "^5.101.4",
 

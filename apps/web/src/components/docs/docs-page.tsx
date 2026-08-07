@@ -7,11 +7,7 @@ import type { DocPage, PageNode } from "@/lib/docs/source";
 import { DocsLayout } from "@/components/docs/docs-layout";
 import { DocsPageActions } from "@/components/docs/docs-page-actions";
 import { mdxComponents } from "@/components/docs/mdx";
-import {
-  canRenderDocPageContent,
-  localizeDocPage,
-  useDocPageContent,
-} from "@/lib/docs/source";
+import { canRenderDocPageContent, localizeDocPage, useDocPageContent } from "@/lib/docs/source";
 import { m } from "@/paraglide/messages.js";
 
 /**
@@ -71,6 +67,14 @@ function DocsPageHeader({ page, markdown }: { page: DocPage; markdown?: string }
             {page.frontmatter.description}
           </p>
         ) : null}
+        <p className="mt-4 flex flex-wrap gap-x-3 gap-y-1 font-mono text-[0.7rem] text-muted-foreground uppercase">
+          <span>CLI v{__BFS_CLI_VERSION__}</span>
+          {page.frontmatter.updated ? (
+            <span>
+              Reviewed <time dateTime={page.frontmatter.updated}>{page.frontmatter.updated}</time>
+            </span>
+          ) : null}
+        </p>
       </div>
     </header>
   );
