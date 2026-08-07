@@ -95,4 +95,9 @@ New ecosystems, libraries, and providers are not the default roadmap. Accept cat
 - browser run-ready, edit-rerun, and ZIP success rates;
 - verified recipe pass rate and evidence freshness.
 
+The internal `/telemetry` decision room is not a public product surface. It reads aggregates through
+internal Convex queries and fails closed unless the same random, 32-character-or-longer
+`TELEMETRY_DASHBOARD_SECRET` is configured in both the web and Convex deployments. The owner signs
+in with the username `owner` and that secret as the password.
+
 Theoretical combination count is not a roadmap metric.

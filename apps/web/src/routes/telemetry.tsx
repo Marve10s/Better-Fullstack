@@ -1,52 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
+
+import type { TelemetryDashboardData } from "@/lib/telemetry-dashboard";
 
 import { TelemetryDecisionDashboard } from "@/components/analytics/telemetry-decision-dashboard";
 import Footer from "@/components/home/footer";
 import { NOINDEX_ROBOTS } from "@/lib/robots";
 import { canonicalUrl } from "@/lib/seo";
-import {
-  buildTelemetryDashboard,
-  type RawDailyTelemetry,
-  type RawEngagement,
-  type RawProductInsights,
-  type RawTelemetryStats,
-} from "@/lib/telemetry-dashboard";
 
 type LoaderResult =
-  | { status: "ready"; data: ReturnType<typeof buildTelemetryDashboard> }
-  | { status: "unconfigured" | "empty" | "unavailable" };
+  | { status: "ready"; data: TelemetryDashboardData }
+  | { status: "unconfigured" | "empty" | "unavailable" | "unauthorized" };
 
-async function loadTelemetry(): Promise<LoaderResult> {
-  const convexUrl = import.meta.env.VITE_CONVEX_URL;
-  if (!convexUrl) return { status: "unconfigured" };
-
-  try {
-    const [{ ConvexHttpClient }, { api }] = await Promise.all([
-      import("convex/browser"),
-      import("@better-fullstack/backend/convex/_generated/api"),
-    ]);
-    const client = new ConvexHttpClient(convexUrl);
-    const [stats, daily, engagement, insights] = await Promise.all([
-      client.query(api.analytics.getStats, {}),
-      client.query(api.analytics.getDailyStats, { days: 30 }),
-      client.query(api.analytics.getEngagement, {}),
-      client.query(api.analytics.getProductInsights, {}),
-    ]);
-    if (!stats) return { status: "empty" };
-
-    return {
-      status: "ready",
-      data: buildTelemetryDashboard({
-        stats: stats as RawTelemetryStats,
-        daily: daily as RawDailyTelemetry[],
-        engagement: engagement as RawEngagement,
-        insights: insights as RawProductInsights,
-      }),
-    };
-  } catch {
-    return { status: "unavailable" };
-  }
-}
+const loadTelemetry = createServerFn({ method: "GET" }).handler(async (): Promise<LoaderResult> => {
+  const { loadTelemetryForOwner } = await import("@/lib/telemetry-data.server");
+  return loadTelemetryForOwner();
+});
 
 export const Route = createFileRoute("/telemetry")({
   head: () => {
@@ -66,7 +35,7 @@ export const Route = createFileRoute("/telemetry")({
     };
   },
   staleTime: 60_000,
-  loader: loadTelemetry,
+  loader: () => loadTelemetry(),
   component: TelemetryRoute,
 });
 
@@ -89,10 +58,13 @@ function TelemetryRoute() {
 
 function TelemetryUnavailable({ status }: { status: Exclude<LoaderResult["status"], "ready"> }) {
   const copy = {
-    unconfigured: "Set VITE_CONVEX_URL to connect this deployment to aggregate telemetry.",
+    unconfigured:
+      "Set the same TELEMETRY_DASHBOARD_SECRET in the web and Convex deployments, then connect the web deployment to Convex.",
     empty: "The telemetry store is connected, but no aggregate events are available yet.",
     unavailable:
       "The aggregate telemetry query is temporarily unavailable. No raw event data was requested.",
+    unauthorized:
+      "Telemetry access was denied. Verify the owner credentials and matching deployment secrets.",
   }[status];
 
   return (

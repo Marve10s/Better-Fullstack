@@ -2,6 +2,7 @@ import { httpRouter } from "convex/server";
 
 import { internal } from "./_generated/api";
 import { httpAction } from "./_generated/server";
+import { getTelemetryDashboardAccess } from "./analytics-access";
 
 type StackValue = string | boolean | string[];
 
@@ -83,6 +84,13 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
+};
+const PRIVATE_JSON_HEADERS = {
+  "Cache-Control": "private, no-store",
+  "Content-Type": "application/json; charset=utf-8",
+  Vary: "Authorization",
+  "X-Content-Type-Options": "nosniff",
+  "X-Robots-Tag": "noindex, nofollow, noarchive, nosnippet",
 };
 
 function sanitizeString(value: string): string | undefined {
@@ -288,6 +296,48 @@ http.route({
       return new Response("Internal Server Error", { status: 500, headers: CORS_HEADERS });
     }
     return new Response("ok", { headers: CORS_HEADERS });
+  }),
+});
+
+http.route({
+  path: "/api/analytics/dashboard",
+  method: "GET",
+  handler: httpAction(async (ctx, req) => {
+    const access = getTelemetryDashboardAccess(
+      req.headers.get("Authorization"),
+      process.env.TELEMETRY_DASHBOARD_SECRET,
+    );
+    if (access === "unconfigured") {
+      return new Response(JSON.stringify({ error: "Telemetry dashboard is not configured" }), {
+        status: 503,
+        headers: PRIVATE_JSON_HEADERS,
+      });
+    }
+    if (access === "unauthorized") {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: PRIVATE_JSON_HEADERS,
+      });
+    }
+
+    try {
+      const [stats, daily, engagement, insights] = await Promise.all([
+        ctx.runQuery(internal.analytics.getStats, {}),
+        ctx.runQuery(internal.analytics.getDailyStats, { days: 30 }),
+        ctx.runQuery(internal.analytics.getEngagement, {}),
+        ctx.runQuery(internal.analytics.getProductInsights, {}),
+      ]);
+
+      return new Response(JSON.stringify({ stats, daily, engagement, insights }), {
+        headers: PRIVATE_JSON_HEADERS,
+      });
+    } catch (error) {
+      console.error("Failed to load aggregate telemetry dashboard:", error);
+      return new Response(JSON.stringify({ error: "Internal Server Error" }), {
+        status: 500,
+        headers: PRIVATE_JSON_HEADERS,
+      });
+    }
   }),
 });
 

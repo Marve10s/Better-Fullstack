@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 
-import { internalMutation, internalQuery, query } from "./_generated/server";
+import { internalMutation, internalQuery } from "./_generated/server";
 import {
   applyFailureClassifications,
   classifyProjectSetupOutcome,
@@ -680,7 +680,7 @@ export const ingestEvent = internalMutation({
 
 const distributionValidator = v.record(v.string(), v.number());
 
-export const getStats = query({
+export const getStats = internalQuery({
   args: {},
   handler: async (ctx) => {
     const stats = await ctx.db.query("analyticsStats").first();
@@ -706,7 +706,7 @@ export const getStats = query({
   },
 });
 
-export const getDailyStats = query({
+export const getDailyStats = internalQuery({
   args: {
     days: v.optional(v.number()),
   },
@@ -771,7 +771,7 @@ export const getDailyStats = query({
   },
 });
 
-export const getEngagement = query({
+export const getEngagement = internalQuery({
   args: {},
   returns: v.object({
     uniqueMachines: v.number(),
@@ -839,7 +839,7 @@ export const getEngagement = query({
  * aggregate counters; anonymous machine identifiers and individual events are
  * never exposed by this query.
  */
-export const getProductInsights = query({
+export const getProductInsights = internalQuery({
   args: {},
   returns: v.object({
     totalEvents: v.number(),
