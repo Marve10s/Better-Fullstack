@@ -4428,7 +4428,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: solid-start-v2
     "vite": "^8.2.0",
     "typescript": "catalog:",
     "@snapshot-solid-start-v2-fullstack/config": "workspace:*",
-    "@tanstack/solid-router-devtools": "^1.167.0"
+    "@tanstack/solid-router-devtools": "1.167.0"
   },
   "engines": {
     "node": ">=24"

@@ -1,3 +1,4 @@
+import { getLatestChannelPinnedVersion } from "@better-fullstack/template-generator";
 import { log } from "@clack/prompts";
 import fs from "fs-extra";
 import path from "node:path";
@@ -41,9 +42,9 @@ function mapWithConcurrency<T, R>(
     }
   }
 
-  return Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, () => worker())).then(
-    () => results,
-  );
+  return Promise.all(
+    Array.from({ length: Math.min(concurrency, items.length) }, () => worker()),
+  ).then(() => results);
 }
 
 type ParsedVersion = {
@@ -210,7 +211,9 @@ function getVersionsForChannel(
   }
 
   const prereleases = versions.filter(isPrerelease);
-  return prereleases.length > 0 ? prereleases : versions.filter((version) => !isPrerelease(version));
+  return prereleases.length > 0
+    ? prereleases
+    : versions.filter((version) => !isPrerelease(version));
 }
 
 function resolveSharedFamilyVersion(
@@ -227,7 +230,9 @@ function resolveSharedFamilyVersion(
 
   for (const packageInfo of remainingInfos) {
     const availableVersions = new Set(getVersionsForChannel(packageInfo, channel));
-    commonVersions = new Set([...commonVersions].filter((version) => availableVersions.has(version)));
+    commonVersions = new Set(
+      [...commonVersions].filter((version) => availableVersions.has(version)),
+    );
   }
 
   return [...commonVersions].sort((left, right) => compareVersions(right, left))[0] ?? null;
@@ -239,7 +244,9 @@ function applySynchronizedFamilyVersions(
   channel: Exclude<VersionChannel, "stable">,
 ): void {
   for (const family of SYNCHRONIZED_VERSION_FAMILIES) {
-    const selectedPackages = family.packages.filter((packageName) => resolvedVersions.has(packageName));
+    const selectedPackages = family.packages.filter((packageName) =>
+      resolvedVersions.has(packageName),
+    );
     if (selectedPackages.length < 2) continue;
 
     const selectedPackageInfos = selectedPackages.flatMap((packageName) => {
@@ -315,15 +322,30 @@ export async function applyDependencyVersionChannel(
 
   const resolvedVersions = new Map<string, string>();
   const packageInfos = new Map<string, NpmPackageInfo>();
+  const latestChannelHolds = new Map<string, string>();
 
   await mapWithConcurrency(
     [...packageNames],
     async (packageName) => {
       try {
         const packageInfo = await fetchPackageInfo(packageName);
-        const resolvedVersion = selectRegistryVersionForChannel(packageInfo, channel);
+        const heldVersion =
+          channel === "latest" ? getLatestChannelPinnedVersion(packageName) : undefined;
+        const normalizedHeldVersion = heldVersion?.replace(/^[^\d]*/, "");
+
+        if (normalizedHeldVersion && !packageInfo.versions?.[normalizedHeldVersion]) {
+          throw new Error(
+            `Reviewed latest-channel version ${normalizedHeldVersion} is unavailable for ${packageName}`,
+          );
+        }
+
+        const resolvedVersion =
+          normalizedHeldVersion ?? selectRegistryVersionForChannel(packageInfo, channel);
         if (!resolvedVersion) {
           throw new Error(`No ${channel} version available for ${packageName}`);
+        }
+        if (normalizedHeldVersion) {
+          latestChannelHolds.set(packageName, normalizedHeldVersion);
         }
         packageInfos.set(packageName, packageInfo);
         resolvedVersions.set(packageName, resolvedVersion);
@@ -337,6 +359,16 @@ export async function applyDependencyVersionChannel(
     },
     REGISTRY_CONCURRENCY,
   );
+
+  if (latestChannelHolds.size > 0) {
+    const heldPackages = [...latestChannelHolds]
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([packageName, version]) => `${packageName}@${version}`)
+      .join(", ");
+    log.warn(
+      `Using reviewed versions for ${heldPackages}; the corresponding npm latest tags are not fully installable.`,
+    );
+  }
 
   if (resolvedVersions.size === 0) return;
 

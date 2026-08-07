@@ -2,14 +2,15 @@ import { describe, expect, it } from "bun:test";
 
 import { dependencyVersionMap } from "../src/utils/add-deps";
 import {
-  DEPENDENCY_UPDATE_POLICIES,
-  getPinnedDependencyVersion,
-} from "../src/utils/dependency-update-policy";
-import {
   getUpdateType,
   selectAutomatedUpdates,
   type VersionInfo,
 } from "../src/utils/dependency-checker";
+import {
+  DEPENDENCY_UPDATE_POLICIES,
+  getLatestChannelPinnedVersion,
+  getPinnedDependencyVersion,
+} from "../src/utils/dependency-update-policy";
 
 const candidate = (name: string, updateType: VersionInfo["updateType"]): VersionInfo => ({
   name,
@@ -21,6 +22,9 @@ const candidate = (name: string, updateType: VersionInfo["updateType"]): Version
 describe("dependency update policy", () => {
   it("keeps every policy pin synchronized with the canonical version map", () => {
     for (const [name, policy] of Object.entries(DEPENDENCY_UPDATE_POLICIES)) {
+      if (policy.holdLatestChannel) {
+        expect(policy.pinnedVersion).toBeDefined();
+      }
       if (policy.pinnedVersion === undefined) continue;
 
       const canonicalVersion: string | undefined =
@@ -28,7 +32,17 @@ describe("dependency update policy", () => {
 
       expect(canonicalVersion).toBe(policy.pinnedVersion);
       expect(getPinnedDependencyVersion(name)).toBe(policy.pinnedVersion);
+      if (policy.holdLatestChannel) {
+        expect(getLatestChannelPinnedVersion(name)).toBe(policy.pinnedVersion);
+      }
     }
+  });
+
+  it("keeps incomplete TanStack Router release trains out of the latest channel", () => {
+    expect(getLatestChannelPinnedVersion("@tanstack/react-router")).toBe("1.170.18");
+    expect(getLatestChannelPinnedVersion("@tanstack/router-plugin")).toBe("1.168.23");
+    expect(getLatestChannelPinnedVersion("@tanstack/solid-router-devtools")).toBe("1.167.0");
+    expect(getLatestChannelPinnedVersion("react")).toBeUndefined();
   });
 
   it("keeps the coupled OpenTelemetry packages on one exact release train", () => {

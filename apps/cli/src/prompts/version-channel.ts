@@ -17,7 +17,7 @@ export async function getVersionChannelChoice(versionChannel?: VersionChannel) {
       {
         value: "latest",
         label: "Latest",
-        hint: "Resolve current npm latest tags during scaffolding",
+        hint: "Resolve npm latest tags, except temporary compatibility holds",
       },
       {
         value: "beta",

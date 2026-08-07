@@ -341,7 +341,9 @@ describe("applyDependencyVersionChannel", () => {
           "dist-tags": {
             latest: packageVersions?.latest,
           },
-          versions: Object.fromEntries((packageVersions?.versions ?? []).map((version) => [version, {}])),
+          versions: Object.fromEntries(
+            (packageVersions?.versions ?? []).map((version) => [version, {}]),
+          ),
         }),
         {
           status: 200,
@@ -357,6 +359,64 @@ describe("applyDependencyVersionChannel", () => {
     expect(packageJson.workspaces.catalog["@orpc/server"]).toBe("^1.14.6");
     expect(packageJson.workspaces.catalog["@orpc/client"]).toBe("^1.14.6");
     expect(packageJson.dependencies["@orpc/tanstack-query"]).toBe("^1.14.6");
+    expect(packageJson.dependencies.react).toBe("^19.3.0");
+  });
+
+  it("keeps compatibility-held packages installable on the latest channel", async () => {
+    const projectDir = await fs.mkdtemp(path.join(os.tmpdir(), "bfs-version-channel-holds-"));
+
+    await fs.writeJson(
+      path.join(projectDir, "package.json"),
+      {
+        name: "version-channel-holds-test",
+        dependencies: {
+          "@tanstack/react-router": "1.170.18",
+          react: "^19.2.8",
+        },
+        devDependencies: {
+          "@tanstack/router-plugin": "1.168.23",
+        },
+      },
+      { spaces: 2 },
+    );
+
+    global.fetch = mock(async (input: string | URL | Request) => {
+      const url = String(input);
+      const packageName = decodeURIComponent(url.split("/").pop() ?? "");
+
+      const versionsByPackage: Record<string, { latest: string; versions: string[] }> = {
+        "@tanstack/react-router": {
+          latest: "1.171.19",
+          versions: ["1.170.18", "1.171.19"],
+        },
+        "@tanstack/router-plugin": {
+          latest: "1.167.25",
+          versions: ["1.167.25", "1.168.23"],
+        },
+        react: { latest: "19.3.0", versions: ["19.2.8", "19.3.0"] },
+      };
+      const packageVersions = versionsByPackage[packageName];
+
+      return new Response(
+        JSON.stringify({
+          "dist-tags": { latest: packageVersions?.latest },
+          versions: Object.fromEntries(
+            (packageVersions?.versions ?? []).map((version) => [version, {}]),
+          ),
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }) as unknown as typeof fetch;
+
+    await applyDependencyVersionChannel(projectDir, "latest");
+
+    const packageJson = await fs.readJson(path.join(projectDir, "package.json"));
+
+    expect(packageJson.dependencies["@tanstack/react-router"]).toBe("1.170.18");
+    expect(packageJson.devDependencies["@tanstack/router-plugin"]).toBe("1.168.23");
     expect(packageJson.dependencies.react).toBe("^19.3.0");
   });
 
@@ -421,7 +481,8 @@ describe("applyDependencyVersionChannel", () => {
     expect(packageJson.devDependencies.vite).toBe("^8.0.0-beta.1");
   });
 
-  it("resolves latest channel from real npm registry",
+  it(
+    "resolves latest channel from real npm registry",
     async () => {
       const projectDir = await fs.mkdtemp(path.join(os.tmpdir(), "bfs-version-channel-real-"));
 
