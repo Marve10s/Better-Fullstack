@@ -42,6 +42,10 @@ function guideVideo(page: Pick<GuidePage, "frontmatter">) {
   return canonicalUrl(video);
 }
 
+function guideMarkdownUrl(url: string) {
+  return canonicalUrl(url === "/guides" ? "/guides.md" : `${url}.md`);
+}
+
 function guideJsonLd(page: Pick<GuidePage, "url" | "frontmatter">) {
   const url = canonicalUrl(page.url);
   const video = guideVideo(page);
@@ -162,6 +166,9 @@ export function guidePageHead(page: Pick<GuidePage, "url" | "frontmatter">) {
       { name: "twitter:image:alt", content: DEFAULT_OG_IMAGE_ALT },
       { "script:ld+json": guideJsonLd(page) } satisfies JsonLdMeta,
     ],
-    links: [{ rel: "canonical", href: url }],
+    links: [
+      { rel: "canonical", href: url },
+      { rel: "alternate", type: "text/markdown", href: guideMarkdownUrl(page.url) },
+    ],
   };
 }

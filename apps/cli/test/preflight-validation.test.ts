@@ -1,6 +1,7 @@
-import { describe, expect, test } from "bun:test";
 import type { ProjectConfig } from "@better-fullstack/types";
+
 import { validatePreflightConfig } from "@better-fullstack/template-generator";
+import { describe, expect, test } from "bun:test";
 
 const BASE_CONFIG: ProjectConfig = {
   projectName: "test-app",
@@ -80,8 +81,7 @@ const config = (overrides: Partial<ProjectConfig>): ProjectConfig => ({
   ...overrides,
 });
 
-const ruleIds = (c: ProjectConfig) =>
-  validatePreflightConfig(c).warnings.map((w) => w.ruleId);
+const ruleIds = (c: ProjectConfig) => validatePreflightConfig(c).warnings.map((w) => w.ruleId);
 
 describe("preflight validation", () => {
   test("valid default config produces no warnings", () => {
@@ -250,21 +250,21 @@ describe("preflight validation", () => {
 
   describe("analytics", () => {
     test("warns without supported frontend", () => {
-      expect(
-        ruleIds(config({ analytics: "plausible", frontend: ["astro"] })),
-      ).toContain("analytics-no-frontend");
+      expect(ruleIds(config({ analytics: "plausible", frontend: ["astro"] }))).toContain(
+        "analytics-no-frontend",
+      );
     });
 
     test("passes with React frontend", () => {
-      expect(
-        ruleIds(config({ analytics: "plausible", frontend: ["next"] })),
-      ).not.toContain("analytics-no-frontend");
+      expect(ruleIds(config({ analytics: "plausible", frontend: ["next"] }))).not.toContain(
+        "analytics-no-frontend",
+      );
     });
 
     test("passes with Svelte frontend", () => {
-      expect(
-        ruleIds(config({ analytics: "umami", frontend: ["svelte"] })),
-      ).not.toContain("analytics-no-frontend");
+      expect(ruleIds(config({ analytics: "umami", frontend: ["svelte"] }))).not.toContain(
+        "analytics-no-frontend",
+      );
     });
   });
 
@@ -276,9 +276,9 @@ describe("preflight validation", () => {
     });
 
     test("passes with React frontend", () => {
-      expect(
-        ruleIds(config({ featureFlags: "posthog", frontend: ["next"] })),
-      ).not.toContain("feature-flags-fully-skipped");
+      expect(ruleIds(config({ featureFlags: "posthog", frontend: ["next"] }))).not.toContain(
+        "feature-flags-fully-skipped",
+      );
     });
 
     test("passes with standalone backend", () => {
@@ -353,6 +353,19 @@ describe("preflight validation", () => {
       ).not.toContain("database-no-orm");
     });
 
+    test("passes for .NET databases with EF Core selected", () => {
+      expect(
+        ruleIds(
+          config({
+            ecosystem: "dotnet",
+            database: "postgres",
+            orm: "none",
+            dotnetOrm: "ef-core",
+          }),
+        ),
+      ).not.toContain("database-no-orm");
+    });
+
     test("passes for EdgeDB without ORM", () => {
       expect(ruleIds(config({ database: "edgedb", orm: "none" }))).not.toContain("database-no-orm");
     });
@@ -387,9 +400,7 @@ describe("preflight validation", () => {
 
   describe("warning structure", () => {
     test("warning contains all required fields", () => {
-      const result = validatePreflightConfig(
-        config({ search: "meilisearch", backend: "convex" }),
-      );
+      const result = validatePreflightConfig(config({ search: "meilisearch", backend: "convex" }));
 
       const warning = result.warnings.find((w) => w.ruleId === "search-no-server");
       expect(warning).toBeDefined();

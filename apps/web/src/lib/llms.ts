@@ -7,6 +7,7 @@ type LlmsPage = {
   frontmatter: {
     title?: string;
     description?: string;
+    updated?: string;
   };
 };
 
@@ -38,7 +39,13 @@ export function generateLlmsTxt({
   const featuredDocs = docsPages.filter((page) =>
     [
       "/docs",
+      "/docs/getting-started/lifecycle",
+      "/docs/recipes",
       "/docs/cli/create",
+      "/docs/cli/add",
+      "/docs/cli/update",
+      "/docs/cli/check",
+      "/docs/cli/gen",
       "/docs/reference/compatibility",
       "/docs/reference/options",
       "/docs/ai/overview",
@@ -52,6 +59,12 @@ export function generateLlmsTxt({
       "/docs/ecosystems/go",
       "/docs/ecosystems/java",
       "/docs/ecosystems/elixir",
+      "/docs/ecosystems/dotnet",
+      "/docs/ecosystems/multi-ecosystem",
+      "/docs/ecosystems/native-mobile",
+      "/docs/web-builder",
+      "/docs/web-builder/edit-and-run",
+      "/docs/web-builder/download-and-share",
     ].includes(page.url),
   );
   const stackPagesByEcosystem = new Map<string, LlmsStackPage[]>();
@@ -103,6 +116,9 @@ export function generateLlmsTxt({
     pageLine("Compare", "/compare", "Comparison against other scaffolders and starter kits"),
     pageLine("MCP", "/mcp", "AI agent integration overview"),
     pageLine("Docs", "/docs", "Documentation index"),
+    pageLine("Docs index for agents", "/docs/llms.txt", "Every documentation page"),
+    pageLine("Full documentation corpus", "/llms-full.txt", "Product docs, guides, and blog text"),
+    pageLine("Markdown sitemap", "/sitemap.md", "Semantic index of public content"),
     pageLine("Guides", "/guides", "Stack-specific starter guides"),
     pageLine("Blog", "/blog", "Engineering write-ups and benchmarks"),
     "",
@@ -118,9 +134,7 @@ export function generateLlmsTxt({
       pageLine(page.frontmatter.title, page.url, page.frontmatter.description),
     ),
     "",
-    ...(stackPages.length
-      ? ["## Stack Templates", "", ...stackTemplateLines]
-      : []),
+    ...(stackPages.length ? ["## Stack Templates", "", ...stackTemplateLines] : []),
     ...(blogPages.length
       ? [
           "## Blog",
@@ -149,5 +163,142 @@ export function generateLlmsTxt({
     "",
     "Yes. Better Fullstack is open-source under the MIT license.",
     "",
+  ].join("\n");
+}
+
+function pageMarkdownUrl(url: string): string {
+  if (url === "/docs") return "/docs.md";
+  if (url === "/guides") return "/guides.md";
+  return `${url}.md`;
+}
+
+function sourceBody(source: string | undefined): string {
+  if (!source) return "_Source unavailable._";
+  return source.replace(/^---\n[\s\S]*?\n---\n?/, "").trim();
+}
+
+export function generateDocsLlmsTxt(
+  docsPages: LlmsPage[],
+  build?: { cliVersion?: string; generatedAt?: string },
+): string {
+  const pages = [...docsPages].sort((a, b) => a.url.localeCompare(b.url));
+  return [
+    `# ${SITE_NAME} Documentation`,
+    "",
+    "> Complete index of the canonical English product documentation.",
+    "",
+    ...(build?.cliVersion ? [`- CLI version: ${build.cliVersion}`] : []),
+    ...(build?.generatedAt ? [`- Generated: ${build.generatedAt}`] : []),
+    `- Full corpus: ${canonicalUrl("/llms-full.txt")}`,
+    `- Semantic sitemap: ${canonicalUrl("/sitemap.md")}`,
+    "",
+    "## Pages",
+    "",
+    ...pages.map((page) =>
+      pageLine(
+        page.frontmatter.title,
+        pageMarkdownUrl(page.url),
+        [
+          page.frontmatter.description,
+          page.frontmatter.updated && `updated ${page.frontmatter.updated}`,
+        ]
+          .filter(Boolean)
+          .join("; "),
+      ),
+    ),
+    "",
+  ].join("\n");
+}
+
+type RawContent = Record<string, string>;
+
+function fullPageSection(kind: string, page: LlmsPage, rawBySlug: RawContent): string[] {
+  const slug = page.slug.join("/");
+  return [
+    `## ${kind}: ${page.frontmatter.title ?? page.url}`,
+    "",
+    `Source: ${canonicalUrl(pageMarkdownUrl(page.url))}`,
+    ...(page.frontmatter.updated ? [`Updated: ${page.frontmatter.updated}`] : []),
+    "",
+    sourceBody(rawBySlug[slug]),
+    "",
+  ];
+}
+
+export function generateLlmsFullTxt({
+  docsPages,
+  guidePages,
+  blogPages,
+  rawDocsPages,
+  rawGuidePages,
+  rawBlogPosts,
+  cliVersion,
+  generatedAt,
+}: {
+  docsPages: LlmsPage[];
+  guidePages: LlmsPage[];
+  blogPages: LlmsPage[];
+  rawDocsPages: RawContent;
+  rawGuidePages: RawContent;
+  rawBlogPosts: RawContent;
+  cliVersion?: string;
+  generatedAt?: string;
+}): string {
+  return [
+    `# ${SITE_NAME}: Full Documentation`,
+    "",
+    "> Canonical English product documentation, guides, and engineering articles in one corpus.",
+    "",
+    ...(cliVersion ? [`CLI version: ${cliVersion}`, ""] : []),
+    ...(generatedAt ? [`Generated: ${generatedAt}`, ""] : []),
+    ...docsPages.flatMap((page) => fullPageSection("Documentation", page, rawDocsPages)),
+    ...guidePages.flatMap((page) => fullPageSection("Guide", page, rawGuidePages)),
+    ...blogPages.flatMap((page) => fullPageSection("Article", page, rawBlogPosts)),
+  ].join("\n");
+}
+
+export function generateMarkdownSitemap({
+  docsPages,
+  guidePages,
+  blogPages,
+  stackPages = [],
+}: {
+  docsPages: LlmsPage[];
+  guidePages: LlmsPage[];
+  blogPages: LlmsPage[];
+  stackPages?: LlmsStackPage[];
+}): string {
+  const sections = [
+    ["Documentation", docsPages] as const,
+    ["Guides", guidePages] as const,
+    ["Articles", blogPages] as const,
+  ];
+  return [
+    `# ${SITE_NAME} Sitemap`,
+    "",
+    "> A semantic Markdown index for people, crawlers, and coding agents.",
+    "",
+    `- [Compact agent index](${canonicalUrl("/llms.txt")})`,
+    `- [Full documentation corpus](${canonicalUrl("/llms-full.txt")})`,
+    `- [XML sitemap](${canonicalUrl("/sitemap.xml")})`,
+    "",
+    ...sections.flatMap(([title, pages]) => [
+      `## ${title}`,
+      "",
+      ...pages.map((page) =>
+        pageLine(page.frontmatter.title, pageMarkdownUrl(page.url), page.frontmatter.description),
+      ),
+      "",
+    ]),
+    ...(stackPages.length
+      ? [
+          "## Generated Stack Pages",
+          "",
+          ...stackPages.map((page) =>
+            pageLine(page.title, `/stack/${page.slug}`, page.description),
+          ),
+          "",
+        ]
+      : []),
   ].join("\n");
 }

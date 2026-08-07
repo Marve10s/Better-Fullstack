@@ -7,14 +7,18 @@ platform and DX work.
 
 ## Post-Scaffold Upgrade Engine
 
-The next major platform feature is `bfs update` / `bfs check`: diff-aware template re-application
-against an existing `bts.jsonc` stack, with reviewable file changes and CI drift checks.
+The baseline `update` / `check` lifecycle is shipped: diff-aware template re-application against an
+existing `bts.jsonc` stack, reviewable file changes, and CI drift checks. The remaining work is
+reliability evidence and recovery depth.
 
-- [ ] Record enough scaffold metadata to know the generator/template version used
-- [ ] Compare current generated output against the latest template output without overwriting user code
-- [ ] Produce a reviewable patch or update plan
-- [ ] Extend the existing `check` command with a CI-friendly template-drift mode
-- [ ] Share conflict detection with MCP stack-update apply logic
+- [x] Record a scaffold baseline in `bts.lock.json`
+- [x] Compare current generated output against current templates without overwriting user code
+- [x] Produce a reviewable dry-run/JSON plan with drift, local edits, conflicts, merges, and manual files
+- [x] Provide `update --check` as a CI-friendly template-drift gate
+- [x] Apply safe drift/new-file/structured-merge changes with `update --apply`
+- [ ] Record explicit generator/template versions and upgrade history
+- [ ] Maintain cross-version fixtures and document the supported upgrade window
+- [ ] Add recoverable patch/backup output and real-repository validation evidence
 
 ---
 
@@ -45,6 +49,7 @@ public docs page at `/docs/reference/verified-combinations`, a Shields-compatibl
 
 ## Priority Order (remaining)
 
-1. **Post-scaffold upgrade engine** — next major moat feature
-2. **Prompt-to-stack builder assistant** — natural language to validated stack
-3. **Upgrade/check polish** — template-drift mode and richer generated-project diagnostics
+1. **Upgrade reliability** — cross-version fixtures, recovery, real-repository evidence
+2. **Lifecycle cohesion** — shared project-status vocabulary across CLI, JSON, MCP, and CI
+3. **Evidence depth** — verified recipes and generated-project diagnostics
+4. **Conditional registry expansion** — only after repeat-use demand is measured

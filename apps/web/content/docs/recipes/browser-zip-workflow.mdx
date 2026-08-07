@@ -1,0 +1,37 @@
+---
+title: Browser Preview and ZIP Workflow
+description: Choose a stack in the browser, run and edit supported previews, download a ZIP, and preserve a reproducible CLI command.
+translationStatus: pending
+updated: 2026-08-07
+---
+
+Use this workflow when you want to evaluate a stack before installing the CLI locally.
+
+## Build and validate
+
+1. Open the [Stack Builder](https://better-fullstack.dev/new).
+2. Choose Solo or Multi-Ecosystem mode and make selections in order.
+3. Resolve compatibility warnings before generating.
+4. Save or share the URL when another person needs to review the exact selection.
+
+## Run and edit
+
+For supported solo TypeScript web stacks, choose **Edit & Run**. The browser generates the project,
+installs dependencies inside an isolated WebContainer, and exposes the app preview plus an editor.
+Browser execution is a convenience check, not proof that production credentials, native tooling,
+or every deploy target works.
+
+## Download and reproduce
+
+Choose **Download ZIP** to save the generated source. Keep the command shown by the builder with the
+ZIP or in your issue/PR; the command is the reproducible record of the selected stack.
+
+After extracting:
+
+1. Read the generated README and `.env.example`.
+2. Install with the selected package manager or native ecosystem tool.
+3. Copy required environment values into local `.env` files.
+4. Run the generated checks before the development server.
+
+See [Edit & Run](/docs/web-builder/edit-and-run/) for browser limitations and
+[Download and Share](/docs/web-builder/download-and-share/) for ZIP and URL details.

@@ -70,8 +70,12 @@ function localizedContentKey(filePath: string, locale: SupportedLocale): string 
   return `${locale}:${filePath}`;
 }
 
-function hasLocalizedContent(filePath: string, locale: SupportedLocale): boolean {
-  return locale !== "en" && localizedContentKey(filePath, locale) in localizedBlogMdxLoaders;
+function hasLocalizedContent(post: BlogPost, locale: SupportedLocale): boolean {
+  return (
+    post.frontmatter.translationStatus !== "pending" &&
+    locale !== "en" &&
+    localizedContentKey(post.filePath, locale) in localizedBlogMdxLoaders
+  );
 }
 
 function contentCacheKey(post: BlogPost, locale: SupportedLocale): string {
@@ -108,7 +112,7 @@ const contentCache = createSuspenseCache<BlogPostContent>();
 async function loadBlogContent(post: BlogPost): Promise<BlogPostContent> {
   const locale = currentContentLocale();
   const localizedKey = localizedContentKey(post.filePath, locale);
-  const hasLocalized = hasLocalizedContent(post.filePath, locale);
+  const hasLocalized = hasLocalizedContent(post, locale);
   const filePath = hasLocalized ? localizedFilePath(post.filePath, locale) : post.filePath;
   const loader = hasLocalized ? localizedBlogMdxLoaders[localizedKey] : mdxLoaders[filePath];
   const module = await loader?.();

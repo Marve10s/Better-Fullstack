@@ -1,5 +1,17 @@
 {
   "title": "Ecosystems",
   "defaultOpen": true,
-  "pages": ["index", "multi-ecosystem", "typescript", "react-native", "rust", "python", "go", "java", "elixir", "dotnet"]
+  "pages": [
+    "index",
+    "multi-ecosystem",
+    "native-mobile",
+    "typescript",
+    "react-native",
+    "rust",
+    "python",
+    "go",
+    "java",
+    "elixir",
+    "dotnet"
+  ]
 }

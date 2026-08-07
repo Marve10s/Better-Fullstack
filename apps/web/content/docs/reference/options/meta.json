@@ -1,5 +1,15 @@
 {
   "title": "Options",
   "defaultOpen": true,
-  "pages": ["index", "typescript", "react-native", "rust", "python", "go", "java", "elixir"]
+  "pages": [
+    "index",
+    "typescript",
+    "react-native",
+    "rust",
+    "python",
+    "go",
+    "java",
+    "elixir",
+    "dotnet"
+  ]
 }

@@ -1,0 +1,51 @@
+---
+title: Anonymous Telemetry
+description: Inspect and control privacy-preserving Better Fullstack CLI telemetry.
+translationStatus: pending
+updated: 2026-08-07
+---
+
+```npm
+npm create better-fullstack@latest telemetry status
+npm create better-fullstack@latest telemetry disable
+npm create better-fullstack@latest telemetry enable
+```
+
+`status --json` prints the effective state, saved preference, and environment override. The runtime
+override `BTS_TELEMETRY_DISABLED=1` takes precedence over the saved preference.
+
+## Collected when enabled
+
+Official CLI releases enable anonymous telemetry by default and show a one-time interactive notice.
+Preview builds disable it. A saved preference or `BTS_TELEMETRY_DISABLED=1` always takes precedence.
+
+- bounded stack/capability identifiers and counts;
+- command/action state, success/failure, duration, and bounded quality counts such as conflicts,
+  warnings, changed files, or manual-review items;
+- CLI/runtime version, OS family, CI boolean/provider, and invocation source;
+- a random anonymous install ID used only for unique, active, and repeat-use aggregates. Repeat use
+  means activity on at least two distinct days in the measured 7- or 30-day window.
+
+## Never collected
+
+Project names, filesystem paths, filenames, source code, recommendation briefs or prompts, env keys
+or values, secrets, URLs, runtime logs, raw error messages, and personal information are excluded at
+both the CLI and Convex ingest boundaries.
+
+Telemetry delivery is best-effort, has a one-second network timeout, and can never fail a command.
+Programmatic `create()` disables analytics by default; CLI creation also supports
+`--disable-analytics`.
+
+## Browser analytics
+
+The web builder uses a separate browser-local anonymous ID for bounded run/edit/ZIP outcomes. The
+same browser preference gates Vercel Web Analytics, Vercel Speed Insights, and the Convex
+product-event stream. Do Not Track and Global Privacy Control disable all three paths. Campaign
+attribution accepts only Better Fullstack's published campaign identifiers; arbitrary URL values
+are discarded.
+
+<BrowserTelemetryControls />
+
+Disabling browser analytics saves only the local preference in this browser. It does not affect CLI
+telemetry on the same machine. Browser analytics never transmit project names, project source or
+edits, filenames, runtime logs, URLs, environment values, prompts, secrets, or raw errors.

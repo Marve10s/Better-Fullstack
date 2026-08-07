@@ -8,6 +8,7 @@ import {
   recordUpgradeBaseline,
   type UpgradePlan,
 } from "../helpers/core/scaffold-upgrade";
+import { trackCommand } from "../utils/analytics";
 import { readBtsConfig } from "../utils/bts-config";
 import { handleError } from "../utils/errors";
 import { renderTitle } from "../utils/render-title";
@@ -140,28 +141,16 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
     return failUpdate(projectDir, "`--dry-run` cannot be combined with `--apply`.", json);
   }
   if (dryRun && recordBaseline) {
-    return failUpdate(
-      projectDir,
-      "`--dry-run` cannot be combined with `--record-baseline`.",
-      json,
-    );
+    return failUpdate(projectDir, "`--dry-run` cannot be combined with `--record-baseline`.", json);
   }
   if (check && apply) {
     return failUpdate(projectDir, "`--check` cannot be combined with `--apply`.", json);
   }
   if (check && recordBaseline) {
-    return failUpdate(
-      projectDir,
-      "`--check` cannot be combined with `--record-baseline`.",
-      json,
-    );
+    return failUpdate(projectDir, "`--check` cannot be combined with `--record-baseline`.", json);
   }
   if (apply && recordBaseline) {
-    return failUpdate(
-      projectDir,
-      "`--apply` cannot be combined with `--record-baseline`.",
-      json,
-    );
+    return failUpdate(projectDir, "`--apply` cannot be combined with `--record-baseline`.", json);
   }
 
   const btsConfig = await readBtsConfig(projectDir);
@@ -178,6 +167,16 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
 
   if (recordBaseline) {
     const manifest = await recordUpgradeBaseline(projectDir);
+    await trackCommand(
+      "update",
+      manifest ? "succeeded" : "failed",
+      {
+        source: "cli-flags",
+        mode: "record-baseline",
+        fileCount: manifest ? Object.keys(manifest.hashes).length : 0,
+      },
+      { ecosystem: btsConfig.ecosystem },
+    );
     if (json) {
       console.log(
         JSON.stringify(
@@ -223,6 +222,23 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
     plan = result;
     applied = undefined;
   }
+
+  await trackCommand(
+    "update",
+    check && plan.actionable.length > 0 ? "failed" : "succeeded",
+    {
+      source: "cli-flags",
+      mode: apply ? "apply" : check ? "check" : "dry-run",
+      changedFileCount:
+        (applied?.patched.length ?? 0) +
+        (applied?.added.length ?? 0) +
+        (applied?.merged.length ?? 0),
+      conflictCount: plan.conflicts.length,
+      manualReviewCount: plan.manual.length,
+      issueCount: plan.actionable.length,
+    },
+    { ecosystem: btsConfig.ecosystem, hasBaseline: plan.hasBaseline },
+  );
 
   if (json) {
     console.log(

@@ -21,19 +21,19 @@ import type { StackState } from "@/lib/stack-defaults";
 
 import { highlight } from "@/components/ui/kibo-ui/code-block";
 import {
-  createRunnableProject,
-  getDefaultRunnableFile,
-  hasDependencyManifestChanges,
-  type RunnableProject,
-  type RunnableSourceFile,
-} from "@/lib/project-runner";
-import {
   classifyBuilderRunFailure,
   failureDurationMs,
   shouldReportBuilderRunFailure,
   type BuilderRunFailure,
   type BuilderRunFailureStage,
 } from "@/lib/builder-failure-analytics";
+import {
+  createRunnableProject,
+  getDefaultRunnableFile,
+  hasDependencyManifestChanges,
+  type RunnableProject,
+  type RunnableSourceFile,
+} from "@/lib/project-runner";
 import { getStackRunSupport } from "@/lib/run-support";
 import { cn } from "@/lib/utils";
 import * as m from "@/paraglide/messages";
@@ -64,6 +64,8 @@ interface RunPanelProps {
   onRunStarted?: (rerun: boolean) => void;
   onRunReady?: (rerun: boolean) => void;
   onRunFailed?: (failure: BuilderRunFailure) => void;
+  onRunStopped?: () => void;
+  onFileEdited?: () => void;
 }
 
 const MAX_LOG_LENGTH = 60_000;
@@ -212,6 +214,8 @@ export function RunPanel({
   onRunStarted,
   onRunReady,
   onRunFailed,
+  onRunStopped,
+  onFileEdited,
 }: RunPanelProps) {
   const support = useMemo(() => getStackRunSupport(stack), [stack]);
   const stackSignature = JSON.stringify(stack);
@@ -232,6 +236,7 @@ export function RunPanel({
   const dependenciesInstalledRef = useRef(false);
   const hasCompletedRunRef = useRef(false);
   const lastReportedFailureRunIdRef = useRef(-1);
+  const editReportedRef = useRef(false);
   const generationSignatureRef = useRef<string | null>(null);
   const generationAttemptRef = useRef(0);
   const consoleRef = useRef<HTMLPreElement>(null);
@@ -242,22 +247,15 @@ export function RunPanel({
   onSelectFileRef.current = onSelectFile;
   onRunFailedRef.current = onRunFailed;
 
-  const reportRunFailure = useCallback(
-    (runId: number, failure: BuilderRunFailure) => {
-      if (
-        !shouldReportBuilderRunFailure(
-          runIdRef.current,
-          runId,
-          lastReportedFailureRunIdRef.current,
-        )
-      ) {
-        return;
-      }
-      lastReportedFailureRunIdRef.current = runId;
-      onRunFailedRef.current?.(failure);
-    },
-    [],
-  );
+  const reportRunFailure = useCallback((runId: number, failure: BuilderRunFailure) => {
+    if (
+      !shouldReportBuilderRunFailure(runIdRef.current, runId, lastReportedFailureRunIdRef.current)
+    ) {
+      return;
+    }
+    lastReportedFailureRunIdRef.current = runId;
+    onRunFailedRef.current?.(failure);
+  }, []);
 
   const prepareWorkspace = useCallback(async () => {
     const startedAt = Date.now();
@@ -266,6 +264,7 @@ export function RunPanel({
     runtimeMountedRef.current = false;
     dependenciesInstalledRef.current = false;
     hasCompletedRunRef.current = false;
+    editReportedRef.current = false;
     setProject(null);
     setDrafts({});
     setSyncedContents({});
@@ -480,6 +479,16 @@ export function RunPanel({
     stopDevelopmentServer();
     setPreviewUrl(null);
     setStatus("stopped");
+    onRunStopped?.();
+  };
+
+  const updateSelectedDraft = (nextContent: string) => {
+    if (!selectedFile) return;
+    setDrafts((current) => ({ ...current, [selectedFile.path]: nextContent }));
+    if (!editReportedRef.current) {
+      editReportedRef.current = true;
+      onFileEdited?.();
+    }
   };
 
   const discardChanges = () => {
@@ -505,7 +514,7 @@ export function RunPanel({
     const start = target.selectionStart;
     const end = target.selectionEnd;
     const nextContent = `${target.value.slice(0, start)}  ${target.value.slice(end)}`;
-    setDrafts((current) => ({ ...current, [selectedFile.path]: nextContent }));
+    updateSelectedDraft(nextContent);
     requestAnimationFrame(() => target.setSelectionRange(start + 2, start + 2));
   };
 
@@ -650,12 +659,7 @@ export function RunPanel({
                       path={selectedFile.path}
                       value={selectedFile.content}
                       ariaLabel={`${m.builderRunEditor()}: ${selectedFile.path}`}
-                      onChange={(next) =>
-                        setDrafts((current) => ({
-                          ...current,
-                          [selectedFile.path]: next,
-                        }))
-                      }
+                      onChange={updateSelectedDraft}
                       onKeyDown={handleEditorKeyDown}
                     />
                   ) : (

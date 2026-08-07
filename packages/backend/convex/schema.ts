@@ -24,14 +24,28 @@ export default defineSchema({
 
   analyticsEvents: defineTable({
     // Event envelope (all optional: rows from older CLI versions lack them)
-    eventType: v.optional(v.string()), // project_created | feature_added | stack_updated
-    source: v.optional(v.string()), // cli-interactive | cli-flags | mcp | programmatic
+    eventType: v.optional(v.string()), // project_created | feature_added | stack_updated | command_used | web_action
+    source: v.optional(v.string()), // cli-interactive | cli-flags | mcp | programmatic | web-builder
+    client: v.optional(v.string()), // cli | web
+    action: v.optional(v.string()), // create | add | update | check | builder-run | ...
+    status: v.optional(v.string()), // started | succeeded | failed | cancelled
+    mode: v.optional(v.string()), // dry-run | apply | check | interactive | ...
     machineId: v.optional(v.string()), // random anonymous UUID, no PII
     success: v.optional(v.boolean()),
     errorName: v.optional(v.string()),
     setupFailures: v.optional(v.array(v.string())),
     durationMs: v.optional(v.number()),
     fileCount: v.optional(v.number()),
+    changedFileCount: v.optional(v.number()),
+    capabilityCount: v.optional(v.number()),
+    conflictCount: v.optional(v.number()),
+    manualReviewCount: v.optional(v.number()),
+    warningCount: v.optional(v.number()),
+    issueCount: v.optional(v.number()),
+    retry: v.optional(v.boolean()),
+    ci: v.optional(v.boolean()),
+    ciProvider: v.optional(v.string()),
+    executionRuntime: v.optional(v.string()),
     // Full stack config, captured generically so new CLI options never
     // require a schema change here.
     stack: v.optional(v.record(v.string(), v.union(v.string(), v.boolean(), v.array(v.string())))),
@@ -92,7 +106,11 @@ export default defineSchema({
     node_version: v.optional(v.string()),
     platform: v.optional(v.string()),
     options: v.optional(v.record(v.string(), v.union(v.string(), v.array(v.string())))),
-  }),
+  })
+    .index("by_event_type", ["eventType"])
+    .index("by_action_status", ["action", "status"])
+    .index("by_source", ["source"])
+    .index("by_machine", ["machineId"]),
 
   analyticsStats: defineTable({
     totalProjects: v.number(),
@@ -165,9 +183,28 @@ export default defineSchema({
     eventTypes: v.optional(distributionValidator),
     sources: v.optional(distributionValidator),
     outcomes: v.optional(distributionValidator), // success | failure | unknown
+    actions: v.optional(distributionValidator),
+    statuses: v.optional(distributionValidator),
+    modes: v.optional(distributionValidator),
+    actionStatuses: v.optional(distributionValidator),
+    actionModes: v.optional(distributionValidator),
+    actionOutcomes: v.optional(distributionValidator),
+    actionDurationBuckets: v.optional(distributionValidator),
+    clients: v.optional(distributionValidator),
+    runtimes: v.optional(distributionValidator),
+    ciUsage: v.optional(distributionValidator),
+    ciProviders: v.optional(distributionValidator),
     errorNames: v.optional(distributionValidator),
     setupFailureStats: v.optional(distributionValidator),
     durationBuckets: v.optional(distributionValidator),
+    fileCountBuckets: v.optional(distributionValidator),
+    changedFileCountBuckets: v.optional(distributionValidator),
+    capabilityCountBuckets: v.optional(distributionValidator),
+    conflictCountBuckets: v.optional(distributionValidator),
+    manualReviewCountBuckets: v.optional(distributionValidator),
+    warningCountBuckets: v.optional(distributionValidator),
+    issueCountBuckets: v.optional(distributionValidator),
+    retryUsage: v.optional(distributionValidator),
     uniqueMachines: v.optional(v.number()),
     returningMachines: v.optional(v.number()),
     trackedMachineEvents: v.optional(v.number()),
@@ -177,6 +214,9 @@ export default defineSchema({
     date: v.string(),
     count: v.number(),
     newMachines: v.optional(v.number()),
+    totalEvents: v.optional(v.number()),
+    successfulEvents: v.optional(v.number()),
+    failedEvents: v.optional(v.number()),
   }).index("by_date", ["date"]),
 
   analyticsMachines: defineTable({
@@ -185,6 +225,7 @@ export default defineSchema({
     lastSeen: v.number(),
     eventCount: v.number(),
     platform: v.optional(v.string()),
+    client: v.optional(v.string()),
     lastCliVersion: v.optional(v.string()),
   }).index("by_machine_id", ["machineId"]),
 
@@ -196,5 +237,6 @@ export default defineSchema({
     lastSeen: v.number(),
   })
     .index("by_date", ["date"])
-    .index("by_date_machine", ["date", "machineId"]),
+    .index("by_date_machine", ["date", "machineId"])
+    .index("by_machine_date", ["machineId", "date"]),
 });

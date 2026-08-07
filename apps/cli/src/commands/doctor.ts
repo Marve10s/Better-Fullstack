@@ -8,6 +8,7 @@ import pc from "picocolors";
 
 import type { BetterTStackConfig, ProjectConfig } from "../types";
 
+import { trackCommand } from "../utils/analytics";
 import { readBtsConfig } from "../utils/bts-config";
 import { handleError } from "../utils/errors";
 import { runGeneratedChecks } from "../utils/generated-checks";
@@ -17,6 +18,7 @@ export type DoctorCommandInput = {
   projectDir?: string;
   skipChecks?: boolean;
   json?: boolean;
+  commandName?: "check" | "doctor";
 };
 
 type CheckStatus = "pass" | "warn" | "fail";
@@ -314,6 +316,18 @@ export async function doctorCommand(input: DoctorCommandInput): Promise<void> {
   for (const check of checks) {
     counts[check.status] += 1;
   }
+
+  await trackCommand(
+    input.commandName ?? "check",
+    counts.fail > 0 ? "failed" : "succeeded",
+    {
+      source: "cli-flags",
+      mode: input.skipChecks ? "config-only" : "full",
+      issueCount: counts.fail,
+      warningCount: counts.warn,
+    },
+    { ecosystem: btsConfig.ecosystem },
+  );
 
   if (json) {
     console.log(

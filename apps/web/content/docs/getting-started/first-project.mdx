@@ -1,6 +1,8 @@
 ---
 title: First Project
 description: Scaffold, inspect, install, and run a Better Fullstack project.
+translationStatus: pending
+updated: 2026-08-07
 ---
 
 This walkthrough creates a project, previews what the CLI can generate, and shows where to look after the scaffold finishes.
@@ -40,6 +42,15 @@ npm create better-fullstack@latest my-app -- \
   --auth better-auth \
   --api trpc \
   --db-setup none \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+  --shadcn-base radix \
+  --shadcn-style nova \
+  --shadcn-icon-library lucide \
+  --shadcn-color-theme neutral \
+  --shadcn-base-color neutral \
+  --shadcn-font geist \
+  --shadcn-radius default \
   --ai none \
   --payments none \
   --examples none \
@@ -74,30 +85,75 @@ uv sync --extra dev
 go mod tidy
 ./mvnw test
 ./gradlew test
+mix deps.get
+dotnet restore
 ```
 
-## 5. Inspect the project
+## 5. Run and verify the project
+
+For the default TypeScript scaffold, start the generated development scripts:
+
+```npm
+npm run dev
+```
+
+Open the web URL printed by the command and confirm that the starter page loads. If the stack has a
+separate backend, confirm its health or example endpoint using the URL printed in the terminal. Stop
+the processes before continuing.
+
+Language-native entrypoints vary with the selected framework, so the generated README is the command
+authority:
+
+| Ecosystem    | Typical development command                                                          |
+| ------------ | ------------------------------------------------------------------------------------ |
+| React Native | Package-manager `start` script, followed by the Expo simulator/device workflow       |
+| Rust         | `cargo run` or the workspace command named in the README                             |
+| Python       | The `uv run ...` command named for the selected framework                            |
+| Go           | `go run ...` for the generated `main` package                                        |
+| Java/Kotlin  | `./mvnw spring-boot:run`, `./gradlew bootRun`, or the generated framework equivalent |
+| Elixir       | `mix phx.server` for Phoenix projects                                                |
+| .NET         | `dotnet run` with the generated project path when required                           |
+
+Run the generated test/check command after the first successful startup. Do not assume one universal
+command across ecosystems.
+
+## 6. Inspect the project
 
 Generated projects include:
 
 - `bts.jsonc` with the selected stack and schema reference.
 - Framework, package, and config files for the selected ecosystem.
 - A reproducible command printed by the CLI.
-- Optional AI docs such as `CLAUDE.md`, `Agents.md`, or `.cursorrules`.
+- Optional AI docs such as `CLAUDE.md`, `AGENTS.md`, or `.cursorrules`.
 - README and setup notes where the selected templates provide them.
 
-## 6. Add supported features later
+## 7. Change the selected stack later
 
-Inside a generated project, use `add` for supported addons:
+Inside a generated project, use `add` for capabilities and stack selections. Preview the plan
+first:
 
 ```npm
-npm create better-fullstack@latest add -- --addons mcp skills
+npm create better-fullstack@latest add -- --email resend --dry-run
+npm create better-fullstack@latest add -- --email resend
 ```
 
-The `add` command reads `bts.jsonc`, skips addons already present, and prints install guidance when dependencies are not installed automatically.
+The `add` command reads `bts.jsonc`, skips selections already present, protects generated files that
+you changed, and prints install guidance when dependencies are not installed automatically.
+
+## 8. Check and update the scaffold
+
+```npm
+npm create better-fullstack@latest check -- --skip-checks
+npm create better-fullstack@latest update
+```
+
+`check` diagnoses config, dependencies, env files, and optionally native/build checks. `update`
+defaults to a review-only template-drift plan; use `update --apply` only after reviewing it.
 
 ## Next
 
 - [CLI Create](/docs/cli/create/) lists every scaffold flag.
-- [CLI Add](/docs/cli/add/) explains existing-project addon updates.
+- [CLI Add](/docs/cli/add/) explains existing-project stack updates.
+- [CLI Update](/docs/cli/update/) explains baseline-aware template updates.
+- [Web Builder](/docs/web-builder/) explains browser preview, Edit & Run, and ZIP download.
 - [Ecosystems](/docs/ecosystems/) compares the supported project families.

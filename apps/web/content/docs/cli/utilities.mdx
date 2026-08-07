@@ -1,0 +1,31 @@
+---
+title: Utility and Maintainer Commands
+description: Browser shortcuts, sponsor output, and repository-maintainer dependency updates.
+translationStatus: pending
+updated: 2026-08-07
+---
+
+## User utilities
+
+| Command    | Behavior                                                                 |
+| ---------- | ------------------------------------------------------------------------ |
+| `docs`     | Open the Better Fullstack docs in the default browser, or print the URL. |
+| `builder`  | Open the visual Stack Builder.                                           |
+| `sponsors` | Fetch and display current Better Fullstack sponsors.                     |
+
+These commands do not modify generated projects.
+
+## Maintainer-only dependency catalog
+
+`update-deps` scans and updates dependency versions in the generator's `add-deps.ts` catalog. It is
+for contributors working in the Better Fullstack repository—not consumers updating a generated app.
+
+| Flag                | Behavior                                     |
+| ------------------- | -------------------------------------------- |
+| `--check`           | Report updates without changing the catalog. |
+| `--patch`           | Apply patch/minor updates only.              |
+| `--all`             | Interactive processing for all updates.      |
+| `--ecosystem`       | Restrict the dependency group.               |
+| `--list-ecosystems` | Print available dependency groups.           |
+
+Use [`update`](/docs/cli/update/) for template changes in a generated project.

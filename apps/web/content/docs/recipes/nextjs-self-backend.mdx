@@ -1,0 +1,40 @@
+---
+title: Next.js Self-Backend App
+description: Build a single Next.js application with PostgreSQL, Drizzle, tRPC, Better Auth, and shadcn/ui.
+translationStatus: pending
+updated: 2026-08-07
+---
+
+This stack keeps the server inside Next.js instead of generating a separate backend workspace.
+
+## Prerequisites
+
+- Node.js 20 or newer and a package manager.
+- A PostgreSQL database URL for local development.
+
+## Scaffold
+
+<PMTabs
+  npm="npm create better-fullstack@latest next-app -- --ecosystem typescript --frontend next --backend self --runtime none --database postgres --orm drizzle --db-setup none --api trpc --auth better-auth --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font geist --shadcn-radius default --addons none --examples none --ai-docs agents-md --package-manager bun --no-install --no-git"
+  pnpm="pnpm create better-fullstack@latest next-app --ecosystem typescript --frontend next --backend self --runtime none --database postgres --orm drizzle --db-setup none --api trpc --auth better-auth --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font geist --shadcn-radius default --addons none --examples none --ai-docs agents-md --package-manager bun --no-install --no-git"
+  bun="bun create better-fullstack@latest next-app --ecosystem typescript --frontend next --backend self --runtime none --database postgres --orm drizzle --db-setup none --api trpc --auth better-auth --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font geist --shadcn-radius default --addons none --examples none --ai-docs agents-md --package-manager bun --no-install --no-git"
+  yarn="yarn create better-fullstack@latest next-app --ecosystem typescript --frontend next --backend self --runtime none --database postgres --orm drizzle --db-setup none --api trpc --auth better-auth --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font geist --shadcn-radius default --addons none --examples none --ai-docs agents-md --package-manager bun --no-install --no-git"
+/>
+
+## Configure and run
+
+```bash
+cd next-app
+bun install
+cp .env.example .env
+```
+
+Set the PostgreSQL and auth values described in `.env.example`, then run `bun run dev`. The result
+is one fullstack Next.js application; `backend self` and `runtime none` are intentional.
+
+## Verify
+
+Run `bun run check-types`, the generated test command, and
+`bun create better-fullstack@latest check`. Use the
+[environment-variable setup guide](/docs/provider-setup/environment-variables) when adding hosted
+auth, email, payments, or storage.

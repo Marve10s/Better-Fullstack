@@ -19,6 +19,16 @@ declare module "virtual:blog-raw" {
   export const rawBlogPosts: Record<string, string>;
 }
 
+declare module "virtual:docs-raw" {
+  /** Raw English MDX source per docs slug, for Markdown and LLM endpoints. */
+  export const rawDocsPages: Record<string, string>;
+}
+
+declare module "virtual:guides-raw" {
+  /** Raw English MDX source per guide slug, for Markdown and LLM endpoints. */
+  export const rawGuidePages: Record<string, string>;
+}
+
 declare module "virtual:localized-content" {
   import type { BlogMdxModule } from "@/lib/blog/mdx-loaders";
   import type { DocMdxModule, RawMdxModule } from "@/lib/docs/mdx-loaders";

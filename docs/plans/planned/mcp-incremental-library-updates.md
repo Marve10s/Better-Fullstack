@@ -1,7 +1,11 @@
 # MCP Incremental Library Updates
 
-> Status: generic MCP stack-update tools have started landing. `bfs_plan_stack_update` /
-> `bfs_apply_stack_update` now accept the broad create-time stack fields, generate the proposed
+> **Implementation history — superseded for priority decisions on 2026-08-07.** Generic MCP
+> plan/apply and the CLI `add` lifecycle now cover the broad stack surface described below. Keep this
+> file for regression context; use `docs/next-updates-roadmap.md` for current priorities.
+
+> Historical implementation detail: `bfs_plan_stack_update` / `bfs_apply_stack_update` accept the
+> broad create-time stack fields, generate the proposed
 > project virtually, merge package/env changes where safe, add new generated files, replace
 > unedited generated files, and refuse user-edited overwrite cases. The legacy
 > `bfs_plan_addition` / `bfs_add_feature` addon path remains for compatibility. Regression
@@ -199,22 +203,27 @@
 > older native configs without those graph roles can still migrate their flat
 > mobile feature fields.
 > External config replays now share the same normalization path: `create
-> --config` file/directory sources and full `--from-history` config snapshots
+--config` file/directory sources and full `--from-history` config snapshots
 > are projected through the graph-derived cache before becoming create flags,
 > so stale flat mobile cache fields cannot override owner-scoped graph parts
 > during project replay.
 
-## Goal
+## Delivered Baseline (historical goal)
 
-Let the Better Fullstack MCP server add scaffold-time libraries and service integrations to existing Better Fullstack projects, not only addon-style tooling.
+The MCP server now adds scaffold-time libraries and service integrations to existing Better
+Fullstack projects instead of being limited to addon-style tooling.
 
-Today `bfs_plan_project` and `bfs_create_project` can scaffold the full stack surface for new projects. `bfs_plan_addition` and `bfs_add_feature` are intentionally narrower: they operate on `addons` such as MCP config, Biome, Storybook, TanStack helpers, Docker Compose, and similar isolated additions.
+`bfs_plan_project` and `bfs_create_project` scaffold new projects.
+`bfs_plan_stack_update` and `bfs_apply_stack_update` cover the broad create-time field surface for
+existing projects. `bfs_plan_addition` and `bfs_add_feature` remain intentionally narrower for
+addons and deploy targets.
 
-The next step is a safe stack mutation layer that can apply categories such as email, observability, auth, CMS, search, file storage, analytics, and caching to an existing project without overwriting user code.
+The remaining step is hardening: cross-version fixtures, clearer recovery artifacts, more
+real-repository evidence, and explicit migration guidance for architecture changes.
 
-## Proposed MCP Tools
+## Delivered MCP Tools
 
-Add two preview-first tools:
+The two preview-first tools are shipped:
 
 - `bfs_plan_stack_update`: read `bts.jsonc`, merge requested stack fields, run compatibility, and return a dry-run update plan.
 - `bfs_apply_stack_update`: apply a previously reviewed update plan to disk with dependency installation disabled.
@@ -230,7 +239,7 @@ The plan output should include:
 - compatibility warnings
 - manual-review blockers
 
-## Implementation Shape
+## Historical Implementation Shape
 
 Build reusable category update handlers instead of expanding the current addon path.
 

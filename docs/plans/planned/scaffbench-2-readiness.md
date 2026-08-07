@@ -1,5 +1,10 @@
 # ScaffBench 2 Readiness
 
+> **Historical V2 runbook — updated 2026-08-07.** The suite and public result surface have shipped,
+> and the runner now supports more agents/models than several examples below name. Treat the current
+> script help and checked-in result artifacts as executable truth; retain this file for scoring and
+> operational context.
+
 ScaffBench 2 turns a single hard prompt into a small, repeatable suite. The goal is to keep
 the current V2 results intact while making the next benchmark run harder, more reproducible, and
 more diagnostic.

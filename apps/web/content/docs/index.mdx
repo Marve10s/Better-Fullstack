@@ -1,11 +1,13 @@
 ---
 title: Better Fullstack Docs
 description: Learn how Better Fullstack scaffolds typed projects across web, mobile, and language-native ecosystems.
+translationStatus: pending
+updated: 2026-08-07
 ---
 
 Better Fullstack is a project generator for typed product stacks. Pick the frontend, backend, data layer, services, tooling, and target ecosystem; the CLI writes the matching files and records the stack in `bts.jsonc`.
 
-Use the interactive CLI when you want a guided setup, the [Stack Builder](https://better-fullstack.dev/new) when you want to compare options visually, and explicit flags when you need a reproducible command for CI, docs, or another developer.
+Use the interactive CLI when you want a guided setup, the [Stack Builder](https://better-fullstack.dev/new) when you want to compare, preview, run, and download options visually, and explicit flags when you need a reproducible command for CI, docs, or another developer.
 
 ## Requirements
 
@@ -15,7 +17,7 @@ The CLI runs on Node.js 20 or newer.
 node --version
 ```
 
-Generated projects may also need their ecosystem toolchain: Expo tooling for React Native, Cargo for Rust, `uv` for Python, Go, Java 21, or Elixir/Erlang for Phoenix projects.
+Generated projects may also need their ecosystem toolchain: Expo tooling for React Native, Cargo for Rust, `uv` for Python, Go, Java/Kotlin tooling, Elixir/Erlang for Phoenix, the .NET SDK, Android/Gradle for Compose, Xcode for SwiftUI, or Flutter for Dart.
 
 ## Create your first project
 
@@ -34,19 +36,22 @@ Accepting defaults creates a TypeScript project with:
 - TanStack Router frontend and Hono backend.
 - Bun runtime, SQLite, Drizzle, Better Auth, and tRPC.
 - Tailwind CSS, shadcn/ui, Vitest, and Turborepo.
-- The package manager used to launch the CLI, stable dependency versions, Git, install enabled, and `CLAUDE.md`.
+- The package manager used to launch the CLI, stable dependency versions, Git, install enabled, and
+  both `CLAUDE.md` and `AGENTS.md`.
 
 You can keep that stack, start from a template, or switch ecosystems entirely.
 
 ## Ways to choose a stack
 
-| Path | Use it when |
-| --- | --- |
-| CLI wizard | You want prompts and sensible defaults. |
-| Stack Builder | You want to explore compatible combinations before scaffolding. |
-| Explicit flags | You want repeatable output in scripts, docs, or issue reports. |
-| Agent Skill | You want a coding agent to use the CLI workflow without hand-writing starter files. |
-| MCP server | You want an AI coding agent to inspect the schema, validate compatibility, and dry-run safely. |
+| Path               | Use it when                                                                                            |
+| ------------------ | ------------------------------------------------------------------------------------------------------ |
+| CLI wizard         | You want prompts and sensible defaults.                                                                |
+| Stack Builder      | You want to explore compatible combinations before scaffolding.                                        |
+| Browser Edit & Run | You want to execute and edit a supported solo TypeScript web stack before downloading it.              |
+| ZIP download       | You want generated source without installing a CLI; use the copied command as the reproducible record. |
+| Explicit flags     | You want repeatable output in scripts, docs, or issue reports.                                         |
+| Agent Skill        | You want a coding agent to use the CLI workflow without hand-writing starter files.                    |
+| MCP server         | You want an AI coding agent to inspect the schema, validate compatibility, and dry-run safely.         |
 
 ## Generated project context
 
@@ -55,12 +60,29 @@ Every generated project includes:
 - `bts.jsonc` with the selected stack.
 - A reproducible command printed by the CLI.
 - Framework, package, and config files for the selected ecosystem.
-- Optional AI instruction files such as `CLAUDE.md`, `Agents.md`, or `.cursorrules`.
+- Optional AI instruction files such as `CLAUDE.md`, `AGENTS.md`, or `.cursorrules`.
+
+## After the first scaffold
+
+| What changed?                                                | Use                                       |
+| ------------------------------------------------------------ | ----------------------------------------- |
+| You want a new capability or stack selection                 | `add --dry-run`, then `add` after review. |
+| The selected stack is unchanged, but templates have advanced | `update`, then `update --apply`.          |
+| You want a supported resource generated inside the project   | `gen ... --dry-run`, then `gen`.          |
+| You installed dependencies or changed environment values     | `check`, plus the project's own tests.    |
+
+The [Project Lifecycle](/docs/getting-started/lifecycle/) explains baselines, safe writes, and
+recovery. The [Recipes](/docs/recipes/) pair complete scaffold commands with install, run, and
+verification steps.
 
 ## Next
 
 - [Installation](/docs/getting-started/installation/) explains launchers and toolchains.
 - [First Project](/docs/getting-started/first-project/) walks through scaffold, dry-run, install, and inspection.
+- [Project Lifecycle](/docs/getting-started/lifecycle/) distinguishes create, add, update, gen, and check.
+- [Recipes](/docs/recipes/) provide end-to-end paths for TypeScript, Python, .NET, mixed-language, and browser ZIP workflows.
 - [CLI Create](/docs/cli/create/) lists flags and scripted examples.
 - [Ecosystems](/docs/ecosystems/) compares every supported project ecosystem.
 - [Multi-Ecosystem](/docs/ecosystems/multi-ecosystem/) shows how to combine web, backend, database, and mobile parts in one project.
+- [Web Builder](/docs/web-builder/) covers preview, Edit & Run, ZIP download, saved stacks, and shared URLs.
+- [CLI Update](/docs/cli/update/) explains safe post-scaffold template updates.

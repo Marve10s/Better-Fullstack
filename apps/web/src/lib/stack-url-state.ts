@@ -8,6 +8,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { StackSearchParams } from "@/lib/stack-search-schema";
 
+import { normalizeCampaignSlug } from "@/lib/campaign";
 import { PRESET_TEMPLATES } from "@/lib/constant";
 import { DEFAULT_STACK, type StackState } from "@/lib/stack-defaults";
 import { getStackSharePath } from "@/lib/stack-share-paths";
@@ -49,7 +50,7 @@ export function getInitialBuilderState(
     stack: preset ? ({ ...DEFAULT_STACK, ...preset.stack } as StackState) : searchToStack(search),
     viewMode: search.view || "command",
     selectedFile: search.file || "",
-    campaign: search.campaign,
+    campaign: normalizeCampaignSlug(search.campaign),
     initialized: true,
   };
 }
@@ -70,8 +71,9 @@ export function createLiveBuilderSearchParams(
     params.set("file", selectedFile);
   }
 
-  if (campaign) {
-    params.set("campaign", campaign);
+  const normalizedCampaign = normalizeCampaignSlug(campaign);
+  if (normalizedCampaign) {
+    params.set("campaign", normalizedCampaign);
   }
 
   return params;

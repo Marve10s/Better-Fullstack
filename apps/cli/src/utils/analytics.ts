@@ -76,9 +76,9 @@ export async function maybeShowTelemetryNotice(): Promise<void> {
   log.info(
     `${pc.bold("Anonymous usage telemetry is enabled.")}\n` +
       `${pc.dim("We collect your selected stack options (e.g. frontend, backend, database),")}\n` +
-      `${pc.dim("scaffold outcome (success, duration), CLI version, Node.js version, OS")}\n` +
+      `${pc.dim("command outcomes and bounded quality counts, CLI/runtime version, OS")}\n` +
       `${pc.dim("platform, and a random anonymous install ID — never project names, file")}\n` +
-      `${pc.dim("paths, or any personal data.")}\n` +
+      `${pc.dim("paths, prompts, source code, env values, secrets, or raw error messages.")}\n` +
       `Opt out anytime with ${pc.cyan("create-better-fullstack telemetry disable")} ` +
       `or ${pc.cyan("BTS_TELEMETRY_DISABLED=1")}.`,
   );
@@ -88,7 +88,7 @@ export async function maybeShowTelemetryNotice(): Promise<void> {
   } catch {}
 }
 
-async function sendConvexEvent(payload: Record<string, unknown>) {
+async function sendConvexEvent(payload: Record<string, unknown>): Promise<void> {
   if (!CONVEX_INGEST_URL) return;
 
   try {
@@ -98,22 +98,192 @@ async function sendConvexEvent(payload: Record<string, unknown>) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(1_000),
     });
   } catch {}
 }
 
-export type TelemetryEventType = "project_created" | "feature_added" | "stack_updated";
+export type TelemetryEventType =
+  | "project_created"
+  | "feature_added"
+  | "stack_updated"
+  | "command_used";
 
 export type TelemetrySource = "cli-interactive" | "cli-flags" | "mcp" | "programmatic";
 
 export type TelemetryOutcome = {
   source?: TelemetrySource;
+  action?: string;
+  status?: "started" | "succeeded" | "failed" | "cancelled";
+  mode?: string;
   success?: boolean;
   errorName?: string;
   setupFailures?: string[];
   durationMs?: number;
   fileCount?: number;
+  changedFileCount?: number;
+  capabilityCount?: number;
+  conflictCount?: number;
+  manualReviewCount?: number;
+  warningCount?: number;
+  issueCount?: number;
+  retry?: boolean;
 };
+
+const TELEMETRY_STATUSES = new Set(["started", "succeeded", "failed", "cancelled"]);
+const TELEMETRY_SOURCES = new Set(["cli-interactive", "cli-flags", "mcp", "programmatic"]);
+
+const BLOCKED_TELEMETRY_KEYS = new Set([
+  "projectname",
+  "projectdir",
+  "relativepath",
+  "targetdir",
+  "workspaceroot",
+  "name",
+  "brief",
+  "prompt",
+  "source",
+  "sourcecode",
+  "content",
+  "code",
+  "message",
+  "error",
+  "path",
+  "file",
+  "filename",
+  "files",
+  "env",
+  "environment",
+  "envkey",
+  "envvalue",
+  "log",
+  "logs",
+  "secret",
+  "secrets",
+  "token",
+  "apikey",
+  "url",
+]);
+
+const TELEMETRY_KEY = /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/;
+const TELEMETRY_IDENTIFIER = /^[A-Za-z0-9][A-Za-z0-9_.:+-]{0,99}$/;
+
+function sanitizeIdentifier(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  return TELEMETRY_IDENTIFIER.test(trimmed) ? trimmed : undefined;
+}
+
+/**
+ * Keep telemetry values inside the product's identifier vocabulary. This is a
+ * second privacy boundary in addition to the Convex ingest sanitizer: paths,
+ * prose, prompts, source code, env values, and other user content are dropped.
+ */
+export function sanitizeTelemetryConfig(
+  config: Partial<ProjectConfig> | Record<string, unknown>,
+): Record<string, string | boolean | string[]> {
+  const safe: Record<string, string | boolean | string[]> = {};
+  for (const [key, value] of Object.entries(config)) {
+    if (BLOCKED_TELEMETRY_KEYS.has(key.toLowerCase()) || !TELEMETRY_KEY.test(key)) continue;
+    if (key === "stackParts" && Array.isArray(value)) {
+      const selections: string[] = [];
+      const ecosystems = new Set<string>();
+      const roles = new Set<string>();
+      for (const rawPart of value.slice(0, 64)) {
+        if (!rawPart || typeof rawPart !== "object" || Array.isArray(rawPart)) continue;
+        const part = rawPart as Record<string, unknown>;
+        if (part.source === "provided" || part.toolId === "none") continue;
+        const role = sanitizeIdentifier(part.role);
+        const ecosystem = sanitizeIdentifier(part.ecosystem);
+        const toolId = sanitizeIdentifier(part.toolId);
+        if (!role || !ecosystem || !toolId) continue;
+        selections.push(`${role}:${ecosystem}:${toolId}`);
+        roles.add(role);
+        if (ecosystem !== "universal") ecosystems.add(ecosystem);
+      }
+      if (selections.length > 0) safe.stackPartSelections = [...new Set(selections)];
+      if (roles.size > 0) safe.stackPartRoles = [...roles];
+      if (ecosystems.size > 0) safe.stackPartEcosystems = [...ecosystems];
+      safe.multiEcosystem = ecosystems.size > 1;
+      continue;
+    }
+    if (typeof value === "boolean") {
+      safe[key] = value;
+      continue;
+    }
+    const identifier = sanitizeIdentifier(value);
+    if (identifier !== undefined) {
+      safe[key] = identifier;
+      continue;
+    }
+    if (Array.isArray(value)) {
+      const identifiers = value
+        .slice(0, 64)
+        .map(sanitizeIdentifier)
+        .filter((item): item is string => item !== undefined);
+      if (identifiers.length > 0) safe[key] = identifiers;
+    }
+  }
+  return safe;
+}
+
+function runtimeContext() {
+  const env = typeof process === "undefined" ? undefined : process.env;
+  const bunVersion =
+    typeof process === "undefined"
+      ? undefined
+      : (process.versions as NodeJS.ProcessVersions & { bun?: string }).bun;
+  const ciProvider = env?.GITHUB_ACTIONS
+    ? "github-actions"
+    : env?.GITLAB_CI
+      ? "gitlab-ci"
+      : env?.CIRCLECI
+        ? "circleci"
+        : env?.VERCEL
+          ? "vercel"
+          : env?.CI
+            ? "other"
+            : undefined;
+  return {
+    client: "cli",
+    executionRuntime: bunVersion ? "bun" : "node",
+    bun_version: bunVersion,
+    ci: Boolean(env?.CI),
+    ciProvider,
+  };
+}
+
+function boundedCount(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0
+    ? Math.min(Math.round(value), 86_400_000)
+    : undefined;
+}
+
+export function sanitizeTelemetryOutcome(outcome: TelemetryOutcome): TelemetryOutcome {
+  const source = TELEMETRY_SOURCES.has(outcome.source ?? "") ? outcome.source : undefined;
+  const status = TELEMETRY_STATUSES.has(outcome.status ?? "") ? outcome.status : undefined;
+  return {
+    source,
+    action: sanitizeIdentifier(outcome.action),
+    status,
+    mode: sanitizeIdentifier(outcome.mode),
+    success: typeof outcome.success === "boolean" ? outcome.success : undefined,
+    errorName: sanitizeIdentifier(outcome.errorName),
+    setupFailures: outcome.setupFailures
+      ?.slice(0, 32)
+      .map(sanitizeIdentifier)
+      .filter((item): item is string => item !== undefined),
+    durationMs: boundedCount(outcome.durationMs),
+    fileCount: boundedCount(outcome.fileCount),
+    changedFileCount: boundedCount(outcome.changedFileCount),
+    capabilityCount: boundedCount(outcome.capabilityCount),
+    conflictCount: boundedCount(outcome.conflictCount),
+    manualReviewCount: boundedCount(outcome.manualReviewCount),
+    warningCount: boundedCount(outcome.warningCount),
+    issueCount: boundedCount(outcome.issueCount),
+    retry: typeof outcome.retry === "boolean" ? outcome.retry : undefined,
+  };
+}
 
 /**
  * Send one telemetry event. `config` may be a full ProjectConfig or any
@@ -128,24 +298,99 @@ export async function trackEvent(
 ) {
   if (disableAnalytics || !(await isTelemetryEnabled())) return;
 
-  const {
-    projectName: _projectName,
-    projectDir: _projectDir,
-    relativePath: _relativePath,
-    ...safeConfig
-  } = config;
+  const safeConfig = sanitizeTelemetryConfig(config);
+  const safeOutcome = sanitizeTelemetryOutcome(outcome);
+  if (eventType === "project_created" && safeOutcome.capabilityCount === undefined) {
+    const graphSelections = safeConfig.stackPartSelections;
+    safeOutcome.capabilityCount = Array.isArray(graphSelections)
+      ? graphSelections.length
+      : Object.entries(safeConfig).filter(([key, value]) => {
+          if (["ecosystem", "packageManager", "versionChannel"].includes(key)) return false;
+          if (value === false || value === "none") return false;
+          return !Array.isArray(value) || value.some((item) => item !== "none");
+        }).length;
+  }
 
   try {
     await sendConvexEvent({
       ...safeConfig,
       eventType,
-      ...outcome,
+      ...safeOutcome,
+      ...runtimeContext(),
       machineId: await getOrCreateMachineId(),
       cli_version: getLatestCLIVersion(),
       node_version: typeof process !== "undefined" ? process.version : "",
       platform: typeof process !== "undefined" ? process.platform : "",
     });
   } catch {}
+}
+
+/** Track a CLI command without sending positional arguments or free-form input. */
+export async function trackCommand(
+  action: string,
+  status: NonNullable<TelemetryOutcome["status"]>,
+  details: Omit<TelemetryOutcome, "action" | "status"> = {},
+  dimensions: Record<string, unknown> = {},
+  disableAnalytics = false,
+) {
+  await trackEvent(
+    "command_used",
+    { command: action, ...dimensions },
+    {
+      ...details,
+      action,
+      status,
+      success: status === "succeeded" ? true : status === "failed" ? false : undefined,
+    },
+    disableAnalytics,
+  );
+}
+
+export async function withCommandTelemetry<T>(
+  action: string,
+  operation: () => Promise<T>,
+  options: {
+    source?: TelemetrySource;
+    mode?: string;
+    dimensions?: Record<string, unknown>;
+    disableAnalytics?: boolean;
+    resultStatus?: (result: T) => "succeeded" | "failed" | "cancelled";
+    resultDetails?: (result: T) => Omit<TelemetryOutcome, "action" | "status">;
+  } = {},
+): Promise<T> {
+  const startedAt = Date.now();
+  const common = { source: options.source, mode: options.mode };
+  await trackCommand(action, "started", common, options.dimensions, options.disableAnalytics);
+  try {
+    const result = await operation();
+    const resultStatus = options.resultStatus?.(result) ?? "succeeded";
+    await trackCommand(
+      action,
+      resultStatus,
+      {
+        ...common,
+        ...options.resultDetails?.(result),
+        durationMs: Date.now() - startedAt,
+      },
+      options.dimensions,
+      options.disableAnalytics,
+    );
+    return result;
+  } catch (error) {
+    const cancelled = error instanceof Error && error.name === "UserCancelledError";
+    await trackCommand(
+      action,
+      cancelled ? "cancelled" : "failed",
+      {
+        ...common,
+        durationMs: Date.now() - startedAt,
+        errorName: error instanceof Error ? error.name : "UnknownError",
+      },
+      options.dimensions,
+      options.disableAnalytics,
+    );
+    throw error;
+  }
 }
 
 export async function trackProjectCreation(

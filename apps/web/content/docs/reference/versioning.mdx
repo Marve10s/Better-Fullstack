@@ -1,0 +1,33 @@
+---
+title: Documentation Versioning
+description: How Better Fullstack documentation tracks CLI releases, review dates, and agent-readable sources.
+translationStatus: pending
+updated: 2026-08-07
+---
+
+The public documentation describes the latest published Better Fullstack CLI unless a page names a
+different version. Every documentation page displays the CLI version bundled with that site build.
+Pages with a `Reviewed` date were checked against the implementation on that date.
+
+## Which source should I trust?
+
+Use these sources in order:
+
+1. The live CLI schema, `bts.jsonc` schema, or MCP `bfs_get_schema` response for current field names
+   and values.
+2. Schema-derived [option tables](/docs/reference/options/) for browsable inventories.
+3. Conceptual and workflow documentation for explanations and examples.
+
+If prose and a live schema disagree, treat the schema as authoritative and [report the docs drift](https://github.com/Marve10s/Better-Fullstack/issues/new).
+
+## Sources for coding agents
+
+- [`/llms.txt`](/llms.txt) is the compact product index.
+- [`/docs/llms.txt`](/docs/llms.txt) lists every documentation page.
+- [`/llms-full.txt`](/llms-full.txt) combines the English docs, guides, and articles.
+- [`/sitemap.md`](/sitemap.md) is a semantic Markdown sitemap.
+- Append `.md` to a docs or guide URL to fetch its canonical English MDX source. For example,
+  [`/docs/cli/update.md`](/docs/cli/update.md).
+
+These files are generated from the same content used by the rendered site, so a documentation build
+cannot publish a separate hand-maintained agent index.

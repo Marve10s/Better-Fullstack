@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 
 import { BenchBarChart } from "./bench-bar-chart";
+import { BrowserTelemetryControls } from "./browser-telemetry-controls";
 import { Callout } from "./callout";
 import { CliFlagTable } from "./cli-flags-table";
 import { CodeBlock } from "./code-block";
@@ -29,6 +30,7 @@ export const mdxComponents: Record<string, ComponentType<any>> = {
 
   // MDX-only components — referenced by name from .mdx files
   BenchBarChart,
+  BrowserTelemetryControls,
   Callout,
   CategoryCount,
   CliFlagTable,

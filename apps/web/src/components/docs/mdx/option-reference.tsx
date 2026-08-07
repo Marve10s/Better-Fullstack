@@ -17,8 +17,7 @@ const OPTION_REFERENCE_ROWS: OptionReferenceRow[] = [
     ecosystem: "typescript",
     title: "TypeScript Options",
     href: "/docs/reference/options/typescript/",
-    scope:
-      "TypeScript web categories, UI, integrations, deploy, examples, and workflow flags.",
+    scope: "TypeScript web categories, UI, integrations, deploy, examples, and workflow flags.",
   },
   {
     ecosystem: "react-native",
@@ -55,6 +54,12 @@ const OPTION_REFERENCE_ROWS: OptionReferenceRow[] = [
     title: "Elixir Options",
     href: "/docs/reference/options/elixir/",
     scope: "Elixir Phoenix, Ecto, auth, API, realtime, jobs, services, and workflow flags.",
+  },
+  {
+    ecosystem: "dotnet",
+    title: ".NET Options",
+    href: "/docs/reference/options/dotnet/",
+    scope: ".NET web, data, auth, API, jobs, realtime, testing, observability, and deploy flags.",
   },
 ];
 
@@ -113,11 +118,7 @@ export function OptionReferenceSummary() {
   );
 }
 
-export function OptionCategoryTable({
-  ecosystem,
-}: {
-  ecosystem: OptionCategoryEcosystem;
-}) {
+export function OptionCategoryTable({ ecosystem }: { ecosystem: OptionCategoryEcosystem }) {
   const categories = getCategoryOrderForEcosystem(ecosystem);
 
   return (
