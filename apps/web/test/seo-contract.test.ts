@@ -83,10 +83,12 @@ describe("SEO contracts", () => {
     expect(paths).not.toContain("/stack");
     expect(paths).toContain("/stack/nextjs-hono-drizzle-better-auth");
     expect(paths).not.toContain("/analytics");
+    expect(paths).not.toContain("/telemetry");
     expect(xml).toContain(canonicalUrl("/docs/cli/create"));
     expect(xml).toContain(canonicalUrl("/guides/typescript/create-tanstack-start-project"));
     expect(xml).toContain(canonicalUrl("/stack/nextjs-hono-drizzle-better-auth"));
     expect(xml).not.toContain(canonicalUrl("/analytics"));
+    expect(xml).not.toContain(canonicalUrl("/telemetry"));
   });
 
   it("adds video discovery metadata when content declares an MP4", () => {

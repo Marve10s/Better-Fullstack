@@ -39,6 +39,7 @@ import { Route as SitemapDotmdRouteImport } from "./routes/sitemap[.]md";
 import { Route as SitemapDotxmlRouteImport } from "./routes/sitemap[.]xml";
 import { Route as StackRouteImport } from "./routes/stack";
 import { Route as StackComboSlugRouteImport } from "./routes/stack_.$comboSlug";
+import { Route as TelemetryRouteImport } from "./routes/telemetry";
 import { Route as TemplatesRouteImport } from "./routes/templates";
 
 const IndexRoute = IndexRouteImport.update({
@@ -114,6 +115,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const StackRoute = StackRouteImport.update({
   id: "/stack",
   path: "/stack",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const TelemetryRoute = TelemetryRouteImport.update({
+  id: "/telemetry",
+  path: "/telemetry",
   getParentRoute: () => rootRouteImport,
 } as any);
 const TemplatesRoute = TemplatesRouteImport.update({
@@ -213,6 +219,7 @@ export interface FileRoutesByFullPath {
   "/sitemap.md": typeof SitemapDotmdRoute;
   "/sitemap.xml": typeof SitemapDotxmlRoute;
   "/stack": typeof StackRoute;
+  "/telemetry": typeof TelemetryRoute;
   "/templates": typeof TemplatesRoute;
   "/api/preview": typeof ApiPreviewRoute;
   "/api/stats": typeof ApiStatsRoute;
@@ -246,6 +253,7 @@ export interface FileRoutesByTo {
   "/sitemap.md": typeof SitemapDotmdRoute;
   "/sitemap.xml": typeof SitemapDotxmlRoute;
   "/stack": typeof StackRoute;
+  "/telemetry": typeof TelemetryRoute;
   "/templates": typeof TemplatesRoute;
   "/api/preview": typeof ApiPreviewRoute;
   "/api/stats": typeof ApiStatsRoute;
@@ -280,6 +288,7 @@ export interface FileRoutesById {
   "/sitemap.md": typeof SitemapDotmdRoute;
   "/sitemap.xml": typeof SitemapDotxmlRoute;
   "/stack": typeof StackRoute;
+  "/telemetry": typeof TelemetryRoute;
   "/templates": typeof TemplatesRoute;
   "/api/preview": typeof ApiPreviewRoute;
   "/api/stats": typeof ApiStatsRoute;
@@ -315,6 +324,7 @@ export interface FileRouteTypes {
     | "/sitemap.md"
     | "/sitemap.xml"
     | "/stack"
+    | "/telemetry"
     | "/templates"
     | "/api/preview"
     | "/api/stats"
@@ -348,6 +358,7 @@ export interface FileRouteTypes {
     | "/sitemap.md"
     | "/sitemap.xml"
     | "/stack"
+    | "/telemetry"
     | "/templates"
     | "/api/preview"
     | "/api/stats"
@@ -381,6 +392,7 @@ export interface FileRouteTypes {
     | "/sitemap.md"
     | "/sitemap.xml"
     | "/stack"
+    | "/telemetry"
     | "/templates"
     | "/api/preview"
     | "/api/stats"
@@ -415,6 +427,7 @@ export interface RootRouteChildren {
   SitemapDotmdRoute: typeof SitemapDotmdRoute;
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute;
   StackRoute: typeof StackRoute;
+  TelemetryRoute: typeof TelemetryRoute;
   TemplatesRoute: typeof TemplatesRoute;
   ApiPreviewRoute: typeof ApiPreviewRoute;
   ApiStatsRoute: typeof ApiStatsRoute;
@@ -538,6 +551,13 @@ declare module "@tanstack/react-router" {
       path: "/stack";
       fullPath: "/stack";
       preLoaderRoute: typeof StackRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/telemetry": {
+      id: "/telemetry";
+      path: "/telemetry";
+      fullPath: "/telemetry";
+      preLoaderRoute: typeof TelemetryRouteImport;
       parentRoute: typeof rootRouteImport;
     };
     "/templates": {
@@ -671,6 +691,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotmdRoute: SitemapDotmdRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StackRoute: StackRoute,
+  TelemetryRoute: TelemetryRoute,
   TemplatesRoute: TemplatesRoute,
   ApiPreviewRoute: ApiPreviewRoute,
   ApiStatsRoute: ApiStatsRoute,

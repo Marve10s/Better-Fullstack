@@ -1,8 +1,9 @@
 import { v } from "convex/values";
 
-import { internalMutation, internalQuery, query } from "./_generated/server";
+import { internalMutation, internalQuery } from "./_generated/server";
 import {
   applyFailureClassifications,
+  classifyProjectSetupOutcome,
   countReturningMachinesFromActivity,
   type Distribution,
 } from "./analytics-core";
@@ -218,6 +219,9 @@ type StatsShape = {
   actionFailureStages: Dist;
   actionFailureReasons: Dist;
   setupFailureStats: Dist;
+  setupOutcomes: Dist;
+  installSelections: Dist;
+  decisionEvents: number;
   durationBuckets: Dist;
   fileCountBuckets: Dist;
   changedFileCountBuckets: Dist;
@@ -267,6 +271,9 @@ function emptyStats(): StatsShape {
     actionFailureStages: {},
     actionFailureReasons: {},
     setupFailureStats: {},
+    setupOutcomes: {},
+    installSelections: {},
+    decisionEvents: 0,
     durationBuckets: {},
     fileCountBuckets: {},
     changedFileCountBuckets: {},
@@ -285,6 +292,102 @@ function emptyStats(): StatsShape {
   return stats;
 }
 
+type ProjectDecisionAggregates = {
+  setupOutcomes: Dist;
+  installSelections: Dist;
+};
+
+function applyProjectDecisionAggregates(
+  stats: ProjectDecisionAggregates,
+  ev: AnalyticsEvent,
+  stack = eventStack(ev),
+): void {
+  const setupOutcome = classifyProjectSetupOutcome({
+    ...ev,
+    install: typeof stack.install === "boolean" ? stack.install : undefined,
+  });
+  inc(stats.setupOutcomes, setupOutcome);
+  if (!setupOutcome) return;
+
+  const installSelection =
+    ev.source === "mcp"
+      ? "generation-only"
+      : typeof stack.install === "boolean"
+        ? stack.install
+          ? "requested"
+          : "skipped"
+        : "unknown";
+  inc(stats.installSelections, installSelection);
+}
+
+type DailyStatsShape = {
+  date: string;
+  count: number;
+  newMachines: number;
+  totalEvents: number;
+  successfulEvents: number;
+  failedEvents: number;
+  decisionEvents: number;
+  actions: Dist;
+  actionStatuses: Dist;
+  actionOutcomes: Dist;
+  clients: Dist;
+  sources: Dist;
+  ecosystems: Dist;
+  setupOutcomes: Dist;
+  installSelections: Dist;
+  failureStages: Dist;
+  failureReasons: Dist;
+  actionFailureStages: Dist;
+  actionFailureReasons: Dist;
+};
+
+function emptyDailyStats(date: string): DailyStatsShape {
+  return {
+    date,
+    count: 0,
+    newMachines: 0,
+    totalEvents: 0,
+    successfulEvents: 0,
+    failedEvents: 0,
+    decisionEvents: 0,
+    actions: {},
+    actionStatuses: {},
+    actionOutcomes: {},
+    clients: {},
+    sources: {},
+    ecosystems: {},
+    setupOutcomes: {},
+    installSelections: {},
+    failureStages: {},
+    failureReasons: {},
+    actionFailureStages: {},
+    actionFailureReasons: {},
+  };
+}
+
+function applyDailyEvent(daily: DailyStatsShape, ev: AnalyticsEvent): void {
+  daily.totalEvents += 1;
+  daily.decisionEvents += 1;
+  if (ev.success === true) daily.successfulEvents += 1;
+  else if (ev.success === false) daily.failedEvents += 1;
+
+  inc(daily.actions, ev.action);
+  if (ev.action && ev.status) inc(daily.actionStatuses, `${ev.action}:${ev.status}`);
+  if (ev.action && ev.success !== undefined) {
+    inc(daily.actionOutcomes, `${ev.action}:${ev.success ? "success" : "failure"}`);
+  }
+  inc(daily.clients, ev.client);
+  inc(daily.sources, ev.source ?? "unknown");
+  applyFailureClassifications(daily, ev);
+
+  if (!isCountedProject(ev)) return;
+  daily.count += 1;
+  const stack = eventStack(ev);
+  inc(daily.ecosystems, typeof stack.ecosystem === "string" ? stack.ecosystem : undefined);
+  applyProjectDecisionAggregates(daily, ev, stack);
+}
+
 /** Apply one event to the running aggregates (mutates `stats`). */
 function applyEvent(stats: StatsShape, ev: AnalyticsEvent): void {
   const now = ev.creationTime;
@@ -292,6 +395,7 @@ function applyEvent(stats: StatsShape, ev: AnalyticsEvent): void {
 
   // Envelope aggregates: every event type.
   stats.totalEvents += 1;
+  stats.decisionEvents += 1;
   inc(stats.eventTypes, ev.eventType ?? "project_created");
   inc(stats.sources, ev.source ?? "unknown");
   inc(stats.outcomes, ev.success === undefined ? "unknown" : ev.success ? "success" : "failure");
@@ -334,6 +438,9 @@ function applyEvent(stats: StatsShape, ev: AnalyticsEvent): void {
   if (ev.issueCount !== undefined) inc(stats.issueCountBuckets, countBucket(ev.issueCount));
   incBool(stats.retryUsage, ev.retry);
 
+  const stack = eventStack(ev);
+  applyProjectDecisionAggregates(stats, ev, stack);
+
   // Failed attempts stop here: no project or requested stack aggregates.
   if (ev.success === false) return;
 
@@ -351,7 +458,7 @@ function applyEvent(stats: StatsShape, ev: AnalyticsEvent): void {
       : ev.eventType === "stack_updated"
         ? "update."
         : `${ev.eventType}.`;
-  for (const [key, value] of Object.entries(eventStack(ev))) {
+  for (const [key, value] of Object.entries(stack)) {
     const dist = (stats.dimensions[prefix + key] ??= {});
     if (typeof value === "boolean") incBool(dist, value);
     else if (Array.isArray(value)) incAll(dist, value);
@@ -544,29 +651,28 @@ export const ingestEvent = internalMutation({
       await ctx.db.insert("analyticsStats", stats);
     }
 
-    const creation = isCountedProject(args);
     const daily = await ctx.db
       .query("analyticsDailyStats")
       .withIndex("by_date", (q) => q.eq("date", today))
       .first();
+    let dailyStats = emptyDailyStats(today);
     if (daily) {
-      await ctx.db.patch("analyticsDailyStats", daily._id, {
-        count: daily.count + (creation ? 1 : 0),
-        newMachines: (daily.newMachines ?? 0) + (newMachine ? 1 : 0),
-        totalEvents: (daily.totalEvents ?? daily.count) + 1,
-        successfulEvents: (daily.successfulEvents ?? 0) + (args.success === true ? 1 : 0),
-        failedEvents: (daily.failedEvents ?? 0) + (args.success === false ? 1 : 0),
-      });
-    } else {
-      await ctx.db.insert("analyticsDailyStats", {
-        date: today,
-        count: creation ? 1 : 0,
-        newMachines: newMachine ? 1 : 0,
-        totalEvents: 1,
-        successfulEvents: args.success === true ? 1 : 0,
-        failedEvents: args.success === false ? 1 : 0,
-      });
+      const { _id, _creationTime, ...plain } = daily;
+      dailyStats = {
+        ...dailyStats,
+        ...plain,
+        newMachines: daily.newMachines ?? 0,
+        totalEvents: daily.totalEvents ?? daily.count,
+        successfulEvents: daily.successfulEvents ?? 0,
+        failedEvents: daily.failedEvents ?? 0,
+        decisionEvents: daily.decisionEvents ?? 0,
+      };
     }
+    applyDailyEvent(dailyStats, { ...args, creationTime: now });
+    if (newMachine) dailyStats.newMachines += 1;
+
+    if (daily) await ctx.db.patch("analyticsDailyStats", daily._id, dailyStats);
+    else await ctx.db.insert("analyticsDailyStats", dailyStats);
 
     return null;
   },
@@ -574,7 +680,7 @@ export const ingestEvent = internalMutation({
 
 const distributionValidator = v.record(v.string(), v.number());
 
-export const getStats = query({
+export const getStats = internalQuery({
   args: {},
   handler: async (ctx) => {
     const stats = await ctx.db.query("analyticsStats").first();
@@ -600,7 +706,7 @@ export const getStats = query({
   },
 });
 
-export const getDailyStats = query({
+export const getDailyStats = internalQuery({
   args: {
     days: v.optional(v.number()),
   },
@@ -612,6 +718,19 @@ export const getDailyStats = query({
       totalEvents: v.optional(v.number()),
       successfulEvents: v.optional(v.number()),
       failedEvents: v.optional(v.number()),
+      decisionEvents: v.optional(v.number()),
+      actions: v.optional(distributionValidator),
+      actionStatuses: v.optional(distributionValidator),
+      actionOutcomes: v.optional(distributionValidator),
+      clients: v.optional(distributionValidator),
+      sources: v.optional(distributionValidator),
+      ecosystems: v.optional(distributionValidator),
+      setupOutcomes: v.optional(distributionValidator),
+      installSelections: v.optional(distributionValidator),
+      failureStages: v.optional(distributionValidator),
+      failureReasons: v.optional(distributionValidator),
+      actionFailureStages: v.optional(distributionValidator),
+      actionFailureReasons: v.optional(distributionValidator),
     }),
   ),
   handler: async (ctx, args) => {
@@ -635,11 +754,24 @@ export const getDailyStats = query({
         totalEvents: d.totalEvents,
         successfulEvents: d.successfulEvents,
         failedEvents: d.failedEvents,
+        decisionEvents: d.decisionEvents,
+        actions: d.actions,
+        actionStatuses: d.actionStatuses,
+        actionOutcomes: d.actionOutcomes,
+        clients: d.clients,
+        sources: d.sources,
+        ecosystems: d.ecosystems,
+        setupOutcomes: d.setupOutcomes,
+        installSelections: d.installSelections,
+        failureStages: d.failureStages,
+        failureReasons: d.failureReasons,
+        actionFailureStages: d.actionFailureStages,
+        actionFailureReasons: d.actionFailureReasons,
       }));
   },
 });
 
-export const getEngagement = query({
+export const getEngagement = internalQuery({
   args: {},
   returns: v.object({
     uniqueMachines: v.number(),
@@ -707,10 +839,11 @@ export const getEngagement = query({
  * aggregate counters; anonymous machine identifiers and individual events are
  * never exposed by this query.
  */
-export const getProductInsights = query({
+export const getProductInsights = internalQuery({
   args: {},
   returns: v.object({
     totalEvents: v.number(),
+    decisionEvents: v.number(),
     actions: distributionValidator,
     statuses: distributionValidator,
     modes: distributionValidator,
@@ -738,12 +871,16 @@ export const getProductInsights = query({
     failureReasons: distributionValidator,
     actionFailureStages: distributionValidator,
     actionFailureReasons: distributionValidator,
+    setupFailureStats: distributionValidator,
+    setupOutcomes: distributionValidator,
+    installSelections: distributionValidator,
     dimensions: v.record(v.string(), distributionValidator),
   }),
   handler: async (ctx) => {
     const stats = await ctx.db.query("analyticsStats").first();
     return {
       totalEvents: stats?.totalEvents ?? 0,
+      decisionEvents: stats?.decisionEvents ?? 0,
       actions: stats?.actions ?? {},
       statuses: stats?.statuses ?? {},
       modes: stats?.modes ?? {},
@@ -771,6 +908,9 @@ export const getProductInsights = query({
       failureReasons: stats?.failureReasons ?? {},
       actionFailureStages: stats?.actionFailureStages ?? {},
       actionFailureReasons: stats?.actionFailureReasons ?? {},
+      setupFailureStats: stats?.setupFailureStats ?? {},
+      setupOutcomes: stats?.setupOutcomes ?? {},
+      installSelections: stats?.installSelections ?? {},
       dimensions: stats?.dimensions ?? {},
     };
   },
@@ -815,16 +955,7 @@ export const backfillStats = internalMutation({
     events.sort((a, b) => a._creationTime - b._creationTime);
 
     const stats = emptyStats();
-    const dailyCounts = new Map<
-      string,
-      {
-        count: number;
-        newMachines: number;
-        totalEvents: number;
-        successfulEvents: number;
-        failedEvents: number;
-      }
-    >();
+    const dailyCounts = new Map<string, DailyStatsShape>();
     const machines = new Map<
       string,
       {
@@ -846,17 +977,8 @@ export const backfillStats = internalMutation({
       applyEvent(stats, { ...ev, creationTime: now } as AnalyticsEvent);
 
       const date = utcDate(now);
-      const daily = dailyCounts.get(date) ?? {
-        count: 0,
-        newMachines: 0,
-        totalEvents: 0,
-        successfulEvents: 0,
-        failedEvents: 0,
-      };
-      if (isCountedProject(ev)) daily.count += 1;
-      daily.totalEvents += 1;
-      if (ev.success === false) daily.failedEvents += 1;
-      else if (ev.success === true) daily.successfulEvents += 1;
+      const daily = dailyCounts.get(date) ?? emptyDailyStats(date);
+      applyDailyEvent(daily, { ...ev, creationTime: now } as AnalyticsEvent);
 
       if (ev.machineId) {
         const activityKey = `${date}:${ev.machineId}`;
@@ -911,8 +1033,8 @@ export const backfillStats = internalMutation({
     if (stats.totalEvents > 0) {
       await ctx.db.insert("analyticsStats", stats);
     }
-    for (const [date, daily] of dailyCounts) {
-      await ctx.db.insert("analyticsDailyStats", { date, ...daily });
+    for (const daily of dailyCounts.values()) {
+      await ctx.db.insert("analyticsDailyStats", daily);
     }
     for (const [machineId, machine] of machines) {
       await ctx.db.insert("analyticsMachines", { machineId, ...machine });
