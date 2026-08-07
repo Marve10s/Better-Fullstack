@@ -68,7 +68,14 @@ export function trackCampaignEvent(event: CampaignEvent, properties?: CampaignPr
     : event.endsWith("_started") || event.endsWith("_viewed") || event.endsWith("_opened")
       ? "started"
       : "succeeded";
-  trackProductEvent(event.replaceAll("_", "-"), status, safeProperties);
+  const productProperties = { ...safeProperties };
+  if (status === "failed") {
+    productProperties.failure_stage = productProperties.stage;
+    productProperties.failure_reason = productProperties.reason;
+    delete productProperties.stage;
+    delete productProperties.reason;
+  }
+  trackProductEvent(event.replaceAll("_", "-"), status, productProperties);
 }
 
 export function sanitizeCampaignProperties(

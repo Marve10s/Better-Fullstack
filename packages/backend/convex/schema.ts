@@ -33,6 +33,8 @@ export default defineSchema({
     machineId: v.optional(v.string()), // random anonymous UUID, no PII
     success: v.optional(v.boolean()),
     errorName: v.optional(v.string()),
+    failureStage: v.optional(v.string()),
+    failureReason: v.optional(v.string()),
     setupFailures: v.optional(v.array(v.string())),
     durationMs: v.optional(v.number()),
     fileCount: v.optional(v.number()),
@@ -195,6 +197,10 @@ export default defineSchema({
     ciUsage: v.optional(distributionValidator),
     ciProviders: v.optional(distributionValidator),
     errorNames: v.optional(distributionValidator),
+    failureStages: v.optional(distributionValidator),
+    failureReasons: v.optional(distributionValidator),
+    actionFailureStages: v.optional(distributionValidator),
+    actionFailureReasons: v.optional(distributionValidator),
     setupFailureStats: v.optional(distributionValidator),
     durationBuckets: v.optional(distributionValidator),
     fileCountBuckets: v.optional(distributionValidator),
@@ -207,6 +213,7 @@ export default defineSchema({
     retryUsage: v.optional(distributionValidator),
     uniqueMachines: v.optional(v.number()),
     returningMachines: v.optional(v.number()),
+    returningMachinesVersion: v.optional(v.number()),
     trackedMachineEvents: v.optional(v.number()),
   }),
 

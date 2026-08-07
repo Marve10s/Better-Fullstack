@@ -173,7 +173,7 @@ import {
   ShadcnFontSchema,
   ShadcnRadiusSchema,
 } from "./types";
-import { withCommandTelemetry } from "./utils/analytics";
+import { statusFromCommandResult, withCommandTelemetry } from "./utils/analytics";
 import { handleError } from "./utils/errors";
 import { getLatestCLIVersion } from "./utils/get-latest-cli-version";
 import { openUrl } from "./utils/open-url";
@@ -247,8 +247,7 @@ export const router = os.router({
           source: telemetrySource,
           mode: options.dryRun ? "dry-run" : options.yes ? "defaults" : "create",
           disableAnalytics: options.disableAnalytics,
-          resultStatus: (commandResult) =>
-            commandResult === undefined ? "cancelled" : "succeeded",
+          resultStatus: statusFromCommandResult,
         },
       );
 
@@ -319,12 +318,7 @@ export const router = os.router({
       await withCommandTelemetry("add", () => addHandler(input as AddInput), {
         source: hasExplicitSelection || input.dryRun ? "cli-flags" : "cli-interactive",
         mode: (input as { dryRun?: boolean }).dryRun ? "dry-run" : "apply",
-        resultStatus: (commandResult) =>
-          commandResult === undefined
-            ? "cancelled"
-            : commandResult.success
-              ? "succeeded"
-              : "failed",
+        resultStatus: statusFromCommandResult,
         resultDetails: (commandResult) => ({
           capabilityCount: commandResult?.addedAddons.length,
           warningCount: commandResult?.setupWarnings?.length,

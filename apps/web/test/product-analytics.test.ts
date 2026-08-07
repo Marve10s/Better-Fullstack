@@ -9,6 +9,8 @@ describe("browser product analytics", () => {
         ecosystem: "typescript",
         mode: "multi",
         backend: "hono,gin",
+        failure_stage: "dependency_install",
+        failure_reason: "dependency_install_exit",
         duration_ms: 1200.4,
         rerun: true,
         status: "failed",
@@ -27,6 +29,8 @@ describe("browser product analytics", () => {
       ecosystem: "typescript",
       mode: "multi",
       backend: "hono,gin",
+      failure_stage: "dependency_install",
+      failure_reason: "dependency_install_exit",
       duration_ms: 1200,
       rerun: true,
     });

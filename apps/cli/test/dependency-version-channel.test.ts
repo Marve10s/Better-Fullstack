@@ -370,11 +370,11 @@ describe("applyDependencyVersionChannel", () => {
       {
         name: "version-channel-holds-test",
         dependencies: {
-          "@tanstack/react-router": "1.170.18",
+          "@tanstack/react-router": "^1.169.0",
           react: "^19.2.8",
         },
         devDependencies: {
-          "@tanstack/router-plugin": "1.168.23",
+          "@tanstack/router-plugin": "~1.167.0",
         },
       },
       { spaces: 2 },

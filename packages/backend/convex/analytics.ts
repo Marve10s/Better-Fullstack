@@ -1,11 +1,17 @@
 import { v } from "convex/values";
 
 import { internalMutation, internalQuery, query } from "./_generated/server";
+import {
+  applyFailureClassifications,
+  countReturningMachinesFromActivity,
+  type Distribution,
+} from "./analytics-core";
 
-type Dist = Record<string, number>;
+type Dist = Distribution;
 type StackValue = string | boolean | string[];
 type StackRecord = Record<string, StackValue>;
 const DAY_MS = 24 * 60 * 60 * 1000;
+const RETURNING_MACHINES_VERSION = 2;
 
 // Legacy per-field aggregates kept for the existing getStats consumers.
 // New stack options do NOT need to be added here: they are covered
@@ -62,6 +68,8 @@ type AnalyticsEvent = {
   machineId?: string;
   success?: boolean;
   errorName?: string;
+  failureStage?: string;
+  failureReason?: string;
   setupFailures?: string[];
   durationMs?: number;
   fileCount?: number;
@@ -205,6 +213,10 @@ type StatsShape = {
   ciUsage: Dist;
   ciProviders: Dist;
   errorNames: Dist;
+  failureStages: Dist;
+  failureReasons: Dist;
+  actionFailureStages: Dist;
+  actionFailureReasons: Dist;
   setupFailureStats: Dist;
   durationBuckets: Dist;
   fileCountBuckets: Dist;
@@ -217,6 +229,7 @@ type StatsShape = {
   retryUsage: Dist;
   uniqueMachines: number;
   returningMachines: number;
+  returningMachinesVersion: number;
   trackedMachineEvents: number;
 } & { [K in (typeof SINGLE_FIELDS)[number]]: Dist } & {
   [K in (typeof MULTI_FIELDS)[number]]: Dist;
@@ -249,6 +262,10 @@ function emptyStats(): StatsShape {
     ciUsage: {},
     ciProviders: {},
     errorNames: {},
+    failureStages: {},
+    failureReasons: {},
+    actionFailureStages: {},
+    actionFailureReasons: {},
     setupFailureStats: {},
     durationBuckets: {},
     fileCountBuckets: {},
@@ -261,6 +278,7 @@ function emptyStats(): StatsShape {
     retryUsage: {},
     uniqueMachines: 0,
     returningMachines: 0,
+    returningMachinesVersion: RETURNING_MACHINES_VERSION,
     trackedMachineEvents: 0,
   } as StatsShape;
   for (const k of [...SINGLE_FIELDS, ...MULTI_FIELDS, ...BOOL_FIELDS]) stats[k] = {};
@@ -290,6 +308,7 @@ function applyEvent(stats: StatsShape, ev: AnalyticsEvent): void {
   incBool(stats.ciUsage, ev.ci);
   inc(stats.ciProviders, ev.ciProvider);
   inc(stats.errorNames, ev.errorName);
+  applyFailureClassifications(stats, ev);
   incAll(stats.setupFailureStats, ev.setupFailures);
   if (ev.durationMs !== undefined) {
     const bucket = durationBucket(ev.durationMs);
@@ -370,6 +389,8 @@ const eventArgs = {
   machineId: v.optional(v.string()),
   success: v.optional(v.boolean()),
   errorName: v.optional(v.string()),
+  failureStage: v.optional(v.string()),
+  failureReason: v.optional(v.string()),
   setupFailures: v.optional(v.array(v.string())),
   durationMs: v.optional(v.number()),
   fileCount: v.optional(v.number()),
@@ -450,6 +471,11 @@ export const ingestEvent = internalMutation({
     if (existing) {
       const { _id, _creationTime, ...plain } = existing;
       stats = { ...emptyStats(), ...plain } as StatsShape;
+      if (existing.returningMachinesVersion !== RETURNING_MACHINES_VERSION) {
+        const activity = await ctx.db.query("analyticsMachineDailyActivity").collect();
+        stats.returningMachines = countReturningMachinesFromActivity(activity);
+        stats.returningMachinesVersion = RETURNING_MACHINES_VERSION;
+      }
     } else {
       stats = emptyStats();
     }
@@ -554,9 +580,17 @@ export const getStats = query({
     const stats = await ctx.db.query("analyticsStats").first();
     if (!stats) return null;
     const { _id, _creationTime, ...plain } = stats;
+    const returningMachines =
+      stats.returningMachinesVersion === RETURNING_MACHINES_VERSION
+        ? (stats.returningMachines ?? 0)
+        : countReturningMachinesFromActivity(
+            await ctx.db.query("analyticsMachineDailyActivity").collect(),
+          );
     return {
       ...emptyStats(),
       ...plain,
+      returningMachines,
+      returningMachinesVersion: RETURNING_MACHINES_VERSION,
       hourlyDistribution: stats.hourlyDistribution ?? {},
       stackCombinations: stats.stackCombinations ?? {},
       dbOrmCombinations: stats.dbOrmCombinations ?? {},
@@ -646,9 +680,16 @@ export const getEngagement = query({
         activeDaysLast7d.set(event.machineId, (activeDaysLast7d.get(event.machineId) ?? 0) + 1);
       }
     }
+    const returningMachines = !stats
+      ? 0
+      : stats.returningMachinesVersion === RETURNING_MACHINES_VERSION
+        ? (stats.returningMachines ?? 0)
+        : countReturningMachinesFromActivity(
+            await ctx.db.query("analyticsMachineDailyActivity").collect(),
+          );
     return {
       uniqueMachines: stats?.uniqueMachines ?? 0,
-      returningMachines: stats?.returningMachines ?? 0,
+      returningMachines,
       trackedEvents: stats?.trackedMachineEvents ?? 0,
       newMachinesLast30d: daily
         .filter((event) => event.date <= today)
@@ -693,6 +734,10 @@ export const getProductInsights = query({
     issueCountBuckets: distributionValidator,
     retryUsage: distributionValidator,
     errorNames: distributionValidator,
+    failureStages: distributionValidator,
+    failureReasons: distributionValidator,
+    actionFailureStages: distributionValidator,
+    actionFailureReasons: distributionValidator,
     dimensions: v.record(v.string(), distributionValidator),
   }),
   handler: async (ctx) => {
@@ -722,6 +767,10 @@ export const getProductInsights = query({
       issueCountBuckets: stats?.issueCountBuckets ?? {},
       retryUsage: stats?.retryUsage ?? {},
       errorNames: stats?.errorNames ?? {},
+      failureStages: stats?.failureStages ?? {},
+      failureReasons: stats?.failureReasons ?? {},
+      actionFailureStages: stats?.actionFailureStages ?? {},
+      actionFailureReasons: stats?.actionFailureReasons ?? {},
       dimensions: stats?.dimensions ?? {},
     };
   },

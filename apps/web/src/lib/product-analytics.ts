@@ -15,6 +15,8 @@ const ALLOWED_PROPERTY_KEYS = new Set([
   "duration_ms",
   "ecosystem",
   "frontend",
+  "failure_reason",
+  "failure_stage",
   "mode",
   "moment",
   "placement",

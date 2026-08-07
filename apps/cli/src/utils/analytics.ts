@@ -5,6 +5,7 @@ import type { ProjectConfig } from "../types";
 
 import { getLatestCLIVersion } from "./get-latest-cli-version";
 import { canPromptInteractively } from "./prompt-environment";
+import { TelemetryDeliveryQueue } from "./telemetry-delivery";
 import {
   getOrCreateMachineId,
   getPersistedTelemetryPreference,
@@ -12,7 +13,10 @@ import {
   markTelemetryNoticeShown,
 } from "./telemetry-settings";
 
-const CONVEX_INGEST_URL = process.env.CONVEX_INGEST_URL;
+const TELEMETRY_DELIVERY_TIMEOUT_MS = 1_000;
+const TELEMETRY_FLUSH_TIMEOUT_MS = 250;
+const telemetryDeliveryQueue = new TelemetryDeliveryQueue();
+let machineIdPromise: Promise<string | undefined> | undefined;
 
 /**
  * Whether telemetry is explicitly overridden at runtime.
@@ -88,19 +92,45 @@ export async function maybeShowTelemetryNotice(): Promise<void> {
   } catch {}
 }
 
-async function sendConvexEvent(payload: Record<string, unknown>): Promise<void> {
-  if (!CONVEX_INGEST_URL) return;
+function getTelemetryMachineId(): Promise<string | undefined> {
+  machineIdPromise ??= getOrCreateMachineId().catch(() => {
+    machineIdPromise = undefined;
+    return undefined;
+  });
+  return machineIdPromise;
+}
+
+async function sendConvexEvent(
+  payload: Record<string, unknown>,
+  controller: AbortController,
+): Promise<void> {
+  const ingestUrl = process.env.CONVEX_INGEST_URL;
+  if (!ingestUrl) return;
+
+  const timeout = setTimeout(() => controller.abort(), TELEMETRY_DELIVERY_TIMEOUT_MS);
+  timeout.unref?.();
 
   try {
-    await fetch(CONVEX_INGEST_URL, {
+    await fetch(ingestUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(1_000),
+      signal: controller.signal,
     });
-  } catch {}
+  } catch {
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+/**
+ * Give background telemetry one short chance to finish when the CLI exits.
+ * Command and MCP operations never wait for network delivery themselves.
+ */
+export async function flushTelemetry(timeoutMs = TELEMETRY_FLUSH_TIMEOUT_MS): Promise<void> {
+  await telemetryDeliveryQueue.flush(timeoutMs);
 }
 
 export type TelemetryEventType =
@@ -172,6 +202,30 @@ function sanitizeIdentifier(value: unknown): string | undefined {
   if (typeof value !== "string") return undefined;
   const trimmed = value.trim();
   return TELEMETRY_IDENTIFIER.test(trimmed) ? trimmed : undefined;
+}
+
+const SETUP_FAILURE_IDENTIFIERS: Readonly<Record<string, string>> = {
+  "Install dependencies": "install-dependencies",
+  "Database setup": "database-setup",
+  "Cargo build": "cargo-build",
+  "uv sync --extra dev (Python dependencies)": "python-uv-sync",
+  "go mod tidy": "go-mod-tidy",
+  "Maven tests": "maven-tests",
+  "Gradle tests": "gradle-tests",
+  "mix deps.get / compile": "elixir-deps-compile",
+};
+
+function sanitizeSetupFailure(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  const known = SETUP_FAILURE_IDENTIFIERS[trimmed];
+  if (known) return known;
+
+  const pythonInstall = /^(pip|poetry) install \(Python dependencies\)$/.exec(trimmed);
+  if (pythonInstall?.[1]) return `python-${pythonInstall[1]}-install`;
+
+  // Preserve already-normalized identifiers emitted by older callers.
+  return sanitizeIdentifier(trimmed);
 }
 
 /**
@@ -262,6 +316,10 @@ function boundedCount(value: unknown): number | undefined {
 export function sanitizeTelemetryOutcome(outcome: TelemetryOutcome): TelemetryOutcome {
   const source = TELEMETRY_SOURCES.has(outcome.source ?? "") ? outcome.source : undefined;
   const status = TELEMETRY_STATUSES.has(outcome.status ?? "") ? outcome.status : undefined;
+  const setupFailures = outcome.setupFailures
+    ?.slice(0, 32)
+    .map(sanitizeSetupFailure)
+    .filter((item): item is string => item !== undefined);
   return {
     source,
     action: sanitizeIdentifier(outcome.action),
@@ -269,10 +327,7 @@ export function sanitizeTelemetryOutcome(outcome: TelemetryOutcome): TelemetryOu
     mode: sanitizeIdentifier(outcome.mode),
     success: typeof outcome.success === "boolean" ? outcome.success : undefined,
     errorName: sanitizeIdentifier(outcome.errorName),
-    setupFailures: outcome.setupFailures
-      ?.slice(0, 32)
-      .map(sanitizeIdentifier)
-      .filter((item): item is string => item !== undefined),
+    setupFailures: setupFailures ? [...new Set(setupFailures)] : undefined,
     durationMs: boundedCount(outcome.durationMs),
     fileCount: boundedCount(outcome.fileCount),
     changedFileCount: boundedCount(outcome.changedFileCount),
@@ -296,7 +351,7 @@ export async function trackEvent(
   outcome: TelemetryOutcome = {},
   disableAnalytics = false,
 ) {
-  if (disableAnalytics || !(await isTelemetryEnabled())) return;
+  if (disableAnalytics || !process.env.CONVEX_INGEST_URL) return;
 
   const safeConfig = sanitizeTelemetryConfig(config);
   const safeOutcome = sanitizeTelemetryOutcome(outcome);
@@ -311,18 +366,29 @@ export async function trackEvent(
         }).length;
   }
 
-  try {
-    await sendConvexEvent({
-      ...safeConfig,
-      eventType,
-      ...safeOutcome,
-      ...runtimeContext(),
-      machineId: await getOrCreateMachineId(),
-      cli_version: getLatestCLIVersion(),
-      node_version: typeof process !== "undefined" ? process.version : "",
-      platform: typeof process !== "undefined" ? process.platform : "",
-    });
-  } catch {}
+  telemetryDeliveryQueue.enqueue(async (controller) => {
+    if (!(await isTelemetryEnabled())) return;
+    await sendConvexEvent(
+      {
+        ...safeConfig,
+        eventType,
+        ...safeOutcome,
+        ...runtimeContext(),
+        machineId: await getTelemetryMachineId(),
+        cli_version: getLatestCLIVersion(),
+        node_version: typeof process !== "undefined" ? process.version : "",
+        platform: typeof process !== "undefined" ? process.platform : "",
+      },
+      controller,
+    );
+  });
+}
+
+export function statusFromCommandResult(
+  result: { success: boolean } | undefined,
+): "succeeded" | "failed" | "cancelled" {
+  if (result === undefined) return "cancelled";
+  return result.success ? "succeeded" : "failed";
 }
 
 /** Track a CLI command without sending positional arguments or free-form input. */

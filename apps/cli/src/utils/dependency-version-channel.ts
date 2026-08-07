@@ -386,7 +386,9 @@ export async function applyDependencyVersionChannel(
         if (!resolvedVersion) continue;
         if (!shouldApplyResolvedVersion(currentVersion, resolvedVersion, channel)) continue;
 
-        const nextVersion = applyVersionPrefix(currentVersion, resolvedVersion);
+        const nextVersion = latestChannelHolds.has(packageName)
+          ? resolvedVersion
+          : applyVersionPrefix(currentVersion, resolvedVersion);
         if (nextVersion !== currentVersion) {
           section[packageName] = nextVersion;
           changed = true;

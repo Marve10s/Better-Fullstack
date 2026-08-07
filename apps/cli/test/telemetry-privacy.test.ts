@@ -1,6 +1,10 @@
 import { describe, expect, it } from "bun:test";
 
-import { sanitizeTelemetryConfig, sanitizeTelemetryOutcome } from "../src/utils/analytics";
+import {
+  sanitizeTelemetryConfig,
+  sanitizeTelemetryOutcome,
+  statusFromCommandResult,
+} from "../src/utils/analytics";
 
 describe("telemetry privacy boundary", () => {
   it("keeps product identifiers while dropping user content and paths", () => {
@@ -89,5 +93,42 @@ describe("telemetry privacy boundary", () => {
       durationMs: undefined,
       conflictCount: 4,
     });
+  });
+
+  it("normalizes known setup steps without admitting arbitrary prose", () => {
+    expect(
+      sanitizeTelemetryOutcome({
+        setupFailures: [
+          "Install dependencies",
+          "Database setup",
+          "Cargo build",
+          "uv sync --extra dev (Python dependencies)",
+          "pip install (Python dependencies)",
+          "poetry install (Python dependencies)",
+          "go mod tidy",
+          "Maven tests",
+          "Gradle tests",
+          "mix deps.get / compile",
+          "raw failure with a path /tmp/private",
+        ],
+      }).setupFailures,
+    ).toEqual([
+      "install-dependencies",
+      "database-setup",
+      "cargo-build",
+      "python-uv-sync",
+      "python-pip-install",
+      "python-poetry-install",
+      "go-mod-tidy",
+      "maven-tests",
+      "gradle-tests",
+      "elixir-deps-compile",
+    ]);
+  });
+
+  it("classifies handled command failures separately from cancellation", () => {
+    expect(statusFromCommandResult(undefined)).toBe("cancelled");
+    expect(statusFromCommandResult({ success: true })).toBe("succeeded");
+    expect(statusFromCommandResult({ success: false })).toBe("failed");
   });
 });
