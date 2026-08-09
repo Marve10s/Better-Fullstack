@@ -1,5 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 
+import { EVIDENCE_SCHEMA_VERSION } from "./verified-combinations/evidence";
+
 type ReleaseGuardStep = {
   command: string;
   durationMs: number;
@@ -8,6 +10,8 @@ type ReleaseGuardStep = {
 };
 
 type ReleaseGuardSummary = {
+  schemaVersion: typeof EVIDENCE_SCHEMA_VERSION;
+  workspaceClean: boolean;
   generatedAt: string;
   gitBranch?: string;
   gitHead?: string;
@@ -69,6 +73,12 @@ async function runReleaseStep(command: string): Promise<ReleaseGuardStep> {
   };
 }
 
+async function workspaceIsClean(): Promise<boolean> {
+  const proc = Bun.spawn(["git", "status", "--porcelain"], { stdout: "pipe", stderr: "ignore" });
+  const output = await new Response(proc.stdout).text();
+  return (await proc.exited) === 0 && output.trim() === "";
+}
+
 async function main(): Promise<void> {
   const script = await readReleaseScript();
   const commands = releaseGuardSteps(script);
@@ -93,6 +103,8 @@ async function main(): Promise<void> {
   }
 
   const summary: ReleaseGuardSummary = {
+    schemaVersion: EVIDENCE_SCHEMA_VERSION,
+    workspaceClean: await workspaceIsClean(),
     generatedAt: new Date().toISOString(),
     gitBranch: await runText("git rev-parse --abbrev-ref HEAD"),
     gitHead: await runText("git rev-parse HEAD"),

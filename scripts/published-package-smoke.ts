@@ -5,6 +5,8 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 
+import { EVIDENCE_SCHEMA_VERSION } from "./verified-combinations/evidence";
+
 type PackageManager = "bun" | "npm" | "pnpm";
 type SmokeStatus = "pass" | "fail";
 
@@ -24,6 +26,7 @@ type PublishedPackageSmokeResult = {
 };
 
 type PublishedPackageSmokeSummary = {
+  schemaVersion: typeof EVIDENCE_SCHEMA_VERSION;
   generatedAt: string;
   packageName: string;
   specifier: string;
@@ -329,6 +332,7 @@ async function main(): Promise<void> {
     }
   } finally {
     const summary: PublishedPackageSmokeSummary = {
+      schemaVersion: EVIDENCE_SCHEMA_VERSION,
       generatedAt: new Date().toISOString(),
       packageName,
       specifier,

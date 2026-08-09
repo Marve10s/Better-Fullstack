@@ -2,6 +2,13 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { getPresetCombos } from "../testing/lib/presets";
+import {
+  evaluatePublishedPackageEvidence,
+  evaluateReleaseGuardEvidence,
+  evaluateScaffbenchEvidence,
+  evaluateSmokeEvidence,
+  type SourceEvidenceContext,
+} from "./verified-combinations/evidence";
 
 type SmokeStep = {
   step: string;
@@ -30,6 +37,7 @@ type ScaffbenchStep = {
   command: string;
   exitCode: number | null;
   status?: "ran" | "skip" | "na";
+  timedOut?: boolean;
 };
 
 type ScaffbenchResult = {
@@ -48,6 +56,7 @@ type ScaffbenchResult = {
     test?: ScaffbenchStep;
     doctor?: ScaffbenchStep;
     route?: ScaffbenchStep;
+    steps?: Record<string, ScaffbenchStep>;
   };
   stackScore?: {
     matched: number;
@@ -67,10 +76,14 @@ type ScaffbenchSummary = {
     routeCheck?: boolean;
   };
   metadata?: {
+    evidenceSchemaVersion?: number;
     gitHead?: string;
     gitBranch?: string;
+    workspaceClean?: boolean;
     bfGeneratorVersion?: string;
     environmentQualified?: boolean;
+    generatorSource?: string;
+    generatorGitHead?: string;
   };
   specs?: ScaffbenchSpec[];
   results?: ScaffbenchResult[];
@@ -107,6 +120,7 @@ type PublishedPackageSmokeSummary = {
   packageName: string;
   specifier: string;
   packageSpec: string;
+  registry: string;
   overallSuccess: boolean;
   managers: Array<"bun" | "npm" | "pnpm">;
   results: PublishedPackageSmokeResult[];
@@ -122,18 +136,20 @@ const WEB_DATA_OUTPUT_PATH = "apps/web/src/lib/docs/verified-combinations-data.t
 const REPOSITORY_BLOB_BASE = "https://github.com/Marve10s/Better-Fullstack/blob/main";
 const RELEASE_GUARD_INPUT = "testing/.release-guard/summary.json";
 const PUBLISHED_PACKAGE_INPUT = "testing/.published-package/summary.json";
-const SMOKE_INPUTS = [
+type SmokeInput = { label: string; path: string; preset?: string; supplementalPaths?: string[] };
+
+const SMOKE_INPUTS: SmokeInput[] = [
   {
     label: "PR core smoke",
     path: "testing/.smoke-output/core/smoke-results.json",
     preset: "pr-core",
-    supplementalPaths: ["testing/.smoke-output/p0-pr-core-no-dev/smoke-results.json"],
   },
 ];
 const SCAFFBENCH_INPUTS = [
   {
     label: "ScaffBench 2",
     path: "testing/.tmp-scaffbench-2/summary.json",
+    expectedSpecIds: ["ai-search-workbench"],
   },
 ];
 
@@ -190,6 +206,8 @@ type VerifiedClaimSummary = {
     sources: string[];
     pass: number;
     total: number;
+    current?: boolean;
+    reasons?: string[];
     ownerArea: string;
     actionLinks: ActionLink[];
     rerunCommand: string;
@@ -200,6 +218,8 @@ type VerifiedClaimSummary = {
     source: string;
     pass: number;
     total: number;
+    current?: boolean;
+    reasons?: string[];
     environmentQualified?: boolean;
     ownerArea: string;
     actionLinks: ActionLink[];
@@ -210,6 +230,8 @@ type VerifiedClaimSummary = {
     source: string;
     pass: number;
     total: number;
+    current?: boolean;
+    reasons?: string[];
     overallSuccess: boolean;
     generatedAt?: string;
     gitBranch?: string;
@@ -225,6 +247,8 @@ type VerifiedClaimSummary = {
     generatedAt?: string;
     pass: number;
     total: number;
+    current?: boolean;
+    reasons?: string[];
     overallSuccess: boolean;
     ownerArea: string;
     actionLinks: ActionLink[];
@@ -281,11 +305,22 @@ function releaseGuardStatusLabel(status: ReleaseGuardStep["status"]): string {
   }[status];
 }
 
+export function releaseGuardEvidenceStatus(
+  status: ReleaseGuardStep["status"],
+  current: boolean,
+): ReleaseGuardStep["status"] {
+  return current ? status : "fail";
+}
+
+export function releaseGuardResultText(pass: number, total: number, current: boolean): string {
+  return `Result: ${current ? pass : 0}/${total} gates passing.`;
+}
+
 function isFreshGitHead(
   recordedHead: string | undefined,
   currentHead: string | undefined,
 ): boolean {
-  return !recordedHead || !currentHead || recordedHead === currentHead;
+  return Boolean(recordedHead && currentHead && recordedHead === currentHead);
 }
 
 function ownerAreaForEcosystem(ecosystem: string): string {
@@ -336,16 +371,18 @@ function formatScaffbenchSteps(result: ScaffbenchResult): string {
     return "no validation payload";
   }
 
-  const orderedSteps = [
-    ["install", validation.install],
-    ["build", validation.build],
-    ["typecheck", validation.checkTypes],
-    ["lint", validation.lint],
-    ["format", validation.format],
-    ["test", validation.test],
-    ["doctor", validation.doctor],
-    ["route", validation.route],
-  ] as const;
+  const orderedSteps: Array<readonly [string, ScaffbenchStep | undefined]> = validation.steps
+    ? Object.entries(validation.steps)
+    : [
+        ["install", validation.install],
+        ["build", validation.build],
+        ["typecheck", validation.checkTypes],
+        ["lint", validation.lint],
+        ["format", validation.format],
+        ["test", validation.test],
+        ["doctor", validation.doctor],
+        ["route", validation.route],
+      ];
 
   return orderedSteps
     .filter(([, step]) => Boolean(step))
@@ -356,6 +393,10 @@ function formatScaffbenchSteps(result: ScaffbenchResult): string {
 
       if (step?.status === "skip") {
         return `${name}: skipped`;
+      }
+
+      if (step?.timedOut) {
+        return `${name}: timed out`;
       }
 
       return `${name}: ${step?.exitCode === 0 ? "pass" : "fail"}`;
@@ -372,18 +413,23 @@ function scaffbenchResultStatus(result: ScaffbenchResult): "pass" | "fail" {
     return "fail";
   }
 
-  const steps = [
-    result.validation?.install,
-    result.validation?.build,
-    result.validation?.checkTypes,
-    result.validation?.lint,
-    result.validation?.format,
-    result.validation?.test,
-    result.validation?.doctor,
-    result.validation?.route,
-  ].filter(Boolean);
+  const steps = result.validation?.steps
+    ? Object.values(result.validation.steps)
+    : [
+        result.validation?.install,
+        result.validation?.build,
+        result.validation?.checkTypes,
+        result.validation?.lint,
+        result.validation?.format,
+        result.validation?.test,
+        result.validation?.doctor,
+        result.validation?.route,
+      ].filter(Boolean);
 
-  return steps.every((step) => step?.status === "na" || step?.exitCode === 0) ? "pass" : "fail";
+  return steps.length > 0 &&
+    steps.every((step) => step?.status === "ran" && step.exitCode === 0 && step.timedOut !== true)
+    ? "pass"
+    : "fail";
 }
 
 function smokeCommandMap(): Map<string, string> {
@@ -398,7 +444,7 @@ function smokeCommandMap(): Map<string, string> {
   return commands;
 }
 
-async function readSmokeResults(input: (typeof SMOKE_INPUTS)[number]): Promise<{
+export async function readSmokeResults(input: SmokeInput): Promise<{
   results: SmokeResult[];
   sources: string[];
 } | null> {
@@ -407,8 +453,14 @@ async function readSmokeResults(input: (typeof SMOKE_INPUTS)[number]): Promise<{
   const sources: string[] = [];
 
   for (const sourcePath of sourcePaths) {
-    const results = await readJson<SmokeResult[]>(sourcePath);
-    if (!results) continue;
+    const raw = await readJson<unknown>(sourcePath);
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
+    const envelope = raw as { schemaVersion?: unknown; evidenceType?: unknown; results?: unknown };
+    if (envelope.schemaVersion !== 1 || envelope.evidenceType !== "better-fullstack/smoke")
+      continue;
+    const rawResults = envelope.results;
+    if (!Array.isArray(rawResults)) continue;
+    const results = rawResults as SmokeResult[];
 
     sources.push(sourcePath);
     for (const result of results) {
@@ -560,12 +612,13 @@ ${entry.command}
   return [`### ${title}`, ...blocks].join("\n\n");
 }
 
-async function renderSmokeSection(): Promise<string> {
+async function renderSmokeSection(claimSummary: VerifiedClaimSummary): Promise<string> {
   const commandMap = smokeCommandMap();
   const sections: string[] = ["## Smoke Preset Evidence"];
   const commandDetails: Array<{ label: string; command: string }> = [];
 
-  for (const input of SMOKE_INPUTS) {
+  for (const [inputIndex, input] of SMOKE_INPUTS.entries()) {
+    const claim = claimSummary.smoke[inputIndex];
     const evidence = await readSmokeResults(input);
     if (!evidence) {
       sections.push(`### ${input.label}`);
@@ -583,7 +636,7 @@ async function renderSmokeSection(): Promise<string> {
             result: resultByName.get(combo.name),
           }))
         : results.map((result) => ({ comboName: result.comboName, result }));
-    const passed = results.filter((result) => result.overallSuccess).length;
+    const passed = claim?.pass ?? 0;
     sections.push(`### ${input.label}`);
     sections.push(
       `Sources: ${sources.map(code).join(", ")}. Result: ${passed}/${rows.length} combinations passing.`,
@@ -618,7 +671,7 @@ async function renderSmokeSection(): Promise<string> {
                 .join(" | ");
             }
 
-            const status = smokeStatus(result);
+            const status = claim?.current === true ? smokeStatus(result) : "fail";
             const ownerArea = ownerAreaForEcosystem(result.ecosystem);
             return [
               statusLabel(status),
@@ -649,10 +702,11 @@ async function renderSmokeSection(): Promise<string> {
   return sections.filter(Boolean).join("\n\n");
 }
 
-async function renderScaffbenchSection(): Promise<string> {
+async function renderScaffbenchSection(claimSummary: VerifiedClaimSummary): Promise<string> {
   const sections: string[] = ["## ScaffBench Evidence"];
 
-  for (const input of SCAFFBENCH_INPUTS) {
+  for (const [inputIndex, input] of SCAFFBENCH_INPUTS.entries()) {
+    const claim = claimSummary.scaffbench[inputIndex];
     const summary = await readJson<ScaffbenchSummary>(input.path);
     if (!summary) {
       sections.push(`No ScaffBench evidence found at ${code(input.path)}.`);
@@ -688,7 +742,7 @@ async function renderScaffbenchSection(): Promise<string> {
               const spec = summary.specs?.find((candidate) => candidate.id === result.specId);
               const family = spec?.family ?? "multi-ecosystem";
               const ownerArea = ownerAreaForEcosystem(family);
-              const status = scaffbenchResultStatus(result);
+              const status = claim?.current === true ? scaffbenchResultStatus(result) : "fail";
               const stackScore = result.stackScore
                 ? `${result.stackScore.matched}/${result.stackScore.total} (${result.stackScore.percent}%)`
                 : "n/a";
@@ -754,7 +808,10 @@ async function renderScaffbenchSection(): Promise<string> {
   return sections.join("\n\n");
 }
 
-async function renderReleaseGuardSection(currentGitHead?: string): Promise<string> {
+async function renderReleaseGuardSection(
+  claimSummary: VerifiedClaimSummary,
+  currentGitHead?: string,
+): Promise<string> {
   const packageJson = await readJson<{ scripts?: Record<string, string> }>("package.json");
   const releaseScript = packageJson?.scripts?.["test:release"];
   const releaseSummary = await readJson<ReleaseGuardSummary>(RELEASE_GUARD_INPUT);
@@ -779,10 +836,13 @@ async function renderReleaseGuardSection(currentGitHead?: string): Promise<strin
         .join(" "),
     );
   } else if (releaseSummary) {
-    const passed = releaseSummary.steps.filter((step) => step.status === "pass").length;
     const sourceSummary = [
       `Source: ${code(RELEASE_GUARD_INPUT)}.`,
-      `Result: ${passed}/${releaseSummary.steps.length} gates passing.`,
+      releaseGuardResultText(
+        claimSummary.releaseGuard?.pass ?? 0,
+        releaseSummary.steps.length,
+        claimSummary.releaseGuard?.current === true,
+      ),
       releaseSummary.gitHead ? `Git head: ${code(releaseSummary.gitHead.slice(0, 12))}.` : "",
       releaseSummary.gitBranch ? `Branch: ${code(releaseSummary.gitBranch)}.` : "",
       releaseSummary.generatedAt ? `Recorded: ${releaseSummary.generatedAt}.` : "",
@@ -799,7 +859,12 @@ async function renderReleaseGuardSection(currentGitHead?: string): Promise<strin
           .map((step) => {
             const ownerPath = releaseGuardOwnerPath(step.command);
             return [
-              releaseGuardStatusLabel(step.status),
+              releaseGuardStatusLabel(
+                releaseGuardEvidenceStatus(
+                  step.status,
+                  claimSummary.releaseGuard?.current === true,
+                ),
+              ),
               code(step.command),
               releaseGuardOwner(step.command),
               typeof step.durationMs === "number" ? `${step.durationMs}ms` : "n/a",
@@ -851,10 +916,13 @@ async function renderReleaseGuardSection(currentGitHead?: string): Promise<strin
   return sections.join("\n\n");
 }
 
-async function renderPublishedPackageSection(): Promise<string> {
+async function renderPublishedPackageSection(
+  claimSummary: VerifiedClaimSummary,
+  expectedPackageVersion: string,
+): Promise<string> {
   const summary = await readJson<PublishedPackageSmokeSummary>(PUBLISHED_PACKAGE_INPUT);
   const sections = ["## Published Package Smoke"];
-  const rerunCommand = "bun run test:published-package";
+  const rerunCommand = `bun run test:published-package --specifier ${expectedPackageVersion}`;
 
   if (!summary) {
     sections.push(
@@ -887,7 +955,7 @@ async function renderPublishedPackageSection(): Promise<string> {
     return sections.join("\n\n");
   }
 
-  const passed = summary.results.filter((result) => result.status === "pass").length;
+  const passed = claimSummary.publishedPackage?.pass ?? 0;
   sections.push(
     [
       `Source: ${code(PUBLISHED_PACKAGE_INPUT)}.`,
@@ -905,7 +973,7 @@ async function renderPublishedPackageSection(): Promise<string> {
       ...summary.results
         .map((result) =>
           [
-            statusLabel(result.status),
+            statusLabel(claimSummary.publishedPackage?.current === true ? result.status : "fail"),
             code(result.manager),
             code(result.command.join(" ")),
             typeof result.durationMs === "number" ? `${result.durationMs}ms` : "n/a",
@@ -935,6 +1003,7 @@ async function renderPublishedPackageSection(): Promise<string> {
 
 async function buildVerifiedClaimSummary(
   generatedAt: string,
+  expectedPackageVersion: string,
   currentGitHead?: string,
 ): Promise<VerifiedClaimSummary> {
   const smoke: VerifiedClaimSummary["smoke"] = [];
@@ -987,7 +1056,7 @@ async function buildVerifiedClaimSummary(
       label: input.label,
       source: input.path,
       pass: results.filter((result) => scaffbenchResultStatus(result) === "pass").length,
-      total: results.length,
+      total: input.expectedSpecIds.length,
       environmentQualified: summary?.metadata?.environmentQualified,
       ownerArea,
       actionLinks: compactActionLinks([
@@ -1008,27 +1077,26 @@ async function buildVerifiedClaimSummary(
     generatedAt,
     smoke,
     scaffbench,
-    releaseGuard:
-      releaseSummary && isFreshGitHead(releaseSummary.gitHead, currentGitHead)
-        ? {
-            source: RELEASE_GUARD_INPUT,
-            pass: releaseSummary.steps.filter((step) => step.status === "pass").length,
-            total: releaseSummary.steps.length,
-            overallSuccess: releaseSummary.overallSuccess,
-            generatedAt: releaseSummary.generatedAt,
-            gitBranch: releaseSummary.gitBranch,
-            gitHead: releaseSummary.gitHead,
-            ownerArea: "release guard",
-            actionLinks: compactActionLinks([
-              repoActionLink("source", RELEASE_GUARD_INPUT),
-              { label: "recorder", href: repoUrl("scripts/record-release-guard.ts") },
-              { label: "package script", href: repoUrl("package.json") },
-            ]),
-            rerunCommand: "bun run test:release:record",
-            failureHint:
-              "Inspect the failing gate in the release summary, rerun the recorder, then follow the gate's owner area.",
-          }
-        : null,
+    releaseGuard: releaseSummary
+      ? {
+          source: RELEASE_GUARD_INPUT,
+          pass: releaseSummary.steps.filter((step) => step.status === "pass").length,
+          total: releaseSummary.steps.length,
+          overallSuccess: releaseSummary.overallSuccess,
+          generatedAt: releaseSummary.generatedAt,
+          gitBranch: releaseSummary.gitBranch,
+          gitHead: releaseSummary.gitHead,
+          ownerArea: "release guard",
+          actionLinks: compactActionLinks([
+            repoActionLink("source", RELEASE_GUARD_INPUT),
+            { label: "recorder", href: repoUrl("scripts/record-release-guard.ts") },
+            { label: "package script", href: repoUrl("package.json") },
+          ]),
+          rerunCommand: "bun run test:release:record",
+          failureHint:
+            "Inspect the failing gate in the release summary, rerun the recorder, then follow the gate's owner area.",
+        }
+      : null,
     publishedPackage: publishedPackageSummary
       ? {
           source: PUBLISHED_PACKAGE_INPUT,
@@ -1044,7 +1112,7 @@ async function buildVerifiedClaimSummary(
             { label: "package script", href: repoUrl("package.json") },
             { label: "cli package", href: repoUrl("apps/cli/package.json") },
           ]),
-          rerunCommand: "bun run test:published-package",
+          rerunCommand: `bun run test:published-package --specifier ${expectedPackageVersion}`,
           failureHint:
             "Inspect the package-manager row, confirm the preview/canary package is visible, then rerun the published-package smoke lane.",
         }
@@ -1056,28 +1124,30 @@ function renderCurrentClaim(summary: VerifiedClaimSummary): string {
   const summaryLines: string[] = [];
 
   for (const smoke of summary.smoke) {
-    summaryLines.push(
-      `- ${smoke.label}: ${smoke.pass}/${smoke.total} combinations have Pass evidence.`,
-    );
+    const pass = smoke.current === true ? smoke.pass : 0;
+    summaryLines.push(`- ${smoke.label}: ${pass}/${smoke.total} combinations have Pass evidence.`);
   }
 
   for (const scaffbench of summary.scaffbench) {
+    const pass = scaffbench.current === true ? scaffbench.pass : 0;
     summaryLines.push(
-      `- ${scaffbench.label}: ${scaffbench.pass}/${scaffbench.total} validation runs have Pass evidence.`,
+      `- ${scaffbench.label}: ${pass}/${scaffbench.total} validation runs have Pass evidence.`,
     );
   }
 
   if (summary.releaseGuard) {
+    const pass = summary.releaseGuard.current === true ? summary.releaseGuard.pass : 0;
     summaryLines.push(
-      `- Release guard: ${summary.releaseGuard.pass}/${summary.releaseGuard.total} gates have Pass evidence.`,
+      `- Release guard: ${pass}/${summary.releaseGuard.total} gates have Pass evidence.`,
     );
   } else {
     summaryLines.push(`- Release guard: missing evidence at ${code(RELEASE_GUARD_INPUT)}.`);
   }
 
   if (summary.publishedPackage) {
+    const pass = summary.publishedPackage.current === true ? summary.publishedPackage.pass : 0;
     summaryLines.push(
-      `- Published package smoke: ${summary.publishedPackage.pass}/${summary.publishedPackage.total} package-manager installs have Pass evidence.`,
+      `- Published package smoke: ${pass}/${summary.publishedPackage.total} package-manager installs have Pass evidence.`,
     );
   } else {
     summaryLines.push(
@@ -1107,6 +1177,8 @@ export type VerifiedCombinationSummary = {
     sources: string[];
     pass: number;
     total: number;
+    current?: boolean;
+    reasons?: string[];
     ownerArea: string;
     actionLinks: VerifiedCombinationActionLink[];
     rerunCommand: string;
@@ -1117,6 +1189,8 @@ export type VerifiedCombinationSummary = {
     source: string;
     pass: number;
     total: number;
+    current?: boolean;
+    reasons?: string[];
     environmentQualified?: boolean;
     ownerArea: string;
     actionLinks: VerifiedCombinationActionLink[];
@@ -1127,6 +1201,8 @@ export type VerifiedCombinationSummary = {
     source: string;
     pass: number;
     total: number;
+    current?: boolean;
+    reasons?: string[];
     overallSuccess: boolean;
     generatedAt?: string;
     gitBranch?: string;
@@ -1142,6 +1218,8 @@ export type VerifiedCombinationSummary = {
     generatedAt?: string;
     pass: number;
     total: number;
+    current?: boolean;
+    reasons?: string[];
     overallSuccess: boolean;
     ownerArea: string;
     actionLinks: VerifiedCombinationActionLink[];
@@ -1156,10 +1234,72 @@ export const verifiedCombinationsSummary: VerifiedCombinationSummary = ${JSON.st
   await writeFile(WEB_DATA_OUTPUT_PATH, output, "utf8");
 }
 
+async function currentWorkspaceIsClean(): Promise<boolean> {
+  const proc = Bun.spawn(["git", "status", "--porcelain"], { stdout: "pipe", stderr: "ignore" });
+  const output = await new Response(proc.stdout).text();
+  return (await proc.exited) === 0 && output.trim() === "";
+}
+
+async function enforceCurrentEvidence(
+  summary: VerifiedClaimSummary,
+  context: SourceEvidenceContext,
+  expectedPackageVersion: string,
+): Promise<void> {
+  for (const [index, input] of SMOKE_INPUTS.entries()) {
+    const expected = input.preset ? getPresetCombos(input.preset).map((combo) => combo.name) : [];
+    const verdict = evaluateSmokeEvidence(await readJson<unknown>(input.path), expected, context);
+    Object.assign(summary.smoke[index]!, verdict);
+  }
+  for (const [index, input] of SCAFFBENCH_INPUTS.entries()) {
+    const raw = await readJson<ScaffbenchSummary>(input.path);
+    const expected = input.expectedSpecIds;
+    const verdict = evaluateScaffbenchEvidence(raw, expected, context);
+    Object.assign(summary.scaffbench[index]!, verdict);
+  }
+  const packageJson = await readJson<{ scripts?: Record<string, string> }>("package.json");
+  const expectedCommands = releaseGuardSteps(packageJson?.scripts?.["test:release"] ?? "");
+  if (summary.releaseGuard) {
+    Object.assign(
+      summary.releaseGuard,
+      evaluateReleaseGuardEvidence(
+        await readJson<unknown>(RELEASE_GUARD_INPUT),
+        expectedCommands,
+        context,
+      ),
+    );
+  }
+  if (summary.publishedPackage) {
+    Object.assign(
+      summary.publishedPackage,
+      evaluatePublishedPackageEvidence(await readJson<unknown>(PUBLISHED_PACKAGE_INPUT), {
+        now: context.now,
+        expectedVersion: expectedPackageVersion,
+        maxAgeMs: context.maxAgeMs,
+      }),
+    );
+  }
+}
+
 async function main(): Promise<void> {
   const generatedAt = new Date().toISOString();
   const currentGitHead = await runText("git rev-parse HEAD");
-  const claimSummary = await buildVerifiedClaimSummary(generatedAt, currentGitHead);
+  const cliPackage = await readJson<{ version?: string }>("apps/cli/package.json");
+  const expectedPackageVersion = cliPackage?.version ?? "";
+  const claimSummary = await buildVerifiedClaimSummary(
+    generatedAt,
+    expectedPackageVersion,
+    currentGitHead,
+  );
+  await enforceCurrentEvidence(
+    claimSummary,
+    {
+      currentGitHead,
+      currentWorkspaceClean: await currentWorkspaceIsClean(),
+      currentPackageVersion: cliPackage?.version,
+      now: new Date(generatedAt),
+    },
+    expectedPackageVersion,
+  );
   const sections = [
     "# Verified Combinations",
     [
@@ -1168,10 +1308,10 @@ async function main(): Promise<void> {
     ].join(" "),
     "A row marked Pass has green evidence in the generated input file. Partial pass means the smoke harness reported an overall pass while one or more non-gating steps failed. Failed rows are intentionally visible. Matrix-only and Configured rows are coverage commitments, not green merge claims.",
     renderCurrentClaim(claimSummary),
-    await renderSmokeSection(),
-    await renderScaffbenchSection(),
-    await renderReleaseGuardSection(currentGitHead),
-    await renderPublishedPackageSection(),
+    await renderSmokeSection(claimSummary),
+    await renderScaffbenchSection(claimSummary),
+    await renderReleaseGuardSection(claimSummary, currentGitHead),
+    await renderPublishedPackageSection(claimSummary, expectedPackageVersion),
   ];
 
   const output = `${sections.join("\n\n")}\n`;
@@ -1182,4 +1322,4 @@ async function main(): Promise<void> {
   console.log(`Wrote ${WEB_DATA_OUTPUT_PATH}`);
 }
 
-await main();
+if (import.meta.main) await main();

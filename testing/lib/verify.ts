@@ -199,11 +199,14 @@ function wrapResult(
   projectDir: string,
   steps: StepResult[],
 ): VerifyResult {
+  const gatingSteps = steps.filter((step) => !step.skipped && !step.advisory);
   return {
     ecosystem,
     comboName,
     projectDir,
-    overallSuccess: steps.every((s) => s.success || s.skipped || s.advisory),
+    overallSuccess:
+      gatingSteps.length > 0 &&
+      steps.every((step) => step.success || step.skipped || step.advisory),
     steps,
     totalDurationMs: steps.reduce((sum, s) => sum + s.durationMs, 0),
   };

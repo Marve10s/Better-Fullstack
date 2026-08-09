@@ -140,58 +140,42 @@ describeE2E("E2E Backend-Only Tests", () => {
 
   for (const config of backendOnlyConfigs) {
     describe(config.name, () => {
-      let server: ServerProcess | null = null;
+      it("scaffolds, starts, and serves its API", async () => {
+        let server: ServerProcess | null = null;
+        try {
+          const result = await setupE2EProject(
+            config.name,
+            {
+              frontend: config.frontend,
+              backend: config.backend,
+              runtime: config.runtime,
+              api: config.api,
+              auth: config.auth,
+              database: "sqlite",
+              orm: "drizzle",
+              addons: ["none"],
+              examples: ["none"],
+              dbSetup: "none",
+              webDeploy: "none",
+              serverDeploy: "none",
+              ...config.overrides,
+            },
+            E2E_SMOKE_DIR,
+          );
+          expect(result.success, result.error).toBe(true);
 
-      afterAll(async () => {
-        if (server) {
-          await server.kill();
-          await new Promise((r) => setTimeout(r, 3000));
-          server = null;
+          server = await startServer(join(E2E_SMOKE_DIR, config.name), {
+            port: SERVER_PORT,
+            timeout: 60_000,
+          });
+          expect(server.baseUrl).toBe("http://localhost:" + SERVER_PORT);
+          expect(await checkHealth(server.baseUrl)).toBe(true);
+
+          const apiResult = await config.callApi(server.baseUrl, "healthCheck");
+          expect(apiResult.status).toBe(200);
+        } finally {
+          await server?.kill();
         }
-      });
-
-      it("should scaffold and install", async () => {
-        const result = await setupE2EProject(
-          config.name,
-          {
-            frontend: config.frontend,
-            backend: config.backend,
-            runtime: config.runtime,
-            api: config.api,
-            auth: config.auth,
-            database: "sqlite",
-            orm: "drizzle",
-            addons: ["none"],
-            examples: ["none"],
-            dbSetup: "none",
-            webDeploy: "none",
-            serverDeploy: "none",
-            ...config.overrides,
-          },
-          E2E_SMOKE_DIR,
-        );
-        expect(result.success).toBe(true);
-      });
-
-      it("should start the backend server", async () => {
-        server = await startServer(join(E2E_SMOKE_DIR, config.name), {
-          port: SERVER_PORT,
-          timeout: 60_000,
-        });
-        expect(server.baseUrl).toBe(`http://localhost:${SERVER_PORT}`);
-      });
-
-      it("should respond to health check", async () => {
-        const healthy = await checkHealth(`http://localhost:${SERVER_PORT}`);
-        expect(healthy).toBe(true);
-      });
-
-      it("should respond to API calls", async () => {
-        const result = await config.callApi(
-          `http://localhost:${SERVER_PORT}`,
-          "healthCheck",
-        );
-        expect(result.status).toBe(200);
       });
     });
   }
@@ -209,87 +193,77 @@ describeE2E("E2E Fullstack Dev Environment Tests", () => {
 
   for (const config of fullstackConfigs) {
     describe(config.name, () => {
-      let devServer: DevServerProcess | null = null;
+      it("scaffolds, starts, serves, and type-checks the full stack", async () => {
+        let devServer: DevServerProcess | null = null;
+        try {
+          const result = await setupE2EProject(
+            config.name,
+            {
+              frontend: config.frontend,
+              backend: config.backend,
+              runtime: config.runtime,
+              api: config.api,
+              auth: config.auth,
+              database: "sqlite",
+              orm: "drizzle",
+              addons: ["none"],
+              examples: ["none"],
+              dbSetup: "none",
+              webDeploy: "none",
+              serverDeploy: "none",
+              cssFramework: "tailwind",
+              uiLibrary: "none",
+              ...config.overrides,
+            },
+            E2E_SMOKE_DIR,
+          );
+          expect(result.success, result.error).toBe(true);
 
-      afterAll(async () => {
-        if (devServer) {
-          await devServer.kill();
-          await new Promise((r) => setTimeout(r, 3000));
-          devServer = null;
-        }
-      });
-
-      it("should scaffold and install", async () => {
-        const result = await setupE2EProject(
-          config.name,
-          {
-            frontend: config.frontend,
+          devServer = await startDevServer(join(E2E_SMOKE_DIR, config.name), {
+            frontend: config.frontend[0],
             backend: config.backend,
-            runtime: config.runtime,
-            api: config.api,
-            auth: config.auth,
-            database: "sqlite",
-            orm: "drizzle",
-            addons: ["none"],
-            examples: ["none"],
-            dbSetup: "none",
-            webDeploy: "none",
-            serverDeploy: "none",
-            cssFramework: "tailwind",
-            uiLibrary: "none",
-            ...config.overrides,
-          },
-          E2E_SMOKE_DIR,
-        );
-        expect(result.success).toBe(true);
-      });
+            timeout: 120_000,
+          });
+          expect(devServer.frontendUrl).toBeTruthy();
 
-      it("should start the dev server", async () => {
-        devServer = await startDevServer(join(E2E_SMOKE_DIR, config.name), {
-          frontend: config.frontend[0],
-          backend: config.backend,
-          timeout: 120_000,
-        });
-        expect(devServer.frontendUrl).toBeTruthy();
-      });
+          const page = await checkFrontendPage(devServer.frontendUrl);
+          if (!page.ok) {
+            console.error("[E2E] Page errors for " + config.name + ":", page.errors);
+          }
+          expect(page.ok).toBe(true);
+          expect(page.status).toBeLessThan(500);
 
-      it("should serve a valid frontend page", async () => {
-        const page = await checkFrontendPage(devServer!.frontendUrl);
-        if (!page.ok) {
-          console.error(`[E2E] Page errors for ${config.name}:`, page.errors);
+          const framework = validateFrameworkPage(page.html, config.frontend[0]);
+          if (!framework.ok) {
+            console.warn("[E2E] Missing markers for " + config.name + ":", framework.missing);
+          }
+          expect(framework.ok).toBe(true);
+          expect(framework.markers.length).toBeGreaterThan(0);
+
+          const assets = await checkStaticAssets(devServer.frontendUrl, page.html);
+          if (!assets.ok) {
+            console.error("[E2E] Failed assets for " + config.name + ":", assets.failed);
+          }
+          expect(assets.ok).toBe(true);
+          expect(assets.checked).toBeGreaterThan(0);
+
+          const apiResult = await config.callApi(
+            devServer.backendUrl ?? devServer.frontendUrl,
+            "healthCheck",
+          );
+          expect(apiResult.status).toBe(200);
+
+          const typecheck = await typecheckProject(join(E2E_SMOKE_DIR, config.name), {
+            timeout: 180_000,
+            requireTarget: true,
+          });
+          if (!typecheck.ok) {
+            console.error("[E2E] Typecheck errors for " + config.name + ":", typecheck.stderr);
+          }
+          expect(typecheck.ok).toBe(true);
+        } finally {
+          await devServer?.kill();
         }
-        expect(page.ok).toBe(true);
-        expect(page.status).toBeLessThan(500);
-      });
-
-      it("should have valid framework markers", async () => {
-        const page = await checkFrontendPage(devServer!.frontendUrl);
-        const framework = validateFrameworkPage(page.html, config.frontend[0]);
-        if (!framework.ok) {
-          console.warn(`[E2E] Missing markers for ${config.name}:`, framework.missing);
-        }
-        // Framework markers are advisory — some frameworks don't have easily detectable markers
-        expect(framework.markers.length).toBeGreaterThan(0);
-      });
-
-      it("should load static assets", async () => {
-        const page = await checkFrontendPage(devServer!.frontendUrl);
-        const assets = await checkStaticAssets(devServer!.frontendUrl, page.html);
-        if (!assets.ok) {
-          console.error(`[E2E] Failed assets for ${config.name}:`, assets.failed);
-        }
-        // At least some assets should be checked (CSS/JS)
-        expect(assets.checked).toBeGreaterThan(0);
-      });
-
-      it("should pass TypeScript typecheck", async () => {
-        const tc = await typecheckProject(join(E2E_SMOKE_DIR, config.name), {
-          timeout: 180_000,
-        });
-        if (!tc.ok) {
-          console.error(`[E2E] Typecheck errors for ${config.name}:`, tc.stderr);
-        }
-        expect(tc.ok).toBe(true);
       });
     });
   }
