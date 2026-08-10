@@ -34,13 +34,7 @@ export const GENERATED_PROJECT_PROOF_CASES: readonly GeneratedProjectProofCase[]
       "--no-git",
     ],
     requiredToolchains: ["node", "bun", "go"],
-    requiredSteps: [
-      "scaffold",
-      "typescript-install",
-      "typescript-build",
-      "go-download",
-      "go-build",
-    ],
+    requiredSteps: ["scaffold", "typescript-install", "typescript-build", "go-tidy", "go-build"],
   },
   {
     id: "python",

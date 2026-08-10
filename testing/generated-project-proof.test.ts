@@ -26,6 +26,12 @@ describe("generated project install/build proof matrix", () => {
       GENERATED_PROJECT_PROOF_CASES.find((entry) => entry.id === "typescript-go")?.flags,
     ).toEqual(expect.arrayContaining(["frontend:typescript:react-vite", "backend:go:gin"]));
     expect(
+      GENERATED_PROJECT_PROOF_CASES.find((entry) => entry.id === "typescript-go")?.requiredSteps,
+    ).toEqual(expect.arrayContaining(["go-tidy", "go-build"]));
+    expect(
+      GENERATED_PROJECT_PROOF_CASES.find((entry) => entry.id === "typescript-go")?.requiredSteps,
+    ).not.toContain("go-download");
+    expect(
       GENERATED_PROJECT_PROOF_CASES.find((entry) => entry.id === "mobile-backend")?.flags,
     ).toEqual(
       expect.arrayContaining(["mobile:react-native:native-bare", "backend:typescript:hono"]),

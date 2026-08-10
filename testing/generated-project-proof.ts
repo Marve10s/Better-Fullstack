@@ -161,8 +161,8 @@ async function runTypeScriptGo(projectDir: string): Promise<RecordedStep[]> {
   if (goModules.length !== 1) {
     return [
       {
-        step: "go-download",
-        command: ["go", "mod", "download"],
+        step: "go-tidy",
+        command: ["go", "mod", "tidy"],
         success: false,
         durationMs: 0,
         stderrTail: `Expected exactly one generated go.mod, found ${goModules.length}.`,
@@ -178,9 +178,9 @@ async function runTypeScriptGo(projectDir: string): Promise<RecordedStep[]> {
   const typescriptBuild = await runCommand("typescript-build", "bun", ["run", "build"], projectDir);
   steps.push(typescriptBuild);
   if (!typescriptBuild.success) return steps;
-  const goDownload = await runCommand("go-download", "go", ["mod", "download"], goRoot);
-  steps.push(goDownload);
-  if (!goDownload.success) return steps;
+  const goTidy = await runCommand("go-tidy", "go", ["mod", "tidy"], goRoot);
+  steps.push(goTidy);
+  if (!goTidy.success) return steps;
   steps.push(await runCommand("go-build", "go", ["build", "./..."], goRoot));
   return steps;
 }
