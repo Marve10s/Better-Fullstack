@@ -93,6 +93,16 @@ test.describe("real WebContainer lifecycle", { tag: "@webcontainer-proof" }, () 
     await expect(frame.locator("body")).toBeVisible({ timeout: 30_000 });
     await expect(frame.locator("body")).not.toContainText("Wave 2 edit observed");
 
+    // A successful first run intentionally opens the product's share prompt.
+    // Close it through the visible UI before interacting with the editor so
+    // the proof exercises the same flow a user sees instead of bypassing the
+    // modal overlay with a forced click.
+    console.info("[webcontainer-proof] dismissing first-run share prompt");
+    const shareDialog = page.locator('[data-slot="dotted-dialog-content"]');
+    await expect(shareDialog).toBeVisible({ timeout: 10_000 });
+    await shareDialog.locator('[data-slot="dotted-dialog-close"]').click();
+    await expect(shareDialog).toBeHidden({ timeout: 10_000 });
+
     await sourceFile.click();
     const editor = page.getByTestId("run-code-editor");
     await expect(editor).toBeVisible();
