@@ -14,7 +14,7 @@
   "dependencies": {
     "@convex-dev/crons": "^0.2.2",
     "convex": "^1.43.0",
-    "convex-helpers": "^0.1.120"
+    "convex-helpers": "^0.1.122"
   },
   "devDependencies": {
     "typescript": "^5.9.3"
