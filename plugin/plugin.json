@@ -1,0 +1,14 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "better-fullstack",
+  "version": "2.5.0",
+  "description": "Scaffold and safely evolve verified fullstack projects with Better Fullstack skills and its official MCP server.",
+  "author": {
+    "name": "Better Fullstack",
+    "url": "https://github.com/Marve10s/Better-Fullstack"
+  },
+  "homepage": "https://better-fullstack.dev",
+  "repository": "https://github.com/Marve10s/Better-Fullstack",
+  "license": "MIT",
+  "keywords": ["better-fullstack", "scaffolding", "agent-skills", "mcp", "fullstack"]
+}
