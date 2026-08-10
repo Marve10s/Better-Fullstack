@@ -752,6 +752,7 @@ export function RunPanel({
                     // oxlint-disable-next-line react/iframe-missing-sandbox -- The generated app runs on an isolated WebContainer origin; sandboxing it breaks HMR, storage, and framework runtimes.
                     <iframe
                       key={previewUrl}
+                      data-testid="run-preview-frame"
                       src={previewUrl}
                       title={m.builderRunPreview()}
                       allow="cross-origin-isolated; clipboard-read; clipboard-write"
@@ -805,7 +806,11 @@ export function RunPanel({
                       )}
                       aria-hidden
                     />
-                    <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-zinc-400">
+                    <span
+                      data-testid="run-status"
+                      data-status={status}
+                      className="font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-zinc-400"
+                    >
                       {statusLabel(status)}
                     </span>
                   </span>

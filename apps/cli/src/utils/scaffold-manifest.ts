@@ -58,6 +58,11 @@ export type ScaffoldManifest = {
   baselines?: Record<string, string>;
 };
 
+export type ScaffoldManifestReadResult =
+  | { status: "missing" }
+  | { status: "valid"; manifest: ScaffoldManifest }
+  | { status: "invalid"; error: string };
+
 /** Files whose render content is stored in the manifest for structured merges. */
 export function isStructuredBaselinePath(relPath: string): boolean {
   const name = path.basename(relPath);
@@ -175,22 +180,85 @@ export async function recordScaffoldManifest(
   }
 }
 
-export async function readScaffoldManifest(projectDir: string): Promise<ScaffoldManifest | null> {
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) return false;
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
+}
+
+function isPortableProjectRelativePath(filePath: string): boolean {
+  return (
+    filePath.length > 0 &&
+    !path.posix.isAbsolute(filePath) &&
+    !path.win32.isAbsolute(filePath) &&
+    !filePath.split(/[\\/]/).includes("..")
+  );
+}
+
+function validateManifest(parsed: unknown): ScaffoldManifestReadResult {
+  if (!isPlainRecord(parsed)) return { status: "invalid", error: "manifest must be a JSON object" };
+  if (typeof parsed.version !== "string" || parsed.version.trim() === "") {
+    return { status: "invalid", error: "version must be a non-empty string" };
+  }
+  if (
+    typeof parsed.createdAt !== "string" ||
+    parsed.createdAt.trim() === "" ||
+    Number.isNaN(Date.parse(parsed.createdAt))
+  ) {
+    return { status: "invalid", error: "createdAt must be a valid timestamp string" };
+  }
+  if (!isPlainRecord(parsed.hashes)) {
+    return { status: "invalid", error: "hashes must be a non-null plain record" };
+  }
+  for (const [filePath, digest] of Object.entries(parsed.hashes)) {
+    if (!isPortableProjectRelativePath(filePath)) {
+      return { status: "invalid", error: `hashes contains an unsafe project path: ${filePath}` };
+    }
+    if (typeof digest !== "string" || !/^[0-9a-f]{64}$/.test(digest)) {
+      return { status: "invalid", error: `hashes[${JSON.stringify(filePath)}] must be SHA-256` };
+    }
+  }
+  if (parsed.baselines !== undefined) {
+    if (!isPlainRecord(parsed.baselines)) {
+      return { status: "invalid", error: "baselines must be a non-null plain record" };
+    }
+    for (const [filePath, content] of Object.entries(parsed.baselines)) {
+      if (!isPortableProjectRelativePath(filePath)) {
+        return {
+          status: "invalid",
+          error: `baselines contains an unsafe project path: ${filePath}`,
+        };
+      }
+      if (typeof content !== "string") {
+        return {
+          status: "invalid",
+          error: `baselines[${JSON.stringify(filePath)}] must be a string`,
+        };
+      }
+    }
+  }
+  return { status: "valid", manifest: parsed as ScaffoldManifest };
+}
+
+export async function readScaffoldManifestResult(
+  projectDir: string,
+): Promise<ScaffoldManifestReadResult> {
   try {
     const manifestPath = path.join(projectDir, SCAFFOLD_MANIFEST_FILE);
-    if (!(await fs.pathExists(manifestPath))) return null;
+    if (!(await fs.pathExists(manifestPath))) return { status: "missing" };
     const raw = await fs.readFile(manifestPath, "utf-8");
-    const parsed = JSON.parse(raw) as ScaffoldManifest;
-    if (!parsed || typeof parsed !== "object" || typeof parsed.hashes !== "object") {
-      return null;
-    }
-    if (parsed.baselines !== undefined && typeof parsed.baselines !== "object") {
-      delete parsed.baselines;
-    }
-    return parsed;
-  } catch {
-    return null;
+    return validateManifest(JSON.parse(raw) as unknown);
+  } catch (error) {
+    return {
+      status: "invalid",
+      error: `manifest is not valid JSON: ${error instanceof Error ? error.message : String(error)}`,
+    };
   }
+}
+
+export async function readScaffoldManifest(projectDir: string): Promise<ScaffoldManifest | null> {
+  const result = await readScaffoldManifestResult(projectDir);
+  return result.status === "valid" ? result.manifest : null;
 }
 
 /**

@@ -1,6 +1,6 @@
 ---
 title: Update Projects
-description: Plan and safely apply current Better Fullstack templates to an existing generated project.
+description: Plan and explicitly acknowledge destructive current-template changes for an existing project.
 translationStatus: pending
 updated: 2026-08-07
 ---
@@ -15,47 +15,66 @@ npm create better-fullstack@latest update
 
 ## Operational contract
 
-| Concern       | Contract                                                                                                 |
-| ------------- | -------------------------------------------------------------------------------------------------------- |
-| Preconditions | A generated project with `bts.jsonc`; safe patching also needs `bts.lock.json`. Commit local work first. |
-| Preview       | Plain `update` and `update --dry-run` only produce a plan.                                               |
-| Writes        | Only `--apply` and `--record-baseline` write files.                                                      |
-| Refuses       | Local edits, conflicts, secrets, lockfiles, and removals are not silently overwritten or deleted.        |
-| Recovery      | Apply on a clean Git worktree, inspect the diff, and revert the update commit if necessary.              |
+| Concern       | Contract                                                                                          |
+| ------------- | ------------------------------------------------------------------------------------------------- |
+| Preconditions | A generated project with `bts.jsonc`; apply also needs a valid manifest-v1 `bts.lock.json`.       |
+| Preview       | Plain `update` and `update --dry-run` only produce a plan.                                        |
+| Writes        | Only `--apply` and `--record-baseline` write files.                                               |
+| Refuses       | Local edits, conflicts, secrets, lockfiles, and removals are not silently overwritten or deleted. |
+| Recovery      | No backup or rollback is built in. Create and verify an independent recovery point before apply.  |
 
 ## Three-way classification
 
 The engine compares the baseline, current template render, and current disk contents. It classifies
-files as unchanged, safe template drift, structured merge, new, locally edited, conflict, removed,
+files as unchanged, template drift, structured merge, new, locally edited, conflict, removed,
 or manual review. `package.json` and `.env.example` can use structured merges. Lockfiles, secrets,
 conflicts, and local edits are never silently overwritten; removed template files are not deleted.
 
 ## Modes
 
-| Flag                         | Behavior                                                                                    |
-| ---------------------------- | ------------------------------------------------------------------------------------------- |
-| no mode flag / `--dry-run`   | Print the plan without writing.                                                             |
-| `--apply`                    | Write safe drift patches, structured merges, and new files; refresh successful baselines.   |
-| `--check`                    | CI gate: exit non-zero when actionable template drift exists.                               |
-| `--record-baseline`          | Adopt the current on-disk project as a baseline for older projects without `bts.lock.json`. |
-| `--json`                     | Print the plan and counts as structured JSON.                                               |
-| positional project directory | Target directory; defaults to the current directory.                                        |
+| Flag                                 | Behavior                                                                                |
+| ------------------------------------ | --------------------------------------------------------------------------------------- |
+| no mode flag / `--dry-run`           | Print the plan without writing.                                                         |
+| `--apply`                            | Destructively write actionable drift, merges, and new files; requires both flags below. |
+| `--review-token <token>`             | Exact token from the categorized plan being applied.                                    |
+| `--acknowledge-unproven-manifest-v1` | Acknowledge unproven lineage, destructive writes, and absent backup/recovery.           |
+| `--check`                            | CI gate: exit non-zero when actionable template drift exists.                           |
+| `--record-baseline`                  | Manually adopt current bytes as a baseline; this is not generator-lineage proof.        |
+| `--json`                             | Print categorized paths, hashes, counts, and the review token as structured JSON.       |
+| positional project directory         | Target directory; defaults to the current directory.                                    |
 
 The write/check/baseline modes are mutually exclusive. `--dry-run` cannot be combined with
 `--apply` or `--record-baseline`.
 
 ## Recommended workflow
 
-1. Commit current work.
-2. Run `update` and review every conflict/manual entry.
-3. Run `update --apply` for the safe subset.
-4. Resolve remaining files manually.
+1. Create and verify an independent recovery point; the command has no backup or rollback.
+2. Run `update --json` and review categorized actionable paths, conflicts, manual entries, and hashes.
+3. Pass that plan's exact token separately from the high-friction acknowledgement.
+
+<PMTabs
+  npm="npm create better-fullstack@[same-cli-version] update [project-directory] -- --apply --review-token [64-character-token] --acknowledge-unproven-manifest-v1"
+  pnpm="pnpm dlx create-better-fullstack@[same-cli-version] update [project-directory] --apply --review-token [64-character-token] --acknowledge-unproven-manifest-v1"
+  bun="bunx create-better-fullstack@[same-cli-version] update [project-directory] --apply --review-token [64-character-token] --acknowledge-unproven-manifest-v1"
+  yarn="yarn dlx create-better-fullstack@[same-cli-version] update [project-directory] --apply --review-token [64-character-token] --acknowledge-unproven-manifest-v1"
+/>
+
+Use the exact version-pinned command emitted by the plan. It is labeled and quoted for PowerShell
+on Windows and for a POSIX shell on other supported platforms.
+
+4. Inspect the resulting diff and resolve remaining files manually.
 5. Run `check`, then the generated project's tests.
 
 <Callout kind="warning" title="Baseline adoption">
-`--record-baseline` records the current project state; it cannot reconstruct the exact historical
-template that created an older project. Review and commit the project before adopting a baseline.
+`--record-baseline` is manual adoption of the current project state. It cannot reconstruct or prove
+the historical generator/template release. Manifest v1 never establishes release lineage, even
+when its config version happens to equal the current CLI version.
 </Callout>
+
+Apply rechecks the reviewed config, manifest, intended hashes, observed path/symlink state, and each
+actionable file preimage. Those checks detect ordinary concurrent edits, but they are not a
+transaction or a guarantee against an active local filesystem adversary. Earlier writes are not
+rolled back if a later check fails.
 
 `update` updates generated project templates. The maintainer-only `update-deps` command updates the
 generator repository's dependency catalog and is unrelated.

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "releases": [
+    {
+      "tag": "v2.4.0",
+      "version": "2.4.0",
+      "recordedTagCommit": "08345516bb37d9158888ba1096e8322f907eb0e1",
+      "tagCommitVerification": "not-performed",
+      "referencedPackageSpec": "create-better-fullstack@2.4.0",
+      "packageGeneration": "not-performed",
+      "fixtureRoot": "2.4.0",
+      "referenceCaptureCommand": "git archive v2.4.0 apps/cli/test/fixtures/gen-resource/orpc",
+      "classification": "static-tag-fixture-provenance-only-unupgradeable",
+      "baseline": "absent",
+      "files": {
+        "bts.jsonc": "ff554572e098dd0b82b035772502a98b2dd167a6df16581f9a0be805675c0393",
+        "packages/api/src/routers/index.ts": "cab43b4a54acdb970aa1801625f02711aca1d75a5cdf4a95b3d776a56f166b17"
+      }
+    },
+    {
+      "tag": "v2.3.1",
+      "version": "2.3.1",
+      "recordedTagCommit": "ce99b4d1256cb2361b3af9f2050aad21f54a331c",
+      "tagCommitVerification": "not-performed",
+      "referencedPackageSpec": "create-better-fullstack@2.3.1",
+      "packageGeneration": "not-performed",
+      "fixtureRoot": "2.3.1",
+      "referenceCaptureCommand": "git archive v2.3.1 apps/cli/test/fixtures/gen-resource/orpc",
+      "classification": "static-tag-fixture-provenance-only-unupgradeable",
+      "baseline": "absent",
+      "files": {
+        "bts.jsonc": "ff554572e098dd0b82b035772502a98b2dd167a6df16581f9a0be805675c0393",
+        "packages/api/src/routers/index.ts": "cab43b4a54acdb970aa1801625f02711aca1d75a5cdf4a95b3d776a56f166b17"
+      }
+    }
+  ]
+}

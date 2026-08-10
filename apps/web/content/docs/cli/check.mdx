@@ -18,30 +18,31 @@ npm create better-fullstack@latest check -- --skip-checks
 | Preconditions     | A generated project with a readable `bts.jsonc`.                                                                            |
 | Source writes     | Does not rewrite scaffold source or configuration. Invoked build/type tools may create their normal caches or build output. |
 | Fast inspection   | `--skip-checks` limits work to config, dependency, and environment inspection.                                              |
-| Structured output | `--json` is machine-readable but intentionally skips native ecosystem subprocess checks.                                    |
-| Failure           | Exits non-zero when an executed check fails.                                                                                |
+| Structured output | `--json` runs the identical multi-target matrix and captures subprocess output.                                             |
+| Failure           | Exits non-zero for failed targets, missing targets/toolchains, or incomplete execution.                                     |
 
 ## What check does
 
 - Reads and validates `bts.jsonc`.
 - Checks whether dependencies are installed for the detected package manager or ecosystem.
 - Reports missing required environment variables from `.env.example` files.
-- Runs the root `check-types` script when one exists unless `--skip-checks` is passed.
-- Runs ecosystem-native generated checks only in normal terminal output mode.
-- Supports `--json` for machine-readable config, dependency, environment, and TypeScript check results.
+- Discovers every executable generated frontend, backend, mobile, and database target from the stack graph.
+- Runs each target's generated type/build contract in deterministic order unless `--skip-checks` is passed.
+- Reports each target directory, toolchain, planned commands, executed commands, status, and reason.
+- Supports `--json` for the same matrix; only presentation changes and command output is captured.
 
 ## Flags
 
-| Flag                         | Behavior                                                                                                                                                                   |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| positional project directory | Project directory to diagnose. Defaults to the current directory.                                                                                                          |
-| `--skip-checks`              | Skip generated type/build checks and only inspect config, dependencies, and env files.                                                                                     |
-| `--json`                     | Print structured JSON. Native ecosystem build checks are reported as skipped and must be run again without `--json`. The command exits non-zero when executed checks fail. |
+| Flag                         | Behavior                                                                                                                                    |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| positional project directory | Project directory to diagnose. Defaults to the current directory.                                                                           |
+| `--skip-checks`              | Skip generated type/build checks and only inspect config, dependencies, and env files.                                                      |
+| `--json`                     | Print structured JSON while running the identical complete target matrix. The command exits non-zero for failed or incomplete verification. |
 
-<Callout kind="warning" title="JSON does not run native checks">
-For Rust, Python, Go, Java/Kotlin, Elixir, and .NET projects, rerun `check` without `--json` before
-claiming that native build checks passed. JSON mode intentionally avoids those subprocesses so agents
-and CI parsers receive clean structured output.
+<Callout kind="warning" title="Checks can mutate toolchain state">
+Generated checks may fetch dependencies and write normal locks, caches, compiler output, or build
+artifacts. JSON captures output but does not make the commands read-only. Use `--skip-checks` for
+inspection without generated target commands.
 </Callout>
 
 ## Doctor Alias

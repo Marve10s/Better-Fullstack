@@ -1,0 +1,73 @@
+import {
+  createStackSelectionSearchParams,
+  DEFAULT_STACK_SELECTION,
+} from "@better-fullstack/types/stack-translation";
+import { expect, test } from "@playwright/test";
+
+import { gotoAppPage } from "./test-helpers";
+
+test.describe("real WebContainer lifecycle", { tag: "@webcontainer-proof" }, () => {
+  test.describe.configure({ mode: "serial", retries: 1, timeout: 420_000 });
+
+  test("boots a generated app, observes a source edit, and serves it after rerun", async ({
+    page,
+  }) => {
+    const params = createStackSelectionSearchParams({
+      ...DEFAULT_STACK_SELECTION,
+      projectName: "browser-proof",
+      webFrontend: ["react-vite"],
+      backend: "none",
+      runtime: "none",
+      database: "none",
+      orm: "none",
+      auth: "none",
+      api: "none",
+      forms: "none",
+      validation: "none",
+      testing: "none",
+      cssFramework: "none",
+      uiLibrary: "none",
+      codeQuality: [],
+      documentation: [],
+      appPlatforms: [],
+      examples: [],
+      aiDocs: [],
+      workspaceShape: "monorepo",
+      install: "false",
+      git: "false",
+    });
+    params.set("view", "run");
+
+    await gotoAppPage(page, `/new?${params.toString()}`);
+    const runButton = page.getByTestId("run-project-button");
+    const status = page.getByTestId("run-status");
+    await expect(runButton).toBeVisible({ timeout: 60_000 });
+
+    await page.getByTestId("project-folder-apps/web").getByRole("button").click();
+    await page.getByTestId("project-folder-apps/web/src").getByRole("button").click();
+    await page.getByTestId("project-folder-apps/web/src/routes").getByRole("button").click();
+    const sourceFile = page.getByTestId("project-file-apps/web/src/routes/home.tsx");
+    await expect(sourceFile).toBeVisible({ timeout: 60_000 });
+
+    await runButton.click();
+    await expect(status).toHaveAttribute("data-status", "ready", { timeout: 300_000 });
+
+    const frame = page.frameLocator('[data-testid="run-preview-frame"]');
+    await expect(frame.locator("body")).toBeVisible({ timeout: 30_000 });
+    await expect(frame.locator("body")).not.toContainText("Wave 2 edit observed");
+
+    await sourceFile.click();
+    const editor = page.getByTestId("run-code-editor");
+    await expect(editor).toBeVisible();
+    const source = await editor.inputValue();
+    expect(source).toContain("API Status");
+    await editor.fill(source.replace("API Status", "Wave 2 edit observed"));
+
+    await runButton.click();
+    await expect(status).not.toHaveAttribute("data-status", "ready", { timeout: 10_000 });
+    await expect(status).toHaveAttribute("data-status", "ready", { timeout: 180_000 });
+    await expect(frame.locator("body")).toContainText("Wave 2 edit observed", {
+      timeout: 30_000,
+    });
+  });
+});

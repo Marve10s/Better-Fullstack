@@ -24,7 +24,10 @@ import { isSilent, runWithContextAsync } from "../../utils/context";
 import { displayConfig } from "../../utils/display-config";
 import { CLIError, UserCancelledError, exitCancelled } from "../../utils/errors";
 import { generateReproducibleCommand } from "../../utils/generate-reproducible-command";
-import { runGeneratedChecks } from "../../utils/generated-checks";
+import {
+  assertGeneratedVerificationComplete,
+  runGeneratedChecks,
+} from "../../utils/generated-checks";
 import { openUrl } from "../../utils/open-url";
 import { displayPreflightWarnings } from "../../utils/preflight-display";
 import { handleDirectoryConflict, setupProjectDirectory } from "../../utils/project-directory";
@@ -41,8 +44,9 @@ import {
 } from "../../validation";
 import { createProject } from "./create-project";
 
-interface CreateHandlerOptions {
+export interface CreateHandlerOptions {
   silent?: boolean;
+  generatedCheckRunner?: typeof runGeneratedChecks;
 }
 
 type BuilderPromptEnvironment = {
@@ -295,7 +299,7 @@ export async function createProjectHandler(
   input: CreateInput & { projectName?: string; fromHistory?: number; config?: string },
   options: CreateHandlerOptions = {},
 ) {
-  const { silent = false } = options;
+  const { silent = false, generatedCheckRunner = runGeneratedChecks } = options;
 
   return runWithContextAsync({ silent }, async () => {
     const startTime = Date.now();
@@ -772,7 +776,11 @@ export async function createProjectHandler(
       const setupFailures = createResult?.setupFailures ?? [];
 
       if (cliInput.verify ?? input.verify) {
-        await runGeneratedChecks(config);
+        try {
+          assertGeneratedVerificationComplete(await generatedCheckRunner(config));
+        } catch (error) {
+          throw new CLIError(error instanceof Error ? error.message : String(error));
+        }
       }
 
       const reproducibleCommand = generateReproducibleCommand(config);

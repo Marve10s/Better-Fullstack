@@ -54,7 +54,11 @@ interface DirectoryContentsProps {
 
 function DirectoryContents({ node, selectedPath, onSelectFile }: DirectoryContentsProps) {
   return (
-    <Folder element={node.name} value={node.path}>
+    <Folder
+      element={node.name}
+      value={node.path}
+      data-testid={node.path ? `project-folder-${node.path}` : "project-folder-root"}
+    >
       {node.children.map((child) =>
         child.type === "directory" ? (
           <DirectoryContents
@@ -67,6 +71,7 @@ function DirectoryContents({ node, selectedPath, onSelectFile }: DirectoryConten
           <File
             key={child.path}
             value={child.path}
+            data-testid={`project-file-${child.path}`}
             isSelect={selectedPath === child.path}
             onClick={() => onSelectFile(child)}
           >

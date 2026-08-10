@@ -488,7 +488,7 @@ export const router = os.router({
   update: os
     .meta({
       description:
-        "Re-apply the current bundled templates to an existing Better Fullstack project, classifying template drift vs. your local edits from the bts.lock.json scaffold baseline. Default is a dry-run plan; `--apply` writes safe drift patches + new files. Distinct from the maintainer `update-deps` command.",
+        "Plan current-template drift from an unproven manifest-v1 baseline. Apply is destructive, requires the exact review token plus explicit acknowledgement, and has no backup/recovery. Distinct from the maintainer `update-deps` command.",
     })
     .input(
       z.tuple([
@@ -506,7 +506,21 @@ export const router = os.router({
             .boolean()
             .optional()
             .default(false)
-            .describe("Write safe template-drift patches and new files, refreshing the baseline"),
+            .describe(
+              "Destructively overwrite actionable template files; requires exact review token and acknowledgement",
+            ),
+          reviewToken: z
+            .string()
+            .length(64)
+            .optional()
+            .describe("Exact token emitted by the update plan being applied"),
+          acknowledgeUnprovenManifestV1: z
+            .boolean()
+            .optional()
+            .default(false)
+            .describe(
+              "Required with --apply: acknowledge manifest v1 has unproven lineage and no backup/recovery",
+            ),
           check: z
             .boolean()
             .optional()
@@ -518,7 +532,7 @@ export const router = os.router({
             .optional()
             .default(false)
             .describe(
-              "Adopt the current on-disk state as the scaffold baseline (for projects created before the update engine)",
+              "Manually adopt current on-disk bytes as a baseline; this does not prove generator release lineage",
             ),
         }),
       ]),
@@ -750,6 +764,8 @@ export async function update(
     check?: boolean;
     json?: boolean;
     recordBaseline?: boolean;
+    acknowledgeUnprovenManifestV1?: boolean;
+    reviewToken?: string;
   },
 ) {
   return caller.update([
@@ -760,6 +776,8 @@ export async function update(
       check: options?.check ?? false,
       json: options?.json ?? false,
       recordBaseline: options?.recordBaseline ?? false,
+      acknowledgeUnprovenManifestV1: options?.acknowledgeUnprovenManifestV1 ?? false,
+      reviewToken: options?.reviewToken,
     },
   ]);
 }

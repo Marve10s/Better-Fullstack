@@ -41,7 +41,8 @@ For npm, Better Fullstack flags go after `--`. Generated npm commands may use `n
 - `--yes` accepts defaults and conflicts with core stack flags such as `--frontend`, `--backend`, `--database`, `--orm`, `--auth`, and `--api`.
 - Use `none` to disable optional categories, including `--ai-docs none`.
 - Use `--no-install` and `--no-git` when you want to inspect generated files before side effects.
-- `--verify` runs generated checks after scaffolding without starting dev servers.
+- `--verify` runs every generated target check after scaffolding without starting dev servers. Those
+  toolchains may fetch dependencies and write normal lockfiles, caches, compiler output, or build artifacts.
 - `--version-channel latest` follows npm `latest` tags except for temporary compatibility holds that
   keep the generated project installable.
 
