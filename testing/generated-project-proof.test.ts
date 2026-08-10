@@ -66,4 +66,18 @@ describe("generated project install/build proof matrix", () => {
     expect(source).toContain("await buildFreshCliBinary()");
     expect(source).not.toContain("ensureBuiltCliBinary");
   });
+
+  it("builds workspace exports before clean-checkout lifecycle tests", async () => {
+    const workflow = await readFile(
+      new URL("../.github/workflows/generated-project-proof.yaml", import.meta.url),
+      "utf8",
+    );
+    const typesBuild = workflow.indexOf("bun run --cwd packages/types build");
+    const generatorBuild = workflow.indexOf("bun run --cwd packages/template-generator build");
+    const lifecycleTests = workflow.indexOf("bun test testing/generated-project-proof.test.ts");
+
+    expect(typesBuild).toBeGreaterThan(-1);
+    expect(generatorBuild).toBeGreaterThan(typesBuild);
+    expect(lifecycleTests).toBeGreaterThan(generatorBuild);
+  });
 });

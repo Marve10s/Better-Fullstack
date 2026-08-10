@@ -69,6 +69,11 @@ jobs:
       - name: Install repository dependencies
         run: bun install --frozen-lockfile
 
+      - name: Build lifecycle workspace packages
+        run: |
+          bun run --cwd packages/types build
+          bun run --cwd packages/template-generator build
+
       - name: Verify lifecycle contracts
         run: |
           bun test testing/generated-project-proof.test.ts apps/web/test/project-download.test.ts
