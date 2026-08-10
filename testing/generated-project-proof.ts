@@ -417,7 +417,44 @@ async function main(): Promise<void> {
     ].join("\n"),
   );
 
-  if (!overallSuccess) process.exitCode = 1;
+  if (!overallSuccess) {
+    console.error(
+      JSON.stringify(
+        {
+          evidenceType: evidence.evidenceType,
+          gitHead,
+          workspaceClean: evidence.workspaceClean,
+          failedToolchains: toolchains
+            .filter((tool) => !tool.success)
+            .map(({ tool, command, exitCode, stderrTail }) => ({
+              tool,
+              command,
+              exitCode,
+              stderrTail,
+            })),
+          failedCases: results
+            .filter((result) => !result.success)
+            .map((result) => ({
+              id: result.id,
+              missingRequiredSteps: result.missingRequiredSteps,
+              failedSteps: result.steps
+                .filter((step) => !step.success || step.skipped)
+                .map(({ step, command, exitCode, skipped, stdoutTail, stderrTail }) => ({
+                  step,
+                  command,
+                  exitCode,
+                  skipped,
+                  stdoutTail,
+                  stderrTail,
+                })),
+            })),
+        },
+        null,
+        2,
+      ),
+    );
+    process.exitCode = 1;
+  }
 }
 
 if (import.meta.main) await main();
