@@ -30,16 +30,24 @@ export function verifiedEvidenceExpired(summary: VerifiedBadgeSummary, now: Date
   return !Number.isFinite(expiry) || now.getTime() > expiry;
 }
 
+export function verifiedEvidenceMatchesDeployment(
+  summary: VerifiedBadgeSummary,
+  deployedGitHead?: string,
+): boolean {
+  return (
+    typeof deployedGitHead === "string" &&
+    /^[0-9a-f]{40}$/i.test(deployedGitHead) &&
+    summary.gitHead === deployedGitHead
+  );
+}
+
 export function verifiedCombinationsBadgePayload(
   summary: VerifiedBadgeSummary,
   now: Date = new Date(),
   deployedGitHead?: string,
 ): VerifiedCombinationsBadgePayload {
   const expired = verifiedEvidenceExpired(summary, now);
-  const revisionCurrent =
-    typeof deployedGitHead === "string" &&
-    /^[0-9a-f]{40}$/i.test(deployedGitHead) &&
-    summary.gitHead === deployedGitHead;
+  const revisionCurrent = verifiedEvidenceMatchesDeployment(summary, deployedGitHead);
   const required = [
     ...summary.smoke,
     ...summary.scaffbench,

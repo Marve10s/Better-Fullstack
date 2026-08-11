@@ -25,6 +25,7 @@ const buildDate = new Intl.DateTimeFormat("en-US", {
 })
   .format(new Date())
   .toLowerCase();
+const deployedGitHead = process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.GITHUB_SHA ?? "";
 
 const webContainerHeaders = {
   "Cross-Origin-Embedder-Policy": "credentialless",
@@ -90,6 +91,7 @@ export default defineConfig({
   define: {
     __BFS_CLI_VERSION__: JSON.stringify(cliPackage.version),
     __BFS_BUILD_DATE__: JSON.stringify(buildDate),
+    __BFS_DEPLOYED_GIT_HEAD__: JSON.stringify(deployedGitHead),
   },
   build: {
     sourcemap: false,

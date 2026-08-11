@@ -3,6 +3,7 @@ import { describe, expect, it } from "bun:test";
 import {
   type VerifiedBadgeSummary,
   verifiedCombinationsBadgePayload,
+  verifiedEvidenceMatchesDeployment,
 } from "../src/lib/docs/verified-combinations-badge";
 
 const NOW = new Date("2026-08-09T12:00:00.000Z");
@@ -93,6 +94,7 @@ describe("verified-combinations badge", () => {
 
     expect(badge.color).toBe("red");
     expect(badge.message).toBe("0/19 passing");
+    expect(verifiedEvidenceMatchesDeployment(current, "b".repeat(40))).toBe(false);
   });
 
   it("fails closed when the deployed commit identity is unavailable", () => {
@@ -100,5 +102,10 @@ describe("verified-combinations badge", () => {
 
     expect(badge.color).toBe("red");
     expect(badge.message).toBe("0/19 passing");
+  });
+
+  it("matches only the exact full deployed commit", () => {
+    expect(verifiedEvidenceMatchesDeployment(current, DEPLOYED_GIT_HEAD)).toBe(true);
+    expect(verifiedEvidenceMatchesDeployment(current, "a".repeat(12))).toBe(false);
   });
 });

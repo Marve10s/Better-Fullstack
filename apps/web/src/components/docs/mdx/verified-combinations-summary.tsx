@@ -5,7 +5,10 @@ import {
   TbExternalLink as ExternalLink,
 } from "react-icons/tb";
 
-import { verifiedEvidenceExpired } from "@/lib/docs/verified-combinations-badge";
+import {
+  verifiedEvidenceExpired,
+  verifiedEvidenceMatchesDeployment,
+} from "@/lib/docs/verified-combinations-badge";
 import {
   type VerifiedCombinationActionLink,
   type VerifiedCombinationSummary,
@@ -41,6 +44,7 @@ export function VerifiedCombinationsSummary() {
   const expired = verifiedEvidenceExpired(summary, new Date());
   const allCurrent =
     !expired &&
+    verifiedEvidenceMatchesDeployment(summary, __BFS_DEPLOYED_GIT_HEAD__) &&
     summary.smoke.every((item) => item.current === true) &&
     summary.scaffbench.every((item) => item.current === true) &&
     releaseGuard?.current === true &&

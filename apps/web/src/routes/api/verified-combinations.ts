@@ -12,7 +12,7 @@ export const Route = createFileRoute("/api/verified-combinations")({
           verifiedCombinationsBadgePayload(
             verifiedCombinationsSummary,
             new Date(),
-            process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.GITHUB_SHA,
+            __BFS_DEPLOYED_GIT_HEAD__,
           ),
           {
             headers: {
