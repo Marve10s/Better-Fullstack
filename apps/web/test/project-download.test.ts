@@ -5,7 +5,7 @@ import { strFromU8, unzipSync } from "fflate";
 import { createHash } from "node:crypto";
 
 import { stackStateToProjectConfig } from "../src/lib/preview-config";
-import { createProjectArchive } from "../src/lib/project-download";
+import { createProjectArchive, sha256ProjectBytes } from "../src/lib/project-download";
 import { DEFAULT_STACK } from "../src/lib/stack-defaults";
 
 function projectTree(): VirtualDirectory {
@@ -41,6 +41,14 @@ function projectTree(): VirtualDirectory {
 }
 
 describe("createProjectArchive", () => {
+  it("hashes project bytes without SubtleCrypto", async () => {
+    const bytes = new TextEncoder().encode("abc");
+
+    expect(await sha256ProjectBytes(bytes, undefined)).toBe(
+      createHash("sha256").update(bytes).digest("hex"),
+    );
+  });
+
   it("creates a project-rooted ZIP with text and binary files", async () => {
     const binaryBytes = new Uint8Array([0, 1, 2, 255]);
     const requestedBinaryPaths: string[] = [];

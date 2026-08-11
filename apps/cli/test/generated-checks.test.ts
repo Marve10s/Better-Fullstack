@@ -153,6 +153,51 @@ describe("generated target checks", () => {
     expect(go?.reason).toContain("directory is missing");
   });
 
+  it("does not collapse a missing multi-app TypeScript target into the workspace root", async () => {
+    const projectDir = await fs.mkdtemp(path.join(tmpdir(), "bfs-missing-ts-target-"));
+    roots.push(projectDir);
+    await fs.outputJson(path.join(projectDir, "package.json"), {
+      scripts: { "check-types": "turbo check-types" },
+    });
+    const config = {
+      ...createCliDefaultProjectConfigBase(),
+      projectName: "missing-ts-target",
+      projectDir,
+      relativePath: ".",
+      workspaceShape: "monorepo",
+      stackParts: [
+        {
+          id: "backend:typescript:hono",
+          role: "backend",
+          ecosystem: "typescript",
+          toolId: "hono",
+          source: "selected",
+          targetPath: "apps/server",
+        },
+      ],
+    } as ProjectConfig;
+
+    expect(await discoverGeneratedCheckTargets(config)).toMatchObject([
+      {
+        id: "backend:typescript:hono",
+        projectDir: path.join(projectDir, "apps/server"),
+      },
+      { id: "workspace:typescript", projectDir },
+    ]);
+
+    const results = await runGeneratedChecks(config, {
+      commandExists: async () => true,
+      execute: async () => ({ exitCode: 0 }),
+    });
+    expect(results.find((result) => result.id === "backend:typescript:hono")).toMatchObject({
+      status: "fail",
+      executed: false,
+    });
+    expect(results.find((result) => result.id === "backend:typescript:hono")?.reason).toContain(
+      "directory is missing",
+    );
+  });
+
   it("fails closed when a required toolchain is unavailable", async () => {
     const config = await graphProject();
     const results = await runGeneratedChecks(config, {

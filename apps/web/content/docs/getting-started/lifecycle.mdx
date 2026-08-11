@@ -99,9 +99,18 @@ Run `check` after creation, additions, updates, dependency installs, and environ
   yarn="yarn create better-fullstack@latest check"
 />
 
-Normal and `--json` output run the same deterministic target matrix, including supported native
-ecosystem checks. JSON changes presentation and captures subprocess output; it does not make those
-commands read-only. Missing targets, toolchains, or incomplete execution fail the command.
+Normal output runs the deterministic target matrix, including supported native ecosystem checks.
+JSON mode reports status without running those checks unless you explicitly pass `--run-checks`:
+
+<PMTabs
+  npm="npm create better-fullstack@latest check -- --json --run-checks"
+  pnpm="pnpm create better-fullstack@latest check --json --run-checks"
+  bun="bun create better-fullstack@latest check --json --run-checks"
+  yarn="yarn create better-fullstack@latest check --json --run-checks"
+/>
+
+With `--run-checks`, JSON changes presentation and captures subprocess output; it does not make
+those commands read-only. Missing targets, toolchains, or incomplete execution fail the command.
 
 ## Recovery rule
 

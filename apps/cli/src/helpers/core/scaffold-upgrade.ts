@@ -513,7 +513,14 @@ export async function planScaffoldUpgrade(projectDirInput: string): Promise<Upgr
         });
         continue;
       }
-      files.push({ path: filePath, category: "new-file" });
+      const renderedContent = renderFiles.get(filePath)?.content;
+      files.push({
+        path: filePath,
+        category: "new-file",
+        ...(renderedContent !== undefined && renderedContent !== BINARY_FILE_MARKER
+          ? { mergedContent: renderedContent }
+          : {}),
+      });
       continue;
     }
 
@@ -580,7 +587,13 @@ export async function planScaffoldUpgrade(projectDirInput: string): Promise<Upgr
     }
 
     if (diskHash === baselineHash) {
-      files.push({ path: filePath, category: "drift" });
+      files.push({
+        path: filePath,
+        category: "drift",
+        ...(renderedContent !== undefined && renderedContent !== BINARY_FILE_MARKER
+          ? { mergedContent: renderedContent }
+          : {}),
+      });
       continue;
     }
 

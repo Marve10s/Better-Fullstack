@@ -187,7 +187,10 @@ export async function discoverGeneratedCheckTargets(
       sourcePartId: part.id,
     };
     if (target.projectDir !== config.projectDir && !(await fs.pathExists(target.projectDir))) {
-      if (await ecosystemManifestExists(config.projectDir, target.ecosystem)) {
+      if (
+        config.workspaceShape !== "monorepo" &&
+        (await ecosystemManifestExists(config.projectDir, target.ecosystem))
+      ) {
         target.projectDir = config.projectDir;
       } else if (manifestPaths.length > 0 && !manifestCoversPath(part.targetPath)) {
         continue;

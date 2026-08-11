@@ -8,6 +8,7 @@ export type VerifiedCombinationActionLink = {
 export type VerifiedCombinationSummary = {
   generatedAt: string;
   expiresAt: string;
+  gitHead?: string;
   expectedTotals: {
     releaseGuard: number;
     publishedPackage: number;
@@ -71,6 +72,7 @@ export type VerifiedCombinationSummary = {
 export const verifiedCombinationsSummary: VerifiedCombinationSummary = {
   "generatedAt": "2026-08-11T11:11:08.988Z",
   "expiresAt": "2026-08-12T23:11:08.988Z",
+  "gitHead": "0c1bc90f735bb15b3fdd7aa1131ec7d48a0f274d",
   "expectedTotals": {
     "releaseGuard": 17,
     "publishedPackage": 3
