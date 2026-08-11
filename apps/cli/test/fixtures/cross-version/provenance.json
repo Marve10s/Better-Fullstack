@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "releases": [
+    {
+      "tag": "v2.4.0",
+      "version": "2.4.0",
+      "recordedTagCommit": "08345516bb37d9158888ba1096e8322f907eb0e1",
+      "tagCommitVerification": "not-performed",
+      "referencedPackageSpec": "create-better-fullstack@2.4.0",
+      "packageGeneration": "performed",
+      "fixtureRoot": "2.4.0",
+      "referenceCaptureCommand": "bunx create-better-fullstack@2.4.0 fixture-2.4.0 --ecosystem typescript --frontend react-vite --backend hono --runtime bun --api orpc --auth none --database sqlite --orm drizzle --ui-library none --css-framework tailwind --payments none --email none --file-upload none --effect none --state-management none --validation zod --forms none --testing none --ai none --realtime none --job-queue none --animation none --logging none --observability none --feature-flags none --integrations none --ecommerce none --analytics none --cms none --caching none --rate-limit none --i18n none --search none --vector-db none --file-storage none --addons none --examples none --ai-docs none --db-setup none --web-deploy none --server-deploy none --package-manager bun --no-install --no-git --disable-analytics",
+      "classification": "published-package-fixture-provenance-only-unupgradeable",
+      "baseline": "absent",
+      "files": {
+        "bts.jsonc": "2654f420cdb9b2a1550e885af14528e273c97b806a4217b430001eb20462da75",
+        "packages/api/src/routers/index.ts": "cab43b4a54acdb970aa1801625f02711aca1d75a5cdf4a95b3d776a56f166b17"
+      }
+    },
+    {
+      "tag": "v2.3.1",
+      "version": "2.3.1",
+      "recordedTagCommit": "ce99b4d1256cb2361b3af9f2050aad21f54a331c",
+      "tagCommitVerification": "not-performed",
+      "referencedPackageSpec": "create-better-fullstack@2.3.1",
+      "packageGeneration": "performed",
+      "fixtureRoot": "2.3.1",
+      "referenceCaptureCommand": "bunx create-better-fullstack@2.3.1 fixture-2.3.1 --ecosystem typescript --frontend react-vite --backend hono --runtime bun --api orpc --auth none --database sqlite --orm drizzle --ui-library none --css-framework tailwind --payments none --email none --file-upload none --effect none --state-management none --validation zod --forms none --testing none --ai none --realtime none --job-queue none --animation none --logging none --observability none --feature-flags none --analytics none --cms none --caching none --rate-limit none --i18n none --search none --vector-db none --file-storage none --addons none --examples none --ai-docs none --db-setup none --web-deploy none --server-deploy none --package-manager bun --no-install --no-git --disable-analytics",
+      "classification": "published-package-fixture-provenance-only-unupgradeable",
+      "baseline": "absent",
+      "files": {
+        "bts.jsonc": "8dac5a7e12258a364a90d882ae5d96a6c1f7688d7cbfceaa214b0e70228db146",
+        "packages/api/src/routers/index.ts": "cab43b4a54acdb970aa1801625f02711aca1d75a5cdf4a95b3d776a56f166b17"
+      }
+    }
+  ]
+}

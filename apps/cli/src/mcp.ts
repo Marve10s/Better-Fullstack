@@ -188,6 +188,12 @@ import { applyEffectBackendDefaults } from "./utils/config-processing";
 import { generateReproducibleCommand } from "./utils/generate-reproducible-command";
 import { getLatestCLIVersion } from "./utils/get-latest-cli-version";
 import { getEffectiveStack, getGraphSummary } from "./utils/graph-summary";
+import {
+  applyMcpProjectUpdate,
+  checkMcpProject,
+  getMcpProjectStatus,
+  planMcpProjectUpdate,
+} from "./utils/mcp-project-lifecycle";
 import { getCompatibilityBackend } from "./utils/stack-compatibility";
 import { getTemplateConfig, getTemplateDescription } from "./utils/templates";
 
@@ -207,12 +213,15 @@ RECOMMENDED WORKFLOW:
 5. Call bfs_create_project to scaffold the project on disk.
 
 For existing projects:
-1. Call bfs_plan_stack_update to preview scaffold-time capability changes.
-2. Call bfs_apply_stack_update to safely apply supported stack changes.
-3. Use bfs_plan_addition / bfs_add_feature only for legacy addon/deploy-only flows.
+1. Call bfs_get_project_status, then bfs_check_project for truthful target verification.
+2. Call bfs_plan_project_update to review current-template drift. Manifest v1 is always unproven and plan-only by default.
+3. Only after independent review and a recovery point, pass its reviewToken plus acknowledgeUnprovenManifestV1: true to bfs_apply_project_update.
+4. Use bfs_plan_stack_update / bfs_apply_stack_update for scaffold-time capability changes.
+5. Use bfs_plan_addition / bfs_add_feature only for legacy addon/deploy-only flows.
 
 CRITICAL RULES:
 - Dependency installation is ALWAYS skipped in MCP mode (timeout risk). After scaffolding, tell the user to run install manually.
+- bfs_check_project executes project build tools. Those tools may write local caches, lock metadata, generated code, or build artifacts even though Better Fullstack does not edit source directly.
 - Array fields: "frontend", "addons", "examples", "aiDocs", "rustLibraries", "pythonAi", "pythonTesting", "pythonCli", "pythonData", "goTesting", "javaLibraries", "javaTestingLibraries", "dotnetTesting", "dotnetObservability", "elixirLibraries", "mobileLibraries", "kotlinMobileLibraries", and "dotnetLibraries". Most other option fields are strings.
 - "none" means "skip this feature entirely", not "use the default".
 - Always specify "ecosystem" first — it determines which other fields are relevant.
@@ -227,7 +236,7 @@ function getGuidance() {
       "Call bfs_check_compatibility to validate your planned stack before creation.",
       "Call bfs_plan_project to preview the generated project (dry-run, no files written).",
       "Call bfs_create_project to scaffold the project on disk.",
-      "For existing projects: call bfs_plan_stack_update, then bfs_apply_stack_update.",
+      "For existing projects: call bfs_get_project_status and bfs_check_project, then use the reviewed project-update or stack-update workflow that matches the requested change.",
       "Use bfs_plan_addition / bfs_add_feature only for legacy addon/deploy-only flows.",
     ],
     ecosystems: {
@@ -1372,9 +1381,6 @@ function normalizeAdjustedToInput(
 }
 
 function summarizeRecommendedConfig(config: ProjectConfig) {
-  // frontend/backend/runtime/api are TypeScript-web concepts; for native backend
-  // ecosystems (rust/go/python/java/dotnet/elixir) the framework lives in stackParts,
-  // so surfacing the TS-shaped defaults here would misrepresent the recommendation.
   const isTsWeb = config.ecosystem === "typescript" || config.ecosystem === "react-native";
   return {
     projectName: config.projectName,
@@ -1913,10 +1919,6 @@ export async function startMcpServer() {
         const result = analyzeStackCompatibility(compatInput);
         const filtered = filterCompatibilityResult(result, input.ecosystem as string);
         const evaluation = evaluateCompatibility(compatInput);
-        // Filter issues to the selected ecosystem, mirroring filterCompatibilityResult.
-        // buildCompatibilityInput injects every ecosystem's defaults, so evaluate()
-        // otherwise flags cross-ecosystem leftovers (elixir*/cssFramework/etc.) as
-        // spurious INCOMPATIBLE issues on a perfectly valid stack.
         const relevantEcosystem = isMcpEcosystem(input.ecosystem as string)
           ? (input.ecosystem as OptionCategoryEcosystem)
           : "typescript";
@@ -2148,6 +2150,125 @@ export async function startMcpServer() {
       ? compatResult.changes.map((change) => change.message)
       : undefined;
   }
+
+  registerTool(
+    "bfs_get_project_status",
+    {
+      description:
+        "Returns Better Fullstack project status and explicit lifecycle prerequisites without executing generated toolchains.",
+      inputSchema: mcpInputSchema({
+        projectDir: z.string().describe("Path to the existing Better Fullstack project"),
+      }),
+      annotations: {
+        title: "Get project status",
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async (input: { projectDir: string }) => {
+      const payload = await getMcpProjectStatus(sanitizePath(input.projectDir));
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
+        ...(!payload.success ? { isError: true } : {}),
+      };
+    },
+  );
+
+  registerTool(
+    "bfs_check_project",
+    {
+      description:
+        "Executes the same complete multi-target checks as CLI check and reports every expected target, command/toolchain, status, and reason. Missing targets or toolchains fail. Build tools may fetch dependencies and write local caches, locks, generated code, or build artifacts.",
+      inputSchema: mcpInputSchema({
+        projectDir: z.string().describe("Path to the existing Better Fullstack project"),
+      }),
+      annotations: {
+        title: "Check project",
+        readOnlyHint: false,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
+    },
+    async (input: { projectDir: string }) => {
+      const payload = await checkMcpProject(sanitizePath(input.projectDir));
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
+        ...(!payload.success || !payload.ok ? { isError: true } : {}),
+      };
+    },
+  );
+
+  registerTool(
+    "bfs_plan_project_update",
+    {
+      description:
+        "Plans current-template drift. Exact structured-merge content is returned up to 32 KiB per file; oversized content is withheld with size/hash metadata and no token. Manifest v1 never proves release lineage and remains plan-only by default; any returned token still requires explicit destructive acknowledgement and an independently managed recovery point.",
+      inputSchema: mcpInputSchema({
+        projectDir: z.string().describe("Path to the existing Better Fullstack project"),
+      }),
+      annotations: {
+        title: "Plan project update",
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async (input: { projectDir: string }) => {
+      const payload = await planMcpProjectUpdate(sanitizePath(input.projectDir));
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
+        ...(!payload.success ? { isError: true } : {}),
+      };
+    },
+  );
+
+  registerTool(
+    "bfs_apply_project_update",
+    {
+      description:
+        "Destructively overwrites actionable template files bound to a reviewed token only when acknowledgeUnprovenManifestV1 is true. Manifest v1 lineage is unproven. Backup and recovery are not implemented.",
+      inputSchema: mcpInputSchema({
+        projectDir: z.string().describe("Path to the existing Better Fullstack project"),
+        reviewToken: z
+          .string()
+          .min(64)
+          .max(64)
+          .describe("Exact reviewToken returned by bfs_plan_project_update"),
+        acknowledgeUnprovenManifestV1: z
+          .boolean()
+          .describe(
+            "Must be true: acknowledge destructive apply, unproven manifest-v1 lineage, and absent backup/recovery",
+          ),
+      }),
+      annotations: {
+        title: "Apply reviewed project update",
+        readOnlyHint: false,
+        destructiveHint: true,
+        idempotentHint: false,
+        openWorldHint: false,
+      },
+    },
+    async (input: {
+      projectDir: string;
+      reviewToken: string;
+      acknowledgeUnprovenManifestV1: boolean;
+    }) => {
+      const payload = await applyMcpProjectUpdate(
+        sanitizePath(input.projectDir),
+        input.reviewToken,
+        input.acknowledgeUnprovenManifestV1,
+      );
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
+        ...(!payload.success ? { isError: true } : {}),
+      };
+    },
+  );
 
   registerTool(
     "bfs_plan_stack_update",

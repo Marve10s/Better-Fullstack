@@ -24,7 +24,10 @@ import { isSilent, runWithContextAsync } from "../../utils/context";
 import { displayConfig } from "../../utils/display-config";
 import { CLIError, UserCancelledError, exitCancelled } from "../../utils/errors";
 import { generateReproducibleCommand } from "../../utils/generate-reproducible-command";
-import { runGeneratedChecks } from "../../utils/generated-checks";
+import {
+  assertGeneratedVerificationComplete,
+  runGeneratedChecks,
+} from "../../utils/generated-checks";
 import { openUrl } from "../../utils/open-url";
 import { displayPreflightWarnings } from "../../utils/preflight-display";
 import { handleDirectoryConflict, setupProjectDirectory } from "../../utils/project-directory";
@@ -41,8 +44,9 @@ import {
 } from "../../validation";
 import { createProject } from "./create-project";
 
-interface CreateHandlerOptions {
+export interface CreateHandlerOptions {
   silent?: boolean;
+  generatedCheckRunner?: typeof runGeneratedChecks;
 }
 
 type BuilderPromptEnvironment = {
@@ -64,9 +68,6 @@ type BuilderPromptGateInput = Pick<CreateInput, "yes" | "part" | "template"> &
     dryRun?: boolean;
   };
 
-// Keys that don't express a stack choice; booleans with zod defaults
-// (yes/yolo/manualDb/...) are always present in parsed input, so their truthy
-// forms are handled explicitly in the gate instead.
 const NON_STACK_CREATE_OPTION_KEYS = new Set([
   "template",
   "fromHistory",
@@ -256,11 +257,6 @@ function shouldPromptForVersionChannel(
   return canPromptInteractively();
 }
 
-// Kotlin (javaLanguage) is only wired for a subset of the Java option surface.
-// Interactive prompts filter the incompatible options up front, but flag-driven
-// and config-file runs bypass those prompts — and the create path does not run
-// analyzeStackCompatibility — so re-check here and fall back to Java loudly
-// instead of letting the template generator do it silently.
 export function normalizeKotlinJavaSelection(config: ProjectConfig) {
   const hasJavaGraphBackend = config.stackParts?.some(
     (part) =>
@@ -295,7 +291,7 @@ export async function createProjectHandler(
   input: CreateInput & { projectName?: string; fromHistory?: number; config?: string },
   options: CreateHandlerOptions = {},
 ) {
-  const { silent = false } = options;
+  const { silent = false, generatedCheckRunner = runGeneratedChecks } = options;
 
   return runWithContextAsync({ silent }, async () => {
     const startTime = Date.now();
@@ -308,8 +304,6 @@ export async function createProjectHandler(
       }
       if (!isSilent()) intro(pc.magenta("Creating a new Better Fullstack project"));
 
-      // One-time notice about anonymous telemetry (self-gated: interactive only,
-      // skipped once a preference is persisted or an env override is set).
       await maybeShowTelemetryNotice();
 
       if (!isSilent() && input.yolo) {
@@ -343,8 +337,6 @@ export async function createProjectHandler(
         );
       }
 
-      // A config base (from history or a file) supplies a complete stack, so we
-      // skip the interactive project-name prompt just like --yes does.
       const useDefaultsForName = Boolean(input.yes) || hasConfigBase;
       let currentPathInput: string;
       if (useDefaultsForName && input.projectName) {
@@ -566,8 +558,6 @@ export async function createProjectHandler(
         currentPathInput = finalPathInput;
       }
 
-      // Overlay any explicitly-passed flags on top of the config base so the
-      // user can override individual options from a replayed/loaded config.
       const definedInput = Object.fromEntries(
         Object.entries(input).filter(([, value]) => value !== undefined),
       ) as typeof input;
@@ -580,9 +570,6 @@ export async function createProjectHandler(
         ...explicitInput,
       };
 
-      // Only flags the user explicitly passed count as "provided" for strict
-      // compatibility checks; config-base values are treated as defaults (the
-      // same leniency --yes uses for a trusted config).
       const providedFlags = getProvidedFlags(explicitInput);
 
       let cliInput = originalInput;
@@ -611,8 +598,6 @@ export async function createProjectHandler(
         }
       }
 
-      // Loaded here instead of at module top: the template-generator bundle
-      // embeds all templates (~2.5 MB of source) and would slow CLI startup.
       const { validatePreflightConfig } = await import("@better-fullstack/template-generator");
 
       let config: ProjectConfig;
@@ -629,10 +614,6 @@ export async function createProjectHandler(
           versionChannel,
         };
 
-        // Auto-adjust incompatible combos with the same engine the web builder
-        // and MCP flows use, explaining every change instead of silently
-        // normalizing or scaffolding a broken project. Programmatic (silent)
-        // callers keep strict validation errors — nobody would see the summary.
         if (!cliInput.yolo && !isSilent()) {
           const { changes, adjustments } = resolveCompatibilityAdjustments(config);
           if (adjustments.length > 0) {
@@ -671,9 +652,6 @@ export async function createProjectHandler(
         );
         config = { ...gatheredConfig, versionChannel };
 
-        // Partial flags lack the prompt/default context needed for reliable
-        // compatibility decisions (for example, shadcn-ui needs the frontend
-        // and CSS selections). Normalize only after gathering the full config.
         if (!cliInput.yolo && !isSilent()) {
           const { changes, adjustments } = resolveCompatibilityAdjustments(config);
           if (adjustments.length > 0) {
@@ -772,7 +750,11 @@ export async function createProjectHandler(
       const setupFailures = createResult?.setupFailures ?? [];
 
       if (cliInput.verify ?? input.verify) {
-        await runGeneratedChecks(config);
+        try {
+          assertGeneratedVerificationComplete(await generatedCheckRunner(config));
+        } catch (error) {
+          throw new CLIError(error instanceof Error ? error.message : String(error));
+        }
       }
 
       const reproducibleCommand = generateReproducibleCommand(config);
@@ -853,7 +835,6 @@ export async function createProjectHandler(
         }
         return;
       }
-      // Only the error class name is sent — messages can contain paths.
       await trackEvent(
         "project_created",
         {},

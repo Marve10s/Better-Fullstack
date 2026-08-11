@@ -4,6 +4,7 @@ import pc from "picocolors";
 
 import {
   applyScaffoldUpgrade,
+  getUpgradePlanDigest,
   planScaffoldUpgrade,
   recordUpgradeBaseline,
   type UpgradePlan,
@@ -11,6 +12,7 @@ import {
 import { trackCommand } from "../utils/analytics";
 import { readBtsConfig } from "../utils/bts-config";
 import { handleError } from "../utils/errors";
+import { getLatestCLIVersion } from "../utils/get-latest-cli-version";
 import { renderTitle } from "../utils/render-title";
 
 export type UpdateCommandInput = {
@@ -20,7 +22,20 @@ export type UpdateCommandInput = {
   check?: boolean;
   json?: boolean;
   recordBaseline?: boolean;
+  acknowledgeUnprovenManifestV1?: boolean;
+  reviewToken?: string;
 };
+
+export function getUpdateApplyAuthorizationError(input: UpdateCommandInput): string | null {
+  if (!input.apply) return null;
+  if (!input.reviewToken) {
+    return "`--review-token` is required with `--apply`. Review the categorized paths and plan, then pass its exact token.";
+  }
+  if (input.acknowledgeUnprovenManifestV1 !== true) {
+    return "`--acknowledge-unproven-manifest-v1` is required with `--apply`: manifest v1 lineage is unproven, apply is destructive, and no backup/recovery exists.";
+  }
+  return null;
+}
 
 function formatCount(count: number, noun: string): string {
   return `${count} ${noun}${count === 1 ? "" : "s"}`;
@@ -29,8 +44,6 @@ function formatCount(count: number, noun: string): string {
 function failUpdate(projectDir: string, error: string, json: boolean): never {
   if (json) {
     console.log(JSON.stringify({ projectDir, ok: false, error }, null, 2));
-    // Exit synchronously: trpc-cli calls process.exit(0) after the handler
-    // resolves, which would otherwise mask the failure for CI gates.
     process.exit(1);
   }
   handleError(error);
@@ -75,15 +88,27 @@ function renderPlan(plan: UpgradePlan): void {
   log.info(
     pc.dim(
       plan.hasBaseline
-        ? `Baseline: bts.lock.json${
+        ? `Manifest v1 baseline (release lineage unproven): bts.lock.json${
             plan.baselineCreatedAt ? ` (recorded ${plan.baselineCreatedAt})` : ""
           }`
-        : "Baseline: none — run `update --record-baseline` to enable safe auto-patching",
+        : "Baseline: none — `update --record-baseline` manually adopts current bytes but does not prove generator lineage",
     ),
   );
+  if (plan.manifestState === "invalid") {
+    log.warn(
+      pc.yellow(
+        `bts.lock.json is malformed and was ignored for this plan: ${plan.manifestError ?? "validation failed"}. ` +
+          "Apply is blocked until the manifest is fixed or re-recorded with `update --record-baseline`.",
+      ),
+    );
+  }
   log.message("");
+  if (plan.hasBaseline && plan.manifestVersion === "1") {
+    log.info(pc.dim(`Review token: ${getUpgradePlanDigest(plan)}`));
+    log.message("");
+  }
 
-  reportGroup("Template drift (safe to patch)", "~", plan.drift);
+  reportGroup("Template drift (requires destructive acknowledgement)", "~", plan.drift);
   reportMerged(plan);
   reportGroup("New files from templates", "+", plan.newFiles);
   reportGroup("Locally edited (kept as-is)", "*", plan.userEdited);
@@ -101,11 +126,16 @@ function renderPlan(plan: UpgradePlan): void {
   );
 }
 
-function toJsonPlan(plan: UpgradePlan) {
+export function toJsonPlan(plan: UpgradePlan) {
   return {
     projectDir: plan.projectDir,
     hasBaseline: plan.hasBaseline,
+    manifestState: plan.manifestState,
+    manifestError: plan.manifestError,
     baselineCreatedAt: plan.baselineCreatedAt,
+    reviewToken:
+      plan.hasBaseline && plan.manifestVersion === "1" ? getUpgradePlanDigest(plan) : undefined,
+    guarantee: "unproven-manifest-v1-plan-only",
     summary: {
       unchanged: plan.unchanged.length,
       drift: plan.drift.length,
@@ -126,7 +156,45 @@ function toJsonPlan(plan: UpgradePlan) {
     manual: plan.manual.map(({ path: filePath, reason }) => ({ path: filePath, reason })),
     removed: plan.removed,
     actionable: plan.actionable,
+    actionableHashes: plan.actionableHashes,
+    actionablePreimages: plan.actionablePreimages,
+    files: plan.files,
   };
+}
+
+export function quotePosixShellArgument(value: string): string {
+  return `'${value.replaceAll("'", `'"'"'`)}'`;
+}
+
+export function quotePowerShellArgument(value: string): string {
+  return `'${value.replaceAll("'", "''")}'`;
+}
+
+export function getUpdateApplyCommandFlavor(
+  platform: NodeJS.Platform = process.platform,
+): "POSIX shell" | "PowerShell" {
+  return platform === "win32" ? "PowerShell" : "POSIX shell";
+}
+
+function packageExecPrefix(packageManager: string | undefined): string {
+  if (packageManager === "bun") return "bunx";
+  if (packageManager === "pnpm") return "pnpm dlx";
+  if (packageManager === "yarn") return "yarn dlx";
+  return "npx --yes";
+}
+
+export function getUpdateApplyCommand(
+  plan: UpgradePlan,
+  platform: NodeJS.Platform = process.platform,
+  packageManager?: string,
+): string | null {
+  if (!plan.hasBaseline || plan.manifestVersion !== "1") return null;
+  const quoteArgument = platform === "win32" ? quotePowerShellArgument : quotePosixShellArgument;
+  return (
+    `${packageExecPrefix(packageManager)} create-better-fullstack@${getLatestCLIVersion()} update ${quoteArgument(plan.projectDir)} --apply ` +
+    `--review-token ${getUpgradePlanDigest(plan)} ` +
+    "--acknowledge-unproven-manifest-v1"
+  );
 }
 
 export async function updateCommand(input: UpdateCommandInput): Promise<void> {
@@ -136,6 +204,8 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
   const check = input.check ?? false;
   const dryRun = input.dryRun ?? false;
   const recordBaseline = input.recordBaseline ?? false;
+  const acknowledgeUnprovenManifestV1 = input.acknowledgeUnprovenManifestV1 ?? false;
+  const reviewToken = input.reviewToken;
 
   if (dryRun && apply) {
     return failUpdate(projectDir, "`--dry-run` cannot be combined with `--apply`.", json);
@@ -152,14 +222,14 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
   if (apply && recordBaseline) {
     return failUpdate(projectDir, "`--apply` cannot be combined with `--record-baseline`.", json);
   }
+  const authorizationError = getUpdateApplyAuthorizationError(input);
+  if (authorizationError) return failUpdate(projectDir, authorizationError, json);
 
   const btsConfig = await readBtsConfig(projectDir);
   if (!btsConfig) {
     const message = `No Better Fullstack project found in ${projectDir}. Make sure bts.jsonc exists.`;
     if (json) {
       console.log(JSON.stringify({ projectDir, ok: false, error: message }, null, 2));
-      // Exit synchronously: trpc-cli calls process.exit(0) after the handler
-      // resolves, which would otherwise mask the failure for CI gates.
       process.exit(1);
     }
     handleError(message);
@@ -204,7 +274,9 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
       ),
     );
     outro(
-      pc.magenta("Baseline recorded. Future `bfs update` runs can now auto-patch template drift."),
+      pc.magenta(
+        "Manual-adoption baseline recorded. It does not prove generator lineage; destructive apply still requires exact review and has no built-in recovery.",
+      ),
     );
     return;
   }
@@ -212,7 +284,10 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
   let plan: UpgradePlan;
   let applied: { patched: string[]; added: string[]; merged: string[] } | undefined;
   if (apply) {
-    const result = await applyScaffoldUpgrade(projectDir);
+    const result = await applyScaffoldUpgrade(projectDir, {
+      expectedPlanDigest: reviewToken,
+      acknowledgeUnprovenManifestV1,
+    });
     if (!result.success) return failUpdate(projectDir, result.error, json);
     plan = result;
     applied = result.applied;
@@ -297,9 +372,19 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
   if (plan.actionable.length === 0) {
     log.success(pc.green("Up to date with the current templates."));
   } else {
+    const applyCommand = getUpdateApplyCommand(
+      plan,
+      process.platform,
+      (await readBtsConfig(projectDir))?.packageManager,
+    );
+    const commandFlavor = getUpdateApplyCommandFlavor();
     log.info(
       pc.cyan(
-        `Run \`bfs update --apply\` to patch ${formatCount(plan.drift.length, "drift file")}, ` +
+        `${
+          applyCommand
+            ? `After creating a recovery point, run this ${commandFlavor} command: \`${applyCommand}\``
+            : "Record and review a manifest-v1 baseline before applying"
+        } to patch ${formatCount(plan.drift.length, "drift file")}, ` +
           `apply ${formatCount(plan.merged.length, "structured merge")}, and add ${formatCount(
             plan.newFiles.length,
             "new file",
@@ -309,7 +394,6 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
   }
   outro(pc.magenta(apply ? "Update complete." : "Dry run — no files were written."));
 
-  // CI gate: exit non-zero when there is actionable drift to apply.
   if (check && plan.actionable.length > 0) {
     process.exit(1);
   }

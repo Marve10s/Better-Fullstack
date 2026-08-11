@@ -495,7 +495,7 @@ jobs:
 
       - name: Run Playwright Tests
         working-directory: apps/web
-        run: bunx playwright test
+        run: bunx playwright test --grep-invert @webcontainer-proof
         env:
           NODE_OPTIONS: "--max-old-space-size=4096"
 

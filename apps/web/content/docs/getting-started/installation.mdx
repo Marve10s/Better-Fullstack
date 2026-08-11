@@ -98,7 +98,9 @@ Use `--dry-run` to preview generated files without writing a project:
 npm create better-fullstack@latest my-app -- --dry-run
 ```
 
-Use `--verify` when you want the CLI to run generated checks after scaffolding. It does not start dev servers.
+Use `--verify` when you want the CLI to run every generated target check after scaffolding. It does
+not start dev servers, but the invoked toolchains may fetch dependencies and write lockfiles,
+caches, compiler output, or build artifacts.
 
 ## Next
 
