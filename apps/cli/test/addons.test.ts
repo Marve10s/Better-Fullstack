@@ -1,10 +1,10 @@
+import { dependencyVersionMap } from "@better-fullstack/template-generator";
+import { parseStackPartSpecs } from "@better-fullstack/types";
 import { describe, it, expect } from "bun:test";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { parseStackPartSpecs } from "@better-fullstack/types";
 
 import { createVirtual, type Addons, type Frontend } from "../src";
-
 import { setupAddons } from "../src/helpers/addons/addons-setup";
 import { getAddonGroup, getCompatibleAddonsForPrompt } from "../src/prompts/addons";
 import { APP_PLATFORM_ADDON_VALUES } from "../src/types";
@@ -108,7 +108,7 @@ describe("Addon Configurations", () => {
       const rootPackage = readFileSync(join(result.projectDir!, "package.json"), "utf-8");
       const config = readFileSync(join(result.projectDir!, "knip.jsonc"), "utf-8");
 
-      expect(rootPackage).toContain('"knip": "^6.29.0"');
+      expect(rootPackage).toContain(`"knip": "${dependencyVersionMap.knip}"`);
       expect(rootPackage).toContain('"knip": "knip"');
       expect(rootPackage).toContain('"knip:production": "knip --production"');
       expect(config).toContain("https://unpkg.com/knip@6/schema-jsonc.json");
@@ -135,7 +135,7 @@ describe("Addon Configurations", () => {
 
       expectSuccess(result);
       const rootPackage = readFileSync(join(result.projectDir!, "package.json"), "utf-8");
-      expect(rootPackage).toContain('"knip": "^6.29.0"');
+      expect(rootPackage).toContain(`"knip": "${dependencyVersionMap.knip}"`);
       expect(rootPackage).toContain('"knip": "knip"');
       expect(rootPackage).toContain('"knip:production": "knip --production"');
     });
@@ -301,7 +301,9 @@ describe("Addon Configurations", () => {
 
       const packageJson = readFileSync(join(result.projectDir!, "package.json"), "utf-8");
       expect(packageJson).toContain('"biome check --write ."');
-      expect(packageJson).not.toContain('"**/*.{js,mjs,cjs,jsx,ts,mts,cts,tsx,vue,astro,svelte}": ""');
+      expect(packageJson).not.toContain(
+        '"**/*.{js,mjs,cjs,jsx,ts,mts,cts,tsx,vue,astro,svelte}": ""',
+      );
     });
 
     it("refreshes existing Lefthook config when a linter is added later", async () => {
@@ -376,9 +378,7 @@ describe("Addon Configurations", () => {
 
       const husky = readFileSync(huskyPath, "utf-8");
       expect(husky.match(/gitleaks git --pre-commit/g)).toHaveLength(2);
-      expect(husky).toContain(
-        "gitleaks git --pre-commit --redact --staged --verbose\nlint-staged",
-      );
+      expect(husky).toContain("gitleaks git --pre-commit --redact --staged --verbose\nlint-staged");
     });
 
     it("merges into a customized Lefthook commands configuration", async () => {
@@ -470,14 +470,12 @@ describe("Addon Configurations", () => {
         {
           projectName: "gitleaks-anchored-jobs",
           alias: "shared-jobs",
-          yaml:
-            "shared-jobs: &shared-jobs\n  - name: existing\n    run: bun run existing\npre-commit:\n  jobs: *shared-jobs\npre-push:\n  jobs: *shared-jobs\n",
+          yaml: "shared-jobs: &shared-jobs\n  - name: existing\n    run: bun run existing\npre-commit:\n  jobs: *shared-jobs\npre-push:\n  jobs: *shared-jobs\n",
         },
         {
           projectName: "gitleaks-anchored-commands",
           alias: "shared-commands",
-          yaml:
-            "shared-commands: &shared-commands\n  existing:\n    run: bun run existing\npre-commit:\n  commands: *shared-commands\npre-push:\n  commands: *shared-commands\n",
+          yaml: "shared-commands: &shared-commands\n  existing:\n    run: bun run existing\npre-commit:\n  commands: *shared-commands\npre-push:\n  commands: *shared-commands\n",
         },
       ]) {
         const result = await runTRPCTest({
@@ -514,9 +512,9 @@ describe("Addon Configurations", () => {
         expect(lefthook).not.toContain(`pre-commit:\n  jobs: *${fixture.alias}`);
         expect(lefthook).not.toContain(`pre-commit:\n  commands: *${fixture.alias}`);
         expect(lefthook).toContain("run: bun run existing");
-        expect(lefthook.match(/gitleaks git --pre-commit --redact --staged --verbose/g)).toHaveLength(
-          1,
-        );
+        expect(
+          lefthook.match(/gitleaks git --pre-commit --redact --staged --verbose/g),
+        ).toHaveLength(1);
         expect(lefthook.match(/(?:name: biome|biome:)/g)).toHaveLength(1);
       }
     });
