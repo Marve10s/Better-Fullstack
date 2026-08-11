@@ -52,7 +52,6 @@ const uk_themeswitchtodark3 = /** @type {(inputs: Themeswitchtodark3Inputs) => L
 */
 const themeswitchtodark3 = /** @type {((inputs?: Themeswitchtodark3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Themeswitchtodark3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_themeswitchtodark3(inputs)
 	if (locale === "es") return es_themeswitchtodark3(inputs)
 	if (locale === "zh") return zh_themeswitchtodark3(inputs)
 	if (locale === "ja") return ja_themeswitchtodark3(inputs)
@@ -60,6 +59,7 @@ const themeswitchtodark3 = /** @type {((inputs?: Themeswitchtodark3Inputs, optio
 	if (locale === "zh-Hant") return zh_hant1_themeswitchtodark3(inputs)
 	if (locale === "de") return de_themeswitchtodark3(inputs)
 	if (locale === "fr") return fr_themeswitchtodark3(inputs)
-	return uk_themeswitchtodark3(inputs)
+	if (locale === "uk") return uk_themeswitchtodark3(inputs)
+	return en_themeswitchtodark3(inputs)
 });
 export { themeswitchtodark3 as "themeSwitchToDark" }

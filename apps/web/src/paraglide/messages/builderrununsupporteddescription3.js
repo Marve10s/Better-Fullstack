@@ -52,7 +52,6 @@ const uk_builderrununsupporteddescription3 = /** @type {(inputs: Builderrununsup
 */
 const builderrununsupporteddescription3 = /** @type {((inputs?: Builderrununsupporteddescription3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderrununsupporteddescription3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderrununsupporteddescription3(inputs)
 	if (locale === "es") return es_builderrununsupporteddescription3(inputs)
 	if (locale === "zh") return zh_builderrununsupporteddescription3(inputs)
 	if (locale === "ja") return ja_builderrununsupporteddescription3(inputs)
@@ -60,6 +59,7 @@ const builderrununsupporteddescription3 = /** @type {((inputs?: Builderrununsupp
 	if (locale === "zh-Hant") return zh_hant1_builderrununsupporteddescription3(inputs)
 	if (locale === "de") return de_builderrununsupporteddescription3(inputs)
 	if (locale === "fr") return fr_builderrununsupporteddescription3(inputs)
-	return uk_builderrununsupporteddescription3(inputs)
+	if (locale === "uk") return uk_builderrununsupporteddescription3(inputs)
+	return en_builderrununsupporteddescription3(inputs)
 });
 export { builderrununsupporteddescription3 as "builderRunUnsupportedDescription" }

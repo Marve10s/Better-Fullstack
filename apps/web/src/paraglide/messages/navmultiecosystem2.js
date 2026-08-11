@@ -52,7 +52,6 @@ const uk_navmultiecosystem2 = /** @type {(inputs: Navmultiecosystem2Inputs) => L
 */
 const navmultiecosystem2 = /** @type {((inputs?: Navmultiecosystem2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navmultiecosystem2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_navmultiecosystem2(inputs)
 	if (locale === "es") return es_navmultiecosystem2(inputs)
 	if (locale === "zh") return zh_navmultiecosystem2(inputs)
 	if (locale === "ja") return ja_navmultiecosystem2(inputs)
@@ -60,6 +59,7 @@ const navmultiecosystem2 = /** @type {((inputs?: Navmultiecosystem2Inputs, optio
 	if (locale === "zh-Hant") return zh_hant1_navmultiecosystem2(inputs)
 	if (locale === "de") return de_navmultiecosystem2(inputs)
 	if (locale === "fr") return fr_navmultiecosystem2(inputs)
-	return uk_navmultiecosystem2(inputs)
+	if (locale === "uk") return uk_navmultiecosystem2(inputs)
+	return en_navmultiecosystem2(inputs)
 });
 export { navmultiecosystem2 as "navMultiEcosystem" }

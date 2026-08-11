@@ -52,7 +52,6 @@ const uk_savedfullconfig2 = /** @type {(inputs: Savedfullconfig2Inputs) => Local
 */
 const savedfullconfig2 = /** @type {((inputs?: Savedfullconfig2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedfullconfig2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_savedfullconfig2(inputs)
 	if (locale === "es") return es_savedfullconfig2(inputs)
 	if (locale === "zh") return zh_savedfullconfig2(inputs)
 	if (locale === "ja") return ja_savedfullconfig2(inputs)
@@ -60,6 +59,7 @@ const savedfullconfig2 = /** @type {((inputs?: Savedfullconfig2Inputs, options?:
 	if (locale === "zh-Hant") return zh_hant1_savedfullconfig2(inputs)
 	if (locale === "de") return de_savedfullconfig2(inputs)
 	if (locale === "fr") return fr_savedfullconfig2(inputs)
-	return uk_savedfullconfig2(inputs)
+	if (locale === "uk") return uk_savedfullconfig2(inputs)
+	return en_savedfullconfig2(inputs)
 });
 export { savedfullconfig2 as "savedFullConfig" }

@@ -52,7 +52,6 @@ const uk_presettrackjavaapiname4 = /** @type {(inputs: Presettrackjavaapiname4In
 */
 const presettrackjavaapiname4 = /** @type {((inputs?: Presettrackjavaapiname4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackjavaapiname4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_presettrackjavaapiname4(inputs)
 	if (locale === "es") return es_presettrackjavaapiname4(inputs)
 	if (locale === "zh") return zh_presettrackjavaapiname4(inputs)
 	if (locale === "ja") return ja_presettrackjavaapiname4(inputs)
@@ -60,6 +59,7 @@ const presettrackjavaapiname4 = /** @type {((inputs?: Presettrackjavaapiname4Inp
 	if (locale === "zh-Hant") return zh_hant1_presettrackjavaapiname4(inputs)
 	if (locale === "de") return de_presettrackjavaapiname4(inputs)
 	if (locale === "fr") return fr_presettrackjavaapiname4(inputs)
-	return uk_presettrackjavaapiname4(inputs)
+	if (locale === "uk") return uk_presettrackjavaapiname4(inputs)
+	return en_presettrackjavaapiname4(inputs)
 });
 export { presettrackjavaapiname4 as "presetTrackJavaApiName" }

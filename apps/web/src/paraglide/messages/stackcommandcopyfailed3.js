@@ -52,7 +52,6 @@ const uk_stackcommandcopyfailed3 = /** @type {(inputs: Stackcommandcopyfailed3In
 */
 const stackcommandcopyfailed3 = /** @type {((inputs?: Stackcommandcopyfailed3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Stackcommandcopyfailed3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_stackcommandcopyfailed3(inputs)
 	if (locale === "es") return es_stackcommandcopyfailed3(inputs)
 	if (locale === "zh") return zh_stackcommandcopyfailed3(inputs)
 	if (locale === "ja") return ja_stackcommandcopyfailed3(inputs)
@@ -60,6 +59,7 @@ const stackcommandcopyfailed3 = /** @type {((inputs?: Stackcommandcopyfailed3Inp
 	if (locale === "zh-Hant") return zh_hant1_stackcommandcopyfailed3(inputs)
 	if (locale === "de") return de_stackcommandcopyfailed3(inputs)
 	if (locale === "fr") return fr_stackcommandcopyfailed3(inputs)
-	return uk_stackcommandcopyfailed3(inputs)
+	if (locale === "uk") return uk_stackcommandcopyfailed3(inputs)
+	return en_stackcommandcopyfailed3(inputs)
 });
 export { stackcommandcopyfailed3 as "stackCommandCopyFailed" }

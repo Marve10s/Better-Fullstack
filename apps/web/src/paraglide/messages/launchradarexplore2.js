@@ -52,7 +52,6 @@ const uk_launchradarexplore2 = /** @type {(inputs: Launchradarexplore2Inputs) =>
 */
 const launchradarexplore2 = /** @type {((inputs?: Launchradarexplore2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Launchradarexplore2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_launchradarexplore2(inputs)
 	if (locale === "es") return es_launchradarexplore2(inputs)
 	if (locale === "zh") return zh_launchradarexplore2(inputs)
 	if (locale === "ja") return ja_launchradarexplore2(inputs)
@@ -60,6 +59,7 @@ const launchradarexplore2 = /** @type {((inputs?: Launchradarexplore2Inputs, opt
 	if (locale === "zh-Hant") return zh_hant1_launchradarexplore2(inputs)
 	if (locale === "de") return de_launchradarexplore2(inputs)
 	if (locale === "fr") return fr_launchradarexplore2(inputs)
-	return uk_launchradarexplore2(inputs)
+	if (locale === "uk") return uk_launchradarexplore2(inputs)
+	return en_launchradarexplore2(inputs)
 });
 export { launchradarexplore2 as "launchRadarExplore" }

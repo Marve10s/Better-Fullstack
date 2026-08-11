@@ -52,7 +52,6 @@ const uk_builderclearsearch2 = /** @type {(inputs: Builderclearsearch2Inputs) =>
 */
 const builderclearsearch2 = /** @type {((inputs?: Builderclearsearch2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderclearsearch2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderclearsearch2(inputs)
 	if (locale === "es") return es_builderclearsearch2(inputs)
 	if (locale === "zh") return zh_builderclearsearch2(inputs)
 	if (locale === "ja") return ja_builderclearsearch2(inputs)
@@ -60,6 +59,7 @@ const builderclearsearch2 = /** @type {((inputs?: Builderclearsearch2Inputs, opt
 	if (locale === "zh-Hant") return zh_hant1_builderclearsearch2(inputs)
 	if (locale === "de") return de_builderclearsearch2(inputs)
 	if (locale === "fr") return fr_builderclearsearch2(inputs)
-	return uk_builderclearsearch2(inputs)
+	if (locale === "uk") return uk_builderclearsearch2(inputs)
+	return en_builderclearsearch2(inputs)
 });
 export { builderclearsearch2 as "builderClearSearch" }

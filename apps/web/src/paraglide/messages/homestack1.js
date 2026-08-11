@@ -52,7 +52,6 @@ const uk_homestack1 = /** @type {(inputs: Homestack1Inputs) => LocalizedString} 
 */
 const homestack1 = /** @type {((inputs?: Homestack1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homestack1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_homestack1(inputs)
 	if (locale === "es") return es_homestack1(inputs)
 	if (locale === "zh") return zh_homestack1(inputs)
 	if (locale === "ja") return ja_homestack1(inputs)
@@ -60,6 +59,7 @@ const homestack1 = /** @type {((inputs?: Homestack1Inputs, options?: { locale?: 
 	if (locale === "zh-Hant") return zh_hant1_homestack1(inputs)
 	if (locale === "de") return de_homestack1(inputs)
 	if (locale === "fr") return fr_homestack1(inputs)
-	return uk_homestack1(inputs)
+	if (locale === "uk") return uk_homestack1(inputs)
+	return en_homestack1(inputs)
 });
 export { homestack1 as "homeStack" }

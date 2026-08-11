@@ -52,7 +52,6 @@ const uk_builderupdatepresetdescriptionnamed4 = /** @type {(inputs: Builderupdat
 */
 const builderupdatepresetdescriptionnamed4 = /** @type {((inputs: Builderupdatepresetdescriptionnamed4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderupdatepresetdescriptionnamed4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderupdatepresetdescriptionnamed4(inputs)
 	if (locale === "es") return es_builderupdatepresetdescriptionnamed4(inputs)
 	if (locale === "zh") return zh_builderupdatepresetdescriptionnamed4(inputs)
 	if (locale === "ja") return ja_builderupdatepresetdescriptionnamed4(inputs)
@@ -60,6 +59,7 @@ const builderupdatepresetdescriptionnamed4 = /** @type {((inputs: Builderupdatep
 	if (locale === "zh-Hant") return zh_hant1_builderupdatepresetdescriptionnamed4(inputs)
 	if (locale === "de") return de_builderupdatepresetdescriptionnamed4(inputs)
 	if (locale === "fr") return fr_builderupdatepresetdescriptionnamed4(inputs)
-	return uk_builderupdatepresetdescriptionnamed4(inputs)
+	if (locale === "uk") return uk_builderupdatepresetdescriptionnamed4(inputs)
+	return en_builderupdatepresetdescriptionnamed4(inputs)
 });
 export { builderupdatepresetdescriptionnamed4 as "builderUpdatePresetDescriptionNamed" }

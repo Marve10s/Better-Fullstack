@@ -52,7 +52,6 @@ const uk_blogreadingshort2 = /** @type {(inputs: Blogreadingshort2Inputs) => Loc
 */
 const blogreadingshort2 = /** @type {((inputs?: Blogreadingshort2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Blogreadingshort2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_blogreadingshort2(inputs)
 	if (locale === "es") return es_blogreadingshort2(inputs)
 	if (locale === "zh") return zh_blogreadingshort2(inputs)
 	if (locale === "ja") return ja_blogreadingshort2(inputs)
@@ -60,6 +59,7 @@ const blogreadingshort2 = /** @type {((inputs?: Blogreadingshort2Inputs, options
 	if (locale === "zh-Hant") return zh_hant1_blogreadingshort2(inputs)
 	if (locale === "de") return de_blogreadingshort2(inputs)
 	if (locale === "fr") return fr_blogreadingshort2(inputs)
-	return uk_blogreadingshort2(inputs)
+	if (locale === "uk") return uk_blogreadingshort2(inputs)
+	return en_blogreadingshort2(inputs)
 });
 export { blogreadingshort2 as "blogReadingShort" }

@@ -52,7 +52,6 @@ const uk_navbenchmark1 = /** @type {(inputs: Navbenchmark1Inputs) => LocalizedSt
 */
 const navbenchmark1 = /** @type {((inputs?: Navbenchmark1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navbenchmark1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_navbenchmark1(inputs)
 	if (locale === "es") return es_navbenchmark1(inputs)
 	if (locale === "zh") return zh_navbenchmark1(inputs)
 	if (locale === "ja") return ja_navbenchmark1(inputs)
@@ -60,6 +59,7 @@ const navbenchmark1 = /** @type {((inputs?: Navbenchmark1Inputs, options?: { loc
 	if (locale === "zh-Hant") return zh_hant1_navbenchmark1(inputs)
 	if (locale === "de") return de_navbenchmark1(inputs)
 	if (locale === "fr") return fr_navbenchmark1(inputs)
-	return uk_navbenchmark1(inputs)
+	if (locale === "uk") return uk_navbenchmark1(inputs)
+	return en_navbenchmark1(inputs)
 });
 export { navbenchmark1 as "navBenchmark" }

@@ -52,7 +52,6 @@ const uk_footerchangelog1 = /** @type {(inputs: Footerchangelog1Inputs) => Local
 */
 const footerchangelog1 = /** @type {((inputs?: Footerchangelog1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Footerchangelog1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_footerchangelog1(inputs)
 	if (locale === "es") return es_footerchangelog1(inputs)
 	if (locale === "zh") return zh_footerchangelog1(inputs)
 	if (locale === "ja") return ja_footerchangelog1(inputs)
@@ -60,6 +59,7 @@ const footerchangelog1 = /** @type {((inputs?: Footerchangelog1Inputs, options?:
 	if (locale === "zh-Hant") return zh_hant1_footerchangelog1(inputs)
 	if (locale === "de") return de_footerchangelog1(inputs)
 	if (locale === "fr") return fr_footerchangelog1(inputs)
-	return uk_footerchangelog1(inputs)
+	if (locale === "uk") return uk_footerchangelog1(inputs)
+	return en_footerchangelog1(inputs)
 });
 export { footerchangelog1 as "footerChangelog" }

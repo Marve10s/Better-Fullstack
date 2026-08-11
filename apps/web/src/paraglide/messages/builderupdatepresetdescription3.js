@@ -52,7 +52,6 @@ const uk_builderupdatepresetdescription3 = /** @type {(inputs: Builderupdatepres
 */
 const builderupdatepresetdescription3 = /** @type {((inputs?: Builderupdatepresetdescription3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderupdatepresetdescription3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderupdatepresetdescription3(inputs)
 	if (locale === "es") return es_builderupdatepresetdescription3(inputs)
 	if (locale === "zh") return zh_builderupdatepresetdescription3(inputs)
 	if (locale === "ja") return ja_builderupdatepresetdescription3(inputs)
@@ -60,6 +59,7 @@ const builderupdatepresetdescription3 = /** @type {((inputs?: Builderupdateprese
 	if (locale === "zh-Hant") return zh_hant1_builderupdatepresetdescription3(inputs)
 	if (locale === "de") return de_builderupdatepresetdescription3(inputs)
 	if (locale === "fr") return fr_builderupdatepresetdescription3(inputs)
-	return uk_builderupdatepresetdescription3(inputs)
+	if (locale === "uk") return uk_builderupdatepresetdescription3(inputs)
+	return en_builderupdatepresetdescription3(inputs)
 });
 export { builderupdatepresetdescription3 as "builderUpdatePresetDescription" }

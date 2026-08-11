@@ -52,7 +52,6 @@ const uk_changelogrelease20260612highlightinstall3 = /** @type {(inputs: Changel
 */
 const changelogrelease20260612highlightinstall3 = /** @type {((inputs?: Changelogrelease20260612highlightinstall3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Changelogrelease20260612highlightinstall3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_changelogrelease20260612highlightinstall3(inputs)
 	if (locale === "es") return es_changelogrelease20260612highlightinstall3(inputs)
 	if (locale === "zh") return zh_changelogrelease20260612highlightinstall3(inputs)
 	if (locale === "ja") return ja_changelogrelease20260612highlightinstall3(inputs)
@@ -60,6 +59,7 @@ const changelogrelease20260612highlightinstall3 = /** @type {((inputs?: Changelo
 	if (locale === "zh-Hant") return zh_hant1_changelogrelease20260612highlightinstall3(inputs)
 	if (locale === "de") return de_changelogrelease20260612highlightinstall3(inputs)
 	if (locale === "fr") return fr_changelogrelease20260612highlightinstall3(inputs)
-	return uk_changelogrelease20260612highlightinstall3(inputs)
+	if (locale === "uk") return uk_changelogrelease20260612highlightinstall3(inputs)
+	return en_changelogrelease20260612highlightinstall3(inputs)
 });
 export { changelogrelease20260612highlightinstall3 as "changelogRelease20260612HighlightInstall" }

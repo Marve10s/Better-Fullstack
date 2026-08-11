@@ -52,7 +52,6 @@ const uk_presettrackmobileappdescription4 = /** @type {(inputs: Presettrackmobil
 */
 const presettrackmobileappdescription4 = /** @type {((inputs?: Presettrackmobileappdescription4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackmobileappdescription4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_presettrackmobileappdescription4(inputs)
 	if (locale === "es") return es_presettrackmobileappdescription4(inputs)
 	if (locale === "zh") return zh_presettrackmobileappdescription4(inputs)
 	if (locale === "ja") return ja_presettrackmobileappdescription4(inputs)
@@ -60,6 +59,7 @@ const presettrackmobileappdescription4 = /** @type {((inputs?: Presettrackmobile
 	if (locale === "zh-Hant") return zh_hant1_presettrackmobileappdescription4(inputs)
 	if (locale === "de") return de_presettrackmobileappdescription4(inputs)
 	if (locale === "fr") return fr_presettrackmobileappdescription4(inputs)
-	return uk_presettrackmobileappdescription4(inputs)
+	if (locale === "uk") return uk_presettrackmobileappdescription4(inputs)
+	return en_presettrackmobileappdescription4(inputs)
 });
 export { presettrackmobileappdescription4 as "presetTrackMobileAppDescription" }

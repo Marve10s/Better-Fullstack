@@ -52,7 +52,6 @@ const uk_campaigntitle1 = /** @type {(inputs: Campaigntitle1Inputs) => Localized
 */
 const campaigntitle1 = /** @type {((inputs?: Campaigntitle1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Campaigntitle1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_campaigntitle1(inputs)
 	if (locale === "es") return es_campaigntitle1(inputs)
 	if (locale === "zh") return zh_campaigntitle1(inputs)
 	if (locale === "ja") return ja_campaigntitle1(inputs)
@@ -60,6 +59,7 @@ const campaigntitle1 = /** @type {((inputs?: Campaigntitle1Inputs, options?: { l
 	if (locale === "zh-Hant") return zh_hant1_campaigntitle1(inputs)
 	if (locale === "de") return de_campaigntitle1(inputs)
 	if (locale === "fr") return fr_campaigntitle1(inputs)
-	return uk_campaigntitle1(inputs)
+	if (locale === "uk") return uk_campaigntitle1(inputs)
+	return en_campaigntitle1(inputs)
 });
 export { campaigntitle1 as "campaignTitle" }

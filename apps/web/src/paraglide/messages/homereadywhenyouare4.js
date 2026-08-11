@@ -52,7 +52,6 @@ const uk_homereadywhenyouare4 = /** @type {(inputs: Homereadywhenyouare4Inputs) 
 */
 const homereadywhenyouare4 = /** @type {((inputs?: Homereadywhenyouare4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homereadywhenyouare4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_homereadywhenyouare4(inputs)
 	if (locale === "es") return es_homereadywhenyouare4(inputs)
 	if (locale === "zh") return zh_homereadywhenyouare4(inputs)
 	if (locale === "ja") return ja_homereadywhenyouare4(inputs)
@@ -60,6 +59,7 @@ const homereadywhenyouare4 = /** @type {((inputs?: Homereadywhenyouare4Inputs, o
 	if (locale === "zh-Hant") return zh_hant1_homereadywhenyouare4(inputs)
 	if (locale === "de") return de_homereadywhenyouare4(inputs)
 	if (locale === "fr") return fr_homereadywhenyouare4(inputs)
-	return uk_homereadywhenyouare4(inputs)
+	if (locale === "uk") return uk_homereadywhenyouare4(inputs)
+	return en_homereadywhenyouare4(inputs)
 });
 export { homereadywhenyouare4 as "homeReadyWhenYouAre" }

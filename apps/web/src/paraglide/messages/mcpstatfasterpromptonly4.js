@@ -52,7 +52,6 @@ const uk_mcpstatfasterpromptonly4 = /** @type {(inputs: Mcpstatfasterpromptonly4
 */
 const mcpstatfasterpromptonly4 = /** @type {((inputs?: Mcpstatfasterpromptonly4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpstatfasterpromptonly4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_mcpstatfasterpromptonly4(inputs)
 	if (locale === "es") return es_mcpstatfasterpromptonly4(inputs)
 	if (locale === "zh") return zh_mcpstatfasterpromptonly4(inputs)
 	if (locale === "ja") return ja_mcpstatfasterpromptonly4(inputs)
@@ -60,6 +59,7 @@ const mcpstatfasterpromptonly4 = /** @type {((inputs?: Mcpstatfasterpromptonly4I
 	if (locale === "zh-Hant") return zh_hant1_mcpstatfasterpromptonly4(inputs)
 	if (locale === "de") return de_mcpstatfasterpromptonly4(inputs)
 	if (locale === "fr") return fr_mcpstatfasterpromptonly4(inputs)
-	return uk_mcpstatfasterpromptonly4(inputs)
+	if (locale === "uk") return uk_mcpstatfasterpromptonly4(inputs)
+	return en_mcpstatfasterpromptonly4(inputs)
 });
 export { mcpstatfasterpromptonly4 as "mcpStatFasterPromptOnly" }

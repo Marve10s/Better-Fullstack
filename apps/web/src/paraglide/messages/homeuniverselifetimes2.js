@@ -52,7 +52,6 @@ const uk_homeuniverselifetimes2 = /** @type {(inputs: Homeuniverselifetimes2Inpu
 */
 const homeuniverselifetimes2 = /** @type {((inputs?: Homeuniverselifetimes2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homeuniverselifetimes2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_homeuniverselifetimes2(inputs)
 	if (locale === "es") return es_homeuniverselifetimes2(inputs)
 	if (locale === "zh") return zh_homeuniverselifetimes2(inputs)
 	if (locale === "ja") return ja_homeuniverselifetimes2(inputs)
@@ -60,6 +59,7 @@ const homeuniverselifetimes2 = /** @type {((inputs?: Homeuniverselifetimes2Input
 	if (locale === "zh-Hant") return zh_hant1_homeuniverselifetimes2(inputs)
 	if (locale === "de") return de_homeuniverselifetimes2(inputs)
 	if (locale === "fr") return fr_homeuniverselifetimes2(inputs)
-	return uk_homeuniverselifetimes2(inputs)
+	if (locale === "uk") return uk_homeuniverselifetimes2(inputs)
+	return en_homeuniverselifetimes2(inputs)
 });
 export { homeuniverselifetimes2 as "homeUniverseLifetimes" }

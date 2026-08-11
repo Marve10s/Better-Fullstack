@@ -52,7 +52,6 @@ const uk_changelogopen1 = /** @type {(inputs: Changelogopen1Inputs) => Localized
 */
 const changelogopen1 = /** @type {((inputs?: Changelogopen1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Changelogopen1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_changelogopen1(inputs)
 	if (locale === "es") return es_changelogopen1(inputs)
 	if (locale === "zh") return zh_changelogopen1(inputs)
 	if (locale === "ja") return ja_changelogopen1(inputs)
@@ -60,6 +59,7 @@ const changelogopen1 = /** @type {((inputs?: Changelogopen1Inputs, options?: { l
 	if (locale === "zh-Hant") return zh_hant1_changelogopen1(inputs)
 	if (locale === "de") return de_changelogopen1(inputs)
 	if (locale === "fr") return fr_changelogopen1(inputs)
-	return uk_changelogopen1(inputs)
+	if (locale === "uk") return uk_changelogopen1(inputs)
+	return en_changelogopen1(inputs)
 });
 export { changelogopen1 as "changelogOpen" }

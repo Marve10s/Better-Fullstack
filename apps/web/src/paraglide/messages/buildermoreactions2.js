@@ -52,7 +52,6 @@ const uk_buildermoreactions2 = /** @type {(inputs: Buildermoreactions2Inputs) =>
 */
 const buildermoreactions2 = /** @type {((inputs?: Buildermoreactions2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildermoreactions2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_buildermoreactions2(inputs)
 	if (locale === "es") return es_buildermoreactions2(inputs)
 	if (locale === "zh") return zh_buildermoreactions2(inputs)
 	if (locale === "ja") return ja_buildermoreactions2(inputs)
@@ -60,6 +59,7 @@ const buildermoreactions2 = /** @type {((inputs?: Buildermoreactions2Inputs, opt
 	if (locale === "zh-Hant") return zh_hant1_buildermoreactions2(inputs)
 	if (locale === "de") return de_buildermoreactions2(inputs)
 	if (locale === "fr") return fr_buildermoreactions2(inputs)
-	return uk_buildermoreactions2(inputs)
+	if (locale === "uk") return uk_buildermoreactions2(inputs)
+	return en_buildermoreactions2(inputs)
 });
 export { buildermoreactions2 as "builderMoreActions" }

@@ -52,7 +52,6 @@ const uk_llmagentdescription2 = /** @type {(inputs: Llmagentdescription2Inputs) 
 */
 const llmagentdescription2 = /** @type {((inputs?: Llmagentdescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmagentdescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_llmagentdescription2(inputs)
 	if (locale === "es") return es_llmagentdescription2(inputs)
 	if (locale === "zh") return zh_llmagentdescription2(inputs)
 	if (locale === "ja") return ja_llmagentdescription2(inputs)
@@ -60,6 +59,7 @@ const llmagentdescription2 = /** @type {((inputs?: Llmagentdescription2Inputs, o
 	if (locale === "zh-Hant") return zh_hant1_llmagentdescription2(inputs)
 	if (locale === "de") return de_llmagentdescription2(inputs)
 	if (locale === "fr") return fr_llmagentdescription2(inputs)
-	return uk_llmagentdescription2(inputs)
+	if (locale === "uk") return uk_llmagentdescription2(inputs)
+	return en_llmagentdescription2(inputs)
 });
 export { llmagentdescription2 as "llmAgentDescription" }

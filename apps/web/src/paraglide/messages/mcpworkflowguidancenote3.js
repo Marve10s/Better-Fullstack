@@ -52,7 +52,6 @@ const uk_mcpworkflowguidancenote3 = /** @type {(inputs: Mcpworkflowguidancenote3
 */
 const mcpworkflowguidancenote3 = /** @type {((inputs?: Mcpworkflowguidancenote3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpworkflowguidancenote3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_mcpworkflowguidancenote3(inputs)
 	if (locale === "es") return es_mcpworkflowguidancenote3(inputs)
 	if (locale === "zh") return zh_mcpworkflowguidancenote3(inputs)
 	if (locale === "ja") return ja_mcpworkflowguidancenote3(inputs)
@@ -60,6 +59,7 @@ const mcpworkflowguidancenote3 = /** @type {((inputs?: Mcpworkflowguidancenote3I
 	if (locale === "zh-Hant") return zh_hant1_mcpworkflowguidancenote3(inputs)
 	if (locale === "de") return de_mcpworkflowguidancenote3(inputs)
 	if (locale === "fr") return fr_mcpworkflowguidancenote3(inputs)
-	return uk_mcpworkflowguidancenote3(inputs)
+	if (locale === "uk") return uk_mcpworkflowguidancenote3(inputs)
+	return en_mcpworkflowguidancenote3(inputs)
 });
 export { mcpworkflowguidancenote3 as "mcpWorkflowGuidanceNote" }

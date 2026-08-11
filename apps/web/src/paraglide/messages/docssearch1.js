@@ -52,7 +52,6 @@ const uk_docssearch1 = /** @type {(inputs: Docssearch1Inputs) => LocalizedString
 */
 const docssearch1 = /** @type {((inputs?: Docssearch1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssearch1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_docssearch1(inputs)
 	if (locale === "es") return es_docssearch1(inputs)
 	if (locale === "zh") return zh_docssearch1(inputs)
 	if (locale === "ja") return ja_docssearch1(inputs)
@@ -60,6 +59,7 @@ const docssearch1 = /** @type {((inputs?: Docssearch1Inputs, options?: { locale?
 	if (locale === "zh-Hant") return zh_hant1_docssearch1(inputs)
 	if (locale === "de") return de_docssearch1(inputs)
 	if (locale === "fr") return fr_docssearch1(inputs)
-	return uk_docssearch1(inputs)
+	if (locale === "uk") return uk_docssearch1(inputs)
+	return en_docssearch1(inputs)
 });
 export { docssearch1 as "docsSearch" }

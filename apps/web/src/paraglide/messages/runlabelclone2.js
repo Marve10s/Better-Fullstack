@@ -52,7 +52,6 @@ const uk_runlabelclone2 = /** @type {(inputs: Runlabelclone2Inputs) => Localized
 */
 const runlabelclone2 = /** @type {((inputs?: Runlabelclone2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runlabelclone2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_runlabelclone2(inputs)
 	if (locale === "es") return es_runlabelclone2(inputs)
 	if (locale === "zh") return zh_runlabelclone2(inputs)
 	if (locale === "ja") return ja_runlabelclone2(inputs)
@@ -60,6 +59,7 @@ const runlabelclone2 = /** @type {((inputs?: Runlabelclone2Inputs, options?: { l
 	if (locale === "zh-Hant") return zh_hant1_runlabelclone2(inputs)
 	if (locale === "de") return de_runlabelclone2(inputs)
 	if (locale === "fr") return fr_runlabelclone2(inputs)
-	return uk_runlabelclone2(inputs)
+	if (locale === "uk") return uk_runlabelclone2(inputs)
+	return en_runlabelclone2(inputs)
 });
 export { runlabelclone2 as "runLabelClone" }

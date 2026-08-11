@@ -52,7 +52,6 @@ const uk_llmscatterunmetered2 = /** @type {(inputs: Llmscatterunmetered2Inputs) 
 */
 const llmscatterunmetered2 = /** @type {((inputs: Llmscatterunmetered2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmscatterunmetered2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_llmscatterunmetered2(inputs)
 	if (locale === "es") return es_llmscatterunmetered2(inputs)
 	if (locale === "zh") return zh_llmscatterunmetered2(inputs)
 	if (locale === "ja") return ja_llmscatterunmetered2(inputs)
@@ -60,6 +59,7 @@ const llmscatterunmetered2 = /** @type {((inputs: Llmscatterunmetered2Inputs, op
 	if (locale === "zh-Hant") return zh_hant1_llmscatterunmetered2(inputs)
 	if (locale === "de") return de_llmscatterunmetered2(inputs)
 	if (locale === "fr") return fr_llmscatterunmetered2(inputs)
-	return uk_llmscatterunmetered2(inputs)
+	if (locale === "uk") return uk_llmscatterunmetered2(inputs)
+	return en_llmscatterunmetered2(inputs)
 });
 export { llmscatterunmetered2 as "llmScatterUnmetered" }

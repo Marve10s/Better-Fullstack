@@ -52,7 +52,6 @@ const uk_presettrackinternaltoolintent4 = /** @type {(inputs: Presettrackinterna
 */
 const presettrackinternaltoolintent4 = /** @type {((inputs?: Presettrackinternaltoolintent4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackinternaltoolintent4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_presettrackinternaltoolintent4(inputs)
 	if (locale === "es") return es_presettrackinternaltoolintent4(inputs)
 	if (locale === "zh") return zh_presettrackinternaltoolintent4(inputs)
 	if (locale === "ja") return ja_presettrackinternaltoolintent4(inputs)
@@ -60,6 +59,7 @@ const presettrackinternaltoolintent4 = /** @type {((inputs?: Presettrackinternal
 	if (locale === "zh-Hant") return zh_hant1_presettrackinternaltoolintent4(inputs)
 	if (locale === "de") return de_presettrackinternaltoolintent4(inputs)
 	if (locale === "fr") return fr_presettrackinternaltoolintent4(inputs)
-	return uk_presettrackinternaltoolintent4(inputs)
+	if (locale === "uk") return uk_presettrackinternaltoolintent4(inputs)
+	return en_presettrackinternaltoolintent4(inputs)
 });
 export { presettrackinternaltoolintent4 as "presetTrackInternalToolIntent" }

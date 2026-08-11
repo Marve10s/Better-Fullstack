@@ -52,7 +52,6 @@ const uk_campaignseotitle2 = /** @type {(inputs: Campaignseotitle2Inputs) => Loc
 */
 const campaignseotitle2 = /** @type {((inputs?: Campaignseotitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Campaignseotitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_campaignseotitle2(inputs)
 	if (locale === "es") return es_campaignseotitle2(inputs)
 	if (locale === "zh") return zh_campaignseotitle2(inputs)
 	if (locale === "ja") return ja_campaignseotitle2(inputs)
@@ -60,6 +59,7 @@ const campaignseotitle2 = /** @type {((inputs?: Campaignseotitle2Inputs, options
 	if (locale === "zh-Hant") return zh_hant1_campaignseotitle2(inputs)
 	if (locale === "de") return de_campaignseotitle2(inputs)
 	if (locale === "fr") return fr_campaignseotitle2(inputs)
-	return uk_campaignseotitle2(inputs)
+	if (locale === "uk") return uk_campaignseotitle2(inputs)
+	return en_campaignseotitle2(inputs)
 });
 export { campaignseotitle2 as "campaignSeoTitle" }

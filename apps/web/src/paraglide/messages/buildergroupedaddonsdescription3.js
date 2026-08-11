@@ -52,7 +52,6 @@ const uk_buildergroupedaddonsdescription3 = /** @type {(inputs: Buildergroupedad
 */
 const buildergroupedaddonsdescription3 = /** @type {((inputs?: Buildergroupedaddonsdescription3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildergroupedaddonsdescription3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_buildergroupedaddonsdescription3(inputs)
 	if (locale === "es") return es_buildergroupedaddonsdescription3(inputs)
 	if (locale === "zh") return zh_buildergroupedaddonsdescription3(inputs)
 	if (locale === "ja") return ja_buildergroupedaddonsdescription3(inputs)
@@ -60,6 +59,7 @@ const buildergroupedaddonsdescription3 = /** @type {((inputs?: Buildergroupedadd
 	if (locale === "zh-Hant") return zh_hant1_buildergroupedaddonsdescription3(inputs)
 	if (locale === "de") return de_buildergroupedaddonsdescription3(inputs)
 	if (locale === "fr") return fr_buildergroupedaddonsdescription3(inputs)
-	return uk_buildergroupedaddonsdescription3(inputs)
+	if (locale === "uk") return uk_buildergroupedaddonsdescription3(inputs)
+	return en_buildergroupedaddonsdescription3(inputs)
 });
 export { buildergroupedaddonsdescription3 as "builderGroupedAddonsDescription" }

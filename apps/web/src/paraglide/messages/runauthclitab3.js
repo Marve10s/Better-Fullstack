@@ -52,7 +52,6 @@ const uk_runauthclitab3 = /** @type {(inputs: Runauthclitab3Inputs) => Localized
 */
 const runauthclitab3 = /** @type {((inputs?: Runauthclitab3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runauthclitab3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_runauthclitab3(inputs)
 	if (locale === "es") return es_runauthclitab3(inputs)
 	if (locale === "zh") return zh_runauthclitab3(inputs)
 	if (locale === "ja") return ja_runauthclitab3(inputs)
@@ -60,6 +59,7 @@ const runauthclitab3 = /** @type {((inputs?: Runauthclitab3Inputs, options?: { l
 	if (locale === "zh-Hant") return zh_hant1_runauthclitab3(inputs)
 	if (locale === "de") return de_runauthclitab3(inputs)
 	if (locale === "fr") return fr_runauthclitab3(inputs)
-	return uk_runauthclitab3(inputs)
+	if (locale === "uk") return uk_runauthclitab3(inputs)
+	return en_runauthclitab3(inputs)
 });
 export { runauthclitab3 as "runAuthCliTab" }

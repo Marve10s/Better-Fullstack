@@ -52,7 +52,6 @@ const uk_shareqralt2 = /** @type {(inputs: Shareqralt2Inputs) => LocalizedString
 */
 const shareqralt2 = /** @type {((inputs?: Shareqralt2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Shareqralt2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_shareqralt2(inputs)
 	if (locale === "es") return es_shareqralt2(inputs)
 	if (locale === "zh") return zh_shareqralt2(inputs)
 	if (locale === "ja") return ja_shareqralt2(inputs)
@@ -60,6 +59,7 @@ const shareqralt2 = /** @type {((inputs?: Shareqralt2Inputs, options?: { locale?
 	if (locale === "zh-Hant") return zh_hant1_shareqralt2(inputs)
 	if (locale === "de") return de_shareqralt2(inputs)
 	if (locale === "fr") return fr_shareqralt2(inputs)
-	return uk_shareqralt2(inputs)
+	if (locale === "uk") return uk_shareqralt2(inputs)
+	return en_shareqralt2(inputs)
 });
 export { shareqralt2 as "shareQrAlt" }
