@@ -31,6 +31,7 @@ interface E2ETestConfig {
   runtime: Runtime;
   api: API;
   auth: Auth;
+  apiBasePath?: string;
   overrides?: Record<string, unknown>;
   callApi: (baseUrl: string, procedure: string) => Promise<{ status: number; body: unknown }>;
 }
@@ -77,6 +78,7 @@ const fullstackConfigs: E2ETestConfig[] = [
     runtime: "none",
     api: "trpc",
     auth: "better-auth",
+    apiBasePath: "/api",
     callApi: callTRPC,
   },
   {
@@ -89,12 +91,13 @@ const fullstackConfigs: E2ETestConfig[] = [
     callApi: callTRPC,
   },
   {
-    name: "nuxt-self-orpc",
-    frontend: ["nuxt"],
+    name: "solid-start-self-orpc",
+    frontend: ["solid-start"],
     backend: "self",
     runtime: "none",
     api: "orpc",
     auth: "better-auth",
+    apiBasePath: "/api",
     callApi: callORPC,
   },
   {
@@ -104,6 +107,7 @@ const fullstackConfigs: E2ETestConfig[] = [
     runtime: "none",
     api: "orpc",
     auth: "better-auth",
+    apiBasePath: "/api",
     callApi: callORPC,
   },
   {
@@ -122,6 +126,7 @@ const fullstackConfigs: E2ETestConfig[] = [
     runtime: "none",
     api: "orpc",
     auth: "better-auth",
+    apiBasePath: "/api",
     callApi: callORPC,
   },
 ];
@@ -142,6 +147,7 @@ describeE2E("E2E Backend-Only Tests", () => {
     describe(config.name, () => {
       it("scaffolds, starts, and serves its API", async () => {
         let server: ServerProcess | null = null;
+        let leakedPorts: number[] = [];
         try {
           const result = await setupE2EProject(
             config.name,
@@ -174,8 +180,9 @@ describeE2E("E2E Backend-Only Tests", () => {
           const apiResult = await config.callApi(server.baseUrl, "healthCheck");
           expect(apiResult.status).toBe(200);
         } finally {
-          await server?.kill();
+          leakedPorts = (await server?.kill()) ?? [];
         }
+        expect(leakedPorts).toEqual([]);
       });
     });
   }
@@ -195,6 +202,7 @@ describeE2E("E2E Fullstack Dev Environment Tests", () => {
     describe(config.name, () => {
       it("scaffolds, starts, serves, and type-checks the full stack", async () => {
         let devServer: DevServerProcess | null = null;
+        let leakedPorts: number[] = [];
         try {
           const result = await setupE2EProject(
             config.name,
@@ -247,10 +255,9 @@ describeE2E("E2E Fullstack Dev Environment Tests", () => {
           expect(assets.ok).toBe(true);
           expect(assets.checked).toBeGreaterThan(0);
 
-          const apiResult = await config.callApi(
-            devServer.backendUrl ?? devServer.frontendUrl,
-            "healthCheck",
-          );
+          const apiBase =
+            devServer.backendUrl ?? devServer.frontendUrl + (config.apiBasePath ?? "");
+          const apiResult = await config.callApi(apiBase, "healthCheck");
           expect(apiResult.status).toBe(200);
 
           const typecheck = await typecheckProject(join(E2E_SMOKE_DIR, config.name), {
@@ -262,9 +269,10 @@ describeE2E("E2E Fullstack Dev Environment Tests", () => {
           }
           expect(typecheck.ok).toBe(true);
         } finally {
-          await devServer?.kill();
+          leakedPorts = (await devServer?.kill()) ?? [];
         }
-      });
+        expect(leakedPorts).toEqual([]);
+      }, 1_200_000);
     });
   }
 });

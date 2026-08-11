@@ -67,8 +67,18 @@ function readListArg(name: string, fallback: PackageManager[]): PackageManager[]
     .filter(Boolean) as PackageManager[];
 }
 
+async function defaultSpecifier(): Promise<string> {
+  if (process.env.BFS_PACKAGE_SPECIFIER) return process.env.BFS_PACKAGE_SPECIFIER;
+  const cliPackagePath = join(import.meta.dir, "..", "apps", "cli", "package.json");
+  const version = ((await Bun.file(cliPackagePath).json()) as { version?: string }).version;
+  if (!version) {
+    throw new Error(`Could not read the workspace CLI version from ${cliPackagePath}`);
+  }
+  return version;
+}
+
 const packageName = readArg("--package", "create-better-fullstack") ?? "create-better-fullstack";
-const specifier = readArg("--specifier", process.env.BFS_PACKAGE_SPECIFIER ?? "latest") ?? "latest";
+const specifier = readArg("--specifier") ?? (await defaultSpecifier());
 const managers = readListArg("--managers", ["bun", "npm", "pnpm"]);
 const registry =
   readArg("--registry", "https://registry.npmjs.org") ?? "https://registry.npmjs.org";

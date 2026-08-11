@@ -4480,7 +4480,8 @@ exports[`Template Snapshots Key File Content Snapshots key files: solid-start-v2
     },
     {
       "content": 
-"import { createORPCClient } from "@orpc/client";
+"import { getRequestEvent } from "solid-js/web";
+import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
 import { createTanstackQueryUtils } from "@orpc/tanstack-query";
 import { QueryCache, QueryClient } from "@tanstack/solid-query";
@@ -4495,7 +4496,10 @@ export const queryClient = new QueryClient({
 });
 
 export const link = new RPCLink({
-	url: "/api/rpc",
+	url: () =>
+		typeof window === "undefined"
+			? new URL("/api/rpc", getRequestEvent()?.request.url ?? "http://localhost:3001").toString()
+			: \`\${window.location.origin}/api/rpc\`,
 });
 
 export const client: AppRouterClient = createORPCClient(link);

@@ -210,6 +210,49 @@ jobs:
     );
   });
 
+  test("rejects preview smoke that runs the default-branch harness", async () => {
+    const documents = await loadWorkflowDocuments();
+    const publish = cloneDocument(documents, "pr-preview.yaml");
+    const job = (publish.jobs as Record<string, any>)["smoke-preview"];
+    const checkout = job.steps.find((step: Record<string, unknown>) =>
+      String(step.uses ?? "").startsWith("actions/checkout@"),
+    );
+    checkout.with.ref = "${{ github.event.repository.default_branch }}";
+
+    expect(validateWorkflowDocuments({ ...documents, "pr-preview.yaml": publish })).toContain(
+      "preview smoke must check out the authorized PR head in a secret-free read-only job",
+    );
+  });
+
+  test("rejects preview smoke with a second checkout overriding the PR head", async () => {
+    const documents = await loadWorkflowDocuments();
+    const publish = cloneDocument(documents, "pr-preview.yaml");
+    const job = (publish.jobs as Record<string, any>)["smoke-preview"];
+    job.steps.push({
+      uses: "actions/checkout@v4",
+      with: { ref: "${{ github.event.repository.default_branch }}", "persist-credentials": false },
+    });
+
+    expect(validateWorkflowDocuments({ ...documents, "pr-preview.yaml": publish })).toContain(
+      "preview smoke must check out the authorized PR head in a secret-free read-only job",
+    );
+  });
+
+  test("rejects preview smoke that gains secrets alongside the PR-head checkout", async () => {
+    const documents = await loadWorkflowDocuments();
+    const publish = cloneDocument(documents, "pr-preview.yaml");
+    const job = (publish.jobs as Record<string, any>)["smoke-preview"];
+    job.steps.push({ run: "printenv", env: { TOKEN: "${{ secrets.NPM_TOKEN }}" } });
+
+    const errors = validateWorkflowDocuments({ ...documents, "pr-preview.yaml": publish });
+    expect(errors).toContain(
+      "preview smoke must check out the authorized PR head in a secret-free read-only job",
+    );
+    expect(errors).toContain(
+      "pr-preview.yaml:smoke-preview checks out an untrusted PR ref in a secret/write-capable job",
+    );
+  });
+
   test("rejects smoke validation through the mutable PR dist-tag", async () => {
     const documents = await loadWorkflowDocuments();
     const publish = cloneDocument(documents, "pr-preview.yaml");

@@ -5,6 +5,11 @@ export type VerifiedEvidenceLane = {
 };
 
 export type VerifiedBadgeSummary = {
+  expiresAt?: string;
+  expectedTotals?: {
+    releaseGuard: number;
+    publishedPackage: number;
+  };
   smoke: VerifiedEvidenceLane[];
   scaffbench: VerifiedEvidenceLane[];
   releaseGuard: VerifiedEvidenceLane | null;
@@ -19,18 +24,34 @@ export type VerifiedCombinationsBadgePayload = {
   namedLogo: string;
 };
 
+export function verifiedEvidenceExpired(summary: VerifiedBadgeSummary, now: Date): boolean {
+  const expiry = summary.expiresAt ? Date.parse(summary.expiresAt) : Number.NaN;
+  return !Number.isFinite(expiry) || now.getTime() > expiry;
+}
+
 export function verifiedCombinationsBadgePayload(
   summary: VerifiedBadgeSummary,
+  now: Date = new Date(),
 ): VerifiedCombinationsBadgePayload {
+  const expired = verifiedEvidenceExpired(summary, now);
   const required = [
     ...summary.smoke,
     ...summary.scaffbench,
-    summary.releaseGuard ?? { pass: 0, total: 1, current: false },
-    summary.publishedPackage ?? { pass: 0, total: 3, current: false },
+    summary.releaseGuard ?? {
+      pass: 0,
+      total: summary.expectedTotals?.releaseGuard ?? 1,
+      current: false,
+    },
+    summary.publishedPackage ?? {
+      pass: 0,
+      total: summary.expectedTotals?.publishedPackage ?? 3,
+      current: false,
+    },
   ];
-  const pass = required.reduce((total, lane) => total + (lane.current === true ? lane.pass : 0), 0);
+  const laneCurrent = (lane: VerifiedEvidenceLane) => !expired && lane.current === true;
+  const pass = required.reduce((total, lane) => total + (laneCurrent(lane) ? lane.pass : 0), 0);
   const total = required.reduce((sum, lane) => sum + lane.total, 0);
-  const allCurrent = required.every((lane) => lane.current === true);
+  const allCurrent = required.every((lane) => laneCurrent(lane));
   const allPassing = allCurrent && total > 0 && pass === total;
 
   return {

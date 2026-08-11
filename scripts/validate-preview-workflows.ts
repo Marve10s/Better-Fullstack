@@ -268,6 +268,20 @@ export function validateWorkflowDocuments(documents: Record<string, WorkflowDocu
   ) {
     errors.push("preview smoke must install the exact authorized version, not a mutable dist-tag");
   }
+  const smokeCheckouts = steps(smokeJob).filter((step) =>
+    String(step.uses ?? "").startsWith("actions/checkout@"),
+  );
+  if (
+    smokeCheckouts.length !== 1 ||
+    record(smokeCheckouts[0]?.with).ref !== "${{ needs.authorize.outputs.head_sha }}" ||
+    record(smokeCheckouts[0]?.with)["persist-credentials"] !== false ||
+    JSON.stringify(smokeJob).includes("secrets.") ||
+    hasWritePermission(effectivePermissions(publish, smokeJob))
+  ) {
+    errors.push(
+      "preview smoke must check out the authorized PR head in a secret-free read-only job",
+    );
+  }
 
   return errors;
 }

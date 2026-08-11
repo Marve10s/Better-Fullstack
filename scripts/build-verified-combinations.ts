@@ -7,6 +7,8 @@ import {
   evaluateReleaseGuardEvidence,
   evaluateScaffbenchEvidence,
   evaluateSmokeEvidence,
+  REQUIRED_MANAGERS,
+  SOURCE_EVIDENCE_MAX_AGE_MS,
   type SourceEvidenceContext,
 } from "./verified-combinations/evidence";
 
@@ -201,6 +203,11 @@ type EvidenceStatus = "pass" | "partial-pass" | "fail" | "matrix-only" | "config
 
 type VerifiedClaimSummary = {
   generatedAt: string;
+  expiresAt: string;
+  expectedTotals: {
+    releaseGuard: number;
+    publishedPackage: number;
+  };
   smoke: Array<{
     label: string;
     sources: string[];
@@ -1004,13 +1011,26 @@ async function renderPublishedPackageSection(
 async function buildVerifiedClaimSummary(
   generatedAt: string,
   expectedPackageVersion: string,
+  releaseGuardCommands: readonly string[],
   currentGitHead?: string,
 ): Promise<VerifiedClaimSummary> {
   const smoke: VerifiedClaimSummary["smoke"] = [];
   const scaffbench: VerifiedClaimSummary["scaffbench"] = [];
+  const evidenceTimestamps: number[] = [];
+  const recordEvidenceTimestamp = (value: unknown) => {
+    const parsed = typeof value === "string" ? Date.parse(value) : Number.NaN;
+    if (Number.isFinite(parsed)) evidenceTimestamps.push(parsed);
+  };
 
   for (const input of SMOKE_INPUTS) {
     const evidence = await readSmokeResults(input);
+    if (evidence) {
+      for (const sourcePath of evidence.sources) {
+        recordEvidenceTimestamp(
+          (await readJson<{ generatedAt?: string }>(sourcePath))?.generatedAt,
+        );
+      }
+    }
     if (!evidence) {
       smoke.push({
         label: input.label,
@@ -1050,6 +1070,7 @@ async function buildVerifiedClaimSummary(
 
   for (const input of SCAFFBENCH_INPUTS) {
     const summary = await readJson<ScaffbenchSummary>(input.path);
+    if (summary) recordEvidenceTimestamp(summary.generatedAt);
     const results = summary?.results ?? [];
     const ownerArea = "packages/template-generator/templates";
     scaffbench.push({
@@ -1073,8 +1094,16 @@ async function buildVerifiedClaimSummary(
   const releaseSummary = await readJson<ReleaseGuardSummary>(RELEASE_GUARD_INPUT);
   const publishedPackageSummary =
     await readJson<PublishedPackageSmokeSummary>(PUBLISHED_PACKAGE_INPUT);
+  if (releaseSummary) recordEvidenceTimestamp(releaseSummary.generatedAt);
+  if (publishedPackageSummary) recordEvidenceTimestamp(publishedPackageSummary.generatedAt);
+  const expiryBasis = Math.min(Date.parse(generatedAt), ...evidenceTimestamps);
   return {
     generatedAt,
+    expiresAt: new Date(expiryBasis + SOURCE_EVIDENCE_MAX_AGE_MS).toISOString(),
+    expectedTotals: {
+      releaseGuard: releaseGuardCommands.length,
+      publishedPackage: REQUIRED_MANAGERS.length,
+    },
     smoke,
     scaffbench,
     releaseGuard: releaseSummary
@@ -1172,6 +1201,11 @@ export type VerifiedCombinationActionLink = {
 
 export type VerifiedCombinationSummary = {
   generatedAt: string;
+  expiresAt: string;
+  expectedTotals: {
+    releaseGuard: number;
+    publishedPackage: number;
+  };
   smoke: Array<{
     label: string;
     sources: string[];
@@ -1244,6 +1278,7 @@ async function enforceCurrentEvidence(
   summary: VerifiedClaimSummary,
   context: SourceEvidenceContext,
   expectedPackageVersion: string,
+  releaseGuardCommands: readonly string[],
 ): Promise<void> {
   for (const [index, input] of SMOKE_INPUTS.entries()) {
     const expected = input.preset ? getPresetCombos(input.preset).map((combo) => combo.name) : [];
@@ -1256,14 +1291,12 @@ async function enforceCurrentEvidence(
     const verdict = evaluateScaffbenchEvidence(raw, expected, context);
     Object.assign(summary.scaffbench[index]!, verdict);
   }
-  const packageJson = await readJson<{ scripts?: Record<string, string> }>("package.json");
-  const expectedCommands = releaseGuardSteps(packageJson?.scripts?.["test:release"] ?? "");
   if (summary.releaseGuard) {
     Object.assign(
       summary.releaseGuard,
       evaluateReleaseGuardEvidence(
         await readJson<unknown>(RELEASE_GUARD_INPUT),
-        expectedCommands,
+        releaseGuardCommands,
         context,
       ),
     );
@@ -1285,9 +1318,12 @@ async function main(): Promise<void> {
   const currentGitHead = await runText("git rev-parse HEAD");
   const cliPackage = await readJson<{ version?: string }>("apps/cli/package.json");
   const expectedPackageVersion = cliPackage?.version ?? "";
+  const rootPackageJson = await readJson<{ scripts?: Record<string, string> }>("package.json");
+  const releaseGuardCommands = releaseGuardSteps(rootPackageJson?.scripts?.["test:release"] ?? "");
   const claimSummary = await buildVerifiedClaimSummary(
     generatedAt,
     expectedPackageVersion,
+    releaseGuardCommands,
     currentGitHead,
   );
   await enforceCurrentEvidence(
@@ -1299,6 +1335,7 @@ async function main(): Promise<void> {
       now: new Date(generatedAt),
     },
     expectedPackageVersion,
+    releaseGuardCommands,
   );
   const sections = [
     "# Verified Combinations",

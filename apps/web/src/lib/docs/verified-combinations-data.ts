@@ -7,6 +7,11 @@ export type VerifiedCombinationActionLink = {
 
 export type VerifiedCombinationSummary = {
   generatedAt: string;
+  expiresAt: string;
+  expectedTotals: {
+    releaseGuard: number;
+    publishedPackage: number;
+  };
   smoke: Array<{
     label: string;
     sources: string[];
@@ -64,7 +69,12 @@ export type VerifiedCombinationSummary = {
 };
 
 export const verifiedCombinationsSummary: VerifiedCombinationSummary = {
-  "generatedAt": "2026-08-09T17:17:52.470Z",
+  "generatedAt": "2026-08-11T11:11:08.988Z",
+  "expiresAt": "2026-08-12T23:11:08.988Z",
+  "expectedTotals": {
+    "releaseGuard": 17,
+    "publishedPackage": 3
+  },
   "smoke": [
     {
       "label": "PR core smoke",

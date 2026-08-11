@@ -115,6 +115,30 @@ describe("source-bound evidence", () => {
     expect(result.reasons).toContain(reason as EvidenceReason);
   });
 
+  it("keeps a lane current when one combo fails, counting only the passing rows", () => {
+    const result = evaluateSmokeEvidence(
+      {
+        ...source,
+        overallSuccess: false,
+        evidenceType: "better-fullstack/smoke",
+        expectedRows: ["a", "b", "c"],
+        results: [
+          { comboName: "a", overallSuccess: true, steps: [{ success: true }] },
+          { comboName: "b", overallSuccess: false, steps: [{ success: false }] },
+          { comboName: "c", overallSuccess: true, steps: [{ success: true }] },
+        ],
+      },
+      ["a", "b", "c"],
+      context,
+    );
+
+    expect(result.current).toBe(true);
+    expect(result.pass).toBe(2);
+    expect(result.total).toBe(3);
+    expect(result.reasons).toContain("failed-validation");
+    expect(result.reasons).toContain("unsuccessful");
+  });
+
   it("rejects smoke rows with no executed gating step", () => {
     const result = evaluateSmokeEvidence(
       {

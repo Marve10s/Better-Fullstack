@@ -39,14 +39,22 @@ jobs:
               github.rest.repos.listPullRequestsAssociatedWithCommit,
               { ...context.repo, commit_sha: run.head_sha, per_page: 100 },
             );
-            const pull = pulls.find((candidate) =>
+            const candidates = pulls.filter((candidate) =>
               candidate.state === "open" && candidate.head.sha === run.head_sha &&
               candidate.head.repo?.full_name === repository,
             );
-            if (!pull || !pull.labels.some((label) => label.name === "preview")) {
+            const labeled = candidates.filter((candidate) =>
+              candidate.labels.some((label) => label.name === "preview"),
+            );
+            if (labeled.length === 0) {
               core.setFailed("The run is stale or the preview label was removed.");
               return;
             }
+            if (labeled.length > 1) {
+              core.setFailed(`Multiple open labeled PRs share this head (${labeled.map((p) => `#${p.number}`).join(", ")}). Remove the preview label from all but one.`);
+              return;
+            }
+            const pull = labeled[0];
             const trustedAssociations = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
             if (!trustedAssociations.has(pull.author_association)) {
               core.setFailed(`Untrusted PR author association: ${pull.author_association}`);
@@ -183,7 +191,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.repository.default_branch }}
+          ref: ${{ needs.authorize.outputs.head_sha }}
           persist-credentials: false
       - uses: oven-sh/setup-bun@v2
         with:
