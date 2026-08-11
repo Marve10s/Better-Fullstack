@@ -52,7 +52,6 @@ const uk_presettrackrestapiintent4 = /** @type {(inputs: Presettrackrestapiinten
 */
 const presettrackrestapiintent4 = /** @type {((inputs?: Presettrackrestapiintent4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackrestapiintent4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_presettrackrestapiintent4(inputs)
 	if (locale === "es") return es_presettrackrestapiintent4(inputs)
 	if (locale === "zh") return zh_presettrackrestapiintent4(inputs)
 	if (locale === "ja") return ja_presettrackrestapiintent4(inputs)
@@ -60,6 +59,7 @@ const presettrackrestapiintent4 = /** @type {((inputs?: Presettrackrestapiintent
 	if (locale === "zh-Hant") return zh_hant1_presettrackrestapiintent4(inputs)
 	if (locale === "de") return de_presettrackrestapiintent4(inputs)
 	if (locale === "fr") return fr_presettrackrestapiintent4(inputs)
-	return uk_presettrackrestapiintent4(inputs)
+	if (locale === "uk") return uk_presettrackrestapiintent4(inputs)
+	return en_presettrackrestapiintent4(inputs)
 });
 export { presettrackrestapiintent4 as "presetTrackRestApiIntent" }

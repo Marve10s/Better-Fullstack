@@ -52,7 +52,6 @@ const uk_llmmodels1 = /** @type {(inputs: Llmmodels1Inputs) => LocalizedString} 
 */
 const llmmodels1 = /** @type {((inputs?: Llmmodels1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmmodels1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_llmmodels1(inputs)
 	if (locale === "es") return es_llmmodels1(inputs)
 	if (locale === "zh") return zh_llmmodels1(inputs)
 	if (locale === "ja") return ja_llmmodels1(inputs)
@@ -60,6 +59,7 @@ const llmmodels1 = /** @type {((inputs?: Llmmodels1Inputs, options?: { locale?: 
 	if (locale === "zh-Hant") return zh_hant1_llmmodels1(inputs)
 	if (locale === "de") return de_llmmodels1(inputs)
 	if (locale === "fr") return fr_llmmodels1(inputs)
-	return uk_llmmodels1(inputs)
+	if (locale === "uk") return uk_llmmodels1(inputs)
+	return en_llmmodels1(inputs)
 });
 export { llmmodels1 as "llmModels" }

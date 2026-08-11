@@ -52,7 +52,6 @@ const uk_buildersavecurrentstacktooltip4 = /** @type {(inputs: Buildersavecurren
 */
 const buildersavecurrentstacktooltip4 = /** @type {((inputs?: Buildersavecurrentstacktooltip4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildersavecurrentstacktooltip4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_buildersavecurrentstacktooltip4(inputs)
 	if (locale === "es") return es_buildersavecurrentstacktooltip4(inputs)
 	if (locale === "zh") return zh_buildersavecurrentstacktooltip4(inputs)
 	if (locale === "ja") return ja_buildersavecurrentstacktooltip4(inputs)
@@ -60,6 +59,7 @@ const buildersavecurrentstacktooltip4 = /** @type {((inputs?: Buildersavecurrent
 	if (locale === "zh-Hant") return zh_hant1_buildersavecurrentstacktooltip4(inputs)
 	if (locale === "de") return de_buildersavecurrentstacktooltip4(inputs)
 	if (locale === "fr") return fr_buildersavecurrentstacktooltip4(inputs)
-	return uk_buildersavecurrentstacktooltip4(inputs)
+	if (locale === "uk") return uk_buildersavecurrentstacktooltip4(inputs)
+	return en_buildersavecurrentstacktooltip4(inputs)
 });
 export { buildersavecurrentstacktooltip4 as "builderSaveCurrentStackTooltip" }

@@ -52,7 +52,6 @@ const uk_runquickstarttitle2 = /** @type {(inputs: Runquickstarttitle2Inputs) =>
 */
 const runquickstarttitle2 = /** @type {((inputs?: Runquickstarttitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runquickstarttitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_runquickstarttitle2(inputs)
 	if (locale === "es") return es_runquickstarttitle2(inputs)
 	if (locale === "zh") return zh_runquickstarttitle2(inputs)
 	if (locale === "ja") return ja_runquickstarttitle2(inputs)
@@ -60,6 +59,7 @@ const runquickstarttitle2 = /** @type {((inputs?: Runquickstarttitle2Inputs, opt
 	if (locale === "zh-Hant") return zh_hant1_runquickstarttitle2(inputs)
 	if (locale === "de") return de_runquickstarttitle2(inputs)
 	if (locale === "fr") return fr_runquickstarttitle2(inputs)
-	return uk_runquickstarttitle2(inputs)
+	if (locale === "uk") return uk_runquickstarttitle2(inputs)
+	return en_runquickstarttitle2(inputs)
 });
 export { runquickstarttitle2 as "runQuickstartTitle" }

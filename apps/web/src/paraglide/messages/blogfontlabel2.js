@@ -52,7 +52,6 @@ const uk_blogfontlabel2 = /** @type {(inputs: Blogfontlabel2Inputs) => Localized
 */
 const blogfontlabel2 = /** @type {((inputs?: Blogfontlabel2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Blogfontlabel2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_blogfontlabel2(inputs)
 	if (locale === "es") return es_blogfontlabel2(inputs)
 	if (locale === "zh") return zh_blogfontlabel2(inputs)
 	if (locale === "ja") return ja_blogfontlabel2(inputs)
@@ -60,6 +59,7 @@ const blogfontlabel2 = /** @type {((inputs?: Blogfontlabel2Inputs, options?: { l
 	if (locale === "zh-Hant") return zh_hant1_blogfontlabel2(inputs)
 	if (locale === "de") return de_blogfontlabel2(inputs)
 	if (locale === "fr") return fr_blogfontlabel2(inputs)
-	return uk_blogfontlabel2(inputs)
+	if (locale === "uk") return uk_blogfontlabel2(inputs)
+	return en_blogfontlabel2(inputs)
 });
 export { blogfontlabel2 as "blogFontLabel" }

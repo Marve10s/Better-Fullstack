@@ -52,7 +52,6 @@ const uk_presettrackaiagentname4 = /** @type {(inputs: Presettrackaiagentname4In
 */
 const presettrackaiagentname4 = /** @type {((inputs?: Presettrackaiagentname4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackaiagentname4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_presettrackaiagentname4(inputs)
 	if (locale === "es") return es_presettrackaiagentname4(inputs)
 	if (locale === "zh") return zh_presettrackaiagentname4(inputs)
 	if (locale === "ja") return ja_presettrackaiagentname4(inputs)
@@ -60,6 +59,7 @@ const presettrackaiagentname4 = /** @type {((inputs?: Presettrackaiagentname4Inp
 	if (locale === "zh-Hant") return zh_hant1_presettrackaiagentname4(inputs)
 	if (locale === "de") return de_presettrackaiagentname4(inputs)
 	if (locale === "fr") return fr_presettrackaiagentname4(inputs)
-	return uk_presettrackaiagentname4(inputs)
+	if (locale === "uk") return uk_presettrackaiagentname4(inputs)
+	return en_presettrackaiagentname4(inputs)
 });
 export { presettrackaiagentname4 as "presetTrackAiAgentName" }

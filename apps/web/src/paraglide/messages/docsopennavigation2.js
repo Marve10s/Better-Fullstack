@@ -52,7 +52,6 @@ const uk_docsopennavigation2 = /** @type {(inputs: Docsopennavigation2Inputs) =>
 */
 const docsopennavigation2 = /** @type {((inputs?: Docsopennavigation2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsopennavigation2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_docsopennavigation2(inputs)
 	if (locale === "es") return es_docsopennavigation2(inputs)
 	if (locale === "zh") return zh_docsopennavigation2(inputs)
 	if (locale === "ja") return ja_docsopennavigation2(inputs)
@@ -60,6 +59,7 @@ const docsopennavigation2 = /** @type {((inputs?: Docsopennavigation2Inputs, opt
 	if (locale === "zh-Hant") return zh_hant1_docsopennavigation2(inputs)
 	if (locale === "de") return de_docsopennavigation2(inputs)
 	if (locale === "fr") return fr_docsopennavigation2(inputs)
-	return uk_docsopennavigation2(inputs)
+	if (locale === "uk") return uk_docsopennavigation2(inputs)
+	return en_docsopennavigation2(inputs)
 });
 export { docsopennavigation2 as "docsOpenNavigation" }

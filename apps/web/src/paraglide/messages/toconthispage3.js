@@ -52,7 +52,6 @@ const uk_toconthispage3 = /** @type {(inputs: Toconthispage3Inputs) => Localized
 */
 const toconthispage3 = /** @type {((inputs?: Toconthispage3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Toconthispage3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_toconthispage3(inputs)
 	if (locale === "es") return es_toconthispage3(inputs)
 	if (locale === "zh") return zh_toconthispage3(inputs)
 	if (locale === "ja") return ja_toconthispage3(inputs)
@@ -60,6 +59,7 @@ const toconthispage3 = /** @type {((inputs?: Toconthispage3Inputs, options?: { l
 	if (locale === "zh-Hant") return zh_hant1_toconthispage3(inputs)
 	if (locale === "de") return de_toconthispage3(inputs)
 	if (locale === "fr") return fr_toconthispage3(inputs)
-	return uk_toconthispage3(inputs)
+	if (locale === "uk") return uk_toconthispage3(inputs)
+	return en_toconthispage3(inputs)
 });
 export { toconthispage3 as "tocOnThisPage" }

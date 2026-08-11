@@ -52,7 +52,6 @@ const uk_presetapply1 = /** @type {(inputs: Presetapply1Inputs) => LocalizedStri
 */
 const presetapply1 = /** @type {((inputs?: Presetapply1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presetapply1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_presetapply1(inputs)
 	if (locale === "es") return es_presetapply1(inputs)
 	if (locale === "zh") return zh_presetapply1(inputs)
 	if (locale === "ja") return ja_presetapply1(inputs)
@@ -60,6 +59,7 @@ const presetapply1 = /** @type {((inputs?: Presetapply1Inputs, options?: { local
 	if (locale === "zh-Hant") return zh_hant1_presetapply1(inputs)
 	if (locale === "de") return de_presetapply1(inputs)
 	if (locale === "fr") return fr_presetapply1(inputs)
-	return uk_presetapply1(inputs)
+	if (locale === "uk") return uk_presetapply1(inputs)
+	return en_presetapply1(inputs)
 });
 export { presetapply1 as "presetApply" }

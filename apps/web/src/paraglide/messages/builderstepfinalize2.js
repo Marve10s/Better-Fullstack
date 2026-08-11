@@ -52,7 +52,6 @@ const uk_builderstepfinalize2 = /** @type {(inputs: Builderstepfinalize2Inputs) 
 */
 const builderstepfinalize2 = /** @type {((inputs?: Builderstepfinalize2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderstepfinalize2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderstepfinalize2(inputs)
 	if (locale === "es") return es_builderstepfinalize2(inputs)
 	if (locale === "zh") return zh_builderstepfinalize2(inputs)
 	if (locale === "ja") return ja_builderstepfinalize2(inputs)
@@ -60,6 +59,7 @@ const builderstepfinalize2 = /** @type {((inputs?: Builderstepfinalize2Inputs, o
 	if (locale === "zh-Hant") return zh_hant1_builderstepfinalize2(inputs)
 	if (locale === "de") return de_builderstepfinalize2(inputs)
 	if (locale === "fr") return fr_builderstepfinalize2(inputs)
-	return uk_builderstepfinalize2(inputs)
+	if (locale === "uk") return uk_builderstepfinalize2(inputs)
+	return en_builderstepfinalize2(inputs)
 });
 export { builderstepfinalize2 as "builderStepFinalize" }

@@ -52,7 +52,6 @@ const uk_stackdependencies1 = /** @type {(inputs: Stackdependencies1Inputs) => L
 */
 const stackdependencies1 = /** @type {((inputs?: Stackdependencies1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Stackdependencies1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_stackdependencies1(inputs)
 	if (locale === "es") return es_stackdependencies1(inputs)
 	if (locale === "zh") return zh_stackdependencies1(inputs)
 	if (locale === "ja") return ja_stackdependencies1(inputs)
@@ -60,6 +59,7 @@ const stackdependencies1 = /** @type {((inputs?: Stackdependencies1Inputs, optio
 	if (locale === "zh-Hant") return zh_hant1_stackdependencies1(inputs)
 	if (locale === "de") return de_stackdependencies1(inputs)
 	if (locale === "fr") return fr_stackdependencies1(inputs)
-	return uk_stackdependencies1(inputs)
+	if (locale === "uk") return uk_stackdependencies1(inputs)
+	return en_stackdependencies1(inputs)
 });
 export { stackdependencies1 as "stackDependencies" }

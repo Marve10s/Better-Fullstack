@@ -52,7 +52,6 @@ const uk_builderclosesectionnavigation3 = /** @type {(inputs: Builderclosesectio
 */
 const builderclosesectionnavigation3 = /** @type {((inputs?: Builderclosesectionnavigation3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderclosesectionnavigation3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderclosesectionnavigation3(inputs)
 	if (locale === "es") return es_builderclosesectionnavigation3(inputs)
 	if (locale === "zh") return zh_builderclosesectionnavigation3(inputs)
 	if (locale === "ja") return ja_builderclosesectionnavigation3(inputs)
@@ -60,6 +59,7 @@ const builderclosesectionnavigation3 = /** @type {((inputs?: Builderclosesection
 	if (locale === "zh-Hant") return zh_hant1_builderclosesectionnavigation3(inputs)
 	if (locale === "de") return de_builderclosesectionnavigation3(inputs)
 	if (locale === "fr") return fr_builderclosesectionnavigation3(inputs)
-	return uk_builderclosesectionnavigation3(inputs)
+	if (locale === "uk") return uk_builderclosesectionnavigation3(inputs)
+	return en_builderclosesectionnavigation3(inputs)
 });
 export { builderclosesectionnavigation3 as "builderCloseSectionNavigation" }

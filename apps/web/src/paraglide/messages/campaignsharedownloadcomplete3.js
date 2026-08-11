@@ -52,7 +52,6 @@ const uk_campaignsharedownloadcomplete3 = /** @type {(inputs: Campaignsharedownl
 */
 const campaignsharedownloadcomplete3 = /** @type {((inputs?: Campaignsharedownloadcomplete3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Campaignsharedownloadcomplete3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_campaignsharedownloadcomplete3(inputs)
 	if (locale === "es") return es_campaignsharedownloadcomplete3(inputs)
 	if (locale === "zh") return zh_campaignsharedownloadcomplete3(inputs)
 	if (locale === "ja") return ja_campaignsharedownloadcomplete3(inputs)
@@ -60,6 +59,7 @@ const campaignsharedownloadcomplete3 = /** @type {((inputs?: Campaignsharedownlo
 	if (locale === "zh-Hant") return zh_hant1_campaignsharedownloadcomplete3(inputs)
 	if (locale === "de") return de_campaignsharedownloadcomplete3(inputs)
 	if (locale === "fr") return fr_campaignsharedownloadcomplete3(inputs)
-	return uk_campaignsharedownloadcomplete3(inputs)
+	if (locale === "uk") return uk_campaignsharedownloadcomplete3(inputs)
+	return en_campaignsharedownloadcomplete3(inputs)
 });
 export { campaignsharedownloadcomplete3 as "campaignShareDownloadComplete" }

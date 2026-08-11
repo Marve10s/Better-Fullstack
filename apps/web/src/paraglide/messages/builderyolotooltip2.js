@@ -52,7 +52,6 @@ const uk_builderyolotooltip2 = /** @type {(inputs: Builderyolotooltip2Inputs) =>
 */
 const builderyolotooltip2 = /** @type {((inputs?: Builderyolotooltip2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderyolotooltip2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderyolotooltip2(inputs)
 	if (locale === "es") return es_builderyolotooltip2(inputs)
 	if (locale === "zh") return zh_builderyolotooltip2(inputs)
 	if (locale === "ja") return ja_builderyolotooltip2(inputs)
@@ -60,6 +59,7 @@ const builderyolotooltip2 = /** @type {((inputs?: Builderyolotooltip2Inputs, opt
 	if (locale === "zh-Hant") return zh_hant1_builderyolotooltip2(inputs)
 	if (locale === "de") return de_builderyolotooltip2(inputs)
 	if (locale === "fr") return fr_builderyolotooltip2(inputs)
-	return uk_builderyolotooltip2(inputs)
+	if (locale === "uk") return uk_builderyolotooltip2(inputs)
+	return en_builderyolotooltip2(inputs)
 });
 export { builderyolotooltip2 as "builderYoloTooltip" }

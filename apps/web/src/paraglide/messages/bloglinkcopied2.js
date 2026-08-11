@@ -52,7 +52,6 @@ const uk_bloglinkcopied2 = /** @type {(inputs: Bloglinkcopied2Inputs) => Localiz
 */
 const bloglinkcopied2 = /** @type {((inputs?: Bloglinkcopied2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Bloglinkcopied2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_bloglinkcopied2(inputs)
 	if (locale === "es") return es_bloglinkcopied2(inputs)
 	if (locale === "zh") return zh_bloglinkcopied2(inputs)
 	if (locale === "ja") return ja_bloglinkcopied2(inputs)
@@ -60,6 +59,7 @@ const bloglinkcopied2 = /** @type {((inputs?: Bloglinkcopied2Inputs, options?: {
 	if (locale === "zh-Hant") return zh_hant1_bloglinkcopied2(inputs)
 	if (locale === "de") return de_bloglinkcopied2(inputs)
 	if (locale === "fr") return fr_bloglinkcopied2(inputs)
-	return uk_bloglinkcopied2(inputs)
+	if (locale === "uk") return uk_bloglinkcopied2(inputs)
+	return en_bloglinkcopied2(inputs)
 });
 export { bloglinkcopied2 as "blogLinkCopied" }

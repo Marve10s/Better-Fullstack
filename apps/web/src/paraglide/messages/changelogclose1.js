@@ -52,7 +52,6 @@ const uk_changelogclose1 = /** @type {(inputs: Changelogclose1Inputs) => Localiz
 */
 const changelogclose1 = /** @type {((inputs?: Changelogclose1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Changelogclose1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_changelogclose1(inputs)
 	if (locale === "es") return es_changelogclose1(inputs)
 	if (locale === "zh") return zh_changelogclose1(inputs)
 	if (locale === "ja") return ja_changelogclose1(inputs)
@@ -60,6 +59,7 @@ const changelogclose1 = /** @type {((inputs?: Changelogclose1Inputs, options?: {
 	if (locale === "zh-Hant") return zh_hant1_changelogclose1(inputs)
 	if (locale === "de") return de_changelogclose1(inputs)
 	if (locale === "fr") return fr_changelogclose1(inputs)
-	return uk_changelogclose1(inputs)
+	if (locale === "uk") return uk_changelogclose1(inputs)
+	return en_changelogclose1(inputs)
 });
 export { changelogclose1 as "changelogClose" }

@@ -52,7 +52,6 @@ const uk_comparereadytitle2 = /** @type {(inputs: Comparereadytitle2Inputs) => L
 */
 const comparereadytitle2 = /** @type {((inputs?: Comparereadytitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparereadytitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_comparereadytitle2(inputs)
 	if (locale === "es") return es_comparereadytitle2(inputs)
 	if (locale === "zh") return zh_comparereadytitle2(inputs)
 	if (locale === "ja") return ja_comparereadytitle2(inputs)
@@ -60,6 +59,7 @@ const comparereadytitle2 = /** @type {((inputs?: Comparereadytitle2Inputs, optio
 	if (locale === "zh-Hant") return zh_hant1_comparereadytitle2(inputs)
 	if (locale === "de") return de_comparereadytitle2(inputs)
 	if (locale === "fr") return fr_comparereadytitle2(inputs)
-	return uk_comparereadytitle2(inputs)
+	if (locale === "uk") return uk_comparereadytitle2(inputs)
+	return en_comparereadytitle2(inputs)
 });
 export { comparereadytitle2 as "compareReadyTitle" }

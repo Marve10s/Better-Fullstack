@@ -52,7 +52,6 @@ const uk_navmcp1 = /** @type {(inputs: Navmcp1Inputs) => LocalizedString} */ () 
 */
 const navmcp1 = /** @type {((inputs?: Navmcp1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navmcp1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_navmcp1(inputs)
 	if (locale === "es") return es_navmcp1(inputs)
 	if (locale === "zh") return zh_navmcp1(inputs)
 	if (locale === "ja") return ja_navmcp1(inputs)
@@ -60,6 +59,7 @@ const navmcp1 = /** @type {((inputs?: Navmcp1Inputs, options?: { locale?: "en" |
 	if (locale === "zh-Hant") return zh_hant1_navmcp1(inputs)
 	if (locale === "de") return de_navmcp1(inputs)
 	if (locale === "fr") return fr_navmcp1(inputs)
-	return uk_navmcp1(inputs)
+	if (locale === "uk") return uk_navmcp1(inputs)
+	return en_navmcp1(inputs)
 });
 export { navmcp1 as "navMcp" }

@@ -52,7 +52,6 @@ const uk_campaignogalt2 = /** @type {(inputs: Campaignogalt2Inputs) => Localized
 */
 const campaignogalt2 = /** @type {((inputs?: Campaignogalt2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Campaignogalt2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_campaignogalt2(inputs)
 	if (locale === "es") return es_campaignogalt2(inputs)
 	if (locale === "zh") return zh_campaignogalt2(inputs)
 	if (locale === "ja") return ja_campaignogalt2(inputs)
@@ -60,6 +59,7 @@ const campaignogalt2 = /** @type {((inputs?: Campaignogalt2Inputs, options?: { l
 	if (locale === "zh-Hant") return zh_hant1_campaignogalt2(inputs)
 	if (locale === "de") return de_campaignogalt2(inputs)
 	if (locale === "fr") return fr_campaignogalt2(inputs)
-	return uk_campaignogalt2(inputs)
+	if (locale === "uk") return uk_campaignogalt2(inputs)
+	return en_campaignogalt2(inputs)
 });
 export { campaignogalt2 as "campaignOgAlt" }

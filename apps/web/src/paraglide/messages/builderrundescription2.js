@@ -52,7 +52,6 @@ const uk_builderrundescription2 = /** @type {(inputs: Builderrundescription2Inpu
 */
 const builderrundescription2 = /** @type {((inputs?: Builderrundescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderrundescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderrundescription2(inputs)
 	if (locale === "es") return es_builderrundescription2(inputs)
 	if (locale === "zh") return zh_builderrundescription2(inputs)
 	if (locale === "ja") return ja_builderrundescription2(inputs)
@@ -60,6 +59,7 @@ const builderrundescription2 = /** @type {((inputs?: Builderrundescription2Input
 	if (locale === "zh-Hant") return zh_hant1_builderrundescription2(inputs)
 	if (locale === "de") return de_builderrundescription2(inputs)
 	if (locale === "fr") return fr_builderrundescription2(inputs)
-	return uk_builderrundescription2(inputs)
+	if (locale === "uk") return uk_builderrundescription2(inputs)
+	return en_builderrundescription2(inputs)
 });
 export { builderrundescription2 as "builderRunDescription" }

@@ -52,7 +52,6 @@ const uk_comparemonorepo1 = /** @type {(inputs: Comparemonorepo1Inputs) => Local
 */
 const comparemonorepo1 = /** @type {((inputs?: Comparemonorepo1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparemonorepo1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_comparemonorepo1(inputs)
 	if (locale === "es") return es_comparemonorepo1(inputs)
 	if (locale === "zh") return zh_comparemonorepo1(inputs)
 	if (locale === "ja") return ja_comparemonorepo1(inputs)
@@ -60,6 +59,7 @@ const comparemonorepo1 = /** @type {((inputs?: Comparemonorepo1Inputs, options?:
 	if (locale === "zh-Hant") return zh_hant1_comparemonorepo1(inputs)
 	if (locale === "de") return de_comparemonorepo1(inputs)
 	if (locale === "fr") return fr_comparemonorepo1(inputs)
-	return uk_comparemonorepo1(inputs)
+	if (locale === "uk") return uk_comparemonorepo1(inputs)
+	return en_comparemonorepo1(inputs)
 });
 export { comparemonorepo1 as "compareMonorepo" }

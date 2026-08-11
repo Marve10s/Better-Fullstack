@@ -52,7 +52,6 @@ const uk_buildersavepreset2 = /** @type {(inputs: Buildersavepreset2Inputs) => L
 */
 const buildersavepreset2 = /** @type {((inputs?: Buildersavepreset2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildersavepreset2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_buildersavepreset2(inputs)
 	if (locale === "es") return es_buildersavepreset2(inputs)
 	if (locale === "zh") return zh_buildersavepreset2(inputs)
 	if (locale === "ja") return ja_buildersavepreset2(inputs)
@@ -60,6 +59,7 @@ const buildersavepreset2 = /** @type {((inputs?: Buildersavepreset2Inputs, optio
 	if (locale === "zh-Hant") return zh_hant1_buildersavepreset2(inputs)
 	if (locale === "de") return de_buildersavepreset2(inputs)
 	if (locale === "fr") return fr_buildersavepreset2(inputs)
-	return uk_buildersavepreset2(inputs)
+	if (locale === "uk") return uk_buildersavepreset2(inputs)
+	return en_buildersavepreset2(inputs)
 });
 export { buildersavepreset2 as "builderSavePreset" }

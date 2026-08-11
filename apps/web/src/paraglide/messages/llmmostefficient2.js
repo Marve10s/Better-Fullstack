@@ -52,7 +52,6 @@ const uk_llmmostefficient2 = /** @type {(inputs: Llmmostefficient2Inputs) => Loc
 */
 const llmmostefficient2 = /** @type {((inputs?: Llmmostefficient2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmmostefficient2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_llmmostefficient2(inputs)
 	if (locale === "es") return es_llmmostefficient2(inputs)
 	if (locale === "zh") return zh_llmmostefficient2(inputs)
 	if (locale === "ja") return ja_llmmostefficient2(inputs)
@@ -60,6 +59,7 @@ const llmmostefficient2 = /** @type {((inputs?: Llmmostefficient2Inputs, options
 	if (locale === "zh-Hant") return zh_hant1_llmmostefficient2(inputs)
 	if (locale === "de") return de_llmmostefficient2(inputs)
 	if (locale === "fr") return fr_llmmostefficient2(inputs)
-	return uk_llmmostefficient2(inputs)
+	if (locale === "uk") return uk_llmmostefficient2(inputs)
+	return en_llmmostefficient2(inputs)
 });
 export { llmmostefficient2 as "llmMostEfficient" }

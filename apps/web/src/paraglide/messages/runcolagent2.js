@@ -52,7 +52,6 @@ const uk_runcolagent2 = /** @type {(inputs: Runcolagent2Inputs) => LocalizedStri
 */
 const runcolagent2 = /** @type {((inputs?: Runcolagent2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runcolagent2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_runcolagent2(inputs)
 	if (locale === "es") return es_runcolagent2(inputs)
 	if (locale === "zh") return zh_runcolagent2(inputs)
 	if (locale === "ja") return ja_runcolagent2(inputs)
@@ -60,6 +59,7 @@ const runcolagent2 = /** @type {((inputs?: Runcolagent2Inputs, options?: { local
 	if (locale === "zh-Hant") return zh_hant1_runcolagent2(inputs)
 	if (locale === "de") return de_runcolagent2(inputs)
 	if (locale === "fr") return fr_runcolagent2(inputs)
-	return uk_runcolagent2(inputs)
+	if (locale === "uk") return uk_runcolagent2(inputs)
+	return en_runcolagent2(inputs)
 });
 export { runcolagent2 as "runColAgent" }

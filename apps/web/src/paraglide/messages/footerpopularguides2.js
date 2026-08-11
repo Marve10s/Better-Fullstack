@@ -52,7 +52,6 @@ const uk_footerpopularguides2 = /** @type {(inputs: Footerpopularguides2Inputs) 
 */
 const footerpopularguides2 = /** @type {((inputs?: Footerpopularguides2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Footerpopularguides2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_footerpopularguides2(inputs)
 	if (locale === "es") return es_footerpopularguides2(inputs)
 	if (locale === "zh") return zh_footerpopularguides2(inputs)
 	if (locale === "ja") return ja_footerpopularguides2(inputs)
@@ -60,6 +59,7 @@ const footerpopularguides2 = /** @type {((inputs?: Footerpopularguides2Inputs, o
 	if (locale === "zh-Hant") return zh_hant1_footerpopularguides2(inputs)
 	if (locale === "de") return de_footerpopularguides2(inputs)
 	if (locale === "fr") return fr_footerpopularguides2(inputs)
-	return uk_footerpopularguides2(inputs)
+	if (locale === "uk") return uk_footerpopularguides2(inputs)
+	return en_footerpopularguides2(inputs)
 });
 export { footerpopularguides2 as "footerPopularGuides" }

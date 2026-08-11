@@ -52,7 +52,6 @@ const uk_compareormcount2 = /** @type {(inputs: Compareormcount2Inputs) => Local
 */
 const compareormcount2 = /** @type {((inputs: Compareormcount2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Compareormcount2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_compareormcount2(inputs)
 	if (locale === "es") return es_compareormcount2(inputs)
 	if (locale === "zh") return zh_compareormcount2(inputs)
 	if (locale === "ja") return ja_compareormcount2(inputs)
@@ -60,6 +59,7 @@ const compareormcount2 = /** @type {((inputs: Compareormcount2Inputs, options?: 
 	if (locale === "zh-Hant") return zh_hant1_compareormcount2(inputs)
 	if (locale === "de") return de_compareormcount2(inputs)
 	if (locale === "fr") return fr_compareormcount2(inputs)
-	return uk_compareormcount2(inputs)
+	if (locale === "uk") return uk_compareormcount2(inputs)
+	return en_compareormcount2(inputs)
 });
 export { compareormcount2 as "compareOrmCount" }

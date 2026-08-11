@@ -52,7 +52,6 @@ const uk_builderdownloadfailed2 = /** @type {(inputs: Builderdownloadfailed2Inpu
 */
 const builderdownloadfailed2 = /** @type {((inputs?: Builderdownloadfailed2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderdownloadfailed2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderdownloadfailed2(inputs)
 	if (locale === "es") return es_builderdownloadfailed2(inputs)
 	if (locale === "zh") return zh_builderdownloadfailed2(inputs)
 	if (locale === "ja") return ja_builderdownloadfailed2(inputs)
@@ -60,6 +59,7 @@ const builderdownloadfailed2 = /** @type {((inputs?: Builderdownloadfailed2Input
 	if (locale === "zh-Hant") return zh_hant1_builderdownloadfailed2(inputs)
 	if (locale === "de") return de_builderdownloadfailed2(inputs)
 	if (locale === "fr") return fr_builderdownloadfailed2(inputs)
-	return uk_builderdownloadfailed2(inputs)
+	if (locale === "uk") return uk_builderdownloadfailed2(inputs)
+	return en_builderdownloadfailed2(inputs)
 });
 export { builderdownloadfailed2 as "builderDownloadFailed" }

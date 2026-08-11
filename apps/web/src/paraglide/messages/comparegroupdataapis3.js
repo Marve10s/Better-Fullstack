@@ -52,7 +52,6 @@ const uk_comparegroupdataapis3 = /** @type {(inputs: Comparegroupdataapis3Inputs
 */
 const comparegroupdataapis3 = /** @type {((inputs?: Comparegroupdataapis3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparegroupdataapis3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_comparegroupdataapis3(inputs)
 	if (locale === "es") return es_comparegroupdataapis3(inputs)
 	if (locale === "zh") return zh_comparegroupdataapis3(inputs)
 	if (locale === "ja") return ja_comparegroupdataapis3(inputs)
@@ -60,6 +59,7 @@ const comparegroupdataapis3 = /** @type {((inputs?: Comparegroupdataapis3Inputs,
 	if (locale === "zh-Hant") return zh_hant1_comparegroupdataapis3(inputs)
 	if (locale === "de") return de_comparegroupdataapis3(inputs)
 	if (locale === "fr") return fr_comparegroupdataapis3(inputs)
-	return uk_comparegroupdataapis3(inputs)
+	if (locale === "uk") return uk_comparegroupdataapis3(inputs)
+	return en_comparegroupdataapis3(inputs)
 });
 export { comparegroupdataapis3 as "compareGroupDataApis" }

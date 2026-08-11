@@ -52,7 +52,6 @@ const uk_mcpstatstructuredtools3 = /** @type {(inputs: Mcpstatstructuredtools3In
 */
 const mcpstatstructuredtools3 = /** @type {((inputs?: Mcpstatstructuredtools3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpstatstructuredtools3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_mcpstatstructuredtools3(inputs)
 	if (locale === "es") return es_mcpstatstructuredtools3(inputs)
 	if (locale === "zh") return zh_mcpstatstructuredtools3(inputs)
 	if (locale === "ja") return ja_mcpstatstructuredtools3(inputs)
@@ -60,6 +59,7 @@ const mcpstatstructuredtools3 = /** @type {((inputs?: Mcpstatstructuredtools3Inp
 	if (locale === "zh-Hant") return zh_hant1_mcpstatstructuredtools3(inputs)
 	if (locale === "de") return de_mcpstatstructuredtools3(inputs)
 	if (locale === "fr") return fr_mcpstatstructuredtools3(inputs)
-	return uk_mcpstatstructuredtools3(inputs)
+	if (locale === "uk") return uk_mcpstatstructuredtools3(inputs)
+	return en_mcpstatstructuredtools3(inputs)
 });
 export { mcpstatstructuredtools3 as "mcpStatStructuredTools" }

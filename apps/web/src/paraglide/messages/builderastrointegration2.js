@@ -52,7 +52,6 @@ const uk_builderastrointegration2 = /** @type {(inputs: Builderastrointegration2
 */
 const builderastrointegration2 = /** @type {((inputs?: Builderastrointegration2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderastrointegration2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderastrointegration2(inputs)
 	if (locale === "es") return es_builderastrointegration2(inputs)
 	if (locale === "zh") return zh_builderastrointegration2(inputs)
 	if (locale === "ja") return ja_builderastrointegration2(inputs)
@@ -60,6 +59,7 @@ const builderastrointegration2 = /** @type {((inputs?: Builderastrointegration2I
 	if (locale === "zh-Hant") return zh_hant1_builderastrointegration2(inputs)
 	if (locale === "de") return de_builderastrointegration2(inputs)
 	if (locale === "fr") return fr_builderastrointegration2(inputs)
-	return uk_builderastrointegration2(inputs)
+	if (locale === "uk") return uk_builderastrointegration2(inputs)
+	return en_builderastrointegration2(inputs)
 });
 export { builderastrointegration2 as "builderAstroIntegration" }

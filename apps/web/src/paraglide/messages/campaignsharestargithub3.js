@@ -52,7 +52,6 @@ const uk_campaignsharestargithub3 = /** @type {(inputs: Campaignsharestargithub3
 */
 const campaignsharestargithub3 = /** @type {((inputs?: Campaignsharestargithub3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Campaignsharestargithub3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_campaignsharestargithub3(inputs)
 	if (locale === "es") return es_campaignsharestargithub3(inputs)
 	if (locale === "zh") return zh_campaignsharestargithub3(inputs)
 	if (locale === "ja") return ja_campaignsharestargithub3(inputs)
@@ -60,6 +59,7 @@ const campaignsharestargithub3 = /** @type {((inputs?: Campaignsharestargithub3I
 	if (locale === "zh-Hant") return zh_hant1_campaignsharestargithub3(inputs)
 	if (locale === "de") return de_campaignsharestargithub3(inputs)
 	if (locale === "fr") return fr_campaignsharestargithub3(inputs)
-	return uk_campaignsharestargithub3(inputs)
+	if (locale === "uk") return uk_campaignsharestargithub3(inputs)
+	return en_campaignsharestargithub3(inputs)
 });
 export { campaignsharestargithub3 as "campaignShareStarGithub" }

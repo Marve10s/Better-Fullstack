@@ -52,7 +52,6 @@ const uk_savedupdated1 = /** @type {(inputs: Savedupdated1Inputs) => LocalizedSt
 */
 const savedupdated1 = /** @type {((inputs?: Savedupdated1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedupdated1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_savedupdated1(inputs)
 	if (locale === "es") return es_savedupdated1(inputs)
 	if (locale === "zh") return zh_savedupdated1(inputs)
 	if (locale === "ja") return ja_savedupdated1(inputs)
@@ -60,6 +59,7 @@ const savedupdated1 = /** @type {((inputs?: Savedupdated1Inputs, options?: { loc
 	if (locale === "zh-Hant") return zh_hant1_savedupdated1(inputs)
 	if (locale === "de") return de_savedupdated1(inputs)
 	if (locale === "fr") return fr_savedupdated1(inputs)
-	return uk_savedupdated1(inputs)
+	if (locale === "uk") return uk_savedupdated1(inputs)
+	return en_savedupdated1(inputs)
 });
 export { savedupdated1 as "savedUpdated" }

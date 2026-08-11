@@ -52,7 +52,6 @@ const uk_runagentsdesc2 = /** @type {(inputs: Runagentsdesc2Inputs) => Localized
 */
 const runagentsdesc2 = /** @type {((inputs?: Runagentsdesc2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runagentsdesc2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_runagentsdesc2(inputs)
 	if (locale === "es") return es_runagentsdesc2(inputs)
 	if (locale === "zh") return zh_runagentsdesc2(inputs)
 	if (locale === "ja") return ja_runagentsdesc2(inputs)
@@ -60,6 +59,7 @@ const runagentsdesc2 = /** @type {((inputs?: Runagentsdesc2Inputs, options?: { l
 	if (locale === "zh-Hant") return zh_hant1_runagentsdesc2(inputs)
 	if (locale === "de") return de_runagentsdesc2(inputs)
 	if (locale === "fr") return fr_runagentsdesc2(inputs)
-	return uk_runagentsdesc2(inputs)
+	if (locale === "uk") return uk_runagentsdesc2(inputs)
+	return en_runagentsdesc2(inputs)
 });
 export { runagentsdesc2 as "runAgentsDesc" }

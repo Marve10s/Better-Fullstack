@@ -52,7 +52,6 @@ const uk_runherodescription2 = /** @type {(inputs: Runherodescription2Inputs) =>
 */
 const runherodescription2 = /** @type {((inputs?: Runherodescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runherodescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_runherodescription2(inputs)
 	if (locale === "es") return es_runherodescription2(inputs)
 	if (locale === "zh") return zh_runherodescription2(inputs)
 	if (locale === "ja") return ja_runherodescription2(inputs)
@@ -60,6 +59,7 @@ const runherodescription2 = /** @type {((inputs?: Runherodescription2Inputs, opt
 	if (locale === "zh-Hant") return zh_hant1_runherodescription2(inputs)
 	if (locale === "de") return de_runherodescription2(inputs)
 	if (locale === "fr") return fr_runherodescription2(inputs)
-	return uk_runherodescription2(inputs)
+	if (locale === "uk") return uk_runherodescription2(inputs)
+	return en_runherodescription2(inputs)
 });
 export { runherodescription2 as "runHeroDescription" }

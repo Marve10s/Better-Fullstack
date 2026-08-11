@@ -52,7 +52,6 @@ const uk_runresultsnotepre3 = /** @type {(inputs: Runresultsnotepre3Inputs) => L
 */
 const runresultsnotepre3 = /** @type {((inputs?: Runresultsnotepre3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runresultsnotepre3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_runresultsnotepre3(inputs)
 	if (locale === "es") return es_runresultsnotepre3(inputs)
 	if (locale === "zh") return zh_runresultsnotepre3(inputs)
 	if (locale === "ja") return ja_runresultsnotepre3(inputs)
@@ -60,6 +59,7 @@ const runresultsnotepre3 = /** @type {((inputs?: Runresultsnotepre3Inputs, optio
 	if (locale === "zh-Hant") return zh_hant1_runresultsnotepre3(inputs)
 	if (locale === "de") return de_runresultsnotepre3(inputs)
 	if (locale === "fr") return fr_runresultsnotepre3(inputs)
-	return uk_runresultsnotepre3(inputs)
+	if (locale === "uk") return uk_runresultsnotepre3(inputs)
+	return en_runresultsnotepre3(inputs)
 });
 export { runresultsnotepre3 as "runResultsNotePre" }

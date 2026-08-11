@@ -52,7 +52,6 @@ const uk_navcommandcopied2 = /** @type {(inputs: Navcommandcopied2Inputs) => Loc
 */
 const navcommandcopied2 = /** @type {((inputs?: Navcommandcopied2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navcommandcopied2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_navcommandcopied2(inputs)
 	if (locale === "es") return es_navcommandcopied2(inputs)
 	if (locale === "zh") return zh_navcommandcopied2(inputs)
 	if (locale === "ja") return ja_navcommandcopied2(inputs)
@@ -60,6 +59,7 @@ const navcommandcopied2 = /** @type {((inputs?: Navcommandcopied2Inputs, options
 	if (locale === "zh-Hant") return zh_hant1_navcommandcopied2(inputs)
 	if (locale === "de") return de_navcommandcopied2(inputs)
 	if (locale === "fr") return fr_navcommandcopied2(inputs)
-	return uk_navcommandcopied2(inputs)
+	if (locale === "uk") return uk_navcommandcopied2(inputs)
+	return en_navcommandcopied2(inputs)
 });
 export { navcommandcopied2 as "navCommandCopied" }

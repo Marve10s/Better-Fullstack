@@ -52,7 +52,6 @@ const uk_changeloglatestpublished2 = /** @type {(inputs: Changeloglatestpublishe
 */
 const changeloglatestpublished2 = /** @type {((inputs: Changeloglatestpublished2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Changeloglatestpublished2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_changeloglatestpublished2(inputs)
 	if (locale === "es") return es_changeloglatestpublished2(inputs)
 	if (locale === "zh") return zh_changeloglatestpublished2(inputs)
 	if (locale === "ja") return ja_changeloglatestpublished2(inputs)
@@ -60,6 +59,7 @@ const changeloglatestpublished2 = /** @type {((inputs: Changeloglatestpublished2
 	if (locale === "zh-Hant") return zh_hant1_changeloglatestpublished2(inputs)
 	if (locale === "de") return de_changeloglatestpublished2(inputs)
 	if (locale === "fr") return fr_changeloglatestpublished2(inputs)
-	return uk_changeloglatestpublished2(inputs)
+	if (locale === "uk") return uk_changeloglatestpublished2(inputs)
+	return en_changeloglatestpublished2(inputs)
 });
 export { changeloglatestpublished2 as "changelogLatestPublished" }

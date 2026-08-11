@@ -52,7 +52,6 @@ const uk_builderpreviewfoldercount3 = /** @type {(inputs: Builderpreviewfolderco
 */
 const builderpreviewfoldercount3 = /** @type {((inputs: Builderpreviewfoldercount3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderpreviewfoldercount3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderpreviewfoldercount3(inputs)
 	if (locale === "es") return es_builderpreviewfoldercount3(inputs)
 	if (locale === "zh") return zh_builderpreviewfoldercount3(inputs)
 	if (locale === "ja") return ja_builderpreviewfoldercount3(inputs)
@@ -60,6 +59,7 @@ const builderpreviewfoldercount3 = /** @type {((inputs: Builderpreviewfoldercoun
 	if (locale === "zh-Hant") return zh_hant1_builderpreviewfoldercount3(inputs)
 	if (locale === "de") return de_builderpreviewfoldercount3(inputs)
 	if (locale === "fr") return fr_builderpreviewfoldercount3(inputs)
-	return uk_builderpreviewfoldercount3(inputs)
+	if (locale === "uk") return uk_builderpreviewfoldercount3(inputs)
+	return en_builderpreviewfoldercount3(inputs)
 });
 export { builderpreviewfoldercount3 as "builderPreviewFolderCount" }

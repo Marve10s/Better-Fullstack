@@ -52,7 +52,6 @@ const uk_compareseodescription2 = /** @type {(inputs: Compareseodescription2Inpu
 */
 const compareseodescription2 = /** @type {((inputs?: Compareseodescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Compareseodescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_compareseodescription2(inputs)
 	if (locale === "es") return es_compareseodescription2(inputs)
 	if (locale === "zh") return zh_compareseodescription2(inputs)
 	if (locale === "ja") return ja_compareseodescription2(inputs)
@@ -60,6 +59,7 @@ const compareseodescription2 = /** @type {((inputs?: Compareseodescription2Input
 	if (locale === "zh-Hant") return zh_hant1_compareseodescription2(inputs)
 	if (locale === "de") return de_compareseodescription2(inputs)
 	if (locale === "fr") return fr_compareseodescription2(inputs)
-	return uk_compareseodescription2(inputs)
+	if (locale === "uk") return uk_compareseodescription2(inputs)
+	return en_compareseodescription2(inputs)
 });
 export { compareseodescription2 as "compareSeoDescription" }
