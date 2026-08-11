@@ -42,12 +42,13 @@ To refresh the release-gate evidence before rebuilding the ledger, run:
 bun run test:release:record
 ```
 
-To refresh package-manager registry install evidence, pass the exact current CLI version. Tags such as `latest` are intentionally rejected as non-reproducible evidence.
+To refresh package-manager registry install evidence for the current published package, run:
 
 ```sh
-CLI_VERSION=$(jq -r .version apps/cli/package.json)
-bun run test:published-package --specifier "$CLI_VERSION"
+bun run test:published-package
 ```
+
+The runner defaults to the exact workspace CLI version. Passing a tag such as `--specifier latest` still works for ad-hoc checks, but the evidence evaluator rejects tags as non-reproducible, so tagged runs never count as current evidence.
 
 ## Badge endpoint
 

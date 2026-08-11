@@ -5,6 +5,7 @@ import {
   TbExternalLink as ExternalLink,
 } from "react-icons/tb";
 
+import { verifiedEvidenceExpired } from "@/lib/docs/verified-combinations-badge";
 import {
   type VerifiedCombinationActionLink,
   type VerifiedCombinationSummary,
@@ -37,7 +38,9 @@ export function VerifiedCombinationsSummary() {
   const summary: VerifiedCombinationSummary = verifiedCombinationsSummary;
   const releaseGuard = summary.releaseGuard;
   const publishedPackage = summary.publishedPackage;
+  const expired = verifiedEvidenceExpired(summary, new Date());
   const allCurrent =
+    !expired &&
     summary.smoke.every((item) => item.current === true) &&
     summary.scaffbench.every((item) => item.current === true) &&
     releaseGuard?.current === true &&
@@ -51,7 +54,9 @@ export function VerifiedCombinationsSummary() {
           <div>
             <p className="m-0 text-sm font-medium text-foreground">Current verified claim</p>
             <p className="m-0 mt-1 text-muted-foreground text-sm">
-              Generated {formatGeneratedAt(summary.generatedAt)} UTC.
+              Generated {formatGeneratedAt(summary.generatedAt)} UTC. Evidence
+              {expired ? " expired " : " valid until "}
+              {formatGeneratedAt(summary.expiresAt)} UTC.
             </p>
           </div>
           <span
@@ -83,7 +88,7 @@ export function VerifiedCombinationsSummary() {
             actionLinks={item.actionLinks}
             rerunCommand={item.rerunCommand}
             failureHint={item.failureHint}
-            current={item.current === true}
+            current={!expired && item.current === true}
             sourcePaths={item.sources}
             reasons={item.reasons}
           />
@@ -102,7 +107,7 @@ export function VerifiedCombinationsSummary() {
             actionLinks={item.actionLinks}
             rerunCommand={item.rerunCommand}
             failureHint={item.failureHint}
-            current={item.current === true}
+            current={!expired && item.current === true}
             sourcePaths={[item.source]}
             reasons={item.reasons}
           />
@@ -116,7 +121,7 @@ export function VerifiedCombinationsSummary() {
             actionLinks={releaseGuard.actionLinks}
             rerunCommand={releaseGuard.rerunCommand}
             failureHint={releaseGuard.failureHint}
-            current={releaseGuard.current === true}
+            current={!expired && releaseGuard.current === true}
             sourcePaths={[releaseGuard.source]}
             reasons={releaseGuard.reasons}
           />
@@ -137,7 +142,7 @@ export function VerifiedCombinationsSummary() {
             actionLinks={publishedPackage.actionLinks}
             rerunCommand={publishedPackage.rerunCommand}
             failureHint={publishedPackage.failureHint}
-            current={publishedPackage.current === true}
+            current={!expired && publishedPackage.current === true}
             sourcePaths={[publishedPackage.source]}
             reasons={publishedPackage.reasons}
           />
@@ -146,7 +151,7 @@ export function VerifiedCombinationsSummary() {
             label="Published package"
             source="testing/.published-package/summary.json"
             ownerArea="published package"
-            rerunCommand="bun run test:published-package --specifier $(jq -r .version apps/cli/package.json)"
+            rerunCommand="bun run test:published-package"
           />
         )}
       </div>

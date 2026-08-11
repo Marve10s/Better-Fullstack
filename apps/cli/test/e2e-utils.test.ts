@@ -28,13 +28,12 @@ function isProcessAlive(pid: number): boolean {
 }
 
 async function readPid(path: string, deadline = Date.now() + 5_000): Promise<number> {
-  try {
-    return Number(await readFile(path, "utf8"));
-  } catch {
-    if (Date.now() >= deadline) throw new Error("Timed out waiting for descendant pid");
-    await new Promise((resolve) => setTimeout(resolve, 25));
-    return readPid(path, deadline);
-  }
+  const content = await readFile(path, "utf8").catch(() => "");
+  const pid = Number.parseInt(content, 10);
+  if (Number.isInteger(pid) && pid > 0) return pid;
+  if (Date.now() >= deadline) throw new Error("Timed out waiting for descendant pid");
+  await new Promise((resolve) => setTimeout(resolve, 25));
+  return readPid(path, deadline);
 }
 
 afterEach(async () => {

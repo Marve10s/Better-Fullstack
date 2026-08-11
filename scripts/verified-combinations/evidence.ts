@@ -32,6 +32,14 @@ export type EvidenceVerdict = {
   reasons: EvidenceReason[];
 };
 
+const OUTCOME_REASONS: ReadonlySet<EvidenceReason> = new Set([
+  "unsuccessful",
+  "failed-validation",
+  "no-executed-steps",
+  "deferred-validation",
+  "skipped-validation",
+]);
+
 export type SourceEvidenceContext = {
   currentGitHead?: string;
   currentWorkspaceClean: boolean;
@@ -63,7 +71,7 @@ type SourceMetadata = {
 const FULL_GIT_SHA = /^[0-9a-f]{40}$/i;
 const EXACT_SEMVER =
   /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
-const REQUIRED_MANAGERS = ["bun", "npm", "pnpm"] as const;
+export const REQUIRED_MANAGERS = ["bun", "npm", "pnpm"] as const;
 const PUBLISHED_PACKAGE_NAME = "create-better-fullstack";
 const PUBLISHED_PACKAGE_REGISTRY = "https://registry.npmjs.org";
 
@@ -104,9 +112,10 @@ function sourceReasons(
 }
 
 function verdict(total: number, eligiblePass: number, reasons: EvidenceReason[]): EvidenceVerdict {
+  const invalid = reasons.some((reason) => !OUTCOME_REASONS.has(reason));
   return {
-    current: reasons.length === 0,
-    pass: reasons.length === 0 ? eligiblePass : 0,
+    current: !invalid,
+    pass: invalid ? 0 : eligiblePass,
     total,
     reasons,
   };

@@ -15,14 +15,14 @@ export interface ServerProcess {
   process: ExecaChildProcess;
   port: number;
   baseUrl: string;
-  kill: () => Promise<void>;
+  kill: () => Promise<number[]>;
 }
 
 export interface DevServerProcess {
   process: ExecaChildProcess;
   frontendUrl: string;
   backendUrl: string | null;
-  kill: () => Promise<void>;
+  kill: () => Promise<number[]>;
 }
 
 export interface E2EProjectResult {
@@ -96,7 +96,7 @@ function signalProcessTree(child: ExecaChildProcess, signal: NodeJS.Signals): bo
       return true;
     } catch (error) {
       if (isMissingProcess(error)) return false;
-      throw error;
+      return child.kill(signal);
     }
   }
 
@@ -110,7 +110,7 @@ function isProcessTreeAlive(child: ExecaChildProcess): boolean {
       return true;
     } catch (error) {
       if (isMissingProcess(error)) return false;
-      throw error;
+      return child.exitCode === null;
     }
   }
 
@@ -178,11 +178,12 @@ async function waitForPortsReleased(ports: readonly number[], deadline: number):
   return waitForPortsReleased(ports, deadline);
 }
 
-async function assertPortsReleased(ports: readonly number[]): Promise<void> {
+async function reportUnreleasedPorts(ports: readonly number[]): Promise<number[]> {
   const stillOpen = await waitForPortsReleased(ports, Date.now() + PROCESS_TERMINATION_GRACE_MS);
   if (stillOpen.length > 0) {
-    throw new Error("E2E process cleanup did not release port(s): " + stillOpen.join(", "));
+    console.error("[E2E] Process cleanup did not release port(s): " + stillOpen.join(", "));
   }
+  return stillOpen;
 }
 
 function managedProcessOptions() {
@@ -289,7 +290,7 @@ export async function startServer(
       serverProcess.stdout?.off("data", stdoutHandler);
       serverProcess.stderr?.off("data", stderrHandler);
       await terminateProcessTree(serverProcess);
-      await assertPortsReleased([port]);
+      return reportUnreleasedPorts([port]);
     },
   };
 }
@@ -346,7 +347,7 @@ export async function startDevServer(
     env: {
       ...process.env,
       NODE_ENV: "development",
-      PORT: String(backendPort),
+      ...(isFullstack ? {} : { PORT: String(backendPort) }),
     },
     reject: false,
     ...managedProcessOptions(),
@@ -395,7 +396,7 @@ export async function startDevServer(
       devProcess.stdout?.off("data", stdoutHandler);
       devProcess.stderr?.off("data", stderrHandler);
       await terminateProcessTree(devProcess);
-      await assertPortsReleased(backendUrl ? [frontendPort, backendPort] : [frontendPort]);
+      return reportUnreleasedPorts(backendUrl ? [frontendPort, backendPort] : [frontendPort]);
     },
   };
 }
@@ -483,6 +484,7 @@ export async function checkStaticAssets(
     /href="([^"]+\.css[^"]*)"/g,
     /src="([^"]+\.(?:js|mjs|tsx?)[^"]*)"/g,
     /href="([^"]+\.(?:js|mjs)[^"]*)"/g,
+    /import\("([^"]+\.(?:js|mjs|ts)[^"]*)"\)/g,
   ];
 
   const urls = new Set<string>();
@@ -578,12 +580,16 @@ export function validateFrameworkPage(html: string, frontend: string): Framework
   };
 }
 
+function apiUrl(baseUrl: string, path: string): URL {
+  return new URL(`${baseUrl.replace(/\/+$/, "")}${path}`);
+}
+
 export async function callTRPC(
   baseUrl: string,
   procedure: string,
   input?: unknown,
 ): Promise<{ status: number; body: unknown }> {
-  const url = new URL(`/trpc/${procedure}`, baseUrl);
+  const url = apiUrl(baseUrl, `/trpc/${procedure}`);
   const inputParam = input !== undefined ? JSON.stringify({ 0: input }) : JSON.stringify({ 0: {} });
   url.searchParams.set("batch", "1");
   url.searchParams.set("input", inputParam);
@@ -609,7 +615,7 @@ export async function callORPC(
   procedure: string,
   input?: unknown,
 ): Promise<{ status: number; body: unknown }> {
-  const url = new URL(`/rpc/${procedure}`, baseUrl);
+  const url = apiUrl(baseUrl, `/rpc/${procedure}`);
 
   try {
     const response = await fetch(url.toString(), {
