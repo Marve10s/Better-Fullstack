@@ -8,6 +8,10 @@ import { join, resolve } from "node:path";
 
 import type { ComboCandidate, GeneratorArgs, HistoricalLedger } from "./lib/generate-combos/types";
 
+import {
+  EVIDENCE_SCHEMA_VERSION,
+  type SmokeEvidenceEnvelope,
+} from "../scripts/verified-combinations/evidence";
 import { ensureBuiltCliBinary } from "./lib/cli-binary";
 import {
   formatCliScaffoldFailure,
@@ -366,6 +370,12 @@ function formatMarkdownSummary(
   return md;
 }
 
+async function gitText(args: string[]): Promise<string | undefined> {
+  const process = Bun.spawn(["git", ...args], { stdout: "pipe", stderr: "ignore" });
+  const output = await new Response(process.stdout).text();
+  return (await process.exited) === 0 ? output.trim() : undefined;
+}
+
 // ── Main ────────────────────────────────────────────────────────────────
 
 const args = parseArgs(process.argv.slice(2));
@@ -540,7 +550,21 @@ const passed = results.filter((r) => r.overallSuccess).length;
 const failed = results.filter((r) => !r.overallSuccess).length;
 console.log(`Results: ${passed} passed, ${failed} failed out of ${results.length}`);
 
-await writeFile(join(args.output, "smoke-results.json"), JSON.stringify(results, null, 2));
+const gitHead = await gitText(["rev-parse", "HEAD"]);
+const workspaceStatus = await gitText(["status", "--porcelain"]);
+const evidence: SmokeEvidenceEnvelope<VerifyResult> = {
+  schemaVersion: EVIDENCE_SCHEMA_VERSION,
+  evidenceType: "better-fullstack/smoke",
+  generatedAt: new Date().toISOString(),
+  gitHead: gitHead ?? "",
+  workspaceClean: workspaceStatus === "",
+  preset: args.preset,
+  expectedRows: combos.map((combo) => combo.name),
+  overallSuccess:
+    results.length === combos.length && results.every((result) => result.overallSuccess),
+  results,
+};
+await writeFile(join(args.output, "smoke-results.json"), JSON.stringify(evidence, null, 2) + "\n");
 await writeFile(
   join(args.output, "summary.md"),
   formatMarkdownSummary(args.seed, results, {

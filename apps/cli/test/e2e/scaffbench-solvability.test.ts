@@ -1,4 +1,6 @@
+import * as BunContext from "@effect/platform-bun/BunContext";
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
+import * as Effect from "effect/Effect";
 import { mkdir, rm } from "node:fs/promises";
 import { join } from "node:path";
 
@@ -76,6 +78,12 @@ function selectSpecs(): BenchmarkSpec[] {
   );
 }
 
+function runValidation(spec: BenchmarkSpec, projectDir: string) {
+  return Effect.runPromise(
+    validateProject(spec, projectDir, parseArgs([])).pipe(Effect.provide(BunContext.layer)),
+  );
+}
+
 describe("ScaffBench 2 spec solvability", () => {
   beforeAll(async () => {
     await rm(SMOKE_DIR, { recursive: true, force: true });
@@ -88,11 +96,22 @@ describe("ScaffBench 2 spec solvability", () => {
     }
   });
 
+  it("executes the ScaffBench validation Effect at the test boundary", async () => {
+    const emptyProjectDir = join(SMOKE_DIR, "effect-execution-contract");
+    await mkdir(emptyProjectDir, { recursive: true });
+
+    const validation = await runValidation(SCAFFBENCH_2_SPECS[0]!, emptyProjectDir);
+
+    expect(Effect.isEffect(validation)).toBe(false);
+    expect(validation.steps["unvalidated:project"]?.status).toBe("ran");
+    expect(validation.steps["unvalidated:project"]?.exitCode).toBe(1);
+  });
+
   for (const spec of selectSpecs()) {
     const missing = (SPEC_TOOLCHAINS[spec.id] ?? []).filter((tool) => !Bun.which(tool));
-    const register = missing.length > 0 ? it.skip : it;
+    const register = missing.length > 0 && !process.env.CI ? it.skip : it;
 
-    if (missing.length > 0) {
+    if (missing.length > 0 && !process.env.CI) {
       console.warn(
         `[scaffbench-solvability] SKIP ${spec.id}: missing toolchain(s) ${missing.join(", ")}`,
       );
@@ -101,6 +120,10 @@ describe("ScaffBench 2 spec solvability", () => {
     register(
       `scaffolds and validates the ${spec.id} stack from its own canonical flags`,
       async () => {
+        expect(
+          missing,
+          `CI is missing required toolchain(s) for ${spec.id}: ${missing.join(", ")}`,
+        ).toEqual([]);
         const projectDir = join(SMOKE_DIR, spec.id);
         const expectedFile = EXPECTED_FILE_BY_FAMILY[spec.family];
 
@@ -113,10 +136,9 @@ describe("ScaffBench 2 spec solvability", () => {
           true,
         );
 
-        // parseArgs([]) yields safe defaults (qualityGate/doctor/route all off),
-        // so validateProject runs only install + build + type-check + native.
-        const options = parseArgs([]);
-        const validation = await validateProject(spec, projectDir, options);
+        // runValidation uses parseArgs([]), whose safe defaults leave
+        // qualityGate/doctor/route off. Only core validation is executed.
+        const validation = await runValidation(spec, projectDir);
 
         // Guard against a VACUOUS pass: if the scaffold produced nothing the
         // validator recognizes (e.g. a hung prompt that left an empty dir), no

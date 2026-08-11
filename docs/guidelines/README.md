@@ -15,6 +15,7 @@ Files:
 - `generator-change-playbook.md` - template-generation change flow, snapshot expectations, and output validation
 - `web-builder-and-url-state.md` - stack builder state handling, URL encoding, lazy loading constraints, and route gotchas
 - `testing-release-and-upstream.md` - verification commands, release-focused CI, and upstream backport workflow
+- `preview-publishing-security.md` - secure PR preview artifact/publish boundary and environment runbook
 - `scripted-cli-runs.md` - non-interactive CLI rules, prompt avoidance, and matrix caveats
 - `production-package-testing.md` - production `bun create better-fullstack@latest` validation workflow and combo-ledger rules
 - `template-output-and-validation.md` - template conditional logic, generated output validation, sync test discipline, and framework-specific constraints

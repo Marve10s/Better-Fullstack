@@ -937,8 +937,7 @@ export const backfillStats = internalMutation({
     uniqueMachines: v.number(),
   }),
   handler: async (ctx) => {
-    const existing = await ctx.db.query("analyticsStats").first();
-    if (existing) {
+    for (const existing of await ctx.db.query("analyticsStats").collect()) {
       await ctx.db.delete("analyticsStats", existing._id);
     }
     for (const d of await ctx.db.query("analyticsDailyStats").collect()) {

@@ -1,52 +1,50 @@
-# Plans
+# Planning Registry
 
-Task planning documents are organized by state:
+This file is the complete state registry for `docs/plans/planned/*.md` and `docs/plans/completed/*.md`. The canonical priority order lives in [`docs/next-updates-roadmap.md`](../next-updates-roadmap.md); a document's directory name alone does not make it current.
 
-- `docs/plans/planned/`: active backlogs plus retained design/opportunity documents; read each
-  status banner before treating it as current work
-- `docs/plans/completed/`: finished work and validation logs
+States:
 
-The canonical product direction and priority order live in
-`docs/next-updates-roadmap.md`. Many older files below combine shipped history with remaining depth;
-they must not be treated as current product status without checking the executable source.
+- **Active** — approved work that supports a current roadmap lane. Scope still requires an issue or implementation brief.
+- **Candidate** — demand-gated or optional depth. It is not committed roadmap work.
+- **Historical** — shipped record, superseded proposal, benchmark snapshot, or retained reference. Never present it as current product status without fresh executable evidence.
 
-## Planned
+Every plan file must appear exactly once below. `scripts/planning-registry.test.ts` enforces coverage and valid states.
 
-- `docs/plans/planned/next-big-features.md` - historical opportunity analysis; superseded by the canonical roadmap
-- `docs/plans/planned/single-source-of-truth-stack-graph.md` - active design: finish graph authority cleanup and compatibility consolidation
-- `docs/plans/planned/ecosystem-expansion-backlog.md` - demand-gated catalog candidates; not the default roadmap
-- `docs/plans/planned/typescript-category-expansion.md` - remaining TypeScript category depth after the June 2026 option batches
-- `docs/plans/planned/typescript-new-categories.md` - remaining TypeScript new-category candidates after GraphQL/i18n/rate-limit/vector/mobile/tooling work
-- `docs/plans/planned/community-requested-integrations.md` - smaller GitHub-requested integrations that are not already first-class options
-- `docs/plans/planned/payment-providers-expansion.md` - Creem, Autumn, Commet, and Better Auth payment/org plugins
-- `docs/plans/planned/docker-and-devcontainers.md` - remaining container follow-ups for non-monorepo/single-app mode and generated checks
-- `docs/plans/planned/platform-features.md` - lifecycle feature status and remaining reliability work
-- `docs/plans/planned/mcp-incremental-library-updates.md` - shipped stack-update implementation history plus remaining depth
-- `docs/plans/planned/documentation-follow-ups.md` - roadmap, compatibility, CLI, MCP, and public section docs
-- `docs/plans/planned/java-ecosystem-follow-ups.md` - remaining Java API/example/runtime-validation depth after Micronaut and Log4j2 shipped
-- `docs/plans/planned/rust-ecosystem-expansion.md` - remaining Rust framework, Kafka, generated-check, and template-depth work
-- `docs/plans/planned/python-ecosystem-expansion.md` - remaining Python search, provider-doc, generated-check, and template-depth work
-- `docs/plans/planned/go-ecosystem-expansion.md` - remaining Go stdlib/Bun/search, generated-check, and template-depth work
-- `docs/plans/planned/mobile-react-native.md` - remaining React Native UI, state/data, testing, push, web-to-mobile, OTA, and generated-check work
-- `docs/plans/planned/new-ecosystems.md` - future solo-ecosystem watch list; Kotlin is already available through JVM and composed app parts
-- `docs/plans/planned/elixir-ecosystem.md` - remaining Elixir/Phoenix follow-ups
-- `docs/plans/planned/scaffbench-2-readiness.md` - historical V2 runbook; verify commands against the current runner
-- `docs/plans/planned/scaffbench-public-positioning.md` - shipped public-positioning research retained for future campaigns
-- `docs/plans/planned/competitive-landscape-2026-06-12.md` - historical June 2026 competitive snapshot; verify before using for marketing
-- `docs/plans/planned/stack-graph-phase-0-library-inventory.md` - reference inventory for remaining stack-graph authority cleanup
-
-## Completed
-
-- `docs/plans/completed/compatibility-unification-and-url-state-foundation-2026-02-28.md`
-- `docs/plans/completed/shadcn-ui-polish-fixes-2026-03-02.md`
-- `docs/plans/completed/engineering-backlog-2026-03-05.md`
-- `docs/plans/completed/ci-security-foundation-2026-04-04.md`
-- `docs/plans/completed/phase-1-quality-hardening-2026-04-04.md`
-- `docs/plans/completed/codebase-issues-2026-04-04.md`
-- `docs/plans/completed/documentation-site-2026-04-29.md`
-- `docs/plans/completed/java-ecosystem-foundation-2026-04-29.md`
-- `docs/plans/completed/competitive-analysis-2026-05-21.md`
-- `docs/plans/completed/deployment-docs-and-docker-foundation-2026-05-21.md`
-- `docs/plans/completed/dotnet-ecosystem-2026-06-10.md`
-- `docs/plans/completed/ci-and-quality-follow-ups-2026-06-30.md`
-- `docs/plans/completed/generated-ci-and-verified-combinations-2026-07-02.md`
+| State      | Document                                                                     | Purpose                                                                                                                                                  |
+| ---------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Active     | `planned/single-source-of-truth-stack-graph.md`                              | [Now — Lifecycle Reliability](../next-updates-roadmap.md#now--lifecycle-reliability) — remaining graph authority and compatibility consolidation.        |
+| Active     | `planned/platform-features.md`                                               | [Now — Lifecycle Reliability](../next-updates-roadmap.md#now--lifecycle-reliability) — lifecycle reliability and platform follow-ups.                    |
+| Historical | `planned/mcp-incremental-library-updates.md`                                 | Shipped implementation history and retained depth notes.                                                                                                 |
+| Active     | `planned/documentation-follow-ups.md`                                        | [Now — Lifecycle Reliability](../next-updates-roadmap.md#now--lifecycle-reliability) — executable-behavior, roadmap, CLI, MCP, and navigation alignment. |
+| Historical | `planned/multi-ecosystem-parity-expansion.md`                                | Shipped parity implementation history and retained depth notes.                                                                                          |
+| Candidate  | `planned/community-requested-integrations.md`                                | Smaller request-driven integrations.                                                                                                                     |
+| Candidate  | `planned/docker-and-devcontainers.md`                                        | Container depth beyond the shipped foundation.                                                                                                           |
+| Candidate  | `planned/ecosystem-expansion-backlog.md`                                     | Demand-gated catalog expansion.                                                                                                                          |
+| Candidate  | `planned/elixir-ecosystem.md`                                                | Remaining Elixir/Phoenix depth.                                                                                                                          |
+| Candidate  | `planned/go-ecosystem-expansion.md`                                          | Remaining Go depth.                                                                                                                                      |
+| Candidate  | `planned/java-ecosystem-follow-ups.md`                                       | Remaining Java depth.                                                                                                                                    |
+| Candidate  | `planned/mobile-react-native.md`                                             | Remaining React Native depth.                                                                                                                            |
+| Candidate  | `planned/new-ecosystems.md`                                                  | Future ecosystem watch list.                                                                                                                             |
+| Candidate  | `planned/payment-providers-expansion.md`                                     | Additional payment providers and auth plugins.                                                                                                           |
+| Candidate  | `planned/python-ecosystem-expansion.md`                                      | Remaining Python depth.                                                                                                                                  |
+| Candidate  | `planned/rust-ecosystem-expansion.md`                                        | Remaining Rust depth.                                                                                                                                    |
+| Candidate  | `planned/typescript-category-expansion.md`                                   | Remaining TypeScript category depth.                                                                                                                     |
+| Candidate  | `planned/typescript-new-categories.md`                                       | Possible new TypeScript categories.                                                                                                                      |
+| Historical | `planned/competitive-landscape-2026-06-12.md`                                | Dated competitive snapshot.                                                                                                                              |
+| Historical | `planned/next-big-features.md`                                               | Superseded opportunity analysis.                                                                                                                         |
+| Historical | `planned/scaffbench-2-readiness.md`                                          | Retained benchmark V2 runbook.                                                                                                                           |
+| Historical | `planned/scaffbench-public-positioning.md`                                   | Shipped positioning research.                                                                                                                            |
+| Historical | `planned/stack-graph-phase-0-library-inventory.md`                           | Phase-0 inventory and decision record.                                                                                                                   |
+| Historical | `completed/ci-and-quality-follow-ups-2026-06-30.md`                          | Completed CI and quality record.                                                                                                                         |
+| Historical | `completed/ci-security-foundation-2026-04-04.md`                             | Completed CI security foundation.                                                                                                                        |
+| Historical | `completed/codebase-issues-2026-04-04.md`                                    | Completed issue batch.                                                                                                                                   |
+| Historical | `completed/compatibility-unification-and-url-state-foundation-2026-02-28.md` | Completed compatibility and URL-state foundation.                                                                                                        |
+| Historical | `completed/competitive-analysis-2026-05-21.md`                               | Dated completed competitive analysis.                                                                                                                    |
+| Historical | `completed/deployment-docs-and-docker-foundation-2026-05-21.md`              | Completed deployment and container foundation.                                                                                                           |
+| Historical | `completed/documentation-site-2026-04-29.md`                                 | Completed documentation site work.                                                                                                                       |
+| Historical | `completed/dotnet-ecosystem-2026-06-10.md`                                   | Completed .NET foundation.                                                                                                                               |
+| Historical | `completed/engineering-backlog-2026-03-05.md`                                | Completed engineering backlog record.                                                                                                                    |
+| Historical | `completed/generated-ci-and-verified-combinations-2026-07-02.md`             | Completed generated CI/evidence foundation.                                                                                                              |
+| Historical | `completed/java-ecosystem-foundation-2026-04-29.md`                          | Completed Java foundation.                                                                                                                               |
+| Historical | `completed/phase-1-quality-hardening-2026-04-04.md`                          | Completed quality-hardening phase.                                                                                                                       |
+| Historical | `completed/shadcn-ui-polish-fixes-2026-03-02.md`                             | Completed UI polish batch.                                                                                                                               |

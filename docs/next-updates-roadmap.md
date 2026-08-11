@@ -1,6 +1,6 @@
 # Better Fullstack Product Roadmap
 
-> **Canonical roadmap — updated 2026-08-07.** This document is derived from the current CLI,
+> **Canonical roadmap — updated 2026-08-09.** This document is derived from the current CLI,
 > Stack Graph, templates, web builder, MCP server, tests, and Convex analytics. Older feature plans
 > are implementation history or depth backlogs; when they disagree with this file, this file wins.
 
@@ -26,6 +26,20 @@ scaffolded, evolved, verified, and reproduced without losing user work.
 - Preview-first stack updates and a three-way scaffold update engine backed by `bts.lock.json`.
 - MCP tools, installable agent plugin, generated AI instructions and skills.
 - Verified-combination evidence, release guards, published-package smoke tests, and ScaffBench.
+
+## Now — Operational Trust
+
+Operational claims must fail closed, and production telemetry must have one explicit owner.
+
+1. Keep the retired `apps/analytics` source as a no-mutation `410 Gone` contract; after export and exact-deployment verification, quarantine the legacy deployment while preserving its app and historical data.
+2. Treat `packages/backend` as the sole active telemetry owner. Production activation and aggregate reconciliation are owner-only operations governed by the [backend runbook](../packages/backend/README.md).
+3. Publish green verification claims only from complete, current, clean-SHA evidence. Missing, stale, malformed, partial, dirty, or version-mismatched evidence must remain non-green.
+4. Keep untrusted PR execution separated from npm credentials, repository write tokens, and OIDC; protected environments are approval boundaries, not documentation-only controls.
+5. Keep active plans, demand-gated candidates, and historical documents explicit in the [planning registry](plans/README.md).
+
+### Exit gate
+
+One documented owner activation drill, one safely bounded reconciliation drill or dry-run review, no public legacy analytics data functions, and repository tests that prevent ownership, planning-state, evidence, and preview-security regressions.
 
 ## Now — Lifecycle Reliability
 
@@ -95,9 +109,9 @@ New ecosystems, libraries, and providers are not the default roadmap. Accept cat
 - browser run-ready, edit-rerun, and ZIP success rates;
 - verified recipe pass rate and evidence freshness.
 
-The internal `/telemetry` decision room is not a public product surface. It reads aggregates through
-internal Convex queries and fails closed unless the same random, 32-character-or-longer
-`TELEMETRY_DASHBOARD_SECRET` is configured in both the web and Convex deployments. The owner signs
-in with the username `owner` and that secret as the password.
+The internal `/telemetry` decision room is not a public product surface. The web server fetches the
+authenticated, aggregate-only `/api/analytics/dashboard` endpoint, which performs internal Convex
+queries and never returns raw events. Access fails closed unless web and Convex share the owner
+secret. Deployment and rotation mechanics live in the [backend owner runbook](../packages/backend/README.md).
 
 Theoretical combination count is not a roadmap metric.
