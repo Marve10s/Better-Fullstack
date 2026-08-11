@@ -44,8 +44,6 @@ function formatCount(count: number, noun: string): string {
 function failUpdate(projectDir: string, error: string, json: boolean): never {
   if (json) {
     console.log(JSON.stringify({ projectDir, ok: false, error }, null, 2));
-    // Exit synchronously: trpc-cli calls process.exit(0) after the handler
-    // resolves, which would otherwise mask the failure for CI gates.
     process.exit(1);
   }
   handleError(error);
@@ -96,6 +94,14 @@ function renderPlan(plan: UpgradePlan): void {
         : "Baseline: none — `update --record-baseline` manually adopts current bytes but does not prove generator lineage",
     ),
   );
+  if (plan.manifestState === "invalid") {
+    log.warn(
+      pc.yellow(
+        `bts.lock.json is malformed and was ignored for this plan: ${plan.manifestError ?? "validation failed"}. ` +
+          "Apply is blocked until the manifest is fixed or re-recorded with `update --record-baseline`.",
+      ),
+    );
+  }
   log.message("");
   if (plan.hasBaseline && plan.manifestVersion === "1") {
     log.info(pc.dim(`Review token: ${getUpgradePlanDigest(plan)}`));
@@ -124,6 +130,8 @@ export function toJsonPlan(plan: UpgradePlan) {
   return {
     projectDir: plan.projectDir,
     hasBaseline: plan.hasBaseline,
+    manifestState: plan.manifestState,
+    manifestError: plan.manifestError,
     baselineCreatedAt: plan.baselineCreatedAt,
     reviewToken:
       plan.hasBaseline && plan.manifestVersion === "1" ? getUpgradePlanDigest(plan) : undefined,
@@ -168,14 +176,22 @@ export function getUpdateApplyCommandFlavor(
   return platform === "win32" ? "PowerShell" : "POSIX shell";
 }
 
+function packageExecPrefix(packageManager: string | undefined): string {
+  if (packageManager === "bun") return "bunx";
+  if (packageManager === "pnpm") return "pnpm dlx";
+  if (packageManager === "yarn") return "yarn dlx";
+  return "npx --yes";
+}
+
 export function getUpdateApplyCommand(
   plan: UpgradePlan,
   platform: NodeJS.Platform = process.platform,
+  packageManager?: string,
 ): string | null {
   if (!plan.hasBaseline || plan.manifestVersion !== "1") return null;
   const quoteArgument = platform === "win32" ? quotePowerShellArgument : quotePosixShellArgument;
   return (
-    `npx --yes create-better-fullstack@${getLatestCLIVersion()} update ${quoteArgument(plan.projectDir)} --apply ` +
+    `${packageExecPrefix(packageManager)} create-better-fullstack@${getLatestCLIVersion()} update ${quoteArgument(plan.projectDir)} --apply ` +
     `--review-token ${getUpgradePlanDigest(plan)} ` +
     "--acknowledge-unproven-manifest-v1"
   );
@@ -214,8 +230,6 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
     const message = `No Better Fullstack project found in ${projectDir}. Make sure bts.jsonc exists.`;
     if (json) {
       console.log(JSON.stringify({ projectDir, ok: false, error: message }, null, 2));
-      // Exit synchronously: trpc-cli calls process.exit(0) after the handler
-      // resolves, which would otherwise mask the failure for CI gates.
       process.exit(1);
     }
     handleError(message);
@@ -358,7 +372,11 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
   if (plan.actionable.length === 0) {
     log.success(pc.green("Up to date with the current templates."));
   } else {
-    const applyCommand = getUpdateApplyCommand(plan);
+    const applyCommand = getUpdateApplyCommand(
+      plan,
+      process.platform,
+      (await readBtsConfig(projectDir))?.packageManager,
+    );
     const commandFlavor = getUpdateApplyCommandFlavor();
     log.info(
       pc.cyan(
@@ -376,7 +394,6 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
   }
   outro(pc.magenta(apply ? "Update complete." : "Dry run — no files were written."));
 
-  // CI gate: exit non-zero when there is actionable drift to apply.
   if (check && plan.actionable.length > 0) {
     process.exit(1);
   }

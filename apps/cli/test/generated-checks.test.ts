@@ -118,10 +118,26 @@ describe("generated target checks", () => {
     ]);
     expect(results.every((result) => result.status === "pass" && result.executed)).toBe(true);
     expect(executed).toEqual([
-      "services/go-fiber:go test -mod=readonly ./...",
+      "services/go-fiber:go mod tidy",
+      "services/go-fiber:go test ./...",
       "packages/db:bun run check-types",
       "apps/web:bun run check-types",
     ]);
+  });
+
+  it("keeps the readonly Go verification when go.sum is present", async () => {
+    const config = await graphProject();
+    await fs.writeFile(path.join(config.projectDir, "services/go-fiber/go.sum"), "");
+    const executed: string[] = [];
+    await runGeneratedChecks(config, {
+      commandExists: async () => true,
+      execute: async ({ display, cwd }) => {
+        executed.push(`${path.relative(config.projectDir, cwd)}:${display}`);
+        return { exitCode: 0 };
+      },
+    });
+    expect(executed).toContain("services/go-fiber:go test -mod=readonly ./...");
+    expect(executed).not.toContain("services/go-fiber:go mod tidy");
   });
 
   it("fails closed for a missing expected target", async () => {
@@ -156,7 +172,7 @@ describe("generated target checks", () => {
     });
     const go = results.find((result) => result.ecosystem === "go");
     expect(go?.status).toBe("fail");
-    expect(go?.executedCommands).toEqual(["go test -mod=readonly ./..."]);
+    expect(go?.executedCommands).toEqual(["go mod tidy"]);
     expect(go?.reason).toContain("exited with code 2");
   });
 
@@ -172,7 +188,7 @@ describe("generated target checks", () => {
     expect(results.find((result) => result.id === "backend:go:fiber")).toMatchObject({
       status: "fail",
       executed: true,
-      reason: "go test -mod=readonly ./... could not start: spawn EACCES",
+      reason: "go mod tidy could not start: spawn EACCES",
     });
     expect(results.find((result) => result.id === "frontend:typescript:react-vite")?.status).toBe(
       "pass",
@@ -214,10 +230,11 @@ describe("generated target checks", () => {
       ["catalog", "uv"],
     ]);
     expect(executed).toEqual([
+      "admin:poetry install --extras dev",
       "admin:poetry run python -m compileall src",
       "admin:poetry run mypy",
-      "catalog:uv run python -m compileall src",
-      "catalog:uv run ruff check .",
+      "catalog:uv run --extra dev python -m compileall src",
+      "catalog:uv run --extra dev ruff check .",
     ]);
   });
 
@@ -366,15 +383,20 @@ describe("generated target checks", () => {
     );
     expect(await fs.pathExists(path.join(config.projectDir, "apps/web/package.json"))).toBe(true);
     expect(await fs.pathExists(path.join(config.projectDir, "apps/server"))).toBe(false);
-    expect(discoverGeneratedCheckTargets(config).map((target) => target.id)).toEqual([
-      "frontend:typescript:next",
+    expect((await discoverGeneratedCheckTargets(config)).map((target) => target.id)).toEqual([
+      "workspace:typescript",
     ]);
+    const executed: string[] = [];
     const checks = await runGeneratedChecks(config, {
       commandExists: async () => true,
-      execute: async () => ({ exitCode: 0 }),
+      execute: async ({ display, cwd }) => {
+        executed.push(`${path.relative(config.projectDir, cwd) || "."}:${display}`);
+        return { exitCode: 0 };
+      },
     });
     expect(checks).toHaveLength(1);
-    expect(checks[0]).toMatchObject({ role: "frontend", status: "pass", executed: true });
+    expect(checks[0]).toMatchObject({ role: "workspace", status: "pass", executed: true });
+    expect(executed).toEqual([".:bun run check-types"]);
   });
 
   it("checks the real Convex package at packages/backend", async () => {
@@ -388,17 +410,21 @@ describe("generated target checks", () => {
     expect(await fs.pathExists(path.join(config.projectDir, "packages/backend/package.json"))).toBe(
       true,
     );
-    expect(discoverGeneratedCheckTargets(config)).toMatchObject([
+    expect(await discoverGeneratedCheckTargets(config)).toMatchObject([
       {
         id: "backend:typescript:convex",
         projectDir: path.join(config.projectDir, "packages/backend"),
       },
+      { id: "workspace:typescript", projectDir: config.projectDir },
     ]);
     const checks = await runGeneratedChecks(config, {
       commandExists: async () => true,
       execute: async () => ({ exitCode: 0 }),
     });
-    expect(checks).toMatchObject([{ status: "pass", executed: true }]);
+    expect(checks).toMatchObject([
+      { id: "backend:typescript:convex", status: "pass", executed: true },
+      { id: "workspace:typescript", status: "pass", executed: true },
+    ]);
   });
 
   it("skips real README-only database output but checks a generated database package", async () => {
@@ -415,7 +441,9 @@ describe("generated target checks", () => {
     expect(await fs.pathExists(path.join(readmeOnly.projectDir, "packages/db/package.json"))).toBe(
       false,
     );
-    expect(discoverGeneratedCheckTargets(readmeOnly)).toEqual([]);
+    expect((await discoverGeneratedCheckTargets(readmeOnly)).map((target) => target.id)).toEqual([
+      "workspace:typescript",
+    ]);
 
     const packaged = await materializeGraph(
       ["backend:typescript:hono", "database:universal:sqlite", "backend.orm:typescript:drizzle"],
@@ -424,17 +452,14 @@ describe("generated target checks", () => {
     expect(await fs.pathExists(path.join(packaged.projectDir, "packages/db/package.json"))).toBe(
       true,
     );
-    expect(discoverGeneratedCheckTargets(packaged).map((target) => target.id)).toContain(
-      "database:universal:sqlite",
-    );
+    expect((await discoverGeneratedCheckTargets(packaged)).map((target) => target.id)).toEqual([
+      "workspace:typescript",
+    ]);
     const packagedChecks = await runGeneratedChecks(packaged, {
       commandExists: async () => true,
       execute: async () => ({ exitCode: 0 }),
     });
-    expect(packagedChecks.find((target) => target.role === "database")).toMatchObject({
-      status: "pass",
-      executed: true,
-    });
+    expect(packagedChecks).toMatchObject([{ role: "workspace", status: "pass", executed: true }]);
 
     const redis = await materializeGraph(["database:universal:redis"], {
       frontend: [],
@@ -444,13 +469,13 @@ describe("generated target checks", () => {
       orm: "none",
     });
     expect(await fs.pathExists(path.join(redis.projectDir, "packages/db/package.json"))).toBe(true);
-    expect(discoverGeneratedCheckTargets(redis).map((target) => target.id)).toEqual([
-      "database:universal:redis",
+    expect((await discoverGeneratedCheckTargets(redis)).map((target) => target.id)).toEqual([
+      "workspace:typescript",
     ]);
     const redisChecks = await runGeneratedChecks(redis, {
       commandExists: async () => true,
       execute: async () => ({ exitCode: 0 }),
     });
-    expect(redisChecks).toMatchObject([{ role: "database", status: "pass", executed: true }]);
+    expect(redisChecks).toMatchObject([{ role: "workspace", status: "pass", executed: true }]);
   });
 });

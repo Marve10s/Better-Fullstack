@@ -13,13 +13,13 @@ npm create better-fullstack@latest check -- --skip-checks
 
 ## Operational contract
 
-| Concern           | Contract                                                                                                                    |
-| ----------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Preconditions     | A generated project with a readable `bts.jsonc`.                                                                            |
-| Source writes     | Does not rewrite scaffold source or configuration. Invoked build/type tools may create their normal caches or build output. |
-| Fast inspection   | `--skip-checks` limits work to config, dependency, and environment inspection.                                              |
-| Structured output | `--json` runs the identical multi-target matrix and captures subprocess output.                                             |
-| Failure           | Exits non-zero for failed targets, missing targets/toolchains, or incomplete execution.                                     |
+| Concern           | Contract                                                                                                                              |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Preconditions     | A generated project with a readable `bts.jsonc`.                                                                                      |
+| Source writes     | Does not rewrite scaffold source or configuration. Invoked build/type tools may create their normal caches or build output.           |
+| Fast inspection   | `--skip-checks` limits work to config, dependency, and environment inspection.                                                        |
+| Structured output | `--json` alone is a fast config/deps/env inspection; add `--run-checks` to execute the full multi-target matrix with captured output. |
+| Failure           | Exits non-zero for failed targets, missing targets/toolchains, or incomplete execution.                                               |
 
 ## What check does
 
@@ -29,15 +29,16 @@ npm create better-fullstack@latest check -- --skip-checks
 - Discovers every executable generated frontend, backend, mobile, and database target from the stack graph.
 - Runs each target's generated type/build contract in deterministic order unless `--skip-checks` is passed.
 - Reports each target directory, toolchain, planned commands, executed commands, status, and reason.
-- Supports `--json` for the same matrix; only presentation changes and command output is captured.
+- Supports `--json` for structured output. On its own, `--json` skips the ecosystem checks and reports a warning, keeping the historical fast machine-readable contract; `--json --run-checks` executes the identical complete matrix with subprocess output captured.
 
 ## Flags
 
-| Flag                         | Behavior                                                                                                                                    |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| positional project directory | Project directory to diagnose. Defaults to the current directory.                                                                           |
-| `--skip-checks`              | Skip generated type/build checks and only inspect config, dependencies, and env files.                                                      |
-| `--json`                     | Print structured JSON while running the identical complete target matrix. The command exits non-zero for failed or incomplete verification. |
+| Flag                         | Behavior                                                                                                                                                            |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| positional project directory | Project directory to diagnose. Defaults to the current directory.                                                                                                   |
+| `--skip-checks`              | Skip generated type/build checks and only inspect config, dependencies, and env files.                                                                              |
+| `--json`                     | Print structured JSON. Without `--run-checks`, ecosystem checks are skipped and reported as a warning so machine consumers keep a fast, toolchain-independent gate. |
+| `--run-checks`               | With `--json`: execute the identical complete target matrix. The command exits non-zero for failed or incomplete verification.                                      |
 
 <Callout kind="warning" title="Checks can mutate toolchain state">
 Generated checks may fetch dependencies and write normal locks, caches, compiler output, or build

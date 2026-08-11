@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
 
+import { spawn } from "node:child_process";
 import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 
@@ -52,6 +53,18 @@ async function gitText(args: string[]): Promise<string> {
   return output.trim();
 }
 
+function signalProcessGroup(pid: number, signal: NodeJS.Signals): void {
+  try {
+    process.kill(process.platform === "win32" ? pid : -pid, signal);
+  } catch {
+    try {
+      process.kill(pid, signal);
+    } catch {
+      return;
+    }
+  }
+}
+
 async function runCommand(
   step: string,
   command: string,
@@ -59,42 +72,61 @@ async function runCommand(
   cwd: string,
 ): Promise<RecordedStep> {
   const startedAt = Date.now();
-  try {
-    const child = Bun.spawn([command, ...args], {
-      cwd,
-      stdout: "pipe",
-      stderr: "pipe",
-      env: { ...processEnv(), CI: "true", NO_COLOR: "1" },
-    });
+  return await new Promise<RecordedStep>((resolvePromise) => {
+    let stdout = "";
+    let stderr = "";
     let timedOut = false;
-    const timeout = setTimeout(() => {
-      timedOut = true;
-      child.kill();
-    }, STEP_TIMEOUT_MS);
-    const [stdout, stderr, exitCode] = await Promise.all([
-      new Response(child.stdout).text(),
-      new Response(child.stderr).text(),
-      child.exited,
-    ]).finally(() => clearTimeout(timeout));
-    return {
-      step,
-      command: [command, ...args],
-      success: exitCode === 0 && !timedOut,
-      durationMs: Date.now() - startedAt,
-      exitCode,
-      timedOut,
-      stdoutTail: stdout.slice(-4_000),
-      stderrTail: stderr.slice(-4_000),
+    let settled = false;
+    const timers: NodeJS.Timeout[] = [];
+    const settle = (exitCode: number | null, failureMessage?: string) => {
+      if (settled) return;
+      settled = true;
+      for (const timer of timers) clearTimeout(timer);
+      // oxlint-disable-next-line promise/no-multiple-resolved -- the settled flag guarantees a single resolution across event paths
+      resolvePromise({
+        step,
+        command: [command, ...args],
+        success: exitCode === 0 && !timedOut && !failureMessage,
+        durationMs: Date.now() - startedAt,
+        exitCode: exitCode ?? undefined,
+        timedOut,
+        stdoutTail: stdout.slice(-4_000),
+        stderrTail: (failureMessage ? `${failureMessage}\n${stderr}` : stderr).slice(-4_000),
+      });
     };
-  } catch (error) {
-    return {
-      step,
-      command: [command, ...args],
-      success: false,
-      durationMs: Date.now() - startedAt,
-      stderrTail: error instanceof Error ? error.message : String(error),
-    };
-  }
+
+    const child = spawn(command, args, {
+      cwd,
+      detached: process.platform !== "win32",
+      env: { ...processEnv(), CI: "true", NO_COLOR: "1" },
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    child.stdout?.on("data", (data: Buffer) => {
+      stdout += data.toString();
+    });
+    child.stderr?.on("data", (data: Buffer) => {
+      stderr += data.toString();
+    });
+    child.on("error", (error) => settle(null, error.message));
+    child.on("close", (code) => settle(code));
+    child.on("exit", (code) => {
+      timers.push(setTimeout(() => settle(code), 5_000));
+    });
+    timers.push(
+      setTimeout(() => {
+        timedOut = true;
+        if (child.pid) signalProcessGroup(child.pid, "SIGTERM");
+        timers.push(
+          setTimeout(() => {
+            if (child.pid) signalProcessGroup(child.pid, "SIGKILL");
+            timers.push(
+              setTimeout(() => settle(null, "Step timed out; process group killed"), 2_000),
+            );
+          }, 2_000),
+        );
+      }, STEP_TIMEOUT_MS),
+    );
+  });
 }
 
 function processEnv(): Record<string, string | undefined> {

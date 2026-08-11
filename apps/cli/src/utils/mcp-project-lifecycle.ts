@@ -58,9 +58,6 @@ export async function checkMcpProject(
 }
 
 export async function planMcpProjectUpdate(projectDir: string) {
-  // Structured merge bytes are part of both the review response and digest.
-  // Reviewers must be able to inspect the exact bounded file content that an
-  // acknowledged apply would overwrite.
   const result = await planReviewedProjectUpdate(projectDir);
   return result.success ? boundMcpUpdateReview(result) : result;
 }

@@ -14,6 +14,7 @@ import { renderTitle } from "../utils/render-title";
 export type DoctorCommandInput = {
   projectDir?: string;
   skipChecks?: boolean;
+  runChecks?: boolean;
   json?: boolean;
   commandName?: "check" | "doctor";
 };
@@ -60,10 +61,9 @@ export async function doctorCommand(input: DoctorCommandInput): Promise<void> {
     log.info(pc.dim(`Path: ${projectDir}`));
   }
 
-  // JSON changes presentation only. It executes the exact same target checks
-  // with output captured, so machine-readable mode cannot report false green.
+  const runChecks = json ? input.runChecks === true && !input.skipChecks : !input.skipChecks;
   const result = await inspectProject(projectDir, {
-    runChecks: !input.skipChecks,
+    runChecks,
     generatedChecks: { output: json ? "ignore" : "inherit" },
   });
 
@@ -73,6 +73,15 @@ export async function doctorCommand(input: DoctorCommandInput): Promise<void> {
       process.exit(1);
     }
     handleError(`${result.error} Project path: ${projectDir}`);
+  }
+
+  if (json && !runChecks && !input.skipChecks) {
+    result.checks.push({
+      label: "generated verification",
+      status: "warn",
+      detail: "Ecosystem checks are skipped in --json mode. Pass --run-checks to execute them.",
+    });
+    result.summary.warn += 1;
   }
 
   if (!json) {
@@ -86,7 +95,7 @@ export async function doctorCommand(input: DoctorCommandInput): Promise<void> {
     result.ok ? "succeeded" : "failed",
     {
       source: "cli-flags",
-      mode: input.skipChecks ? "config-only" : "full",
+      mode: runChecks ? "full" : "config-only",
       issueCount: result.summary.fail,
       warningCount: result.summary.warn,
     },
@@ -96,7 +105,5 @@ export async function doctorCommand(input: DoctorCommandInput): Promise<void> {
   if (json) console.log(JSON.stringify(result, null, 2));
   else renderResult(result);
 
-  // trpc-cli exits zero after resolved handlers, so a failed gate must exit
-  // synchronously. Pure callers (including MCP) use inspectProject directly.
   if (!result.ok) process.exit(1);
 }

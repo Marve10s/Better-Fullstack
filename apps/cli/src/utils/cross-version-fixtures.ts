@@ -1,6 +1,7 @@
 import fs from "fs-extra";
 import path from "node:path";
 
+import { readBtsConfig } from "./bts-config";
 import { hashContent } from "./scaffold-manifest";
 
 type ReleaseFixture = {
@@ -9,10 +10,10 @@ type ReleaseFixture = {
   recordedTagCommit: string;
   tagCommitVerification: "not-performed";
   referencedPackageSpec: string;
-  packageGeneration: "not-performed";
+  packageGeneration: "performed";
   fixtureRoot: string;
   referenceCaptureCommand: string;
-  classification: "static-tag-fixture-provenance-only-unupgradeable";
+  classification: "published-package-fixture-provenance-only-unupgradeable";
   baseline: "absent";
   files: Record<string, string>;
 };
@@ -44,7 +45,6 @@ async function listFixtureFiles(root: string): Promise<{ files: string[]; unsafe
   return { files: files.sort(), unsafe: unsafe.sort() };
 }
 
-/** Validate static tag-fixture provenance metadata and every checked-in byte. */
 export async function validateCrossVersionFixtureProvenance(
   provenancePath: string,
   currentVersion: string,
@@ -80,14 +80,18 @@ export async function validateCrossVersionFixtureProvenance(
     if (release.referencedPackageSpec !== `create-better-fullstack@${release.version}`) {
       errors.push(`${prefix} referenced package spec/version mismatch.`);
     }
-    if (release.packageGeneration !== "not-performed") {
-      errors.push(`${prefix} must not claim package-generated output.`);
+    if (release.packageGeneration !== "performed") {
+      errors.push(`${prefix} must record how its fixture bytes were generated.`);
     }
-    const expectedCommand = `git archive ${release.tag} apps/cli/test/fixtures/gen-resource/orpc`;
-    if (release.referenceCaptureCommand !== expectedCommand) {
-      errors.push(`${prefix} reference capture command is not tag-bound.`);
+    if (
+      typeof release.referenceCaptureCommand !== "string" ||
+      !release.referenceCaptureCommand.startsWith(
+        `bunx create-better-fullstack@${release.version} `,
+      )
+    ) {
+      errors.push(`${prefix} reference capture command is not bound to the release version.`);
     }
-    if (release.classification !== "static-tag-fixture-provenance-only-unupgradeable") {
+    if (release.classification !== "published-package-fixture-provenance-only-unupgradeable") {
       errors.push(`${prefix} must not claim cross-version upgrade eligibility.`);
     }
     if (version && current) {
@@ -136,9 +140,21 @@ export async function validateCrossVersionFixtureProvenance(
         errors.push(`${prefix} fixture hash mismatch: ${relativePath}`);
       }
     }
+    const fixtureConfig = await readBtsConfig(fixtureDir).catch(() => null);
+    if (fixtureConfig?.version !== release.version) {
+      errors.push(
+        `${prefix} fixture bts.jsonc declares version ${fixtureConfig?.version ?? "unknown"}, expected ${release.version}.`,
+      );
+    }
     validated.push({ ...release, fixtureDir });
   }
 
   if (minors.size < 2) errors.push("At least two distinct prior minor releases are required.");
+  const fileSignatures = releases.map((release) =>
+    JSON.stringify(Object.entries(release.files ?? {}).sort()),
+  );
+  if (fileSignatures.length > 1 && new Set(fileSignatures).size !== fileSignatures.length) {
+    errors.push("Release fixtures are byte-identical; distinct prior-release bytes are required.");
+  }
   return errors.length > 0 ? { valid: false, errors } : { valid: true, releases: validated };
 }

@@ -76,7 +76,6 @@ export type ProjectStatusFailure = {
 export type InspectProjectOptions = {
   runChecks?: boolean;
   generatedChecks?: GeneratedCheckDependencies;
-  /** Injectable runner for deterministic contract tests. */
   generatedCheckRunner?: (
     config: ProjectConfig,
     dependencies?: GeneratedCheckDependencies,
@@ -145,7 +144,6 @@ async function expectedFileCheck(
     : targetCheck(target, relativePath, missingStatus, missingDetail);
 }
 
-/** Native dependency/lock state is reported at every generated target path. */
 async function checkNativeTargetDependencies(
   config: ProjectConfig,
   target: GeneratedCheckTarget,
@@ -206,8 +204,8 @@ async function checkNativeTargetDependencies(
           await expectedFileCheck(
             target,
             ".venv",
-            "fail",
-            "Create .venv and install project dependencies",
+            "warn",
+            "Missing .venv — generated checks provision it, or create it and install project dependencies",
           ),
         ];
       }
@@ -262,12 +260,22 @@ async function checkNativeTargetDependencies(
           ),
         ];
       }
+      if (buildTool === "maven") {
+        return [
+          await expectedFileCheck(
+            target,
+            "pom.xml",
+            "fail",
+            "Generated Maven project descriptor is missing",
+          ),
+        ];
+      }
       return [
         await expectedFileCheck(
           target,
-          "pom.xml",
+          "src",
           "fail",
-          "Generated Maven project descriptor is missing",
+          "Generated Java source directory is missing",
         ),
       ];
     }
@@ -426,7 +434,7 @@ export async function inspectProject(
     ...(await checkEnvFiles(projectDir)),
   ];
   const config = { ...btsConfig, projectDir } as unknown as ProjectConfig;
-  const expectedTargets = discoverGeneratedCheckTargets(config);
+  const expectedTargets = await discoverGeneratedCheckTargets(config);
   for (const target of expectedTargets) {
     checks.push(...(await checkNativeTargetDependencies(config, target)));
   }

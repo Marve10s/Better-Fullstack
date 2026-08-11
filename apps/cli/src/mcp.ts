@@ -1381,9 +1381,6 @@ function normalizeAdjustedToInput(
 }
 
 function summarizeRecommendedConfig(config: ProjectConfig) {
-  // frontend/backend/runtime/api are TypeScript-web concepts; for native backend
-  // ecosystems (rust/go/python/java/dotnet/elixir) the framework lives in stackParts,
-  // so surfacing the TS-shaped defaults here would misrepresent the recommendation.
   const isTsWeb = config.ecosystem === "typescript" || config.ecosystem === "react-native";
   return {
     projectName: config.projectName,
@@ -1922,10 +1919,6 @@ export async function startMcpServer() {
         const result = analyzeStackCompatibility(compatInput);
         const filtered = filterCompatibilityResult(result, input.ecosystem as string);
         const evaluation = evaluateCompatibility(compatInput);
-        // Filter issues to the selected ecosystem, mirroring filterCompatibilityResult.
-        // buildCompatibilityInput injects every ecosystem's defaults, so evaluate()
-        // otherwise flags cross-ecosystem leftovers (elixir*/cssFramework/etc.) as
-        // spurious INCOMPATIBLE issues on a perfectly valid stack.
         const relevantEcosystem = isMcpEcosystem(input.ecosystem as string)
           ? (input.ecosystem as OptionCategoryEcosystem)
           : "typescript";

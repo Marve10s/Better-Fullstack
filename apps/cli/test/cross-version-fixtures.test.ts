@@ -39,10 +39,35 @@ describe("cross-version fixture provenance", () => {
     expect(
       result.releases.every(
         (release) =>
-          release.classification === "static-tag-fixture-provenance-only-unupgradeable" &&
-          release.packageGeneration === "not-performed",
+          release.classification === "published-package-fixture-provenance-only-unupgradeable" &&
+          release.packageGeneration === "performed",
       ),
     ).toBe(true);
+    expect(result.releases.map((release) => release.files["bts.jsonc"])).toHaveLength(
+      new Set(result.releases.map((release) => release.files["bts.jsonc"])).size,
+    );
+  });
+
+  it("rejects byte-identical release fixtures and version-mismatched configs", async () => {
+    const provenance = await fs.readJson(provenancePath);
+    const identical = structuredClone(provenance);
+    identical.releases[1].files = { ...identical.releases[0].files };
+    const root = await fs.mkdtemp(path.join(tmpdir(), "bfs-provenance-dup-"));
+    roots.push(root);
+    for (const release of identical.releases) {
+      await fs.copy(
+        path.join(import.meta.dir, "fixtures/cross-version", identical.releases[0].fixtureRoot),
+        path.join(root, release.fixtureRoot),
+      );
+    }
+    const duplicatePath = path.join(root, "provenance.json");
+    await fs.writeJson(duplicatePath, identical);
+    const result = await validateCrossVersionFixtureProvenance(duplicatePath, "2.5.0");
+    expect(result.valid).toBe(false);
+    if (!result.valid) {
+      expect(result.errors.some((error) => error.includes("byte-identical"))).toBe(true);
+      expect(result.errors.some((error) => error.includes("declares version"))).toBe(true);
+    }
   });
 
   it("fails closed on malformed or mismatched provenance", async () => {

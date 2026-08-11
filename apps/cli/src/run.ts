@@ -218,6 +218,13 @@ const ProjectCheckInputSchema = z.tuple([
       .optional()
       .default(false)
       .describe("Skip the ecosystem build/type checks (config + deps + env only)"),
+    runChecks: z
+      .boolean()
+      .optional()
+      .default(false)
+      .describe(
+        "With --json: execute the ecosystem checks (slower; failures change the exit code)",
+      ),
     json: z.boolean().optional().default(false).describe("Output the diagnosis as JSON"),
   }),
 ]);
@@ -722,21 +729,29 @@ export async function telemetry(
 
 export async function doctor(
   projectDir?: string,
-  options?: { skipChecks?: boolean; json?: boolean },
+  options?: { skipChecks?: boolean; runChecks?: boolean; json?: boolean },
 ) {
   return caller.doctor([
     projectDir,
-    { skipChecks: options?.skipChecks ?? false, json: options?.json ?? false },
+    {
+      skipChecks: options?.skipChecks ?? false,
+      runChecks: options?.runChecks ?? false,
+      json: options?.json ?? false,
+    },
   ]);
 }
 
 export async function check(
   projectDir?: string,
-  options?: { skipChecks?: boolean; json?: boolean },
+  options?: { skipChecks?: boolean; runChecks?: boolean; json?: boolean },
 ) {
   return caller.check([
     projectDir,
-    { skipChecks: options?.skipChecks ?? false, json: options?.json ?? false },
+    {
+      skipChecks: options?.skipChecks ?? false,
+      runChecks: options?.runChecks ?? false,
+      json: options?.json ?? false,
+    },
   ]);
 }
 

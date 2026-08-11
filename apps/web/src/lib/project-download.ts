@@ -134,9 +134,6 @@ async function addLifecycleFiles(
   metadata: BrowserLifecycleMetadata,
 ): Promise<void> {
   const createdAt = metadata.createdAt ?? new Date().toISOString();
-  // The shared config-file schema is the field authority. Zod strips
-  // projectDir/projectName/install/git instead of this browser path maintaining
-  // a second persistence field list.
   const persistedConfig = BetterTStackConfigFileSchema.parse({
     ...metadata.config,
     $schema: "https://better-fullstack-web.vercel.app/schema.json",
@@ -159,8 +156,6 @@ async function addLifecycleFiles(
       : [],
   );
 
-  // This is deliberately the current CLI v1 shape. Manifest v2 generator and
-  // template lineage is a Wave 1 dependency and is not guessed here.
   const manifestContent = `${JSON.stringify(
     {
       version: "1",

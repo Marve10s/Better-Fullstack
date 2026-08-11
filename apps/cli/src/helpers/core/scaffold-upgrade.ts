@@ -30,11 +30,6 @@ import {
 
 const BINARY_FILE_MARKER = "[Binary file]";
 
-/**
- * Files that are never auto-patched: lockfiles are install artifacts and `.env`
- * holds user secrets — both always go to manual review. package.json and
- * *.env.example (see isStructuredBaselinePath) get a structured merge instead.
- */
 function isConservativeFile(relPath: string): boolean {
   const name = path.basename(relPath);
   return (
@@ -47,23 +42,10 @@ function isConservativeFile(relPath: string): boolean {
   );
 }
 
-/**
- * Files whose on-disk bytes are mutated by create-time post-processing
- * (package-manager version, dependency version channel, db-setup, addons) or by
- * dependency install, so their scaffold baseline is not a pure-template render.
- * They never take the plain hash-comparison path: they are either merged
- * structurally or routed to manual review.
- */
 function isStructuredMergeFile(relPath: string): boolean {
   return isConservativeFile(relPath) || isStructuredBaselinePath(relPath);
 }
 
-/**
- * Generated docs (README) are re-derived from project mode / stack summary at
- * render time, so their bytes legitimately differ between the create-time
- * render and a later re-render even when untouched. Mirror stack-update's
- * isSkippableGeneratedDoc: never auto-patch them, and never flag them as drift.
- */
 function isSkippableDoc(relPath: string): boolean {
   return path.basename(relPath).toLowerCase() === "readme.md";
 }
@@ -82,9 +64,7 @@ export type UpgradeFileEntry = {
   path: string;
   category: UpgradeCategory;
   reason?: string;
-  /** Keep a raw browser-ZIP baseline when disk bytes only differ by formatting. */
   preserveBaseline?: boolean;
-  /** Merge result to write on `--apply` (category "merged" only). */
   mergedContent?: string;
 };
 
@@ -93,9 +73,10 @@ export type UpgradePlan = {
   projectDir: string;
   projectRealpath: string;
   configHash: string;
-  /** Exact raw bytes of bts.lock.json at review time. */
   manifestHash: string | null;
   hasBaseline: boolean;
+  manifestState: "missing" | "valid" | "invalid";
+  manifestError?: string;
   manifestVersion?: string;
   baselineCreatedAt?: string;
   files: UpgradeFileEntry[];
@@ -107,11 +88,8 @@ export type UpgradePlan = {
   merged: string[];
   newFiles: string[];
   removed: string[];
-  /** Files `--apply` would write: drift patches, structured merges, new files. */
   actionable: string[];
-  /** Exact intended bytes for every actionable path, keyed by project-relative path. */
   actionableHashes: Record<string, string>;
-  /** On-disk bytes each actionable path must still have, or "absent". */
   actionablePreimages: Record<string, string | "absent">;
 };
 
@@ -121,7 +99,6 @@ export type UpgradeApplyResult =
   | (UpgradePlan & { applied: { patched: string[]; added: string[]; merged: string[] } })
   | { success: false; projectDir?: string; error: string };
 
-/** Stable binding for a reviewed plan. Includes merged file contents, not just paths. */
 export function getUpgradePlanDigest(plan: UpgradePlan): string {
   return hashContent(
     JSON.stringify({
@@ -167,8 +144,6 @@ async function verifyAppliedActionableState(plan: UpgradePlan): Promise<string |
   }
   for (const filePath of plan.actionable) {
     try {
-      // Revalidate observed path state as well as bytes. This detects ordinary
-      // concurrent changes; it is not a transaction or active-adversary guard.
       // oxlint-disable-next-line no-await-in-loop
       await validateWritePath(plan.projectRealpath, filePath);
       // oxlint-disable-next-line no-await-in-loop
@@ -233,9 +208,6 @@ async function readActionablePreimage(
   projectRealpath: string,
   relativePath: string,
 ): Promise<string | "absent"> {
-  // These checks reject symlinks observed at this instant. They reduce
-  // accidental path escapes, but are not a transaction or a guarantee against
-  // an active local filesystem adversary racing the subsequent write.
   await validateWritePath(projectRealpath, relativePath);
   const target = path.join(projectRealpath, relativePath);
   const stats = await fs.lstat(target).catch(() => null);
@@ -287,12 +259,6 @@ async function inferProjectName(projectDir: string): Promise<string> {
   return path.basename(projectDir);
 }
 
-/**
- * Render the project with the current bundled templates and return a
- * deterministic path -> sha256 map of the formatted output. Text files hash
- * their formatted content directly; binary files are materialized to a temp
- * dir (mirroring how create writes them) and hashed from bytes.
- */
 async function computeRenderHashes(tree: VirtualFileTree): Promise<Map<string, string>> {
   const fileMap = treeToFileMap(tree);
   const hashes = new Map<string, string>();
@@ -348,7 +314,6 @@ async function renderCurrentProject(
   }
 }
 
-/** Deep equality ignoring object key order (renders may reorder catalog maps etc.). */
 function deepEqualUnordered(a: unknown, b: unknown): boolean {
   if (a === b) return true;
   if (Array.isArray(a) || Array.isArray(b)) {
@@ -371,12 +336,6 @@ function deepEqualUnordered(a: unknown, b: unknown): boolean {
   return false;
 }
 
-/**
- * Template-side package.json changes mergePackageJson cannot express: key
- * removals inside the merged sections and any change to other top-level fields
- * (exports, workspaces, type, ...). Files with such changes go to manual review
- * instead of being silently labeled user-edited or partially merged.
- */
 function findUnmergeableTemplateChanges(
   previousContent: string,
   proposedContent: string,
@@ -387,7 +346,7 @@ function findUnmergeableTemplateChanges(
     previous = JSON.parse(previousContent);
     proposed = JSON.parse(proposedContent);
   } catch {
-    return []; // mergePackageJson already reports invalid JSON as a blocker
+    return [];
   }
   const isRecord = (value: unknown): value is Record<string, unknown> =>
     Boolean(value && typeof value === "object" && !Array.isArray(value));
@@ -409,13 +368,6 @@ function findUnmergeableTemplateChanges(
   return changes;
 }
 
-/**
- * Structured 3-way merge for package.json / *.env.example, reusing stack-update's
- * merge semantics: template-side changes (proposed vs the recorded render
- * baseline) are folded into the user's file; keys the user (or create-time
- * post-processing) changed are never overwritten — if the template also changed
- * such a key, the whole file becomes a conflict naming the blocked keys.
- */
 function classifyStructuredMerge(
   filePath: string,
   existingContent: string,
@@ -426,10 +378,6 @@ function classifyStructuredMerge(
     return { path: filePath, category: "manual", reason: "no comparable template render" };
   }
 
-  // Without a recorded render baseline there is no "previous" side to diff
-  // against: package.json cannot 3-way merge at all, and an env merge would
-  // mistake every proposed key for a template addition and re-append keys the
-  // user deliberately removed. Both fall back to manual review.
   if (baselineContent === undefined) {
     return {
       path: filePath,
@@ -471,7 +419,6 @@ function classifyStructuredMerge(
     };
   }
 
-  // *.env.example: append template-added keys; existing keys are never touched.
   const merged = mergeEnvExample(existingContent, baselineContent, proposedContent);
   if (merged.content) {
     return {
@@ -492,6 +439,8 @@ function summarize(
   projectDir: string,
   files: UpgradeFileEntry[],
   manifest: ScaffoldManifest | null,
+  manifestState: "missing" | "valid" | "invalid",
+  manifestError: string | undefined,
   configHash: string,
   manifestHash: string | null,
   actionableHashes: Record<string, string>,
@@ -510,6 +459,8 @@ function summarize(
     configHash,
     manifestHash,
     hasBaseline: manifest !== null,
+    manifestState,
+    manifestError,
     manifestVersion: manifest?.version,
     baselineCreatedAt: manifest?.createdAt,
     files,
@@ -527,10 +478,6 @@ function summarize(
   };
 }
 
-/**
- * Classify every current-template file against the on-disk project and the
- * recorded scaffold baseline. Pure read-only planning — writes nothing.
- */
 export async function planScaffoldUpgrade(projectDirInput: string): Promise<UpgradeResult> {
   const projectDir = await canonicalProjectDir(projectDirInput);
   const configHashBefore = await readConfigHash(projectDir);
@@ -546,13 +493,6 @@ export async function planScaffoldUpgrade(projectDirInput: string): Promise<Upgr
   const { tree, renderHashes } = rendered;
   const renderFiles = treeToFileMap(tree);
   const manifestResult = await readScaffoldManifestResult(projectDir);
-  if (manifestResult.status === "invalid") {
-    return {
-      success: false,
-      projectDir,
-      error: `Unsupported malformed ${SCAFFOLD_MANIFEST_FILE}: ${manifestResult.error}`,
-    };
-  }
   const manifest = manifestResult.status === "valid" ? manifestResult.manifest : null;
   const baseline = manifest?.hashes ?? {};
   const hasBaseline = manifest !== null;
@@ -590,7 +530,6 @@ export async function planScaffoldUpgrade(projectDirInput: string): Promise<Upgr
     }
 
     if (isSkippableDoc(filePath)) {
-      // Regenerated per project mode — not real template drift, never patched.
       continue;
     }
 
@@ -617,10 +556,6 @@ export async function planScaffoldUpgrade(projectDirInput: string): Promise<Upgr
 
     const renderedContent = renderFiles.get(filePath)?.content;
     if (renderedContent !== undefined && renderedContent !== BINARY_FILE_MARKER) {
-      // Browser ZIPs record the raw generator bytes, while CLI generation runs
-      // the formatter before recording its manifest. Treat formatting-only
-      // differences as unchanged without replacing the raw baseline: a future
-      // substantive template change will still compare against those bytes.
       // oxlint-disable-next-line no-await-in-loop
       const formattedDisk = await formatCode(filePath, diskBytes.toString("utf-8"));
       if (
@@ -645,18 +580,15 @@ export async function planScaffoldUpgrade(projectDirInput: string): Promise<Upgr
     }
 
     if (diskHash === baselineHash) {
-      // Disk untouched since scaffold, but the template moved -> safe to patch.
       files.push({ path: filePath, category: "drift" });
       continue;
     }
 
     if (renderHash === baselineHash) {
-      // Template unchanged, but the user edited the file -> keep as-is.
       files.push({ path: filePath, category: "user-edited" });
       continue;
     }
 
-    // Both the template and the local copy diverged from the baseline.
     files.push({
       path: filePath,
       category: "conflict",
@@ -714,6 +646,8 @@ export async function planScaffoldUpgrade(projectDirInput: string): Promise<Upgr
     projectDir,
     files,
     manifest,
+    manifestResult.status,
+    manifestResult.status === "invalid" ? manifestResult.error : undefined,
     configHashBefore,
     manifestHashBefore,
     actionableHashes,
@@ -721,19 +655,11 @@ export async function planScaffoldUpgrade(projectDirInput: string): Promise<Upgr
   );
 }
 
-/**
- * Apply an explicitly acknowledged, destructive subset of the plan: overwrite template-drift files, write
- * brand-new template files, write structured merges (package.json /
- * *.env.example), then refresh the baseline for every file that was reconciled
- * with the current render. Conflicts, local edits, and lockfiles/secrets are
- * left untouched (and reported by the caller for manual review).
- */
 export async function applyScaffoldUpgrade(
   projectDirInput: string,
   options: {
     expectedPlanDigest?: string;
     acknowledgeUnprovenManifestV1?: boolean;
-    /** Test-only concurrency hook; production callers must not depend on it. */
     afterActionableWrite?: (input: { path: string; index: number }) => void | Promise<void>;
   } = {},
 ): Promise<UpgradeApplyResult> {
@@ -747,6 +673,13 @@ export async function applyScaffoldUpgrade(
   }
   const plan = await planScaffoldUpgrade(projectDirInput);
   if (!plan.success) return plan;
+  if (plan.manifestState === "invalid") {
+    return {
+      success: false,
+      projectDir: plan.projectDir,
+      error: `Refusing to apply with a malformed ${SCAFFOLD_MANIFEST_FILE}: ${plan.manifestError ?? "unknown validation failure"}. Fix the manifest or re-record the baseline first.`,
+    };
+  }
   if (!plan.hasBaseline || !plan.manifestHash || plan.manifestVersion !== "1") {
     return {
       success: false,
@@ -811,9 +744,19 @@ export async function applyScaffoldUpgrade(
   }
   const toWrite = new Set([...plan.drift, ...plan.newFiles]);
   let actionableIndex = 0;
+  let writeAttempted = false;
+  const failWrites = (error: unknown): UpgradeApplyResult => {
+    const message = error instanceof Error ? error.message : String(error);
+    return {
+      success: false,
+      projectDir,
+      error: writeAttempted ? partialWriteError(message) : message,
+    };
+  };
   for (const candidate of [...toWrite].sort()) {
     try {
       await assertActionablePreimage(plan, candidate);
+      writeAttempted = true;
       await writeSelectedFiles(tree, projectDir, (filePath) => filePath === candidate);
       const written = await fs.readFile(path.join(projectDir, candidate));
       if (hashContent(written) !== plan.actionableHashes[candidate]) {
@@ -822,11 +765,7 @@ export async function applyScaffoldUpgrade(
       await options.afterActionableWrite?.({ path: candidate, index: actionableIndex });
       actionableIndex += 1;
     } catch (error) {
-      return {
-        success: false,
-        projectDir,
-        error: error instanceof Error ? error.message : String(error),
-      };
+      return failWrites(error);
     }
   }
 
@@ -837,6 +776,7 @@ export async function applyScaffoldUpgrade(
   for (const entry of mergedEntries) {
     try {
       await assertActionablePreimage(plan, entry.path);
+      writeAttempted = true;
       await fs.writeFile(path.join(projectDir, entry.path), entry.mergedContent, "utf-8");
       const written = await fs.readFile(path.join(projectDir, entry.path));
       if (hashContent(written) !== plan.actionableHashes[entry.path]) {
@@ -845,11 +785,7 @@ export async function applyScaffoldUpgrade(
       await options.afterActionableWrite?.({ path: entry.path, index: actionableIndex });
       actionableIndex += 1;
     } catch (error) {
-      return {
-        success: false,
-        projectDir,
-        error: error instanceof Error ? error.message : String(error),
-      };
+      return failWrites(error);
     }
   }
 
@@ -868,9 +804,6 @@ export async function applyScaffoldUpgrade(
           "bts.lock.json changed before baseline refresh. Written files were not rolled back; inspect them and create a new plan.",
       };
     }
-    // Every file that now equals the current render becomes the new baseline;
-    // user-edited / conflict / manual files keep their original baseline so a
-    // later update can still tell they diverged.
     const preserveBaselines = new Set(
       plan.files.filter((file) => file.preserveBaseline).map((file) => file.path),
     );
@@ -882,9 +815,6 @@ export async function applyScaffoldUpgrade(
     for (const entry of mergedEntries) {
       manifest.hashes[entry.path] = hashContent(Buffer.from(entry.mergedContent, "utf-8"));
     }
-    // Structured-merge files reconciled with this render (unchanged, rewritten,
-    // or merged) advance their content baseline so the next update diffs the
-    // template against this render instead of the create-time one.
     const renderFiles = treeToFileMap(tree);
     const reconciled = [...plan.unchanged, ...toWrite, ...mergedEntries.map((entry) => entry.path)];
     for (const filePath of reconciled) {
@@ -898,11 +828,7 @@ export async function applyScaffoldUpgrade(
       await validateWritePath(plan.projectRealpath, SCAFFOLD_MANIFEST_FILE);
       await writeScaffoldManifest(projectDir, manifest);
     } catch (error) {
-      return {
-        success: false,
-        projectDir,
-        error: error instanceof Error ? error.message : String(error),
-      };
+      return failWrites(error);
     }
   }
 
@@ -921,18 +847,11 @@ export async function applyScaffoldUpgrade(
   };
 }
 
-/**
- * Record the scaffold baseline for an existing project (`update
- * --record-baseline`): disk hashes plus, when the project still renders, the
- * structured-merge content baselines for package.json / *.env.example.
- */
 export async function recordUpgradeBaseline(
   projectDirInput: string,
 ): Promise<ScaffoldManifest | null> {
   const projectDir = await canonicalProjectDir(projectDirInput);
   try {
-    // This rejects symlinks observed now; like apply path checks, it is not a
-    // transaction or protection against an active filesystem race.
     await validateWritePath(projectDir, SCAFFOLD_MANIFEST_FILE);
   } catch {
     return null;
