@@ -144,6 +144,7 @@ export function getSiteJsonLd() {
         "@type": "WebSite",
         "@id": `${SITE_URL}/#website`,
         name: SITE_NAME,
+        alternateName: "Better-Fullstack",
         url: SITE_URL,
         publisher: { "@id": `${SITE_URL}/#organization` },
       },
