@@ -7,10 +7,16 @@ The plugin bundles:
 
 - MCP server: `create-better-fullstack mcp`
 - Skills: `scaffold-project` and `add-to-project`
+- Portable Agent Plugins v1 manifest: `plugin.json`
+- Portable Agent Plugins v1 MCP configuration: `mcp.json`
 - Codex manifest: `.codex-plugin/plugin.json`
 - Claude Code manifest: `.claude-plugin/plugin.json`
 - Repo-root Codex marketplace catalog: `.agents/plugins/marketplace.json`
 - Repo-root Claude Code marketplace catalog: `.claude-plugin/marketplace.json`
+
+The portable manifest uses the open Agent Plugins 1.0 format. Compatible clients discover skills
+from `skills/` and the MCP server from `mcp.json`. The client-specific Codex and Claude manifests
+remain in place for clients that have not adopted the portable format.
 
 ## How Agents Should Use It
 

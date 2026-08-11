@@ -1,4 +1,10 @@
-import { Outlet, HeadContent, Scripts, createRootRoute, Link } from "@tanstack/react-router";
+import {
+  Outlet,
+  HeadContent,
+  Scripts,
+  createRootRoute,
+  Link,
+} from "@tanstack/react-router";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { lazy, Suspense, type ReactNode, useSyncExternalStore } from "react";
@@ -6,6 +12,7 @@ import { lazy, Suspense, type ReactNode, useSyncExternalStore } from "react";
 import { Navbar } from "@/components/navbar";
 import Providers from "@/components/providers";
 import { isBrowserTelemetryEnabled, subscribeBrowserTelemetry } from "@/lib/product-analytics";
+import { NOINDEX_ROBOTS } from "@/lib/robots";
 import {
   DEFAULT_OG_IMAGE_ALT,
   DEFAULT_OG_IMAGE_HEIGHT,
@@ -51,6 +58,9 @@ const THEME_INIT_SCRIPT = `
 })();
 `;
 const themeInitMarkup = { __html: THEME_INIT_SCRIPT };
+const ERROR_PAGE_TITLE = `Temporarily Unavailable | ${SITE_NAME}`;
+const ERROR_PAGE_DESCRIPTION =
+  "Better Fullstack could not load this page. Please try again or return to the homepage.";
 
 const SponsorButton = lazy(async () => {
   const mod = await import("@/components/sponsor-button");
@@ -72,7 +82,53 @@ function NotFoundComponent() {
   );
 }
 
+function RootErrorComponent() {
+  return (
+    <html lang="en" className="font-sans">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>{ERROR_PAGE_TITLE}</title>
+        <meta name="description" content={ERROR_PAGE_DESCRIPTION} />
+        <meta name="robots" content={NOINDEX_ROBOTS} />
+        <meta name="googlebot" content={NOINDEX_ROBOTS} />
+        <meta name="theme-color" content={DARK_THEME_COLOR} />
+        <link rel="icon" href="/favicon.ico" sizes="32x32" />
+      </head>
+      <body className="bg-background text-foreground">
+        <main className="flex min-h-svh items-center justify-center p-6">
+          <section className="w-full max-w-lg rounded-xl border border-border bg-card p-8 shadow-sm">
+            <p className="mb-3 font-mono text-muted-foreground text-sm">{SITE_NAME}</p>
+            <h1 className="font-semibold text-3xl tracking-tight">This page failed to load.</h1>
+            <p className="mt-3 text-muted-foreground">
+              The failure is temporary. Try the page again or return to the homepage.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <form method="get">
+                <button
+                  type="submit"
+                  className="rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground text-sm transition-colors hover:bg-primary/90"
+                >
+                  Try again
+                </button>
+              </form>
+              <a
+                href="/"
+                className="rounded-md border border-border px-4 py-2 font-medium text-sm transition-colors hover:bg-muted"
+              >
+                Go home
+              </a>
+            </div>
+          </section>
+        </main>
+        <Scripts />
+      </body>
+    </html>
+  );
+}
+
 export const Route = createRootRoute({
+  errorComponent: RootErrorComponent,
   notFoundComponent: NotFoundComponent,
   head: () => {
     const description = getDefaultDescription();

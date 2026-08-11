@@ -11,7 +11,23 @@ dry-run previews, project creation, broad stack updates, and focused addon/deplo
 
 This page describes the Better Fullstack MCP server. The generated-project `mcp` addon is separate: it writes MCP client/server configuration into a scaffolded app and may run external setup commands.
 
-For a lighter CLI-driven agent workflow, install the [Better Fullstack agent skill](/docs/ai/skills/). The skill and MCP server both use the same generator; the skill is optimized for fast flag-based scaffolding, while MCP is optimized for structured tool calls.
+<Callout kind="info" title="Protocol compatibility is automatic">
+The stdio server negotiates both the 2025 MCP protocol family and MCP 2026-07-28 without a
+client-specific flag or version pin. Modern clients use the stateless-core request model and
+receive cache hints for tool and resource discovery, while older clients continue through the
+legacy initialization flow.
+</Callout>
+
+## Choose your integration
+
+All three paths use the same Better Fullstack generator. Choose the narrowest integration that
+fits your agent:
+
+| Integration                      | Includes                                              | Best for                                                                      |
+| -------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------- |
+| [Agent plugin](/docs/ai/plugin/) | MCP server and reusable skills in one portable bundle | Agents with plugin or marketplace support                                     |
+| MCP server                       | Structured tools and resources over stdio             | MCP clients that need schema discovery, validation, planning, and safe writes |
+| [Agent skill](/docs/ai/skills/)  | A lightweight CLI-driven workflow                     | Agents with shell access that do not need an MCP connection                   |
 
 ## Setup
 

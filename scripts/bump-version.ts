@@ -12,6 +12,7 @@ const TEMPLATE_GENERATOR_PACKAGE_JSON_PATH = join(
 );
 const CODEX_PLUGIN_MANIFEST_PATH = join(process.cwd(), "plugin/.codex-plugin/plugin.json");
 const CLAUDE_PLUGIN_MANIFEST_PATH = join(process.cwd(), "plugin/.claude-plugin/plugin.json");
+const PORTABLE_PLUGIN_MANIFEST_PATH = join(process.cwd(), "plugin/plugin.json");
 
 async function updateJsonFile(path: string, update: (json: Record<string, unknown>) => void) {
   const json = JSON.parse(await readFile(path, "utf-8"));
@@ -127,7 +128,11 @@ async function main(): Promise<void> {
     dependencies["@better-fullstack/types"] = `^${newVersion}`;
   });
 
-  for (const manifestPath of [CODEX_PLUGIN_MANIFEST_PATH, CLAUDE_PLUGIN_MANIFEST_PATH]) {
+  for (const manifestPath of [
+    CODEX_PLUGIN_MANIFEST_PATH,
+    CLAUDE_PLUGIN_MANIFEST_PATH,
+    PORTABLE_PLUGIN_MANIFEST_PATH,
+  ]) {
     await updateJsonFile(manifestPath, (manifest) => {
       manifest.version = newVersion;
     });
@@ -135,7 +140,7 @@ async function main(): Promise<void> {
 
   await $`bun install`;
   await $`bun run build:cli`;
-  await $`git add apps/cli/package.json packages/create-bfs/package.json packages/types/package.json packages/template-generator/package.json plugin/.codex-plugin/plugin.json plugin/.claude-plugin/plugin.json bun.lock`;
+  await $`git add apps/cli/package.json packages/create-bfs/package.json packages/types/package.json packages/template-generator/package.json plugin/.codex-plugin/plugin.json plugin/.claude-plugin/plugin.json plugin/plugin.json bun.lock`;
   await $`git commit -m "chore(release): ${newVersion}"`;
 
   // Push the release branch
