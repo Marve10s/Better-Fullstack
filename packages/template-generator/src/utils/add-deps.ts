@@ -231,7 +231,7 @@ export const dependencyVersionMap = {
   "ai-cli": "^0.3.1",
 
   "@orpc/server": "^1.14.15",
-  "@orpc/client": "^1.14.13",
+  "@orpc/client": "^1.14.15",
   "@orpc/openapi": "^1.14.15",
   "@orpc/zod": "^1.14.15",
   "@orpc/tanstack-query": "^1.14.15",
