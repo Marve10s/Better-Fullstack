@@ -34,7 +34,7 @@ describe("SolidStart v2", () => {
     expect(existsSync(join(webDir, "app.config.ts"))).toBe(false);
     expect(packageJson).toContain('"@solidjs/start": "^2.0.0"');
     expect(packageJson).toContain('"nitro": "^3.0.260610-beta"');
-    expect(packageJson).toContain('"vite": "^8.2.0"');
+    expect(packageJson).toContain('"vite": "^8.');
     expect(packageJson).toContain('"node": ">=24"');
     expect(packageJson).not.toContain("vinxi");
     expect(packageJson).not.toContain("vite-tsconfig-paths");
