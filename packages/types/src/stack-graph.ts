@@ -23,6 +23,7 @@ import {
   DATABASE_SETUP_VALUES,
   DOTNET_API_VALUES,
   DOTNET_AUTH_VALUES,
+  DOTNET_FRONTEND_VALUES,
   DOTNET_VALIDATION_VALUES,
   DOTNET_CACHING_VALUES,
   DOTNET_DEPLOY_VALUES,
@@ -33,6 +34,7 @@ import {
   DOTNET_REALTIME_VALUES,
   DOTNET_TESTING_VALUES,
   DOTNET_WEB_FRAMEWORK_VALUES,
+  DART_MOBILE_VALUES,
   ELIXIR_API_VALUES,
   ELIXIR_LIBRARIES_VALUES,
   ELIXIR_AUTH_VALUES,
@@ -93,6 +95,9 @@ import {
   MOBILE_STORAGE_VALUES,
   MOBILE_TESTING_VALUES,
   MOBILE_UI_VALUES,
+  KOTLIN_MOBILE_VALUES,
+  KOTLIN_MOBILE_LIBRARIES_VALUES,
+  SWIFT_MOBILE_VALUES,
   OBSERVABILITY_VALUES,
   ORM_VALUES,
   PAYMENTS_VALUES,
@@ -384,6 +389,8 @@ const LEGACY_DATABASE_SINGLE_CATEGORIES = {
 } as const satisfies Partial<Record<StackPartRole, keyof ProjectConfig>>;
 
 const LEGACY_MOBILE_SINGLE_CATEGORIES = {
+  auth: "auth",
+  payments: "payments",
   navigation: "mobileNavigation",
   ui: "mobileUI",
   storage: "mobileStorage",
@@ -477,6 +484,7 @@ const LEGACY_ARRAY_CATEGORIES = new Set<keyof ProjectConfig>([
   "javaLibraries",
   "javaTestingLibraries",
   "mobileLibraries",
+  "kotlinMobileLibraries",
   "dotnetLibraries",
   "dotnetTesting",
   "dotnetObservability",
@@ -557,6 +565,8 @@ const OWNER_ROLES_BY_SCOPED_ROLE = {
     ].map((role) => [role, ["mobile"]]),
   ),
   deploy: ["frontend", "backend"],
+  auth: ["frontend", "backend", "mobile"],
+  payments: ["backend", "mobile"],
   dbSetup: ["database"],
   migrations: ["backend"],
   ui: ["frontend", "mobile"],
@@ -804,6 +814,7 @@ const GRAPH_PROJECTION_DEFAULT_LEGACY_CATEGORIES = [
   ...Object.values(LEGACY_DATABASE_SINGLE_CATEGORIES),
   ...Object.values(LEGACY_MOBILE_SINGLE_CATEGORIES),
   ...Object.values(LEGACY_MOBILE_ARRAY_CATEGORIES),
+  "kotlinMobileLibraries",
   ...Object.values(LEGACY_EXTRA_CATEGORIES_BY_ECOSYSTEM).flatMap((categories) =>
     Object.values(categories),
   ),
@@ -953,6 +964,7 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   // addons registered above), backend-owned so it never shares a scope with them.
   ...defineTools(TESTING_VALUES, "testing", "typescript", "testing"),
   ...defineTools(AUTH_VALUES, "auth", "react-native", "auth"),
+  ...defineTools(["revenuecat"], "payments", "react-native", "payments"),
   ...defineTools(MOBILE_NAVIGATION_VALUES, "navigation", "react-native", "mobileNavigation"),
   ...defineTools(MOBILE_UI_VALUES, "ui", "react-native", "mobileUI"),
   ...defineTools(MOBILE_STORAGE_VALUES, "storage", "react-native", "mobileStorage"),
@@ -965,6 +977,17 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   }),
   ...defineTools(RUST_WEB_FRAMEWORK_VALUES, "backend", "rust", "rustWebFramework"),
   ...defineTools(RUST_FRONTEND_VALUES, "frontend", "rust", "rustFrontend"),
+  ...defineTools(DOTNET_FRONTEND_VALUES, "frontend", "dotnet", "dotnetFrontend"),
+  ...defineTools(KOTLIN_MOBILE_VALUES, "mobile", "kotlin", "kotlinMobile"),
+  ...defineTools(
+    KOTLIN_MOBILE_LIBRARIES_VALUES,
+    "libraries",
+    "kotlin",
+    "kotlinMobileLibraries",
+    { allowMultiple: true },
+  ),
+  ...defineTools(SWIFT_MOBILE_VALUES, "mobile", "swift", "swiftMobile"),
+  ...defineTools(DART_MOBILE_VALUES, "mobile", "dart", "dartMobile"),
   ...defineTools(RUST_ORM_VALUES, "orm", "rust", "rustOrm"),
   ...defineTools(RUST_API_VALUES, "api", "rust", "rustApi"),
   ...defineTools(RUST_AUTH_VALUES, "auth", "rust", "rustAuth"),
@@ -2840,18 +2863,20 @@ function allowsMultipleSelectedParts(parts: readonly StackPart[]) {
 function parseRolePath(rolePath: string): {
   role: StackPartRole;
   ownerRole?: StackPrimaryRole;
+  ownerPartId?: string;
 } {
   const segments = rolePath.split(".");
   const rawRole = segments.length === 1 ? segments[0] : segments[segments.length - 1];
   const rawOwnerRole = segments.length > 1 ? segments[0] : undefined;
   const role = StackPartRoleSchema.parse(rawRole);
-  const ownerRole = rawOwnerRole ? StackPartRoleSchema.parse(rawOwnerRole) : undefined;
+  if (!rawOwnerRole) return { role };
 
-  if (ownerRole && !PRIMARY_ROLES.has(ownerRole)) {
-    throw new Error(`Stack part owner role '${ownerRole}' must be a primary role.`);
+  const parsedOwnerRole = StackPartRoleSchema.safeParse(rawOwnerRole);
+  if (parsedOwnerRole.success && PRIMARY_ROLES.has(parsedOwnerRole.data)) {
+    return { role, ownerRole: parsedOwnerRole.data as StackPrimaryRole };
   }
 
-  return { role, ownerRole: ownerRole as StackPrimaryRole | undefined };
+  return { role, ownerPartId: sanitizePartId(rawOwnerRole) };
 }
 
 export function parseStackPartSpecs(
@@ -2865,18 +2890,30 @@ export function parseStackPartSpecs(
         `Invalid --part '${spec}'. Use role:ecosystem:tool or owner.role:ecosystem:tool.`,
       );
     }
-    const { role, ownerRole } = parseRolePath(rolePath);
+    const { role, ownerRole, ownerPartId } = parseRolePath(rolePath);
     return {
       role,
       ownerRole,
+      ownerPartId,
       ecosystem: ecosystem as StackPartEcosystem,
       toolId,
       customId,
     };
   });
 
-  const primaryParts = unresolved
-    .filter((part) => !part.ownerRole)
+  const unresolvedPrimaryParts = unresolved.filter((part) => !part.ownerRole && !part.ownerPartId);
+  const primaryRoleCounts = new Map<StackPartRole, number>();
+  for (const part of unresolvedPrimaryParts) {
+    primaryRoleCounts.set(part.role, (primaryRoleCounts.get(part.role) ?? 0) + 1);
+  }
+  const repeatedTargetRoot: Partial<Record<StackPrimaryRole, string>> = {
+    frontend: "apps",
+    backend: "services",
+    mobile: "apps",
+    database: "data",
+  };
+
+  const primaryParts = unresolvedPrimaryParts
     .map((part) =>
       createStackPart({
         role: part.role,
@@ -2884,6 +2921,12 @@ export function parseStackPartSpecs(
         toolId: part.toolId,
         source,
         id: part.customId,
+        targetPath:
+          (primaryRoleCounts.get(part.role) ?? 0) > 1 && PRIMARY_ROLES.has(part.role)
+            ? `${repeatedTargetRoot[part.role as StackPrimaryRole]}/${sanitizePartId(
+                part.customId ?? `${part.ecosystem}-${part.toolId}`,
+              ).replaceAll(":", "-")}`
+            : undefined,
       }),
     );
 
@@ -2892,17 +2935,19 @@ export function parseStackPartSpecs(
     primaryParts.map((part) => [`${part.role}:${part.ecosystem}`, part]),
   );
   const scopedParts = unresolved
-    .filter(
-      (part): part is typeof part & { ownerRole: StackPrimaryRole } => part.ownerRole !== undefined,
-    )
+    .filter((part) => part.ownerRole !== undefined || part.ownerPartId !== undefined)
     .map((part) =>
       createStackPart({
         role: part.role,
         ecosystem: part.ecosystem,
         toolId: part.toolId,
-        ownerPartId:
-          primaryByRoleAndEcosystem.get(`${part.ownerRole}:${part.ecosystem}`)?.id ??
-          primaryByRole.get(part.ownerRole)?.id,
+        ownerPartId: part.ownerPartId
+          ? primaryParts.find((candidate) => candidate.id === part.ownerPartId)?.id ??
+            part.ownerPartId
+          : part.ownerRole
+            ? (primaryByRoleAndEcosystem.get(`${part.ownerRole}:${part.ecosystem}`)?.id ??
+              primaryByRole.get(part.ownerRole)?.id)
+            : undefined,
         source,
         id: part.customId,
       }),
@@ -2915,8 +2960,20 @@ export function formatStackPartSpec(part: StackPart, parts: readonly StackPart[]
   const owner = part.ownerPartId
     ? parts.find((candidate) => candidate.id === part.ownerPartId)
     : undefined;
-  const rolePath = owner ? `${owner.role}.${part.role}` : part.role;
-  return `${rolePath}:${part.ecosystem}:${part.toolId}`;
+  const sameRoleOwners = owner
+    ? parts.filter(
+        (candidate) =>
+          candidate.role === owner.role &&
+          candidate.ecosystem === owner.ecosystem &&
+          !candidate.ownerPartId &&
+          candidate.source !== "provided",
+      )
+    : [];
+  const ownerSelector = owner && sameRoleOwners.length > 1 ? owner.id : owner?.role;
+  const rolePath = ownerSelector ? `${ownerSelector}.${part.role}` : part.role;
+  const canonicalId = sanitizePartId(`${part.role}:${part.ecosystem}:${part.toolId}`);
+  const customId = !part.ownerPartId && part.id !== canonicalId ? `:${part.id}` : "";
+  return `${rolePath}:${part.ecosystem}:${part.toolId}${customId}`;
 }
 
 export function materializeProvidedStackParts(parts: readonly StackPart[]): StackPart[] {
@@ -3121,6 +3178,21 @@ export function legacyProjectConfigToStackParts(
     frontendPart.settings = { astroIntegration: config.astroIntegration };
   }
   const mobilePart = addLegacyPart(parts, "mobile", "react-native", nativeFrontend, source);
+  addLegacyPart(parts, "frontend", "dotnet", config.dotnetFrontend, source);
+  const kotlinMobilePart = addLegacyPart(
+    parts,
+    "mobile",
+    "kotlin",
+    config.kotlinMobile,
+    source,
+  );
+  addLegacyPart(parts, "mobile", "swift", config.swiftMobile, source);
+  addLegacyPart(parts, "mobile", "dart", config.dartMobile, source);
+  if (kotlinMobilePart) {
+    for (const library of config.kotlinMobileLibraries ?? []) {
+      addLegacyPart(parts, "libraries", "kotlin", library, source, kotlinMobilePart.id);
+    }
+  }
 
   let backendPart: StackPart | undefined;
   if (
@@ -3323,11 +3395,27 @@ export function legacyProjectConfigToStackParts(
 
 function ecosystemForLegacy(parts: readonly StackPart[]): Ecosystem {
   const frontend = getPrimaryPart(parts, "frontend");
-  if (frontend?.ecosystem && frontend.ecosystem !== "universal") return frontend.ecosystem;
+  if (
+    frontend?.ecosystem &&
+    frontend.ecosystem !== "universal" &&
+    frontend.ecosystem !== "kotlin" &&
+    frontend.ecosystem !== "swift" &&
+    frontend.ecosystem !== "dart"
+  ) {
+    return frontend.ecosystem;
+  }
   const mobile = getPrimaryPart(parts, "mobile");
   if (mobile) return "react-native";
   const backend = getPrimaryPart(parts, "backend");
-  if (backend?.ecosystem && backend.ecosystem !== "universal") return backend.ecosystem;
+  if (
+    backend?.ecosystem &&
+    backend.ecosystem !== "universal" &&
+    backend.ecosystem !== "kotlin" &&
+    backend.ecosystem !== "swift" &&
+    backend.ecosystem !== "dart"
+  ) {
+    return backend.ecosystem;
+  }
   return "typescript";
 }
 
@@ -3398,7 +3486,7 @@ export function stackPartsToLegacyProjectConfigPartial(
         }
       } else if (part.role === "frontend" && part.ecosystem === "rust") {
         config.rustFrontend = part.toolId as ProjectConfig["rustFrontend"];
-      } else if (part.role === "mobile") {
+      } else if (part.role === "mobile" && part.ecosystem === "react-native") {
         config.frontend = [
           ...(config.frontend ?? []),
           part.toolId as ProjectConfig["frontend"][number],
@@ -3439,7 +3527,10 @@ export function stackPartsToLegacyProjectConfigPartial(
   return config;
 }
 
-type GraphProjectionEcosystem = Exclude<StackPartEcosystem, "universal">;
+type GraphProjectionEcosystem = Exclude<
+  StackPartEcosystem,
+  "universal" | "kotlin" | "swift" | "dart"
+>;
 
 function getSelectedPrimaryPart(parts: readonly StackPart[], role: StackPartRole) {
   return parts.find(
@@ -3499,8 +3590,9 @@ function getLegacyCategoryForPart(
     if (legacyCategory) return legacyCategory;
   }
 
-  if (owner?.role === "mobile" && part.ecosystem === "react-native" && part.role === "auth") {
-    return "auth";
+  if (owner?.role === "mobile" && part.ecosystem === "react-native") {
+    if (part.role === "auth") return "auth";
+    if (part.role === "payments") return "payments";
   }
 
   if (owner?.role === "database" && part.ecosystem === "universal") {
@@ -3639,7 +3731,7 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
     projectLegacyCategoryFromPart(projected, part, ecosystem, parts);
   }
 
-  const mobileScopedPartRoles = new Set<StackPartRole>(["auth"]);
+  const mobileScopedPartRoles = new Set<StackPartRole>(["auth", "payments"]);
   for (const part of parts) {
     if (
       part.source === "provided" ||
@@ -3671,16 +3763,59 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
 export function validateStackParts(parts: readonly StackPart[]): StackGraphValidationResult {
   const issues: StackGraphIssue[] = [];
   const partsById = new Map(parts.map((part) => [part.id, part]));
+  const seenPartIds = new Set<string>();
 
-  for (const role of PRIMARY_ROLES) {
-    const matching = parts.filter((part) => part.role === role && !part.ownerPartId);
-    if (matching.length > 1) {
+  const selectedPrimaryParts = parts.filter(
+    (part) => !part.ownerPartId && part.source !== "provided" && PRIMARY_ROLES.has(part.role),
+  );
+  const unsupportedRepeatedPrimaryGroups = [
+    {
+      label: "TypeScript web frontend",
+      parts: selectedPrimaryParts.filter(
+        (part) => part.role === "frontend" && part.ecosystem === "typescript",
+      ),
+    },
+    {
+      label: "TypeScript backend",
+      parts: selectedPrimaryParts.filter(
+        (part) => part.role === "backend" && part.ecosystem === "typescript",
+      ),
+    },
+    {
+      label: "React Native mobile app",
+      parts: selectedPrimaryParts.filter(
+        (part) => part.role === "mobile" && part.ecosystem === "react-native",
+      ),
+    },
+    {
+      label: "database",
+      parts: selectedPrimaryParts.filter((part) => part.role === "database"),
+    },
+  ];
+
+  for (const group of unsupportedRepeatedPrimaryGroups) {
+    for (const part of group.parts.slice(1)) {
       issues.push({
-        code: "DUPLICATE_PRIMARY_ROLE",
-        role,
-        message: `Only one primary '${role}' stack part is supported in v1.`,
+        code: "UNSUPPORTED_REPEATED_PRIMARY",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: `Only one ${group.label} is currently supported. Named repeated backend services are supported for Rust, Python, Go, Java/Kotlin, .NET, and Elixir.`,
       });
     }
+  }
+
+  for (const part of parts) {
+    if (seenPartIds.has(part.id)) {
+      issues.push({
+        code: "DUPLICATE_PART_ID",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: `Stack part ID '${part.id}' is repeated. Give repeated primary services unique IDs with role:ecosystem:tool:id.`,
+      });
+    }
+    seenPartIds.add(part.id);
   }
 
   for (const part of parts) {
@@ -3730,6 +3865,7 @@ export function validateStackParts(parts: readonly StackPart[]): StackGraphValid
 
   const byScope = new Map<string, StackPart[]>();
   for (const part of parts) {
+    if (!part.ownerPartId && PRIMARY_ROLES.has(part.role)) continue;
     const key = `${part.ownerPartId ?? "root"}:${part.role}`;
     byScope.set(key, [...(byScope.get(key) ?? []), part]);
   }

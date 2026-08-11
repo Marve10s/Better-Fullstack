@@ -1,9 +1,14 @@
 ---
 title: .NET
 description: ASP.NET Core scaffolds with EF Core or Dapper, Identity, Minimal APIs or Hot Chocolate, SignalR, background jobs, tests, and deploy files.
+translationStatus: pending
+updated: 2026-08-07
 ---
 
 .NET projects generate ASP.NET Core applications that follow standard `dotnet` conventions. Choose .NET options for the web framework, data access, auth, API style, realtime, background jobs, observability, caching, testing, and deploy files.
+
+Multi-Ecosystem mode can also generate standalone `blazor-webassembly` or `blazor-web-app`
+frontend parts alongside a backend in another supported language.
 
 ## Prerequisites
 
@@ -33,21 +38,24 @@ npm create better-fullstack@latest my-dotnet-app -- \
   --no-git
 ```
 
-## .NET categories
+## Current option values
 
-| Category | Values |
-| --- | --- |
-| Web framework | `aspnet-minimal` `aspnet-mvc` `aspnet-blazor` `none` |
-| Data access | `ef-core` `dapper` `linq2db` `none` |
-| Auth | `aspnet-identity` `duende-identityserver` `auth0-aspnet` `none` |
-| API | `minimal-api` `graphql-hotchocolate` `grpc-dotnet` `none` |
-| Testing | `xunit` `nunit` `moq` `testcontainers-dotnet` `none` |
-| Background jobs | `hangfire` `quartz-net` `hosted-services` `none` |
-| Realtime | `signalr` `none` |
-| Observability | `opentelemetry-dotnet` `serilog` `nlog` `health-checks` `none` |
-| Validation | `fluentvalidation` `data-annotations` `none` |
-| Caching | `redis` `memory-cache` `none` |
-| Deploy | `docker` `azure` `aws` `none` |
+Use the schema-derived [.NET options reference](/docs/reference/options/dotnet/) for the exhaustive
+framework, data, auth, API, testing, jobs, realtime, observability, validation, caching, and deploy
+values.
+
+## Blazor frontend parts
+
+```npm
+npm create better-fullstack@latest blazor-go -- \
+  --part frontend:dotnet:blazor-webassembly \
+  --part backend:go:gin \
+  --part backend.orm:go:gorm \
+  --part database:universal:postgres
+```
+
+Blazor frontend selections are primary frontend Stack Parts and are distinct from
+`--dotnet-web-framework aspnet-blazor`, which selects the solo .NET backend/application surface.
 
 ## Compatibility notes
 

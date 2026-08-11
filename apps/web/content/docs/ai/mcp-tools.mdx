@@ -1,102 +1,98 @@
 ---
 title: MCP Tools Reference
 description: Detailed reference for Better Fullstack MCP tools, inputs, outputs, and safe workflows.
+translationStatus: pending
+updated: 2026-08-07
 ---
 
-The MCP server exposes structured tools for agents. Use them instead of asking an agent to guess CLI flags from prose or copy long commands by hand.
+The MCP server exposes structured tools for discovery, project creation, and existing-project
+updates. Call the live guidance and schema tools instead of guessing fields from prose: the schema
+is the authoritative contract.
 
 ## Recommended workflows
 
-### New project
+### Discover a stack
 
-1. `bfs_get_guidance`
-2. `bfs_get_schema`
-3. `bfs_check_compatibility`
-4. `bfs_plan_project`
-5. `bfs_create_project`
+1. Call `bfs_get_guidance`.
+2. Use `bfs_list_presets` when a known starting point is useful.
+3. Use `bfs_recommend_stack` for a product brief, or `bfs_get_schema` for direct selection.
+4. Pass the proposed stack through `bfs_check_compatibility`.
 
-### Existing project
+### Create a project
 
-1. `bfs_get_guidance`
-2. `bfs_plan_addition`
-3. `bfs_add_feature`
+1. Complete the discovery workflow.
+2. Call `bfs_plan_project` to generate the file tree in memory.
+3. Show the plan and adjustments to the user.
+4. After approval, call `bfs_create_project` with the same stack fields.
+5. Report the returned install command; MCP does not install dependencies.
 
-<Callout kind="warn" title="Mutation behavior">
-`bfs_plan_project` is dry-run only. `bfs_create_project` writes a new project to disk. `bfs_add_feature` mutates an existing project. MCP project creation and feature addition do not install dependencies.
+### Update an existing stack
+
+1. Call `bfs_get_guidance`.
+2. Call `bfs_plan_stack_update` with an absolute `projectDir` and the scaffold-time fields to
+   change.
+3. Review compatibility adjustments, conflicts, manual-review blockers, architecture changes, and
+   migration steps.
+4. After approval, call `bfs_apply_stack_update` with the same fields. Set
+   `acknowledgeArchitectureChange: true` only when the user accepted an architecture change.
+5. Report the returned install command and any manual migration work.
+
+Use `bfs_plan_addition` and `bfs_add_feature` only for the narrower addon, web-deploy, and
+server-deploy workflow.
+
+<Callout kind="warn" title="Write and migration behavior">
+Planning tools are read-only. Create, apply, and add tools write files but do not install
+dependencies. Stack updates refuse to overwrite user-edited generated files. Architecture updates
+do not migrate application data or schemas automatically.
 </Callout>
 
-<Callout kind="info" title="Graph metadata">
-Project planning, creation, and addition tools include `graphSummary`, `effectiveStack`, and `stackPartSpecs` so agents can inspect the same graph-derived stack view that `bts.jsonc` persists.
-</Callout>
-
-## Tool reference
+## Discovery and validation tools
 
 ### `bfs_get_guidance`
 
-| Field | Details |
-| --- | --- |
-| Purpose | Returns workflow rules, field semantics, ambiguity rules, and critical constraints. |
-| When to call | First, before other Better Fullstack MCP tools. |
-| Writes files | No. |
-| Required inputs | None. |
-| Optional inputs | None. |
-| Output | JSON guidance covering recommended tool order, array fields, ecosystem rules, and examples. |
-
-```json
-{}
-```
+Returns current workflow rules, field semantics, ambiguity rules, and constraints. It has no input
+and never writes files. Call it first because its output evolves with the server.
 
 ### `bfs_get_schema`
 
-| Field | Details |
-| --- | --- |
-| Purpose | Returns valid option values for one category or all categories. |
-| When to call | Before planning a stack, especially when the user named technologies informally. |
-| Writes files | No. |
-| Required inputs | None. |
-| Optional inputs | `category`, `ecosystem`. |
-| Output | JSON schema/options data filtered by category or ecosystem. |
+Returns valid options for one `category` or all categories. Pass `ecosystem` to limit the response
+to the relevant field family. It is read-only.
+
+```json
+{ "category": "database", "ecosystem": "typescript" }
+```
+
+### `bfs_list_presets`
+
+Lists each ready-made preset with its ID, name, description, ecosystem, and stack summary. It has
+no input and is read-only. Treat the response as authoritative instead of keeping a local preset
+list.
+
+### `bfs_recommend_stack`
+
+Accepts a required natural-language `brief` plus optional `ecosystem` and `projectName`. It uses
+deterministic rules—not another model—to return a compatibility-validated config, rationale,
+adjustments, nearest preset, graph metadata, and reproducible CLI command. It is read-only.
 
 ```json
 {
-  "category": "database",
-  "ecosystem": "typescript"
+  "brief": "A B2B SaaS with organizations, billing, and PostgreSQL",
+  "projectName": "control-plane"
 }
 ```
 
 ### `bfs_check_compatibility`
 
-| Field | Details |
-| --- | --- |
-| Purpose | Validates a stack combination and returns adjusted selections with warnings. |
-| When to call | Before `bfs_plan_project` or `bfs_create_project`. |
-| Writes files | No. |
-| Required inputs | `ecosystem`. |
-| Optional inputs | Frontend, backend, runtime, database, ORM, API, auth, services, UI/CSS, mobile fields, addons, examples, package manager, deployment fields, and ecosystem-specific fields. |
-| Output | JSON compatibility analysis with changes, notes, and adjusted stack data. |
+Accepts an `ecosystem` and supported stack fields. It returns adjusted selections, changes,
+compatibility issues, and whether issues remain. It is read-only. Use `bfs_get_schema` to discover
+the exact current fields and value shapes before calling it.
 
-```json
-{
-  "ecosystem": "typescript",
-  "frontend": ["next"],
-  "backend": "self",
-  "runtime": "none",
-  "database": "postgres",
-  "orm": "drizzle",
-  "api": "trpc"
-}
-```
+## New-project tools
 
 ### `bfs_plan_project`
 
-| Field | Details |
-| --- | --- |
-| Purpose | Generates a project in memory and returns a file-tree summary. |
-| When to call | After compatibility validation and before writing files. |
-| Writes files | No. |
-| Required inputs | None, but `projectName` and `ecosystem` are recommended. |
-| Optional inputs | Full project stack selections. |
-| Output | JSON success flag plus generated file/directory summary, `graphSummary`, `effectiveStack`, and `stackPartSpecs`. |
+Generates the proposed project in memory. It accepts scaffold-time fields and returns the generated
+file/directory summary plus graph-backed stack metadata. It never writes files.
 
 ```json
 {
@@ -112,67 +108,58 @@ Project planning, creation, and addition tools include `graphSummary`, `effectiv
 
 ### `bfs_create_project`
 
-| Field | Details |
-| --- | --- |
-| Purpose | Writes a new generated project to disk. |
-| When to call | Only after `bfs_plan_project` succeeds and the user approves. |
-| Writes files | Yes, creates the project directory and generated files. |
-| Required inputs | `projectName`. |
-| Optional inputs | Full project stack selections. |
-| Output | JSON success flag, project directory, file count, graph metadata, addon warnings, and install command guidance. |
+Requires `projectName`; optional `targetDir` is the absolute parent directory. It accepts the same
+scaffold-time fields as planning, creates the project directory, writes generated files and
+`bts.jsonc`, and returns the path, file count, graph metadata, warnings, and install guidance. It
+does not install dependencies.
+
+## Existing-project stack tools
+
+### `bfs_plan_stack_update`
+
+Requires an absolute `projectDir` and accepts the same scaffold-time stack fields as project
+planning. It compares the requested stack with `bts.jsonc`, computes safe file operations, and
+returns compatibility adjustments, conflicts, blockers, architecture changes, migration steps,
+and install guidance. It does not write files.
 
 ```json
 {
-  "projectName": "my-app",
-  "ecosystem": "java",
-  "javaWebFramework": "spring-boot",
-  "javaBuildTool": "maven",
-  "javaTestingLibraries": ["junit5"]
+  "projectDir": "/absolute/path/to/my-app",
+  "email": "resend",
+  "addons": ["biome", "github-actions"]
 }
 ```
+
+### `bfs_apply_stack_update`
+
+Requires the same `projectDir` and requested stack fields used for the reviewed plan. It regenerates
+only safe scaffold-owned files, preserves user-edited generated files, updates configuration and
+the scaffold manifest, and returns the applied result plus install guidance. It does not install
+dependencies.
+
+When the plan reports an architecture change, repeat the request with
+`acknowledgeArchitectureChange: true` only after the user approves the listed data/schema risks.
+
+## Focused addon and deploy tools
 
 ### `bfs_plan_addition`
 
-| Field | Details |
-| --- | --- |
-| Purpose | Reads `bts.jsonc` and validates proposed additions for an existing project. |
-| When to call | Before mutating an existing project with `bfs_add_feature`. |
-| Writes files | No. |
-| Required inputs | `projectDir`. |
-| Optional inputs | `addons`, `webDeploy`, `serverDeploy`. |
-| Output | Existing config summary, proposed additions, graph metadata for both, already-present addons, and compatibility warnings. |
-
-```json
-{
-  "projectDir": "/absolute/path/to/my-app",
-  "addons": ["mcp", "skills"]
-}
-```
+Requires an absolute `projectDir`. Optional inputs are `addons`, `webDeploy`, and `serverDeploy`.
+It reads `bts.jsonc`, identifies new and already-present additions, checks compatibility, and does
+not write files.
 
 ### `bfs_add_feature`
 
-| Field | Details |
-| --- | --- |
-| Purpose | Adds supported addons or deployment settings to an existing Better Fullstack project. |
-| When to call | After `bfs_plan_addition` succeeds and the user approves. |
-| Writes files | Yes, mutates the existing project. |
-| Required inputs | `projectDir`. |
-| Optional inputs | `addons`, `webDeploy`, `serverDeploy`, `packageManager`. |
-| Output | JSON result from the add handler, graph metadata after the update, and install guidance when available. |
+Requires an absolute `projectDir`. Optional inputs are `addons`, `webDeploy`, `serverDeploy`, and
+`packageManager`. It applies the focused addition and updates project metadata without installing
+dependencies. Use it only after `bfs_plan_addition` succeeds and the user approves.
 
-```json
-{
-  "projectDir": "/absolute/path/to/my-app",
-  "addons": ["biome"],
-  "packageManager": "bun"
-}
-```
+## Rules for agents
 
-## Agent Rules
-
-- Treat `frontend`, `addons`, `examples`, `rustLibraries`, `pythonAi`, `javaLibraries`, and `javaTestingLibraries` as arrays.
-- Set `ecosystem` before selecting ecosystem-specific fields.
-- Prefer `none` when the user explicitly wants to disable a category.
-- MCP project creation does not currently expose every CLI workflow flag. For example, `aiDocs` uses the server's built-in default during project creation.
-- Do not call write tools until the user has approved the dry-run or addition plan.
-- Tell the user which install/test commands to run after MCP creation or addition, because MCP does not install dependencies.
+- Start with `bfs_get_guidance`; use `bfs_get_schema` for exact current field names, value sets, and
+  array shapes.
+- Keep the ecosystem and field family aligned. Do not convert arrays to scalar strings.
+- Apply the exact stack that was planned; if the request changes, plan again.
+- Do not call a write tool until the user has reviewed its corresponding plan.
+- Surface compatibility adjustments and manual-review blockers instead of silently accepting them.
+- After every write, report the returned dependency-install command and relevant test/run commands.

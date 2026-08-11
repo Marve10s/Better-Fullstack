@@ -184,99 +184,96 @@ describe("CLI add command", () => {
     CLI_COMMAND_TEST_TIMEOUT_MS,
   );
 
-  it("adds Kong with its Compose scaffold and remains idempotent", async () => {
-    const root = await makeTempRoot("bfs-add-kong-test-");
-    const projectName = "app";
-    const projectDir = join(root, projectName);
+  it(
+    "adds Kong with its Compose scaffold and remains idempotent",
+    async () => {
+      const root = await makeTempRoot("bfs-add-kong-test-");
+      const projectName = "app";
+      const projectDir = join(root, projectName);
 
-    const configSourceName = "config-source";
-    const sourceCreateResult = await runCli(
-      [
-        "create",
-        configSourceName,
-        "--yes",
-        "--no-install",
-        "--no-git",
-        "--disable-analytics",
-      ],
-      { cwd: root },
-    );
-    expect(sourceCreateResult.exitCode).toBe(0);
+      const configSourceName = "config-source";
+      const sourceCreateResult = await runCli(
+        ["create", configSourceName, "--yes", "--no-install", "--no-git", "--disable-analytics"],
+        { cwd: root },
+      );
+      expect(sourceCreateResult.exitCode).toBe(0);
 
-    const btsConfigPath = join(root, configSourceName, "bts.jsonc");
-    const btsConfig = JSONC.parse(
-      (await readFile(btsConfigPath, "utf8")).replaceAll("tanstack-router", "next"),
-    ) as {
-      frontend?: string[];
-      stackParts?: Array<{
-        id: string;
-        role: string;
-        toolId: string;
-        ecosystem: string;
-        source: string;
-      }>;
-    };
-    btsConfig.stackParts = [
-      ...(btsConfig.stackParts ?? []),
-      {
-        id: "workspacetooling:universal:devcontainer",
-        role: "workspaceTooling",
-        toolId: "devcontainer",
-        ecosystem: "universal",
-        source: "legacy",
-      },
-    ];
-    await writeFile(btsConfigPath, `${JSON.stringify(btsConfig, null, 2)}\n`);
+      const btsConfigPath = join(root, configSourceName, "bts.jsonc");
+      const btsConfig = JSONC.parse(
+        (await readFile(btsConfigPath, "utf8")).replaceAll("tanstack-router", "next"),
+      ) as {
+        frontend?: string[];
+        stackParts?: Array<{
+          id: string;
+          role: string;
+          toolId: string;
+          ecosystem: string;
+          source: string;
+        }>;
+      };
+      btsConfig.stackParts = [
+        ...(btsConfig.stackParts ?? []),
+        {
+          id: "workspacetooling:universal:devcontainer",
+          role: "workspaceTooling",
+          toolId: "devcontainer",
+          ecosystem: "universal",
+          source: "legacy",
+        },
+      ];
+      await writeFile(btsConfigPath, `${JSON.stringify(btsConfig, null, 2)}\n`);
 
-    const createResult = await runCli(
-      [
-        "create",
-        projectName,
-        "--config",
-        btsConfigPath,
-        "--no-install",
-        "--no-git",
-        "--disable-analytics",
-      ],
-      { cwd: root },
-    );
-    expect(createResult.exitCode, cliOutput(createResult)).toBe(0);
+      const createResult = await runCli(
+        [
+          "create",
+          projectName,
+          "--config",
+          btsConfigPath,
+          "--no-install",
+          "--no-git",
+          "--disable-analytics",
+        ],
+        { cwd: root },
+      );
+      expect(createResult.exitCode, cliOutput(createResult)).toBe(0);
 
-    const addResult = await runCli(
-      ["add", "--project-dir", projectDir, "--addons", "kong"],
-      { cwd: root, env: { BFS_SKIP_EXTERNAL_COMMANDS: "1" } },
-    );
+      const addResult = await runCli(["add", "--project-dir", projectDir, "--addons", "kong"], {
+        cwd: root,
+        env: { BFS_SKIP_EXTERNAL_COMMANDS: "1" },
+      });
 
-    expect(
-      addResult.exitCode,
-      `add failed\nstdout:\n${addResult.stdout}\nstderr:\n${addResult.stderr}`,
-    ).toBe(0);
-    expect(cliOutput(addResult)).toContain("Successfully added: kong");
+      expect(
+        addResult.exitCode,
+        `add failed\nstdout:\n${addResult.stdout}\nstderr:\n${addResult.stderr}`,
+      ).toBe(0);
+      expect(cliOutput(addResult)).toContain("Successfully added: kong");
 
-    const config = (await readJsoncFile(join(projectDir, "bts.jsonc"))) as {
-      addons?: string[];
-    };
-    const compose = await Bun.file(join(projectDir, "docker-compose.yml")).text();
-    const kongConfig = await Bun.file(join(projectDir, "kong", "kong.yml")).text();
-    const nextConfig = await Bun.file(join(projectDir, "apps", "web", "next.config.ts")).text();
-    const devcontainer = JSON.parse(
-      await Bun.file(join(projectDir, ".devcontainer", "devcontainer.json")).text(),
-    );
+      const config = (await readJsoncFile(join(projectDir, "bts.jsonc"))) as {
+        addons?: string[];
+      };
+      const compose = await Bun.file(join(projectDir, "docker-compose.yml")).text();
+      const kongConfig = await Bun.file(join(projectDir, "kong", "kong.yml")).text();
+      const nextConfig = await Bun.file(join(projectDir, "apps", "web", "next.config.ts")).text();
+      const devcontainer = JSON.parse(
+        await Bun.file(join(projectDir, ".devcontainer", "devcontainer.json")).text(),
+      );
 
-    expect(config.addons).toContain("kong");
-    expect(compose).toContain("kong/kong-gateway:3.15.0.1");
-    expect(kongConfig).toContain("url: http://server:3000");
-    expect(nextConfig).toContain('output: "standalone"');
-    expect(devcontainer.runServices).toContain("kong");
-    expect(devcontainer.forwardPorts).toEqual(expect.arrayContaining([8000, 8001]));
+      expect(config.addons).toContain("kong");
+      expect(compose).toContain("kong/kong-gateway:3.15.0.1");
+      expect(kongConfig).toContain("url: http://server:3000");
+      expect(nextConfig).toContain('output: "standalone"');
+      expect(devcontainer.runServices).toContain("kong");
+      expect(devcontainer.forwardPorts).toEqual(expect.arrayContaining([8000, 8001]));
 
-    const secondAddResult = await runCli(
-      ["add", "--project-dir", projectDir, "--addons", "kong"],
-      { cwd: root, env: { BFS_SKIP_EXTERNAL_COMMANDS: "1" } },
-    );
-    expect(secondAddResult.exitCode).toBe(0);
-    expect(cliOutput(secondAddResult)).toContain("No new addons selected.");
-  }, CLI_COMMAND_TEST_TIMEOUT_MS);
+      const secondAddResult = await runCli(
+        ["add", "--project-dir", projectDir, "--addons", "kong"],
+        { cwd: root, env: { BFS_SKIP_EXTERNAL_COMMANDS: "1" } },
+      );
+      expect(secondAddResult.exitCode).toBe(0);
+      expect(cliOutput(secondAddResult)).toContain("No new addons selected.");
+    },
+    CLI_COMMAND_TEST_TIMEOUT_MS,
+  );
 
   it(
     "wires Gitleaks into existing Husky and Lefthook hooks",
@@ -355,20 +352,18 @@ describe("CLI add command", () => {
       expect(initialAdd.exitCode).toBe(0);
 
       await writeFile(lefthookPath, "pre-commit: [\n");
-      const failedAdd = await runCli(
-        ["add", "--project-dir", projectDir, "--addons", "gitleaks"],
-        { cwd: root },
-      );
+      const failedAdd = await runCli(["add", "--project-dir", projectDir, "--addons", "gitleaks"], {
+        cwd: root,
+      });
       expect(failedAdd.exitCode).not.toBe(0);
 
       await writeFile(
         lefthookPath,
         "pre-commit:\n  commands:\n    lint:\n      run: bun run lint\n",
       );
-      const retry = await runCli(
-        ["add", "--project-dir", projectDir, "--addons", "gitleaks"],
-        { cwd: root },
-      );
+      const retry = await runCli(["add", "--project-dir", projectDir, "--addons", "gitleaks"], {
+        cwd: root,
+      });
       expect(retry.exitCode, `retry failed\n${retry.all}`).toBe(0);
       expect(await readFile(lefthookPath, "utf8")).toContain(
         "gitleaks git --pre-commit --redact --staged --verbose",
@@ -376,10 +371,9 @@ describe("CLI add command", () => {
 
       const huskyPath = join(projectDir, ".husky", "pre-commit");
       await Promise.all([rm(huskyPath), rm(lefthookPath)]);
-      const recreate = await runCli(
-        ["add", "--project-dir", projectDir, "--addons", "gitleaks"],
-        { cwd: root },
-      );
+      const recreate = await runCli(["add", "--project-dir", projectDir, "--addons", "gitleaks"], {
+        cwd: root,
+      });
       expect(recreate.exitCode, `recreate failed\n${recreate.all}`).toBe(0);
       expect(await readFile(huskyPath, "utf8")).toContain(
         "gitleaks git --pre-commit --redact --staged --verbose",
@@ -418,10 +412,9 @@ describe("CLI add command", () => {
 
       const lefthookPath = join(projectDir, "lefthook.yml");
       await writeFile(lefthookPath, "pre-commit: [\n");
-      const failedAdd = await runCli(
-        ["add", "--project-dir", projectDir, "--addons", "biome"],
-        { cwd: root },
-      );
+      const failedAdd = await runCli(["add", "--project-dir", projectDir, "--addons", "biome"], {
+        cwd: root,
+      });
       expect(failedAdd.exitCode).not.toBe(0);
 
       const configAfterFailure = (await readJsoncFile(join(projectDir, "bts.jsonc"))) as {
@@ -433,10 +426,9 @@ describe("CLI add command", () => {
         lefthookPath,
         "pre-commit:\n  commands:\n    existing:\n      run: bun run lint\n",
       );
-      const retry = await runCli(
-        ["add", "--project-dir", projectDir, "--addons", "biome"],
-        { cwd: root },
-      );
+      const retry = await runCli(["add", "--project-dir", projectDir, "--addons", "biome"], {
+        cwd: root,
+      });
       expect(retry.exitCode, `retry failed\n${retry.all}`).toBe(0);
       expect(cliOutput(retry)).toContain("Repaired addon setup: biome");
       expect(await readFile(lefthookPath, "utf8")).toContain("biome check --write");
@@ -602,6 +594,7 @@ describe("CLI history command", () => {
       const expectedCommand =
         "bun create better-fullstack@latest python-history-app " +
         "--ecosystem python " +
+        "--database none " +
         "--python-web-framework django " +
         "--python-orm sqlalchemy " +
         "--python-validation pydantic " +

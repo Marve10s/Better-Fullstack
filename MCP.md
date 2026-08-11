@@ -4,6 +4,10 @@
 
 Works with Claude Code, Cursor, VS Code Copilot, Windsurf, Claude Desktop, Zed, Cline, and any MCP-compatible client.
 
+The stdio server supports both the 2025 MCP protocol family and MCP 2026-07-28. Modern clients get
+the stateless-core request model and cache hints for tool/resource discovery; legacy clients
+continue to use the existing initialization flow.
+
 ## Setup
 
 **Claude Code:**

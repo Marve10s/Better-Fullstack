@@ -9,9 +9,9 @@ import type { TelemetrySource } from "./utils/analytics";
 
 import { historyHandler } from "./commands/history";
 import { telemetryHandler } from "./commands/telemetry";
+import { BUILDER_URL } from "./constants";
 import { CreateCommandInputSchema, CreateCommandOptionsSchema } from "./create-command-input";
 import { createProjectHandler } from "./helpers/core/command-handlers";
-import { BUILDER_URL } from "./constants";
 import {
   type AddInput,
   type Addons,
@@ -173,6 +173,7 @@ import {
   ShadcnFontSchema,
   ShadcnRadiusSchema,
 } from "./types";
+import { statusFromCommandResult, withCommandTelemetry } from "./utils/analytics";
 import { handleError } from "./utils/errors";
 import { getLatestCLIVersion } from "./utils/get-latest-cli-version";
 import { openUrl } from "./utils/open-url";
@@ -235,40 +236,71 @@ export const router = os.router({
         projectName,
         ...options,
       };
-      const result = await createProjectHandler(combinedInput);
+      const telemetrySource =
+        options.yes || options.part?.length || options.config || options.fromHistory !== undefined
+          ? "cli-flags"
+          : "cli-interactive";
+      const result = await withCommandTelemetry(
+        "create",
+        () => createProjectHandler(combinedInput),
+        {
+          source: telemetrySource,
+          mode: options.dryRun ? "dry-run" : options.yes ? "defaults" : "create",
+          disableAnalytics: options.disableAnalytics,
+          resultStatus: statusFromCommandResult,
+        },
+      );
 
       if (options.verbose) {
         return result;
       }
     }),
   sponsors: os.meta({ description: "Show Better Fullstack sponsors" }).handler(async () => {
-    try {
-      renderTitle();
-      intro(pc.magenta("Better Fullstack Sponsors"));
-      const sponsors = await fetchSponsors();
-      displaySponsors(sponsors);
-    } catch (error) {
-      handleError(error, "Failed to display sponsors");
-    }
+    await withCommandTelemetry(
+      "sponsors",
+      async () => {
+        try {
+          renderTitle();
+          intro(pc.magenta("Better Fullstack Sponsors"));
+          const sponsors = await fetchSponsors();
+          displaySponsors(sponsors);
+        } catch (error) {
+          handleError(error, "Failed to display sponsors");
+        }
+      },
+      { source: "cli-flags" },
+    );
   }),
   docs: os.meta({ description: "Open Better Fullstack documentation" }).handler(async () => {
-    const DOCS_URL = "https://better-fullstack-web.vercel.app/docs";
-    try {
-      await openUrl(DOCS_URL);
-      log.success(pc.blue("Opened docs in your default browser."));
-    } catch {
-      log.message(`Please visit ${DOCS_URL}`);
-    }
+    const DOCS_URL = "https://better-fullstack.dev/docs";
+    await withCommandTelemetry(
+      "docs",
+      async () => {
+        try {
+          await openUrl(DOCS_URL);
+          log.success(pc.blue("Opened docs in your default browser."));
+        } catch {
+          log.message(`Please visit ${DOCS_URL}`);
+        }
+      },
+      { source: "cli-flags" },
+    );
   }),
   builder: os
     .meta({ description: "Open the interactive web-based stack builder at better-fullstack.dev" })
     .handler(async () => {
-      try {
-        await openUrl(BUILDER_URL);
-        log.success(pc.blue("Opened builder in your default browser."));
-      } catch {
-        log.message(`Please visit ${BUILDER_URL}`);
-      }
+      await withCommandTelemetry(
+        "builder",
+        async () => {
+          try {
+            await openUrl(BUILDER_URL);
+            log.success(pc.blue("Opened builder in your default browser."));
+          } catch {
+            log.message(`Please visit ${BUILDER_URL}`);
+          }
+        },
+        { source: "cli-flags" },
+      );
     }),
   add: os
     .meta({
@@ -278,7 +310,20 @@ export const router = os.router({
     .input(AddCommandInputSchema)
     .handler(async ({ input }) => {
       const { addHandler } = await import("./helpers/core/add-handler.js");
-      await addHandler(input as AddInput);
+      const hasExplicitSelection = Object.entries(input).some(([key, value]) => {
+        if (["projectDir", "install", "dryRun"].includes(key)) return false;
+        if (value === undefined || value === false) return false;
+        return !Array.isArray(value) || value.length > 0;
+      });
+      await withCommandTelemetry("add", () => addHandler(input as AddInput), {
+        source: hasExplicitSelection || input.dryRun ? "cli-flags" : "cli-interactive",
+        mode: (input as { dryRun?: boolean }).dryRun ? "dry-run" : "apply",
+        resultStatus: statusFromCommandResult,
+        resultDetails: (commandResult) => ({
+          capabilityCount: commandResult?.addedAddons.length,
+          warningCount: commandResult?.setupWarnings?.length,
+        }),
+      });
     }),
   history: os
     .meta({ description: "Show history of scaffolded projects with reproducible commands" })
@@ -290,7 +335,10 @@ export const router = os.router({
       }),
     )
     .handler(async ({ input }) => {
-      await historyHandler(input);
+      await withCommandTelemetry("history", () => historyHandler(input), {
+        source: "cli-flags",
+        mode: input.clear ? "clear" : input.json ? "json" : "list",
+      });
     }),
   telemetry: os
     .meta({
@@ -311,7 +359,11 @@ export const router = os.router({
     )
     .handler(async ({ input }) => {
       const [action, options] = input;
-      await telemetryHandler({ action, json: options.json });
+      await withCommandTelemetry(
+        "telemetry",
+        () => telemetryHandler({ action, json: options.json }),
+        { source: "cli-flags", mode: action },
+      );
     }),
   "update-deps": os
     .meta({ description: "Check and update dependency versions in add-deps.ts" })
@@ -333,12 +385,21 @@ export const router = os.router({
         showEcosystems();
         return;
       }
-      await updateDepsHandler({
-        check: input.check,
-        patch: input.patch,
-        all: input.all,
-        ecosystem: input.ecosystem,
-      });
+      await withCommandTelemetry(
+        "update-deps",
+        () =>
+          updateDepsHandler({
+            check: input.check,
+            patch: input.patch,
+            all: input.all,
+            ecosystem: input.ecosystem,
+          }),
+        {
+          source: "cli-flags",
+          mode: input.check ? "check" : input.patch ? "patch" : input.all ? "all" : "update",
+          dimensions: { targetEcosystem: input.ecosystem },
+        },
+      );
     }),
   gen: os
     .meta({
@@ -361,7 +422,21 @@ export const router = os.router({
     .handler(async ({ input }) => {
       const [kind, name, options] = input;
       const { genCommand } = await import("./commands/gen.js");
-      await genCommand({ kind, name, dir: options.dir, dryRun: options.dryRun });
+      await withCommandTelemetry(
+        "gen",
+        () => genCommand({ kind, name, dir: options.dir, dryRun: options.dryRun }),
+        {
+          source: "cli-flags",
+          mode: options.dryRun ? "dry-run" : "apply",
+          dimensions: { generatorKind: kind },
+          resultStatus: (commandResult) =>
+            commandResult.status === "unsupported" ? "failed" : "succeeded",
+          resultDetails: (commandResult) => ({
+            changedFileCount: commandResult.status === "created" && !options.dryRun ? 1 : 0,
+            manualReviewCount: commandResult.status === "manual-wiring" ? 1 : 0,
+          }),
+        },
+      );
     }),
   registry: os
     .meta({
@@ -393,13 +468,22 @@ export const router = os.router({
     .handler(async ({ input }) => {
       const [action, source, options] = input;
       const { registryHandler } = await import("./commands/registry.js");
-      await registryHandler({
-        action,
-        source,
-        projectDir: options.projectDir,
-        json: options.json,
-        dryRun: options.dryRun,
-      });
+      await withCommandTelemetry(
+        "registry",
+        () =>
+          registryHandler({
+            action,
+            source,
+            projectDir: options.projectDir,
+            json: options.json,
+            dryRun: options.dryRun,
+          }),
+        {
+          source: "cli-flags",
+          mode: action === "list" ? "list" : options.dryRun ? "dry-run" : "add",
+          dimensions: { registryAction: action },
+        },
+      );
     }),
   update: os
     .meta({
@@ -462,7 +546,7 @@ export const router = os.router({
     .handler(async ({ input }) => {
       const [projectDir, options] = input;
       const { doctorCommand } = await import("./commands/doctor.js");
-      await doctorCommand({ projectDir, ...options });
+      await doctorCommand({ projectDir, ...options, commandName: "doctor" });
     }),
   check: os
     .meta({
@@ -473,7 +557,7 @@ export const router = os.router({
     .handler(async ({ input }) => {
       const [projectDir, options] = input;
       const { doctorCommand } = await import("./commands/doctor.js");
-      await doctorCommand({ projectDir, ...options });
+      await doctorCommand({ projectDir, ...options, commandName: "check" });
     }),
   recommend: os
     .meta({
@@ -495,9 +579,18 @@ export const router = os.router({
     )
     .handler(async ({ input }) => {
       const { recommendStackFromBrief } = await import("./mcp.js");
-      const result = recommendStackFromBrief(
-        input.brief,
-        input.ecosystem as Parameters<typeof recommendStackFromBrief>[1],
+      const result = await withCommandTelemetry(
+        "recommend",
+        async () =>
+          recommendStackFromBrief(
+            input.brief,
+            input.ecosystem as Parameters<typeof recommendStackFromBrief>[1],
+          ),
+        {
+          source: "cli-flags",
+          mode: input.json ? "json" : "human",
+          dimensions: { targetEcosystem: input.ecosystem },
+        },
       );
 
       if (input.json) {

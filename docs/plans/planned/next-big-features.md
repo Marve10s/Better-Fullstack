@@ -1,5 +1,9 @@
 # Next Big Features — Prioritized Opportunities
 
+> **Superseded for priority decisions on 2026-08-07.** Retained as opportunity research. Use
+> `docs/next-updates-roadmap.md` for current sequencing; several features described below have
+> shipped since this analysis.
+
 Synthesis of internal readiness (codebase, plan docs, GitHub issues) and external evidence
 (competitive landscape as of June 12, 2026 — see `docs/plans/planned/competitive-landscape-2026-06-12.md`).
 Updated 2026-06-30 to focus on the highest-leverage remaining product opportunities.
@@ -17,13 +21,17 @@ verified-combinations guarantee. Both build directly on the stack-graph and vali
 
 ## Tier 1 — Headline features (high leverage, nobody has them)
 
-### 1. Post-scaffold upgrade engine (`bfs update`)
+### 1. Post-scaffold upgrade engine (`update`) — baseline shipped
 
-The #1 unsolved problem across the entire space. Users regenerate scaffolds and hand-diff the changes; the Python world partially solved it (`cruft update`/`copier update` diff-based re-application + `cruft check` in CI); Amplication ("live templates", automatic package updates) and Nx (agentic migrations, Self-Healing CI) both *monetize* exactly this gap. No JS-ecosystem scaffolder has it.
+This was the #1 unsolved problem identified by the June 2026 research. Better Fullstack has since
+shipped a baseline-aware dry-run/apply/check engine; the opportunity is now cross-version
+reliability, recovery, and public evidence rather than first implementation.
 
-- **Shape**: diff-aware template re-application keyed off `bts.jsonc` (which already records the stack as a graph — Phase 4 finalized the shape) plus a recorded template/CLI version; a `bfs check` CI mode that flags drift from the current template version.
+- **Shipped shape**: diff-aware template re-application keyed off `bts.jsonc` and `bts.lock.json`,
+  with safe apply and a CI-oriented check mode.
 - **Why us**: the stack graph + `bts.jsonc` is precisely the lockfile this needs; `add`/`bfs_add_feature` already prove the mutate-existing-project plumbing.
-- **Dependencies**: stack graph Phase 3 completion (graph-native compatibility rules); shares machinery with item 2 — design them together.
+- **Remaining depth**: recorded version history, cross-version fixtures, recoverable patch/backup
+  output, and real-repository validation.
 
 ### 2. Incremental capability additions to existing projects
 
@@ -60,7 +68,7 @@ The default consumer of a scaffolder in 2026 is an agent. create-next-app ships 
 - **Installable agent plugin**: bundle the existing MCP server, scaffold/add skills, and plugin
   metadata so agents can discover Better Fullstack as a product surface instead of relying on
   repo-local setup instructions.
-- **Stack-specific skills**: generated docs/skills that explain how to add a route, run migrations, or add a test *in this exact combo* — not generic boilerplate.
+- **Stack-specific skills**: generated docs/skills that explain how to add a route, run migrations, or add a test _in this exact combo_ — not generic boilerplate.
 - **In-project generators**: `bfs gen resource <name>` style deterministic codegen inside scaffolded repos, per ecosystem (Loco's migration-first generators are the model). Agents prefer invoking deterministic tools over free-form generation.
 - Our own LLM benchmark data (36 runs; MCP path avg 66.9s vs prompt-only 170.7s) is the marketing material for this.
 
@@ -97,4 +105,5 @@ Verified-combinations page/badge ──► More evidence surfaces (#3)          
 Per-stack skills + generators (#4)                                          [parallel]
 ```
 
-Treat the upgrade engine (#1) as the headline feature for the next major version — it is the one thing users of every competitor are asking for that no one has built.
+Treat upgrade reliability—not the already-shipped baseline command—as the headline lifecycle track
+for the next major version.

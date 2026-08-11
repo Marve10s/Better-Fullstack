@@ -1,15 +1,15 @@
 # Mobile / React Native Expansion
 
-Current native options: `native-bare`, `native-uniwind`, `native-unistyles`. These scaffold React Native/Expo apps as frontends in the monorepo. Status was refreshed on 2026-06-30; only unfinished follow-ups remain below.
+Current native options: `native-bare`, `native-uniwind`, `native-unistyles`. These scaffold React Native/Expo apps as frontends in the monorepo. Status was refreshed on 2026-08-07; completed rows remain visible to prevent duplicate work.
 
 ---
 
 ## Current State
 
-| Option | What it does |
-|--------|-------------|
-| `native-bare` | Plain React Native with Expo |
-| `native-uniwind` | React Native + UniWind (Tailwind for RN) |
+| Option             | What it does                                 |
+| ------------------ | -------------------------------------------- |
+| `native-bare`      | Plain React Native with Expo                 |
+| `native-uniwind`   | React Native + UniWind (Tailwind for RN)     |
 | `native-unistyles` | React Native + Unistyles (type-safe styling) |
 
 All use Expo as the base.
@@ -24,8 +24,8 @@ All use Expo as the base.
 
 ## State & Data
 
-- [ ] Add `tanstack-query` integration for React Native — already an addon, but ensure mobile-specific setup (offline persistence, refetch on app focus, network-aware)
-- [ ] Add `legend-state` — already in state management schema, but has excellent React Native support (persistence, sync, fine-grained reactivity)
+- [ ] Deepen `tanstack-query` for React Native with offline persistence, app-focus refetch, and network awareness.
+- [ ] Deepen the existing `legend-state` option with mobile persistence and sync examples.
 - [ ] Add `watermelondb` — offline-first database for React Native. SQLite-based, lazy loading, sync engine. Good for apps that need to work offline.
 
 ---
@@ -46,7 +46,7 @@ All use Expo as the base.
 
 ### Capacitor (better-t-stack #539 — closed but relevant)
 
-- [ ] Add `capacitor` addon — wrap existing web app in native container. Access native APIs (camera, geolocation, push). Ionic team.
+- [x] Add `capacitor` with generated config, dependencies, and web-frontend compatibility.
   - **When:** User has a web frontend and wants mobile without rewriting
   - **Generate:** `capacitor.config.ts`, native project directories (`ios/`, `android/`)
   - **Pairs with:** Any web frontend (Next, SvelteKit, React Router, etc.)
@@ -74,8 +74,7 @@ All use Expo as the base.
 
 ## Priority Order
 
-1. **Capacitor** — web-to-mobile bridge for teams that do not want a separate React Native app.
-2. **TanStack Query mobile setup** — offline persistence, focus/refetch behavior, and network-aware defaults.
-3. **Legend State / offline data** — mobile-friendly persistence and sync story.
-4. **React Native Paper or OneSignal** — only if issue demand appears.
-5. **Generated-project quality** — ensure mobile options survive install/typecheck and ScaffBench route/build checks.
+1. **TanStack Query mobile setup** — offline persistence, focus/refetch behavior, and network-aware defaults.
+2. **Legend State / offline data** — mobile-friendly persistence and sync story.
+3. **React Native Paper or OneSignal** — only if issue demand appears.
+4. **Generated-project quality** — ensure mobile options survive install/typecheck and ScaffBench route/build checks.

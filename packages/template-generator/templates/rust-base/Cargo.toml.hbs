@@ -1,7 +1,9 @@
 [workspace]
 resolver = "2"
 members = [
+{{#unless graphRustClientOnly}}
     "crates/server",
+{{/unless}}
 {{#if (eq rustApi "tonic")}}
     "crates/proto",
 {{/if}}
@@ -22,7 +24,9 @@ members = [
 {{/if}}
 ]
 default-members = [
+{{#unless graphRustClientOnly}}
     "crates/server",
+{{/unless}}
 {{#if (eq rustApi "tonic")}}
     "crates/proto",
 {{/if}}

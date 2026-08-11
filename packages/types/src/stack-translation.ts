@@ -97,6 +97,11 @@ export const DEFAULT_STACK_SELECTION: StackSelectionState = {
   yolo: "false",
   rustWebFramework: "axum",
   rustFrontend: "none",
+  dotnetFrontend: "none",
+  kotlinMobile: "none",
+  kotlinMobileLibraries: [],
+  swiftMobile: "none",
+  dartMobile: "none",
   rustOrm: "sea-orm",
   rustApi: "none",
   rustCli: "none",
@@ -275,6 +280,11 @@ export const STACK_SELECTION_OPTION_CATEGORY_BY_KEY: Record<
   serverDeploy: "serverDeploy",
   rustWebFramework: "rustWebFramework",
   rustFrontend: "rustFrontend",
+  dotnetFrontend: "dotnetFrontend",
+  kotlinMobile: "kotlinMobile",
+  kotlinMobileLibraries: "kotlinMobileLibraries",
+  swiftMobile: "swiftMobile",
+  dartMobile: "dartMobile",
   rustOrm: "rustOrm",
   rustApi: "rustApi",
   rustCli: "rustCli",
@@ -463,6 +473,11 @@ export const STACK_SELECTION_URL_KEYS = {
   yolo: "yolo",
   rustWebFramework: "rwf",
   rustFrontend: "rfe",
+  dotnetFrontend: "dnfe",
+  kotlinMobile: "km",
+  kotlinMobileLibraries: "kmlib",
+  swiftMobile: "sm",
+  dartMobile: "dm",
   rustOrm: "rorm",
   rustApi: "rapi",
   rustCli: "rcli",
@@ -809,6 +824,10 @@ const CLI_SCALAR_CONFIG_FIELDS = [
   ["shadcnRadius", "shadcnRadius"],
   ["rustWebFramework", "rustWebFramework"],
   ["rustFrontend", "rustFrontend"],
+  ["dotnetFrontend", "dotnetFrontend"],
+  ["kotlinMobile", "kotlinMobile"],
+  ["swiftMobile", "swiftMobile"],
+  ["dartMobile", "dartMobile"],
   ["rustOrm", "rustOrm"],
   ["rustApi", "rustApi"],
   ["rustCli", "rustCli"],
@@ -901,6 +920,7 @@ const CLI_NON_EMPTY_ARRAY_CONFIG_FIELDS = [
 const CLI_DEFINED_ARRAY_CONFIG_FIELDS = [
   ["aiDocs", "aiDocs"],
   ["mobileLibraries", "mobileLibraries"],
+  ["kotlinMobileLibraries", "kotlinMobileLibraries"],
   ["rustLibraries", "rustLibraries"],
   ["pythonAi", "pythonAi"],
   ["javaLibraries", "javaLibraries"],
@@ -1066,11 +1086,11 @@ export function processCliArrayOption<T>(options: readonly (T | "none")[] | unde
   return options.filter((item): item is T => item !== "none");
 }
 
-function toUniqueNonNoneArray(values: readonly string[]) {
-  return [...new Set(withoutNone(values))];
+function toUniqueNonNoneArray(values: readonly string[] | undefined) {
+  return [...new Set(withoutNone(values ?? []))];
 }
 
-function formatArrayFlag(flag: string, values: readonly string[]) {
+function formatArrayFlag(flag: string, values: readonly string[] | undefined) {
   const filteredValues = toUniqueNonNoneArray(values);
   return `--${flag} ${filteredValues.join(" ") || "none"}`;
 }
@@ -1084,13 +1104,8 @@ function formatTypeScriptAddonsFlag(selection: StackSelectionInput) {
 }
 
 type StackSelectionStringKey = {
-  [K in keyof StackSelectionState]: StackSelectionState[K] extends string ? K : never;
+  [K in keyof StackSelectionState]-?: NonNullable<StackSelectionState[K]> extends string ? K : never;
 }[keyof StackSelectionState];
-
-const GRAPH_TYPESCRIPT_FRONTEND_FLAG_KEYS = [
-  ["validation", "validation"],
-  ["testing", "testing"],
-] as const satisfies readonly [StackSelectionStringKey, string][];
 
 const GRAPH_SHADCN_FLAG_KEYS = [
   ["shadcnBase", "shadcn-base"],
@@ -1104,16 +1119,8 @@ const GRAPH_SHADCN_FLAG_KEYS = [
 
 const GRAPH_MOBILE_FLAG_KEYS = [] as const satisfies readonly [StackSelectionStringKey, string][];
 
-const GRAPH_TYPESCRIPT_BACKEND_FLAG_KEYS = [
-  ["backendLibraries", "effect"],
-] as const satisfies readonly [StackSelectionStringKey, string][];
-
 const GRAPH_SHARED_BACKEND_FLAG_KEYS = [
-  ["email", "email"],
-  ["observability", "observability"],
-  ["caching", "caching"],
   ["rateLimit", "rate-limit"],
-  ["search", "search"],
 ] as const satisfies readonly [StackSelectionStringKey, string][];
 
 const GRAPH_ELIXIR_BACKEND_FLAG_KEYS = [["elixirJson", "elixir-json"]] as const satisfies readonly [
@@ -1132,7 +1139,7 @@ function formatChangedStringFlag(
 }
 
 type StackSelectionArrayKey = {
-  [K in keyof StackSelectionState]: StackSelectionState[K] extends string[] ? K : never;
+  [K in keyof StackSelectionState]: NonNullable<StackSelectionState[K]> extends string[] ? K : never;
 }[keyof StackSelectionState];
 
 function formatChangedStringFlags(
@@ -1205,6 +1212,9 @@ const GRAPH_TYPESCRIPT_BACKEND_PART_SELECTION_KEYS = [
   ["search", "search"],
   ["vectorDb", "vectorDb"],
   ["fileStorage", "fileStorage"],
+  ["backendLibraries", "effect"],
+  ["validation", "validation"],
+  ["testing", "testing"],
 ] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
 
 const GRAPH_ELIXIR_BACKEND_PART_SELECTION_KEYS = [
@@ -1231,6 +1241,8 @@ const GRAPH_DATABASE_PART_SELECTION_KEYS = [["dbSetup", "dbSetup"]] as const sat
 ][];
 
 const GRAPH_MOBILE_PART_SELECTION_KEYS = [
+  ["auth", "auth"],
+  ["payments", "payments"],
   ["mobileNavigation", "navigation"],
   ["mobileUI", "ui"],
   ["mobileStorage", "storage"],
@@ -1244,10 +1256,20 @@ const GRAPH_MOBILE_ARRAY_PART_SELECTION_KEYS = [
   ["mobileLibraries", "libraries"],
 ] as const satisfies readonly [StackSelectionArrayKey, ScopedStackPartRole][];
 
+const GRAPH_KOTLIN_MOBILE_ARRAY_PART_SELECTION_KEYS = [
+  ["kotlinMobileLibraries", "libraries"],
+] as const satisfies readonly [StackSelectionArrayKey, ScopedStackPartRole][];
+
 const GRAPH_RUST_BACKEND_PART_SELECTION_KEYS = [
   ["rustCli", "cli"],
   ["rustLogging", "logging"],
   ["rustErrorHandling", "errorHandling"],
+  ["rustRealtime", "realtime"],
+  ["rustMessageQueue", "jobQueue"],
+  ["rustObservability", "observability"],
+  ["rustTemplating", "templating"],
+  ["email", "email"],
+  ["observability", "observability"],
   ["caching", "caching"],
   ["search", "search"],
   ["rustCaching", "caching"],
@@ -1268,12 +1290,19 @@ const GRAPH_PYTHON_BACKEND_PART_SELECTION_KEYS = [
   ["pythonServer", "server"],
   ["pythonPackageManager", "packageManager"],
   ["pythonMessageQueue", "messageQueue"],
+  ["pythonCaching", "caching"],
+  ["pythonRealtime", "realtime"],
+  ["pythonObservability", "observability"],
+  ["email", "email"],
+  ["observability", "observability"],
   ["caching", "caching"],
   ["search", "search"],
 ] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
 
 const GRAPH_PYTHON_BACKEND_ARRAY_PART_SELECTION_KEYS = [
   ["pythonAi", "ai"],
+  ["pythonTesting", "testing"],
+  ["pythonCli", "cli"],
   ["pythonData", "data"],
 ] as const satisfies readonly [StackSelectionArrayKey, ScopedStackPartRole][];
 
@@ -1286,13 +1315,27 @@ const GRAPH_GO_BACKEND_PART_SELECTION_KEYS = [
   ["goTemplating", "templating"],
   ["goProtoTooling", "buildTool"],
   ["goDI", "libraries"],
+  ["goRealtime", "realtime"],
+  ["goMessageQueue", "jobQueue"],
+  ["goCaching", "caching"],
+  ["goConfig", "config"],
+  ["goObservability", "observability"],
+  ["email", "email"],
+  ["observability", "observability"],
   ["caching", "caching"],
   ["search", "search"],
 ] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
 
+const GRAPH_GO_BACKEND_ARRAY_PART_SELECTION_KEYS = [
+  ["goTesting", "testing"],
+] as const satisfies readonly [StackSelectionArrayKey, ScopedStackPartRole][];
+
 const GRAPH_JAVA_BACKEND_PART_SELECTION_KEYS = [
   ["javaLanguage", "language"],
   ["javaBuildTool", "buildTool"],
+  ["javaLogging", "logging"],
+  ["email", "email"],
+  ["observability", "observability"],
   ["caching", "caching"],
   ["search", "search"],
 ] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
@@ -1308,6 +1351,7 @@ const GRAPH_DOTNET_BACKEND_PART_SELECTION_KEYS = [
   ["dotnetApi", "api"],
   ["dotnetJobQueue", "jobQueue"],
   ["dotnetRealtime", "realtime"],
+  ["dotnetValidation", "validation"],
   ["dotnetCaching", "caching"],
   ["dotnetDeploy", "deploy"],
 ] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
@@ -1316,6 +1360,10 @@ const GRAPH_DOTNET_BACKEND_ARRAY_PART_SELECTION_KEYS = [
   ["dotnetTesting", "testing"],
   ["dotnetObservability", "observability"],
   ["dotnetLibraries", "libraries"],
+] as const satisfies readonly [StackSelectionArrayKey, ScopedStackPartRole][];
+
+const GRAPH_ELIXIR_BACKEND_ARRAY_PART_SELECTION_KEYS = [
+  ["elixirLibraries", "libraries"],
 ] as const satisfies readonly [StackSelectionArrayKey, ScopedStackPartRole][];
 
 const GRAPH_TYPESCRIPT_FRONTEND_PART_CLI_KEYS = [
@@ -1328,6 +1376,8 @@ const GRAPH_TYPESCRIPT_FRONTEND_PART_CLI_KEYS = [
   ["fileUpload", "fileUpload"],
   ["i18n", "i18n"],
   ["analytics", "analytics"],
+  ["validation", "validation"],
+  ["testing", "testing"],
 ] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
 
 const GRAPH_TYPESCRIPT_BACKEND_PART_CLI_KEYS = [
@@ -1349,6 +1399,7 @@ const GRAPH_TYPESCRIPT_BACKEND_PART_CLI_KEYS = [
   ["search", "search"],
   ["vectorDb", "vectorDb"],
   ["fileStorage", "fileStorage"],
+  ["effect", "effect"],
 ] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
 
 const GRAPH_ELIXIR_BACKEND_PART_CLI_KEYS = [
@@ -1375,6 +1426,8 @@ const GRAPH_DATABASE_PART_CLI_KEYS = [["dbSetup", "dbSetup"]] as const satisfies
 ][];
 
 const GRAPH_MOBILE_PART_CLI_KEYS = [
+  ["auth", "auth"],
+  ["payments", "payments"],
   ["mobileNavigation", "navigation"],
   ["mobileUI", "ui"],
   ["mobileStorage", "storage"],
@@ -1388,10 +1441,20 @@ const GRAPH_MOBILE_ARRAY_PART_CLI_KEYS = [
   ["mobileLibraries", "libraries"],
 ] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
 
+const GRAPH_KOTLIN_MOBILE_ARRAY_PART_CLI_KEYS = [
+  ["kotlinMobileLibraries", "libraries"],
+] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
+
 const GRAPH_RUST_BACKEND_PART_CLI_KEYS = [
   ["rustCli", "cli"],
   ["rustLogging", "logging"],
   ["rustErrorHandling", "errorHandling"],
+  ["rustRealtime", "realtime"],
+  ["rustMessageQueue", "jobQueue"],
+  ["rustObservability", "observability"],
+  ["rustTemplating", "templating"],
+  ["email", "email"],
+  ["observability", "observability"],
   ["caching", "caching"],
   ["search", "search"],
   ["rustCaching", "caching"],
@@ -1412,12 +1475,19 @@ const GRAPH_PYTHON_BACKEND_PART_CLI_KEYS = [
   ["pythonServer", "server"],
   ["pythonPackageManager", "packageManager"],
   ["pythonMessageQueue", "messageQueue"],
+  ["pythonCaching", "caching"],
+  ["pythonRealtime", "realtime"],
+  ["pythonObservability", "observability"],
+  ["email", "email"],
+  ["observability", "observability"],
   ["caching", "caching"],
   ["search", "search"],
 ] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
 
 const GRAPH_PYTHON_BACKEND_ARRAY_PART_CLI_KEYS = [
   ["pythonAi", "ai"],
+  ["pythonTesting", "testing"],
+  ["pythonCli", "cli"],
   ["pythonData", "data"],
 ] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
 
@@ -1430,12 +1500,26 @@ const GRAPH_GO_BACKEND_PART_CLI_KEYS = [
   ["goTemplating", "templating"],
   ["goProtoTooling", "buildTool"],
   ["goDI", "libraries"],
+  ["goRealtime", "realtime"],
+  ["goMessageQueue", "jobQueue"],
+  ["goCaching", "caching"],
+  ["goConfig", "config"],
+  ["goObservability", "observability"],
+  ["email", "email"],
+  ["observability", "observability"],
   ["caching", "caching"],
   ["search", "search"],
 ] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
 
+const GRAPH_GO_BACKEND_ARRAY_PART_CLI_KEYS = [
+  ["goTesting", "testing"],
+] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
+
 const GRAPH_JAVA_BACKEND_PART_CLI_KEYS = [
   ["javaBuildTool", "buildTool"],
+  ["javaLogging", "logging"],
+  ["email", "email"],
+  ["observability", "observability"],
   ["caching", "caching"],
   ["search", "search"],
 ] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
@@ -1451,6 +1535,7 @@ const GRAPH_DOTNET_BACKEND_PART_CLI_KEYS = [
   ["dotnetApi", "api"],
   ["dotnetJobQueue", "jobQueue"],
   ["dotnetRealtime", "realtime"],
+  ["dotnetValidation", "validation"],
   ["dotnetCaching", "caching"],
   ["dotnetDeploy", "deploy"],
 ] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
@@ -1459,6 +1544,10 @@ const GRAPH_DOTNET_BACKEND_ARRAY_PART_CLI_KEYS = [
   ["dotnetTesting", "testing"],
   ["dotnetObservability", "observability"],
   ["dotnetLibraries", "libraries"],
+] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
+
+const GRAPH_ELIXIR_BACKEND_ARRAY_PART_CLI_KEYS = [
+  ["elixirLibraries", "libraries"],
 ] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
 
 function getAddonScopedPartFields(addons: readonly string[] | undefined): ScopedStackPartField[] {
@@ -1585,6 +1674,13 @@ function getSelectionScopedPartFields(selection: StackSelectionInput): ScopedSta
       value: selection[key],
       allowMultiple: true,
     })),
+    ...GRAPH_KOTLIN_MOBILE_ARRAY_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ownerRole: "mobile" as const,
+      ecosystem: "kotlin" as const,
+      role,
+      value: selection[key],
+      allowMultiple: true,
+    })),
     ...GRAPH_RUST_BACKEND_PART_SELECTION_KEYS.map(([key, role]) => ({
       ownerRole: "backend" as const,
       ecosystem: "rust" as const,
@@ -1617,6 +1713,13 @@ function getSelectionScopedPartFields(selection: StackSelectionInput): ScopedSta
       role,
       value: selection[key],
     })),
+    ...GRAPH_GO_BACKEND_ARRAY_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "go" as const,
+      role,
+      value: selection[key],
+      allowMultiple: true,
+    })),
     ...GRAPH_JAVA_BACKEND_PART_SELECTION_KEYS.map(([key, role]) => ({
       ownerRole: "backend" as const,
       ecosystem: "java" as const,
@@ -1639,6 +1742,13 @@ function getSelectionScopedPartFields(selection: StackSelectionInput): ScopedSta
     ...GRAPH_DOTNET_BACKEND_ARRAY_PART_SELECTION_KEYS.map(([key, role]) => ({
       ownerRole: "backend" as const,
       ecosystem: "dotnet" as const,
+      role,
+      value: selection[key],
+      allowMultiple: true,
+    })),
+    ...GRAPH_ELIXIR_BACKEND_ARRAY_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "elixir" as const,
       role,
       value: selection[key],
       allowMultiple: true,
@@ -1702,6 +1812,13 @@ function getCliScopedPartFields(input: CLIInput): ScopedStackPartField[] {
       value: getArrayValue(key),
       allowMultiple: true,
     })),
+    ...GRAPH_KOTLIN_MOBILE_ARRAY_PART_CLI_KEYS.map(([key, role]) => ({
+      ownerRole: "mobile" as const,
+      ecosystem: "kotlin" as const,
+      role,
+      value: getArrayValue(key),
+      allowMultiple: true,
+    })),
     ...GRAPH_RUST_BACKEND_PART_CLI_KEYS.map(([key, role]) => ({
       ownerRole: "backend" as const,
       ecosystem: "rust" as const,
@@ -1734,6 +1851,13 @@ function getCliScopedPartFields(input: CLIInput): ScopedStackPartField[] {
       role,
       value: getValue(key),
     })),
+    ...GRAPH_GO_BACKEND_ARRAY_PART_CLI_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "go" as const,
+      role,
+      value: getArrayValue(key),
+      allowMultiple: true,
+    })),
     ...GRAPH_JAVA_BACKEND_PART_CLI_KEYS.map(([key, role]) => ({
       ownerRole: "backend" as const,
       ecosystem: "java" as const,
@@ -1756,6 +1880,13 @@ function getCliScopedPartFields(input: CLIInput): ScopedStackPartField[] {
     ...GRAPH_DOTNET_BACKEND_ARRAY_PART_CLI_KEYS.map(([key, role]) => ({
       ownerRole: "backend" as const,
       ecosystem: "dotnet" as const,
+      role,
+      value: getArrayValue(key),
+      allowMultiple: true,
+    })),
+    ...GRAPH_ELIXIR_BACKEND_ARRAY_PART_CLI_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "elixir" as const,
       role,
       value: getArrayValue(key),
       allowMultiple: true,
@@ -2055,6 +2186,13 @@ function buildProjectConfigBase(
     fileStorage: stack.fileStorage as ProjectConfig["fileStorage"],
     rustWebFramework: stack.rustWebFramework as ProjectConfig["rustWebFramework"],
     rustFrontend: stack.rustFrontend as ProjectConfig["rustFrontend"],
+    dotnetFrontend: stack.dotnetFrontend as ProjectConfig["dotnetFrontend"],
+    kotlinMobile: stack.kotlinMobile as ProjectConfig["kotlinMobile"],
+    kotlinMobileLibraries: toUniqueNonNoneArray(
+      stack.kotlinMobileLibraries,
+    ) as ProjectConfig["kotlinMobileLibraries"],
+    swiftMobile: stack.swiftMobile as ProjectConfig["swiftMobile"],
+    dartMobile: stack.dartMobile as ProjectConfig["dartMobile"],
     rustOrm: stack.rustOrm as ProjectConfig["rustOrm"],
     rustApi: stack.rustApi as ProjectConfig["rustApi"],
     rustCli: stack.rustCli as ProjectConfig["rustCli"],
@@ -2262,7 +2400,6 @@ function generateGraphCommand(selection: StackSelectionInput, projectName: strin
   const stackParts = getGraphStackParts(selection);
   const hasTypeScriptFrontend = hasGraphPrimaryPart(stackParts, "frontend", "typescript");
   const hasAstroFrontend = hasGraphPrimaryPart(stackParts, "frontend", "typescript", "astro");
-  const hasTypeScriptBackend = hasGraphPrimaryPart(stackParts, "backend", "typescript");
   const hasRustBackend = hasGraphPrimaryPart(stackParts, "backend", "rust");
   const hasPythonBackend = hasGraphPrimaryPart(stackParts, "backend", "python");
   const hasGoBackend = hasGraphPrimaryPart(stackParts, "backend", "go");
@@ -2281,17 +2418,11 @@ function generateGraphCommand(selection: StackSelectionInput, projectName: strin
     ...stackParts
       .filter((part) => part.source !== "provided" && part.toolId !== "none")
       .map((part) => `--part ${formatStackPartSpec(part, stackParts)}`),
-    ...(hasTypeScriptFrontend
-      ? formatChangedStringFlags(selection, GRAPH_TYPESCRIPT_FRONTEND_FLAG_KEYS)
-      : []),
     ...(hasAstroFrontend && selection.astroIntegration !== "none"
       ? [`--astro-integration ${selection.astroIntegration}`]
       : []),
     ...(hasTypeScriptFrontend && selection.uiLibrary === "shadcn-ui"
       ? formatChangedStringFlags(selection, GRAPH_SHADCN_FLAG_KEYS)
-      : []),
-    ...(hasTypeScriptBackend
-      ? formatChangedStringFlags(selection, GRAPH_TYPESCRIPT_BACKEND_FLAG_KEYS)
       : []),
     ...(hasNonTypeScriptBackend
       ? formatChangedStringFlags(selection, GRAPH_SHARED_BACKEND_FLAG_KEYS)
@@ -2427,6 +2558,7 @@ function generateReactNativeCommand(selection: StackSelectionInput, projectName:
     `--mobile-ota ${selection.mobileOTA}`,
     `--mobile-deep-linking ${selection.mobileDeepLinking}`,
     formatArrayFlag("mobile-libraries", selection.mobileLibraries),
+    formatArrayFlag("kotlin-mobile-libraries", selection.kotlinMobileLibraries),
     `--package-manager ${selection.packageManager}`,
     selection.git === "false" ? "--no-git" : "--git",
     selection.install === "false" ? "--no-install" : "--install",

@@ -19,6 +19,7 @@ import {
   DotnetApiSchema,
   DotnetAuthSchema,
   DotnetCachingSchema,
+  DotnetFrontendSchema,
   DotnetValidationSchema,
   DotnetDeploySchema,
   DotnetJobQueueSchema,
@@ -67,6 +68,7 @@ import {
   MobileStorageSchema,
   MobileTestingSchema,
   MobileUISchema,
+  KotlinMobileLibrariesSchema,
   FrontendSchema,
   GoApiSchema,
   GoAuthSchema,
@@ -97,6 +99,9 @@ import {
   JavaWebFrameworkSchema,
   I18nSchema,
   JobQueueSchema,
+  KotlinMobileSchema,
+  SwiftMobileSchema,
+  DartMobileSchema,
   LoggingSchema,
   ObservabilitySchema,
   ORMSchema,
@@ -193,7 +198,7 @@ export const CreateCommandOptionsSchema = z.object({
     .default(false)
     .describe("Run generated project checks after scaffolding without starting dev servers"),
   ecosystem: EcosystemSchema.optional().describe(
-    "Language ecosystem (typescript, react-native, rust, python, go, java, or elixir)",
+    "Language ecosystem (typescript, react-native, rust, python, go, java, elixir, or dotnet)",
   ),
   database: DatabaseSchema.optional(),
   orm: ORMSchema.optional(),
@@ -298,6 +303,16 @@ export const CreateCommandOptionsSchema = z.object({
     "Rust web framework (axum, actix-web)",
   ),
   rustFrontend: RustFrontendSchema.optional().describe("Rust WASM frontend (leptos, dioxus)"),
+  dotnetFrontend: DotnetFrontendSchema.optional().describe(".NET frontend (blazor-webassembly)"),
+  kotlinMobile: KotlinMobileSchema.optional().describe(
+    "Kotlin mobile app (jetpack-compose or compose-multiplatform)",
+  ),
+  kotlinMobileLibraries: z
+    .array(KotlinMobileLibrariesSchema)
+    .optional()
+    .describe("Optional Kotlin mobile libraries"),
+  swiftMobile: SwiftMobileSchema.optional().describe("Swift mobile app (swiftui)"),
+  dartMobile: DartMobileSchema.optional().describe("Dart mobile app (flutter)"),
   rustOrm: RustOrmSchema.optional().describe("Rust ORM/database (sea-orm, sqlx)"),
   rustApi: RustApiSchema.optional().describe("Rust API layer (tonic, async-graphql)"),
   rustCli: RustCliSchema.optional().describe("Rust CLI tools (clap, ratatui)"),

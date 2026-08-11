@@ -124,13 +124,13 @@ export default function ContributorsSection() {
             {m.homeContributeGithub()}
           </a>
           <a
-            href="https://www.patreon.com/cw/marve10s"
+            href="https://github.com/sponsors/Marve10s"
             target="_blank"
             rel="noopener noreferrer"
             className="group inline-flex items-center gap-2 rounded-md bg-foreground px-5 py-2.5 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
           >
             <Heart className="h-4 w-4" />
-            {m.homeBecomePatron()}
+            {m.homeSponsorOnGithub()}
           </a>
         </div>
       </div>

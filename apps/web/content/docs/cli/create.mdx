@@ -1,6 +1,8 @@
 ---
 title: Create Command
 description: Scaffold a new Better Fullstack project with prompts, defaults, or explicit flags.
+translationStatus: pending
+updated: 2026-08-07
 ---
 
 The `create` command writes a new project from a typed stack configuration. Use it interactively for exploration, or pass flags when you need the same project shape every time.
@@ -14,14 +16,24 @@ The `create` command writes a new project from a typed stack configuration. Use 
 
 For npm, Better Fullstack flags go after `--`. Generated npm commands may use `npx create-better-fullstack@latest`; that runs the same package entrypoint in a non-interactive form.
 
+## Operational contract
+
+| Concern         | Contract                                                                                                                                                              |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Preview         | Add `--dry-run` to render and list files without writing them.                                                                                                        |
+| Writes          | Creates a project directory; dependency installation and Git initialization follow `--install` and `--git`.                                                           |
+| Safe inspection | Combine `--dry-run`, `--no-install`, and `--no-git`.                                                                                                                  |
+| Recovery        | Generate into a new directory, inspect it, and remove that directory if you reject the scaffold. Existing-directory behavior is controlled by `--directory-conflict`. |
+| Source of truth | The live CLI schema and the generated flag tables below.                                                                                                              |
+
 ## Command modes
 
-| Mode | Command shape | Use it when |
-| --- | --- | --- |
-| Wizard | `[launcher] my-app` | You want prompts and defaults. |
-| Defaults | `[launcher] my-app [flags] --yes` | You want the default stack without prompts. |
-| Scripted | `[launcher] my-app [flags]` | You want repeatable output. |
-| Dry run | `[launcher] my-app [flags] --dry-run` | You want to inspect files before writing. |
+| Mode     | Command shape                         | Use it when                                 |
+| -------- | ------------------------------------- | ------------------------------------------- |
+| Wizard   | `[launcher] my-app`                   | You want prompts and defaults.              |
+| Defaults | `[launcher] my-app [flags] --yes`     | You want the default stack without prompts. |
+| Scripted | `[launcher] my-app [flags]`           | You want repeatable output.                 |
+| Dry run  | `[launcher] my-app [flags] --dry-run` | You want to inspect files before writing.   |
 
 ## Prompt behavior
 
@@ -30,6 +42,8 @@ For npm, Better Fullstack flags go after `--`. Generated npm commands may use `n
 - Use `none` to disable optional categories, including `--ai-docs none`.
 - Use `--no-install` and `--no-git` when you want to inspect generated files before side effects.
 - `--verify` runs generated checks after scaffolding without starting dev servers.
+- `--version-channel latest` follows npm `latest` tags except for temporary compatibility holds that
+  keep the generated project installable.
 
 ## Common flags
 
@@ -106,6 +120,13 @@ npm create better-fullstack@latest my-app -- \
   --auth better-auth \
   --css-framework tailwind \
   --ui-library shadcn-ui \
+  --shadcn-base radix \
+  --shadcn-style nova \
+  --shadcn-icon-library lucide \
+  --shadcn-color-theme neutral \
+  --shadcn-base-color neutral \
+  --shadcn-font geist \
+  --shadcn-radius default \
   --ai none \
   --payments none \
   --email none \

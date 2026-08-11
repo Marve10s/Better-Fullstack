@@ -436,9 +436,10 @@ describe("Virtual Generator Regressions", () => {
       expect(hasVirtualFile(tree.root, filePath)).toBe(true);
     }
 
-    expect(readTextFromTree(tree, "apps/server/src/lib/vector.ts")).toContain(
-      "@qdrant/js-client-rest",
-    );
+    const vectorSource = readTextFromTree(tree, "apps/server/src/lib/vector.ts");
+    expect(vectorSource).toContain("@qdrant/js-client-rest");
+    expect(vectorSource).toContain("vectorClient.query(collection");
+    expect(vectorSource).not.toContain("vectorClient.search(collection");
     expect(readTextFromTree(tree, "apps/server/src/lib/search.ts")).toContain(
       "@opensearch-project/opensearch",
     );

@@ -620,6 +620,52 @@ function transformJavaOutputPath(relativePath: string, context: JavaTemplateCont
   return transformFilename(relativePath.replace(/__javaPackagePath__/g, context.javaPackagePath));
 }
 
+function processKtorTemplates(
+  vfs: VirtualFileSystem,
+  templates: TemplateData,
+  config: ProjectConfig,
+  targetPath: string,
+): void {
+  const prefix = "kotlin-ktor/";
+  for (const [templatePath, content] of templates) {
+    if (!templatePath.startsWith(prefix)) continue;
+    if (config.javaBuildTool === "maven" && templatePath.endsWith("build.gradle.kts.hbs")) continue;
+    if (config.javaBuildTool === "maven" && templatePath.endsWith("settings.gradle.kts.hbs")) continue;
+    if (config.javaBuildTool === "gradle" && templatePath.endsWith("pom.xml.hbs")) continue;
+
+    const relativePath = templatePath.slice(prefix.length);
+    const outputPath = transformFilename(relativePath);
+    const destPath = targetPath ? `${targetPath}/${outputPath}` : outputPath;
+    const processedContent = templatePath.endsWith(".hbs")
+      ? processTemplateString(content, config)
+      : content;
+    if (!isEmptyTemplateOutput(templatePath, processedContent)) {
+      vfs.writeFile(destPath, processedContent);
+    }
+  }
+
+  const wrapperFiles =
+    config.javaBuildTool === "maven"
+      ? ["mvnw", "mvnw.cmd", ".mvn/wrapper/maven-wrapper.properties"]
+      : [
+          "gradlew",
+          "gradlew.bat",
+          "gradle/wrapper/gradle-wrapper.jar",
+          "gradle/wrapper/gradle-wrapper.properties",
+        ];
+  for (const relativePath of wrapperFiles) {
+    const sourcePath = `java-base/${relativePath}`;
+    const content = templates.get(sourcePath);
+    if (content === undefined) continue;
+    const binarySource = relativePath.endsWith(".jar") ? sourcePath : undefined;
+    vfs.writeFile(
+      targetPath ? `${targetPath}/${relativePath}` : relativePath,
+      binarySource ? "[Binary file]" : content,
+      binarySource,
+    );
+  }
+}
+
 export async function processJavaBaseTemplate(
   vfs: VirtualFileSystem,
   templates: TemplateData,
@@ -627,6 +673,11 @@ export async function processJavaBaseTemplate(
   targetPath = "",
 ): Promise<void> {
   if (config.ecosystem !== "java") return;
+
+  if (config.javaWebFramework === "ktor") {
+    processKtorTemplates(vfs, templates, config, targetPath);
+    return;
+  }
 
   const prefix = "java-base/";
   const context = createJavaTemplateContext(config);

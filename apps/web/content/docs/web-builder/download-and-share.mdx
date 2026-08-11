@@ -1,0 +1,35 @@
+---
+title: Download and Share
+description: Download generated projects as ZIP archives and share reproducible builder state.
+translationStatus: pending
+updated: 2026-08-07
+---
+
+## Download a ZIP
+
+Choose **Download ZIP** in the builder. The browser regenerates the selected stack with the shared
+template generator, loads text and binary template assets, and creates an archive locally.
+
+- The archive has one sanitized top-level project directory.
+- Generated executable scripts retain executable file metadata.
+- The selected package manager is preserved.
+- No server-side project workspace is created.
+- Edit & Run source experiments are not included; the ZIP represents the current stack selection.
+
+After extraction, follow the generated README and use the matching ecosystem install command. ZIP
+download does not install dependencies, initialize Git, provision providers, or run checks.
+
+## Share or import builder state
+
+Copy the builder URL to share the current stack selection. Opening that URL imports the encoded state
+back into the builder, where it can be reviewed, adjusted, downloaded, or converted to a command.
+The URL describes option identifiers, not project source files.
+
+Saved stacks are a separate browser-local feature. They can be reopened, renamed, and updated on the
+same browser, but are not a cloud project store.
+
+## Move to the CLI
+
+For reproducible automation, copy the generated command instead of treating the ZIP as the only
+record. The CLI validates the same selection and writes `bts.jsonc` plus `bts.lock.json`, enabling
+later `add`, `update`, and `check` workflows.

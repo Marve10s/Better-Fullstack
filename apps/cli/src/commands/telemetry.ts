@@ -3,7 +3,10 @@ import pc from "picocolors";
 
 import { hasTelemetryEnvOverride, isTelemetryEnabled } from "../utils/analytics";
 import { renderTitle } from "../utils/render-title";
-import { getPersistedTelemetryPreference, setTelemetryPreference } from "../utils/telemetry-settings";
+import {
+  getPersistedTelemetryPreference,
+  setTelemetryPreference,
+} from "../utils/telemetry-settings";
 
 export type TelemetryAction = "status" | "enable" | "disable";
 
@@ -14,12 +17,14 @@ export type TelemetryCommandInput = {
 
 const COLLECTED = [
   "Selected stack options (frontend, backend, database, ORM, auth, API, etc.)",
-  "CLI version, Node.js version, and OS platform",
+  "Command/action outcomes, duration, and bounded quality counts (for example conflicts or warnings)",
+  "CLI/runtime version, OS platform, and whether the command runs in CI",
   "A random anonymous install ID used to count unique and returning installs",
 ];
 
 const NOT_COLLECTED = [
   "Project names, directory paths, or file contents",
+  "Prompts, recommendation briefs, source code, env values, secrets, URLs, or raw error messages",
   "Personal or otherwise identifying information",
 ];
 

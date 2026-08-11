@@ -76,9 +76,32 @@ const hasGraphBackend = (config: ProjectConfig) =>
   ) ?? false;
 
 const hasGraphOrm = (config: ProjectConfig) =>
-  config.stackParts?.some(
-    (part) => part.role === "orm" && part.source !== "provided",
-  ) ?? false;
+  config.stackParts?.some((part) => part.role === "orm" && part.source !== "provided") ?? false;
+
+const hasSoloEcosystemOrm = (config: ProjectConfig): boolean => {
+  switch (config.ecosystem) {
+    case "python":
+      return (
+        Boolean(config.pythonOrm && config.pythonOrm !== "none") &&
+        (config.database === "mongodb") === (config.pythonOrm === "pymongo")
+      );
+    case "rust":
+      return (
+        Boolean(config.rustOrm && config.rustOrm !== "none") &&
+        (config.database === "mongodb") === (config.rustOrm === "mongodb")
+      );
+    case "go":
+      return Boolean(config.goOrm && config.goOrm !== "none");
+    case "java":
+      return Boolean(config.javaOrm && config.javaOrm !== "none");
+    case "elixir":
+      return Boolean(config.elixirOrm && config.elixirOrm !== "none");
+    case "dotnet":
+      return Boolean(config.dotnetOrm && config.dotnetOrm !== "none");
+    default:
+      return false;
+  }
+};
 
 const needsStandaloneServer = (config: ProjectConfig) =>
   !hasGraphBackend(config) &&
@@ -115,7 +138,10 @@ const backendFeature = (
   displayName,
   willSkip: (c) => (c[featureKey] as string) !== "none" && needsAnyServer(c),
   reason: `${displayName} requires a backend server. Convex and no-backend modes are not supported.`,
-  suggestions: ["Switch to a server backend like Hono or a fullstack framework", `Remove ${displayName.toLowerCase()}`],
+  suggestions: [
+    "Switch to a server backend like Hono or a fullstack framework",
+    `Remove ${displayName.toLowerCase()}`,
+  ],
 });
 
 const PREFLIGHT_RULES: readonly PreflightRule[] = [
@@ -133,8 +159,7 @@ const PREFLIGHT_RULES: readonly PreflightRule[] = [
     featureKey: "integrations",
     displayName: "Integrations (Nango)",
     willSkip: (c) =>
-      c.integrations === "nango" &&
-      (c.runtime === "workers" || usesCloudflareFullstackRuntime(c)),
+      c.integrations === "nango" && (c.runtime === "workers" || usesCloudflareFullstackRuntime(c)),
     reason: "Nango's Node SDK is not available on the Cloudflare Workers runtime.",
     suggestions: ["Switch to the Node or Bun runtime", "Remove Nango integrations"],
   },
@@ -212,16 +237,15 @@ const PREFLIGHT_RULES: readonly PreflightRule[] = [
       c.database !== "redis" &&
       c.backend !== "convex" &&
       c.orm === "none" &&
-      // A Python ORM only satisfies the database when they match: PyMongo is
-      // the only ORM that can drive MongoDB, and it cannot drive anything else.
-      !(
-        c.ecosystem === "python" &&
-        c.pythonOrm !== "none" &&
-        (c.database === "mongodb") === (c.pythonOrm === "pymongo")
-      ) &&
+      !hasSoloEcosystemOrm(c) &&
       !hasGraphOrm(c),
-    reason: "This database requires an ORM to generate setup templates. EdgeDB and Redis work without one.",
-    suggestions: ["Select an ORM like Drizzle or Prisma", "Use EdgeDB or Redis instead", "Remove database"],
+    reason:
+      "This database requires an ORM to generate setup templates. EdgeDB and Redis work without one.",
+    suggestions: [
+      "Select an ORM like Drizzle or Prisma",
+      "Use EdgeDB or Redis instead",
+      "Remove database",
+    ],
   },
 
   {
@@ -229,8 +253,12 @@ const PREFLIGHT_RULES: readonly PreflightRule[] = [
     featureKey: "serverDeploy",
     displayName: "Server Deployment",
     willSkip: (c) => c.serverDeploy === "vercel" && c.backend === "elysia",
-    reason: "Elysia is Bun-only. Vercel's serverless runtime uses Node.js by default. Your server may need configuration to run on Vercel.",
-    suggestions: ["Consider using Hono (works with both Bun and Node.js)", "Check Vercel Bun runtime documentation"],
+    reason:
+      "Elysia is Bun-only. Vercel's serverless runtime uses Node.js by default. Your server may need configuration to run on Vercel.",
+    suggestions: [
+      "Consider using Hono (works with both Bun and Node.js)",
+      "Check Vercel Bun runtime documentation",
+    ],
   },
 ];
 

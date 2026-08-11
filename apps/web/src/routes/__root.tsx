@@ -1,10 +1,11 @@
 import { Outlet, HeadContent, Scripts, createRootRoute, Link } from "@tanstack/react-router";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
-import { lazy, Suspense, type ReactNode } from "react";
+import { lazy, Suspense, type ReactNode, useSyncExternalStore } from "react";
 
 import { Navbar } from "@/components/navbar";
 import Providers from "@/components/providers";
+import { isBrowserTelemetryEnabled, subscribeBrowserTelemetry } from "@/lib/product-analytics";
 import {
   DEFAULT_OG_IMAGE_ALT,
   DEFAULT_OG_IMAGE_HEIGHT,
@@ -51,9 +52,9 @@ const THEME_INIT_SCRIPT = `
 `;
 const themeInitMarkup = { __html: THEME_INIT_SCRIPT };
 
-const PatreonButton = lazy(async () => {
-  const mod = await import("@/components/patreon-button");
-  return { default: mod.PatreonButton };
+const SponsorButton = lazy(async () => {
+  const mod = await import("@/components/sponsor-button");
+  return { default: mod.SponsorButton };
 });
 
 function NotFoundComponent() {
@@ -160,7 +161,7 @@ function RootComponent() {
       <Navbar />
       <Outlet />
       <Suspense fallback={null}>
-        <PatreonButton />
+        <SponsorButton />
       </Suspense>
     </RootDocument>
   );
@@ -180,10 +181,23 @@ function RootDocument({ children }: { children: ReactNode }) {
       </head>
       <body className="bg-background text-foreground">
         <Providers>{children}</Providers>
-        <Analytics />
-        <SpeedInsights />
+        <BrowserAnalytics />
         <Scripts />
       </body>
     </html>
   );
+}
+
+function BrowserAnalytics() {
+  const enabled = useSyncExternalStore(
+    subscribeBrowserTelemetry,
+    isBrowserTelemetryEnabled,
+    () => false,
+  );
+  return enabled ? (
+    <>
+      <Analytics />
+      <SpeedInsights />
+    </>
+  ) : null;
 }

@@ -33,12 +33,10 @@ import { TechIcon } from "@/components/ui/tech-icon";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   getLaunchRadarOptionLabel,
-  hasSeenLaunchRadar,
   LAUNCH_RADAR_GROUPS,
   LAUNCH_RADAR_OPEN_EVENT,
   LAUNCH_RADAR_TOTAL,
   markLaunchRadarSeen,
-  registerLaunchRadarVisit,
 } from "@/lib/launch-radar";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages.js";
@@ -117,22 +115,10 @@ export default function LaunchRadarStrip() {
       if (window.location.hash === "#whats-new") showModal();
     };
 
-    const seen = hasSeenLaunchRadar(window.localStorage);
-    const returningVisitor = registerLaunchRadarVisit(
-      window.localStorage,
-      window.sessionStorage,
-    );
-    const openedFromHash = window.location.hash === "#whats-new";
-    let autoOpenTimer: number | undefined;
-
     openFromHash();
-    if (!seen && returningVisitor && !openedFromHash && !window.navigator.webdriver) {
-      autoOpenTimer = window.setTimeout(showModal, 900);
-    }
     window.addEventListener(LAUNCH_RADAR_OPEN_EVENT, showModal);
     window.addEventListener("hashchange", openFromHash);
     return () => {
-      if (autoOpenTimer !== undefined) window.clearTimeout(autoOpenTimer);
       window.removeEventListener(LAUNCH_RADAR_OPEN_EVENT, showModal);
       window.removeEventListener("hashchange", openFromHash);
     };
@@ -234,7 +220,6 @@ export default function LaunchRadarStrip() {
                           ecosystem: group.id,
                           view: "command",
                           file: "",
-                          newOptions: "1",
                         }}
                         className="ml-auto inline-flex items-center gap-1 font-mono text-[9px] font-semibold uppercase tracking-[0.12em] text-ink underline decoration-transparent underline-offset-4 transition-all hover:gap-2 hover:decoration-current"
                         aria-label={m.launchRadarOpenBuilder({ ecosystem: group.name })}

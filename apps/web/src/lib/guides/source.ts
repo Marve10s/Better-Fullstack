@@ -64,8 +64,12 @@ function localizedContentKey(filePath: string, locale: SupportedLocale): string 
   return `${locale}:${filePath}`;
 }
 
-function hasLocalizedContent(filePath: string, locale: SupportedLocale): boolean {
-  return locale !== "en" && localizedContentKey(filePath, locale) in localizedGuideMdxLoaders;
+function hasLocalizedContent(page: GuidePage, locale: SupportedLocale): boolean {
+  return (
+    page.frontmatter.translationStatus !== "pending" &&
+    locale !== "en" &&
+    localizedContentKey(page.filePath, locale) in localizedGuideMdxLoaders
+  );
 }
 
 function contentCacheKey(page: GuidePage, locale: SupportedLocale): string {
@@ -101,7 +105,7 @@ const contentCache = createSuspenseCache<GuidePageContent>();
 async function loadGuideContent(page: GuidePage): Promise<GuidePageContent> {
   const locale = currentContentLocale();
   const localizedKey = localizedContentKey(page.filePath, locale);
-  const hasLocalized = hasLocalizedContent(page.filePath, locale);
+  const hasLocalized = hasLocalizedContent(page, locale);
   const filePath = hasLocalized ? localizedFilePath(page.filePath, locale) : page.filePath;
   const loader = hasLocalized ? localizedGuideMdxLoaders[localizedKey] : mdxLoaders[filePath];
   const module = await loader?.();

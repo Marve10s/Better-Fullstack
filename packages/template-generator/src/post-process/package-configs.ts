@@ -7,7 +7,7 @@ import type { ProjectConfig } from "@better-fullstack/types";
 
 import type { VirtualFileSystem } from "../core/virtual-fs";
 
-import { getGraphBackendConnection } from "../utils/graph-backend";
+import { getGraphBackendConnection, getGraphBackendConnections } from "../utils/graph-backend";
 import { getServerPackagePath } from "../utils/project-paths";
 
 type PackageJson = {
@@ -99,6 +99,7 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
 
   const pmConfig = getPackageManagerConfig(packageManager, workspaceTool);
   const graphBackend = getGraphBackendConnection(config);
+  const graphBackends = getGraphBackendConnections(config);
   const hasWebWorkspace = vfs.fileExists("apps/web/package.json");
   const hasNativeWorkspace = vfs.fileExists("apps/native/package.json");
   const hasDocsWorkspace = vfs.fileExists("apps/docs/package.json");
@@ -148,6 +149,14 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
     }
   } else if (backend !== "self" && backend !== "none") {
     scripts["dev:server"] = pmConfig.filter(backendPackageName, "dev");
+  }
+
+  for (const service of graphBackends) {
+    const scriptId = service.partId.replace(/[^a-zA-Z0-9_-]+/g, "-");
+    scripts[`dev:${scriptId}`] = service.devCommand;
+    if (service.setupCommand) scripts[`setup:${scriptId}`] = service.setupCommand;
+    if (service.checkCommand) scripts[`check:${scriptId}`] = service.checkCommand;
+    if (service.testCommand) scripts[`test:${scriptId}`] = service.testCommand;
   }
 
   if (backend === "convex") {

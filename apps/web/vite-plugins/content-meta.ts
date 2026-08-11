@@ -27,6 +27,10 @@ const RESOLVED_ID = "\0" + VIRTUAL_ID;
 // dynamically by that route, so it stays in its own lazy server chunk.
 const BLOG_RAW_ID = "virtual:blog-raw";
 const RESOLVED_BLOG_RAW_ID = "\0" + BLOG_RAW_ID;
+const DOCS_RAW_ID = "virtual:docs-raw";
+const RESOLVED_DOCS_RAW_ID = "\0" + DOCS_RAW_ID;
+const GUIDES_RAW_ID = "virtual:guides-raw";
+const RESOLVED_GUIDES_RAW_ID = "\0" + GUIDES_RAW_ID;
 const LOCALIZED_CONTENT_ID = "virtual:localized-content";
 const RESOLVED_LOCALIZED_CONTENT_ID = "\0" + LOCALIZED_CONTENT_ID;
 const LOCALIZED_MDX_BUNDLE_PREFIX = "virtual:localized-content-mdx-bundle/";
@@ -342,6 +346,26 @@ export function contentMetaPlugin(): Plugin {
     return `${imports.join("\n")}\nexport default {${exports.join(",")}};`;
   }
 
+  function buildRawContentModule(
+    contentSubdir: ContentSubdir,
+    exportName: string,
+    addWatchFile: (file: string) => void,
+  ): string {
+    const contentDir = path.join(rootDir, "content", contentSubdir);
+    const entries = collectMdxFiles(contentDir).map((file) => {
+      addWatchFile(file);
+      const slug = path
+        .relative(contentDir, file)
+        .split(path.sep)
+        .join("/")
+        .replace(/\.mdx$/, "")
+        .replace(/(^|\/)index$/, "")
+        .replace(/\/$/, "");
+      return `${JSON.stringify(slug)}: ${JSON.stringify(fs.readFileSync(file, "utf8"))}`;
+    });
+    return `export const ${exportName} = {${entries.join(",")}};`;
+  }
+
   return {
     name: "better-fullstack:content-meta",
     configResolved(config) {
@@ -350,6 +374,8 @@ export function contentMetaPlugin(): Plugin {
     resolveId(id) {
       if (id === VIRTUAL_ID) return RESOLVED_ID;
       if (id === BLOG_RAW_ID) return RESOLVED_BLOG_RAW_ID;
+      if (id === DOCS_RAW_ID) return RESOLVED_DOCS_RAW_ID;
+      if (id === GUIDES_RAW_ID) return RESOLVED_GUIDES_RAW_ID;
       if (id === LOCALIZED_CONTENT_ID) return RESOLVED_LOCALIZED_CONTENT_ID;
       if (id.startsWith(LOCALIZED_MDX_BUNDLE_PREFIX)) {
         return id;
@@ -364,17 +390,13 @@ export function contentMetaPlugin(): Plugin {
     },
     load(id) {
       if (id === RESOLVED_BLOG_RAW_ID) {
-        const contentDir = path.join(rootDir, "content", "blog");
-        const entries = collectMdxFiles(contentDir).map((file) => {
-          this.addWatchFile(file);
-          const slug = path
-            .relative(contentDir, file)
-            .split(path.sep)
-            .join("/")
-            .replace(/\.mdx$/, "");
-          return `${JSON.stringify(slug)}: ${JSON.stringify(fs.readFileSync(file, "utf8"))}`;
-        });
-        return `export const rawBlogPosts = {${entries.join(",")}};`;
+        return buildRawContentModule("blog", "rawBlogPosts", (file) => this.addWatchFile(file));
+      }
+      if (id === RESOLVED_DOCS_RAW_ID) {
+        return buildRawContentModule("docs", "rawDocsPages", (file) => this.addWatchFile(file));
+      }
+      if (id === RESOLVED_GUIDES_RAW_ID) {
+        return buildRawContentModule("guides", "rawGuidePages", (file) => this.addWatchFile(file));
       }
 
       const { bundles, watchFiles: localizedWatchFiles } = readLocalizedBundles(rootDir);
@@ -436,7 +458,13 @@ export function contentMetaPlugin(): Plugin {
     },
     handleHotUpdate(ctx) {
       if (!ctx.file.endsWith(".mdx") && !ctx.file.endsWith(".json")) return;
-      for (const id of [RESOLVED_ID, RESOLVED_LOCALIZED_CONTENT_ID, RESOLVED_BLOG_RAW_ID]) {
+      for (const id of [
+        RESOLVED_ID,
+        RESOLVED_LOCALIZED_CONTENT_ID,
+        RESOLVED_BLOG_RAW_ID,
+        RESOLVED_DOCS_RAW_ID,
+        RESOLVED_GUIDES_RAW_ID,
+      ]) {
         const mod = ctx.server.moduleGraph.getModuleById(id);
         if (mod) ctx.server.moduleGraph.invalidateModule(mod);
       }

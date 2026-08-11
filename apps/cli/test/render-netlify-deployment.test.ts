@@ -229,12 +229,13 @@ describe("Netlify Deployment", () => {
       }
 
       if (frontend === "solid-start") {
-        const appConfig = readFileSync(
-          join(result.projectDir!, "apps", "web", "app.config.ts"),
+        const viteConfig = readFileSync(
+          join(result.projectDir!, "apps", "web", "vite.config.ts"),
           "utf8",
         );
 
-        expect(appConfig).toContain('preset: "netlify"');
+        expect(viteConfig).toContain('preset: "netlify"');
+        expect(existsSync(join(result.projectDir!, "apps", "web", "app.config.ts"))).toBe(false);
       }
     });
   }

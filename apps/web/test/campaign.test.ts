@@ -5,7 +5,10 @@ import {
   CAMPAIGN_PRESETS,
   getCampaignPresetUrl,
 } from "../src/lib/campaign";
-import { stackAnalyticsProperties } from "../src/lib/campaign-analytics";
+import {
+  sanitizeCampaignProperties,
+  stackAnalyticsProperties,
+} from "../src/lib/campaign-analytics";
 import {
   getCampaignShareMessage,
   getCampaignShareTitle,
@@ -116,5 +119,26 @@ describe("Run Before You Clone campaign", () => {
     expect(properties.frontend).toBe("next");
     expect(properties.backend).toBe("gin");
     expect(properties.database).toBe("postgres");
+  });
+
+  it("keeps only published campaign identifiers in analytics", () => {
+    expect(
+      sanitizeCampaignProperties({
+        campaign: "run-before-you-clone",
+        ecosystem: "typescript",
+      }),
+    ).toEqual({ campaign: "run-before-you-clone", ecosystem: "typescript" });
+    expect(
+      sanitizeCampaignProperties({
+        campaign: "person@example.com",
+        ecosystem: "typescript",
+      }),
+    ).toEqual({ ecosystem: "typescript" });
+    expect(
+      sanitizeCampaignProperties({
+        campaign: "unpublished-campaign",
+        ecosystem: "typescript",
+      }),
+    ).toEqual({ ecosystem: "typescript" });
   });
 });

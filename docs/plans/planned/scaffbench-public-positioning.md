@@ -1,5 +1,10 @@
 # ScaffBench Public Positioning
 
+> **Shipped baseline / retained campaign research — updated 2026-08-07.** A public benchmark and run
+> detail surface now exists with multi-agent adapters and reproducible evidence. The pre-launch gates
+> below are historical; future ScaffBench work supports proof and acquisition rather than replacing
+> the lifecycle roadmap.
+
 ## Core Question
 
 Which AI agent can create a real fullstack app correctly?

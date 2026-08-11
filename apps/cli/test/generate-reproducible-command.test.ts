@@ -200,6 +200,7 @@ describe("generateReproducibleCommand", () => {
     expect(generateReproducibleCommand(config)).toBe(
       "bun create better-fullstack@latest my-app " +
         "--ecosystem python " +
+        "--database none " +
         "--python-web-framework django " +
         "--python-orm sqlalchemy " +
         "--python-validation pydantic " +
@@ -295,6 +296,7 @@ describe("generateReproducibleCommand", () => {
     expect(command).toBe(
       "npx create-better-fullstack@latest my-app " +
         "--ecosystem python " +
+        "--database none " +
         "--python-web-framework fastapi " +
         "--python-orm sqlmodel " +
         "--python-validation pydantic " +
@@ -355,6 +357,7 @@ describe("generateReproducibleCommand", () => {
     expect(generateReproducibleCommand(config)).toBe(
       "pnpm create better-fullstack@latest my-app " +
         "--ecosystem rust " +
+        "--database sqlite " +
         "--rust-web-framework axum " +
         "--rust-frontend leptos " +
         "--rust-orm sqlx " +
@@ -406,6 +409,7 @@ describe("generateReproducibleCommand", () => {
     expect(generateReproducibleCommand(config)).toBe(
       "bun create better-fullstack@latest my-app " +
         "--ecosystem go " +
+        "--database sqlite " +
         "--go-web-framework gin " +
         "--go-orm gorm " +
         "--go-api grpc-go " +
@@ -506,6 +510,7 @@ describe("generateReproducibleCommand", () => {
     expect(command).toBe(
       "bun create better-fullstack@latest my-app " +
         "--ecosystem java " +
+        "--database none " +
         "--java-web-framework spring-boot " +
         "--java-build-tool gradle " +
         "--java-orm spring-data-jpa " +
@@ -540,6 +545,7 @@ describe("generateReproducibleCommand", () => {
       packageManager: "bun",
       install: false,
       git: false,
+      database: "postgres",
       dotnetWebFramework: "aspnet-minimal",
       dotnetOrm: "ef-core",
       dotnetAuth: "aspnet-identity",
@@ -556,6 +562,7 @@ describe("generateReproducibleCommand", () => {
     expect(generateReproducibleCommand(config)).toBe(
       "bun create better-fullstack@latest my-app " +
         "--ecosystem dotnet " +
+        "--database postgres " +
         "--dotnet-web-framework aspnet-minimal " +
         "--dotnet-orm ef-core " +
         "--dotnet-auth aspnet-identity " +
@@ -978,6 +985,7 @@ describe("generateReproducibleCommand", () => {
     );
 
     expect(command).toContain("--elixir-i18n gettext");
+    expect(command).toContain("--database sqlite");
     expect(command).toContain("--elixir-http-server bandit");
     expect(command).toContain("--elixir-application-framework ash");
     expect(command).toContain("--elixir-documentation ex_doc");

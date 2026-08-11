@@ -1,7 +1,11 @@
 import type { ProjectConfig } from "@better-fullstack/types";
 
 import type { VirtualFileSystem } from "../core/virtual-fs";
-import { getGraphBackendConnection, hasWebFrontend } from "../utils/graph-backend";
+import {
+  getGraphBackendConnection,
+  getGraphBackendConnections,
+  hasWebFrontend,
+} from "../utils/graph-backend";
 
 /**
  * Pins the non-TypeScript backend's CORS to the web frontend's dev origin by
@@ -10,30 +14,80 @@ import { getGraphBackendConnection, hasWebFrontend } from "../utils/graph-backen
  * (backend-only) scaffolds are unaffected.
  */
 export function processGraphBackendEnv(vfs: VirtualFileSystem, config: ProjectConfig): void {
-  const connection = getGraphBackendConnection(config);
-  if (!connection?.webOrigin || !vfs.directoryExists(connection.targetPath)) return;
+  for (const connection of getGraphBackendConnections(config)) {
+    if (!connection.webOrigin || !vfs.directoryExists(connection.targetPath)) continue;
 
-  const line = `CORS_ORIGIN=${connection.webOrigin}`;
-  for (const file of [".env", ".env.example"]) {
-    const path = `${connection.targetPath}/${file}`;
-    const current = vfs.exists(path) ? (vfs.readFile(path) ?? "") : "";
-    let next: string;
-    if (/^CORS_ORIGIN=.*$/m.test(current)) {
-      next = current.replace(/^CORS_ORIGIN=.*$/m, line);
-    } else {
-      const separator = current.length > 0 && !current.endsWith("\n") ? "\n" : "";
-      const comment = "# Web frontend dev origin (unset or empty = allow any origin)\n";
-      next = `${current}${separator}${current.length > 0 ? "\n" : ""}${comment}${line}\n`;
+    const line = `CORS_ORIGIN=${connection.webOrigin}`;
+    for (const file of [".env", ".env.example"]) {
+      const path = `${connection.targetPath}/${file}`;
+      const current = vfs.exists(path) ? (vfs.readFile(path) ?? "") : "";
+      let next: string;
+      if (/^CORS_ORIGIN=.*$/m.test(current)) {
+        next = current.replace(/^CORS_ORIGIN=.*$/m, line);
+      } else {
+        const separator = current.length > 0 && !current.endsWith("\n") ? "\n" : "";
+        const comment = "# Web frontend dev origin (unset or empty = allow any origin)\n";
+        next = `${current}${separator}${current.length > 0 ? "\n" : ""}${comment}${line}\n`;
+      }
+      vfs.writeFile(path, next);
     }
-    vfs.writeFile(path, next);
   }
 }
 
 export function processGraphBackendConnection(vfs: VirtualFileSystem, config: ProjectConfig): void {
   const connection = getGraphBackendConnection(config);
-  if (!connection || !hasWebFrontend(config)) return;
+  if (!connection) return;
+  const connections = getGraphBackendConnections(config);
 
-  const frontend = config.frontend.find((entry) => entry !== "none" && !entry.startsWith("native-"));
+  if (connections.length > 1) {
+    vfs.writeFile(
+      "GRAPH_SERVICES.md",
+      `# Generated services\n\nThe first service is the default client connection. Every service also has named root scripts.\n\n${connections
+        .map(
+          (service, index) =>
+            `## ${index === 0 ? `${service.label} (default)` : service.label}\n\n- Part ID: \`${service.partId}\`\n- Directory: \`${service.targetPath}\`\n- Base URL: \`${service.serverUrl}\`\n- Start: \`bun run dev:${service.partId.replace(/[^a-zA-Z0-9_-]+/g, "-")}\``,
+        )
+        .join("\n\n")}\n`,
+    );
+  }
+
+  const graphFrontends = (config.stackParts ?? []).filter(
+    (part) =>
+      part.role === "frontend" && !part.ownerPartId && part.source !== "provided" && part.toolId !== "none",
+  );
+  const graphFrontend = graphFrontends.find((part) => part.ecosystem === "typescript");
+  const graphMobiles = (config.stackParts ?? []).filter(
+    (part) =>
+      part.role === "mobile" && !part.ownerPartId && part.source !== "provided" && part.toolId !== "none",
+  );
+
+  for (const graphMobile of graphMobiles) {
+    if (graphMobile.ecosystem === "kotlin") {
+      writeKotlinConnection(vfs, graphMobile.targetPath ?? "apps/native", connection);
+    }
+    if (graphMobile.ecosystem === "swift") {
+      writeSwiftConnection(vfs, graphMobile.targetPath ?? "apps/mobile", connection);
+    }
+    if (graphMobile.ecosystem === "dart") {
+      writeFlutterConnection(vfs, graphMobile.targetPath ?? "apps/mobile", connection);
+    }
+  }
+
+  if (!hasWebFrontend(config)) return;
+
+  for (const frontendPart of graphFrontends) {
+    if (frontendPart.ecosystem === "dotnet") {
+      writeBlazorConnection(vfs, frontendPart.targetPath ?? "apps/web", connection);
+    }
+    if (frontendPart.ecosystem === "rust") {
+      writeRustFrontendConnection(vfs, frontendPart.targetPath ?? "apps/web", connection);
+    }
+  }
+
+  const frontend =
+    graphFrontend?.ecosystem === "typescript"
+      ? graphFrontend.toolId
+      : config.frontend.find((entry) => entry !== "none" && !entry.startsWith("native-"));
   if (!frontend) return;
 
   const graphDocPath =
@@ -87,6 +141,220 @@ The frontend environment file contains the matching public server URL. Keep that
   } else if (frontend === "redwood") {
     writeRedwoodStatus(vfs, connection.serverUrl, connection.healthPath);
   }
+}
+
+function writeConnectionDoc(
+  vfs: VirtualFileSystem,
+  path: string,
+  connection: NonNullable<ReturnType<typeof getGraphBackendConnection>>,
+  clientNote: string,
+): void {
+  vfs.writeFile(
+    path,
+    `# Graph Backend Connection
+
+This application was generated with a ${connection.label} backend.
+
+- Backend directory: \`${connection.targetPath}\`
+- Base URL: \`${connection.serverUrl}\`
+- Health URL: \`${connection.healthUrl}\`
+- Start command: \`${connection.devCommand}\`
+
+${clientNote}
+`,
+  );
+}
+
+function writeBlazorConnection(
+  vfs: VirtualFileSystem,
+  targetPath: string,
+  connection: NonNullable<ReturnType<typeof getGraphBackendConnection>>,
+): void {
+  if (!vfs.directoryExists(targetPath)) return;
+  writeConnectionDoc(
+    vfs,
+    `${targetPath}/GRAPH_BACKEND.md`,
+    connection,
+    "The named HttpClient reads ApiBaseUrl from appsettings and the status component checks the backend health endpoint.",
+  );
+  vfs.writeFile(
+    `${targetPath}/wwwroot/appsettings.json`,
+    `${JSON.stringify({ ApiBaseUrl: connection.serverUrl }, null, 2)}\n`,
+  );
+  const isBlazorWebApp = vfs.directoryExists(`${targetPath}/Components`);
+  if (isBlazorWebApp) {
+    const appSettingsPath = `${targetPath}/appsettings.json`;
+    const appSettings = vfs.readFile(appSettingsPath) ?? "{}";
+    const parsed = JSON.parse(appSettings) as Record<string, unknown>;
+    parsed.ApiBaseUrl = connection.serverUrl;
+    vfs.writeFile(appSettingsPath, `${JSON.stringify(parsed, null, 2)}\n`);
+  }
+  const statusPath = isBlazorWebApp
+    ? `${targetPath}/Components/Shared/GraphBackendStatus.razor`
+    : `${targetPath}/Shared/GraphBackendStatus.razor`;
+  vfs.writeFile(
+    statusPath,
+    `@inject IHttpClientFactory HttpClientFactory
+@implements IDisposable
+
+<section class="backend-status" aria-live="polite">
+    <strong>Backend:</strong> @status
+</section>
+
+@code {
+    private string status = "Checking…";
+    private readonly CancellationTokenSource cancellation = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var client = HttpClientFactory.CreateClient("GraphBackend");
+            using var response = await client.GetAsync("${connection.healthPath.replace(/^\//, "")}", cancellation.Token);
+            status = response.IsSuccessStatusCode ? "Connected" : "Unavailable";
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { }
+        catch (HttpRequestException) { status = "Disconnected"; }
+    }
+
+    public void Dispose() => cancellation.Cancel();
+}
+`,
+  );
+  const programPath = `${targetPath}/Program.cs`;
+  const program = vfs.readFile(programPath);
+  if (program && !program.includes('AddHttpClient("GraphBackend"') && isBlazorWebApp) {
+    vfs.writeFile(
+      programPath,
+      program.replace(
+        "builder.Services.AddRazorComponents().AddInteractiveServerComponents();",
+        'builder.Services.AddRazorComponents().AddInteractiveServerComponents();\nvar apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? "' +
+          connection.serverUrl +
+          '";\nbuilder.Services.AddHttpClient("GraphBackend", client =>\n    client.BaseAddress = new Uri(apiBaseUrl.EndsWith("/") ? apiBaseUrl : $"{apiBaseUrl}/"));',
+      ),
+    );
+  } else if (program && !program.includes('AddHttpClient("GraphBackend"')) {
+    vfs.writeFile(
+      programPath,
+      program.replace(
+        'builder.RootComponents.Add<HeadOutlet>("head::after");',
+        'builder.RootComponents.Add<HeadOutlet>("head::after");\n\nvar apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? "' +
+          connection.serverUrl +
+          '";\nbuilder.Services.AddHttpClient("GraphBackend", client =>\n    client.BaseAddress = new Uri(apiBaseUrl.EndsWith("/") ? apiBaseUrl : $"{apiBaseUrl}/"));',
+      ),
+    );
+  }
+  const importsPath = isBlazorWebApp
+    ? `${targetPath}/Components/_Imports.razor`
+    : `${targetPath}/_Imports.razor`;
+  const imports = vfs.readFile(importsPath);
+  if (imports && !imports.includes("BetterFullstack.Web.Shared")) {
+    vfs.writeFile(
+      importsPath,
+      `${imports}\n@using BetterFullstack.Web.${isBlazorWebApp ? "Components.Shared" : "Shared"}\n`,
+    );
+  }
+  const homePath = isBlazorWebApp
+    ? `${targetPath}/Components/Pages/Home.razor`
+    : `${targetPath}/Pages/Home.razor`;
+  const home = vfs.readFile(homePath);
+  if (home && !home.includes("GraphBackendStatus")) {
+    vfs.writeFile(homePath, `${home.trimEnd()}\n    <GraphBackendStatus />\n`);
+  }
+}
+
+function writeRustFrontendConnection(
+  vfs: VirtualFileSystem,
+  targetPath: string,
+  connection: NonNullable<ReturnType<typeof getGraphBackendConnection>>,
+): void {
+  if (!vfs.directoryExists(targetPath)) return;
+  writeConnectionDoc(
+    vfs,
+    `${targetPath}/GRAPH_BACKEND.md`,
+    connection,
+    "Set GRAPH_API_BASE_URL at build time if the backend is hosted somewhere else.",
+  );
+  vfs.writeFile(
+    `${targetPath}/.env.example`,
+    `GRAPH_API_BASE_URL=${connection.serverUrl}\nGRAPH_API_HEALTH_PATH=${connection.healthPath}\n`,
+  );
+}
+
+function writeKotlinConnection(
+  vfs: VirtualFileSystem,
+  targetPath: string,
+  connection: NonNullable<ReturnType<typeof getGraphBackendConnection>>,
+): void {
+  if (!vfs.directoryExists(targetPath)) return;
+  writeConnectionDoc(
+    vfs,
+    `${targetPath}/GRAPH_BACKEND.md`,
+    connection,
+    "Android emulators reach the host through 10.0.2.2. Override GraphBackend.baseUrl for devices and production builds.",
+  );
+  const kotlinPath = vfs.directoryExists(`${targetPath}/composeApp`)
+    ? `${targetPath}/composeApp/src/commonMain/kotlin/com/betterfullstack/app/GraphBackend.kt`
+    : `${targetPath}/app/src/main/java/com/betterfullstack/app/GraphBackend.kt`;
+  vfs.writeFile(
+    kotlinPath,
+    `package com.betterfullstack.app
+
+object GraphBackend {
+    const val baseUrl = "${connection.serverUrl.replace("localhost", "10.0.2.2")}"
+    const val healthPath = "${connection.healthPath}"
+    val healthUrl: String get() = "$baseUrl$healthPath"
+}
+`,
+  );
+}
+
+function writeSwiftConnection(
+  vfs: VirtualFileSystem,
+  targetPath: string,
+  connection: NonNullable<ReturnType<typeof getGraphBackendConnection>>,
+): void {
+  if (!vfs.directoryExists(targetPath)) return;
+  writeConnectionDoc(
+    vfs,
+    `${targetPath}/GRAPH_BACKEND.md`,
+    connection,
+    "The iOS simulator can use localhost. Set GraphBackend.baseURL to your Mac's LAN address for a physical device.",
+  );
+  vfs.writeFile(
+    `${targetPath}/Sources/GraphBackend.swift`,
+    `import Foundation
+
+enum GraphBackend {
+    static let baseURL = URL(string: "${connection.serverUrl}")!
+    static let healthURL = baseURL.appending(path: "${connection.healthPath.replace(/^\//, "")}")
+}
+`,
+  );
+}
+
+function writeFlutterConnection(
+  vfs: VirtualFileSystem,
+  targetPath: string,
+  connection: NonNullable<ReturnType<typeof getGraphBackendConnection>>,
+): void {
+  if (!vfs.directoryExists(targetPath)) return;
+  writeConnectionDoc(
+    vfs,
+    `${targetPath}/GRAPH_BACKEND.md`,
+    connection,
+    "Android emulators use 10.0.2.2 for the host; pass --dart-define=API_BASE_URL=... for devices and production.",
+  );
+  vfs.writeFile(
+    `${targetPath}/lib/graph_backend.dart`,
+    `const graphApiBaseUrl = String.fromEnvironment(
+  'API_BASE_URL',
+  defaultValue: '${connection.serverUrl.replace("localhost", "10.0.2.2")}',
+);
+const graphApiHealthPath = '${connection.healthPath}';
+const graphApiHealthUrl = '$graphApiBaseUrl$graphApiHealthPath';
+`,
+  );
 }
 
 function viteServerUrlExpression(serverUrl: string): string {

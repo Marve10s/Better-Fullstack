@@ -1,4 +1,3 @@
-import type { DocPage } from "./source";
 import {
   DEFAULT_OG_IMAGE_ALT,
   DEFAULT_OG_IMAGE_HEIGHT,
@@ -12,6 +11,8 @@ import {
   getDefaultDescription,
 } from "@/lib/seo";
 import { m } from "@/paraglide/messages.js";
+
+import type { DocPage } from "./source";
 
 type JsonLdMeta = {
   "script:ld+json": Record<string, unknown>;
@@ -32,6 +33,10 @@ function docsPageImage(page: Pick<DocPage, "frontmatter">) {
   if (!image) return DEFAULT_OG_IMAGE_URL;
   if (image.startsWith("http://") || image.startsWith("https://")) return image;
   return canonicalUrl(image);
+}
+
+function docsMarkdownUrl(url: string) {
+  return canonicalUrl(url === "/docs" ? "/docs.md" : `${url}.md`);
 }
 
 export function docsPageJsonLd(page: Pick<DocPage, "url" | "frontmatter">) {
@@ -90,6 +95,9 @@ export function docsPageHead(page: Pick<DocPage, "url" | "frontmatter">) {
       { name: "twitter:image:alt", content: DEFAULT_OG_IMAGE_ALT },
       { "script:ld+json": docsPageJsonLd(page) } satisfies JsonLdMeta,
     ],
-    links: [{ rel: "canonical", href: url }],
+    links: [
+      { rel: "canonical", href: url },
+      { rel: "alternate", type: "text/markdown", href: docsMarkdownUrl(page.url) },
+    ],
   };
 }

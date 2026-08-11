@@ -1,6 +1,8 @@
 ---
 title: Add Features
 description: Add supported addons, deployment targets, and stack capabilities to existing Better Fullstack projects.
+translationStatus: pending
+updated: 2026-08-07
 ---
 
 The `add` command updates an existing Better Fullstack project. It reads `bts.jsonc`, plans the requested stack change, writes safe generated-file updates, and updates the project config.
@@ -14,6 +16,16 @@ Preview a service update before writing files:
 ```npm
 npm create better-fullstack@latest add -- --email resend --dry-run
 ```
+
+## Operational contract
+
+| Concern       | Contract                                                                                                    |
+| ------------- | ----------------------------------------------------------------------------------------------------------- |
+| Preconditions | Run inside a generated project with `bts.jsonc`, or pass `--project-dir`. Commit or stash local work first. |
+| Preview       | `add [flags] --dry-run` plans without writing.                                                              |
+| Writes        | Updates safe scaffold-owned files, dependencies, env examples, `bts.jsonc`, and the scaffold manifest.      |
+| Refuses       | Never overwrites a generated file that has diverged from its recorded baseline.                             |
+| Recovery      | Review the dry run, apply on a clean Git worktree, and revert the resulting commit if needed.               |
 
 ## What add does
 
@@ -32,35 +44,38 @@ Use `--dry-run` to inspect the file, dependency, env var, compatibility, and man
 
 ## Flags
 
-| Flag | Values or behavior |
-| --- | --- |
-| `--addons` | `pwa` `tauri` `starlight` `biome` `lefthook` `husky` `ruler` `mcp` `skills` `turborepo` `nx` `fumadocs` `ultracite` `oxlint` `opentui` `wxt` `msw` `storybook` `swr` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` `backend-utils` `devcontainer` `docker-compose` `github-actions` `none` |
-| `--dry-run` | Plan the update and print the summary without writing files. |
-| `--project-dir` | Path to the generated project. Defaults to the current directory. |
-| `--install` | Install dependencies after adding files. Defaults to false for `add`. |
-| `--package-manager` | `npm` `pnpm` `bun` `yarn` |
-| `--email` | Add an email provider such as `resend`, when compatible with the existing stack. |
-| `--observability` | Add an observability provider such as `sentry`, when compatible with the existing stack. |
-| `--search` `--vector-db` `--file-storage` | Add supported service integrations. |
-| `--web-deploy` `--server-deploy` | Add or update supported deployment targets. |
+| Flag                                      | Values or behavior                                                                                                                                                                                     |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--addons`                                | One or more values from the schema-derived [TypeScript options reference](/docs/reference/options/typescript/). Use `none` only when explicitly clearing a multi-select field in a supported workflow. |
+| `--dry-run`                               | Plan the update and print the summary without writing files.                                                                                                                                           |
+| `--project-dir`                           | Path to the generated project. Defaults to the current directory.                                                                                                                                      |
+| `--install`                               | Install dependencies after adding files. Defaults to false for `add`.                                                                                                                                  |
+| `--package-manager`                       | `npm` `pnpm` `bun` `yarn`                                                                                                                                                                              |
+| `--email`                                 | Add an email provider such as `resend`, when compatible with the existing stack.                                                                                                                       |
+| `--observability`                         | Add an observability provider such as `sentry`, when compatible with the existing stack.                                                                                                               |
+| `--search` `--vector-db` `--file-storage` | Add supported service integrations.                                                                                                                                                                    |
+| `--web-deploy` `--server-deploy`          | Add or update supported deployment targets.                                                                                                                                                            |
 
 Most create-time stack fields are accepted for existing-project updates when the planner can apply them safely. Risky architecture swaps may require manual review or a fresh scaffold.
 
-## Addon reference
+## Selected addon examples
 
-| Addon | Purpose |
-| --- | --- |
-| `mcp` | Generated-project MCP server configuration for coding agents. |
-| `skills` | Curated coding-agent skill files. |
-| `turborepo` | Monorepo orchestration. |
-| `docker-compose` | Local service orchestration for supported stacks. |
-| `biome` `oxlint` `ultracite` `lefthook` `husky` `ruler` | Code quality and hooks. |
-| `starlight` `fumadocs` | Documentation sites when compatible with the stack. |
-| `tauri` `pwa` `wxt` | Desktop, progressive web app, and browser extension support. |
-| `msw` `storybook` | Testing and component development utilities. |
-| `swr` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` | Data fetching and UI utilities. |
-| `backend-utils` | asyncHandler, ApiResponse, and a global error handler for Hono, Express, Fastify, Elysia, feTS, or NestJS servers. |
-| `opentui` | Terminal UI support. |
+This table explains common choices; it is not the complete accepted-value inventory. Use the
+[TypeScript options reference](/docs/reference/options/typescript/) for the current exhaustive list.
+
+| Addon                                                                                     | Purpose                                                                                                            |
+| ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `mcp`                                                                                     | Generated-project MCP server configuration for coding agents.                                                      |
+| `skills`                                                                                  | Curated coding-agent skill files.                                                                                  |
+| `turborepo`                                                                               | Monorepo orchestration.                                                                                            |
+| `docker-compose`                                                                          | Local service orchestration for supported stacks.                                                                  |
+| `biome` `oxlint` `ultracite` `lefthook` `husky` `ruler`                                   | Code quality and hooks.                                                                                            |
+| `starlight` `fumadocs`                                                                    | Documentation sites when compatible with the stack.                                                                |
+| `tauri` `pwa` `wxt`                                                                       | Desktop, progressive web app, and browser extension support.                                                       |
+| `msw` `storybook`                                                                         | Testing and component development utilities.                                                                       |
+| `swr` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` | Data fetching and UI utilities.                                                                                    |
+| `backend-utils`                                                                           | asyncHandler, ApiResponse, and a global error handler for Hono, Express, Fastify, Elysia, feTS, or NestJS servers. |
+| `opentui`                                                                                 | Terminal UI support.                                                                                               |
 
 ## Idempotency
 

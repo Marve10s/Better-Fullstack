@@ -1,6 +1,8 @@
 ---
 title: Check Projects
 description: Diagnose existing Better Fullstack projects from the CLI.
+translationStatus: pending
+updated: 2026-08-07
 ---
 
 The `check` command validates a scaffolded Better Fullstack project. It is the user-facing alias for the existing `doctor` command.
@@ -9,21 +11,38 @@ The `check` command validates a scaffolded Better Fullstack project. It is the u
 npm create better-fullstack@latest check -- --skip-checks
 ```
 
+## Operational contract
+
+| Concern           | Contract                                                                                                                    |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Preconditions     | A generated project with a readable `bts.jsonc`.                                                                            |
+| Source writes     | Does not rewrite scaffold source or configuration. Invoked build/type tools may create their normal caches or build output. |
+| Fast inspection   | `--skip-checks` limits work to config, dependency, and environment inspection.                                              |
+| Structured output | `--json` is machine-readable but intentionally skips native ecosystem subprocess checks.                                    |
+| Failure           | Exits non-zero when an executed check fails.                                                                                |
+
 ## What check does
 
 - Reads and validates `bts.jsonc`.
 - Checks whether dependencies are installed for the detected package manager or ecosystem.
 - Reports missing required environment variables from `.env.example` files.
-- Runs available generated-project type or build checks unless `--skip-checks` is passed.
-- Supports `--json` for agents and CI scripts.
+- Runs the root `check-types` script when one exists unless `--skip-checks` is passed.
+- Runs ecosystem-native generated checks only in normal terminal output mode.
+- Supports `--json` for machine-readable config, dependency, environment, and TypeScript check results.
 
 ## Flags
 
-| Flag | Behavior |
-| --- | --- |
-| positional project directory | Project directory to diagnose. Defaults to the current directory. |
-| `--skip-checks` | Skip generated type/build checks and only inspect config, dependencies, and env files. |
-| `--json` | Print structured JSON. The command exits non-zero when failures are present. |
+| Flag                         | Behavior                                                                                                                                                                   |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| positional project directory | Project directory to diagnose. Defaults to the current directory.                                                                                                          |
+| `--skip-checks`              | Skip generated type/build checks and only inspect config, dependencies, and env files.                                                                                     |
+| `--json`                     | Print structured JSON. Native ecosystem build checks are reported as skipped and must be run again without `--json`. The command exits non-zero when executed checks fail. |
+
+<Callout kind="warning" title="JSON does not run native checks">
+For Rust, Python, Go, Java/Kotlin, Elixir, and .NET projects, rerun `check` without `--json` before
+claiming that native build checks passed. JSON mode intentionally avoids those subprocesses so agents
+and CI parsers receive clean structured output.
+</Callout>
 
 ## Doctor Alias
 

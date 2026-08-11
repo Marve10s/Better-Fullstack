@@ -1,6 +1,8 @@
 ---
 title: Installation
 description: Set up your environment and scaffold your first Better Fullstack project.
+translationStatus: pending
+updated: 2026-08-07
 ---
 
 Better Fullstack runs through the `create-better-fullstack` package. You do not need to install it globally; run it with your package manager, answer the prompts, and the CLI writes the selected project.
@@ -16,15 +18,19 @@ Prefer to choose visually? Open the [Stack Builder](https://better-fullstack.dev
 - Git only if you want the CLI to initialize a repository.
 - Ecosystem-specific tools only for the project you generate.
 
-| Ecosystem | Extra tooling |
-| --- | --- |
-| TypeScript | npm, pnpm, Yarn, or Bun |
+| Ecosystem    | Extra tooling                                                             |
+| ------------ | ------------------------------------------------------------------------- |
+| TypeScript   | npm, pnpm, Yarn, or Bun                                                   |
 | React Native | Expo-compatible iOS/Android tooling when running on a simulator or device |
-| Rust | Rust toolchain and Cargo |
-| Python | Python and `uv` |
-| Go | Go toolchain |
-| Java | Java 21 |
-| Elixir | Elixir, Erlang/OTP, and PostgreSQL for database-backed Phoenix flows |
+| Rust         | Rust toolchain and Cargo                                                  |
+| Python       | Python and `uv`                                                           |
+| Go           | Go toolchain                                                              |
+| Java         | Java 21                                                                   |
+| Elixir       | Elixir, Erlang/OTP, and PostgreSQL for database-backed Phoenix flows      |
+| .NET         | .NET SDK 10 or newer                                                      |
+
+Multi-ecosystem projects can also include Kotlin Compose, SwiftUI, Flutter, Blazor, or Rust frontend
+parts. Install Android/Gradle, Xcode, Flutter, .NET, or Rust tooling only for the app parts you select.
 
 ## Run the CLI
 
@@ -72,13 +78,13 @@ Use `--ai-docs none` when you do not want generated AI instruction files. Use `-
 
 Templates are shorthand for common stacks:
 
-| Template | Stack |
-| --- | --- |
-| `t3` | Next.js, tRPC, Prisma, PostgreSQL, Better Auth |
-| `mern` | MongoDB, Express, React Router, Node.js |
-| `pern` | PostgreSQL, Express, TanStack Router, Node.js |
-| `uniwind` | Expo + Uniwind, mobile-only |
-| `none` | No shorthand template |
+| Template  | Stack                                          |
+| --------- | ---------------------------------------------- |
+| `t3`      | Next.js, tRPC, Prisma, PostgreSQL, Better Auth |
+| `mern`    | MongoDB, Express, React Router, Node.js        |
+| `pern`    | PostgreSQL, Express, TanStack Router, Node.js  |
+| `uniwind` | Expo + Uniwind, mobile-only                    |
+| `none`    | No shorthand template                          |
 
 ```npm
 npm create better-fullstack@latest my-app -- --template t3

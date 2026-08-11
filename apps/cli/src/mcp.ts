@@ -17,9 +17,11 @@ import {
   CSSFrameworkSchema,
   DatabaseSchema,
   DatabaseSetupSchema,
+  DartMobileSchema,
   DotnetApiSchema,
   DotnetAuthSchema,
   DotnetCachingSchema,
+  DotnetFrontendSchema,
   DotnetValidationSchema,
   DotnetDeploySchema,
   DotnetJobQueueSchema,
@@ -99,6 +101,8 @@ import {
   JavaWebFrameworkSchema,
   I18nSchema,
   JobQueueSchema,
+  KotlinMobileLibrariesSchema,
+  KotlinMobileSchema,
   legacyProjectConfigToStackParts,
   LoggingSchema,
   ObservabilitySchema,
@@ -160,6 +164,7 @@ import {
   ShadcnStyleSchema,
   stackPartsToLegacyProjectConfigPartial,
   StateManagementSchema,
+  SwiftMobileSchema,
   TestingSchema,
   UILibrarySchema,
   ValidationSchema,
@@ -172,12 +177,12 @@ import {
   TEMPLATE_VALUES,
   type Template,
 } from "@better-fullstack/types";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { McpServer } from "@modelcontextprotocol/server";
+import { serveStdio } from "@modelcontextprotocol/server/stdio";
 import z from "zod";
 
 import { applyStackUpdate, planStackUpdate } from "./helpers/core/stack-update";
-import { trackEvent, trackProjectCreation } from "./utils/analytics";
+import { trackEvent, trackProjectCreation, withCommandTelemetry } from "./utils/analytics";
 import { previewBtsConfigUpdate, readBtsConfig, writeBtsConfig } from "./utils/bts-config";
 import { applyEffectBackendDefaults } from "./utils/config-processing";
 import { generateReproducibleCommand } from "./utils/generate-reproducible-command";
@@ -208,7 +213,7 @@ For existing projects:
 
 CRITICAL RULES:
 - Dependency installation is ALWAYS skipped in MCP mode (timeout risk). After scaffolding, tell the user to run install manually.
-- Array fields: "frontend", "addons", "examples", "aiDocs", "rustLibraries", "pythonAi", "pythonTesting", "pythonCli", "pythonData", "goTesting", "javaLibraries", "javaTestingLibraries", "dotnetTesting", "dotnetObservability", "elixirLibraries", "mobileLibraries", and "dotnetLibraries". Most other option fields are strings.
+- Array fields: "frontend", "addons", "examples", "aiDocs", "rustLibraries", "pythonAi", "pythonTesting", "pythonCli", "pythonData", "goTesting", "javaLibraries", "javaTestingLibraries", "dotnetTesting", "dotnetObservability", "elixirLibraries", "mobileLibraries", "kotlinMobileLibraries", and "dotnetLibraries". Most other option fields are strings.
 - "none" means "skip this feature entirely", not "use the default".
 - Always specify "ecosystem" first — it determines which other fields are relevant.
 - TypeScript web-specific fields (web frontend, backend, orm, etc.) are IGNORED for react-native/rust/python/go/java/dotnet/elixir ecosystems.
@@ -441,8 +446,8 @@ function getInstallCommand(
   }
 }
 
-function mcpInputSchema<T extends Record<string, unknown>>(schema: T): Record<string, unknown> {
-  return schema;
+function mcpInputSchema<T extends z.ZodRawShape>(schema: T): z.ZodObject<T> {
+  return z.object(schema);
 }
 
 function filterCompatibilityResult(
@@ -812,6 +817,13 @@ export function buildMcpCompatibilityInput(input: Record<string, unknown>): Comp
     webFrontend,
     nativeFrontend,
     ...defaults,
+    dotnetFrontend: (input.dotnetFrontend as string) ?? "none",
+    kotlinMobile: (input.kotlinMobile as string) ?? "none",
+    kotlinMobileLibraries: Array.isArray(input.kotlinMobileLibraries)
+      ? (input.kotlinMobileLibraries as string[])
+      : [],
+    swiftMobile: (input.swiftMobile as string) ?? "none",
+    dartMobile: (input.dartMobile as string) ?? "none",
     mobileNavigation:
       (input.mobileNavigation as string) ?? (hasMobileProject ? "expo-router" : "none"),
     mobileDeepLinking:
@@ -1010,20 +1022,20 @@ type McpToolAnnotations = {
   openWorldHint?: boolean;
 };
 
-const guidanceOutputSchema = {
+const guidanceOutputSchema = z.object({
   workflow: z.array(z.string()),
   ecosystems: z.record(z.string(), z.string()),
   fieldRules: z.record(z.string(), z.string()),
   ambiguityRules: z.array(z.string()),
   criticalConstraints: z.array(z.string()),
-};
+});
 
-const schemaOutputSchema = {
+const schemaOutputSchema = z.object({
   category: z.string().optional(),
   options: z.array(z.string()).optional(),
   categories: z.record(z.string(), z.array(z.string())).optional(),
   error: z.string().optional(),
-};
+});
 
 const compatibilityIssueOutputSchema = z.object({
   code: z.string(),
@@ -1034,12 +1046,12 @@ const compatibilityIssueOutputSchema = z.object({
   suggestions: z.array(z.string()).optional(),
 });
 
-const compatibilityOutputSchema = {
+const compatibilityOutputSchema = z.object({
   adjustedStack: z.record(z.string(), z.unknown()).nullable(),
   changes: z.array(z.object({ category: z.string(), message: z.string() })),
   issues: z.array(compatibilityIssueOutputSchema),
   hasIssues: z.boolean(),
-};
+});
 
 const graphPreviewOutputShape = {
   graphSummary: z.string().optional(),
@@ -1047,24 +1059,24 @@ const graphPreviewOutputShape = {
   stackPartSpecs: z.array(z.string()).optional(),
 };
 
-const planProjectOutputSchema = {
+const planProjectOutputSchema = z.object({
   success: z.boolean(),
   fileCount: z.number().optional(),
   directoryCount: z.number().optional(),
   files: z.array(z.string()).optional(),
   ...graphPreviewOutputShape,
-};
+});
 
-const createProjectOutputSchema = {
+const createProjectOutputSchema = z.object({
   success: z.boolean(),
   projectDirectory: z.string().optional(),
   fileCount: z.number().optional(),
   addonWarnings: z.array(z.string()).optional(),
   message: z.string().optional(),
   ...graphPreviewOutputShape,
-};
+});
 
-const planAdditionOutputSchema = {
+const planAdditionOutputSchema = z.object({
   success: z.boolean(),
   existingConfig: z
     .object({
@@ -1089,17 +1101,17 @@ const planAdditionOutputSchema = {
     .optional(),
   alreadyPresent: z.array(z.string()).optional(),
   compatibilityWarnings: z.array(z.string()).optional(),
-};
+});
 
-const addFeatureOutputSchema = {
+const addFeatureOutputSchema = z.object({
   success: z.boolean(),
   addedAddons: z.array(z.string()).optional(),
   projectDir: z.string().optional(),
   message: z.string().optional(),
   ...graphPreviewOutputShape,
-};
+});
 
-const stackUpdateOutputSchema = {
+const stackUpdateOutputSchema = z.object({
   success: z.boolean(),
   projectDir: z.string().optional(),
   error: z.string().optional(),
@@ -1121,7 +1133,7 @@ const stackUpdateOutputSchema = {
   installCommand: z.string().optional(),
   message: z.string().optional(),
   ...graphPreviewOutputShape,
-};
+});
 
 function buildPresetStackSummary(config: CreateInput): string {
   const parts: string[] = [];
@@ -1410,6 +1422,14 @@ const deploymentInputSchema = {
 const crossEcosystemInputSchema = {
   rustWebFramework: RustWebFrameworkSchema.optional().describe("Rust web framework"),
   rustFrontend: RustFrontendSchema.optional().describe("Rust frontend (WASM)"),
+  dotnetFrontend: DotnetFrontendSchema.optional().describe(".NET frontend (Blazor WebAssembly)"),
+  kotlinMobile: KotlinMobileSchema.optional().describe("Kotlin mobile app"),
+  kotlinMobileLibraries: z
+    .array(KotlinMobileLibrariesSchema)
+    .optional()
+    .describe("Kotlin mobile libraries"),
+  swiftMobile: SwiftMobileSchema.optional().describe("Swift mobile app"),
+  dartMobile: DartMobileSchema.optional().describe("Dart mobile app"),
   rustOrm: RustOrmSchema.optional().describe("Rust ORM"),
   rustApi: RustApiSchema.optional().describe("Rust API layer"),
   rustCli: RustCliSchema.optional().describe("Rust CLI framework"),
@@ -1596,18 +1616,24 @@ export const MCP_STACK_UPDATE_SCHEMA = {
     ),
 };
 
-export async function startMcpServer() {
+export function createMcpServer(): McpServer {
   const server = new McpServer(
     { name: "better-fullstack", version: getLatestCLIVersion() },
-    { instructions: INSTRUCTIONS, capabilities: { logging: {} } },
+    {
+      instructions: INSTRUCTIONS,
+      cacheHints: {
+        "tools/list": { ttlMs: 300_000, cacheScope: "public" },
+        "resources/list": { ttlMs: 300_000, cacheScope: "public" },
+      },
+    },
   );
 
   const registerTool = <Input extends Record<string, unknown> = Record<string, unknown>>(
     name: string,
     config: {
       description: string;
-      inputSchema?: Record<string, unknown>;
-      outputSchema?: Record<string, unknown>;
+      inputSchema?: z.ZodType;
+      outputSchema?: z.ZodType;
       annotations?: McpToolAnnotations;
     },
     cb: (input: Input) => unknown,
@@ -1618,7 +1644,20 @@ export async function startMcpServer() {
         toolConfig: Record<string, unknown>,
         toolCb: (input: Input) => unknown,
       ) => void
-    )(name, config, cb);
+    )(name, config, async (input) =>
+      withCommandTelemetry(name, async () => cb(input), {
+        source: "mcp",
+        mode: config.annotations?.readOnlyHint ? "read" : "write",
+        dimensions: { mcpTool: name },
+        resultStatus: (result) =>
+          result &&
+          typeof result === "object" &&
+          "isError" in result &&
+          (result as { isError?: unknown }).isError === true
+            ? "failed"
+            : "succeeded",
+      }),
+    );
   };
 
   registerTool(
@@ -2444,25 +2483,27 @@ export async function startMcpServer() {
     },
   );
 
-  server.resource(
+  server.registerResource(
     "compatibility-rules",
     "docs://compatibility-rules",
     {
       description:
         "Stack compatibility rules — which frontend/backend/API/ORM combinations are valid. Read this BEFORE scaffolding.",
       mimeType: "text/markdown",
+      cacheHint: { ttlMs: 300_000, cacheScope: "public" },
     },
     async () => ({
       contents: [{ uri: "docs://compatibility-rules", text: COMPATIBILITY_RULES_MD }],
     }),
   );
 
-  server.resource(
+  server.registerResource(
     "stack-options",
     "docs://stack-options",
     {
       description: "All available technology options per category for every ecosystem.",
       mimeType: "application/json",
+      cacheHint: { ttlMs: 300_000, cacheScope: "public" },
     },
     async () => ({
       contents: [
@@ -2471,18 +2512,22 @@ export async function startMcpServer() {
     }),
   );
 
-  server.resource(
+  server.registerResource(
     "getting-started",
     "docs://getting-started",
     {
       description: "Quick start guide for scaffolding projects with Better-Fullstack MCP.",
       mimeType: "text/markdown",
+      cacheHint: { ttlMs: 300_000, cacheScope: "public" },
     },
     async () => ({
       contents: [{ uri: "docs://getting-started", text: GETTING_STARTED_MD }],
     }),
   );
 
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
+  return server;
+}
+
+export async function startMcpServer() {
+  await serveStdio(createMcpServer);
 }

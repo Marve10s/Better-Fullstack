@@ -132,6 +132,42 @@ test.describe("Builder parity", () => {
     await expect(page).toHaveURL(/part=/);
   });
 
+  test("multi-ecosystem mode exposes owned frontend, database, mobile, and finalize options", async ({
+    page,
+  }) => {
+    await clickVisibleTestId(page, "stack-mode-multi");
+    await clickVisibleTestId(page, "multi-frontend-tool-astro");
+    await expect(page.getByTestId("multi-frontend-astroIntegration-react")).toBeVisible();
+    await expect(page.getByTestId("multi-frontend-webDeploy-vercel")).toBeVisible();
+    await expect(page.getByTestId("multi-frontend-analytics-posthog")).toBeVisible();
+
+    await clickVisibleTestId(page, "multi-step-database");
+    await clickVisibleTestId(page, "multi-database-tool-postgres");
+    await expect(page.getByTestId("multi-database-dbSetup-neon")).toBeVisible();
+
+    await clickVisibleTestId(page, "multi-step-mobile");
+    await clickVisibleTestId(page, "multi-mobile-tool-native-bare");
+    await expect(page.getByTestId("multi-mobile-auth-auth0")).toHaveCount(0);
+    await expect(page.getByTestId("multi-mobile-payments-revenuecat")).toBeVisible();
+    await clickVisibleTestId(page, "multi-mobile-payments-revenuecat");
+
+    const command = commandOutput(page);
+    await expect(command).toContainText("--part mobile.payments:react-native:revenuecat");
+
+    await clickVisibleTestId(page, "multi-mobile-language-kotlin");
+    await expect(page.getByTestId("multi-mobile-tool-jetpack-compose")).toBeVisible();
+    await expect(command).toContainText("--part mobile:kotlin:jetpack-compose");
+
+    await clickVisibleTestId(page, "multi-step-frontend");
+    await clickVisibleTestId(page, "multi-frontend-language-dotnet");
+    await expect(page.getByTestId("multi-frontend-tool-blazor-webassembly")).toBeVisible();
+    await expect(command).toContainText("--part frontend:dotnet:blazor-webassembly");
+
+    await clickVisibleTestId(page, "multi-step-finalize");
+    await expect(page.getByTestId("category-workspaceShape")).toBeVisible();
+    await expect(page.getByTestId("category-examples")).toBeVisible();
+  });
+
   test("multi-ecosystem mode exposes Kotlin as a separate backend language", async ({ page }) => {
     await clickVisibleTestId(page, "stack-mode-multi");
     await clickVisibleTestId(page, "multi-step-next");

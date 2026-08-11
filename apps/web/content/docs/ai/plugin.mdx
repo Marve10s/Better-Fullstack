@@ -10,6 +10,14 @@ The Better Fullstack plugin bundles the official MCP server with two focused ski
 
 Use the plugin when your agent supports plugin marketplaces and you want one install to provide both the Better Fullstack MCP server and the skills. Use the standalone [MCP server](/docs/ai/mcp/) setup when your client only needs tool calls.
 
+## Portable Agent Plugins v1
+
+The bundle also implements the open Agent Plugins 1.0 format. Its root `plugin.json` identifies the
+plugin, `skills/` contains the reusable Agent Skills, and `mcp.json` declares the stdio MCP server.
+Compatible clients can therefore load the same package without a client-specific rearrangement.
+
+The existing Codex and Claude Code manifests remain available for their marketplace flows.
+
 ## Claude Code
 
 Add this repository as a Claude Code plugin marketplace, then install the plugin:

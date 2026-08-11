@@ -1,11 +1,18 @@
 import { v } from "convex/values";
 
-import { internalMutation, mutation, query } from "./_generated/server";
+import { internalMutation, internalQuery } from "./_generated/server";
+import {
+  applyFailureClassifications,
+  classifyProjectSetupOutcome,
+  countReturningMachinesFromActivity,
+  type Distribution,
+} from "./analytics-core";
 
-type Dist = Record<string, number>;
+type Dist = Distribution;
 type StackValue = string | boolean | string[];
 type StackRecord = Record<string, StackValue>;
 const DAY_MS = 24 * 60 * 60 * 1000;
+const RETURNING_MACHINES_VERSION = 2;
 
 // Legacy per-field aggregates kept for the existing getStats consumers.
 // New stack options do NOT need to be added here: they are covered
@@ -55,12 +62,28 @@ type AnalyticsEvent = {
   creationTime: number;
   eventType?: string;
   source?: string;
+  client?: string;
+  action?: string;
+  status?: string;
+  mode?: string;
   machineId?: string;
   success?: boolean;
   errorName?: string;
+  failureStage?: string;
+  failureReason?: string;
   setupFailures?: string[];
   durationMs?: number;
   fileCount?: number;
+  changedFileCount?: number;
+  capabilityCount?: number;
+  conflictCount?: number;
+  manualReviewCount?: number;
+  warningCount?: number;
+  issueCount?: number;
+  retry?: boolean;
+  ci?: boolean;
+  ciProvider?: string;
+  executionRuntime?: string;
   stack?: StackRecord;
   options?: Record<string, string | string[]>;
   cli_version?: string;
@@ -99,6 +122,20 @@ function durationBucket(ms: number): string {
   if (ms < 60_000) return "30-60s";
   if (ms < 180_000) return "1-3m";
   return ">3m";
+}
+
+function countBucket(count: number): string {
+  if (count === 0) return "0";
+  if (count === 1) return "1";
+  if (count <= 5) return "2-5";
+  if (count <= 10) return "6-10";
+  if (count <= 25) return "11-25";
+  if (count <= 100) return "26-100";
+  return ">100";
+}
+
+function countReturning(activeDays: Map<string, number>): number {
+  return [...activeDays.values()].filter((days) => days > 1).length;
 }
 
 function isCreation(ev: { eventType?: string }): boolean {
@@ -165,11 +202,38 @@ type StatsShape = {
   eventTypes: Dist;
   sources: Dist;
   outcomes: Dist;
+  actions: Dist;
+  statuses: Dist;
+  modes: Dist;
+  actionStatuses: Dist;
+  actionModes: Dist;
+  actionOutcomes: Dist;
+  actionDurationBuckets: Dist;
+  clients: Dist;
+  runtimes: Dist;
+  ciUsage: Dist;
+  ciProviders: Dist;
   errorNames: Dist;
+  failureStages: Dist;
+  failureReasons: Dist;
+  actionFailureStages: Dist;
+  actionFailureReasons: Dist;
   setupFailureStats: Dist;
+  setupOutcomes: Dist;
+  installSelections: Dist;
+  decisionEvents: number;
   durationBuckets: Dist;
+  fileCountBuckets: Dist;
+  changedFileCountBuckets: Dist;
+  capabilityCountBuckets: Dist;
+  conflictCountBuckets: Dist;
+  manualReviewCountBuckets: Dist;
+  warningCountBuckets: Dist;
+  issueCountBuckets: Dist;
+  retryUsage: Dist;
   uniqueMachines: number;
   returningMachines: number;
+  returningMachinesVersion: number;
   trackedMachineEvents: number;
 } & { [K in (typeof SINGLE_FIELDS)[number]]: Dist } & {
   [K in (typeof MULTI_FIELDS)[number]]: Dist;
@@ -190,15 +254,138 @@ function emptyStats(): StatsShape {
     eventTypes: {},
     sources: {},
     outcomes: {},
+    actions: {},
+    statuses: {},
+    modes: {},
+    actionStatuses: {},
+    actionModes: {},
+    actionOutcomes: {},
+    actionDurationBuckets: {},
+    clients: {},
+    runtimes: {},
+    ciUsage: {},
+    ciProviders: {},
     errorNames: {},
+    failureStages: {},
+    failureReasons: {},
+    actionFailureStages: {},
+    actionFailureReasons: {},
     setupFailureStats: {},
+    setupOutcomes: {},
+    installSelections: {},
+    decisionEvents: 0,
     durationBuckets: {},
+    fileCountBuckets: {},
+    changedFileCountBuckets: {},
+    capabilityCountBuckets: {},
+    conflictCountBuckets: {},
+    manualReviewCountBuckets: {},
+    warningCountBuckets: {},
+    issueCountBuckets: {},
+    retryUsage: {},
     uniqueMachines: 0,
     returningMachines: 0,
+    returningMachinesVersion: RETURNING_MACHINES_VERSION,
     trackedMachineEvents: 0,
   } as StatsShape;
   for (const k of [...SINGLE_FIELDS, ...MULTI_FIELDS, ...BOOL_FIELDS]) stats[k] = {};
   return stats;
+}
+
+type ProjectDecisionAggregates = {
+  setupOutcomes: Dist;
+  installSelections: Dist;
+};
+
+function applyProjectDecisionAggregates(
+  stats: ProjectDecisionAggregates,
+  ev: AnalyticsEvent,
+  stack = eventStack(ev),
+): void {
+  const setupOutcome = classifyProjectSetupOutcome({
+    ...ev,
+    install: typeof stack.install === "boolean" ? stack.install : undefined,
+  });
+  inc(stats.setupOutcomes, setupOutcome);
+  if (!setupOutcome) return;
+
+  const installSelection =
+    ev.source === "mcp"
+      ? "generation-only"
+      : typeof stack.install === "boolean"
+        ? stack.install
+          ? "requested"
+          : "skipped"
+        : "unknown";
+  inc(stats.installSelections, installSelection);
+}
+
+type DailyStatsShape = {
+  date: string;
+  count: number;
+  newMachines: number;
+  totalEvents: number;
+  successfulEvents: number;
+  failedEvents: number;
+  decisionEvents: number;
+  actions: Dist;
+  actionStatuses: Dist;
+  actionOutcomes: Dist;
+  clients: Dist;
+  sources: Dist;
+  ecosystems: Dist;
+  setupOutcomes: Dist;
+  installSelections: Dist;
+  failureStages: Dist;
+  failureReasons: Dist;
+  actionFailureStages: Dist;
+  actionFailureReasons: Dist;
+};
+
+function emptyDailyStats(date: string): DailyStatsShape {
+  return {
+    date,
+    count: 0,
+    newMachines: 0,
+    totalEvents: 0,
+    successfulEvents: 0,
+    failedEvents: 0,
+    decisionEvents: 0,
+    actions: {},
+    actionStatuses: {},
+    actionOutcomes: {},
+    clients: {},
+    sources: {},
+    ecosystems: {},
+    setupOutcomes: {},
+    installSelections: {},
+    failureStages: {},
+    failureReasons: {},
+    actionFailureStages: {},
+    actionFailureReasons: {},
+  };
+}
+
+function applyDailyEvent(daily: DailyStatsShape, ev: AnalyticsEvent): void {
+  daily.totalEvents += 1;
+  daily.decisionEvents += 1;
+  if (ev.success === true) daily.successfulEvents += 1;
+  else if (ev.success === false) daily.failedEvents += 1;
+
+  inc(daily.actions, ev.action);
+  if (ev.action && ev.status) inc(daily.actionStatuses, `${ev.action}:${ev.status}`);
+  if (ev.action && ev.success !== undefined) {
+    inc(daily.actionOutcomes, `${ev.action}:${ev.success ? "success" : "failure"}`);
+  }
+  inc(daily.clients, ev.client);
+  inc(daily.sources, ev.source ?? "unknown");
+  applyFailureClassifications(daily, ev);
+
+  if (!isCountedProject(ev)) return;
+  daily.count += 1;
+  const stack = eventStack(ev);
+  inc(daily.ecosystems, typeof stack.ecosystem === "string" ? stack.ecosystem : undefined);
+  applyProjectDecisionAggregates(daily, ev, stack);
 }
 
 /** Apply one event to the running aggregates (mutates `stats`). */
@@ -208,15 +395,59 @@ function applyEvent(stats: StatsShape, ev: AnalyticsEvent): void {
 
   // Envelope aggregates: every event type.
   stats.totalEvents += 1;
+  stats.decisionEvents += 1;
   inc(stats.eventTypes, ev.eventType ?? "project_created");
   inc(stats.sources, ev.source ?? "unknown");
   inc(stats.outcomes, ev.success === undefined ? "unknown" : ev.success ? "success" : "failure");
+  inc(stats.actions, ev.action);
+  inc(stats.statuses, ev.status);
+  inc(stats.modes, ev.mode);
+  if (ev.action && ev.status) inc(stats.actionStatuses, `${ev.action}:${ev.status}`);
+  if (ev.action && ev.mode) inc(stats.actionModes, `${ev.action}:${ev.mode}`);
+  if (ev.action && ev.success !== undefined) {
+    inc(stats.actionOutcomes, `${ev.action}:${ev.success ? "success" : "failure"}`);
+  }
+  inc(stats.clients, ev.client);
+  inc(stats.runtimes, ev.executionRuntime);
+  incBool(stats.ciUsage, ev.ci);
+  inc(stats.ciProviders, ev.ciProvider);
   inc(stats.errorNames, ev.errorName);
+  applyFailureClassifications(stats, ev);
   incAll(stats.setupFailureStats, ev.setupFailures);
-  if (ev.durationMs !== undefined) inc(stats.durationBuckets, durationBucket(ev.durationMs));
+  if (ev.durationMs !== undefined) {
+    const bucket = durationBucket(ev.durationMs);
+    inc(stats.durationBuckets, bucket);
+    if (ev.action) inc(stats.actionDurationBuckets, `${ev.action}:${bucket}`);
+  }
+  if (ev.fileCount !== undefined) inc(stats.fileCountBuckets, countBucket(ev.fileCount));
+  if (ev.changedFileCount !== undefined) {
+    inc(stats.changedFileCountBuckets, countBucket(ev.changedFileCount));
+  }
+  if (ev.capabilityCount !== undefined) {
+    inc(stats.capabilityCountBuckets, countBucket(ev.capabilityCount));
+  }
+  if (ev.conflictCount !== undefined) {
+    inc(stats.conflictCountBuckets, countBucket(ev.conflictCount));
+  }
+  if (ev.manualReviewCount !== undefined) {
+    inc(stats.manualReviewCountBuckets, countBucket(ev.manualReviewCount));
+  }
+  if (ev.warningCount !== undefined) {
+    inc(stats.warningCountBuckets, countBucket(ev.warningCount));
+  }
+  if (ev.issueCount !== undefined) inc(stats.issueCountBuckets, countBucket(ev.issueCount));
+  incBool(stats.retryUsage, ev.retry);
+
+  const stack = eventStack(ev);
+  applyProjectDecisionAggregates(stats, ev, stack);
 
   // Failed attempts stop here: no project or requested stack aggregates.
   if (ev.success === false) return;
+
+  // A CLI command emits a start plus one terminal event. Aggregate selected
+  // dimensions only from the terminal success so command options are not
+  // counted twice and cancelled attempts do not look like completed usage.
+  if (ev.eventType === "command_used" && ev.status !== "succeeded") return;
 
   // Generic full-coverage dimensions. Creation events use bare category
   // names; add/update events are namespaced so they never skew stack stats.
@@ -227,7 +458,7 @@ function applyEvent(stats: StatsShape, ev: AnalyticsEvent): void {
       : ev.eventType === "stack_updated"
         ? "update."
         : `${ev.eventType}.`;
-  for (const [key, value] of Object.entries(eventStack(ev))) {
+  for (const [key, value] of Object.entries(stack)) {
     const dist = (stats.dimensions[prefix + key] ??= {});
     if (typeof value === "boolean") incBool(dist, value);
     else if (Array.isArray(value)) incAll(dist, value);
@@ -258,12 +489,28 @@ const eventArgs = {
   // Envelope
   eventType: v.optional(v.string()),
   source: v.optional(v.string()),
+  client: v.optional(v.string()),
+  action: v.optional(v.string()),
+  status: v.optional(v.string()),
+  mode: v.optional(v.string()),
   machineId: v.optional(v.string()),
   success: v.optional(v.boolean()),
   errorName: v.optional(v.string()),
+  failureStage: v.optional(v.string()),
+  failureReason: v.optional(v.string()),
   setupFailures: v.optional(v.array(v.string())),
   durationMs: v.optional(v.number()),
   fileCount: v.optional(v.number()),
+  changedFileCount: v.optional(v.number()),
+  capabilityCount: v.optional(v.number()),
+  conflictCount: v.optional(v.number()),
+  manualReviewCount: v.optional(v.number()),
+  warningCount: v.optional(v.number()),
+  issueCount: v.optional(v.number()),
+  retry: v.optional(v.boolean()),
+  ci: v.optional(v.boolean()),
+  ciProvider: v.optional(v.string()),
+  executionRuntime: v.optional(v.string()),
   // Full generic stack config
   stack: v.optional(stackValidator),
   // Legacy named fields (still sent by older CLI versions)
@@ -320,7 +567,10 @@ export const ingestEvent = internalMutation({
   handler: async (ctx, args) => {
     const id = await ctx.db.insert("analyticsEvents", args);
     const event = await ctx.db.get(id);
-    const now = event!._creationTime;
+    if (!event) {
+      throw new Error("Inserted analytics event could not be reloaded");
+    }
+    const now = event._creationTime;
     const today = utcDate(now);
 
     const existing = await ctx.db.query("analyticsStats").first();
@@ -328,6 +578,11 @@ export const ingestEvent = internalMutation({
     if (existing) {
       const { _id, _creationTime, ...plain } = existing;
       stats = { ...emptyStats(), ...plain } as StatsShape;
+      if (existing.returningMachinesVersion !== RETURNING_MACHINES_VERSION) {
+        const activity = await ctx.db.query("analyticsMachineDailyActivity").collect();
+        stats.returningMachines = countReturningMachinesFromActivity(activity);
+        stats.returningMachinesVersion = RETURNING_MACHINES_VERSION;
+      }
     } else {
       stats = emptyStats();
     }
@@ -336,34 +591,36 @@ export const ingestEvent = internalMutation({
     // Machine tracking (anonymous random ID → uniques, new vs returning).
     let newMachine = false;
     if (args.machineId) {
+      const machineId = args.machineId;
       stats.trackedMachineEvents += 1;
       const machine = await ctx.db
         .query("analyticsMachines")
-        .withIndex("by_machine_id", (q) => q.eq("machineId", args.machineId!))
+        .withIndex("by_machine_id", (q) => q.eq("machineId", machineId))
         .first();
       if (machine) {
-        if (machine.eventCount === 1) stats.returningMachines += 1;
         await ctx.db.patch("analyticsMachines", machine._id, {
           lastSeen: now,
           eventCount: machine.eventCount + 1,
           platform: args.platform ?? machine.platform,
+          client: args.client ?? machine.client,
           lastCliVersion: args.cli_version ?? machine.lastCliVersion,
         });
       } else {
         newMachine = true;
         stats.uniqueMachines += 1;
         await ctx.db.insert("analyticsMachines", {
-          machineId: args.machineId,
+          machineId,
           firstSeen: now,
           lastSeen: now,
           eventCount: 1,
           platform: args.platform,
+          client: args.client,
           lastCliVersion: args.cli_version,
         });
       }
       const activity = await ctx.db
         .query("analyticsMachineDailyActivity")
-        .withIndex("by_date_machine", (q) => q.eq("date", today).eq("machineId", args.machineId!))
+        .withIndex("by_date_machine", (q) => q.eq("date", today).eq("machineId", machineId))
         .first();
       if (activity) {
         await ctx.db.patch("analyticsMachineDailyActivity", activity._id, {
@@ -371,9 +628,16 @@ export const ingestEvent = internalMutation({
           lastSeen: now,
         });
       } else {
+        if (machine) {
+          const priorActiveDays = await ctx.db
+            .query("analyticsMachineDailyActivity")
+            .withIndex("by_machine_date", (q) => q.eq("machineId", machineId))
+            .take(2);
+          if (priorActiveDays.length === 1) stats.returningMachines += 1;
+        }
         await ctx.db.insert("analyticsMachineDailyActivity", {
           date: today,
-          machineId: args.machineId,
+          machineId,
           eventCount: 1,
           firstSeen: now,
           lastSeen: now,
@@ -387,23 +651,28 @@ export const ingestEvent = internalMutation({
       await ctx.db.insert("analyticsStats", stats);
     }
 
-    const creation = isCountedProject(args);
     const daily = await ctx.db
       .query("analyticsDailyStats")
       .withIndex("by_date", (q) => q.eq("date", today))
       .first();
+    let dailyStats = emptyDailyStats(today);
     if (daily) {
-      await ctx.db.patch("analyticsDailyStats", daily._id, {
-        count: daily.count + (creation ? 1 : 0),
-        newMachines: (daily.newMachines ?? 0) + (newMachine ? 1 : 0),
-      });
-    } else {
-      await ctx.db.insert("analyticsDailyStats", {
-        date: today,
-        count: creation ? 1 : 0,
-        newMachines: newMachine ? 1 : 0,
-      });
+      const { _id, _creationTime, ...plain } = daily;
+      dailyStats = {
+        ...dailyStats,
+        ...plain,
+        newMachines: daily.newMachines ?? 0,
+        totalEvents: daily.totalEvents ?? daily.count,
+        successfulEvents: daily.successfulEvents ?? 0,
+        failedEvents: daily.failedEvents ?? 0,
+        decisionEvents: daily.decisionEvents ?? 0,
+      };
     }
+    applyDailyEvent(dailyStats, { ...args, creationTime: now });
+    if (newMachine) dailyStats.newMachines += 1;
+
+    if (daily) await ctx.db.patch("analyticsDailyStats", daily._id, dailyStats);
+    else await ctx.db.insert("analyticsDailyStats", dailyStats);
 
     return null;
   },
@@ -411,15 +680,23 @@ export const ingestEvent = internalMutation({
 
 const distributionValidator = v.record(v.string(), v.number());
 
-export const getStats = query({
+export const getStats = internalQuery({
   args: {},
   handler: async (ctx) => {
     const stats = await ctx.db.query("analyticsStats").first();
     if (!stats) return null;
     const { _id, _creationTime, ...plain } = stats;
+    const returningMachines =
+      stats.returningMachinesVersion === RETURNING_MACHINES_VERSION
+        ? (stats.returningMachines ?? 0)
+        : countReturningMachinesFromActivity(
+            await ctx.db.query("analyticsMachineDailyActivity").collect(),
+          );
     return {
       ...emptyStats(),
       ...plain,
+      returningMachines,
+      returningMachinesVersion: RETURNING_MACHINES_VERSION,
       hourlyDistribution: stats.hourlyDistribution ?? {},
       stackCombinations: stats.stackCombinations ?? {},
       dbOrmCombinations: stats.dbOrmCombinations ?? {},
@@ -429,7 +706,7 @@ export const getStats = query({
   },
 });
 
-export const getDailyStats = query({
+export const getDailyStats = internalQuery({
   args: {
     days: v.optional(v.number()),
   },
@@ -438,6 +715,22 @@ export const getDailyStats = query({
       date: v.string(),
       count: v.number(),
       newMachines: v.optional(v.number()),
+      totalEvents: v.optional(v.number()),
+      successfulEvents: v.optional(v.number()),
+      failedEvents: v.optional(v.number()),
+      decisionEvents: v.optional(v.number()),
+      actions: v.optional(distributionValidator),
+      actionStatuses: v.optional(distributionValidator),
+      actionOutcomes: v.optional(distributionValidator),
+      clients: v.optional(distributionValidator),
+      sources: v.optional(distributionValidator),
+      ecosystems: v.optional(distributionValidator),
+      setupOutcomes: v.optional(distributionValidator),
+      installSelections: v.optional(distributionValidator),
+      failureStages: v.optional(distributionValidator),
+      failureReasons: v.optional(distributionValidator),
+      actionFailureStages: v.optional(distributionValidator),
+      actionFailureReasons: v.optional(distributionValidator),
     }),
   ),
   handler: async (ctx, args) => {
@@ -454,48 +747,176 @@ export const getDailyStats = query({
 
     return allDaily
       .filter((d) => d.date >= cutoffDate && d.date <= today)
-      .map((d) => ({ date: d.date, count: d.count, newMachines: d.newMachines }));
+      .map((d) => ({
+        date: d.date,
+        count: d.count,
+        newMachines: d.newMachines,
+        totalEvents: d.totalEvents,
+        successfulEvents: d.successfulEvents,
+        failedEvents: d.failedEvents,
+        decisionEvents: d.decisionEvents,
+        actions: d.actions,
+        actionStatuses: d.actionStatuses,
+        actionOutcomes: d.actionOutcomes,
+        clients: d.clients,
+        sources: d.sources,
+        ecosystems: d.ecosystems,
+        setupOutcomes: d.setupOutcomes,
+        installSelections: d.installSelections,
+        failureStages: d.failureStages,
+        failureReasons: d.failureReasons,
+        actionFailureStages: d.actionFailureStages,
+        actionFailureReasons: d.actionFailureReasons,
+      }));
   },
 });
 
-export const getEngagement = query({
+export const getEngagement = internalQuery({
   args: {},
   returns: v.object({
     uniqueMachines: v.number(),
     returningMachines: v.number(),
     trackedEvents: v.number(),
     newMachinesLast30d: v.number(),
+    activeMachinesLast7d: v.number(),
     activeMachinesLast30d: v.number(),
+    returningMachinesLast7d: v.number(),
+    returningMachinesLast30d: v.number(),
   }),
   handler: async (ctx) => {
     const stats = await ctx.db.query("analyticsStats").first();
     const now = Date.now();
     const today = utcDate(now);
-    const cutoffDate = utcDate(now - 29 * DAY_MS);
+    const cutoffDate30d = utcDate(now - 29 * DAY_MS);
+    const cutoffDate7d = utcDate(now - 6 * DAY_MS);
     const daily = await ctx.db
       .query("analyticsDailyStats")
-      .withIndex("by_date", (q) => q.gte("date", cutoffDate))
+      .withIndex("by_date", (q) => q.gte("date", cutoffDate30d))
       .collect();
     const activity = await ctx.db
       .query("analyticsMachineDailyActivity")
-      .withIndex("by_date", (q) => q.gte("date", cutoffDate))
+      .withIndex("by_date", (q) => q.gte("date", cutoffDate30d))
       .collect();
-    const activeMachines = new Set(
-      activity.filter((event) => event.date <= today).map((event) => event.machineId),
+    const activityThroughToday = activity.filter((event) => event.date <= today);
+    const activeMachinesLast30d = new Set(activityThroughToday.map((event) => event.machineId));
+    const activeMachinesLast7d = new Set(
+      activityThroughToday
+        .filter((event) => event.date >= cutoffDate7d)
+        .map((event) => event.machineId),
     );
+    const activeDaysLast30d = new Map<string, number>();
+    const activeDaysLast7d = new Map<string, number>();
+    for (const event of activityThroughToday) {
+      activeDaysLast30d.set(event.machineId, (activeDaysLast30d.get(event.machineId) ?? 0) + 1);
+      if (event.date >= cutoffDate7d) {
+        activeDaysLast7d.set(event.machineId, (activeDaysLast7d.get(event.machineId) ?? 0) + 1);
+      }
+    }
+    const returningMachines = !stats
+      ? 0
+      : stats.returningMachinesVersion === RETURNING_MACHINES_VERSION
+        ? (stats.returningMachines ?? 0)
+        : countReturningMachinesFromActivity(
+            await ctx.db.query("analyticsMachineDailyActivity").collect(),
+          );
     return {
       uniqueMachines: stats?.uniqueMachines ?? 0,
-      returningMachines: stats?.returningMachines ?? 0,
+      returningMachines,
       trackedEvents: stats?.trackedMachineEvents ?? 0,
       newMachinesLast30d: daily
         .filter((event) => event.date <= today)
         .reduce((sum, event) => sum + (event.newMachines ?? 0), 0),
-      activeMachinesLast30d: activeMachines.size,
+      activeMachinesLast7d: activeMachinesLast7d.size,
+      activeMachinesLast30d: activeMachinesLast30d.size,
+      returningMachinesLast7d: countReturning(activeDaysLast7d),
+      returningMachinesLast30d: countReturning(activeDaysLast30d),
     };
   },
 });
 
-export const getRecentEvents = query({
+/**
+ * Product-level telemetry for roadmap decisions. The result contains only
+ * aggregate counters; anonymous machine identifiers and individual events are
+ * never exposed by this query.
+ */
+export const getProductInsights = internalQuery({
+  args: {},
+  returns: v.object({
+    totalEvents: v.number(),
+    decisionEvents: v.number(),
+    actions: distributionValidator,
+    statuses: distributionValidator,
+    modes: distributionValidator,
+    actionStatuses: distributionValidator,
+    actionModes: distributionValidator,
+    actionOutcomes: distributionValidator,
+    actionDurationBuckets: distributionValidator,
+    clients: distributionValidator,
+    sources: distributionValidator,
+    outcomes: distributionValidator,
+    runtimes: distributionValidator,
+    ciUsage: distributionValidator,
+    ciProviders: distributionValidator,
+    durationBuckets: distributionValidator,
+    fileCountBuckets: distributionValidator,
+    changedFileCountBuckets: distributionValidator,
+    capabilityCountBuckets: distributionValidator,
+    conflictCountBuckets: distributionValidator,
+    manualReviewCountBuckets: distributionValidator,
+    warningCountBuckets: distributionValidator,
+    issueCountBuckets: distributionValidator,
+    retryUsage: distributionValidator,
+    errorNames: distributionValidator,
+    failureStages: distributionValidator,
+    failureReasons: distributionValidator,
+    actionFailureStages: distributionValidator,
+    actionFailureReasons: distributionValidator,
+    setupFailureStats: distributionValidator,
+    setupOutcomes: distributionValidator,
+    installSelections: distributionValidator,
+    dimensions: v.record(v.string(), distributionValidator),
+  }),
+  handler: async (ctx) => {
+    const stats = await ctx.db.query("analyticsStats").first();
+    return {
+      totalEvents: stats?.totalEvents ?? 0,
+      decisionEvents: stats?.decisionEvents ?? 0,
+      actions: stats?.actions ?? {},
+      statuses: stats?.statuses ?? {},
+      modes: stats?.modes ?? {},
+      actionStatuses: stats?.actionStatuses ?? {},
+      actionModes: stats?.actionModes ?? {},
+      actionOutcomes: stats?.actionOutcomes ?? {},
+      actionDurationBuckets: stats?.actionDurationBuckets ?? {},
+      clients: stats?.clients ?? {},
+      sources: stats?.sources ?? {},
+      outcomes: stats?.outcomes ?? {},
+      runtimes: stats?.runtimes ?? {},
+      ciUsage: stats?.ciUsage ?? {},
+      ciProviders: stats?.ciProviders ?? {},
+      durationBuckets: stats?.durationBuckets ?? {},
+      fileCountBuckets: stats?.fileCountBuckets ?? {},
+      changedFileCountBuckets: stats?.changedFileCountBuckets ?? {},
+      capabilityCountBuckets: stats?.capabilityCountBuckets ?? {},
+      conflictCountBuckets: stats?.conflictCountBuckets ?? {},
+      manualReviewCountBuckets: stats?.manualReviewCountBuckets ?? {},
+      warningCountBuckets: stats?.warningCountBuckets ?? {},
+      issueCountBuckets: stats?.issueCountBuckets ?? {},
+      retryUsage: stats?.retryUsage ?? {},
+      errorNames: stats?.errorNames ?? {},
+      failureStages: stats?.failureStages ?? {},
+      failureReasons: stats?.failureReasons ?? {},
+      actionFailureStages: stats?.actionFailureStages ?? {},
+      actionFailureReasons: stats?.actionFailureReasons ?? {},
+      setupFailureStats: stats?.setupFailureStats ?? {},
+      setupOutcomes: stats?.setupOutcomes ?? {},
+      installSelections: stats?.installSelections ?? {},
+      dimensions: stats?.dimensions ?? {},
+    };
+  },
+});
+
+export const getRecentEvents = internalQuery({
   args: {},
   handler: async (ctx) => {
     const cutoff = Date.now() - 30 * 60 * 1000;
@@ -508,7 +929,7 @@ export const getRecentEvents = query({
   },
 });
 
-export const backfillStats = mutation({
+export const backfillStats = internalMutation({
   args: {},
   returns: v.object({
     totalProcessed: v.number(),
@@ -534,7 +955,7 @@ export const backfillStats = mutation({
     events.sort((a, b) => a._creationTime - b._creationTime);
 
     const stats = emptyStats();
-    const dailyCounts = new Map<string, { count: number; newMachines: number }>();
+    const dailyCounts = new Map<string, DailyStatsShape>();
     const machines = new Map<
       string,
       {
@@ -542,6 +963,7 @@ export const backfillStats = mutation({
         lastSeen: number;
         eventCount: number;
         platform?: string;
+        client?: string;
         lastCliVersion?: string;
       }
     >();
@@ -555,8 +977,8 @@ export const backfillStats = mutation({
       applyEvent(stats, { ...ev, creationTime: now } as AnalyticsEvent);
 
       const date = utcDate(now);
-      const daily = dailyCounts.get(date) ?? { count: 0, newMachines: 0 };
-      if (isCountedProject(ev)) daily.count += 1;
+      const daily = dailyCounts.get(date) ?? emptyDailyStats(date);
+      applyDailyEvent(daily, { ...ev, creationTime: now } as AnalyticsEvent);
 
       if (ev.machineId) {
         const activityKey = `${date}:${ev.machineId}`;
@@ -579,6 +1001,7 @@ export const backfillStats = mutation({
           machine.lastSeen = now;
           machine.eventCount += 1;
           machine.platform = ev.platform ?? machine.platform;
+          machine.client = ev.client ?? machine.client;
           machine.lastCliVersion = ev.cli_version ?? machine.lastCliVersion;
         } else {
           daily.newMachines += 1;
@@ -587,6 +1010,7 @@ export const backfillStats = mutation({
             lastSeen: now,
             eventCount: 1,
             platform: ev.platform,
+            client: ev.client,
             lastCliVersion: ev.cli_version,
           });
         }
@@ -595,13 +1019,22 @@ export const backfillStats = mutation({
     }
 
     stats.uniqueMachines = machines.size;
-    stats.returningMachines = [...machines.values()].filter((m) => m.eventCount > 1).length;
+    const activeDaysByMachine = new Map<string, number>();
+    for (const activity of machineActivity.values()) {
+      activeDaysByMachine.set(
+        activity.machineId,
+        (activeDaysByMachine.get(activity.machineId) ?? 0) + 1,
+      );
+    }
+    stats.returningMachines = [...activeDaysByMachine.values()].filter(
+      (activeDays) => activeDays > 1,
+    ).length;
     stats.trackedMachineEvents = [...machines.values()].reduce((sum, m) => sum + m.eventCount, 0);
     if (stats.totalEvents > 0) {
       await ctx.db.insert("analyticsStats", stats);
     }
-    for (const [date, { count, newMachines }] of dailyCounts) {
-      await ctx.db.insert("analyticsDailyStats", { date, count, newMachines });
+    for (const daily of dailyCounts.values()) {
+      await ctx.db.insert("analyticsDailyStats", daily);
     }
     for (const [machineId, machine] of machines) {
       await ctx.db.insert("analyticsMachines", { machineId, ...machine });

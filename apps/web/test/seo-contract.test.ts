@@ -4,14 +4,16 @@ import { describe, expect, it } from "bun:test";
 import { blogPostHead } from "../src/lib/blog/seo";
 import { docsPageHead } from "../src/lib/docs/seo";
 import { guidePageHead } from "../src/lib/guides/seo";
-import { generateLlmsTxt } from "../src/lib/llms";
+import {
+  generateDocsLlmsTxt,
+  generateLlmsFullTxt,
+  generateLlmsTxt,
+  generateMarkdownSitemap,
+} from "../src/lib/llms";
 import { OPTION_COUNT_LABEL } from "../src/lib/project-stats";
 import { NOINDEX_ROBOTS } from "../src/lib/robots";
 import { buildPageHead, canonicalUrl, getSiteJsonLd, SITE_NAME } from "../src/lib/seo";
-import {
-  generateSitemapXmlFromEntries,
-  getSitemapEntriesFromPages,
-} from "../src/lib/sitemap-core";
+import { generateSitemapXmlFromEntries, getSitemapEntriesFromPages } from "../src/lib/sitemap-core";
 
 function countUniqueOptions(categoryMatches: (category: string) => boolean) {
   const optionIds = new Set<string>();
@@ -81,10 +83,12 @@ describe("SEO contracts", () => {
     expect(paths).not.toContain("/stack");
     expect(paths).toContain("/stack/nextjs-hono-drizzle-better-auth");
     expect(paths).not.toContain("/analytics");
+    expect(paths).not.toContain("/telemetry");
     expect(xml).toContain(canonicalUrl("/docs/cli/create"));
     expect(xml).toContain(canonicalUrl("/guides/typescript/create-tanstack-start-project"));
     expect(xml).toContain(canonicalUrl("/stack/nextjs-hono-drizzle-better-auth"));
     expect(xml).not.toContain(canonicalUrl("/analytics"));
+    expect(xml).not.toContain(canonicalUrl("/telemetry"));
   });
 
   it("adds video discovery metadata when content declares an MP4", () => {
@@ -219,6 +223,11 @@ describe("SEO contracts", () => {
       rel: "canonical",
       href: canonicalUrl("/docs/cli/create"),
     });
+    expect(head.links).toContainEqual({
+      rel: "alternate",
+      type: "text/markdown",
+      href: canonicalUrl("/docs/cli/create.md"),
+    });
     expect(head.meta).toContainEqual({
       property: "og:url",
       content: canonicalUrl("/docs/cli/create"),
@@ -258,10 +267,66 @@ describe("SEO contracts", () => {
     });
 
     expect(llms).toContain(`${OPTION_COUNT_LABEL} options`);
-    expect(llms).toContain("https://better-fullstack.dev/guides/typescript/create-tanstack-start-project");
+    expect(llms).toContain(
+      "https://better-fullstack.dev/guides/typescript/create-tanstack-start-project",
+    );
     expect(llms).toContain("https://better-fullstack.dev/docs/ai/mcp-tools");
     expect(llms).toContain("## Stack Templates");
     expect(llms).toContain("https://better-fullstack.dev/stack/nextjs-hono-drizzle-better-auth");
+  });
+
+  it("generates scoped, full-corpus, and semantic Markdown indexes", () => {
+    const docsPages = [
+      {
+        url: "/docs/cli/update",
+        slug: ["cli", "update"],
+        frontmatter: {
+          title: "Update Projects",
+          description: "Safely update a generated project.",
+          updated: "2026-08-07",
+        },
+      },
+    ];
+    const guidePages = [
+      {
+        url: "/guides/typescript/example",
+        slug: ["typescript", "example"],
+        frontmatter: { title: "Example Guide", description: "A complete guide." },
+      },
+    ];
+    const blogPages = [
+      {
+        url: "/blog/example",
+        slug: ["example"],
+        frontmatter: { title: "Example Article", description: "An engineering article." },
+      },
+    ];
+
+    const scoped = generateDocsLlmsTxt(docsPages, {
+      cliVersion: "9.9.9",
+      generatedAt: "Aug 7, 2026",
+    });
+    const full = generateLlmsFullTxt({
+      docsPages,
+      guidePages,
+      blogPages,
+      rawDocsPages: {
+        "cli/update": "---\ntitle: Update Projects\n---\n\nUpdate body.",
+      },
+      rawGuidePages: { "typescript/example": "Guide body." },
+      rawBlogPosts: { example: "Article body." },
+    });
+    const sitemap = generateMarkdownSitemap({ docsPages, guidePages, blogPages });
+
+    expect(scoped).toContain("CLI version: 9.9.9");
+    expect(scoped).toContain("/docs/cli/update.md");
+    expect(full).toContain("Update body.");
+    expect(full).toContain("Guide body.");
+    expect(full).toContain("Article body.");
+    expect(full).not.toContain("title: Update Projects");
+    expect(sitemap).toContain("/docs/cli/update.md");
+    expect(sitemap).toContain("/guides/typescript/example.md");
+    expect(sitemap).toContain("/llms-full.txt");
   });
 
   it("uses existing manifest icon paths", async () => {

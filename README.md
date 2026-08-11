@@ -176,6 +176,8 @@ Got questions or feedback? Open a [GitHub issue](https://github.com/Marve10s/Bet
 
 If Better Fullstack saves you time, consider supporting:
 
+[![GitHub Sponsors](https://img.shields.io/badge/GitHub_Sponsors-Sponsor-EA4AAA?style=for-the-badge&logo=githubsponsors&logoColor=white)](https://github.com/sponsors/Marve10s)
+&nbsp;
 [![Patreon](https://img.shields.io/badge/Patreon-Support-F96854?style=for-the-badge&logo=patreon&logoColor=white)](https://www.patreon.com/c/marve10s)
 
 <br>

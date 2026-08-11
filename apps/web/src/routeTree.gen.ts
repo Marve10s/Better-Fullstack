@@ -8,511 +8,670 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as StackShareRouteImport } from './routes/$stackShare'
-import { Route as BenchmarkRouteImport } from './routes/benchmark'
-import { Route as CompareRouteImport } from './routes/compare'
-import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
-import { Route as McpRouteImport } from './routes/mcp'
-import { Route as NewRouteImport } from './routes/new'
-import { Route as RunRouteImport } from './routes/run'
-import { Route as RunBeforeYouCloneRouteImport } from './routes/run-before-you-clone'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as StackRouteImport } from './routes/stack'
-import { Route as TemplatesRouteImport } from './routes/templates'
-import { Route as ApiPreviewRouteImport } from './routes/api/preview'
-import { Route as ApiStatsRouteImport } from './routes/api/stats'
-import { Route as ApiVerifiedCombinationsRouteImport } from './routes/api/verified-combinations'
-import { Route as BlogIndexRouteImport } from './routes/blog/index'
-import { Route as BlogSplatRouteImport } from './routes/blog/$'
-import { Route as BlogChar123postChar125DotmdRouteImport } from './routes/blog/{$post}[.]md'
-import { Route as CompareSlugRouteImport } from './routes/compare_.$slug'
-import { Route as DocsIndexRouteImport } from './routes/docs/index'
-import { Route as DocsSplatRouteImport } from './routes/docs/$'
-import { Route as GuidesIndexRouteImport } from './routes/guides/index'
-import { Route as GuidesSplatRouteImport } from './routes/guides/$'
-import { Route as StackComboSlugRouteImport } from './routes/stack_.$comboSlug'
+import { Route as StackShareRouteImport } from "./routes/$stackShare";
+import { Route as rootRouteImport } from "./routes/__root";
+import { Route as ApiPreviewRouteImport } from "./routes/api/preview";
+import { Route as ApiStatsRouteImport } from "./routes/api/stats";
+import { Route as ApiVerifiedCombinationsRouteImport } from "./routes/api/verified-combinations";
+import { Route as BenchmarkRouteImport } from "./routes/benchmark";
+import { Route as BlogSplatRouteImport } from "./routes/blog/$";
+import { Route as BlogIndexRouteImport } from "./routes/blog/index";
+import { Route as BlogChar123postChar125DotmdRouteImport } from "./routes/blog/{$post}[.]md";
+import { Route as CompareRouteImport } from "./routes/compare";
+import { Route as CompareSlugRouteImport } from "./routes/compare_.$slug";
+import { Route as DocsSplatRouteImport } from "./routes/docs/$";
+import { Route as DocsIndexRouteImport } from "./routes/docs/index";
+import { Route as DocsLlmsDottxtRouteImport } from "./routes/docs/llms[.]txt";
+import { Route as DocsChar123Char125DotmdRouteImport } from "./routes/docs/{$}[.]md";
+import { Route as DocsDotmdRouteImport } from "./routes/docs[.]md";
+import { Route as GuidesSplatRouteImport } from "./routes/guides/$";
+import { Route as GuidesIndexRouteImport } from "./routes/guides/index";
+import { Route as GuidesChar123Char125DotmdRouteImport } from "./routes/guides/{$}[.]md";
+import { Route as GuidesDotmdRouteImport } from "./routes/guides[.]md";
+import { Route as IndexRouteImport } from "./routes/index";
+import { Route as LlmsFullDottxtRouteImport } from "./routes/llms-full[.]txt";
+import { Route as LlmsDottxtRouteImport } from "./routes/llms[.]txt";
+import { Route as McpRouteImport } from "./routes/mcp";
+import { Route as NewRouteImport } from "./routes/new";
+import { Route as RunRouteImport } from "./routes/run";
+import { Route as RunBeforeYouCloneRouteImport } from "./routes/run-before-you-clone";
+import { Route as SitemapDotmdRouteImport } from "./routes/sitemap[.]md";
+import { Route as SitemapDotxmlRouteImport } from "./routes/sitemap[.]xml";
+import { Route as StackRouteImport } from "./routes/stack";
+import { Route as StackComboSlugRouteImport } from "./routes/stack_.$comboSlug";
+import { Route as TelemetryRouteImport } from "./routes/telemetry";
+import { Route as TemplatesRouteImport } from "./routes/templates";
 
 const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+  id: "/",
+  path: "/",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const StackShareRoute = StackShareRouteImport.update({
-  id: '/$stackShare',
-  path: '/$stackShare',
+  id: "/$stackShare",
+  path: "/$stackShare",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const BenchmarkRoute = BenchmarkRouteImport.update({
-  id: '/benchmark',
-  path: '/benchmark',
+  id: "/benchmark",
+  path: "/benchmark",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const CompareRoute = CompareRouteImport.update({
-  id: '/compare',
-  path: '/compare',
+  id: "/compare",
+  path: "/compare",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
+const DocsDotmdRoute = DocsDotmdRouteImport.update({
+  id: "/docs.md",
+  path: "/docs.md",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const GuidesDotmdRoute = GuidesDotmdRouteImport.update({
+  id: "/guides.md",
+  path: "/guides.md",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const LlmsFullDottxtRoute = LlmsFullDottxtRouteImport.update({
+  id: "/llms-full.txt",
+  path: "/llms-full.txt",
+  getParentRoute: () => rootRouteImport,
+} as any);
 const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
-  id: '/llms.txt',
-  path: '/llms.txt',
+  id: "/llms.txt",
+  path: "/llms.txt",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const McpRoute = McpRouteImport.update({
-  id: '/mcp',
-  path: '/mcp',
+  id: "/mcp",
+  path: "/mcp",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const NewRoute = NewRouteImport.update({
-  id: '/new',
-  path: '/new',
+  id: "/new",
+  path: "/new",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const RunRoute = RunRouteImport.update({
-  id: '/run',
-  path: '/run',
+  id: "/run",
+  path: "/run",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const RunBeforeYouCloneRoute = RunBeforeYouCloneRouteImport.update({
-  id: '/run-before-you-clone',
-  path: '/run-before-you-clone',
+  id: "/run-before-you-clone",
+  path: "/run-before-you-clone",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
+const SitemapDotmdRoute = SitemapDotmdRouteImport.update({
+  id: "/sitemap.md",
+  path: "/sitemap.md",
+  getParentRoute: () => rootRouteImport,
+} as any);
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
+  id: "/sitemap.xml",
+  path: "/sitemap.xml",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const StackRoute = StackRouteImport.update({
-  id: '/stack',
-  path: '/stack',
+  id: "/stack",
+  path: "/stack",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
+const TelemetryRoute = TelemetryRouteImport.update({
+  id: "/telemetry",
+  path: "/telemetry",
+  getParentRoute: () => rootRouteImport,
+} as any);
 const TemplatesRoute = TemplatesRouteImport.update({
-  id: '/templates',
-  path: '/templates',
+  id: "/templates",
+  path: "/templates",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ApiPreviewRoute = ApiPreviewRouteImport.update({
-  id: '/api/preview',
-  path: '/api/preview',
+  id: "/api/preview",
+  path: "/api/preview",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ApiStatsRoute = ApiStatsRouteImport.update({
-  id: '/api/stats',
-  path: '/api/stats',
+  id: "/api/stats",
+  path: "/api/stats",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ApiVerifiedCombinationsRoute = ApiVerifiedCombinationsRouteImport.update({
-  id: '/api/verified-combinations',
-  path: '/api/verified-combinations',
+  id: "/api/verified-combinations",
+  path: "/api/verified-combinations",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const BlogIndexRoute = BlogIndexRouteImport.update({
-  id: '/blog/',
-  path: '/blog/',
+  id: "/blog/",
+  path: "/blog/",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const BlogSplatRoute = BlogSplatRouteImport.update({
-  id: '/blog/$',
-  path: '/blog/$',
+  id: "/blog/$",
+  path: "/blog/$",
   getParentRoute: () => rootRouteImport,
-} as any)
-const BlogChar123postChar125DotmdRoute =
-  BlogChar123postChar125DotmdRouteImport.update({
-    id: '/blog/{$post}.md',
-    path: '/blog/{$post}.md',
-    getParentRoute: () => rootRouteImport,
-  } as any)
+} as any);
+const BlogChar123postChar125DotmdRoute = BlogChar123postChar125DotmdRouteImport.update({
+  id: "/blog/{$post}.md",
+  path: "/blog/{$post}.md",
+  getParentRoute: () => rootRouteImport,
+} as any);
 const CompareSlugRoute = CompareSlugRouteImport.update({
-  id: '/compare_/$slug',
-  path: '/compare/$slug',
+  id: "/compare_/$slug",
+  path: "/compare/$slug",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const DocsIndexRoute = DocsIndexRouteImport.update({
-  id: '/docs/',
-  path: '/docs/',
+  id: "/docs/",
+  path: "/docs/",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const DocsSplatRoute = DocsSplatRouteImport.update({
-  id: '/docs/$',
-  path: '/docs/$',
+  id: "/docs/$",
+  path: "/docs/$",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
+const DocsLlmsDottxtRoute = DocsLlmsDottxtRouteImport.update({
+  id: "/docs/llms.txt",
+  path: "/docs/llms.txt",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const DocsChar123Char125DotmdRoute = DocsChar123Char125DotmdRouteImport.update({
+  id: "/docs/{$}.md",
+  path: "/docs/{$}.md",
+  getParentRoute: () => rootRouteImport,
+} as any);
 const GuidesIndexRoute = GuidesIndexRouteImport.update({
-  id: '/guides/',
-  path: '/guides/',
+  id: "/guides/",
+  path: "/guides/",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const GuidesSplatRoute = GuidesSplatRouteImport.update({
-  id: '/guides/$',
-  path: '/guides/$',
+  id: "/guides/$",
+  path: "/guides/$",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
+const GuidesChar123Char125DotmdRoute = GuidesChar123Char125DotmdRouteImport.update({
+  id: "/guides/{$}.md",
+  path: "/guides/{$}.md",
+  getParentRoute: () => rootRouteImport,
+} as any);
 const StackComboSlugRoute = StackComboSlugRouteImport.update({
-  id: '/stack_/$comboSlug',
-  path: '/stack/$comboSlug',
+  id: "/stack_/$comboSlug",
+  path: "/stack/$comboSlug",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/$stackShare': typeof StackShareRoute
-  '/benchmark': typeof BenchmarkRoute
-  '/compare': typeof CompareRoute
-  '/llms.txt': typeof LlmsDottxtRoute
-  '/mcp': typeof McpRoute
-  '/new': typeof NewRoute
-  '/run': typeof RunRoute
-  '/run-before-you-clone': typeof RunBeforeYouCloneRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/stack': typeof StackRoute
-  '/templates': typeof TemplatesRoute
-  '/api/preview': typeof ApiPreviewRoute
-  '/api/stats': typeof ApiStatsRoute
-  '/api/verified-combinations': typeof ApiVerifiedCombinationsRoute
-  '/blog/$': typeof BlogSplatRoute
-  '/blog/{$post}.md': typeof BlogChar123postChar125DotmdRoute
-  '/compare/$slug': typeof CompareSlugRoute
-  '/docs/$': typeof DocsSplatRoute
-  '/guides/$': typeof GuidesSplatRoute
-  '/stack/$comboSlug': typeof StackComboSlugRoute
-  '/blog/': typeof BlogIndexRoute
-  '/docs/': typeof DocsIndexRoute
-  '/guides/': typeof GuidesIndexRoute
+  "/": typeof IndexRoute;
+  "/$stackShare": typeof StackShareRoute;
+  "/benchmark": typeof BenchmarkRoute;
+  "/compare": typeof CompareRoute;
+  "/docs.md": typeof DocsDotmdRoute;
+  "/guides.md": typeof GuidesDotmdRoute;
+  "/llms-full.txt": typeof LlmsFullDottxtRoute;
+  "/llms.txt": typeof LlmsDottxtRoute;
+  "/mcp": typeof McpRoute;
+  "/new": typeof NewRoute;
+  "/run": typeof RunRoute;
+  "/run-before-you-clone": typeof RunBeforeYouCloneRoute;
+  "/sitemap.md": typeof SitemapDotmdRoute;
+  "/sitemap.xml": typeof SitemapDotxmlRoute;
+  "/stack": typeof StackRoute;
+  "/telemetry": typeof TelemetryRoute;
+  "/templates": typeof TemplatesRoute;
+  "/api/preview": typeof ApiPreviewRoute;
+  "/api/stats": typeof ApiStatsRoute;
+  "/api/verified-combinations": typeof ApiVerifiedCombinationsRoute;
+  "/blog/$": typeof BlogSplatRoute;
+  "/blog/{$post}.md": typeof BlogChar123postChar125DotmdRoute;
+  "/compare/$slug": typeof CompareSlugRoute;
+  "/docs/$": typeof DocsSplatRoute;
+  "/docs/llms.txt": typeof DocsLlmsDottxtRoute;
+  "/docs/{$}.md": typeof DocsChar123Char125DotmdRoute;
+  "/guides/$": typeof GuidesSplatRoute;
+  "/guides/{$}.md": typeof GuidesChar123Char125DotmdRoute;
+  "/stack/$comboSlug": typeof StackComboSlugRoute;
+  "/blog/": typeof BlogIndexRoute;
+  "/docs/": typeof DocsIndexRoute;
+  "/guides/": typeof GuidesIndexRoute;
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/$stackShare': typeof StackShareRoute
-  '/benchmark': typeof BenchmarkRoute
-  '/compare': typeof CompareRoute
-  '/llms.txt': typeof LlmsDottxtRoute
-  '/mcp': typeof McpRoute
-  '/new': typeof NewRoute
-  '/run': typeof RunRoute
-  '/run-before-you-clone': typeof RunBeforeYouCloneRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/stack': typeof StackRoute
-  '/templates': typeof TemplatesRoute
-  '/api/preview': typeof ApiPreviewRoute
-  '/api/stats': typeof ApiStatsRoute
-  '/api/verified-combinations': typeof ApiVerifiedCombinationsRoute
-  '/blog/$': typeof BlogSplatRoute
-  '/blog/{$post}.md': typeof BlogChar123postChar125DotmdRoute
-  '/compare/$slug': typeof CompareSlugRoute
-  '/docs/$': typeof DocsSplatRoute
-  '/guides/$': typeof GuidesSplatRoute
-  '/stack/$comboSlug': typeof StackComboSlugRoute
-  '/blog': typeof BlogIndexRoute
-  '/docs': typeof DocsIndexRoute
-  '/guides': typeof GuidesIndexRoute
+  "/": typeof IndexRoute;
+  "/$stackShare": typeof StackShareRoute;
+  "/benchmark": typeof BenchmarkRoute;
+  "/compare": typeof CompareRoute;
+  "/docs.md": typeof DocsDotmdRoute;
+  "/guides.md": typeof GuidesDotmdRoute;
+  "/llms-full.txt": typeof LlmsFullDottxtRoute;
+  "/llms.txt": typeof LlmsDottxtRoute;
+  "/mcp": typeof McpRoute;
+  "/new": typeof NewRoute;
+  "/run": typeof RunRoute;
+  "/run-before-you-clone": typeof RunBeforeYouCloneRoute;
+  "/sitemap.md": typeof SitemapDotmdRoute;
+  "/sitemap.xml": typeof SitemapDotxmlRoute;
+  "/stack": typeof StackRoute;
+  "/telemetry": typeof TelemetryRoute;
+  "/templates": typeof TemplatesRoute;
+  "/api/preview": typeof ApiPreviewRoute;
+  "/api/stats": typeof ApiStatsRoute;
+  "/api/verified-combinations": typeof ApiVerifiedCombinationsRoute;
+  "/blog/$": typeof BlogSplatRoute;
+  "/blog/{$post}.md": typeof BlogChar123postChar125DotmdRoute;
+  "/compare/$slug": typeof CompareSlugRoute;
+  "/docs/$": typeof DocsSplatRoute;
+  "/docs/llms.txt": typeof DocsLlmsDottxtRoute;
+  "/docs/{$}.md": typeof DocsChar123Char125DotmdRoute;
+  "/guides/$": typeof GuidesSplatRoute;
+  "/guides/{$}.md": typeof GuidesChar123Char125DotmdRoute;
+  "/stack/$comboSlug": typeof StackComboSlugRoute;
+  "/blog": typeof BlogIndexRoute;
+  "/docs": typeof DocsIndexRoute;
+  "/guides": typeof GuidesIndexRoute;
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/$stackShare': typeof StackShareRoute
-  '/benchmark': typeof BenchmarkRoute
-  '/compare': typeof CompareRoute
-  '/llms.txt': typeof LlmsDottxtRoute
-  '/mcp': typeof McpRoute
-  '/new': typeof NewRoute
-  '/run': typeof RunRoute
-  '/run-before-you-clone': typeof RunBeforeYouCloneRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/stack': typeof StackRoute
-  '/templates': typeof TemplatesRoute
-  '/api/preview': typeof ApiPreviewRoute
-  '/api/stats': typeof ApiStatsRoute
-  '/api/verified-combinations': typeof ApiVerifiedCombinationsRoute
-  '/blog/$': typeof BlogSplatRoute
-  '/blog/{$post}.md': typeof BlogChar123postChar125DotmdRoute
-  '/compare_/$slug': typeof CompareSlugRoute
-  '/docs/$': typeof DocsSplatRoute
-  '/guides/$': typeof GuidesSplatRoute
-  '/stack_/$comboSlug': typeof StackComboSlugRoute
-  '/blog/': typeof BlogIndexRoute
-  '/docs/': typeof DocsIndexRoute
-  '/guides/': typeof GuidesIndexRoute
+  __root__: typeof rootRouteImport;
+  "/": typeof IndexRoute;
+  "/$stackShare": typeof StackShareRoute;
+  "/benchmark": typeof BenchmarkRoute;
+  "/compare": typeof CompareRoute;
+  "/docs.md": typeof DocsDotmdRoute;
+  "/guides.md": typeof GuidesDotmdRoute;
+  "/llms-full.txt": typeof LlmsFullDottxtRoute;
+  "/llms.txt": typeof LlmsDottxtRoute;
+  "/mcp": typeof McpRoute;
+  "/new": typeof NewRoute;
+  "/run": typeof RunRoute;
+  "/run-before-you-clone": typeof RunBeforeYouCloneRoute;
+  "/sitemap.md": typeof SitemapDotmdRoute;
+  "/sitemap.xml": typeof SitemapDotxmlRoute;
+  "/stack": typeof StackRoute;
+  "/telemetry": typeof TelemetryRoute;
+  "/templates": typeof TemplatesRoute;
+  "/api/preview": typeof ApiPreviewRoute;
+  "/api/stats": typeof ApiStatsRoute;
+  "/api/verified-combinations": typeof ApiVerifiedCombinationsRoute;
+  "/blog/$": typeof BlogSplatRoute;
+  "/blog/{$post}.md": typeof BlogChar123postChar125DotmdRoute;
+  "/compare_/$slug": typeof CompareSlugRoute;
+  "/docs/$": typeof DocsSplatRoute;
+  "/docs/llms.txt": typeof DocsLlmsDottxtRoute;
+  "/docs/{$}.md": typeof DocsChar123Char125DotmdRoute;
+  "/guides/$": typeof GuidesSplatRoute;
+  "/guides/{$}.md": typeof GuidesChar123Char125DotmdRoute;
+  "/stack_/$comboSlug": typeof StackComboSlugRoute;
+  "/blog/": typeof BlogIndexRoute;
+  "/docs/": typeof DocsIndexRoute;
+  "/guides/": typeof GuidesIndexRoute;
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
+  fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
-    | '/'
-    | '/$stackShare'
-    | '/benchmark'
-    | '/compare'
-    | '/llms.txt'
-    | '/mcp'
-    | '/new'
-    | '/run'
-    | '/run-before-you-clone'
-    | '/sitemap.xml'
-    | '/stack'
-    | '/templates'
-    | '/api/preview'
-    | '/api/stats'
-    | '/api/verified-combinations'
-    | '/blog/$'
-    | '/blog/{$post}.md'
-    | '/compare/$slug'
-    | '/docs/$'
-    | '/guides/$'
-    | '/stack/$comboSlug'
-    | '/blog/'
-    | '/docs/'
-    | '/guides/'
-  fileRoutesByTo: FileRoutesByTo
+    | "/"
+    | "/$stackShare"
+    | "/benchmark"
+    | "/compare"
+    | "/docs.md"
+    | "/guides.md"
+    | "/llms-full.txt"
+    | "/llms.txt"
+    | "/mcp"
+    | "/new"
+    | "/run"
+    | "/run-before-you-clone"
+    | "/sitemap.md"
+    | "/sitemap.xml"
+    | "/stack"
+    | "/telemetry"
+    | "/templates"
+    | "/api/preview"
+    | "/api/stats"
+    | "/api/verified-combinations"
+    | "/blog/$"
+    | "/blog/{$post}.md"
+    | "/compare/$slug"
+    | "/docs/$"
+    | "/docs/llms.txt"
+    | "/docs/{$}.md"
+    | "/guides/$"
+    | "/guides/{$}.md"
+    | "/stack/$comboSlug"
+    | "/blog/"
+    | "/docs/"
+    | "/guides/";
+  fileRoutesByTo: FileRoutesByTo;
   to:
-    | '/'
-    | '/$stackShare'
-    | '/benchmark'
-    | '/compare'
-    | '/llms.txt'
-    | '/mcp'
-    | '/new'
-    | '/run'
-    | '/run-before-you-clone'
-    | '/sitemap.xml'
-    | '/stack'
-    | '/templates'
-    | '/api/preview'
-    | '/api/stats'
-    | '/api/verified-combinations'
-    | '/blog/$'
-    | '/blog/{$post}.md'
-    | '/compare/$slug'
-    | '/docs/$'
-    | '/guides/$'
-    | '/stack/$comboSlug'
-    | '/blog'
-    | '/docs'
-    | '/guides'
+    | "/"
+    | "/$stackShare"
+    | "/benchmark"
+    | "/compare"
+    | "/docs.md"
+    | "/guides.md"
+    | "/llms-full.txt"
+    | "/llms.txt"
+    | "/mcp"
+    | "/new"
+    | "/run"
+    | "/run-before-you-clone"
+    | "/sitemap.md"
+    | "/sitemap.xml"
+    | "/stack"
+    | "/telemetry"
+    | "/templates"
+    | "/api/preview"
+    | "/api/stats"
+    | "/api/verified-combinations"
+    | "/blog/$"
+    | "/blog/{$post}.md"
+    | "/compare/$slug"
+    | "/docs/$"
+    | "/docs/llms.txt"
+    | "/docs/{$}.md"
+    | "/guides/$"
+    | "/guides/{$}.md"
+    | "/stack/$comboSlug"
+    | "/blog"
+    | "/docs"
+    | "/guides";
   id:
-    | '__root__'
-    | '/'
-    | '/$stackShare'
-    | '/benchmark'
-    | '/compare'
-    | '/llms.txt'
-    | '/mcp'
-    | '/new'
-    | '/run'
-    | '/run-before-you-clone'
-    | '/sitemap.xml'
-    | '/stack'
-    | '/templates'
-    | '/api/preview'
-    | '/api/stats'
-    | '/api/verified-combinations'
-    | '/blog/$'
-    | '/blog/{$post}.md'
-    | '/compare_/$slug'
-    | '/docs/$'
-    | '/guides/$'
-    | '/stack_/$comboSlug'
-    | '/blog/'
-    | '/docs/'
-    | '/guides/'
-  fileRoutesById: FileRoutesById
+    | "__root__"
+    | "/"
+    | "/$stackShare"
+    | "/benchmark"
+    | "/compare"
+    | "/docs.md"
+    | "/guides.md"
+    | "/llms-full.txt"
+    | "/llms.txt"
+    | "/mcp"
+    | "/new"
+    | "/run"
+    | "/run-before-you-clone"
+    | "/sitemap.md"
+    | "/sitemap.xml"
+    | "/stack"
+    | "/telemetry"
+    | "/templates"
+    | "/api/preview"
+    | "/api/stats"
+    | "/api/verified-combinations"
+    | "/blog/$"
+    | "/blog/{$post}.md"
+    | "/compare_/$slug"
+    | "/docs/$"
+    | "/docs/llms.txt"
+    | "/docs/{$}.md"
+    | "/guides/$"
+    | "/guides/{$}.md"
+    | "/stack_/$comboSlug"
+    | "/blog/"
+    | "/docs/"
+    | "/guides/";
+  fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  StackShareRoute: typeof StackShareRoute
-  BenchmarkRoute: typeof BenchmarkRoute
-  CompareRoute: typeof CompareRoute
-  LlmsDottxtRoute: typeof LlmsDottxtRoute
-  McpRoute: typeof McpRoute
-  NewRoute: typeof NewRoute
-  RunRoute: typeof RunRoute
-  RunBeforeYouCloneRoute: typeof RunBeforeYouCloneRoute
-  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  StackRoute: typeof StackRoute
-  TemplatesRoute: typeof TemplatesRoute
-  ApiPreviewRoute: typeof ApiPreviewRoute
-  ApiStatsRoute: typeof ApiStatsRoute
-  ApiVerifiedCombinationsRoute: typeof ApiVerifiedCombinationsRoute
-  BlogSplatRoute: typeof BlogSplatRoute
-  BlogChar123postChar125DotmdRoute: typeof BlogChar123postChar125DotmdRoute
-  CompareSlugRoute: typeof CompareSlugRoute
-  DocsSplatRoute: typeof DocsSplatRoute
-  GuidesSplatRoute: typeof GuidesSplatRoute
-  StackComboSlugRoute: typeof StackComboSlugRoute
-  BlogIndexRoute: typeof BlogIndexRoute
-  DocsIndexRoute: typeof DocsIndexRoute
-  GuidesIndexRoute: typeof GuidesIndexRoute
+  IndexRoute: typeof IndexRoute;
+  StackShareRoute: typeof StackShareRoute;
+  BenchmarkRoute: typeof BenchmarkRoute;
+  CompareRoute: typeof CompareRoute;
+  DocsDotmdRoute: typeof DocsDotmdRoute;
+  GuidesDotmdRoute: typeof GuidesDotmdRoute;
+  LlmsFullDottxtRoute: typeof LlmsFullDottxtRoute;
+  LlmsDottxtRoute: typeof LlmsDottxtRoute;
+  McpRoute: typeof McpRoute;
+  NewRoute: typeof NewRoute;
+  RunRoute: typeof RunRoute;
+  RunBeforeYouCloneRoute: typeof RunBeforeYouCloneRoute;
+  SitemapDotmdRoute: typeof SitemapDotmdRoute;
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute;
+  StackRoute: typeof StackRoute;
+  TelemetryRoute: typeof TelemetryRoute;
+  TemplatesRoute: typeof TemplatesRoute;
+  ApiPreviewRoute: typeof ApiPreviewRoute;
+  ApiStatsRoute: typeof ApiStatsRoute;
+  ApiVerifiedCombinationsRoute: typeof ApiVerifiedCombinationsRoute;
+  BlogSplatRoute: typeof BlogSplatRoute;
+  BlogChar123postChar125DotmdRoute: typeof BlogChar123postChar125DotmdRoute;
+  CompareSlugRoute: typeof CompareSlugRoute;
+  DocsSplatRoute: typeof DocsSplatRoute;
+  DocsLlmsDottxtRoute: typeof DocsLlmsDottxtRoute;
+  DocsChar123Char125DotmdRoute: typeof DocsChar123Char125DotmdRoute;
+  GuidesSplatRoute: typeof GuidesSplatRoute;
+  GuidesChar123Char125DotmdRoute: typeof GuidesChar123Char125DotmdRoute;
+  StackComboSlugRoute: typeof StackComboSlugRoute;
+  BlogIndexRoute: typeof BlogIndexRoute;
+  DocsIndexRoute: typeof DocsIndexRoute;
+  GuidesIndexRoute: typeof GuidesIndexRoute;
 }
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/$stackShare': {
-      id: '/$stackShare'
-      path: '/$stackShare'
-      fullPath: '/$stackShare'
-      preLoaderRoute: typeof StackShareRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/benchmark': {
-      id: '/benchmark'
-      path: '/benchmark'
-      fullPath: '/benchmark'
-      preLoaderRoute: typeof BenchmarkRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/compare': {
-      id: '/compare'
-      path: '/compare'
-      fullPath: '/compare'
-      preLoaderRoute: typeof CompareRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/llms.txt': {
-      id: '/llms.txt'
-      path: '/llms.txt'
-      fullPath: '/llms.txt'
-      preLoaderRoute: typeof LlmsDottxtRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mcp': {
-      id: '/mcp'
-      path: '/mcp'
-      fullPath: '/mcp'
-      preLoaderRoute: typeof McpRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/new': {
-      id: '/new'
-      path: '/new'
-      fullPath: '/new'
-      preLoaderRoute: typeof NewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/run': {
-      id: '/run'
-      path: '/run'
-      fullPath: '/run'
-      preLoaderRoute: typeof RunRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/run-before-you-clone': {
-      id: '/run-before-you-clone'
-      path: '/run-before-you-clone'
-      fullPath: '/run-before-you-clone'
-      preLoaderRoute: typeof RunBeforeYouCloneRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/stack': {
-      id: '/stack'
-      path: '/stack'
-      fullPath: '/stack'
-      preLoaderRoute: typeof StackRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/templates': {
-      id: '/templates'
-      path: '/templates'
-      fullPath: '/templates'
-      preLoaderRoute: typeof TemplatesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/preview': {
-      id: '/api/preview'
-      path: '/api/preview'
-      fullPath: '/api/preview'
-      preLoaderRoute: typeof ApiPreviewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/stats': {
-      id: '/api/stats'
-      path: '/api/stats'
-      fullPath: '/api/stats'
-      preLoaderRoute: typeof ApiStatsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/verified-combinations': {
-      id: '/api/verified-combinations'
-      path: '/api/verified-combinations'
-      fullPath: '/api/verified-combinations'
-      preLoaderRoute: typeof ApiVerifiedCombinationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/blog/': {
-      id: '/blog/'
-      path: '/blog'
-      fullPath: '/blog/'
-      preLoaderRoute: typeof BlogIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/blog/$': {
-      id: '/blog/$'
-      path: '/blog/$'
-      fullPath: '/blog/$'
-      preLoaderRoute: typeof BlogSplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/blog/{$post}.md': {
-      id: '/blog/{$post}.md'
-      path: '/blog/{$post}.md'
-      fullPath: '/blog/{$post}.md'
-      preLoaderRoute: typeof BlogChar123postChar125DotmdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/compare_/$slug': {
-      id: '/compare_/$slug'
-      path: '/compare/$slug'
-      fullPath: '/compare/$slug'
-      preLoaderRoute: typeof CompareSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/': {
-      id: '/docs/'
-      path: '/docs'
-      fullPath: '/docs/'
-      preLoaderRoute: typeof DocsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/$': {
-      id: '/docs/$'
-      path: '/docs/$'
-      fullPath: '/docs/$'
-      preLoaderRoute: typeof DocsSplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/guides/': {
-      id: '/guides/'
-      path: '/guides'
-      fullPath: '/guides/'
-      preLoaderRoute: typeof GuidesIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/guides/$': {
-      id: '/guides/$'
-      path: '/guides/$'
-      fullPath: '/guides/$'
-      preLoaderRoute: typeof GuidesSplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/stack_/$comboSlug': {
-      id: '/stack_/$comboSlug'
-      path: '/stack/$comboSlug'
-      fullPath: '/stack/$comboSlug'
-      preLoaderRoute: typeof StackComboSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+    "/": {
+      id: "/";
+      path: "/";
+      fullPath: "/";
+      preLoaderRoute: typeof IndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/$stackShare": {
+      id: "/$stackShare";
+      path: "/$stackShare";
+      fullPath: "/$stackShare";
+      preLoaderRoute: typeof StackShareRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/benchmark": {
+      id: "/benchmark";
+      path: "/benchmark";
+      fullPath: "/benchmark";
+      preLoaderRoute: typeof BenchmarkRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/compare": {
+      id: "/compare";
+      path: "/compare";
+      fullPath: "/compare";
+      preLoaderRoute: typeof CompareRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/docs.md": {
+      id: "/docs.md";
+      path: "/docs.md";
+      fullPath: "/docs.md";
+      preLoaderRoute: typeof DocsDotmdRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/guides.md": {
+      id: "/guides.md";
+      path: "/guides.md";
+      fullPath: "/guides.md";
+      preLoaderRoute: typeof GuidesDotmdRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/llms-full.txt": {
+      id: "/llms-full.txt";
+      path: "/llms-full.txt";
+      fullPath: "/llms-full.txt";
+      preLoaderRoute: typeof LlmsFullDottxtRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/llms.txt": {
+      id: "/llms.txt";
+      path: "/llms.txt";
+      fullPath: "/llms.txt";
+      preLoaderRoute: typeof LlmsDottxtRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/mcp": {
+      id: "/mcp";
+      path: "/mcp";
+      fullPath: "/mcp";
+      preLoaderRoute: typeof McpRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/new": {
+      id: "/new";
+      path: "/new";
+      fullPath: "/new";
+      preLoaderRoute: typeof NewRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/run": {
+      id: "/run";
+      path: "/run";
+      fullPath: "/run";
+      preLoaderRoute: typeof RunRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/run-before-you-clone": {
+      id: "/run-before-you-clone";
+      path: "/run-before-you-clone";
+      fullPath: "/run-before-you-clone";
+      preLoaderRoute: typeof RunBeforeYouCloneRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/sitemap.md": {
+      id: "/sitemap.md";
+      path: "/sitemap.md";
+      fullPath: "/sitemap.md";
+      preLoaderRoute: typeof SitemapDotmdRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/sitemap.xml": {
+      id: "/sitemap.xml";
+      path: "/sitemap.xml";
+      fullPath: "/sitemap.xml";
+      preLoaderRoute: typeof SitemapDotxmlRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/stack": {
+      id: "/stack";
+      path: "/stack";
+      fullPath: "/stack";
+      preLoaderRoute: typeof StackRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/telemetry": {
+      id: "/telemetry";
+      path: "/telemetry";
+      fullPath: "/telemetry";
+      preLoaderRoute: typeof TelemetryRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/templates": {
+      id: "/templates";
+      path: "/templates";
+      fullPath: "/templates";
+      preLoaderRoute: typeof TemplatesRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/api/preview": {
+      id: "/api/preview";
+      path: "/api/preview";
+      fullPath: "/api/preview";
+      preLoaderRoute: typeof ApiPreviewRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/api/stats": {
+      id: "/api/stats";
+      path: "/api/stats";
+      fullPath: "/api/stats";
+      preLoaderRoute: typeof ApiStatsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/api/verified-combinations": {
+      id: "/api/verified-combinations";
+      path: "/api/verified-combinations";
+      fullPath: "/api/verified-combinations";
+      preLoaderRoute: typeof ApiVerifiedCombinationsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/blog/": {
+      id: "/blog/";
+      path: "/blog";
+      fullPath: "/blog/";
+      preLoaderRoute: typeof BlogIndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/blog/$": {
+      id: "/blog/$";
+      path: "/blog/$";
+      fullPath: "/blog/$";
+      preLoaderRoute: typeof BlogSplatRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/blog/{$post}.md": {
+      id: "/blog/{$post}.md";
+      path: "/blog/{$post}.md";
+      fullPath: "/blog/{$post}.md";
+      preLoaderRoute: typeof BlogChar123postChar125DotmdRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/compare_/$slug": {
+      id: "/compare_/$slug";
+      path: "/compare/$slug";
+      fullPath: "/compare/$slug";
+      preLoaderRoute: typeof CompareSlugRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/docs/": {
+      id: "/docs/";
+      path: "/docs";
+      fullPath: "/docs/";
+      preLoaderRoute: typeof DocsIndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/docs/$": {
+      id: "/docs/$";
+      path: "/docs/$";
+      fullPath: "/docs/$";
+      preLoaderRoute: typeof DocsSplatRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/docs/llms.txt": {
+      id: "/docs/llms.txt";
+      path: "/docs/llms.txt";
+      fullPath: "/docs/llms.txt";
+      preLoaderRoute: typeof DocsLlmsDottxtRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/docs/{$}.md": {
+      id: "/docs/{$}.md";
+      path: "/docs/{$}.md";
+      fullPath: "/docs/{$}.md";
+      preLoaderRoute: typeof DocsChar123Char125DotmdRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/guides/": {
+      id: "/guides/";
+      path: "/guides";
+      fullPath: "/guides/";
+      preLoaderRoute: typeof GuidesIndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/guides/$": {
+      id: "/guides/$";
+      path: "/guides/$";
+      fullPath: "/guides/$";
+      preLoaderRoute: typeof GuidesSplatRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/guides/{$}.md": {
+      id: "/guides/{$}.md";
+      path: "/guides/{$}.md";
+      fullPath: "/guides/{$}.md";
+      preLoaderRoute: typeof GuidesChar123Char125DotmdRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/stack_/$comboSlug": {
+      id: "/stack_/$comboSlug";
+      path: "/stack/$comboSlug";
+      fullPath: "/stack/$comboSlug";
+      preLoaderRoute: typeof StackComboSlugRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
   }
 }
 
@@ -521,13 +680,18 @@ const rootRouteChildren: RootRouteChildren = {
   StackShareRoute: StackShareRoute,
   BenchmarkRoute: BenchmarkRoute,
   CompareRoute: CompareRoute,
+  DocsDotmdRoute: DocsDotmdRoute,
+  GuidesDotmdRoute: GuidesDotmdRoute,
+  LlmsFullDottxtRoute: LlmsFullDottxtRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
   McpRoute: McpRoute,
   NewRoute: NewRoute,
   RunRoute: RunRoute,
   RunBeforeYouCloneRoute: RunBeforeYouCloneRoute,
+  SitemapDotmdRoute: SitemapDotmdRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StackRoute: StackRoute,
+  TelemetryRoute: TelemetryRoute,
   TemplatesRoute: TemplatesRoute,
   ApiPreviewRoute: ApiPreviewRoute,
   ApiStatsRoute: ApiStatsRoute,
@@ -536,21 +700,25 @@ const rootRouteChildren: RootRouteChildren = {
   BlogChar123postChar125DotmdRoute: BlogChar123postChar125DotmdRoute,
   CompareSlugRoute: CompareSlugRoute,
   DocsSplatRoute: DocsSplatRoute,
+  DocsLlmsDottxtRoute: DocsLlmsDottxtRoute,
+  DocsChar123Char125DotmdRoute: DocsChar123Char125DotmdRoute,
   GuidesSplatRoute: GuidesSplatRoute,
+  GuidesChar123Char125DotmdRoute: GuidesChar123Char125DotmdRoute,
   StackComboSlugRoute: StackComboSlugRoute,
   BlogIndexRoute: BlogIndexRoute,
   DocsIndexRoute: DocsIndexRoute,
   GuidesIndexRoute: GuidesIndexRoute,
-}
+};
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+  ._addFileTypes<FileRouteTypes>();
 
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
+import type { createStart } from "@tanstack/react-start";
+
+import type { getRouter } from "./router.tsx";
+declare module "@tanstack/react-start" {
   interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
+    ssr: true;
+    router: Awaited<ReturnType<typeof getRouter>>;
   }
 }

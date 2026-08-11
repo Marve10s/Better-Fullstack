@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
-import { create, createVirtual } from "../src/index";
 import { DEFAULT_CONFIG } from "../src/constants";
+import { create, createVirtual } from "../src/index";
 import { gatherConfig } from "../src/prompts/config-prompts";
 import {
   findVirtualFile as findFile,
@@ -84,7 +84,7 @@ describe("mobile native scaffolding", () => {
 
     expect(pkg.main).toBe("index.js");
     expect(pkg.dependencies).toMatchObject({
-      "@react-navigation/native-stack": "^7.18.6",
+      "@react-navigation/native-stack": "^7.18.8",
       "@gluestack-ui/themed": "^1.1.73",
       "react-native-mmkv": "^4.3.2",
       "expo-notifications": "^56.0.18",
@@ -98,7 +98,9 @@ describe("mobile native scaffolding", () => {
     expect(appConfig.expo.updates.url).toBe("https://u.expo.dev/your-eas-project-id");
     expect(appConfig.expo.extra.eas.projectId).toBe("your-eas-project-id");
     expect(getFile(root, "apps/native/App.tsx")).toContain("NavigationContainer");
-    expect(getFile(root, "apps/native/navigation/native-navigation.tsx")).toContain("mobileStorage");
+    expect(getFile(root, "apps/native/navigation/native-navigation.tsx")).toContain(
+      "mobileStorage",
+    );
     expect(getFile(root, "apps/native/lib/notifications.ts")).toContain("getExpoPushTokenAsync");
     expect(getFile(root, "apps/native/lib/updates.ts")).toContain("checkForUpdateAsync");
     expect(getFile(root, "apps/native/.maestro/home.yaml")).toContain("launchApp");

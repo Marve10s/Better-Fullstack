@@ -1,7 +1,7 @@
 # Community-Requested Integrations
 
 Smaller feature requests from GitHub issues across both repos that do not warrant individual plan
-files. Status was refreshed on 2026-06-30; only unfinished work remains here.
+files. Status was refreshed on 2026-08-07; completed rows remain visible to prevent duplicate work.
 
 ---
 
@@ -45,7 +45,7 @@ files. Status was refreshed on 2026-06-30; only unfinished work remains here.
 
 ### Intlayer (better-t-stack #888)
 
-- [ ] Add `intlayer` — type-safe, per-component i18n. AI translation tooling, visual editor, CMS integration. Supports React, Next.js, Vite.
+- [x] Add `intlayer` with framework-specific providers, dependencies, compatibility, and tests.
   - **Package:** `intlayer`, `next-intlayer` or `react-intlayer`
   - **Template:** Provider setup, per-component declaration files, locale config
   - **Category:** i18n (alongside paraglide, i18next, next-intl — already tracked in typescript-new-categories.md)
@@ -93,8 +93,7 @@ files. Status was refreshed on 2026-06-30; only unfinished work remains here.
 1. **Creem.io** (see `payment-providers-expansion.md`)
 2. **DB without ORM / raw SQL** — common request for SQL purists
 3. **InstantDB** — realtime/offline database option for React + React Native
-4. **Intlayer** — modern i18n option
-5. **Plasmo** — browser extensions
-6. **Effect HTTP API** — if Effect-heavy stacks keep showing up in benchmarks/issues
-7. **Mastra quality pass** — make sure the generated output is more than dependency wiring
-8. Remaining items
+4. **Plasmo** — browser extensions
+5. **Effect HTTP API** — if Effect-heavy stacks keep showing up in benchmarks/issues
+6. **Mastra quality pass** — make sure the generated output is more than dependency wiring
+7. Remaining items
