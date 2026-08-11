@@ -52,7 +52,6 @@ const uk_presettrackrustbackenddescription4 = /** @type {(inputs: Presettrackrus
 */
 const presettrackrustbackenddescription4 = /** @type {((inputs?: Presettrackrustbackenddescription4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackrustbackenddescription4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_presettrackrustbackenddescription4(inputs)
 	if (locale === "es") return es_presettrackrustbackenddescription4(inputs)
 	if (locale === "zh") return zh_presettrackrustbackenddescription4(inputs)
 	if (locale === "ja") return ja_presettrackrustbackenddescription4(inputs)
@@ -60,6 +59,7 @@ const presettrackrustbackenddescription4 = /** @type {((inputs?: Presettrackrust
 	if (locale === "zh-Hant") return zh_hant1_presettrackrustbackenddescription4(inputs)
 	if (locale === "de") return de_presettrackrustbackenddescription4(inputs)
 	if (locale === "fr") return fr_presettrackrustbackenddescription4(inputs)
-	return uk_presettrackrustbackenddescription4(inputs)
+	if (locale === "uk") return uk_presettrackrustbackenddescription4(inputs)
+	return en_presettrackrustbackenddescription4(inputs)
 });
 export { presettrackrustbackenddescription4 as "presetTrackRustBackendDescription" }

@@ -52,7 +52,6 @@ const uk_llmerrorrate2 = /** @type {(inputs: Llmerrorrate2Inputs) => LocalizedSt
 */
 const llmerrorrate2 = /** @type {((inputs?: Llmerrorrate2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmerrorrate2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_llmerrorrate2(inputs)
 	if (locale === "es") return es_llmerrorrate2(inputs)
 	if (locale === "zh") return zh_llmerrorrate2(inputs)
 	if (locale === "ja") return ja_llmerrorrate2(inputs)
@@ -60,6 +59,7 @@ const llmerrorrate2 = /** @type {((inputs?: Llmerrorrate2Inputs, options?: { loc
 	if (locale === "zh-Hant") return zh_hant1_llmerrorrate2(inputs)
 	if (locale === "de") return de_llmerrorrate2(inputs)
 	if (locale === "fr") return fr_llmerrorrate2(inputs)
-	return uk_llmerrorrate2(inputs)
+	if (locale === "uk") return uk_llmerrorrate2(inputs)
+	return en_llmerrorrate2(inputs)
 });
 export { llmerrorrate2 as "llmErrorRate" }

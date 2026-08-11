@@ -52,7 +52,6 @@ const uk_builderauthgroup2 = /** @type {(inputs: Builderauthgroup2Inputs) => Loc
 */
 const builderauthgroup2 = /** @type {((inputs: Builderauthgroup2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderauthgroup2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderauthgroup2(inputs)
 	if (locale === "es") return es_builderauthgroup2(inputs)
 	if (locale === "zh") return zh_builderauthgroup2(inputs)
 	if (locale === "ja") return ja_builderauthgroup2(inputs)
@@ -60,6 +59,7 @@ const builderauthgroup2 = /** @type {((inputs: Builderauthgroup2Inputs, options?
 	if (locale === "zh-Hant") return zh_hant1_builderauthgroup2(inputs)
 	if (locale === "de") return de_builderauthgroup2(inputs)
 	if (locale === "fr") return fr_builderauthgroup2(inputs)
-	return uk_builderauthgroup2(inputs)
+	if (locale === "uk") return uk_builderauthgroup2(inputs)
+	return en_builderauthgroup2(inputs)
 });
 export { builderauthgroup2 as "builderAuthGroup" }

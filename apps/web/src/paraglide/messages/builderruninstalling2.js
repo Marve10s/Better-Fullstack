@@ -52,7 +52,6 @@ const uk_builderruninstalling2 = /** @type {(inputs: Builderruninstalling2Inputs
 */
 const builderruninstalling2 = /** @type {((inputs?: Builderruninstalling2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderruninstalling2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderruninstalling2(inputs)
 	if (locale === "es") return es_builderruninstalling2(inputs)
 	if (locale === "zh") return zh_builderruninstalling2(inputs)
 	if (locale === "ja") return ja_builderruninstalling2(inputs)
@@ -60,6 +59,7 @@ const builderruninstalling2 = /** @type {((inputs?: Builderruninstalling2Inputs,
 	if (locale === "zh-Hant") return zh_hant1_builderruninstalling2(inputs)
 	if (locale === "de") return de_builderruninstalling2(inputs)
 	if (locale === "fr") return fr_builderruninstalling2(inputs)
-	return uk_builderruninstalling2(inputs)
+	if (locale === "uk") return uk_builderruninstalling2(inputs)
+	return en_builderruninstalling2(inputs)
 });
 export { builderruninstalling2 as "builderRunInstalling" }

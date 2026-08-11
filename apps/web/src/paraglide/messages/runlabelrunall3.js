@@ -52,7 +52,6 @@ const uk_runlabelrunall3 = /** @type {(inputs: Runlabelrunall3Inputs) => Localiz
 */
 const runlabelrunall3 = /** @type {((inputs?: Runlabelrunall3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runlabelrunall3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_runlabelrunall3(inputs)
 	if (locale === "es") return es_runlabelrunall3(inputs)
 	if (locale === "zh") return zh_runlabelrunall3(inputs)
 	if (locale === "ja") return ja_runlabelrunall3(inputs)
@@ -60,6 +59,7 @@ const runlabelrunall3 = /** @type {((inputs?: Runlabelrunall3Inputs, options?: {
 	if (locale === "zh-Hant") return zh_hant1_runlabelrunall3(inputs)
 	if (locale === "de") return de_runlabelrunall3(inputs)
 	if (locale === "fr") return fr_runlabelrunall3(inputs)
-	return uk_runlabelrunall3(inputs)
+	if (locale === "uk") return uk_runlabelrunall3(inputs)
+	return en_runlabelrunall3(inputs)
 });
 export { runlabelrunall3 as "runLabelRunAll" }

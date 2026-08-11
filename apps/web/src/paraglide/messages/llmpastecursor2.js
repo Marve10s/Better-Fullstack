@@ -52,7 +52,6 @@ const uk_llmpastecursor2 = /** @type {(inputs: Llmpastecursor2Inputs) => Localiz
 */
 const llmpastecursor2 = /** @type {((inputs?: Llmpastecursor2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmpastecursor2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_llmpastecursor2(inputs)
 	if (locale === "es") return es_llmpastecursor2(inputs)
 	if (locale === "zh") return zh_llmpastecursor2(inputs)
 	if (locale === "ja") return ja_llmpastecursor2(inputs)
@@ -60,6 +59,7 @@ const llmpastecursor2 = /** @type {((inputs?: Llmpastecursor2Inputs, options?: {
 	if (locale === "zh-Hant") return zh_hant1_llmpastecursor2(inputs)
 	if (locale === "de") return de_llmpastecursor2(inputs)
 	if (locale === "fr") return fr_llmpastecursor2(inputs)
-	return uk_llmpastecursor2(inputs)
+	if (locale === "uk") return uk_llmpastecursor2(inputs)
+	return en_llmpastecursor2(inputs)
 });
 export { llmpastecursor2 as "llmPasteCursor" }

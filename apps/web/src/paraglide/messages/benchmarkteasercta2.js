@@ -52,7 +52,6 @@ const uk_benchmarkteasercta2 = /** @type {(inputs: Benchmarkteasercta2Inputs) =>
 */
 const benchmarkteasercta2 = /** @type {((inputs?: Benchmarkteasercta2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Benchmarkteasercta2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_benchmarkteasercta2(inputs)
 	if (locale === "es") return es_benchmarkteasercta2(inputs)
 	if (locale === "zh") return zh_benchmarkteasercta2(inputs)
 	if (locale === "ja") return ja_benchmarkteasercta2(inputs)
@@ -60,6 +59,7 @@ const benchmarkteasercta2 = /** @type {((inputs?: Benchmarkteasercta2Inputs, opt
 	if (locale === "zh-Hant") return zh_hant1_benchmarkteasercta2(inputs)
 	if (locale === "de") return de_benchmarkteasercta2(inputs)
 	if (locale === "fr") return fr_benchmarkteasercta2(inputs)
-	return uk_benchmarkteasercta2(inputs)
+	if (locale === "uk") return uk_benchmarkteasercta2(inputs)
+	return en_benchmarkteasercta2(inputs)
 });
 export { benchmarkteasercta2 as "benchmarkTeaserCta" }

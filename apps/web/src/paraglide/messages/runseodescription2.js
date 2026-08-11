@@ -52,7 +52,6 @@ const uk_runseodescription2 = /** @type {(inputs: Runseodescription2Inputs) => L
 */
 const runseodescription2 = /** @type {((inputs?: Runseodescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runseodescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_runseodescription2(inputs)
 	if (locale === "es") return es_runseodescription2(inputs)
 	if (locale === "zh") return zh_runseodescription2(inputs)
 	if (locale === "ja") return ja_runseodescription2(inputs)
@@ -60,6 +59,7 @@ const runseodescription2 = /** @type {((inputs?: Runseodescription2Inputs, optio
 	if (locale === "zh-Hant") return zh_hant1_runseodescription2(inputs)
 	if (locale === "de") return de_runseodescription2(inputs)
 	if (locale === "fr") return fr_runseodescription2(inputs)
-	return uk_runseodescription2(inputs)
+	if (locale === "uk") return uk_runseodescription2(inputs)
+	return en_runseodescription2(inputs)
 });
 export { runseodescription2 as "runSeoDescription" }

@@ -52,7 +52,6 @@ const uk_footermitlicense2 = /** @type {(inputs: Footermitlicense2Inputs) => Loc
 */
 const footermitlicense2 = /** @type {((inputs?: Footermitlicense2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Footermitlicense2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_footermitlicense2(inputs)
 	if (locale === "es") return es_footermitlicense2(inputs)
 	if (locale === "zh") return zh_footermitlicense2(inputs)
 	if (locale === "ja") return ja_footermitlicense2(inputs)
@@ -60,6 +59,7 @@ const footermitlicense2 = /** @type {((inputs?: Footermitlicense2Inputs, options
 	if (locale === "zh-Hant") return zh_hant1_footermitlicense2(inputs)
 	if (locale === "de") return de_footermitlicense2(inputs)
 	if (locale === "fr") return fr_footermitlicense2(inputs)
-	return uk_footermitlicense2(inputs)
+	if (locale === "uk") return uk_footermitlicense2(inputs)
+	return en_footermitlicense2(inputs)
 });
 export { footermitlicense2 as "footerMitLicense" }

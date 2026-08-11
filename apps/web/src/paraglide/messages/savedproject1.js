@@ -52,7 +52,6 @@ const uk_savedproject1 = /** @type {(inputs: Savedproject1Inputs) => LocalizedSt
 */
 const savedproject1 = /** @type {((inputs?: Savedproject1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedproject1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_savedproject1(inputs)
 	if (locale === "es") return es_savedproject1(inputs)
 	if (locale === "zh") return zh_savedproject1(inputs)
 	if (locale === "ja") return ja_savedproject1(inputs)
@@ -60,6 +59,7 @@ const savedproject1 = /** @type {((inputs?: Savedproject1Inputs, options?: { loc
 	if (locale === "zh-Hant") return zh_hant1_savedproject1(inputs)
 	if (locale === "de") return de_savedproject1(inputs)
 	if (locale === "fr") return fr_savedproject1(inputs)
-	return uk_savedproject1(inputs)
+	if (locale === "uk") return uk_savedproject1(inputs)
+	return en_savedproject1(inputs)
 });
 export { savedproject1 as "savedProject" }

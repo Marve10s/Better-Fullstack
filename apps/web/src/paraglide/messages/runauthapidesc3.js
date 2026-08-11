@@ -52,7 +52,6 @@ const uk_runauthapidesc3 = /** @type {(inputs: Runauthapidesc3Inputs) => Localiz
 */
 const runauthapidesc3 = /** @type {((inputs?: Runauthapidesc3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runauthapidesc3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_runauthapidesc3(inputs)
 	if (locale === "es") return es_runauthapidesc3(inputs)
 	if (locale === "zh") return zh_runauthapidesc3(inputs)
 	if (locale === "ja") return ja_runauthapidesc3(inputs)
@@ -60,6 +59,7 @@ const runauthapidesc3 = /** @type {((inputs?: Runauthapidesc3Inputs, options?: {
 	if (locale === "zh-Hant") return zh_hant1_runauthapidesc3(inputs)
 	if (locale === "de") return de_runauthapidesc3(inputs)
 	if (locale === "fr") return fr_runauthapidesc3(inputs)
-	return uk_runauthapidesc3(inputs)
+	if (locale === "uk") return uk_runauthapidesc3(inputs)
+	return en_runauthapidesc3(inputs)
 });
 export { runauthapidesc3 as "runAuthApiDesc" }

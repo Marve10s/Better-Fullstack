@@ -52,7 +52,6 @@ const uk_presetclicktoapply3 = /** @type {(inputs: Presetclicktoapply3Inputs) =>
 */
 const presetclicktoapply3 = /** @type {((inputs?: Presetclicktoapply3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presetclicktoapply3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_presetclicktoapply3(inputs)
 	if (locale === "es") return es_presetclicktoapply3(inputs)
 	if (locale === "zh") return zh_presetclicktoapply3(inputs)
 	if (locale === "ja") return ja_presetclicktoapply3(inputs)
@@ -60,6 +59,7 @@ const presetclicktoapply3 = /** @type {((inputs?: Presetclicktoapply3Inputs, opt
 	if (locale === "zh-Hant") return zh_hant1_presetclicktoapply3(inputs)
 	if (locale === "de") return de_presetclicktoapply3(inputs)
 	if (locale === "fr") return fr_presetclicktoapply3(inputs)
-	return uk_presetclicktoapply3(inputs)
+	if (locale === "uk") return uk_presetclicktoapply3(inputs)
+	return en_presetclicktoapply3(inputs)
 });
 export { presetclicktoapply3 as "presetClickToApply" }

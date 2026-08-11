@@ -52,7 +52,6 @@ const uk_mcpworkflowdonenote3 = /** @type {(inputs: Mcpworkflowdonenote3Inputs) 
 */
 const mcpworkflowdonenote3 = /** @type {((inputs?: Mcpworkflowdonenote3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpworkflowdonenote3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_mcpworkflowdonenote3(inputs)
 	if (locale === "es") return es_mcpworkflowdonenote3(inputs)
 	if (locale === "zh") return zh_mcpworkflowdonenote3(inputs)
 	if (locale === "ja") return ja_mcpworkflowdonenote3(inputs)
@@ -60,6 +59,7 @@ const mcpworkflowdonenote3 = /** @type {((inputs?: Mcpworkflowdonenote3Inputs, o
 	if (locale === "zh-Hant") return zh_hant1_mcpworkflowdonenote3(inputs)
 	if (locale === "de") return de_mcpworkflowdonenote3(inputs)
 	if (locale === "fr") return fr_mcpworkflowdonenote3(inputs)
-	return uk_mcpworkflowdonenote3(inputs)
+	if (locale === "uk") return uk_mcpworkflowdonenote3(inputs)
+	return en_mcpworkflowdonenote3(inputs)
 });
 export { mcpworkflowdonenote3 as "mcpWorkflowDoneNote" }

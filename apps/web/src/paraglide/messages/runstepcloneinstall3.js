@@ -52,7 +52,6 @@ const uk_runstepcloneinstall3 = /** @type {(inputs: Runstepcloneinstall3Inputs) 
 */
 const runstepcloneinstall3 = /** @type {((inputs?: Runstepcloneinstall3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runstepcloneinstall3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_runstepcloneinstall3(inputs)
 	if (locale === "es") return es_runstepcloneinstall3(inputs)
 	if (locale === "zh") return zh_runstepcloneinstall3(inputs)
 	if (locale === "ja") return ja_runstepcloneinstall3(inputs)
@@ -60,6 +59,7 @@ const runstepcloneinstall3 = /** @type {((inputs?: Runstepcloneinstall3Inputs, o
 	if (locale === "zh-Hant") return zh_hant1_runstepcloneinstall3(inputs)
 	if (locale === "de") return de_runstepcloneinstall3(inputs)
 	if (locale === "fr") return fr_runstepcloneinstall3(inputs)
-	return uk_runstepcloneinstall3(inputs)
+	if (locale === "uk") return uk_runstepcloneinstall3(inputs)
+	return en_runstepcloneinstall3(inputs)
 });
 export { runstepcloneinstall3 as "runStepCloneInstall" }

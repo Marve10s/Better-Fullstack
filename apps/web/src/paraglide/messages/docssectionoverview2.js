@@ -52,7 +52,6 @@ const uk_docssectionoverview2 = /** @type {(inputs: Docssectionoverview2Inputs) 
 */
 const docssectionoverview2 = /** @type {((inputs?: Docssectionoverview2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssectionoverview2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_docssectionoverview2(inputs)
 	if (locale === "es") return es_docssectionoverview2(inputs)
 	if (locale === "zh") return zh_docssectionoverview2(inputs)
 	if (locale === "ja") return ja_docssectionoverview2(inputs)
@@ -60,6 +59,7 @@ const docssectionoverview2 = /** @type {((inputs?: Docssectionoverview2Inputs, o
 	if (locale === "zh-Hant") return zh_hant1_docssectionoverview2(inputs)
 	if (locale === "de") return de_docssectionoverview2(inputs)
 	if (locale === "fr") return fr_docssectionoverview2(inputs)
-	return uk_docssectionoverview2(inputs)
+	if (locale === "uk") return uk_docssectionoverview2(inputs)
+	return en_docssectionoverview2(inputs)
 });
 export { docssectionoverview2 as "docsSectionOverview" }

@@ -52,7 +52,6 @@ const uk_mcpseotitle2 = /** @type {(inputs: Mcpseotitle2Inputs) => LocalizedStri
 */
 const mcpseotitle2 = /** @type {((inputs?: Mcpseotitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpseotitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_mcpseotitle2(inputs)
 	if (locale === "es") return es_mcpseotitle2(inputs)
 	if (locale === "zh") return zh_mcpseotitle2(inputs)
 	if (locale === "ja") return ja_mcpseotitle2(inputs)
@@ -60,6 +59,7 @@ const mcpseotitle2 = /** @type {((inputs?: Mcpseotitle2Inputs, options?: { local
 	if (locale === "zh-Hant") return zh_hant1_mcpseotitle2(inputs)
 	if (locale === "de") return de_mcpseotitle2(inputs)
 	if (locale === "fr") return fr_mcpseotitle2(inputs)
-	return uk_mcpseotitle2(inputs)
+	if (locale === "uk") return uk_mcpseotitle2(inputs)
+	return en_mcpseotitle2(inputs)
 });
 export { mcpseotitle2 as "mcpSeoTitle" }

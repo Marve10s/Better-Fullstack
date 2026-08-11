@@ -52,7 +52,6 @@ const uk_mcpworkfloweyebrow2 = /** @type {(inputs: Mcpworkfloweyebrow2Inputs) =>
 */
 const mcpworkfloweyebrow2 = /** @type {((inputs?: Mcpworkfloweyebrow2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpworkfloweyebrow2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_mcpworkfloweyebrow2(inputs)
 	if (locale === "es") return es_mcpworkfloweyebrow2(inputs)
 	if (locale === "zh") return zh_mcpworkfloweyebrow2(inputs)
 	if (locale === "ja") return ja_mcpworkfloweyebrow2(inputs)
@@ -60,6 +59,7 @@ const mcpworkfloweyebrow2 = /** @type {((inputs?: Mcpworkfloweyebrow2Inputs, opt
 	if (locale === "zh-Hant") return zh_hant1_mcpworkfloweyebrow2(inputs)
 	if (locale === "de") return de_mcpworkfloweyebrow2(inputs)
 	if (locale === "fr") return fr_mcpworkfloweyebrow2(inputs)
-	return uk_mcpworkfloweyebrow2(inputs)
+	if (locale === "uk") return uk_mcpworkfloweyebrow2(inputs)
+	return en_mcpworkfloweyebrow2(inputs)
 });
 export { mcpworkfloweyebrow2 as "mcpWorkflowEyebrow" }

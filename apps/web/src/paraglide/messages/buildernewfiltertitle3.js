@@ -52,7 +52,6 @@ const uk_buildernewfiltertitle3 = /** @type {(inputs: Buildernewfiltertitle3Inpu
 */
 const buildernewfiltertitle3 = /** @type {((inputs: Buildernewfiltertitle3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildernewfiltertitle3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_buildernewfiltertitle3(inputs)
 	if (locale === "es") return es_buildernewfiltertitle3(inputs)
 	if (locale === "zh") return zh_buildernewfiltertitle3(inputs)
 	if (locale === "ja") return ja_buildernewfiltertitle3(inputs)
@@ -60,6 +59,7 @@ const buildernewfiltertitle3 = /** @type {((inputs: Buildernewfiltertitle3Inputs
 	if (locale === "zh-Hant") return zh_hant1_buildernewfiltertitle3(inputs)
 	if (locale === "de") return de_buildernewfiltertitle3(inputs)
 	if (locale === "fr") return fr_buildernewfiltertitle3(inputs)
-	return uk_buildernewfiltertitle3(inputs)
+	if (locale === "uk") return uk_buildernewfiltertitle3(inputs)
+	return en_buildernewfiltertitle3(inputs)
 });
 export { buildernewfiltertitle3 as "builderNewFilterTitle" }

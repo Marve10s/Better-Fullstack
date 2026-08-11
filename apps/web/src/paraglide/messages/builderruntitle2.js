@@ -52,7 +52,6 @@ const uk_builderruntitle2 = /** @type {(inputs: Builderruntitle2Inputs) => Local
 */
 const builderruntitle2 = /** @type {((inputs?: Builderruntitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderruntitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderruntitle2(inputs)
 	if (locale === "es") return es_builderruntitle2(inputs)
 	if (locale === "zh") return zh_builderruntitle2(inputs)
 	if (locale === "ja") return ja_builderruntitle2(inputs)
@@ -60,6 +59,7 @@ const builderruntitle2 = /** @type {((inputs?: Builderruntitle2Inputs, options?:
 	if (locale === "zh-Hant") return zh_hant1_builderruntitle2(inputs)
 	if (locale === "de") return de_builderruntitle2(inputs)
 	if (locale === "fr") return fr_builderruntitle2(inputs)
-	return uk_builderruntitle2(inputs)
+	if (locale === "uk") return uk_builderruntitle2(inputs)
+	return en_builderruntitle2(inputs)
 });
 export { builderruntitle2 as "builderRunTitle" }

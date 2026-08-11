@@ -52,7 +52,6 @@ const uk_builderrunopenpreview3 = /** @type {(inputs: Builderrunopenpreview3Inpu
 */
 const builderrunopenpreview3 = /** @type {((inputs?: Builderrunopenpreview3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderrunopenpreview3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderrunopenpreview3(inputs)
 	if (locale === "es") return es_builderrunopenpreview3(inputs)
 	if (locale === "zh") return zh_builderrunopenpreview3(inputs)
 	if (locale === "ja") return ja_builderrunopenpreview3(inputs)
@@ -60,6 +59,7 @@ const builderrunopenpreview3 = /** @type {((inputs?: Builderrunopenpreview3Input
 	if (locale === "zh-Hant") return zh_hant1_builderrunopenpreview3(inputs)
 	if (locale === "de") return de_builderrunopenpreview3(inputs)
 	if (locale === "fr") return fr_builderrunopenpreview3(inputs)
-	return uk_builderrunopenpreview3(inputs)
+	if (locale === "uk") return uk_builderrunopenpreview3(inputs)
+	return en_builderrunopenpreview3(inputs)
 });
 export { builderrunopenpreview3 as "builderRunOpenPreview" }

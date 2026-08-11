@@ -52,7 +52,6 @@ const uk_llmrunityourself3 = /** @type {(inputs: Llmrunityourself3Inputs) => Loc
 */
 const llmrunityourself3 = /** @type {((inputs?: Llmrunityourself3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmrunityourself3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_llmrunityourself3(inputs)
 	if (locale === "es") return es_llmrunityourself3(inputs)
 	if (locale === "zh") return zh_llmrunityourself3(inputs)
 	if (locale === "ja") return ja_llmrunityourself3(inputs)
@@ -60,6 +59,7 @@ const llmrunityourself3 = /** @type {((inputs?: Llmrunityourself3Inputs, options
 	if (locale === "zh-Hant") return zh_hant1_llmrunityourself3(inputs)
 	if (locale === "de") return de_llmrunityourself3(inputs)
 	if (locale === "fr") return fr_llmrunityourself3(inputs)
-	return uk_llmrunityourself3(inputs)
+	if (locale === "uk") return uk_llmrunityourself3(inputs)
+	return en_llmrunityourself3(inputs)
 });
 export { llmrunityourself3 as "llmRunItYourself" }

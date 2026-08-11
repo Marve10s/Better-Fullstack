@@ -52,7 +52,6 @@ const uk_actionsreset1 = /** @type {(inputs: Actionsreset1Inputs) => LocalizedSt
 */
 const actionsreset1 = /** @type {((inputs?: Actionsreset1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Actionsreset1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_actionsreset1(inputs)
 	if (locale === "es") return es_actionsreset1(inputs)
 	if (locale === "zh") return zh_actionsreset1(inputs)
 	if (locale === "ja") return ja_actionsreset1(inputs)
@@ -60,6 +59,7 @@ const actionsreset1 = /** @type {((inputs?: Actionsreset1Inputs, options?: { loc
 	if (locale === "zh-Hant") return zh_hant1_actionsreset1(inputs)
 	if (locale === "de") return de_actionsreset1(inputs)
 	if (locale === "fr") return fr_actionsreset1(inputs)
-	return uk_actionsreset1(inputs)
+	if (locale === "uk") return uk_actionsreset1(inputs)
+	return en_actionsreset1(inputs)
 });
 export { actionsreset1 as "actionsReset" }

@@ -52,7 +52,6 @@ const uk_builderrundiscardchanges3 = /** @type {(inputs: Builderrundiscardchange
 */
 const builderrundiscardchanges3 = /** @type {((inputs?: Builderrundiscardchanges3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderrundiscardchanges3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderrundiscardchanges3(inputs)
 	if (locale === "es") return es_builderrundiscardchanges3(inputs)
 	if (locale === "zh") return zh_builderrundiscardchanges3(inputs)
 	if (locale === "ja") return ja_builderrundiscardchanges3(inputs)
@@ -60,6 +59,7 @@ const builderrundiscardchanges3 = /** @type {((inputs?: Builderrundiscardchanges
 	if (locale === "zh-Hant") return zh_hant1_builderrundiscardchanges3(inputs)
 	if (locale === "de") return de_builderrundiscardchanges3(inputs)
 	if (locale === "fr") return fr_builderrundiscardchanges3(inputs)
-	return uk_builderrundiscardchanges3(inputs)
+	if (locale === "uk") return uk_builderrundiscardchanges3(inputs)
+	return en_builderrundiscardchanges3(inputs)
 });
 export { builderrundiscardchanges3 as "builderRunDiscardChanges" }

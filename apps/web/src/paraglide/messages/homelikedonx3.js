@@ -52,7 +52,6 @@ const uk_homelikedonx3 = /** @type {(inputs: Homelikedonx3Inputs) => LocalizedSt
 */
 const homelikedonx3 = /** @type {((inputs?: Homelikedonx3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homelikedonx3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_homelikedonx3(inputs)
 	if (locale === "es") return es_homelikedonx3(inputs)
 	if (locale === "zh") return zh_homelikedonx3(inputs)
 	if (locale === "ja") return ja_homelikedonx3(inputs)
@@ -60,6 +59,7 @@ const homelikedonx3 = /** @type {((inputs?: Homelikedonx3Inputs, options?: { loc
 	if (locale === "zh-Hant") return zh_hant1_homelikedonx3(inputs)
 	if (locale === "de") return de_homelikedonx3(inputs)
 	if (locale === "fr") return fr_homelikedonx3(inputs)
-	return uk_homelikedonx3(inputs)
+	if (locale === "uk") return uk_homelikedonx3(inputs)
+	return en_homelikedonx3(inputs)
 });
 export { homelikedonx3 as "homeLikedOnX" }

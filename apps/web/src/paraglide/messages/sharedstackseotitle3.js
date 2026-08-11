@@ -52,7 +52,6 @@ const uk_sharedstackseotitle3 = /** @type {(inputs: Sharedstackseotitle3Inputs) 
 */
 const sharedstackseotitle3 = /** @type {((inputs?: Sharedstackseotitle3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Sharedstackseotitle3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_sharedstackseotitle3(inputs)
 	if (locale === "es") return es_sharedstackseotitle3(inputs)
 	if (locale === "zh") return zh_sharedstackseotitle3(inputs)
 	if (locale === "ja") return ja_sharedstackseotitle3(inputs)
@@ -60,6 +59,7 @@ const sharedstackseotitle3 = /** @type {((inputs?: Sharedstackseotitle3Inputs, o
 	if (locale === "zh-Hant") return zh_hant1_sharedstackseotitle3(inputs)
 	if (locale === "de") return de_sharedstackseotitle3(inputs)
 	if (locale === "fr") return fr_sharedstackseotitle3(inputs)
-	return uk_sharedstackseotitle3(inputs)
+	if (locale === "uk") return uk_sharedstackseotitle3(inputs)
+	return en_sharedstackseotitle3(inputs)
 });
 export { sharedstackseotitle3 as "sharedStackSeoTitle" }

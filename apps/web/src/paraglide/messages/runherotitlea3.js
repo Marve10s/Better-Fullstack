@@ -52,7 +52,6 @@ const uk_runherotitlea3 = /** @type {(inputs: Runherotitlea3Inputs) => Localized
 */
 const runherotitlea3 = /** @type {((inputs?: Runherotitlea3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runherotitlea3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_runherotitlea3(inputs)
 	if (locale === "es") return es_runherotitlea3(inputs)
 	if (locale === "zh") return zh_runherotitlea3(inputs)
 	if (locale === "ja") return ja_runherotitlea3(inputs)
@@ -60,6 +59,7 @@ const runherotitlea3 = /** @type {((inputs?: Runherotitlea3Inputs, options?: { l
 	if (locale === "zh-Hant") return zh_hant1_runherotitlea3(inputs)
 	if (locale === "de") return de_runherotitlea3(inputs)
 	if (locale === "fr") return fr_runherotitlea3(inputs)
-	return uk_runherotitlea3(inputs)
+	if (locale === "uk") return uk_runherotitlea3(inputs)
+	return en_runherotitlea3(inputs)
 });
 export { runherotitlea3 as "runHeroTitleA" }

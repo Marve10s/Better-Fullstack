@@ -52,7 +52,6 @@ const uk_savedpresetupdated2 = /** @type {(inputs: Savedpresetupdated2Inputs) =>
 */
 const savedpresetupdated2 = /** @type {((inputs: Savedpresetupdated2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedpresetupdated2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_savedpresetupdated2(inputs)
 	if (locale === "es") return es_savedpresetupdated2(inputs)
 	if (locale === "zh") return zh_savedpresetupdated2(inputs)
 	if (locale === "ja") return ja_savedpresetupdated2(inputs)
@@ -60,6 +59,7 @@ const savedpresetupdated2 = /** @type {((inputs: Savedpresetupdated2Inputs, opti
 	if (locale === "zh-Hant") return zh_hant1_savedpresetupdated2(inputs)
 	if (locale === "de") return de_savedpresetupdated2(inputs)
 	if (locale === "fr") return fr_savedpresetupdated2(inputs)
-	return uk_savedpresetupdated2(inputs)
+	if (locale === "uk") return uk_savedpresetupdated2(inputs)
+	return en_savedpresetupdated2(inputs)
 });
 export { savedpresetupdated2 as "savedPresetUpdated" }

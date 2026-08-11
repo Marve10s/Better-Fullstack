@@ -98,62 +98,6 @@ export const urlPatterns = [
     ]
   }
 ];
-/** @type {string | undefined} */
-let cachedRouteStrategyUrl;
-/** @type {{ match: string; strategy?: typeof strategy; exclude?: boolean } | undefined} */
-let cachedRouteStrategy;
-/**
- * @param {string | URL} url
- * @returns {{ match: string; strategy?: typeof strategy; exclude?: boolean } | undefined}
- */
-function findMatchingRouteStrategy(url) {
-    if (routeStrategies.length === 0) {
-        return undefined;
-    }
-    const urlString = typeof url === "string" ? url : url.href;
-    if (cachedRouteStrategyUrl === urlString) {
-        return cachedRouteStrategy;
-    }
-    const urlObject = new URL(urlString, "http://dummy.com");
-    let match;
-    for (const routeStrategy of routeStrategies) {
-        const pattern = new URLPattern(routeStrategy.match, urlObject.href);
-        if (pattern.exec(urlObject.href)) {
-            match = routeStrategy;
-            break;
-        }
-    }
-    cachedRouteStrategyUrl = urlString;
-    cachedRouteStrategy = match;
-    return match;
-}
-/**
- * Returns the strategy to use for a specific URL.
- *
- * If no route strategy matches (or the matching rule is `exclude: true`),
- * the global strategy is returned.
- *
- * @param {string | URL} url
- * @returns {typeof strategy}
- */
-export function getStrategyForUrl(url) {
-    const routeStrategy = findMatchingRouteStrategy(url);
-    if (routeStrategy &&
-        routeStrategy.exclude !== true &&
-        Array.isArray(routeStrategy.strategy)) {
-        return routeStrategy.strategy;
-    }
-    return strategy;
-}
-/**
- * Returns whether the given URL is excluded from middleware i18n processing.
- *
- * @param {string | URL} url
- * @returns {boolean}
- */
-export function isExcludedByRouteStrategy(url) {
-    return findMatchingRouteStrategy(url)?.exclude === true;
-}
 /**
  * @typedef {{
  * 		getStore(): {
@@ -174,6 +118,17 @@ export function isExcludedByRouteStrategy(url) {
  * @type {ParaglideAsyncLocalStorage | undefined}
  */
 export let serverAsyncLocalStorage = undefined;
+/**
+ * Returns the current server-side async local storage instance.
+ *
+ * Accessing the mutable value through a function keeps it observable when
+ * module interceptors wrap exported bindings and snapshot their initial value.
+ *
+ * @returns {ParaglideAsyncLocalStorage | undefined}
+ */
+export function getServerAsyncLocalStorage() {
+    return serverAsyncLocalStorage;
+}
 export const disableAsyncLocalStorage = false;
 export const experimentalMiddlewareLocaleSplitting = false;
 export const isServer = import.meta.env.SSR;
@@ -421,9 +376,12 @@ const navigateOrReload = (newLocation) => {
  * Set the locale.
  *
  * Updates the locale using your configured strategies (cookie, localStorage, URL, etc.).
- * By default, this reloads the page on the client to reflect the new locale. Reloading
- * can be disabled by passing `reload: false` as an option, but you'll need to ensure
- * the UI updates to reflect the new locale.
+ * By default, this navigates the client to the localized URL or reloads the current
+ * document to reflect the new locale. `reload: false` is a narrow browser-only escape
+ * hatch for a fully client-rendered, non-URL-routed surface that owns its reactive
+ * updates and document state. It does not re-render the UI or update the document.
+ * Do not use it for normal locale pickers, URL-routed pages, or switching an SSR,
+ * SSG, or hydrated document. It is incompatible with per-locale builds.
  *
  * If any custom strategy's `setLocale` function is async, then this function
  * will become async as well.
@@ -443,6 +401,12 @@ export let setLocale = (newLocale, options) => {
         reload: true,
         ...options,
     };
+    if (experimentalStaticLocale !== undefined &&
+        newLocale !== experimentalStaticLocale &&
+        optionsWithDefaults.reload === false) {
+        console.warn(`Paraglide: setLocale(${JSON.stringify(newLocale)}, { reload: false }) cannot switch away from the statically built locale ${JSON.stringify(experimentalStaticLocale)}. A document navigation is required; reload has been forced to true.`);
+        optionsWithDefaults.reload = true;
+    }
     // locale is already set
     // https://github.com/opral/inlang-paraglide-js/issues/430
     /** @type {Locale | undefined} */
@@ -559,7 +523,7 @@ export const overwriteSetLocale = (fn) => {
 /**
  * The origin of the current URL.
  *
- * Defaults to "http://y.com" in non-browser environments. If this
+ * Defaults to "http://example.com" in non-browser environments. If this
  * behavior is not desired, the implementation can be overwritten
  * by `overwriteGetUrlOrigin()`.
  *
@@ -965,7 +929,7 @@ export function extractLocaleFromUrl(url) {
  * @returns {Locale | undefined} The extracted locale, or undefined if no locale is found.
  */
 function defaultUrlPatternExtractLocale(url) {
-    const urlObj = new URL(url, "http://dummy.com");
+    const urlObj = new URL(url, "http://example.com");
     const pathSegments = urlObj.pathname.split("/").filter(Boolean);
     return toLocale(pathSegments[0]) || baseLocale;
 }
@@ -1282,6 +1246,76 @@ export function aggregateGroups(match) {
     };
 }
 
+/** @type {string | undefined} */
+let cachedRouteStrategyUrl;
+/** @type {{ match: string; strategy?: typeof strategy; exclude?: boolean } | undefined} */
+let cachedRouteStrategy;
+/**
+ * Match route policy against both the public URL and its canonical URL.
+ *
+ * The function is deliberately separate from variables.js: configuration is
+ * inert data, while canonicalization and route selection form a routing layer.
+ *
+ * @param {string | URL} url
+ * @returns {{ match: string; strategy?: typeof strategy; exclude?: boolean } | undefined}
+ */
+export function findMatchingRouteStrategy(url) {
+    if (routeStrategies.length === 0) {
+        return undefined;
+    }
+    const urlString = typeof url === "string" ? url : url.href;
+    if (cachedRouteStrategyUrl === urlString) {
+        return cachedRouteStrategy;
+    }
+    const publicUrl = new URL(urlString, "http://example.com");
+    const canonicalUrl = deLocalizeUrl(publicUrl);
+    const candidateUrls = canonicalUrl.href === publicUrl.href
+        ? [publicUrl]
+        : [publicUrl, canonicalUrl];
+    let match;
+    for (const candidateUrl of candidateUrls) {
+        for (const routeStrategy of routeStrategies) {
+            const pattern = new URLPattern(routeStrategy.match, candidateUrl.href);
+            if (pattern.exec(candidateUrl.href)) {
+                match = routeStrategy;
+                break;
+            }
+        }
+        if (match)
+            break;
+    }
+    cachedRouteStrategyUrl = urlString;
+    cachedRouteStrategy = match;
+    return match;
+}
+/**
+ * Returns the strategy to use for a specific URL.
+ *
+ * If no route strategy matches (or the matching rule is `exclude: true`),
+ * the global strategy is returned.
+ *
+ * @param {string | URL} url
+ * @returns {typeof strategy}
+ */
+export function getStrategyForUrl(url) {
+    const routeStrategy = findMatchingRouteStrategy(url);
+    if (routeStrategy &&
+        routeStrategy.exclude !== true &&
+        Array.isArray(routeStrategy.strategy)) {
+        return routeStrategy.strategy;
+    }
+    return strategy;
+}
+/**
+ * Returns whether the given URL is excluded from middleware i18n processing.
+ *
+ * @param {string | URL} url
+ * @returns {boolean}
+ */
+export function isExcludedByRouteStrategy(url) {
+    return findMatchingRouteStrategy(url)?.exclude === true;
+}
+
 /**
  * @typedef {object} ShouldRedirectServerInput
  * @property {Request} request
@@ -1397,10 +1431,12 @@ async function resolveLocale(input, currentUrl) {
  * @returns {URL}
  */
 function resolveUrl(input) {
-    if ("effectiveRequestUrl" in input && input.effectiveRequestUrl instanceof URL) {
+    if ("effectiveRequestUrl" in input &&
+        input.effectiveRequestUrl instanceof URL) {
         return new URL(input.effectiveRequestUrl.href);
     }
-    if ("effectiveRequestUrl" in input && typeof input.effectiveRequestUrl === "string") {
+    if ("effectiveRequestUrl" in input &&
+        typeof input.effectiveRequestUrl === "string") {
         return new URL(input.effectiveRequestUrl, input.request ? input.request.url : getUrlOrigin());
     }
     if (input.request) {

@@ -52,7 +52,6 @@ const uk_homenotjusttypescript4 = /** @type {(inputs: Homenotjusttypescript4Inpu
 */
 const homenotjusttypescript4 = /** @type {((inputs?: Homenotjusttypescript4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homenotjusttypescript4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_homenotjusttypescript4(inputs)
 	if (locale === "es") return es_homenotjusttypescript4(inputs)
 	if (locale === "zh") return zh_homenotjusttypescript4(inputs)
 	if (locale === "ja") return ja_homenotjusttypescript4(inputs)
@@ -60,6 +59,7 @@ const homenotjusttypescript4 = /** @type {((inputs?: Homenotjusttypescript4Input
 	if (locale === "zh-Hant") return zh_hant1_homenotjusttypescript4(inputs)
 	if (locale === "de") return de_homenotjusttypescript4(inputs)
 	if (locale === "fr") return fr_homenotjusttypescript4(inputs)
-	return uk_homenotjusttypescript4(inputs)
+	if (locale === "uk") return uk_homenotjusttypescript4(inputs)
+	return en_homenotjusttypescript4(inputs)
 });
 export { homenotjusttypescript4 as "homeNotJustTypeScript" }

@@ -52,7 +52,6 @@ const uk_docssearchsectionsindexed3 = /** @type {(inputs: Docssearchsectionsinde
 */
 const docssearchsectionsindexed3 = /** @type {((inputs: Docssearchsectionsindexed3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssearchsectionsindexed3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_docssearchsectionsindexed3(inputs)
 	if (locale === "es") return es_docssearchsectionsindexed3(inputs)
 	if (locale === "zh") return zh_docssearchsectionsindexed3(inputs)
 	if (locale === "ja") return ja_docssearchsectionsindexed3(inputs)
@@ -60,6 +59,7 @@ const docssearchsectionsindexed3 = /** @type {((inputs: Docssearchsectionsindexe
 	if (locale === "zh-Hant") return zh_hant1_docssearchsectionsindexed3(inputs)
 	if (locale === "de") return de_docssearchsectionsindexed3(inputs)
 	if (locale === "fr") return fr_docssearchsectionsindexed3(inputs)
-	return uk_docssearchsectionsindexed3(inputs)
+	if (locale === "uk") return uk_docssearchsectionsindexed3(inputs)
+	return en_docssearchsectionsindexed3(inputs)
 });
 export { docssearchsectionsindexed3 as "docsSearchSectionsIndexed" }

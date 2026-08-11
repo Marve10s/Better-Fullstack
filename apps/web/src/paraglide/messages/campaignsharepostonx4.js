@@ -52,7 +52,6 @@ const uk_campaignsharepostonx4 = /** @type {(inputs: Campaignsharepostonx4Inputs
 */
 const campaignsharepostonx4 = /** @type {((inputs?: Campaignsharepostonx4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Campaignsharepostonx4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_campaignsharepostonx4(inputs)
 	if (locale === "es") return es_campaignsharepostonx4(inputs)
 	if (locale === "zh") return zh_campaignsharepostonx4(inputs)
 	if (locale === "ja") return ja_campaignsharepostonx4(inputs)
@@ -60,6 +59,7 @@ const campaignsharepostonx4 = /** @type {((inputs?: Campaignsharepostonx4Inputs,
 	if (locale === "zh-Hant") return zh_hant1_campaignsharepostonx4(inputs)
 	if (locale === "de") return de_campaignsharepostonx4(inputs)
 	if (locale === "fr") return fr_campaignsharepostonx4(inputs)
-	return uk_campaignsharepostonx4(inputs)
+	if (locale === "uk") return uk_campaignsharepostonx4(inputs)
+	return en_campaignsharepostonx4(inputs)
 });
 export { campaignsharepostonx4 as "campaignSharePostOnX" }

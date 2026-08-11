@@ -52,7 +52,6 @@ const uk_buildergroupother2 = /** @type {(inputs: Buildergroupother2Inputs) => L
 */
 const buildergroupother2 = /** @type {((inputs?: Buildergroupother2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildergroupother2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_buildergroupother2(inputs)
 	if (locale === "es") return es_buildergroupother2(inputs)
 	if (locale === "zh") return zh_buildergroupother2(inputs)
 	if (locale === "ja") return ja_buildergroupother2(inputs)
@@ -60,6 +59,7 @@ const buildergroupother2 = /** @type {((inputs?: Buildergroupother2Inputs, optio
 	if (locale === "zh-Hant") return zh_hant1_buildergroupother2(inputs)
 	if (locale === "de") return de_buildergroupother2(inputs)
 	if (locale === "fr") return fr_buildergroupother2(inputs)
-	return uk_buildergroupother2(inputs)
+	if (locale === "uk") return uk_buildergroupother2(inputs)
+	return en_buildergroupother2(inputs)
 });
 export { buildergroupother2 as "builderGroupOther" }

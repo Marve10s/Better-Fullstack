@@ -52,7 +52,6 @@ const uk_mcprunterminal2 = /** @type {(inputs: Mcprunterminal2Inputs) => Localiz
 */
 const mcprunterminal2 = /** @type {((inputs?: Mcprunterminal2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcprunterminal2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_mcprunterminal2(inputs)
 	if (locale === "es") return es_mcprunterminal2(inputs)
 	if (locale === "zh") return zh_mcprunterminal2(inputs)
 	if (locale === "ja") return ja_mcprunterminal2(inputs)
@@ -60,6 +59,7 @@ const mcprunterminal2 = /** @type {((inputs?: Mcprunterminal2Inputs, options?: {
 	if (locale === "zh-Hant") return zh_hant1_mcprunterminal2(inputs)
 	if (locale === "de") return de_mcprunterminal2(inputs)
 	if (locale === "fr") return fr_mcprunterminal2(inputs)
-	return uk_mcprunterminal2(inputs)
+	if (locale === "uk") return uk_mcprunterminal2(inputs)
+	return en_mcprunterminal2(inputs)
 });
 export { mcprunterminal2 as "mcpRunTerminal" }

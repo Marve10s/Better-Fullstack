@@ -52,7 +52,6 @@ const uk_llmbenchmarkdescription2 = /** @type {(inputs: Llmbenchmarkdescription2
 */
 const llmbenchmarkdescription2 = /** @type {((inputs?: Llmbenchmarkdescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmbenchmarkdescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_llmbenchmarkdescription2(inputs)
 	if (locale === "es") return es_llmbenchmarkdescription2(inputs)
 	if (locale === "zh") return zh_llmbenchmarkdescription2(inputs)
 	if (locale === "ja") return ja_llmbenchmarkdescription2(inputs)
@@ -60,6 +59,7 @@ const llmbenchmarkdescription2 = /** @type {((inputs?: Llmbenchmarkdescription2I
 	if (locale === "zh-Hant") return zh_hant1_llmbenchmarkdescription2(inputs)
 	if (locale === "de") return de_llmbenchmarkdescription2(inputs)
 	if (locale === "fr") return fr_llmbenchmarkdescription2(inputs)
-	return uk_llmbenchmarkdescription2(inputs)
+	if (locale === "uk") return uk_llmbenchmarkdescription2(inputs)
+	return en_llmbenchmarkdescription2(inputs)
 });
 export { llmbenchmarkdescription2 as "llmBenchmarkDescription" }

@@ -52,7 +52,6 @@ const uk_themetoggle1 = /** @type {(inputs: Themetoggle1Inputs) => LocalizedStri
 */
 const themetoggle1 = /** @type {((inputs?: Themetoggle1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Themetoggle1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_themetoggle1(inputs)
 	if (locale === "es") return es_themetoggle1(inputs)
 	if (locale === "zh") return zh_themetoggle1(inputs)
 	if (locale === "ja") return ja_themetoggle1(inputs)
@@ -60,6 +59,7 @@ const themetoggle1 = /** @type {((inputs?: Themetoggle1Inputs, options?: { local
 	if (locale === "zh-Hant") return zh_hant1_themetoggle1(inputs)
 	if (locale === "de") return de_themetoggle1(inputs)
 	if (locale === "fr") return fr_themetoggle1(inputs)
-	return uk_themetoggle1(inputs)
+	if (locale === "uk") return uk_themetoggle1(inputs)
+	return en_themetoggle1(inputs)
 });
 export { themetoggle1 as "themeToggle" }

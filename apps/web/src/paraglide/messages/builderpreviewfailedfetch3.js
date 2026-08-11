@@ -52,7 +52,6 @@ const uk_builderpreviewfailedfetch3 = /** @type {(inputs: Builderpreviewfailedfe
 */
 const builderpreviewfailedfetch3 = /** @type {((inputs?: Builderpreviewfailedfetch3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderpreviewfailedfetch3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderpreviewfailedfetch3(inputs)
 	if (locale === "es") return es_builderpreviewfailedfetch3(inputs)
 	if (locale === "zh") return zh_builderpreviewfailedfetch3(inputs)
 	if (locale === "ja") return ja_builderpreviewfailedfetch3(inputs)
@@ -60,6 +59,7 @@ const builderpreviewfailedfetch3 = /** @type {((inputs?: Builderpreviewfailedfet
 	if (locale === "zh-Hant") return zh_hant1_builderpreviewfailedfetch3(inputs)
 	if (locale === "de") return de_builderpreviewfailedfetch3(inputs)
 	if (locale === "fr") return fr_builderpreviewfailedfetch3(inputs)
-	return uk_builderpreviewfailedfetch3(inputs)
+	if (locale === "uk") return uk_builderpreviewfailedfetch3(inputs)
+	return en_builderpreviewfailedfetch3(inputs)
 });
 export { builderpreviewfailedfetch3 as "builderPreviewFailedFetch" }

@@ -52,7 +52,6 @@ const uk_benchmarkseotitle2 = /** @type {(inputs: Benchmarkseotitle2Inputs) => L
 */
 const benchmarkseotitle2 = /** @type {((inputs?: Benchmarkseotitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Benchmarkseotitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_benchmarkseotitle2(inputs)
 	if (locale === "es") return es_benchmarkseotitle2(inputs)
 	if (locale === "zh") return zh_benchmarkseotitle2(inputs)
 	if (locale === "ja") return ja_benchmarkseotitle2(inputs)
@@ -60,6 +59,7 @@ const benchmarkseotitle2 = /** @type {((inputs?: Benchmarkseotitle2Inputs, optio
 	if (locale === "zh-Hant") return zh_hant1_benchmarkseotitle2(inputs)
 	if (locale === "de") return de_benchmarkseotitle2(inputs)
 	if (locale === "fr") return fr_benchmarkseotitle2(inputs)
-	return uk_benchmarkseotitle2(inputs)
+	if (locale === "uk") return uk_benchmarkseotitle2(inputs)
+	return en_benchmarkseotitle2(inputs)
 });
 export { benchmarkseotitle2 as "benchmarkSeoTitle" }

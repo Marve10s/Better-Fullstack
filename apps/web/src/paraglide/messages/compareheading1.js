@@ -52,7 +52,6 @@ const uk_compareheading1 = /** @type {(inputs: Compareheading1Inputs) => Localiz
 */
 const compareheading1 = /** @type {((inputs?: Compareheading1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Compareheading1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_compareheading1(inputs)
 	if (locale === "es") return es_compareheading1(inputs)
 	if (locale === "zh") return zh_compareheading1(inputs)
 	if (locale === "ja") return ja_compareheading1(inputs)
@@ -60,6 +59,7 @@ const compareheading1 = /** @type {((inputs?: Compareheading1Inputs, options?: {
 	if (locale === "zh-Hant") return zh_hant1_compareheading1(inputs)
 	if (locale === "de") return de_compareheading1(inputs)
 	if (locale === "fr") return fr_compareheading1(inputs)
-	return uk_compareheading1(inputs)
+	if (locale === "uk") return uk_compareheading1(inputs)
+	return en_compareheading1(inputs)
 });
 export { compareheading1 as "compareHeading" }

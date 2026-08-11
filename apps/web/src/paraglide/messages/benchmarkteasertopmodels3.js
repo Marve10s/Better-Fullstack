@@ -52,7 +52,6 @@ const uk_benchmarkteasertopmodels3 = /** @type {(inputs: Benchmarkteasertopmodel
 */
 const benchmarkteasertopmodels3 = /** @type {((inputs?: Benchmarkteasertopmodels3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Benchmarkteasertopmodels3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_benchmarkteasertopmodels3(inputs)
 	if (locale === "es") return es_benchmarkteasertopmodels3(inputs)
 	if (locale === "zh") return zh_benchmarkteasertopmodels3(inputs)
 	if (locale === "ja") return ja_benchmarkteasertopmodels3(inputs)
@@ -60,6 +59,7 @@ const benchmarkteasertopmodels3 = /** @type {((inputs?: Benchmarkteasertopmodels
 	if (locale === "zh-Hant") return zh_hant1_benchmarkteasertopmodels3(inputs)
 	if (locale === "de") return de_benchmarkteasertopmodels3(inputs)
 	if (locale === "fr") return fr_benchmarkteasertopmodels3(inputs)
-	return uk_benchmarkteasertopmodels3(inputs)
+	if (locale === "uk") return uk_benchmarkteasertopmodels3(inputs)
+	return en_benchmarkteasertopmodels3(inputs)
 });
 export { benchmarkteasertopmodels3 as "benchmarkTeaserTopModels" }

@@ -52,7 +52,6 @@ const uk_presettrackrestapiname4 = /** @type {(inputs: Presettrackrestapiname4In
 */
 const presettrackrestapiname4 = /** @type {((inputs?: Presettrackrestapiname4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackrestapiname4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_presettrackrestapiname4(inputs)
 	if (locale === "es") return es_presettrackrestapiname4(inputs)
 	if (locale === "zh") return zh_presettrackrestapiname4(inputs)
 	if (locale === "ja") return ja_presettrackrestapiname4(inputs)
@@ -60,6 +59,7 @@ const presettrackrestapiname4 = /** @type {((inputs?: Presettrackrestapiname4Inp
 	if (locale === "zh-Hant") return zh_hant1_presettrackrestapiname4(inputs)
 	if (locale === "de") return de_presettrackrestapiname4(inputs)
 	if (locale === "fr") return fr_presettrackrestapiname4(inputs)
-	return uk_presettrackrestapiname4(inputs)
+	if (locale === "uk") return uk_presettrackrestapiname4(inputs)
+	return en_presettrackrestapiname4(inputs)
 });
 export { presettrackrestapiname4 as "presetTrackRestApiName" }

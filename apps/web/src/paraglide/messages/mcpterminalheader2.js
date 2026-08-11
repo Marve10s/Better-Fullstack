@@ -52,7 +52,6 @@ const uk_mcpterminalheader2 = /** @type {(inputs: Mcpterminalheader2Inputs) => L
 */
 const mcpterminalheader2 = /** @type {((inputs?: Mcpterminalheader2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpterminalheader2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_mcpterminalheader2(inputs)
 	if (locale === "es") return es_mcpterminalheader2(inputs)
 	if (locale === "zh") return zh_mcpterminalheader2(inputs)
 	if (locale === "ja") return ja_mcpterminalheader2(inputs)
@@ -60,6 +59,7 @@ const mcpterminalheader2 = /** @type {((inputs?: Mcpterminalheader2Inputs, optio
 	if (locale === "zh-Hant") return zh_hant1_mcpterminalheader2(inputs)
 	if (locale === "de") return de_mcpterminalheader2(inputs)
 	if (locale === "fr") return fr_mcpterminalheader2(inputs)
-	return uk_mcpterminalheader2(inputs)
+	if (locale === "uk") return uk_mcpterminalheader2(inputs)
+	return en_mcpterminalheader2(inputs)
 });
 export { mcpterminalheader2 as "mcpTerminalHeader" }

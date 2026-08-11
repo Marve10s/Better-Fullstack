@@ -52,7 +52,6 @@ const uk_builderrunworkspace2 = /** @type {(inputs: Builderrunworkspace2Inputs) 
 */
 const builderrunworkspace2 = /** @type {((inputs?: Builderrunworkspace2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderrunworkspace2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderrunworkspace2(inputs)
 	if (locale === "es") return es_builderrunworkspace2(inputs)
 	if (locale === "zh") return zh_builderrunworkspace2(inputs)
 	if (locale === "ja") return ja_builderrunworkspace2(inputs)
@@ -60,6 +59,7 @@ const builderrunworkspace2 = /** @type {((inputs?: Builderrunworkspace2Inputs, o
 	if (locale === "zh-Hant") return zh_hant1_builderrunworkspace2(inputs)
 	if (locale === "de") return de_builderrunworkspace2(inputs)
 	if (locale === "fr") return fr_builderrunworkspace2(inputs)
-	return uk_builderrunworkspace2(inputs)
+	if (locale === "uk") return uk_builderrunworkspace2(inputs)
+	return en_builderrunworkspace2(inputs)
 });
 export { builderrunworkspace2 as "builderRunWorkspace" }

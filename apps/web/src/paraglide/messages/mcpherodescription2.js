@@ -52,7 +52,6 @@ const uk_mcpherodescription2 = /** @type {(inputs: Mcpherodescription2Inputs) =>
 */
 const mcpherodescription2 = /** @type {((inputs?: Mcpherodescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpherodescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_mcpherodescription2(inputs)
 	if (locale === "es") return es_mcpherodescription2(inputs)
 	if (locale === "zh") return zh_mcpherodescription2(inputs)
 	if (locale === "ja") return ja_mcpherodescription2(inputs)
@@ -60,6 +59,7 @@ const mcpherodescription2 = /** @type {((inputs?: Mcpherodescription2Inputs, opt
 	if (locale === "zh-Hant") return zh_hant1_mcpherodescription2(inputs)
 	if (locale === "de") return de_mcpherodescription2(inputs)
 	if (locale === "fr") return fr_mcpherodescription2(inputs)
-	return uk_mcpherodescription2(inputs)
+	if (locale === "uk") return uk_mcpherodescription2(inputs)
+	return en_mcpherodescription2(inputs)
 });
 export { mcpherodescription2 as "mcpHeroDescription" }

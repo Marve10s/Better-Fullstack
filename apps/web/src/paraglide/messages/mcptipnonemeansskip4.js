@@ -52,7 +52,6 @@ const uk_mcptipnonemeansskip4 = /** @type {(inputs: Mcptipnonemeansskip4Inputs) 
 */
 const mcptipnonemeansskip4 = /** @type {((inputs?: Mcptipnonemeansskip4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcptipnonemeansskip4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_mcptipnonemeansskip4(inputs)
 	if (locale === "es") return es_mcptipnonemeansskip4(inputs)
 	if (locale === "zh") return zh_mcptipnonemeansskip4(inputs)
 	if (locale === "ja") return ja_mcptipnonemeansskip4(inputs)
@@ -60,6 +59,7 @@ const mcptipnonemeansskip4 = /** @type {((inputs?: Mcptipnonemeansskip4Inputs, o
 	if (locale === "zh-Hant") return zh_hant1_mcptipnonemeansskip4(inputs)
 	if (locale === "de") return de_mcptipnonemeansskip4(inputs)
 	if (locale === "fr") return fr_mcptipnonemeansskip4(inputs)
-	return uk_mcptipnonemeansskip4(inputs)
+	if (locale === "uk") return uk_mcptipnonemeansskip4(inputs)
+	return en_mcptipnonemeansskip4(inputs)
 });
 export { mcptipnonemeansskip4 as "mcpTipNoneMeansSkip" }

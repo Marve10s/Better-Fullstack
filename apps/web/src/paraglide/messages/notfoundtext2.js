@@ -52,7 +52,6 @@ const uk_notfoundtext2 = /** @type {(inputs: Notfoundtext2Inputs) => LocalizedSt
 */
 const notfoundtext2 = /** @type {((inputs?: Notfoundtext2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Notfoundtext2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_notfoundtext2(inputs)
 	if (locale === "es") return es_notfoundtext2(inputs)
 	if (locale === "zh") return zh_notfoundtext2(inputs)
 	if (locale === "ja") return ja_notfoundtext2(inputs)
@@ -60,6 +59,7 @@ const notfoundtext2 = /** @type {((inputs?: Notfoundtext2Inputs, options?: { loc
 	if (locale === "zh-Hant") return zh_hant1_notfoundtext2(inputs)
 	if (locale === "de") return de_notfoundtext2(inputs)
 	if (locale === "fr") return fr_notfoundtext2(inputs)
-	return uk_notfoundtext2(inputs)
+	if (locale === "uk") return uk_notfoundtext2(inputs)
+	return en_notfoundtext2(inputs)
 });
 export { notfoundtext2 as "notFoundText" }

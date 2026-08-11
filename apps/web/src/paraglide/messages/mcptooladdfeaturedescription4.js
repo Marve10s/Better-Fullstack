@@ -52,7 +52,6 @@ const uk_mcptooladdfeaturedescription4 = /** @type {(inputs: Mcptooladdfeaturede
 */
 const mcptooladdfeaturedescription4 = /** @type {((inputs?: Mcptooladdfeaturedescription4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcptooladdfeaturedescription4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_mcptooladdfeaturedescription4(inputs)
 	if (locale === "es") return es_mcptooladdfeaturedescription4(inputs)
 	if (locale === "zh") return zh_mcptooladdfeaturedescription4(inputs)
 	if (locale === "ja") return ja_mcptooladdfeaturedescription4(inputs)
@@ -60,6 +59,7 @@ const mcptooladdfeaturedescription4 = /** @type {((inputs?: Mcptooladdfeaturedes
 	if (locale === "zh-Hant") return zh_hant1_mcptooladdfeaturedescription4(inputs)
 	if (locale === "de") return de_mcptooladdfeaturedescription4(inputs)
 	if (locale === "fr") return fr_mcptooladdfeaturedescription4(inputs)
-	return uk_mcptooladdfeaturedescription4(inputs)
+	if (locale === "uk") return uk_mcptooladdfeaturedescription4(inputs)
+	return en_mcptooladdfeaturedescription4(inputs)
 });
 export { mcptooladdfeaturedescription4 as "mcpToolAddFeatureDescription" }

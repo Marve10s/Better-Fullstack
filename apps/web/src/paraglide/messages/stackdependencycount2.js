@@ -52,7 +52,6 @@ const uk_stackdependencycount2 = /** @type {(inputs: Stackdependencycount2Inputs
 */
 const stackdependencycount2 = /** @type {((inputs: Stackdependencycount2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Stackdependencycount2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_stackdependencycount2(inputs)
 	if (locale === "es") return es_stackdependencycount2(inputs)
 	if (locale === "zh") return zh_stackdependencycount2(inputs)
 	if (locale === "ja") return ja_stackdependencycount2(inputs)
@@ -60,6 +59,7 @@ const stackdependencycount2 = /** @type {((inputs: Stackdependencycount2Inputs, 
 	if (locale === "zh-Hant") return zh_hant1_stackdependencycount2(inputs)
 	if (locale === "de") return de_stackdependencycount2(inputs)
 	if (locale === "fr") return fr_stackdependencycount2(inputs)
-	return uk_stackdependencycount2(inputs)
+	if (locale === "uk") return uk_stackdependencycount2(inputs)
+	return en_stackdependencycount2(inputs)
 });
 export { stackdependencycount2 as "stackDependencyCount" }

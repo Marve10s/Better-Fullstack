@@ -52,7 +52,6 @@ const uk_llmpathpromptdetail3 = /** @type {(inputs: Llmpathpromptdetail3Inputs) 
 */
 const llmpathpromptdetail3 = /** @type {((inputs?: Llmpathpromptdetail3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmpathpromptdetail3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_llmpathpromptdetail3(inputs)
 	if (locale === "es") return es_llmpathpromptdetail3(inputs)
 	if (locale === "zh") return zh_llmpathpromptdetail3(inputs)
 	if (locale === "ja") return ja_llmpathpromptdetail3(inputs)
@@ -60,6 +59,7 @@ const llmpathpromptdetail3 = /** @type {((inputs?: Llmpathpromptdetail3Inputs, o
 	if (locale === "zh-Hant") return zh_hant1_llmpathpromptdetail3(inputs)
 	if (locale === "de") return de_llmpathpromptdetail3(inputs)
 	if (locale === "fr") return fr_llmpathpromptdetail3(inputs)
-	return uk_llmpathpromptdetail3(inputs)
+	if (locale === "uk") return uk_llmpathpromptdetail3(inputs)
+	return en_llmpathpromptdetail3(inputs)
 });
 export { llmpathpromptdetail3 as "llmPathPromptDetail" }

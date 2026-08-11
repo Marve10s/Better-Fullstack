@@ -52,7 +52,6 @@ const uk_buildercancel1 = /** @type {(inputs: Buildercancel1Inputs) => Localized
 */
 const buildercancel1 = /** @type {((inputs?: Buildercancel1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildercancel1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_buildercancel1(inputs)
 	if (locale === "es") return es_buildercancel1(inputs)
 	if (locale === "zh") return zh_buildercancel1(inputs)
 	if (locale === "ja") return ja_buildercancel1(inputs)
@@ -60,6 +59,7 @@ const buildercancel1 = /** @type {((inputs?: Buildercancel1Inputs, options?: { l
 	if (locale === "zh-Hant") return zh_hant1_buildercancel1(inputs)
 	if (locale === "de") return de_buildercancel1(inputs)
 	if (locale === "fr") return fr_buildercancel1(inputs)
-	return uk_buildercancel1(inputs)
+	if (locale === "uk") return uk_buildercancel1(inputs)
+	return en_buildercancel1(inputs)
 });
 export { buildercancel1 as "builderCancel" }

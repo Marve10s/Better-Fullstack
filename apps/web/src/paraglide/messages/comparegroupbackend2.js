@@ -52,7 +52,6 @@ const uk_comparegroupbackend2 = /** @type {(inputs: Comparegroupbackend2Inputs) 
 */
 const comparegroupbackend2 = /** @type {((inputs?: Comparegroupbackend2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparegroupbackend2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_comparegroupbackend2(inputs)
 	if (locale === "es") return es_comparegroupbackend2(inputs)
 	if (locale === "zh") return zh_comparegroupbackend2(inputs)
 	if (locale === "ja") return ja_comparegroupbackend2(inputs)
@@ -60,6 +59,7 @@ const comparegroupbackend2 = /** @type {((inputs?: Comparegroupbackend2Inputs, o
 	if (locale === "zh-Hant") return zh_hant1_comparegroupbackend2(inputs)
 	if (locale === "de") return de_comparegroupbackend2(inputs)
 	if (locale === "fr") return fr_comparegroupbackend2(inputs)
-	return uk_comparegroupbackend2(inputs)
+	if (locale === "uk") return uk_comparegroupbackend2(inputs)
+	return en_comparegroupbackend2(inputs)
 });
 export { comparegroupbackend2 as "compareGroupBackend" }

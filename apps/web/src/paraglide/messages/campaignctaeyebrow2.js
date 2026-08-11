@@ -52,7 +52,6 @@ const uk_campaignctaeyebrow2 = /** @type {(inputs: Campaignctaeyebrow2Inputs) =>
 */
 const campaignctaeyebrow2 = /** @type {((inputs?: Campaignctaeyebrow2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Campaignctaeyebrow2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_campaignctaeyebrow2(inputs)
 	if (locale === "es") return es_campaignctaeyebrow2(inputs)
 	if (locale === "zh") return zh_campaignctaeyebrow2(inputs)
 	if (locale === "ja") return ja_campaignctaeyebrow2(inputs)
@@ -60,6 +59,7 @@ const campaignctaeyebrow2 = /** @type {((inputs?: Campaignctaeyebrow2Inputs, opt
 	if (locale === "zh-Hant") return zh_hant1_campaignctaeyebrow2(inputs)
 	if (locale === "de") return de_campaignctaeyebrow2(inputs)
 	if (locale === "fr") return fr_campaignctaeyebrow2(inputs)
-	return uk_campaignctaeyebrow2(inputs)
+	if (locale === "uk") return uk_campaignctaeyebrow2(inputs)
+	return en_campaignctaeyebrow2(inputs)
 });
 export { campaignctaeyebrow2 as "campaignCtaEyebrow" }

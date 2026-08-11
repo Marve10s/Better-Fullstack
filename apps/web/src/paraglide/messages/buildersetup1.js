@@ -52,7 +52,6 @@ const uk_buildersetup1 = /** @type {(inputs: Buildersetup1Inputs) => LocalizedSt
 */
 const buildersetup1 = /** @type {((inputs?: Buildersetup1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildersetup1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_buildersetup1(inputs)
 	if (locale === "es") return es_buildersetup1(inputs)
 	if (locale === "zh") return zh_buildersetup1(inputs)
 	if (locale === "ja") return ja_buildersetup1(inputs)
@@ -60,6 +59,7 @@ const buildersetup1 = /** @type {((inputs?: Buildersetup1Inputs, options?: { loc
 	if (locale === "zh-Hant") return zh_hant1_buildersetup1(inputs)
 	if (locale === "de") return de_buildersetup1(inputs)
 	if (locale === "fr") return fr_buildersetup1(inputs)
-	return uk_buildersetup1(inputs)
+	if (locale === "uk") return uk_buildersetup1(inputs)
+	return en_buildersetup1(inputs)
 });
 export { buildersetup1 as "builderSetup" }

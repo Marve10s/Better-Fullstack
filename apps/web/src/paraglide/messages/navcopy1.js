@@ -52,7 +52,6 @@ const uk_navcopy1 = /** @type {(inputs: Navcopy1Inputs) => LocalizedString} */ (
 */
 const navcopy1 = /** @type {((inputs?: Navcopy1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navcopy1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_navcopy1(inputs)
 	if (locale === "es") return es_navcopy1(inputs)
 	if (locale === "zh") return zh_navcopy1(inputs)
 	if (locale === "ja") return ja_navcopy1(inputs)
@@ -60,6 +59,7 @@ const navcopy1 = /** @type {((inputs?: Navcopy1Inputs, options?: { locale?: "en"
 	if (locale === "zh-Hant") return zh_hant1_navcopy1(inputs)
 	if (locale === "de") return de_navcopy1(inputs)
 	if (locale === "fr") return fr_navcopy1(inputs)
-	return uk_navcopy1(inputs)
+	if (locale === "uk") return uk_navcopy1(inputs)
+	return en_navcopy1(inputs)
 });
 export { navcopy1 as "navCopy" }
