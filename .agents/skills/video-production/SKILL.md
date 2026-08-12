@@ -275,9 +275,8 @@ with callouts and 9:16 format for mobile.
 - **Compatible Platforms**: Claude, ChatGPT, Gemini, Codex
 
 ### Related Skills
-- [image-generation](../image-generation/SKILL.md)
-- [presentation-builder](../../documentation/presentation-builder/SKILL.md)
-- [frontend-design](../../frontend/design-system/SKILL.md)
+
+- [frontend-design](../frontend-design/SKILL.md)
 
 ### Tags
 `#video` `#remotion` `#animation` `#storytelling` `#automation` `#react`

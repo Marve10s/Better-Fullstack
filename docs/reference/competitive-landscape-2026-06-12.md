@@ -1,6 +1,6 @@
 # Competitive Landscape — Scaffolding Tools (June 2026)
 
-Research snapshot as of June 12, 2026. Sources: competitor repos/docs/changelogs, GitHub issues, HN/Reddit threads, and pricing pages. Like the May 21 better-t-stack analysis, this will go stale — verify against current releases before using as a roadmap source. Roadmap conclusions drawn from this snapshot live in `docs/plans/planned/next-big-features.md`.
+Research snapshot as of June 12, 2026. Sources: competitor repos/docs/changelogs, GitHub issues, HN/Reddit threads, and pricing pages. Like the May 21 better-t-stack analysis, this will go stale — verify against current releases before using as a roadmap source. Roadmap conclusions drawn from this snapshot live in `docs/reference/next-big-features.md`.
 
 ---
 

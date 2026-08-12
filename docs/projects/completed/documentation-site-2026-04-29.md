@@ -74,7 +74,7 @@ The first public documentation surface now lives in `apps/web/content/docs` and 
 
 ## Follow-Up Backlog
 
-The remaining docs work is tracked in `docs/plans/planned/documentation-follow-ups.md`:
+The remaining docs work is tracked in `docs/projects/backlog/documentation-follow-ups.md`:
 
 - Public roadmap page
 - Interactive compatibility matrix

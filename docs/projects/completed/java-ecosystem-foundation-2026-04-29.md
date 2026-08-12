@@ -103,4 +103,4 @@ Generated Java Maven/Gradle runtime tests were not run locally during implementa
 
 ## Follow-Up Backlog
 
-Remaining Java work now lives in `docs/plans/planned/java-ecosystem-follow-ups.md`.
+Remaining Java work now lives in `docs/projects/backlog/java-ecosystem-follow-ups.md`.

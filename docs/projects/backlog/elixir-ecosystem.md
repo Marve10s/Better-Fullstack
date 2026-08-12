@@ -23,6 +23,7 @@ Current status: only deeper follow-ups remain here.
 - Elixir 1.17+ / OTP 27+ as default
 
 ### Challenges
+
 - Phoenix has its own project structure conventions (different from all other ecosystems)
 - Mix-based build system requires different template generation approach
 - LiveView is unique — no equivalent concept in other ecosystems

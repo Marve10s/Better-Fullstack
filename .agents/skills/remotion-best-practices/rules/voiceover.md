@@ -7,7 +7,7 @@ metadata:
 
 # Adding AI voiceover to a Remotion composition
 
-Use ElevenLabs TTS to generate speech audio per scene, then use [`calculateMetadata`](./calculate-metadata) to dynamically size the composition to match the audio.
+Use ElevenLabs TTS to generate speech audio per scene, then use [`calculateMetadata`](./calculate-metadata.md) to dynamically size the composition to match the audio.
 
 ## Prerequisites
 

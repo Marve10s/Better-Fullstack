@@ -16,6 +16,7 @@ Related request from GitHub (#76, better-t-stack #678): scaffold a single app wi
   - Useful for small projects, quick prototypes, or teams that don't want monorepo complexity
 
 ### Implementation
+
 - Skip Turborepo/Nx workspace setup
 - Merge `apps/web` and `apps/server` into root (or colocate)
 - Adjust all template paths

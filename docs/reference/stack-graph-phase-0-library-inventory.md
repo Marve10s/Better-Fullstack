@@ -1,6 +1,6 @@
 # Stack-Graph Phase 0 — Library Inventory & Phase 2 Work Plan
 
-> Deliverable of Phase 0 from [single-source-of-truth-stack-graph.md](./single-source-of-truth-stack-graph.md).
+> Deliverable of Phase 0 from [single-source-of-truth-stack-graph.md](../projects/active/single-source-of-truth-stack-graph.md).
 > Status: **Reference inventory with remaining Phase 3/4 follow-up**. Companion deliverable: structural round-trip tests in `packages/types/test/stack-graph.test.ts`.
 
 This catalogs every flat `ProjectConfig` field, its target graph role, owner part, supported ecosystems, selection mode, and where its compatibility rules live today — so Phase 2 (promote libraries to owned parts) can be executed in planned batches instead of discovered incrementally.

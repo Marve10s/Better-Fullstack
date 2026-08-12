@@ -1,9 +1,10 @@
-import { OPTION_CATEGORY_METADATA } from "@better-fullstack/types";
-import { STACK_SELECTION_URL_KEYS } from "@better-fullstack/types/stack-translation";
 import { describe, expect, it } from "bun:test";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+
+import { OPTION_CATEGORY_METADATA } from "@better-fullstack/types";
+import { STACK_SELECTION_URL_KEYS } from "@better-fullstack/types/stack-translation";
 
 import { buildSearchSections } from "../src/lib/docs/search";
 import { LOCALIZED_CONTENT_LOCALES } from "../src/lib/i18n/locales";
@@ -14,7 +15,7 @@ const DOCS_ROOT = join(CONTENT_ROOT, "docs");
 const GUIDES_ROOT = join(CONTENT_ROOT, "guides");
 const BLOG_ROOT = join(CONTENT_ROOT, "blog");
 const LOCALIZED_CONTENT_ROOT = join(CONTENT_ROOT, "i18n");
-const PLANS_ROOT = join(WEB_ROOT, "../../docs/plans");
+const PROJECT_BACKLOG_ROOT = join(WEB_ROOT, "../../docs/projects/backlog");
 const PUBLIC_ROUTE_ROOTS = new Map([
   ["/docs", DOCS_ROOT],
   ["/guides", GUIDES_ROOT],
@@ -518,15 +519,17 @@ describe("docs content contract", () => {
         metadata.options.flatMap((option) => [option.id, option.cliValue]),
       ),
     );
-    const staleRows = walkFiles(PLANS_ROOT, (path) => path.endsWith(".md")).flatMap((path) => {
-      const source = readFileSync(path, "utf8");
-      return [...source.matchAll(/^- \[ \] Add `([^`]+)`/gm)]
-        .filter((match) => registeredOptions.has(match[1]))
-        .map(
-          (match) =>
-            `${relative(WEB_ROOT, path)}:${lineNumberForIndex(source, match.index)} ${match[1]}`,
-        );
-    });
+    const staleRows = walkFiles(PROJECT_BACKLOG_ROOT, (path) => path.endsWith(".md")).flatMap(
+      (path) => {
+        const source = readFileSync(path, "utf8");
+        return [...source.matchAll(/^- \[ \] Add `([^`]+)`/gm)]
+          .filter((match) => registeredOptions.has(match[1]))
+          .map(
+            (match) =>
+              `${relative(WEB_ROOT, path)}:${lineNumberForIndex(source, match.index)} ${match[1]}`,
+          );
+      },
+    );
 
     expect(staleRows).toEqual([]);
   });

@@ -1,69 +1,78 @@
 import { describe, expect, test } from "bun:test";
 import { readdir } from "node:fs/promises";
 
-const REGISTRY_PATH = "docs/plans/README.md";
-const VALID_STATES = new Set(["Active", "Candidate", "Historical"]);
+const INDEX_PATH = "docs/projects/README.md";
+const LIFECYCLES = ["active", "backlog", "completed"] as const;
 
-async function planFiles(): Promise<string[]> {
+async function projectFiles(): Promise<string[]> {
   const entries = await Promise.all(
-    ["planned", "completed"].map(async (directory) =>
-      (await readdir(`docs/plans/${directory}`))
+    LIFECYCLES.map(async (lifecycle) =>
+      (await readdir(`docs/projects/${lifecycle}`))
         .filter((file) => file.endsWith(".md"))
-        .map((file) => `${directory}/${file}`),
+        .map((file) => `${lifecycle}/${file}`),
     ),
   );
   return entries.flat().sort();
 }
 
-function registryRows(source: string): Array<{ state: string; path: string; purpose: string }> {
+function indexedProjects(source: string): string[] {
+  return [...source.matchAll(/^- `((?:active|backlog|completed)\/[^`]+\.md)`/gm)]
+    .flatMap((match) => (match[1] ? [match[1]] : []))
+    .sort();
+}
+
+function activeRows(source: string): Array<{ path: string; lane: string }> {
   return [
     ...source.matchAll(
-      /^\|\s*(Active|Candidate|Historical)\s*\|\s*`([^`]+)`\s*\|\s*([^|\n]+?)\s*\|$/gm,
+      /^- `(active\/[^`]+\.md)` - \[([^\]]+)\]\(\.\.\/next-updates-roadmap\.md#[^)]+\):/gm,
     ),
   ].flatMap((match) => {
-    const state = match[1];
-    const path = match[2];
-    const purpose = match[3];
-    return state && path && purpose ? [{ state, path, purpose }] : [];
+    const path = match[1];
+    const lane = match[2];
+    return path && lane ? [{ path, lane }] : [];
   });
 }
 
-describe("planning registry", () => {
-  test("covers every plan exactly once with an explicit state", async () => {
-    const [source, files] = await Promise.all([Bun.file(REGISTRY_PATH).text(), planFiles()]);
-    const rows = registryRows(source);
-    const registered = rows.map((row) => row.path).sort();
+describe("project lifecycle registry", () => {
+  test("indexes every project exactly once", async () => {
+    const [source, files] = await Promise.all([Bun.file(INDEX_PATH).text(), projectFiles()]);
+    const indexed = indexedProjects(source);
 
-    expect(registered).toEqual(files);
-    expect(new Set(registered).size).toBe(registered.length);
-    expect(rows.every((row) => VALID_STATES.has(row.state))).toBe(true);
+    expect(indexed).toEqual(files);
+    expect(new Set(indexed).size).toBe(indexed.length);
   });
 
-  test("completed records cannot be advertised as active or candidate", async () => {
-    const rows = registryRows(await Bun.file(REGISTRY_PATH).text());
-    const invalid = rows.filter(
-      (row) => row.path.startsWith("completed/") && row.state !== "Historical",
-    );
+  test("backlog contains unfinished work only", async () => {
+    const backlog = await readdir("docs/projects/backlog");
+    const completedRows = (
+      await Promise.all(
+        backlog
+          .filter((file) => file.endsWith(".md"))
+          .map(async (file) => {
+            const path = `docs/projects/backlog/${file}`;
+            const source = await Bun.file(path).text();
+            return /^\s*-\s*\[[xX]\]/mu.test(source) ? [path] : [];
+          }),
+      )
+    ).flat();
 
-    expect(invalid).toEqual([]);
+    expect(completedRows).toEqual([]);
   });
 
-  test("every active plan names and links its current roadmap lane", async () => {
-    const [registry, roadmap] = await Promise.all([
-      Bun.file(REGISTRY_PATH).text(),
+  test("every active project names and links its current roadmap lane", async () => {
+    const [index, roadmap] = await Promise.all([
+      Bun.file(INDEX_PATH).text(),
       Bun.file("docs/next-updates-roadmap.md").text(),
     ]);
-    const active = registryRows(registry).filter((row) => row.state === "Active");
+    const active = activeRows(index);
 
     expect(active.map((row) => row.path).sort()).toEqual([
-      "planned/documentation-follow-ups.md",
-      "planned/platform-features.md",
-      "planned/single-source-of-truth-stack-graph.md",
+      "active/documentation-follow-ups.md",
+      "active/platform-features.md",
+      "active/single-source-of-truth-stack-graph.md",
     ]);
     for (const row of active) {
-      const lane = row.purpose.match(/^\[([^\]]+)\]\(\.\.\/next-updates-roadmap\.md#[^)]+\)\s+—/);
-      expect(lane, `${row.path} must link a named roadmap lane`).not.toBeNull();
-      expect(roadmap).toContain(`## ${lane?.[1]}`);
+      expect(roadmap).toContain(`## ${row.lane}`);
     }
   });
 
@@ -74,7 +83,7 @@ describe("planning registry", () => {
 
     expect(operationalTrust).toBeGreaterThan(-1);
     expect(operationalTrust).toBeLessThan(lifecycleReliability);
-    expect(roadmap).toContain("[planning registry](plans/README.md)");
+    expect(roadmap).toContain("[project lifecycle](projects/README.md)");
     expect(roadmap).toContain("[backend runbook](../packages/backend/README.md)");
   });
 });

@@ -74,7 +74,8 @@ insta) — no new category; do not duplicate.
 
 ## Batch 6 — Kotlin (new language)
 
-Decision (per `new-ecosystems.md`): Kotlin ships as a **Java-ecosystem extension**, not a
+Decision (per [the ecosystem watch list](../../reference/new-ecosystems-watch-list.md)): Kotlin ships
+as a **Java-ecosystem extension**, not a
 standalone ecosystem — it shares Maven/Gradle, Spring, and the JVM toolchain.
 
 - [x] `javaLanguage` field: `java` (default) | `kotlin` — switches templates to `.kt` sources,

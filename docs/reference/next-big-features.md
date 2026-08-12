@@ -5,7 +5,7 @@
 > shipped since this analysis.
 
 Synthesis of internal readiness (codebase, plan docs, GitHub issues) and external evidence
-(competitive landscape as of June 12, 2026 — see `docs/plans/planned/competitive-landscape-2026-06-12.md`).
+(competitive landscape as of June 12, 2026 — see `docs/reference/competitive-landscape-2026-06-12.md`).
 Updated 2026-06-30 to focus on the highest-leverage remaining product opportunities.
 
 ## Framing
@@ -35,7 +35,7 @@ reliability, recovery, and public evidence rather than first implementation.
 
 ### 2. Incremental capability additions to existing projects
 
-Plan doc already exists: `docs/plans/planned/mcp-incremental-library-updates.md`. Generic
+Plan doc already exists: `docs/projects/completed/mcp-incremental-library-updates.md`. Generic
 `bfs_plan_stack_update` / `bfs_apply_stack_update` tools have started landing and now cover broad
 create-time stack fields, compatibility adjustment reporting, additive file/dependency/env updates,
 and many cross-ecosystem library additions. This is no longer a blank-slate feature; it is an
@@ -74,7 +74,7 @@ The default consumer of a scaffolder in 2026 is an agent. create-next-app ships 
 
 ### 5. Prompt-to-stack on the web builder
 
-Meet the Lovable-shaped expectation: natural language → recommended config via the existing compatibility engine → reviewable CLI command/JSON. Keeps the deterministic-output advantage while lowering the commitment barrier. The plumbing (`bfs_plan_project`, compatibility auto-adjustment) already exists. Related: template preview in builder (`docs/plans/planned/platform-features.md`) lowers the same commitment barrier.
+Meet the Lovable-shaped expectation: natural language → recommended config via the existing compatibility engine → reviewable CLI command/JSON. Keeps the deterministic-output advantage while lowering the commitment barrier. The plumbing (`bfs_plan_project`, compatibility auto-adjustment) already exists. Related: template preview in builder (`docs/projects/backlog/platform-features.md`) lowers the same commitment barrier.
 
 ### 6. Registry for community/private capability packs
 
