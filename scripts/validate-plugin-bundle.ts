@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, normalize } from "node:path";
 
 type JsonObject = Record<string, unknown>;
@@ -61,7 +61,7 @@ function assertPathInsideRoot(relativePath: unknown, name: string) {
   return absolutePath;
 }
 
-function assertSkillFile(path: string) {
+function readSkillName(path: string): string {
   const skillText = readFileSync(path, "utf8");
   assert(skillText.startsWith("---\n"), `${path} must start with YAML frontmatter`);
   const frontmatterEnd = skillText.indexOf("\n---", 4);
@@ -82,6 +82,7 @@ function assertSkillFile(path: string) {
   const meta = parsed as JsonObject;
   assertString(meta.name, `${path} frontmatter name`);
   assertString(meta.description, `${path} frontmatter description`);
+  return meta.name as string;
 }
 
 function assertManifestBasics(manifest: JsonObject, prefix: string) {
@@ -113,12 +114,18 @@ assert(
 assertString((codexManifest.author as JsonObject).name, "codexPlugin.author.name");
 
 const skillsDir = assertPluginComponents(codexManifest, "codexPlugin");
-const skillFiles = ["scaffold-project", "add-to-project"].map((name) =>
-  join(skillsDir, name, "SKILL.md"),
-);
-for (const skillFile of skillFiles) {
+const skillDirectories = readdirSync(skillsDir, { withFileTypes: true })
+  .filter((entry) => entry.isDirectory())
+  .map((entry) => entry.name)
+  .sort();
+assert(skillDirectories.length > 0, "plugin skills directory must contain at least one skill");
+for (const skillDirectory of skillDirectories) {
+  const skillFile = join(skillsDir, skillDirectory, "SKILL.md");
   assert(existsSync(skillFile), `Missing plugin skill file: ${skillFile}`);
-  assertSkillFile(skillFile);
+  assert(
+    readSkillName(skillFile) === skillDirectory,
+    `${skillFile} frontmatter name must match its directory`,
+  );
 }
 
 const claudeManifest = readJson(claudeManifestPath);

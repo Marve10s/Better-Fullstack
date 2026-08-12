@@ -33,6 +33,11 @@ Preview first when the stack is new or scripted:
 Remove `--dry-run` to scaffold. Commit the generated `bts.jsonc` and `bts.lock.json`; both are part
 of the project's reproducible history.
 
+Choose the workspace layout during creation. `monorepo` is the default. `single-app` is restricted
+to thin Next.js and TanStack Start self-backend stacks that do not emit sibling database, auth, API,
+service, native, container, or deployment packages; later lifecycle commands preserve the recorded
+layout rather than converting an established project in place.
+
 ## 2. Evolve the selected stack
 
 Use `add` when the desired configuration changes—for example, adding email, observability, an

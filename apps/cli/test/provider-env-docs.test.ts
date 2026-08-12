@@ -1,0 +1,103 @@
+import type { ProjectConfig } from "@better-fullstack/types";
+
+import { describe, expect, it } from "bun:test";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+import { createVirtual } from "../src/index";
+import { listVirtualTreeFiles } from "./virtual-tree-utils";
+
+const ENV_DOCS_PATH = resolve(
+  import.meta.dir,
+  "../../web/content/docs/provider-setup/environment-variables.mdx",
+);
+
+type ProviderEnvContract = {
+  id: string;
+  config: Partial<Omit<ProjectConfig, "projectDir" | "relativePath">>;
+  keys: string[];
+};
+
+const CONTRACTS: ProviderEnvContract[] = [
+  {
+    id: "better-auth",
+    config: { auth: "better-auth" },
+    keys: ["BETTER_AUTH_SECRET", "BETTER_AUTH_URL"],
+  },
+  {
+    id: "stripe",
+    config: { payments: "stripe" },
+    keys: ["VITE_STRIPE_PUBLISHABLE_KEY", "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"],
+  },
+  {
+    id: "resend",
+    config: { email: "resend" },
+    keys: ["RESEND_API_KEY", "RESEND_FROM_EMAIL"],
+  },
+  {
+    id: "sentry",
+    config: { observability: "sentry" },
+    keys: [
+      "SENTRY_DSN",
+      "SENTRY_ENVIRONMENT",
+      "SENTRY_TRACES_SAMPLE_RATE",
+      "SENTRY_PROFILES_SAMPLE_RATE",
+    ],
+  },
+  {
+    id: "upstash-redis",
+    config: { caching: "upstash-redis" },
+    keys: ["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN", "UPSTASH_REDIS_URL"],
+  },
+  {
+    id: "s3",
+    config: { fileStorage: "s3" },
+    keys: [
+      "AWS_S3_REGION",
+      "AWS_S3_ACCESS_KEY_ID",
+      "AWS_S3_SECRET_ACCESS_KEY",
+      "AWS_S3_BUCKET_NAME",
+    ],
+  },
+  {
+    id: "r2",
+    config: { fileStorage: "r2" },
+    keys: ["R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET_NAME"],
+  },
+];
+
+function envKeysForTree(tree: NonNullable<Awaited<ReturnType<typeof createVirtual>>["tree"]>) {
+  return new Set(
+    listVirtualTreeFiles(tree)
+      .filter((file) => /(^|\/)\.env(?:\.example|\.local)?$/.test(file.path))
+      .flatMap((file) =>
+        file.content.split("\n").flatMap((line) => line.match(/^([A-Z][A-Z0-9_]*)=/)?.[1] ?? []),
+      ),
+  );
+}
+
+describe("provider environment documentation", () => {
+  it("matches exact generated keys for documented provider selections", async () => {
+    const docs = readFileSync(ENV_DOCS_PATH, "utf8");
+    const results = await Promise.all(
+      CONTRACTS.map(async (contract) => ({
+        contract,
+        generated: await createVirtual({
+          projectName: `env-docs-${contract.id}`,
+          ...contract.config,
+        }),
+      })),
+    );
+
+    for (const { contract, generated } of results) {
+      expect(generated.success, `${contract.id}: ${generated.error}`).toBe(true);
+      expect(generated.tree).toBeDefined();
+      const generatedKeys = envKeysForTree(generated.tree!);
+
+      expect(docs).toContain(`<!-- env-contract:${contract.id} ${contract.keys.join(",")} -->`);
+      for (const key of contract.keys) {
+        expect(generatedKeys.has(key), `${contract.id} did not generate ${key}`).toBe(true);
+      }
+    }
+  });
+});

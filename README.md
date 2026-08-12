@@ -43,22 +43,22 @@ Most scaffolding tools lock you into one framework and one opinion. Better Fulls
 - **Broad stack catalog** — frontend, backend, database, ORM, auth, API layer, payments, AI, DevOps, and more
 - **Multi-ecosystem projects** — compose web, mobile, and backend stacks across TypeScript, React Native, Rust, Go, Python, Java, .NET, and Elixir
 - **Visual builder** — configure your stack in the browser, get a ready-to-run CLI command
-- **Wired for you** — no manual glue code; every picked integration is preconfigured and working out of the box
-- **Compatibility-checked** — an engine validates every combination, so generated projects build and type-check
+- **Lifecycle-aware** — create, add, update, check, and generate from the recorded `bts.jsonc` project model
+- **Compatibility-checked** — the planner rejects or adjusts invalid selections before files are generated
 
 <details>
 <summary><strong>What's in the catalog?</strong></summary>
 <br>
 
-| Category | Examples |
-|---|---|
-| Web frontends | Next.js, Nuxt, SvelteKit, SolidStart, Angular, Qwik, Astro, TanStack Start, TanStack Router, React Router |
-| Backends | Hono, Elysia, Fastify, Express, NestJS, AdonisJS, Axum, Rocket, FastAPI, Flask, Litestar, Spring Boot |
-| Mobile | Expo / React Native with navigation, UI, storage, push, OTA options |
-| Databases & ORMs | PostgreSQL, MySQL, SQLite, MongoDB — Drizzle, Prisma, MikroORM, TypeORM, Sequelize, SQLx, Diesel |
-| API layer | tRPC, oRPC, ts-rest, OpenAPI, GraphQL |
-| Auth & payments | Better-Auth, Clerk, Auth.js, Auth0, Supabase Auth, WorkOS — Stripe, Paddle, LemonSqueezy, RevenueCat |
-| Extras | AI SDKs, job queues, realtime, caching, search, file storage, i18n, feature flags, vector DBs, observability |
+| Category         | Examples                                                                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------------------------ |
+| Web frontends    | Next.js, Nuxt, SvelteKit, SolidStart, Angular, Qwik, Astro, TanStack Start, TanStack Router, React Router    |
+| Backends         | Hono, Elysia, Fastify, Express, NestJS, AdonisJS, Axum, Rocket, FastAPI, Flask, Litestar, Spring Boot        |
+| Mobile           | Expo / React Native with navigation, UI, storage, push, OTA options                                          |
+| Databases & ORMs | PostgreSQL, MySQL, SQLite, MongoDB — Drizzle, Prisma, MikroORM, TypeORM, Sequelize, SQLx, Diesel             |
+| API layer        | tRPC, oRPC, ts-rest, OpenAPI, GraphQL                                                                        |
+| Auth & payments  | Better-Auth, Clerk, Auth.js, Auth0, Supabase Auth, WorkOS — Stripe, Paddle, LemonSqueezy, RevenueCat         |
+| Extras           | AI SDKs, job queues, realtime, caching, search, file storage, i18n, feature flags, vector DBs, observability |
 
 Explore every option in the **[App Builder →](https://better-fullstack.dev/new)**
 
@@ -117,6 +117,7 @@ yarn create better-fullstack@latest
 --template <name>  # Use a preset (t3, mern, pern, uniwind)
 --ecosystem <lang> # Choose the primary project ecosystem
 --part <binding>   # Add a multi-ecosystem stack part, e.g. frontend:typescript:next
+--workspace-shape # Choose monorepo or a qualifying flat single-app layout
 --version-channel  # Dependency channel: stable, latest, beta
 --no-git           # Skip git initialization
 --no-install       # Skip dependency installation
@@ -125,6 +126,19 @@ yarn create better-fullstack@latest
 ```
 
 </details>
+
+<br>
+
+## 🔁 Project Lifecycle
+
+Better Fullstack keeps the selected stack in `bts.jsonc` and the generated baseline in
+`bts.lock.json`. Use `add --dry-run` before changing capabilities, `update` before applying newer
+templates, `check` for a machine-readable project diagnosis, and `gen ... --dry-run` for supported
+in-project generation. See the **[lifecycle guide →](https://better-fullstack.dev/docs/getting-started/lifecycle/)**.
+
+Flat `single-app` output is available for thin Next.js and TanStack Start self-backend projects.
+Stacks that need separate database, auth, API, service, native, or deployment packages remain
+monorepos.
 
 <br>
 
