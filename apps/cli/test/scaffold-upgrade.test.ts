@@ -176,6 +176,32 @@ describe("scaffold-upgrade engine", () => {
     }
   });
 
+  it("migrates a valid manifest v1 deterministically without inventing provenance", async () => {
+    const dir = await makeTempDir();
+    const legacy = {
+      version: "1",
+      createdAt: "2026-08-10T00:00:00.000Z",
+      hashes: { "src/index.ts": "a".repeat(64) },
+      baselines: { "package.json": "{}\n" },
+    };
+    await writeFile(join(dir, SCAFFOLD_MANIFEST_FILE), JSON.stringify(legacy), "utf-8");
+
+    const first = await readScaffoldManifestResult(dir);
+    const second = await readScaffoldManifestResult(dir);
+    expect(first).toEqual(second);
+    expect(first).toMatchObject({
+      status: "valid",
+      migratedFromVersion: "1",
+      manifest: {
+        version: "2",
+        provenance: { state: "migrated-v1", createdWith: null, current: null },
+      },
+    });
+    if (first.status === "valid") {
+      expect(first.manifest.history[0]?.id).toMatch(/^[0-9a-f]{24}$/);
+    }
+  });
+
   it("reports no drift on an untouched fresh project", async () => {
     const dir = await makeTempDir();
     await scaffoldWithBaseline(dir, makeConfig(dir));
@@ -633,6 +659,28 @@ describe("scaffold-upgrade engine", () => {
     expect(await readFile(envPath, "utf-8")).toContain("MY_SECRET=shh");
   });
 
+  it("keeps plans stable when a generated secrets file is absent", async () => {
+    const dir = await makeTempDir();
+    await scaffoldWithBaseline(dir, makeConfig(dir));
+    const target = "apps/server/.env";
+    await unlink(join(dir, target));
+    const manifest = await readScaffoldManifest(dir);
+    delete manifest!.hashes[target];
+    await writeScaffoldManifest(dir, manifest!);
+
+    const first = await planScaffoldUpgrade(dir);
+    const second = await planScaffoldUpgrade(dir);
+    assertSuccess(first);
+    assertSuccess(second);
+    expect(getUpgradePlanDigest(second)).toBe(getUpgradePlanDigest(first));
+    expect(first.manual).toContainEqual({
+      path: target,
+      category: "manual",
+      reason: "secrets file is absent — create it manually; never generated during update",
+    });
+    expect(first.actionable).not.toContain(target);
+  });
+
   it("never treats a generated README as drift, even when it differs from the render", async () => {
     const dir = await makeTempDir();
     await scaffoldWithBaseline(dir, makeConfig(dir));
@@ -679,7 +727,7 @@ describe("scaffold-upgrade engine", () => {
     expect(await readFile(join(dir, source), "utf-8")).toBe("// changed after review\n");
   });
 
-  it("requires explicit destructive manifest-v1 acknowledgement before any write", async () => {
+  it("applies verified manifest-v2 plans without a lineage acknowledgement", async () => {
     const dir = await makeTempDir();
     await scaffoldWithBaseline(dir, makeConfig(dir));
     const baseline = await planScaffoldUpgrade(dir);
@@ -697,16 +745,17 @@ describe("scaffold-upgrade engine", () => {
     const result = await applyScaffoldUpgrade(dir, {
       expectedPlanDigest: getUpgradePlanDigest(reviewed),
     });
-    expect(result.success).toBe(false);
-    if (!result.success) expect(result.error).toContain("acknowledgeUnprovenManifestV1");
-    expect(await readFile(join(dir, target), "utf-8")).toBe(old);
+    assertSuccess(result);
+    expect(await readFile(join(dir, target), "utf-8")).toBe(current);
+    expect(result.lifecycle).toMatchObject({
+      status: "applied",
+      provenance: { verified: true },
+      recovery: { available: true, automaticRollback: true },
+    });
   });
 
-  it("requires CLI apply review token and separate acknowledgement", async () => {
+  it("requires a CLI apply review token and reports the v2 recovery guarantee", async () => {
     expect(getUpdateApplyAuthorizationError({ apply: true })).toContain("--review-token");
-    expect(
-      getUpdateApplyAuthorizationError({ apply: true, reviewToken: "a".repeat(64) }),
-    ).toContain("--acknowledge-unproven-manifest-v1");
     expect(
       getUpdateApplyAuthorizationError({
         apply: true,
@@ -721,13 +770,13 @@ describe("scaffold-upgrade engine", () => {
     assertSuccess(plan);
     expect(toJsonPlan(plan)).toMatchObject({
       reviewToken: getUpgradePlanDigest(plan),
-      guarantee: "unproven-manifest-v1-plan-only",
+      guarantee: "verified-manifest-v2-recoverable",
       actionableHashes: plan.actionableHashes,
       actionablePreimages: plan.actionablePreimages,
     });
     expect(getUpdateApplyCommand(plan, "linux")).toBe(
       `npx --yes create-better-fullstack@${getLatestCLIVersion()} update ${quotePosixShellArgument(plan.projectDir)} --apply ` +
-        `--review-token ${getUpgradePlanDigest(plan)} --acknowledge-unproven-manifest-v1`,
+        `--review-token ${getUpgradePlanDigest(plan)}`,
     );
   });
 
@@ -742,7 +791,7 @@ describe("scaffold-upgrade engine", () => {
 
     expect(command).toBe(
       `npx --yes create-better-fullstack@${getLatestCLIVersion()} update '/tmp/review path/$(touch should-not-run)/o'"'"'brien' --apply ` +
-        `--review-token ${getUpgradePlanDigest(reviewedPlan)} --acknowledge-unproven-manifest-v1`,
+        `--review-token ${getUpgradePlanDigest(reviewedPlan)}`,
     );
     expect(command).not.toContain("bfs update");
     expect(getUpdateApplyCommandFlavor("linux")).toBe("POSIX shell");
@@ -751,7 +800,7 @@ describe("scaffold-upgrade engine", () => {
     const windowsPlan = { ...plan, projectDir: windowsPath };
     expect(getUpdateApplyCommand(windowsPlan, "win32")).toBe(
       `npx --yes create-better-fullstack@${getLatestCLIVersion()} update ${quotePowerShellArgument(windowsPath)} --apply ` +
-        `--review-token ${getUpgradePlanDigest(windowsPlan)} --acknowledge-unproven-manifest-v1`,
+        `--review-token ${getUpgradePlanDigest(windowsPlan)}`,
     );
     expect(getUpdateApplyCommandFlavor("win32")).toBe("PowerShell");
   });
@@ -828,7 +877,7 @@ describe("scaffold-upgrade engine", () => {
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error).toContain(`${target} changed after it was written`);
-      expect(result.error).toContain("partial writes; no rollback was performed");
+      expect(result.error).toContain("Rollback refused to overwrite concurrently changed files");
     }
     expect(await readFile(join(dir, target), "utf-8")).toBe(concurrentBytes);
     expect(await readFile(join(dir, SCAFFOLD_MANIFEST_FILE), "utf-8")).toBe(manifestBefore);
@@ -861,7 +910,7 @@ describe("scaffold-upgrade engine", () => {
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error).toContain("bts.jsonc changed during apply");
-      expect(result.error).toContain("partial writes; no rollback was performed");
+      expect(result.error).toContain("transaction restored every bound preimage");
     }
     expect(await readFile(configPath, "utf-8")).toBe(changedConfig);
     expect(await readFile(join(dir, SCAFFOLD_MANIFEST_FILE), "utf-8")).toBe(manifestBefore);
@@ -891,7 +940,7 @@ describe("scaffold-upgrade engine", () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) expect(result.error).toContain("before baseline refresh");
-    expect(await readFile(join(dir, target), "utf-8")).toBe(current);
+    expect(await readFile(join(dir, target), "utf-8")).toBe(old);
   });
 
   it("binds the raw bts config identity into the reviewed plan", async () => {

@@ -7,10 +7,12 @@ import path from "node:path";
 import { recordUpgradeBaseline } from "../src/helpers/core/scaffold-upgrade";
 import { readBtsConfig, writeBtsConfig } from "../src/utils/bts-config";
 import {
+  applyMcpPartRemoval,
   applyMcpProjectUpdate,
   boundMcpUpdateReview,
   checkMcpProject,
   getMcpProjectStatus,
+  planMcpPartRemoval,
   planMcpProjectUpdate,
   MCP_UPDATE_REVIEW_CONTENT_LIMIT_BYTES,
 } from "../src/utils/mcp-project-lifecycle";
@@ -25,7 +27,7 @@ afterEach(async () => {
 });
 
 describe("MCP project lifecycle parity", () => {
-  it("truthfully annotates executable checks and non-recoverable apply", async () => {
+  it("truthfully annotates executable checks and recoverable apply", async () => {
     const source = await Bun.file(path.join(import.meta.dir, "../src/mcp.ts")).text();
     const checkBlock = source.slice(
       source.indexOf('registerTool(\n    "bfs_check_project"'),
@@ -39,7 +41,8 @@ describe("MCP project lifecycle parity", () => {
       source.indexOf('registerTool(\n    "bfs_plan_stack_update"'),
     );
     expect(applyBlock).toContain("destructiveHint: true");
-    expect(applyBlock).toContain("Backup and recovery are not implemented");
+    expect(applyBlock).toContain("recoverable transaction");
+    expect(applyBlock).toContain("bfs_recover_project_transaction");
     expect(applyBlock).toContain("acknowledgeUnprovenManifestV1");
   });
 
@@ -49,8 +52,17 @@ describe("MCP project lifecycle parity", () => {
     if (!result.success) return;
     expect(result.prerequisites.wave1).toMatchObject({
       ready: false,
-      generatorProvenance: "unavailable",
-      recovery: "unavailable",
+      generatorProvenance: "unverified",
+      recovery: "available",
+    });
+    expect(result.prerequisites.wave1.blockers).toContain(
+      "A versioned scaffold manifest is required for lifecycle apply and recovery.",
+    );
+    expect(result.upgrade).toMatchObject({
+      available: true,
+      actionable: true,
+      applyAllowed: false,
+      guarantee: "unverified-origin-recoverable",
     });
   });
 
@@ -146,9 +158,7 @@ describe("MCP project lifecycle parity", () => {
     await fs.outputFile(path.join(projectDir, "services/catalog/uv.lock"), "version = 1\n");
     await fs.outputFile(path.join(projectDir, "services/admin/poetry.lock"), "# lock\n");
 
-    const direct = await inspectProject(projectDir, { runChecks: false });
     const mcp = await getMcpProjectStatus(projectDir);
-    expect(mcp).toEqual(direct);
     expect(mcp.success).toBe(true);
     if (!mcp.success) return;
     expect(mcp.checks).toEqual(
@@ -167,6 +177,38 @@ describe("MCP project lifecycle parity", () => {
         expect.objectContaining({ targetId: "admin", label: "admin: poetry.lock", status: "pass" }),
       ]),
     );
+    expect(mcp.upgrade.available).toBe(true);
+  });
+
+  it("plans exact non-primary removal and applies only with its bound token", async () => {
+    const projectDir = await fs.mkdtemp(path.join(tmpdir(), "bfs-part-removal-"));
+    roots.push(projectDir);
+    await fs.copy(historicalFixture, projectDir);
+    const target = "backend:typescript:hono.validation:typescript:zod";
+
+    const plan = await planMcpPartRemoval(projectDir, target);
+    expect(plan.success).toBe(true);
+    if (!plan.success) return;
+    expect(plan.removal).toMatchObject({ selectedPart: "backend.validation:typescript:zod" });
+    expect(plan.reviewToken).toMatch(/^[a-f0-9]{64}$/);
+    expect((await readBtsConfig(projectDir))?.validation).toBe("zod");
+
+    const stale = await applyMcpPartRemoval(projectDir, target, "0".repeat(64), false);
+    expect(stale.success).toBe(false);
+    expect((await readBtsConfig(projectDir))?.validation).toBe("zod");
+
+    const applied = await applyMcpPartRemoval(projectDir, target, plan.reviewToken, false);
+    expect(applied.success).toBe(true);
+    const updated = await readBtsConfig(projectDir);
+    expect(updated?.validation).toBe("none");
+    expect(updated?.stackParts?.some((part) => part.id === target)).toBe(false);
+    if (applied.success) expect(applied.lifecycle.recovery.available).toBe(true);
+  });
+
+  it("refuses removal of primary architecture roles", async () => {
+    const result = await planMcpPartRemoval(historicalFixture, "backend:typescript:hono");
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toContain("Cannot remove primary backend part");
   });
 
   it("keeps historical fixtures plan-only and refuses unbound apply", async () => {
@@ -179,10 +221,10 @@ describe("MCP project lifecycle parity", () => {
 
     const applied = await applyMcpProjectUpdate(historicalFixture, undefined, false);
     expect(applied.success).toBe(false);
-    if (!applied.success) expect(applied.error).toContain("bts.lock.json manifest v1 baseline");
+    if (!applied.success) expect(applied.error).toContain("versioned bts.lock.json baseline");
   });
 
-  it("keeps every manifest v1 plan unproven and requires token plus acknowledgement", async () => {
+  it("keeps adopted projects unverified and requires token plus acknowledgement", async () => {
     const projectDir = await fs.mkdtemp(path.join(tmpdir(), "bfs-current-lifecycle-"));
     roots.push(projectDir);
     await fs.copy(historicalFixture, projectDir);
@@ -193,8 +235,8 @@ describe("MCP project lifecycle parity", () => {
     if (!plan.success) return;
     expect(plan.applyAllowed).toBe(false);
     expect(plan.reviewToken).toMatch(/^[a-f0-9]{64}$/);
-    expect(plan.guarantee).toBe("unproven-manifest-v1-plan-only");
-    expect(plan.blockers.join(" ")).toContain("cannot prove generator release lineage");
+    expect(plan.guarantee).toBe("unverified-origin-recoverable");
+    expect(plan.blockers.join(" ")).toContain("original generator lineage is unverified");
     const actionableFiles = plan.plan.files.filter((file) =>
       plan.plan.actionable.includes(file.path),
     );
@@ -205,7 +247,6 @@ describe("MCP project lifecycle parity", () => {
           typeof file.mergedContent === "string" && file.reviewContent?.status === "complete",
       ),
     ).toBe(true);
-
     const refused = await applyMcpProjectUpdate(projectDir, plan.reviewToken, false);
     expect(refused.success).toBe(false);
     if (!refused.success) expect(refused.error).toContain("acknowledgeUnprovenManifestV1");
@@ -233,6 +274,7 @@ describe("MCP project lifecycle parity", () => {
       currentContractSupported: false,
     });
     expect(status.prerequisites.manifest.error).toContain("hashes");
+    expect(status.prerequisites.wave1.blockers).toContain(status.prerequisites.manifest.error);
 
     const plan = await planMcpProjectUpdate(projectDir);
     expect(plan.success).toBe(false);

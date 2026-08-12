@@ -7,8 +7,17 @@ import path from "node:path";
 
 import { readBtsConfig } from "../../utils/bts-config";
 import { formatCode } from "../../utils/file-formatter";
+import { getProjectRecoveryCommand } from "../../utils/lifecycle-command";
+import { lifecycleResult, type LifecycleResult } from "../../utils/lifecycle-contract";
+import {
+  beginProjectTransaction,
+  commitProjectTransaction,
+  markProjectTransactionWrite,
+  rollbackProjectTransaction,
+} from "../../utils/project-transaction";
 import {
   collectStructuredBaselines,
+  getCurrentLifecycleVersions,
   hashContent,
   isStructuredBaselinePath,
   readScaffoldManifest,
@@ -91,13 +100,18 @@ export type UpgradePlan = {
   actionable: string[];
   actionableHashes: Record<string, string>;
   actionablePreimages: Record<string, string | "absent">;
+  lifecycle: LifecycleResult;
 };
 
 export type UpgradeResult = UpgradePlan | { success: false; projectDir?: string; error: string };
 
 export type UpgradeApplyResult =
-  | (UpgradePlan & { applied: { patched: string[]; added: string[]; merged: string[] } })
-  | { success: false; projectDir?: string; error: string };
+  | (UpgradePlan & {
+      applied: { patched: string[]; added: string[]; merged: string[] };
+      recoveryId: string;
+      lifecycle: LifecycleResult;
+    })
+  | { success: false; projectDir?: string; error: string; lifecycle?: LifecycleResult };
 
 export function getUpgradePlanDigest(plan: UpgradePlan): string {
   return hashContent(
@@ -119,6 +133,7 @@ export function getUpgradePlanDigest(plan: UpgradePlan): string {
       actionable: plan.actionable,
       actionableHashes: plan.actionableHashes,
       actionablePreimages: plan.actionablePreimages,
+      lifecycle: plan.lifecycle,
     }),
   );
 }
@@ -159,7 +174,7 @@ async function verifyAppliedActionableState(plan: UpgradePlan): Promise<string |
 }
 
 function partialWriteError(reason: string): string {
-  return `${reason}. Apply stopped after partial writes; no rollback was performed. Inspect the project and create a new plan.`;
+  return `${reason}. Apply stopped and the transaction restored every bound preimage.`;
 }
 
 function intendedActionableHashes(
@@ -451,6 +466,10 @@ function summarize(
   const drift = byCategory("drift");
   const merged = byCategory("merged");
   const newFiles = byCategory("new-file");
+  const conflicts = byCategory("conflict");
+  const manual = files.filter((file) => file.category === "manual");
+  const removed = byCategory("removed");
+  const provenanceVerified = manifest?.provenance.state === "verified";
 
   return {
     success: true,
@@ -467,14 +486,37 @@ function summarize(
     unchanged: byCategory("unchanged"),
     drift,
     userEdited: byCategory("user-edited"),
-    conflicts: byCategory("conflict"),
-    manual: files.filter((file) => file.category === "manual"),
+    conflicts,
+    manual,
     merged,
     newFiles,
-    removed: byCategory("removed"),
+    removed,
     actionable: [...drift, ...merged, ...newFiles].sort(),
     actionableHashes,
     actionablePreimages,
+    lifecycle: lifecycleResult({
+      operation: "template-update",
+      status: "planned",
+      projectDir,
+      changes: {
+        added: newFiles.length,
+        patched: drift.length,
+        merged: merged.length,
+        removed: removed.length,
+        manual: conflicts.length + manual.length,
+      },
+      blockers: [
+        ...conflicts.map((filePath) => `${filePath}: template and local copy both changed`),
+        ...manual.map((entry) => `${entry.path}: ${entry.reason ?? "manual review required"}`),
+      ],
+      provenance: {
+        source: manifest?.provenance.current ?? null,
+        target: getCurrentLifecycleVersions(),
+        verified: provenanceVerified,
+      },
+      recovery: { available: true, automaticRollback: true },
+      nextActions: ["Review the complete plan before apply."],
+    }),
   };
 }
 
@@ -510,6 +552,14 @@ export async function planScaffoldUpgrade(projectDirInput: string): Promise<Upgr
           path: filePath,
           category: "user-edited",
           reason: "deleted locally",
+        });
+        continue;
+      }
+      if (path.basename(filePath) === ".env") {
+        files.push({
+          path: filePath,
+          category: "manual",
+          reason: "secrets file is absent — create it manually; never generated during update",
         });
         continue;
       }
@@ -676,14 +726,6 @@ export async function applyScaffoldUpgrade(
     afterActionableWrite?: (input: { path: string; index: number }) => void | Promise<void>;
   } = {},
 ): Promise<UpgradeApplyResult> {
-  if (options.acknowledgeUnprovenManifestV1 !== true) {
-    return {
-      success: false,
-      projectDir: await canonicalProjectDir(projectDirInput),
-      error:
-        "Refusing destructive manifest-v1 apply without acknowledgeUnprovenManifestV1: true. Manifest v1 has no release provenance and no backup/recovery.",
-    };
-  }
   const plan = await planScaffoldUpgrade(projectDirInput);
   if (!plan.success) return plan;
   if (plan.manifestState === "invalid") {
@@ -693,12 +735,20 @@ export async function applyScaffoldUpgrade(
       error: `Refusing to apply with a malformed ${SCAFFOLD_MANIFEST_FILE}: ${plan.manifestError ?? "unknown validation failure"}. Fix the manifest or re-record the baseline first.`,
     };
   }
-  if (!plan.hasBaseline || !plan.manifestHash || plan.manifestVersion !== "1") {
+  if (!plan.hasBaseline || !plan.manifestHash || plan.manifestVersion !== "2") {
     return {
       success: false,
       projectDir: plan.projectDir,
       error:
-        "Refusing destructive apply without a readable manifest v1 baseline. Manual baseline adoption is required first and still does not prove release lineage.",
+        "Refusing apply without a readable manifest v2 baseline. Migrate or adopt a baseline first.",
+    };
+  }
+  if (!plan.lifecycle.provenance.verified && options.acknowledgeUnprovenManifestV1 !== true) {
+    return {
+      success: false,
+      projectDir: plan.projectDir,
+      error:
+        "This manifest was migrated or adopted without verified generator lineage. Set acknowledgeUnprovenManifestV1: true after reviewing the transactional recovery plan.",
     };
   }
 
@@ -756,20 +806,59 @@ export async function applyScaffoldUpgrade(
     };
   }
   const toWrite = new Set([...plan.drift, ...plan.newFiles]);
-  let actionableIndex = 0;
-  let writeAttempted = false;
-  const failWrites = (error: unknown): UpgradeApplyResult => {
-    const message = error instanceof Error ? error.message : String(error);
+  const mergedEntries = plan.files.filter(
+    (file): file is UpgradeFileEntry & { mergedContent: string } =>
+      file.category === "merged" && file.mergedContent !== undefined,
+  );
+  let transaction;
+  try {
+    transaction = await beginProjectTransaction(projectDir, "template-update", [
+      ...plan.actionable,
+      SCAFFOLD_MANIFEST_FILE,
+    ]);
+  } catch (error) {
     return {
       success: false,
       projectDir,
-      error: writeAttempted ? partialWriteError(message) : message,
+      error: `Could not create the recovery snapshot: ${error instanceof Error ? error.message : String(error)}`,
+    };
+  }
+  let actionableIndex = 0;
+  const failWrites = async (error: unknown): Promise<UpgradeApplyResult> => {
+    const message = error instanceof Error ? error.message : String(error);
+    try {
+      await rollbackProjectTransaction(transaction);
+    } catch (rollbackError) {
+      return {
+        success: false,
+        projectDir,
+        error: `${message}. Automatic rollback also failed: ${rollbackError instanceof Error ? rollbackError.message : String(rollbackError)}. Recovery transaction: ${transaction.id}.`,
+        lifecycle: lifecycleResult({
+          ...plan.lifecycle,
+          status: "failed",
+          recovery: {
+            available: true,
+            transactionId: transaction.id,
+            command: getProjectRecoveryCommand(projectDir, transaction.id),
+          },
+        }),
+      };
+    }
+    return {
+      success: false,
+      projectDir,
+      error: partialWriteError(message),
+      lifecycle: lifecycleResult({
+        ...plan.lifecycle,
+        status: "rolled-back",
+        recovery: { available: true, transactionId: transaction.id, automaticRollback: true },
+      }),
     };
   };
   for (const candidate of [...toWrite].sort()) {
     try {
       await assertActionablePreimage(plan, candidate);
-      writeAttempted = true;
+      markProjectTransactionWrite(transaction, candidate, plan.actionableHashes[candidate]);
       await writeSelectedFiles(tree, projectDir, (filePath) => filePath === candidate);
       const written = await fs.readFile(path.join(projectDir, candidate));
       if (hashContent(written) !== plan.actionableHashes[candidate]) {
@@ -778,18 +867,14 @@ export async function applyScaffoldUpgrade(
       await options.afterActionableWrite?.({ path: candidate, index: actionableIndex });
       actionableIndex += 1;
     } catch (error) {
-      return failWrites(error);
+      return await failWrites(error);
     }
   }
 
-  const mergedEntries = plan.files.filter(
-    (file): file is UpgradeFileEntry & { mergedContent: string } =>
-      file.category === "merged" && file.mergedContent !== undefined,
-  );
   for (const entry of mergedEntries) {
     try {
       await assertActionablePreimage(plan, entry.path);
-      writeAttempted = true;
+      markProjectTransactionWrite(transaction, entry.path, plan.actionableHashes[entry.path]);
       await fs.writeFile(path.join(projectDir, entry.path), entry.mergedContent, "utf-8");
       const written = await fs.readFile(path.join(projectDir, entry.path));
       if (hashContent(written) !== plan.actionableHashes[entry.path]) {
@@ -798,24 +883,19 @@ export async function applyScaffoldUpgrade(
       await options.afterActionableWrite?.({ path: entry.path, index: actionableIndex });
       actionableIndex += 1;
     } catch (error) {
-      return failWrites(error);
+      return await failWrites(error);
     }
   }
 
   const stateErrorBeforeRefresh = await verifyAppliedActionableState(plan);
   if (stateErrorBeforeRefresh) {
-    return { success: false, projectDir, error: partialWriteError(stateErrorBeforeRefresh) };
+    return await failWrites(stateErrorBeforeRefresh);
   }
 
   const manifest = await readScaffoldManifest(projectDir);
   if (manifest) {
     if ((await readManifestHash(projectDir)) !== plan.manifestHash) {
-      return {
-        success: false,
-        projectDir,
-        error:
-          "bts.lock.json changed before baseline refresh. Written files were not rolled back; inspect them and create a new plan.",
-      };
+      return await failWrites("bts.lock.json changed before baseline refresh");
     }
     const preserveBaselines = new Set(
       plan.files.filter((file) => file.preserveBaseline).map((file) => file.path),
@@ -837,21 +917,56 @@ export async function applyScaffoldUpgrade(
         (manifest.baselines ??= {})[filePath] = content;
       }
     }
+    const completedAt = new Date().toISOString();
+    const targetVersions = getCurrentLifecycleVersions();
+    manifest.updatedAt = completedAt;
+    manifest.history.push({
+      id: hashContent(`template-update:${completedAt}:${projectDir}`).slice(0, 24),
+      operation: "template-update",
+      completedAt,
+      source: manifest.provenance.current,
+      target: targetVersions,
+      changes: plan.lifecycle.changes,
+      recoveryId: transaction.id,
+    });
+    manifest.provenance.current = targetVersions;
     try {
       await validateWritePath(plan.projectRealpath, SCAFFOLD_MANIFEST_FILE);
       await writeScaffoldManifest(projectDir, manifest);
+      markProjectTransactionWrite(
+        transaction,
+        SCAFFOLD_MANIFEST_FILE,
+        hashContent(await fs.readFile(path.join(projectDir, SCAFFOLD_MANIFEST_FILE))),
+      );
     } catch (error) {
-      return failWrites(error);
+      return await failWrites(error);
     }
   }
 
   const stateErrorAfterRefresh = await verifyAppliedActionableState(plan);
   if (stateErrorAfterRefresh) {
-    return { success: false, projectDir, error: partialWriteError(stateErrorAfterRefresh) };
+    return await failWrites(stateErrorAfterRefresh);
+  }
+  try {
+    await commitProjectTransaction(transaction);
+  } catch (error) {
+    return await failWrites(error);
   }
 
   return {
     ...plan,
+    recoveryId: transaction.id,
+    lifecycle: lifecycleResult({
+      ...plan.lifecycle,
+      status: "applied",
+      recovery: {
+        available: true,
+        transactionId: transaction.id,
+        command: getProjectRecoveryCommand(projectDir, transaction.id),
+        automaticRollback: true,
+      },
+      nextActions: ["Run `create-better-fullstack check` to verify every generated target."],
+    }),
     applied: {
       patched: [...plan.drift],
       added: [...plan.newFiles],
@@ -871,5 +986,9 @@ export async function recordUpgradeBaseline(
   }
   const rendered = await renderCurrentProject(projectDir);
   const baselines = "error" in rendered ? undefined : collectStructuredBaselines(rendered.tree);
-  return recordScaffoldManifest(projectDir, { baselines });
+  return recordScaffoldManifest(projectDir, {
+    baselines,
+    provenanceState: "adopted-unverified",
+    operation: "baseline-adoption",
+  });
 }

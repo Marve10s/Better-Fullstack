@@ -1,10 +1,9 @@
+import { OPTION_CATEGORY_METADATA } from "@better-fullstack/types";
+import { STACK_SELECTION_URL_KEYS } from "@better-fullstack/types/stack-translation";
 import { describe, expect, it } from "bun:test";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-
-import { OPTION_CATEGORY_METADATA } from "@better-fullstack/types";
-import { STACK_SELECTION_URL_KEYS } from "@better-fullstack/types/stack-translation";
 
 import { buildSearchSections } from "../src/lib/docs/search";
 import { LOCALIZED_CONTENT_LOCALES } from "../src/lib/i18n/locales";
@@ -37,7 +36,9 @@ const PENDING_TRANSLATION_PATHS = [
   "content/docs/cli/index.mdx",
   "content/docs/cli/mcp.mdx",
   "content/docs/cli/recommend.mdx",
+  "content/docs/cli/remove.mdx",
   "content/docs/cli/registry.mdx",
+  "content/docs/cli/status.mdx",
   "content/docs/cli/telemetry.mdx",
   "content/docs/cli/update.mdx",
   "content/docs/cli/utilities.mdx",

@@ -52,8 +52,10 @@ function renderResult(result: ProjectStatusResult): void {
 }
 
 export async function doctorCommand(input: DoctorCommandInput): Promise<void> {
+  const startedAt = Date.now();
   const projectDir = path.resolve(input.projectDir || process.cwd());
   const json = input.json ?? false;
+  const commandName = input.commandName ?? "check";
 
   if (!json) {
     renderTitle();
@@ -62,12 +64,23 @@ export async function doctorCommand(input: DoctorCommandInput): Promise<void> {
   }
 
   const runChecks = json ? input.runChecks === true && !input.skipChecks : !input.skipChecks;
+  await trackCommand(commandName, "started", {
+    source: "cli-flags",
+    mode: runChecks ? "full" : "config-only",
+  });
   const result = await inspectProject(projectDir, {
     runChecks,
     generatedChecks: { output: json ? "ignore" : "inherit" },
   });
 
   if (!result.success) {
+    await trackCommand(commandName, "failed", {
+      source: "cli-flags",
+      mode: runChecks ? "full" : "config-only",
+      durationMs: Date.now() - startedAt,
+      errorName: "ProjectStatusError",
+      issueCount: 1,
+    });
     if (json) {
       console.log(JSON.stringify(result, null, 2));
       process.exit(1);
@@ -91,13 +104,14 @@ export async function doctorCommand(input: DoctorCommandInput): Promise<void> {
   }
 
   await trackCommand(
-    input.commandName ?? "check",
+    commandName,
     result.ok ? "succeeded" : "failed",
     {
       source: "cli-flags",
       mode: runChecks ? "full" : "config-only",
       issueCount: result.summary.fail,
       warningCount: result.summary.warn,
+      durationMs: Date.now() - startedAt,
     },
     { ecosystem: result.ecosystem },
   );

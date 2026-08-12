@@ -2,7 +2,7 @@
 title: Browser Preview and ZIP Workflow
 description: Choose a stack in the browser, run and edit supported previews, download a ZIP, and preserve a reproducible CLI command.
 translationStatus: pending
-updated: 2026-08-10
+updated: 2026-08-12
 ---
 
 Use this workflow when you want to evaluate a stack before installing the CLI locally.
@@ -24,7 +24,7 @@ or every deploy target works.
 ## Download and reproduce
 
 Choose **Download ZIP** to save the generated source. The archive includes the current canonical
-`bts.jsonc` configuration and a v1 `bts.lock.json` scaffold baseline, so `add`, `update`, and
+`bts.jsonc` configuration and a v2 `bts.lock.json` scaffold baseline, so `add`, `update`, and
 `check` can recognize it after extraction. The manifest hashes the exact bytes of
 template-comparable archived files. It excludes its own lifecycle files (`bts.jsonc` and
 `bts.lock.json`) plus install-generated lock artifacts: `bun.lock`, `bun.lockb`,
@@ -32,10 +32,9 @@ template-comparable archived files. It excludes its own lifecycle files (`bts.js
 `go.sum`, and `mix.lock`. Keep the command shown by the builder with the ZIP or in your issue/PR as
 an additional reviewable record of the selected stack.
 
-The v1 lock manifest does not contain the planned generator/template version history. The browser
-does not invent that provenance: current-template update remains plan-only by default. A destructive
-apply requires an exact review token, explicit manifest-v1 risk acknowledgement, and an externally
-managed recovery point. Stronger cross-version claims remain blocked on the manifest-v2 lifecycle.
+The v2 manifest records the bundled CLI, generator, template-set, and schema versions plus its create
+operation. Update remains plan-only by default. Apply requires the exact review token, snapshots
+bounded paths, rolls failures back, and returns a one-command recovery point.
 
 After extracting:
 

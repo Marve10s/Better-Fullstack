@@ -167,6 +167,8 @@ const ECOSYSTEM_LABELS: Record<string, string> = {
 const OPERATION_GROUPS = [
   { id: "create", label: "Create", actions: ["create"] },
   { id: "add", label: "Add", actions: ["add"] },
+  { id: "remove", label: "Remove", actions: ["remove"] },
+  { id: "status", label: "Status", actions: ["status"] },
   { id: "update", label: "Update", actions: ["update"] },
   { id: "check", label: "Check", actions: ["check", "doctor"] },
   { id: "gen", label: "Generate", actions: ["gen"] },
