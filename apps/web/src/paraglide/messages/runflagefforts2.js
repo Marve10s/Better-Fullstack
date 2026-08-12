@@ -52,7 +52,6 @@ const uk_runflagefforts2 = /** @type {(inputs: Runflagefforts2Inputs) => Localiz
 */
 const runflagefforts2 = /** @type {((inputs?: Runflagefforts2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runflagefforts2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_runflagefforts2(inputs)
 	if (locale === "es") return es_runflagefforts2(inputs)
 	if (locale === "zh") return zh_runflagefforts2(inputs)
 	if (locale === "ja") return ja_runflagefforts2(inputs)
@@ -60,6 +59,7 @@ const runflagefforts2 = /** @type {((inputs?: Runflagefforts2Inputs, options?: {
 	if (locale === "zh-Hant") return zh_hant1_runflagefforts2(inputs)
 	if (locale === "de") return de_runflagefforts2(inputs)
 	if (locale === "fr") return fr_runflagefforts2(inputs)
-	return uk_runflagefforts2(inputs)
+	if (locale === "uk") return uk_runflagefforts2(inputs)
+	return en_runflagefforts2(inputs)
 });
 export { runflagefforts2 as "runFlagEfforts" }

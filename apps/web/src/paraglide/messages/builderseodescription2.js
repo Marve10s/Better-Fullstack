@@ -52,7 +52,6 @@ const uk_builderseodescription2 = /** @type {(inputs: Builderseodescription2Inpu
 */
 const builderseodescription2 = /** @type {((inputs?: Builderseodescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderseodescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderseodescription2(inputs)
 	if (locale === "es") return es_builderseodescription2(inputs)
 	if (locale === "zh") return zh_builderseodescription2(inputs)
 	if (locale === "ja") return ja_builderseodescription2(inputs)
@@ -60,6 +59,7 @@ const builderseodescription2 = /** @type {((inputs?: Builderseodescription2Input
 	if (locale === "zh-Hant") return zh_hant1_builderseodescription2(inputs)
 	if (locale === "de") return de_builderseodescription2(inputs)
 	if (locale === "fr") return fr_builderseodescription2(inputs)
-	return uk_builderseodescription2(inputs)
+	if (locale === "uk") return uk_builderseodescription2(inputs)
+	return en_builderseodescription2(inputs)
 });
 export { builderseodescription2 as "builderSeoDescription" }

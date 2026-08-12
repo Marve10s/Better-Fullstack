@@ -1,6 +1,6 @@
 # Better Fullstack Product Roadmap
 
-> **Canonical roadmap — updated 2026-08-07.** This document is derived from the current CLI,
+> **Canonical roadmap — updated 2026-08-10.** This document is derived from the current CLI,
 > Stack Graph, templates, web builder, MCP server, tests, and Convex analytics. Older feature plans
 > are implementation history or depth backlogs; when they disagree with this file, this file wins.
 
@@ -20,18 +20,37 @@ scaffolded, evolved, verified, and reproduced without losing user work.
 - Multi-ecosystem Stack Graph composition with TypeScript web frontends, backend services across
   supported languages, React Native mobile apps, shared databases, and owned capabilities.
 - Visual builder with command generation, file preview, local browser Edit & Run for supported
-  web stacks, shareable URL state, saved stacks, and generated ZIP downloads.
+  web stacks, shareable URL state, saved stacks, and lifecycle-ready ZIP downloads containing
+  `bts.jsonc` plus the current manifest-v1 baseline.
 - CLI lifecycle commands: `create`, `add`, `update`, `check`/`doctor`, `gen`, `registry`,
   `recommend`, `history`, and `mcp`.
 - Preview-first stack updates and a three-way scaffold update engine backed by `bts.lock.json`.
 - MCP tools, installable agent plugin, generated AI instructions and skills.
 - Verified-combination evidence, release guards, published-package smoke tests, and ScaffBench.
+- Shared multi-target project status/check services across CLI JSON and MCP, plus clean-SHA fresh
+  generated-project install/build evidence and an unmocked browser boot/edit/rerun contract.
+
+## Now — Operational Trust
+
+Operational claims must fail closed, and production telemetry must have one explicit owner.
+
+1. Keep the retired `apps/analytics` source as a no-mutation `410 Gone` contract; after export and exact-deployment verification, quarantine the legacy deployment while preserving its app and historical data.
+2. Treat `packages/backend` as the sole active telemetry owner. Production activation and aggregate reconciliation are owner-only operations governed by the [backend runbook](../packages/backend/README.md).
+3. Publish green verification claims only from complete, current, clean-SHA evidence. Missing, stale, malformed, partial, dirty, or version-mismatched evidence must remain non-green.
+4. Keep untrusted PR execution separated from npm credentials, repository write tokens, and OIDC; protected environments are approval boundaries, not documentation-only controls.
+5. Keep active projects, demand-gated backlog, completed history, and reference documents explicit
+   in the [project lifecycle](projects/README.md).
+
+### Exit gate
+
+One documented owner activation drill, one safely bounded reconciliation drill or dry-run review, no public legacy analytics data functions, and repository tests that prevent ownership, planning-state, evidence, and preview-security regressions.
 
 ## Now — Lifecycle Reliability
 
 1. **Make `update` a trustworthy public beta.**
    - Add explicit generator/template version history to the scaffold manifest.
-   - Maintain cross-version fixtures from previous releases.
+   - Turn static, tag-bound fixtures from previous releases into executable cross-version upgrade
+     fixtures only after generator/template provenance is recorded.
    - Provide a recoverable patch/backup workflow and a documented CI `update --check` path.
    - Validate real user-edited repositories and publish the boundaries of automatic merging.
 2. **Unify project status.**
@@ -54,7 +73,8 @@ plus cross-version fixtures covering the supported upgrade window.
 
 - Expand deterministic `gen` beyond its current TypeScript tRPC/oRPC resource generator only after
   usage shows which ecosystems and resources matter.
-- Add a project-status/upgrade report that agents and CI can consume without parsing prose.
+- Extend the structured project-status/update reports with manifest-v2 provenance, recovery output,
+  and supported-window eligibility without changing their CLI/MCP vocabulary.
 - Deepen verified recipes and generated-project checks instead of advertising theoretical
   combinations.
 - Improve repeat-use workflows: safe capability removal/replacement, upgrade history, and clearer
@@ -95,9 +115,9 @@ New ecosystems, libraries, and providers are not the default roadmap. Accept cat
 - browser run-ready, edit-rerun, and ZIP success rates;
 - verified recipe pass rate and evidence freshness.
 
-The internal `/telemetry` decision room is not a public product surface. It reads aggregates through
-internal Convex queries and fails closed unless the same random, 32-character-or-longer
-`TELEMETRY_DASHBOARD_SECRET` is configured in both the web and Convex deployments. The owner signs
-in with the username `owner` and that secret as the password.
+The internal `/telemetry` decision room is not a public product surface. The web server fetches the
+authenticated, aggregate-only `/api/analytics/dashboard` endpoint, which performs internal Convex
+queries and never returns raw events. Access fails closed unless web and Convex share the owner
+secret. Deployment and rotation mechanics live in the [backend owner runbook](../packages/backend/README.md).
 
 Theoretical combination count is not a roadmap metric.

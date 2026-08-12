@@ -52,7 +52,6 @@ const uk_builderrunclearlogs3 = /** @type {(inputs: Builderrunclearlogs3Inputs) 
 */
 const builderrunclearlogs3 = /** @type {((inputs?: Builderrunclearlogs3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderrunclearlogs3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderrunclearlogs3(inputs)
 	if (locale === "es") return es_builderrunclearlogs3(inputs)
 	if (locale === "zh") return zh_builderrunclearlogs3(inputs)
 	if (locale === "ja") return ja_builderrunclearlogs3(inputs)
@@ -60,6 +59,7 @@ const builderrunclearlogs3 = /** @type {((inputs?: Builderrunclearlogs3Inputs, o
 	if (locale === "zh-Hant") return zh_hant1_builderrunclearlogs3(inputs)
 	if (locale === "de") return de_builderrunclearlogs3(inputs)
 	if (locale === "fr") return fr_builderrunclearlogs3(inputs)
-	return uk_builderrunclearlogs3(inputs)
+	if (locale === "uk") return uk_builderrunclearlogs3(inputs)
+	return en_builderrunclearlogs3(inputs)
 });
 export { builderrunclearlogs3 as "builderRunClearLogs" }

@@ -35,6 +35,8 @@ import {
   scoredOutcome,
 } from "@/scoring";
 
+import { EVIDENCE_SCHEMA_VERSION } from "../verified-combinations/evidence";
+
 export function aggregateResults(results: readonly RunResult[]) {
   const bySpecCell = aggregateBy(results, (result) =>
     [result.specId, result.model, result.effort, result.path].join("|"),
@@ -159,9 +161,7 @@ function aggregateBy(
         avgOutputTokens: maybeAverage(group.map((result) => result.claude.outputTokens)),
         avgCostUsd: maybeAveragePrecise(group.map((result) => result.claude.totalCostUsd)),
         avgLines: nullableAverage(
-          scored.flatMap((result) =>
-            result.codeMetrics ? [result.codeMetrics.lines] : [],
-          ),
+          scored.flatMap((result) => (result.codeMetrics ? [result.codeMetrics.lines] : [])),
         ),
         failureTags: countFailureTags(group),
         outcomeCounts: countOutcomes(group),
@@ -486,6 +486,7 @@ export function collectMetadata(options: ScaffbenchOptions) {
   return Effect.gen(function* () {
     const gitHead = yield* tryCommandText("git", ["rev-parse", "HEAD"], process.cwd());
     const gitBranch = yield* tryCommandText("git", ["branch", "--show-current"], process.cwd());
+    const gitStatus = yield* tryCommandText("git", ["status", "--porcelain"], process.cwd());
     const bunVersion = yield* tryCommandText(
       existsSync(`${process.env.HOME}/.bun/bin/bun`) ? `${process.env.HOME}/.bun/bin/bun` : "bun",
       ["--version"],
@@ -498,6 +499,8 @@ export function collectMetadata(options: ScaffbenchOptions) {
     const toolchains = yield* collectToolchainVersions();
     return {
       cwd: process.cwd(),
+      evidenceSchemaVersion: EVIDENCE_SCHEMA_VERSION,
+      workspaceClean: gitStatus === "",
       gitHead,
       gitBranch,
       bunVersion,

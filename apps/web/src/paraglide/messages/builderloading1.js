@@ -52,7 +52,6 @@ const uk_builderloading1 = /** @type {(inputs: Builderloading1Inputs) => Localiz
 */
 const builderloading1 = /** @type {((inputs?: Builderloading1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderloading1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderloading1(inputs)
 	if (locale === "es") return es_builderloading1(inputs)
 	if (locale === "zh") return zh_builderloading1(inputs)
 	if (locale === "ja") return ja_builderloading1(inputs)
@@ -60,6 +59,7 @@ const builderloading1 = /** @type {((inputs?: Builderloading1Inputs, options?: {
 	if (locale === "zh-Hant") return zh_hant1_builderloading1(inputs)
 	if (locale === "de") return de_builderloading1(inputs)
 	if (locale === "fr") return fr_builderloading1(inputs)
-	return uk_builderloading1(inputs)
+	if (locale === "uk") return uk_builderloading1(inputs)
+	return en_builderloading1(inputs)
 });
 export { builderloading1 as "builderLoading" }

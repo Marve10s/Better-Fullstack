@@ -52,7 +52,6 @@ const uk_campaignsharestack2 = /** @type {(inputs: Campaignsharestack2Inputs) =>
 */
 const campaignsharestack2 = /** @type {((inputs?: Campaignsharestack2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Campaignsharestack2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_campaignsharestack2(inputs)
 	if (locale === "es") return es_campaignsharestack2(inputs)
 	if (locale === "zh") return zh_campaignsharestack2(inputs)
 	if (locale === "ja") return ja_campaignsharestack2(inputs)
@@ -60,6 +59,7 @@ const campaignsharestack2 = /** @type {((inputs?: Campaignsharestack2Inputs, opt
 	if (locale === "zh-Hant") return zh_hant1_campaignsharestack2(inputs)
 	if (locale === "de") return de_campaignsharestack2(inputs)
 	if (locale === "fr") return fr_campaignsharestack2(inputs)
-	return uk_campaignsharestack2(inputs)
+	if (locale === "uk") return uk_campaignsharestack2(inputs)
+	return en_campaignsharestack2(inputs)
 });
 export { campaignsharestack2 as "campaignShareStack" }

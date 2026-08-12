@@ -52,7 +52,6 @@ const uk_stackpackagecount2 = /** @type {(inputs: Stackpackagecount2Inputs) => L
 */
 const stackpackagecount2 = /** @type {((inputs: Stackpackagecount2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Stackpackagecount2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_stackpackagecount2(inputs)
 	if (locale === "es") return es_stackpackagecount2(inputs)
 	if (locale === "zh") return zh_stackpackagecount2(inputs)
 	if (locale === "ja") return ja_stackpackagecount2(inputs)
@@ -60,6 +59,7 @@ const stackpackagecount2 = /** @type {((inputs: Stackpackagecount2Inputs, option
 	if (locale === "zh-Hant") return zh_hant1_stackpackagecount2(inputs)
 	if (locale === "de") return de_stackpackagecount2(inputs)
 	if (locale === "fr") return fr_stackpackagecount2(inputs)
-	return uk_stackpackagecount2(inputs)
+	if (locale === "uk") return uk_stackpackagecount2(inputs)
+	return en_stackpackagecount2(inputs)
 });
 export { stackpackagecount2 as "stackPackageCount" }

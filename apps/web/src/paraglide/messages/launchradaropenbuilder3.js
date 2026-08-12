@@ -52,7 +52,6 @@ const uk_launchradaropenbuilder3 = /** @type {(inputs: Launchradaropenbuilder3In
 */
 const launchradaropenbuilder3 = /** @type {((inputs: Launchradaropenbuilder3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Launchradaropenbuilder3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_launchradaropenbuilder3(inputs)
 	if (locale === "es") return es_launchradaropenbuilder3(inputs)
 	if (locale === "zh") return zh_launchradaropenbuilder3(inputs)
 	if (locale === "ja") return ja_launchradaropenbuilder3(inputs)
@@ -60,6 +59,7 @@ const launchradaropenbuilder3 = /** @type {((inputs: Launchradaropenbuilder3Inpu
 	if (locale === "zh-Hant") return zh_hant1_launchradaropenbuilder3(inputs)
 	if (locale === "de") return de_launchradaropenbuilder3(inputs)
 	if (locale === "fr") return fr_launchradaropenbuilder3(inputs)
-	return uk_launchradaropenbuilder3(inputs)
+	if (locale === "uk") return uk_launchradaropenbuilder3(inputs)
+	return en_launchradaropenbuilder3(inputs)
 });
 export { launchradaropenbuilder3 as "launchRadarOpenBuilder" }

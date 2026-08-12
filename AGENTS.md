@@ -1,5 +1,9 @@
 This file provides the small set of project-wide instructions agents should read before working in Better-Fullstack. Keep detailed, area-specific guidance in `docs/guidelines/` instead of growing this file with task notes.
 
+For documentation work or when the right source of project knowledge is unclear, read
+`docs/README.md`. It defines document authority, lifecycle, and routing. Use `CONTEXT.md` for the
+current domain language and `docs/next-updates-roadmap.md` for product priority.
+
 ## Guidelines
 
 Do not read files in `docs/guidelines/` by default. Treat this section as an index and only open a guideline file when the user request clearly matches that topic.
@@ -8,15 +12,22 @@ See `docs/guidelines/` for deeper reference on these topics:
 
 - `README.md` - folder purpose, usage rules, and quick index for all guideline files
 - `architecture-and-ownership.md` - monorepo package ownership and where changes belong
+- `stack-graph-and-config-authority.md` - graph authority, Role Binding ownership, flat projections, and graph-safe mutations
+- `lifecycle-commands-and-mcp.md` - create/add/update/check semantics, plan/apply safety, baselines, and CLI/MCP parity
+- `generated-artifacts-and-sync.md` - generated-file producers, authoritative inputs, and safe regeneration in dirty worktrees
+- `telemetry-privacy-and-internal-tools.md` - telemetry allowlists, ingest privacy, aggregate access, and fail-closed internal tools
+- `public-docs-i18n-and-seo.md` - public content authority, translation fallback, schema-derived references, and agent/SEO surfaces
 - `stack-options-and-compatibility.md` - schema source of truth, canonical option metadata, aliases, and compatibility rules
 - `generator-change-playbook.md` - how option changes flow through templates, snapshots, CLI output, and web previews
 - `web-builder-and-url-state.md` - stack builder state, URL parsing, lazy-route constraints, and preview wiring
 - `testing-release-and-upstream.md` - targeted verification commands, release guard expectations, and upstream backport workflow
+- `preview-publishing-security.md` - PR preview threat model, trusted artifact boundary, environment setup, and workflow guard
 - `scripted-cli-runs.md` - safe non-interactive CLI usage, prompt-avoidance flags, and matrix-testing caveats
 - `production-package-testing.md` - how to use the `testing/` workspace for published npm-package validation cycles
 - `template-output-and-validation.md` - template conditional logic, generated output validation, sync test discipline, and framework-specific constraints
 - `remotion-video-style.md` - default visual style, color system, motion rules, and branding for Remotion videos in this project
 - `design-reading-guide.md` - ordered index of design-related markdown (agent skills + BF video style), precedence when sources conflict, and commands to verify coverage
+- `scaffbench-benchmark.md` - ScaffBench protocol, execution, validation, and publication rules
 - `adding-new-tool-options/` - **read this subfolder when adding any new library, tool, or category** to any ecosystem (TypeScript, Rust, Go, Python). Covers every file that must be touched, with worked examples, template handler reference, test patterns, and routing edge cases (Convex skips, self-backend, frontend array detection, processor ordering)
 
 ## Workflow
@@ -28,4 +39,5 @@ See `docs/guidelines/` for deeper reference on these topics:
 ## Bun
 
 Bun is the default package manager and script runner. Use `bun install`, `bun run <script>`, `bun test`, and `bunx`. Do not switch to npm, pnpm, yarn, npx, or ad hoc `node` wrappers unless a file explicitly requires it.
+
 - In this WSL setup, `bun` on `PATH` can resolve to the Windows install instead of native Linux Bun. For Turbo runs and published-package verification, prefer `~/.bun/bin/bun` and `~/.bun/bin/bunx` explicitly.

@@ -52,7 +52,6 @@ const uk_builderpreviewfilecount3 = /** @type {(inputs: Builderpreviewfilecount3
 */
 const builderpreviewfilecount3 = /** @type {((inputs: Builderpreviewfilecount3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderpreviewfilecount3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderpreviewfilecount3(inputs)
 	if (locale === "es") return es_builderpreviewfilecount3(inputs)
 	if (locale === "zh") return zh_builderpreviewfilecount3(inputs)
 	if (locale === "ja") return ja_builderpreviewfilecount3(inputs)
@@ -60,6 +59,7 @@ const builderpreviewfilecount3 = /** @type {((inputs: Builderpreviewfilecount3In
 	if (locale === "zh-Hant") return zh_hant1_builderpreviewfilecount3(inputs)
 	if (locale === "de") return de_builderpreviewfilecount3(inputs)
 	if (locale === "fr") return fr_builderpreviewfilecount3(inputs)
-	return uk_builderpreviewfilecount3(inputs)
+	if (locale === "uk") return uk_builderpreviewfilecount3(inputs)
+	return en_builderpreviewfilecount3(inputs)
 });
 export { builderpreviewfilecount3 as "builderPreviewFileCount" }

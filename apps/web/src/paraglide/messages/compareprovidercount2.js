@@ -52,7 +52,6 @@ const uk_compareprovidercount2 = /** @type {(inputs: Compareprovidercount2Inputs
 */
 const compareprovidercount2 = /** @type {((inputs: Compareprovidercount2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Compareprovidercount2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_compareprovidercount2(inputs)
 	if (locale === "es") return es_compareprovidercount2(inputs)
 	if (locale === "zh") return zh_compareprovidercount2(inputs)
 	if (locale === "ja") return ja_compareprovidercount2(inputs)
@@ -60,6 +59,7 @@ const compareprovidercount2 = /** @type {((inputs: Compareprovidercount2Inputs, 
 	if (locale === "zh-Hant") return zh_hant1_compareprovidercount2(inputs)
 	if (locale === "de") return de_compareprovidercount2(inputs)
 	if (locale === "fr") return fr_compareprovidercount2(inputs)
-	return uk_compareprovidercount2(inputs)
+	if (locale === "uk") return uk_compareprovidercount2(inputs)
+	return en_compareprovidercount2(inputs)
 });
 export { compareprovidercount2 as "compareProviderCount" }

@@ -52,7 +52,6 @@ const uk_mcpresources1 = /** @type {(inputs: Mcpresources1Inputs) => LocalizedSt
 */
 const mcpresources1 = /** @type {((inputs?: Mcpresources1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpresources1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_mcpresources1(inputs)
 	if (locale === "es") return es_mcpresources1(inputs)
 	if (locale === "zh") return zh_mcpresources1(inputs)
 	if (locale === "ja") return ja_mcpresources1(inputs)
@@ -60,6 +59,7 @@ const mcpresources1 = /** @type {((inputs?: Mcpresources1Inputs, options?: { loc
 	if (locale === "zh-Hant") return zh_hant1_mcpresources1(inputs)
 	if (locale === "de") return de_mcpresources1(inputs)
 	if (locale === "fr") return fr_mcpresources1(inputs)
-	return uk_mcpresources1(inputs)
+	if (locale === "uk") return uk_mcpresources1(inputs)
+	return en_mcpresources1(inputs)
 });
 export { mcpresources1 as "mcpResources" }

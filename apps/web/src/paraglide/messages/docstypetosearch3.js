@@ -52,7 +52,6 @@ const uk_docstypetosearch3 = /** @type {(inputs: Docstypetosearch3Inputs) => Loc
 */
 const docstypetosearch3 = /** @type {((inputs?: Docstypetosearch3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docstypetosearch3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_docstypetosearch3(inputs)
 	if (locale === "es") return es_docstypetosearch3(inputs)
 	if (locale === "zh") return zh_docstypetosearch3(inputs)
 	if (locale === "ja") return ja_docstypetosearch3(inputs)
@@ -60,6 +59,7 @@ const docstypetosearch3 = /** @type {((inputs?: Docstypetosearch3Inputs, options
 	if (locale === "zh-Hant") return zh_hant1_docstypetosearch3(inputs)
 	if (locale === "de") return de_docstypetosearch3(inputs)
 	if (locale === "fr") return fr_docstypetosearch3(inputs)
-	return uk_docstypetosearch3(inputs)
+	if (locale === "uk") return uk_docstypetosearch3(inputs)
+	return en_docstypetosearch3(inputs)
 });
 export { docstypetosearch3 as "docsTypeToSearch" }

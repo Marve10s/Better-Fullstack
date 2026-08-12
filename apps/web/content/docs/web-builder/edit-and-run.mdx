@@ -2,7 +2,7 @@
 title: Edit & Run
 description: Run supported generated TypeScript web projects locally in your browser before downloading them.
 translationStatus: pending
-updated: 2026-08-07
+updated: 2026-08-10
 ---
 
 Edit & Run creates a disposable generated project and executes it inside a browser WebContainer. It
@@ -41,6 +41,27 @@ to the running project. Editing `package.json` triggers another dependency insta
 
 Discard restores the last contents successfully synced to the runtime. Stop terminates the current
 development server. Reloading or leaving the page destroys the WebContainer and unsaved edits.
+
+## Expected outcome
+
+When the status becomes **Ready**, the preview frame shows the generated application. Select a text
+file, make a visible change, and choose **Save & rerun**. The status cycles through startup again,
+then the preview shows the saved change. The console remains available for install, build, and
+development-server output.
+
+## Troubleshooting and recovery
+
+- If the browser reports that the stack or runtime is unsupported, download the ZIP and run the
+  project with its local toolchain instead.
+- If dependency installation fails, check browser network access and the console output, then retry.
+  Corporate proxies, content blockers, and transient registry failures can prevent WebContainer
+  package downloads.
+- If a source edit fails to compile, use **Discard edits** to restore the last successfully synced
+  contents, or correct the file and choose **Save & rerun** again.
+- If the development server stops responding, choose **Stop**, then start it again. Reloading the
+  page is the final reset, but it discards the disposable workspace and all unsaved edits.
+- If an experiment must be kept, copy it out before reloading or leaving. The normal ZIP download
+  regenerates from the selected stack and does not include Edit & Run changes.
 
 <Callout kind="warning" title="Download uses the selected stack">
 The normal ZIP action regenerates from the selected stack. It does not export edits made inside the

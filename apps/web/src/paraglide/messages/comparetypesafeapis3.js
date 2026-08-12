@@ -52,7 +52,6 @@ const uk_comparetypesafeapis3 = /** @type {(inputs: Comparetypesafeapis3Inputs) 
 */
 const comparetypesafeapis3 = /** @type {((inputs?: Comparetypesafeapis3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparetypesafeapis3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_comparetypesafeapis3(inputs)
 	if (locale === "es") return es_comparetypesafeapis3(inputs)
 	if (locale === "zh") return zh_comparetypesafeapis3(inputs)
 	if (locale === "ja") return ja_comparetypesafeapis3(inputs)
@@ -60,6 +59,7 @@ const comparetypesafeapis3 = /** @type {((inputs?: Comparetypesafeapis3Inputs, o
 	if (locale === "zh-Hant") return zh_hant1_comparetypesafeapis3(inputs)
 	if (locale === "de") return de_comparetypesafeapis3(inputs)
 	if (locale === "fr") return fr_comparetypesafeapis3(inputs)
-	return uk_comparetypesafeapis3(inputs)
+	if (locale === "uk") return uk_comparetypesafeapis3(inputs)
+	return en_comparetypesafeapis3(inputs)
 });
 export { comparetypesafeapis3 as "compareTypeSafeApis" }

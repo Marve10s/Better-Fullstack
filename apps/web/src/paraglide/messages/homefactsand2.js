@@ -52,7 +52,6 @@ const uk_homefactsand2 = /** @type {(inputs: Homefactsand2Inputs) => LocalizedSt
 */
 const homefactsand2 = /** @type {((inputs: Homefactsand2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homefactsand2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_homefactsand2(inputs)
 	if (locale === "es") return es_homefactsand2(inputs)
 	if (locale === "zh") return zh_homefactsand2(inputs)
 	if (locale === "ja") return ja_homefactsand2(inputs)
@@ -60,6 +59,7 @@ const homefactsand2 = /** @type {((inputs: Homefactsand2Inputs, options?: { loca
 	if (locale === "zh-Hant") return zh_hant1_homefactsand2(inputs)
 	if (locale === "de") return de_homefactsand2(inputs)
 	if (locale === "fr") return fr_homefactsand2(inputs)
-	return uk_homefactsand2(inputs)
+	if (locale === "uk") return uk_homefactsand2(inputs)
+	return en_homefactsand2(inputs)
 });
 export { homefactsand2 as "homeFactSand" }

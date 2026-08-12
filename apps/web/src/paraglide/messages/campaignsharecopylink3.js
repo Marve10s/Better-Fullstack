@@ -52,7 +52,6 @@ const uk_campaignsharecopylink3 = /** @type {(inputs: Campaignsharecopylink3Inpu
 */
 const campaignsharecopylink3 = /** @type {((inputs?: Campaignsharecopylink3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Campaignsharecopylink3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_campaignsharecopylink3(inputs)
 	if (locale === "es") return es_campaignsharecopylink3(inputs)
 	if (locale === "zh") return zh_campaignsharecopylink3(inputs)
 	if (locale === "ja") return ja_campaignsharecopylink3(inputs)
@@ -60,6 +59,7 @@ const campaignsharecopylink3 = /** @type {((inputs?: Campaignsharecopylink3Input
 	if (locale === "zh-Hant") return zh_hant1_campaignsharecopylink3(inputs)
 	if (locale === "de") return de_campaignsharecopylink3(inputs)
 	if (locale === "fr") return fr_campaignsharecopylink3(inputs)
-	return uk_campaignsharecopylink3(inputs)
+	if (locale === "uk") return uk_campaignsharecopylink3(inputs)
+	return en_campaignsharecopylink3(inputs)
 });
 export { campaignsharecopylink3 as "campaignShareCopyLink" }

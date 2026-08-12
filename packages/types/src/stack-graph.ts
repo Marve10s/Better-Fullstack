@@ -699,7 +699,7 @@ function isNativeEcosystemBackendServiceTool(
   return false;
 }
 
-// Phase 2 Batch 0/1 (docs/plans/planned/stack-graph-phase-0-library-inventory.md):
+// Phase 2 Batch 0/1 (docs/reference/stack-graph-phase-0-library-inventory.md):
 // registered backend-owned singles/extras that round-trip through the graph.
 const LEGACY_EXTRA_CATEGORIES_BY_ECOSYSTEM = {
   rust: {

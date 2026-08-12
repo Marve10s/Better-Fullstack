@@ -52,7 +52,6 @@ const uk_buildertabpresets2 = /** @type {(inputs: Buildertabpresets2Inputs) => L
 */
 const buildertabpresets2 = /** @type {((inputs?: Buildertabpresets2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildertabpresets2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_buildertabpresets2(inputs)
 	if (locale === "es") return es_buildertabpresets2(inputs)
 	if (locale === "zh") return zh_buildertabpresets2(inputs)
 	if (locale === "ja") return ja_buildertabpresets2(inputs)
@@ -60,6 +59,7 @@ const buildertabpresets2 = /** @type {((inputs?: Buildertabpresets2Inputs, optio
 	if (locale === "zh-Hant") return zh_hant1_buildertabpresets2(inputs)
 	if (locale === "de") return de_buildertabpresets2(inputs)
 	if (locale === "fr") return fr_buildertabpresets2(inputs)
-	return uk_buildertabpresets2(inputs)
+	if (locale === "uk") return uk_buildertabpresets2(inputs)
+	return en_buildertabpresets2(inputs)
 });
 export { buildertabpresets2 as "builderTabPresets" }

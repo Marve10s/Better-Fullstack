@@ -46,9 +46,10 @@ Additional focused release-facing checks:
 
 - `.github/workflows/test.yaml` runs a dedicated `Release Guard` job before broader build checks.
 - `.github/workflows/release.yaml` also runs the release verification lane before publishing packages.
-- `.github/workflows/pr-preview.yaml` and `.github/workflows/release.yaml` run the published-package smoke lane after publishing npm packages, because that check needs the real npm tag/version to be visible.
+- `.github/workflows/pr-preview-build.yaml` builds preview tarballs without secrets. Once the protected `npm-preview` environment has its package-scoped token, `.github/workflows/pr-preview.yaml` publishes them and runs the published-package smoke lane; it fails closed while that owner setting is absent. `.github/workflows/release.yaml` also runs the published-package smoke lane after publishing npm packages, because that check needs the real npm tag/version to be visible.
 - Published packages are versioned independently inside the release workflow. Do not hand-edit version bumps casually during unrelated feature work.
 - Keep Bun pinned for deterministic release verification, but prefer the Node/npm publish path for actual package publishing. Treat publish-tooling changes in `.github/workflows/release.yaml` as release-sensitive.
+- See `preview-publishing-security.md` before changing preview workflow permissions, artifacts, secrets, or environments.
 
 ## CI build-order notes
 
@@ -95,4 +96,4 @@ The report classifies likely backport candidates into `reliability`, `dependency
    - `cd apps/web && bun run build`
 5. Open focused PRs by theme (stability, commands, web parity, etc.).
 
-Use `docs/plans/README.md` as the stable entry point for current planning documents.
+Use `docs/projects/README.md` as the stable entry point for current project documents.

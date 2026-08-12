@@ -52,7 +52,6 @@ const uk_stackcopied1 = /** @type {(inputs: Stackcopied1Inputs) => LocalizedStri
 */
 const stackcopied1 = /** @type {((inputs?: Stackcopied1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Stackcopied1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_stackcopied1(inputs)
 	if (locale === "es") return es_stackcopied1(inputs)
 	if (locale === "zh") return zh_stackcopied1(inputs)
 	if (locale === "ja") return ja_stackcopied1(inputs)
@@ -60,6 +59,7 @@ const stackcopied1 = /** @type {((inputs?: Stackcopied1Inputs, options?: { local
 	if (locale === "zh-Hant") return zh_hant1_stackcopied1(inputs)
 	if (locale === "de") return de_stackcopied1(inputs)
 	if (locale === "fr") return fr_stackcopied1(inputs)
-	return uk_stackcopied1(inputs)
+	if (locale === "uk") return uk_stackcopied1(inputs)
+	return en_stackcopied1(inputs)
 });
 export { stackcopied1 as "stackCopied" }

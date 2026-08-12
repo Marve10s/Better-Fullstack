@@ -52,7 +52,6 @@ const uk_builderrununsavedchanges3 = /** @type {(inputs: Builderrununsavedchange
 */
 const builderrununsavedchanges3 = /** @type {((inputs: Builderrununsavedchanges3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderrununsavedchanges3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderrununsavedchanges3(inputs)
 	if (locale === "es") return es_builderrununsavedchanges3(inputs)
 	if (locale === "zh") return zh_builderrununsavedchanges3(inputs)
 	if (locale === "ja") return ja_builderrununsavedchanges3(inputs)
@@ -60,6 +59,7 @@ const builderrununsavedchanges3 = /** @type {((inputs: Builderrununsavedchanges3
 	if (locale === "zh-Hant") return zh_hant1_builderrununsavedchanges3(inputs)
 	if (locale === "de") return de_builderrununsavedchanges3(inputs)
 	if (locale === "fr") return fr_builderrununsavedchanges3(inputs)
-	return uk_builderrununsavedchanges3(inputs)
+	if (locale === "uk") return uk_builderrununsavedchanges3(inputs)
+	return en_builderrununsavedchanges3(inputs)
 });
 export { builderrununsavedchanges3 as "builderRunUnsavedChanges" }

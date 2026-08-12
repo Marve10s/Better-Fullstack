@@ -2,11 +2,12 @@ import type { ExecaChildProcess } from "execa";
 
 import { getLocalWebDevPort } from "@better-fullstack/types";
 import { execa } from "execa";
-import { existsSync } from "node:fs";
+import { readFile } from "node:fs/promises";
+import { Socket } from "node:net";
 import { basename, dirname, join } from "node:path";
 
-import { runTRPCTest, type TestConfig } from "../test-utils";
 import { scaffoldWithCli, type CliScaffoldResult } from "../../../../testing/lib/cli-scaffold";
+import { runTRPCTest, type TestConfig } from "../test-utils";
 
 type E2EPackageManager = "bun" | "npm" | "pnpm" | "yarn";
 
@@ -14,14 +15,14 @@ export interface ServerProcess {
   process: ExecaChildProcess;
   port: number;
   baseUrl: string;
-  kill: () => Promise<void>;
+  kill: () => Promise<number[]>;
 }
 
 export interface DevServerProcess {
   process: ExecaChildProcess;
   frontendUrl: string;
   backendUrl: string | null;
-  kill: () => Promise<void>;
+  kill: () => Promise<number[]>;
 }
 
 export interface E2EProjectResult {
@@ -78,6 +79,120 @@ const HTML_ERROR_PATTERNS = [
   /There was an error while hydrating/i,
 ];
 
+const PROCESS_TERMINATION_GRACE_MS = 2_000;
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isMissingProcess(error: unknown): boolean {
+  return error instanceof Error && "code" in error && error.code === "ESRCH";
+}
+
+function signalProcessTree(child: ExecaChildProcess, signal: NodeJS.Signals): boolean {
+  if (process.platform !== "win32" && child.pid) {
+    try {
+      process.kill(-child.pid, signal);
+      return true;
+    } catch (error) {
+      if (isMissingProcess(error)) return false;
+      return child.kill(signal);
+    }
+  }
+
+  return child.kill(signal);
+}
+
+function isProcessTreeAlive(child: ExecaChildProcess): boolean {
+  if (process.platform !== "win32" && child.pid) {
+    try {
+      process.kill(-child.pid, 0);
+      return true;
+    } catch (error) {
+      if (isMissingProcess(error)) return false;
+      return child.exitCode === null;
+    }
+  }
+
+  return child.exitCode === null;
+}
+
+async function waitForProcessTreeExit(child: ExecaChildProcess, deadline: number): Promise<void> {
+  if (!isProcessTreeAlive(child) || Date.now() >= deadline) return;
+  await delay(50);
+  await waitForProcessTreeExit(child, deadline);
+}
+
+export async function terminateProcessTree(child: ExecaChildProcess): Promise<void> {
+  signalProcessTree(child, "SIGTERM");
+  await waitForProcessTreeExit(child, Date.now() + PROCESS_TERMINATION_GRACE_MS);
+
+  if (isProcessTreeAlive(child)) {
+    signalProcessTree(child, "SIGKILL");
+  }
+
+  await Promise.race([
+    child.then(
+      () => undefined,
+      () => undefined,
+    ),
+    delay(1_000),
+  ]);
+}
+
+function isPortOpen(port: number, host = "127.0.0.1"): Promise<boolean> {
+  return new Promise((resolve) => {
+    const socket = new Socket();
+    let settled = false;
+    const finish = (open: boolean) => {
+      if (settled) return;
+      settled = true;
+      socket.destroy();
+      resolve(open);
+    };
+
+    socket.setTimeout(500);
+    socket.once("connect", () => finish(true));
+    socket.once("error", () => finish(false));
+    socket.once("timeout", () => finish(false));
+    socket.connect(port, host);
+  });
+}
+
+async function assertPortAvailable(port: number, label: string): Promise<void> {
+  if (await isPortOpen(port)) {
+    throw new Error(`${label} port ${port} is already in use before the E2E process starts`);
+  }
+}
+
+async function openPorts(ports: readonly number[]): Promise<number[]> {
+  const uniquePorts = [...new Set(ports)];
+  const states = await Promise.all(uniquePorts.map((port) => isPortOpen(port)));
+  return uniquePorts.filter((_, index) => states[index]);
+}
+
+async function waitForPortsReleased(ports: readonly number[], deadline: number): Promise<number[]> {
+  const stillOpen = await openPorts(ports);
+  if (stillOpen.length === 0 || Date.now() >= deadline) return stillOpen;
+  await delay(50);
+  return waitForPortsReleased(ports, deadline);
+}
+
+async function reportUnreleasedPorts(ports: readonly number[]): Promise<number[]> {
+  const stillOpen = await waitForPortsReleased(ports, Date.now() + PROCESS_TERMINATION_GRACE_MS);
+  if (stillOpen.length > 0) {
+    console.error("[E2E] Process cleanup did not release port(s): " + stillOpen.join(", "));
+  }
+  return stillOpen;
+}
+
+function managedProcessOptions() {
+  return {
+    detached: process.platform !== "win32",
+    forceKillAfterDelay: PROCESS_TERMINATION_GRACE_MS,
+  } as const;
+}
+
 export async function setupE2EProject(
   projectName: string,
   config: Partial<TestConfig>,
@@ -106,6 +221,7 @@ export async function startServer(
 
   const serverDir = join(projectDir, "apps", "server");
   const baseUrl = `http://localhost:${port}`;
+  await assertPortAvailable(port, "Backend");
 
   let command: string;
   let args: string[];
@@ -142,6 +258,7 @@ export async function startServer(
       NODE_ENV: "development",
     },
     reject: false,
+    ...managedProcessOptions(),
   });
 
   const stdoutHandler = (data: Buffer) => {
@@ -159,7 +276,7 @@ export async function startServer(
   if (!isReady) {
     serverProcess.stdout?.off("data", stdoutHandler);
     serverProcess.stderr?.off("data", stderrHandler);
-    serverProcess.kill("SIGTERM");
+    await terminateProcessTree(serverProcess);
     console.error(`[E2E] Server stdout:\n${serverOutput}`);
     console.error(`[E2E] Server stderr:\n${serverError}`);
     throw new Error(`Server failed to start within ${timeout}ms. Check server logs above.`);
@@ -172,12 +289,8 @@ export async function startServer(
     kill: async () => {
       serverProcess.stdout?.off("data", stdoutHandler);
       serverProcess.stderr?.off("data", stderrHandler);
-      serverProcess.kill("SIGTERM");
-      await new Promise((r) => setTimeout(r, 1000));
-      if (!serverProcess.killed) {
-        serverProcess.kill("SIGKILL");
-      }
-      await new Promise((r) => setTimeout(r, 100));
+      await terminateProcessTree(serverProcess);
+      return reportUnreleasedPorts([port]);
     },
   };
 }
@@ -198,6 +311,10 @@ export async function startDevServer(
   const frontendUrl = `http://localhost:${frontendPort}`;
   const isFullstack = backend === "self";
   const backendUrl = isFullstack ? null : `http://localhost:${backendPort}`;
+  await assertPortAvailable(frontendPort, "Frontend");
+  if (backendUrl && backendPort !== frontendPort) {
+    await assertPortAvailable(backendPort, "Backend");
+  }
 
   let command: string;
   let args: string[];
@@ -230,9 +347,10 @@ export async function startDevServer(
     env: {
       ...process.env,
       NODE_ENV: "development",
-      PORT: String(backendPort),
+      ...(isFullstack ? {} : { PORT: String(backendPort) }),
     },
     reject: false,
+    ...managedProcessOptions(),
   });
 
   const stdoutHandler = (data: Buffer) => {
@@ -250,7 +368,7 @@ export async function startDevServer(
   if (!frontendReady) {
     devProcess.stdout?.off("data", stdoutHandler);
     devProcess.stderr?.off("data", stderrHandler);
-    devProcess.kill("SIGTERM");
+    await terminateProcessTree(devProcess);
     console.error(`[E2E] Dev stdout:\n${output}`);
     console.error(`[E2E] Dev stderr:\n${errOutput}`);
     throw new Error(
@@ -261,7 +379,12 @@ export async function startDevServer(
   if (backendUrl) {
     const backendReady = await waitForServer(backendUrl, 30_000);
     if (!backendReady) {
-      console.warn(`[E2E] Backend not ready on ${backendUrl} — may be expected for some configs`);
+      devProcess.stdout?.off("data", stdoutHandler);
+      devProcess.stderr?.off("data", stderrHandler);
+      await terminateProcessTree(devProcess);
+      console.error(`[E2E] Dev stdout:\n${output}`);
+      console.error(`[E2E] Dev stderr:\n${errOutput}`);
+      throw new Error(`Backend (${backend}) failed to start on ${backendUrl}`);
     }
   }
 
@@ -272,12 +395,8 @@ export async function startDevServer(
     kill: async () => {
       devProcess.stdout?.off("data", stdoutHandler);
       devProcess.stderr?.off("data", stderrHandler);
-      devProcess.kill("SIGTERM");
-      await new Promise((r) => setTimeout(r, 2000));
-      if (!devProcess.killed) {
-        devProcess.kill("SIGKILL");
-      }
-      await new Promise((r) => setTimeout(r, 500));
+      await terminateProcessTree(devProcess);
+      return reportUnreleasedPorts(backendUrl ? [frontendPort, backendPort] : [frontendPort]);
     },
   };
 }
@@ -365,6 +484,7 @@ export async function checkStaticAssets(
     /href="([^"]+\.css[^"]*)"/g,
     /src="([^"]+\.(?:js|mjs|tsx?)[^"]*)"/g,
     /href="([^"]+\.(?:js|mjs)[^"]*)"/g,
+    /import\("([^"]+\.(?:js|mjs|ts)[^"]*)"\)/g,
   ];
 
   const urls = new Set<string>();
@@ -460,14 +580,17 @@ export function validateFrameworkPage(html: string, frontend: string): Framework
   };
 }
 
+function apiUrl(baseUrl: string, path: string): URL {
+  return new URL(`${baseUrl.replace(/\/+$/, "")}${path}`);
+}
+
 export async function callTRPC(
   baseUrl: string,
   procedure: string,
   input?: unknown,
 ): Promise<{ status: number; body: unknown }> {
-  const url = new URL(`/trpc/${procedure}`, baseUrl);
-  const inputParam =
-    input !== undefined ? JSON.stringify({ 0: input }) : JSON.stringify({ 0: {} });
+  const url = apiUrl(baseUrl, `/trpc/${procedure}`);
+  const inputParam = input !== undefined ? JSON.stringify({ 0: input }) : JSON.stringify({ 0: {} });
   url.searchParams.set("batch", "1");
   url.searchParams.set("input", inputParam);
 
@@ -492,7 +615,7 @@ export async function callORPC(
   procedure: string,
   input?: unknown,
 ): Promise<{ status: number; body: unknown }> {
-  const url = new URL(`/rpc/${procedure}`, baseUrl);
+  const url = apiUrl(baseUrl, `/rpc/${procedure}`);
 
   try {
     const response = await fetch(url.toString(), {
@@ -520,45 +643,70 @@ export interface TypecheckResult {
 
 /**
  * Run typecheck on a generated project to verify zero TypeScript errors.
+ * Prefer the root workspace script because generated roots use package-manager
+ * specific if-present semantics for members that do not define type checking.
  */
+async function packageTypecheckScript(dir: string): Promise<"check-types" | "typecheck" | null> {
+  try {
+    const packageJson = JSON.parse(await readFile(join(dir, "package.json"), "utf8")) as {
+      scripts?: Record<string, unknown>;
+    };
+    if (typeof packageJson.scripts?.["check-types"] === "string") return "check-types";
+    if (typeof packageJson.scripts?.typecheck === "string") return "typecheck";
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+export async function findTypecheckTargets(
+  projectDir: string,
+): Promise<Array<{ dir: string; script: "check-types" | "typecheck" }>> {
+  const rootScript = await packageTypecheckScript(projectDir);
+  if (rootScript) return [{ dir: projectDir, script: rootScript }];
+
+  const directories = [join(projectDir, "apps", "web"), join(projectDir, "apps", "server")];
+  const scripts = await Promise.all(directories.map((dir) => packageTypecheckScript(dir)));
+  return directories.flatMap((dir, index) => {
+    const script = scripts[index];
+    return script ? [{ dir, script }] : [];
+  });
+}
+
 export async function typecheckProject(
   projectDir: string,
-  options?: { timeout?: number },
+  options?: { timeout?: number; requireTarget?: boolean },
 ): Promise<TypecheckResult> {
   const timeout = options?.timeout ?? 120_000;
-
-  const webDir = join(projectDir, "apps", "web");
-  const serverDir = join(projectDir, "apps", "server");
-
-  const results: TypecheckResult[] = [];
-
-  for (const dir of [webDir, serverDir]) {
-    if (!existsSync(join(dir, "tsconfig.json"))) continue;
-
-    const result = await execa("bun", ["run", "check-types"], {
-      cwd: dir,
-      timeout,
-      reject: false,
-      env: { ...process.env, NODE_ENV: "development" },
-    });
-
-    results.push({
-      ok: result.exitCode === 0,
-      stdout: result.stdout,
-      stderr: result.stderr,
-      exitCode: result.exitCode ?? 1,
-    });
-  }
+  const targets = await findTypecheckTargets(projectDir);
+  const results = await Promise.all(
+    targets.map(async ({ dir, script }): Promise<TypecheckResult> => {
+      const result = await execa("bun", ["run", script], {
+        cwd: dir,
+        timeout,
+        reject: false,
+        env: { ...process.env, NODE_ENV: "development" },
+      });
+      return {
+        ok: result.exitCode === 0,
+        stdout: result.stdout,
+        stderr: result.stderr,
+        exitCode: result.exitCode ?? 1,
+      };
+    }),
+  );
 
   if (results.length === 0) {
-    return { ok: true, stdout: "No tsconfig found", stderr: "", exitCode: 0 };
+    return options?.requireTarget
+      ? { ok: false, stdout: "", stderr: "No typecheck script found", exitCode: 1 }
+      : { ok: true, stdout: "No typecheck script found", stderr: "", exitCode: 0 };
   }
 
-  const failed = results.filter((r) => !r.ok);
+  const failed = results.filter((result) => !result.ok);
   return {
     ok: failed.length === 0,
-    stdout: results.map((r) => r.stdout).join("\n"),
-    stderr: results.map((r) => r.stderr).join("\n"),
+    stdout: results.map((result) => result.stdout).join("\n"),
+    stderr: results.map((result) => result.stderr).join("\n"),
     exitCode: failed.length > 0 ? (failed[0]?.exitCode ?? 1) : 0,
   };
 }
@@ -571,7 +719,12 @@ export async function typecheckProject(
 export async function scaffoldWithCLIBinary(
   projectDir: string,
   flags: string[],
-  options?: { timeout?: number; cliPath?: string; env?: NodeJS.ProcessEnv; expectedFiles?: string[] },
+  options?: {
+    timeout?: number;
+    cliPath?: string;
+    env?: NodeJS.ProcessEnv;
+    expectedFiles?: string[];
+  },
 ): Promise<CliScaffoldResult> {
   const timeout = options?.timeout ?? 120_000;
   const cliPath = options?.cliPath ?? join(import.meta.dir, "..", "..", "dist", "cli.mjs");

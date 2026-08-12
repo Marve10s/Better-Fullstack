@@ -535,7 +535,9 @@ export function getUpdateType(current: string, latest: string): UpdateType {
   const lat = parseVersion(latest);
 
   if (comparison === 0 && curr.raw === lat.raw) return "none";
-  if (comparison < 0) return "downgrade";
+  if (comparison < 0) {
+    return parseSemver(current).prerelease.length > 0 ? "none" : "downgrade";
+  }
   if (comparison === 0) return "patch";
   if (lat.major > curr.major) return "major";
   // SemVer does not promise compatibility before 1.0. A caret range can cross
@@ -569,10 +571,21 @@ async function fetchPackageInfo(packageName: string): Promise<NpmPackageInfo> {
   const encodedName = encodeURIComponent(packageName).replace("%40", "@");
   const url = `https://registry.npmjs.org/${encodedName}`;
 
-  const response = await fetch(url, {
-    headers: { Accept: "application/json" },
-  });
+  let response = await fetch(url, { headers: { Accept: "application/json" } });
+  for (
+    let attempt = 0;
+    (response.status === 429 || response.status >= 500) && attempt < 2;
+    attempt++
+  ) {
+    await new Promise((resolve) => setTimeout(resolve, 1_000 * (attempt + 1)));
+    response = await fetch(url, { headers: { Accept: "application/json" } });
+  }
 
+  if (response.status === 429 || response.status >= 500) {
+    throw new Error(
+      `npm registry unavailable for ${packageName} (HTTP ${response.status}); verification skipped this run`,
+    );
+  }
   if (!response.ok) {
     throw new Error(`Package ${packageName} not found (${response.status})`);
   }
@@ -583,11 +596,13 @@ async function fetchPackageInfo(packageName: string): Promise<NpmPackageInfo> {
   return info;
 }
 
+function isPrereleaseVersion(version: string): boolean {
+  return parseSemver(version).prerelease.length > 0;
+}
+
 function getStableVersionsDescending(info: NpmPackageInfo): string[] {
   return Object.keys(info.versions || {})
-    .filter(
-      (version) => !/-(alpha|beta|rc|next|canary|pre|dev|snapshot|experimental)/.test(version),
-    )
+    .filter((version) => !isPrereleaseVersion(version))
     .filter((version) => isOldEnough(info, version))
     .sort((a, b) => compareVersions(b, a));
 }
@@ -638,12 +653,7 @@ export async function fetchLatestVersion(
   // If the latest is a prerelease (and we want to skip prereleases) or is
   // younger than the minimum release age, fall back to the highest stable
   // version that clears both filters.
-  if (
-    latest &&
-    ((skipPrerelease &&
-      /-(alpha|beta|rc|next|canary|pre|dev|snapshot|experimental)/.test(latest)) ||
-      !isOldEnough(data, latest))
-  ) {
+  if (latest && ((skipPrerelease && isPrereleaseVersion(latest)) || !isOldEnough(data, latest))) {
     const versions = getStableVersionsDescending(data);
     if (versions.length > 0 && versions[0]) {
       latest = versions[0];

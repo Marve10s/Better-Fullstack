@@ -52,7 +52,6 @@ const uk_mcptoolplanadditiondescription4 = /** @type {(inputs: Mcptoolplanadditi
 */
 const mcptoolplanadditiondescription4 = /** @type {((inputs?: Mcptoolplanadditiondescription4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcptoolplanadditiondescription4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_mcptoolplanadditiondescription4(inputs)
 	if (locale === "es") return es_mcptoolplanadditiondescription4(inputs)
 	if (locale === "zh") return zh_mcptoolplanadditiondescription4(inputs)
 	if (locale === "ja") return ja_mcptoolplanadditiondescription4(inputs)
@@ -60,6 +59,7 @@ const mcptoolplanadditiondescription4 = /** @type {((inputs?: Mcptoolplanadditio
 	if (locale === "zh-Hant") return zh_hant1_mcptoolplanadditiondescription4(inputs)
 	if (locale === "de") return de_mcptoolplanadditiondescription4(inputs)
 	if (locale === "fr") return fr_mcptoolplanadditiondescription4(inputs)
-	return uk_mcptoolplanadditiondescription4(inputs)
+	if (locale === "uk") return uk_mcptoolplanadditiondescription4(inputs)
+	return en_mcptoolplanadditiondescription4(inputs)
 });
 export { mcptoolplanadditiondescription4 as "mcpToolPlanAdditionDescription" }

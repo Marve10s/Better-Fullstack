@@ -52,7 +52,6 @@ const uk_benchmarkteasermcpbody3 = /** @type {(inputs: Benchmarkteasermcpbody3In
 */
 const benchmarkteasermcpbody3 = /** @type {((inputs?: Benchmarkteasermcpbody3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Benchmarkteasermcpbody3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_benchmarkteasermcpbody3(inputs)
 	if (locale === "es") return es_benchmarkteasermcpbody3(inputs)
 	if (locale === "zh") return zh_benchmarkteasermcpbody3(inputs)
 	if (locale === "ja") return ja_benchmarkteasermcpbody3(inputs)
@@ -60,6 +59,7 @@ const benchmarkteasermcpbody3 = /** @type {((inputs?: Benchmarkteasermcpbody3Inp
 	if (locale === "zh-Hant") return zh_hant1_benchmarkteasermcpbody3(inputs)
 	if (locale === "de") return de_benchmarkteasermcpbody3(inputs)
 	if (locale === "fr") return fr_benchmarkteasermcpbody3(inputs)
-	return uk_benchmarkteasermcpbody3(inputs)
+	if (locale === "uk") return uk_benchmarkteasermcpbody3(inputs)
+	return en_benchmarkteasermcpbody3(inputs)
 });
 export { benchmarkteasermcpbody3 as "benchmarkTeaserMcpBody" }

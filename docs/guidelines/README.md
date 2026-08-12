@@ -11,15 +11,22 @@ Usage rules:
 Files:
 
 - `architecture-and-ownership.md` - monorepo layout, package responsibilities, and where edits belong
+- `stack-graph-and-config-authority.md` - authoritative Stack Parts, owner scope, derived flat config, projection rules, and graph-safe mutations
+- `lifecycle-commands-and-mcp.md` - command semantics, plan/apply boundaries, scaffold baselines, user-edit protection, and MCP parity
+- `generated-artifacts-and-sync.md` - generated outputs, their producers, dirty-worktree safety, and regeneration commands
+- `telemetry-privacy-and-internal-tools.md` - client/server telemetry privacy, safe outcomes, aggregate access, and internal authorization
+- `public-docs-i18n-and-seo.md` - canonical public content, pending-translation fallback, generated references, Markdown/LLM surfaces, and SEO
 - `stack-options-and-compatibility.md` - canonical option metadata, aliases, schema ownership, and compatibility constraints
 - `generator-change-playbook.md` - template-generation change flow, snapshot expectations, and output validation
 - `web-builder-and-url-state.md` - stack builder state handling, URL encoding, lazy loading constraints, and route gotchas
 - `testing-release-and-upstream.md` - verification commands, release-focused CI, and upstream backport workflow
+- `preview-publishing-security.md` - secure PR preview artifact/publish boundary and environment runbook
 - `scripted-cli-runs.md` - non-interactive CLI rules, prompt avoidance, and matrix caveats
 - `production-package-testing.md` - production `bun create better-fullstack@latest` validation workflow and combo-ledger rules
 - `template-output-and-validation.md` - template conditional logic, generated output validation, sync test discipline, and framework-specific constraints
 - `remotion-video-style.md` - default visual style, color system, motion rules, and branding for Remotion videos in this project
 - `design-reading-guide.md` - ordered index of all in-repo design specs (agent skills + BF Remotion style), precedence rules, and verification commands for agents reading “all designs”
+- `scaffbench-benchmark.md` - ScaffBench protocol, machine-load constraints, validation semantics, and publication workflow
 - `adding-new-tool-options/` - complete guide for adding new tool/library options to any ecosystem
   - `README.md` - master guide: checklists, both scenarios (existing category vs new category), area-by-area file reference, ecosystem rules, naming conventions, common mistakes
   - `worked-example.md` - complete end-to-end walkthrough adding "opensearch" to Search, with every file diff and new-category wiring patterns

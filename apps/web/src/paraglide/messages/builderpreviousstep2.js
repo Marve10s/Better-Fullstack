@@ -52,7 +52,6 @@ const uk_builderpreviousstep2 = /** @type {(inputs: Builderpreviousstep2Inputs) 
 */
 const builderpreviousstep2 = /** @type {((inputs?: Builderpreviousstep2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderpreviousstep2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderpreviousstep2(inputs)
 	if (locale === "es") return es_builderpreviousstep2(inputs)
 	if (locale === "zh") return zh_builderpreviousstep2(inputs)
 	if (locale === "ja") return ja_builderpreviousstep2(inputs)
@@ -60,6 +59,7 @@ const builderpreviousstep2 = /** @type {((inputs?: Builderpreviousstep2Inputs, o
 	if (locale === "zh-Hant") return zh_hant1_builderpreviousstep2(inputs)
 	if (locale === "de") return de_builderpreviousstep2(inputs)
 	if (locale === "fr") return fr_builderpreviousstep2(inputs)
-	return uk_builderpreviousstep2(inputs)
+	if (locale === "uk") return uk_builderpreviousstep2(inputs)
+	return en_builderpreviousstep2(inputs)
 });
 export { builderpreviousstep2 as "builderPreviousStep" }

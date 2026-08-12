@@ -52,7 +52,6 @@ const uk_homeyears1 = /** @type {(inputs: Homeyears1Inputs) => LocalizedString} 
 */
 const homeyears1 = /** @type {((inputs?: Homeyears1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homeyears1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_homeyears1(inputs)
 	if (locale === "es") return es_homeyears1(inputs)
 	if (locale === "zh") return zh_homeyears1(inputs)
 	if (locale === "ja") return ja_homeyears1(inputs)
@@ -60,6 +59,7 @@ const homeyears1 = /** @type {((inputs?: Homeyears1Inputs, options?: { locale?: 
 	if (locale === "zh-Hant") return zh_hant1_homeyears1(inputs)
 	if (locale === "de") return de_homeyears1(inputs)
 	if (locale === "fr") return fr_homeyears1(inputs)
-	return uk_homeyears1(inputs)
+	if (locale === "uk") return uk_homeyears1(inputs)
+	return en_homeyears1(inputs)
 });
 export { homeyears1 as "homeYears" }

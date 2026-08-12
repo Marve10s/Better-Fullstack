@@ -52,7 +52,6 @@ const uk_mcptipsetecosystemfirst4 = /** @type {(inputs: Mcptipsetecosystemfirst4
 */
 const mcptipsetecosystemfirst4 = /** @type {((inputs?: Mcptipsetecosystemfirst4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcptipsetecosystemfirst4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_mcptipsetecosystemfirst4(inputs)
 	if (locale === "es") return es_mcptipsetecosystemfirst4(inputs)
 	if (locale === "zh") return zh_mcptipsetecosystemfirst4(inputs)
 	if (locale === "ja") return ja_mcptipsetecosystemfirst4(inputs)
@@ -60,6 +59,7 @@ const mcptipsetecosystemfirst4 = /** @type {((inputs?: Mcptipsetecosystemfirst4I
 	if (locale === "zh-Hant") return zh_hant1_mcptipsetecosystemfirst4(inputs)
 	if (locale === "de") return de_mcptipsetecosystemfirst4(inputs)
 	if (locale === "fr") return fr_mcptipsetecosystemfirst4(inputs)
-	return uk_mcptipsetecosystemfirst4(inputs)
+	if (locale === "uk") return uk_mcptipsetecosystemfirst4(inputs)
+	return en_mcptipsetecosystemfirst4(inputs)
 });
 export { mcptipsetecosystemfirst4 as "mcpTipSetEcosystemFirst" }

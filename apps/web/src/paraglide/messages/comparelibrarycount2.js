@@ -52,7 +52,6 @@ const uk_comparelibrarycount2 = /** @type {(inputs: Comparelibrarycount2Inputs) 
 */
 const comparelibrarycount2 = /** @type {((inputs: Comparelibrarycount2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparelibrarycount2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_comparelibrarycount2(inputs)
 	if (locale === "es") return es_comparelibrarycount2(inputs)
 	if (locale === "zh") return zh_comparelibrarycount2(inputs)
 	if (locale === "ja") return ja_comparelibrarycount2(inputs)
@@ -60,6 +59,7 @@ const comparelibrarycount2 = /** @type {((inputs: Comparelibrarycount2Inputs, op
 	if (locale === "zh-Hant") return zh_hant1_comparelibrarycount2(inputs)
 	if (locale === "de") return de_comparelibrarycount2(inputs)
 	if (locale === "fr") return fr_comparelibrarycount2(inputs)
-	return uk_comparelibrarycount2(inputs)
+	if (locale === "uk") return uk_comparelibrarycount2(inputs)
+	return en_comparelibrarycount2(inputs)
 });
 export { comparelibrarycount2 as "compareLibraryCount" }

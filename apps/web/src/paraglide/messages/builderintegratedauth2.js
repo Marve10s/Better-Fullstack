@@ -52,7 +52,6 @@ const uk_builderintegratedauth2 = /** @type {(inputs: Builderintegratedauth2Inpu
 */
 const builderintegratedauth2 = /** @type {((inputs?: Builderintegratedauth2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderintegratedauth2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderintegratedauth2(inputs)
 	if (locale === "es") return es_builderintegratedauth2(inputs)
 	if (locale === "zh") return zh_builderintegratedauth2(inputs)
 	if (locale === "ja") return ja_builderintegratedauth2(inputs)
@@ -60,6 +59,7 @@ const builderintegratedauth2 = /** @type {((inputs?: Builderintegratedauth2Input
 	if (locale === "zh-Hant") return zh_hant1_builderintegratedauth2(inputs)
 	if (locale === "de") return de_builderintegratedauth2(inputs)
 	if (locale === "fr") return fr_builderintegratedauth2(inputs)
-	return uk_builderintegratedauth2(inputs)
+	if (locale === "uk") return uk_builderintegratedauth2(inputs)
+	return en_builderintegratedauth2(inputs)
 });
 export { builderintegratedauth2 as "builderIntegratedAuth" }

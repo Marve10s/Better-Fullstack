@@ -39,7 +39,7 @@ Current examples:
 - `shadcn-ui` is intentionally incompatible with `svelte` and `solid-start`.
 - Redwood currently requires `api=none` and only supports `daisyui` or `none` for `uiLibrary`.
 - Backend-aware path rules matter for Redwood: `web/api` only applies when Redwood owns both layers.
-- Before trusting older files under `docs/plans/planned/`, verify roadmap or competitive-analysis claims against `packages/types/src/schemas.ts`, `packages/types/src/option-metadata.ts`, and CLI addon helpers. Planned docs can lag behind shipped addon support.
+- Before trusting older files under `docs/projects/backlog/` or `docs/reference/`, verify roadmap and catalog claims against `packages/types/src/schemas.ts`, `packages/types/src/option-metadata.ts`, and CLI addon helpers. Backlog and reference documents can lag behind shipped support.
 
 ## Sync-test discipline
 

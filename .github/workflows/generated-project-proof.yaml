@@ -1,0 +1,101 @@
+name: Generated Project Install & Build Proof
+
+on:
+  pull_request:
+    paths:
+      - "apps/cli/src/**"
+      - "apps/cli/package.json"
+      - "apps/web/src/lib/project-download.ts"
+      - "apps/web/test/browser-cli-lifecycle.test.ts"
+      - "apps/web/test/project-download.test.ts"
+      - "packages/types/**"
+      - "packages/template-generator/**"
+      - "testing/**"
+      - ".github/workflows/generated-project-proof.yaml"
+  push:
+    branches: [development, main]
+    paths:
+      - "apps/cli/src/**"
+      - "apps/cli/package.json"
+      - "apps/web/src/lib/project-download.ts"
+      - "apps/web/test/browser-cli-lifecycle.test.ts"
+      - "apps/web/test/project-download.test.ts"
+      - "packages/types/**"
+      - "packages/template-generator/**"
+      - "testing/**"
+      - ".github/workflows/generated-project-proof.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: generated-project-proof-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generated-project-install-build:
+    name: Fresh generated projects install and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.5
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
+      - name: Setup Python and uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Install repository dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build lifecycle workspace packages
+        run: |
+          bun run --cwd packages/types build
+          bun run --cwd packages/template-generator build
+
+      - name: Verify lifecycle contracts
+        run: |
+          bun test testing/generated-project-proof.test.ts apps/web/test/project-download.test.ts
+          bun test apps/web/test/browser-cli-lifecycle.test.ts --timeout 120000
+
+      - name: Run generated project install/build proof
+        run: bun run testing/generated-project-proof.ts
+
+      - name: Publish job summary
+        if: always()
+        run: |
+          if [ -f testing/.smoke-output/generated-project-proof/generated-project-proof.md ]; then
+            cat testing/.smoke-output/generated-project-proof/generated-project-proof.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload SHA-bound evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-project-proof-${{ github.sha }}
+          path: testing/.smoke-output/generated-project-proof/
+          include-hidden-files: true
+          if-no-files-found: error

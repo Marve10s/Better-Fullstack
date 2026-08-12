@@ -52,7 +52,6 @@ const uk_runlabeltwophase3 = /** @type {(inputs: Runlabeltwophase3Inputs) => Loc
 */
 const runlabeltwophase3 = /** @type {((inputs?: Runlabeltwophase3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runlabeltwophase3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_runlabeltwophase3(inputs)
 	if (locale === "es") return es_runlabeltwophase3(inputs)
 	if (locale === "zh") return zh_runlabeltwophase3(inputs)
 	if (locale === "ja") return ja_runlabeltwophase3(inputs)
@@ -60,6 +59,7 @@ const runlabeltwophase3 = /** @type {((inputs?: Runlabeltwophase3Inputs, options
 	if (locale === "zh-Hant") return zh_hant1_runlabeltwophase3(inputs)
 	if (locale === "de") return de_runlabeltwophase3(inputs)
 	if (locale === "fr") return fr_runlabeltwophase3(inputs)
-	return uk_runlabeltwophase3(inputs)
+	if (locale === "uk") return uk_runlabeltwophase3(inputs)
+	return en_runlabeltwophase3(inputs)
 });
 export { runlabeltwophase3 as "runLabelTwoPhase" }

@@ -52,7 +52,6 @@ const uk_launchradarheadline2 = /** @type {(inputs: Launchradarheadline2Inputs) 
 */
 const launchradarheadline2 = /** @type {((inputs: Launchradarheadline2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Launchradarheadline2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_launchradarheadline2(inputs)
 	if (locale === "es") return es_launchradarheadline2(inputs)
 	if (locale === "zh") return zh_launchradarheadline2(inputs)
 	if (locale === "ja") return ja_launchradarheadline2(inputs)
@@ -60,6 +59,7 @@ const launchradarheadline2 = /** @type {((inputs: Launchradarheadline2Inputs, op
 	if (locale === "zh-Hant") return zh_hant1_launchradarheadline2(inputs)
 	if (locale === "de") return de_launchradarheadline2(inputs)
 	if (locale === "fr") return fr_launchradarheadline2(inputs)
-	return uk_launchradarheadline2(inputs)
+	if (locale === "uk") return uk_launchradarheadline2(inputs)
+	return en_launchradarheadline2(inputs)
 });
 export { launchradarheadline2 as "launchRadarHeadline" }

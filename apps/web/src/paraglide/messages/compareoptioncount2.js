@@ -52,7 +52,6 @@ const uk_compareoptioncount2 = /** @type {(inputs: Compareoptioncount2Inputs) =>
 */
 const compareoptioncount2 = /** @type {((inputs: Compareoptioncount2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Compareoptioncount2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_compareoptioncount2(inputs)
 	if (locale === "es") return es_compareoptioncount2(inputs)
 	if (locale === "zh") return zh_compareoptioncount2(inputs)
 	if (locale === "ja") return ja_compareoptioncount2(inputs)
@@ -60,6 +59,7 @@ const compareoptioncount2 = /** @type {((inputs: Compareoptioncount2Inputs, opti
 	if (locale === "zh-Hant") return zh_hant1_compareoptioncount2(inputs)
 	if (locale === "de") return de_compareoptioncount2(inputs)
 	if (locale === "fr") return fr_compareoptioncount2(inputs)
-	return uk_compareoptioncount2(inputs)
+	if (locale === "uk") return uk_compareoptioncount2(inputs)
+	return en_compareoptioncount2(inputs)
 });
 export { compareoptioncount2 as "compareOptionCount" }

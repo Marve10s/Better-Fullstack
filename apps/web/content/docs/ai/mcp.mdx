@@ -90,19 +90,23 @@ Use the same stdio command with clients such as Claude Desktop, Zed, Cursor, Cod
 
 For full inputs, outputs, examples, and safe write behavior, see the [MCP tools reference](/docs/ai/mcp-tools/).
 
-| Tool                      | Purpose                                                                     |
-| ------------------------- | --------------------------------------------------------------------------- |
-| `bfs_get_guidance`        | Returns workflow rules and field semantics. Call this first.                |
-| `bfs_get_schema`          | Returns valid options for configuration categories.                         |
-| `bfs_list_presets`        | Lists ready-made stacks and their canonical configuration.                  |
-| `bfs_recommend_stack`     | Turns a product brief into a deterministic, validated stack recommendation. |
-| `bfs_check_compatibility` | Validates a stack and returns adjusted selections with warnings.            |
-| `bfs_plan_project`        | Dry-runs project generation in memory.                                      |
-| `bfs_create_project`      | Writes a new project to disk.                                               |
-| `bfs_plan_stack_update`   | Plans any supported scaffold-time stack change in an existing project.      |
-| `bfs_apply_stack_update`  | Applies a reviewed stack update without overwriting edited generated files. |
-| `bfs_plan_addition`       | Plans a focused addon or deploy-target addition.                            |
-| `bfs_add_feature`         | Applies a focused addon or deploy-target addition.                          |
+| Tool                       | Purpose                                                                         |
+| -------------------------- | ------------------------------------------------------------------------------- |
+| `bfs_get_guidance`         | Returns workflow rules and field semantics. Call this first.                    |
+| `bfs_get_schema`           | Returns valid options for configuration categories.                             |
+| `bfs_list_presets`         | Lists ready-made stacks and their canonical configuration.                      |
+| `bfs_recommend_stack`      | Turns a product brief into a deterministic, validated stack recommendation.     |
+| `bfs_check_compatibility`  | Validates a stack and returns adjusted selections with warnings.                |
+| `bfs_plan_project`         | Dry-runs project generation in memory.                                          |
+| `bfs_create_project`       | Writes a new project to disk.                                                   |
+| `bfs_get_project_status`   | Reads project and manifest prerequisites without executing toolchains.          |
+| `bfs_check_project`        | Runs every generated target check; build tools may mutate caches/artifacts.     |
+| `bfs_plan_project_update`  | Returns a plan-only v1 review token only when bounded content is inspectable.   |
+| `bfs_apply_project_update` | Destructively applies token-bound files after explicit v1-risk acknowledgement. |
+| `bfs_plan_stack_update`    | Plans any supported scaffold-time stack change in an existing project.          |
+| `bfs_apply_stack_update`   | Applies a reviewed stack update without overwriting edited generated files.     |
+| `bfs_plan_addition`        | Plans a focused addon or deploy-target addition.                                |
+| `bfs_add_feature`          | Applies a focused addon or deploy-target addition.                              |
 
 <Callout kind="info" title="Install behavior">
 MCP project creation skips normal dependency installation to avoid long-running agent calls. If the generated project includes the `mcp` addon, that addon setup may still run external setup commands for MCP client configuration.
@@ -131,9 +135,13 @@ For a new project:
 For an existing project's stack:
 
 1. `bfs_get_guidance`
-2. `bfs_plan_stack_update`
-3. Review conflicts, migration steps, and architecture changes.
-4. Ask for approval, then `bfs_apply_stack_update` with the same requested fields.
+2. `bfs_get_project_status`, then `bfs_check_project` when executable verification is requested.
+3. For current-template drift, call `bfs_plan_project_update`, review it, then pass its exact
+   `reviewToken` and `acknowledgeUnprovenManifestV1: true` to `bfs_apply_project_update` after
+   approval and an independently managed recovery point.
+4. For capability changes, call `bfs_plan_stack_update` and review conflicts, migration steps, and
+   architecture changes.
+5. Ask for approval, then `bfs_apply_stack_update` with the same requested fields.
 
 Use `bfs_plan_addition` followed by `bfs_add_feature` only for the narrower addon and deploy-target
 workflow.
@@ -145,6 +153,9 @@ workflow.
 - Set `ecosystem` first, preserve arrays as arrays, and use `none` only where the schema permits it.
 - Project planning, creation, and update responses include graph-backed stack metadata.
 - A stack update requires an absolute `projectDir`. Plan and apply with the same requested fields.
+- Project update apply requires the exact token from a bounded plan and
+  `acknowledgeUnprovenManifestV1: true`. Manifest v1 is always plan-only by default and never proves
+  generator release/SHA provenance; backup/recovery remains unavailable until Wave 1.
 - Architecture-changing updates do not migrate application data or schemas. Review `migrationSteps`
   and pass `acknowledgeArchitectureChange: true` only after explicit approval.
 - Write tools do not install dependencies. Report the returned install command to the user.
@@ -158,5 +169,9 @@ bfs_check_compatibility and preview it with bfs_plan_project. Only call
 bfs_create_project after I approve the plan. For an existing project's
 stack, use bfs_plan_stack_update before bfs_apply_stack_update. Tell me
 the returned install, test, and run commands because write tools do not
-install dependencies.
+install dependencies. For current-template drift, call bfs_get_project_status,
+bfs_check_project, and bfs_plan_project_update; only pass its exact reviewToken
+with acknowledgeUnprovenManifestV1: true to bfs_apply_project_update after I approve
+and provide a recovery point. Do not claim manifest v1 provides generator provenance
+or automated recovery.
 ```

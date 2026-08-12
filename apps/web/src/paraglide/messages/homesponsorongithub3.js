@@ -52,7 +52,6 @@ const uk_homesponsorongithub3 = /** @type {(inputs: Homesponsorongithub3Inputs) 
 */
 const homesponsorongithub3 = /** @type {((inputs?: Homesponsorongithub3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homesponsorongithub3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_homesponsorongithub3(inputs)
 	if (locale === "es") return es_homesponsorongithub3(inputs)
 	if (locale === "zh") return zh_homesponsorongithub3(inputs)
 	if (locale === "ja") return ja_homesponsorongithub3(inputs)
@@ -60,6 +59,7 @@ const homesponsorongithub3 = /** @type {((inputs?: Homesponsorongithub3Inputs, o
 	if (locale === "zh-Hant") return zh_hant1_homesponsorongithub3(inputs)
 	if (locale === "de") return de_homesponsorongithub3(inputs)
 	if (locale === "fr") return fr_homesponsorongithub3(inputs)
-	return uk_homesponsorongithub3(inputs)
+	if (locale === "uk") return uk_homesponsorongithub3(inputs)
+	return en_homesponsorongithub3(inputs)
 });
 export { homesponsorongithub3 as "homeSponsorOnGithub" }

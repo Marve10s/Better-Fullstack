@@ -1,5 +1,7 @@
 {{#if (ne backend "self")}}
 import { env } from "@{{projectName}}/env/web";
+{{else}}
+import { getRequestEvent } from "solid-js/web";
 {{/if}}
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
@@ -16,7 +18,10 @@ export const queryClient = new QueryClient({
 });
 
 export const link = new RPCLink({
-	url: {{#if (eq backend "self")}}"/api/rpc"{{else}}`${env.VITE_SERVER_URL}/rpc`{{/if}},
+	url: {{#if (eq backend "self")}}() =>
+		typeof window === "undefined"
+			? new URL("/api/rpc", getRequestEvent()?.request.url ?? "http://localhost:3001").toString()
+			: `${window.location.origin}/api/rpc`{{else}}`${env.VITE_SERVER_URL}/rpc`{{/if}},
 	{{#if (and (isBetterAuth auth) (ne backend "self"))}}
 	fetch(url, options) {
 		return fetch(url, {

@@ -52,7 +52,6 @@ const uk_savedemptytitle2 = /** @type {(inputs: Savedemptytitle2Inputs) => Local
 */
 const savedemptytitle2 = /** @type {((inputs?: Savedemptytitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedemptytitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_savedemptytitle2(inputs)
 	if (locale === "es") return es_savedemptytitle2(inputs)
 	if (locale === "zh") return zh_savedemptytitle2(inputs)
 	if (locale === "ja") return ja_savedemptytitle2(inputs)
@@ -60,6 +59,7 @@ const savedemptytitle2 = /** @type {((inputs?: Savedemptytitle2Inputs, options?:
 	if (locale === "zh-Hant") return zh_hant1_savedemptytitle2(inputs)
 	if (locale === "de") return de_savedemptytitle2(inputs)
 	if (locale === "fr") return fr_savedemptytitle2(inputs)
-	return uk_savedemptytitle2(inputs)
+	if (locale === "uk") return uk_savedemptytitle2(inputs)
+	return en_savedemptytitle2(inputs)
 });
 export { savedemptytitle2 as "savedEmptyTitle" }

@@ -52,7 +52,6 @@ const uk_builderrunidle2 = /** @type {(inputs: Builderrunidle2Inputs) => Localiz
 */
 const builderrunidle2 = /** @type {((inputs?: Builderrunidle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderrunidle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderrunidle2(inputs)
 	if (locale === "es") return es_builderrunidle2(inputs)
 	if (locale === "zh") return zh_builderrunidle2(inputs)
 	if (locale === "ja") return ja_builderrunidle2(inputs)
@@ -60,6 +59,7 @@ const builderrunidle2 = /** @type {((inputs?: Builderrunidle2Inputs, options?: {
 	if (locale === "zh-Hant") return zh_hant1_builderrunidle2(inputs)
 	if (locale === "de") return de_builderrunidle2(inputs)
 	if (locale === "fr") return fr_builderrunidle2(inputs)
-	return uk_builderrunidle2(inputs)
+	if (locale === "uk") return uk_builderrunidle2(inputs)
+	return en_builderrunidle2(inputs)
 });
 export { builderrunidle2 as "builderRunIdle" }

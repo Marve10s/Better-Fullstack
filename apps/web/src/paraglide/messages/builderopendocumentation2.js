@@ -52,7 +52,6 @@ const uk_builderopendocumentation2 = /** @type {(inputs: Builderopendocumentatio
 */
 const builderopendocumentation2 = /** @type {((inputs?: Builderopendocumentation2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderopendocumentation2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderopendocumentation2(inputs)
 	if (locale === "es") return es_builderopendocumentation2(inputs)
 	if (locale === "zh") return zh_builderopendocumentation2(inputs)
 	if (locale === "ja") return ja_builderopendocumentation2(inputs)
@@ -60,6 +59,7 @@ const builderopendocumentation2 = /** @type {((inputs?: Builderopendocumentation
 	if (locale === "zh-Hant") return zh_hant1_builderopendocumentation2(inputs)
 	if (locale === "de") return de_builderopendocumentation2(inputs)
 	if (locale === "fr") return fr_builderopendocumentation2(inputs)
-	return uk_builderopendocumentation2(inputs)
+	if (locale === "uk") return uk_builderopendocumentation2(inputs)
+	return en_builderopendocumentation2(inputs)
 });
 export { builderopendocumentation2 as "builderOpenDocumentation" }

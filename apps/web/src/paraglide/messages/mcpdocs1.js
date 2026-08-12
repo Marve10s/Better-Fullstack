@@ -52,7 +52,6 @@ const uk_mcpdocs1 = /** @type {(inputs: Mcpdocs1Inputs) => LocalizedString} */ (
 */
 const mcpdocs1 = /** @type {((inputs?: Mcpdocs1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpdocs1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_mcpdocs1(inputs)
 	if (locale === "es") return es_mcpdocs1(inputs)
 	if (locale === "zh") return zh_mcpdocs1(inputs)
 	if (locale === "ja") return ja_mcpdocs1(inputs)
@@ -60,6 +59,7 @@ const mcpdocs1 = /** @type {((inputs?: Mcpdocs1Inputs, options?: { locale?: "en"
 	if (locale === "zh-Hant") return zh_hant1_mcpdocs1(inputs)
 	if (locale === "de") return de_mcpdocs1(inputs)
 	if (locale === "fr") return fr_mcpdocs1(inputs)
-	return uk_mcpdocs1(inputs)
+	if (locale === "uk") return uk_mcpdocs1(inputs)
+	return en_mcpdocs1(inputs)
 });
 export { mcpdocs1 as "mcpDocs" }

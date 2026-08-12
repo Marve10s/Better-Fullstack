@@ -52,7 +52,6 @@ const uk_sharelinkcopyfailed3 = /** @type {(inputs: Sharelinkcopyfailed3Inputs) 
 */
 const sharelinkcopyfailed3 = /** @type {((inputs?: Sharelinkcopyfailed3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Sharelinkcopyfailed3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_sharelinkcopyfailed3(inputs)
 	if (locale === "es") return es_sharelinkcopyfailed3(inputs)
 	if (locale === "zh") return zh_sharelinkcopyfailed3(inputs)
 	if (locale === "ja") return ja_sharelinkcopyfailed3(inputs)
@@ -60,6 +59,7 @@ const sharelinkcopyfailed3 = /** @type {((inputs?: Sharelinkcopyfailed3Inputs, o
 	if (locale === "zh-Hant") return zh_hant1_sharelinkcopyfailed3(inputs)
 	if (locale === "de") return de_sharelinkcopyfailed3(inputs)
 	if (locale === "fr") return fr_sharelinkcopyfailed3(inputs)
-	return uk_sharelinkcopyfailed3(inputs)
+	if (locale === "uk") return uk_sharelinkcopyfailed3(inputs)
+	return en_sharelinkcopyfailed3(inputs)
 });
 export { sharelinkcopyfailed3 as "shareLinkCopyFailed" }

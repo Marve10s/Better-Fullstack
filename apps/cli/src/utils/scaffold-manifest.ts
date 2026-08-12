@@ -5,30 +5,11 @@ import fs from "fs-extra";
 import { createHash } from "node:crypto";
 import path from "node:path";
 
-/**
- * Scaffold baseline manifest ("bts.lock.json").
- *
- * Recorded once at create time (after formatting, before install) as a map of
- * every on-disk file path -> sha256 of its bytes. `bfs update` later re-renders
- * the project with the current templates and uses this baseline to tell apart
- * three cases per file: the template moved but the file was never touched (safe
- * to patch), the user edited the file (keep as-is), or both changed (conflict).
- * Without a recorded baseline that distinction is impossible.
- */
-
 export const SCAFFOLD_MANIFEST_FILE = "bts.lock.json";
 const MANIFEST_VERSION = "1";
 
-/** Directories never worth hashing (dependencies / VCS metadata). */
 const EXCLUDED_DIR_NAMES = new Set(["node_modules", ".git"]);
 
-/**
- * Files whose on-disk bytes are NOT a pure-template render — the manifest
- * itself, the config file (regenerated on update), and package-manager /
- * toolchain lockfiles that install mutates. Excluding them keeps the baseline
- * focused on template-comparable content so `bfs update` never mistakes an
- * install artifact for template drift.
- */
 const EXCLUDED_FILE_NAMES = new Set([
   SCAFFOLD_MANIFEST_FILE,
   "bts.jsonc",
@@ -48,17 +29,14 @@ export type ScaffoldManifest = {
   version: string;
   createdAt: string;
   hashes: Record<string, string>;
-  /**
-   * Pure-template render content (pre post-processing) of structured-merge
-   * files — package.json and *.env.example. `bfs update` uses these as the
-   * "previous" side of a 3-way merge so template-side dependency/script/env-key
-   * changes can be folded into a post-processed or user-edited file without
-   * clobbering either. Optional: manifests recorded by older CLIs lack it.
-   */
   baselines?: Record<string, string>;
 };
 
-/** Files whose render content is stored in the manifest for structured merges. */
+export type ScaffoldManifestReadResult =
+  | { status: "missing" }
+  | { status: "valid"; manifest: ScaffoldManifest }
+  | { status: "invalid"; error: string };
+
 export function isStructuredBaselinePath(relPath: string): boolean {
   const name = path.basename(relPath);
   return name === "package.json" || name.endsWith(".env.example");
@@ -66,7 +44,6 @@ export function isStructuredBaselinePath(relPath: string): boolean {
 
 const BINARY_FILE_MARKER = "[Binary file]";
 
-/** Extract structured-merge baseline contents from a generated virtual tree. */
 export function collectStructuredBaselines(tree: VirtualFileTree): Record<string, string> {
   const baselines: Record<string, string> = {};
 
@@ -120,7 +97,6 @@ async function walkFiles(rootDir: string): Promise<string[]> {
   return results;
 }
 
-/** Walk the project on disk and return a deterministic path -> sha256 map. */
 export async function computeScaffoldHashes(projectDir: string): Promise<Record<string, string>> {
   const files = await walkFiles(projectDir);
   const entries = await Promise.all(
@@ -150,13 +126,6 @@ export async function writeScaffoldManifest(
   await fs.writeFile(manifestPath, `${JSON.stringify(sorted, null, 2)}\n`, "utf-8");
 }
 
-/**
- * Record the scaffold baseline manifest for a freshly created project.
- *
- * Best-effort by design: any failure returns null instead of throwing, so a
- * problem here can only disable `bfs update`'s auto-patching — it must never
- * break the create path.
- */
 export async function recordScaffoldManifest(
   projectDir: string,
   metadata: { createdAt?: string; baselines?: Record<string, string> } = {},
@@ -175,29 +144,87 @@ export async function recordScaffoldManifest(
   }
 }
 
-export async function readScaffoldManifest(projectDir: string): Promise<ScaffoldManifest | null> {
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) return false;
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
+}
+
+function isPortableProjectRelativePath(filePath: string): boolean {
+  return (
+    filePath.length > 0 &&
+    !path.posix.isAbsolute(filePath) &&
+    !path.win32.isAbsolute(filePath) &&
+    !filePath.split(/[\\/]/).includes("..")
+  );
+}
+
+function validateManifest(parsed: unknown): ScaffoldManifestReadResult {
+  if (!isPlainRecord(parsed)) return { status: "invalid", error: "manifest must be a JSON object" };
+  if (typeof parsed.version !== "string" || parsed.version.trim() === "") {
+    return { status: "invalid", error: "version must be a non-empty string" };
+  }
+  if (
+    typeof parsed.createdAt !== "string" ||
+    parsed.createdAt.trim() === "" ||
+    Number.isNaN(Date.parse(parsed.createdAt))
+  ) {
+    return { status: "invalid", error: "createdAt must be a valid timestamp string" };
+  }
+  if (!isPlainRecord(parsed.hashes)) {
+    return { status: "invalid", error: "hashes must be a non-null plain record" };
+  }
+  for (const [filePath, digest] of Object.entries(parsed.hashes)) {
+    if (!isPortableProjectRelativePath(filePath)) {
+      return { status: "invalid", error: `hashes contains an unsafe project path: ${filePath}` };
+    }
+    if (typeof digest !== "string" || !/^[0-9a-f]{64}$/.test(digest)) {
+      return { status: "invalid", error: `hashes[${JSON.stringify(filePath)}] must be SHA-256` };
+    }
+  }
+  if (parsed.baselines !== undefined) {
+    if (!isPlainRecord(parsed.baselines)) {
+      return { status: "invalid", error: "baselines must be a non-null plain record" };
+    }
+    for (const [filePath, content] of Object.entries(parsed.baselines)) {
+      if (!isPortableProjectRelativePath(filePath)) {
+        return {
+          status: "invalid",
+          error: `baselines contains an unsafe project path: ${filePath}`,
+        };
+      }
+      if (typeof content !== "string") {
+        return {
+          status: "invalid",
+          error: `baselines[${JSON.stringify(filePath)}] must be a string`,
+        };
+      }
+    }
+  }
+  return { status: "valid", manifest: parsed as ScaffoldManifest };
+}
+
+export async function readScaffoldManifestResult(
+  projectDir: string,
+): Promise<ScaffoldManifestReadResult> {
   try {
     const manifestPath = path.join(projectDir, SCAFFOLD_MANIFEST_FILE);
-    if (!(await fs.pathExists(manifestPath))) return null;
+    if (!(await fs.pathExists(manifestPath))) return { status: "missing" };
     const raw = await fs.readFile(manifestPath, "utf-8");
-    const parsed = JSON.parse(raw) as ScaffoldManifest;
-    if (!parsed || typeof parsed !== "object" || typeof parsed.hashes !== "object") {
-      return null;
-    }
-    if (parsed.baselines !== undefined && typeof parsed.baselines !== "object") {
-      delete parsed.baselines;
-    }
-    return parsed;
-  } catch {
-    return null;
+    return validateManifest(JSON.parse(raw) as unknown);
+  } catch (error) {
+    return {
+      status: "invalid",
+      error: `manifest is not valid JSON: ${error instanceof Error ? error.message : String(error)}`,
+    };
   }
 }
 
-/**
- * Refresh only files deliberately written by an in-place stack update.
- * `baselines` (path -> render content) advances the structured-merge baselines
- * to the render the project was just reconciled against.
- */
+export async function readScaffoldManifest(projectDir: string): Promise<ScaffoldManifest | null> {
+  const result = await readScaffoldManifestResult(projectDir);
+  return result.status === "valid" ? result.manifest : null;
+}
+
 export async function refreshScaffoldManifestFiles(
   projectDir: string,
   relativePaths: Iterable<string>,

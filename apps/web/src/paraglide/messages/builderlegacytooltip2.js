@@ -52,7 +52,6 @@ const uk_builderlegacytooltip2 = /** @type {(inputs: Builderlegacytooltip2Inputs
 */
 const builderlegacytooltip2 = /** @type {((inputs?: Builderlegacytooltip2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderlegacytooltip2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderlegacytooltip2(inputs)
 	if (locale === "es") return es_builderlegacytooltip2(inputs)
 	if (locale === "zh") return zh_builderlegacytooltip2(inputs)
 	if (locale === "ja") return ja_builderlegacytooltip2(inputs)
@@ -60,6 +59,7 @@ const builderlegacytooltip2 = /** @type {((inputs?: Builderlegacytooltip2Inputs,
 	if (locale === "zh-Hant") return zh_hant1_builderlegacytooltip2(inputs)
 	if (locale === "de") return de_builderlegacytooltip2(inputs)
 	if (locale === "fr") return fr_builderlegacytooltip2(inputs)
-	return uk_builderlegacytooltip2(inputs)
+	if (locale === "uk") return uk_builderlegacytooltip2(inputs)
+	return en_builderlegacytooltip2(inputs)
 });
 export { builderlegacytooltip2 as "builderLegacyTooltip" }

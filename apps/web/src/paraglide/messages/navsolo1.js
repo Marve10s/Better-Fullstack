@@ -52,7 +52,6 @@ const uk_navsolo1 = /** @type {(inputs: Navsolo1Inputs) => LocalizedString} */ (
 */
 const navsolo1 = /** @type {((inputs?: Navsolo1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navsolo1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_navsolo1(inputs)
 	if (locale === "es") return es_navsolo1(inputs)
 	if (locale === "zh") return zh_navsolo1(inputs)
 	if (locale === "ja") return ja_navsolo1(inputs)
@@ -60,6 +59,7 @@ const navsolo1 = /** @type {((inputs?: Navsolo1Inputs, options?: { locale?: "en"
 	if (locale === "zh-Hant") return zh_hant1_navsolo1(inputs)
 	if (locale === "de") return de_navsolo1(inputs)
 	if (locale === "fr") return fr_navsolo1(inputs)
-	return uk_navsolo1(inputs)
+	if (locale === "uk") return uk_navsolo1(inputs)
+	return en_navsolo1(inputs)
 });
 export { navsolo1 as "navSolo" }

@@ -2,7 +2,7 @@
 title: MCP Tools Reference
 description: Detailed reference for Better Fullstack MCP tools, inputs, outputs, and safe workflows.
 translationStatus: pending
-updated: 2026-08-07
+updated: 2026-08-10
 ---
 
 The MCP server exposes structured tools for discovery, project creation, and existing-project
@@ -40,10 +40,29 @@ is the authoritative contract.
 Use `bfs_plan_addition` and `bfs_add_feature` only for the narrower addon, web-deploy, and
 server-deploy workflow.
 
+### Inspect, check, and update project files
+
+1. Call `bfs_get_project_status` to recognize the project and inspect lifecycle prerequisites
+   without running generated toolchains.
+2. Call `bfs_check_project` when the user wants truthful executable verification. Treat missing
+   dependencies, targets, or toolchains as failures.
+3. Call `bfs_plan_project_update` to compare the project with the currently bundled templates.
+4. Review the categorized/hash-bound plan. Structured merge content is exact through 32 KiB per
+   file; oversized content is withheld with size/SHA metadata and no token is issued.
+5. After approval, call `bfs_apply_project_update` with the same absolute `projectDir` and exact
+   token plus `acknowledgeUnprovenManifestV1: true`. A missing, stale, modified, cross-project, or
+   bounded-review-ineligible token fails closed.
+
+This workflow currently guarantees only a manifest-v1 baseline. It does not prove generator
+release/SHA lineage, choose a supported cross-version upgrade window, create a transactional
+backup, or provide automated recovery. Those provenance and recovery guarantees remain blocked on
+Wave 1.
+
 <Callout kind="warn" title="Write and migration behavior">
-Planning tools are read-only. Create, apply, and add tools write files but do not install
-dependencies. Stack updates refuse to overwrite user-edited generated files. Architecture updates
-do not migrate application data or schemas automatically.
+Planning tools are read-only. Create, apply, and add tools write files. Project checks can fetch
+dependencies and write toolchain locks, caches, compiler output, or build artifacts. Stack updates
+refuse to overwrite user-edited generated files. Architecture updates do not migrate application
+data or schemas automatically.
 </Callout>
 
 ## Discovery and validation tools
@@ -115,6 +134,49 @@ does not install dependencies.
 
 ## Existing-project stack tools
 
+### `bfs_get_project_status`
+
+Requires an existing project directory containing a valid `bts.jsonc`. It returns the recognized
+ecosystem, graph summary, dependency/environment status, verification counts, and lifecycle
+prerequisites. It is read-only and does not execute generated toolchains or write project files.
+The manifest is optional for inspection: the response reports whether `bts.lock.json` exists and
+whether its current v1 contract is supported. It never returns a project-update `reviewToken`.
+Manifest v1 has no generator release/SHA provenance and this tool provides no backup or recovery;
+those guarantees remain unavailable until Wave 1 ships.
+
+### `bfs_check_project`
+
+Requires a valid `bts.jsonc`, installed project dependencies, and every toolchain required by the
+generated targets. It returns every expected target, command/toolchain, execution status, reason,
+and an overall `ok` value. Missing dependencies, targets, commands, or toolchains make the result
+non-green. It does not directly rewrite generated source, configuration, or the manifest, but its
+invoked build tools may fetch dependencies and write locks, caches, compiler output, or build
+artifacts; therefore this tool is not annotated read-only. A manifest is not required and no `reviewToken` is produced. Any reported
+manifest support is limited to v1; release/SHA provenance and transactional recovery remain Wave 1
+limitations.
+
+### `bfs_plan_project_update`
+
+Requires a valid `bts.jsonc` and compares the on-disk project with the currently bundled templates.
+It is read-only and returns categorized drift, conflicts, manual-review items, actionable files,
+blockers, and whether apply is allowed. A `reviewToken` is returned only when a supported
+`bts.lock.json` manifest-v1 baseline is present and every proposed structured merge fits the 32 KiB
+per-file review bound. The token binds the canonical project path, raw config and manifest hashes,
+categorized actions, intended actionable hashes, preimages, and exact bounded merge bytes. An
+oversized merge returns withheld size/SHA/limit metadata and no token. Manifest v1 remains
+plan-only by default and never proves generator release/SHA lineage; transactional backup and
+automated recovery remain unavailable until Wave 1.
+
+### `bfs_apply_project_update`
+
+Requires the same absolute `projectDir`, a supported manifest-v1 baseline, prior bounded review,
+its exact 64-character `reviewToken`, and `acknowledgeUnprovenManifestV1: true`. It destructively
+overwrites only currently actionable template files and advances the v1 baseline. Missing, stale,
+changed, cross-project, or oversized-review-ineligible tokens fail closed. Checks reject observed
+symlinks and changed preimages, but are not a transaction or an active-filesystem-adversary
+guarantee; earlier writes are not rolled back after a later failure. Manifest v1 has no generator
+release/SHA provenance, and backup/rollback recovery is not implemented.
+
 ### `bfs_plan_stack_update`
 
 Requires an absolute `projectDir` and accepts the same scaffold-time stack fields as project
@@ -162,4 +224,7 @@ dependencies. Use it only after `bfs_plan_addition` succeeds and the user approv
 - Apply the exact stack that was planned; if the request changes, plan again.
 - Do not call a write tool until the user has reviewed its corresponding plan.
 - Surface compatibility adjustments and manual-review blockers instead of silently accepting them.
+- For lifecycle work, inspect before checking, plan before applying, and pass the exact
+  `bfs_plan_project_update` token unchanged. Never claim manifest v1 proves generator provenance or
+  recovery.
 - After every write, report the returned dependency-install command and relevant test/run commands.

@@ -148,7 +148,9 @@ npm create better-fullstack@latest update
 ```
 
 `check` diagnoses config, dependencies, env files, and optionally native/build checks. `update`
-defaults to a review-only template-drift plan; use `update --apply` only after reviewing it.
+defaults to a review-only template-drift plan. Before destructive apply, create and verify an
+independent recovery point, review the categorized paths, and pass that exact plan token together
+with `--acknowledge-unproven-manifest-v1`; no built-in backup or rollback exists.
 
 ## Next
 

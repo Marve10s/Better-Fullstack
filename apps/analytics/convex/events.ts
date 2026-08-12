@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 
-import { internalMutation, query } from "./_generated/server";
+import { internalMutation, internalQuery } from "./_generated/server";
 
 export const insertProjectCreation = internalMutation({
   args: {
@@ -55,7 +55,7 @@ export const insertProjectCreation = internalMutation({
 });
 
 // Query to get all project creations (for dashboard)
-export const listProjectCreations = query({
+export const listProjectCreations = internalQuery({
   args: {
     limit: v.optional(v.number()),
   },
@@ -66,7 +66,7 @@ export const listProjectCreations = query({
 });
 
 // Query to get stats
-export const getStats = query({
+export const getStats = internalQuery({
   handler: async (ctx) => {
     const all = await ctx.db.query("projectCreations").collect();
 

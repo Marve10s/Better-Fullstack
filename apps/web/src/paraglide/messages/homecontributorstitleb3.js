@@ -52,7 +52,6 @@ const uk_homecontributorstitleb3 = /** @type {(inputs: Homecontributorstitleb3In
 */
 const homecontributorstitleb3 = /** @type {((inputs?: Homecontributorstitleb3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homecontributorstitleb3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_homecontributorstitleb3(inputs)
 	if (locale === "es") return es_homecontributorstitleb3(inputs)
 	if (locale === "zh") return zh_homecontributorstitleb3(inputs)
 	if (locale === "ja") return ja_homecontributorstitleb3(inputs)
@@ -60,6 +59,7 @@ const homecontributorstitleb3 = /** @type {((inputs?: Homecontributorstitleb3Inp
 	if (locale === "zh-Hant") return zh_hant1_homecontributorstitleb3(inputs)
 	if (locale === "de") return de_homecontributorstitleb3(inputs)
 	if (locale === "fr") return fr_homecontributorstitleb3(inputs)
-	return uk_homecontributorstitleb3(inputs)
+	if (locale === "uk") return uk_homecontributorstitleb3(inputs)
+	return en_homecontributorstitleb3(inputs)
 });
 export { homecontributorstitleb3 as "homeContributorsTitleB" }

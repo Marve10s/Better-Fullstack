@@ -52,7 +52,6 @@ const uk_builderrunlocalnotice3 = /** @type {(inputs: Builderrunlocalnotice3Inpu
 */
 const builderrunlocalnotice3 = /** @type {((inputs?: Builderrunlocalnotice3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderrunlocalnotice3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderrunlocalnotice3(inputs)
 	if (locale === "es") return es_builderrunlocalnotice3(inputs)
 	if (locale === "zh") return zh_builderrunlocalnotice3(inputs)
 	if (locale === "ja") return ja_builderrunlocalnotice3(inputs)
@@ -60,6 +59,7 @@ const builderrunlocalnotice3 = /** @type {((inputs?: Builderrunlocalnotice3Input
 	if (locale === "zh-Hant") return zh_hant1_builderrunlocalnotice3(inputs)
 	if (locale === "de") return de_builderrunlocalnotice3(inputs)
 	if (locale === "fr") return fr_builderrunlocalnotice3(inputs)
-	return uk_builderrunlocalnotice3(inputs)
+	if (locale === "uk") return uk_builderrunlocalnotice3(inputs)
+	return en_builderrunlocalnotice3(inputs)
 });
 export { builderrunlocalnotice3 as "builderRunLocalNotice" }

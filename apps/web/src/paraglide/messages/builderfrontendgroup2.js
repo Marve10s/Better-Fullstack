@@ -52,7 +52,6 @@ const uk_builderfrontendgroup2 = /** @type {(inputs: Builderfrontendgroup2Inputs
 */
 const builderfrontendgroup2 = /** @type {((inputs: Builderfrontendgroup2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderfrontendgroup2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderfrontendgroup2(inputs)
 	if (locale === "es") return es_builderfrontendgroup2(inputs)
 	if (locale === "zh") return zh_builderfrontendgroup2(inputs)
 	if (locale === "ja") return ja_builderfrontendgroup2(inputs)
@@ -60,6 +59,7 @@ const builderfrontendgroup2 = /** @type {((inputs: Builderfrontendgroup2Inputs, 
 	if (locale === "zh-Hant") return zh_hant1_builderfrontendgroup2(inputs)
 	if (locale === "de") return de_builderfrontendgroup2(inputs)
 	if (locale === "fr") return fr_builderfrontendgroup2(inputs)
-	return uk_builderfrontendgroup2(inputs)
+	if (locale === "uk") return uk_builderfrontendgroup2(inputs)
+	return en_builderfrontendgroup2(inputs)
 });
 export { builderfrontendgroup2 as "builderFrontendGroup" }

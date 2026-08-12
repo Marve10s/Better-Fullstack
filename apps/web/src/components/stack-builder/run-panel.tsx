@@ -55,9 +55,6 @@ interface RunPanelProps {
   stack: StackState;
   selectedFilePath: string | null;
   onSelectFile: (filePath: string | null) => void;
-  /** The scaffold command + copy affordance relocated from the floating bar:
-   *  on this tab the bar hides and its copy button lands in the files sidebar
-   *  (shared Motion layoutId flight). */
   command: string;
   copied: boolean;
   onCopy: () => void;
@@ -109,15 +106,8 @@ function errorMessage(error: unknown): string {
   return m.builderRunFailed();
 }
 
-// The Run editor pane is always dark, so both theme slots get the dark theme
-// the Preview tab's code viewer uses.
 const RUN_EDITOR_THEMES = { light: "catppuccin-mocha", dark: "catppuccin-mocha" };
 
-/** Editable code pane with the same Shiki highlighting as the Preview tab:
- *  a highlighted layer + line-number gutter sit behind a transparent-text
- *  textarea that owns input, caret, and scrolling. Layer metrics (font, size,
- *  leading, padding, no-wrap) must match the textarea exactly or the visible
- *  code drifts from the caret. */
 function RunCodeEditor({
   path,
   value,
@@ -227,8 +217,6 @@ export function RunPanel({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [browserUnsupported, setBrowserUnsupported] = useState(false);
-  // The editor pane starts hidden: it only opens once the user picks a file
-  // in the explorer, and can be dismissed again from the editor header.
   const [fileOpen, setFileOpen] = useState(false);
   const [previewUrlCopied, setPreviewUrlCopied] = useState(false);
   const runIdRef = useRef(0);
@@ -340,16 +328,12 @@ export function RunPanel({
     if (consoleElement) consoleElement.scrollTop = consoleElement.scrollHeight;
   }, [logs]);
 
-  // Native leave-page confirmation while the in-browser runtime is doing real
-  // work (boot/install/start) or serving the app — closing or reloading the
-  // page kills the WebContainer and loses the running session.
   const runtimeActive =
     status === "booting" || status === "installing" || status === "starting" || status === "ready";
   useEffect(() => {
     if (!runtimeActive) return;
     const warnBeforeUnload = (event: BeforeUnloadEvent) => {
       event.preventDefault();
-      // Required by Chrome for the confirmation dialog to appear.
       event.returnValue = "";
     };
     window.addEventListener("beforeunload", warnBeforeUnload);
@@ -522,16 +506,9 @@ export function RunPanel({
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-fd-background">
-      {/* The workspace grid (and the docked copy button in its sidebar footer)
-          stays mounted while the project generates: the footer button is the
-          landing target of the command-bar flight, so it must exist from the
-          moment the tab opens — if it mounts late (or unmounts on rebuild),
-          the shared-layout handoff has no destination and the button blinks. */}
       <div
         className={cn(
           "grid min-h-0 flex-1 grid-cols-1 overflow-auto lg:overflow-hidden",
-          // 16rem first column = lg:w-64, matching the Preview sidebar and the
-          // toolbar's name-field block so the vertical separators align.
           fileOpen && selectedFile
             ? "lg:grid-cols-[16rem_minmax(20rem,1fr)_minmax(20rem,1fr)]"
             : "lg:grid-cols-[16rem_minmax(20rem,1fr)]",
@@ -752,6 +729,7 @@ export function RunPanel({
                     // oxlint-disable-next-line react/iframe-missing-sandbox -- The generated app runs on an isolated WebContainer origin; sandboxing it breaks HMR, storage, and framework runtimes.
                     <iframe
                       key={previewUrl}
+                      data-testid="run-preview-frame"
                       src={previewUrl}
                       title={m.builderRunPreview()}
                       allow="cross-origin-isolated; clipboard-read; clipboard-write"
@@ -805,7 +783,11 @@ export function RunPanel({
                       )}
                       aria-hidden
                     />
-                    <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-zinc-400">
+                    <span
+                      data-testid="run-status"
+                      data-status={status}
+                      className="font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-zinc-400"
+                    >
                       {statusLabel(status)}
                     </span>
                   </span>

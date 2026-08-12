@@ -1,184 +1,240 @@
-name: PR Preview
+name: PR Preview Publish
 
 on:
-  pull_request_target:
-    types: [labeled]
+  workflow_run:
+    workflows: [PR Preview Build]
+    types: [completed]
 
-permissions:
-  contents: read
-  pull-requests: write
-  id-token: write
-
-concurrency:
-  group: pr-preview-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+# NPM credentials, PR write access, and preview execution never share a job.
+# This workflow does not request an OIDC token.
+permissions: {}
 
 jobs:
-  publish-preview:
-    name: Publish Preview
+  authorize:
+    name: Authorize repository-owned preview
+    if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
-    if: github.event.label.name == 'preview'
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      pr: ${{ steps.check.outputs.pr }}
+      tag: ${{ steps.check.outputs.tag }}
+      version: ${{ steps.check.outputs.version }}
+      head_sha: ${{ steps.check.outputs.head_sha }}
     steps:
-      - name: Checkout PR Code
-        uses: actions/checkout@v4
+      - name: Verify current head, label, and repository ownership
+        id: check
+        uses: actions/github-script@v8
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 0
+          script: |
+            const run = context.payload.workflow_run;
+            const repository = `${context.repo.owner}/${context.repo.repo}`;
+            if (run.event !== "pull_request" || run.head_repository?.full_name !== repository) {
+              core.setFailed("Only same-repository pull_request runs may publish previews.");
+              return;
+            }
+            const pulls = await github.paginate(
+              github.rest.repos.listPullRequestsAssociatedWithCommit,
+              { ...context.repo, commit_sha: run.head_sha, per_page: 100 },
+            );
+            const candidates = pulls.filter((candidate) =>
+              candidate.state === "open" && candidate.head.sha === run.head_sha &&
+              candidate.head.repo?.full_name === repository,
+            );
+            const labeled = candidates.filter((candidate) =>
+              candidate.labels.some((label) => label.name === "preview"),
+            );
+            if (labeled.length === 0) {
+              core.setFailed("The run is stale or the preview label was removed.");
+              return;
+            }
+            if (labeled.length > 1) {
+              core.setFailed(`Multiple open labeled PRs share this head (${labeled.map((p) => `#${p.number}`).join(", ")}). Remove the preview label from all but one.`);
+              return;
+            }
+            const pull = labeled[0];
+            const trustedAssociations = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
+            if (!trustedAssociations.has(pull.author_association)) {
+              core.setFailed(`Untrusted PR author association: ${pull.author_association}`);
+              return;
+            }
+            const response = await github.rest.repos.getContent({
+              ...context.repo, path: "apps/cli/package.json", ref: pull.base.sha,
+            });
+            if (Array.isArray(response.data) || response.data.type !== "file") {
+              core.setFailed("Could not read the trusted base package version.");
+              return;
+            }
+            const packageJson = JSON.parse(Buffer.from(response.data.content, "base64").toString("utf8"));
+            const match = String(packageJson.version).match(/^(\d+\.\d+\.\d+)/);
+            if (!match) {
+              core.setFailed("The trusted base package version is invalid.");
+              return;
+            }
+            core.setOutput("pr", String(pull.number));
+            core.setOutput("tag", `pr${pull.number}`);
+            core.setOutput("version", `${match[1]}-pr${pull.number}.sha${run.head_sha}`);
+            core.setOutput("head_sha", run.head_sha);
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+  publish-preview:
+    name: Publish approved inert artifacts
+    needs: authorize
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: npm-preview
+    concurrency:
+      group: pr-preview-publish-${{ needs.authorize.outputs.pr }}
+      cancel-in-progress: false
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Revalidate approved PR head after environment gate
+        uses: actions/github-script@v8
+        env:
+          AUTHORIZED_PR: ${{ needs.authorize.outputs.pr }}
+          AUTHORIZED_SHA: ${{ github.event.workflow_run.head_sha }}
         with:
-          bun-version: latest
+          script: |
+            const issueNumber = Number(process.env.AUTHORIZED_PR);
+            const authorizedSha = process.env.AUTHORIZED_SHA;
+            const trustedAssociations = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
+            const repository = `${context.repo.owner}/${context.repo.repo}`;
+            const { data: pull } = await github.rest.pulls.get({
+              ...context.repo, pull_number: issueNumber,
+            });
+            const stillAuthorized =
+              pull.state === "open" &&
+              pull.head.sha === authorizedSha &&
+              pull.head.repo?.full_name === repository &&
+              pull.labels.some((label) => label.name === "preview") &&
+              trustedAssociations.has(pull.author_association);
+            if (!stillAuthorized) {
+              core.setFailed("PR head, repository, state, label, or trusted author association changed during approval.");
+            }
 
-      - name: Cache Dependencies
-        uses: actions/cache@v4
+      - uses: actions/setup-node@v4
         with:
-          path: |
-            node_modules
-            ~/.bun/install/cache
-          key: preview-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
-          restore-keys: |
-            preview-${{ runner.os }}-bun-
-
-      - name: Install Dependencies
-        run: bun install --frozen-lockfile
-        env:
-          BTS_TELEMETRY: 0
-
-      - name: Validate plugin bundle
-        run: bun run test:plugin-bundle
-
-      - name: Generate Preview Version
-        id: version
-        run: |
-          PR_NUMBER=${{ github.event.pull_request.number }}
-          COMMIT_SHA=$(echo "${{ github.event.pull_request.head.sha }}" | cut -c1-7)
-          BASE_VERSION=$(jq -r '.version' apps/cli/package.json | sed -E 's/^([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
-          PREVIEW_VERSION="${BASE_VERSION}-pr${PR_NUMBER}.${COMMIT_SHA}"
-          NPM_TAG="pr${PR_NUMBER}"
-
-          echo "version=$PREVIEW_VERSION" >> $GITHUB_OUTPUT
-          echo "tag=$NPM_TAG" >> $GITHUB_OUTPUT
-          echo "pr=$PR_NUMBER" >> $GITHUB_OUTPUT
-          echo "commit=$COMMIT_SHA" >> $GITHUB_OUTPUT
-
-          echo "Preview version: $PREVIEW_VERSION"
-          echo "NPM tag: $NPM_TAG"
-
-      - name: Update types package version
-        run: |
-          cd packages/types
-          jq --arg v "${{ steps.version.outputs.version }}" '.version = $v' package.json > tmp.json && mv tmp.json package.json
-
-      - name: Build types package
-        run: cd packages/types && bun run build
-
-      - name: Publish types to NPM
-        run: cd packages/types && bun publish --access public --tag ${{ steps.version.outputs.tag }}
-        env:
-          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
-          BTS_TELEMETRY: 0
-
-      - name: Update template-generator package version and types dependency
-        run: |
-          cd packages/template-generator
-          jq --arg v "${{ steps.version.outputs.version }}" '.version = $v | .dependencies["@better-fullstack/types"] = $v' package.json > tmp.json && mv tmp.json package.json
-
-      - name: Build template-generator package
-        run: cd packages/template-generator && bun run build
-
-      - name: Publish template-generator to NPM
-        run: cd packages/template-generator && bun publish --access public --tag ${{ steps.version.outputs.tag }}
-        env:
-          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
-          BTS_TELEMETRY: 0
-
-      - name: Update CLI package version and dependencies
-        run: |
-          cd apps/cli
-          jq --arg v "${{ steps.version.outputs.version }}" '.version = $v | .dependencies["@better-fullstack/types"] = $v | .dependencies["@better-fullstack/template-generator"] = $v' package.json > tmp.json && mv tmp.json package.json
-
-      - name: Update create-bfs alias package version
-        run: |
-          cd packages/create-bfs
-          jq --arg v "${{ steps.version.outputs.version }}" '.version = $v | .dependencies["create-better-fullstack"] = $v' package.json > tmp.json && mv tmp.json package.json
-
-      - name: Build CLI
-        run: cd apps/cli && bun run build
-        env:
-          BTS_TELEMETRY: 0
-
-      - name: Publish CLI to NPM
-        run: cd apps/cli && bun publish --access public --tag ${{ steps.version.outputs.tag }}
-        env:
-          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
-          BTS_TELEMETRY: 0
-
-      - name: Publish create-bfs to NPM
-        run: cd packages/create-bfs && bun publish --access public --tag ${{ steps.version.outputs.tag }}
-        env:
-          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
-          BTS_TELEMETRY: 0
-
-      - name: Setup pnpm for published package smoke
-        run: corepack enable && corepack prepare pnpm@latest --activate
-
-      - name: Smoke published preview packages
-        run: bun run test:published-package --specifier ${{ steps.version.outputs.tag }}
-        env:
-          BTS_TELEMETRY: 0
-
-      - name: Find existing preview comment
-        uses: peter-evans/find-comment@v3
-        id: find-comment
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+      - name: Download the exact build-run artifact
+        uses: actions/download-artifact@v4
         with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-author: "github-actions[bot]"
-          body-includes: "PR Preview Release"
+          name: preview-packages-${{ github.event.workflow_run.id }}
+          path: ${{ runner.temp }}/preview-packages
+          repository: ${{ github.repository }}
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+      - name: Validate identities without executing lifecycle scripts
+        env:
+          ARTIFACT_DIR: ${{ runner.temp }}/preview-packages
+          EXPECTED_VERSION: ${{ needs.authorize.outputs.version }}
+          NPM_CONFIG_CACHE: ${{ runner.temp }}/npm-cache
+        run: |
+          set -euo pipefail
+          expected_files=$'cli.tgz\ncreate-bfs.tgz\ntemplate-generator.tgz\ntypes.tgz'
+          actual_files=$(find "$ARTIFACT_DIR" -mindepth 1 -maxdepth 1 -printf '%f\n' | sort)
+          [[ "$actual_files" == "$expected_files" ]]
+          while IFS= read -r file; do
+            [[ -f "$ARTIFACT_DIR/$file" && ! -L "$ARTIFACT_DIR/$file" ]]
+          done <<< "$expected_files"
+          validate_package() {
+            local archive="$1" expected_name="$2" result actual_name actual_version
+            result=$(mktemp "${RUNNER_TEMP}/npm-dry-run.XXXXXX")
+            npm publish --dry-run --ignore-scripts --json "$archive" > "$result"
+            actual_name=$(jq -r '.name // empty' "$result")
+            actual_version=$(jq -r '.version // empty' "$result")
+            [[ "$actual_name" == "$expected_name" && "$actual_version" == "$EXPECTED_VERSION" ]]
+          }
+          validate_package "$ARTIFACT_DIR/types.tgz" "@better-fullstack/types"
+          validate_package "$ARTIFACT_DIR/template-generator.tgz" "@better-fullstack/template-generator"
+          validate_package "$ARTIFACT_DIR/cli.tgz" "create-better-fullstack"
+          validate_package "$ARTIFACT_DIR/create-bfs.tgz" "create-bfs"
+      - name: Publish without executing lifecycle scripts
+        env:
+          ARTIFACT_DIR: ${{ runner.temp }}/preview-packages
+          EXPECTED_VERSION: ${{ needs.authorize.outputs.version }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PREVIEW_TOKEN }}
+          NPM_CONFIG_CACHE: ${{ runner.temp }}/npm-cache
+          NPM_TAG: ${{ needs.authorize.outputs.tag }}
+        run: |
+          set -euo pipefail
+          publish_package() {
+            local archive="$1" package_name="$2" local_integrity local_shasum registry_integrity registry_shasum
+            if npm view "${package_name}@${EXPECTED_VERSION}" version >/dev/null 2>&1; then
+              local_integrity=$(node -e 'const fs=require("fs"),crypto=require("crypto"); process.stdout.write("sha512-"+crypto.createHash("sha512").update(fs.readFileSync(process.argv[1])).digest("base64"))' "$archive")
+              local_shasum=$(sha1sum "$archive" | awk '{print $1}')
+              registry_integrity=$(npm view "${package_name}@${EXPECTED_VERSION}" dist.integrity)
+              registry_shasum=$(npm view "${package_name}@${EXPECTED_VERSION}" dist.shasum)
+              [[ "$registry_integrity" == "$local_integrity" && "$registry_shasum" == "$local_shasum" ]]
+              npm dist-tag add "${package_name}@${EXPECTED_VERSION}" "$NPM_TAG"
+            else
+              npm publish "$archive" --access public --tag "$NPM_TAG" --ignore-scripts
+            fi
+          }
+          publish_package "$ARTIFACT_DIR/types.tgz" "@better-fullstack/types"
+          publish_package "$ARTIFACT_DIR/template-generator.tgz" "@better-fullstack/template-generator"
+          publish_package "$ARTIFACT_DIR/cli.tgz" "create-better-fullstack"
+          publish_package "$ARTIFACT_DIR/create-bfs.tgz" "create-bfs"
 
-      - name: Create or update PR comment
-        uses: peter-evans/create-or-update-comment@v4
+  smoke-preview:
+    name: Smoke published preview without privileges
+    needs: [authorize, publish-preview]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
         with:
-          comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request.number }}
-          edit-mode: replace
-          body: |
-            ## PR Preview Release
+          ref: ${{ needs.authorize.outputs.head_sha }}
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.12
+      - run: corepack enable && corepack prepare pnpm@latest --activate
+      - run: bun install --frozen-lockfile
+        env:
+          BTS_TELEMETRY: 0
+      - name: Smoke published packages
+        run: bun run test:published-package --specifier "$PREVIEW_VERSION"
+        env:
+          BTS_TELEMETRY: 0
+          PREVIEW_VERSION: ${{ needs.authorize.outputs.version }}
 
-            A preview version has been published for this PR.
-
-            | Package | Version | NPM Tag |
-            |---------|---------|---------|
-            | `create-better-fullstack` | `${{ steps.version.outputs.version }}` | `pr${{ steps.version.outputs.pr }}` |
-            | `create-bfs` | `${{ steps.version.outputs.version }}` | `pr${{ steps.version.outputs.pr }}` |
-            | `@better-fullstack/types` | `${{ steps.version.outputs.version }}` | `pr${{ steps.version.outputs.pr }}` |
-            | `@better-fullstack/template-generator` | `${{ steps.version.outputs.version }}` | `pr${{ steps.version.outputs.pr }}` |
-
-            **Commit:** `${{ steps.version.outputs.commit }}`
-
-            **Published-package smoke:** Bun, npm, and pnpm scaffold checks passed for this preview tag.
-
-            ### Install
-
-            ```bash
-            # Using the PR tag (always gets latest for this PR)
-            bunx create-better-fullstack@pr${{ steps.version.outputs.pr }}
-            npx create-better-fullstack@pr${{ steps.version.outputs.pr }}
-
-            # Using exact version
-            bunx create-better-fullstack@${{ steps.version.outputs.version }}
-            npx create-better-fullstack@${{ steps.version.outputs.version }}
-
-            # Using the alias
-            bunx create-bfs@pr${{ steps.version.outputs.pr }}
-            npx create-bfs@pr${{ steps.version.outputs.pr }}
-            ```
-
-            ### NPM Links
-            - [create-better-fullstack@${{ steps.version.outputs.version }}](https://www.npmjs.com/package/create-better-fullstack/v/${{ steps.version.outputs.version }})
-            - [create-bfs@${{ steps.version.outputs.version }}](https://www.npmjs.com/package/create-bfs/v/${{ steps.version.outputs.version }})
-            - [@better-fullstack/types@${{ steps.version.outputs.version }}](https://www.npmjs.com/package/@better-fullstack/types/v/${{ steps.version.outputs.version }})
-            - [@better-fullstack/template-generator@${{ steps.version.outputs.version }}](https://www.npmjs.com/package/@better-fullstack/template-generator/v/${{ steps.version.outputs.version }})
-
-            ---
-            *To publish a new preview after more commits, remove and re-add the `preview` label.*
+  comment:
+    name: Report preview on pull request
+    needs: [authorize, publish-preview, smoke-preview]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/github-script@v8
+        env:
+          PREVIEW_PR: ${{ needs.authorize.outputs.pr }}
+          PREVIEW_SHA: ${{ needs.authorize.outputs.head_sha }}
+          PREVIEW_TAG: ${{ needs.authorize.outputs.tag }}
+          PREVIEW_VERSION: ${{ needs.authorize.outputs.version }}
+        with:
+          script: |
+            const issueNumber = Number(process.env.PREVIEW_PR);
+            const version = process.env.PREVIEW_VERSION;
+            const tag = process.env.PREVIEW_TAG;
+            const marker = "<!-- better-fullstack-pr-preview -->";
+            const body = `${marker}\n## PR Preview Release\n\nPreview ${version} (${process.env.PREVIEW_SHA}) was published with npm tag \`${tag}\`.\n\n\`bunx create-better-fullstack@${tag}\`\n\nPublished-package smoke checks passed.`;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              ...context.repo, issue_number: issueNumber, per_page: 100,
+            });
+            const existing = comments.find((comment) =>
+              comment.user?.login === "github-actions[bot]" && comment.body?.includes(marker),
+            );
+            if (existing) {
+              await github.rest.issues.updateComment({ ...context.repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ ...context.repo, issue_number: issueNumber, body });
+            }

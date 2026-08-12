@@ -1261,7 +1261,7 @@ function structuralTuple(part: { role: string; ecosystem: string; toolId: string
   return `${part.role}:${part.ecosystem}:${part.toolId}`;
 }
 
-// Phase 0 of docs/plans/planned/single-source-of-truth-stack-graph.md: prove
+// Phase 0 of docs/projects/active/single-source-of-truth-stack-graph.md: prove
 // flat -> graph -> flat is lossless for every structural option value, by
 // asserting the runtime drift guard never fires across the enumerated space.
 describe("stack graph structural round-trip (phase 0)", () => {
