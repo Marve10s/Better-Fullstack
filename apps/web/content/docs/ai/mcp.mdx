@@ -2,7 +2,7 @@
 title: MCP Server
 description: Connect Better Fullstack to Claude Code, Cursor, VS Code, and MCP-compatible AI coding agents.
 translationStatus: pending
-updated: 2026-08-10
+updated: 2026-08-12
 ---
 
 The Better Fullstack MCP server lets agents scaffold and evolve projects through structured tool
@@ -121,8 +121,9 @@ For an existing project's stack:
 1. `bfs_get_guidance`
 2. `bfs_get_project_status`, then `bfs_check_project` when executable verification is requested.
 3. For current-template drift, call `bfs_plan_project_update`, review it, then pass its exact
-   `reviewToken` and `acknowledgeUnprovenManifestV1: true` to `bfs_apply_project_update` after
-   approval and an independently managed recovery point.
+   `reviewToken` to `bfs_apply_project_update` after approval. Add
+   `acknowledgeUnprovenManifestV1: true` only when the plan reports unverified migrated/adopted
+   lineage. Keep the returned transaction ID for `bfs_recover_project_transaction` until checks pass.
 4. For capability changes, call `bfs_plan_stack_update` and review conflicts, migration steps, and
    architecture changes.
 5. Ask for approval, then `bfs_apply_stack_update` with the same requested fields.
@@ -137,9 +138,9 @@ workflow.
 - Set `ecosystem` first, preserve arrays as arrays, and use `none` only where the schema permits it.
 - Project planning, creation, and update responses include graph-backed stack metadata.
 - A stack update requires an absolute `projectDir`. Plan and apply with the same requested fields.
-- Project update apply requires the exact token from a bounded plan and
-  `acknowledgeUnprovenManifestV1: true`. Manifest v1 is always plan-only by default and never proves
-  generator release/SHA provenance; backup/recovery remains unavailable until Wave 1.
+- Project update apply requires the exact token from a bounded plan. Manifest v2 reports
+  generator/template provenance and lifecycle history; apply is transactional and recoverable.
+  Migrated/adopted unverified lineage additionally requires explicit acknowledgement.
 - Architecture-changing updates do not migrate application data or schemas. Review `migrationSteps`
   and pass `acknowledgeArchitectureChange: true` only after explicit approval.
 - Write tools do not install dependencies. Report the returned install command to the user.
@@ -155,7 +156,8 @@ stack, use bfs_plan_stack_update before bfs_apply_stack_update. Tell me
 the returned install, test, and run commands because write tools do not
 install dependencies. For current-template drift, call bfs_get_project_status,
 bfs_check_project, and bfs_plan_project_update; only pass its exact reviewToken
-with acknowledgeUnprovenManifestV1: true to bfs_apply_project_update after I approve
-and provide a recovery point. Do not claim manifest v1 provides generator provenance
-or automated recovery.
+to bfs_apply_project_update after I approve. If the plan reports migrated or adopted
+unverified lineage, also pass acknowledgeUnprovenManifestV1: true. Keep the returned
+recovery transaction ID until checks pass. Do not claim manifest v1 provides generator
+provenance or automated recovery.
 ```

@@ -7,20 +7,22 @@ platform and DX work.
 
 ## Post-Scaffold Upgrade Engine
 
-The baseline `update` / `check` lifecycle is shipped: diff-aware template comparison against an
-existing `bts.jsonc` stack, reviewable file changes, and CI drift checks. Manifest v1 does not prove
-generator/template lineage, so applying its plan is an explicitly acknowledged destructive action;
-it is not a cross-version safety guarantee. The remaining work is provenance, recovery, and real
-upgrade evidence.
+The `update` / `check` lifecycle now includes diff-aware template comparison, review-bound apply,
+manifest-v2 generator/template provenance, automatic rollback, and explicit recovery points.
+Manifest-v1 projects migrate deterministically but cannot prove their original lineage, so they
+still require explicit acknowledgement. The remaining work is executable cross-version coverage,
+a documented support window, and real upgrade evidence.
 
 - [x] Record a scaffold baseline in `bts.lock.json`
 - [x] Compare current generated output against current templates without overwriting user code
 - [x] Produce a reviewable dry-run/JSON plan with drift, local edits, conflicts, merges, and manual files
 - [x] Provide `update --check` as a CI-friendly template-drift gate
-- [x] Bind apply to the exact reviewed plan and require a separate manifest-v1 risk acknowledgment
-- [ ] Record explicit generator/template versions and upgrade history
+- [x] Bind apply to the exact reviewed plan and require a separate risk acknowledgment for
+      migrated/adopted unverified lineage
+- [x] Record explicit generator/template versions and upgrade history in manifest v2
 - [ ] Generate executable cross-version fixtures and document the supported upgrade window
-- [ ] Add recoverable patch/backup output and real-repository validation evidence
+- [x] Add bounded transactional backups, automatic rollback, and one-command recovery output
+- [ ] Add real-repository validation evidence
 
 ---
 
@@ -32,7 +34,7 @@ generated project.
 - [x] Add `create-better-fullstack doctor` and the user-facing `create-better-fullstack check` alias
 - [x] Validate `bts.jsonc`, dependency/package-manager consistency, required env vars, and generated scripts
 - [x] Run deterministic checks for every executable Stack Graph target, with missing toolchains and
-  incomplete checks reported as failures
+      incomplete checks reported as failures
 - [x] Return structured JSON for agents and CI
 
 ---
@@ -40,10 +42,11 @@ generated project.
 ## Lifecycle Surface Parity
 
 - [x] Share project status, multi-target checks, and reviewed plan/apply contracts across CLI and MCP
-- [x] Include `bts.jsonc` and an exact manifest-v1 baseline in browser-generated ZIPs
+- [x] Include `bts.jsonc` and an exact manifest baseline in browser-generated ZIPs
 - [x] Prove real browser boot, edit, rerun, and rendered-output change in an unmocked WebContainer lane
 - [x] Publish clean-SHA fresh generated-project install/build evidence for a curated polyglot matrix
-- [ ] Add manifest-v2 provenance, transactional recovery, and executable prior-release upgrades
+- [x] Add manifest-v2 provenance and transactional recovery across CLI/JSON/MCP mutations
+- [ ] Add executable prior-release upgrades
 
 ---
 

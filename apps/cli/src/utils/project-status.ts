@@ -40,9 +40,9 @@ export type LifecyclePrerequisites = {
     exactCurrentVersion: boolean;
   };
   wave1: {
-    ready: false;
-    generatorProvenance: "unavailable";
-    recovery: "unavailable";
+    ready: boolean;
+    generatorProvenance: "verified" | "unverified";
+    recovery: "available";
     blockers: string[];
   };
 };
@@ -386,6 +386,25 @@ export async function getLifecyclePrerequisites(
     readBtsConfig(projectDir),
   ]);
   const currentVersion = getLatestCLIVersion();
+  const manifest = manifestResult.status === "valid" ? manifestResult.manifest : null;
+  const migratedFromV1 =
+    manifestResult.status === "valid" && manifestResult.migratedFromVersion === "1";
+  const provenanceVerified =
+    manifest?.provenance.state === "verified" && manifest.provenance.current !== null;
+  const blockers = [
+    ...(manifestResult.status === "missing"
+      ? ["A versioned scaffold manifest is required for lifecycle apply and recovery."]
+      : []),
+    ...(manifestResult.status === "invalid" ? [manifestResult.error] : []),
+    ...(migratedFromV1
+      ? [
+          "Manifest v1 was migrated deterministically, but its original generator lineage remains unverified.",
+        ]
+      : []),
+    ...(manifest && !migratedFromV1 && !provenanceVerified
+      ? ["This project was adopted without cryptographically trustworthy generator lineage."]
+      : []),
+  ];
   return {
     manifest: {
       present: manifestResult.status !== "missing",
@@ -393,7 +412,7 @@ export async function getLifecyclePrerequisites(
       version: manifestResult.status === "valid" ? manifestResult.manifest.version : undefined,
       error: manifestResult.status === "invalid" ? manifestResult.error : undefined,
       currentContractSupported:
-        manifestResult.status === "valid" && manifestResult.manifest.version === "1",
+        manifestResult.status === "valid" && manifestResult.manifest.version === "2",
     },
     config: {
       version: config?.version,
@@ -401,14 +420,10 @@ export async function getLifecyclePrerequisites(
       exactCurrentVersion: config?.version === currentVersion,
     },
     wave1: {
-      ready: false,
-      generatorProvenance: "unavailable",
-      recovery: "unavailable",
-      blockers: [
-        "Manifest v1 does not record generator release/SHA lineage.",
-        "Transactional backup and recovery are not implemented.",
-        "Cross-version auto-apply guarantees remain unavailable until Wave 1 lands.",
-      ],
+      ready: manifest !== null && blockers.length === 0,
+      generatorProvenance: provenanceVerified ? "verified" : "unverified",
+      recovery: "available",
+      blockers,
     },
   };
 }

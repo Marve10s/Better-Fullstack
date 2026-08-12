@@ -2,22 +2,23 @@
 title: Project Lifecycle
 description: Choose the right Better Fullstack command to create, evolve, refresh, generate inside, and diagnose a project.
 translationStatus: pending
-updated: 2026-08-07
+updated: 2026-08-12
 ---
 
 Better Fullstack records a generated project's selected stack in `bts.jsonc` and its comparison
 baseline in `bts.lock.json`. Those files help later commands classify current-template changes and
-local edits. Manifest v1 does not prove generator lineage or make an update recoverable.
+local edits. Manifest v2 records CLI, generator, template-set, and schema provenance plus lifecycle
+history. Valid v1 manifests migrate deterministically without inventing original provenance.
 
 ## Lifecycle at a glance
 
-| Goal                                           | Command                        | Writes by default?                                       |
-| ---------------------------------------------- | ------------------------------ | -------------------------------------------------------- |
-| Create a project                               | `create` (the default command) | Yes; use `--dry-run` to preview.                         |
-| Change selected capabilities                   | `add`                          | Yes; use `--dry-run` to preview.                         |
-| Apply newer templates to the same stack        | `update`                       | No; apply needs the plan token and risk acknowledgement. |
-| Generate an in-project resource                | `gen`                          | Yes; use `--dry-run` to preview.                         |
-| Diagnose config, dependencies, env, and checks | `check`                        | Toolchains may write locks, caches, or build output.     |
+| Goal                                           | Command                        | Writes by default?                                   |
+| ---------------------------------------------- | ------------------------------ | ---------------------------------------------------- |
+| Create a project                               | `create` (the default command) | Yes; use `--dry-run` to preview.                     |
+| Change selected capabilities                   | `add`                          | Yes; use `--dry-run` to preview.                     |
+| Apply newer templates to the same stack        | `update`                       | No; apply needs the exact plan token.                |
+| Generate an in-project resource                | `gen`                          | Yes; use `--dry-run` to preview.                     |
+| Diagnose config, dependencies, env, and checks | `check`                        | Toolchains may write locks, caches, or build output. |
 
 ## 1. Create
 
@@ -60,21 +61,21 @@ The default invocation is already a dry run:
   yarn="yarn create better-fullstack@latest update"
 />
 
-Create an independent recovery point, review the categorized plan and its token, then apply with
-both required authorization flags:
+Review the categorized plan and its token, then run the exact emitted apply command:
 
 <PMTabs
-  npm="npm create better-fullstack@[same-cli-version] update [project-directory] -- --apply --review-token [64-character-token] --acknowledge-unproven-manifest-v1"
-  pnpm="pnpm dlx create-better-fullstack@[same-cli-version] update [project-directory] --apply --review-token [64-character-token] --acknowledge-unproven-manifest-v1"
-  bun="bunx create-better-fullstack@[same-cli-version] update [project-directory] --apply --review-token [64-character-token] --acknowledge-unproven-manifest-v1"
-  yarn="yarn dlx create-better-fullstack@[same-cli-version] update [project-directory] --apply --review-token [64-character-token] --acknowledge-unproven-manifest-v1"
+  npm="npm create better-fullstack@[same-cli-version] update [project-directory] -- --apply --review-token [64-character-token]"
+  pnpm="pnpm dlx create-better-fullstack@[same-cli-version] update [project-directory] --apply --review-token [64-character-token]"
+  bun="bunx create-better-fullstack@[same-cli-version] update [project-directory] --apply --review-token [64-character-token]"
+  yarn="yarn dlx create-better-fullstack@[same-cli-version] update [project-directory] --apply --review-token [64-character-token]"
 />
 
 Use the exact version-pinned command emitted by the plan. On Windows the CLI labels and quotes it
 for PowerShell; on other supported platforms it emits POSIX-shell quoting.
 
-Local edits, secrets, removed files, and conflicts are not selected for automatic writes. Apply is
-destructive, has no built-in rollback, and is not a cross-version safety guarantee.
+Local edits, secrets, removed files, and conflicts are not selected for automatic writes. Apply
+rolls failed writes back and emits a recovery command for successful transactions. Migrated or
+manually adopted manifests require the additional lineage acknowledgement shown by their plan.
 
 ## 4. Generate inside the project
 

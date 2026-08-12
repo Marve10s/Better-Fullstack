@@ -495,7 +495,7 @@ export const router = os.router({
   update: os
     .meta({
       description:
-        "Plan current-template drift from an unproven manifest-v1 baseline. Apply is destructive, requires the exact review token plus explicit acknowledgement, and has no backup/recovery. Distinct from the maintainer `update-deps` command.",
+        "Plan or apply current-template drift from a versioned manifest. Apply requires the exact review token, creates a recovery point, and rolls back automatically on failure. Distinct from the maintainer `update-deps` command.",
     })
     .input(
       z.tuple([
@@ -514,7 +514,7 @@ export const router = os.router({
             .optional()
             .default(false)
             .describe(
-              "Destructively overwrite actionable template files; requires exact review token and acknowledgement",
+              "Apply the reviewed template changes transactionally; requires the exact review token",
             ),
           reviewToken: z
             .string()
@@ -526,7 +526,7 @@ export const router = os.router({
             .optional()
             .default(false)
             .describe(
-              "Required with --apply: acknowledge manifest v1 has unproven lineage and no backup/recovery",
+              "Required only for migrated/adopted manifests whose original generator lineage is unverified",
             ),
           check: z
             .boolean()
@@ -541,6 +541,11 @@ export const router = os.router({
             .describe(
               "Manually adopt current on-disk bytes as a baseline; this does not prove generator release lineage",
             ),
+          recover: z
+            .string()
+            .uuid()
+            .optional()
+            .describe("Restore every file bound to a successful or interrupted transaction"),
         }),
       ]),
     )

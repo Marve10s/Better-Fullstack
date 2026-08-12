@@ -31,9 +31,21 @@ import {
 import { validateConfigForProgrammaticUse } from "../../utils/config-validation";
 import { formatCode } from "../../utils/file-formatter";
 import { getEffectiveStack, getGraphSummary } from "../../utils/graph-summary";
+import { getProjectRecoveryCommand } from "../../utils/lifecycle-command";
+import { lifecycleResult, type LifecycleResult } from "../../utils/lifecycle-contract";
+import {
+  beginProjectTransaction,
+  commitProjectTransaction,
+  markProjectTransactionWrite,
+  rollbackProjectTransaction,
+} from "../../utils/project-transaction";
 import {
   collectStructuredBaselines,
+  getCurrentLifecycleVersions,
+  hashContent,
+  readScaffoldManifest,
   refreshScaffoldManifestFiles,
+  SCAFFOLD_MANIFEST_FILE,
 } from "../../utils/scaffold-manifest";
 import {
   asString,
@@ -89,6 +101,8 @@ export type StackUpdatePlan = {
   graphSummary?: string;
   effectiveStack?: Record<string, string>;
   stackPartSpecs: string[];
+  lifecycle: LifecycleResult;
+  recoveryId?: string;
 };
 
 export type StackUpdateResult =
@@ -97,6 +111,7 @@ export type StackUpdateResult =
       success: false;
       projectDir?: string;
       error: string;
+      lifecycle?: LifecycleResult;
     };
 
 const ARRAY_UPDATE_KEYS = new Set<keyof ProjectConfig>([
@@ -1593,13 +1608,16 @@ export async function planStackUpdate(
   const graphPreview = getGraphPreview(persistedProposedConfig);
   const architectureChanges = computeArchitectureChanges(currentConfig, proposedConfig);
   const migrationSteps = buildMigrationSteps(architectureChanges);
+  const manifest = await readScaffoldManifest(projectDir);
+  const uniqueFilesToAdd = [...new Set(filesToAdd)].sort();
+  const uniqueFilesToPatch = [...new Set(filesToPatch)].sort();
   return {
     success: true,
     projectDir,
     requestedChanges: requestedChanges as Record<string, unknown>,
     proposedConfig: persistedProposedConfig,
-    filesToAdd: [...new Set(filesToAdd)].sort(),
-    filesToPatch: [...new Set(filesToPatch)].sort(),
+    filesToAdd: uniqueFilesToAdd,
+    filesToPatch: uniqueFilesToPatch,
     filesUnchanged: [...new Set(filesUnchanged)].sort(),
     dependencyChanges,
     scriptChanges,
@@ -1611,6 +1629,25 @@ export async function planStackUpdate(
     operations,
     installCommand: getInstallCommand(normalizedProposedConfig),
     compatibilityAdjustments,
+    lifecycle: lifecycleResult({
+      operation: "stack-update",
+      status: manualReviewBlockers.length > 0 ? "blocked" : "planned",
+      projectDir,
+      changes: {
+        added: uniqueFilesToAdd.length,
+        patched: uniqueFilesToPatch.length,
+        manual: manualReviewBlockers.length,
+      },
+      warnings: migrationSteps,
+      blockers: manualReviewBlockers,
+      provenance: {
+        source: manifest?.provenance.current ?? null,
+        target: getCurrentLifecycleVersions(),
+        verified: manifest?.provenance.state === "verified",
+      },
+      recovery: { available: true, automaticRollback: true },
+      nextActions: ["Review the complete plan before apply."],
+    }),
     ...graphPreview,
   };
 }
@@ -1618,7 +1655,12 @@ export async function planStackUpdate(
 export async function applyStackUpdate(
   projectDirInput: string,
   input: Record<string, unknown>,
+  options: {
+    beforeManifestRefresh?: () => void | Promise<void>;
+    operation?: "add" | "stack-update";
+  } = {},
 ): Promise<StackUpdateResult> {
+  const lifecycleOperation = options.operation ?? "stack-update";
   const plan = await planStackUpdate(projectDirInput, input);
   if (!plan.success) return plan;
   if (plan.manualReviewBlockers.length > 0) {
@@ -1654,38 +1696,133 @@ export async function applyStackUpdate(
       .filter((operation) => operation.writeMode === "generated")
       .map((operation) => operation.path),
   );
-
-  if (generatedPaths.size > 0) {
-    await writeSelectedFiles(proposedTree, plan.projectDir, (filePath) =>
-      generatedPaths.has(filePath),
+  const transactionPaths = [
+    ...plan.operations.map((operation) => operation.path),
+    "bts.jsonc",
+    SCAFFOLD_MANIFEST_FILE,
+    ...(plan.architectureChanges.length > 0 ? ["MIGRATION.md"] : []),
+  ];
+  let transaction;
+  try {
+    transaction = await beginProjectTransaction(
+      plan.projectDir,
+      lifecycleOperation,
+      transactionPaths,
     );
+  } catch (error) {
+    return {
+      success: false,
+      projectDir: plan.projectDir,
+      error: `Could not create the recovery snapshot: ${error instanceof Error ? error.message : String(error)}`,
+    };
   }
 
-  await Promise.all(
-    plan.operations
-      .filter((operation) => operation.writeMode === "content")
-      .map(async (operation) => {
-        const targetPath = path.join(plan.projectDir, operation.path);
-        await fs.ensureDir(path.dirname(targetPath));
-        await fs.writeFile(targetPath, operation.content, "utf-8");
+  try {
+    if (generatedPaths.size > 0) {
+      const generatedFiles = treeToFileMap(proposedTree);
+      for (const filePath of generatedPaths) {
+        const file = generatedFiles.get(filePath);
+        if (!file) throw new Error(`Generated transaction output is missing: ${filePath}`);
+        // oxlint-disable-next-line no-await-in-loop -- binary templates are materialized individually
+        const binaryBytes = await readGeneratedFileBytes(proposedTree, filePath, file);
+        const expectedBytes = binaryBytes ?? Buffer.from(file.content, "utf-8");
+        markProjectTransactionWrite(transaction, filePath, hashContent(expectedBytes));
+      }
+      await writeSelectedFiles(proposedTree, plan.projectDir, (filePath) =>
+        generatedPaths.has(filePath),
+      );
+    }
+
+    await Promise.all(
+      plan.operations
+        .filter((operation) => operation.writeMode === "content")
+        .map(async (operation) => {
+          markProjectTransactionWrite(
+            transaction,
+            operation.path,
+            hashContent(Buffer.from(operation.content, "utf-8")),
+          );
+          const targetPath = path.join(plan.projectDir, operation.path);
+          await fs.ensureDir(path.dirname(targetPath));
+          await fs.writeFile(targetPath, operation.content, "utf-8");
+        }),
+    );
+
+    await writeMigrationChecklist(plan.projectDir, plan);
+    if (plan.architectureChanges.length > 0) {
+      const migrationBytes = await fs.readFile(path.join(plan.projectDir, "MIGRATION.md"));
+      markProjectTransactionWrite(transaction, "MIGRATION.md", hashContent(migrationBytes));
+    }
+    await writeBtsConfig(proposedConfig, {
+      version: plan.proposedConfig.version,
+      createdAt: plan.proposedConfig.createdAt,
+    });
+    const configBytes = await fs.readFile(path.join(plan.projectDir, "bts.jsonc"));
+    markProjectTransactionWrite(transaction, "bts.jsonc", hashContent(configBytes));
+
+    await options.beforeManifestRefresh?.();
+
+    await refreshScaffoldManifestFiles(
+      plan.projectDir,
+      plan.operations.map((operation) => operation.path),
+      collectStructuredBaselines(proposedTree),
+      {
+        type: lifecycleOperation,
+        changes: plan.lifecycle.changes,
+        recoveryId: transaction.id,
+      },
+    );
+    const manifestBytes = await fs.readFile(path.join(plan.projectDir, SCAFFOLD_MANIFEST_FILE));
+    markProjectTransactionWrite(transaction, SCAFFOLD_MANIFEST_FILE, hashContent(manifestBytes));
+    await commitProjectTransaction(transaction);
+  } catch (error) {
+    try {
+      await rollbackProjectTransaction(transaction);
+    } catch (rollbackError) {
+      return {
+        success: false,
+        projectDir: plan.projectDir,
+        error: `${error instanceof Error ? error.message : String(error)}. Automatic rollback failed: ${rollbackError instanceof Error ? rollbackError.message : String(rollbackError)}. Recovery transaction: ${transaction.id}.`,
+        lifecycle: lifecycleResult({
+          ...plan.lifecycle,
+          status: "failed",
+          recovery: {
+            available: true,
+            transactionId: transaction.id,
+            command: getProjectRecoveryCommand(plan.projectDir, transaction.id),
+          },
+        }),
+      };
+    }
+    return {
+      success: false,
+      projectDir: plan.projectDir,
+      error: `${error instanceof Error ? error.message : String(error)}. Every bound preimage was restored.`,
+      lifecycle: lifecycleResult({
+        ...plan.lifecycle,
+        status: "rolled-back",
+        recovery: { available: true, transactionId: transaction.id, automaticRollback: true },
       }),
-  );
+    };
+  }
 
-  await writeBtsConfig(proposedConfig, {
-    version: plan.proposedConfig.version,
-    createdAt: plan.proposedConfig.createdAt,
-  });
-
-  // The whole plan applied cleanly (manual blockers abort above), so every
-  // structured-merge file is now reconciled with the proposed render — advance
-  // its `bfs update` baseline alongside the hashes.
-  await refreshScaffoldManifestFiles(
-    plan.projectDir,
-    plan.operations.map((operation) => operation.path),
-    collectStructuredBaselines(proposedTree),
-  );
-
-  await writeMigrationChecklist(plan.projectDir, plan);
-
-  return plan;
+  return {
+    ...plan,
+    recoveryId: transaction.id,
+    lifecycle: lifecycleResult({
+      ...plan.lifecycle,
+      operation: lifecycleOperation,
+      status: "applied",
+      recovery: {
+        available: true,
+        transactionId: transaction.id,
+        command: getProjectRecoveryCommand(plan.projectDir, transaction.id),
+        automaticRollback: true,
+      },
+      nextActions: [
+        plan.installCommand,
+        "Run `create-better-fullstack check` to verify every generated target.",
+      ],
+    }),
+  };
 }

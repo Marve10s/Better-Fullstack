@@ -155,11 +155,40 @@ async function addLifecycleFiles(
       ? ([[relativePath, file.text]] as const)
       : [],
   );
+  const versions = {
+    cli: metadata.cliVersion,
+    generator: metadata.cliVersion,
+    templateSet: metadata.cliVersion,
+    schema: "1",
+  };
+  const operationId = (await sha256(strToU8(`create:${createdAt}:${projectName}`))).slice(0, 24);
 
   const manifestContent = `${JSON.stringify(
     {
-      version: "1",
+      version: "2",
       createdAt,
+      updatedAt: createdAt,
+      provenance: {
+        state: "verified",
+        createdWith: versions,
+        current: versions,
+      },
+      history: [
+        {
+          id: operationId,
+          operation: "create",
+          completedAt: createdAt,
+          source: null,
+          target: versions,
+          changes: {
+            added: hashEntries.length,
+            patched: 0,
+            merged: 0,
+            removed: 0,
+            manual: 0,
+          },
+        },
+      ],
       hashes: sortedRecord(hashEntries),
       ...(baselineEntries.length > 0 ? { baselines: sortedRecord(baselineEntries) } : {}),
     },

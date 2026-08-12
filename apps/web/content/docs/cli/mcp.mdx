@@ -58,23 +58,24 @@ Equivalent command/args for other package managers:
 
 ## Tool Surface
 
-| Tool                       | Purpose                                                                        |
-| -------------------------- | ------------------------------------------------------------------------------ |
-| `bfs_get_guidance`         | Returns workflow rules and field semantics.                                    |
-| `bfs_get_schema`           | Returns valid options for one category or all categories.                      |
-| `bfs_list_presets`         | Lists ready-made stack presets.                                                |
-| `bfs_recommend_stack`      | Recommends a validated stack from a product brief.                             |
-| `bfs_check_compatibility`  | Validates stack selections before generation.                                  |
-| `bfs_plan_project`         | Dry-runs generation in memory.                                                 |
-| `bfs_create_project`       | Writes a new project to disk.                                                  |
-| `bfs_get_project_status`   | Reads project and manifest prerequisites without checks.                       |
-| `bfs_check_project`        | Executes every target; toolchains may write locks/caches/artifacts.            |
-| `bfs_plan_project_update`  | Plans v1 drift; token requires bounded inspectable merge content.              |
-| `bfs_apply_project_update` | Destructively applies token-bound files with explicit v1-risk acknowledgement. |
-| `bfs_plan_stack_update`    | Plans broad stack changes for an existing project.                             |
-| `bfs_apply_stack_update`   | Applies a reviewed stack update.                                               |
-| `bfs_plan_addition`        | Plans focused addon or deploy changes.                                         |
-| `bfs_add_feature`          | Applies focused addon or deploy changes.                                       |
+| Tool                              | Purpose                                                                     |
+| --------------------------------- | --------------------------------------------------------------------------- |
+| `bfs_get_guidance`                | Returns workflow rules and field semantics.                                 |
+| `bfs_get_schema`                  | Returns valid options for one category or all categories.                   |
+| `bfs_list_presets`                | Lists ready-made stack presets.                                             |
+| `bfs_recommend_stack`             | Recommends a validated stack from a product brief.                          |
+| `bfs_check_compatibility`         | Validates stack selections before generation.                               |
+| `bfs_plan_project`                | Dry-runs generation in memory.                                              |
+| `bfs_create_project`              | Writes a new project to disk.                                               |
+| `bfs_get_project_status`          | Reads project and manifest prerequisites without checks.                    |
+| `bfs_check_project`               | Executes every target; toolchains may write locks/caches/artifacts.         |
+| `bfs_plan_project_update`         | Plans manifest-v2 drift; token requires bounded inspectable merge content.  |
+| `bfs_apply_project_update`        | Applies token-bound files transactionally with provenance-aware safeguards. |
+| `bfs_recover_project_transaction` | Restores a successful or interrupted transaction exactly once.              |
+| `bfs_plan_stack_update`           | Plans broad stack changes for an existing project.                          |
+| `bfs_apply_stack_update`          | Applies a reviewed stack update.                                            |
+| `bfs_plan_addition`               | Plans focused addon or deploy changes.                                      |
+| `bfs_add_feature`                 | Applies focused addon or deploy changes.                                    |
 
 Project planning, creation, and addition responses include graph metadata (`graphSummary`, `effectiveStack`, and `stackPartSpecs`) alongside the generated file or mutation summary.
 
@@ -88,10 +89,11 @@ See the [MCP tools reference](/docs/ai/mcp-tools/) for inputs, outputs, and safe
   and write locks, caches, compiler output, or build artifacts; missing prerequisites fail the check.
 - `bfs_create_project`, `bfs_apply_project_update`, `bfs_apply_stack_update`, and
   `bfs_add_feature` write files but do not install dependencies.
-- Current-template apply requires the exact bounded `reviewToken` plus
-  `acknowledgeUnprovenManifestV1: true`; missing, stale, cross-project, or oversized-review-ineligible
-  tokens fail closed. Manifest v1 never proves generator release/SHA provenance, and no built-in
-  backup/recovery exists.
+- Current-template apply requires the exact bounded `reviewToken`; missing, stale, cross-project,
+  or oversized-review-ineligible tokens fail closed. Migrated or manually adopted projects also
+  require `acknowledgeUnprovenManifestV1: true` because their original generator lineage is
+  unverified. Apply snapshots bounded paths, rolls operation-owned writes back on failure, and
+  returns a transaction ID for one-command recovery.
 - Stack updates refuse to overwrite user-edited generated files. Architecture changes require an
   explicit acknowledgement and never migrate application data or schemas automatically.
 - Agents should call `bfs_get_guidance`, inspect the live schema, and plan before any write.
