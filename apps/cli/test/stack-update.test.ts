@@ -3801,6 +3801,29 @@ describe("stack update planner", () => {
     expect(manifest?.history.at(-1)?.operation).toBe("remove");
   });
 
+  it("keeps obsolete files for manual review without verified recorded provenance", async () => {
+    const root = await makeTempRoot("bfs-stack-remove-unverified-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir, { email: "resend" }));
+    const config = await readBtsConfig(projectDir);
+    const target = config?.stackParts?.find((part) => part.role === "email")?.id;
+    expect(target).toBeDefined();
+    const manifestPath = join(projectDir, "bts.lock.json");
+    const manifest = JSON.parse(await readFile(manifestPath, "utf-8")) as {
+      provenance: { state: string; createdWith: unknown; current: unknown };
+    };
+    manifest.provenance = { state: "adopted-unverified", createdWith: null, current: null };
+    await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+
+    const plan = await planPartRemoval(projectDir, target!);
+    expect(plan.success).toBe(true);
+    if (!plan.success) return;
+    expect(plan.filesToRemove).toEqual([]);
+    expect(plan.manualReviewBlockers).toContainEqual(
+      expect.stringContaining("no verified scaffold provenance"),
+    );
+  });
+
   it("removes one exact owned capability without deleting the same role from another owner", async () => {
     const root = await makeTempRoot("bfs-stack-remove-owned-capability-");
     const projectDir = join(root, "app");

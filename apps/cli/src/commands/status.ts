@@ -41,8 +41,9 @@ export async function statusCommand(input: StatusCommandInput): Promise<ProjectR
     const summary = result.upgrade.summary;
     const actionable =
       summary.drift + summary.merged + summary.newFiles + summary.conflicts + summary.manualReview;
+    const reviewItems = actionable + summary.removedByTemplate;
     log.message(
-      `Upgrade: ${actionable === 0 ? pc.green("current") : pc.yellow(`${actionable} actionable`)} · ` +
+      `Upgrade: ${reviewItems === 0 ? pc.green("current") : pc.yellow(`${reviewItems} actionable`)} · ` +
         `${summary.localEdits} local edits preserved`,
     );
     for (const blocker of result.upgrade.blockers) log.warn(pc.yellow(blocker));

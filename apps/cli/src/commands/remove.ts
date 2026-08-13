@@ -8,7 +8,11 @@ import {
   type PartRemovalResult,
 } from "../helpers/core/remove-handler";
 import { CLIError } from "../utils/errors";
-import { getProjectRecoveryCommand } from "../utils/lifecycle-command";
+import {
+  getProjectRecoveryCommand,
+  quotePosixShellArgument,
+  quotePowerShellArgument,
+} from "../utils/lifecycle-command";
 import { renderTitle } from "../utils/render-title";
 
 export type RemoveCommandInput = {
@@ -55,6 +59,9 @@ export async function removeCommand(input: RemoveCommandInput): Promise<PartRemo
         `${result.filesToRemove.length} remove · ${result.manualReviewBlockers.length} manual review`,
     ),
   );
+  for (const filePath of result.filesToAdd) log.info(pc.dim(`  + ${filePath}`));
+  for (const filePath of result.filesToPatch) log.info(pc.dim(`  ~ ${filePath}`));
+  for (const filePath of result.filesToRemove) log.info(pc.dim(`  - ${filePath}`));
   for (const adjustment of result.compatibilityAdjustments) {
     log.info(pc.dim(`Adjusted: ${adjustment}`));
   }
@@ -68,11 +75,14 @@ export async function removeCommand(input: RemoveCommandInput): Promise<PartRemo
     }
     outro(pc.magenta("Capability removed with transactional recovery available."));
   } else {
+    const quoteArgument =
+      process.platform === "win32" ? quotePowerShellArgument : quotePosixShellArgument;
     log.message("");
     log.info(`Review token: ${pc.cyan(result.reviewToken)}`);
     log.info(
       pc.dim(
-        `Apply with: create-better-fullstack remove ${JSON.stringify(result.removal.selectedPart)} --apply --review-token ${result.reviewToken}`,
+        `Apply with: create-better-fullstack remove ${quoteArgument(result.removal.selectedPart)} ` +
+          `--project-dir ${quoteArgument(projectDir)} --apply --review-token ${result.reviewToken}`,
       ),
     );
     outro(pc.magenta("Dry run — no files were written."));

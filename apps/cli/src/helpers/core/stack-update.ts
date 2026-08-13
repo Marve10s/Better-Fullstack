@@ -1465,6 +1465,7 @@ export async function planStackUpdate(
       error: `No bts.jsonc found in ${projectDir}. Is this a Better-Fullstack project?`,
     };
   }
+  const manifest = await readScaffoldManifest(projectDir);
 
   const projectName = await inferProjectName(projectDir);
   const currentConfig = configFromBtsConfig(currentBtsConfig, projectDir, projectName);
@@ -1697,35 +1698,24 @@ export async function planStackUpdate(
   }
 
   if (options.removeObsoleteGeneratedArtifacts) {
-    for (const [filePath, currentFile] of currentGeneratedFiles) {
+    for (const filePath of currentGeneratedFiles.keys()) {
       if (proposedGeneratedFiles.has(filePath)) continue;
       const targetPath = path.join(projectDir, filePath);
       // oxlint-disable-next-line no-await-in-loop -- each candidate needs its live preimage
       const existingBuffer = await fs.readFile(targetPath).catch(() => null);
       if (!existingBuffer) continue;
-      const currentRawFile = currentRawGeneratedFiles.get(filePath);
-      const isBinary = isGeneratedBinaryFile(currentFile);
-      if (isBinary) {
-        // oxlint-disable-next-line no-await-in-loop -- binary baselines are loaded from the tree
-        const baseline = await readGeneratedFileBytes(currentTree, filePath, currentFile);
-        if (buffersEqual(existingBuffer, baseline)) {
-          filesToRemove.push(filePath);
-          operations.push({ kind: "remove", path: filePath, writeMode: "remove" });
-        } else {
-          manualReviewBlockers.push(
-            `${filePath}: obsolete generated binary differs from the generated baseline`,
-          );
-        }
+      if (manifest?.provenance.state !== "verified") {
+        manualReviewBlockers.push(
+          `${filePath}: obsolete generated file has no verified scaffold provenance`,
+        );
         continue;
       }
-
-      const existingContent = existingBuffer.toString("utf-8");
-      if (
-        contentMatchesAny(
-          existingContent,
-          uniqueContents([currentRawFile?.content, currentFile.content]),
-        )
-      ) {
+      const baselineHash = manifest.hashes[filePath];
+      if (!baselineHash) {
+        manualReviewBlockers.push(`${filePath}: obsolete generated file has no recorded baseline`);
+        continue;
+      }
+      if (hashContent(existingBuffer) === baselineHash) {
         filesToRemove.push(filePath);
         operations.push({ kind: "remove", path: filePath, writeMode: "remove" });
       } else {
@@ -1753,7 +1743,6 @@ export async function planStackUpdate(
     options.stackPartsOverride !== undefined,
   );
   const migrationSteps = buildMigrationSteps(architectureChanges);
-  const manifest = await readScaffoldManifest(projectDir);
   const uniqueFilesToAdd = [...new Set(filesToAdd)].sort();
   const uniqueFilesToPatch = [...new Set(filesToPatch)].sort();
   const uniqueFilesToRemove = [...new Set(filesToRemove)].sort();

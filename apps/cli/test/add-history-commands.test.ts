@@ -135,6 +135,40 @@ afterAll(async () => {
 
 describe("CLI add command", () => {
   it(
+    "prints reviewable removal paths and preserves the planned project directory",
+    async () => {
+      const root = await makeTempRoot("bfs-remove-plan-test-");
+      const projectDir = join(root, "app");
+      const createResult = await runCli(
+        ["create", "app", "--yes", "--no-install", "--no-git", "--disable-analytics"],
+        { cwd: root },
+      );
+      expect(
+        createResult.exitCode,
+        `create failed\nstdout:\n${createResult.stdout}\nstderr:\n${createResult.stderr}`,
+      ).toBe(0);
+      const addResult = await runCli(["add", "--project-dir", projectDir, "--email", "resend"], {
+        cwd: root,
+        env: { BFS_SKIP_EXTERNAL_COMMANDS: "1" },
+      });
+      expect(addResult.exitCode, addResult.stderr).toBe(0);
+      const config = (await readJsoncFile(join(projectDir, "bts.jsonc"))) as {
+        stackParts?: Array<{ id: string; role: string }>;
+      };
+      const target = config.stackParts?.find((part) => part.role === "email")?.id;
+      expect(target).toBeDefined();
+
+      const removal = await runCli(["remove", target!, "--project-dir", projectDir], {
+        cwd: root,
+      });
+      expect(removal.exitCode, removal.stderr).toBe(0);
+      expect(cliOutput(removal)).toContain("  - ");
+      expect(cliOutput(removal)).toContain(`--project-dir '${projectDir}'`);
+    },
+    CLI_COMMAND_TEST_TIMEOUT_MS,
+  );
+
+  it(
     "adds addon via --addons and is idempotent for already-installed addon",
     async () => {
       const root = await makeTempRoot("bfs-add-test-");
