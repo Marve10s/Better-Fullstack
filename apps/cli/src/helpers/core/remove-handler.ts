@@ -1,10 +1,11 @@
 import fs from "fs-extra";
 import path from "node:path";
 
-import type { ProjectConfig, StackPart } from "../../types";
+import type { Addons, ProjectConfig, StackPart } from "../../types";
 
 import {
   formatStackPartSpec,
+  getAddonStackPartBinding,
   legacyProjectConfigToStackParts,
   stackPartsToLegacyProjectConfigPartial,
 } from "../../types";
@@ -77,9 +78,11 @@ async function resolveRemoval(projectDirInput: string, target: string): Promise<
 
   const part = matches[0];
   if (!part) throw new Error(`Removal target '${target}' is not selected.`);
+  const addonBinding = getAddonStackPartBinding(part.toolId);
   if (
-    config.addons?.includes(part.toolId as ProjectConfig["addons"][number]) &&
-    ADDONS_REQUIRING_IMPERATIVE_SETUP.has(part.toolId as ProjectConfig["addons"][number])
+    addonBinding?.role === part.role &&
+    addonBinding.ecosystem === part.ecosystem &&
+    ADDONS_REQUIRING_IMPERATIVE_SETUP.has(part.toolId as Addons)
   ) {
     throw new Error(
       `Cannot transactionally remove addon '${part.toolId}' because its imperative setup artifacts are not yet modeled for teardown. Remove those artifacts manually before updating the stack selection.`,

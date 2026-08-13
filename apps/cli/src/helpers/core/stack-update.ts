@@ -597,6 +597,39 @@ function buildMigrationSteps(changes: ArchitectureChange[]): string[] {
   for (const { key, from, to } of changes) {
     const label = `${key} (${from} -> ${to})`;
     const riskKey = key.includes(".") ? key.slice(key.lastIndexOf(".") + 1) : key;
+    if (to === "none") {
+      switch (riskKey) {
+        case "database":
+          steps.push(
+            `${label}: Back up all existing data from the ${from} database before removing its integration.`,
+            `${label}: Remove or replace DATABASE_URL references without deleting retained data automatically.`,
+            `${label}: Remove ${from}-specific schemas, migrations, and queries only after confirming they are no longer needed.`,
+          );
+          break;
+        case "orm":
+          steps.push(
+            `${label}: Preserve the ${from} schema and migration history before removing the ORM integration.`,
+            `${label}: Replace or remove ${from} queries and generated clients manually.`,
+          );
+          break;
+        case "auth":
+          steps.push(
+            `${label}: Export any user/account records and invalidate active sessions before removing ${from}.`,
+            `${label}: Remove ${from} secrets, callbacks, and protected-route integration manually.`,
+          );
+          break;
+        case "api":
+          steps.push(
+            `${label}: Remove or replace ${from} routers, handlers, client calls, and generated types manually.`,
+          );
+          break;
+        default:
+          steps.push(
+            `${label}: Preserve required data and remove ${from}-specific code, configuration, and deployment wiring manually.`,
+          );
+      }
+      continue;
+    }
     switch (riskKey) {
       case "database":
         steps.push(

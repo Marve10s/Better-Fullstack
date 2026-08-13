@@ -90,7 +90,16 @@ export async function removeCommand(input: RemoveCommandInput): Promise<PartRemo
   if (input.apply) {
     if (result.recoveryId) {
       log.info(pc.dim(`Recovery point: ${result.recoveryId}`));
-      log.info(pc.dim(`Restore with: ${getProjectRecoveryCommand(projectDir, result.recoveryId)}`));
+      log.info(
+        pc.dim(
+          `Restore with: ${getProjectRecoveryCommand(
+            projectDir,
+            result.recoveryId,
+            process.platform,
+            result.proposedConfig.packageManager,
+          )}`,
+        ),
+      );
     }
     outro(pc.magenta("Capability removed with transactional recovery available."));
   } else {

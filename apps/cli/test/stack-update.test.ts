@@ -3936,6 +3936,10 @@ describe("stack update planner", () => {
     const config = await readBtsConfig(projectDir);
     const target = config?.stackParts?.find((part) => part.toolId === "biome")?.id;
     expect(target).toBeDefined();
+    await writeFile(
+      join(projectDir, "bts.jsonc"),
+      `${JSON.stringify({ ...config, addons: [] }, null, 2)}\n`,
+    );
 
     const plan = await planPartRemoval(projectDir, target!);
     expect(plan.success).toBe(false);
@@ -4048,6 +4052,8 @@ describe("stack update planner", () => {
     expect(plan.migrationSteps).toContainEqual(
       expect.stringContaining("Back up all existing data"),
     );
+    expect(plan.migrationSteps.join("\n")).not.toContain("Provision a none database");
+    expect(plan.migrationSteps.join("\n")).toContain("removing its integration");
     const applyCommand = getPartRemovalApplyCommand(plan, "linux");
     expect(applyCommand).toContain("bunx create-better-fullstack@");
     expect(applyCommand).toContain("remove 'api-db'");
