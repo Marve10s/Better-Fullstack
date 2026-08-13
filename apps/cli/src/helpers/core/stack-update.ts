@@ -29,7 +29,11 @@ import {
   writeBtsConfig,
 } from "../../utils/bts-config";
 import { validateConfigForProgrammaticUse } from "../../utils/config-validation";
-import { applyDependencyVersionChannel } from "../../utils/dependency-version-channel";
+import {
+  applyDependencyVersionChannel,
+  planDependencyVersionChannel,
+  type DependencyVersionChannelRewrite,
+} from "../../utils/dependency-version-channel";
 import { formatCode } from "../../utils/file-formatter";
 import { getEffectiveStack, getGraphSummary } from "../../utils/graph-summary";
 import { getProjectRecoveryCommand } from "../../utils/lifecycle-command";
@@ -109,6 +113,7 @@ export type StackUpdatePlan = {
   requiresArchitectureAck: boolean;
   operations: StackUpdateOperation[];
   preimages: Record<string, { sha256: string | null; mode: number | null }>;
+  versionChannelRewrites: Record<string, string>;
   installCommand: string;
   compatibilityAdjustments: string[];
   graphSummary?: string;
@@ -116,6 +121,11 @@ export type StackUpdatePlan = {
   stackPartSpecs: string[];
   lifecycle: LifecycleResult;
   recoveryId?: string;
+};
+
+const PLANNED_VERSION_CHANNEL_REWRITES = Symbol("plannedVersionChannelRewrites");
+type InternalStackUpdatePlan = StackUpdatePlan & {
+  [PLANNED_VERSION_CHANNEL_REWRITES]?: readonly DependencyVersionChannelRewrite[];
 };
 
 export type StackUpdateResult =
@@ -141,6 +151,7 @@ export function getStackUpdatePlanDigest(plan: StackUpdatePlan): string {
       proposedConfig: plan.proposedConfig,
       operations: plan.operations,
       preimages: plan.preimages,
+      versionChannelRewrites: plan.versionChannelRewrites,
       blockers: plan.manualReviewBlockers,
       architectureChanges: plan.architectureChanges,
     }),
@@ -1834,19 +1845,16 @@ export async function planStackUpdate(
   const uniqueFilesToAdd = [...new Set(filesToAdd)].sort();
   const uniqueFilesToPatch = [...new Set(filesToPatch)].sort();
   const uniqueFilesToRemove = [...new Set(filesToRemove)].sort();
-  const versionChannelPackagePaths =
+  const plannedVersionChannelRewrites =
     options.includeVersionChannelPaths && proposedConfig.versionChannel !== "stable"
-      ? (
-          await applyDependencyVersionChannel(
-            projectDir,
-            proposedConfig.versionChannel,
-            undefined,
-            {
-              dryRun: true,
-            },
-          )
-        ).map((packageJsonPath) => toPosixPath(path.relative(projectDir, packageJsonPath)))
+      ? await planDependencyVersionChannel(projectDir, proposedConfig.versionChannel)
       : [];
+  const versionChannelRewrites = Object.fromEntries(
+    plannedVersionChannelRewrites.map((rewrite) => [
+      toPosixPath(path.relative(projectDir, rewrite.packageJsonPath)),
+      rewrite.sha256,
+    ]),
+  );
   let preimages: Record<string, { sha256: string | null; mode: number | null }>;
   try {
     preimages = await collectPlanPreimages(projectDir, [
@@ -1854,7 +1862,7 @@ export async function planStackUpdate(
       "bts.jsonc",
       SCAFFOLD_MANIFEST_FILE,
       ...(architectureChanges.length > 0 ? ["MIGRATION.md"] : []),
-      ...versionChannelPackagePaths,
+      ...Object.keys(versionChannelRewrites),
     ]);
   } catch (error) {
     return {
@@ -1863,7 +1871,7 @@ export async function planStackUpdate(
       error: `Could not bind the stack update plan to safe transaction targets: ${error instanceof Error ? error.message : String(error)}`,
     };
   }
-  return {
+  const plan: InternalStackUpdatePlan = {
     success: true,
     projectDir,
     requestedChanges: requestedChanges as Record<string, unknown>,
@@ -1881,6 +1889,7 @@ export async function planStackUpdate(
     requiresArchitectureAck: architectureChanges.length > 0,
     operations,
     preimages,
+    versionChannelRewrites,
     installCommand: getInstallCommand(normalizedProposedConfig),
     compatibilityAdjustments,
     lifecycle: lifecycleResult({
@@ -1905,6 +1914,10 @@ export async function planStackUpdate(
     }),
     ...graphPreview,
   };
+  Object.defineProperty(plan, PLANNED_VERSION_CHANNEL_REWRITES, {
+    value: plannedVersionChannelRewrites,
+  });
+  return plan;
 }
 
 export async function applyStackUpdate(
@@ -2080,6 +2093,9 @@ export async function applyStackUpdate(
           const relativePath = toPosixPath(path.relative(plan.projectDir, packageJsonPath));
           versionChannelRewrites.push(relativePath);
           markProjectTransactionWrite(transaction, relativePath, sha256);
+        },
+        {
+          rewrites: (plan as InternalStackUpdatePlan)[PLANNED_VERSION_CHANNEL_REWRITES] ?? [],
         },
       );
     }

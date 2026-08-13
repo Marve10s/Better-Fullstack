@@ -110,6 +110,17 @@ async function resolveRemoval(projectDirInput: string, target: string): Promise<
       `Cannot remove '${formatStackPartSpec(part, parts)}' while dependent part(s) remain: ${listTargets(dependentParts)}. Remove the dependent parts first.`,
     );
   }
+  const requiredDatabaseParts = remainingParts.filter(
+    (candidate) =>
+      part.role === "orm" &&
+      candidate.role === "database" &&
+      candidate.ownerPartId === part.ownerPartId,
+  );
+  if (requiredDatabaseParts.length > 0) {
+    throw new Error(
+      `Cannot remove '${formatStackPartSpec(part, parts)}' while database part(s) remain: ${listTargets(requiredDatabaseParts)}. Remove the database first or replace the ORM through an architecture update.`,
+    );
+  }
   const remainingProjection = stackPartsToLegacyProjectConfigPartial(remainingParts);
   const request: Record<string, unknown> = {};
   const replaceArrayKeys = new Set<keyof ProjectConfig>();

@@ -58,6 +58,12 @@ type ParsedVersion = {
 
 type PackageJsonVersionSection = Record<string, string>;
 
+export type DependencyVersionChannelRewrite = {
+  packageJsonPath: string;
+  content: string;
+  sha256: string;
+};
+
 function getVersionSections(packageJson: Record<string, unknown>): PackageJsonVersionSection[] {
   const sections: PackageJsonVersionSection[] = [];
 
@@ -302,12 +308,10 @@ export async function collectPackageJsonPaths(projectDir: string): Promise<strin
   return results.sort();
 }
 
-export async function applyDependencyVersionChannel(
+export async function planDependencyVersionChannel(
   projectDir: string,
   channel: VersionChannel,
-  onWrite?: (packageJsonPath: string, sha256: string) => void | Promise<void>,
-  options: { dryRun?: boolean } = {},
-): Promise<string[]> {
+): Promise<DependencyVersionChannelRewrite[]> {
   if (channel === "stable") return [];
 
   const packageJsonPaths = await collectPackageJsonPaths(projectDir);
@@ -382,7 +386,7 @@ export async function applyDependencyVersionChannel(
   if (resolvedVersions.size === 0) return [];
 
   applySynchronizedFamilyVersions(resolvedVersions, packageInfos, channel);
-  const changedPaths: string[] = [];
+  const rewrites: DependencyVersionChannelRewrite[] = [];
 
   for (const packageJsonPath of packageJsonPaths) {
     const packageJson = await fs.readJson(packageJsonPath);
@@ -407,17 +411,29 @@ export async function applyDependencyVersionChannel(
     }
 
     if (changed) {
-      changedPaths.push(packageJsonPath);
-      if (!options.dryRun) {
-        await fs.writeJson(packageJsonPath, packageJson, { spaces: 2 });
-      }
-      if (!options.dryRun && onWrite) {
-        // oxlint-disable-next-line no-await-in-loop -- expose the exact persisted bytes to rollback
-        const bytes = await fs.readFile(packageJsonPath);
-        // oxlint-disable-next-line no-await-in-loop -- bind each completed rewrite before continuing
-        await onWrite(packageJsonPath, hashContent(bytes));
-      }
+      const content = `${JSON.stringify(packageJson, null, 2)}\n`;
+      rewrites.push({ packageJsonPath, content, sha256: hashContent(Buffer.from(content)) });
     }
   }
-  return changedPaths;
+  return rewrites;
+}
+
+export async function applyDependencyVersionChannel(
+  projectDir: string,
+  channel: VersionChannel,
+  onWrite?: (packageJsonPath: string, sha256: string) => void | Promise<void>,
+  options: { rewrites?: readonly DependencyVersionChannelRewrite[] } = {},
+): Promise<string[]> {
+  const rewrites = options.rewrites ?? (await planDependencyVersionChannel(projectDir, channel));
+
+  for (const rewrite of rewrites) {
+    if (onWrite) {
+      // oxlint-disable-next-line no-await-in-loop -- bind each rewrite before its first byte changes
+      await onWrite(rewrite.packageJsonPath, rewrite.sha256);
+    }
+    // oxlint-disable-next-line no-await-in-loop -- persist reviewed rewrites in transaction order
+    await fs.writeFile(rewrite.packageJsonPath, rewrite.content, "utf-8");
+  }
+
+  return rewrites.map((rewrite) => rewrite.packageJsonPath);
 }

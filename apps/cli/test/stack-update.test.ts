@@ -3918,6 +3918,54 @@ describe("stack update planner", () => {
     expect(manifest?.hashes["custom/package.json"]).toBe(hashContent(packageContent));
   });
 
+  it("does not re-resolve a failed version-channel rewrite during apply", async () => {
+    const root = await makeTempRoot("bfs-stack-update-channel-single-resolution-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir));
+    await mkdir(join(projectDir, "custom"));
+    const packagePath = join(projectDir, "custom/package.json");
+    await writeFile(
+      packagePath,
+      JSON.stringify(
+        {
+          name: "custom",
+          dependencies: { "manifest-transient-resolution-probe": "^1.0.0" },
+        },
+        null,
+        2,
+      ),
+    );
+
+    const originalFetch = globalThis.fetch;
+    let probeRequests = 0;
+    globalThis.fetch = (async (input) => {
+      if (String(input).includes("manifest-transient-resolution-probe")) {
+        probeRequests++;
+        if (probeRequests === 1) return new Response(null, { status: 503 });
+        return new Response(
+          JSON.stringify({ "dist-tags": { latest: "9.9.9" }, versions: { "9.9.9": {} } }),
+          { status: 200 },
+        );
+      }
+      return new Response(null, { status: 503 });
+    }) as typeof fetch;
+    try {
+      const result = await applyStackUpdate(
+        projectDir,
+        { email: "resend", versionChannel: "latest" },
+        { applyVersionChannel: true },
+      );
+      expect(result.success).toBe(true);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    expect(probeRequests).toBe(1);
+    expect(await readFile(packagePath, "utf-8")).toContain(
+      '"manifest-transient-resolution-probe": "^1.0.0"',
+    );
+  });
+
   it("plans and removes obsolete generated files and dependencies", async () => {
     const root = await makeTempRoot("bfs-stack-remove-obsolete-");
     const projectDir = join(root, "app");
@@ -4120,6 +4168,30 @@ describe("stack update planner", () => {
     const plan = await planPartRemoval(projectDir, "api-db");
     expect(plan.success).toBe(false);
     if (!plan.success) expect(plan.error).toContain("Remove the dependent parts first");
+  });
+
+  it("blocks scoped ORM removal while its owner still has a database", async () => {
+    const root = await makeTempRoot("bfs-stack-remove-required-orm-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(
+      makeConfig(projectDir, {
+        stackParts: parseStackPartSpecs([
+          "backend:typescript:hono:api",
+          "api.database:universal:sqlite:api-db",
+          "api.orm:typescript:prisma:api-orm",
+        ]),
+        ecosystem: "typescript",
+        database: "sqlite",
+        orm: "prisma",
+      }),
+    );
+
+    const plan = await planPartRemoval(projectDir, "api-orm");
+    expect(plan.success).toBe(false);
+    if (!plan.success) {
+      expect(plan.error).toContain("while database part(s) remain");
+      expect(plan.error).toContain("Remove the database first or replace the ORM");
+    }
   });
 
   it("refuses to overwrite a preimage changed after the recovery snapshot", async () => {
