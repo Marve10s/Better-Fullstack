@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { lstat, mkdtemp, readlink, readdir, readFile, rm } from "node:fs/promises";
+import { appendFile, lstat, mkdtemp, readlink, readdir, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -51,6 +51,41 @@ type ValidationResult = {
   error?: string;
 };
 
+const USER_EDIT_MARKERS = new Map([
+  [".css", "\n/* Better Fullstack external validation user edit */\n"],
+  [".md", "\n<!-- Better Fullstack external validation user edit -->\n"],
+  [".mdx", "\n<!-- Better Fullstack external validation user edit -->\n"],
+  [".py", "\n# Better Fullstack external validation user edit\n"],
+  [".ex", "\n# Better Fullstack external validation user edit\n"],
+  [".exs", "\n# Better Fullstack external validation user edit\n"],
+  [".ts", "\n// Better Fullstack external validation user edit\n"],
+  [".tsx", "\n// Better Fullstack external validation user edit\n"],
+  [".js", "\n// Better Fullstack external validation user edit\n"],
+  [".jsx", "\n// Better Fullstack external validation user edit\n"],
+  [".mjs", "\n// Better Fullstack external validation user edit\n"],
+  [".cjs", "\n// Better Fullstack external validation user edit\n"],
+  [".go", "\n// Better Fullstack external validation user edit\n"],
+  [".rs", "\n// Better Fullstack external validation user edit\n"],
+  [".java", "\n// Better Fullstack external validation user edit\n"],
+  [".kt", "\n// Better Fullstack external validation user edit\n"],
+  [".cs", "\n// Better Fullstack external validation user edit\n"],
+]);
+
+async function injectUserEdit(projectDir: string): Promise<{ path: string; content: Buffer }> {
+  const initialPlan = await planReviewedProjectUpdate(projectDir);
+  if (!initialPlan.success) throw new Error(initialPlan.error);
+  const relativePath = initialPlan.plan.actionable.find((candidate) =>
+    USER_EDIT_MARKERS.has(path.extname(candidate)),
+  );
+  if (!relativePath) {
+    throw new Error("Upgrade plan has no safe generated source file for user-edit validation");
+  }
+  const marker = USER_EDIT_MARKERS.get(path.extname(relativePath));
+  if (!marker) throw new Error(`Unsupported user-edit validation path: ${relativePath}`);
+  await appendFile(path.join(projectDir, relativePath), marker);
+  return { path: relativePath, content: await readFile(path.join(projectDir, relativePath)) };
+}
+
 async function snapshot(root: string): Promise<Record<string, string>> {
   const entries: Record<string, string> = {};
   async function visit(directory: string): Promise<void> {
@@ -94,12 +129,21 @@ async function validate(repository: string, root: string): Promise<ValidationRes
     if (!(await recordUpgradeBaseline(projectDir))) {
       throw new Error("Could not adopt a manifest-v2 baseline");
     }
+    const userEdit = await injectUserEdit(projectDir);
     const before = await snapshot(projectDir);
     const plan = await planReviewedProjectUpdate(projectDir);
     if (!plan.success) throw new Error(plan.error);
     if (!plan.reviewToken) throw new Error(plan.blockers.join(" ") || "No review token issued");
     if (plan.plan.actionable.length === 0) {
       throw new Error("Upgrade plan has no actionable generated-file changes");
+    }
+    const protectedPaths = new Set([
+      ...plan.plan.userEdited,
+      ...plan.plan.conflicts,
+      ...plan.plan.manual.map((entry) => entry.path),
+    ]);
+    if (plan.plan.actionable.includes(userEdit.path) || !protectedPaths.has(userEdit.path)) {
+      throw new Error(`Injected user edit was not protected from apply: ${userEdit.path}`);
     }
     const applied = await applyScaffoldUpgrade(projectDir, {
       expectedPlanDigest: plan.reviewToken,
@@ -108,6 +152,9 @@ async function validate(repository: string, root: string): Promise<ValidationRes
     if (!applied.success) throw new Error(applied.error);
     if (!applied.recoveryId)
       throw new Error("Actionable apply did not emit a recovery transaction");
+    if (!(await readFile(path.join(projectDir, userEdit.path))).equals(userEdit.content)) {
+      throw new Error(`Applied upgrade overwrote the injected user edit: ${userEdit.path}`);
+    }
     await recoverProjectTransaction(projectDir, applied.recoveryId);
     const after = await snapshot(projectDir);
     if (JSON.stringify(after) !== JSON.stringify(before)) {

@@ -18,9 +18,11 @@ import { setupWxt } from "./wxt-setup";
 
 export const ADDONS_REQUIRING_IMPERATIVE_SETUP: ReadonlySet<Addons> = new Set([
   "starlight",
+  "ruler",
   "mcp",
   "skills",
   "fumadocs",
+  "ultracite",
   "oxlint",
   "opentui",
   "wxt",

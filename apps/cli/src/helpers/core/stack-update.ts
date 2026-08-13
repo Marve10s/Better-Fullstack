@@ -2013,7 +2013,10 @@ export async function applyStackUpdate(
         plan.projectDir,
         plan.proposedConfig.versionChannel,
         (packageJsonPath, sha256) => {
-          const relativePath = path.relative(plan.projectDir, packageJsonPath);
+          const relativePath = path
+            .relative(plan.projectDir, packageJsonPath)
+            .split(path.sep)
+            .join("/");
           versionChannelRewrites.push(relativePath);
           markProjectTransactionWrite(transaction, relativePath, sha256);
         },

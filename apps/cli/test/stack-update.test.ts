@@ -3814,14 +3814,34 @@ describe("stack update planner", () => {
     const result = await addHandler(
       {
         projectDir,
-        addons: ["starlight", "fumadocs", "opentui", "wxt", "mcp", "skills", "oxlint"],
+        addons: [
+          "starlight",
+          "ruler",
+          "fumadocs",
+          "ultracite",
+          "opentui",
+          "wxt",
+          "mcp",
+          "skills",
+          "oxlint",
+        ],
         install: false,
       },
       { silent: true },
     );
     expect(result?.success).toBe(false);
     expect(result?.error).toContain("require imperative setup");
-    for (const addon of ["starlight", "fumadocs", "opentui", "wxt", "mcp", "skills", "oxlint"]) {
+    for (const addon of [
+      "starlight",
+      "ruler",
+      "fumadocs",
+      "ultracite",
+      "opentui",
+      "wxt",
+      "mcp",
+      "skills",
+      "oxlint",
+    ]) {
       expect(result?.error).toContain(addon);
     }
     expect(await pathExists(join(projectDir, "apps/docs/package.json"))).toBe(false);
