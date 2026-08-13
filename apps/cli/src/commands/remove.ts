@@ -8,7 +8,9 @@ import {
   type PartRemovalResult,
 } from "../helpers/core/remove-handler";
 import { CLIError } from "../utils/errors";
+import { getLatestCLIVersion } from "../utils/get-latest-cli-version";
 import {
+  getPackageExecPrefix,
   getProjectRecoveryCommand,
   quotePosixShellArgument,
   quotePowerShellArgument,
@@ -23,6 +25,23 @@ export type RemoveCommandInput = {
   acknowledgeArchitectureChange?: boolean;
   json?: boolean;
 };
+
+export function getPartRemovalApplyCommand(
+  result: Extract<PartRemovalResult, { success: true }>,
+  platform: NodeJS.Platform = process.platform,
+): string | null {
+  if (!result.applyAllowed || !result.reviewToken) return null;
+  const quoteArgument = platform === "win32" ? quotePowerShellArgument : quotePosixShellArgument;
+  const acknowledgement = result.requiresArchitectureAck
+    ? " --acknowledge-architecture-change"
+    : "";
+  return (
+    `${getPackageExecPrefix(result.proposedConfig.packageManager)} ` +
+    `create-better-fullstack@${getLatestCLIVersion()} remove ` +
+    `${quoteArgument(result.removal.target)} --project-dir ${quoteArgument(result.projectDir)} ` +
+    `--apply --review-token ${result.reviewToken}${acknowledgement}`
+  );
+}
 
 export async function removeCommand(input: RemoveCommandInput): Promise<PartRemovalResult> {
   const projectDir = path.resolve(input.projectDir || process.cwd());
@@ -75,20 +94,14 @@ export async function removeCommand(input: RemoveCommandInput): Promise<PartRemo
     }
     outro(pc.magenta("Capability removed with transactional recovery available."));
   } else {
-    if (!result.applyAllowed || !result.reviewToken) {
+    const applyCommand = getPartRemovalApplyCommand(result);
+    if (!applyCommand) {
       outro(pc.yellow("Dry run — resolve manual-review blockers before applying."));
       return result;
     }
-    const quoteArgument =
-      process.platform === "win32" ? quotePowerShellArgument : quotePosixShellArgument;
     log.message("");
     log.info(`Review token: ${pc.cyan(result.reviewToken)}`);
-    log.info(
-      pc.dim(
-        `Apply with: create-better-fullstack remove ${quoteArgument(result.removal.selectedPart)} ` +
-          `--project-dir ${quoteArgument(projectDir)} --apply --review-token ${result.reviewToken}`,
-      ),
-    );
+    log.info(pc.dim(`Apply with: ${applyCommand}`));
     outro(pc.magenta("Dry run — no files were written."));
   }
   return result;

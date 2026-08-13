@@ -8,6 +8,13 @@ export function quotePowerShellArgument(value: string): string {
   return `'${value.replaceAll("'", "''")}'`;
 }
 
+export function getPackageExecPrefix(packageManager: string | undefined): string {
+  if (packageManager === "bun") return "bunx";
+  if (packageManager === "pnpm") return "pnpm dlx";
+  if (packageManager === "yarn") return "yarn dlx";
+  return "npx --yes";
+}
+
 export function getProjectRecoveryCommand(
   projectDir: string,
   transactionId: string,
@@ -15,16 +22,8 @@ export function getProjectRecoveryCommand(
   packageManager: "bun" | "npm" | "pnpm" | "yarn" = "bun",
 ): string {
   const quoteArgument = platform === "win32" ? quotePowerShellArgument : quotePosixShellArgument;
-  const runner =
-    packageManager === "pnpm"
-      ? "pnpm dlx"
-      : packageManager === "yarn"
-        ? "yarn dlx"
-        : packageManager === "npm"
-          ? "npx --yes"
-          : "bunx";
   return (
-    `${runner} create-better-fullstack@${getLatestCLIVersion()} update ` +
+    `${getPackageExecPrefix(packageManager)} create-better-fullstack@${getLatestCLIVersion()} update ` +
     `${quoteArgument(projectDir)} --recover ${transactionId}`
   );
 }

@@ -11,6 +11,7 @@ import { cp, mkdir, mkdtemp, readFile, rename, rm, symlink, writeFile } from "no
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
+import { getPartRemovalApplyCommand } from "../src/commands/remove";
 import { CreateCommandOptionsSchema } from "../src/create-command-input";
 import { addHandler } from "../src/helpers/core/add-handler";
 import { applyPartRemoval, planPartRemoval } from "../src/helpers/core/remove-handler";
@@ -4034,6 +4035,10 @@ describe("stack update planner", () => {
     expect(plan.migrationSteps).toContainEqual(
       expect.stringContaining("Back up all existing data"),
     );
+    const applyCommand = getPartRemovalApplyCommand(plan, "linux");
+    expect(applyCommand).toContain("bunx create-better-fullstack@");
+    expect(applyCommand).toContain("remove 'api-db'");
+    expect(applyCommand).toContain("--acknowledge-architecture-change");
   });
 
   it("blocks scoped database removal while its owner still has an ORM", async () => {

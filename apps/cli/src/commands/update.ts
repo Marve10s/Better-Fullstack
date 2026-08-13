@@ -15,6 +15,7 @@ import { handleError } from "../utils/errors";
 import { getLatestCLIVersion } from "../utils/get-latest-cli-version";
 import {
   getProjectRecoveryCommand,
+  getPackageExecPrefix,
   quotePosixShellArgument,
   quotePowerShellArgument,
 } from "../utils/lifecycle-command";
@@ -178,13 +179,6 @@ export function getUpdateApplyCommandFlavor(
   return platform === "win32" ? "PowerShell" : "POSIX shell";
 }
 
-function packageExecPrefix(packageManager: string | undefined): string {
-  if (packageManager === "bun") return "bunx";
-  if (packageManager === "pnpm") return "pnpm dlx";
-  if (packageManager === "yarn") return "yarn dlx";
-  return "npx --yes";
-}
-
 export function getUpdateApplyCommand(
   plan: UpgradePlan,
   platform: NodeJS.Platform = process.platform,
@@ -196,7 +190,7 @@ export function getUpdateApplyCommand(
     ? ""
     : " --acknowledge-unproven-manifest-v1";
   return (
-    `${packageExecPrefix(packageManager)} create-better-fullstack@${getLatestCLIVersion()} update ${quoteArgument(plan.projectDir)} --apply ` +
+    `${getPackageExecPrefix(packageManager)} create-better-fullstack@${getLatestCLIVersion()} update ${quoteArgument(plan.projectDir)} --apply ` +
     `--review-token ${getUpgradePlanDigest(plan)}` +
     acknowledgement
   );
