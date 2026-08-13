@@ -182,7 +182,7 @@ describe("CLI add command", () => {
 
       expect(createResult.exitCode).toBe(0);
 
-      const addResult = await runCli(["add", "--project-dir", projectDir, "--addons", "mcp"], {
+      const addResult = await runCli(["add", "--project-dir", projectDir, "--addons", "biome"], {
         cwd: root,
         env: {
           BFS_SKIP_EXTERNAL_COMMANDS: "1",
@@ -193,17 +193,17 @@ describe("CLI add command", () => {
         addResult.exitCode,
         `add failed\nstdout:\n${addResult.stdout}\nstderr:\n${addResult.stderr}`,
       ).toBe(0);
-      expect(cliOutput(addResult)).toContain("Successfully added: mcp");
+      expect(cliOutput(addResult)).toContain("Successfully added: biome");
 
       const config = (await readJsoncFile(join(projectDir, "bts.jsonc"))) as {
         addons?: string[];
       };
 
       expect(config.addons).toBeDefined();
-      expect(config.addons).toContain("mcp");
+      expect(config.addons).toContain("biome");
 
       const secondAddResult = await runCli(
-        ["add", "--project-dir", projectDir, "--addons", "mcp"],
+        ["add", "--project-dir", projectDir, "--addons", "biome"],
         {
           cwd: root,
           env: {
