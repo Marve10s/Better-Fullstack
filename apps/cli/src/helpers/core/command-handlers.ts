@@ -28,12 +28,14 @@ import {
   assertGeneratedVerificationComplete,
   runGeneratedChecks,
 } from "../../utils/generated-checks";
+import { lifecycleResult } from "../../utils/lifecycle-contract";
 import { openUrl } from "../../utils/open-url";
 import { displayPreflightWarnings } from "../../utils/preflight-display";
 import { handleDirectoryConflict, setupProjectDirectory } from "../../utils/project-directory";
 import { addToHistory } from "../../utils/project-history";
 import { canPromptInteractively } from "../../utils/prompt-environment";
 import { renderTitle } from "../../utils/render-title";
+import { getCurrentLifecycleVersions } from "../../utils/scaffold-manifest";
 import { resolveCompatibilityAdjustments } from "../../utils/stack-compatibility";
 import { getTemplateConfig, getTemplateDescription } from "../../utils/templates";
 import {
@@ -741,6 +743,19 @@ export async function createProjectHandler(
           fileCount: result.tree.fileCount,
           directoryCount: result.tree.directoryCount,
           files,
+          lifecycle: lifecycleResult({
+            operation: "create",
+            status: "planned",
+            projectDir: config.projectDir,
+            changes: { added: result.tree.fileCount },
+            provenance: {
+              source: null,
+              target: getCurrentLifecycleVersions(),
+              verified: true,
+            },
+            recovery: { available: false, automaticRollback: true },
+            nextActions: ["Run the same command without `--dry-run` to create the project."],
+          }),
         };
       }
 
@@ -818,6 +833,7 @@ export async function createProjectHandler(
         projectDirectory: config.projectDir,
         relativePath: config.relativePath,
         setupFailures,
+        lifecycle: createResult.lifecycle,
       };
     } catch (error) {
       if (error instanceof UserCancelledError) {

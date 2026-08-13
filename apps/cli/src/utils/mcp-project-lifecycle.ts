@@ -1,11 +1,13 @@
 import type { GeneratedCheckDependencies } from "./generated-checks";
 
+import { lifecycleResult } from "./lifecycle-contract";
 import {
   applyReviewedProjectUpdate,
   planReviewedProjectUpdate,
   type ReviewedProjectUpdatePlan,
 } from "./project-lifecycle";
 import { inspectProject } from "./project-status";
+import { recoverProjectTransaction } from "./project-transaction";
 import { hashContent } from "./scaffold-manifest";
 
 export const MCP_UPDATE_REVIEW_CONTENT_LIMIT_BYTES = 32 * 1024;
@@ -94,4 +96,30 @@ export async function applyMcpProjectUpdate(
     };
   }
   return applyReviewedProjectUpdate(projectDir, reviewToken, acknowledgeUnprovenManifestV1);
+}
+
+export async function recoverMcpProjectTransaction(projectDir: string, transactionId: string) {
+  try {
+    const transaction = await recoverProjectTransaction(projectDir, transactionId);
+    return {
+      success: true as const,
+      projectDir,
+      transaction,
+      lifecycle: lifecycleResult({
+        operation: "recover",
+        status: "recovered",
+        projectDir,
+        changes: { patched: transaction.files.length },
+        provenance: { source: null, target: null, verified: false },
+        recovery: { available: false, transactionId },
+        nextActions: ["Run `bfs_check_project` to verify every generated target."],
+      }),
+    };
+  } catch (error) {
+    return {
+      success: false as const,
+      projectDir,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
 }

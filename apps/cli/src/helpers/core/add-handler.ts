@@ -219,9 +219,7 @@ async function runStackUpdateAdd(
   request: Record<string, unknown>,
 ): Promise<AddResult> {
   const dryRun = input.dryRun ?? false;
-  const requestedAddons = (input.addons ?? []).filter(
-    (addon): addon is Addons => addon !== "none",
-  );
+  const requestedAddons = (input.addons ?? []).filter((addon): addon is Addons => addon !== "none");
   const existingAddons = new Set(currentConfig.addons ?? []);
   const addonsToRepair = await getAddonsToSetup(input, currentConfig, projectDir);
   const isExistingAddonRepair =
@@ -249,7 +247,7 @@ async function runStackUpdateAdd(
 
   const result = dryRun
     ? await planStackUpdate(projectDir, request)
-    : await applyStackUpdate(projectDir, request);
+    : await applyStackUpdate(projectDir, request, { operation: "add" });
 
   if (!result.success) {
     throw new CLIError(result.error);

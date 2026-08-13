@@ -13,6 +13,13 @@ import { trackCommand } from "../utils/analytics";
 import { readBtsConfig } from "../utils/bts-config";
 import { handleError } from "../utils/errors";
 import { getLatestCLIVersion } from "../utils/get-latest-cli-version";
+import {
+  getProjectRecoveryCommand,
+  quotePosixShellArgument,
+  quotePowerShellArgument,
+} from "../utils/lifecycle-command";
+import { lifecycleResult } from "../utils/lifecycle-contract";
+import { recoverProjectTransaction } from "../utils/project-transaction";
 import { renderTitle } from "../utils/render-title";
 
 export type UpdateCommandInput = {
@@ -24,15 +31,13 @@ export type UpdateCommandInput = {
   recordBaseline?: boolean;
   acknowledgeUnprovenManifestV1?: boolean;
   reviewToken?: string;
+  recover?: string;
 };
 
 export function getUpdateApplyAuthorizationError(input: UpdateCommandInput): string | null {
   if (!input.apply) return null;
   if (!input.reviewToken) {
     return "`--review-token` is required with `--apply`. Review the categorized paths and plan, then pass its exact token.";
-  }
-  if (input.acknowledgeUnprovenManifestV1 !== true) {
-    return "`--acknowledge-unproven-manifest-v1` is required with `--apply`: manifest v1 lineage is unproven, apply is destructive, and no backup/recovery exists.";
   }
   return null;
 }
@@ -88,7 +93,7 @@ function renderPlan(plan: UpgradePlan): void {
   log.info(
     pc.dim(
       plan.hasBaseline
-        ? `Manifest v1 baseline (release lineage unproven): bts.lock.json${
+        ? `Manifest v${plan.manifestVersion ?? "unknown"} baseline (${plan.lifecycle.provenance.verified ? "verified lineage" : "unverified origin"}): bts.lock.json${
             plan.baselineCreatedAt ? ` (recorded ${plan.baselineCreatedAt})` : ""
           }`
         : "Baseline: none — `update --record-baseline` manually adopts current bytes but does not prove generator lineage",
@@ -103,7 +108,7 @@ function renderPlan(plan: UpgradePlan): void {
     );
   }
   log.message("");
-  if (plan.hasBaseline && plan.manifestVersion === "1") {
+  if (plan.hasBaseline && plan.manifestVersion === "2") {
     log.info(pc.dim(`Review token: ${getUpgradePlanDigest(plan)}`));
     log.message("");
   }
@@ -134,8 +139,10 @@ export function toJsonPlan(plan: UpgradePlan) {
     manifestError: plan.manifestError,
     baselineCreatedAt: plan.baselineCreatedAt,
     reviewToken:
-      plan.hasBaseline && plan.manifestVersion === "1" ? getUpgradePlanDigest(plan) : undefined,
-    guarantee: "unproven-manifest-v1-plan-only",
+      plan.hasBaseline && plan.manifestVersion === "2" ? getUpgradePlanDigest(plan) : undefined,
+    guarantee: plan.lifecycle.provenance.verified
+      ? "verified-manifest-v2-recoverable"
+      : "unverified-origin-recoverable",
     summary: {
       unchanged: plan.unchanged.length,
       drift: plan.drift.length,
@@ -159,16 +166,11 @@ export function toJsonPlan(plan: UpgradePlan) {
     actionableHashes: plan.actionableHashes,
     actionablePreimages: plan.actionablePreimages,
     files: plan.files,
+    lifecycle: plan.lifecycle,
   };
 }
 
-export function quotePosixShellArgument(value: string): string {
-  return `'${value.replaceAll("'", `'"'"'`)}'`;
-}
-
-export function quotePowerShellArgument(value: string): string {
-  return `'${value.replaceAll("'", "''")}'`;
-}
+export { quotePosixShellArgument, quotePowerShellArgument };
 
 export function getUpdateApplyCommandFlavor(
   platform: NodeJS.Platform = process.platform,
@@ -188,12 +190,15 @@ export function getUpdateApplyCommand(
   platform: NodeJS.Platform = process.platform,
   packageManager?: string,
 ): string | null {
-  if (!plan.hasBaseline || plan.manifestVersion !== "1") return null;
+  if (!plan.hasBaseline || plan.manifestVersion !== "2") return null;
   const quoteArgument = platform === "win32" ? quotePowerShellArgument : quotePosixShellArgument;
+  const acknowledgement = plan.lifecycle.provenance.verified
+    ? ""
+    : " --acknowledge-unproven-manifest-v1";
   return (
     `${packageExecPrefix(packageManager)} create-better-fullstack@${getLatestCLIVersion()} update ${quoteArgument(plan.projectDir)} --apply ` +
-    `--review-token ${getUpgradePlanDigest(plan)} ` +
-    "--acknowledge-unproven-manifest-v1"
+    `--review-token ${getUpgradePlanDigest(plan)}` +
+    acknowledgement
   );
 }
 
@@ -206,6 +211,42 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
   const recordBaseline = input.recordBaseline ?? false;
   const acknowledgeUnprovenManifestV1 = input.acknowledgeUnprovenManifestV1 ?? false;
   const reviewToken = input.reviewToken;
+  const recover = input.recover;
+
+  if (recover) {
+    if (apply || check || dryRun || recordBaseline || reviewToken) {
+      return failUpdate(
+        projectDir,
+        "`--recover` cannot be combined with planning, apply, check, baseline, or review-token flags.",
+        json,
+      );
+    }
+    try {
+      const metadata = await recoverProjectTransaction(projectDir, recover);
+      const lifecycle = lifecycleResult({
+        operation: "recover",
+        status: "recovered",
+        projectDir,
+        changes: { patched: metadata.files.length },
+        provenance: { source: null, target: null, verified: false },
+        recovery: { available: false, transactionId: metadata.id },
+        nextActions: ["Run `create-better-fullstack check` to verify every generated target."],
+      });
+      if (json) {
+        console.log(JSON.stringify({ ok: true, transaction: metadata, lifecycle }, null, 2));
+        return;
+      }
+      renderTitle();
+      intro(pc.magenta("Recover lifecycle transaction"));
+      log.success(
+        pc.green(`Recovered ${formatCount(metadata.files.length, "file")} from ${metadata.id}.`),
+      );
+      outro(pc.magenta("Recovery complete. Run `create-better-fullstack check` next."));
+      return;
+    } catch (error) {
+      return failUpdate(projectDir, error instanceof Error ? error.message : String(error), json);
+    }
+  }
 
   if (dryRun && apply) {
     return failUpdate(projectDir, "`--dry-run` cannot be combined with `--apply`.", json);
@@ -275,7 +316,7 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
     );
     outro(
       pc.magenta(
-        "Manual-adoption baseline recorded. It does not prove generator lineage; destructive apply still requires exact review and has no built-in recovery.",
+        "Manual-adoption manifest v2 recorded. Its origin remains unverified, so apply still requires explicit acknowledgement; transactional recovery is available.",
       ),
     );
     return;
@@ -283,6 +324,7 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
 
   let plan: UpgradePlan;
   let applied: { patched: string[]; added: string[]; merged: string[] } | undefined;
+  let recoveryId: string | undefined;
   if (apply) {
     const result = await applyScaffoldUpgrade(projectDir, {
       expectedPlanDigest: reviewToken,
@@ -291,6 +333,7 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
     if (!result.success) return failUpdate(projectDir, result.error, json);
     plan = result;
     applied = result.applied;
+    recoveryId = result.recoveryId;
   } else {
     const result = await planScaffoldUpgrade(projectDir);
     if (!result.success) return failUpdate(projectDir, result.error, json);
@@ -323,6 +366,7 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
           ok: true,
           mode: apply ? "apply" : check ? "check" : "dry-run",
           applied,
+          recoveryId,
         },
         null,
         2,
@@ -365,6 +409,13 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
         ),
       );
     }
+    if (recoveryId) {
+      log.info(
+        pc.cyan(
+          `Recovery point: ${recoveryId}. Restore it with \`${getProjectRecoveryCommand(projectDir, recoveryId)}\`.`,
+        ),
+      );
+    }
     outro(pc.magenta("Update complete."));
     return;
   }
@@ -383,7 +434,7 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
         `${
           applyCommand
             ? `After creating a recovery point, run this ${commandFlavor} command: \`${applyCommand}\``
-            : "Record and review a manifest-v1 baseline before applying"
+            : "Record and review a manifest-v2 baseline before applying"
         } to patch ${formatCount(plan.drift.length, "drift file")}, ` +
           `apply ${formatCount(plan.merged.length, "structured merge")}, and add ${formatCount(
             plan.newFiles.length,

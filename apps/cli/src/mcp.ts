@@ -183,8 +183,9 @@ import z from "zod";
 
 import { applyStackUpdate, planStackUpdate } from "./helpers/core/stack-update";
 import { trackEvent, trackProjectCreation, withCommandTelemetry } from "./utils/analytics";
-import { previewBtsConfigUpdate, readBtsConfig, writeBtsConfig } from "./utils/bts-config";
+import { previewBtsConfigUpdate, readBtsConfig } from "./utils/bts-config";
 import { applyEffectBackendDefaults } from "./utils/config-processing";
+import { runWithContextAsync } from "./utils/context";
 import { generateReproducibleCommand } from "./utils/generate-reproducible-command";
 import { getLatestCLIVersion } from "./utils/get-latest-cli-version";
 import { getEffectiveStack, getGraphSummary } from "./utils/graph-summary";
@@ -193,6 +194,7 @@ import {
   checkMcpProject,
   getMcpProjectStatus,
   planMcpProjectUpdate,
+  recoverMcpProjectTransaction,
 } from "./utils/mcp-project-lifecycle";
 import { getCompatibilityBackend } from "./utils/stack-compatibility";
 import { getTemplateConfig, getTemplateDescription } from "./utils/templates";
@@ -775,7 +777,7 @@ function buildProjectConfig(
     shadcnFont: (input.shadcnFont as ProjectConfig["shadcnFont"]) ?? "inter",
     shadcnRadius: (input.shadcnRadius as ProjectConfig["shadcnRadius"]) ?? "default",
     aiDocs: (input.aiDocs as ProjectConfig["aiDocs"]) ?? ["claude-md", "agents-md"],
-    git: !!overrides,
+    git: false,
     install: false,
   };
 
@@ -803,6 +805,14 @@ function sanitizePath(input: string): string {
     throw new Error("Path must not contain '..' components");
   }
   return input;
+}
+
+function sanitizeProjectName(input: string): string {
+  const projectName = sanitizePath(input);
+  if (!/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(projectName) || projectName === ".") {
+    throw new Error("Project name must be one portable directory name");
+  }
+  return projectName;
 }
 
 export function buildMcpCompatibilityInput(input: Record<string, unknown>): CompatibilityInput {
@@ -1068,6 +1078,41 @@ const graphPreviewOutputShape = {
   stackPartSpecs: z.array(z.string()).optional(),
 };
 
+const lifecycleVersionsOutputSchema = z.object({
+  cli: z.string(),
+  generator: z.string(),
+  templateSet: z.string(),
+  schema: z.string(),
+});
+
+const lifecycleResultOutputSchema = z.object({
+  contractVersion: z.literal("1"),
+  operation: z.enum(["create", "add", "stack-update", "template-update", "recover"]),
+  status: z.enum(["planned", "applied", "blocked", "failed", "rolled-back", "recovered"]),
+  projectDir: z.string(),
+  changes: z.object({
+    added: z.number(),
+    patched: z.number(),
+    merged: z.number(),
+    removed: z.number(),
+    manual: z.number(),
+  }),
+  warnings: z.array(z.string()),
+  blockers: z.array(z.string()),
+  provenance: z.object({
+    source: lifecycleVersionsOutputSchema.nullable(),
+    target: lifecycleVersionsOutputSchema.nullable(),
+    verified: z.boolean(),
+  }),
+  recovery: z.object({
+    available: z.boolean(),
+    transactionId: z.string().optional(),
+    command: z.string().optional(),
+    automaticRollback: z.boolean().optional(),
+  }),
+  nextActions: z.array(z.string()),
+});
+
 const planProjectOutputSchema = z.object({
   success: z.boolean(),
   fileCount: z.number().optional(),
@@ -1082,6 +1127,7 @@ const createProjectOutputSchema = z.object({
   fileCount: z.number().optional(),
   addonWarnings: z.array(z.string()).optional(),
   message: z.string().optional(),
+  lifecycle: lifecycleResultOutputSchema.optional(),
   ...graphPreviewOutputShape,
 });
 
@@ -1117,6 +1163,8 @@ const addFeatureOutputSchema = z.object({
   addedAddons: z.array(z.string()).optional(),
   projectDir: z.string().optional(),
   message: z.string().optional(),
+  lifecycle: lifecycleResultOutputSchema.optional(),
+  recoveryId: z.string().optional(),
   ...graphPreviewOutputShape,
 });
 
@@ -1141,6 +1189,8 @@ const stackUpdateOutputSchema = z.object({
   compatibilityWarnings: z.array(z.string()).optional(),
   installCommand: z.string().optional(),
   message: z.string().optional(),
+  lifecycle: lifecycleResultOutputSchema.optional(),
+  recoveryId: z.string().optional(),
   ...graphPreviewOutputShape,
 });
 
@@ -2024,7 +2074,11 @@ export function createMcpServer(): McpServer {
         "Creates a new fullstack project on disk. Dependencies are NOT installed (agent must tell user to install manually). Call bfs_plan_project first to preview.",
       inputSchema: mcpInputSchema({
         ...MCP_PLAN_CREATE_SCHEMA,
-        projectName: z.string().describe("Project name (kebab-case). Will be the directory name."),
+        projectName: z
+          .string()
+          .regex(/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/)
+          .refine((value) => value !== ".")
+          .describe("Project name (kebab-case). Will be the directory name."),
         targetDir: z
           .string()
           .optional()
@@ -2044,58 +2098,17 @@ export function createMcpServer(): McpServer {
     async (input: Record<string, unknown> & { projectName: string }) => {
       const startTime = Date.now();
       try {
-        const { generateVirtualProject, EMBEDDED_TEMPLATES } =
-          await import("@better-fullstack/template-generator");
-        const { writeTreeToFilesystem } =
-          await import("@better-fullstack/template-generator/fs-writer");
         const path = await import("node:path");
 
-        const projectName = sanitizePath(input.projectName);
+        const projectName = sanitizeProjectName(input.projectName);
         const targetDir = input.targetDir ? sanitizePath(input.targetDir as string) : undefined;
         const projectDir = path.resolve(targetDir ?? process.cwd(), projectName);
         const config = buildProjectConfig(input, { projectDir });
-
-        const fs = await import("node:fs/promises");
-        await fs.mkdir(projectDir, { recursive: true });
-
-        const result = await generateVirtualProject({ config, templates: EMBEDDED_TEMPLATES });
-        if (!result.success || !result.tree) {
-          await trackProjectCreation(config, false, {
-            source: "mcp",
-            success: false,
-            errorName: "GenerationFailed",
-            durationMs: Date.now() - startTime,
-          });
-          return {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify({
-                  success: false,
-                  error: result.error ?? "Generation failed",
-                }),
-              },
-            ],
-            isError: true,
-          };
-        }
-
-        await writeTreeToFilesystem(result.tree, projectDir);
-
-        await writeBtsConfig(config);
+        const { createProject } = await import("./helpers/core/create-project.js");
+        const result = await runWithContextAsync({ silent: true }, () =>
+          createProject(config, { allowExistingDirectory: false }),
+        );
         const graphPreview = getMcpGraphPreview(config);
-
-        let addonWarnings: string[] = [];
-        if (config.addons.length > 0 && config.addons[0] !== "none") {
-          const { setupAddons } = await import("./helpers/addons/addons-setup.js");
-          addonWarnings = await setupAddons(config);
-        }
-
-        const { collectStructuredBaselines, recordScaffoldManifest } =
-          await import("./utils/scaffold-manifest.js");
-        await recordScaffoldManifest(projectDir, {
-          baselines: collectStructuredBaselines(result.tree),
-        });
 
         const ecosystem = (input.ecosystem as string) ?? "typescript";
         const installCmd = getInstallCommand(
@@ -2109,15 +2122,16 @@ export function createMcpServer(): McpServer {
         await trackProjectCreation(config, false, {
           source: "mcp",
           success: true,
-          fileCount: result.tree.fileCount,
+          fileCount: result.fileCount,
           durationMs: Date.now() - startTime,
         });
         const payload = {
           success: true as const,
           projectDirectory: projectDir,
-          fileCount: result.tree.fileCount,
+          fileCount: result.fileCount,
           ...graphPreview,
-          ...(addonWarnings.length > 0 ? { addonWarnings } : {}),
+          ...(result.addonWarnings.length > 0 ? { addonWarnings: result.addonWarnings } : {}),
+          lifecycle: result.lifecycle,
           message: `Project created at ${projectDir}. Tell the user to run: ${installCmd}`,
         };
         return {
@@ -2211,7 +2225,7 @@ export function createMcpServer(): McpServer {
     "bfs_plan_project_update",
     {
       description:
-        "Plans current-template drift. Exact structured-merge content is returned up to 32 KiB per file; oversized content is withheld with size/hash metadata and no token. Manifest v1 never proves release lineage and remains plan-only by default; any returned token still requires explicit destructive acknowledgement and an independently managed recovery point.",
+        "Plans current-template drift. Exact structured-merge content is returned up to 32 KiB per file; oversized content is withheld with size/hash metadata and no token. Manifest v2 provenance and transactional recovery eligibility are returned in the lifecycle contract.",
       inputSchema: mcpInputSchema({
         projectDir: z.string().describe("Path to the existing Better Fullstack project"),
       }),
@@ -2236,7 +2250,7 @@ export function createMcpServer(): McpServer {
     "bfs_apply_project_update",
     {
       description:
-        "Destructively overwrites actionable template files bound to a reviewed token only when acknowledgeUnprovenManifestV1 is true. Manifest v1 lineage is unproven. Backup and recovery are not implemented.",
+        "Applies actionable template files bound to a reviewed token in a recoverable transaction. Verified manifest-v2 projects need no lineage acknowledgement; migrated/adopted projects do.",
       inputSchema: mcpInputSchema({
         projectDir: z.string().describe("Path to the existing Better Fullstack project"),
         reviewToken: z
@@ -2246,9 +2260,9 @@ export function createMcpServer(): McpServer {
           .describe("Exact reviewToken returned by bfs_plan_project_update"),
         acknowledgeUnprovenManifestV1: z
           .boolean()
-          .describe(
-            "Must be true: acknowledge destructive apply, unproven manifest-v1 lineage, and absent backup/recovery",
-          ),
+          .optional()
+          .default(false)
+          .describe("Required only when the plan reports unverified migrated/adopted lineage"),
       }),
       annotations: {
         title: "Apply reviewed project update",
@@ -2267,6 +2281,36 @@ export function createMcpServer(): McpServer {
         sanitizePath(input.projectDir),
         input.reviewToken,
         input.acknowledgeUnprovenManifestV1,
+      );
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
+        ...(!payload.success ? { isError: true } : {}),
+      };
+    },
+  );
+
+  registerTool(
+    "bfs_recover_project_transaction",
+    {
+      description:
+        "Restores every file bound to a successful or interrupted Better Fullstack lifecycle transaction. The transaction can be recovered once, then project checks should be rerun.",
+      inputSchema: mcpInputSchema({
+        projectDir: z.string().describe("Path to the existing Better Fullstack project"),
+        transactionId: z.string().uuid().describe("Recovery transaction ID returned by apply"),
+      }),
+      annotations: {
+        title: "Recover project transaction",
+        readOnlyHint: false,
+        destructiveHint: true,
+        idempotentHint: false,
+        openWorldHint: false,
+      },
+    },
+    async (input: { projectDir: string; transactionId: string }) => {
+      const payload = await recoverMcpProjectTransaction(
+        sanitizePath(input.projectDir),
+        input.transactionId,
       );
       return {
         content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],

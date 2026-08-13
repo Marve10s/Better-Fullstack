@@ -5,10 +5,19 @@ import fs from "fs-extra";
 import { createHash } from "node:crypto";
 import path from "node:path";
 
-export const SCAFFOLD_MANIFEST_FILE = "bts.lock.json";
-const MANIFEST_VERSION = "1";
+import type {
+  LifecycleChangeSummary,
+  LifecycleOperation,
+  LifecycleVersions,
+} from "./lifecycle-contract";
 
-const EXCLUDED_DIR_NAMES = new Set(["node_modules", ".git"]);
+import { getLatestCLIVersion } from "./get-latest-cli-version";
+
+export const SCAFFOLD_MANIFEST_FILE = "bts.lock.json";
+export const SCAFFOLD_MANIFEST_VERSION = "2";
+export const PROJECT_SCHEMA_VERSION = "1";
+
+const EXCLUDED_DIR_NAMES = new Set(["node_modules", ".git", ".bts"]);
 
 const EXCLUDED_FILE_NAMES = new Set([
   SCAFFOLD_MANIFEST_FILE,
@@ -25,8 +34,42 @@ const EXCLUDED_FILE_NAMES = new Set([
   "mix.lock",
 ]);
 
+const MANIFEST_OPERATIONS = new Set<ScaffoldManifestOperation["operation"]>([
+  "create",
+  "add",
+  "stack-update",
+  "template-update",
+  "recover",
+  "baseline-adoption",
+  "manifest-migration",
+]);
+
+export type ScaffoldManifestOperation = {
+  id: string;
+  operation: LifecycleOperation | "baseline-adoption" | "manifest-migration";
+  completedAt: string;
+  source: LifecycleVersions | null;
+  target: LifecycleVersions | null;
+  changes: LifecycleChangeSummary;
+  recoveryId?: string;
+};
+
 export type ScaffoldManifest = {
-  version: string;
+  version: typeof SCAFFOLD_MANIFEST_VERSION;
+  createdAt: string;
+  updatedAt: string;
+  provenance: {
+    state: "verified" | "migrated-v1" | "adopted-unverified";
+    createdWith: LifecycleVersions | null;
+    current: LifecycleVersions | null;
+  };
+  history: ScaffoldManifestOperation[];
+  hashes: Record<string, string>;
+  baselines?: Record<string, string>;
+};
+
+type ScaffoldManifestV1 = {
+  version: "1";
   createdAt: string;
   hashes: Record<string, string>;
   baselines?: Record<string, string>;
@@ -34,8 +77,22 @@ export type ScaffoldManifest = {
 
 export type ScaffoldManifestReadResult =
   | { status: "missing" }
-  | { status: "valid"; manifest: ScaffoldManifest }
+  | { status: "valid"; manifest: ScaffoldManifest; migratedFromVersion?: "1" }
   | { status: "invalid"; error: string };
+
+export function getCurrentLifecycleVersions(): LifecycleVersions {
+  const releaseVersion = getLatestCLIVersion();
+  return {
+    cli: releaseVersion,
+    generator: releaseVersion,
+    templateSet: releaseVersion,
+    schema: PROJECT_SCHEMA_VERSION,
+  };
+}
+
+function emptyChanges(): LifecycleChangeSummary {
+  return { added: 0, patched: 0, merged: 0, removed: 0, manual: 0 };
+}
 
 export function isStructuredBaselinePath(relPath: string): boolean {
   const name = path.basename(relPath);
@@ -115,8 +172,11 @@ export async function writeScaffoldManifest(
   const sortEntries = (record: Record<string, string>) =>
     Object.fromEntries(Object.entries(record).sort(([a], [b]) => a.localeCompare(b)));
   const sorted: ScaffoldManifest = {
-    version: manifest.version,
+    version: SCAFFOLD_MANIFEST_VERSION,
     createdAt: manifest.createdAt,
+    updatedAt: manifest.updatedAt,
+    provenance: manifest.provenance,
+    history: manifest.history,
     hashes: sortEntries(manifest.hashes),
     ...(manifest.baselines && Object.keys(manifest.baselines).length > 0
       ? { baselines: sortEntries(manifest.baselines) }
@@ -128,13 +188,42 @@ export async function writeScaffoldManifest(
 
 export async function recordScaffoldManifest(
   projectDir: string,
-  metadata: { createdAt?: string; baselines?: Record<string, string> } = {},
+  metadata: {
+    createdAt?: string;
+    baselines?: Record<string, string>;
+    provenanceState?: ScaffoldManifest["provenance"]["state"];
+    operation?: ScaffoldManifestOperation["operation"];
+    changes?: LifecycleChangeSummary;
+  } = {},
 ): Promise<ScaffoldManifest | null> {
   try {
+    const createdAt = metadata.createdAt ?? new Date().toISOString();
+    const versions = getCurrentLifecycleVersions();
+    const provenanceState = metadata.provenanceState ?? "verified";
+    const hashes = await computeScaffoldHashes(projectDir);
     const manifest: ScaffoldManifest = {
-      version: MANIFEST_VERSION,
-      createdAt: metadata.createdAt ?? new Date().toISOString(),
-      hashes: await computeScaffoldHashes(projectDir),
+      version: SCAFFOLD_MANIFEST_VERSION,
+      createdAt,
+      updatedAt: createdAt,
+      provenance: {
+        state: provenanceState,
+        createdWith: provenanceState === "verified" ? versions : null,
+        current: provenanceState === "verified" ? versions : null,
+      },
+      history: [
+        {
+          id: hashContent(`${metadata.operation ?? "create"}:${createdAt}:${projectDir}`).slice(
+            0,
+            24,
+          ),
+          operation: metadata.operation ?? "create",
+          completedAt: createdAt,
+          source: null,
+          target: provenanceState === "verified" ? versions : null,
+          changes: metadata.changes ?? { ...emptyChanges(), added: Object.keys(hashes).length },
+        },
+      ],
+      hashes,
       baselines: metadata.baselines,
     };
     await writeScaffoldManifest(projectDir, manifest);
@@ -157,6 +246,58 @@ function isPortableProjectRelativePath(filePath: string): boolean {
     !path.win32.isAbsolute(filePath) &&
     !filePath.split(/[\\/]/).includes("..")
   );
+}
+
+function isTimestamp(value: unknown): value is string {
+  return typeof value === "string" && value.trim() !== "" && !Number.isNaN(Date.parse(value));
+}
+
+function isLifecycleVersions(value: unknown): value is LifecycleVersions {
+  return (
+    isPlainRecord(value) &&
+    typeof value.cli === "string" &&
+    typeof value.generator === "string" &&
+    typeof value.templateSet === "string" &&
+    typeof value.schema === "string"
+  );
+}
+
+function isLifecycleChanges(value: unknown): value is LifecycleChangeSummary {
+  return (
+    isPlainRecord(value) &&
+    ["added", "patched", "merged", "removed", "manual"].every(
+      (key) => typeof value[key] === "number" && Number.isInteger(value[key]) && value[key] >= 0,
+    )
+  );
+}
+
+function migrateManifestV1(manifest: ScaffoldManifestV1): ScaffoldManifest {
+  const migrationId = hashContent(
+    JSON.stringify({
+      version: manifest.version,
+      createdAt: manifest.createdAt,
+      hashes: Object.entries(manifest.hashes).sort(([a], [b]) => a.localeCompare(b)),
+      baselines: Object.entries(manifest.baselines ?? {}).sort(([a], [b]) => a.localeCompare(b)),
+    }),
+  ).slice(0, 24);
+  return {
+    version: SCAFFOLD_MANIFEST_VERSION,
+    createdAt: manifest.createdAt,
+    updatedAt: manifest.createdAt,
+    provenance: { state: "migrated-v1", createdWith: null, current: null },
+    history: [
+      {
+        id: migrationId,
+        operation: "manifest-migration",
+        completedAt: manifest.createdAt,
+        source: null,
+        target: null,
+        changes: emptyChanges(),
+      },
+    ],
+    hashes: manifest.hashes,
+    baselines: manifest.baselines,
+  };
 }
 
 function validateManifest(parsed: unknown): ScaffoldManifestReadResult {
@@ -201,6 +342,61 @@ function validateManifest(parsed: unknown): ScaffoldManifestReadResult {
       }
     }
   }
+  if (parsed.version === "1") {
+    return {
+      status: "valid",
+      manifest: migrateManifestV1(parsed as ScaffoldManifestV1),
+      migratedFromVersion: "1",
+    };
+  }
+  if (parsed.version !== SCAFFOLD_MANIFEST_VERSION) {
+    return { status: "invalid", error: `unsupported manifest version: ${parsed.version}` };
+  }
+  if (!isTimestamp(parsed.updatedAt)) {
+    return { status: "invalid", error: "updatedAt must be a valid timestamp string" };
+  }
+  if (!isPlainRecord(parsed.provenance)) {
+    return { status: "invalid", error: "provenance must be a non-null plain record" };
+  }
+  if (
+    parsed.provenance.state !== "verified" &&
+    parsed.provenance.state !== "migrated-v1" &&
+    parsed.provenance.state !== "adopted-unverified"
+  ) {
+    return { status: "invalid", error: "provenance.state is unsupported" };
+  }
+  if (
+    parsed.provenance.createdWith !== null &&
+    !isLifecycleVersions(parsed.provenance.createdWith)
+  ) {
+    return { status: "invalid", error: "provenance.createdWith is invalid" };
+  }
+  if (parsed.provenance.current !== null && !isLifecycleVersions(parsed.provenance.current)) {
+    return { status: "invalid", error: "provenance.current is invalid" };
+  }
+  if (!Array.isArray(parsed.history)) {
+    return { status: "invalid", error: "history must be an array" };
+  }
+  for (const [index, operation] of parsed.history.entries()) {
+    if (
+      !isPlainRecord(operation) ||
+      typeof operation.id !== "string" ||
+      !/^[0-9a-f]{24}$/.test(operation.id) ||
+      typeof operation.operation !== "string" ||
+      !MANIFEST_OPERATIONS.has(operation.operation as ScaffoldManifestOperation["operation"]) ||
+      !isTimestamp(operation.completedAt) ||
+      (operation.source !== null && !isLifecycleVersions(operation.source)) ||
+      (operation.target !== null && !isLifecycleVersions(operation.target)) ||
+      !isLifecycleChanges(operation.changes) ||
+      (operation.recoveryId !== undefined &&
+        (typeof operation.recoveryId !== "string" ||
+          !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+            operation.recoveryId,
+          )))
+    ) {
+      return { status: "invalid", error: `history[${index}] is invalid` };
+    }
+  }
   return { status: "valid", manifest: parsed as ScaffoldManifest };
 }
 
@@ -229,6 +425,11 @@ export async function refreshScaffoldManifestFiles(
   projectDir: string,
   relativePaths: Iterable<string>,
   baselines?: Record<string, string>,
+  operation?: {
+    type: ScaffoldManifestOperation["operation"];
+    changes: LifecycleChangeSummary;
+    recoveryId?: string;
+  },
 ): Promise<void> {
   const manifest = await readScaffoldManifest(projectDir);
   if (!manifest) return;
@@ -245,6 +446,23 @@ export async function refreshScaffoldManifestFiles(
 
   if (baselines && Object.keys(baselines).length > 0) {
     manifest.baselines = { ...manifest.baselines, ...baselines };
+  }
+
+  if (operation) {
+    const completedAt = new Date().toISOString();
+    const source = manifest.provenance.current;
+    const target = getCurrentLifecycleVersions();
+    manifest.updatedAt = completedAt;
+    manifest.provenance.current = target;
+    manifest.history.push({
+      id: hashContent(`${operation.type}:${completedAt}:${projectDir}`).slice(0, 24),
+      operation: operation.type,
+      completedAt,
+      source,
+      target,
+      changes: operation.changes,
+      ...(operation.recoveryId ? { recoveryId: operation.recoveryId } : {}),
+    });
   }
 
   await writeScaffoldManifest(projectDir, manifest);

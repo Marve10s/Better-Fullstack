@@ -25,7 +25,7 @@ afterEach(async () => {
 });
 
 describe("MCP project lifecycle parity", () => {
-  it("truthfully annotates executable checks and non-recoverable apply", async () => {
+  it("truthfully annotates executable checks and recoverable apply", async () => {
     const source = await Bun.file(path.join(import.meta.dir, "../src/mcp.ts")).text();
     const checkBlock = source.slice(
       source.indexOf('registerTool(\n    "bfs_check_project"'),
@@ -39,7 +39,8 @@ describe("MCP project lifecycle parity", () => {
       source.indexOf('registerTool(\n    "bfs_plan_stack_update"'),
     );
     expect(applyBlock).toContain("destructiveHint: true");
-    expect(applyBlock).toContain("Backup and recovery are not implemented");
+    expect(applyBlock).toContain("recoverable transaction");
+    expect(applyBlock).toContain("bfs_recover_project_transaction");
     expect(applyBlock).toContain("acknowledgeUnprovenManifestV1");
   });
 
@@ -49,9 +50,12 @@ describe("MCP project lifecycle parity", () => {
     if (!result.success) return;
     expect(result.prerequisites.wave1).toMatchObject({
       ready: false,
-      generatorProvenance: "unavailable",
-      recovery: "unavailable",
+      generatorProvenance: "unverified",
+      recovery: "available",
     });
+    expect(result.prerequisites.wave1.blockers).toContain(
+      "A versioned scaffold manifest is required for lifecycle apply and recovery.",
+    );
   });
 
   it("runs the shared check service and fails absent generated targets", async () => {
@@ -179,10 +183,10 @@ describe("MCP project lifecycle parity", () => {
 
     const applied = await applyMcpProjectUpdate(historicalFixture, undefined, false);
     expect(applied.success).toBe(false);
-    if (!applied.success) expect(applied.error).toContain("bts.lock.json manifest v1 baseline");
+    if (!applied.success) expect(applied.error).toContain("versioned bts.lock.json baseline");
   });
 
-  it("keeps every manifest v1 plan unproven and requires token plus acknowledgement", async () => {
+  it("keeps adopted projects unverified and requires token plus acknowledgement", async () => {
     const projectDir = await fs.mkdtemp(path.join(tmpdir(), "bfs-current-lifecycle-"));
     roots.push(projectDir);
     await fs.copy(historicalFixture, projectDir);
@@ -193,8 +197,8 @@ describe("MCP project lifecycle parity", () => {
     if (!plan.success) return;
     expect(plan.applyAllowed).toBe(false);
     expect(plan.reviewToken).toMatch(/^[a-f0-9]{64}$/);
-    expect(plan.guarantee).toBe("unproven-manifest-v1-plan-only");
-    expect(plan.blockers.join(" ")).toContain("cannot prove generator release lineage");
+    expect(plan.guarantee).toBe("unverified-origin-recoverable");
+    expect(plan.blockers.join(" ")).toContain("original generator lineage is unverified");
     const actionableFiles = plan.plan.files.filter((file) =>
       plan.plan.actionable.includes(file.path),
     );
@@ -233,6 +237,7 @@ describe("MCP project lifecycle parity", () => {
       currentContractSupported: false,
     });
     expect(status.prerequisites.manifest.error).toContain("hashes");
+    expect(status.prerequisites.wave1.blockers).toContain(status.prerequisites.manifest.error);
 
     const plan = await planMcpProjectUpdate(projectDir);
     expect(plan.success).toBe(false);
