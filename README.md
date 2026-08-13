@@ -133,7 +133,7 @@ yarn create better-fullstack@latest
 
 Better Fullstack keeps the selected stack in `bts.jsonc` and the generated baseline in
 `bts.lock.json`. Use `add --dry-run` before changing capabilities, `update` before applying newer
-templates, `check` for a machine-readable project diagnosis, and `gen ... --dry-run` for supported
+templates, `check --json` for a machine-readable project diagnosis, and `gen ... --dry-run` for supported
 in-project generation. See the **[lifecycle guide →](https://better-fullstack.dev/docs/getting-started/lifecycle/)**.
 
 Flat `single-app` output is available for thin Next.js and TanStack Start self-backend projects.

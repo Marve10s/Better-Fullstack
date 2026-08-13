@@ -119,6 +119,12 @@ const skillDirectories = readdirSync(skillsDir, { withFileTypes: true })
   .map((entry) => entry.name)
   .sort();
 assert(skillDirectories.length > 0, "plugin skills directory must contain at least one skill");
+for (const requiredSkill of ["add-to-project", "scaffold-project"]) {
+  assert(
+    skillDirectories.includes(requiredSkill),
+    `Missing required plugin skill: ${requiredSkill}`,
+  );
+}
 for (const skillDirectory of skillDirectories) {
   const skillFile = join(skillsDir, skillDirectory, "SKILL.md");
   assert(existsSync(skillFile), `Missing plugin skill file: ${skillFile}`);

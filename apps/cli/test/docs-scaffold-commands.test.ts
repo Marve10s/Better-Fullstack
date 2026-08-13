@@ -40,6 +40,7 @@ const LAUNCHERS = [
 type DocumentedCommand = {
   source: string;
   command: string;
+  launcher: (typeof LAUNCHERS)[number];
   payload: string[];
 };
 
@@ -64,29 +65,64 @@ function tokenize(command: string): string[] {
   return tokens;
 }
 
-function commandPayload(command: string): string[] | undefined {
+function parseDocumentedCommand(
+  command: string,
+): { launcher: (typeof LAUNCHERS)[number]; payload: string[] } | undefined {
   const tokens = tokenize(command);
   const launcher = LAUNCHERS.find((candidate) =>
     candidate.every((part, index) => tokens[index] === part),
   );
   if (!launcher) return undefined;
 
-  return tokens.slice(launcher.length).filter((token) => token !== "--");
+  const launcherPayload = tokens.slice(launcher.length);
+  const separatorIndexes = launcherPayload.flatMap((token, index) =>
+    token === "--" ? [index] : [],
+  );
+  const isNpmCreate = launcher[0] === "npm";
+  if (isNpmCreate) {
+    const firstFlag = launcherPayload.findIndex(
+      (token) => token !== "--" && (token.startsWith("--") || token === "[flags]"),
+    );
+    if (firstFlag >= 0) {
+      expect(
+        separatorIndexes,
+        `npm create flags must follow one forwarding separator\nCommand: ${command}`,
+      ).toEqual([firstFlag - 1]);
+    }
+  } else {
+    expect(
+      separatorIndexes,
+      `Only npm create uses the documented forwarding separator\nCommand: ${command}`,
+    ).toEqual([]);
+  }
+
+  return {
+    launcher,
+    payload: isNpmCreate
+      ? launcherPayload.filter((_, index) => index !== separatorIndexes[0])
+      : launcherPayload,
+  };
 }
 
 function extractDocumentedCommands(): DocumentedCommand[] {
-  const files = [join(REPO_ROOT, "README.md"), ...walkContentFiles(CONTENT_ROOT)];
+  const files = [
+    join(REPO_ROOT, "README.md"),
+    join(REPO_ROOT, "apps/cli/README.md"),
+    ...walkContentFiles(CONTENT_ROOT),
+  ];
   const commandPattern =
-    /(?:npm|bun|pnpm|yarn) create better-fullstack@latest\b[^\n"<`]*|npx(?: -y)? create-better-fullstack@latest\b[^\n"<`]*/g;
+    /(?:npm|bun|pnpm|yarn)[ \t]+\S+[ \t]+better-fullstack@latest\b[^\n"<`]*|npx(?:[ \t]+\S+){0,2}[ \t]+create-better-fullstack@latest\b[^\n"<`]*/g;
   const commands = files.flatMap((path) => {
     const source = readFileSync(path, "utf8").replace(/\\\r?\n\s*/g, " ");
     return [...source.matchAll(commandPattern)].flatMap((match) => {
       const command = match[0].trim().replace(/[.,;:]$/, "");
-      const payload = commandPayload(command);
-      if (!payload || payload.length === 0) return [];
+      const parsed = parseDocumentedCommand(command);
+      expect(parsed, `Unsupported package-manager launcher\nCommand: ${command}`).toBeDefined();
+      if (!parsed || parsed.payload.length === 0) return [];
+      const { launcher, payload } = parsed;
       if (payload[0].startsWith("[") || NON_SCAFFOLD_COMMANDS.has(payload[0])) return [];
       if (!payload.some((token) => token.startsWith("--"))) return [];
-      return [{ source: relative(REPO_ROOT, path), command, payload }];
+      return [{ source: relative(REPO_ROOT, path), command, launcher, payload }];
     });
   });
 
@@ -157,6 +193,7 @@ describe("documented scaffold commands", () => {
           `${documented.source} failed\nCommand: ${documented.command}\n\n${result.output}`,
         ).toBe(0);
         expect(result.output).toContain("Dry run complete");
+        expect(result.output).not.toContain("Adjusted incompatible options");
       }
     },
     { timeout: 180_000 },
