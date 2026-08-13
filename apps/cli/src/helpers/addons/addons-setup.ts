@@ -17,17 +17,10 @@ import { setupUltracite } from "./ultracite-setup";
 import { setupWxt } from "./wxt-setup";
 
 export const ADDONS_REQUIRING_IMPERATIVE_SETUP: ReadonlySet<Addons> = new Set([
-  "tauri",
   "starlight",
-  "biome",
-  "lefthook",
-  "husky",
-  "gitleaks",
-  "ruler",
   "mcp",
   "skills",
   "fumadocs",
-  "ultracite",
   "oxlint",
   "opentui",
   "wxt",
