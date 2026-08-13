@@ -123,6 +123,7 @@ export type StackUpdateResult =
 export type StackUpdatePlanOptions = {
   replaceArrayKeys?: ReadonlySet<keyof ProjectConfig>;
   removeObsoleteGeneratedArtifacts?: boolean;
+  stackPartsOverride?: readonly StackPart[];
 };
 
 export function getStackUpdatePlanDigest(plan: StackUpdatePlan): string {
@@ -1463,10 +1464,9 @@ export async function planStackUpdate(
       compatibilityChangesToProjectConfig(compatibilityResult.adjustedStack),
     );
   }
-  proposedConfig.stackParts = mergeDerivedStackPartsWithExistingGraph(
-    currentConfig,
-    proposedConfig,
-  );
+  proposedConfig.stackParts = options.stackPartsOverride
+    ? [...options.stackPartsOverride]
+    : mergeDerivedStackPartsWithExistingGraph(currentConfig, proposedConfig);
   Object.assign(proposedConfig, mergeStackPartSpecs(proposedConfig, stackPartSpecs));
   try {
     validateConfigForProgrammaticUse(proposedConfig);
@@ -1757,6 +1757,7 @@ export async function applyStackUpdate(
     operation?: "add" | "remove" | "stack-update";
     replaceArrayKeys?: ReadonlySet<keyof ProjectConfig>;
     removeObsoleteGeneratedArtifacts?: boolean;
+    stackPartsOverride?: readonly StackPart[];
     expectedPlanDigest?: string;
   } = {},
 ): Promise<StackUpdateResult> {
@@ -1764,6 +1765,7 @@ export async function applyStackUpdate(
   const plan = await planStackUpdate(projectDirInput, input, {
     replaceArrayKeys: options.replaceArrayKeys,
     removeObsoleteGeneratedArtifacts: options.removeObsoleteGeneratedArtifacts,
+    stackPartsOverride: options.stackPartsOverride,
   });
   if (!plan.success) return plan;
   if (options.expectedPlanDigest && getStackUpdatePlanDigest(plan) !== options.expectedPlanDigest) {

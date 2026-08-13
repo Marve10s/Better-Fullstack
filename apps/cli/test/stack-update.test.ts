@@ -3791,7 +3791,7 @@ describe("stack update planner", () => {
 
     const removedPaths = [...plan.filesToRemove];
     const applied = await applyPartRemoval(projectDir, target!, plan.reviewToken);
-    expect(applied.success).toBe(true);
+    expect(applied.success, applied.success ? undefined : applied.error).toBe(true);
     if (!applied.success) return;
     expect(applied.lifecycle.operation).toBe("remove");
     for (const relativePath of removedPaths) {
@@ -3799,6 +3799,37 @@ describe("stack update planner", () => {
     }
     const manifest = await readScaffoldManifest(projectDir);
     expect(manifest?.history.at(-1)?.operation).toBe("remove");
+  });
+
+  it("removes one exact owned capability without deleting the same role from another owner", async () => {
+    const root = await makeTempRoot("bfs-stack-remove-owned-capability-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(
+      makeConfig(projectDir, {
+        stackParts: parseStackPartSpecs([
+          "backend:go:gin:api",
+          "backend:python:fastapi:worker",
+          "api.database:universal:sqlite:api-db",
+          "worker.database:universal:sqlite:worker-db",
+        ]),
+        ecosystem: "go",
+        database: "sqlite",
+      }),
+    );
+
+    const plan = await planPartRemoval(projectDir, "api-db");
+    expect(plan.success).toBe(true);
+    if (!plan.success) return;
+    expect(plan.proposedConfig.stackParts?.some((part) => part.id === "api-db")).toBe(false);
+    expect(plan.proposedConfig.stackParts).toContainEqual(
+      expect.objectContaining({
+        id: "worker-db",
+        ownerPartId: "worker",
+        role: "database",
+        toolId: "sqlite",
+      }),
+    );
+    expect(plan.proposedConfig.database).toBe("sqlite");
   });
 
   it("restores every bound preimage when stack apply fails before manifest refresh", async () => {

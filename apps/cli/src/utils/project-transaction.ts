@@ -12,7 +12,7 @@ const RECOVERY_VERSION = 1;
 
 export type RecoveryFile =
   | { path: string; state: "absent" }
-  | { path: string; state: "file"; sha256: string };
+  | { path: string; state: "file"; sha256: string; mode?: number };
 
 export type RecoveryMetadata = {
   version: typeof RECOVERY_VERSION;
@@ -113,7 +113,12 @@ export async function beginProjectTransaction(
       await fs.ensureDir(path.dirname(backupPath));
       // oxlint-disable-next-line no-await-in-loop
       await fs.writeFile(backupPath, bytes);
-      files.push({ path: relativePath, state: "file", sha256: hashContent(bytes) });
+      files.push({
+        path: relativePath,
+        state: "file",
+        sha256: hashContent(bytes),
+        mode: stats.mode & 0o7777,
+      });
     }
 
     const transaction: ProjectTransaction = {
@@ -188,7 +193,9 @@ async function restoreFiles(
     if (hasExpectedCurrentHash) {
       const stillAtPreimage =
         (file.state === "absent" && current === null) ||
-        (file.state === "file" && currentHash === file.sha256);
+        (file.state === "file" &&
+          currentHash === file.sha256 &&
+          (file.mode === undefined || ((currentStats?.mode ?? -1) & 0o7777) === file.mode));
       if (stillAtPreimage) {
         restorations.push({ file, target, backup, skip: true });
         continue;
@@ -220,6 +227,10 @@ async function restoreFiles(
     await fs.ensureDir(path.dirname(restoration.target));
     // oxlint-disable-next-line no-await-in-loop -- complete preflight precedes ordered restoration
     await fs.writeFile(restoration.target, restoration.backup);
+    if (restoration.file.mode !== undefined) {
+      // oxlint-disable-next-line no-await-in-loop -- restore each captured file mode after its bytes
+      await fs.chmod(restoration.target, restoration.file.mode);
+    }
   }
 }
 
@@ -269,7 +280,12 @@ function validateRecoveryMetadata(value: unknown, expectedId: string): RecoveryM
       (file.state === "file" &&
         (!("sha256" in file) ||
           typeof file.sha256 !== "string" ||
-          !/^[0-9a-f]{64}$/.test(file.sha256)))
+          !/^[0-9a-f]{64}$/.test(file.sha256) ||
+          ("mode" in file &&
+            (typeof file.mode !== "number" ||
+              !Number.isInteger(file.mode) ||
+              file.mode < 0 ||
+              file.mode > 0o7777))))
     ) {
       throw new Error("Recovery metadata contains an invalid file entry.");
     }

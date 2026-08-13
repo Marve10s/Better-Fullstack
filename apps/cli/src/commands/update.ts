@@ -9,7 +9,7 @@ import {
   recordUpgradeBaseline,
   type UpgradePlan,
 } from "../helpers/core/scaffold-upgrade";
-import { trackCommand } from "../utils/analytics";
+import { flushTelemetry, trackCommand } from "../utils/analytics";
 import { readBtsConfig } from "../utils/bts-config";
 import { handleError } from "../utils/errors";
 import { getLatestCLIVersion } from "../utils/get-latest-cli-version";
@@ -232,6 +232,7 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
       errorName: "UpdateError",
       issueCount: 1,
     });
+    await flushTelemetry();
     return failUpdate(projectDir, error, json);
   };
 

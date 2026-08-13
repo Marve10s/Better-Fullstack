@@ -36,6 +36,7 @@ type ResolvedRemoval = {
   projectDir: string;
   request: Record<string, unknown>;
   replaceArrayKeys: ReadonlySet<keyof ProjectConfig>;
+  stackPartsOverride: readonly StackPart[];
   removal: PartRemoval;
 };
 
@@ -71,8 +72,9 @@ async function resolveRemoval(projectDirInput: string, target: string): Promise<
     );
   }
 
-  const part = matches[0]!;
-  if (PRIMARY_ROLES.has(part.role)) {
+  const part = matches[0];
+  if (!part) throw new Error(`Removal target '${target}' is not selected.`);
+  if (PRIMARY_ROLES.has(part.role) && !part.ownerPartId) {
     throw new Error(
       `Cannot remove primary ${part.role} part '${target}'. Replace the architecture through add/stack-update so compatibility and migration checks can run.`,
     );
@@ -82,7 +84,8 @@ async function resolveRemoval(projectDirInput: string, target: string): Promise<
     ? parts.find((candidate) => candidate.id === part.ownerPartId)
     : undefined;
   const partProjection = stackPartsToLegacyProjectConfigPartial(owner ? [owner, part] : [part]);
-  const fullProjection = stackPartsToLegacyProjectConfigPartial(parts);
+  const remainingParts = parts.filter((candidate) => candidate.id !== part.id);
+  const remainingProjection = stackPartsToLegacyProjectConfigPartial(remainingParts);
   const request: Record<string, unknown> = {};
   const replaceArrayKeys = new Set<keyof ProjectConfig>();
 
@@ -92,15 +95,15 @@ async function resolveRemoval(projectDirInput: string, target: string): Promise<
       Array.isArray(projectedValue) &&
       (projectedValue as readonly unknown[]).includes(part.toolId)
     ) {
-      const currentValue = fullProjection[key];
-      const remaining = Array.isArray(currentValue)
-        ? currentValue.filter((value) => value !== part.toolId && value !== "none")
+      const remainingValue = remainingProjection[key];
+      const remaining = Array.isArray(remainingValue)
+        ? remainingValue.filter((value) => value !== "none")
         : [];
       request[rawKey] = remaining.length > 0 ? remaining : ["none"];
       replaceArrayKeys.add(key);
       continue;
     }
-    if (projectedValue === part.toolId) request[rawKey] = "none";
+    if (projectedValue === part.toolId) request[rawKey] = remainingProjection[key] ?? "none";
   }
 
   const configKeys = Object.keys(request).sort();
@@ -114,6 +117,7 @@ async function resolveRemoval(projectDirInput: string, target: string): Promise<
     projectDir,
     request,
     replaceArrayKeys,
+    stackPartsOverride: remainingParts,
     removal: {
       target,
       selectedPart: formatStackPartSpec(part, parts),
@@ -149,6 +153,7 @@ export async function planPartRemoval(
   const plan = await planStackUpdate(resolved.projectDir, resolved.request, {
     replaceArrayKeys: resolved.replaceArrayKeys,
     removeObsoleteGeneratedArtifacts: true,
+    stackPartsOverride: resolved.stackPartsOverride,
   });
   if (!plan.success) return plan;
   return {
@@ -186,6 +191,7 @@ export async function applyPartRemoval(
       operation: "remove",
       replaceArrayKeys: resolved.replaceArrayKeys,
       removeObsoleteGeneratedArtifacts: true,
+      stackPartsOverride: resolved.stackPartsOverride,
       expectedPlanDigest: getStackUpdatePlanDigest(reviewed),
     },
   );

@@ -8,6 +8,7 @@ import {
   type PartRemovalResult,
 } from "../helpers/core/remove-handler";
 import { CLIError } from "../utils/errors";
+import { getProjectRecoveryCommand } from "../utils/lifecycle-command";
 import { renderTitle } from "../utils/render-title";
 
 export type RemoveCommandInput = {
@@ -61,6 +62,10 @@ export async function removeCommand(input: RemoveCommandInput): Promise<PartRemo
   for (const step of result.migrationSteps) log.warn(pc.yellow(step));
 
   if (input.apply) {
+    if (result.recoveryId) {
+      log.info(pc.dim(`Recovery point: ${result.recoveryId}`));
+      log.info(pc.dim(`Restore with: ${getProjectRecoveryCommand(projectDir, result.recoveryId)}`));
+    }
     outro(pc.magenta("Capability removed with transactional recovery available."));
   } else {
     log.message("");
