@@ -169,7 +169,7 @@ describe("CLI add command", () => {
   );
 
   it(
-    "adds addon via --addons and is idempotent for already-installed addon",
+    "adds a declarative addon via --addons and is idempotent for an existing addon",
     async () => {
       const root = await makeTempRoot("bfs-add-test-");
       const projectName = "app";
@@ -182,7 +182,7 @@ describe("CLI add command", () => {
 
       expect(createResult.exitCode).toBe(0);
 
-      const addResult = await runCli(["add", "--project-dir", projectDir, "--addons", "biome"], {
+      const addResult = await runCli(["add", "--project-dir", projectDir, "--addons", "prettier"], {
         cwd: root,
         env: {
           BFS_SKIP_EXTERNAL_COMMANDS: "1",
@@ -193,17 +193,17 @@ describe("CLI add command", () => {
         addResult.exitCode,
         `add failed\nstdout:\n${addResult.stdout}\nstderr:\n${addResult.stderr}`,
       ).toBe(0);
-      expect(cliOutput(addResult)).toContain("Successfully added: biome");
+      expect(cliOutput(addResult)).toContain("Successfully added: prettier");
 
       const config = (await readJsoncFile(join(projectDir, "bts.jsonc"))) as {
         addons?: string[];
       };
 
       expect(config.addons).toBeDefined();
-      expect(config.addons).toContain("biome");
+      expect(config.addons).toContain("prettier");
 
       const secondAddResult = await runCli(
-        ["add", "--project-dir", projectDir, "--addons", "biome"],
+        ["add", "--project-dir", projectDir, "--addons", "prettier"],
         {
           cwd: root,
           env: {
