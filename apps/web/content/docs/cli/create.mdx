@@ -2,7 +2,7 @@
 title: Create Command
 description: Scaffold a new Better Fullstack project with prompts, defaults, or explicit flags.
 translationStatus: pending
-updated: 2026-08-07
+updated: 2026-08-12
 ---
 
 The `create` command writes a new project from a typed stack configuration. Use it interactively for exploration, or pass flags when you need the same project shape every time.
@@ -106,6 +106,55 @@ GoBetterAuth is selected with the global `--auth go-better-auth` value. Go-nativ
 
 ## Examples
 
+### Flat single-app output
+
+`--workspace-shape single-app` flattens a thin Next.js or TanStack Start self-backend scaffold into
+the project root. It is a create-time layout choice. If the stack needs separate database, ORM,
+auth, API, service, native, container, or deployment packages, compatibility safely restores the
+default `monorepo` layout.
+
+```npm
+npm create better-fullstack@latest thin-next-app -- \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --runtime none \
+  --workspace-shape single-app \
+  --database none \
+  --orm none \
+  --db-setup none \
+  --api none \
+  --auth none \
+  --payments none \
+  --email none \
+  --file-upload none \
+  --realtime none \
+  --job-queue none \
+  --caching none \
+  --rate-limit none \
+  --i18n none \
+  --search none \
+  --vector-db none \
+  --file-storage none \
+  --cms none \
+  --ai none \
+  --analytics none \
+  --feature-flags none \
+  --integrations none \
+  --ecommerce none \
+  --observability none \
+  --logging none \
+  --web-deploy none \
+  --server-deploy none \
+  --examples none \
+  --addons none \
+  --ai-docs none \
+  --no-install \
+  --no-git
+```
+
+### Explicit TypeScript stack
+
 Create a TypeScript app with explicit flags:
 
 ```npm
@@ -139,7 +188,7 @@ npm create better-fullstack@latest my-app -- \
   --no-git
 ```
 
-Create a multi-ecosystem project:
+### Multi-ecosystem project
 
 ```npm
 npm create better-fullstack@latest my-mixed-app -- \
