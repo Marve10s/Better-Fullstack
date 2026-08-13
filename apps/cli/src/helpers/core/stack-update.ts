@@ -29,10 +29,7 @@ import {
   writeBtsConfig,
 } from "../../utils/bts-config";
 import { validateConfigForProgrammaticUse } from "../../utils/config-validation";
-import {
-  applyDependencyVersionChannel,
-  collectPackageJsonPaths,
-} from "../../utils/dependency-version-channel";
+import { applyDependencyVersionChannel } from "../../utils/dependency-version-channel";
 import { formatCode } from "../../utils/file-formatter";
 import { getEffectiveStack, getGraphSummary } from "../../utils/graph-summary";
 import { getProjectRecoveryCommand } from "../../utils/lifecycle-command";
@@ -1784,9 +1781,17 @@ export async function planStackUpdate(
     for (const filePath of currentGeneratedFiles.keys()) {
       if (proposedGeneratedFiles.has(filePath)) continue;
       const targetPath = path.join(projectDir, filePath);
-      // oxlint-disable-next-line no-await-in-loop -- each candidate needs its live preimage
-      const existingBuffer = await fs.readFile(targetPath).catch(() => null);
-      if (!existingBuffer) continue;
+      let existingBuffer: Buffer;
+      try {
+        // oxlint-disable-next-line no-await-in-loop -- each candidate needs its live preimage
+        existingBuffer = await fs.readFile(targetPath);
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === "ENOENT") continue;
+        manualReviewBlockers.push(
+          `${filePath}: obsolete generated file could not be read: ${error instanceof Error ? error.message : String(error)}`,
+        );
+        continue;
+      }
       if (manifest?.provenance.state !== "verified") {
         manualReviewBlockers.push(
           `${filePath}: obsolete generated file has no verified scaffold provenance`,
@@ -1831,9 +1836,16 @@ export async function planStackUpdate(
   const uniqueFilesToRemove = [...new Set(filesToRemove)].sort();
   const versionChannelPackagePaths =
     options.includeVersionChannelPaths && proposedConfig.versionChannel !== "stable"
-      ? (await collectPackageJsonPaths(projectDir)).map((packageJsonPath) =>
-          toPosixPath(path.relative(projectDir, packageJsonPath)),
-        )
+      ? (
+          await applyDependencyVersionChannel(
+            projectDir,
+            proposedConfig.versionChannel,
+            undefined,
+            {
+              dryRun: true,
+            },
+          )
+        ).map((packageJsonPath) => toPosixPath(path.relative(projectDir, packageJsonPath)))
       : [];
   let preimages: Record<string, { sha256: string | null; mode: number | null }>;
   try {
@@ -1906,6 +1918,7 @@ export async function applyStackUpdate(
     stackPartsOverride?: readonly StackPart[];
     expectedPlanDigest?: string;
     applyVersionChannel?: boolean;
+    beforeTransactionSnapshot?: () => void | Promise<void>;
     beforeMutation?: () => void | Promise<void>;
   } = {},
 ): Promise<StackUpdateResult> {
@@ -1960,6 +1973,7 @@ export async function applyStackUpdate(
   const transactionPaths = Object.keys(plan.preimages);
   let transaction: ProjectTransaction;
   try {
+    await options.beforeTransactionSnapshot?.();
     transaction = await beginProjectTransaction(
       plan.projectDir,
       lifecycleOperation,
@@ -1974,6 +1988,19 @@ export async function applyStackUpdate(
   }
 
   try {
+    const staleReviewedPreimages = transaction.metadata.files.filter((file) => {
+      const reviewed = plan.preimages[file.path];
+      if (!reviewed) return true;
+      if (file.state === "absent") return reviewed.sha256 !== null || reviewed.mode !== null;
+      return file.sha256 !== reviewed.sha256 || (file.mode ?? null) !== reviewed.mode;
+    });
+    if (staleReviewedPreimages.length > 0) {
+      throw new Error(
+        `The reviewed stack update preimages changed before the recovery snapshot: ${staleReviewedPreimages
+          .map((file) => file.path)
+          .join(", ")}. Re-plan before applying.`,
+      );
+    }
     await options.beforeMutation?.();
     const livePreimages = await collectPlanPreimages(plan.projectDir, transactionPaths);
     const stalePreimages = transaction.metadata.files.filter((file) => {

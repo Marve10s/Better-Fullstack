@@ -133,6 +133,15 @@ describe("MCP project lifecycle parity", () => {
       detail: "The explicit stack graph has no executable generated target contract.",
     });
 
+    await writeBtsConfig(
+      { ...zeroTarget, frontend: ["tanstack-router"], stackParts: [] } as ProjectConfig,
+      { version: config!.version, createdAt: config!.createdAt },
+    );
+    const emptyGraph = await inspectProject(projectDir, { runChecks: false });
+    expect(emptyGraph.success).toBe(true);
+    if (!emptyGraph.success) return;
+    expect(emptyGraph.stackPartSpecs).toEqual([]);
+
     const restoredDir = await fs.mkdtemp(path.join(tmpdir(), "bfs-incomplete-matrix-"));
     roots.push(restoredDir);
     await fs.copy(historicalFixture, restoredDir);

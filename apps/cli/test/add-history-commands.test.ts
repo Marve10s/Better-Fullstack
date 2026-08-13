@@ -2,7 +2,7 @@ import { afterAll, describe, expect, it } from "bun:test";
 import * as JSONC from "jsonc-parser";
 import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
-import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, realpath, rm, writeFile } from "node:fs/promises";
 import { homedir, tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -190,8 +190,18 @@ describe("CLI add command", () => {
         cwd: root,
       });
       expect(removal.exitCode, removal.stderr).toBe(0);
-      expect(cliOutput(removal)).toContain("  - ");
-      expect(cliOutput(removal)).toContain(`--project-dir '${projectDir}'`);
+      const removalOutput = cliOutput(removal);
+      expect(removalOutput).toContain("  - ");
+      expect(removalOutput).toContain(`--project-dir '${await realpath(projectDir)}'`);
+      const reviewToken = removalOutput.match(/Review token:[\s\S]*?([a-f0-9]{64})/)?.[1];
+      expect(reviewToken).toBeDefined();
+
+      const applied = await runCli(
+        ["remove", target!, "--project-dir", projectDir, "--apply", "--review-token", reviewToken!],
+        { cwd: root },
+      );
+      expect(applied.exitCode, applied.stderr).toBe(0);
+      expect(cliOutput(applied)).toContain("Install dependencies with:");
     },
     CLI_COMMAND_TEST_TIMEOUT_MS,
   );

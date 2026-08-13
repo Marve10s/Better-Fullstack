@@ -101,6 +101,7 @@ export async function removeCommand(input: RemoveCommandInput): Promise<PartRemo
         ),
       );
     }
+    log.info(pc.dim(`Install dependencies with: ${result.installCommand}`));
     outro(pc.magenta("Capability removed with transactional recovery available."));
   } else {
     const applyCommand = getPartRemovalApplyCommand(result);

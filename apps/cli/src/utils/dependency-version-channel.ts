@@ -306,11 +306,12 @@ export async function applyDependencyVersionChannel(
   projectDir: string,
   channel: VersionChannel,
   onWrite?: (packageJsonPath: string, sha256: string) => void | Promise<void>,
-): Promise<void> {
-  if (channel === "stable") return;
+  options: { dryRun?: boolean } = {},
+): Promise<string[]> {
+  if (channel === "stable") return [];
 
   const packageJsonPaths = await collectPackageJsonPaths(projectDir);
-  if (packageJsonPaths.length === 0) return;
+  if (packageJsonPaths.length === 0) return [];
 
   const packageNames = new Set<string>();
 
@@ -326,7 +327,7 @@ export async function applyDependencyVersionChannel(
     }
   }
 
-  if (packageNames.size === 0) return;
+  if (packageNames.size === 0) return [];
 
   const resolvedVersions = new Map<string, string>();
   const packageInfos = new Map<string, NpmPackageInfo>();
@@ -378,9 +379,10 @@ export async function applyDependencyVersionChannel(
     );
   }
 
-  if (resolvedVersions.size === 0) return;
+  if (resolvedVersions.size === 0) return [];
 
   applySynchronizedFamilyVersions(resolvedVersions, packageInfos, channel);
+  const changedPaths: string[] = [];
 
   for (const packageJsonPath of packageJsonPaths) {
     const packageJson = await fs.readJson(packageJsonPath);
@@ -405,8 +407,11 @@ export async function applyDependencyVersionChannel(
     }
 
     if (changed) {
-      await fs.writeJson(packageJsonPath, packageJson, { spaces: 2 });
-      if (onWrite) {
+      changedPaths.push(packageJsonPath);
+      if (!options.dryRun) {
+        await fs.writeJson(packageJsonPath, packageJson, { spaces: 2 });
+      }
+      if (!options.dryRun && onWrite) {
         // oxlint-disable-next-line no-await-in-loop -- expose the exact persisted bytes to rollback
         const bytes = await fs.readFile(packageJsonPath);
         // oxlint-disable-next-line no-await-in-loop -- bind each completed rewrite before continuing
@@ -414,4 +419,5 @@ export async function applyDependencyVersionChannel(
       }
     }
   }
+  return changedPaths;
 }

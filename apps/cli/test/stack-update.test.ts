@@ -3874,6 +3874,11 @@ describe("stack update planner", () => {
         2,
       ),
     );
+    await mkdir(join(projectDir, "untouched"));
+    await writeFile(
+      join(projectDir, "untouched/package.json"),
+      JSON.stringify({ name: "untouched", private: true }, null, 2),
+    );
 
     const originalFetch = globalThis.fetch;
     globalThis.fetch = (async () =>
@@ -3885,6 +3890,16 @@ describe("stack update planner", () => {
         { status: 200 },
       )) as typeof fetch;
     try {
+      const plan = await planStackUpdate(
+        projectDir,
+        { email: "resend", versionChannel: "latest" },
+        { includeVersionChannelPaths: true },
+      );
+      expect(plan.success).toBe(true);
+      if (!plan.success) return;
+      expect(plan.preimages["custom/package.json"]).toBeDefined();
+      expect(plan.preimages["untouched/package.json"]).toBeUndefined();
+
       const result = await applyStackUpdate(
         projectDir,
         { email: "resend", versionChannel: "latest" },
@@ -3973,6 +3988,32 @@ describe("stack update planner", () => {
     const applied = await applyPartRemoval(projectDir, target!, undefined);
     expect(applied.success).toBe(false);
     if (!applied.success) expect(applied.error).toContain("Manual review required");
+  });
+
+  it("blocks unreadable obsolete generated artifacts instead of treating them as absent", async () => {
+    const root = await makeTempRoot("bfs-stack-remove-unreadable-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir, { email: "resend" }));
+    const config = await readBtsConfig(projectDir);
+    const target = config?.stackParts?.find((part) => part.role === "email")?.id;
+    expect(target).toBeDefined();
+    const initialPlan = await planPartRemoval(projectDir, target!);
+    expect(initialPlan.success).toBe(true);
+    if (!initialPlan.success) return;
+    const obsoletePath = initialPlan.filesToRemove[0];
+    expect(obsoletePath).toBeDefined();
+    await rm(join(projectDir, obsoletePath!));
+    await mkdir(join(projectDir, obsoletePath!));
+
+    const plan = await planPartRemoval(projectDir, target!);
+    expect(plan.success).toBe(true);
+    if (!plan.success) return;
+    expect(plan.filesToRemove).not.toContain(obsoletePath);
+    expect(plan.manualReviewBlockers).toContainEqual(
+      expect.stringContaining(`${obsoletePath}: obsolete generated file could not be read`),
+    );
+    expect(plan.applyAllowed).toBe(false);
+    expect(plan.reviewToken).toBeUndefined();
   });
 
   it("binds removal review tokens to one canonical project", async () => {
@@ -4098,6 +4139,26 @@ describe("stack update planner", () => {
 
     expect(result.success).toBe(false);
     if (!result.success) expect(result.error).toContain("preimages changed before apply");
+    expect(await readFile(configPath, "utf-8")).toBe(concurrentContent);
+  });
+
+  it("refuses a reviewed preimage changed before the recovery snapshot", async () => {
+    const root = await makeTempRoot("bfs-stack-update-snapshot-preimage-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir));
+    const configPath = join(projectDir, "bts.jsonc");
+    const concurrentContent = `${await readFile(configPath, "utf-8")}\n`;
+
+    const result = await applyStackUpdate(
+      projectDir,
+      { email: "resend" },
+      {
+        beforeTransactionSnapshot: () => writeFile(configPath, concurrentContent),
+      },
+    );
+
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toContain("changed before the recovery snapshot");
     expect(await readFile(configPath, "utf-8")).toBe(concurrentContent);
   });
 

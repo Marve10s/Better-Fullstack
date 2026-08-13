@@ -452,9 +452,10 @@ export async function inspectProject(
     ...(await checkEnvFiles(projectDir)),
   ];
   const config = { ...btsConfig, projectDir } as unknown as ProjectConfig;
-  const stackParts = btsConfig.stackParts?.length
-    ? btsConfig.stackParts
-    : legacyProjectConfigToStackParts(btsConfig);
+  const stackParts =
+    btsConfig.stackParts === undefined
+      ? legacyProjectConfigToStackParts(btsConfig)
+      : btsConfig.stackParts;
   const expectedTargets = await discoverGeneratedCheckTargets(config);
   for (const target of expectedTargets) {
     checks.push(...(await checkNativeTargetDependencies(config, target)));
