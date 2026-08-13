@@ -58,6 +58,7 @@ const PENDING_TRANSLATION_PATHS = [
   "content/docs/getting-started/installation.mdx",
   "content/docs/getting-started/lifecycle.mdx",
   "content/docs/index.mdx",
+  "content/docs/provider-setup/environment-variables.mdx",
   "content/docs/recipes/browser-zip-workflow.mdx",
   "content/docs/recipes/default-typescript-web.mdx",
   "content/docs/recipes/dotnet-service.mdx",

@@ -14,6 +14,7 @@ const ENV_DOCS_PATH = resolve(
 
 type ProviderEnvContract = {
   id: string;
+  label: string;
   baseline: Partial<Omit<ProjectConfig, "projectDir" | "relativePath">>;
   config: Partial<Omit<ProjectConfig, "projectDir" | "relativePath">>;
   keys: string[];
@@ -22,24 +23,28 @@ type ProviderEnvContract = {
 const CONTRACTS: ProviderEnvContract[] = [
   {
     id: "better-auth",
+    label: "Better Auth",
     baseline: { auth: "none", database: "sqlite", orm: "drizzle" },
     config: { auth: "better-auth", database: "sqlite", orm: "drizzle" },
     keys: ["BETTER_AUTH_SECRET", "BETTER_AUTH_URL"],
   },
   {
     id: "stripe",
+    label: "Stripe",
     baseline: { auth: "better-auth", database: "sqlite", orm: "drizzle", payments: "none" },
     config: { auth: "better-auth", database: "sqlite", orm: "drizzle", payments: "stripe" },
     keys: ["VITE_STRIPE_PUBLISHABLE_KEY", "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"],
   },
   {
     id: "resend",
+    label: "Resend",
     baseline: { email: "none" },
     config: { email: "resend" },
     keys: ["RESEND_API_KEY", "RESEND_FROM_EMAIL"],
   },
   {
     id: "sentry",
+    label: "Sentry",
     baseline: { observability: "none" },
     config: { observability: "sentry" },
     keys: [
@@ -51,12 +56,14 @@ const CONTRACTS: ProviderEnvContract[] = [
   },
   {
     id: "upstash-redis",
+    label: "Upstash Redis",
     baseline: { caching: "none" },
     config: { caching: "upstash-redis" },
     keys: ["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN", "UPSTASH_REDIS_URL"],
   },
   {
     id: "s3",
+    label: "Amazon S3",
     baseline: { fileStorage: "none" },
     config: { fileStorage: "s3" },
     keys: [
@@ -68,6 +75,7 @@ const CONTRACTS: ProviderEnvContract[] = [
   },
   {
     id: "r2",
+    label: "Cloudflare R2",
     baseline: { fileStorage: "none" },
     config: { fileStorage: "r2" },
     keys: ["R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET_NAME"],
@@ -84,9 +92,25 @@ function envKeysForTree(tree: NonNullable<Awaited<ReturnType<typeof createVirtua
   );
 }
 
+function visibleEnvKeyRows(docs: string) {
+  return new Map(
+    docs.split("\n").flatMap((line) => {
+      const cells = line
+        .split("|")
+        .slice(1, -1)
+        .map((cell) => cell.trim());
+      if (cells.length !== 2 || /^-+$/.test(cells[0] ?? "")) return [];
+
+      const keys = [...(cells[1] ?? "").matchAll(/`([A-Z][A-Z0-9_]*)`/g)].map((match) => match[1]);
+      return keys.length > 0 ? ([[cells[0], keys]] as const) : [];
+    }),
+  );
+}
+
 describe("provider environment documentation", () => {
   it("matches exact generated keys for documented provider selections", async () => {
     const docs = readFileSync(ENV_DOCS_PATH, "utf8");
+    const visibleRows = visibleEnvKeyRows(docs);
     const results = await Promise.all(
       CONTRACTS.map(async (contract) => ({
         contract,
@@ -111,6 +135,9 @@ describe("provider environment documentation", () => {
       const providerKeys = [...generatedKeys].filter((key) => !baselineKeys.has(key)).sort();
 
       expect(docs).toContain(`{/* env-contract:${contract.id} ${contract.keys.join(",")} */}`);
+      expect(visibleRows.get(contract.label), `${contract.label} visible documentation`).toEqual(
+        contract.keys,
+      );
       expect(providerKeys, `${contract.id} generated-key delta`).toEqual([...contract.keys].sort());
     }
   });

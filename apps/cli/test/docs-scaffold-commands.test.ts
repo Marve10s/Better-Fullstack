@@ -10,6 +10,7 @@ const NATIVE_BUN = resolve(homedir(), ".bun", "bin", "bun");
 const BUN_EXECUTABLE =
   process.env.BFS_TEST_BUN_BIN || (existsSync(NATIVE_BUN) ? NATIVE_BUN : "bun");
 const CONTENT_ROOT = join(REPO_ROOT, "apps/web/content");
+const LOCALIZED_CONTENT_ROOT = join(CONTENT_ROOT, "i18n");
 const TEMP_ROOTS: string[] = [];
 const NON_SCAFFOLD_COMMANDS = new Set([
   "add",
@@ -44,6 +45,12 @@ type DocumentedCommand = {
   payload: string[];
 };
 
+type LocalizedContentEntry = {
+  body?: unknown;
+};
+
+type LocalizedContentBundle = Record<string, Record<string, LocalizedContentEntry>>;
+
 function walkContentFiles(root: string): string[] {
   return readdirSync(root)
     .flatMap((name) => {
@@ -63,6 +70,37 @@ function tokenize(command: string): string[] {
   }
 
   return tokens;
+}
+
+function hasPendingTranslation(source: string) {
+  const frontmatter = source.match(/^---\n([\s\S]*?)\n---/)?.[1] ?? "";
+  return /^translationStatus:\s*["']?pending["']?\s*$/m.test(frontmatter);
+}
+
+function localizedCommandSources() {
+  return readdirSync(LOCALIZED_CONTENT_ROOT)
+    .filter((name) => name.endsWith(".json"))
+    .flatMap((name) => {
+      const bundle = JSON.parse(
+        readFileSync(join(LOCALIZED_CONTENT_ROOT, name), "utf8"),
+      ) as LocalizedContentBundle;
+
+      return Object.entries(bundle).flatMap(([section, entries]) =>
+        Object.entries(entries).flatMap(([contentPath, entry]) => {
+          const canonicalPath = join(CONTENT_ROOT, section, contentPath);
+          if (
+            typeof entry.body !== "string" ||
+            !existsSync(canonicalPath) ||
+            hasPendingTranslation(readFileSync(canonicalPath, "utf8"))
+          ) {
+            return [];
+          }
+          return [
+            { source: `apps/web/content/i18n/${name}:${section}/${contentPath}`, body: entry.body },
+          ];
+        }),
+      );
+    });
 }
 
 function parseDocumentedCommand(
@@ -112,8 +150,15 @@ function extractDocumentedCommands(): DocumentedCommand[] {
   ];
   const commandPattern =
     /(?:npm|bun|pnpm|yarn)[ \t]+\S+[ \t]+better-fullstack@latest\b[^\n"<`]*|npx(?:[ \t]+\S+){0,2}[ \t]+create-better-fullstack@latest\b[^\n"<`]*/g;
-  const commands = files.flatMap((path) => {
-    const source = readFileSync(path, "utf8").replace(/\\\r?\n\s*/g, " ");
+  const sources = [
+    ...files.map((path) => ({
+      source: relative(REPO_ROOT, path),
+      body: readFileSync(path, "utf8"),
+    })),
+    ...localizedCommandSources(),
+  ];
+  const commands = sources.flatMap(({ source: sourceName, body }) => {
+    const source = body.replace(/\\\r?\n\s*/g, " ");
     return [...source.matchAll(commandPattern)].flatMap((match) => {
       const command = match[0].trim().replace(/[.,;:]$/, "");
       const parsed = parseDocumentedCommand(command);
@@ -122,7 +167,7 @@ function extractDocumentedCommands(): DocumentedCommand[] {
       const { launcher, payload } = parsed;
       if (payload[0].startsWith("[") || NON_SCAFFOLD_COMMANDS.has(payload[0])) return [];
       if (!payload.some((token) => token.startsWith("--"))) return [];
-      return [{ source: relative(REPO_ROOT, path), command, launcher, payload }];
+      return [{ source: sourceName, command, launcher, payload }];
     });
   });
 

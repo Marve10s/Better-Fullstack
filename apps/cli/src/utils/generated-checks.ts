@@ -6,7 +6,6 @@ import type { ProjectConfig, StackPart, StackPartEcosystem } from "../types";
 
 import { stackGraphToLegacyProjectConfigForEcosystem } from "../types";
 import { commandExists } from "./command-exists";
-import { readScaffoldManifest } from "./scaffold-manifest";
 
 export type GeneratedCheckCommand = {
   command: string;
@@ -171,11 +170,6 @@ export async function discoverGeneratedCheckTargets(
     ];
   }
 
-  const scaffoldManifest = await readScaffoldManifest(config.projectDir).catch(() => null);
-  const manifestPaths = Object.keys(scaffoldManifest?.hashes ?? {});
-  const manifestCoversPath = (targetPath: string | undefined) =>
-    targetPath !== undefined && manifestPaths.some((entry) => entry.startsWith(`${targetPath}/`));
-
   const targets: GeneratedCheckTarget[] = [];
   for (const part of primary) {
     const target: GeneratedCheckTarget = {
@@ -192,8 +186,6 @@ export async function discoverGeneratedCheckTargets(
         (await ecosystemManifestExists(config.projectDir, target.ecosystem))
       ) {
         target.projectDir = config.projectDir;
-      } else if (manifestPaths.length > 0 && !manifestCoversPath(part.targetPath)) {
-        continue;
       }
     }
     targets.push(target);

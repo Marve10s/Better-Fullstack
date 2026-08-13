@@ -3741,6 +3741,72 @@ describe("stack update planner", () => {
     expect(await pathExists(join(projectDir, "MIGRATION.md"))).toBe(false);
   });
 
+  it("records the caller's add operation independently of changed fields", async () => {
+    const root = await makeTempRoot("bfs-stack-update-add-operation-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir));
+
+    const result = await applyStackUpdate(projectDir, { email: "resend" }, { operation: "add" });
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.lifecycle.operation).toBe("add");
+
+    const manifest = await readScaffoldManifest(projectDir);
+    expect(manifest?.history.at(-1)?.operation).toBe("add");
+  });
+
+  it("restores every bound preimage when stack apply fails before manifest refresh", async () => {
+    const root = await makeTempRoot("bfs-stack-update-rollback-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir));
+    const plan = await planStackUpdate(projectDir, { email: "resend" });
+    expect(plan.success).toBe(true);
+    if (!plan.success) return;
+    const boundPaths = [
+      ...plan.operations.map((operation) => operation.path),
+      "bts.jsonc",
+      "bts.lock.json",
+    ];
+    const before = new Map(
+      await Promise.all(
+        boundPaths.map(
+          async (relativePath) =>
+            [
+              relativePath,
+              await readFile(join(projectDir, relativePath)).catch(() => null),
+            ] as const,
+        ),
+      ),
+    );
+
+    const result = await applyStackUpdate(
+      projectDir,
+      { email: "resend" },
+      {
+        beforeManifestRefresh: () => {
+          throw new Error("injected apply failure");
+        },
+      },
+    );
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toContain("injected apply failure");
+      expect(result.lifecycle?.status).toBe("rolled-back");
+    }
+    const after = new Map(
+      await Promise.all(
+        boundPaths.map(
+          async (relativePath) =>
+            [
+              relativePath,
+              await readFile(join(projectDir, relativePath)).catch(() => null),
+            ] as const,
+        ),
+      ),
+    );
+    expect(after).toEqual(before);
+  });
+
   it("does not gate additive (none -> X) stack additions", async () => {
     const root = await makeTempRoot("bfs-stack-update-arch-add-none-");
     const projectDir = join(root, "app");

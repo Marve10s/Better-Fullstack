@@ -64,17 +64,17 @@ Every generated project includes:
 
 ## After the first scaffold
 
-| What changed?                                                | Use                                                                                  |
-| ------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
-| You want a new capability or stack selection                 | `add --dry-run`, then `add` after review.                                            |
-| The selected stack is unchanged, but templates have advanced | `update`; recover, review, then apply with its exact token and risk acknowledgement. |
-| You want a supported resource generated inside the project   | `gen ... --dry-run`, then `gen`.                                                     |
-| You installed dependencies or changed environment values     | `check`, plus the project's own tests.                                               |
+| What changed?                                                | Use                                                                              |
+| ------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| You want a new capability or stack selection                 | `add --dry-run`, then `add` after review.                                        |
+| The selected stack is unchanged, but templates have advanced | `update`; review, then apply with its exact token and keep its recovery command. |
+| You want a supported resource generated inside the project   | `gen ... --dry-run`, then `gen`.                                                 |
+| You installed dependencies or changed environment values     | `check`, plus the project's own tests.                                           |
 
-The [Project Lifecycle](/docs/getting-started/lifecycle/) explains baselines, independent recovery
-points, exact review tokens, the destructive manifest-v1 acknowledgement, and absent built-in
-rollback. The [Recipes](/docs/recipes/) pair complete scaffold commands with install, run, and
-verification steps.
+The [Project Lifecycle](/docs/getting-started/lifecycle/) explains manifest-v2 provenance, exact
+review tokens, transactional rollback, recovery commands, and unverified migrated/adopted lineage.
+The [Recipes](/docs/recipes/) pair complete scaffold commands with install, run, and verification
+steps.
 
 ## Next
 
