@@ -52,7 +52,6 @@ const uk_stackcopy1 = /** @type {(inputs: Stackcopy1Inputs) => LocalizedString} 
 */
 const stackcopy1 = /** @type {((inputs?: Stackcopy1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Stackcopy1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_stackcopy1(inputs)
 	if (locale === "es") return es_stackcopy1(inputs)
 	if (locale === "zh") return zh_stackcopy1(inputs)
 	if (locale === "ja") return ja_stackcopy1(inputs)
@@ -60,6 +59,7 @@ const stackcopy1 = /** @type {((inputs?: Stackcopy1Inputs, options?: { locale?: 
 	if (locale === "zh-Hant") return zh_hant1_stackcopy1(inputs)
 	if (locale === "de") return de_stackcopy1(inputs)
 	if (locale === "fr") return fr_stackcopy1(inputs)
-	return uk_stackcopy1(inputs)
+	if (locale === "uk") return uk_stackcopy1(inputs)
+	return en_stackcopy1(inputs)
 });
 export { stackcopy1 as "stackCopy" }

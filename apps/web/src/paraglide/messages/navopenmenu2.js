@@ -52,7 +52,6 @@ const uk_navopenmenu2 = /** @type {(inputs: Navopenmenu2Inputs) => LocalizedStri
 */
 const navopenmenu2 = /** @type {((inputs?: Navopenmenu2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navopenmenu2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_navopenmenu2(inputs)
 	if (locale === "es") return es_navopenmenu2(inputs)
 	if (locale === "zh") return zh_navopenmenu2(inputs)
 	if (locale === "ja") return ja_navopenmenu2(inputs)
@@ -60,6 +59,7 @@ const navopenmenu2 = /** @type {((inputs?: Navopenmenu2Inputs, options?: { local
 	if (locale === "zh-Hant") return zh_hant1_navopenmenu2(inputs)
 	if (locale === "de") return de_navopenmenu2(inputs)
 	if (locale === "fr") return fr_navopenmenu2(inputs)
-	return uk_navopenmenu2(inputs)
+	if (locale === "uk") return uk_navopenmenu2(inputs)
+	return en_navopenmenu2(inputs)
 });
 export { navopenmenu2 as "navOpenMenu" }

@@ -16,7 +16,10 @@ projects, and safely evolve existing projects.
   yarn="yarn dlx create-better-fullstack@latest mcp"
 />
 
-The server uses stdio transport. Configure your MCP client to launch the command and communicate over standard input/output.
+The server uses stdio transport and supports both the 2025 MCP protocol family and MCP 2026-07-28.
+Modern clients can use the stateless-core request model, while older clients continue through the
+legacy initialization flow. Configure your MCP client to launch the command and communicate over
+standard input/output.
 
 ## Client examples
 

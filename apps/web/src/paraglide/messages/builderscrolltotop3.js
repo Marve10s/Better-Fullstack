@@ -52,7 +52,6 @@ const uk_builderscrolltotop3 = /** @type {(inputs: Builderscrolltotop3Inputs) =>
 */
 const builderscrolltotop3 = /** @type {((inputs?: Builderscrolltotop3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderscrolltotop3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderscrolltotop3(inputs)
 	if (locale === "es") return es_builderscrolltotop3(inputs)
 	if (locale === "zh") return zh_builderscrolltotop3(inputs)
 	if (locale === "ja") return ja_builderscrolltotop3(inputs)
@@ -60,6 +59,7 @@ const builderscrolltotop3 = /** @type {((inputs?: Builderscrolltotop3Inputs, opt
 	if (locale === "zh-Hant") return zh_hant1_builderscrolltotop3(inputs)
 	if (locale === "de") return de_builderscrolltotop3(inputs)
 	if (locale === "fr") return fr_builderscrolltotop3(inputs)
-	return uk_builderscrolltotop3(inputs)
+	if (locale === "uk") return uk_builderscrolltotop3(inputs)
+	return en_builderscrolltotop3(inputs)
 });
 export { builderscrolltotop3 as "builderScrollToTop" }

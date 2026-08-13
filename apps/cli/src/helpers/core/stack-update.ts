@@ -549,8 +549,11 @@ function buildMigrationSteps(changes: ArchitectureChange[]): string[] {
   return steps;
 }
 
-async function writeMigrationChecklist(projectDir: string, plan: StackUpdatePlan): Promise<void> {
-  if (plan.architectureChanges.length === 0 || plan.migrationSteps.length === 0) return;
+async function buildMigrationChecklistContent(
+  projectDir: string,
+  plan: StackUpdatePlan,
+): Promise<string | null> {
+  if (plan.architectureChanges.length === 0 || plan.migrationSteps.length === 0) return null;
   const migrationPath = path.join(projectDir, "MIGRATION.md");
   const timestamp = new Date().toISOString();
   const swaps = plan.architectureChanges
@@ -568,10 +571,9 @@ async function writeMigrationChecklist(projectDir: string, plan: StackUpdatePlan
 
   if (await fs.pathExists(migrationPath)) {
     const existing = (await fs.readFile(migrationPath, "utf-8")).trimEnd();
-    await fs.writeFile(migrationPath, `${existing}\n\n${section}\n`, "utf-8");
-  } else {
-    await fs.writeFile(migrationPath, `# Migration checklist\n\n${section}\n`, "utf-8");
+    return `${existing}\n\n${section}\n`;
   }
+  return `# Migration checklist\n\n${section}\n`;
 }
 
 function getDefaultDatabaseForDbSetup(
@@ -1733,25 +1735,29 @@ export async function applyStackUpdate(
       );
     }
 
-    await Promise.all(
-      plan.operations
-        .filter((operation) => operation.writeMode === "content")
-        .map(async (operation) => {
-          markProjectTransactionWrite(
-            transaction,
-            operation.path,
-            hashContent(Buffer.from(operation.content, "utf-8")),
-          );
-          const targetPath = path.join(plan.projectDir, operation.path);
-          await fs.ensureDir(path.dirname(targetPath));
-          await fs.writeFile(targetPath, operation.content, "utf-8");
-        }),
-    );
+    for (const operation of plan.operations.filter(
+      (candidate) => candidate.writeMode === "content",
+    )) {
+      markProjectTransactionWrite(
+        transaction,
+        operation.path,
+        hashContent(Buffer.from(operation.content, "utf-8")),
+      );
+      const targetPath = path.join(plan.projectDir, operation.path);
+      // oxlint-disable-next-line no-await-in-loop -- rollback must wait for each bound write
+      await fs.ensureDir(path.dirname(targetPath));
+      // oxlint-disable-next-line no-await-in-loop -- rollback must wait for each bound write
+      await fs.writeFile(targetPath, operation.content, "utf-8");
+    }
 
-    await writeMigrationChecklist(plan.projectDir, plan);
-    if (plan.architectureChanges.length > 0) {
-      const migrationBytes = await fs.readFile(path.join(plan.projectDir, "MIGRATION.md"));
-      markProjectTransactionWrite(transaction, "MIGRATION.md", hashContent(migrationBytes));
+    const migrationContent = await buildMigrationChecklistContent(plan.projectDir, plan);
+    if (migrationContent !== null) {
+      markProjectTransactionWrite(
+        transaction,
+        "MIGRATION.md",
+        hashContent(Buffer.from(migrationContent, "utf-8")),
+      );
+      await fs.writeFile(path.join(plan.projectDir, "MIGRATION.md"), migrationContent, "utf-8");
     }
     await writeBtsConfig(proposedConfig, {
       version: plan.proposedConfig.version,

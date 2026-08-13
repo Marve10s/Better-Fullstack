@@ -86,4 +86,13 @@ describe("generated project install/build proof matrix", () => {
     expect(generatorBuild).toBeGreaterThan(typesBuild);
     expect(lifecycleTests).toBeGreaterThan(generatorBuild);
   });
+
+  it("runs when CLI package metadata changes on pull requests and development pushes", async () => {
+    const workflow = await readFile(
+      new URL("../.github/workflows/generated-project-proof.yaml", import.meta.url),
+      "utf8",
+    );
+
+    expect(workflow.match(/- "apps\/cli\/package\.json"/g)).toHaveLength(2);
+  });
 });

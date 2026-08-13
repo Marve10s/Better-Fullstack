@@ -52,7 +52,6 @@ const uk_homelayerbackendframeworks3 = /** @type {(inputs: Homelayerbackendframe
 */
 const homelayerbackendframeworks3 = /** @type {((inputs?: Homelayerbackendframeworks3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homelayerbackendframeworks3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_homelayerbackendframeworks3(inputs)
 	if (locale === "es") return es_homelayerbackendframeworks3(inputs)
 	if (locale === "zh") return zh_homelayerbackendframeworks3(inputs)
 	if (locale === "ja") return ja_homelayerbackendframeworks3(inputs)
@@ -60,6 +59,7 @@ const homelayerbackendframeworks3 = /** @type {((inputs?: Homelayerbackendframew
 	if (locale === "zh-Hant") return zh_hant1_homelayerbackendframeworks3(inputs)
 	if (locale === "de") return de_homelayerbackendframeworks3(inputs)
 	if (locale === "fr") return fr_homelayerbackendframeworks3(inputs)
-	return uk_homelayerbackendframeworks3(inputs)
+	if (locale === "uk") return uk_homelayerbackendframeworks3(inputs)
+	return en_homelayerbackendframeworks3(inputs)
 });
 export { homelayerbackendframeworks3 as "homeLayerBackendFrameworks" }

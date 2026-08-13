@@ -52,7 +52,6 @@ const uk_builderselectfiletoview4 = /** @type {(inputs: Builderselectfiletoview4
 */
 const builderselectfiletoview4 = /** @type {((inputs?: Builderselectfiletoview4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderselectfiletoview4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderselectfiletoview4(inputs)
 	if (locale === "es") return es_builderselectfiletoview4(inputs)
 	if (locale === "zh") return zh_builderselectfiletoview4(inputs)
 	if (locale === "ja") return ja_builderselectfiletoview4(inputs)
@@ -60,6 +59,7 @@ const builderselectfiletoview4 = /** @type {((inputs?: Builderselectfiletoview4I
 	if (locale === "zh-Hant") return zh_hant1_builderselectfiletoview4(inputs)
 	if (locale === "de") return de_builderselectfiletoview4(inputs)
 	if (locale === "fr") return fr_builderselectfiletoview4(inputs)
-	return uk_builderselectfiletoview4(inputs)
+	if (locale === "uk") return uk_builderselectfiletoview4(inputs)
+	return en_builderselectfiletoview4(inputs)
 });
 export { builderselectfiletoview4 as "builderSelectFileToView" }

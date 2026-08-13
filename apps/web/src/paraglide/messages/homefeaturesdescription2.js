@@ -52,7 +52,6 @@ const uk_homefeaturesdescription2 = /** @type {(inputs: Homefeaturesdescription2
 */
 const homefeaturesdescription2 = /** @type {((inputs: Homefeaturesdescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homefeaturesdescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_homefeaturesdescription2(inputs)
 	if (locale === "es") return es_homefeaturesdescription2(inputs)
 	if (locale === "zh") return zh_homefeaturesdescription2(inputs)
 	if (locale === "ja") return ja_homefeaturesdescription2(inputs)
@@ -60,6 +59,7 @@ const homefeaturesdescription2 = /** @type {((inputs: Homefeaturesdescription2In
 	if (locale === "zh-Hant") return zh_hant1_homefeaturesdescription2(inputs)
 	if (locale === "de") return de_homefeaturesdescription2(inputs)
 	if (locale === "fr") return fr_homefeaturesdescription2(inputs)
-	return uk_homefeaturesdescription2(inputs)
+	if (locale === "uk") return uk_homefeaturesdescription2(inputs)
+	return en_homefeaturesdescription2(inputs)
 });
 export { homefeaturesdescription2 as "homeFeaturesDescription" }

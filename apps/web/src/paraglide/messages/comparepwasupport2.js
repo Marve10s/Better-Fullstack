@@ -52,7 +52,6 @@ const uk_comparepwasupport2 = /** @type {(inputs: Comparepwasupport2Inputs) => L
 */
 const comparepwasupport2 = /** @type {((inputs?: Comparepwasupport2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparepwasupport2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_comparepwasupport2(inputs)
 	if (locale === "es") return es_comparepwasupport2(inputs)
 	if (locale === "zh") return zh_comparepwasupport2(inputs)
 	if (locale === "ja") return ja_comparepwasupport2(inputs)
@@ -60,6 +59,7 @@ const comparepwasupport2 = /** @type {((inputs?: Comparepwasupport2Inputs, optio
 	if (locale === "zh-Hant") return zh_hant1_comparepwasupport2(inputs)
 	if (locale === "de") return de_comparepwasupport2(inputs)
 	if (locale === "fr") return fr_comparepwasupport2(inputs)
-	return uk_comparepwasupport2(inputs)
+	if (locale === "uk") return uk_comparepwasupport2(inputs)
+	return en_comparepwasupport2(inputs)
 });
 export { comparepwasupport2 as "comparePwaSupport" }

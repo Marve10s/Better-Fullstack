@@ -41,6 +41,7 @@ import {
 import { type BuilderMode, useBuilderMode } from "@/lib/builder-mode-bridge";
 import { LOCALE_LABELS } from "@/lib/i18n/locales";
 import { isStackShareSlug } from "@/lib/stack-share-slugs";
+import { SITE_NAME } from "@/lib/seo";
 import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages.js";
@@ -547,14 +548,14 @@ export function Navbar() {
           <Link
             to="/"
             className="flex items-center font-mono text-sm font-bold tracking-[-0.02em] text-foreground sm:text-base"
-            aria-label={m.navHome()}
+            aria-label={`${SITE_NAME} — ${m.navHome()}`}
           >
-            <span className="sm:hidden">
-              b<span className="text-muted-foreground">/</span>f
-            </span>
-            <span className="hidden sm:inline">
-              better<span className="text-muted-foreground">/</span>fullstack
-            </span>
+            <span
+              aria-hidden
+              data-brand-short="b/f"
+              data-brand-full="better/fullstack"
+              className="before:content-[attr(data-brand-short)] sm:before:content-[attr(data-brand-full)]"
+            />
           </Link>
           {!onBuilder && (
             <>

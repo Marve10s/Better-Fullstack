@@ -52,7 +52,6 @@ const uk_buildernosearchresults3 = /** @type {(inputs: Buildernosearchresults3In
 */
 const buildernosearchresults3 = /** @type {((inputs: Buildernosearchresults3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildernosearchresults3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_buildernosearchresults3(inputs)
 	if (locale === "es") return es_buildernosearchresults3(inputs)
 	if (locale === "zh") return zh_buildernosearchresults3(inputs)
 	if (locale === "ja") return ja_buildernosearchresults3(inputs)
@@ -60,6 +59,7 @@ const buildernosearchresults3 = /** @type {((inputs: Buildernosearchresults3Inpu
 	if (locale === "zh-Hant") return zh_hant1_buildernosearchresults3(inputs)
 	if (locale === "de") return de_buildernosearchresults3(inputs)
 	if (locale === "fr") return fr_buildernosearchresults3(inputs)
-	return uk_buildernosearchresults3(inputs)
+	if (locale === "uk") return uk_buildernosearchresults3(inputs)
+	return en_buildernosearchresults3(inputs)
 });
 export { buildernosearchresults3 as "builderNoSearchResults" }

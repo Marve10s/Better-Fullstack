@@ -52,7 +52,6 @@ const uk_homeseotitle2 = /** @type {(inputs: Homeseotitle2Inputs) => LocalizedSt
 */
 const homeseotitle2 = /** @type {((inputs?: Homeseotitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homeseotitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_homeseotitle2(inputs)
 	if (locale === "es") return es_homeseotitle2(inputs)
 	if (locale === "zh") return zh_homeseotitle2(inputs)
 	if (locale === "ja") return ja_homeseotitle2(inputs)
@@ -60,6 +59,7 @@ const homeseotitle2 = /** @type {((inputs?: Homeseotitle2Inputs, options?: { loc
 	if (locale === "zh-Hant") return zh_hant1_homeseotitle2(inputs)
 	if (locale === "de") return de_homeseotitle2(inputs)
 	if (locale === "fr") return fr_homeseotitle2(inputs)
-	return uk_homeseotitle2(inputs)
+	if (locale === "uk") return uk_homeseotitle2(inputs)
+	return en_homeseotitle2(inputs)
 });
 export { homeseotitle2 as "homeSeoTitle" }

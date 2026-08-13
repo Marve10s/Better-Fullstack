@@ -52,7 +52,6 @@ const uk_campaignstepeditcopy3 = /** @type {(inputs: Campaignstepeditcopy3Inputs
 */
 const campaignstepeditcopy3 = /** @type {((inputs?: Campaignstepeditcopy3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Campaignstepeditcopy3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_campaignstepeditcopy3(inputs)
 	if (locale === "es") return es_campaignstepeditcopy3(inputs)
 	if (locale === "zh") return zh_campaignstepeditcopy3(inputs)
 	if (locale === "ja") return ja_campaignstepeditcopy3(inputs)
@@ -60,6 +59,7 @@ const campaignstepeditcopy3 = /** @type {((inputs?: Campaignstepeditcopy3Inputs,
 	if (locale === "zh-Hant") return zh_hant1_campaignstepeditcopy3(inputs)
 	if (locale === "de") return de_campaignstepeditcopy3(inputs)
 	if (locale === "fr") return fr_campaignstepeditcopy3(inputs)
-	return uk_campaignstepeditcopy3(inputs)
+	if (locale === "uk") return uk_campaignstepeditcopy3(inputs)
+	return en_campaignstepeditcopy3(inputs)
 });
 export { campaignstepeditcopy3 as "campaignStepEditCopy" }

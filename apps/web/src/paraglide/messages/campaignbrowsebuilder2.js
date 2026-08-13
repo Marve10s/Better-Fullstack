@@ -52,7 +52,6 @@ const uk_campaignbrowsebuilder2 = /** @type {(inputs: Campaignbrowsebuilder2Inpu
 */
 const campaignbrowsebuilder2 = /** @type {((inputs?: Campaignbrowsebuilder2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Campaignbrowsebuilder2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_campaignbrowsebuilder2(inputs)
 	if (locale === "es") return es_campaignbrowsebuilder2(inputs)
 	if (locale === "zh") return zh_campaignbrowsebuilder2(inputs)
 	if (locale === "ja") return ja_campaignbrowsebuilder2(inputs)
@@ -60,6 +59,7 @@ const campaignbrowsebuilder2 = /** @type {((inputs?: Campaignbrowsebuilder2Input
 	if (locale === "zh-Hant") return zh_hant1_campaignbrowsebuilder2(inputs)
 	if (locale === "de") return de_campaignbrowsebuilder2(inputs)
 	if (locale === "fr") return fr_campaignbrowsebuilder2(inputs)
-	return uk_campaignbrowsebuilder2(inputs)
+	if (locale === "uk") return uk_campaignbrowsebuilder2(inputs)
+	return en_campaignbrowsebuilder2(inputs)
 });
 export { campaignbrowsebuilder2 as "campaignBrowseBuilder" }

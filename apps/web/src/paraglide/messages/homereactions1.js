@@ -52,7 +52,6 @@ const uk_homereactions1 = /** @type {(inputs: Homereactions1Inputs) => Localized
 */
 const homereactions1 = /** @type {((inputs?: Homereactions1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homereactions1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_homereactions1(inputs)
 	if (locale === "es") return es_homereactions1(inputs)
 	if (locale === "zh") return zh_homereactions1(inputs)
 	if (locale === "ja") return ja_homereactions1(inputs)
@@ -60,6 +59,7 @@ const homereactions1 = /** @type {((inputs?: Homereactions1Inputs, options?: { l
 	if (locale === "zh-Hant") return zh_hant1_homereactions1(inputs)
 	if (locale === "de") return de_homereactions1(inputs)
 	if (locale === "fr") return fr_homereactions1(inputs)
-	return uk_homereactions1(inputs)
+	if (locale === "uk") return uk_homereactions1(inputs)
+	return en_homereactions1(inputs)
 });
 export { homereactions1 as "homeReactions" }

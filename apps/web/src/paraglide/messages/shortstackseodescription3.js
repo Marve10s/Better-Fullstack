@@ -52,7 +52,6 @@ const uk_shortstackseodescription3 = /** @type {(inputs: Shortstackseodescriptio
 */
 const shortstackseodescription3 = /** @type {((inputs?: Shortstackseodescription3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Shortstackseodescription3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_shortstackseodescription3(inputs)
 	if (locale === "es") return es_shortstackseodescription3(inputs)
 	if (locale === "zh") return zh_shortstackseodescription3(inputs)
 	if (locale === "ja") return ja_shortstackseodescription3(inputs)
@@ -60,6 +59,7 @@ const shortstackseodescription3 = /** @type {((inputs?: Shortstackseodescription
 	if (locale === "zh-Hant") return zh_hant1_shortstackseodescription3(inputs)
 	if (locale === "de") return de_shortstackseodescription3(inputs)
 	if (locale === "fr") return fr_shortstackseodescription3(inputs)
-	return uk_shortstackseodescription3(inputs)
+	if (locale === "uk") return uk_shortstackseodescription3(inputs)
+	return en_shortstackseodescription3(inputs)
 });
 export { shortstackseodescription3 as "shortStackSeoDescription" }

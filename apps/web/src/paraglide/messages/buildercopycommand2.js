@@ -52,7 +52,6 @@ const uk_buildercopycommand2 = /** @type {(inputs: Buildercopycommand2Inputs) =>
 */
 const buildercopycommand2 = /** @type {((inputs?: Buildercopycommand2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildercopycommand2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_buildercopycommand2(inputs)
 	if (locale === "es") return es_buildercopycommand2(inputs)
 	if (locale === "zh") return zh_buildercopycommand2(inputs)
 	if (locale === "ja") return ja_buildercopycommand2(inputs)
@@ -60,6 +59,7 @@ const buildercopycommand2 = /** @type {((inputs?: Buildercopycommand2Inputs, opt
 	if (locale === "zh-Hant") return zh_hant1_buildercopycommand2(inputs)
 	if (locale === "de") return de_buildercopycommand2(inputs)
 	if (locale === "fr") return fr_buildercopycommand2(inputs)
-	return uk_buildercopycommand2(inputs)
+	if (locale === "uk") return uk_buildercopycommand2(inputs)
+	return en_buildercopycommand2(inputs)
 });
 export { buildercopycommand2 as "builderCopyCommand" }

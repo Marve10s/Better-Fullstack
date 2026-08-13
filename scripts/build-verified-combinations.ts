@@ -204,6 +204,7 @@ type EvidenceStatus = "pass" | "partial-pass" | "fail" | "matrix-only" | "config
 type VerifiedClaimSummary = {
   generatedAt: string;
   expiresAt: string;
+  gitHead?: string;
   expectedTotals: {
     releaseGuard: number;
     publishedPackage: number;
@@ -1100,6 +1101,7 @@ async function buildVerifiedClaimSummary(
   return {
     generatedAt,
     expiresAt: new Date(expiryBasis + SOURCE_EVIDENCE_MAX_AGE_MS).toISOString(),
+    gitHead: currentGitHead,
     expectedTotals: {
       releaseGuard: releaseGuardCommands.length,
       publishedPackage: REQUIRED_MANAGERS.length,
@@ -1202,6 +1204,7 @@ export type VerifiedCombinationActionLink = {
 export type VerifiedCombinationSummary = {
   generatedAt: string;
   expiresAt: string;
+  gitHead?: string;
   expectedTotals: {
     releaseGuard: number;
     publishedPackage: number;

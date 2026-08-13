@@ -52,7 +52,6 @@ const uk_campaigncurateddescription2 = /** @type {(inputs: Campaigncurateddescri
 */
 const campaigncurateddescription2 = /** @type {((inputs?: Campaigncurateddescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Campaigncurateddescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_campaigncurateddescription2(inputs)
 	if (locale === "es") return es_campaigncurateddescription2(inputs)
 	if (locale === "zh") return zh_campaigncurateddescription2(inputs)
 	if (locale === "ja") return ja_campaigncurateddescription2(inputs)
@@ -60,6 +59,7 @@ const campaigncurateddescription2 = /** @type {((inputs?: Campaigncurateddescrip
 	if (locale === "zh-Hant") return zh_hant1_campaigncurateddescription2(inputs)
 	if (locale === "de") return de_campaigncurateddescription2(inputs)
 	if (locale === "fr") return fr_campaigncurateddescription2(inputs)
-	return uk_campaigncurateddescription2(inputs)
+	if (locale === "uk") return uk_campaigncurateddescription2(inputs)
+	return en_campaigncurateddescription2(inputs)
 });
 export { campaigncurateddescription2 as "campaignCuratedDescription" }

@@ -52,7 +52,6 @@ const uk_footerinspiredby2 = /** @type {(inputs: Footerinspiredby2Inputs) => Loc
 */
 const footerinspiredby2 = /** @type {((inputs?: Footerinspiredby2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Footerinspiredby2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_footerinspiredby2(inputs)
 	if (locale === "es") return es_footerinspiredby2(inputs)
 	if (locale === "zh") return zh_footerinspiredby2(inputs)
 	if (locale === "ja") return ja_footerinspiredby2(inputs)
@@ -60,6 +59,7 @@ const footerinspiredby2 = /** @type {((inputs?: Footerinspiredby2Inputs, options
 	if (locale === "zh-Hant") return zh_hant1_footerinspiredby2(inputs)
 	if (locale === "de") return de_footerinspiredby2(inputs)
 	if (locale === "fr") return fr_footerinspiredby2(inputs)
-	return uk_footerinspiredby2(inputs)
+	if (locale === "uk") return uk_footerinspiredby2(inputs)
+	return en_footerinspiredby2(inputs)
 });
 export { footerinspiredby2 as "footerInspiredBy" }

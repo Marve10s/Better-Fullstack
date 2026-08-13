@@ -52,7 +52,6 @@ const uk_navcreationmethod2 = /** @type {(inputs: Navcreationmethod2Inputs) => L
 */
 const navcreationmethod2 = /** @type {((inputs?: Navcreationmethod2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navcreationmethod2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_navcreationmethod2(inputs)
 	if (locale === "es") return es_navcreationmethod2(inputs)
 	if (locale === "zh") return zh_navcreationmethod2(inputs)
 	if (locale === "ja") return ja_navcreationmethod2(inputs)
@@ -60,6 +59,7 @@ const navcreationmethod2 = /** @type {((inputs?: Navcreationmethod2Inputs, optio
 	if (locale === "zh-Hant") return zh_hant1_navcreationmethod2(inputs)
 	if (locale === "de") return de_navcreationmethod2(inputs)
 	if (locale === "fr") return fr_navcreationmethod2(inputs)
-	return uk_navcreationmethod2(inputs)
+	if (locale === "uk") return uk_navcreationmethod2(inputs)
+	return en_navcreationmethod2(inputs)
 });
 export { navcreationmethod2 as "navCreationMethod" }

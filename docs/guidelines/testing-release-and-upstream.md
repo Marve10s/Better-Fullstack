@@ -96,4 +96,4 @@ The report classifies likely backport candidates into `reliability`, `dependency
    - `cd apps/web && bun run build`
 5. Open focused PRs by theme (stability, commands, web parity, etc.).
 
-Use `docs/plans/README.md` as the stable entry point for current planning documents.
+Use `docs/projects/README.md` as the stable entry point for current project documents.

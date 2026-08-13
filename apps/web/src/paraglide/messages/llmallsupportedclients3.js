@@ -52,7 +52,6 @@ const uk_llmallsupportedclients3 = /** @type {(inputs: Llmallsupportedclients3In
 */
 const llmallsupportedclients3 = /** @type {((inputs?: Llmallsupportedclients3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmallsupportedclients3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_llmallsupportedclients3(inputs)
 	if (locale === "es") return es_llmallsupportedclients3(inputs)
 	if (locale === "zh") return zh_llmallsupportedclients3(inputs)
 	if (locale === "ja") return ja_llmallsupportedclients3(inputs)
@@ -60,6 +59,7 @@ const llmallsupportedclients3 = /** @type {((inputs?: Llmallsupportedclients3Inp
 	if (locale === "zh-Hant") return zh_hant1_llmallsupportedclients3(inputs)
 	if (locale === "de") return de_llmallsupportedclients3(inputs)
 	if (locale === "fr") return fr_llmallsupportedclients3(inputs)
-	return uk_llmallsupportedclients3(inputs)
+	if (locale === "uk") return uk_llmallsupportedclients3(inputs)
+	return en_llmallsupportedclients3(inputs)
 });
 export { llmallsupportedclients3 as "llmAllSupportedClients" }

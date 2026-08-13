@@ -52,7 +52,6 @@ const uk_mcptoolstitlea3 = /** @type {(inputs: Mcptoolstitlea3Inputs) => Localiz
 */
 const mcptoolstitlea3 = /** @type {((inputs?: Mcptoolstitlea3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcptoolstitlea3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_mcptoolstitlea3(inputs)
 	if (locale === "es") return es_mcptoolstitlea3(inputs)
 	if (locale === "zh") return zh_mcptoolstitlea3(inputs)
 	if (locale === "ja") return ja_mcptoolstitlea3(inputs)
@@ -60,6 +59,7 @@ const mcptoolstitlea3 = /** @type {((inputs?: Mcptoolstitlea3Inputs, options?: {
 	if (locale === "zh-Hant") return zh_hant1_mcptoolstitlea3(inputs)
 	if (locale === "de") return de_mcptoolstitlea3(inputs)
 	if (locale === "fr") return fr_mcptoolstitlea3(inputs)
-	return uk_mcptoolstitlea3(inputs)
+	if (locale === "uk") return uk_mcptoolstitlea3(inputs)
+	return en_mcptoolstitlea3(inputs)
 });
 export { mcptoolstitlea3 as "mcpToolsTitleA" }

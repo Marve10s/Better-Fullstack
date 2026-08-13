@@ -52,7 +52,6 @@ const uk_mcptipfrontendarray3 = /** @type {(inputs: Mcptipfrontendarray3Inputs) 
 */
 const mcptipfrontendarray3 = /** @type {((inputs?: Mcptipfrontendarray3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcptipfrontendarray3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_mcptipfrontendarray3(inputs)
 	if (locale === "es") return es_mcptipfrontendarray3(inputs)
 	if (locale === "zh") return zh_mcptipfrontendarray3(inputs)
 	if (locale === "ja") return ja_mcptipfrontendarray3(inputs)
@@ -60,6 +59,7 @@ const mcptipfrontendarray3 = /** @type {((inputs?: Mcptipfrontendarray3Inputs, o
 	if (locale === "zh-Hant") return zh_hant1_mcptipfrontendarray3(inputs)
 	if (locale === "de") return de_mcptipfrontendarray3(inputs)
 	if (locale === "fr") return fr_mcptipfrontendarray3(inputs)
-	return uk_mcptipfrontendarray3(inputs)
+	if (locale === "uk") return uk_mcptipfrontendarray3(inputs)
+	return en_mcptipfrontendarray3(inputs)
 });
 export { mcptipfrontendarray3 as "mcpTipFrontendArray" }

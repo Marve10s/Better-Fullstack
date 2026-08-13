@@ -52,7 +52,6 @@ const uk_mcpworkflowschemanote3 = /** @type {(inputs: Mcpworkflowschemanote3Inpu
 */
 const mcpworkflowschemanote3 = /** @type {((inputs?: Mcpworkflowschemanote3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpworkflowschemanote3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_mcpworkflowschemanote3(inputs)
 	if (locale === "es") return es_mcpworkflowschemanote3(inputs)
 	if (locale === "zh") return zh_mcpworkflowschemanote3(inputs)
 	if (locale === "ja") return ja_mcpworkflowschemanote3(inputs)
@@ -60,6 +59,7 @@ const mcpworkflowschemanote3 = /** @type {((inputs?: Mcpworkflowschemanote3Input
 	if (locale === "zh-Hant") return zh_hant1_mcpworkflowschemanote3(inputs)
 	if (locale === "de") return de_mcpworkflowschemanote3(inputs)
 	if (locale === "fr") return fr_mcpworkflowschemanote3(inputs)
-	return uk_mcpworkflowschemanote3(inputs)
+	if (locale === "uk") return uk_mcpworkflowschemanote3(inputs)
+	return en_mcpworkflowschemanote3(inputs)
 });
 export { mcpworkflowschemanote3 as "mcpWorkflowSchemaNote" }

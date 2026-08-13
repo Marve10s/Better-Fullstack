@@ -52,7 +52,6 @@ const uk_campaignnosignup2 = /** @type {(inputs: Campaignnosignup2Inputs) => Loc
 */
 const campaignnosignup2 = /** @type {((inputs?: Campaignnosignup2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Campaignnosignup2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_campaignnosignup2(inputs)
 	if (locale === "es") return es_campaignnosignup2(inputs)
 	if (locale === "zh") return zh_campaignnosignup2(inputs)
 	if (locale === "ja") return ja_campaignnosignup2(inputs)
@@ -60,6 +59,7 @@ const campaignnosignup2 = /** @type {((inputs?: Campaignnosignup2Inputs, options
 	if (locale === "zh-Hant") return zh_hant1_campaignnosignup2(inputs)
 	if (locale === "de") return de_campaignnosignup2(inputs)
 	if (locale === "fr") return fr_campaignnosignup2(inputs)
-	return uk_campaignnosignup2(inputs)
+	if (locale === "uk") return uk_campaignnosignup2(inputs)
+	return en_campaignnosignup2(inputs)
 });
 export { campaignnosignup2 as "campaignNoSignup" }

@@ -52,7 +52,6 @@ const uk_runctatitle2 = /** @type {(inputs: Runctatitle2Inputs) => LocalizedStri
 */
 const runctatitle2 = /** @type {((inputs?: Runctatitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runctatitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_runctatitle2(inputs)
 	if (locale === "es") return es_runctatitle2(inputs)
 	if (locale === "zh") return zh_runctatitle2(inputs)
 	if (locale === "ja") return ja_runctatitle2(inputs)
@@ -60,6 +59,7 @@ const runctatitle2 = /** @type {((inputs?: Runctatitle2Inputs, options?: { local
 	if (locale === "zh-Hant") return zh_hant1_runctatitle2(inputs)
 	if (locale === "de") return de_runctatitle2(inputs)
 	if (locale === "fr") return fr_runctatitle2(inputs)
-	return uk_runctatitle2(inputs)
+	if (locale === "uk") return uk_runctatitle2(inputs)
+	return en_runctatitle2(inputs)
 });
 export { runctatitle2 as "runCtaTitle" }

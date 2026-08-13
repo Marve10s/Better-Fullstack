@@ -52,7 +52,6 @@ const uk_compareintro1 = /** @type {(inputs: Compareintro1Inputs) => LocalizedSt
 */
 const compareintro1 = /** @type {((inputs: Compareintro1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Compareintro1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_compareintro1(inputs)
 	if (locale === "es") return es_compareintro1(inputs)
 	if (locale === "zh") return zh_compareintro1(inputs)
 	if (locale === "ja") return ja_compareintro1(inputs)
@@ -60,6 +59,7 @@ const compareintro1 = /** @type {((inputs: Compareintro1Inputs, options?: { loca
 	if (locale === "zh-Hant") return zh_hant1_compareintro1(inputs)
 	if (locale === "de") return de_compareintro1(inputs)
 	if (locale === "fr") return fr_compareintro1(inputs)
-	return uk_compareintro1(inputs)
+	if (locale === "uk") return uk_compareintro1(inputs)
+	return en_compareintro1(inputs)
 });
 export { compareintro1 as "compareIntro" }

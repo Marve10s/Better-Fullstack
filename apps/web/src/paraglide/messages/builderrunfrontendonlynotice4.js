@@ -52,7 +52,6 @@ const uk_builderrunfrontendonlynotice4 = /** @type {(inputs: Builderrunfrontendo
 */
 const builderrunfrontendonlynotice4 = /** @type {((inputs?: Builderrunfrontendonlynotice4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderrunfrontendonlynotice4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderrunfrontendonlynotice4(inputs)
 	if (locale === "es") return es_builderrunfrontendonlynotice4(inputs)
 	if (locale === "zh") return zh_builderrunfrontendonlynotice4(inputs)
 	if (locale === "ja") return ja_builderrunfrontendonlynotice4(inputs)
@@ -60,6 +59,7 @@ const builderrunfrontendonlynotice4 = /** @type {((inputs?: Builderrunfrontendon
 	if (locale === "zh-Hant") return zh_hant1_builderrunfrontendonlynotice4(inputs)
 	if (locale === "de") return de_builderrunfrontendonlynotice4(inputs)
 	if (locale === "fr") return fr_builderrunfrontendonlynotice4(inputs)
-	return uk_builderrunfrontendonlynotice4(inputs)
+	if (locale === "uk") return uk_builderrunfrontendonlynotice4(inputs)
+	return en_builderrunfrontendonlynotice4(inputs)
 });
 export { builderrunfrontendonlynotice4 as "builderRunFrontendOnlyNotice" }

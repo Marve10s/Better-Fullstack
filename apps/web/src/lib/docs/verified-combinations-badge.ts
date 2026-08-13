@@ -6,6 +6,7 @@ export type VerifiedEvidenceLane = {
 
 export type VerifiedBadgeSummary = {
   expiresAt?: string;
+  gitHead?: string;
   expectedTotals?: {
     releaseGuard: number;
     publishedPackage: number;
@@ -29,11 +30,24 @@ export function verifiedEvidenceExpired(summary: VerifiedBadgeSummary, now: Date
   return !Number.isFinite(expiry) || now.getTime() > expiry;
 }
 
+export function verifiedEvidenceMatchesDeployment(
+  summary: VerifiedBadgeSummary,
+  deployedGitHead?: string,
+): boolean {
+  return (
+    typeof deployedGitHead === "string" &&
+    /^[0-9a-f]{40}$/i.test(deployedGitHead) &&
+    summary.gitHead === deployedGitHead
+  );
+}
+
 export function verifiedCombinationsBadgePayload(
   summary: VerifiedBadgeSummary,
   now: Date = new Date(),
+  deployedGitHead?: string,
 ): VerifiedCombinationsBadgePayload {
   const expired = verifiedEvidenceExpired(summary, now);
+  const revisionCurrent = verifiedEvidenceMatchesDeployment(summary, deployedGitHead);
   const required = [
     ...summary.smoke,
     ...summary.scaffbench,
@@ -48,7 +62,8 @@ export function verifiedCombinationsBadgePayload(
       current: false,
     },
   ];
-  const laneCurrent = (lane: VerifiedEvidenceLane) => !expired && lane.current === true;
+  const laneCurrent = (lane: VerifiedEvidenceLane) =>
+    !expired && revisionCurrent && lane.current === true;
   const pass = required.reduce((total, lane) => total + (laneCurrent(lane) ? lane.pass : 0), 0);
   const total = required.reduce((sum, lane) => sum + lane.total, 0);
   const allCurrent = required.every((lane) => laneCurrent(lane));

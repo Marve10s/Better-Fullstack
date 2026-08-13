@@ -52,7 +52,6 @@ const uk_navguides1 = /** @type {(inputs: Navguides1Inputs) => LocalizedString} 
 */
 const navguides1 = /** @type {((inputs?: Navguides1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navguides1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_navguides1(inputs)
 	if (locale === "es") return es_navguides1(inputs)
 	if (locale === "zh") return zh_navguides1(inputs)
 	if (locale === "ja") return ja_navguides1(inputs)
@@ -60,6 +59,7 @@ const navguides1 = /** @type {((inputs?: Navguides1Inputs, options?: { locale?: 
 	if (locale === "zh-Hant") return zh_hant1_navguides1(inputs)
 	if (locale === "de") return de_navguides1(inputs)
 	if (locale === "fr") return fr_navguides1(inputs)
-	return uk_navguides1(inputs)
+	if (locale === "uk") return uk_navguides1(inputs)
+	return en_navguides1(inputs)
 });
 export { navguides1 as "navGuides" }

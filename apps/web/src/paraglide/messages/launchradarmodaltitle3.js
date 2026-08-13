@@ -52,7 +52,6 @@ const uk_launchradarmodaltitle3 = /** @type {(inputs: Launchradarmodaltitle3Inpu
 */
 const launchradarmodaltitle3 = /** @type {((inputs?: Launchradarmodaltitle3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Launchradarmodaltitle3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_launchradarmodaltitle3(inputs)
 	if (locale === "es") return es_launchradarmodaltitle3(inputs)
 	if (locale === "zh") return zh_launchradarmodaltitle3(inputs)
 	if (locale === "ja") return ja_launchradarmodaltitle3(inputs)
@@ -60,6 +59,7 @@ const launchradarmodaltitle3 = /** @type {((inputs?: Launchradarmodaltitle3Input
 	if (locale === "zh-Hant") return zh_hant1_launchradarmodaltitle3(inputs)
 	if (locale === "de") return de_launchradarmodaltitle3(inputs)
 	if (locale === "fr") return fr_launchradarmodaltitle3(inputs)
-	return uk_launchradarmodaltitle3(inputs)
+	if (locale === "uk") return uk_launchradarmodaltitle3(inputs)
+	return en_launchradarmodaltitle3(inputs)
 });
 export { launchradarmodaltitle3 as "launchRadarModalTitle" }

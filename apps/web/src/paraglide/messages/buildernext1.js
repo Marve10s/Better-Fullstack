@@ -52,7 +52,6 @@ const uk_buildernext1 = /** @type {(inputs: Buildernext1Inputs) => LocalizedStri
 */
 const buildernext1 = /** @type {((inputs?: Buildernext1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildernext1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_buildernext1(inputs)
 	if (locale === "es") return es_buildernext1(inputs)
 	if (locale === "zh") return zh_buildernext1(inputs)
 	if (locale === "ja") return ja_buildernext1(inputs)
@@ -60,6 +59,7 @@ const buildernext1 = /** @type {((inputs?: Buildernext1Inputs, options?: { local
 	if (locale === "zh-Hant") return zh_hant1_buildernext1(inputs)
 	if (locale === "de") return de_buildernext1(inputs)
 	if (locale === "fr") return fr_buildernext1(inputs)
-	return uk_buildernext1(inputs)
+	if (locale === "uk") return uk_buildernext1(inputs)
+	return en_buildernext1(inputs)
 });
 export { buildernext1 as "builderNext" }

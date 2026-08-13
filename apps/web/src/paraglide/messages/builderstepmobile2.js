@@ -52,7 +52,6 @@ const uk_builderstepmobile2 = /** @type {(inputs: Builderstepmobile2Inputs) => L
 */
 const builderstepmobile2 = /** @type {((inputs?: Builderstepmobile2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderstepmobile2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderstepmobile2(inputs)
 	if (locale === "es") return es_builderstepmobile2(inputs)
 	if (locale === "zh") return zh_builderstepmobile2(inputs)
 	if (locale === "ja") return ja_builderstepmobile2(inputs)
@@ -60,6 +59,7 @@ const builderstepmobile2 = /** @type {((inputs?: Builderstepmobile2Inputs, optio
 	if (locale === "zh-Hant") return zh_hant1_builderstepmobile2(inputs)
 	if (locale === "de") return de_builderstepmobile2(inputs)
 	if (locale === "fr") return fr_builderstepmobile2(inputs)
-	return uk_builderstepmobile2(inputs)
+	if (locale === "uk") return uk_builderstepmobile2(inputs)
+	return en_builderstepmobile2(inputs)
 });
 export { builderstepmobile2 as "builderStepMobile" }

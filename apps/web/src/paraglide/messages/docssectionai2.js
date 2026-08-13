@@ -52,7 +52,6 @@ const uk_docssectionai2 = /** @type {(inputs: Docssectionai2Inputs) => Localized
 */
 const docssectionai2 = /** @type {((inputs?: Docssectionai2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssectionai2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_docssectionai2(inputs)
 	if (locale === "es") return es_docssectionai2(inputs)
 	if (locale === "zh") return zh_docssectionai2(inputs)
 	if (locale === "ja") return ja_docssectionai2(inputs)
@@ -60,6 +59,7 @@ const docssectionai2 = /** @type {((inputs?: Docssectionai2Inputs, options?: { l
 	if (locale === "zh-Hant") return zh_hant1_docssectionai2(inputs)
 	if (locale === "de") return de_docssectionai2(inputs)
 	if (locale === "fr") return fr_docssectionai2(inputs)
-	return uk_docssectionai2(inputs)
+	if (locale === "uk") return uk_docssectionai2(inputs)
+	return en_docssectionai2(inputs)
 });
 export { docssectionai2 as "docsSectionAi" }

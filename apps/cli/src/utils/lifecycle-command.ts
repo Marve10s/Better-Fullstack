@@ -12,10 +12,19 @@ export function getProjectRecoveryCommand(
   projectDir: string,
   transactionId: string,
   platform: NodeJS.Platform = process.platform,
+  packageManager: "bun" | "npm" | "pnpm" | "yarn" = "bun",
 ): string {
   const quoteArgument = platform === "win32" ? quotePowerShellArgument : quotePosixShellArgument;
+  const runner =
+    packageManager === "pnpm"
+      ? "pnpm dlx"
+      : packageManager === "yarn"
+        ? "yarn dlx"
+        : packageManager === "npm"
+          ? "npx --yes"
+          : "bunx";
   return (
-    `npx --yes create-better-fullstack@${getLatestCLIVersion()} update ` +
+    `${runner} create-better-fullstack@${getLatestCLIVersion()} update ` +
     `${quoteArgument(projectDir)} --recover ${transactionId}`
   );
 }

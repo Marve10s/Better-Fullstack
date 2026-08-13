@@ -52,7 +52,6 @@ const uk_builderrunsavererun3 = /** @type {(inputs: Builderrunsavererun3Inputs) 
 */
 const builderrunsavererun3 = /** @type {((inputs?: Builderrunsavererun3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderrunsavererun3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderrunsavererun3(inputs)
 	if (locale === "es") return es_builderrunsavererun3(inputs)
 	if (locale === "zh") return zh_builderrunsavererun3(inputs)
 	if (locale === "ja") return ja_builderrunsavererun3(inputs)
@@ -60,6 +59,7 @@ const builderrunsavererun3 = /** @type {((inputs?: Builderrunsavererun3Inputs, o
 	if (locale === "zh-Hant") return zh_hant1_builderrunsavererun3(inputs)
 	if (locale === "de") return de_builderrunsavererun3(inputs)
 	if (locale === "fr") return fr_builderrunsavererun3(inputs)
-	return uk_builderrunsavererun3(inputs)
+	if (locale === "uk") return uk_builderrunsavererun3(inputs)
+	return en_builderrunsavererun3(inputs)
 });
 export { builderrunsavererun3 as "builderRunSaveRerun" }

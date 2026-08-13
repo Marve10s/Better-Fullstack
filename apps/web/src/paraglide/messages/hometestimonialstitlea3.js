@@ -52,7 +52,6 @@ const uk_hometestimonialstitlea3 = /** @type {(inputs: Hometestimonialstitlea3In
 */
 const hometestimonialstitlea3 = /** @type {((inputs?: Hometestimonialstitlea3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Hometestimonialstitlea3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_hometestimonialstitlea3(inputs)
 	if (locale === "es") return es_hometestimonialstitlea3(inputs)
 	if (locale === "zh") return zh_hometestimonialstitlea3(inputs)
 	if (locale === "ja") return ja_hometestimonialstitlea3(inputs)
@@ -60,6 +59,7 @@ const hometestimonialstitlea3 = /** @type {((inputs?: Hometestimonialstitlea3Inp
 	if (locale === "zh-Hant") return zh_hant1_hometestimonialstitlea3(inputs)
 	if (locale === "de") return de_hometestimonialstitlea3(inputs)
 	if (locale === "fr") return fr_hometestimonialstitlea3(inputs)
-	return uk_hometestimonialstitlea3(inputs)
+	if (locale === "uk") return uk_hometestimonialstitlea3(inputs)
+	return en_hometestimonialstitlea3(inputs)
 });
 export { hometestimonialstitlea3 as "homeTestimonialsTitleA" }

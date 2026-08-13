@@ -52,7 +52,6 @@ const uk_builderresetdefaults2 = /** @type {(inputs: Builderresetdefaults2Inputs
 */
 const builderresetdefaults2 = /** @type {((inputs?: Builderresetdefaults2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderresetdefaults2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderresetdefaults2(inputs)
 	if (locale === "es") return es_builderresetdefaults2(inputs)
 	if (locale === "zh") return zh_builderresetdefaults2(inputs)
 	if (locale === "ja") return ja_builderresetdefaults2(inputs)
@@ -60,6 +59,7 @@ const builderresetdefaults2 = /** @type {((inputs?: Builderresetdefaults2Inputs,
 	if (locale === "zh-Hant") return zh_hant1_builderresetdefaults2(inputs)
 	if (locale === "de") return de_builderresetdefaults2(inputs)
 	if (locale === "fr") return fr_builderresetdefaults2(inputs)
-	return uk_builderresetdefaults2(inputs)
+	if (locale === "uk") return uk_builderresetdefaults2(inputs)
+	return en_builderresetdefaults2(inputs)
 });
 export { builderresetdefaults2 as "builderResetDefaults" }

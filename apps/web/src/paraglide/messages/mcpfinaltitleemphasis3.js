@@ -52,7 +52,6 @@ const uk_mcpfinaltitleemphasis3 = /** @type {(inputs: Mcpfinaltitleemphasis3Inpu
 */
 const mcpfinaltitleemphasis3 = /** @type {((inputs?: Mcpfinaltitleemphasis3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpfinaltitleemphasis3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_mcpfinaltitleemphasis3(inputs)
 	if (locale === "es") return es_mcpfinaltitleemphasis3(inputs)
 	if (locale === "zh") return zh_mcpfinaltitleemphasis3(inputs)
 	if (locale === "ja") return ja_mcpfinaltitleemphasis3(inputs)
@@ -60,6 +59,7 @@ const mcpfinaltitleemphasis3 = /** @type {((inputs?: Mcpfinaltitleemphasis3Input
 	if (locale === "zh-Hant") return zh_hant1_mcpfinaltitleemphasis3(inputs)
 	if (locale === "de") return de_mcpfinaltitleemphasis3(inputs)
 	if (locale === "fr") return fr_mcpfinaltitleemphasis3(inputs)
-	return uk_mcpfinaltitleemphasis3(inputs)
+	if (locale === "uk") return uk_mcpfinaltitleemphasis3(inputs)
+	return en_mcpfinaltitleemphasis3(inputs)
 });
 export { mcpfinaltitleemphasis3 as "mcpFinalTitleEmphasis" }

@@ -52,7 +52,6 @@ const uk_homecontributorsdescription2 = /** @type {(inputs: Homecontributorsdesc
 */
 const homecontributorsdescription2 = /** @type {((inputs?: Homecontributorsdescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homecontributorsdescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_homecontributorsdescription2(inputs)
 	if (locale === "es") return es_homecontributorsdescription2(inputs)
 	if (locale === "zh") return zh_homecontributorsdescription2(inputs)
 	if (locale === "ja") return ja_homecontributorsdescription2(inputs)
@@ -60,6 +59,7 @@ const homecontributorsdescription2 = /** @type {((inputs?: Homecontributorsdescr
 	if (locale === "zh-Hant") return zh_hant1_homecontributorsdescription2(inputs)
 	if (locale === "de") return de_homecontributorsdescription2(inputs)
 	if (locale === "fr") return fr_homecontributorsdescription2(inputs)
-	return uk_homecontributorsdescription2(inputs)
+	if (locale === "uk") return uk_homecontributorsdescription2(inputs)
+	return en_homecontributorsdescription2(inputs)
 });
 export { homecontributorsdescription2 as "homeContributorsDescription" }

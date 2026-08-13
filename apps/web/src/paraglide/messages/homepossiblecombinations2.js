@@ -52,7 +52,6 @@ const uk_homepossiblecombinations2 = /** @type {(inputs: Homepossiblecombination
 */
 const homepossiblecombinations2 = /** @type {((inputs?: Homepossiblecombinations2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homepossiblecombinations2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_homepossiblecombinations2(inputs)
 	if (locale === "es") return es_homepossiblecombinations2(inputs)
 	if (locale === "zh") return zh_homepossiblecombinations2(inputs)
 	if (locale === "ja") return ja_homepossiblecombinations2(inputs)
@@ -60,6 +59,7 @@ const homepossiblecombinations2 = /** @type {((inputs?: Homepossiblecombinations
 	if (locale === "zh-Hant") return zh_hant1_homepossiblecombinations2(inputs)
 	if (locale === "de") return de_homepossiblecombinations2(inputs)
 	if (locale === "fr") return fr_homepossiblecombinations2(inputs)
-	return uk_homepossiblecombinations2(inputs)
+	if (locale === "uk") return uk_homepossiblecombinations2(inputs)
+	return en_homepossiblecombinations2(inputs)
 });
 export { homepossiblecombinations2 as "homePossibleCombinations" }

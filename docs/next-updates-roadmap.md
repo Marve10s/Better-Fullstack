@@ -38,7 +38,8 @@ Operational claims must fail closed, and production telemetry must have one expl
 2. Treat `packages/backend` as the sole active telemetry owner. Production activation and aggregate reconciliation are owner-only operations governed by the [backend runbook](../packages/backend/README.md).
 3. Publish green verification claims only from complete, current, clean-SHA evidence. Missing, stale, malformed, partial, dirty, or version-mismatched evidence must remain non-green.
 4. Keep untrusted PR execution separated from npm credentials, repository write tokens, and OIDC; protected environments are approval boundaries, not documentation-only controls.
-5. Keep active plans, demand-gated candidates, and historical documents explicit in the [planning registry](plans/README.md).
+5. Keep active projects, demand-gated backlog, completed history, and reference documents explicit
+   in the [project lifecycle](projects/README.md).
 
 ### Exit gate
 

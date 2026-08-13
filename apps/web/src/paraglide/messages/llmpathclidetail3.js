@@ -52,7 +52,6 @@ const uk_llmpathclidetail3 = /** @type {(inputs: Llmpathclidetail3Inputs) => Loc
 */
 const llmpathclidetail3 = /** @type {((inputs?: Llmpathclidetail3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmpathclidetail3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_llmpathclidetail3(inputs)
 	if (locale === "es") return es_llmpathclidetail3(inputs)
 	if (locale === "zh") return zh_llmpathclidetail3(inputs)
 	if (locale === "ja") return ja_llmpathclidetail3(inputs)
@@ -60,6 +59,7 @@ const llmpathclidetail3 = /** @type {((inputs?: Llmpathclidetail3Inputs, options
 	if (locale === "zh-Hant") return zh_hant1_llmpathclidetail3(inputs)
 	if (locale === "de") return de_llmpathclidetail3(inputs)
 	if (locale === "fr") return fr_llmpathclidetail3(inputs)
-	return uk_llmpathclidetail3(inputs)
+	if (locale === "uk") return uk_llmpathclidetail3(inputs)
+	return en_llmpathclidetail3(inputs)
 });
 export { llmpathclidetail3 as "llmPathCliDetail" }

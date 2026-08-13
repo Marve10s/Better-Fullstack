@@ -8,13 +8,20 @@ export const Route = createFileRoute("/api/verified-combinations")({
   server: {
     handlers: {
       GET: async () =>
-        Response.json(verifiedCombinationsBadgePayload(verifiedCombinationsSummary), {
-          headers: {
-            "Cache-Control": "public, max-age=60, s-maxage=300, stale-while-revalidate=1800",
-            "Content-Type": "application/json",
-            "X-Robots-Tag": NOINDEX_ROBOTS,
+        Response.json(
+          verifiedCombinationsBadgePayload(
+            verifiedCombinationsSummary,
+            new Date(),
+            __BFS_DEPLOYED_GIT_HEAD__,
+          ),
+          {
+            headers: {
+              "Cache-Control": "public, max-age=60, s-maxage=300, stale-while-revalidate=1800",
+              "Content-Type": "application/json",
+              "X-Robots-Tag": NOINDEX_ROBOTS,
+            },
           },
-        }),
+        ),
     },
   },
 });

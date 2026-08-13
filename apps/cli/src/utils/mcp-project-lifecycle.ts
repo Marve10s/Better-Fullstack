@@ -15,7 +15,14 @@ export const MCP_UPDATE_REVIEW_CONTENT_LIMIT_BYTES = 32 * 1024;
 export function boundMcpUpdateReview(result: ReviewedProjectUpdatePlan) {
   let hasWithheldContent = false;
   const files = result.plan.files.map((file) => {
-    if (file.mergedContent === undefined) return file;
+    if (file.mergedContent === undefined) {
+      if (!result.plan.actionable.includes(file.path)) return file;
+      hasWithheldContent = true;
+      return {
+        ...file,
+        reviewContent: { status: "withheld-unavailable" as const },
+      };
+    }
     const contentBytes = Buffer.byteLength(file.mergedContent, "utf-8");
     const contentSha256 = hashContent(file.mergedContent);
     if (contentBytes <= MCP_UPDATE_REVIEW_CONTENT_LIMIT_BYTES) {
@@ -42,7 +49,7 @@ export function boundMcpUpdateReview(result: ReviewedProjectUpdatePlan) {
     reviewToken: undefined,
     blockers: [
       ...result.blockers,
-      `At least one proposed merged file exceeds the ${MCP_UPDATE_REVIEW_CONTENT_LIMIT_BYTES}-byte MCP review limit. No review token is issued because the exact intended bytes were withheld.`,
+      `At least one actionable file's exact intended bytes were unavailable or exceeded the ${MCP_UPDATE_REVIEW_CONTENT_LIMIT_BYTES}-byte MCP review limit. No review token is issued because the exact intended bytes were withheld.`,
     ],
     plan: { ...result.plan, files },
   };

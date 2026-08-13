@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "apps/cli/src/**"
+      - "apps/cli/package.json"
       - "apps/web/src/lib/project-download.ts"
       - "apps/web/test/browser-cli-lifecycle.test.ts"
       - "apps/web/test/project-download.test.ts"
@@ -15,6 +16,7 @@ on:
     branches: [development, main]
     paths:
       - "apps/cli/src/**"
+      - "apps/cli/package.json"
       - "apps/web/src/lib/project-download.ts"
       - "apps/web/test/browser-cli-lifecycle.test.ts"
       - "apps/web/test/project-download.test.ts"

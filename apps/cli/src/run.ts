@@ -786,6 +786,7 @@ export async function update(
     recordBaseline?: boolean;
     acknowledgeUnprovenManifestV1?: boolean;
     reviewToken?: string;
+    recover?: string;
   },
 ) {
   return caller.update([
@@ -798,6 +799,7 @@ export async function update(
       recordBaseline: options?.recordBaseline ?? false,
       acknowledgeUnprovenManifestV1: options?.acknowledgeUnprovenManifestV1 ?? false,
       reviewToken: options?.reviewToken,
+      recover: options?.recover,
     },
   ]);
 }

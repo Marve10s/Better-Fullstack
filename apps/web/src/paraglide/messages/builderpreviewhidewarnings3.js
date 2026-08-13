@@ -52,7 +52,6 @@ const uk_builderpreviewhidewarnings3 = /** @type {(inputs: Builderpreviewhidewar
 */
 const builderpreviewhidewarnings3 = /** @type {((inputs?: Builderpreviewhidewarnings3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderpreviewhidewarnings3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderpreviewhidewarnings3(inputs)
 	if (locale === "es") return es_builderpreviewhidewarnings3(inputs)
 	if (locale === "zh") return zh_builderpreviewhidewarnings3(inputs)
 	if (locale === "ja") return ja_builderpreviewhidewarnings3(inputs)
@@ -60,6 +59,7 @@ const builderpreviewhidewarnings3 = /** @type {((inputs?: Builderpreviewhidewarn
 	if (locale === "zh-Hant") return zh_hant1_builderpreviewhidewarnings3(inputs)
 	if (locale === "de") return de_builderpreviewhidewarnings3(inputs)
 	if (locale === "fr") return fr_builderpreviewhidewarnings3(inputs)
-	return uk_builderpreviewhidewarnings3(inputs)
+	if (locale === "uk") return uk_builderpreviewhidewarnings3(inputs)
+	return en_builderpreviewhidewarnings3(inputs)
 });
 export { builderpreviewhidewarnings3 as "builderPreviewHideWarnings" }

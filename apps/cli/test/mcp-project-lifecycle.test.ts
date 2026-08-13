@@ -199,6 +199,16 @@ describe("MCP project lifecycle parity", () => {
     expect(plan.reviewToken).toMatch(/^[a-f0-9]{64}$/);
     expect(plan.guarantee).toBe("unverified-origin-recoverable");
     expect(plan.blockers.join(" ")).toContain("original generator lineage is unverified");
+    const actionableFiles = plan.plan.files.filter((file) =>
+      plan.plan.actionable.includes(file.path),
+    );
+    expect(actionableFiles.length).toBeGreaterThan(0);
+    expect(
+      actionableFiles.every(
+        (file) =>
+          typeof file.mergedContent === "string" && file.reviewContent?.status === "complete",
+      ),
+    ).toBe(true);
 
     const refused = await applyMcpProjectUpdate(projectDir, plan.reviewToken, false);
     expect(refused.success).toBe(false);
@@ -279,6 +289,33 @@ describe("MCP project lifecycle parity", () => {
       },
     });
     expect("mergedContent" in oversizedReview.plan.files[0]!).toBe(false);
+  });
+
+  it("withholds the review token when an actionable file has no reviewable bytes", async () => {
+    const projectDir = await fs.mkdtemp(path.join(tmpdir(), "bfs-unavailable-review-"));
+    roots.push(projectDir);
+    await fs.copy(historicalFixture, projectDir);
+    expect(await recordUpgradeBaseline(projectDir)).not.toBeNull();
+    const planned = await planMcpProjectUpdate(projectDir);
+    expect(planned.success).toBe(true);
+    if (!planned.success) return;
+
+    const unavailableReview = boundMcpUpdateReview({
+      ...planned,
+      reviewToken: "a".repeat(64),
+      plan: {
+        ...planned.plan,
+        actionable: ["new-file.ts"],
+        files: [{ path: "new-file.ts", category: "new-file" }],
+      },
+    });
+
+    expect(unavailableReview.reviewToken).toBeUndefined();
+    expect(unavailableReview.blockers.join(" ")).toContain("exact intended bytes were withheld");
+    expect(unavailableReview.plan.files[0]).toMatchObject({
+      path: "new-file.ts",
+      reviewContent: { status: "withheld-unavailable" },
+    });
   });
 
   it("refuses MCP apply when oversized merged bytes were withheld", async () => {

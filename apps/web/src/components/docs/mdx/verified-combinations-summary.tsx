@@ -5,7 +5,10 @@ import {
   TbExternalLink as ExternalLink,
 } from "react-icons/tb";
 
-import { verifiedEvidenceExpired } from "@/lib/docs/verified-combinations-badge";
+import {
+  verifiedEvidenceExpired,
+  verifiedEvidenceMatchesDeployment,
+} from "@/lib/docs/verified-combinations-badge";
 import {
   type VerifiedCombinationActionLink,
   type VerifiedCombinationSummary,
@@ -41,11 +44,26 @@ export function VerifiedCombinationsSummary() {
   const expired = verifiedEvidenceExpired(summary, new Date());
   const allCurrent =
     !expired &&
+    verifiedEvidenceMatchesDeployment(summary, __BFS_DEPLOYED_GIT_HEAD__) &&
     summary.smoke.every((item) => item.current === true) &&
     summary.scaffbench.every((item) => item.current === true) &&
     releaseGuard?.current === true &&
     publishedPackage?.current === true;
-  const releaseTone = allCurrent ? ("pass" as const) : ("warn" as const);
+  const allPassing =
+    allCurrent &&
+    summary.smoke.length > 0 &&
+    summary.scaffbench.length > 0 &&
+    summary.smoke.every((item) => item.total > 0 && item.pass === item.total) &&
+    summary.scaffbench.every((item) => item.total > 0 && item.pass === item.total) &&
+    releaseGuard !== null &&
+    releaseGuard.total > 0 &&
+    releaseGuard.pass === releaseGuard.total &&
+    releaseGuard.overallSuccess &&
+    publishedPackage !== null &&
+    publishedPackage.total > 0 &&
+    publishedPackage.pass === publishedPackage.total &&
+    publishedPackage.overallSuccess;
+  const releaseTone = allPassing ? ("pass" as const) : ("warn" as const);
 
   return (
     <div className="my-8 space-y-4">
@@ -70,9 +88,11 @@ export function VerifiedCombinationsSummary() {
             ) : (
               <CircleAlert className="size-3.5" />
             )}
-            {allCurrent && releaseGuard?.overallSuccess
+            {allPassing
               ? "Release guard passing"
-              : "Needs fresh release evidence"}
+              : allCurrent
+                ? "Verification failures require attention"
+                : "Needs fresh release evidence"}
           </span>
         </div>
       </div>

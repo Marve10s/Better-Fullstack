@@ -30,10 +30,13 @@ describe("project lifecycle transactions", () => {
   it("emits executable recovery commands with platform-safe project paths", () => {
     const transactionId = "123e4567-e89b-42d3-a456-426614174000";
     expect(getProjectRecoveryCommand("/tmp/o'brien app", transactionId, "linux")).toBe(
-      `npx --yes create-better-fullstack@${getLatestCLIVersion()} update '/tmp/o'"'"'brien app' --recover ${transactionId}`,
+      `bunx create-better-fullstack@${getLatestCLIVersion()} update '/tmp/o'"'"'brien app' --recover ${transactionId}`,
     );
     expect(getProjectRecoveryCommand("C:\\o'brien app", transactionId, "win32")).toBe(
-      `npx --yes create-better-fullstack@${getLatestCLIVersion()} update 'C:\\o''brien app' --recover ${transactionId}`,
+      `bunx create-better-fullstack@${getLatestCLIVersion()} update 'C:\\o''brien app' --recover ${transactionId}`,
+    );
+    expect(getProjectRecoveryCommand("/tmp/app", transactionId, "linux", "npm")).toStartWith(
+      "npx --yes ",
     );
   });
 

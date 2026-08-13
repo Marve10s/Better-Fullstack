@@ -52,7 +52,6 @@ const uk_navlanguage1 = /** @type {(inputs: Navlanguage1Inputs) => LocalizedStri
 */
 const navlanguage1 = /** @type {((inputs?: Navlanguage1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navlanguage1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_navlanguage1(inputs)
 	if (locale === "es") return es_navlanguage1(inputs)
 	if (locale === "zh") return zh_navlanguage1(inputs)
 	if (locale === "ja") return ja_navlanguage1(inputs)
@@ -60,6 +59,7 @@ const navlanguage1 = /** @type {((inputs?: Navlanguage1Inputs, options?: { local
 	if (locale === "zh-Hant") return zh_hant1_navlanguage1(inputs)
 	if (locale === "de") return de_navlanguage1(inputs)
 	if (locale === "fr") return fr_navlanguage1(inputs)
-	return uk_navlanguage1(inputs)
+	if (locale === "uk") return uk_navlanguage1(inputs)
+	return en_navlanguage1(inputs)
 });
 export { navlanguage1 as "navLanguage" }

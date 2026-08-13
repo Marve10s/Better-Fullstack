@@ -52,7 +52,6 @@ const uk_docssectionreference2 = /** @type {(inputs: Docssectionreference2Inputs
 */
 const docssectionreference2 = /** @type {((inputs?: Docssectionreference2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssectionreference2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_docssectionreference2(inputs)
 	if (locale === "es") return es_docssectionreference2(inputs)
 	if (locale === "zh") return zh_docssectionreference2(inputs)
 	if (locale === "ja") return ja_docssectionreference2(inputs)
@@ -60,6 +59,7 @@ const docssectionreference2 = /** @type {((inputs?: Docssectionreference2Inputs,
 	if (locale === "zh-Hant") return zh_hant1_docssectionreference2(inputs)
 	if (locale === "de") return de_docssectionreference2(inputs)
 	if (locale === "fr") return fr_docssectionreference2(inputs)
-	return uk_docssectionreference2(inputs)
+	if (locale === "uk") return uk_docssectionreference2(inputs)
+	return en_docssectionreference2(inputs)
 });
 export { docssectionreference2 as "docsSectionReference" }

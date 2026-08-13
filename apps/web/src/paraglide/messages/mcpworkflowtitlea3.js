@@ -52,7 +52,6 @@ const uk_mcpworkflowtitlea3 = /** @type {(inputs: Mcpworkflowtitlea3Inputs) => L
 */
 const mcpworkflowtitlea3 = /** @type {((inputs?: Mcpworkflowtitlea3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpworkflowtitlea3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_mcpworkflowtitlea3(inputs)
 	if (locale === "es") return es_mcpworkflowtitlea3(inputs)
 	if (locale === "zh") return zh_mcpworkflowtitlea3(inputs)
 	if (locale === "ja") return ja_mcpworkflowtitlea3(inputs)
@@ -60,6 +59,7 @@ const mcpworkflowtitlea3 = /** @type {((inputs?: Mcpworkflowtitlea3Inputs, optio
 	if (locale === "zh-Hant") return zh_hant1_mcpworkflowtitlea3(inputs)
 	if (locale === "de") return de_mcpworkflowtitlea3(inputs)
 	if (locale === "fr") return fr_mcpworkflowtitlea3(inputs)
-	return uk_mcpworkflowtitlea3(inputs)
+	if (locale === "uk") return uk_mcpworkflowtitlea3(inputs)
+	return en_mcpworkflowtitlea3(inputs)
 });
 export { mcpworkflowtitlea3 as "mcpWorkflowTitleA" }

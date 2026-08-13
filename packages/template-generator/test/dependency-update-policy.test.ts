@@ -82,5 +82,7 @@ describe("dependency update policy", () => {
     expect(getUpdateType("^0.3.1", "^0.4.0")).toBe("major");
     expect(getUpdateType("^0.0.3", "^0.0.4")).toBe("major");
     expect(getUpdateType("^0.3.1", "^0.3.2")).toBe("patch");
+    expect(getUpdateType("^3.0.260610-beta", "^3.0.0")).toBe("none");
+    expect(getUpdateType("^1.1.0", "^1.0.0")).toBe("downgrade");
   });
 });

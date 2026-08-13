@@ -52,7 +52,6 @@ const uk_sharebuttoncopytitle3 = /** @type {(inputs: Sharebuttoncopytitle3Inputs
 */
 const sharebuttoncopytitle3 = /** @type {((inputs?: Sharebuttoncopytitle3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Sharebuttoncopytitle3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_sharebuttoncopytitle3(inputs)
 	if (locale === "es") return es_sharebuttoncopytitle3(inputs)
 	if (locale === "zh") return zh_sharebuttoncopytitle3(inputs)
 	if (locale === "ja") return ja_sharebuttoncopytitle3(inputs)
@@ -60,6 +59,7 @@ const sharebuttoncopytitle3 = /** @type {((inputs?: Sharebuttoncopytitle3Inputs,
 	if (locale === "zh-Hant") return zh_hant1_sharebuttoncopytitle3(inputs)
 	if (locale === "de") return de_sharebuttoncopytitle3(inputs)
 	if (locale === "fr") return fr_sharebuttoncopytitle3(inputs)
-	return uk_sharebuttoncopytitle3(inputs)
+	if (locale === "uk") return uk_sharebuttoncopytitle3(inputs)
+	return en_sharebuttoncopytitle3(inputs)
 });
 export { sharebuttoncopytitle3 as "shareButtonCopyTitle" }

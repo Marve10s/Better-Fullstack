@@ -52,7 +52,6 @@ const uk_homeeverything1 = /** @type {(inputs: Homeeverything1Inputs) => Localiz
 */
 const homeeverything1 = /** @type {((inputs?: Homeeverything1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homeeverything1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_homeeverything1(inputs)
 	if (locale === "es") return es_homeeverything1(inputs)
 	if (locale === "zh") return zh_homeeverything1(inputs)
 	if (locale === "ja") return ja_homeeverything1(inputs)
@@ -60,6 +59,7 @@ const homeeverything1 = /** @type {((inputs?: Homeeverything1Inputs, options?: {
 	if (locale === "zh-Hant") return zh_hant1_homeeverything1(inputs)
 	if (locale === "de") return de_homeeverything1(inputs)
 	if (locale === "fr") return fr_homeeverything1(inputs)
-	return uk_homeeverything1(inputs)
+	if (locale === "uk") return uk_homeeverything1(inputs)
+	return en_homeeverything1(inputs)
 });
 export { homeeverything1 as "homeEverything" }

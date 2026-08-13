@@ -52,7 +52,6 @@ const uk_campaignsteprun2 = /** @type {(inputs: Campaignsteprun2Inputs) => Local
 */
 const campaignsteprun2 = /** @type {((inputs?: Campaignsteprun2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Campaignsteprun2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_campaignsteprun2(inputs)
 	if (locale === "es") return es_campaignsteprun2(inputs)
 	if (locale === "zh") return zh_campaignsteprun2(inputs)
 	if (locale === "ja") return ja_campaignsteprun2(inputs)
@@ -60,6 +59,7 @@ const campaignsteprun2 = /** @type {((inputs?: Campaignsteprun2Inputs, options?:
 	if (locale === "zh-Hant") return zh_hant1_campaignsteprun2(inputs)
 	if (locale === "de") return de_campaignsteprun2(inputs)
 	if (locale === "fr") return fr_campaignsteprun2(inputs)
-	return uk_campaignsteprun2(inputs)
+	if (locale === "uk") return uk_campaignsteprun2(inputs)
+	return en_campaignsteprun2(inputs)
 });
 export { campaignsteprun2 as "campaignStepRun" }

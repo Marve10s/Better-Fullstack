@@ -52,7 +52,6 @@ const uk_runagentstitle2 = /** @type {(inputs: Runagentstitle2Inputs) => Localiz
 */
 const runagentstitle2 = /** @type {((inputs?: Runagentstitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Runagentstitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_runagentstitle2(inputs)
 	if (locale === "es") return es_runagentstitle2(inputs)
 	if (locale === "zh") return zh_runagentstitle2(inputs)
 	if (locale === "ja") return ja_runagentstitle2(inputs)
@@ -60,6 +59,7 @@ const runagentstitle2 = /** @type {((inputs?: Runagentstitle2Inputs, options?: {
 	if (locale === "zh-Hant") return zh_hant1_runagentstitle2(inputs)
 	if (locale === "de") return de_runagentstitle2(inputs)
 	if (locale === "fr") return fr_runagentstitle2(inputs)
-	return uk_runagentstitle2(inputs)
+	if (locale === "uk") return uk_runagentstitle2(inputs)
+	return en_runagentstitle2(inputs)
 });
 export { runagentstitle2 as "runAgentsTitle" }

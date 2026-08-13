@@ -52,7 +52,6 @@ const uk_navsectioncreate2 = /** @type {(inputs: Navsectioncreate2Inputs) => Loc
 */
 const navsectioncreate2 = /** @type {((inputs?: Navsectioncreate2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navsectioncreate2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_navsectioncreate2(inputs)
 	if (locale === "es") return es_navsectioncreate2(inputs)
 	if (locale === "zh") return zh_navsectioncreate2(inputs)
 	if (locale === "ja") return ja_navsectioncreate2(inputs)
@@ -60,6 +59,7 @@ const navsectioncreate2 = /** @type {((inputs?: Navsectioncreate2Inputs, options
 	if (locale === "zh-Hant") return zh_hant1_navsectioncreate2(inputs)
 	if (locale === "de") return de_navsectioncreate2(inputs)
 	if (locale === "fr") return fr_navsectioncreate2(inputs)
-	return uk_navsectioncreate2(inputs)
+	if (locale === "uk") return uk_navsectioncreate2(inputs)
+	return en_navsectioncreate2(inputs)
 });
 export { navsectioncreate2 as "navSectionCreate" }

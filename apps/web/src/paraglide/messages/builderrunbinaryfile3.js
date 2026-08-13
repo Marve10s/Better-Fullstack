@@ -52,7 +52,6 @@ const uk_builderrunbinaryfile3 = /** @type {(inputs: Builderrunbinaryfile3Inputs
 */
 const builderrunbinaryfile3 = /** @type {((inputs?: Builderrunbinaryfile3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderrunbinaryfile3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "en") return en_builderrunbinaryfile3(inputs)
 	if (locale === "es") return es_builderrunbinaryfile3(inputs)
 	if (locale === "zh") return zh_builderrunbinaryfile3(inputs)
 	if (locale === "ja") return ja_builderrunbinaryfile3(inputs)
@@ -60,6 +59,7 @@ const builderrunbinaryfile3 = /** @type {((inputs?: Builderrunbinaryfile3Inputs,
 	if (locale === "zh-Hant") return zh_hant1_builderrunbinaryfile3(inputs)
 	if (locale === "de") return de_builderrunbinaryfile3(inputs)
 	if (locale === "fr") return fr_builderrunbinaryfile3(inputs)
-	return uk_builderrunbinaryfile3(inputs)
+	if (locale === "uk") return uk_builderrunbinaryfile3(inputs)
+	return en_builderrunbinaryfile3(inputs)
 });
 export { builderrunbinaryfile3 as "builderRunBinaryFile" }
