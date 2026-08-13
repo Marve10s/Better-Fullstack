@@ -30,10 +30,13 @@ describe("project lifecycle transactions", () => {
   it("emits executable recovery commands with platform-safe project paths", () => {
     const transactionId = "123e4567-e89b-42d3-a456-426614174000";
     expect(getProjectRecoveryCommand("/tmp/o'brien app", transactionId, "linux")).toBe(
-      `npx --yes create-better-fullstack@${getLatestCLIVersion()} update '/tmp/o'"'"'brien app' --recover ${transactionId}`,
+      `bunx create-better-fullstack@${getLatestCLIVersion()} update '/tmp/o'"'"'brien app' --recover ${transactionId}`,
     );
     expect(getProjectRecoveryCommand("C:\\o'brien app", transactionId, "win32")).toBe(
-      `npx --yes create-better-fullstack@${getLatestCLIVersion()} update 'C:\\o''brien app' --recover ${transactionId}`,
+      `bunx create-better-fullstack@${getLatestCLIVersion()} update 'C:\\o''brien app' --recover ${transactionId}`,
+    );
+    expect(getProjectRecoveryCommand("/tmp/app", transactionId, "linux", "npm")).toStartWith(
+      "npx --yes ",
     );
   });
 
@@ -114,5 +117,27 @@ describe("project lifecycle transactions", () => {
       "integrity validation",
     );
     expect(await fs.readFile(path.join(projectDir, "file.txt"), "utf-8")).toBe("after\n");
+  });
+
+  it("preflights every backup before restoring any file", async () => {
+    const projectDir = await makeProject();
+    await fs.writeFile(path.join(projectDir, "a.txt"), "a-before\n");
+    await fs.writeFile(path.join(projectDir, "z.txt"), "z-before\n");
+    const transaction = await beginProjectTransaction(projectDir, "stack-update", [
+      "a.txt",
+      "z.txt",
+    ]);
+    markProjectTransactionWrite(transaction, "a.txt", hashContent("a-after\n"));
+    markProjectTransactionWrite(transaction, "z.txt", hashContent("z-after\n"));
+    await fs.writeFile(path.join(projectDir, "a.txt"), "a-after\n");
+    await fs.writeFile(path.join(projectDir, "z.txt"), "z-after\n");
+    await commitProjectTransaction(transaction);
+    await fs.writeFile(path.join(transaction.recoveryDir, "files/z.txt"), "tampered\n");
+
+    await expect(recoverProjectTransaction(projectDir, transaction.id)).rejects.toThrow(
+      "integrity validation",
+    );
+    expect(await fs.readFile(path.join(projectDir, "a.txt"), "utf-8")).toBe("a-after\n");
+    expect(await fs.readFile(path.join(projectDir, "z.txt"), "utf-8")).toBe("z-after\n");
   });
 });

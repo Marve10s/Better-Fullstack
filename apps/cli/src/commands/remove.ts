@@ -51,7 +51,7 @@ export async function removeCommand(input: RemoveCommandInput): Promise<PartRemo
   log.info(
     pc.dim(
       `Files: ${result.filesToAdd.length} add · ${result.filesToPatch.length} update · ` +
-        `${result.manualReviewBlockers.length} manual review`,
+        `${result.filesToRemove.length} remove · ${result.manualReviewBlockers.length} manual review`,
     ),
   );
   for (const adjustment of result.compatibilityAdjustments) {

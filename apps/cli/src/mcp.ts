@@ -185,6 +185,7 @@ import { applyStackUpdate, planStackUpdate } from "./helpers/core/stack-update";
 import { trackEvent, trackProjectCreation, withCommandTelemetry } from "./utils/analytics";
 import { previewBtsConfigUpdate, readBtsConfig } from "./utils/bts-config";
 import { applyEffectBackendDefaults } from "./utils/config-processing";
+import { runWithContextAsync } from "./utils/context";
 import { generateReproducibleCommand } from "./utils/generate-reproducible-command";
 import { getLatestCLIVersion } from "./utils/get-latest-cli-version";
 import { getEffectiveStack, getGraphSummary } from "./utils/graph-summary";
@@ -1089,7 +1090,7 @@ const lifecycleVersionsOutputSchema = z.object({
 
 const lifecycleResultOutputSchema = z.object({
   contractVersion: z.literal("1"),
-  operation: z.enum(["create", "add", "stack-update", "template-update", "recover"]),
+  operation: z.enum(["create", "add", "remove", "stack-update", "template-update", "recover"]),
   status: z.enum(["planned", "applied", "blocked", "failed", "rolled-back", "recovered"]),
   projectDir: z.string(),
   changes: z.object({
@@ -1164,6 +1165,7 @@ const addFeatureOutputSchema = z.object({
   success: z.boolean(),
   addedAddons: z.array(z.string()).optional(),
   projectDir: z.string().optional(),
+  error: z.string().optional(),
   message: z.string().optional(),
   lifecycle: lifecycleResultOutputSchema.optional(),
   recoveryId: z.string().optional(),
@@ -1178,6 +1180,7 @@ const stackUpdateOutputSchema = z.object({
   proposedConfig: z.record(z.string(), z.unknown()).optional(),
   filesToAdd: z.array(z.string()).optional(),
   filesToPatch: z.array(z.string()).optional(),
+  filesToRemove: z.array(z.string()).optional(),
   dependencyChanges: z.record(z.string(), z.record(z.string(), z.string())).optional(),
   scriptChanges: z.record(z.string(), z.array(z.string())).optional(),
   envChanges: z.record(z.string(), z.array(z.string())).optional(),
@@ -2107,7 +2110,9 @@ export function createMcpServer(): McpServer {
         const projectDir = path.resolve(targetDir ?? process.cwd(), projectName);
         const config = buildProjectConfig(input, { projectDir });
         const { createProject } = await import("./helpers/core/create-project.js");
-        const result = await createProject(config, { allowExistingDirectory: false });
+        const result = await runWithContextAsync({ silent: true }, () =>
+          createProject(config, { allowExistingDirectory: false }),
+        );
         const graphPreview = getMcpGraphPreview(config);
 
         const ecosystem = (input.ecosystem as string) ?? "typescript";
@@ -2691,6 +2696,8 @@ export function createMcpServer(): McpServer {
             success: true as const,
             addedAddons: result.addedAddons,
             projectDir: result.projectDir,
+            lifecycle: result.lifecycle,
+            recoveryId: result.recoveryId,
             ...graphPreview,
             message: `Added ${result.addedAddons.join(", ")} to project. Tell the user to run: ${installCmd}`,
           };
@@ -2699,16 +2706,15 @@ export function createMcpServer(): McpServer {
             structuredContent: payload,
           };
         }
+        const payload = {
+          success: false as const,
+          error: result?.error ?? "Add command returned no result",
+          lifecycle: result?.lifecycle,
+          recoveryId: result?.recoveryId,
+        };
         return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify({
-                success: false,
-                error: result?.error ?? "Add command returned no result",
-              }),
-            },
-          ],
+          content: [{ type: "text", text: JSON.stringify(payload) }],
+          structuredContent: payload,
           isError: true,
         };
       } catch (error) {

@@ -58,6 +58,7 @@ describe("MCP project lifecycle parity", () => {
     expect(result.prerequisites.wave1.blockers).toContain(
       "A versioned scaffold manifest is required for lifecycle apply and recovery.",
     );
+    expect(result.stackPartSpecs).toContain("backend.validation:typescript:zod");
     expect(result.upgrade).toMatchObject({
       available: true,
       actionable: true,

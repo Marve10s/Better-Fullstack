@@ -11,6 +11,7 @@ import { readBtsConfig } from "../../utils/bts-config";
 import { hashContent } from "../../utils/scaffold-manifest";
 import {
   applyStackUpdate,
+  getStackUpdatePlanDigest,
   planStackUpdate,
   type StackUpdatePlan,
   type StackUpdateResult,
@@ -125,11 +126,7 @@ function removalReviewToken(plan: StackUpdatePlan, removal: PartRemoval): string
   return hashContent(
     JSON.stringify({
       removal,
-      requestedChanges: plan.requestedChanges,
-      proposedConfig: plan.proposedConfig,
-      operations: plan.operations,
-      blockers: plan.manualReviewBlockers,
-      architectureChanges: plan.architectureChanges,
+      planDigest: getStackUpdatePlanDigest(plan),
     }),
   );
 }
@@ -151,10 +148,12 @@ export async function planPartRemoval(
 
   const plan = await planStackUpdate(resolved.projectDir, resolved.request, {
     replaceArrayKeys: resolved.replaceArrayKeys,
+    removeObsoleteGeneratedArtifacts: true,
   });
   if (!plan.success) return plan;
   return {
     ...plan,
+    lifecycle: { ...plan.lifecycle, operation: "remove" },
     removal: resolved.removal,
     reviewToken: removalReviewToken(plan, resolved.removal),
   };
@@ -184,8 +183,10 @@ export async function applyPartRemoval(
       acknowledgeArchitectureChange,
     },
     {
-      operation: "stack-update",
+      operation: "remove",
       replaceArrayKeys: resolved.replaceArrayKeys,
+      removeObsoleteGeneratedArtifacts: true,
+      expectedPlanDigest: getStackUpdatePlanDigest(reviewed),
     },
   );
   if (!applied.success) return applied;

@@ -12,13 +12,19 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { CreateCommandOptionsSchema } from "../src/create-command-input";
+import { addHandler } from "../src/helpers/core/add-handler";
+import { applyPartRemoval, planPartRemoval } from "../src/helpers/core/remove-handler";
 import {
   applyStackUpdate,
   planStackUpdate,
   SUPPORTED_STACK_UPDATE_KEYS,
 } from "../src/helpers/core/stack-update";
 import { MCP_STACK_UPDATE_SCHEMA } from "../src/mcp";
-import { buildBtsConfigForPersistence, writeBtsConfig } from "../src/utils/bts-config";
+import {
+  buildBtsConfigForPersistence,
+  readBtsConfig,
+  writeBtsConfig,
+} from "../src/utils/bts-config";
 import {
   hashContent,
   readScaffoldManifest,
@@ -3753,6 +3759,46 @@ describe("stack update planner", () => {
 
     const manifest = await readScaffoldManifest(projectDir);
     expect(manifest?.history.at(-1)?.operation).toBe("add");
+  });
+
+  it("returns add recovery details to programmatic callers", async () => {
+    const root = await makeTempRoot("bfs-stack-update-add-recovery-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir));
+
+    const result = await addHandler(
+      { projectDir, email: "resend", install: false },
+      { silent: true },
+    );
+    expect(result?.success).toBe(true);
+    expect(result?.recoveryId).toMatch(/^[0-9a-f-]+$/);
+    expect(result?.lifecycle?.recovery.command).toContain(result!.recoveryId!);
+  });
+
+  it("plans and removes obsolete generated files and dependencies", async () => {
+    const root = await makeTempRoot("bfs-stack-remove-obsolete-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir, { email: "resend" }));
+    const config = await readBtsConfig(projectDir);
+    const target = config?.stackParts?.find((part) => part.role === "email")?.id;
+    expect(target).toBeDefined();
+
+    const plan = await planPartRemoval(projectDir, target!);
+    expect(plan.success).toBe(true);
+    if (!plan.success) return;
+    expect(plan.filesToRemove.length).toBeGreaterThan(0);
+    expect(Object.values(plan.dependencyChanges).some((changes) => "resend" in changes)).toBe(true);
+
+    const removedPaths = [...plan.filesToRemove];
+    const applied = await applyPartRemoval(projectDir, target!, plan.reviewToken);
+    expect(applied.success).toBe(true);
+    if (!applied.success) return;
+    expect(applied.lifecycle.operation).toBe("remove");
+    for (const relativePath of removedPaths) {
+      expect(await pathExists(join(projectDir, relativePath))).toBe(false);
+    }
+    const manifest = await readScaffoldManifest(projectDir);
+    expect(manifest?.history.at(-1)?.operation).toBe("remove");
   });
 
   it("restores every bound preimage when stack apply fails before manifest refresh", async () => {

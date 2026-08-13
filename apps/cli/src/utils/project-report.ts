@@ -56,6 +56,12 @@ export async function getProjectReport(projectDir: string): Promise<ProjectRepor
   }
 
   const plan = reviewed.plan;
+  const requiresFullReview =
+    plan.actionable.length > 0 ||
+    plan.userEdited.length > 0 ||
+    plan.conflicts.length > 0 ||
+    plan.manual.length > 0 ||
+    plan.removed.length > 0;
   return {
     ...status,
     upgrade: {
@@ -63,7 +69,7 @@ export async function getProjectReport(projectDir: string): Promise<ProjectRepor
       actionable: plan.actionable.length > 0,
       applyAllowed: reviewed.applyAllowed,
       guarantee: reviewed.guarantee,
-      requiresFullReview: plan.actionable.length > 0,
+      requiresFullReview,
       summary: {
         drift: plan.drift.length,
         merged: plan.merged.length,
@@ -73,7 +79,7 @@ export async function getProjectReport(projectDir: string): Promise<ProjectRepor
         manualReview: plan.manual.length,
         removedByTemplate: plan.removed.length,
       },
-      blockers: reviewed.blockers,
+      blockers: [...new Set([...reviewed.blockers, ...plan.lifecycle.blockers])],
     },
   };
 }

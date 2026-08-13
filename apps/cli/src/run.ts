@@ -394,7 +394,7 @@ export const router = os.router({
         resultStatus: statusFromCommandResult,
         resultDetails: (result) => ({
           changedFileCount: result.success
-            ? result.filesToAdd.length + result.filesToPatch.length
+            ? result.filesToAdd.length + result.filesToPatch.length + result.filesToRemove.length
             : 0,
           conflictCount: result.success ? result.architectureChanges.length : 0,
           manualReviewCount: result.success ? result.manualReviewBlockers.length : 0,
@@ -855,6 +855,7 @@ export async function update(
     recordBaseline?: boolean;
     acknowledgeUnprovenManifestV1?: boolean;
     reviewToken?: string;
+    recover?: string;
   },
 ) {
   return caller.update([
@@ -867,6 +868,7 @@ export async function update(
       recordBaseline: options?.recordBaseline ?? false,
       acknowledgeUnprovenManifestV1: options?.acknowledgeUnprovenManifestV1 ?? false,
       reviewToken: options?.reviewToken,
+      recover: options?.recover,
     },
   ]);
 }

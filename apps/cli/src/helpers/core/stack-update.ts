@@ -72,6 +72,11 @@ type StackUpdateOperation =
       writeMode: "content";
       content: string;
       summary: string[];
+    }
+  | {
+      kind: "remove";
+      path: string;
+      writeMode: "remove";
     };
 
 export type ArchitectureChange = {
@@ -87,6 +92,7 @@ export type StackUpdatePlan = {
   proposedConfig: BetterTStackConfig;
   filesToAdd: string[];
   filesToPatch: string[];
+  filesToRemove: string[];
   filesUnchanged: string[];
   dependencyChanges: Record<string, Record<string, string>>;
   scriptChanges: Record<string, string[]>;
@@ -116,7 +122,20 @@ export type StackUpdateResult =
 
 export type StackUpdatePlanOptions = {
   replaceArrayKeys?: ReadonlySet<keyof ProjectConfig>;
+  removeObsoleteGeneratedArtifacts?: boolean;
 };
+
+export function getStackUpdatePlanDigest(plan: StackUpdatePlan): string {
+  return hashContent(
+    JSON.stringify({
+      requestedChanges: plan.requestedChanges,
+      proposedConfig: plan.proposedConfig,
+      operations: plan.operations,
+      blockers: plan.manualReviewBlockers,
+      architectureChanges: plan.architectureChanges,
+    }),
+  );
+}
 
 const ARRAY_UPDATE_KEYS = new Set<keyof ProjectConfig>([
   "frontend",
@@ -556,8 +575,11 @@ function buildMigrationSteps(changes: ArchitectureChange[]): string[] {
   return steps;
 }
 
-async function writeMigrationChecklist(projectDir: string, plan: StackUpdatePlan): Promise<void> {
-  if (plan.architectureChanges.length === 0 || plan.migrationSteps.length === 0) return;
+async function buildMigrationChecklistContent(
+  projectDir: string,
+  plan: StackUpdatePlan,
+): Promise<string | null> {
+  if (plan.architectureChanges.length === 0 || plan.migrationSteps.length === 0) return null;
   const migrationPath = path.join(projectDir, "MIGRATION.md");
   const timestamp = new Date().toISOString();
   const swaps = plan.architectureChanges
@@ -575,10 +597,9 @@ async function writeMigrationChecklist(projectDir: string, plan: StackUpdatePlan
 
   if (await fs.pathExists(migrationPath)) {
     const existing = (await fs.readFile(migrationPath, "utf-8")).trimEnd();
-    await fs.writeFile(migrationPath, `${existing}\n\n${section}\n`, "utf-8");
-  } else {
-    await fs.writeFile(migrationPath, `# Migration checklist\n\n${section}\n`, "utf-8");
+    return `${existing}\n\n${section}\n`;
   }
+  return `# Migration checklist\n\n${section}\n`;
 }
 
 function getDefaultDatabaseForDbSetup(
@@ -1062,11 +1083,13 @@ function diffJsonSection(
   previous: JsonObject,
   proposed: JsonObject,
   section: string,
-): { values: Record<string, string>; blockers: string[] } {
+  allowRemovals: boolean,
+): { values: Record<string, string>; removals: string[]; blockers: string[] } {
   const previousSection = isPlainObject(previous[section]) ? previous[section] : {};
   const proposedSection = isPlainObject(proposed[section]) ? proposed[section] : {};
   const currentSection = isPlainObject(current[section]) ? current[section] : {};
   const values: Record<string, string> = {};
+  const removals: string[] = [];
   const blockers: string[] = [];
 
   for (const [name, proposedValue] of Object.entries(proposedSection)) {
@@ -1083,13 +1106,25 @@ function diffJsonSection(
     values[name] = String(proposedValue);
   }
 
-  return { values, blockers };
+  if (allowRemovals) {
+    for (const [name, previousValue] of Object.entries(previousSection)) {
+      if (name in proposedSection) continue;
+      if (currentSection[name] !== previousValue) {
+        blockers.push(`${section}.${name}`);
+        continue;
+      }
+      removals.push(name);
+    }
+  }
+
+  return { values, removals, blockers };
 }
 
 export function mergePackageJson(
   existingContent: string,
   previousContent: string | undefined,
   proposedContent: string,
+  allowRemovals = false,
 ): {
   content?: string;
   summary: string[];
@@ -1116,22 +1151,27 @@ export function mergePackageJson(
   const scriptChanges: string[] = [];
 
   for (const section of PACKAGE_JSON_SECTIONS) {
-    const diff = diffJsonSection(existing, previous, proposed, section);
+    const diff = diffJsonSection(existing, previous, proposed, section, allowRemovals);
     blockers.push(...diff.blockers);
-    if (Object.keys(diff.values).length === 0) continue;
+    if (Object.keys(diff.values).length === 0 && diff.removals.length === 0) continue;
 
     const target = isPlainObject(next[section]) ? { ...next[section] } : {};
+    for (const name of diff.removals) delete target[name];
     for (const [name, value] of Object.entries(diff.values)) {
       target[name] = value;
     }
     next[section] = Object.fromEntries(
       Object.entries(target).sort(([a], [b]) => a.localeCompare(b)),
     );
-    summary.push(`${section}: ${Object.keys(diff.values).join(", ")}`);
+    const changedNames = [...Object.keys(diff.values), ...diff.removals].sort();
+    summary.push(`${section}: ${changedNames.join(", ")}`);
     if (section === "scripts") {
-      scriptChanges.push(...Object.keys(diff.values));
+      scriptChanges.push(...changedNames);
     } else {
-      dependencyChanges[section] = diff.values;
+      dependencyChanges[section] = {
+        ...diff.values,
+        ...Object.fromEntries(diff.removals.map((name) => [name, "removed"])),
+      };
     }
   }
 
@@ -1471,6 +1511,7 @@ export async function planStackUpdate(
   const operations: StackUpdateOperation[] = [];
   const filesToAdd: string[] = [];
   const filesToPatch: string[] = [];
+  const filesToRemove: string[] = [];
   const filesUnchanged: string[] = [];
   const manualReviewBlockers: string[] = [];
   const dependencyChanges: Record<string, Record<string, string>> = {};
@@ -1542,7 +1583,12 @@ export async function planStackUpdate(
     }
 
     if (filePath.endsWith("package.json")) {
-      const merged = mergePackageJson(existingContent, previousContent, proposedContent);
+      const merged = mergePackageJson(
+        existingContent,
+        previousContent,
+        proposedContent,
+        options.removeObsoleteGeneratedArtifacts,
+      );
       for (const blocker of merged.blockers) {
         manualReviewBlockers.push(`${filePath}: ${blocker}`);
       }
@@ -1603,6 +1649,46 @@ export async function planStackUpdate(
     manualReviewBlockers.push(`${filePath}: existing file differs from the generated baseline`);
   }
 
+  if (options.removeObsoleteGeneratedArtifacts) {
+    for (const [filePath, currentFile] of currentGeneratedFiles) {
+      if (proposedGeneratedFiles.has(filePath)) continue;
+      const targetPath = path.join(projectDir, filePath);
+      // oxlint-disable-next-line no-await-in-loop -- each candidate needs its live preimage
+      const existingBuffer = await fs.readFile(targetPath).catch(() => null);
+      if (!existingBuffer) continue;
+      const currentRawFile = currentRawGeneratedFiles.get(filePath);
+      const isBinary = isGeneratedBinaryFile(currentFile);
+      if (isBinary) {
+        // oxlint-disable-next-line no-await-in-loop -- binary baselines are loaded from the tree
+        const baseline = await readGeneratedFileBytes(currentTree, filePath, currentFile);
+        if (buffersEqual(existingBuffer, baseline)) {
+          filesToRemove.push(filePath);
+          operations.push({ kind: "remove", path: filePath, writeMode: "remove" });
+        } else {
+          manualReviewBlockers.push(
+            `${filePath}: obsolete generated binary differs from the generated baseline`,
+          );
+        }
+        continue;
+      }
+
+      const existingContent = existingBuffer.toString("utf-8");
+      if (
+        contentMatchesAny(
+          existingContent,
+          uniqueContents([currentRawFile?.content, currentFile.content]),
+        )
+      ) {
+        filesToRemove.push(filePath);
+        operations.push({ kind: "remove", path: filePath, writeMode: "remove" });
+      } else {
+        manualReviewBlockers.push(
+          `${filePath}: obsolete generated file differs from the generated baseline`,
+        );
+      }
+    }
+  }
+
   await addMissingEnvExampleOperation({
     projectDir,
     proposedGeneratedFiles,
@@ -1619,6 +1705,7 @@ export async function planStackUpdate(
   const manifest = await readScaffoldManifest(projectDir);
   const uniqueFilesToAdd = [...new Set(filesToAdd)].sort();
   const uniqueFilesToPatch = [...new Set(filesToPatch)].sort();
+  const uniqueFilesToRemove = [...new Set(filesToRemove)].sort();
   return {
     success: true,
     projectDir,
@@ -1626,6 +1713,7 @@ export async function planStackUpdate(
     proposedConfig: persistedProposedConfig,
     filesToAdd: uniqueFilesToAdd,
     filesToPatch: uniqueFilesToPatch,
+    filesToRemove: uniqueFilesToRemove,
     filesUnchanged: [...new Set(filesUnchanged)].sort(),
     dependencyChanges,
     scriptChanges,
@@ -1644,6 +1732,7 @@ export async function planStackUpdate(
       changes: {
         added: uniqueFilesToAdd.length,
         patched: uniqueFilesToPatch.length,
+        removed: uniqueFilesToRemove.length,
         manual: manualReviewBlockers.length,
       },
       warnings: migrationSteps,
@@ -1665,15 +1754,25 @@ export async function applyStackUpdate(
   input: Record<string, unknown>,
   options: {
     beforeManifestRefresh?: () => void | Promise<void>;
-    operation?: "add" | "stack-update";
+    operation?: "add" | "remove" | "stack-update";
     replaceArrayKeys?: ReadonlySet<keyof ProjectConfig>;
+    removeObsoleteGeneratedArtifacts?: boolean;
+    expectedPlanDigest?: string;
   } = {},
 ): Promise<StackUpdateResult> {
   const lifecycleOperation = options.operation ?? "stack-update";
   const plan = await planStackUpdate(projectDirInput, input, {
     replaceArrayKeys: options.replaceArrayKeys,
+    removeObsoleteGeneratedArtifacts: options.removeObsoleteGeneratedArtifacts,
   });
   if (!plan.success) return plan;
+  if (options.expectedPlanDigest && getStackUpdatePlanDigest(plan) !== options.expectedPlanDigest) {
+    return {
+      success: false,
+      projectDir: plan.projectDir,
+      error: "The reviewed stack update plan is stale. Re-plan before applying.",
+    };
+  }
   if (plan.manualReviewBlockers.length > 0) {
     return {
       success: false,
@@ -1744,25 +1843,37 @@ export async function applyStackUpdate(
       );
     }
 
-    await Promise.all(
-      plan.operations
-        .filter((operation) => operation.writeMode === "content")
-        .map(async (operation) => {
-          markProjectTransactionWrite(
-            transaction,
-            operation.path,
-            hashContent(Buffer.from(operation.content, "utf-8")),
-          );
-          const targetPath = path.join(plan.projectDir, operation.path);
-          await fs.ensureDir(path.dirname(targetPath));
-          await fs.writeFile(targetPath, operation.content, "utf-8");
-        }),
-    );
+    for (const operation of plan.operations.filter(
+      (candidate) => candidate.writeMode === "content",
+    )) {
+      markProjectTransactionWrite(
+        transaction,
+        operation.path,
+        hashContent(Buffer.from(operation.content, "utf-8")),
+      );
+      const targetPath = path.join(plan.projectDir, operation.path);
+      // oxlint-disable-next-line no-await-in-loop -- rollback must wait for each bound write
+      await fs.ensureDir(path.dirname(targetPath));
+      // oxlint-disable-next-line no-await-in-loop -- rollback must wait for each bound write
+      await fs.writeFile(targetPath, operation.content, "utf-8");
+    }
 
-    await writeMigrationChecklist(plan.projectDir, plan);
-    if (plan.architectureChanges.length > 0) {
-      const migrationBytes = await fs.readFile(path.join(plan.projectDir, "MIGRATION.md"));
-      markProjectTransactionWrite(transaction, "MIGRATION.md", hashContent(migrationBytes));
+    for (const operation of plan.operations.filter(
+      (candidate) => candidate.writeMode === "remove",
+    )) {
+      markProjectTransactionWrite(transaction, operation.path, null);
+      // oxlint-disable-next-line no-await-in-loop -- rollback must bind each removal in order
+      await fs.remove(path.join(plan.projectDir, operation.path));
+    }
+
+    const migrationContent = await buildMigrationChecklistContent(plan.projectDir, plan);
+    if (migrationContent !== null) {
+      markProjectTransactionWrite(
+        transaction,
+        "MIGRATION.md",
+        hashContent(Buffer.from(migrationContent, "utf-8")),
+      );
+      await fs.writeFile(path.join(plan.projectDir, "MIGRATION.md"), migrationContent, "utf-8");
     }
     await writeBtsConfig(proposedConfig, {
       version: plan.proposedConfig.version,

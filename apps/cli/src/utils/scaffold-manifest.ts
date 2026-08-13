@@ -37,6 +37,7 @@ const EXCLUDED_FILE_NAMES = new Set([
 const MANIFEST_OPERATIONS = new Set<ScaffoldManifestOperation["operation"]>([
   "create",
   "add",
+  "remove",
   "stack-update",
   "template-update",
   "recover",
@@ -436,12 +437,15 @@ export async function refreshScaffoldManifestFiles(
 
   for (const relativePath of new Set(relativePaths)) {
     const fullPath = path.join(projectDir, relativePath);
-    if (!(await fs.pathExists(fullPath))) continue;
+    const manifestPath = relativePath.split(path.sep).join("/");
+    if (!(await fs.pathExists(fullPath))) {
+      delete manifest.hashes[manifestPath];
+      if (manifest.baselines) delete manifest.baselines[manifestPath];
+      continue;
+    }
     const stats = await fs.stat(fullPath).catch(() => null);
     if (!stats?.isFile()) continue;
-    manifest.hashes[relativePath.split(path.sep).join("/")] = hashContent(
-      await fs.readFile(fullPath),
-    );
+    manifest.hashes[manifestPath] = hashContent(await fs.readFile(fullPath));
   }
 
   if (baselines && Object.keys(baselines).length > 0) {
