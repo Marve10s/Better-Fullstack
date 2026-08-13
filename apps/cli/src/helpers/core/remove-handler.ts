@@ -85,6 +85,17 @@ async function resolveRemoval(projectDirInput: string, target: string): Promise<
     : undefined;
   const partProjection = stackPartsToLegacyProjectConfigPartial(owner ? [owner, part] : [part]);
   const remainingParts = parts.filter((candidate) => candidate.id !== part.id);
+  const dependentParts = remainingParts.filter(
+    (candidate) =>
+      candidate.ownerPartId === part.ownerPartId &&
+      part.role === "database" &&
+      candidate.role === "orm",
+  );
+  if (dependentParts.length > 0) {
+    throw new Error(
+      `Cannot remove '${formatStackPartSpec(part, parts)}' while dependent part(s) remain: ${listTargets(dependentParts)}. Remove the dependent parts first.`,
+    );
+  }
   const remainingProjection = stackPartsToLegacyProjectConfigPartial(remainingParts);
   const request: Record<string, unknown> = {};
   const replaceArrayKeys = new Set<keyof ProjectConfig>();

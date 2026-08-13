@@ -516,6 +516,22 @@ function mergeDerivedStackPartsWithExistingGraph(
   return parseStackPartSpecs(pruneScopedSpecsWithoutOwners([...new Set(nextSpecs)]), "selected");
 }
 
+function preserveMatchingStackPartIdentity(
+  parts: readonly StackPart[],
+  previousParts: readonly StackPart[],
+): StackPart[] {
+  return parts.map((part) => {
+    const previous = previousParts.find(
+      (candidate) =>
+        candidate.role === part.role &&
+        candidate.ecosystem === part.ecosystem &&
+        candidate.toolId === part.toolId &&
+        candidate.ownerPartId === part.ownerPartId,
+    );
+    return previous ? { ...part, id: previous.id } : part;
+  });
+}
+
 function computeArchitectureChanges(
   currentConfig: ProjectConfig,
   proposedConfig: ProjectConfig,
@@ -562,8 +578,9 @@ async function collectPlanPreimages(
       preimages[relativePath] = { sha256: null, mode: null };
       continue;
     }
-    // Non-files are rejected when the transaction is opened.
-    if (!stats.isFile()) continue;
+    if (!stats.isFile()) {
+      throw new Error(`Transaction target is not a regular file: ${relativePath}`);
+    }
     // oxlint-disable-next-line no-await-in-loop -- plan tokens bind each live preimage
     const bytes = await fs.readFile(target);
     preimages[relativePath] = { sha256: hashContent(bytes), mode: stats.mode & 0o7777 };
@@ -575,7 +592,8 @@ function buildMigrationSteps(changes: ArchitectureChange[]): string[] {
   const steps: string[] = [];
   for (const { key, from, to } of changes) {
     const label = `${key} (${from} -> ${to})`;
-    switch (key) {
+    const riskKey = key.includes(".") ? key.slice(key.lastIndexOf(".") + 1) : key;
+    switch (riskKey) {
       case "database":
         steps.push(
           `${label}: Back up all existing data from the ${from} database before making changes.`,
@@ -1516,6 +1534,34 @@ export async function planStackUpdate(
     ? [...options.stackPartsOverride]
     : mergeDerivedStackPartsWithExistingGraph(currentConfig, proposedConfig);
   Object.assign(proposedConfig, mergeStackPartSpecs(proposedConfig, stackPartSpecs));
+
+  if (options.stackPartsOverride) {
+    const graphProjectedConfig = configFromBtsConfig(
+      buildBtsConfigForPersistence(proposedConfig, {
+        version: currentBtsConfig.version,
+        createdAt: currentBtsConfig.createdAt,
+      }),
+      projectDir,
+      projectName,
+    );
+    const finalCompatibilityResult = shouldApplyCompatibilityAdjustments
+      ? analyzeStackCompatibility(buildCompatibilityInputFromConfig(graphProjectedConfig))
+      : { adjustedStack: null, changes: [] };
+    compatibilityAdjustments.push(
+      ...finalCompatibilityResult.changes.map((change) => `${change.category}: ${change.message}`),
+    );
+    if (finalCompatibilityResult.adjustedStack) {
+      const adjustedConfig = mergeProjectConfig(
+        graphProjectedConfig,
+        compatibilityChangesToProjectConfig(finalCompatibilityResult.adjustedStack),
+      );
+      adjustedConfig.stackParts = preserveMatchingStackPartIdentity(
+        mergeDerivedStackPartsWithExistingGraph(proposedConfig, adjustedConfig),
+        proposedConfig.stackParts ?? [],
+      );
+      proposedConfig = adjustedConfig;
+    }
+  }
   try {
     validateConfigForProgrammaticUse(proposedConfig);
   } catch (error) {
@@ -1746,18 +1792,28 @@ export async function planStackUpdate(
   const uniqueFilesToAdd = [...new Set(filesToAdd)].sort();
   const uniqueFilesToPatch = [...new Set(filesToPatch)].sort();
   const uniqueFilesToRemove = [...new Set(filesToRemove)].sort();
-  const versionChannelPackagePaths = options.includeVersionChannelPaths
-    ? (await collectPackageJsonPaths(projectDir)).map((packageJsonPath) =>
-        path.relative(projectDir, packageJsonPath),
-      )
-    : [];
-  const preimages = await collectPlanPreimages(projectDir, [
-    ...operations.map((operation) => operation.path),
-    "bts.jsonc",
-    SCAFFOLD_MANIFEST_FILE,
-    ...(architectureChanges.length > 0 ? ["MIGRATION.md"] : []),
-    ...versionChannelPackagePaths,
-  ]);
+  const versionChannelPackagePaths =
+    options.includeVersionChannelPaths && proposedConfig.versionChannel !== "stable"
+      ? (await collectPackageJsonPaths(projectDir)).map((packageJsonPath) =>
+          path.relative(projectDir, packageJsonPath),
+        )
+      : [];
+  let preimages: Record<string, { sha256: string | null; mode: number | null }>;
+  try {
+    preimages = await collectPlanPreimages(projectDir, [
+      ...operations.map((operation) => operation.path),
+      "bts.jsonc",
+      SCAFFOLD_MANIFEST_FILE,
+      ...(architectureChanges.length > 0 ? ["MIGRATION.md"] : []),
+      ...versionChannelPackagePaths,
+    ]);
+  } catch (error) {
+    return {
+      success: false,
+      projectDir,
+      error: `Could not bind the stack update plan to safe transaction targets: ${error instanceof Error ? error.message : String(error)}`,
+    };
+  }
   return {
     success: true,
     projectDir,

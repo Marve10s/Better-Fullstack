@@ -37,6 +37,7 @@ export interface AddResult {
 }
 
 const ADD_CONTROL_KEYS = new Set(["projectDir", "install", "dryRun"]);
+const CREATE_ONLY_ADDONS = new Set<Addons>(["starlight"]);
 
 function buildStackUpdateRequest(input: AddInput): Record<string, unknown> {
   const request: Record<string, unknown> = {};
@@ -224,6 +225,14 @@ async function runStackUpdateAdd(
   const dryRun = input.dryRun ?? false;
   const requestedAddons = (input.addons ?? []).filter((addon): addon is Addons => addon !== "none");
   const existingAddons = new Set(currentConfig.addons ?? []);
+  const unsupportedRuntimeAddons = requestedAddons.filter(
+    (addon) => CREATE_ONLY_ADDONS.has(addon) && !existingAddons.has(addon),
+  );
+  if (unsupportedRuntimeAddons.length > 0) {
+    throw new CLIError(
+      `Cannot transactionally add create-only addon(s): ${unsupportedRuntimeAddons.join(", ")}. Select them when creating a project so every generated file is included in the scaffold baseline.`,
+    );
+  }
   const addonsToRepair = await getAddonsToSetup(input, currentConfig, projectDir);
   const isExistingAddonRepair =
     !dryRun &&
@@ -275,8 +284,7 @@ async function runStackUpdateAdd(
   try {
     const addonsToSetup = await getAddonsToSetup(input, currentConfig, projectDir);
     const setupConfig = buildAddonSetupConfig(projectDir, projectName, currentConfig, result);
-    const setupWarnings =
-      addonsToSetup.length > 0 ? await setupAddons(setupConfig, addonsToSetup) : [];
+    const setupWarnings: string[] = [];
     let installFailed = false;
     if (input.install) {
       if (

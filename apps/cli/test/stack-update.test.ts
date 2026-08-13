@@ -7,7 +7,7 @@ import {
 } from "@better-fullstack/types";
 import { afterAll, describe, expect, it } from "bun:test";
 import * as JSONC from "jsonc-parser";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rename, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -3775,6 +3775,51 @@ describe("stack update planner", () => {
     expect(result?.lifecycle?.recovery.command).toContain(result!.recoveryId!);
   });
 
+  it("does not bind untouched package manifests for stable-channel adds", async () => {
+    const root = await makeTempRoot("bfs-stack-update-stable-preimages-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir));
+    await mkdir(join(projectDir, "custom"));
+    await writeFile(join(projectDir, "custom/package.json"), '{"name":"custom"}\n');
+
+    const plan = await planStackUpdate(
+      projectDir,
+      { email: "resend" },
+      { includeVersionChannelPaths: true },
+    );
+    expect(plan.success).toBe(true);
+    if (!plan.success) return;
+    expect(plan.preimages).not.toHaveProperty("custom/package.json");
+  });
+
+  it("refuses add plans that would transact through a config symlink", async () => {
+    const root = await makeTempRoot("bfs-stack-update-symlink-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir));
+    const configPath = join(projectDir, "bts.jsonc");
+    const externalConfigPath = join(root, "external-bts.jsonc");
+    await rename(configPath, externalConfigPath);
+    await symlink(externalConfigPath, configPath);
+
+    const plan = await planStackUpdate(projectDir, { email: "resend" });
+    expect(plan.success).toBe(false);
+    if (!plan.success) expect(plan.error).toContain("not a regular file");
+  });
+
+  it("keeps imperative create-only addons outside transactional add", async () => {
+    const root = await makeTempRoot("bfs-stack-update-create-only-addon-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir));
+
+    const result = await addHandler(
+      { projectDir, addons: ["starlight"], install: false },
+      { silent: true },
+    );
+    expect(result?.success).toBe(false);
+    expect(result?.error).toContain("create-only addon");
+    expect(await pathExists(join(projectDir, "apps/docs/package.json"))).toBe(false);
+  });
+
   it("plans and removes obsolete generated files and dependencies", async () => {
     const root = await makeTempRoot("bfs-stack-remove-obsolete-");
     const projectDir = join(root, "app");
@@ -3830,24 +3875,24 @@ describe("stack update planner", () => {
     await scaffoldGeneratedProject(
       makeConfig(projectDir, {
         stackParts: parseStackPartSpecs([
-          "backend:go:gin:api",
-          "backend:python:fastapi:worker",
+          "backend:typescript:hono:api",
+          "mobile:react-native:native-bare:mobile",
           "api.database:universal:sqlite:api-db",
-          "worker.database:universal:sqlite:worker-db",
+          "mobile.database:universal:sqlite:mobile-db",
         ]),
-        ecosystem: "go",
+        ecosystem: "typescript",
         database: "sqlite",
       }),
     );
 
     const plan = await planPartRemoval(projectDir, "api-db");
-    expect(plan.success).toBe(true);
+    expect(plan.success, plan.success ? undefined : plan.error).toBe(true);
     if (!plan.success) return;
     expect(plan.proposedConfig.stackParts?.some((part) => part.id === "api-db")).toBe(false);
     expect(plan.proposedConfig.stackParts).toContainEqual(
       expect.objectContaining({
-        id: "worker-db",
-        ownerPartId: "worker",
+        id: "mobile-db",
+        ownerPartId: "mobile",
         role: "database",
         toolId: "sqlite",
       }),
@@ -3859,6 +3904,30 @@ describe("stack update planner", () => {
       from: "sqlite",
       to: "none",
     });
+    expect(plan.migrationSteps).toContainEqual(
+      expect.stringContaining("Back up all existing data"),
+    );
+  });
+
+  it("blocks scoped database removal while its owner still has an ORM", async () => {
+    const root = await makeTempRoot("bfs-stack-remove-dependent-capability-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(
+      makeConfig(projectDir, {
+        stackParts: parseStackPartSpecs([
+          "backend:typescript:hono:api",
+          "api.database:universal:sqlite:api-db",
+          "api.orm:typescript:drizzle:api-orm",
+        ]),
+        ecosystem: "typescript",
+        database: "sqlite",
+        orm: "drizzle",
+      }),
+    );
+
+    const plan = await planPartRemoval(projectDir, "api-db");
+    expect(plan.success).toBe(false);
+    if (!plan.success) expect(plan.error).toContain("Remove the dependent parts first");
   });
 
   it("refuses to overwrite a preimage changed after the recovery snapshot", async () => {
