@@ -257,7 +257,9 @@ async function addLifecycleFiles(
     templateSet: metadata.cliVersion,
     schema: "1",
   };
-  const operationId = (await sha256(strToU8(`create:${createdAt}:${projectName}`))).slice(0, 24);
+  const operationId = (
+    await sha256ProjectBytes(strToU8(`create:${createdAt}:${projectName}`))
+  ).slice(0, 24);
 
   const manifestContent = `${JSON.stringify(
     {
