@@ -276,7 +276,12 @@ export async function collectPackageJsonPaths(projectDir: string): Promise<strin
   async function walk(currentDir: string) {
     const entries = await fs.readdir(currentDir, { withFileTypes: true });
     for (const entry of entries) {
-      if (entry.name === "node_modules" || entry.name === ".git" || entry.name === ".turbo") {
+      if (
+        entry.name === "node_modules" ||
+        entry.name === ".git" ||
+        entry.name === ".turbo" ||
+        entry.name === ".bts"
+      ) {
         continue;
       }
 
