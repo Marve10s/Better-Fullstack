@@ -1,3 +1,4 @@
+import fs from "fs-extra";
 import path from "node:path";
 
 import type { ProjectConfig, StackPart } from "../../types";
@@ -27,7 +28,8 @@ export type PartRemoval = {
 
 export type PartRemovalPlan = StackUpdatePlan & {
   removal: PartRemoval;
-  reviewToken: string;
+  applyAllowed: boolean;
+  reviewToken?: string;
 };
 
 export type PartRemovalResult = PartRemovalPlan | Extract<StackUpdateResult, { success: false }>;
@@ -42,9 +44,9 @@ type ResolvedRemoval = {
 
 function selectedParts(config: Awaited<ReturnType<typeof readBtsConfig>>): StackPart[] {
   if (!config) return [];
-  return (
-    config.stackParts?.length ? config.stackParts : legacyProjectConfigToStackParts(config)
-  ).filter((part) => part.source !== "provided" && part.toolId !== "none");
+  const parts =
+    config.stackParts === undefined ? legacyProjectConfigToStackParts(config) : config.stackParts;
+  return parts.filter((part) => part.source !== "provided" && part.toolId !== "none");
 }
 
 function listTargets(parts: readonly StackPart[]): string {
@@ -55,7 +57,7 @@ function listTargets(parts: readonly StackPart[]): string {
 }
 
 async function resolveRemoval(projectDirInput: string, target: string): Promise<ResolvedRemoval> {
-  const projectDir = path.resolve(projectDirInput);
+  const projectDir = await fs.realpath(path.resolve(projectDirInput));
   const config = await readBtsConfig(projectDir);
   if (!config) {
     throw new Error(`No bts.jsonc found in ${projectDir}. Is this a Better Fullstack project?`);
@@ -140,6 +142,7 @@ async function resolveRemoval(projectDirInput: string, target: string): Promise<
 function removalReviewToken(plan: StackUpdatePlan, removal: PartRemoval): string {
   return hashContent(
     JSON.stringify({
+      projectDir: plan.projectDir,
       removal,
       planDigest: getStackUpdatePlanDigest(plan),
     }),
@@ -167,11 +170,13 @@ export async function planPartRemoval(
     stackPartsOverride: resolved.stackPartsOverride,
   });
   if (!plan.success) return plan;
+  const applyAllowed = plan.manualReviewBlockers.length === 0;
   return {
     ...plan,
     lifecycle: { ...plan.lifecycle, operation: "remove" },
     removal: resolved.removal,
-    reviewToken: removalReviewToken(plan, resolved.removal),
+    applyAllowed,
+    reviewToken: applyAllowed ? removalReviewToken(plan, resolved.removal) : undefined,
   };
 }
 
@@ -183,6 +188,13 @@ export async function applyPartRemoval(
 ): Promise<PartRemovalResult> {
   const reviewed = await planPartRemoval(projectDirInput, target);
   if (!reviewed.success) return reviewed;
+  if (!reviewed.applyAllowed || !reviewed.reviewToken) {
+    return {
+      success: false,
+      projectDir: reviewed.projectDir,
+      error: `Manual review required before applying part removal: ${reviewed.manualReviewBlockers.join("; ")}`,
+    };
+  }
   if (!reviewToken || reviewToken !== reviewed.reviewToken) {
     return {
       success: false,
@@ -210,6 +222,7 @@ export async function applyPartRemoval(
   return {
     ...applied,
     removal: resolved.removal,
+    applyAllowed: true,
     reviewToken,
   };
 }

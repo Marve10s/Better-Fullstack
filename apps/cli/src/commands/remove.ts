@@ -75,6 +75,10 @@ export async function removeCommand(input: RemoveCommandInput): Promise<PartRemo
     }
     outro(pc.magenta("Capability removed with transactional recovery available."));
   } else {
+    if (!result.applyAllowed || !result.reviewToken) {
+      outro(pc.yellow("Dry run — resolve manual-review blockers before applying."));
+      return result;
+    }
     const quoteArgument =
       process.platform === "win32" ? quotePowerShellArgument : quotePosixShellArgument;
     log.message("");

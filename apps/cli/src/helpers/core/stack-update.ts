@@ -65,6 +65,10 @@ type JsonObject = Record<string, unknown>;
 
 type FileSnapshot = Pick<VirtualFile, "content" | "sourcePath">;
 
+function toPosixPath(value: string): string {
+  return value.replaceAll("\\", "/");
+}
+
 type StackUpdateOperation =
   | {
       kind: "add" | "replace";
@@ -1795,7 +1799,7 @@ export async function planStackUpdate(
   const versionChannelPackagePaths =
     options.includeVersionChannelPaths && proposedConfig.versionChannel !== "stable"
       ? (await collectPackageJsonPaths(projectDir)).map((packageJsonPath) =>
-          path.relative(projectDir, packageJsonPath),
+          toPosixPath(path.relative(projectDir, packageJsonPath)),
         )
       : [];
   let preimages: Record<string, { sha256: string | null; mode: number | null }>;
@@ -2013,10 +2017,7 @@ export async function applyStackUpdate(
         plan.projectDir,
         plan.proposedConfig.versionChannel,
         (packageJsonPath, sha256) => {
-          const relativePath = path
-            .relative(plan.projectDir, packageJsonPath)
-            .split(path.sep)
-            .join("/");
+          const relativePath = toPosixPath(path.relative(plan.projectDir, packageJsonPath));
           versionChannelRewrites.push(relativePath);
           markProjectTransactionWrite(transaction, relativePath, sha256);
         },

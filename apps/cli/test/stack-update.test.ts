@@ -7,7 +7,7 @@ import {
 } from "@better-fullstack/types";
 import { afterAll, describe, expect, it } from "bun:test";
 import * as JSONC from "jsonc-parser";
-import { mkdir, mkdtemp, readFile, rename, rm, symlink, writeFile } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readFile, rename, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -3815,6 +3815,10 @@ describe("stack update planner", () => {
       {
         projectDir,
         addons: [
+          "biome",
+          "gitleaks",
+          "husky",
+          "lefthook",
           "starlight",
           "ruler",
           "fumadocs",
@@ -3824,6 +3828,7 @@ describe("stack update planner", () => {
           "mcp",
           "skills",
           "oxlint",
+          "tauri",
         ],
         install: false,
       },
@@ -3832,6 +3837,10 @@ describe("stack update planner", () => {
     expect(result?.success).toBe(false);
     expect(result?.error).toContain("require imperative setup");
     for (const addon of [
+      "biome",
+      "gitleaks",
+      "husky",
+      "lefthook",
       "starlight",
       "ruler",
       "fumadocs",
@@ -3841,6 +3850,7 @@ describe("stack update planner", () => {
       "mcp",
       "skills",
       "oxlint",
+      "tauri",
     ]) {
       expect(result?.error).toContain(addon);
     }
@@ -3939,6 +3949,51 @@ describe("stack update planner", () => {
     expect(plan.manualReviewBlockers).toContainEqual(
       expect.stringContaining("no verified scaffold provenance"),
     );
+    expect(plan.applyAllowed).toBe(false);
+    expect(plan.reviewToken).toBeUndefined();
+
+    const applied = await applyPartRemoval(projectDir, target!, undefined);
+    expect(applied.success).toBe(false);
+    if (!applied.success) expect(applied.error).toContain("Manual review required");
+  });
+
+  it("binds removal review tokens to one canonical project", async () => {
+    const root = await makeTempRoot("bfs-stack-remove-project-bound-token-");
+    const reviewedProject = join(root, "reviewed");
+    const cloneProject = join(root, "clone");
+    await scaffoldGeneratedProject(makeConfig(reviewedProject, { email: "resend" }));
+    await cp(reviewedProject, cloneProject, { recursive: true });
+    const config = await readBtsConfig(reviewedProject);
+    const target = config?.stackParts?.find((part) => part.role === "email")?.id;
+    expect(target).toBeDefined();
+
+    const reviewed = await planPartRemoval(reviewedProject, target!);
+    const clonePlan = await planPartRemoval(cloneProject, target!);
+    expect(reviewed.success).toBe(true);
+    expect(clonePlan.success).toBe(true);
+    if (!reviewed.success || !clonePlan.success) return;
+    expect(reviewed.reviewToken).toBeDefined();
+    expect(clonePlan.reviewToken).not.toBe(reviewed.reviewToken);
+
+    const replayed = await applyPartRemoval(cloneProject, target!, reviewed.reviewToken);
+    expect(replayed.success).toBe(false);
+    if (!replayed.success) expect(replayed.error).toContain("missing or stale");
+  });
+
+  it("treats an explicit empty stack graph as authoritative", async () => {
+    const root = await makeTempRoot("bfs-stack-remove-empty-graph-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir, { email: "resend" }));
+    const config = await readBtsConfig(projectDir);
+    expect(config).toBeDefined();
+    await writeFile(
+      join(projectDir, "bts.jsonc"),
+      `${JSON.stringify({ ...config, stackParts: [] }, null, 2)}\n`,
+    );
+
+    const plan = await planPartRemoval(projectDir, "email:typescript:resend");
+    expect(plan.success).toBe(false);
+    if (!plan.success) expect(plan.error).toContain("is not selected");
   });
 
   it("removes one exact owned capability without deleting the same role from another owner", async () => {
