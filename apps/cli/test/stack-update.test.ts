@@ -3793,6 +3793,34 @@ describe("stack update planner", () => {
     expect(plan.preimages).not.toHaveProperty("custom/package.json");
   });
 
+  it("includes version-channel manifest rewrites in dry-run add plans", async () => {
+    const root = await makeTempRoot("bfs-stack-update-add-dry-run-channel-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir, { versionChannel: "latest" }));
+
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response(
+        JSON.stringify({ "dist-tags": { latest: "9.9.9" }, versions: { "9.9.9": {} } }),
+        { status: 200 },
+      )) as typeof fetch;
+    let result: Awaited<ReturnType<typeof addHandler>>;
+    try {
+      result = await addHandler(
+        { projectDir, email: "resend", dryRun: true, install: false },
+        { silent: true },
+      );
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    expect(result?.success).toBe(true);
+    expect(Object.keys(result?.plan?.versionChannelRewrites ?? {})).toContain(
+      "apps/server/package.json",
+    );
+    expect(await pathExists(join(projectDir, "apps/server/src/lib/email.ts"))).toBe(false);
+  });
+
   it("refuses add plans that would transact through a config symlink", async () => {
     const root = await makeTempRoot("bfs-stack-update-symlink-");
     const projectDir = join(root, "app");
@@ -3966,6 +3994,35 @@ describe("stack update planner", () => {
     );
   });
 
+  it("rebases version-channel rewrites onto planned package changes", async () => {
+    const root = await makeTempRoot("bfs-stack-update-channel-rebase-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir));
+
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response(
+        JSON.stringify({ "dist-tags": { latest: "9.9.9" }, versions: { "9.9.9": {} } }),
+        { status: 200 },
+      )) as typeof fetch;
+    try {
+      const result = await applyStackUpdate(
+        projectDir,
+        { email: "resend", versionChannel: "latest" },
+        { applyVersionChannel: true },
+      );
+      expect(result.success).toBe(true);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    const serverPackage = JSON.parse(
+      await readFile(join(projectDir, "apps/server/package.json"), "utf-8"),
+    ) as { dependencies?: Record<string, string> };
+    expect(serverPackage.dependencies?.resend).toBeDefined();
+    expect(serverPackage.dependencies?.resend).toContain("9.9.9");
+  });
+
   it("plans and removes obsolete generated files and dependencies", async () => {
     const root = await makeTempRoot("bfs-stack-remove-obsolete-");
     const projectDir = join(root, "app");
@@ -3990,6 +4047,46 @@ describe("stack update planner", () => {
     }
     const manifest = await readScaffoldManifest(projectDir);
     expect(manifest?.history.at(-1)?.operation).toBe("remove");
+  });
+
+  it("uses the recorded package baseline to classify dependency removals", async () => {
+    const root = await makeTempRoot("bfs-stack-remove-recorded-package-baseline-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir, { email: "resend" }));
+    const config = await readBtsConfig(projectDir);
+    const target = config?.stackParts?.find((part) => part.role === "email")?.id;
+    expect(target).toBeDefined();
+    const packagePath = join(projectDir, "apps/server/package.json");
+    const manifestPath = join(projectDir, "bts.lock.json");
+    const currentPackage = JSON.parse(await readFile(packagePath, "utf-8")) as {
+      dependencies: Record<string, string>;
+    };
+    const oldPackage = structuredClone(currentPackage);
+    oldPackage.dependencies.resend = "^4.0.0";
+    const oldContent = `${JSON.stringify(oldPackage, null, 2)}\n`;
+    const manifest = JSON.parse(await readFile(manifestPath, "utf-8")) as {
+      baselines?: Record<string, string>;
+    };
+    manifest.baselines ??= {};
+    manifest.baselines["apps/server/package.json"] = oldContent;
+    await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+    await writeFile(packagePath, oldContent);
+
+    const uneditedPlan = await planPartRemoval(projectDir, target!);
+    expect(uneditedPlan.success).toBe(true);
+    if (!uneditedPlan.success) return;
+    expect(uneditedPlan.manualReviewBlockers).not.toContainEqual(
+      expect.stringContaining("dependencies.resend"),
+    );
+
+    await writeFile(packagePath, `${JSON.stringify(currentPackage, null, 2)}\n`);
+    const userEditedPlan = await planPartRemoval(projectDir, target!);
+    expect(userEditedPlan.success).toBe(true);
+    if (!userEditedPlan.success) return;
+    expect(userEditedPlan.manualReviewBlockers).toContainEqual(
+      expect.stringContaining("dependencies.resend"),
+    );
+    expect(userEditedPlan.applyAllowed).toBe(false);
   });
 
   it("rejects removal of addons whose imperative setup has no transactional teardown", async () => {
@@ -4149,7 +4246,7 @@ describe("stack update planner", () => {
     expect(applyCommand).toContain("--acknowledge-architecture-change");
   });
 
-  it("blocks scoped database removal while its owner still has an ORM", async () => {
+  it("atomically removes a scoped database and its dependent ORM", async () => {
     const root = await makeTempRoot("bfs-stack-remove-dependent-capability-");
     const projectDir = join(root, "app");
     await scaffoldGeneratedProject(
@@ -4166,8 +4263,15 @@ describe("stack update planner", () => {
     );
 
     const plan = await planPartRemoval(projectDir, "api-db");
-    expect(plan.success).toBe(false);
-    if (!plan.success) expect(plan.error).toContain("Remove the dependent parts first");
+    expect(plan.success).toBe(true);
+    if (!plan.success) return;
+    expect(plan.removal.configKeys).toEqual(expect.arrayContaining(["database", "orm"]));
+    expect(plan.proposedConfig.stackParts).not.toContainEqual(
+      expect.objectContaining({ id: "api-db" }),
+    );
+    expect(plan.proposedConfig.stackParts).not.toContainEqual(
+      expect.objectContaining({ id: "api-orm" }),
+    );
   });
 
   it("blocks scoped ORM removal while its owner still has a database", async () => {

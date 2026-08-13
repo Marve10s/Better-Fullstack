@@ -1674,7 +1674,12 @@ export async function planStackUpdate(
     const proposedRawFile = proposedRawGeneratedFiles.get(filePath);
     const proposedContent = proposedFile.content;
     const previousContent = previousFile?.content;
-    const currentBaselineContents = uniqueContents([previousRawFile?.content, previousContent]);
+    const recordedBaseline = manifest?.baselines?.[filePath];
+    const currentBaselineContents = uniqueContents([
+      recordedBaseline,
+      previousRawFile?.content,
+      previousContent,
+    ]);
     const proposedBaselineContents = uniqueContents([proposedRawFile?.content, proposedContent]);
     const isBinaryFile = isGeneratedBinaryFile(proposedFile) || isGeneratedBinaryFile(previousFile);
     const existingContent =
@@ -1724,7 +1729,7 @@ export async function planStackUpdate(
     if (filePath.endsWith("package.json")) {
       const merged = mergePackageJson(
         existingContent,
-        previousContent,
+        recordedBaseline ?? previousContent,
         proposedContent,
         options.removeObsoleteGeneratedArtifacts,
       );
@@ -1845,9 +1850,26 @@ export async function planStackUpdate(
   const uniqueFilesToAdd = [...new Set(filesToAdd)].sort();
   const uniqueFilesToPatch = [...new Set(filesToPatch)].sort();
   const uniqueFilesToRemove = [...new Set(filesToRemove)].sort();
+  const projectedPackageJsonContents = new Map<string, string | null>();
+  for (const operation of operations) {
+    if (!operation.path.endsWith("package.json")) continue;
+    const packageJsonPath = path.join(projectDir, operation.path);
+    if (operation.writeMode === "remove") {
+      projectedPackageJsonContents.set(packageJsonPath, null);
+    } else if (operation.writeMode === "content") {
+      projectedPackageJsonContents.set(packageJsonPath, operation.content);
+    } else {
+      const generatedFile = proposedGeneratedFiles.get(operation.path);
+      if (generatedFile) projectedPackageJsonContents.set(packageJsonPath, generatedFile.content);
+    }
+  }
   const plannedVersionChannelRewrites =
     options.includeVersionChannelPaths && proposedConfig.versionChannel !== "stable"
-      ? await planDependencyVersionChannel(projectDir, proposedConfig.versionChannel)
+      ? await planDependencyVersionChannel(
+          projectDir,
+          proposedConfig.versionChannel,
+          projectedPackageJsonContents,
+        )
       : [];
   const versionChannelRewrites = Object.fromEntries(
     plannedVersionChannelRewrites.map((rewrite) => [

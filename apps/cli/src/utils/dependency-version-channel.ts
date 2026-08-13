@@ -311,16 +311,31 @@ export async function collectPackageJsonPaths(projectDir: string): Promise<strin
 export async function planDependencyVersionChannel(
   projectDir: string,
   channel: VersionChannel,
+  projectedPackageJsonContents: ReadonlyMap<string, string | null> = new Map(),
 ): Promise<DependencyVersionChannelRewrite[]> {
   if (channel === "stable") return [];
 
-  const packageJsonPaths = await collectPackageJsonPaths(projectDir);
+  const packageJsonPaths = [
+    ...new Set([
+      ...(await collectPackageJsonPaths(projectDir)),
+      ...projectedPackageJsonContents.keys(),
+    ]),
+  ]
+    .filter((packageJsonPath) => projectedPackageJsonContents.get(packageJsonPath) !== null)
+    .sort();
   if (packageJsonPaths.length === 0) return [];
+
+  const readPackageJson = async (packageJsonPath: string): Promise<Record<string, unknown>> => {
+    const projectedContent = projectedPackageJsonContents.get(packageJsonPath);
+    if (typeof projectedContent === "string")
+      return JSON.parse(projectedContent) as Record<string, unknown>;
+    return fs.readJson(packageJsonPath) as Promise<Record<string, unknown>>;
+  };
 
   const packageNames = new Set<string>();
 
   for (const packageJsonPath of packageJsonPaths) {
-    const packageJson = await fs.readJson(packageJsonPath);
+    const packageJson = await readPackageJson(packageJsonPath);
 
     for (const section of getVersionSections(packageJson)) {
       for (const [depName, depVersion] of Object.entries(section)) {
@@ -389,7 +404,7 @@ export async function planDependencyVersionChannel(
   const rewrites: DependencyVersionChannelRewrite[] = [];
 
   for (const packageJsonPath of packageJsonPaths) {
-    const packageJson = await fs.readJson(packageJsonPath);
+    const packageJson = await readPackageJson(packageJsonPath);
     let changed = false;
 
     for (const section of getVersionSections(packageJson)) {

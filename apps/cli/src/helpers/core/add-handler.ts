@@ -35,6 +35,7 @@ export interface AddResult {
   setupWarnings?: string[];
   lifecycle?: LifecycleResult;
   recoveryId?: string;
+  plan?: StackUpdatePlan;
 }
 
 const ADD_CONTROL_KEYS = new Set(["projectDir", "install", "dryRun"]);
@@ -131,6 +132,14 @@ function logStackUpdateSummary(plan: StackUpdatePlan, dryRun: boolean) {
   const dependencyCount = countDependencyChanges(plan);
   if (dependencyCount > 0) {
     log.info(pc.dim(`Dependencies: ${formatCount(dependencyCount, "change")}`));
+  }
+  const versionChannelRewriteCount = Object.keys(plan.versionChannelRewrites).length;
+  if (versionChannelRewriteCount > 0) {
+    log.info(
+      pc.dim(
+        `Version channel: ${formatCount(versionChannelRewriteCount, "package manifest rewrite")}`,
+      ),
+    );
   }
 
   const envCount = countEnvChanges(plan);
@@ -257,7 +266,7 @@ async function runStackUpdateAdd(
   }
 
   const result = dryRun
-    ? await planStackUpdate(projectDir, request)
+    ? await planStackUpdate(projectDir, request, { includeVersionChannelPaths: true })
     : await applyStackUpdate(projectDir, request, {
         operation: "add",
         applyVersionChannel: true,
@@ -277,6 +286,7 @@ async function runStackUpdateAdd(
       success: true,
       addedAddons: [],
       projectDir,
+      plan: result,
     };
   }
 

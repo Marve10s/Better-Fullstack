@@ -97,19 +97,19 @@ async function resolveRemoval(projectDirInput: string, target: string): Promise<
   const owner = part.ownerPartId
     ? parts.find((candidate) => candidate.id === part.ownerPartId)
     : undefined;
-  const partProjection = stackPartsToLegacyProjectConfigPartial(owner ? [owner, part] : [part]);
-  const remainingParts = parts.filter((candidate) => candidate.id !== part.id);
-  const dependentParts = remainingParts.filter(
+  const dependentParts = parts.filter(
     (candidate) =>
+      candidate.id !== part.id &&
       candidate.ownerPartId === part.ownerPartId &&
       part.role === "database" &&
       candidate.role === "orm",
   );
-  if (dependentParts.length > 0) {
-    throw new Error(
-      `Cannot remove '${formatStackPartSpec(part, parts)}' while dependent part(s) remain: ${listTargets(dependentParts)}. Remove the dependent parts first.`,
-    );
-  }
+  const removedParts = [part, ...dependentParts];
+  const removedPartIds = new Set(removedParts.map((candidate) => candidate.id));
+  const partProjection = stackPartsToLegacyProjectConfigPartial(
+    owner ? [owner, ...removedParts] : removedParts,
+  );
+  const remainingParts = parts.filter((candidate) => !removedPartIds.has(candidate.id));
   const requiredDatabaseParts = remainingParts.filter(
     (candidate) =>
       part.role === "orm" &&
@@ -124,12 +124,13 @@ async function resolveRemoval(projectDirInput: string, target: string): Promise<
   const remainingProjection = stackPartsToLegacyProjectConfigPartial(remainingParts);
   const request: Record<string, unknown> = {};
   const replaceArrayKeys = new Set<keyof ProjectConfig>();
+  const removedToolIds = new Set(removedParts.map((candidate) => candidate.toolId));
 
   for (const [rawKey, projectedValue] of Object.entries(partProjection)) {
     const key = rawKey as keyof ProjectConfig;
     if (
       Array.isArray(projectedValue) &&
-      (projectedValue as readonly unknown[]).includes(part.toolId)
+      projectedValue.some((value) => typeof value === "string" && removedToolIds.has(value))
     ) {
       const remainingValue = remainingProjection[key];
       const remaining = Array.isArray(remainingValue)
@@ -139,7 +140,9 @@ async function resolveRemoval(projectDirInput: string, target: string): Promise<
       replaceArrayKeys.add(key);
       continue;
     }
-    if (projectedValue === part.toolId) request[rawKey] = remainingProjection[key] ?? "none";
+    if (typeof projectedValue === "string" && removedToolIds.has(projectedValue)) {
+      request[rawKey] = remainingProjection[key] ?? "none";
+    }
   }
 
   const configKeys = Object.keys(request).sort();
