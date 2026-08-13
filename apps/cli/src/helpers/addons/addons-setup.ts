@@ -2,7 +2,7 @@ import fs from "fs-extra";
 import path from "node:path";
 import { isAlias, isMap, isSeq, parseDocument } from "yaml";
 
-import type { ProjectConfig } from "../../types";
+import type { Addons, ProjectConfig } from "../../types";
 
 import { addPackageDependency } from "../../utils/add-package-deps";
 import { setupFumadocs } from "./fumadocs-setup";
@@ -15,6 +15,23 @@ import { setupTauri } from "./tauri-setup";
 import { setupTui } from "./tui-setup";
 import { setupUltracite } from "./ultracite-setup";
 import { setupWxt } from "./wxt-setup";
+
+export const ADDONS_REQUIRING_IMPERATIVE_SETUP: ReadonlySet<Addons> = new Set([
+  "tauri",
+  "starlight",
+  "biome",
+  "lefthook",
+  "husky",
+  "gitleaks",
+  "ruler",
+  "mcp",
+  "skills",
+  "fumadocs",
+  "ultracite",
+  "oxlint",
+  "opentui",
+  "wxt",
+]);
 
 export async function setupAddons(
   config: ProjectConfig,
@@ -75,10 +92,7 @@ export async function setupAddons(
     } else if (hasBiome) {
       linter = "biome";
     }
-    if (
-      hasHusky &&
-      (setupSet.has("husky") || setupSet.has("biome") || setupSet.has("oxlint"))
-    ) {
+    if (hasHusky && (setupSet.has("husky") || setupSet.has("biome") || setupSet.has("oxlint"))) {
       await setupHusky(projectDir, linter, hasGitleaks);
     }
     if (
@@ -262,10 +276,7 @@ function resolveLefthookSeq(document: ReturnType<typeof parseDocument>, node: un
   return isSeq(resolved) ? resolved : undefined;
 }
 
-function detachLefthookMapAlias(
-  document: ReturnType<typeof parseDocument>,
-  node: unknown,
-) {
+function detachLefthookMapAlias(document: ReturnType<typeof parseDocument>, node: unknown) {
   if (!isAlias(node)) return resolveLefthookMap(document, node);
 
   const resolved = resolveLefthookMap(document, node);
@@ -276,10 +287,7 @@ function detachLefthookMapAlias(
   return detached;
 }
 
-function detachLefthookSeqAlias(
-  document: ReturnType<typeof parseDocument>,
-  node: unknown,
-) {
+function detachLefthookSeqAlias(document: ReturnType<typeof parseDocument>, node: unknown) {
   if (!isAlias(node)) return resolveLefthookSeq(document, node);
 
   const resolved = resolveLefthookSeq(document, node);
@@ -396,7 +404,9 @@ async function ensureLinterLefthookHook(
 
   const document = parseDocument(await fs.readFile(hookPath, "utf8"));
   if (document.errors.length > 0) {
-    throw new Error(`Cannot configure ${linter} in invalid Lefthook YAML: ${document.errors[0]?.message}`);
+    throw new Error(
+      `Cannot configure ${linter} in invalid Lefthook YAML: ${document.errors[0]?.message}`,
+    );
   }
 
   let preCommitNode = document.get("pre-commit", true);
@@ -416,9 +426,7 @@ async function ensureLinterLefthookHook(
   if (isAlias(jobsNode) && isSeq(jobs)) preCommit.set("jobs", jobs);
   if (isSeq(jobs)) {
     for (const definition of definitions) {
-      const existing = jobs.items.find(
-        (job) => isMap(job) && job.get("name") === definition.name,
-      );
+      const existing = jobs.items.find((job) => isMap(job) && job.get("name") === definition.name);
       if (isMap(existing)) {
         for (const [key, value] of Object.entries(definition)) existing.set(key, value);
       } else {
@@ -487,9 +495,7 @@ export async function isLinterLefthookSetupComplete(
     return definitions.every((definition) =>
       jobs.items.some(
         (job) =>
-          isMap(job) &&
-          job.get("name") === definition.name &&
-          job.get("run") === definition.run,
+          isMap(job) && job.get("name") === definition.name && job.get("run") === definition.run,
       ),
     );
   }

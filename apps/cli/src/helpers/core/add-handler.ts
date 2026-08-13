@@ -14,6 +14,7 @@ import { applyDependencyVersionChannel } from "../../utils/dependency-version-ch
 import { CLIError, UserCancelledError } from "../../utils/errors";
 import { renderTitle } from "../../utils/render-title";
 import {
+  ADDONS_REQUIRING_IMPERATIVE_SETUP,
   isGitleaksSetupComplete,
   isLinterLefthookSetupComplete,
   setupAddons,
@@ -37,8 +38,6 @@ export interface AddResult {
 }
 
 const ADD_CONTROL_KEYS = new Set(["projectDir", "install", "dryRun"]);
-const CREATE_ONLY_ADDONS = new Set<Addons>(["starlight"]);
-
 function buildStackUpdateRequest(input: AddInput): Record<string, unknown> {
   const request: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(input as Record<string, unknown>)) {
@@ -226,11 +225,11 @@ async function runStackUpdateAdd(
   const requestedAddons = (input.addons ?? []).filter((addon): addon is Addons => addon !== "none");
   const existingAddons = new Set(currentConfig.addons ?? []);
   const unsupportedRuntimeAddons = requestedAddons.filter(
-    (addon) => CREATE_ONLY_ADDONS.has(addon) && !existingAddons.has(addon),
+    (addon) => ADDONS_REQUIRING_IMPERATIVE_SETUP.has(addon) && !existingAddons.has(addon),
   );
   if (unsupportedRuntimeAddons.length > 0) {
     throw new CLIError(
-      `Cannot transactionally add create-only addon(s): ${unsupportedRuntimeAddons.join(", ")}. Select them when creating a project so every generated file is included in the scaffold baseline.`,
+      `Cannot transactionally add addon(s) that require imperative setup: ${unsupportedRuntimeAddons.join(", ")}. Select them when creating a project so every generated file is included in the scaffold baseline.`,
     );
   }
   const addonsToRepair = await getAddonsToSetup(input, currentConfig, projectDir);

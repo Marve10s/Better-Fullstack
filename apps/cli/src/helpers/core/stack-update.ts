@@ -2007,26 +2007,34 @@ export async function applyStackUpdate(
     const configBytes = await fs.readFile(path.join(plan.projectDir, "bts.jsonc"));
     markProjectTransactionWrite(transaction, "bts.jsonc", hashContent(configBytes));
 
+    const versionChannelRewrites: string[] = [];
     if (options.applyVersionChannel) {
       await applyDependencyVersionChannel(
         plan.projectDir,
         plan.proposedConfig.versionChannel,
         (packageJsonPath, sha256) => {
-          markProjectTransactionWrite(
-            transaction,
-            path.relative(plan.projectDir, packageJsonPath),
-            sha256,
-          );
+          const relativePath = path.relative(plan.projectDir, packageJsonPath);
+          versionChannelRewrites.push(relativePath);
+          markProjectTransactionWrite(transaction, relativePath, sha256);
         },
       );
     }
 
     await options.beforeManifestRefresh?.();
 
+    const structuredBaselines = collectStructuredBaselines(proposedTree);
+    for (const relativePath of versionChannelRewrites) {
+      // oxlint-disable-next-line no-await-in-loop -- baseline must match each persisted rewrite
+      structuredBaselines[relativePath] = await fs.readFile(
+        path.join(plan.projectDir, relativePath),
+        "utf-8",
+      );
+    }
+
     await refreshScaffoldManifestFiles(
       plan.projectDir,
-      plan.operations.map((operation) => operation.path),
-      collectStructuredBaselines(proposedTree),
+      [...plan.operations.map((operation) => operation.path), ...versionChannelRewrites],
+      structuredBaselines,
       {
         type: lifecycleOperation,
         changes: plan.lifecycle.changes,

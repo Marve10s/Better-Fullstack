@@ -3806,18 +3806,70 @@ describe("stack update planner", () => {
     if (!plan.success) expect(plan.error).toContain("not a regular file");
   });
 
-  it("keeps imperative create-only addons outside transactional add", async () => {
+  it("keeps imperative addons outside transactional add", async () => {
     const root = await makeTempRoot("bfs-stack-update-create-only-addon-");
     const projectDir = join(root, "app");
     await scaffoldGeneratedProject(makeConfig(projectDir));
 
     const result = await addHandler(
-      { projectDir, addons: ["starlight"], install: false },
+      {
+        projectDir,
+        addons: ["starlight", "fumadocs", "opentui", "wxt", "mcp", "skills"],
+        install: false,
+      },
       { silent: true },
     );
     expect(result?.success).toBe(false);
-    expect(result?.error).toContain("create-only addon");
+    expect(result?.error).toContain("require imperative setup");
+    for (const addon of ["starlight", "fumadocs", "opentui", "wxt", "mcp", "skills"]) {
+      expect(result?.error).toContain(addon);
+    }
     expect(await pathExists(join(projectDir, "apps/docs/package.json"))).toBe(false);
+  });
+
+  it("records post-channel package rewrites as the current manifest baseline", async () => {
+    const root = await makeTempRoot("bfs-stack-update-channel-baseline-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir));
+    await mkdir(join(projectDir, "custom"));
+    await writeFile(
+      join(projectDir, "custom/package.json"),
+      JSON.stringify(
+        {
+          name: "custom",
+          dependencies: { "manifest-baseline-probe": "^1.0.0" },
+        },
+        null,
+        2,
+      ),
+    );
+
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response(
+        JSON.stringify({
+          "dist-tags": { latest: "9.9.9" },
+          versions: { "9.9.9": {} },
+        }),
+        { status: 200 },
+      )) as typeof fetch;
+    try {
+      const result = await applyStackUpdate(
+        projectDir,
+        { email: "resend", versionChannel: "latest" },
+        { applyVersionChannel: true },
+      );
+      expect(result.success).toBe(true);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    const packagePath = join(projectDir, "custom/package.json");
+    const packageContent = await readFile(packagePath, "utf-8");
+    expect(packageContent).toContain('"manifest-baseline-probe": "^9.9.9"');
+    const manifest = await readScaffoldManifest(projectDir);
+    expect(manifest?.baselines?.["custom/package.json"]).toBe(packageContent);
+    expect(manifest?.hashes["custom/package.json"]).toBe(hashContent(packageContent));
   });
 
   it("plans and removes obsolete generated files and dependencies", async () => {

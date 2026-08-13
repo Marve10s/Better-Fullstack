@@ -80,6 +80,21 @@ describe("MCP project lifecycle parity", () => {
     expect(result.targets.every((target) => target.executed === false)).toBe(true);
   });
 
+  it("excludes retained recovery snapshots from environment checks", async () => {
+    const projectDir = await fs.mkdtemp(path.join(tmpdir(), "bfs-status-recovery-env-"));
+    roots.push(projectDir);
+    await fs.copy(historicalFixture, projectDir);
+    await fs.outputFile(
+      path.join(projectDir, ".bts/recovery/transaction/files/apps/web/.env.example"),
+      "RECOVERY_ONLY_SECRET=required\n",
+    );
+
+    const result = await inspectProject(projectDir, { runChecks: false });
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.checks.some((check) => check.label.includes(".bts/recovery"))).toBe(false);
+  });
+
   it("fails explicit zero-target graphs and injected incomplete matrices", async () => {
     const projectDir = await fs.mkdtemp(path.join(tmpdir(), "bfs-zero-target-"));
     roots.push(projectDir);

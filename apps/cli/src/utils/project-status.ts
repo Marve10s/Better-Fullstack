@@ -87,6 +87,7 @@ export type InspectProjectOptions = {
 const IGNORED_DIRECTORIES = new Set([
   "node_modules",
   ".git",
+  ".bts",
   "dist",
   "build",
   ".next",

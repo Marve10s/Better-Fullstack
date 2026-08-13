@@ -98,12 +98,17 @@ async function validate(repository: string, root: string): Promise<ValidationRes
     const plan = await planReviewedProjectUpdate(projectDir);
     if (!plan.success) throw new Error(plan.error);
     if (!plan.reviewToken) throw new Error(plan.blockers.join(" ") || "No review token issued");
+    if (plan.plan.actionable.length === 0) {
+      throw new Error("Upgrade plan has no actionable generated-file changes");
+    }
     const applied = await applyScaffoldUpgrade(projectDir, {
       expectedPlanDigest: plan.reviewToken,
       acknowledgeUnprovenManifestV1: true,
     });
     if (!applied.success) throw new Error(applied.error);
-    if (applied.recoveryId) await recoverProjectTransaction(projectDir, applied.recoveryId);
+    if (!applied.recoveryId)
+      throw new Error("Actionable apply did not emit a recovery transaction");
+    await recoverProjectTransaction(projectDir, applied.recoveryId);
     const after = await snapshot(projectDir);
     if (JSON.stringify(after) !== JSON.stringify(before)) {
       throw new Error("Recovery did not restore the complete pre-apply project byte-for-byte");
@@ -112,7 +117,7 @@ async function validate(repository: string, root: string): Promise<ValidationRes
       repository,
       success: true,
       actionable: plan.plan.actionable.length,
-      recovered: Boolean(applied.recoveryId),
+      recovered: true,
     };
   } catch (error) {
     return {
