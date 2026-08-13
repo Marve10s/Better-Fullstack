@@ -250,7 +250,10 @@ async function runStackUpdateAdd(
 
   const result = dryRun
     ? await planStackUpdate(projectDir, request)
-    : await applyStackUpdate(projectDir, request, { operation: "add" });
+    : await applyStackUpdate(projectDir, request, {
+        operation: "add",
+        applyVersionChannel: true,
+      });
 
   if (!result.success) {
     throw new CLIError(result.error);
@@ -274,8 +277,6 @@ async function runStackUpdateAdd(
     const setupConfig = buildAddonSetupConfig(projectDir, projectName, currentConfig, result);
     const setupWarnings =
       addonsToSetup.length > 0 ? await setupAddons(setupConfig, addonsToSetup) : [];
-    await applyDependencyVersionChannel(projectDir, result.proposedConfig.versionChannel);
-
     let installFailed = false;
     if (input.install) {
       if (

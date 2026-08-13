@@ -29,6 +29,10 @@ import {
   writeBtsConfig,
 } from "../../utils/bts-config";
 import { validateConfigForProgrammaticUse } from "../../utils/config-validation";
+import {
+  applyDependencyVersionChannel,
+  collectPackageJsonPaths,
+} from "../../utils/dependency-version-channel";
 import { formatCode } from "../../utils/file-formatter";
 import { getEffectiveStack, getGraphSummary } from "../../utils/graph-summary";
 import { getProjectRecoveryCommand } from "../../utils/lifecycle-command";
@@ -38,6 +42,7 @@ import {
   commitProjectTransaction,
   markProjectTransactionWrite,
   rollbackProjectTransaction,
+  type ProjectTransaction,
 } from "../../utils/project-transaction";
 import {
   collectStructuredBaselines,
@@ -102,6 +107,7 @@ export type StackUpdatePlan = {
   migrationSteps: string[];
   requiresArchitectureAck: boolean;
   operations: StackUpdateOperation[];
+  preimages: Record<string, { sha256: string | null; mode: number | null }>;
   installCommand: string;
   compatibilityAdjustments: string[];
   graphSummary?: string;
@@ -124,6 +130,7 @@ export type StackUpdatePlanOptions = {
   replaceArrayKeys?: ReadonlySet<keyof ProjectConfig>;
   removeObsoleteGeneratedArtifacts?: boolean;
   stackPartsOverride?: readonly StackPart[];
+  includeVersionChannelPaths?: boolean;
 };
 
 export function getStackUpdatePlanDigest(plan: StackUpdatePlan): string {
@@ -132,6 +139,7 @@ export function getStackUpdatePlanDigest(plan: StackUpdatePlan): string {
       requestedChanges: plan.requestedChanges,
       proposedConfig: plan.proposedConfig,
       operations: plan.operations,
+      preimages: plan.preimages,
       blockers: plan.manualReviewBlockers,
       architectureChanges: plan.architectureChanges,
     }),
@@ -511,6 +519,7 @@ function mergeDerivedStackPartsWithExistingGraph(
 function computeArchitectureChanges(
   currentConfig: ProjectConfig,
   proposedConfig: ProjectConfig,
+  includeScopedChanges: boolean,
 ): ArchitectureChange[] {
   const changes: ArchitectureChange[] = [];
   for (const key of RISKY_ARCHITECTURE_KEYS) {
@@ -521,7 +530,45 @@ function computeArchitectureChanges(
       changes.push({ key: key as string, from, to });
     }
   }
+  if (includeScopedChanges) {
+    const currentParts = currentConfig.stackParts ?? [];
+    const proposedParts = proposedConfig.stackParts ?? [];
+    for (const part of currentParts) {
+      if (
+        !part.ownerPartId ||
+        !RISKY_ARCHITECTURE_KEYS.includes(part.role as keyof ProjectConfig)
+      ) {
+        continue;
+      }
+      const proposedPart = proposedParts.find((candidate) => candidate.id === part.id);
+      const to = proposedPart?.toolId ?? "none";
+      if (part.toolId === to) continue;
+      changes.push({ key: `${part.ownerPartId}.${part.role}`, from: part.toolId, to });
+    }
+  }
   return changes;
+}
+
+async function collectPlanPreimages(
+  projectDir: string,
+  relativePaths: Iterable<string>,
+): Promise<Record<string, { sha256: string | null; mode: number | null }>> {
+  const preimages: Record<string, { sha256: string | null; mode: number | null }> = {};
+  for (const relativePath of [...new Set(relativePaths)].sort()) {
+    const target = path.join(projectDir, relativePath);
+    // oxlint-disable-next-line no-await-in-loop -- plan tokens bind each live preimage
+    const stats = await fs.lstat(target).catch(() => null);
+    if (!stats) {
+      preimages[relativePath] = { sha256: null, mode: null };
+      continue;
+    }
+    // Non-files are rejected when the transaction is opened.
+    if (!stats.isFile()) continue;
+    // oxlint-disable-next-line no-await-in-loop -- plan tokens bind each live preimage
+    const bytes = await fs.readFile(target);
+    preimages[relativePath] = { sha256: hashContent(bytes), mode: stats.mode & 0o7777 };
+  }
+  return preimages;
 }
 
 function buildMigrationSteps(changes: ArchitectureChange[]): string[] {
@@ -1700,12 +1747,28 @@ export async function planStackUpdate(
   });
 
   const graphPreview = getGraphPreview(persistedProposedConfig);
-  const architectureChanges = computeArchitectureChanges(currentConfig, proposedConfig);
+  const architectureChanges = computeArchitectureChanges(
+    currentConfig,
+    proposedConfig,
+    options.stackPartsOverride !== undefined,
+  );
   const migrationSteps = buildMigrationSteps(architectureChanges);
   const manifest = await readScaffoldManifest(projectDir);
   const uniqueFilesToAdd = [...new Set(filesToAdd)].sort();
   const uniqueFilesToPatch = [...new Set(filesToPatch)].sort();
   const uniqueFilesToRemove = [...new Set(filesToRemove)].sort();
+  const versionChannelPackagePaths = options.includeVersionChannelPaths
+    ? (await collectPackageJsonPaths(projectDir)).map((packageJsonPath) =>
+        path.relative(projectDir, packageJsonPath),
+      )
+    : [];
+  const preimages = await collectPlanPreimages(projectDir, [
+    ...operations.map((operation) => operation.path),
+    "bts.jsonc",
+    SCAFFOLD_MANIFEST_FILE,
+    ...(architectureChanges.length > 0 ? ["MIGRATION.md"] : []),
+    ...versionChannelPackagePaths,
+  ]);
   return {
     success: true,
     projectDir,
@@ -1723,6 +1786,7 @@ export async function planStackUpdate(
     migrationSteps,
     requiresArchitectureAck: architectureChanges.length > 0,
     operations,
+    preimages,
     installCommand: getInstallCommand(normalizedProposedConfig),
     compatibilityAdjustments,
     lifecycle: lifecycleResult({
@@ -1759,6 +1823,8 @@ export async function applyStackUpdate(
     removeObsoleteGeneratedArtifacts?: boolean;
     stackPartsOverride?: readonly StackPart[];
     expectedPlanDigest?: string;
+    applyVersionChannel?: boolean;
+    beforeMutation?: () => void | Promise<void>;
   } = {},
 ): Promise<StackUpdateResult> {
   const lifecycleOperation = options.operation ?? "stack-update";
@@ -1766,6 +1832,7 @@ export async function applyStackUpdate(
     replaceArrayKeys: options.replaceArrayKeys,
     removeObsoleteGeneratedArtifacts: options.removeObsoleteGeneratedArtifacts,
     stackPartsOverride: options.stackPartsOverride,
+    includeVersionChannelPaths: options.applyVersionChannel,
   });
   if (!plan.success) return plan;
   if (options.expectedPlanDigest && getStackUpdatePlanDigest(plan) !== options.expectedPlanDigest) {
@@ -1808,13 +1875,8 @@ export async function applyStackUpdate(
       .filter((operation) => operation.writeMode === "generated")
       .map((operation) => operation.path),
   );
-  const transactionPaths = [
-    ...plan.operations.map((operation) => operation.path),
-    "bts.jsonc",
-    SCAFFOLD_MANIFEST_FILE,
-    ...(plan.architectureChanges.length > 0 ? ["MIGRATION.md"] : []),
-  ];
-  let transaction;
+  const transactionPaths = Object.keys(plan.preimages);
+  let transaction: ProjectTransaction;
   try {
     transaction = await beginProjectTransaction(
       plan.projectDir,
@@ -1830,6 +1892,22 @@ export async function applyStackUpdate(
   }
 
   try {
+    await options.beforeMutation?.();
+    const livePreimages = await collectPlanPreimages(plan.projectDir, transactionPaths);
+    const stalePreimages = transaction.metadata.files.filter((file) => {
+      const live = livePreimages[file.path];
+      if (!live) return true;
+      if (file.state === "absent") return live.sha256 !== null || live.mode !== null;
+      return file.sha256 !== live.sha256 || (file.mode ?? null) !== live.mode;
+    });
+    if (stalePreimages.length > 0) {
+      throw new Error(
+        `The reviewed stack update preimages changed before apply: ${stalePreimages
+          .map((file) => file.path)
+          .join(", ")}. Re-plan before applying.`,
+      );
+    }
+
     if (generatedPaths.size > 0) {
       const generatedFiles = treeToFileMap(proposedTree);
       for (const filePath of generatedPaths) {
@@ -1883,6 +1961,20 @@ export async function applyStackUpdate(
     });
     const configBytes = await fs.readFile(path.join(plan.projectDir, "bts.jsonc"));
     markProjectTransactionWrite(transaction, "bts.jsonc", hashContent(configBytes));
+
+    if (options.applyVersionChannel) {
+      await applyDependencyVersionChannel(
+        plan.projectDir,
+        plan.proposedConfig.versionChannel,
+        (packageJsonPath, sha256) => {
+          markProjectTransactionWrite(
+            transaction,
+            path.relative(plan.projectDir, packageJsonPath),
+            sha256,
+          );
+        },
+      );
+    }
 
     await options.beforeManifestRefresh?.();
 

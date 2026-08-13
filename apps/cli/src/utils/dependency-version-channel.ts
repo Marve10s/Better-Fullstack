@@ -5,6 +5,8 @@ import path from "node:path";
 
 import type { VersionChannel } from "../types";
 
+import { hashContent } from "./scaffold-manifest";
+
 type NpmPackageInfo = {
   "dist-tags"?: Record<string, string>;
   versions?: Record<string, unknown>;
@@ -268,7 +270,7 @@ function applySynchronizedFamilyVersions(
   }
 }
 
-async function collectPackageJsonPaths(projectDir: string): Promise<string[]> {
+export async function collectPackageJsonPaths(projectDir: string): Promise<string[]> {
   const results: string[] = [];
 
   async function walk(currentDir: string) {
@@ -298,6 +300,7 @@ async function collectPackageJsonPaths(projectDir: string): Promise<string[]> {
 export async function applyDependencyVersionChannel(
   projectDir: string,
   channel: VersionChannel,
+  onWrite?: (packageJsonPath: string, sha256: string) => void | Promise<void>,
 ): Promise<void> {
   if (channel === "stable") return;
 
@@ -398,6 +401,12 @@ export async function applyDependencyVersionChannel(
 
     if (changed) {
       await fs.writeJson(packageJsonPath, packageJson, { spaces: 2 });
+      if (onWrite) {
+        // oxlint-disable-next-line no-await-in-loop -- expose the exact persisted bytes to rollback
+        const bytes = await fs.readFile(packageJsonPath);
+        // oxlint-disable-next-line no-await-in-loop -- bind each completed rewrite before continuing
+        await onWrite(packageJsonPath, hashContent(bytes));
+      }
     }
   }
 }

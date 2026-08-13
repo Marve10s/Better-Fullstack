@@ -2,7 +2,7 @@ import { intro, log } from "@clack/prompts";
 import path from "node:path";
 import pc from "picocolors";
 
-import { trackCommand } from "../utils/analytics";
+import { flushTelemetry, trackCommand } from "../utils/analytics";
 import { handleError } from "../utils/errors";
 import {
   inspectProject,
@@ -81,6 +81,7 @@ export async function doctorCommand(input: DoctorCommandInput): Promise<void> {
       errorName: "ProjectStatusError",
       issueCount: 1,
     });
+    await flushTelemetry();
     if (json) {
       console.log(JSON.stringify(result, null, 2));
       process.exit(1);
@@ -119,5 +120,8 @@ export async function doctorCommand(input: DoctorCommandInput): Promise<void> {
   if (json) console.log(JSON.stringify(result, null, 2));
   else renderResult(result);
 
-  if (!result.ok) process.exit(1);
+  if (!result.ok) {
+    await flushTelemetry();
+    process.exit(1);
+  }
 }

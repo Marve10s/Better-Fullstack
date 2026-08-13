@@ -396,7 +396,6 @@ export const router = os.router({
           changedFileCount: result.success
             ? result.filesToAdd.length + result.filesToPatch.length + result.filesToRemove.length
             : 0,
-          conflictCount: result.success ? result.architectureChanges.length : 0,
           manualReviewCount: result.success ? result.manualReviewBlockers.length : 0,
         }),
       });

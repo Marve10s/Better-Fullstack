@@ -3830,6 +3830,32 @@ describe("stack update planner", () => {
       }),
     );
     expect(plan.proposedConfig.database).toBe("sqlite");
+    expect(plan.requiresArchitectureAck).toBe(true);
+    expect(plan.architectureChanges).toContainEqual({
+      key: "api.database",
+      from: "sqlite",
+      to: "none",
+    });
+  });
+
+  it("refuses to overwrite a preimage changed after the recovery snapshot", async () => {
+    const root = await makeTempRoot("bfs-stack-update-live-preimage-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir));
+    const configPath = join(projectDir, "bts.jsonc");
+    const concurrentContent = `${await readFile(configPath, "utf-8")}\n`;
+
+    const result = await applyStackUpdate(
+      projectDir,
+      { email: "resend" },
+      {
+        beforeMutation: () => writeFile(configPath, concurrentContent),
+      },
+    );
+
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toContain("preimages changed before apply");
+    expect(await readFile(configPath, "utf-8")).toBe(concurrentContent);
   });
 
   it("restores every bound preimage when stack apply fails before manifest refresh", async () => {
