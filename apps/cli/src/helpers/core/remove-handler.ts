@@ -10,6 +10,7 @@ import {
 } from "../../types";
 import { readBtsConfig } from "../../utils/bts-config";
 import { hashContent } from "../../utils/scaffold-manifest";
+import { ADDONS_REQUIRING_IMPERATIVE_SETUP } from "../addons/addons-setup";
 import {
   applyStackUpdate,
   getStackUpdatePlanDigest,
@@ -76,6 +77,14 @@ async function resolveRemoval(projectDirInput: string, target: string): Promise<
 
   const part = matches[0];
   if (!part) throw new Error(`Removal target '${target}' is not selected.`);
+  if (
+    config.addons?.includes(part.toolId as ProjectConfig["addons"][number]) &&
+    ADDONS_REQUIRING_IMPERATIVE_SETUP.has(part.toolId as ProjectConfig["addons"][number])
+  ) {
+    throw new Error(
+      `Cannot transactionally remove addon '${part.toolId}' because its imperative setup artifacts are not yet modeled for teardown. Remove those artifacts manually before updating the stack selection.`,
+    );
+  }
   if (PRIMARY_ROLES.has(part.role) && !part.ownerPartId) {
     throw new Error(
       `Cannot remove primary ${part.role} part '${target}'. Replace the architecture through add/stack-update so compatibility and migration checks can run.`,

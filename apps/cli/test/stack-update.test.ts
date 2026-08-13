@@ -3929,6 +3929,19 @@ describe("stack update planner", () => {
     expect(manifest?.history.at(-1)?.operation).toBe("remove");
   });
 
+  it("rejects removal of addons whose imperative setup has no transactional teardown", async () => {
+    const root = await makeTempRoot("bfs-stack-remove-imperative-addon-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir, { addons: ["biome"] }));
+    const config = await readBtsConfig(projectDir);
+    const target = config?.stackParts?.find((part) => part.toolId === "biome")?.id;
+    expect(target).toBeDefined();
+
+    const plan = await planPartRemoval(projectDir, target!);
+    expect(plan.success).toBe(false);
+    if (!plan.success) expect(plan.error).toContain("imperative setup artifacts");
+  });
+
   it("keeps obsolete files for manual review without verified recorded provenance", async () => {
     const root = await makeTempRoot("bfs-stack-remove-unverified-");
     const projectDir = join(root, "app");

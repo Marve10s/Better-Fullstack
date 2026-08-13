@@ -83,8 +83,14 @@ describe("telemetry decision dashboard", () => {
               "doctor:succeeded": 2,
               "remove:started": 1,
               "remove:succeeded": 1,
+              "bfs_plan_part_removal:started": 1,
+              "bfs_plan_part_removal:succeeded": 1,
+              "bfs_apply_part_removal:started": 1,
+              "bfs_apply_part_removal:failed": 1,
               "status:started": 1,
               "status:succeeded": 1,
+              "bfs_get_project_status:started": 2,
+              "bfs_get_project_status:succeeded": 2,
             },
             actionOutcomes: {},
             clients: { cli: 20, web: 10 },
@@ -140,8 +146,14 @@ describe("telemetry decision dashboard", () => {
       successRate: 7 / 8,
     });
     expect(data.operations.find((operation) => operation.id === "check")?.succeeded).toBe(3);
-    expect(data.operations.find((operation) => operation.id === "remove")?.successRate).toBe(1);
+    expect(data.operations.find((operation) => operation.id === "remove")).toMatchObject({
+      attempts: 3,
+      succeeded: 2,
+      failed: 1,
+      successRate: 2 / 3,
+    });
     expect(data.operations.find((operation) => operation.id === "status")?.successRate).toBe(1);
+    expect(data.operations.find((operation) => operation.id === "status")?.attempts).toBe(3);
     expect(data.adoption.map((item) => item.name)).toEqual(["TypeScript", "Rust", "Python"]);
     expect(data.repeatUse.repeat7dRate).toBe(0.4);
     expect(data.failureReasons[0]?.name).toBe("Create / Install");
