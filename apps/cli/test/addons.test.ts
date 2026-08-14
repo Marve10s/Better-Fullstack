@@ -27,6 +27,7 @@ describe("Addon Configurations", () => {
       "gitleaks",
       "turborepo",
       "nx",
+      "vite-plus",
       "oxlint",
       "msw",
     ];
@@ -648,7 +649,59 @@ describe("Addon Configurations", () => {
         expectError: true,
       });
 
-      expectError(result, "Nx and Turborepo are alternative workspace runners");
+      expectError(result, "alternative workspace runners");
+    });
+  });
+
+  describe("Vite+ Addon", () => {
+    it("generates Vite+ workspace scripts and dependency", async () => {
+      const result = await runTRPCTest({
+        projectName: "vite-plus-workspace",
+        addons: ["vite-plus"],
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "trpc",
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const rootPackage = readFileSync(join(result.projectDir!, "package.json"), "utf-8");
+      expect(rootPackage).toContain('"vite-plus": "^0.2.9"');
+      expect(rootPackage).toContain('"dev": "vp run -r --parallel dev"');
+      expect(rootPackage).toContain('"build": "vp run -r build"');
+      expect(rootPackage).toContain('"check-types": "vp run -r check-types"');
+      expect(rootPackage).toContain(
+        '"db:push": "vp run --fail-if-no-match --filter @vite-plus-workspace/db db:push"',
+      );
+    });
+
+    it("rejects selecting Vite+ with another workspace runner", async () => {
+      const result = await runTRPCTest({
+        projectName: "vite-plus-turbo-fail",
+        addons: ["vite-plus", "turborepo"],
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "trpc",
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        expectError: true,
+      });
+
+      expectError(result, "alternative workspace runners");
     });
   });
 

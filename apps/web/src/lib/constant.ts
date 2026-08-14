@@ -2539,6 +2539,14 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
     {
+      id: "vite-plus",
+      name: "Vite+",
+      description: "Unified web toolchain and workspace runner (Beta)",
+      icon: "https://raw.githubusercontent.com/voidzero-dev/vite-plus/main/logo.svg",
+      color: "from-violet-500 to-cyan-400",
+      default: false,
+    },
+    {
       id: "axios",
       name: "Axios",
       description: "HTTP client with interceptors, cancellation, and typed responses",

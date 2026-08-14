@@ -62,9 +62,7 @@ describe("compatibility issue helpers", () => {
       };
 
       expect(analyzeStackCompatibility(stack).adjustedStack?.observability).toBe("none");
-      expect(getDisabledReason(stack, "observability", "signoz")).toContain(
-        "not yet bootstrapped",
-      );
+      expect(getDisabledReason(stack, "observability", "signoz")).toContain("not yet bootstrapped");
     }
   });
 
@@ -85,18 +83,10 @@ describe("compatibility issue helpers", () => {
       "Cloudflare-hosted fullstack apps",
     );
     expect(
-      getDisabledReason(
-        { ...cloudflareSelfStack, webDeploy: "none" },
-        "webDeploy",
-        "cloudflare",
-      ),
+      getDisabledReason({ ...cloudflareSelfStack, webDeploy: "none" }, "webDeploy", "cloudflare"),
     ).toContain("Cloudflare-hosted fullstack apps");
     expect(
-      getDisabledReason(
-        { ...cloudflareSelfStack, backend: "self" },
-        "observability",
-        "signoz",
-      ),
+      getDisabledReason({ ...cloudflareSelfStack, backend: "self" }, "observability", "signoz"),
     ).toContain("Cloudflare-hosted fullstack apps");
   });
 
@@ -159,18 +149,12 @@ describe("compatibility issue helpers", () => {
       goObservability: "signoz" as const,
     };
     expect(analyzeStackCompatibility(noServerGo).adjustedStack?.goObservability).toBe("none");
-    expect(getDisabledReason(noServerGo, "goObservability", "signoz")).toContain(
-      "server target",
-    );
+    expect(getDisabledReason(noServerGo, "goObservability", "signoz")).toContain("server target");
     expect(
       getDisabledReason({ ...noServerGo, goApi: "grpc-go" }, "goObservability", "signoz"),
     ).toBeNull();
     expect(
-      getDisabledReason(
-        { ...noServerGo, auth: "go-better-auth" },
-        "goObservability",
-        "signoz",
-      ),
+      getDisabledReason({ ...noServerGo, auth: "go-better-auth" }, "goObservability", "signoz"),
     ).toBeNull();
 
     const unsupportedPython = {
@@ -1058,7 +1042,10 @@ describe("compatibility issue helpers", () => {
     });
     expect(convexKong.adjustedStack?.appPlatforms).not.toContain("kong");
     expect(convexKong.changes).toContainEqual(
-      expect.objectContaining({ category: "appPlatforms", message: expect.stringContaining("Kong") }),
+      expect.objectContaining({
+        category: "appPlatforms",
+        message: expect.stringContaining("Kong"),
+      }),
     );
 
     expect(
@@ -1138,7 +1125,7 @@ describe("compatibility issue helpers", () => {
         "appPlatforms",
         "nx",
       ),
-    ).toBe("Choose either Nx or Turborepo, not both");
+    ).toBe("Choose one workspace runner: Turborepo, Nx, or Vite+");
 
     expect(
       getDisabledReason(
@@ -1155,11 +1142,7 @@ describe("compatibility issue helpers", () => {
 
   it("gates Knip through the code quality category", () => {
     expect(
-      getDisabledReason(
-        { ...DEFAULT_STACK_SELECTION, ecosystem: "go" },
-        "codeQuality",
-        "knip",
-      ),
+      getDisabledReason({ ...DEFAULT_STACK_SELECTION, ecosystem: "go" }, "codeQuality", "knip"),
     ).toBe("Knip requires a TypeScript or React Native workspace");
     expect(
       getDisabledReason(

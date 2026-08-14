@@ -176,6 +176,7 @@ export const AddonsSchema = z
     "skills",
     "turborepo",
     "nx",
+    "vite-plus",
     "fumadocs",
     "ultracite",
     "oxlint",

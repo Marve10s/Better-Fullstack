@@ -33,7 +33,7 @@ type PackageManagerConfig = {
   filter: (workspace: string, script: string) => string;
 };
 
-type WorkspaceTool = "turbo" | "nx" | null;
+type WorkspaceTool = "turbo" | "nx" | "vite-plus" | null;
 
 const VIRTUAL_PACKAGE_MANAGER_VERSIONS: Record<ProjectConfig["packageManager"], string> = {
   npm: "10.9.2",
@@ -395,6 +395,14 @@ function getPackageManagerConfig(
       filter: (workspace, script) => `nx run ${workspace} --target=${script}`,
     };
   }
+  if (workspaceTool === "vite-plus") {
+    return {
+      dev: "vp run -r --parallel dev",
+      build: "vp run -r build",
+      checkTypes: "vp run -r check-types",
+      filter: (workspace, script) => `vp run --fail-if-no-match --filter ${workspace} ${script}`,
+    };
+  }
 
   switch (packageManager) {
     case "pnpm":
@@ -435,6 +443,7 @@ function getPackageManagerConfig(
 function getWorkspaceTool(addons: ProjectConfig["addons"]): WorkspaceTool {
   if (addons.includes("nx")) return "nx";
   if (addons.includes("turborepo")) return "turbo";
+  if (addons.includes("vite-plus")) return "vite-plus";
   return null;
 }
 

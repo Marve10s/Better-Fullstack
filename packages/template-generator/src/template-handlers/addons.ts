@@ -199,8 +199,8 @@ export async function processAddonTemplates(
   for (const addon of config.addons) {
     if (addon === "none") continue;
 
-    // turborepo is handled programmatically by turbo-generator.ts
-    if (addon === "turborepo") continue;
+    // Workspace runners are handled programmatically by processors.
+    if (addon === "turborepo" || addon === "nx" || addon === "vite-plus") continue;
 
     if (addon === "pwa") {
       if (config.frontend.includes("next") || config.frontend.includes("vinext")) {

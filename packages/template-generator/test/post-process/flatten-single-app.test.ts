@@ -282,6 +282,24 @@ describe("flattenSingleApp", () => {
     );
   });
 
+  it("preserves Vite+ as a usable single-app toolchain", () => {
+    const vfs = seedThinSelfMonorepo("flatapp");
+    const rootPkg = vfs.readJson<Record<string, unknown>>("package.json") ?? {};
+    vfs.writeJson("package.json", {
+      ...rootPkg,
+      devDependencies: { "vite-plus": "^0.2.9" },
+    });
+
+    flattenSingleApp(vfs, makeConfig({ ...SINGLE_APP_NEXT, addons: ["vite-plus"] }));
+
+    const flatPkg = vfs.readJson<{
+      scripts?: Record<string, string>;
+      devDependencies?: Record<string, string>;
+    }>("package.json");
+    expect(flatPkg?.devDependencies?.["vite-plus"]).toBe("^0.2.9");
+    expect(flatPkg?.scripts?.["vite-plus:check"]).toBe("vp check");
+  });
+
   it("removes workspace tooling files", () => {
     const vfs = seedThinSelfMonorepo("flatapp");
     vfs.writeJson("turbo.json", { tasks: {} });

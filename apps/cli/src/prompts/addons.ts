@@ -33,6 +33,10 @@ function getAddonDisplay(addon: Addons): { label: string; hint: string } {
       label = "Nx";
       hint = "Smart monorepo task runner and cache";
       break;
+    case "vite-plus":
+      label = "Vite+";
+      hint = "Unified web toolchain and workspace runner (Beta)";
+      break;
     case "pwa":
       label = "PWA";
       hint = "Make your app installable and work offline";
@@ -197,6 +201,7 @@ const ADDON_GROUPS: Record<string, Addons[]> = {
   Tooling: [
     "turborepo",
     "nx",
+    "vite-plus",
     "github-actions",
     "biome",
     "eslint",

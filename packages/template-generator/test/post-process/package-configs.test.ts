@@ -1,6 +1,5 @@
+import { cliInputToProjectConfigPartial, parseStackPartSpecs } from "@better-fullstack/types";
 import { describe, expect, it } from "bun:test";
-
-import { cliInputToProjectConfigPartial } from "@better-fullstack/types";
 
 import { processPackageConfigs } from "../../src/post-process/package-configs";
 import { makeConfig } from "../_fixtures/config-factory";
@@ -146,6 +145,36 @@ describe("processPackageConfigs", () => {
       "db:push": "nx run @nx-demo/db --target=db:push",
       "db:generate": "nx run @nx-demo/db --target=db:generate",
       "db:migrate": "nx run @nx-demo/db --target=db:migrate",
+    });
+  });
+
+  it("generates Vite+ recursive workspace scripts", () => {
+    const vfs = createSeededVFS();
+    vfs.writeJson("package.json", { name: "starter", scripts: {}, workspaces: [] });
+
+    processPackageConfigs(
+      vfs,
+      makeConfig({
+        projectName: "vite-plus-demo",
+        addons: ["vite-plus"],
+        database: "postgres",
+        orm: "prisma",
+        stackParts: parseStackPartSpecs([
+          "frontend:typescript:next",
+          "backend:go:gin",
+          "workspaceTooling:universal:vite-plus",
+        ]),
+      }),
+    );
+
+    expect(vfs.readJson<PackageJson>("package.json")?.scripts).toMatchObject({
+      dev: "vp run --fail-if-no-match --filter web dev",
+      build: "vp run -r build",
+      "check-types": "vp run -r check-types",
+      "dev:web": "vp run --fail-if-no-match --filter web dev",
+      "dev:native": "vp run --fail-if-no-match --filter native dev",
+      "dev:server": "cd apps/server && go run cmd/server/main.go",
+      "db:push": "vp run --fail-if-no-match --filter @vite-plus-demo/db db:push",
     });
   });
 

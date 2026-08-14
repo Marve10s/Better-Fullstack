@@ -738,8 +738,11 @@ export function validateAddonsAgainstFrontends(
   goApi?: ProjectConfig["goApi"],
   javaApi?: ProjectConfig["javaApi"],
 ) {
-  if (addons.includes("nx") && addons.includes("turborepo")) {
-    exitWithError("Nx and Turborepo are alternative workspace runners. Choose one addon.");
+  const workspaceRunners = addons.filter((addon) =>
+    ["turborepo", "nx", "vite-plus"].includes(addon),
+  );
+  if (workspaceRunners.length > 1) {
+    exitWithError("Turborepo, Nx, and Vite+ are alternative workspace runners. Choose one addon.");
   }
 
   for (const addon of addons) {

@@ -47,13 +47,7 @@ export {
 
 export type CompatibilityCategory = OptionCategory;
 
-const SIGNOZ_SUPPORTED_GO_WEB_FRAMEWORKS = new Set([
-  "gin",
-  "echo",
-  "fiber",
-  "chi",
-  "stdlib",
-]);
+const SIGNOZ_SUPPORTED_GO_WEB_FRAMEWORKS = new Set(["gin", "echo", "fiber", "chi", "stdlib"]);
 const SIGNOZ_SUPPORTED_PYTHON_WEB_FRAMEWORKS = new Set(["fastapi"]);
 
 export function isSignozSupportedGoWebFramework(framework: string): boolean {
@@ -2535,11 +2529,7 @@ export const getDisabledReason = (
       return "React Native payments currently support RevenueCat only";
     }
 
-    if (
-      !reactNativeCategories.has(category) &&
-      optionId !== "none" &&
-      optionId !== "false"
-    ) {
+    if (!reactNativeCategories.has(category) && optionId !== "none" && optionId !== "false") {
       return "React Native ecosystem only supports native mobile options";
     }
   }
@@ -2620,11 +2610,7 @@ export const getDisabledReason = (
   }
 
   if (currentStack.ecosystem === "java" && currentStack.javaLanguage === "kotlin") {
-    if (
-      category === "javaWebFramework" &&
-      optionId !== "spring-boot" &&
-      optionId !== "ktor"
-    ) {
+    if (category === "javaWebFramework" && optionId !== "spring-boot" && optionId !== "ktor") {
       return "Kotlin sources are only wired for the Spring Boot and Ktor scaffolds";
     }
     if (category === "javaBuildTool" && optionId === "none") {
@@ -3092,20 +3078,11 @@ export const getDisabledReason = (
     }
   }
 
-  if (
-    category === "appPlatforms" &&
-    optionId === "nx" &&
-    currentStack.appPlatforms.includes("turborepo")
-  ) {
-    return "Choose either Nx or Turborepo, not both";
-  }
-
-  if (
-    category === "appPlatforms" &&
-    optionId === "turborepo" &&
-    currentStack.appPlatforms.includes("nx")
-  ) {
-    return "Choose either Turborepo or Nx, not both";
+  if (category === "appPlatforms" && ["turborepo", "nx", "vite-plus"].includes(optionId)) {
+    const otherRunner = currentStack.appPlatforms.find(
+      (selected) => selected !== optionId && ["turborepo", "nx", "vite-plus"].includes(selected),
+    );
+    if (otherRunner) return "Choose one workspace runner: Turborepo, Nx, or Vite+";
   }
 
   // ============================================
@@ -4776,6 +4753,7 @@ const ADDON_COMPATIBILITY: Record<Addons, readonly Frontend[]> = {
   gitleaks: [],
   turborepo: [],
   nx: [],
+  "vite-plus": [],
   starlight: [],
   ultracite: [],
   ruler: [],

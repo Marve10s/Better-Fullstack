@@ -809,6 +809,7 @@ const APP_SHELL_VALUES = APP_PLATFORM_ADDON_VALUES;
 const APP_PLATFORM_VALUES = [
   "turborepo",
   "nx",
+  "vite-plus",
   "mcp",
   "skills",
   "msw",
@@ -1309,6 +1310,9 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     opentui: "OpenTUI",
   },
   appPlatforms: {
+    turborepo: "Turborepo",
+    nx: "Nx",
+    "vite-plus": "Vite+",
     mcp: "MCP",
     msw: "MSW",
     swr: "SWR",

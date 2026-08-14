@@ -1072,6 +1072,7 @@ function generateFeaturesList(
     husky: "- **Husky** - Git hooks for code quality",
     starlight: "- **Starlight** - Documentation site with Astro",
     turborepo: "- **Turborepo** - Optimized monorepo build system",
+    "vite-plus": "- **Vite+** - Unified web toolchain and workspace runner",
     msw: "- **MSW** - Mock Service Worker for API mocking",
     storybook: "- **Storybook** - Component development and testing",
     swr: "- **SWR** - React Hooks for data fetching and caching",

@@ -176,6 +176,7 @@ export const dependencyVersionMap = {
 
   turbo: "^2.10.0",
   nx: "^23.1.1",
+  "vite-plus": "^0.2.9",
 
   // Chat SDK (Vercel)
   chat: "^4.37.0",

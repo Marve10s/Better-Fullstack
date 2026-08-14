@@ -223,15 +223,15 @@ function buildFlatPackageJson(
   const devDependencies = resolveDeps(webPkg.devDependencies, catalog, projectScope);
   const rootKnipVersion = rootPkg.devDependencies?.knip;
   if (config.addons.includes("knip") && rootKnipVersion) {
-    const resolvedKnipVersion = resolveDeps(
-      { knip: rootKnipVersion },
-      catalog,
-      projectScope,
-    ).knip;
+    const resolvedKnipVersion = resolveDeps({ knip: rootKnipVersion }, catalog, projectScope).knip;
 
     if (resolvedKnipVersion) {
       devDependencies.knip = resolvedKnipVersion;
     }
+  }
+  const rootVitePlusVersion = rootPkg.devDependencies?.["vite-plus"];
+  if (config.addons.includes("vite-plus") && rootVitePlusVersion) {
+    devDependencies["vite-plus"] = rootVitePlusVersion;
   }
 
   const scripts = { ...webPkg.scripts };
@@ -246,6 +246,9 @@ function buildFlatPackageJson(
       const script = rootPkg.scripts?.[scriptName];
       if (script) scripts[scriptName] = script;
     }
+  }
+  if (config.addons.includes("vite-plus")) {
+    scripts["vite-plus:check"] = "vp check";
   }
 
   const flatPkg: PackageJson = {

@@ -448,6 +448,7 @@ const FRONTEND_TESTING_ADDONS = new Set(["msw", "storybook"]);
 const WORKSPACE_TOOLING_ADDONS = new Set([
   "turborepo",
   "nx",
+  "vite-plus",
   "docker-compose",
   "devcontainer",
   "kong",
@@ -979,13 +980,9 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(RUST_FRONTEND_VALUES, "frontend", "rust", "rustFrontend"),
   ...defineTools(DOTNET_FRONTEND_VALUES, "frontend", "dotnet", "dotnetFrontend"),
   ...defineTools(KOTLIN_MOBILE_VALUES, "mobile", "kotlin", "kotlinMobile"),
-  ...defineTools(
-    KOTLIN_MOBILE_LIBRARIES_VALUES,
-    "libraries",
-    "kotlin",
-    "kotlinMobileLibraries",
-    { allowMultiple: true },
-  ),
+  ...defineTools(KOTLIN_MOBILE_LIBRARIES_VALUES, "libraries", "kotlin", "kotlinMobileLibraries", {
+    allowMultiple: true,
+  }),
   ...defineTools(SWIFT_MOBILE_VALUES, "mobile", "swift", "swiftMobile"),
   ...defineTools(DART_MOBILE_VALUES, "mobile", "dart", "dartMobile"),
   ...defineTools(RUST_ORM_VALUES, "orm", "rust", "rustOrm"),
@@ -2079,23 +2076,17 @@ function createAddonCompatibilityIssue(
 
   if (part.role === "workspaceTooling") {
     const workspaceTooling = context.selectedToolIdsByRoleList?.workspaceTooling ?? [];
-    if (part.toolId === "nx" && workspaceTooling.includes("turborepo")) {
+    const workspaceRunners = ["turborepo", "nx", "vite-plus"];
+    const otherWorkspaceRunner = workspaceTooling.find(
+      (toolId) => toolId !== part.toolId && workspaceRunners.includes(toolId),
+    );
+    if (workspaceRunners.includes(part.toolId) && otherWorkspaceRunner) {
       return createStackGraphIssue({
         code: "INCOMPATIBLE_GRAPH_SELECTION",
         partId: part.id,
         role: part.role,
         toolId: part.toolId,
-        message: "Choose either Nx or Turborepo, not both",
-      });
-    }
-
-    if (part.toolId === "turborepo" && workspaceTooling.includes("nx")) {
-      return createStackGraphIssue({
-        code: "INCOMPATIBLE_GRAPH_SELECTION",
-        partId: part.id,
-        role: part.role,
-        toolId: part.toolId,
-        message: "Choose either Turborepo or Nx, not both",
+        message: "Choose one workspace runner: Turborepo, Nx, or Vite+",
       });
     }
 
@@ -2135,10 +2126,7 @@ function createAddonCompatibilityIssue(
           message: `${title} is not compatible with Cloudflare Workers runtime.`,
         });
       }
-      if (
-        backendEcosystem &&
-        !DOCKER_COMPOSE_COMPATIBLE_ECOSYSTEMS.has(backendEcosystem)
-      ) {
+      if (backendEcosystem && !DOCKER_COMPOSE_COMPATIBLE_ECOSYSTEMS.has(backendEcosystem)) {
         return createStackGraphIssue({
           code: "INCOMPATIBLE_GRAPH_SELECTION",
           partId: part.id,
@@ -2222,11 +2210,7 @@ function createAddonCompatibilityIssue(
           message: "Kong Gateway currently requires an HTTP Rust API.",
         });
       }
-      if (
-        part.toolId === "kong" &&
-        primaryEcosystem === "rust" &&
-        backendTool === "loco"
-      ) {
+      if (part.toolId === "kong" && primaryEcosystem === "rust" && backendTool === "loco") {
         return createStackGraphIssue({
           code: "INCOMPATIBLE_GRAPH_SELECTION",
           partId: part.id,
@@ -2913,22 +2897,21 @@ export function parseStackPartSpecs(
     database: "data",
   };
 
-  const primaryParts = unresolvedPrimaryParts
-    .map((part) =>
-      createStackPart({
-        role: part.role,
-        ecosystem: part.ecosystem,
-        toolId: part.toolId,
-        source,
-        id: part.customId,
-        targetPath:
-          (primaryRoleCounts.get(part.role) ?? 0) > 1 && PRIMARY_ROLES.has(part.role)
-            ? `${repeatedTargetRoot[part.role as StackPrimaryRole]}/${sanitizePartId(
-                part.customId ?? `${part.ecosystem}-${part.toolId}`,
-              ).replaceAll(":", "-")}`
-            : undefined,
-      }),
-    );
+  const primaryParts = unresolvedPrimaryParts.map((part) =>
+    createStackPart({
+      role: part.role,
+      ecosystem: part.ecosystem,
+      toolId: part.toolId,
+      source,
+      id: part.customId,
+      targetPath:
+        (primaryRoleCounts.get(part.role) ?? 0) > 1 && PRIMARY_ROLES.has(part.role)
+          ? `${repeatedTargetRoot[part.role as StackPrimaryRole]}/${sanitizePartId(
+              part.customId ?? `${part.ecosystem}-${part.toolId}`,
+            ).replaceAll(":", "-")}`
+          : undefined,
+    }),
+  );
 
   const primaryByRole = new Map(primaryParts.map((part) => [part.role, part]));
   const primaryByRoleAndEcosystem = new Map(
@@ -2942,8 +2925,8 @@ export function parseStackPartSpecs(
         ecosystem: part.ecosystem,
         toolId: part.toolId,
         ownerPartId: part.ownerPartId
-          ? primaryParts.find((candidate) => candidate.id === part.ownerPartId)?.id ??
-            part.ownerPartId
+          ? (primaryParts.find((candidate) => candidate.id === part.ownerPartId)?.id ??
+            part.ownerPartId)
           : part.ownerRole
             ? (primaryByRoleAndEcosystem.get(`${part.ownerRole}:${part.ecosystem}`)?.id ??
               primaryByRole.get(part.ownerRole)?.id)
@@ -3179,13 +3162,7 @@ export function legacyProjectConfigToStackParts(
   }
   const mobilePart = addLegacyPart(parts, "mobile", "react-native", nativeFrontend, source);
   addLegacyPart(parts, "frontend", "dotnet", config.dotnetFrontend, source);
-  const kotlinMobilePart = addLegacyPart(
-    parts,
-    "mobile",
-    "kotlin",
-    config.kotlinMobile,
-    source,
-  );
+  const kotlinMobilePart = addLegacyPart(parts, "mobile", "kotlin", config.kotlinMobile, source);
   addLegacyPart(parts, "mobile", "swift", config.swiftMobile, source);
   addLegacyPart(parts, "mobile", "dart", config.dartMobile, source);
   if (kotlinMobilePart) {

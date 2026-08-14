@@ -1121,6 +1121,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://turbo.build/repo/docs",
     githubUrl: "https://github.com/vercel/turborepo",
   },
+  "vite-plus": {
+    docsUrl: "https://viteplus.dev/guide/",
+    githubUrl: "https://github.com/voidzero-dev/vite-plus",
+  },
   pwa: { docsUrl: "https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps" },
   tauri: { docsUrl: "https://tauri.app/start/", githubUrl: "https://github.com/tauri-apps/tauri" },
   wxt: { docsUrl: "https://wxt.dev/", githubUrl: "https://github.com/wxt-dev/wxt" },
