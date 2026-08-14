@@ -43,6 +43,17 @@ export function processAnalyticsDeps(vfs: VirtualFileSystem, config: ProjectConf
     }
   }
 
+  if (analytics === "vercel-analytics" && hasWebFrontend) {
+    const webPath = getWebPackagePath(frontend, backend);
+    if (vfs.exists(webPath)) {
+      addPackageDependency({
+        vfs,
+        packagePath: webPath,
+        dependencies: ["@vercel/analytics"],
+      });
+    }
+  }
+
   // Umami uses a script tag approach - no npm dependencies needed
   // The umami.tsx template handles loading the script dynamically
 }

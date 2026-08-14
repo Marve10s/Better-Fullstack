@@ -898,6 +898,9 @@ export const dependencyVersionMap = {
 
   // Analytics - Plausible
   "plausible-tracker": "^0.3.9",
+
+  // Analytics - Vercel
+  "@vercel/analytics": "^2.0.1",
 } as const;
 
 export type AvailableDependencies = keyof typeof dependencyVersionMap;

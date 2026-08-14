@@ -1234,6 +1234,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     plausible: "Plausible",
     umami: "Umami",
     ga4: "Google Analytics 4",
+    "vercel-analytics": "Vercel Analytics",
   },
   mobileNavigation: {
     "expo-router": "Expo Router",

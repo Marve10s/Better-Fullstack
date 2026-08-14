@@ -6,6 +6,10 @@ type TechResourceLinks = {
 type LinkMap = Record<string, TechResourceLinks>;
 
 const BASE_LINKS: LinkMap = {
+  "vercel-analytics": {
+    docsUrl: "https://vercel.com/docs/analytics/quickstart",
+    githubUrl: "https://github.com/vercel/analytics",
+  },
   "blazor-webassembly": {
     docsUrl: "https://learn.microsoft.com/aspnet/core/blazor/hosting-models",
     githubUrl: "https://github.com/dotnet/aspnetcore",

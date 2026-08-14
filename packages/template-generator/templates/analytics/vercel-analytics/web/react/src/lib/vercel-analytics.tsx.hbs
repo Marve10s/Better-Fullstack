@@ -1,0 +1,5 @@
+{{#if (eq frontend.[0] "next")}}
+export { Analytics } from "@vercel/analytics/next";
+{{else}}
+export { Analytics } from "@vercel/analytics/react";
+{{/if}}

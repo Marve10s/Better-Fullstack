@@ -649,6 +649,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "umami",
           "posthog",
           "ga4",
+          "vercel-analytics",
           "none"
         ],
         "valueHint": null,

@@ -68,6 +68,7 @@ export function qualifiesForSingleApp(config: ProjectConfig): boolean {
   const webFrontends = (config.frontend ?? []).filter((f) => f && f !== "none");
   if (webFrontends.length !== 1) return false;
   if (!SINGLE_APP_WEB_FRONTENDS.has(webFrontends[0] as string)) return false;
+  if (config.analytics !== "none" && config.analytics !== "vercel-analytics") return false;
 
   const siblingPackageScalars = [
     config.api,
@@ -87,7 +88,6 @@ export function qualifiesForSingleApp(config: ProjectConfig): boolean {
     config.fileStorage,
     config.cms,
     config.ai,
-    config.analytics,
     config.featureFlags,
     config.integrations,
     config.ecommerce,

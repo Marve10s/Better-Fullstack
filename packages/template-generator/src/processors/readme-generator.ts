@@ -576,6 +576,15 @@ ${packageManagerRunCmd} dev
 \`\`\`
 
 ${generateRunningInstructions(frontend, backend, webPort, hasWeb, hasNative, isConvex)}
+${
+  options.analytics === "vercel-analytics"
+    ? `
+## Vercel Web Analytics
+
+The analytics component is already mounted and requires no environment variables. Enable Web Analytics for the project in the Vercel dashboard, then deploy to Vercel to begin collecting privacy-friendly page views.
+`
+    : ""
+}
 ${ai === "ai-cli" ? `\n${generateAICLISection(packageManagerRunCmd, packageManager)}\n` : ""}
 ${
   examples.includes("chat-sdk")
