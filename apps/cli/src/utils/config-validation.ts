@@ -99,6 +99,7 @@ function validateContainerAddonConstraints(config: Partial<ProjectConfig>) {
       addonConfig.rustApi,
       addonConfig.goApi,
       addonConfig.javaApi,
+      (config.stackParts?.length ?? 0) > 0,
     );
     if (!isCompatible) {
       throw new Error(reason ?? `${addon} is not compatible with this configuration`);
@@ -1645,6 +1646,7 @@ export function validateFullConfig(
       addonConfig.rustApi,
       addonConfig.goApi,
       addonConfig.javaApi,
+      (config.stackParts?.length ?? 0) > 0,
     );
     config.addons = [...new Set(config.addons)];
   }
@@ -1736,6 +1738,7 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
         addonConfig.rustApi,
         addonConfig.goApi,
         addonConfig.javaApi,
+        (config.stackParts?.length ?? 0) > 0,
       );
     }
 

@@ -110,6 +110,28 @@ describe("compatibility issue helpers", () => {
     ).toBeNull();
   });
 
+  it("restricts Vite+ to JavaScript workspace roots", () => {
+    const goStack = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "go" as const,
+      appPlatforms: ["vite-plus"],
+    };
+
+    expect(analyzeStackCompatibility(goStack).adjustedStack?.appPlatforms).not.toContain(
+      "vite-plus",
+    );
+    expect(getDisabledReason(goStack, "appPlatforms", "vite-plus")).toContain(
+      "JavaScript workspace root",
+    );
+    expect(
+      getDisabledReason(
+        { ...DEFAULT_STACK_SELECTION, appPlatforms: [] },
+        "appPlatforms",
+        "vite-plus",
+      ),
+    ).toBeNull();
+  });
+
   it("keeps React Native code-quality options aligned with the CLI", () => {
     const nativeStack = {
       ...DEFAULT_STACK_SELECTION,

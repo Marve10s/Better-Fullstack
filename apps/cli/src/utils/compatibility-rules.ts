@@ -483,6 +483,7 @@ export function validateAddonCompatibility(
   rustApi?: ProjectConfig["rustApi"],
   goApi?: ProjectConfig["goApi"],
   javaApi?: ProjectConfig["javaApi"],
+  hasStackGraph = false,
 ): { isCompatible: boolean; reason?: string } {
   const baseCompatibility = validateAddonCompatibilityShared(addon, frontend, _auth);
   if (!baseCompatibility.isCompatible) return baseCompatibility;
@@ -496,6 +497,20 @@ export function validateAddonCompatibility(
     return {
       isCompatible: false,
       reason: "Knip currently supports TypeScript and React Native projects only",
+    };
+  }
+
+  if (
+    addon === "vite-plus" &&
+    ecosystem !== undefined &&
+    ecosystem !== "typescript" &&
+    ecosystem !== "react-native" &&
+    !hasStackGraph
+  ) {
+    return {
+      isCompatible: false,
+      reason:
+        "Vite+ requires a JavaScript workspace root; use TypeScript, React Native, or a multi-ecosystem Stack Graph project",
     };
   }
 
@@ -715,6 +730,7 @@ export function getCompatibleAddons(
       context?.rustApi,
       context?.goApi,
       context?.javaApi,
+      (context?.stackParts?.length ?? 0) > 0,
     );
     return isCompatible;
   });
@@ -737,11 +753,12 @@ export function validateAddonsAgainstFrontends(
   rustApi?: ProjectConfig["rustApi"],
   goApi?: ProjectConfig["goApi"],
   javaApi?: ProjectConfig["javaApi"],
+  hasStackGraph = false,
 ) {
-  const workspaceRunners = addons.filter((addon) =>
-    ["turborepo", "nx", "vite-plus"].includes(addon),
+  const workspaceRunners = new Set(
+    addons.filter((addon) => ["turborepo", "nx", "vite-plus"].includes(addon)),
   );
-  if (workspaceRunners.length > 1) {
+  if (workspaceRunners.size > 1) {
     exitWithError("Turborepo, Nx, and Vite+ are alternative workspace runners. Choose one addon.");
   }
 
@@ -764,6 +781,7 @@ export function validateAddonsAgainstFrontends(
       rustApi,
       goApi,
       javaApi,
+      hasStackGraph,
     );
     if (!isCompatible) {
       exitWithError(`Incompatible addon/frontend combination: ${reason}`);

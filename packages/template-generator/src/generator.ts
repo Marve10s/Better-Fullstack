@@ -434,6 +434,19 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
       };
     }
 
+    if (
+      config.addons.includes("vite-plus") &&
+      !config.stackParts?.length &&
+      config.ecosystem !== "typescript" &&
+      config.ecosystem !== "react-native"
+    ) {
+      return {
+        success: false,
+        error:
+          "Vite+ requires a JavaScript workspace root; use TypeScript, React Native, or a multi-ecosystem Stack Graph project",
+      };
+    }
+
     if (config.stackParts && config.stackParts.length > 0) {
       const graphIssues = [
         ...validateGraphContainerAddons(config),

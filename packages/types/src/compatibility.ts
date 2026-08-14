@@ -1730,7 +1730,7 @@ export const analyzeStackCompatibility = (
     }
   }
 
-  for (const platform of ["docker-compose", "devcontainer", "kong"] as const) {
+  for (const platform of ["docker-compose", "devcontainer", "kong", "vite-plus"] as const) {
     if (!nextStack.appPlatforms.includes(platform)) continue;
     const reason = getDisabledReason(nextStack, "appPlatforms", platform);
     if (!reason) continue;
@@ -1742,7 +1742,9 @@ export const analyzeStackCompatibility = (
         ? "Docker Compose"
         : platform === "devcontainer"
           ? "DevContainer"
-          : "Kong Gateway";
+          : platform === "kong"
+            ? "Kong Gateway"
+            : "Vite+";
     changes.push({
       category: "appPlatforms",
       message: `${label} removed (${reason})`,
@@ -2383,6 +2385,15 @@ export const getDisabledReason = (
     currentStack.ecosystem !== "react-native"
   ) {
     return "Knip requires a TypeScript or React Native workspace";
+  }
+
+  if (
+    category === "appPlatforms" &&
+    optionId === "vite-plus" &&
+    currentStack.ecosystem !== "typescript" &&
+    currentStack.ecosystem !== "react-native"
+  ) {
+    return "Vite+ requires a JavaScript workspace root";
   }
 
   if (

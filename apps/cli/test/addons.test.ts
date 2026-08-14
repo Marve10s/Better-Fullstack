@@ -703,6 +703,38 @@ describe("Addon Configurations", () => {
 
       expectError(result, "alternative workspace runners");
     });
+
+    it("accepts duplicate Vite+ selections as one workspace runner", async () => {
+      const result = await runTRPCTest({
+        projectName: "vite-plus-duplicate",
+        addons: ["vite-plus", "vite-plus"],
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "trpc",
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+    });
+
+    it("rejects Vite+ for legacy non-JavaScript solo projects", async () => {
+      const result = await runTRPCTest({
+        projectName: "vite-plus-go-solo",
+        ecosystem: "go",
+        addons: ["vite-plus"],
+        expectError: true,
+      });
+
+      expectError(result, "requires a JavaScript workspace root");
+    });
   });
 
   describe("Frontend-Specific Addons", () => {
