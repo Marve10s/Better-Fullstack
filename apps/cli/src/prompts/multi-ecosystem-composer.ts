@@ -19,6 +19,7 @@ import { getAddonsChoice, getAppPlatformsChoice } from "./addons";
 import { getAiDocsChoice } from "./ai-docs";
 import { getAstroIntegrationChoice } from "./astro-integration";
 import { getBackendFrameworkChoice } from "./backend";
+import { getBotProtectionChoice } from "./bot-protection";
 import { getApiChoice } from "./api";
 import { getAuthChoice } from "./auth";
 import { getORMChoice } from "./orm";
@@ -582,6 +583,13 @@ export async function gatherMultiEcosystemConfig(
         : await scopedPromptValue("typescript", "rateLimit", configScope, backendSections, () =>
             getRateLimitChoice(flags.rateLimit, backend),
           );
+    const botProtection = await scopedPromptValue(
+      "typescript",
+      "botProtection",
+      configScope,
+      typeScriptSections,
+      () => getBotProtectionChoice(flags.botProtection, frontendList),
+    );
     const cms =
       backend === "none"
         ? "none"
@@ -639,6 +647,7 @@ export async function gatherMultiEcosystemConfig(
       jobQueue,
       caching,
       rateLimit,
+      botProtection,
       cms,
       search,
       vectorDb,
@@ -670,6 +679,9 @@ export async function gatherMultiEcosystemConfig(
       ["ecommerce", ecommerce],
     ] as const) {
       if (value !== "none") stackPartSpecs.push(`backend.${role}:typescript:${value}`);
+    }
+    if (botProtection !== "none") {
+      stackPartSpecs.push(`frontend.botProtection:typescript:${botProtection}`);
     }
   } else if (backendEcosystem === "go") {
     const goWebFramework = promptValue(await getGoWebFrameworkChoice(flags.goWebFramework));

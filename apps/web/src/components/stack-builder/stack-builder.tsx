@@ -610,6 +610,7 @@ const MULTI_FRONTEND_LIBRARY_GROUPS: Array<keyof typeof TECH_OPTIONS> = [
   "fileUpload",
   "i18n",
   "analytics",
+  "botProtection",
   "webDeploy",
 ];
 
@@ -1419,6 +1420,7 @@ const INITIALLY_COLLAPSED_SET = new Set([
   "integrations",
   "ecommerce",
   "analytics",
+  "botProtection",
   "ai",
   "stateManagement",
   "forms",

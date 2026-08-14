@@ -200,6 +200,7 @@ export type CompatibilityInput = {
   jobQueue: string;
   caching: string;
   rateLimit: string;
+  botProtection: string;
   animation: string;
   cssFramework: string;
   uiLibrary: string;
@@ -3296,6 +3297,25 @@ export const getDisabledReason = (
     }
     if (currentStack.backend === "none") {
       return "Rate limiting requires a backend";
+    }
+  }
+
+  // ============================================
+  // BOT PROTECTION CONSTRAINTS
+  // ============================================
+  if (category === "botProtection" && optionId !== "none") {
+    if (currentStack.ecosystem !== "typescript") {
+      return "Bot protection is currently available for TypeScript web applications";
+    }
+    const webFrontends = currentStack.webFrontend.filter((frontend) => frontend !== "none");
+    if (webFrontends.length === 0) {
+      return "Bot protection requires a web frontend";
+    }
+    if (
+      optionId === "botid" &&
+      webFrontends.some((frontend) => frontend !== "next" && frontend !== "vinext")
+    ) {
+      return "Vercel BotID is only available for Next.js and Vinext frontends";
     }
   }
 

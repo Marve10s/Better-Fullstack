@@ -641,6 +641,14 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://upstash.com/docs/redis/sdks/ratelimit-ts/overview",
     githubUrl: "https://github.com/upstash/ratelimit-js",
   },
+  botid: {
+    docsUrl: "https://vercel.com/docs/botid",
+    githubUrl: "https://github.com/vercel/botid",
+  },
+  turnstile: {
+    docsUrl: "https://developers.cloudflare.com/turnstile/",
+    githubUrl: "https://github.com/marsidev/react-turnstile",
+  },
   polar: { docsUrl: "https://docs.polar.sh/", githubUrl: "https://github.com/polarsource/polar" },
   stripe: {
     docsUrl: "https://docs.stripe.com/",

@@ -103,6 +103,7 @@ import type {
   Payments,
   ProjectConfig,
   RateLimit,
+  BotProtection,
   PythonAi,
   PythonApi,
   PythonAuth,
@@ -163,6 +164,7 @@ import { getApiChoice } from "./api";
 import { getAstroIntegrationChoice } from "./astro-integration";
 import { getAuthChoice } from "./auth";
 import { getBackendFrameworkChoice } from "./backend";
+import { getBotProtectionChoice } from "./bot-protection";
 import { getCachingChoice } from "./caching";
 import { getCMSChoice } from "./cms";
 import {
@@ -373,6 +375,7 @@ type PromptGroupResults = {
   cms: CMS;
   caching: Caching;
   rateLimit: RateLimit;
+  botProtection: BotProtection;
   i18n: I18n;
   search: Search;
   vectorDb: VectorDb;
@@ -557,6 +560,7 @@ const CONFIG_PROMPT_ENTRY_KEY_MAP = {
   cms: true,
   caching: true,
   rateLimit: true,
+  botProtection: true,
   i18n: true,
   search: true,
   vectorDb: true,
@@ -759,6 +763,7 @@ function getPromptResolutionValue(
     fileUpload: { fileUpload: flags.fileUpload, backend: results.backend },
     logging: { logging: flags.logging, backend: results.backend },
     rateLimit: { rateLimit: flags.rateLimit, backend: results.backend },
+    botProtection: { botProtection: flags.botProtection, frontends },
     cms: { cms: flags.cms, backend: results.backend },
     vectorDb: { vectorDb: flags.vectorDb, backend: results.backend, ecosystem: results.ecosystem },
     fileStorage: { fileStorage: flags.fileStorage, backend: results.backend },
@@ -1099,6 +1104,10 @@ export async function gatherConfig(
     rateLimit: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as RateLimit);
       return getRateLimitChoice(flags.rateLimit, results.backend);
+    },
+    botProtection: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve("none" as BotProtection);
+      return getBotProtectionChoice(flags.botProtection, results.frontend);
     },
     i18n: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as I18n);
@@ -1740,6 +1749,7 @@ export async function gatherConfig(
     cms: result.cms,
     caching: result.caching,
     rateLimit: result.rateLimit,
+    botProtection: result.botProtection,
     i18n: result.i18n,
     search: result.search,
     vectorDb: result.vectorDb,

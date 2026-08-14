@@ -65,6 +65,7 @@ export function createCliDefaultProjectConfigBase(
     cms: "none",
     caching: "none",
     rateLimit: "none",
+    botProtection: "none",
     i18n: "none",
     search: "none",
     vectorDb: "none",

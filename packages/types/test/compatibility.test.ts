@@ -12,6 +12,22 @@ import {
 import { DEFAULT_STACK_SELECTION } from "../src/stack-translation";
 
 describe("compatibility issue helpers", () => {
+  it("limits BotID to Next.js and Vinext while keeping Turnstile universal for web stacks", () => {
+    const nextStack = { ...DEFAULT_STACK_SELECTION, webFrontend: ["next"] };
+    const viteStack = { ...DEFAULT_STACK_SELECTION, webFrontend: ["react-vite"] };
+
+    expect(getDisabledReason(nextStack, "botProtection", "botid")).toBeNull();
+    expect(getDisabledReason(viteStack, "botProtection", "botid")).toContain("Next.js and Vinext");
+    expect(getDisabledReason(viteStack, "botProtection", "turnstile")).toBeNull();
+    expect(
+      getDisabledReason(
+        { ...DEFAULT_STACK_SELECTION, ecosystem: "go", webFrontend: ["none"] },
+        "botProtection",
+        "turnstile",
+      ),
+    ).toContain("TypeScript");
+  });
+
   it("keeps SigNoz off stacks without a generated server target", () => {
     for (const backend of ["none", "convex"] as const) {
       const stack = {

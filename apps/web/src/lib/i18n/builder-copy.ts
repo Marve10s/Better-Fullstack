@@ -163,6 +163,16 @@ const CATEGORY_NAMES: Record<string, LocalizedMap> = {
     "fr": "Limitation de débit",
     "uk": "Обмеження швидкості",
   },
+  botProtection: {
+    "es": "Protección contra bots",
+    "zh": "机器人防护",
+    "ja": "ボット保護",
+    "ko": "봇 보호",
+    "zh-Hant": "機器人防護",
+    "de": "Bot-Schutz",
+    "fr": "Protection anti-bot",
+    "uk": "Захист від ботів",
+  },
   featureFlags: {
     "es": "Feature flags",
     "zh": "功能开关",

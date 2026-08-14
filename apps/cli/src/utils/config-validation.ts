@@ -1186,6 +1186,37 @@ function validateRateLimitConstraints(config: Partial<ProjectConfig>) {
   }
 }
 
+function validateBotProtectionConstraints(config: Partial<ProjectConfig>) {
+  if (!config.botProtection || config.botProtection === "none") return;
+  if ((config.ecosystem ?? "typescript") !== "typescript") {
+    incompatibilityError({
+      message: "Bot protection is currently available for TypeScript web applications only.",
+      provided: { ecosystem: config.ecosystem ?? "typescript", "bot-protection": config.botProtection },
+      suggestions: ["Use --bot-protection none"],
+    });
+  }
+  const webFrontends = (config.frontend ?? []).filter(
+    (frontend) => frontend !== "none" && !frontend.startsWith("native-"),
+  );
+  if (webFrontends.length === 0) {
+    incompatibilityError({
+      message: "Bot protection requires a web frontend.",
+      provided: { "bot-protection": config.botProtection },
+      suggestions: ["Select a web frontend", "Use --bot-protection none"],
+    });
+  }
+  if (
+    config.botProtection === "botid" &&
+    webFrontends.some((frontend) => frontend !== "next" && frontend !== "vinext")
+  ) {
+    incompatibilityError({
+      message: "Vercel BotID is only available for Next.js and Vinext frontends.",
+      provided: { frontend: webFrontends.join(","), "bot-protection": "botid" },
+      suggestions: ["Use --frontend next", "Use --bot-protection turnstile"],
+    });
+  }
+}
+
 function validateSearchConstraints(config: Partial<ProjectConfig>) {
   if (!config.search || config.search === "none") return;
   const ecosystem = config.ecosystem ?? "typescript";
@@ -1539,6 +1570,7 @@ export function validateFullConfig(
   validateObservabilityConstraints(config);
   validateCachingConstraints(config);
   validateRateLimitConstraints(config);
+  validateBotProtectionConstraints(config);
   validateSearchConstraints(config);
   validateJavaConstraints(config, providedFlags);
   validateElixirConstraints(config);
@@ -1708,6 +1740,7 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
     validateObservabilityConstraints(config);
     validateCachingConstraints(config);
     validateRateLimitConstraints(config);
+    validateBotProtectionConstraints(config);
     validateSearchConstraints(config);
     validateJavaConstraints(config);
     validateElixirConstraints(config);

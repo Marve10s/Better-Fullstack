@@ -123,6 +123,7 @@ import {
   PYTHON_VALIDATION_VALUES,
   PYTHON_WEB_FRAMEWORK_VALUES,
   RATE_LIMIT_VALUES,
+  BOT_PROTECTION_VALUES,
   REALTIME_VALUES,
   RUNTIME_VALUES,
   RUST_API_VALUES,
@@ -382,6 +383,7 @@ const LEGACY_TYPESCRIPT_FRONTEND_SINGLE_CATEGORIES = {
   fileUpload: "fileUpload",
   i18n: "i18n",
   analytics: "analytics",
+  botProtection: "botProtection",
 } as const satisfies Partial<Record<StackPartRole, keyof ProjectConfig>>;
 
 const LEGACY_DATABASE_SINGLE_CATEGORIES = {
@@ -875,6 +877,7 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(FILE_UPLOAD_VALUES, "fileUpload", "typescript", "fileUpload"),
   ...defineTools(I18N_VALUES, "i18n", "typescript", "i18n"),
   ...defineTools(ANALYTICS_VALUES, "analytics", "typescript", "analytics"),
+  ...defineTools(BOT_PROTECTION_VALUES, "botProtection", "typescript", "botProtection"),
   ...defineTools(
     ADDONS_VALUES.filter((value) => CODE_QUALITY_ADDONS.has(value)),
     "codeQuality",

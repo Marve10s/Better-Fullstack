@@ -96,6 +96,11 @@ const typescriptSections = [
     promptKeys: ["jobQueue", "realtime", "rateLimit"],
   },
   {
+    id: "frontend-security",
+    label: "Frontend Security",
+    promptKeys: ["botProtection"],
+  },
+  {
     id: "quality",
     label: "Testing & Observability",
     promptKeys: ["testing", "logging", "observability"],
