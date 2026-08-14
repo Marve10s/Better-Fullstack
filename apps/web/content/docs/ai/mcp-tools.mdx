@@ -145,7 +145,8 @@ ecosystem, graph summary, dependency/environment status, verification counts, an
 prerequisites. It is read-only and does not execute generated toolchains or write project files.
 The manifest is optional for inspection: the response reports whether `bts.lock.json` exists and
 whether its current contract is supported, its provenance state, and recovery availability. It
-never returns a project-update `reviewToken`.
+also returns a compact current-template upgrade summary. It never returns a project-update
+`reviewToken`.
 
 ### `bfs_check_project`
 
@@ -156,6 +157,19 @@ non-green. It does not directly rewrite generated source, configuration, or the 
 invoked build tools may fetch dependencies and write locks, caches, compiler output, or build
 artifacts; therefore this tool is not annotated read-only. A manifest is not required and no `reviewToken` is produced. Any reported
 manifest status does not change the executable check matrix.
+
+### `bfs_plan_part_removal`
+
+Requires an absolute `projectDir` and one exact selected stack-part spec or ID. It rejects primary
+frontend, backend, mobile, and database roles and returns the resulting config/file plan plus a
+64-character `reviewToken`. Planning is read-only.
+
+### `bfs_apply_part_removal`
+
+Requires the same project, exact target, and review token returned by the removal plan. It applies
+the removal in a recoverable transaction and fails closed if project state changed. Set
+`acknowledgeArchitectureChange: true` only after reviewing reported migration risks; data and
+schemas are never migrated automatically.
 
 ### `bfs_plan_project_update`
 

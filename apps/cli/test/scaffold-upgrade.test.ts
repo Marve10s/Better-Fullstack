@@ -659,6 +659,28 @@ describe("scaffold-upgrade engine", () => {
     expect(await readFile(envPath, "utf-8")).toContain("MY_SECRET=shh");
   });
 
+  it("keeps plans stable when a generated secrets file is absent", async () => {
+    const dir = await makeTempDir();
+    await scaffoldWithBaseline(dir, makeConfig(dir));
+    const target = "apps/server/.env";
+    await unlink(join(dir, target));
+    const manifest = await readScaffoldManifest(dir);
+    delete manifest!.hashes[target];
+    await writeScaffoldManifest(dir, manifest!);
+
+    const first = await planScaffoldUpgrade(dir);
+    const second = await planScaffoldUpgrade(dir);
+    assertSuccess(first);
+    assertSuccess(second);
+    expect(getUpgradePlanDigest(second)).toBe(getUpgradePlanDigest(first));
+    expect(first.manual).toContainEqual({
+      path: target,
+      category: "manual",
+      reason: "secrets file is absent — create it manually; never generated during update",
+    });
+    expect(first.actionable).not.toContain(target);
+  });
+
   it("never treats a generated README as drift, even when it differs from the render", async () => {
     const dir = await makeTempDir();
     await scaffoldWithBaseline(dir, makeConfig(dir));

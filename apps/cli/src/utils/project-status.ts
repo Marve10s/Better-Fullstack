@@ -5,6 +5,7 @@ import path from "node:path";
 
 import type { BetterTStackConfig, ProjectConfig } from "../types";
 
+import { formatStackPartSpec, legacyProjectConfigToStackParts } from "../types";
 import { readBtsConfig } from "./bts-config";
 import {
   configForGeneratedTarget,
@@ -52,6 +53,7 @@ export type ProjectStatusResult = {
   projectDir: string;
   ecosystem: BetterTStackConfig["ecosystem"];
   graphSummary?: string;
+  stackPartSpecs: string[];
   ok: boolean;
   verification: {
     requested: boolean;
@@ -85,6 +87,7 @@ export type InspectProjectOptions = {
 const IGNORED_DIRECTORIES = new Set([
   "node_modules",
   ".git",
+  ".bts",
   "dist",
   "build",
   ".next",
@@ -449,6 +452,10 @@ export async function inspectProject(
     ...(await checkEnvFiles(projectDir)),
   ];
   const config = { ...btsConfig, projectDir } as unknown as ProjectConfig;
+  const stackParts =
+    btsConfig.stackParts === undefined
+      ? legacyProjectConfigToStackParts(btsConfig)
+      : btsConfig.stackParts;
   const expectedTargets = await discoverGeneratedCheckTargets(config);
   for (const target of expectedTargets) {
     checks.push(...(await checkNativeTargetDependencies(config, target)));
@@ -505,6 +512,10 @@ export async function inspectProject(
     projectDir,
     ecosystem: btsConfig.ecosystem,
     graphSummary: btsConfig.graphSummary,
+    stackPartSpecs: stackParts
+      .filter((part) => part.source !== "provided" && part.toolId !== "none")
+      .map((part) => formatStackPartSpec(part, stackParts))
+      .sort(),
     ok: summary.fail === 0 && (!options.runChecks || verificationComplete),
     verification: {
       requested: Boolean(options.runChecks),

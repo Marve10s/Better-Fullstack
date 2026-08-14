@@ -72,6 +72,8 @@ Equivalent command/args for other package managers:
 | `bfs_create_project`              | Writes a new project to disk.                                               |
 | `bfs_get_project_status`          | Reads project and manifest prerequisites without checks.                    |
 | `bfs_check_project`               | Executes every target; toolchains may write locks/caches/artifacts.         |
+| `bfs_plan_part_removal`           | Plans exact non-primary capability removal and returns a review token.      |
+| `bfs_apply_part_removal`          | Applies a reviewed capability removal in a recoverable transaction.         |
 | `bfs_plan_project_update`         | Plans manifest-v2 drift; token requires bounded inspectable merge content.  |
 | `bfs_apply_project_update`        | Applies token-bound files transactionally with provenance-aware safeguards. |
 | `bfs_recover_project_transaction` | Restores a successful or interrupted transaction exactly once.              |
@@ -90,8 +92,8 @@ See the [MCP tools reference](/docs/ai/mcp-tools/) for inputs, outputs, and safe
 - `bfs_get_project_status` is read-only and does not execute toolchains. `bfs_check_project` does
   not directly rewrite Better Fullstack source/configuration, but build tools may fetch dependencies
   and write locks, caches, compiler output, or build artifacts; missing prerequisites fail the check.
-- `bfs_create_project`, `bfs_apply_project_update`, `bfs_apply_stack_update`, and
-  `bfs_add_feature` write files but do not install dependencies.
+- `bfs_create_project`, `bfs_apply_part_removal`, `bfs_apply_project_update`,
+  `bfs_apply_stack_update`, and `bfs_add_feature` write files but do not install dependencies.
 - Current-template apply requires the exact bounded `reviewToken`; missing, stale, cross-project,
   or oversized-review-ineligible tokens fail closed. Migrated or manually adopted projects also
   require `acknowledgeUnprovenManifestV1: true` because their original generator lineage is
@@ -99,6 +101,8 @@ See the [MCP tools reference](/docs/ai/mcp-tools/) for inputs, outputs, and safe
   returns a transaction ID for one-command recovery.
 - Stack updates refuse to overwrite user-edited generated files. Architecture changes require an
   explicit acknowledgement and never migrate application data or schemas automatically.
+- Part removal requires an exact selected non-primary stack part and the token from
+  `bfs_plan_part_removal`; primary roles must be replaced through stack update instead.
 - Agents should call `bfs_get_guidance`, inspect the live schema, and plan before any write.
 
 ## Related Commands

@@ -167,7 +167,7 @@ describe("browser ZIP to CLI lifecycle", () => {
     process.env.BTS_TELEMETRY_DISABLED = "1";
     const addPlan = await add({
       projectDir,
-      addons: ["biome"],
+      addons: ["prettier"],
       dryRun: true,
       install: false,
     });
@@ -177,20 +177,20 @@ describe("browser ZIP to CLI lifecycle", () => {
 
     const addApply = await add({
       projectDir,
-      addons: ["biome"],
+      addons: ["prettier"],
       dryRun: false,
       install: false,
     });
     expect(addApply?.success).toBe(true);
-    expect(addApply?.addedAddons).toContain("biome");
-    expect((await readBtsConfig(projectDir))?.addons).toContain("biome");
+    expect(addApply?.addedAddons).toContain("prettier");
+    expect((await readBtsConfig(projectDir))?.addons).toContain("prettier");
     const manifestAfterAdd = await readScaffoldManifest(projectDir);
     expect(manifestAfterAdd?.version).toBe("2");
     expect(manifestAfterAdd?.history.at(-1)?.operation).toBe("add");
     // Applying an addition advances the comparable-file baseline while
     // preserving the archive's baseline identity timestamp.
     expect(manifestAfterAdd?.createdAt).toBe(manifest?.createdAt);
-    expect(manifestAfterAdd?.hashes["biome.json"]).toMatch(/^[0-9a-f]{64}$/);
+    expect(manifestAfterAdd?.hashes[".prettierrc.json"]).toMatch(/^[0-9a-f]{64}$/);
     expect(await readFile(path.join(projectDir, "bts.lock.json"), "utf8")).not.toBe(
       manifestBeforeAdd,
     );

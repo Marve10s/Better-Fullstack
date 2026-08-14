@@ -8,7 +8,7 @@
 
 Better Fullstack is the deterministic lifecycle layer for full-stack projects and coding agents:
 
-**create → add → update → check → generate**
+**create → status → add/remove → update → check → generate**
 
 The goal is no longer the largest theoretical option count. Success means a project can be planned,
 scaffolded, evolved, verified, and reproduced without losing user work.
@@ -22,8 +22,8 @@ scaffolded, evolved, verified, and reproduced without losing user work.
 - Visual builder with command generation, file preview, local browser Edit & Run for supported
   web stacks, shareable URL state, saved stacks, and lifecycle-ready ZIP downloads containing
   `bts.jsonc` plus the current manifest-v2 baseline.
-- CLI lifecycle commands: `create`, `add`, `update`, `check`/`doctor`, `gen`, `registry`,
-  `recommend`, `history`, and `mcp`.
+- CLI lifecycle commands: `create`, `status`, `add`, `remove`, `update`, `check`/`doctor`, `gen`,
+  `registry`, `recommend`, `history`, and `mcp`.
 - Preview-first stack updates and a three-way scaffold update engine backed by `bts.lock.json`.
 - MCP tools, installable agent plugin, generated AI instructions and skills.
 - Verified-combination evidence, release guards, published-package smoke tests, and ScaffBench.
@@ -59,6 +59,8 @@ One documented owner activation drill, one safely bounded reconciliation drill o
    - Validate real user-edited repositories and publish the boundaries of automatic merging.
 2. **Unify project status.**
    - Present create/add/update/check outcomes with the same vocabulary in CLI, JSON, and MCP.
+   - `status` presents health, lifecycle guarantees, and an upgrade summary without executing
+     generated toolchains; CLI JSON and MCP use the same project-report service.
    - Finish remaining Stack Graph authority cleanup so every mutation shares one project model.
 3. **Measure the lifecycle without collecting user content.**
    - Track anonymous command/action outcomes, durations, compatibility/manual-review counts,
@@ -71,7 +73,9 @@ One documented owner activation drill, one safely bounded reconciliation drill o
 ### Exit gate
 
 Twenty successful upgrades across at least five external repositories, with no lost user changes,
-plus cross-version fixtures covering the supported upgrade window.
+plus cross-version fixtures covering the supported upgrade window. The external gate is satisfied
+by the [2026-08-12 qualification](evidence/external-upgrade-validation-2026-08-12.md): 20 public
+repositories completed token-bound apply and exact recovery with no byte loss.
 
 ## Next — Lifecycle Depth
 
@@ -82,7 +86,8 @@ plus cross-version fixtures covering the supported upgrade window.
 - Deepen verified recipes and generated-project checks instead of advertising theoretical
   combinations.
 - Improve repeat-use workflows: safe capability removal/replacement, upgrade history, and clearer
-  recovery instructions.
+  recovery instructions. Exact non-primary capability removal is review-token-bound and
+  transactional in CLI and MCP; primary architecture roles continue through replacement planning.
 
 ## Conditional Bet — Registry
 
@@ -112,7 +117,7 @@ New ecosystems, libraries, and providers are not the default roadmap. Accept cat
 
 ## Product Metrics
 
-- successful create/add/update/check/gen operations;
+- successful create/status/add/remove/update/check/gen operations;
 - update plan-to-apply conversion and safe auto-apply rate;
 - conflict/manual-review and diagnostic failure rates;
 - anonymous 7/30-day repeat use;

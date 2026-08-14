@@ -5,6 +5,7 @@ import path from "node:path";
 
 import {
   applyDependencyVersionChannel,
+  collectPackageJsonPaths,
   compareVersions,
   parseVersion,
   selectRegistryVersionForChannel,
@@ -240,6 +241,25 @@ describe("selectRegistryVersionForChannel", () => {
 });
 
 describe("applyDependencyVersionChannel", () => {
+  it("excludes internal recovery snapshots from package discovery", async () => {
+    const projectDir = await fs.mkdtemp(path.join(os.tmpdir(), "bfs-version-channel-recovery-"));
+    const livePackagePath = path.join(projectDir, "apps", "web", "package.json");
+    const recoveryPackagePath = path.join(
+      projectDir,
+      ".bts",
+      "recovery",
+      "transaction",
+      "files",
+      "apps",
+      "web",
+      "package.json",
+    );
+    await fs.outputJson(livePackagePath, { dependencies: { react: "^19.0.0" } });
+    await fs.outputJson(recoveryPackagePath, { dependencies: { react: "^18.0.0" } });
+
+    expect(await collectPackageJsonPaths(projectDir)).toEqual([livePackagePath]);
+  });
+
   it("rewrites npm semver dependencies for latest and preserves range prefixes", async () => {
     const projectDir = await fs.mkdtemp(path.join(os.tmpdir(), "bfs-version-channel-"));
 

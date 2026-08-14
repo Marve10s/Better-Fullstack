@@ -12,7 +12,7 @@ const RECOVERY_VERSION = 1;
 
 export type RecoveryFile =
   | { path: string; state: "absent" }
-  | { path: string; state: "file"; sha256: string };
+  | { path: string; state: "file"; sha256: string; mode?: number };
 
 export type RecoveryMetadata = {
   version: typeof RECOVERY_VERSION;
@@ -29,7 +29,7 @@ export type ProjectTransaction = {
   projectDir: string;
   recoveryDir: string;
   metadata: RecoveryMetadata;
-  writes: Map<string, string>;
+  writes: Map<string, string | null>;
 };
 
 function isPortableProjectPath(relativePath: string): boolean {
@@ -113,7 +113,12 @@ export async function beginProjectTransaction(
       await fs.ensureDir(path.dirname(backupPath));
       // oxlint-disable-next-line no-await-in-loop
       await fs.writeFile(backupPath, bytes);
-      files.push({ path: relativePath, state: "file", sha256: hashContent(bytes) });
+      files.push({
+        path: relativePath,
+        state: "file",
+        sha256: hashContent(bytes),
+        mode: stats.mode & 0o7777,
+      });
     }
 
     const transaction: ProjectTransaction = {
@@ -141,7 +146,7 @@ export async function beginProjectTransaction(
 export function markProjectTransactionWrite(
   transaction: ProjectTransaction,
   relativePath: string,
-  expectedSha256: string,
+  expectedSha256: string | null,
 ): void {
   if (!transaction.metadata.files.some((file) => file.path === relativePath)) {
     throw new Error(`Transaction write is not bound to its recovery snapshot: ${relativePath}`);
@@ -152,52 +157,80 @@ export function markProjectTransactionWrite(
 async function restoreFiles(
   transaction: ProjectTransaction,
   files: RecoveryFile[],
-  expectedCurrentHashes?: Map<string, string>,
+  expectedCurrentHashes?: Map<string, string | null>,
 ): Promise<void> {
   const concurrentChanges: string[] = [];
+  const restorations: Array<{
+    file: RecoveryFile;
+    target: string;
+    backup?: Buffer;
+    skip: boolean;
+  }> = [];
+
   for (const file of files) {
-    // oxlint-disable-next-line no-await-in-loop -- recovery must validate and restore each bound path
+    // oxlint-disable-next-line no-await-in-loop -- recovery preflights one bounded path at a time
     const target = await assertSafeTarget(transaction.projectDir, file.path);
+    // oxlint-disable-next-line no-await-in-loop -- recovery preflights one bounded path at a time
+    const currentStats = await fs.lstat(target).catch(() => null);
+    if (currentStats && !currentStats.isFile()) {
+      throw new Error(`Recovery target is no longer a regular file: ${file.path}`);
+    }
+    // oxlint-disable-next-line no-await-in-loop -- recovery preflights one bounded path at a time
+    const current = currentStats ? await fs.readFile(target) : null;
+    const currentHash = current ? hashContent(current) : null;
+    let backup: Buffer | undefined;
+    if (file.state === "file") {
+      const backupPath = path.join(transaction.recoveryDir, "files", file.path);
+      // oxlint-disable-next-line no-await-in-loop -- all backups must pass before any restore begins
+      backup = await fs.readFile(backupPath);
+      if (hashContent(backup) !== file.sha256) {
+        throw new Error(`Recovery backup failed integrity validation: ${file.path}`);
+      }
+    }
+
+    const hasExpectedCurrentHash = expectedCurrentHashes?.has(file.path) ?? false;
     const expectedCurrentHash = expectedCurrentHashes?.get(file.path);
-    if (expectedCurrentHash) {
-      // oxlint-disable-next-line no-await-in-loop
-      const current = await fs.readFile(target).catch(() => null);
-      const currentHash = current ? hashContent(current) : null;
+    if (hasExpectedCurrentHash) {
       const stillAtPreimage =
         (file.state === "absent" && current === null) ||
-        (file.state === "file" && currentHash === file.sha256);
-      if (stillAtPreimage) continue;
+        (file.state === "file" &&
+          currentHash === file.sha256 &&
+          (file.mode === undefined || ((currentStats?.mode ?? -1) & 0o7777) === file.mode));
+      if (stillAtPreimage) {
+        restorations.push({ file, target, backup, skip: true });
+        continue;
+      }
       if (currentHash !== expectedCurrentHash) {
         concurrentChanges.push(file.path);
         continue;
       }
     }
-    if (file.state === "absent") {
-      // oxlint-disable-next-line no-await-in-loop
-      const currentStats = await fs.lstat(target).catch(() => null);
-      if (currentStats && !currentStats.isFile()) {
-        throw new Error(`Recovery target is no longer a regular file: ${file.path}`);
-      }
-      // oxlint-disable-next-line no-await-in-loop
-      await fs.remove(target);
-      continue;
-    }
-
-    const backupPath = path.join(transaction.recoveryDir, "files", file.path);
-    // oxlint-disable-next-line no-await-in-loop
-    const bytes = await fs.readFile(backupPath);
-    if (hashContent(bytes) !== file.sha256) {
-      throw new Error(`Recovery backup failed integrity validation: ${file.path}`);
-    }
-    // oxlint-disable-next-line no-await-in-loop
-    await fs.ensureDir(path.dirname(target));
-    // oxlint-disable-next-line no-await-in-loop
-    await fs.writeFile(target, bytes);
+    restorations.push({ file, target, backup, skip: false });
   }
   if (concurrentChanges.length > 0) {
     throw new Error(
       `Rollback refused to overwrite concurrently changed files: ${concurrentChanges.join(", ")}`,
     );
+  }
+
+  for (const restoration of restorations) {
+    if (restoration.skip) continue;
+    if (restoration.file.state === "absent") {
+      // oxlint-disable-next-line no-await-in-loop -- complete preflight precedes ordered restoration
+      await fs.remove(restoration.target);
+      continue;
+    }
+    if (!restoration.backup) {
+      throw new Error(`Recovery backup is unavailable after validation: ${restoration.file.path}`);
+    }
+    // oxlint-disable-next-line no-await-in-loop -- complete preflight precedes ordered restoration
+    await fs.ensureDir(path.dirname(restoration.target));
+    // oxlint-disable-next-line no-await-in-loop -- complete preflight precedes ordered restoration
+    await fs.writeFile(restoration.target, restoration.backup);
+    if (restoration.file.mode !== undefined) {
+      // oxlint-disable-next-line no-await-in-loop -- restore each captured file mode after its bytes
+      await fs.chmod(restoration.target, restoration.file.mode);
+    }
   }
 }
 
@@ -227,7 +260,9 @@ function validateRecoveryMetadata(value: unknown, expectedId: string): RecoveryM
     metadata.id !== expectedId ||
     !Array.isArray(metadata.files) ||
     typeof metadata.operation !== "string" ||
-    !["create", "add", "stack-update", "template-update", "recover"].includes(metadata.operation) ||
+    !["create", "add", "remove", "stack-update", "template-update", "recover"].includes(
+      metadata.operation,
+    ) ||
     typeof metadata.createdAt !== "string" ||
     !["pending", "applied", "rolled-back", "recovered"].includes(metadata.status ?? "")
   ) {
@@ -245,7 +280,12 @@ function validateRecoveryMetadata(value: unknown, expectedId: string): RecoveryM
       (file.state === "file" &&
         (!("sha256" in file) ||
           typeof file.sha256 !== "string" ||
-          !/^[0-9a-f]{64}$/.test(file.sha256)))
+          !/^[0-9a-f]{64}$/.test(file.sha256) ||
+          ("mode" in file &&
+            (typeof file.mode !== "number" ||
+              !Number.isInteger(file.mode) ||
+              file.mode < 0 ||
+              file.mode > 0o7777))))
     ) {
       throw new Error("Recovery metadata contains an invalid file entry.");
     }

@@ -555,6 +555,14 @@ export async function planScaffoldUpgrade(projectDirInput: string): Promise<Upgr
         });
         continue;
       }
+      if (path.basename(filePath) === ".env") {
+        files.push({
+          path: filePath,
+          category: "manual",
+          reason: "secrets file is absent — create it manually; never generated during update",
+        });
+        continue;
+      }
       const renderedContent = renderFiles.get(filePath)?.content;
       files.push({
         path: filePath,

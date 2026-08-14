@@ -3,6 +3,7 @@ import path from "node:path";
 import pc from "picocolors";
 
 import type { AddInput, Addons, BetterTStackConfig, ProjectConfig } from "../../types";
+import type { LifecycleResult } from "../../utils/lifecycle-contract";
 
 import { getDefaultConfig } from "../../constants";
 import { getAddonsToAdd } from "../../prompts/addons";
@@ -13,6 +14,7 @@ import { applyDependencyVersionChannel } from "../../utils/dependency-version-ch
 import { CLIError, UserCancelledError } from "../../utils/errors";
 import { renderTitle } from "../../utils/render-title";
 import {
+  ADDONS_REQUIRING_IMPERATIVE_SETUP,
   isGitleaksSetupComplete,
   isLinterLefthookSetupComplete,
   setupAddons,
@@ -31,10 +33,12 @@ export interface AddResult {
   projectDir: string;
   error?: string;
   setupWarnings?: string[];
+  lifecycle?: LifecycleResult;
+  recoveryId?: string;
+  plan?: StackUpdatePlan;
 }
 
 const ADD_CONTROL_KEYS = new Set(["projectDir", "install", "dryRun"]);
-
 function buildStackUpdateRequest(input: AddInput): Record<string, unknown> {
   const request: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(input as Record<string, unknown>)) {
@@ -129,6 +133,14 @@ function logStackUpdateSummary(plan: StackUpdatePlan, dryRun: boolean) {
   if (dependencyCount > 0) {
     log.info(pc.dim(`Dependencies: ${formatCount(dependencyCount, "change")}`));
   }
+  const versionChannelRewriteCount = Object.keys(plan.versionChannelRewrites).length;
+  if (versionChannelRewriteCount > 0) {
+    log.info(
+      pc.dim(
+        `Version channel: ${formatCount(versionChannelRewriteCount, "package manifest rewrite")}`,
+      ),
+    );
+  }
 
   const envCount = countEnvChanges(plan);
   if (envCount > 0) {
@@ -221,6 +233,14 @@ async function runStackUpdateAdd(
   const dryRun = input.dryRun ?? false;
   const requestedAddons = (input.addons ?? []).filter((addon): addon is Addons => addon !== "none");
   const existingAddons = new Set(currentConfig.addons ?? []);
+  const unsupportedRuntimeAddons = requestedAddons.filter(
+    (addon) => ADDONS_REQUIRING_IMPERATIVE_SETUP.has(addon) && !existingAddons.has(addon),
+  );
+  if (unsupportedRuntimeAddons.length > 0) {
+    throw new CLIError(
+      `Cannot transactionally add addon(s) that require imperative setup: ${unsupportedRuntimeAddons.join(", ")}. Select them when creating a project so every generated file is included in the scaffold baseline.`,
+    );
+  }
   const addonsToRepair = await getAddonsToSetup(input, currentConfig, projectDir);
   const isExistingAddonRepair =
     !dryRun &&
@@ -246,8 +266,11 @@ async function runStackUpdateAdd(
   }
 
   const result = dryRun
-    ? await planStackUpdate(projectDir, request)
-    : await applyStackUpdate(projectDir, request, { operation: "add" });
+    ? await planStackUpdate(projectDir, request, { includeVersionChannelPaths: true })
+    : await applyStackUpdate(projectDir, request, {
+        operation: "add",
+        applyVersionChannel: true,
+      });
 
   if (!result.success) {
     throw new CLIError(result.error);
@@ -263,63 +286,86 @@ async function runStackUpdateAdd(
       success: true,
       addedAddons: [],
       projectDir,
+      plan: result,
     };
   }
 
-  const addonsToSetup = await getAddonsToSetup(input, currentConfig, projectDir);
-  const setupConfig = buildAddonSetupConfig(projectDir, projectName, currentConfig, result);
-  const setupWarnings =
-    addonsToSetup.length > 0 ? await setupAddons(setupConfig, addonsToSetup) : [];
-  await applyDependencyVersionChannel(projectDir, result.proposedConfig.versionChannel);
-
-  let installFailed = false;
-  if (input.install) {
-    if (
-      result.proposedConfig.ecosystem === "typescript" ||
-      result.proposedConfig.ecosystem === "react-native"
-    ) {
-      const installResult = await installDependencies({
-        projectDir,
-        packageManager: setupConfig.packageManager,
-      });
-      installFailed = !installResult.success;
-    } else if (!isSilent()) {
-      log.warn(
-        pc.yellow(
-          `Automatic --install is only supported for JavaScript package-manager installs. Run '${result.installCommand}' instead.`,
-        ),
-      );
+  try {
+    const addonsToSetup = await getAddonsToSetup(input, currentConfig, projectDir);
+    const setupConfig = buildAddonSetupConfig(projectDir, projectName, currentConfig, result);
+    const setupWarnings: string[] = [];
+    let installFailed = false;
+    if (input.install) {
+      if (
+        result.proposedConfig.ecosystem === "typescript" ||
+        result.proposedConfig.ecosystem === "react-native"
+      ) {
+        const installResult = await installDependencies({
+          projectDir,
+          packageManager: setupConfig.packageManager,
+        });
+        installFailed = !installResult.success;
+      } else if (!isSilent()) {
+        log.warn(
+          pc.yellow(
+            `Automatic --install is only supported for JavaScript package-manager installs. Run '${result.installCommand}' instead.`,
+          ),
+        );
+      }
     }
+
+    if (!isSilent()) {
+      if (addonsToSetup.length > 0) {
+        log.success(pc.green(`Successfully added: ${addonsToSetup.join(", ")}`));
+      } else if ((input.addons ?? []).some((addon) => addon !== "none")) {
+        log.info(pc.dim("No new addons selected."));
+      }
+      log.success(pc.green("Stack update applied."));
+      for (const warning of setupWarnings) {
+        log.warn(pc.yellow(warning));
+      }
+      if (!input.install) {
+        log.info(pc.yellow(`Run '${result.installCommand}' to install new dependencies.`));
+      } else if (installFailed) {
+        log.warn(
+          pc.yellow(
+            `Dependency installation failed. Run '${result.installCommand}' after resolving the error above.`,
+          ),
+        );
+      }
+      if (result.lifecycle.recovery.command) {
+        log.info(pc.dim(`Recovery: ${result.lifecycle.recovery.command}`));
+      }
+      outro(pc.magenta("Project updated successfully!"));
+    }
+
+    return {
+      success: true,
+      addedAddons: addonsToSetup,
+      projectDir,
+      setupWarnings: setupWarnings.length > 0 ? setupWarnings : undefined,
+      lifecycle: result.lifecycle,
+      recoveryId: result.recoveryId,
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (!isSilent()) {
+      if (result.lifecycle.recovery.command) {
+        log.error(
+          pc.red(`Post-update setup failed. Recovery: ${result.lifecycle.recovery.command}`),
+        );
+      }
+      throw new CLIError(message);
+    }
+    return {
+      success: false,
+      addedAddons: [],
+      projectDir,
+      error: message,
+      lifecycle: result.lifecycle,
+      recoveryId: result.recoveryId,
+    };
   }
-
-  if (!isSilent()) {
-    if (addonsToSetup.length > 0) {
-      log.success(pc.green(`Successfully added: ${addonsToSetup.join(", ")}`));
-    } else if ((input.addons ?? []).some((addon) => addon !== "none")) {
-      log.info(pc.dim("No new addons selected."));
-    }
-    log.success(pc.green("Stack update applied."));
-    for (const warning of setupWarnings) {
-      log.warn(pc.yellow(warning));
-    }
-    if (!input.install) {
-      log.info(pc.yellow(`Run '${result.installCommand}' to install new dependencies.`));
-    } else if (installFailed) {
-      log.warn(
-        pc.yellow(
-          `Dependency installation failed. Run '${result.installCommand}' after resolving the error above.`,
-        ),
-      );
-    }
-    outro(pc.magenta("Project updated successfully!"));
-  }
-
-  return {
-    success: true,
-    addedAddons: addonsToSetup,
-    projectDir,
-    setupWarnings: setupWarnings.length > 0 ? setupWarnings : undefined,
-  };
 }
 
 // Keys that describe an addon/deploy-only `add` — anything else in the

@@ -2,7 +2,7 @@ import { afterAll, describe, expect, it } from "bun:test";
 import * as JSONC from "jsonc-parser";
 import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
-import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, realpath, rm, writeFile } from "node:fs/promises";
 import { homedir, tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -129,13 +129,85 @@ async function readJsoncFile(path: string): Promise<unknown> {
   return parsed;
 }
 
+async function createWithImperativeAddons(root: string, projectName: string, addons: string[]) {
+  const sourceName = `${projectName}-config-source`;
+  const source = await runCli(
+    ["create", sourceName, "--yes", "--no-install", "--no-git", "--disable-analytics"],
+    { cwd: root },
+  );
+  if (source.exitCode !== 0) return source;
+
+  const sourceConfigPath = join(root, sourceName, "bts.jsonc");
+  const sourceConfig = (await readJsoncFile(sourceConfigPath)) as Record<string, unknown>;
+  const flatConfig = { ...sourceConfig };
+  delete flatConfig.stackParts;
+  const configPath = join(root, `${projectName}-addons.json`);
+  await writeFile(configPath, `${JSON.stringify({ ...flatConfig, addons }, null, 2)}\n`);
+  return runCli(
+    [
+      "create",
+      projectName,
+      "--config",
+      configPath,
+      "--no-install",
+      "--no-git",
+      "--disable-analytics",
+    ],
+    { cwd: root },
+  );
+}
+
 afterAll(async () => {
   await Promise.all(TEMP_ROOTS.map((dir) => rm(dir, { recursive: true, force: true })));
 }, 30_000);
 
 describe("CLI add command", () => {
   it(
-    "adds addon via --addons and is idempotent for already-installed addon",
+    "prints reviewable removal paths and preserves the planned project directory",
+    async () => {
+      const root = await makeTempRoot("bfs-remove-plan-test-");
+      const projectDir = join(root, "app");
+      const createResult = await runCli(
+        ["create", "app", "--yes", "--no-install", "--no-git", "--disable-analytics"],
+        { cwd: root },
+      );
+      expect(
+        createResult.exitCode,
+        `create failed\nstdout:\n${createResult.stdout}\nstderr:\n${createResult.stderr}`,
+      ).toBe(0);
+      const addResult = await runCli(["add", "--project-dir", projectDir, "--email", "resend"], {
+        cwd: root,
+        env: { BFS_SKIP_EXTERNAL_COMMANDS: "1" },
+      });
+      expect(addResult.exitCode, addResult.stderr).toBe(0);
+      const config = (await readJsoncFile(join(projectDir, "bts.jsonc"))) as {
+        stackParts?: Array<{ id: string; role: string }>;
+      };
+      const target = config.stackParts?.find((part) => part.role === "email")?.id;
+      expect(target).toBeDefined();
+
+      const removal = await runCli(["remove", target!, "--project-dir", projectDir], {
+        cwd: root,
+      });
+      expect(removal.exitCode, removal.stderr).toBe(0);
+      const removalOutput = cliOutput(removal);
+      expect(removalOutput).toContain("  - ");
+      expect(removalOutput).toContain(`--project-dir '${await realpath(projectDir)}'`);
+      const reviewToken = removalOutput.match(/Review token:[\s\S]*?([a-f0-9]{64})/)?.[1];
+      expect(reviewToken).toBeDefined();
+
+      const applied = await runCli(
+        ["remove", target!, "--project-dir", projectDir, "--apply", "--review-token", reviewToken!],
+        { cwd: root },
+      );
+      expect(applied.exitCode, applied.stderr).toBe(0);
+      expect(cliOutput(applied)).toContain("Install dependencies with:");
+    },
+    CLI_COMMAND_TEST_TIMEOUT_MS,
+  );
+
+  it(
+    "adds a declarative addon via --addons and is idempotent for an existing addon",
     async () => {
       const root = await makeTempRoot("bfs-add-test-");
       const projectName = "app";
@@ -148,7 +220,7 @@ describe("CLI add command", () => {
 
       expect(createResult.exitCode).toBe(0);
 
-      const addResult = await runCli(["add", "--project-dir", projectDir, "--addons", "mcp"], {
+      const addResult = await runCli(["add", "--project-dir", projectDir, "--addons", "prettier"], {
         cwd: root,
         env: {
           BFS_SKIP_EXTERNAL_COMMANDS: "1",
@@ -159,17 +231,17 @@ describe("CLI add command", () => {
         addResult.exitCode,
         `add failed\nstdout:\n${addResult.stdout}\nstderr:\n${addResult.stderr}`,
       ).toBe(0);
-      expect(cliOutput(addResult)).toContain("Successfully added: mcp");
+      expect(cliOutput(addResult)).toContain("Successfully added: prettier");
 
       const config = (await readJsoncFile(join(projectDir, "bts.jsonc"))) as {
         addons?: string[];
       };
 
       expect(config.addons).toBeDefined();
-      expect(config.addons).toContain("mcp");
+      expect(config.addons).toContain("prettier");
 
       const secondAddResult = await runCli(
-        ["add", "--project-dir", projectDir, "--addons", "mcp"],
+        ["add", "--project-dir", projectDir, "--addons", "prettier"],
         {
           cwd: root,
           env: {
@@ -276,38 +348,21 @@ describe("CLI add command", () => {
   );
 
   it(
-    "wires Gitleaks into existing Husky and Lefthook hooks",
+    "wires Gitleaks into Husky and Lefthook hooks during creation",
     async () => {
       const root = await makeTempRoot("bfs-add-gitleaks-test-");
       const projectName = "app";
       const projectDir = join(root, projectName);
 
-      const createResult = await runCli(
-        ["create", projectName, "--yes", "--no-install", "--no-git", "--disable-analytics"],
-        { cwd: root },
-      );
+      const createResult = await createWithImperativeAddons(root, projectName, [
+        "husky",
+        "lefthook",
+        "gitleaks",
+      ]);
 
       expect(
         createResult.exitCode,
         `create failed\nstdout:\n${createResult.stdout}\nstderr:\n${createResult.stderr}`,
-      ).toBe(0);
-
-      const hooksResult = await runCli(
-        ["add", "--project-dir", projectDir, "--addons", "husky", "lefthook"],
-        { cwd: root },
-      );
-      expect(
-        hooksResult.exitCode,
-        `hook add failed\nstdout:\n${hooksResult.stdout}\nstderr:\n${hooksResult.stderr}`,
-      ).toBe(0);
-
-      const addResult = await runCli(["add", "--project-dir", projectDir, "--addons", "gitleaks"], {
-        cwd: root,
-      });
-
-      expect(
-        addResult.exitCode,
-        `add failed\nstdout:\n${addResult.stdout}\nstderr:\n${addResult.stderr}`,
       ).toBe(0);
 
       const [husky, lefthook] = await Promise.all([
@@ -332,25 +387,14 @@ describe("CLI add command", () => {
       const projectName = "app";
       const projectDir = join(root, projectName);
 
-      const createResult = await runCli(
-        ["create", projectName, "--yes", "--no-install", "--no-git", "--disable-analytics"],
-        { cwd: root },
-      );
+      const createResult = await createWithImperativeAddons(root, projectName, [
+        "husky",
+        "lefthook",
+        "gitleaks",
+      ]);
       expect(createResult.exitCode).toBe(0);
 
-      const hooksResult = await runCli(
-        ["add", "--project-dir", projectDir, "--addons", "husky", "lefthook"],
-        { cwd: root },
-      );
-      expect(hooksResult.exitCode).toBe(0);
-
       const lefthookPath = join(projectDir, "lefthook.yml");
-      const initialAdd = await runCli(
-        ["add", "--project-dir", projectDir, "--addons", "gitleaks"],
-        { cwd: root },
-      );
-      expect(initialAdd.exitCode).toBe(0);
-
       await writeFile(lefthookPath, "pre-commit: [\n");
       const failedAdd = await runCli(["add", "--project-dir", projectDir, "--addons", "gitleaks"], {
         cwd: root,
@@ -392,23 +436,11 @@ describe("CLI add command", () => {
       const projectName = "app";
       const projectDir = join(root, projectName);
 
-      const createResult = await runCli(
-        ["create", projectName, "--yes", "--no-install", "--no-git", "--disable-analytics"],
-        { cwd: root },
-      );
+      const createResult = await createWithImperativeAddons(root, projectName, [
+        "lefthook",
+        "biome",
+      ]);
       expect(createResult.exitCode).toBe(0);
-
-      const hookResult = await runCli(
-        ["add", "--project-dir", projectDir, "--addons", "lefthook"],
-        { cwd: root },
-      );
-      expect(hookResult.exitCode).toBe(0);
-
-      const initialLinterAdd = await runCli(
-        ["add", "--project-dir", projectDir, "--addons", "biome"],
-        { cwd: root },
-      );
-      expect(initialLinterAdd.exitCode).toBe(0);
 
       const lefthookPath = join(projectDir, "lefthook.yml");
       await writeFile(lefthookPath, "pre-commit: [\n");

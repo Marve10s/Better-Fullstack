@@ -332,6 +332,74 @@ export const router = os.router({
         }),
       });
     }),
+  status: os
+    .meta({
+      description:
+        "Report project health, lifecycle provenance/recovery readiness, and current-template upgrade status without executing toolchains",
+    })
+    .input(
+      z.tuple([
+        z.string().optional().describe("Project directory to inspect (defaults to current)"),
+        z.object({
+          json: z.boolean().optional().default(false).describe("Output the report as JSON"),
+        }),
+      ]),
+    )
+    .handler(async ({ input }) => {
+      const [projectDir, options] = input;
+      const { statusCommand } = await import("./commands/status.js");
+      await withCommandTelemetry(
+        "status",
+        () => statusCommand({ projectDir, json: options.json }),
+        {
+          source: "cli-flags",
+          mode: options.json ? "json" : "human",
+          resultStatus: statusFromCommandResult,
+          resultDetails: (result) => ({
+            issueCount: result.success ? result.summary.fail : 1,
+            warningCount: result.success ? result.summary.warn : 0,
+          }),
+        },
+      );
+    }),
+  remove: os
+    .meta({
+      description:
+        "Plan or apply removal of one exact selected non-primary Stack Part with a review token and transactional recovery",
+    })
+    .input(
+      z.tuple([
+        z
+          .string()
+          .describe("Exact selected Stack Part spec or ID, as shown by status/MCP project status"),
+        z.object({
+          projectDir: z.string().optional().describe("Project directory (defaults to current)"),
+          apply: z.boolean().optional().default(false).describe("Apply the reviewed removal"),
+          reviewToken: z.string().optional().describe("Exact token emitted by the latest plan"),
+          acknowledgeArchitectureChange: z
+            .boolean()
+            .optional()
+            .default(false)
+            .describe("Acknowledge migration steps for architecture-sensitive capability removal"),
+          json: z.boolean().optional().default(false).describe("Output the result as JSON"),
+        }),
+      ]),
+    )
+    .handler(async ({ input }) => {
+      const [target, options] = input;
+      const { removeCommand } = await import("./commands/remove.js");
+      await withCommandTelemetry("remove", () => removeCommand({ target, ...options }), {
+        source: "cli-flags",
+        mode: options.apply ? "apply" : "dry-run",
+        resultStatus: statusFromCommandResult,
+        resultDetails: (result) => ({
+          changedFileCount: result.success
+            ? result.filesToAdd.length + result.filesToPatch.length + result.filesToRemove.length
+            : 0,
+          manualReviewCount: result.success ? result.manualReviewBlockers.length : 0,
+        }),
+      });
+    }),
   history: os
     .meta({ description: "Show history of scaffolded projects with reproducible commands" })
     .input(

@@ -1,4 +1,10 @@
-export type LifecycleOperation = "create" | "add" | "stack-update" | "template-update" | "recover";
+export type LifecycleOperation =
+  | "create"
+  | "add"
+  | "remove"
+  | "stack-update"
+  | "template-update"
+  | "recover";
 
 export type LifecycleStatus =
   | "planned"

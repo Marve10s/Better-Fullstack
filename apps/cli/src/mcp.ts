@@ -190,9 +190,11 @@ import { generateReproducibleCommand } from "./utils/generate-reproducible-comma
 import { getLatestCLIVersion } from "./utils/get-latest-cli-version";
 import { getEffectiveStack, getGraphSummary } from "./utils/graph-summary";
 import {
+  applyMcpPartRemoval,
   applyMcpProjectUpdate,
   checkMcpProject,
   getMcpProjectStatus,
+  planMcpPartRemoval,
   planMcpProjectUpdate,
   recoverMcpProjectTransaction,
 } from "./utils/mcp-project-lifecycle";
@@ -218,6 +220,7 @@ For existing projects:
 1. Call bfs_get_project_status, then bfs_check_project for truthful target verification.
 2. Call bfs_plan_project_update to review current-template drift. Manifest v1 is always unproven and plan-only by default.
 3. Only after independent review and a recovery point, pass its reviewToken plus acknowledgeUnprovenManifestV1: true to bfs_apply_project_update.
+4. For removal, call bfs_plan_part_removal with one exact non-primary stack part, review the result, then pass its unchanged token to bfs_apply_part_removal.
 4. Use bfs_plan_stack_update / bfs_apply_stack_update for scaffold-time capability changes.
 5. Use bfs_plan_addition / bfs_add_feature only for legacy addon/deploy-only flows.
 
@@ -1087,7 +1090,7 @@ const lifecycleVersionsOutputSchema = z.object({
 
 const lifecycleResultOutputSchema = z.object({
   contractVersion: z.literal("1"),
-  operation: z.enum(["create", "add", "stack-update", "template-update", "recover"]),
+  operation: z.enum(["create", "add", "remove", "stack-update", "template-update", "recover"]),
   status: z.enum(["planned", "applied", "blocked", "failed", "rolled-back", "recovered"]),
   projectDir: z.string(),
   changes: z.object({
@@ -1162,6 +1165,7 @@ const addFeatureOutputSchema = z.object({
   success: z.boolean(),
   addedAddons: z.array(z.string()).optional(),
   projectDir: z.string().optional(),
+  error: z.string().optional(),
   message: z.string().optional(),
   lifecycle: lifecycleResultOutputSchema.optional(),
   recoveryId: z.string().optional(),
@@ -1176,6 +1180,7 @@ const stackUpdateOutputSchema = z.object({
   proposedConfig: z.record(z.string(), z.unknown()).optional(),
   filesToAdd: z.array(z.string()).optional(),
   filesToPatch: z.array(z.string()).optional(),
+  filesToRemove: z.array(z.string()).optional(),
   dependencyChanges: z.record(z.string(), z.record(z.string(), z.string())).optional(),
   scriptChanges: z.record(z.string(), z.array(z.string())).optional(),
   envChanges: z.record(z.string(), z.array(z.string())).optional(),
@@ -2222,6 +2227,83 @@ export function createMcpServer(): McpServer {
   );
 
   registerTool(
+    "bfs_plan_part_removal",
+    {
+      description:
+        "Plans removal of one exact non-primary stack part and returns a review token bound to the resulting config and generated-file operations.",
+      inputSchema: mcpInputSchema({
+        projectDir: z.string().describe("Path to the existing Better Fullstack project"),
+        target: z
+          .string()
+          .describe("Exact stack part spec or ID, for example backend.auth:typescript:better-auth"),
+      }),
+      annotations: {
+        title: "Plan stack part removal",
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async (input: { projectDir: string; target: string }) => {
+      const payload = await planMcpPartRemoval(sanitizePath(input.projectDir), input.target);
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
+        ...(!payload.success ? { isError: true } : {}),
+      };
+    },
+  );
+
+  registerTool(
+    "bfs_apply_part_removal",
+    {
+      description:
+        "Applies an exact reviewed stack-part removal in a recoverable transaction. Architecture-sensitive removals require explicit acknowledgement.",
+      inputSchema: mcpInputSchema({
+        projectDir: z.string().describe("Path to the existing Better Fullstack project"),
+        target: z.string().describe("Exact stack part spec or ID returned by the removal plan"),
+        reviewToken: z
+          .string()
+          .min(64)
+          .max(64)
+          .describe("Exact reviewToken returned by bfs_plan_part_removal"),
+        acknowledgeArchitectureChange: z
+          .boolean()
+          .optional()
+          .default(false)
+          .describe(
+            "Required when the plan reports an architecture-sensitive removal; data and schema are not migrated automatically.",
+          ),
+      }),
+      annotations: {
+        title: "Apply reviewed stack part removal",
+        readOnlyHint: false,
+        destructiveHint: true,
+        idempotentHint: false,
+        openWorldHint: false,
+      },
+    },
+    async (input: {
+      projectDir: string;
+      target: string;
+      reviewToken: string;
+      acknowledgeArchitectureChange: boolean;
+    }) => {
+      const payload = await applyMcpPartRemoval(
+        sanitizePath(input.projectDir),
+        input.target,
+        input.reviewToken,
+        input.acknowledgeArchitectureChange,
+      );
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
+        ...(!payload.success ? { isError: true } : {}),
+      };
+    },
+  );
+
+  registerTool(
     "bfs_plan_project_update",
     {
       description:
@@ -2614,6 +2696,8 @@ export function createMcpServer(): McpServer {
             success: true as const,
             addedAddons: result.addedAddons,
             projectDir: result.projectDir,
+            lifecycle: result.lifecycle,
+            recoveryId: result.recoveryId,
             ...graphPreview,
             message: `Added ${result.addedAddons.join(", ")} to project. Tell the user to run: ${installCmd}`,
           };
@@ -2622,16 +2706,15 @@ export function createMcpServer(): McpServer {
             structuredContent: payload,
           };
         }
+        const payload = {
+          success: false as const,
+          error: result?.error ?? "Add command returned no result",
+          lifecycle: result?.lifecycle,
+          recoveryId: result?.recoveryId,
+        };
         return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify({
-                success: false,
-                error: result?.error ?? "Add command returned no result",
-              }),
-            },
-          ],
+          content: [{ type: "text", text: JSON.stringify(payload) }],
+          structuredContent: payload,
           isError: true,
         };
       } catch (error) {

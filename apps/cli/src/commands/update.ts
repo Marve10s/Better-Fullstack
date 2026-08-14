@@ -9,12 +9,13 @@ import {
   recordUpgradeBaseline,
   type UpgradePlan,
 } from "../helpers/core/scaffold-upgrade";
-import { trackCommand } from "../utils/analytics";
+import { flushTelemetry, trackCommand } from "../utils/analytics";
 import { readBtsConfig } from "../utils/bts-config";
 import { handleError } from "../utils/errors";
 import { getLatestCLIVersion } from "../utils/get-latest-cli-version";
 import {
   getProjectRecoveryCommand,
+  getPackageExecPrefix,
   quotePosixShellArgument,
   quotePowerShellArgument,
 } from "../utils/lifecycle-command";
@@ -178,13 +179,6 @@ export function getUpdateApplyCommandFlavor(
   return platform === "win32" ? "PowerShell" : "POSIX shell";
 }
 
-function packageExecPrefix(packageManager: string | undefined): string {
-  if (packageManager === "bun") return "bunx";
-  if (packageManager === "pnpm") return "pnpm dlx";
-  if (packageManager === "yarn") return "yarn dlx";
-  return "npx --yes";
-}
-
 export function getUpdateApplyCommand(
   plan: UpgradePlan,
   platform: NodeJS.Platform = process.platform,
@@ -196,13 +190,14 @@ export function getUpdateApplyCommand(
     ? ""
     : " --acknowledge-unproven-manifest-v1";
   return (
-    `${packageExecPrefix(packageManager)} create-better-fullstack@${getLatestCLIVersion()} update ${quoteArgument(plan.projectDir)} --apply ` +
+    `${getPackageExecPrefix(packageManager)} create-better-fullstack@${getLatestCLIVersion()} update ${quoteArgument(plan.projectDir)} --apply ` +
     `--review-token ${getUpgradePlanDigest(plan)}` +
     acknowledgement
   );
 }
 
 export async function updateCommand(input: UpdateCommandInput): Promise<void> {
+  const startedAt = Date.now();
   const projectDir = path.resolve(input.projectDir || process.cwd());
   const json = input.json ?? false;
   const apply = input.apply ?? false;
@@ -212,13 +207,33 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
   const acknowledgeUnprovenManifestV1 = input.acknowledgeUnprovenManifestV1 ?? false;
   const reviewToken = input.reviewToken;
   const recover = input.recover;
+  const mode = recover
+    ? "recover"
+    : recordBaseline
+      ? "record-baseline"
+      : apply
+        ? "apply"
+        : check
+          ? "check"
+          : "dry-run";
+
+  await trackCommand("update", "started", { source: "cli-flags", mode });
+  const fail = async (error: string): Promise<never> => {
+    await trackCommand("update", "failed", {
+      source: "cli-flags",
+      mode,
+      durationMs: Date.now() - startedAt,
+      errorName: "UpdateError",
+      issueCount: 1,
+    });
+    await flushTelemetry();
+    return failUpdate(projectDir, error, json);
+  };
 
   if (recover) {
     if (apply || check || dryRun || recordBaseline || reviewToken) {
-      return failUpdate(
-        projectDir,
+      return fail(
         "`--recover` cannot be combined with planning, apply, check, baseline, or review-token flags.",
-        json,
       );
     }
     try {
@@ -232,6 +247,12 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
         recovery: { available: false, transactionId: metadata.id },
         nextActions: ["Run `create-better-fullstack check` to verify every generated target."],
       });
+      await trackCommand("update", "succeeded", {
+        source: "cli-flags",
+        mode,
+        changedFileCount: metadata.files.length,
+        durationMs: Date.now() - startedAt,
+      });
       if (json) {
         console.log(JSON.stringify({ ok: true, transaction: metadata, lifecycle }, null, 2));
         return;
@@ -244,36 +265,32 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
       outro(pc.magenta("Recovery complete. Run `create-better-fullstack check` next."));
       return;
     } catch (error) {
-      return failUpdate(projectDir, error instanceof Error ? error.message : String(error), json);
+      return fail(error instanceof Error ? error.message : String(error));
     }
   }
 
   if (dryRun && apply) {
-    return failUpdate(projectDir, "`--dry-run` cannot be combined with `--apply`.", json);
+    return fail("`--dry-run` cannot be combined with `--apply`.");
   }
   if (dryRun && recordBaseline) {
-    return failUpdate(projectDir, "`--dry-run` cannot be combined with `--record-baseline`.", json);
+    return fail("`--dry-run` cannot be combined with `--record-baseline`.");
   }
   if (check && apply) {
-    return failUpdate(projectDir, "`--check` cannot be combined with `--apply`.", json);
+    return fail("`--check` cannot be combined with `--apply`.");
   }
   if (check && recordBaseline) {
-    return failUpdate(projectDir, "`--check` cannot be combined with `--record-baseline`.", json);
+    return fail("`--check` cannot be combined with `--record-baseline`.");
   }
   if (apply && recordBaseline) {
-    return failUpdate(projectDir, "`--apply` cannot be combined with `--record-baseline`.", json);
+    return fail("`--apply` cannot be combined with `--record-baseline`.");
   }
   const authorizationError = getUpdateApplyAuthorizationError(input);
-  if (authorizationError) return failUpdate(projectDir, authorizationError, json);
+  if (authorizationError) return fail(authorizationError);
 
   const btsConfig = await readBtsConfig(projectDir);
   if (!btsConfig) {
     const message = `No Better Fullstack project found in ${projectDir}. Make sure bts.jsonc exists.`;
-    if (json) {
-      console.log(JSON.stringify({ projectDir, ok: false, error: message }, null, 2));
-      process.exit(1);
-    }
-    handleError(message);
+    return fail(message);
   }
 
   if (recordBaseline) {
@@ -285,6 +302,7 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
         source: "cli-flags",
         mode: "record-baseline",
         fileCount: manifest ? Object.keys(manifest.hashes).length : 0,
+        durationMs: Date.now() - startedAt,
       },
       { ecosystem: btsConfig.ecosystem },
     );
@@ -330,13 +348,13 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
       expectedPlanDigest: reviewToken,
       acknowledgeUnprovenManifestV1,
     });
-    if (!result.success) return failUpdate(projectDir, result.error, json);
+    if (!result.success) return fail(result.error);
     plan = result;
     applied = result.applied;
     recoveryId = result.recoveryId;
   } else {
     const result = await planScaffoldUpgrade(projectDir);
-    if (!result.success) return failUpdate(projectDir, result.error, json);
+    if (!result.success) return fail(result.error);
     plan = result;
     applied = undefined;
   }
@@ -346,7 +364,7 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
     check && plan.actionable.length > 0 ? "failed" : "succeeded",
     {
       source: "cli-flags",
-      mode: apply ? "apply" : check ? "check" : "dry-run",
+      mode,
       changedFileCount:
         (applied?.patched.length ?? 0) +
         (applied?.added.length ?? 0) +
@@ -354,6 +372,7 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
       conflictCount: plan.conflicts.length,
       manualReviewCount: plan.manual.length,
       issueCount: plan.actionable.length,
+      durationMs: Date.now() - startedAt,
     },
     { ecosystem: btsConfig.ecosystem, hasBaseline: plan.hasBaseline },
   );

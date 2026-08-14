@@ -1,11 +1,13 @@
 import type { GeneratedCheckDependencies } from "./generated-checks";
 
+import { applyPartRemoval, planPartRemoval } from "../helpers/core/remove-handler";
 import { lifecycleResult } from "./lifecycle-contract";
 import {
   applyReviewedProjectUpdate,
   planReviewedProjectUpdate,
   type ReviewedProjectUpdatePlan,
 } from "./project-lifecycle";
+import { getProjectReport } from "./project-report";
 import { inspectProject } from "./project-status";
 import { recoverProjectTransaction } from "./project-transaction";
 import { hashContent } from "./scaffold-manifest";
@@ -56,7 +58,7 @@ export function boundMcpUpdateReview(result: ReviewedProjectUpdatePlan) {
 }
 
 export async function getMcpProjectStatus(projectDir: string) {
-  return inspectProject(projectDir, { runChecks: false });
+  return getProjectReport(projectDir);
 }
 
 export async function checkMcpProject(
@@ -69,6 +71,19 @@ export async function checkMcpProject(
 export async function planMcpProjectUpdate(projectDir: string) {
   const result = await planReviewedProjectUpdate(projectDir);
   return result.success ? boundMcpUpdateReview(result) : result;
+}
+
+export async function planMcpPartRemoval(projectDir: string, target: string) {
+  return planPartRemoval(projectDir, target);
+}
+
+export async function applyMcpPartRemoval(
+  projectDir: string,
+  target: string,
+  reviewToken: string | undefined,
+  acknowledgeArchitectureChange: boolean | undefined,
+) {
+  return applyPartRemoval(projectDir, target, reviewToken, acknowledgeArchitectureChange === true);
 }
 
 export async function applyMcpProjectUpdate(
