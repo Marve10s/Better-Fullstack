@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import { TbArrowRight as ArrowRight, TbCheck as Check, TbCopy as Copy } from "react-icons/tb";
 
 import { AsciiHeroBackground } from "@/components/ui/ascii-hero-background";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { latestChangelogRelease } from "@/lib/changelog";
 import { PROJECT_ECOSYSTEM_COPY } from "@/lib/project-stats";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages.js";
 
 import PackageIcon from "./icons";
+import { LIKED_BY } from "./testimonials-data";
 
 const PMS = ["bun", "pnpm", "npm", "yarn"] as const;
 type PM = (typeof PMS)[number];
@@ -201,6 +203,67 @@ export default function HeroSection() {
           >
             {m.homeReadDocs()}
           </Link>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.42 }}
+          className="relative z-10 mt-8 flex flex-wrap items-center gap-x-4 gap-y-3"
+        >
+          <ul className="isolate flex -space-x-2.5" aria-label={m.homeLikedOnX()}>
+            {LIKED_BY.map((person) => (
+              <li
+                key={person.handle}
+                className="relative transition-transform hover:z-10 hover:-translate-y-1"
+              >
+                <Tooltip delay={80}>
+                  <TooltipTrigger
+                    render={
+                      <a
+                        href={`https://x.com/${person.handle}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`${person.name} — @${person.handle}`}
+                        className="block rounded-full outline-none focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                      />
+                    }
+                  >
+                    <img
+                      src={person.avatar}
+                      alt=""
+                      referrerPolicy="no-referrer"
+                      className={cn(
+                        "size-8 rounded-full border-2 border-surface bg-surface-raised object-cover shadow-sm sm:size-10",
+                        person.invertDark && "dark:bg-white dark:p-0.5",
+                      )}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="top"
+                    sideOffset={12}
+                    className="min-w-44 border border-background/15 px-3.5 py-3 shadow-[4px_4px_0_rgba(198,232,83,0.35)]"
+                  >
+                    <span className="block font-mono text-xs font-semibold tracking-[-0.02em]">
+                      {person.name}
+                    </span>
+                    <span className="mt-0.5 block font-mono text-[10px] text-background/65">
+                      @{person.handle}
+                    </span>
+                    <span className="mt-2 block border-t border-background/20 pt-2 font-mono text-[9px] uppercase tracking-[0.14em] text-background/75">
+                      {person.role}
+                    </span>
+                  </TooltipContent>
+                </Tooltip>
+              </li>
+            ))}
+          </ul>
+
+          <div className="border-l border-edge pl-4">
+            <p className={cn("font-mono text-[10px] uppercase tracking-[0.2em]", ACCENT_TEXT)}>
+              ✦ {m.homeLikedOnX()}
+            </p>
+          </div>
         </motion.div>
       </div>
     </section>

@@ -157,10 +157,28 @@ export const ROW_3: Testimonial[] = [
 
 export const LIKED_BY: LikedByPerson[] = [
   {
+    name: "shadcn",
+    handle: "shadcn",
+    avatar: "https://github.com/shadcn.png",
+    role: "Creator of shadcn/ui",
+  },
+  {
     name: "Tanner Linsley",
     handle: "tannerlinsley",
     avatar: "https://github.com/tannerlinsley.png",
     role: "Creator of TanStack",
+  },
+  {
+    name: "SolidJS",
+    handle: "solid_js",
+    avatar: "https://github.com/solidjs.png",
+    role: "Reactive JavaScript library",
+  },
+  {
+    name: "Ahmad Awais",
+    handle: "MrAhmadAwais",
+    avatar: "https://github.com/ahmadawais.png",
+    role: "Founder & CEO of Command Code",
   },
   {
     name: "SaltyAom",
@@ -175,10 +193,11 @@ export const LIKED_BY: LikedByPerson[] = [
     role: "Ergonomic web framework",
   },
   {
-    name: "Dev Agrawal",
-    handle: "devagrawal09",
-    avatar: "https://github.com/devagrawal09.png",
-    role: "Clerk DevRel",
+    name: "Base UI",
+    handle: "base_ui",
+    avatar: "/icon/base-ui.svg",
+    role: "Unstyled UI components",
+    invertDark: true,
   },
   {
     name: "Hayden Bleasel",
@@ -187,16 +206,21 @@ export const LIKED_BY: LikedByPerson[] = [
     role: "Creator of Ultracite",
   },
   {
-    name: "SolidJS",
-    handle: "solid_js",
-    avatar: "https://github.com/solidjs.png",
-    role: "Reactive JavaScript library",
+    name: "Dev Agrawal",
+    handle: "devagrawal09",
+    avatar: "https://github.com/devagrawal09.png",
+    role: "SolidJS core · TanStack maintainer",
   },
   {
-    name: "Base UI",
-    handle: "base_ui",
-    avatar: "/icon/base-ui.svg",
-    role: "Unstyled UI components",
-    invertDark: true,
+    name: "Aman Varshney",
+    handle: "amanvarshney01",
+    avatar: "https://github.com/AmanVarshney01.png",
+    role: "Creator of Better T Stack",
+  },
+  {
+    name: "Emanuele Di Pietro",
+    handle: "emanueledpt",
+    avatar: "https://github.com/Emanuele-web04.png",
+    role: "Indie hacker · iOS & web builder",
   },
 ];
