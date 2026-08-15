@@ -297,7 +297,13 @@ describe("flattenSingleApp", () => {
       devDependencies?: Record<string, string>;
     }>("package.json");
     expect(flatPkg?.devDependencies?.["vite-plus"]).toBe("^0.2.9");
-    expect(flatPkg?.scripts?.["vite-plus:check"]).toBe("vp check");
+    expect(flatPkg?.scripts).toMatchObject({
+      check: "vp check",
+      lint: "vp lint",
+      format: "vp fmt",
+      test: "vp test",
+      prepare: "vp config --no-agent --hooks-dir .vite-hooks",
+    });
   });
 
   it("removes workspace tooling files", () => {

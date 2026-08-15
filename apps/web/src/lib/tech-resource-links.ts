@@ -1898,6 +1898,12 @@ const BASE_LINKS: LinkMap = {
 };
 
 const CATEGORY_LINKS: LinkMap = {
+  "toolchainProfile:modular": {
+    docsUrl: "https://better-fullstack.dev/docs/sections/quality-and-tooling/",
+  },
+  "codeQualityProfile:eslint-prettier": {
+    docsUrl: "https://better-fullstack.dev/docs/sections/quality-and-tooling/",
+  },
   // ─── React Native optional Expo modules ───────────────────────────────────
   ...Object.fromEntries(
     [

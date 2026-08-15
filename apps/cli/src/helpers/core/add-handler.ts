@@ -6,7 +6,8 @@ import type { AddInput, Addons, BetterTStackConfig, ProjectConfig } from "../../
 import type { LifecycleResult } from "../../utils/lifecycle-contract";
 
 import { getDefaultConfig } from "../../constants";
-import { getAddonsToAdd } from "../../prompts/addons";
+import { getCapabilityPartSpecsToAdd } from "../../prompts/addons";
+import { getToolingCapability } from "../../types";
 import { maybeShowTelemetryNotice, type TelemetrySource, trackEvent } from "../../utils/analytics";
 import { readBtsConfig } from "../../utils/bts-config";
 import { isSilent, runWithContextAsync } from "../../utils/context";
@@ -39,6 +40,16 @@ export interface AddResult {
 }
 
 const ADD_CONTROL_KEYS = new Set(["projectDir", "install", "dryRun"]);
+const WORKSPACE_RUNNERS = new Set<Addons>(["turborepo", "nx", "vite-plus"]);
+
+function getRequestedCapabilityIds(input: AddInput): Addons[] {
+  const legacy = (input.addons ?? []).filter((toolId): toolId is Addons => toolId !== "none");
+  const graph = (input.part ?? []).flatMap((spec) => {
+    const toolId = spec.split(":")[2];
+    return toolId && getToolingCapability(toolId) ? [toolId as Addons] : [];
+  });
+  return [...new Set([...legacy, ...graph])];
+}
 function buildStackUpdateRequest(input: AddInput): Record<string, unknown> {
   const request: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(input as Record<string, unknown>)) {
@@ -55,7 +66,7 @@ async function getAddonsToSetup(
   currentConfig: BetterTStackConfig,
   projectDir: string,
 ): Promise<Addons[]> {
-  const requestedAddons = (input.addons ?? []).filter((addon): addon is Addons => addon !== "none");
+  const requestedAddons = getRequestedCapabilityIds(input);
   const existingAddons = new Set(currentConfig.addons ?? []);
   const addonsToSetup = requestedAddons.filter((addon) => !existingAddons.has(addon));
 
@@ -231,20 +242,24 @@ async function runStackUpdateAdd(
   request: Record<string, unknown>,
 ): Promise<AddResult> {
   const dryRun = input.dryRun ?? false;
-  const requestedAddons = (input.addons ?? []).filter((addon): addon is Addons => addon !== "none");
+  const requestedAddons = getRequestedCapabilityIds(input);
   const existingAddons = new Set(currentConfig.addons ?? []);
+  const requestedRunner = requestedAddons.find((addon) => WORKSPACE_RUNNERS.has(addon));
+  const replacesWorkspaceRunner =
+    requestedRunner !== undefined &&
+    [...existingAddons].some((addon) => WORKSPACE_RUNNERS.has(addon) && addon !== requestedRunner);
   const unsupportedRuntimeAddons = requestedAddons.filter(
     (addon) => ADDONS_REQUIRING_IMPERATIVE_SETUP.has(addon) && !existingAddons.has(addon),
   );
   if (unsupportedRuntimeAddons.length > 0) {
     throw new CLIError(
-      `Cannot transactionally add addon(s) that require imperative setup: ${unsupportedRuntimeAddons.join(", ")}. Select them when creating a project so every generated file is included in the scaffold baseline.`,
+      `Cannot transactionally add tooling that requires imperative setup: ${unsupportedRuntimeAddons.join(", ")}. Select it when creating a project so every generated file is included in the scaffold baseline.`,
     );
   }
   const addonsToRepair = await getAddonsToSetup(input, currentConfig, projectDir);
   const isExistingAddonRepair =
     !dryRun &&
-    Object.keys(request).every((key) => key === "addons") &&
+    Object.keys(request).every((key) => key === "addons" || key === "part") &&
     requestedAddons.length > 0 &&
     requestedAddons.every((addon) => existingAddons.has(addon)) &&
     addonsToRepair.length > 0;
@@ -254,7 +269,7 @@ async function runStackUpdateAdd(
     const setupWarnings = await setupAddons(setupConfig, addonsToRepair);
     await applyDependencyVersionChannel(projectDir, setupConfig.versionChannel);
     if (!isSilent()) {
-      log.success(pc.green(`Repaired addon setup: ${addonsToRepair.join(", ")}`));
+      log.success(pc.green(`Repaired tooling setup: ${addonsToRepair.join(", ")}`));
       outro(pc.magenta("Project updated successfully!"));
     }
     return {
@@ -266,10 +281,14 @@ async function runStackUpdateAdd(
   }
 
   const result = dryRun
-    ? await planStackUpdate(projectDir, request, { includeVersionChannelPaths: true })
+    ? await planStackUpdate(projectDir, request, {
+        includeVersionChannelPaths: true,
+        removeObsoleteGeneratedArtifacts: replacesWorkspaceRunner,
+      })
     : await applyStackUpdate(projectDir, request, {
         operation: "add",
         applyVersionChannel: true,
+        removeObsoleteGeneratedArtifacts: replacesWorkspaceRunner,
       });
 
   if (!result.success) {
@@ -317,8 +336,8 @@ async function runStackUpdateAdd(
     if (!isSilent()) {
       if (addonsToSetup.length > 0) {
         log.success(pc.green(`Successfully added: ${addonsToSetup.join(", ")}`));
-      } else if ((input.addons ?? []).some((addon) => addon !== "none")) {
-        log.info(pc.dim("No new addons selected."));
+      } else if (requestedAddons.length > 0) {
+        log.info(pc.dim("No new tooling capabilities selected."));
       }
       log.success(pc.green("Stack update applied."));
       for (const warning of setupWarnings) {
@@ -494,29 +513,10 @@ async function addHandlerInternal(input: AddInput): Promise<AddResult> {
     return runStackUpdateAdd(input, projectDir, projectName, btsConfig, stackUpdateRequest);
   }
 
-  const existingAddons = btsConfig.addons || [];
-  let addonsToAdd: Addons[] = [];
-
-  if (input.addons && input.addons.length > 0) {
-    addonsToAdd = input.addons.filter(
-      (addon): addon is Addons => addon !== "none" && !existingAddons.includes(addon),
-    );
-  } else {
-    const selectedAddons = await getAddonsToAdd(
-      btsConfig.frontend || [],
-      existingAddons,
-      btsConfig.auth,
-      btsConfig.backend,
-      btsConfig.runtime,
-      btsConfig.api ?? "none",
-      btsConfig,
-    );
-    addonsToAdd = selectedAddons.filter((addon) => addon !== "none");
-  }
-
-  if (addonsToAdd.length === 0) {
+  const capabilityPartSpecs = await getCapabilityPartSpecsToAdd(btsConfig);
+  if (capabilityPartSpecs.length === 0) {
     if (!isSilent()) {
-      log.info(pc.dim("No new addons selected."));
+      log.info(pc.dim("No new tooling capabilities selected."));
       outro(pc.magenta("Nothing to add."));
     }
     return {
@@ -527,14 +527,11 @@ async function addHandlerInternal(input: AddInput): Promise<AddResult> {
   }
 
   if (!isSilent()) {
-    log.info(pc.cyan(`Adding addons: ${addonsToAdd.join(", ")}`));
+    log.info(pc.cyan(`Adding tooling: ${capabilityPartSpecs.join(", ")}`));
   }
 
-  // Interactive additions must use the graph-aware update pipeline too. This
-  // preserves the actual backend projection and re-renders dependent addons
-  // such as DevContainer when infrastructure like Kong is added.
-  const interactiveInput: AddInput = { ...input, addons: addonsToAdd };
+  const interactiveInput: AddInput = { ...input, part: capabilityPartSpecs };
   return runStackUpdateAdd(interactiveInput, projectDir, projectName, btsConfig, {
-    addons: addonsToAdd,
+    part: capabilityPartSpecs,
   });
 }

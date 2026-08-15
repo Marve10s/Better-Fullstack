@@ -954,6 +954,17 @@ export async function gatherConfig(
       return getEffectChoice(flags.effect);
     },
     addons: ({ results }) => {
+      if (results.ecosystem === "react-native" && flags.addons === undefined) {
+        return getAddonsChoice(
+          undefined,
+          results.frontend,
+          results.auth,
+          results.backend,
+          results.runtime,
+          results.api,
+          { ecosystem: "react-native" },
+        );
+      }
       if (results.ecosystem !== "typescript") {
         const nonTypeScriptAddons = (flags.addons ?? []).filter(
           (addon): addon is Addons =>
@@ -962,8 +973,7 @@ export async function gatherConfig(
             addon === "gitleaks" ||
             addon === "kong" ||
             addon === "github-actions" ||
-            (results.ecosystem === "react-native" &&
-              (addon === "knip" || addon === "vite-plus")),
+            (results.ecosystem === "react-native" && (addon === "knip" || addon === "vite-plus")),
         );
         return Promise.resolve(nonTypeScriptAddons);
       }

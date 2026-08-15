@@ -2,7 +2,7 @@ import type { ProjectConfig, StackPart } from "@better-fullstack/types";
 
 import {
   getRoleTargetPath,
-  hasJavaScriptWorkspaceRoot,
+  hasVitePlusWorkspaceRoot,
   parseStackPartSpecs,
   stackGraphToLegacyProjectConfigForEcosystem,
   validateStackParts,
@@ -110,10 +110,7 @@ function validateGraphContainerAddons(config: ProjectConfig): string[] {
 
   const explicitContainerAddons = new Set(
     config.stackParts
-      .filter(
-        (part) =>
-          part.role === "workspaceTooling" && GRAPH_CONTAINER_ADDONS.has(part.toolId),
-      )
+      .filter((part) => part.role === "workspaceTooling" && GRAPH_CONTAINER_ADDONS.has(part.toolId))
       .map((part) => part.toolId),
   );
   const legacyContainerAddons = (config.addons ?? []).filter(
@@ -127,21 +124,18 @@ function validateGraphContainerAddons(config: ProjectConfig): string[] {
   ];
   const containerPartIds = new Set(
     effectiveParts
-      .filter(
-        (part) =>
-          part.role === "workspaceTooling" && GRAPH_CONTAINER_ADDONS.has(part.toolId),
-      )
+      .filter((part) => part.role === "workspaceTooling" && GRAPH_CONTAINER_ADDONS.has(part.toolId))
       .map((part) => part.id),
   );
 
-  return validateStackParts(effectiveParts).issues
-    .filter((issue) => issue.partId !== undefined && containerPartIds.has(issue.partId))
+  return validateStackParts(effectiveParts)
+    .issues.filter((issue) => issue.partId !== undefined && containerPartIds.has(issue.partId))
     .map((issue) => issue.message);
 }
 
 function validateGraphRenderingSupport(config: ProjectConfig): string[] {
-  return validateStackParts(config.stackParts ?? []).issues
-    .filter((issue) => issue.code === "UNSUPPORTED_REPEATED_PRIMARY")
+  return validateStackParts(config.stackParts ?? [])
+    .issues.filter((issue) => issue.code === "UNSUPPORTED_REPEATED_PRIMARY")
     .map((issue) => issue.message);
 }
 
@@ -278,9 +272,7 @@ async function processGraphTemplates(
           // Compose-backed infrastructure must be rendered from the non-TypeScript
           // backend projection so every selected service shares one graph-aware
           // Compose file and DevContainer configuration.
-          addons: tsConfig.addons.filter(
-            (addon) => !crossEcosystemInfrastructureAddons.has(addon),
-          ),
+          addons: tsConfig.addons.filter((addon) => !crossEcosystemInfrastructureAddons.has(addon)),
         }
       : tsConfig;
     await processAddonTemplates(vfs, templates, withCiTemplateFlags(initialTsAddonConfig));
@@ -435,14 +427,20 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
       };
     }
 
-    const hasJavaScriptRoot = config.stackParts?.length
-      ? hasJavaScriptWorkspaceRoot(config.stackParts)
-      : config.ecosystem === "typescript" || config.ecosystem === "react-native";
-    if (config.addons.includes("vite-plus") && !hasJavaScriptRoot) {
+    const hasVitePlusRoot = config.stackParts?.length
+      ? hasVitePlusWorkspaceRoot(config.stackParts)
+      : config.ecosystem === "typescript" &&
+        config.frontend.some(
+          (frontend) =>
+            frontend !== "none" &&
+            frontend !== "native-bare" &&
+            frontend !== "native-uniwind" &&
+            frontend !== "native-unistyles",
+        );
+    if (config.addons.includes("vite-plus") && !hasVitePlusRoot) {
       return {
         success: false,
-        error:
-          "Vite+ requires a JavaScript workspace root; use TypeScript, React Native, or a multi-ecosystem Stack Graph project",
+        error: "Vite+ requires a generated TypeScript web frontend",
       };
     }
 

@@ -2390,10 +2390,10 @@ export const getDisabledReason = (
   if (
     category === "appPlatforms" &&
     optionId === "vite-plus" &&
-    currentStack.ecosystem !== "typescript" &&
-    currentStack.ecosystem !== "react-native"
+    (currentStack.ecosystem !== "typescript" ||
+      !currentStack.webFrontend.some((frontend) => frontend !== "none"))
   ) {
-    return "Vite+ requires a JavaScript workspace root";
+    return "Vite+ requires a generated TypeScript web frontend";
   }
 
   if (
@@ -2535,19 +2535,6 @@ export const getDisabledReason = (
       "install",
       "codeQuality",
     ]);
-
-    if (
-      category === "appPlatforms" &&
-      optionId !== "vite-plus" &&
-      optionId !== "none" &&
-      optionId !== "false"
-    ) {
-      return "React Native app platforms currently support Vite+ only";
-    }
-
-    if (category === "appPlatforms" && optionId === "vite-plus") {
-      return null;
-    }
 
     if (category === "payments" && optionId !== "none" && optionId !== "revenuecat") {
       return "React Native payments currently support RevenueCat only";
@@ -5207,7 +5194,7 @@ export function validateAddonCompatibility(
       const frontendList = compatibleFrontends.join(", ");
       return {
         isCompatible: false,
-        reason: `${addon} addon requires one of these frontends: ${frontendList}`,
+        reason: `${addon} requires one of these frontends: ${frontendList}`,
       };
     }
   }

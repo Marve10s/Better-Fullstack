@@ -112,7 +112,7 @@ const typescriptSections = [
   },
   {
     id: "addons-examples",
-    label: "Addons & Examples",
+    label: "Tooling & Examples",
     promptKeys: ["addons", "examples"],
   },
 ] as const satisfies ConfigSection[];

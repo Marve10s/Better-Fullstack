@@ -16,6 +16,8 @@ import {
   analyzeStackCompatibility,
   createStackPart,
   formatStackPartSpec,
+  getToolingCapability,
+  getToolingCategory,
   legacyProjectConfigToStackParts,
   parseStackPartSpecs,
   requiresChatSdkVercelAI,
@@ -345,9 +347,17 @@ function mergeProjectConfig(
       } else if (requested.length === 0 && arrayValue.includes("none")) {
         (next as Record<string, unknown>)[key] = [];
       } else {
-        const existing = Array.isArray(next[key])
+        let existing = Array.isArray(next[key])
           ? (next[key] as string[]).filter((item) => item !== "none")
           : [];
+        if (
+          key === "addons" &&
+          requested.some((item) => item === "turborepo" || item === "nx" || item === "vite-plus")
+        ) {
+          existing = existing.filter(
+            (item) => item !== "turborepo" && item !== "nx" && item !== "vite-plus",
+          );
+        }
         (next as Record<string, unknown>)[key] = [...new Set([...existing, ...requested])];
       }
       continue;
@@ -368,7 +378,35 @@ function mergeStackPartSpecs(
   const currentSpecs = currentStackParts
     .filter((part) => part.source !== "provided")
     .map((part) => formatStackPartSpec(part, currentStackParts));
-  const stackParts = parseStackPartSpecs([...new Set([...currentSpecs, ...specs])], "selected");
+  const combinedParts = parseStackPartSpecs([...new Set([...currentSpecs, ...specs])], "selected");
+  const requestedSpecs = new Set(specs);
+  const requestedParts = combinedParts.filter((part) =>
+    requestedSpecs.has(formatStackPartSpec(part, combinedParts)),
+  );
+  const requestedSingleCategories = new Set(
+    requestedParts.flatMap((part) => {
+      const capability = getToolingCapability(part.toolId);
+      if (
+        !capability ||
+        capability.role !== part.role ||
+        getToolingCategory(capability.category)?.selectionMode !== "single"
+      ) {
+        return [];
+      }
+      return [`${part.ownerPartId ?? "root"}:${capability.category}`];
+    }),
+  );
+  if (requestedParts.some((part) => part.toolId === "vite-plus" && !part.ownerPartId)) {
+    requestedSingleCategories.add("root:workspaceRunner");
+    requestedSingleCategories.add("root:codeQuality");
+    requestedSingleCategories.add("root:gitHooks");
+  }
+  const stackParts = combinedParts.filter((part) => {
+    if (requestedParts.includes(part)) return true;
+    const capability = getToolingCapability(part.toolId);
+    if (!capability || capability.role !== part.role) return true;
+    return !requestedSingleCategories.has(`${part.ownerPartId ?? "root"}:${capability.category}`);
+  });
   return {
     ...stackPartsToLegacyProjectConfigPartial(stackParts),
     stackParts,

@@ -147,7 +147,6 @@ npm create better-fullstack@latest thin-next-app -- \
   --web-deploy none \
   --server-deploy none \
   --examples none \
-  --addons none \
   --ai-docs none \
   --no-install \
   --no-git
@@ -181,7 +180,6 @@ npm create better-fullstack@latest my-app -- \
   --payments none \
   --email none \
   --examples none \
-  --addons none \
   --ai-docs none \
   --version-channel stable \
   --no-install \
@@ -198,7 +196,8 @@ npm create better-fullstack@latest my-mixed-app -- \
   --part backend.auth:go:jwt \
   --part database:universal:postgres \
   --part mobile:react-native:native-bare \
-  --addons turborepo docker-compose
+  --part workspaceRunner:universal:turborepo \
+  --part containerOrchestration:universal:docker-compose
 ```
 
 ## Compatibility
@@ -207,5 +206,5 @@ npm create better-fullstack@latest my-mixed-app -- \
 - TypeScript `backend self` is for fullstack frontends and pairs with `runtime none`.
 - tRPC is React-oriented.
 - Workers runtime support depends on the frontend/backend combination.
-- UI libraries, deployment targets, providers, and addons are stack-sensitive.
+- UI libraries, deployment targets, providers, and tooling capabilities are stack-sensitive.
 - For a visual check, use the [Compatibility Matrix](/docs/reference/compatibility/) or the [Stack Builder](https://better-fullstack.dev/new).

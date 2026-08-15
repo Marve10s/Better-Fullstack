@@ -733,10 +733,10 @@ describe("Addon Configurations", () => {
         expectError: true,
       });
 
-      expectError(result, "requires a JavaScript workspace root");
+      expectError(result, "requires a generated TypeScript web frontend");
     });
 
-    it("offers Vite+ for React Native projects", () => {
+    it("does not offer Vite+ for native-only React Native projects", () => {
       expect(
         getCompatibleAddonsForPrompt(
           ["vite-plus"],
@@ -748,28 +748,15 @@ describe("Addon Configurations", () => {
           "none",
           { ecosystem: "react-native" },
         ),
-      ).toEqual(["vite-plus"]);
+      ).toEqual([]);
     });
 
     it("rejects Vite+ for native-only non-JavaScript Stack Graph projects", () => {
       expect(
-        getCompatibleAddons(
-          ["vite-plus"],
-          [],
-          [],
-          "none",
-          "gin",
-          undefined,
-          "none",
-          "go",
-          {
-            ecosystem: "go",
-            stackParts: parseStackPartSpecs([
-              "backend:go:gin",
-              "workspaceTooling:universal:vite-plus",
-            ]),
-          },
-        ),
+        getCompatibleAddons(["vite-plus"], [], [], "none", "gin", undefined, "none", "go", {
+          ecosystem: "go",
+          stackParts: parseStackPartSpecs(["backend:go:gin", "toolchain:universal:vite-plus"]),
+        }),
       ).toEqual([]);
     });
   });

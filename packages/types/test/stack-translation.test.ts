@@ -261,9 +261,9 @@ describe("stack selection translation", () => {
     expect(specs).toContain("codeQuality:universal:biome");
     expect(specs).toContain("documentation:universal:fumadocs");
     expect(specs).toContain("frontend.appPlatform:typescript:pwa");
-    expect(specs).toContain("frontend.dataFetching:typescript:tanstack-table");
+    expect(specs).toContain("frontend.libraries:typescript:tanstack-table");
     expect(specs).toContain("frontend.testing:typescript:storybook");
-    expect(specs).toContain("workspaceTooling:universal:turborepo");
+    expect(specs).toContain("workspaceRunner:universal:turborepo");
     expect(specs).toContain("examples:universal:ai");
   });
 
@@ -292,7 +292,7 @@ describe("stack selection translation", () => {
     expect(command).not.toContain("--part backend.json:elixir:none");
     expect(command).toContain("--part backend.deploy:elixir:docker");
     expect(command).not.toContain("--elixir-deploy docker");
-    expect(command).toContain("--part workspaceTooling:universal:turborepo");
+    expect(command).toContain("--part workspaceRunner:universal:turborepo");
     expect(command).toContain("--part examples:universal:ai");
     expect(command).not.toContain("--addons turborepo");
     expect(command).not.toContain("--examples ai");
@@ -314,8 +314,8 @@ describe("stack selection translation", () => {
 
     expect(command).toContain("--part codeQuality:universal:biome");
     expect(command).toContain("--part documentation:universal:fumadocs");
-    expect(command).toContain("--part workspaceTooling:universal:turborepo");
-    expect(command).toContain("--part workspaceTooling:universal:mcp");
+    expect(command).toContain("--part workspaceRunner:universal:turborepo");
+    expect(command).toContain("--part aiTooling:universal:mcp");
     expect(command).toContain("--part frontend.appPlatform:typescript:pwa");
     expect(command).toContain("--part frontend.dataFetching:typescript:swr");
     expect(command).toContain("--part frontend.testing:typescript:storybook");
@@ -523,10 +523,7 @@ describe("stack selection translation", () => {
         ecosystem: "elixir",
         backend: "phoenix",
         selection: { elixirLibraries: ["broadway", "floki"] },
-        expectedParts: [
-          "backend.libraries:elixir:broadway",
-          "backend.libraries:elixir:floki",
-        ],
+        expectedParts: ["backend.libraries:elixir:broadway", "backend.libraries:elixir:floki"],
       },
     ];
 
@@ -691,6 +688,23 @@ describe("stack selection translation", () => {
     ).toEqual(["frontend:typescript:next", "backend:go:gin", "orm:go:gorm"]);
   });
 
+  it("keeps tooling-only parts as an overlay on flat stack flags", () => {
+    const config = cliInputToProjectConfigPartial({
+      frontend: ["next"],
+      backend: "hono",
+      orm: "drizzle",
+      part: ["codeQuality:universal:biome", "aiTooling:universal:skills"],
+    });
+
+    expect(config.frontend).toEqual(["next"]);
+    expect(config.backend).toBe("hono");
+    expect(config.orm).toBe("drizzle");
+    expect(config.stackParts?.map((part) => `${part.role}:${part.toolId}`)).toEqual([
+      "codeQuality:biome",
+      "aiTooling:skills",
+    ]);
+  });
+
   it("derives ProjectConfig stackParts from graph URL state", () => {
     const config = toProjectConfig({
       ...DEFAULT_SELECTION,
@@ -819,7 +833,15 @@ describe("stack selection translation", () => {
     const config = toProjectConfig(selection);
 
     expect(config.addons).toEqual(["biome", "fumadocs", "pwa"]);
-    expect(generateStackSelectionCommand(selection)).toContain("--addons biome fumadocs pwa");
+    expect(generateStackSelectionCommand(selection)).toContain(
+      "--part codeQuality:universal:biome",
+    );
+    expect(generateStackSelectionCommand(selection)).toContain(
+      "--part documentation:universal:fumadocs",
+    );
+    expect(generateStackSelectionCommand(selection)).toContain(
+      "--part frontend.appPlatform:typescript:pwa",
+    );
   });
 
   it("keeps every selected TypeScript addon in generated commands", () => {
@@ -827,12 +849,31 @@ describe("stack selection translation", () => {
       ...DEFAULT_SELECTION,
       codeQuality: ["eslint", "prettier"],
       documentation: ["graphql-codegen"],
-      appPlatforms: ["axios", "firebase", "openapi-typescript", "apollo-client", "electron", "capacitor"],
+      appPlatforms: [
+        "axios",
+        "firebase",
+        "openapi-typescript",
+        "apollo-client",
+        "electron",
+        "capacitor",
+      ],
     } satisfies StackSelectionInput;
 
-    expect(generateStackSelectionCommand(selection)).toContain(
-      "--addons eslint prettier graphql-codegen axios firebase openapi-typescript apollo-client electron capacitor",
-    );
+    const command = generateStackSelectionCommand(selection);
+    for (const spec of [
+      "codeQuality:universal:eslint",
+      "codeQuality:universal:prettier",
+      "codeGeneration:universal:graphql-codegen",
+      "frontend.httpClient:typescript:axios",
+      "frontend.libraries:typescript:firebase",
+      "codeGeneration:universal:openapi-typescript",
+      "frontend.dataFetching:typescript:apollo-client",
+      "frontend.appPlatform:typescript:electron",
+      "frontend.appPlatform:typescript:capacitor",
+    ]) {
+      expect(command).toContain(`--part ${spec}`);
+    }
+    expect(command).not.toContain("--addons");
   });
 
   it("converts boolean-like strings and allows preview install overrides", () => {

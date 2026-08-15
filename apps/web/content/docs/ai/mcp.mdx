@@ -7,9 +7,9 @@ updated: 2026-08-12
 
 The Better Fullstack MCP server lets agents scaffold and evolve projects through structured tool
 calls instead of guessing CLI flags. It handles discovery, recommendations, compatibility checks,
-dry-run previews, project creation, broad stack updates, and focused addon/deploy additions.
+dry-run previews, project creation, broad stack updates, and focused capability/deploy additions.
 
-This page describes the Better Fullstack MCP server. The generated-project `mcp` addon is separate: it writes MCP client/server configuration into a scaffolded app and may run external setup commands.
+This page describes the Better Fullstack MCP server. The generated-project `mcp` capability is separate: it writes MCP client/server configuration into a scaffolded app and may run external setup commands.
 
 <Callout kind="info" title="Protocol compatibility is automatic">
 The stdio server negotiates both the 2025 MCP protocol family and MCP 2026-07-28 without a
@@ -105,11 +105,11 @@ For full inputs, outputs, examples, and safe write behavior, see the [MCP tools 
 | `bfs_apply_project_update` | Destructively applies token-bound files after explicit v1-risk acknowledgement. |
 | `bfs_plan_stack_update`    | Plans any supported scaffold-time stack change in an existing project.          |
 | `bfs_apply_stack_update`   | Applies a reviewed stack update without overwriting edited generated files.     |
-| `bfs_plan_addition`        | Plans a focused addon or deploy-target addition.                                |
-| `bfs_add_feature`          | Applies a focused addon or deploy-target addition.                              |
+| `bfs_plan_addition`        | Plans a focused capability or deploy-target addition.                           |
+| `bfs_add_feature`          | Applies a focused capability or deploy-target addition.                         |
 
 <Callout kind="info" title="Install behavior">
-MCP project creation skips normal dependency installation to avoid long-running agent calls. If the generated project includes the `mcp` addon, that addon setup may still run external setup commands for MCP client configuration.
+MCP project creation skips normal dependency installation to avoid long-running agent calls. If the generated project includes the `mcp` capability, that setup may still run external commands for MCP client configuration.
 </Callout>
 
 ## Resources
@@ -144,7 +144,7 @@ For an existing project's stack:
    architecture changes.
 5. Ask for approval, then `bfs_apply_stack_update` with the same requested fields.
 
-Use `bfs_plan_addition` followed by `bfs_add_feature` only for the narrower addon and deploy-target
+Use `bfs_plan_addition` followed by `bfs_add_feature` only for the narrower capability and deploy-target
 workflow.
 
 ## Key rules for agents

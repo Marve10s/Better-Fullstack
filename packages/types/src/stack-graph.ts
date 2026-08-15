@@ -8,8 +8,6 @@ import type {
 } from "./types";
 
 import {
-  ADDONS_VALUES,
-  APP_PLATFORM_ADDON_VALUES,
   API_VALUES,
   AUTH_VALUES,
   AI_VALUES,
@@ -169,6 +167,12 @@ import {
   requiresChatSdkVercelAIForExamples,
   UI_LIBRARY_COMPATIBILITY,
 } from "./stack-compatibility-rules";
+import {
+  getToolingCapability,
+  getToolingCategory,
+  getToolingSelectionOptions,
+  TOOLING_CAPABILITIES,
+} from "./tooling-capabilities";
 
 export type StackPrimaryRole = Extract<
   StackPartRole,
@@ -420,46 +424,6 @@ const LEGACY_BACKEND_ARRAY_CATEGORIES_BY_ECOSYSTEM = {
   Partial<Record<StackPartRole, keyof ProjectConfig>>
 >;
 
-const CODE_QUALITY_ADDONS = new Set([
-  "biome",
-  "eslint",
-  "prettier",
-  "oxlint",
-  "ultracite",
-  "lefthook",
-  "husky",
-  "gitleaks",
-]);
-const TYPESCRIPT_CODE_QUALITY_ADDONS = new Set(["knip"]);
-const DOCUMENTATION_ADDONS = new Set(["starlight", "fumadocs"]);
-const FRONTEND_APP_PLATFORM_ADDONS = new Set<string>(APP_PLATFORM_ADDON_VALUES);
-const FRONTEND_DATA_FETCHING_ADDONS = new Set([
-  "swr",
-  "apollo-client",
-  "tanstack-query",
-  "tanstack-table",
-  "tanstack-virtual",
-  "tanstack-db",
-  "tanstack-pacer",
-]);
-const FRONTEND_HTTP_CLIENT_ADDONS = new Set(["axios"]);
-const FRONTEND_LIBRARY_ADDONS = new Set(["firebase"]);
-const FRONTEND_TESTING_ADDONS = new Set(["msw", "storybook"]);
-const WORKSPACE_TOOLING_ADDONS = new Set([
-  "turborepo",
-  "nx",
-  "vite-plus",
-  "docker-compose",
-  "devcontainer",
-  "kong",
-  "github-actions",
-  "ruler",
-  "mcp",
-  "skills",
-  "backend-utils",
-  "graphql-codegen",
-  "openapi-typescript",
-]);
 const DOCKER_COMPOSE_COMPATIBLE_ECOSYSTEMS = new Set<StackPartEcosystem>([
   "typescript",
   "python",
@@ -468,15 +432,56 @@ const DOCKER_COMPOSE_COMPATIBLE_ECOSYSTEMS = new Set<StackPartEcosystem>([
   "java",
 ]);
 const LEGACY_ADDON_GRAPH_ROLES = new Set<StackPartRole>([
-  "appPlatform",
-  "codeQuality",
-  "dataFetching",
-  "documentation",
-  "testing",
+  ...TOOLING_CAPABILITIES.map((capability) => capability.role),
   "workspaceTooling",
-  "httpClient",
-  "libraries",
 ]);
+
+function getHistoricalAddonRole(toolId: string): StackPartRole | undefined {
+  if (
+    [
+      "biome",
+      "eslint",
+      "prettier",
+      "oxlint",
+      "ultracite",
+      "lefthook",
+      "husky",
+      "knip",
+      "gitleaks",
+    ].includes(toolId)
+  ) {
+    return "codeQuality";
+  }
+  if (["starlight", "fumadocs"].includes(toolId)) return "documentation";
+  if (["pwa", "tauri", "electron", "capacitor", "wxt", "opentui"].includes(toolId)) {
+    return "appPlatform";
+  }
+  if (
+    [
+      "swr",
+      "apollo-client",
+      "tanstack-query",
+      "tanstack-table",
+      "tanstack-virtual",
+      "tanstack-db",
+      "tanstack-pacer",
+    ].includes(toolId)
+  ) {
+    return "dataFetching";
+  }
+  if (toolId === "axios") return "httpClient";
+  if (toolId === "firebase") return "libraries";
+  if (["msw", "storybook"].includes(toolId)) return "testing";
+  if (getToolingCapability(toolId)) return "workspaceTooling";
+  return undefined;
+}
+
+function getHistoricalAddonEcosystem(toolId: string): StackPartEcosystem | undefined {
+  const role = getHistoricalAddonRole(toolId);
+  if (!role) return undefined;
+  if (role === "workspaceTooling") return "universal";
+  return getToolingCapability(toolId)?.ecosystem;
+}
 const LEGACY_ARRAY_CATEGORIES = new Set<keyof ProjectConfig>([
   "addons",
   "examples",
@@ -503,50 +508,13 @@ export type AddonStackPartBinding = {
 };
 
 export function getAddonStackPartBinding(toolId: string): AddonStackPartBinding | undefined {
-  if (TYPESCRIPT_CODE_QUALITY_ADDONS.has(toolId)) {
-    return { role: "codeQuality", ecosystem: "typescript" };
-  }
-  if (CODE_QUALITY_ADDONS.has(toolId)) {
-    return { role: "codeQuality", ecosystem: "universal" };
-  }
-  if (DOCUMENTATION_ADDONS.has(toolId)) {
-    return { role: "documentation", ecosystem: "universal" };
-  }
-  if (FRONTEND_APP_PLATFORM_ADDONS.has(toolId)) {
-    return {
-      role: "appPlatform",
-      ecosystem: "typescript",
-      ownerRole: "frontend",
-    };
-  }
-  if (FRONTEND_DATA_FETCHING_ADDONS.has(toolId)) {
-    return {
-      role: "dataFetching",
-      ecosystem: "typescript",
-      ownerRole: "frontend",
-    };
-  }
-  if (FRONTEND_HTTP_CLIENT_ADDONS.has(toolId)) {
-    return {
-      role: "httpClient",
-      ecosystem: "typescript",
-      ownerRole: "frontend",
-    };
-  }
-  if (FRONTEND_LIBRARY_ADDONS.has(toolId)) {
-    return {
-      role: "libraries",
-      ecosystem: "typescript",
-      ownerRole: "frontend",
-    };
-  }
-  if (FRONTEND_TESTING_ADDONS.has(toolId)) {
-    return { role: "testing", ecosystem: "typescript", ownerRole: "frontend" };
-  }
-  if (WORKSPACE_TOOLING_ADDONS.has(toolId)) {
-    return { role: "workspaceTooling", ecosystem: "universal" };
-  }
-  return undefined;
+  const capability = getToolingCapability(toolId);
+  if (!capability) return undefined;
+  return {
+    role: capability.role,
+    ecosystem: capability.ecosystem,
+    ownerRole: capability.ownerRole,
+  };
 }
 
 const OWNER_ROLES_BY_SCOPED_ROLE = {
@@ -876,69 +844,31 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(FILE_UPLOAD_VALUES, "fileUpload", "typescript", "fileUpload"),
   ...defineTools(I18N_VALUES, "i18n", "typescript", "i18n"),
   ...defineTools(ANALYTICS_VALUES, "analytics", "typescript", "analytics"),
-  ...defineTools(
-    ADDONS_VALUES.filter((value) => CODE_QUALITY_ADDONS.has(value)),
-    "codeQuality",
-    "universal",
-    undefined,
-    { allowMultiple: true, ownerless: true },
-  ),
-  ...defineTools(
-    ADDONS_VALUES.filter((value) => TYPESCRIPT_CODE_QUALITY_ADDONS.has(value)),
-    "codeQuality",
-    "typescript",
-    undefined,
-    { allowMultiple: true, ownerless: true },
-  ),
-  ...defineTools(
-    ADDONS_VALUES.filter((value) => DOCUMENTATION_ADDONS.has(value)),
-    "documentation",
-    "universal",
-    undefined,
-    { allowMultiple: true, ownerless: true },
-  ),
-  ...defineTools(
-    ADDONS_VALUES.filter((value) => FRONTEND_APP_PLATFORM_ADDONS.has(value)),
-    "appPlatform",
-    "typescript",
-    undefined,
-    { allowMultiple: true },
-  ),
-  ...defineTools(
-    ADDONS_VALUES.filter((value) => FRONTEND_DATA_FETCHING_ADDONS.has(value)),
-    "dataFetching",
-    "typescript",
-    undefined,
-    { allowMultiple: true },
-  ),
-  ...defineTools(
-    ADDONS_VALUES.filter((value) => FRONTEND_HTTP_CLIENT_ADDONS.has(value)),
-    "httpClient",
-    "typescript",
-    undefined,
-    { allowMultiple: true },
-  ),
-  ...defineTools(
-    ADDONS_VALUES.filter((value) => FRONTEND_LIBRARY_ADDONS.has(value)),
-    "libraries",
-    "typescript",
-    undefined,
-    { allowMultiple: true },
-  ),
-  ...defineTools(
-    ADDONS_VALUES.filter((value) => FRONTEND_TESTING_ADDONS.has(value)),
-    "testing",
-    "typescript",
-    undefined,
-    { allowMultiple: true },
-  ),
-  ...defineTools(
-    ADDONS_VALUES.filter((value) => WORKSPACE_TOOLING_ADDONS.has(value)),
-    "workspaceTooling",
-    "universal",
-    undefined,
-    { allowMultiple: true, ownerless: true },
-  ),
+  ...TOOLING_CAPABILITIES.map((capability) => {
+    const category = getToolingCategory(capability.category);
+    return {
+      toolId: capability.toolId,
+      roles: [capability.role],
+      ecosystems: [capability.ecosystem],
+      allowMultiple:
+        category?.selectionMode === "multiple" || capability.category === "codeQuality",
+      ownerless: capability.ownerRole === undefined,
+    } satisfies ToolDefinition;
+  }),
+  ...TOOLING_CAPABILITIES.flatMap((capability) => {
+    const historicalRole = getHistoricalAddonRole(capability.toolId);
+    if (!historicalRole || historicalRole === capability.role) return [];
+    return [
+      {
+        toolId: capability.toolId,
+        roles: [historicalRole],
+        ecosystems: [getHistoricalAddonEcosystem(capability.toolId) ?? capability.ecosystem],
+        selectable: false,
+        allowMultiple: true,
+        ownerless: historicalRole === "workspaceTooling" || capability.ownerRole === undefined,
+      } satisfies ToolDefinition,
+    ];
+  }),
   ...defineTools(EXAMPLES_VALUES, "examples", "universal", undefined, {
     allowMultiple: true,
     ownerless: true,
@@ -2074,6 +2004,45 @@ function createAddonCompatibilityIssue(
     }
   }
 
+  if (part.role === "toolchain" && part.toolId === "vite-plus") {
+    if (context.primaryEcosystemsByRole?.frontend !== "typescript") {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Vite+ requires a generated TypeScript web frontend",
+      });
+    }
+    const conflictingTool = [
+      ...(context.selectedToolIdsByRoleList?.workspaceRunner ?? []),
+      ...(context.selectedToolIdsByRoleList?.codeQuality ?? []),
+      ...(context.selectedToolIdsByRoleList?.gitHooks ?? []),
+    ].find((toolId) => toolId !== "none");
+    if (conflictingTool) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: `Vite+ owns workspace tasks, code quality, and commit hooks; remove '${conflictingTool}'`,
+      });
+    }
+  }
+
+  if (
+    (part.role === "workspaceRunner" || part.role === "codeQuality" || part.role === "gitHooks") &&
+    context.selectedToolIdsByRoleList?.toolchain?.includes("vite-plus")
+  ) {
+    return createStackGraphIssue({
+      code: "INCOMPATIBLE_GRAPH_SELECTION",
+      partId: part.id,
+      role: part.role,
+      toolId: part.toolId,
+      message: "Vite+ owns workspace tasks, code quality, and commit hooks",
+    });
+  }
+
   if (part.role === "workspaceTooling") {
     const workspaceTooling = context.selectedToolIdsByRoleList?.workspaceTooling ?? [];
     const workspaceRunners = ["turborepo", "nx", "vite-plus"];
@@ -2804,7 +2773,22 @@ export function hasJavaScriptWorkspaceRoot(parts: readonly StackPart[] | undefin
       (part) =>
         !part.ownerPartId &&
         part.source !== "provided" &&
-        (part.ecosystem === "typescript" || part.ecosystem === "react-native"),
+        part.toolId !== "none" &&
+        (part.ecosystem === "typescript" || part.ecosystem === "react-native") &&
+        (part.role === "frontend" || part.role === "backend" || part.role === "mobile"),
+    ) ?? false
+  );
+}
+
+export function hasVitePlusWorkspaceRoot(parts: readonly StackPart[] | undefined) {
+  return (
+    parts?.some(
+      (part) =>
+        !part.ownerPartId &&
+        part.source !== "provided" &&
+        part.toolId !== "none" &&
+        part.ecosystem === "typescript" &&
+        part.role === "frontend",
     ) ?? false
   );
 }
@@ -3106,12 +3090,18 @@ function addLegacyAddonPart(
   toolId: string,
   source: StackPartSource,
   frontendPart: StackPart | undefined,
+  backendPart: StackPart | undefined,
 ) {
   if (!toolId || toolId === "none") return;
   const binding = getAddonStackPartBinding(toolId);
   if (!binding) return;
-  const ownerPartId = binding.ownerRole === "frontend" ? frontendPart?.id : undefined;
-  if (binding.ownerRole === "frontend" && !ownerPartId) return;
+  const ownerPartId =
+    binding.ownerRole === "frontend"
+      ? frontendPart?.id
+      : binding.ownerRole === "backend"
+        ? backendPart?.id
+        : undefined;
+  if (binding.ownerRole && !ownerPartId) return;
   addLegacyPart(parts, binding.role, binding.ecosystem, toolId, source, ownerPartId);
 }
 
@@ -3131,7 +3121,13 @@ function getLegacyArrayCategoryForPart(part: StackPart): keyof ProjectConfig | u
   if (part.role === "examples") return "examples";
   if (LEGACY_ADDON_GRAPH_ROLES.has(part.role)) {
     const binding = getAddonStackPartBinding(part.toolId);
-    if (binding && binding.role === part.role && binding.ecosystem === part.ecosystem) {
+    const historicalRole = getHistoricalAddonRole(part.toolId);
+    if (
+      binding &&
+      (binding.role === part.role || historicalRole === part.role) &&
+      (binding.ecosystem === part.ecosystem ||
+        getHistoricalAddonEcosystem(part.toolId) === part.ecosystem)
+    ) {
       return "addons";
     }
   }
@@ -3213,7 +3209,7 @@ export function legacyProjectConfigToStackParts(
   }
 
   for (const addon of config.addons ?? []) {
-    addLegacyAddonPart(parts, addon, source, frontendPart);
+    addLegacyAddonPart(parts, addon, source, frontendPart, backendPart);
   }
   for (const example of config.examples ?? []) {
     addLegacyPart(parts, "examples", "universal", example, source);
@@ -3890,6 +3886,45 @@ export function validateStackParts(parts: readonly StackPart[]): StackGraphValid
         role: selected.role,
         toolId: selected.toolId,
         message: `'${selected.toolId}' conflicts with '${provided.toolId}' provided by '${provider?.toolId ?? "another part"}'.`,
+      });
+    }
+  }
+
+  const toolingByCategoryAndScope = new Map<string, StackPart[]>();
+  for (const part of parts) {
+    if (part.source === "provided") continue;
+    const capability = getToolingCapability(part.toolId);
+    if (!capability || capability.role !== part.role || capability.ecosystem !== part.ecosystem) {
+      continue;
+    }
+    const key = `${part.ownerPartId ?? "root"}:${capability.category}`;
+    toolingByCategoryAndScope.set(key, [...(toolingByCategoryAndScope.get(key) ?? []), part]);
+  }
+
+  for (const categoryParts of toolingByCategoryAndScope.values()) {
+    const first = categoryParts[0];
+    if (!first) continue;
+    const capability = getToolingCapability(first.toolId);
+    if (!capability || getToolingCategory(capability.category)?.selectionMode !== "single") {
+      continue;
+    }
+    if (categoryParts.every((part) => part.source === "legacy")) continue;
+
+    const selected = [...new Set(categoryParts.map((part) => part.toolId))].sort();
+    const matchesProfile = getToolingSelectionOptions(capability.category).some((selection) => {
+      const expected = [...selection.toolIds].sort();
+      return (
+        expected.length === selected.length &&
+        expected.every((toolId, index) => toolId === selected[index])
+      );
+    });
+    if (!matchesProfile) {
+      issues.push({
+        code: "INCOHERENT_TOOLING_PROFILE",
+        partId: first.id,
+        role: first.role,
+        toolId: first.toolId,
+        message: `Choose one complete '${getToolingCategory(capability.category)?.label}' profile.`,
       });
     }
   }

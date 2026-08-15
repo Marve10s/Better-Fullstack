@@ -202,7 +202,15 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
 
   applyGeneratedPackageTestScripts(vfs, config);
   const testCommands = getWorkspaceTestCommands(vfs, packageManager);
-  if (testCommands.length > 0) {
+  if (workspaceTool === "vite-plus") {
+    scripts.check = "vp check";
+    scripts.lint = "vp lint";
+    scripts.format = "vp fmt";
+    scripts.test = "vp run -r test";
+    scripts.prepare = scripts.prepare
+      ? `${scripts.prepare} && vp config --no-agent --hooks-dir .vite-hooks`
+      : "vp config --no-agent --hooks-dir .vite-hooks";
+  } else if (testCommands.length > 0) {
     scripts.test = testCommands.join(" && ");
   } else {
     delete scripts.test;
@@ -216,6 +224,7 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
 
   applyBetterAuthKyselyOverride(pkgJson, config);
   applyTsdownDevtoolsOverride(vfs, pkgJson, config);
+  applyVitePlusOverrides(pkgJson, config);
 
   if (backend === "convex") {
     if (!workspaces.includes("packages/*")) {
@@ -240,6 +249,31 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
     : workspaces;
 
   vfs.writeJson("package.json", pkgJson);
+}
+
+function applyVitePlusOverrides(pkgJson: PackageJson, config: ProjectConfig): void {
+  if (!config.addons.includes("vite-plus")) return;
+  const overrides = {
+    vite: "npm:@voidzero-dev/vite-plus-core@^0.2.9",
+    vitest: "npm:@voidzero-dev/vite-plus-test@^0.2.9",
+  };
+  switch (config.packageManager) {
+    case "pnpm":
+      pkgJson.pnpm = pkgJson.pnpm || {};
+      pkgJson.pnpm.overrides = { ...pkgJson.pnpm.overrides, ...overrides };
+      break;
+    case "yarn":
+      pkgJson.resolutions = { ...pkgJson.resolutions, ...overrides };
+      break;
+    case "bun":
+    case "npm":
+      pkgJson.overrides = { ...pkgJson.overrides, ...overrides };
+      break;
+    default: {
+      const _exhaustive: never = config.packageManager;
+      throw new Error(`Unknown package manager: ${_exhaustive}`);
+    }
+  }
 }
 
 function applyGeneratedPackageTestScripts(vfs: VirtualFileSystem, config: ProjectConfig): void {

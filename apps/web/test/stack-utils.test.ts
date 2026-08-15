@@ -118,8 +118,8 @@ describe("generateStackCommand", () => {
     expect(command).toContain("--part backend:python:fastapi");
     expect(command).toContain("--part backend.ai:python:langchain");
     expect(command).toContain("--part backend.codeQuality:python:mypy");
-    expect(command).toContain("--part workspaceTooling:universal:turborepo");
-    expect(command).toContain("--part workspaceTooling:universal:docker-compose");
+    expect(command).toContain("--part workspaceRunner:universal:turborepo");
+    expect(command).toContain("--part containerOrchestration:universal:docker-compose");
     expect(command).toContain("--part examples:universal:ai");
     expect(command).not.toContain("--ecosystem python");
   });

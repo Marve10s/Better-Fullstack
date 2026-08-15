@@ -2,7 +2,7 @@
 title: MCP Tools Reference
 description: Detailed reference for Better Fullstack MCP tools, inputs, outputs, and safe workflows.
 translationStatus: pending
-updated: 2026-08-12
+updated: 2026-08-15
 ---
 
 The MCP server exposes structured tools for discovery, project creation, and existing-project
@@ -37,7 +37,7 @@ is the authoritative contract.
    `acknowledgeArchitectureChange: true` only when the user accepted an architecture change.
 5. Report the returned install command and any manual migration work.
 
-Use `bfs_plan_addition` and `bfs_add_feature` only for the narrower addon, web-deploy, and
+Use `bfs_plan_addition` and `bfs_add_feature` only for the narrower Stack Part, web-deploy, and
 server-deploy workflow.
 
 ### Inspect, check, and update project files
@@ -208,7 +208,10 @@ and install guidance. It does not write files.
 {
   "projectDir": "/absolute/path/to/my-app",
   "email": "resend",
-  "addons": ["biome", "github-actions"]
+  "part": [
+    "codeQuality:universal:biome",
+    "continuousIntegration:universal:github-actions"
+  ]
 }
 ```
 
@@ -222,17 +225,17 @@ dependencies.
 When the plan reports an architecture change, repeat the request with
 `acknowledgeArchitectureChange: true` only after the user approves the listed data/schema risks.
 
-## Focused addon and deploy tools
+## Focused capability and deploy tools
 
 ### `bfs_plan_addition`
 
-Requires an absolute `projectDir`. Optional inputs are `addons`, `webDeploy`, and `serverDeploy`.
+Requires an absolute `projectDir`. Optional inputs are `part`, `webDeploy`, and `serverDeploy`.
 It reads `bts.jsonc`, identifies new and already-present additions, checks compatibility, and does
 not write files.
 
 ### `bfs_add_feature`
 
-Requires an absolute `projectDir`. Optional inputs are `addons`, `webDeploy`, `serverDeploy`, and
+Requires an absolute `projectDir`. Optional inputs are `part`, `webDeploy`, `serverDeploy`, and
 `packageManager`. It applies the focused addition and updates project metadata without installing
 dependencies. Use it only after `bfs_plan_addition` succeeds and the user approves.
 

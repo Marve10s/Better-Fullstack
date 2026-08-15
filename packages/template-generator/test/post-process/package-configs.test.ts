@@ -162,7 +162,7 @@ describe("processPackageConfigs", () => {
         stackParts: parseStackPartSpecs([
           "frontend:typescript:next",
           "backend:go:gin",
-          "workspaceTooling:universal:vite-plus",
+          "toolchain:universal:vite-plus",
         ]),
       }),
     );
@@ -175,6 +175,15 @@ describe("processPackageConfigs", () => {
       "dev:native": "vp run --fail-if-no-match --filter native dev",
       "dev:server": "cd apps/server && go run cmd/server/main.go",
       "db:push": "vp run --fail-if-no-match --filter @vite-plus-demo/db db:push",
+      check: "vp check",
+      lint: "vp lint",
+      format: "vp fmt",
+      test: "vp run -r test",
+      prepare: "vp config --no-agent --hooks-dir .vite-hooks",
+    });
+    expect(vfs.readJson<PackageJson>("package.json")?.overrides).toMatchObject({
+      vite: "npm:@voidzero-dev/vite-plus-core@^0.2.9",
+      vitest: "npm:@voidzero-dev/vite-plus-test@^0.2.9",
     });
   });
 

@@ -17,6 +17,7 @@ import {
   stackPartsToLegacyProjectConfigPartial,
   validateStackParts,
 } from "./stack-graph";
+import { getToolingCapability } from "./tooling-capabilities";
 
 export type StackSelectionMode = "solo" | "multi";
 export type StackSelectionInput = CompatibilityInput & {
@@ -1095,16 +1096,32 @@ function formatArrayFlag(flag: string, values: readonly string[] | undefined) {
   return `--${flag} ${filteredValues.join(" ") || "none"}`;
 }
 
-function formatTypeScriptAddonsFlag(selection: StackSelectionInput) {
+function formatTypeScriptCapabilityParts(selection: StackSelectionInput) {
   const addons = [...selection.codeQuality, ...selection.documentation, ...selection.appPlatforms];
-
-  if (addons.length === 0) return "--addons none";
-
-  return `--addons ${toUniqueNonNoneArray(addons).join(" ") || "none"}`;
+  const parts = legacyProjectConfigToStackParts(
+    {
+      ecosystem: "typescript",
+      frontend: [...selection.webFrontend, ...selection.nativeFrontend].filter(
+        (frontend) => frontend !== "none",
+      ) as ProjectConfig["frontend"],
+      backend: mapBackendToCli(selection.backend) as ProjectConfig["backend"],
+      addons: toUniqueNonNoneArray(addons) as ProjectConfig["addons"],
+    },
+    "selected",
+  );
+  return parts
+    .filter(
+      (part) =>
+        part.source !== "provided" && getAddonStackPartBinding(part.toolId)?.role === part.role,
+    )
+    .map((part) => `--part ${formatStackPartSpec(part, parts)}`)
+    .join(" ");
 }
 
 type StackSelectionStringKey = {
-  [K in keyof StackSelectionState]-?: NonNullable<StackSelectionState[K]> extends string ? K : never;
+  [K in keyof StackSelectionState]-?: NonNullable<StackSelectionState[K]> extends string
+    ? K
+    : never;
 }[keyof StackSelectionState];
 
 const GRAPH_SHADCN_FLAG_KEYS = [
@@ -1119,9 +1136,10 @@ const GRAPH_SHADCN_FLAG_KEYS = [
 
 const GRAPH_MOBILE_FLAG_KEYS = [] as const satisfies readonly [StackSelectionStringKey, string][];
 
-const GRAPH_SHARED_BACKEND_FLAG_KEYS = [
-  ["rateLimit", "rate-limit"],
-] as const satisfies readonly [StackSelectionStringKey, string][];
+const GRAPH_SHARED_BACKEND_FLAG_KEYS = [["rateLimit", "rate-limit"]] as const satisfies readonly [
+  StackSelectionStringKey,
+  string,
+][];
 
 const GRAPH_ELIXIR_BACKEND_FLAG_KEYS = [["elixirJson", "elixir-json"]] as const satisfies readonly [
   StackSelectionStringKey,
@@ -1139,7 +1157,9 @@ function formatChangedStringFlag(
 }
 
 type StackSelectionArrayKey = {
-  [K in keyof StackSelectionState]: NonNullable<StackSelectionState[K]> extends string[] ? K : never;
+  [K in keyof StackSelectionState]: NonNullable<StackSelectionState[K]> extends string[]
+    ? K
+    : never;
 }[keyof StackSelectionState];
 
 function formatChangedStringFlags(
@@ -2016,10 +2036,16 @@ export function cliInputToProjectConfigPartial(
   }
 
   if (Array.isArray(input.part) && input.part.length > 0) {
-    const stackParts = getCliGraphStackParts(input);
-    Object.assign(config, stackPartsToLegacyProjectConfigPartial(stackParts), {
-      stackParts,
-    });
+    const providedStackParts = parseStackPartSpecs(input.part, "selected");
+    const isToolingOverlay = providedStackParts.every((part) => getToolingCapability(part.toolId));
+    if (isToolingOverlay) {
+      config.stackParts = providedStackParts;
+    } else {
+      const stackParts = getCliGraphStackParts(input);
+      Object.assign(config, stackPartsToLegacyProjectConfigPartial(stackParts), {
+        stackParts,
+      });
+    }
   }
 
   return config;
@@ -2299,7 +2325,10 @@ function buildProjectConfigBase(
   };
 
   if (!isGraphStackSelection(graphStack)) {
-    return baseConfig;
+    return {
+      ...baseConfig,
+      stackParts: legacyProjectConfigToStackParts(baseConfig, "selected"),
+    };
   }
 
   const stackParts = getGraphStackParts(graphStack);
@@ -2528,7 +2557,7 @@ function generateTypeScriptCommand(selection: StackSelectionInput, projectName: 
     `--web-deploy ${selection.webDeploy}`,
     `--server-deploy ${selection.serverDeploy}`,
     selection.install === "false" ? "--no-install" : "--install",
-    formatTypeScriptAddonsFlag(selection),
+    formatTypeScriptCapabilityParts(selection),
     formatArrayFlag("examples", selection.examples),
     formatArrayFlag("ai-docs", selection.aiDocs),
   ];

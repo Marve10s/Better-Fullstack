@@ -4,7 +4,13 @@ import fs from "fs-extra";
 import path from "node:path";
 import pc from "picocolors";
 
-import type { CreateInput, DirectoryConflict, ProjectConfig } from "../../types";
+import type {
+  Addons,
+  CreateInput,
+  DirectoryConflict,
+  ProjectConfig,
+  ToolingCategoryId,
+} from "../../types";
 
 import { BUILDER_URL, getDefaultConfig } from "../../constants";
 import { CreateCommandOptionsSchema } from "../../create-command-input";
@@ -12,7 +18,12 @@ import { gatherConfig } from "../../prompts/config-prompts";
 import { isCancel, isGoBack, navigableSelect } from "../../prompts/navigable";
 import { getProjectName } from "../../prompts/project-name";
 import { getVersionChannelChoice } from "../../prompts/version-channel";
-import { getKotlinJavaIncompatibilityReason } from "../../types";
+import {
+  getKotlinJavaIncompatibilityReason,
+  getToolingCapability,
+  getToolingCategory,
+  legacyProjectConfigToStackParts,
+} from "../../types";
 import {
   maybeShowTelemetryNotice,
   type TelemetrySource,
@@ -231,6 +242,52 @@ function getYesBaseConfig(flagConfig: Partial<ProjectConfig>): ProjectConfig {
     mobileOTA: "none",
     mobileDeepLinking: "none",
     mobileLibraries: [],
+  };
+}
+
+function expandToolingOverlay(config: ProjectConfig): ProjectConfig {
+  const overlayParts = config.stackParts ?? [];
+  if (
+    overlayParts.length === 0 ||
+    !overlayParts.every((part) => getToolingCapability(part.toolId))
+  ) {
+    return config;
+  }
+
+  const overlayCategories = new Set<ToolingCategoryId>();
+  const overlayToolIds: Addons[] = [];
+  for (const part of overlayParts) {
+    const capability = getToolingCapability(part.toolId);
+    if (!capability) continue;
+    overlayCategories.add(capability.category);
+    overlayToolIds.push(part.toolId as Addons);
+  }
+
+  const categoriesToReplace = new Set<ToolingCategoryId>(
+    [...overlayCategories].filter(
+      (category) => getToolingCategory(category)?.selectionMode === "single",
+    ),
+  );
+  if (overlayToolIds.includes("vite-plus")) {
+    categoriesToReplace.add("workspaceRunner");
+    categoriesToReplace.add("codeQuality");
+    categoriesToReplace.add("gitHooks");
+  }
+
+  const addons = (config.addons ?? []).filter((toolId) => {
+    if (toolId === "none") return false;
+    const capability = getToolingCapability(toolId);
+    return !capability || !categoriesToReplace.has(capability.category);
+  });
+  for (const toolId of overlayToolIds) {
+    if (!addons.includes(toolId)) addons.push(toolId);
+  }
+
+  const compatibilityConfig = { ...config, addons, stackParts: undefined };
+  return {
+    ...config,
+    addons,
+    stackParts: legacyProjectConfigToStackParts(compatibilityConfig, "selected"),
   };
 }
 
@@ -607,14 +664,14 @@ export async function createProjectHandler(
         if (!silent) telemetrySource = "cli-flags";
         const flagConfig = processProvidedFlagsWithoutValidation(cliInput, finalBaseName);
 
-        config = {
+        config = expandToolingOverlay({
           ...getYesBaseConfig(flagConfig),
           ...flagConfig,
           projectName: finalBaseName,
           projectDir: finalResolvedPath,
           relativePath: currentPathInput,
           versionChannel,
-        };
+        });
 
         if (!cliInput.yolo && !isSilent()) {
           const { changes, adjustments } = resolveCompatibilityAdjustments(config);

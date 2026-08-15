@@ -199,8 +199,20 @@ export async function processAddonTemplates(
   for (const addon of config.addons) {
     if (addon === "none") continue;
 
+    if (addon === "vite-plus") {
+      processTemplatesFromPrefix(vfs, templates, "addons/vite-plus", "", config);
+      const gitignore = vfs.readFile(".gitignore") ?? "";
+      if (!gitignore.split("\n").includes(".vite-hooks/_")) {
+        vfs.writeFile(
+          ".gitignore",
+          `${gitignore}${gitignore.endsWith("\n") || gitignore.length === 0 ? "" : "\n"}.vite-hooks/_\n`,
+        );
+      }
+      continue;
+    }
+
     // Workspace runners are handled programmatically by processors.
-    if (addon === "turborepo" || addon === "nx" || addon === "vite-plus") continue;
+    if (addon === "turborepo" || addon === "nx") continue;
 
     if (addon === "pwa") {
       if (config.frontend.includes("next") || config.frontend.includes("vinext")) {

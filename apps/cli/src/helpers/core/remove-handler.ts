@@ -85,7 +85,7 @@ async function resolveRemoval(projectDirInput: string, target: string): Promise<
     ADDONS_REQUIRING_IMPERATIVE_SETUP.has(part.toolId as Addons)
   ) {
     throw new Error(
-      `Cannot transactionally remove addon '${part.toolId}' because its imperative setup artifacts are not yet modeled for teardown. Remove those artifacts manually before updating the stack selection.`,
+      `Cannot transactionally remove capability '${part.toolId}' because its imperative setup artifacts are not yet modeled for teardown. Remove those artifacts manually before updating the stack selection.`,
     );
   }
   if (PRIMARY_ROLES.has(part.role) && !part.ownerPartId) {

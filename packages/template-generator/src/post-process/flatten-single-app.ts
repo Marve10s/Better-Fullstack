@@ -232,6 +232,10 @@ function buildFlatPackageJson(
   const rootVitePlusVersion = rootPkg.devDependencies?.["vite-plus"];
   if (config.addons.includes("vite-plus") && rootVitePlusVersion) {
     devDependencies["vite-plus"] = rootVitePlusVersion;
+    for (const dependency of ["@voidzero-dev/vite-plus-core", "@voidzero-dev/vite-plus-test"]) {
+      const version = rootPkg.devDependencies?.[dependency];
+      if (version) devDependencies[dependency] = version;
+    }
   }
 
   const scripts = { ...webPkg.scripts };
@@ -248,7 +252,11 @@ function buildFlatPackageJson(
     }
   }
   if (config.addons.includes("vite-plus")) {
-    scripts["vite-plus:check"] = "vp check";
+    scripts.check = "vp check";
+    scripts.lint = "vp lint";
+    scripts.format = "vp fmt";
+    scripts.test = "vp test";
+    scripts.prepare = "vp config --no-agent --hooks-dir .vite-hooks";
   }
 
   const flatPkg: PackageJson = {

@@ -109,6 +109,7 @@ afterAll(async () => {
 });
 
 const CREATE_ONLY_KEYS = new Set([
+  "addons",
   "template",
   "fromHistory",
   "config",
@@ -299,7 +300,10 @@ describe("stack update planner", () => {
       .sort();
 
     expect(mcpUpdateKeys).toEqual(expectedStackKeys);
-    expect(SUPPORTED_STACK_UPDATE_KEYS).toEqual(expectedStackKeys);
+    expect(SUPPORTED_STACK_UPDATE_KEYS.filter((key) => key !== "addons")).toEqual(
+      expectedStackKeys,
+    );
+    expect(SUPPORTED_STACK_UPDATE_KEYS).toContain("addons");
   });
 
   it("plans and applies scaffold-time category additions", async () => {
@@ -3748,6 +3752,31 @@ describe("stack update planner", () => {
     expect(await pathExists(join(projectDir, "MIGRATION.md"))).toBe(false);
   });
 
+  it("replaces the existing workspace runner when adding Vite+", async () => {
+    const root = await makeTempRoot("bfs-stack-update-runner-replace-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(
+      makeConfig(projectDir, { addons: ["turborepo", "github-actions"] }),
+    );
+
+    const result = await addHandler(
+      { projectDir, part: ["toolchain:universal:vite-plus"], install: false },
+      { silent: true },
+    );
+    expect(result.success, result.error).toBe(true);
+
+    const btsConfig = await readJsonc(join(projectDir, "bts.jsonc"));
+    expect(btsConfig.addons).toContain("vite-plus");
+    expect(btsConfig.addons).toContain("github-actions");
+    expect(btsConfig.addons).not.toContain("turborepo");
+    expect(btsConfig.stackParts).toEqual(
+      expect.arrayContaining([expect.objectContaining({ role: "toolchain", toolId: "vite-plus" })]),
+    );
+    const rootPackage = await readFile(join(projectDir, "package.json"), "utf-8");
+    expect(rootPackage).toContain('"vite-plus"');
+    expect(rootPackage).not.toContain('"turbo"');
+  });
+
   it("records the caller's add operation independently of changed fields", async () => {
     const root = await makeTempRoot("bfs-stack-update-add-operation-");
     const projectDir = join(root, "app");
@@ -3864,7 +3893,7 @@ describe("stack update planner", () => {
       { silent: true },
     );
     expect(result?.success).toBe(false);
-    expect(result?.error).toContain("require imperative setup");
+    expect(result?.error).toContain("requires imperative setup");
     for (const addon of [
       "biome",
       "gitleaks",

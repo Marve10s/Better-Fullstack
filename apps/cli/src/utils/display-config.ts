@@ -1,4 +1,10 @@
-import { formatStackPartSpec } from "@better-fullstack/types";
+import {
+  formatStackPartSpec,
+  getSelectedToolingOption,
+  getToolingCapability,
+  legacyProjectConfigToStackParts,
+  TOOLING_CATEGORIES,
+} from "@better-fullstack/types";
 import pc from "picocolors";
 
 import type { ProjectConfig } from "../types";
@@ -318,10 +324,23 @@ export function displayConfig(config: Partial<ProjectConfig>) {
     configDisplay.push(`${pc.blue("File Storage:")} ${String(config.fileStorage)}`);
   }
 
-  if (config.addons !== undefined) {
-    const addons = Array.isArray(config.addons) ? config.addons : [config.addons];
-    const addonsText = addons.length > 0 && addons[0] !== undefined ? addons.join(", ") : "none";
-    configDisplay.push(`${pc.blue("Addons:")} ${addonsText}`);
+  if (config.addons !== undefined || config.stackParts?.length) {
+    const parts = config.stackParts?.length
+      ? config.stackParts
+      : legacyProjectConfigToStackParts(config);
+    for (const category of TOOLING_CATEGORIES) {
+      const toolIds = parts.flatMap((part) => {
+        const capability = getToolingCapability(part.toolId);
+        return capability?.category === category.id && capability.role === part.role
+          ? [part.toolId]
+          : [];
+      });
+      if (toolIds.length === 0) continue;
+      const selection = getSelectedToolingOption(category.id, toolIds);
+      configDisplay.push(
+        `${pc.blue(`${category.label}:`)} ${selection?.label ?? toolIds.join(", ")}`,
+      );
+    }
   }
 
   if (config.examples !== undefined) {
