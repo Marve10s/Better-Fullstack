@@ -1,4 +1,4 @@
-import type { ProjectConfig } from "@better-fullstack/types";
+import { type ProjectConfig, isVercelAnalyticsFrontend } from "@better-fullstack/types";
 
 import type { VirtualFileSystem } from "../core/virtual-fs";
 
@@ -20,11 +20,16 @@ const NUXT_FRONTENDS = new Set(["nuxt"]);
 const SOLID_FRONTENDS = new Set(["solid", "solid-start"]);
 const ASTRO_FRONTENDS = new Set(["astro"]);
 
-function getAnalyticsTemplateVariant(frontend: readonly string[]): string | null {
+function getAnalyticsTemplateVariant(
+  frontend: readonly string[],
+  analytics: ProjectConfig["analytics"],
+): string | null {
   if (frontend.some((f) => REACT_FRONTENDS.has(f))) return "react";
   if (frontend.some((f) => SVELTE_FRONTENDS.has(f))) return "svelte";
   if (frontend.some((f) => VUE_FRONTENDS.has(f))) return "vue";
-  if (frontend.some((f) => NUXT_FRONTENDS.has(f))) return "nuxt";
+  if (frontend.some((f) => NUXT_FRONTENDS.has(f))) {
+    return analytics === "vercel-analytics" ? "nuxt" : "vue";
+  }
   if (frontend.some((f) => SOLID_FRONTENDS.has(f))) return "solid";
   if (frontend.some((f) => ASTRO_FRONTENDS.has(f))) return "astro";
   return null;
@@ -102,7 +107,7 @@ function mountVercelAnalytics(vfs: VirtualFileSystem, frontend: string) {
         path,
         source.replace(
           '<script lang="ts">',
-          '<script lang="ts">\n\timport "$lib/vercel-analytics";',
+          '<script lang="ts">\n\timport { startVercelAnalytics } from "$lib/vercel-analytics";\n\n\tstartVercelAnalytics();',
         ),
       );
     }
@@ -156,7 +161,18 @@ export async function processAnalyticsTemplates(
     return;
   }
 
-  const variant = getAnalyticsTemplateVariant(config.frontend);
+  const webFrontends = config.frontend.filter(
+    (frontend) => frontend !== "none" && !frontend.startsWith("native-"),
+  );
+  if (
+    config.analytics === "vercel-analytics" &&
+    (webFrontends.length === 0 ||
+      webFrontends.some((frontend) => !isVercelAnalyticsFrontend(frontend)))
+  ) {
+    throw new Error("Vercel Analytics is not yet mounted for the selected frontend");
+  }
+
+  const variant = getAnalyticsTemplateVariant(config.frontend, config.analytics);
   if (!variant) return;
 
   const targetPath =

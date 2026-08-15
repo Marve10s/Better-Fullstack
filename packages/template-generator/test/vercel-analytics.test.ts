@@ -68,8 +68,49 @@ describe("Vercel Analytics generation", () => {
     async (frontend, path, marker) => {
       const output = await generate(frontend);
       expect(output.get(path)).toContain(marker);
+      if (frontend === "svelte") {
+        expect(output.get("apps/web/src/lib/vercel-analytics.ts")).not.toContain(
+          "\ninjectAnalytics();",
+        );
+        expect(output.get(path)).toContain("startVercelAnalytics();");
+      }
     },
   );
+
+  it("rejects unsupported frontends before installing an unused package", async () => {
+    const result = await generateVirtualProject({
+      config: makeConfig({
+        frontend: ["angular"],
+        backend: "self",
+        runtime: "none",
+        analytics: "vercel-analytics",
+      }),
+      templates: EMBEDDED_TEMPLATES,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("not yet mounted");
+  });
+
+  for (const analytics of ["posthog", "umami"] as const) {
+    it(`keeps the ${analytics} Vue helper for Nuxt`, async () => {
+      const result = await generateVirtualProject({
+        config: makeConfig({
+          frontend: ["nuxt"],
+          backend: "self",
+          runtime: "none",
+          analytics,
+        }),
+        templates: EMBEDDED_TEMPLATES,
+      });
+
+      expect(result.success).toBe(true);
+      const output = new Map(files(result.tree!.root).map((file) => [file.path, file.content]));
+      expect(output.has(`apps/web/src/lib/${analytics === "posthog" ? "posthog" : "umami"}.ts`)).toBe(
+        true,
+      );
+    });
+  }
 
   it("retains the mounted component and dependency in single-app output", async () => {
     const output = await generate("next", { workspaceShape: "single-app" });

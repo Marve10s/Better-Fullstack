@@ -60,9 +60,11 @@ const SOLID_FRONTENDS = new Set(["solid", "solid-start"]);
 const hasReact = (f: readonly string[]) => f.some((x) => REACT_FRONTENDS.has(x));
 const hasSvelte = (f: readonly string[]) => f.includes("svelte");
 const hasNuxt = (f: readonly string[]) => f.includes("nuxt");
+const hasVue = (f: readonly string[]) => f.includes("vue");
+const hasAstro = (f: readonly string[]) => f.includes("astro");
 const hasSolid = (f: readonly string[]) => f.some((x) => SOLID_FRONTENDS.has(x));
 const hasAnyWebFrontend = (f: readonly string[]) =>
-  hasReact(f) || hasSvelte(f) || hasNuxt(f) || hasSolid(f);
+  hasReact(f) || hasSvelte(f) || hasNuxt(f) || hasVue(f) || hasAstro(f) || hasSolid(f);
 
 const hasGraphBackend = (config: ProjectConfig) =>
   config.stackParts?.some(
@@ -199,7 +201,7 @@ const PREFLIGHT_RULES: readonly PreflightRule[] = [
     featureKey: "analytics",
     displayName: "Analytics",
     willSkip: (c) => c.analytics !== "none" && !hasAnyWebFrontend(c.frontend),
-    reason: "Analytics requires a React, Svelte, Nuxt, or Solid frontend.",
+    reason: "Analytics requires a supported web frontend.",
     suggestions: ["Add a supported web frontend", "Remove analytics"],
   },
 

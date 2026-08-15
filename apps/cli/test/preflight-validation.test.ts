@@ -249,8 +249,8 @@ describe("preflight validation", () => {
   });
 
   describe("analytics", () => {
-    test("warns without supported frontend", () => {
-      expect(ruleIds(config({ analytics: "plausible", frontend: ["astro"] }))).toContain(
+    test("passes with Astro frontend", () => {
+      expect(ruleIds(config({ analytics: "plausible", frontend: ["astro"] }))).not.toContain(
         "analytics-no-frontend",
       );
     });

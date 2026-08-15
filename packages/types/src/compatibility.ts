@@ -70,6 +70,10 @@ const VERCEL_ANALYTICS_FRONTENDS = new Set([
   "astro",
 ]);
 
+export function isVercelAnalyticsFrontend(frontend: string) {
+  return VERCEL_ANALYTICS_FRONTENDS.has(frontend);
+}
+
 export function isSignozSupportedGoWebFramework(framework: string): boolean {
   return SIGNOZ_SUPPORTED_GO_WEB_FRAMEWORKS.has(framework);
 }
@@ -2356,7 +2360,7 @@ export const analyzeStackCompatibility = (
 
   if (
     nextStack.analytics === "vercel-analytics" &&
-    !nextStack.webFrontend.some((frontend) => VERCEL_ANALYTICS_FRONTENDS.has(frontend))
+    !nextStack.webFrontend.some((frontend) => isVercelAnalyticsFrontend(frontend))
   ) {
     nextStack.analytics = "none";
     changed = true;
@@ -2808,7 +2812,7 @@ export const getDisabledReason = (
   if (category === "analytics" && optionId === "vercel-analytics") {
     const webFrontends = currentStack.webFrontend.filter((frontend) => frontend !== "none");
     if (webFrontends.length === 0) return "Vercel Analytics requires a web frontend";
-    if (webFrontends.some((frontend) => !VERCEL_ANALYTICS_FRONTENDS.has(frontend))) {
+    if (webFrontends.some((frontend) => !isVercelAnalyticsFrontend(frontend))) {
       return "Vercel Analytics is not yet mounted for the selected frontend";
     }
   }
@@ -2816,7 +2820,7 @@ export const getDisabledReason = (
     category === "webFrontend" &&
     currentStack.analytics === "vercel-analytics" &&
     optionId !== "none" &&
-    !VERCEL_ANALYTICS_FRONTENDS.has(optionId)
+    !isVercelAnalyticsFrontend(optionId)
   ) {
     return "The selected frontend does not yet mount Vercel Analytics";
   }

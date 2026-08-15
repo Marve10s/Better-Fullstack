@@ -1,4 +1,4 @@
-import type { ProjectConfig } from "@better-fullstack/types";
+import { type ProjectConfig, isVercelAnalyticsFrontend } from "@better-fullstack/types";
 
 import type { VirtualFileSystem } from "../core/virtual-fs";
 
@@ -43,7 +43,10 @@ export function processAnalyticsDeps(vfs: VirtualFileSystem, config: ProjectConf
     }
   }
 
-  if (analytics === "vercel-analytics" && hasWebFrontend) {
+  if (
+    analytics === "vercel-analytics" &&
+    frontend.some((candidate) => isVercelAnalyticsFrontend(candidate))
+  ) {
     const webPath = getWebPackagePath(frontend, backend);
     if (vfs.exists(webPath)) {
       addPackageDependency({

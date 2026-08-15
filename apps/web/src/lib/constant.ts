@@ -1432,7 +1432,7 @@ export const TECH_OPTIONS: Record<
       id: "vercel-analytics",
       name: "Vercel Analytics",
       description: "Privacy-friendly page views and custom events, best when deployed to Vercel",
-      icon: "https://cdn.simpleicons.org/vercel/000000",
+      icon: "",
       color: "from-zinc-700 to-black",
       default: false,
     },
