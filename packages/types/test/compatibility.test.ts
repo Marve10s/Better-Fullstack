@@ -12,7 +12,7 @@ import {
 import { DEFAULT_STACK_SELECTION } from "../src/stack-translation";
 
 describe("compatibility issue helpers", () => {
-  it("limits BotID to Next.js and Vinext while keeping Turnstile universal for web stacks", () => {
+  it("keeps bot protection within its generated auth and frontend boundaries", () => {
     const nextStack = { ...DEFAULT_STACK_SELECTION, webFrontend: ["next"] };
     const viteStack = { ...DEFAULT_STACK_SELECTION, webFrontend: ["react-vite"] };
 
@@ -21,11 +21,75 @@ describe("compatibility issue helpers", () => {
     expect(getDisabledReason(viteStack, "botProtection", "turnstile")).toBeNull();
     expect(
       getDisabledReason(
+        { ...nextStack, webDeploy: "netlify" },
+        "botProtection",
+        "botid",
+      ),
+    ).toContain("Vercel deployment");
+    expect(
+      getDisabledReason(
+        { ...nextStack, botProtection: "botid" },
+        "webFrontend",
+        "svelte",
+      ),
+    ).toContain("Next.js and Vinext");
+    expect(
+      getDisabledReason(
+        { ...nextStack, botProtection: "botid" },
+        "webDeploy",
+        "netlify",
+      ),
+    ).toContain("Vercel deployment");
+    expect(
+      getDisabledReason(
+        { ...nextStack, auth: "none" },
+        "botProtection",
+        "turnstile",
+      ),
+    ).toContain("Better Auth");
+    expect(
+      getDisabledReason(
+        { ...nextStack, backend: "none" },
+        "botProtection",
+        "turnstile",
+      ),
+    ).toContain("server-side verification");
+    expect(
+      getDisabledReason(
+        { ...nextStack, backend: "convex" },
+        "botProtection",
+        "turnstile",
+      ),
+    ).toContain("Convex");
+    expect(
+      getDisabledReason(
+        { ...nextStack, webFrontend: ["svelte"] },
+        "botProtection",
+        "turnstile",
+      ),
+    ).toContain("React web frontends only");
+    expect(
+      getDisabledReason(
         { ...DEFAULT_STACK_SELECTION, ecosystem: "go", webFrontend: ["none"] },
         "botProtection",
         "turnstile",
       ),
     ).toContain("TypeScript");
+
+    expect(
+      analyzeStackCompatibility({
+        ...DEFAULT_STACK_SELECTION,
+        webFrontend: ["svelte"],
+        botProtection: "botid",
+      }).adjustedStack?.botProtection,
+    ).toBe("none");
+    expect(
+      evaluateCompatibility({
+        ...DEFAULT_STACK_SELECTION,
+        webFrontend: ["svelte"],
+        botProtection: "botid",
+      }).issues.map((issue) => issue.category),
+    ).toContain("botProtection");
   });
 
   it("keeps SigNoz off stacks without a generated server target", () => {

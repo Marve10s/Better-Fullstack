@@ -1,4 +1,8 @@
-import type { ProjectConfig } from "@better-fullstack/types";
+import {
+  type ProjectConfig,
+  isBotIdWebFrontend,
+  isTurnstileWebFrontend,
+} from "@better-fullstack/types";
 
 import type { VirtualFileSystem } from "../core/virtual-fs";
 import type { TemplateData } from "./utils";
@@ -9,21 +13,8 @@ function turnstileSiteKeyExpression(frontend: string[]) {
   return 'import.meta.env.VITE_TURNSTILE_SITE_KEY ?? ""';
 }
 
-function hasReactWebFrontend(frontend: string[]) {
-  return frontend.some((value) =>
-    [
-      "next",
-      "vinext",
-      "react-router",
-      "react-vite",
-      "tanstack-router",
-      "tanstack-start",
-      "redwood",
-    ].includes(value),
-  );
-}
-
 function patchTurnstileForms(vfs: VirtualFileSystem): void {
+  let patchedForms = 0;
   for (const path of vfs.getAllFiles()) {
     if (!/apps\/web\/src\/components\/sign-(in|up)-form\.tsx$/.test(path)) continue;
     const source = vfs.readFile(path);
@@ -35,24 +26,36 @@ function patchTurnstileForms(vfs: VirtualFileSystem): void {
     );
     next = next.replace(
       /(const \{ isPending \} = authClient\.useSession\(\);)/,
-      '$1\n  const [turnstileToken, setTurnstileToken] = useState("");',
+      '$1\n  const [turnstileToken, setTurnstileToken] = useState("");\n  const [turnstileAttempt, setTurnstileAttempt] = useState(0);',
     );
     next = next.replace(
       /(\{\n\s+onSuccess: \(\) => \{)/,
-      '{\n          fetchOptions: { headers: { "x-turnstile-token": turnstileToken } },\n          onSuccess: () => {',
+      '{\n          fetchOptions: {\n            headers: { "x-turnstile-token": turnstileToken },\n            onResponse: () => {\n              setTurnstileToken("");\n              setTurnstileAttempt((attempt) => attempt + 1);\n            },\n          },\n          onSuccess: () => {',
     );
     next = next.replace(
       /(\n\s*<form\.Subscribe>)/,
-      "\n        <BotProtection onToken={setTurnstileToken} />$1",
+      "\n        <BotProtection key={turnstileAttempt} onToken={setTurnstileToken} />$1",
     );
+    if (
+      next === source ||
+      !next.includes("turnstileAttempt") ||
+      !next.includes('"x-turnstile-token": turnstileToken') ||
+      !next.includes("<BotProtection")
+    ) {
+      throw new Error(`Unable to wire Turnstile into ${path}`);
+    }
     vfs.writeFile(path, next);
+    patchedForms += 1;
   }
+  if (patchedForms === 0) throw new Error("Unable to find Better Auth forms for Turnstile");
 }
 
 function patchBetterAuth(vfs: VirtualFileSystem, provider: "botid" | "turnstile"): void {
   const path = "packages/auth/src/index.ts";
   const source = vfs.readFile(path);
-  if (!source?.includes("export const auth = betterAuth({")) return;
+  if (!source?.includes("export const auth = betterAuth({")) {
+    throw new Error(`Unable to wire ${provider} verification into Better Auth`);
+  }
 
   const helperImport =
     provider === "turnstile"
@@ -96,7 +99,20 @@ export async function processBotProtectionTemplates(
 ): Promise<void> {
   if (!config.botProtection || config.botProtection === "none") return;
 
+  const webFrontends = config.frontend.filter(
+    (frontend) => frontend !== "none" && !frontend.startsWith("native-"),
+  );
+  const hasBetterAuth =
+    config.auth === "better-auth" || config.auth === "better-auth-organizations";
+  if (!hasBetterAuth) throw new Error("Bot protection requires Better Auth");
+
   if (config.botProtection === "botid") {
+    if (webFrontends.length === 0 || webFrontends.some((frontend) => !isBotIdWebFrontend(frontend))) {
+      throw new Error("Vercel BotID is only available for Next.js and Vinext frontends");
+    }
+    if (config.webDeploy !== "none" && config.webDeploy !== "vercel") {
+      throw new Error("Vercel BotID requires Vercel deployment when web deployment is selected");
+    }
     vfs.writeFile(
       "apps/web/instrumentation-client.ts",
       `import { initBotId } from "botid/client/core";
@@ -114,6 +130,19 @@ initBotId({
     return;
   }
 
+  if (
+    webFrontends.length === 0 ||
+    webFrontends.some((frontend) => !isTurnstileWebFrontend(frontend))
+  ) {
+    throw new Error("Cloudflare Turnstile is currently wired for React web frontends only");
+  }
+  if (config.backend === "convex") {
+    throw new Error("Cloudflare Turnstile is not wired for Convex auth forms");
+  }
+  if (config.backend === "none") {
+    throw new Error("Cloudflare Turnstile requires a backend for server-side verification");
+  }
+
   vfs.writeFile(
     "apps/web/src/lib/bot-protection.ts",
     `export const turnstileSiteKey = ${turnstileSiteKeyExpression(config.frontend)};
@@ -124,10 +153,9 @@ export function turnstileHeaders(token: string): Record<string, string> {
 `,
   );
 
-  if (hasReactWebFrontend(config.frontend)) {
-    vfs.writeFile(
-      "apps/web/src/components/bot-protection.tsx",
-      `"use client";
+  vfs.writeFile(
+    "apps/web/src/components/bot-protection.tsx",
+    `"use client";
 
 import { Turnstile } from "@marsidev/react-turnstile";
 import { turnstileSiteKey } from "@/lib/bot-protection";
@@ -136,14 +164,12 @@ export function BotProtection({ onToken }: { onToken: (token: string) => void })
   return <Turnstile siteKey={turnstileSiteKey} onSuccess={onToken} onExpire={() => onToken("")} />;
 }
 `,
-    );
-    patchTurnstileForms(vfs);
-  }
+  );
+  patchTurnstileForms(vfs);
 
-  if (vfs.exists("packages/auth/src")) {
-    vfs.writeFile(
-      "packages/auth/src/lib/bot-protection.ts",
-      `import { env } from "@${config.projectName}/env/server";
+  vfs.writeFile(
+    "packages/auth/src/lib/bot-protection.ts",
+    `import { env } from "@${config.projectName}/env/server";
 
 export async function verifyTurnstile(headers: Headers): Promise<boolean> {
   const token = headers.get("x-turnstile-token");
@@ -167,7 +193,6 @@ export async function verifyTurnstile(headers: Headers): Promise<boolean> {
   );
 }
 `,
-    );
-    patchBetterAuth(vfs, "turnstile");
-  }
+  );
+  patchBetterAuth(vfs, "turnstile");
 }

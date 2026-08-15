@@ -1,4 +1,9 @@
-import type { BotProtection, Frontend } from "../types";
+import {
+  type BotProtection,
+  type Frontend,
+  isBotIdWebFrontend,
+  isTurnstileWebFrontend,
+} from "../types";
 import type { PromptSingleResolution } from "./prompt-contract";
 
 import { exitCancelled } from "../utils/errors";
@@ -25,9 +30,14 @@ export function resolveBotProtectionPrompt(
   context: BotProtectionPromptContext = {},
 ): PromptSingleResolution<BotProtection> {
   const frontends = context.frontends ?? [];
+  const webFrontends = frontends.filter(
+    (frontend) => frontend !== "none" && !frontend.startsWith("native-"),
+  );
   const supportsBotId =
-    frontends.length > 0 &&
-    frontends.every((frontend) => frontend === "next" || frontend === "vinext");
+    webFrontends.length > 0 && webFrontends.every((frontend) => isBotIdWebFrontend(frontend));
+  const supportsTurnstile =
+    webFrontends.length > 0 &&
+    webFrontends.every((frontend) => isTurnstileWebFrontend(frontend));
   const options = [
     ...(supportsBotId
       ? [
@@ -38,11 +48,11 @@ export function resolveBotProtectionPrompt(
           },
         ]
       : []),
-    TURNSTILE_OPTION,
+    ...(supportsTurnstile ? [TURNSTILE_OPTION] : []),
     NONE_OPTION,
   ];
 
-  if (frontends.length === 0) {
+  if (webFrontends.length === 0) {
     return { shouldPrompt: false, mode: "single", options: [], autoValue: "none" };
   }
 

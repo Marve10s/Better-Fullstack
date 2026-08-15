@@ -49,7 +49,7 @@ app.use(
 		credentials: true,
 {{/if}}
 {{#if (isBetterAuth auth)}}
-		allowedHeaders: ["Content-Type", "Authorization"],
+		allowedHeaders: ["Content-Type", "Authorization"{{#if (eq botProtection "turnstile")}}, "X-Turnstile-Token"{{/if}}],
 {{/if}}
 	})
 );
