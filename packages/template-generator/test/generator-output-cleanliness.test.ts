@@ -258,7 +258,8 @@ describe("generated output cleanliness", () => {
     const result = await generateVirtualProject({ config, templates: EMBEDDED_TEMPLATES });
 
     expect(result.success).toBe(true);
-    if (!result.success) return;
+    expect(result.tree).toBeDefined();
+    if (!result.success || !result.tree) return;
     const files = listFiles(result.tree.root);
     const getFile = (path: string) => files.find((file) => file.path === path)?.content;
     const rootPackage = JSON.parse(getFile("package.json") ?? "{}") as {

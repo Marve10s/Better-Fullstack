@@ -31,12 +31,12 @@ test.describe("Builder parity", () => {
     await expect(page).toHaveURL(/aisdk=vercel-ai/);
   });
 
-  test("selecting and removing multi-select addons updates the command", async ({ page }) => {
-    await clickVisibleTestId(page, "option-codeQuality-biome");
-    await expect(commandOutput(page)).toContainText("--addons biome turborepo");
+  test("selecting and removing a code-quality profile updates the command", async ({ page }) => {
+    await clickVisibleTestId(page, "option-codeQualityProfile-biome");
+    await expect(commandOutput(page)).toContainText("--part codeQuality:universal:biome");
     await expect(page).toHaveURL(/cq=biome/);
 
-    await clickVisibleTestId(page, "option-codeQuality-biome");
+    await clickVisibleTestId(page, "option-codeQualityProfile-biome");
     await expect(commandOutput(page)).toContainText("--yes");
   });
 
