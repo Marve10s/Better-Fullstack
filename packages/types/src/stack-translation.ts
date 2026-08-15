@@ -935,7 +935,7 @@ const CLI_DEFINED_ARRAY_CONFIG_FIELDS = [
   ["elixirLibraries", "elixirLibraries"],
 ] as const satisfies readonly (readonly [keyof CLIInput, keyof ProjectConfig])[];
 
-const PACKAGE_MANAGER_COMMANDS = {
+export const PACKAGE_MANAGER_COMMANDS = {
   npm: "npx create-better-fullstack@latest",
   pnpm: "pnpm create better-fullstack@latest",
   yarn: "yarn create better-fullstack@latest",

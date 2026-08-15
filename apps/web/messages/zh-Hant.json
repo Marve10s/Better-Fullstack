@@ -570,5 +570,12 @@
   "campaignShareStack": "分享這個技術棧",
   "campaignSharePostOnX": "發布到 X",
   "campaignShareCopyLink": "複製分享文字",
-  "campaignShareStarGithub": "在 GitHub 上按星星"
+  "campaignShareStarGithub": "在 GitHub 上按星星",
+  "homeStarterTitleA": "你的下一個",
+  "homeStarterTitleB": "專案是什麼？",
+  "homeStarterSubtitle": "一條命令 → 專案立即可以開始寫程式。或透過 MCP 交給你的 AI 代理。",
+  "homeStarterShapeFullstack": "全端",
+  "homeStarterShapeFrontend": "僅前端",
+  "homeStarterShapeBackend": "僅後端",
+  "homeStarterShapeMobile": "行動應用"
 }

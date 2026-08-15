@@ -570,5 +570,12 @@
   "campaignShareStack": "Compartir este stack",
   "campaignSharePostOnX": "Publicar en X",
   "campaignShareCopyLink": "Copiar texto para compartir",
-  "campaignShareStarGithub": "Dar una estrella en GitHub"
+  "campaignShareStarGithub": "Dar una estrella en GitHub",
+  "homeStarterTitleA": "¿Cuál es tu",
+  "homeStarterTitleB": "próximo proyecto?",
+  "homeStarterSubtitle": "Un comando → un proyecto listo para programar. O déjaselo a tu agente de IA por MCP.",
+  "homeStarterShapeFullstack": "Full stack",
+  "homeStarterShapeFrontend": "Solo frontend",
+  "homeStarterShapeBackend": "Solo backend",
+  "homeStarterShapeMobile": "App móvil"
 }

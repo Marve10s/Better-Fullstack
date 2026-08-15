@@ -570,5 +570,12 @@
   "campaignShareStack": "分享这个技术栈",
   "campaignSharePostOnX": "发布到 X",
   "campaignShareCopyLink": "复制分享文本",
-  "campaignShareStarGithub": "在 GitHub 上加星"
+  "campaignShareStarGithub": "在 GitHub 上加星",
+  "homeStarterTitleA": "你的下一个",
+  "homeStarterTitleB": "项目是什么？",
+  "homeStarterSubtitle": "一条命令 → 项目即刻可以写代码。或者通过 MCP 交给你的 AI 代理。",
+  "homeStarterShapeFullstack": "全栈",
+  "homeStarterShapeFrontend": "仅前端",
+  "homeStarterShapeBackend": "仅后端",
+  "homeStarterShapeMobile": "移动应用"
 }

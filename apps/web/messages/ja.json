@@ -570,5 +570,12 @@
   "campaignShareStack": "このスタックを共有",
   "campaignSharePostOnX": "X に投稿",
   "campaignShareCopyLink": "共有テキストをコピー",
-  "campaignShareStarGithub": "GitHub でスターを付ける"
+  "campaignShareStarGithub": "GitHub でスターを付ける",
+  "homeStarterTitleA": "次のプロジェクトは",
+  "homeStarterTitleB": "何ですか？",
+  "homeStarterSubtitle": "コマンド 1 つ → すぐに書き始められるプロジェクト。MCP 経由で AI エージェントに任せることもできます。",
+  "homeStarterShapeFullstack": "フルスタック",
+  "homeStarterShapeFrontend": "フロントエンドのみ",
+  "homeStarterShapeBackend": "バックエンドのみ",
+  "homeStarterShapeMobile": "モバイルアプリ"
 }

@@ -570,5 +570,12 @@
   "campaignShareStack": "Поділитися цим стеком",
   "campaignSharePostOnX": "Опублікувати в X",
   "campaignShareCopyLink": "Скопіювати текст для шерингу",
-  "campaignShareStarGithub": "Поставити зірку на GitHub"
+  "campaignShareStarGithub": "Поставити зірку на GitHub",
+  "homeStarterTitleA": "Який твій",
+  "homeStarterTitleB": "наступний проєкт?",
+  "homeStarterSubtitle": "Одна команда → проєкт готовий до коду. Або доручіть це ШІ-агенту через MCP.",
+  "homeStarterShapeFullstack": "Full stack",
+  "homeStarterShapeFrontend": "Лише фронтенд",
+  "homeStarterShapeBackend": "Лише бекенд",
+  "homeStarterShapeMobile": "Мобільний застосунок"
 }

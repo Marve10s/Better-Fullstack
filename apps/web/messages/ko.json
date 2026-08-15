@@ -570,5 +570,12 @@
   "campaignShareStack": "이 스택 공유하기",
   "campaignSharePostOnX": "X에 게시",
   "campaignShareCopyLink": "공유 텍스트 복사",
-  "campaignShareStarGithub": "GitHub에서 스타 누르기"
+  "campaignShareStarGithub": "GitHub에서 스타 누르기",
+  "homeStarterTitleA": "다음 프로젝트는",
+  "homeStarterTitleB": "무엇인가요?",
+  "homeStarterSubtitle": "명령어 하나 → 바로 코딩할 수 있는 프로젝트. MCP로 AI 에이전트에게 맡길 수도 있습니다.",
+  "homeStarterShapeFullstack": "풀스택",
+  "homeStarterShapeFrontend": "프런트엔드만",
+  "homeStarterShapeBackend": "백엔드만",
+  "homeStarterShapeMobile": "모바일 앱"
 }
