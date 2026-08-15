@@ -7,6 +7,7 @@ import {
   type Auth,
   type Backend,
   type Frontend,
+  hasJavaScriptWorkspaceRoot,
   type ProjectConfig,
   type Runtime,
 } from "../types";
@@ -265,6 +266,7 @@ function validateAddonCompatibilityForPrompt(
     context.rustApi,
     context.goApi,
     context.javaApi,
+    hasJavaScriptWorkspaceRoot(context.stackParts),
   );
 }
 

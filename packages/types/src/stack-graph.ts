@@ -2798,6 +2798,17 @@ export function getStackPartCompatibilityIssueForPart(
   return getStackPartCompatibilityIssue(part, getStackPartOptionContextForPart(part, parts));
 }
 
+export function hasJavaScriptWorkspaceRoot(parts: readonly StackPart[] | undefined) {
+  return (
+    parts?.some(
+      (part) =>
+        !part.ownerPartId &&
+        part.source !== "provided" &&
+        (part.ecosystem === "typescript" || part.ecosystem === "react-native"),
+    ) ?? false
+  );
+}
+
 export function getStackToolDefinitions(context?: StackPartOptionContext): ToolDefinition[] {
   if (!context) return [...STACK_TOOL_DEFINITIONS];
   return STACK_TOOL_DEFINITIONS.filter((definition) => {

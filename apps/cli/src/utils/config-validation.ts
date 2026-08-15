@@ -5,6 +5,7 @@ import type { CLIInput, Database, DatabaseSetup, Frontend, ProjectConfig, Runtim
 
 import {
   getDisabledReason,
+  hasJavaScriptWorkspaceRoot,
   hasSignozSupportedGoServerTarget,
   isSignozSupportedPythonWebFramework,
   normalizeCapabilitySelection,
@@ -99,7 +100,7 @@ function validateContainerAddonConstraints(config: Partial<ProjectConfig>) {
       addonConfig.rustApi,
       addonConfig.goApi,
       addonConfig.javaApi,
-      (config.stackParts?.length ?? 0) > 0,
+      hasJavaScriptWorkspaceRoot(config.stackParts),
     );
     if (!isCompatible) {
       throw new Error(reason ?? `${addon} is not compatible with this configuration`);
@@ -1646,7 +1647,7 @@ export function validateFullConfig(
       addonConfig.rustApi,
       addonConfig.goApi,
       addonConfig.javaApi,
-      (config.stackParts?.length ?? 0) > 0,
+      hasJavaScriptWorkspaceRoot(config.stackParts),
     );
     config.addons = [...new Set(config.addons)];
   }
@@ -1738,7 +1739,7 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
         addonConfig.rustApi,
         addonConfig.goApi,
         addonConfig.javaApi,
-        (config.stackParts?.length ?? 0) > 0,
+        hasJavaScriptWorkspaceRoot(config.stackParts),
       );
     }
 

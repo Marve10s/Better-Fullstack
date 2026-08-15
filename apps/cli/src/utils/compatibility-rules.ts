@@ -6,6 +6,7 @@ import {
   getCompatibleCSSFrameworks as getCompatibleCSSFrameworksShared,
   getCompatibleUILibraries as getCompatibleUILibrariesShared,
   getUnsupportedWebDeployFrontend,
+  hasJavaScriptWorkspaceRoot,
   hasDockerComposeCompatibleFrontend,
   hasWebStyling as hasWebStylingShared,
   isBackendUtilsCompatibleBackend,
@@ -483,7 +484,7 @@ export function validateAddonCompatibility(
   rustApi?: ProjectConfig["rustApi"],
   goApi?: ProjectConfig["goApi"],
   javaApi?: ProjectConfig["javaApi"],
-  hasStackGraph = false,
+  hasJavaScriptStackPart = false,
 ): { isCompatible: boolean; reason?: string } {
   const baseCompatibility = validateAddonCompatibilityShared(addon, frontend, _auth);
   if (!baseCompatibility.isCompatible) return baseCompatibility;
@@ -505,7 +506,7 @@ export function validateAddonCompatibility(
     ecosystem !== undefined &&
     ecosystem !== "typescript" &&
     ecosystem !== "react-native" &&
-    !hasStackGraph
+    !hasJavaScriptStackPart
   ) {
     return {
       isCompatible: false,
@@ -730,7 +731,7 @@ export function getCompatibleAddons(
       context?.rustApi,
       context?.goApi,
       context?.javaApi,
-      (context?.stackParts?.length ?? 0) > 0,
+      hasJavaScriptWorkspaceRoot(context?.stackParts),
     );
     return isCompatible;
   });
@@ -753,7 +754,7 @@ export function validateAddonsAgainstFrontends(
   rustApi?: ProjectConfig["rustApi"],
   goApi?: ProjectConfig["goApi"],
   javaApi?: ProjectConfig["javaApi"],
-  hasStackGraph = false,
+  hasJavaScriptStackPart = false,
 ) {
   const workspaceRunners = new Set(
     addons.filter((addon) => ["turborepo", "nx", "vite-plus"].includes(addon)),
@@ -781,7 +782,7 @@ export function validateAddonsAgainstFrontends(
       rustApi,
       goApi,
       javaApi,
-      hasStackGraph,
+      hasJavaScriptStackPart,
     );
     if (!isCompatible) {
       exitWithError(`Incompatible addon/frontend combination: ${reason}`);

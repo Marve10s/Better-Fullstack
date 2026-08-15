@@ -235,6 +235,21 @@ describe("generated output cleanliness", () => {
     expect(result.success).toBe(false);
     expect(result.error).toContain("Only one TypeScript backend is currently supported");
   });
+
+  it("rejects Vite+ when a Stack Graph has no JavaScript workspace root", async () => {
+    const config = makeConfig({
+      addons: ["vite-plus"],
+      stackParts: parseStackPartSpecs([
+        "backend:go:gin",
+        "workspaceTooling:universal:vite-plus",
+      ]),
+    });
+
+    const result = await generateVirtualProject({ config, templates: EMBEDDED_TEMPLATES });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("requires a JavaScript workspace root");
+  });
 });
 
 function pathEndsWith(path: string, suffix: string) {

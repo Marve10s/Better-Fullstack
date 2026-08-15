@@ -2,6 +2,7 @@ import type { ProjectConfig, StackPart } from "@better-fullstack/types";
 
 import {
   getRoleTargetPath,
+  hasJavaScriptWorkspaceRoot,
   parseStackPartSpecs,
   stackGraphToLegacyProjectConfigForEcosystem,
   validateStackParts,
@@ -434,12 +435,10 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
       };
     }
 
-    if (
-      config.addons.includes("vite-plus") &&
-      !config.stackParts?.length &&
-      config.ecosystem !== "typescript" &&
-      config.ecosystem !== "react-native"
-    ) {
+    const hasJavaScriptRoot = config.stackParts?.length
+      ? hasJavaScriptWorkspaceRoot(config.stackParts)
+      : config.ecosystem === "typescript" || config.ecosystem === "react-native";
+    if (config.addons.includes("vite-plus") && !hasJavaScriptRoot) {
       return {
         success: false,
         error:

@@ -735,6 +735,43 @@ describe("Addon Configurations", () => {
 
       expectError(result, "requires a JavaScript workspace root");
     });
+
+    it("offers Vite+ for React Native projects", () => {
+      expect(
+        getCompatibleAddonsForPrompt(
+          ["vite-plus"],
+          ["native-bare"],
+          [],
+          "none",
+          "none",
+          "none",
+          "none",
+          { ecosystem: "react-native" },
+        ),
+      ).toEqual(["vite-plus"]);
+    });
+
+    it("rejects Vite+ for native-only non-JavaScript Stack Graph projects", () => {
+      expect(
+        getCompatibleAddons(
+          ["vite-plus"],
+          [],
+          [],
+          "none",
+          "gin",
+          undefined,
+          "none",
+          "go",
+          {
+            ecosystem: "go",
+            stackParts: parseStackPartSpecs([
+              "backend:go:gin",
+              "workspaceTooling:universal:vite-plus",
+            ]),
+          },
+        ),
+      ).toEqual([]);
+    });
   });
 
   describe("Frontend-Specific Addons", () => {

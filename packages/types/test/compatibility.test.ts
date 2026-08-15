@@ -130,6 +130,20 @@ describe("compatibility issue helpers", () => {
         "vite-plus",
       ),
     ).toBeNull();
+    expect(
+      getDisabledReason(
+        { ...DEFAULT_STACK_SELECTION, ecosystem: "react-native", appPlatforms: [] },
+        "appPlatforms",
+        "vite-plus",
+      ),
+    ).toBeNull();
+    expect(
+      analyzeStackCompatibility({
+        ...DEFAULT_STACK_SELECTION,
+        ecosystem: "react-native",
+        appPlatforms: ["vite-plus"],
+      }).adjustedStack?.appPlatforms,
+    ).toContain("vite-plus");
   });
 
   it("keeps React Native code-quality options aligned with the CLI", () => {

@@ -962,7 +962,8 @@ export async function gatherConfig(
             addon === "gitleaks" ||
             addon === "kong" ||
             addon === "github-actions" ||
-            (results.ecosystem === "react-native" && addon === "knip"),
+            (results.ecosystem === "react-native" &&
+              (addon === "knip" || addon === "vite-plus")),
         );
         return Promise.resolve(nonTypeScriptAddons);
       }

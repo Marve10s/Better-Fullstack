@@ -2536,6 +2536,19 @@ export const getDisabledReason = (
       "codeQuality",
     ]);
 
+    if (
+      category === "appPlatforms" &&
+      optionId !== "vite-plus" &&
+      optionId !== "none" &&
+      optionId !== "false"
+    ) {
+      return "React Native app platforms currently support Vite+ only";
+    }
+
+    if (category === "appPlatforms" && optionId === "vite-plus") {
+      return null;
+    }
+
     if (category === "payments" && optionId !== "none" && optionId !== "revenuecat") {
       return "React Native payments currently support RevenueCat only";
     }
