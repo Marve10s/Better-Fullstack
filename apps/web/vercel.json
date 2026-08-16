@@ -17,8 +17,73 @@
       "permanent": true
     },
     {
+      "source": "/docs/recipes/default-typescript-web.md",
+      "destination": "/guides/typescript/hono-trpc-drizzle.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/recipes/nextjs-self-backend.md",
+      "destination": "/guides/typescript/nextjs-drizzle-better-auth.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/recipes/python-api.md",
+      "destination": "/guides/python/fastapi-postgres-sqlalchemy.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/recipes/dotnet-service.md",
+      "destination": "/guides/dotnet/aspnet-core-efcore.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/recipes/multi-ecosystem-product.md",
+      "destination": "/docs/ecosystems/multi-ecosystem.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/recipes/browser-zip-workflow.md",
+      "destination": "/docs/web-builder.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/recipes.md",
+      "destination": "/guides.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/sections/deployment.md",
+      "destination": "/docs/stack-guides/deployment.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/sections/frontend-and-apps.md",
+      "destination": "/docs/stack-guides/frontend-frameworks.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/sections/backend-and-api.md",
+      "destination": "/docs/stack-guides/backend-frameworks.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/sections/data-and-storage.md",
+      "destination": "/docs/stack-guides/database-orm-pairing.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/sections/auth-and-payments.md",
+      "destination": "/docs/stack-guides/auth-providers.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/sections.md",
+      "destination": "/docs/reference/options.md",
+      "permanent": true
+    },
+    {
       "source": "/docs/recipes/default-typescript-web",
-      "destination": "/guides/typescript/create-tanstack-start-project",
+      "destination": "/guides/typescript/hono-trpc-drizzle",
       "permanent": true
     },
     {
@@ -52,11 +117,6 @@
       "permanent": true
     },
     {
-      "source": "/docs/recipes/:path*",
-      "destination": "/guides",
-      "permanent": true
-    },
-    {
       "source": "/docs/sections/deployment",
       "destination": "/docs/stack-guides/deployment",
       "permanent": true
@@ -84,6 +144,11 @@
     {
       "source": "/docs/sections",
       "destination": "/docs/reference/options",
+      "permanent": true
+    },
+    {
+      "source": "/docs/recipes/:path*",
+      "destination": "/guides",
       "permanent": true
     },
     {

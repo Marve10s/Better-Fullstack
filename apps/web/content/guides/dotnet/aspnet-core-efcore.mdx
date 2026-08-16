@@ -45,20 +45,20 @@ npm create better-fullstack@latest my-dotnet-api -- \
 
 ## Generated shape
 
-The scaffold is a single ASP.NET Core project plus a sibling test project. The namespace and project name are derived from the project name you pass to the CLI.
+The scaffold is a single ASP.NET Core project plus a sibling test project. The project name and namespace come from the directory name with every character outside `A-Za-z0-9_` replaced by an underscore, so `my-dotnet-api` produces `my_dotnet_api`.
 
 ```txt
 my-dotnet-api/
-├── MyDotnetApi.csproj
-├── MyDotnetApi.http
+├── my_dotnet_api.csproj
+├── my_dotnet_api.http
 ├── Program.cs
 ├── appsettings.json
 ├── appsettings.Development.json
 ├── Dockerfile
 ├── Validators/
 │   └── SampleInputValidator.cs
-└── MyDotnetApi.Tests/
-    ├── MyDotnetApi.Tests.csproj
+└── my_dotnet_api.Tests/
+    ├── my_dotnet_api.Tests.csproj
     └── ApiTests.cs
 ```
 
@@ -84,7 +84,14 @@ The generated `appsettings.json` ships a local development connection string. Ov
 export ConnectionStrings__DefaultConnection="Host=localhost;Port=5432;Database=my_dotnet_api;Username=postgres;Password=postgres"
 ```
 
-Open the URL printed by ASP.NET Core, then use the generated `.http` file to exercise the endpoints. `dotnet build` and `dotnet test` verify the scaffold.
+Open the URL printed by ASP.NET Core, then use the generated `.http` file to exercise the endpoints.
+
+No solution file is generated, and the test SDK lives only in the test project, so a bare `dotnet test` from the project root builds the API and runs nothing. Name the test project explicitly:
+
+```bash
+dotnet build
+dotnet test my_dotnet_api.Tests/my_dotnet_api.Tests.csproj
+```
 
 ## Create the schema before calling the data endpoints
 
@@ -158,7 +165,13 @@ Choose Minimal APIs over `--dotnet-web-framework aspnet-mvc` when the service is
 
 - `--dotnet-orm ef-core` selects the provider from `--database`: Npgsql for `postgres`, `Microsoft.EntityFrameworkCore.Sqlite` for `sqlite`.
 - `--dotnet-auth aspnet-identity` calls `AddIdentityCore<IdentityUser>().AddEntityFrameworkStores<AppDbContext>()`, but the generated `AppDbContext` derives from `DbContext`, not `IdentityDbContext`. Change the base class and generate a migration before resolving the user store.
-- `--dotnet-validation fluentvalidation` generates `SampleInputValidator` but does not register it. Add `builder.Services.AddValidatorsFromAssemblyContaining<SampleInputValidator>()` when you start validating requests.
+- `--dotnet-validation fluentvalidation` generates `SampleInputValidator` but does not register it, and the csproj references only the core `FluentValidation` package. Assembly scanning needs the DI extensions package first:
+
+  ```bash
+  dotnet add package FluentValidation.DependencyInjectionExtensions
+  ```
+
+  Then `builder.Services.AddValidatorsFromAssemblyContaining<SampleInputValidator>()` resolves. Without that package the call does not compile, whatever the generated file's own comment suggests.
 - Deployment targets for .NET come from `--dotnet-deploy`, not the TypeScript `--web-deploy` and `--server-deploy` flags.
 
 ## Deployment notes
@@ -174,7 +187,7 @@ Before deploying, set the production connection string, apply migrations, and co
 | `relation "Todos" does not exist` | Create and apply an EF migration; nothing creates the schema at startup. |
 | App binds an unexpected port | `PORT` is only honored when `ASPNETCORE_URLS` is unset. |
 | Identity user store fails to resolve | `AppDbContext` needs to derive from `IdentityDbContext` and have a migration. |
-| Validators never run | Register them with `AddValidatorsFromAssemblyContaining`. |
+| Validators never run | Add `FluentValidation.DependencyInjectionExtensions`, then register them with `AddValidatorsFromAssemblyContaining`. |
 | Connection string changes are ignored | Real environment variables win over the local `.env` the app loads at startup. |
 
 ## Tradeoffs
@@ -183,6 +196,6 @@ A single `Program.cs` keeps the scaffold readable but stops scaling once you add
 
 ## Next steps
 
-- Open the [Stack Builder](/new?eco=dotnet&dnwf=aspnet-minimal&dnorm=ef-core&dnauth=aspnet-identity&dnapi=minimal-api&db=postgres).
+- Open the [Stack Builder](/new?eco=dotnet&dnwf=aspnet-minimal&dnorm=ef-core&dnauth=aspnet-identity&dnapi=minimal-api&dnval=fluentvalidation&db=postgres).
 - Read the [.NET ecosystem docs](/docs/ecosystems/dotnet/).
 - Review the [CLI create reference](/docs/cli/create/).
