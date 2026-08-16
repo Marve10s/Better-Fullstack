@@ -6,6 +6,9 @@ import { mkdtemp, mkdir, readFile, realpath, rm, writeFile } from "node:fs/promi
 import { homedir, tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
+import { addHandler } from "../src/helpers/core/add-handler";
+import { flushTelemetry } from "../src/utils/analytics";
+
 const CLI_ENTRY = resolve(import.meta.dir, "..", "src", "cli.ts");
 const NATIVE_BUN = resolve(homedir(), ".bun", "bin", "bun");
 const BUN_EXECUTABLE =
@@ -162,6 +165,51 @@ afterAll(async () => {
 }, 30_000);
 
 describe("CLI add command", () => {
+  it("classifies tooling part additions as feature telemetry", async () => {
+    const root = await makeTempRoot("bfs-add-telemetry-test-");
+    const originalFetch = globalThis.fetch;
+    const originalIngestUrl = process.env.CONVEX_INGEST_URL;
+    const originalTelemetryOverride = process.env.BTS_TELEMETRY_DISABLED;
+    const events: Record<string, unknown>[] = [];
+
+    process.env.CONVEX_INGEST_URL = "https://telemetry.test/events";
+    process.env.BTS_TELEMETRY_DISABLED = "0";
+    globalThis.fetch = (async (_input, init) => {
+      if (typeof init?.body === "string") {
+        events.push(JSON.parse(init.body) as Record<string, unknown>);
+      }
+      return new Response(null, { status: 204 });
+    }) as typeof fetch;
+
+    try {
+      await addHandler(
+        {
+          projectDir: join(root, "missing-tooling-project"),
+          part: ["codeQuality:universal:eslint", "codeQuality:universal:prettier"],
+          install: false,
+        },
+        { silent: true },
+      );
+      await addHandler(
+        {
+          projectDir: join(root, "missing-architecture-project"),
+          part: ["frontend:typescript:next"],
+          install: false,
+        },
+        { silent: true },
+      );
+      await flushTelemetry(1_000);
+    } finally {
+      globalThis.fetch = originalFetch;
+      if (originalIngestUrl === undefined) delete process.env.CONVEX_INGEST_URL;
+      else process.env.CONVEX_INGEST_URL = originalIngestUrl;
+      if (originalTelemetryOverride === undefined) delete process.env.BTS_TELEMETRY_DISABLED;
+      else process.env.BTS_TELEMETRY_DISABLED = originalTelemetryOverride;
+    }
+
+    expect(events.map((event) => event.eventType)).toEqual(["feature_added", "stack_updated"]);
+  });
+
   it(
     "prints reviewable removal paths and preserves the planned project directory",
     async () => {
@@ -207,7 +255,7 @@ describe("CLI add command", () => {
   );
 
   it(
-    "adds a declarative code-quality profile via --part and remains idempotent",
+    "adds and atomically removes a declarative code-quality profile",
     async () => {
       const root = await makeTempRoot("bfs-add-test-");
       const projectName = "app";
@@ -256,6 +304,37 @@ describe("CLI add command", () => {
 
       expect(secondAddResult.exitCode).toBe(0);
       expect(cliOutput(secondAddResult)).toContain("No new tooling capabilities selected.");
+
+      const removal = await runCli(
+        ["remove", "codeQuality:universal:eslint", "--project-dir", projectDir],
+        { cwd: root },
+      );
+      expect(removal.exitCode, removal.stderr).toBe(0);
+      const reviewToken = cliOutput(removal).match(/Review token:[\s\S]*?([a-f0-9]{64})/)?.[1];
+      expect(reviewToken).toBeDefined();
+
+      const applied = await runCli(
+        [
+          "remove",
+          "codeQuality:universal:eslint",
+          "--project-dir",
+          projectDir,
+          "--apply",
+          "--review-token",
+          reviewToken!,
+        ],
+        { cwd: root },
+      );
+      expect(applied.exitCode, applied.stderr).toBe(0);
+
+      const removedConfig = (await readJsoncFile(join(projectDir, "bts.jsonc"))) as {
+        addons?: string[];
+        stackParts?: Array<{ toolId: string }>;
+      };
+      expect(removedConfig.addons).not.toContain("eslint");
+      expect(removedConfig.addons).not.toContain("prettier");
+      expect(removedConfig.stackParts?.some((part) => part.toolId === "eslint")).toBe(false);
+      expect(removedConfig.stackParts?.some((part) => part.toolId === "prettier")).toBe(false);
     },
     CLI_COMMAND_TEST_TIMEOUT_MS,
   );

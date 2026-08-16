@@ -6,8 +6,12 @@ import { join } from "node:path";
 
 import { createVirtual, type Addons, type Frontend } from "../src";
 import { setupAddons } from "../src/helpers/addons/addons-setup";
-import { getAddonGroup, getCompatibleAddonsForPrompt } from "../src/prompts/addons";
-import { APP_PLATFORM_ADDON_VALUES } from "../src/types";
+import {
+  getAddonGroup,
+  getCompatibleAddonsForPrompt,
+  promptCapabilities,
+} from "../src/prompts/addons";
+import { APP_PLATFORM_ADDON_VALUES, TOOLING_CATEGORIES } from "../src/types";
 import { getCompatibleAddons } from "../src/utils/compatibility-rules";
 import { expectError, expectSuccess, runTRPCTest, type TestConfig } from "./test-utils";
 
@@ -16,6 +20,22 @@ describe("Addon Configurations", () => {
     for (const addon of APP_PLATFORM_ADDON_VALUES) {
       expect(getAddonGroup(addon)).toBe("App Platforms");
     }
+  });
+
+  it("keeps installed single-select tooling in additions-only prompt context", async () => {
+    const selected = await promptCapabilities(
+      {
+        frontends: ["tanstack-router"],
+        existing: ["vite-plus"],
+        config: { ecosystem: "typescript" },
+        additionsOnly: true,
+      },
+      TOOLING_CATEGORIES.filter((category) =>
+        ["toolchain", "workspaceRunner"].includes(category.id),
+      ),
+    );
+
+    expect(selected).toEqual(["vite-plus"]);
   });
 
   describe("Universal Addons (no frontend restrictions)", () => {

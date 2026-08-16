@@ -22,6 +22,7 @@ import {
   getKotlinJavaIncompatibilityReason,
   getToolingCapability,
   getToolingCategory,
+  isToolingOverlayPart,
   legacyProjectConfigToStackParts,
 } from "../../types";
 import {
@@ -33,7 +34,7 @@ import {
 import { resolveCreateConfigBase } from "../../utils/config-source";
 import { isSilent, runWithContextAsync } from "../../utils/context";
 import { displayConfig } from "../../utils/display-config";
-import { CLIError, UserCancelledError, exitCancelled } from "../../utils/errors";
+import { CLIError, UserCancelledError, exitCancelled, exitWithError } from "../../utils/errors";
 import { generateReproducibleCommand } from "../../utils/generate-reproducible-command";
 import {
   assertGeneratedVerificationComplete,
@@ -248,11 +249,14 @@ function getYesBaseConfig(flagConfig: Partial<ProjectConfig>): ProjectConfig {
 
 function expandToolingOverlay(config: ProjectConfig): ProjectConfig {
   const overlayParts = config.stackParts ?? [];
-  if (
-    overlayParts.length === 0 ||
-    !overlayParts.every((part) => getToolingCapability(part.toolId))
-  ) {
-    return config;
+  if (overlayParts.length === 0) return config;
+  if (!overlayParts.every((part) => getToolingCapability(part.toolId))) return config;
+
+  const mismatchedPart = overlayParts.find((part) => !isToolingOverlayPart(part));
+  if (mismatchedPart) {
+    exitWithError(
+      `Tooling part does not match its capability binding: ${mismatchedPart.role}:${mismatchedPart.ecosystem}:${mismatchedPart.toolId}`,
+    );
   }
 
   const overlayCategories = new Set<ToolingCategoryId>();

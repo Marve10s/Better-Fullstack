@@ -127,7 +127,7 @@ function getCompatibleSelections(
   });
 }
 
-async function promptCapabilities(
+export async function promptCapabilities(
   context: CapabilityPromptContext,
   categories = TOOLING_CATEGORIES,
   ownerLabel?: string,
@@ -157,7 +157,12 @@ async function promptCapabilities(
         getToolingSelectionOptions(category.id).flatMap((selection) => selection.toolIds),
       );
       for (let index = selected.length - 1; index >= 0; index -= 1) {
-        if (categoryToolIds.has(selected[index])) selected.splice(index, 1);
+        if (
+          categoryToolIds.has(selected[index]) &&
+          (!context.additionsOnly || !context.existing.includes(selected[index]))
+        ) {
+          selected.splice(index, 1);
+        }
       }
       for (const toolId of selectedOption.toolIds) {
         const parsed = AddonsSchema.safeParse(toolId);

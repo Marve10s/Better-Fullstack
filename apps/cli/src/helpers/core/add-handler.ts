@@ -406,7 +406,15 @@ async function trackAddEvent(
       delete stackPayload.addons;
     }
   }
-  const eventType = Object.keys(request).some((key) => !ADD_FEATURE_KEYS.has(key))
+  const toolingPartAddition =
+    (input.part?.length ?? 0) > 0 &&
+    input.part?.every((spec) => {
+      const toolId = spec.split(":")[2];
+      return toolId !== undefined && getToolingCapability(toolId) !== undefined;
+    });
+  const eventType = Object.keys(request).some(
+    (key) => !ADD_FEATURE_KEYS.has(key) && (key !== "part" || !toolingPartAddition),
+  )
     ? ("stack_updated" as const)
     : ("feature_added" as const);
   const source =

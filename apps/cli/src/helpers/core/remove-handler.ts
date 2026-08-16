@@ -6,6 +6,8 @@ import type { Addons, ProjectConfig, StackPart } from "../../types";
 import {
   formatStackPartSpec,
   getAddonStackPartBinding,
+  getSelectedToolingOption,
+  getToolingCapability,
   legacyProjectConfigToStackParts,
   stackPartsToLegacyProjectConfigPartial,
 } from "../../types";
@@ -104,7 +106,34 @@ async function resolveRemoval(projectDirInput: string, target: string): Promise<
       part.role === "database" &&
       candidate.role === "orm",
   );
-  const removedParts = [part, ...dependentParts];
+  const toolingCapability = getToolingCapability(part.toolId);
+  const toolingCategoryParts = toolingCapability
+    ? parts.filter((candidate) => {
+        const candidateCapability = getToolingCapability(candidate.toolId);
+        return (
+          candidate.ownerPartId === part.ownerPartId &&
+          candidateCapability?.category === toolingCapability.category &&
+          candidateCapability.role === candidate.role &&
+          candidateCapability.ecosystem === candidate.ecosystem
+        );
+      })
+    : [];
+  const selectedToolingOption = toolingCapability
+    ? getSelectedToolingOption(
+        toolingCapability.category,
+        toolingCategoryParts.map((candidate) => candidate.toolId),
+      )
+    : undefined;
+  const profileParts = selectedToolingOption?.toolIds.includes(part.toolId)
+    ? toolingCategoryParts.filter((candidate) =>
+        selectedToolingOption.toolIds.includes(candidate.toolId),
+      )
+    : [];
+  const removedParts = [
+    ...new Map(
+      [part, ...dependentParts, ...profileParts].map((candidate) => [candidate.id, candidate]),
+    ).values(),
+  ];
   const removedPartIds = new Set(removedParts.map((candidate) => candidate.id));
   const partProjection = stackPartsToLegacyProjectConfigPartial(
     owner ? [owner, ...removedParts] : removedParts,

@@ -43,7 +43,7 @@ import { lifecycleResult, type LifecycleResult } from "../../utils/lifecycle-con
 import {
   beginProjectTransaction,
   commitProjectTransaction,
-  bindProjectTransactionWrite,
+  journalProjectTransactionWrites,
   markProjectTransactionWrite,
   rollbackProjectTransaction,
   type ProjectTransaction,
@@ -2112,17 +2112,23 @@ export async function applyStackUpdate(
 
     if (generatedPaths.size > 0) {
       const generatedFiles = treeToFileMap(proposedTree);
+      const expectedHashes = new Map<string, string>();
       for (const filePath of generatedPaths) {
         const file = generatedFiles.get(filePath);
         if (!file) throw new Error(`Generated transaction output is missing: ${filePath}`);
         // oxlint-disable-next-line no-await-in-loop -- binary templates are materialized individually
         const binaryBytes = await readGeneratedFileBytes(proposedTree, filePath, file);
         const expectedBytes = binaryBytes ?? Buffer.from(file.content, "utf-8");
-        markProjectTransactionWrite(transaction, filePath, hashContent(expectedBytes));
+        expectedHashes.set(filePath, hashContent(expectedBytes));
       }
+      await journalProjectTransactionWrites(transaction, generatedPaths);
       await writeSelectedFiles(proposedTree, plan.projectDir, (filePath) =>
         generatedPaths.has(filePath),
       );
+      for (const [filePath, expectedHash] of expectedHashes) {
+        markProjectTransactionWrite(transaction, filePath, expectedHash);
+      }
+      await journalProjectTransactionWrites(transaction);
     }
 
     for (const operation of plan.operations.filter(
@@ -2157,7 +2163,7 @@ export async function applyStackUpdate(
       );
       await fs.writeFile(path.join(plan.projectDir, "MIGRATION.md"), migrationContent, "utf-8");
     }
-    bindProjectTransactionWrite(transaction, "bts.jsonc");
+    await journalProjectTransactionWrites(transaction, ["bts.jsonc"]);
     await writeBtsConfig(proposedConfig, {
       version: plan.proposedConfig.version,
       createdAt: plan.proposedConfig.createdAt,
@@ -2192,6 +2198,7 @@ export async function applyStackUpdate(
       );
     }
 
+    await journalProjectTransactionWrites(transaction, [SCAFFOLD_MANIFEST_FILE]);
     await refreshScaffoldManifestFiles(
       plan.projectDir,
       [...plan.operations.map((operation) => operation.path), ...versionChannelRewrites],

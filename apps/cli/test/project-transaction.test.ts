@@ -9,6 +9,7 @@ import {
   beginProjectTransaction,
   commitProjectTransaction,
   markProjectTransactionWrite,
+  journalProjectTransactionWrites,
   recoverProjectTransaction,
   rollbackProjectTransaction,
 } from "../src/utils/project-transaction";
@@ -88,10 +89,23 @@ describe("project lifecycle transactions", () => {
     expect(await fs.readFile(path.join(projectDir, "existing.txt"), "utf-8")).toBe("hand edited\n");
   });
 
+  it("refuses recovery over edits to files an interrupted transaction never journaled", async () => {
+    const projectDir = await makeProject();
+    await fs.writeFile(path.join(projectDir, "file.txt"), "before\n");
+    const transaction = await beginProjectTransaction(projectDir, "stack-update", ["file.txt"]);
+    await fs.writeFile(path.join(projectDir, "file.txt"), "hand edited\n");
+
+    await expect(recoverProjectTransaction(projectDir, transaction.id)).rejects.toThrow(
+      "Refused to overwrite files changed after the transaction",
+    );
+    expect(await fs.readFile(path.join(projectDir, "file.txt"), "utf-8")).toBe("hand edited\n");
+  });
+
   it("recovers an interrupted pending transaction", async () => {
     const projectDir = await makeProject();
     await fs.writeFile(path.join(projectDir, "file.txt"), "before\n");
     const transaction = await beginProjectTransaction(projectDir, "stack-update", ["file.txt"]);
+    await journalProjectTransactionWrites(transaction, ["file.txt"]);
     await fs.writeFile(path.join(projectDir, "file.txt"), "partial write\n");
 
     const recovered = await recoverProjectTransaction(projectDir, transaction.id);

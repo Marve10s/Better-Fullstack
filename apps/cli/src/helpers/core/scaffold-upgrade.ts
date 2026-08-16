@@ -12,7 +12,7 @@ import { lifecycleResult, type LifecycleResult } from "../../utils/lifecycle-con
 import {
   beginProjectTransaction,
   commitProjectTransaction,
-  bindProjectTransactionWrite,
+  journalProjectTransactionWrites,
   markProjectTransactionWrite,
   rollbackProjectTransaction,
 } from "../../utils/project-transaction";
@@ -865,12 +865,13 @@ export async function applyScaffoldUpgrade(
   for (const candidate of [...toWrite].sort()) {
     try {
       await assertActionablePreimage(plan, candidate);
-      markProjectTransactionWrite(transaction, candidate, plan.actionableHashes[candidate]);
+      await journalProjectTransactionWrites(transaction, [candidate]);
       await writeSelectedFiles(tree, projectDir, (filePath) => filePath === candidate);
       const written = await fs.readFile(path.join(projectDir, candidate));
       if (hashContent(written) !== plan.actionableHashes[candidate]) {
         throw new Error(`Written bytes did not match the reviewed plan: ${candidate}`);
       }
+      markProjectTransactionWrite(transaction, candidate, plan.actionableHashes[candidate]);
       await options.afterActionableWrite?.({ path: candidate, index: actionableIndex });
       actionableIndex += 1;
     } catch (error) {
@@ -881,12 +882,13 @@ export async function applyScaffoldUpgrade(
   for (const entry of mergedEntries) {
     try {
       await assertActionablePreimage(plan, entry.path);
-      markProjectTransactionWrite(transaction, entry.path, plan.actionableHashes[entry.path]);
+      await journalProjectTransactionWrites(transaction, [entry.path]);
       await fs.writeFile(path.join(projectDir, entry.path), entry.mergedContent, "utf-8");
       const written = await fs.readFile(path.join(projectDir, entry.path));
       if (hashContent(written) !== plan.actionableHashes[entry.path]) {
         throw new Error(`Written bytes did not match the reviewed plan: ${entry.path}`);
       }
+      markProjectTransactionWrite(transaction, entry.path, plan.actionableHashes[entry.path]);
       await options.afterActionableWrite?.({ path: entry.path, index: actionableIndex });
       actionableIndex += 1;
     } catch (error) {
@@ -939,7 +941,7 @@ export async function applyScaffoldUpgrade(
     manifest.provenance.current = targetVersions;
     try {
       await validateWritePath(plan.projectRealpath, SCAFFOLD_MANIFEST_FILE);
-      bindProjectTransactionWrite(transaction, SCAFFOLD_MANIFEST_FILE);
+      await journalProjectTransactionWrites(transaction, [SCAFFOLD_MANIFEST_FILE]);
       await writeScaffoldManifest(projectDir, manifest);
       markProjectTransactionWrite(
         transaction,

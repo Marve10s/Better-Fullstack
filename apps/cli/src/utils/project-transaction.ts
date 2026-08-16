@@ -152,6 +152,17 @@ export function bindProjectTransactionWrite(
   markProjectTransactionWrite(transaction, relativePath, UNVERIFIED_WRITE);
 }
 
+export async function journalProjectTransactionWrites(
+  transaction: ProjectTransaction,
+  relativePaths?: Iterable<string>,
+): Promise<void> {
+  for (const relativePath of relativePaths ?? []) {
+    bindProjectTransactionWrite(transaction, relativePath);
+  }
+  transaction.metadata.outputs = Object.fromEntries(transaction.writes);
+  await writeMetadata(transaction);
+}
+
 export function markProjectTransactionWrite(
   transaction: ProjectTransaction,
   relativePath: string,
@@ -341,12 +352,18 @@ export async function recoverProjectTransaction(
     metadata,
     writes: new Map(),
   };
-  const recordedOutputs = metadata.status === "applied" ? metadata.outputs : undefined;
-  await restoreFiles(
-    transaction,
-    metadata.files,
-    recordedOutputs ? new Map(Object.entries(recordedOutputs)) : undefined,
+  const recordedOutputs = metadata.outputs ?? {};
+  const expectedCurrentHashes = new Map(
+    metadata.files.map((file) => [
+      file.path,
+      file.path in recordedOutputs
+        ? recordedOutputs[file.path]
+        : file.state === "file"
+          ? file.sha256
+          : null,
+    ]),
   );
+  await restoreFiles(transaction, metadata.files, expectedCurrentHashes);
   metadata.status = "recovered";
   metadata.completedAt = new Date().toISOString();
   await writeMetadata(transaction);

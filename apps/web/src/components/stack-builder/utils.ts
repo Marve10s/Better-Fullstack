@@ -4,6 +4,8 @@ import {
   analyzeStackCompatibility as analyzeStackCompatibilityShared,
   getCategoryDisplayName,
   getDisabledReason as getDisabledReasonShared,
+  getToolingCategory,
+  getToolingSelectionOptions,
   hasPWACompatibleFrontend,
   hasTauriCompatibleFrontend,
   isOptionCompatible as isOptionCompatibleShared,
@@ -78,6 +80,23 @@ export const getDisabledReason = (
     return getDisabledReasonShared(currentStack, toCompatibilityCategory(category), optionId);
   }
 
+  const replacementCategories =
+    getToolingCategory(toolingCategory)?.selectionMode === "single" ? [toolingCategory] : [];
+  if (toolingCategory === "toolchain" && optionId === "vite-plus") {
+    replacementCategories.push("workspaceRunner", "codeQuality", "gitHooks");
+  }
+  const replacedToolIds = new Set(
+    replacementCategories.flatMap((replacementCategory) =>
+      getToolingSelectionOptions(replacementCategory).flatMap((option) => option.toolIds),
+    ),
+  );
+  const compatibilityStack = {
+    ...currentStack,
+    appPlatforms: currentStack.appPlatforms.filter((toolId) => !replacedToolIds.has(toolId)),
+    codeQuality: currentStack.codeQuality.filter((toolId) => !replacedToolIds.has(toolId)),
+    documentation: currentStack.documentation.filter((toolId) => !replacedToolIds.has(toolId)),
+  };
+
   if (
     currentStack.appPlatforms.includes("vite-plus") &&
     ((toolingCategory === "workspaceRunner" && optionId !== "none") ||
@@ -96,7 +115,7 @@ export const getDisabledReason = (
         : toolingCategory === "documentation"
           ? "documentation"
           : "appPlatforms";
-    const reason = getDisabledReasonShared(currentStack, compatibilityCategory, toolId);
+    const reason = getDisabledReasonShared(compatibilityStack, compatibilityCategory, toolId);
     if (reason) return reason;
   }
   return null;
