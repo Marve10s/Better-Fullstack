@@ -3,9 +3,9 @@ import { Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { Fragment, useState } from "react";
 import {
+  TbArrowNarrowRight as ArrowNarrowRight,
   TbArrowRight as ArrowRight,
   TbCheck as Check,
-  TbChevronsRight as ChevronsRight,
   TbCopy as Copy,
 } from "react-icons/tb";
 
@@ -54,7 +54,7 @@ export default function HeroSection() {
 
   return (
     <section className="relative bg-surface text-ink">
-      <div className="mx-auto flex max-w-3xl flex-col items-center px-4 pb-20 pt-28 sm:pb-24 sm:pt-32">
+      <div className="mx-auto flex min-h-[calc(100svh-3.5rem)] max-w-3xl flex-col items-center justify-center px-4 py-16 sm:py-20">
         <motion.h1
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
@@ -70,7 +70,7 @@ export default function HeroSection() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.12 }}
-          className="mt-5 max-w-xl text-balance text-center text-sm leading-relaxed text-soft sm:mt-6 sm:text-base"
+          className="mt-5 max-w-2xl whitespace-pre-line text-center text-sm leading-relaxed text-soft sm:mt-6 sm:text-base"
         >
           {m
             .homeStarterSubtitle()
@@ -78,12 +78,27 @@ export default function HeroSection() {
             .map((part, index) => (
               <Fragment key={part}>
                 {index > 0 && (
-                  <ChevronsRight
+                  <ArrowNarrowRight
                     aria-hidden
-                    className={cn("inline size-3.5 align-[-0.1em] opacity-80", ACCENT_TEXT)}
+                    className={cn("mx-1 inline size-5 align-middle stroke-[2.25]", ACCENT_TEXT)}
                   />
                 )}
-                {part}
+                {part.split(/(MCP)/).map((chunk, chunkIndex) =>
+                  chunk === "MCP" ? (
+                    <a
+                      key={`${chunk}-${chunkIndex}`}
+                      href="/docs/ai/mcp"
+                      className={cn(
+                        "font-medium underline decoration-brand decoration-2 underline-offset-4 transition-colors hover:text-ink dark:hover:text-brand",
+                        ACCENT_TEXT,
+                      )}
+                    >
+                      {chunk}
+                    </a>
+                  ) : (
+                    <Fragment key={`${chunk}-${chunkIndex}`}>{chunk}</Fragment>
+                  ),
+                )}
               </Fragment>
             ))}
         </motion.p>

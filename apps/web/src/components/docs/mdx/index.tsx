@@ -8,6 +8,7 @@ import { CodeBlock } from "./code-block";
 import { CompatibilityMatrix } from "./compatibility-matrix";
 import { GuideCompatibilityNote } from "./guide-compatibility-note";
 import { GuideStackSnapshot } from "./guide-stack-snapshot";
+import { McpClientTabs } from "./mcp-client-tabs";
 import { OptionCategoryTable, OptionReferenceSummary } from "./option-reference";
 import { CategoryCount, OptionCount } from "./option-stats";
 import { PMTabs } from "./pm-tabs";
@@ -37,6 +38,7 @@ export const mdxComponents: Record<string, ComponentType<any>> = {
   CompatibilityMatrix,
   GuideCompatibilityNote,
   GuideStackSnapshot,
+  McpClientTabs,
   OptionCount,
   OptionCategoryTable,
   OptionReferenceSummary,
