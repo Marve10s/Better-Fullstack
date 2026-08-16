@@ -258,6 +258,8 @@ function applyVitePlusOverrides(pkgJson: PackageJson, config: ProjectConfig): vo
   const overrides = {
     vite: "npm:@voidzero-dev/vite-plus-core@^0.2.9",
     vitest: VITE_PLUS_BUNDLED_VITEST_VERSION,
+    "@vitest/ui": VITE_PLUS_BUNDLED_VITEST_VERSION,
+    "@vitest/coverage-v8": VITE_PLUS_BUNDLED_VITEST_VERSION,
   };
   switch (config.packageManager) {
     case "pnpm":

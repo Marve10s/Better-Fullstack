@@ -403,10 +403,22 @@ function mergeStackPartSpecs(
       return [`${part.ownerPartId ?? "root"}:${capability.category}`];
     }),
   );
+  const vitePlusOwnedCategories = ["workspaceRunner", "codeQuality", "gitHooks"] as const;
   if (requestedParts.some((part) => part.toolId === "vite-plus" && !part.ownerPartId)) {
-    requestedSingleCategories.add("root:workspaceRunner");
-    requestedSingleCategories.add("root:codeQuality");
-    requestedSingleCategories.add("root:gitHooks");
+    for (const category of vitePlusOwnedCategories) {
+      requestedSingleCategories.add(`root:${category}`);
+    }
+  } else if (
+    requestedParts.some((part) => {
+      const category = getToolingCapability(part.toolId)?.category;
+      return (
+        !part.ownerPartId &&
+        category !== undefined &&
+        (vitePlusOwnedCategories as readonly string[]).includes(category)
+      );
+    })
+  ) {
+    requestedSingleCategories.add("root:toolchain");
   }
   const stackParts = combinedParts.filter((part) => {
     if (requestedParts.includes(part)) return true;
