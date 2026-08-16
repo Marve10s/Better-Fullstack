@@ -5,8 +5,10 @@ import type { CLIInput, Database, DatabaseSetup, Frontend, ProjectConfig, Runtim
 
 import {
   getDisabledReason,
+  hasVitePlusWorkspaceRoot,
   hasSignozSupportedGoServerTarget,
   isSignozSupportedPythonWebFramework,
+  isToolingOverlayOnly,
   isTurnstileWebFrontend,
   normalizeCapabilitySelection,
   stackGraphToLegacyProjectConfigForEcosystem,
@@ -100,6 +102,7 @@ function validateContainerAddonConstraints(config: Partial<ProjectConfig>) {
       addonConfig.rustApi,
       addonConfig.goApi,
       addonConfig.javaApi,
+      hasVitePlusWorkspaceRoot(config.stackParts),
     );
     if (!isCompatible) {
       throw new Error(reason ?? `${addon} is not compatible with this configuration`);
@@ -1105,8 +1108,7 @@ function validateObservabilityConstraints(config: Partial<ProjectConfig>) {
     effective.frontend?.some((frontend) => frontend === "tanstack-start" || frontend === "astro")
   ) {
     incompatibilityError({
-      message:
-        "SigNoz tracing is not yet bootstrapped for TanStack Start or Astro fullstack apps.",
+      message: "SigNoz tracing is not yet bootstrapped for TanStack Start or Astro fullstack apps.",
       provided: {
         observability: "signoz",
         backend: "self",
@@ -1502,10 +1504,7 @@ export function validateGoExpansionConstraints(config: Partial<ProjectConfig>) {
         : undefined;
   if (!goConfig) return;
 
-  if (
-    goConfig.goObservability === "signoz" &&
-    !hasSignozSupportedGoServerTarget(goConfig)
-  ) {
+  if (goConfig.goObservability === "signoz" && !hasSignozSupportedGoServerTarget(goConfig)) {
     incompatibilityError({
       message:
         "SigNoz request tracing for Go requires an instrumented HTTP, gRPC, or Go Better Auth server target.",
@@ -1584,7 +1583,7 @@ export function validateFullConfig(
   providedFlags: Set<string>,
   options: CLIInput,
 ) {
-  if (config.stackParts && !options.yolo) {
+  if (config.stackParts && !isToolingOverlayOnly(config.stackParts) && !options.yolo) {
     const graphValidation = validateStackParts(config.stackParts);
     if (graphValidation.issues.length > 0) {
       exitWithError(graphValidation.issues.map((issue) => issue.message).join("\n"));
@@ -1721,6 +1720,7 @@ export function validateFullConfig(
       addonConfig.rustApi,
       addonConfig.goApi,
       addonConfig.javaApi,
+      hasVitePlusWorkspaceRoot(config.stackParts),
     );
     config.addons = [...new Set(config.addons)];
   }
@@ -1813,6 +1813,7 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
         addonConfig.rustApi,
         addonConfig.goApi,
         addonConfig.javaApi,
+        hasVitePlusWorkspaceRoot(config.stackParts),
       );
     }
 

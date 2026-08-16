@@ -6,45 +6,45 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Builderpreviewinfodescription3Inputs */
 
 const en_builderpreviewinfodescription3 = /** @type {(inputs: Builderpreviewinfodescription3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`This is a static template preview. Files are not formatted. Some features like database provider setup (Turso, Neon, Supabase, etc.) and certain addons (Fumadocs, Starlight, Tauri, etc.) require CLI execution and are not shown here.`)
+	return /** @type {LocalizedString} */ (`This is a static template preview. Files are not formatted. Some provider setup and imperative tooling steps require CLI execution and are not shown here.`)
 };
 
 const es_builderpreviewinfodescription3 = /** @type {(inputs: Builderpreviewinfodescription3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Esta es una vista previa estática de la plantilla. Los archivos no están formateados. Algunas funciones, como la configuración de proveedores de base de datos (Turso, Neon, Supabase, etc.) y ciertos addons (Fumadocs, Starlight, Tauri, etc.), requieren ejecutar la CLI y no se muestran aquí.`)
+	return /** @type {LocalizedString} */ (`Esta es una vista previa estática de la plantilla. Los archivos no están formateados. Algunos pasos de proveedores y herramientas imperativas requieren la CLI y no se muestran aquí.`)
 };
 
 const zh_builderpreviewinfodescription3 = /** @type {(inputs: Builderpreviewinfodescription3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`这是静态模板预览。文件不会被格式化。某些功能，例如数据库提供方设置（Turso、Neon、Supabase 等）以及部分 addons（Fumadocs、Starlight、Tauri 等），需要执行 CLI，因此不会在这里显示。`)
+	return /** @type {LocalizedString} */ (`这是静态模板预览。文件不会被格式化。部分提供方设置和命令式工具步骤需要运行 CLI，因此不会在这里显示。`)
 };
 
 const ja_builderpreviewinfodescription3 = /** @type {(inputs: Builderpreviewinfodescription3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`これは静的なテンプレートのプレビューです。ファイルがフォーマットされていません。データベース プロバイダーのセットアップ (Turso、Neon、Supabase など) や特定のアドオン (Fumadocs、Starlight、Tauri など) などの一部の機能は、CLI の実行が必要なため、ここには示されていません。`)
+	return /** @type {LocalizedString} */ (`これは静的なテンプレートのプレビューです。ファイルはフォーマットされていません。一部のプロバイダー設定と命令型ツール手順には CLI が必要なため、ここには表示されません。`)
 };
 
 const ko_builderpreviewinfodescription3 = /** @type {(inputs: Builderpreviewinfodescription3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`이것은 정적 템플릿 미리보기입니다. 파일이 포맷되지 않았습니다. 데이터베이스 공급자 설정(Turso, Neon, Supabase 등) 및 특정 애드온(Fumadocs, Starlight, Tauri 등)과 같은 일부 기능에는 CLI 실행이 필요하며 여기에 표시되지 않습니다.`)
+	return /** @type {LocalizedString} */ (`이것은 정적 템플릿 미리보기입니다. 파일은 포맷되지 않습니다. 일부 공급자 설정과 명령형 도구 단계에는 CLI가 필요하며 여기에 표시되지 않습니다.`)
 };
 
 const zh_hant1_builderpreviewinfodescription3 = /** @type {(inputs: Builderpreviewinfodescription3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`這是靜態模板預覽。文件不會被格式化。某些功能，例如資料庫提供者設定（Turso、Neon、Supabase 等）以及部分 addons（Fumadocs、Starlight、Tauri 等），需要執行 CLI，因此不會在這裡顯示。`)
+	return /** @type {LocalizedString} */ (`這是靜態模板預覽。文件不會被格式化。部分提供者設定和命令式工具步驟需要執行 CLI，因此不會在這裡顯示。`)
 };
 
 const de_builderpreviewinfodescription3 = /** @type {(inputs: Builderpreviewinfodescription3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Dies ist eine statische Vorlagenvorschau. Dateien sind nicht formatiert. Einige Funktionen wie die Einrichtung des Datenbankanbieters (Turso, Neon, Supabase usw.) und bestimmte Add-ons (Fumadocs, Starlight, Tauri usw.) erfordern die Ausführung CLI und werden hier nicht angezeigt.`)
+	return /** @type {LocalizedString} */ (`Dies ist eine statische Vorlagenvorschau. Dateien sind nicht formatiert. Einige Anbieter- und imperative Tooling-Schritte erfordern die CLI und werden hier nicht angezeigt.`)
 };
 
 const fr_builderpreviewinfodescription3 = /** @type {(inputs: Builderpreviewinfodescription3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Il s'agit d'un aperçu de modèle statique. Les fichiers ne sont pas formatés. Certaines fonctionnalités telles que la configuration du fournisseur de base de données (Turso, Neon, Supabase, etc.) et certains modules complémentaires (Fumadocs, Starlight, Tauri, etc.) nécessitent l'exécution de CLI et ne sont pas affichées ici.`)
+	return /** @type {LocalizedString} */ (`Il s'agit d'un aperçu statique. Les fichiers ne sont pas formatés. Certaines étapes impératives de fournisseur et d'outillage nécessitent la CLI et ne sont pas affichées ici.`)
 };
 
 const uk_builderpreviewinfodescription3 = /** @type {(inputs: Builderpreviewinfodescription3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Це статичний попередній перегляд шаблону. Файли не форматуються. Деякі функції — наприклад налаштування провайдерів баз даних (Turso, Neon, Supabase тощо) і окремі аддони (Fumadocs, Starlight, Tauri тощо) — потребують запуску CLI й тут не показані.`)
+	return /** @type {LocalizedString} */ (`Це статичний попередній перегляд шаблону. Файли не форматуються. Деякі налаштування провайдерів та імперативні кроки інструментів потребують CLI й тут не показані.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "This is a static template preview. Files are not formatted. Some features like database provider setup (Turso, Neon, Supabase, etc.) and certain addons (Fuma..." |
+* | "This is a static template preview. Files are not formatted. Some provider setup and imperative tooling steps require CLI execution and are not shown here." |
 *
 * @param {Builderpreviewinfodescription3Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options

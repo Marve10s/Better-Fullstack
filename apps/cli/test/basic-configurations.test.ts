@@ -140,6 +140,66 @@ describe("Basic Configurations", () => {
       expect(result.result?.files).toContain("packages/db/README.md");
     });
 
+    it("should overlay dedicated tooling capabilities on a flat TypeScript stack", async () => {
+      const result = await runTRPCTest({
+        projectName: "tooling-overlay",
+        frontend: ["next"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        api: "trpc",
+        auth: "better-auth",
+        part: ["codeQuality:universal:biome", "aiTooling:universal:skills"],
+        dryRun: true,
+        install: false,
+      });
+
+      expectSuccess(result);
+      expect(result.result?.projectConfig).toMatchObject({
+        frontend: ["next"],
+        backend: "hono",
+        database: "sqlite",
+        orm: "drizzle",
+        api: "trpc",
+        auth: "better-auth",
+      });
+      expect(result.result?.projectConfig.stackParts).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ role: "backend", toolId: "hono" }),
+          expect.objectContaining({ role: "orm", toolId: "drizzle" }),
+          expect.objectContaining({ role: "codeQuality", toolId: "biome" }),
+          expect.objectContaining({ role: "aiTooling", toolId: "skills" }),
+        ]),
+      );
+    });
+
+    it("should make Vite+ the exclusive JavaScript toolchain profile", async () => {
+      const result = await runTRPCTest({
+        projectName: "vite-plus-profile",
+        yes: true,
+        part: ["toolchain:universal:vite-plus"],
+        dryRun: true,
+        install: false,
+      });
+
+      expectSuccess(result);
+      const toolingParts = result.result?.projectConfig.stackParts ?? [];
+      expect(toolingParts).toContainEqual(
+        expect.objectContaining({ role: "toolchain", toolId: "vite-plus" }),
+      );
+      expect(toolingParts).not.toContainEqual(
+        expect.objectContaining({ role: "workspaceRunner" }),
+      );
+      expect(toolingParts).not.toContainEqual(
+        expect.objectContaining({ role: "codeQuality" }),
+      );
+      expect(toolingParts).not.toContainEqual(
+        expect.objectContaining({ role: "gitHooks" }),
+      );
+      expect(result.result?.projectConfig.packageManager).toBe("bun");
+    });
+
     it("should reject invalid graph part role bindings", async () => {
       const result = await runTRPCTest({
         projectName: "bad-graph-parts",

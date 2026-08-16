@@ -47,13 +47,7 @@ export {
 
 export type CompatibilityCategory = OptionCategory;
 
-const SIGNOZ_SUPPORTED_GO_WEB_FRAMEWORKS = new Set([
-  "gin",
-  "echo",
-  "fiber",
-  "chi",
-  "stdlib",
-]);
+const SIGNOZ_SUPPORTED_GO_WEB_FRAMEWORKS = new Set(["gin", "echo", "fiber", "chi", "stdlib"]);
 const SIGNOZ_SUPPORTED_PYTHON_WEB_FRAMEWORKS = new Set(["fastapi"]);
 const VERCEL_ANALYTICS_FRONTENDS = new Set([
   "next",
@@ -1772,7 +1766,7 @@ export const analyzeStackCompatibility = (
     }
   }
 
-  for (const platform of ["docker-compose", "devcontainer", "kong"] as const) {
+  for (const platform of ["docker-compose", "devcontainer", "kong", "vite-plus"] as const) {
     if (!nextStack.appPlatforms.includes(platform)) continue;
     const reason = getDisabledReason(nextStack, "appPlatforms", platform);
     if (!reason) continue;
@@ -1784,7 +1778,9 @@ export const analyzeStackCompatibility = (
         ? "Docker Compose"
         : platform === "devcontainer"
           ? "DevContainer"
-          : "Kong Gateway";
+          : platform === "kong"
+            ? "Kong Gateway"
+            : "Vite+";
     changes.push({
       category: "appPlatforms",
       message: `${label} removed (${reason})`,
@@ -2471,6 +2467,15 @@ export const getDisabledReason = (
   }
 
   if (
+    category === "appPlatforms" &&
+    optionId === "vite-plus" &&
+    (currentStack.ecosystem !== "typescript" ||
+      !currentStack.webFrontend.some((frontend) => frontend !== "none"))
+  ) {
+    return "Vite+ requires a generated TypeScript web frontend";
+  }
+
+  if (
     ((category === "observability" && optionId === "signoz") ||
       (category === "backend" && currentStack.observability === "signoz")) &&
     (category === "backend"
@@ -2614,11 +2619,7 @@ export const getDisabledReason = (
       return "React Native payments currently support RevenueCat only";
     }
 
-    if (
-      !reactNativeCategories.has(category) &&
-      optionId !== "none" &&
-      optionId !== "false"
-    ) {
+    if (!reactNativeCategories.has(category) && optionId !== "none" && optionId !== "false") {
       return "React Native ecosystem only supports native mobile options";
     }
   }
@@ -2699,11 +2700,7 @@ export const getDisabledReason = (
   }
 
   if (currentStack.ecosystem === "java" && currentStack.javaLanguage === "kotlin") {
-    if (
-      category === "javaWebFramework" &&
-      optionId !== "spring-boot" &&
-      optionId !== "ktor"
-    ) {
+    if (category === "javaWebFramework" && optionId !== "spring-boot" && optionId !== "ktor") {
       return "Kotlin sources are only wired for the Spring Boot and Ktor scaffolds";
     }
     if (category === "javaBuildTool" && optionId === "none") {
@@ -3203,20 +3200,11 @@ export const getDisabledReason = (
     }
   }
 
-  if (
-    category === "appPlatforms" &&
-    optionId === "nx" &&
-    currentStack.appPlatforms.includes("turborepo")
-  ) {
-    return "Choose either Nx or Turborepo, not both";
-  }
-
-  if (
-    category === "appPlatforms" &&
-    optionId === "turborepo" &&
-    currentStack.appPlatforms.includes("nx")
-  ) {
-    return "Choose either Turborepo or Nx, not both";
+  if (category === "appPlatforms" && ["turborepo", "nx", "vite-plus"].includes(optionId)) {
+    const otherRunner = currentStack.appPlatforms.find(
+      (selected) => selected !== optionId && ["turborepo", "nx", "vite-plus"].includes(selected),
+    );
+    if (otherRunner) return "Choose one workspace runner: Turborepo, Nx, or Vite+";
   }
 
   // ============================================
@@ -4204,7 +4192,7 @@ function getAddonOrExampleGraphBinding(
     ecosystem: binding.ecosystem,
     ownerRole: binding.ownerRole,
     ownerEcosystem: binding.ownerRole ? binding.ecosystem : undefined,
-    allowOwnerlessCandidate: binding.ownerRole === undefined,
+    allowOwnerlessCandidate: binding.ownerRole !== "frontend",
     authoritative: true,
     missingOwnerReason:
       binding.ownerRole === "frontend" ? `${optionId} requires a web frontend` : undefined,
@@ -4937,6 +4925,7 @@ const ADDON_COMPATIBILITY: Record<Addons, readonly Frontend[]> = {
   gitleaks: [],
   turborepo: [],
   nx: [],
+  "vite-plus": [],
   starlight: [],
   ultracite: [],
   ruler: [],
@@ -5366,7 +5355,7 @@ export function validateAddonCompatibility(
       const frontendList = compatibleFrontends.join(", ");
       return {
         isCompatible: false,
-        reason: `${addon} addon requires one of these frontends: ${frontendList}`,
+        reason: `${addon} requires one of these frontends: ${frontendList}`,
       };
     }
   }

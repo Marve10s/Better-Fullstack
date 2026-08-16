@@ -33,7 +33,9 @@ type PackageManagerConfig = {
   filter: (workspace: string, script: string) => string;
 };
 
-type WorkspaceTool = "turbo" | "nx" | null;
+type WorkspaceTool = "turbo" | "nx" | "vite-plus" | null;
+
+const VITE_PLUS_BUNDLED_VITEST_VERSION = "4.1.10";
 
 const VIRTUAL_PACKAGE_MANAGER_VERSIONS: Record<ProjectConfig["packageManager"], string> = {
   npm: "10.9.2",
@@ -202,7 +204,15 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
 
   applyGeneratedPackageTestScripts(vfs, config);
   const testCommands = getWorkspaceTestCommands(vfs, packageManager);
-  if (testCommands.length > 0) {
+  if (workspaceTool === "vite-plus") {
+    scripts.check = "vp check";
+    scripts.lint = "vp lint";
+    scripts.format = "vp fmt";
+    scripts.test = "vp run -r test";
+    scripts.prepare = scripts.prepare
+      ? `${scripts.prepare} && vp config --no-agent --hooks-dir .vite-hooks`
+      : "vp config --no-agent --hooks-dir .vite-hooks";
+  } else if (testCommands.length > 0) {
     scripts.test = testCommands.join(" && ");
   } else {
     delete scripts.test;
@@ -216,6 +226,7 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
 
   applyBetterAuthKyselyOverride(pkgJson, config);
   applyTsdownDevtoolsOverride(vfs, pkgJson, config);
+  applyVitePlusOverrides(pkgJson, config);
 
   if (backend === "convex") {
     if (!workspaces.includes("packages/*")) {
@@ -240,6 +251,33 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
     : workspaces;
 
   vfs.writeJson("package.json", pkgJson);
+}
+
+function applyVitePlusOverrides(pkgJson: PackageJson, config: ProjectConfig): void {
+  if (!config.addons.includes("vite-plus")) return;
+  const overrides = {
+    vite: "npm:@voidzero-dev/vite-plus-core@^0.2.9",
+    vitest: VITE_PLUS_BUNDLED_VITEST_VERSION,
+    "@vitest/ui": VITE_PLUS_BUNDLED_VITEST_VERSION,
+    "@vitest/coverage-v8": VITE_PLUS_BUNDLED_VITEST_VERSION,
+  };
+  switch (config.packageManager) {
+    case "pnpm":
+      pkgJson.pnpm = pkgJson.pnpm || {};
+      pkgJson.pnpm.overrides = { ...pkgJson.pnpm.overrides, ...overrides };
+      break;
+    case "yarn":
+      pkgJson.resolutions = { ...pkgJson.resolutions, ...overrides };
+      break;
+    case "bun":
+    case "npm":
+      pkgJson.overrides = { ...pkgJson.overrides, ...overrides };
+      break;
+    default: {
+      const _exhaustive: never = config.packageManager;
+      throw new Error(`Unknown package manager: ${_exhaustive}`);
+    }
+  }
 }
 
 function applyGeneratedPackageTestScripts(vfs: VirtualFileSystem, config: ProjectConfig): void {
@@ -395,6 +433,14 @@ function getPackageManagerConfig(
       filter: (workspace, script) => `nx run ${workspace} --target=${script}`,
     };
   }
+  if (workspaceTool === "vite-plus") {
+    return {
+      dev: "vp run -r --parallel dev",
+      build: "vp run -r build",
+      checkTypes: "vp run -r check-types",
+      filter: (workspace, script) => `vp run --fail-if-no-match --filter ${workspace} ${script}`,
+    };
+  }
 
   switch (packageManager) {
     case "pnpm":
@@ -435,6 +481,7 @@ function getPackageManagerConfig(
 function getWorkspaceTool(addons: ProjectConfig["addons"]): WorkspaceTool {
   if (addons.includes("nx")) return "nx";
   if (addons.includes("turborepo")) return "turbo";
+  if (addons.includes("vite-plus")) return "vite-plus";
   return null;
 }
 

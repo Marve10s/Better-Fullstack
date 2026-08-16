@@ -33,6 +33,19 @@ describe("telemetry privacy boundary", () => {
     });
   });
 
+  it("strips owner names from raw part specs", () => {
+    const safe = sanitizeTelemetryConfig({
+      part: ["customer-api.testing:typescript:storybook", "frontend:typescript:next"],
+    });
+
+    expect(safe.part).toBeUndefined();
+    expect(safe.stackPartSelections).toEqual([
+      "testing:typescript:storybook",
+      "frontend:typescript:next",
+    ]);
+    expect(JSON.stringify(safe)).not.toContain("customer-api");
+  });
+
   it("retains normalized graph dimensions without paths or settings", () => {
     expect(
       sanitizeTelemetryConfig({

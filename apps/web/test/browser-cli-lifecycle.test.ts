@@ -167,22 +167,24 @@ describe("browser ZIP to CLI lifecycle", () => {
     process.env.BTS_TELEMETRY_DISABLED = "1";
     const addPlan = await add({
       projectDir,
-      addons: ["prettier"],
+      part: ["codeQuality:universal:eslint", "codeQuality:universal:prettier"],
       dryRun: true,
       install: false,
     });
-    expect(addPlan?.success).toBe(true);
+    expect(addPlan?.success, addPlan?.error).toBe(true);
     expect(await readFile(path.join(projectDir, "bts.jsonc"), "utf8")).toBe(configBeforeAdd);
     expect(await readFile(path.join(projectDir, "bts.lock.json"), "utf8")).toBe(manifestBeforeAdd);
 
     const addApply = await add({
       projectDir,
-      addons: ["prettier"],
+      part: ["codeQuality:universal:eslint", "codeQuality:universal:prettier"],
       dryRun: false,
       install: false,
     });
     expect(addApply?.success).toBe(true);
+    expect(addApply?.addedAddons).toContain("eslint");
     expect(addApply?.addedAddons).toContain("prettier");
+    expect((await readBtsConfig(projectDir))?.addons).toContain("eslint");
     expect((await readBtsConfig(projectDir))?.addons).toContain("prettier");
     const manifestAfterAdd = await readScaffoldManifest(projectDir);
     expect(manifestAfterAdd?.version).toBe("2");

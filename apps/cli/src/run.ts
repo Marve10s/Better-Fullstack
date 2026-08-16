@@ -14,8 +14,6 @@ import { CreateCommandInputSchema, CreateCommandOptionsSchema } from "./create-c
 import { createProjectHandler } from "./helpers/core/command-handlers";
 import {
   type AddInput,
-  type Addons,
-  AddonsSchema,
   AISchema,
   type API,
   APISchema,
@@ -312,7 +310,7 @@ export const router = os.router({
   add: os
     .meta({
       description:
-        "Add addons, deploy targets, or stack capabilities to an existing Better Fullstack project using its bts.jsonc config",
+        "Add deployment targets or typed stack capabilities to an existing Better Fullstack project using its bts.jsonc config",
     })
     .input(AddCommandInputSchema)
     .handler(async ({ input }) => {
@@ -705,11 +703,57 @@ export const router = os.router({
 const caller = createRouterClient(router, { context: {} });
 
 export function createBtsCli() {
-  return createCli({
+  const cli = createCli({
     router,
     name: "create-better-fullstack",
     version: getLatestCLIVersion(),
   });
+  const buildProgram = cli.buildProgram.bind(cli);
+  const hideLegacyOptions = (program: ReturnType<typeof buildProgram>) => {
+    type CommandNode = {
+      commands?: CommandNode[];
+      options?: Array<{ long?: string; hideHelp?: () => void }>;
+      configureHelp?: (configuration: {
+        visibleOptions: (command: CommandNode) => Array<{ long?: string }>;
+      }) => void;
+    };
+    const visit = (command: CommandNode) => {
+      command.options?.find((option) => option.long === "--addons")?.hideHelp?.();
+      command.configureHelp?.({
+        visibleOptions: (target) =>
+          (target.options ?? []).filter((option) => option.long !== "--addons"),
+      });
+      command.commands?.forEach(visit);
+    };
+    visit(program as CommandNode);
+    return program;
+  };
+
+  return {
+    ...cli,
+    buildProgram: (params?: Parameters<typeof buildProgram>[0]) =>
+      hideLegacyOptions(buildProgram(params)),
+    run: async (
+      params?: Parameters<typeof cli.run>[0],
+      program?: Parameters<typeof cli.run>[1],
+    ) => {
+      const resolvedProgram = program ?? hideLegacyOptions(buildProgram(params));
+      const argv = params?.argv ?? process.argv;
+      const commandArguments = argv.slice(2);
+      if (
+        commandArguments.length === 1 &&
+        (commandArguments[0] === "--help" || commandArguments[0] === "-h")
+      ) {
+        const commandTree = resolvedProgram as unknown as {
+          commands: Array<{ name: () => string; outputHelp: () => void }>;
+        };
+        const createCommand = commandTree.commands.find((command) => command.name() === "create");
+        createCommand?.outputHelp();
+        return;
+      }
+      return cli.run(params, resolvedProgram);
+    },
+  };
 }
 
 /**

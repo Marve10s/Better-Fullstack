@@ -207,7 +207,7 @@ describe("CLI add command", () => {
   );
 
   it(
-    "adds a declarative addon via --addons and is idempotent for an existing addon",
+    "adds a declarative code-quality profile via --part and remains idempotent",
     async () => {
       const root = await makeTempRoot("bfs-add-test-");
       const projectName = "app";
@@ -220,7 +220,13 @@ describe("CLI add command", () => {
 
       expect(createResult.exitCode).toBe(0);
 
-      const addResult = await runCli(["add", "--project-dir", projectDir, "--addons", "prettier"], {
+      const profileParts = [
+        "--part",
+        "codeQuality:universal:eslint",
+        "--part",
+        "codeQuality:universal:prettier",
+      ];
+      const addResult = await runCli(["add", "--project-dir", projectDir, ...profileParts], {
         cwd: root,
         env: {
           BFS_SKIP_EXTERNAL_COMMANDS: "1",
@@ -231,27 +237,25 @@ describe("CLI add command", () => {
         addResult.exitCode,
         `add failed\nstdout:\n${addResult.stdout}\nstderr:\n${addResult.stderr}`,
       ).toBe(0);
-      expect(cliOutput(addResult)).toContain("Successfully added: prettier");
+      expect(cliOutput(addResult)).toContain("Successfully added: eslint, prettier");
 
       const config = (await readJsoncFile(join(projectDir, "bts.jsonc"))) as {
         addons?: string[];
       };
 
       expect(config.addons).toBeDefined();
+      expect(config.addons).toContain("eslint");
       expect(config.addons).toContain("prettier");
 
-      const secondAddResult = await runCli(
-        ["add", "--project-dir", projectDir, "--addons", "prettier"],
-        {
-          cwd: root,
-          env: {
-            BFS_SKIP_EXTERNAL_COMMANDS: "1",
-          },
+      const secondAddResult = await runCli(["add", "--project-dir", projectDir, ...profileParts], {
+        cwd: root,
+        env: {
+          BFS_SKIP_EXTERNAL_COMMANDS: "1",
         },
-      );
+      });
 
       expect(secondAddResult.exitCode).toBe(0);
-      expect(cliOutput(secondAddResult)).toContain("No new addons selected.");
+      expect(cliOutput(secondAddResult)).toContain("No new tooling capabilities selected.");
     },
     CLI_COMMAND_TEST_TIMEOUT_MS,
   );
@@ -309,7 +313,8 @@ describe("CLI add command", () => {
       );
       expect(createResult.exitCode, cliOutput(createResult)).toBe(0);
 
-      const addResult = await runCli(["add", "--project-dir", projectDir, "--addons", "kong"], {
+      const kongPart = ["--part", "apiGateway:universal:kong"];
+      const addResult = await runCli(["add", "--project-dir", projectDir, ...kongPart], {
         cwd: root,
         env: { BFS_SKIP_EXTERNAL_COMMANDS: "1" },
       });
@@ -338,11 +343,11 @@ describe("CLI add command", () => {
       expect(devcontainer.forwardPorts).toEqual(expect.arrayContaining([8000, 8001]));
 
       const secondAddResult = await runCli(
-        ["add", "--project-dir", projectDir, "--addons", "kong"],
+        ["add", "--project-dir", projectDir, ...kongPart],
         { cwd: root, env: { BFS_SKIP_EXTERNAL_COMMANDS: "1" } },
       );
       expect(secondAddResult.exitCode).toBe(0);
-      expect(cliOutput(secondAddResult)).toContain("No new addons selected.");
+      expect(cliOutput(secondAddResult)).toContain("No new tooling capabilities selected.");
     },
     CLI_COMMAND_TEST_TIMEOUT_MS,
   );
@@ -444,7 +449,8 @@ describe("CLI add command", () => {
 
       const lefthookPath = join(projectDir, "lefthook.yml");
       await writeFile(lefthookPath, "pre-commit: [\n");
-      const failedAdd = await runCli(["add", "--project-dir", projectDir, "--addons", "biome"], {
+      const biomePart = ["--part", "codeQuality:universal:biome"];
+      const failedAdd = await runCli(["add", "--project-dir", projectDir, ...biomePart], {
         cwd: root,
       });
       expect(failedAdd.exitCode).not.toBe(0);
@@ -458,11 +464,11 @@ describe("CLI add command", () => {
         lefthookPath,
         "pre-commit:\n  commands:\n    existing:\n      run: bun run lint\n",
       );
-      const retry = await runCli(["add", "--project-dir", projectDir, "--addons", "biome"], {
+      const retry = await runCli(["add", "--project-dir", projectDir, ...biomePart], {
         cwd: root,
       });
       expect(retry.exitCode, `retry failed\n${retry.all}`).toBe(0);
-      expect(cliOutput(retry)).toContain("Repaired addon setup: biome");
+      expect(cliOutput(retry)).toContain("Repaired tooling setup: biome");
       expect(await readFile(lefthookPath, "utf8")).toContain("biome check --write");
     },
     CLI_COMMAND_TEST_TIMEOUT_MS,
@@ -652,7 +658,6 @@ describe("CLI history command", () => {
         "--observability none " +
         "--caching none " +
         "--search none " +
-        "--addons none " +
         "--examples none " +
         "--db-setup none " +
         "--web-deploy none " +

@@ -68,6 +68,17 @@ export const StackPartRoleSchema = z
     "appPlatform",
     "dataFetching",
     "workspaceTooling",
+    "toolchain",
+    "workspaceRunner",
+    "gitHooks",
+    "staticAnalysis",
+    "aiTooling",
+    "codeGeneration",
+    "developerEnvironment",
+    "containerOrchestration",
+    "apiGateway",
+    "continuousIntegration",
+    "backendUtilities",
     "examples",
     "language",
     "buildTool",
@@ -177,6 +188,7 @@ export const AddonsSchema = z
     "skills",
     "turborepo",
     "nx",
+    "vite-plus",
     "fumadocs",
     "ultracite",
     "oxlint",
@@ -206,14 +218,9 @@ export const AddonsSchema = z
     "capacitor",
     "none",
   ])
-  .describe("Additional addons");
+  .describe("Deprecated flat compatibility projection of tooling capabilities");
 
-/**
- * Addon values that are app platforms — shells/targets that package the web
- * frontend (desktop, mobile hybrid, browser extension, terminal, installable
- * PWA). Surfaced as a dedicated "App Platforms" section in the CLI and web
- * builder; they still serialize into the `addons` config field.
- */
+/** @deprecated Use tooling capability metadata and Stack Part role bindings. */
 export const APP_PLATFORM_ADDON_VALUES = [
   "pwa",
   "tauri",

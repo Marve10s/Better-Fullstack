@@ -114,6 +114,8 @@ import {
   generateStackCommand,
   generateStackSharingUrl,
   getStackKeyForCategory,
+  getToolingCategoryForUi,
+  getToolingOptionForUi,
 } from "@/lib/stack-utils";
 import { ICON_REGISTRY } from "@/lib/tech-icons";
 import { getTechResourceLinks } from "@/lib/tech-resource-links";
@@ -127,6 +129,7 @@ import { ShareButton } from "./share-button";
 import { TechIcon } from "./tech-icon";
 import {
   analyzeStackCompatibility,
+  GRAPH_COMMON_CATEGORY_ORDER,
   getCategoryDisplayName,
   getDisabledReason,
   getVisibleOptions,
@@ -602,7 +605,6 @@ const MULTI_FRONTEND_LIBRARY_GROUPS: Array<keyof typeof TECH_OPTIONS> = [
   "uiLibrary",
   "stateManagement",
   "appShells",
-  "appPlatforms",
   "forms",
   "validation",
   "testing",
@@ -780,18 +782,6 @@ const GRAPH_NATIVE_BACKEND_ALTERNATIVES = {
     Partial<Record<"caching" | "observability", keyof typeof TECH_OPTIONS>>
   >
 >;
-
-const GRAPH_COMMON_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
-  "codeQuality",
-  "documentation",
-  "workspaceShape",
-  "examples",
-  "packageManager",
-  "aiDocs",
-  "versionChannel",
-  "git",
-  "install",
-];
 
 function isGraphBackendEcosystem(
   ecosystem: StackPartEcosystem,
@@ -1267,17 +1257,6 @@ function DisabledReasonInline({ reason, compact = false }: { reason: string; com
   );
 }
 
-function CategoryHint({ categoryKey }: { categoryKey: string }) {
-  if (categoryKey !== "appPlatforms") return null;
-
-  return (
-    <div className="mb-3 rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">
-      <span className="font-medium text-foreground">{m.builderGroupedAddons()}</span>{" "}
-      {m.builderGroupedAddonsDescription()}
-    </div>
-  );
-}
-
 function getSelectionCountForValue(
   category: keyof typeof TECH_OPTIONS,
   value: StackState[keyof StackState],
@@ -1304,12 +1283,16 @@ function getSelectedCount(category: keyof typeof TECH_OPTIONS, stack: StackState
   }
 
   const catKey = getStackKeyForCategory(category);
-  // appShells and appPlatforms share one state array; count only the ids
-  // that belong to this section.
-  if (category === "appShells" || category === "appPlatforms") {
-    const optionIds = new Set((TECH_OPTIONS[category] ?? []).map((option) => option.id));
+  if (getToolingCategoryForUi(category)) {
     const values = Array.isArray(stack[catKey]) ? (stack[catKey] as string[]) : [];
-    return values.filter((value) => value !== "none" && optionIds.has(value)).length;
+    return (TECH_OPTIONS[category] ?? []).filter((option) => {
+      const selection = getToolingOptionForUi(category, option.id);
+      return (
+        selection &&
+        selection.toolIds.length > 0 &&
+        selection.toolIds.every((toolId) => values.includes(toolId))
+      );
+    }).length;
   }
   return getSelectionCountForValue(category, stack[catKey]);
 }
@@ -1318,6 +1301,19 @@ function isSelectedCheck(stack: StackState, categoryKey: string, techId: string)
   const category = categoryKey as keyof typeof TECH_OPTIONS;
   const stackKey = getStackKeyForCategory(category);
   const currentValue = stack[stackKey];
+  const toolingOption = getToolingOptionForUi(category, techId);
+  if (toolingOption) {
+    const selectedValues = Array.isArray(currentValue) ? currentValue : [];
+    if (toolingOption.toolIds.length === 0) {
+      const categoryToolIds = new Set(
+        (TECH_OPTIONS[category] ?? []).flatMap(
+          (option) => getToolingOptionForUi(category, option.id)?.toolIds ?? [],
+        ),
+      );
+      return selectedValues.every((value) => !categoryToolIds.has(value));
+    }
+    return toolingOption.toolIds.every((toolId) => selectedValues.includes(toolId));
+  }
   if (isMultiSelectCategory(categoryKey as OptionCategory)) {
     const selectedValues = Array.isArray(currentValue) ? currentValue : [];
 
@@ -1338,6 +1334,36 @@ function getStackOptionUpdate(
   const catKey = getStackKeyForCategory(category);
   const update: Partial<StackState> = {};
   const currentValue = currentStack[catKey];
+  const toolingCategory = getToolingCategoryForUi(category);
+  const toolingOption = getToolingOptionForUi(category, techId);
+
+  if (toolingCategory && toolingOption) {
+    const currentArray = Array.isArray(currentValue) ? [...currentValue] : [];
+    const categoryToolIds = new Set(
+      (TECH_OPTIONS[category] ?? []).flatMap(
+        (option) => getToolingOptionForUi(category, option.id)?.toolIds ?? [],
+      ),
+    );
+    const isSelected =
+      toolingOption.toolIds.length > 0 &&
+      toolingOption.toolIds.every((toolId) => currentArray.includes(toolId));
+    let nextArray = isMultiSelectCategory(category as OptionCategory)
+      ? currentArray.filter((value) => !toolingOption.toolIds.includes(value))
+      : currentArray.filter((value) => !categoryToolIds.has(value));
+
+    if (!isSelected) nextArray.push(...toolingOption.toolIds);
+
+    if (toolingCategory === "toolchain" && techId === "vite-plus" && !isSelected) {
+      nextArray = nextArray.filter((toolId) => toolId !== "turborepo" && toolId !== "nx");
+      nextArray.push("vite-plus");
+      update.codeQuality = currentStack.codeQuality.filter((toolId) =>
+        ["knip", "gitleaks"].includes(toolId),
+      );
+    }
+
+    (update as Record<string, unknown>)[catKey] = [...new Set(nextArray)];
+    return update;
+  }
 
   if (isMultiSelectCategory(category as OptionCategory)) {
     const currentArray = Array.isArray(currentValue) ? [...currentValue] : [];
@@ -1436,7 +1462,16 @@ const INITIALLY_COLLAPSED_SET = new Set([
   "animation",
   "cms",
   "documentation",
-  "appPlatforms",
+  "testingTools",
+  "dataClient",
+  "frontendUtilities",
+  "httpClientTool",
+  "codeGeneration",
+  "developerEnvironment",
+  "containerOrchestration",
+  "apiGateway",
+  "continuousIntegration",
+  "backendUtilitiesTool",
 ]);
 
 const SHADCN_SUB_CATEGORIES = new Set<keyof typeof TECH_OPTIONS>([
@@ -2889,6 +2924,21 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
       );
       if (options.length === 0) continue;
       const catKey = getStackKeyForCategory(category as keyof typeof TECH_OPTIONS);
+      if (getToolingCategoryForUi(category as keyof typeof TECH_OPTIONS)) {
+        const picks = isMultiSelectCategory(category as OptionCategory)
+          ? [...options]
+              .filter((option) => option.id !== "none")
+              .sort(() => 0.5 - Math.random())
+              .slice(0, Math.floor(Math.random() * 3))
+          : [options[Math.floor(Math.random() * options.length)]];
+        const toolIds = picks.flatMap(
+          (option) =>
+            getToolingOptionForUi(category as keyof typeof TECH_OPTIONS, option.id)?.toolIds ?? [],
+        );
+        const selected = (randomStack as Record<string, string[]>)[catKey] ?? [];
+        (randomStack as Record<string, string[]>)[catKey] = [...new Set([...selected, ...toolIds])];
+        continue;
+      }
       if (isMultiSelectCategory(category as OptionCategory)) {
         if (catKey === "webFrontend" || catKey === "nativeFrontend") {
           const randomIndex = Math.floor(Math.random() * options.length);
@@ -3665,7 +3715,6 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                                   transition={{ duration: 0.25, ease: "easeInOut" }}
                                   className="overflow-hidden"
                                 >
-                                  <CategoryHint categoryKey={categoryKey} />
                                   <div className="space-y-4">
                                     {categoryOptionGroups.map((group) => (
                                       <div key={group.key}>

@@ -16,6 +16,7 @@
 
 import type { ProjectConfig } from "@better-fullstack/types";
 
+import { isToolingOverlayOnly } from "@better-fullstack/types";
 import yaml from "yaml";
 
 import type { VirtualFileSystem } from "../core/virtual-fs";
@@ -61,7 +62,7 @@ export interface WorkspaceLayout {
 export function qualifiesForSingleApp(config: ProjectConfig): boolean {
   if (config.workspaceShape !== "single-app") return false;
   if (config.addons.some((addon) => CONTAINER_ADDONS.has(addon))) return false;
-  if (config.stackParts && config.stackParts.length > 0) return false;
+  if (!isToolingOverlayOnly(config.stackParts)) return false;
   if (config.ecosystem !== "typescript") return false;
   if (config.backend !== "self") return false;
 
@@ -223,14 +224,18 @@ function buildFlatPackageJson(
   const devDependencies = resolveDeps(webPkg.devDependencies, catalog, projectScope);
   const rootKnipVersion = rootPkg.devDependencies?.knip;
   if (config.addons.includes("knip") && rootKnipVersion) {
-    const resolvedKnipVersion = resolveDeps(
-      { knip: rootKnipVersion },
-      catalog,
-      projectScope,
-    ).knip;
+    const resolvedKnipVersion = resolveDeps({ knip: rootKnipVersion }, catalog, projectScope).knip;
 
     if (resolvedKnipVersion) {
       devDependencies.knip = resolvedKnipVersion;
+    }
+  }
+  const rootVitePlusVersion = rootPkg.devDependencies?.["vite-plus"];
+  if (config.addons.includes("vite-plus") && rootVitePlusVersion) {
+    devDependencies["vite-plus"] = rootVitePlusVersion;
+    for (const dependency of ["@voidzero-dev/vite-plus-core"]) {
+      const version = rootPkg.devDependencies?.[dependency];
+      if (version) devDependencies[dependency] = version;
     }
   }
 
@@ -246,6 +251,15 @@ function buildFlatPackageJson(
       const script = rootPkg.scripts?.[scriptName];
       if (script) scripts[scriptName] = script;
     }
+  }
+  if (config.addons.includes("vite-plus")) {
+    scripts.check = "vp check";
+    scripts.lint = "vp lint";
+    scripts.format = "vp fmt";
+    if (config.testing === "vitest" || config.testing === "none") {
+      scripts.test = "vp test";
+    }
+    scripts.prepare = "vp config --no-agent --hooks-dir .vite-hooks";
   }
 
   const flatPkg: PackageJson = {

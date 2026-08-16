@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 
-import { generateStackCommand } from "../src/lib/stack-utils";
 import { DEFAULT_STACK } from "../src/lib/stack-defaults";
+import { generateStackCommand } from "../src/lib/stack-utils";
 
 describe("generateStackCommand parity", () => {
   it("emits --yes only for stacks semantically equal to CLI defaults", () => {
@@ -95,7 +95,7 @@ describe("generateStackCommand parity", () => {
 
     expect(command).not.toContain("--workspace-shape monorepo");
   });
-  it("serializes addons from codeQuality, documentation, and appPlatforms", () => {
+  it("serializes tooling selections as canonical Stack Parts", () => {
     const command = generateStackCommand({
       ...DEFAULT_STACK,
       codeQuality: ["biome"],
@@ -103,7 +103,10 @@ describe("generateStackCommand parity", () => {
       appPlatforms: ["pwa"],
     });
 
-    expect(command).toContain("--addons biome fumadocs pwa");
+    expect(command).toContain("--part codeQuality:universal:biome");
+    expect(command).toContain("--part documentation:universal:fumadocs");
+    expect(command).toContain("--part frontend.appPlatform:typescript:pwa");
+    expect(command).toContain("--addons none");
   });
 
   it("serializes examples and aiDocs arrays explicitly", () => {

@@ -29,13 +29,30 @@ const BUILDER_CATEGORY_TO_CLI_OPTION_KEY: Partial<
   nativeFrontend: "frontend",
   backendLibraries: "effect",
   ai: "ai",
-  codeQuality: "addons",
-  documentation: "addons",
-  appShells: "addons",
-  appPlatforms: "addons",
+  codeQuality: "part",
+  documentation: "part",
+  appShells: "part",
+  appPlatforms: "part",
+  toolchainProfile: "part",
+  workspaceRunner: "part",
+  codeQualityProfile: "part",
+  gitHooks: "part",
+  staticAnalysis: "part",
+  aiTooling: "part",
+  testingTools: "part",
+  dataClient: "part",
+  frontendUtilities: "part",
+  httpClientTool: "part",
+  codeGeneration: "part",
+  developerEnvironment: "part",
+  containerOrchestration: "part",
+  apiGateway: "part",
+  continuousIntegration: "part",
+  backendUtilitiesTool: "part",
 };
 
 const NON_BUILDER_CREATE_OPTION_KEYS = new Set([
+  "addons",
   "ecosystem",
   "template",
   "fromHistory",
@@ -180,8 +197,9 @@ describe("CLI and Builder catalog parity", () => {
 
 describe("StackState to CLI input parity", () => {
   it("maps every option-backed StackState key to a create-command input field", () => {
-    const missingCliKeys = STACK_SELECTION_KEYS
-      .filter((key) => STACK_SELECTION_OPTION_CATEGORY_BY_KEY[key] !== undefined)
+    const missingCliKeys = STACK_SELECTION_KEYS.filter(
+      (key) => STACK_SELECTION_OPTION_CATEGORY_BY_KEY[key] !== undefined,
+    )
       .map((key) => {
         const techCategory = key === "aiSdk" ? "ai" : key;
         return getCreateOptionKey(techCategory as keyof typeof TECH_OPTIONS);

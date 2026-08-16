@@ -394,6 +394,10 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
 
   // ─── App Platforms ─────────────────────────────────────────────────────────
   turborepo: { type: "si", slug: "turborepo", hex: "EF4444" },
+  "vite-plus": {
+    type: "local",
+    src: "https://raw.githubusercontent.com/voidzero-dev/vite-plus/main/logo.svg",
+  },
   tauri: { type: "si", slug: "tauri", hex: "FFC131" },
   storybook: { type: "si", slug: "storybook", hex: "FF4785" },
   pwa: { type: "si", slug: "pwa", hex: "5A0FC8" },

@@ -1,6 +1,6 @@
 ---
 name: better-fullstack
-description: Scaffold, plan, or extend Better Fullstack projects with the generator, CLI, or MCP server. Use when a user asks to create, generate, or scaffold a fullstack starter; choose a Better Fullstack stack; add Better Fullstack addons; compare agent scaffolding paths; or avoid hand-authoring boilerplate project files.
+description: Scaffold, plan, or extend Better Fullstack projects with the generator, CLI, or MCP server. Use when a user asks to create, generate, or scaffold a fullstack starter; choose a Better Fullstack stack; add Better Fullstack capabilities; compare agent scaffolding paths; or avoid hand-authoring boilerplate project files.
 ---
 
 # Better Fullstack
@@ -92,10 +92,10 @@ Use graph parts as `category:ecosystem:option`.
 
 ## Existing Projects
 
-For a generated project with `bts.jsonc`, use the Better Fullstack `add` command or MCP add tools. Addons are arrays, for example:
+For a generated project with `bts.jsonc`, use the Better Fullstack `add` command or MCP add tools. Use canonical Stack Part specs so each capability keeps its category and owner, for example:
 
 ```bash
-<better-fullstack-cli> add --project-dir ./my-app --addons biome turborepo --no-install
+<better-fullstack-cli> add --project-dir ./my-app --part staticAnalysis:typescript:knip --part workspaceRunner:universal:turborepo --no-install
 ```
 
 For MCP lifecycle work, use this sequence:

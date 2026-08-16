@@ -19,7 +19,7 @@ import {
 } from "../../utils/scaffold-manifest";
 import { setupAddons } from "../addons/addons-setup";
 import { setupDatabase } from "../core/db-setup";
-import { initializeGit } from "./git";
+import { commitInitialScaffold, initializeGit } from "./git";
 import {
   installDependencies,
   runCargoBuild,
@@ -107,6 +107,8 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
 
     if (!isSilent()) log.success("Project template successfully scaffolded!");
 
+    const repositoryInitialized = await initializeGit(projectDir, options.git);
+
     // Skip npm/pnpm/bun install for Rust/Python/Go/Java projects (they use native toolchains)
     if (
       options.install &&
@@ -154,7 +156,7 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
       if (!result.success) setupFailures.push(result);
     }
 
-    await initializeGit(projectDir, options.git);
+    await commitInitialScaffold(projectDir, repositoryInitialized);
 
     if (!isSilent()) {
       await displayPostInstallInstructions({
