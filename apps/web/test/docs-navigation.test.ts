@@ -18,14 +18,13 @@ describe("docs navigation", () => {
   it("registers the trust milestone docs in sidebar metadata", async () => {
     const rootMeta = await readJson<{ pages: string[] }>("meta.json");
     const cliMeta = await readJson<{ pages: string[] }>("cli/meta.json");
-    const sectionsMeta = await readJson<{ pages: string[] }>("sections/meta.json");
     const referenceMeta = await readJson<{ pages: string[] }>("reference/meta.json");
+    const stackGuidesMeta = await readJson<{ pages: string[] }>("stack-guides/meta.json");
     const aiMeta = await readJson<{ pages: string[] }>("ai/meta.json");
     const gettingStartedMeta = await readJson<{ pages: string[] }>("getting-started/meta.json");
-    const recipesMeta = await readJson<{ pages: string[] }>("recipes/meta.json");
 
-    expect(rootMeta.pages).toContain("sections");
-    expect(rootMeta.pages).toContain("recipes");
+    expect(rootMeta.pages).not.toContain("sections");
+    expect(rootMeta.pages).not.toContain("recipes");
     expect(rootMeta.pages).not.toContain("deployment");
     const ecosystemsMeta = await readJson<{ pages: string[] }>("ecosystems/meta.json");
     const optionsMeta = await readJson<{ pages: string[] }>("reference/options/meta.json");
@@ -43,8 +42,6 @@ describe("docs navigation", () => {
       "telemetry",
       "utilities",
     ]);
-    expect(sectionsMeta.pages).toContain("deployment");
-    expect(sectionsMeta.pages).toContain("frontend-and-apps");
     expect(ecosystemsMeta.pages).toContain("multi-ecosystem");
     expect(referenceMeta.pages).toContain("compatibility");
     expect(referenceMeta.pages).toContain("versioning");
@@ -53,7 +50,7 @@ describe("docs navigation", () => {
     expect(aiMeta.pages).toContain("skills");
     expect(aiMeta.pages).toContain("mcp-tools");
     expect(gettingStartedMeta.pages).toContain("lifecycle");
-    expect(recipesMeta.pages).toHaveLength(7);
+    expect(stackGuidesMeta.pages).toContain("deployment");
   });
 
   it("keeps linked milestone docs backed by MDX files", async () => {
@@ -61,9 +58,8 @@ describe("docs navigation", () => {
     await expectDocPage("reference/options/elixir.mdx");
     await expectDocPage("reference/options/dotnet.mdx");
     await expectDocPage("reference/versioning.mdx");
-    await expectDocPage("sections/index.mdx");
-    await expectDocPage("sections/deployment.mdx");
-    await expectDocPage("sections/backend-and-api.mdx");
+    await expectDocPage("stack-guides/deployment.mdx");
+    await expectDocPage("stack-guides/backend-frameworks.mdx");
     await expectDocPage("cli/index.mdx");
     await expectDocPage("cli/check.mdx");
     await expectDocPage("cli/update.mdx");
@@ -81,11 +77,5 @@ describe("docs navigation", () => {
     await expectDocPage("ai/skills.mdx");
     await expectDocPage("ai/mcp-tools.mdx");
     await expectDocPage("getting-started/lifecycle.mdx");
-    await expectDocPage("recipes/default-typescript-web.mdx");
-    await expectDocPage("recipes/nextjs-self-backend.mdx");
-    await expectDocPage("recipes/python-api.mdx");
-    await expectDocPage("recipes/dotnet-service.mdx");
-    await expectDocPage("recipes/multi-ecosystem-product.mdx");
-    await expectDocPage("recipes/browser-zip-workflow.mdx");
   });
 });

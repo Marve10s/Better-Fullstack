@@ -296,7 +296,7 @@ Codex Spark on the composite index.
 
 Its denominator needs explaining, and honestly:
 
-<Callout kind="warn">
+<Callout kind="warning">
   **Two of Hy3's specs died on the endpoint, not in the model.** On the Elixir spec the free endpoint
   stalled mid-stream after the agent had done the work; on the React Native spec it returned zero
   bytes — the endpoint never responded at all. Those are infrastructure failures (free-tier rate
@@ -329,7 +329,7 @@ Kilo **Nemotrons** (7% and 19% wired, mostly inconclusive) rarely produce a meas
 
 A benchmark is only useful if it discloses what it couldn't measure — and what it got wrong.
 
-<Callout kind="warn">
+<Callout kind="warning">
   **Our validator had real bugs, and they were flattering some scores.** While scoring GPT-5.6 we
   noticed the flagship tier landing below the mid tier and audited our own harness before believing
   it. We found: (1) manifest discovery only looked at the project root, so an agent that split its
