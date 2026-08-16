@@ -14,28 +14,32 @@ import { DEFAULT_STACK_SELECTION } from "../src/stack-translation";
 describe("compatibility issue helpers", () => {
   it("keeps bot protection within its generated auth and frontend boundaries", () => {
     const nextStack = { ...DEFAULT_STACK_SELECTION, webFrontend: ["next"] };
+    const botIdStack = { ...nextStack, backend: "self-next" };
     const viteStack = { ...DEFAULT_STACK_SELECTION, webFrontend: ["react-vite"] };
 
-    expect(getDisabledReason(nextStack, "botProtection", "botid")).toBeNull();
+    expect(getDisabledReason(botIdStack, "botProtection", "botid")).toBeNull();
+    expect(getDisabledReason(nextStack, "botProtection", "botid")).toContain(
+      "self-hosted Next.js backend",
+    );
     expect(getDisabledReason(viteStack, "botProtection", "botid")).toContain("Next.js frontends");
     expect(getDisabledReason(viteStack, "botProtection", "turnstile")).toBeNull();
     expect(
       getDisabledReason(
-        { ...nextStack, webDeploy: "netlify" },
+        { ...botIdStack, webDeploy: "netlify" },
         "botProtection",
         "botid",
       ),
     ).toContain("Vercel deployment");
     expect(
       getDisabledReason(
-        { ...nextStack, botProtection: "botid" },
+        { ...botIdStack, botProtection: "botid" },
         "webFrontend",
         "svelte",
       ),
     ).toContain("Next.js frontends");
     expect(
       getDisabledReason(
-        { ...nextStack, botProtection: "botid" },
+        { ...botIdStack, botProtection: "botid" },
         "webDeploy",
         "netlify",
       ),
@@ -63,11 +67,11 @@ describe("compatibility issue helpers", () => {
     ).toContain("Convex");
     expect(
       getDisabledReason(
-        { ...nextStack, backend: "convex" },
+        { ...botIdStack, backend: "convex" },
         "botProtection",
         "botid",
       ),
-    ).toContain("Convex");
+    ).toContain("self-hosted Next.js backend");
     expect(
       getDisabledReason(
         { ...nextStack, webFrontend: ["svelte"] },
@@ -84,7 +88,7 @@ describe("compatibility issue helpers", () => {
     ).toContain("React web frontends only");
     expect(
       getDisabledReason(
-        { ...nextStack, webFrontend: ["vinext"] },
+        { ...botIdStack, webFrontend: ["vinext"] },
         "botProtection",
         "botid",
       ),
@@ -92,14 +96,14 @@ describe("compatibility issue helpers", () => {
     for (const botProtection of ["botid", "turnstile"] as const) {
       expect(
         getDisabledReason(
-          { ...nextStack, nativeFrontend: ["native-bare"] },
+          { ...botIdStack, nativeFrontend: ["native-bare"] },
           "botProtection",
           botProtection,
         ),
       ).toContain("native frontend");
       expect(
         analyzeStackCompatibility({
-          ...nextStack,
+          ...botIdStack,
           nativeFrontend: ["native-bare"],
           botProtection,
         }).adjustedStack?.botProtection,
@@ -122,8 +126,8 @@ describe("compatibility issue helpers", () => {
     ).toBe("none");
     expect(
       analyzeStackCompatibility({
-        ...nextStack,
-        backend: "convex",
+        ...botIdStack,
+        backend: "hono",
         botProtection: "botid",
       }).adjustedStack?.botProtection,
     ).toBe("none");

@@ -120,7 +120,7 @@ describe("bot protection generation", () => {
     expect(result.error).toContain("requires Vercel deployment");
   });
 
-  it("rejects BotID with Convex before attempting to patch Better Auth", async () => {
+  it("rejects BotID for backends that do not host the Next.js auth handler", async () => {
     const result = await generateVirtualProject({
       config: makeConfig({
         frontend: ["next"],
@@ -133,7 +133,7 @@ describe("bot protection generation", () => {
     });
 
     expect(result.success).toBe(false);
-    expect(result.error).toContain("Vercel BotID is not wired for the Convex backend");
+    expect(result.error).toContain("Vercel BotID requires the self-hosted Next.js backend");
     expect(result.error).not.toContain("Unable to wire");
   });
 

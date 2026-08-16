@@ -2334,7 +2334,7 @@ export const analyzeStackCompatibility = (
       (hasNativeFrontend ||
         webFrontends.length === 0 ||
         webFrontends.some((frontend) => !isBotIdWebFrontend(frontend)) ||
-        nextStack.backend === "convex" ||
+        nextStack.backend !== "self-next" ||
         (nextStack.webDeploy !== "none" && nextStack.webDeploy !== "vercel"));
     const invalidTurnstile =
       nextStack.botProtection === "turnstile" &&
@@ -3390,8 +3390,8 @@ export const getDisabledReason = (
     ) {
       return "Vercel BotID is only available for Next.js frontends";
     }
-    if (optionId === "botid" && currentStack.backend === "convex") {
-      return "Vercel BotID is not wired for the Convex backend";
+    if (optionId === "botid" && currentStack.backend !== "self-next") {
+      return "Vercel BotID requires the self-hosted Next.js backend";
     }
     if (
       optionId === "botid" &&

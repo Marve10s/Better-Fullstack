@@ -113,8 +113,8 @@ export async function processBotProtectionTemplates(
     if (webFrontends.length === 0 || webFrontends.some((frontend) => !isBotIdWebFrontend(frontend))) {
       throw new Error("Vercel BotID is only available for Next.js frontends");
     }
-    if (config.backend === "convex") {
-      throw new Error("Vercel BotID is not wired for the Convex backend");
+    if (config.backend !== "self") {
+      throw new Error("Vercel BotID requires the self-hosted Next.js backend");
     }
     if (config.webDeploy !== "none" && config.webDeploy !== "vercel") {
       throw new Error("Vercel BotID requires Vercel deployment when web deployment is selected");
