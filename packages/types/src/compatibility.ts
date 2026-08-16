@@ -175,6 +175,23 @@ export type CompatibilityEvaluation = {
   issues: CompatibilityIssue[];
 };
 
+const TURNSTILE_WEB_FRONTENDS = new Set([
+  "next",
+  "vinext",
+  "react-router",
+  "react-vite",
+  "tanstack-router",
+  "tanstack-start",
+]);
+
+export function isTurnstileWebFrontend(frontend: string) {
+  return TURNSTILE_WEB_FRONTENDS.has(frontend);
+}
+
+export function isBotIdWebFrontend(frontend: string) {
+  return frontend === "next";
+}
+
 export type CompatibilityAdjustment = {
   category: string;
   message: string;
@@ -218,6 +235,7 @@ export type CompatibilityInput = {
   jobQueue: string;
   caching: string;
   rateLimit: string;
+  botProtection: string;
   animation: string;
   cssFramework: string;
   uiLibrary: string;
@@ -2324,6 +2342,37 @@ export const analyzeStackCompatibility = (
     });
   }
 
+  if (nextStack.botProtection && nextStack.botProtection !== "none") {
+    const webFrontends = nextStack.webFrontend.filter((frontend) => frontend !== "none");
+    const hasNativeFrontend = nextStack.nativeFrontend.some((frontend) => frontend !== "none");
+    const hasBetterAuth =
+      nextStack.auth === "better-auth" || nextStack.auth === "better-auth-organizations";
+    const invalidBotId =
+      nextStack.botProtection === "botid" &&
+      (hasNativeFrontend ||
+        webFrontends.length === 0 ||
+        webFrontends.some((frontend) => !isBotIdWebFrontend(frontend)) ||
+        nextStack.backend !== "self-next" ||
+        (nextStack.webDeploy !== "none" && nextStack.webDeploy !== "vercel"));
+    const invalidTurnstile =
+      nextStack.botProtection === "turnstile" &&
+      (hasNativeFrontend ||
+        webFrontends.length === 0 ||
+        webFrontends.some((frontend) => !isTurnstileWebFrontend(frontend)) ||
+        nextStack.backend === "none" ||
+        nextStack.backend === "convex");
+
+    if (!hasBetterAuth || invalidBotId || invalidTurnstile) {
+      const provider = nextStack.botProtection;
+      nextStack.botProtection = "none";
+      changed = true;
+      changes.push({
+        category: "botProtection",
+        message: `Bot protection set to 'None' ('${provider}' is not wired for the selected frontend, auth, backend, or deployment)`,
+      });
+    }
+  }
+
   // Server deploy constraints
   if (nextStack.serverDeploy === "cloudflare") {
     if (nextStack.runtime !== "workers" || nextStack.backend !== "hono") {
@@ -2807,6 +2856,22 @@ export const getDisabledReason = (
     FULLSTACK_SELF_BACKENDS.has(currentStack.backend)
   ) {
     return "Nango's Node SDK is not available on Cloudflare Workers";
+  }
+  if (
+    category === "webFrontend" &&
+    currentStack.botProtection === "botid" &&
+    optionId !== "none" &&
+    !isBotIdWebFrontend(optionId)
+  ) {
+    return "Vercel BotID is only available for Next.js frontends";
+  }
+  if (
+    category === "webDeploy" &&
+    currentStack.botProtection === "botid" &&
+    optionId !== "none" &&
+    optionId !== "vercel"
+  ) {
+    return "Vercel BotID requires Vercel deployment";
   }
 
   if (category === "analytics" && optionId === "vercel-analytics") {
@@ -3342,6 +3407,56 @@ export const getDisabledReason = (
     }
     if (currentStack.backend === "none") {
       return "Rate limiting requires a backend";
+    }
+  }
+
+  // ============================================
+  // BOT PROTECTION CONSTRAINTS
+  // ============================================
+  if (category === "botProtection" && optionId !== "none") {
+    if (currentStack.ecosystem !== "typescript") {
+      return "Bot protection is currently available for TypeScript web applications";
+    }
+    const webFrontends = currentStack.webFrontend.filter((frontend) => frontend !== "none");
+    if (webFrontends.length === 0) {
+      return "Bot protection requires a web frontend";
+    }
+    if (currentStack.nativeFrontend.some((frontend) => frontend !== "none")) {
+      return "Bot protection is not supported when a native frontend is selected";
+    }
+    if (
+      currentStack.auth !== "better-auth" &&
+      currentStack.auth !== "better-auth-organizations"
+    ) {
+      return "Bot protection requires Better Auth";
+    }
+    if (
+      optionId === "botid" &&
+      webFrontends.some((frontend) => !isBotIdWebFrontend(frontend))
+    ) {
+      return "Vercel BotID is only available for Next.js frontends";
+    }
+    if (optionId === "botid" && currentStack.backend !== "self-next") {
+      return "Vercel BotID requires the self-hosted Next.js backend";
+    }
+    if (
+      optionId === "botid" &&
+      currentStack.webDeploy !== "none" &&
+      currentStack.webDeploy !== "vercel"
+    ) {
+      return "Vercel BotID requires Vercel deployment when a web deployment is selected";
+    }
+    if (
+      optionId === "turnstile" &&
+      webFrontends.some((frontend) => !isTurnstileWebFrontend(frontend))
+    ) {
+      return "Cloudflare Turnstile is currently wired for React web frontends only";
+    }
+    if (optionId === "turnstile" && currentStack.backend === "convex") {
+      return "Cloudflare Turnstile is not wired for Convex auth forms";
+    }
+    if (optionId === "turnstile" && currentStack.backend === "none") {
+      return "Cloudflare Turnstile requires a backend for server-side verification";
     }
   }
 
@@ -5400,6 +5515,7 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
     ["featureFlags", input.featureFlags],
     ["integrations", input.integrations],
     ["ecommerce", input.ecommerce],
+    ["botProtection", input.botProtection],
     ["pythonApi", input.pythonApi],
     ["javaWebFramework", input.javaWebFramework],
     ["javaBuildTool", input.javaBuildTool],

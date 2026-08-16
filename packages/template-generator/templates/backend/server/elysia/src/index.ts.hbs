@@ -93,7 +93,7 @@ new Elysia({ adapter: node() })
 			origin: env.CORS_ORIGIN,
 			methods: ["GET", "POST", "OPTIONS"],
 {{#if (isBetterAuth auth)}}
-			allowedHeaders: ["Content-Type", "Authorization"],
+			allowedHeaders: ["Content-Type", "Authorization"{{#if (eq botProtection "turnstile")}}, "X-Turnstile-Token"{{/if}}],
 			credentials: true,
 {{/if}}
 		}),

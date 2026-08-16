@@ -148,6 +148,7 @@ describe("stack selection translation", () => {
         fileUpload: "uploadthing",
         i18n: "i18next",
         analytics: "plausible",
+        botProtection: "turnstile",
         javaOrm: "spring-data-jpa",
         javaAuth: "spring-security",
         javaBuildTool: "gradle",
@@ -192,6 +193,7 @@ describe("stack selection translation", () => {
     expect(config.fileUpload).toBe("uploadthing");
     expect(config.i18n).toBe("i18next");
     expect(config.analytics).toBe("plausible");
+    expect(config.botProtection).toBe("turnstile");
     expect(config.javaOrm).toBe("spring-data-jpa");
     expect(config.javaAuth).toBe("spring-security");
     expect(config.javaBuildTool).toBe("gradle");
@@ -237,6 +239,7 @@ describe("stack selection translation", () => {
     expect(specs).toContain("frontend.fileUpload:typescript:uploadthing");
     expect(specs).toContain("frontend.i18n:typescript:i18next");
     expect(specs).toContain("frontend.analytics:typescript:plausible");
+    expect(specs).toContain("frontend.botProtection:typescript:turnstile");
     expect(specs).toContain("backend.orm:java:spring-data-jpa");
     expect(specs).toContain("backend.auth:java:spring-security");
     expect(specs).toContain("backend.buildTool:java:gradle");

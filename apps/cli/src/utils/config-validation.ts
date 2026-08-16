@@ -7,6 +7,7 @@ import {
   getDisabledReason,
   hasSignozSupportedGoServerTarget,
   isSignozSupportedPythonWebFramework,
+  isTurnstileWebFrontend,
   normalizeCapabilitySelection,
   stackGraphToLegacyProjectConfigForEcosystem,
   validateStackParts,
@@ -1186,6 +1187,80 @@ function validateRateLimitConstraints(config: Partial<ProjectConfig>) {
   }
 }
 
+function validateBotProtectionConstraints(config: Partial<ProjectConfig>) {
+  if (!config.botProtection || config.botProtection === "none") return;
+  if ((config.ecosystem ?? "typescript") !== "typescript") {
+    incompatibilityError({
+      message: "Bot protection is currently available for TypeScript web applications only.",
+      provided: { ecosystem: config.ecosystem ?? "typescript", "bot-protection": config.botProtection },
+      suggestions: ["Use --bot-protection none"],
+    });
+  }
+  const webFrontends = (config.frontend ?? []).filter(
+    (frontend) => frontend !== "none" && !frontend.startsWith("native-"),
+  );
+  if (webFrontends.length === 0) {
+    incompatibilityError({
+      message: "Bot protection requires a web frontend.",
+      provided: { "bot-protection": config.botProtection },
+      suggestions: ["Select a web frontend", "Use --bot-protection none"],
+    });
+  }
+  if (config.auth !== "better-auth" && config.auth !== "better-auth-organizations") {
+    incompatibilityError({
+      message: "Bot protection requires Better Auth.",
+      provided: { auth: config.auth ?? "none", "bot-protection": config.botProtection },
+      suggestions: ["Use --auth better-auth", "Use --bot-protection none"],
+    });
+  }
+  if (
+    config.botProtection === "botid" &&
+    webFrontends.some((frontend) => frontend !== "next" && frontend !== "vinext")
+  ) {
+    incompatibilityError({
+      message: "Vercel BotID is only available for Next.js and Vinext frontends.",
+      provided: { frontend: webFrontends.join(","), "bot-protection": "botid" },
+      suggestions: ["Use --frontend next", "Use --bot-protection turnstile"],
+    });
+  }
+  if (
+    config.botProtection === "botid" &&
+    config.webDeploy !== undefined &&
+    config.webDeploy !== "none" &&
+    config.webDeploy !== "vercel"
+  ) {
+    incompatibilityError({
+      message: "Vercel BotID requires Vercel deployment when web deployment is selected.",
+      provided: { "web-deploy": config.webDeploy, "bot-protection": "botid" },
+      suggestions: ["Use --web-deploy vercel", "Use --bot-protection turnstile"],
+    });
+  }
+  if (
+    config.botProtection === "turnstile" &&
+    webFrontends.some((frontend) => !isTurnstileWebFrontend(frontend))
+  ) {
+    incompatibilityError({
+      message: "Cloudflare Turnstile is currently wired for React web frontends only.",
+      provided: { frontend: webFrontends.join(","), "bot-protection": "turnstile" },
+      suggestions: ["Choose a React web frontend", "Use --bot-protection none"],
+    });
+  }
+  if (config.botProtection === "turnstile" && config.backend === "convex") {
+    incompatibilityError({
+      message: "Cloudflare Turnstile is not wired for Convex auth forms.",
+      provided: { backend: "convex", "bot-protection": "turnstile" },
+      suggestions: ["Choose a generated server backend", "Use --bot-protection none"],
+    });
+  }
+  if (config.botProtection === "turnstile" && config.backend === "none") {
+    incompatibilityError({
+      message: "Cloudflare Turnstile requires a backend for server-side verification.",
+      provided: { backend: "none", "bot-protection": "turnstile" },
+      suggestions: ["Choose a generated server backend", "Use --bot-protection none"],
+    });
+  }
+}
+
 function validateSearchConstraints(config: Partial<ProjectConfig>) {
   if (!config.search || config.search === "none") return;
   const ecosystem = config.ecosystem ?? "typescript";
@@ -1539,6 +1614,7 @@ export function validateFullConfig(
   validateObservabilityConstraints(config);
   validateCachingConstraints(config);
   validateRateLimitConstraints(config);
+  validateBotProtectionConstraints(config);
   validateSearchConstraints(config);
   validateJavaConstraints(config, providedFlags);
   validateElixirConstraints(config);
@@ -1708,6 +1784,7 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
     validateObservabilityConstraints(config);
     validateCachingConstraints(config);
     validateRateLimitConstraints(config);
+    validateBotProtectionConstraints(config);
     validateSearchConstraints(config);
     validateJavaConstraints(config);
     validateElixirConstraints(config);

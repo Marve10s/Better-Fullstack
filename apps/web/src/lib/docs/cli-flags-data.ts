@@ -720,6 +720,18 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "multiple": false
       },
       {
+        "flag": "--bot-protection",
+        "summary": "Bot and CAPTCHA verification provider.",
+        "values": [
+          "botid",
+          "turnstile",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
         "flag": "--i18n",
         "summary": "Internationalization library.",
         "values": [
@@ -1164,6 +1176,60 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "valueHint": null,
         "defaultValue": "none",
         "multiple": true
+      },
+      {
+        "flag": "--kotlin-mobile",
+        "summary": "Kotlin mobile app.",
+        "values": [
+          "jetpack-compose",
+          "compose-multiplatform",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": null,
+        "multiple": false
+      },
+      {
+        "flag": "--kotlin-mobile-libraries",
+        "summary": "Optional Kotlin mobile libraries.",
+        "values": [
+          "navigation-compose",
+          "voyager",
+          "koin",
+          "ktor-client",
+          "kotlinx-serialization-json",
+          "datastore",
+          "coil",
+          "mockk",
+          "turbine",
+          "junit5",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": null,
+        "multiple": true
+      },
+      {
+        "flag": "--swift-mobile",
+        "summary": "Swift mobile app.",
+        "values": [
+          "swiftui",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": null,
+        "multiple": false
+      },
+      {
+        "flag": "--dart-mobile",
+        "summary": "Flutter / Dart mobile app.",
+        "values": [
+          "flutter",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": null,
+        "multiple": false
       }
     ]
   },
@@ -1912,6 +1978,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "summary": "Java web framework.",
         "values": [
           "spring-boot",
+          "ktor",
           "quarkus",
           "micronaut",
           "none"
@@ -2067,6 +2134,18 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
     "title": ".NET flags",
     "description": "Flags for `--ecosystem dotnet`.",
     "flags": [
+      {
+        "flag": "--dotnet-frontend",
+        "summary": ".NET frontend.",
+        "values": [
+          "blazor-webassembly",
+          "blazor-web-app",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": null,
+        "multiple": false
+      },
       {
         "flag": "--dotnet-web-framework",
         "summary": ".NET web framework.",

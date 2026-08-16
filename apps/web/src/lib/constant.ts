@@ -1341,6 +1341,32 @@ export const TECH_OPTIONS: Record<
       default: true,
     },
   ],
+  botProtection: [
+    {
+      id: "botid",
+      name: "Vercel BotID",
+      description: "Invisible bot detection for Vercel-hosted Next.js applications",
+      icon: "https://cdn.simpleicons.org/vercel/000000",
+      color: "from-zinc-700 to-black",
+      default: false,
+    },
+    {
+      id: "turnstile",
+      name: "Cloudflare Turnstile",
+      description: "Privacy-friendly challenge with mandatory server verification",
+      icon: "https://cdn.simpleicons.org/cloudflare/F38020",
+      color: "from-orange-400 to-amber-600",
+      default: false,
+    },
+    {
+      id: "none",
+      name: "No Bot Protection",
+      description: "Skip bot protection setup",
+      icon: "",
+      color: "from-gray-400 to-gray-600",
+      default: true,
+    },
+  ],
   featureFlags: [
     {
       id: "growthbook",

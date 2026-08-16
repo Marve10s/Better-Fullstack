@@ -577,6 +577,21 @@ ${packageManagerRunCmd} dev
 
 ${generateRunningInstructions(frontend, backend, webPort, hasWeb, hasNative, isConvex)}
 ${
+  options.botProtection === "turnstile"
+    ? `
+## Cloudflare Turnstile
+
+Create a Turnstile widget in Cloudflare, then set the generated public site key in the web app environment and \`TURNSTILE_SECRET_KEY\` in the server environment. Sign-in and sign-up tokens are verified with Cloudflare Siteverify before Better Auth handles the request.
+`
+    : options.botProtection === "botid"
+      ? `
+## Vercel BotID
+
+BotID is initialized for the generated authentication routes and requires deployment on Vercel. Enable BotID for the project in the Vercel dashboard; no application secret is required.
+`
+      : ""
+}
+${
   options.analytics === "vercel-analytics"
     ? `
 ## Vercel Web Analytics
