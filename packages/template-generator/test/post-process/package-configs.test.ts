@@ -183,7 +183,7 @@ describe("processPackageConfigs", () => {
     });
     expect(vfs.readJson<PackageJson>("package.json")?.overrides).toMatchObject({
       vite: "npm:@voidzero-dev/vite-plus-core@^0.2.9",
-      vitest: "npm:@voidzero-dev/vite-plus-test@^0.2.9",
+      vitest: "4.1.10",
     });
   });
 

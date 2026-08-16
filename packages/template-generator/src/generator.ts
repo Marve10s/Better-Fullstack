@@ -428,9 +428,6 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
       };
     }
 
-    // Tooling-overlay parts (capability selections such as Vite+ or a data
-    // client) are a projection over the legacy config, not a stack graph:
-    // they must not switch generation into graph mode.
     const usesGraphParts = Boolean(config.stackParts?.length) && !isToolingOverlayOnly(config.stackParts);
 
     const hasVitePlusRoot = usesGraphParts

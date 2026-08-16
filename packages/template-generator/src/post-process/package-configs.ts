@@ -35,6 +35,8 @@ type PackageManagerConfig = {
 
 type WorkspaceTool = "turbo" | "nx" | "vite-plus" | null;
 
+const VITE_PLUS_BUNDLED_VITEST_VERSION = "4.1.10";
+
 const VIRTUAL_PACKAGE_MANAGER_VERSIONS: Record<ProjectConfig["packageManager"], string> = {
   npm: "10.9.2",
   pnpm: "10.17.1",
@@ -255,7 +257,7 @@ function applyVitePlusOverrides(pkgJson: PackageJson, config: ProjectConfig): vo
   if (!config.addons.includes("vite-plus")) return;
   const overrides = {
     vite: "npm:@voidzero-dev/vite-plus-core@^0.2.9",
-    vitest: "npm:@voidzero-dev/vite-plus-test@^0.2.9",
+    vitest: VITE_PLUS_BUNDLED_VITEST_VERSION,
   };
   switch (config.packageManager) {
     case "pnpm":

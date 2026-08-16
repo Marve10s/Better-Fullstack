@@ -520,6 +520,26 @@ export function getAddonStackPartBinding(toolId: string): AddonStackPartBinding 
   };
 }
 
+export function toolingOverlayStackParts(
+  addons: readonly string[] | undefined,
+  source: StackPartSource = "selected",
+): StackPart[] {
+  return (addons ?? [])
+    .filter((toolId) => toolId !== "none")
+    .flatMap((toolId) => {
+      const capability = getToolingCapability(toolId);
+      if (!capability) return [];
+      return [
+        createStackPart({
+          role: capability.role,
+          ecosystem: capability.ecosystem,
+          toolId,
+          source,
+        }),
+      ];
+    });
+}
+
 const OWNER_ROLES_BY_SCOPED_ROLE = {
   ...Object.fromEntries(
     [
@@ -2022,6 +2042,9 @@ function createAddonCompatibilityIssue(
       ...(context.selectedToolIdsByRoleList?.workspaceRunner ?? []),
       ...(context.selectedToolIdsByRoleList?.codeQuality ?? []),
       ...(context.selectedToolIdsByRoleList?.gitHooks ?? []),
+      ...(context.selectedToolIdsByRoleList?.workspaceTooling ?? []).filter((toolId) =>
+        ["turborepo", "nx"].includes(toolId),
+      ),
     ].find((toolId) => toolId !== "none");
     if (conflictingTool) {
       return createStackGraphIssue({

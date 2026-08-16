@@ -175,6 +175,8 @@ import {
   CATEGORY_ORDER,
   getCategoryOrderForEcosystem,
   getToolingCapability,
+  getToolingSelectionOptions,
+  isToolingOverlayOnly,
   TEMPLATE_VALUES,
   type Template,
 } from "@better-fullstack/types";
@@ -792,7 +794,14 @@ function buildProjectConfig(
       input.part.filter((part): part is string => typeof part === "string"),
       "selected",
     );
-    Object.assign(config, stackPartsToLegacyProjectConfigPartial(stackParts), { stackParts });
+    if (isToolingOverlayOnly(stackParts)) {
+      config.stackParts = stackParts;
+      config.addons = [
+        ...new Set([...config.addons, ...stackParts.map((part) => part.toolId)]),
+      ] as ProjectConfig["addons"];
+    } else {
+      Object.assign(config, stackPartsToLegacyProjectConfigPartial(stackParts), { stackParts });
+    }
   }
 
   applyEffectBackendDefaults(config, new Set(Object.keys(input)));
@@ -801,14 +810,40 @@ function buildProjectConfig(
   return config;
 }
 
+function diffAddedCapabilities(
+  before: Partial<ProjectConfig> | null | undefined,
+  after: Partial<ProjectConfig> | null | undefined,
+): string[] {
+  const beforeAddons = new Set(before?.addons ?? []);
+  const added: string[] = [];
+  for (const addon of after?.addons ?? []) {
+    if (addon === "none" || beforeAddons.has(addon)) continue;
+    const capability = getToolingCapability(addon);
+    const owner = capability?.ownerRole ? `${capability.ownerRole}.` : "";
+    added.push(capability ? `${owner}${capability.role}:${capability.ecosystem}:${addon}` : addon);
+  }
+  for (const key of ["webDeploy", "serverDeploy"] as const) {
+    const next = after?.[key];
+    if (next && next !== "none" && next !== before?.[key]) added.push(`${key}:${next}`);
+  }
+  return added;
+}
+
 function mergeLegacyAddonParts(part?: string[], addons?: string[]): string[] | undefined {
   const addonSpecs = (addons ?? [])
     .filter((addon) => addon !== "none")
-    .map((addon) => {
+    .flatMap((addon) => {
       const capability = getToolingCapability(addon);
       if (!capability) throw new Error(`Unknown addon '${addon}'`);
-      const owner = capability.ownerRole ? `${capability.ownerRole}.` : "";
-      return `${owner}${capability.role}:${capability.ecosystem}:${addon}`;
+      const profile = getToolingSelectionOptions(capability.category).find((option) =>
+        option.toolIds.includes(addon),
+      );
+      return (profile?.toolIds.length ? [...profile.toolIds] : [addon]).map((toolId) => {
+        const toolCapability = getToolingCapability(toolId);
+        if (!toolCapability) throw new Error(`Unknown addon '${toolId}'`);
+        const owner = toolCapability.ownerRole ? `${toolCapability.ownerRole}.` : "";
+        return `${owner}${toolCapability.role}:${toolCapability.ecosystem}:${toolId}`;
+      });
     });
   const merged = [...new Set([...(part ?? []), ...addonSpecs])];
   return merged.length > 0 ? merged : undefined;
@@ -1145,6 +1180,7 @@ const createProjectOutputSchema = z.object({
   projectDirectory: z.string().optional(),
   fileCount: z.number().optional(),
   capabilityWarnings: z.array(z.string()).optional(),
+  addonWarnings: z.array(z.string()).optional().describe("Deprecated alias of capabilityWarnings"),
   message: z.string().optional(),
   lifecycle: lifecycleResultOutputSchema.optional(),
   ...graphPreviewOutputShape,
@@ -2144,7 +2180,9 @@ export function createMcpServer(): McpServer {
           projectDirectory: projectDir,
           fileCount: result.fileCount,
           ...graphPreview,
-          ...(result.addonWarnings.length > 0 ? { capabilityWarnings: result.addonWarnings } : {}),
+          ...(result.addonWarnings.length > 0
+            ? { capabilityWarnings: result.addonWarnings, addonWarnings: result.addonWarnings }
+            : {}),
           lifecycle: result.lifecycle,
           message: `Project created at ${projectDir}. Tell the user to run: ${installCmd}`,
         };
@@ -2648,6 +2686,7 @@ export function createMcpServer(): McpServer {
         const safePath = sanitizePath(input.projectDir);
         const { add } = await import("./index.js");
 
+        const configBefore = await readBtsConfig(safePath);
         const requestedParts = mergeLegacyAddonParts(
           input.part as string[] | undefined,
           input.addons as string[] | undefined,
@@ -2677,7 +2716,7 @@ export function createMcpServer(): McpServer {
           );
           const payload = {
             success: true as const,
-            addedCapabilities: requestedParts ?? [],
+            addedCapabilities: diffAddedCapabilities(configBefore, existingConfig),
             projectDir: result.projectDir,
             lifecycle: result.lifecycle,
             recoveryId: result.recoveryId,

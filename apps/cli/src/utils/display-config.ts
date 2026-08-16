@@ -2,6 +2,7 @@ import {
   formatStackPartSpec,
   getSelectedToolingOption,
   getToolingCapability,
+  getToolingSelectionOptions,
   legacyProjectConfigToStackParts,
   TOOLING_CATEGORIES,
 } from "@better-fullstack/types";
@@ -336,10 +337,18 @@ export function displayConfig(config: Partial<ProjectConfig>) {
           : [];
       });
       if (toolIds.length === 0) continue;
-      const selection = getSelectedToolingOption(category.id, toolIds);
-      configDisplay.push(
-        `${pc.blue(`${category.label}:`)} ${selection?.label ?? toolIds.join(", ")}`,
-      );
+      const label =
+        category.selectionMode === "multiple"
+          ? toolIds
+              .map(
+                (toolId) =>
+                  getToolingSelectionOptions(category.id).find((option) =>
+                    option.toolIds.includes(toolId),
+                  )?.label ?? toolId,
+              )
+              .join(", ")
+          : (getSelectedToolingOption(category.id, toolIds)?.label ?? toolIds.join(", "));
+      configDisplay.push(`${pc.blue(`${category.label}:`)} ${label}`);
     }
   }
 

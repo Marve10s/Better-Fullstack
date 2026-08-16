@@ -166,12 +166,13 @@ describe("Basic Configurations", () => {
       });
       expect(result.result?.projectConfig.stackParts).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ role: "backend", toolId: "hono" }),
-          expect.objectContaining({ role: "orm", toolId: "drizzle" }),
           expect.objectContaining({ role: "codeQuality", toolId: "biome" }),
           expect.objectContaining({ role: "aiTooling", toolId: "skills" }),
         ]),
       );
+      expect(
+        result.result?.projectConfig.stackParts?.map((part) => part.role),
+      ).not.toContain("backend");
     });
 
     it("should make Vite+ the exclusive JavaScript toolchain profile", async () => {

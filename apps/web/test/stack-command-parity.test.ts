@@ -106,7 +106,7 @@ describe("generateStackCommand parity", () => {
     expect(command).toContain("--part codeQuality:universal:biome");
     expect(command).toContain("--part documentation:universal:fumadocs");
     expect(command).toContain("--part frontend.appPlatform:typescript:pwa");
-    expect(command).not.toContain("--addons");
+    expect(command).toContain("--addons none");
   });
 
   it("serializes examples and aiDocs arrays explicitly", () => {

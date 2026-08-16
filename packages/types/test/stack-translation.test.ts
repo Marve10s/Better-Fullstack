@@ -718,6 +718,30 @@ describe("stack selection translation", () => {
     }
   });
 
+  it("builds solo configs for multiple web frontends without lifting into the graph", () => {
+    const config = toProjectConfig({
+      ...DEFAULT_SELECTION,
+      webFrontend: ["react-vite", "astro"],
+    });
+
+    expect(config.frontend).toEqual(["react-vite", "astro"]);
+    for (const part of config.stackParts ?? []) {
+      expect(isToolingOverlayPart(part)).toBe(true);
+    }
+  });
+
+  it("suppresses the default workspace runner when the builder chose none", () => {
+    const command = generateStackSelectionCommand({
+      ...DEFAULT_SELECTION,
+      appPlatforms: [],
+      codeQuality: ["knip"],
+    });
+
+    expect(command).toContain("--addons none");
+    expect(command).toContain("--part staticAnalysis:typescript:knip");
+    expect(command).not.toContain("turborepo");
+  });
+
   it("derives ProjectConfig stackParts from graph URL state", () => {
     const config = toProjectConfig({
       ...DEFAULT_SELECTION,
@@ -886,7 +910,7 @@ describe("stack selection translation", () => {
     ]) {
       expect(command).toContain(`--part ${spec}`);
     }
-    expect(command).not.toContain("--addons");
+    expect(command).toContain("--addons none");
   });
 
   it("converts boolean-like strings and allows preview install overrides", () => {

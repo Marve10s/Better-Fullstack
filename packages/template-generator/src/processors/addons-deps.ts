@@ -125,11 +125,7 @@ export function processAddonsDeps(vfs: VirtualFileSystem, config: ProjectConfig)
     addPackageDependency({
       vfs,
       packagePath: "package.json",
-      devDependencies: [
-        "vite-plus",
-        "@voidzero-dev/vite-plus-core",
-        "@voidzero-dev/vite-plus-test",
-      ],
+      devDependencies: ["vite-plus", "@voidzero-dev/vite-plus-core"],
     });
   }
 

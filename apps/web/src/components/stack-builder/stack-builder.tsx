@@ -1343,10 +1343,12 @@ function getStackOptionUpdate(
         (option) => getToolingOptionForUi(category, option.id)?.toolIds ?? [],
       ),
     );
-    let nextArray = currentArray.filter((value) => !categoryToolIds.has(value));
     const isSelected =
       toolingOption.toolIds.length > 0 &&
       toolingOption.toolIds.every((toolId) => currentArray.includes(toolId));
+    let nextArray = isMultiSelectCategory(category as OptionCategory)
+      ? currentArray.filter((value) => !toolingOption.toolIds.includes(value))
+      : currentArray.filter((value) => !categoryToolIds.has(value));
 
     if (!isSelected) nextArray.push(...toolingOption.toolIds);
 

@@ -22,7 +22,7 @@ import {
   getKotlinJavaIncompatibilityReason,
   getToolingCapability,
   getToolingCategory,
-  legacyProjectConfigToStackParts,
+  toolingOverlayStackParts,
 } from "../../types";
 import {
   maybeShowTelemetryNotice,
@@ -283,11 +283,10 @@ function expandToolingOverlay(config: ProjectConfig): ProjectConfig {
     if (!addons.includes(toolId)) addons.push(toolId);
   }
 
-  const compatibilityConfig = { ...config, addons, stackParts: undefined };
   return {
     ...config,
     addons,
-    stackParts: legacyProjectConfigToStackParts(compatibilityConfig, "selected"),
+    stackParts: toolingOverlayStackParts(addons),
   };
 }
 

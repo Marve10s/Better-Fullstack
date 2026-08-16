@@ -411,7 +411,7 @@ function mergeStackPartSpecs(
   const stackParts = combinedParts.filter((part) => {
     if (requestedParts.includes(part)) return true;
     const capability = getToolingCapability(part.toolId);
-    if (!capability || capability.role !== part.role) return true;
+    if (!capability) return true;
     return !requestedSingleCategories.has(`${part.ownerPartId ?? "root"}:${capability.category}`);
   });
   return {

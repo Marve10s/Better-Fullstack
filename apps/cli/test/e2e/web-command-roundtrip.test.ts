@@ -208,7 +208,7 @@ const CASES: RoundtripCase[] = [
       expect(config.logging).toBe("evlog");
       expect(config.cms).toBe("directus");
       expect(config.fileStorage).toBe("cloudinary");
-      expect(config.addons).toEqual(["turborepo", "swr"]);
+      expect(config.addons).toEqual(["swr"]);
     },
     assertMarkers: (projectDir) => {
       const serverPackageJson = JSON.parse(

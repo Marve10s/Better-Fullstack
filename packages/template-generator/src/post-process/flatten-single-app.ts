@@ -233,7 +233,7 @@ function buildFlatPackageJson(
   const rootVitePlusVersion = rootPkg.devDependencies?.["vite-plus"];
   if (config.addons.includes("vite-plus") && rootVitePlusVersion) {
     devDependencies["vite-plus"] = rootVitePlusVersion;
-    for (const dependency of ["@voidzero-dev/vite-plus-core", "@voidzero-dev/vite-plus-test"]) {
+    for (const dependency of ["@voidzero-dev/vite-plus-core"]) {
       const version = rootPkg.devDependencies?.[dependency];
       if (version) devDependencies[dependency] = version;
     }

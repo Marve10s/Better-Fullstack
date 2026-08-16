@@ -95,7 +95,7 @@ Use graph parts as `category:ecosystem:option`.
 For a generated project with `bts.jsonc`, use the Better Fullstack `add` command or MCP add tools. Use canonical Stack Part specs so each capability keeps its category and owner, for example:
 
 ```bash
-<better-fullstack-cli> add --project-dir ./my-app --part codeQuality:universal:biome --part workspaceRunner:universal:turborepo --no-install
+<better-fullstack-cli> add --project-dir ./my-app --part staticAnalysis:typescript:knip --part workspaceRunner:universal:turborepo --no-install
 ```
 
 For MCP lifecycle work, use this sequence:

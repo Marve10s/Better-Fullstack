@@ -8,6 +8,7 @@ import {
   hasVitePlusWorkspaceRoot,
   hasSignozSupportedGoServerTarget,
   isSignozSupportedPythonWebFramework,
+  isToolingOverlayOnly,
   normalizeCapabilitySelection,
   stackGraphToLegacyProjectConfigForEcosystem,
   validateStackParts,
@@ -1507,7 +1508,7 @@ export function validateFullConfig(
   providedFlags: Set<string>,
   options: CLIInput,
 ) {
-  if (config.stackParts && !options.yolo) {
+  if (config.stackParts && !isToolingOverlayOnly(config.stackParts) && !options.yolo) {
     const graphValidation = validateStackParts(config.stackParts);
     if (graphValidation.issues.length > 0) {
       exitWithError(graphValidation.issues.map((issue) => issue.message).join("\n"));

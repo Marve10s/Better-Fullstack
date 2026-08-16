@@ -15,9 +15,10 @@ import {
   legacyProjectConfigToStackParts,
   parseStackPartSpecs,
   stackPartsToLegacyProjectConfigPartial,
+  toolingOverlayStackParts,
   validateStackParts,
 } from "./stack-graph";
-import { isToolingOverlayOnly, isToolingOverlayPart } from "./tooling-capabilities";
+import { getToolingCapability, isToolingOverlayOnly } from "./tooling-capabilities";
 
 export type StackSelectionMode = "solo" | "multi";
 export type StackSelectionInput = CompatibilityInput & {
@@ -1098,24 +1099,18 @@ function formatArrayFlag(flag: string, values: readonly string[] | undefined) {
 
 function formatTypeScriptCapabilityParts(selection: StackSelectionInput) {
   const addons = [...selection.codeQuality, ...selection.documentation, ...selection.appPlatforms];
-  const parts = legacyProjectConfigToStackParts(
-    {
-      ecosystem: "typescript",
-      frontend: [...selection.webFrontend, ...selection.nativeFrontend].filter(
-        (frontend) => frontend !== "none",
-      ) as ProjectConfig["frontend"],
-      backend: mapBackendToCli(selection.backend) as ProjectConfig["backend"],
-      addons: toUniqueNonNoneArray(addons) as ProjectConfig["addons"],
-    },
-    "selected",
-  );
-  return parts
-    .filter(
-      (part) =>
-        part.source !== "provided" && getAddonStackPartBinding(part.toolId)?.role === part.role,
-    )
-    .map((part) => `--part ${formatStackPartSpec(part, parts)}`)
-    .join(" ");
+  const selectedAddons = toUniqueNonNoneArray(addons);
+  const specs = selectedAddons.flatMap((toolId) => {
+    const binding = getAddonStackPartBinding(toolId);
+    if (!binding) return [];
+    const owner = binding.ownerRole ? `${binding.ownerRole}.` : "";
+    return [`--part ${owner}${binding.role}:${binding.ecosystem}:${toolId}`];
+  });
+  const suppliesWorkspaceRunner = selectedAddons.some((toolId) => {
+    const category = getToolingCapability(toolId)?.category;
+    return category === "workspaceRunner" || category === "toolchain";
+  });
+  return [...(suppliesWorkspaceRunner ? [] : ["--addons none"]), ...specs].join(" ");
 }
 
 type StackSelectionStringKey = {
@@ -2326,9 +2321,7 @@ function buildProjectConfigBase(
   if (!isGraphStackSelection(graphStack)) {
     return {
       ...baseConfig,
-      stackParts: legacyProjectConfigToStackParts(baseConfig, "selected").filter((part) =>
-        isToolingOverlayPart(part),
-      ),
+      stackParts: toolingOverlayStackParts(baseConfig.addons),
     };
   }
 
