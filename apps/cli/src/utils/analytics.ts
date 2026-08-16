@@ -261,6 +261,19 @@ export function sanitizeTelemetryConfig(
       safe.multiEcosystem = ecosystems.size > 1;
       continue;
     }
+    if (key === "part" && Array.isArray(value)) {
+      const selections = value.slice(0, 64).flatMap((spec) => {
+        if (typeof spec !== "string") return [];
+        const [rolePath = "", ecosystem = "", toolId = ""] = spec.split(":");
+        const role = sanitizeIdentifier(rolePath.split(".").pop());
+        const safeEcosystem = sanitizeIdentifier(ecosystem);
+        const safeToolId = sanitizeIdentifier(toolId);
+        if (!role || !safeEcosystem || !safeToolId) return [];
+        return [`${role}:${safeEcosystem}:${safeToolId}`];
+      });
+      if (selections.length > 0) safe.stackPartSelections = [...new Set(selections)];
+      continue;
+    }
     if (typeof value === "boolean") {
       safe[key] = value;
       continue;
