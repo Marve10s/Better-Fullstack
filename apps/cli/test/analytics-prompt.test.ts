@@ -10,6 +10,13 @@ describe("analytics prompt", () => {
     expect(resolution.options.map((option) => option.value)).toContain("vercel-analytics");
   });
 
+  it("hides Vercel Analytics for unsupported web frontends", () => {
+    const resolution = resolveAnalyticsPrompt({ frontend: ["angular"] });
+
+    expect(resolution.shouldPrompt).toBe(true);
+    expect(resolution.options.map((option) => option.value)).not.toContain("vercel-analytics");
+  });
+
   it("respects flags and skips non-web projects", () => {
     expect(
       resolveAnalyticsPrompt({ analytics: "vercel-analytics", frontend: ["next"] }).autoValue,

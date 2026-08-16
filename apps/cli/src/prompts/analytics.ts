@@ -1,6 +1,7 @@
 import type { Analytics, Frontend } from "../types";
 import type { PromptSingleResolution } from "./prompt-contract";
 
+import { isVercelAnalyticsFrontend } from "../types";
 import { exitCancelled } from "../utils/errors";
 import { isCancel, navigableSelect } from "./navigable";
 
@@ -29,23 +30,28 @@ type AnalyticsPromptContext = {
 export function resolveAnalyticsPrompt(
   context: AnalyticsPromptContext = {},
 ): PromptSingleResolution<Analytics> {
-  if (
-    !context.frontend?.some((frontend) => frontend !== "none" && !frontend.startsWith("native-"))
-  ) {
+  const webFrontends = (context.frontend ?? []).filter(
+    (frontend) => frontend !== "none" && !frontend.startsWith("native-"),
+  );
+  if (webFrontends.length === 0) {
     return { shouldPrompt: false, mode: "single", options: [], autoValue: "none" };
   }
+
+  const options = webFrontends.every((frontend) => isVercelAnalyticsFrontend(frontend))
+    ? ANALYTICS_PROMPT_OPTIONS
+    : ANALYTICS_PROMPT_OPTIONS.filter((option) => option.value !== "vercel-analytics");
 
   return context.analytics !== undefined
     ? {
         shouldPrompt: false,
         mode: "single",
-        options: ANALYTICS_PROMPT_OPTIONS,
+        options,
         autoValue: context.analytics,
       }
     : {
         shouldPrompt: true,
         mode: "single",
-        options: ANALYTICS_PROMPT_OPTIONS,
+        options,
         initialValue: "none",
       };
 }
