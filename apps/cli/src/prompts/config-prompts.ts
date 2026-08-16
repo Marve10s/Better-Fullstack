@@ -156,6 +156,7 @@ import { hasWebStyling, requiresChatSdkVercelAI } from "../utils/compatibility-r
 import { exitCancelled } from "../utils/errors";
 import { getUserPkgManager } from "../utils/get-package-manager";
 import { getAddonsChoice, getAppPlatformsChoice } from "./addons";
+import { getAnalyticsChoice } from "./analytics";
 import { getAIChoice } from "./ai";
 import { getAiDocsChoice } from "./ai-docs";
 import { getAnimationChoice } from "./animation";
@@ -1084,7 +1085,7 @@ export async function gatherConfig(
       getEcommerceChoice(flags.ecommerce, results.backend, results.ecosystem),
     analytics: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as Analytics);
-      return Promise.resolve(flags.analytics || "none") as Promise<Analytics>;
+      return getAnalyticsChoice(flags.analytics, results.frontend);
     },
     cms: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as CMS);

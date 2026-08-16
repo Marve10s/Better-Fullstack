@@ -60,9 +60,22 @@ const SOLID_FRONTENDS = new Set(["solid", "solid-start"]);
 const hasReact = (f: readonly string[]) => f.some((x) => REACT_FRONTENDS.has(x));
 const hasSvelte = (f: readonly string[]) => f.includes("svelte");
 const hasNuxt = (f: readonly string[]) => f.includes("nuxt");
+const hasVue = (f: readonly string[]) => f.includes("vue");
+const hasAstro = (f: readonly string[]) => f.includes("astro");
 const hasSolid = (f: readonly string[]) => f.some((x) => SOLID_FRONTENDS.has(x));
 const hasAnyWebFrontend = (f: readonly string[]) =>
-  hasReact(f) || hasSvelte(f) || hasNuxt(f) || hasSolid(f);
+  hasReact(f) || hasSvelte(f) || hasNuxt(f) || hasVue(f) || hasAstro(f) || hasSolid(f);
+
+const ANALYTICS_FRONTEND_SUPPORT: Record<string, (f: readonly string[]) => boolean> = {
+  ga4: hasAnyWebFrontend,
+  plausible: hasReact,
+  posthog: (f) => hasReact(f) || hasSvelte(f) || hasVue(f) || hasNuxt(f) || hasSolid(f),
+  umami: (f) => hasReact(f) || hasSvelte(f) || hasVue(f) || hasNuxt(f) || hasSolid(f),
+  "vercel-analytics": hasAnyWebFrontend,
+};
+
+const supportsAnalyticsFrontend = (config: ProjectConfig) =>
+  (ANALYTICS_FRONTEND_SUPPORT[config.analytics] ?? hasAnyWebFrontend)(config.frontend);
 
 const hasGraphBackend = (config: ProjectConfig) =>
   config.stackParts?.some(
@@ -198,9 +211,9 @@ const PREFLIGHT_RULES: readonly PreflightRule[] = [
     id: "analytics-no-frontend",
     featureKey: "analytics",
     displayName: "Analytics",
-    willSkip: (c) => c.analytics !== "none" && !hasAnyWebFrontend(c.frontend),
-    reason: "Analytics requires a React, Svelte, Nuxt, or Solid frontend.",
-    suggestions: ["Add a supported web frontend", "Remove analytics"],
+    willSkip: (c) => c.analytics !== "none" && !supportsAnalyticsFrontend(c),
+    reason: "The selected analytics provider does not support the chosen frontend.",
+    suggestions: ["Add a web frontend supported by the analytics provider", "Remove analytics"],
   },
 
   {
