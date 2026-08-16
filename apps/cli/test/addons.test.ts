@@ -704,6 +704,27 @@ describe("Addon Configurations", () => {
       expectError(result, "alternative workspace runners");
     });
 
+    it("rejects Vite+ with a separate code quality or hook tool", async () => {
+      const result = await runTRPCTest({
+        projectName: "vite-plus-biome-fail",
+        addons: ["vite-plus", "biome"],
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "trpc",
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        expectError: true,
+      });
+
+      expectError(result, "Vite+ owns workspace tasks, code quality, and commit hooks");
+    });
+
     it("accepts duplicate Vite+ selections as one workspace runner", async () => {
       const result = await runTRPCTest({
         projectName: "vite-plus-duplicate",

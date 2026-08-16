@@ -6,6 +6,7 @@ import {
   getCompatibleCSSFrameworks as getCompatibleCSSFrameworksShared,
   getCompatibleUILibraries as getCompatibleUILibrariesShared,
   getUnsupportedWebDeployFrontend,
+  getToolingCapability,
   hasVitePlusWorkspaceRoot,
   hasDockerComposeCompatibleFrontend,
   hasWebStyling as hasWebStylingShared,
@@ -767,6 +768,18 @@ export function validateAddonsAgainstFrontends(
   );
   if (workspaceRunners.size > 1) {
     exitWithError("Turborepo, Nx, and Vite+ are alternative workspace runners. Choose one.");
+  }
+
+  if (addons.includes("vite-plus")) {
+    const ownedTool = addons.find((addon) => {
+      const category = getToolingCapability(addon)?.category;
+      return category === "codeQuality" || category === "gitHooks";
+    });
+    if (ownedTool) {
+      exitWithError(
+        `Vite+ owns workspace tasks, code quality, and commit hooks; remove '${ownedTool}'`,
+      );
+    }
   }
 
   for (const addon of addons) {

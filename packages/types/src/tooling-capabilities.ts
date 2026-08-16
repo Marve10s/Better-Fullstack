@@ -411,12 +411,27 @@ export function getToolingSelectionOptions(category: ToolingCategoryId) {
 export function isToolingOverlayPart(part: {
   readonly toolId: string;
   readonly role: StackPartRole;
+  readonly ecosystem?: StackPartEcosystem;
   readonly source?: string;
 }) {
-  return part.source !== "provided" && getToolingCapability(part.toolId)?.role === part.role;
+  const capability = getToolingCapability(part.toolId);
+  if (!capability || part.source === "provided") return false;
+  return (
+    capability.role === part.role &&
+    (part.ecosystem === undefined || capability.ecosystem === part.ecosystem)
+  );
 }
 
-export function isToolingOverlayOnly(parts: readonly { toolId: string; role: StackPartRole; source?: string }[] | undefined) {
+export function isToolingOverlayOnly(
+  parts:
+    | readonly {
+        toolId: string;
+        role: StackPartRole;
+        ecosystem?: StackPartEcosystem;
+        source?: string;
+      }[]
+    | undefined,
+) {
   return (parts ?? []).every((part) => isToolingOverlayPart(part));
 }
 

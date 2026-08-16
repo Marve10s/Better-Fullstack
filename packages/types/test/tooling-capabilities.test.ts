@@ -2,6 +2,8 @@ import { describe, expect, it } from "bun:test";
 
 import { AddonsSchema } from "../src/schemas";
 import {
+  isToolingOverlayOnly,
+  isToolingOverlayPart,
   TOOLING_CAPABILITIES,
   TOOLING_CATEGORIES,
   TOOLING_SELECTION_OPTIONS,
@@ -36,5 +38,19 @@ describe("tooling capability registry", () => {
     for (const { toolId } of TOOLING_CAPABILITIES) {
       expect(selectedToolIds.has(toolId)).toBe(true);
     }
+  });
+
+  it("treats a mismatched ecosystem as a non-overlay part", () => {
+    expect(isToolingOverlayPart({ toolId: "biome", role: "codeQuality", ecosystem: "universal" })).toBe(
+      true,
+    );
+    expect(isToolingOverlayPart({ toolId: "biome", role: "codeQuality", ecosystem: "go" })).toBe(
+      false,
+    );
+    expect(
+      isToolingOverlayOnly([
+        { toolId: "turborepo", role: "workspaceRunner", ecosystem: "typescript" },
+      ]),
+    ).toBe(false);
   });
 });
