@@ -3,13 +3,12 @@ import { describe, expect, it } from "bun:test";
 import { resolveBotProtectionPrompt } from "../src/prompts/bot-protection";
 
 describe("bot protection prompt", () => {
-  it("offers BotID for a Next.js web app even when React Native is also selected", () => {
+  it("does not offer bot protection when React Native is also selected", () => {
     const values = resolveBotProtectionPrompt({ frontends: ["next", "native-bare"] }).options.map(
       (option) => option.value,
     );
 
-    expect(values).toContain("botid");
-    expect(values).toContain("turnstile");
+    expect(values).toEqual(["none"]);
   });
 
   it("skips bot protection for native-only projects", () => {

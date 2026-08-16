@@ -30,7 +30,7 @@ function patchTurnstileForms(vfs: VirtualFileSystem): void {
     );
     next = next.replace(
       /(\{\n\s+onSuccess: \(\) => \{)/,
-      '{\n          fetchOptions: {\n            headers: { "x-turnstile-token": turnstileToken },\n            onResponse: () => {\n              setTurnstileToken("");\n              setTurnstileAttempt((attempt) => attempt + 1);\n            },\n          },\n          onSuccess: () => {',
+      '{\n          headers: { "x-turnstile-token": turnstileToken },\n          onResponse: () => {\n            setTurnstileToken("");\n            setTurnstileAttempt((attempt) => attempt + 1);\n          },\n          onSuccess: () => {',
     );
     next = next.replace(
       /(\n\s*<form\.Subscribe>)/,
@@ -105,10 +105,16 @@ export async function processBotProtectionTemplates(
   const hasBetterAuth =
     config.auth === "better-auth" || config.auth === "better-auth-organizations";
   if (!hasBetterAuth) throw new Error("Bot protection requires Better Auth");
+  if (config.frontend.some((frontend) => frontend.startsWith("native-"))) {
+    throw new Error("Bot protection is not supported when a native frontend is selected");
+  }
 
   if (config.botProtection === "botid") {
     if (webFrontends.length === 0 || webFrontends.some((frontend) => !isBotIdWebFrontend(frontend))) {
-      throw new Error("Vercel BotID is only available for Next.js and Vinext frontends");
+      throw new Error("Vercel BotID is only available for Next.js frontends");
+    }
+    if (config.backend === "convex") {
+      throw new Error("Vercel BotID is not wired for the Convex backend");
     }
     if (config.webDeploy !== "none" && config.webDeploy !== "vercel") {
       throw new Error("Vercel BotID requires Vercel deployment when web deployment is selected");

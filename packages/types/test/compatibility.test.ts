@@ -17,7 +17,7 @@ describe("compatibility issue helpers", () => {
     const viteStack = { ...DEFAULT_STACK_SELECTION, webFrontend: ["react-vite"] };
 
     expect(getDisabledReason(nextStack, "botProtection", "botid")).toBeNull();
-    expect(getDisabledReason(viteStack, "botProtection", "botid")).toContain("Next.js and Vinext");
+    expect(getDisabledReason(viteStack, "botProtection", "botid")).toContain("Next.js frontends");
     expect(getDisabledReason(viteStack, "botProtection", "turnstile")).toBeNull();
     expect(
       getDisabledReason(
@@ -32,7 +32,7 @@ describe("compatibility issue helpers", () => {
         "webFrontend",
         "svelte",
       ),
-    ).toContain("Next.js and Vinext");
+    ).toContain("Next.js frontends");
     expect(
       getDisabledReason(
         { ...nextStack, botProtection: "botid" },
@@ -63,11 +63,48 @@ describe("compatibility issue helpers", () => {
     ).toContain("Convex");
     expect(
       getDisabledReason(
+        { ...nextStack, backend: "convex" },
+        "botProtection",
+        "botid",
+      ),
+    ).toContain("Convex");
+    expect(
+      getDisabledReason(
         { ...nextStack, webFrontend: ["svelte"] },
         "botProtection",
         "turnstile",
       ),
     ).toContain("React web frontends only");
+    expect(
+      getDisabledReason(
+        { ...nextStack, webFrontend: ["redwood"] },
+        "botProtection",
+        "turnstile",
+      ),
+    ).toContain("React web frontends only");
+    expect(
+      getDisabledReason(
+        { ...nextStack, webFrontend: ["vinext"] },
+        "botProtection",
+        "botid",
+      ),
+    ).toContain("Next.js frontends");
+    for (const botProtection of ["botid", "turnstile"] as const) {
+      expect(
+        getDisabledReason(
+          { ...nextStack, nativeFrontend: ["native-bare"] },
+          "botProtection",
+          botProtection,
+        ),
+      ).toContain("native frontend");
+      expect(
+        analyzeStackCompatibility({
+          ...nextStack,
+          nativeFrontend: ["native-bare"],
+          botProtection,
+        }).adjustedStack?.botProtection,
+      ).toBe("none");
+    }
     expect(
       getDisabledReason(
         { ...DEFAULT_STACK_SELECTION, ecosystem: "go", webFrontend: ["none"] },
@@ -80,6 +117,13 @@ describe("compatibility issue helpers", () => {
       analyzeStackCompatibility({
         ...DEFAULT_STACK_SELECTION,
         webFrontend: ["svelte"],
+        botProtection: "botid",
+      }).adjustedStack?.botProtection,
+    ).toBe("none");
+    expect(
+      analyzeStackCompatibility({
+        ...nextStack,
+        backend: "convex",
         botProtection: "botid",
       }).adjustedStack?.botProtection,
     ).toBe("none");

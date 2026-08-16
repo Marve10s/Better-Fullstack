@@ -164,7 +164,6 @@ const TURNSTILE_WEB_FRONTENDS = new Set([
   "react-vite",
   "tanstack-router",
   "tanstack-start",
-  "redwood",
 ]);
 
 export function isTurnstileWebFrontend(frontend: string) {
@@ -172,7 +171,7 @@ export function isTurnstileWebFrontend(frontend: string) {
 }
 
 export function isBotIdWebFrontend(frontend: string) {
-  return frontend === "next" || frontend === "vinext";
+  return frontend === "next";
 }
 
 export type CompatibilityAdjustment = {
@@ -2327,16 +2326,20 @@ export const analyzeStackCompatibility = (
 
   if (nextStack.botProtection !== "none") {
     const webFrontends = nextStack.webFrontend.filter((frontend) => frontend !== "none");
+    const hasNativeFrontend = nextStack.nativeFrontend.some((frontend) => frontend !== "none");
     const hasBetterAuth =
       nextStack.auth === "better-auth" || nextStack.auth === "better-auth-organizations";
     const invalidBotId =
       nextStack.botProtection === "botid" &&
-      (webFrontends.length === 0 ||
+      (hasNativeFrontend ||
+        webFrontends.length === 0 ||
         webFrontends.some((frontend) => !isBotIdWebFrontend(frontend)) ||
+        nextStack.backend === "convex" ||
         (nextStack.webDeploy !== "none" && nextStack.webDeploy !== "vercel"));
     const invalidTurnstile =
       nextStack.botProtection === "turnstile" &&
-      (webFrontends.length === 0 ||
+      (hasNativeFrontend ||
+        webFrontends.length === 0 ||
         webFrontends.some((frontend) => !isTurnstileWebFrontend(frontend)) ||
         nextStack.backend === "none" ||
         nextStack.backend === "convex");
@@ -2830,7 +2833,7 @@ export const getDisabledReason = (
     optionId !== "none" &&
     !isBotIdWebFrontend(optionId)
   ) {
-    return "Vercel BotID is only available for Next.js and Vinext frontends";
+    return "Vercel BotID is only available for Next.js frontends";
   }
   if (
     category === "webDeploy" &&
@@ -3372,6 +3375,9 @@ export const getDisabledReason = (
     if (webFrontends.length === 0) {
       return "Bot protection requires a web frontend";
     }
+    if (currentStack.nativeFrontend.some((frontend) => frontend !== "none")) {
+      return "Bot protection is not supported when a native frontend is selected";
+    }
     if (
       currentStack.auth !== "better-auth" &&
       currentStack.auth !== "better-auth-organizations"
@@ -3382,7 +3388,10 @@ export const getDisabledReason = (
       optionId === "botid" &&
       webFrontends.some((frontend) => !isBotIdWebFrontend(frontend))
     ) {
-      return "Vercel BotID is only available for Next.js and Vinext frontends";
+      return "Vercel BotID is only available for Next.js frontends";
+    }
+    if (optionId === "botid" && currentStack.backend === "convex") {
+      return "Vercel BotID is not wired for the Convex backend";
     }
     if (
       optionId === "botid" &&

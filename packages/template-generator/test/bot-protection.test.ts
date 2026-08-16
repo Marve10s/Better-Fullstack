@@ -34,9 +34,13 @@ describe("bot protection generation", () => {
     const output = await generate("turnstile");
     expect(output.get("apps/web/package.json")).toContain('"@marsidev/react-turnstile": "^1.5.4"');
     expect(output.get("apps/web/src/components/bot-protection.tsx")).toContain("<Turnstile");
-    expect(output.get("apps/web/src/components/sign-in-form.tsx")).toContain(
-      '"x-turnstile-token": turnstileToken',
-    );
+    for (const path of [
+      "apps/web/src/components/sign-in-form.tsx",
+      "apps/web/src/components/sign-up-form.tsx",
+    ]) {
+      expect(output.get(path)).toContain('headers: { "x-turnstile-token": turnstileToken }');
+      expect(output.get(path)).not.toContain("fetchOptions: {");
+    }
     expect(output.get("apps/web/src/components/sign-in-form.tsx")).toContain(
       "setTurnstileAttempt((attempt) => attempt + 1)",
     );
@@ -72,11 +76,15 @@ describe("bot protection generation", () => {
     expect(output.get("apps/server/src/index.ts")).toContain('"X-Turnstile-Token"');
   });
 
-  for (const [name, overrides, message] of [
+  const turnstileRejections: Array<
+    [string, Parameters<typeof makeConfig>[0], string]
+  > = [
     ["backendless projects", { auth: "none", backend: "none" }, "requires Better Auth"],
     ["Convex", { backend: "convex" }, "not wired for Convex"],
     ["Svelte", { frontend: ["svelte"] }, "React web frontends only"],
-  ] as const) {
+  ];
+
+  for (const [name, overrides, message] of turnstileRejections) {
     it(`rejects Turnstile for ${name}`, async () => {
       const result = await generateVirtualProject({
         config: makeConfig({
@@ -110,5 +118,40 @@ describe("bot protection generation", () => {
 
     expect(result.success).toBe(false);
     expect(result.error).toContain("requires Vercel deployment");
+  });
+
+  it("rejects BotID with Convex before attempting to patch Better Auth", async () => {
+    const result = await generateVirtualProject({
+      config: makeConfig({
+        frontend: ["next"],
+        backend: "convex",
+        runtime: "none",
+        auth: "better-auth",
+        botProtection: "botid",
+      }),
+      templates: EMBEDDED_TEMPLATES,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("Vercel BotID is not wired for the Convex backend");
+    expect(result.error).not.toContain("Unable to wire");
+  });
+
+  it("rejects Turnstile when a native frontend is selected", async () => {
+    const result = await generateVirtualProject({
+      config: makeConfig({
+        frontend: ["next", "native-bare"],
+        backend: "self",
+        runtime: "none",
+        auth: "better-auth",
+        botProtection: "turnstile",
+      }),
+      templates: EMBEDDED_TEMPLATES,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain(
+      "Bot protection is not supported when a native frontend is selected",
+    );
   });
 });

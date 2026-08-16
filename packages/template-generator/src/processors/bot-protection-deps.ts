@@ -17,7 +17,6 @@ export function processBotProtectionDeps(vfs: VirtualFileSystem, config: Project
       "react-vite",
       "tanstack-router",
       "tanstack-start",
-      "redwood",
     ].includes(value),
   );
   if (vfs.exists(webPackagePath) && (config.botProtection === "botid" || hasReactWebFrontend)) {

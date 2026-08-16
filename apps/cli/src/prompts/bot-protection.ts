@@ -29,15 +29,12 @@ type BotProtectionPromptContext = {
 export function resolveBotProtectionPrompt(
   context: BotProtectionPromptContext = {},
 ): PromptSingleResolution<BotProtection> {
-  const frontends = context.frontends ?? [];
-  const webFrontends = frontends.filter(
-    (frontend) => frontend !== "none" && !frontend.startsWith("native-"),
-  );
+  const frontends = (context.frontends ?? []).filter((frontend) => frontend !== "none");
+  const hasWebFrontend = frontends.some((frontend) => !frontend.startsWith("native-"));
   const supportsBotId =
-    webFrontends.length > 0 && webFrontends.every((frontend) => isBotIdWebFrontend(frontend));
+    hasWebFrontend && frontends.every((frontend) => isBotIdWebFrontend(frontend));
   const supportsTurnstile =
-    webFrontends.length > 0 &&
-    webFrontends.every((frontend) => isTurnstileWebFrontend(frontend));
+    hasWebFrontend && frontends.every((frontend) => isTurnstileWebFrontend(frontend));
   const options = [
     ...(supportsBotId
       ? [
@@ -52,7 +49,7 @@ export function resolveBotProtectionPrompt(
     NONE_OPTION,
   ];
 
-  if (webFrontends.length === 0) {
+  if (!hasWebFrontend) {
     return { shouldPrompt: false, mode: "single", options: [], autoValue: "none" };
   }
 
