@@ -2922,6 +2922,21 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
       );
       if (options.length === 0) continue;
       const catKey = getStackKeyForCategory(category as keyof typeof TECH_OPTIONS);
+      if (getToolingCategoryForUi(category as keyof typeof TECH_OPTIONS)) {
+        const picks = isMultiSelectCategory(category as OptionCategory)
+          ? [...options]
+              .filter((option) => option.id !== "none")
+              .sort(() => 0.5 - Math.random())
+              .slice(0, Math.floor(Math.random() * 3))
+          : [options[Math.floor(Math.random() * options.length)]];
+        const toolIds = picks.flatMap(
+          (option) =>
+            getToolingOptionForUi(category as keyof typeof TECH_OPTIONS, option.id)?.toolIds ?? [],
+        );
+        const selected = (randomStack as Record<string, string[]>)[catKey] ?? [];
+        (randomStack as Record<string, string[]>)[catKey] = [...new Set([...selected, ...toolIds])];
+        continue;
+      }
       if (isMultiSelectCategory(category as OptionCategory)) {
         if (catKey === "webFrontend" || catKey === "nativeFrontend") {
           const randomIndex = Math.floor(Math.random() * options.length);

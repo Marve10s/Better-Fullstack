@@ -256,7 +256,9 @@ function buildFlatPackageJson(
     scripts.check = "vp check";
     scripts.lint = "vp lint";
     scripts.format = "vp fmt";
-    scripts.test = "vp test";
+    if (config.testing === "vitest" || config.testing === "none") {
+      scripts.test = "vp test";
+    }
     scripts.prepare = "vp config --no-agent --hooks-dir .vite-hooks";
   }
 

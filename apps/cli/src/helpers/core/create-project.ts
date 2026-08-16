@@ -107,6 +107,8 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
 
     if (!isSilent()) log.success("Project template successfully scaffolded!");
 
+    await initializeGit(projectDir, options.git);
+
     // Skip npm/pnpm/bun install for Rust/Python/Go/Java projects (they use native toolchains)
     if (
       options.install &&
@@ -153,8 +155,6 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
       const result = await runMixCompile({ projectDir });
       if (!result.success) setupFailures.push(result);
     }
-
-    await initializeGit(projectDir, options.git);
 
     if (!isSilent()) {
       await displayPostInstallInstructions({

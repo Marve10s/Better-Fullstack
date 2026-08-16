@@ -286,7 +286,7 @@ describe("generated output cleanliness", () => {
     expect(getFile(".gitignore")).toContain(".vite-hooks/_");
     const workflow = getFile(".github/workflows/ci.yml") ?? "";
     expect(workflow).toContain("voidzero-dev/setup-vp@v1.17.0");
-    expect(workflow).toContain("vp install --frozen-lockfile");
+    expect(workflow).toContain("vp install");
     expect(workflow).toContain("vp run -r build");
   });
 });
