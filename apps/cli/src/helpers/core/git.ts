@@ -3,7 +3,7 @@ import { $ } from "execa";
 import pc from "picocolors";
 
 export async function initializeGit(projectDir: string, useGit: boolean) {
-  if (!useGit) return;
+  if (!useGit) return false;
   const gitEnv = { ...process.env };
   delete gitEnv.GIT_DIR;
   delete gitEnv.GIT_WORK_TREE;
@@ -21,7 +21,7 @@ export async function initializeGit(projectDir: string, useGit: boolean) {
 
   if (gitVersionResult.exitCode !== 0) {
     log.warn(pc.yellow("Git is not installed"));
-    return;
+    return false;
   }
 
   const result = await $({
@@ -58,10 +58,11 @@ export async function initializeGit(projectDir: string, useGit: boolean) {
     })`git config user.email ${"scaffold@better-fullstack.dev"}`;
   }
 
+  return true;
 }
 
-export async function commitInitialScaffold(projectDir: string, useGit: boolean) {
-  if (!useGit) return;
+export async function commitInitialScaffold(projectDir: string, repositoryInitialized: boolean) {
+  if (!repositoryInitialized) return;
   const gitEnv = { ...process.env };
   delete gitEnv.GIT_DIR;
   delete gitEnv.GIT_WORK_TREE;
@@ -69,14 +70,6 @@ export async function commitInitialScaffold(projectDir: string, useGit: boolean)
   delete gitEnv.GIT_OBJECT_DIRECTORY;
   delete gitEnv.GIT_ALTERNATE_OBJECT_DIRECTORIES;
   delete gitEnv.GIT_COMMON_DIR;
-
-  const insideRepo = await $({
-    cwd: projectDir,
-    env: gitEnv,
-    reject: false,
-    stderr: "pipe",
-  })`git rev-parse --git-dir`;
-  if (insideRepo.exitCode !== 0) return;
 
   await $({ cwd: projectDir, env: gitEnv })`git add -A`;
   await $({ cwd: projectDir, env: gitEnv })`git commit --no-verify -m ${"initial commit"}`;

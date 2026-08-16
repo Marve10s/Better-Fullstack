@@ -107,7 +107,7 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
 
     if (!isSilent()) log.success("Project template successfully scaffolded!");
 
-    await initializeGit(projectDir, options.git);
+    const repositoryInitialized = await initializeGit(projectDir, options.git);
 
     // Skip npm/pnpm/bun install for Rust/Python/Go/Java projects (they use native toolchains)
     if (
@@ -156,7 +156,7 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
       if (!result.success) setupFailures.push(result);
     }
 
-    await commitInitialScaffold(projectDir, options.git);
+    await commitInitialScaffold(projectDir, repositoryInitialized);
 
     if (!isSilent()) {
       await displayPostInstallInstructions({
