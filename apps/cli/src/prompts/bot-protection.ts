@@ -1,11 +1,12 @@
 import {
   type BotProtection,
   type Frontend,
-  isBotIdWebFrontend,
-  isTurnstileWebFrontend,
+  type ProjectConfig,
+  getDisabledReason,
 } from "../types";
 import type { PromptSingleResolution } from "./prompt-contract";
 
+import { buildCompatibilityInputFromConfig } from "../utils/stack-compatibility";
 import { exitCancelled } from "../utils/errors";
 import { isCancel, navigableSelect } from "./navigable";
 
@@ -24,6 +25,9 @@ const NONE_OPTION = {
 type BotProtectionPromptContext = {
   botProtection?: BotProtection;
   frontends?: Frontend[];
+  auth?: ProjectConfig["auth"];
+  backend?: ProjectConfig["backend"];
+  webDeploy?: ProjectConfig["webDeploy"];
 };
 
 export function resolveBotProtectionPrompt(
@@ -31,10 +35,17 @@ export function resolveBotProtectionPrompt(
 ): PromptSingleResolution<BotProtection> {
   const frontends = (context.frontends ?? []).filter((frontend) => frontend !== "none");
   const hasWebFrontend = frontends.some((frontend) => !frontend.startsWith("native-"));
+  const compatibilityInput = buildCompatibilityInputFromConfig({
+    ecosystem: "typescript",
+    frontend: frontends,
+    auth: context.auth,
+    backend: context.backend,
+    webDeploy: context.webDeploy,
+  });
   const supportsBotId =
-    hasWebFrontend && frontends.every((frontend) => isBotIdWebFrontend(frontend));
+    getDisabledReason(compatibilityInput, "botProtection", "botid") === null;
   const supportsTurnstile =
-    hasWebFrontend && frontends.every((frontend) => isTurnstileWebFrontend(frontend));
+    getDisabledReason(compatibilityInput, "botProtection", "turnstile") === null;
   const options = [
     ...(supportsBotId
       ? [
@@ -71,8 +82,17 @@ export function resolveBotProtectionPrompt(
 export async function getBotProtectionChoice(
   botProtection?: BotProtection,
   frontends?: Frontend[],
+  auth?: ProjectConfig["auth"],
+  backend?: ProjectConfig["backend"],
+  webDeploy?: ProjectConfig["webDeploy"],
 ) {
-  const resolution = resolveBotProtectionPrompt({ botProtection, frontends });
+  const resolution = resolveBotProtectionPrompt({
+    botProtection,
+    frontends,
+    auth,
+    backend,
+    webDeploy,
+  });
   if (!resolution.shouldPrompt) return resolution.autoValue ?? "none";
 
   const response = await navigableSelect<BotProtection>({

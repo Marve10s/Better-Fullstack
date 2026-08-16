@@ -1,6 +1,7 @@
 import type {
   AI,
   Addons,
+  Analytics,
   API,
   AstroIntegration,
   Auth,
@@ -64,8 +65,51 @@ const VERCEL_ANALYTICS_FRONTENDS = new Set([
   "astro",
 ]);
 
+const REACT_ANALYTICS_FRONTENDS = new Set([
+  "tanstack-router",
+  "react-router",
+  "react-vite",
+  "tanstack-start",
+  "next",
+  "vinext",
+]);
+
+const STANDARD_ANALYTICS_FRONTENDS = new Set([
+  ...REACT_ANALYTICS_FRONTENDS,
+  "svelte",
+  "nuxt",
+  "vue",
+  "solid",
+  "solid-start",
+]);
+
+export const ANALYTICS_FRONTEND_SUPPORT = {
+  ga4: VERCEL_ANALYTICS_FRONTENDS,
+  plausible: REACT_ANALYTICS_FRONTENDS,
+  posthog: STANDARD_ANALYTICS_FRONTENDS,
+  umami: STANDARD_ANALYTICS_FRONTENDS,
+  "vercel-analytics": VERCEL_ANALYTICS_FRONTENDS,
+} as const satisfies Record<Exclude<Analytics, "none">, ReadonlySet<string>>;
+
+export function isAnalyticsFrontendSupported(analytics: Analytics, frontend: string) {
+  return analytics !== "none" && ANALYTICS_FRONTEND_SUPPORT[analytics].has(frontend);
+}
+
+export function supportsAnalyticsFrontends(
+  analytics: Analytics,
+  frontends: readonly string[],
+) {
+  const webFrontends = frontends.filter(
+    (frontend) => frontend !== "none" && !frontend.startsWith("native-"),
+  );
+  return (
+    webFrontends.length > 0 &&
+    webFrontends.every((frontend) => isAnalyticsFrontendSupported(analytics, frontend))
+  );
+}
+
 export function isVercelAnalyticsFrontend(frontend: string) {
-  return VERCEL_ANALYTICS_FRONTENDS.has(frontend);
+  return isAnalyticsFrontendSupported("vercel-analytics", frontend);
 }
 
 export function isSignozSupportedGoWebFramework(framework: string): boolean {
@@ -2405,7 +2449,7 @@ export const analyzeStackCompatibility = (
 
   if (
     nextStack.analytics === "vercel-analytics" &&
-    !nextStack.webFrontend.some((frontend) => isVercelAnalyticsFrontend(frontend))
+    !supportsAnalyticsFrontends("vercel-analytics", nextStack.webFrontend)
   ) {
     nextStack.analytics = "none";
     changed = true;
@@ -2872,9 +2916,10 @@ export const getDisabledReason = (
   }
 
   if (category === "analytics" && optionId === "vercel-analytics") {
-    const webFrontends = currentStack.webFrontend.filter((frontend) => frontend !== "none");
-    if (webFrontends.length === 0) return "Vercel Analytics requires a web frontend";
-    if (webFrontends.some((frontend) => !isVercelAnalyticsFrontend(frontend))) {
+    if (!currentStack.webFrontend.some((frontend) => frontend !== "none")) {
+      return "Vercel Analytics requires a web frontend";
+    }
+    if (!supportsAnalyticsFrontends("vercel-analytics", currentStack.webFrontend)) {
       return "Vercel Analytics is not yet mounted for the selected frontend";
     }
   }

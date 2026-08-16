@@ -12,6 +12,7 @@ import { lifecycleResult, type LifecycleResult } from "../../utils/lifecycle-con
 import {
   beginProjectTransaction,
   commitProjectTransaction,
+  bindProjectTransactionWrite,
   markProjectTransactionWrite,
   rollbackProjectTransaction,
 } from "../../utils/project-transaction";
@@ -765,6 +766,7 @@ export async function applyScaffoldUpgrade(
   }
 
   const { projectDir } = plan;
+  const projectPackageManager = (await readBtsConfig(projectDir))?.packageManager;
   try {
     await validatePlanWritePaths(plan);
   } catch (error) {
@@ -839,7 +841,12 @@ export async function applyScaffoldUpgrade(
           recovery: {
             available: true,
             transactionId: transaction.id,
-            command: getProjectRecoveryCommand(projectDir, transaction.id),
+            command: getProjectRecoveryCommand(
+              projectDir,
+              transaction.id,
+              process.platform,
+              projectPackageManager,
+            ),
           },
         }),
       };
@@ -932,6 +939,7 @@ export async function applyScaffoldUpgrade(
     manifest.provenance.current = targetVersions;
     try {
       await validateWritePath(plan.projectRealpath, SCAFFOLD_MANIFEST_FILE);
+      bindProjectTransactionWrite(transaction, SCAFFOLD_MANIFEST_FILE);
       await writeScaffoldManifest(projectDir, manifest);
       markProjectTransactionWrite(
         transaction,
@@ -962,7 +970,12 @@ export async function applyScaffoldUpgrade(
       recovery: {
         available: true,
         transactionId: transaction.id,
-        command: getProjectRecoveryCommand(projectDir, transaction.id),
+        command: getProjectRecoveryCommand(
+              projectDir,
+              transaction.id,
+              process.platform,
+              projectPackageManager,
+            ),
         automaticRollback: true,
       },
       nextActions: ["Run `create-better-fullstack check` to verify every generated target."],

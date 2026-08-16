@@ -96,3 +96,6 @@ uv.lock
 # OS
 .DS_Store
 Thumbs.db
+
+# Better Fullstack recovery snapshots
+.bts/recovery

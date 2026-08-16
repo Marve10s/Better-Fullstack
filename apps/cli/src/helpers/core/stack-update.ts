@@ -43,6 +43,7 @@ import { lifecycleResult, type LifecycleResult } from "../../utils/lifecycle-con
 import {
   beginProjectTransaction,
   commitProjectTransaction,
+  bindProjectTransactionWrite,
   markProjectTransactionWrite,
   rollbackProjectTransaction,
   type ProjectTransaction,
@@ -2156,6 +2157,7 @@ export async function applyStackUpdate(
       );
       await fs.writeFile(path.join(plan.projectDir, "MIGRATION.md"), migrationContent, "utf-8");
     }
+    bindProjectTransactionWrite(transaction, "bts.jsonc");
     await writeBtsConfig(proposedConfig, {
       version: plan.proposedConfig.version,
       createdAt: plan.proposedConfig.createdAt,
@@ -2220,7 +2222,12 @@ export async function applyStackUpdate(
           recovery: {
             available: true,
             transactionId: transaction.id,
-            command: getProjectRecoveryCommand(plan.projectDir, transaction.id),
+            command: getProjectRecoveryCommand(
+              plan.projectDir,
+              transaction.id,
+              process.platform,
+              plan.proposedConfig.packageManager,
+            ),
           },
         }),
       };
@@ -2247,7 +2254,12 @@ export async function applyStackUpdate(
       recovery: {
         available: true,
         transactionId: transaction.id,
-        command: getProjectRecoveryCommand(plan.projectDir, transaction.id),
+        command: getProjectRecoveryCommand(
+              plan.projectDir,
+              transaction.id,
+              process.platform,
+              plan.proposedConfig.packageManager,
+            ),
         automaticRollback: true,
       },
       nextActions: [

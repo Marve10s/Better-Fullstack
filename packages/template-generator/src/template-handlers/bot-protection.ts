@@ -13,6 +13,20 @@ function turnstileSiteKeyExpression(frontend: string[]) {
   return 'import.meta.env.VITE_TURNSTILE_SITE_KEY ?? ""';
 }
 
+export function insertBeforeFormSubscribe(source: string, content: string) {
+  const markerIndex = source.indexOf("<form.Subscribe>");
+  if (markerIndex === -1) return source;
+
+  let whitespaceStart = markerIndex;
+  while (whitespaceStart > 0 && source.charAt(whitespaceStart - 1).trim() === "") {
+    whitespaceStart -= 1;
+  }
+  const insertionIndex = source.indexOf("\n", whitespaceStart);
+  if (insertionIndex === -1 || insertionIndex >= markerIndex) return source;
+
+  return `${source.slice(0, insertionIndex)}${content}${source.slice(insertionIndex)}`;
+}
+
 function patchTurnstileForms(vfs: VirtualFileSystem): void {
   let patchedForms = 0;
   for (const path of vfs.getAllFiles()) {
@@ -32,9 +46,9 @@ function patchTurnstileForms(vfs: VirtualFileSystem): void {
       /(\{\n\s+onSuccess: \(\) => \{)/,
       '{\n          headers: { "x-turnstile-token": turnstileToken },\n          onResponse: () => {\n            setTurnstileToken("");\n            setTurnstileAttempt((attempt) => attempt + 1);\n          },\n          onSuccess: () => {',
     );
-    next = next.replace(
-      /(\n\s*<form\.Subscribe>)/,
-      "\n        <BotProtection key={turnstileAttempt} onToken={setTurnstileToken} />$1",
+    next = insertBeforeFormSubscribe(
+      next,
+      "\n        <BotProtection key={turnstileAttempt} onToken={setTurnstileToken} />",
     );
     if (
       next === source ||

@@ -877,7 +877,7 @@ describe("scaffold-upgrade engine", () => {
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error).toContain(`${target} changed after it was written`);
-      expect(result.error).toContain("Rollback refused to overwrite concurrently changed files");
+      expect(result.error).toContain("Refused to overwrite files changed after the transaction");
     }
     expect(await readFile(join(dir, target), "utf-8")).toBe(concurrentBytes);
     expect(await readFile(join(dir, SCAFFOLD_MANIFEST_FILE), "utf-8")).toBe(manifestBefore);

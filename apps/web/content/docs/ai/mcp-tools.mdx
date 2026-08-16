@@ -61,7 +61,7 @@ Transactional apply restores operation-owned writes on failure and returns bound
 The current plan still decides eligibility; manifest provenance alone does not define a supported
 cross-version upgrade window.
 
-<Callout kind="warn" title="Write and migration behavior">
+<Callout kind="warning" title="Write and migration behavior">
 Planning tools are read-only. Create, apply, and add tools write files. Project checks can fetch
 dependencies and write toolchain locks, caches, compiler output, or build artifacts. Stack updates
 refuse to overwrite user-edited generated files. Architecture updates do not migrate application

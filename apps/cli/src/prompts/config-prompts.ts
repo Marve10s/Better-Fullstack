@@ -764,7 +764,13 @@ function getPromptResolutionValue(
     fileUpload: { fileUpload: flags.fileUpload, backend: results.backend },
     logging: { logging: flags.logging, backend: results.backend },
     rateLimit: { rateLimit: flags.rateLimit, backend: results.backend },
-    botProtection: { botProtection: flags.botProtection, frontends },
+    botProtection: {
+      botProtection: flags.botProtection,
+      frontends,
+      auth: results.auth,
+      backend: results.backend,
+      webDeploy: results.webDeploy,
+    },
     cms: { cms: flags.cms, backend: results.backend },
     vectorDb: { vectorDb: flags.vectorDb, backend: results.backend, ecosystem: results.ecosystem },
     fileStorage: { fileStorage: flags.fileStorage, backend: results.backend },
@@ -1119,7 +1125,13 @@ export async function gatherConfig(
     },
     botProtection: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as BotProtection);
-      return getBotProtectionChoice(flags.botProtection, results.frontend);
+      return getBotProtectionChoice(
+        flags.botProtection,
+        results.frontend,
+        results.auth,
+        results.backend,
+        results.webDeploy,
+      );
     },
     i18n: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as I18n);

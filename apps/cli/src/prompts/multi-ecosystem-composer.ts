@@ -330,6 +330,15 @@ async function selectDatabaseConfig(flags: Partial<ProjectConfig>) {
   return { database, dbSetup };
 }
 
+export const MULTI_ECOSYSTEM_TYPESCRIPT_SECTION_IDS = [
+  "app-platforms",
+  "ui-styling",
+  "frontend-security",
+  "content",
+  "deploy",
+  "addons-examples",
+] as const;
+
 export async function gatherMultiEcosystemConfig(
   flags: Partial<ProjectConfig>,
   projectName: string,
@@ -339,14 +348,13 @@ export async function gatherMultiEcosystemConfig(
   const baseConfig = getDefaultConfig();
   const shouldPromptForScope = !hasMultiStackPromptFlags(flags);
   const configScope = shouldPromptForScope ? promptValue(await getConfigScopeChoice()) : "full";
-  // Offer only the TypeScript sections whose prompts this composer actually asks.
   const typeScriptSections =
     configScope === "custom"
       ? promptValue(
           await getConfigSectionsChoice(
             "typescript",
             [],
-            ["app-platforms", "ui-styling", "content", "deploy", "addons-examples"],
+            [...MULTI_ECOSYSTEM_TYPESCRIPT_SECTION_IDS],
           ),
         )
       : [];
@@ -464,6 +472,13 @@ export async function gatherMultiEcosystemConfig(
           getAnalyticsChoice(flags.analytics, frontendList),
         )
       : "none";
+  const webDeploy = await scopedPromptValue(
+    "typescript",
+    "webDeploy",
+    configScope,
+    typeScriptSections,
+    () => getDeploymentChoice(flags.webDeploy, "bun", "none", frontendList),
+  );
 
   const backendEcosystem = await selectBackendEcosystem();
   const backendSections =
@@ -598,7 +613,7 @@ export async function gatherMultiEcosystemConfig(
       "botProtection",
       configScope,
       typeScriptSections,
-      () => getBotProtectionChoice(flags.botProtection, frontendList),
+      () => getBotProtectionChoice(flags.botProtection, frontendList, auth, backend, webDeploy),
     );
     const cms =
       backend === "none"
@@ -1525,13 +1540,6 @@ export async function gatherMultiEcosystemConfig(
         undefined,
         { ...graphPartial, ecosystem: backendEcosystem },
       ),
-  );
-  const webDeploy = await scopedPromptValue(
-    "typescript",
-    "webDeploy",
-    configScope,
-    typeScriptSections,
-    () => getDeploymentChoice(flags.webDeploy, "bun", "none", frontendList),
   );
   const serverDeploy = shouldAskConfigPromptKey(
     "typescript",

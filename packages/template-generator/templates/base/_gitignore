@@ -48,3 +48,5 @@ coverage
 .cache
 tmp
 temp
+# Better Fullstack recovery snapshots
+.bts/recovery

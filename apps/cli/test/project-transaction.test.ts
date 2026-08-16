@@ -29,13 +29,19 @@ async function makeProject(): Promise<string> {
 describe("project lifecycle transactions", () => {
   it("emits executable recovery commands with platform-safe project paths", () => {
     const transactionId = "123e4567-e89b-42d3-a456-426614174000";
-    expect(getProjectRecoveryCommand("/tmp/o'brien app", transactionId, "linux")).toBe(
+    expect(getProjectRecoveryCommand("/tmp/o'brien app", transactionId, "linux", "bun")).toBe(
       `bunx create-better-fullstack@${getLatestCLIVersion()} update '/tmp/o'"'"'brien app' --recover ${transactionId}`,
     );
-    expect(getProjectRecoveryCommand("C:\\o'brien app", transactionId, "win32")).toBe(
+    expect(getProjectRecoveryCommand("C:\\o'brien app", transactionId, "win32", "bun")).toBe(
       `bunx create-better-fullstack@${getLatestCLIVersion()} update 'C:\\o''brien app' --recover ${transactionId}`,
     );
     expect(getProjectRecoveryCommand("/tmp/app", transactionId, "linux", "npm")).toStartWith(
+      "npx --yes ",
+    );
+    expect(getProjectRecoveryCommand("/tmp/app", transactionId, "linux", "pnpm")).toStartWith(
+      "pnpm dlx ",
+    );
+    expect(getProjectRecoveryCommand("/tmp/app", transactionId, "linux", undefined)).toStartWith(
       "npx --yes ",
     );
   });
@@ -61,6 +67,25 @@ describe("project lifecycle transactions", () => {
     await expect(recoverProjectTransaction(projectDir, transaction.id)).rejects.toThrow(
       "not applied or interrupted",
     );
+  });
+
+  it("refuses recovery over edits made after the transaction was applied", async () => {
+    const projectDir = await makeProject();
+    await fs.writeFile(path.join(projectDir, "existing.txt"), "before\n");
+    const transaction = await beginProjectTransaction(projectDir, "template-update", [
+      "existing.txt",
+    ]);
+
+    markProjectTransactionWrite(transaction, "existing.txt", hashContent("after\n"));
+    await fs.writeFile(path.join(projectDir, "existing.txt"), "after\n");
+    await commitProjectTransaction(transaction);
+
+    await fs.writeFile(path.join(projectDir, "existing.txt"), "hand edited\n");
+
+    await expect(recoverProjectTransaction(projectDir, transaction.id)).rejects.toThrow(
+      "Refused to overwrite files changed after the transaction",
+    );
+    expect(await fs.readFile(path.join(projectDir, "existing.txt"), "utf-8")).toBe("hand edited\n");
   });
 
   it("recovers an interrupted pending transaction", async () => {

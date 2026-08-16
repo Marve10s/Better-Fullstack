@@ -17,6 +17,15 @@ describe("analytics prompt", () => {
     expect(resolution.options.map((option) => option.value)).not.toContain("vercel-analytics");
   });
 
+  it("only offers providers with templates for every selected web frontend", () => {
+    expect(
+      resolveAnalyticsPrompt({ frontend: ["astro"] }).options.map((option) => option.value),
+    ).toEqual(["vercel-analytics", "ga4", "none"]);
+    expect(
+      resolveAnalyticsPrompt({ frontend: ["vue"] }).options.map((option) => option.value),
+    ).toEqual(["vercel-analytics", "umami", "posthog", "ga4", "none"]);
+  });
+
   it("respects flags and skips non-web projects", () => {
     expect(
       resolveAnalyticsPrompt({ analytics: "vercel-analytics", frontend: ["next"] }).autoValue,

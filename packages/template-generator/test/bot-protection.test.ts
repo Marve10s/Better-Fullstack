@@ -3,6 +3,7 @@ import { describe, expect, it } from "bun:test";
 import type { VirtualFile, VirtualNode } from "../src/types";
 
 import { generateVirtualProject } from "../src/generator";
+import { insertBeforeFormSubscribe } from "../src/template-handlers/bot-protection";
 import { EMBEDDED_TEMPLATES } from "../src/templates.generated";
 import { makeConfig } from "./_fixtures/config-factory";
 
@@ -30,6 +31,12 @@ async function generate(
 }
 
 describe("bot protection generation", () => {
+  it("handles repeated newlines before a missing form anchor", () => {
+    const source = `authClient.sign${"\n".repeat(20_000)}missing`;
+
+    expect(insertBeforeFormSubscribe(source, "<BotProtection />")).toBe(source);
+  });
+
   it("wires Turnstile into the auth form and enforces Siteverify on the server", async () => {
     const output = await generate("turnstile");
     expect(output.get("apps/web/package.json")).toContain('"@marsidev/react-turnstile": "^1.5.4"');

@@ -431,7 +431,7 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
     if (recoveryId) {
       log.info(
         pc.cyan(
-          `Recovery point: ${recoveryId}. Restore it with \`${getProjectRecoveryCommand(projectDir, recoveryId)}\`.`,
+          `Recovery point: ${recoveryId}. Restore it with \`${getProjectRecoveryCommand(projectDir, recoveryId, process.platform, btsConfig?.packageManager)}\`.`,
         ),
       );
     }

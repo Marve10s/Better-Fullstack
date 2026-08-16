@@ -165,6 +165,16 @@ describe("compatibility issue helpers", () => {
       "does not yet mount",
     );
     expect(analyzeStackCompatibility(unsupported).adjustedStack?.analytics).toBe("none");
+
+    const mixed = {
+      ...DEFAULT_STACK_SELECTION,
+      webFrontend: ["next", "qwik"],
+      analytics: "vercel-analytics" as const,
+    };
+    expect(getDisabledReason(mixed, "analytics", "vercel-analytics")).toContain(
+      "not yet mounted",
+    );
+    expect(analyzeStackCompatibility(mixed).adjustedStack?.analytics).toBe("none");
   });
 
   it("keeps SigNoz off stacks without a generated server target", () => {

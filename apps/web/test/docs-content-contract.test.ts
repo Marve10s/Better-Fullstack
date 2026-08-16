@@ -5,6 +5,8 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { CALLOUT_KINDS } from "../src/components/docs/mdx/callout";
+import { GUIDE_COMPATIBILITY_KINDS } from "../src/components/docs/mdx/guide-compatibility-note";
 import { buildSearchSections } from "../src/lib/docs/search";
 import { LOCALIZED_CONTENT_LOCALES } from "../src/lib/i18n/locales";
 
@@ -61,23 +63,10 @@ const PENDING_TRANSLATION_PATHS = [
   "content/docs/getting-started/lifecycle.mdx",
   "content/docs/index.mdx",
   "content/docs/provider-setup/environment-variables.mdx",
-  "content/docs/recipes/browser-zip-workflow.mdx",
-  "content/docs/recipes/default-typescript-web.mdx",
-  "content/docs/recipes/dotnet-service.mdx",
-  "content/docs/recipes/index.mdx",
-  "content/docs/recipes/multi-ecosystem-product.mdx",
-  "content/docs/recipes/nextjs-self-backend.mdx",
-  "content/docs/recipes/python-api.mdx",
   "content/docs/reference/options/dotnet.mdx",
   "content/docs/reference/options/typescript.mdx",
   "content/docs/reference/versioning.mdx",
-  "content/docs/sections/auth-and-payments.mdx",
-  "content/docs/sections/backend-and-api.mdx",
-  "content/docs/sections/deployment.mdx",
-  "content/docs/sections/frontend-and-apps.mdx",
-  "content/docs/sections/index.mdx",
-  "content/docs/sections/quality-and-tooling.mdx",
-  "content/docs/sections/ui-and-experience.mdx",
+  "content/docs/stack-guides/deployment.mdx",
   "content/docs/web-builder/download-and-share.mdx",
   "content/docs/web-builder/edit-and-run.mdx",
   "content/docs/web-builder/index.mdx",
@@ -87,6 +76,7 @@ const PENDING_TRANSLATION_PATHS = [
   "content/blog/tanstack-start-vs-nextjs.mdx",
   "content/guides/ai/nextjs-ai-cli-agent-workbench.mdx",
   "content/guides/packs/create-ai-agent-app.mdx",
+  "content/guides/dotnet/aspnet-core-efcore.mdx",
   "content/guides/python/fastapi-postgres-sqlmodel.mdx",
   "content/guides/typescript/hono-better-auth.mdx",
   "content/guides/typescript/hono-openapi-drizzle.mdx",
@@ -428,6 +418,42 @@ describe("docs content contract", () => {
     });
 
     expect(invalidFences).toEqual([]);
+  });
+
+  it("keeps MDX component kind props inside the values their components render", () => {
+    const allowedKinds = new Map([
+      ["Callout", new Set<string>(CALLOUT_KINDS)],
+      ["GuideCompatibilityNote", new Set<string>(GUIDE_COMPATIBILITY_KINDS)],
+    ]);
+    const componentPattern = new RegExp(
+      `<(${[...allowedKinds.keys()].join("|")})\\b[^>]*?\\bkind=\\\\?"([a-zA-Z-]*)\\\\?"`,
+      "g",
+    );
+    const sources = [
+      ...contentFiles.map((file) => ({ label: file.relativePath, source: file.source })),
+      ...LOCALIZED_CONTENT_LOCALES.map((locale) => ({
+        label: `content/i18n/${locale}.json`,
+        source: readFileSync(join(LOCALIZED_CONTENT_ROOT, `${locale}.json`), "utf8"),
+      })),
+    ];
+
+    const unknownKinds = sources.flatMap(({ label, source }) => {
+      const invalid: string[] = [];
+      let match: RegExpExecArray | null;
+
+      componentPattern.lastIndex = 0;
+      while ((match = componentPattern.exec(source)) !== null) {
+        const [, component, kind] = match;
+        if (allowedKinds.get(component)?.has(kind)) continue;
+        invalid.push(
+          `${label}:${lineNumberForIndex(source, match.index)} <${component} kind="${kind}">`,
+        );
+      }
+
+      return invalid;
+    });
+
+    expect(unknownKinds).toEqual([]);
   });
 
   it("indexes markdown body sections for docs search", () => {

@@ -5,6 +5,7 @@
     "frontend-frameworks",
     "backend-frameworks",
     "database-orm-pairing",
-    "auth-providers"
+    "auth-providers",
+    "deployment"
   ]
 }

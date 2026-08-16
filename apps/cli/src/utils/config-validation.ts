@@ -7,6 +7,7 @@ import {
   getDisabledReason,
   hasVitePlusWorkspaceRoot,
   hasSignozSupportedGoServerTarget,
+  isBotIdWebFrontend,
   isSignozSupportedPythonWebFramework,
   isToolingOverlayOnly,
   isTurnstileWebFrontend,
@@ -1217,10 +1218,10 @@ function validateBotProtectionConstraints(config: Partial<ProjectConfig>) {
   }
   if (
     config.botProtection === "botid" &&
-    webFrontends.some((frontend) => frontend !== "next" && frontend !== "vinext")
+    webFrontends.some((frontend) => !isBotIdWebFrontend(frontend))
   ) {
     incompatibilityError({
-      message: "Vercel BotID is only available for Next.js and Vinext frontends.",
+      message: "Vercel BotID is only available for Next.js frontends.",
       provided: { frontend: webFrontends.join(","), "bot-protection": "botid" },
       suggestions: ["Use --frontend next", "Use --bot-protection turnstile"],
     });

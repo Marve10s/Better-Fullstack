@@ -18,8 +18,8 @@ export function getPackageExecPrefix(packageManager: string | undefined): string
 export function getProjectRecoveryCommand(
   projectDir: string,
   transactionId: string,
-  platform: NodeJS.Platform = process.platform,
-  packageManager: "bun" | "npm" | "pnpm" | "yarn" = "bun",
+  platform: NodeJS.Platform,
+  packageManager: "bun" | "npm" | "pnpm" | "yarn" | undefined,
 ): string {
   const quoteArgument = platform === "win32" ? quotePowerShellArgument : quotePosixShellArgument;
   return (

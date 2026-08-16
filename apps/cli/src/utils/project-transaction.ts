@@ -22,6 +22,7 @@ export type RecoveryMetadata = {
   completedAt?: string;
   status: "pending" | "applied" | "rolled-back" | "recovered";
   files: RecoveryFile[];
+  outputs?: Record<string, string | null>;
 };
 
 export type ProjectTransaction = {
@@ -75,11 +76,10 @@ async function assertSafeTarget(projectDir: string, relativePath: string): Promi
 }
 
 async function writeMetadata(transaction: ProjectTransaction): Promise<void> {
-  await fs.writeJson(
-    path.join(transaction.recoveryDir, RECOVERY_METADATA_FILE),
-    transaction.metadata,
-    { spaces: 2 },
-  );
+  const metadataPath = path.join(transaction.recoveryDir, RECOVERY_METADATA_FILE);
+  const stagingPath = `${metadataPath}.tmp`;
+  await fs.writeJson(stagingPath, transaction.metadata, { spaces: 2 });
+  await fs.rename(stagingPath, metadataPath);
 }
 
 export async function beginProjectTransaction(
@@ -143,6 +143,15 @@ export async function beginProjectTransaction(
   }
 }
 
+export const UNVERIFIED_WRITE = "unverified";
+
+export function bindProjectTransactionWrite(
+  transaction: ProjectTransaction,
+  relativePath: string,
+): void {
+  markProjectTransactionWrite(transaction, relativePath, UNVERIFIED_WRITE);
+}
+
 export function markProjectTransactionWrite(
   transaction: ProjectTransaction,
   relativePath: string,
@@ -190,7 +199,7 @@ async function restoreFiles(
 
     const hasExpectedCurrentHash = expectedCurrentHashes?.has(file.path) ?? false;
     const expectedCurrentHash = expectedCurrentHashes?.get(file.path);
-    if (hasExpectedCurrentHash) {
+    if (hasExpectedCurrentHash && expectedCurrentHash !== UNVERIFIED_WRITE) {
       const stillAtPreimage =
         (file.state === "absent" && current === null) ||
         (file.state === "file" &&
@@ -209,7 +218,7 @@ async function restoreFiles(
   }
   if (concurrentChanges.length > 0) {
     throw new Error(
-      `Rollback refused to overwrite concurrently changed files: ${concurrentChanges.join(", ")}`,
+      `Refused to overwrite files changed after the transaction: ${concurrentChanges.join(", ")}`,
     );
   }
 
@@ -235,6 +244,7 @@ async function restoreFiles(
 }
 
 export async function commitProjectTransaction(transaction: ProjectTransaction): Promise<void> {
+  transaction.metadata.outputs = Object.fromEntries(transaction.writes);
   transaction.metadata.status = "applied";
   transaction.metadata.completedAt = new Date().toISOString();
   await writeMetadata(transaction);
@@ -267,6 +277,22 @@ function validateRecoveryMetadata(value: unknown, expectedId: string): RecoveryM
     !["pending", "applied", "rolled-back", "recovered"].includes(metadata.status ?? "")
   ) {
     throw new Error("Recovery metadata is malformed.");
+  }
+  if (metadata.outputs !== undefined) {
+    if (
+      !metadata.outputs ||
+      typeof metadata.outputs !== "object" ||
+      Array.isArray(metadata.outputs) ||
+      Object.entries(metadata.outputs).some(
+        ([outputPath, hash]) =>
+          !isPortableProjectPath(outputPath) ||
+          (hash !== null &&
+            hash !== UNVERIFIED_WRITE &&
+            (typeof hash !== "string" || !/^[0-9a-f]{64}$/.test(hash))),
+      )
+    ) {
+      throw new Error("Recovery metadata contains an invalid output entry.");
+    }
   }
   for (const file of metadata.files) {
     if (
@@ -315,7 +341,12 @@ export async function recoverProjectTransaction(
     metadata,
     writes: new Map(),
   };
-  await restoreFiles(transaction, metadata.files);
+  const recordedOutputs = metadata.status === "applied" ? metadata.outputs : undefined;
+  await restoreFiles(
+    transaction,
+    metadata.files,
+    recordedOutputs ? new Map(Object.entries(recordedOutputs)) : undefined,
+  );
   metadata.status = "recovered";
   metadata.completedAt = new Date().toISOString();
   await writeMetadata(transaction);

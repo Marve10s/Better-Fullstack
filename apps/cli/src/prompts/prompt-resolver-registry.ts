@@ -297,7 +297,21 @@ export const PROMPT_RESOLVER_REGISTRY: ResolverRegistry = {
   botProtection: {
     schemaValues: BOT_PROTECTION_VALUES,
     resolve: resolveBotProtectionPrompt,
-    coverageContexts: [{ frontends: ["next"] }, { frontends: ["react-vite"] }, { frontends: [] }],
+    coverageContexts: [
+      {
+        frontends: ["next"],
+        auth: "better-auth",
+        backend: "self",
+        webDeploy: "vercel",
+      },
+      {
+        frontends: ["react-vite"],
+        auth: "better-auth",
+        backend: "hono",
+        webDeploy: "none",
+      },
+      { frontends: [] },
+    ],
   },
   cms: {
     schemaValues: CMS_VALUES,
