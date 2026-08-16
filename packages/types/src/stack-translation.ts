@@ -15,7 +15,6 @@ import {
   legacyProjectConfigToStackParts,
   parseStackPartSpecs,
   stackPartsToLegacyProjectConfigPartial,
-  toolingOverlayStackParts,
   validateStackParts,
 } from "./stack-graph";
 import { getToolingCapability, isToolingOverlayOnly } from "./tooling-capabilities";
@@ -2326,10 +2325,7 @@ function buildProjectConfigBase(
   };
 
   if (!isGraphStackSelection(graphStack)) {
-    return {
-      ...baseConfig,
-      stackParts: toolingOverlayStackParts(baseConfig.addons),
-    };
+    return baseConfig;
   }
 
   const stackParts = getGraphStackParts(graphStack);

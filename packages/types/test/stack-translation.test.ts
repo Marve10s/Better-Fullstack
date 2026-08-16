@@ -709,16 +709,14 @@ describe("stack selection translation", () => {
     ]);
   });
 
-  it("keeps solo selections on the legacy pipeline with tooling-only stackParts", () => {
+  it("keeps solo selections on the legacy pipeline without graph parts", () => {
     const config = toProjectConfig({
       ...DEFAULT_SELECTION,
       codeQuality: ["biome"],
     });
 
-    expect(config.stackParts?.length).toBeGreaterThan(0);
-    for (const part of config.stackParts ?? []) {
-      expect(isToolingOverlayPart(part)).toBe(true);
-    }
+    expect(config.stackParts).toBeUndefined();
+    expect(config.addons).toContain("biome");
   });
 
   it("builds solo configs for multiple web frontends without lifting into the graph", () => {
