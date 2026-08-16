@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 
 import type { StackSelectionInput } from "../src/stack-translation";
 
+import { isToolingOverlayPart } from "../src/tooling-capabilities";
 import {
   DEFAULT_STACK_SELECTION,
   STACK_SELECTION_KEYS,
@@ -703,6 +704,19 @@ describe("stack selection translation", () => {
       "codeQuality:biome",
       "aiTooling:skills",
     ]);
+    expect(config.addons).toEqual(expect.arrayContaining(["biome", "skills"]));
+  });
+
+  it("keeps solo selections on the legacy pipeline with tooling-only stackParts", () => {
+    const config = toProjectConfig({
+      ...DEFAULT_SELECTION,
+      codeQuality: ["biome"],
+    });
+
+    expect(config.stackParts?.length).toBeGreaterThan(0);
+    for (const part of config.stackParts ?? []) {
+      expect(isToolingOverlayPart(part)).toBe(true);
+    }
   });
 
   it("derives ProjectConfig stackParts from graph URL state", () => {

@@ -121,7 +121,7 @@ describe("compatibility issue helpers", () => {
       "vite-plus",
     );
     expect(getDisabledReason(goStack, "appPlatforms", "vite-plus")).toContain(
-      "JavaScript workspace root",
+      "TypeScript web frontend",
     );
     expect(
       getDisabledReason(
@@ -136,14 +136,14 @@ describe("compatibility issue helpers", () => {
         "appPlatforms",
         "vite-plus",
       ),
-    ).toBeNull();
+    ).toContain("TypeScript web frontend");
     expect(
       analyzeStackCompatibility({
         ...DEFAULT_STACK_SELECTION,
         ecosystem: "react-native",
         appPlatforms: ["vite-plus"],
       }).adjustedStack?.appPlatforms,
-    ).toContain("vite-plus");
+    ).not.toContain("vite-plus");
   });
 
   it("keeps React Native code-quality options aligned with the CLI", () => {

@@ -1,3 +1,5 @@
+import { parseStackPartSpecs } from "@better-fullstack/types";
+
 import { describe, expect, it } from "bun:test";
 
 import { VirtualFileSystem } from "../../src/core/virtual-fs";
@@ -133,6 +135,23 @@ const SINGLE_APP_NEXT = {
 describe("qualifiesForSingleApp", () => {
   it("qualifies a thin self-next app with everything else 'none'", () => {
     expect(qualifiesForSingleApp(makeConfig(SINGLE_APP_NEXT))).toBe(true);
+  });
+
+  it("still qualifies when the config carries tooling-overlay stack parts", () => {
+    const config = makeConfig({
+      ...SINGLE_APP_NEXT,
+      addons: ["vite-plus"],
+      stackParts: parseStackPartSpecs(["toolchain:universal:vite-plus"], "selected"),
+    });
+    expect(qualifiesForSingleApp(config)).toBe(true);
+  });
+
+  it("stays monorepo for graph stack parts", () => {
+    const config = makeConfig({
+      ...SINGLE_APP_NEXT,
+      stackParts: parseStackPartSpecs(["frontend:typescript:next"], "selected"),
+    });
+    expect(qualifiesForSingleApp(config)).toBe(false);
   });
 
   it("qualifies a thin self tanstack-start app", () => {

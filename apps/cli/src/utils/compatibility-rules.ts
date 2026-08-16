@@ -766,9 +766,7 @@ export function validateAddonsAgainstFrontends(
     addons.filter((addon) => ["turborepo", "nx", "vite-plus"].includes(addon)),
   );
   if (workspaceRunners.size > 1) {
-    exitWithError(
-      "Turborepo, Nx, and Vite+ are alternative workspace profiles. Choose one profile.",
-    );
+    exitWithError("Turborepo, Nx, and Vite+ are alternative workspace runners. Choose one.");
   }
 
   for (const addon of addons) {

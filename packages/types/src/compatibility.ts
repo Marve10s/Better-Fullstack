@@ -4031,7 +4031,7 @@ function getAddonOrExampleGraphBinding(
     ecosystem: binding.ecosystem,
     ownerRole: binding.ownerRole,
     ownerEcosystem: binding.ownerRole ? binding.ecosystem : undefined,
-    allowOwnerlessCandidate: binding.ownerRole === undefined,
+    allowOwnerlessCandidate: binding.ownerRole !== "frontend",
     authoritative: true,
     missingOwnerReason:
       binding.ownerRole === "frontend" ? `${optionId} requires a web frontend` : undefined,

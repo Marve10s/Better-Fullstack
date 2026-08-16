@@ -3,6 +3,7 @@ import type { ProjectConfig, StackPart } from "@better-fullstack/types";
 import {
   getRoleTargetPath,
   hasVitePlusWorkspaceRoot,
+  isToolingOverlayOnly,
   parseStackPartSpecs,
   stackGraphToLegacyProjectConfigForEcosystem,
   validateStackParts,
@@ -427,7 +428,12 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
       };
     }
 
-    const hasVitePlusRoot = config.stackParts?.length
+    // Tooling-overlay parts (capability selections such as Vite+ or a data
+    // client) are a projection over the legacy config, not a stack graph:
+    // they must not switch generation into graph mode.
+    const usesGraphParts = Boolean(config.stackParts?.length) && !isToolingOverlayOnly(config.stackParts);
+
+    const hasVitePlusRoot = usesGraphParts
       ? hasVitePlusWorkspaceRoot(config.stackParts)
       : config.ecosystem === "typescript" &&
         config.frontend.some(
@@ -444,7 +450,7 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
       };
     }
 
-    if (config.stackParts && config.stackParts.length > 0) {
+    if (usesGraphParts) {
       const graphIssues = [
         ...validateGraphContainerAddons(config),
         ...validateGraphRenderingSupport(config),
@@ -459,7 +465,7 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
 
     const vfs = new VirtualFileSystem();
 
-    if (config.stackParts && config.stackParts.length > 0) {
+    if (usesGraphParts) {
       await processGraphTemplates(vfs, templates, config);
     } else if (config.ecosystem in ECOSYSTEM_BASE_TEMPLATE_PROCESSORS) {
       await ECOSYSTEM_BASE_TEMPLATE_PROCESSORS[config.ecosystem as NonTypeScriptTemplateEcosystem](
@@ -517,11 +523,7 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
       }
     }
 
-    if (
-      !config.stackParts?.length &&
-      config.ecosystem !== "typescript" &&
-      config.ecosystem !== "react-native"
-    ) {
+    if (!usesGraphParts && config.ecosystem !== "typescript" && config.ecosystem !== "react-native") {
       await processAddonTemplates(vfs, templates, config);
       processEnvVariables(vfs, config);
     }

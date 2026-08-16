@@ -379,9 +379,16 @@ function mergeStackPartSpecs(
     .filter((part) => part.source !== "provided")
     .map((part) => formatStackPartSpec(part, currentStackParts));
   const combinedParts = parseStackPartSpecs([...new Set([...currentSpecs, ...specs])], "selected");
-  const requestedSpecs = new Set(specs);
-  const requestedParts = combinedParts.filter((part) =>
-    requestedSpecs.has(formatStackPartSpec(part, combinedParts)),
+  const requestedKeys = new Set(
+    specs.map((spec) => {
+      const [rolePath = "", ecosystem = "", toolId = ""] = spec.split(":");
+      return `${rolePath.split(".").pop()}:${ecosystem}:${toolId}`;
+    }),
+  );
+  const requestedParts = combinedParts.filter(
+    (part) =>
+      part.source !== "provided" &&
+      requestedKeys.has(`${part.role}:${part.ecosystem}:${part.toolId}`),
   );
   const requestedSingleCategories = new Set(
     requestedParts.flatMap((part) => {

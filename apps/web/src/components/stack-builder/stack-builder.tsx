@@ -1344,15 +1344,13 @@ function getStackOptionUpdate(
       ),
     );
     let nextArray = currentArray.filter((value) => !categoryToolIds.has(value));
+    const isSelected =
+      toolingOption.toolIds.length > 0 &&
+      toolingOption.toolIds.every((toolId) => currentArray.includes(toolId));
 
-    if (isMultiSelectCategory(category as OptionCategory)) {
-      const isSelected = toolingOption.toolIds.every((toolId) => currentArray.includes(toolId));
-      if (!isSelected) nextArray.push(...toolingOption.toolIds);
-    } else {
-      nextArray.push(...toolingOption.toolIds);
-    }
+    if (!isSelected) nextArray.push(...toolingOption.toolIds);
 
-    if (toolingCategory === "toolchain" && techId === "vite-plus") {
+    if (toolingCategory === "toolchain" && techId === "vite-plus" && !isSelected) {
       nextArray = nextArray.filter((toolId) => toolId !== "turborepo" && toolId !== "nx");
       nextArray.push("vite-plus");
       update.codeQuality = currentStack.codeQuality.filter((toolId) =>

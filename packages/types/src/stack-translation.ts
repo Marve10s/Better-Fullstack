@@ -17,7 +17,7 @@ import {
   stackPartsToLegacyProjectConfigPartial,
   validateStackParts,
 } from "./stack-graph";
-import { getToolingCapability } from "./tooling-capabilities";
+import { isToolingOverlayOnly, isToolingOverlayPart } from "./tooling-capabilities";
 
 export type StackSelectionMode = "solo" | "multi";
 export type StackSelectionInput = CompatibilityInput & {
@@ -2037,9 +2037,11 @@ export function cliInputToProjectConfigPartial(
 
   if (Array.isArray(input.part) && input.part.length > 0) {
     const providedStackParts = parseStackPartSpecs(input.part, "selected");
-    const isToolingOverlay = providedStackParts.every((part) => getToolingCapability(part.toolId));
-    if (isToolingOverlay) {
+    if (isToolingOverlayOnly(providedStackParts)) {
       config.stackParts = providedStackParts;
+      config.addons = [
+        ...new Set([...(config.addons ?? []), ...providedStackParts.map((part) => part.toolId)]),
+      ] as ProjectConfig["addons"];
     } else {
       const stackParts = getCliGraphStackParts(input);
       Object.assign(config, stackPartsToLegacyProjectConfigPartial(stackParts), {
@@ -2327,7 +2329,9 @@ function buildProjectConfigBase(
   if (!isGraphStackSelection(graphStack)) {
     return {
       ...baseConfig,
-      stackParts: legacyProjectConfigToStackParts(baseConfig, "selected"),
+      stackParts: legacyProjectConfigToStackParts(baseConfig, "selected").filter((part) =>
+        isToolingOverlayPart(part),
+      ),
     };
   }
 

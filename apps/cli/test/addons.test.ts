@@ -895,7 +895,7 @@ describe("Addon Configurations", () => {
           }
 
           const result = await runTRPCTest(config);
-          expectError(result, "pwa addon requires one of these frontends");
+          expectError(result, "pwa requires one of these frontends");
         });
       }
     });
@@ -964,7 +964,7 @@ describe("Addon Configurations", () => {
             expectError: true,
           });
 
-          expectError(result, "tauri addon requires one of these frontends");
+          expectError(result, "tauri requires one of these frontends");
         });
       }
     });
@@ -2889,7 +2889,7 @@ describe("Addon Configurations", () => {
             expectError: true,
           });
 
-          expectError(result, "storybook addon requires one of these frontends");
+          expectError(result, "storybook requires one of these frontends");
         });
       }
     });
@@ -2956,7 +2956,7 @@ describe("Addon Configurations", () => {
         expectError: true,
       });
 
-      expectError(result, "pwa addon requires one of these frontends");
+      expectError(result, "pwa requires one of these frontends");
     });
 
     it("should deduplicate addons", async () => {
@@ -3511,7 +3511,7 @@ describe("Addon Configurations", () => {
             expectError: true,
           });
 
-          expectError(result, "tanstack-table addon requires one of these frontends");
+          expectError(result, "tanstack-table requires one of these frontends");
         });
       }
 
@@ -3534,7 +3534,7 @@ describe("Addon Configurations", () => {
           expectError: true,
         });
 
-        expectError(result, "tanstack-virtual addon requires one of these frontends");
+        expectError(result, "tanstack-virtual requires one of these frontends");
       });
 
       // TanStack Query should fail with native frontends (no adapters)
@@ -3556,7 +3556,7 @@ describe("Addon Configurations", () => {
           expectError: true,
         });
 
-        expectError(result, "tanstack-query addon requires one of these frontends");
+        expectError(result, "tanstack-query requires one of these frontends");
       });
 
       // TanStack Query should fail with Fresh (Preact-based, no adapters)
@@ -3578,7 +3578,7 @@ describe("Addon Configurations", () => {
           expectError: true,
         });
 
-        expectError(result, "tanstack-query addon requires one of these frontends");
+        expectError(result, "tanstack-query requires one of these frontends");
       });
 
       // TanStack addons should fail with Qwik (no adapters)
@@ -3600,7 +3600,7 @@ describe("Addon Configurations", () => {
           expectError: true,
         });
 
-        expectError(result, "tanstack-query addon requires one of these frontends");
+        expectError(result, "tanstack-query requires one of these frontends");
       });
 
       // TanStack DB should fail with Angular (no @tanstack/angular-db adapter)
@@ -3622,7 +3622,7 @@ describe("Addon Configurations", () => {
           expectError: true,
         });
 
-        expectError(result, "tanstack-db addon requires one of these frontends");
+        expectError(result, "tanstack-db requires one of these frontends");
       });
     });
 

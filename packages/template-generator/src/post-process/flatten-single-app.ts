@@ -16,6 +16,7 @@
 
 import type { ProjectConfig } from "@better-fullstack/types";
 
+import { isToolingOverlayOnly } from "@better-fullstack/types";
 import yaml from "yaml";
 
 import type { VirtualFileSystem } from "../core/virtual-fs";
@@ -61,7 +62,7 @@ export interface WorkspaceLayout {
 export function qualifiesForSingleApp(config: ProjectConfig): boolean {
   if (config.workspaceShape !== "single-app") return false;
   if (config.addons.some((addon) => CONTAINER_ADDONS.has(addon))) return false;
-  if (config.stackParts && config.stackParts.length > 0) return false;
+  if (!isToolingOverlayOnly(config.stackParts)) return false;
   if (config.ecosystem !== "typescript") return false;
   if (config.backend !== "self") return false;
 

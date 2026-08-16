@@ -1,5 +1,6 @@
 import {
   type AddInput,
+  AddonsSchema,
   AISchema,
   AiDocsSchema,
   AnalyticsSchema,
@@ -173,6 +174,7 @@ import {
   evaluateCompatibility,
   CATEGORY_ORDER,
   getCategoryOrderForEcosystem,
+  getToolingCapability,
   TEMPLATE_VALUES,
   type Template,
 } from "@better-fullstack/types";
@@ -773,6 +775,18 @@ function buildProjectConfig(
     install: false,
   };
 
+  if (Array.isArray(input.addons) && input.addons.length > 0) {
+    config.addons = [
+      ...new Set([
+        ...config.addons,
+        ...input.addons.filter(
+          (addon): addon is Exclude<ProjectConfig["addons"][number], "none"> =>
+            typeof addon === "string" && addon !== "none",
+        ),
+      ]),
+    ];
+  }
+
   if (Array.isArray(input.part) && input.part.length > 0) {
     const stackParts = parseStackPartSpecs(
       input.part.filter((part): part is string => typeof part === "string"),
@@ -785,6 +799,19 @@ function buildProjectConfig(
   validateMcpProjectConfigCompatibility(config);
 
   return config;
+}
+
+function mergeLegacyAddonParts(part?: string[], addons?: string[]): string[] | undefined {
+  const addonSpecs = (addons ?? [])
+    .filter((addon) => addon !== "none")
+    .map((addon) => {
+      const capability = getToolingCapability(addon);
+      if (!capability) throw new Error(`Unknown addon '${addon}'`);
+      const owner = capability.ownerRole ? `${capability.ownerRole}.` : "";
+      return `${owner}${capability.role}:${capability.ecosystem}:${addon}`;
+    });
+  const merged = [...new Set([...(part ?? []), ...addonSpecs])];
+  return merged.length > 0 ? merged : undefined;
 }
 
 function sanitizePath(input: string): string {
@@ -1581,6 +1608,7 @@ export const MCP_PLAN_CREATE_SCHEMA = {
     .array(z.string())
     .optional()
     .describe("Stack graph part binding, e.g. frontend:typescript:next or backend.orm:go:gorm"),
+  addons: z.array(AddonsSchema).optional().describe("Deprecated alias for tooling part bindings"),
   ecosystem: EcosystemSchema.optional().describe("Language ecosystem (default: typescript)"),
   frontend: z.array(FrontendSchema).optional().describe("Frontend frameworks (TypeScript only)"),
   backend: BackendSchema.optional().describe("Backend framework"),
@@ -1640,8 +1668,10 @@ export const MCP_PLAN_CREATE_SCHEMA = {
   ...crossEcosystemInputSchema,
 };
 
+const { addons: _createOnlyAddonsAlias, ...MCP_STACK_UPDATE_BASE_SCHEMA } = MCP_PLAN_CREATE_SCHEMA;
+
 export const MCP_STACK_UPDATE_SCHEMA = {
-  ...MCP_PLAN_CREATE_SCHEMA,
+  ...MCP_STACK_UPDATE_BASE_SCHEMA,
   projectDir: z.string().describe("Absolute path to the existing Better-Fullstack project"),
   acknowledgeArchitectureChange: z
     .boolean()
@@ -1943,6 +1973,10 @@ export function createMcpServer(): McpServer {
         shadcnFont: ShadcnFontSchema.optional().describe("shadcn/ui font"),
         shadcnRadius: ShadcnRadiusSchema.optional().describe("shadcn/ui border radius"),
         part: z.array(z.string()).optional().describe("Canonical Stack Part bindings"),
+        addons: z
+          .array(AddonsSchema)
+          .optional()
+          .describe("Deprecated alias for tooling part bindings"),
         examples: z.array(ExamplesSchema).optional().describe("Example templates"),
         packageManager: PackageManagerSchema.optional().describe("Package manager"),
         ...crossEcosystemInputSchema,
@@ -2517,6 +2551,10 @@ export function createMcpServer(): McpServer {
       inputSchema: mcpInputSchema({
         projectDir: z.string().describe("Absolute path to the existing project directory"),
         part: z.array(z.string()).optional().describe("Canonical Stack Part bindings to add"),
+        addons: z
+          .array(AddonsSchema)
+          .optional()
+          .describe("Deprecated alias for tooling part bindings"),
         webDeploy: WebDeploySchema.optional().describe("Web deployment option"),
         serverDeploy: ServerDeploySchema.optional().describe("Server deployment option"),
       }),
@@ -2531,18 +2569,21 @@ export function createMcpServer(): McpServer {
     async ({
       projectDir,
       part,
+      addons,
       webDeploy,
       serverDeploy,
     }: {
       projectDir: string;
       part?: string[];
+      addons?: string[];
       webDeploy?: ProjectConfig["webDeploy"];
       serverDeploy?: ProjectConfig["serverDeploy"];
     }) => {
       try {
         const safePath = sanitizePath(projectDir);
+        const requestedParts = mergeLegacyAddonParts(part, addons);
         const plan = await planStackUpdate(safePath, {
-          part,
+          part: requestedParts,
           webDeploy,
           serverDeploy,
         });
@@ -2556,7 +2597,7 @@ export function createMcpServer(): McpServer {
         const { operations: _operations, filesUnchanged: _filesUnchanged, ...safePlan } = plan;
         const payload = {
           ...safePlan,
-          requestedParts: part ?? [],
+          requestedParts: requestedParts ?? [],
           compatibilityWarnings: compatibilityWarningsForStackUpdate(plan.proposedConfig),
         };
         return {
@@ -2585,6 +2626,10 @@ export function createMcpServer(): McpServer {
       inputSchema: mcpInputSchema({
         projectDir: z.string().describe("Absolute path to the existing project directory"),
         part: z.array(z.string()).optional().describe("Canonical Stack Part bindings to add"),
+        addons: z
+          .array(AddonsSchema)
+          .optional()
+          .describe("Deprecated alias for tooling part bindings"),
         webDeploy: WebDeploySchema.optional().describe("Web deployment option"),
         serverDeploy: ServerDeploySchema.optional().describe("Server deployment option"),
         packageManager: PackageManagerSchema.optional().describe("Package manager to use"),
@@ -2603,8 +2648,12 @@ export function createMcpServer(): McpServer {
         const safePath = sanitizePath(input.projectDir);
         const { add } = await import("./index.js");
 
+        const requestedParts = mergeLegacyAddonParts(
+          input.part as string[] | undefined,
+          input.addons as string[] | undefined,
+        );
         const addInput: AddInput = {
-          part: input.part as string[] | undefined,
+          part: requestedParts,
           webDeploy: input.webDeploy as ProjectConfig["webDeploy"] | undefined,
           serverDeploy: input.serverDeploy as ProjectConfig["serverDeploy"] | undefined,
           projectDir: safePath,
@@ -2628,7 +2677,7 @@ export function createMcpServer(): McpServer {
           );
           const payload = {
             success: true as const,
-            addedCapabilities: (input.part as string[] | undefined) ?? [],
+            addedCapabilities: requestedParts ?? [],
             projectDir: result.projectDir,
             lifecycle: result.lifecycle,
             recoveryId: result.recoveryId,

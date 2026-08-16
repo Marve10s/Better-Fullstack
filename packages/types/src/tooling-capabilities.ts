@@ -408,6 +408,18 @@ export function getToolingSelectionOptions(category: ToolingCategoryId) {
   return TOOLING_SELECTION_OPTIONS.filter((definition) => definition.category === category);
 }
 
+export function isToolingOverlayPart(part: {
+  readonly toolId: string;
+  readonly role: StackPartRole;
+  readonly source?: string;
+}) {
+  return part.source !== "provided" && getToolingCapability(part.toolId)?.role === part.role;
+}
+
+export function isToolingOverlayOnly(parts: readonly { toolId: string; role: StackPartRole; source?: string }[] | undefined) {
+  return (parts ?? []).every((part) => isToolingOverlayPart(part));
+}
+
 export function getSelectedToolingOption(
   category: ToolingCategoryId,
   selectedToolIds: readonly string[],

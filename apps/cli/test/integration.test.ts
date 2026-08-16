@@ -429,7 +429,7 @@ describe("Integration Tests - Real World Scenarios", () => {
         expectError: true,
       });
 
-      expectError(result, "pwa addon requires one of these frontends");
+      expectError(result, "pwa requires one of these frontends");
     });
 
     it("should fail with example incompatibility", async () => {

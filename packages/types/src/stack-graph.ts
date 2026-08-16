@@ -214,6 +214,9 @@ export type StackPartOptionContext = {
   siblingToolIdsByRoleList?: Partial<Record<StackPartRole, readonly string[] | undefined>>;
   selectedToolIdsByRole?: Partial<Record<StackPartRole, string | undefined>>;
   selectedToolIdsByRoleList?: Partial<Record<StackPartRole, readonly string[] | undefined>>;
+  selectedEcosystemsByRoleList?: Partial<
+    Record<StackPartRole, readonly StackPartEcosystem[] | undefined>
+  >;
   primaryToolIdsByRole?: Partial<Record<StackPrimaryRole, string | undefined>>;
   primaryEcosystemsByRole?: Partial<Record<StackPrimaryRole, StackPartEcosystem | undefined>>;
 };
@@ -1982,30 +1985,31 @@ function createAddonCompatibilityIssue(
       });
     }
 
-    if (
-      [
-        "tanstack-query",
-        "tanstack-table",
-        "tanstack-virtual",
-        "tanstack-db",
-        "tanstack-pacer",
-      ].includes(part.toolId) &&
-      frontendTool === "astro" &&
-      context.settings?.astroIntegration === "none"
-    ) {
-      return createStackGraphIssue({
-        code: "INCOMPATIBLE_GRAPH_SELECTION",
-        partId: part.id,
-        role: part.role,
-        toolId: part.toolId,
-        message:
-          "TanStack libraries with Astro require a UI framework integration (React, Vue, Svelte, or Solid)",
-      });
-    }
+  }
+
+  if (
+    (part.role === "dataFetching" || part.role === "libraries") &&
+    ["tanstack-query", "tanstack-table", "tanstack-virtual", "tanstack-db", "tanstack-pacer"].includes(
+      part.toolId,
+    ) &&
+    frontendTool === "astro" &&
+    context.settings?.astroIntegration === "none"
+  ) {
+    return createStackGraphIssue({
+      code: "INCOMPATIBLE_GRAPH_SELECTION",
+      partId: part.id,
+      role: part.role,
+      toolId: part.toolId,
+      message:
+        "TanStack libraries with Astro require a UI framework integration (React, Vue, Svelte, or Solid)",
+    });
   }
 
   if (part.role === "toolchain" && part.toolId === "vite-plus") {
-    if (context.primaryEcosystemsByRole?.frontend !== "typescript") {
+    const frontendEcosystems =
+      context.selectedEcosystemsByRoleList?.frontend ??
+      (context.primaryEcosystemsByRole?.frontend ? [context.primaryEcosystemsByRole.frontend] : []);
+    if (!frontendEcosystems.includes("typescript")) {
       return createStackGraphIssue({
         code: "INCOMPATIBLE_GRAPH_SELECTION",
         partId: part.id,
@@ -2030,6 +2034,23 @@ function createAddonCompatibilityIssue(
     }
   }
 
+  if (part.role === "workspaceRunner") {
+    const workspaceRunners = ["turborepo", "nx", "vite-plus"];
+    const otherRunner = [
+      ...(context.selectedToolIdsByRoleList?.workspaceRunner ?? []),
+      ...(context.selectedToolIdsByRoleList?.workspaceTooling ?? []),
+    ].find((toolId) => toolId !== part.toolId && workspaceRunners.includes(toolId));
+    if (otherRunner) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Choose one workspace runner: Turborepo, Nx, or Vite+",
+      });
+    }
+  }
+
   if (
     (part.role === "workspaceRunner" || part.role === "codeQuality" || part.role === "gitHooks") &&
     context.selectedToolIdsByRoleList?.toolchain?.includes("vite-plus")
@@ -2043,7 +2064,13 @@ function createAddonCompatibilityIssue(
     });
   }
 
-  if (part.role === "workspaceTooling") {
+  if (
+    part.role === "workspaceTooling" ||
+    part.role === "containerOrchestration" ||
+    part.role === "developerEnvironment" ||
+    part.role === "apiGateway" ||
+    part.role === "backendUtilities"
+  ) {
     const workspaceTooling = context.selectedToolIdsByRoleList?.workspaceTooling ?? [];
     const workspaceRunners = ["turborepo", "nx", "vite-plus"];
     const otherWorkspaceRunner = workspaceTooling.find(
@@ -2998,6 +3025,16 @@ function getSelectedToolIdsByRoleList(parts: readonly StackPart[]) {
   return selectedToolIdsByRoleList;
 }
 
+function getSelectedEcosystemsByRoleList(parts: readonly StackPart[]) {
+  const selectedEcosystemsByRoleList: Partial<Record<StackPartRole, StackPartEcosystem[]>> = {};
+  for (const part of parts) {
+    if (part.source === "provided" || part.ownerPartId || part.toolId === "none") continue;
+    selectedEcosystemsByRoleList[part.role] ??= [];
+    selectedEcosystemsByRoleList[part.role]?.push(part.ecosystem);
+  }
+  return selectedEcosystemsByRoleList;
+}
+
 function getPrimaryToolContext(parts: readonly StackPart[]) {
   const primaryToolIdsByRole: Partial<Record<StackPrimaryRole, string>> = {};
   const primaryEcosystemsByRole: Partial<Record<StackPrimaryRole, StackPartEcosystem>> = {};
@@ -3058,6 +3095,7 @@ function getStackPartOptionContextForPart(
     siblingToolIdsByRoleList: getSiblingToolIdsByRoleList(part, parts),
     selectedToolIdsByRole: getSelectedToolIdsByRole(parts),
     selectedToolIdsByRoleList: getSelectedToolIdsByRoleList(parts),
+    selectedEcosystemsByRoleList: getSelectedEcosystemsByRoleList(parts),
     primaryToolIdsByRole,
     primaryEcosystemsByRole,
   };
