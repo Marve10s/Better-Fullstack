@@ -577,7 +577,6 @@ ${packageManagerRunCmd} dev
 
 ${generateRunningInstructions(frontend, backend, webPort, hasWeb, hasNative, isConvex)}
 ${
-<<<<<<< HEAD
   options.botProtection === "turnstile"
     ? `
 ## Cloudflare Turnstile
@@ -591,7 +590,8 @@ Create a Turnstile widget in Cloudflare, then set the generated public site key 
 BotID is initialized for the generated authentication routes and requires deployment on Vercel. Enable BotID for the project in the Vercel dashboard; no application secret is required.
 `
       : ""
-=======
+}
+${
   options.analytics === "vercel-analytics"
     ? `
 ## Vercel Web Analytics
@@ -599,7 +599,6 @@ BotID is initialized for the generated authentication routes and requires deploy
 The analytics component is already mounted and requires no environment variables. Enable Web Analytics for the project in the Vercel dashboard, then deploy to Vercel to begin collecting privacy-friendly page views.
 `
     : ""
->>>>>>> origin/development
 }
 ${ai === "ai-cli" ? `\n${generateAICLISection(packageManagerRunCmd, packageManager)}\n` : ""}
 ${
