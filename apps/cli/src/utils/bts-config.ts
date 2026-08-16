@@ -7,7 +7,6 @@ import type { BetterTStackConfig, ProjectConfig } from "../types";
 import {
   createStackPart,
   getAddonStackPartBinding,
-  isToolingOverlayOnly,
   legacyProjectConfigToStackParts,
   stackPartsToLegacyProjectConfigPartial,
 } from "../types";
@@ -59,7 +58,6 @@ function normalizeGraphConfigForPersistence(
   stackParts: ProjectConfig["stackParts"],
 ) {
   if (!stackParts) return projectConfig;
-  if (isToolingOverlayOnly(stackParts)) return projectConfig;
 
   const legacyConfig = stackPartsToLegacyProjectConfigPartial(stackParts);
   const selectedEcosystems = new Set(
