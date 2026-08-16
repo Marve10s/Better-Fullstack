@@ -2039,9 +2039,6 @@ export function cliInputToProjectConfigPartial(
     const providedStackParts = parseStackPartSpecs(input.part, "selected");
     if (isToolingOverlayOnly(providedStackParts)) {
       config.stackParts = providedStackParts;
-      config.addons = [
-        ...new Set([...(config.addons ?? []), ...providedStackParts.map((part) => part.toolId)]),
-      ] as ProjectConfig["addons"];
     } else {
       const stackParts = getCliGraphStackParts(input);
       Object.assign(config, stackPartsToLegacyProjectConfigPartial(stackParts), {

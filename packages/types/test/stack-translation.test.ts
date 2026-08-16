@@ -704,7 +704,6 @@ describe("stack selection translation", () => {
       "codeQuality:biome",
       "aiTooling:skills",
     ]);
-    expect(config.addons).toEqual(expect.arrayContaining(["biome", "skills"]));
   });
 
   it("keeps solo selections on the legacy pipeline with tooling-only stackParts", () => {
