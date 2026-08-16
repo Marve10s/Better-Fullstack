@@ -24,7 +24,7 @@ Other ecosystems expose native helpers: Go uses `--auth go-better-auth` or `--go
 ## Stack requirements
 
 - **Better Auth needs an adapter.** It works with `drizzle`, `prisma`, `kysely`, and `mikroorm`, but not with `typeorm` or `sequelize`. See [Database and ORM Pairing](/docs/stack-guides/database-orm-pairing/).
-- **Payments can require Better Auth.** For example, Polar requires Better Auth and a web frontend. Review the [Auth and Payments](/docs/sections/auth-and-payments/) section.
+- **Payments can require Better Auth.** For example, Polar requires Better Auth and a web frontend. Review the [Compatibility Matrix](/docs/reference/compatibility/).
 - **Hosted providers need keys.** Clerk, Auth0, WorkOS, Kinde, Stack Auth, and Supabase Auth read credentials from environment variables — see [Environment Variables](/docs/provider-setup/environment-variables/).
 
 ## Choosing a provider
@@ -34,5 +34,4 @@ Pick `better-auth` when you want to own the data and already use a supported ORM
 ## Next steps
 
 - See every value on the [TypeScript options](/docs/reference/options/typescript/) page.
-- Read the [Auth and Payments](/docs/sections/auth-and-payments/) section overview.
 - Configure credentials with the [Environment Variables](/docs/provider-setup/environment-variables/) guide.

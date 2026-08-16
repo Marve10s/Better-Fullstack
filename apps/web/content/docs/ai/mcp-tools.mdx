@@ -58,7 +58,7 @@ release/SHA lineage, choose a supported cross-version upgrade window, create a t
 backup, or provide automated recovery. Those provenance and recovery guarantees remain blocked on
 Wave 1.
 
-<Callout kind="warn" title="Write and migration behavior">
+<Callout kind="warning" title="Write and migration behavior">
 Planning tools are read-only. Create, apply, and add tools write files. Project checks can fetch
 dependencies and write toolchain locks, caches, compiler output, or build artifacts. Stack updates
 refuse to overwrite user-edited generated files. Architecture updates do not migrate application

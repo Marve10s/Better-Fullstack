@@ -4,7 +4,9 @@ import { TbAlertCircle as AlertCircle, TbAlertTriangle as AlertTriangle, TbInfoC
 
 import { cn } from "@/lib/utils";
 
-type CalloutKind = "info" | "tip" | "warn" | "danger";
+export const CALLOUT_KINDS = ["info", "tip", "warning", "danger"] as const;
+
+export type CalloutKind = (typeof CALLOUT_KINDS)[number];
 
 const config: Record<CalloutKind, { icon: typeof Info; tone: string; rail: string }> = {
   info: {
@@ -17,7 +19,7 @@ const config: Record<CalloutKind, { icon: typeof Info; tone: string; rail: strin
     tone: "text-emerald-600 dark:text-emerald-400",
     rail: "border-l-emerald-500",
   },
-  warn: {
+  warning: {
     icon: AlertTriangle,
     tone: "text-amber-500 dark:text-amber-400",
     rail: "border-l-amber-500",
@@ -33,9 +35,8 @@ const config: Record<CalloutKind, { icon: typeof Info; tone: string; rail: strin
  * Side-bar callout used inside MDX:
  *   <Callout kind="tip">Some advice here.</Callout>
  *
- * Renders as a thin card with a colored icon. Spec leans neutral so callouts
- * don't fight the content. Only `warn` and `danger` kinds carry color; the
- * rest stay grayscale to honor the brand palette.
+ * `kind` arrives untyped from MDX, so an unknown value degrades to `info`
+ * rather than throwing and taking the whole docs page down.
  */
 export function Callout({
   kind = "info",
@@ -46,7 +47,7 @@ export function Callout({
   title?: string;
   children?: ReactNode;
 }) {
-  const { icon: Icon, tone, rail } = config[kind];
+  const { icon: Icon, tone, rail } = config[kind] ?? config.info;
   return (
     <aside
       className={cn(

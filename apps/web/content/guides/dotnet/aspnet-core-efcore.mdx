@@ -1,0 +1,188 @@
+---
+title: ASP.NET Core with PostgreSQL and EF Core
+description: Create a .NET API project with ASP.NET Core Minimal APIs, PostgreSQL, EF Core, ASP.NET Identity, SignalR, Serilog, and xUnit using Better Fullstack.
+translationStatus: pending
+updated: 2026-08-16
+category: .NET
+tags:
+  - aspnet-core
+  - postgres
+  - ef-core
+  - dotnet
+keywords:
+  - aspnet core postgres starter
+  - dotnet minimal api boilerplate
+  - ef core postgres starter
+  - create aspnet core project
+  - dotnet rest api starter
+---
+
+Use this stack when you want a .NET HTTP API with relational persistence, structured logging, and a test project wired up from the first commit.
+
+```npm
+npm create better-fullstack@latest my-dotnet-api -- \
+  --ecosystem dotnet \
+  --dotnet-web-framework aspnet-minimal \
+  --dotnet-orm ef-core \
+  --dotnet-auth aspnet-identity \
+  --dotnet-api minimal-api \
+  --dotnet-testing xunit \
+  --dotnet-realtime signalr \
+  --dotnet-observability serilog \
+  --dotnet-validation fluentvalidation \
+  --dotnet-deploy docker \
+  --database postgres
+```
+
+## What this creates
+
+- An ASP.NET Core application using Minimal APIs.
+- PostgreSQL through the Npgsql EF Core provider.
+- ASP.NET Core Identity registered against the application `DbContext`.
+- A SignalR hub for server-pushed updates.
+- Serilog console logging.
+- FluentValidation rules and an xUnit test project.
+
+## Generated shape
+
+The scaffold is a single ASP.NET Core project plus a sibling test project. The namespace and project name are derived from the project name you pass to the CLI.
+
+```txt
+my-dotnet-api/
+├── MyDotnetApi.csproj
+├── MyDotnetApi.http
+├── Program.cs
+├── appsettings.json
+├── appsettings.Development.json
+├── Dockerfile
+├── Validators/
+│   └── SampleInputValidator.cs
+└── MyDotnetApi.Tests/
+    ├── MyDotnetApi.Tests.csproj
+    └── ApiTests.cs
+```
+
+Everything lives in `Program.cs`: endpoint mapping, service registration, the `TodoItem` model, and `AppDbContext`. Split it into folders once the API grows past the generated sample.
+
+## Prerequisites
+
+- .NET SDK 10 or newer.
+- A PostgreSQL instance reachable from the machine running the app.
+- Docker if you keep the generated `Dockerfile` in your deploy path.
+
+## Run and verify
+
+```bash
+cd my-dotnet-api
+dotnet restore
+dotnet run
+```
+
+The generated `appsettings.json` ships a local development connection string. Override it for anything else through `ConnectionStrings__DefaultConnection` rather than editing the committed file.
+
+```bash
+export ConnectionStrings__DefaultConnection="Host=localhost;Port=5432;Database=my_dotnet_api;Username=postgres;Password=postgres"
+```
+
+Open the URL printed by ASP.NET Core, then use the generated `.http` file to exercise the endpoints. `dotnet build` and `dotnet test` verify the scaffold.
+
+## Create the schema before calling the data endpoints
+
+The generated `Program.cs` registers `AppDbContext` but never calls `Migrate()` or `EnsureCreated()`, so `/api/todos` hits an empty database until you create the schema yourself. `Microsoft.EntityFrameworkCore.Design` is already referenced, so the EF tooling works without adding packages:
+
+```bash
+dotnet tool install --global dotnet-ef
+dotnet ef migrations add InitialCreate
+dotnet ef database update
+```
+
+Run migrations against production before routing traffic. Treat this as the first change you make to a fresh scaffold.
+
+## Representative snippets
+
+The persisted model and context are plain EF Core.
+
+```csharp
+public sealed class TodoItem
+{
+    public int Id { get; set; }
+    public required string Title { get; set; }
+    public bool Complete { get; set; }
+}
+
+public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+{
+    public DbSet<TodoItem> Todos => Set<TodoItem>();
+}
+```
+
+Minimal API endpoints take the context by injection.
+
+```csharp
+app.MapGet("/api/todos", async (AppDbContext db) =>
+{
+    return Results.Ok(await db.Todos.OrderBy(todo => todo.Id).ToListAsync());
+});
+
+app.MapPost("/api/todos", async (TodoInput input, AppDbContext db) =>
+{
+    var todo = new TodoItem { Title = input.Title, Complete = false };
+    db.Todos.Add(todo);
+    await db.SaveChangesAsync();
+    return Results.Created($"/api/todos/{todo.Id}", todo);
+});
+```
+
+The xUnit project boots the real application through `WebApplicationFactory`, so tests exercise the actual pipeline rather than a mock.
+
+```csharp
+public sealed class ApiTests : IClassFixture<WebApplicationFactory<Program>>
+{
+    [Fact]
+    public async Task RootEndpointReturnsOk()
+    {
+        using var client = _factory.CreateClient();
+        using var response = await client.GetAsync("/");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+}
+```
+
+## When to choose it
+
+Choose .NET when you want a compiled, statically typed backend with first-party database, identity, logging, and realtime libraries maintained on one release cadence.
+
+Choose Minimal APIs over `--dotnet-web-framework aspnet-mvc` when the service is API-only. Choose MVC when you want controllers, model binding conventions, and view support.
+
+## Compatibility notes
+
+- `--dotnet-orm ef-core` selects the provider from `--database`: Npgsql for `postgres`, `Microsoft.EntityFrameworkCore.Sqlite` for `sqlite`.
+- `--dotnet-auth aspnet-identity` calls `AddIdentityCore<IdentityUser>().AddEntityFrameworkStores<AppDbContext>()`, but the generated `AppDbContext` derives from `DbContext`, not `IdentityDbContext`. Change the base class and generate a migration before resolving the user store.
+- `--dotnet-validation fluentvalidation` generates `SampleInputValidator` but does not register it. Add `builder.Services.AddValidatorsFromAssemblyContaining<SampleInputValidator>()` when you start validating requests.
+- Deployment targets for .NET come from `--dotnet-deploy`, not the TypeScript `--web-deploy` and `--server-deploy` flags.
+
+## Deployment notes
+
+The generated `Dockerfile` builds and publishes the app. The scaffold reads `PORT` and binds all interfaces when `ASPNETCORE_URLS` is unset, so container platforms that inject a port work without changes.
+
+Before deploying, set the production connection string, apply migrations, and confirm Serilog's sink configuration matches where you collect logs.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| `relation "Todos" does not exist` | Create and apply an EF migration; nothing creates the schema at startup. |
+| App binds an unexpected port | `PORT` is only honored when `ASPNETCORE_URLS` is unset. |
+| Identity user store fails to resolve | `AppDbContext` needs to derive from `IdentityDbContext` and have a migration. |
+| Validators never run | Register them with `AddValidatorsFromAssemblyContaining`. |
+| Connection string changes are ignored | Real environment variables win over the local `.env` the app loads at startup. |
+
+## Tradeoffs
+
+A single `Program.cs` keeps the scaffold readable but stops scaling once you add more than a handful of endpoints. Plan the split into endpoint groups and a separate data project early.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=dotnet&dnwf=aspnet-minimal&dnorm=ef-core&dnauth=aspnet-identity&dnapi=minimal-api&db=postgres).
+- Read the [.NET ecosystem docs](/docs/ecosystems/dotnet/).
+- Review the [CLI create reference](/docs/cli/create/).

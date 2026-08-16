@@ -40,7 +40,6 @@ export function generateLlmsTxt({
     [
       "/docs",
       "/docs/getting-started/lifecycle",
-      "/docs/recipes",
       "/docs/cli/create",
       "/docs/cli/add",
       "/docs/cli/update",
