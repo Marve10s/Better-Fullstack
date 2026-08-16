@@ -446,7 +446,7 @@ export const IntegrationsSchema = z
 export const EcommerceSchema = z.enum(["medusa", "none"]).describe("E-commerce platform SDK");
 
 export const AnalyticsSchema = z
-  .enum(["plausible", "umami", "posthog", "ga4", "none"])
+  .enum(["plausible", "umami", "posthog", "ga4", "vercel-analytics", "none"])
   .describe("Product analytics provider");
 
 export const MobileNavigationSchema = z

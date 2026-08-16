@@ -16,6 +16,7 @@ import {
 import { hasWebStyling } from "../utils/compatibility-rules";
 import { exitCancelled } from "../utils/errors";
 import { getAddonsChoice, getAppPlatformsChoice } from "./addons";
+import { getAnalyticsChoice } from "./analytics";
 import { getAiDocsChoice } from "./ai-docs";
 import { getAstroIntegrationChoice } from "./astro-integration";
 import { getBackendFrameworkChoice } from "./backend";
@@ -345,7 +346,7 @@ export async function gatherMultiEcosystemConfig(
           await getConfigSectionsChoice(
             "typescript",
             [],
-            ["app-platforms", "ui-styling", "deploy", "addons-examples"],
+            ["app-platforms", "ui-styling", "content", "deploy", "addons-examples"],
           ),
         )
       : [];
@@ -457,6 +458,12 @@ export async function gatherMultiEcosystemConfig(
         getCSSFrameworkChoice(flags.cssFramework, uiLibrary, frontendList),
       )
     : "none";
+  const analytics =
+    frontendEcosystem === "typescript"
+      ? await scopedPromptValue("typescript", "analytics", configScope, typeScriptSections, () =>
+          getAnalyticsChoice(flags.analytics, frontendList),
+        )
+      : "none";
 
   const backendEcosystem = await selectBackendEcosystem();
   const backendSections =
@@ -467,6 +474,9 @@ export async function gatherMultiEcosystemConfig(
   }
   if (frontendEcosystem === "typescript" && frontend !== "none") {
     stackPartSpecs.push(`frontend:typescript:${frontend}`);
+    if (analytics !== "none") {
+      stackPartSpecs.push(`frontend.analytics:typescript:${analytics}`);
+    }
   }
   if (frontendEcosystem === "dotnet" && selectedDotnetFrontend !== "none") {
     stackPartSpecs.push(`frontend:dotnet:${selectedDotnetFrontend}`);
@@ -1588,6 +1598,7 @@ export async function gatherMultiEcosystemConfig(
     uiLibrary,
     ...shadcnOptions,
     cssFramework,
+    analytics,
     addons: selectedAddons,
     examples: [],
     dbSetup,

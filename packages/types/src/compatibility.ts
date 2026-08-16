@@ -55,6 +55,24 @@ const SIGNOZ_SUPPORTED_GO_WEB_FRAMEWORKS = new Set([
   "stdlib",
 ]);
 const SIGNOZ_SUPPORTED_PYTHON_WEB_FRAMEWORKS = new Set(["fastapi"]);
+const VERCEL_ANALYTICS_FRONTENDS = new Set([
+  "next",
+  "vinext",
+  "tanstack-router",
+  "tanstack-start",
+  "react-router",
+  "react-vite",
+  "svelte",
+  "nuxt",
+  "vue",
+  "solid",
+  "solid-start",
+  "astro",
+]);
+
+export function isVercelAnalyticsFrontend(frontend: string) {
+  return VERCEL_ANALYTICS_FRONTENDS.has(frontend);
+}
 
 export function isSignozSupportedGoWebFramework(framework: string): boolean {
   return SIGNOZ_SUPPORTED_GO_WEB_FRAMEWORKS.has(framework);
@@ -493,6 +511,7 @@ export function stackQualifiesForSingleApp(stack: CompatibilityInput): boolean {
   const webFrontends = (stack.webFrontend ?? []).filter((f) => f && f !== "none");
   if (webFrontends.length !== 1) return false;
   if (webFrontends[0] !== SINGLE_APP_WEB_FRONTEND_BY_BACKEND[stack.backend]) return false;
+  if (stack.analytics !== "none" && stack.analytics !== "vercel-analytics") return false;
 
   const siblingPackageScalars = [
     stack.api,
@@ -512,7 +531,6 @@ export function stackQualifiesForSingleApp(stack: CompatibilityInput): boolean {
     stack.fileStorage,
     stack.cms,
     stack.aiSdk,
-    stack.analytics,
     stack.featureFlags,
     stack.integrations,
     stack.ecommerce,
@@ -2389,6 +2407,18 @@ export const analyzeStackCompatibility = (
     });
   }
 
+  if (
+    nextStack.analytics === "vercel-analytics" &&
+    !nextStack.webFrontend.some((frontend) => isVercelAnalyticsFrontend(frontend))
+  ) {
+    nextStack.analytics = "none";
+    changed = true;
+    changes.push({
+      category: "analytics",
+      message: "Analytics set to 'None' (Vercel Analytics is not mounted for this frontend)",
+    });
+  }
+
   // Workspace shape: single-app (flat) only applies to a qualifying thin self
   // app; normalize back to monorepo for anything else so we never emit a broken
   // flat layout.
@@ -2842,6 +2872,22 @@ export const getDisabledReason = (
     optionId !== "vercel"
   ) {
     return "Vercel BotID requires Vercel deployment";
+  }
+
+  if (category === "analytics" && optionId === "vercel-analytics") {
+    const webFrontends = currentStack.webFrontend.filter((frontend) => frontend !== "none");
+    if (webFrontends.length === 0) return "Vercel Analytics requires a web frontend";
+    if (webFrontends.some((frontend) => !isVercelAnalyticsFrontend(frontend))) {
+      return "Vercel Analytics is not yet mounted for the selected frontend";
+    }
+  }
+  if (
+    category === "webFrontend" &&
+    currentStack.analytics === "vercel-analytics" &&
+    optionId !== "none" &&
+    !isVercelAnalyticsFrontend(optionId)
+  ) {
+    return "The selected frontend does not yet mount Vercel Analytics";
   }
 
   const graphDisabledReason =

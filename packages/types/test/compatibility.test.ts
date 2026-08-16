@@ -140,6 +140,33 @@ describe("compatibility issue helpers", () => {
     ).toContain("botProtection");
   });
 
+  it("offers Vercel Analytics only where its generated mount is wired", () => {
+    expect(
+      getDisabledReason(
+        { ...DEFAULT_STACK_SELECTION, webFrontend: ["next"] },
+        "analytics",
+        "vercel-analytics",
+      ),
+    ).toBeNull();
+    expect(
+      getDisabledReason(
+        { ...DEFAULT_STACK_SELECTION, webFrontend: ["vanilla-vite"] },
+        "analytics",
+        "vercel-analytics",
+      ),
+    ).toContain("not yet mounted");
+
+    const unsupported = {
+      ...DEFAULT_STACK_SELECTION,
+      webFrontend: ["vanilla-vite" as const],
+      analytics: "vercel-analytics" as const,
+    };
+    expect(getDisabledReason(unsupported, "webFrontend", "qwik")).toContain(
+      "does not yet mount",
+    );
+    expect(analyzeStackCompatibility(unsupported).adjustedStack?.analytics).toBe("none");
+  });
+
   it("keeps SigNoz off stacks without a generated server target", () => {
     for (const backend of ["none", "convex"] as const) {
       const stack = {

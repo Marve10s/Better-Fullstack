@@ -73,6 +73,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   "openapi-typescript": { type: "si", slug: "openapiinitiative", hex: "6BA539" },
   "apollo-client": { type: "si", slug: "apollographql", hex: "311C87" },
   ga4: { type: "si", slug: "googleanalytics", hex: "E37400" },
+  "vercel-analytics": { type: "si", slug: "vercel", hex: "000000" },
   paypal: { type: "si", slug: "paypal", hex: "003087" },
   xendit: { type: "local", src: "https://www.xendit.co/favicon.ico" },
   medusa: { type: "si", slug: "medusa", hex: "000000" },
