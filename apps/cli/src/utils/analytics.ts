@@ -3,6 +3,12 @@ import pc from "picocolors";
 
 import type { ProjectConfig } from "../types";
 
+import {
+  STACK_TOOL_DEFINITIONS,
+  StackPartEcosystemSchema,
+  StackPartRoleSchema,
+} from "../types";
+
 import { getLatestCLIVersion } from "./get-latest-cli-version";
 import { canPromptInteractively } from "./prompt-environment";
 import { TelemetryDeliveryQueue } from "./telemetry-delivery";
@@ -198,6 +204,22 @@ const BLOCKED_TELEMETRY_KEYS = new Set([
 const TELEMETRY_KEY = /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/;
 const TELEMETRY_IDENTIFIER = /^[A-Za-z0-9][A-Za-z0-9_.:+-]{0,99}$/;
 
+const REGISTERED_STACK_TOOL_IDS = new Set(
+  STACK_TOOL_DEFINITIONS.map((definition) => definition.toolId),
+);
+
+function isRegisteredStackPartRole(value: string | undefined): boolean {
+  return value !== undefined && StackPartRoleSchema.safeParse(value).success;
+}
+
+function isRegisteredStackPartEcosystem(value: string): boolean {
+  return StackPartEcosystemSchema.safeParse(value).success;
+}
+
+function isRegisteredStackToolId(value: string): boolean {
+  return REGISTERED_STACK_TOOL_IDS.has(value);
+}
+
 function sanitizeIdentifier(value: unknown): string | undefined {
   if (typeof value !== "string") return undefined;
   const trimmed = value.trim();
@@ -265,11 +287,15 @@ export function sanitizeTelemetryConfig(
       const selections = value.slice(0, 64).flatMap((spec) => {
         if (typeof spec !== "string") return [];
         const [rolePath = "", ecosystem = "", toolId = ""] = spec.split(":");
-        const role = sanitizeIdentifier(rolePath.split(".").pop());
-        const safeEcosystem = sanitizeIdentifier(ecosystem);
-        const safeToolId = sanitizeIdentifier(toolId);
-        if (!role || !safeEcosystem || !safeToolId) return [];
-        return [`${role}:${safeEcosystem}:${safeToolId}`];
+        const role = rolePath.split(".").pop();
+        if (
+          !isRegisteredStackPartRole(role) ||
+          !isRegisteredStackPartEcosystem(ecosystem) ||
+          !isRegisteredStackToolId(toolId)
+        ) {
+          return [];
+        }
+        return [`${role}:${ecosystem}:${toolId}`];
       });
       if (selections.length > 0) safe.stackPartSelections = [...new Set(selections)];
       continue;
