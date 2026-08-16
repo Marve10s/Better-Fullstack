@@ -16,9 +16,11 @@ import {
 import { hasWebStyling } from "../utils/compatibility-rules";
 import { exitCancelled } from "../utils/errors";
 import { getAddonsChoice, getAppPlatformsChoice } from "./addons";
+import { getAnalyticsChoice } from "./analytics";
 import { getAiDocsChoice } from "./ai-docs";
 import { getAstroIntegrationChoice } from "./astro-integration";
 import { getBackendFrameworkChoice } from "./backend";
+import { getBotProtectionChoice } from "./bot-protection";
 import { getApiChoice } from "./api";
 import { getAuthChoice } from "./auth";
 import { getORMChoice } from "./orm";
@@ -344,7 +346,7 @@ export async function gatherMultiEcosystemConfig(
           await getConfigSectionsChoice(
             "typescript",
             [],
-            ["app-platforms", "ui-styling", "deploy", "addons-examples"],
+            ["app-platforms", "ui-styling", "content", "deploy", "addons-examples"],
           ),
         )
       : [];
@@ -456,6 +458,12 @@ export async function gatherMultiEcosystemConfig(
         getCSSFrameworkChoice(flags.cssFramework, uiLibrary, frontendList),
       )
     : "none";
+  const analytics =
+    frontendEcosystem === "typescript"
+      ? await scopedPromptValue("typescript", "analytics", configScope, typeScriptSections, () =>
+          getAnalyticsChoice(flags.analytics, frontendList),
+        )
+      : "none";
 
   const backendEcosystem = await selectBackendEcosystem();
   const backendSections =
@@ -466,6 +474,9 @@ export async function gatherMultiEcosystemConfig(
   }
   if (frontendEcosystem === "typescript" && frontend !== "none") {
     stackPartSpecs.push(`frontend:typescript:${frontend}`);
+    if (analytics !== "none") {
+      stackPartSpecs.push(`frontend.analytics:typescript:${analytics}`);
+    }
   }
   if (frontendEcosystem === "dotnet" && selectedDotnetFrontend !== "none") {
     stackPartSpecs.push(`frontend:dotnet:${selectedDotnetFrontend}`);
@@ -582,6 +593,13 @@ export async function gatherMultiEcosystemConfig(
         : await scopedPromptValue("typescript", "rateLimit", configScope, backendSections, () =>
             getRateLimitChoice(flags.rateLimit, backend),
           );
+    const botProtection = await scopedPromptValue(
+      "typescript",
+      "botProtection",
+      configScope,
+      typeScriptSections,
+      () => getBotProtectionChoice(flags.botProtection, frontendList),
+    );
     const cms =
       backend === "none"
         ? "none"
@@ -639,6 +657,7 @@ export async function gatherMultiEcosystemConfig(
       jobQueue,
       caching,
       rateLimit,
+      botProtection,
       cms,
       search,
       vectorDb,
@@ -670,6 +689,9 @@ export async function gatherMultiEcosystemConfig(
       ["ecommerce", ecommerce],
     ] as const) {
       if (value !== "none") stackPartSpecs.push(`backend.${role}:typescript:${value}`);
+    }
+    if (botProtection !== "none") {
+      stackPartSpecs.push(`frontend.botProtection:typescript:${botProtection}`);
     }
   } else if (backendEcosystem === "go") {
     const goWebFramework = promptValue(await getGoWebFrameworkChoice(flags.goWebFramework));
@@ -1576,6 +1598,7 @@ export async function gatherMultiEcosystemConfig(
     uiLibrary,
     ...shadcnOptions,
     cssFramework,
+    analytics,
     addons: selectedAddons,
     examples: [],
     dbSetup,

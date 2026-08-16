@@ -478,6 +478,15 @@ function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
       config.rateLimit,
       "none",
     );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "botProtection",
+      "typescript",
+      "bot-protection",
+      config.botProtection,
+      "none",
+    );
     appendChangedGraphStringFlag(flags, config, "cms", "typescript", "cms", config.cms, "none");
     appendChangedGraphStringFlag(
       flags,
@@ -952,6 +961,7 @@ function getTypeScriptFlags(config: ProjectConfig) {
   flags.push(`--ecommerce ${config.ecommerce}`);
   flags.push(`--caching ${config.caching}`);
   flags.push(`--rate-limit ${config.rateLimit}`);
+  flags.push(`--bot-protection ${config.botProtection}`);
   flags.push(`--i18n ${config.i18n}`);
   flags.push(`--cms ${config.cms}`);
   flags.push(`--search ${config.search}`);
@@ -1004,6 +1014,7 @@ function getReactNativeFlags(config: ProjectConfig) {
   flags.push(`--mobile-deep-linking ${config.mobileDeepLinking}`);
   flags.push(formatArrayFlag("mobile-libraries", config.mobileLibraries));
 
+  appendCapabilityPartFlags(flags, config);
   appendCommonFlags(flags, config);
 
   return flags;

@@ -106,6 +106,7 @@ export function buildCompatibilityInputFromConfig(
     jobQueue: asString(config.jobQueue),
     caching: asString(config.caching),
     rateLimit: asString(config.rateLimit),
+    botProtection: asString(config.botProtection),
     animation: asString(config.animation),
     cssFramework: asString(config.cssFramework),
     uiLibrary: asString(config.uiLibrary),

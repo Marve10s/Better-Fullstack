@@ -61,6 +61,7 @@ const DEFAULT_CONFIG = {
   vectorDb: "none",
   fileStorage: "none",
   rateLimit: "none",
+  botProtection: "none",
   rustWebFramework: "none",
   rustFrontend: "none",
   rustOrm: "none",

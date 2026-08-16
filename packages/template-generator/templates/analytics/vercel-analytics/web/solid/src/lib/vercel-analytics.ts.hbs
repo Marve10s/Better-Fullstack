@@ -1,0 +1,9 @@
+import { inject } from "@vercel/analytics";
+
+let started = false;
+
+export function startVercelAnalytics() {
+  if (started || typeof window === "undefined") return;
+  inject();
+  started = true;
+}

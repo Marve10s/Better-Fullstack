@@ -125,6 +125,7 @@ import {
   PYTHON_VALIDATION_VALUES,
   PYTHON_WEB_FRAMEWORK_VALUES,
   RATE_LIMIT_VALUES,
+  BOT_PROTECTION_VALUES,
   REALTIME_VALUES,
   RUNTIME_VALUES,
   RUST_API_VALUES,
@@ -186,6 +187,7 @@ export type OptionCategory =
   | "jobQueue"
   | "caching"
   | "rateLimit"
+  | "botProtection"
   | "i18n"
   | "search"
   | "vectorDb"
@@ -396,6 +398,7 @@ export const TYPESCRIPT_CATEGORY_ORDER = [
   "jobQueue",
   "caching",
   "rateLimit",
+  "botProtection",
   "i18n",
   "search",
   "vectorDb",
@@ -943,6 +946,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   jobQueue: JOB_QUEUE_VALUES,
   caching: CACHING_VALUES,
   rateLimit: RATE_LIMIT_VALUES,
+  botProtection: BOT_PROTECTION_VALUES,
   i18n: I18N_VALUES,
   search: SEARCH_VALUES,
   vectorDb: VECTOR_DB_VALUES,
@@ -1209,6 +1213,10 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     arcjet: "Arcjet",
     "upstash-ratelimit": "Upstash Ratelimit",
   },
+  botProtection: {
+    botid: "Vercel BotID",
+    turnstile: "Cloudflare Turnstile",
+  },
   backendLibraries: {
     effect: "Effect Core",
     "effect-full": "Effect Platform + SQL",
@@ -1307,6 +1315,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     plausible: "Plausible",
     umami: "Umami",
     ga4: "Google Analytics 4",
+    "vercel-analytics": "Vercel Analytics",
   },
   mobileNavigation: {
     "expo-router": "Expo Router",
@@ -2166,6 +2175,7 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   jobQueue: buildCategoryMetadata("jobQueue"),
   caching: buildCategoryMetadata("caching"),
   rateLimit: buildCategoryMetadata("rateLimit"),
+  botProtection: buildCategoryMetadata("botProtection"),
   i18n: buildCategoryMetadata("i18n"),
   search: buildCategoryMetadata("search"),
   vectorDb: buildCategoryMetadata("vectorDb"),

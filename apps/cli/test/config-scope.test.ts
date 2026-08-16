@@ -56,6 +56,7 @@ describe("configuration scope registry", () => {
       "ai",
       "data-storage",
       "backend-extras",
+      "frontend-security",
       "quality",
       "content",
       "deploy",

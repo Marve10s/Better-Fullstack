@@ -12,6 +12,161 @@ import {
 import { DEFAULT_STACK_SELECTION } from "../src/stack-translation";
 
 describe("compatibility issue helpers", () => {
+  it("keeps bot protection within its generated auth and frontend boundaries", () => {
+    const nextStack = { ...DEFAULT_STACK_SELECTION, webFrontend: ["next"] };
+    const botIdStack = { ...nextStack, backend: "self-next" };
+    const viteStack = { ...DEFAULT_STACK_SELECTION, webFrontend: ["react-vite"] };
+
+    expect(getDisabledReason(botIdStack, "botProtection", "botid")).toBeNull();
+    expect(getDisabledReason(nextStack, "botProtection", "botid")).toContain(
+      "self-hosted Next.js backend",
+    );
+    expect(getDisabledReason(viteStack, "botProtection", "botid")).toContain("Next.js frontends");
+    expect(getDisabledReason(viteStack, "botProtection", "turnstile")).toBeNull();
+    expect(
+      getDisabledReason(
+        { ...botIdStack, webDeploy: "netlify" },
+        "botProtection",
+        "botid",
+      ),
+    ).toContain("Vercel deployment");
+    expect(
+      getDisabledReason(
+        { ...botIdStack, botProtection: "botid" },
+        "webFrontend",
+        "svelte",
+      ),
+    ).toContain("Next.js frontends");
+    expect(
+      getDisabledReason(
+        { ...botIdStack, botProtection: "botid" },
+        "webDeploy",
+        "netlify",
+      ),
+    ).toContain("Vercel deployment");
+    expect(
+      getDisabledReason(
+        { ...nextStack, auth: "none" },
+        "botProtection",
+        "turnstile",
+      ),
+    ).toContain("Better Auth");
+    expect(
+      getDisabledReason(
+        { ...nextStack, backend: "none" },
+        "botProtection",
+        "turnstile",
+      ),
+    ).toContain("server-side verification");
+    expect(
+      getDisabledReason(
+        { ...nextStack, backend: "convex" },
+        "botProtection",
+        "turnstile",
+      ),
+    ).toContain("Convex");
+    expect(
+      getDisabledReason(
+        { ...botIdStack, backend: "convex" },
+        "botProtection",
+        "botid",
+      ),
+    ).toContain("self-hosted Next.js backend");
+    expect(
+      getDisabledReason(
+        { ...nextStack, webFrontend: ["svelte"] },
+        "botProtection",
+        "turnstile",
+      ),
+    ).toContain("React web frontends only");
+    expect(
+      getDisabledReason(
+        { ...nextStack, webFrontend: ["redwood"] },
+        "botProtection",
+        "turnstile",
+      ),
+    ).toContain("React web frontends only");
+    expect(
+      getDisabledReason(
+        { ...botIdStack, webFrontend: ["vinext"] },
+        "botProtection",
+        "botid",
+      ),
+    ).toContain("Next.js frontends");
+    for (const botProtection of ["botid", "turnstile"] as const) {
+      expect(
+        getDisabledReason(
+          { ...botIdStack, nativeFrontend: ["native-bare"] },
+          "botProtection",
+          botProtection,
+        ),
+      ).toContain("native frontend");
+      expect(
+        analyzeStackCompatibility({
+          ...botIdStack,
+          nativeFrontend: ["native-bare"],
+          botProtection,
+        }).adjustedStack?.botProtection,
+      ).toBe("none");
+    }
+    expect(
+      getDisabledReason(
+        { ...DEFAULT_STACK_SELECTION, ecosystem: "go", webFrontend: ["none"] },
+        "botProtection",
+        "turnstile",
+      ),
+    ).toContain("TypeScript");
+
+    expect(
+      analyzeStackCompatibility({
+        ...DEFAULT_STACK_SELECTION,
+        webFrontend: ["svelte"],
+        botProtection: "botid",
+      }).adjustedStack?.botProtection,
+    ).toBe("none");
+    expect(
+      analyzeStackCompatibility({
+        ...botIdStack,
+        backend: "hono",
+        botProtection: "botid",
+      }).adjustedStack?.botProtection,
+    ).toBe("none");
+    expect(
+      evaluateCompatibility({
+        ...DEFAULT_STACK_SELECTION,
+        webFrontend: ["svelte"],
+        botProtection: "botid",
+      }).issues.map((issue) => issue.category),
+    ).toContain("botProtection");
+  });
+
+  it("offers Vercel Analytics only where its generated mount is wired", () => {
+    expect(
+      getDisabledReason(
+        { ...DEFAULT_STACK_SELECTION, webFrontend: ["next"] },
+        "analytics",
+        "vercel-analytics",
+      ),
+    ).toBeNull();
+    expect(
+      getDisabledReason(
+        { ...DEFAULT_STACK_SELECTION, webFrontend: ["vanilla-vite"] },
+        "analytics",
+        "vercel-analytics",
+      ),
+    ).toContain("not yet mounted");
+
+    const unsupported = {
+      ...DEFAULT_STACK_SELECTION,
+      webFrontend: ["vanilla-vite" as const],
+      analytics: "vercel-analytics" as const,
+    };
+    expect(getDisabledReason(unsupported, "webFrontend", "qwik")).toContain(
+      "does not yet mount",
+    );
+    expect(analyzeStackCompatibility(unsupported).adjustedStack?.analytics).toBe("none");
+  });
+
   it("keeps SigNoz off stacks without a generated server target", () => {
     for (const backend of ["none", "convex"] as const) {
       const stack = {

@@ -822,6 +822,10 @@ export const dependencyVersionMap = {
   "@arcjet/node": "^1.9.1",
   "@upstash/ratelimit": "^2.0.8",
 
+  // Bot protection
+  botid: "^1.5.11",
+  "@marsidev/react-turnstile": "^1.5.4",
+
   // i18n - i18next
   i18next: "^26.3.6",
   "react-i18next": "^17.0.11",
@@ -900,6 +904,9 @@ export const dependencyVersionMap = {
 
   // Analytics - Plausible
   "plausible-tracker": "^0.3.9",
+
+  // Analytics - Vercel
+  "@vercel/analytics": "^2.0.1",
 } as const;
 
 export type AvailableDependencies = keyof typeof dependencyVersionMap;

@@ -19,7 +19,7 @@ import {
 } from "../../utils/scaffold-manifest";
 import { setupAddons } from "../addons/addons-setup";
 import { setupDatabase } from "../core/db-setup";
-import { initializeGit } from "./git";
+import { commitInitialScaffold, initializeGit } from "./git";
 import {
   installDependencies,
   runCargoBuild,
@@ -155,6 +155,8 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
       const result = await runMixCompile({ projectDir });
       if (!result.success) setupFailures.push(result);
     }
+
+    await commitInitialScaffold(projectDir, options.git);
 
     if (!isSilent()) {
       await displayPostInstallInstructions({

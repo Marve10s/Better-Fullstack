@@ -346,6 +346,12 @@ export const CLI_FLAG_GROUP_DEFINITIONS: readonly CliFlagGroupDefinition[] = [
         configKey: "rateLimit",
       },
       {
+        flag: "bot-protection",
+        summary: "Bot and CAPTCHA verification provider.",
+        source: { kind: "category", category: "botProtection" },
+        configKey: "botProtection",
+      },
+      {
         flag: "i18n",
         summary: "Internationalization library.",
         source: { kind: "category", category: "i18n" },

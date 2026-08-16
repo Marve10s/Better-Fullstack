@@ -149,6 +149,7 @@ describe("stack selection translation", () => {
         fileUpload: "uploadthing",
         i18n: "i18next",
         analytics: "plausible",
+        botProtection: "turnstile",
         javaOrm: "spring-data-jpa",
         javaAuth: "spring-security",
         javaBuildTool: "gradle",
@@ -193,6 +194,7 @@ describe("stack selection translation", () => {
     expect(config.fileUpload).toBe("uploadthing");
     expect(config.i18n).toBe("i18next");
     expect(config.analytics).toBe("plausible");
+    expect(config.botProtection).toBe("turnstile");
     expect(config.javaOrm).toBe("spring-data-jpa");
     expect(config.javaAuth).toBe("spring-security");
     expect(config.javaBuildTool).toBe("gradle");
@@ -238,6 +240,7 @@ describe("stack selection translation", () => {
     expect(specs).toContain("frontend.fileUpload:typescript:uploadthing");
     expect(specs).toContain("frontend.i18n:typescript:i18next");
     expect(specs).toContain("frontend.analytics:typescript:plausible");
+    expect(specs).toContain("frontend.botProtection:typescript:turnstile");
     expect(specs).toContain("backend.orm:java:spring-data-jpa");
     expect(specs).toContain("backend.auth:java:spring-security");
     expect(specs).toContain("backend.buildTool:java:gradle");
@@ -613,7 +616,7 @@ describe("stack selection translation", () => {
       animation: "framer-motion",
       fileUpload: "uploadthing",
       i18n: "i18next",
-      analytics: "plausible",
+      analytics: "vercel-analytics",
     });
 
     expect(command).toContain("--part frontend:typescript:next");
@@ -624,7 +627,7 @@ describe("stack selection translation", () => {
     expect(command).toContain("--part frontend.animation:typescript:framer-motion");
     expect(command).toContain("--part frontend.fileUpload:typescript:uploadthing");
     expect(command).toContain("--part frontend.i18n:typescript:i18next");
-    expect(command).toContain("--part frontend.analytics:typescript:plausible");
+    expect(command).toContain("--part frontend.analytics:typescript:vercel-analytics");
     expect(command).not.toContain("--css-framework scss");
     expect(command).not.toContain("--ui-library radix-ui");
     expect(command).not.toContain("--forms formik");
@@ -632,7 +635,7 @@ describe("stack selection translation", () => {
     expect(command).not.toContain("--animation framer-motion");
     expect(command).not.toContain("--file-upload uploadthing");
     expect(command).not.toContain("--i18n i18next");
-    expect(command).not.toContain("--analytics plausible");
+    expect(command).not.toContain("--analytics vercel-analytics");
   });
 
   it("emits changed graph infrastructure as scoped graph parts", () => {

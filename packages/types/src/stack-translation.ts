@@ -67,6 +67,7 @@ export const DEFAULT_STACK_SELECTION: StackSelectionState = {
   jobQueue: "none",
   caching: "none",
   rateLimit: "none",
+  botProtection: "none",
   i18n: "none",
   animation: "none",
   cssFramework: "tailwind",
@@ -251,6 +252,7 @@ export const STACK_SELECTION_OPTION_CATEGORY_BY_KEY: Record<
   jobQueue: "jobQueue",
   caching: "caching",
   rateLimit: "rateLimit",
+  botProtection: "botProtection",
   i18n: "i18n",
   animation: "animation",
   cssFramework: "cssFramework",
@@ -443,6 +445,7 @@ export const STACK_SELECTION_URL_KEYS = {
   jobQueue: "jq",
   caching: "cache",
   rateLimit: "rl",
+  botProtection: "bp",
   i18n: "i18n",
   animation: "anim",
   cssFramework: "css",
@@ -794,6 +797,7 @@ const CLI_SCALAR_CONFIG_FIELDS = [
   ["vectorDb", "vectorDb"],
   ["fileStorage", "fileStorage"],
   ["analytics", "analytics"],
+  ["botProtection", "botProtection"],
   ["mobileNavigation", "mobileNavigation"],
   ["mobileUI", "mobileUI"],
   ["mobileStorage", "mobileStorage"],
@@ -1206,6 +1210,7 @@ const GRAPH_TYPESCRIPT_FRONTEND_PART_SELECTION_KEYS = [
   ["fileUpload", "fileUpload"],
   ["i18n", "i18n"],
   ["analytics", "analytics"],
+  ["botProtection", "botProtection"],
 ] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
 
 const GRAPH_TYPESCRIPT_BACKEND_PART_SELECTION_KEYS = [
@@ -1391,6 +1396,7 @@ const GRAPH_TYPESCRIPT_FRONTEND_PART_CLI_KEYS = [
   ["fileUpload", "fileUpload"],
   ["i18n", "i18n"],
   ["analytics", "analytics"],
+  ["botProtection", "botProtection"],
   ["validation", "validation"],
   ["testing", "testing"],
 ] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
@@ -2200,6 +2206,7 @@ function buildProjectConfigBase(
     cms: stack.cms as ProjectConfig["cms"],
     caching: stack.caching as ProjectConfig["caching"],
     rateLimit: stack.rateLimit as ProjectConfig["rateLimit"],
+    botProtection: stack.botProtection as ProjectConfig["botProtection"],
     i18n: stack.i18n as ProjectConfig["i18n"],
     search: stack.search as ProjectConfig["search"],
     vectorDb: stack.vectorDb as ProjectConfig["vectorDb"],
@@ -2525,6 +2532,7 @@ function generateTypeScriptCommand(selection: StackSelectionInput, projectName: 
     `--job-queue ${selection.jobQueue}`,
     `--caching ${selection.caching}`,
     `--rate-limit ${selection.rateLimit}`,
+    `--bot-protection ${selection.botProtection}`,
     `--i18n ${selection.i18n}`,
     `--search ${selection.search}`,
     `--vector-db ${selection.vectorDb}`,

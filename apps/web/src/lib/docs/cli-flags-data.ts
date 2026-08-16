@@ -599,6 +599,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "umami",
           "posthog",
           "ga4",
+          "vercel-analytics",
           "none"
         ],
         "valueHint": null,
@@ -662,6 +663,18 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "values": [
           "arcjet",
           "upstash-ratelimit",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--bot-protection",
+        "summary": "Bot and CAPTCHA verification provider.",
+        "values": [
+          "botid",
+          "turnstile",
           "none"
         ],
         "valueHint": null,

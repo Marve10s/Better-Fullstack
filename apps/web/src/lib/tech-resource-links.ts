@@ -6,6 +6,10 @@ type TechResourceLinks = {
 type LinkMap = Record<string, TechResourceLinks>;
 
 const BASE_LINKS: LinkMap = {
+  "vercel-analytics": {
+    docsUrl: "https://vercel.com/docs/analytics/quickstart",
+    githubUrl: "https://github.com/vercel/analytics",
+  },
   "blazor-webassembly": {
     docsUrl: "https://learn.microsoft.com/aspnet/core/blazor/hosting-models",
     githubUrl: "https://github.com/dotnet/aspnetcore",
@@ -640,6 +644,14 @@ const BASE_LINKS: LinkMap = {
   "upstash-ratelimit": {
     docsUrl: "https://upstash.com/docs/redis/sdks/ratelimit-ts/overview",
     githubUrl: "https://github.com/upstash/ratelimit-js",
+  },
+  botid: {
+    docsUrl: "https://vercel.com/docs/botid",
+    githubUrl: "https://github.com/vercel/botid",
+  },
+  turnstile: {
+    docsUrl: "https://developers.cloudflare.com/turnstile/",
+    githubUrl: "https://github.com/marsidev/react-turnstile",
   },
   polar: { docsUrl: "https://docs.polar.sh/", githubUrl: "https://github.com/polarsource/polar" },
   stripe: {

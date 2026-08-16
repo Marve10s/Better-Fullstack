@@ -40,6 +40,7 @@ export const StackPartRoleSchema = z
     "fileStorage",
     "jobQueue",
     "rateLimit",
+    "botProtection",
     "testing",
     "stateManagement",
     "forms",
@@ -402,6 +403,10 @@ export const RateLimitSchema = z
   .enum(["arcjet", "upstash-ratelimit", "none"])
   .describe("Rate limiting and abuse protection");
 
+export const BotProtectionSchema = z
+  .enum(["botid", "turnstile", "none"])
+  .describe("Bot and CAPTCHA verification provider");
+
 export const I18nSchema = z
   .enum(["paraglide", "i18next", "next-intl", "intlayer", "none"])
   .describe("Internationalization (i18n) library");
@@ -448,7 +453,7 @@ export const IntegrationsSchema = z
 export const EcommerceSchema = z.enum(["medusa", "none"]).describe("E-commerce platform SDK");
 
 export const AnalyticsSchema = z
-  .enum(["plausible", "umami", "posthog", "ga4", "none"])
+  .enum(["plausible", "umami", "posthog", "ga4", "vercel-analytics", "none"])
   .describe("Product analytics provider");
 
 export const MobileNavigationSchema = z
@@ -1177,6 +1182,7 @@ export const CreateInputSchema = z.object({
   cms: CMSSchema.optional(),
   caching: CachingSchema.optional(),
   rateLimit: RateLimitSchema.optional(),
+  botProtection: BotProtectionSchema.optional(),
   i18n: I18nSchema.optional(),
   search: SearchSchema.optional(),
   vectorDb: VectorDbSchema.optional(),
@@ -1374,6 +1380,7 @@ export const ProjectConfigSchema = z.object({
   cms: CMSSchema,
   caching: CachingSchema,
   rateLimit: RateLimitSchema,
+  botProtection: BotProtectionSchema.default("none"),
   i18n: I18nSchema,
   search: SearchSchema,
   vectorDb: VectorDbSchema,
@@ -1558,6 +1565,7 @@ export const BetterTStackConfigSchema = z.object({
   cms: CMSSchema,
   caching: CachingSchema,
   rateLimit: RateLimitSchema,
+  botProtection: BotProtectionSchema.default("none"),
   i18n: I18nSchema,
   search: SearchSchema,
   vectorDb: VectorDbSchema,
@@ -1763,6 +1771,7 @@ export const MOBILE_LIBRARIES_VALUES = MobileLibrariesSchema.options;
 export const CMS_VALUES = CMSSchema.options;
 export const CACHING_VALUES = CachingSchema.options;
 export const RATE_LIMIT_VALUES = RateLimitSchema.options;
+export const BOT_PROTECTION_VALUES = BotProtectionSchema.options;
 export const I18N_VALUES = I18nSchema.options;
 export const SEARCH_VALUES = SearchSchema.options;
 export const VECTOR_DB_VALUES = VectorDbSchema.options;

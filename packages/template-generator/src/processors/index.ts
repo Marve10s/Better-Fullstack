@@ -11,6 +11,7 @@ import { processApiDeps } from "./api-deps";
 import { processAuthDeps } from "./auth-deps";
 import { processAuthPlugins } from "./auth-plugins";
 import { processBackendDeps } from "./backend-deps";
+import { processBotProtectionDeps } from "./bot-protection-deps";
 import { processCachingDeps } from "./caching-deps";
 import { processI18nDeps } from "./i18n-deps";
 import { processCMSDeps } from "./cms-deps";
@@ -75,6 +76,7 @@ export function processDependencies(vfs: VirtualFileSystem, config: ProjectConfi
   processLoggingDeps(vfs, config);
   processObservabilityDeps(vfs, config);
   processRateLimitDeps(vfs, config);
+  processBotProtectionDeps(vfs, config);
   processFeatureFlagsDeps(vfs, config);
   processIntegrationsDeps(vfs, config);
   processEcommerceDeps(vfs, config);
@@ -122,6 +124,7 @@ export {
   processEcommerceDeps,
   processPaymentsDeps,
   processRateLimitDeps,
+  processBotProtectionDeps,
   processReadme,
   processRealtimeDeps,
   processRuntimeDeps,
