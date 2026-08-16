@@ -2324,7 +2324,7 @@ export const analyzeStackCompatibility = (
     });
   }
 
-  if (nextStack.botProtection !== "none") {
+  if (nextStack.botProtection && nextStack.botProtection !== "none") {
     const webFrontends = nextStack.webFrontend.filter((frontend) => frontend !== "none");
     const hasNativeFrontend = nextStack.nativeFrontend.some((frontend) => frontend !== "none");
     const hasBetterAuth =
