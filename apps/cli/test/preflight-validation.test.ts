@@ -250,7 +250,13 @@ describe("preflight validation", () => {
 
   describe("analytics", () => {
     test("passes with Astro frontend", () => {
-      expect(ruleIds(config({ analytics: "plausible", frontend: ["astro"] }))).not.toContain(
+      expect(ruleIds(config({ analytics: "vercel-analytics", frontend: ["astro"] }))).not.toContain(
+        "analytics-no-frontend",
+      );
+    });
+
+    test("warns when the provider has no Astro template", () => {
+      expect(ruleIds(config({ analytics: "plausible", frontend: ["astro"] }))).toContain(
         "analytics-no-frontend",
       );
     });
