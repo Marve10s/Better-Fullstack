@@ -1,10 +1,4 @@
-import {
-  Outlet,
-  HeadContent,
-  Scripts,
-  createRootRoute,
-  Link,
-} from "@tanstack/react-router";
+import { Outlet, HeadContent, Scripts, createRootRoute, Link } from "@tanstack/react-router";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { lazy, Suspense, type ReactNode, useSyncExternalStore } from "react";
@@ -65,6 +59,11 @@ const ERROR_PAGE_DESCRIPTION =
 const SponsorButton = lazy(async () => {
   const mod = await import("@/components/sponsor-button");
   return { default: mod.SponsorButton };
+});
+
+const ChangelogWidget = lazy(async () => {
+  const mod = await import("@/components/changelog-widget");
+  return { default: mod.ChangelogWidget };
 });
 
 function NotFoundComponent() {
@@ -217,6 +216,7 @@ function RootComponent() {
       <Navbar />
       <Outlet />
       <Suspense fallback={null}>
+        <ChangelogWidget />
         <SponsorButton />
       </Suspense>
     </RootDocument>
