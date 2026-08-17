@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { TbHistory as History, TbX as X } from "react-icons/tb";
+import { TbX as X } from "react-icons/tb";
 
 import { ChangelogModal } from "@/components/changelog-modal";
 import { latestChangelogRelease } from "@/lib/changelog";
@@ -100,14 +100,6 @@ export function ChangelogWidget() {
           ) : null}
 
           <div className="flex items-start gap-3 p-3">
-            <button
-              type="button"
-              onClick={openChangelog}
-              className="mt-0.5 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-edge bg-surface-raised text-ink transition-colors hover:bg-soft"
-              aria-label={m.changelogOpen()}
-            >
-              <History className="size-4" aria-hidden="true" />
-            </button>
             <button
               type="button"
               onClick={openChangelog}
