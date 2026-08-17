@@ -73,6 +73,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   "openapi-typescript": { type: "si", slug: "openapiinitiative", hex: "6BA539" },
   "apollo-client": { type: "si", slug: "apollographql", hex: "311C87" },
   ga4: { type: "si", slug: "googleanalytics", hex: "E37400" },
+  "vercel-analytics": { type: "si", slug: "vercel", hex: "000000" },
   paypal: { type: "si", slug: "paypal", hex: "003087" },
   xendit: { type: "local", src: "https://www.xendit.co/favicon.ico" },
   medusa: { type: "si", slug: "medusa", hex: "000000" },
@@ -393,6 +394,10 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
 
   // ─── App Platforms ─────────────────────────────────────────────────────────
   turborepo: { type: "si", slug: "turborepo", hex: "EF4444" },
+  "vite-plus": {
+    type: "local",
+    src: "https://raw.githubusercontent.com/voidzero-dev/vite-plus/main/logo.svg",
+  },
   tauri: { type: "si", slug: "tauri", hex: "FFC131" },
   storybook: { type: "si", slug: "storybook", hex: "FF4785" },
   pwa: { type: "si", slug: "pwa", hex: "5A0FC8" },

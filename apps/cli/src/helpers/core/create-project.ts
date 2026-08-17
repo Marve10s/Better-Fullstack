@@ -11,10 +11,15 @@ import { isSilent } from "../../utils/context";
 import { applyDependencyVersionChannel } from "../../utils/dependency-version-channel";
 import { CLIError } from "../../utils/errors";
 import { formatProject } from "../../utils/file-formatter";
-import { collectStructuredBaselines, recordScaffoldManifest } from "../../utils/scaffold-manifest";
+import { lifecycleResult } from "../../utils/lifecycle-contract";
+import {
+  collectStructuredBaselines,
+  getCurrentLifecycleVersions,
+  recordScaffoldManifest,
+} from "../../utils/scaffold-manifest";
 import { setupAddons } from "../addons/addons-setup";
 import { setupDatabase } from "../core/db-setup";
-import { initializeGit } from "./git";
+import { commitInitialScaffold, initializeGit } from "./git";
 import {
   installDependencies,
   runCargoBuild,
@@ -29,18 +34,23 @@ import { displayPostInstallInstructions } from "./post-installation";
 
 export interface CreateProjectOptions {
   manualDb?: boolean;
+  allowExistingDirectory?: boolean;
 }
 
 export async function createProject(options: ProjectConfig, cliInput: CreateProjectOptions = {}) {
   const projectDir = options.projectDir;
   const isConvex = options.backend === "convex";
   const setupFailures: SetupStepResult[] = [];
+  let addonWarnings: string[] = [];
 
   // Track whether the target directory already had user content before we
   // started writing. If it did (merge mode), we must never delete it on
   // failure; if it was empty/new, we own everything in it and can roll back.
   const dirHadContentBefore =
     (await fs.pathExists(projectDir)) && (await fs.readdir(projectDir)).length > 0;
+  if (dirHadContentBefore && cliInput.allowExistingDirectory === false) {
+    throw new CLIError(`Refusing to create a project in non-empty directory: ${projectDir}`);
+  }
 
   try {
     await fs.ensureDir(projectDir);
@@ -72,7 +82,7 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
     }
 
     if (options.addons.length > 0 && options.addons[0] !== "none") {
-      await setupAddons(options);
+      addonWarnings = await setupAddons(options);
     }
 
     await applyDependencyVersionChannel(projectDir, options.versionChannel);
@@ -86,13 +96,18 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
     // user edits. The pure-render content of package.json / *.env.example (before
     // the post-processing above mutated them on disk) is kept alongside the
     // hashes so `bfs update` can structurally merge future template changes.
-    // Best-effort: recordScaffoldManifest never throws, so a failure here
-    // disables update auto-patching without breaking scaffolding.
-    await recordScaffoldManifest(projectDir, {
+    // The versioned manifest is part of a complete scaffold transaction. A
+    // project without it cannot prove lineage or recover future mutations.
+    const manifest = await recordScaffoldManifest(projectDir, {
       baselines: collectStructuredBaselines(result.tree),
     });
+    if (!manifest) {
+      throw new Error("Failed to record the versioned scaffold manifest");
+    }
 
     if (!isSilent()) log.success("Project template successfully scaffolded!");
+
+    const repositoryInitialized = await initializeGit(projectDir, options.git);
 
     // Skip npm/pnpm/bun install for Rust/Python/Go/Java projects (they use native toolchains)
     if (
@@ -141,7 +156,7 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
       if (!result.success) setupFailures.push(result);
     }
 
-    await initializeGit(projectDir, options.git);
+    await commitInitialScaffold(projectDir, repositoryInitialized);
 
     if (!isSilent()) {
       await displayPostInstallInstructions({
@@ -150,7 +165,32 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
       });
     }
 
-    return { projectDir, setupFailures };
+    return {
+      projectDir,
+      setupFailures,
+      addonWarnings,
+      fileCount: result.tree.fileCount,
+      directoryCount: result.tree.directoryCount,
+      lifecycle: lifecycleResult({
+        operation: "create",
+        status: "applied",
+        projectDir,
+        changes: { added: Object.keys(manifest.hashes).length },
+        warnings: [
+          ...setupFailures.map((failure) => `${failure.step} did not complete`),
+          ...addonWarnings,
+        ],
+        provenance: {
+          source: null,
+          target: getCurrentLifecycleVersions(),
+          verified: true,
+        },
+        recovery: { available: false, automaticRollback: true },
+        nextActions: [
+          "Install dependencies if they were skipped, then run `create-better-fullstack check`.",
+        ],
+      }),
+    };
   } catch (error) {
     await rollbackPartialProject(projectDir, dirHadContentBefore);
     if (error instanceof Error) {

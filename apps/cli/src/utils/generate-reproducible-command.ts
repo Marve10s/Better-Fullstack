@@ -1,6 +1,10 @@
 import type { ProjectConfig, StackPartRole } from "../types";
 
-import { formatStackPartSpec, getAddonStackPartBinding } from "../types";
+import {
+  formatStackPartSpec,
+  getAddonStackPartBinding,
+  legacyProjectConfigToStackParts,
+} from "../types";
 
 function getBaseCommand(packageManager: ProjectConfig["packageManager"]) {
   switch (packageManager) {
@@ -42,6 +46,16 @@ function appendCommonFlags(flags: string[], config: ProjectConfig) {
     flags.push(`--version-channel ${config.versionChannel}`);
   }
   flags.push(config.install ? "--install" : "--no-install");
+}
+
+function appendCapabilityPartFlags(flags: string[], config: ProjectConfig) {
+  const parts = legacyProjectConfigToStackParts(config, "selected");
+  for (const part of parts) {
+    if (part.source === "provided" || part.toolId === "none") continue;
+    const binding = getAddonStackPartBinding(part.toolId);
+    if (!binding || binding.role !== part.role || binding.ecosystem !== part.ecosystem) continue;
+    flags.push(`--part ${formatStackPartSpec(part, parts)}`);
+  }
 }
 
 function hasGraphPrimaryPart(
@@ -92,31 +106,6 @@ function getOwnedGraphPartIncludingDisabled(
       part.role === role &&
       part.ownerPartId === owner.id &&
       (!ecosystem || part.ecosystem === ecosystem),
-  );
-}
-
-function hasAnyGraphAddonPart(config: ProjectConfig) {
-  return Boolean(
-    config.stackParts?.some((part) => {
-      if (part.source === "provided" || part.toolId === "none") return false;
-
-      const binding = getAddonStackPartBinding(part.toolId);
-      if (!binding || binding.role !== part.role || binding.ecosystem !== part.ecosystem) {
-        return false;
-      }
-
-      if (!binding.ownerRole) return !part.ownerPartId;
-
-      const owner = config.stackParts?.find(
-        (candidate) =>
-          candidate.source !== "provided" &&
-          candidate.role === binding.ownerRole &&
-          candidate.ecosystem === binding.ecosystem &&
-          candidate.id === part.ownerPartId,
-      );
-
-      return Boolean(owner);
-    }),
   );
 }
 
@@ -233,9 +222,6 @@ function appendAstroIntegrationFlag(flags: string[], config: ProjectConfig) {
 }
 
 function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
-  if (!hasAnyGraphAddonPart(config)) {
-    appendChangedArrayFlag(flags, "addons", config.addons, ["turborepo"]);
-  }
   if (!hasAnyGraphExamplePart(config)) {
     appendChangedArrayFlag(flags, "examples", config.examples, []);
   }
@@ -490,6 +476,15 @@ function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
       "typescript",
       "rate-limit",
       config.rateLimit,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "botProtection",
+      "typescript",
+      "bot-protection",
+      config.botProtection,
       "none",
     );
     appendChangedGraphStringFlag(flags, config, "cms", "typescript", "cms", config.cms, "none");
@@ -913,7 +908,7 @@ function appendSharedNonTypeScriptFlags(flags: string[], config: ProjectConfig) 
   flags.push(`--observability ${config.observability}`);
   flags.push(`--caching ${config.caching}`);
   flags.push(`--search ${config.search}`);
-  flags.push(formatArrayFlag("addons", config.addons));
+  appendCapabilityPartFlags(flags, config);
   flags.push(formatArrayFlag("examples", config.examples));
   flags.push(`--db-setup ${config.dbSetup}`);
   flags.push(`--web-deploy ${config.webDeploy}`);
@@ -966,6 +961,7 @@ function getTypeScriptFlags(config: ProjectConfig) {
   flags.push(`--ecommerce ${config.ecommerce}`);
   flags.push(`--caching ${config.caching}`);
   flags.push(`--rate-limit ${config.rateLimit}`);
+  flags.push(`--bot-protection ${config.botProtection}`);
   flags.push(`--i18n ${config.i18n}`);
   flags.push(`--cms ${config.cms}`);
   flags.push(`--search ${config.search}`);
@@ -982,11 +978,7 @@ function getTypeScriptFlags(config: ProjectConfig) {
     flags.push(formatArrayFlag("mobile-libraries", config.mobileLibraries));
   }
 
-  if (config.addons && config.addons.length > 0) {
-    flags.push(`--addons ${config.addons.join(" ")}`);
-  } else {
-    flags.push("--addons none");
-  }
+  appendCapabilityPartFlags(flags, config);
 
   if (config.examples && config.examples.length > 0) {
     flags.push(`--examples ${config.examples.join(" ")}`);
@@ -1022,6 +1014,7 @@ function getReactNativeFlags(config: ProjectConfig) {
   flags.push(`--mobile-deep-linking ${config.mobileDeepLinking}`);
   flags.push(formatArrayFlag("mobile-libraries", config.mobileLibraries));
 
+  appendCapabilityPartFlags(flags, config);
   appendCommonFlags(flags, config);
 
   return flags;

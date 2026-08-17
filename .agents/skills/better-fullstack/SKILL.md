@@ -1,6 +1,6 @@
 ---
 name: better-fullstack
-description: Scaffold, plan, or extend Better Fullstack projects with the generator, CLI, or MCP server. Use when a user asks to create, generate, or scaffold a fullstack starter; choose a Better Fullstack stack; add Better Fullstack addons; compare agent scaffolding paths; or avoid hand-authoring boilerplate project files.
+description: Scaffold, plan, or extend Better Fullstack projects with the generator, CLI, or MCP server. Use when a user asks to create, generate, or scaffold a fullstack starter; choose a Better Fullstack stack; add Better Fullstack capabilities; compare agent scaffolding paths; or avoid hand-authoring boilerplate project files.
 ---
 
 # Better Fullstack
@@ -92,11 +92,31 @@ Use graph parts as `category:ecosystem:option`.
 
 ## Existing Projects
 
-For a generated project with `bts.jsonc`, use the Better Fullstack `add` command or MCP add tools. Addons are arrays, for example:
+For a generated project with `bts.jsonc`, use the Better Fullstack `add` command or MCP add tools. Use canonical Stack Part specs so each capability keeps its category and owner, for example:
 
 ```bash
-<better-fullstack-cli> add --project-dir ./my-app --addons biome turborepo --no-install
+<better-fullstack-cli> add --project-dir ./my-app --part staticAnalysis:typescript:knip --part workspaceRunner:universal:turborepo --no-install
 ```
+
+For MCP lifecycle work, use this sequence:
+
+1. `bfs_get_project_status` reads configuration and manifest prerequisites without running
+   toolchains or writing files.
+2. `bfs_check_project` runs every generated target check. It requires installed dependencies and
+   required toolchains; missing prerequisites are failures. It does not rewrite Better Fullstack
+   source/configuration directly, though build tools may fetch dependencies and write locks,
+   caches, compiler output, or build artifacts.
+3. `bfs_plan_project_update` reads current-template drift. It returns a `reviewToken` only when a
+   supported manifest-v1 baseline exists and all exact structured-merge content fits the 32 KiB
+   per-file MCP review bound. Oversized content is withheld with size/SHA metadata and no token.
+4. After explicit approval, pass the same absolute project path and exact unchanged token to
+   `bfs_apply_project_update` with `acknowledgeUnprovenManifestV1: true`. Missing, stale,
+   cross-project, or bounded-review-ineligible tokens fail closed. Apply destructively overwrites
+   currently actionable template files and advances the v1 manifest without installing dependencies.
+
+Manifest v1 does not prove generator release/SHA provenance or cross-version eligibility, and the
+current apply path has no transactional backup or automated recovery. Do not promise those Wave 1
+guarantees.
 
 ## Final Response
 

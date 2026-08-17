@@ -131,6 +131,25 @@ describe("SEO contracts", () => {
     expect(head.meta).toContainEqual({ name: "twitter:image", content: expect.any(String) });
   });
 
+  it("keeps render failures out of search results and provides a stable site name", async () => {
+    const website = getSiteJsonLd()["@graph"].find((entry) => entry["@type"] === "WebSite");
+    const rootRouteSource = await Bun.file("src/routes/__root.tsx").text();
+    const navbarSource = await Bun.file("src/components/navbar.tsx").text();
+
+    expect(website).toEqual(
+      expect.objectContaining({
+        name: SITE_NAME,
+        alternateName: "Better-Fullstack",
+      }),
+    );
+    expect(rootRouteSource).toContain("errorComponent: RootErrorComponent");
+    expect(rootRouteSource).toContain('<meta name="robots" content={NOINDEX_ROBOTS} />');
+    expect(rootRouteSource).toContain("<title>{ERROR_PAGE_TITLE}</title>");
+    expect(navbarSource).toContain('data-brand-short="b/f"');
+    expect(navbarSource).toContain('data-brand-full="better/fullstack"');
+    expect(navbarSource).not.toContain('<span className="sm:hidden">');
+  });
+
   it("keeps every SoftwareApplication feature count derived from option metadata", () => {
     const expectedCounts = {
       "frontend frameworks": countUniqueOptions((category) => category.endsWith("Frontend")),

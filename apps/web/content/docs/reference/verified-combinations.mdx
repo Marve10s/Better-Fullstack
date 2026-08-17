@@ -22,9 +22,9 @@ Better Fullstack only treats rows with current Pass evidence as verified. The ge
 
 ## Failure links
 
-Each evidence card links to the source artifact, owner area, and rerun command. When a section is not fully passing, use those links in order:
+Each evidence card names its local source path and provides owner/action links plus a rerun command. Local evidence under `testing/.*` is deliberately not committed or linked as a durable artifact. When a section is not fully passing, use the displayed path and actions in order:
 
-1. Open the source artifact and find the failing row or gate.
+1. Open the local source path and find the failing row or gate.
 2. Follow the owner link to the template, package, or test area responsible for that failure.
 3. Rerun the listed command after making a fix, then rebuild the verified-combinations ledger.
 
@@ -47,6 +47,8 @@ To refresh package-manager registry install evidence for the current published p
 ```sh
 bun run test:published-package
 ```
+
+The runner defaults to the exact workspace CLI version. Passing a tag such as `--specifier latest` still works for ad-hoc checks, but the evidence evaluator rejects tags as non-reproducible, so tagged runs never count as current evidence.
 
 ## Badge endpoint
 

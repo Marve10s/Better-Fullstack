@@ -1,9 +1,12 @@
 import { Client } from "@modelcontextprotocol/client";
 import { StdioClientTransport } from "@modelcontextprotocol/client/stdio";
 import { afterEach, describe, expect, it } from "bun:test";
-import { resolve } from "node:path";
+import fs from "fs-extra";
+import { tmpdir } from "node:os";
+import path, { resolve } from "node:path";
 
 const clients: Client[] = [];
+const roots: string[] = [];
 
 async function connectClient(mode: "legacy" | "modern") {
   const client = new Client(
@@ -23,6 +26,7 @@ async function connectClient(mode: "legacy" | "modern") {
 
 afterEach(async () => {
   await Promise.all(clients.splice(0).map((client) => client.close()));
+  await Promise.all(roots.splice(0).map((root) => fs.remove(root)));
 });
 
 describe("Better Fullstack MCP protocol support", () => {
@@ -52,5 +56,31 @@ describe("Better Fullstack MCP protocol support", () => {
     );
     expect(stackOptions.ttlMs).toBe(300_000);
     expect(stackOptions.cacheScope).toBe("public");
+  });
+
+  it("keeps project creation output off the JSON-RPC stream", async () => {
+    const client = await connectClient("modern");
+    const targetDir = await fs.mkdtemp(path.join(tmpdir(), "bfs-mcp-create-"));
+    roots.push(targetDir);
+
+    const result = await client.callTool({
+      name: "bfs_create_project",
+      arguments: {
+        projectName: "silent-create",
+        targetDir,
+        ecosystem: "typescript",
+        frontend: ["react-vite"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        api: "trpc",
+        auth: "none",
+        packageManager: "bun",
+      },
+    });
+
+    expect(result.isError).not.toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, "silent-create", "bts.jsonc"))).toBe(true);
   });
 });

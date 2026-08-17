@@ -226,7 +226,6 @@ describe("generateReproducibleCommand", () => {
         "--observability none " +
         "--caching none " +
         "--search none " +
-        "--addons none " +
         "--examples none " +
         "--db-setup none " +
         "--web-deploy none " +
@@ -322,7 +321,7 @@ describe("generateReproducibleCommand", () => {
         "--observability none " +
         "--caching none " +
         "--search none " +
-        "--addons skills " +
+        "--part aiTooling:universal:skills " +
         "--examples none " +
         "--db-setup none " +
         "--web-deploy none " +
@@ -376,7 +375,6 @@ describe("generateReproducibleCommand", () => {
         "--observability none " +
         "--caching none " +
         "--search none " +
-        "--addons none " +
         "--examples none " +
         "--db-setup none " +
         "--web-deploy none " +
@@ -433,7 +431,6 @@ describe("generateReproducibleCommand", () => {
         "--observability none " +
         "--caching none " +
         "--search none " +
-        "--addons none " +
         "--examples none " +
         "--db-setup none " +
         "--web-deploy none " +
@@ -523,7 +520,6 @@ describe("generateReproducibleCommand", () => {
         "--observability none " +
         "--caching none " +
         "--search none " +
-        "--addons none " +
         "--examples none " +
         "--db-setup none " +
         "--web-deploy none " +
@@ -1062,7 +1058,7 @@ describe("generateReproducibleCommand", () => {
     expect(command).toContain("--payments stripe");
     expect(command).toContain("--email resend");
     expect(command).toContain("--file-upload uploadthing");
-    expect(command).toContain("--addons turborepo pwa");
+    expect(command).not.toContain("--addons");
     expect(command).toContain("--examples ai");
     expect(command).toContain("--db-setup docker");
     expect(command).toContain("--web-deploy vercel");

@@ -2,6 +2,7 @@
 title: Create an AI Agent App
 description: Create an AI agent app with Next.js, AI CLI workflow docs, MCP, skills, Better Auth, Drizzle, SQLite, Tailwind CSS, and shadcn/ui.
 updated: 2026-05-21
+translationStatus: pending
 category: Packs
 tags:
   - ai-agent
@@ -30,12 +31,17 @@ bun create better-fullstack@latest my-ai-agent-app \
   --ecosystem typescript \
   --frontend next \
   --backend self \
+  --runtime none \
   --database sqlite \
   --orm drizzle \
   --auth better-auth \
   --api trpc \
   --ai ai-cli \
-  --addons biome ruler turborepo mcp skills \
+  --part codeQuality:universal:biome \
+  --part aiTooling:universal:ruler \
+  --part workspaceRunner:universal:turborepo \
+  --part aiTooling:universal:mcp \
+  --part aiTooling:universal:skills \
   --ai-docs claude-md agents-md cursorrules
 ```
 

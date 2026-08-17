@@ -7,3 +7,6 @@
 *.ez
 /.elixir_ls/
 .env
+
+# Better Fullstack recovery snapshots
+.bts/recovery

@@ -130,6 +130,7 @@ export async function createVirtual(
       cms: options.cms || "none",
       caching: options.caching || "none",
       rateLimit: options.rateLimit || "none",
+      botProtection: options.botProtection || "none",
       i18n: options.i18n || "none",
       search: options.search || "none",
       vectorDb: options.vectorDb || "none",

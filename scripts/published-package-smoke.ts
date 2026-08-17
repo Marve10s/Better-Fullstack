@@ -5,6 +5,8 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 
+import { EVIDENCE_SCHEMA_VERSION } from "./verified-combinations/evidence";
+
 type PackageManager = "bun" | "npm" | "pnpm";
 type SmokeStatus = "pass" | "fail";
 
@@ -24,6 +26,7 @@ type PublishedPackageSmokeResult = {
 };
 
 type PublishedPackageSmokeSummary = {
+  schemaVersion: typeof EVIDENCE_SCHEMA_VERSION;
   generatedAt: string;
   packageName: string;
   specifier: string;
@@ -64,8 +67,18 @@ function readListArg(name: string, fallback: PackageManager[]): PackageManager[]
     .filter(Boolean) as PackageManager[];
 }
 
+async function defaultSpecifier(): Promise<string> {
+  if (process.env.BFS_PACKAGE_SPECIFIER) return process.env.BFS_PACKAGE_SPECIFIER;
+  const cliPackagePath = join(import.meta.dir, "..", "apps", "cli", "package.json");
+  const version = ((await Bun.file(cliPackagePath).json()) as { version?: string }).version;
+  if (!version) {
+    throw new Error(`Could not read the workspace CLI version from ${cliPackagePath}`);
+  }
+  return version;
+}
+
 const packageName = readArg("--package", "create-better-fullstack") ?? "create-better-fullstack";
-const specifier = readArg("--specifier", process.env.BFS_PACKAGE_SPECIFIER ?? "latest") ?? "latest";
+const specifier = readArg("--specifier") ?? (await defaultSpecifier());
 const managers = readListArg("--managers", ["bun", "npm", "pnpm"]);
 const registry =
   readArg("--registry", "https://registry.npmjs.org") ?? "https://registry.npmjs.org";
@@ -329,6 +342,7 @@ async function main(): Promise<void> {
     }
   } finally {
     const summary: PublishedPackageSmokeSummary = {
+      schemaVersion: EVIDENCE_SCHEMA_VERSION,
       generatedAt: new Date().toISOString(),
       packageName,
       specifier,

@@ -1,5 +1,14 @@
-import { TbCircleCheck as CheckCircle2, TbAlertCircle as CircleAlert, TbClockHour3 as Clock3, TbExternalLink as ExternalLink } from "react-icons/tb";
+import {
+  TbCircleCheck as CheckCircle2,
+  TbAlertCircle as CircleAlert,
+  TbClockHour3 as Clock3,
+  TbExternalLink as ExternalLink,
+} from "react-icons/tb";
 
+import {
+  verifiedEvidenceExpired,
+  verifiedEvidenceMatchesDeployment,
+} from "@/lib/docs/verified-combinations-badge";
 import {
   type VerifiedCombinationActionLink,
   type VerifiedCombinationSummary,
@@ -19,8 +28,8 @@ function formatGeneratedAt(value: string): string {
   }
 }
 
-function statusTone(pass: number, total: number): "pass" | "warn" {
-  return total > 0 && pass === total ? "pass" : "warn";
+function statusTone(pass: number, total: number, current: boolean): "pass" | "warn" {
+  return current && total > 0 && pass === total ? "pass" : "warn";
 }
 
 const toneClasses = {
@@ -32,9 +41,29 @@ export function VerifiedCombinationsSummary() {
   const summary: VerifiedCombinationSummary = verifiedCombinationsSummary;
   const releaseGuard = summary.releaseGuard;
   const publishedPackage = summary.publishedPackage;
-  const releaseTone = releaseGuard
-    ? statusTone(releaseGuard.pass, releaseGuard.total)
-    : ("warn" as const);
+  const expired = verifiedEvidenceExpired(summary, new Date());
+  const allCurrent =
+    !expired &&
+    verifiedEvidenceMatchesDeployment(summary, __BFS_DEPLOYED_GIT_HEAD__) &&
+    summary.smoke.every((item) => item.current === true) &&
+    summary.scaffbench.every((item) => item.current === true) &&
+    releaseGuard?.current === true &&
+    publishedPackage?.current === true;
+  const allPassing =
+    allCurrent &&
+    summary.smoke.length > 0 &&
+    summary.scaffbench.length > 0 &&
+    summary.smoke.every((item) => item.total > 0 && item.pass === item.total) &&
+    summary.scaffbench.every((item) => item.total > 0 && item.pass === item.total) &&
+    releaseGuard !== null &&
+    releaseGuard.total > 0 &&
+    releaseGuard.pass === releaseGuard.total &&
+    releaseGuard.overallSuccess &&
+    publishedPackage !== null &&
+    publishedPackage.total > 0 &&
+    publishedPackage.pass === publishedPackage.total &&
+    publishedPackage.overallSuccess;
+  const releaseTone = allPassing ? ("pass" as const) : ("warn" as const);
 
   return (
     <div className="my-8 space-y-4">
@@ -43,7 +72,9 @@ export function VerifiedCombinationsSummary() {
           <div>
             <p className="m-0 text-sm font-medium text-foreground">Current verified claim</p>
             <p className="m-0 mt-1 text-muted-foreground text-sm">
-              Generated {formatGeneratedAt(summary.generatedAt)} UTC.
+              Generated {formatGeneratedAt(summary.generatedAt)} UTC. Evidence
+              {expired ? " expired " : " valid until "}
+              {formatGeneratedAt(summary.expiresAt)} UTC.
             </p>
           </div>
           <span
@@ -57,7 +88,11 @@ export function VerifiedCombinationsSummary() {
             ) : (
               <CircleAlert className="size-3.5" />
             )}
-            {releaseGuard?.overallSuccess ? "Release guard passing" : "Needs fresh release evidence"}
+            {allPassing
+              ? "Release guard passing"
+              : allCurrent
+                ? "Verification failures require attention"
+                : "Needs fresh release evidence"}
           </span>
         </div>
       </div>
@@ -73,6 +108,9 @@ export function VerifiedCombinationsSummary() {
             actionLinks={item.actionLinks}
             rerunCommand={item.rerunCommand}
             failureHint={item.failureHint}
+            current={!expired && item.current === true}
+            sourcePaths={item.sources}
+            reasons={item.reasons}
           />
         ))}
         {summary.scaffbench.map((item) => (
@@ -89,6 +127,9 @@ export function VerifiedCombinationsSummary() {
             actionLinks={item.actionLinks}
             rerunCommand={item.rerunCommand}
             failureHint={item.failureHint}
+            current={!expired && item.current === true}
+            sourcePaths={[item.source]}
+            reasons={item.reasons}
           />
         ))}
         {releaseGuard ? (
@@ -100,9 +141,17 @@ export function VerifiedCombinationsSummary() {
             actionLinks={releaseGuard.actionLinks}
             rerunCommand={releaseGuard.rerunCommand}
             failureHint={releaseGuard.failureHint}
+            current={!expired && releaseGuard.current === true}
+            sourcePaths={[releaseGuard.source]}
+            reasons={releaseGuard.reasons}
           />
         ) : (
-          <MissingEvidenceCard label="Release guard" />
+          <MissingEvidenceCard
+            label="Release guard"
+            source="testing/.release-guard/summary.json"
+            ownerArea="release guard"
+            rerunCommand="bun run test:release:record"
+          />
         )}
         {publishedPackage ? (
           <EvidenceCard
@@ -113,9 +162,17 @@ export function VerifiedCombinationsSummary() {
             actionLinks={publishedPackage.actionLinks}
             rerunCommand={publishedPackage.rerunCommand}
             failureHint={publishedPackage.failureHint}
+            current={!expired && publishedPackage.current === true}
+            sourcePaths={[publishedPackage.source]}
+            reasons={publishedPackage.reasons}
           />
         ) : (
-          <MissingEvidenceCard label="Published package" />
+          <MissingEvidenceCard
+            label="Published package"
+            source="testing/.published-package/summary.json"
+            ownerArea="published package"
+            rerunCommand="bun run test:published-package"
+          />
         )}
       </div>
     </div>
@@ -130,6 +187,9 @@ function EvidenceCard({
   actionLinks,
   rerunCommand,
   failureHint,
+  current,
+  sourcePaths,
+  reasons,
 }: {
   label: string;
   detail: string;
@@ -138,10 +198,14 @@ function EvidenceCard({
   actionLinks: VerifiedCombinationActionLink[];
   rerunCommand: string;
   failureHint: string;
+  current: boolean;
+  sourcePaths: string[];
+  reasons?: string[];
 }) {
-  const tone = statusTone(pass, total);
+  const tone = statusTone(pass, total, current);
   const Icon = tone === "pass" ? CheckCircle2 : Clock3;
   const allPassing = tone === "pass";
+  const displayedPass = current ? pass : 0;
 
   return (
     <div className="rounded-lg border border-[var(--docs-border-subtle)] bg-background/70 p-4">
@@ -153,12 +217,14 @@ function EvidenceCard({
         <Icon
           className={cn(
             "mt-0.5 size-4 shrink-0",
-            tone === "pass" ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400",
+            tone === "pass"
+              ? "text-emerald-600 dark:text-emerald-400"
+              : "text-amber-600 dark:text-amber-400",
           )}
         />
       </div>
       <p className="m-0 mt-4 font-semibold text-2xl text-foreground tabular-nums">
-        {pass}/{total}
+        {displayedPass}/{total}
       </p>
       <p className="m-0 mt-1 text-muted-foreground text-xs">rows with Pass evidence</p>
       <div className="mt-4 flex flex-wrap gap-2">
@@ -175,9 +241,17 @@ function EvidenceCard({
           </a>
         ))}
       </div>
+      <p className="m-0 mt-3 break-all text-muted-foreground text-xs">
+        Source: <code>{sourcePaths.join(", ")}</code>
+      </p>
       <p className="m-0 mt-3 text-muted-foreground text-xs">
         Rerun: <code>{rerunCommand}</code>
       </p>
+      {!allPassing && reasons && reasons.length > 0 ? (
+        <p className="m-0 mt-2 text-amber-600 text-xs dark:text-amber-400">
+          Evidence state: {reasons.map((reason) => reason.replaceAll("-", " ")).join(", ")}.
+        </p>
+      ) : null}
       {allPassing ? null : (
         <p className="m-0 mt-2 text-amber-600 text-xs dark:text-amber-400">{failureHint}</p>
       )}
@@ -185,7 +259,17 @@ function EvidenceCard({
   );
 }
 
-function MissingEvidenceCard({ label }: { label: string }) {
+function MissingEvidenceCard({
+  label,
+  source,
+  ownerArea,
+  rerunCommand,
+}: {
+  label: string;
+  source: string;
+  ownerArea: string;
+  rerunCommand: string;
+}) {
   return (
     <div className="rounded-lg border border-amber-500/30 bg-amber-500/8 p-4">
       <div className="flex items-start justify-between gap-3">
@@ -195,6 +279,13 @@ function MissingEvidenceCard({ label }: { label: string }) {
         </div>
         <CircleAlert className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" />
       </div>
+      <p className="m-0 mt-4 break-all text-muted-foreground text-xs">
+        Source: <code>{source}</code>
+      </p>
+      <p className="m-0 mt-2 text-muted-foreground text-xs">Owner: {ownerArea}</p>
+      <p className="m-0 mt-2 text-muted-foreground text-xs">
+        Rerun: <code>{rerunCommand}</code>
+      </p>
     </div>
   );
 }

@@ -5,6 +5,8 @@ import path from "node:path";
 
 import type { VersionChannel } from "../types";
 
+import { hashContent } from "./scaffold-manifest";
+
 type NpmPackageInfo = {
   "dist-tags"?: Record<string, string>;
   versions?: Record<string, unknown>;
@@ -55,6 +57,12 @@ type ParsedVersion = {
 };
 
 type PackageJsonVersionSection = Record<string, string>;
+
+export type DependencyVersionChannelRewrite = {
+  packageJsonPath: string;
+  content: string;
+  sha256: string;
+};
 
 function getVersionSections(packageJson: Record<string, unknown>): PackageJsonVersionSection[] {
   const sections: PackageJsonVersionSection[] = [];
@@ -268,13 +276,18 @@ function applySynchronizedFamilyVersions(
   }
 }
 
-async function collectPackageJsonPaths(projectDir: string): Promise<string[]> {
+export async function collectPackageJsonPaths(projectDir: string): Promise<string[]> {
   const results: string[] = [];
 
   async function walk(currentDir: string) {
     const entries = await fs.readdir(currentDir, { withFileTypes: true });
     for (const entry of entries) {
-      if (entry.name === "node_modules" || entry.name === ".git" || entry.name === ".turbo") {
+      if (
+        entry.name === "node_modules" ||
+        entry.name === ".git" ||
+        entry.name === ".turbo" ||
+        entry.name === ".bts"
+      ) {
         continue;
       }
 
@@ -295,19 +308,34 @@ async function collectPackageJsonPaths(projectDir: string): Promise<string[]> {
   return results.sort();
 }
 
-export async function applyDependencyVersionChannel(
+export async function planDependencyVersionChannel(
   projectDir: string,
   channel: VersionChannel,
-): Promise<void> {
-  if (channel === "stable") return;
+  projectedPackageJsonContents: ReadonlyMap<string, string | null> = new Map(),
+): Promise<DependencyVersionChannelRewrite[]> {
+  if (channel === "stable") return [];
 
-  const packageJsonPaths = await collectPackageJsonPaths(projectDir);
-  if (packageJsonPaths.length === 0) return;
+  const packageJsonPaths = [
+    ...new Set([
+      ...(await collectPackageJsonPaths(projectDir)),
+      ...projectedPackageJsonContents.keys(),
+    ]),
+  ]
+    .filter((packageJsonPath) => projectedPackageJsonContents.get(packageJsonPath) !== null)
+    .sort();
+  if (packageJsonPaths.length === 0) return [];
+
+  const readPackageJson = async (packageJsonPath: string): Promise<Record<string, unknown>> => {
+    const projectedContent = projectedPackageJsonContents.get(packageJsonPath);
+    if (typeof projectedContent === "string")
+      return JSON.parse(projectedContent) as Record<string, unknown>;
+    return fs.readJson(packageJsonPath) as Promise<Record<string, unknown>>;
+  };
 
   const packageNames = new Set<string>();
 
   for (const packageJsonPath of packageJsonPaths) {
-    const packageJson = await fs.readJson(packageJsonPath);
+    const packageJson = await readPackageJson(packageJsonPath);
 
     for (const section of getVersionSections(packageJson)) {
       for (const [depName, depVersion] of Object.entries(section)) {
@@ -318,7 +346,7 @@ export async function applyDependencyVersionChannel(
     }
   }
 
-  if (packageNames.size === 0) return;
+  if (packageNames.size === 0) return [];
 
   const resolvedVersions = new Map<string, string>();
   const packageInfos = new Map<string, NpmPackageInfo>();
@@ -370,12 +398,13 @@ export async function applyDependencyVersionChannel(
     );
   }
 
-  if (resolvedVersions.size === 0) return;
+  if (resolvedVersions.size === 0) return [];
 
   applySynchronizedFamilyVersions(resolvedVersions, packageInfos, channel);
+  const rewrites: DependencyVersionChannelRewrite[] = [];
 
   for (const packageJsonPath of packageJsonPaths) {
-    const packageJson = await fs.readJson(packageJsonPath);
+    const packageJson = await readPackageJson(packageJsonPath);
     let changed = false;
 
     for (const section of getVersionSections(packageJson)) {
@@ -397,7 +426,29 @@ export async function applyDependencyVersionChannel(
     }
 
     if (changed) {
-      await fs.writeJson(packageJsonPath, packageJson, { spaces: 2 });
+      const content = `${JSON.stringify(packageJson, null, 2)}\n`;
+      rewrites.push({ packageJsonPath, content, sha256: hashContent(Buffer.from(content)) });
     }
   }
+  return rewrites;
+}
+
+export async function applyDependencyVersionChannel(
+  projectDir: string,
+  channel: VersionChannel,
+  onWrite?: (packageJsonPath: string, sha256: string) => void | Promise<void>,
+  options: { rewrites?: readonly DependencyVersionChannelRewrite[] } = {},
+): Promise<string[]> {
+  const rewrites = options.rewrites ?? (await planDependencyVersionChannel(projectDir, channel));
+
+  for (const rewrite of rewrites) {
+    if (onWrite) {
+      // oxlint-disable-next-line no-await-in-loop -- bind each rewrite before its first byte changes
+      await onWrite(rewrite.packageJsonPath, rewrite.sha256);
+    }
+    // oxlint-disable-next-line no-await-in-loop -- persist reviewed rewrites in transaction order
+    await fs.writeFile(rewrite.packageJsonPath, rewrite.content, "utf-8");
+  }
+
+  return rewrites.map((rewrite) => rewrite.packageJsonPath);
 }

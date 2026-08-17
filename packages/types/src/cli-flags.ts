@@ -83,16 +83,6 @@ export const CLI_FLAG_GROUP_DEFINITIONS: readonly CliFlagGroupDefinition[] = [
         source: { kind: "freeform", hint: "role:ecosystem:tool (e.g. frontend:typescript:next)" },
       },
       {
-        flag: "addons",
-        summary: "Repo tooling and platform addons.",
-        source: {
-          kind: "categories",
-          categories: ["appShells", "appPlatforms", "codeQuality", "documentation"],
-        },
-        configKey: "addons",
-        multiple: true,
-      },
-      {
         flag: "examples",
         summary: "Optional example features to include.",
         source: { kind: "category", category: "examples" },
@@ -354,6 +344,12 @@ export const CLI_FLAG_GROUP_DEFINITIONS: readonly CliFlagGroupDefinition[] = [
         summary: "Rate limiting helper.",
         source: { kind: "category", category: "rateLimit" },
         configKey: "rateLimit",
+      },
+      {
+        flag: "bot-protection",
+        summary: "Bot and CAPTCHA verification provider.",
+        source: { kind: "category", category: "botProtection" },
+        configKey: "botProtection",
       },
       {
         flag: "i18n",

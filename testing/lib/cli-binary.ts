@@ -15,7 +15,12 @@ function getCliBinaryRelativePath(bin: PackageJsonBin): string {
     return bin;
   }
 
-  if (bin && typeof bin === "object" && typeof bin[CLI_PACKAGE_NAME] === "string" && bin[CLI_PACKAGE_NAME].length > 0) {
+  if (
+    bin &&
+    typeof bin === "object" &&
+    typeof bin[CLI_PACKAGE_NAME] === "string" &&
+    bin[CLI_PACKAGE_NAME].length > 0
+  ) {
     return bin[CLI_PACKAGE_NAME];
   }
 
@@ -26,7 +31,9 @@ export function resolveCliBinaryPath(options: CliBinaryResolutionOptions = {}): 
   const repoRoot = options.repoRoot ?? resolve(import.meta.dir, "../..");
   const packageJson =
     options.packageJson ??
-    JSON.parse(readFileSync(join(repoRoot, "apps/cli/package.json"), "utf8")) as { bin?: PackageJsonBin };
+    (JSON.parse(readFileSync(join(repoRoot, "apps/cli/package.json"), "utf8")) as {
+      bin?: PackageJsonBin;
+    });
 
   return join(repoRoot, "apps/cli", getCliBinaryRelativePath(packageJson.bin));
 }
@@ -50,23 +57,38 @@ async function runBuildCommand(repoRoot: string, args: string[]): Promise<void> 
 
   if (exitCode !== 0) {
     const output = [stdout.trim(), stderr.trim()].filter(Boolean).join("\n");
-    throw new Error(`Build command failed: ${process.execPath} run ${args.join(" ")}\n${output}`.trim());
+    throw new Error(
+      `Build command failed: ${process.execPath} run ${args.join(" ")}\n${output}`.trim(),
+    );
   }
 }
 
-export async function ensureBuiltCliBinary(repoRoot = resolve(import.meta.dir, "../..")): Promise<string> {
-  const cliBinaryPath = resolveCliBinaryPath({ repoRoot });
-  if (existsSync(cliBinaryPath)) {
-    return cliBinaryPath;
-  }
+export type CliBuildCommand = (repoRoot: string, args: string[]) => Promise<void>;
 
-  await runBuildCommand(repoRoot, ["--cwd", "packages/types", "build"]);
-  await runBuildCommand(repoRoot, ["--cwd", "packages/template-generator", "build"]);
-  await runBuildCommand(repoRoot, ["--cwd", "apps/cli", "build"]);
+export async function buildFreshCliBinary(
+  repoRoot = resolve(import.meta.dir, "../.."),
+  buildCommand: CliBuildCommand = runBuildCommand,
+): Promise<string> {
+  const cliBinaryPath = resolveCliBinaryPath({ repoRoot });
+
+  await buildCommand(repoRoot, ["--cwd", "packages/types", "build"]);
+  await buildCommand(repoRoot, ["--cwd", "packages/template-generator", "build"]);
+  await buildCommand(repoRoot, ["--cwd", "apps/cli", "build"]);
 
   if (!existsSync(cliBinaryPath)) {
     throw new Error(`CLI binary was not produced at ${cliBinaryPath}`);
   }
 
   return cliBinaryPath;
+}
+
+export async function ensureBuiltCliBinary(
+  repoRoot = resolve(import.meta.dir, "../.."),
+): Promise<string> {
+  const cliBinaryPath = resolveCliBinaryPath({ repoRoot });
+  if (existsSync(cliBinaryPath)) {
+    return cliBinaryPath;
+  }
+
+  return buildFreshCliBinary(repoRoot);
 }

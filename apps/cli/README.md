@@ -34,7 +34,8 @@ Configure your stack visually — pick every option from a UI, preview your choi
 - **Broad stack catalog** — frontend, backend, database, auth, payments, AI, DevOps, and more
 - **Multi-ecosystem projects** — compose web, mobile, and backend stacks across supported ecosystems
 - **Visual builder** — configure your stack in the browser
-- **Wired for you** — every picked integration is preconfigured and working out of the box
+- **Lifecycle-aware** — create, add, update, check, and generate from the recorded project model
+- **Compatibility-checked** — invalid selections are rejected or safely adjusted before generation
 
 ## CLI Flags
 
@@ -44,6 +45,7 @@ Configure your stack visually — pick every option from a UI, preview your choi
 --template <name>  # Use a preset (t3, mern, pern, uniwind)
 --ecosystem <lang> # Choose the primary project ecosystem
 --part <binding>   # Add a multi-ecosystem stack part, e.g. frontend:typescript:next
+--workspace-shape # Workspace layout (monorepo, qualifying single-app)
 --version-channel  # Dependency channel: stable, latest, beta
 --no-git           # Skip git initialization
 --no-install       # Skip dependency installation
@@ -63,6 +65,22 @@ bun create better-fullstack@latest my-mixed-app \
   --part backend.orm:go:gorm \
   --part database:universal:postgres
 ```
+
+## Existing Projects
+
+Generated projects record their selected stack in `bts.jsonc` and their scaffold baseline in
+`bts.lock.json`.
+
+```bash
+npx create-better-fullstack@latest add --email resend --dry-run
+npx create-better-fullstack@latest update
+npx create-better-fullstack@latest check --json
+npx create-better-fullstack@latest gen resource post --dry-run
+```
+
+Use `--workspace-shape single-app` only for thin Next.js or TanStack Start self-backend projects.
+Selections that require sibling database, auth, API, service, native, or deployment packages use
+the default monorepo layout.
 
 ## Links
 

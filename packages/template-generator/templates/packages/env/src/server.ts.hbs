@@ -113,6 +113,9 @@ export const env = createEnv({
 {{#if (eq rateLimit "arcjet")}}
 		ARCJET_KEY: z.string().min(1),
 {{/if}}
+{{#if (eq botProtection "turnstile")}}
+		TURNSTILE_SECRET_KEY: z.string().min(1),
+{{/if}}
 {{#if (eq rateLimit "upstash-ratelimit")}}
 		UPSTASH_REDIS_REST_URL: z.url(),
 		UPSTASH_REDIS_REST_TOKEN: z.string().min(1),

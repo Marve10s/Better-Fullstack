@@ -5,6 +5,8 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { CALLOUT_KINDS } from "../src/components/docs/mdx/callout";
+import { GUIDE_COMPATIBILITY_KINDS } from "../src/components/docs/mdx/guide-compatibility-note";
 import { buildSearchSections } from "../src/lib/docs/search";
 import { LOCALIZED_CONTENT_LOCALES } from "../src/lib/i18n/locales";
 
@@ -14,7 +16,10 @@ const DOCS_ROOT = join(CONTENT_ROOT, "docs");
 const GUIDES_ROOT = join(CONTENT_ROOT, "guides");
 const BLOG_ROOT = join(CONTENT_ROOT, "blog");
 const LOCALIZED_CONTENT_ROOT = join(CONTENT_ROOT, "i18n");
-const PLANS_ROOT = join(WEB_ROOT, "../../docs/plans");
+const PROJECT_BACKLOG_ROOT = join(WEB_ROOT, "../../docs/projects/backlog");
+const PLUGIN_SKILLS_ROOT = join(WEB_ROOT, "../../plugin/skills");
+const REPOSITORY_README = join(WEB_ROOT, "../../README.md");
+const NPM_README = join(WEB_ROOT, "../cli/README.md");
 const PUBLIC_ROUTE_ROOTS = new Map([
   ["/docs", DOCS_ROOT],
   ["/guides", GUIDES_ROOT],
@@ -36,7 +41,9 @@ const PENDING_TRANSLATION_PATHS = [
   "content/docs/cli/index.mdx",
   "content/docs/cli/mcp.mdx",
   "content/docs/cli/recommend.mdx",
+  "content/docs/cli/remove.mdx",
   "content/docs/cli/registry.mdx",
+  "content/docs/cli/status.mdx",
   "content/docs/cli/telemetry.mdx",
   "content/docs/cli/update.mdx",
   "content/docs/cli/utilities.mdx",
@@ -55,17 +62,11 @@ const PENDING_TRANSLATION_PATHS = [
   "content/docs/getting-started/installation.mdx",
   "content/docs/getting-started/lifecycle.mdx",
   "content/docs/index.mdx",
-  "content/docs/recipes/browser-zip-workflow.mdx",
-  "content/docs/recipes/default-typescript-web.mdx",
-  "content/docs/recipes/dotnet-service.mdx",
-  "content/docs/recipes/index.mdx",
-  "content/docs/recipes/multi-ecosystem-product.mdx",
-  "content/docs/recipes/nextjs-self-backend.mdx",
-  "content/docs/recipes/python-api.mdx",
+  "content/docs/provider-setup/environment-variables.mdx",
   "content/docs/reference/options/dotnet.mdx",
+  "content/docs/reference/options/typescript.mdx",
   "content/docs/reference/versioning.mdx",
-  "content/docs/sections/auth-and-payments.mdx",
-  "content/docs/sections/backend-and-api.mdx",
+  "content/docs/stack-guides/deployment.mdx",
   "content/docs/web-builder/download-and-share.mdx",
   "content/docs/web-builder/edit-and-run.mdx",
   "content/docs/web-builder/index.mdx",
@@ -73,6 +74,9 @@ const PENDING_TRANSLATION_PATHS = [
   "content/blog/drizzle-vs-prisma.mdx",
   "content/blog/self-backend-vs-separate-api.mdx",
   "content/blog/tanstack-start-vs-nextjs.mdx",
+  "content/guides/ai/nextjs-ai-cli-agent-workbench.mdx",
+  "content/guides/packs/create-ai-agent-app.mdx",
+  "content/guides/dotnet/aspnet-core-efcore.mdx",
   "content/guides/python/fastapi-postgres-sqlmodel.mdx",
   "content/guides/typescript/hono-better-auth.mdx",
   "content/guides/typescript/hono-openapi-drizzle.mdx",
@@ -416,6 +420,42 @@ describe("docs content contract", () => {
     expect(invalidFences).toEqual([]);
   });
 
+  it("keeps MDX component kind props inside the values their components render", () => {
+    const allowedKinds = new Map([
+      ["Callout", new Set<string>(CALLOUT_KINDS)],
+      ["GuideCompatibilityNote", new Set<string>(GUIDE_COMPATIBILITY_KINDS)],
+    ]);
+    const componentPattern = new RegExp(
+      `<(${[...allowedKinds.keys()].join("|")})\\b[^>]*?\\bkind=\\\\?"([a-zA-Z-]*)\\\\?"`,
+      "g",
+    );
+    const sources = [
+      ...contentFiles.map((file) => ({ label: file.relativePath, source: file.source })),
+      ...LOCALIZED_CONTENT_LOCALES.map((locale) => ({
+        label: `content/i18n/${locale}.json`,
+        source: readFileSync(join(LOCALIZED_CONTENT_ROOT, `${locale}.json`), "utf8"),
+      })),
+    ];
+
+    const unknownKinds = sources.flatMap(({ label, source }) => {
+      const invalid: string[] = [];
+      let match: RegExpExecArray | null;
+
+      componentPattern.lastIndex = 0;
+      while ((match = componentPattern.exec(source)) !== null) {
+        const [, component, kind] = match;
+        if (allowedKinds.get(component)?.has(kind)) continue;
+        invalid.push(
+          `${label}:${lineNumberForIndex(source, match.index)} <${component} kind="${kind}">`,
+        );
+      }
+
+      return invalid;
+    });
+
+    expect(unknownKinds).toEqual([]);
+  });
+
   it("indexes markdown body sections for docs search", () => {
     const sections = buildSearchSections([
       {
@@ -480,6 +520,42 @@ describe("docs content contract", () => {
     expect([...documentedTools].sort()).toEqual([...registeredTools].sort());
   });
 
+  it("documents the exact bundled plugin skill surface", () => {
+    const reference = readFileSync(join(DOCS_ROOT, "ai/plugin.mdx"), "utf8");
+    const bundledSkills = readdirSync(PLUGIN_SKILLS_ROOT, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => {
+        const skillPath = join(PLUGIN_SKILLS_ROOT, entry.name, "SKILL.md");
+        const skillName = parseFrontmatter(readFileSync(skillPath, "utf8")).get("name");
+        expect(skillName, skillPath).toBe(entry.name);
+        return entry.name;
+      });
+    const documentedSkills = [...reference.matchAll(/^- `([a-z][a-z0-9-]+)` /gm)].map(
+      (match) => match[1],
+    );
+
+    expect(documentedSkills.sort()).toEqual(bundledSkills.sort());
+  });
+
+  it("keeps repository, npm, lifecycle, and single-app guidance aligned", () => {
+    const readmes = [readFileSync(REPOSITORY_README, "utf8"), readFileSync(NPM_README, "utf8")];
+    const lifecycle = readFileSync(join(DOCS_ROOT, "getting-started/lifecycle.mdx"), "utf8");
+    const create = readFileSync(join(DOCS_ROOT, "cli/create.mdx"), "utf8");
+
+    for (const source of readmes) {
+      for (const command of ["create", "add", "update", "check", "gen"]) {
+        expect(source).toContain(command);
+      }
+      expect(source).toContain("bts.jsonc");
+      expect(source).toContain("single-app");
+    }
+
+    expect(lifecycle).toContain("single-app");
+    expect(lifecycle).toContain("preserve the recorded");
+    expect(create).toContain("--workspace-shape single-app");
+    expect(create).toContain("compatibility safely restores");
+  });
+
   it("keeps mutating CLI workflows explicit about their operational contract", () => {
     for (const relativePath of [
       "cli/create.mdx",
@@ -518,15 +594,17 @@ describe("docs content contract", () => {
         metadata.options.flatMap((option) => [option.id, option.cliValue]),
       ),
     );
-    const staleRows = walkFiles(PLANS_ROOT, (path) => path.endsWith(".md")).flatMap((path) => {
-      const source = readFileSync(path, "utf8");
-      return [...source.matchAll(/^- \[ \] Add `([^`]+)`/gm)]
-        .filter((match) => registeredOptions.has(match[1]))
-        .map(
-          (match) =>
-            `${relative(WEB_ROOT, path)}:${lineNumberForIndex(source, match.index)} ${match[1]}`,
-        );
-    });
+    const staleRows = walkFiles(PROJECT_BACKLOG_ROOT, (path) => path.endsWith(".md")).flatMap(
+      (path) => {
+        const source = readFileSync(path, "utf8");
+        return [...source.matchAll(/^- \[ \] Add `([^`]+)`/gm)]
+          .filter((match) => registeredOptions.has(match[1]))
+          .map(
+            (match) =>
+              `${relative(WEB_ROOT, path)}:${lineNumberForIndex(source, match.index)} ${match[1]}`,
+          );
+      },
+    );
 
     expect(staleRows).toEqual([]);
   });

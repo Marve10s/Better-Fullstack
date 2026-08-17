@@ -21,12 +21,12 @@ test.describe("Stack Builder - Compatibility", () => {
   });
 
   test("Payload CMS shows disabled state without Next.js", async ({ page }) => {
-    await clickVisibleTestId(page, "category-toggle-cms");
+    await clickVisibleTestId(page, "section-toggle-product");
     await expect(page.getByTestId("option-cms-payload")).toContainText("Unavailable");
   });
 
   test("Sanity CMS is available with non-Next.js frontends", async ({ page }) => {
-    await clickVisibleTestId(page, "category-toggle-cms");
+    await clickVisibleTestId(page, "section-toggle-product");
     await expect(page.getByTestId("option-cms-sanity")).toBeVisible();
     await expect(page.getByTestId("option-cms-sanity")).not.toContainText("Unavailable");
   });

@@ -14,8 +14,6 @@ import { CreateCommandInputSchema, CreateCommandOptionsSchema } from "./create-c
 import { createProjectHandler } from "./helpers/core/command-handlers";
 import {
   type AddInput,
-  type Addons,
-  AddonsSchema,
   AISchema,
   type API,
   APISchema,
@@ -218,6 +216,13 @@ const ProjectCheckInputSchema = z.tuple([
       .optional()
       .default(false)
       .describe("Skip the ecosystem build/type checks (config + deps + env only)"),
+    runChecks: z
+      .boolean()
+      .optional()
+      .default(false)
+      .describe(
+        "With --json: execute the ecosystem checks (slower; failures change the exit code)",
+      ),
     json: z.boolean().optional().default(false).describe("Output the diagnosis as JSON"),
   }),
 ]);
@@ -305,7 +310,7 @@ export const router = os.router({
   add: os
     .meta({
       description:
-        "Add addons, deploy targets, or stack capabilities to an existing Better Fullstack project using its bts.jsonc config",
+        "Add deployment targets or typed stack capabilities to an existing Better Fullstack project using its bts.jsonc config",
     })
     .input(AddCommandInputSchema)
     .handler(async ({ input }) => {
@@ -322,6 +327,74 @@ export const router = os.router({
         resultDetails: (commandResult) => ({
           capabilityCount: commandResult?.addedAddons.length,
           warningCount: commandResult?.setupWarnings?.length,
+        }),
+      });
+    }),
+  status: os
+    .meta({
+      description:
+        "Report project health, lifecycle provenance/recovery readiness, and current-template upgrade status without executing toolchains",
+    })
+    .input(
+      z.tuple([
+        z.string().optional().describe("Project directory to inspect (defaults to current)"),
+        z.object({
+          json: z.boolean().optional().default(false).describe("Output the report as JSON"),
+        }),
+      ]),
+    )
+    .handler(async ({ input }) => {
+      const [projectDir, options] = input;
+      const { statusCommand } = await import("./commands/status.js");
+      await withCommandTelemetry(
+        "status",
+        () => statusCommand({ projectDir, json: options.json }),
+        {
+          source: "cli-flags",
+          mode: options.json ? "json" : "human",
+          resultStatus: statusFromCommandResult,
+          resultDetails: (result) => ({
+            issueCount: result.success ? result.summary.fail : 1,
+            warningCount: result.success ? result.summary.warn : 0,
+          }),
+        },
+      );
+    }),
+  remove: os
+    .meta({
+      description:
+        "Plan or apply removal of one exact selected non-primary Stack Part with a review token and transactional recovery",
+    })
+    .input(
+      z.tuple([
+        z
+          .string()
+          .describe("Exact selected Stack Part spec or ID, as shown by status/MCP project status"),
+        z.object({
+          projectDir: z.string().optional().describe("Project directory (defaults to current)"),
+          apply: z.boolean().optional().default(false).describe("Apply the reviewed removal"),
+          reviewToken: z.string().optional().describe("Exact token emitted by the latest plan"),
+          acknowledgeArchitectureChange: z
+            .boolean()
+            .optional()
+            .default(false)
+            .describe("Acknowledge migration steps for architecture-sensitive capability removal"),
+          json: z.boolean().optional().default(false).describe("Output the result as JSON"),
+        }),
+      ]),
+    )
+    .handler(async ({ input }) => {
+      const [target, options] = input;
+      const { removeCommand } = await import("./commands/remove.js");
+      await withCommandTelemetry("remove", () => removeCommand({ target, ...options }), {
+        source: "cli-flags",
+        mode: options.apply ? "apply" : "dry-run",
+        resultStatus: statusFromCommandResult,
+        resultDetails: (result) => ({
+          changedFileCount: result.success
+            ? result.filesToAdd.length + result.filesToPatch.length + result.filesToRemove.length
+            : 0,
+          manualReviewCount: result.success ? result.manualReviewBlockers.length : 0,
         }),
       });
     }),
@@ -488,7 +561,7 @@ export const router = os.router({
   update: os
     .meta({
       description:
-        "Re-apply the current bundled templates to an existing Better Fullstack project, classifying template drift vs. your local edits from the bts.lock.json scaffold baseline. Default is a dry-run plan; `--apply` writes safe drift patches + new files. Distinct from the maintainer `update-deps` command.",
+        "Plan or apply current-template drift from a versioned manifest. Apply requires the exact review token, creates a recovery point, and rolls back automatically on failure. Distinct from the maintainer `update-deps` command.",
     })
     .input(
       z.tuple([
@@ -506,7 +579,21 @@ export const router = os.router({
             .boolean()
             .optional()
             .default(false)
-            .describe("Write safe template-drift patches and new files, refreshing the baseline"),
+            .describe(
+              "Apply the reviewed template changes transactionally; requires the exact review token",
+            ),
+          reviewToken: z
+            .string()
+            .length(64)
+            .optional()
+            .describe("Exact token emitted by the update plan being applied"),
+          acknowledgeUnprovenManifestV1: z
+            .boolean()
+            .optional()
+            .default(false)
+            .describe(
+              "Required only for migrated/adopted manifests whose original generator lineage is unverified",
+            ),
           check: z
             .boolean()
             .optional()
@@ -518,8 +605,13 @@ export const router = os.router({
             .optional()
             .default(false)
             .describe(
-              "Adopt the current on-disk state as the scaffold baseline (for projects created before the update engine)",
+              "Manually adopt current on-disk bytes as a baseline; this does not prove generator release lineage",
             ),
+          recover: z
+            .string()
+            .uuid()
+            .optional()
+            .describe("Restore every file bound to a successful or interrupted transaction"),
         }),
       ]),
     )
@@ -611,11 +703,57 @@ export const router = os.router({
 const caller = createRouterClient(router, { context: {} });
 
 export function createBtsCli() {
-  return createCli({
+  const cli = createCli({
     router,
     name: "create-better-fullstack",
     version: getLatestCLIVersion(),
   });
+  const buildProgram = cli.buildProgram.bind(cli);
+  const hideLegacyOptions = (program: ReturnType<typeof buildProgram>) => {
+    type CommandNode = {
+      commands?: CommandNode[];
+      options?: Array<{ long?: string; hideHelp?: () => void }>;
+      configureHelp?: (configuration: {
+        visibleOptions: (command: CommandNode) => Array<{ long?: string }>;
+      }) => void;
+    };
+    const visit = (command: CommandNode) => {
+      command.options?.find((option) => option.long === "--addons")?.hideHelp?.();
+      command.configureHelp?.({
+        visibleOptions: (target) =>
+          (target.options ?? []).filter((option) => option.long !== "--addons"),
+      });
+      command.commands?.forEach(visit);
+    };
+    visit(program as CommandNode);
+    return program;
+  };
+
+  return {
+    ...cli,
+    buildProgram: (params?: Parameters<typeof buildProgram>[0]) =>
+      hideLegacyOptions(buildProgram(params)),
+    run: async (
+      params?: Parameters<typeof cli.run>[0],
+      program?: Parameters<typeof cli.run>[1],
+    ) => {
+      const resolvedProgram = program ?? hideLegacyOptions(buildProgram(params));
+      const argv = params?.argv ?? process.argv;
+      const commandArguments = argv.slice(2);
+      if (
+        commandArguments.length === 1 &&
+        (commandArguments[0] === "--help" || commandArguments[0] === "-h")
+      ) {
+        const commandTree = resolvedProgram as unknown as {
+          commands: Array<{ name: () => string; outputHelp: () => void }>;
+        };
+        const createCommand = commandTree.commands.find((command) => command.name() === "create");
+        createCommand?.outputHelp();
+        return;
+      }
+      return cli.run(params, resolvedProgram);
+    },
+  };
 }
 
 /**
@@ -708,21 +846,29 @@ export async function telemetry(
 
 export async function doctor(
   projectDir?: string,
-  options?: { skipChecks?: boolean; json?: boolean },
+  options?: { skipChecks?: boolean; runChecks?: boolean; json?: boolean },
 ) {
   return caller.doctor([
     projectDir,
-    { skipChecks: options?.skipChecks ?? false, json: options?.json ?? false },
+    {
+      skipChecks: options?.skipChecks ?? false,
+      runChecks: options?.runChecks ?? false,
+      json: options?.json ?? false,
+    },
   ]);
 }
 
 export async function check(
   projectDir?: string,
-  options?: { skipChecks?: boolean; json?: boolean },
+  options?: { skipChecks?: boolean; runChecks?: boolean; json?: boolean },
 ) {
   return caller.check([
     projectDir,
-    { skipChecks: options?.skipChecks ?? false, json: options?.json ?? false },
+    {
+      skipChecks: options?.skipChecks ?? false,
+      runChecks: options?.runChecks ?? false,
+      json: options?.json ?? false,
+    },
   ]);
 }
 
@@ -750,6 +896,9 @@ export async function update(
     check?: boolean;
     json?: boolean;
     recordBaseline?: boolean;
+    acknowledgeUnprovenManifestV1?: boolean;
+    reviewToken?: string;
+    recover?: string;
   },
 ) {
   return caller.update([
@@ -760,6 +909,9 @@ export async function update(
       check: options?.check ?? false,
       json: options?.json ?? false,
       recordBaseline: options?.recordBaseline ?? false,
+      acknowledgeUnprovenManifestV1: options?.acknowledgeUnprovenManifestV1 ?? false,
+      reviewToken: options?.reviewToken,
+      recover: options?.recover,
     },
   ]);
 }

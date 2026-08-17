@@ -135,6 +135,7 @@ function buildClientVars(
   payments: ProjectConfig["payments"],
   featureFlags: ProjectConfig["featureFlags"],
   analytics: ProjectConfig["analytics"],
+  botProtection: ProjectConfig["botProtection"],
   serverUrlOverride?: string,
 ): EnvVariable[] {
   const hasNextJs = frontend.includes("next");
@@ -157,6 +158,20 @@ function buildClientVars(
       condition: backend === "convex" ? true : baseVar.write,
     },
   ];
+
+  if (botProtection === "turnstile") {
+    const key = hasNextJs
+      ? "NEXT_PUBLIC_TURNSTILE_SITE_KEY"
+      : hasSvelte
+        ? "PUBLIC_TURNSTILE_SITE_KEY"
+        : "VITE_TURNSTILE_SITE_KEY";
+    vars.push({
+      key,
+      value: "",
+      condition: true,
+      comment: "Cloudflare Turnstile public site key",
+    });
+  }
 
   if (backend === "convex" && auth === "clerk") {
     if (hasNextJs) {
@@ -847,6 +862,7 @@ function buildServerVars(
   logging: ProjectConfig["logging"],
   observability: ProjectConfig["observability"],
   rateLimit: ProjectConfig["rateLimit"],
+  botProtection: ProjectConfig["botProtection"],
   featureFlags: ProjectConfig["featureFlags"],
   integrations: ProjectConfig["integrations"],
   ecommerce: ProjectConfig["ecommerce"],
@@ -1629,6 +1645,12 @@ function buildServerVars(
       comment: "Arcjet site key - get it at https://app.arcjet.com",
     },
     {
+      key: "TURNSTILE_SECRET_KEY",
+      value: "",
+      condition: botProtection === "turnstile",
+      comment: "Cloudflare Turnstile secret key",
+    },
+    {
       key: "GROWTHBOOK_API_HOST",
       value: "https://cdn.growthbook.io",
       condition: featureFlags === "growthbook",
@@ -2193,6 +2215,7 @@ export function processEnvVariables(vfs: VirtualFileSystem, config: ProjectConfi
         payments,
         config.featureFlags,
         config.analytics,
+        config.botProtection,
         graphBackend?.serverUrl,
       );
       writeEnvFile(vfs, envPath, clientVars);
@@ -2271,6 +2294,7 @@ export function processEnvVariables(vfs: VirtualFileSystem, config: ProjectConfi
     logging,
     observability,
     config.rateLimit,
+    config.botProtection,
     config.featureFlags,
     config.integrations,
     config.ecommerce,

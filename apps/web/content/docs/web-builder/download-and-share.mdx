@@ -2,7 +2,7 @@
 title: Download and Share
 description: Download generated projects as ZIP archives and share reproducible builder state.
 translationStatus: pending
-updated: 2026-08-07
+updated: 2026-08-12
 ---
 
 ## Download a ZIP
@@ -13,11 +13,23 @@ template generator, loads text and binary template assets, and creates an archiv
 - The archive has one sanitized top-level project directory.
 - Generated executable scripts retain executable file metadata.
 - The selected package manager is preserved.
+- `bts.jsonc` contains the schema-validated current stack configuration.
+- `bts.lock.json` v2 records generator/template provenance and hashes the exact bytes of
+  template-comparable archived files. It keeps
+  structured `package.json` and `*.env.example` baselines used by three-way updates. Hashing
+  excludes `bts.jsonc`, `bts.lock.json`, and install-generated lock artifacts (`bun.lock`,
+  `bun.lockb`, `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, `Cargo.lock`, `uv.lock`,
+  `poetry.lock`, `go.sum`, and `mix.lock`).
 - No server-side project workspace is created.
 - Edit & Run source experiments are not included; the ZIP represents the current stack selection.
 
 After extraction, follow the generated README and use the matching ecosystem install command. ZIP
 download does not install dependencies, initialize Git, provision providers, or run checks.
+
+<Callout kind="warning" title="Current support boundary">
+The manifest proves which bundled generator/template version created the archive. It does not by
+itself establish a future supported upgrade window; rely on the current CLI plan and its blockers.
+</Callout>
 
 ## Share or import builder state
 
@@ -31,5 +43,5 @@ same browser, but are not a cloud project store.
 ## Move to the CLI
 
 For reproducible automation, copy the generated command instead of treating the ZIP as the only
-record. The CLI validates the same selection and writes `bts.jsonc` plus `bts.lock.json`, enabling
-later `add`, `update`, and `check` workflows.
+record. Browser ZIPs and CLI scaffolds both include `bts.jsonc` plus the current `bts.lock.json`,
+enabling later `add`, `update`, and `check` workflows.

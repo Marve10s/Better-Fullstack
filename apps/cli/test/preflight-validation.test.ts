@@ -249,7 +249,13 @@ describe("preflight validation", () => {
   });
 
   describe("analytics", () => {
-    test("warns without supported frontend", () => {
+    test("passes with Astro frontend", () => {
+      expect(ruleIds(config({ analytics: "vercel-analytics", frontend: ["astro"] }))).not.toContain(
+        "analytics-no-frontend",
+      );
+    });
+
+    test("warns when the provider has no Astro template", () => {
       expect(ruleIds(config({ analytics: "plausible", frontend: ["astro"] }))).toContain(
         "analytics-no-frontend",
       );

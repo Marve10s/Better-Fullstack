@@ -44,7 +44,8 @@ npm create better-fullstack@latest my-mixed-app -- \
   --part database:universal:postgres \
   --part mobile:kotlin:compose-multiplatform \
   --part mobile.libraries:kotlin:ktor-client \
-  --addons turborepo docker-compose
+  --part workspaceRunner:universal:turborepo \
+  --part containerOrchestration:universal:docker-compose
 ```
 
 ## Source of truth
@@ -62,7 +63,7 @@ The Stack Builder's Multi-Ecosystem mode walks through:
 3. Database - shared universal database choices.
 4. Mobile/apps - React Native, Kotlin/Compose, SwiftUI, Flutter, .NET Blazor, and supported
    standalone Rust frontend choices.
-5. Finalize - addons, AI docs, install, Git, and version settings.
+5. Finalize - toolchain and capability sections, AI docs, install, Git, and version settings.
 
 ## Compatibility
 

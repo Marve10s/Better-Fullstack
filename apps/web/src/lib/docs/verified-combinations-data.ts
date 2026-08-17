@@ -7,11 +7,19 @@ export type VerifiedCombinationActionLink = {
 
 export type VerifiedCombinationSummary = {
   generatedAt: string;
+  expiresAt: string;
+  gitHead?: string;
+  expectedTotals: {
+    releaseGuard: number;
+    publishedPackage: number;
+  };
   smoke: Array<{
     label: string;
     sources: string[];
     pass: number;
     total: number;
+    current?: boolean;
+    reasons?: string[];
     ownerArea: string;
     actionLinks: VerifiedCombinationActionLink[];
     rerunCommand: string;
@@ -22,6 +30,8 @@ export type VerifiedCombinationSummary = {
     source: string;
     pass: number;
     total: number;
+    current?: boolean;
+    reasons?: string[];
     environmentQualified?: boolean;
     ownerArea: string;
     actionLinks: VerifiedCombinationActionLink[];
@@ -32,6 +42,8 @@ export type VerifiedCombinationSummary = {
     source: string;
     pass: number;
     total: number;
+    current?: boolean;
+    reasons?: string[];
     overallSuccess: boolean;
     generatedAt?: string;
     gitBranch?: string;
@@ -47,6 +59,8 @@ export type VerifiedCombinationSummary = {
     generatedAt?: string;
     pass: number;
     total: number;
+    current?: boolean;
+    reasons?: string[];
     overallSuccess: boolean;
     ownerArea: string;
     actionLinks: VerifiedCombinationActionLink[];
@@ -56,80 +70,65 @@ export type VerifiedCombinationSummary = {
 };
 
 export const verifiedCombinationsSummary: VerifiedCombinationSummary = {
-  generatedAt: "2026-07-03T10:00:51.704Z",
-  smoke: [
-    {
-      label: "PR core smoke",
-      sources: [
-        "testing/.smoke-output/core/smoke-results.json",
-        "testing/.smoke-output/p0-pr-core-no-dev/smoke-results.json",
-      ],
-      pass: 12,
-      total: 12,
-      ownerArea: "packages/template-generator/templates",
-      actionLinks: [
-        {
-          label: "owner",
-          href: "https://github.com/Marve10s/Better-Fullstack/blob/main/packages/template-generator/templates",
-        },
-        {
-          label: "preset",
-          href: "https://github.com/Marve10s/Better-Fullstack/blob/main/testing/lib/presets.ts",
-        },
-      ],
-      rerunCommand: "bun run test:smoke:pr-core",
-      failureHint:
-        "Open the smoke source artifact, find the failing combination row, then inspect the listed owner area.",
-    },
-  ],
-  scaffbench: [
-    {
-      label: "ScaffBench 2",
-      source: "testing/.tmp-scaffbench-2/summary.json",
-      pass: 1,
-      total: 1,
-      environmentQualified: true,
-      ownerArea: "packages/template-generator/templates",
-      actionLinks: [
-        {
-          label: "runner",
-          href: "https://github.com/Marve10s/Better-Fullstack/blob/main/scripts/scaffbench-v2.ts",
-        },
-        {
-          label: "owner",
-          href: "https://github.com/Marve10s/Better-Fullstack/blob/main/packages/template-generator/templates",
-        },
-      ],
-      rerunCommand: "bun run scaffbench:2:canonical",
-      failureHint:
-        "Inspect failureTags and validation steps in the ScaffBench summary, then follow the owner area for the stack family.",
-    },
-  ],
-  releaseGuard: null,
-  publishedPackage: {
-    source: "testing/.published-package/summary.json",
-    packageSpec: "create-better-fullstack@latest",
-    generatedAt: "2026-07-02T12:06:55.312Z",
-    pass: 3,
-    total: 3,
-    overallSuccess: true,
-    ownerArea: "published package",
-    actionLinks: [
-      {
-        label: "runner",
-        href: "https://github.com/Marve10s/Better-Fullstack/blob/main/scripts/published-package-smoke.ts",
-      },
-      {
-        label: "package script",
-        href: "https://github.com/Marve10s/Better-Fullstack/blob/main/package.json",
-      },
-      {
-        label: "cli package",
-        href: "https://github.com/Marve10s/Better-Fullstack/blob/main/apps/cli/package.json",
-      },
-    ],
-    rerunCommand: "bun run test:published-package",
-    failureHint:
-      "Inspect the package-manager row, confirm the preview/canary package is visible, then rerun the published-package smoke lane.",
+  "generatedAt": "2026-08-11T11:11:08.988Z",
+  "expiresAt": "2026-08-12T23:11:08.988Z",
+  "gitHead": "0c1bc90f735bb15b3fdd7aa1131ec7d48a0f274d",
+  "expectedTotals": {
+    "releaseGuard": 17,
+    "publishedPackage": 3
   },
+  "smoke": [
+    {
+      "label": "PR core smoke",
+      "sources": [
+        "testing/.smoke-output/core/smoke-results.json"
+      ],
+      "pass": 0,
+      "total": 12,
+      "ownerArea": "testing",
+      "actionLinks": [
+        {
+          "label": "preset",
+          "href": "https://github.com/Marve10s/Better-Fullstack/blob/main/testing/lib/presets.ts"
+        },
+        {
+          "label": "smoke harness",
+          "href": "https://github.com/Marve10s/Better-Fullstack/blob/main/testing/smoke-test.ts"
+        }
+      ],
+      "rerunCommand": "bun run test:smoke:pr-core",
+      "failureHint": "Run the smoke preset and inspect the generated smoke-results.json source files.",
+      "current": false,
+      "reasons": [
+        "missing"
+      ]
+    }
+  ],
+  "scaffbench": [
+    {
+      "label": "ScaffBench 2",
+      "source": "testing/.tmp-scaffbench-2/summary.json",
+      "pass": 0,
+      "total": 1,
+      "ownerArea": "packages/template-generator/templates",
+      "actionLinks": [
+        {
+          "label": "runner",
+          "href": "https://github.com/Marve10s/Better-Fullstack/blob/main/scripts/scaffbench-v2.ts"
+        },
+        {
+          "label": "owner",
+          "href": "https://github.com/Marve10s/Better-Fullstack/blob/main/packages/template-generator/templates"
+        }
+      ],
+      "rerunCommand": "bun run scaffbench:2:canonical",
+      "failureHint": "Inspect failureTags and validation steps in the ScaffBench summary, then follow the owner area for the stack family.",
+      "current": false,
+      "reasons": [
+        "missing"
+      ]
+    }
+  ],
+  "releaseGuard": null,
+  "publishedPackage": null
 };

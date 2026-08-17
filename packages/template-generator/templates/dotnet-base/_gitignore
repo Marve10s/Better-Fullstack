@@ -7,3 +7,6 @@ obj/
 TestResults/
 coverage/
 appsettings.Local.json
+
+# Better Fullstack recovery snapshots
+.bts/recovery

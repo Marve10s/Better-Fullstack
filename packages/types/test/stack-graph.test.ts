@@ -374,12 +374,12 @@ describe("stack graph", () => {
       "frontend:typescript:next",
       "frontend.appPlatform:typescript:pwa",
       "frontend.dataFetching:typescript:swr",
-      "frontend.dataFetching:typescript:tanstack-table",
+      "frontend.libraries:typescript:tanstack-table",
       "frontend.testing:typescript:storybook",
       "codeQuality:universal:biome",
       "documentation:universal:fumadocs",
-      "workspaceTooling:universal:turborepo",
-      "workspaceTooling:universal:mcp",
+      "workspaceRunner:universal:turborepo",
+      "aiTooling:universal:mcp",
       "examples:universal:ai",
       "examples:universal:chat-sdk",
       "backend:typescript:hono",
@@ -515,15 +515,15 @@ describe("stack graph", () => {
     expect(result.issues.map((issue) => issue.code)).toContain("DUPLICATE_ROLE_SCOPE");
   });
 
-  it("allows registry-marked multi-select roles and ownerless workspace tools", () => {
+  it("allows registry-marked multi-select categories and coherent single profiles", () => {
     const stackParts = parseStackPartSpecs([
       "frontend:typescript:next",
       "frontend.dataFetching:typescript:swr",
-      "frontend.dataFetching:typescript:tanstack-table",
-      "codeQuality:universal:biome",
-      "codeQuality:universal:oxlint",
-      "workspaceTooling:universal:turborepo",
-      "workspaceTooling:universal:skills",
+      "frontend.libraries:typescript:tanstack-table",
+      "codeQuality:universal:eslint",
+      "codeQuality:universal:prettier",
+      "workspaceRunner:universal:turborepo",
+      "aiTooling:universal:skills",
     ]);
     const result = validateStackParts(stackParts);
 
@@ -947,10 +947,7 @@ describe("stack graph", () => {
   });
 
   it("rejects Kong with Loco until its container configuration is supported", () => {
-    const parts = parseStackPartSpecs([
-      "backend:rust:loco",
-      "workspaceTooling:universal:kong",
-    ]);
+    const parts = parseStackPartSpecs(["backend:rust:loco", "workspaceTooling:universal:kong"]);
 
     expect(validateStackParts(parts).issues.map((issue) => issue.message)).toContain(
       "Kong Gateway does not yet support Loco's container configuration.",
@@ -1261,7 +1258,7 @@ function structuralTuple(part: { role: string; ecosystem: string; toolId: string
   return `${part.role}:${part.ecosystem}:${part.toolId}`;
 }
 
-// Phase 0 of docs/plans/planned/single-source-of-truth-stack-graph.md: prove
+// Phase 0 of docs/projects/active/single-source-of-truth-stack-graph.md: prove
 // flat -> graph -> flat is lossless for every structural option value, by
 // asserting the runtime drift guard never fires across the enumerated space.
 describe("stack graph structural round-trip (phase 0)", () => {
@@ -1655,9 +1652,13 @@ describe("stack graph structural round-trip (phase 0)", () => {
       } else {
         expect(derived.addons).toContain(addon);
         expect(graphPart).toBeDefined();
-        expect(graphPart?.ownerPartId).toBe(
-          binding?.ownerRole === "frontend" ? frontend?.id : undefined,
-        );
+        const expectedOwner =
+          binding?.ownerRole === "frontend"
+            ? frontend?.id
+            : binding?.ownerRole === "backend"
+              ? parts.find((part) => part.role === "backend" && part.ecosystem === "typescript")?.id
+              : undefined;
+        expect(graphPart?.ownerPartId).toBe(expectedOwner);
       }
       expect(validateStackParts(parts).issues).toEqual([]);
     }
@@ -1685,8 +1686,9 @@ describe("stack graph structural round-trip (phase 0)", () => {
 
   it("models Knip as TypeScript tooling instead of a universal addon", () => {
     expect(getAddonStackPartBinding("knip")).toEqual({
-      role: "codeQuality",
+      role: "staticAnalysis",
       ecosystem: "typescript",
+      ownerRole: undefined,
     });
     expect(getAddonStackPartBinding("gitleaks")?.ecosystem).toBe("universal");
   });
