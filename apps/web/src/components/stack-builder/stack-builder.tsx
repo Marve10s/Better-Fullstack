@@ -3740,13 +3740,6 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                                     const categoryOptionGroups =
                                       builderSearchData.groupsByCategory.get(categoryKey) ?? [];
                                     const categoryNotes = getCategoryNotes(categoryKey);
-                                    const compactGroup =
-                                      categoryOptionGroups.length === 1 &&
-                                      categoryOptionGroups[0].options.filter(
-                                        (option) => option.id !== "none",
-                                      ).length <= 3
-                                        ? categoryOptionGroups[0]
-                                        : null;
 
                                     return (
                                       <div
@@ -3765,121 +3758,6 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                                             <InfoIcon className="h-3.5 w-3.5 shrink-0 text-amber-500" />
                                           )}
                                         </div>
-                                        {compactGroup ? (
-                                          <div className="flex flex-wrap gap-2">
-                                            {compactGroup.options.map((tech) => {
-                                              const compatibilityStack =
-                                                getCompatibilityStackForCategory(
-                                                  compactGroup.category,
-                                                );
-                                              const isSelected = isSelectedCheck(
-                                                stack,
-                                                compactGroup.category,
-                                                tech.id,
-                                              );
-                                              const isDisabled = !isOptionCompatible(
-                                                compatibilityStack,
-                                                compactGroup.category,
-                                                tech.id,
-                                              );
-                                              const disabledReason = isDisabled
-                                                ? getDisabledReason(
-                                                    compatibilityStack,
-                                                    compactGroup.category,
-                                                    tech.id,
-                                                  )
-                                                : null;
-                                              const { docsUrl, githubUrl } = getTechResourceLinks(
-                                                compactGroup.category,
-                                                tech.id,
-                                              );
-
-                                              return (
-                                                <div
-                                                  key={tech.id}
-                                                  className="flex items-center gap-1"
-                                                >
-                                                  <Tooltip>
-                                                    <TooltipTrigger
-                                                      render={
-                                                        <button
-                                                          type="button"
-                                                          aria-label={tech.name}
-                                                          aria-pressed={isSelected}
-                                                          data-testid={`option-${compactGroup.category}-${tech.id}`}
-                                                          onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleTechSelect(
-                                                              compactGroup.category,
-                                                              tech.id,
-                                                            );
-                                                          }}
-                                                          className={cn(
-                                                            "flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 font-medium text-xs transition-all",
-                                                            isSelected
-                                                              ? "border-primary bg-primary/10 text-primary"
-                                                              : isDisabled
-                                                                ? "border-destructive/30 bg-destructive/5 text-muted-foreground opacity-50 hover:opacity-75"
-                                                                : "border-border bg-fd-background text-foreground hover:border-primary/40 hover:bg-primary/5",
-                                                          )}
-                                                        />
-                                                      }
-                                                    >
-                                                      {(tech.icon !== "" ||
-                                                        ICON_REGISTRY[tech.id]) && (
-                                                        <TechIcon
-                                                          techId={tech.id}
-                                                          icon={tech.icon}
-                                                          name={tech.name}
-                                                          className="h-3.5 w-3.5"
-                                                        />
-                                                      )}
-                                                      <span>{tech.name}</span>
-                                                      {tech.default && !isSelected && (
-                                                        <span className="text-[9px] text-muted-foreground">
-                                                          {m.builderDefault()}
-                                                        </span>
-                                                      )}
-                                                    </TooltipTrigger>
-                                                    <TooltipContent className="max-w-64">
-                                                      {isDisabled && disabledReason
-                                                        ? disabledReason
-                                                        : getLocalizedTechOption(tech).description}
-                                                    </TooltipContent>
-                                                  </Tooltip>
-                                                  {(docsUrl || githubUrl) && (
-                                                    <span className="mr-1 flex items-center gap-1">
-                                                      {docsUrl && (
-                                                        <a
-                                                          href={docsUrl}
-                                                          target="_blank"
-                                                          rel="noopener noreferrer"
-                                                          aria-label={m.builderOpenDocumentation()}
-                                                          onClick={(e) => e.stopPropagation()}
-                                                          className="text-muted-foreground/60 transition-colors hover:text-foreground"
-                                                        >
-                                                          <BookOpen className="h-3 w-3" />
-                                                        </a>
-                                                      )}
-                                                      {githubUrl && (
-                                                        <a
-                                                          href={githubUrl}
-                                                          target="_blank"
-                                                          rel="noopener noreferrer"
-                                                          aria-label={m.builderOpenGithubRepository()}
-                                                          onClick={(e) => e.stopPropagation()}
-                                                          className="text-muted-foreground/60 transition-colors hover:text-foreground"
-                                                        >
-                                                          <Github className="h-3 w-3" />
-                                                        </a>
-                                                      )}
-                                                    </span>
-                                                  )}
-                                                </div>
-                                              );
-                                            })}
-                                          </div>
-                                        ) : (
                                           <div className="space-y-4">
                                             {categoryOptionGroups.map((group) => (
                                       <div key={group.key}>
@@ -4002,7 +3880,6 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                                       </div>
                                     ))}
                                           </div>
-                                        )}
 
                           {/* shadcn/ui Configuration - shown only when shadcn-ui is selected */}
                           {categoryKey === "uiLibrary" && (
