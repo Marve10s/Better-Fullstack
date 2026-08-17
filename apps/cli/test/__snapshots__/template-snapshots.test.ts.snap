@@ -1868,7 +1868,7 @@ export default app;
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
-    "sonner": "^2.0.7",
+    "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.3",
     "tw-animate-css": "^1.4.0",
@@ -2570,7 +2570,7 @@ export default nextConfig;
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
-    "sonner": "^2.0.7",
+    "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",
     "tw-animate-css": "^1.4.0",
     "next": "catalog:",
@@ -2821,7 +2821,7 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
       "@types/bun": "^1.3.14",
-      "next": "^16.3.0",
+      "next": "^16.3.1",
       "@trpc/server": "^11.18.0",
       "@trpc/client": "^11.18.0",
       "better-auth": "^1.6.22"
@@ -3144,7 +3144,7 @@ export default defineConfig({
     "zod": "catalog:",
     "@snapshot-next-self-fullstack/env": "workspace:*",
     "drizzle-orm": "^0.45.2",
-    "pg": "^8.22.0"
+    "pg": "^8.23.0"
   }
 }
 "
@@ -3386,11 +3386,11 @@ exports[`Template Snapshots Key File Content Snapshots key files: astro-react-in
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^7.2.0",
+    "astro": "^7.2.2",
     "@astrojs/react": "^6.0.2",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "@astrojs/node": "^11.1.0",
+    "@astrojs/node": "^11.1.2",
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@snapshot-astro-react-integration/env": "workspace:*",
@@ -3575,10 +3575,10 @@ export const orpc = createTanstackQueryUtils(client)
     "zod": "catalog:",
     "@snapshot-astro-react-integration/env": "workspace:*",
     "@snapshot-astro-react-integration/db": "workspace:*",
-    "@orpc/server": "^1.14.15",
-    "@orpc/client": "^1.14.15",
-    "@orpc/openapi": "^1.14.15",
-    "@orpc/zod": "^1.14.15"
+    "@orpc/server": "^1.15.0",
+    "@orpc/client": "^1.15.0",
+    "@orpc/openapi": "^1.15.0",
+    "@orpc/zod": "^1.15.0"
   }
 }
 "
@@ -3970,11 +3970,11 @@ export default defineNuxtConfig({
     "@orpc/openapi": "catalog:",
     "@orpc/zod": "catalog:",
     "@tanstack/vue-query": "^5.101.4",
-    "@orpc/tanstack-query": "^1.14.15"
+    "@orpc/tanstack-query": "^1.15.0"
   },
   "devDependencies": {
     "tailwindcss": "^4.3.3",
-    "@iconify-json/lucide": "^1.2.122",
+    "@iconify-json/lucide": "^1.2.123",
     "typescript": "catalog:",
     "@snapshot-nuxt-standalone/config": "workspace:*",
     "@tanstack/vue-query-devtools": "^6.1.38"
@@ -4047,10 +4047,10 @@ export default defineNuxtConfig({
       "@types/bun": "^1.3.14",
       "@libsql/client": "^0.17.4",
       "libsql": "^0.5.29",
-      "@orpc/server": "^1.14.15",
-      "@orpc/client": "^1.14.15",
-      "@orpc/openapi": "^1.14.15",
-      "@orpc/zod": "^1.14.15"
+      "@orpc/server": "^1.15.0",
+      "@orpc/client": "^1.15.0",
+      "@orpc/openapi": "^1.15.0",
+      "@orpc/zod": "^1.15.0"
     }
   },
   "scripts": {
@@ -4420,7 +4420,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: solid-start-v2
     "@orpc/client": "catalog:",
     "@orpc/openapi": "catalog:",
     "@orpc/zod": "catalog:",
-    "@orpc/tanstack-query": "^1.14.15",
+    "@orpc/tanstack-query": "^1.15.0",
     "@tanstack/solid-query": "^5.101.4",
     "better-auth": "catalog:"
   },
@@ -4679,10 +4679,10 @@ export default defineConfig({
       "@types/node": "^26.2.0",
       "@libsql/client": "^0.17.4",
       "libsql": "^0.5.29",
-      "@orpc/server": "^1.14.15",
-      "@orpc/client": "^1.14.15",
-      "@orpc/openapi": "^1.14.15",
-      "@orpc/zod": "^1.14.15",
+      "@orpc/server": "^1.15.0",
+      "@orpc/client": "^1.15.0",
+      "@orpc/openapi": "^1.15.0",
+      "@orpc/zod": "^1.15.0",
       "better-auth": "^1.6.22"
     }
   },
@@ -5266,7 +5266,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: express-node-t
     "@snapshot-express-node-trpc/config": "workspace:*",
     "@types/express": "catalog:",
     "@types/cors": "^2.8.19",
-    "tsx": "^4.23.11",
+    "tsx": "^4.23.12",
     "@types/node": "catalog:"
   }
 }
@@ -5365,7 +5365,7 @@ app.listen(3000, () => {
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
-    "sonner": "^2.0.7",
+    "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.3",
     "tw-animate-css": "^1.4.0",
@@ -5869,7 +5869,7 @@ export type AppRouter = typeof appRouter;
     "@snapshot-express-node-trpc/env": "workspace:*",
     "@prisma/client": "catalog:",
     "@prisma/adapter-pg": "^7.9.1",
-    "pg": "^8.22.0"
+    "pg": "^8.23.0"
   }
 }
 "
@@ -6158,7 +6158,7 @@ export default app;
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
-    "sonner": "^2.0.7",
+    "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.3",
     "tw-animate-css": "^1.4.0",
@@ -6171,7 +6171,7 @@ export default app;
     "@snapshot-hono-bun-orpc/api": "workspace:*",
     "@libsql/client": "catalog:",
     "libsql": "catalog:",
-    "@orpc/tanstack-query": "^1.14.15",
+    "@orpc/tanstack-query": "^1.15.0",
     "@orpc/client": "catalog:",
     "@orpc/server": "catalog:",
     "@tanstack/react-query": "^5.101.4",
@@ -6466,12 +6466,12 @@ export default defineConfig({
       "typescript": "^6.0.3",
       "@types/bun": "^1.3.14",
       "hono": "^4.12.27",
-      "@orpc/server": "^1.14.15",
-      "@orpc/openapi": "^1.14.15",
-      "@orpc/zod": "^1.14.15",
+      "@orpc/server": "^1.15.0",
+      "@orpc/openapi": "^1.15.0",
+      "@orpc/zod": "^1.15.0",
       "@libsql/client": "^0.17.4",
       "libsql": "^0.5.29",
-      "@orpc/client": "^1.14.15"
+      "@orpc/client": "^1.15.0"
     }
   },
   "scripts": {
@@ -6830,8 +6830,8 @@ exports[`Template Snapshots Key File Content Snapshots key files: hono-openapi 1
     "@snapshot-hono-openapi/auth": "workspace:*",
     "@snapshot-hono-openapi/db": "workspace:*",
     "hono": "catalog:",
-    "@hono/zod-openapi": "^1.5.2",
-    "@scalar/hono-api-reference": "^0.11.13",
+    "@hono/zod-openapi": "^1.6.0",
+    "@scalar/hono-api-reference": "^0.11.14",
     "better-auth": "catalog:"
   },
   "devDependencies": {
@@ -7002,7 +7002,7 @@ export default app;
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
-    "sonner": "^2.0.7",
+    "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.3",
     "tw-animate-css": "^1.4.0",
@@ -8081,7 +8081,7 @@ export default app;
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
-    "sonner": "^2.0.7",
+    "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.3",
     "tw-animate-css": "^1.4.0",
@@ -9176,7 +9176,7 @@ export default app;
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
-    "sonner": "^2.0.7",
+    "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.3",
     "tw-animate-css": "^1.4.0",
@@ -9848,7 +9848,7 @@ export default defineConfig({
     "zod": "catalog:",
     "@snapshot-better-auth-full/env": "workspace:*",
     "drizzle-orm": "^0.45.2",
-    "pg": "^8.22.0"
+    "pg": "^8.23.0"
   }
 }
 "
@@ -10090,7 +10090,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: convex-clerk 1
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
-    "sonner": "^2.0.7",
+    "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.3",
     "tw-animate-css": "^1.4.0",
@@ -10369,7 +10369,7 @@ export default defineConfig({
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
       "@types/bun": "^1.3.14",
-      "convex": "^1.43.0",
+      "convex": "^1.44.0",
       "@types/node": "^26.2.0"
     }
   },
@@ -10650,7 +10650,7 @@ export default nextConfig;
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
-    "sonner": "^2.0.7",
+    "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",
     "tw-animate-css": "^1.4.0",
     "next": "catalog:",
@@ -10667,7 +10667,7 @@ export default nextConfig;
     "@trpc/client": "catalog:",
     "@trpc/tanstack-react-query": "^11.18.0",
     "@tanstack/react-query": "^5.101.4",
-    "@clerk/nextjs": "^7.7.1",
+    "@clerk/nextjs": "^7.7.6",
     "lucide-react": "^1.21.0"
   },
   "devDependencies": {
@@ -10875,7 +10875,7 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
       "@types/bun": "^1.3.14",
-      "next": "^16.3.0",
+      "next": "^16.3.1",
       "@libsql/client": "^0.17.4",
       "libsql": "^0.5.29",
       "@trpc/server": "^11.18.0",
@@ -11234,7 +11234,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: self-tanstack-
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
-    "sonner": "^2.0.7",
+    "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.3",
     "tailwindcss": "^4.3.3",
@@ -11257,8 +11257,8 @@ exports[`Template Snapshots Key File Content Snapshots key files: self-tanstack-
     "@orpc/client": "catalog:",
     "@orpc/openapi": "catalog:",
     "@orpc/zod": "catalog:",
-    "@orpc/tanstack-query": "^1.14.15",
-    "@clerk/tanstack-react-start": "^1.4.29",
+    "@orpc/tanstack-query": "^1.15.0",
+    "@clerk/tanstack-react-start": "^1.5.2",
     "srvx": "^0.11.22",
     "lucide-react": "^1.21.0"
   },
@@ -11577,10 +11577,10 @@ export default defineConfig({
       "@types/bun": "^1.3.14",
       "@libsql/client": "^0.17.4",
       "libsql": "^0.5.29",
-      "@orpc/server": "^1.14.15",
-      "@orpc/client": "^1.14.15",
-      "@orpc/openapi": "^1.14.15",
-      "@orpc/zod": "^1.14.15"
+      "@orpc/server": "^1.15.0",
+      "@orpc/client": "^1.15.0",
+      "@orpc/openapi": "^1.15.0",
+      "@orpc/zod": "^1.15.0"
     }
   },
   "scripts": {
@@ -12043,7 +12043,7 @@ export default app;
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
-    "sonner": "^2.0.7",
+    "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.3",
     "tw-animate-css": "^1.4.0",
@@ -12532,7 +12532,7 @@ export type AppRouter = typeof appRouter;
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@snapshot-mongodb-mongoose/env": "workspace:*",
-    "mongoose": "^9.9.1"
+    "mongoose": "^9.9.2"
   }
 }
 "
@@ -12774,7 +12774,7 @@ export default app;
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
-    "sonner": "^2.0.7",
+    "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.3",
     "tw-animate-css": "^1.4.0",
@@ -13278,7 +13278,7 @@ export type AppRouter = typeof appRouter;
     "@snapshot-postgres-prisma/env": "workspace:*",
     "@prisma/client": "catalog:",
     "@prisma/adapter-pg": "^7.9.1",
-    "pg": "^8.22.0"
+    "pg": "^8.23.0"
   }
 }
 "
@@ -13532,7 +13532,7 @@ export default app;
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
-    "sonner": "^2.0.7",
+    "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.3",
     "tw-animate-css": "^1.4.0",
@@ -14318,7 +14318,7 @@ export default app;
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
-    "sonner": "^2.0.7",
+    "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.3",
     "tw-animate-css": "^1.4.0",
@@ -15024,7 +15024,7 @@ export default nextConfig;
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
-    "sonner": "^2.0.7",
+    "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",
     "tw-animate-css": "^1.4.0",
     "next": "catalog:",
@@ -15259,7 +15259,7 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
       "@types/bun": "^1.3.14",
-      "next": "^16.3.0",
+      "next": "^16.3.1",
       "@libsql/client": "^0.17.4",
       "libsql": "^0.5.29",
       "@trpc/server": "^11.18.0",
@@ -15737,7 +15737,7 @@ export default app;
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
-    "sonner": "^2.0.7",
+    "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.3",
     "tw-animate-css": "^1.4.0",
@@ -15770,7 +15770,7 @@ export default app;
     "typescript": "catalog:",
     "@snapshot-i18n-paraglide-tanstack-router/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.101.4",
-    "@inlang/paraglide-js": "^2.23.2"
+    "@inlang/paraglide-js": "^2.24.0"
   }
 }
 "
@@ -16533,7 +16533,7 @@ export default app;
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
-    "sonner": "^2.0.7",
+    "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.3",
     "tw-animate-css": "^1.4.0",
@@ -17320,7 +17320,7 @@ export default app;
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
-    "sonner": "^2.0.7",
+    "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.3",
     "tw-animate-css": "^1.4.0",
@@ -18002,7 +18002,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: frontend-only-
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
-    "sonner": "^2.0.7",
+    "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.3",
     "tw-animate-css": "^1.4.0",
@@ -18660,9 +18660,9 @@ fontWeight: "bold",
     "react-dom": "^19.2.8",
     "@babel/runtime": "^7.26.0",
     "react-native": "^0.86.2",
-    "react-native-gesture-handler": "^3.1.0",
+    "react-native-gesture-handler": "^3.2.1",
     "react-native-reanimated": "^4.5.3",
-    "react-native-safe-area-context": "^5.8.1",
+    "react-native-safe-area-context": "^5.9.0",
     "react-native-screens": "^4.27.0",
     "react-native-web": "^0.21.2",
     "react-native-worklets": "^0.10.2",
@@ -19377,9 +19377,9 @@ registerRootComponent(App);
     "@babel/runtime": "^7.26.0",
     "react-native": "^0.86.2",
     "react-native-mmkv": "^4.3.2",
-    "react-native-gesture-handler": "^3.1.0",
+    "react-native-gesture-handler": "^3.2.1",
     "react-native-reanimated": "^4.5.3",
-    "react-native-safe-area-context": "^5.8.1",
+    "react-native-safe-area-context": "^5.9.0",
     "react-native-screens": "^4.27.0",
     "react-native-web": "^0.21.2",
     "react-native-worklets": "^0.10.2",
@@ -19387,7 +19387,7 @@ registerRootComponent(App);
     "zod": "catalog:",
     "@snapshot-native-mobile-integrations/env": "workspace:*",
     "@snapshot-native-mobile-integrations/api": "workspace:*",
-    "@orpc/tanstack-query": "^1.14.15",
+    "@orpc/tanstack-query": "^1.15.0",
     "@orpc/client": "catalog:"
   },
   "devDependencies": {
@@ -19622,10 +19622,10 @@ export default app;
       "typescript": "^6.0.3",
       "@types/bun": "^1.3.14",
       "hono": "^4.12.27",
-      "@orpc/server": "^1.14.15",
-      "@orpc/openapi": "^1.14.15",
-      "@orpc/zod": "^1.14.15",
-      "@orpc/client": "^1.14.15"
+      "@orpc/server": "^1.15.0",
+      "@orpc/openapi": "^1.15.0",
+      "@orpc/zod": "^1.15.0",
+      "@orpc/client": "^1.15.0"
     }
   },
   "scripts": {
