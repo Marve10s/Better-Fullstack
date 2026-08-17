@@ -53,6 +53,7 @@ const TSDOWN_VITEJS_DEVTOOLS_OVERRIDE = "0.4.1";
  */
 export function processPackageConfigs(vfs: VirtualFileSystem, config: ProjectConfig): void {
   updateRootPackageJson(vfs, config);
+  applyVitePlusWorkspaceScripts(vfs, config);
   updateConfigPackageJson(vfs, config);
   updateEnvPackageJson(vfs, config);
   updateInfraPackageJson(vfs, config);
@@ -251,6 +252,35 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
     : workspaces;
 
   vfs.writeJson("package.json", pkgJson);
+}
+
+// The vite-plus override aliases the `vite` package to @voidzero-dev/vite-plus-core,
+// which ships no `vite` binary; workspace scripts must run vite through `vp`.
+function applyVitePlusWorkspaceScripts(vfs: VirtualFileSystem, config: ProjectConfig): void {
+  if (!config.addons.includes("vite-plus")) return;
+
+  const rewriteSegment = (segment: string) => {
+    const trimmed = segment.trim();
+    if (trimmed === "vite") return segment.replace("vite", "vp dev");
+    if (trimmed.startsWith("vite ")) return segment.replace("vite ", "vp ");
+    return segment;
+  };
+
+  for (const filePath of vfs.getAllFiles()) {
+    if (filePath === "package.json" || !filePath.endsWith("/package.json")) continue;
+    const pkgJson = vfs.readJson<PackageJson>(filePath);
+    if (!pkgJson?.scripts) continue;
+
+    let changed = false;
+    for (const [name, script] of Object.entries(pkgJson.scripts)) {
+      const rewritten = script.split("&&").map(rewriteSegment).join("&&");
+      if (rewritten !== script) {
+        pkgJson.scripts[name] = rewritten;
+        changed = true;
+      }
+    }
+    if (changed) vfs.writeJson(filePath, pkgJson);
+  }
 }
 
 function applyVitePlusOverrides(pkgJson: PackageJson, config: ProjectConfig): void {

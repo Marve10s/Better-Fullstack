@@ -187,6 +187,33 @@ describe("processPackageConfigs", () => {
     });
   });
 
+  it("rewrites workspace vite scripts to vp because the override ships no vite binary", () => {
+    const vfs = createSeededVFS();
+    vfs.writeJson("package.json", { name: "starter", scripts: {}, workspaces: [] });
+    vfs.writeJson("apps/web/package.json", {
+      name: "web",
+      scripts: {
+        dev: "vite dev",
+        build: "vite build",
+        serve: "vite preview",
+        start: "vite",
+        test: "vitest run",
+        "check-types": "tsr generate && tsc --noEmit",
+      },
+    });
+
+    processPackageConfigs(vfs, makeConfig({ addons: ["vite-plus"] }));
+
+    expect(vfs.readJson<PackageJson>("apps/web/package.json")?.scripts).toMatchObject({
+      dev: "vp dev",
+      build: "vp build",
+      serve: "vp preview",
+      start: "vp dev",
+      test: "vitest run",
+      "check-types": "tsr generate && tsc --noEmit",
+    });
+  });
+
   it("pins Better Auth's Kysely peer with the package-manager override field", () => {
     for (const [packageManager, expected] of [
       ["bun", { overrides: { kysely: "0.28.17" } }],
