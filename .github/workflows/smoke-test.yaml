@@ -1,6 +1,33 @@
 name: Smoke Test
 
 on:
+  workflow_call:
+    inputs:
+      seed:
+        description: "PRNG seed override (default: caller commit SHA)"
+        required: false
+        type: string
+      ecosystem:
+        description: "Single ecosystem to test (leave empty for all)"
+        required: false
+        type: string
+      count:
+        description: "Number of combos to generate"
+        required: false
+        type: number
+        default: 14
+      force_flags:
+        description: "Additional force flags passed to the smoke harness"
+        required: false
+        type: string
+      checkout_ref:
+        description: "Git ref containing the generator changes to test"
+        required: false
+        type: string
+    outputs:
+      summary:
+        description: "Markdown smoke-test summary"
+        value: ${{ jobs.smoke.outputs.summary }}
   push:
     branches: [main]
     paths:
@@ -42,12 +69,16 @@ on:
         required: false
         type: number
         default: 14
+      force_flags:
+        description: "Additional force flags passed to the smoke harness"
+        required: false
+        type: string
 
 permissions:
   contents: read
 
 concurrency:
-  group: smoke-${{ github.head_ref || github.ref }}
+  group: smoke-${{ inputs.checkout_ref || github.head_ref || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -55,6 +86,8 @@ jobs:
     name: Smoke Test
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    outputs:
+      summary: ${{ steps.smoke-summary.outputs.summary }}
     services:
       postgres:
         image: postgres:16
@@ -84,6 +117,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.checkout_ref || github.ref }}
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -196,7 +231,7 @@ jobs:
           FALLBACK_SEED: ${{ github.sha }}
           SMOKE_ECOSYSTEM: ${{ inputs.ecosystem }}
           SMOKE_COUNT: ${{ inputs.count || '14' }}
-          FORCE_FLAGS: ${{ steps.detect-changes.outputs.force_flags }}
+          FORCE_FLAGS: ${{ inputs.force_flags || steps.detect-changes.outputs.force_flags }}
         run: |
           SEED="${INPUT_SEED:-$FALLBACK_SEED}"
 
@@ -218,6 +253,22 @@ jobs:
           if [ -f testing/.smoke-output/summary.md ]; then
             cat testing/.smoke-output/summary.md >> "$GITHUB_STEP_SUMMARY"
           fi
+
+      - name: Capture Smoke Summary
+        id: smoke-summary
+        if: always()
+        run: |
+          {
+            echo 'summary<<EOF'
+            if [ -f testing/.smoke-output/summary.md ]; then
+              cat testing/.smoke-output/summary.md
+            else
+              echo '## Smoke Test Results'
+              echo
+              echo 'The smoke harness did not produce a summary.'
+            fi
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
 
       - name: Upload Results
         if: always()

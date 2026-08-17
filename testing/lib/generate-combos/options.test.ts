@@ -31,4 +31,26 @@ describe("smoke combo generation", () => {
       }
     }
   });
+
+  it("forces TypeScript categories away from none", () => {
+    const combos = generateBatch(
+      {
+        count: 24,
+        ecosystems: ["typescript"],
+        installMode: "no-install",
+        rng: createSeededRandom(seedFromString("force-typescript-category")),
+        forceNonNone: ["analytics"],
+      },
+      {
+        fingerprintKeys: new Set(),
+        legacyNames: new Set(),
+        historyCount: 0,
+      },
+    );
+
+    expect(combos).toHaveLength(24);
+    for (const combo of combos) {
+      expect(combo.config.analytics).not.toBe("none");
+    }
+  });
 });

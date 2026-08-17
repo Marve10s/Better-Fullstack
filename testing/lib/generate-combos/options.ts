@@ -236,7 +236,7 @@ function createCommonOptions(ecosystem: Ecosystem, args: GeneratorArgs): CLIInpu
 
 function sampleTypeScriptFrontends(): CLIInput["frontend"] {
   const picked: string[] = [];
-  const web = sampleScalar(WEB_FRONTENDS, 0.2);
+  const web = sampleScalar(WEB_FRONTENDS, 0.2, "frontend");
   if (web !== "none") {
     picked.push(web);
   }
@@ -250,12 +250,13 @@ function sampleTypeScriptFrontends(): CLIInput["frontend"] {
 
 function makeTypeScriptDraft(args: GeneratorArgs): CandidateDraft {
   const frontend = sampleTypeScriptFrontends();
-  const cssFramework = sampleScalar(CSS_FRAMEWORK_VALUES, 0.2);
+  const cssFramework = sampleScalar(CSS_FRAMEWORK_VALUES, 0.2, "cssFramework");
   const backend = frontend.some((value) => SELF_COMPATIBLE_FRONTENDS.has(value))
-    ? sampleScalar(BACKEND_VALUES, 0.18)
+    ? sampleScalar(BACKEND_VALUES, 0.18, "backend")
     : sampleScalar(
         BACKEND_VALUES.filter((value) => value !== "self"),
         0.18,
+        "backend",
       );
 
   const runtime =
@@ -263,31 +264,34 @@ function makeTypeScriptDraft(args: GeneratorArgs): CandidateDraft {
       ? "none"
       : backend === "nestjs" || backend === "adonisjs" || backend === "nitro"
         ? "node"
-        : sampleScalar(RUNTIME_VALUES, 0.2);
+        : sampleScalar(RUNTIME_VALUES, 0.2, "runtime");
 
   const database =
-    backend === "none" || backend === "convex" ? "none" : sampleScalar(DATABASE_VALUES, 0.2);
+    backend === "none" || backend === "convex"
+      ? "none"
+      : sampleScalar(DATABASE_VALUES, 0.2, "database");
 
   const orm =
     database === "none" || database === "edgedb" || database === "redis"
       ? "none"
       : database === "mongodb"
-        ? sampleScalar(["mongoose", "prisma", "none"] as const, 0.1)
+        ? sampleScalar(["mongoose", "prisma", "none"] as const, 0.1, "orm")
         : sampleScalar(
             ORM_VALUES.filter((value) => value !== "mongoose"),
             0.1,
+            "orm",
           );
 
   const api =
     backend === "none" || backend === "self" || backend === "convex"
       ? "none"
-      : sampleScalar(API_VALUES, 0.2);
+      : sampleScalar(API_VALUES, 0.2, "api");
 
-  let auth = backend === "none" ? "none" : sampleScalar(AUTH_VALUES, 0.3);
+  let auth = backend === "none" ? "none" : sampleScalar(AUTH_VALUES, 0.3, "auth");
   // better-auth requires a database connection
   if (auth === "better-auth" && database === "none") auth = "none";
   const astroIntegration = frontend.includes("astro")
-    ? sampleScalar(ASTRO_INTEGRATION_VALUES, 0.15)
+    ? sampleScalar(ASTRO_INTEGRATION_VALUES, 0.15, "astroIntegration")
     : undefined;
 
   // Most UI libraries are React-only; non-React astro integrations need compatible ones
@@ -302,7 +306,8 @@ function makeTypeScriptDraft(args: GeneratorArgs): CandidateDraft {
   ]);
   const needsNonReactUI =
     astroIntegration && astroIntegration !== "react" && astroIntegration !== "none";
-  let uiLibrary = cssFramework !== "tailwind" ? "none" : sampleScalar(UI_LIBRARY_VALUES, 0.25);
+  let uiLibrary =
+    cssFramework !== "tailwind" ? "none" : sampleScalar(UI_LIBRARY_VALUES, 0.25, "uiLibrary");
   if (needsNonReactUI && REACT_ONLY_UI.has(uiLibrary)) uiLibrary = "none";
   const usesShadcn = uiLibrary === "shadcn-ui";
 
@@ -316,69 +321,80 @@ function makeTypeScriptDraft(args: GeneratorArgs): CandidateDraft {
       api,
       database,
       orm,
-      dbSetup: database === "none" ? "none" : sampleScalar(DATABASE_SETUP_VALUES, 0.82),
+      dbSetup: database === "none" ? "none" : sampleScalar(DATABASE_SETUP_VALUES, 0.82, "dbSetup"),
       auth,
-      payments: backend === "none" ? "none" : sampleScalar(PAYMENTS_VALUES, 0.75),
-      email: backend === "none" ? "none" : sampleScalar(EMAIL_VALUES, 0.75),
-      fileUpload: sampleScalar(FILE_UPLOAD_VALUES, 0.82),
-      logging: backend === "none" ? "none" : sampleScalar(LOGGING_VALUES, 0.65),
-      observability: sampleScalar(OBSERVABILITY_VALUES, 0.85),
+      payments: backend === "none" ? "none" : sampleScalar(PAYMENTS_VALUES, 0.75, "payments"),
+      email: backend === "none" ? "none" : sampleScalar(EMAIL_VALUES, 0.75, "email"),
+      fileUpload: sampleScalar(FILE_UPLOAD_VALUES, 0.82, "fileUpload"),
+      logging: backend === "none" ? "none" : sampleScalar(LOGGING_VALUES, 0.65, "logging"),
+      observability: sampleScalar(OBSERVABILITY_VALUES, 0.85, "observability"),
       featureFlags: sampleScalar(
         ["growthbook", "posthog", "launchdarkly", "flagsmith", "unleash", "none"] as const,
         0.85,
+        "featureFlags",
       ),
       integrations:
         backend === "none" || backend === "convex" || runtime === "workers"
           ? "none"
-          : sampleScalar(INTEGRATIONS_VALUES, 0.9),
+          : sampleScalar(INTEGRATIONS_VALUES, 0.9, "integrations"),
       ecommerce:
         backend === "none" || backend === "convex"
           ? "none"
-          : sampleScalar(ECOMMERCE_VALUES, 0.9),
-      analytics: sampleScalar(ANALYTICS_VALUES, 0.9),
-      effect: sampleScalar(EFFECT_VALUES, 0.82),
-      stateManagement: sampleScalar(STATE_MANAGEMENT_VALUES, 0.7),
-      forms: sampleScalar(FORMS_VALUES, 0.6),
-      validation: sampleScalar(VALIDATION_VALUES, 0.35),
-      testing: sampleScalar(TESTING_VALUES, 0.35),
-      ai: sampleScalar(AI_VALUES, 0.78),
-      realtime: backend === "none" ? "none" : sampleScalar(REALTIME_VALUES, 0.84),
-      jobQueue: backend === "none" ? "none" : sampleScalar(JOB_QUEUE_VALUES, 0.88),
-      animation: sampleScalar(ANIMATION_VALUES, 0.74),
+          : sampleScalar(ECOMMERCE_VALUES, 0.9, "ecommerce"),
+      analytics: sampleScalar(ANALYTICS_VALUES, 0.9, "analytics"),
+      effect: sampleScalar(EFFECT_VALUES, 0.82, "effect"),
+      stateManagement: sampleScalar(STATE_MANAGEMENT_VALUES, 0.7, "stateManagement"),
+      forms: sampleScalar(FORMS_VALUES, 0.6, "forms"),
+      validation: sampleScalar(VALIDATION_VALUES, 0.35, "validation"),
+      testing: sampleScalar(TESTING_VALUES, 0.35, "testing"),
+      ai: sampleScalar(AI_VALUES, 0.78, "ai"),
+      realtime: backend === "none" ? "none" : sampleScalar(REALTIME_VALUES, 0.84, "realtime"),
+      jobQueue: backend === "none" ? "none" : sampleScalar(JOB_QUEUE_VALUES, 0.88, "jobQueue"),
+      animation: sampleScalar(ANIMATION_VALUES, 0.74, "animation"),
       cssFramework,
       uiLibrary,
-      cms: sampleScalar(CMS_VALUES, 0.88),
-      caching: sampleScalar(CACHING_VALUES, 0.88),
+      cms: sampleScalar(CMS_VALUES, 0.88, "cms"),
+      caching: sampleScalar(CACHING_VALUES, 0.88, "caching"),
       rateLimit:
-        backend === "none" || backend === "convex" ? "none" : sampleScalar(RATE_LIMIT_VALUES, 0.9),
-      i18n: sampleScalar(I18N_VALUES, 0.88),
-      search: sampleScalar(SEARCH_VALUES, 0.9),
-      fileStorage: sampleScalar(FILE_STORAGE_VALUES, 0.84),
-      webDeploy: sampleScalar(WEB_DEPLOY_VALUES, 0.92),
+        backend === "none" || backend === "convex"
+          ? "none"
+          : sampleScalar(RATE_LIMIT_VALUES, 0.9, "rateLimit"),
+      i18n: sampleScalar(I18N_VALUES, 0.88, "i18n"),
+      search: sampleScalar(SEARCH_VALUES, 0.9, "search"),
+      fileStorage: sampleScalar(FILE_STORAGE_VALUES, 0.84, "fileStorage"),
+      webDeploy: sampleScalar(WEB_DEPLOY_VALUES, 0.92, "webDeploy"),
       serverDeploy:
         backend === "hono"
-          ? sampleScalar(SERVER_DEPLOY_VALUES, 0.92)
+          ? sampleScalar(SERVER_DEPLOY_VALUES, 0.92, "serverDeploy")
           : sampleScalar(
               SERVER_DEPLOY_VALUES.filter((v) => v !== "sst"),
               0.92,
+              "serverDeploy",
             ),
-      addons: sampleArray(ADDONS_VALUES, 0.82, 2),
+      addons: sampleArray(ADDONS_VALUES, 0.82, 2, "addons"),
       examples:
         backend === "none"
           ? sampleArray(
               EXAMPLES_VALUES.filter((v) => v !== "ai"),
               0.9,
               1,
+              "examples",
             )
-          : sampleArray(EXAMPLES_VALUES, 0.9, 1),
+          : sampleArray(EXAMPLES_VALUES, 0.9, 1, "examples"),
       astroIntegration,
-      shadcnBase: usesShadcn ? sampleScalar(SHADCN_BASE_VALUES, 0) : undefined,
-      shadcnStyle: usesShadcn ? sampleScalar(SHADCN_STYLE_VALUES, 0) : undefined,
-      shadcnIconLibrary: usesShadcn ? sampleScalar(SHADCN_ICON_LIBRARY_VALUES, 0) : undefined,
-      shadcnColorTheme: usesShadcn ? sampleScalar(SHADCN_COLOR_THEME_VALUES, 0) : undefined,
-      shadcnBaseColor: usesShadcn ? sampleScalar(SHADCN_BASE_COLOR_VALUES, 0) : undefined,
-      shadcnFont: usesShadcn ? sampleScalar(SHADCN_FONT_VALUES, 0) : undefined,
-      shadcnRadius: usesShadcn ? sampleScalar(SHADCN_RADIUS_VALUES, 0) : undefined,
+      shadcnBase: usesShadcn ? sampleScalar(SHADCN_BASE_VALUES, 0, "shadcnBase") : undefined,
+      shadcnStyle: usesShadcn ? sampleScalar(SHADCN_STYLE_VALUES, 0, "shadcnStyle") : undefined,
+      shadcnIconLibrary: usesShadcn
+        ? sampleScalar(SHADCN_ICON_LIBRARY_VALUES, 0, "shadcnIconLibrary")
+        : undefined,
+      shadcnColorTheme: usesShadcn
+        ? sampleScalar(SHADCN_COLOR_THEME_VALUES, 0, "shadcnColorTheme")
+        : undefined,
+      shadcnBaseColor: usesShadcn
+        ? sampleScalar(SHADCN_BASE_COLOR_VALUES, 0, "shadcnBaseColor")
+        : undefined,
+      shadcnFont: usesShadcn ? sampleScalar(SHADCN_FONT_VALUES, 0, "shadcnFont") : undefined,
+      shadcnRadius: usesShadcn ? sampleScalar(SHADCN_RADIUS_VALUES, 0, "shadcnRadius") : undefined,
     },
   };
 }

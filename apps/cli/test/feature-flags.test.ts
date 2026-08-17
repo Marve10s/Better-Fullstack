@@ -1,3 +1,4 @@
+import { dependencyVersionMap } from "@better-fullstack/template-generator";
 import { describe, it, expect } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -487,7 +488,7 @@ describe("Feature Flags Configurations", () => {
         expect(packageJson(result, "apps/web").dependencies?.[provider.webPackage]).toBeDefined();
         if (provider.id === "unleash") {
           expect(packageJson(result, "apps/web").dependencies?.["unleash-proxy-client"]).toBe(
-            "^3.8.2",
+            dependencyVersionMap["unleash-proxy-client"],
           );
         }
         expect(fileContent(result, provider.serverFile)).toContain(provider.serverPackage);

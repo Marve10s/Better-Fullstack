@@ -27,7 +27,7 @@ jobs:
   check-versions:
     name: Check Dependency Versions
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 60
     permissions:
       contents: write
       pull-requests: write
@@ -35,6 +35,8 @@ jobs:
       has_major_updates: ${{ steps.check.outputs.has_major_updates }}
       major_packages: ${{ steps.check.outputs.major_packages }}
       has_pr_changes: ${{ steps.pending.outputs.has_changes }}
+      smoke_force_flags: ${{ steps.smoke-flags.outputs.force_flags }}
+      pull_request_number: ${{ steps.cpr.outputs.pull-request-number }}
 
     steps:
       - name: Checkout Code
@@ -133,6 +135,36 @@ jobs:
           bun test apps/cli/test/generated-command-contract.test.ts
           bun test apps/web/test/preview-config.test.ts
 
+      - name: Run Full Test Suite
+        id: full-tests
+        if: steps.check.outputs.effective_update_mode == 'patch-minor' || steps.check.outputs.effective_update_mode == 'all'
+        run: |
+          set +e
+          bun run test 2>&1 | tee "$RUNNER_TEMP/full-test.log"
+          TEST_EXIT_CODE=${PIPESTATUS[0]}
+          set -e
+          echo "exit_code=$TEST_EXIT_CODE" >> "$GITHUB_OUTPUT"
+
+      - name: Capture Test Verification Report
+        id: test-report
+        if: steps.check.outputs.effective_update_mode == 'patch-minor' || steps.check.outputs.effective_update_mode == 'all'
+        run: |
+          bun run .github/scripts/format-test-report.ts \
+            "$RUNNER_TEMP/full-test.log" \
+            "${{ steps.full-tests.outputs.exit_code }}" > "$RUNNER_TEMP/test-verification.md"
+          {
+            echo 'report<<EOF'
+            cat "$RUNNER_TEMP/test-verification.md"
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Derive Targeted Smoke Flags
+        id: smoke-flags
+        if: steps.check.outputs.effective_update_mode == 'patch-minor' || steps.check.outputs.effective_update_mode == 'all'
+        run: |
+          FORCE_FLAGS="$(bun run .github/scripts/derive-deps-smoke-flags.ts --base origin/main)"
+          echo "force_flags=$FORCE_FLAGS" >> "$GITHUB_OUTPUT"
+
       - name: Regenerate Dependency Report
         if: steps.check.outputs.effective_update_mode == 'patch-minor' || steps.check.outputs.effective_update_mode == 'all'
         run: |
@@ -169,6 +201,7 @@ jobs:
         run: git config core.hooksPath /dev/null
 
       - name: Create Pull Request
+        id: cpr
         if: steps.pending.outputs.has_changes == 'true' && (steps.check.outputs.effective_update_mode == 'patch-minor' || steps.check.outputs.effective_update_mode == 'all')
         uses: peter-evans/create-pull-request@v6
         with:
@@ -187,6 +220,8 @@ jobs:
             - Note: `all` mode only applies major changes explicitly allowlisted in the repository policy; their smoke test runs automatically.
 
             ${{ steps.final-report.outputs.report }}
+
+            ${{ steps.test-report.outputs.report }}
 
             ### Review Checklist
             - [ ] Review the version changes
@@ -216,6 +251,42 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo "${{ steps.final-report.outputs.report }}" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
+
+  deps-smoke:
+    name: Dependency Update Smoke Test
+    needs: check-versions
+    if: needs.check-versions.outputs.has_pr_changes == 'true'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/smoke-test.yaml
+    with:
+      checkout_ref: deps/version-updates
+      count: 40
+      force_flags: ${{ needs.check-versions.outputs.smoke_force_flags }}
+    secrets: inherit
+
+  deps-smoke-report:
+    name: Post Dependency Smoke Report
+    needs: [check-versions, deps-smoke]
+    if: always() && needs.check-versions.outputs.has_pr_changes == 'true' && needs.check-versions.outputs.pull_request_number != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Post Smoke Summary To Pull Request
+        env:
+          GH_TOKEN: ${{ secrets.PAT_WORKFLOW }}
+          PR_NUMBER: ${{ needs.check-versions.outputs.pull_request_number }}
+          SMOKE_SUMMARY: ${{ needs.deps-smoke.outputs.summary }}
+        run: |
+          if [ -z "$SMOKE_SUMMARY" ]; then
+            SMOKE_SUMMARY='## Smoke Test Results
+
+            The smoke workflow did not return a summary. Inspect its job log and artifacts.'
+          fi
+          gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body "$SMOKE_SUMMARY"
 
   major-deps-smoke:
     name: Major Deps Smoke Test
