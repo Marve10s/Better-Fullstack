@@ -76,7 +76,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
-    "@inlang/paraglide-js": "^2.24.0",
+    "@inlang/paraglide-js": "^2.23.2",
     "@playwright/test": "1.62.1",
     "@tailwindcss/postcss": "^4.3.3",
     "@tailwindcss/vite": "^4.3.3",
