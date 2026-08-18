@@ -188,6 +188,6 @@ describe("processAuthDeps", () => {
   });
 
   it("uses the Auth0 v4 SDK expected by the Next templates", () => {
-    expect(dependencyVersionMap["@auth0/nextjs-auth0"]).toBe("^4.23.0");
+    expect(dependencyVersionMap["@auth0/nextjs-auth0"]).toMatch(/^\^4\./);
   });
 });
