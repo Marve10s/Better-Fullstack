@@ -32,18 +32,8 @@ describe("project shape flags", () => {
       ecosystem: "rust",
       rustWebFramework: "none",
     });
-    expect(shapeFlagsForEcosystem("frontend", "dotnet")).toEqual({
-      ecosystem: "dotnet",
-      dotnetWebFramework: "none",
-      dotnetOrm: "none",
-      dotnetApi: "none",
-      dotnetAuth: "none",
-      dotnetRealtime: "none",
-      dotnetJobQueue: "none",
-      dotnetCaching: "none",
-      dotnetDeploy: "none",
-      database: "none",
-    });
+    // .NET is not an accepted frontend ecosystem, so it contributes nothing.
+    expect(shapeFlagsForEcosystem("frontend", "dotnet")).toEqual({ ecosystem: "dotnet" });
   });
 
   test("backend shape switches off the frontend half per ecosystem", () => {
@@ -83,12 +73,6 @@ describe("project shape flags", () => {
       rustWebFramework: "none",
       rustFrontend: "leptos",
     });
-    expect(shapeFlagsForEcosystem("frontend", "dotnet", { withoutPrompts: true })).toMatchObject({
-      ecosystem: "dotnet",
-      dotnetWebFramework: "none",
-      dotnetOrm: "none",
-      dotnetFrontend: "blazor-web-app",
-    });
     expect(shapeFlagsForEcosystem("frontend", "typescript", { withoutPrompts: true })).toEqual(
       shapeFlagsForEcosystem("frontend", "typescript"),
     );
@@ -97,6 +81,8 @@ describe("project shape flags", () => {
   test("each shape accepts only the ecosystems that can express it", () => {
     expect(shapeSupportsEcosystem("frontend", "go")).toBe(false);
     expect(shapeSupportsEcosystem("frontend", "typescript")).toBe(true);
+    // A frontend-only .NET project renders no Blazor app, so it is not offered.
+    expect(shapeSupportsEcosystem("frontend", "dotnet")).toBe(false);
     expect(shapeSupportsEcosystem("backend", "react-native")).toBe(false);
     expect(shapeSupportsEcosystem("backend", "elixir")).toBe(true);
     expect(shapeSupportsEcosystem("mobile", "react-native")).toBe(true);
@@ -120,14 +106,6 @@ describe("project shape flags", () => {
       "auth",
       "backend",
       "database",
-      "dotnetApi",
-      "dotnetAuth",
-      "dotnetCaching",
-      "dotnetDeploy",
-      "dotnetJobQueue",
-      "dotnetOrm",
-      "dotnetRealtime",
-      "dotnetWebFramework",
       "orm",
       "runtime",
       "rustWebFramework",
@@ -265,21 +243,16 @@ describe("project shape scaffolding", () => {
     expect(result.projectConfig.rustFrontend).toBe("none");
   });
 
-  test("dotnet frontend shape clears the backend-owned half", async () => {
-    const result = await create("shape-frontend-dotnet", {
+  test("a native frontend selector answers the mobile shape rather than fighting it", async () => {
+    const result = await create("shape-mobile-native-frontend", {
       ...baseOptions,
-      shape: "frontend",
-      ecosystem: "dotnet",
+      shape: "mobile",
+      frontend: ["native-uniwind"],
       yes: true,
     });
 
     expect(result.success).toBe(true);
-    expect(result.projectConfig.dotnetFrontend).toBe("blazor-web-app");
-    expect(result.projectConfig.dotnetWebFramework).toBe("none");
-    expect(result.projectConfig.dotnetOrm).toBe("none");
-    expect(result.projectConfig.dotnetAuth).toBe("none");
-    expect(result.projectConfig.dotnetApi).toBe("none");
-    expect(result.projectConfig.database).toBe("none");
+    expect(result.projectConfig.frontend).toEqual(["native-uniwind"]);
   });
 
   test("rust frontend shape scaffolds a frontend rather than an empty project", async () => {

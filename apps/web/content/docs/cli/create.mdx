@@ -42,19 +42,21 @@ For npm, Better Fullstack flags go after `--`. Generated npm commands may use `n
 | Shape                | Asks                                                          | Result                                              |
 | -------------------- | ------------------------------------------------------------- | --------------------------------------------------- |
 | `--shape fullstack`  | Nothing extra; the standard composition prompt runs.          | The full guided flow.                               |
-| `--shape frontend`   | TypeScript, Rust, or .NET.                                    | A client app with the server half switched off.     |
+| `--shape frontend`   | TypeScript or Rust.                                           | A client app with the server half switched off.     |
 | `--shape backend`    | TypeScript, Go, Rust, Python, Java/Kotlin, .NET, or Elixir.   | An API with no web frontend.                        |
 | `--shape mobile`     | React Native, Kotlin, Swift, or Flutter.                      | A mobile app on the platform you pick.              |
 
-Platform and ecosystem flags answer the shape's question ahead of time, which keeps shapes usable in scripts:
+Platform and ecosystem flags answer the shape's own question ahead of time. The remaining prompts for that stack still run, so add `--yes` when you need a command that never asks anything:
 
 ```bash
 # Prompts for the mobile platform
 bun create better-fullstack@latest my-app --shape mobile
 
-# Answers it up front, no prompt
+# Platform answered up front; Kotlin libraries and Git are still asked
 bun create better-fullstack@latest my-app --shape mobile --kotlin-mobile compose-multiplatform
-bun create better-fullstack@latest my-app --shape backend --ecosystem go
+
+# Fully prompt-free
+bun create better-fullstack@latest my-app --shape backend --ecosystem go --yes
 ```
 
 With `--yes` there is nothing to prompt, so a shape falls back to its default: TypeScript for `frontend` and `backend`, React Native for `mobile`.

@@ -108,8 +108,15 @@ export function assertShapeInputIsUsable(
 
   if (!options.yes) return;
 
-  const coreStackFlagsProvided = Array.from(providedFlags).filter((flag) =>
-    CORE_STACK_FLAGS.has(flag),
+  // A native frontend is how you name the React Native platform, so it answers
+  // the mobile shape's question rather than contradicting it.
+  const platformSelectors =
+    shape === "mobile" && mobilePlatformsFromFlags(options).length === 1
+      ? new Set(["frontend"])
+      : new Set<string>();
+
+  const coreStackFlagsProvided = Array.from(providedFlags).filter(
+    (flag) => CORE_STACK_FLAGS.has(flag) && !platformSelectors.has(flag),
   );
 
   if (coreStackFlagsProvided.length > 0) {

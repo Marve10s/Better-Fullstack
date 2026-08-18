@@ -42,17 +42,6 @@ const FRONTEND_ONLY_FLAGS: Partial<Record<Ecosystem, Partial<ProjectConfig>>> = 
     auth: "none",
   },
   rust: { rustWebFramework: "none" },
-  dotnet: {
-    dotnetWebFramework: "none",
-    dotnetOrm: "none",
-    dotnetApi: "none",
-    dotnetAuth: "none",
-    dotnetRealtime: "none",
-    dotnetJobQueue: "none",
-    dotnetCaching: "none",
-    dotnetDeploy: "none",
-    database: "none",
-  },
 };
 
 const BACKEND_ONLY_FLAGS: Partial<Record<Ecosystem, Partial<ProjectConfig>>> = {
@@ -67,7 +56,6 @@ const BACKEND_ONLY_FLAGS: Partial<Record<Ecosystem, Partial<ProjectConfig>>> = {
  */
 const FRONTEND_SHAPE_YES_DEFAULTS: Partial<Record<Ecosystem, Partial<ProjectConfig>>> = {
   rust: { rustFrontend: "leptos" },
-  dotnet: { dotnetFrontend: "blazor-web-app" },
 };
 
 const BACKEND_SHAPE_YES_DEFAULTS: Partial<Record<Ecosystem, Partial<ProjectConfig>>> = {
@@ -76,7 +64,9 @@ const BACKEND_SHAPE_YES_DEFAULTS: Partial<Record<Ecosystem, Partial<ProjectConfi
 
 export const SHAPE_ECOSYSTEMS = {
   fullstack: ECOSYSTEM_VALUES,
-  frontend: ["typescript", "rust", "dotnet"],
+  // .NET is absent deliberately: a frontend-only .NET project renders the base
+  // template with no Blazor app, with or without a shape.
+  frontend: ["typescript", "rust"],
   backend: ["typescript", "go", "rust", "python", "java", "dotnet", "elixir"],
   mobile: ["react-native"],
 } as const satisfies Record<ProjectShape, readonly Ecosystem[]>;
