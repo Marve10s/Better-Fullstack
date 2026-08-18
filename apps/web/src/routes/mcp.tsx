@@ -112,6 +112,14 @@ const AGENTS: readonly Agent[] = [
     config: "cmd mcp add better-fullstack -- npx -y create-better-fullstack@latest mcp",
   },
   {
+    id: "gemini-cli",
+    name: "Gemini CLI",
+    file: "terminal",
+    shell: true,
+    iconSlug: "googlegemini",
+    config: "gemini mcp add better-fullstack npx -y create-better-fullstack@latest mcp",
+  },
+  {
     id: "cursor",
     name: "Cursor",
     file: ".cursor/mcp.json",
@@ -211,7 +219,7 @@ const AGENTS: readonly Agent[] = [
     id: "kilo-code",
     name: "Kilo Code",
     iconSrc: "/icon/kilo-code.svg",
-    file: "kilo.json",
+    file: ".kilo/kilo.jsonc",
     shell: false,
     config: `{
   "mcp": {

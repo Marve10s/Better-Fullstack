@@ -48,6 +48,13 @@ export const AGENT_TABS: readonly AgentTab[] = [
     shell: true,
   },
   {
+    id: "gemini-cli",
+    label: "Gemini CLI",
+    iconSlug: "googlegemini",
+    command: "gemini mcp add better-fullstack npx -y create-better-fullstack@latest mcp",
+    shell: true,
+  },
+  {
     id: "cursor",
     label: "Cursor",
     iconSlug: "cursor",
@@ -87,7 +94,7 @@ export const AGENT_TABS: readonly AgentTab[] = [
     label: "Kilo Code",
     iconSrc: "/icon/kilo-code.svg",
     command: LOCAL_SNIPPET,
-    target: "kilo.json (mcp)",
+    target: ".kilo/kilo.jsonc (mcp)",
     shell: false,
   },
   {

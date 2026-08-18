@@ -2,7 +2,11 @@ import path from "node:path";
 
 import type { CLIInput, ProjectConfig } from "./types";
 
-import { SHAPE_ECOSYSTEMS, shapeSupportsEcosystem } from "./prompts/project-shape";
+import {
+  SHAPE_ECOSYSTEMS,
+  shapeControlledFlags,
+  shapeSupportsEcosystem,
+} from "./prompts/project-shape";
 import { ProjectNameSchema } from "./types";
 import {
   applyEffectBackendDefaults,
@@ -34,6 +38,19 @@ const CORE_STACK_FLAGS = new Set([
   "effect",
 ]);
 
+function isSameStackValue(provided: unknown, offValue: unknown) {
+  const normalize = (value: unknown) =>
+    Array.isArray(value) ? value.filter((entry) => entry !== "none") : value === "none" ? [] : value;
+  const left = normalize(provided);
+  const right = normalize(offValue);
+  if (Array.isArray(left) && Array.isArray(right)) return left.length === right.length;
+  return left === right;
+}
+
+function toFlagName(configKey: string) {
+  return `--${configKey.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`;
+}
+
 export function assertShapeInputIsUsable(
   options: CLIInput & { config?: string; fromHistory?: number },
   providedFlags: Set<string>,
@@ -41,10 +58,22 @@ export function assertShapeInputIsUsable(
   const shape = options.shape;
   if (!shape || shape === "fullstack") return;
 
-  if (options.config || options.fromHistory !== undefined) {
+  if (options.config || options.fromHistory !== undefined || options.part?.length) {
     exitWithError(
-      `Cannot combine --shape ${shape} with a saved stack (--config or --from-history). ` +
-        "The saved stack already answers what --shape would ask. Remove one of them.",
+      `Cannot combine --shape ${shape} with a complete stack (--config, --from-history, or --part). ` +
+        "Those already answer what --shape would ask. Remove one of them.",
+    );
+  }
+
+  const controlled = Object.entries(shapeControlledFlags(shape)).filter(
+    ([key, offValue]) =>
+      providedFlags.has(key) &&
+      !isSameStackValue(options[key as keyof CLIInput], offValue),
+  );
+  if (controlled.length > 0) {
+    exitWithError(
+      `--shape ${shape} conflicts with ${controlled.map(([key]) => toFlagName(key)).join(", ")}. ` +
+        `A ${shape} project switches those off. Remove them or drop --shape.`,
     );
   }
 

@@ -89,6 +89,17 @@ export function shapeFlagsForEcosystem(
   return {};
 }
 
+/**
+ * The stack keys a shape switches off. Providing one of them explicitly asks
+ * for the opposite of the shape, so the combination is rejected rather than
+ * silently resolved in either direction.
+ */
+export function shapeControlledFlags(shape: ProjectShape): Record<string, unknown> {
+  const source =
+    shape === "frontend" ? FRONTEND_ONLY_FLAGS : shape === "backend" ? BACKEND_ONLY_FLAGS : {};
+  return Object.assign({}, ...Object.values(source));
+}
+
 export function shapeSupportsEcosystem(shape: ProjectShape, ecosystem: Ecosystem): boolean {
   const supported: readonly Ecosystem[] = SHAPE_ECOSYSTEMS[shape];
   return supported.includes(ecosystem);

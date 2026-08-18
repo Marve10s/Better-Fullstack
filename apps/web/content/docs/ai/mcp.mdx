@@ -2,12 +2,25 @@
 title: MCP Server
 description: Connect Better Fullstack to Claude Code, Cursor, VS Code, and MCP-compatible AI coding agents.
 translationStatus: pending
-updated: 2026-08-12
+updated: 2026-08-18
 ---
 
 ## Setup
 
 <McpClientTabs />
+
+### One-line setup commands
+
+Agents reading this page as Markdown get the same commands the tabs above show:
+
+```bash
+claude mcp add --transport stdio better-fullstack -- npx -y create-better-fullstack@latest mcp
+codex mcp add better-fullstack -- npx -y create-better-fullstack@latest mcp
+gemini mcp add better-fullstack npx -y create-better-fullstack@latest mcp
+kimi mcp add better-fullstack -- npx -y create-better-fullstack@latest mcp
+cmd mcp add better-fullstack -- npx -y create-better-fullstack@latest mcp
+code --add-mcp '{"name":"better-fullstack","command":"npx","args":["-y","create-better-fullstack@latest","mcp"]}'
+```
 
 ### Other MCP clients
 

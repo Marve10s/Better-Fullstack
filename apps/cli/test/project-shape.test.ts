@@ -5,6 +5,7 @@ import { gatherConfig } from "../src/prompts/config-prompts";
 import {
   mobilePlatformFromFlags,
   nativeMobilePartSpecs,
+  shapeControlledFlags,
   shapeFlagsForEcosystem,
   shapeSupportsEcosystem,
 } from "../src/prompts/project-shape";
@@ -87,6 +88,26 @@ describe("project shape flags", () => {
     expect(shapeSupportsEcosystem("backend", "elixir")).toBe(true);
     expect(shapeSupportsEcosystem("mobile", "react-native")).toBe(true);
     expect(shapeSupportsEcosystem("mobile", "python")).toBe(false);
+  });
+
+  test("controlled flags span every ecosystem the shape supports", () => {
+    expect(Object.keys(shapeControlledFlags("frontend")).sort()).toEqual([
+      "api",
+      "auth",
+      "backend",
+      "database",
+      "dotnetWebFramework",
+      "orm",
+      "runtime",
+      "rustWebFramework",
+    ]);
+    expect(Object.keys(shapeControlledFlags("backend")).sort()).toEqual([
+      "cssFramework",
+      "dotnetFrontend",
+      "frontend",
+      "rustFrontend",
+      "uiLibrary",
+    ]);
   });
 
   test("kotlin part specs carry the selected app and libraries", () => {
@@ -200,7 +221,43 @@ describe("project shape scaffolding", () => {
       yes: true,
     });
     expect(contradictoryFlag.success).toBe(false);
-    expect(contradictoryFlag.error).toMatch(/Cannot combine --yes with core stack/);
+    expect(contradictoryFlag.error).toMatch(/--shape frontend conflicts with --backend/);
+  });
+
+  test("rejects a shape that contradicts an ecosystem-specific flag", async () => {
+    // Rust and .NET have their own frontend/backend keys, so a shape that only
+    // guarded the TypeScript ones would silently scaffold both halves.
+    const rustConflict = await create("shape-rust-conflict", {
+      ...baseOptions,
+      shape: "frontend",
+      ecosystem: "rust",
+      rustWebFramework: "axum",
+      yes: true,
+    });
+    expect(rustConflict.success).toBe(false);
+    expect(rustConflict.error).toMatch(/--shape frontend conflicts with --rust-web-framework/);
+  });
+
+  test("accepts a flag that merely restates what the shape switches off", async () => {
+    const result = await create("shape-redundant-flag", {
+      ...baseOptions,
+      shape: "backend",
+      frontend: ["none"],
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.projectConfig.backend).not.toBe("none");
+  });
+
+  test("rejects a shape alongside a complete stack graph", async () => {
+    const result = await create("shape-vs-part", {
+      ...baseOptions,
+      shape: "frontend",
+      part: ["backend:go:gin"],
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toMatch(/Cannot combine --shape frontend with a complete stack/);
   });
 
   test("the guided mobile shape honours an explicit install request", async () => {
