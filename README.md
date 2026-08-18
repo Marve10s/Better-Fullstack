@@ -196,6 +196,12 @@ If Better Fullstack saves you time, consider supporting:
 
 <br>
 
+<!--
+Star History is hidden while GitHub restricts stargazer data to repo admins and
+collaborators, which makes the chart render an error placard instead of a graph:
+https://star-history.com/blog/github-stargazer-api-restriction
+Restore this block once the API is public again.
+
 ## 📈 Star History
 
 <div align="center">
@@ -207,8 +213,7 @@ If Better Fullstack saves you time, consider supporting:
     </picture>
   </a>
 </div>
-
-<br>
+-->
 
 ## License
 
