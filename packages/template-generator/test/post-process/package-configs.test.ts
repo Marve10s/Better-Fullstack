@@ -199,12 +199,14 @@ describe("processPackageConfigs", () => {
         start: "vite",
         test: "vitest run",
         "check-types": "tsr generate && tsc --noEmit",
+        "dev.debug": "node --inspect-brk ./node_modules/vite/bin/vite.js --mode ssr --force",
       },
     });
 
     processPackageConfigs(vfs, makeConfig({ addons: ["vite-plus"] }));
 
-    expect(vfs.readJson<PackageJson>("apps/web/package.json")?.scripts).toMatchObject({
+    const scripts = vfs.readJson<PackageJson>("apps/web/package.json")?.scripts;
+    expect(scripts).toMatchObject({
       dev: "vp dev",
       build: "vp build",
       serve: "vp preview",
@@ -212,6 +214,7 @@ describe("processPackageConfigs", () => {
       test: "vitest run",
       "check-types": "tsr generate && tsc --noEmit",
     });
+    expect(scripts?.["dev.debug"]).toBeUndefined();
   });
 
   it("pins Better Auth's Kysely peer with the package-manager override field", () => {

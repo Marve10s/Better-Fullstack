@@ -222,11 +222,11 @@ RECOMMENDED WORKFLOW:
 
 For existing projects:
 1. Call bfs_get_project_status, then bfs_check_project for truthful target verification.
-2. Call bfs_plan_project_update to review current-template drift. Manifest v1 is always unproven and plan-only by default.
-3. Only after independent review and a recovery point, pass its reviewToken plus acknowledgeUnprovenManifestV1: true to bfs_apply_project_update.
+2. Call bfs_plan_project_update to review current-template drift. Only a valid manifest v2 baseline returns a reviewToken.
+3. Pass that exact reviewToken to bfs_apply_project_update, adding acknowledgeUnprovenManifestV1: true only when the plan reports unverified provenance. Apply creates its own recovery point.
 4. For removal, call bfs_plan_part_removal with one exact non-primary stack part, review the result, then pass its unchanged token to bfs_apply_part_removal.
-4. Use bfs_plan_stack_update / bfs_apply_stack_update for provider changes.
-5. Use bfs_plan_addition / bfs_add_feature for owner-scoped tooling Stack Parts and deploy targets.
+5. Use bfs_plan_stack_update / bfs_apply_stack_update for provider changes.
+6. Use bfs_plan_addition / bfs_add_feature for owner-scoped tooling Stack Parts and deploy targets.
 
 CRITICAL RULES:
 - Dependency installation is ALWAYS skipped in MCP mode (timeout risk). After scaffolding, tell the user to run install manually.
@@ -830,6 +830,8 @@ function diffAddedCapabilities(
   }
   return added;
 }
+
+const WORKSPACE_RUNNERS: ReadonlySet<string> = new Set(["turborepo", "nx", "vite-plus"]);
 
 function mergeLegacyAddonParts(part?: string[], addons?: string[]): string[] | undefined {
   const addonSpecs = (addons ?? [])
@@ -2624,11 +2626,25 @@ export function createMcpServer(): McpServer {
       try {
         const safePath = sanitizePath(projectDir);
         const requestedParts = mergeLegacyAddonParts(part, addons);
-        const plan = await planStackUpdate(safePath, {
-          part: requestedParts,
-          webDeploy,
-          serverDeploy,
-        });
+        const requestedRunner = (requestedParts ?? [])
+          .map((spec) => spec.split(":")[2])
+          .find((toolId) => toolId !== undefined && WORKSPACE_RUNNERS.has(toolId));
+        const existingAddons = (await readBtsConfig(safePath))?.addons ?? [];
+        const replacesWorkspaceRunner =
+          requestedRunner !== undefined &&
+          existingAddons.some((addon) => WORKSPACE_RUNNERS.has(addon) && addon !== requestedRunner);
+        const plan = await planStackUpdate(
+          safePath,
+          {
+            part: requestedParts,
+            webDeploy,
+            serverDeploy,
+          },
+          {
+            includeVersionChannelPaths: true,
+            removeObsoleteGeneratedArtifacts: replacesWorkspaceRunner,
+          },
+        );
         if (!plan.success) {
           return {
             content: [{ type: "text", text: JSON.stringify(plan, null, 2) }],

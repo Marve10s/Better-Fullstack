@@ -1,12 +1,45 @@
 import { Client } from "@modelcontextprotocol/client";
 import { StdioClientTransport } from "@modelcontextprotocol/client/stdio";
+import { EMBEDDED_TEMPLATES, generateVirtualProject } from "@better-fullstack/template-generator";
+import { writeTreeToFilesystem } from "@better-fullstack/template-generator/fs-writer";
+import { createCliDefaultProjectConfigBase, type ProjectConfig } from "@better-fullstack/types";
 import { afterEach, describe, expect, it } from "bun:test";
 import fs from "fs-extra";
 import { tmpdir } from "node:os";
 import path, { resolve } from "node:path";
 
+import { buildBtsConfigForPersistence, writeBtsConfig } from "../src/utils/bts-config";
+import { recordScaffoldManifest } from "../src/utils/scaffold-manifest";
+
 const clients: Client[] = [];
 const roots: string[] = [];
+
+async function scaffoldProject(projectDir: string, overrides: Partial<ProjectConfig>) {
+  const config = {
+    ...createCliDefaultProjectConfigBase(),
+    projectName: path.basename(projectDir),
+    projectDir,
+    relativePath: ".",
+    git: false,
+    install: false,
+    ...overrides,
+  } as ProjectConfig;
+  const persisted = buildBtsConfigForPersistence(config);
+  const normalized = { ...config, ...persisted, projectDir, relativePath: "." } as ProjectConfig;
+  const generated = await generateVirtualProject({
+    config: normalized,
+    templates: EMBEDDED_TEMPLATES,
+  });
+  if (!generated.success || !generated.tree) {
+    throw new Error(generated.error ?? "Failed to generate fixture project");
+  }
+  await writeTreeToFilesystem(generated.tree, projectDir);
+  await writeBtsConfig(normalized, {
+    version: persisted.version,
+    createdAt: persisted.createdAt,
+  });
+  await recordScaffoldManifest(projectDir);
+}
 
 async function connectClient(mode: "legacy" | "modern") {
   const client = new Client(
@@ -82,5 +115,21 @@ describe("Better Fullstack MCP protocol support", () => {
 
     expect(result.isError).not.toBe(true);
     expect(await fs.pathExists(path.join(targetDir, "silent-create", "bts.jsonc"))).toBe(true);
+  });
+
+  it("plans additions with the mutation options the apply path uses", async () => {
+    const client = await connectClient("modern");
+    const root = await fs.mkdtemp(path.join(tmpdir(), "bfs-mcp-plan-addition-"));
+    roots.push(root);
+    const projectDir = path.join(root, "app");
+    await scaffoldProject(projectDir, { addons: ["turborepo"] });
+
+    const result = await client.callTool({
+      name: "bfs_plan_addition",
+      arguments: { projectDir, part: ["workspaceRunner:universal:nx"] },
+    });
+
+    expect(result.isError).not.toBe(true);
+    expect(result.structuredContent?.filesToRemove).toContain("turbo.json");
   });
 });

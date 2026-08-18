@@ -273,6 +273,13 @@ function applyVitePlusWorkspaceScripts(vfs: VirtualFileSystem, config: ProjectCo
 
     let changed = false;
     for (const [name, script] of Object.entries(pkgJson.scripts)) {
+      // `vp` is not a node entrypoint, so scripts that boot the aliased vite bin
+      // under the node inspector have no Vite+ equivalent.
+      if (script.includes("node_modules/vite/bin/vite.js")) {
+        delete pkgJson.scripts[name];
+        changed = true;
+        continue;
+      }
       const rewritten = script.split("&&").map(rewriteSegment).join("&&");
       if (rewritten !== script) {
         pkgJson.scripts[name] = rewritten;

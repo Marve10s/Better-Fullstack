@@ -53,7 +53,7 @@ describe("MCP project lifecycle parity", () => {
     expect(result.prerequisites.wave1).toMatchObject({
       ready: false,
       generatorProvenance: "unverified",
-      recovery: "available",
+      recovery: "unavailable",
     });
     expect(result.prerequisites.wave1.blockers).toContain(
       "A versioned scaffold manifest is required for lifecycle apply and recovery.",
@@ -254,6 +254,14 @@ describe("MCP project lifecycle parity", () => {
     roots.push(projectDir);
     await fs.copy(historicalFixture, projectDir);
     expect(await recordUpgradeBaseline(projectDir)).not.toBeNull();
+
+    const status = await getMcpProjectStatus(projectDir);
+    expect(status.success).toBe(true);
+    if (!status.success) return;
+    expect(status.prerequisites.wave1).toMatchObject({
+      generatorProvenance: "unverified",
+      recovery: "available",
+    });
 
     const plan = await planMcpProjectUpdate(projectDir);
     expect(plan.success).toBe(true);

@@ -43,7 +43,7 @@ export type LifecyclePrerequisites = {
   wave1: {
     ready: boolean;
     generatorProvenance: "verified" | "unverified";
-    recovery: "available";
+    recovery: "available" | "unavailable";
     blockers: string[];
   };
 };
@@ -425,7 +425,7 @@ export async function getLifecyclePrerequisites(
     wave1: {
       ready: manifest !== null && blockers.length === 0,
       generatorProvenance: provenanceVerified ? "verified" : "unverified",
-      recovery: "available",
+      recovery: manifest === null ? "unavailable" : "available",
       blockers,
     },
   };

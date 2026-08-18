@@ -149,6 +149,60 @@ function formatProjectName(name: string): string {
   return name.replace(/\s+/g, "-");
 }
 
+export function buildRandomStack(stack: StackState): Partial<StackState> {
+  const randomStack: Partial<StackState> = {};
+  for (const category of CATEGORY_ORDER) {
+    const categoryKey = category as keyof typeof TECH_OPTIONS;
+    const workingStack = { ...stack, ...randomStack };
+    const visibleOptions = getVisibleOptions(
+      workingStack,
+      categoryKey,
+      TECH_OPTIONS[categoryKey] || [],
+    );
+    const compatibleOptions = visibleOptions.filter(
+      (option) => getDisabledReason(workingStack, categoryKey, option.id) === null,
+    );
+    const options = compatibleOptions.length > 0 ? compatibleOptions : visibleOptions;
+    if (options.length === 0) continue;
+    const catKey = getStackKeyForCategory(categoryKey);
+    if (getToolingCategoryForUi(categoryKey)) {
+      const picks = isMultiSelectCategory(category as OptionCategory)
+        ? [...options]
+            .filter((option) => option.id !== "none")
+            .sort(() => 0.5 - Math.random())
+            .slice(0, Math.floor(Math.random() * 3))
+        : [options[Math.floor(Math.random() * options.length)]];
+      const toolIds = picks.flatMap(
+        (option) => getToolingOptionForUi(categoryKey, option.id)?.toolIds ?? [],
+      );
+      const selected = (randomStack as Record<string, string[]>)[catKey] ?? [];
+      (randomStack as Record<string, string[]>)[catKey] = [...new Set([...selected, ...toolIds])];
+      continue;
+    }
+    if (isMultiSelectCategory(category as OptionCategory)) {
+      if (catKey === "webFrontend" || catKey === "nativeFrontend") {
+        const randomIndex = Math.floor(Math.random() * options.length);
+        const selectedOption = options[randomIndex].id;
+        randomStack[catKey as "webFrontend" | "nativeFrontend"] = [selectedOption];
+      } else {
+        const numToPick = Math.floor(Math.random() * Math.min(options.length, 4));
+        if (numToPick === 0) {
+          (randomStack as Record<string, string[]>)[catKey] = [];
+        } else {
+          const shuffledOptions = [...options]
+            .filter((opt) => opt.id !== "none")
+            .sort(() => 0.5 - Math.random())
+            .slice(0, numToPick);
+          (randomStack as Record<string, string[]>)[catKey] = shuffledOptions.map((opt) => opt.id);
+        }
+      }
+    } else {
+      (randomStack[catKey] as string) = options[Math.floor(Math.random() * options.length)].id;
+    }
+  }
+  return randomStack;
+}
+
 type TechOption = (typeof TECH_OPTIONS)[keyof typeof TECH_OPTIONS][number];
 type CompatibilityNotes = { notes: string[]; hasIssue: boolean };
 type RenderOptionGroup = {
@@ -2913,57 +2967,9 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
   };
 
   const getRandomStack = () => {
-    const randomStack: Partial<StackState> = {};
-    for (const category of CATEGORY_ORDER) {
-      const options = getVisibleOptions(
-        stack,
-        category as keyof typeof TECH_OPTIONS,
-        TECH_OPTIONS[category as keyof typeof TECH_OPTIONS] || [],
-      );
-      if (options.length === 0) continue;
-      const catKey = getStackKeyForCategory(category as keyof typeof TECH_OPTIONS);
-      if (getToolingCategoryForUi(category as keyof typeof TECH_OPTIONS)) {
-        const picks = isMultiSelectCategory(category as OptionCategory)
-          ? [...options]
-              .filter((option) => option.id !== "none")
-              .sort(() => 0.5 - Math.random())
-              .slice(0, Math.floor(Math.random() * 3))
-          : [options[Math.floor(Math.random() * options.length)]];
-        const toolIds = picks.flatMap(
-          (option) =>
-            getToolingOptionForUi(category as keyof typeof TECH_OPTIONS, option.id)?.toolIds ?? [],
-        );
-        const selected = (randomStack as Record<string, string[]>)[catKey] ?? [];
-        (randomStack as Record<string, string[]>)[catKey] = [...new Set([...selected, ...toolIds])];
-        continue;
-      }
-      if (isMultiSelectCategory(category as OptionCategory)) {
-        if (catKey === "webFrontend" || catKey === "nativeFrontend") {
-          const randomIndex = Math.floor(Math.random() * options.length);
-          const selectedOption = options[randomIndex].id;
-          randomStack[catKey as "webFrontend" | "nativeFrontend"] = [selectedOption];
-        } else {
-          const numToPick = Math.floor(Math.random() * Math.min(options.length, 4));
-          if (numToPick === 0) {
-            (randomStack as Record<string, string[]>)[catKey] = [];
-          } else {
-            const shuffledOptions = [...options]
-              .filter((opt) => opt.id !== "none")
-              .sort(() => 0.5 - Math.random())
-              .slice(0, numToPick);
-            (randomStack as Record<string, string[]>)[catKey] = shuffledOptions.map(
-              (opt) => opt.id,
-            );
-          }
-        }
-      } else {
-        const randomIndex = Math.floor(Math.random() * options.length);
-        (randomStack[catKey] as string) = options[randomIndex].id;
-      }
-    }
     startTransition(() => {
       setStack({
-        ...(randomStack as StackState),
+        ...(buildRandomStack(stack) as StackState),
         projectName: stack.projectName || "my-app",
         stackMode: "solo",
         stackPartSpecs: [],
