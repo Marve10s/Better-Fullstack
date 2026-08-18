@@ -211,6 +211,39 @@ describe("CLI add command", () => {
   });
 
   it(
+    "reports that recovery after --install leaves the lockfile out of sync",
+    async () => {
+      const root = await makeTempRoot("bfs-add-install-recovery-");
+      const projectDir = join(root, "app");
+      const createResult = await runCli(
+        ["create", "app", "--yes", "--no-install", "--no-git", "--disable-analytics"],
+        { cwd: root },
+      );
+      expect(createResult.exitCode, cliOutput(createResult)).toBe(0);
+
+      const originalPath = process.env.PATH;
+      // No package manager on PATH: the install fails immediately instead of
+      // resolving the registry, but it still runs after the transaction commits.
+      process.env.PATH = join(root, "no-package-manager");
+      let result: Awaited<ReturnType<typeof addHandler>>;
+      try {
+        result = await addHandler({ projectDir, email: "resend", install: true }, { silent: true });
+      } finally {
+        process.env.PATH = originalPath;
+      }
+
+      expect(result?.success, result?.error).toBe(true);
+      expect(result?.lifecycle?.recovery.command).toBeDefined();
+      expect(
+        result?.lifecycle?.nextActions.filter(
+          (action) => action.includes("not rolled back") && action.includes("after recovering"),
+        ),
+      ).toHaveLength(1);
+    },
+    CLI_COMMAND_TEST_TIMEOUT_MS,
+  );
+
+  it(
     "prints reviewable removal paths and preserves the planned project directory",
     async () => {
       const root = await makeTempRoot("bfs-remove-plan-test-");
@@ -421,10 +454,10 @@ describe("CLI add command", () => {
       expect(devcontainer.runServices).toContain("kong");
       expect(devcontainer.forwardPorts).toEqual(expect.arrayContaining([8000, 8001]));
 
-      const secondAddResult = await runCli(
-        ["add", "--project-dir", projectDir, ...kongPart],
-        { cwd: root, env: { BFS_SKIP_EXTERNAL_COMMANDS: "1" } },
-      );
+      const secondAddResult = await runCli(["add", "--project-dir", projectDir, ...kongPart], {
+        cwd: root,
+        env: { BFS_SKIP_EXTERNAL_COMMANDS: "1" },
+      });
       expect(secondAddResult.exitCode).toBe(0);
       expect(cliOutput(secondAddResult)).toContain("No new tooling capabilities selected.");
     },
@@ -737,6 +770,7 @@ describe("CLI history command", () => {
         "--observability none " +
         "--caching none " +
         "--search none " +
+        "--addons none " +
         "--examples none " +
         "--db-setup none " +
         "--web-deploy none " +

@@ -1375,9 +1375,9 @@ describe("stack graph structural round-trip (phase 0)", () => {
   });
 
   it("owns the TypeScript test runner on the backend without colliding with testing addons", () => {
-    // The framework testing part (backend-owned) and the msw/storybook testing addons
-    // (frontend-owned) share the `testing` role but live in different owner scopes, so
-    // both round-trip cleanly and validateStackParts raises no DUPLICATE_ROLE_SCOPE issue.
+    // The framework testing part (backend-owned), storybook (frontend-owned) and msw
+    // (ownerless) share the `testing` role but live in different owner scopes, so they
+    // all round-trip cleanly and validateStackParts raises no DUPLICATE_ROLE_SCOPE issue.
     const config: Partial<ProjectConfig> = {
       ...TS_BASE,
       testing: "vitest",
@@ -1397,12 +1397,35 @@ describe("stack graph structural round-trip (phase 0)", () => {
 
     expect(frameworkPart?.ownerPartId).toBe(backend?.id);
     expect(addonTestingParts.map((part) => part.toolId).sort()).toEqual(["msw", "storybook"]);
-    expect(addonTestingParts.every((part) => part.ownerPartId === frontend?.id)).toBe(true);
+    expect(
+      addonTestingParts.find((part) => part.toolId === "storybook")?.ownerPartId,
+    ).toBe(frontend?.id);
+    expect(addonTestingParts.find((part) => part.toolId === "msw")?.ownerPartId).toBeUndefined();
     expect(validateStackParts(parts).issues).toEqual([]);
 
     const derived = expectNoDrift(config);
     expect(derived.testing).toBe("vitest");
     expect([...(derived.addons ?? [])].sort()).toEqual(["msw", "storybook"]);
+  });
+
+  it("keeps standalone app and mocking addons in the graph without a frontend", () => {
+    const config: Partial<ProjectConfig> = {
+      ...TS_BASE,
+      frontend: ["none"],
+      addons: ["wxt", "opentui", "msw"],
+    };
+    const parts = legacyProjectConfigToStackParts(config);
+
+    expect(parts.some((part) => part.role === "frontend")).toBe(false);
+    for (const toolId of ["wxt", "opentui", "msw"]) {
+      const part = parts.find((candidate) => candidate.toolId === toolId);
+      expect(part).toBeDefined();
+      expect(part?.ownerPartId).toBeUndefined();
+    }
+    expect(validateStackParts(parts).issues).toEqual([]);
+
+    const derived = stackPartsToLegacyProjectConfigPartial(parts);
+    expect([...(derived.addons ?? [])].sort()).toEqual(["msw", "opentui", "wxt"]);
   });
 
   it("round-trips every frontend-owned TypeScript single value as a scoped graph part", () => {

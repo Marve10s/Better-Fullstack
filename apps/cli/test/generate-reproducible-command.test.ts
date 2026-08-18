@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 
 import type { ProjectConfig } from "../src/types";
 
-import { parseStackPartSpecs } from "../src/types";
+import { createCliDefaultProjectConfigBase, parseStackPartSpecs } from "../src/types";
 import { generateReproducibleCommand } from "../src/utils/generate-reproducible-command";
 
 function makeConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
@@ -226,6 +226,7 @@ describe("generateReproducibleCommand", () => {
         "--observability none " +
         "--caching none " +
         "--search none " +
+        "--addons none " +
         "--examples none " +
         "--db-setup none " +
         "--web-deploy none " +
@@ -375,6 +376,7 @@ describe("generateReproducibleCommand", () => {
         "--observability none " +
         "--caching none " +
         "--search none " +
+        "--addons none " +
         "--examples none " +
         "--db-setup none " +
         "--web-deploy none " +
@@ -431,6 +433,7 @@ describe("generateReproducibleCommand", () => {
         "--observability none " +
         "--caching none " +
         "--search none " +
+        "--addons none " +
         "--examples none " +
         "--db-setup none " +
         "--web-deploy none " +
@@ -520,6 +523,7 @@ describe("generateReproducibleCommand", () => {
         "--observability none " +
         "--caching none " +
         "--search none " +
+        "--addons none " +
         "--examples none " +
         "--db-setup none " +
         "--web-deploy none " +
@@ -1066,5 +1070,35 @@ describe("generateReproducibleCommand", () => {
     expect(command).toContain("--shadcn-style luma");
     expect(command).toContain("--shadcn-font geist");
     expect(command).not.toContain("--backend");
+  });
+
+  it("states an empty addon selection so replaying it cannot fall back to the default addons", () => {
+    expect(createCliDefaultProjectConfigBase("bun").addons).not.toEqual([]);
+
+    expect(generateReproducibleCommand(makeConfig({ addons: [] }))).toContain("--addons none");
+  });
+
+  it("states an empty addon selection for graph configs", () => {
+    const stackParts = parseStackPartSpecs(["frontend:typescript:next", "backend:typescript:hono"]);
+
+    const command = generateReproducibleCommand(
+      makeConfig({ stackParts, frontend: ["next"], addons: [] }),
+    );
+
+    expect(command).toContain("--addons none");
+  });
+
+  it("does not restate addons when addon parts are already emitted", () => {
+    const stackParts = parseStackPartSpecs([
+      "frontend:typescript:next",
+      "workspaceTooling:universal:turborepo",
+    ]);
+
+    const command = generateReproducibleCommand(
+      makeConfig({ stackParts, frontend: ["next"], addons: ["turborepo"] }),
+    );
+
+    expect(command).toContain("--part workspaceTooling:universal:turborepo");
+    expect(command).not.toContain("--addons none");
   });
 });

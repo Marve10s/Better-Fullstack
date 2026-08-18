@@ -319,20 +319,27 @@ export const TOOLING_CAPABILITIES: readonly ToolingCapabilityDefinition[] = [
     role: "documentation",
     ecosystem: "universal",
   },
-  ...(["pwa", "tauri", "electron", "capacitor", "wxt", "opentui"] as const).map((toolId) => ({
+  ...(["pwa", "tauri", "electron", "capacitor"] as const).map((toolId) => ({
     toolId,
     category: "appPlatforms" as const,
     role: "appPlatform" as const,
     ecosystem: "typescript" as const,
     ownerRole: "frontend" as const,
   })),
-  ...(["msw", "storybook"] as const).map((toolId) => ({
+  ...(["wxt", "opentui"] as const).map((toolId) => ({
     toolId,
-    category: "testingTools" as const,
-    role: "testing" as const,
+    category: "appPlatforms" as const,
+    role: "appPlatform" as const,
     ecosystem: "typescript" as const,
-    ownerRole: "frontend" as const,
   })),
+  { toolId: "msw", category: "testingTools", role: "testing", ecosystem: "typescript" },
+  {
+    toolId: "storybook",
+    category: "testingTools",
+    role: "testing",
+    ecosystem: "typescript",
+    ownerRole: "frontend",
+  },
   ...(["swr", "tanstack-query", "apollo-client"] as const).map((toolId) => ({
     toolId,
     category: "dataClient" as const,

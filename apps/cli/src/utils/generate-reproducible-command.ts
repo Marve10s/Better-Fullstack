@@ -48,6 +48,12 @@ function appendCommonFlags(flags: string[], config: ProjectConfig) {
   flags.push(config.install ? "--install" : "--no-install");
 }
 
+function appendAddonsNoneFlag(flags: string[], config: ProjectConfig) {
+  if (!config.addons?.some((addon) => addon !== "none")) {
+    flags.push("--addons none");
+  }
+}
+
 function appendCapabilityPartFlags(flags: string[], config: ProjectConfig) {
   const parts = legacyProjectConfigToStackParts(config, "selected");
   for (const part of parts) {
@@ -56,6 +62,7 @@ function appendCapabilityPartFlags(flags: string[], config: ProjectConfig) {
     if (!binding || binding.role !== part.role || binding.ecosystem !== part.ecosystem) continue;
     flags.push(`--part ${formatStackPartSpec(part, parts)}`);
   }
+  appendAddonsNoneFlag(flags, config);
 }
 
 function hasGraphPrimaryPart(
@@ -1190,9 +1197,11 @@ export function generateReproducibleCommand(config: ProjectConfig) {
   let flags: string[];
 
   if (config.stackParts && config.stackParts.length > 0) {
-    flags = config.stackParts
+    const stackParts = config.stackParts;
+    flags = stackParts
       .filter((part) => part.source !== "provided" && part.toolId !== "none")
-      .map((part) => `--part ${formatStackPartSpec(part, config.stackParts ?? [])}`);
+      .map((part) => `--part ${formatStackPartSpec(part, stackParts)}`);
+    appendAddonsNoneFlag(flags, config);
     appendGraphExtraFlags(flags, config);
     appendCommonFlags(flags, config);
     const baseCommand = getBaseCommand(config.packageManager);
