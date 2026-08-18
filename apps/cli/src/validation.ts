@@ -130,6 +130,19 @@ export function assertShapeInputIsUsable(
     }
   }
 
+  // A frontend shape builds a web app; a native frontend is a mobile app.
+  if (
+    shape === "frontend" &&
+    providedFlags.has("frontend") &&
+    Array.isArray(options.frontend) &&
+    options.frontend.some((entry) => NATIVE_FRONTENDS.has(entry))
+  ) {
+    exitWithError(
+      "--shape frontend builds a web app, so --frontend cannot name a native frontend. " +
+        "Use --shape mobile for a mobile app.",
+    );
+  }
+
   // A web frontend never names a mobile platform, on any path.
   if (
     shape === "mobile" &&

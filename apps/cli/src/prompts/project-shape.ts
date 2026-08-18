@@ -81,6 +81,16 @@ export const SHAPE_ECOSYSTEMS = {
   mobile: ["react-native"],
 } as const satisfies Record<ProjectShape, readonly Ecosystem[]>;
 
+export /** A mobile shape builds no server, so server flags contradict it. */
+const MOBILE_ONLY_FLAGS: Partial<ProjectConfig> = {
+  backend: "none",
+  runtime: "none",
+  api: "none",
+  database: "none",
+  orm: "none",
+  auth: "none",
+};
+
 export const NATIVE_FRONTENDS = new Set([
   "native-bare",
   "native-uniwind",
@@ -147,7 +157,7 @@ export function shapeFlagsForEcosystem(
       ...(withoutPrompts ? BACKEND_SHAPE_YES_DEFAULTS[ecosystem] : {}),
     };
   }
-  if (shape === "mobile") return { ecosystem };
+  if (shape === "mobile") return { ecosystem, ...MOBILE_ONLY_FLAGS };
   return {};
 }
 
@@ -157,8 +167,8 @@ export function shapeFlagsForEcosystem(
  * silently resolved in either direction.
  */
 export function shapeControlledFlags(shape: ProjectShape): Record<string, unknown> {
-  const source =
-    shape === "frontend" ? FRONTEND_ONLY_FLAGS : shape === "backend" ? BACKEND_ONLY_FLAGS : {};
+  if (shape === "mobile") return { ...MOBILE_ONLY_FLAGS };
+  const source = shape === "frontend" ? FRONTEND_ONLY_FLAGS : shape === "backend" ? BACKEND_ONLY_FLAGS : {};
   return Object.assign({}, ...Object.values(source));
 }
 

@@ -268,6 +268,30 @@ describe("project shape scaffolding", () => {
     expect(result.error).toMatch(/--frontend must name a native frontend/);
   });
 
+  test("rejects a native frontend on the frontend shape", async () => {
+    const result = await create("shape-fe-native", {
+      ...baseOptions,
+      shape: "frontend",
+      frontend: ["native-bare"],
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toMatch(/--frontend cannot name a native frontend/);
+  });
+
+  test("rejects server flags on the mobile shape", async () => {
+    // Previously accepted, then silently reset to none during resolution.
+    const result = await create("shape-mobile-server", {
+      ...baseOptions,
+      shape: "mobile",
+      backend: "hono",
+      database: "postgres",
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toMatch(/--shape mobile conflicts with/);
+  });
+
   test("rejects a mobile platform selector on a non-mobile shape", async () => {
     const result = await create("shape-stray-platform", {
       ...baseOptions,
