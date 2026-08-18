@@ -131,6 +131,7 @@ import {
   PythonValidationSchema,
   PythonWebFrameworkSchema,
   RateLimitSchema,
+  BotProtectionSchema,
   RealtimeSchema,
   RuntimeSchema,
   RustApiSchema,
@@ -224,6 +225,7 @@ export const CreateCommandOptionsSchema = z.object({
   cms: CMSSchema.optional().describe("Headless CMS solution"),
   caching: CachingSchema.optional().describe("Caching solution"),
   rateLimit: RateLimitSchema.optional().describe("Rate limiting solution"),
+  botProtection: BotProtectionSchema.optional().describe("Bot verification provider"),
   i18n: I18nSchema.optional().describe("Internationalization (i18n) library"),
   search: SearchSchema.optional().describe("Search engine solution"),
   vectorDb: VectorDbSchema.optional().describe(

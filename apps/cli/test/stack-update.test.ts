@@ -7,18 +7,25 @@ import {
 } from "@better-fullstack/types";
 import { afterAll, describe, expect, it } from "bun:test";
 import * as JSONC from "jsonc-parser";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readFile, rename, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
+import { getPartRemovalApplyCommand } from "../src/commands/remove";
 import { CreateCommandOptionsSchema } from "../src/create-command-input";
+import { addHandler } from "../src/helpers/core/add-handler";
+import { applyPartRemoval, planPartRemoval } from "../src/helpers/core/remove-handler";
 import {
   applyStackUpdate,
   planStackUpdate,
   SUPPORTED_STACK_UPDATE_KEYS,
 } from "../src/helpers/core/stack-update";
 import { MCP_STACK_UPDATE_SCHEMA } from "../src/mcp";
-import { buildBtsConfigForPersistence, writeBtsConfig } from "../src/utils/bts-config";
+import {
+  buildBtsConfigForPersistence,
+  readBtsConfig,
+  writeBtsConfig,
+} from "../src/utils/bts-config";
 import {
   hashContent,
   readScaffoldManifest,
@@ -102,6 +109,7 @@ afterAll(async () => {
 });
 
 const CREATE_ONLY_KEYS = new Set([
+  "addons",
   "template",
   "fromHistory",
   "config",
@@ -292,7 +300,10 @@ describe("stack update planner", () => {
       .sort();
 
     expect(mcpUpdateKeys).toEqual(expectedStackKeys);
-    expect(SUPPORTED_STACK_UPDATE_KEYS).toEqual(expectedStackKeys);
+    expect(SUPPORTED_STACK_UPDATE_KEYS.filter((key) => key !== "addons")).toEqual(
+      expectedStackKeys,
+    );
+    expect(SUPPORTED_STACK_UPDATE_KEYS).toContain("addons");
   });
 
   it("plans and applies scaffold-time category additions", async () => {
@@ -3739,6 +3750,673 @@ describe("stack update planner", () => {
     const result = await applyStackUpdate(projectDir, { addons: ["ultracite"] });
     expect(result.success).toBe(true);
     expect(await pathExists(join(projectDir, "MIGRATION.md"))).toBe(false);
+  });
+
+  it("replaces the existing workspace runner when adding Vite+", async () => {
+    const root = await makeTempRoot("bfs-stack-update-runner-replace-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(
+      makeConfig(projectDir, { addons: ["turborepo", "github-actions"] }),
+    );
+
+    const result = await addHandler(
+      { projectDir, part: ["toolchain:universal:vite-plus"], install: false },
+      { silent: true },
+    );
+    expect(result.success, result.error).toBe(true);
+
+    const btsConfig = await readJsonc(join(projectDir, "bts.jsonc"));
+    expect(btsConfig.addons).toContain("vite-plus");
+    expect(btsConfig.addons).toContain("github-actions");
+    expect(btsConfig.addons).not.toContain("turborepo");
+    expect(btsConfig.stackParts).toEqual(
+      expect.arrayContaining([expect.objectContaining({ role: "toolchain", toolId: "vite-plus" })]),
+    );
+    const rootPackage = await readFile(join(projectDir, "package.json"), "utf-8");
+    expect(rootPackage).toContain('"vite-plus"');
+    expect(rootPackage).not.toContain('"turbo"');
+  });
+
+  it("records the caller's add operation independently of changed fields", async () => {
+    const root = await makeTempRoot("bfs-stack-update-add-operation-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir));
+
+    const result = await applyStackUpdate(projectDir, { email: "resend" }, { operation: "add" });
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.lifecycle.operation).toBe("add");
+
+    const manifest = await readScaffoldManifest(projectDir);
+    expect(manifest?.history.at(-1)?.operation).toBe("add");
+  });
+
+  it("returns add recovery details to programmatic callers", async () => {
+    const root = await makeTempRoot("bfs-stack-update-add-recovery-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir));
+
+    const result = await addHandler(
+      { projectDir, email: "resend", install: false },
+      { silent: true },
+    );
+    expect(result?.success).toBe(true);
+    expect(result?.recoveryId).toMatch(/^[0-9a-f-]+$/);
+    expect(result?.lifecycle?.recovery.command).toContain(result!.recoveryId!);
+  });
+
+  it("does not bind untouched package manifests for stable-channel adds", async () => {
+    const root = await makeTempRoot("bfs-stack-update-stable-preimages-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir));
+    await mkdir(join(projectDir, "custom"));
+    await writeFile(join(projectDir, "custom/package.json"), '{"name":"custom"}\n');
+
+    const plan = await planStackUpdate(
+      projectDir,
+      { email: "resend" },
+      { includeVersionChannelPaths: true },
+    );
+    expect(plan.success).toBe(true);
+    if (!plan.success) return;
+    expect(plan.preimages).not.toHaveProperty("custom/package.json");
+  });
+
+  it("includes version-channel manifest rewrites in dry-run add plans", async () => {
+    const root = await makeTempRoot("bfs-stack-update-add-dry-run-channel-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir, { versionChannel: "latest" }));
+
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response(
+        JSON.stringify({ "dist-tags": { latest: "9.9.9" }, versions: { "9.9.9": {} } }),
+        { status: 200 },
+      )) as typeof fetch;
+    let result: Awaited<ReturnType<typeof addHandler>>;
+    try {
+      result = await addHandler(
+        { projectDir, email: "resend", dryRun: true, install: false },
+        { silent: true },
+      );
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    expect(result?.success).toBe(true);
+    expect(Object.keys(result?.plan?.versionChannelRewrites ?? {})).toContain(
+      "apps/server/package.json",
+    );
+    expect(await pathExists(join(projectDir, "apps/server/src/lib/email.ts"))).toBe(false);
+  });
+
+  it("refuses add plans that would transact through a config symlink", async () => {
+    const root = await makeTempRoot("bfs-stack-update-symlink-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir));
+    const configPath = join(projectDir, "bts.jsonc");
+    const externalConfigPath = join(root, "external-bts.jsonc");
+    await rename(configPath, externalConfigPath);
+    await symlink(externalConfigPath, configPath);
+
+    const plan = await planStackUpdate(projectDir, { email: "resend" });
+    expect(plan.success).toBe(false);
+    if (!plan.success) expect(plan.error).toContain("not a regular file");
+  });
+
+  it("keeps imperative addons outside transactional add", async () => {
+    const root = await makeTempRoot("bfs-stack-update-create-only-addon-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir));
+
+    const result = await addHandler(
+      {
+        projectDir,
+        addons: [
+          "biome",
+          "gitleaks",
+          "husky",
+          "lefthook",
+          "starlight",
+          "ruler",
+          "fumadocs",
+          "ultracite",
+          "opentui",
+          "wxt",
+          "mcp",
+          "skills",
+          "oxlint",
+          "tauri",
+        ],
+        install: false,
+      },
+      { silent: true },
+    );
+    expect(result?.success).toBe(false);
+    expect(result?.error).toContain("requires imperative setup");
+    for (const addon of [
+      "biome",
+      "gitleaks",
+      "husky",
+      "lefthook",
+      "starlight",
+      "ruler",
+      "fumadocs",
+      "ultracite",
+      "opentui",
+      "wxt",
+      "mcp",
+      "skills",
+      "oxlint",
+      "tauri",
+    ]) {
+      expect(result?.error).toContain(addon);
+    }
+    expect(await pathExists(join(projectDir, "apps/docs/package.json"))).toBe(false);
+  });
+
+  it("records post-channel package rewrites as the current manifest baseline", async () => {
+    const root = await makeTempRoot("bfs-stack-update-channel-baseline-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir));
+    await mkdir(join(projectDir, "custom"));
+    await writeFile(
+      join(projectDir, "custom/package.json"),
+      JSON.stringify(
+        {
+          name: "custom",
+          dependencies: { "manifest-baseline-probe": "^1.0.0" },
+        },
+        null,
+        2,
+      ),
+    );
+    await mkdir(join(projectDir, "untouched"));
+    await writeFile(
+      join(projectDir, "untouched/package.json"),
+      JSON.stringify({ name: "untouched", private: true }, null, 2),
+    );
+
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response(
+        JSON.stringify({
+          "dist-tags": { latest: "9.9.9" },
+          versions: { "9.9.9": {} },
+        }),
+        { status: 200 },
+      )) as typeof fetch;
+    try {
+      const plan = await planStackUpdate(
+        projectDir,
+        { email: "resend", versionChannel: "latest" },
+        { includeVersionChannelPaths: true },
+      );
+      expect(plan.success).toBe(true);
+      if (!plan.success) return;
+      expect(plan.preimages["custom/package.json"]).toBeDefined();
+      expect(plan.preimages["untouched/package.json"]).toBeUndefined();
+
+      const result = await applyStackUpdate(
+        projectDir,
+        { email: "resend", versionChannel: "latest" },
+        { applyVersionChannel: true },
+      );
+      expect(result.success).toBe(true);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    const packagePath = join(projectDir, "custom/package.json");
+    const packageContent = await readFile(packagePath, "utf-8");
+    expect(packageContent).toContain('"manifest-baseline-probe": "^9.9.9"');
+    const manifest = await readScaffoldManifest(projectDir);
+    expect(manifest?.baselines?.["custom/package.json"]).toBe(packageContent);
+    expect(manifest?.hashes["custom/package.json"]).toBe(hashContent(packageContent));
+  });
+
+  it("does not re-resolve a failed version-channel rewrite during apply", async () => {
+    const root = await makeTempRoot("bfs-stack-update-channel-single-resolution-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir));
+    await mkdir(join(projectDir, "custom"));
+    const packagePath = join(projectDir, "custom/package.json");
+    await writeFile(
+      packagePath,
+      JSON.stringify(
+        {
+          name: "custom",
+          dependencies: { "manifest-transient-resolution-probe": "^1.0.0" },
+        },
+        null,
+        2,
+      ),
+    );
+
+    const originalFetch = globalThis.fetch;
+    let probeRequests = 0;
+    globalThis.fetch = (async (input) => {
+      if (String(input).includes("manifest-transient-resolution-probe")) {
+        probeRequests++;
+        if (probeRequests === 1) return new Response(null, { status: 503 });
+        return new Response(
+          JSON.stringify({ "dist-tags": { latest: "9.9.9" }, versions: { "9.9.9": {} } }),
+          { status: 200 },
+        );
+      }
+      return new Response(null, { status: 503 });
+    }) as typeof fetch;
+    try {
+      const result = await applyStackUpdate(
+        projectDir,
+        { email: "resend", versionChannel: "latest" },
+        { applyVersionChannel: true },
+      );
+      expect(result.success).toBe(true);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    expect(probeRequests).toBe(1);
+    expect(await readFile(packagePath, "utf-8")).toContain(
+      '"manifest-transient-resolution-probe": "^1.0.0"',
+    );
+  });
+
+  it("rebases version-channel rewrites onto planned package changes", async () => {
+    const root = await makeTempRoot("bfs-stack-update-channel-rebase-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir));
+
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response(
+        JSON.stringify({ "dist-tags": { latest: "9.9.9" }, versions: { "9.9.9": {} } }),
+        { status: 200 },
+      )) as typeof fetch;
+    try {
+      const result = await applyStackUpdate(
+        projectDir,
+        { email: "resend", versionChannel: "latest" },
+        { applyVersionChannel: true },
+      );
+      expect(result.success).toBe(true);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    const serverPackage = JSON.parse(
+      await readFile(join(projectDir, "apps/server/package.json"), "utf-8"),
+    ) as { dependencies?: Record<string, string> };
+    expect(serverPackage.dependencies?.resend).toBeDefined();
+    expect(serverPackage.dependencies?.resend).toContain("9.9.9");
+  });
+
+  it("plans and removes obsolete generated files and dependencies", async () => {
+    const root = await makeTempRoot("bfs-stack-remove-obsolete-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir, { email: "resend" }));
+    const config = await readBtsConfig(projectDir);
+    const target = config?.stackParts?.find((part) => part.role === "email")?.id;
+    expect(target).toBeDefined();
+
+    const plan = await planPartRemoval(projectDir, target!);
+    expect(plan.success).toBe(true);
+    if (!plan.success) return;
+    expect(plan.filesToRemove.length).toBeGreaterThan(0);
+    expect(Object.values(plan.dependencyChanges).some((changes) => "resend" in changes)).toBe(true);
+
+    const removedPaths = [...plan.filesToRemove];
+    const applied = await applyPartRemoval(projectDir, target!, plan.reviewToken);
+    expect(applied.success, applied.success ? undefined : applied.error).toBe(true);
+    if (!applied.success) return;
+    expect(applied.lifecycle.operation).toBe("remove");
+    for (const relativePath of removedPaths) {
+      expect(await pathExists(join(projectDir, relativePath))).toBe(false);
+    }
+    const manifest = await readScaffoldManifest(projectDir);
+    expect(manifest?.history.at(-1)?.operation).toBe("remove");
+  });
+
+  it("uses the recorded package baseline to classify dependency removals", async () => {
+    const root = await makeTempRoot("bfs-stack-remove-recorded-package-baseline-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir, { email: "resend" }));
+    const config = await readBtsConfig(projectDir);
+    const target = config?.stackParts?.find((part) => part.role === "email")?.id;
+    expect(target).toBeDefined();
+    const packagePath = join(projectDir, "apps/server/package.json");
+    const manifestPath = join(projectDir, "bts.lock.json");
+    const currentPackage = JSON.parse(await readFile(packagePath, "utf-8")) as {
+      dependencies: Record<string, string>;
+    };
+    const oldPackage = structuredClone(currentPackage);
+    oldPackage.dependencies.resend = "^4.0.0";
+    const oldContent = `${JSON.stringify(oldPackage, null, 2)}\n`;
+    const manifest = JSON.parse(await readFile(manifestPath, "utf-8")) as {
+      baselines?: Record<string, string>;
+    };
+    manifest.baselines ??= {};
+    manifest.baselines["apps/server/package.json"] = oldContent;
+    await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+    await writeFile(packagePath, oldContent);
+
+    const uneditedPlan = await planPartRemoval(projectDir, target!);
+    expect(uneditedPlan.success).toBe(true);
+    if (!uneditedPlan.success) return;
+    expect(uneditedPlan.manualReviewBlockers).not.toContainEqual(
+      expect.stringContaining("dependencies.resend"),
+    );
+
+    await writeFile(packagePath, `${JSON.stringify(currentPackage, null, 2)}\n`);
+    const userEditedPlan = await planPartRemoval(projectDir, target!);
+    expect(userEditedPlan.success).toBe(true);
+    if (!userEditedPlan.success) return;
+    expect(userEditedPlan.manualReviewBlockers).toContainEqual(
+      expect.stringContaining("dependencies.resend"),
+    );
+    expect(userEditedPlan.applyAllowed).toBe(false);
+  });
+
+  it("rejects removal of addons whose imperative setup has no transactional teardown", async () => {
+    const root = await makeTempRoot("bfs-stack-remove-imperative-addon-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir, { addons: ["biome"] }));
+    const config = await readBtsConfig(projectDir);
+    const target = config?.stackParts?.find((part) => part.toolId === "biome")?.id;
+    expect(target).toBeDefined();
+    await writeFile(
+      join(projectDir, "bts.jsonc"),
+      `${JSON.stringify({ ...config, addons: [] }, null, 2)}\n`,
+    );
+
+    const plan = await planPartRemoval(projectDir, target!);
+    expect(plan.success).toBe(false);
+    if (!plan.success) expect(plan.error).toContain("imperative setup artifacts");
+  });
+
+  it("keeps obsolete files for manual review without verified recorded provenance", async () => {
+    const root = await makeTempRoot("bfs-stack-remove-unverified-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir, { email: "resend" }));
+    const config = await readBtsConfig(projectDir);
+    const target = config?.stackParts?.find((part) => part.role === "email")?.id;
+    expect(target).toBeDefined();
+    const manifestPath = join(projectDir, "bts.lock.json");
+    const manifest = JSON.parse(await readFile(manifestPath, "utf-8")) as {
+      provenance: { state: string; createdWith: unknown; current: unknown };
+    };
+    manifest.provenance = { state: "adopted-unverified", createdWith: null, current: null };
+    await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+
+    const plan = await planPartRemoval(projectDir, target!);
+    expect(plan.success).toBe(true);
+    if (!plan.success) return;
+    expect(plan.filesToRemove).toEqual([]);
+    expect(plan.manualReviewBlockers).toContainEqual(
+      expect.stringContaining("no verified scaffold provenance"),
+    );
+    expect(plan.applyAllowed).toBe(false);
+    expect(plan.reviewToken).toBeUndefined();
+
+    const applied = await applyPartRemoval(projectDir, target!, undefined);
+    expect(applied.success).toBe(false);
+    if (!applied.success) expect(applied.error).toContain("Manual review required");
+  });
+
+  it("blocks unreadable obsolete generated artifacts instead of treating them as absent", async () => {
+    const root = await makeTempRoot("bfs-stack-remove-unreadable-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir, { email: "resend" }));
+    const config = await readBtsConfig(projectDir);
+    const target = config?.stackParts?.find((part) => part.role === "email")?.id;
+    expect(target).toBeDefined();
+    const initialPlan = await planPartRemoval(projectDir, target!);
+    expect(initialPlan.success).toBe(true);
+    if (!initialPlan.success) return;
+    const obsoletePath = initialPlan.filesToRemove[0];
+    expect(obsoletePath).toBeDefined();
+    await rm(join(projectDir, obsoletePath!));
+    await mkdir(join(projectDir, obsoletePath!));
+
+    const plan = await planPartRemoval(projectDir, target!);
+    expect(plan.success).toBe(true);
+    if (!plan.success) return;
+    expect(plan.filesToRemove).not.toContain(obsoletePath);
+    expect(plan.manualReviewBlockers).toContainEqual(
+      expect.stringContaining(`${obsoletePath}: obsolete generated file could not be read`),
+    );
+    expect(plan.applyAllowed).toBe(false);
+    expect(plan.reviewToken).toBeUndefined();
+  });
+
+  it("binds removal review tokens to one canonical project", async () => {
+    const root = await makeTempRoot("bfs-stack-remove-project-bound-token-");
+    const reviewedProject = join(root, "reviewed");
+    const cloneProject = join(root, "clone");
+    await scaffoldGeneratedProject(makeConfig(reviewedProject, { email: "resend" }));
+    await cp(reviewedProject, cloneProject, { recursive: true });
+    const config = await readBtsConfig(reviewedProject);
+    const target = config?.stackParts?.find((part) => part.role === "email")?.id;
+    expect(target).toBeDefined();
+
+    const reviewed = await planPartRemoval(reviewedProject, target!);
+    const clonePlan = await planPartRemoval(cloneProject, target!);
+    expect(reviewed.success).toBe(true);
+    expect(clonePlan.success).toBe(true);
+    if (!reviewed.success || !clonePlan.success) return;
+    expect(reviewed.reviewToken).toBeDefined();
+    expect(clonePlan.reviewToken).not.toBe(reviewed.reviewToken);
+
+    const replayed = await applyPartRemoval(cloneProject, target!, reviewed.reviewToken);
+    expect(replayed.success).toBe(false);
+    if (!replayed.success) expect(replayed.error).toContain("missing or stale");
+  });
+
+  it("treats an explicit empty stack graph as authoritative", async () => {
+    const root = await makeTempRoot("bfs-stack-remove-empty-graph-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir, { email: "resend" }));
+    const config = await readBtsConfig(projectDir);
+    expect(config).toBeDefined();
+    await writeFile(
+      join(projectDir, "bts.jsonc"),
+      `${JSON.stringify({ ...config, stackParts: [] }, null, 2)}\n`,
+    );
+
+    const plan = await planPartRemoval(projectDir, "email:typescript:resend");
+    expect(plan.success).toBe(false);
+    if (!plan.success) expect(plan.error).toContain("is not selected");
+  });
+
+  it("removes one exact owned capability without deleting the same role from another owner", async () => {
+    const root = await makeTempRoot("bfs-stack-remove-owned-capability-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(
+      makeConfig(projectDir, {
+        stackParts: parseStackPartSpecs([
+          "backend:typescript:hono:api",
+          "mobile:react-native:native-bare:mobile",
+          "api.database:universal:sqlite:api-db",
+          "mobile.database:universal:sqlite:mobile-db",
+        ]),
+        ecosystem: "typescript",
+        database: "sqlite",
+      }),
+    );
+
+    const plan = await planPartRemoval(projectDir, "api-db");
+    expect(plan.success, plan.success ? undefined : plan.error).toBe(true);
+    if (!plan.success) return;
+    expect(plan.proposedConfig.stackParts?.some((part) => part.id === "api-db")).toBe(false);
+    expect(plan.proposedConfig.stackParts).toContainEqual(
+      expect.objectContaining({
+        id: "mobile-db",
+        ownerPartId: "mobile",
+        role: "database",
+        toolId: "sqlite",
+      }),
+    );
+    expect(plan.proposedConfig.database).toBe("sqlite");
+    expect(plan.requiresArchitectureAck).toBe(true);
+    expect(plan.architectureChanges).toContainEqual({
+      key: "api.database",
+      from: "sqlite",
+      to: "none",
+    });
+    expect(plan.migrationSteps).toContainEqual(
+      expect.stringContaining("Back up all existing data"),
+    );
+    expect(plan.migrationSteps.join("\n")).not.toContain("Provision a none database");
+    expect(plan.migrationSteps.join("\n")).toContain("removing its integration");
+    const applyCommand = getPartRemovalApplyCommand(plan, "linux");
+    expect(applyCommand).toContain("bunx create-better-fullstack@");
+    expect(applyCommand).toContain("remove 'api-db'");
+    expect(applyCommand).toContain("--acknowledge-architecture-change");
+  });
+
+  it("atomically removes a scoped database and its dependent ORM", async () => {
+    const root = await makeTempRoot("bfs-stack-remove-dependent-capability-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(
+      makeConfig(projectDir, {
+        stackParts: parseStackPartSpecs([
+          "backend:typescript:hono:api",
+          "api.database:universal:sqlite:api-db",
+          "api.orm:typescript:drizzle:api-orm",
+        ]),
+        ecosystem: "typescript",
+        database: "sqlite",
+        orm: "drizzle",
+      }),
+    );
+
+    const plan = await planPartRemoval(projectDir, "api-db");
+    expect(plan.success).toBe(true);
+    if (!plan.success) return;
+    expect(plan.removal.configKeys).toEqual(expect.arrayContaining(["database", "orm"]));
+    expect(plan.proposedConfig.stackParts).not.toContainEqual(
+      expect.objectContaining({ id: "api-db" }),
+    );
+    expect(plan.proposedConfig.stackParts).not.toContainEqual(
+      expect.objectContaining({ id: "api-orm" }),
+    );
+  });
+
+  it("blocks scoped ORM removal while its owner still has a database", async () => {
+    const root = await makeTempRoot("bfs-stack-remove-required-orm-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(
+      makeConfig(projectDir, {
+        stackParts: parseStackPartSpecs([
+          "backend:typescript:hono:api",
+          "api.database:universal:sqlite:api-db",
+          "api.orm:typescript:prisma:api-orm",
+        ]),
+        ecosystem: "typescript",
+        database: "sqlite",
+        orm: "prisma",
+      }),
+    );
+
+    const plan = await planPartRemoval(projectDir, "api-orm");
+    expect(plan.success).toBe(false);
+    if (!plan.success) {
+      expect(plan.error).toContain("while database part(s) remain");
+      expect(plan.error).toContain("Remove the database first or replace the ORM");
+    }
+  });
+
+  it("refuses to overwrite a preimage changed after the recovery snapshot", async () => {
+    const root = await makeTempRoot("bfs-stack-update-live-preimage-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir));
+    const configPath = join(projectDir, "bts.jsonc");
+    const concurrentContent = `${await readFile(configPath, "utf-8")}\n`;
+
+    const result = await applyStackUpdate(
+      projectDir,
+      { email: "resend" },
+      {
+        beforeMutation: () => writeFile(configPath, concurrentContent),
+      },
+    );
+
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toContain("preimages changed before apply");
+    expect(await readFile(configPath, "utf-8")).toBe(concurrentContent);
+  });
+
+  it("refuses a reviewed preimage changed before the recovery snapshot", async () => {
+    const root = await makeTempRoot("bfs-stack-update-snapshot-preimage-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir));
+    const configPath = join(projectDir, "bts.jsonc");
+    const concurrentContent = `${await readFile(configPath, "utf-8")}\n`;
+
+    const result = await applyStackUpdate(
+      projectDir,
+      { email: "resend" },
+      {
+        beforeTransactionSnapshot: () => writeFile(configPath, concurrentContent),
+      },
+    );
+
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toContain("changed before the recovery snapshot");
+    expect(await readFile(configPath, "utf-8")).toBe(concurrentContent);
+  });
+
+  it("restores every bound preimage when stack apply fails before manifest refresh", async () => {
+    const root = await makeTempRoot("bfs-stack-update-rollback-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir));
+    const plan = await planStackUpdate(projectDir, { email: "resend" });
+    expect(plan.success).toBe(true);
+    if (!plan.success) return;
+    const boundPaths = [
+      ...plan.operations.map((operation) => operation.path),
+      "bts.jsonc",
+      "bts.lock.json",
+    ];
+    const before = new Map(
+      await Promise.all(
+        boundPaths.map(
+          async (relativePath) =>
+            [
+              relativePath,
+              await readFile(join(projectDir, relativePath)).catch(() => null),
+            ] as const,
+        ),
+      ),
+    );
+
+    const result = await applyStackUpdate(
+      projectDir,
+      { email: "resend" },
+      {
+        beforeManifestRefresh: () => {
+          throw new Error("injected apply failure");
+        },
+      },
+    );
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toContain("injected apply failure");
+      expect(result.lifecycle?.status).toBe("rolled-back");
+    }
+    const after = new Map(
+      await Promise.all(
+        boundPaths.map(
+          async (relativePath) =>
+            [
+              relativePath,
+              await readFile(join(projectDir, relativePath)).catch(() => null),
+            ] as const,
+        ),
+      ),
+    );
+    expect(after).toEqual(before);
   });
 
   it("does not gate additive (none -> X) stack additions", async () => {

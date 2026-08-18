@@ -125,6 +125,7 @@ import {
   PYTHON_VALIDATION_VALUES,
   PYTHON_WEB_FRAMEWORK_VALUES,
   RATE_LIMIT_VALUES,
+  BOT_PROTECTION_VALUES,
   REALTIME_VALUES,
   RUNTIME_VALUES,
   RUST_API_VALUES,
@@ -157,6 +158,7 @@ import {
   VALIDATION_VALUES,
   WEB_DEPLOY_VALUES,
 } from "./schemas";
+import { getToolingSelectionOptions } from "./tooling-capabilities";
 
 export type OptionCategory =
   | "api"
@@ -185,6 +187,7 @@ export type OptionCategory =
   | "jobQueue"
   | "caching"
   | "rateLimit"
+  | "botProtection"
   | "i18n"
   | "search"
   | "vectorDb"
@@ -209,6 +212,22 @@ export type OptionCategory =
   | "documentation"
   | "appShells"
   | "appPlatforms"
+  | "toolchainProfile"
+  | "workspaceRunner"
+  | "codeQualityProfile"
+  | "gitHooks"
+  | "staticAnalysis"
+  | "aiTooling"
+  | "testingTools"
+  | "dataClient"
+  | "frontendUtilities"
+  | "httpClientTool"
+  | "codeGeneration"
+  | "developerEnvironment"
+  | "containerOrchestration"
+  | "apiGateway"
+  | "continuousIntegration"
+  | "backendUtilitiesTool"
   | "packageManager"
   | "workspaceShape"
   | "versionChannel"
@@ -379,15 +398,30 @@ export const TYPESCRIPT_CATEGORY_ORDER = [
   "jobQueue",
   "caching",
   "rateLimit",
+  "botProtection",
   "i18n",
   "search",
   "vectorDb",
   "fileStorage",
   "animation",
   "cms",
-  "codeQuality",
+  "toolchainProfile",
+  "workspaceRunner",
+  "codeQualityProfile",
+  "gitHooks",
+  "staticAnalysis",
+  "aiTooling",
   "documentation",
-  "appPlatforms",
+  "testingTools",
+  "dataClient",
+  "frontendUtilities",
+  "httpClientTool",
+  "codeGeneration",
+  "developerEnvironment",
+  "containerOrchestration",
+  "apiGateway",
+  "continuousIntegration",
+  "backendUtilitiesTool",
   "workspaceShape",
   "packageManager",
   "examples",
@@ -608,7 +642,23 @@ export function getCategoryDisplayName(categoryKey: string): string {
   const categoryNames: Record<string, string> = {
     i18n: "Internationalization (i18n)",
     appShells: "App Platforms",
-    appPlatforms: "Addons",
+    appPlatforms: "Legacy Capabilities",
+    toolchainProfile: "JavaScript Toolchain",
+    workspaceRunner: "Workspace Runner",
+    codeQualityProfile: "Code Quality",
+    gitHooks: "Git Hooks",
+    staticAnalysis: "Static Analysis",
+    aiTooling: "AI Tooling",
+    testingTools: "Testing Support",
+    dataClient: "Data Client",
+    frontendUtilities: "Frontend Utilities",
+    httpClientTool: "HTTP Client",
+    codeGeneration: "API Code Generation",
+    developerEnvironment: "Developer Environment",
+    containerOrchestration: "Local Containers",
+    apiGateway: "API Gateway",
+    continuousIntegration: "Continuous Integration",
+    backendUtilitiesTool: "Backend Utilities",
     mobileNavigation: "Mobile Navigation",
     mobileUI: "Mobile UI",
     mobileStorage: "Mobile Storage",
@@ -809,6 +859,7 @@ const APP_SHELL_VALUES = APP_PLATFORM_ADDON_VALUES;
 const APP_PLATFORM_VALUES = [
   "turborepo",
   "nx",
+  "vite-plus",
   "mcp",
   "skills",
   "msw",
@@ -831,6 +882,9 @@ const APP_PLATFORM_VALUES = [
   "apollo-client",
 ] as const satisfies readonly string[];
 
+const toolingSelectionIds = (category: Parameters<typeof getToolingSelectionOptions>[0]) =>
+  getToolingSelectionOptions(category).map((selection) => selection.id);
+
 const EXAMPLE_VALUES = ["ai", "chat-sdk"] as const satisfies readonly string[];
 const BOOLEAN_OPTION_VALUES = ["true", "false"] as const satisfies readonly string[];
 
@@ -838,9 +892,15 @@ const MULTI_SELECT_CATEGORIES = new Set<OptionCategory>([
   "webFrontend",
   "nativeFrontend",
   "codeQuality",
-  "documentation",
   "appShells",
   "appPlatforms",
+  "staticAnalysis",
+  "aiTooling",
+  "testingTools",
+  "frontendUtilities",
+  "codeGeneration",
+  "developerEnvironment",
+  "backendUtilitiesTool",
   "examples",
   "aiDocs",
   "rustLibraries",
@@ -886,6 +946,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   jobQueue: JOB_QUEUE_VALUES,
   caching: CACHING_VALUES,
   rateLimit: RATE_LIMIT_VALUES,
+  botProtection: BOT_PROTECTION_VALUES,
   i18n: I18N_VALUES,
   search: SEARCH_VALUES,
   vectorDb: VECTOR_DB_VALUES,
@@ -910,6 +971,22 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   documentation: DOCUMENTATION_VALUES,
   appShells: APP_SHELL_VALUES,
   appPlatforms: APP_PLATFORM_VALUES,
+  toolchainProfile: toolingSelectionIds("toolchain"),
+  workspaceRunner: toolingSelectionIds("workspaceRunner"),
+  codeQualityProfile: toolingSelectionIds("codeQuality"),
+  gitHooks: toolingSelectionIds("gitHooks"),
+  staticAnalysis: toolingSelectionIds("staticAnalysis"),
+  aiTooling: toolingSelectionIds("aiTooling"),
+  testingTools: toolingSelectionIds("testingTools"),
+  dataClient: toolingSelectionIds("dataClient"),
+  frontendUtilities: toolingSelectionIds("frontendUtilities"),
+  httpClientTool: toolingSelectionIds("httpClient"),
+  codeGeneration: toolingSelectionIds("codeGeneration"),
+  developerEnvironment: toolingSelectionIds("developerEnvironment"),
+  containerOrchestration: toolingSelectionIds("containerOrchestration"),
+  apiGateway: toolingSelectionIds("apiGateway"),
+  continuousIntegration: toolingSelectionIds("continuousIntegration"),
+  backendUtilitiesTool: toolingSelectionIds("backendUtilities"),
   packageManager: PACKAGE_MANAGER_VALUES,
   workspaceShape: WORKSPACE_SHAPE_VALUES,
   versionChannel: VERSION_CHANNEL_VALUES,
@@ -1136,6 +1213,10 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     arcjet: "Arcjet",
     "upstash-ratelimit": "Upstash Ratelimit",
   },
+  botProtection: {
+    botid: "Vercel BotID",
+    turnstile: "Cloudflare Turnstile",
+  },
   backendLibraries: {
     effect: "Effect Core",
     "effect-full": "Effect Platform + SQL",
@@ -1234,6 +1315,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     plausible: "Plausible",
     umami: "Umami",
     ga4: "Google Analytics 4",
+    "vercel-analytics": "Vercel Analytics",
   },
   mobileNavigation: {
     "expo-router": "Expo Router",
@@ -1309,6 +1391,9 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     opentui: "OpenTUI",
   },
   appPlatforms: {
+    turborepo: "Turborepo",
+    nx: "Nx",
+    "vite-plus": "Vite+",
     mcp: "MCP",
     msw: "MSW",
     swr: "SWR",
@@ -2090,6 +2175,7 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   jobQueue: buildCategoryMetadata("jobQueue"),
   caching: buildCategoryMetadata("caching"),
   rateLimit: buildCategoryMetadata("rateLimit"),
+  botProtection: buildCategoryMetadata("botProtection"),
   i18n: buildCategoryMetadata("i18n"),
   search: buildCategoryMetadata("search"),
   vectorDb: buildCategoryMetadata("vectorDb"),
@@ -2114,6 +2200,22 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   documentation: buildCategoryMetadata("documentation"),
   appShells: buildCategoryMetadata("appShells"),
   appPlatforms: buildCategoryMetadata("appPlatforms"),
+  toolchainProfile: buildCategoryMetadata("toolchainProfile"),
+  workspaceRunner: buildCategoryMetadata("workspaceRunner"),
+  codeQualityProfile: buildCategoryMetadata("codeQualityProfile"),
+  gitHooks: buildCategoryMetadata("gitHooks"),
+  staticAnalysis: buildCategoryMetadata("staticAnalysis"),
+  aiTooling: buildCategoryMetadata("aiTooling"),
+  testingTools: buildCategoryMetadata("testingTools"),
+  dataClient: buildCategoryMetadata("dataClient"),
+  frontendUtilities: buildCategoryMetadata("frontendUtilities"),
+  httpClientTool: buildCategoryMetadata("httpClientTool"),
+  codeGeneration: buildCategoryMetadata("codeGeneration"),
+  developerEnvironment: buildCategoryMetadata("developerEnvironment"),
+  containerOrchestration: buildCategoryMetadata("containerOrchestration"),
+  apiGateway: buildCategoryMetadata("apiGateway"),
+  continuousIntegration: buildCategoryMetadata("continuousIntegration"),
+  backendUtilitiesTool: buildCategoryMetadata("backendUtilitiesTool"),
   packageManager: buildCategoryMetadata("packageManager"),
   workspaceShape: buildCategoryMetadata("workspaceShape"),
   versionChannel: buildCategoryMetadata("versionChannel"),

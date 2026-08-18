@@ -101,7 +101,11 @@ import {
   type StackState,
   TECH_OPTIONS,
 } from "@/lib/constant";
-import { getLocalizedCategoryDisplayName, getLocalizedTechOption } from "@/lib/i18n/builder-copy";
+import {
+  getLocalizedCategoryDisplayName,
+  getLocalizedSectionName,
+  getLocalizedTechOption,
+} from "@/lib/i18n/builder-copy";
 import { getStackRunSupport } from "@/lib/run-support";
 import {
   buildSavedStackEntry,
@@ -114,6 +118,8 @@ import {
   generateStackCommand,
   generateStackSharingUrl,
   getStackKeyForCategory,
+  getToolingCategoryForUi,
+  getToolingOptionForUi,
 } from "@/lib/stack-utils";
 import { ICON_REGISTRY } from "@/lib/tech-icons";
 import { getTechResourceLinks } from "@/lib/tech-resource-links";
@@ -122,11 +128,13 @@ import { m } from "@/paraglide/messages.js";
 
 import { BuilderShareModal } from "./builder-share-modal";
 import { PresetsPanel } from "./presets-panel";
+import { type BuilderSectionDef, getBuilderSections } from "./section-groups";
 import { SavedStacksPanel } from "./saved-stacks-panel";
 import { ShareButton } from "./share-button";
 import { TechIcon } from "./tech-icon";
 import {
   analyzeStackCompatibility,
+  GRAPH_COMMON_CATEGORY_ORDER,
   getCategoryDisplayName,
   getDisabledReason,
   getVisibleOptions,
@@ -602,7 +610,6 @@ const MULTI_FRONTEND_LIBRARY_GROUPS: Array<keyof typeof TECH_OPTIONS> = [
   "uiLibrary",
   "stateManagement",
   "appShells",
-  "appPlatforms",
   "forms",
   "validation",
   "testing",
@@ -610,6 +617,7 @@ const MULTI_FRONTEND_LIBRARY_GROUPS: Array<keyof typeof TECH_OPTIONS> = [
   "fileUpload",
   "i18n",
   "analytics",
+  "botProtection",
   "webDeploy",
 ];
 
@@ -779,18 +787,6 @@ const GRAPH_NATIVE_BACKEND_ALTERNATIVES = {
     Partial<Record<"caching" | "observability", keyof typeof TECH_OPTIONS>>
   >
 >;
-
-const GRAPH_COMMON_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
-  "codeQuality",
-  "documentation",
-  "workspaceShape",
-  "examples",
-  "packageManager",
-  "aiDocs",
-  "versionChannel",
-  "git",
-  "install",
-];
 
 function isGraphBackendEcosystem(
   ecosystem: StackPartEcosystem,
@@ -1266,17 +1262,6 @@ function DisabledReasonInline({ reason, compact = false }: { reason: string; com
   );
 }
 
-function CategoryHint({ categoryKey }: { categoryKey: string }) {
-  if (categoryKey !== "appPlatforms") return null;
-
-  return (
-    <div className="mb-3 rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">
-      <span className="font-medium text-foreground">{m.builderGroupedAddons()}</span>{" "}
-      {m.builderGroupedAddonsDescription()}
-    </div>
-  );
-}
-
 function getSelectionCountForValue(
   category: keyof typeof TECH_OPTIONS,
   value: StackState[keyof StackState],
@@ -1303,12 +1288,16 @@ function getSelectedCount(category: keyof typeof TECH_OPTIONS, stack: StackState
   }
 
   const catKey = getStackKeyForCategory(category);
-  // appShells and appPlatforms share one state array; count only the ids
-  // that belong to this section.
-  if (category === "appShells" || category === "appPlatforms") {
-    const optionIds = new Set((TECH_OPTIONS[category] ?? []).map((option) => option.id));
+  if (getToolingCategoryForUi(category)) {
     const values = Array.isArray(stack[catKey]) ? (stack[catKey] as string[]) : [];
-    return values.filter((value) => value !== "none" && optionIds.has(value)).length;
+    return (TECH_OPTIONS[category] ?? []).filter((option) => {
+      const selection = getToolingOptionForUi(category, option.id);
+      return (
+        selection &&
+        selection.toolIds.length > 0 &&
+        selection.toolIds.every((toolId) => values.includes(toolId))
+      );
+    }).length;
   }
   return getSelectionCountForValue(category, stack[catKey]);
 }
@@ -1317,6 +1306,19 @@ function isSelectedCheck(stack: StackState, categoryKey: string, techId: string)
   const category = categoryKey as keyof typeof TECH_OPTIONS;
   const stackKey = getStackKeyForCategory(category);
   const currentValue = stack[stackKey];
+  const toolingOption = getToolingOptionForUi(category, techId);
+  if (toolingOption) {
+    const selectedValues = Array.isArray(currentValue) ? currentValue : [];
+    if (toolingOption.toolIds.length === 0) {
+      const categoryToolIds = new Set(
+        (TECH_OPTIONS[category] ?? []).flatMap(
+          (option) => getToolingOptionForUi(category, option.id)?.toolIds ?? [],
+        ),
+      );
+      return selectedValues.every((value) => !categoryToolIds.has(value));
+    }
+    return toolingOption.toolIds.every((toolId) => selectedValues.includes(toolId));
+  }
   if (isMultiSelectCategory(categoryKey as OptionCategory)) {
     const selectedValues = Array.isArray(currentValue) ? currentValue : [];
 
@@ -1337,6 +1339,36 @@ function getStackOptionUpdate(
   const catKey = getStackKeyForCategory(category);
   const update: Partial<StackState> = {};
   const currentValue = currentStack[catKey];
+  const toolingCategory = getToolingCategoryForUi(category);
+  const toolingOption = getToolingOptionForUi(category, techId);
+
+  if (toolingCategory && toolingOption) {
+    const currentArray = Array.isArray(currentValue) ? [...currentValue] : [];
+    const categoryToolIds = new Set(
+      (TECH_OPTIONS[category] ?? []).flatMap(
+        (option) => getToolingOptionForUi(category, option.id)?.toolIds ?? [],
+      ),
+    );
+    const isSelected =
+      toolingOption.toolIds.length > 0 &&
+      toolingOption.toolIds.every((toolId) => currentArray.includes(toolId));
+    let nextArray = isMultiSelectCategory(category as OptionCategory)
+      ? currentArray.filter((value) => !toolingOption.toolIds.includes(value))
+      : currentArray.filter((value) => !categoryToolIds.has(value));
+
+    if (!isSelected) nextArray.push(...toolingOption.toolIds);
+
+    if (toolingCategory === "toolchain" && techId === "vite-plus" && !isSelected) {
+      nextArray = nextArray.filter((toolId) => toolId !== "turborepo" && toolId !== "nx");
+      nextArray.push("vite-plus");
+      update.codeQuality = currentStack.codeQuality.filter((toolId) =>
+        ["knip", "gitleaks"].includes(toolId),
+      );
+    }
+
+    (update as Record<string, unknown>)[catKey] = [...new Set(nextArray)];
+    return update;
+  }
 
   if (isMultiSelectCategory(category as OptionCategory)) {
     const currentArray = Array.isArray(currentValue) ? [...currentValue] : [];
@@ -1409,33 +1441,34 @@ function getStackOptionUpdate(
 
 // ─── Collapsible section config ──────────────────────────────────────────────
 
-const INITIALLY_COLLAPSED_SET = new Set([
-  "payments",
-  "email",
-  "fileUpload",
-  "logging",
-  "observability",
-  "featureFlags",
-  "integrations",
-  "ecommerce",
-  "analytics",
-  "ai",
-  "stateManagement",
-  "forms",
-  "validation",
-  "testing",
-  "realtime",
-  "jobQueue",
-  "caching",
-  "rateLimit",
-  "search",
-  "vectorDb",
-  "fileStorage",
-  "animation",
-  "cms",
-  "documentation",
-  "appPlatforms",
-]);
+function categoryHasNonDefaultSelection(
+  category: keyof typeof TECH_OPTIONS,
+  stack: StackState,
+): boolean {
+  if (getToolingCategoryForUi(category)) {
+    return getSelectedCount(category, stack) > 0;
+  }
+  const stackKey = getStackKeyForCategory(category);
+  return JSON.stringify(stack[stackKey]) !== JSON.stringify(DEFAULT_STACK[stackKey]);
+}
+
+function shouldSkipCategory(stack: StackState, categoryKey: string): boolean {
+  return (
+    categoryKey === "astroIntegration" ||
+    SHADCN_SUB_CATEGORIES.has(categoryKey as keyof typeof TECH_OPTIONS) ||
+    (stack.ecosystem === "go" && categoryKey === "auth")
+  );
+}
+
+function resolveDisplayedSections(
+  stackMode: StackState["stackMode"],
+  ecosystem: Ecosystem,
+): BuilderSectionDef[] {
+  if (stackMode === "multi") {
+    return getBuilderSections("typescript", GRAPH_COMMON_CATEGORY_ORDER as readonly OptionCategory[]);
+  }
+  return getBuilderSections(ecosystem, getCategoryOrderForEcosystem(ecosystem));
+}
 
 const SHADCN_SUB_CATEGORIES = new Set<keyof typeof TECH_OPTIONS>([
   "shadcnBase",
@@ -2443,18 +2476,15 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
   const [sharePromptMoment, setSharePromptMoment] = useState<ShareMoment>("run");
   const [pendingUpdateEntryId, setPendingUpdateEntryId] = useState<string | null>(null);
   const [multiActiveStep, setMultiActiveStep] = useState<MultiStackStepId>("frontend");
-  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
-    const initial = new Set(INITIALLY_COLLAPSED_SET);
-    for (const cat of INITIALLY_COLLAPSED_SET) {
-      const catKey = cat as keyof StackState;
-      if (JSON.stringify(stack[catKey]) !== JSON.stringify(DEFAULT_STACK[catKey])) {
-        initial.delete(cat);
-      }
-    }
-    return initial;
-  });
+  // Collapse state stores explicit user toggles only; sections without an
+  // override fall back to their definition's default, which auto-expands when
+  // the section holds a non-default selection (shared URLs, presets, random).
+  const [sectionCollapseOverrides, setSectionCollapseOverrides] = useState<
+    ReadonlyMap<string, boolean>
+  >(new Map());
 
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
+  const categoryRefs = useRef<Record<string, HTMLElement | null>>({});
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const downloadAttemptRef = useRef({ stackSignature: "", attemptCount: 0 });
   const lastAppliedStackString = useRef<string>("");
@@ -2549,15 +2579,21 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
 
   // ─── Derived state ──────────────────────────────────────────────────────
 
-  const categoryOrder = useMemo(() => {
-    return getCategoryOrderForEcosystem(stack.ecosystem);
-  }, [stack.ecosystem]);
   const graphSelection = useMemo(() => getGraphSelection(stack), [stack]);
 
-  const displayedCategoryOrder = useMemo(() => {
-    if (stack.stackMode !== "multi") return categoryOrder;
-    return GRAPH_COMMON_CATEGORY_ORDER;
-  }, [categoryOrder, stack.stackMode]);
+  const displayedSections = useMemo(
+    () => resolveDisplayedSections(stack.stackMode, stack.ecosystem),
+    [stack.stackMode, stack.ecosystem],
+  );
+  const sectionKeyByCategory = useMemo(() => {
+    const lookup = new Map<string, string>();
+    for (const builderSection of displayedSections) {
+      for (const category of builderSection.categories) {
+        lookup.set(category, builderSection.key);
+      }
+    }
+    return lookup;
+  }, [displayedSections]);
   const multiActiveStepIndex = Math.max(
     0,
     MULTI_STACK_STEPS.findIndex((step) => step.id === multiActiveStep),
@@ -2574,42 +2610,41 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
     const groupsByCategory = new Map<string, RenderOptionGroup[]>();
     const entries: BuilderSearchEntry[] = [];
 
-    for (const categoryKey of displayedCategoryOrder) {
-      if (categoryKey === "astroIntegration" || SHADCN_SUB_CATEGORIES.has(categoryKey)) {
-        continue;
-      }
-      if (stack.ecosystem === "go" && categoryKey === "auth") continue;
+    for (const builderSection of displayedSections) {
+      for (const categoryKey of builderSection.categories) {
+        if (shouldSkipCategory(stack, categoryKey)) continue;
 
-      const groups = getCategoryRenderGroups(stack, categoryKey as keyof typeof TECH_OPTIONS);
-      const categoryName = getLocalizedCategoryDisplayName(
-        categoryKey,
-        getCategoryDisplayName(categoryKey),
-      );
-      groupsByCategory.set(categoryKey, groups);
-      if (groups.length === 0) continue;
+        const groups = getCategoryRenderGroups(stack, categoryKey as keyof typeof TECH_OPTIONS);
+        const categoryName = getLocalizedCategoryDisplayName(
+          categoryKey,
+          getCategoryDisplayName(categoryKey),
+        );
+        groupsByCategory.set(categoryKey, groups);
+        if (groups.length === 0) continue;
 
-      entries.push({
-        key: `section:${categoryKey}`,
-        kind: "section",
-        name: categoryName,
-        context: null,
-        categoryKey,
-        searchIndex: createBuilderSearchIndex([categoryName]),
-      });
+        entries.push({
+          key: `section:${categoryKey}`,
+          kind: "section",
+          name: categoryName,
+          context: null,
+          categoryKey,
+          searchIndex: createBuilderSearchIndex([categoryName]),
+        });
 
-      for (const group of groups) {
-        for (const option of group.options) {
-          const localizedOption = getLocalizedTechOption(option);
-          entries.push({
-            key: `library:${categoryKey}:${group.category}:${option.id}`,
-            kind: "library",
-            name: localizedOption.name,
-            context: group.heading ? `${categoryName} · ${group.heading}` : categoryName,
-            categoryKey,
-            optionCategory: group.category,
-            optionId: option.id,
-            searchIndex: createBuilderSearchIndex([option.id, option.name, localizedOption.name]),
-          });
+        for (const group of groups) {
+          for (const option of group.options) {
+            const localizedOption = getLocalizedTechOption(option);
+            entries.push({
+              key: `library:${categoryKey}:${group.category}:${option.id}`,
+              kind: "library",
+              name: localizedOption.name,
+              context: group.heading ? `${categoryName} · ${group.heading}` : categoryName,
+              categoryKey,
+              optionCategory: group.category,
+              optionId: option.id,
+              searchIndex: createBuilderSearchIndex([option.id, option.name, localizedOption.name]),
+            });
+          }
         }
       }
     }
@@ -2618,7 +2653,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
       groupsByCategory,
       lookup: buildBuilderSearchLookup(entries),
     };
-  }, [displayedCategoryOrder, stack]);
+  }, [displayedSections, stack]);
 
   // ─── URL generation ──────────────────────────────────────────────────────
 
@@ -2887,6 +2922,21 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
       );
       if (options.length === 0) continue;
       const catKey = getStackKeyForCategory(category as keyof typeof TECH_OPTIONS);
+      if (getToolingCategoryForUi(category as keyof typeof TECH_OPTIONS)) {
+        const picks = isMultiSelectCategory(category as OptionCategory)
+          ? [...options]
+              .filter((option) => option.id !== "none")
+              .sort(() => 0.5 - Math.random())
+              .slice(0, Math.floor(Math.random() * 3))
+          : [options[Math.floor(Math.random() * options.length)]];
+        const toolIds = picks.flatMap(
+          (option) =>
+            getToolingOptionForUi(category as keyof typeof TECH_OPTIONS, option.id)?.toolIds ?? [],
+        );
+        const selected = (randomStack as Record<string, string[]>)[catKey] ?? [];
+        (randomStack as Record<string, string[]>)[catKey] = [...new Set([...selected, ...toolIds])];
+        continue;
+      }
       if (isMultiSelectCategory(category as OptionCategory)) {
         if (catKey === "webFrontend" || catKey === "nativeFrontend") {
           const randomIndex = Math.floor(Math.random() * options.length);
@@ -3024,51 +3074,70 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
       ? null
       : savedStacks.find((entry) => entry.id === pendingUpdateEntryId) || null;
 
-  const toggleSection = (categoryKey: string) => {
-    setCollapsedSections((prev) => {
-      const next = new Set(prev);
-      if (next.has(categoryKey)) {
-        next.delete(categoryKey);
-      } else {
-        next.add(categoryKey);
-      }
-      return next;
+  const sectionDefByKey = useMemo(
+    () => new Map(displayedSections.map((def) => [def.key, def])),
+    [displayedSections],
+  );
+
+  const isSectionCollapsed = (sectionKey: string): boolean => {
+    const override = sectionCollapseOverrides.get(sectionKey);
+    if (override !== undefined) return override;
+    const def = sectionDefByKey.get(sectionKey);
+    if (!def?.defaultCollapsed) return false;
+    return !def.categories.some((category) => categoryHasNonDefaultSelection(category, stack));
+  };
+
+  const toggleSection = (sectionKey: string) => {
+    const next = !isSectionCollapsed(sectionKey);
+    setSectionCollapseOverrides((prev) => new Map(prev).set(sectionKey, next));
+  };
+
+  const expandSection = (sectionKey: string) => {
+    if (!isSectionCollapsed(sectionKey)) return;
+    setSectionCollapseOverrides((prev) => new Map(prev).set(sectionKey, false));
+  };
+
+  // Sections shown in the navigation drawer — mirrors the rendered sections.
+  const navSections = useMemo(
+    () =>
+      displayedSections
+        .map((builderSection) => ({
+          key: builderSection.key,
+          name: getLocalizedSectionName(builderSection.key, builderSection.fallbackName),
+          categories: builderSection.categories.filter(
+            (categoryKey) =>
+              !shouldSkipCategory(stack, categoryKey) &&
+              getCategoryRenderGroups(stack, categoryKey as keyof typeof TECH_OPTIONS).length > 0,
+          ),
+        }))
+        .filter((builderSection) => builderSection.categories.length > 0),
+    [displayedSections, stack],
+  );
+
+  const goToSection = (sectionKey: string) => {
+    // Expand the section if collapsed, then scroll it into view.
+    expandSection(sectionKey);
+    setSidebarOpen(false);
+    requestAnimationFrame(() => {
+      sectionRefs.current[sectionKey]?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   };
 
-  // Sections shown in the navigation drawer — mirrors the rendered category sections.
-  const navSections = useMemo(
-    () =>
-      displayedCategoryOrder
-        .filter((categoryKey) => {
-          if (categoryKey === "astroIntegration") return false;
-          if (SHADCN_SUB_CATEGORIES.has(categoryKey)) return false;
-          if (stack.ecosystem === "go" && categoryKey === "auth") return false;
-          return (
-            getCategoryRenderGroups(stack, categoryKey as keyof typeof TECH_OPTIONS).length > 0
-          );
-        })
-        .map((categoryKey) => ({ key: categoryKey, name: getCategoryDisplayName(categoryKey) })),
-    [displayedCategoryOrder, stack],
-  );
-
-  const goToSection = (categoryKey: string) => {
-    // Expand the section if collapsed, then scroll it into view.
-    setCollapsedSections((prev) => {
-      if (!prev.has(categoryKey)) return prev;
-      const next = new Set(prev);
-      next.delete(categoryKey);
-      return next;
-    });
+  const goToCategory = (categoryKey: string) => {
+    const sectionKey = sectionKeyByCategory.get(categoryKey);
+    if (sectionKey) {
+      expandSection(sectionKey);
+    }
     setSidebarOpen(false);
     requestAnimationFrame(() => {
-      sectionRefs.current[categoryKey]?.scrollIntoView({ behavior: "smooth", block: "start" });
+      const target = categoryRefs.current[categoryKey] ?? sectionRefs.current[sectionKey ?? ""];
+      target?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   };
 
   const goToBuilderSearchResult = (entry: BuilderSearchEntry) => {
     setViewMode("command");
-    goToSection(entry.categoryKey);
+    goToCategory(entry.categoryKey);
 
     if (!entry.optionCategory || !entry.optionId) return;
     requestAnimationFrame(() => {
@@ -3585,25 +3654,18 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                     onActiveStepChange={handleMultiActiveStepChange}
                   />
 
-                  {/* Category sections - all options for each category.
-                      In multi mode these general settings are the final "Finalize" step. */}
+                  {/* Grouped sections — each section renders its categories as
+                      subsections. In multi mode these are the final "Finalize" step. */}
                   {(stack.stackMode !== "multi" || multiActiveStep === "finalize") &&
-                    displayedCategoryOrder.map((categoryKey) => {
-                      // Skip astroIntegration - rendered conditionally after webFrontend
-                      if (categoryKey === "astroIntegration") return null;
-
-                      // Skip shadcn sub-categories - rendered conditionally after uiLibrary
-                      if (SHADCN_SUB_CATEGORIES.has(categoryKey)) return null;
-
-                      if (stack.ecosystem === "go" && categoryKey === "auth") return null;
-
-                      const categoryDisplayName = getLocalizedCategoryDisplayName(
-                        categoryKey,
-                        getCategoryDisplayName(categoryKey),
+                    displayedSections.map((builderSection) => {
+                      const visibleCategories = builderSection.categories.filter(
+                        (categoryKey) =>
+                          !shouldSkipCategory(stack, categoryKey) &&
+                          (builderSearchData.groupsByCategory.get(categoryKey) ?? []).length > 0,
                       );
-                      const categoryOptionGroups =
-                        builderSearchData.groupsByCategory.get(categoryKey) ?? [];
-                      const sectionCompatibilityNotes =
+                      if (visibleCategories.length === 0) return null;
+
+                      const getCategoryNotes = (categoryKey: string) =>
                         stack.ecosystem === "go" && categoryKey === "goAuth"
                           ? mergeCompatibilityNotes(
                               compatibilityAnalysis.notes.goAuth,
@@ -3611,61 +3673,93 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                             )
                           : compatibilityAnalysis.notes[categoryKey];
 
-                      if (categoryOptionGroups.length === 0) return null;
-
-                      const isSectionCollapsed = collapsedSections.has(categoryKey);
-                      const sectionSelectedCount = getSelectedCount(
-                        categoryKey as keyof typeof TECH_OPTIONS,
-                        stack,
+                      const sectionName = getLocalizedSectionName(
+                        builderSection.key,
+                        builderSection.fallbackName,
+                      );
+                      const sectionCollapsed = isSectionCollapsed(builderSection.key);
+                      const sectionSelectedCount = visibleCategories.reduce(
+                        (total, categoryKey) =>
+                          total + getSelectedCount(categoryKey as keyof typeof TECH_OPTIONS, stack),
+                        0,
+                      );
+                      const sectionHasIssue = visibleCategories.some(
+                        (categoryKey) => getCategoryNotes(categoryKey)?.hasIssue,
                       );
 
                       return (
-                        <div key={categoryKey}>
-                          <section
-                            ref={(el) => {
-                              sectionRefs.current[categoryKey] = el;
-                            }}
-                            id={`section-${categoryKey}`}
-                            data-testid={`category-${categoryKey}`}
-                            className="mb-6 scroll-mt-4 sm:mb-8"
+                        <section
+                          key={builderSection.key}
+                          ref={(el) => {
+                            sectionRefs.current[builderSection.key] = el;
+                          }}
+                          id={`section-${builderSection.key}`}
+                          data-testid={`section-${builderSection.key}`}
+                          className="mb-6 scroll-mt-4 sm:mb-8"
+                        >
+                          <button
+                            type="button"
+                            onClick={() => toggleSection(builderSection.key)}
+                            data-testid={`section-toggle-${builderSection.key}`}
+                            className="mb-4 flex w-full cursor-pointer items-center gap-2 border-b border-border pb-2 text-left transition-opacity hover:opacity-80"
                           >
-                            <button
-                              type="button"
-                              onClick={() => toggleSection(categoryKey)}
-                              data-testid={`category-toggle-${categoryKey}`}
-                              className="mb-3 flex w-full cursor-pointer items-center gap-2 border-b border-border pb-2 text-left transition-opacity hover:opacity-80"
+                            <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
+                            <h2 className="flex-1 font-mono text-foreground text-sm sm:text-base">
+                              {sectionName}
+                            </h2>
+                            {sectionHasIssue && (
+                              <InfoIcon className="h-4 w-4 shrink-0 text-amber-500" />
+                            )}
+                            {sectionCollapsed && sectionSelectedCount > 0 && (
+                              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 font-mono text-[10px] font-semibold text-primary-foreground">
+                                {sectionSelectedCount}
+                              </span>
+                            )}
+                            <motion.div
+                              animate={{ rotate: sectionCollapsed ? 0 : 180 }}
+                              transition={{ duration: 0.2 }}
                             >
-                              <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
-                              <h2 className="flex-1 font-mono text-foreground text-sm sm:text-base">
-                                {categoryDisplayName}
-                              </h2>
-                              {sectionCompatibilityNotes?.hasIssue && (
-                                <InfoIcon className="h-4 w-4 shrink-0 text-amber-500" />
-                              )}
-                              {isSectionCollapsed && sectionSelectedCount > 0 && (
-                                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 font-mono text-[10px] font-semibold text-primary-foreground">
-                                  {sectionSelectedCount}
-                                </span>
-                              )}
+                              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                            </motion.div>
+                          </button>
+                          <AnimatePresence initial={false}>
+                            {!sectionCollapsed && (
                               <motion.div
-                                animate={{ rotate: isSectionCollapsed ? 0 : 180 }}
-                                transition={{ duration: 0.2 }}
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.25, ease: "easeInOut" }}
+                                className="overflow-hidden"
                               >
-                                <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                              </motion.div>
-                            </button>
-                            <AnimatePresence initial={false}>
-                              {!isSectionCollapsed && (
-                                <motion.div
-                                  initial={{ height: 0, opacity: 0 }}
-                                  animate={{ height: "auto", opacity: 1 }}
-                                  exit={{ height: 0, opacity: 0 }}
-                                  transition={{ duration: 0.25, ease: "easeInOut" }}
-                                  className="overflow-hidden"
-                                >
-                                  <CategoryHint categoryKey={categoryKey} />
-                                  <div className="space-y-4">
-                                    {categoryOptionGroups.map((group) => (
+                                <div className="space-y-7">
+                                  {visibleCategories.map((categoryKey) => {
+                                    const categoryDisplayName = getLocalizedCategoryDisplayName(
+                                      categoryKey,
+                                      getCategoryDisplayName(categoryKey),
+                                    );
+                                    const categoryOptionGroups =
+                                      builderSearchData.groupsByCategory.get(categoryKey) ?? [];
+                                    const categoryNotes = getCategoryNotes(categoryKey);
+
+                                    return (
+                                      <div
+                                        key={categoryKey}
+                                        ref={(el) => {
+                                          categoryRefs.current[categoryKey] = el;
+                                        }}
+                                        data-testid={`category-${categoryKey}`}
+                                        className="scroll-mt-16"
+                                      >
+                                        <div className="mb-2 flex items-center gap-2">
+                                          <h3 className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+                                            {categoryDisplayName}
+                                          </h3>
+                                          {categoryNotes?.hasIssue && (
+                                            <InfoIcon className="h-3.5 w-3.5 shrink-0 text-amber-500" />
+                                          )}
+                                        </div>
+                                          <div className="space-y-4">
+                                            {categoryOptionGroups.map((group) => (
                                       <div key={group.key}>
                                         {group.heading && (
                                           <h3 className="mb-2 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
@@ -3785,11 +3879,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                                         </div>
                                       </div>
                                     ))}
-                                  </div>
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
-                          </section>
+                                          </div>
 
                           {/* shadcn/ui Configuration - shown only when shadcn-ui is selected */}
                           {categoryKey === "uiLibrary" && (
@@ -3804,21 +3894,21 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                                   exit={{ opacity: 0, height: 0 }}
                                   transition={{ duration: 0.3, ease: "easeInOut" }}
                                   data-testid="category-shadcnBase"
-                                  className="mb-6 scroll-mt-4 sm:mb-8 overflow-hidden"
+                                  className="mt-4 scroll-mt-16 overflow-hidden"
                                 >
                                   <button
                                     type="button"
                                     onClick={() => toggleSection("shadcnBase")}
                                     data-testid="category-toggle-shadcnBase"
-                                    className="mb-3 flex w-full items-center gap-2 border-b border-border pb-2 text-left transition-opacity hover:opacity-80"
+                                    className="mb-3 flex w-full items-center gap-2 border-b border-border/60 pb-2 text-left transition-opacity hover:opacity-80"
                                   >
-                                    <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
-                                    <h2 className="flex-1 font-mono text-foreground text-sm sm:text-base">
+                                    <Terminal className="h-3.5 w-3.5 shrink-0 text-muted-foreground sm:h-4 sm:w-4" />
+                                    <h2 className="flex-1 font-mono text-foreground text-xs sm:text-sm">
                                       {m.builderShadcnConfiguration()}
                                     </h2>
                                     <motion.div
                                       animate={{
-                                        rotate: collapsedSections.has("shadcnBase") ? 0 : 180,
+                                        rotate: isSectionCollapsed("shadcnBase") ? 0 : 180,
                                       }}
                                       transition={{ duration: 0.2 }}
                                     >
@@ -3826,7 +3916,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                                     </motion.div>
                                   </button>
                                   <AnimatePresence initial={false}>
-                                    {!collapsedSections.has("shadcnBase") && (
+                                    {!isSectionCollapsed("shadcnBase") && (
                                       <motion.div
                                         initial={{ height: 0, opacity: 0 }}
                                         animate={{ height: "auto", opacity: 1 }}
@@ -4011,11 +4101,11 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                                   exit={{ opacity: 0, height: 0 }}
                                   transition={{ duration: 0.3, ease: "easeInOut" }}
                                   data-testid="category-astroIntegration"
-                                  className="mb-6 scroll-mt-4 sm:mb-8 overflow-hidden"
+                                  className="mt-4 scroll-mt-16 overflow-hidden"
                                 >
-                                  <div className="mb-3 flex items-center gap-2 border-border border-b pb-2">
-                                    <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
-                                    <h2 className="font-mono text-foreground text-sm sm:text-base">
+                                  <div className="mb-3 flex items-center gap-2 border-border/60 border-b pb-2">
+                                    <Terminal className="h-3.5 w-3.5 shrink-0 text-muted-foreground sm:h-4 sm:w-4" />
+                                    <h2 className="font-mono text-foreground text-xs sm:text-sm">
                                       {m.builderAstroIntegration()}
                                     </h2>
                                   </div>
@@ -4116,7 +4206,14 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                               )}
                             </AnimatePresence>
                           )}
-                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </section>
                       );
                     })}
 
@@ -4414,7 +4511,11 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
               </div>
               <nav className="no-scrollbar min-h-0 flex-1 overflow-y-auto py-1.5">
                 {navSections.map((section) => {
-                  const count = getSelectedCount(section.key as keyof typeof TECH_OPTIONS, stack);
+                  const count = section.categories.reduce(
+                    (total, categoryKey) =>
+                      total + getSelectedCount(categoryKey as keyof typeof TECH_OPTIONS, stack),
+                    0,
+                  );
                   return (
                     <button
                       key={section.key}

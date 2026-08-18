@@ -6,6 +6,8 @@ import {
   getCompatibleCSSFrameworks as getCompatibleCSSFrameworksShared,
   getCompatibleUILibraries as getCompatibleUILibrariesShared,
   getUnsupportedWebDeployFrontend,
+  getToolingCapability,
+  hasVitePlusWorkspaceRoot,
   hasDockerComposeCompatibleFrontend,
   hasWebStyling as hasWebStylingShared,
   isBackendUtilsCompatibleBackend,
@@ -483,6 +485,7 @@ export function validateAddonCompatibility(
   rustApi?: ProjectConfig["rustApi"],
   goApi?: ProjectConfig["goApi"],
   javaApi?: ProjectConfig["javaApi"],
+  hasVitePlusStackPart = false,
 ): { isCompatible: boolean; reason?: string } {
   const baseCompatibility = validateAddonCompatibilityShared(addon, frontend, _auth);
   if (!baseCompatibility.isCompatible) return baseCompatibility;
@@ -496,6 +499,26 @@ export function validateAddonCompatibility(
     return {
       isCompatible: false,
       reason: "Knip currently supports TypeScript and React Native projects only",
+    };
+  }
+
+  if (
+    addon === "vite-plus" &&
+    !(
+      hasVitePlusStackPart ||
+      (ecosystem === "typescript" &&
+        frontend.some(
+          (candidate) =>
+            candidate !== "none" &&
+            candidate !== "native-bare" &&
+            candidate !== "native-uniwind" &&
+            candidate !== "native-unistyles",
+        ))
+    )
+  ) {
+    return {
+      isCompatible: false,
+      reason: "Vite+ requires a generated TypeScript web frontend",
     };
   }
 
@@ -715,6 +738,7 @@ export function getCompatibleAddons(
       context?.rustApi,
       context?.goApi,
       context?.javaApi,
+      hasVitePlusWorkspaceRoot(context?.stackParts),
     );
     return isCompatible;
   });
@@ -737,9 +761,25 @@ export function validateAddonsAgainstFrontends(
   rustApi?: ProjectConfig["rustApi"],
   goApi?: ProjectConfig["goApi"],
   javaApi?: ProjectConfig["javaApi"],
+  hasJavaScriptStackPart = false,
 ) {
-  if (addons.includes("nx") && addons.includes("turborepo")) {
-    exitWithError("Nx and Turborepo are alternative workspace runners. Choose one addon.");
+  const workspaceRunners = new Set(
+    addons.filter((addon) => ["turborepo", "nx", "vite-plus"].includes(addon)),
+  );
+  if (workspaceRunners.size > 1) {
+    exitWithError("Turborepo, Nx, and Vite+ are alternative workspace runners. Choose one.");
+  }
+
+  if (addons.includes("vite-plus")) {
+    const ownedTool = addons.find((addon) => {
+      const category = getToolingCapability(addon)?.category;
+      return category === "codeQuality" || category === "gitHooks";
+    });
+    if (ownedTool) {
+      exitWithError(
+        `Vite+ owns workspace tasks, code quality, and commit hooks; remove '${ownedTool}'`,
+      );
+    }
   }
 
   for (const addon of addons) {
@@ -761,9 +801,10 @@ export function validateAddonsAgainstFrontends(
       rustApi,
       goApi,
       javaApi,
+      hasJavaScriptStackPart,
     );
     if (!isCompatible) {
-      exitWithError(`Incompatible addon/frontend combination: ${reason}`);
+      exitWithError(`Incompatible tooling/frontend combination: ${reason}`);
     }
   }
 }

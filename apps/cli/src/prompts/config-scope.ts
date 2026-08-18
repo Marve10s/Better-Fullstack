@@ -96,6 +96,11 @@ const typescriptSections = [
     promptKeys: ["jobQueue", "realtime", "rateLimit"],
   },
   {
+    id: "frontend-security",
+    label: "Frontend Security",
+    promptKeys: ["botProtection"],
+  },
+  {
     id: "quality",
     label: "Testing & Observability",
     promptKeys: ["testing", "logging", "observability"],
@@ -112,7 +117,7 @@ const typescriptSections = [
   },
   {
     id: "addons-examples",
-    label: "Addons & Examples",
+    label: "Tooling & Examples",
     promptKeys: ["addons", "examples"],
   },
 ] as const satisfies ConfigSection[];

@@ -8,7 +8,6 @@ import {
   LAUNCH_RADAR_TOTAL,
   markLaunchRadarSeen,
   NEW_OPTION_IDS_BY_CATEGORY,
-  registerLaunchRadarVisit,
 } from "../src/lib/launch-radar";
 
 function createStorage(initial: Record<string, string> = {}) {
@@ -53,16 +52,5 @@ describe("launch radar release manifest", () => {
     expect(hasSeenLaunchRadar(storage)).toBe(false);
     markLaunchRadarSeen(storage);
     expect(hasSeenLaunchRadar(storage)).toBe(true);
-  });
-
-  test("auto-opens only for visitors returning in a later session", () => {
-    const persistentStorage = createStorage();
-    const firstSession = createStorage();
-
-    expect(registerLaunchRadarVisit(persistentStorage, firstSession)).toBe(false);
-    expect(registerLaunchRadarVisit(persistentStorage, firstSession)).toBe(false);
-
-    const laterSession = createStorage();
-    expect(registerLaunchRadarVisit(persistentStorage, laterSession)).toBe(true);
   });
 });

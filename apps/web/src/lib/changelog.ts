@@ -17,12 +17,146 @@ export type ChangelogRelease = {
 
 const RELEASE_BASE_URL = "https://github.com/Marve10s/Better-Fullstack/releases/tag";
 
+const GRADIENT_ARTWORK_URL =
+  "https://images.unsplash.com/photo-1777711391050-7e0cefd4b33b?q=80&w=2340&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
+
+function gradientArtwork(): ChangelogRelease["image"] {
+  return {
+    src: GRADIENT_ARTWORK_URL,
+    alt: "Abstract colorful gradient artwork",
+    credit: "Unsplash",
+    creditHref: GRADIENT_ARTWORK_URL,
+  };
+}
+
 export const changelogReleases: ChangelogRelease[] = [
+  {
+    version: "v2.5.1",
+    publishedAt: "2026-08-12T15:50:44Z",
+    displayDate: "August 12, 2026",
+    isLatest: true,
+    href: `${RELEASE_BASE_URL}/v2.5.1`,
+    title: "Portable agent plugins, provable lifecycle surfaces, and clearer telemetry",
+    summary:
+      "Better Fullstack 2.5.1 makes the agent path portable and the project lifecycle verifiable. The MCP server and plugin bundle move to the 2026 spec so the same setup works across agents, generated projects prove their own create-run-update surfaces in CI, and telemetry choices are laid out in one place you can read before opting in.",
+    highlights: [
+      "Use one portable plugin bundle across agents: the MCP server adopts the 2026 spec, and the Claude Code and Codex plugins ship from a shared skill set and server config.",
+      "Trust the lifecycle surfaces you rely on — create, run, and update paths are now exercised end to end in CI against real generated projects, including a browser-run proof.",
+      "Read exactly what anonymous usage reporting collects, and what it never sends, in a dedicated telemetry decision room before choosing a setting.",
+      "Support the project through GitHub Sponsors, now the primary funding path across the site and docs.",
+      "Get steadier scaffolds from pinned TanStack Router template dependencies and an oRPC version bump applied in lockstep across generated packages.",
+      "Search the site without malformed result metadata breaking the results list.",
+    ],
+    image: gradientArtwork(),
+  },
+  {
+    version: "v2.5.0",
+    publishedAt: "2026-08-05T18:33:53Z",
+    displayDate: "August 5, 2026",
+    href: `${RELEASE_BASE_URL}/v2.5.0`,
+    title: "Wider multi-ecosystem creation and a calmer builder",
+    summary:
+      "This release widens what a single multi-ecosystem command can create and clears the announcement furniture out of the builder. Non-interactive runs now resolve prompts to defaults instead of stalling, and CLI graph updates behave the same way the builder does.",
+    highlights: [
+      "Compose more of your product in one pass — multi-ecosystem project creation covers a wider set of frontend, backend, database, and mobile combinations.",
+      "Work in a quieter builder: the launch-radar surfaces, new-option badges, and the new-only filter are retired from the chrome now that the additions they announced have landed.",
+      "Run the CLI in CI and scripts without hanging — prompts resolve to their defaults in non-interactive environments.",
+      "Get consistent results from `bfs update` in graph-based projects, matching what the builder produces for the same stack.",
+      "Scaffold SolidStart projects on SolidStart 2, and get a working Qdrant query in generated vector-search code.",
+    ],
+    image: gradientArtwork(),
+  },
+  {
+    version: "v2.4.0",
+    publishedAt: "2026-08-04T10:06:10Z",
+    displayDate: "August 4, 2026",
+    href: `${RELEASE_BASE_URL}/v2.4.0`,
+    title: "E-commerce, integrations, an API gateway, and production tooling",
+    summary:
+      "This release adds four new capability areas to the stack graph: MedusaJS for e-commerce, Nango for third-party integrations, Kong as an API gateway in front of your services, and a tooling tier covering payments, tracing, dead-code detection, and secret scanning.",
+    highlights: [
+      "Scaffold a storefront backend with MedusaJS, wired through the graph, generated containers, and stack updates.",
+      "Connect third-party APIs with Nango, including generated backend ownership rules so integrations land in the right app.",
+      "Put Kong Gateway in front of generated services, with container routing that keeps upstreams reachable only through the gateway.",
+      "Add Xendit payments, SigNoz tracing, Knip dead-code detection, and Gitleaks secret scanning as first-class options.",
+      "Get complete request tracing from SigNoz across edge, gRPC, and Nitro runtimes, including aborted and cancelled streams.",
+      "See why a builder run failed — failures are now captured instead of disappearing silently.",
+    ],
+    image: gradientArtwork(),
+  },
+  {
+    version: "v2.3.1",
+    publishedAt: "2026-07-29T08:49:44Z",
+    displayDate: "July 29, 2026",
+    href: `${RELEASE_BASE_URL}/v2.3.1`,
+    title: "ScaffBench 2.2, the Run Before You Clone campaign, and expansion fixes",
+    summary:
+      "This release republishes the agent benchmark on a rebuilt 2.2 harness with honest ranking, launches the Run Before You Clone campaign, and closes the review and CI findings left by the large library expansion.",
+    highlights: [
+      "Read a rebuilt ScaffBench 2.2 board: a hardened harness and validator, a code-volume metric, tie-band ranks, hover notes explaining surprising rows, and a methodology card above the results.",
+      "Compare agents across harnesses, not just models, with official harness logos in the table and harness-plus-model pairing in the graph.",
+      "Try a stack before you clone it through the Run Before You Clone campaign and the reworked Edit & Run surface.",
+      "Install Python projects reliably under Poetry, and get pyright-clean output from PyJWT templates.",
+      "Scaffold without npm 10 install failures, and stay on a working Nuxt 4.4.8 while @nuxt/ui catches up to 4.5.",
+      "Generate frontend-less stacks with Resend without missing React types, contributed by @taltas.",
+    ],
+    image: gradientArtwork(),
+  },
+  {
+    version: "v2.3.0",
+    publishedAt: "2026-07-22T14:33:47Z",
+    displayDate: "July 22, 2026",
+    href: `${RELEASE_BASE_URL}/v2.3.0`,
+    title: "Python, Java, .NET, and React Native library expansion",
+    summary:
+      "This release completes the ecosystem library push with 20 additions each for Python, Java, .NET, and React Native, and pairs them with the Edit & Run surface for trying a generated stack in the browser.",
+    highlights: [
+      "Choose from 20 new Python libraries spanning ML, data, cloud SDKs, HTTP clients, metrics, packaging, and production serving.",
+      "Build deeper Spring Boot services with 20 new Java libraries covering data stores, messaging, realtime, sessions, security, and resilient HTTP.",
+      "Reach for 20 new .NET libraries across endpoints, messaging, observability, data access, mapping, and email.",
+      "Add 20 Expo modules to React Native projects, from camera and location to background tasks and local authentication.",
+      "Edit and run a generated stack directly in the browser before downloading it.",
+      "Find the project through expanded search content, including per-tool comparison pages and stack-combination pages.",
+    ],
+    image: gradientArtwork(),
+  },
+  {
+    version: "v2.2.0",
+    publishedAt: "2026-07-15T10:42:22Z",
+    displayDate: "July 15, 2026",
+    href: `${RELEASE_BASE_URL}/v2.2.0`,
+    title: "Rust, Go, and Elixir libraries, safer updates, and a refined builder",
+    summary:
+      "This release expands the Rust, Go, and Elixir ecosystems by 20 libraries each, makes `bfs update` merge structured files instead of overwriting them, and refines the builder and blog around the larger option surface.",
+    highlights: [
+      "Pick from 20 new libraries in each of Rust, Go, and Elixir, covering frameworks, data access, messaging, observability, testing, and quality tooling.",
+      "Keep your own edits when updating: `bfs update` now merges `package.json` and `.env.example` structurally rather than replacing them.",
+      "Reach cross-ecosystem backends from the browser without CORS surprises — generated services pin their allowed origin through `CORS_ORIGIN`.",
+      "Find options faster in the builder with search, and see incompatible create flags auto-adjusted with an explanation instead of a hard failure.",
+      "Read the blog in a new editorial layout, reachable from the navbar.",
+      "Generate buildable Next.js projects with NextAuth, and get safer automated template dependency updates.",
+    ],
+    image: gradientArtwork(),
+  },
+  {
+    version: "v2.1.8",
+    publishedAt: "2026-07-10T10:09:09Z",
+    displayDate: "July 10, 2026",
+    href: `${RELEASE_BASE_URL}/v2.1.8`,
+    title: "Honest Kotlin gating and a tidier builder",
+    summary:
+      "This patch makes the Kotlin language gate tell the truth in both the CLI and the builder, and removes builder surfaces that promised more than they delivered.",
+    highlights: [
+      "See the same Kotlin availability rules in the CLI and the web builder, backed by one shared predicate, with JPA entities opened correctly for Kotlin projects.",
+      "Read a ScaffBench graph that filters honestly, with a version dropdown for switching between boards.",
+      "Work in a cleaner builder after the share modal's plugin section and the presets panel's brief suggester were removed.",
+    ],
+    image: gradientArtwork(),
+  },
   {
     version: "v2.1.7",
     publishedAt: "2026-07-09T19:27:13Z",
     displayDate: "July 9, 2026",
-    isLatest: true,
     href: `${RELEASE_BASE_URL}/v2.1.7`,
     title: "A smoother first run, Kotlin everywhere, and safer project updates",
     summary:

@@ -15,6 +15,7 @@ import {
 } from "@better-fullstack/types/stack-translation";
 import { describe, expect, it } from "bun:test";
 
+import { GRAPH_COMMON_CATEGORY_ORDER } from "../src/components/stack-builder/utils";
 import { ECOSYSTEM_CATEGORIES } from "../src/lib/constant";
 import { DEFAULT_STACK } from "../src/lib/stack-defaults";
 import {
@@ -33,6 +34,13 @@ function isMappedStackStateKey(key: string): key is MappedStackStateKey {
 }
 
 describe("StackState contract", () => {
+  it("exposes dedicated tooling sections in multi-stack finalization", () => {
+    expect(GRAPH_COMMON_CATEGORY_ORDER).toContain("toolchainProfile");
+    expect(GRAPH_COMMON_CATEGORY_ORDER).toContain("workspaceRunner");
+    expect(GRAPH_COMMON_CATEGORY_ORDER).toContain("codeQualityProfile");
+    expect(GRAPH_COMMON_CATEGORY_ORDER).not.toContain("appPlatforms");
+  });
+
   it("keeps DEFAULT_STACK, stackStateKeys, and URL keys in exact sync", () => {
     expect(Object.keys(DEFAULT_STACK)).toEqual(stackStateKeys);
     expect(Object.keys(STACK_SELECTION_URL_KEYS)).toEqual(stackStateKeys);
@@ -65,7 +73,9 @@ describe("StackState contract", () => {
       const metadata = OPTION_CATEGORY_METADATA[category];
       const defaultValue = DEFAULT_STACK[stackKey];
 
-      if (metadata.selectionMode === "multiple") {
+      if (category === "documentation") {
+        expect(Array.isArray(defaultValue)).toBe(true);
+      } else if (metadata.selectionMode === "multiple") {
         expect(Array.isArray(defaultValue)).toBe(true);
       } else {
         expect(Array.isArray(defaultValue)).toBe(false);

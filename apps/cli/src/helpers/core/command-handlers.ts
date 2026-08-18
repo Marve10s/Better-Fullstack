@@ -4,7 +4,13 @@ import fs from "fs-extra";
 import path from "node:path";
 import pc from "picocolors";
 
-import type { CreateInput, DirectoryConflict, ProjectConfig } from "../../types";
+import type {
+  Addons,
+  CreateInput,
+  DirectoryConflict,
+  ProjectConfig,
+  ToolingCategoryId,
+} from "../../types";
 
 import { BUILDER_URL, getDefaultConfig } from "../../constants";
 import { CreateCommandOptionsSchema } from "../../create-command-input";
@@ -12,7 +18,13 @@ import { gatherConfig } from "../../prompts/config-prompts";
 import { isCancel, isGoBack, navigableSelect } from "../../prompts/navigable";
 import { getProjectName } from "../../prompts/project-name";
 import { getVersionChannelChoice } from "../../prompts/version-channel";
-import { getKotlinJavaIncompatibilityReason } from "../../types";
+import {
+  getKotlinJavaIncompatibilityReason,
+  getToolingCapability,
+  getToolingCategory,
+  isToolingOverlayPart,
+  legacyProjectConfigToStackParts,
+} from "../../types";
 import {
   maybeShowTelemetryNotice,
   type TelemetrySource,
@@ -22,18 +34,20 @@ import {
 import { resolveCreateConfigBase } from "../../utils/config-source";
 import { isSilent, runWithContextAsync } from "../../utils/context";
 import { displayConfig } from "../../utils/display-config";
-import { CLIError, UserCancelledError, exitCancelled } from "../../utils/errors";
+import { CLIError, UserCancelledError, exitCancelled, exitWithError } from "../../utils/errors";
 import { generateReproducibleCommand } from "../../utils/generate-reproducible-command";
 import {
   assertGeneratedVerificationComplete,
   runGeneratedChecks,
 } from "../../utils/generated-checks";
+import { lifecycleResult } from "../../utils/lifecycle-contract";
 import { openUrl } from "../../utils/open-url";
 import { displayPreflightWarnings } from "../../utils/preflight-display";
 import { handleDirectoryConflict, setupProjectDirectory } from "../../utils/project-directory";
 import { addToHistory } from "../../utils/project-history";
 import { canPromptInteractively } from "../../utils/prompt-environment";
 import { renderTitle } from "../../utils/render-title";
+import { getCurrentLifecycleVersions } from "../../utils/scaffold-manifest";
 import { resolveCompatibilityAdjustments } from "../../utils/stack-compatibility";
 import { getTemplateConfig, getTemplateDescription } from "../../utils/templates";
 import {
@@ -217,6 +231,7 @@ function getYesBaseConfig(flagConfig: Partial<ProjectConfig>): ProjectConfig {
     cms: "none",
     caching: "none",
     rateLimit: "none",
+    botProtection: "none",
     i18n: "none",
     search: "none",
     vectorDb: "none",
@@ -229,6 +244,55 @@ function getYesBaseConfig(flagConfig: Partial<ProjectConfig>): ProjectConfig {
     mobileOTA: "none",
     mobileDeepLinking: "none",
     mobileLibraries: [],
+  };
+}
+
+function expandToolingOverlay(config: ProjectConfig): ProjectConfig {
+  const overlayParts = config.stackParts ?? [];
+  if (overlayParts.length === 0) return config;
+  if (!overlayParts.every((part) => getToolingCapability(part.toolId))) return config;
+
+  const mismatchedPart = overlayParts.find((part) => !isToolingOverlayPart(part));
+  if (mismatchedPart) {
+    exitWithError(
+      `Tooling part does not match its capability binding: ${mismatchedPart.role}:${mismatchedPart.ecosystem}:${mismatchedPart.toolId}`,
+    );
+  }
+
+  const overlayCategories = new Set<ToolingCategoryId>();
+  const overlayToolIds: Addons[] = [];
+  for (const part of overlayParts) {
+    const capability = getToolingCapability(part.toolId);
+    if (!capability) continue;
+    overlayCategories.add(capability.category);
+    overlayToolIds.push(part.toolId as Addons);
+  }
+
+  const categoriesToReplace = new Set<ToolingCategoryId>(
+    [...overlayCategories].filter(
+      (category) => getToolingCategory(category)?.selectionMode === "single",
+    ),
+  );
+  if (overlayToolIds.includes("vite-plus")) {
+    categoriesToReplace.add("workspaceRunner");
+    categoriesToReplace.add("codeQuality");
+    categoriesToReplace.add("gitHooks");
+  }
+
+  const addons = (config.addons ?? []).filter((toolId) => {
+    if (toolId === "none") return false;
+    const capability = getToolingCapability(toolId);
+    return !capability || !categoriesToReplace.has(capability.category);
+  });
+  for (const toolId of overlayToolIds) {
+    if (!addons.includes(toolId)) addons.push(toolId);
+  }
+
+  const compatibilityConfig = { ...config, addons, stackParts: undefined };
+  return {
+    ...config,
+    addons,
+    stackParts: legacyProjectConfigToStackParts(compatibilityConfig, "selected"),
   };
 }
 
@@ -445,6 +509,7 @@ export async function createProjectHandler(
               cms: "none",
               caching: "none",
               rateLimit: "none",
+              botProtection: "none",
               i18n: "none",
               search: "none",
               vectorDb: "none",
@@ -605,14 +670,14 @@ export async function createProjectHandler(
         if (!silent) telemetrySource = "cli-flags";
         const flagConfig = processProvidedFlagsWithoutValidation(cliInput, finalBaseName);
 
-        config = {
+        config = expandToolingOverlay({
           ...getYesBaseConfig(flagConfig),
           ...flagConfig,
           projectName: finalBaseName,
           projectDir: finalResolvedPath,
           relativePath: currentPathInput,
           versionChannel,
-        };
+        });
 
         if (!cliInput.yolo && !isSilent()) {
           const { changes, adjustments } = resolveCompatibilityAdjustments(config);
@@ -741,6 +806,19 @@ export async function createProjectHandler(
           fileCount: result.tree.fileCount,
           directoryCount: result.tree.directoryCount,
           files,
+          lifecycle: lifecycleResult({
+            operation: "create",
+            status: "planned",
+            projectDir: config.projectDir,
+            changes: { added: result.tree.fileCount },
+            provenance: {
+              source: null,
+              target: getCurrentLifecycleVersions(),
+              verified: true,
+            },
+            recovery: { available: false, automaticRollback: true },
+            nextActions: ["Run the same command without `--dry-run` to create the project."],
+          }),
         };
       }
 
@@ -818,6 +896,7 @@ export async function createProjectHandler(
         projectDirectory: config.projectDir,
         relativePath: config.relativePath,
         setupFailures,
+        lifecycle: createResult.lifecycle,
       };
     } catch (error) {
       if (error instanceof UserCancelledError) {

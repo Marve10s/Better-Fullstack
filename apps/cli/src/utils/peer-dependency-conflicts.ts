@@ -49,7 +49,8 @@ export const PEER_DEPENDENCY_CONFLICTS: PeerDependencyConflict[] = [
   // 2. Effect ecosystem with Zod
   {
     id: "effect-schema-zod-overlap",
-    description: "effect/Schema (built into effect) and zod both provide validation - may cause confusion",
+    description:
+      "effect/Schema (built into effect) and zod both provide validation - may cause confusion",
     packages: ["effect", "zod"],
     severity: "warning",
     resolution: "Use --validation effect-schema with Effect, or --effect none with Zod",
@@ -71,7 +72,7 @@ export const PEER_DEPENDENCY_CONFLICTS: PeerDependencyConflict[] = [
   // 4. Biome conflicts with ESLint/Prettier addons
   {
     id: "biome-linting-overlap",
-    description: "Biome includes linting/formatting - other linting addons are redundant",
+    description: "Biome includes linting and formatting, so other quality profiles are redundant",
     packages: ["@biomejs/biome", "eslint", "prettier"],
     severity: "warning",
     resolution: "Choose either Biome (all-in-one) or other linting tools, not both",

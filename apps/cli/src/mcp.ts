@@ -136,6 +136,7 @@ import {
   PythonValidationSchema,
   PythonWebFrameworkSchema,
   RateLimitSchema,
+  BotProtectionSchema,
   RealtimeSchema,
   RuntimeSchema,
   RustApiSchema,
@@ -174,6 +175,9 @@ import {
   evaluateCompatibility,
   CATEGORY_ORDER,
   getCategoryOrderForEcosystem,
+  getToolingCapability,
+  getToolingSelectionOptions,
+  isToolingOverlayOnly,
   TEMPLATE_VALUES,
   type Template,
 } from "@better-fullstack/types";
@@ -183,16 +187,20 @@ import z from "zod";
 
 import { applyStackUpdate, planStackUpdate } from "./helpers/core/stack-update";
 import { trackEvent, trackProjectCreation, withCommandTelemetry } from "./utils/analytics";
-import { previewBtsConfigUpdate, readBtsConfig, writeBtsConfig } from "./utils/bts-config";
+import { readBtsConfig } from "./utils/bts-config";
 import { applyEffectBackendDefaults } from "./utils/config-processing";
+import { runWithContextAsync } from "./utils/context";
 import { generateReproducibleCommand } from "./utils/generate-reproducible-command";
 import { getLatestCLIVersion } from "./utils/get-latest-cli-version";
 import { getEffectiveStack, getGraphSummary } from "./utils/graph-summary";
 import {
+  applyMcpPartRemoval,
   applyMcpProjectUpdate,
   checkMcpProject,
   getMcpProjectStatus,
+  planMcpPartRemoval,
   planMcpProjectUpdate,
+  recoverMcpProjectTransaction,
 } from "./utils/mcp-project-lifecycle";
 import { getCompatibilityBackend } from "./utils/stack-compatibility";
 import { getTemplateConfig, getTemplateDescription } from "./utils/templates";
@@ -216,13 +224,15 @@ For existing projects:
 1. Call bfs_get_project_status, then bfs_check_project for truthful target verification.
 2. Call bfs_plan_project_update to review current-template drift. Manifest v1 is always unproven and plan-only by default.
 3. Only after independent review and a recovery point, pass its reviewToken plus acknowledgeUnprovenManifestV1: true to bfs_apply_project_update.
-4. Use bfs_plan_stack_update / bfs_apply_stack_update for scaffold-time capability changes.
-5. Use bfs_plan_addition / bfs_add_feature only for legacy addon/deploy-only flows.
+4. For removal, call bfs_plan_part_removal with one exact non-primary stack part, review the result, then pass its unchanged token to bfs_apply_part_removal.
+4. Use bfs_plan_stack_update / bfs_apply_stack_update for provider changes.
+5. Use bfs_plan_addition / bfs_add_feature for owner-scoped tooling Stack Parts and deploy targets.
 
 CRITICAL RULES:
 - Dependency installation is ALWAYS skipped in MCP mode (timeout risk). After scaffolding, tell the user to run install manually.
 - bfs_check_project executes project build tools. Those tools may write local caches, lock metadata, generated code, or build artifacts even though Better Fullstack does not edit source directly.
-- Array fields: "frontend", "addons", "examples", "aiDocs", "rustLibraries", "pythonAi", "pythonTesting", "pythonCli", "pythonData", "goTesting", "javaLibraries", "javaTestingLibraries", "dotnetTesting", "dotnetObservability", "elixirLibraries", "mobileLibraries", "kotlinMobileLibraries", and "dotnetLibraries". Most other option fields are strings.
+- Tooling is expressed with canonical "part" bindings. Use bfs_get_schema to discover dedicated toolchain, runner, quality, hooks, analysis, documentation, platform, testing, data, CI, and utility categories.
+- Array fields include "part", "frontend", "examples", "aiDocs", and the ecosystem library/testing collections. Most provider fields are strings.
 - "none" means "skip this feature entirely", not "use the default".
 - Always specify "ecosystem" first — it determines which other fields are relevant.
 - TypeScript web-specific fields (web frontend, backend, orm, etc.) are IGNORED for react-native/rust/python/go/java/dotnet/elixir ecosystems.
@@ -237,7 +247,7 @@ function getGuidance() {
       "Call bfs_plan_project to preview the generated project (dry-run, no files written).",
       "Call bfs_create_project to scaffold the project on disk.",
       "For existing projects: call bfs_get_project_status and bfs_check_project, then use the reviewed project-update or stack-update workflow that matches the requested change.",
-      "Use bfs_plan_addition / bfs_add_feature only for legacy addon/deploy-only flows.",
+      "Use bfs_plan_addition / bfs_add_feature for owner-scoped tooling Stack Parts and deploy targets.",
     ],
     ecosystems: {
       typescript:
@@ -260,12 +270,11 @@ function getGuidance() {
       frontend:
         "ARRAY of strings. TypeScript only. Supports multiple frontends in one monorepo. Use [] for API-only.",
       arrayFields:
-        'Use arrays for frontend, addons, examples, aiDocs, rustLibraries, pythonAi, pythonTesting, pythonCli, pythonData, goTesting, javaLibraries, javaTestingLibraries, dotnetTesting, dotnetObservability, elixirLibraries, mobileLibraries, and dotnetLibraries. Use [] for "none" on multi-select fields.',
+        'Use arrays for part, frontend, examples, aiDocs, and ecosystem library/testing collections. Use [] for "none" on multi-select fields.',
       backend:
         'String. "self" means fullstack mode (Next.js/Vinext/TanStack Start/Nuxt/Astro API routes). "none" for frontend-only.',
       runtime: '"bun" or "node". Must be "none" when backend is "self" or "convex".',
-      addons:
-        "ARRAY of strings. Monorepo tools, code quality, desktop (tauri), browser extensions (wxt), etc.",
+      part: "ARRAY of canonical Stack Part bindings. Tooling capabilities use dedicated roles and owner scopes, for example toolchain:universal:vite-plus or frontend.testing:typescript:storybook.",
       email:
         "String. TypeScript supports multiple providers; Rust, Python, Go, and Java currently support resend or none.",
       observability:
@@ -277,7 +286,7 @@ function getGuidance() {
     },
     ambiguityRules: [
       "If the user request leaves major stack choices unspecified, ASK the user before proceeding. Do not guess.",
-      'Do not infer addons, examples, or optional features the user did not mention. Default strings to "none" and multi-select arrays to [].',
+      'Do not infer tooling capabilities, examples, or optional features the user did not mention. Default strings to "none" and multi-select arrays to [].',
       "When the user says 'fullstack Next.js', use backend='self', frontend=['next'], runtime='none'.\nWhen the user says 'fullstack Vinext', use backend='self', frontend=['vinext'], runtime='none'.",
       "When the user says 'React + Hono', use frontend=['tanstack-router'] (or ask which React framework), backend='hono'.",
     ],
@@ -309,7 +318,6 @@ const MCP_ECOSYSTEMS = new Set<OptionCategoryEcosystem>(
 const MCP_SHARED_SCHEMA_KEYS = [
   "ecosystem",
   "packageManager",
-  "addons",
   "examples",
   "webDeploy",
   "serverDeploy",
@@ -328,20 +336,12 @@ const MCP_LEGACY_CATEGORY_KEYS: Partial<Record<OptionCategory, readonly string[]
   webFrontend: ["frontend"],
   nativeFrontend: ["frontend"],
   backendLibraries: ["effect"],
-  codeQuality: ["addons"],
-  documentation: ["addons"],
-  appShells: ["addons"],
-  appPlatforms: ["addons"],
 };
 
 const MCP_SCHEMA_EXCLUDED_CATEGORIES = new Set<OptionCategory>([
   "webFrontend",
   "nativeFrontend",
   "backendLibraries",
-  "codeQuality",
-  "documentation",
-  "appShells",
-  "appPlatforms",
   "aiDocs",
   "git",
   "install",
@@ -352,7 +352,6 @@ const MCP_SCHEMA_OPTION_OVERRIDES = {
   ecosystem: EcosystemSchema.options,
   frontend: FrontendSchema.options,
   backend: BackendSchema.options,
-  addons: AddonsSchema.options,
   examples: ExamplesSchema.options,
   effect: EffectSchema.options,
 } as const satisfies Record<string, readonly string[]>;
@@ -520,6 +519,7 @@ const MCP_COMPATIBILITY_DEFAULTS = {
   jobQueue: "none",
   caching: "none",
   rateLimit: "none",
+  botProtection: "none",
   i18n: "none",
   animation: "none",
   cssFramework: "tailwind",
@@ -775,22 +775,80 @@ function buildProjectConfig(
     shadcnFont: (input.shadcnFont as ProjectConfig["shadcnFont"]) ?? "inter",
     shadcnRadius: (input.shadcnRadius as ProjectConfig["shadcnRadius"]) ?? "default",
     aiDocs: (input.aiDocs as ProjectConfig["aiDocs"]) ?? ["claude-md", "agents-md"],
-    git: !!overrides,
+    git: false,
     install: false,
   };
+
+  if (Array.isArray(input.addons) && input.addons.length > 0) {
+    config.addons = [
+      ...new Set([
+        ...config.addons,
+        ...input.addons.filter(
+          (addon): addon is Exclude<ProjectConfig["addons"][number], "none"> =>
+            typeof addon === "string" && addon !== "none",
+        ),
+      ]),
+    ];
+  }
 
   if (Array.isArray(input.part) && input.part.length > 0) {
     const stackParts = parseStackPartSpecs(
       input.part.filter((part): part is string => typeof part === "string"),
       "selected",
     );
-    Object.assign(config, stackPartsToLegacyProjectConfigPartial(stackParts), { stackParts });
+    if (isToolingOverlayOnly(stackParts)) {
+      config.stackParts = stackParts;
+      config.addons = [
+        ...new Set([...config.addons, ...stackParts.map((part) => part.toolId)]),
+      ] as ProjectConfig["addons"];
+    } else {
+      Object.assign(config, stackPartsToLegacyProjectConfigPartial(stackParts), { stackParts });
+    }
   }
 
   applyEffectBackendDefaults(config, new Set(Object.keys(input)));
   validateMcpProjectConfigCompatibility(config);
 
   return config;
+}
+
+function diffAddedCapabilities(
+  before: Partial<ProjectConfig> | null | undefined,
+  after: Partial<ProjectConfig> | null | undefined,
+): string[] {
+  const beforeAddons = new Set(before?.addons ?? []);
+  const added: string[] = [];
+  for (const addon of after?.addons ?? []) {
+    if (addon === "none" || beforeAddons.has(addon)) continue;
+    const capability = getToolingCapability(addon);
+    const owner = capability?.ownerRole ? `${capability.ownerRole}.` : "";
+    added.push(capability ? `${owner}${capability.role}:${capability.ecosystem}:${addon}` : addon);
+  }
+  for (const key of ["webDeploy", "serverDeploy"] as const) {
+    const next = after?.[key];
+    if (next && next !== "none" && next !== before?.[key]) added.push(`${key}:${next}`);
+  }
+  return added;
+}
+
+function mergeLegacyAddonParts(part?: string[], addons?: string[]): string[] | undefined {
+  const addonSpecs = (addons ?? [])
+    .filter((addon) => addon !== "none")
+    .flatMap((addon) => {
+      const capability = getToolingCapability(addon);
+      if (!capability) throw new Error(`Unknown addon '${addon}'`);
+      const profile = getToolingSelectionOptions(capability.category).find((option) =>
+        option.toolIds.includes(addon),
+      );
+      return (profile?.toolIds.length ? [...profile.toolIds] : [addon]).map((toolId) => {
+        const toolCapability = getToolingCapability(toolId);
+        if (!toolCapability) throw new Error(`Unknown addon '${toolId}'`);
+        const owner = toolCapability.ownerRole ? `${toolCapability.ownerRole}.` : "";
+        return `${owner}${toolCapability.role}:${toolCapability.ecosystem}:${toolId}`;
+      });
+    });
+  const merged = [...new Set([...(part ?? []), ...addonSpecs])];
+  return merged.length > 0 ? merged : undefined;
 }
 
 function sanitizePath(input: string): string {
@@ -803,6 +861,14 @@ function sanitizePath(input: string): string {
     throw new Error("Path must not contain '..' components");
   }
   return input;
+}
+
+function sanitizeProjectName(input: string): string {
+  const projectName = sanitizePath(input);
+  if (!/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(projectName) || projectName === ".") {
+    throw new Error("Project name must be one portable directory name");
+  }
+  return projectName;
 }
 
 export function buildMcpCompatibilityInput(input: Record<string, unknown>): CompatibilityInput {
@@ -1020,7 +1086,7 @@ const GETTING_STARTED_MD = `# Getting Started with Better-Fullstack MCP
 1. Call bfs_plan_stack_update with projectDir and any stack fields to add or change.
 2. Review filesToAdd, filesToPatch, dependencyChanges, envChanges, and manualReviewBlockers.
 3. If there are no blockers, call bfs_apply_stack_update with the same arguments.
-4. Use bfs_add_feature only for older addon/deploy-only workflows.
+4. Use bfs_plan_addition / bfs_add_feature for owner-scoped tooling Stack Parts and deploy targets.
 `;
 
 type McpToolAnnotations = {
@@ -1068,6 +1134,41 @@ const graphPreviewOutputShape = {
   stackPartSpecs: z.array(z.string()).optional(),
 };
 
+const lifecycleVersionsOutputSchema = z.object({
+  cli: z.string(),
+  generator: z.string(),
+  templateSet: z.string(),
+  schema: z.string(),
+});
+
+const lifecycleResultOutputSchema = z.object({
+  contractVersion: z.literal("1"),
+  operation: z.enum(["create", "add", "remove", "stack-update", "template-update", "recover"]),
+  status: z.enum(["planned", "applied", "blocked", "failed", "rolled-back", "recovered"]),
+  projectDir: z.string(),
+  changes: z.object({
+    added: z.number(),
+    patched: z.number(),
+    merged: z.number(),
+    removed: z.number(),
+    manual: z.number(),
+  }),
+  warnings: z.array(z.string()),
+  blockers: z.array(z.string()),
+  provenance: z.object({
+    source: lifecycleVersionsOutputSchema.nullable(),
+    target: lifecycleVersionsOutputSchema.nullable(),
+    verified: z.boolean(),
+  }),
+  recovery: z.object({
+    available: z.boolean(),
+    transactionId: z.string().optional(),
+    command: z.string().optional(),
+    automaticRollback: z.boolean().optional(),
+  }),
+  nextActions: z.array(z.string()),
+});
+
 const planProjectOutputSchema = z.object({
   success: z.boolean(),
   fileCount: z.number().optional(),
@@ -1080,43 +1181,34 @@ const createProjectOutputSchema = z.object({
   success: z.boolean(),
   projectDirectory: z.string().optional(),
   fileCount: z.number().optional(),
-  addonWarnings: z.array(z.string()).optional(),
+  capabilityWarnings: z.array(z.string()).optional(),
+  addonWarnings: z.array(z.string()).optional().describe("Deprecated alias of capabilityWarnings"),
   message: z.string().optional(),
+  lifecycle: lifecycleResultOutputSchema.optional(),
   ...graphPreviewOutputShape,
 });
 
 const planAdditionOutputSchema = z.object({
   success: z.boolean(),
-  existingConfig: z
-    .object({
-      ecosystem: z.string(),
-      frontend: z.array(z.string()).optional(),
-      backend: z.string().optional(),
-      addons: z.array(z.string()).optional(),
-      graphSummary: z.string().optional(),
-      effectiveStack: z.record(z.string(), z.string()).optional(),
-      stackPartSpecs: z.array(z.string()),
-    })
-    .optional(),
-  proposedAdditions: z
-    .object({
-      newAddons: z.array(z.string()),
-      webDeploy: z.string().nullable(),
-      serverDeploy: z.string().nullable(),
-      graphSummary: z.string().optional(),
-      effectiveStack: z.record(z.string(), z.string()).optional(),
-      stackPartSpecs: z.array(z.string()),
-    })
-    .optional(),
-  alreadyPresent: z.array(z.string()).optional(),
+  projectDir: z.string().optional(),
+  requestedParts: z.array(z.string()).optional(),
+  requestedChanges: z.record(z.string(), z.unknown()).optional(),
+  proposedConfig: z.record(z.string(), z.unknown()).optional(),
+  graphSummary: z.string().optional(),
+  filesToAdd: z.array(z.string()).optional(),
+  filesToPatch: z.array(z.string()).optional(),
+  filesToRemove: z.array(z.string()).optional(),
   compatibilityWarnings: z.array(z.string()).optional(),
 });
 
 const addFeatureOutputSchema = z.object({
   success: z.boolean(),
-  addedAddons: z.array(z.string()).optional(),
+  addedCapabilities: z.array(z.string()).optional(),
   projectDir: z.string().optional(),
+  error: z.string().optional(),
   message: z.string().optional(),
+  lifecycle: lifecycleResultOutputSchema.optional(),
+  recoveryId: z.string().optional(),
   ...graphPreviewOutputShape,
 });
 
@@ -1128,6 +1220,7 @@ const stackUpdateOutputSchema = z.object({
   proposedConfig: z.record(z.string(), z.unknown()).optional(),
   filesToAdd: z.array(z.string()).optional(),
   filesToPatch: z.array(z.string()).optional(),
+  filesToRemove: z.array(z.string()).optional(),
   dependencyChanges: z.record(z.string(), z.record(z.string(), z.string())).optional(),
   scriptChanges: z.record(z.string(), z.array(z.string())).optional(),
   envChanges: z.record(z.string(), z.array(z.string())).optional(),
@@ -1141,6 +1234,8 @@ const stackUpdateOutputSchema = z.object({
   compatibilityWarnings: z.array(z.string()).optional(),
   installCommand: z.string().optional(),
   message: z.string().optional(),
+  lifecycle: lifecycleResultOutputSchema.optional(),
+  recoveryId: z.string().optional(),
   ...graphPreviewOutputShape,
 });
 
@@ -1155,8 +1250,8 @@ function buildPresetStackSummary(config: CreateInput): string {
   if (config.api && config.api !== "none") parts.push(`api: ${config.api}`);
   if (config.auth && config.auth !== "none") parts.push(`auth: ${config.auth}`);
   if (config.payments && config.payments !== "none") parts.push(`payments: ${config.payments}`);
-  const addons = (config.addons ?? []).filter((item) => item !== "none");
-  if (addons.length > 0) parts.push(`addons: ${addons.join("+")}`);
+  const graph = getMcpGraphPreview(config);
+  if (graph.stackPartSpecs.length > 0) parts.push(`parts: ${graph.stackPartSpecs.join("+")}`);
   return parts.join(", ");
 }
 
@@ -1401,7 +1496,7 @@ function summarizeRecommendedConfig(config: ProjectConfig) {
     cms: config.cms,
     realtime: config.realtime,
     examples: config.examples,
-    addons: config.addons,
+    stackPartSpecs: getMcpGraphPreview(config).stackPartSpecs,
   };
 }
 
@@ -1551,6 +1646,7 @@ export const MCP_PLAN_CREATE_SCHEMA = {
     .array(z.string())
     .optional()
     .describe("Stack graph part binding, e.g. frontend:typescript:next or backend.orm:go:gorm"),
+  addons: z.array(AddonsSchema).optional().describe("Deprecated alias for tooling part bindings"),
   ecosystem: EcosystemSchema.optional().describe("Language ecosystem (default: typescript)"),
   frontend: z.array(FrontendSchema).optional().describe("Frontend frameworks (TypeScript only)"),
   backend: BackendSchema.optional().describe("Backend framework"),
@@ -1561,7 +1657,6 @@ export const MCP_PLAN_CREATE_SCHEMA = {
   auth: AuthSchema.optional().describe("Auth provider"),
   payments: PaymentsSchema.optional().describe("Payments provider"),
   email: EmailSchema.optional().describe("Email provider"),
-  addons: z.array(AddonsSchema).optional().describe("Addons"),
   examples: z.array(ExamplesSchema).optional().describe("Example templates"),
   packageManager: PackageManagerSchema.optional().describe("Package manager (default: bun)"),
   cssFramework: CSSFrameworkSchema.optional().describe("CSS framework"),
@@ -1590,6 +1685,7 @@ export const MCP_PLAN_CREATE_SCHEMA = {
   vectorDb: VectorDbSchema.optional().describe("Vector database (TypeScript only)"),
   caching: CachingSchema.optional().describe("Caching solution"),
   rateLimit: RateLimitSchema.optional().describe("Rate limiting solution"),
+  botProtection: BotProtectionSchema.optional().describe("Bot verification provider"),
   i18n: I18nSchema.optional().describe("Internationalization (i18n) library"),
   cms: CMSSchema.optional().describe("CMS"),
   fileStorage: FileStorageSchema.optional().describe("File storage"),
@@ -1611,8 +1707,10 @@ export const MCP_PLAN_CREATE_SCHEMA = {
   ...crossEcosystemInputSchema,
 };
 
+const { addons: _createOnlyAddonsAlias, ...MCP_STACK_UPDATE_BASE_SCHEMA } = MCP_PLAN_CREATE_SCHEMA;
+
 export const MCP_STACK_UPDATE_SCHEMA = {
-  ...MCP_PLAN_CREATE_SCHEMA,
+  ...MCP_STACK_UPDATE_BASE_SCHEMA,
   projectDir: z.string().describe("Absolute path to the existing Better-Fullstack project"),
   acknowledgeArchitectureChange: z
     .boolean()
@@ -1895,6 +1993,7 @@ export function createMcpServer(): McpServer {
         cms: CMSSchema.optional().describe("CMS"),
         caching: CachingSchema.optional().describe("Caching solution"),
         rateLimit: RateLimitSchema.optional().describe("Rate limiting solution"),
+        botProtection: BotProtectionSchema.optional().describe("Bot verification provider"),
         i18n: I18nSchema.optional().describe("Internationalization library"),
         search: SearchSchema.optional().describe("Search engine"),
         vectorDb: VectorDbSchema.optional().describe("Vector database (TypeScript only)"),
@@ -1913,7 +2012,11 @@ export function createMcpServer(): McpServer {
         shadcnBaseColor: ShadcnBaseColorSchema.optional().describe("shadcn/ui base neutral color"),
         shadcnFont: ShadcnFontSchema.optional().describe("shadcn/ui font"),
         shadcnRadius: ShadcnRadiusSchema.optional().describe("shadcn/ui border radius"),
-        addons: z.array(AddonsSchema).optional().describe("Addon list"),
+        part: z.array(z.string()).optional().describe("Canonical Stack Part bindings"),
+        addons: z
+          .array(AddonsSchema)
+          .optional()
+          .describe("Deprecated alias for tooling part bindings"),
         examples: z.array(ExamplesSchema).optional().describe("Example templates"),
         packageManager: PackageManagerSchema.optional().describe("Package manager"),
         ...crossEcosystemInputSchema,
@@ -1921,7 +2024,8 @@ export function createMcpServer(): McpServer {
     },
     async (input: Record<string, unknown>) => {
       try {
-        const compatInput = buildMcpCompatibilityInput(input);
+        const compatibilitySource = Array.isArray(input.part) ? buildProjectConfig(input) : input;
+        const compatInput = buildMcpCompatibilityInput(compatibilitySource);
         const result = analyzeStackCompatibility(compatInput);
         const filtered = filterCompatibilityResult(result, input.ecosystem as string);
         const evaluation = evaluateCompatibility(compatInput);
@@ -2024,7 +2128,11 @@ export function createMcpServer(): McpServer {
         "Creates a new fullstack project on disk. Dependencies are NOT installed (agent must tell user to install manually). Call bfs_plan_project first to preview.",
       inputSchema: mcpInputSchema({
         ...MCP_PLAN_CREATE_SCHEMA,
-        projectName: z.string().describe("Project name (kebab-case). Will be the directory name."),
+        projectName: z
+          .string()
+          .regex(/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/)
+          .refine((value) => value !== ".")
+          .describe("Project name (kebab-case). Will be the directory name."),
         targetDir: z
           .string()
           .optional()
@@ -2044,58 +2152,17 @@ export function createMcpServer(): McpServer {
     async (input: Record<string, unknown> & { projectName: string }) => {
       const startTime = Date.now();
       try {
-        const { generateVirtualProject, EMBEDDED_TEMPLATES } =
-          await import("@better-fullstack/template-generator");
-        const { writeTreeToFilesystem } =
-          await import("@better-fullstack/template-generator/fs-writer");
         const path = await import("node:path");
 
-        const projectName = sanitizePath(input.projectName);
+        const projectName = sanitizeProjectName(input.projectName);
         const targetDir = input.targetDir ? sanitizePath(input.targetDir as string) : undefined;
         const projectDir = path.resolve(targetDir ?? process.cwd(), projectName);
         const config = buildProjectConfig(input, { projectDir });
-
-        const fs = await import("node:fs/promises");
-        await fs.mkdir(projectDir, { recursive: true });
-
-        const result = await generateVirtualProject({ config, templates: EMBEDDED_TEMPLATES });
-        if (!result.success || !result.tree) {
-          await trackProjectCreation(config, false, {
-            source: "mcp",
-            success: false,
-            errorName: "GenerationFailed",
-            durationMs: Date.now() - startTime,
-          });
-          return {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify({
-                  success: false,
-                  error: result.error ?? "Generation failed",
-                }),
-              },
-            ],
-            isError: true,
-          };
-        }
-
-        await writeTreeToFilesystem(result.tree, projectDir);
-
-        await writeBtsConfig(config);
+        const { createProject } = await import("./helpers/core/create-project.js");
+        const result = await runWithContextAsync({ silent: true }, () =>
+          createProject(config, { allowExistingDirectory: false }),
+        );
         const graphPreview = getMcpGraphPreview(config);
-
-        let addonWarnings: string[] = [];
-        if (config.addons.length > 0 && config.addons[0] !== "none") {
-          const { setupAddons } = await import("./helpers/addons/addons-setup.js");
-          addonWarnings = await setupAddons(config);
-        }
-
-        const { collectStructuredBaselines, recordScaffoldManifest } =
-          await import("./utils/scaffold-manifest.js");
-        await recordScaffoldManifest(projectDir, {
-          baselines: collectStructuredBaselines(result.tree),
-        });
 
         const ecosystem = (input.ecosystem as string) ?? "typescript";
         const installCmd = getInstallCommand(
@@ -2109,15 +2176,18 @@ export function createMcpServer(): McpServer {
         await trackProjectCreation(config, false, {
           source: "mcp",
           success: true,
-          fileCount: result.tree.fileCount,
+          fileCount: result.fileCount,
           durationMs: Date.now() - startTime,
         });
         const payload = {
           success: true as const,
           projectDirectory: projectDir,
-          fileCount: result.tree.fileCount,
+          fileCount: result.fileCount,
           ...graphPreview,
-          ...(addonWarnings.length > 0 ? { addonWarnings } : {}),
+          ...(result.addonWarnings.length > 0
+            ? { capabilityWarnings: result.addonWarnings, addonWarnings: result.addonWarnings }
+            : {}),
+          lifecycle: result.lifecycle,
           message: `Project created at ${projectDir}. Tell the user to run: ${installCmd}`,
         };
         return {
@@ -2208,10 +2278,87 @@ export function createMcpServer(): McpServer {
   );
 
   registerTool(
+    "bfs_plan_part_removal",
+    {
+      description:
+        "Plans removal of one exact non-primary stack part and returns a review token bound to the resulting config and generated-file operations.",
+      inputSchema: mcpInputSchema({
+        projectDir: z.string().describe("Path to the existing Better Fullstack project"),
+        target: z
+          .string()
+          .describe("Exact stack part spec or ID, for example backend.auth:typescript:better-auth"),
+      }),
+      annotations: {
+        title: "Plan stack part removal",
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async (input: { projectDir: string; target: string }) => {
+      const payload = await planMcpPartRemoval(sanitizePath(input.projectDir), input.target);
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
+        ...(!payload.success ? { isError: true } : {}),
+      };
+    },
+  );
+
+  registerTool(
+    "bfs_apply_part_removal",
+    {
+      description:
+        "Applies an exact reviewed stack-part removal in a recoverable transaction. Architecture-sensitive removals require explicit acknowledgement.",
+      inputSchema: mcpInputSchema({
+        projectDir: z.string().describe("Path to the existing Better Fullstack project"),
+        target: z.string().describe("Exact stack part spec or ID returned by the removal plan"),
+        reviewToken: z
+          .string()
+          .min(64)
+          .max(64)
+          .describe("Exact reviewToken returned by bfs_plan_part_removal"),
+        acknowledgeArchitectureChange: z
+          .boolean()
+          .optional()
+          .default(false)
+          .describe(
+            "Required when the plan reports an architecture-sensitive removal; data and schema are not migrated automatically.",
+          ),
+      }),
+      annotations: {
+        title: "Apply reviewed stack part removal",
+        readOnlyHint: false,
+        destructiveHint: true,
+        idempotentHint: false,
+        openWorldHint: false,
+      },
+    },
+    async (input: {
+      projectDir: string;
+      target: string;
+      reviewToken: string;
+      acknowledgeArchitectureChange: boolean;
+    }) => {
+      const payload = await applyMcpPartRemoval(
+        sanitizePath(input.projectDir),
+        input.target,
+        input.reviewToken,
+        input.acknowledgeArchitectureChange,
+      );
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
+        ...(!payload.success ? { isError: true } : {}),
+      };
+    },
+  );
+
+  registerTool(
     "bfs_plan_project_update",
     {
       description:
-        "Plans current-template drift. Exact structured-merge content is returned up to 32 KiB per file; oversized content is withheld with size/hash metadata and no token. Manifest v1 never proves release lineage and remains plan-only by default; any returned token still requires explicit destructive acknowledgement and an independently managed recovery point.",
+        "Plans current-template drift. Exact structured-merge content is returned up to 32 KiB per file; oversized content is withheld with size/hash metadata and no token. Manifest v2 provenance and transactional recovery eligibility are returned in the lifecycle contract.",
       inputSchema: mcpInputSchema({
         projectDir: z.string().describe("Path to the existing Better Fullstack project"),
       }),
@@ -2236,7 +2383,7 @@ export function createMcpServer(): McpServer {
     "bfs_apply_project_update",
     {
       description:
-        "Destructively overwrites actionable template files bound to a reviewed token only when acknowledgeUnprovenManifestV1 is true. Manifest v1 lineage is unproven. Backup and recovery are not implemented.",
+        "Applies actionable template files bound to a reviewed token in a recoverable transaction. Verified manifest-v2 projects need no lineage acknowledgement; migrated/adopted projects do.",
       inputSchema: mcpInputSchema({
         projectDir: z.string().describe("Path to the existing Better Fullstack project"),
         reviewToken: z
@@ -2246,9 +2393,9 @@ export function createMcpServer(): McpServer {
           .describe("Exact reviewToken returned by bfs_plan_project_update"),
         acknowledgeUnprovenManifestV1: z
           .boolean()
-          .describe(
-            "Must be true: acknowledge destructive apply, unproven manifest-v1 lineage, and absent backup/recovery",
-          ),
+          .optional()
+          .default(false)
+          .describe("Required only when the plan reports unverified migrated/adopted lineage"),
       }),
       annotations: {
         title: "Apply reviewed project update",
@@ -2277,10 +2424,40 @@ export function createMcpServer(): McpServer {
   );
 
   registerTool(
+    "bfs_recover_project_transaction",
+    {
+      description:
+        "Restores every file bound to a successful or interrupted Better Fullstack lifecycle transaction. The transaction can be recovered once, then project checks should be rerun.",
+      inputSchema: mcpInputSchema({
+        projectDir: z.string().describe("Path to the existing Better Fullstack project"),
+        transactionId: z.string().uuid().describe("Recovery transaction ID returned by apply"),
+      }),
+      annotations: {
+        title: "Recover project transaction",
+        readOnlyHint: false,
+        destructiveHint: true,
+        idempotentHint: false,
+        openWorldHint: false,
+      },
+    },
+    async (input: { projectDir: string; transactionId: string }) => {
+      const payload = await recoverMcpProjectTransaction(
+        sanitizePath(input.projectDir),
+        input.transactionId,
+      );
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
+        ...(!payload.success ? { isError: true } : {}),
+      };
+    },
+  );
+
+  registerTool(
     "bfs_plan_stack_update",
     {
       description:
-        "Plans scaffold-time stack updates for an existing Better-Fullstack project. Supports the same stack fields as project creation (email, auth, payments, API, CMS, search, vector DB, observability, mobile/non-TS categories, addons, deploy, etc.). Does not write files.",
+        "Plans scaffold-time Stack Part and provider updates for an existing Better-Fullstack project. Supports the same fields as project creation and does not write files.",
       inputSchema: mcpInputSchema(MCP_STACK_UPDATE_SCHEMA),
       outputSchema: stackUpdateOutputSchema,
       annotations: {
@@ -2412,10 +2589,14 @@ export function createMcpServer(): McpServer {
     "bfs_plan_addition",
     {
       description:
-        "Validates what would be added to an existing project. Reads the project config (bts.jsonc) and checks which addons are new.",
+        "Plans owner-scoped tooling capabilities and deployment changes for an existing project without writing files.",
       inputSchema: mcpInputSchema({
         projectDir: z.string().describe("Absolute path to the existing project directory"),
-        addons: z.array(AddonsSchema).optional().describe("Addons to add"),
+        part: z.array(z.string()).optional().describe("Canonical Stack Part bindings to add"),
+        addons: z
+          .array(AddonsSchema)
+          .optional()
+          .describe("Deprecated alias for tooling part bindings"),
         webDeploy: WebDeploySchema.optional().describe("Web deployment option"),
         serverDeploy: ServerDeploySchema.optional().describe("Server deployment option"),
       }),
@@ -2429,75 +2610,37 @@ export function createMcpServer(): McpServer {
     },
     async ({
       projectDir,
+      part,
       addons,
       webDeploy,
       serverDeploy,
     }: {
       projectDir: string;
-      addons?: ProjectConfig["addons"];
+      part?: string[];
+      addons?: string[];
       webDeploy?: ProjectConfig["webDeploy"];
       serverDeploy?: ProjectConfig["serverDeploy"];
     }) => {
       try {
         const safePath = sanitizePath(projectDir);
-        const config = await readBtsConfig(safePath);
-        if (!config) {
+        const requestedParts = mergeLegacyAddonParts(part, addons);
+        const plan = await planStackUpdate(safePath, {
+          part: requestedParts,
+          webDeploy,
+          serverDeploy,
+        });
+        if (!plan.success) {
           return {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify({
-                  success: false,
-                  error: `No bts.jsonc found in ${safePath}. Is this a Better-Fullstack project?`,
-                }),
-              },
-            ],
+            content: [{ type: "text", text: JSON.stringify(plan, null, 2) }],
+            structuredContent: plan,
             isError: true,
           };
         }
-
-        const existingAddons = new Set(config.addons ?? []);
-        const newAddons = (addons ?? []).filter((a) => a !== "none" && !existingAddons.has(a));
-
-        const mergedAddons = [...new Set([...(config.addons ?? []), ...newAddons])];
-        const updatePreview = previewBtsConfigUpdate(config, {
-          addons: mergedAddons,
-          webDeploy: webDeploy ?? config.webDeploy,
-          serverDeploy: serverDeploy ?? config.serverDeploy,
-        });
-        const existingGraphPreview = getMcpGraphPreview(config);
-        const proposedGraphPreview = getMcpGraphPreview(updatePreview);
-        const compatInput = buildMcpCompatibilityInput({
-          ...config,
-          addons: mergedAddons,
-          webDeploy: webDeploy ?? config.webDeploy,
-          serverDeploy: serverDeploy ?? config.serverDeploy,
-        });
-        const compatResult = analyzeStackCompatibility(compatInput);
-        const compatibilityWarnings =
-          compatResult.changes.length > 0 ? compatResult.changes.map((c) => c.message) : undefined;
-
+        const { operations: _operations, filesUnchanged: _filesUnchanged, ...safePlan } = plan;
         const payload = {
-          success: true as const,
-          existingConfig: {
-            ecosystem: config.ecosystem,
-            frontend: config.frontend,
-            backend: config.backend,
-            addons: config.addons,
-            graphSummary: existingGraphPreview.graphSummary,
-            effectiveStack: existingGraphPreview.effectiveStack,
-            stackPartSpecs: existingGraphPreview.stackPartSpecs,
-          },
-          proposedAdditions: {
-            newAddons,
-            webDeploy: webDeploy ?? null,
-            serverDeploy: serverDeploy ?? null,
-            graphSummary: proposedGraphPreview.graphSummary,
-            effectiveStack: proposedGraphPreview.effectiveStack,
-            stackPartSpecs: proposedGraphPreview.stackPartSpecs,
-          },
-          alreadyPresent: (addons ?? []).filter((a) => existingAddons.has(a)),
-          ...(compatibilityWarnings ? { compatibilityWarnings } : {}),
+          ...safePlan,
+          requestedParts: requestedParts ?? [],
+          compatibilityWarnings: compatibilityWarningsForStackUpdate(plan.proposedConfig),
         };
         return {
           content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
@@ -2521,10 +2664,14 @@ export function createMcpServer(): McpServer {
     "bfs_add_feature",
     {
       description:
-        "Adds addons/features to an existing Better-Fullstack project. Dependencies are NOT installed. Call bfs_plan_addition first to validate.",
+        "Adds owner-scoped tooling capabilities or deployment targets to an existing Better-Fullstack project. Dependencies are not installed. Call bfs_plan_addition first.",
       inputSchema: mcpInputSchema({
         projectDir: z.string().describe("Absolute path to the existing project directory"),
-        addons: z.array(AddonsSchema).optional().describe("Addons to add"),
+        part: z.array(z.string()).optional().describe("Canonical Stack Part bindings to add"),
+        addons: z
+          .array(AddonsSchema)
+          .optional()
+          .describe("Deprecated alias for tooling part bindings"),
         webDeploy: WebDeploySchema.optional().describe("Web deployment option"),
         serverDeploy: ServerDeploySchema.optional().describe("Server deployment option"),
         packageManager: PackageManagerSchema.optional().describe("Package manager to use"),
@@ -2543,8 +2690,13 @@ export function createMcpServer(): McpServer {
         const safePath = sanitizePath(input.projectDir);
         const { add } = await import("./index.js");
 
+        const configBefore = await readBtsConfig(safePath);
+        const requestedParts = mergeLegacyAddonParts(
+          input.part as string[] | undefined,
+          input.addons as string[] | undefined,
+        );
         const addInput: AddInput = {
-          addons: input.addons as ProjectConfig["addons"] | undefined,
+          part: requestedParts,
           webDeploy: input.webDeploy as ProjectConfig["webDeploy"] | undefined,
           serverDeploy: input.serverDeploy as ProjectConfig["serverDeploy"] | undefined,
           projectDir: safePath,
@@ -2568,26 +2720,27 @@ export function createMcpServer(): McpServer {
           );
           const payload = {
             success: true as const,
-            addedAddons: result.addedAddons,
+            addedCapabilities: diffAddedCapabilities(configBefore, existingConfig),
             projectDir: result.projectDir,
+            lifecycle: result.lifecycle,
+            recoveryId: result.recoveryId,
             ...graphPreview,
-            message: `Added ${result.addedAddons.join(", ")} to project. Tell the user to run: ${installCmd}`,
+            message: `Applied the requested tooling capabilities. Tell the user to run: ${installCmd}`,
           };
           return {
             content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
             structuredContent: payload,
           };
         }
+        const payload = {
+          success: false as const,
+          error: result?.error ?? "Add command returned no result",
+          lifecycle: result?.lifecycle,
+          recoveryId: result?.recoveryId,
+        };
         return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify({
-                success: false,
-                error: result?.error ?? "Add command returned no result",
-              }),
-            },
-          ],
+          content: [{ type: "text", text: JSON.stringify(payload) }],
+          structuredContent: payload,
           isError: true,
         };
       } catch (error) {

@@ -138,7 +138,7 @@ function activateSignozTracing(
 ): void {
   if (config.backend !== "self") {
     if (prependImport(vfs, `${targetDir}/src/index.ts`, "./lib/tracing")) return;
-    if (prependImport(vfs, `${targetDir}/bin/server.ts`, "../src/lib/tracing")) return;
+    if (prependImport(vfs, `${targetDir}/bin/server.ts`, "../src/lib/tracing.js")) return;
 
     if (config.backend === "nitro") {
       vfs.writeFile(

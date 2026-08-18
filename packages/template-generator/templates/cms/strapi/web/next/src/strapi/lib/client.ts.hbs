@@ -12,47 +12,29 @@ export const strapiServerClient = strapi({
   auth: strapiApiToken,
 });
 
-// Type-safe fetch helper with revalidation support
+// Type-safe fetch helper
 export async function strapiFetch<T>({
   collection,
   documentId,
   params = {},
-  revalidate = 60,
-  tags = [],
   useAuth = false,
 }: {
   collection: string;
   documentId?: string;
   params?: Record<string, unknown>;
-  revalidate?: number | false;
-  tags?: string[];
   useAuth?: boolean;
 }): Promise<T> {
   const client = useAuth ? strapiServerClient : strapiClient;
   const collectionManager = client.collection(collection);
 
-  // Build fetch options for Next.js caching
-  const fetchOptions = {
-    next: {
-      revalidate: tags.length ? false : revalidate,
-      tags,
-    },
-  };
-
   if (documentId) {
     // Fetch single document
-    const response = await collectionManager.findOne(documentId, {
-      ...params,
-      ...fetchOptions,
-    });
+    const response = await collectionManager.findOne(documentId, params);
     return response as T;
   }
 
   // Fetch collection
-  const response = await collectionManager.find({
-    ...params,
-    ...fetchOptions,
-  });
+  const response = await collectionManager.find(params);
   return response as T;
 }
 
@@ -60,29 +42,15 @@ export async function strapiFetch<T>({
 export async function strapiFetchSingle<T>({
   resource,
   params = {},
-  revalidate = 60,
-  tags = [],
   useAuth = false,
 }: {
   resource: string;
   params?: Record<string, unknown>;
-  revalidate?: number | false;
-  tags?: string[];
   useAuth?: boolean;
 }): Promise<T> {
   const client = useAuth ? strapiServerClient : strapiClient;
   const singleManager = client.single(resource);
 
-  const fetchOptions = {
-    next: {
-      revalidate: tags.length ? false : revalidate,
-      tags,
-    },
-  };
-
-  const response = await singleManager.find({
-    ...params,
-    ...fetchOptions,
-  });
+  const response = await singleManager.find(params);
   return response as T;
 }

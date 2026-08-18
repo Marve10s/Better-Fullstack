@@ -4,8 +4,22 @@ import {
   parseStackSelectionFromUrlRecord as parseStackFromUrlRecord,
 } from "@better-fullstack/types/stack-translation";
 
+import { isOptionCompatible } from "../src/components/stack-builder/utils";
 import { DEFAULT_STACK } from "../src/lib/constant";
 import { generateStackCommand, generateStackSummary } from "../src/lib/stack-utils";
+
+describe("stack builder tooling compatibility", () => {
+  it("evaluates Vite+ after replacing its owned tooling", () => {
+    expect(isOptionCompatible(DEFAULT_STACK, "toolchainProfile", "vite-plus")).toBe(true);
+    expect(
+      isOptionCompatible(
+        { ...DEFAULT_STACK, webFrontend: ["none"] },
+        "toolchainProfile",
+        "vite-plus",
+      ),
+    ).toBe(false);
+  });
+});
 
 describe("generateStackCommand", () => {
   it("includes version channel flags when using non-stable releases", () => {
@@ -118,8 +132,8 @@ describe("generateStackCommand", () => {
     expect(command).toContain("--part backend:python:fastapi");
     expect(command).toContain("--part backend.ai:python:langchain");
     expect(command).toContain("--part backend.codeQuality:python:mypy");
-    expect(command).toContain("--part workspaceTooling:universal:turborepo");
-    expect(command).toContain("--part workspaceTooling:universal:docker-compose");
+    expect(command).toContain("--part workspaceRunner:universal:turborepo");
+    expect(command).toContain("--part containerOrchestration:universal:docker-compose");
     expect(command).toContain("--part examples:universal:ai");
     expect(command).not.toContain("--ecosystem python");
   });

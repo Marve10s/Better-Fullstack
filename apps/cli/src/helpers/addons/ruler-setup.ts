@@ -21,7 +21,7 @@ export async function setupRuler(config: ProjectConfig) {
     if (!(await fs.pathExists(rulerDir))) {
       log.error(
         pc.red(
-          "Ruler template directory not found. Please ensure ruler addon is properly installed.",
+          "Ruler template directory not found. Please ensure the Ruler capability is properly installed.",
         ),
       );
       return;

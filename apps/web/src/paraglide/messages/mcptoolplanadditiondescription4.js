@@ -6,45 +6,45 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Mcptoolplanadditiondescription4Inputs */
 
 const en_mcptoolplanadditiondescription4 = /** @type {(inputs: Mcptoolplanadditiondescription4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Validate proposed addons for an existing project`)
+	return /** @type {LocalizedString} */ (`Plan tooling capabilities for an existing project`)
 };
 
 const es_mcptoolplanadditiondescription4 = /** @type {(inputs: Mcptoolplanadditiondescription4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Valida addons propuestos para un proyecto existente`)
+	return /** @type {LocalizedString} */ (`Planifica capacidades de herramientas para un proyecto existente`)
 };
 
 const zh_mcptoolplanadditiondescription4 = /** @type {(inputs: Mcptoolplanadditiondescription4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`验证现有项目的拟添加 addons`)
+	return /** @type {LocalizedString} */ (`为现有项目规划工具能力`)
 };
 
 const ja_mcptoolplanadditiondescription4 = /** @type {(inputs: Mcptoolplanadditiondescription4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`既存のプロジェクトに対して提案されたアドオンを検証する`)
+	return /** @type {LocalizedString} */ (`既存のプロジェクトのツール機能を計画する`)
 };
 
 const ko_mcptoolplanadditiondescription4 = /** @type {(inputs: Mcptoolplanadditiondescription4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`기존 프로젝트에 대해 제안된 애드온 검증`)
+	return /** @type {LocalizedString} */ (`기존 프로젝트의 도구 기능 계획`)
 };
 
 const zh_hant1_mcptoolplanadditiondescription4 = /** @type {(inputs: Mcptoolplanadditiondescription4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`驗證現有項目的擬添加 addons`)
+	return /** @type {LocalizedString} */ (`為現有專案規劃工具能力`)
 };
 
 const de_mcptoolplanadditiondescription4 = /** @type {(inputs: Mcptoolplanadditiondescription4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Validieren Sie vorgeschlagene Add-ons für ein bestehendes Projekt`)
+	return /** @type {LocalizedString} */ (`Planen Sie Tooling-Funktionen für ein bestehendes Projekt`)
 };
 
 const fr_mcptoolplanadditiondescription4 = /** @type {(inputs: Mcptoolplanadditiondescription4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Valider les extensions proposées pour un projet existant`)
+	return /** @type {LocalizedString} */ (`Planifier les capacités d'outillage d'un projet existant`)
 };
 
 const uk_mcptoolplanadditiondescription4 = /** @type {(inputs: Mcptoolplanadditiondescription4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Перевірте запропоновані аддони для наявного проєкту`)
+	return /** @type {LocalizedString} */ (`Сплануйте інструментальні можливості для наявного проєкту`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Validate proposed addons for an existing project" |
+* | "Plan tooling capabilities for an existing project" |
 *
 * @param {Mcptoolplanadditiondescription4Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options

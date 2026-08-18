@@ -1,6 +1,7 @@
 ---
 title: Deployment
 description: Choose web and server deployment targets as one stack section.
+translationStatus: pending
 ---
 
 Deployment is one stack section, not a separate docs pillar. It controls whether Better Fullstack emits platform files during project creation with `--web-deploy` and `--server-deploy`.
@@ -20,7 +21,7 @@ Deployment choices are compatibility-checked against the stack. Some fullstack f
 
 | Target | Best fit | Notes |
 | --- | --- | --- |
-| Docker | Self-hosting, reproducible production images, and local service orchestration. | Separate from the `docker-compose` addon, which focuses on local services. |
+| Docker | Self-hosting, reproducible production images, and local service orchestration. | Separate from the `containerOrchestration:universal:docker-compose` capability, which focuses on local services. |
 | Vercel | Supported React, Nuxt, SvelteKit, Solid, and serverless deployments. | Fullstack frontends usually deploy through the web app rather than a separate server target. |
 | Cloudflare | Workers runtime stacks and edge-first Hono servers. | Compatibility is scoped to Workers-compatible server runtimes. |
 | Fly.io | Docker-backed app hosting with regional placement and long-running services. | Good for persistent server processes. |
@@ -38,4 +39,4 @@ Deployment choices are compatibility-checked against the stack. Some fullstack f
 
 ## Add after scaffold
 
-The `add` command can record deployment flags, but it currently processes addons first. If no new addon is selected, deployment-only `add` commands exit early. Prefer choosing deployment targets during `create` until deployment-only add flows are expanded.
+Use `add --dry-run --web-deploy <target>` or `add --dry-run --server-deploy <target>` to review a deployment change against an existing generated project before applying it.

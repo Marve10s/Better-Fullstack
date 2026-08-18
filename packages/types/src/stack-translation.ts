@@ -17,6 +17,7 @@ import {
   stackPartsToLegacyProjectConfigPartial,
   validateStackParts,
 } from "./stack-graph";
+import { getToolingCapability, isToolingOverlayOnly } from "./tooling-capabilities";
 
 export type StackSelectionMode = "solo" | "multi";
 export type StackSelectionInput = CompatibilityInput & {
@@ -65,6 +66,7 @@ export const DEFAULT_STACK_SELECTION: StackSelectionState = {
   jobQueue: "none",
   caching: "none",
   rateLimit: "none",
+  botProtection: "none",
   i18n: "none",
   animation: "none",
   cssFramework: "tailwind",
@@ -249,6 +251,7 @@ export const STACK_SELECTION_OPTION_CATEGORY_BY_KEY: Record<
   jobQueue: "jobQueue",
   caching: "caching",
   rateLimit: "rateLimit",
+  botProtection: "botProtection",
   i18n: "i18n",
   animation: "animation",
   cssFramework: "cssFramework",
@@ -441,6 +444,7 @@ export const STACK_SELECTION_URL_KEYS = {
   jobQueue: "jq",
   caching: "cache",
   rateLimit: "rl",
+  botProtection: "bp",
   i18n: "i18n",
   animation: "anim",
   cssFramework: "css",
@@ -792,6 +796,7 @@ const CLI_SCALAR_CONFIG_FIELDS = [
   ["vectorDb", "vectorDb"],
   ["fileStorage", "fileStorage"],
   ["analytics", "analytics"],
+  ["botProtection", "botProtection"],
   ["mobileNavigation", "mobileNavigation"],
   ["mobileUI", "mobileUI"],
   ["mobileStorage", "mobileStorage"],
@@ -1095,16 +1100,26 @@ function formatArrayFlag(flag: string, values: readonly string[] | undefined) {
   return `--${flag} ${filteredValues.join(" ") || "none"}`;
 }
 
-function formatTypeScriptAddonsFlag(selection: StackSelectionInput) {
+function formatTypeScriptCapabilityParts(selection: StackSelectionInput) {
   const addons = [...selection.codeQuality, ...selection.documentation, ...selection.appPlatforms];
-
-  if (addons.length === 0) return "--addons none";
-
-  return `--addons ${toUniqueNonNoneArray(addons).join(" ") || "none"}`;
+  const selectedAddons = toUniqueNonNoneArray(addons);
+  const specs = selectedAddons.flatMap((toolId) => {
+    const binding = getAddonStackPartBinding(toolId);
+    if (!binding) return [];
+    const owner = binding.ownerRole ? `${binding.ownerRole}.` : "";
+    return [`--part ${owner}${binding.role}:${binding.ecosystem}:${toolId}`];
+  });
+  const suppliesWorkspaceRunner = selectedAddons.some((toolId) => {
+    const category = getToolingCapability(toolId)?.category;
+    return category === "workspaceRunner" || category === "toolchain";
+  });
+  return [...(suppliesWorkspaceRunner ? [] : ["--addons none"]), ...specs].join(" ");
 }
 
 type StackSelectionStringKey = {
-  [K in keyof StackSelectionState]-?: NonNullable<StackSelectionState[K]> extends string ? K : never;
+  [K in keyof StackSelectionState]-?: NonNullable<StackSelectionState[K]> extends string
+    ? K
+    : never;
 }[keyof StackSelectionState];
 
 const GRAPH_SHADCN_FLAG_KEYS = [
@@ -1119,9 +1134,10 @@ const GRAPH_SHADCN_FLAG_KEYS = [
 
 const GRAPH_MOBILE_FLAG_KEYS = [] as const satisfies readonly [StackSelectionStringKey, string][];
 
-const GRAPH_SHARED_BACKEND_FLAG_KEYS = [
-  ["rateLimit", "rate-limit"],
-] as const satisfies readonly [StackSelectionStringKey, string][];
+const GRAPH_SHARED_BACKEND_FLAG_KEYS = [["rateLimit", "rate-limit"]] as const satisfies readonly [
+  StackSelectionStringKey,
+  string,
+][];
 
 const GRAPH_ELIXIR_BACKEND_FLAG_KEYS = [["elixirJson", "elixir-json"]] as const satisfies readonly [
   StackSelectionStringKey,
@@ -1139,7 +1155,9 @@ function formatChangedStringFlag(
 }
 
 type StackSelectionArrayKey = {
-  [K in keyof StackSelectionState]: NonNullable<StackSelectionState[K]> extends string[] ? K : never;
+  [K in keyof StackSelectionState]: NonNullable<StackSelectionState[K]> extends string[]
+    ? K
+    : never;
 }[keyof StackSelectionState];
 
 function formatChangedStringFlags(
@@ -1191,6 +1209,7 @@ const GRAPH_TYPESCRIPT_FRONTEND_PART_SELECTION_KEYS = [
   ["fileUpload", "fileUpload"],
   ["i18n", "i18n"],
   ["analytics", "analytics"],
+  ["botProtection", "botProtection"],
 ] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
 
 const GRAPH_TYPESCRIPT_BACKEND_PART_SELECTION_KEYS = [
@@ -1376,6 +1395,7 @@ const GRAPH_TYPESCRIPT_FRONTEND_PART_CLI_KEYS = [
   ["fileUpload", "fileUpload"],
   ["i18n", "i18n"],
   ["analytics", "analytics"],
+  ["botProtection", "botProtection"],
   ["validation", "validation"],
   ["testing", "testing"],
 ] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
@@ -2016,10 +2036,15 @@ export function cliInputToProjectConfigPartial(
   }
 
   if (Array.isArray(input.part) && input.part.length > 0) {
-    const stackParts = getCliGraphStackParts(input);
-    Object.assign(config, stackPartsToLegacyProjectConfigPartial(stackParts), {
-      stackParts,
-    });
+    const providedStackParts = parseStackPartSpecs(input.part, "selected");
+    if (isToolingOverlayOnly(providedStackParts)) {
+      config.stackParts = providedStackParts;
+    } else {
+      const stackParts = getCliGraphStackParts(input);
+      Object.assign(config, stackPartsToLegacyProjectConfigPartial(stackParts), {
+        stackParts,
+      });
+    }
   }
 
   return config;
@@ -2180,6 +2205,7 @@ function buildProjectConfigBase(
     cms: stack.cms as ProjectConfig["cms"],
     caching: stack.caching as ProjectConfig["caching"],
     rateLimit: stack.rateLimit as ProjectConfig["rateLimit"],
+    botProtection: stack.botProtection as ProjectConfig["botProtection"],
     i18n: stack.i18n as ProjectConfig["i18n"],
     search: stack.search as ProjectConfig["search"],
     vectorDb: stack.vectorDb as ProjectConfig["vectorDb"],
@@ -2502,6 +2528,7 @@ function generateTypeScriptCommand(selection: StackSelectionInput, projectName: 
     `--job-queue ${selection.jobQueue}`,
     `--caching ${selection.caching}`,
     `--rate-limit ${selection.rateLimit}`,
+    `--bot-protection ${selection.botProtection}`,
     `--i18n ${selection.i18n}`,
     `--search ${selection.search}`,
     `--vector-db ${selection.vectorDb}`,
@@ -2528,7 +2555,7 @@ function generateTypeScriptCommand(selection: StackSelectionInput, projectName: 
     `--web-deploy ${selection.webDeploy}`,
     `--server-deploy ${selection.serverDeploy}`,
     selection.install === "false" ? "--no-install" : "--install",
-    formatTypeScriptAddonsFlag(selection),
+    formatTypeScriptCapabilityParts(selection),
     formatArrayFlag("examples", selection.examples),
     formatArrayFlag("ai-docs", selection.aiDocs),
   ];

@@ -16,6 +16,8 @@ import {
   analyzeStackCompatibility,
   createStackPart,
   formatStackPartSpec,
+  getToolingCapability,
+  getToolingCategory,
   legacyProjectConfigToStackParts,
   parseStackPartSpecs,
   requiresChatSdkVercelAI,
@@ -29,11 +31,30 @@ import {
   writeBtsConfig,
 } from "../../utils/bts-config";
 import { validateConfigForProgrammaticUse } from "../../utils/config-validation";
+import {
+  applyDependencyVersionChannel,
+  planDependencyVersionChannel,
+  type DependencyVersionChannelRewrite,
+} from "../../utils/dependency-version-channel";
 import { formatCode } from "../../utils/file-formatter";
 import { getEffectiveStack, getGraphSummary } from "../../utils/graph-summary";
+import { getProjectRecoveryCommand } from "../../utils/lifecycle-command";
+import { lifecycleResult, type LifecycleResult } from "../../utils/lifecycle-contract";
+import {
+  beginProjectTransaction,
+  commitProjectTransaction,
+  journalProjectTransactionWrites,
+  markProjectTransactionWrite,
+  rollbackProjectTransaction,
+  type ProjectTransaction,
+} from "../../utils/project-transaction";
 import {
   collectStructuredBaselines,
+  getCurrentLifecycleVersions,
+  hashContent,
+  readScaffoldManifest,
   refreshScaffoldManifestFiles,
+  SCAFFOLD_MANIFEST_FILE,
 } from "../../utils/scaffold-manifest";
 import {
   asString,
@@ -48,6 +69,10 @@ type JsonObject = Record<string, unknown>;
 
 type FileSnapshot = Pick<VirtualFile, "content" | "sourcePath">;
 
+function toPosixPath(value: string): string {
+  return value.replaceAll("\\", "/");
+}
+
 type StackUpdateOperation =
   | {
       kind: "add" | "replace";
@@ -60,6 +85,11 @@ type StackUpdateOperation =
       writeMode: "content";
       content: string;
       summary: string[];
+    }
+  | {
+      kind: "remove";
+      path: string;
+      writeMode: "remove";
     };
 
 export type ArchitectureChange = {
@@ -75,6 +105,7 @@ export type StackUpdatePlan = {
   proposedConfig: BetterTStackConfig;
   filesToAdd: string[];
   filesToPatch: string[];
+  filesToRemove: string[];
   filesUnchanged: string[];
   dependencyChanges: Record<string, Record<string, string>>;
   scriptChanges: Record<string, string[]>;
@@ -84,11 +115,20 @@ export type StackUpdatePlan = {
   migrationSteps: string[];
   requiresArchitectureAck: boolean;
   operations: StackUpdateOperation[];
+  preimages: Record<string, { sha256: string | null; mode: number | null }>;
+  versionChannelRewrites: Record<string, string>;
   installCommand: string;
   compatibilityAdjustments: string[];
   graphSummary?: string;
   effectiveStack?: Record<string, string>;
   stackPartSpecs: string[];
+  lifecycle: LifecycleResult;
+  recoveryId?: string;
+};
+
+const PLANNED_VERSION_CHANNEL_REWRITES = Symbol("plannedVersionChannelRewrites");
+type InternalStackUpdatePlan = StackUpdatePlan & {
+  [PLANNED_VERSION_CHANNEL_REWRITES]?: readonly DependencyVersionChannelRewrite[];
 };
 
 export type StackUpdateResult =
@@ -97,7 +137,29 @@ export type StackUpdateResult =
       success: false;
       projectDir?: string;
       error: string;
+      lifecycle?: LifecycleResult;
     };
+
+export type StackUpdatePlanOptions = {
+  replaceArrayKeys?: ReadonlySet<keyof ProjectConfig>;
+  removeObsoleteGeneratedArtifacts?: boolean;
+  stackPartsOverride?: readonly StackPart[];
+  includeVersionChannelPaths?: boolean;
+};
+
+export function getStackUpdatePlanDigest(plan: StackUpdatePlan): string {
+  return hashContent(
+    JSON.stringify({
+      requestedChanges: plan.requestedChanges,
+      proposedConfig: plan.proposedConfig,
+      operations: plan.operations,
+      preimages: plan.preimages,
+      versionChannelRewrites: plan.versionChannelRewrites,
+      blockers: plan.manualReviewBlockers,
+      architectureChanges: plan.architectureChanges,
+    }),
+  );
+}
 
 const ARRAY_UPDATE_KEYS = new Set<keyof ProjectConfig>([
   "frontend",
@@ -268,6 +330,7 @@ function buildRequestedChanges(input: Record<string, unknown>): {
 function mergeProjectConfig(
   currentConfig: ProjectConfig,
   requestedChanges: Partial<ProjectConfig>,
+  options: StackUpdatePlanOptions = {},
 ): ProjectConfig {
   const next: ProjectConfig = { ...currentConfig };
   for (const [key, value] of Object.entries(requestedChanges) as [
@@ -280,12 +343,22 @@ function mergeProjectConfig(
       const requested = arrayValue.filter(
         (item): item is string => typeof item === "string" && item !== "none",
       );
-      if (requested.length === 0 && arrayValue.includes("none")) {
+      if (options.replaceArrayKeys?.has(key)) {
+        (next as Record<string, unknown>)[key] = requested;
+      } else if (requested.length === 0 && arrayValue.includes("none")) {
         (next as Record<string, unknown>)[key] = [];
       } else {
-        const existing = Array.isArray(next[key])
+        let existing = Array.isArray(next[key])
           ? (next[key] as string[]).filter((item) => item !== "none")
           : [];
+        if (
+          key === "addons" &&
+          requested.some((item) => item === "turborepo" || item === "nx" || item === "vite-plus")
+        ) {
+          existing = existing.filter(
+            (item) => item !== "turborepo" && item !== "nx" && item !== "vite-plus",
+          );
+        }
         (next as Record<string, unknown>)[key] = [...new Set([...existing, ...requested])];
       }
       continue;
@@ -306,7 +379,54 @@ function mergeStackPartSpecs(
   const currentSpecs = currentStackParts
     .filter((part) => part.source !== "provided")
     .map((part) => formatStackPartSpec(part, currentStackParts));
-  const stackParts = parseStackPartSpecs([...new Set([...currentSpecs, ...specs])], "selected");
+  const combinedParts = parseStackPartSpecs([...new Set([...currentSpecs, ...specs])], "selected");
+  const requestedKeys = new Set(
+    specs.map((spec) => {
+      const [rolePath = "", ecosystem = "", toolId = ""] = spec.split(":");
+      return `${rolePath.split(".").pop()}:${ecosystem}:${toolId}`;
+    }),
+  );
+  const requestedParts = combinedParts.filter(
+    (part) =>
+      part.source !== "provided" &&
+      requestedKeys.has(`${part.role}:${part.ecosystem}:${part.toolId}`),
+  );
+  const requestedSingleCategories = new Set(
+    requestedParts.flatMap((part) => {
+      const capability = getToolingCapability(part.toolId);
+      if (
+        !capability ||
+        capability.role !== part.role ||
+        getToolingCategory(capability.category)?.selectionMode !== "single"
+      ) {
+        return [];
+      }
+      return [`${part.ownerPartId ?? "root"}:${capability.category}`];
+    }),
+  );
+  const vitePlusOwnedCategories = ["workspaceRunner", "codeQuality", "gitHooks"] as const;
+  if (requestedParts.some((part) => part.toolId === "vite-plus" && !part.ownerPartId)) {
+    for (const category of vitePlusOwnedCategories) {
+      requestedSingleCategories.add(`root:${category}`);
+    }
+  } else if (
+    requestedParts.some((part) => {
+      const category = getToolingCapability(part.toolId)?.category;
+      return (
+        !part.ownerPartId &&
+        category !== undefined &&
+        (vitePlusOwnedCategories as readonly string[]).includes(category)
+      );
+    })
+  ) {
+    requestedSingleCategories.add("root:toolchain");
+  }
+  const stackParts = combinedParts.filter((part) => {
+    if (requestedParts.includes(part)) return true;
+    const capability = getToolingCapability(part.toolId);
+    if (!capability) return true;
+    return !requestedSingleCategories.has(`${part.ownerPartId ?? "root"}:${capability.category}`);
+  });
   return {
     ...stackPartsToLegacyProjectConfigPartial(stackParts),
     stackParts,
@@ -466,9 +586,26 @@ function mergeDerivedStackPartsWithExistingGraph(
   return parseStackPartSpecs(pruneScopedSpecsWithoutOwners([...new Set(nextSpecs)]), "selected");
 }
 
+function preserveMatchingStackPartIdentity(
+  parts: readonly StackPart[],
+  previousParts: readonly StackPart[],
+): StackPart[] {
+  return parts.map((part) => {
+    const previous = previousParts.find(
+      (candidate) =>
+        candidate.role === part.role &&
+        candidate.ecosystem === part.ecosystem &&
+        candidate.toolId === part.toolId &&
+        candidate.ownerPartId === part.ownerPartId,
+    );
+    return previous ? { ...part, id: previous.id } : part;
+  });
+}
+
 function computeArchitectureChanges(
   currentConfig: ProjectConfig,
   proposedConfig: ProjectConfig,
+  includeScopedChanges: boolean,
 ): ArchitectureChange[] {
   const changes: ArchitectureChange[] = [];
   for (const key of RISKY_ARCHITECTURE_KEYS) {
@@ -479,14 +616,87 @@ function computeArchitectureChanges(
       changes.push({ key: key as string, from, to });
     }
   }
+  if (includeScopedChanges) {
+    const currentParts = currentConfig.stackParts ?? [];
+    const proposedParts = proposedConfig.stackParts ?? [];
+    for (const part of currentParts) {
+      if (
+        !part.ownerPartId ||
+        !RISKY_ARCHITECTURE_KEYS.includes(part.role as keyof ProjectConfig)
+      ) {
+        continue;
+      }
+      const proposedPart = proposedParts.find((candidate) => candidate.id === part.id);
+      const to = proposedPart?.toolId ?? "none";
+      if (part.toolId === to) continue;
+      changes.push({ key: `${part.ownerPartId}.${part.role}`, from: part.toolId, to });
+    }
+  }
   return changes;
+}
+
+async function collectPlanPreimages(
+  projectDir: string,
+  relativePaths: Iterable<string>,
+): Promise<Record<string, { sha256: string | null; mode: number | null }>> {
+  const preimages: Record<string, { sha256: string | null; mode: number | null }> = {};
+  for (const relativePath of [...new Set(relativePaths)].sort()) {
+    const target = path.join(projectDir, relativePath);
+    // oxlint-disable-next-line no-await-in-loop -- plan tokens bind each live preimage
+    const stats = await fs.lstat(target).catch(() => null);
+    if (!stats) {
+      preimages[relativePath] = { sha256: null, mode: null };
+      continue;
+    }
+    if (!stats.isFile()) {
+      throw new Error(`Transaction target is not a regular file: ${relativePath}`);
+    }
+    // oxlint-disable-next-line no-await-in-loop -- plan tokens bind each live preimage
+    const bytes = await fs.readFile(target);
+    preimages[relativePath] = { sha256: hashContent(bytes), mode: stats.mode & 0o7777 };
+  }
+  return preimages;
 }
 
 function buildMigrationSteps(changes: ArchitectureChange[]): string[] {
   const steps: string[] = [];
   for (const { key, from, to } of changes) {
     const label = `${key} (${from} -> ${to})`;
-    switch (key) {
+    const riskKey = key.includes(".") ? key.slice(key.lastIndexOf(".") + 1) : key;
+    if (to === "none") {
+      switch (riskKey) {
+        case "database":
+          steps.push(
+            `${label}: Back up all existing data from the ${from} database before removing its integration.`,
+            `${label}: Remove or replace DATABASE_URL references without deleting retained data automatically.`,
+            `${label}: Remove ${from}-specific schemas, migrations, and queries only after confirming they are no longer needed.`,
+          );
+          break;
+        case "orm":
+          steps.push(
+            `${label}: Preserve the ${from} schema and migration history before removing the ORM integration.`,
+            `${label}: Replace or remove ${from} queries and generated clients manually.`,
+          );
+          break;
+        case "auth":
+          steps.push(
+            `${label}: Export any user/account records and invalidate active sessions before removing ${from}.`,
+            `${label}: Remove ${from} secrets, callbacks, and protected-route integration manually.`,
+          );
+          break;
+        case "api":
+          steps.push(
+            `${label}: Remove or replace ${from} routers, handlers, client calls, and generated types manually.`,
+          );
+          break;
+        default:
+          steps.push(
+            `${label}: Preserve required data and remove ${from}-specific code, configuration, and deployment wiring manually.`,
+          );
+      }
+      continue;
+    }
+    switch (riskKey) {
       case "database":
         steps.push(
           `${label}: Back up all existing data from the ${from} database before making changes.`,
@@ -534,8 +744,11 @@ function buildMigrationSteps(changes: ArchitectureChange[]): string[] {
   return steps;
 }
 
-async function writeMigrationChecklist(projectDir: string, plan: StackUpdatePlan): Promise<void> {
-  if (plan.architectureChanges.length === 0 || plan.migrationSteps.length === 0) return;
+async function buildMigrationChecklistContent(
+  projectDir: string,
+  plan: StackUpdatePlan,
+): Promise<string | null> {
+  if (plan.architectureChanges.length === 0 || plan.migrationSteps.length === 0) return null;
   const migrationPath = path.join(projectDir, "MIGRATION.md");
   const timestamp = new Date().toISOString();
   const swaps = plan.architectureChanges
@@ -553,10 +766,9 @@ async function writeMigrationChecklist(projectDir: string, plan: StackUpdatePlan
 
   if (await fs.pathExists(migrationPath)) {
     const existing = (await fs.readFile(migrationPath, "utf-8")).trimEnd();
-    await fs.writeFile(migrationPath, `${existing}\n\n${section}\n`, "utf-8");
-  } else {
-    await fs.writeFile(migrationPath, `# Migration checklist\n\n${section}\n`, "utf-8");
+    return `${existing}\n\n${section}\n`;
   }
+  return `# Migration checklist\n\n${section}\n`;
 }
 
 function getDefaultDatabaseForDbSetup(
@@ -1040,11 +1252,13 @@ function diffJsonSection(
   previous: JsonObject,
   proposed: JsonObject,
   section: string,
-): { values: Record<string, string>; blockers: string[] } {
+  allowRemovals: boolean,
+): { values: Record<string, string>; removals: string[]; blockers: string[] } {
   const previousSection = isPlainObject(previous[section]) ? previous[section] : {};
   const proposedSection = isPlainObject(proposed[section]) ? proposed[section] : {};
   const currentSection = isPlainObject(current[section]) ? current[section] : {};
   const values: Record<string, string> = {};
+  const removals: string[] = [];
   const blockers: string[] = [];
 
   for (const [name, proposedValue] of Object.entries(proposedSection)) {
@@ -1061,13 +1275,25 @@ function diffJsonSection(
     values[name] = String(proposedValue);
   }
 
-  return { values, blockers };
+  if (allowRemovals) {
+    for (const [name, previousValue] of Object.entries(previousSection)) {
+      if (name in proposedSection) continue;
+      if (currentSection[name] !== previousValue) {
+        blockers.push(`${section}.${name}`);
+        continue;
+      }
+      removals.push(name);
+    }
+  }
+
+  return { values, removals, blockers };
 }
 
 export function mergePackageJson(
   existingContent: string,
   previousContent: string | undefined,
   proposedContent: string,
+  allowRemovals = false,
 ): {
   content?: string;
   summary: string[];
@@ -1094,22 +1320,27 @@ export function mergePackageJson(
   const scriptChanges: string[] = [];
 
   for (const section of PACKAGE_JSON_SECTIONS) {
-    const diff = diffJsonSection(existing, previous, proposed, section);
+    const diff = diffJsonSection(existing, previous, proposed, section, allowRemovals);
     blockers.push(...diff.blockers);
-    if (Object.keys(diff.values).length === 0) continue;
+    if (Object.keys(diff.values).length === 0 && diff.removals.length === 0) continue;
 
     const target = isPlainObject(next[section]) ? { ...next[section] } : {};
+    for (const name of diff.removals) delete target[name];
     for (const [name, value] of Object.entries(diff.values)) {
       target[name] = value;
     }
     next[section] = Object.fromEntries(
       Object.entries(target).sort(([a], [b]) => a.localeCompare(b)),
     );
-    summary.push(`${section}: ${Object.keys(diff.values).join(", ")}`);
+    const changedNames = [...Object.keys(diff.values), ...diff.removals].sort();
+    summary.push(`${section}: ${changedNames.join(", ")}`);
     if (section === "scripts") {
-      scriptChanges.push(...Object.keys(diff.values));
+      scriptChanges.push(...changedNames);
     } else {
-      dependencyChanges[section] = diff.values;
+      dependencyChanges[section] = {
+        ...diff.values,
+        ...Object.fromEntries(diff.removals.map((name) => [name, "removed"])),
+      };
     }
   }
 
@@ -1344,6 +1575,7 @@ function getGraphPreview(config: BetterTStackConfig) {
 export async function planStackUpdate(
   projectDirInput: string,
   input: Record<string, unknown>,
+  options: StackUpdatePlanOptions = {},
 ): Promise<StackUpdateResult> {
   const projectDir = path.resolve(projectDirInput);
   const currentBtsConfig = await readBtsConfig(projectDir);
@@ -1354,6 +1586,7 @@ export async function planStackUpdate(
       error: `No bts.jsonc found in ${projectDir}. Is this a Better-Fullstack project?`,
     };
   }
+  const manifest = await readScaffoldManifest(projectDir);
 
   const projectName = await inferProjectName(projectDir);
   const currentConfig = configFromBtsConfig(currentBtsConfig, projectDir, projectName);
@@ -1382,7 +1615,7 @@ export async function planStackUpdate(
     };
   }
 
-  let proposedConfig = mergeProjectConfig(currentConfig, requestedChanges);
+  let proposedConfig = mergeProjectConfig(currentConfig, requestedChanges, options);
   const dependencyExpansion = applyKnownDependencyExpansions(proposedConfig, requestedChanges);
   proposedConfig = dependencyExpansion.config;
   const shouldApplyCompatibilityAdjustments =
@@ -1400,11 +1633,38 @@ export async function planStackUpdate(
       compatibilityChangesToProjectConfig(compatibilityResult.adjustedStack),
     );
   }
-  proposedConfig.stackParts = mergeDerivedStackPartsWithExistingGraph(
-    currentConfig,
-    proposedConfig,
-  );
+  proposedConfig.stackParts = options.stackPartsOverride
+    ? [...options.stackPartsOverride]
+    : mergeDerivedStackPartsWithExistingGraph(currentConfig, proposedConfig);
   Object.assign(proposedConfig, mergeStackPartSpecs(proposedConfig, stackPartSpecs));
+
+  if (options.stackPartsOverride) {
+    const graphProjectedConfig = configFromBtsConfig(
+      buildBtsConfigForPersistence(proposedConfig, {
+        version: currentBtsConfig.version,
+        createdAt: currentBtsConfig.createdAt,
+      }),
+      projectDir,
+      projectName,
+    );
+    const finalCompatibilityResult = shouldApplyCompatibilityAdjustments
+      ? analyzeStackCompatibility(buildCompatibilityInputFromConfig(graphProjectedConfig))
+      : { adjustedStack: null, changes: [] };
+    compatibilityAdjustments.push(
+      ...finalCompatibilityResult.changes.map((change) => `${change.category}: ${change.message}`),
+    );
+    if (finalCompatibilityResult.adjustedStack) {
+      const adjustedConfig = mergeProjectConfig(
+        graphProjectedConfig,
+        compatibilityChangesToProjectConfig(finalCompatibilityResult.adjustedStack),
+      );
+      adjustedConfig.stackParts = preserveMatchingStackPartIdentity(
+        mergeDerivedStackPartsWithExistingGraph(proposedConfig, adjustedConfig),
+        proposedConfig.stackParts ?? [],
+      );
+      proposedConfig = adjustedConfig;
+    }
+  }
   try {
     validateConfigForProgrammaticUse(proposedConfig);
   } catch (error) {
@@ -1448,6 +1708,7 @@ export async function planStackUpdate(
   const operations: StackUpdateOperation[] = [];
   const filesToAdd: string[] = [];
   const filesToPatch: string[] = [];
+  const filesToRemove: string[] = [];
   const filesUnchanged: string[] = [];
   const manualReviewBlockers: string[] = [];
   const dependencyChanges: Record<string, Record<string, string>> = {};
@@ -1471,7 +1732,12 @@ export async function planStackUpdate(
     const proposedRawFile = proposedRawGeneratedFiles.get(filePath);
     const proposedContent = proposedFile.content;
     const previousContent = previousFile?.content;
-    const currentBaselineContents = uniqueContents([previousRawFile?.content, previousContent]);
+    const recordedBaseline = manifest?.baselines?.[filePath];
+    const currentBaselineContents = uniqueContents([
+      recordedBaseline,
+      previousRawFile?.content,
+      previousContent,
+    ]);
     const proposedBaselineContents = uniqueContents([proposedRawFile?.content, proposedContent]);
     const isBinaryFile = isGeneratedBinaryFile(proposedFile) || isGeneratedBinaryFile(previousFile);
     const existingContent =
@@ -1519,7 +1785,12 @@ export async function planStackUpdate(
     }
 
     if (filePath.endsWith("package.json")) {
-      const merged = mergePackageJson(existingContent, previousContent, proposedContent);
+      const merged = mergePackageJson(
+        existingContent,
+        recordedBaseline ?? previousContent,
+        proposedContent,
+        options.removeObsoleteGeneratedArtifacts,
+      );
       for (const blocker of merged.blockers) {
         manualReviewBlockers.push(`${filePath}: ${blocker}`);
       }
@@ -1580,6 +1851,43 @@ export async function planStackUpdate(
     manualReviewBlockers.push(`${filePath}: existing file differs from the generated baseline`);
   }
 
+  if (options.removeObsoleteGeneratedArtifacts) {
+    for (const filePath of currentGeneratedFiles.keys()) {
+      if (proposedGeneratedFiles.has(filePath)) continue;
+      const targetPath = path.join(projectDir, filePath);
+      let existingBuffer: Buffer;
+      try {
+        // oxlint-disable-next-line no-await-in-loop -- each candidate needs its live preimage
+        existingBuffer = await fs.readFile(targetPath);
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === "ENOENT") continue;
+        manualReviewBlockers.push(
+          `${filePath}: obsolete generated file could not be read: ${error instanceof Error ? error.message : String(error)}`,
+        );
+        continue;
+      }
+      if (manifest?.provenance.state !== "verified") {
+        manualReviewBlockers.push(
+          `${filePath}: obsolete generated file has no verified scaffold provenance`,
+        );
+        continue;
+      }
+      const baselineHash = manifest.hashes[filePath];
+      if (!baselineHash) {
+        manualReviewBlockers.push(`${filePath}: obsolete generated file has no recorded baseline`);
+        continue;
+      }
+      if (hashContent(existingBuffer) === baselineHash) {
+        filesToRemove.push(filePath);
+        operations.push({ kind: "remove", path: filePath, writeMode: "remove" });
+      } else {
+        manualReviewBlockers.push(
+          `${filePath}: obsolete generated file differs from the generated baseline`,
+        );
+      }
+    }
+  }
+
   await addMissingEnvExampleOperation({
     projectDir,
     proposedGeneratedFiles,
@@ -1591,15 +1899,66 @@ export async function planStackUpdate(
   });
 
   const graphPreview = getGraphPreview(persistedProposedConfig);
-  const architectureChanges = computeArchitectureChanges(currentConfig, proposedConfig);
+  const architectureChanges = computeArchitectureChanges(
+    currentConfig,
+    proposedConfig,
+    options.stackPartsOverride !== undefined,
+  );
   const migrationSteps = buildMigrationSteps(architectureChanges);
-  return {
+  const uniqueFilesToAdd = [...new Set(filesToAdd)].sort();
+  const uniqueFilesToPatch = [...new Set(filesToPatch)].sort();
+  const uniqueFilesToRemove = [...new Set(filesToRemove)].sort();
+  const projectedPackageJsonContents = new Map<string, string | null>();
+  for (const operation of operations) {
+    if (!operation.path.endsWith("package.json")) continue;
+    const packageJsonPath = path.join(projectDir, operation.path);
+    if (operation.writeMode === "remove") {
+      projectedPackageJsonContents.set(packageJsonPath, null);
+    } else if (operation.writeMode === "content") {
+      projectedPackageJsonContents.set(packageJsonPath, operation.content);
+    } else {
+      const generatedFile = proposedGeneratedFiles.get(operation.path);
+      if (generatedFile) projectedPackageJsonContents.set(packageJsonPath, generatedFile.content);
+    }
+  }
+  const plannedVersionChannelRewrites =
+    options.includeVersionChannelPaths && proposedConfig.versionChannel !== "stable"
+      ? await planDependencyVersionChannel(
+          projectDir,
+          proposedConfig.versionChannel,
+          projectedPackageJsonContents,
+        )
+      : [];
+  const versionChannelRewrites = Object.fromEntries(
+    plannedVersionChannelRewrites.map((rewrite) => [
+      toPosixPath(path.relative(projectDir, rewrite.packageJsonPath)),
+      rewrite.sha256,
+    ]),
+  );
+  let preimages: Record<string, { sha256: string | null; mode: number | null }>;
+  try {
+    preimages = await collectPlanPreimages(projectDir, [
+      ...operations.map((operation) => operation.path),
+      "bts.jsonc",
+      SCAFFOLD_MANIFEST_FILE,
+      ...(architectureChanges.length > 0 ? ["MIGRATION.md"] : []),
+      ...Object.keys(versionChannelRewrites),
+    ]);
+  } catch (error) {
+    return {
+      success: false,
+      projectDir,
+      error: `Could not bind the stack update plan to safe transaction targets: ${error instanceof Error ? error.message : String(error)}`,
+    };
+  }
+  const plan: InternalStackUpdatePlan = {
     success: true,
     projectDir,
     requestedChanges: requestedChanges as Record<string, unknown>,
     proposedConfig: persistedProposedConfig,
-    filesToAdd: [...new Set(filesToAdd)].sort(),
-    filesToPatch: [...new Set(filesToPatch)].sort(),
+    filesToAdd: uniqueFilesToAdd,
+    filesToPatch: uniqueFilesToPatch,
+    filesToRemove: uniqueFilesToRemove,
     filesUnchanged: [...new Set(filesUnchanged)].sort(),
     dependencyChanges,
     scriptChanges,
@@ -1609,18 +1968,68 @@ export async function planStackUpdate(
     migrationSteps,
     requiresArchitectureAck: architectureChanges.length > 0,
     operations,
+    preimages,
+    versionChannelRewrites,
     installCommand: getInstallCommand(normalizedProposedConfig),
     compatibilityAdjustments,
+    lifecycle: lifecycleResult({
+      operation: "stack-update",
+      status: manualReviewBlockers.length > 0 ? "blocked" : "planned",
+      projectDir,
+      changes: {
+        added: uniqueFilesToAdd.length,
+        patched: uniqueFilesToPatch.length,
+        removed: uniqueFilesToRemove.length,
+        manual: manualReviewBlockers.length,
+      },
+      warnings: migrationSteps,
+      blockers: manualReviewBlockers,
+      provenance: {
+        source: manifest?.provenance.current ?? null,
+        target: getCurrentLifecycleVersions(),
+        verified: manifest?.provenance.state === "verified",
+      },
+      recovery: { available: true, automaticRollback: true },
+      nextActions: ["Review the complete plan before apply."],
+    }),
     ...graphPreview,
   };
+  Object.defineProperty(plan, PLANNED_VERSION_CHANNEL_REWRITES, {
+    value: plannedVersionChannelRewrites,
+  });
+  return plan;
 }
 
 export async function applyStackUpdate(
   projectDirInput: string,
   input: Record<string, unknown>,
+  options: {
+    beforeManifestRefresh?: () => void | Promise<void>;
+    operation?: "add" | "remove" | "stack-update";
+    replaceArrayKeys?: ReadonlySet<keyof ProjectConfig>;
+    removeObsoleteGeneratedArtifacts?: boolean;
+    stackPartsOverride?: readonly StackPart[];
+    expectedPlanDigest?: string;
+    applyVersionChannel?: boolean;
+    beforeTransactionSnapshot?: () => void | Promise<void>;
+    beforeMutation?: () => void | Promise<void>;
+  } = {},
 ): Promise<StackUpdateResult> {
-  const plan = await planStackUpdate(projectDirInput, input);
+  const lifecycleOperation = options.operation ?? "stack-update";
+  const plan = await planStackUpdate(projectDirInput, input, {
+    replaceArrayKeys: options.replaceArrayKeys,
+    removeObsoleteGeneratedArtifacts: options.removeObsoleteGeneratedArtifacts,
+    stackPartsOverride: options.stackPartsOverride,
+    includeVersionChannelPaths: options.applyVersionChannel,
+  });
   if (!plan.success) return plan;
+  if (options.expectedPlanDigest && getStackUpdatePlanDigest(plan) !== options.expectedPlanDigest) {
+    return {
+      success: false,
+      projectDir: plan.projectDir,
+      error: "The reviewed stack update plan is stale. Re-plan before applying.",
+    };
+  }
   if (plan.manualReviewBlockers.length > 0) {
     return {
       success: false,
@@ -1654,38 +2063,216 @@ export async function applyStackUpdate(
       .filter((operation) => operation.writeMode === "generated")
       .map((operation) => operation.path),
   );
-
-  if (generatedPaths.size > 0) {
-    await writeSelectedFiles(proposedTree, plan.projectDir, (filePath) =>
-      generatedPaths.has(filePath),
+  const transactionPaths = Object.keys(plan.preimages);
+  let transaction: ProjectTransaction;
+  try {
+    await options.beforeTransactionSnapshot?.();
+    transaction = await beginProjectTransaction(
+      plan.projectDir,
+      lifecycleOperation,
+      transactionPaths,
     );
+  } catch (error) {
+    return {
+      success: false,
+      projectDir: plan.projectDir,
+      error: `Could not create the recovery snapshot: ${error instanceof Error ? error.message : String(error)}`,
+    };
   }
 
-  await Promise.all(
-    plan.operations
-      .filter((operation) => operation.writeMode === "content")
-      .map(async (operation) => {
-        const targetPath = path.join(plan.projectDir, operation.path);
-        await fs.ensureDir(path.dirname(targetPath));
-        await fs.writeFile(targetPath, operation.content, "utf-8");
+  try {
+    const staleReviewedPreimages = transaction.metadata.files.filter((file) => {
+      const reviewed = plan.preimages[file.path];
+      if (!reviewed) return true;
+      if (file.state === "absent") return reviewed.sha256 !== null || reviewed.mode !== null;
+      return file.sha256 !== reviewed.sha256 || (file.mode ?? null) !== reviewed.mode;
+    });
+    if (staleReviewedPreimages.length > 0) {
+      throw new Error(
+        `The reviewed stack update preimages changed before the recovery snapshot: ${staleReviewedPreimages
+          .map((file) => file.path)
+          .join(", ")}. Re-plan before applying.`,
+      );
+    }
+    await options.beforeMutation?.();
+    const livePreimages = await collectPlanPreimages(plan.projectDir, transactionPaths);
+    const stalePreimages = transaction.metadata.files.filter((file) => {
+      const live = livePreimages[file.path];
+      if (!live) return true;
+      if (file.state === "absent") return live.sha256 !== null || live.mode !== null;
+      return file.sha256 !== live.sha256 || (file.mode ?? null) !== live.mode;
+    });
+    if (stalePreimages.length > 0) {
+      throw new Error(
+        `The reviewed stack update preimages changed before apply: ${stalePreimages
+          .map((file) => file.path)
+          .join(", ")}. Re-plan before applying.`,
+      );
+    }
+
+    if (generatedPaths.size > 0) {
+      const generatedFiles = treeToFileMap(proposedTree);
+      const expectedHashes = new Map<string, string>();
+      for (const filePath of generatedPaths) {
+        const file = generatedFiles.get(filePath);
+        if (!file) throw new Error(`Generated transaction output is missing: ${filePath}`);
+        // oxlint-disable-next-line no-await-in-loop -- binary templates are materialized individually
+        const binaryBytes = await readGeneratedFileBytes(proposedTree, filePath, file);
+        const expectedBytes = binaryBytes ?? Buffer.from(file.content, "utf-8");
+        expectedHashes.set(filePath, hashContent(expectedBytes));
+      }
+      await journalProjectTransactionWrites(transaction, generatedPaths);
+      await writeSelectedFiles(proposedTree, plan.projectDir, (filePath) =>
+        generatedPaths.has(filePath),
+      );
+      for (const [filePath, expectedHash] of expectedHashes) {
+        markProjectTransactionWrite(transaction, filePath, expectedHash);
+      }
+      await journalProjectTransactionWrites(transaction);
+    }
+
+    for (const operation of plan.operations.filter(
+      (candidate) => candidate.writeMode === "content",
+    )) {
+      markProjectTransactionWrite(
+        transaction,
+        operation.path,
+        hashContent(Buffer.from(operation.content, "utf-8")),
+      );
+      const targetPath = path.join(plan.projectDir, operation.path);
+      // oxlint-disable-next-line no-await-in-loop -- rollback must wait for each bound write
+      await fs.ensureDir(path.dirname(targetPath));
+      // oxlint-disable-next-line no-await-in-loop -- rollback must wait for each bound write
+      await fs.writeFile(targetPath, operation.content, "utf-8");
+    }
+
+    for (const operation of plan.operations.filter(
+      (candidate) => candidate.writeMode === "remove",
+    )) {
+      markProjectTransactionWrite(transaction, operation.path, null);
+      // oxlint-disable-next-line no-await-in-loop -- rollback must bind each removal in order
+      await fs.remove(path.join(plan.projectDir, operation.path));
+    }
+
+    const migrationContent = await buildMigrationChecklistContent(plan.projectDir, plan);
+    if (migrationContent !== null) {
+      markProjectTransactionWrite(
+        transaction,
+        "MIGRATION.md",
+        hashContent(Buffer.from(migrationContent, "utf-8")),
+      );
+      await fs.writeFile(path.join(plan.projectDir, "MIGRATION.md"), migrationContent, "utf-8");
+    }
+    await journalProjectTransactionWrites(transaction, ["bts.jsonc"]);
+    await writeBtsConfig(proposedConfig, {
+      version: plan.proposedConfig.version,
+      createdAt: plan.proposedConfig.createdAt,
+    });
+    const configBytes = await fs.readFile(path.join(plan.projectDir, "bts.jsonc"));
+    markProjectTransactionWrite(transaction, "bts.jsonc", hashContent(configBytes));
+
+    const versionChannelRewrites: string[] = [];
+    if (options.applyVersionChannel) {
+      await applyDependencyVersionChannel(
+        plan.projectDir,
+        plan.proposedConfig.versionChannel,
+        (packageJsonPath, sha256) => {
+          const relativePath = toPosixPath(path.relative(plan.projectDir, packageJsonPath));
+          versionChannelRewrites.push(relativePath);
+          markProjectTransactionWrite(transaction, relativePath, sha256);
+        },
+        {
+          rewrites: (plan as InternalStackUpdatePlan)[PLANNED_VERSION_CHANNEL_REWRITES] ?? [],
+        },
+      );
+    }
+
+    await options.beforeManifestRefresh?.();
+
+    const structuredBaselines = collectStructuredBaselines(proposedTree);
+    for (const relativePath of versionChannelRewrites) {
+      // oxlint-disable-next-line no-await-in-loop -- baseline must match each persisted rewrite
+      structuredBaselines[relativePath] = await fs.readFile(
+        path.join(plan.projectDir, relativePath),
+        "utf-8",
+      );
+    }
+
+    await journalProjectTransactionWrites(transaction, [SCAFFOLD_MANIFEST_FILE]);
+    await refreshScaffoldManifestFiles(
+      plan.projectDir,
+      [...plan.operations.map((operation) => operation.path), ...versionChannelRewrites],
+      structuredBaselines,
+      {
+        type: lifecycleOperation,
+        changes: plan.lifecycle.changes,
+        recoveryId: transaction.id,
+      },
+    );
+    const manifestPath = path.join(plan.projectDir, SCAFFOLD_MANIFEST_FILE);
+    if (await fs.pathExists(manifestPath)) {
+      const manifestBytes = await fs.readFile(manifestPath);
+      markProjectTransactionWrite(transaction, SCAFFOLD_MANIFEST_FILE, hashContent(manifestBytes));
+    }
+    await commitProjectTransaction(transaction);
+  } catch (error) {
+    try {
+      await rollbackProjectTransaction(transaction);
+    } catch (rollbackError) {
+      return {
+        success: false,
+        projectDir: plan.projectDir,
+        error: `${error instanceof Error ? error.message : String(error)}. Automatic rollback failed: ${rollbackError instanceof Error ? rollbackError.message : String(rollbackError)}. Recovery transaction: ${transaction.id}.`,
+        lifecycle: lifecycleResult({
+          ...plan.lifecycle,
+          status: "failed",
+          recovery: {
+            available: true,
+            transactionId: transaction.id,
+            command: getProjectRecoveryCommand(
+              plan.projectDir,
+              transaction.id,
+              process.platform,
+              plan.proposedConfig.packageManager,
+            ),
+          },
+        }),
+      };
+    }
+    return {
+      success: false,
+      projectDir: plan.projectDir,
+      error: `${error instanceof Error ? error.message : String(error)}. Every bound preimage was restored.`,
+      lifecycle: lifecycleResult({
+        ...plan.lifecycle,
+        status: "rolled-back",
+        recovery: { available: true, transactionId: transaction.id, automaticRollback: true },
       }),
-  );
+    };
+  }
 
-  await writeBtsConfig(proposedConfig, {
-    version: plan.proposedConfig.version,
-    createdAt: plan.proposedConfig.createdAt,
-  });
-
-  // The whole plan applied cleanly (manual blockers abort above), so every
-  // structured-merge file is now reconciled with the proposed render — advance
-  // its `bfs update` baseline alongside the hashes.
-  await refreshScaffoldManifestFiles(
-    plan.projectDir,
-    plan.operations.map((operation) => operation.path),
-    collectStructuredBaselines(proposedTree),
-  );
-
-  await writeMigrationChecklist(plan.projectDir, plan);
-
-  return plan;
+  return {
+    ...plan,
+    recoveryId: transaction.id,
+    lifecycle: lifecycleResult({
+      ...plan.lifecycle,
+      operation: lifecycleOperation,
+      status: "applied",
+      recovery: {
+        available: true,
+        transactionId: transaction.id,
+        command: getProjectRecoveryCommand(
+              plan.projectDir,
+              transaction.id,
+              process.platform,
+              plan.proposedConfig.packageManager,
+            ),
+        automaticRollback: true,
+      },
+      nextActions: [
+        plan.installCommand,
+        "Run `create-better-fullstack check` to verify every generated target.",
+      ],
+    }),
+  };
 }

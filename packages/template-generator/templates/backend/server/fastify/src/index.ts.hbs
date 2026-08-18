@@ -60,6 +60,7 @@ const baseCorsConfig = {
 	allowedHeaders: [
 		"Content-Type",
 		"Authorization",
+		{{#if (eq botProtection "turnstile")}}"X-Turnstile-Token",{{/if}}
 		"X-Requested-With"
 	],
 	credentials: true,

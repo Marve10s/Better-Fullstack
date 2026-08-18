@@ -576,6 +576,30 @@ ${packageManagerRunCmd} dev
 \`\`\`
 
 ${generateRunningInstructions(frontend, backend, webPort, hasWeb, hasNative, isConvex)}
+${
+  options.botProtection === "turnstile"
+    ? `
+## Cloudflare Turnstile
+
+Create a Turnstile widget in Cloudflare, then set the generated public site key in the web app environment and \`TURNSTILE_SECRET_KEY\` in the server environment. Sign-in and sign-up tokens are verified with Cloudflare Siteverify before Better Auth handles the request.
+`
+    : options.botProtection === "botid"
+      ? `
+## Vercel BotID
+
+BotID is initialized for the generated authentication routes and requires deployment on Vercel. Enable BotID for the project in the Vercel dashboard; no application secret is required.
+`
+      : ""
+}
+${
+  options.analytics === "vercel-analytics"
+    ? `
+## Vercel Web Analytics
+
+The analytics component is already mounted and requires no environment variables. Enable Web Analytics for the project in the Vercel dashboard, then deploy to Vercel to begin collecting privacy-friendly page views.
+`
+    : ""
+}
 ${ai === "ai-cli" ? `\n${generateAICLISection(packageManagerRunCmd, packageManager)}\n` : ""}
 ${
   examples.includes("chat-sdk")
@@ -1072,6 +1096,7 @@ function generateFeaturesList(
     husky: "- **Husky** - Git hooks for code quality",
     starlight: "- **Starlight** - Documentation site with Astro",
     turborepo: "- **Turborepo** - Optimized monorepo build system",
+    "vite-plus": "- **Vite+** - Unified web toolchain and workspace runner",
     msw: "- **MSW** - Mock Service Worker for API mocking",
     storybook: "- **Storybook** - Component development and testing",
     swr: "- **SWR** - React Hooks for data fetching and caching",
