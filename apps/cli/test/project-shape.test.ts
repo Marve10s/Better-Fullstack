@@ -4,6 +4,7 @@ import { create, createVirtual } from "../src/index";
 import { gatherConfig } from "../src/prompts/config-prompts";
 import {
   mobilePlatformFromFlags,
+  mobilePlatformsFromFlags,
   nativeMobilePartSpecs,
   shapeControlledFlags,
   shapeFlagsForEcosystem,
@@ -88,6 +89,17 @@ describe("project shape flags", () => {
     expect(shapeSupportsEcosystem("backend", "elixir")).toBe(true);
     expect(shapeSupportsEcosystem("mobile", "react-native")).toBe(true);
     expect(shapeSupportsEcosystem("mobile", "python")).toBe(false);
+  });
+
+  test("reports every platform a flag set matches, deduplicated", () => {
+    expect(mobilePlatformsFromFlags({ kotlinMobile: "jetpack-compose" })).toEqual(["kotlin"]);
+    expect(
+      mobilePlatformsFromFlags({ kotlinMobile: "jetpack-compose", dartMobile: "flutter" }),
+    ).toEqual(["kotlin", "dart"]);
+    // Both signals name React Native, so this is one platform, not an ambiguity.
+    expect(
+      mobilePlatformsFromFlags({ ecosystem: "react-native", frontend: ["native-bare"] }),
+    ).toEqual(["react-native"]);
   });
 
   test("controlled flags span every ecosystem the shape supports", () => {
@@ -257,10 +269,12 @@ describe("project shape scaffolding", () => {
     });
 
     expect(result.success).toBe(false);
-    expect(result.error).toMatch(/Cannot combine --shape frontend with a complete stack/);
+    expect(result.error).toMatch(/Cannot combine --shape frontend with --part/);
   });
 
-  test("the guided mobile shape honours an explicit install request", async () => {
+  // The CLI drives no Gradle/SwiftPM/Flutter install, so reporting success here
+  // would claim dependencies that were never fetched.
+  test("the guided mobile shape does not claim a native install", async () => {
     const config = await gatherConfig(
       {
         projectName: "kotlin-install",
@@ -277,7 +291,53 @@ describe("project shape scaffolding", () => {
       "mobile",
     );
 
-    expect(config.install).toBe(true);
+    expect(config.install).toBe(false);
+  });
+
+  test("the guided mobile shape keeps explicitly selected addons", async () => {
+    const config = await gatherConfig(
+      {
+        projectName: "kotlin-addons",
+        projectDir: "/tmp/kotlin-addons",
+        relativePath: "kotlin-addons",
+        kotlinMobile: "jetpack-compose",
+        kotlinMobileLibraries: [],
+        addons: ["skills"],
+        git: false,
+      },
+      "kotlin-addons",
+      "/tmp/kotlin-addons",
+      "kotlin-addons",
+      "mobile",
+    );
+
+    expect(config.addons).toEqual(["skills"]);
+    expect(config.stackParts?.map((part) => part.toolId)).toContain("skills");
+  });
+
+  test("rejects a shape combined with a template preset", async () => {
+    const result = await create("shape-vs-template", {
+      ...baseOptions,
+      shape: "frontend",
+      template: "t3",
+      yes: true,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toMatch(/Cannot combine --shape frontend with --template/);
+  });
+
+  test("rejects an ambiguous set of mobile platform selectors", async () => {
+    const result = await create("shape-two-platforms", {
+      ...baseOptions,
+      shape: "mobile",
+      kotlinMobile: "jetpack-compose",
+      dartMobile: "flutter",
+      yes: true,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toMatch(/matches more than one platform/);
   });
 
   test("the guided mobile shape builds a Kotlin app that generates Kotlin sources", async () => {

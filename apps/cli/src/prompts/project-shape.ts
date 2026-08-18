@@ -1,8 +1,11 @@
 import type { Ecosystem, ProjectConfig, ProjectShape } from "../types";
 
+import { log } from "@clack/prompts";
+
 import { getDefaultConfig } from "../constants";
 import {
   ECOSYSTEM_VALUES,
+  getAddonStackPartBinding,
   parseStackPartSpecs,
   stackPartsToLegacyProjectConfigPartial,
 } from "../types";
@@ -65,6 +68,12 @@ export const SHAPE_ECOSYSTEMS = {
 
 const NATIVE_FRONTENDS = new Set(["native-bare", "native-uniwind", "native-unistyles"]);
 
+const NATIVE_TOOLCHAIN: Record<NativeMobilePlatform, string> = {
+  kotlin: "Gradle",
+  swift: "Swift Package Manager",
+  dart: "Flutter",
+};
+
 export const SHAPE_DEFAULT_ECOSYSTEM = {
   fullstack: "typescript",
   frontend: "typescript",
@@ -109,13 +118,18 @@ export function shapeSupportsEcosystem(shape: ProjectShape, ecosystem: Ecosystem
  * Platform flags answer the platform question on their own, which keeps
  * `--shape mobile --kotlin-mobile ...` usable without any prompt.
  */
+export function mobilePlatformsFromFlags(flags: Partial<ProjectConfig>): MobilePlatform[] {
+  const platforms = new Set<MobilePlatform>();
+  if (flags.kotlinMobile && flags.kotlinMobile !== "none") platforms.add("kotlin");
+  if (flags.swiftMobile && flags.swiftMobile !== "none") platforms.add("swift");
+  if (flags.dartMobile && flags.dartMobile !== "none") platforms.add("dart");
+  if (flags.ecosystem === "react-native") platforms.add("react-native");
+  if (flags.frontend?.some((entry) => NATIVE_FRONTENDS.has(entry))) platforms.add("react-native");
+  return [...platforms];
+}
+
 export function mobilePlatformFromFlags(flags: Partial<ProjectConfig>): MobilePlatform | undefined {
-  if (flags.kotlinMobile && flags.kotlinMobile !== "none") return "kotlin";
-  if (flags.swiftMobile && flags.swiftMobile !== "none") return "swift";
-  if (flags.dartMobile && flags.dartMobile !== "none") return "dart";
-  if (flags.ecosystem === "react-native") return "react-native";
-  if (flags.frontend?.some((entry) => NATIVE_FRONTENDS.has(entry))) return "react-native";
-  return undefined;
+  return mobilePlatformsFromFlags(flags)[0];
 }
 
 export function nativeMobilePartSpecs(
@@ -186,11 +200,27 @@ async function gatherNativeMobileConfig(
   const kotlinMobile = platform === "kotlin" ? await selectKotlinApp(flags.kotlinMobile) : "none";
   const kotlinMobileLibraries =
     platform === "kotlin" ? await selectKotlinMobileLibraries(flags.kotlinMobileLibraries) : [];
+  const addons = (flags.addons ?? []).filter((addon) => addon !== "none");
+  const addonSpecs = addons.flatMap((addon) => {
+    const binding = getAddonStackPartBinding(addon);
+    if (!binding) return [];
+    const rolePath = binding.ownerRole ? `${binding.ownerRole}.${binding.role}` : binding.role;
+    return [`${rolePath}:${binding.ecosystem}:${addon}`];
+  });
   const stackParts = parseStackPartSpecs(
-    nativeMobilePartSpecs(platform, kotlinMobile, kotlinMobileLibraries),
+    [...nativeMobilePartSpecs(platform, kotlinMobile, kotlinMobileLibraries), ...addonSpecs],
     "selected",
   );
   const git = await getGitChoice(flags.git);
+
+  // Gradle, SwiftPM, and Flutter are not driven by the CLI, so installing here
+  // would touch only workspace tooling while reporting the app's dependencies
+  // as installed.
+  if (flags.install) {
+    log.warn(
+      `${NATIVE_TOOLCHAIN[platform]} dependencies are not installed by the CLI. Skipping install; run that toolchain in apps/native.`,
+    );
+  }
 
   return {
     ...getDefaultConfig(),
@@ -209,14 +239,14 @@ async function gatherNativeMobileConfig(
     orm: "none",
     api: "none",
     auth: "none",
-    addons: [],
+    addons,
     examples: [],
     kotlinMobile,
     kotlinMobileLibraries,
     swiftMobile: platform === "swift" ? "swiftui" : "none",
     dartMobile: platform === "dart" ? "flutter" : "none",
     git,
-    install: flags.install ?? false,
+    install: false,
     stackParts,
   };
 }

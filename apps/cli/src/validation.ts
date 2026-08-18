@@ -4,6 +4,7 @@ import type { CLIInput, ProjectConfig } from "./types";
 
 import {
   SHAPE_ECOSYSTEMS,
+  mobilePlatformsFromFlags,
   shapeControlledFlags,
   shapeSupportsEcosystem,
 } from "./prompts/project-shape";
@@ -58,11 +59,32 @@ export function assertShapeInputIsUsable(
   const shape = options.shape;
   if (!shape || shape === "fullstack") return;
 
-  if (options.config || options.fromHistory !== undefined || options.part?.length) {
+  const completeStackSource =
+    options.config !== undefined
+      ? "--config"
+      : options.fromHistory !== undefined
+        ? "--from-history"
+        : options.part?.length
+          ? "--part"
+          : options.template && options.template !== "none"
+            ? "--template"
+            : undefined;
+
+  if (completeStackSource) {
     exitWithError(
-      `Cannot combine --shape ${shape} with a complete stack (--config, --from-history, or --part). ` +
-        "Those already answer what --shape would ask. Remove one of them.",
+      `Cannot combine --shape ${shape} with ${completeStackSource}. ` +
+        "That already answers what --shape would ask. Remove one of them.",
     );
+  }
+
+  if (shape === "mobile") {
+    const platforms = mobilePlatformsFromFlags(options);
+    if (platforms.length > 1) {
+      exitWithError(
+        `--shape mobile matches more than one platform: ${platforms.join(", ")}. ` +
+          "Pass a selector for exactly one platform.",
+      );
+    }
   }
 
   const controlled = Object.entries(shapeControlledFlags(shape)).filter(

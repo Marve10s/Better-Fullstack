@@ -59,6 +59,8 @@ bun create better-fullstack@latest my-app --shape backend --ecosystem go
 
 With `--yes` there is nothing to prompt, so a shape falls back to its default: TypeScript for `frontend` and `backend`, React Native for `mobile`.
 
+A shape decides the stack, so it is rejected rather than silently overruled when the rest of the command already decides it too: `--config`, `--from-history`, `--part`, and `--template` each carry a complete stack, a flag the shape switches off contradicts it, and `--shape mobile` accepts selectors for exactly one platform. Kotlin, Swift, and Flutter apps are built by Gradle, SwiftPM, and Flutter, which the CLI does not run, so `--install` is skipped with a notice on those platforms instead of reporting an install that did not happen.
+
 ## Prompt behavior
 
 - Explicit flags skip only the categories they cover.
