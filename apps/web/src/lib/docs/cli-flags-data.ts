@@ -57,6 +57,19 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "multiple": false
       },
       {
+        "flag": "--shape",
+        "summary": "Start from a project shape. Asks which language or platform, then only the prompts that shape needs.",
+        "values": [
+          "fullstack",
+          "frontend",
+          "backend",
+          "mobile"
+        ],
+        "valueHint": null,
+        "defaultValue": null,
+        "multiple": false
+      },
+      {
         "flag": "--part",
         "summary": "Add a multi-ecosystem stack part. Repeat once per part.",
         "values": [],

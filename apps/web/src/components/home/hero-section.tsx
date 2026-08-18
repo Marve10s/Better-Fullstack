@@ -21,14 +21,15 @@ type PM = (typeof PMS)[number];
 const ACCENT_TEXT = "text-ink dark:text-brand";
 
 /**
- * Each shape pins only the flags the CLI cannot infer; every remaining question
- * is answered by the CLI's own prompts, which is the point of the short command.
+ * A shape names what you are building. The CLI then asks which language or
+ * platform and only the questions that shape needs, so no stack choice is
+ * hidden behind the short command.
  */
 const SHAPES = [
   { id: "fullstack", label: m.homeStarterShapeFullstack, flags: "" },
-  { id: "frontend", label: m.homeStarterShapeFrontend, flags: "--backend none" },
-  { id: "backend", label: m.homeStarterShapeBackend, flags: "--frontend none" },
-  { id: "mobile", label: m.homeStarterShapeMobile, flags: "--ecosystem react-native" },
+  { id: "frontend", label: m.homeStarterShapeFrontend, flags: "--shape frontend" },
+  { id: "backend", label: m.homeStarterShapeBackend, flags: "--shape backend" },
+  { id: "mobile", label: m.homeStarterShapeMobile, flags: "--shape mobile" },
 ] as const;
 
 type ShapeId = (typeof SHAPES)[number]["id"];

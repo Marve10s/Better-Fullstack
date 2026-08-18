@@ -2,6 +2,7 @@ import path from "node:path";
 
 import type { CLIInput, ProjectConfig } from "./types";
 
+import { SHAPE_ECOSYSTEMS, shapeSupportsEcosystem } from "./prompts/project-shape";
 import { ProjectNameSchema } from "./types";
 import {
   applyEffectBackendDefaults,
@@ -33,10 +34,50 @@ const CORE_STACK_FLAGS = new Set([
   "effect",
 ]);
 
+export function assertShapeInputIsUsable(
+  options: CLIInput & { config?: string; fromHistory?: number },
+  providedFlags: Set<string>,
+) {
+  const shape = options.shape;
+  if (!shape || shape === "fullstack") return;
+
+  if (options.config || options.fromHistory !== undefined) {
+    exitWithError(
+      `Cannot combine --shape ${shape} with a saved stack (--config or --from-history). ` +
+        "The saved stack already answers what --shape would ask. Remove one of them.",
+    );
+  }
+
+  if (options.ecosystem && !shapeSupportsEcosystem(shape, options.ecosystem)) {
+    exitWithError(
+      `--shape ${shape} does not support --ecosystem ${options.ecosystem}. ` +
+        `Supported: ${SHAPE_ECOSYSTEMS[shape].join(", ")}.`,
+    );
+  }
+
+  if (!options.yes) return;
+
+  const coreStackFlagsProvided = Array.from(providedFlags).filter((flag) =>
+    CORE_STACK_FLAGS.has(flag),
+  );
+
+  if (coreStackFlagsProvided.length > 0) {
+    exitWithError(
+      `Cannot combine --yes with core stack configuration flags: ${coreStackFlagsProvided.map((f) => `--${f}`).join(", ")}. ` +
+        "The --yes flag uses default configuration. Remove these flags or use --yes without them.",
+    );
+  }
+}
+
 function validateYesFlagCombination(options: CLIInput, providedFlags: Set<string>) {
   if (!options.yes) return;
 
   if (options.template && options.template !== "none") {
+    return;
+  }
+
+  // A shape expands into stack flags of its own, so they are not user-provided.
+  if (options.shape && options.shape !== "fullstack") {
     return;
   }
 

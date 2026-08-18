@@ -159,6 +159,7 @@ import {
   ShadcnRadiusSchema,
   ShadcnStyleSchema,
   StateManagementSchema,
+  ProjectShapeSchema,
   TemplateSchema,
   TestingSchema,
   UILibrarySchema,
@@ -169,6 +170,9 @@ import {
 
 export const CreateCommandOptionsSchema = z.object({
   template: TemplateSchema.optional().describe("Use a predefined template"),
+  shape: ProjectShapeSchema.optional().describe(
+    "Start from a project shape (fullstack, frontend, backend, or mobile)",
+  ),
   fromHistory: z
     .number()
     .optional()

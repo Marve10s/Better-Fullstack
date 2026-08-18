@@ -185,6 +185,7 @@ const OPTION_ENTRY_COUNT = Object.values(OPTION_CATEGORY_METADATA).reduce(
 
 const AddCommandInputSchema = CreateCommandOptionsSchema.omit({
   template: true,
+  shape: true,
   fromHistory: true,
   config: true,
   yes: true,

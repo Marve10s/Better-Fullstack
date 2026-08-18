@@ -17,6 +17,12 @@ import { CreateCommandOptionsSchema } from "../../create-command-input";
 import { gatherConfig } from "../../prompts/config-prompts";
 import { isCancel, isGoBack, navigableSelect } from "../../prompts/navigable";
 import { getProjectName } from "../../prompts/project-name";
+import {
+  SHAPE_DEFAULT_ECOSYSTEM,
+  mobilePlatformFromFlags,
+  nativeMobilePartSpecs,
+  shapeFlagsForEcosystem,
+} from "../../prompts/project-shape";
 import { getVersionChannelChoice } from "../../prompts/version-channel";
 import {
   getKotlinJavaIncompatibilityReason,
@@ -52,6 +58,7 @@ import { resolveCompatibilityAdjustments } from "../../utils/stack-compatibility
 import { getTemplateConfig, getTemplateDescription } from "../../utils/templates";
 import {
   getProvidedFlags,
+  assertShapeInputIsUsable,
   processAndValidateFlags,
   processProvidedFlagsWithoutValidation,
   validateConfigCompatibility,
@@ -639,6 +646,8 @@ export async function createProjectHandler(
 
       let cliInput = originalInput;
 
+      assertShapeInputIsUsable(originalInput, providedFlags);
+
       if (input.template && input.template !== "none") {
         const templateConfig = getTemplateConfig(input.template);
         if (templateConfig) {
@@ -668,6 +677,33 @@ export async function createProjectHandler(
       let config: ProjectConfig;
       if (cliInput.yes || cliInput.part?.length || hasConfigBase) {
         if (!silent) telemetrySource = "cli-flags";
+        // No prompts run on this path, so a shape contributes its default
+        // ecosystem plus both halves of the stack it decides.
+        if (cliInput.shape && cliInput.shape !== "fullstack") {
+          const platform =
+            cliInput.shape === "mobile" ? mobilePlatformFromFlags(cliInput) : undefined;
+
+          if (platform && platform !== "react-native") {
+            cliInput = {
+              ...cliInput,
+              part: [
+                ...(cliInput.part ?? []),
+                ...nativeMobilePartSpecs(
+                  platform,
+                  cliInput.kotlinMobile ?? "jetpack-compose",
+                  cliInput.kotlinMobileLibraries ?? [],
+                ),
+              ],
+            };
+          } else {
+            const ecosystem = cliInput.ecosystem ?? SHAPE_DEFAULT_ECOSYSTEM[cliInput.shape];
+            cliInput = {
+              ...shapeFlagsForEcosystem(cliInput.shape, ecosystem, { withoutPrompts: true }),
+              ...cliInput,
+              ecosystem,
+            };
+          }
+        }
         const flagConfig = processProvidedFlagsWithoutValidation(cliInput, finalBaseName);
 
         config = expandToolingOverlay({
@@ -714,6 +750,7 @@ export async function createProjectHandler(
           finalBaseName,
           finalResolvedPath,
           currentPathInput,
+          input.shape,
         );
         config = { ...gatheredConfig, versionChannel };
 
