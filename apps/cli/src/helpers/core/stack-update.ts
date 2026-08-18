@@ -2173,12 +2173,13 @@ export async function applyStackUpdate(
       (candidate) => candidate.writeMode === "content",
     );
     if (contentOperations.length > 0) {
-      await journalProjectTransactionWrites(
-        transaction,
-        contentOperations.map((operation) => operation.path),
-      );
       for (const operation of contentOperations) {
         const targetPath = path.join(plan.projectDir, operation.path);
+        // Journal only the path about to change: an UNVERIFIED marker tells
+        // recovery to skip byte validation, so marking untouched files would
+        // let recovery clobber edits the transaction never made.
+        // oxlint-disable-next-line no-await-in-loop -- rollback must wait for each bound write
+        await journalProjectTransactionWrites(transaction, [operation.path]);
         // oxlint-disable-next-line no-await-in-loop -- rollback must wait for each bound write
         await fs.ensureDir(path.dirname(targetPath));
         // oxlint-disable-next-line no-await-in-loop -- rollback must wait for each bound write
@@ -2196,11 +2197,9 @@ export async function applyStackUpdate(
       (candidate) => candidate.writeMode === "remove",
     );
     if (removeOperations.length > 0) {
-      await journalProjectTransactionWrites(
-        transaction,
-        removeOperations.map((operation) => operation.path),
-      );
       for (const operation of removeOperations) {
+        // oxlint-disable-next-line no-await-in-loop -- rollback must bind each removal in order
+        await journalProjectTransactionWrites(transaction, [operation.path]);
         // oxlint-disable-next-line no-await-in-loop -- rollback must bind each removal in order
         await fs.remove(path.join(plan.projectDir, operation.path));
         markProjectTransactionWrite(transaction, operation.path, null);

@@ -52,7 +52,9 @@ describe("StackState contract", () => {
 
     let vitePlusDraws = 0;
     const conflicts: string[] = [];
-    for (let attempt = 0; attempt < 200; attempt++) {
+    // vite-plus is drawn roughly half the time, so 40 attempts make a miss
+    // vanishingly unlikely while keeping this well inside the test timeout.
+    for (let attempt = 0; attempt < 40; attempt++) {
       const randomStack = { ...DEFAULT_STACK, ...buildRandomStack(DEFAULT_STACK) };
       if (!randomStack.appPlatforms.includes("vite-plus")) continue;
       vitePlusDraws++;

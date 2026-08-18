@@ -268,6 +268,19 @@ describe("project shape scaffolding", () => {
     expect(result.error).toMatch(/--frontend must name a native frontend/);
   });
 
+  test("guards the .NET required half before the directory is touched", async () => {
+    const result = await create("shape-dotnet-half", {
+      ...baseOptions,
+      shape: "frontend",
+      ecosystem: "dotnet",
+      dotnetFrontend: "none",
+      yes: true,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toMatch(/needs --dotnet-frontend, but it was set to none/);
+  });
+
   test("rejects a native frontend on the frontend shape", async () => {
     const result = await create("shape-fe-native", {
       ...baseOptions,

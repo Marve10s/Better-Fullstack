@@ -98,7 +98,7 @@ export const NATIVE_FRONTENDS = new Set([
 ]);
 
 const SHAPE_REQUIRED_HALF: Record<"frontend" | "backend", Partial<Record<Ecosystem, string>>> = {
-  frontend: { typescript: "frontend", rust: "rustFrontend" },
+  frontend: { typescript: "frontend", rust: "rustFrontend", dotnet: "dotnetFrontend" },
   backend: {
     typescript: "backend",
     rust: "rustWebFramework",
