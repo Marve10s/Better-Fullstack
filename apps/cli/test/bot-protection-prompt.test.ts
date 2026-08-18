@@ -86,6 +86,36 @@ describe("bot protection prompt", () => {
     ).toThrow("Vercel BotID is only available for Next.js frontends");
   });
 
+  it("rejects a non-self backend for BotID during programmatic validation", () => {
+    expect(() =>
+      runWithContext({ silent: true }, () =>
+        validateConfigForProgrammaticUse({
+          ecosystem: "typescript",
+          frontend: ["next"],
+          auth: "better-auth",
+          backend: "hono",
+          webDeploy: "vercel",
+          botProtection: "botid",
+        }),
+      ),
+    ).toThrow("Vercel BotID requires the self-hosted Next.js backend");
+  });
+
+  it("rejects a native frontend for bot protection during programmatic validation", () => {
+    expect(() =>
+      runWithContext({ silent: true }, () =>
+        validateConfigForProgrammaticUse({
+          ecosystem: "typescript",
+          frontend: ["next", "native-uniwind"],
+          auth: "better-auth",
+          backend: "self",
+          webDeploy: "vercel",
+          botProtection: "botid",
+        }),
+      ),
+    ).toThrow("Bot protection is not supported when a native frontend is selected");
+  });
+
   it("exposes frontend security in custom multi-ecosystem configuration", () => {
     expect(MULTI_ECOSYSTEM_TYPESCRIPT_SECTION_IDS).toContain("frontend-security");
   });

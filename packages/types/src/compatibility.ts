@@ -17,6 +17,7 @@ import type {
 } from "./types";
 
 import { getCapabilityDisabledReason, normalizeCapabilitySelection } from "./capabilities";
+import { ANALYTICS_VALUES } from "./schemas";
 import { CATEGORY_ORDER, getCategoryDisplayName, type OptionCategory } from "./option-metadata";
 import {
   getUnsupportedWebDeployFrontend,
@@ -74,6 +75,15 @@ const REACT_ANALYTICS_FRONTENDS = new Set([
   "vinext",
 ]);
 
+const GA4_FRONTENDS = new Set([
+  ...VERCEL_ANALYTICS_FRONTENDS,
+  "vanilla-vite",
+  "qwik",
+  "angular",
+  "redwood",
+  "fresh",
+]);
+
 const STANDARD_ANALYTICS_FRONTENDS = new Set([
   ...REACT_ANALYTICS_FRONTENDS,
   "svelte",
@@ -84,7 +94,7 @@ const STANDARD_ANALYTICS_FRONTENDS = new Set([
 ]);
 
 export const ANALYTICS_FRONTEND_SUPPORT = {
-  ga4: VERCEL_ANALYTICS_FRONTENDS,
+  ga4: GA4_FRONTENDS,
   plausible: REACT_ANALYTICS_FRONTENDS,
   posthog: STANDARD_ANALYTICS_FRONTENDS,
   umami: STANDARD_ANALYTICS_FRONTENDS,
@@ -215,7 +225,6 @@ export type CompatibilityEvaluation = {
 
 const TURNSTILE_WEB_FRONTENDS = new Set([
   "next",
-  "vinext",
   "react-router",
   "react-vite",
   "tanstack-router",
@@ -2447,15 +2456,20 @@ export const analyzeStackCompatibility = (
     });
   }
 
+  const selectedAnalytics = ANALYTICS_VALUES.find((value) => value === nextStack.analytics);
   if (
-    nextStack.analytics === "vercel-analytics" &&
-    !supportsAnalyticsFrontends("vercel-analytics", nextStack.webFrontend)
+    selectedAnalytics &&
+    selectedAnalytics !== "none" &&
+    !supportsAnalyticsFrontends(selectedAnalytics, nextStack.webFrontend)
   ) {
+    const wasVercel = selectedAnalytics === "vercel-analytics";
     nextStack.analytics = "none";
     changed = true;
     changes.push({
       category: "analytics",
-      message: "Analytics set to 'None' (Vercel Analytics is not mounted for this frontend)",
+      message: wasVercel
+        ? "Analytics set to 'None' (Vercel Analytics is not mounted for this frontend)"
+        : "Analytics set to 'None' (no analytics template for this frontend)",
     });
   }
 

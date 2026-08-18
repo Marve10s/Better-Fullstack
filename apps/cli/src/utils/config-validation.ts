@@ -1202,6 +1202,16 @@ function validateBotProtectionConstraints(config: Partial<ProjectConfig>) {
   const webFrontends = (config.frontend ?? []).filter(
     (frontend) => frontend !== "none" && !frontend.startsWith("native-"),
   );
+  if ((config.frontend ?? []).some((frontend) => frontend.startsWith("native-"))) {
+    incompatibilityError({
+      message: "Bot protection is not supported when a native frontend is selected.",
+      provided: {
+        frontend: (config.frontend ?? []).join(","),
+        "bot-protection": config.botProtection,
+      },
+      suggestions: ["Remove the native frontend", "Use --bot-protection none"],
+    });
+  }
   if (webFrontends.length === 0) {
     incompatibilityError({
       message: "Bot protection requires a web frontend.",
@@ -1224,6 +1234,17 @@ function validateBotProtectionConstraints(config: Partial<ProjectConfig>) {
       message: "Vercel BotID is only available for Next.js frontends.",
       provided: { frontend: webFrontends.join(","), "bot-protection": "botid" },
       suggestions: ["Use --frontend next", "Use --bot-protection turnstile"],
+    });
+  }
+  if (
+    config.botProtection === "botid" &&
+    config.backend !== undefined &&
+    config.backend !== "self"
+  ) {
+    incompatibilityError({
+      message: "Vercel BotID requires the self-hosted Next.js backend.",
+      provided: { backend: config.backend, "bot-protection": "botid" },
+      suggestions: ["Use --backend self", "Use --bot-protection turnstile"],
     });
   }
   if (

@@ -8,6 +8,7 @@ import {
   getApiFrontendCompatibilityIssue,
   getCompatibleFormLibraries,
   getDisabledReason,
+  isAnalyticsFrontendSupported,
 } from "../src/compatibility";
 import { DEFAULT_STACK_SELECTION } from "../src/stack-translation";
 
@@ -138,6 +139,69 @@ describe("compatibility issue helpers", () => {
         botProtection: "botid",
       }).issues.map((issue) => issue.category),
     ).toContain("botProtection");
+  });
+
+  it("keeps Turnstile off vinext, which generates no Better Auth forms to wire it into", () => {
+    const vinextStack = {
+      ...DEFAULT_STACK_SELECTION,
+      webFrontend: ["vinext"],
+      auth: "better-auth",
+      backend: "self-vinext",
+    };
+
+    expect(getDisabledReason(vinextStack, "botProtection", "turnstile")).toContain(
+      "React web frontends only",
+    );
+    expect(
+      analyzeStackCompatibility({ ...vinextStack, botProtection: "turnstile" }).adjustedStack
+        ?.botProtection,
+    ).toBe("none");
+    expect(
+      evaluateCompatibility({ ...vinextStack, botProtection: "turnstile" }).issues.map(
+        (issue) => issue.category,
+      ),
+    ).toContain("botProtection");
+  });
+
+  it("normalizes any analytics provider that has no template for the frontend", () => {
+    // Only vercel-analytics was normalized before; the rest were left set and
+    // materialized as deps and env vars that nothing consumed.
+    const { changes, adjustedStack } = analyzeStackCompatibility({
+      ...DEFAULT_STACK_SELECTION,
+      webFrontend: ["vue"],
+      analytics: "plausible",
+    });
+
+    expect(adjustedStack.analytics).toBe("none");
+    expect(changes.some((change) => change.category === "analytics")).toBe(true);
+  });
+
+  it("offers GA4 on every frontend that generates a web package", () => {
+    const ga4Frontends = [
+      "tanstack-router",
+      "react-router",
+      "react-vite",
+      "vanilla-vite",
+      "vue",
+      "tanstack-start",
+      "next",
+      "vinext",
+      "nuxt",
+      "svelte",
+      "solid",
+      "solid-start",
+      "astro",
+      "qwik",
+      "angular",
+      "redwood",
+      "fresh",
+    ] as const;
+
+    for (const webFrontend of ga4Frontends) {
+      expect(
+        isAnalyticsFrontendSupported("ga4", webFrontend),
+      ).toBe(true);
+    }
   });
 
   it("offers Vercel Analytics only where its generated mount is wired", () => {
