@@ -21,6 +21,7 @@ import {
   SHAPE_DEFAULT_ECOSYSTEM,
   mobilePlatformFromFlags,
   nativeMobilePartSpecs,
+  noticeNativeInstallSkipped,
   shapeFlagsForEcosystem,
 } from "../../prompts/project-shape";
 import { getVersionChannelChoice } from "../../prompts/version-channel";
@@ -684,8 +685,10 @@ export async function createProjectHandler(
             cliInput.shape === "mobile" ? mobilePlatformFromFlags(cliInput) : undefined;
 
           if (platform && platform !== "react-native") {
+            noticeNativeInstallSkipped(platform, cliInput.install);
             cliInput = {
               ...cliInput,
+              install: false,
               part: [
                 ...(cliInput.part ?? []),
                 ...nativeMobilePartSpecs(

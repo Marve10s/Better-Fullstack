@@ -20,7 +20,7 @@ import {
 import { isCancel, isGoBack, navigableSelect } from "./navigable";
 
 export type MobilePlatform = Exclude<MobileEcosystem, "none">;
-type NativeMobilePlatform = Exclude<MobilePlatform, "react-native">;
+export type NativeMobilePlatform = Exclude<MobilePlatform, "react-native">;
 
 export type ShapeResolution =
   | { kind: "flags"; flags: Partial<ProjectConfig> }
@@ -147,6 +147,21 @@ export function nativeMobilePartSpecs(
   ];
 }
 
+/**
+ * Gradle, SwiftPM, and Flutter are not driven by the CLI, so installing would
+ * touch only workspace tooling while reporting the app's own dependencies as
+ * installed. Both the guided and prompt-free paths route through here.
+ */
+export function noticeNativeInstallSkipped(
+  platform: NativeMobilePlatform,
+  requestedInstall?: boolean,
+) {
+  if (!requestedInstall) return;
+  log.warn(
+    `${NATIVE_TOOLCHAIN[platform]} dependencies are not installed by the CLI. Skipping install; run that toolchain in apps/native.`,
+  );
+}
+
 async function selectMobilePlatform(): Promise<MobilePlatform> {
   const response = await navigableSelect<MobilePlatform>({
     message: "Select mobile platform",
@@ -213,14 +228,7 @@ async function gatherNativeMobileConfig(
   );
   const git = await getGitChoice(flags.git);
 
-  // Gradle, SwiftPM, and Flutter are not driven by the CLI, so installing here
-  // would touch only workspace tooling while reporting the app's dependencies
-  // as installed.
-  if (flags.install) {
-    log.warn(
-      `${NATIVE_TOOLCHAIN[platform]} dependencies are not installed by the CLI. Skipping install; run that toolchain in apps/native.`,
-    );
-  }
+  noticeNativeInstallSkipped(platform, flags.install);
 
   return {
     ...getDefaultConfig(),

@@ -833,7 +833,7 @@ export const dependencyVersionMap = {
   "i18next-http-backend": "^4.0.1",
 
   // i18n - Paraglide
-  "@inlang/paraglide-js": "^2.24.0",
+  "@inlang/paraglide-js": "^2.23.2",
 
   // i18n - next-intl
   "next-intl": "^4.13.6",

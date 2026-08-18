@@ -34,6 +34,12 @@ export const DEPENDENCY_UPDATE_POLICIES: Readonly<Record<string, DependencyUpdat
     pinnedVersion: "^8.5.15",
     reason: "Newer releases are quarantined by Yarn hardened mode.",
   },
+  "@inlang/paraglide-js": {
+    pinnedVersion: "^2.23.2",
+    holdLatestChannel: true,
+    reason:
+      "paraglide-js 2.24 pulls @inlang/sdk 3 and the @lix-js/sdk 0.12 native binary, which needs glibc 2.38 and breaks Vercel's AL2023 runtime.",
+  },
   graphql: {
     pinnedVersion: "^16.11.0",
     reason: "Garph, GraphQL Yoga, and Apollo Server peers currently cap GraphQL at 16.x.",

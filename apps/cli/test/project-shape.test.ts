@@ -294,6 +294,33 @@ describe("project shape scaffolding", () => {
     expect(config.install).toBe(false);
   });
 
+  // The guided path guarded this from the start; the prompt-free branch built
+  // its config separately and kept the TypeScript default of install: true.
+  test("the prompt-free native path does not claim a native install either", async () => {
+    const kotlin = await create("shape-yes-kotlin-install", {
+      ...baseOptions,
+      shape: "mobile",
+      kotlinMobile: "jetpack-compose",
+      install: true,
+      yes: true,
+    });
+
+    expect(kotlin.success).toBe(true);
+    expect(kotlin.projectConfig.install).toBe(false);
+  });
+
+  test("react native keeps its JavaScript install on the prompt-free path", async () => {
+    const expo = await create("shape-yes-rn-install", {
+      ...baseOptions,
+      shape: "mobile",
+      install: true,
+      yes: true,
+    });
+
+    expect(expo.success).toBe(true);
+    expect(expo.projectConfig.install).toBe(true);
+  });
+
   test("the guided mobile shape keeps explicitly selected addons", async () => {
     const config = await gatherConfig(
       {
