@@ -4,11 +4,10 @@ import type { CLIInput, ProjectConfig } from "./types";
 
 import {
   NATIVE_FRONTENDS,
-  SHAPE_DEFAULT_ECOSYSTEM,
   SHAPE_ECOSYSTEMS,
   mobilePlatformsFromFlags,
   shapeControlledFlags,
-  shapeRequiredHalfKey,
+  shapeRequiredHalfKeys,
   shapeSupportsEcosystem,
 } from "./prompts/project-shape";
 import { ProjectNameSchema } from "./types";
@@ -102,19 +101,30 @@ export function assertShapeInputIsUsable(
     );
   }
 
-  // Disabling the half the shape exists to build leaves an empty project.
-  const requiredHalf = shapeRequiredHalfKey(
-    shape,
-    options.ecosystem ?? SHAPE_DEFAULT_ECOSYSTEM[shape],
+  // Disabling the half the shape exists to build leaves an empty project. The
+  // ecosystem may still be unchosen, so every half the shape could need counts.
+  const disabledHalf = shapeRequiredHalfKeys(shape).find(
+    (key) =>
+      providedFlags.has(key) && isSameStackValue(options[key as keyof CLIInput], "none"),
   );
-  if (requiredHalf && providedFlags.has(requiredHalf)) {
-    const value = options[requiredHalf as keyof CLIInput];
-    if (isSameStackValue(value, "none")) {
-      exitWithError(
-        `--shape ${shape} needs ${toFlagName(requiredHalf)}, but it was set to none. ` +
-          `That would generate an empty project. Pick a ${shape} or drop --shape.`,
-      );
-    }
+  if (disabledHalf) {
+    exitWithError(
+      `--shape ${shape} needs ${toFlagName(disabledHalf)}, but it was set to none. ` +
+        `That would generate an empty project. Pick a ${shape} or drop --shape.`,
+    );
+  }
+
+  // A web frontend never names a mobile platform, on any path.
+  if (
+    shape === "mobile" &&
+    providedFlags.has("frontend") &&
+    Array.isArray(options.frontend) &&
+    options.frontend.some((entry) => entry !== "none" && !NATIVE_FRONTENDS.has(entry))
+  ) {
+    exitWithError(
+      "--shape mobile builds a mobile app, so --frontend must name a native frontend. " +
+        "Drop --frontend or pass a native one.",
+    );
   }
 
   if (options.ecosystem && !shapeSupportsEcosystem(shape, options.ecosystem)) {
@@ -129,11 +139,8 @@ export function assertShapeInputIsUsable(
   // A native frontend is how you name the React Native platform, so it answers
   // the mobile shape's question rather than contradicting it. A web frontend
   // never does, whatever else the flags say.
-  const frontendIsPlatformSelector =
-    shape === "mobile" &&
-    Array.isArray(options.frontend) &&
-    options.frontend.length > 0 &&
-    options.frontend.every((entry) => NATIVE_FRONTENDS.has(entry));
+  // Native frontends already passed the platform check above.
+  const frontendIsPlatformSelector = shape === "mobile" && providedFlags.has("frontend");
 
   const shapeOffValues = shapeControlledFlags(shape);
 

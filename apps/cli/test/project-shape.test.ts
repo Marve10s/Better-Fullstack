@@ -243,17 +243,29 @@ describe("project shape scaffolding", () => {
     expect(result.projectConfig.rustFrontend).toBe("none");
   });
 
-  test("a web frontend never counts as a mobile platform selector", async () => {
-    const result = await create("shape-mobile-web-frontend", {
+  // Guided and prompt-free alike: a web frontend cannot name a mobile platform.
+  test.each([true, false])("a web frontend is rejected on a mobile shape (yes=%p)", async (yes) => {
+    const result = await create(`shape-mobile-web-frontend-${yes}`, {
       ...baseOptions,
       shape: "mobile",
       ecosystem: "react-native",
       frontend: ["next"],
-      yes: true,
+      ...(yes ? { yes: true } : {}),
     });
 
     expect(result.success).toBe(false);
-    expect(result.error).toMatch(/Cannot combine --yes with core stack/);
+    expect(result.error).toMatch(/--frontend must name a native frontend/);
+  });
+
+  test("guards the required half before the ecosystem is chosen", async () => {
+    const result = await create("shape-go-half-disabled", {
+      ...baseOptions,
+      shape: "backend",
+      goWebFramework: "none",
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toMatch(/needs --go-web-framework, but it was set to none/);
   });
 
   test("a flag restating what the shape switches off is accepted with --yes", async () => {

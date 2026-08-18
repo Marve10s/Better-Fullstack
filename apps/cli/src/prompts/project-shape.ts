@@ -90,17 +90,14 @@ const SHAPE_REQUIRED_HALF: Record<"frontend" | "backend", Partial<Record<Ecosyst
   },
 };
 
-export function shapeRequiredHalfKey(
-  shape: ProjectShape,
-  ecosystem: Ecosystem,
-): string | undefined {
-  if (shape !== "frontend" && shape !== "backend") return undefined;
-  return SHAPE_REQUIRED_HALF[shape][ecosystem];
+export function shapeRequiredHalfKeys(shape: ProjectShape): string[] {
+  if (shape !== "frontend" && shape !== "backend") return [];
+  return [...new Set(Object.values(SHAPE_REQUIRED_HALF[shape]))];
 }
 
 const NATIVE_TOOLCHAIN: Record<NativeMobilePlatform, string> = {
   kotlin: "Gradle",
-  swift: "Swift Package Manager",
+  swift: "XcodeGen",
   dart: "Flutter",
 };
 
