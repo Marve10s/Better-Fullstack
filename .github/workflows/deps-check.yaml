@@ -275,6 +275,27 @@ jobs:
       pull-requests: write
 
     steps:
+      # This job runs inside the scheduled automation run, so the smoke result
+      # would never appear on the PR; publish it as a status the PR can gate on.
+      - name: Publish Smoke Status On Dependency Head
+        env:
+          GH_TOKEN: ${{ secrets.PAT_WORKFLOW }}
+          SMOKE_RESULT: ${{ needs.deps-smoke.result }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          HEAD_SHA=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/deps/version-updates" --jq .object.sha)
+          STATE=failure
+          DESCRIPTION="Targeted dependency smoke failed"
+          if [ "$SMOKE_RESULT" = "success" ]; then
+            STATE=success
+            DESCRIPTION="Targeted dependency smoke passed"
+          fi
+          gh api -X POST "repos/$GITHUB_REPOSITORY/statuses/$HEAD_SHA" \
+            -f state="$STATE" \
+            -f context="Dependency Update Smoke Test" \
+            -f description="$DESCRIPTION" \
+            -f target_url="$RUN_URL"
+
       - name: Post Smoke Summary To Pull Request
         env:
           GH_TOKEN: ${{ secrets.PAT_WORKFLOW }}

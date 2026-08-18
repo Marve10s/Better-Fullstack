@@ -964,16 +964,25 @@ function applyForcedOptions(draft: CandidateDraft, args: GeneratorArgs): Candida
     }
   }
 
-  // Re-sample non-none for forced categories (simple: if value is "none", pick first non-none)
-  for (const key of forceNonNone) {
-    const val = (options as Record<string, unknown>)[key];
-    if (val === "none" || (Array.isArray(val) && val.length === 1 && val[0] === "none")) {
-      // We can't re-sample here without knowing the valid values,
-      // so we leave it — the sampleScalar/sampleArray key-aware version handles this
-    }
+  return { ...draft, options };
+}
+
+/**
+ * The samplers honour forceNonNone, but prerequisite branches can still hardcode a
+ * category to "none" (database is "none" whenever backend is "none" or convex).
+ * Such a draft cannot exercise the forced category, so the caller retries instead.
+ */
+function satisfiesForceNonNone(draft: CandidateDraft, forced: ReadonlySet<string>): boolean {
+  if (forced.size === 0) return true;
+
+  for (const key of forced) {
+    const value = (draft.options as Record<string, unknown>)[key];
+    if (value === undefined) continue;
+    if (value === "none") return false;
+    if (Array.isArray(value) && value.every((entry) => entry === "none")) return false;
   }
 
-  return { ...draft, options };
+  return true;
 }
 
 export function generateBatch(args: GeneratorArgs, history: HistoricalLedger): ComboCandidate[] {
@@ -996,6 +1005,7 @@ export function generateBatch(args: GeneratorArgs, history: HistoricalLedger): C
 
       try {
         const draft = applyForcedOptions(createDraft(ecosystem, args), args);
+        if (!satisfiesForceNonNone(draft, _forceNonNone)) continue;
         const provisionalConfig = validateDraft(draft, "candidate");
         const provisionalFingerprint = buildHistoryFingerprint(provisionalConfig);
         const provisionalKey = fingerprintToKey(provisionalFingerprint);
@@ -1029,6 +1039,16 @@ export function generateBatch(args: GeneratorArgs, history: HistoricalLedger): C
       } catch {
         continue;
       }
+    }
+
+    // An empty batch means every draft was rejected — usually impossible force
+    // flags. Returning it would let the smoke runner report a vacuous success.
+    if (totalNeeded > 0 && combos.length === 0) {
+      throw new Error(
+        `Generated no combinations after ${attempts} attempts. Check the force flags: ` +
+          `forceOptions=${JSON.stringify(args.forceOptions ?? {})} ` +
+          `forceNonNone=${JSON.stringify(args.forceNonNone ?? [])}`,
+      );
     }
 
     // Partition: slice to this runner's portion

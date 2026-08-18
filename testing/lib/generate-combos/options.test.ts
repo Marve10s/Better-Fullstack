@@ -53,4 +53,26 @@ describe("smoke combo generation", () => {
       expect(combo.config.analytics).not.toBe("none");
     }
   });
+
+  it("keeps forced categories non-none through prerequisite branches", () => {
+    const combos = generateBatch(
+      {
+        count: 12,
+        ecosystems: ["typescript"],
+        installMode: "no-install",
+        rng: createSeededRandom(seedFromString("forced-database-prerequisites")),
+        forceNonNone: ["database"],
+      },
+      {
+        fingerprintKeys: new Set(),
+        legacyNames: new Set(),
+        historyCount: 0,
+      },
+    );
+
+    expect(combos.length).toBeGreaterThan(0);
+    for (const combo of combos) {
+      expect(combo.config.database).not.toBe("none");
+    }
+  });
 });

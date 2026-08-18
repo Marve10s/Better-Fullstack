@@ -65,9 +65,24 @@ report += "\n\n### ⚠️ Needs attention\n\n";
 if (exitCode === 0) {
   report += "- None. `bun run test` completed successfully.";
 } else if (failures.length > 0) {
-  report += failures
-    .map(({ label, excerpt }) => `#### \`${label}\`\n\n\`\`\`text\n${excerpt}\n\`\`\``)
-    .join("\n\n");
+  // A cascading regression can fail hundreds of tests; an unbounded report
+  // overflows the PR body and breaks the step that opens the PR.
+  const MAX_FAILURES = 15;
+  const MAX_REPORT_CHARS = 30_000;
+  const shown: string[] = [];
+  let budget = MAX_REPORT_CHARS;
+
+  for (const { label, excerpt } of failures.slice(0, MAX_FAILURES)) {
+    const block = `#### \`${label}\`\n\n\`\`\`text\n${excerpt}\n\`\`\``;
+    if (block.length > budget) break;
+    budget -= block.length;
+    shown.push(block);
+  }
+
+  report += shown.join("\n\n");
+  if (shown.length < failures.length) {
+    report += `\n\n_Showing ${shown.length} of ${failures.length} failures. See the [workflow log](${process.env.RUN_URL ?? "the workflow run"}) for the rest._`;
+  }
 } else {
   const errorIndex = lines.findIndex((line) => /(?:error|failed|exited|GLIBC_)/i.test(line));
   const start = errorIndex >= 0 ? errorIndex : Math.max(0, lines.length - 10);

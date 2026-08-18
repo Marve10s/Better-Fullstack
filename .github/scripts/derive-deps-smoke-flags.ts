@@ -1,5 +1,9 @@
 #!/usr/bin/env bun
 
+import {
+  getCategoryOptionIds,
+  type OptionCategory,
+} from "../../packages/types/src/option-metadata";
 import { execFileSync } from "node:child_process";
 import { relative, resolve } from "node:path";
 
@@ -153,6 +157,34 @@ function categoriesForTemplatePath(path: string): string[] {
   return [...(TEMPLATE_CATEGORY_KEYS[templateCategory] ?? [])];
 }
 
+const optionIdCache = new Map<string, ReadonlySet<string>>();
+
+function validOptionIds(category: string): ReadonlySet<string> {
+  const cached = optionIdCache.get(category);
+  if (cached) return cached;
+
+  let ids: ReadonlySet<string>;
+  try {
+    ids = new Set(getCategoryOptionIds(category as OptionCategory));
+  } catch {
+    ids = new Set<string>();
+  }
+  optionIdCache.set(category, ids);
+  return ids;
+}
+
+/**
+ * Nested template trees (frontend/react/tanstack-router) put grouping directories
+ * between the category and the selectable option, so the segment right after the
+ * category is not always a real option id. Take the first segment the schema
+ * recognises for this category, and pin nothing when none of them qualify.
+ */
+function resolveOptionId(templatePath: string, category: string): string | undefined {
+  const ids = validOptionIds(category);
+  if (ids.size === 0) return undefined;
+  return templatePath.split("/").find((segment) => ids.has(segment));
+}
+
 function sourceCategories(
   path: string,
   content: string,
@@ -203,10 +235,7 @@ async function mapPackages(packages: readonly string[]): Promise<Map<string, Pac
     const content = await Bun.file(resolve(TEMPLATE_ROOT, path)).text();
     for (const packageName of packages) {
       if (!content.includes(packageName)) continue;
-      const [templateCategory, optionId] = path.split("/");
-      if (templateCategory && optionId) {
-        mappings.get(packageName)?.templateOptions.add(`${templateCategory}/${optionId}`);
-      }
+      mappings.get(packageName)?.templateOptions.add(path);
       for (const category of categoriesForTemplatePath(path)) {
         mappings.get(packageName)?.categories.add(category);
       }
@@ -225,9 +254,9 @@ async function mapPackages(packages: readonly string[]): Promise<Map<string, Pac
         const mapping = mappings.get(packageName);
         mapping?.sourceFiles.add(path);
         const optionIds = new Set(
-          [...(mapping?.templateOptions ?? [])]
-            .map((templatePath) => templatePath.split("/")[1])
-            .filter((optionId): optionId is string => optionId !== undefined),
+          [...(mapping?.templateOptions ?? [])].flatMap((templatePath) =>
+            templatePath.split("/").slice(1),
+          ),
         );
         for (const category of sourceCategories(path, content, index, optionIds)) {
           mapping?.categories.add(category);
@@ -251,8 +280,11 @@ async function deriveForceFlags(diff: string): Promise<string> {
     for (const category of mapping.categories) {
       const bucket = optionsByCategory.get(category) ?? new Set<string>();
       for (const entry of mapping.templateOptions) {
-        const [templateCategory, optionId] = entry.split("/");
-        if (templateCategory === category && optionId) bucket.add(optionId);
+        // Template directories are kebab-case (feature-flags) while categories are
+        // camelCase, so normalise through the same mapping used for detection.
+        if (!categoriesForTemplatePath(entry).includes(category)) continue;
+        const optionId = resolveOptionId(entry, category);
+        if (optionId) bucket.add(optionId);
       }
       optionsByCategory.set(category, bucket);
     }
@@ -308,10 +340,26 @@ if (args.includes("--test")) {
 -  "@medusajs/js-sdk": "^2.18.0",
 +  "@medusajs/js-sdk": "^2.19.0",
 `;
-  const flags = await deriveForceFlags(syntheticDiff);
-  const expected = "--force-option ecommerce=medusa --force-option integrations=nango";
-  if (flags !== expected) throw new Error(`Expected ${expected}, received ${flags || "<empty>"}`);
-  console.log(flags);
+  // Kebab-cased template directory (feature-flags -> featureFlags) and a package
+  // that only lives under a nested frontend group (frontend/react/<option>).
+  const nestedDiff = `diff --git a/${VERSION_MAP_PATH} b/${VERSION_MAP_PATH}
+--- a/${VERSION_MAP_PATH}
++++ b/${VERSION_MAP_PATH}
+@@ -887 +887 @@
+-  "@launchdarkly/js-client-sdk": "^4.9.3",
++  "@launchdarkly/js-client-sdk": "^4.9.4",
+`;
+
+  const cases: Array<[string, string]> = [
+    [syntheticDiff, "--force-option ecommerce=medusa --force-option integrations=nango"],
+    [nestedDiff, "--force-option featureFlags=launchdarkly"],
+  ];
+
+  for (const [diff, expected] of cases) {
+    const flags = await deriveForceFlags(diff);
+    if (flags !== expected) throw new Error(`Expected ${expected}, received ${flags || "<empty>"}`);
+    console.log(flags);
+  }
 } else {
   const baseIndex = args.indexOf("--base");
   const base = baseIndex >= 0 && args[baseIndex + 1] ? args[baseIndex + 1] : "origin/main";
