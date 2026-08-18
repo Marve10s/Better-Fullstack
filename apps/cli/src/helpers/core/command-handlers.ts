@@ -19,6 +19,7 @@ import { isCancel, isGoBack, navigableSelect } from "../../prompts/navigable";
 import { getProjectName } from "../../prompts/project-name";
 import {
   SHAPE_DEFAULT_ECOSYSTEM,
+  dotnetFrontendPartSpecs,
   mobilePlatformFromFlags,
   nativeMobilePartSpecs,
   noticeNativeInstallSkipped,
@@ -685,7 +686,17 @@ export async function createProjectHandler(
           const platform =
             cliInput.shape === "mobile" ? mobilePlatformFromFlags(cliInput) : undefined;
 
-          if (platform && platform !== "react-native") {
+          if (cliInput.shape === "frontend" && cliInput.ecosystem === "dotnet") {
+            // Only the graph reaches the Blazor templates; the flat field does not.
+            cliInput = {
+              ...shapeFlagsForEcosystem("frontend", "dotnet", { withoutPrompts: true }),
+              ...cliInput,
+              part: [
+                ...(cliInput.part ?? []),
+                ...dotnetFrontendPartSpecs(cliInput.dotnetFrontend ?? "blazor-web-app"),
+              ],
+            };
+          } else if (platform && platform !== "react-native") {
             noticeNativeInstallSkipped(platform, cliInput.install);
             cliInput = {
               ...cliInput,

@@ -42,6 +42,17 @@ const FRONTEND_ONLY_FLAGS: Partial<Record<Ecosystem, Partial<ProjectConfig>>> = 
     auth: "none",
   },
   rust: { rustWebFramework: "none" },
+  dotnet: {
+    dotnetWebFramework: "none",
+    dotnetOrm: "none",
+    dotnetApi: "none",
+    dotnetAuth: "none",
+    dotnetRealtime: "none",
+    dotnetJobQueue: "none",
+    dotnetCaching: "none",
+    dotnetDeploy: "none",
+    database: "none",
+  },
 };
 
 const BACKEND_ONLY_FLAGS: Partial<Record<Ecosystem, Partial<ProjectConfig>>> = {
@@ -56,6 +67,7 @@ const BACKEND_ONLY_FLAGS: Partial<Record<Ecosystem, Partial<ProjectConfig>>> = {
  */
 const FRONTEND_SHAPE_YES_DEFAULTS: Partial<Record<Ecosystem, Partial<ProjectConfig>>> = {
   rust: { rustFrontend: "leptos" },
+  dotnet: { dotnetFrontend: "blazor-web-app" },
 };
 
 const BACKEND_SHAPE_YES_DEFAULTS: Partial<Record<Ecosystem, Partial<ProjectConfig>>> = {
@@ -64,9 +76,7 @@ const BACKEND_SHAPE_YES_DEFAULTS: Partial<Record<Ecosystem, Partial<ProjectConfi
 
 export const SHAPE_ECOSYSTEMS = {
   fullstack: ECOSYSTEM_VALUES,
-  // .NET is absent deliberately: a frontend-only .NET project renders the base
-  // template with no Blazor app, with or without a shape.
-  frontend: ["typescript", "rust"],
+  frontend: ["typescript", "rust", "dotnet"],
   backend: ["typescript", "go", "rust", "python", "java", "dotnet", "elixir"],
   mobile: ["react-native"],
 } as const satisfies Record<ProjectShape, readonly Ecosystem[]>;
@@ -191,7 +201,7 @@ export function nativeMobilePartSpecs(
 }
 
 /**
- * Gradle, SwiftPM, and Flutter are not driven by the CLI, so installing would
+ * Gradle, XcodeGen, and Flutter are not driven by the CLI, so installing would
  * touch only workspace tooling while reporting the app's own dependencies as
  * installed. Both the guided and prompt-free paths route through here.
  */
@@ -203,6 +213,75 @@ export function noticeNativeInstallSkipped(
   log.warn(
     `${NATIVE_TOOLCHAIN[platform]} dependencies are not installed by the CLI. Skipping install; run that toolchain in apps/native.`,
   );
+}
+
+export function dotnetFrontendPartSpecs(choice: string): string[] {
+  return [`frontend:dotnet:${choice}`];
+}
+
+async function selectDotnetFrontend(
+  selected?: ProjectConfig["dotnetFrontend"],
+): Promise<"blazor-web-app" | "blazor-webassembly"> {
+  if (selected && selected !== "none") return selected;
+
+  const response = await navigableSelect<"blazor-web-app" | "blazor-webassembly">({
+    message: "Select .NET web frontend",
+    options: [
+      {
+        value: "blazor-web-app",
+        label: "Blazor Web App",
+        hint: "Interactive server rendering on .NET 10",
+      },
+      {
+        value: "blazor-webassembly",
+        label: "Blazor WebAssembly",
+        hint: "Client-side Razor components on .NET 10",
+      },
+    ],
+    initialValue: "blazor-web-app",
+  });
+
+  if (isCancel(response) || isGoBack(response)) return exitCancelled("Operation cancelled");
+  return response;
+}
+
+/**
+ * A .NET frontend only reaches the Blazor templates through the stack graph.
+ * The flat dotnetFrontend field leaves the generator on its base-template
+ * branch, which emits csproj files and no Razor components at all.
+ */
+async function gatherDotnetFrontendConfig(
+  flags: Partial<ProjectConfig>,
+  projectName: string,
+  projectDir: string,
+  relativePath: string,
+): Promise<ProjectConfig> {
+  const dotnetFrontend = await selectDotnetFrontend(flags.dotnetFrontend);
+  const stackParts = parseStackPartSpecs(dotnetFrontendPartSpecs(dotnetFrontend), "selected");
+  const git = await getGitChoice(flags.git);
+
+  return {
+    ...getDefaultConfig(),
+    ...flags,
+    ...stackPartsToLegacyProjectConfigPartial(stackParts),
+    projectName,
+    projectDir,
+    relativePath,
+    ecosystem: "dotnet",
+    dotnetFrontend,
+    ...FRONTEND_ONLY_FLAGS.dotnet,
+    frontend: ["none"],
+    uiLibrary: "none",
+    cssFramework: "none",
+    backend: "none",
+    runtime: "none",
+    orm: "none",
+    api: "none",
+    auth: "none",
+    examples: [],
+    git,
+    stackParts,
+  };
 }
 
 async function selectMobilePlatform(): Promise<MobilePlatform> {
@@ -330,11 +409,30 @@ export async function resolveProjectShape(
 
   // Both selectors fall back to their initial value without a TTY, so the shape
   // default is passed in rather than inherited from the composer's own default.
+  if (shape === "frontend" && flags.ecosystem === "dotnet") {
+    return {
+      kind: "config",
+      config: await gatherDotnetFrontendConfig(flags, projectName, projectDir, relativePath),
+    };
+  }
+
   const ecosystem =
     flags.ecosystem ??
     (shape === "frontend"
       ? await selectFrontendEcosystem(SHAPE_ECOSYSTEMS.frontend)
       : await selectBackendEcosystem(SHAPE_DEFAULT_ECOSYSTEM.backend));
+
+  if (shape === "frontend" && ecosystem === "dotnet") {
+    return {
+      kind: "config",
+      config: await gatherDotnetFrontendConfig(
+        { ...flags, ecosystem },
+        projectName,
+        projectDir,
+        relativePath,
+      ),
+    };
+  }
 
   return { kind: "flags", flags: shapeFlagsForEcosystem(shape, ecosystem) };
 }
