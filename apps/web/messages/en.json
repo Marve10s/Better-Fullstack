@@ -121,6 +121,8 @@
   "changelogAria": "Changelog",
   "changelogOpen": "Open changelog",
   "changelogClose": "Close changelog",
+  "changelogReadMore": "Read more",
+  "changelogDismiss": "Dismiss",
   "changelogLatestRelease": "Latest release",
   "changelogLatestPublished": "Latest release published {date}.",
   "changelogLatestUpdate": "Latest update",

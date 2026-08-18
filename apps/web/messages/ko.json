@@ -119,6 +119,8 @@
   "changelogAria": "변경 내역",
   "changelogOpen": "변경 로그 열기",
   "changelogClose": "변경 로그 닫기",
+  "changelogReadMore": "Read more",
+  "changelogDismiss": "Dismiss",
   "changelogLatestRelease": "최신 릴리스",
   "changelogLatestPublished": "최신 릴리스는 {date}에 게시되었습니다.",
   "changelogLatestUpdate": "최신 업데이트",

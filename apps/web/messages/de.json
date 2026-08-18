@@ -119,6 +119,8 @@
   "changelogAria": "Änderungsprotokoll",
   "changelogOpen": "Änderungsprotokoll öffnen",
   "changelogClose": "Änderungsprotokoll schließen",
+  "changelogReadMore": "Read more",
+  "changelogDismiss": "Dismiss",
   "changelogLatestRelease": "Neueste Veröffentlichung",
   "changelogLatestPublished": "Neueste Version veröffentlicht {date}.",
   "changelogLatestUpdate": "Neuestes Update",

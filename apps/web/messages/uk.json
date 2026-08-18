@@ -120,6 +120,8 @@
   "changelogAria": "Журнал змін",
   "changelogOpen": "Відкрити журнал змін",
   "changelogClose": "Закрити журнал змін",
+  "changelogReadMore": "Read more",
+  "changelogDismiss": "Dismiss",
   "changelogLatestRelease": "Останній випуск",
   "changelogLatestPublished": "Останній реліз опубліковано {date}.",
   "changelogLatestUpdate": "Останнє оновлення",

@@ -119,6 +119,8 @@
   "changelogAria": "Journal des modifications",
   "changelogOpen": "Ouvrir le journal des modifications",
   "changelogClose": "Fermer le journal des modifications",
+  "changelogReadMore": "Read more",
+  "changelogDismiss": "Dismiss",
   "changelogLatestRelease": "Dernière version",
   "changelogLatestPublished": "Dernière version publiée {date}.",
   "changelogLatestUpdate": "Dernière mise à jour",
