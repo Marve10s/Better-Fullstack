@@ -71,7 +71,32 @@ export const SHAPE_ECOSYSTEMS = {
   mobile: ["react-native"],
 } as const satisfies Record<ProjectShape, readonly Ecosystem[]>;
 
-const NATIVE_FRONTENDS = new Set(["native-bare", "native-uniwind", "native-unistyles"]);
+export const NATIVE_FRONTENDS = new Set([
+  "native-bare",
+  "native-uniwind",
+  "native-unistyles",
+]);
+
+const SHAPE_REQUIRED_HALF: Record<"frontend" | "backend", Partial<Record<Ecosystem, string>>> = {
+  frontend: { typescript: "frontend", rust: "rustFrontend" },
+  backend: {
+    typescript: "backend",
+    rust: "rustWebFramework",
+    go: "goWebFramework",
+    python: "pythonWebFramework",
+    java: "javaWebFramework",
+    dotnet: "dotnetWebFramework",
+    elixir: "elixirWebFramework",
+  },
+};
+
+export function shapeRequiredHalfKey(
+  shape: ProjectShape,
+  ecosystem: Ecosystem,
+): string | undefined {
+  if (shape !== "frontend" && shape !== "backend") return undefined;
+  return SHAPE_REQUIRED_HALF[shape][ecosystem];
+}
 
 const NATIVE_TOOLCHAIN: Record<NativeMobilePlatform, string> = {
   kotlin: "Gradle",
@@ -301,7 +326,7 @@ export async function resolveProjectShape(
   const ecosystem =
     flags.ecosystem ??
     (shape === "frontend"
-      ? await selectFrontendEcosystem()
+      ? await selectFrontendEcosystem(SHAPE_ECOSYSTEMS.frontend)
       : await selectBackendEcosystem(SHAPE_DEFAULT_ECOSYSTEM.backend));
 
   return { kind: "flags", flags: shapeFlagsForEcosystem(shape, ecosystem) };

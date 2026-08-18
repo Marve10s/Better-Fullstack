@@ -243,6 +243,44 @@ describe("project shape scaffolding", () => {
     expect(result.projectConfig.rustFrontend).toBe("none");
   });
 
+  test("a web frontend never counts as a mobile platform selector", async () => {
+    const result = await create("shape-mobile-web-frontend", {
+      ...baseOptions,
+      shape: "mobile",
+      ecosystem: "react-native",
+      frontend: ["next"],
+      yes: true,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toMatch(/Cannot combine --yes with core stack/);
+  });
+
+  test("a flag restating what the shape switches off is accepted with --yes", async () => {
+    const result = await create("shape-redundant-yes", {
+      ...baseOptions,
+      shape: "backend",
+      frontend: ["none"],
+      yes: true,
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.projectConfig.backend).not.toBe("none");
+  });
+
+  test("rejects disabling the half the shape exists to build", async () => {
+    const result = await create("shape-empty-half", {
+      ...baseOptions,
+      shape: "frontend",
+      ecosystem: "rust",
+      rustFrontend: "none",
+      yes: true,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toMatch(/needs --rust-frontend, but it was set to none/);
+  });
+
   test("a native frontend selector answers the mobile shape rather than fighting it", async () => {
     const result = await create("shape-mobile-native-frontend", {
       ...baseOptions,

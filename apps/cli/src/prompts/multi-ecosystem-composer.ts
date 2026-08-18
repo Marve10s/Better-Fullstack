@@ -218,14 +218,18 @@ export async function selectBackendEcosystem(
   return response;
 }
 
-export async function selectFrontendEcosystem(): Promise<FrontendEcosystem> {
+export async function selectFrontendEcosystem(
+  allowed: readonly FrontendEcosystem[] = ["typescript", "rust", "dotnet"],
+): Promise<FrontendEcosystem> {
   const response = await navigableSelect<FrontendEcosystem>({
     message: "Select frontend ecosystem",
-    options: [
-      { value: "typescript", label: "TypeScript", hint: "React, Vue, Svelte, Astro, and more" },
-      { value: "rust", label: "Rust", hint: "Leptos, Dioxus, or Yew" },
-      { value: "dotnet", label: ".NET", hint: "Blazor Web App or WebAssembly" },
-    ],
+    options: (
+      [
+        { value: "typescript", label: "TypeScript", hint: "React, Vue, Svelte, Astro, and more" },
+        { value: "rust", label: "Rust", hint: "Leptos, Dioxus, or Yew" },
+        { value: "dotnet", label: ".NET", hint: "Blazor Web App or WebAssembly" },
+      ] satisfies { value: FrontendEcosystem; label: string; hint: string }[]
+    ).filter((option) => allowed.includes(option.value)),
     initialValue: "typescript",
   });
 

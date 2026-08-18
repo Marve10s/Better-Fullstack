@@ -3,9 +3,12 @@ import path from "node:path";
 import type { CLIInput, ProjectConfig } from "./types";
 
 import {
+  NATIVE_FRONTENDS,
+  SHAPE_DEFAULT_ECOSYSTEM,
   SHAPE_ECOSYSTEMS,
   mobilePlatformsFromFlags,
   shapeControlledFlags,
+  shapeRequiredHalfKey,
   shapeSupportsEcosystem,
 } from "./prompts/project-shape";
 import { ProjectNameSchema } from "./types";
@@ -99,6 +102,21 @@ export function assertShapeInputIsUsable(
     );
   }
 
+  // Disabling the half the shape exists to build leaves an empty project.
+  const requiredHalf = shapeRequiredHalfKey(
+    shape,
+    options.ecosystem ?? SHAPE_DEFAULT_ECOSYSTEM[shape],
+  );
+  if (requiredHalf && providedFlags.has(requiredHalf)) {
+    const value = options[requiredHalf as keyof CLIInput];
+    if (isSameStackValue(value, "none")) {
+      exitWithError(
+        `--shape ${shape} needs ${toFlagName(requiredHalf)}, but it was set to none. ` +
+          `That would generate an empty project. Pick a ${shape} or drop --shape.`,
+      );
+    }
+  }
+
   if (options.ecosystem && !shapeSupportsEcosystem(shape, options.ecosystem)) {
     exitWithError(
       `--shape ${shape} does not support --ecosystem ${options.ecosystem}. ` +
@@ -109,15 +127,26 @@ export function assertShapeInputIsUsable(
   if (!options.yes) return;
 
   // A native frontend is how you name the React Native platform, so it answers
-  // the mobile shape's question rather than contradicting it.
-  const platformSelectors =
-    shape === "mobile" && mobilePlatformsFromFlags(options).length === 1
-      ? new Set(["frontend"])
-      : new Set<string>();
+  // the mobile shape's question rather than contradicting it. A web frontend
+  // never does, whatever else the flags say.
+  const frontendIsPlatformSelector =
+    shape === "mobile" &&
+    Array.isArray(options.frontend) &&
+    options.frontend.length > 0 &&
+    options.frontend.every((entry) => NATIVE_FRONTENDS.has(entry));
 
-  const coreStackFlagsProvided = Array.from(providedFlags).filter(
-    (flag) => CORE_STACK_FLAGS.has(flag) && !platformSelectors.has(flag),
-  );
+  const shapeOffValues = shapeControlledFlags(shape);
+
+  const coreStackFlagsProvided = Array.from(providedFlags).filter((flag) => {
+    if (!CORE_STACK_FLAGS.has(flag)) return false;
+    if (flag === "frontend" && frontendIsPlatformSelector) return false;
+    // A flag that merely restates what the shape already switches off adds
+    // nothing to reject.
+    if (flag in shapeOffValues) {
+      return !isSameStackValue(options[flag as keyof CLIInput], shapeOffValues[flag]);
+    }
+    return true;
+  });
 
   if (coreStackFlagsProvided.length > 0) {
     exitWithError(
