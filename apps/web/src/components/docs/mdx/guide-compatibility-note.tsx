@@ -2,7 +2,14 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
-type CompatibilityKind = "supported" | "partial" | "unsupported" | "warning";
+export const GUIDE_COMPATIBILITY_KINDS = [
+  "supported",
+  "partial",
+  "unsupported",
+  "warning",
+] as const;
+
+type CompatibilityKind = (typeof GUIDE_COMPATIBILITY_KINDS)[number];
 
 const toneByKind: Record<CompatibilityKind, string> = {
   supported: "border-l-emerald-500",

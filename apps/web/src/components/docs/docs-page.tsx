@@ -141,8 +141,6 @@ function formatSectionLabel(segment: string | undefined) {
       return m.docsSectionGettingStarted();
     case "reference":
       return m.docsSectionReference();
-    case "sections":
-      return m.docsSectionSections();
     default:
       return segment
         .split("-")
