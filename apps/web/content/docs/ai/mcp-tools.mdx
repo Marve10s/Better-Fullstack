@@ -2,7 +2,7 @@
 title: MCP Tools Reference
 description: Detailed reference for Better Fullstack MCP tools, inputs, outputs, and safe workflows.
 translationStatus: pending
-updated: 2026-08-10
+updated: 2026-08-15
 ---
 
 The MCP server exposes structured tools for discovery, project creation, and existing-project
@@ -37,7 +37,7 @@ is the authoritative contract.
    `acknowledgeArchitectureChange: true` only when the user accepted an architecture change.
 5. Report the returned install command and any manual migration work.
 
-Use `bfs_plan_addition` and `bfs_add_feature` only for the narrower addon, web-deploy, and
+Use `bfs_plan_addition` and `bfs_add_feature` only for the narrower Stack Part, web-deploy, and
 server-deploy workflow.
 
 ### Inspect, check, and update project files
@@ -50,13 +50,16 @@ server-deploy workflow.
 4. Review the categorized/hash-bound plan. Structured merge content is exact through 32 KiB per
    file; oversized content is withheld with size/SHA metadata and no token is issued.
 5. After approval, call `bfs_apply_project_update` with the same absolute `projectDir` and exact
-   token plus `acknowledgeUnprovenManifestV1: true`. A missing, stale, modified, cross-project, or
-   bounded-review-ineligible token fails closed.
+   token. Set `acknowledgeUnprovenManifestV1: true` only when the plan reports migrated/adopted
+   unverified lineage. A missing, stale, modified, cross-project, or bounded-review-ineligible token
+   fails closed.
+6. Keep the returned recovery transaction ID until `bfs_check_project` passes. If needed, call
+   `bfs_recover_project_transaction` with that ID.
 
-This workflow currently guarantees only a manifest-v1 baseline. It does not prove generator
-release/SHA lineage, choose a supported cross-version upgrade window, create a transactional
-backup, or provide automated recovery. Those provenance and recovery guarantees remain blocked on
-Wave 1.
+Manifest v2 records CLI, generator, template-set, and schema provenance plus lifecycle history.
+Transactional apply restores operation-owned writes on failure and returns bounded recovery data.
+The current plan still decides eligibility; manifest provenance alone does not define a supported
+cross-version upgrade window.
 
 <Callout kind="warning" title="Write and migration behavior">
 Planning tools are read-only. Create, apply, and add tools write files. Project checks can fetch
@@ -129,8 +132,9 @@ file/directory summary plus graph-backed stack metadata. It never writes files.
 
 Requires `projectName`; optional `targetDir` is the absolute parent directory. It accepts the same
 scaffold-time fields as planning, creates the project directory, writes generated files and
-`bts.jsonc`, and returns the path, file count, graph metadata, warnings, and install guidance. It
-does not install dependencies.
+`bts.jsonc`, and manifest-v2 provenance through the same create core as the CLI. It returns the
+path, file count, lifecycle result, graph metadata, warnings, and install guidance. It does not
+install dependencies or initialize Git.
 
 ## Existing-project stack tools
 
@@ -140,9 +144,9 @@ Requires an existing project directory containing a valid `bts.jsonc`. It return
 ecosystem, graph summary, dependency/environment status, verification counts, and lifecycle
 prerequisites. It is read-only and does not execute generated toolchains or write project files.
 The manifest is optional for inspection: the response reports whether `bts.lock.json` exists and
-whether its current v1 contract is supported. It never returns a project-update `reviewToken`.
-Manifest v1 has no generator release/SHA provenance and this tool provides no backup or recovery;
-those guarantees remain unavailable until Wave 1 ships.
+whether its current contract is supported, its provenance state, and recovery availability. It
+also returns a compact current-template upgrade summary. It never returns a project-update
+`reviewToken`.
 
 ### `bfs_check_project`
 
@@ -152,30 +156,46 @@ and an overall `ok` value. Missing dependencies, targets, commands, or toolchain
 non-green. It does not directly rewrite generated source, configuration, or the manifest, but its
 invoked build tools may fetch dependencies and write locks, caches, compiler output, or build
 artifacts; therefore this tool is not annotated read-only. A manifest is not required and no `reviewToken` is produced. Any reported
-manifest support is limited to v1; release/SHA provenance and transactional recovery remain Wave 1
-limitations.
+manifest status does not change the executable check matrix.
+
+### `bfs_plan_part_removal`
+
+Requires an absolute `projectDir` and one exact selected stack-part spec or ID. It rejects primary
+frontend, backend, mobile, and database roles and returns the resulting config/file plan plus a
+64-character `reviewToken`. Planning is read-only.
+
+### `bfs_apply_part_removal`
+
+Requires the same project, exact target, and review token returned by the removal plan. It applies
+the removal in a recoverable transaction and fails closed if project state changed. Set
+`acknowledgeArchitectureChange: true` only after reviewing reported migration risks; data and
+schemas are never migrated automatically.
 
 ### `bfs_plan_project_update`
 
 Requires a valid `bts.jsonc` and compares the on-disk project with the currently bundled templates.
 It is read-only and returns categorized drift, conflicts, manual-review items, actionable files,
 blockers, and whether apply is allowed. A `reviewToken` is returned only when a supported
-`bts.lock.json` manifest-v1 baseline is present and every proposed structured merge fits the 32 KiB
+versioned `bts.lock.json` baseline is present and every proposed structured merge fits the 32 KiB
 per-file review bound. The token binds the canonical project path, raw config and manifest hashes,
 categorized actions, intended actionable hashes, preimages, and exact bounded merge bytes. An
-oversized merge returns withheld size/SHA/limit metadata and no token. Manifest v1 remains
-plan-only by default and never proves generator release/SHA lineage; transactional backup and
-automated recovery remain unavailable until Wave 1.
+oversized merge returns withheld size/SHA/limit metadata and no token. The result includes the
+shared lifecycle contract: changes, blockers, provenance, recovery eligibility, and next actions.
 
 ### `bfs_apply_project_update`
 
-Requires the same absolute `projectDir`, a supported manifest-v1 baseline, prior bounded review,
-its exact 64-character `reviewToken`, and `acknowledgeUnprovenManifestV1: true`. It destructively
-overwrites only currently actionable template files and advances the v1 baseline. Missing, stale,
-changed, cross-project, or oversized-review-ineligible tokens fail closed. Checks reject observed
-symlinks and changed preimages, but are not a transaction or an active-filesystem-adversary
-guarantee; earlier writes are not rolled back after a later failure. Manifest v1 has no generator
-release/SHA provenance, and backup/rollback recovery is not implemented.
+Requires the same absolute `projectDir`, a supported versioned baseline, prior bounded review, and
+its exact 64-character `reviewToken`. Migrated/adopted unverified lineage additionally requires
+`acknowledgeUnprovenManifestV1: true`. It writes only actionable template files in a transaction,
+advances manifest-v2 history, rolls operation-owned writes back on failure, and returns a recovery
+ID and command on success. Missing, stale, changed, cross-project, or oversized-review-ineligible
+tokens fail closed. Concurrent edits are preserved and reported instead of being overwritten.
+
+### `bfs_recover_project_transaction`
+
+Requires an absolute `projectDir` and the transaction UUID returned by apply. It restores every
+bound preimage for a successful or interrupted transaction exactly once, then returns a shared
+`recovered` lifecycle result. Run `bfs_check_project` afterward.
 
 ### `bfs_plan_stack_update`
 
@@ -188,7 +208,10 @@ and install guidance. It does not write files.
 {
   "projectDir": "/absolute/path/to/my-app",
   "email": "resend",
-  "addons": ["biome", "github-actions"]
+  "part": [
+    "codeQuality:universal:biome",
+    "continuousIntegration:universal:github-actions"
+  ]
 }
 ```
 
@@ -202,17 +225,17 @@ dependencies.
 When the plan reports an architecture change, repeat the request with
 `acknowledgeArchitectureChange: true` only after the user approves the listed data/schema risks.
 
-## Focused addon and deploy tools
+## Focused capability and deploy tools
 
 ### `bfs_plan_addition`
 
-Requires an absolute `projectDir`. Optional inputs are `addons`, `webDeploy`, and `serverDeploy`.
+Requires an absolute `projectDir`. Optional inputs are `part`, `webDeploy`, and `serverDeploy`.
 It reads `bts.jsonc`, identifies new and already-present additions, checks compatibility, and does
 not write files.
 
 ### `bfs_add_feature`
 
-Requires an absolute `projectDir`. Optional inputs are `addons`, `webDeploy`, `serverDeploy`, and
+Requires an absolute `projectDir`. Optional inputs are `part`, `webDeploy`, `serverDeploy`, and
 `packageManager`. It applies the focused addition and updates project metadata without installing
 dependencies. Use it only after `bfs_plan_addition` succeeds and the user approves.
 

@@ -32,6 +32,8 @@ describe("docs navigation", () => {
       "index",
       "create",
       "add",
+      "remove",
+      "status",
       "update",
       "check",
       "gen",
@@ -61,6 +63,8 @@ describe("docs navigation", () => {
     await expectDocPage("stack-guides/deployment.mdx");
     await expectDocPage("stack-guides/backend-frameworks.mdx");
     await expectDocPage("cli/index.mdx");
+    await expectDocPage("cli/status.mdx");
+    await expectDocPage("cli/remove.mdx");
     await expectDocPage("cli/check.mdx");
     await expectDocPage("cli/update.mdx");
     await expectDocPage("cli/gen.mdx");

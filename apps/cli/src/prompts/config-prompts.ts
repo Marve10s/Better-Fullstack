@@ -102,7 +102,9 @@ import type {
   WorkspaceShape,
   Payments,
   ProjectConfig,
+  ProjectShape,
   RateLimit,
+  BotProtection,
   PythonAi,
   PythonApi,
   PythonAuth,
@@ -158,11 +160,13 @@ import { getUserPkgManager } from "../utils/get-package-manager";
 import { getAddonsChoice, getAppPlatformsChoice } from "./addons";
 import { getAIChoice } from "./ai";
 import { getAiDocsChoice } from "./ai-docs";
+import { getAnalyticsChoice } from "./analytics";
 import { getAnimationChoice } from "./animation";
 import { getApiChoice } from "./api";
 import { getAstroIntegrationChoice } from "./astro-integration";
 import { getAuthChoice } from "./auth";
 import { getBackendFrameworkChoice } from "./backend";
+import { getBotProtectionChoice } from "./bot-protection";
 import { getCachingChoice } from "./caching";
 import { getCMSChoice } from "./cms";
 import {
@@ -275,6 +279,7 @@ import { getObservabilityChoice } from "./observability";
 import { getORMChoice } from "./orm";
 import { getPackageManagerChoice } from "./package-manager";
 import { getPaymentsChoice } from "./payments";
+import { resolveProjectShape } from "./project-shape";
 import { PROMPT_RESOLVER_REGISTRY } from "./prompt-resolver-registry";
 import {
   getPythonAiChoice,
@@ -373,6 +378,7 @@ type PromptGroupResults = {
   cms: CMS;
   caching: Caching;
   rateLimit: RateLimit;
+  botProtection: BotProtection;
   i18n: I18n;
   search: Search;
   vectorDb: VectorDb;
@@ -557,6 +563,7 @@ const CONFIG_PROMPT_ENTRY_KEY_MAP = {
   cms: true,
   caching: true,
   rateLimit: true,
+  botProtection: true,
   i18n: true,
   search: true,
   vectorDb: true,
@@ -759,6 +766,13 @@ function getPromptResolutionValue(
     fileUpload: { fileUpload: flags.fileUpload, backend: results.backend },
     logging: { logging: flags.logging, backend: results.backend },
     rateLimit: { rateLimit: flags.rateLimit, backend: results.backend },
+    botProtection: {
+      botProtection: flags.botProtection,
+      frontends,
+      auth: results.auth,
+      backend: results.backend,
+      webDeploy: results.webDeploy,
+    },
     cms: { cms: flags.cms, backend: results.backend },
     vectorDb: { vectorDb: flags.vectorDb, backend: results.backend, ecosystem: results.ecosystem },
     fileStorage: { fileStorage: flags.fileStorage, backend: results.backend },
@@ -822,11 +836,20 @@ function scopedPrompt<K extends PromptGroupKey>(
 }
 
 export async function gatherConfig(
-  flags: Partial<ProjectConfig>,
+  inputFlags: Partial<ProjectConfig>,
   projectName: string,
   projectDir: string,
   relativePath: string,
+  shape?: ProjectShape,
 ) {
+  const shapeResolution = shape
+    ? await resolveProjectShape(shape, inputFlags, projectName, projectDir, relativePath)
+    : undefined;
+
+  if (shapeResolution?.kind === "config") return shapeResolution.config;
+
+  const flags = shapeResolution ? { ...inputFlags, ...shapeResolution.flags } : inputFlags;
+
   if (flags.ecosystem === undefined && flags.stackParts === undefined) {
     const compositionMode = await getCompositionModeChoice();
     if (compositionMode === "multi") {
@@ -954,6 +977,17 @@ export async function gatherConfig(
       return getEffectChoice(flags.effect);
     },
     addons: ({ results }) => {
+      if (results.ecosystem === "react-native" && flags.addons === undefined) {
+        return getAddonsChoice(
+          undefined,
+          results.frontend,
+          results.auth,
+          results.backend,
+          results.runtime,
+          results.api,
+          { ecosystem: "react-native" },
+        );
+      }
       if (results.ecosystem !== "typescript") {
         const nonTypeScriptAddons = (flags.addons ?? []).filter(
           (addon): addon is Addons =>
@@ -962,7 +996,7 @@ export async function gatherConfig(
             addon === "gitleaks" ||
             addon === "kong" ||
             addon === "github-actions" ||
-            (results.ecosystem === "react-native" && addon === "knip"),
+            (results.ecosystem === "react-native" && (addon === "knip" || addon === "vite-plus")),
         );
         return Promise.resolve(nonTypeScriptAddons);
       }
@@ -1084,7 +1118,7 @@ export async function gatherConfig(
       getEcommerceChoice(flags.ecommerce, results.backend, results.ecosystem),
     analytics: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as Analytics);
-      return Promise.resolve(flags.analytics || "none") as Promise<Analytics>;
+      return getAnalyticsChoice(flags.analytics, results.frontend);
     },
     cms: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as CMS);
@@ -1099,6 +1133,16 @@ export async function gatherConfig(
     rateLimit: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as RateLimit);
       return getRateLimitChoice(flags.rateLimit, results.backend);
+    },
+    botProtection: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve("none" as BotProtection);
+      return getBotProtectionChoice(
+        flags.botProtection,
+        results.frontend,
+        results.auth,
+        results.backend,
+        results.webDeploy,
+      );
     },
     i18n: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as I18n);
@@ -1740,6 +1784,7 @@ export async function gatherConfig(
     cms: result.cms,
     caching: result.caching,
     rateLimit: result.rateLimit,
+    botProtection: result.botProtection,
     i18n: result.i18n,
     search: result.search,
     vectorDb: result.vectorDb,

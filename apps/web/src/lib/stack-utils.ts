@@ -1,7 +1,9 @@
 import {
   CATEGORY_ORDER,
   getCategoryOrderForEcosystem,
+  getToolingSelectionOptions,
   parseStackPartSpecs,
+  type ToolingCategoryId,
 } from "@better-fullstack/types";
 import {
   createStackSelectionSearchParams as createStackSearchParams,
@@ -16,10 +18,48 @@ import { DEFAULT_STACK, type StackState } from "@/lib/stack-defaults";
 
 export function getStackKeyForCategory(category: TechCategory): keyof StackState {
   if (category === "ai") return "aiSdk";
-  // appShells is a UI-only split of the addons grab-bag; both sections share
-  // the appPlatforms state key so old share links keep working.
-  if (category === "appShells") return "appPlatforms";
+  if (category === "documentation") return "documentation";
+  if (
+    category === "codeQualityProfile" ||
+    category === "gitHooks" ||
+    category === "staticAnalysis"
+  ) {
+    return "codeQuality";
+  }
+  if (getToolingCategoryForUi(category)) return "appPlatforms";
   return category as keyof StackState;
+}
+
+const TOOLING_CATEGORY_BY_UI: Partial<Record<TechCategory, ToolingCategoryId>> = {
+  toolchainProfile: "toolchain",
+  workspaceRunner: "workspaceRunner",
+  codeQualityProfile: "codeQuality",
+  gitHooks: "gitHooks",
+  staticAnalysis: "staticAnalysis",
+  aiTooling: "aiTooling",
+  documentation: "documentation",
+  appShells: "appPlatforms",
+  testingTools: "testingTools",
+  dataClient: "dataClient",
+  frontendUtilities: "frontendUtilities",
+  httpClientTool: "httpClient",
+  codeGeneration: "codeGeneration",
+  developerEnvironment: "developerEnvironment",
+  containerOrchestration: "containerOrchestration",
+  apiGateway: "apiGateway",
+  continuousIntegration: "continuousIntegration",
+  backendUtilitiesTool: "backendUtilities",
+};
+
+export function getToolingCategoryForUi(category: TechCategory) {
+  return TOOLING_CATEGORY_BY_UI[category];
+}
+
+export function getToolingOptionForUi(category: TechCategory, optionId: string) {
+  const toolingCategory = getToolingCategoryForUi(category);
+  return toolingCategory
+    ? getToolingSelectionOptions(toolingCategory).find((selection) => selection.id === optionId)
+    : undefined;
 }
 
 /**

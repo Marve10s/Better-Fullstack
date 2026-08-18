@@ -21,6 +21,7 @@ export { processDeployTemplates } from "./deploy";
 export { processLoggingTemplates } from "./logging";
 export { processObservabilityTemplates } from "./observability";
 export { processRateLimitTemplates } from "./rate-limit";
+export { processBotProtectionTemplates } from "./bot-protection";
 export { processFeatureFlagsTemplates } from "./feature-flags";
 export { processIntegrationsTemplates } from "./integrations";
 export { processEcommerceTemplates } from "./ecommerce";

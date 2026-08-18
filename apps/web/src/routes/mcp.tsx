@@ -69,8 +69,11 @@ interface Agent {
   config: string;
   shell: boolean;
   iconSlug?: string;
+  /** Local asset for brands simple-icons does not ship. */
+  iconSrc?: string;
   /** simple-icons brands that are monochrome and need theme-aware color */
   mono?: boolean;
+  openaiMark?: boolean;
 }
 
 const AGENTS: readonly Agent[] = [
@@ -88,7 +91,25 @@ const AGENTS: readonly Agent[] = [
     name: "Codex",
     file: "terminal",
     shell: true,
+    openaiMark: true,
     config: "codex mcp add better-fullstack -- npx -y create-better-fullstack@latest mcp",
+  },
+  {
+    id: "kimi-code",
+    name: "Kimi Code",
+    file: "terminal",
+    shell: true,
+    iconSlug: "kimi",
+    mono: true,
+    config: "kimi mcp add better-fullstack -- npx -y create-better-fullstack@latest mcp",
+  },
+  {
+    id: "command-code",
+    name: "Command Code",
+    iconSrc: "/icon/command-code.png",
+    file: "terminal",
+    shell: true,
+    config: "cmd mcp add better-fullstack -- npx -y create-better-fullstack@latest mcp",
   },
   {
     id: "gemini-cli",
@@ -152,11 +173,60 @@ const AGENTS: readonly Agent[] = [
     file: "~/.codeium/windsurf/mcp_config.json",
     shell: false,
     iconSlug: "windsurf",
+    mono: true,
     config: `{
   "mcpServers": {
     "better-fullstack": {
       "command": "npx",
       "args": ["-y", "create-better-fullstack@latest", "mcp"]
+    }
+  }
+}`,
+  },
+  {
+    id: "antigravity",
+    name: "Antigravity",
+    iconSrc: "/icon/antigravity.png",
+    file: "~/.gemini/config/mcp_config.json",
+    shell: false,
+    config: `{
+  "mcpServers": {
+    "better-fullstack": {
+      "command": "npx",
+      "args": ["-y", "create-better-fullstack@latest", "mcp"]
+    }
+  }
+}`,
+  },
+  {
+    id: "opencode",
+    name: "OpenCode",
+    file: "opencode.json",
+    shell: false,
+    iconSlug: "opencode",
+    mono: true,
+    config: `{
+  "mcp": {
+    "better-fullstack": {
+      "type": "local",
+      "command": ["npx", "-y", "create-better-fullstack@latest", "mcp"],
+      "enabled": true
+    }
+  }
+}`,
+  },
+  {
+    id: "kilo-code",
+    name: "Kilo Code",
+    iconSrc: "/icon/kilo-code.svg",
+    file: ".kilo/kilo.jsonc",
+    shell: false,
+    config: `{
+  "mcp": {
+    "better-fullstack": {
+      "type": "local",
+      "command": ["npx", "-y", "create-better-fullstack@latest", "mcp"],
+      "enabled": true
     }
   }
 }`,
@@ -595,8 +665,18 @@ function AgentTabButton({
 function AgentIcon({ agent, active }: { agent: Agent; active: boolean }) {
   const { resolvedTheme } = useTheme();
 
-  if (!agent.iconSlug) {
+  if (agent.openaiMark) {
     return <OpenAIMark className="size-3.5 sm:size-4" />;
+  }
+
+  if (agent.iconSrc) {
+    return (
+      <img src={agent.iconSrc} alt="" width={16} height={16} className="size-3.5 sm:size-4" />
+    );
+  }
+
+  if (!agent.iconSlug) {
+    return null;
   }
 
   // Active tabs sit on lime, so monochrome marks stay dark there.

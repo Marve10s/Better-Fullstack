@@ -1,11 +1,10 @@
-import { describe, expect, it } from "bun:test";
-
 import {
   analyzeStackCompatibility,
   createCliDefaultProjectConfigBase,
   parseStackPartSpecs,
   type ProjectConfig,
 } from "@better-fullstack/types";
+import { describe, expect, it } from "bun:test";
 
 import {
   buildMcpCompatibilityInput,
@@ -114,14 +113,14 @@ describe("MCP graph preview", () => {
       frontend: "typescript:next",
       "frontend.deploy": "typescript:render",
       "frontend.appPlatform": "typescript:pwa",
-      workspaceTooling: "universal:mcp",
+      aiTooling: "universal:mcp",
     });
     expect(preview.stackPartSpecs).toEqual(
       expect.arrayContaining([
         "frontend:typescript:next",
         "frontend.deploy:typescript:render",
         "frontend.appPlatform:typescript:pwa",
-        "workspaceTooling:universal:mcp",
+        "aiTooling:universal:mcp",
       ]),
     );
   });

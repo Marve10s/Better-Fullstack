@@ -1,11 +1,15 @@
 import type { GeneratedCheckDependencies } from "./generated-checks";
 
+import { applyPartRemoval, planPartRemoval } from "../helpers/core/remove-handler";
+import { lifecycleResult } from "./lifecycle-contract";
 import {
   applyReviewedProjectUpdate,
   planReviewedProjectUpdate,
   type ReviewedProjectUpdatePlan,
 } from "./project-lifecycle";
+import { getProjectReport } from "./project-report";
 import { inspectProject } from "./project-status";
+import { recoverProjectTransaction } from "./project-transaction";
 import { hashContent } from "./scaffold-manifest";
 
 export const MCP_UPDATE_REVIEW_CONTENT_LIMIT_BYTES = 32 * 1024;
@@ -54,7 +58,7 @@ export function boundMcpUpdateReview(result: ReviewedProjectUpdatePlan) {
 }
 
 export async function getMcpProjectStatus(projectDir: string) {
-  return inspectProject(projectDir, { runChecks: false });
+  return getProjectReport(projectDir);
 }
 
 export async function checkMcpProject(
@@ -67,6 +71,19 @@ export async function checkMcpProject(
 export async function planMcpProjectUpdate(projectDir: string) {
   const result = await planReviewedProjectUpdate(projectDir);
   return result.success ? boundMcpUpdateReview(result) : result;
+}
+
+export async function planMcpPartRemoval(projectDir: string, target: string) {
+  return planPartRemoval(projectDir, target);
+}
+
+export async function applyMcpPartRemoval(
+  projectDir: string,
+  target: string,
+  reviewToken: string | undefined,
+  acknowledgeArchitectureChange: boolean | undefined,
+) {
+  return applyPartRemoval(projectDir, target, reviewToken, acknowledgeArchitectureChange === true);
 }
 
 export async function applyMcpProjectUpdate(
@@ -94,4 +111,30 @@ export async function applyMcpProjectUpdate(
     };
   }
   return applyReviewedProjectUpdate(projectDir, reviewToken, acknowledgeUnprovenManifestV1);
+}
+
+export async function recoverMcpProjectTransaction(projectDir: string, transactionId: string) {
+  try {
+    const transaction = await recoverProjectTransaction(projectDir, transactionId);
+    return {
+      success: true as const,
+      projectDir,
+      transaction,
+      lifecycle: lifecycleResult({
+        operation: "recover",
+        status: "recovered",
+        projectDir,
+        changes: { patched: transaction.files.length },
+        provenance: { source: null, target: null, verified: false },
+        recovery: { available: false, transactionId },
+        nextActions: ["Run `bfs_check_project` to verify every generated target."],
+      }),
+    };
+  } catch (error) {
+    return {
+      success: false as const,
+      projectDir,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
 }

@@ -40,6 +40,7 @@ export const StackPartRoleSchema = z
     "fileStorage",
     "jobQueue",
     "rateLimit",
+    "botProtection",
     "testing",
     "stateManagement",
     "forms",
@@ -67,6 +68,17 @@ export const StackPartRoleSchema = z
     "appPlatform",
     "dataFetching",
     "workspaceTooling",
+    "toolchain",
+    "workspaceRunner",
+    "gitHooks",
+    "staticAnalysis",
+    "aiTooling",
+    "codeGeneration",
+    "developerEnvironment",
+    "containerOrchestration",
+    "apiGateway",
+    "continuousIntegration",
+    "backendUtilities",
     "examples",
     "language",
     "buildTool",
@@ -176,6 +188,7 @@ export const AddonsSchema = z
     "skills",
     "turborepo",
     "nx",
+    "vite-plus",
     "fumadocs",
     "ultracite",
     "oxlint",
@@ -205,14 +218,9 @@ export const AddonsSchema = z
     "capacitor",
     "none",
   ])
-  .describe("Additional addons");
+  .describe("Deprecated flat compatibility projection of tooling capabilities");
 
-/**
- * Addon values that are app platforms — shells/targets that package the web
- * frontend (desktop, mobile hybrid, browser extension, terminal, installable
- * PWA). Surfaced as a dedicated "App Platforms" section in the CLI and web
- * builder; they still serialize into the `addons` config field.
- */
+/** @deprecated Use tooling capability metadata and Stack Part role bindings. */
 export const APP_PLATFORM_ADDON_VALUES = [
   "pwa",
   "tauri",
@@ -395,6 +403,10 @@ export const RateLimitSchema = z
   .enum(["arcjet", "upstash-ratelimit", "none"])
   .describe("Rate limiting and abuse protection");
 
+export const BotProtectionSchema = z
+  .enum(["botid", "turnstile", "none"])
+  .describe("Bot and CAPTCHA verification provider");
+
 export const I18nSchema = z
   .enum(["paraglide", "i18next", "next-intl", "intlayer", "none"])
   .describe("Internationalization (i18n) library");
@@ -441,7 +453,7 @@ export const IntegrationsSchema = z
 export const EcommerceSchema = z.enum(["medusa", "none"]).describe("E-commerce platform SDK");
 
 export const AnalyticsSchema = z
-  .enum(["plausible", "umami", "posthog", "ga4", "none"])
+  .enum(["plausible", "umami", "posthog", "ga4", "vercel-analytics", "none"])
   .describe("Product analytics provider");
 
 export const MobileNavigationSchema = z
@@ -1093,6 +1105,10 @@ export const TemplateSchema = z
   .enum(["mern", "pern", "t3", "saas", "uniwind", "none"])
   .describe("Predefined project template");
 
+export const ProjectShapeSchema = z
+  .enum(["fullstack", "frontend", "backend", "mobile"])
+  .describe("Project shape that seeds the guided flow with a language and app-kind question");
+
 export const ProjectNameSchema = z
   .string()
   .min(1, "Project name cannot be empty")
@@ -1112,6 +1128,7 @@ export const ProjectNameSchema = z
 export const CreateInputSchema = z.object({
   projectName: z.string().optional(),
   template: TemplateSchema.optional(),
+  shape: ProjectShapeSchema.optional(),
   yes: z.boolean().optional(),
   yolo: z.boolean().optional(),
   verbose: z.boolean().optional(),
@@ -1170,6 +1187,7 @@ export const CreateInputSchema = z.object({
   cms: CMSSchema.optional(),
   caching: CachingSchema.optional(),
   rateLimit: RateLimitSchema.optional(),
+  botProtection: BotProtectionSchema.optional(),
   i18n: I18nSchema.optional(),
   search: SearchSchema.optional(),
   vectorDb: VectorDbSchema.optional(),
@@ -1296,6 +1314,7 @@ export const CreateInputSchema = z.object({
 export const AddInputSchema = CreateInputSchema.omit({
   projectName: true,
   template: true,
+  shape: true,
   yes: true,
   yolo: true,
   verbose: true,
@@ -1367,6 +1386,7 @@ export const ProjectConfigSchema = z.object({
   cms: CMSSchema,
   caching: CachingSchema,
   rateLimit: RateLimitSchema,
+  botProtection: BotProtectionSchema.default("none"),
   i18n: I18nSchema,
   search: SearchSchema,
   vectorDb: VectorDbSchema,
@@ -1551,6 +1571,7 @@ export const BetterTStackConfigSchema = z.object({
   cms: CMSSchema,
   caching: CachingSchema,
   rateLimit: RateLimitSchema,
+  botProtection: BotProtectionSchema.default("none"),
   i18n: I18nSchema,
   search: SearchSchema,
   vectorDb: VectorDbSchema,
@@ -1725,6 +1746,7 @@ export const WEB_DEPLOY_VALUES = WebDeploySchema.options;
 export const SERVER_DEPLOY_VALUES = ServerDeploySchema.options;
 export const DIRECTORY_CONFLICT_VALUES = DirectoryConflictSchema.options;
 export const TEMPLATE_VALUES = TemplateSchema.options;
+export const PROJECT_SHAPE_VALUES = ProjectShapeSchema.options;
 export const ASTRO_INTEGRATION_VALUES = AstroIntegrationSchema.options;
 export const AI_VALUES = AISchema.options;
 export const EFFECT_VALUES = EffectSchema.options;
@@ -1756,6 +1778,7 @@ export const MOBILE_LIBRARIES_VALUES = MobileLibrariesSchema.options;
 export const CMS_VALUES = CMSSchema.options;
 export const CACHING_VALUES = CachingSchema.options;
 export const RATE_LIMIT_VALUES = RateLimitSchema.options;
+export const BOT_PROTECTION_VALUES = BotProtectionSchema.options;
 export const I18N_VALUES = I18nSchema.options;
 export const SEARCH_VALUES = SearchSchema.options;
 export const VECTOR_DB_VALUES = VectorDbSchema.options;

@@ -54,7 +54,6 @@ npm create better-fullstack@latest my-app -- \
   --ai none \
   --payments none \
   --examples none \
-  --addons none \
   --ai-docs none \
   --version-channel stable \
   --no-install \
@@ -148,9 +147,10 @@ npm create better-fullstack@latest update
 ```
 
 `check` diagnoses config, dependencies, env files, and optionally native/build checks. `update`
-defaults to a review-only template-drift plan. Before destructive apply, create and verify an
-independent recovery point, review the categorized paths, and pass that exact plan token together
-with `--acknowledge-unproven-manifest-v1`; no built-in backup or rollback exists.
+defaults to a review-only template-drift plan. Review the categorized paths and pass that exact plan
+token. Apply creates a recovery point and rolls failed writes back. The additional
+`--acknowledge-unproven-manifest-v1` flag is required only for migrated or manually adopted
+manifests whose original lineage remains unverified.
 
 ## Next
 

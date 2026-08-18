@@ -4,7 +4,12 @@ import {
   type OptionCategory,
   type OptionCategoryEcosystem,
 } from "./option-metadata";
-import { DIRECTORY_CONFLICT_VALUES, ECOSYSTEM_VALUES, TEMPLATE_VALUES } from "./schemas";
+import {
+  DIRECTORY_CONFLICT_VALUES,
+  ECOSYSTEM_VALUES,
+  PROJECT_SHAPE_VALUES,
+  TEMPLATE_VALUES,
+} from "./schemas";
 
 type CliDefaultConfig = ReturnType<typeof createCliDefaultProjectConfigBase>;
 type CliConfigKey = keyof CliDefaultConfig;
@@ -78,19 +83,15 @@ export const CLI_FLAG_GROUP_DEFINITIONS: readonly CliFlagGroupDefinition[] = [
         source: { kind: "literal", values: TEMPLATE_VALUES },
       },
       {
+        flag: "shape",
+        summary:
+          "Start from a project shape. Asks which language or platform, then only the prompts that shape needs.",
+        source: { kind: "literal", values: PROJECT_SHAPE_VALUES },
+      },
+      {
         flag: "part",
         summary: "Add a multi-ecosystem stack part. Repeat once per part.",
         source: { kind: "freeform", hint: "role:ecosystem:tool (e.g. frontend:typescript:next)" },
-      },
-      {
-        flag: "addons",
-        summary: "Repo tooling and platform addons.",
-        source: {
-          kind: "categories",
-          categories: ["appShells", "appPlatforms", "codeQuality", "documentation"],
-        },
-        configKey: "addons",
-        multiple: true,
       },
       {
         flag: "examples",
@@ -354,6 +355,12 @@ export const CLI_FLAG_GROUP_DEFINITIONS: readonly CliFlagGroupDefinition[] = [
         summary: "Rate limiting helper.",
         source: { kind: "category", category: "rateLimit" },
         configKey: "rateLimit",
+      },
+      {
+        flag: "bot-protection",
+        summary: "Bot and CAPTCHA verification provider.",
+        source: { kind: "category", category: "botProtection" },
+        configKey: "botProtection",
       },
       {
         flag: "i18n",

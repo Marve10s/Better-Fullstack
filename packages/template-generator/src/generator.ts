@@ -2,6 +2,8 @@ import type { ProjectConfig, StackPart } from "@better-fullstack/types";
 
 import {
   getRoleTargetPath,
+  hasVitePlusWorkspaceRoot,
+  isToolingOverlayOnly,
   parseStackPartSpecs,
   stackGraphToLegacyProjectConfigForEcosystem,
   validateStackParts,
@@ -58,6 +60,7 @@ import {
   processLoggingTemplates,
   processObservabilityTemplates,
   processRateLimitTemplates,
+  processBotProtectionTemplates,
   processFeatureFlagsTemplates,
   processIntegrationsTemplates,
   processEcommerceTemplates,
@@ -109,10 +112,7 @@ function validateGraphContainerAddons(config: ProjectConfig): string[] {
 
   const explicitContainerAddons = new Set(
     config.stackParts
-      .filter(
-        (part) =>
-          part.role === "workspaceTooling" && GRAPH_CONTAINER_ADDONS.has(part.toolId),
-      )
+      .filter((part) => part.role === "workspaceTooling" && GRAPH_CONTAINER_ADDONS.has(part.toolId))
       .map((part) => part.toolId),
   );
   const legacyContainerAddons = (config.addons ?? []).filter(
@@ -126,21 +126,18 @@ function validateGraphContainerAddons(config: ProjectConfig): string[] {
   ];
   const containerPartIds = new Set(
     effectiveParts
-      .filter(
-        (part) =>
-          part.role === "workspaceTooling" && GRAPH_CONTAINER_ADDONS.has(part.toolId),
-      )
+      .filter((part) => part.role === "workspaceTooling" && GRAPH_CONTAINER_ADDONS.has(part.toolId))
       .map((part) => part.id),
   );
 
-  return validateStackParts(effectiveParts).issues
-    .filter((issue) => issue.partId !== undefined && containerPartIds.has(issue.partId))
+  return validateStackParts(effectiveParts)
+    .issues.filter((issue) => issue.partId !== undefined && containerPartIds.has(issue.partId))
     .map((issue) => issue.message);
 }
 
 function validateGraphRenderingSupport(config: ProjectConfig): string[] {
-  return validateStackParts(config.stackParts ?? []).issues
-    .filter((issue) => issue.code === "UNSUPPORTED_REPEATED_PRIMARY")
+  return validateStackParts(config.stackParts ?? [])
+    .issues.filter((issue) => issue.code === "UNSUPPORTED_REPEATED_PRIMARY")
     .map((issue) => issue.message);
 }
 
@@ -277,9 +274,7 @@ async function processGraphTemplates(
           // Compose-backed infrastructure must be rendered from the non-TypeScript
           // backend projection so every selected service shares one graph-aware
           // Compose file and DevContainer configuration.
-          addons: tsConfig.addons.filter(
-            (addon) => !crossEcosystemInfrastructureAddons.has(addon),
-          ),
+          addons: tsConfig.addons.filter((addon) => !crossEcosystemInfrastructureAddons.has(addon)),
         }
       : tsConfig;
     await processAddonTemplates(vfs, templates, withCiTemplateFlags(initialTsAddonConfig));
@@ -289,6 +284,7 @@ async function processGraphTemplates(
     await processLoggingTemplates(vfs, templates, tsConfig);
     await processObservabilityTemplates(vfs, templates, tsConfig);
     await processRateLimitTemplates(vfs, templates, tsConfig);
+    await processBotProtectionTemplates(vfs, templates, tsConfig);
     await processFeatureFlagsTemplates(vfs, templates, tsConfig);
     await processIntegrationsTemplates(vfs, templates, tsConfig);
     await processEcommerceTemplates(vfs, templates, tsConfig);
@@ -434,7 +430,26 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
       };
     }
 
-    if (config.stackParts && config.stackParts.length > 0) {
+    const usesGraphParts = Boolean(config.stackParts?.length) && !isToolingOverlayOnly(config.stackParts);
+
+    const hasVitePlusRoot = usesGraphParts
+      ? hasVitePlusWorkspaceRoot(config.stackParts)
+      : config.ecosystem === "typescript" &&
+        config.frontend.some(
+          (frontend) =>
+            frontend !== "none" &&
+            frontend !== "native-bare" &&
+            frontend !== "native-uniwind" &&
+            frontend !== "native-unistyles",
+        );
+    if (config.addons.includes("vite-plus") && !hasVitePlusRoot) {
+      return {
+        success: false,
+        error: "Vite+ requires a generated TypeScript web frontend",
+      };
+    }
+
+    if (usesGraphParts) {
       const graphIssues = [
         ...validateGraphContainerAddons(config),
         ...validateGraphRenderingSupport(config),
@@ -449,7 +464,7 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
 
     const vfs = new VirtualFileSystem();
 
-    if (config.stackParts && config.stackParts.length > 0) {
+    if (usesGraphParts) {
       await processGraphTemplates(vfs, templates, config);
     } else if (config.ecosystem in ECOSYSTEM_BASE_TEMPLATE_PROCESSORS) {
       await ECOSYSTEM_BASE_TEMPLATE_PROCESSORS[config.ecosystem as NonTypeScriptTemplateEcosystem](
@@ -476,6 +491,7 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
       await processLoggingTemplates(vfs, templates, config);
       await processObservabilityTemplates(vfs, templates, config);
       await processRateLimitTemplates(vfs, templates, config);
+      await processBotProtectionTemplates(vfs, templates, config);
       await processFeatureFlagsTemplates(vfs, templates, config);
       await processIntegrationsTemplates(vfs, templates, config);
       await processEcommerceTemplates(vfs, templates, config);
@@ -507,11 +523,7 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
       }
     }
 
-    if (
-      !config.stackParts?.length &&
-      config.ecosystem !== "typescript" &&
-      config.ecosystem !== "react-native"
-    ) {
+    if (!usesGraphParts && config.ecosystem !== "typescript" && config.ecosystem !== "react-native") {
       await processAddonTemplates(vfs, templates, config);
       processEnvVariables(vfs, config);
     }

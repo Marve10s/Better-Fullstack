@@ -244,7 +244,7 @@ const corsMiddleware = (handler: typeof router) => {
 					"Access-Control-Allow-Origin": corsOrigin,
 					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
 {{#if (isBetterAuth auth)}}
-					"Access-Control-Allow-Headers": "Content-Type, Authorization",
+					"Access-Control-Allow-Headers": "Content-Type, Authorization{{#if (eq botProtection "turnstile")}}, X-Turnstile-Token{{/if}}",
 					"Access-Control-Allow-Credentials": "true",
 {{else}}
 					"Access-Control-Allow-Headers": "Content-Type",
@@ -258,7 +258,7 @@ const corsMiddleware = (handler: typeof router) => {
 		newHeaders.set("Access-Control-Allow-Origin", corsOrigin);
 		newHeaders.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
 {{#if (isBetterAuth auth)}}
-		newHeaders.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+		newHeaders.set("Access-Control-Allow-Headers", "Content-Type, Authorization{{#if (eq botProtection "turnstile")}}, X-Turnstile-Token{{/if}}");
 		newHeaders.set("Access-Control-Allow-Credentials", "true");
 {{else}}
 		newHeaders.set("Access-Control-Allow-Headers", "Content-Type");
@@ -315,7 +315,7 @@ const corsMiddleware = (handler: typeof router) => {
 					"Access-Control-Allow-Origin": corsOrigin,
 					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
 {{#if (isBetterAuth auth)}}
-					"Access-Control-Allow-Headers": "Content-Type, Authorization",
+					"Access-Control-Allow-Headers": "Content-Type, Authorization{{#if (eq botProtection "turnstile")}}, X-Turnstile-Token{{/if}}",
 					"Access-Control-Allow-Credentials": "true",
 {{else}}
 					"Access-Control-Allow-Headers": "Content-Type",
@@ -329,7 +329,7 @@ const corsMiddleware = (handler: typeof router) => {
 		newHeaders.set("Access-Control-Allow-Origin", corsOrigin);
 		newHeaders.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
 {{#if (isBetterAuth auth)}}
-		newHeaders.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+		newHeaders.set("Access-Control-Allow-Headers", "Content-Type, Authorization{{#if (eq botProtection "turnstile")}}, X-Turnstile-Token{{/if}}");
 		newHeaders.set("Access-Control-Allow-Credentials", "true");
 {{else}}
 		newHeaders.set("Access-Control-Allow-Headers", "Content-Type");

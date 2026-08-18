@@ -5,9 +5,14 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { createVirtual, type Addons, type Frontend } from "../src";
-import { setupAddons } from "../src/helpers/addons/addons-setup";
-import { getAddonGroup, getCompatibleAddonsForPrompt } from "../src/prompts/addons";
-import { APP_PLATFORM_ADDON_VALUES } from "../src/types";
+import { ADDONS_REQUIRING_IMPERATIVE_SETUP, setupAddons } from "../src/helpers/addons/addons-setup";
+import {
+  getAddonGroup,
+  getCompatibleAddonsForPrompt,
+  getCompatibleSelections,
+  promptCapabilities,
+} from "../src/prompts/addons";
+import { APP_PLATFORM_ADDON_VALUES, TOOLING_CATEGORIES } from "../src/types";
 import { getCompatibleAddons } from "../src/utils/compatibility-rules";
 import { expectError, expectSuccess, runTRPCTest, type TestConfig } from "./test-utils";
 
@@ -16,6 +21,41 @@ describe("Addon Configurations", () => {
     for (const addon of APP_PLATFORM_ADDON_VALUES) {
       expect(getAddonGroup(addon)).toBe("App Platforms");
     }
+  });
+
+  it("never offers capabilities that transactional add refuses", () => {
+    for (const category of TOOLING_CATEGORIES) {
+      const offered = getCompatibleSelections(
+        category.id,
+        {
+          frontends: ["tanstack-router"],
+          existing: [],
+          config: { ecosystem: "typescript" },
+          additionsOnly: true,
+        },
+        [],
+      ).flatMap((selection) => selection.toolIds);
+
+      expect(
+        offered.filter((toolId) => ADDONS_REQUIRING_IMPERATIVE_SETUP.has(toolId as Addons)),
+      ).toEqual([]);
+    }
+  });
+
+  it("keeps installed single-select tooling in additions-only prompt context", async () => {
+    const selected = await promptCapabilities(
+      {
+        frontends: ["tanstack-router"],
+        existing: ["vite-plus"],
+        config: { ecosystem: "typescript" },
+        additionsOnly: true,
+      },
+      TOOLING_CATEGORIES.filter((category) =>
+        ["toolchain", "workspaceRunner"].includes(category.id),
+      ),
+    );
+
+    expect(selected).toEqual(["vite-plus"]);
   });
 
   describe("Universal Addons (no frontend restrictions)", () => {
@@ -27,6 +67,7 @@ describe("Addon Configurations", () => {
       "gitleaks",
       "turborepo",
       "nx",
+      "vite-plus",
       "oxlint",
       "msw",
     ];
@@ -648,7 +689,136 @@ describe("Addon Configurations", () => {
         expectError: true,
       });
 
-      expectError(result, "Nx and Turborepo are alternative workspace runners");
+      expectError(result, "alternative workspace runners");
+    });
+  });
+
+  describe("Vite+ Addon", () => {
+    it("generates Vite+ workspace scripts and dependency", async () => {
+      const result = await runTRPCTest({
+        projectName: "vite-plus-workspace",
+        addons: ["vite-plus"],
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "trpc",
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const rootPackage = readFileSync(join(result.projectDir!, "package.json"), "utf-8");
+      expect(rootPackage).toContain('"vite-plus": "^0.2.9"');
+      expect(rootPackage).toContain('"dev": "vp run -r --parallel dev"');
+      expect(rootPackage).toContain('"build": "vp run -r build"');
+      expect(rootPackage).toContain('"check-types": "vp run -r check-types"');
+      expect(rootPackage).toContain(
+        '"db:push": "vp run --fail-if-no-match --filter @vite-plus-workspace/db db:push"',
+      );
+    });
+
+    it("rejects selecting Vite+ with another workspace runner", async () => {
+      const result = await runTRPCTest({
+        projectName: "vite-plus-turbo-fail",
+        addons: ["vite-plus", "turborepo"],
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "trpc",
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        expectError: true,
+      });
+
+      expectError(result, "alternative workspace runners");
+    });
+
+    it("rejects Vite+ with a separate code quality or hook tool", async () => {
+      const result = await runTRPCTest({
+        projectName: "vite-plus-biome-fail",
+        addons: ["vite-plus", "biome"],
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "trpc",
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        expectError: true,
+      });
+
+      expectError(result, "Vite+ owns workspace tasks, code quality, and commit hooks");
+    });
+
+    it("accepts duplicate Vite+ selections as one workspace runner", async () => {
+      const result = await runTRPCTest({
+        projectName: "vite-plus-duplicate",
+        addons: ["vite-plus", "vite-plus"],
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "trpc",
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+    });
+
+    it("rejects Vite+ for legacy non-JavaScript solo projects", async () => {
+      const result = await runTRPCTest({
+        projectName: "vite-plus-go-solo",
+        ecosystem: "go",
+        addons: ["vite-plus"],
+        expectError: true,
+      });
+
+      expectError(result, "requires a generated TypeScript web frontend");
+    });
+
+    it("does not offer Vite+ for native-only React Native projects", () => {
+      expect(
+        getCompatibleAddonsForPrompt(
+          ["vite-plus"],
+          ["native-bare"],
+          [],
+          "none",
+          "none",
+          "none",
+          "none",
+          { ecosystem: "react-native" },
+        ),
+      ).toEqual([]);
+    });
+
+    it("rejects Vite+ for native-only non-JavaScript Stack Graph projects", () => {
+      expect(
+        getCompatibleAddons(["vite-plus"], [], [], "none", "gin", undefined, "none", "go", {
+          ecosystem: "go",
+          stackParts: parseStackPartSpecs(["backend:go:gin", "toolchain:universal:vite-plus"]),
+        }),
+      ).toEqual([]);
     });
   });
 
@@ -786,7 +956,7 @@ describe("Addon Configurations", () => {
           }
 
           const result = await runTRPCTest(config);
-          expectError(result, "pwa addon requires one of these frontends");
+          expectError(result, "pwa requires one of these frontends");
         });
       }
     });
@@ -855,7 +1025,7 @@ describe("Addon Configurations", () => {
             expectError: true,
           });
 
-          expectError(result, "tauri addon requires one of these frontends");
+          expectError(result, "tauri requires one of these frontends");
         });
       }
     });
@@ -2780,7 +2950,7 @@ describe("Addon Configurations", () => {
             expectError: true,
           });
 
-          expectError(result, "storybook addon requires one of these frontends");
+          expectError(result, "storybook requires one of these frontends");
         });
       }
     });
@@ -2847,7 +3017,7 @@ describe("Addon Configurations", () => {
         expectError: true,
       });
 
-      expectError(result, "pwa addon requires one of these frontends");
+      expectError(result, "pwa requires one of these frontends");
     });
 
     it("should deduplicate addons", async () => {
@@ -3402,7 +3572,7 @@ describe("Addon Configurations", () => {
             expectError: true,
           });
 
-          expectError(result, "tanstack-table addon requires one of these frontends");
+          expectError(result, "tanstack-table requires one of these frontends");
         });
       }
 
@@ -3425,7 +3595,7 @@ describe("Addon Configurations", () => {
           expectError: true,
         });
 
-        expectError(result, "tanstack-virtual addon requires one of these frontends");
+        expectError(result, "tanstack-virtual requires one of these frontends");
       });
 
       // TanStack Query should fail with native frontends (no adapters)
@@ -3447,7 +3617,7 @@ describe("Addon Configurations", () => {
           expectError: true,
         });
 
-        expectError(result, "tanstack-query addon requires one of these frontends");
+        expectError(result, "tanstack-query requires one of these frontends");
       });
 
       // TanStack Query should fail with Fresh (Preact-based, no adapters)
@@ -3469,7 +3639,7 @@ describe("Addon Configurations", () => {
           expectError: true,
         });
 
-        expectError(result, "tanstack-query addon requires one of these frontends");
+        expectError(result, "tanstack-query requires one of these frontends");
       });
 
       // TanStack addons should fail with Qwik (no adapters)
@@ -3491,7 +3661,7 @@ describe("Addon Configurations", () => {
           expectError: true,
         });
 
-        expectError(result, "tanstack-query addon requires one of these frontends");
+        expectError(result, "tanstack-query requires one of these frontends");
       });
 
       // TanStack DB should fail with Angular (no @tanstack/angular-db adapter)
@@ -3513,7 +3683,7 @@ describe("Addon Configurations", () => {
           expectError: true,
         });
 
-        expectError(result, "tanstack-db addon requires one of these frontends");
+        expectError(result, "tanstack-db requires one of these frontends");
       });
     });
 

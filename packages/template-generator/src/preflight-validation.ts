@@ -1,4 +1,7 @@
-import type { ProjectConfig } from "@better-fullstack/types";
+import {
+  type ProjectConfig,
+  supportsAnalyticsFrontends,
+} from "@better-fullstack/types";
 
 export class PreflightWarning {
   readonly ruleId: string;
@@ -55,14 +58,7 @@ const REACT_FRONTENDS = new Set([
   "vinext",
 ]);
 
-const SOLID_FRONTENDS = new Set(["solid", "solid-start"]);
-
 const hasReact = (f: readonly string[]) => f.some((x) => REACT_FRONTENDS.has(x));
-const hasSvelte = (f: readonly string[]) => f.includes("svelte");
-const hasNuxt = (f: readonly string[]) => f.includes("nuxt");
-const hasSolid = (f: readonly string[]) => f.some((x) => SOLID_FRONTENDS.has(x));
-const hasAnyWebFrontend = (f: readonly string[]) =>
-  hasReact(f) || hasSvelte(f) || hasNuxt(f) || hasSolid(f);
 
 const hasGraphBackend = (config: ProjectConfig) =>
   config.stackParts?.some(
@@ -198,9 +194,10 @@ const PREFLIGHT_RULES: readonly PreflightRule[] = [
     id: "analytics-no-frontend",
     featureKey: "analytics",
     displayName: "Analytics",
-    willSkip: (c) => c.analytics !== "none" && !hasAnyWebFrontend(c.frontend),
-    reason: "Analytics requires a React, Svelte, Nuxt, or Solid frontend.",
-    suggestions: ["Add a supported web frontend", "Remove analytics"],
+    willSkip: (c) =>
+      c.analytics !== "none" && !supportsAnalyticsFrontends(c.analytics, c.frontend),
+    reason: "The selected analytics provider does not support the chosen frontend.",
+    suggestions: ["Add a web frontend supported by the analytics provider", "Remove analytics"],
   },
 
   {

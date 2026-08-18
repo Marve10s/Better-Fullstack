@@ -93,6 +93,7 @@ import {
   PYTHON_VALIDATION_VALUES,
   PYTHON_WEB_FRAMEWORK_VALUES,
   RATE_LIMIT_VALUES,
+  BOT_PROTECTION_VALUES,
   REALTIME_VALUES,
   RUNTIME_VALUES,
   RUST_API_VALUES,
@@ -115,6 +116,7 @@ import { resolveApiPrompt } from "./api";
 import { resolveAstroIntegrationPrompt } from "./astro-integration";
 import { resolveAuthPrompt } from "./auth";
 import { resolveBackendPrompt } from "./backend";
+import { resolveBotProtectionPrompt } from "./bot-protection";
 import { resolveCachingPrompt } from "./caching";
 import { resolveCMSPrompt } from "./cms";
 import { resolveCSSFrameworkPrompt } from "./css-framework";
@@ -291,6 +293,25 @@ export const PROMPT_RESOLVER_REGISTRY: ResolverRegistry = {
     schemaValues: RATE_LIMIT_VALUES,
     resolve: resolveRateLimitPrompt,
     coverageContexts: [{ backend: "hono" }, { backend: "none" }],
+  },
+  botProtection: {
+    schemaValues: BOT_PROTECTION_VALUES,
+    resolve: resolveBotProtectionPrompt,
+    coverageContexts: [
+      {
+        frontends: ["next"],
+        auth: "better-auth",
+        backend: "self",
+        webDeploy: "vercel",
+      },
+      {
+        frontends: ["react-vite"],
+        auth: "better-auth",
+        backend: "hono",
+        webDeploy: "none",
+      },
+      { frontends: [] },
+    ],
   },
   cms: {
     schemaValues: CMS_VALUES,

@@ -5,6 +5,7 @@ import path from "node:path";
 
 import type { BetterTStackConfig, ProjectConfig } from "../types";
 
+import { formatStackPartSpec, legacyProjectConfigToStackParts } from "../types";
 import { readBtsConfig } from "./bts-config";
 import {
   configForGeneratedTarget,
@@ -40,9 +41,9 @@ export type LifecyclePrerequisites = {
     exactCurrentVersion: boolean;
   };
   wave1: {
-    ready: false;
-    generatorProvenance: "unavailable";
-    recovery: "unavailable";
+    ready: boolean;
+    generatorProvenance: "verified" | "unverified";
+    recovery: "available" | "unavailable";
     blockers: string[];
   };
 };
@@ -52,6 +53,7 @@ export type ProjectStatusResult = {
   projectDir: string;
   ecosystem: BetterTStackConfig["ecosystem"];
   graphSummary?: string;
+  stackPartSpecs: string[];
   ok: boolean;
   verification: {
     requested: boolean;
@@ -85,6 +87,7 @@ export type InspectProjectOptions = {
 const IGNORED_DIRECTORIES = new Set([
   "node_modules",
   ".git",
+  ".bts",
   "dist",
   "build",
   ".next",
@@ -386,6 +389,25 @@ export async function getLifecyclePrerequisites(
     readBtsConfig(projectDir),
   ]);
   const currentVersion = getLatestCLIVersion();
+  const manifest = manifestResult.status === "valid" ? manifestResult.manifest : null;
+  const migratedFromV1 =
+    manifestResult.status === "valid" && manifestResult.migratedFromVersion === "1";
+  const provenanceVerified =
+    manifest?.provenance.state === "verified" && manifest.provenance.current !== null;
+  const blockers = [
+    ...(manifestResult.status === "missing"
+      ? ["A versioned scaffold manifest is required for lifecycle apply and recovery."]
+      : []),
+    ...(manifestResult.status === "invalid" ? [manifestResult.error] : []),
+    ...(migratedFromV1
+      ? [
+          "Manifest v1 was migrated deterministically, but its original generator lineage remains unverified.",
+        ]
+      : []),
+    ...(manifest && !migratedFromV1 && !provenanceVerified
+      ? ["This project was adopted without cryptographically trustworthy generator lineage."]
+      : []),
+  ];
   return {
     manifest: {
       present: manifestResult.status !== "missing",
@@ -393,7 +415,7 @@ export async function getLifecyclePrerequisites(
       version: manifestResult.status === "valid" ? manifestResult.manifest.version : undefined,
       error: manifestResult.status === "invalid" ? manifestResult.error : undefined,
       currentContractSupported:
-        manifestResult.status === "valid" && manifestResult.manifest.version === "1",
+        manifestResult.status === "valid" && manifestResult.manifest.version === "2",
     },
     config: {
       version: config?.version,
@@ -401,14 +423,10 @@ export async function getLifecyclePrerequisites(
       exactCurrentVersion: config?.version === currentVersion,
     },
     wave1: {
-      ready: false,
-      generatorProvenance: "unavailable",
-      recovery: "unavailable",
-      blockers: [
-        "Manifest v1 does not record generator release/SHA lineage.",
-        "Transactional backup and recovery are not implemented.",
-        "Cross-version auto-apply guarantees remain unavailable until Wave 1 lands.",
-      ],
+      ready: manifest !== null && blockers.length === 0,
+      generatorProvenance: provenanceVerified ? "verified" : "unverified",
+      recovery: manifest === null ? "unavailable" : "available",
+      blockers,
     },
   };
 }
@@ -434,6 +452,10 @@ export async function inspectProject(
     ...(await checkEnvFiles(projectDir)),
   ];
   const config = { ...btsConfig, projectDir } as unknown as ProjectConfig;
+  const stackParts =
+    btsConfig.stackParts === undefined
+      ? legacyProjectConfigToStackParts(btsConfig)
+      : btsConfig.stackParts;
   const expectedTargets = await discoverGeneratedCheckTargets(config);
   for (const target of expectedTargets) {
     checks.push(...(await checkNativeTargetDependencies(config, target)));
@@ -490,6 +512,10 @@ export async function inspectProject(
     projectDir,
     ecosystem: btsConfig.ecosystem,
     graphSummary: btsConfig.graphSummary,
+    stackPartSpecs: stackParts
+      .filter((part) => part.source !== "provided" && part.toolId !== "none")
+      .map((part) => formatStackPartSpec(part, stackParts))
+      .sort(),
     ok: summary.fail === 0 && (!options.runChecks || verificationComplete),
     verification: {
       requested: Boolean(options.runChecks),

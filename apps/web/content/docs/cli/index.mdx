@@ -18,7 +18,9 @@ and you want newer generator templates. Both expose a review-first workflow.
 | Command     | Purpose                                                                                                   |
 | ----------- | --------------------------------------------------------------------------------------------------------- |
 | `create`    | Scaffold a new project from a stack configuration. This is the default command.                           |
-| `add`       | Add supported addons, deployment settings, or stack capabilities to an existing Better Fullstack project. |
+| `add`       | Add supported tooling, deployment settings, or stack capabilities to an existing Better Fullstack project. |
+| `remove`    | Plan and apply removal of one exact non-primary stack capability.                                         |
+| `status`    | Summarize project health, lifecycle guarantees, and available template drift without running toolchains.  |
 | `update`    | Plan or apply current template drift against the `bts.lock.json` scaffold baseline.                       |
 | `check`     | Diagnose an existing project for config, dependency, env, and generated check issues.                     |
 | `doctor`    | Compatibility alias for `check`.                                                                          |
@@ -75,6 +77,8 @@ catalog. It does not update a generated project; generated projects use `update`
 
 - [Create command](/docs/cli/create/) covers all scaffold flags.
 - [Add command](/docs/cli/add/) covers existing-project updates.
+- [Remove command](/docs/cli/remove/) covers reviewed capability removal.
+- [Status command](/docs/cli/status/) summarizes health and upgrade readiness.
 - [Update command](/docs/cli/update/) covers template drift and baseline adoption.
 - [Check command](/docs/cli/check/) covers project diagnostics.
 - [Generate command](/docs/cli/gen/) covers deterministic in-project generation.

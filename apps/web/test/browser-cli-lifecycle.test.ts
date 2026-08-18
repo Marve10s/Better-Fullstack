@@ -109,7 +109,8 @@ describe("browser ZIP to CLI lifecycle", () => {
     ]);
     expect(parsedConfig?.ecosystem).toBe("typescript");
     expect(parsedConfig?.version).toBe(currentCliVersion);
-    expect(manifest?.version).toBe("1");
+    expect(manifest?.version).toBe("2");
+    expect(manifest?.provenance.state).toBe("verified");
     expect(Object.keys(manifest?.hashes ?? {}).length).toBeGreaterThan(0);
 
     // ZIP download intentionally performs no install. The current CLI check
@@ -135,19 +136,18 @@ describe("browser ZIP to CLI lifecycle", () => {
     const update = await planReviewedProjectUpdate(projectDir);
     expect(update.success).toBe(true);
     if (!update.success) return;
-    expect(update.applyAllowed).toBe(false);
+    expect(update.applyAllowed).toBe(true);
     expect(update.plan.hasBaseline).toBe(true);
     expect(update.plan.actionable).toEqual([]);
     expect(update.reviewToken).toMatch(/^[a-f0-9]{64}$/);
-    expect(update.blockers.join(" ")).toContain("cannot prove generator release lineage");
-    expect(update.guarantee).toBe("unproven-manifest-v1-plan-only");
+    expect(update.blockers).toEqual([]);
+    expect(update.guarantee).toBe("verified-manifest-v2-recoverable");
 
     const rawManifestBeforeNoop = await readScaffoldManifest(projectDir);
     const formatEquivalent = update.plan.files.filter((file) => file.preserveBaseline);
     expect(formatEquivalent.length).toBeGreaterThan(0);
     const noopApply = await applyScaffoldUpgrade(projectDir, {
       expectedPlanDigest: getUpgradePlanDigest(update.plan),
-      acknowledgeUnprovenManifestV1: true,
     });
     expect(noopApply.success).toBe(true);
     const rawManifestAfterNoop = await readScaffoldManifest(projectDir);
@@ -167,29 +167,32 @@ describe("browser ZIP to CLI lifecycle", () => {
     process.env.BTS_TELEMETRY_DISABLED = "1";
     const addPlan = await add({
       projectDir,
-      addons: ["biome"],
+      part: ["codeQuality:universal:eslint", "codeQuality:universal:prettier"],
       dryRun: true,
       install: false,
     });
-    expect(addPlan?.success).toBe(true);
+    expect(addPlan?.success, addPlan?.error).toBe(true);
     expect(await readFile(path.join(projectDir, "bts.jsonc"), "utf8")).toBe(configBeforeAdd);
     expect(await readFile(path.join(projectDir, "bts.lock.json"), "utf8")).toBe(manifestBeforeAdd);
 
     const addApply = await add({
       projectDir,
-      addons: ["biome"],
+      part: ["codeQuality:universal:eslint", "codeQuality:universal:prettier"],
       dryRun: false,
       install: false,
     });
     expect(addApply?.success).toBe(true);
-    expect(addApply?.addedAddons).toContain("biome");
-    expect((await readBtsConfig(projectDir))?.addons).toContain("biome");
+    expect(addApply?.addedAddons).toContain("eslint");
+    expect(addApply?.addedAddons).toContain("prettier");
+    expect((await readBtsConfig(projectDir))?.addons).toContain("eslint");
+    expect((await readBtsConfig(projectDir))?.addons).toContain("prettier");
     const manifestAfterAdd = await readScaffoldManifest(projectDir);
-    expect(manifestAfterAdd?.version).toBe("1");
+    expect(manifestAfterAdd?.version).toBe("2");
+    expect(manifestAfterAdd?.history.at(-1)?.operation).toBe("add");
     // Applying an addition advances the comparable-file baseline while
-    // preserving the archive's v1 baseline identity timestamp.
+    // preserving the archive's baseline identity timestamp.
     expect(manifestAfterAdd?.createdAt).toBe(manifest?.createdAt);
-    expect(manifestAfterAdd?.hashes["biome.json"]).toMatch(/^[0-9a-f]{64}$/);
+    expect(manifestAfterAdd?.hashes[".prettierrc.json"]).toMatch(/^[0-9a-f]{64}$/);
     expect(await readFile(path.join(projectDir, "bts.lock.json"), "utf8")).not.toBe(
       manifestBeforeAdd,
     );

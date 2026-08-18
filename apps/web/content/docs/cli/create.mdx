@@ -2,7 +2,7 @@
 title: Create Command
 description: Scaffold a new Better Fullstack project with prompts, defaults, or explicit flags.
 translationStatus: pending
-updated: 2026-08-07
+updated: 2026-08-18
 ---
 
 The `create` command writes a new project from a typed stack configuration. Use it interactively for exploration, or pass flags when you need the same project shape every time.
@@ -34,6 +34,34 @@ For npm, Better Fullstack flags go after `--`. Generated npm commands may use `n
 | Defaults | `[launcher] my-app [flags] --yes`     | You want the default stack without prompts. |
 | Scripted | `[launcher] my-app [flags]`           | You want repeatable output.                 |
 | Dry run  | `[launcher] my-app [flags] --dry-run` | You want to inspect files before writing.   |
+
+## Project shapes
+
+`--shape` names what you are building. The CLI then asks which language or platform fits that shape and runs only the prompts that shape needs, so nothing is pinned that you did not choose.
+
+| Shape                | Asks                                                          | Result                                              |
+| -------------------- | ------------------------------------------------------------- | --------------------------------------------------- |
+| `--shape fullstack`  | Nothing extra; the standard composition prompt runs.          | The full guided flow.                               |
+| `--shape frontend`   | TypeScript, Rust, or .NET.                                    | A client app with the server half switched off.     |
+| `--shape backend`    | TypeScript, Go, Rust, Python, Java/Kotlin, .NET, or Elixir.   | An API with no web frontend.                        |
+| `--shape mobile`     | React Native, Kotlin, Swift, or Flutter.                      | A mobile app on the platform you pick.              |
+
+Platform and ecosystem flags answer the shape's own question ahead of time. The remaining prompts for that stack still run, so add `--yes` when you need a command that never asks anything:
+
+```bash
+# Prompts for the mobile platform
+bun create better-fullstack@latest my-app --shape mobile
+
+# Platform answered up front; Kotlin libraries and Git are still asked
+bun create better-fullstack@latest my-app --shape mobile --kotlin-mobile compose-multiplatform
+
+# Fully prompt-free
+bun create better-fullstack@latest my-app --shape backend --ecosystem go --yes
+```
+
+With `--yes` there is nothing to prompt, so a shape falls back to its default: TypeScript for `frontend` and `backend`, React Native for `mobile`.
+
+A shape decides the stack, so it is rejected rather than silently overruled when the rest of the command already decides it too: `--config`, `--from-history`, `--part`, and `--template` each carry a complete stack, a flag the shape switches off contradicts it, and `--shape mobile` accepts selectors for exactly one platform. Kotlin, Swift, and Flutter apps are built by Gradle, XcodeGen, and Flutter, which the CLI does not run, so `--install` is skipped with a notice on those platforms instead of reporting an install that did not happen.
 
 ## Prompt behavior
 
@@ -106,6 +134,54 @@ GoBetterAuth is selected with the global `--auth go-better-auth` value. Go-nativ
 
 ## Examples
 
+### Flat single-app output
+
+`--workspace-shape single-app` flattens a thin Next.js or TanStack Start self-backend scaffold into
+the project root. It is a create-time layout choice. If the stack needs separate database, ORM,
+auth, API, service, native, container, or deployment packages, compatibility safely restores the
+default `monorepo` layout.
+
+```npm
+npm create better-fullstack@latest thin-next-app -- \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --runtime none \
+  --workspace-shape single-app \
+  --database none \
+  --orm none \
+  --db-setup none \
+  --api none \
+  --auth none \
+  --payments none \
+  --email none \
+  --file-upload none \
+  --realtime none \
+  --job-queue none \
+  --caching none \
+  --rate-limit none \
+  --i18n none \
+  --search none \
+  --vector-db none \
+  --file-storage none \
+  --cms none \
+  --ai none \
+  --analytics none \
+  --feature-flags none \
+  --integrations none \
+  --ecommerce none \
+  --observability none \
+  --logging none \
+  --web-deploy none \
+  --server-deploy none \
+  --examples none \
+  --ai-docs none \
+  --no-install \
+  --no-git
+```
+
+### Explicit TypeScript stack
+
 Create a TypeScript app with explicit flags:
 
 ```npm
@@ -132,14 +208,13 @@ npm create better-fullstack@latest my-app -- \
   --payments none \
   --email none \
   --examples none \
-  --addons none \
   --ai-docs none \
   --version-channel stable \
   --no-install \
   --no-git
 ```
 
-Create a multi-ecosystem project:
+### Multi-ecosystem project
 
 ```npm
 npm create better-fullstack@latest my-mixed-app -- \
@@ -149,7 +224,8 @@ npm create better-fullstack@latest my-mixed-app -- \
   --part backend.auth:go:jwt \
   --part database:universal:postgres \
   --part mobile:react-native:native-bare \
-  --addons turborepo docker-compose
+  --part workspaceRunner:universal:turborepo \
+  --part containerOrchestration:universal:docker-compose
 ```
 
 ## Compatibility
@@ -158,5 +234,5 @@ npm create better-fullstack@latest my-mixed-app -- \
 - TypeScript `backend self` is for fullstack frontends and pairs with `runtime none`.
 - tRPC is React-oriented.
 - Workers runtime support depends on the frontend/backend combination.
-- UI libraries, deployment targets, providers, and addons are stack-sensitive.
+- UI libraries, deployment targets, providers, and tooling capabilities are stack-sensitive.
 - For a visual check, use the [Compatibility Matrix](/docs/reference/compatibility/) or the [Stack Builder](https://better-fullstack.dev/new).

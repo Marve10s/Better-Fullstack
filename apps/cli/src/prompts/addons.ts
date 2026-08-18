@@ -1,241 +1,30 @@
 import { DEFAULT_CONFIG } from "../constants";
+import { ADDONS_REQUIRING_IMPERATIVE_SETUP } from "../helpers/addons/addons-setup";
 import {
   type Addons,
   AddonsSchema,
   type API,
-  APP_PLATFORM_ADDON_VALUES,
   type Auth,
   type Backend,
+  BackendSchema,
   type Frontend,
+  FrontendSchema,
+  getToolingCapability,
+  getSelectedToolingOption,
+  getToolingSelectionOptions,
+  hasVitePlusWorkspaceRoot,
+  legacyProjectConfigToStackParts,
   type ProjectConfig,
   type Runtime,
+  TOOLING_CATEGORIES,
+  type ToolingCategoryId,
 } from "../types";
 import { getCompatibleAddons, validateAddonCompatibility } from "../utils/compatibility-rules";
 import { exitCancelled } from "../utils/errors";
-import { isCancel, navigableGroupMultiselect, navigableMultiselect } from "./navigable";
+import { isCancel, navigableMultiselect, navigableSelect } from "./navigable";
 
-type AddonOption = {
-  value: Addons;
-  label: string;
-  hint: string;
-};
-
-function getAddonDisplay(addon: Addons): { label: string; hint: string } {
-  let label: string;
-  let hint: string;
-
-  switch (addon) {
-    case "turborepo":
-      label = "Turborepo";
-      hint = "High-performance build system";
-      break;
-    case "nx":
-      label = "Nx";
-      hint = "Smart monorepo task runner and cache";
-      break;
-    case "pwa":
-      label = "PWA";
-      hint = "Make your app installable and work offline";
-      break;
-    case "tauri":
-      label = "Tauri";
-      hint = "Build native desktop apps from your web frontend";
-      break;
-    case "biome":
-      label = "Biome";
-      hint = "Format, lint, and more";
-      break;
-    case "oxlint":
-      label = "Oxlint";
-      hint = "Oxlint + Oxfmt (linting & formatting)";
-      break;
-    case "ultracite":
-      label = "Ultracite";
-      hint = "Zero-config Biome preset with AI integration";
-      break;
-    case "ruler":
-      label = "Ruler";
-      hint = "Centralize your AI rules";
-      break;
-    case "mcp":
-      label = "MCP";
-      hint = "Install MCP server recommendations for your stack";
-      break;
-    case "skills":
-      label = "Skills";
-      hint = "Install curated AI coding skills for your stack";
-      break;
-    case "lefthook":
-      label = "Lefthook";
-      hint = "Fast and powerful Git hooks manager";
-      break;
-    case "husky":
-      label = "Husky";
-      hint = "Modern native Git hooks made easy";
-      break;
-    case "knip":
-      label = "Knip";
-      hint = "Find unused files, dependencies, and exports";
-      break;
-    case "gitleaks":
-      label = "Gitleaks";
-      hint = "Detect hardcoded secrets in Git history and staged changes";
-      break;
-    case "starlight":
-      label = "Starlight";
-      hint = "Build stellar docs with astro";
-      break;
-    case "fumadocs":
-      label = "Fumadocs";
-      hint = "Build excellent documentation site";
-      break;
-    case "opentui":
-      label = "OpenTUI";
-      hint = "Build terminal user interfaces";
-      break;
-    case "wxt":
-      label = "WXT";
-      hint = "Build browser extensions";
-      break;
-    case "msw":
-      label = "MSW";
-      hint = "Mock Service Worker for API mocking";
-      break;
-    case "storybook":
-      label = "Storybook";
-      hint = "Component development and testing workshop";
-      break;
-    case "swr":
-      label = "SWR";
-      hint = "React Hooks for data fetching and caching";
-      break;
-    case "tanstack-query":
-      label = "TanStack Query";
-      hint = "Powerful async state management & data fetching";
-      break;
-    case "tanstack-table":
-      label = "TanStack Table";
-      hint = "Headless table with sorting, filtering & pagination";
-      break;
-    case "tanstack-virtual":
-      label = "TanStack Virtual";
-      hint = "Virtualize large lists & grids for 60fps performance";
-      break;
-    case "tanstack-db":
-      label = "TanStack DB";
-      hint = "Reactive client-first data store with sync backends (Beta)";
-      break;
-    case "tanstack-pacer":
-      label = "TanStack Pacer";
-      hint = "Debounce, throttle, rate-limit & queue utilities (Beta)";
-      break;
-    case "backend-utils":
-      label = "Backend Utils";
-      hint = "asyncHandler, ApiResponse & global error handler for your server";
-      break;
-    case "devcontainer":
-      label = "DevContainer";
-      hint = "VS Code container config with stack-aware ports and extensions";
-      break;
-    case "docker-compose":
-      label = "Docker Compose";
-      hint = "Containerize your app for deployment";
-      break;
-    case "kong":
-      label = "Kong Gateway";
-      hint = "DB-less API gateway with declarative Docker configuration";
-      break;
-    case "github-actions":
-      label = "GitHub Actions";
-      hint = "Ship a CI workflow (install, lint, type-check, build)";
-      break;
-    case "eslint":
-      label = "ESLint";
-      hint = "Pluggable JavaScript and TypeScript linting with flat config";
-      break;
-    case "prettier":
-      label = "Prettier";
-      hint = "Opinionated formatting for code, JSON, Markdown, and styles";
-      break;
-    case "axios":
-      label = "Axios";
-      hint = "HTTP client with interceptors, cancellation, and typed responses";
-      break;
-    case "firebase":
-      label = "Firebase JS SDK";
-      hint = "Firebase app, Auth, Firestore, and Storage client setup";
-      break;
-    case "graphql-codegen":
-      label = "GraphQL Code Generator";
-      hint = "Generate typed GraphQL documents and client helpers";
-      break;
-    case "openapi-typescript":
-      label = "openapi-typescript";
-      hint = "Generate runtime-free TypeScript types from OpenAPI schemas";
-      break;
-    case "apollo-client":
-      label = "Apollo Client";
-      hint = "GraphQL client with normalized caching and framework integrations";
-      break;
-    case "electron":
-      label = "Electron";
-      hint = "Package compatible Vite frontends as desktop applications";
-      break;
-    case "capacitor":
-      label = "Capacitor";
-      hint = "Ship compatible Vite frontends to iOS and Android";
-      break;
-    default:
-      label = addon;
-      hint = `Add ${addon}`;
-  }
-
-  return { label, hint };
-}
-
-const ADDON_GROUPS: Record<string, Addons[]> = {
-  Tooling: [
-    "turborepo",
-    "nx",
-    "github-actions",
-    "biome",
-    "eslint",
-    "prettier",
-    "oxlint",
-    "ultracite",
-    "husky",
-    "lefthook",
-    "knip",
-    "gitleaks",
-  ],
-  Documentation: ["starlight", "fumadocs"],
-  Extensions: ["ruler", "devcontainer", "docker-compose", "kong"],
-  Integrations: ["msw", "storybook", "backend-utils", "axios", "firebase"],
-  "API Tooling": ["graphql-codegen", "openapi-typescript"],
-  "AI Agents": ["mcp", "skills"],
-  "App Platforms": [...APP_PLATFORM_ADDON_VALUES],
-  "Data Fetching": ["swr", "apollo-client"],
-  TanStack: [
-    "tanstack-query",
-    "tanstack-table",
-    "tanstack-virtual",
-    "tanstack-db",
-    "tanstack-pacer",
-  ],
-};
-
-function createGroupedAddonOptions() {
-  return Object.fromEntries(
-    Object.keys(ADDON_GROUPS).map((group) => [group, [] as AddonOption[]]),
-  ) as Record<string, AddonOption[]>;
-}
-
-export function getAddonGroup(addon: Addons) {
-  return Object.entries(ADDON_GROUPS).find(([, addons]) => addons.includes(addon))?.[0];
-}
-
-function validateAddonCompatibilityForPrompt(
-  addon: Addons,
+function validateCapability(
+  toolId: Addons,
   frontends: Frontend[],
   auth?: Auth,
   backend?: Backend,
@@ -244,7 +33,7 @@ function validateAddonCompatibilityForPrompt(
   context: Partial<ProjectConfig> = { ecosystem: "typescript" },
 ) {
   return validateAddonCompatibility(
-    addon,
+    toolId,
     frontends,
     auth,
     backend,
@@ -260,13 +49,14 @@ function validateAddonCompatibilityForPrompt(
     context.rustApi,
     context.goApi,
     context.javaApi,
+    hasVitePlusWorkspaceRoot(context.stackParts),
   );
 }
 
 export function getCompatibleAddonsForPrompt(
-  allAddons: Addons[],
+  allCapabilities: Addons[],
   frontends: Frontend[],
-  existingAddons: Addons[] = [],
+  existingCapabilities: Addons[] = [],
   auth?: Auth,
   backend?: Backend,
   runtime?: Runtime,
@@ -274,9 +64,9 @@ export function getCompatibleAddonsForPrompt(
   context: Partial<ProjectConfig> = { ecosystem: "typescript" },
 ) {
   return getCompatibleAddons(
-    allAddons,
+    allCapabilities,
     frontends,
-    existingAddons,
+    existingCapabilities,
     auth,
     backend,
     runtime,
@@ -286,104 +76,170 @@ export function getCompatibleAddonsForPrompt(
   );
 }
 
-const APP_PLATFORM_ADDONS = new Set<Addons>(APP_PLATFORM_ADDON_VALUES);
+export function getAddonGroup(toolId: Addons) {
+  return TOOLING_CATEGORIES.find((category) =>
+    getToolingSelectionOptions(category.id).some((selection) => selection.toolIds.includes(toolId)),
+  )?.label;
+}
 
-/**
- * Dedicated multiselect for app platforms (Electron, Tauri, Capacitor, PWA,
- * WXT, OpenTUI). Selections merge into `config.addons`; when `--addons` is
- * passed the flag already carries any platforms, so this returns [] to avoid
- * double-collecting.
- */
-export async function getAppPlatformsChoice(addons?: Addons[], frontends?: Frontend[]) {
-  if (addons !== undefined) return [] as Addons[];
+type CapabilityPromptContext = {
+  frontends: Frontend[];
+  existing: Addons[];
+  auth?: Auth;
+  backend?: Backend;
+  runtime?: Runtime;
+  api?: API;
+  config: Partial<ProjectConfig>;
+  additionsOnly: boolean;
+};
 
-  const options: AddonOption[] = [];
-  for (const platform of APP_PLATFORM_ADDON_VALUES) {
-    const { isCompatible } = validateAddonCompatibilityForPrompt(platform, frontends || []);
-    if (!isCompatible) continue;
-    const { label, hint } = getAddonDisplay(platform);
-    options.push({ value: platform, label, hint });
-  }
-  if (options.length === 0) return [] as Addons[];
-
-  const response = await navigableMultiselect<Addons>({
-    message: "Select app platforms (desktop, mobile, extension)",
-    options,
-    initialValues: [],
-    required: false,
+export function getCompatibleSelections(
+  category: ToolingCategoryId,
+  context: CapabilityPromptContext,
+  selected: readonly Addons[],
+) {
+  return getToolingSelectionOptions(category).filter((selection) => {
+    if (
+      context.additionsOnly &&
+      selection.toolIds.length > 0 &&
+      selection.toolIds.every((toolId) => context.existing.includes(toolId as Addons))
+    ) {
+      return false;
+    }
+    if (
+      context.additionsOnly &&
+      selection.toolIds.some(
+        (toolId) =>
+          ADDONS_REQUIRING_IMPERATIVE_SETUP.has(toolId as Addons) &&
+          !context.existing.includes(toolId as Addons),
+      )
+    ) {
+      return false;
+    }
+    if (
+      selected.includes("vite-plus") &&
+      (category === "workspaceRunner" || category === "codeQuality" || category === "gitHooks")
+    ) {
+      return selection.toolIds.length === 0;
+    }
+    return selection.toolIds.every((toolId) => {
+      const parsed = AddonsSchema.safeParse(toolId);
+      if (!parsed.success) return false;
+      return validateCapability(
+        parsed.data,
+        context.frontends,
+        context.auth,
+        context.backend,
+        context.runtime,
+        context.api,
+        context.config,
+      ).isCompatible;
+    });
   });
+}
 
-  if (isCancel(response)) return exitCancelled("Operation cancelled");
+export async function promptCapabilities(
+  context: CapabilityPromptContext,
+  categories = TOOLING_CATEGORIES,
+  ownerLabel?: string,
+) {
+  const selected = [...context.existing];
 
-  return response;
+  for (const category of categories) {
+    const options = getCompatibleSelections(category.id, context, selected);
+    if (!options.some((selection) => selection.toolIds.length > 0)) continue;
+
+    if (category.selectionMode === "single") {
+      const current = getSelectedToolingOption(category.id, selected);
+      const response = await navigableSelect<string>({
+        message: ownerLabel ? `${category.label} · ${ownerLabel}` : category.label,
+        options: options.map((selection) => ({
+          value: selection.id,
+          label: selection.label,
+          hint: selection.description,
+        })),
+        initialValue: context.additionsOnly ? undefined : current?.id,
+      });
+      if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+      const selectedOption = options.find((selection) => selection.id === response);
+      if (!selectedOption) continue;
+      const categoryToolIds = new Set(
+        getToolingSelectionOptions(category.id).flatMap((selection) => selection.toolIds),
+      );
+      for (let index = selected.length - 1; index >= 0; index -= 1) {
+        if (
+          categoryToolIds.has(selected[index]) &&
+          (!context.additionsOnly || !context.existing.includes(selected[index]))
+        ) {
+          selected.splice(index, 1);
+        }
+      }
+      for (const toolId of selectedOption.toolIds) {
+        const parsed = AddonsSchema.safeParse(toolId);
+        if (parsed.success && !selected.includes(parsed.data)) selected.push(parsed.data);
+      }
+      continue;
+    }
+
+    const response = await navigableMultiselect<string>({
+      message: ownerLabel ? `${category.label} · ${ownerLabel}` : category.label,
+      options: options.map((selection) => ({
+        value: selection.id,
+        label: selection.label,
+        hint: selection.description,
+      })),
+      initialValues: context.additionsOnly
+        ? []
+        : options
+            .filter((selection) =>
+              selection.toolIds.every((toolId) => selected.includes(toolId as Addons)),
+            )
+            .map((selection) => selection.id),
+      required: false,
+    });
+    if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+    const categoryToolIds = new Set(options.flatMap((selection) => selection.toolIds));
+    for (let index = selected.length - 1; index >= 0; index -= 1) {
+      if (categoryToolIds.has(selected[index])) selected.splice(index, 1);
+    }
+    for (const selectionId of response) {
+      const selection = options.find((option) => option.id === selectionId);
+      for (const toolId of selection?.toolIds ?? []) {
+        const parsed = AddonsSchema.safeParse(toolId);
+        if (parsed.success && !selected.includes(parsed.data)) selected.push(parsed.data);
+      }
+    }
+  }
+
+  return selected;
+}
+
+export async function getAppPlatformsChoice(_legacyAddons?: Addons[], _frontends?: Frontend[]) {
+  return [] as Addons[];
 }
 
 export async function getAddonsChoice(
-  addons?: Addons[],
-  frontends?: Frontend[],
+  legacyAddons?: Addons[],
+  frontends: Frontend[] = [],
   auth?: Auth,
   backend?: Backend,
   runtime?: Runtime,
   api?: API,
-  context: Partial<ProjectConfig> = { ecosystem: "typescript" },
+  config: Partial<ProjectConfig> = { ecosystem: "typescript" },
 ) {
-  if (addons !== undefined) return addons;
-
-  const allAddons = AddonsSchema.options.filter(
-    (addon) => addon !== "none" && !APP_PLATFORM_ADDONS.has(addon),
-  );
-  const groupedOptions: Record<string, AddonOption[]> = createGroupedAddonOptions();
-
-  const frontendsArray = frontends || [];
-
-  for (const addon of allAddons) {
-    const { isCompatible } = validateAddonCompatibilityForPrompt(
-      addon,
-      frontendsArray,
-      auth,
-      backend,
-      runtime,
-      api,
-      context,
-    );
-    if (!isCompatible) continue;
-
-    const { label, hint } = getAddonDisplay(addon);
-    const option = { value: addon, label, hint };
-
-    const group = getAddonGroup(addon);
-    if (group) groupedOptions[group].push(option);
-  }
-
-  Object.keys(groupedOptions).forEach((group) => {
-    if (groupedOptions[group].length === 0) {
-      delete groupedOptions[group];
-    } else {
-      const groupOrder = ADDON_GROUPS[group as keyof typeof ADDON_GROUPS] || [];
-      groupedOptions[group].sort((a, b) => {
-        const indexA = groupOrder.indexOf(a.value);
-        const indexB = groupOrder.indexOf(b.value);
-        return indexA - indexB;
-      });
-    }
+  if (legacyAddons !== undefined) return legacyAddons;
+  return promptCapabilities({
+    frontends,
+    existing: [...DEFAULT_CONFIG.addons],
+    auth,
+    backend,
+    runtime,
+    api,
+    config,
+    additionsOnly: false,
   });
-
-  const initialValues = DEFAULT_CONFIG.addons.filter((addonValue) =>
-    Object.values(groupedOptions).some((options) =>
-      options.some((opt) => opt.value === addonValue),
-    ),
-  );
-
-  const response = await navigableGroupMultiselect<Addons>({
-    message: "Select addons",
-    options: groupedOptions,
-    initialValues: initialValues,
-    required: false,
-  });
-
-  if (isCancel(response)) return exitCancelled("Operation cancelled");
-
-  return response;
 }
 
 export async function getAddonsToAdd(
@@ -393,55 +249,117 @@ export async function getAddonsToAdd(
   backend?: Backend,
   runtime?: Runtime,
   api?: API,
-  context?: Partial<ProjectConfig>,
+  config: Partial<ProjectConfig> = { ecosystem: "typescript" },
 ) {
-  const groupedOptions: Record<string, AddonOption[]> = createGroupedAddonOptions();
-
-  const frontendArray = frontend || [];
-
-  const compatibleAddons = getCompatibleAddonsForPrompt(
-    AddonsSchema.options.filter((addon) => addon !== "none"),
-    frontendArray,
-    existingAddons,
+  const selected = await promptCapabilities({
+    frontends: frontend,
+    existing: existingAddons,
     auth,
     backend,
     runtime,
     api,
-    context,
+    config,
+    additionsOnly: true,
+  });
+  return selected.filter((toolId) => !existingAddons.includes(toolId));
+}
+
+export async function getCapabilityPartSpecsToAdd(config: Partial<ProjectConfig>) {
+  const parts = (
+    config.stackParts?.length ? config.stackParts : legacyProjectConfigToStackParts(config)
+  ).filter((part) => part.source !== "provided");
+  const rootCategories = TOOLING_CATEGORIES.filter((category) => !category.ownerRole);
+  const rootExisting = parts.flatMap((part) => {
+    const capability = getToolingCapability(part.toolId);
+    return capability && capability.role === part.role && !part.ownerPartId
+      ? [part.toolId as Addons]
+      : [];
+  });
+  const typeScriptFrontends = parts
+    .filter(
+      (part) => part.role === "frontend" && part.ecosystem === "typescript" && !part.ownerPartId,
+    )
+    .flatMap((part) => {
+      const frontend = FrontendSchema.safeParse(part.toolId);
+      return frontend.success ? [{ part, frontend: frontend.data }] : [];
+    });
+  const typeScriptBackends = parts
+    .filter(
+      (part) => part.role === "backend" && part.ecosystem === "typescript" && !part.ownerPartId,
+    )
+    .flatMap((part) => {
+      const backend = BackendSchema.safeParse(part.toolId);
+      return backend.success ? [{ part, backend: backend.data }] : [];
+    });
+  const rootSelected = await promptCapabilities(
+    {
+      frontends: typeScriptFrontends.map(({ frontend }) => frontend),
+      existing: rootExisting,
+      auth: config.auth,
+      backend: typeScriptBackends[0]?.backend ?? config.backend,
+      runtime: config.runtime,
+      api: config.api,
+      config,
+      additionsOnly: true,
+    },
+    rootCategories,
   );
+  const specs: string[] = rootSelected
+    .filter((toolId) => !rootExisting.includes(toolId))
+    .flatMap((toolId) => {
+      const capability = getToolingCapability(toolId);
+      return capability ? [`${capability.role}:${capability.ecosystem}:${toolId}`] : [];
+    });
 
-  for (const addon of compatibleAddons) {
-    const { label, hint } = getAddonDisplay(addon);
-    const option = { value: addon, label, hint };
-
-    const group = getAddonGroup(addon);
-    if (group) groupedOptions[group].push(option);
-  }
-
-  Object.keys(groupedOptions).forEach((group) => {
-    if (groupedOptions[group].length === 0) {
-      delete groupedOptions[group];
-    } else {
-      const groupOrder = ADDON_GROUPS[group as keyof typeof ADDON_GROUPS] || [];
-      groupedOptions[group].sort((a, b) => {
-        const indexA = groupOrder.indexOf(a.value);
-        const indexB = groupOrder.indexOf(b.value);
-        return indexA - indexB;
-      });
+  const ownerGroups = [
+    ...typeScriptFrontends.map(({ part, frontend }) => ({
+      part,
+      ownerRole: "frontend" as const,
+      frontends: [frontend],
+      backend: config.backend,
+    })),
+    ...typeScriptBackends.map(({ part, backend }) => ({
+      part,
+      ownerRole: "backend" as const,
+      frontends: typeScriptFrontends.map(({ frontend }) => frontend),
+      backend,
+    })),
+  ];
+  for (const owner of ownerGroups) {
+    const categories = TOOLING_CATEGORIES.filter(
+      (category) => category.ownerRole === owner.ownerRole,
+    );
+    const existing = parts.flatMap((part) => {
+      const capability = getToolingCapability(part.toolId);
+      return capability && capability.role === part.role && part.ownerPartId === owner.part.id
+        ? [part.toolId as Addons]
+        : [];
+    });
+    const selected = await promptCapabilities(
+      {
+        frontends: owner.frontends,
+        existing,
+        auth: config.auth,
+        backend: owner.backend,
+        runtime: config.runtime,
+        api: config.api,
+        config,
+        additionsOnly: true,
+      },
+      categories,
+      owner.part.toolId,
+    );
+    const sameRoleOwners = parts.filter(
+      (part) => part.role === owner.ownerRole && !part.ownerPartId,
+    );
+    const ownerSelector = sameRoleOwners.length > 1 ? owner.part.id : owner.ownerRole;
+    for (const toolId of selected.filter((toolId) => !existing.includes(toolId))) {
+      const capability = getToolingCapability(toolId);
+      if (capability) {
+        specs.push(`${ownerSelector}.${capability.role}:${capability.ecosystem}:${toolId}`);
+      }
     }
-  });
-
-  if (Object.keys(groupedOptions).length === 0) {
-    return [];
   }
 
-  const response = await navigableGroupMultiselect<Addons>({
-    message: "Select addons to add",
-    options: groupedOptions,
-    required: false,
-  });
-
-  if (isCancel(response)) return exitCancelled("Operation cancelled");
-
-  return response;
+  return specs;
 }

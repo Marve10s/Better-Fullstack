@@ -1,14 +1,16 @@
 ---
 title: Add Features
-description: Add supported addons, deployment targets, and stack capabilities to existing Better Fullstack projects.
+description: Add typed tooling, deployment targets, and stack capabilities to existing Better Fullstack projects.
 translationStatus: pending
-updated: 2026-08-07
+updated: 2026-08-18
 ---
 
 The `add` command updates an existing Better Fullstack project. It reads `bts.jsonc`, plans the requested stack change, writes safe generated-file updates, and updates the project config.
 
 ```npm
-npm create better-fullstack@latest add -- --addons mcp skills
+npm create better-fullstack@latest add -- \
+  --part codeQuality:universal:eslint \
+  --part codeQuality:universal:prettier
 ```
 
 Preview a service update before writing files:
@@ -30,10 +32,11 @@ npm create better-fullstack@latest add -- --email resend --dry-run
 ## What add does
 
 - Reads `bts.jsonc` from the current project, or from `--project-dir`.
-- Prompts for compatible addons when no explicit stack flags are passed.
+- Prompts in dedicated tooling and capability sections when no explicit stack flags are passed.
 - Accepts additive stack flags such as `--email`, `--observability`, `--search`, `--file-storage`, `--web-deploy`, and `--server-deploy`.
 - Uses the same safe planning engine as the MCP stack-update tools for explicit stack flags.
-- Skips addons that are already installed.
+- Skips capabilities that are already selected.
+- Refuses capabilities whose setup is imperative rather than generated. They must be selected at `create` time.
 - Writes generated files, dependency changes, env examples, and config updates when the existing files still match the generated baseline.
 - Refuses to overwrite user-edited generated files and prints the manual-review blockers.
 - Prints an install command when dependency installation is skipped.
@@ -46,10 +49,10 @@ Use `--dry-run` to inspect the file, dependency, env var, compatibility, and man
 
 | Flag                                      | Values or behavior                                                                                                                                                                                     |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `--addons`                                | One or more values from the schema-derived [TypeScript options reference](/docs/reference/options/typescript/). Use `none` only when explicitly clearing a multi-select field in a supported workflow. |
+| `--part`                                  | One or more canonical `role:ecosystem:tool` Stack Part specs. Owner-scoped parts use `ownerRole.role:ecosystem:tool` or an explicit part ID.                                               |
 | `--dry-run`                               | Plan the update and print the summary without writing files.                                                                                                                                           |
 | `--project-dir`                           | Path to the generated project. Defaults to the current directory.                                                                                                                                      |
-| `--install`                               | Install dependencies after adding files. Defaults to false for `add`.                                                                                                                                  |
+| `--install`                               | Install dependencies after adding files. Defaults to false for `add`. The lockfile it writes stays outside the transaction, so recovery restores generated files only and you must re-run install.      |
 | `--package-manager`                       | `npm` `pnpm` `bun` `yarn`                                                                                                                                                                              |
 | `--email`                                 | Add an email provider such as `resend`, when compatible with the existing stack.                                                                                                                       |
 | `--observability`                         | Add an observability provider such as `sentry`, when compatible with the existing stack.                                                                                                               |
@@ -58,28 +61,35 @@ Use `--dry-run` to inspect the file, dependency, env var, compatibility, and man
 
 Most create-time stack fields are accepted for existing-project updates when the planner can apply them safely. Risky architecture swaps may require manual review or a fresh scaffold.
 
-## Selected addon examples
+## Selected capability examples
 
 This table explains common choices; it is not the complete accepted-value inventory. Use the
 [TypeScript options reference](/docs/reference/options/typescript/) for the current exhaustive list.
 
-| Addon                                                                                     | Purpose                                                                                                            |
+| Capability                                                                                | Purpose                                                                                                            |
 | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `mcp`                                                                                     | Generated-project MCP server configuration for coding agents.                                                      |
-| `skills`                                                                                  | Curated coding-agent skill files.                                                                                  |
 | `turborepo`                                                                               | Monorepo orchestration.                                                                                            |
+| `vite-plus`                                                                               | Unified web toolchain and workspace orchestration (Beta).                                                          |
 | `docker-compose`                                                                          | Local service orchestration for supported stacks.                                                                  |
-| `biome` `oxlint` `ultracite` `lefthook` `husky` `ruler`                                   | Code quality and hooks.                                                                                            |
-| `starlight` `fumadocs`                                                                    | Documentation sites when compatible with the stack.                                                                |
-| `tauri` `pwa` `wxt`                                                                       | Desktop, progressive web app, and browser extension support.                                                       |
+| `eslint` `prettier`                                                                       | Code quality.                                                                                                      |
+| `pwa` `electron` `capacitor`                                                              | Progressive web app and desktop or mobile shells.                                                                  |
 | `msw` `storybook`                                                                         | Testing and component development utilities.                                                                       |
 | `swr` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` | Data fetching and UI utilities.                                                                                    |
 | `backend-utils`                                                                           | asyncHandler, ApiResponse, and a global error handler for Hono, Express, Fastify, Elysia, feTS, or NestJS servers. |
-| `opentui`                                                                                 | Terminal UI support.                                                                                               |
+
+<Callout kind="warning" title="Create-time only capabilities">
+`mcp`, `skills`, `ruler`, `biome`, `oxlint`, `ultracite`, `lefthook`, `husky`, `gitleaks`,
+`starlight`, `fumadocs`, `tauri`, `wxt`, and `opentui` run imperative setup steps that the
+transactional planner cannot write or roll back. `add` refuses them and the `add` prompts do not
+offer them; select them with `create` so every generated file lands in the scaffold baseline.
+</Callout>
+
+Vite+ is a toolchain profile: select it as `toolchain:universal:vite-plus`. The package-manager
+flag still chooses npm, pnpm, Yarn, or Bun underneath Vite+.
 
 ## Idempotency
 
-`bts.jsonc` is the source of truth for installed addons and selected stack parts. If every requested addon or capability is already present, `add` reports that there are no stack changes to apply.
+Canonical `stackParts` in `bts.jsonc` are the source of truth. Legacy flat projections remain readable for older projects, but new commands and prompts use Stack Parts. If every requested capability is already present, `add` reports that there are no stack changes to apply.
 
 ## Recommended workflow
 

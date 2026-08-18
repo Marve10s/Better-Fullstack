@@ -1,5 +1,6 @@
 import {
   getCategoryOrderForEcosystem,
+  getToolingSelectionOptions,
   OPTION_CATEGORY_METADATA,
   REACT_NATIVE_CATEGORY_ORDER,
   TYPESCRIPT_CATEGORY_ORDER,
@@ -15,6 +16,8 @@ import {
 } from "@better-fullstack/types/stack-translation";
 import { describe, expect, it } from "bun:test";
 
+import { buildRandomStack } from "../src/components/stack-builder/stack-builder";
+import { GRAPH_COMMON_CATEGORY_ORDER } from "../src/components/stack-builder/utils";
 import { ECOSYSTEM_CATEGORIES } from "../src/lib/constant";
 import { DEFAULT_STACK } from "../src/lib/stack-defaults";
 import {
@@ -33,6 +36,39 @@ function isMappedStackStateKey(key: string): key is MappedStackStateKey {
 }
 
 describe("StackState contract", () => {
+  it("exposes dedicated tooling sections in multi-stack finalization", () => {
+    expect(GRAPH_COMMON_CATEGORY_ORDER).toContain("toolchainProfile");
+    expect(GRAPH_COMMON_CATEGORY_ORDER).toContain("workspaceRunner");
+    expect(GRAPH_COMMON_CATEGORY_ORDER).toContain("codeQualityProfile");
+    expect(GRAPH_COMMON_CATEGORY_ORDER).not.toContain("appPlatforms");
+  });
+
+  it("never randomizes a Vite+ toolchain alongside the tooling it owns", () => {
+    const vitePlusOwnedToolIds = new Set(
+      (["workspaceRunner", "codeQuality", "gitHooks"] as const).flatMap((toolingCategory) =>
+        getToolingSelectionOptions(toolingCategory).flatMap((option) => option.toolIds),
+      ),
+    );
+
+    let vitePlusDraws = 0;
+    const conflicts: string[] = [];
+    // vite-plus is drawn roughly half the time, so 40 attempts make a miss
+    // vanishingly unlikely while keeping this well inside the test timeout.
+    for (let attempt = 0; attempt < 40; attempt++) {
+      const randomStack = { ...DEFAULT_STACK, ...buildRandomStack(DEFAULT_STACK) };
+      if (!randomStack.appPlatforms.includes("vite-plus")) continue;
+      vitePlusDraws++;
+      conflicts.push(
+        ...[...randomStack.appPlatforms, ...randomStack.codeQuality].filter((toolId) =>
+          vitePlusOwnedToolIds.has(toolId),
+        ),
+      );
+    }
+
+    expect(vitePlusDraws).toBeGreaterThan(0);
+    expect(conflicts).toEqual([]);
+  });
+
   it("keeps DEFAULT_STACK, stackStateKeys, and URL keys in exact sync", () => {
     expect(Object.keys(DEFAULT_STACK)).toEqual(stackStateKeys);
     expect(Object.keys(STACK_SELECTION_URL_KEYS)).toEqual(stackStateKeys);
@@ -65,7 +101,9 @@ describe("StackState contract", () => {
       const metadata = OPTION_CATEGORY_METADATA[category];
       const defaultValue = DEFAULT_STACK[stackKey];
 
-      if (metadata.selectionMode === "multiple") {
+      if (category === "documentation") {
+        expect(Array.isArray(defaultValue)).toBe(true);
+      } else if (metadata.selectionMode === "multiple") {
         expect(Array.isArray(defaultValue)).toBe(true);
       } else {
         expect(Array.isArray(defaultValue)).toBe(false);

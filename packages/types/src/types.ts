@@ -19,6 +19,7 @@ import type {
   ServerDeploySchema,
   DirectoryConflictSchema,
   TemplateSchema,
+  ProjectShapeSchema,
   ProjectNameSchema,
   CreateInputSchema,
   AddInputSchema,
@@ -58,6 +59,7 @@ import type {
   CMSSchema,
   CachingSchema,
   RateLimitSchema,
+  BotProtectionSchema,
   I18nSchema,
   SearchSchema,
   VectorDbSchema,
@@ -196,6 +198,7 @@ export type WebDeploy = z.infer<typeof WebDeploySchema>;
 export type ServerDeploy = z.infer<typeof ServerDeploySchema>;
 export type DirectoryConflict = z.infer<typeof DirectoryConflictSchema>;
 export type Template = z.infer<typeof TemplateSchema>;
+export type ProjectShape = z.infer<typeof ProjectShapeSchema>;
 export type ProjectName = z.infer<typeof ProjectNameSchema>;
 export type AstroIntegration = z.infer<typeof AstroIntegrationSchema>;
 export type AI = z.infer<typeof AISchema>;
@@ -228,6 +231,7 @@ export type MobileLibraries = z.infer<typeof MobileLibrariesSchema>;
 export type CMS = z.infer<typeof CMSSchema>;
 export type Caching = z.infer<typeof CachingSchema>;
 export type RateLimit = z.infer<typeof RateLimitSchema>;
+export type BotProtection = z.infer<typeof BotProtectionSchema>;
 export type I18n = z.infer<typeof I18nSchema>;
 export type Search = z.infer<typeof SearchSchema>;
 export type VectorDb = z.infer<typeof VectorDbSchema>;

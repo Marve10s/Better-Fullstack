@@ -1,87 +1,49 @@
+import { PACKAGE_MANAGER_COMMANDS } from "@better-fullstack/types";
 import { Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { useEffect, useState } from "react";
-import { TbArrowRight as ArrowRight, TbCheck as Check, TbCopy as Copy } from "react-icons/tb";
+import { Fragment, useState } from "react";
+import {
+  TbArrowNarrowRight as ArrowNarrowRight,
+  TbArrowRight as ArrowRight,
+  TbCheck as Check,
+  TbCopy as Copy,
+} from "react-icons/tb";
 
-import { AsciiHeroBackground } from "@/components/ui/ascii-hero-background";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { latestChangelogRelease } from "@/lib/changelog";
-import { PROJECT_ECOSYSTEM_COPY } from "@/lib/project-stats";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages.js";
 
-import PackageIcon from "./icons";
 import { LIKED_BY } from "./testimonials-data";
 
 const PMS = ["bun", "pnpm", "npm", "yarn"] as const;
 type PM = (typeof PMS)[number];
-const COMMANDS: Record<PM, string> = {
-  bun: "bun create better-fullstack@latest",
-  pnpm: "pnpm create better-fullstack@latest",
-  npm: "npx create-better-fullstack@latest",
-  yarn: "yarn create better-fullstack@latest",
-};
 
 const ACCENT_TEXT = "text-ink dark:text-brand";
 
-// The release badge updates itself. We seed it from the curated changelog (so SSR
-// and offline still render something correct), then refresh it live from the
-// latest GitHub release — which the Release workflow cuts on every npm publish —
-// so it never goes stale after a release without anyone hand-editing changelog.ts.
-// (Build-time injection can't help: the publish runs *after* the deploy that
-// triggers it, so any baked-in value always lags a version.)
-const FALLBACK_RELEASE_BADGE = latestChangelogRelease
-  ? `${latestChangelogRelease.version} · ${latestChangelogRelease.displayDate}`
-  : "";
-const LATEST_RELEASE_API = "https://api.github.com/repos/Marve10s/Better-Fullstack/releases/latest";
-const RELEASE_BADGE_CACHE_KEY = "bfs:latest-release-badge";
+/**
+ * A shape names what you are building. The CLI then asks which language or
+ * platform and only the questions that shape needs, so no stack choice is
+ * hidden behind the short command.
+ */
+const SHAPES = [
+  { id: "fullstack", label: m.homeStarterShapeFullstack, flags: "" },
+  { id: "frontend", label: m.homeStarterShapeFrontend, flags: "--shape frontend" },
+  { id: "backend", label: m.homeStarterShapeBackend, flags: "--shape backend" },
+  { id: "mobile", label: m.homeStarterShapeMobile, flags: "--shape mobile" },
+] as const;
 
-function formatReleaseBadge(tagName: string, publishedAt: string): string {
-  const date = new Date(publishedAt);
-  const displayDate = Number.isNaN(date.getTime())
-    ? ""
-    : date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-  return displayDate ? `${tagName} · ${displayDate}` : tagName;
-}
+type ShapeId = (typeof SHAPES)[number]["id"];
 
 export default function HeroSection() {
+  const [shape, setShape] = useState<ShapeId>("fullstack");
   const [pm, setPm] = useState<PM>("bun");
   const [copied, setCopied] = useState(false);
-  const [releaseBadge, setReleaseBadge] = useState(FALLBACK_RELEASE_BADGE);
 
-  useEffect(() => {
-    const cached = sessionStorage.getItem(RELEASE_BADGE_CACHE_KEY);
-    if (cached) {
-      setReleaseBadge(cached);
-      return;
-    }
-    let cancelled = false;
-    void (async () => {
-      try {
-        const res = await fetch(LATEST_RELEASE_API, {
-          headers: { Accept: "application/vnd.github+json" },
-        });
-        if (!res.ok) return;
-        const data = (await res.json()) as { tag_name?: string; published_at?: string };
-        if (cancelled || !data.tag_name) return;
-        const badge = formatReleaseBadge(data.tag_name, data.published_at ?? "");
-        setReleaseBadge(badge);
-        try {
-          sessionStorage.setItem(RELEASE_BADGE_CACHE_KEY, badge);
-        } catch {
-          // sessionStorage can throw in private mode; the live value still renders.
-        }
-      } catch {
-        // Network / rate-limit failure: keep the curated fallback badge.
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const flags = SHAPES.find((entry) => entry.id === shape)?.flags ?? "";
+  const command = [PACKAGE_MANAGER_COMMANDS[pm], flags].filter(Boolean).join(" ");
 
   const copy = () => {
-    navigator.clipboard.writeText(COMMANDS[pm]).then(
+    navigator.clipboard.writeText(command).then(
       () => {
         setCopied(true);
         window.setTimeout(() => setCopied(false), 1600);
@@ -92,124 +54,144 @@ export default function HeroSection() {
   };
 
   return (
-    <section
-      className={cn(
-        "relative bg-surface text-ink [color-scheme:light]",
-        "dark:[color-scheme:dark]",
-      )}
-    >
-      <div className="border-b border-edge px-4 pb-5 pt-6 sm:px-8 sm:pt-8">
-        <div className="flex items-baseline justify-between">
-          <span className={cn("font-mono text-[11px] uppercase tracking-[0.22em]", ACCENT_TEXT)}>
-            ✦ {m.homeInstall()}
-          </span>
-          <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-soft">
-            {releaseBadge}
-          </span>
-        </div>
+    <section className="relative bg-surface text-ink">
+      <div className="mx-auto flex min-h-[calc(100svh-3.5rem)] max-w-3xl flex-col items-center justify-center px-4 py-16 sm:py-20">
+        <motion.h1
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-balance text-center font-mono font-bold tracking-[-0.045em] text-ink"
+          style={{ fontSize: "clamp(2.25rem, 6.5vw, 4.5rem)", lineHeight: 1 }}
+        >
+          {m.homeStarterTitleA()}{" "}
+          <span className={cn("italic", ACCENT_TEXT)}>{m.homeStarterTitleB()}</span>
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.12 }}
+          className="mt-5 max-w-2xl whitespace-pre-line text-center text-sm leading-relaxed text-soft sm:mt-6 sm:text-base"
+        >
+          {m
+            .homeStarterSubtitle()
+            .split("→")
+            .map((part, index) => (
+              <Fragment key={part}>
+                {index > 0 && (
+                  <ArrowNarrowRight
+                    aria-hidden
+                    className={cn("mx-1 inline size-5 align-middle stroke-[2.25]", ACCENT_TEXT)}
+                  />
+                )}
+                {part.split(/(MCP)/).map((chunk, chunkIndex) =>
+                  chunk === "MCP" ? (
+                    <a
+                      key={`${chunk}-${chunkIndex}`}
+                      href="/docs/ai/mcp"
+                      className={cn(
+                        "font-medium underline decoration-brand decoration-2 underline-offset-4 transition-colors hover:text-ink dark:hover:text-brand",
+                        ACCENT_TEXT,
+                      )}
+                    >
+                      {chunk}
+                    </a>
+                  ) : (
+                    <Fragment key={`${chunk}-${chunkIndex}`}>{chunk}</Fragment>
+                  ),
+                )}
+              </Fragment>
+            ))}
+        </motion.p>
 
         <motion.div
-          initial={{ opacity: 0, y: -4 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="mt-3 overflow-hidden rounded-md border border-edge bg-surface-raised"
+          transition={{ duration: 0.5, delay: 0.22 }}
+          className="mt-8 w-full sm:mt-10"
         >
-          <div className="flex border-b border-edge">
-            {PMS.map((p) => (
+          <div className="flex flex-wrap justify-center gap-2">
+            {SHAPES.map((entry) => (
               <button
-                key={p}
+                key={entry.id}
                 type="button"
-                onClick={() => setPm(p)}
+                onClick={() => setShape(entry.id)}
+                aria-pressed={shape === entry.id}
                 className={cn(
-                  "flex cursor-pointer items-center gap-1.5 border-r border-edge px-3 py-2 text-xs font-medium transition-colors sm:gap-2 sm:px-4",
-                  pm === p ? "bg-brand text-[#0a0a0a]" : "bg-transparent text-soft",
+                  "cursor-pointer rounded-full border px-4 py-2 text-sm font-medium transition-colors",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface",
+                  shape === entry.id
+                    ? "border-brand bg-brand text-[#0a0a0a]"
+                    : "border-edge bg-surface-raised text-ink hover:border-soft",
                 )}
               >
-                <PackageIcon pm={p} className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                {p}
+                {entry.label()}
               </button>
             ))}
           </div>
-          <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-5 sm:py-4">
-            <code className="truncate font-mono text-sm sm:text-base">
-              <span className={ACCENT_TEXT}>$</span> {COMMANDS[pm]}
+
+          <div className="mt-6 flex items-center gap-3 rounded-2xl border border-edge bg-surface-raised px-4 py-3.5 sm:mt-8 sm:rounded-full sm:px-6">
+            <span className={cn("shrink-0 font-mono text-sm", ACCENT_TEXT)}>$</span>
+            <code className="no-scrollbar min-w-0 flex-1 overflow-x-auto whitespace-nowrap font-mono text-xs sm:text-sm">
+              {PACKAGE_MANAGER_COMMANDS[pm]}
+              {flags && <span className={ACCENT_TEXT}> {flags}</span>}
             </code>
             <button
               type="button"
               onClick={copy}
               aria-label={m.homeCopyCommand()}
               className={cn(
-                "flex size-8 cursor-pointer items-center justify-center rounded-md bg-transparent transition-colors active:translate-y-[1px]",
-                copied ? "text-ink dark:text-brand" : "text-soft",
+                "flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors active:translate-y-[1px]",
+                copied ? ACCENT_TEXT : "text-soft hover:text-ink",
               )}
             >
               {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
             </button>
           </div>
-        </motion.div>
-      </div>
 
-      <div className="relative overflow-hidden px-4 pb-16 pt-12 sm:px-8 sm:pb-24 sm:pt-20">
-        <div
-          className="pointer-events-none absolute inset-y-0 left-1/2 w-screen -translate-x-1/2"
-          aria-hidden
-        >
-          <AsciiHeroBackground className="size-full" variant="stack" />
-        </div>
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-3">
+            <div className="flex items-center gap-1 text-xs">
+              {PMS.map((entry) => (
+                <button
+                  key={entry}
+                  type="button"
+                  onClick={() => setPm(entry)}
+                  aria-pressed={pm === entry}
+                  className={cn(
+                    "cursor-pointer rounded-full px-2 py-1 font-mono transition-colors",
+                    pm === entry ? cn("bg-surface-raised", ACCENT_TEXT) : "text-soft hover:text-ink",
+                  )}
+                >
+                  {entry}
+                </button>
+              ))}
+            </div>
 
-        <motion.h1
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.05 }}
-          className={cn(
-            "relative z-10 max-w-[15ch] text-balance font-mono font-bold tracking-[-0.045em] text-ink",
-          )}
-          style={{
-            fontSize: "clamp(2.75rem, 9vw, 6.5rem)",
-            lineHeight: 0.94,
-          }}
-        >
-          {m.homeStopWiring()}
-          <br />
-          <span className={cn("italic", ACCENT_TEXT)}>{m.homeStartShipping()}</span>
-        </motion.h1>
+            <span aria-hidden className="text-edge">
+              ·
+            </span>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="relative z-10 mt-7 max-w-lg text-pretty text-base text-soft sm:text-lg"
-        >
-          {m.homeHeroDescription(PROJECT_ECOSYSTEM_COPY)}
-        </motion.p>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="relative z-10 mt-10 flex flex-wrap items-center gap-3"
-        >
-          <Link
-            to="/new"
-            search={{ view: "command", file: "" }}
-            className="group inline-flex items-center gap-1.5 rounded-md bg-brand px-5 py-2.5 text-sm font-semibold text-[#0a0a0a] transition-all hover:gap-2.5"
-          >
-            {m.homeOpenBuilder()}
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-          </Link>
-          <Link
-            to="/docs"
-            className="px-2 py-2.5 text-sm font-medium text-soft transition-colors hover:text-ink"
-          >
-            {m.homeReadDocs()}
-          </Link>
+            <Link
+              to="/new"
+              className={cn(
+                "group inline-flex items-center gap-2 rounded-full border border-brand/40 px-4 py-1.5",
+                "font-mono text-[10px] uppercase tracking-[0.18em] transition-colors",
+                "hover:border-brand hover:bg-brand hover:text-[#0a0a0a]",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface",
+                ACCENT_TEXT,
+              )}
+            >
+              {m.homeOpenBuilder()}
+              <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          </div>
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.42 }}
-          className="relative z-10 mt-8 flex flex-wrap items-center gap-x-4 gap-y-3"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="mt-12 flex flex-wrap items-center justify-center gap-x-4 gap-y-3"
         >
           <ul className="isolate flex -space-x-2.5" aria-label={m.homeLikedOnX()}>
             {LIKED_BY.map((person) => (

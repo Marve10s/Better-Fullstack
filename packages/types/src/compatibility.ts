@@ -1,6 +1,7 @@
 import type {
   AI,
   Addons,
+  Analytics,
   API,
   AstroIntegration,
   Auth,
@@ -16,6 +17,7 @@ import type {
 } from "./types";
 
 import { getCapabilityDisabledReason, normalizeCapabilitySelection } from "./capabilities";
+import { ANALYTICS_VALUES } from "./schemas";
 import { CATEGORY_ORDER, getCategoryDisplayName, type OptionCategory } from "./option-metadata";
 import {
   getUnsupportedWebDeployFrontend,
@@ -47,14 +49,78 @@ export {
 
 export type CompatibilityCategory = OptionCategory;
 
-const SIGNOZ_SUPPORTED_GO_WEB_FRAMEWORKS = new Set([
-  "gin",
-  "echo",
-  "fiber",
-  "chi",
-  "stdlib",
-]);
+const SIGNOZ_SUPPORTED_GO_WEB_FRAMEWORKS = new Set(["gin", "echo", "fiber", "chi", "stdlib"]);
 const SIGNOZ_SUPPORTED_PYTHON_WEB_FRAMEWORKS = new Set(["fastapi"]);
+const VERCEL_ANALYTICS_FRONTENDS = new Set([
+  "next",
+  "vinext",
+  "tanstack-router",
+  "tanstack-start",
+  "react-router",
+  "react-vite",
+  "svelte",
+  "nuxt",
+  "vue",
+  "solid",
+  "solid-start",
+  "astro",
+]);
+
+const REACT_ANALYTICS_FRONTENDS = new Set([
+  "tanstack-router",
+  "react-router",
+  "react-vite",
+  "tanstack-start",
+  "next",
+  "vinext",
+]);
+
+const GA4_FRONTENDS = new Set([
+  ...VERCEL_ANALYTICS_FRONTENDS,
+  "vanilla-vite",
+  "qwik",
+  "angular",
+  "redwood",
+  "fresh",
+]);
+
+const STANDARD_ANALYTICS_FRONTENDS = new Set([
+  ...REACT_ANALYTICS_FRONTENDS,
+  "svelte",
+  "nuxt",
+  "vue",
+  "solid",
+  "solid-start",
+]);
+
+export const ANALYTICS_FRONTEND_SUPPORT = {
+  ga4: GA4_FRONTENDS,
+  plausible: REACT_ANALYTICS_FRONTENDS,
+  posthog: STANDARD_ANALYTICS_FRONTENDS,
+  umami: STANDARD_ANALYTICS_FRONTENDS,
+  "vercel-analytics": VERCEL_ANALYTICS_FRONTENDS,
+} as const satisfies Record<Exclude<Analytics, "none">, ReadonlySet<string>>;
+
+export function isAnalyticsFrontendSupported(analytics: Analytics, frontend: string) {
+  return analytics !== "none" && ANALYTICS_FRONTEND_SUPPORT[analytics].has(frontend);
+}
+
+export function supportsAnalyticsFrontends(
+  analytics: Analytics,
+  frontends: readonly string[],
+) {
+  const webFrontends = frontends.filter(
+    (frontend) => frontend !== "none" && !frontend.startsWith("native-"),
+  );
+  return (
+    webFrontends.length > 0 &&
+    webFrontends.every((frontend) => isAnalyticsFrontendSupported(analytics, frontend))
+  );
+}
+
+export function isVercelAnalyticsFrontend(frontend: string) {
+  return isAnalyticsFrontendSupported("vercel-analytics", frontend);
+}
 
 export function isSignozSupportedGoWebFramework(framework: string): boolean {
   return SIGNOZ_SUPPORTED_GO_WEB_FRAMEWORKS.has(framework);
@@ -157,6 +223,22 @@ export type CompatibilityEvaluation = {
   issues: CompatibilityIssue[];
 };
 
+const TURNSTILE_WEB_FRONTENDS = new Set([
+  "next",
+  "react-router",
+  "react-vite",
+  "tanstack-router",
+  "tanstack-start",
+]);
+
+export function isTurnstileWebFrontend(frontend: string) {
+  return TURNSTILE_WEB_FRONTENDS.has(frontend);
+}
+
+export function isBotIdWebFrontend(frontend: string) {
+  return frontend === "next";
+}
+
 export type CompatibilityAdjustment = {
   category: string;
   message: string;
@@ -200,6 +282,7 @@ export type CompatibilityInput = {
   jobQueue: string;
   caching: string;
   rateLimit: string;
+  botProtection: string;
   animation: string;
   cssFramework: string;
   uiLibrary: string;
@@ -475,6 +558,7 @@ export function stackQualifiesForSingleApp(stack: CompatibilityInput): boolean {
   const webFrontends = (stack.webFrontend ?? []).filter((f) => f && f !== "none");
   if (webFrontends.length !== 1) return false;
   if (webFrontends[0] !== SINGLE_APP_WEB_FRONTEND_BY_BACKEND[stack.backend]) return false;
+  if (stack.analytics !== "none" && stack.analytics !== "vercel-analytics") return false;
 
   const siblingPackageScalars = [
     stack.api,
@@ -494,7 +578,6 @@ export function stackQualifiesForSingleApp(stack: CompatibilityInput): boolean {
     stack.fileStorage,
     stack.cms,
     stack.aiSdk,
-    stack.analytics,
     stack.featureFlags,
     stack.integrations,
     stack.ecommerce,
@@ -1736,7 +1819,7 @@ export const analyzeStackCompatibility = (
     }
   }
 
-  for (const platform of ["docker-compose", "devcontainer", "kong"] as const) {
+  for (const platform of ["docker-compose", "devcontainer", "kong", "vite-plus"] as const) {
     if (!nextStack.appPlatforms.includes(platform)) continue;
     const reason = getDisabledReason(nextStack, "appPlatforms", platform);
     if (!reason) continue;
@@ -1748,7 +1831,9 @@ export const analyzeStackCompatibility = (
         ? "Docker Compose"
         : platform === "devcontainer"
           ? "DevContainer"
-          : "Kong Gateway";
+          : platform === "kong"
+            ? "Kong Gateway"
+            : "Vite+";
     changes.push({
       category: "appPlatforms",
       message: `${label} removed (${reason})`,
@@ -2306,6 +2391,37 @@ export const analyzeStackCompatibility = (
     });
   }
 
+  if (nextStack.botProtection && nextStack.botProtection !== "none") {
+    const webFrontends = nextStack.webFrontend.filter((frontend) => frontend !== "none");
+    const hasNativeFrontend = nextStack.nativeFrontend.some((frontend) => frontend !== "none");
+    const hasBetterAuth =
+      nextStack.auth === "better-auth" || nextStack.auth === "better-auth-organizations";
+    const invalidBotId =
+      nextStack.botProtection === "botid" &&
+      (hasNativeFrontend ||
+        webFrontends.length === 0 ||
+        webFrontends.some((frontend) => !isBotIdWebFrontend(frontend)) ||
+        nextStack.backend !== "self-next" ||
+        (nextStack.webDeploy !== "none" && nextStack.webDeploy !== "vercel"));
+    const invalidTurnstile =
+      nextStack.botProtection === "turnstile" &&
+      (hasNativeFrontend ||
+        webFrontends.length === 0 ||
+        webFrontends.some((frontend) => !isTurnstileWebFrontend(frontend)) ||
+        nextStack.backend === "none" ||
+        nextStack.backend === "convex");
+
+    if (!hasBetterAuth || invalidBotId || invalidTurnstile) {
+      const provider = nextStack.botProtection;
+      nextStack.botProtection = "none";
+      changed = true;
+      changes.push({
+        category: "botProtection",
+        message: `Bot protection set to 'None' ('${provider}' is not wired for the selected frontend, auth, backend, or deployment)`,
+      });
+    }
+  }
+
   // Server deploy constraints
   if (nextStack.serverDeploy === "cloudflare") {
     if (nextStack.runtime !== "workers" || nextStack.backend !== "hono") {
@@ -2337,6 +2453,23 @@ export const analyzeStackCompatibility = (
     changes.push({
       category: "serverDeploy",
       message: "Server deploy set to 'None' (not needed for this backend)",
+    });
+  }
+
+  const selectedAnalytics = ANALYTICS_VALUES.find((value) => value === nextStack.analytics);
+  if (
+    selectedAnalytics &&
+    selectedAnalytics !== "none" &&
+    !supportsAnalyticsFrontends(selectedAnalytics, nextStack.webFrontend)
+  ) {
+    const wasVercel = selectedAnalytics === "vercel-analytics";
+    nextStack.analytics = "none";
+    changed = true;
+    changes.push({
+      category: "analytics",
+      message: wasVercel
+        ? "Analytics set to 'None' (Vercel Analytics is not mounted for this frontend)"
+        : "Analytics set to 'None' (no analytics template for this frontend)",
     });
   }
 
@@ -2389,6 +2522,15 @@ export const getDisabledReason = (
     currentStack.ecosystem !== "react-native"
   ) {
     return "Knip requires a TypeScript or React Native workspace";
+  }
+
+  if (
+    category === "appPlatforms" &&
+    optionId === "vite-plus" &&
+    (currentStack.ecosystem !== "typescript" ||
+      !currentStack.webFrontend.some((frontend) => frontend !== "none"))
+  ) {
+    return "Vite+ requires a generated TypeScript web frontend";
   }
 
   if (
@@ -2535,11 +2677,7 @@ export const getDisabledReason = (
       return "React Native payments currently support RevenueCat only";
     }
 
-    if (
-      !reactNativeCategories.has(category) &&
-      optionId !== "none" &&
-      optionId !== "false"
-    ) {
+    if (!reactNativeCategories.has(category) && optionId !== "none" && optionId !== "false") {
       return "React Native ecosystem only supports native mobile options";
     }
   }
@@ -2620,11 +2758,7 @@ export const getDisabledReason = (
   }
 
   if (currentStack.ecosystem === "java" && currentStack.javaLanguage === "kotlin") {
-    if (
-      category === "javaWebFramework" &&
-      optionId !== "spring-boot" &&
-      optionId !== "ktor"
-    ) {
+    if (category === "javaWebFramework" && optionId !== "spring-boot" && optionId !== "ktor") {
       return "Kotlin sources are only wired for the Spring Boot and Ktor scaffolds";
     }
     if (category === "javaBuildTool" && optionId === "none") {
@@ -2777,6 +2911,39 @@ export const getDisabledReason = (
     FULLSTACK_SELF_BACKENDS.has(currentStack.backend)
   ) {
     return "Nango's Node SDK is not available on Cloudflare Workers";
+  }
+  if (
+    category === "webFrontend" &&
+    currentStack.botProtection === "botid" &&
+    optionId !== "none" &&
+    !isBotIdWebFrontend(optionId)
+  ) {
+    return "Vercel BotID is only available for Next.js frontends";
+  }
+  if (
+    category === "webDeploy" &&
+    currentStack.botProtection === "botid" &&
+    optionId !== "none" &&
+    optionId !== "vercel"
+  ) {
+    return "Vercel BotID requires Vercel deployment";
+  }
+
+  if (category === "analytics" && optionId === "vercel-analytics") {
+    if (!currentStack.webFrontend.some((frontend) => frontend !== "none")) {
+      return "Vercel Analytics requires a web frontend";
+    }
+    if (!supportsAnalyticsFrontends("vercel-analytics", currentStack.webFrontend)) {
+      return "Vercel Analytics is not yet mounted for the selected frontend";
+    }
+  }
+  if (
+    category === "webFrontend" &&
+    currentStack.analytics === "vercel-analytics" &&
+    optionId !== "none" &&
+    !isVercelAnalyticsFrontend(optionId)
+  ) {
+    return "The selected frontend does not yet mount Vercel Analytics";
   }
 
   const graphDisabledReason =
@@ -3092,20 +3259,11 @@ export const getDisabledReason = (
     }
   }
 
-  if (
-    category === "appPlatforms" &&
-    optionId === "nx" &&
-    currentStack.appPlatforms.includes("turborepo")
-  ) {
-    return "Choose either Nx or Turborepo, not both";
-  }
-
-  if (
-    category === "appPlatforms" &&
-    optionId === "turborepo" &&
-    currentStack.appPlatforms.includes("nx")
-  ) {
-    return "Choose either Turborepo or Nx, not both";
+  if (category === "appPlatforms" && ["turborepo", "nx", "vite-plus"].includes(optionId)) {
+    const otherRunner = currentStack.appPlatforms.find(
+      (selected) => selected !== optionId && ["turborepo", "nx", "vite-plus"].includes(selected),
+    );
+    if (otherRunner) return "Choose one workspace runner: Turborepo, Nx, or Vite+";
   }
 
   // ============================================
@@ -3296,6 +3454,56 @@ export const getDisabledReason = (
     }
     if (currentStack.backend === "none") {
       return "Rate limiting requires a backend";
+    }
+  }
+
+  // ============================================
+  // BOT PROTECTION CONSTRAINTS
+  // ============================================
+  if (category === "botProtection" && optionId !== "none") {
+    if (currentStack.ecosystem !== "typescript") {
+      return "Bot protection is currently available for TypeScript web applications";
+    }
+    const webFrontends = currentStack.webFrontend.filter((frontend) => frontend !== "none");
+    if (webFrontends.length === 0) {
+      return "Bot protection requires a web frontend";
+    }
+    if (currentStack.nativeFrontend.some((frontend) => frontend !== "none")) {
+      return "Bot protection is not supported when a native frontend is selected";
+    }
+    if (
+      currentStack.auth !== "better-auth" &&
+      currentStack.auth !== "better-auth-organizations"
+    ) {
+      return "Bot protection requires Better Auth";
+    }
+    if (
+      optionId === "botid" &&
+      webFrontends.some((frontend) => !isBotIdWebFrontend(frontend))
+    ) {
+      return "Vercel BotID is only available for Next.js frontends";
+    }
+    if (optionId === "botid" && currentStack.backend !== "self-next") {
+      return "Vercel BotID requires the self-hosted Next.js backend";
+    }
+    if (
+      optionId === "botid" &&
+      currentStack.webDeploy !== "none" &&
+      currentStack.webDeploy !== "vercel"
+    ) {
+      return "Vercel BotID requires Vercel deployment when a web deployment is selected";
+    }
+    if (
+      optionId === "turnstile" &&
+      webFrontends.some((frontend) => !isTurnstileWebFrontend(frontend))
+    ) {
+      return "Cloudflare Turnstile is currently wired for React web frontends only";
+    }
+    if (optionId === "turnstile" && currentStack.backend === "convex") {
+      return "Cloudflare Turnstile is not wired for Convex auth forms";
+    }
+    if (optionId === "turnstile" && currentStack.backend === "none") {
+      return "Cloudflare Turnstile requires a backend for server-side verification";
     }
   }
 
@@ -4043,7 +4251,7 @@ function getAddonOrExampleGraphBinding(
     ecosystem: binding.ecosystem,
     ownerRole: binding.ownerRole,
     ownerEcosystem: binding.ownerRole ? binding.ecosystem : undefined,
-    allowOwnerlessCandidate: binding.ownerRole === undefined,
+    allowOwnerlessCandidate: binding.ownerRole !== "frontend",
     authoritative: true,
     missingOwnerReason:
       binding.ownerRole === "frontend" ? `${optionId} requires a web frontend` : undefined,
@@ -4776,6 +4984,7 @@ const ADDON_COMPATIBILITY: Record<Addons, readonly Frontend[]> = {
   gitleaks: [],
   turborepo: [],
   nx: [],
+  "vite-plus": [],
   starlight: [],
   ultracite: [],
   ruler: [],
@@ -5205,7 +5414,7 @@ export function validateAddonCompatibility(
       const frontendList = compatibleFrontends.join(", ");
       return {
         isCompatible: false,
-        reason: `${addon} addon requires one of these frontends: ${frontendList}`,
+        reason: `${addon} requires one of these frontends: ${frontendList}`,
       };
     }
   }
@@ -5354,6 +5563,7 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
     ["featureFlags", input.featureFlags],
     ["integrations", input.integrations],
     ["ecommerce", input.ecommerce],
+    ["botProtection", input.botProtection],
     ["pythonApi", input.pythonApi],
     ["javaWebFramework", input.javaWebFramework],
     ["javaBuildTool", input.javaBuildTool],

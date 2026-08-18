@@ -1,4 +1,9 @@
-import { getCapabilityDefinitions, getCategoryOrderForEcosystem } from "@better-fullstack/types";
+import {
+  getCapabilityDefinitions,
+  getCategoryOrderForEcosystem,
+  getToolingSelectionOptions,
+  type ToolingCategoryId,
+} from "@better-fullstack/types";
 
 import type { Ecosystem, TechCategory } from "./types";
 
@@ -12,6 +17,42 @@ const AUTH_TECH_OPTIONS = getCapabilityDefinitions("auth").map((cap) => ({
   color: cap.color,
   default: cap.default,
 }));
+
+const TOOLING_ICONS: Record<string, string> = {
+  "vite-plus": "https://raw.githubusercontent.com/voidzero-dev/vite-plus/main/logo.svg",
+  turborepo: "https://cdn.simpleicons.org/turborepo/EF4444",
+  nx: "https://cdn.simpleicons.org/nx/143055",
+  biome: "https://cdn.simpleicons.org/biome/60A5FA",
+  oxlint: "https://cdn.simpleicons.org/oxc/FF915C",
+  starlight: "/icon/starlight.svg",
+  fumadocs: "/icon/fumadocs.svg",
+  electron: "https://cdn.simpleicons.org/electron/47848F",
+  tauri: "https://cdn.simpleicons.org/tauri/FFC131",
+  capacitor: "https://cdn.simpleicons.org/capacitor/119EFF",
+  axios: "https://cdn.simpleicons.org/axios/5A29E4",
+  firebase: "https://cdn.simpleicons.org/firebase/DD2C00",
+  "graphql-codegen": "https://cdn.simpleicons.org/graphql/E10098",
+  "openapi-typescript": "https://cdn.simpleicons.org/openapiinitiative/6BA539",
+  "apollo-client": "https://cdn.simpleicons.org/apollographql/311C87",
+  "docker-compose": "https://cdn.simpleicons.org/docker/2496ED",
+  devcontainer: "https://cdn.simpleicons.org/docker/2496ED",
+  kong: "https://cdn.simpleicons.org/kong/003459",
+  "github-actions": "https://cdn.simpleicons.org/githubactions/2088FF",
+  gitleaks: "https://github.com/gitleaks.png",
+};
+
+const toolingTechOptions = (category: ToolingCategoryId) =>
+  getToolingSelectionOptions(category).map((selection) => ({
+    id: selection.id,
+    name: selection.label,
+    description: selection.description,
+    icon: TOOLING_ICONS[selection.id] ?? "",
+    color: "from-slate-500 to-slate-700",
+    default:
+      selection.id === "modular" ||
+      selection.id === "turborepo" ||
+      (selection.id === "none" && category !== "workspaceRunner"),
+  }));
 
 export const TECH_OPTIONS: Record<
   TechCategory,
@@ -1341,6 +1382,32 @@ export const TECH_OPTIONS: Record<
       default: true,
     },
   ],
+  botProtection: [
+    {
+      id: "botid",
+      name: "Vercel BotID",
+      description: "Invisible bot detection for Vercel-hosted Next.js applications",
+      icon: "https://cdn.simpleicons.org/vercel/000000",
+      color: "from-zinc-700 to-black",
+      default: false,
+    },
+    {
+      id: "turnstile",
+      name: "Cloudflare Turnstile",
+      description: "Privacy-friendly challenge with mandatory server verification",
+      icon: "https://cdn.simpleicons.org/cloudflare/F38020",
+      color: "from-orange-400 to-amber-600",
+      default: false,
+    },
+    {
+      id: "none",
+      name: "No Bot Protection",
+      description: "Skip bot protection setup",
+      icon: "",
+      color: "from-gray-400 to-gray-600",
+      default: true,
+    },
+  ],
   featureFlags: [
     {
       id: "growthbook",
@@ -1428,6 +1495,14 @@ export const TECH_OPTIONS: Record<
     },
   ],
   analytics: [
+    {
+      id: "vercel-analytics",
+      name: "Vercel Analytics",
+      description: "Privacy-friendly page views and custom events, best when deployed to Vercel",
+      icon: "",
+      color: "from-zinc-700 to-black",
+      default: false,
+    },
     {
       id: "ga4",
       name: "Google Analytics 4",
@@ -2452,6 +2527,12 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
   ],
+  toolchainProfile: toolingTechOptions("toolchain"),
+  workspaceRunner: toolingTechOptions("workspaceRunner"),
+  codeQualityProfile: toolingTechOptions("codeQuality"),
+  gitHooks: toolingTechOptions("gitHooks"),
+  staticAnalysis: toolingTechOptions("staticAnalysis"),
+  aiTooling: toolingTechOptions("aiTooling"),
   documentation: [
     {
       id: "starlight",
@@ -2470,6 +2551,16 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
   ],
+  testingTools: toolingTechOptions("testingTools"),
+  dataClient: toolingTechOptions("dataClient"),
+  frontendUtilities: toolingTechOptions("frontendUtilities"),
+  httpClientTool: toolingTechOptions("httpClient"),
+  codeGeneration: toolingTechOptions("codeGeneration"),
+  developerEnvironment: toolingTechOptions("developerEnvironment"),
+  containerOrchestration: toolingTechOptions("containerOrchestration"),
+  apiGateway: toolingTechOptions("apiGateway"),
+  continuousIntegration: toolingTechOptions("continuousIntegration"),
+  backendUtilitiesTool: toolingTechOptions("backendUtilities"),
   appShells: [
     {
       id: "electron",
@@ -2536,6 +2627,14 @@ export const TECH_OPTIONS: Record<
       description: "Smart monorepo task runner and cache",
       icon: "https://cdn.simpleicons.org/nx/143055",
       color: "from-sky-500 to-cyan-700",
+      default: false,
+    },
+    {
+      id: "vite-plus",
+      name: "Vite+",
+      description: "Unified web toolchain and workspace runner (Beta)",
+      icon: "https://raw.githubusercontent.com/voidzero-dev/vite-plus/main/logo.svg",
+      color: "from-violet-500 to-cyan-400",
       default: false,
     },
     {

@@ -64,7 +64,7 @@ describe("createProjectArchive", () => {
     expect(requestedBinaryPaths).toEqual(["frontend/nuxt/public/favicon.ico"]);
   });
 
-  it("adds the canonical config and byte-accurate v1 update baseline", async () => {
+  it("adds the canonical config and byte-accurate manifest-v2 baseline", async () => {
     const createdAt = "2026-08-10T09:00:00.000Z";
     const binaryBytes = new Uint8Array([0, 1, 2, 255]);
     const tree = projectTree();
@@ -92,6 +92,13 @@ describe("createProjectArchive", () => {
     const manifest = JSON.parse(strFromU8(files["my-project/bts.lock.json"]!)) as {
       version: string;
       createdAt: string;
+      updatedAt: string;
+      provenance: {
+        state: string;
+        createdWith: Record<string, string>;
+        current: Record<string, string>;
+      };
+      history: Array<{ operation: string; changes: { added: number } }>;
       hashes: Record<string, string>;
       baselines?: Record<string, string>;
     };
@@ -101,8 +108,25 @@ describe("createProjectArchive", () => {
     expect(config.ecosystem).toBe("typescript");
     expect(config.projectDir).toBeUndefined();
     expect(config.install).toBeUndefined();
-    expect(manifest.version).toBe("1");
+    expect(manifest.version).toBe("2");
     expect(manifest.createdAt).toBe(createdAt);
+    expect(manifest.updatedAt).toBe(createdAt);
+    expect(manifest.provenance).toEqual({
+      state: "verified",
+      createdWith: {
+        cli: "2.5.0-test",
+        generator: "2.5.0-test",
+        templateSet: "2.5.0-test",
+        schema: "1",
+      },
+      current: {
+        cli: "2.5.0-test",
+        generator: "2.5.0-test",
+        templateSet: "2.5.0-test",
+        schema: "1",
+      },
+    });
+    expect(manifest.history).toMatchObject([{ operation: "create", changes: { added: 3 } }]);
     expect(manifest.hashes["README.md"]).toBe(
       createHash("sha256").update("# My project\n").digest("hex"),
     );
