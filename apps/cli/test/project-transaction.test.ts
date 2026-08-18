@@ -127,6 +127,25 @@ describe("project lifecycle transactions", () => {
     expect((await fs.stat(executable)).mode & 0o777).toBe(0o755);
   });
 
+  it("refuses recovery over a mode change made after the transaction was applied", async () => {
+    const projectDir = await makeProject();
+    const executable = path.join(projectDir, "run.sh");
+    await fs.writeFile(executable, "echo before\n", { mode: 0o644 });
+    const transaction = await beginProjectTransaction(projectDir, "stack-update", ["run.sh"]);
+    markProjectTransactionWrite(transaction, "run.sh", hashContent("echo after\n"));
+    await fs.writeFile(executable, "echo after\n");
+    await fs.chmod(executable, 0o644);
+    await commitProjectTransaction(transaction);
+
+    await fs.chmod(executable, 0o755);
+
+    await expect(recoverProjectTransaction(projectDir, transaction.id)).rejects.toThrow(
+      "Refused to overwrite files changed after the transaction",
+    );
+    expect((await fs.stat(executable)).mode & 0o777).toBe(0o755);
+    expect(await fs.readFile(executable, "utf-8")).toBe("echo after\n");
+  });
+
   it("rolls back only writes owned by the failed operation", async () => {
     const projectDir = await makeProject();
     await fs.writeFile(path.join(projectDir, "owned.txt"), "before\n");

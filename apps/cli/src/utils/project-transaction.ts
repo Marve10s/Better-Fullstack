@@ -23,6 +23,7 @@ export type RecoveryMetadata = {
   status: "pending" | "applied" | "rolled-back" | "recovered";
   files: RecoveryFile[];
   outputs?: Record<string, string | null>;
+  outputModes?: Record<string, number>;
 };
 
 export type ProjectTransaction = {
@@ -178,6 +179,7 @@ async function restoreFiles(
   transaction: ProjectTransaction,
   files: RecoveryFile[],
   expectedCurrentHashes?: Map<string, string | null>,
+  expectedCurrentModes?: Map<string, number>,
 ): Promise<void> {
   const concurrentChanges: string[] = [];
   const restorations: Array<{
@@ -220,7 +222,12 @@ async function restoreFiles(
         restorations.push({ file, target, backup, skip: true });
         continue;
       }
-      if (currentHash !== expectedCurrentHash) {
+      const expectedCurrentMode = expectedCurrentModes?.get(file.path);
+      if (
+        currentHash !== expectedCurrentHash ||
+        (expectedCurrentMode !== undefined &&
+          ((currentStats?.mode ?? -1) & 0o7777) !== expectedCurrentMode)
+      ) {
         concurrentChanges.push(file.path);
         continue;
       }
@@ -254,8 +261,23 @@ async function restoreFiles(
   }
 }
 
+async function readWriteModes(transaction: ProjectTransaction): Promise<Record<string, number>> {
+  const modes: Record<string, number> = {};
+  for (const relativePath of transaction.writes.keys()) {
+    // oxlint-disable-next-line no-await-in-loop -- one bounded stat per written path
+    const target = await assertSafeTarget(transaction.projectDir, relativePath);
+    // oxlint-disable-next-line no-await-in-loop
+    const stats = await fs.lstat(target).catch(() => null);
+    if (stats?.isFile()) {
+      modes[relativePath] = stats.mode & 0o7777;
+    }
+  }
+  return modes;
+}
+
 export async function commitProjectTransaction(transaction: ProjectTransaction): Promise<void> {
   transaction.metadata.outputs = Object.fromEntries(transaction.writes);
+  transaction.metadata.outputModes = await readWriteModes(transaction);
   transaction.metadata.status = "applied";
   transaction.metadata.completedAt = new Date().toISOString();
   await writeMetadata(transaction);
@@ -303,6 +325,23 @@ function validateRecoveryMetadata(value: unknown, expectedId: string): RecoveryM
       )
     ) {
       throw new Error("Recovery metadata contains an invalid output entry.");
+    }
+  }
+  if (metadata.outputModes !== undefined) {
+    if (
+      !metadata.outputModes ||
+      typeof metadata.outputModes !== "object" ||
+      Array.isArray(metadata.outputModes) ||
+      Object.entries(metadata.outputModes).some(
+        ([outputPath, mode]) =>
+          !isPortableProjectPath(outputPath) ||
+          typeof mode !== "number" ||
+          !Number.isInteger(mode) ||
+          mode < 0 ||
+          mode > 0o7777,
+      )
+    ) {
+      throw new Error("Recovery metadata contains an invalid output mode entry.");
     }
   }
   for (const file of metadata.files) {
@@ -363,7 +402,12 @@ export async function recoverProjectTransaction(
           : null,
     ]),
   );
-  await restoreFiles(transaction, metadata.files, expectedCurrentHashes);
+  await restoreFiles(
+    transaction,
+    metadata.files,
+    expectedCurrentHashes,
+    new Map(Object.entries(metadata.outputModes ?? {})),
+  );
   metadata.status = "recovered";
   metadata.completedAt = new Date().toISOString();
   await writeMetadata(transaction);

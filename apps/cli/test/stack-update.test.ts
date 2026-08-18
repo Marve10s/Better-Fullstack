@@ -6,8 +6,19 @@ import {
   type ProjectConfig,
 } from "@better-fullstack/types";
 import { afterAll, describe, expect, it } from "bun:test";
+import fsExtra from "fs-extra";
 import * as JSONC from "jsonc-parser";
-import { cp, mkdir, mkdtemp, readFile, rename, rm, symlink, writeFile } from "node:fs/promises";
+import {
+  cp,
+  mkdir,
+  mkdtemp,
+  readdir,
+  readFile,
+  rename,
+  rm,
+  symlink,
+  writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -26,6 +37,7 @@ import {
   readBtsConfig,
   writeBtsConfig,
 } from "../src/utils/bts-config";
+import { RECOVERY_ROOT, recoverProjectTransaction } from "../src/utils/project-transaction";
 import {
   hashContent,
   readScaffoldManifest,
@@ -3916,7 +3928,7 @@ describe("stack update planner", () => {
     expect(await pathExists(join(projectDir, "apps/docs/package.json"))).toBe(false);
   });
 
-  it("records post-channel package rewrites as the current manifest baseline", async () => {
+  it("records channel-resolved generated content as the manifest baseline", async () => {
     const root = await makeTempRoot("bfs-stack-update-channel-baseline-");
     const projectDir = join(root, "app");
     await scaffoldGeneratedProject(makeConfig(projectDir));
@@ -3937,6 +3949,12 @@ describe("stack update planner", () => {
       join(projectDir, "untouched/package.json"),
       JSON.stringify({ name: "untouched", private: true }, null, 2),
     );
+    const serverPackagePath = join(projectDir, "apps/server/package.json");
+    const serverPackage = JSON.parse(await readFile(serverPackagePath, "utf-8")) as {
+      dependencies?: Record<string, string>;
+    };
+    serverPackage.dependencies = { ...serverPackage.dependencies, "manifest-user-dep": "^1.0.0" };
+    await writeFile(serverPackagePath, `${JSON.stringify(serverPackage, null, 2)}\n`);
 
     const originalFetch = globalThis.fetch;
     globalThis.fetch = (async () =>
@@ -3972,8 +3990,13 @@ describe("stack update planner", () => {
     const packageContent = await readFile(packagePath, "utf-8");
     expect(packageContent).toContain('"manifest-baseline-probe": "^9.9.9"');
     const manifest = await readScaffoldManifest(projectDir);
-    expect(manifest?.baselines?.["custom/package.json"]).toBe(packageContent);
+    expect(manifest?.baselines?.["custom/package.json"]).toBeUndefined();
     expect(manifest?.hashes["custom/package.json"]).toBe(hashContent(packageContent));
+
+    const serverBaseline = manifest?.baselines?.["apps/server/package.json"];
+    expect(serverBaseline).toBeDefined();
+    expect(serverBaseline).not.toContain("manifest-user-dep");
+    expect(serverBaseline).toContain("9.9.9");
   });
 
   it("does not re-resolve a failed version-channel rewrite during apply", async () => {
@@ -4418,6 +4441,113 @@ describe("stack update planner", () => {
       ),
     );
     expect(after).toEqual(before);
+  });
+
+  it("keeps a crashed apply recoverable when mutations land before the journal", async () => {
+    const root = await makeTempRoot("bfs-stack-update-crash-journal-");
+    const projectDir = join(root, "app");
+    const crashedDir = join(root, "crashed");
+    await scaffoldGeneratedProject(makeConfig(projectDir, { email: "resend" }));
+
+    const plan = await planStackUpdate(
+      projectDir,
+      { email: "none" },
+      { removeObsoleteGeneratedArtifacts: true },
+    );
+    expect(plan.success).toBe(true);
+    if (!plan.success) return;
+    const removedPath = plan.filesToRemove[0];
+    expect(removedPath).toBeDefined();
+    const removedContent = await readFile(join(projectDir, removedPath), "utf-8");
+
+    const originalRemove = fsExtra.remove;
+    let crashed = false;
+    fsExtra.remove = (async (target: string) => {
+      await originalRemove(target);
+      if (!crashed && target === join(projectDir, removedPath)) {
+        crashed = true;
+        await cp(projectDir, crashedDir, { recursive: true });
+        throw new Error("injected crash after removal");
+      }
+    }) as typeof fsExtra.remove;
+
+    try {
+      const result = await applyStackUpdate(
+        projectDir,
+        { email: "none" },
+        { removeObsoleteGeneratedArtifacts: true },
+      );
+      expect(result.success).toBe(false);
+    } finally {
+      fsExtra.remove = originalRemove;
+    }
+    expect(crashed).toBe(true);
+    expect(await pathExists(join(crashedDir, removedPath))).toBe(false);
+
+    const [transactionId] = await readdir(join(crashedDir, RECOVERY_ROOT));
+    expect(transactionId).toBeDefined();
+    await recoverProjectTransaction(crashedDir, transactionId);
+    expect(await readFile(join(crashedDir, removedPath), "utf-8")).toBe(removedContent);
+  });
+
+  it("keeps a crash during version-channel rewrites recoverable", async () => {
+    const root = await makeTempRoot("bfs-stack-update-channel-journal-");
+    const projectDir = join(root, "app");
+    const crashedDir = join(root, "crashed");
+    await scaffoldGeneratedProject(makeConfig(projectDir));
+    await mkdir(join(projectDir, "custom"));
+    const customContent = `${JSON.stringify(
+      { name: "custom", dependencies: { "channel-journal-probe": "^1.0.0" } },
+      null,
+      2,
+    )}\n`;
+    await writeFile(join(projectDir, "custom/package.json"), customContent);
+
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response(
+        JSON.stringify({ "dist-tags": { latest: "9.9.9" }, versions: { "9.9.9": {} } }),
+        { status: 200 },
+      )) as typeof fetch;
+    try {
+      const result = await applyStackUpdate(
+        projectDir,
+        { email: "resend", versionChannel: "latest" },
+        {
+          applyVersionChannel: true,
+          beforeManifestRefresh: async () => {
+            await cp(projectDir, crashedDir, { recursive: true });
+            throw new Error("injected crash after version-channel rewrite");
+          },
+        },
+      );
+      expect(result.success).toBe(false);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    expect(await readFile(join(crashedDir, "custom/package.json"), "utf-8")).toContain("^9.9.9");
+    const [transactionId] = await readdir(join(crashedDir, RECOVERY_ROOT));
+    expect(transactionId).toBeDefined();
+    await recoverProjectTransaction(crashedDir, transactionId);
+    expect(await readFile(join(crashedDir, "custom/package.json"), "utf-8")).toBe(customContent);
+  });
+
+  it("refuses to plan against an invalid scaffold manifest", async () => {
+    const root = await makeTempRoot("bfs-stack-update-invalid-manifest-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir));
+    await writeFile(join(projectDir, "bts.lock.json"), "{ not json");
+
+    const plan = await planStackUpdate(projectDir, { email: "resend" });
+    expect(plan.success).toBe(false);
+    if (plan.success) return;
+    expect(plan.error).toContain("bts.lock.json");
+    expect(plan.error).toContain("invalid");
+
+    const applied = await applyStackUpdate(projectDir, { email: "resend" });
+    expect(applied.success).toBe(false);
+    expect(await readFile(join(projectDir, "bts.lock.json"), "utf-8")).toBe("{ not json");
   });
 
   it("does not gate additive (none -> X) stack additions", async () => {

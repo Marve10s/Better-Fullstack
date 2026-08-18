@@ -52,7 +52,7 @@ import {
   collectStructuredBaselines,
   getCurrentLifecycleVersions,
   hashContent,
-  readScaffoldManifest,
+  readScaffoldManifestResult,
   refreshScaffoldManifestFiles,
   SCAFFOLD_MANIFEST_FILE,
 } from "../../utils/scaffold-manifest";
@@ -1250,6 +1250,33 @@ function isPlainObject(value: unknown): value is JsonObject {
   return Boolean(value && typeof value === "object" && !Array.isArray(value));
 }
 
+function applyResolvedVersionsToBaseline(
+  generatedContent: string,
+  rewrittenContent: string,
+): string {
+  const generated = parseJson(generatedContent);
+  const rewritten = parseJson(rewrittenContent);
+  if (!generated || !rewritten) return generatedContent;
+
+  const generatedWorkspaces = isPlainObject(generated.workspaces) ? generated.workspaces : {};
+  const rewrittenWorkspaces = isPlainObject(rewritten.workspaces) ? rewritten.workspaces : {};
+  const sections: Array<[unknown, unknown]> = [
+    [generated.dependencies, rewritten.dependencies],
+    [generated.devDependencies, rewritten.devDependencies],
+    [generatedWorkspaces.catalog, rewrittenWorkspaces.catalog],
+  ];
+
+  for (const [generatedSection, rewrittenSection] of sections) {
+    if (!isPlainObject(generatedSection) || !isPlainObject(rewrittenSection)) continue;
+    for (const name of Object.keys(generatedSection)) {
+      const resolved = rewrittenSection[name];
+      if (typeof resolved === "string") generatedSection[name] = resolved;
+    }
+  }
+
+  return stringifyJson(generated);
+}
+
 function diffJsonSection(
   current: JsonObject,
   previous: JsonObject,
@@ -1589,7 +1616,15 @@ export async function planStackUpdate(
       error: `No bts.jsonc found in ${projectDir}. Is this a Better-Fullstack project?`,
     };
   }
-  const manifest = await readScaffoldManifest(projectDir);
+  const manifestResult = await readScaffoldManifestResult(projectDir);
+  if (manifestResult.status === "invalid") {
+    return {
+      success: false,
+      projectDir,
+      error: `The ${SCAFFOLD_MANIFEST_FILE} scaffold manifest is invalid: ${manifestResult.error}. Repair or delete it before updating the stack.`,
+    };
+  }
+  const manifest = manifestResult.status === "valid" ? manifestResult.manifest : null;
 
   const projectName = await inferProjectName(projectDir);
   const currentConfig = configFromBtsConfig(currentBtsConfig, projectDir, projectName);
@@ -2134,37 +2169,54 @@ export async function applyStackUpdate(
       await journalProjectTransactionWrites(transaction);
     }
 
-    for (const operation of plan.operations.filter(
+    const contentOperations = plan.operations.filter(
       (candidate) => candidate.writeMode === "content",
-    )) {
-      markProjectTransactionWrite(
+    );
+    if (contentOperations.length > 0) {
+      await journalProjectTransactionWrites(
         transaction,
-        operation.path,
-        hashContent(Buffer.from(operation.content, "utf-8")),
+        contentOperations.map((operation) => operation.path),
       );
-      const targetPath = path.join(plan.projectDir, operation.path);
-      // oxlint-disable-next-line no-await-in-loop -- rollback must wait for each bound write
-      await fs.ensureDir(path.dirname(targetPath));
-      // oxlint-disable-next-line no-await-in-loop -- rollback must wait for each bound write
-      await fs.writeFile(targetPath, operation.content, "utf-8");
+      for (const operation of contentOperations) {
+        const targetPath = path.join(plan.projectDir, operation.path);
+        // oxlint-disable-next-line no-await-in-loop -- rollback must wait for each bound write
+        await fs.ensureDir(path.dirname(targetPath));
+        // oxlint-disable-next-line no-await-in-loop -- rollback must wait for each bound write
+        await fs.writeFile(targetPath, operation.content, "utf-8");
+        markProjectTransactionWrite(
+          transaction,
+          operation.path,
+          hashContent(Buffer.from(operation.content, "utf-8")),
+        );
+      }
+      await journalProjectTransactionWrites(transaction);
     }
 
-    for (const operation of plan.operations.filter(
+    const removeOperations = plan.operations.filter(
       (candidate) => candidate.writeMode === "remove",
-    )) {
-      markProjectTransactionWrite(transaction, operation.path, null);
-      // oxlint-disable-next-line no-await-in-loop -- rollback must bind each removal in order
-      await fs.remove(path.join(plan.projectDir, operation.path));
+    );
+    if (removeOperations.length > 0) {
+      await journalProjectTransactionWrites(
+        transaction,
+        removeOperations.map((operation) => operation.path),
+      );
+      for (const operation of removeOperations) {
+        // oxlint-disable-next-line no-await-in-loop -- rollback must bind each removal in order
+        await fs.remove(path.join(plan.projectDir, operation.path));
+        markProjectTransactionWrite(transaction, operation.path, null);
+      }
+      await journalProjectTransactionWrites(transaction);
     }
 
     const migrationContent = await buildMigrationChecklistContent(plan.projectDir, plan);
     if (migrationContent !== null) {
+      await journalProjectTransactionWrites(transaction, ["MIGRATION.md"]);
+      await fs.writeFile(path.join(plan.projectDir, "MIGRATION.md"), migrationContent, "utf-8");
       markProjectTransactionWrite(
         transaction,
         "MIGRATION.md",
         hashContent(Buffer.from(migrationContent, "utf-8")),
       );
-      await fs.writeFile(path.join(plan.projectDir, "MIGRATION.md"), migrationContent, "utf-8");
     }
     await journalProjectTransactionWrites(transaction, ["bts.jsonc"]);
     await writeBtsConfig(proposedConfig, {
@@ -2176,6 +2228,14 @@ export async function applyStackUpdate(
 
     const versionChannelRewrites: string[] = [];
     if (options.applyVersionChannel) {
+      const plannedRewrites =
+        (plan as InternalStackUpdatePlan)[PLANNED_VERSION_CHANNEL_REWRITES] ?? [];
+      await journalProjectTransactionWrites(
+        transaction,
+        plannedRewrites.map((rewrite) =>
+          toPosixPath(path.relative(plan.projectDir, rewrite.packageJsonPath)),
+        ),
+      );
       await applyDependencyVersionChannel(
         plan.projectDir,
         plan.proposedConfig.versionChannel,
@@ -2184,20 +2244,22 @@ export async function applyStackUpdate(
           versionChannelRewrites.push(relativePath);
           markProjectTransactionWrite(transaction, relativePath, sha256);
         },
-        {
-          rewrites: (plan as InternalStackUpdatePlan)[PLANNED_VERSION_CHANNEL_REWRITES] ?? [],
-        },
+        { rewrites: plannedRewrites },
       );
+      await journalProjectTransactionWrites(transaction);
     }
 
     await options.beforeManifestRefresh?.();
 
     const structuredBaselines = collectStructuredBaselines(proposedTree);
     for (const relativePath of versionChannelRewrites) {
+      const generatedBaseline = structuredBaselines[relativePath];
+      if (generatedBaseline === undefined) continue;
       // oxlint-disable-next-line no-await-in-loop -- baseline must match each persisted rewrite
-      structuredBaselines[relativePath] = await fs.readFile(
-        path.join(plan.projectDir, relativePath),
-        "utf-8",
+      const rewritten = await fs.readFile(path.join(plan.projectDir, relativePath), "utf-8");
+      structuredBaselines[relativePath] = applyResolvedVersionsToBaseline(
+        generatedBaseline,
+        rewritten,
       );
     }
 
