@@ -103,7 +103,7 @@ export function assertShapeInputIsUsable(
 
   // Disabling the half the shape exists to build leaves an empty project. The
   // ecosystem may still be unchosen, so every half the shape could need counts.
-  const disabledHalf = shapeRequiredHalfKeys(shape).find(
+  const disabledHalf = shapeRequiredHalfKeys(shape, options.ecosystem).find(
     (key) =>
       providedFlags.has(key) && isSameStackValue(options[key as keyof CLIInput], "none"),
   );

@@ -257,6 +257,20 @@ describe("project shape scaffolding", () => {
     expect(result.error).toMatch(/--frontend must name a native frontend/);
   });
 
+  test("ignores a required-half flag belonging to an unused ecosystem", async () => {
+    // Inert under TypeScript, so there is nothing to reject.
+    const result = await create("shape-inert-half", {
+      ...baseOptions,
+      shape: "backend",
+      ecosystem: "typescript",
+      goWebFramework: "none",
+      yes: true,
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.projectConfig.backend).not.toBe("none");
+  });
+
   test("guards the required half before the ecosystem is chosen", async () => {
     const result = await create("shape-go-half-disabled", {
       ...baseOptions,

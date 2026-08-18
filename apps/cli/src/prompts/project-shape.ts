@@ -90,9 +90,19 @@ const SHAPE_REQUIRED_HALF: Record<"frontend" | "backend", Partial<Record<Ecosyst
   },
 };
 
-export function shapeRequiredHalfKeys(shape: ProjectShape): string[] {
+/**
+ * With an explicit ecosystem only that half matters; a key belonging to another
+ * ecosystem is inert. Without one, any of them could be the half that ends up
+ * required, so all are guarded.
+ */
+export function shapeRequiredHalfKeys(shape: ProjectShape, ecosystem?: Ecosystem): string[] {
   if (shape !== "frontend" && shape !== "backend") return [];
-  return [...new Set(Object.values(SHAPE_REQUIRED_HALF[shape]))];
+  const halves = SHAPE_REQUIRED_HALF[shape];
+  if (ecosystem) {
+    const key = halves[ecosystem];
+    return key ? [key] : [];
+  }
+  return [...new Set(Object.values(halves))];
 }
 
 const NATIVE_TOOLCHAIN: Record<NativeMobilePlatform, string> = {
