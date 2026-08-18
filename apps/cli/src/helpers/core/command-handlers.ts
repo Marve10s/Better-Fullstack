@@ -409,6 +409,23 @@ export async function createProjectHandler(
         );
       }
 
+      const definedInput = Object.fromEntries(
+        Object.entries(input).filter(([, value]) => value !== undefined),
+      ) as typeof input;
+      const explicitInput = {
+        ...definedInput,
+        projectDirectory: input.projectName,
+      };
+      const originalInput = {
+        ...configBase,
+        ...explicitInput,
+      };
+      const providedFlags = getProvidedFlags(explicitInput);
+
+      // Input-only, so it runs before any directory is resolved, cleared, or
+      // created. A rejected shape must never cost the user their files.
+      assertShapeInputIsUsable(originalInput, providedFlags);
+
       const useDefaultsForName = Boolean(input.yes) || hasConfigBase;
       let currentPathInput: string;
       if (useDefaultsForName && input.projectName) {
@@ -631,23 +648,7 @@ export async function createProjectHandler(
         currentPathInput = finalPathInput;
       }
 
-      const definedInput = Object.fromEntries(
-        Object.entries(input).filter(([, value]) => value !== undefined),
-      ) as typeof input;
-      const explicitInput = {
-        ...definedInput,
-        projectDirectory: input.projectName,
-      };
-      const originalInput = {
-        ...configBase,
-        ...explicitInput,
-      };
-
-      const providedFlags = getProvidedFlags(explicitInput);
-
       let cliInput = originalInput;
-
-      assertShapeInputIsUsable(originalInput, providedFlags);
 
       if (input.template && input.template !== "none") {
         const templateConfig = getTemplateConfig(input.template);

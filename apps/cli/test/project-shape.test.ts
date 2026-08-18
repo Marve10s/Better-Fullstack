@@ -1,4 +1,7 @@
-import { describe, expect, test } from "bun:test";
+import { afterAll, describe, expect, test } from "bun:test";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 import { create, createVirtual } from "../src/index";
 import { gatherConfig } from "../src/prompts/config-prompts";
@@ -32,6 +35,14 @@ describe("project shape flags", () => {
     expect(shapeFlagsForEcosystem("frontend", "dotnet")).toEqual({
       ecosystem: "dotnet",
       dotnetWebFramework: "none",
+      dotnetOrm: "none",
+      dotnetApi: "none",
+      dotnetAuth: "none",
+      dotnetRealtime: "none",
+      dotnetJobQueue: "none",
+      dotnetCaching: "none",
+      dotnetDeploy: "none",
+      database: "none",
     });
   });
 
@@ -72,9 +83,10 @@ describe("project shape flags", () => {
       rustWebFramework: "none",
       rustFrontend: "leptos",
     });
-    expect(shapeFlagsForEcosystem("frontend", "dotnet", { withoutPrompts: true })).toEqual({
+    expect(shapeFlagsForEcosystem("frontend", "dotnet", { withoutPrompts: true })).toMatchObject({
       ecosystem: "dotnet",
       dotnetWebFramework: "none",
+      dotnetOrm: "none",
       dotnetFrontend: "blazor-web-app",
     });
     expect(shapeFlagsForEcosystem("frontend", "typescript", { withoutPrompts: true })).toEqual(
@@ -108,6 +120,13 @@ describe("project shape flags", () => {
       "auth",
       "backend",
       "database",
+      "dotnetApi",
+      "dotnetAuth",
+      "dotnetCaching",
+      "dotnetDeploy",
+      "dotnetJobQueue",
+      "dotnetOrm",
+      "dotnetRealtime",
       "dotnetWebFramework",
       "orm",
       "runtime",
@@ -133,6 +152,36 @@ describe("project shape flags", () => {
 });
 
 describe("project shape scaffolding", () => {
+  const temporaryDirectories: string[] = [];
+
+  afterAll(async () => {
+    await Promise.all(temporaryDirectories.map((dir) => rm(dir, { recursive: true, force: true })));
+  });
+
+  // The shape check is input-only, so it must run before any directory is
+  // resolved, cleared, or created. Rejecting after the clear would have
+  // destroyed the user's files and then exited without scaffolding.
+  test("an invalid shape never costs the user their files", async () => {
+    const parent = await mkdtemp(join(tmpdir(), "bfs-shape-"));
+    temporaryDirectories.push(parent);
+    const destination = join(parent, "victim");
+    await mkdtemp(join(parent, "unused-"));
+    await rm(destination, { recursive: true, force: true });
+    await writeFile(join(parent, "keep.txt"), "precious").catch(() => {});
+
+    const result = await create(destination, {
+      ...baseOptions,
+      shape: "frontend",
+      backend: "hono",
+      yes: true,
+      directoryConflict: "overwrite",
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toMatch(/--shape frontend conflicts with --backend/);
+    await expect(readFile(join(parent, "keep.txt"), "utf8")).resolves.toBe("precious");
+  });
+
   test("frontend shape scaffolds a web app with no server", async () => {
     const result = await create("shape-frontend", { ...baseOptions, shape: "frontend", yes: true });
 
@@ -201,6 +250,36 @@ describe("project shape scaffolding", () => {
     });
     expect(flutter.success).toBe(true);
     expect(flutter.projectConfig.dartMobile).toBe("flutter");
+  });
+
+  test("rust backend shape scaffolds a server rather than an empty project", async () => {
+    const result = await create("shape-backend-rust", {
+      ...baseOptions,
+      shape: "backend",
+      ecosystem: "rust",
+      yes: true,
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.projectConfig.rustWebFramework).toBe("axum");
+    expect(result.projectConfig.rustFrontend).toBe("none");
+  });
+
+  test("dotnet frontend shape clears the backend-owned half", async () => {
+    const result = await create("shape-frontend-dotnet", {
+      ...baseOptions,
+      shape: "frontend",
+      ecosystem: "dotnet",
+      yes: true,
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.projectConfig.dotnetFrontend).toBe("blazor-web-app");
+    expect(result.projectConfig.dotnetWebFramework).toBe("none");
+    expect(result.projectConfig.dotnetOrm).toBe("none");
+    expect(result.projectConfig.dotnetAuth).toBe("none");
+    expect(result.projectConfig.dotnetApi).toBe("none");
+    expect(result.projectConfig.database).toBe("none");
   });
 
   test("rust frontend shape scaffolds a frontend rather than an empty project", async () => {

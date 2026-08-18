@@ -9,6 +9,7 @@ import {
   parseStackPartSpecs,
   stackPartsToLegacyProjectConfigPartial,
 } from "../types";
+import { isSilent } from "../utils/context";
 import { exitCancelled } from "../utils/errors";
 import { getGitChoice } from "./git";
 import {
@@ -41,7 +42,17 @@ const FRONTEND_ONLY_FLAGS: Partial<Record<Ecosystem, Partial<ProjectConfig>>> = 
     auth: "none",
   },
   rust: { rustWebFramework: "none" },
-  dotnet: { dotnetWebFramework: "none" },
+  dotnet: {
+    dotnetWebFramework: "none",
+    dotnetOrm: "none",
+    dotnetApi: "none",
+    dotnetAuth: "none",
+    dotnetRealtime: "none",
+    dotnetJobQueue: "none",
+    dotnetCaching: "none",
+    dotnetDeploy: "none",
+    database: "none",
+  },
 };
 
 const BACKEND_ONLY_FLAGS: Partial<Record<Ecosystem, Partial<ProjectConfig>>> = {
@@ -57,6 +68,10 @@ const BACKEND_ONLY_FLAGS: Partial<Record<Ecosystem, Partial<ProjectConfig>>> = {
 const FRONTEND_SHAPE_YES_DEFAULTS: Partial<Record<Ecosystem, Partial<ProjectConfig>>> = {
   rust: { rustFrontend: "leptos" },
   dotnet: { dotnetFrontend: "blazor-web-app" },
+};
+
+const BACKEND_SHAPE_YES_DEFAULTS: Partial<Record<Ecosystem, Partial<ProjectConfig>>> = {
+  rust: { rustWebFramework: "axum" },
 };
 
 export const SHAPE_ECOSYSTEMS = {
@@ -93,7 +108,13 @@ export function shapeFlagsForEcosystem(
       ...(withoutPrompts ? FRONTEND_SHAPE_YES_DEFAULTS[ecosystem] : {}),
     };
   }
-  if (shape === "backend") return { ecosystem, ...BACKEND_ONLY_FLAGS[ecosystem] };
+  if (shape === "backend") {
+    return {
+      ecosystem,
+      ...BACKEND_ONLY_FLAGS[ecosystem],
+      ...(withoutPrompts ? BACKEND_SHAPE_YES_DEFAULTS[ecosystem] : {}),
+    };
+  }
   if (shape === "mobile") return { ecosystem };
   return {};
 }
@@ -156,7 +177,7 @@ export function noticeNativeInstallSkipped(
   platform: NativeMobilePlatform,
   requestedInstall?: boolean,
 ) {
-  if (!requestedInstall) return;
+  if (!requestedInstall || isSilent()) return;
   log.warn(
     `${NATIVE_TOOLCHAIN[platform]} dependencies are not installed by the CLI. Skipping install; run that toolchain in apps/native.`,
   );
