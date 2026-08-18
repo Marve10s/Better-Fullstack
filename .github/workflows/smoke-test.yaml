@@ -77,8 +77,10 @@ on:
 permissions:
   contents: read
 
+# event_name keeps a called run (scheduled deps verification) and the pull_request
+# run for the same branch in separate groups so they cannot cancel each other.
 concurrency:
-  group: smoke-${{ inputs.checkout_ref || github.head_ref || github.ref }}
+  group: smoke-${{ github.event_name }}-${{ inputs.checkout_ref || github.head_ref || github.ref }}
   cancel-in-progress: true
 
 jobs:

@@ -245,10 +245,17 @@ async function deriveForceFlags(diff: string): Promise<string> {
   if (packages.length === 0) return "";
 
   const mappings = await mapPackages(packages);
-  const categories = new Set<string>();
+  const optionsByCategory = new Map<string, Set<string>>();
 
   for (const [packageName, mapping] of mappings) {
-    for (const category of mapping.categories) categories.add(category);
+    for (const category of mapping.categories) {
+      const bucket = optionsByCategory.get(category) ?? new Set<string>();
+      for (const entry of mapping.templateOptions) {
+        const [templateCategory, optionId] = entry.split("/");
+        if (templateCategory === category && optionId) bucket.add(optionId);
+      }
+      optionsByCategory.set(category, bucket);
+    }
     const evidence = [
       mapping.templateOptions.size > 0
         ? `templates: ${[...mapping.templateOptions].sort().join(", ")}`
@@ -260,8 +267,27 @@ async function deriveForceFlags(diff: string): Promise<string> {
     );
   }
 
-  const selected = [...categories].sort().slice(0, MAX_FORCED_CATEGORIES);
-  return selected.length > 0 ? `--force-non-none ${selected.join(",")}` : "";
+  const selected = [...optionsByCategory.keys()].sort().slice(0, MAX_FORCED_CATEGORIES);
+  if (selected.length === 0) return "";
+
+  // A category whose changed packages point at exactly one option gets pinned to
+  // that option; anything broader falls back to "any non-none option".
+  const exactFlags: string[] = [];
+  const nonNoneCategories: string[] = [];
+  for (const category of selected) {
+    const options = optionsByCategory.get(category) ?? new Set<string>();
+    if (options.size === 1) {
+      exactFlags.push(`--force-option ${category}=${[...options][0]}`);
+    } else {
+      nonNoneCategories.push(category);
+    }
+  }
+
+  const parts = [...exactFlags];
+  if (nonNoneCategories.length > 0) {
+    parts.push(`--force-non-none ${nonNoneCategories.join(",")}`);
+  }
+  return parts.join(" ");
 }
 
 function readDiff(base: string): string {
@@ -283,7 +309,7 @@ if (args.includes("--test")) {
 +  "@medusajs/js-sdk": "^2.19.0",
 `;
   const flags = await deriveForceFlags(syntheticDiff);
-  const expected = "--force-non-none ecommerce,integrations";
+  const expected = "--force-option ecommerce=medusa --force-option integrations=nango";
   if (flags !== expected) throw new Error(`Expected ${expected}, received ${flags || "<empty>"}`);
   console.log(flags);
 } else {
