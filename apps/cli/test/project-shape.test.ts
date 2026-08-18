@@ -257,6 +257,19 @@ describe("project shape scaffolding", () => {
     expect(result.error).toMatch(/--frontend must name a native frontend/);
   });
 
+  test("rejects a mobile platform selector on a non-mobile shape", async () => {
+    const result = await create("shape-stray-platform", {
+      ...baseOptions,
+      shape: "backend",
+      ecosystem: "go",
+      kotlinMobile: "jetpack-compose",
+      yes: true,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toMatch(/builds no mobile app, so kotlin cannot be selected/);
+  });
+
   test("ignores a required-half flag belonging to an unused ecosystem", async () => {
     // Inert under TypeScript, so there is nothing to reject.
     const result = await create("shape-inert-half", {

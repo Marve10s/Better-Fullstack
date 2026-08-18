@@ -114,6 +114,22 @@ export function assertShapeInputIsUsable(
     );
   }
 
+  // A frontend or backend shape builds no mobile app, so a platform selector
+  // would be dropped without a word.
+  if (shape !== "mobile") {
+    const strayPlatforms = mobilePlatformsFromFlags({
+      kotlinMobile: options.kotlinMobile,
+      swiftMobile: options.swiftMobile,
+      dartMobile: options.dartMobile,
+    });
+    if (strayPlatforms.length > 0) {
+      exitWithError(
+        `--shape ${shape} builds no mobile app, so ${strayPlatforms.join(", ")} cannot be selected. ` +
+          "Use --shape mobile, or add the app with --part mobile:<platform>:<tool>.",
+      );
+    }
+  }
+
   // A web frontend never names a mobile platform, on any path.
   if (
     shape === "mobile" &&
