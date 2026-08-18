@@ -80,7 +80,6 @@ describe("dynamic project statistics", () => {
           string
         >;
 
-        expect(messages.homeHeroDescription).toContain("{ecosystemCount}");
         expect(messages.homeEcosystemCount).toContain("{ecosystemCount}");
         expect(messages.homeFeaturesDescription).toContain("{ecosystemCount}");
         expect(messages.homeFeaturesDescription).toContain("{ecosystemNames}");

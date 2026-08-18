@@ -28,7 +28,7 @@ async function expectNoSeriousViolations(page: Page, scope = "body") {
 test.describe("Accessibility", () => {
   test("landing page has no serious accessibility violations", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { name: "Stop wiring. Start shipping." })).toBeVisible({
+    await expect(page.getByRole("heading", { level: 1, name: /next project/i })).toBeVisible({
       timeout: 15000,
     });
     await expectNoSeriousViolations(page);

@@ -1105,6 +1105,10 @@ export const TemplateSchema = z
   .enum(["mern", "pern", "t3", "saas", "uniwind", "none"])
   .describe("Predefined project template");
 
+export const ProjectShapeSchema = z
+  .enum(["fullstack", "frontend", "backend", "mobile"])
+  .describe("Project shape that seeds the guided flow with a language and app-kind question");
+
 export const ProjectNameSchema = z
   .string()
   .min(1, "Project name cannot be empty")
@@ -1124,6 +1128,7 @@ export const ProjectNameSchema = z
 export const CreateInputSchema = z.object({
   projectName: z.string().optional(),
   template: TemplateSchema.optional(),
+  shape: ProjectShapeSchema.optional(),
   yes: z.boolean().optional(),
   yolo: z.boolean().optional(),
   verbose: z.boolean().optional(),
@@ -1309,6 +1314,7 @@ export const CreateInputSchema = z.object({
 export const AddInputSchema = CreateInputSchema.omit({
   projectName: true,
   template: true,
+  shape: true,
   yes: true,
   yolo: true,
   verbose: true,
@@ -1740,6 +1746,7 @@ export const WEB_DEPLOY_VALUES = WebDeploySchema.options;
 export const SERVER_DEPLOY_VALUES = ServerDeploySchema.options;
 export const DIRECTORY_CONFLICT_VALUES = DirectoryConflictSchema.options;
 export const TEMPLATE_VALUES = TemplateSchema.options;
+export const PROJECT_SHAPE_VALUES = ProjectShapeSchema.options;
 export const ASTRO_INTEGRATION_VALUES = AstroIntegrationSchema.options;
 export const AI_VALUES = AISchema.options;
 export const EFFECT_VALUES = EffectSchema.options;

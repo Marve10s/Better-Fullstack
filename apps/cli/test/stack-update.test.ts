@@ -111,6 +111,7 @@ afterAll(async () => {
 const CREATE_ONLY_KEYS = new Set([
   "addons",
   "template",
+  "shape",
   "fromHistory",
   "config",
   "yes",

@@ -2,8 +2,51 @@
 title: MCP Server
 description: Connect Better Fullstack to Claude Code, Cursor, VS Code, and MCP-compatible AI coding agents.
 translationStatus: pending
-updated: 2026-08-12
+updated: 2026-08-18
 ---
+
+## Setup
+
+<McpClientTabs />
+
+### One-line setup commands
+
+Agents reading this page as Markdown get the same commands the tabs above show:
+
+```bash
+claude mcp add --transport stdio better-fullstack -- npx -y create-better-fullstack@latest mcp
+codex mcp add better-fullstack -- npx -y create-better-fullstack@latest mcp
+gemini mcp add better-fullstack npx -y create-better-fullstack@latest mcp
+kimi mcp add better-fullstack -- npx -y create-better-fullstack@latest mcp
+cmd mcp add better-fullstack -- npx -y create-better-fullstack@latest mcp
+code --add-mcp '{"name":"better-fullstack","command":"npx","args":["-y","create-better-fullstack@latest","mcp"]}'
+```
+
+### Other MCP clients
+
+Clients that read a config file — Claude Desktop, Zed, Windsurf, Goose — take the same stdio server:
+
+```json
+{
+  "mcpServers": {
+    "better-fullstack": {
+      "command": "npx",
+      "args": ["-y", "create-better-fullstack@latest", "mcp"]
+    }
+  }
+}
+```
+
+VS Code uses `servers` instead of `mcpServers`, Zed uses `context_servers`, and OpenCode/Kilo Code use `mcp` with `"type": "local"`. Swap the launcher for your package manager:
+
+| Package manager | `command` | `args`                                             |
+| --------------- | --------- | -------------------------------------------------- |
+| npm             | `npx`     | `["-y", "create-better-fullstack@latest", "mcp"]`  |
+| pnpm            | `pnpm`    | `["dlx", "create-better-fullstack@latest", "mcp"]` |
+| Bun             | `bunx`    | `["create-better-fullstack@latest", "mcp"]`        |
+| Yarn            | `yarn`    | `["dlx", "create-better-fullstack@latest", "mcp"]` |
+
+## What the server does
 
 The Better Fullstack MCP server lets agents scaffold and evolve projects through structured tool
 calls instead of guessing CLI flags. It handles discovery, recommendations, compatibility checks,
@@ -28,63 +71,6 @@ fits your agent:
 | [Agent plugin](/docs/ai/plugin/) | MCP server and reusable skills in one portable bundle | Agents with plugin or marketplace support                                     |
 | MCP server                       | Structured tools and resources over stdio             | MCP clients that need schema discovery, validation, planning, and safe writes |
 | [Agent skill](/docs/ai/skills/)  | A lightweight CLI-driven workflow                     | Agents with shell access that do not need an MCP connection                   |
-
-## Setup
-
-Launch the server with the package manager you use:
-
-<PMTabs
-  npm="npx -y create-better-fullstack@latest mcp"
-  pnpm="pnpm dlx create-better-fullstack@latest mcp"
-  bun="bunx create-better-fullstack@latest mcp"
-  yarn="yarn dlx create-better-fullstack@latest mcp"
-/>
-
-### Claude Code
-
-```bash
-claude mcp add --transport stdio better-fullstack -- npx -y create-better-fullstack@latest mcp
-```
-
-Use the same launcher table above if you prefer pnpm, Bun, or Yarn.
-
-### Cursor
-
-```json
-{
-  "mcpServers": {
-    "better-fullstack": {
-      "command": "npx",
-      "args": ["-y", "create-better-fullstack@latest", "mcp"]
-    }
-  }
-}
-```
-
-### VS Code
-
-```json
-{
-  "servers": {
-    "better-fullstack": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "create-better-fullstack@latest", "mcp"]
-    }
-  }
-}
-```
-
-### Other MCP clients
-
-Use the same stdio command with clients such as Claude Desktop, Zed, Cursor, Codex, OpenCode, Gemini CLI, Goose, or other MCP-compatible tools.
-
-| Package manager | `command` | `args`                                             |
-| --------------- | --------- | -------------------------------------------------- |
-| npm             | `npx`     | `["-y", "create-better-fullstack@latest", "mcp"]`  |
-| pnpm            | `pnpm`    | `["dlx", "create-better-fullstack@latest", "mcp"]` |
-| Bun             | `bunx`    | `["create-better-fullstack@latest", "mcp"]`        |
-| Yarn            | `yarn`    | `["dlx", "create-better-fullstack@latest", "mcp"]` |
 
 ## Tools
 

@@ -55,6 +55,9 @@ const NON_BUILDER_CREATE_OPTION_KEYS = new Set([
   "addons",
   "ecosystem",
   "template",
+  // Seeds the guided flow with a language/platform question rather than
+  // selecting any single builder option.
+  "shape",
   "fromHistory",
   "config",
   "yes",

@@ -102,6 +102,7 @@ import type {
   WorkspaceShape,
   Payments,
   ProjectConfig,
+  ProjectShape,
   RateLimit,
   BotProtection,
   PythonAi,
@@ -157,9 +158,9 @@ import { hasWebStyling, requiresChatSdkVercelAI } from "../utils/compatibility-r
 import { exitCancelled } from "../utils/errors";
 import { getUserPkgManager } from "../utils/get-package-manager";
 import { getAddonsChoice, getAppPlatformsChoice } from "./addons";
-import { getAnalyticsChoice } from "./analytics";
 import { getAIChoice } from "./ai";
 import { getAiDocsChoice } from "./ai-docs";
+import { getAnalyticsChoice } from "./analytics";
 import { getAnimationChoice } from "./animation";
 import { getApiChoice } from "./api";
 import { getAstroIntegrationChoice } from "./astro-integration";
@@ -278,6 +279,7 @@ import { getObservabilityChoice } from "./observability";
 import { getORMChoice } from "./orm";
 import { getPackageManagerChoice } from "./package-manager";
 import { getPaymentsChoice } from "./payments";
+import { resolveProjectShape } from "./project-shape";
 import { PROMPT_RESOLVER_REGISTRY } from "./prompt-resolver-registry";
 import {
   getPythonAiChoice,
@@ -834,11 +836,20 @@ function scopedPrompt<K extends PromptGroupKey>(
 }
 
 export async function gatherConfig(
-  flags: Partial<ProjectConfig>,
+  inputFlags: Partial<ProjectConfig>,
   projectName: string,
   projectDir: string,
   relativePath: string,
+  shape?: ProjectShape,
 ) {
+  const shapeResolution = shape
+    ? await resolveProjectShape(shape, inputFlags, projectName, projectDir, relativePath)
+    : undefined;
+
+  if (shapeResolution?.kind === "config") return shapeResolution.config;
+
+  const flags = shapeResolution ? { ...inputFlags, ...shapeResolution.flags } : inputFlags;
+
   if (flags.ecosystem === undefined && flags.stackParts === undefined) {
     const compositionMode = await getCompositionModeChoice();
     if (compositionMode === "multi") {

@@ -183,6 +183,9 @@ const ARRAY_UPDATE_KEYS = new Set<keyof ProjectConfig>([
 
 const NON_STACK_UPDATE_CREATE_KEYS = new Set([
   "template",
+  // A shape only seeds the create-time prompt flow; an existing project is
+  // already past the question it answers.
+  "shape",
   "fromHistory",
   "config",
   "yes",

@@ -35,7 +35,7 @@ describe("third-party integrations", () => {
 
     expect(helper).toContain('import { Nango } from "@nangohq/node"');
     expect(helper).toContain("new Nango");
-    expect(packageJson).toContain('"@nangohq/node": "^0.71.3"');
+    expect(packageJson).toContain('"@nangohq/node": "^0.71.4"');
     expect(env).toContain("NANGO_SECRET_KEY=nango_secret_your_key");
     expect(env).toContain("NANGO_HOST=");
   });

@@ -29,7 +29,7 @@ test.describe("Stack Builder - Mobile", () => {
 
   test("landing page loads on mobile", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { name: "Stop wiring. Start shipping." })).toBeVisible({
+    await expect(page.getByRole("heading", { level: 1, name: /next project/i })).toBeVisible({
       timeout: 15000,
     });
   });

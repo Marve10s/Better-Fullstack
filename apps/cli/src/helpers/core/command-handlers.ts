@@ -17,6 +17,13 @@ import { CreateCommandOptionsSchema } from "../../create-command-input";
 import { gatherConfig } from "../../prompts/config-prompts";
 import { isCancel, isGoBack, navigableSelect } from "../../prompts/navigable";
 import { getProjectName } from "../../prompts/project-name";
+import {
+  SHAPE_DEFAULT_ECOSYSTEM,
+  mobilePlatformFromFlags,
+  nativeMobilePartSpecs,
+  noticeNativeInstallSkipped,
+  shapeFlagsForEcosystem,
+} from "../../prompts/project-shape";
 import { getVersionChannelChoice } from "../../prompts/version-channel";
 import {
   getKotlinJavaIncompatibilityReason,
@@ -52,6 +59,7 @@ import { resolveCompatibilityAdjustments } from "../../utils/stack-compatibility
 import { getTemplateConfig, getTemplateDescription } from "../../utils/templates";
 import {
   getProvidedFlags,
+  assertShapeInputIsUsable,
   processAndValidateFlags,
   processProvidedFlagsWithoutValidation,
   validateConfigCompatibility,
@@ -401,6 +409,23 @@ export async function createProjectHandler(
         );
       }
 
+      const definedInput = Object.fromEntries(
+        Object.entries(input).filter(([, value]) => value !== undefined),
+      ) as typeof input;
+      const explicitInput = {
+        ...definedInput,
+        projectDirectory: input.projectName,
+      };
+      const originalInput = {
+        ...configBase,
+        ...explicitInput,
+      };
+      const providedFlags = getProvidedFlags(explicitInput);
+
+      // Input-only, so it runs before any directory is resolved, cleared, or
+      // created. A rejected shape must never cost the user their files.
+      assertShapeInputIsUsable(originalInput, providedFlags);
+
       const useDefaultsForName = Boolean(input.yes) || hasConfigBase;
       let currentPathInput: string;
       if (useDefaultsForName && input.projectName) {
@@ -623,20 +648,6 @@ export async function createProjectHandler(
         currentPathInput = finalPathInput;
       }
 
-      const definedInput = Object.fromEntries(
-        Object.entries(input).filter(([, value]) => value !== undefined),
-      ) as typeof input;
-      const explicitInput = {
-        ...definedInput,
-        projectDirectory: input.projectName,
-      };
-      const originalInput = {
-        ...configBase,
-        ...explicitInput,
-      };
-
-      const providedFlags = getProvidedFlags(explicitInput);
-
       let cliInput = originalInput;
 
       if (input.template && input.template !== "none") {
@@ -668,6 +679,35 @@ export async function createProjectHandler(
       let config: ProjectConfig;
       if (cliInput.yes || cliInput.part?.length || hasConfigBase) {
         if (!silent) telemetrySource = "cli-flags";
+        // No prompts run on this path, so a shape contributes its default
+        // ecosystem plus both halves of the stack it decides.
+        if (cliInput.shape && cliInput.shape !== "fullstack") {
+          const platform =
+            cliInput.shape === "mobile" ? mobilePlatformFromFlags(cliInput) : undefined;
+
+          if (platform && platform !== "react-native") {
+            noticeNativeInstallSkipped(platform, cliInput.install);
+            cliInput = {
+              ...cliInput,
+              install: false,
+              part: [
+                ...(cliInput.part ?? []),
+                ...nativeMobilePartSpecs(
+                  platform,
+                  cliInput.kotlinMobile ?? "jetpack-compose",
+                  cliInput.kotlinMobileLibraries ?? [],
+                ),
+              ],
+            };
+          } else {
+            const ecosystem = cliInput.ecosystem ?? SHAPE_DEFAULT_ECOSYSTEM[cliInput.shape];
+            cliInput = {
+              ...shapeFlagsForEcosystem(cliInput.shape, ecosystem, { withoutPrompts: true }),
+              ...cliInput,
+              ecosystem,
+            };
+          }
+        }
         const flagConfig = processProvidedFlagsWithoutValidation(cliInput, finalBaseName);
 
         config = expandToolingOverlay({
@@ -714,6 +754,7 @@ export async function createProjectHandler(
           finalBaseName,
           finalResolvedPath,
           currentPathInput,
+          input.shape,
         );
         config = { ...gatheredConfig, versionChannel };
 

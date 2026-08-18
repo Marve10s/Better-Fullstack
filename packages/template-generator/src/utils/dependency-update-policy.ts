@@ -34,6 +34,12 @@ export const DEPENDENCY_UPDATE_POLICIES: Readonly<Record<string, DependencyUpdat
     pinnedVersion: "^8.5.15",
     reason: "Newer releases are quarantined by Yarn hardened mode.",
   },
+  "@inlang/paraglide-js": {
+    pinnedVersion: "^2.23.2",
+    holdLatestChannel: true,
+    reason:
+      "paraglide-js 2.24 pulls @inlang/sdk 3 and the @lix-js/sdk 0.12 native binary, which needs glibc 2.38 and breaks Vercel's AL2023 runtime.",
+  },
   graphql: {
     pinnedVersion: "^16.11.0",
     reason: "Garph, GraphQL Yoga, and Apollo Server peers currently cap GraphQL at 16.x.",
@@ -153,6 +159,16 @@ export const DEPENDENCY_UPDATE_POLICIES: Readonly<Record<string, DependencyUpdat
   "@opentelemetry/sdk-metrics": {
     pinnedVersion: "2.9.0",
     reason: "Keep the coupled OpenTelemetry SDK and exporter release trains exact and aligned.",
+  },
+  "@storybook/vue3": {
+    pinnedVersion: "^8.6.18",
+    reason:
+      "Storybook 10.x requires a whole-family upgrade; core storybook and @storybook/vue3-vite are still on 8.x, so a 10.x renderer makes the peer graph unsatisfiable.",
+  },
+  "@storybook/svelte": {
+    pinnedVersion: "^8.6.18",
+    reason:
+      "Storybook 10.x requires a whole-family upgrade; core storybook and @storybook/svelte-vite are still on 8.x, so a 10.x renderer makes the peer graph unsatisfiable.",
   },
   vitest: {
     pinnedVersion: "4.1.8",

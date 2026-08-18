@@ -4,7 +4,12 @@ import {
   type OptionCategory,
   type OptionCategoryEcosystem,
 } from "./option-metadata";
-import { DIRECTORY_CONFLICT_VALUES, ECOSYSTEM_VALUES, TEMPLATE_VALUES } from "./schemas";
+import {
+  DIRECTORY_CONFLICT_VALUES,
+  ECOSYSTEM_VALUES,
+  PROJECT_SHAPE_VALUES,
+  TEMPLATE_VALUES,
+} from "./schemas";
 
 type CliDefaultConfig = ReturnType<typeof createCliDefaultProjectConfigBase>;
 type CliConfigKey = keyof CliDefaultConfig;
@@ -76,6 +81,12 @@ export const CLI_FLAG_GROUP_DEFINITIONS: readonly CliFlagGroupDefinition[] = [
         flag: "template",
         summary: "Start from a curated stack preset instead of individual flags.",
         source: { kind: "literal", values: TEMPLATE_VALUES },
+      },
+      {
+        flag: "shape",
+        summary:
+          "Start from a project shape. Asks which language or platform, then only the prompts that shape needs.",
+        source: { kind: "literal", values: PROJECT_SHAPE_VALUES },
       },
       {
         flag: "part",

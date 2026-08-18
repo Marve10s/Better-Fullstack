@@ -168,12 +168,12 @@ import { getUILibraryChoice } from "./ui-library";
 import { getDeploymentChoice } from "./web-deploy";
 
 type CompositionMode = "single" | "multi";
-type BackendEcosystem = Extract<
+export type BackendEcosystem = Extract<
   Ecosystem,
   "typescript" | "go" | "rust" | "python" | "java" | "dotnet" | "elixir"
 >;
-type FrontendEcosystem = "typescript" | "rust" | "dotnet";
-type MobileEcosystem = "none" | "react-native" | "kotlin" | "swift" | "dart";
+export type FrontendEcosystem = "typescript" | "rust" | "dotnet";
+export type MobileEcosystem = "none" | "react-native" | "kotlin" | "swift" | "dart";
 
 export async function getCompositionModeChoice(): Promise<CompositionMode> {
   const response = await navigableSelect<CompositionMode>({
@@ -197,7 +197,9 @@ export async function getCompositionModeChoice(): Promise<CompositionMode> {
   return response;
 }
 
-async function selectBackendEcosystem(): Promise<BackendEcosystem> {
+export async function selectBackendEcosystem(
+  initialValue: BackendEcosystem = "go",
+): Promise<BackendEcosystem> {
   const response = await navigableSelect<BackendEcosystem>({
     message: "Select backend ecosystem",
     options: [
@@ -209,21 +211,25 @@ async function selectBackendEcosystem(): Promise<BackendEcosystem> {
       { value: "dotnet", label: ".NET", hint: "ASP.NET Core, EF Core, SignalR" },
       { value: "elixir", label: "Elixir", hint: "Phoenix, LiveView" },
     ],
-    initialValue: "go",
+    initialValue,
   });
 
   if (isCancel(response) || isGoBack(response)) return exitCancelled("Operation cancelled");
   return response;
 }
 
-async function selectFrontendEcosystem(): Promise<FrontendEcosystem> {
+export async function selectFrontendEcosystem(
+  allowed: readonly FrontendEcosystem[] = ["typescript", "rust", "dotnet"],
+): Promise<FrontendEcosystem> {
   const response = await navigableSelect<FrontendEcosystem>({
     message: "Select frontend ecosystem",
-    options: [
-      { value: "typescript", label: "TypeScript", hint: "React, Vue, Svelte, Astro, and more" },
-      { value: "rust", label: "Rust", hint: "Leptos, Dioxus, or Yew" },
-      { value: "dotnet", label: ".NET", hint: "Blazor Web App or WebAssembly" },
-    ],
+    options: (
+      [
+        { value: "typescript", label: "TypeScript", hint: "React, Vue, Svelte, Astro, and more" },
+        { value: "rust", label: "Rust", hint: "Leptos, Dioxus, or Yew" },
+        { value: "dotnet", label: ".NET", hint: "Blazor Web App or WebAssembly" },
+      ] satisfies { value: FrontendEcosystem; label: string; hint: string }[]
+    ).filter((option) => allowed.includes(option.value)),
     initialValue: "typescript",
   });
 
@@ -248,7 +254,7 @@ async function selectMobileEcosystem(): Promise<MobileEcosystem> {
   return response;
 }
 
-async function selectKotlinMobileLibraries(
+export async function selectKotlinMobileLibraries(
   selected?: KotlinMobileLibraries[],
 ): Promise<KotlinMobileLibraries[]> {
   if (selected !== undefined) return selected.filter((library) => library !== "none");
