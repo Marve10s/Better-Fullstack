@@ -154,6 +154,16 @@ export const DEPENDENCY_UPDATE_POLICIES: Readonly<Record<string, DependencyUpdat
     pinnedVersion: "2.9.0",
     reason: "Keep the coupled OpenTelemetry SDK and exporter release trains exact and aligned.",
   },
+  "@storybook/vue3": {
+    pinnedVersion: "^8.6.18",
+    reason:
+      "Storybook 10.x requires a whole-family upgrade; core storybook and @storybook/vue3-vite are still on 8.x, so a 10.x renderer makes the peer graph unsatisfiable.",
+  },
+  "@storybook/svelte": {
+    pinnedVersion: "^8.6.18",
+    reason:
+      "Storybook 10.x requires a whole-family upgrade; core storybook and @storybook/svelte-vite are still on 8.x, so a 10.x renderer makes the peer graph unsatisfiable.",
+  },
   vitest: {
     pinnedVersion: "4.1.8",
     reason: "The Vitest family is exact-pinned to the latest reviewed Yarn-compatible patch.",
