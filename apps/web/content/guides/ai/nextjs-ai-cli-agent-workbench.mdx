@@ -2,6 +2,7 @@
 title: Next.js AI CLI Agent Workbench
 description: Create a Next.js app with AI CLI, MCP, Skills, Better Auth, Drizzle, SQLite, and agent documentation using Better Fullstack.
 updated: 2026-05-12
+translationStatus: pending
 category: AI Tools
 tags:
   - nextjs
@@ -23,12 +24,14 @@ npm create better-fullstack@latest my-agent-workbench -- \
   --ecosystem typescript \
   --frontend next \
   --backend self \
+  --runtime none \
   --database sqlite \
   --orm drizzle \
   --auth better-auth \
   --api trpc \
   --ai ai-cli \
-  --addons mcp skills \
+  --part aiTooling:universal:mcp \
+  --part aiTooling:universal:skills \
   --ai-docs claude-md agents-md cursorrules \
   --css-framework tailwind \
   --ui-library shadcn-ui \
@@ -66,7 +69,7 @@ The exact documentation files depend on `--ai-docs claude-md agents-md cursorrul
 
 ## How the AI pieces fit
 
-`--ai ai-cli` selects AI CLI support. `--addons mcp skills` adds local agent capabilities around MCP and skills. `--ai-docs` controls which repository instruction files are generated.
+`--ai ai-cli` selects AI CLI support. The `aiTooling` Stack Parts add local MCP and skill capabilities. `--ai-docs` controls which repository instruction files are generated.
 
 Use those pieces for different jobs:
 
@@ -119,7 +122,7 @@ Choose this when the repository itself should be easy for coding agents to under
 ## Compatibility notes
 
 - This preset uses a TypeScript Next.js app with `--backend self`, so Next.js owns the server boundary.
-- `--addons mcp skills` are development-workflow additions. They do not replace app authentication, database, or API choices.
+- The MCP and Skills Stack Parts are development-workflow capabilities. They do not replace app authentication, database, or API choices.
 - `--ai-docs claude-md agents-md cursorrules` intentionally generates multiple instruction formats for different tools.
 - SQLite is convenient for local workbench-style projects. Use PostgreSQL if the workbench becomes a multi-user production product with shared state.
 
@@ -133,7 +136,7 @@ Agent docs usually belong in source control. Local credentials, generated logs, 
 
 - If an AI tool ignores the repository guidance, confirm it reads the generated filename you selected with `--ai-docs`.
 - If MCP tools are unavailable, verify the local MCP setup and whether the consuming agent has been pointed at it.
-- If scaffolded addon setup prompts during scripted runs, use explicit flags like this guide does so defaults are deterministic.
+- If capability setup prompts during scripted runs, use explicit flags like this guide does so defaults are deterministic.
 - If the app works locally but auth fails after deploy, check the same Better Auth URL and cookie settings you would inspect in any Next.js stack.
 
 ## Tradeoffs

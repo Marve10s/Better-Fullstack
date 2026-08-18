@@ -21,6 +21,30 @@ jobs:
         uses: actions/checkout@v4
 
 {{#if (or (eq ecosystem "typescript") (eq ecosystem "react-native"))}}
+{{#if (includes addons "vite-plus")}}
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1.17.0
+        with:
+          node-version: "24"
+          cache: true
+
+      - name: Install dependencies
+        run: vp install
+
+      - name: Check
+        run: vp check
+
+      - name: Type check
+        run: vp run -r check-types
+
+      - name: Build
+        run: vp run -r build
+{{#if ciHasTestScript}}
+
+      - name: Test
+        run: vp run -r test
+{{/if}}
+{{else}}
 {{#if (eq packageManager "bun")}}
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -138,6 +162,7 @@ jobs:
 
       - name: Test
         run: npm run test
+{{/if}}
 {{/if}}
 {{/if}}
 {{else if (eq ecosystem "rust")}}

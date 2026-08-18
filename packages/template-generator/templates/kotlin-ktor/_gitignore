@@ -3,3 +3,6 @@
 build/
 target/
 .env
+
+# Better Fullstack recovery snapshots
+.bts/recovery

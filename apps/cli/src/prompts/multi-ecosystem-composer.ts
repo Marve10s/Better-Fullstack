@@ -16,9 +16,11 @@ import {
 import { hasWebStyling } from "../utils/compatibility-rules";
 import { exitCancelled } from "../utils/errors";
 import { getAddonsChoice, getAppPlatformsChoice } from "./addons";
+import { getAnalyticsChoice } from "./analytics";
 import { getAiDocsChoice } from "./ai-docs";
 import { getAstroIntegrationChoice } from "./astro-integration";
 import { getBackendFrameworkChoice } from "./backend";
+import { getBotProtectionChoice } from "./bot-protection";
 import { getApiChoice } from "./api";
 import { getAuthChoice } from "./auth";
 import { getORMChoice } from "./orm";
@@ -166,12 +168,12 @@ import { getUILibraryChoice } from "./ui-library";
 import { getDeploymentChoice } from "./web-deploy";
 
 type CompositionMode = "single" | "multi";
-type BackendEcosystem = Extract<
+export type BackendEcosystem = Extract<
   Ecosystem,
   "typescript" | "go" | "rust" | "python" | "java" | "dotnet" | "elixir"
 >;
-type FrontendEcosystem = "typescript" | "rust" | "dotnet";
-type MobileEcosystem = "none" | "react-native" | "kotlin" | "swift" | "dart";
+export type FrontendEcosystem = "typescript" | "rust" | "dotnet";
+export type MobileEcosystem = "none" | "react-native" | "kotlin" | "swift" | "dart";
 
 export async function getCompositionModeChoice(): Promise<CompositionMode> {
   const response = await navigableSelect<CompositionMode>({
@@ -195,7 +197,9 @@ export async function getCompositionModeChoice(): Promise<CompositionMode> {
   return response;
 }
 
-async function selectBackendEcosystem(): Promise<BackendEcosystem> {
+export async function selectBackendEcosystem(
+  initialValue: BackendEcosystem = "go",
+): Promise<BackendEcosystem> {
   const response = await navigableSelect<BackendEcosystem>({
     message: "Select backend ecosystem",
     options: [
@@ -207,21 +211,25 @@ async function selectBackendEcosystem(): Promise<BackendEcosystem> {
       { value: "dotnet", label: ".NET", hint: "ASP.NET Core, EF Core, SignalR" },
       { value: "elixir", label: "Elixir", hint: "Phoenix, LiveView" },
     ],
-    initialValue: "go",
+    initialValue,
   });
 
   if (isCancel(response) || isGoBack(response)) return exitCancelled("Operation cancelled");
   return response;
 }
 
-async function selectFrontendEcosystem(): Promise<FrontendEcosystem> {
+export async function selectFrontendEcosystem(
+  allowed: readonly FrontendEcosystem[] = ["typescript", "rust", "dotnet"],
+): Promise<FrontendEcosystem> {
   const response = await navigableSelect<FrontendEcosystem>({
     message: "Select frontend ecosystem",
-    options: [
-      { value: "typescript", label: "TypeScript", hint: "React, Vue, Svelte, Astro, and more" },
-      { value: "rust", label: "Rust", hint: "Leptos, Dioxus, or Yew" },
-      { value: "dotnet", label: ".NET", hint: "Blazor Web App or WebAssembly" },
-    ],
+    options: (
+      [
+        { value: "typescript", label: "TypeScript", hint: "React, Vue, Svelte, Astro, and more" },
+        { value: "rust", label: "Rust", hint: "Leptos, Dioxus, or Yew" },
+        { value: "dotnet", label: ".NET", hint: "Blazor Web App or WebAssembly" },
+      ] satisfies { value: FrontendEcosystem; label: string; hint: string }[]
+    ).filter((option) => allowed.includes(option.value)),
     initialValue: "typescript",
   });
 
@@ -246,7 +254,7 @@ async function selectMobileEcosystem(): Promise<MobileEcosystem> {
   return response;
 }
 
-async function selectKotlinMobileLibraries(
+export async function selectKotlinMobileLibraries(
   selected?: KotlinMobileLibraries[],
 ): Promise<KotlinMobileLibraries[]> {
   if (selected !== undefined) return selected.filter((library) => library !== "none");
@@ -328,6 +336,15 @@ async function selectDatabaseConfig(flags: Partial<ProjectConfig>) {
   return { database, dbSetup };
 }
 
+export const MULTI_ECOSYSTEM_TYPESCRIPT_SECTION_IDS = [
+  "app-platforms",
+  "ui-styling",
+  "frontend-security",
+  "content",
+  "deploy",
+  "addons-examples",
+] as const;
+
 export async function gatherMultiEcosystemConfig(
   flags: Partial<ProjectConfig>,
   projectName: string,
@@ -337,14 +354,13 @@ export async function gatherMultiEcosystemConfig(
   const baseConfig = getDefaultConfig();
   const shouldPromptForScope = !hasMultiStackPromptFlags(flags);
   const configScope = shouldPromptForScope ? promptValue(await getConfigScopeChoice()) : "full";
-  // Offer only the TypeScript sections whose prompts this composer actually asks.
   const typeScriptSections =
     configScope === "custom"
       ? promptValue(
           await getConfigSectionsChoice(
             "typescript",
             [],
-            ["app-platforms", "ui-styling", "deploy", "addons-examples"],
+            [...MULTI_ECOSYSTEM_TYPESCRIPT_SECTION_IDS],
           ),
         )
       : [];
@@ -456,6 +472,19 @@ export async function gatherMultiEcosystemConfig(
         getCSSFrameworkChoice(flags.cssFramework, uiLibrary, frontendList),
       )
     : "none";
+  const analytics =
+    frontendEcosystem === "typescript"
+      ? await scopedPromptValue("typescript", "analytics", configScope, typeScriptSections, () =>
+          getAnalyticsChoice(flags.analytics, frontendList),
+        )
+      : "none";
+  const webDeploy = await scopedPromptValue(
+    "typescript",
+    "webDeploy",
+    configScope,
+    typeScriptSections,
+    () => getDeploymentChoice(flags.webDeploy, "bun", "none", frontendList),
+  );
 
   const backendEcosystem = await selectBackendEcosystem();
   const backendSections =
@@ -466,6 +495,9 @@ export async function gatherMultiEcosystemConfig(
   }
   if (frontendEcosystem === "typescript" && frontend !== "none") {
     stackPartSpecs.push(`frontend:typescript:${frontend}`);
+    if (analytics !== "none") {
+      stackPartSpecs.push(`frontend.analytics:typescript:${analytics}`);
+    }
   }
   if (frontendEcosystem === "dotnet" && selectedDotnetFrontend !== "none") {
     stackPartSpecs.push(`frontend:dotnet:${selectedDotnetFrontend}`);
@@ -582,6 +614,13 @@ export async function gatherMultiEcosystemConfig(
         : await scopedPromptValue("typescript", "rateLimit", configScope, backendSections, () =>
             getRateLimitChoice(flags.rateLimit, backend),
           );
+    const botProtection = await scopedPromptValue(
+      "typescript",
+      "botProtection",
+      configScope,
+      typeScriptSections,
+      () => getBotProtectionChoice(flags.botProtection, frontendList, auth, backend, webDeploy),
+    );
     const cms =
       backend === "none"
         ? "none"
@@ -639,6 +678,7 @@ export async function gatherMultiEcosystemConfig(
       jobQueue,
       caching,
       rateLimit,
+      botProtection,
       cms,
       search,
       vectorDb,
@@ -670,6 +710,9 @@ export async function gatherMultiEcosystemConfig(
       ["ecommerce", ecommerce],
     ] as const) {
       if (value !== "none") stackPartSpecs.push(`backend.${role}:typescript:${value}`);
+    }
+    if (botProtection !== "none") {
+      stackPartSpecs.push(`frontend.botProtection:typescript:${botProtection}`);
     }
   } else if (backendEcosystem === "go") {
     const goWebFramework = promptValue(await getGoWebFrameworkChoice(flags.goWebFramework));
@@ -1504,13 +1547,6 @@ export async function gatherMultiEcosystemConfig(
         { ...graphPartial, ecosystem: backendEcosystem },
       ),
   );
-  const webDeploy = await scopedPromptValue(
-    "typescript",
-    "webDeploy",
-    configScope,
-    typeScriptSections,
-    () => getDeploymentChoice(flags.webDeploy, "bun", "none", frontendList),
-  );
   const serverDeploy = shouldAskConfigPromptKey(
     "typescript",
     "serverDeploy",
@@ -1576,6 +1612,7 @@ export async function gatherMultiEcosystemConfig(
     uiLibrary,
     ...shadcnOptions,
     cssFramework,
+    analytics,
     addons: selectedAddons,
     examples: [],
     dbSetup,

@@ -1,4 +1,11 @@
-import { formatStackPartSpec } from "@better-fullstack/types";
+import {
+  formatStackPartSpec,
+  getSelectedToolingOption,
+  getToolingCapability,
+  getToolingSelectionOptions,
+  legacyProjectConfigToStackParts,
+  TOOLING_CATEGORIES,
+} from "@better-fullstack/types";
 import pc from "picocolors";
 
 import type { ProjectConfig } from "../types";
@@ -318,10 +325,31 @@ export function displayConfig(config: Partial<ProjectConfig>) {
     configDisplay.push(`${pc.blue("File Storage:")} ${String(config.fileStorage)}`);
   }
 
-  if (config.addons !== undefined) {
-    const addons = Array.isArray(config.addons) ? config.addons : [config.addons];
-    const addonsText = addons.length > 0 && addons[0] !== undefined ? addons.join(", ") : "none";
-    configDisplay.push(`${pc.blue("Addons:")} ${addonsText}`);
+  if (config.addons !== undefined || config.stackParts?.length) {
+    const parts = config.stackParts?.length
+      ? config.stackParts
+      : legacyProjectConfigToStackParts(config);
+    for (const category of TOOLING_CATEGORIES) {
+      const toolIds = parts.flatMap((part) => {
+        const capability = getToolingCapability(part.toolId);
+        return capability?.category === category.id && capability.role === part.role
+          ? [part.toolId]
+          : [];
+      });
+      if (toolIds.length === 0) continue;
+      const label =
+        category.selectionMode === "multiple"
+          ? toolIds
+              .map(
+                (toolId) =>
+                  getToolingSelectionOptions(category.id).find((option) =>
+                    option.toolIds.includes(toolId),
+                  )?.label ?? toolId,
+              )
+              .join(", ")
+          : (getSelectedToolingOption(category.id, toolIds)?.label ?? toolIds.join(", "));
+      configDisplay.push(`${pc.blue(`${category.label}:`)} ${label}`);
+    }
   }
 
   if (config.examples !== undefined) {

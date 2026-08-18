@@ -7,7 +7,10 @@ minimumReleaseAge = 172800
 
 [test]
 coverage = true
-coverageReporter = ["text", "lcov"]
+# The text reporter streams a table of every source file to stdout; bun dies
+# with "internal error (WriteFailed)" partway through it on CI. Nothing
+# consumes coverage output, so lcov alone keeps the data without the crash.
+coverageReporter = ["lcov"]
 coverageSkipTestFiles = true  # default false
 
 # Performance optimizations for matrix testing

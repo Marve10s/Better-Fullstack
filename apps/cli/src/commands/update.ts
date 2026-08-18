@@ -9,10 +9,18 @@ import {
   recordUpgradeBaseline,
   type UpgradePlan,
 } from "../helpers/core/scaffold-upgrade";
-import { trackCommand } from "../utils/analytics";
+import { flushTelemetry, trackCommand } from "../utils/analytics";
 import { readBtsConfig } from "../utils/bts-config";
 import { handleError } from "../utils/errors";
 import { getLatestCLIVersion } from "../utils/get-latest-cli-version";
+import {
+  getProjectRecoveryCommand,
+  getPackageExecPrefix,
+  quotePosixShellArgument,
+  quotePowerShellArgument,
+} from "../utils/lifecycle-command";
+import { lifecycleResult } from "../utils/lifecycle-contract";
+import { recoverProjectTransaction } from "../utils/project-transaction";
 import { renderTitle } from "../utils/render-title";
 
 export type UpdateCommandInput = {
@@ -24,15 +32,13 @@ export type UpdateCommandInput = {
   recordBaseline?: boolean;
   acknowledgeUnprovenManifestV1?: boolean;
   reviewToken?: string;
+  recover?: string;
 };
 
 export function getUpdateApplyAuthorizationError(input: UpdateCommandInput): string | null {
   if (!input.apply) return null;
   if (!input.reviewToken) {
     return "`--review-token` is required with `--apply`. Review the categorized paths and plan, then pass its exact token.";
-  }
-  if (input.acknowledgeUnprovenManifestV1 !== true) {
-    return "`--acknowledge-unproven-manifest-v1` is required with `--apply`: manifest v1 lineage is unproven, apply is destructive, and no backup/recovery exists.";
   }
   return null;
 }
@@ -88,7 +94,7 @@ function renderPlan(plan: UpgradePlan): void {
   log.info(
     pc.dim(
       plan.hasBaseline
-        ? `Manifest v1 baseline (release lineage unproven): bts.lock.json${
+        ? `Manifest v${plan.manifestVersion ?? "unknown"} baseline (${plan.lifecycle.provenance.verified ? "verified lineage" : "unverified origin"}): bts.lock.json${
             plan.baselineCreatedAt ? ` (recorded ${plan.baselineCreatedAt})` : ""
           }`
         : "Baseline: none — `update --record-baseline` manually adopts current bytes but does not prove generator lineage",
@@ -103,7 +109,7 @@ function renderPlan(plan: UpgradePlan): void {
     );
   }
   log.message("");
-  if (plan.hasBaseline && plan.manifestVersion === "1") {
+  if (plan.hasBaseline && plan.manifestVersion === "2") {
     log.info(pc.dim(`Review token: ${getUpgradePlanDigest(plan)}`));
     log.message("");
   }
@@ -134,8 +140,10 @@ export function toJsonPlan(plan: UpgradePlan) {
     manifestError: plan.manifestError,
     baselineCreatedAt: plan.baselineCreatedAt,
     reviewToken:
-      plan.hasBaseline && plan.manifestVersion === "1" ? getUpgradePlanDigest(plan) : undefined,
-    guarantee: "unproven-manifest-v1-plan-only",
+      plan.hasBaseline && plan.manifestVersion === "2" ? getUpgradePlanDigest(plan) : undefined,
+    guarantee: plan.lifecycle.provenance.verified
+      ? "verified-manifest-v2-recoverable"
+      : "unverified-origin-recoverable",
     summary: {
       unchanged: plan.unchanged.length,
       drift: plan.drift.length,
@@ -159,16 +167,11 @@ export function toJsonPlan(plan: UpgradePlan) {
     actionableHashes: plan.actionableHashes,
     actionablePreimages: plan.actionablePreimages,
     files: plan.files,
+    lifecycle: plan.lifecycle,
   };
 }
 
-export function quotePosixShellArgument(value: string): string {
-  return `'${value.replaceAll("'", `'"'"'`)}'`;
-}
-
-export function quotePowerShellArgument(value: string): string {
-  return `'${value.replaceAll("'", "''")}'`;
-}
+export { quotePosixShellArgument, quotePowerShellArgument };
 
 export function getUpdateApplyCommandFlavor(
   platform: NodeJS.Platform = process.platform,
@@ -176,28 +179,25 @@ export function getUpdateApplyCommandFlavor(
   return platform === "win32" ? "PowerShell" : "POSIX shell";
 }
 
-function packageExecPrefix(packageManager: string | undefined): string {
-  if (packageManager === "bun") return "bunx";
-  if (packageManager === "pnpm") return "pnpm dlx";
-  if (packageManager === "yarn") return "yarn dlx";
-  return "npx --yes";
-}
-
 export function getUpdateApplyCommand(
   plan: UpgradePlan,
   platform: NodeJS.Platform = process.platform,
   packageManager?: string,
 ): string | null {
-  if (!plan.hasBaseline || plan.manifestVersion !== "1") return null;
+  if (!plan.hasBaseline || plan.manifestVersion !== "2") return null;
   const quoteArgument = platform === "win32" ? quotePowerShellArgument : quotePosixShellArgument;
+  const acknowledgement = plan.lifecycle.provenance.verified
+    ? ""
+    : " --acknowledge-unproven-manifest-v1";
   return (
-    `${packageExecPrefix(packageManager)} create-better-fullstack@${getLatestCLIVersion()} update ${quoteArgument(plan.projectDir)} --apply ` +
-    `--review-token ${getUpgradePlanDigest(plan)} ` +
-    "--acknowledge-unproven-manifest-v1"
+    `${getPackageExecPrefix(packageManager)} create-better-fullstack@${getLatestCLIVersion()} update ${quoteArgument(plan.projectDir)} --apply ` +
+    `--review-token ${getUpgradePlanDigest(plan)}` +
+    acknowledgement
   );
 }
 
 export async function updateCommand(input: UpdateCommandInput): Promise<void> {
+  const startedAt = Date.now();
   const projectDir = path.resolve(input.projectDir || process.cwd());
   const json = input.json ?? false;
   const apply = input.apply ?? false;
@@ -206,33 +206,91 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
   const recordBaseline = input.recordBaseline ?? false;
   const acknowledgeUnprovenManifestV1 = input.acknowledgeUnprovenManifestV1 ?? false;
   const reviewToken = input.reviewToken;
+  const recover = input.recover;
+  const mode = recover
+    ? "recover"
+    : recordBaseline
+      ? "record-baseline"
+      : apply
+        ? "apply"
+        : check
+          ? "check"
+          : "dry-run";
+
+  await trackCommand("update", "started", { source: "cli-flags", mode });
+  const fail = async (error: string): Promise<never> => {
+    await trackCommand("update", "failed", {
+      source: "cli-flags",
+      mode,
+      durationMs: Date.now() - startedAt,
+      errorName: "UpdateError",
+      issueCount: 1,
+    });
+    await flushTelemetry();
+    return failUpdate(projectDir, error, json);
+  };
+
+  if (recover) {
+    if (apply || check || dryRun || recordBaseline || reviewToken) {
+      return fail(
+        "`--recover` cannot be combined with planning, apply, check, baseline, or review-token flags.",
+      );
+    }
+    try {
+      const metadata = await recoverProjectTransaction(projectDir, recover);
+      const lifecycle = lifecycleResult({
+        operation: "recover",
+        status: "recovered",
+        projectDir,
+        changes: { patched: metadata.files.length },
+        provenance: { source: null, target: null, verified: false },
+        recovery: { available: false, transactionId: metadata.id },
+        nextActions: ["Run `create-better-fullstack check` to verify every generated target."],
+      });
+      await trackCommand("update", "succeeded", {
+        source: "cli-flags",
+        mode,
+        changedFileCount: metadata.files.length,
+        durationMs: Date.now() - startedAt,
+      });
+      if (json) {
+        console.log(JSON.stringify({ ok: true, transaction: metadata, lifecycle }, null, 2));
+        return;
+      }
+      renderTitle();
+      intro(pc.magenta("Recover lifecycle transaction"));
+      log.success(
+        pc.green(`Recovered ${formatCount(metadata.files.length, "file")} from ${metadata.id}.`),
+      );
+      outro(pc.magenta("Recovery complete. Run `create-better-fullstack check` next."));
+      return;
+    } catch (error) {
+      return fail(error instanceof Error ? error.message : String(error));
+    }
+  }
 
   if (dryRun && apply) {
-    return failUpdate(projectDir, "`--dry-run` cannot be combined with `--apply`.", json);
+    return fail("`--dry-run` cannot be combined with `--apply`.");
   }
   if (dryRun && recordBaseline) {
-    return failUpdate(projectDir, "`--dry-run` cannot be combined with `--record-baseline`.", json);
+    return fail("`--dry-run` cannot be combined with `--record-baseline`.");
   }
   if (check && apply) {
-    return failUpdate(projectDir, "`--check` cannot be combined with `--apply`.", json);
+    return fail("`--check` cannot be combined with `--apply`.");
   }
   if (check && recordBaseline) {
-    return failUpdate(projectDir, "`--check` cannot be combined with `--record-baseline`.", json);
+    return fail("`--check` cannot be combined with `--record-baseline`.");
   }
   if (apply && recordBaseline) {
-    return failUpdate(projectDir, "`--apply` cannot be combined with `--record-baseline`.", json);
+    return fail("`--apply` cannot be combined with `--record-baseline`.");
   }
   const authorizationError = getUpdateApplyAuthorizationError(input);
-  if (authorizationError) return failUpdate(projectDir, authorizationError, json);
+  if (authorizationError) return fail(authorizationError);
 
   const btsConfig = await readBtsConfig(projectDir);
   if (!btsConfig) {
     const message = `No Better Fullstack project found in ${projectDir}. Make sure bts.jsonc exists.`;
-    if (json) {
-      console.log(JSON.stringify({ projectDir, ok: false, error: message }, null, 2));
-      process.exit(1);
-    }
-    handleError(message);
+    return fail(message);
   }
 
   if (recordBaseline) {
@@ -244,6 +302,7 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
         source: "cli-flags",
         mode: "record-baseline",
         fileCount: manifest ? Object.keys(manifest.hashes).length : 0,
+        durationMs: Date.now() - startedAt,
       },
       { ecosystem: btsConfig.ecosystem },
     );
@@ -275,7 +334,7 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
     );
     outro(
       pc.magenta(
-        "Manual-adoption baseline recorded. It does not prove generator lineage; destructive apply still requires exact review and has no built-in recovery.",
+        "Manual-adoption manifest v2 recorded. Its origin remains unverified, so apply still requires explicit acknowledgement; transactional recovery is available.",
       ),
     );
     return;
@@ -283,17 +342,19 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
 
   let plan: UpgradePlan;
   let applied: { patched: string[]; added: string[]; merged: string[] } | undefined;
+  let recoveryId: string | undefined;
   if (apply) {
     const result = await applyScaffoldUpgrade(projectDir, {
       expectedPlanDigest: reviewToken,
       acknowledgeUnprovenManifestV1,
     });
-    if (!result.success) return failUpdate(projectDir, result.error, json);
+    if (!result.success) return fail(result.error);
     plan = result;
     applied = result.applied;
+    recoveryId = result.recoveryId;
   } else {
     const result = await planScaffoldUpgrade(projectDir);
-    if (!result.success) return failUpdate(projectDir, result.error, json);
+    if (!result.success) return fail(result.error);
     plan = result;
     applied = undefined;
   }
@@ -303,7 +364,7 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
     check && plan.actionable.length > 0 ? "failed" : "succeeded",
     {
       source: "cli-flags",
-      mode: apply ? "apply" : check ? "check" : "dry-run",
+      mode,
       changedFileCount:
         (applied?.patched.length ?? 0) +
         (applied?.added.length ?? 0) +
@@ -311,6 +372,7 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
       conflictCount: plan.conflicts.length,
       manualReviewCount: plan.manual.length,
       issueCount: plan.actionable.length,
+      durationMs: Date.now() - startedAt,
     },
     { ecosystem: btsConfig.ecosystem, hasBaseline: plan.hasBaseline },
   );
@@ -323,6 +385,7 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
           ok: true,
           mode: apply ? "apply" : check ? "check" : "dry-run",
           applied,
+          recoveryId,
         },
         null,
         2,
@@ -365,6 +428,13 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
         ),
       );
     }
+    if (recoveryId) {
+      log.info(
+        pc.cyan(
+          `Recovery point: ${recoveryId}. Restore it with \`${getProjectRecoveryCommand(projectDir, recoveryId, process.platform, btsConfig?.packageManager)}\`.`,
+        ),
+      );
+    }
     outro(pc.magenta("Update complete."));
     return;
   }
@@ -383,7 +453,7 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
         `${
           applyCommand
             ? `After creating a recovery point, run this ${commandFlavor} command: \`${applyCommand}\``
-            : "Record and review a manifest-v1 baseline before applying"
+            : "Record and review a manifest-v2 baseline before applying"
         } to patch ${formatCount(plan.drift.length, "drift file")}, ` +
           `apply ${formatCount(plan.merged.length, "structured merge")}, and add ${formatCount(
             plan.newFiles.length,

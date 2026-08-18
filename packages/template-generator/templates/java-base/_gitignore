@@ -37,3 +37,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# Better Fullstack recovery snapshots
+.bts/recovery

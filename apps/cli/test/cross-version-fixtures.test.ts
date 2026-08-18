@@ -128,9 +128,9 @@ describe("cross-version fixture provenance", () => {
       expect(plan.applyAllowed).toBe(false);
       expect(plan.reviewToken).toBeUndefined();
       expect(plan.blockers).toContain(
-        "A bts.lock.json manifest v1 baseline is required before MCP apply.",
+        "A versioned bts.lock.json baseline is required before MCP apply.",
       );
-      expect(plan.guarantee).toBe("unproven-manifest-v1-plan-only");
+      expect(plan.guarantee).toBe("unverified-origin-recoverable");
     }
   });
 });

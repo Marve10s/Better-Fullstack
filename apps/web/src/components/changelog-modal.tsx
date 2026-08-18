@@ -33,20 +33,15 @@ export function ChangelogModal({ open, onOpenChange }: ChangelogModalProps) {
   if (!latestChangelogRelease) return null;
 
   const latestRelease = getLocalizedChangelogRelease(latestChangelogRelease);
-  const latestDate = formatReleaseDate(
-    latestRelease.publishedAt,
-    latestRelease.displayDate,
-  );
+  const latestDate = formatReleaseDate(latestRelease.publishedAt, latestRelease.displayDate);
   const latestTitle = latestRelease.title ?? m.changelogLatestRelease();
-  const latestSummary =
-    latestRelease.summary ??
-    m.changelogLatestPublished({ date: latestDate });
+  const latestSummary = latestRelease.summary ?? m.changelogLatestPublished({ date: latestDate });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[min(90vh,48rem)] gap-0 overflow-hidden p-0 sm:max-w-2xl">
+      <DialogContent className="flex max-h-[min(90vh,48rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl">
         {latestRelease.image ? (
-          <div className="h-40 overflow-hidden border-border border-b sm:h-52">
+          <div className="h-40 shrink-0 overflow-hidden border-border border-b sm:h-52">
             <img
               src={latestRelease.image.src}
               alt={latestRelease.image.alt}
@@ -54,15 +49,13 @@ export function ChangelogModal({ open, onOpenChange }: ChangelogModalProps) {
             />
           </div>
         ) : null}
-        <div className="min-h-0 overflow-y-auto px-5 py-5 sm:px-6">
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">
           <DialogHeader>
             <div className="flex flex-wrap items-center gap-2">
               <span className="border border-border px-1.5 py-0.5 font-mono font-medium text-[10px] text-foreground">
                 {latestRelease.version}
               </span>
-              <span className="text-muted-foreground text-xs">
-                {latestDate}
-              </span>
+              <span className="text-muted-foreground text-xs">{latestDate}</span>
             </div>
             <DialogTitle className="text-base">{latestTitle}</DialogTitle>
             <DialogDescription>{latestSummary}</DialogDescription>

@@ -3,9 +3,11 @@ import path from "node:path";
 import pc from "picocolors";
 
 import type { AddInput, Addons, BetterTStackConfig, ProjectConfig } from "../../types";
+import type { LifecycleResult } from "../../utils/lifecycle-contract";
 
 import { getDefaultConfig } from "../../constants";
-import { getAddonsToAdd } from "../../prompts/addons";
+import { getCapabilityPartSpecsToAdd } from "../../prompts/addons";
+import { getToolingCapability } from "../../types";
 import { maybeShowTelemetryNotice, type TelemetrySource, trackEvent } from "../../utils/analytics";
 import { readBtsConfig } from "../../utils/bts-config";
 import { isSilent, runWithContextAsync } from "../../utils/context";
@@ -13,6 +15,7 @@ import { applyDependencyVersionChannel } from "../../utils/dependency-version-ch
 import { CLIError, UserCancelledError } from "../../utils/errors";
 import { renderTitle } from "../../utils/render-title";
 import {
+  ADDONS_REQUIRING_IMPERATIVE_SETUP,
   isGitleaksSetupComplete,
   isLinterLefthookSetupComplete,
   setupAddons,
@@ -31,10 +34,22 @@ export interface AddResult {
   projectDir: string;
   error?: string;
   setupWarnings?: string[];
+  lifecycle?: LifecycleResult;
+  recoveryId?: string;
+  plan?: StackUpdatePlan;
 }
 
 const ADD_CONTROL_KEYS = new Set(["projectDir", "install", "dryRun"]);
+const WORKSPACE_RUNNERS = new Set<Addons>(["turborepo", "nx", "vite-plus"]);
 
+function getRequestedCapabilityIds(input: AddInput): Addons[] {
+  const legacy = (input.addons ?? []).filter((toolId): toolId is Addons => toolId !== "none");
+  const graph = (input.part ?? []).flatMap((spec) => {
+    const toolId = spec.split(":")[2];
+    return toolId && getToolingCapability(toolId) ? [toolId as Addons] : [];
+  });
+  return [...new Set([...legacy, ...graph])];
+}
 function buildStackUpdateRequest(input: AddInput): Record<string, unknown> {
   const request: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(input as Record<string, unknown>)) {
@@ -51,7 +66,7 @@ async function getAddonsToSetup(
   currentConfig: BetterTStackConfig,
   projectDir: string,
 ): Promise<Addons[]> {
-  const requestedAddons = (input.addons ?? []).filter((addon): addon is Addons => addon !== "none");
+  const requestedAddons = getRequestedCapabilityIds(input);
   const existingAddons = new Set(currentConfig.addons ?? []);
   const addonsToSetup = requestedAddons.filter((addon) => !existingAddons.has(addon));
 
@@ -129,6 +144,14 @@ function logStackUpdateSummary(plan: StackUpdatePlan, dryRun: boolean) {
   if (dependencyCount > 0) {
     log.info(pc.dim(`Dependencies: ${formatCount(dependencyCount, "change")}`));
   }
+  const versionChannelRewriteCount = Object.keys(plan.versionChannelRewrites).length;
+  if (versionChannelRewriteCount > 0) {
+    log.info(
+      pc.dim(
+        `Version channel: ${formatCount(versionChannelRewriteCount, "package manifest rewrite")}`,
+      ),
+    );
+  }
 
   const envCount = countEnvChanges(plan);
   if (envCount > 0) {
@@ -160,6 +183,10 @@ function logStackUpdateSummary(plan: StackUpdatePlan, dryRun: boolean) {
   for (const blocker of plan.manualReviewBlockers) {
     log.warn(pc.yellow(`Manual review: ${blocker}`));
   }
+}
+
+function appendRecoveryNote(lifecycle: LifecycleResult, note: string | undefined): LifecycleResult {
+  return note ? { ...lifecycle, nextActions: [...lifecycle.nextActions, note] } : lifecycle;
 }
 
 function buildAddonSetupConfig(
@@ -219,14 +246,24 @@ async function runStackUpdateAdd(
   request: Record<string, unknown>,
 ): Promise<AddResult> {
   const dryRun = input.dryRun ?? false;
-  const requestedAddons = (input.addons ?? []).filter(
-    (addon): addon is Addons => addon !== "none",
-  );
+  const requestedAddons = getRequestedCapabilityIds(input);
   const existingAddons = new Set(currentConfig.addons ?? []);
+  const requestedRunner = requestedAddons.find((addon) => WORKSPACE_RUNNERS.has(addon));
+  const replacesWorkspaceRunner =
+    requestedRunner !== undefined &&
+    [...existingAddons].some((addon) => WORKSPACE_RUNNERS.has(addon) && addon !== requestedRunner);
+  const unsupportedRuntimeAddons = requestedAddons.filter(
+    (addon) => ADDONS_REQUIRING_IMPERATIVE_SETUP.has(addon) && !existingAddons.has(addon),
+  );
+  if (unsupportedRuntimeAddons.length > 0) {
+    throw new CLIError(
+      `Cannot transactionally add tooling that requires imperative setup: ${unsupportedRuntimeAddons.join(", ")}. Select it when creating a project so every generated file is included in the scaffold baseline.`,
+    );
+  }
   const addonsToRepair = await getAddonsToSetup(input, currentConfig, projectDir);
   const isExistingAddonRepair =
     !dryRun &&
-    Object.keys(request).every((key) => key === "addons") &&
+    Object.keys(request).every((key) => key === "addons" || key === "part") &&
     requestedAddons.length > 0 &&
     requestedAddons.every((addon) => existingAddons.has(addon)) &&
     addonsToRepair.length > 0;
@@ -236,7 +273,7 @@ async function runStackUpdateAdd(
     const setupWarnings = await setupAddons(setupConfig, addonsToRepair);
     await applyDependencyVersionChannel(projectDir, setupConfig.versionChannel);
     if (!isSilent()) {
-      log.success(pc.green(`Repaired addon setup: ${addonsToRepair.join(", ")}`));
+      log.success(pc.green(`Repaired tooling setup: ${addonsToRepair.join(", ")}`));
       outro(pc.magenta("Project updated successfully!"));
     }
     return {
@@ -248,8 +285,15 @@ async function runStackUpdateAdd(
   }
 
   const result = dryRun
-    ? await planStackUpdate(projectDir, request)
-    : await applyStackUpdate(projectDir, request);
+    ? await planStackUpdate(projectDir, request, {
+        includeVersionChannelPaths: true,
+        removeObsoleteGeneratedArtifacts: replacesWorkspaceRunner,
+      })
+    : await applyStackUpdate(projectDir, request, {
+        operation: "add",
+        applyVersionChannel: true,
+        removeObsoleteGeneratedArtifacts: replacesWorkspaceRunner,
+      });
 
   if (!result.success) {
     throw new CLIError(result.error);
@@ -265,63 +309,94 @@ async function runStackUpdateAdd(
       success: true,
       addedAddons: [],
       projectDir,
+      plan: result,
     };
   }
 
-  const addonsToSetup = await getAddonsToSetup(input, currentConfig, projectDir);
-  const setupConfig = buildAddonSetupConfig(projectDir, projectName, currentConfig, result);
-  const setupWarnings =
-    addonsToSetup.length > 0 ? await setupAddons(setupConfig, addonsToSetup) : [];
-  await applyDependencyVersionChannel(projectDir, result.proposedConfig.versionChannel);
-
-  let installFailed = false;
-  if (input.install) {
-    if (
-      result.proposedConfig.ecosystem === "typescript" ||
-      result.proposedConfig.ecosystem === "react-native"
-    ) {
-      const installResult = await installDependencies({
-        projectDir,
-        packageManager: setupConfig.packageManager,
-      });
-      installFailed = !installResult.success;
-    } else if (!isSilent()) {
-      log.warn(
-        pc.yellow(
-          `Automatic --install is only supported for JavaScript package-manager installs. Run '${result.installCommand}' instead.`,
-        ),
-      );
+  let recoveryNote: string | undefined;
+  try {
+    const addonsToSetup = await getAddonsToSetup(input, currentConfig, projectDir);
+    const setupConfig = buildAddonSetupConfig(projectDir, projectName, currentConfig, result);
+    const setupWarnings: string[] = [];
+    let installFailed = false;
+    if (input.install) {
+      if (
+        result.proposedConfig.ecosystem === "typescript" ||
+        result.proposedConfig.ecosystem === "react-native"
+      ) {
+        const installResult = await installDependencies({
+          projectDir,
+          packageManager: setupConfig.packageManager,
+        });
+        installFailed = !installResult.success;
+        recoveryNote = `Recovery restores generated files only. The lockfile this install wrote is not rolled back, so re-run '${result.installCommand}' after recovering.`;
+      } else if (!isSilent()) {
+        log.warn(
+          pc.yellow(
+            `Automatic --install is only supported for JavaScript package-manager installs. Run '${result.installCommand}' instead.`,
+          ),
+        );
+      }
     }
+
+    if (!isSilent()) {
+      if (addonsToSetup.length > 0) {
+        log.success(pc.green(`Successfully added: ${addonsToSetup.join(", ")}`));
+      } else if (requestedAddons.length > 0) {
+        log.info(pc.dim("No new tooling capabilities selected."));
+      }
+      log.success(pc.green("Stack update applied."));
+      for (const warning of setupWarnings) {
+        log.warn(pc.yellow(warning));
+      }
+      if (!input.install) {
+        log.info(pc.yellow(`Run '${result.installCommand}' to install new dependencies.`));
+      } else if (installFailed) {
+        log.warn(
+          pc.yellow(
+            `Dependency installation failed. Run '${result.installCommand}' after resolving the error above.`,
+          ),
+        );
+      }
+      if (result.lifecycle.recovery.command) {
+        log.info(pc.dim(`Recovery: ${result.lifecycle.recovery.command}`));
+        if (recoveryNote) {
+          log.warn(pc.yellow(recoveryNote));
+        }
+      }
+      outro(pc.magenta("Project updated successfully!"));
+    }
+
+    return {
+      success: true,
+      addedAddons: addonsToSetup,
+      projectDir,
+      setupWarnings: setupWarnings.length > 0 ? setupWarnings : undefined,
+      lifecycle: appendRecoveryNote(result.lifecycle, recoveryNote),
+      recoveryId: result.recoveryId,
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (!isSilent()) {
+      if (result.lifecycle.recovery.command) {
+        log.error(
+          pc.red(`Post-update setup failed. Recovery: ${result.lifecycle.recovery.command}`),
+        );
+        if (recoveryNote) {
+          log.warn(pc.yellow(recoveryNote));
+        }
+      }
+      throw new CLIError(message);
+    }
+    return {
+      success: false,
+      addedAddons: [],
+      projectDir,
+      error: message,
+      lifecycle: appendRecoveryNote(result.lifecycle, recoveryNote),
+      recoveryId: result.recoveryId,
+    };
   }
-
-  if (!isSilent()) {
-    if (addonsToSetup.length > 0) {
-      log.success(pc.green(`Successfully added: ${addonsToSetup.join(", ")}`));
-    } else if ((input.addons ?? []).some((addon) => addon !== "none")) {
-      log.info(pc.dim("No new addons selected."));
-    }
-    log.success(pc.green("Stack update applied."));
-    for (const warning of setupWarnings) {
-      log.warn(pc.yellow(warning));
-    }
-    if (!input.install) {
-      log.info(pc.yellow(`Run '${result.installCommand}' to install new dependencies.`));
-    } else if (installFailed) {
-      log.warn(
-        pc.yellow(
-          `Dependency installation failed. Run '${result.installCommand}' after resolving the error above.`,
-        ),
-      );
-    }
-    outro(pc.magenta("Project updated successfully!"));
-  }
-
-  return {
-    success: true,
-    addedAddons: addonsToSetup,
-    projectDir,
-    setupWarnings: setupWarnings.length > 0 ? setupWarnings : undefined,
-  };
 }
 
 // Keys that describe an addon/deploy-only `add` — anything else in the
@@ -343,7 +418,15 @@ async function trackAddEvent(
       delete stackPayload.addons;
     }
   }
-  const eventType = Object.keys(request).some((key) => !ADD_FEATURE_KEYS.has(key))
+  const toolingPartAddition =
+    (input.part?.length ?? 0) > 0 &&
+    input.part?.every((spec) => {
+      const toolId = spec.split(":")[2];
+      return toolId !== undefined && getToolingCapability(toolId) !== undefined;
+    });
+  const eventType = Object.keys(request).some(
+    (key) => !ADD_FEATURE_KEYS.has(key) && (key !== "part" || !toolingPartAddition),
+  )
     ? ("stack_updated" as const)
     : ("feature_added" as const);
   const source =
@@ -450,29 +533,10 @@ async function addHandlerInternal(input: AddInput): Promise<AddResult> {
     return runStackUpdateAdd(input, projectDir, projectName, btsConfig, stackUpdateRequest);
   }
 
-  const existingAddons = btsConfig.addons || [];
-  let addonsToAdd: Addons[] = [];
-
-  if (input.addons && input.addons.length > 0) {
-    addonsToAdd = input.addons.filter(
-      (addon): addon is Addons => addon !== "none" && !existingAddons.includes(addon),
-    );
-  } else {
-    const selectedAddons = await getAddonsToAdd(
-      btsConfig.frontend || [],
-      existingAddons,
-      btsConfig.auth,
-      btsConfig.backend,
-      btsConfig.runtime,
-      btsConfig.api ?? "none",
-      btsConfig,
-    );
-    addonsToAdd = selectedAddons.filter((addon) => addon !== "none");
-  }
-
-  if (addonsToAdd.length === 0) {
+  const capabilityPartSpecs = await getCapabilityPartSpecsToAdd(btsConfig);
+  if (capabilityPartSpecs.length === 0) {
     if (!isSilent()) {
-      log.info(pc.dim("No new addons selected."));
+      log.info(pc.dim("No new tooling capabilities selected."));
       outro(pc.magenta("Nothing to add."));
     }
     return {
@@ -483,14 +547,11 @@ async function addHandlerInternal(input: AddInput): Promise<AddResult> {
   }
 
   if (!isSilent()) {
-    log.info(pc.cyan(`Adding addons: ${addonsToAdd.join(", ")}`));
+    log.info(pc.cyan(`Adding tooling: ${capabilityPartSpecs.join(", ")}`));
   }
 
-  // Interactive additions must use the graph-aware update pipeline too. This
-  // preserves the actual backend projection and re-renders dependent addons
-  // such as DevContainer when infrastructure like Kong is added.
-  const interactiveInput: AddInput = { ...input, addons: addonsToAdd };
+  const interactiveInput: AddInput = { ...input, part: capabilityPartSpecs };
   return runStackUpdateAdd(interactiveInput, projectDir, projectName, btsConfig, {
-    addons: addonsToAdd,
+    part: capabilityPartSpecs,
   });
 }

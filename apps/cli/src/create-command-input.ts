@@ -131,6 +131,7 @@ import {
   PythonValidationSchema,
   PythonWebFrameworkSchema,
   RateLimitSchema,
+  BotProtectionSchema,
   RealtimeSchema,
   RuntimeSchema,
   RustApiSchema,
@@ -158,6 +159,7 @@ import {
   ShadcnRadiusSchema,
   ShadcnStyleSchema,
   StateManagementSchema,
+  ProjectShapeSchema,
   TemplateSchema,
   TestingSchema,
   UILibrarySchema,
@@ -168,6 +170,9 @@ import {
 
 export const CreateCommandOptionsSchema = z.object({
   template: TemplateSchema.optional().describe("Use a predefined template"),
+  shape: ProjectShapeSchema.optional().describe(
+    "Start from a project shape (fullstack, frontend, backend, or mobile)",
+  ),
   fromHistory: z
     .number()
     .optional()
@@ -224,6 +229,7 @@ export const CreateCommandOptionsSchema = z.object({
   cms: CMSSchema.optional().describe("Headless CMS solution"),
   caching: CachingSchema.optional().describe("Caching solution"),
   rateLimit: RateLimitSchema.optional().describe("Rate limiting solution"),
+  botProtection: BotProtectionSchema.optional().describe("Bot verification provider"),
   i18n: I18nSchema.optional().describe("Internationalization (i18n) library"),
   search: SearchSchema.optional().describe("Search engine solution"),
   vectorDb: VectorDbSchema.optional().describe(

@@ -15770,7 +15770,7 @@ export default app;
     "typescript": "catalog:",
     "@snapshot-i18n-paraglide-tanstack-router/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.101.4",
-    "@inlang/paraglide-js": "^2.24.0"
+    "@inlang/paraglide-js": "^2.23.2"
   }
 }
 "

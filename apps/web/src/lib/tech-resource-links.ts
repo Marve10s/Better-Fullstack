@@ -6,6 +6,10 @@ type TechResourceLinks = {
 type LinkMap = Record<string, TechResourceLinks>;
 
 const BASE_LINKS: LinkMap = {
+  "vercel-analytics": {
+    docsUrl: "https://vercel.com/docs/analytics/quickstart",
+    githubUrl: "https://github.com/vercel/analytics",
+  },
   "blazor-webassembly": {
     docsUrl: "https://learn.microsoft.com/aspnet/core/blazor/hosting-models",
     githubUrl: "https://github.com/dotnet/aspnetcore",
@@ -641,6 +645,14 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://upstash.com/docs/redis/sdks/ratelimit-ts/overview",
     githubUrl: "https://github.com/upstash/ratelimit-js",
   },
+  botid: {
+    docsUrl: "https://vercel.com/docs/botid",
+    githubUrl: "https://github.com/vercel/botid",
+  },
+  turnstile: {
+    docsUrl: "https://developers.cloudflare.com/turnstile/",
+    githubUrl: "https://github.com/marsidev/react-turnstile",
+  },
   polar: { docsUrl: "https://docs.polar.sh/", githubUrl: "https://github.com/polarsource/polar" },
   stripe: {
     docsUrl: "https://docs.stripe.com/",
@@ -1120,6 +1132,10 @@ const BASE_LINKS: LinkMap = {
   turborepo: {
     docsUrl: "https://turbo.build/repo/docs",
     githubUrl: "https://github.com/vercel/turborepo",
+  },
+  "vite-plus": {
+    docsUrl: "https://viteplus.dev/guide/",
+    githubUrl: "https://github.com/voidzero-dev/vite-plus",
   },
   pwa: { docsUrl: "https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps" },
   tauri: { docsUrl: "https://tauri.app/start/", githubUrl: "https://github.com/tauri-apps/tauri" },
@@ -1894,6 +1910,12 @@ const BASE_LINKS: LinkMap = {
 };
 
 const CATEGORY_LINKS: LinkMap = {
+  "toolchainProfile:modular": {
+    docsUrl: "https://better-fullstack.dev/docs/sections/quality-and-tooling/",
+  },
+  "codeQualityProfile:eslint-prettier": {
+    docsUrl: "https://better-fullstack.dev/docs/sections/quality-and-tooling/",
+  },
   // ─── React Native optional Expo modules ───────────────────────────────────
   ...Object.fromEntries(
     [

@@ -8,10 +8,239 @@ import {
   getApiFrontendCompatibilityIssue,
   getCompatibleFormLibraries,
   getDisabledReason,
+  isAnalyticsFrontendSupported,
 } from "../src/compatibility";
 import { DEFAULT_STACK_SELECTION } from "../src/stack-translation";
 
 describe("compatibility issue helpers", () => {
+  it("keeps bot protection within its generated auth and frontend boundaries", () => {
+    const nextStack = { ...DEFAULT_STACK_SELECTION, webFrontend: ["next"] };
+    const botIdStack = { ...nextStack, backend: "self-next" };
+    const viteStack = { ...DEFAULT_STACK_SELECTION, webFrontend: ["react-vite"] };
+
+    expect(getDisabledReason(botIdStack, "botProtection", "botid")).toBeNull();
+    expect(getDisabledReason(nextStack, "botProtection", "botid")).toContain(
+      "self-hosted Next.js backend",
+    );
+    expect(getDisabledReason(viteStack, "botProtection", "botid")).toContain("Next.js frontends");
+    expect(getDisabledReason(viteStack, "botProtection", "turnstile")).toBeNull();
+    expect(
+      getDisabledReason(
+        { ...botIdStack, webDeploy: "netlify" },
+        "botProtection",
+        "botid",
+      ),
+    ).toContain("Vercel deployment");
+    expect(
+      getDisabledReason(
+        { ...botIdStack, botProtection: "botid" },
+        "webFrontend",
+        "svelte",
+      ),
+    ).toContain("Next.js frontends");
+    expect(
+      getDisabledReason(
+        { ...botIdStack, botProtection: "botid" },
+        "webDeploy",
+        "netlify",
+      ),
+    ).toContain("Vercel deployment");
+    expect(
+      getDisabledReason(
+        { ...nextStack, auth: "none" },
+        "botProtection",
+        "turnstile",
+      ),
+    ).toContain("Better Auth");
+    expect(
+      getDisabledReason(
+        { ...nextStack, backend: "none" },
+        "botProtection",
+        "turnstile",
+      ),
+    ).toContain("server-side verification");
+    expect(
+      getDisabledReason(
+        { ...nextStack, backend: "convex" },
+        "botProtection",
+        "turnstile",
+      ),
+    ).toContain("Convex");
+    expect(
+      getDisabledReason(
+        { ...botIdStack, backend: "convex" },
+        "botProtection",
+        "botid",
+      ),
+    ).toContain("self-hosted Next.js backend");
+    expect(
+      getDisabledReason(
+        { ...nextStack, webFrontend: ["svelte"] },
+        "botProtection",
+        "turnstile",
+      ),
+    ).toContain("React web frontends only");
+    expect(
+      getDisabledReason(
+        { ...nextStack, webFrontend: ["redwood"] },
+        "botProtection",
+        "turnstile",
+      ),
+    ).toContain("React web frontends only");
+    expect(
+      getDisabledReason(
+        { ...botIdStack, webFrontend: ["vinext"] },
+        "botProtection",
+        "botid",
+      ),
+    ).toContain("Next.js frontends");
+    for (const botProtection of ["botid", "turnstile"] as const) {
+      expect(
+        getDisabledReason(
+          { ...botIdStack, nativeFrontend: ["native-bare"] },
+          "botProtection",
+          botProtection,
+        ),
+      ).toContain("native frontend");
+      expect(
+        analyzeStackCompatibility({
+          ...botIdStack,
+          nativeFrontend: ["native-bare"],
+          botProtection,
+        }).adjustedStack?.botProtection,
+      ).toBe("none");
+    }
+    expect(
+      getDisabledReason(
+        { ...DEFAULT_STACK_SELECTION, ecosystem: "go", webFrontend: ["none"] },
+        "botProtection",
+        "turnstile",
+      ),
+    ).toContain("TypeScript");
+
+    expect(
+      analyzeStackCompatibility({
+        ...DEFAULT_STACK_SELECTION,
+        webFrontend: ["svelte"],
+        botProtection: "botid",
+      }).adjustedStack?.botProtection,
+    ).toBe("none");
+    expect(
+      analyzeStackCompatibility({
+        ...botIdStack,
+        backend: "hono",
+        botProtection: "botid",
+      }).adjustedStack?.botProtection,
+    ).toBe("none");
+    expect(
+      evaluateCompatibility({
+        ...DEFAULT_STACK_SELECTION,
+        webFrontend: ["svelte"],
+        botProtection: "botid",
+      }).issues.map((issue) => issue.category),
+    ).toContain("botProtection");
+  });
+
+  it("keeps Turnstile off vinext, which generates no Better Auth forms to wire it into", () => {
+    const vinextStack = {
+      ...DEFAULT_STACK_SELECTION,
+      webFrontend: ["vinext"],
+      auth: "better-auth",
+      backend: "self-vinext",
+    };
+
+    expect(getDisabledReason(vinextStack, "botProtection", "turnstile")).toContain(
+      "React web frontends only",
+    );
+    expect(
+      analyzeStackCompatibility({ ...vinextStack, botProtection: "turnstile" }).adjustedStack
+        ?.botProtection,
+    ).toBe("none");
+    expect(
+      evaluateCompatibility({ ...vinextStack, botProtection: "turnstile" }).issues.map(
+        (issue) => issue.category,
+      ),
+    ).toContain("botProtection");
+  });
+
+  it("normalizes any analytics provider that has no template for the frontend", () => {
+    // Only vercel-analytics was normalized before; the rest were left set and
+    // materialized as deps and env vars that nothing consumed.
+    const { changes, adjustedStack } = analyzeStackCompatibility({
+      ...DEFAULT_STACK_SELECTION,
+      webFrontend: ["vue"],
+      analytics: "plausible",
+    });
+
+    expect(adjustedStack.analytics).toBe("none");
+    expect(changes.some((change) => change.category === "analytics")).toBe(true);
+  });
+
+  it("offers GA4 on every frontend that generates a web package", () => {
+    const ga4Frontends = [
+      "tanstack-router",
+      "react-router",
+      "react-vite",
+      "vanilla-vite",
+      "vue",
+      "tanstack-start",
+      "next",
+      "vinext",
+      "nuxt",
+      "svelte",
+      "solid",
+      "solid-start",
+      "astro",
+      "qwik",
+      "angular",
+      "redwood",
+      "fresh",
+    ] as const;
+
+    for (const webFrontend of ga4Frontends) {
+      expect(
+        isAnalyticsFrontendSupported("ga4", webFrontend),
+      ).toBe(true);
+    }
+  });
+
+  it("offers Vercel Analytics only where its generated mount is wired", () => {
+    expect(
+      getDisabledReason(
+        { ...DEFAULT_STACK_SELECTION, webFrontend: ["next"] },
+        "analytics",
+        "vercel-analytics",
+      ),
+    ).toBeNull();
+    expect(
+      getDisabledReason(
+        { ...DEFAULT_STACK_SELECTION, webFrontend: ["vanilla-vite"] },
+        "analytics",
+        "vercel-analytics",
+      ),
+    ).toContain("not yet mounted");
+
+    const unsupported = {
+      ...DEFAULT_STACK_SELECTION,
+      webFrontend: ["vanilla-vite" as const],
+      analytics: "vercel-analytics" as const,
+    };
+    expect(getDisabledReason(unsupported, "webFrontend", "qwik")).toContain(
+      "does not yet mount",
+    );
+    expect(analyzeStackCompatibility(unsupported).adjustedStack?.analytics).toBe("none");
+
+    const mixed = {
+      ...DEFAULT_STACK_SELECTION,
+      webFrontend: ["next", "qwik"],
+      analytics: "vercel-analytics" as const,
+    };
+    expect(getDisabledReason(mixed, "analytics", "vercel-analytics")).toContain(
+      "not yet mounted",
+    );
+    expect(analyzeStackCompatibility(mixed).adjustedStack?.analytics).toBe("none");
+  });
+
   it("keeps SigNoz off stacks without a generated server target", () => {
     for (const backend of ["none", "convex"] as const) {
       const stack = {
@@ -62,9 +291,7 @@ describe("compatibility issue helpers", () => {
       };
 
       expect(analyzeStackCompatibility(stack).adjustedStack?.observability).toBe("none");
-      expect(getDisabledReason(stack, "observability", "signoz")).toContain(
-        "not yet bootstrapped",
-      );
+      expect(getDisabledReason(stack, "observability", "signoz")).toContain("not yet bootstrapped");
     }
   });
 
@@ -85,18 +312,10 @@ describe("compatibility issue helpers", () => {
       "Cloudflare-hosted fullstack apps",
     );
     expect(
-      getDisabledReason(
-        { ...cloudflareSelfStack, webDeploy: "none" },
-        "webDeploy",
-        "cloudflare",
-      ),
+      getDisabledReason({ ...cloudflareSelfStack, webDeploy: "none" }, "webDeploy", "cloudflare"),
     ).toContain("Cloudflare-hosted fullstack apps");
     expect(
-      getDisabledReason(
-        { ...cloudflareSelfStack, backend: "self" },
-        "observability",
-        "signoz",
-      ),
+      getDisabledReason({ ...cloudflareSelfStack, backend: "self" }, "observability", "signoz"),
     ).toContain("Cloudflare-hosted fullstack apps");
   });
 
@@ -118,6 +337,42 @@ describe("compatibility issue helpers", () => {
         "knip",
       ),
     ).toBeNull();
+  });
+
+  it("restricts Vite+ to JavaScript workspace roots", () => {
+    const goStack = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "go" as const,
+      appPlatforms: ["vite-plus"],
+    };
+
+    expect(analyzeStackCompatibility(goStack).adjustedStack?.appPlatforms).not.toContain(
+      "vite-plus",
+    );
+    expect(getDisabledReason(goStack, "appPlatforms", "vite-plus")).toContain(
+      "TypeScript web frontend",
+    );
+    expect(
+      getDisabledReason(
+        { ...DEFAULT_STACK_SELECTION, appPlatforms: [] },
+        "appPlatforms",
+        "vite-plus",
+      ),
+    ).toBeNull();
+    expect(
+      getDisabledReason(
+        { ...DEFAULT_STACK_SELECTION, ecosystem: "react-native", appPlatforms: [] },
+        "appPlatforms",
+        "vite-plus",
+      ),
+    ).toContain("TypeScript web frontend");
+    expect(
+      analyzeStackCompatibility({
+        ...DEFAULT_STACK_SELECTION,
+        ecosystem: "react-native",
+        appPlatforms: ["vite-plus"],
+      }).adjustedStack?.appPlatforms,
+    ).not.toContain("vite-plus");
   });
 
   it("keeps React Native code-quality options aligned with the CLI", () => {
@@ -159,18 +414,12 @@ describe("compatibility issue helpers", () => {
       goObservability: "signoz" as const,
     };
     expect(analyzeStackCompatibility(noServerGo).adjustedStack?.goObservability).toBe("none");
-    expect(getDisabledReason(noServerGo, "goObservability", "signoz")).toContain(
-      "server target",
-    );
+    expect(getDisabledReason(noServerGo, "goObservability", "signoz")).toContain("server target");
     expect(
       getDisabledReason({ ...noServerGo, goApi: "grpc-go" }, "goObservability", "signoz"),
     ).toBeNull();
     expect(
-      getDisabledReason(
-        { ...noServerGo, auth: "go-better-auth" },
-        "goObservability",
-        "signoz",
-      ),
+      getDisabledReason({ ...noServerGo, auth: "go-better-auth" }, "goObservability", "signoz"),
     ).toBeNull();
 
     const unsupportedPython = {
@@ -1058,7 +1307,10 @@ describe("compatibility issue helpers", () => {
     });
     expect(convexKong.adjustedStack?.appPlatforms).not.toContain("kong");
     expect(convexKong.changes).toContainEqual(
-      expect.objectContaining({ category: "appPlatforms", message: expect.stringContaining("Kong") }),
+      expect.objectContaining({
+        category: "appPlatforms",
+        message: expect.stringContaining("Kong"),
+      }),
     );
 
     expect(
@@ -1138,7 +1390,7 @@ describe("compatibility issue helpers", () => {
         "appPlatforms",
         "nx",
       ),
-    ).toBe("Choose either Nx or Turborepo, not both");
+    ).toBe("Choose one workspace runner: Turborepo, Nx, or Vite+");
 
     expect(
       getDisabledReason(
@@ -1155,11 +1407,7 @@ describe("compatibility issue helpers", () => {
 
   it("gates Knip through the code quality category", () => {
     expect(
-      getDisabledReason(
-        { ...DEFAULT_STACK_SELECTION, ecosystem: "go" },
-        "codeQuality",
-        "knip",
-      ),
+      getDisabledReason({ ...DEFAULT_STACK_SELECTION, ecosystem: "go" }, "codeQuality", "knip"),
     ).toBe("Knip requires a TypeScript or React Native workspace");
     expect(
       getDisabledReason(

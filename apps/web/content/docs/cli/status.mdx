@@ -1,0 +1,24 @@
+---
+title: Status Command
+description: Inspect project health, lifecycle guarantees, and current-template drift without running generated toolchains.
+translationStatus: pending
+updated: 2026-08-12
+---
+
+`status` gives a fast, read-only answer to three questions: does Better Fullstack recognize this
+project, what recovery and provenance guarantees are available, and is a template update worth
+reviewing? It does not execute application checks or write project files.
+
+<PMTabs
+  npm="npx -y create-better-fullstack@latest status ."
+  pnpm="pnpm dlx create-better-fullstack@latest status ."
+  bun="bunx create-better-fullstack@latest status ."
+  yarn="yarn dlx create-better-fullstack@latest status ."
+/>
+
+Use `--json` for automation. The result includes dependency and environment diagnostics, manifest
+provenance and recovery eligibility, plus a compact upgrade summary grouped into drift, merges,
+new files, local edits, conflicts, manual review, and template removals.
+
+`status` is intentionally non-executable. Run [`check`](/docs/cli/check/) to verify every generated
+target, then [`update`](/docs/cli/update/) to inspect exact file changes and obtain an apply token.

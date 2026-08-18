@@ -82,6 +82,7 @@ MCP is a transport for the product model, not a separate product.
 - Error codes are stable identifiers; free-form internal exceptions are not an API.
 - Manual-review blockers, migration steps, install commands, and changed files remain structured.
 - When adding a CLI lifecycle feature, update or explicitly rule out the corresponding MCP surface.
+- `--shape` is deliberately CLI-only. It seeds the interactive flow with a language/platform question, and MCP paths are prompt-free and already pass a complete stack, so there is nothing for a shape to decide.
 
 ## Non-Interactive Behavior
 

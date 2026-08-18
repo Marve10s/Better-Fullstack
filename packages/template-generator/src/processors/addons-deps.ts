@@ -121,6 +121,14 @@ export function processAddonsDeps(vfs: VirtualFileSystem, config: ProjectConfig)
     addPackageDependency({ vfs, packagePath: "package.json", devDependencies: ["nx"] });
   }
 
+  if (config.addons.includes("vite-plus")) {
+    addPackageDependency({
+      vfs,
+      packagePath: "package.json",
+      devDependencies: ["vite-plus", "@voidzero-dev/vite-plus-core"],
+    });
+  }
+
   if (config.addons.includes("eslint")) {
     addPackageDependency({
       vfs,

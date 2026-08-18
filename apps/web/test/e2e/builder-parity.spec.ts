@@ -23,7 +23,7 @@ test.describe("Builder parity", () => {
   });
 
   test("selecting an AI option updates command and URL", async ({ page }) => {
-    await clickVisibleTestId(page, "category-toggle-ai");
+    await clickVisibleTestId(page, "section-toggle-ai");
     await clickVisibleTestId(page, "option-ai-vercel-ai");
 
     await expect(commandOutput(page)).toContainText("--ai vercel-ai");
@@ -31,13 +31,26 @@ test.describe("Builder parity", () => {
     await expect(page).toHaveURL(/aisdk=vercel-ai/);
   });
 
-  test("selecting and removing multi-select addons updates the command", async ({ page }) => {
-    await clickVisibleTestId(page, "option-codeQuality-biome");
-    await expect(commandOutput(page)).toContainText("--addons biome turborepo");
+  test("selecting and removing a code-quality profile updates the command", async ({ page }) => {
+    await clickVisibleTestId(page, "section-toggle-qualityTesting");
+    await clickVisibleTestId(page, "option-codeQualityProfile-biome");
+    await expect(commandOutput(page)).toContainText("--part codeQuality:universal:biome");
     await expect(page).toHaveURL(/cq=biome/);
 
-    await clickVisibleTestId(page, "option-codeQuality-biome");
+    await clickVisibleTestId(page, "option-codeQualityProfile-biome");
     await expect(commandOutput(page)).toContainText("--yes");
+  });
+
+  test("multi-select tooling categories accumulate and toggle independently", async ({ page }) => {
+    await clickVisibleTestId(page, "section-toggle-qualityTesting");
+    await clickVisibleTestId(page, "option-staticAnalysis-knip");
+    await clickVisibleTestId(page, "option-staticAnalysis-gitleaks");
+    await expect(commandOutput(page)).toContainText("--part staticAnalysis:typescript:knip");
+    await expect(commandOutput(page)).toContainText("--part staticAnalysis:universal:gitleaks");
+
+    await clickVisibleTestId(page, "option-staticAnalysis-gitleaks");
+    await expect(commandOutput(page)).toContainText("--part staticAnalysis:typescript:knip");
+    await expect(commandOutput(page)).not.toContainText("gitleaks");
   });
 
   test("run tab only shows for browser-runnable TypeScript stacks", async ({ page }) => {
@@ -201,7 +214,7 @@ test.describe("Builder parity", () => {
   });
 
   test("disabled options do not mutate the command output", async ({ page }) => {
-    await clickVisibleTestId(page, "category-toggle-cms");
+    await clickVisibleTestId(page, "section-toggle-product");
     const command = commandOutput(page);
     const initialCommand = await command.textContent();
 

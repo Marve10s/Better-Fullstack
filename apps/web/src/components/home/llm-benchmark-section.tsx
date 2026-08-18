@@ -17,6 +17,7 @@ import {
   TbCopy as Copy,
 } from "react-icons/tb";
 
+import { AgentCommandTabs } from "@/components/mcp/agent-command-tabs";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -34,63 +35,6 @@ import { m } from "@/paraglide/messages.js";
 import { OpenAIMark, ProviderLogo, type ProviderLogoId } from "./provider-marks";
 import { SCAFFBENCH22_CELLS, SCAFFBENCH22_MODELS, SCAFFBENCH22_SPECS } from "./scaffbench-2-2-data";
 import { type ScaffbenchCell, type ScaffbenchModel } from "./scaffbench-2-data";
-
-interface AgentTab {
-  id: string;
-  label: string;
-  iconSlug?: string;
-  mono?: boolean;
-  command: string;
-  hint: string;
-  shell: boolean;
-}
-
-const AGENT_TABS: readonly AgentTab[] = [
-  {
-    id: "claude-code",
-    label: "Claude Code",
-    iconSlug: "claudecode",
-    command:
-      "claude mcp add --transport stdio better-fullstack -- npx -y create-better-fullstack@latest mcp",
-    hint: "run in your terminal",
-    shell: true,
-  },
-  {
-    id: "cursor",
-    label: "Cursor",
-    iconSlug: "cursor",
-    mono: true,
-    command:
-      '"better-fullstack": { "command": "npx", "args": ["-y", "create-better-fullstack@latest", "mcp"] }',
-    hint: "paste into ~/.cursor/mcp.json under mcpServers",
-    shell: false,
-  },
-  {
-    id: "codex",
-    label: "Codex",
-    command: "codex mcp add better-fullstack -- npx -y create-better-fullstack@latest mcp",
-    hint: "run in your terminal",
-    shell: true,
-  },
-  {
-    id: "gemini-cli",
-    label: "Gemini CLI",
-    iconSlug: "googlegemini",
-    command: "gemini mcp add better-fullstack npx -y create-better-fullstack@latest mcp",
-    hint: "run in your terminal",
-    shell: true,
-  },
-  {
-    id: "vscode",
-    label: "VS Code",
-    iconSlug: "githubcopilot",
-    mono: true,
-    command:
-      'code --add-mcp \'{"name":"better-fullstack","command":"npx","args":["-y","create-better-fullstack@latest","mcp"]}\'',
-    hint: "run in your terminal",
-    shell: true,
-  },
-] as const;
 
 const fadeUpInitial = { opacity: 0, y: 12 } as const;
 
@@ -1456,22 +1400,6 @@ function SpecMenuItem({
 }
 
 function AgentInstallPanel() {
-  const [agentId, setAgentId] = useState<string>(AGENT_TABS[0].id);
-  const [copied, setCopied] = useState(false);
-  const agent = AGENT_TABS.find((tab) => tab.id === agentId) ?? AGENT_TABS[0];
-
-  const copy = useCallback(() => {
-    const command = AGENT_TABS.find((tab) => tab.id === agentId)?.command ?? "";
-    navigator.clipboard.writeText(command).then(
-      () => {
-        setCopied(true);
-        window.setTimeout(() => setCopied(false), 1600);
-        return;
-      },
-      () => {},
-    );
-  }, [agentId]);
-
   return (
     <motion.div
       initial={fadeUpInitial}
@@ -1496,90 +1424,7 @@ function AgentInstallPanel() {
         </a>
       </div>
 
-      <div className="col-span-12 lg:col-span-8">
-        <div className="overflow-hidden rounded-md border border-border bg-card">
-          <div className="flex flex-wrap border-b border-border">
-            {AGENT_TABS.map((tab) => (
-              <AgentTabButton
-                key={tab.id}
-                tab={tab}
-                active={agentId === tab.id}
-                onSelect={setAgentId}
-              />
-            ))}
-          </div>
-          <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-5 sm:py-4">
-            <code className="truncate font-mono text-xs sm:text-sm">
-              {agent.shell ? <span className="text-ink dark:text-brand">$ </span> : null}
-              {agent.command}
-            </code>
-            <button
-              type="button"
-              onClick={copy}
-              aria-label={m.llmCopyAgentSetupCommand({ agent: agent.label })}
-              className={cn(
-                "flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors active:translate-y-[1px]",
-                copied ? "text-ink dark:text-brand" : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
-            </button>
-          </div>
-        </div>
-        <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-          {getAgentHint(agent)}
-        </p>
-      </div>
+      <AgentCommandTabs className="col-span-12 lg:col-span-8" />
     </motion.div>
   );
-}
-
-function AgentTabButton({
-  tab,
-  active,
-  onSelect,
-}: {
-  tab: AgentTab;
-  active: boolean;
-  onSelect: (id: string) => void;
-}) {
-  const handleClick = useCallback(() => {
-    onSelect(tab.id);
-  }, [onSelect, tab.id]);
-
-  return (
-    <button
-      type="button"
-      onClick={handleClick}
-      aria-pressed={active}
-      className={cn(
-        "flex cursor-pointer items-center gap-1.5 border-r border-border px-3 py-2 text-xs font-medium transition-colors last:border-r-0 sm:gap-2 sm:px-4",
-        active
-          ? "bg-[#C6E853] text-[#0a0a0a]"
-          : "bg-transparent text-muted-foreground hover:text-foreground",
-      )}
-    >
-      <AgentTabIcon tab={tab} active={active} />
-      {tab.label}
-    </button>
-  );
-}
-
-function AgentTabIcon({ tab, active }: { tab: AgentTab; active: boolean }) {
-  const { resolvedTheme } = useTheme();
-
-  if (!tab.iconSlug) {
-    return <OpenAIMark className="size-3.5 sm:size-4" />;
-  }
-
-  const monoColor = !active && resolvedTheme === "dark" ? "e5e5e5" : "171717";
-  const src = tab.mono
-    ? `https://cdn.simpleicons.org/${tab.iconSlug}/${monoColor}`
-    : `https://cdn.simpleicons.org/${tab.iconSlug}`;
-
-  return <img src={src} alt="" width={16} height={16} className="size-3.5 sm:size-4" />;
-}
-
-function getAgentHint(agent: AgentTab): string {
-  return agent.id === "cursor" ? m.llmPasteCursor() : m.llmRunInTerminal();
 }

@@ -26,3 +26,6 @@ debug/
 
 # Documentation (generated)
 /target/doc/
+
+# Better Fullstack recovery snapshots
+.bts/recovery

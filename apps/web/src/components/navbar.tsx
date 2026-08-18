@@ -154,8 +154,9 @@ function HeaderCopyButton() {
       }
       const pathSlug = getFirstPathSegment(window.location.pathname);
       const stack =
-        sp.size === 0 && pathSlug ? parseStackShareSlug(pathSlug) : parseStackFromUrlRecord(record);
-      if (!stack) return;
+        (sp.size === 0 && pathSlug
+          ? parseStackShareSlug(pathSlug)
+          : parseStackFromUrlRecord(record)) ?? parseStackFromUrlRecord({});
       await navigator.clipboard.writeText(generateStackCommand(stack));
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);

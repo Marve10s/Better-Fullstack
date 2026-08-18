@@ -129,6 +129,10 @@ export async function terminateProcessTree(child: ExecaChildProcess): Promise<vo
 
   if (isProcessTreeAlive(child)) {
     signalProcessTree(child, "SIGKILL");
+    // SIGKILL is delivered asynchronously, and awaiting the launcher below only
+    // proves the group leader is gone. Descendants that ignored SIGTERM can
+    // still be in the process table, so wait for the whole group to clear.
+    await waitForProcessTreeExit(child, Date.now() + PROCESS_TERMINATION_GRACE_MS);
   }
 
   await Promise.race([

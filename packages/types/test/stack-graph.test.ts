@@ -374,12 +374,12 @@ describe("stack graph", () => {
       "frontend:typescript:next",
       "frontend.appPlatform:typescript:pwa",
       "frontend.dataFetching:typescript:swr",
-      "frontend.dataFetching:typescript:tanstack-table",
+      "frontend.libraries:typescript:tanstack-table",
       "frontend.testing:typescript:storybook",
       "codeQuality:universal:biome",
       "documentation:universal:fumadocs",
-      "workspaceTooling:universal:turborepo",
-      "workspaceTooling:universal:mcp",
+      "workspaceRunner:universal:turborepo",
+      "aiTooling:universal:mcp",
       "examples:universal:ai",
       "examples:universal:chat-sdk",
       "backend:typescript:hono",
@@ -515,15 +515,15 @@ describe("stack graph", () => {
     expect(result.issues.map((issue) => issue.code)).toContain("DUPLICATE_ROLE_SCOPE");
   });
 
-  it("allows registry-marked multi-select roles and ownerless workspace tools", () => {
+  it("allows registry-marked multi-select categories and coherent single profiles", () => {
     const stackParts = parseStackPartSpecs([
       "frontend:typescript:next",
       "frontend.dataFetching:typescript:swr",
-      "frontend.dataFetching:typescript:tanstack-table",
-      "codeQuality:universal:biome",
-      "codeQuality:universal:oxlint",
-      "workspaceTooling:universal:turborepo",
-      "workspaceTooling:universal:skills",
+      "frontend.libraries:typescript:tanstack-table",
+      "codeQuality:universal:eslint",
+      "codeQuality:universal:prettier",
+      "workspaceRunner:universal:turborepo",
+      "aiTooling:universal:skills",
     ]);
     const result = validateStackParts(stackParts);
 
@@ -947,10 +947,7 @@ describe("stack graph", () => {
   });
 
   it("rejects Kong with Loco until its container configuration is supported", () => {
-    const parts = parseStackPartSpecs([
-      "backend:rust:loco",
-      "workspaceTooling:universal:kong",
-    ]);
+    const parts = parseStackPartSpecs(["backend:rust:loco", "workspaceTooling:universal:kong"]);
 
     expect(validateStackParts(parts).issues.map((issue) => issue.message)).toContain(
       "Kong Gateway does not yet support Loco's container configuration.",
@@ -1378,9 +1375,9 @@ describe("stack graph structural round-trip (phase 0)", () => {
   });
 
   it("owns the TypeScript test runner on the backend without colliding with testing addons", () => {
-    // The framework testing part (backend-owned) and the msw/storybook testing addons
-    // (frontend-owned) share the `testing` role but live in different owner scopes, so
-    // both round-trip cleanly and validateStackParts raises no DUPLICATE_ROLE_SCOPE issue.
+    // The framework testing part (backend-owned), storybook (frontend-owned) and msw
+    // (ownerless) share the `testing` role but live in different owner scopes, so they
+    // all round-trip cleanly and validateStackParts raises no DUPLICATE_ROLE_SCOPE issue.
     const config: Partial<ProjectConfig> = {
       ...TS_BASE,
       testing: "vitest",
@@ -1400,12 +1397,35 @@ describe("stack graph structural round-trip (phase 0)", () => {
 
     expect(frameworkPart?.ownerPartId).toBe(backend?.id);
     expect(addonTestingParts.map((part) => part.toolId).sort()).toEqual(["msw", "storybook"]);
-    expect(addonTestingParts.every((part) => part.ownerPartId === frontend?.id)).toBe(true);
+    expect(
+      addonTestingParts.find((part) => part.toolId === "storybook")?.ownerPartId,
+    ).toBe(frontend?.id);
+    expect(addonTestingParts.find((part) => part.toolId === "msw")?.ownerPartId).toBeUndefined();
     expect(validateStackParts(parts).issues).toEqual([]);
 
     const derived = expectNoDrift(config);
     expect(derived.testing).toBe("vitest");
     expect([...(derived.addons ?? [])].sort()).toEqual(["msw", "storybook"]);
+  });
+
+  it("keeps standalone app and mocking addons in the graph without a frontend", () => {
+    const config: Partial<ProjectConfig> = {
+      ...TS_BASE,
+      frontend: ["none"],
+      addons: ["wxt", "opentui", "msw"],
+    };
+    const parts = legacyProjectConfigToStackParts(config);
+
+    expect(parts.some((part) => part.role === "frontend")).toBe(false);
+    for (const toolId of ["wxt", "opentui", "msw"]) {
+      const part = parts.find((candidate) => candidate.toolId === toolId);
+      expect(part).toBeDefined();
+      expect(part?.ownerPartId).toBeUndefined();
+    }
+    expect(validateStackParts(parts).issues).toEqual([]);
+
+    const derived = stackPartsToLegacyProjectConfigPartial(parts);
+    expect([...(derived.addons ?? [])].sort()).toEqual(["msw", "opentui", "wxt"]);
   });
 
   it("round-trips every frontend-owned TypeScript single value as a scoped graph part", () => {
@@ -1655,9 +1675,13 @@ describe("stack graph structural round-trip (phase 0)", () => {
       } else {
         expect(derived.addons).toContain(addon);
         expect(graphPart).toBeDefined();
-        expect(graphPart?.ownerPartId).toBe(
-          binding?.ownerRole === "frontend" ? frontend?.id : undefined,
-        );
+        const expectedOwner =
+          binding?.ownerRole === "frontend"
+            ? frontend?.id
+            : binding?.ownerRole === "backend"
+              ? parts.find((part) => part.role === "backend" && part.ecosystem === "typescript")?.id
+              : undefined;
+        expect(graphPart?.ownerPartId).toBe(expectedOwner);
       }
       expect(validateStackParts(parts).issues).toEqual([]);
     }
@@ -1685,8 +1709,9 @@ describe("stack graph structural round-trip (phase 0)", () => {
 
   it("models Knip as TypeScript tooling instead of a universal addon", () => {
     expect(getAddonStackPartBinding("knip")).toEqual({
-      role: "codeQuality",
+      role: "staticAnalysis",
       ecosystem: "typescript",
+      ownerRole: undefined,
     });
     expect(getAddonStackPartBinding("gitleaks")?.ecosystem).toBe("universal");
   });

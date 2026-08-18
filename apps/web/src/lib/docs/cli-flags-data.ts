@@ -57,62 +57,25 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "multiple": false
       },
       {
+        "flag": "--shape",
+        "summary": "Start from a project shape. Asks which language or platform, then only the prompts that shape needs.",
+        "values": [
+          "fullstack",
+          "frontend",
+          "backend",
+          "mobile"
+        ],
+        "valueHint": null,
+        "defaultValue": null,
+        "multiple": false
+      },
+      {
         "flag": "--part",
         "summary": "Add a multi-ecosystem stack part. Repeat once per part.",
         "values": [],
         "valueHint": "role:ecosystem:tool (e.g. frontend:typescript:next)",
         "defaultValue": null,
         "multiple": false
-      },
-      {
-        "flag": "--addons",
-        "summary": "Repo tooling and platform addons.",
-        "values": [
-          "pwa",
-          "tauri",
-          "electron",
-          "capacitor",
-          "wxt",
-          "opentui",
-          "turborepo",
-          "nx",
-          "mcp",
-          "skills",
-          "msw",
-          "storybook",
-          "swr",
-          "tanstack-query",
-          "tanstack-table",
-          "tanstack-virtual",
-          "tanstack-db",
-          "tanstack-pacer",
-          "backend-utils",
-          "devcontainer",
-          "docker-compose",
-          "kong",
-          "github-actions",
-          "axios",
-          "firebase",
-          "graphql-codegen",
-          "openapi-typescript",
-          "apollo-client",
-          "biome",
-          "eslint",
-          "prettier",
-          "oxlint",
-          "ultracite",
-          "lefthook",
-          "husky",
-          "knip",
-          "gitleaks",
-          "ruler",
-          "starlight",
-          "fumadocs",
-          "none"
-        ],
-        "valueHint": null,
-        "defaultValue": "turborepo",
-        "multiple": true
       },
       {
         "flag": "--examples",
@@ -649,6 +612,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "umami",
           "posthog",
           "ga4",
+          "vercel-analytics",
           "none"
         ],
         "valueHint": null,
@@ -712,6 +676,18 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "values": [
           "arcjet",
           "upstash-ratelimit",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--bot-protection",
+        "summary": "Bot and CAPTCHA verification provider.",
+        "values": [
+          "botid",
+          "turnstile",
           "none"
         ],
         "valueHint": null,
@@ -1163,6 +1139,60 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "valueHint": null,
         "defaultValue": "none",
         "multiple": true
+      },
+      {
+        "flag": "--kotlin-mobile",
+        "summary": "Kotlin mobile app.",
+        "values": [
+          "jetpack-compose",
+          "compose-multiplatform",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": null,
+        "multiple": false
+      },
+      {
+        "flag": "--kotlin-mobile-libraries",
+        "summary": "Optional Kotlin mobile libraries.",
+        "values": [
+          "navigation-compose",
+          "voyager",
+          "koin",
+          "ktor-client",
+          "kotlinx-serialization-json",
+          "datastore",
+          "coil",
+          "mockk",
+          "turbine",
+          "junit5",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": null,
+        "multiple": true
+      },
+      {
+        "flag": "--swift-mobile",
+        "summary": "Swift mobile app.",
+        "values": [
+          "swiftui",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": null,
+        "multiple": false
+      },
+      {
+        "flag": "--dart-mobile",
+        "summary": "Flutter / Dart mobile app.",
+        "values": [
+          "flutter",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": null,
+        "multiple": false
       }
     ]
   },
@@ -1911,6 +1941,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "summary": "Java web framework.",
         "values": [
           "spring-boot",
+          "ktor",
           "quarkus",
           "micronaut",
           "none"
@@ -2066,6 +2097,18 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
     "title": ".NET flags",
     "description": "Flags for `--ecosystem dotnet`.",
     "flags": [
+      {
+        "flag": "--dotnet-frontend",
+        "summary": ".NET frontend.",
+        "values": [
+          "blazor-webassembly",
+          "blazor-web-app",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": null,
+        "multiple": false
+      },
       {
         "flag": "--dotnet-web-framework",
         "summary": ".NET web framework.",

@@ -3,8 +3,6 @@ export const LAUNCH_RADAR_SEEN_EVENT = "better-fullstack:launch-radar-seen";
 export const LAUNCH_RADAR_OPEN_EVENT = "better-fullstack:launch-radar-open";
 
 const LAUNCH_RADAR_STORAGE_KEY = `better-fullstack.launch-radar.${LAUNCH_RADAR_RELEASE_ID}`;
-const VISITOR_STORAGE_KEY = "better-fullstack.has-visited";
-const FIRST_VISIT_SESSION_KEY = "better-fullstack.launch-radar.first-visit-session";
 
 export const NEW_OPTION_IDS_BY_CATEGORY = {
   webFrontend: ["vanilla-vite", "vue"],
@@ -389,27 +387,6 @@ export function isLaunchRadarNewOption(category: string, optionId: string): bool
 export function hasSeenLaunchRadar(storage: Pick<Storage, "getItem"> | null): boolean {
   try {
     return storage?.getItem(LAUNCH_RADAR_STORAGE_KEY) === "seen";
-  } catch {
-    return false;
-  }
-}
-
-export function registerLaunchRadarVisit(
-  persistentStorage: Pick<Storage, "getItem" | "setItem"> | null,
-  sessionStorage: Pick<Storage, "getItem" | "setItem"> | null,
-): boolean {
-  try {
-    const isFirstVisitSession =
-      sessionStorage?.getItem(FIRST_VISIT_SESSION_KEY) === "true";
-    const hasVisited = persistentStorage?.getItem(VISITOR_STORAGE_KEY) === "true";
-
-    if (!hasVisited) {
-      persistentStorage?.setItem(VISITOR_STORAGE_KEY, "true");
-      sessionStorage?.setItem(FIRST_VISIT_SESSION_KEY, "true");
-      return false;
-    }
-
-    return !isFirstVisitSession;
   } catch {
     return false;
   }
