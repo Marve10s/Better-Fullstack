@@ -1,3 +1,4 @@
+import { dependencyVersionMap } from "@better-fullstack/template-generator";
 import { EcommerceSchema } from "@better-fullstack/types";
 import { describe, expect, test } from "bun:test";
 import { readFile } from "node:fs/promises";
@@ -29,7 +30,9 @@ describe("e-commerce integrations", () => {
     expect(helper).toContain('"default" in Medusa ? Medusa.default : Medusa');
     expect(helper).toContain("new MedusaClient");
     expect(helper).toContain("publishableKey");
-    expect(packageJson).toContain('"@medusajs/js-sdk": "^2.19.0"');
+    expect(packageJson).toContain(
+      `"@medusajs/js-sdk": "${dependencyVersionMap["@medusajs/js-sdk"]}"`,
+    );
     expect(env).toContain("MEDUSA_BACKEND_URL=http://localhost:9000");
     expect(env).toContain("MEDUSA_PUBLISHABLE_KEY=pk_your_publishable_key");
   });

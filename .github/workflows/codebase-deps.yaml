@@ -22,10 +22,13 @@ jobs:
   update:
     name: Update Workspace Dependencies
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 60
     permissions:
       contents: write
       pull-requests: write
+    outputs:
+      has_pr_changes: ${{ steps.pending.outputs.has_changes }}
+      pull_request_number: ${{ steps.cpr.outputs.pull-request-number }}
 
     steps:
       - name: Checkout Code
@@ -115,10 +118,49 @@ jobs:
           # Re-install to fix lockfile after any reverts
           bun install
 
+      - name: Determine Pending Changes
+        id: pending
+        run: |
+          if git diff --quiet -- \
+            package.json \
+            bun.lock \
+            ':(glob)apps/*/package.json' \
+            ':(glob)packages/*/package.json'; then
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run Full Test Suite
+        id: full-tests
+        if: steps.pending.outputs.has_changes == 'true'
+        run: |
+          set +e
+          bun run test 2>&1 | tee "$RUNNER_TEMP/full-test.log"
+          TEST_EXIT_CODE=${PIPESTATUS[0]}
+          set -e
+          echo "exit_code=$TEST_EXIT_CODE" >> "$GITHUB_OUTPUT"
+
+      - name: Capture Test Verification Report
+        id: test-report
+        if: steps.pending.outputs.has_changes == 'true'
+        run: |
+          bun run .github/scripts/format-test-report.ts \
+            "$RUNNER_TEMP/full-test.log" \
+            "${{ steps.full-tests.outputs.exit_code }}" > "$RUNNER_TEMP/test-verification.md"
+          {
+            echo 'report<<EOF'
+            cat "$RUNNER_TEMP/test-verification.md"
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+
       - name: Disable Git Hooks For Automation Commit
+        if: steps.pending.outputs.has_changes == 'true'
         run: git config core.hooksPath /dev/null
 
       - name: Create Pull Request
+        id: cpr
+        if: steps.pending.outputs.has_changes == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.PAT_WORKFLOW }}
@@ -132,10 +174,124 @@ jobs:
             - Update mode: `${{ steps.mode.outputs.mode }}`
             - Scope: root + all Bun workspaces (`--recursive`)
 
+            ${{ steps.test-report.outputs.report }}
+
             ---
             *Automated by [codebase-deps.yaml](.github/workflows/codebase-deps.yaml)*
           branch: deps/codebase-updates
           delete-branch: true
+          add-paths: |
+            package.json
+            bun.lock
+            apps/*/package.json
+            packages/*/package.json
           labels: |
             dependencies
             automated
+
+  vercel-parity-build:
+    name: Vercel-Parity Build (glibc 2.34)
+    needs: update
+    if: needs.update.outputs.has_pr_changes == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    container: amazonlinux:2023
+    defaults:
+      run:
+        shell: bash
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Install System Dependencies
+        run: dnf install -y git tar gzip unzip libstdc++ which curl ca-certificates nodejs22
+
+      - name: Checkout Dependency Branch
+        uses: actions/checkout@v4
+        with:
+          ref: deps/codebase-updates
+
+      - name: Install Bun
+        run: |
+          BUN_VERSION=$(node -p "require('./package.json').packageManager.split('@')[1]")
+          curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+          "$HOME/.bun/bin/bun" --version
+
+      - name: Record Dependency Head
+        id: dep-head
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Run Vercel-Parity Build
+        id: parity
+        run: |
+          set +e
+          {
+            bun install --frozen-lockfile &&
+            bun run --cwd packages/types build &&
+            bun run --cwd packages/template-generator build &&
+            bun run --cwd apps/web build
+          } 2>&1 | tee "$RUNNER_TEMP/vercel-parity.log"
+          BUILD_EXIT_CODE=${PIPESTATUS[0]}
+          set -e
+          echo "exit_code=$BUILD_EXIT_CODE" >> "$GITHUB_OUTPUT"
+
+      # The job runs inside the scheduled automation run, so a failure would not
+      # otherwise surface on the dependency PR; publish it as a commit status.
+      - name: Publish Parity Status On Dependency Head
+        if: always() && steps.parity.outputs.exit_code != ''
+        env:
+          GH_TOKEN: ${{ secrets.PAT_WORKFLOW }}
+          HEAD_SHA: ${{ steps.dep-head.outputs.sha }}
+          EXIT_CODE: ${{ steps.parity.outputs.exit_code }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          STATE=failure
+          DESCRIPTION="Web build failed on glibc 2.34 (Amazon Linux 2023)"
+          if [ "$EXIT_CODE" = "0" ]; then
+            STATE=success
+            DESCRIPTION="Web build passed on glibc 2.34 (Amazon Linux 2023)"
+          fi
+          curl -fsS -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/statuses/$HEAD_SHA" \
+            -d "{\"state\":\"$STATE\",\"context\":\"Vercel-Parity Build (glibc 2.34)\",\"description\":\"$DESCRIPTION\",\"target_url\":\"$RUN_URL\"}"
+
+      - name: Format Vercel-Parity Report
+        id: parity-report
+        if: always() && steps.parity.outputs.exit_code != ''
+        run: |
+          bun run .github/scripts/format-vercel-parity-report.ts \
+            "$RUNNER_TEMP/vercel-parity.log" \
+            "${{ steps.parity.outputs.exit_code }}" > "$RUNNER_TEMP/vercel-parity-report.md"
+
+      - name: Post Vercel-Parity Report To Pull Request
+        if: always() && steps.parity.outputs.exit_code != ''
+        env:
+          GH_TOKEN: ${{ secrets.PAT_WORKFLOW }}
+          PR_NUMBER: ${{ needs.update.outputs.pull_request_number }}
+          REPORT_PATH: ${{ runner.temp }}/vercel-parity-report.md
+        run: |
+          bun -e '
+            const body = await Bun.file(process.env.REPORT_PATH).text();
+            const response = await fetch(
+              `${process.env.GITHUB_API_URL}/repos/${process.env.GITHUB_REPOSITORY}/issues/${process.env.PR_NUMBER}/comments`,
+              {
+                method: "POST",
+                headers: {
+                  Accept: "application/vnd.github+json",
+                  Authorization: `Bearer ${process.env.GH_TOKEN}`,
+                  "X-GitHub-Api-Version": "2022-11-28",
+                },
+                body: JSON.stringify({ body }),
+              },
+            );
+            if (!response.ok) throw new Error(`GitHub API returned ${response.status}: ${await response.text()}`);
+          '
+
+      - name: Fail On Vercel-Parity Build Error
+        if: steps.parity.outputs.exit_code != '0'
+        run: exit 1
