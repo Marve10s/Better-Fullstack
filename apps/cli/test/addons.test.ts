@@ -5,10 +5,11 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { createVirtual, type Addons, type Frontend } from "../src";
-import { setupAddons } from "../src/helpers/addons/addons-setup";
+import { ADDONS_REQUIRING_IMPERATIVE_SETUP, setupAddons } from "../src/helpers/addons/addons-setup";
 import {
   getAddonGroup,
   getCompatibleAddonsForPrompt,
+  getCompatibleSelections,
   promptCapabilities,
 } from "../src/prompts/addons";
 import { APP_PLATFORM_ADDON_VALUES, TOOLING_CATEGORIES } from "../src/types";
@@ -19,6 +20,25 @@ describe("Addon Configurations", () => {
   it("keeps app platforms grouped in the bts add prompt", () => {
     for (const addon of APP_PLATFORM_ADDON_VALUES) {
       expect(getAddonGroup(addon)).toBe("App Platforms");
+    }
+  });
+
+  it("never offers capabilities that transactional add refuses", () => {
+    for (const category of TOOLING_CATEGORIES) {
+      const offered = getCompatibleSelections(
+        category.id,
+        {
+          frontends: ["tanstack-router"],
+          existing: [],
+          config: { ecosystem: "typescript" },
+          additionsOnly: true,
+        },
+        [],
+      ).flatMap((selection) => selection.toolIds);
+
+      expect(
+        offered.filter((toolId) => ADDONS_REQUIRING_IMPERATIVE_SETUP.has(toolId as Addons)),
+      ).toEqual([]);
     }
   });
 

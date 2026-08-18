@@ -185,6 +185,10 @@ function logStackUpdateSummary(plan: StackUpdatePlan, dryRun: boolean) {
   }
 }
 
+function appendRecoveryNote(lifecycle: LifecycleResult, note: string | undefined): LifecycleResult {
+  return note ? { ...lifecycle, nextActions: [...lifecycle.nextActions, note] } : lifecycle;
+}
+
 function buildAddonSetupConfig(
   projectDir: string,
   projectName: string,
@@ -309,6 +313,7 @@ async function runStackUpdateAdd(
     };
   }
 
+  let recoveryNote: string | undefined;
   try {
     const addonsToSetup = await getAddonsToSetup(input, currentConfig, projectDir);
     const setupConfig = buildAddonSetupConfig(projectDir, projectName, currentConfig, result);
@@ -324,6 +329,7 @@ async function runStackUpdateAdd(
           packageManager: setupConfig.packageManager,
         });
         installFailed = !installResult.success;
+        recoveryNote = `Recovery restores generated files only. The lockfile this install wrote is not rolled back, so re-run '${result.installCommand}' after recovering.`;
       } else if (!isSilent()) {
         log.warn(
           pc.yellow(
@@ -354,6 +360,9 @@ async function runStackUpdateAdd(
       }
       if (result.lifecycle.recovery.command) {
         log.info(pc.dim(`Recovery: ${result.lifecycle.recovery.command}`));
+        if (recoveryNote) {
+          log.warn(pc.yellow(recoveryNote));
+        }
       }
       outro(pc.magenta("Project updated successfully!"));
     }
@@ -363,7 +372,7 @@ async function runStackUpdateAdd(
       addedAddons: addonsToSetup,
       projectDir,
       setupWarnings: setupWarnings.length > 0 ? setupWarnings : undefined,
-      lifecycle: result.lifecycle,
+      lifecycle: appendRecoveryNote(result.lifecycle, recoveryNote),
       recoveryId: result.recoveryId,
     };
   } catch (error) {
@@ -373,6 +382,9 @@ async function runStackUpdateAdd(
         log.error(
           pc.red(`Post-update setup failed. Recovery: ${result.lifecycle.recovery.command}`),
         );
+        if (recoveryNote) {
+          log.warn(pc.yellow(recoveryNote));
+        }
       }
       throw new CLIError(message);
     }
@@ -381,7 +393,7 @@ async function runStackUpdateAdd(
       addedAddons: [],
       projectDir,
       error: message,
-      lifecycle: result.lifecycle,
+      lifecycle: appendRecoveryNote(result.lifecycle, recoveryNote),
       recoveryId: result.recoveryId,
     };
   }

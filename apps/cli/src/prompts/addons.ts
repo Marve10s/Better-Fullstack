@@ -1,4 +1,5 @@
 import { DEFAULT_CONFIG } from "../constants";
+import { ADDONS_REQUIRING_IMPERATIVE_SETUP } from "../helpers/addons/addons-setup";
 import {
   type Addons,
   AddonsSchema,
@@ -92,7 +93,7 @@ type CapabilityPromptContext = {
   additionsOnly: boolean;
 };
 
-function getCompatibleSelections(
+export function getCompatibleSelections(
   category: ToolingCategoryId,
   context: CapabilityPromptContext,
   selected: readonly Addons[],
@@ -102,6 +103,16 @@ function getCompatibleSelections(
       context.additionsOnly &&
       selection.toolIds.length > 0 &&
       selection.toolIds.every((toolId) => context.existing.includes(toolId as Addons))
+    ) {
+      return false;
+    }
+    if (
+      context.additionsOnly &&
+      selection.toolIds.some(
+        (toolId) =>
+          ADDONS_REQUIRING_IMPERATIVE_SETUP.has(toolId as Addons) &&
+          !context.existing.includes(toolId as Addons),
+      )
     ) {
       return false;
     }
@@ -136,7 +147,7 @@ export async function promptCapabilities(
 
   for (const category of categories) {
     const options = getCompatibleSelections(category.id, context, selected);
-    if (options.length === 0) continue;
+    if (!options.some((selection) => selection.toolIds.length > 0)) continue;
 
     if (category.selectionMode === "single") {
       const current = getSelectedToolingOption(category.id, selected);
