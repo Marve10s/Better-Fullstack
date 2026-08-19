@@ -1,7 +1,13 @@
 import type { Ecosystem } from "@better-fullstack/types";
 
-import { getCategoryDisplayName } from "@better-fullstack/types";
+import {
+  getCategoryDisplayName,
+  hasReactNativeApp,
+  isMultiEcosystemMobileCategory,
+  isReactNativeOnlyCategory,
+} from "@better-fullstack/types";
 
+import type { StackState } from "@/lib/stack-defaults";
 import type { TechCategory } from "@/lib/types";
 
 export type BuilderSectionDef = {
@@ -105,6 +111,25 @@ const TYPESCRIPT_SECTIONS: readonly BuilderSectionDef[] = [
     "install",
   ]),
 ];
+
+/**
+ * React Native's own categories stay hidden until a React Native app is
+ * selected, and the other mobile platforms never appear in the section list
+ * (the multi-ecosystem composer renders those itself), so a React Native stack
+ * is never offered Kotlin or Swift options.
+ *
+ * Yolo skips compatibility normalization, so an Expo selection survives losing
+ * its app. Keep those categories visible there or the values stay in the
+ * generated command with no control left to clear them.
+ */
+export function isHiddenMobilePlatformCategory(
+  stack: Pick<StackState, "nativeFrontend" | "yolo">,
+  category: string,
+): boolean {
+  if (isMultiEcosystemMobileCategory(category)) return true;
+  if (stack.yolo === "true") return false;
+  return isReactNativeOnlyCategory(category) && !hasReactNativeApp(stack);
+}
 
 const REACT_NATIVE_SECTIONS: readonly BuilderSectionDef[] = [
   section("mobileFrameworks", "Mobile Frameworks", [

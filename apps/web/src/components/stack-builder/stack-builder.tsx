@@ -128,7 +128,11 @@ import { m } from "@/paraglide/messages.js";
 
 import { BuilderShareModal } from "./builder-share-modal";
 import { PresetsPanel } from "./presets-panel";
-import { type BuilderSectionDef, getBuilderSections } from "./section-groups";
+import {
+  type BuilderSectionDef,
+  getBuilderSections,
+  isHiddenMobilePlatformCategory,
+} from "./section-groups";
 import { SavedStacksPanel } from "./saved-stacks-panel";
 import { ShareButton } from "./share-button";
 import { TechIcon } from "./tech-icon";
@@ -1510,7 +1514,8 @@ function shouldSkipCategory(stack: StackState, categoryKey: string): boolean {
   return (
     categoryKey === "astroIntegration" ||
     SHADCN_SUB_CATEGORIES.has(categoryKey as keyof typeof TECH_OPTIONS) ||
-    (stack.ecosystem === "go" && categoryKey === "auth")
+    (stack.ecosystem === "go" && categoryKey === "auth") ||
+    isHiddenMobilePlatformCategory(stack, categoryKey)
   );
 }
 
@@ -1798,6 +1803,9 @@ function CreationModeComposer({
     ...stack,
     ecosystem: "react-native",
   };
+  // The react-native ecosystem rejects every non-Expo option, so a Kotlin app's
+  // libraries have to be checked outside it.
+  const kotlinMobileCompatibilityStack: StackState = stack;
 
   const applyGraphSelection = useCallback(
     (nextSelection: GraphSelection) => {
@@ -2425,7 +2433,7 @@ function CreationModeComposer({
                     ),
                     category,
                     testIdPrefix: `multi-mobile-${category}`,
-                    compatibilityStack: mobileCompatibilityStack,
+                    compatibilityStack: kotlinMobileCompatibilityStack,
                   })}
                 </div>
               ))}

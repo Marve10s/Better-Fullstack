@@ -3,6 +3,7 @@ import {
   getCategoryDisplayName,
   getCategoryOrderForEcosystem,
   getDisabledReason,
+  isMultiEcosystemMobileCategory,
   isMultiSelectCategory,
   isOptionCompatible,
   OPTION_CATEGORY_METADATA,
@@ -54,7 +55,9 @@ function getDocsCategories(ecosystem: Ecosystem): SelectCategory[] {
   return [
     ...getCategoryOrderForEcosystem(ecosystem).filter(
       (category) =>
-        Boolean(OPTION_CATEGORY_METADATA[category]) && !DOCS_CATEGORY_EXCLUSIONS.has(category),
+        Boolean(OPTION_CATEGORY_METADATA[category]) &&
+        !DOCS_CATEGORY_EXCLUSIONS.has(category) &&
+        !isMultiEcosystemMobileCategory(category),
     ),
     ...(DOCS_EXTRA_CATEGORIES_BY_ECOSYSTEM[ecosystem] ?? []),
   ];

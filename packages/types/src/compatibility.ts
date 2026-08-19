@@ -18,7 +18,12 @@ import type {
 
 import { getCapabilityDisabledReason, normalizeCapabilitySelection } from "./capabilities";
 import { ANALYTICS_VALUES } from "./schemas";
-import { CATEGORY_ORDER, getCategoryDisplayName, type OptionCategory } from "./option-metadata";
+import {
+  CATEGORY_ORDER,
+  getCategoryDisplayName,
+  isMultiEcosystemMobileCategory,
+  type OptionCategory,
+} from "./option-metadata";
 import {
   getUnsupportedWebDeployFrontend,
   hasPWACompatibleFrontend,
@@ -208,6 +213,38 @@ export function getKotlinJavaIncompatibilityReason(stack: KotlinJavaGateInput): 
     return `The '${unsupportedTestingLibrary}' testing library is not wired for the Kotlin scaffold`;
   }
   return null;
+}
+
+// ============================================
+// MOBILE PLATFORM GATE
+// ============================================
+// Mobile spans four independent platforms (React Native, Kotlin, Swift,
+// Flutter) whose library catalogs never mix. This is the single source of truth
+// for which categories belong to React Native — `getDisabledReason` and the web
+// builder's category visibility both read it, so Expo options can never be
+// offered without an Expo app and Kotlin libraries can never be offered for one.
+
+const REACT_NATIVE_ONLY_CATEGORIES: ReadonlySet<string> = new Set([
+  "mobileNavigation",
+  "mobileUI",
+  "mobileStorage",
+  "mobileTesting",
+  "mobilePush",
+  "mobileOTA",
+  "mobileDeepLinking",
+  "mobileLibraries",
+]);
+
+export function isReactNativeOnlyCategory(category: string): boolean {
+  return REACT_NATIVE_ONLY_CATEGORIES.has(category);
+}
+
+export function hasReactNativeApp(stack: { nativeFrontend?: string[] }): boolean {
+  return (stack.nativeFrontend ?? []).some((frontend) => frontend !== "none");
+}
+
+function hasKotlinMobileApp(stack: { kotlinMobile?: string }): boolean {
+  return (stack.kotlinMobile ?? "none") !== "none";
 }
 
 export type CompatibilityIssue = {
@@ -2507,6 +2544,14 @@ export const getDisabledReason = (
   optionId: string,
 ): string | null => {
   if (
+    optionId !== "none" &&
+    category === "kotlinMobileLibraries" &&
+    !hasKotlinMobileApp(currentStack)
+  ) {
+    return "Kotlin mobile libraries require a Jetpack Compose or Compose Multiplatform app";
+  }
+
+  if (
     currentStack.ecosystem === "react-native" &&
     category === "codeQuality" &&
     optionId !== "knip" &&
@@ -2677,7 +2722,16 @@ export const getDisabledReason = (
       return "React Native payments currently support RevenueCat only";
     }
 
-    if (!reactNativeCategories.has(category) && optionId !== "none" && optionId !== "false") {
+    // A graph selection whose only primary part is a Kotlin, Swift or Flutter
+    // app still lowers to the react-native ecosystem (`ecosystemForLegacy`), so
+    // this allowlist cannot speak for those categories. Their own gates above
+    // enforce the real constraint.
+    if (
+      !reactNativeCategories.has(category) &&
+      !isMultiEcosystemMobileCategory(category) &&
+      optionId !== "none" &&
+      optionId !== "false"
+    ) {
       return "React Native ecosystem only supports native mobile options";
     }
   }
@@ -3651,20 +3705,8 @@ export const getDisabledReason = (
     }
   }
 
-  const mobileCategories = new Set([
-    "mobileNavigation",
-    "mobileUI",
-    "mobileStorage",
-    "mobileTesting",
-    "mobilePush",
-    "mobileOTA",
-    "mobileDeepLinking",
-    "mobileLibraries",
-  ]);
-
-  if (mobileCategories.has(category)) {
-    const hasNativeFrontend = currentStack.nativeFrontend.some((f) => f !== "none");
-    if (!hasNativeFrontend && optionId !== "none") {
+  if (isReactNativeOnlyCategory(category)) {
+    if (!hasReactNativeApp(currentStack) && optionId !== "none") {
       return `${getCategoryDisplayName(category)} requires a native Expo frontend`;
     }
 
@@ -5684,6 +5726,18 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
         message: reason,
         category: "mobileLibraries",
         optionId: mobileLibrary,
+      });
+    }
+  }
+
+  for (const kotlinLibrary of input.kotlinMobileLibraries ?? []) {
+    const reason = getDisabledReason(input, "kotlinMobileLibraries", kotlinLibrary);
+    if (reason) {
+      issues.push({
+        code: "INCOMPATIBLE_KOTLIN_MOBILE_LIBRARY",
+        message: reason,
+        category: "kotlinMobileLibraries",
+        optionId: kotlinLibrary,
       });
     }
   }

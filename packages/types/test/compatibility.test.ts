@@ -1037,6 +1037,72 @@ describe("compatibility issue helpers", () => {
     ).toBeNull();
   });
 
+  it("blocks Kotlin mobile libraries unless a Kotlin mobile app is selected", () => {
+    const withReactNativeApp = {
+      ...DEFAULT_STACK_SELECTION,
+      nativeFrontend: ["native-bare"],
+      kotlinMobile: "none",
+    };
+
+    expect(getDisabledReason(withReactNativeApp, "kotlinMobileLibraries", "koin")).toBe(
+      "Kotlin mobile libraries require a Jetpack Compose or Compose Multiplatform app",
+    );
+    expect(getDisabledReason(withReactNativeApp, "kotlinMobileLibraries", "none")).toBeNull();
+
+    expect(
+      getDisabledReason(
+        { ...withReactNativeApp, kotlinMobile: "jetpack-compose" },
+        "kotlinMobileLibraries",
+        "koin",
+      ),
+    ).toBeNull();
+  });
+
+  it("keeps Kotlin mobile libraries selectable for a mobile-only Kotlin graph selection", () => {
+    // A graph selection whose only primary part is a Kotlin app lowers to the
+    // react-native ecosystem, which must not reject the Kotlin categories.
+    const kotlinOnlyStack = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "react-native",
+      webFrontend: ["none"],
+      nativeFrontend: ["none"],
+      kotlinMobile: "jetpack-compose",
+    };
+
+    expect(getDisabledReason(kotlinOnlyStack, "kotlinMobileLibraries", "koin")).toBeNull();
+    expect(getDisabledReason(kotlinOnlyStack, "kotlinMobile", "jetpack-compose")).toBeNull();
+    expect(
+      getDisabledReason({ ...kotlinOnlyStack, swiftMobile: "swiftui" }, "swiftMobile", "swiftui"),
+    ).toBeNull();
+
+    expect(
+      getDisabledReason(
+        { ...kotlinOnlyStack, kotlinMobile: "none" },
+        "kotlinMobileLibraries",
+        "koin",
+      ),
+    ).toBe("Kotlin mobile libraries require a Jetpack Compose or Compose Multiplatform app");
+
+    expect(getDisabledReason(kotlinOnlyStack, "database", "postgres")).toBe(
+      "React Native ecosystem only supports native mobile options",
+    );
+  });
+
+  it("reports Kotlin mobile libraries requested alongside a React Native app", () => {
+    const { issues } = evaluateCompatibility({
+      ...DEFAULT_STACK_SELECTION,
+      nativeFrontend: ["native-bare"],
+      kotlinMobile: "none",
+      kotlinMobileLibraries: ["koin", "ktor-client"],
+    });
+
+    const kotlinIssues = issues.filter((issue) => issue.category === "kotlinMobileLibraries");
+    expect(kotlinIssues.map((issue) => issue.optionId)).toEqual(["koin", "ktor-client"]);
+    for (const issue of kotlinIssues) {
+      expect(issue.code).toBe("INCOMPATIBLE_KOTLIN_MOBILE_LIBRARY");
+    }
+  });
+
   it("allows RevenueCat payments for React Native stacks without enabling web payment providers", () => {
     const reactNativeStack = {
       ...DEFAULT_STACK_SELECTION,
