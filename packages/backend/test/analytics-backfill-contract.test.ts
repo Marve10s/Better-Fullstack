@@ -1,10 +1,15 @@
 import { expect, it } from "bun:test";
 
-it("backfill removes every aggregate singleton row before rebuilding", async () => {
+/**
+ * The backfill replays the whole event log. Doing that inside one mutation hits
+ * Convex's per-mutation read limit once `analyticsEvents` grows past a few
+ * thousand rows, so the orchestration has to stay an action over bounded pages.
+ */
+it("backfill rebuilds aggregates across bounded pages rather than one mutation", async () => {
   const source = await Bun.file("packages/backend/convex/analytics.ts").text();
 
-  expect(source).toContain(
-    'for (const existing of await ctx.db.query("analyticsStats").collect())',
-  );
-  expect(source).toContain('await ctx.db.delete("analyticsStats", existing._id)');
+  expect(source).toContain("export const backfillStats = internalAction(");
+  expect(source).toContain("export const backfillPage = internalMutation(");
+  expect(source).toContain("export const clearAggregateBatch = internalMutation(");
+  expect(source).not.toContain("export const backfillStats = internalMutation(");
 });

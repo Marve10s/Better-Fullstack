@@ -5,7 +5,7 @@ import {
   classifyProjectSetupOutcome,
   countReturningMachinesFromActivity,
   type FailureAggregates,
-} from "../convex/analytics-core";
+} from "../convex/analytics_core";
 
 function emptyFailureAggregates(): FailureAggregates {
   return {

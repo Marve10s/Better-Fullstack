@@ -1,12 +1,15 @@
 import { v } from "convex/values";
 
-import { internalMutation, internalQuery } from "./_generated/server";
+import type { Doc, Id } from "./_generated/dataModel";
+
+import { internal } from "./_generated/api";
+import { internalAction, internalMutation, internalQuery } from "./_generated/server";
 import {
   applyFailureClassifications,
   classifyProjectSetupOutcome,
   countReturningMachinesFromActivity,
   type Distribution,
-} from "./analytics-core";
+} from "./analytics_core";
 
 type Dist = Distribution;
 type StackValue = string | boolean | string[];
@@ -169,6 +172,44 @@ function eventStack(ev: AnalyticsEvent): StackRecord {
   for (const k of BOOL_FIELDS) if (ev[k] !== undefined) s[k] = ev[k] as boolean;
   if (ev.options) Object.assign(s, ev.options);
   return s;
+}
+
+const ENVELOPE_STRING_FIELDS = [
+  "source",
+  "client",
+  "action",
+  "status",
+  "mode",
+  "ciProvider",
+  "executionRuntime",
+] as const;
+const ENVELOPE_BOOL_FIELDS = ["ci", "retry"] as const;
+
+/**
+ * Rows ingested between 2026-08-07 and the module-rename deploy carry their
+ * envelope inside `stack`, because that build never lifted them out. Reading
+ * them back through this restores the envelope aggregates for that history.
+ */
+function withEnvelopeFromStack(ev: AnalyticsEvent): AnalyticsEvent {
+  const stack = ev.stack;
+  if (!stack) return ev;
+  const recovered: AnalyticsEvent = { ...ev };
+  for (const key of ENVELOPE_STRING_FIELDS) {
+    const value = stack[key];
+    if (recovered[key] === undefined && typeof value === "string") recovered[key] = value;
+  }
+  for (const key of ENVELOPE_BOOL_FIELDS) {
+    const value = stack[key];
+    if (recovered[key] === undefined && typeof value === "boolean") recovered[key] = value;
+  }
+  return recovered;
+}
+
+function stripSystemFields<T extends Doc<"analyticsStats"> | Doc<"analyticsDailyStats">>(
+  row: T,
+): Omit<T, "_id" | "_creationTime"> {
+  const { _id, _creationTime, ...rest } = row;
+  return rest;
 }
 
 const LEGACY_KEYS: Set<string> = new Set([...SINGLE_FIELDS, ...MULTI_FIELDS, ...BOOL_FIELDS]);
@@ -929,82 +970,116 @@ export const getRecentEvents = internalQuery({
   },
 });
 
-export const backfillStats = internalMutation({
+const CLEAR_BATCH = 512;
+const BACKFILL_PAGE_SIZE = 500;
+
+/**
+ * Delete one bounded batch of aggregate rows. The caller loops until `done`,
+ * so clearing never has to fit the whole table into a single mutation.
+ */
+export const clearAggregateBatch = internalMutation({
   args: {},
-  returns: v.object({
-    totalProcessed: v.number(),
-    dailyDates: v.number(),
-    uniqueMachines: v.number(),
-  }),
+  returns: v.object({ done: v.boolean(), deleted: v.number() }),
   handler: async (ctx) => {
-    for (const existing of await ctx.db.query("analyticsStats").collect()) {
-      await ctx.db.delete("analyticsStats", existing._id);
+    let budget = CLEAR_BATCH;
+    for (const table of [
+      "analyticsStats",
+      "analyticsDailyStats",
+      "analyticsMachines",
+      "analyticsMachineDailyActivity",
+    ] as const) {
+      if (budget === 0) break;
+      const rows = await ctx.db.query(table).take(budget);
+      for (const row of rows) await ctx.db.delete(table, row._id);
+      budget -= rows.length;
     }
-    for (const d of await ctx.db.query("analyticsDailyStats").collect()) {
-      await ctx.db.delete("analyticsDailyStats", d._id);
-    }
-    for (const m of await ctx.db.query("analyticsMachines").collect()) {
-      await ctx.db.delete("analyticsMachines", m._id);
-    }
-    for (const a of await ctx.db.query("analyticsMachineDailyActivity").collect()) {
-      await ctx.db.delete("analyticsMachineDailyActivity", a._id);
+    return { done: budget > 0, deleted: CLEAR_BATCH - budget };
+  },
+});
+
+/**
+ * Fold one page of events into the persisted aggregates. Every aggregate is
+ * additive (counters and distributions) or a running min/max, so replaying the
+ * log a page at a time lands on the same result as one pass over all of it —
+ * without reading the whole event table into a single mutation.
+ */
+/** Newest event at the moment the rebuild starts; see `backfillStats`. */
+export const backfillWatermark = internalQuery({
+  args: {},
+  returns: v.number(),
+  handler: async (ctx) => {
+    const newest = await ctx.db.query("analyticsEvents").order("desc").first();
+    return newest?._creationTime ?? 0;
+  },
+});
+
+export const backfillPage = internalMutation({
+  args: { cursor: v.union(v.string(), v.null()), until: v.number() },
+  returns: v.object({
+    cursor: v.union(v.string(), v.null()),
+    isDone: v.boolean(),
+    processed: v.number(),
+  }),
+  handler: async (ctx, args) => {
+    const page = await ctx.db
+      .query("analyticsEvents")
+      .order("asc")
+      .paginate({ cursor: args.cursor, numItems: BACKFILL_PAGE_SIZE });
+
+    // Events newer than the watermark were ingested after the rebuild began, so
+    // live ingest has already counted them against the cleared aggregates.
+    const events = page.page.filter((ev) => ev._creationTime <= args.until);
+    const reachedWatermark = events.length < page.page.length;
+
+    if (events.length === 0) {
+      return { cursor: page.continueCursor, isDone: true, processed: 0 };
     }
 
-    const events = await ctx.db.query("analyticsEvents").collect();
-    events.sort((a, b) => a._creationTime - b._creationTime);
+    const statsRow = await ctx.db.query("analyticsStats").first();
+    const stats: StatsShape = statsRow
+      ? { ...emptyStats(), ...stripSystemFields(statsRow) }
+      : emptyStats();
 
-    const stats = emptyStats();
-    const dailyCounts = new Map<string, DailyStatsShape>();
-    const machines = new Map<
-      string,
-      {
-        firstSeen: number;
-        lastSeen: number;
-        eventCount: number;
-        platform?: string;
-        client?: string;
-        lastCliVersion?: string;
-      }
-    >();
-    const machineActivity = new Map<
-      string,
-      { date: string; machineId: string; eventCount: number; firstSeen: number; lastSeen: number }
-    >();
+    const dailyTouched = new Map<string, DailyStatsShape>();
+    const dailyIds = new Map<string, Id<"analyticsDailyStats">>();
 
     for (const ev of events) {
       const now = ev._creationTime;
-      applyEvent(stats, { ...ev, creationTime: now } as AnalyticsEvent);
+      const event = withEnvelopeFromStack({ ...ev, creationTime: now } as AnalyticsEvent);
+      applyEvent(stats, event);
 
       const date = utcDate(now);
-      const daily = dailyCounts.get(date) ?? emptyDailyStats(date);
-      applyDailyEvent(daily, { ...ev, creationTime: now } as AnalyticsEvent);
+      let daily = dailyTouched.get(date);
+      if (!daily) {
+        const existing = await ctx.db
+          .query("analyticsDailyStats")
+          .withIndex("by_date", (q) => q.eq("date", date))
+          .first();
+        daily = existing
+          ? { ...emptyDailyStats(date), ...stripSystemFields(existing) }
+          : emptyDailyStats(date);
+        if (existing) dailyIds.set(date, existing._id);
+      }
+      applyDailyEvent(daily, event);
 
       if (ev.machineId) {
-        const activityKey = `${date}:${ev.machineId}`;
-        const activity = machineActivity.get(activityKey);
-        if (activity) {
-          activity.eventCount += 1;
-          activity.lastSeen = now;
-        } else {
-          machineActivity.set(activityKey, {
-            date,
-            machineId: ev.machineId,
-            eventCount: 1,
-            firstSeen: now,
-            lastSeen: now,
-          });
-        }
-
-        const machine = machines.get(ev.machineId);
+        const machine = await ctx.db
+          .query("analyticsMachines")
+          .withIndex("by_machine_id", (q) => q.eq("machineId", ev.machineId as string))
+          .first();
         if (machine) {
-          machine.lastSeen = now;
-          machine.eventCount += 1;
-          machine.platform = ev.platform ?? machine.platform;
-          machine.client = ev.client ?? machine.client;
-          machine.lastCliVersion = ev.cli_version ?? machine.lastCliVersion;
+          await ctx.db.patch("analyticsMachines", machine._id, {
+            lastSeen: Math.max(machine.lastSeen, now),
+            firstSeen: Math.min(machine.firstSeen, now),
+            eventCount: machine.eventCount + 1,
+            platform: ev.platform ?? machine.platform,
+            client: ev.client ?? machine.client,
+            lastCliVersion: ev.cli_version ?? machine.lastCliVersion,
+          });
         } else {
           daily.newMachines += 1;
-          machines.set(ev.machineId, {
+          await ctx.db.insert("analyticsMachines", {
+            machineId: ev.machineId,
             firstSeen: now,
             lastSeen: now,
             eventCount: 1,
@@ -1013,39 +1088,112 @@ export const backfillStats = internalMutation({
             lastCliVersion: ev.cli_version,
           });
         }
+
+        const activity = await ctx.db
+          .query("analyticsMachineDailyActivity")
+          .withIndex("by_date_machine", (q) =>
+            q.eq("date", date).eq("machineId", ev.machineId as string),
+          )
+          .first();
+        if (activity) {
+          await ctx.db.patch("analyticsMachineDailyActivity", activity._id, {
+            eventCount: activity.eventCount + 1,
+            firstSeen: Math.min(activity.firstSeen, now),
+            lastSeen: Math.max(activity.lastSeen, now),
+          });
+        } else {
+          await ctx.db.insert("analyticsMachineDailyActivity", {
+            date,
+            machineId: ev.machineId,
+            eventCount: 1,
+            firstSeen: now,
+            lastSeen: now,
+          });
+        }
       }
-      dailyCounts.set(date, daily);
+      dailyTouched.set(date, daily);
     }
 
-    stats.uniqueMachines = machines.size;
-    const activeDaysByMachine = new Map<string, number>();
-    for (const activity of machineActivity.values()) {
-      activeDaysByMachine.set(
-        activity.machineId,
-        (activeDaysByMachine.get(activity.machineId) ?? 0) + 1,
-      );
-    }
-    stats.returningMachines = [...activeDaysByMachine.values()].filter(
-      (activeDays) => activeDays > 1,
-    ).length;
-    stats.trackedMachineEvents = [...machines.values()].reduce((sum, m) => sum + m.eventCount, 0);
-    if (stats.totalEvents > 0) {
-      await ctx.db.insert("analyticsStats", stats);
-    }
-    for (const daily of dailyCounts.values()) {
-      await ctx.db.insert("analyticsDailyStats", daily);
-    }
-    for (const [machineId, machine] of machines) {
-      await ctx.db.insert("analyticsMachines", { machineId, ...machine });
-    }
-    for (const activity of machineActivity.values()) {
-      await ctx.db.insert("analyticsMachineDailyActivity", activity);
+    if (statsRow) await ctx.db.replace("analyticsStats", statsRow._id, stats);
+    else await ctx.db.insert("analyticsStats", stats);
+
+    for (const [date, daily] of dailyTouched) {
+      const id = dailyIds.get(date);
+      if (id) await ctx.db.replace("analyticsDailyStats", id, daily);
+      else await ctx.db.insert("analyticsDailyStats", daily);
     }
 
     return {
-      totalProcessed: stats.totalEvents,
-      dailyDates: dailyCounts.size,
-      uniqueMachines: machines.size,
+      cursor: page.continueCursor,
+      isDone: page.isDone || reachedWatermark,
+      processed: events.length,
     };
+  },
+});
+
+/**
+ * Derive the machine roll-ups that only make sense once every page has landed.
+ */
+export const finalizeBackfill = internalMutation({
+  args: {},
+  returns: v.object({ uniqueMachines: v.number(), dailyDates: v.number() }),
+  handler: async (ctx) => {
+    const statsRow = await ctx.db.query("analyticsStats").first();
+    const machines = await ctx.db.query("analyticsMachines").collect();
+    const activity = await ctx.db.query("analyticsMachineDailyActivity").collect();
+    const dailyDates = (await ctx.db.query("analyticsDailyStats").collect()).length;
+
+    if (statsRow) {
+      await ctx.db.patch("analyticsStats", statsRow._id, {
+        uniqueMachines: machines.length,
+        returningMachines: countReturningMachinesFromActivity(activity),
+        returningMachinesVersion: RETURNING_MACHINES_VERSION,
+        trackedMachineEvents: machines.reduce((sum, m) => sum + m.eventCount, 0),
+      });
+    }
+    return { uniqueMachines: machines.length, dailyDates };
+  },
+});
+
+/**
+ * Rebuild every aggregate table from the raw event log, one bounded page at a
+ * time so the job stays inside Convex's per-mutation read and write limits no
+ * matter how large `analyticsEvents` grows.
+ */
+export const backfillStats = internalAction({
+  args: {},
+  returns: v.object({
+    totalProcessed: v.number(),
+    dailyDates: v.number(),
+    uniqueMachines: v.number(),
+  }),
+  handler: async (
+    ctx,
+  ): Promise<{
+    totalProcessed: number;
+    dailyDates: number;
+    uniqueMachines: number;
+  }> => {
+    const until: number = await ctx.runQuery(internal.analytics.backfillWatermark, {});
+    for (;;) {
+      const { done } = await ctx.runMutation(internal.analytics.clearAggregateBatch, {});
+      if (done) break;
+    }
+
+    let cursor: string | null = null;
+    let totalProcessed = 0;
+    for (;;) {
+      const page: { cursor: string | null; isDone: boolean; processed: number } =
+        await ctx.runMutation(internal.analytics.backfillPage, { cursor, until });
+      totalProcessed += page.processed;
+      if (page.isDone) break;
+      cursor = page.cursor;
+    }
+
+    const { uniqueMachines, dailyDates } = await ctx.runMutation(
+      internal.analytics.finalizeBackfill,
+      {},
+    );
+    return { totalProcessed, dailyDates, uniqueMachines };
   },
 });

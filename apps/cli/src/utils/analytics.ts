@@ -20,7 +20,13 @@ import {
 } from "./telemetry-settings";
 
 const TELEMETRY_DELIVERY_TIMEOUT_MS = 1_000;
-const TELEMETRY_FLUSH_TIMEOUT_MS = 250;
+/**
+ * Must stay above `TELEMETRY_DELIVERY_TIMEOUT_MS` plus the settings reads a
+ * delivery performs first. A shorter budget aborts the terminal event of every
+ * command — it is enqueued microseconds before the flush — while start events
+ * survive on the command's own runtime.
+ */
+const TELEMETRY_FLUSH_TIMEOUT_MS = 1_500;
 const telemetryDeliveryQueue = new TelemetryDeliveryQueue();
 let machineIdPromise: Promise<string | undefined> | undefined;
 
