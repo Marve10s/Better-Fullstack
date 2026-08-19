@@ -10,6 +10,6 @@ it("backfill rebuilds aggregates across bounded pages rather than one mutation",
 
   expect(source).toContain("export const backfillStats = internalAction(");
   expect(source).toContain("export const backfillPage = internalMutation(");
-  expect(source).toContain("export const clearAggregateBatch = internalMutation(");
+  expect(source).toContain("export const sealAggregates = internalMutation(");
   expect(source).not.toContain("export const backfillStats = internalMutation(");
 });
