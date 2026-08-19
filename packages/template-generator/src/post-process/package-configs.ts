@@ -7,6 +7,7 @@ import type { ProjectConfig } from "@better-fullstack/types";
 
 import type { VirtualFileSystem } from "../core/virtual-fs";
 
+import { dependencyVersionMap } from "../utils/add-deps";
 import { getGraphBackendConnection, getGraphBackendConnections } from "../utils/graph-backend";
 import { getServerPackagePath } from "../utils/project-paths";
 
@@ -36,6 +37,41 @@ type PackageManagerConfig = {
 type WorkspaceTool = "turbo" | "nx" | "vite-plus" | null;
 
 const VITE_PLUS_BUNDLED_VITEST_VERSION = "4.1.10";
+
+const VITE_PLUS_PREPARE_COMMAND = "vp config --no-agent --hooks-dir .vite-hooks";
+
+// vp resolves each package's vite config from the process cwd, so the root scripts
+// must delegate per workspace instead of linting the whole tree in one pass.
+const VITE_PLUS_PACKAGE_SCRIPTS = {
+  lint: "vp lint --no-error-on-unmatched-pattern",
+  format: "vp fmt",
+  check: "vp check --no-error-on-unmatched-pattern",
+};
+
+// `vp fmt` reads .gitignore and .prettierignore from its own working directory, and
+// the per-workspace scripts above run it inside each package.
+const VITE_PLUS_FORMAT_IGNORE = [
+  "dist",
+  "build",
+  "out",
+  ".next",
+  ".nuxt",
+  ".output",
+  ".vercel",
+  ".nitro",
+  ".svelte-kit",
+  ".astro",
+  ".expo",
+  ".turbo",
+  "*.gen.ts",
+].join("\n");
+
+// processPackageConfigs runs more than once over the same root package.json.
+function withVitePlusPrepare(existing: string | undefined): string {
+  if (!existing) return VITE_PLUS_PREPARE_COMMAND;
+  if (existing.includes(VITE_PLUS_PREPARE_COMMAND)) return existing;
+  return `${existing} && ${VITE_PLUS_PREPARE_COMMAND}`;
+}
 
 const VIRTUAL_PACKAGE_MANAGER_VERSIONS: Record<ProjectConfig["packageManager"], string> = {
   npm: "10.9.2",
@@ -206,13 +242,11 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
   applyGeneratedPackageTestScripts(vfs, config);
   const testCommands = getWorkspaceTestCommands(vfs, packageManager);
   if (workspaceTool === "vite-plus") {
-    scripts.check = "vp check";
-    scripts.lint = "vp lint";
-    scripts.format = "vp fmt";
+    scripts.check = "vp run -r check";
+    scripts.lint = "vp run -r lint";
+    scripts.format = "vp run -r format";
     scripts.test = "vp run -r test";
-    scripts.prepare = scripts.prepare
-      ? `${scripts.prepare} && vp config --no-agent --hooks-dir .vite-hooks`
-      : "vp config --no-agent --hooks-dir .vite-hooks";
+    scripts.prepare = withVitePlusPrepare(scripts.prepare);
   } else if (testCommands.length > 0) {
     scripts.test = testCommands.join(" && ");
   } else {
@@ -269,31 +303,31 @@ function applyVitePlusWorkspaceScripts(vfs: VirtualFileSystem, config: ProjectCo
   for (const filePath of vfs.getAllFiles()) {
     if (filePath === "package.json" || !filePath.endsWith("/package.json")) continue;
     const pkgJson = vfs.readJson<PackageJson>(filePath);
-    if (!pkgJson?.scripts) continue;
+    if (!pkgJson) continue;
+    pkgJson.scripts ??= {};
 
-    let changed = false;
     for (const [name, script] of Object.entries(pkgJson.scripts)) {
       // `vp` is not a node entrypoint, so scripts that boot the aliased vite bin
       // under the node inspector have no Vite+ equivalent.
       if (script.includes("node_modules/vite/bin/vite.js")) {
         delete pkgJson.scripts[name];
-        changed = true;
         continue;
       }
-      const rewritten = script.split("&&").map(rewriteSegment).join("&&");
-      if (rewritten !== script) {
-        pkgJson.scripts[name] = rewritten;
-        changed = true;
-      }
+      pkgJson.scripts[name] = script.split("&&").map(rewriteSegment).join("&&");
     }
-    if (changed) vfs.writeJson(filePath, pkgJson);
+
+    Object.assign(pkgJson.scripts, VITE_PLUS_PACKAGE_SCRIPTS);
+    vfs.writeJson(filePath, pkgJson);
+
+    const ignorePath = filePath.replace(/package\.json$/, ".prettierignore");
+    if (!vfs.fileExists(ignorePath)) vfs.writeFile(ignorePath, `${VITE_PLUS_FORMAT_IGNORE}\n`);
   }
 }
 
 function applyVitePlusOverrides(pkgJson: PackageJson, config: ProjectConfig): void {
   if (!config.addons.includes("vite-plus")) return;
   const overrides = {
-    vite: "npm:@voidzero-dev/vite-plus-core@^0.2.9",
+    vite: `npm:@voidzero-dev/vite-plus-core@${dependencyVersionMap["@voidzero-dev/vite-plus-core"]}`,
     vitest: VITE_PLUS_BUNDLED_VITEST_VERSION,
     "@vitest/ui": VITE_PLUS_BUNDLED_VITEST_VERSION,
     "@vitest/coverage-v8": VITE_PLUS_BUNDLED_VITEST_VERSION,
