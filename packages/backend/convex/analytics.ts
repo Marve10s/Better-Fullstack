@@ -189,9 +189,9 @@ const ENVELOPE_BOOL_FIELDS = ["ci", "retry"] as const;
  * them out of `stack`. The web client sends the snake_case pair.
  */
 const ENVELOPE_ALIASES = [
-  ["failureStage", ["failure_stage", "stage"]],
-  ["failureReason", ["failure_reason", "reason"]],
-  ["errorName", ["error_name"]],
+  ["failureStage", ["failureStage", "failure_stage", "stage"]],
+  ["failureReason", ["failureReason", "failure_reason", "reason"]],
+  ["errorName", ["errorName", "error_name"]],
 ] as const;
 
 /**
@@ -990,7 +990,9 @@ export const getRecentEvents = internalQuery({
 });
 
 const CLEAR_BATCH = 512;
-const BACKFILL_PAGE_SIZE = 500;
+// The ingest accepts payloads up to 64 KiB, so the page size — not just the
+// document count — is what keeps a mutation inside its byte budget.
+const BACKFILL_PAGE_SIZE = 64;
 
 const AGGREGATE_TABLES = [
   "analyticsStats",
@@ -1037,7 +1039,7 @@ export const backfillPage = internalMutation({
     cursor: v.union(v.string(), v.null()),
     isDone: v.boolean(),
     processed: v.number(),
-    newDates: v.number(),
+    dates: v.array(v.string()),
   }),
   handler: async (ctx, args) => {
     const page = await ctx.db
@@ -1051,7 +1053,7 @@ export const backfillPage = internalMutation({
     const reachedWatermark = events.length < page.page.length;
 
     if (events.length === 0) {
-      return { cursor: page.continueCursor, isDone: true, processed: 0, newDates: 0 };
+      return { cursor: page.continueCursor, isDone: true, processed: 0, dates: [] };
     }
 
     const statsRow = await ctx.db.query("analyticsStats").first();
@@ -1061,7 +1063,6 @@ export const backfillPage = internalMutation({
 
     const dailyTouched = new Map<string, DailyStatsShape>();
     const dailyIds = new Map<string, Id<"analyticsDailyStats">>();
-    let newDates = 0;
 
     for (const ev of events) {
       const now = ev._creationTime;
@@ -1080,7 +1081,6 @@ export const backfillPage = internalMutation({
           dailyIds.set(date, existing._id);
         } else {
           daily = emptyDailyStats(date);
-          newDates += 1;
         }
       }
       applyDailyEvent(daily, event);
@@ -1166,7 +1166,7 @@ export const backfillPage = internalMutation({
       cursor: page.continueCursor,
       isDone: page.isDone || reachedWatermark,
       processed: events.length,
-      newDates,
+      dates: [...dailyTouched.keys()],
     };
   },
 });
@@ -1198,18 +1198,22 @@ export const backfillStats = internalAction({
 
     let cursor: string | null = null;
     let totalProcessed = 0;
-    let dailyDates = 0;
+    const dates = new Set<string>();
     for (;;) {
-      const page: { cursor: string | null; isDone: boolean; processed: number; newDates: number } =
-        await ctx.runMutation(internal.analytics.backfillPage, { cursor, until });
+      const page: {
+        cursor: string | null;
+        isDone: boolean;
+        processed: number;
+        dates: string[];
+      } = await ctx.runMutation(internal.analytics.backfillPage, { cursor, until });
       totalProcessed += page.processed;
-      dailyDates += page.newDates;
+      for (const date of page.dates) dates.add(date);
       if (page.isDone) break;
       cursor = page.cursor;
     }
 
     const uniqueMachines: number = await ctx.runQuery(internal.analytics.countMachines, {});
-    return { totalProcessed, dailyDates, uniqueMachines };
+    return { totalProcessed, dailyDates: dates.size, uniqueMachines };
   },
 });
 
