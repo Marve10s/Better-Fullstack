@@ -896,10 +896,13 @@ export async function createProjectHandler(
         );
       }
 
+      const firstFailure = setupFailures[0];
       await trackProjectCreation(config, input.disableAnalytics, {
         source: telemetrySource,
         success: true,
         setupFailures: setupFailures.map((failure) => failure.step),
+        failureStage: firstFailure?.step,
+        failureReason: firstFailure?.failureReason,
         durationMs: Date.now() - startTime,
       });
       try {
