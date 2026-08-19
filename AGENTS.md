@@ -6,7 +6,7 @@ current domain language and `docs/next-updates-roadmap.md` for product priority.
 
 ## Guidelines
 
-Do not read files in `docs/guidelines/` by default. Treat this section as an index and only open a guideline file when the user request clearly matches that topic.
+Do not bulk-read `docs/guidelines/`. Open a guideline when the request matches its topic. One exception is mandatory, not optional: adding any new library, tool, or category to any ecosystem requires reading `docs/guidelines/adding-new-tool-options/` first.
 
 See `docs/guidelines/` for deeper reference on these topics:
 
@@ -29,6 +29,10 @@ See `docs/guidelines/` for deeper reference on these topics:
 - `design-reading-guide.md` - ordered index of design-related markdown (agent skills + BF video style), precedence when sources conflict, and commands to verify coverage
 - `scaffbench-benchmark.md` - ScaffBench protocol, execution, validation, and publication rules
 - `adding-new-tool-options/` - **read this subfolder when adding any new library, tool, or category** to any ecosystem (TypeScript, Rust, Go, Python). Covers every file that must be touched, with worked examples, template handler reference, test patterns, and routing edge cases (Convex skips, self-backend, frontend array detection, processor ordering)
+
+## Web UI
+
+`apps/web` has established primitives — tabs, copy buttons, command/code bars, cards. Before adding any UI control, grep `apps/web/src/components` for an existing one and reuse it. Do not introduce a second visual language for a control that already exists (no pills where the app uses tabs). New visual patterns need Ibrahim's sign-off; `docs/guidelines/design-reading-guide.md` covers new visual direction, not substitutes for existing components.
 
 ## Workflow
 

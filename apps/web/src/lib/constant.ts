@@ -189,7 +189,7 @@ export const TECH_OPTIONS: Record<
     {
       id: "vinext",
       name: "Vinext",
-      description: "next framework powered by Vite",
+      description: "Next.js framework powered by Vite",
       icon: "https://cdn.simpleicons.org/nextdotjs",
       color: "from-green-400 to-green-600",
       default: false,
