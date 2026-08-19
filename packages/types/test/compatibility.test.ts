@@ -1037,6 +1037,42 @@ describe("compatibility issue helpers", () => {
     ).toBeNull();
   });
 
+  it("blocks Kotlin mobile libraries unless a Kotlin mobile app is selected", () => {
+    const withReactNativeApp = {
+      ...DEFAULT_STACK_SELECTION,
+      nativeFrontend: ["native-bare"],
+      kotlinMobile: "none",
+    };
+
+    expect(getDisabledReason(withReactNativeApp, "kotlinMobileLibraries", "koin")).toBe(
+      "Kotlin mobile libraries require a Jetpack Compose or Compose Multiplatform app",
+    );
+    expect(getDisabledReason(withReactNativeApp, "kotlinMobileLibraries", "none")).toBeNull();
+
+    expect(
+      getDisabledReason(
+        { ...withReactNativeApp, kotlinMobile: "jetpack-compose" },
+        "kotlinMobileLibraries",
+        "koin",
+      ),
+    ).toBeNull();
+  });
+
+  it("reports Kotlin mobile libraries requested alongside a React Native app", () => {
+    const { issues } = evaluateCompatibility({
+      ...DEFAULT_STACK_SELECTION,
+      nativeFrontend: ["native-bare"],
+      kotlinMobile: "none",
+      kotlinMobileLibraries: ["koin", "ktor-client"],
+    });
+
+    const kotlinIssues = issues.filter((issue) => issue.category === "kotlinMobileLibraries");
+    expect(kotlinIssues.map((issue) => issue.optionId)).toEqual(["koin", "ktor-client"]);
+    for (const issue of kotlinIssues) {
+      expect(issue.code).toBe("INCOMPATIBLE_KOTLIN_MOBILE_LIBRARY");
+    }
+  });
+
   it("allows RevenueCat payments for React Native stacks without enabling web payment providers", () => {
     const reactNativeStack = {
       ...DEFAULT_STACK_SELECTION,

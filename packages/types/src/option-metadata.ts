@@ -431,6 +431,24 @@ export const TYPESCRIPT_CATEGORY_ORDER = [
   "install",
 ] as const satisfies readonly OptionCategory[];
 
+/**
+ * Kotlin, Swift and Flutter apps exist only as stack graph parts: they are
+ * composed in multi-ecosystem mode or through `--shape mobile`, and the
+ * `react-native` ecosystem rejects them outright. They ride along in the mobile
+ * category order so their metadata stays reachable, so every surface that
+ * presents the react-native ecosystem to a user must filter them out.
+ */
+export const MULTI_ECOSYSTEM_MOBILE_CATEGORIES: ReadonlySet<string> = new Set([
+  "kotlinMobile",
+  "kotlinMobileLibraries",
+  "swiftMobile",
+  "dartMobile",
+]);
+
+export function isMultiEcosystemMobileCategory(category: string): boolean {
+  return MULTI_ECOSYSTEM_MOBILE_CATEGORIES.has(category);
+}
+
 export const REACT_NATIVE_CATEGORY_ORDER = [
   "nativeFrontend",
   "kotlinMobile",

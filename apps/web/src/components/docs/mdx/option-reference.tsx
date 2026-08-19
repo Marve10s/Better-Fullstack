@@ -1,6 +1,7 @@
 import {
   getCategoryDisplayName,
   getCategoryOrderForEcosystem,
+  isMultiEcosystemMobileCategory,
   OPTION_CATEGORY_METADATA,
   type OptionCategoryEcosystem,
 } from "@better-fullstack/types";
@@ -63,8 +64,17 @@ const OPTION_REFERENCE_ROWS: OptionReferenceRow[] = [
   },
 ];
 
+// Kotlin, Swift and Flutter apps are not reachable with `--ecosystem
+// react-native`, so listing their categories on the React Native page would
+// document values the ecosystem rejects.
+function getReferenceCategories(ecosystem: OptionCategoryEcosystem) {
+  return getCategoryOrderForEcosystem(ecosystem).filter(
+    (category) => !isMultiEcosystemMobileCategory(category),
+  );
+}
+
 function getEcosystemStats(ecosystem: OptionCategoryEcosystem) {
-  const categories = getCategoryOrderForEcosystem(ecosystem);
+  const categories = getReferenceCategories(ecosystem);
   const optionCount = categories.reduce(
     (sum, category) => sum + OPTION_CATEGORY_METADATA[category].options.length,
     0,
@@ -119,7 +129,7 @@ export function OptionReferenceSummary() {
 }
 
 export function OptionCategoryTable({ ecosystem }: { ecosystem: OptionCategoryEcosystem }) {
-  const categories = getCategoryOrderForEcosystem(ecosystem);
+  const categories = getReferenceCategories(ecosystem);
 
   return (
     <div className="not-prose my-6 overflow-hidden rounded-lg border border-[var(--docs-border-subtle)] bg-[var(--docs-surface-elevated)]/70 shadow-sm">

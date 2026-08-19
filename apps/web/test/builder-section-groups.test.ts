@@ -7,6 +7,7 @@ import {
 
 import {
   getBuilderSections,
+  isHiddenMobilePlatformCategory,
   SECTION_EMBEDDED_CATEGORIES,
   SECTIONS_BY_ECOSYSTEM,
 } from "../src/components/stack-builder/section-groups";
@@ -59,6 +60,34 @@ describe("builder section groups", () => {
     for (const section of sections) {
       expect(knownKeys.has(section.key)).toBe(true);
     }
+  });
+
+  it("keeps Kotlin, Swift and Flutter categories out of the React Native ecosystem", () => {
+    const expoStack = { nativeFrontend: ["native-bare"] };
+    const rendered = getBuilderSections(
+      "react-native",
+      getCategoryOrderForEcosystem("react-native"),
+    )
+      .flatMap((section) => section.categories)
+      .filter((category) => !isHiddenMobilePlatformCategory(expoStack, category));
+
+    expect(rendered).not.toContain("kotlinMobile");
+    expect(rendered).not.toContain("kotlinMobileLibraries");
+    expect(rendered).not.toContain("swiftMobile");
+    expect(rendered).not.toContain("dartMobile");
+    expect(rendered).toContain("nativeFrontend");
+    expect(rendered).toContain("mobileLibraries");
+  });
+
+  it("hides Expo categories until a React Native app is selected", () => {
+    const emptyStack = { nativeFrontend: ["none"] };
+
+    expect(isHiddenMobilePlatformCategory(emptyStack, "mobileLibraries")).toBe(true);
+    expect(isHiddenMobilePlatformCategory(emptyStack, "mobileNavigation")).toBe(true);
+    expect(isHiddenMobilePlatformCategory(emptyStack, "nativeFrontend")).toBe(false);
+    expect(
+      isHiddenMobilePlatformCategory({ nativeFrontend: ["native-uniwind"] }, "mobileLibraries"),
+    ).toBe(false);
   });
 
   it("falls back to a single-category section for unmapped categories", () => {

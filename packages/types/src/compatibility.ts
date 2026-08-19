@@ -210,6 +210,38 @@ export function getKotlinJavaIncompatibilityReason(stack: KotlinJavaGateInput): 
   return null;
 }
 
+// ============================================
+// MOBILE PLATFORM GATE
+// ============================================
+// Mobile spans four independent platforms (React Native, Kotlin, Swift,
+// Flutter) whose library catalogs never mix. This is the single source of truth
+// for which categories belong to React Native — `getDisabledReason` and the web
+// builder's category visibility both read it, so Expo options can never be
+// offered without an Expo app and Kotlin libraries can never be offered for one.
+
+const REACT_NATIVE_ONLY_CATEGORIES: ReadonlySet<string> = new Set([
+  "mobileNavigation",
+  "mobileUI",
+  "mobileStorage",
+  "mobileTesting",
+  "mobilePush",
+  "mobileOTA",
+  "mobileDeepLinking",
+  "mobileLibraries",
+]);
+
+export function isReactNativeOnlyCategory(category: string): boolean {
+  return REACT_NATIVE_ONLY_CATEGORIES.has(category);
+}
+
+export function hasReactNativeApp(stack: { nativeFrontend?: string[] }): boolean {
+  return (stack.nativeFrontend ?? []).some((frontend) => frontend !== "none");
+}
+
+function hasKotlinMobileApp(stack: { kotlinMobile?: string }): boolean {
+  return (stack.kotlinMobile ?? "none") !== "none";
+}
+
 export type CompatibilityIssue = {
   code: string;
   message: string;
@@ -2507,6 +2539,14 @@ export const getDisabledReason = (
   optionId: string,
 ): string | null => {
   if (
+    optionId !== "none" &&
+    category === "kotlinMobileLibraries" &&
+    !hasKotlinMobileApp(currentStack)
+  ) {
+    return "Kotlin mobile libraries require a Jetpack Compose or Compose Multiplatform app";
+  }
+
+  if (
     currentStack.ecosystem === "react-native" &&
     category === "codeQuality" &&
     optionId !== "knip" &&
@@ -3651,20 +3691,8 @@ export const getDisabledReason = (
     }
   }
 
-  const mobileCategories = new Set([
-    "mobileNavigation",
-    "mobileUI",
-    "mobileStorage",
-    "mobileTesting",
-    "mobilePush",
-    "mobileOTA",
-    "mobileDeepLinking",
-    "mobileLibraries",
-  ]);
-
-  if (mobileCategories.has(category)) {
-    const hasNativeFrontend = currentStack.nativeFrontend.some((f) => f !== "none");
-    if (!hasNativeFrontend && optionId !== "none") {
+  if (isReactNativeOnlyCategory(category)) {
+    if (!hasReactNativeApp(currentStack) && optionId !== "none") {
       return `${getCategoryDisplayName(category)} requires a native Expo frontend`;
     }
 
@@ -5684,6 +5712,18 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
         message: reason,
         category: "mobileLibraries",
         optionId: mobileLibrary,
+      });
+    }
+  }
+
+  for (const kotlinLibrary of input.kotlinMobileLibraries ?? []) {
+    const reason = getDisabledReason(input, "kotlinMobileLibraries", kotlinLibrary);
+    if (reason) {
+      issues.push({
+        code: "INCOMPATIBLE_KOTLIN_MOBILE_LIBRARY",
+        message: reason,
+        category: "kotlinMobileLibraries",
+        optionId: kotlinLibrary,
       });
     }
   }
