@@ -48,6 +48,7 @@ const PR_BROAD_PRESET_NAMES = [
   "preset-angular-fets",
   "preset-vinext-minimal",
   "preset-vinext-basic",
+  "preset-vite-plus-toolchain",
 ];
 
 describe("preset groups", () => {

@@ -444,6 +444,19 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
     },
   },
 
+  "vite-plus-toolchain": {
+    ecosystem: "typescript",
+    overrides: {
+      frontend: ["tanstack-start"],
+      backend: "self",
+      runtime: "none",
+      api: "orpc",
+      cssFramework: "tailwind",
+      webDeploy: "vercel",
+      addons: ["vite-plus"],
+    },
+  },
+
   "version-channel-latest": {
     ecosystem: "typescript",
     overrides: {
@@ -1045,6 +1058,7 @@ const PRESET_GROUPS = {
     "angular-fets",
     "vinext-minimal",
     "vinext-basic",
+    "vite-plus-toolchain",
   ],
 } as const satisfies Record<Exclude<PresetGroupId, "all">, readonly string[]>;
 

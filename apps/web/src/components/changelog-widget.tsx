@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import { TbX as X } from "react-icons/tb";
 
 import { ChangelogModal } from "@/components/changelog-modal";
 import { latestChangelogRelease } from "@/lib/changelog";
@@ -79,57 +78,74 @@ export function ChangelogWidget() {
   return (
     <>
       {isVisible ? (
-        <aside
-          className="animate-fadeIn fixed bottom-3 left-3 z-40 w-[calc(100vw-1.5rem)] max-w-[22rem] overflow-hidden rounded-2xl border border-edge bg-surface shadow-2xl shadow-black/10 sm:bottom-4 sm:left-4"
-          aria-label={m.changelogAria()}
-        >
-          {latestRelease.image ? (
+        <div className="animate-fadeIn fixed bottom-3 left-3 z-40 w-[calc(100vw-1.5rem)] max-w-[22rem] sm:bottom-4 sm:left-4">
+          {/* Stacked edges hint at the rest of the changelog without rendering it. */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-4 -top-2 h-4 rounded-t-2xl border border-edge border-b-0 bg-surface-raised opacity-60"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-2 -top-1 h-3 rounded-t-2xl border border-edge border-b-0 bg-surface-raised opacity-80"
+          />
+
+          <section
+            className="group relative overflow-hidden rounded-2xl border border-edge bg-surface shadow-2xl shadow-black/10"
+            aria-label={m.changelogAria()}
+          >
             <button
               type="button"
               onClick={openChangelog}
-              className="group relative block h-24 w-full cursor-pointer overflow-hidden border-edge border-b"
+              className="block w-full cursor-pointer p-5 pb-4 text-left"
               aria-label={m.changelogOpen()}
             >
-              <img
-                src={latestRelease.image.src}
-                alt={latestRelease.image.alt}
-                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                loading="lazy"
-              />
-            </button>
-          ) : null}
-
-          <div className="flex items-start gap-3 p-3">
-            <button
-              type="button"
-              onClick={openChangelog}
-              className="group min-w-0 flex-1 cursor-pointer text-left"
-            >
-              <span className="flex flex-wrap items-center gap-2">
-                <span className="font-mono font-semibold text-ink text-sm">
-                  {m.footerChangelog()}
-                </span>
-                <span className="rounded-md border border-edge px-1.5 py-0.5 font-mono font-medium text-[10px] text-ink">
-                  {latestRelease.version}
-                </span>
-              </span>
-              <span className="mt-1 block font-medium text-ink text-sm transition-colors group-hover:text-muted-foreground">
+              <span className="block text-balance font-semibold text-ink text-xl leading-tight tracking-[-0.02em]">
                 {latestTitle}
               </span>
-              <span className="mt-1 line-clamp-2 block text-muted-foreground text-xs">
+              {/* No `block` here: it would override the -webkit-box display
+                  line-clamp needs, and the summary would never clamp. */}
+              <span className="mt-2 line-clamp-3 text-soft text-sm leading-snug">
                 {latestSummary}
               </span>
+
+              {latestRelease.image ? (
+                <span className="mt-4 block overflow-hidden rounded-xl border border-edge">
+                  <img
+                    src={latestRelease.image.src}
+                    alt={latestRelease.image.alt}
+                    width={1200}
+                    height={630}
+                    className="block h-auto w-full transition-transform duration-500 group-hover:scale-[1.02]"
+                    loading="lazy"
+                  />
+                </span>
+              ) : null}
             </button>
-            <button
-              type="button"
-              onClick={dismiss}
-              className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-transparent text-muted-foreground transition-colors hover:border-edge hover:bg-surface-raised hover:text-ink"
-              aria-label={m.changelogClose()}
-            >
-              <X className="size-3.5" aria-hidden="true" />
-            </button>
-          </div>
-        </aside>
+
+            {/* Collapsed to zero height until hover or keyboard focus, so the
+                card grows from the bottom instead of the actions popping in. */}
+            <div className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-out group-focus-within:grid-rows-[1fr] group-hover:grid-rows-[1fr] motion-reduce:transition-none">
+              <div className="overflow-hidden">
+                <div className="flex items-center justify-between gap-3 px-5 pt-1 pb-5">
+                  <button
+                    type="button"
+                    onClick={openChangelog}
+                    className="cursor-pointer text-base text-soft transition-colors hover:text-ink"
+                  >
+                    {m.changelogReadMore()}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={dismiss}
+                    className="cursor-pointer text-base text-soft transition-colors hover:text-ink"
+                  >
+                    {m.changelogDismiss()}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
       ) : null}
 
       <ChangelogModal open={isModalOpen} onOpenChange={setIsModalOpen} />

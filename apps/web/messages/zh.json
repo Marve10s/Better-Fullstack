@@ -119,6 +119,8 @@
   "changelogAria": "更新日志",
   "changelogOpen": "打开更新日志",
   "changelogClose": "关闭更新日志",
+  "changelogReadMore": "Read more",
+  "changelogDismiss": "Dismiss",
   "changelogLatestRelease": "最新版本",
   "changelogLatestPublished": "最新版本发布于 {date}。",
   "changelogLatestUpdate": "最新更新",

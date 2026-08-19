@@ -4,6 +4,8 @@ import { $ } from "execa";
 import pc from "picocolors";
 
 import type { Addons, PackageManager, PythonPackageManager } from "../../types";
+
+import { classifySetupFailure } from "../../utils/analytics";
 import { commandExists } from "../../utils/command-exists";
 
 /**
@@ -18,10 +20,23 @@ export interface SetupStepResult {
   success: boolean;
   /** Present when success is false. */
   errorMessage?: string;
+  /** Whitelisted telemetry reason code; never the raw output. */
+  failureReason?: string;
 }
 
 function toErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+/**
+ * execa's own message is only "Command failed with exit code 1", so the reason
+ * has to come from the tool's stderr. The captured text is classified here and
+ * discarded — only the resulting code is ever reported.
+ */
+function toStepFailure(step: string, error: unknown, errorMessage: string): SetupStepResult {
+  const stderr = (error as { stderr?: unknown })?.stderr;
+  const detail = typeof stderr === "string" ? `${errorMessage}\n${stderr}` : errorMessage;
+  return { step, success: false, errorMessage, failureReason: classifySetupFailure(detail) };
 }
 
 export function getInstallEnvironment(
@@ -72,7 +87,7 @@ export async function installDependencies({
         ...process.env,
         ...getInstallEnvironment(packageManager),
       },
-      stderr: "inherit",
+      stderr: ["inherit", "pipe"],
     })`${packageManager} ${installArgs}`;
 
     s.stop("Dependencies installed successfully");
@@ -81,7 +96,7 @@ export async function installDependencies({
     s.stop(pc.red("Failed to install dependencies"));
     const errorMessage = toErrorMessage(error);
     consola.error(pc.red(`Installation error: ${errorMessage}`));
-    return { step, success: false, errorMessage };
+    return toStepFailure(step, error, errorMessage);
   }
 }
 
@@ -98,7 +113,7 @@ export async function runCargoBuild({
 
     await $({
       cwd: projectDir,
-      stderr: "inherit",
+      stderr: ["inherit", "pipe"],
     })`cargo build`;
 
     s.stop("Cargo build completed");
@@ -107,7 +122,7 @@ export async function runCargoBuild({
     s.stop(pc.red("Cargo build failed"));
     const errorMessage = toErrorMessage(error);
     consola.error(pc.red(`Cargo build error: ${errorMessage}`));
-    return { step, success: false, errorMessage };
+    return toStepFailure(step, error, errorMessage);
   }
 }
 
@@ -120,7 +135,7 @@ export async function runUvSync({ projectDir }: { projectDir: string }): Promise
 
     await $({
       cwd: projectDir,
-      stderr: "inherit",
+      stderr: ["inherit", "pipe"],
     })`uv sync --extra dev`;
 
     s.stop("Python dependencies installed successfully");
@@ -129,7 +144,7 @@ export async function runUvSync({ projectDir }: { projectDir: string }): Promise
     s.stop(pc.red("uv sync --extra dev failed"));
     const errorMessage = toErrorMessage(error);
     consola.error(pc.red(`uv sync --extra dev error: ${errorMessage}`));
-    return { step, success: false, errorMessage };
+    return toStepFailure(step, error, errorMessage);
   }
 }
 
@@ -148,15 +163,15 @@ export async function runPythonInstall({
   try {
     if (packageManager === "poetry") {
       s.start("Running poetry install...");
-      await $({ cwd: projectDir, stderr: "inherit" })`poetry install --extras dev`;
+      await $({ cwd: projectDir, stderr: ["inherit", "pipe"] })`poetry install --extras dev`;
     } else {
       s.start("Creating a virtual environment and installing with pip...");
       const python = (await commandExists("python")) ? "python" : "python3";
-      await $({ cwd: projectDir, stderr: "inherit" })`${python} -m venv .venv`;
+      await $({ cwd: projectDir, stderr: ["inherit", "pipe"] })`${python} -m venv .venv`;
       const pip = process.platform === "win32" ? ".venv/Scripts/pip.exe" : ".venv/bin/pip";
       // Include the dev extra: pytest and the selected quality tools live there,
       // and the printed next-step commands advertise them.
-      await $({ cwd: projectDir, stderr: "inherit" })`${pip} install -e .[dev]`;
+      await $({ cwd: projectDir, stderr: ["inherit", "pipe"] })`${pip} install -e .[dev]`;
     }
 
     s.stop("Python dependencies installed successfully");
@@ -165,7 +180,7 @@ export async function runPythonInstall({
     s.stop(pc.red("Python dependency installation failed"));
     const errorMessage = toErrorMessage(error);
     consola.error(pc.red(`Python installation error: ${errorMessage}`));
-    return { step, success: false, errorMessage };
+    return toStepFailure(step, error, errorMessage);
   }
 }
 
@@ -182,7 +197,7 @@ export async function runGoModTidy({
 
     await $({
       cwd: projectDir,
-      stderr: "inherit",
+      stderr: ["inherit", "pipe"],
     })`go mod tidy`;
 
     s.stop("Go dependencies installed successfully");
@@ -191,7 +206,7 @@ export async function runGoModTidy({
     s.stop(pc.red("go mod tidy failed"));
     const errorMessage = toErrorMessage(error);
     consola.error(pc.red(`go mod tidy error: ${errorMessage}`));
-    return { step, success: false, errorMessage };
+    return toStepFailure(step, error, errorMessage);
   }
 }
 
@@ -209,7 +224,7 @@ export async function runMavenTests({
 
     await $({
       cwd: projectDir,
-      stderr: "inherit",
+      stderr: ["inherit", "pipe"],
     })`${mvnw} test`;
 
     s.stop("Maven tests completed");
@@ -218,7 +233,7 @@ export async function runMavenTests({
     s.stop(pc.red("Maven tests failed"));
     const errorMessage = toErrorMessage(error);
     consola.error(pc.red(`Maven test error: ${errorMessage}`));
-    return { step, success: false, errorMessage };
+    return toStepFailure(step, error, errorMessage);
   }
 }
 
@@ -236,7 +251,7 @@ export async function runGradleTests({
 
     await $({
       cwd: projectDir,
-      stderr: "inherit",
+      stderr: ["inherit", "pipe"],
     })`${gradlew} test`;
 
     s.stop("Gradle tests completed");
@@ -245,7 +260,7 @@ export async function runGradleTests({
     s.stop(pc.red("Gradle tests failed"));
     const errorMessage = toErrorMessage(error);
     consola.error(pc.red(`Gradle test error: ${errorMessage}`));
-    return { step, success: false, errorMessage };
+    return toStepFailure(step, error, errorMessage);
   }
 }
 
@@ -262,12 +277,12 @@ export async function runMixCompile({
 
     await $({
       cwd: projectDir,
-      stderr: "inherit",
+      stderr: ["inherit", "pipe"],
     })`mix deps.get`;
 
     await $({
       cwd: projectDir,
-      stderr: "inherit",
+      stderr: ["inherit", "pipe"],
     })`mix compile`;
 
     s.stop("Elixir dependencies installed and project compiled");
@@ -276,6 +291,6 @@ export async function runMixCompile({
     s.stop(pc.red("mix compile failed"));
     const errorMessage = toErrorMessage(error);
     consola.error(pc.red(`Mix error: ${errorMessage}`));
-    return { step, success: false, errorMessage };
+    return toStepFailure(step, error, errorMessage);
   }
 }

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 
 import {
+  classifySetupFailure,
   sanitizeTelemetryConfig,
   sanitizeTelemetryOutcome,
   statusFromCommandResult,
@@ -157,5 +158,58 @@ describe("telemetry privacy boundary", () => {
     expect(statusFromCommandResult(undefined)).toBe("cancelled");
     expect(statusFromCommandResult({ success: true })).toBe("succeeded");
     expect(statusFromCommandResult({ success: false })).toBe("failed");
+  });
+});
+
+describe("setup failure classification", () => {
+  it("maps real package-manager errors to their reason code", () => {
+    const cases: Array<[string, string]> = [
+      [
+        "Command failed with exit code 1: npm install\nnpm error code ERESOLVE\nnpm error ERESOLVE unable to resolve dependency tree",
+        "peer-conflict",
+      ],
+      ["npm error Cannot read properties of null (reading 'edgesOut')", "arborist-crash"],
+      [
+        "npm error code E404\nnpm error 404 Not Found - GET https://registry.npmjs.org/nope",
+        "registry-not-found",
+      ],
+      ["Error: ENOSPC: no space left on device, write", "disk-space"],
+      [
+        "Error: EPERM: operation not permitted, unlink 'C:\\Users\\x\\node_modules\\.bin'",
+        "permission",
+      ],
+      ["Error: ENAMETOOLONG: name too long", "path-too-long"],
+      ["request to https://registry.npmjs.org/x failed, reason: ECONNRESET", "network"],
+      ["spawn pnpm ENOENT", "missing-tool"],
+      ["npm error code EBADENGINE\nnpm error notsup Unsupported engine", "engine-mismatch"],
+      ["gyp ERR! build error\nnode-gyp failed", "build-script-failed"],
+      ["ERR_PNPM_OUTDATED_LOCKFILE  Cannot install with frozen-lockfile", "lockfile-mismatch"],
+    ];
+
+    for (const [message, expected] of cases) {
+      expect(classifySetupFailure(message)).toBe(expected);
+    }
+  });
+
+  it("never lets an unrecognised message through as its own text", () => {
+    const secret = "Command failed: /Users/person/secret-client/.npmrc token=sk-private";
+    expect(classifySetupFailure(secret)).toBe("unknown");
+    expect(classifySetupFailure(undefined)).toBe("unknown");
+  });
+
+  it("drops a failure reason that is not in the allowed vocabulary", () => {
+    expect(
+      sanitizeTelemetryOutcome({
+        failureStage: "Install dependencies",
+        failureReason: "/Users/person/project blew up",
+      }),
+    ).toMatchObject({ failureStage: "install-dependencies", failureReason: undefined });
+
+    expect(
+      sanitizeTelemetryOutcome({
+        failureStage: "Install dependencies",
+        failureReason: "peer-conflict",
+      }),
+    ).toMatchObject({ failureStage: "install-dependencies", failureReason: "peer-conflict" });
   });
 });

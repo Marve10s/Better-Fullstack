@@ -119,6 +119,8 @@
   "changelogAria": "変更履歴",
   "changelogOpen": "変更履歴を開く",
   "changelogClose": "変更履歴を閉じる",
+  "changelogReadMore": "Read more",
+  "changelogDismiss": "Dismiss",
   "changelogLatestRelease": "最新リリース",
   "changelogLatestPublished": "最新リリースは {date} として公開されました。",
   "changelogLatestUpdate": "最新のアップデート",

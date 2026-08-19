@@ -5,6 +5,7 @@ import type { VirtualFile, VirtualNode } from "../src/types";
 
 import { generateVirtualProject } from "../src/generator";
 import { EMBEDDED_TEMPLATES } from "../src/templates.generated";
+import { dependencyVersionMap } from "../src/utils/add-deps";
 import { makeConfig } from "./_fixtures/config-factory";
 
 function listFiles(node: VirtualNode): VirtualFile[] {
@@ -268,21 +269,29 @@ describe("generated output cleanliness", () => {
       overrides?: Record<string, string>;
     };
     expect(rootPackage.scripts).toMatchObject({
-      check: "vp check",
-      lint: "vp lint",
-      format: "vp fmt",
+      check: "vp run -r check",
+      lint: "vp run -r lint",
+      format: "vp run -r format",
       test: "vp run -r test",
       prepare: "vp config --no-agent --hooks-dir .vite-hooks",
     });
     expect(rootPackage.devDependencies).toMatchObject({
-      "vite-plus": "^0.2.9",
-      "@voidzero-dev/vite-plus-core": "^0.2.9",
+      "vite-plus": dependencyVersionMap["vite-plus"],
+      "@voidzero-dev/vite-plus-core": dependencyVersionMap["@voidzero-dev/vite-plus-core"],
     });
     expect(rootPackage.overrides).toMatchObject({
-      vite: "npm:@voidzero-dev/vite-plus-core@^0.2.9",
+      vite: `npm:@voidzero-dev/vite-plus-core@${dependencyVersionMap["@voidzero-dev/vite-plus-core"]}`,
       vitest: "4.1.10",
     });
-    expect(getFile(".vite-hooks/pre-commit")).toContain("vp check");
+    const webPackage = JSON.parse(getFile("apps/web/package.json") ?? "{}") as {
+      scripts?: Record<string, string>;
+    };
+    expect(webPackage.scripts).toMatchObject({
+      lint: "vp lint --no-error-on-unmatched-pattern",
+      format: "vp fmt",
+      check: "vp check --no-error-on-unmatched-pattern",
+    });
+    expect(getFile(".vite-hooks/pre-commit")).toContain("vpr check");
     expect(getFile(".gitignore")).toContain(".vite-hooks/_");
     const workflow = getFile(".github/workflows/ci.yml") ?? "";
     expect(workflow).toContain("voidzero-dev/setup-vp@v1.17.0");

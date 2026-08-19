@@ -31,10 +31,33 @@ function gradientArtwork(): ChangelogRelease["image"] {
 
 export const changelogReleases: ChangelogRelease[] = [
   {
+    version: "v2.6.0",
+    publishedAt: "2026-08-18T21:36:36Z",
+    displayDate: "August 18, 2026",
+    isLatest: true,
+    href: `${RELEASE_BASE_URL}/v2.6.0`,
+    title: "One command to start, Vite+ toolchain, and bot protection",
+    summary:
+      "Better Fullstack 2.6.0 replaces the hero's stack wizard with a single copyable command. Tell the CLI what you are building (fullstack, frontend, backend, or mobile) and it asks which language or platform, then only the questions that shape needs. Mobile now reaches Kotlin, Swift, and Flutter, not just React Native.",
+    highlights: [
+      "Start from a shape: `--shape frontend|backend|mobile` picks what you are building, then asks which language fits it. Contradictory flags are rejected up front instead of being silently dropped.",
+      "Scaffold mobile apps beyond Expo: Jetpack Compose, Compose Multiplatform, SwiftUI, and Flutter are all reachable from one command.",
+      "Choose Vite+ as your toolchain and get its workspace scripts wired without a separate runner, linter, and hook manager fighting over the same files.",
+      "Add bot protection at scaffold time with Cloudflare Turnstile or Vercel BotID, and ship Vercel Analytics without hand-wiring the provider.",
+      "Find options faster in the stack builder: roughly fifty flat categories are now grouped into a dozen sections.",
+      "Recover a failed update reliably: project transactions journal every write before touching bytes, so a crash mid-apply no longer refuses recovery outright.",
+    ],
+    image: {
+      src: "/changelog/v2.6.0.webp",
+      alt: "Vite+, Vercel, and Cloudflare Turnstile marks on a soft neutral background",
+      credit: "Better Fullstack",
+      creditHref: `${RELEASE_BASE_URL}/v2.6.0`,
+    },
+  },
+  {
     version: "v2.5.1",
     publishedAt: "2026-08-12T15:50:44Z",
     displayDate: "August 12, 2026",
-    isLatest: true,
     href: `${RELEASE_BASE_URL}/v2.5.1`,
     title: "Portable agent plugins, provable lifecycle surfaces, and clearer telemetry",
     summary:
