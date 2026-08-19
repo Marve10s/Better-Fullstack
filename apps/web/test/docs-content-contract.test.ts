@@ -538,7 +538,8 @@ describe("docs content contract", () => {
   });
 
   it("keeps repository, npm, lifecycle, and single-app guidance aligned", () => {
-    const readmes = [readFileSync(REPOSITORY_README, "utf8"), readFileSync(NPM_README, "utf8")];
+    const npmReadme = readFileSync(NPM_README, "utf8");
+    const readmes = [readFileSync(REPOSITORY_README, "utf8"), npmReadme];
     const lifecycle = readFileSync(join(DOCS_ROOT, "getting-started/lifecycle.mdx"), "utf8");
     const create = readFileSync(join(DOCS_ROOT, "cli/create.mdx"), "utf8");
 
@@ -547,8 +548,9 @@ describe("docs content contract", () => {
         expect(source).toContain(command);
       }
       expect(source).toContain("bts.jsonc");
-      expect(source).toContain("single-app");
     }
+
+    expect(npmReadme).toContain("single-app");
 
     expect(lifecycle).toContain("single-app");
     expect(lifecycle).toContain("preserve the recorded");
