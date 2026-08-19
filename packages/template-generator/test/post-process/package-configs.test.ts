@@ -208,6 +208,30 @@ describe("processPackageConfigs", () => {
     );
   });
 
+  it("gives Vite+ quality scripts to workspaces that ship no scripts field", () => {
+    const vfs = createSeededVFS();
+    vfs.writeJson("package.json", { name: "starter", scripts: {}, workspaces: [] });
+    vfs.writeJson("packages/env/package.json", { name: "env" });
+
+    processPackageConfigs(
+      vfs,
+      makeConfig({
+        projectName: "vite-plus-demo",
+        addons: ["vite-plus"],
+        stackParts: parseStackPartSpecs([
+          "frontend:typescript:next",
+          "toolchain:universal:vite-plus",
+        ]),
+      }),
+    );
+
+    expect(vfs.readJson<PackageJson>("packages/env/package.json")?.scripts).toMatchObject({
+      lint: "vp lint --no-error-on-unmatched-pattern",
+      format: "vp fmt",
+      check: "vp check --no-error-on-unmatched-pattern",
+    });
+  });
+
   it("rewrites workspace vite scripts to vp because the override ships no vite binary", () => {
     const vfs = createSeededVFS();
     vfs.writeJson("package.json", { name: "starter", scripts: {}, workspaces: [] });

@@ -50,7 +50,21 @@ const VITE_PLUS_PACKAGE_SCRIPTS = {
 
 // `vp fmt` reads .gitignore and .prettierignore from its own working directory, and
 // the per-workspace scripts above run it inside each package.
-const VITE_PLUS_FORMAT_IGNORE = ["dist", ".output", ".vercel", ".nitro", "*.gen.ts"].join("\n");
+const VITE_PLUS_FORMAT_IGNORE = [
+  "dist",
+  "build",
+  "out",
+  ".next",
+  ".nuxt",
+  ".output",
+  ".vercel",
+  ".nitro",
+  ".svelte-kit",
+  ".astro",
+  ".expo",
+  ".turbo",
+  "*.gen.ts",
+].join("\n");
 
 // processPackageConfigs runs more than once over the same root package.json.
 function withVitePlusPrepare(existing: string | undefined): string {
@@ -289,7 +303,8 @@ function applyVitePlusWorkspaceScripts(vfs: VirtualFileSystem, config: ProjectCo
   for (const filePath of vfs.getAllFiles()) {
     if (filePath === "package.json" || !filePath.endsWith("/package.json")) continue;
     const pkgJson = vfs.readJson<PackageJson>(filePath);
-    if (!pkgJson?.scripts) continue;
+    if (!pkgJson) continue;
+    pkgJson.scripts ??= {};
 
     for (const [name, script] of Object.entries(pkgJson.scripts)) {
       // `vp` is not a node entrypoint, so scripts that boot the aliased vite bin
