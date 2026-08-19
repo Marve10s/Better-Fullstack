@@ -46,24 +46,6 @@ Most scaffolding tools lock you into one framework and one opinion. Better Fulls
 - **Lifecycle-aware** — create, add, update, check, and generate from the recorded `bts.jsonc` project model
 - **Compatibility-checked** — the planner rejects or adjusts invalid selections before files are generated
 
-<details>
-<summary><strong>What's in the catalog?</strong></summary>
-<br>
-
-| Category         | Examples                                                                                                     |
-| ---------------- | ------------------------------------------------------------------------------------------------------------ |
-| Web frontends    | Next.js, Nuxt, SvelteKit, SolidStart, Angular, Qwik, Astro, TanStack Start, TanStack Router, React Router    |
-| Backends         | Hono, Elysia, Fastify, Express, NestJS, AdonisJS, Axum, Rocket, FastAPI, Flask, Litestar, Spring Boot        |
-| Mobile           | Expo / React Native with navigation, UI, storage, push, OTA options                                          |
-| Databases & ORMs | PostgreSQL, MySQL, SQLite, MongoDB — Drizzle, Prisma, MikroORM, TypeORM, Sequelize, SQLx, Diesel             |
-| API layer        | tRPC, oRPC, ts-rest, OpenAPI, GraphQL                                                                        |
-| Auth & payments  | Better-Auth, Clerk, Auth.js, Auth0, Supabase Auth, WorkOS — Stripe, Paddle, LemonSqueezy, RevenueCat         |
-| Extras           | AI SDKs, job queues, realtime, caching, search, file storage, i18n, feature flags, vector DBs, observability |
-
-Explore every option in the **[App Builder →](https://better-fullstack.dev/new)**
-
-</details>
-
 <br>
 
 ## ⚡ Quick Start
@@ -106,39 +88,6 @@ yarn create better-fullstack@latest
 </td>
 </tr>
 </table>
-
-<details>
-<summary><strong>CLI Flags</strong></summary>
-<br>
-
-```bash
---yes              # Accept all defaults
---yolo             # Scaffold a random stack — good for exploring
---template <name>  # Use a preset (t3, mern, pern, uniwind)
---ecosystem <lang> # Choose the primary project ecosystem
---part <binding>   # Add a multi-ecosystem stack part, e.g. frontend:typescript:next
---workspace-shape # Choose monorepo or a qualifying flat single-app layout
---version-channel  # Dependency channel: stable, latest, beta
---no-git           # Skip git initialization
---no-install       # Skip dependency installation
---verify           # Run generated project checks without starting dev servers
---verbose          # Show detailed output
-```
-
-</details>
-
-<br>
-
-## 🔁 Project Lifecycle
-
-Better Fullstack keeps the selected stack in `bts.jsonc` and the generated baseline in
-`bts.lock.json`. Use `add --dry-run` before changing capabilities, `update` before applying newer
-templates, `check --json` for a machine-readable project diagnosis, and `gen ... --dry-run` for supported
-in-project generation. See the **[lifecycle guide →](https://better-fullstack.dev/docs/getting-started/lifecycle/)**.
-
-Flat `single-app` output is available for thin Next.js and TanStack Start self-backend projects.
-Stacks that need separate database, auth, API, service, native, or deployment packages remain
-monorepos.
 
 <br>
 
