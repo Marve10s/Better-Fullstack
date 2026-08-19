@@ -99,10 +99,12 @@ export function ChangelogWidget() {
               className="block w-full cursor-pointer p-5 pb-4 text-left"
               aria-label={m.changelogOpen()}
             >
-              <span className="block truncate font-semibold text-ink text-xl tracking-[-0.02em]">
+              <span className="block text-balance font-semibold text-ink text-xl leading-tight tracking-[-0.02em]">
                 {latestTitle}
               </span>
-              <span className="mt-2 line-clamp-2 block text-base text-soft leading-snug">
+              {/* No `block` here: it would override the -webkit-box display
+                  line-clamp needs, and the summary would never clamp. */}
+              <span className="mt-2 line-clamp-3 text-soft text-sm leading-snug">
                 {latestSummary}
               </span>
 
