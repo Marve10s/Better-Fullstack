@@ -2,6 +2,7 @@ import { cliInputToProjectConfigPartial, parseStackPartSpecs } from "@better-ful
 import { describe, expect, it } from "bun:test";
 
 import { processPackageConfigs } from "../../src/post-process/package-configs";
+import { dependencyVersionMap } from "../../src/utils/add-deps";
 import { makeConfig } from "../_fixtures/config-factory";
 import { createSeededVFS } from "../_fixtures/vfs-factory";
 
@@ -175,16 +176,36 @@ describe("processPackageConfigs", () => {
       "dev:native": "vp run --fail-if-no-match --filter native dev",
       "dev:server": "cd apps/server && go run cmd/server/main.go",
       "db:push": "vp run --fail-if-no-match --filter @vite-plus-demo/db db:push",
-      check: "vp check",
-      lint: "vp lint",
-      format: "vp fmt",
+      check: "vp run -r check",
+      lint: "vp run -r lint",
+      format: "vp run -r format",
       test: "vp run -r test",
       prepare: "vp config --no-agent --hooks-dir .vite-hooks",
     });
     expect(vfs.readJson<PackageJson>("package.json")?.overrides).toMatchObject({
-      vite: "npm:@voidzero-dev/vite-plus-core@^0.2.9",
+      vite: `npm:@voidzero-dev/vite-plus-core@${dependencyVersionMap["@voidzero-dev/vite-plus-core"]}`,
       vitest: "4.1.10",
     });
+  });
+
+  it("keeps the Vite+ prepare hook single when processed more than once", () => {
+    const vfs = createSeededVFS();
+    vfs.writeJson("package.json", { name: "starter", scripts: {}, workspaces: [] });
+    const config = makeConfig({
+      projectName: "vite-plus-demo",
+      addons: ["vite-plus"],
+      stackParts: parseStackPartSpecs([
+        "frontend:typescript:next",
+        "toolchain:universal:vite-plus",
+      ]),
+    });
+
+    processPackageConfigs(vfs, config);
+    processPackageConfigs(vfs, config);
+
+    expect(vfs.readJson<PackageJson>("package.json")?.scripts?.prepare).toBe(
+      "vp config --no-agent --hooks-dir .vite-hooks",
+    );
   });
 
   it("rewrites workspace vite scripts to vp because the override ships no vite binary", () => {
