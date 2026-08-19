@@ -63,18 +63,11 @@ describe("shutdown flush budget", () => {
     let aborted = false;
     let completed = false;
     global.fetch = (async (_input: string | URL | Request, init?: RequestInit) => {
-      await new Promise<void>((resolve) => {
-        const timer = setTimeout(resolve, 400);
-        init?.signal?.addEventListener(
-          "abort",
-          () => {
-            aborted = true;
-            clearTimeout(timer);
-            resolve();
-          },
-          { once: true },
-        );
+      const abortSignalled = new Promise<void>((resolve) => {
+        init?.signal?.addEventListener("abort", () => resolve(), { once: true });
       });
+      await Promise.race([Bun.sleep(400), abortSignalled]);
+      aborted = init?.signal?.aborted ?? false;
       if (aborted) throw new Error("aborted");
       completed = true;
       return new Response(null, { status: 200 });

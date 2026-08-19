@@ -7,11 +7,12 @@ if (firstArg === "mcp" && process.argv.length === 3) {
     },
   );
 } else {
-  Promise.all([
-    import("./run.js"),
-    import("./utils/analytics.js"),
-    import("./utils/errors.js"),
-  ]).then(async ([run, analytics, errors]) => {
+  void (async () => {
+    const [run, analytics, errors] = await Promise.all([
+      import("./run.js"),
+      import("./utils/analytics.js"),
+      import("./utils/errors.js"),
+    ]);
     // The message for a reported error was already printed where it was raised.
     const ALREADY_REPORTED = "bts:already-reported";
     let exitCode = 0;
@@ -40,5 +41,5 @@ if (firstArg === "mcp" && process.argv.length === 3) {
     }
 
     process.exit(exitCode);
-  });
+  })();
 }
