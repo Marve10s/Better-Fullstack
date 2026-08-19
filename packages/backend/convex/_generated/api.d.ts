@@ -9,6 +9,8 @@
  */
 
 import type * as analytics from "../analytics.js";
+import type * as analytics_access from "../analytics_access.js";
+import type * as analytics_core from "../analytics_core.js";
 import type * as healthCheck from "../healthCheck.js";
 import type * as hooks from "../hooks.js";
 import type * as http from "../http.js";
@@ -23,6 +25,8 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   analytics: typeof analytics;
+  analytics_access: typeof analytics_access;
+  analytics_core: typeof analytics_core;
   healthCheck: typeof healthCheck;
   hooks: typeof hooks;
   http: typeof http;

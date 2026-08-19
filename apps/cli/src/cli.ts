@@ -7,13 +7,28 @@ if (firstArg === "mcp" && process.argv.length === 3) {
     },
   );
 } else {
-  Promise.all([import("./run.js"), import("./utils/analytics.js")]).then(
-    async ([run, analytics]) => {
-      try {
-        return await run.createBtsCli().run();
-      } finally {
-        await analytics.flushTelemetry();
-      }
-    },
-  );
+  void (async () => {
+    const [run, analytics] = await Promise.all([
+      import("./run.js"),
+      import("./utils/analytics.js"),
+    ]);
+    let exitCode = 0;
+
+    try {
+      await run.createBtsCli().run({
+        // Record the code instead of exiting, so the shutdown flush below still
+        // runs. trpc-cli turns a returning `exit` into a FailedToExitError.
+        process: { exit: ((code: number) => void (exitCode = code)) as (code: number) => never },
+        // The default formatter inspects the whole error object; the message is
+        // what a CLI user can act on.
+        formatError: (error) => (error instanceof Error ? error.message : String(error)),
+      });
+    } catch (error) {
+      exitCode = (error as { exitCode?: number }).exitCode ?? 1;
+    } finally {
+      await analytics.flushTelemetry();
+    }
+
+    process.exit(exitCode);
+  })();
 }

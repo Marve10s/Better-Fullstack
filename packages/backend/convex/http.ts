@@ -2,7 +2,7 @@ import { httpRouter } from "convex/server";
 
 import { internal } from "./_generated/api";
 import { httpAction } from "./_generated/server";
-import { getTelemetryDashboardAccess } from "./analytics-access";
+import { getTelemetryDashboardAccess } from "./analytics_access";
 
 type StackValue = string | boolean | string[];
 
