@@ -3,12 +3,7 @@ import pc from "picocolors";
 
 import type { ProjectConfig } from "../types";
 
-import {
-  STACK_TOOL_DEFINITIONS,
-  StackPartEcosystemSchema,
-  StackPartRoleSchema,
-} from "../types";
-
+import { STACK_TOOL_DEFINITIONS, StackPartEcosystemSchema, StackPartRoleSchema } from "../types";
 import { getLatestCLIVersion } from "./get-latest-cli-version";
 import { canPromptInteractively } from "./prompt-environment";
 import { TelemetryDeliveryQueue } from "./telemetry-delivery";
@@ -154,6 +149,10 @@ export type TelemetryOutcome = {
   mode?: string;
   success?: boolean;
   errorName?: string;
+  /** Which setup step failed first, as a `SETUP_FAILURE_IDENTIFIERS` value. */
+  failureStage?: string;
+  /** Why it failed, as a `SETUP_FAILURE_REASONS` code. */
+  failureReason?: string;
   setupFailures?: string[];
   durationMs?: number;
   fileCount?: number;
@@ -236,6 +235,64 @@ const SETUP_FAILURE_IDENTIFIERS: Readonly<Record<string, string>> = {
   "Gradle tests": "gradle-tests",
   "mix deps.get / compile": "elixir-deps-compile",
 };
+
+/**
+ * Why a setup step failed, as a bounded vocabulary. Raw error text is never
+ * sent: it carries absolute paths, registry URLs and occasionally credentials.
+ * A code is enough to tell "npm cannot resolve peers" from "the disk is full".
+ */
+const SETUP_FAILURE_REASONS = new Set([
+  "network",
+  "registry-not-found",
+  "registry-auth",
+  "peer-conflict",
+  "arborist-crash",
+  "lockfile-mismatch",
+  "disk-space",
+  "permission",
+  "path-too-long",
+  "missing-tool",
+  "engine-mismatch",
+  "build-script-failed",
+  "out-of-memory",
+  "timeout",
+  "unknown",
+]);
+
+const SETUP_FAILURE_PATTERNS: ReadonlyArray<readonly [RegExp, string]> = [
+  [/ENOSPC|no space left/i, "disk-space"],
+  [/ENAMETOOLONG|path too long|filename too long|MAX_PATH/i, "path-too-long"],
+  [/EACCES|EPERM|operation not permitted|access is denied/i, "permission"],
+  [/ERESOLVE|peer dep|unable to resolve dependency tree/i, "peer-conflict"],
+  [/Cannot read properties of null \(reading 'edgesOut'\)/i, "arborist-crash"],
+  [/E404|404 Not Found/i, "registry-not-found"],
+  [/ENEEDAUTH|E401|E403|401 Unauthorized|403 Forbidden/i, "registry-auth"],
+  [
+    /ERR_PNPM_OUTDATED_LOCKFILE|frozen-lockfile|lockfile is not up to date|EUSAGE/i,
+    "lockfile-mismatch",
+  ],
+  [/ENOTFOUND|EAI_AGAIN|ECONNRESET|ETIMEDOUT|ECONNREFUSED|socket hang up|network/i, "network"],
+  [
+    /ENOENT.*spawn|spawn .*ENOENT|command not found|is not recognized as an internal/i,
+    "missing-tool",
+  ],
+  [/EBADENGINE|unsupported engine|requires Node/i, "engine-mismatch"],
+  [/node-gyp|postinstall|prepare script|gyp ERR/i, "build-script-failed"],
+  [/heap out of memory|SIGKILL|JavaScript heap/i, "out-of-memory"],
+  [/timed out|ETIMEDOUT|SIGTERM/i, "timeout"],
+];
+
+/**
+ * Reduce a setup step's error message to one whitelisted reason code. Anything
+ * unrecognised becomes "unknown" rather than leaking the original text.
+ */
+export function classifySetupFailure(errorMessage: string | undefined): string {
+  if (!errorMessage) return "unknown";
+  for (const [pattern, reason] of SETUP_FAILURE_PATTERNS) {
+    if (pattern.test(errorMessage)) return reason;
+  }
+  return "unknown";
+}
 
 function sanitizeSetupFailure(value: unknown): string | undefined {
   if (typeof value !== "string") return undefined;
@@ -366,6 +423,10 @@ export function sanitizeTelemetryOutcome(outcome: TelemetryOutcome): TelemetryOu
     mode: sanitizeIdentifier(outcome.mode),
     success: typeof outcome.success === "boolean" ? outcome.success : undefined,
     errorName: sanitizeIdentifier(outcome.errorName),
+    failureStage: sanitizeSetupFailure(outcome.failureStage),
+    failureReason: SETUP_FAILURE_REASONS.has(outcome.failureReason ?? "")
+      ? outcome.failureReason
+      : undefined,
     setupFailures: setupFailures ? [...new Set(setupFailures)] : undefined,
     durationMs: boundedCount(outcome.durationMs),
     fileCount: boundedCount(outcome.fileCount),
