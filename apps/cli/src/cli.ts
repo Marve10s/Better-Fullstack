@@ -8,13 +8,10 @@ if (firstArg === "mcp" && process.argv.length === 3) {
   );
 } else {
   void (async () => {
-    const [run, analytics, errors] = await Promise.all([
+    const [run, analytics] = await Promise.all([
       import("./run.js"),
       import("./utils/analytics.js"),
-      import("./utils/errors.js"),
     ]);
-    // The message for a reported error was already printed where it was raised.
-    const ALREADY_REPORTED = "bts:already-reported";
     let exitCode = 0;
 
     try {
@@ -22,17 +19,9 @@ if (firstArg === "mcp" && process.argv.length === 3) {
         // Record the code instead of exiting, so the shutdown flush below still
         // runs. trpc-cli turns a returning `exit` into a FailedToExitError.
         process: { exit: ((code: number) => void (exitCode = code)) as (code: number) => never },
-        formatError: (error) =>
-          errors.isReportedError(error)
-            ? ALREADY_REPORTED
-            : error instanceof Error
-              ? error.message
-              : String(error),
-        logger: {
-          error: (message) => {
-            if (message !== ALREADY_REPORTED) console.error(message);
-          },
-        },
+        // The default formatter inspects the whole error object; the message is
+        // what a CLI user can act on.
+        formatError: (error) => (error instanceof Error ? error.message : String(error)),
       });
     } catch (error) {
       exitCode = (error as { exitCode?: number }).exitCode ?? 1;

@@ -1094,13 +1094,19 @@ export const backfillPage = internalMutation({
           .withIndex("by_machine_id", (q) => q.eq("machineId", machineId))
           .first();
         if (machine) {
+          // A live event can land between the seal and this page, leaving newer
+          // metadata on the row; an older replayed event must not overwrite it.
+          const isLatest = now >= machine.lastSeen;
+          if (now < machine.firstSeen) daily.newMachines += 1;
           await ctx.db.patch("analyticsMachines", machine._id, {
             lastSeen: Math.max(machine.lastSeen, now),
             firstSeen: Math.min(machine.firstSeen, now),
             eventCount: machine.eventCount + 1,
-            platform: ev.platform ?? machine.platform,
-            client: ev.client ?? machine.client,
-            lastCliVersion: ev.cli_version ?? machine.lastCliVersion,
+            platform: isLatest ? (ev.platform ?? machine.platform) : machine.platform,
+            client: isLatest ? (ev.client ?? machine.client) : machine.client,
+            lastCliVersion: isLatest
+              ? (ev.cli_version ?? machine.lastCliVersion)
+              : machine.lastCliVersion,
           });
         } else {
           daily.newMachines += 1;
