@@ -18,7 +18,12 @@ import type {
 
 import { getCapabilityDisabledReason, normalizeCapabilitySelection } from "./capabilities";
 import { ANALYTICS_VALUES } from "./schemas";
-import { CATEGORY_ORDER, getCategoryDisplayName, type OptionCategory } from "./option-metadata";
+import {
+  CATEGORY_ORDER,
+  getCategoryDisplayName,
+  isMultiEcosystemMobileCategory,
+  type OptionCategory,
+} from "./option-metadata";
 import {
   getUnsupportedWebDeployFrontend,
   hasPWACompatibleFrontend,
@@ -2717,7 +2722,16 @@ export const getDisabledReason = (
       return "React Native payments currently support RevenueCat only";
     }
 
-    if (!reactNativeCategories.has(category) && optionId !== "none" && optionId !== "false") {
+    // A graph selection whose only primary part is a Kotlin, Swift or Flutter
+    // app still lowers to the react-native ecosystem (`ecosystemForLegacy`), so
+    // this allowlist cannot speak for those categories. Their own gates above
+    // enforce the real constraint.
+    if (
+      !reactNativeCategories.has(category) &&
+      !isMultiEcosystemMobileCategory(category) &&
+      optionId !== "none" &&
+      optionId !== "false"
+    ) {
       return "React Native ecosystem only supports native mobile options";
     }
   }

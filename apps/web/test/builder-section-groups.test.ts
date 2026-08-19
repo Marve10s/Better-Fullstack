@@ -63,7 +63,7 @@ describe("builder section groups", () => {
   });
 
   it("keeps Kotlin, Swift and Flutter categories out of the React Native ecosystem", () => {
-    const expoStack = { nativeFrontend: ["native-bare"] };
+    const expoStack = { nativeFrontend: ["native-bare"], yolo: "false" };
     const rendered = getBuilderSections(
       "react-native",
       getCategoryOrderForEcosystem("react-native"),
@@ -80,14 +80,25 @@ describe("builder section groups", () => {
   });
 
   it("hides Expo categories until a React Native app is selected", () => {
-    const emptyStack = { nativeFrontend: ["none"] };
+    const emptyStack = { nativeFrontend: ["none"], yolo: "false" };
 
     expect(isHiddenMobilePlatformCategory(emptyStack, "mobileLibraries")).toBe(true);
     expect(isHiddenMobilePlatformCategory(emptyStack, "mobileNavigation")).toBe(true);
     expect(isHiddenMobilePlatformCategory(emptyStack, "nativeFrontend")).toBe(false);
     expect(
-      isHiddenMobilePlatformCategory({ nativeFrontend: ["native-uniwind"] }, "mobileLibraries"),
+      isHiddenMobilePlatformCategory(
+        { nativeFrontend: ["native-uniwind"], yolo: "false" },
+        "mobileLibraries",
+      ),
     ).toBe(false);
+  });
+
+  it("keeps Expo categories reachable under yolo, which skips the clearing pass", () => {
+    const yoloStack = { nativeFrontend: ["none"], yolo: "true" };
+
+    expect(isHiddenMobilePlatformCategory(yoloStack, "mobileUI")).toBe(false);
+    expect(isHiddenMobilePlatformCategory(yoloStack, "mobileLibraries")).toBe(false);
+    expect(isHiddenMobilePlatformCategory(yoloStack, "kotlinMobileLibraries")).toBe(true);
   });
 
   it("falls back to a single-category section for unmapped categories", () => {

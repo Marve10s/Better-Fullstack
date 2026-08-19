@@ -1058,6 +1058,36 @@ describe("compatibility issue helpers", () => {
     ).toBeNull();
   });
 
+  it("keeps Kotlin mobile libraries selectable for a mobile-only Kotlin graph selection", () => {
+    // A graph selection whose only primary part is a Kotlin app lowers to the
+    // react-native ecosystem, which must not reject the Kotlin categories.
+    const kotlinOnlyStack = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "react-native",
+      webFrontend: ["none"],
+      nativeFrontend: ["none"],
+      kotlinMobile: "jetpack-compose",
+    };
+
+    expect(getDisabledReason(kotlinOnlyStack, "kotlinMobileLibraries", "koin")).toBeNull();
+    expect(getDisabledReason(kotlinOnlyStack, "kotlinMobile", "jetpack-compose")).toBeNull();
+    expect(
+      getDisabledReason({ ...kotlinOnlyStack, swiftMobile: "swiftui" }, "swiftMobile", "swiftui"),
+    ).toBeNull();
+
+    expect(
+      getDisabledReason(
+        { ...kotlinOnlyStack, kotlinMobile: "none" },
+        "kotlinMobileLibraries",
+        "koin",
+      ),
+    ).toBe("Kotlin mobile libraries require a Jetpack Compose or Compose Multiplatform app");
+
+    expect(getDisabledReason(kotlinOnlyStack, "database", "postgres")).toBe(
+      "React Native ecosystem only supports native mobile options",
+    );
+  });
+
   it("reports Kotlin mobile libraries requested alongside a React Native app", () => {
     const { issues } = evaluateCompatibility({
       ...DEFAULT_STACK_SELECTION,

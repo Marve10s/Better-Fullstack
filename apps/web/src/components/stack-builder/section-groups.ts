@@ -117,15 +117,18 @@ const TYPESCRIPT_SECTIONS: readonly BuilderSectionDef[] = [
  * selected, and the other mobile platforms never appear in the section list
  * (the multi-ecosystem composer renders those itself), so a React Native stack
  * is never offered Kotlin or Swift options.
+ *
+ * Yolo skips compatibility normalization, so an Expo selection survives losing
+ * its app. Keep those categories visible there or the values stay in the
+ * generated command with no control left to clear them.
  */
 export function isHiddenMobilePlatformCategory(
-  stack: Pick<StackState, "nativeFrontend">,
+  stack: Pick<StackState, "nativeFrontend" | "yolo">,
   category: string,
 ): boolean {
-  return (
-    isMultiEcosystemMobileCategory(category) ||
-    (isReactNativeOnlyCategory(category) && !hasReactNativeApp(stack))
-  );
+  if (isMultiEcosystemMobileCategory(category)) return true;
+  if (stack.yolo === "true") return false;
+  return isReactNativeOnlyCategory(category) && !hasReactNativeApp(stack);
 }
 
 const REACT_NATIVE_SECTIONS: readonly BuilderSectionDef[] = [
