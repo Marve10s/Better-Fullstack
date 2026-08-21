@@ -176,7 +176,12 @@ export default defineConfig({
           [
             rehypeShiki,
             {
-              theme: "github-dark-default",
+              themes: {
+                light: "github-light-default",
+                dark: "github-dark-default",
+              },
+              defaultColor: false,
+              transformers: [languageClassOnPre],
             },
           ],
         ],
