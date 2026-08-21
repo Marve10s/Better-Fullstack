@@ -51,28 +51,28 @@ denominator. This is one unified ranking — free and subscription models place 
 paid frontier, with no separate tier. Rows marked † predate the validator fixes and keep their
 original scores (their run artifacts are gone, so they can't be re-scored until they're rerun).
 
-| Config | CORE pass@1 | Avg cost | Wired libs |
-| --- | :---: | ---: | :---: |
-| Fable 5 · **low** | **5 / 13** (38%) | $2.12 | 95% |
-| GPT-5.6 Luna · **max** | **5 / 13** (38%) | $0.83 | 94% |
-| GPT-5.5 · **high** | **5 / 13** (38%) | $1.41 | 93% |
-| GPT-5.6 Sol · **max** | **5 / 13** (38%) | $4.72 | 93% |
-| Fable 5 · **high** | **4 / 13** (31%) | $4.94 | 95% |
-| Claude Opus 4.8 · **max** † | 3 / 11 (27%) | $9.21 | 97% |
-| Claude Opus 4.8 · **low** † | 3 / 11 (27%) | $1.63 | 96% |
-| Gemini 3.5 Flash · **high** † | 3 / 11 (27%) | — | 94% |
-| Claude Sonnet 5 · **max** † | 2 / 10 (20%) | $5.26 | 96% |
-| GPT-5.6 Sol · **high** | **2 / 13** (15%) | — | 92% |
-| GPT-5.6 Terra · **medium** | **2 / 13** (15%) | — | 93% |
-| GPT-5.6 Luna · **medium** | **2 / 13** (15%) | — | 88% |
-| Hy3 (opencode) | **1 / 9** (11%) | free | 95% |
-| DeepSeek V4 Flash (opencode) † | 1 / 10 (10%) | free | 83% |
-| Claude Sonnet 4.6 · **high** † | 1 / 11 (9%) | $1.53 | 94% |
-| GPT-5.3 Codex Spark · **high** † | 1 / 11 (9%) | — | 92% |
-| GLM 5.2 (OpenCode Go) | **1 / 13** (8%) | $0.88 | 95% |
-| MiMo V2.5 (opencode) † | 0 / 9 | free | 82% |
-| Nemotron 3 Nano 30B (Kilo) † | 0 / 1 | free | 7% |
-| Nemotron 3 Ultra 550B (Kilo) † | 0 / 3 | free | 19% |
+| Config                           |   CORE pass@1    | Avg cost | Wired libs |
+| -------------------------------- | :--------------: | -------: | :--------: |
+| Fable 5 · **low**                | **5 / 13** (38%) |    $2.12 |    95%     |
+| GPT-5.6 Luna · **max**           | **5 / 13** (38%) |    $0.83 |    94%     |
+| GPT-5.5 · **high**               | **5 / 13** (38%) |    $1.41 |    93%     |
+| GPT-5.6 Sol · **max**            | **5 / 13** (38%) |    $4.72 |    93%     |
+| Fable 5 · **high**               | **4 / 13** (31%) |    $4.94 |    95%     |
+| Claude Opus 4.8 · **max** †      |   3 / 11 (27%)   |    $9.21 |    97%     |
+| Claude Opus 4.8 · **low** †      |   3 / 11 (27%)   |    $1.63 |    96%     |
+| Gemini 3.5 Flash · **high** †    |   3 / 11 (27%)   |        — |    94%     |
+| Claude Sonnet 5 · **max** †      |   2 / 10 (20%)   |    $5.26 |    96%     |
+| GPT-5.6 Sol · **high**           | **2 / 13** (15%) |        — |    92%     |
+| GPT-5.6 Terra · **medium**       | **2 / 13** (15%) |        — |    93%     |
+| GPT-5.6 Luna · **medium**        | **2 / 13** (15%) |        — |    88%     |
+| Hy3 (opencode)                   | **1 / 9** (11%)  |     free |    95%     |
+| DeepSeek V4 Flash (opencode) †   |   1 / 10 (10%)   |     free |    83%     |
+| Claude Sonnet 4.6 · **high** †   |   1 / 11 (9%)    |    $1.53 |    94%     |
+| GPT-5.3 Codex Spark · **high** † |   1 / 11 (9%)    |        — |    92%     |
+| GLM 5.2 (OpenCode Go)            | **1 / 13** (8%)  |    $0.88 |    95%     |
+| MiMo V2.5 (opencode) †           |      0 / 9       |     free |    82%     |
+| Nemotron 3 Nano 30B (Kilo) †     |      0 / 1       |     free |     7%     |
+| Nemotron 3 Ultra 550B (Kilo) †   |      0 / 3       |     free |    19%     |
 
 <BenchBarChart
   title="CORE build pass@1 · prompt-only"
@@ -114,21 +114,21 @@ efforts, it doesn't happen. **All three land on exactly 2/13** — flagship at h
 at medium, and the fast tier alike — against GPT-5.5's 5/13. The tiers don't even separate: more
 parameters bought precisely nothing at these settings. The miss pattern is telling:
 
-| Spec | Ecosystem | GPT-5.5 · high | Sol · high | Terra · medium | Luna · medium |
-| --- | --- | :---: | :---: | :---: | :---: |
-| `python-ingestion-api` | Python | ✅ | ✅ | ✅ | ✅ |
-| `rust-leptos-axum` | Rust | ❌ | ✅ **gained** | ✅ **gained** | ❌ |
-| `elixir-broadway-absinthe` | Elixir | ✅ | ❌ | ❌ | ✅ |
-| `go-realtime-api` | Go | ✅ | ❌ | ❌ | ❌ |
-| `react-native-expo` | React Native | ✅ | ❌ | ❌ | ❌ |
-| `frontier-effect-eventsourcing` | TypeScript | ✅ | ❌ | ❌ | ❌ |
-| `multi-ts-go-grpc` | Multi (TS + Go) | ❌ | ❌ | ❌ | ❌ |
-| `frontier-polyglot-proto` | Multi | ❌ | ❌ | ❌ | ❌ |
-| `java-spring-jooq-keycloak` | Java | ❌ | ❌ | ❌ | ❌ |
-| `multi-dotnet-ops` | Multi (TS + .NET) | ❌ | ❌ | ❌ | ❌ |
-| `dotnet-blazor-cqrs` | .NET | ❌ | ❌ | ❌ | ❌ |
-| `ts-svelte-edge-orpc` | TypeScript | ❌ | ❌ | ❌ | ❌ |
-| `ai-search-workbench` | TypeScript | ❌ | ❌ | ❌ | ❌ |
+| Spec                            | Ecosystem         | GPT-5.5 · high |  Sol · high   | Terra · medium | Luna · medium |
+| ------------------------------- | ----------------- | :------------: | :-----------: | :------------: | :-----------: |
+| `python-ingestion-api`          | Python            |       ✅       |      ✅       |       ✅       |      ✅       |
+| `rust-leptos-axum`              | Rust              |       ❌       | ✅ **gained** | ✅ **gained**  |      ❌       |
+| `elixir-broadway-absinthe`      | Elixir            |       ✅       |      ❌       |       ❌       |      ✅       |
+| `go-realtime-api`               | Go                |       ✅       |      ❌       |       ❌       |      ❌       |
+| `react-native-expo`             | React Native      |       ✅       |      ❌       |       ❌       |      ❌       |
+| `frontier-effect-eventsourcing` | TypeScript        |       ✅       |      ❌       |       ❌       |      ❌       |
+| `multi-ts-go-grpc`              | Multi (TS + Go)   |       ❌       |      ❌       |       ❌       |      ❌       |
+| `frontier-polyglot-proto`       | Multi             |       ❌       |      ❌       |       ❌       |      ❌       |
+| `java-spring-jooq-keycloak`     | Java              |       ❌       |      ❌       |       ❌       |      ❌       |
+| `multi-dotnet-ops`              | Multi (TS + .NET) |       ❌       |      ❌       |       ❌       |      ❌       |
+| `dotnet-blazor-cqrs`            | .NET              |       ❌       |      ❌       |       ❌       |      ❌       |
+| `ts-svelte-edge-orpc`           | TypeScript        |       ❌       |      ❌       |       ❌       |      ❌       |
+| `ai-search-workbench`           | TypeScript        |       ❌       |      ❌       |       ❌       |      ❌       |
 
 The regression isn't uniform — Sol and Terra land `rust-leptos-axum`, a spec GPT-5.5 missed — but the
 net is clear: at default efforts the newer family drops Go, Expo, and the Effect frontier spec and
@@ -136,7 +136,7 @@ only claws one Rust build back.
 
 ### Then we turned the dial to max — and 5.6 came alive
 
-Because "the flagship ties the fast tier" felt wrong, we reran Sol *and* Luna at **max** reasoning
+Because "the flagship ties the fast tier" felt wrong, we reran Sol _and_ Luna at **max** reasoning
 effort. Both jumped from 2/13 to **5/13** — matching GPT-5.5-at-high build-for-build and putting
 Luna-at-max in a tie with Fable 5 low at the very top of the composite index:
 
@@ -148,7 +148,7 @@ Luna-at-max in a tie with Fable 5 low at the very top of the composite index:
 
 The price is time, not money: Luna at max costs $0.83/project but its median generation goes from
 ~3 to ~15 minutes (Sol: ~19), and each run gave one spec to the 90-minute generation ceiling (scored
-as a model failure, per policy). The tiers *still* don't separate — Sol-at-max and Luna-at-max tie on
+as a model failure, per policy). The tiers _still_ don't separate — Sol-at-max and Luna-at-max tie on
 count with different spec mixes — but the family finally expresses its capability.
 
 <BenchBarChart
@@ -225,7 +225,7 @@ project**, against Sonnet 5's 215 steps / $5.26 and Opus-at-max's 99 steps / $9.
 trading accuracy for builds: at **95% wired** it leads the paid field on stack selection too.
 
 Turning the dial to **high** doesn't buy more builds — it drops one, to **4**, for 2.3× the cost.
-What changes is *which* specs assemble: high gains `frontier-effect-eventsourcing` but loses
+What changes is _which_ specs assemble: high gains `frontier-effect-eventsourcing` but loses
 `multi-dotnet-ops` and `java-spring-jooq-keycloak`. Fable is also the only Claude line to build the
 Expo `react-native-expo` app, at either effort.
 
@@ -247,7 +247,7 @@ config we've tested, it doesn't:
 **GPT-5.6 breaks the pattern.** Sol went 2/13 → 5/13 from high to max; Luna went 2/13 → 5/13 from
 medium to max — the first configs on this board where more reasoning bought strictly more builds
 rather than a reshuffle. Remember, no model can run an install to check a version — so the extra
-thinking is doing recall work: at max effort, 5.6 dredges up the *right* coordinates it apparently
+thinking is doing recall work: at max effort, 5.6 dredges up the _right_ coordinates it apparently
 knew all along, where its default budgets produce one-shot projects with unverified dependency facts.
 The Claude configs spend their budgets differently (Fable low passes 5 specs in 37 steps of writing
 and revising), which is why more effort merely reshuffles their results instead of adding to them.
@@ -263,7 +263,7 @@ and revising), which is why more effort merely reshuffles their results instead 
   caption="Metered from token usage. Opus at max spent $13–19 on the heaviest specs — none of which built."
 />
 
-More thinking changes *which* hard stacks assemble, not *how many*. The bottleneck isn't reasoning —
+More thinking changes _which_ hard stacks assemble, not _how many_. The bottleneck isn't reasoning —
 it's coherent assembly. GPT-5.6 sharpens the same point from the opposite direction: its failure mode
 isn't a shortage of deliberation, it's confidently wrong dependency facts.
 
@@ -313,7 +313,7 @@ Kilo **Nemotrons** (7% and 19% wired, mostly inconclusive) rarely produce a meas
 
 - **Eight ecosystems, 13 specs.** TypeScript, Rust, Python, Go, .NET, Java (Spring + jOOQ + Keycloak),
   Elixir (Broadway + Absinthe), an Expo React Native app, and multi-ecosystem graphs — each chosen so
-  a confident agent can pick a *near* neighbour and get it subtly wrong.
+  a confident agent can pick a _near_ neighbour and get it subtly wrong.
 - **Frontier, prompt-only specs.** Two specs are deliberately beyond our own generator's option space,
   so no scaffolder could "cheat" them.
 - **A hardened validator.** Manifest discovery now finds projects wherever the agent puts them
@@ -355,7 +355,7 @@ The other disclosures:
   rule we apply to every model's inconclusive runs.
 - **Effort levels aren't identical across the board.** GPT-5.5 ran at high; Luna and Terra ran at
   medium (their balanced setting) and Sol at high and max, Luna also at max. The max runs show effort
-  *does* move this family (2/13 → 5/13) — which is exactly why we report each config's effort level
+  _does_ move this family (2/13 → 5/13) — which is exactly why we report each config's effort level
   in every row rather than pretending they're interchangeable.
 - **Two max-effort generations hit the 90-minute ceiling** (one per run) and score as model failures,
   per the same SWE-bench-style rule as every other timeout. A sleep interruption on the bench machine
@@ -392,11 +392,11 @@ The other disclosures:
   codegen imports that were never generated. TypeScript installs succeeded for every model; Go and
   Java punish invented coordinates with a failed build. Max-effort runs get the coordinates right —
   the knowledge was there, unspent.
-- **Fable 5 still tops the board on efficiency.** 5/13 at *low* effort, 37 steps, $2.12/project, and
+- **Fable 5 still tops the board on efficiency.** 5/13 at _low_ effort, 37 steps, $2.12/project, and
   the paid field's best wired-libs score. Luna-at-max ties its index — while taking 4× the wall-clock
   and Fable gets there without leaving low effort.
 - **Reasoning effort isn't the lever for Claude — it's the whole lever for GPT-5.6.** Opus, Fable, and
-  Sonnet reshuffle *which* stacks assemble with more deliberation; Sol and Luna tripled their build
+  Sonnet reshuffle _which_ stacks assemble with more deliberation; Sol and Luna tripled their build
   counts at max. 5.6's default budgets under-spend on verifying its own manifests.
 - **A scaffolder beats reasoning at both price points.** Luna at medium + MCP: 7/11 (64%) at $0.20 and
   69s/project — versus 2/13 prompt-only from the same model at the same effort, and better than any

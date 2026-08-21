@@ -10,7 +10,7 @@ import {
 } from "@/lib/docs/source";
 
 /**
- * Catch-all for nested docs paths (`/docs/cli/create`, `/docs/ecosystems/go`,
+ * Catch-all for nested docs paths (`/docs/cli/create`, `/docs/ecosystems/multi-ecosystem`,
  * etc.). The exact `/docs` URL is handled by `routes/docs/index.tsx` because
  * TanStack Router splats don't match the empty case (unlike Next.js
  * `[[...slug]]`). Both routes render the same component below.

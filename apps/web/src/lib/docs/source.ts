@@ -27,6 +27,8 @@ export type DocFrontmatter = {
   updated?: string;
   image?: string;
   translationStatus?: "pending";
+  /** `"landing"` drops the breadcrumb, default header, TOC rail, and prev/next nav. */
+  layout?: "landing";
 };
 
 /**

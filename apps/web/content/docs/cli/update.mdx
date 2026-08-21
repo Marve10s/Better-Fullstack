@@ -1,9 +1,78 @@
 ---
-title: Update Projects
-description: Plan, apply, and recover current-template changes for an existing project.
+title: Update and Check Projects
+description: Inspect project health, diagnose generated targets, and apply current-template changes to an existing project.
 translationStatus: pending
-updated: 2026-08-12
+updated: 2026-08-21
 ---
+
+Three commands maintain a project after it is scaffolded. `status` answers whether anything needs
+attention without running anything. `check` executes the generated target matrix and tells you
+whether the project actually builds. `update` compares the project with the current templates and
+applies the difference under a review token.
+
+## Operational contract
+
+| Command  | Preconditions                                                                        | Writes                                                                                      | Recovery                                                                                        |
+| -------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `status` | A generated project with `bts.jsonc`.                                                | Nothing. It never executes generated toolchains.                                            | Not applicable.                                                                                 |
+| `check`  | `bts.jsonc`, installed dependencies, and every toolchain the generated targets need. | No scaffold source or config. Invoked build tools may write their normal caches and output. | Not applicable.                                                                                 |
+| `update` | `bts.jsonc`; apply also needs a valid versioned `bts.lock.json`.                     | Only `--apply` and `--record-baseline` write files.                                         | Apply snapshots bounded paths, rolls failed writes back, and returns a one-command recovery ID. |
+
+Local edits, conflicts, secrets, lockfiles, and template removals are never silently overwritten or
+deleted.
+
+## Status
+
+`status` gives a fast, read-only answer to three questions: does Better Fullstack recognize this
+project, what recovery and provenance guarantees are available, and is a template update worth
+reviewing?
+
+<PMTabs
+  npm="npx -y create-better-fullstack@latest status ."
+  pnpm="pnpm dlx create-better-fullstack@latest status ."
+  bun="bunx create-better-fullstack@latest status ."
+  yarn="yarn dlx create-better-fullstack@latest status ."
+/>
+
+Use `--json` for automation. The result includes dependency and environment diagnostics, manifest
+provenance and recovery eligibility, plus a compact upgrade summary grouped into drift, merges,
+new files, local edits, conflicts, manual review, and template removals.
+
+`status` is intentionally non-executable. Run `check` to verify every generated target, then
+`update` to inspect exact file changes and obtain an apply token.
+
+## Check
+
+`check` validates a scaffolded project. `doctor` is the older name for the same command and stays
+available.
+
+```npm
+npm create better-fullstack@latest check -- --skip-checks
+```
+
+It reads and validates `bts.jsonc`, checks whether dependencies are installed for the detected
+package manager or ecosystem, reports missing required environment variables from `.env.example`
+files, discovers every executable frontend, backend, mobile, and database target from the stack
+graph, runs each target's generated type/build contract in deterministic order, and reports each
+target directory, toolchain, planned commands, executed commands, status, and reason. It exits
+non-zero for failed targets, missing targets or toolchains, and incomplete execution.
+
+### Check flags
+
+| Flag                         | Behavior                                                                                                                                                            |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| positional project directory | Project directory to diagnose. Defaults to the current directory.                                                                                                   |
+| `--skip-checks`              | Skip generated type/build checks and only inspect config, dependencies, and env files.                                                                              |
+| `--json`                     | Print structured JSON. Without `--run-checks`, ecosystem checks are skipped and reported as a warning so machine consumers keep a fast, toolchain-independent gate. |
+| `--run-checks`               | With `--json`: execute the identical complete target matrix. The command exits non-zero for failed or incomplete verification.                                      |
+
+<Callout kind="warning" title="Checks can mutate toolchain state">
+Generated checks may fetch dependencies and write normal locks, caches, compiler output, or build
+artifacts. JSON captures output but does not make the commands read-only. Use `--skip-checks` for
+inspection without generated target commands.
+</Callout>
+
+## Update
 
 `update` re-renders the stack recorded in `bts.jsonc` and compares it with the scaffold baseline in
 `bts.lock.json`. Its default behavior is a dry-run plan; it does not write files unless `--apply` or
@@ -13,24 +82,14 @@ updated: 2026-08-12
 npm create better-fullstack@latest update
 ```
 
-## Operational contract
-
-| Concern       | Contract                                                                                          |
-| ------------- | ------------------------------------------------------------------------------------------------- |
-| Preconditions | A generated project with `bts.jsonc`; apply also needs a valid versioned `bts.lock.json`.         |
-| Preview       | Plain `update` and `update --dry-run` only produce a plan.                                        |
-| Writes        | Only `--apply` and `--record-baseline` write files.                                               |
-| Refuses       | Local edits, conflicts, secrets, lockfiles, and removals are not silently overwritten or deleted. |
-| Recovery      | Apply snapshots bounded paths, rolls failed writes back, and returns a one-command recovery ID.   |
-
-## Three-way classification
+### Three-way classification
 
 The engine compares the baseline, current template render, and current disk contents. It classifies
 files as unchanged, template drift, structured merge, new, locally edited, conflict, removed,
 or manual review. `package.json` and `.env.example` can use structured merges. Lockfiles, secrets,
 conflicts, and local edits are never silently overwritten; removed template files are not deleted.
 
-## Modes
+### Update modes
 
 | Flag                                 | Behavior                                                                                 |
 | ------------------------------------ | ---------------------------------------------------------------------------------------- |
@@ -47,7 +106,7 @@ conflicts, and local edits are never silently overwritten; removed template file
 The write/check/baseline modes are mutually exclusive. `--dry-run` cannot be combined with
 `--apply` or `--record-baseline`.
 
-## Recommended workflow
+### Recommended workflow
 
 1. Run `update --json` and review categorized actionable paths, conflicts, manual entries, hashes,
    provenance, and recovery eligibility.

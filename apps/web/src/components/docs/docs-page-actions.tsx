@@ -44,11 +44,11 @@ export function DocsPageActions({ path, markdown }: DocsPageActionsProps) {
   };
 
   return (
-    <div className="relative inline-flex items-center rounded-md border border-[var(--docs-border-subtle)] bg-[var(--docs-surface-elevated)]/85 text-muted-foreground shadow-sm transition-colors hover:border-[var(--docs-accent)] hover:text-foreground">
+    <div className="relative inline-flex w-fit items-center self-start rounded-md border border-[var(--docs-border-subtle)] bg-[var(--docs-surface-elevated)]/85 text-muted-foreground shadow-sm transition-colors hover:border-[var(--docs-accent)] hover:text-foreground">
       <button
         type="button"
         onClick={copyMarkdown}
-        className="inline-flex h-8 items-center gap-1.5 px-2.5 font-mono text-[0.7rem]"
+        className="inline-flex h-8 items-center gap-1.5 px-2.5 text-[0.8125rem]"
       >
         {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
         {copied ? "Copied" : "Copy MD"}
@@ -63,7 +63,7 @@ export function DocsPageActions({ path, markdown }: DocsPageActionsProps) {
             href={markdownUrl}
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-2 rounded-sm px-2.5 py-2 font-mono text-[0.72rem] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="flex items-center gap-2 rounded-sm px-2.5 py-2 text-[0.8125rem] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <FileText className="size-3.5" />
             View Markdown
@@ -72,7 +72,7 @@ export function DocsPageActions({ path, markdown }: DocsPageActionsProps) {
             href={githubUrl}
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-2 rounded-sm px-2.5 py-2 font-mono text-[0.72rem] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="flex items-center gap-2 rounded-sm px-2.5 py-2 text-[0.8125rem] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <ExternalLink className="size-3.5" />
             Open on GitHub

@@ -9,6 +9,7 @@ import { fileURLToPath } from "node:url";
 import remarkFrontmatter from "remark-frontmatter";
 import remarkGfm from "remark-gfm";
 import remarkMdxFrontmatter from "remark-mdx-frontmatter";
+import type { ShikiTransformer } from "shiki";
 import { defineConfig, type PluginOption } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
@@ -17,6 +18,13 @@ import { paraglideCompilerOptions } from "./paraglide.config";
 import { remarkExtractToc } from "./src/lib/docs/remark-extract-toc";
 import { remarkNpmTabs } from "./src/lib/docs/remark-npm-tabs";
 import { contentMetaPlugin } from "./vite-plugins/content-meta";
+
+const languageClassOnPre: ShikiTransformer = {
+  name: "language-class-on-pre",
+  pre(node) {
+    this.addClassToHast(node, `language-${this.options.lang}`);
+  },
+};
 
 const buildDate = new Intl.DateTimeFormat("en-US", {
   month: "short",

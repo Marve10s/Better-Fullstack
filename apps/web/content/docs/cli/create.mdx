@@ -39,12 +39,12 @@ For npm, Better Fullstack flags go after `--`. Generated npm commands may use `n
 
 `--shape` names what you are building. The CLI then asks which language or platform fits that shape and runs only the prompts that shape needs, so nothing is pinned that you did not choose.
 
-| Shape                | Asks                                                          | Result                                              |
-| -------------------- | ------------------------------------------------------------- | --------------------------------------------------- |
-| `--shape fullstack`  | Nothing extra; the standard composition prompt runs.          | The full guided flow.                               |
-| `--shape frontend`   | TypeScript, Rust, or .NET.                                    | A client app with the server half switched off.     |
-| `--shape backend`    | TypeScript, Go, Rust, Python, Java/Kotlin, .NET, or Elixir.   | An API with no web frontend.                        |
-| `--shape mobile`     | React Native, Kotlin, Swift, or Flutter.                      | A mobile app on the platform you pick.              |
+| Shape               | Asks                                                        | Result                                          |
+| ------------------- | ----------------------------------------------------------- | ----------------------------------------------- |
+| `--shape fullstack` | Nothing extra; the standard composition prompt runs.        | The full guided flow.                           |
+| `--shape frontend`  | TypeScript, Rust, or .NET.                                  | A client app with the server half switched off. |
+| `--shape backend`   | TypeScript, Go, Rust, Python, Java/Kotlin, .NET, or Elixir. | An API with no web frontend.                    |
+| `--shape mobile`    | React Native, Kotlin, Swift, or Flutter.                    | A mobile app on the platform you pick.          |
 
 Platform and ecosystem flags answer the shape's own question ahead of time. The remaining prompts for that stack still run, so add `--yes` when you need a command that never asks anything:
 
@@ -63,6 +63,23 @@ With `--yes` there is nothing to prompt, so a shape falls back to its default: T
 
 A shape decides the stack, so it is rejected rather than silently overruled when the rest of the command already decides it too: `--config`, `--from-history`, `--part`, and `--template` each carry a complete stack, a flag the shape switches off contradicts it, and `--shape mobile` accepts selectors for exactly one platform. Kotlin, Swift, and Flutter apps are built by Gradle, XcodeGen, and Flutter, which the CLI does not run, so `--install` is skipped with a notice on those platforms instead of reporting an install that did not happen.
 
+## Templates
+
+`--template` starts from a filled-in stack instead of individual flags. Any flag you pass alongside it overrides that field, and `--yes` accepts the rest of the template as-is.
+
+| Template  | Stack                                                                        |
+| --------- | ---------------------------------------------------------------------------- |
+| `t3`      | Next.js, tRPC, Prisma, PostgreSQL, Better Auth, Biome, Turborepo             |
+| `saas`    | Next.js, tRPC, Drizzle, PostgreSQL, Better Auth organizations, Creem billing |
+| `mern`    | React Router, Express, Mongoose, MongoDB Atlas, oRPC, Better Auth            |
+| `pern`    | TanStack Router, Express, Drizzle, PostgreSQL, tRPC, Better Auth             |
+| `uniwind` | Expo with Uniwind, mobile only, no backend                                   |
+| `none`    | No template                                                                  |
+
+```npm
+npm create better-fullstack@latest my-app -- --template t3
+```
+
 ## Prompt behavior
 
 - Explicit flags skip only the categories they cover.
@@ -76,7 +93,7 @@ A shape decides the stack, so it is rejected rather than silently overruled when
 
 ## Common flags
 
-The tables below are generated from the same shared schemas the CLI, Stack Builder, and MCP server use, so accepted values and defaults stay in sync with the generator. See the [Options Reference](/docs/reference/options/) for per-ecosystem option details.
+The tables below are generated from the same shared schemas the CLI, Stack Builder, and MCP server use, so accepted values and defaults stay in sync with the generator.
 
 <CliFlagTable group="common" />
 
@@ -228,6 +245,28 @@ npm create better-fullstack@latest my-mixed-app -- \
   --part containerOrchestration:universal:docker-compose
 ```
 
+## Scaffold history
+
+`history` lists recent scaffolded projects with the reproducible command that created each one. Use
+it to recreate a stack, compare generated output, or share a known-good command.
+
+<PMTabs
+  npm="npx -y create-better-fullstack@latest history"
+  pnpm="pnpm dlx create-better-fullstack@latest history"
+  bun="bunx create-better-fullstack@latest history"
+  yarn="yarn dlx create-better-fullstack@latest history"
+/>
+
+| Flag      | Default | Description                        |
+| --------- | ------- | ---------------------------------- |
+| `--limit` | `10`    | Number of history entries to show. |
+| `--clear` | `false` | Clear all saved scaffold history.  |
+| `--json`  | `false` | Print history as JSON for scripts. |
+
+To reuse a stack, run `history`, copy the reproducible command for the one you want, and re-run it
+with a new project name or adjusted flags. History is stored locally under your user directory and
+does not affect generated project files.
+
 ## Compatibility
 
 - The CLI validates stack compatibility before generation.
@@ -235,4 +274,4 @@ npm create better-fullstack@latest my-mixed-app -- \
 - tRPC is React-oriented.
 - Workers runtime support depends on the frontend/backend combination.
 - UI libraries, deployment targets, providers, and tooling capabilities are stack-sensitive.
-- For a visual check, use the [Compatibility Matrix](/docs/reference/compatibility/) or the [Stack Builder](https://better-fullstack.dev/new).
+- For a visual check, use the [Stack Builder](https://better-fullstack.dev/new).

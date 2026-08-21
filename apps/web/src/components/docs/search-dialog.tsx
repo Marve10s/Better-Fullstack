@@ -165,7 +165,7 @@ export function DocsSearchDialog({
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={onKey}
                 aria-label={m.docsSearch()}
-                className="flex-1 bg-transparent font-mono text-sm outline-none placeholder:text-muted-foreground"
+                className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
               />
               <kbd className="hidden font-mono text-[0.65rem] text-muted-foreground uppercase sm:inline-flex">
                 Esc
@@ -177,18 +177,18 @@ export function DocsSearchDialog({
                 <Empty>{m.docsSearchLoading()}</Empty>
               ) : query.trim() === "" ? (
                 <Empty>
-                  <span className="font-mono text-xs uppercase">{m.docsTypeToSearch()}</span>
+                  <span className="text-xs">{m.docsTypeToSearch()}</span>
                 </Empty>
               ) : hits.length === 0 ? (
                 <Empty>
                   {m.docsNoResultsPrefix()}{" "}
-                  <span className="font-mono text-foreground">"{query}"</span>
+                  <span className="text-foreground">"{query}"</span>
                 </Empty>
               ) : (
                 <ul className="flex flex-col">
                   {grouped.map((group) => (
                     <li key={group.pageId} className="px-2 py-1">
-                      <p className="select-none px-2 py-1 font-mono text-[0.65rem] text-muted-foreground uppercase">
+                      <p className="select-none px-2 py-1 font-medium text-[0.75rem] text-muted-foreground">
                         {group.pageTitle}
                       </p>
                       <ul>
@@ -238,7 +238,7 @@ export function DocsSearchDialog({
               )}
             </div>
 
-            <div className="flex items-center justify-between border-border border-t px-4 py-2 font-mono text-[0.65rem] text-muted-foreground uppercase">
+            <div className="flex items-center justify-between border-border border-t px-4 py-2 text-[0.75rem] text-muted-foreground">
               <span className="flex items-center gap-3">
                 <KeyHint label="↑↓" />
                 <span>{m.docsSearchNavigate()}</span>
@@ -322,7 +322,7 @@ export function DocsSearchTrigger({ className }: { className?: string }) {
         )}
       >
         <SearchIcon className="size-3.5" />
-        <span className="hidden font-mono sm:inline">{m.docsSearch()}</span>
+        <span className="hidden sm:inline">{m.docsSearch()}</span>
         <kbd className="hidden items-center gap-0.5 font-mono text-[0.65rem] uppercase sm:inline-flex">
           <span>{getModifierLabel()}</span>
           <span>K</span>

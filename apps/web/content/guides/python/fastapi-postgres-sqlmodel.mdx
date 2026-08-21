@@ -101,11 +101,11 @@ Use a separate database or transaction strategy for tests. Assertions should cov
 
 SQLModel reduces repetition for conventional CRUD-shaped APIs. SQLAlchemy is the more direct choice when the domain uses advanced mappings or when the team wants persistence models clearly separate from validation schemas.
 
-| Decision | SQLModel | SQLAlchemy |
-| --- | --- | --- |
-| Model style | Pydantic and SQLAlchemy concepts combined | Explicit ORM mapping, separate Pydantic schemas |
-| Best fit | Compact services and straightforward resources | Complex persistence models and established SQLAlchemy patterns |
-| Template | [SQLModel starter](/stack/python-fastapi-postgres-sqlmodel) | [SQLAlchemy starter](/stack/python-fastapi-postgres-sqlalchemy) |
+| Decision    | SQLModel                                                    | SQLAlchemy                                                      |
+| ----------- | ----------------------------------------------------------- | --------------------------------------------------------------- |
+| Model style | Pydantic and SQLAlchemy concepts combined                   | Explicit ORM mapping, separate Pydantic schemas                 |
+| Best fit    | Compact services and straightforward resources              | Complex persistence models and established SQLAlchemy patterns  |
+| Template    | [SQLModel starter](/stack/python-fastapi-postgres-sqlmodel) | [SQLAlchemy starter](/stack/python-fastapi-postgres-sqlalchemy) |
 
 <GuideCompatibilityNote
   kind="supported"

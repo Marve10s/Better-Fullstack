@@ -2,7 +2,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { TbArrowRight as ArrowRight, TbArrowUpRight as ArrowUpRight } from "react-icons/tb";
 import type { CSSProperties } from "react";
 
-import { formatPostDate } from "@/components/blog/blog-page";
+import { formatContentDate } from "@/lib/content-date";
 import type { BlogPost } from "@/lib/blog/source";
 
 import { blogIndexHead } from "@/lib/blog/seo";
@@ -32,7 +32,7 @@ function ordinal(index: number): string {
 }
 
 function PostMeta({ post }: { post: BlogPost }) {
-  const date = formatPostDate(post.frontmatter.date);
+  const date = formatContentDate(post.frontmatter.date);
   const minutes = post.readingStats?.longMins;
 
   return (

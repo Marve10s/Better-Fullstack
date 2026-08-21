@@ -4,22 +4,18 @@ import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * Wraps the `<pre>` element rehype-shiki produces so we can layer a copy
- * button + filename label on top without touching the highlighted markup.
+ * Wraps the `<pre>` element rehype-shiki produces so we can layer a language
+ * label and a copy button on top without touching the highlighted markup.
  *
- * We don't replace the inner HTML — Shiki's spans and inline styles need to
- * survive intact for the syntax-highlighting themes to render. Instead, we
- * intercept the `<pre>` rendered by MDX and render the same children inside
- * our chrome.
+ * We don't replace the inner HTML. Shiki's spans carry the per-token
+ * `--shiki-light` / `--shiki-dark` custom properties that global.css reads to
+ * pick a theme, so the children pass through untouched.
  */
 export function CodeBlock({ className, children, ...rest }: React.HTMLAttributes<HTMLPreElement>) {
   const [copied, setCopied] = useState(false);
   const preRef = useRef<HTMLPreElement | null>(null);
   const language = extractLanguage(className);
 
-  // Detect whether this code block was substituted by PMTabs (which sets
-  // `data-pm-block` on the wrapper). In that case the parent owns its own
-  // copy UI; we render the bare pre.
   const handleCopy = async () => {
     const text = preRef.current?.innerText ?? "";
     if (!text) return;
@@ -38,31 +34,29 @@ export function CodeBlock({ className, children, ...rest }: React.HTMLAttributes
   }, [copied]);
 
   return (
-    <div className="group relative my-6 overflow-hidden rounded-lg border bg-[var(--code-bg)] border-[var(--code-border)] shadow-sm">
-      {language ? (
-        <div className="flex items-center border-[var(--code-border)] border-b px-4 py-1.5 font-mono text-[#8b949e] text-[0.65rem] uppercase">
-          <span>{language}</span>
-        </div>
-      ) : null}
+    <div className="my-6 overflow-hidden rounded-lg border bg-[var(--code-bg)] border-[var(--code-border)]">
+      <div className="flex h-9 items-center gap-2 border-[var(--code-border)] border-b bg-[var(--code-chrome-bg)] pr-1.5 pl-4">
+        <span className="text-[0.75rem] text-[var(--code-muted)]">{language}</span>
+        <button
+          type="button"
+          onClick={handleCopy}
+          aria-label={copied ? "Copied" : "Copy code"}
+          className="ml-auto flex size-7 items-center justify-center rounded-md text-[var(--code-muted)] transition-colors hover:bg-[var(--code-bg)] hover:text-[var(--code-fg)]"
+        >
+          {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
+        </button>
+      </div>
       <pre
         {...rest}
         ref={preRef}
         className={cn(
-          "overflow-x-auto px-4 py-4 text-[0.84rem] leading-relaxed",
+          "overflow-x-auto px-4 py-4 text-[0.875rem] leading-relaxed",
           "[&_code]:font-mono [&_code]:bg-transparent",
           className,
         )}
       >
         {children}
       </pre>
-      <button
-        type="button"
-        onClick={handleCopy}
-        aria-label={copied ? "Copied" : "Copy code"}
-        className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-md border border-[#30363d] bg-[#161b22] text-[#8b949e] opacity-0 transition-all hover:text-[#e6edf3] group-hover:opacity-100 focus:opacity-100"
-      >
-        {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-      </button>
     </div>
   );
 }

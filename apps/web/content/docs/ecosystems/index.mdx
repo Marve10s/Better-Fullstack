@@ -1,27 +1,27 @@
 ---
 title: Ecosystems
-description: Supported language ecosystems and what Better Fullstack scaffolds for each one.
+description: Supported language ecosystems, what Better Fullstack scaffolds for each one, and the compatibility rules that apply.
 translationStatus: pending
-updated: 2026-08-07
+updated: 2026-08-21
 ---
 
 Better Fullstack uses one CLI for eight solo ecosystem surfaces plus additional Stack Part languages
 for composed projects. Each has its own templates, toolchain, and compatibility rules.
 
-For product stacks that span languages, use [Multi-Ecosystem mode](/docs/ecosystems/multi-ecosystem/). It models the project as stack parts, such as `frontend:typescript:next`, `backend:go:gin`, `backend.orm:go:gorm`, and `database:universal:postgres`.
+| Ecosystem                           | Best for                                                                                                         | Notes                                                                                  |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| [TypeScript](#typescript)           | Fullstack web, APIs, workers, desktop, and the largest web integration matrix.                                   | Web options are TypeScript-first.                                                      |
+| [React Native](#react-native)       | Expo mobile apps with navigation, UI, storage, testing, push, OTA, and deep linking.                             | Uses the React Native ecosystem surface instead of TypeScript web frontend categories. |
+| [Rust](#rust)                       | Backend services, CLI apps, GraphQL/gRPC, Rust web frontends, and strongly typed libraries.                      | Uses Cargo; templates are conditional by selected Rust options.                        |
+| [Python](#python)                   | API and AI-oriented services with framework, ORM, validation, queue, GraphQL, and quality choices.               | Uses `uv`; Python AI is a separate multi-select category.                              |
+| [Go](#go)                           | API services, gRPC, CLIs, logging, ORM, and Go auth helpers.                                                     | Uses Go modules; GoBetterAuth is selected with global `--auth go-better-auth`.         |
+| [Java and Kotlin](#java-and-kotlin) | Spring Boot, Ktor, Quarkus, or plain Java projects with Maven/Gradle, persistence, auth, libraries, and tests.   | Uses Maven or Gradle wrappers when a build tool is selected.                           |
+| [Elixir](#elixir)                   | Phoenix and Phoenix LiveView apps with Ecto, Absinthe, realtime, jobs, testing, quality, and deploy choices.     | Uses Mix; a few schema-level options stay disabled until templates catch up.           |
+| [.NET](#net)                        | ASP.NET Core services with EF Core or Dapper, Identity, Minimal APIs or Hot Chocolate, SignalR, jobs, and tests. | Uses the .NET SDK; testing and observability are multi-select categories.              |
 
-| Ecosystem                                      | Best for                                                                                                         | Notes                                                                                  |
-| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| [TypeScript](/docs/ecosystems/typescript/)     | Fullstack web, APIs, workers, desktop, and the largest web integration matrix.                                   | Web options are TypeScript-first.                                                      |
-| [React Native](/docs/ecosystems/react-native/) | Expo mobile apps with navigation, UI, storage, testing, push, OTA, and deep linking.                             | Uses the React Native ecosystem surface instead of TypeScript web frontend categories. |
-| [Rust](/docs/ecosystems/rust/)                 | Backend services, CLI apps, GraphQL/gRPC, Rust web frontends, and strongly typed libraries.                      | Uses Cargo; templates are conditional by selected Rust options.                        |
-| [Python](/docs/ecosystems/python/)             | API and AI-oriented services with framework, ORM, validation, queue, GraphQL, and quality choices.               | Uses `uv`; Python AI is a separate multi-select category.                              |
-| [Go](/docs/ecosystems/go/)                     | API services, gRPC, CLIs, logging, ORM, and Go auth helpers.                                                     | Uses Go modules; GoBetterAuth is selected with global `--auth go-better-auth`.         |
-| [Java](/docs/ecosystems/java/)                 | Spring Boot, Quarkus, or plain Java projects with Maven/Gradle, persistence, auth, libraries, and tests.         | Java uses Maven or Gradle wrappers when a build tool is selected.                      |
-| [Elixir](/docs/ecosystems/elixir/)             | Phoenix and Phoenix LiveView apps with Ecto, Absinthe, realtime, jobs, testing, quality, and deploy choices.     | Uses Mix; a few schema-level options stay disabled until templates catch up.           |
-| [.NET](/docs/ecosystems/dotnet/)               | ASP.NET Core services with EF Core or Dapper, Identity, Minimal APIs or Hot Chocolate, SignalR, jobs, and tests. | Uses the .NET SDK; testing and observability are multi-select categories.              |
-
-## Additional composed app languages
+For product stacks that span languages, use [Multi-Ecosystem mode](/docs/ecosystems/multi-ecosystem/).
+It models the project as stack parts, such as `frontend:typescript:next`, `backend:go:gin`,
+`backend.orm:go:gorm`, and `database:universal:postgres`.
 
 Multi-Ecosystem mode can also add Kotlin/Compose, SwiftUI, Flutter/Dart, .NET Blazor, and standalone
 Rust web frontends as primary app parts. Kotlin is also available as the JVM language for Ktor and
@@ -55,4 +55,326 @@ Runtime and package manager are separate choices. For example, a generated TypeS
 
 ## Shared options are not universal
 
-Some flags are global because they are stored in one project config, but not every flag applies to every ecosystem. Use the ecosystem pages below for what is generated, and use [Reference Options](/docs/reference/options/) and the generated tables on [CLI Create](/docs/cli/create/) for exact current values.
+Some flags are global because they are stored in one project config, but not every flag applies to every ecosystem. Use the sections below for what each ecosystem generates, and the generated flag tables on [CLI Create](/docs/cli/create/) for exact current values.
+
+## TypeScript
+
+TypeScript is the broadest ecosystem. Use it for web apps, APIs, workers, desktop shells, browser extensions, documentation sites, service integrations, and typed tooling capabilities. Expo mobile scaffolds live in [React Native](#react-native) instead.
+
+It needs Node.js 20 or newer, one of npm, pnpm, Yarn, or Bun, and Git if you want repository initialization.
+
+```npm
+npm create better-fullstack@latest my-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime node \
+  --database sqlite \
+  --orm drizzle \
+  --db-setup none \
+  --api orpc \
+  --auth better-auth \
+  --part workspaceRunner:universal:turborepo \
+  --examples none \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install
+```
+
+[CLI Create](/docs/cli/create/#typescript-flags) lists every accepted value for frontend, backend,
+runtime, data, API, UI, services, tooling, and deploy.
+
+- tRPC is for React-based frontends.
+- `self` backend is for fullstack frameworks and pairs with `runtime none`.
+- Qwik, Angular, Redwood, and Fresh have narrower API/backend support than the full option table.
+- Workers runtime support is backend-dependent.
+- UI libraries often depend on frontend family and CSS framework. For example, shadcn/ui is React-oriented and Tailwind-based.
+- Some providers have extra constraints, such as Polar requiring Better Auth and a web frontend.
+- Some options are surfaced for compatibility or dependency support before every template path is equally deep. Run the compatibility checker or [Stack Builder](/new) before scaffolding large combinations.
+
+## React Native
+
+React Native is the dedicated mobile ecosystem. It scaffolds Expo projects and keeps mobile choices separate from TypeScript web frontend, backend, database, and deploy categories.
+
+It needs Node.js 20 or newer, one of npm, pnpm, Yarn, or Bun, and Expo-compatible iOS/Android tooling when you want simulator or device validation.
+
+```npm
+npm create better-fullstack@latest mobile-app -- \
+  --ecosystem react-native \
+  --frontend native-bare \
+  --mobile-navigation expo-router \
+  --mobile-ui tamagui \
+  --mobile-storage mmkv \
+  --mobile-testing maestro-react-native-testing-library \
+  --mobile-push expo-notifications \
+  --mobile-ota expo-updates \
+  --mobile-deep-linking expo-linking \
+  --ai-docs none \
+  --no-install
+```
+
+[CLI Create](/docs/cli/create/#react-native-flags) lists every accepted value for frontend,
+navigation, UI, storage, testing, push, OTA, and deep linking.
+
+A scaffold generates Expo config with scheme and runtime settings when deep linking or OTA is selected, Expo Router route files or a React Navigation entrypoint depending on navigation, mobile UI provider and theme files for Tamagui, Gluestack UI, Uniwind, or Unistyles, MMKV client helpers when storage is selected, Jest Expo and React Native Testing Library examples or Maestro flows, push registration helpers for Expo Notifications, OTA helpers for Expo Updates, and an `.env.example` using `EXPO_PUBLIC_` conventions.
+
+- React Native does not expose TypeScript web frontend, backend, database, web UI, web deploy, or server deploy categories.
+- Uniwind and Unistyles UI modes are tied to their matching Expo frontend variants.
+- Tamagui and Gluestack UI use the bare Expo variant to avoid conflicting styling setup.
+- Deep linking is enabled automatically when a mobile auth flow requires redirect URI examples.
+
+## Rust
+
+Rust projects use Cargo and language-native templates. Choose Rust options for backend services, CLIs, GraphQL/gRPC, WebAssembly frontends, logging, caching, and auth helpers. They need the Rust toolchain and Cargo.
+
+```npm
+npm create better-fullstack@latest my-rust-api -- \
+  --ecosystem rust \
+  --rust-web-framework axum \
+  --rust-orm sqlx \
+  --rust-libraries serde validator \
+  --rust-logging tracing \
+  --rust-error-handling anyhow-thiserror \
+  --rust-api none \
+  --rust-frontend none \
+  --rust-cli none \
+  --rust-caching none \
+  --rust-auth none \
+  --rust-realtime tokio-tungstenite \
+  --rust-message-queue lapin \
+  --rust-observability opentelemetry \
+  --rust-templating askama \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+[CLI Create](/docs/cli/create/#rust) lists every accepted value for framework, data, API, CLI,
+libraries, logging, auth, realtime, and infrastructure.
+
+- `cargo build` is the install and verification path when install is enabled.
+- Leptos, Dioxus, Tonic, Clap, and Ratatui template files are included only when their matching options are selected.
+- `rustLibraries` is multi-select; pass `none` or omit libraries you do not want.
+
+## Python
+
+Python projects use `uv` and Python-native templates. Choose Python options for API frameworks, ORMs, validation, AI libraries, auth helpers, task queues, GraphQL, and quality tooling. They need Python and `uv`.
+
+```npm
+npm create better-fullstack@latest my-python-api -- \
+  --ecosystem python \
+  --python-web-framework fastapi \
+  --python-orm sqlalchemy \
+  --python-validation pydantic \
+  --python-ai none \
+  --python-auth jwt \
+  --python-task-queue none \
+  --python-graphql none \
+  --python-quality ruff \
+  --python-testing pytest hypothesis \
+  --python-caching redis \
+  --python-realtime python-socketio \
+  --python-observability opentelemetry \
+  --python-cli typer rich \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+[CLI Create](/docs/cli/create/#python) lists every accepted value for framework, data, AI, auth,
+API, quality, testing, and infrastructure.
+
+- `uv sync --extra dev` is the install path when install is enabled.
+- `pythonAi` is a multi-select category and is separate from TypeScript `--ai`.
+- Empty conditional Python template files are skipped when selected options do not need them.
+
+## Go
+
+Go projects use Go modules and Go-native templates. Choose Go options for HTTP services, gRPC, CLIs, logging, ORMs, and Go auth helpers. They need the Go toolchain.
+
+```npm
+npm create better-fullstack@latest my-go-api -- \
+  --ecosystem go \
+  --go-web-framework gin \
+  --go-orm gorm \
+  --go-logging zap \
+  --go-auth jwt \
+  --go-api none \
+  --go-cli none \
+  --go-testing testify \
+  --go-realtime gorilla-websocket \
+  --go-message-queue nats \
+  --go-caching redis \
+  --go-config viper \
+  --go-observability opentelemetry \
+  --auth none \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+[CLI Create](/docs/cli/create/#go) lists every accepted value for framework, data, API, CLI,
+logging, auth, testing, and infrastructure.
+
+### Go auth split
+
+Go has two auth-related fields. `--go-auth casbin|jwt|none` adds Go-native auth helpers, and
+`--auth go-better-auth` selects GoBetterAuth through the global auth field. Other global auth
+providers such as Clerk, NextAuth, Stack Auth, Supabase Auth, and Auth0 are TypeScript-oriented and
+are not general Go scaffold support.
+
+- `go mod tidy` is the install and verification path when install is enabled.
+- gRPC, Cobra, and Bubble Tea files are included only when selected.
+- Testing, realtime, message-queue, caching, config, and observability selections generate
+  standalone packages under `internal/`, plus example tests for `testify` and `gomock`.
+- `gqlgen` scaffolds `graph/schema.graphqls` and `gqlgen.yml`; run `go generate ./graph` to produce
+  the GraphQL server code, mirroring the Ent code-generation flow.
+- `goth` registers OAuth providers from `GOOGLE_CLIENT_ID` and `GITHUB_CLIENT_ID` style credentials.
+
+## Java and Kotlin
+
+The JVM ecosystem supports Java and Kotlin projects with Spring Boot, Kotlin Ktor, Quarkus,
+Micronaut, and plain-project templates. Choose the language, framework, build tool, persistence,
+auth, application libraries, and test libraries independently where compatibility permits. It needs
+Java 21.
+
+```npm
+npm create better-fullstack@latest my-java-api -- \
+  --ecosystem java \
+  --java-language kotlin \
+  --java-web-framework ktor \
+  --java-build-tool gradle \
+  --java-orm none \
+  --java-auth none \
+  --java-api none \
+  --java-logging logback \
+  --java-libraries none \
+  --java-testing-libraries junit5 \
+  --ai-docs none \
+  --no-install \
+  --no-git
+```
+
+A Spring Boot project instead:
+
+```npm
+npm create better-fullstack@latest my-spring-api -- \
+  --ecosystem java \
+  --java-language java \
+  --java-web-framework spring-boot \
+  --java-build-tool maven \
+  --java-orm spring-data-jpa \
+  --java-auth spring-security \
+  --java-api spring-graphql \
+  --java-logging logback \
+  --java-libraries spring-actuator spring-validation flyway \
+  --java-testing-libraries junit5 mockito testcontainers \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+[CLI Create](/docs/cli/create/#java) lists every accepted value for language, framework, build,
+persistence, auth, API, logging, libraries, and testing.
+
+- Spring Boot and Quarkus require Maven or Gradle.
+- Ktor requires Kotlin and either Maven or Gradle; Spring-only ORM, auth, and library choices are removed when Ktor is selected.
+- Java ORM, auth, and Spring-specific libraries require Spring Boot plus Maven or Gradle.
+- Flyway requires Spring Data JPA.
+- Some libraries are framework-specific. For example, Spring Batch, Spring Kafka, Spring Mail, Spring WebFlux, Springdoc OpenAPI, Actuator, and Spring Security target Spring Boot projects.
+- Maven projects verify with `./mvnw test` and Gradle projects with `./gradlew test` when install is enabled.
+- Plain Java behavior comes from `--java-web-framework none` plus compatible `none` values for framework-dependent categories.
+- Ktor projects generate Kotlin/Gradle source, configuration, tests, and application entrypoints.
+
+## Elixir
+
+Elixir projects generate Phoenix applications that follow Mix and Phoenix conventions. Choose Elixir options for LiveView, Ecto SQL, auth, APIs, realtime, jobs, testing, quality, and deploy files.
+
+They need Elixir and Erlang/OTP compatible with Phoenix 1.7, plus PostgreSQL when using `ecto-sql`, `phx-gen-auth`, or `oban`.
+
+```npm
+npm create better-fullstack@latest my-phoenix-app -- \
+  --ecosystem elixir \
+  --elixir-web-framework phoenix-live-view \
+  --elixir-orm ecto-sql \
+  --elixir-auth phx-gen-auth \
+  --elixir-api absinthe \
+  --elixir-realtime presence \
+  --elixir-jobs oban \
+  --elixir-http req \
+  --elixir-json jason \
+  --elixir-observability telemetry \
+  --elixir-testing ex_unit \
+  --elixir-quality credo \
+  --elixir-deploy docker \
+  --ai-docs none \
+  --no-install \
+  --no-git
+```
+
+[CLI Create](/docs/cli/create/#elixir) lists every accepted value for Phoenix, data, auth, API,
+realtime, jobs, quality, and deploy.
+
+- Elixir options only apply with `--ecosystem elixir`.
+- Phoenix and Phoenix LiveView are standalone Elixir web frameworks; TypeScript frontend and backend options are ignored.
+- `phx-gen-auth` and Oban require Ecto SQL because the generated code needs a Repo and migrations.
+- Oban targets PostgreSQL-backed Ecto SQL projects.
+- LiveView streams require `phoenix-live-view`.
+- A few schema-level choices are intentionally rejected by the graph validator until matching templates exist: `ecto`, `ueberauth`, `guardian`, `nimble-options`, `nebulex`, `opentelemetry`, `prom_ex`, `mox`, `bypass`, `wallaby`, `fly`, and `gigalixir`. The CLI and builder surface those as unsupported-tool messages rather than generating partial Phoenix code.
+- The project includes `mix.exs`, Phoenix config, router, endpoint, controllers, tests, `.env.example`, and setup notes. Ecto SQL selections add a Repo, migrations, schema and context code, and PostgreSQL config. Optional selections add working files for LiveView, Channels and Presence, Oban or Quantum jobs, Absinthe schema and resolvers, Req or Finch HTTP clients, Swoosh mailer, Cachex, a Dockerfile, and release config.
+
+## .NET
+
+.NET projects generate ASP.NET Core applications that follow standard `dotnet` conventions. Choose .NET options for the web framework, data access, auth, API style, realtime, background jobs, observability, caching, testing, and deploy files.
+
+They need .NET SDK 10 or newer, PostgreSQL when using `ef-core` with the `postgres` database (SQLite needs no server), and Docker when using the `docker` deploy target or `testcontainers-dotnet`.
+
+```npm
+npm create better-fullstack@latest my-dotnet-app -- \
+  --ecosystem dotnet \
+  --dotnet-web-framework aspnet-minimal \
+  --dotnet-orm ef-core \
+  --dotnet-auth aspnet-identity \
+  --dotnet-api minimal-api \
+  --dotnet-testing xunit \
+  --dotnet-job-queue hangfire \
+  --dotnet-realtime signalr \
+  --dotnet-observability serilog \
+  --dotnet-caching redis \
+  --dotnet-deploy docker \
+  --database postgres \
+  --ai-docs none \
+  --no-install \
+  --no-git
+```
+
+[CLI Create](/docs/cli/create/#net) lists every accepted value for framework, data, auth, API,
+testing, jobs, realtime, observability, validation, caching, and deploy.
+
+### Blazor frontend parts
+
+Multi-Ecosystem mode can generate standalone `blazor-webassembly` or `blazor-web-app` frontend parts
+alongside a backend in another supported language:
+
+```npm
+npm create better-fullstack@latest blazor-go -- \
+  --part frontend:dotnet:blazor-webassembly \
+  --part backend:go:gin \
+  --part backend.orm:go:gorm \
+  --part database:universal:postgres
+```
+
+Blazor frontend selections are primary frontend Stack Parts and are distinct from
+`--dotnet-web-framework aspnet-blazor`, which selects the solo .NET backend and application surface.
+
+- .NET options only apply with `--ecosystem dotnet`.
+- ASP.NET Core is a standalone .NET web framework; TypeScript frontend and backend options are ignored.
+- `--dotnet-testing` and `--dotnet-observability` accept multiple values.
+- `ef-core` selects the provider from `--database`: `postgres` uses Npgsql, anything else falls back to SQLite.
+- `aspnet-identity` registers Identity stores only when paired with `ef-core`; without it the scaffold registers plain authentication and authorization services.
+- Non-interactive defaults when `--ecosystem dotnet` is set: `aspnet-minimal`, `ef-core`, `aspnet-identity`, `minimal-api`, `xunit`, `signalr`, `serilog`, and `docker`.
+- The project includes a `.csproj`, `Program.cs`, `appsettings.json`, an `.http` request file, a test project, `.gitignore`, and setup notes in the README. EF Core selections wire up a `DbContext` with the Npgsql or SQLite provider plus the design-time package for migrations. Optional selections add working code for Identity, Hot Chocolate GraphQL, gRPC services, SignalR hubs, Hangfire or Quartz.NET jobs, Serilog, NLog, or OpenTelemetry pipelines, Redis caching, and a multi-stage Dockerfile.
