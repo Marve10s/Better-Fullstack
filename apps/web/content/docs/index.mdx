@@ -1,18 +1,17 @@
 ---
 title: Better Fullstack Docs
-description: Requirements, the command that creates a project, and the commands that follow it.
+description: One command scaffolds a configured fullstack project in TypeScript, React Native, Rust, Python, Go, Java, Elixir, or .NET. Start here.
 translationStatus: pending
 layout: landing
-updated: 2026-08-20
+updated: 2026-08-22
 ---
 
 <DocsHero
   title="Scaffold anything with Better Fullstack"
-  subhead="Choose a frontend, backend, data layer, services, and tooling. The CLI writes the project across TypeScript, React Native, Rust, Python, Go, Java, Elixir, and .NET."
+  subhead="Pick a frontend, backend, data layer, auth provider, services, and tooling. The CLI writes a working project you own."
   actions={[
-    { label: "Get started", href: "/docs/getting-started/first-project/", primary: true },
+    { label: "Create your first project", href: "/docs/getting-started/first-project/", primary: true },
     { label: "Open Stack Builder", href: "/new" },
-    { label: "Set up AI agents", href: "/docs/ai/overview/" },
   ]}
 >
 
@@ -22,76 +21,20 @@ npm create better-fullstack@latest
 
 </DocsHero>
 
-## Requirements
+Nothing installs globally. Your package manager runs the CLI on demand and Node.js 20 or newer is the only requirement. No terminal handy? The [Stack Builder](/new) composes, previews, and runs projects in the browser.
 
-[Node.js](https://nodejs.org/en/download) 20 or newer, and only if you run the CLI.
+## Where to go
 
-To skip that install, configure the project in the [Stack Builder](/new) and download it as a ZIP. That path needs nothing but a browser.
+| You want to                                        | Read                                                          |
+| -------------------------------------------------- | ------------------------------------------------------------- |
+| Scaffold, run, and verify a project                | [First Project](/docs/getting-started/first-project/)         |
+| Script a stack with flags, templates, or shapes    | [CLI Create](/docs/cli/create/)                               |
+| Add capabilities to an existing project            | [CLI Add](/docs/cli/add/)                                     |
+| Refresh templates or diagnose project health       | [Status, Check, Update](/docs/cli/update/)                    |
+| Build, preview, run, and download in the browser   | [Stack Builder](/docs/builder/)                               |
+| Pick a frontend, backend, database, auth, deploy   | [Choosing a Stack](/docs/choosing-a-stack/)                   |
+| See what each language ecosystem scaffolds         | [Ecosystems](/docs/ecosystems/)                               |
+| Combine languages in one project                   | [Multi-Ecosystem](/docs/ecosystems/multi-ecosystem/)          |
+| Hand the work to a coding agent                    | [AI Agents](/docs/ai/overview/)                               |
 
-## Start and learn
-
-<DocsCardGrid>
-  <DocsCard title="Installation" href="/docs/getting-started/installation/" icon="download">
-    Launchers for every package manager, plus the toolchain each ecosystem needs.
-  </DocsCard>
-  <DocsCard title="First project" href="/docs/getting-started/first-project/" icon="terminal">
-    Scaffold, inspect, install, and run one project from an empty directory.
-  </DocsCard>
-  <DocsCard title="Project lifecycle" href="/docs/getting-started/lifecycle/" icon="refresh">
-    Which command creates, evolves, refreshes, generates inside, and diagnoses a project.
-  </DocsCard>
-</DocsCardGrid>
-
-## Build and evolve
-
-<DocsCardGrid>
-  <DocsCard title="Stack Builder" href="/docs/web-builder/" icon="grid">
-    Compose a stack, run it in the browser, then share a URL or download a ZIP.
-  </DocsCard>
-  <DocsCard title="Create command" href="/docs/cli/create/" icon="adjustments">
-    Every flag, and scripted examples that reproduce a stack in CI or an issue report.
-  </DocsCard>
-  <DocsCard title="Add features" href="/docs/cli/add/" icon="plus">
-    Add typed tooling, deployment targets, and stack capabilities to an existing project.
-  </DocsCard>
-  <DocsCard title="Update projects" href="/docs/cli/update/" icon="checklist">
-    Plan, apply, and recover current-template changes without losing your edits.
-  </DocsCard>
-  <DocsCard title="CLI reference" href="/docs/cli/" icon="terminal">
-    Every command for creating projects, updating generated apps, and opening resources.
-  </DocsCard>
-</DocsCardGrid>
-
-## Choose a stack
-
-<DocsCardGrid>
-  <DocsCard title="Ecosystems" href="/docs/ecosystems/" icon="stack">
-    What Better Fullstack scaffolds for each supported language ecosystem.
-  </DocsCard>
-  <DocsCard title="Multi-ecosystem" href="/docs/ecosystems/multi-ecosystem/" icon="relation">
-    Compose frontend, backend, database, and mobile parts from different ecosystems.
-  </DocsCard>
-  <DocsCard title="Stack guides" href="/docs/stack-guides/" icon="browser">
-    How frontend, backend, database, auth, and deployment choices constrain each other.
-  </DocsCard>
-</DocsCardGrid>
-
-## Work with AI agents
-
-<DocsCardGrid>
-  <DocsCard title="AI agents" href="/docs/ai/overview/" icon="robot">
-    Generated context files, the agent skill, and the plugin bundle for coding agents.
-  </DocsCard>
-  <DocsCard title="MCP server" href="/docs/ai/mcp/" icon="plug">
-    Connect an MCP client, then read every tool it can call and the order to call them in.
-  </DocsCard>
-</DocsCardGrid>
-
-## After the first scaffold
-
-| What changed?                                                | Use                                                                              |
-| ------------------------------------------------------------ | -------------------------------------------------------------------------------- |
-| You want a new capability or stack selection                 | `add --dry-run`, then `add` after review.                                        |
-| The selected stack is unchanged, but templates have advanced | `update`; review, then apply with its exact token and keep its recovery command. |
-| You want a supported resource generated inside the project   | `gen ... --dry-run`, then `gen`.                                                 |
-| You installed dependencies or changed environment values     | `check`, plus the project's own tests.                                           |
+After the first scaffold, three commands cover most of the work. `add` changes the selected stack, `update` refreshes templates under review, and `check` verifies the project builds. [Project Lifecycle](/docs/getting-started/lifecycle/) maps every command to the moment you need it.

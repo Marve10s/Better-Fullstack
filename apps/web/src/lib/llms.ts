@@ -48,9 +48,9 @@ export function generateLlmsTxt({
       "/docs/ai/mcp",
       "/docs/ecosystems",
       "/docs/ecosystems/multi-ecosystem",
-      "/docs/ecosystems/native-mobile",
-      "/docs/web-builder",
-      "/docs/stack-guides",
+      "/docs/ecosystems/native-apps",
+      "/docs/builder",
+      "/docs/choosing-a-stack",
     ].includes(page.url),
   );
   const stackPagesByEcosystem = new Map<string, LlmsStackPage[]>();

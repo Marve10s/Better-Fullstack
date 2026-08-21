@@ -1,83 +1,53 @@
 ---
 title: CLI Reference
-description: Commands for creating projects, updating generated apps, opening resources, and running AI-agent workflows.
+description: Every command for creating projects, evolving generated apps, running AI-agent workflows, and opening resources.
 translationStatus: pending
-updated: 2026-08-21
+updated: 2026-08-22
 ---
 
-Better Fullstack exposes a project lifecycle through the CLI: create, evolve, update, diagnose, and
-generate. Commands marked experimental have intentionally narrow support today.
-
-<Callout kind="info" title="Add changes the stack; update refreshes templates">
-Use `add` when you want a new selected capability. Use `update` when the selection stays the same
-and you want newer generator templates. Both expose a review-first workflow.
-</Callout>
+The CLI exposes a project lifecycle: create, evolve, refresh, diagnose, generate. Commands marked experimental have intentionally narrow support today.
 
 ## Commands
 
 | Command     | Purpose                                                                                                    |
-| ----------- | ---------------------------------------------------------------------------------------------------------- |
-| `create`    | Scaffold a new project from a stack configuration. This is the default command.                            |
-| `add`       | Add supported tooling, deployment settings, or stack capabilities to an existing Better Fullstack project. |
-| `remove`    | Plan and apply removal of one exact non-primary stack capability.                                          |
-| `status`    | Summarize project health, lifecycle guarantees, and available template drift without running toolchains.   |
-| `update`    | Plan or apply current template drift against the `bts.lock.json` scaffold baseline.                        |
-| `check`     | Diagnose an existing project for config, dependency, env, and generated check issues.                      |
-| `doctor`    | Compatibility alias for `check`.                                                                           |
-| `history`   | Show, export, or clear local scaffold history and reproducible commands.                                   |
-| `gen`       | Experimental: generate a TypeScript tRPC/oRPC resource router in an existing project.                      |
-| `registry`  | Experimental: add or list local capability packs. Remote URLs are not supported.                           |
-| `recommend` | Experimental: deterministic keyword/preset recommendation from a brief.                                    |
-| `mcp`       | Start the Better Fullstack MCP server over stdio for AI coding agents.                                     |
-| `telemetry` | Inspect, enable, or disable anonymous CLI telemetry.                                                       |
+| ----------- | ----------------------------------------------------------------------------------------------------------- |
+| `create`    | Scaffold a new project from a stack configuration. This is the default command.                             |
+| `add`       | Add supported tooling, deployment settings, or stack capabilities to an existing project.                   |
+| `remove`    | Plan and apply removal of one exact non-primary stack capability.                                           |
+| `status`    | Summarize project health, lifecycle guarantees, and template drift without running toolchains.              |
+| `update`    | Plan or apply current template drift against the `bts.lock.json` scaffold baseline.                         |
+| `check`     | Diagnose config, dependency, env, and generated-target issues. `doctor` is a compatibility alias.           |
+| `history`   | Show, export, or clear local scaffold history and reproducible commands.                                    |
+| `gen`       | Experimental: generate a TypeScript tRPC/oRPC resource router in an existing project.                       |
+| `registry`  | Experimental: add or list local capability packs. Remote URLs are not supported.                            |
+| `recommend` | Experimental: deterministic keyword/preset recommendation from a brief.                                     |
+| `mcp`       | Start the Better Fullstack MCP server over stdio for AI coding agents.                                      |
+| `telemetry` | Inspect, enable, or disable anonymous CLI telemetry.                                                        |
+
+Most people need four of these day to day: `create`, `add`, `check`, and `history`. Agents use `mcp`.
+
+<Callout kind="info" title="Add changes the stack; update refreshes templates">
+Use `add` when you want a new selected capability. Use `update` when the selection stays the same and you want newer generator templates. Both are review-first.
+</Callout>
 
 ## Utility commands
 
-These open a resource and never modify a generated project.
+These open a resource and never modify a generated project:
 
 | Command    | Behavior                                                                 |
-| ---------- | ------------------------------------------------------------------------ |
+| ---------- | ------------------------------------------------------------------------- |
 | `docs`     | Open the Better Fullstack docs in the default browser, or print the URL. |
-| `builder`  | Open the visual Stack Builder.                                           |
-| `sponsors` | Fetch and display current Better Fullstack sponsors.                     |
+| `builder`  | Open the visual Stack Builder.                                            |
+| `sponsors` | Fetch and display current sponsors.                                       |
 
-Open the docs:
+```bash
+npx create-better-fullstack@latest docs
+```
 
-<PMTabs
-  npm="npx -y create-better-fullstack@latest docs"
-  pnpm="pnpm dlx create-better-fullstack@latest docs"
-  bun="bunx create-better-fullstack@latest docs"
-  yarn="yarn dlx create-better-fullstack@latest docs"
-/>
+Swap the launcher for `pnpm dlx`, `bunx`, or `yarn dlx`; the rest stays identical for `builder` and `sponsors`.
 
-Open the builder:
+## Maintainer command
 
-<PMTabs
-  npm="npx -y create-better-fullstack@latest builder"
-  pnpm="pnpm dlx create-better-fullstack@latest builder"
-  bun="bunx create-better-fullstack@latest builder"
-  yarn="yarn dlx create-better-fullstack@latest builder"
-/>
+`update-deps` scans and updates dependency versions in the generator's catalog. It is for contributors working in this repository, not for consumers updating a generated app; that job belongs to [`update`](/docs/cli/update/).
 
-Show sponsors:
-
-<PMTabs
-  npm="npx -y create-better-fullstack@latest sponsors"
-  pnpm="pnpm dlx create-better-fullstack@latest sponsors"
-  bun="bunx create-better-fullstack@latest sponsors"
-  yarn="yarn dlx create-better-fullstack@latest sponsors"
-/>
-
-## Maintainer commands
-
-`update-deps` scans and updates dependency versions in the generator's `add-deps.ts` catalog. It is
-for contributors working in the Better Fullstack repository, not for consumers updating a generated
-app. Generated projects use [`update`](/docs/cli/update/).
-
-| Flag                | Behavior                                     |
-| ------------------- | -------------------------------------------- |
-| `--check`           | Report updates without changing the catalog. |
-| `--patch`           | Apply patch/minor updates only.              |
-| `--all`             | Interactive processing for all updates.      |
-| `--ecosystem`       | Restrict the dependency group.               |
-| `--list-ecosystems` | Print available dependency groups.           |
+Flags: `--check` (report only), `--patch` (patch/minor only), `--all`, `--ecosystem <group>`, and `--list-ecosystems`.
