@@ -76,9 +76,28 @@ export const DotnetBlazorCqrsSpec: BenchmarkSpec = {
       { id: "realtime:signalr", text: ["SignalR"] },
       { id: "validation:fluentvalidation", text: ["FluentValidation"] },
       { id: "observability:nlog", text: ["NLog"] },
+      { id: "observability:opentelemetry", textAny: ["OpenTelemetry"] },
+      {
+        id: "observability:health-checks",
+        textAny: ["AddHealthChecks", "MapHealthChecks", "HealthChecks"],
+      },
+      { id: "db:postgres", textAny: ["Npgsql"] },
+      {
+        id: "caching:redis",
+        textAny: ["StackExchange.Redis", "AddStackExchangeRedisCache", "Redis"],
+      },
+      { id: "deploy:docker", files: ["Dockerfile"] },
       { id: "forbidden:hangfire", forbiddenText: ["Hangfire"] },
       { id: "forbidden:serilog", forbiddenText: ["Serilog"] },
       { id: "forbidden:ef-core", forbiddenText: ["Microsoft.EntityFrameworkCore"] },
+      { id: "forbidden:aspnet-identity", forbiddenText: ["Microsoft.AspNetCore.Identity"] },
+      { id: "forbidden:grpc", forbiddenText: ["Grpc.AspNetCore", "Grpc.Net.Client"] },
+      { id: "forbidden:xunit", forbiddenText: ["xunit"] },
+      {
+        id: "forbidden:mvc",
+        forbiddenText: ["AddControllersWithViews", "MapControllerRoute", "AddMvc("],
+      },
+      { id: "forbidden:minimal-api-host", forbiddenText: ["CreateSlimBuilder"] },
     ],
     validationProfile: { native: ["dotnet"] },
   };

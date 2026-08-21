@@ -6,7 +6,7 @@ import { runCommand } from "@/agents/command";
 
 export const HARNESS_VERSION = "3.1.0";
 export const SCAFFBENCH_SUITE_VERSION = "3.0";
-export const PROMPT_VERSION = "2026-08-21-scaffbench-3";
+export const PROMPT_VERSION = "2026-08-21-scaffbench-3.1";
 export const MIN_RANKED_TRIALS = 1;
 export const MIN_CI_RUNS = 8;
 
@@ -38,7 +38,7 @@ export const SCAFFBENCH_INDEX_WEIGHTS = {
     discipline: 0.15,
   },
 } as const;
-export const VALIDATION_CACHE_VERSION = 7;
+export const VALIDATION_CACHE_VERSION = 8;
 
 export function indexWeightsForPath(pathMode: CreationPath) {
   return pathMode === "prompt"
@@ -70,6 +70,15 @@ export function resolveBfVersion() {
     return version && /^\d+\.\d+\.\d+/.test(version) ? version : "latest";
   });
 }
+export const EFFORT_VALUES: readonly Effort[] = [
+  "default",
+  "low",
+  "medium",
+  "high",
+  "xhigh",
+  "max",
+];
+export const CREATION_PATH_VALUES: readonly CreationPath[] = ["prompt", "mcp"];
 export const DEFAULT_EFFORTS: readonly Effort[] = ["default"];
 export const DEFAULT_PATHS: readonly CreationPath[] = ["prompt"];
 
@@ -83,7 +92,7 @@ export function resolveSpecPaths(
 }
 
 export const GEN_TIMEOUT_MS = 90 * 60_000;
-/** @deprecated Use GEN_TIMEOUT_MS; retained for external script compatibility. */
+/** @deprecated Use GEN_TIMEOUT_MS. */
 export const CLAUDE_TIMEOUT_MS = GEN_TIMEOUT_MS;
 export const GEN_IDLE_TIMEOUT_MS = 20 * 60_000;
 export const TIMEOUT_PROGRESS_WINDOW_MS = 10 * 60_000;

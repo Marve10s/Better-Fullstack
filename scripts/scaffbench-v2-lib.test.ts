@@ -11,6 +11,7 @@ import {
   canonicalCommand,
   claudeCostUsd,
   classifyOutcome,
+  codexCostUsd,
   deriveFailureTags,
   extractToolUses,
   findProjectDir,
@@ -105,7 +106,6 @@ describe("ScaffBench 2 harness config", () => {
 
     expect(options.model).toBe("opus");
     expect(options.efforts).toEqual(["default"]);
-    // Prompt-only by default (V2.1+); mcp is opt-in, cli is legacy.
     expect(options.paths).toEqual(["prompt"]);
     expect(options.specs).toEqual([
       "ai-search-workbench",
@@ -155,8 +155,6 @@ describe("ScaffBench 2 harness config", () => {
   it("does not leak the canonical command (answer key) into agent-facing prompts", () => {
     const mcpPrompt = promptFor(aiSpec, "mcp", "/tmp/run", "workbench", "explicit");
 
-    // The agent must derive the stack itself; the full flag list is kept only in
-    // canonical-command.txt / spec.json for grading.
     expect(mcpPrompt).not.toContain(canonicalCommand(aiSpec, "workbench"));
     expect(mcpPrompt).not.toContain("--vector-db");
     expect(mcpPrompt).not.toContain("--shadcn-base");
@@ -318,8 +316,6 @@ describe("ScaffBench 2 scoring", () => {
   });
 
   it("does not pass a run with zero executed validation steps (no manifest fired)", () => {
-    // Agent left a directory but no package.json/Cargo.toml/etc., so no validator
-    // ran. `[].every(...)` is vacuously true — guard against that inflating Pass@1.
     const empty = makeRun({ validation: { projectExists: true, steps: {} } });
     expect(validationPassed(empty)).toBe(false);
     expect(classifyOutcome(empty)).toBe("model-failure");
@@ -335,10 +331,6 @@ describe("ScaffBench 2 scoring", () => {
   });
 
   it("treats a 'skip' advisory step as a quality miss, not a core failure (Finding 1)", () => {
-    // Core (install+build) is green so the project builds and runs -> core pass.
-    // The linter could not run (no tool configured) -> 'skip' (exitCode null):
-    // that is NOT a vacuous quality pass (pre-fix it carried exitCode 0 and
-    // passed silently), but it must not flag the working project as broken.
     const run = makeRun({
       validation: {
         projectExists: true,
@@ -363,9 +355,6 @@ describe("ScaffBench 2 scoring", () => {
   });
 
   it("scores a format-only failure as a core pass but a quality fail (not broken)", () => {
-    // The project installs, builds, and type-checks; only `format` is red. A
-    // mis-formatted project still runs, so this is a quality miss, not a broken
-    // template: Pass@1 (core) holds, Quality drops, outcome stays success.
     const run = makeRun({
       validation: {
         projectExists: true,
@@ -413,7 +402,6 @@ describe("ScaffBench 2 scoring", () => {
         },
       },
     });
-    // The 'na' test is excluded; every real step is green -> pass.
     expect(validationPassed(run)).toBe(true);
   });
 
@@ -469,9 +457,33 @@ describe("ScaffBench 2 artifact-grounded scoring", () => {
 
       const score = await scoreArtifact(spec, dir);
 
-      // hono + qdrant wired, stripe correctly absent => 3; opensearch missing.
       expect(score).toMatchObject({ matched: 3, total: 4 });
       expect(score.misses).toEqual(["search:opensearch"]);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("credits file markers by path suffix and wildcard, not a fixed layout", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "sb21-files-"));
+    try {
+      await mkdir(join(dir, "internal", "ent", "schema"), { recursive: true });
+      await writeFile(join(dir, "internal", "ent", "schema", "vehicle.go"), "package schema\n");
+      await writeFile(
+        join(dir, "go.mod"),
+        "module example.com/fleet\nrequire entgo.io/ent v0.14.0\n",
+      );
+
+      const spec = {
+        ...aiSpec,
+        strictMarkers: [
+          { id: "orm:ent", text: ["entgo.io/ent"], files: ["ent/schema/*.go"] },
+          { id: "orm:ent-user-only", text: ["entgo.io/ent"], files: ["ent/schema/user.go"] },
+        ],
+      };
+
+      const score = await scoreArtifact(spec, dir);
+      expect(score.misses).toEqual(["orm:ent-user-only"]);
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
@@ -480,7 +492,6 @@ describe("ScaffBench 2 artifact-grounded scoring", () => {
   it("separates artifact from faithfulness and flags a claimed-but-unwired stack", async () => {
     const dir = await mkdtemp(join(tmpdir(), "sb21-unwired-"));
     try {
-      // bts.jsonc records the full requested stack => 100% faithful...
       await writeFile(
         join(dir, "bts.jsonc"),
         JSON.stringify({
@@ -488,7 +499,6 @@ describe("ScaffBench 2 artifact-grounded scoring", () => {
           addons: aiSpec.expectedAddons,
         }),
       );
-      // ...but the emitted tree wires almost nothing => low artifact score.
       await writeFile(join(dir, "package.json"), JSON.stringify({ dependencies: { hono: "^4" } }));
 
       const { artifact, faithfulness } = await scoreProject(aiSpec, dir);
@@ -554,7 +564,6 @@ describe("ScaffBench 2 run outcomes", () => {
         projectExists: true,
         steps: {
           install: stepResult("bun install", 0),
-          // bun ran fine; the generated `build` script referenced a missing bin.
           build: stepResult("bun run build", 127),
         },
       },
@@ -657,12 +666,12 @@ describe("ScaffBench 2 statistical reporting", () => {
     expect(cell).toMatchObject({
       scoredRuns: 4,
       passCount: 3,
-      passRate: 75, // pooled
-      macroPassRate: 75, // mean of per-spec rates (100 + 50) / 2
+      passRate: 75,
+      macroPassRate: 75,
       specCount: 2,
-      passAnySpecs: 2, // both specs pass at least once (pass@k)
-      passAllSpecs: 1, // only spec-a passes every repeat (pass^k)
-      ciReportable: false, // 4 < MIN_CI_RUNS
+      passAnySpecs: 2,
+      passAllSpecs: 1,
+      ciReportable: false,
     });
   });
 
@@ -698,13 +707,12 @@ describe("ScaffBench 2 statistical reporting", () => {
 
     const [cell] = aggregateResults(runs).leaderboard;
 
-    // 1 passing scored repeat + 1 infra-inconclusive: measured once, not "every repeat".
     expect(cell).toMatchObject({
       scoredRuns: 1,
       inconclusiveCount: 1,
-      passAnySpecs: 1, // solved at least once
-      passAllSpecs: 0, // NOT solved on every repeat (one was unmeasured)
-      macroPassRate: 100, // the one measured repeat passed
+      passAnySpecs: 1,
+      passAllSpecs: 0,
+      macroPassRate: 100,
     });
   });
 
@@ -799,7 +807,7 @@ describe("ScaffBench 2 composite index", () => {
       macroPassRate: 50,
       stackPercent: 80,
       commandDisciplinePercent: 50,
-      index: 58, // round(0.6*50 + 0.25*80 + 0.15*50) = round(57.5)
+      index: 58,
       medianDurationMs: 1000,
       p95DurationMs: 3000,
     });
@@ -830,21 +838,16 @@ describe("ScaffBench 2 discovery lane", () => {
     const explicitAi = promptFor(aiSpec, "prompt", "/tmp/run", "wb", "explicit");
     const naturalRust = promptFor(rustSpec, "prompt", "/tmp/run", "wb", "natural");
 
-    // ai-search has acceptance sets → discovery lane omits the scoring rule + names
     expect(naturalAi).not.toContain("Important scoring rule");
     expect(naturalAi).not.toContain("Qdrant");
-    // explicit lane still names the required libraries
     expect(explicitAi).toContain("Important scoring rule");
-    // rust has no acceptance sets yet → it is NOT a discovery spec, notes stay
     expect(naturalRust).toContain("Important scoring rule");
   });
 
   it("falls back to tsc --noEmit so typecheck cannot be dodged", () => {
     expect(typecheckGate({ "check-types": "tsc" }, true)).toBe("check-types");
     expect(typecheckGate({ typecheck: "tsc" }, true)).toBe("typecheck");
-    // no script but a tsconfig exists → must still type-check
     expect(typecheckGate({}, true)).toBe("tsc");
-    // genuinely nothing to type-check
     expect(typecheckGate({}, false)).toBeNull();
   });
 
@@ -860,13 +863,13 @@ describe("ScaffBench 2 discovery lane", () => {
             "drizzle-orm": "*",
             "better-auth": "*",
             ai: "*",
-            pgvector: "*", // alternative to the canonical qdrant
-            meilisearch: "*", // alternative to the canonical opensearch
-            bullmq: "*", // alternative to the canonical inngest
+            pgvector: "*",
+            meilisearch: "*",
+            bullmq: "*",
             pino: "*",
             vitest: "*",
             i18next: "*",
-            turbo: "*", // alternative to the canonical vite-plus
+            turbo: "*",
           },
         }),
       );
@@ -876,7 +879,6 @@ describe("ScaffBench 2 discovery lane", () => {
       const { acceptance } = await scoreProject(aiSpec, dir, "natural");
       expect(acceptance).toMatchObject({ matched: 13, total: 13 });
 
-      // explicit lane returns no acceptance score (strict markers only)
       const explicit = await scoreProject(aiSpec, dir, "explicit");
       expect(explicit.acceptance).toBeUndefined();
     } finally {
@@ -897,7 +899,6 @@ describe("ScaffBench 2 restraint spec", () => {
     const overDir = await mkdtemp(join(tmpdir(), "sb21-over-"));
     const leanDir = await mkdtemp(join(tmpdir(), "sb21-lean-"));
     try {
-      // over-engineered: adds a backend + auth the spec forbids
       await writeFile(
         join(overDir, "package.json"),
         JSON.stringify({
@@ -909,10 +910,12 @@ describe("ScaffBench 2 restraint spec", () => {
       expect(over.misses).toContain("forbidden:auth");
       expect(over.misses).not.toContain("frontend:react-vite");
 
-      // lean: only allowed libraries → all markers (incl. absent forbidden) match
       await writeFile(
         join(leanDir, "package.json"),
-        JSON.stringify({ dependencies: { react: "*", vite: "*", tailwindcss: "*" } }),
+        JSON.stringify({
+          dependencies: { react: "*", vite: "*", tailwindcss: "*" },
+          devDependencies: { turbo: "*" },
+        }),
       );
       const lean = await scoreArtifact(minimalSpec, leanDir);
       expect(lean.matched).toBe(lean.total);
@@ -927,8 +930,6 @@ describe("ScaffBench 2 acceptance matching precision (Codex #258)", () => {
   it("does not credit acceptance from substrings (ai⊂tailwindcss, vite⊂vitest)", async () => {
     const dir = await mkdtemp(join(tmpdir(), "sb21-substr-"));
     try {
-      // tailwindcss contains "ai"; vitest contains "vite" — neither should
-      // satisfy the ai / web-framework capabilities under precise matching.
       await writeFile(
         join(dir, "package.json"),
         JSON.stringify({ dependencies: { tailwindcss: "*", vitest: "*" } }),
@@ -936,7 +937,6 @@ describe("ScaffBench 2 acceptance matching precision (Codex #258)", () => {
       const { acceptance } = await scoreProject(aiSpec, dir, "natural");
       expect(acceptance?.misses).toContain("ai");
       expect(acceptance?.misses).toContain("web-framework");
-      // vitest DOES satisfy the testing capability (exact dep)
       expect(acceptance?.misses).not.toContain("testing");
     } finally {
       await rm(dir, { recursive: true, force: true });
@@ -955,7 +955,7 @@ describe("ScaffBench 2 acceptance matching precision (Codex #258)", () => {
 
     const [cell] = aggregateResults([wired, noProject]).leaderboard;
 
-    expect(cell?.acceptancePercent).toBe(50); // (100 + 0) / 2, not 100
+    expect(cell?.acceptancePercent).toBe(50);
   });
 });
 
@@ -1022,7 +1022,6 @@ describe("ScaffBench 2 acceptance scoped-prefix (Codex #261)", () => {
         JSON.stringify({ dependencies: { "@auth/core": "*", "@auth/drizzle-adapter": "*" } }),
       );
       const { acceptance } = await scoreProject(aiSpec, dir, "natural");
-      // Auth.js via @auth/core must satisfy the auth capability (not be a miss).
       expect(acceptance?.misses).not.toContain("auth");
     } finally {
       await rm(dir, { recursive: true, force: true });
@@ -1047,9 +1046,11 @@ describe("codex (GPT) agent adapter", () => {
     ].join("\n");
     const parsed = parseCodexResult(jsonl);
     expect(parsed?.session_id).toBe("t-123");
-    // output tokens = answer + reasoning, so thinking cost is visible.
-    expect(parsed?.usage?.output_tokens).toBe(150);
+    expect(parsed?.usage?.output_tokens).toBe(120);
     expect(parsed?.total_cost_usd).toBeUndefined();
+    expect(codexCostUsd("gpt-5.6-luna", { output_tokens: 120, reasoning_output_tokens: 30 })).toBe(
+      (120 * 6) / 1_000_000,
+    );
     expect(parseCodexResult("not json")).toBeNull();
   });
 
@@ -1070,14 +1071,11 @@ describe("opencode / Kilo Code agent adapter", () => {
   it("routes opencode/* and kilo/* models to their providers", () => {
     expect(providerForModel("opencode/north-mini-code-free")).toBe("opencode");
     expect(providerForModel("kilo/poolside/laguna-m.1:free")).toBe("kilo");
-    // Bare provider/model strings that aren't opencode/kilo fall through normally.
     expect(providerForModel("gpt-5.5")).toBe("codex");
     expect(providerForModel("claude-opus-4-8")).toBe("claude");
   });
 
   it("routes the paid Go subscription and Cloudflare gateway tiers to opencode", () => {
-    // opencode-go/* is the paid "Go" plan — a distinct prefix that must NOT fall
-    // through to Claude (it starts with "opencode-", not "opencode/").
     expect(providerForModel("opencode-go/deepseek-v4-pro")).toBe("opencode");
     expect(providerForModel("opencode-go/glm-5.2")).toBe("opencode");
     expect(providerForModel("cloudflare-ai-gateway/anthropic/claude-opus-4-8")).toBe("opencode");
@@ -1100,7 +1098,6 @@ describe("opencode / Kilo Code agent adapter", () => {
     ].join("\n");
     const parsed = parseOpencodeResult(jsonl);
     expect(parsed?.session_id).toBe("ses_0faabff1");
-    // output = answer + reasoning, summed across step-finish events: (40+10)+(3+0).
     expect(parsed?.usage?.output_tokens).toBe(53);
     expect(parsed?.total_cost_usd).toBe(0);
     expect(parseOpencodeResult("not json")).toBeNull();
@@ -1202,7 +1199,6 @@ describe("Pi agent adapter", () => {
         args: { command: "pwd" },
       },
       { type: "message_end", message: second },
-      // Real Pi streams repeat completed messages here; the parser must ignore it.
       { type: "agent_end", messages: [first, second], willRetry: false },
     ]
       .map((event) => JSON.stringify(event))
@@ -1269,18 +1265,14 @@ describe("Pi agent adapter", () => {
 
 describe("ScaffBench 2 Claude cost pricing", () => {
   it("prices Claude from token usage so a $0 CLI cost is not treated as free", () => {
-    // Opus 4.8: $5/1M input, $25/1M output; cache read 0.1x input, write 1.25x.
     const usage = {
       input_tokens: 1_000_000,
       output_tokens: 1_000_000,
       cache_read_input_tokens: 1_000_000,
       cache_creation_input_tokens: 1_000_000,
     };
-    // 5 + 25 + 0.5 + 6.25 = 36.75
     expect(claudeCostUsd("claude-opus-4-8", usage)).toBeCloseTo(36.75, 5);
-    // Bare alias resolves to the same pricing.
     expect(claudeCostUsd("opus", { output_tokens: 1_000_000 })).toBeCloseTo(25, 5);
-    // Sonnet/Haiku tiers differ.
     expect(claudeCostUsd("claude-sonnet-4-6", { input_tokens: 1_000_000 })).toBeCloseTo(3, 5);
     expect(claudeCostUsd("claude-haiku-4-5", { output_tokens: 1_000_000 })).toBeCloseTo(5, 5);
   });

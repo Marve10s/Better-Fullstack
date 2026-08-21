@@ -104,9 +104,10 @@ export const MultiDotnetOpsSpec: BenchmarkSpec = {
     strictMarkers: [
       { id: "frontend:next", deps: ["next"] },
       { id: "frontend:tailwind", deps: ["tailwindcss"] },
-      { id: "frontend:shadcn", files: ["apps/web/components.json"] },
-      { id: "backend:aspnet-minimal", files: ["apps/server/Program.cs"], text: ["MapGet"] },
+      { id: "frontend:shadcn", files: ["components.json"] },
+      { id: "backend:aspnet-minimal", files: ["Program.cs"], text: ["MapGet"] },
       { id: "orm:ef-core", text: ["Microsoft.EntityFrameworkCore"] },
+      { id: "db:postgres", textAny: ["Npgsql"] },
       { id: "auth:aspnet-identity", text: ["Microsoft.AspNetCore.Identity"] },
       { id: "testing:xunit", text: ["xunit"] },
       { id: "testing:testcontainers", text: ["Testcontainers"] },
@@ -114,7 +115,14 @@ export const MultiDotnetOpsSpec: BenchmarkSpec = {
       { id: "realtime:signalr", text: ["SignalR"] },
       { id: "validation:fluentvalidation", text: ["FluentValidation"] },
       { id: "jobs:hangfire", text: ["Hangfire"] },
-      { id: "addon:github-actions", files: [".github/workflows/ci.yml"] },
+      {
+        id: "caching:memory-cache",
+        textAny: ["IMemoryCache", "AddMemoryCache", "Microsoft.Extensions.Caching.Memory"],
+      },
+      { id: "deploy:docker", files: ["Dockerfile"] },
+      { id: "addon:turborepo", deps: ["turbo"] },
+      { id: "addon:biome", deps: ["@biomejs/biome"] },
+      { id: "addon:github-actions", files: [".github/workflows/*.y*ml"] },
     ],
     validationProfile: {
       packageManager: "bun",

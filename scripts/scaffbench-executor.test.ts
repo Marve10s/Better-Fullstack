@@ -11,6 +11,7 @@ import type { ScaffbenchOptions } from "@/types";
 import { SCAFFBENCH_2_SPECS } from "@/specs";
 import { runValidationCommand } from "@/validation/executor";
 import { validateProjectCached } from "@/validation/cache";
+import { validateCargoProject, validateProject } from "@/validation";
 
 const goSpec = SCAFFBENCH_2_SPECS.find((spec) => spec.id === "go-realtime-api")!;
 
@@ -87,6 +88,80 @@ describe("ScaffBench validation executor", () => {
     }
   }, 40_000);
 
+  it("kills the running process tree when the project validation deadline fires", async () => {
+    const dir = await mkdtemp(path.join(os.tmpdir(), "sb-exec-deadline-"));
+    const project = path.join(dir, "project");
+    const bin = path.join(dir, "bin");
+    const pidFile = path.join(dir, "child.pid");
+    try {
+      await mkdir(project);
+      await mkdir(bin);
+      await writeFile(path.join(project, "go.mod"), "module example.com/deadline-test\n");
+      await writeFile(
+        path.join(bin, "go"),
+        `#!/bin/sh\nsleep 600 &\necho $! > ${JSON.stringify(pidFile)}\nsleep 600\n`,
+      );
+      await chmod(path.join(bin, "go"), 0o755);
+
+      const previousPath = process.env.PATH;
+      process.env.PATH = `${bin}${path.delimiter}${previousPath ?? ""}`;
+      try {
+        const validation = await validateProject(goSpec, project, options(dir), {
+          deadlineMs: 1_500,
+        }).pipe(Effect.runPromise);
+        expect(validation.steps["unvalidated:deadline"]).toBeDefined();
+      } finally {
+        process.env.PATH = previousPath;
+      }
+
+      const childPid = Number((await readFile(pidFile, "utf8")).trim());
+      expect(Number.isInteger(childPid)).toBe(true);
+      const deadline = Date.now() + 5_000;
+      while (alive(childPid) && Date.now() < deadline) await Bun.sleep(100);
+      expect(alive(childPid)).toBe(false);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  }, 20_000);
+
+  it("records planned quality gates as not-run once an earlier gate fails", async () => {
+    const dir = await mkdtemp(path.join(os.tmpdir(), "sb-exec-not-run-"));
+    const project = path.join(dir, "project");
+    const bin = path.join(dir, "bin");
+    const ranLog = path.join(dir, "cargo-ran.log");
+    try {
+      await mkdir(project);
+      await mkdir(bin);
+      await writeFile(path.join(project, "Cargo.toml"), '[package]\nname = "not-run-test"\n');
+      await writeFile(
+        path.join(bin, "cargo"),
+        `#!/bin/sh\necho "$1" >> ${JSON.stringify(ranLog)}\nif [ "$1" = "fmt" ]; then exit 1; fi\nexit 0\n`,
+      );
+      await chmod(path.join(bin, "cargo"), 0o755);
+
+      const previousPath = process.env.PATH;
+      process.env.PATH = `${bin}${path.delimiter}${previousPath ?? ""}`;
+      const steps = await validateCargoProject(project, {
+        ...options(dir),
+        qualityGate: true,
+      })
+        .pipe(Effect.runPromise)
+        .finally(() => {
+          process.env.PATH = previousPath;
+        });
+
+      expect(steps.cargoCheck?.exitCode).toBe(0);
+      expect(steps.format?.exitCode).toBe(1);
+      expect(steps.lint).toBeUndefined();
+      expect(steps.test).toBeUndefined();
+      expect(steps["not-run:lint"]?.status).toBe("skip");
+      expect(steps["not-run:test"]?.status).toBe("skip");
+      expect((await readFile(ranLog, "utf8")).trim().split("\n")).toEqual(["check", "fmt"]);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  }, 20_000);
+
   it("scrubs credential-shaped variables from the validation environment", async () => {
     process.env.SB_EXEC_TEST_TOKEN = "supersecret";
     process.env.SB_EXEC_TEST_PLAIN = "visible";
@@ -137,6 +212,19 @@ describe("ScaffBench validation executor", () => {
           Effect.runPromise,
         );
         expect(second.cacheHit).toBe(true);
+
+        const forced = await validateProjectCached(goSpec, project, {
+          ...options(dir),
+          forceRevalidate: true,
+        }).pipe(Effect.provide(BunContext.layer), Effect.runPromise);
+        expect(forced.cacheHit).toBe(false);
+        expect(forced.steps.build?.exitCode).toBe(0);
+
+        const afterForced = await validateProjectCached(goSpec, project, options(dir)).pipe(
+          Effect.provide(BunContext.layer),
+          Effect.runPromise,
+        );
+        expect(afterForced.cacheHit).toBe(true);
       } finally {
         process.env.PATH = previousPath;
       }

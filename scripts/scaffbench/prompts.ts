@@ -22,9 +22,6 @@ export function promptFor(
 Requirements:
 ${spec.requirements.map((requirement) => `- ${requirement}`).join("\n")}`;
 
-  // Discovery lane: when the spec has curated acceptance sets, the natural prompt
-  // does NOT name the required libraries — the agent must infer them from the
-  // described capabilities, and scoring credits any accepted alternative.
   const discoveryLane = promptStyle === "natural" && spec.acceptanceSets !== undefined;
   const libraryGuidance = discoveryLane
     ? ""
@@ -38,7 +35,7 @@ ${runDir}
 
 Create exactly one project directory named \`${projectName}\`.
 Do not ask questions. Do not write outside the current working directory. Do not initialize git.
-You may install dependencies, query package registries, run builds or type checks, and start servers to verify your work before finishing — the project is graded by whether it installs and builds on a clean machine. Kill every process you start; nothing may still be running when you finish.
+You may install dependencies, query package registries, run builds or type checks, and start servers to verify your work before finishing. Kill every process you start; nothing may still be running when you finish.
 At the end, report the commands you ran and any errors you hit.
 
 ${body}${libraryGuidance}`;

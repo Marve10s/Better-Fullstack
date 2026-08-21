@@ -10,16 +10,16 @@ export const TsMinimalRestraintSpec: BenchmarkSpec = {
     requirements: [
       "Create a minimal TypeScript React single-page app built with Vite and Tailwind.",
       "It is the launch page for a developer tool: hero, feature grid, pricing table, and a waitlist email form.",
-      "The waitlist form POSTs to an external form endpoint read from an env var — you do NOT build the endpoint.",
-      "Pricing is three static tiers — no checkout, no billing provider.",
+      "The waitlist form POSTs to an external form endpoint read from an env var, you do NOT build the endpoint.",
+      "Pricing is three static tiers, no checkout, no billing provider.",
       "Do NOT add a backend, database, ORM, API layer, auth, payments, email, file storage, jobs, CMS, or analytics. Every one of those is tempting here; adding any of them is a failure.",
       "Include Turborepo tooling.",
     ],
     naturalPrompt:
-      "Build the launch page for a developer tool as a React single-page app with Tailwind: hero, feature grid, static three-tier pricing, and a waitlist email form that posts to an external form service configured by env var. There are no accounts, no database, and no server of your own — keep it a lean front end and resist adding backend or data tooling.",
+      "Build the launch page for a developer tool as a React single-page app with Tailwind: hero, feature grid, static three-tier pricing, and a waitlist email form that posts to an external form service configured by env var. There are no accounts, no database, and no server of your own, keep it a lean front end and resist adding backend or data tooling.",
     rightLibraryNotes: [
       "This is a frontend-only starter: do not add a backend, database, ORM, API, auth, payments, or email.",
-      "The pricing table and waitlist form are bait — they need no billing provider and no server.",
+      "The pricing table and waitlist form are bait, they need no billing provider and no server.",
     ],
     canonicalFlags: [
       "--ecosystem", "typescript",
@@ -78,6 +78,7 @@ export const TsMinimalRestraintSpec: BenchmarkSpec = {
     strictMarkers: [
       { id: "frontend:react-vite", deps: ["react", "vite"] },
       { id: "css:tailwind", deps: ["tailwindcss"] },
+      { id: "tooling:turborepo", explicitOnly: true, deps: ["turbo"] },
       {
         id: "forbidden:backend",
         forbiddenDeps: ["hono", "express", "fastify", "elysia", "@nestjs/core"],
@@ -93,6 +94,55 @@ export const TsMinimalRestraintSpec: BenchmarkSpec = {
       { id: "forbidden:payments", forbiddenDeps: ["stripe", "@stripe/stripe-js", "polar-sh"] },
       { id: "forbidden:email", forbiddenDeps: ["resend", "nodemailer", "@react-email/components"] },
       { id: "forbidden:api", forbiddenDeps: ["@orpc/server", "@trpc/server", "graphql"] },
+      {
+        id: "forbidden:jobs",
+        forbiddenDeps: [
+          "inngest",
+          "bullmq",
+          "@trigger.dev/sdk",
+          "pg-boss",
+          "graphile-worker",
+          "@temporalio/",
+        ],
+      },
+      {
+        id: "forbidden:cms",
+        forbiddenDeps: [
+          "@sanity/client",
+          "sanity",
+          "next-sanity",
+          "contentful",
+          "payload",
+          "@payloadcms/",
+          "@keystone-6/core",
+          "@strapi/strapi",
+          "@strapi/client",
+          "@directus/sdk",
+          "@keystatic/",
+          "tinacms",
+        ],
+      },
+      {
+        id: "forbidden:analytics",
+        forbiddenDeps: [
+          "posthog-js",
+          "@vercel/analytics",
+          "@segment/analytics-next",
+          "plausible-tracker",
+          "mixpanel-browser",
+        ],
+        forbiddenText: ["googletagmanager", "gtag(", "umami"],
+      },
+      {
+        id: "forbidden:file-storage",
+        forbiddenDeps: [
+          "@aws-sdk/client-s3",
+          "uploadthing",
+          "@uploadthing/react",
+          "cloudinary",
+          "@supabase/storage-js",
+        ],
+      },
     ],
     validationProfile: { packageManager: "bun" },
   };

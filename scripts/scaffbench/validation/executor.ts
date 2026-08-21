@@ -1,4 +1,3 @@
-import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 
 import type { CommandResult } from "@/types";
@@ -9,21 +8,11 @@ import {
   VALIDATION_OUTPUT_LIMIT_BYTES,
   VALIDATION_RESOURCE_ENV,
 } from "@/constants";
-
-// The ambient bun-types ChildProcess omits its EventEmitter surface; this is the
-// narrow shape the executor actually uses.
-type SpawnedProcess = {
-  pid?: number;
-  stdout: { on(event: "data", listener: (chunk: Buffer) => void): void } | null;
-  stderr: { on(event: "data", listener: (chunk: Buffer) => void): void } | null;
-  on(event: "error", listener: (cause: Error & { code?: string }) => void): void;
-  on(event: "close", listener: (code: number | null) => void): void;
-};
+import { spawnProcessTree } from "@/process-tree";
 
 const TASKPOLICY = "/usr/sbin/taskpolicy";
 const useTaskpolicy = process.platform === "darwin" && existsSync(TASKPOLICY);
 const RETAINED_OUTPUT_CHARS = 262_144;
-const KILL_ESCALATION_MS = 3_000;
 
 export function validationEnv(extra?: Record<string, string>): Record<string, string> {
   const env: Record<string, string> = {};
@@ -34,18 +23,13 @@ export function validationEnv(extra?: Record<string, string>): Record<string, st
   return { ...env, ...VALIDATION_RESOURCE_ENV, ...extra };
 }
 
-function killProcessGroup(pid: number, signal: NodeJS.Signals) {
-  try {
-    process.kill(-pid, signal);
-  } catch {}
-}
-
 export function runValidationCommand(
   command: string,
   args: readonly string[],
   cwd: string,
   timeoutMs: number,
   extraEnv?: Record<string, string>,
+  signal?: AbortSignal,
 ): Promise<CommandResult> {
   const displayCommand = [command, ...args].map(quoteArg).join(" ");
   const spawnCommand = useTaskpolicy ? TASKPOLICY : command;
@@ -62,26 +46,13 @@ export function runValidationCommand(
     let settled = false;
     let lastActivityAtMs = started;
 
-    const child = spawn(spawnCommand, spawnArgs, {
-      cwd,
-      env: validationEnv(extraEnv),
-      detached: true,
-      stdio: ["ignore", "pipe", "pipe"],
-    }) as unknown as SpawnedProcess;
-
-    const terminateTree = () => {
-      if (child.pid === undefined) return;
-      killProcessGroup(child.pid, "SIGTERM");
-      setTimeout(() => {
-        if (child.pid !== undefined) killProcessGroup(child.pid, "SIGKILL");
-      }, KILL_ESCALATION_MS).unref();
+    const settle = (result: CommandResult) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      signal?.removeEventListener("abort", onAbort);
+      resolve(result);
     };
-
-    const timer = setTimeout(() => {
-      timedOut = true;
-      terminateTree();
-    }, timeoutMs);
-    timer.unref();
 
     const append = (stream: "stdout" | "stderr", chunk: Buffer) => {
       lastActivityAtMs = Date.now();
@@ -98,56 +69,69 @@ export function runValidationCommand(
         (stdoutBytes > VALIDATION_OUTPUT_LIMIT_BYTES || stderrBytes > VALIDATION_OUTPUT_LIMIT_BYTES)
       ) {
         outputLimited = true;
-        terminateTree();
+        tree.terminate();
       }
     };
 
-    child.stdout?.on("data", (chunk: Buffer) => append("stdout", chunk));
-    child.stderr?.on("data", (chunk: Buffer) => append("stderr", chunk));
+    const tree = spawnProcessTree(
+      spawnCommand,
+      spawnArgs,
+      { cwd, env: validationEnv(extraEnv) },
+      {
+        onStdout: (chunk) => append("stdout", chunk),
+        onStderr: (chunk) => append("stderr", chunk),
+        onError: (cause) => {
+          const code = typeof cause.code === "string" ? cause.code : undefined;
+          settle({
+            command: displayCommand,
+            exitCode: 127,
+            timedOut: false,
+            spawnError: true,
+            spawnErrorCode: code,
+            durationMs: Date.now() - started,
+            stdout: "",
+            stderr: `${displayCommand}: ${cause.message}`,
+            stdoutTail: "",
+            stderrTail: tail(`${displayCommand}: ${cause.message}`),
+            startedAtMs: started,
+            lastActivityAtMs,
+          });
+        },
+        onClose: (code) => {
+          tree.kill();
+          if (outputLimited) {
+            stderr += `\n[scaffbench] output exceeded ${VALIDATION_OUTPUT_LIMIT_BYTES} bytes; process tree terminated`;
+          }
+          settle({
+            command: displayCommand,
+            exitCode: timedOut ? null : outputLimited ? 1 : code,
+            timedOut,
+            timeoutKind: timedOut ? "hard" : undefined,
+            durationMs: Date.now() - started,
+            stdout,
+            stderr,
+            stdoutTail: tail(stdout),
+            stderrTail: tail(stderr),
+            startedAtMs: started,
+            lastActivityAtMs,
+          });
+        },
+      },
+    );
 
-    const settle = (result: CommandResult) => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timer);
-      resolve(result);
+    const onAbort = () => {
+      tree.terminate();
     };
 
-    child.on("error", (cause) => {
-      const code = typeof cause.code === "string" ? cause.code : undefined;
-      settle({
-        command: displayCommand,
-        exitCode: 127,
-        timedOut: false,
-        spawnError: true,
-        spawnErrorCode: code,
-        durationMs: Date.now() - started,
-        stdout: "",
-        stderr: `${displayCommand}: ${cause.message}`,
-        stdoutTail: "",
-        stderrTail: tail(`${displayCommand}: ${cause.message}`),
-        startedAtMs: started,
-        lastActivityAtMs,
-      });
-    });
+    const timer = setTimeout(() => {
+      timedOut = true;
+      tree.terminate();
+    }, timeoutMs);
+    timer.unref();
 
-    child.on("close", (code) => {
-      if (child.pid !== undefined) killProcessGroup(child.pid, "SIGKILL");
-      if (outputLimited) {
-        stderr += `\n[scaffbench] output exceeded ${VALIDATION_OUTPUT_LIMIT_BYTES} bytes; process tree terminated`;
-      }
-      settle({
-        command: displayCommand,
-        exitCode: timedOut ? null : outputLimited ? 1 : code,
-        timedOut,
-        timeoutKind: timedOut ? "hard" : undefined,
-        durationMs: Date.now() - started,
-        stdout,
-        stderr,
-        stdoutTail: tail(stdout),
-        stderrTail: tail(stderr),
-        startedAtMs: started,
-        lastActivityAtMs,
-      });
-    });
+    if (signal) {
+      if (signal.aborted) onAbort();
+      else signal.addEventListener("abort", onAbort, { once: true });
+    }
   });
 }

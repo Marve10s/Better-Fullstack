@@ -86,7 +86,8 @@ export const GoRealtimeApiSpec: BenchmarkSpec = {
     },
     strictMarkers: [
       { id: "backend:chi", text: ["github.com/go-chi/chi"] },
-      { id: "orm:ent", text: ["entgo.io/ent"], files: ["ent/schema/user.go"] },
+      { id: "orm:ent", text: ["entgo.io/ent"], files: ["ent/schema/*.go"] },
+      { id: "db:postgres", textAny: ["github.com/lib/pq", "github.com/jackc/pgx"] },
       { id: "api:grpc-go", text: ["google.golang.org/grpc"] },
       { id: "cli:cobra", text: ["github.com/spf13/cobra"] },
       { id: "logging:zap", text: ["go.uber.org/zap"] },

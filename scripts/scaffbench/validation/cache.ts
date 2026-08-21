@@ -17,7 +17,7 @@ import {
   hasTransientNetworkSignature,
   isRecurringTransientFailure,
 } from "@/validation/classification";
-import { validateProject } from "@/validation/index";
+import { effectiveValidationOptions, validateProject } from "@/validation/index";
 
 const HASH_SKIP_DIRECTORIES = new Set([
   "node_modules",
@@ -31,6 +31,8 @@ const HASH_SKIP_DIRECTORIES = new Set([
   ".venv",
   "bin",
   "obj",
+  "deps",
+  "_build",
 ]);
 
 export function validateProjectCached(
@@ -46,8 +48,10 @@ export function validateProjectCached(
     const cacheDir = path.join(options.outDir, "validation-cache");
     const cachePath = path.join(cacheDir, `${cacheKey}.json`);
 
-    const cached = yield* readCachedValidation(cachePath, sourceHash, cacheKey);
-    if (cached) return cached;
+    if (!options.forceRevalidate) {
+      const cached = yield* readCachedValidation(cachePath, sourceHash, cacheKey);
+      if (cached) return cached;
+    }
 
     const cloneDir = `${projectDir}.validate-tmp`;
     yield* Effect.tryPromise(() => rm(cloneDir, { recursive: true, force: true }));
@@ -80,6 +84,8 @@ export function validateProjectCached(
           2,
         )}\n`,
       );
+    } else {
+      yield* Effect.tryPromise(() => rm(cachePath, { force: true })).pipe(Effect.ignore);
     }
     return withCacheMeta;
   });
@@ -127,6 +133,7 @@ export function validationCacheKey(
   const toolchainHash = createHash("sha256")
     .update(JSON.stringify(Object.entries(toolchains).sort(([a], [b]) => a.localeCompare(b))))
     .digest("hex");
+  const effective = effectiveValidationOptions(spec, options);
   const hash = createHash("sha256");
   hash.update(
     JSON.stringify({
@@ -135,9 +142,9 @@ export function validationCacheKey(
       resourceProfileId: VALIDATION_RESOURCE_PROFILE_ID,
       specId: spec.id,
       sourceHash,
-      qualityGate: options.qualityGate,
-      doctorCheck: options.doctorCheck,
-      routeCheck: options.routeCheck,
+      qualityGate: effective.qualityGate,
+      doctorCheck: effective.doctorCheck,
+      routeCheck: effective.routeCheck,
       platform: environment.platform,
       arch: environment.arch,
       toolchainHash,

@@ -10,7 +10,7 @@ export const ReactNativeExpoSpec: BenchmarkSpec = {
     requirements: [
       "Create a React Native (Expo) habit-tracker app: a habit list, a detail screen, and a settings screen, all working offline.",
       "Use Expo Router for navigation.",
-      "Use Uniwind for Tailwind-style styling. NativeWind is the familiar answer and the wrong one here — do not add it.",
+      "Use Uniwind for Tailwind-style styling. NativeWind is the familiar answer and the wrong one here, do not add it.",
       "Use MMKV for on-device storage; all habit data lives on the device.",
       "Use Maestro plus React Native Testing Library for testing.",
       "Use Expo Notifications for habit reminders, Expo Updates for OTA, and Expo Linking for deep linking into a habit's detail screen.",
@@ -58,8 +58,41 @@ export const ReactNativeExpoSpec: BenchmarkSpec = {
       { id: "ota:expo-updates", deps: ["expo-updates"] },
       { id: "deep-linking:expo-linking", deps: ["expo-linking"] },
       { id: "testing:rntl", deps: ["@testing-library/react-native"] },
-      { id: "testing:maestro", files: ["apps/native/.maestro/home.yaml"] },
+      { id: "testing:maestro", files: [".maestro/*.y*ml"] },
       { id: "forbidden:nativewind", forbiddenDeps: ["nativewind"] },
+      {
+        id: "forbidden:backend",
+        forbiddenDeps: ["express", "hono", "fastify", "elysia", "@nestjs/core", "convex"],
+      },
+      {
+        id: "forbidden:database",
+        forbiddenDeps: [
+          "drizzle-orm",
+          "@prisma/client",
+          "@supabase/supabase-js",
+          "firebase",
+          "@react-native-firebase/app",
+        ],
+      },
+      {
+        id: "forbidden:sync",
+        forbiddenDeps: [
+          "@powersync/react-native",
+          "@instantdb/react-native",
+          "replicache",
+          "@rocicorp/zero",
+          "@nozbe/watermelondb",
+        ],
+      },
+      {
+        id: "forbidden:auth",
+        forbiddenDeps: [
+          "better-auth",
+          "@clerk/clerk-expo",
+          "expo-auth-session",
+          "@react-native-google-signin/google-signin",
+        ],
+      },
     ],
     validationProfile: { packageManager: "bun" },
   };

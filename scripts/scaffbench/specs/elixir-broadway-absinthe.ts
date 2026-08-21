@@ -10,11 +10,11 @@ export const ElixirBroadwayAbsintheSpec: BenchmarkSpec = {
     requirements: [
       "Create an Elixir project using Phoenix LiveView (not plain Phoenix).",
       "Use Ecto SQL with PostgreSQL and Ecto changesets for validation.",
-      "Use Guardian for auth (not phx.gen.auth or Ueberauth).",
+      "Use Guardian for auth. Do not generate or hand-write a phx.gen.auth user store (no bcrypt password hashing, no UserSessionController) and do not use Ueberauth.",
       "Use Absinthe for a GraphQL API.",
       "Include Broadway and Nx as libraries.",
       "Use Phoenix Presence for realtime, Oban for jobs, Finch as the HTTP client, Jason for JSON, Swoosh for email, Nebulex for caching, and PromEx for observability.",
-      "Use Wallaby for testing, Dialyxir for code quality, and Fly for deploy output.",
+      "Use Wallaby for testing, Dialyxir for code quality (not Credo), and Fly for deploy output.",
     ],
     naturalPrompt:
       "Build an Elixir Phoenix starter for a realtime data-ingestion app. It needs server-rendered live views, Postgres via Ecto, a dedicated JWT auth library, a GraphQL API, data pipelines, numerical/ML support, presence tracking, durable background jobs, a pooled HTTP client, caching, Prometheus metrics, browser-based tests, static analysis, and a deploy target. Pick the right BEAM libraries rather than the framework defaults.",
@@ -84,7 +84,17 @@ export const ElixirBroadwayAbsintheSpec: BenchmarkSpec = {
       { id: "observability:prom_ex", text: ["prom_ex"] },
       { id: "testing:wallaby", text: ["wallaby"] },
       { id: "quality:dialyxir", text: ["dialyxir"] },
+      { id: "realtime:presence", textAny: ["Presence"] },
+      { id: "validation:ecto-changesets", textAny: ["changeset"] },
+      { id: "json:jason", textAny: [":jason", "Jason"] },
+      { id: "email:swoosh", textAny: [":swoosh", "Swoosh"] },
+      { id: "deploy:fly", files: ["fly.toml"] },
       { id: "forbidden:credo", forbiddenText: [":credo"] },
+      { id: "forbidden:ueberauth", forbiddenText: ["ueberauth"] },
+      {
+        id: "forbidden:phx-gen-auth",
+        forbiddenText: [":bcrypt_elixir", "UserSessionController", "phx.gen.auth"],
+      },
     ],
     validationProfile: { native: ["elixir"] },
   };

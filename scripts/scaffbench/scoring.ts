@@ -34,38 +34,31 @@ export function typecheckGate(
   return null;
 }
 
-/**
- * Score the libraries actually wired into the generated tree (dependency
- * declarations + source imports + required files). This is the primary
- * "right libs" signal for EVERY creation path, so a broken or empty generated
- * package (e.g. a db package that declares nothing and is imported nowhere) no
- * longer earns full stack credit on the strength of bts.jsonc alone.
- */
-export async function scoreArtifact(spec: BenchmarkSpec, projectDir: string): Promise<StackScore> {
-  return scoreMarkers(spec, await collectProjectIndex(projectDir));
+export async function scoreArtifact(
+  spec: BenchmarkSpec,
+  projectDir: string,
+  promptStyle: PromptStyle = "explicit",
+): Promise<StackScore> {
+  return scoreMarkers(spec, await collectProjectIndex(projectDir), promptStyle);
 }
 
-/**
- * Two complementary stack signals:
- * - `artifact`: what is actually wired in the emitted project (primary).
- * - `faithfulness`: assisted paths only — whether Better-Fullstack's own
- *   bts.jsonc echoes the requested stack. A generator-honesty diagnostic, not
- *   the capability metric. A high faithfulness with a low artifact score is the
- *   signature of a generator that recorded a library it never wired.
- */
+function scoredMarkers(spec: BenchmarkSpec, promptStyle: PromptStyle) {
+  return promptStyle === "natural"
+    ? spec.strictMarkers.filter((marker) => !marker.explicitOnly)
+    : spec.strictMarkers;
+}
+
 export async function scoreProject(
   spec: BenchmarkSpec,
   projectDir: string,
   promptStyle: PromptStyle = "explicit",
 ): Promise<{ artifact: StackScore; faithfulness?: StackScore; acceptance?: StackScore }> {
   const index = await collectProjectIndex(projectDir);
-  const artifact = scoreMarkers(spec, index);
+  const artifact = scoreMarkers(spec, index, promptStyle);
   const btsPath = path.join(projectDir, "bts.jsonc");
   const faithfulness = existsSync(btsPath)
     ? scoreBts(spec, await readFile(btsPath, "utf8"))
     : undefined;
-  // Discovery lane only: how many capabilities are satisfied by ANY accepted
-  // library, so reasonable alternatives are credited (vs. the strict markers).
   const acceptance =
     promptStyle === "natural" && spec.acceptanceSets
       ? scoreAcceptance(spec.acceptanceSets, index)
@@ -90,12 +83,6 @@ function scoreAcceptance(
   return scoreFromCounts(matched, capabilities.length, misses);
 }
 
-/**
- * Match an acceptance pattern precisely — NOT a substring over all project text,
- * which would credit `ai` from `tailwindcss` or `vite` from `vitest`. A path-like
- * pattern (starts with `.`) matches a file path; otherwise it matches a dependency
- * exactly or as a scoped-package prefix (`@ai-sdk` → `@ai-sdk/react`).
- */
 function acceptancePatternMatch(
   pattern: string,
   deps: readonly string[],
@@ -104,8 +91,6 @@ function acceptancePatternMatch(
   if (pattern.startsWith(".")) {
     return files.some((file) => file === pattern || file.includes(`${pattern}/`));
   }
-  // A pattern already ending in "/" is an explicit scope prefix (e.g. "@auth/"
-  // → "@auth/core"); don't append a second slash.
   const prefix = pattern.endsWith("/") ? pattern : `${pattern}/`;
   return deps.some((dep) => dep === pattern || dep.startsWith(prefix));
 }
@@ -180,30 +165,45 @@ function formatConfigStackParts(stackParts: readonly Record<string, any>[]) {
     });
 }
 
-function scoreMarkers(spec: BenchmarkSpec, index: ProjectIndex): StackScore {
+function scoreMarkers(
+  spec: BenchmarkSpec,
+  index: ProjectIndex,
+  promptStyle: PromptStyle = "explicit",
+): StackScore {
   const misses: string[] = [];
+  const markers = scoredMarkers(spec, promptStyle);
   let matched = 0;
 
-  for (const marker of spec.strictMarkers) {
-    const depsMatch = !marker.deps || marker.deps.every((dep) => index.dependencies.has(dep));
+  for (const marker of markers) {
+    const depsMatch =
+      !marker.deps || marker.deps.every((dep) => depMarkerMatches(index.dependencies, dep));
     const sourceMatch =
       !marker.source || marker.source.every((pattern) => index.sourceText.includes(pattern));
     const textMatch =
       !marker.text || marker.text.every((pattern) => index.allText.includes(pattern));
-    const filesMatch = !marker.files || marker.files.every((filePath) => index.files.has(filePath));
+    const textAnyMatch =
+      !marker.textAny || marker.textAny.some((pattern) => index.allText.includes(pattern));
+    const filesMatch =
+      !marker.files || marker.files.every((pattern) => fileMarkerMatches(index.files, pattern));
     const forbiddenDepsMatch =
-      !marker.forbiddenDeps || marker.forbiddenDeps.every((dep) => !index.dependencies.has(dep));
+      !marker.forbiddenDeps ||
+      marker.forbiddenDeps.every((dep) => !depMarkerMatches(index.dependencies, dep));
     const forbiddenTextMatch =
       !marker.forbiddenText ||
       marker.forbiddenText.every((pattern) => !index.allText.includes(pattern));
+    const forbiddenFilesMatch =
+      !marker.forbiddenFiles ||
+      marker.forbiddenFiles.every((pattern) => !fileMarkerMatches(index.files, pattern));
 
     if (
       depsMatch &&
       sourceMatch &&
       textMatch &&
+      textAnyMatch &&
       filesMatch &&
       forbiddenDepsMatch &&
-      forbiddenTextMatch
+      forbiddenTextMatch &&
+      forbiddenFilesMatch
     ) {
       matched += 1;
     } else {
@@ -211,7 +211,37 @@ function scoreMarkers(spec: BenchmarkSpec, index: ProjectIndex): StackScore {
     }
   }
 
-  return scoreFromCounts(matched, spec.strictMarkers.length, misses);
+  return scoreFromCounts(matched, markers.length, misses);
+}
+
+export function depMarkerMatches(dependencies: ReadonlySet<string>, pattern: string) {
+  if (!pattern.endsWith("/")) return dependencies.has(pattern);
+  for (const dep of dependencies) {
+    if (dep.startsWith(pattern)) return true;
+  }
+  return false;
+}
+
+export function fileMarkerMatches(files: ReadonlySet<string>, pattern: string) {
+  if (files.has(pattern)) return true;
+  const matcher = fileMarkerPattern(pattern);
+  for (const file of files) {
+    if (matcher.test(file.split(path.sep).join("/"))) return true;
+  }
+  return false;
+}
+
+function fileMarkerPattern(pattern: string) {
+  const source = pattern
+    .split("/")
+    .map((segment) =>
+      segment
+        .split("*")
+        .map((literal) => literal.replace(/[|\\{}()[\]^$+*?.-]/g, "\\$&"))
+        .join("[^/]*"),
+    )
+    .join("/");
+  return new RegExp(`(^|/)${source}$`);
 }
 
 function scoreFromCounts(matched: number, total: number, misses: string[]): StackScore {
@@ -223,10 +253,13 @@ function scoreFromCounts(matched: number, total: number, misses: string[]): Stac
   };
 }
 
-export function emptyArtifactScore(spec: BenchmarkSpec): StackScore {
+export function emptyArtifactScore(
+  spec: BenchmarkSpec,
+  promptStyle: PromptStyle = "explicit",
+): StackScore {
   return {
     matched: 0,
-    total: spec.strictMarkers.length,
+    total: scoredMarkers(spec, promptStyle).length,
     percent: 0,
     misses: ["project not found or unscorable"],
   };
@@ -270,8 +303,9 @@ async function collectProjectIndex(projectDir: string): Promise<ProjectIndex> {
   await walk(projectDir, async (filePath) => {
     const relativePath = path.relative(projectDir, filePath);
     index.files.add(relativePath);
+    if (path.basename(filePath) === "bts.jsonc") return;
     if (
-      !/(package\.json|Cargo\.toml|go\.mod|pyproject\.toml|pom\.xml|mix\.exs|\.csproj|\.gradle|\.kts|\.ts|\.tsx|\.js|\.jsx|\.mjs|\.cjs|\.rs|\.go|\.py|\.cs|\.java|\.kt|\.exs|\.ex|\.heex|\.json|\.toml|\.yml|\.yaml)$/.test(
+      !/(package\.json|Cargo\.toml|go\.mod|pyproject\.toml|pom\.xml|mix\.exs|\.csproj|\.gradle|\.kts|\.ts|\.tsx|\.js|\.jsx|\.mjs|\.cjs|\.rs|\.go|\.py|\.cs|\.java|\.kt|\.exs|\.ex|\.heex|\.html|\.vue|\.svelte|\.json|\.jsonc|\.proto|\.toml|\.yml|\.yaml)$/.test(
         filePath,
       )
     ) {
@@ -315,9 +349,6 @@ function collectPackageDependencies(target: Set<string>, rawPackageJson: string)
   } catch {}
 }
 
-/** Extract the agent's tool calls from a stream-json transcript (assistant
- * `tool_use` blocks). Returns [] for non-stream output, so callers degrade to
- * the bts.jsonc safety net rather than crashing. */
 export function extractToolUses(stdout: string): { name: string; command?: string }[] {
   const uses: { name: string; command?: string }[] = [];
   for (const line of stdout.split("\n")) {
@@ -329,7 +360,6 @@ export function extractToolUses(stdout: string): { name: string; command?: strin
     } catch {
       continue;
     }
-    // Claude stream-json: message.content[] blocks of type "tool_use".
     const content = event?.message?.content;
     if (Array.isArray(content)) {
       for (const block of content) {
@@ -340,8 +370,6 @@ export function extractToolUses(stdout: string): { name: string; command?: strin
         }
       }
     }
-    // Codex JSONL: item.completed events carry mcp_tool_call (name in `tool`) and
-    // command_execution (shell string in `command`) items.
     if (event?.type === "item.completed" && event.item) {
       const item = event.item;
       if (item.type === "mcp_tool_call" && typeof item.tool === "string") {
@@ -350,9 +378,6 @@ export function extractToolUses(stdout: string): { name: string; command?: strin
         uses.push({ name: "bash", command: item.command });
       }
     }
-    // opencode / Kilo Code JSONL: a part of type "tool" carries the tool name
-    // (part.tool, e.g. "bash" or "better-fullstack_bfs_create_project") and, for
-    // the bash tool, the shell command in state.input.command.
     if (event?.part?.type === "tool" && typeof event.part.tool === "string") {
       const command =
         typeof event.part.state?.input?.command === "string"
@@ -360,7 +385,6 @@ export function extractToolUses(stdout: string): { name: string; command?: strin
           : undefined;
       uses.push({ name: event.part.tool, command });
     }
-    // Pi JSONL: execution starts carry the stable tool name and finalized args.
     if (event?.type === "tool_execution_start" && typeof event.toolName === "string") {
       const command = typeof event.args?.command === "string" ? event.args.command : undefined;
       uses.push({ name: event.toolName, command });
@@ -377,7 +401,6 @@ export async function scoreToolCompliance(
   const toolUses = extractToolUses(claude.stdout);
   const hasBtsConfig = projectDir ? existsSync(path.join(projectDir, "bts.jsonc")) : false;
 
-  // Grounded in the actual tool trajectory, not a grep of the result envelope.
   const usedBfsCreate = toolUses.some((use) => /bfs_create_project/i.test(use.name));
   const usedAnyBfsTool = toolUses.some((use) => /bfs_/i.test(use.name));
   const bashCommands = toolUses
@@ -411,19 +434,12 @@ export async function scoreToolCompliance(
     });
   }
 
-  // Every check is now definitive (pass/fail) — none are dropped from the score.
   const score = checks.filter((check) => check.status === "pass").length;
   return { score, total: checks.length, checks };
 }
 
-// A step is "advisory" (quality tier) when it measures polish rather than
-// whether the project works: lint/format/test/doctor/route. These mirror the
-// solvability gate's ADVISORY_STEPS. CORE steps (install/build/typecheck/native
-// compile) decide whether a scaffold actually builds and runs — a formatting
-// nit or a style-lint warning must never read as a broken project.
 const ADVISORY_STEP_KEYS = new Set(["lint", "format", "test", "doctor", "route", "tidy"]);
-// Step keys may be namespaced "<subroot>:<step>" (multi-root projects); the
-// advisory/core split is decided by the base step name after the last ":".
+
 export function stepBaseName(name: string) {
   return name.slice(name.lastIndexOf(":") + 1);
 }
@@ -431,9 +447,6 @@ export function isAdvisoryStep(name: string) {
   return ADVISORY_STEP_KEYS.has(stepBaseName(name));
 }
 
-// Applicable steps (a real check that should be judged) whose key matches the
-// predicate. "na" steps (e.g. a genuinely testless scaffold) are excluded —
-// neither pass nor fail.
 function applicableSteps(result: RunResult, predicate: (name: string) => boolean): StepResult[] {
   return Object.entries(result.validation.steps)
     .filter((entry): entry is [string, StepResult] => Boolean(entry[1]))
@@ -441,40 +454,20 @@ function applicableSteps(result: RunResult, predicate: (name: string) => boolean
     .map(([, step]) => step);
 }
 
-// A "skip" (a check that should have run but no tool was configured) is NOT a
-// pass — it disqualifies the tier. (Pre-fix, skips carried exitCode 0 and passed
-// silently: the Finding-1 inflation.)
 function stepsAllGreen(steps: readonly StepResult[]) {
   return steps.every(
     (step) => step.status !== "skip" && step.exitCode === 0 && !step.timedOut && !step.spawnError,
   );
 }
 
-/**
- * Core pass — the headline "does it actually build and run?" signal, and the
- * basis of the reported pass rate / classifyOutcome. Requires every applicable
- * CORE step (install/build/typecheck/native compile) to be a real green run;
- * advisory polish checks (lint/format/test/doctor/route) are excluded, so a
- * project that builds and runs but is mis-formatted is NOT scored as broken.
- * This matches the solvability gate's contract exactly.
- */
 export function validationPassed(result: RunResult) {
   if (result.validation.deferred) return false;
   if (!result.validation.projectExists) return false;
   const core = applicableSteps(result, (name) => !isAdvisoryStep(name));
-  // A run with zero applicable CORE steps must NOT pass vacuously (`[].every(...)`
-  // is true): the agent left a directory but no recognizable manifest, so no
-  // build/typecheck validator fired — an unbuildable project, not a success.
   if (core.length === 0) return false;
   return stepsAllGreen(core);
 }
 
-/**
- * Quality pass — the stricter, advisory tier: core passed AND every applicable
- * lint/format/test/doctor/route check is green. Reported as a SEPARATE signal
- * (qualityPassRate); it never demotes the core pass rate, so formatting is a
- * quality metric rather than a brokenness verdict.
- */
 export function qualityPassed(result: RunResult) {
   if (result.validation.skipped || result.validation.qualityGateRequested !== true) {
     return "na" as const;
@@ -513,17 +506,13 @@ export function outcomeEvidenceFor(result: RunResult): OutcomeEvidence | undefin
   return undefined;
 }
 
-/**
- * Fine-grained, evidence-backed outcome. Aggregate callers use `rollupOutcome`
- * to retain the historic success/model-failure/infra-inconclusive denominator.
- */
 export function classifyOutcome(result: RunResult): RunOutcome {
   if (result.validation.skipped) return "skipped";
   if (isBudgetExhausted(result)) return "budget-exhausted";
   if (result.claude.timedOut) return "deadline-exhausted";
   if (result.claude.spawnError) return "harness-infra";
-  if (hasProviderInfraEvidence(result)) return "provider-infra";
   if (result.validation.deferred) return "validation-infra";
+  if (!validationPassed(result) && hasProviderInfraEvidence(result)) return "provider-infra";
 
   const coreEntries = Object.entries(result.validation.steps).filter(
     ([name, step]) => step && step.status !== "na" && !isAdvisoryStep(name),
@@ -549,7 +538,6 @@ export function scoredOutcome(result: RunResult) {
 }
 
 function hasProviderInfraEvidence(result: RunResult) {
-  if (result.validation.projectExists) return false;
   const reason = `${result.claude.terminalReason ?? ""}\n${result.claude.stderrTail ?? ""}`;
   if (/(?:opencode-unknown|pi)-zero-usage-no-tools/.test(reason) && !result.claude.outputTokens) {
     return true;
@@ -604,8 +592,6 @@ export function deriveFailureTags(result: RunResult): FailureTag[] {
   if (result.claude.timeoutProgress) tags.add(result.claude.timeoutProgress);
   if (!result.validation.projectExists) tags.add("project-not-found");
   if (result.stackScore.matched < result.stackScore.total) tags.add("stack-mismatch");
-  // bts.jsonc records the full stack but the artifact does not wire it (e.g. an
-  // empty generated package): the generator claimed more than it produced.
   if (
     result.generatorFaithfulness &&
     result.generatorFaithfulness.percent === 100 &&
@@ -620,23 +606,11 @@ export function deriveFailureTags(result: RunResult): FailureTag[] {
 
   for (const [name, step] of Object.entries(result.validation.steps)) {
     if (!step || (step.exitCode === 0 && !step.timedOut)) continue;
-    // Each failing step gets its specific tag below (lint-failed/format-failed/…)
-    // for visibility, but the generic "validation-failed" (= broken) is added
-    // ONCE, at the end, keyed strictly to a CORE failure — so a cosmetic
-    // lint/format failure is surfaced without flagging the project as broken.
     if (step.spawnError || isDotnetSdkNotFound(step)) {
-      // The validator binary itself could not be spawned (e.g. cargo/uv/go/dotnet
-      // not on PATH), or the .NET SDK pinned by global.json is not installed: an
-      // environment problem, not a model-authored break. A child process that ran
-      // and exited 127 (e.g. a generated `bun run build` whose script references
-      // a missing bin) is NOT this — it falls through below.
       tags.add("toolchain-missing");
       continue;
     }
     if (isRecurringTransientFailure(name, step)) continue;
-    // Match on the lowercased base name (after any "<subroot>:" namespace) so
-    // camelCase keys tag correctly — pre-fix, "dotnetBuild" never matched
-    // "build" and .NET build breaks were untagged.
     const base = stepBaseName(name).toLowerCase();
     if (base.includes("install") || base.includes("restore")) tags.add("install-failed");
     if (base.includes("build") || base.includes("cargocheck")) tags.add("build-failed");

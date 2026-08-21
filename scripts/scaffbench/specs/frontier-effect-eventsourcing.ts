@@ -6,8 +6,6 @@ export const FrontierEffectEventsourcingSpec: BenchmarkSpec = {
     title: "Frontier: TypeScript Effect service with event-sourcing/CQRS and tRPC-over-WebSocket subscriptions",
     lane: "core",
     family: "typescript",
-    // BFS offers Effect and tRPC as options but cannot scaffold this architecture,
-    // so it runs prompt-only — a pure test of the model's engineering.
     supportedByBetterFullstack: false,
     paths: ["prompt"],
     requirements: [
@@ -19,7 +17,7 @@ export const FrontierEffectEventsourcingSpec: BenchmarkSpec = {
       "Provide build and type-check scripts.",
     ],
     naturalPrompt:
-      "Build a TypeScript bank-ledger backend on the Effect ecosystem that uses event sourcing with CQRS — an append-only event store, command handlers for open/deposit/withdraw with overdraft rejection on the write side, replayable idempotent balance projections on the read side, and an outbox for reliable publishing. Expose it through tRPC, including a WebSocket subscription that streams balance updates.",
+      "Build a TypeScript bank-ledger backend on the Effect ecosystem that uses event sourcing with CQRS, an append-only event store, command handlers for open/deposit/withdraw with overdraft rejection on the write side, replayable idempotent balance projections on the read side, and an outbox for reliable publishing. Expose it through tRPC, including a WebSocket subscription that streams balance updates.",
     rightLibraryNotes: [
       "The service layer must be built on Effect.",
       "Use event-sourcing + CQRS (event store, projections, outbox), not plain CRUD.",
@@ -28,11 +26,23 @@ export const FrontierEffectEventsourcingSpec: BenchmarkSpec = {
     ],
     canonicalFlags: [],
     strictMarkers: [
-      // Loose single-token diagnostics (text arrays AND together).
       { id: "runtime:effect", deps: ["effect"] },
       { id: "api:trpc", deps: ["@trpc/server"] },
       { id: "ws:subscription", text: ["subscription"] },
       { id: "pattern:event-sourcing", text: ["projection"] },
+      { id: "store:event-store", textAny: ["eventStore", "EventStore", "event_store"] },
+      { id: "store:append-only", textAny: ["append"] },
+      { id: "cqrs:commands", textAny: ["command", "Command"] },
+      { id: "command:open-account", textAny: ["openAccount", "OpenAccount", "open_account"] },
+      { id: "command:deposit", textAny: ["deposit", "Deposit"] },
+      { id: "command:withdraw", textAny: ["withdraw", "Withdraw"] },
+      {
+        id: "ledger:overdraft",
+        textAny: ["overdraft", "Overdraft", "insufficient", "Insufficient"],
+      },
+      { id: "projection:replay", textAny: ["replay", "Replay", "rebuild", "Rebuild"] },
+      { id: "projection:idempotent", textAny: ["idempot", "Idempot"] },
+      { id: "pattern:outbox", textAny: ["outbox", "Outbox"] },
     ],
     validationProfile: { packageManager: "bun" },
   };

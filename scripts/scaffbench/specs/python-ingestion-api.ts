@@ -12,7 +12,7 @@ export const PythonIngestionApiSpec: BenchmarkSpec = {
       "Use SQLModel for database models and Pydantic for validation.",
       "Use LangGraph and OpenAI SDK for the extraction workflow.",
       "Use JWT auth, Celery task queues, WebSockets for realtime job progress, Redis caching, OpenTelemetry, Typer, Rich, Ruff, Pytest, and Hypothesis.",
-      "Do not choose Django REST Framework, Django Ninja, or Flask — this is a FastAPI project.",
+      "Do not choose Django REST Framework, Django Ninja, or Flask, this is a FastAPI project.",
     ],
     naturalPrompt:
       "Build a Python ingestion API starter for AI document processing. It needs FastAPI, SQL-backed models, strict validation, AI workflow libraries, queued workers, realtime job updates, Redis cache, tracing, CLI tools, and real test/quality tooling. Avoid Django-only API libraries.",
@@ -102,7 +102,18 @@ export const PythonIngestionApiSpec: BenchmarkSpec = {
       { id: "testing:hypothesis", text: ["hypothesis"] },
       { id: "realtime:websockets", text: ["websockets"] },
       { id: "cli:typer+rich", text: ["typer", "rich"] },
-      { id: "forbidden:django-api", forbiddenText: ["django-rest-framework", "django-ninja"] },
+      { id: "caching:redis", text: ["redis"] },
+      { id: "observability:opentelemetry", textAny: ["opentelemetry"] },
+      {
+        id: "forbidden:django-api",
+        forbiddenText: [
+          "djangorestframework",
+          "django-rest-framework",
+          "rest_framework",
+          "django-ninja",
+          "django_ninja",
+        ],
+      },
       { id: "forbidden:flask", forbiddenText: ["flask"] },
     ],
     validationProfile: { native: ["python"] },

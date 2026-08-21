@@ -9,12 +9,6 @@ import type { CommandResult, Effort } from "@/types";
 import { agentRunCommandOptions, runCommand } from "@/agents/command";
 import { bfSpec, GEN_TIMEOUT_MS } from "@/constants";
 
-// opencode / Kilo Code adapter — both ship the same CLI, so one function (binary =
-// "opencode" | "kilo") drives both. Runs `<bin> run --format json` in the isolated
-// workdir; for the MCP path it writes a project opencode.json wiring ONLY the
-// Better-Fullstack MCP server. opencode reports USD cost directly on each
-// step-finish (0 for free models), so no pricing table is needed. Reasoning effort
-// maps to --variant. Output is the JSONL event stream parseOpencodeResult reads.
 export function runOpencode(input: {
   binary: "opencode" | "kilo";
   cwd: string;
@@ -43,10 +37,6 @@ export function runOpencode(input: {
       );
     }
     const effortArgs = input.effort === "default" ? [] : ["--variant", input.effort];
-    // Harness-side disambiguation prefix: `kilocode/<id>` means "drive the Kilo
-    // binary with <id>" (e.g. kilocode/openai/gpt-5.6-luna → Kilo's OpenAI
-    // oauth), distinct from Kilo's own credit-gated `kilo/*` catalog ids which
-    // pass through unchanged.
     const modelId = input.model.replace(/^kilocode\//i, "");
     return yield* runCommand(
       input.binary,
@@ -54,11 +44,8 @@ export function runOpencode(input: {
         "run",
         "--format",
         "json",
-        // Non-interactive: there is no human to approve tool calls, so without this
-        // opencode/Kilo auto-REJECT every bash/edit ("user rejected permission"),
-        // and the agent can't scaffold anything. Matches claude's
-        // --dangerously-skip-permissions and codex's --full-auto.
-        "--dangerously-skip-permissions",
+        "--auto",
+        "--pure",
         "-m",
         modelId,
         ...effortArgs,
@@ -72,10 +59,7 @@ export function runOpencode(input: {
     );
   });
 }
-// opencode / Kilo Code analogue. Every JSONL event carries a sessionID; each
-// `step-finish` part carries per-step token usage and USD cost (0 for free
-// models), summed across steps. opencode reports cost directly, so unlike codex
-// no pricing table is involved.
+
 export function parseOpencodeResult(stdout: string): any | null {
   let sessionId: string | undefined;
   let outputTokens = 0;

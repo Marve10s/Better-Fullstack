@@ -103,7 +103,7 @@ async function findGoModuleDirs(root: string, depth = 3): Promise<string[]> {
 
 async function runDocumentedGoSetup(projectDir: string): Promise<void> {
   for (const moduleDir of await findGoModuleDirs(projectDir)) {
-    // oxlint-disable-next-line no-await-in-loop -- tidy modules one at a time.
+    // oxlint-disable-next-line no-await-in-loop
     const tidy = await runCommand(["go", "mod", "tidy"], moduleDir);
     if (tidy.exitCode !== 0) {
       console.warn(`go mod tidy failed in ${path.relative(projectDir, moduleDir) || "."}`);
@@ -113,7 +113,7 @@ async function runDocumentedGoSetup(projectDir: string): Promise<void> {
 
 async function buildLocalCliBinary(): Promise<string> {
   for (const packageDirectory of ["packages/types", "packages/template-generator", "apps/cli"]) {
-    // oxlint-disable-next-line no-await-in-loop -- workspace packages must build in dependency order.
+    // oxlint-disable-next-line no-await-in-loop
     const result = await runCommand(
       [process.execPath, "run", "build"],
       path.join(REPO_ROOT, packageDirectory),
@@ -153,27 +153,27 @@ async function main(): Promise<void> {
     for (const spec of specs) {
       const projectName = `canonical-${spec.id}`;
       const projectDir = path.join(PROJECT_ROOT, projectName);
-      // oxlint-disable-next-line no-await-in-loop -- canonical runs stay isolated and deterministic.
+      // oxlint-disable-next-line no-await-in-loop
       await rm(projectDir, { recursive: true, force: true });
 
       const command = localCanonicalCommand(cliPath, spec, projectName);
       const commandText = displayCommand(command);
       console.log(`SCAFFBENCH ${spec.id}: ${commandText}`);
-      // oxlint-disable-next-line no-await-in-loop -- avoid overlapping package installs across specs.
+      // oxlint-disable-next-line no-await-in-loop
       const create = await runCommand(command, PROJECT_ROOT);
       const projectExists = create.exitCode === 0;
       if (projectExists) {
-        // oxlint-disable-next-line no-await-in-loop -- setup precedes this spec's validation.
+        // oxlint-disable-next-line no-await-in-loop
         await runDocumentedGoSetup(projectDir);
       }
-      // oxlint-disable-next-line no-await-in-loop -- validate each isolated scaffold before scoring it.
+      // oxlint-disable-next-line no-await-in-loop
       const validation = await validateProject(
         spec,
         projectExists ? projectDir : null,
         options,
       ).pipe(Effect.provide(BunContext.layer), Effect.runPromise);
       const scored = projectExists
-        ? // oxlint-disable-next-line no-await-in-loop -- scoring consumes the just-validated project.
+        ? // oxlint-disable-next-line no-await-in-loop
           await scoreProject(spec, projectDir, options.promptStyle)
         : {
             artifact: {

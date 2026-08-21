@@ -1,6 +1,6 @@
 import * as Effect from "effect/Effect";
 import { existsSync } from "node:fs";
-import { writeFile } from "node:fs/promises";
+import { rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import type {
@@ -80,12 +80,6 @@ function aggregateBy(
       ).length;
       const ci = wilsonInterval(passCount, scored.length);
 
-      // Per-spec macro statistics: treat each spec as a unit rather than pooling
-      // heterogeneous-difficulty specs into one binomial (which understates
-      // variance). pass@k / pass^k summarise reliability across repeats.
-      // Track total repeats (from the full group) alongside scored/pass so that
-      // pass^k cannot be overstated: a spec with one passing scored repeat and
-      // the rest infra-inconclusive must NOT count as "passed every repeat".
       const bySpec = new Map<string, { total: number; scored: number; pass: number }>();
       for (const result of group) {
         const entry = bySpec.get(result.specId) ?? { total: 0, scored: 0, pass: 0 };
@@ -97,17 +91,13 @@ function aggregateBy(
         bySpec.set(result.specId, entry);
       }
       const specEntries = [...bySpec.values()];
-      // Macro pass rate averages only specs that were actually measured.
       const measuredSpecs = specEntries.filter((entry) => entry.scored > 0);
       const macroPassRate = average(
         measuredSpecs.map((entry) => (entry.pass / entry.scored) * 100),
       );
-      // pass^k: passed on EVERY repeat (all repeats measured and passing).
       const passAllSpecs = specEntries.filter((entry) => entry.pass === entry.total).length;
-      // pass@k: passed on at least one repeat.
       const passAnySpecs = specEntries.filter((entry) => entry.pass > 0).length;
 
-      // Every composite component uses the same eligible trial set as validation.
       const stackPercent = average(scored.map((result) => result.stackScore.percent));
       const commandDisciplinePercent = average(
         scored.map((result) =>
@@ -232,15 +222,11 @@ function nullableAverage(values: readonly number[]) {
   return values.length > 0 ? average(values) : null;
 }
 
-/** Unrounded mean — used for sub-unit quantities like USD cost, where rounding
- * to a whole number before formatting would print a $0.40 mean as `0.000`. */
 function averagePrecise(values: readonly number[]) {
   if (values.length === 0) return 0;
   return values.reduce((sum, value) => sum + value, 0) / values.length;
 }
 
-/** Nearest-rank percentile (p in 0..100), rounded. Wall-clock and cost move with
- * provider load, so median/p95 are reported alongside the mean. */
 function percentile(values: readonly number[], p: number) {
   if (values.length === 0) return 0;
   const sorted = [...values].sort((a, b) => a - b);
@@ -299,8 +285,14 @@ export async function writeSummary(
     aggregates,
     results: persistedResults,
   };
-  await writeFile(path.join(outDir, "summary.json"), `${JSON.stringify(summary, null, 2)}\n`);
-  await writeFile(path.join(outDir, "summary.md"), renderMarkdown(summary));
+  await writeAtomic(path.join(outDir, "summary.json"), `${JSON.stringify(summary, null, 2)}\n`);
+  await writeAtomic(path.join(outDir, "summary.md"), renderMarkdown(summary));
+}
+
+async function writeAtomic(target: string, contents: string) {
+  const temporary = `${target}.tmp-${process.pid}`;
+  await writeFile(temporary, contents);
+  await rename(temporary, target);
 }
 
 export function renderMarkdown(summary: ScaffbenchSummary) {
@@ -323,10 +315,10 @@ export function renderMarkdown(summary: ScaffbenchSummary) {
         `${result.stackScore.matched}/${result.stackScore.total}`,
         result.generatorFaithfulness
           ? `${result.generatorFaithfulness.matched}/${result.generatorFaithfulness.total}`
-          : "—",
+          : "–",
         result.acceptanceScore
           ? `${result.acceptanceScore.matched}/${result.acceptanceScore.total}`
-          : "—",
+          : "–",
         result.validation.install?.exitCode ?? "",
         result.validation.build?.exitCode ?? "",
         result.validation.checkTypes?.exitCode ?? "",
@@ -363,8 +355,8 @@ export function renderMarkdown(summary: ScaffbenchSummary) {
           ? `${aggregate.passRate}% (${aggregate.passCi95.low}-${aggregate.passCi95.high})`
           : `n<${MIN_CI_RUNS}`,
         `${aggregate.stackPercent}%`,
-        aggregate.faithfulnessPercent !== undefined ? `${aggregate.faithfulnessPercent}%` : "—",
-        aggregate.acceptancePercent !== undefined ? `${aggregate.acceptancePercent}%` : "—",
+        aggregate.faithfulnessPercent !== undefined ? `${aggregate.faithfulnessPercent}%` : "–",
+        aggregate.acceptancePercent !== undefined ? `${aggregate.acceptancePercent}%` : "–",
         `${aggregate.commandDisciplinePercent}%`,
         `${formatSeconds(aggregate.medianDurationMs)} / ${formatSeconds(aggregate.p95DurationMs)}`,
         aggregate.avgOutputTokens ?? "",
@@ -397,7 +389,7 @@ This is an ablation across creation paths and reasoning effort for one agent
 Provider, harness, and validation infrastructure outcomes are inconclusive and
 excluded; budget and generation-deadline exhaustion remain scored failures.
 
-"Pass@1" is the CORE pass rate — install + build + typecheck + native compile,
+"Pass@1" is the CORE pass rate, install + build + typecheck + native compile,
 i.e. does the project actually build and run. "Quality" is the stricter advisory
 tier (core + lint/format/test/doctor/route): a project can be Pass@1-green but
 Quality-red because it is mis-formatted or a style-lint warns. Formatting is a
@@ -492,9 +484,6 @@ export function collectMetadata(options: ScaffbenchOptions) {
       ["--version"],
       process.cwd(),
     );
-    // The assisted paths exercise the PUBLISHED generator (pinned at run start via
-    // resolvedBfVersion() and used by every assisted invocation), not repo HEAD, so
-    // record the exact version under test; gitHead only describes the local checkout.
     const bfGeneratorVersion = resolvedBfVersion() === "latest" ? undefined : resolvedBfVersion();
     const toolchains = yield* collectToolchainVersions();
     return {
@@ -507,8 +496,6 @@ export function collectMetadata(options: ScaffbenchOptions) {
       nodeVersion: process.version,
       platform: process.platform,
       arch: process.arch,
-      // Validation runs non-frozen network installs on the host toolchains below,
-      // so a published pass/fail is qualified by this environment.
       environmentQualified: true,
       toolchains,
       suiteVersion: SCAFFBENCH_SUITE_VERSION,

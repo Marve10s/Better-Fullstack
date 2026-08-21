@@ -1,26 +1,41 @@
 import * as BunContext from "@effect/platform-bun/BunContext";
 import { describe, expect, it } from "bun:test";
 import * as Effect from "effect/Effect";
-import { chmod, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { chmod, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
 import {
+  CORE_SPEC_IDS,
   SCAFFBENCH_2_SPECS,
   agentRunCommandOptions,
   aggregateResults,
+  agyModelString,
   assertResumeProtocol,
+  assertScheduleSupported,
   buildGenerationSchedule,
+  isCompletedHarnessRun,
+  recordedRunOptions,
+  resolvedCostUsd,
+  runScaffbench,
+  scoreProject,
   buildRunId,
   classifyOutcome,
+  effectiveValidationOptions,
   findCompletedTrial,
+  formatCheckCommand,
   hasTransientNetworkSignature,
+  parseArgs,
   parseClaudeResult,
   parseCodexResult,
   parseOpencodeResult,
   promptFor,
   runCommand,
+  scoreArtifact,
+  validatePendingResults,
   validateProject,
+  validateProjectCached,
   writeSummary,
   type BenchmarkSpec,
   type RunResult,
@@ -28,6 +43,7 @@ import {
   type StepResult,
 } from "@/index";
 
+import { buildRows } from "./build-scaffbench-3-data";
 import { buildPublishedCells } from "./build-scaffbench-2-1-data";
 import { normalizeExistingCell } from "./splice-scaffbench-2-1";
 
@@ -36,6 +52,8 @@ const cargoSpec = SCAFFBENCH_2_SPECS.find((spec) => spec.id === "rust-leptos-axu
 const dotnetSpec = SCAFFBENCH_2_SPECS.find((spec) => spec.id === "dotnet-blazor-cqrs")!;
 const expoSpec = SCAFFBENCH_2_SPECS.find((spec) => spec.id === "react-native-expo")!;
 const goSpec = SCAFFBENCH_2_SPECS.find((spec) => spec.id === "go-realtime-api")!;
+const svelteSpec = SCAFFBENCH_2_SPECS.find((spec) => spec.id === "ts-svelte-edge-orpc")!;
+const minimalSpec = SCAFFBENCH_2_SPECS.find((spec) => spec.id === "ts-minimal-restraint")!;
 
 const options = (outDir = "/tmp/scaffbench-hardening-round-2"): ScaffbenchOptions => ({
   command: "run",
@@ -207,7 +225,7 @@ describe("ScaffBench hardening round 2", () => {
       ];
     }
     const allowed =
-      "You may install dependencies, query package registries, run builds or type checks, and start servers to verify your work before finishing — the project is graded by whether it installs and builds on a clean machine. Kill every process you start; nothing may still be running when you finish.";
+      "You may install dependencies, query package registries, run builds or type checks, and start servers to verify your work before finishing. Kill every process you start; nothing may still be running when you finish.";
     expect(snapshot).toEqual({
       prompt: [allowed],
       mcp: [allowed],
@@ -499,12 +517,194 @@ describe("ScaffBench hardening round 2", () => {
     }
   });
 
+  it("gates formatting through the project's own format script in check mode", async () => {
+    const dir = await tempDirectory("sb-r2-format-");
+    const bin = path.join(dir, "bin");
+    const previousPath = process.env.PATH;
+    try {
+      await mkdir(bin);
+      await executable(path.join(bin, "vp"), 'case " $* " in *" --check "*) exit 1;; esac');
+      await writeFile(
+        path.join(dir, "package.json"),
+        JSON.stringify({
+          name: "format-gate",
+          scripts: { build: "true", format: "vp run -r format" },
+        }),
+      );
+      process.env.PATH = `${bin}${path.delimiter}${previousPath ?? ""}`;
+      const validation = await effectPromise(validateProject(aiSpec, dir, options(dir)));
+      expect(validation.steps.format?.status).not.toBe("skip");
+      expect(validation.steps.format?.command).toContain("run format --check");
+      expect(validation.steps.format?.exitCode).toBe(1);
+    } finally {
+      process.env.PATH = previousPath;
+      await rm(dir, { recursive: true, force: true });
+    }
+  }, 60_000);
+
+  it("resolves optional checks against the spec's declared validation profile", () => {
+    const asked = { ...options(), qualityGate: false, doctorCheck: true, routeCheck: true };
+    expect(effectiveValidationOptions(aiSpec, asked)).toMatchObject({
+      qualityGate: true,
+      doctorCheck: true,
+      routeCheck: true,
+    });
+    expect(effectiveValidationOptions(goSpec, asked)).toMatchObject({
+      qualityGate: false,
+      doctorCheck: false,
+      routeCheck: false,
+    });
+  });
+
+  it("skips a prerequisite whose config is absent instead of failing core", async () => {
+    const dir = await tempDirectory("sb-r2-prereq-");
+    try {
+      await writeFile(path.join(dir, "go.mod"), "module example.com/prereq\n");
+      const spec: BenchmarkSpec = {
+        ...goSpec,
+        prerequisiteCommands: [
+          { command: ["definitely-not-installed"], whenConfigFound: ["buf.gen.yaml"] },
+        ],
+      };
+      const validation = await effectPromise(
+        validateProject(spec, dir, options(dir), { deadlineMs: 30_000 }),
+      );
+      expect(validation.steps["prerequisite:01:definitely-not-installed"]?.status).toBe("na");
+      expect(Object.keys(validation.steps)).toContain("install");
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  }, 60_000);
+
+  it("scores markers from emitted files only, never from bts.jsonc", async () => {
+    const dir = await tempDirectory("sb-r2-bts-");
+    try {
+      await writeFile(path.join(dir, "package.json"), JSON.stringify({ name: "edge" }));
+      await writeFile(
+        path.join(dir, "bts.jsonc"),
+        '{\n  "dbSetup": "d1",\n  "d1_databases": "declared"\n}\n',
+      );
+      const spec: BenchmarkSpec = {
+        ...svelteSpec,
+        strictMarkers: [{ id: "db:d1", textAny: ["d1_databases", "D1Database"] }],
+      };
+      expect((await scoreArtifact(spec, dir)).misses).toEqual(["db:d1"]);
+
+      await writeFile(
+        path.join(dir, "wrangler.jsonc"),
+        '{\n  "d1_databases": [{ "binding": "DB" }]\n}\n',
+      );
+      expect((await scoreArtifact(spec, dir)).matched).toBe(1);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("lets an explicit --no-quality-gate beat a spec profile that forces the gate", () => {
+    expect(aiSpec.validationProfile.qualityGate).toBe(true);
+    expect(effectiveValidationOptions(aiSpec, parseArgs([])).qualityGate).toBe(true);
+    expect(effectiveValidationOptions(aiSpec, parseArgs(["--no-quality-gate"])).qualityGate).toBe(
+      false,
+    );
+  });
+
+  it("rejects a check-named format script that actually writes", async () => {
+    const dir = await tempDirectory("sb-r2-format-write-");
+    try {
+      expect(
+        formatCheckCommand({ "format:check": "biome format --write ." }, dir, "bun"),
+      ).toBeNull();
+      expect(
+        formatCheckCommand({ "format:check": "biome format --write .", fmt: "vp fmt" }, dir, "bun"),
+      ).toEqual({ command: "bun", args: ["run", "fmt", "--check"] });
+      expect(formatCheckCommand({ "format:check": "biome ci ." }, dir, "bun")).toEqual({
+        command: "bun",
+        args: ["run", "format:check"],
+      });
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("deletes a stale cache entry when a forced revalidation is uncacheable", async () => {
+    const dir = await tempDirectory("sb-r2-cache-drop-");
+    try {
+      const projectDir = path.join(dir, "project");
+      await mkdir(projectDir);
+      await writeFile(
+        path.join(projectDir, "package.json"),
+        JSON.stringify({ name: "cacheable", scripts: { build: "true" } }),
+      );
+      const runOptions = options(dir);
+      const first = await effectPromise(validateProjectCached(aiSpec, projectDir, runOptions));
+      const cacheFile = path.join(dir, "validation-cache", `${first.cacheKey}.json`);
+      expect(first.cacheHit).toBe(false);
+      expect(existsSync(cacheFile)).toBe(true);
+
+      const bin = path.join(dir, "bin");
+      await mkdir(bin);
+      const flaky = path.join(bin, "flaky-prerequisite");
+      await executable(flaky, 'echo "ECONNRESET while reaching registry.npmjs.org" >&2; exit 1');
+      const broken: BenchmarkSpec = { ...aiSpec, prerequisiteCommands: [{ command: [flaky] }] };
+      const forced = await effectPromise(
+        validateProjectCached(broken, projectDir, { ...runOptions, forceRevalidate: true }),
+      );
+      expect(forced.cacheKey).toBe(first.cacheKey);
+      expect(existsSync(cacheFile)).toBe(false);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  }, 120_000);
+
+  it("recomputes marker scores when a revalidation is forced", async () => {
+    const dir = await tempDirectory("sb-r2-rescore-");
+    try {
+      const projectDir = path.join(dir, "project");
+      await mkdir(projectDir);
+      await writeFile(
+        path.join(projectDir, "package.json"),
+        JSON.stringify({
+          name: "rescore",
+          scripts: { build: "true" },
+          dependencies: { hono: "1.0.0" },
+        }),
+      );
+      const spec: BenchmarkSpec = {
+        ...aiSpec,
+        strictMarkers: [{ id: "backend:hono", deps: ["hono"] }],
+      };
+      const result = run({
+        projectDir,
+        stackScore: { matched: 0, total: 1, percent: 0, misses: ["backend:hono"] },
+        validation: {
+          projectExists: true,
+          qualityGateRequested: true,
+          cacheKey: "stale",
+          steps: { build: step() },
+        },
+      });
+      await effectPromise(
+        validatePendingResults(
+          [result],
+          { ...options(dir), validateExisting: true, forceRevalidate: true },
+          [spec],
+          {},
+          () => {},
+        ),
+      );
+      expect(result.stackScore).toMatchObject({ matched: 1, total: 1, percent: 100 });
+      expect(result.validation.cacheKey).not.toBe("stale");
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  }, 120_000);
+
   it("H enforces a total validation deadline with explicit failure evidence", async () => {
     const dir = await tempDirectory("sb-r2-deadline-");
     try {
       const slow = path.join(dir, "slow");
       await executable(slow, "sleep 1");
-      const spec: BenchmarkSpec = { ...aiSpec, prerequisiteCommands: [[slow]] };
+      const spec: BenchmarkSpec = { ...aiSpec, prerequisiteCommands: [{ command: [slow] }] };
       const started = Date.now();
       const validation = (await effectPromise(
         (validateProject as any)(spec, dir, options(dir), { deadlineMs: 45 }),
@@ -533,7 +733,7 @@ describe("ScaffBench hardening round 2", () => {
     }
   });
 
-  it("I resumes a legacy trial 1 when repeat count grows and rejects unaligned artifacts", () => {
+  it("I locks the repeat count to the out-dir and rejects unaligned artifacts", () => {
     const schedule = buildGenerationSchedule(
       [aiSpec],
       { repeats: 2, efforts: ["high"], paths: ["prompt"] },
@@ -555,6 +755,15 @@ describe("ScaffBench hardening round 2", () => {
         schedule,
         model: "gpt-5.6-sol",
       }),
+    ).toThrow(/cannot resume as repeats=2/);
+    expect(() =>
+      assertResumeProtocol({
+        recorded: { repeats: 2, seed: 99 },
+        current: { repeats: 2, seed: 99 },
+        results: [legacy],
+        schedule,
+        model: "gpt-5.6-sol",
+      }),
     ).not.toThrow();
 
     const unaligned = run({
@@ -564,7 +773,7 @@ describe("ScaffBench hardening round 2", () => {
     });
     expect(() =>
       assertResumeProtocol({
-        recorded: { repeats: 3, seed: 99 },
+        recorded: { repeats: 2, seed: 7 },
         current: { repeats: 2, seed: 99 },
         results: [legacy, unaligned],
         schedule,
@@ -613,7 +822,7 @@ describe("ScaffBench hardening round 2", () => {
         `{"type":"turn.completed","usage":{"output_tokens":5,"reasoning_output_tokens":7}}`,
       ].join("\n"),
     );
-    expect(cumulative?.usage.output_tokens).toBe(12);
+    expect(cumulative?.usage.output_tokens).toBe(5);
 
     const deltas = parseCodexResult(
       [
@@ -621,7 +830,7 @@ describe("ScaffBench hardening round 2", () => {
         `{"type":"turn.completed","usage":{"output_tokens":2,"reasoning_output_tokens":3}}`,
       ].join("\n"),
     );
-    expect(deltas?.usage.output_tokens).toBe(17);
+    expect(deltas?.usage.output_tokens).toBe(7);
   });
 
   it("L persists skip-validation as skipped and excludes it from denominators", async () => {
@@ -676,7 +885,6 @@ describe("ScaffBench hardening round 2", () => {
   });
 
   it("N uses content-introduction dates from git history instead of the file-split date", () => {
-    // The 3.0 spec refresh (2026-08-21) rewrote every spec, so every cohort date moved.
     const expected = {
       "ai-search-workbench": "2026-08-21",
       "rust-leptos-axum": "2026-08-21",
@@ -719,6 +927,313 @@ describe("ScaffBench hardening round 2", () => {
       const keys = Object.keys(validation.steps);
       expect(keys.indexOf("install")).toBeGreaterThanOrEqual(0);
       expect(keys.indexOf("build")).toBeGreaterThan(keys.indexOf("install"));
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+});
+
+const PUBLISH_PROVENANCE = {
+  suiteVersion: "3.0",
+  harnessVersion: "3.1.0",
+  validationCacheVersion: 8,
+  promptVersion: "2026-08-21-scaffbench-3.1",
+  resourceProfileId: "low-2w-v1",
+  agentAdapter: "codex",
+  configuredTrials: 1,
+  specOrderSeed: 1,
+} as const;
+
+function publishableResults(model: string, effort: RunResult["effort"]): RunResult[] {
+  return CORE_SPEC_IDS.map((specId) =>
+    run({
+      id: `${specId}-${model}-${effort}-prompt-r01`,
+      specId,
+      model,
+      effort,
+      provenance: { ...PUBLISH_PROVENANCE },
+      claude: { exitCode: 0, timedOut: false, durationMs: 60_000, outputTokens: 10, totalCostUsd: 1 },
+      validation: {
+        projectExists: true,
+        qualityGateRequested: true,
+        steps: { build: step() },
+      },
+    }),
+  );
+}
+
+async function writePublishableRun(
+  dir: string,
+  model: string,
+  efforts: readonly RunResult["effort"][],
+  mutate: (summary: Record<string, any>) => void = () => {},
+) {
+  const results = efforts.flatMap((effort) => publishableResults(model, effort));
+  const summary: Record<string, any> = {
+    harnessVersion: "3.1.0",
+    generatedAt: "2026-08-21T12:00:00.000Z",
+    options: {
+      model,
+      efforts: [...efforts],
+      paths: ["prompt"],
+      specs: [...CORE_SPEC_IDS],
+      repeats: 1,
+      qualityGate: true,
+    },
+    results,
+    aggregates: aggregateResults(results),
+  };
+  mutate(summary);
+  await writeFile(path.join(dir, "summary.json"), JSON.stringify(summary));
+  return dir;
+}
+
+describe("ScaffBench hardening round 3", () => {
+  it("P keeps the originating protocol on a validation-only resume", () => {
+    const recorded = recordedRunOptions({
+      options: {
+        model: "gpt-5.6-sol",
+        efforts: ["high"],
+        paths: ["prompt"],
+        specs: ["ai-search-workbench", "go-realtime-api"],
+        repeats: 3,
+        promptStyle: "natural",
+        outDir: "/tmp/recorded",
+        forceRevalidate: true,
+      },
+    });
+    expect(recorded).toEqual({
+      model: "gpt-5.6-sol",
+      efforts: ["high"],
+      paths: ["prompt"],
+      specs: ["ai-search-workbench", "go-realtime-api"],
+      repeats: 3,
+      promptStyle: "natural",
+    });
+    const merged = { ...options("/tmp/out"), ...recorded };
+    expect(merged.repeats).toBe(3);
+    expect(merged.model).toBe("gpt-5.6-sol");
+    expect(merged.forceRevalidate).toBe(false);
+    expect(recordedRunOptions(undefined)).toEqual({});
+    expect(recordedRunOptions({ options: { model: 7, repeats: "3", paths: ["ftp"] } })).toEqual({});
+  });
+
+  it("Q writes summaries atomically and refuses to resume an unreadable one", async () => {
+    const dir = await tempDirectory("sb-r3-summary-");
+    try {
+      await writeSummary(dir, [run()], options(dir), [aiSpec], {});
+      const entries = await readdir(dir);
+      expect(entries.filter((name) => name.includes(".tmp-"))).toEqual([]);
+      expect(JSON.parse(await readFile(path.join(dir, "summary.json"), "utf8")).results).toHaveLength(
+        1,
+      );
+
+      await writeFile(path.join(dir, "summary.json"), '{"results": [{"id": "truncat');
+      const failure = await effectPromise(
+        Effect.either(
+          runScaffbench({ ...options(dir), writeMatrixOnly: true }, () => {}) as Effect.Effect<
+            void,
+            unknown,
+            any
+          >,
+        ),
+      );
+      expect(failure._tag).toBe("Left");
+      expect(String((failure as { left: unknown }).left)).toMatch(/unreadable/);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("R keeps a fast terminal failure as the pass@1 result and retries only infra", () => {
+    const fastFailure = run({
+      claude: { exitCode: 1, timedOut: false, durationMs: 900 },
+      projectDir: null,
+      validation: { projectExists: false, qualityGateRequested: true, steps: {} },
+    });
+    expect(classifyOutcome(fastFailure)).toBe("model-failure");
+    expect(isCompletedHarnessRun(fastFailure)).toBe(true);
+
+    const spawnFailure = run({
+      claude: { exitCode: 127, timedOut: false, durationMs: 50, spawnError: true },
+      validation: { projectExists: false, qualityGateRequested: true, steps: {} },
+    });
+    expect(isCompletedHarnessRun(spawnFailure)).toBe(false);
+
+    const deferred = run({
+      validation: { projectExists: true, qualityGateRequested: true, deferred: true, steps: {} },
+    });
+    expect(isCompletedHarnessRun(deferred)).toBe(true);
+  });
+
+  it("S classifies a mid-scaffold provider outage on the evidence, not the directory", () => {
+    const outage = {
+      claude: {
+        exitCode: 1,
+        timedOut: false,
+        durationMs: 1000,
+        stderrTail: "upstream provider error: HTTP 429 too many requests",
+      },
+    };
+    const beforeScaffold = run({
+      ...outage,
+      projectDir: null,
+      validation: { projectExists: false, qualityGateRequested: true, steps: {} },
+    });
+    const partialScaffold = run({
+      ...outage,
+      validation: {
+        projectExists: true,
+        qualityGateRequested: true,
+        steps: { build: step({ exitCode: 1 }) },
+      },
+    });
+    expect(classifyOutcome(beforeScaffold)).toBe("provider-infra");
+    expect(classifyOutcome(partialScaffold)).toBe("provider-infra");
+    expect(classifyOutcome(run(outage))).toBe("success");
+  });
+
+  it("T keeps an adapter's own reported cost and prices only Claude-harness runs", () => {
+    const parsed = { usage: { output_tokens: 100 }, total_cost_usd: 0.42 };
+    expect(resolvedCostUsd("pi", "pi/anthropic/claude-opus-5", parsed)).toBe(0.42);
+    expect(resolvedCostUsd("opencode", "opencode/claude-sonnet-5", parsed)).toBe(0.42);
+    expect(resolvedCostUsd("codex", "gpt-5.6-luna", parsed)).toBe(0.42);
+    expect(resolvedCostUsd("agy", "gemini-3.5-flash", undefined)).toBeUndefined();
+    const claude = resolvedCostUsd("claude", "claude-opus-5", {
+      usage: { input_tokens: 1_000_000, output_tokens: 0 },
+      total_cost_usd: 0,
+    });
+    expect(claude).toBe(5);
+  });
+
+  it("U refuses schedules an adapter cannot run", () => {
+    const mcpSchedule = buildGenerationSchedule(
+      [aiSpec],
+      { repeats: 1, efforts: ["high"], paths: ["mcp"] },
+      1,
+    );
+    expect(() => assertScheduleSupported(mcpSchedule, "pi", "pi/openai/gpt-5.6")).toThrow(
+      /--paths mcp is not supported/,
+    );
+    expect(() => assertScheduleSupported(mcpSchedule, "agy", "gemini-3.5-flash")).toThrow(
+      /--paths mcp is not supported/,
+    );
+    expect(() => assertScheduleSupported(mcpSchedule, "codex", "gpt-5.6-sol")).not.toThrow();
+
+    const promptSchedule = (effort: RunResult["effort"]) =>
+      buildGenerationSchedule([aiSpec], { repeats: 1, efforts: [effort], paths: ["prompt"] }, 1);
+    expect(agyModelString("gemini-3.5-flash", "high")).toBe("Gemini 3.5 Flash (High)");
+    expect(agyModelString("gemini-3.1-pro", "low")).toBe("Gemini 3.1 Pro (Low)");
+    for (const effort of ["default", "xhigh", "max"] as const) {
+      expect(() =>
+        assertScheduleSupported(promptSchedule(effort), "agy", "gemini-3.5-flash"),
+      ).toThrow(/no distinct/);
+    }
+    expect(() =>
+      assertScheduleSupported(promptSchedule("medium"), "agy", "gemini-3.1-pro"),
+    ).toThrow(/no distinct medium variant/);
+  });
+
+  it("V rejects unknown flag values and unusable budgets", () => {
+    expect(() => parseArgs(["--specs", "ai-search-workbench,typo-spec"])).toThrow(/unknown value/);
+    expect(() => parseArgs(["--paths", "cli"])).toThrow(/unknown value/);
+    expect(() => parseArgs(["--efforts", "ultra"])).toThrow(/unknown value/);
+    expect(() => parseArgs(["--max-budget-usd", "twelve"])).toThrow(/non-negative number/);
+    expect(() => parseArgs(["--max-budget-usd", "-1"])).toThrow(/non-negative number/);
+    expect(() => parseArgs(["--repeats", "1.5"])).toThrow(/positive integer/);
+    expect(parseArgs(["--specs", "ai-search-workbench"]).specs).toEqual(["ai-search-workbench"]);
+    expect(parseArgs(["--max-budget-usd", "3.5"]).maxBudgetUsd).toBe("3.5");
+  });
+
+  it("W publishes one row per effort and refuses an unproven cohort", async () => {
+    const dir = await tempDirectory("sb-r3-publish-");
+    try {
+      await writePublishableRun(dir, "gpt-5.6-sol", ["low", "high"]);
+      const { rows, qualityGates, trialsPerSpec } = buildRows([dir]);
+      expect(rows.map((row) => row.key).sort()).toEqual(["gpt-5.6-sol|high", "gpt-5.6-sol|low"]);
+      expect(rows.every((row) => row.totalCostUsd === CORE_SPEC_IDS.length)).toBe(true);
+      expect(rows.every((row) => row.fullPasses === CORE_SPEC_IDS.length)).toBe(true);
+      expect(qualityGates).toBe(true);
+      expect(trialsPerSpec).toBe(1);
+
+      const refusals: [string, RegExp][] = [
+        ["partial", /exact 13-spec core cohort/],
+        ["gates-off", /quality gates ON/],
+        ["repeats", /pass@1/],
+        ["deferred", /still deferred/],
+        ["missing-cell", /no trial for/],
+      ];
+      for (const [kind, message] of refusals) {
+        const bad = await tempDirectory(`sb-r3-publish-${kind}-`);
+        try {
+          await writePublishableRun(bad, "gpt-5.6-sol", ["high"], (summary) => {
+            if (kind === "partial") summary.options.specs = summary.options.specs.slice(0, 12);
+            if (kind === "gates-off") summary.options.qualityGate = false;
+            if (kind === "repeats") summary.options.repeats = 3;
+            if (kind === "deferred") summary.results[0].validation.deferred = true;
+            if (kind === "missing-cell") summary.results.splice(0, 1);
+          });
+          expect(() => buildRows([bad])).toThrow(message);
+        } finally {
+          await rm(bad, { recursive: true, force: true });
+        }
+      }
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("X exempts an explicit-only marker from the discovery lane", async () => {
+    const dir = await tempDirectory("sb-r3-explicit-");
+    try {
+      await writeFile(
+        path.join(dir, "package.json"),
+        JSON.stringify({ dependencies: { react: "^19", vite: "^8", tailwindcss: "^4" } }),
+      );
+      const explicit = await scoreProject(minimalSpec, dir, "explicit");
+      const natural = await scoreProject(minimalSpec, dir, "natural");
+      expect(explicit.artifact.misses).toContain("tooling:turborepo");
+      expect(natural.artifact.misses).not.toContain("tooling:turborepo");
+      expect(natural.artifact.total).toBe(explicit.artifact.total - 1);
+      expect(natural.artifact.percent).toBe(100);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("Y scores script-tag analytics and the new competing-framework traps", async () => {
+    const dir = await tempDirectory("sb-r3-markers-");
+    try {
+      await writeFile(
+        path.join(dir, "package.json"),
+        JSON.stringify({ dependencies: { react: "^19", vite: "^8", tailwindcss: "^4" } }),
+      );
+      await writeFile(
+        path.join(dir, "index.html"),
+        '<script async src="https://www.googletagmanager.com/gtag/js?id=G-X"></script>',
+      );
+      expect((await scoreArtifact(minimalSpec, dir)).misses).toContain("forbidden:analytics");
+
+      for (const [specId, file, contents, marker] of [
+        ["elixir-broadway-absinthe", "mix.exs", "{:bcrypt_elixir, \"~> 3.0\"}", "forbidden:phx-gen-auth"],
+        ["rust-leptos-axum", "Cargo.toml", 'yew = "0.23"', "forbidden:yew"],
+        [
+          "java-spring-jooq-keycloak",
+          "SecurityConfig.java",
+          "UserDetailsService userDetailsService()",
+          "forbidden:in-app-auth",
+        ],
+        ["dotnet-blazor-cqrs", "Program.cs", "builder.Services.AddControllersWithViews();", "forbidden:mvc"],
+      ] as const) {
+        const specDir = await tempDirectory("sb-r3-trap-");
+        try {
+          await writeFile(path.join(specDir, file), contents);
+          const spec = SCAFFBENCH_2_SPECS.find((candidate) => candidate.id === specId)!;
+          expect((await scoreArtifact(spec, specDir)).misses).toContain(marker);
+        } finally {
+          await rm(specDir, { recursive: true, force: true });
+        }
+      }
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
