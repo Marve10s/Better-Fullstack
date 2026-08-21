@@ -33,6 +33,7 @@ import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages.js";
 
 import { OpenAIMark, ProviderLogo, type ProviderLogoId } from "./provider-marks";
+import { SCAFFBENCH21_CELLS, SCAFFBENCH21_MODELS } from "./scaffbench-2-1-data";
 import { SCAFFBENCH22_CELLS, SCAFFBENCH22_MODELS, SCAFFBENCH22_SPECS } from "./scaffbench-2-2-data";
 import { type ScaffbenchCell, type ScaffbenchModel } from "./scaffbench-2-data";
 
@@ -81,6 +82,7 @@ interface ModelLeaderRow {
   key: string;
   label: string;
   effort: string;
+  legacy: boolean;
   color: string;
   logo?: ProviderLogoId;
   harness?: string;
@@ -140,6 +142,35 @@ const HARNESS_LABEL: Record<"claude" | "codex" | "opencode" | "kilo" | "agy" | "
   pi: "Pi",
 };
 
+type BoardEntry = {
+  model: ScaffbenchModel;
+  cells: readonly ScaffbenchCell[];
+  legacy: boolean;
+};
+
+const LEGACY_KEYS_2_2: readonly string[] = ["claude-opus-5|high", "gpt-5.6-sol|high"];
+const LEGACY_KEYS_2_1: readonly string[] = ["claude-fable-5|low", "claude-fable-5|high"];
+
+function boardEntries(
+  models: readonly ScaffbenchModel[],
+  cells: readonly ScaffbenchCell[],
+  keys: readonly string[],
+  legacy: boolean,
+): BoardEntry[] {
+  return keys.flatMap((key) => {
+    const model = models.find((entry) => entry.key === key);
+    if (!model) return [];
+    return [{ model, cells: cells.filter((cell) => cell.modelKey === key), legacy }];
+  });
+}
+
+const BOARD_ENTRIES: readonly BoardEntry[] = [
+  ...boardEntries(SCAFFBENCH22_MODELS, SCAFFBENCH22_CELLS, LEGACY_KEYS_2_2, true),
+  ...boardEntries(SCAFFBENCH21_MODELS, SCAFFBENCH21_CELLS, LEGACY_KEYS_2_1, true),
+];
+
+const BOARD_MODELS: readonly ScaffbenchModel[] = BOARD_ENTRIES.map((entry) => entry.model);
+
 function passTally(scored: readonly ScaffbenchCell[]): {
   successes: number;
   trials: number;
@@ -164,10 +195,8 @@ function passTally(scored: readonly ScaffbenchCell[]): {
 }
 
 function computeScaffbenchModelRows(specs: ReadonlySet<string>): ModelLeaderRow[] {
-  const rows = SCAFFBENCH22_MODELS.flatMap((model) => {
-    const cells = SCAFFBENCH22_CELLS.filter(
-      (cell) => cell.modelKey === model.key && cell.path === "prompt" && specs.has(cell.spec),
-    );
+  const rows = BOARD_ENTRIES.flatMap(({ model, cells: entryCells, legacy }) => {
+    const cells = entryCells.filter((cell) => cell.path === "prompt" && specs.has(cell.spec));
     const scored = cells.filter((cell) => cell.scored);
     const tally = passTally(scored);
     const passSuccesses = tally.successes;
@@ -186,6 +215,7 @@ function computeScaffbenchModelRows(specs: ReadonlySet<string>): ModelLeaderRow[
       key: model.key,
       label: model.label,
       effort: model.effort,
+      legacy,
       color: PROVIDER_BAR_COLOR[model.provider],
       logo: PROVIDER_LOGO[model.provider],
       harness: HARNESS_LABEL[model.provider],
@@ -307,11 +337,13 @@ const CHART_PALETTE: ChartPalette = {
 };
 
 const CHART_THEME_VARS = cn(
-  "[--ch-grid:#ececec] [--ch-tick:#9c9a93] [--ch-label:#71706a] [--ch-note:#9c9a93] [--ch-stroke:#ffffff]",
+  "[--ch-grid:#ececec] [--ch-tick:#9c9a93] [--ch-label:#71706a] [--ch-note:#9c9a93] [--ch-stroke:#ffffff] [--ch-legacy:#a8a69e]",
   "[--ch-m1:#e85d11] [--ch-m2:#4c5fd5] [--ch-m3:#0d9488] [--ch-m4:#c13a6e] [--ch-m5:#9333ea] [--ch-m6:#b45309]",
-  "dark:[--ch-grid:#edebe414] dark:[--ch-tick:#6c6a61] dark:[--ch-label:#8f8d84] dark:[--ch-note:#8f8d84] dark:[--ch-stroke:#161614]",
+  "dark:[--ch-grid:#edebe414] dark:[--ch-tick:#6c6a61] dark:[--ch-label:#8f8d84] dark:[--ch-note:#8f8d84] dark:[--ch-stroke:#161614] dark:[--ch-legacy:#6c6a61]",
   "dark:[--ch-m1:#e0894f] dark:[--ch-m2:#98a6f2] dark:[--ch-m3:#4fd0c0] dark:[--ch-m4:#e887ad] dark:[--ch-m5:#c08ef5] dark:[--ch-m6:#dba05c]",
 );
+
+const V2_LEGACY_COLOR = "var(--ch-legacy)";
 
 const V2_MODEL_COLORS: readonly string[] = [
   "var(--ch-m1)",
@@ -420,10 +452,8 @@ interface PathMetrics {
   scoredCount: number;
 }
 
-function aggregatePathMetrics(modelKey: string): PathMetrics {
-  const cells = SCAFFBENCH22_CELLS.filter(
-    (cell) => cell.modelKey === modelKey && cell.path === "prompt",
-  );
+function aggregatePathMetrics(sourceCells: readonly ScaffbenchCell[]): PathMetrics {
+  const cells = sourceCells.filter((cell) => cell.path === "prompt");
   const scored = cells.filter((cell) => cell.scored);
   const tokens = scored
     .map((cell) => cell.outTokens)
@@ -515,11 +545,12 @@ interface V2ModelPoint extends PathMetrics {
   harness: string;
   color: string;
   free: boolean;
+  legacy: boolean;
 }
 
 function computeV2ModelPoints(): V2ModelPoint[] {
-  return SCAFFBENCH22_MODELS.map((model, index) => {
-    const metrics = aggregatePathMetrics(model.key);
+  return BOARD_ENTRIES.map(({ model, cells, legacy }, index) => {
+    const metrics = aggregatePathMetrics(cells);
     const free = isFreeModel(model);
     if (metrics.cost === null && free && metrics.scoredCount > 0) {
       metrics.cost = 0;
@@ -529,8 +560,9 @@ function computeV2ModelPoints(): V2ModelPoint[] {
       label: model.label,
       reasoning: model.effort,
       harness: HARNESS_LABEL[model.provider],
-      color: V2_MODEL_COLORS[index % V2_MODEL_COLORS.length],
+      color: legacy ? V2_LEGACY_COLOR : V2_MODEL_COLORS[index % V2_MODEL_COLORS.length],
       free,
+      legacy,
       ...metrics,
     };
   });
@@ -1299,7 +1331,7 @@ function MetricHelp({ label, children }: { label: string; children: ReactNode })
 function ScaffbenchLeaderboardCard({ className }: { className?: string } = {}) {
   const [selectedSpecs, setSelectedSpecs] = useState<readonly string[]>(SCAFFBENCH22_SPECS);
   const [selectedModelKeys, setSelectedModelKeys] = useState<readonly string[]>(() =>
-    SCAFFBENCH22_MODELS.map((model) => model.key),
+    BOARD_MODELS.map((model) => model.key),
   );
   const specsSet = useMemo(() => new Set<string>(selectedSpecs), [selectedSpecs]);
   const modelKeysSet = useMemo(() => new Set<string>(selectedModelKeys), [selectedModelKeys]);
@@ -1325,7 +1357,7 @@ function ScaffbenchLeaderboardCard({ className }: { className?: string } = {}) {
     setSelectedModelKeys((prev) =>
       prev.includes(key)
         ? prev.filter((selectedKey) => selectedKey !== key)
-        : SCAFFBENCH22_MODELS.filter((model) => model.key === key || prev.includes(model.key)).map(
+        : BOARD_MODELS.filter((model) => model.key === key || prev.includes(model.key)).map(
             (model) => model.key,
           ),
     );
@@ -1347,7 +1379,7 @@ function ScaffbenchLeaderboardCard({ className }: { className?: string } = {}) {
         <div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-center justify-end gap-3 px-3">
           <div className="flex items-center gap-2">
             <ModelPicker
-              models={SCAFFBENCH22_MODELS}
+              models={BOARD_MODELS}
               selectedKeys={selectedModelKeys}
               onToggle={toggleModel}
             />
@@ -1463,6 +1495,11 @@ function ModelLeaderRow({ row }: { row: ModelLeaderRow }) {
         {row.effort ? (
           <span className="shrink-0 font-mono text-[11px] text-[#9c9a93] dark:text-[#6c6a61]">
             [{row.effort}]
+          </span>
+        ) : null}
+        {row.legacy ? (
+          <span className="shrink-0 rounded-sm border border-[#dcdad3] px-1 font-mono text-[10px] uppercase text-[#9c9a93] dark:border-[#3a382f] dark:text-[#6c6a61]">
+            legacy
           </span>
         ) : null}
       </span>
