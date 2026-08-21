@@ -551,6 +551,11 @@ interface V2ModelPoint extends PathMetrics {
   legacy: boolean;
 }
 
+function v2PointLabel(model: ScaffbenchModel): string {
+  const effort = model.effort.charAt(0).toUpperCase() + model.effort.slice(1);
+  return `${model.label} ${effort}`;
+}
+
 function computeV2ModelPoints(): V2ModelPoint[] {
   return BOARD_ENTRIES.map(({ model, cells, legacy }, index) => {
     const metrics = aggregatePathMetrics(cells);
@@ -560,7 +565,7 @@ function computeV2ModelPoints(): V2ModelPoint[] {
     }
     return {
       key: model.key,
-      label: model.label,
+      label: v2PointLabel(model),
       reasoning: model.effort,
       harness: HARNESS_LABEL[model.provider],
       color: legacy ? V2_LEGACY_COLOR : V2_MODEL_COLORS[index % V2_MODEL_COLORS.length],
@@ -635,7 +640,7 @@ function BenchmarkChartCard({ className }: { className?: string } = {}) {
     [modelPoints, metric],
   );
   const [selectedKeys, setSelectedKeys] = useState<readonly string[]>(() =>
-    modelPoints.filter((point) => !point.free).map((point) => point.key),
+    modelPoints.map((point) => point.key),
   );
   const toggleModel = useCallback((key: string) => {
     setSelectedKeys((prev) =>
