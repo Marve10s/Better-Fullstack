@@ -1,18 +1,23 @@
 import * as FileSystem from "@effect/platform/FileSystem";
 import * as Effect from "effect/Effect";
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { lstat, readFile, readdir, readlink } from "node:fs/promises";
+import { cp, lstat, readFile, readdir, readlink, rm } from "node:fs/promises";
 import path from "node:path";
 
 import type { BenchmarkSpec, ProjectValidation, ScaffbenchOptions } from "@/types";
 
-import { HARNESS_VERSION, VALIDATION_CACHE_VERSION } from "@/constants";
+import {
+  HARNESS_VERSION,
+  VALIDATION_CACHE_VERSION,
+  VALIDATION_RESOURCE_PROFILE_ID,
+} from "@/constants";
 import { collectToolchainVersions } from "@/summary";
 import {
   hasTransientNetworkSignature,
   isRecurringTransientFailure,
 } from "@/validation/classification";
-import { validateProject } from "@/validation/index";
+import { effectiveValidationOptions, validateProject } from "@/validation/index";
 
 const HASH_SKIP_DIRECTORIES = new Set([
   "node_modules",
@@ -26,6 +31,8 @@ const HASH_SKIP_DIRECTORIES = new Set([
   ".venv",
   "bin",
   "obj",
+  "deps",
+  "_build",
 ]);
 
 export function validateProjectCached(
@@ -41,10 +48,19 @@ export function validateProjectCached(
     const cacheDir = path.join(options.outDir, "validation-cache");
     const cachePath = path.join(cacheDir, `${cacheKey}.json`);
 
-    const cached = yield* readCachedValidation(cachePath, sourceHash, cacheKey);
-    if (cached) return cached;
+    if (!options.forceRevalidate) {
+      const cached = yield* readCachedValidation(cachePath, sourceHash, cacheKey);
+      if (cached) return cached;
+    }
 
-    const validation = yield* validateProject(spec, projectDir, options);
+    const cloneDir = `${projectDir}.validate-tmp`;
+    yield* Effect.tryPromise(() => rm(cloneDir, { recursive: true, force: true }));
+    yield* Effect.tryPromise(() => cloneProjectTree(projectDir, cloneDir));
+    const validation = yield* validateProject(spec, cloneDir, options).pipe(
+      Effect.ensuring(
+        Effect.tryPromise(() => rm(cloneDir, { recursive: true, force: true })).pipe(Effect.ignore),
+      ),
+    );
     const withCacheMeta: ProjectValidation = {
       ...validation,
       sourceHash,
@@ -68,6 +84,8 @@ export function validateProjectCached(
           2,
         )}\n`,
       );
+    } else {
+      yield* Effect.tryPromise(() => rm(cachePath, { force: true })).pipe(Effect.ignore);
     }
     return withCacheMeta;
   });
@@ -115,22 +133,33 @@ export function validationCacheKey(
   const toolchainHash = createHash("sha256")
     .update(JSON.stringify(Object.entries(toolchains).sort(([a], [b]) => a.localeCompare(b))))
     .digest("hex");
+  const effective = effectiveValidationOptions(spec, options);
   const hash = createHash("sha256");
   hash.update(
     JSON.stringify({
       version: VALIDATION_CACHE_VERSION,
       harnessVersion: HARNESS_VERSION,
+      resourceProfileId: VALIDATION_RESOURCE_PROFILE_ID,
       specId: spec.id,
       sourceHash,
-      qualityGate: options.qualityGate,
-      doctorCheck: options.doctorCheck,
-      routeCheck: options.routeCheck,
+      qualityGate: effective.qualityGate,
+      doctorCheck: effective.doctorCheck,
+      routeCheck: effective.routeCheck,
       platform: environment.platform,
       arch: environment.arch,
       toolchainHash,
     }),
   );
   return hash.digest("hex");
+}
+
+async function cloneProjectTree(sourceDir: string, destDir: string) {
+  if (process.platform === "darwin") {
+    const clone = spawnSync("cp", ["-Rc", sourceDir, destDir], { stdio: "ignore" });
+    if (clone.status === 0) return;
+    await rm(destDir, { recursive: true, force: true });
+  }
+  await cp(sourceDir, destDir, { recursive: true, force: true, verbatimSymlinks: true });
 }
 
 type HashEntry = {

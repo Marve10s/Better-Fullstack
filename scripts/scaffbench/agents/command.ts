@@ -1,38 +1,17 @@
-import type { CommandExecutor } from "@effect/platform/CommandExecutor";
-
-import * as Command from "@effect/platform/Command";
-import * as Data from "effect/Data";
-import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
-import * as Either from "effect/Either";
-import * as Fiber from "effect/Fiber";
-import * as Stream from "effect/Stream";
 
 import type { CommandResult } from "@/types";
 
 import { GEN_IDLE_TIMEOUT_MS, TIMEOUT_PROGRESS_WINDOW_MS } from "@/constants";
-
-export class AgentSpawnError extends Data.TaggedError("AgentSpawnError")<{
-  readonly command: string;
-  readonly cause: unknown;
-}> {}
-
-export class ValidationTimeout extends Data.TaggedError("ValidationTimeout")<{
-  readonly command: string;
-  readonly timeoutMs: number;
-  readonly timeoutKind: "hard" | "idle";
-}> {}
+import { spawnProcessTree } from "@/process-tree";
 
 export type RunCommandOptions = {
-  /** Generation-only idle ceiling; validation callers normally leave this unset. */
   idleTimeoutMs?: number;
   env?: Record<string, string>;
 };
 
 export type IdleCapableAdapter = "claude" | "codex" | "opencode" | "kilo" | "agy" | "pi";
 
-/** Idle enforcement is safe only when the adapter emits streaming JSONL. agy
- * buffers its response until completion, so silence is not evidence of a stall. */
 export function agentRunCommandOptions(
   adapter: IdleCapableAdapter,
   idleTimeoutMs = GEN_IDLE_TIMEOUT_MS,
@@ -46,182 +25,141 @@ export function runCommand(
   cwd: string,
   timeoutMs: number,
   options: RunCommandOptions = {},
-): Effect.Effect<CommandResult, never, CommandExecutor> {
+): Effect.Effect<CommandResult> {
   const displayCommand = [command, ...args].map(quoteArg).join(" ");
 
-  return Effect.gen(function* () {
-    const started = yield* Effect.clockWith((clock) => clock.currentTimeMillis);
-    let lastActivityAtMs = started;
-    let lastStdoutActivityAtMs = started;
-    let lastStderrActivityAtMs = started;
-    let lastProgressActivityAtMs: number | undefined;
-    let stdoutLineRemainder = "";
-    let stderrLineRemainder = "";
-    const inFlightToolIds = new Set<string>();
-
-    const appendOutput = (stream: "stdout" | "stderr", output: string, chunk: Uint8Array) => {
-      const receivedAt = Date.now();
-      lastActivityAtMs = receivedAt;
-      if (stream === "stdout") lastStdoutActivityAtMs = receivedAt;
-      else lastStderrActivityAtMs = receivedAt;
-      const text = Buffer.from(chunk).toString();
-      const remainder = stream === "stdout" ? stdoutLineRemainder : stderrLineRemainder;
-      const lines = `${remainder}${text}`.split("\n");
-      if (stream === "stdout") stdoutLineRemainder = lines.pop() ?? "";
-      else stderrLineRemainder = lines.pop() ?? "";
-      for (const line of lines) {
-        const activity = streamEventActivity(line, receivedAt);
-        if (activity.progressAtMs !== undefined) {
-          lastProgressActivityAtMs = activity.progressAtMs;
-        }
-        for (const id of activity.startedToolIds) inFlightToolIds.add(id);
-        for (const id of activity.completedToolIds) inFlightToolIds.delete(id);
-      }
-      return output + text;
-    };
-
-    const execution = Effect.scoped(
-      Effect.gen(function* () {
-        // Keep stdin as an empty pipe. Closing it immediately gives commands such
-        // as `codex exec` EOF instead of leaving them waiting for interactive input.
-        const child = yield* Command.make(command, ...args).pipe(
-          Command.workingDirectory(cwd),
-          Command.env({ ...process.env, ...options.env }),
-          Command.stdin(Stream.empty),
-          Command.start,
-          Effect.mapError((cause) => new AgentSpawnError({ command: displayCommand, cause })),
-        );
-
-        const stdoutFiber = yield* child.stdout.pipe(
-          Stream.runFold("", (output, chunk) => appendOutput("stdout", output, chunk)),
-          Effect.forkScoped,
-        );
-        const stderrFiber = yield* child.stderr.pipe(
-          Stream.runFold("", (output, chunk) => appendOutput("stderr", output, chunk)),
-          Effect.forkScoped,
-        );
-
-        const hardTimeout = Effect.sleep(Duration.millis(timeoutMs)).pipe(
-          Effect.as(
-            new ValidationTimeout({
-              command: displayCommand,
-              timeoutMs,
-              timeoutKind: "hard",
-            }),
-          ),
-        );
-        const timeout = options.idleTimeoutMs
-          ? Effect.race(
-              hardTimeout,
-              waitForIdleTimeout(
-                displayCommand,
-                options.idleTimeoutMs,
-                () => lastActivityAtMs,
-                () => inFlightToolIds.size > 0,
-              ),
-            )
-          : hardTimeout;
-        const completion = yield* Effect.race(
-          Effect.either(child.exitCode).pipe(
-            Effect.map((exitCode) => ({ _tag: "Exited" as const, exitCode })),
-          ),
-          timeout,
-        );
-
-        let exitCode: number | null;
+  return Effect.promise(
+    () =>
+      new Promise<CommandResult>((resolve) => {
+        const started = Date.now();
+        let stdout = "";
+        let stderr = "";
+        let lastActivityAtMs = started;
+        let lastStdoutActivityAtMs = started;
+        let lastStderrActivityAtMs = started;
+        let lastProgressActivityAtMs: number | undefined;
+        let stdoutLineRemainder = "";
+        let stderrLineRemainder = "";
         let timedOut = false;
         let timeoutKind: "hard" | "idle" | undefined;
-        if (completion instanceof ValidationTimeout) {
-          timedOut = true;
-          timeoutKind = completion.timeoutKind;
-          // `Process.kill` sends the signal immediately and then waits for exit.
-          // Race that wait with a three-second escalation window.
-          const terminated = yield* Effect.race(
-            child.kill("SIGTERM").pipe(Effect.as(true)),
-            Effect.sleep(Duration.seconds(3)).pipe(Effect.as(false)),
-          );
-          if (!terminated) yield* child.kill("SIGKILL").pipe(Effect.ignore);
-          exitCode = null;
-        } else {
-          // @effect/platform represents signal termination as an exitCode
-          // PlatformError. The harness contract represents it as `null`.
-          exitCode = Either.isRight(completion.exitCode) ? Number(completion.exitCode.right) : null;
-        }
+        let settled = false;
+        const inFlightToolIds = new Set<string>();
 
-        const stdout = yield* Fiber.join(stdoutFiber);
-        const stderr = yield* Fiber.join(stderrFiber);
-        return { exitCode, timedOut, timeoutKind, stdout, stderr };
-      }),
-    );
+        const appendOutput = (stream: "stdout" | "stderr", chunk: Buffer) => {
+          const receivedAt = Date.now();
+          lastActivityAtMs = receivedAt;
+          const text = chunk.toString();
+          if (stream === "stdout") {
+            lastStdoutActivityAtMs = receivedAt;
+            stdout += text;
+          } else {
+            lastStderrActivityAtMs = receivedAt;
+            stderr += text;
+          }
+          const remainder = stream === "stdout" ? stdoutLineRemainder : stderrLineRemainder;
+          const lines = `${remainder}${text}`.split("\n");
+          if (stream === "stdout") stdoutLineRemainder = lines.pop() ?? "";
+          else stderrLineRemainder = lines.pop() ?? "";
+          for (const line of lines) {
+            const activity = streamEventActivity(line, receivedAt);
+            if (activity.progressAtMs !== undefined) {
+              lastProgressActivityAtMs = activity.progressAtMs;
+            }
+            for (const id of activity.startedToolIds) inFlightToolIds.add(id);
+            for (const id of activity.completedToolIds) inFlightToolIds.delete(id);
+          }
+        };
 
-    const outcome = yield* execution.pipe(
-      Effect.catchAll((error) => {
-        const cause = error instanceof AgentSpawnError ? error.cause : error;
-        return Effect.succeed({
-          exitCode: 127,
-          timedOut: false,
-          stdout: "",
-          stderr: `${displayCommand}: ${formatSpawnError(cause)}`,
-          spawnError: true as const,
-          spawnErrorCode: spawnErrorCode(cause),
-        });
-      }),
-    );
-    const finished = yield* Effect.clockWith((clock) => clock.currentTimeMillis);
+        const settle = (result: CommandResult) => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(hardTimer);
+          if (idleTimer !== undefined) clearInterval(idleTimer);
+          resolve(result);
+        };
 
-    return {
-      command: displayCommand,
-      exitCode: outcome.exitCode,
-      timedOut: outcome.timedOut,
-      spawnError: "spawnError" in outcome ? outcome.spawnError : false,
-      spawnErrorCode: "spawnErrorCode" in outcome ? outcome.spawnErrorCode : undefined,
-      durationMs: finished - started,
-      stdout: outcome.stdout,
-      stderr: outcome.stderr,
-      stdoutTail: tail(outcome.stdout),
-      stderrTail: tail(outcome.stderr),
-      timeoutKind: "timeoutKind" in outcome ? outcome.timeoutKind : undefined,
-      timeoutProgress: outcome.timedOut
-        ? ("timeoutKind" in outcome && outcome.timeoutKind === "idle") ||
-          lastProgressActivityAtMs === undefined ||
-          (inFlightToolIds.size === 0 &&
-            finished - lastProgressActivityAtMs > TIMEOUT_PROGRESS_WINDOW_MS)
-          ? "timeout-stuck"
-          : "timeout-progressing"
-        : undefined,
-      startedAtMs: started,
-      lastActivityAtMs,
-      lastStdoutActivityAtMs,
-      lastStderrActivityAtMs,
-      lastProgressActivityAtMs,
-    };
-  });
-}
-
-function waitForIdleTimeout(
-  command: string,
-  idleTimeoutMs: number,
-  lastActivity: () => number,
-  idleSuspended: () => boolean,
-) {
-  return Effect.gen(function* () {
-    const pollMs = Math.max(10, Math.min(1_000, Math.floor(idleTimeoutMs / 4)));
-    while (true) {
-      yield* Effect.sleep(Duration.millis(pollMs));
-      if (idleSuspended()) continue;
-      const now = yield* Effect.clockWith((clock) => clock.currentTimeMillis);
-      if (now - lastActivity() >= idleTimeoutMs) {
-        return new ValidationTimeout({
+        const tree = spawnProcessTree(
           command,
-          timeoutMs: idleTimeoutMs,
-          timeoutKind: "idle",
-        });
-      }
-    }
-  });
+          args,
+          { cwd, env: { ...process.env, ...options.env } },
+          {
+            onStdout: (chunk) => appendOutput("stdout", chunk),
+            onStderr: (chunk) => appendOutput("stderr", chunk),
+            onError: (cause) => {
+              const message = `${displayCommand}: ${formatSpawnError(cause)}`;
+              settle({
+                command: displayCommand,
+                exitCode: 127,
+                timedOut: false,
+                spawnError: true,
+                spawnErrorCode: spawnErrorCode(cause),
+                durationMs: Date.now() - started,
+                stdout: "",
+                stderr: message,
+                stdoutTail: "",
+                stderrTail: tail(message),
+                startedAtMs: started,
+                lastActivityAtMs,
+              });
+            },
+            onClose: (code) => {
+              tree.kill();
+              const finished = Date.now();
+              settle({
+                command: displayCommand,
+                exitCode: timedOut ? null : code,
+                timedOut,
+                timeoutKind,
+                spawnError: false,
+                durationMs: finished - started,
+                stdout,
+                stderr,
+                stdoutTail: tail(stdout),
+                stderrTail: tail(stderr),
+                timeoutProgress: timedOut
+                  ? timeoutKind === "idle" ||
+                    lastProgressActivityAtMs === undefined ||
+                    (inFlightToolIds.size === 0 &&
+                      finished - lastProgressActivityAtMs > TIMEOUT_PROGRESS_WINDOW_MS)
+                    ? "timeout-stuck"
+                    : "timeout-progressing"
+                  : undefined,
+                startedAtMs: started,
+                lastActivityAtMs,
+                lastStdoutActivityAtMs,
+                lastStderrActivityAtMs,
+                lastProgressActivityAtMs,
+              });
+            },
+          },
+        );
+
+        const hardTimer = setTimeout(() => {
+          timedOut = true;
+          timeoutKind = "hard";
+          tree.terminate();
+        }, timeoutMs);
+        hardTimer.unref();
+
+        const idleTimeoutMs = options.idleTimeoutMs;
+        const idleTimer =
+          idleTimeoutMs === undefined
+            ? undefined
+            : setInterval(
+                () => {
+                  if (inFlightToolIds.size > 0) return;
+                  if (Date.now() - lastActivityAtMs < idleTimeoutMs) return;
+                  timedOut = true;
+                  timeoutKind = "idle";
+                  tree.terminate();
+                },
+                Math.max(10, Math.min(1_000, Math.floor(idleTimeoutMs / 4))),
+              );
+        idleTimer?.unref();
+      }),
+  );
 }
 
-/** Recognize tool/file trajectory events and prefer their embedded timestamps. */
 export function progressEventTime(line: string, receivedAtMs: number): number | undefined {
   return streamEventActivity(line, receivedAtMs).progressAtMs;
 }

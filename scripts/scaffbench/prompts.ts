@@ -22,9 +22,6 @@ export function promptFor(
 Requirements:
 ${spec.requirements.map((requirement) => `- ${requirement}`).join("\n")}`;
 
-  // Discovery lane: when the spec has curated acceptance sets, the natural prompt
-  // does NOT name the required libraries — the agent must infer them from the
-  // described capabilities, and scoring credits any accepted alternative.
   const discoveryLane = promptStyle === "natural" && spec.acceptanceSets !== undefined;
   const libraryGuidance = discoveryLane
     ? ""
@@ -37,8 +34,8 @@ ${spec.rightLibraryNotes.map((note) => `- ${note}`).join("\n")}`;
 ${runDir}
 
 Create exactly one project directory named \`${projectName}\`.
-Do not ask questions. Do not start a dev server. Do not write outside the current working directory.
-You may install dependencies, query package registries, and run builds or type checks to verify your work before finishing — the project is graded by whether it installs and builds on a clean machine.
+Do not ask questions. Do not write outside the current working directory. Do not initialize git.
+You may install dependencies, query package registries, run builds or type checks, and start servers to verify your work before finishing. Kill every process you start; nothing may still be running when you finish.
 At the end, report the commands you ran and any errors you hit.
 
 ${body}${libraryGuidance}`;
@@ -49,15 +46,6 @@ ${body}${libraryGuidance}`;
 Creation mode: prompt-only.
 Do not use the Better-Fullstack MCP server, Better-Fullstack CLI, Better-Fullstack website, or files from the Better-Fullstack repository.
 Create the project from scratch by writing the files and manifests needed for a runnable starter.`;
-  }
-
-  if (pathMode === "cli") {
-    return `${base}
-
-Creation mode: Better-Fullstack CLI mention.
-Do not use MCP tools. Use the Better-Fullstack CLI via \`bun create ${bfSpec("better-fullstack")}\`.
-Map the requirements to explicit non-interactive CLI flags yourself; inspect \`--help\` if you are unsure of a flag name or value. Run the command with \`--dry-run\` first, then run the same scaffold command for real without \`--dry-run\`.
-Use \`--no-install --no-git --disable-analytics\`.`;
   }
 
   return `${base}

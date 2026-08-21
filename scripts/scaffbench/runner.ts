@@ -19,6 +19,7 @@ import type {
 } from "@/types";
 
 import {
+  agyModelString,
   claudeCostUsd,
   parseAgyResult,
   parseClaudeResult,
@@ -37,10 +38,13 @@ import { calibrationOptions, calibrationVerdict, formatCalibrationVerdict } from
 import { selectedSpecs } from "@/cli";
 import { measureProjectCode } from "@/code-metrics";
 import {
+  CREATION_PATH_VALUES,
+  EFFORT_VALUES,
   HARNESS_VERSION,
   PROMPT_VERSION,
   SCAFFBENCH_SUITE_VERSION,
   VALIDATION_CACHE_VERSION,
+  VALIDATION_RESOURCE_PROFILE_ID,
   QUEUE_POLL_MS,
   STALE_LOCK_MS,
   bfSpec,
@@ -120,78 +124,91 @@ function runScaffbenchUnlocked(options: ScaffbenchOptions, log: Log) {
       );
     }
 
-    const specs = selectedSpecs(options.specs);
     if (options.listSpecs) {
-      for (const spec of specs.length ? specs : SCAFFBENCH_2_SPECS) {
+      const listed = selectedSpecs(options.specs);
+      for (const spec of listed.length ? listed : SCAFFBENCH_2_SPECS) {
         log(`${spec.id}\t${spec.lane}\t${spec.family}\t${spec.title}`);
       }
       return;
     }
 
     yield* fs.makeDirectory(options.outDir, { recursive: true });
-    const specOrderSeed = specShuffleSeed(options);
-    const runProtocol = { repeats: options.repeats, seed: specOrderSeed } satisfies RunProtocol;
     const existingSummary = yield* readExistingSummary(options.outDir);
+    const runOptions: ScaffbenchOptions = options.validateExisting
+      ? { ...options, ...recordedRunOptions(existingSummary) }
+      : options;
+
+    const specs = selectedSpecs(runOptions.specs);
+    const specOrderSeed = specShuffleSeed(runOptions);
+    const runProtocol = { repeats: runOptions.repeats, seed: specOrderSeed } satisfies RunProtocol;
     const results = completedResults(existingSummary);
-    const recordedResults = Array.isArray(existingSummary?.results)
-      ? (existingSummary.results as RunResult[])
-      : [];
+    const recordedResults = recordedRunResults(existingSummary);
+    const schedule = buildGenerationSchedule(specs, runOptions, specOrderSeed);
+    if (schedule.length === 0 && !runOptions.writeMatrixOnly) {
+      return yield* Effect.fail(
+        new Error(
+          `empty schedule: specs=${runOptions.specs.join(",") || "(none)"} ` +
+            `efforts=${runOptions.efforts.join(",")} paths=${runOptions.paths.join(",")}`,
+        ),
+      );
+    }
     if (recordedResults.length > 0 && !options.validateExisting) {
       assertResumeProtocol({
         recorded: recordedRunProtocol(existingSummary),
         current: runProtocol,
         results: recordedResults,
-        schedule: buildGenerationSchedule(specs, options, specOrderSeed),
-        model: options.model,
+        schedule,
+        model: runOptions.model,
       });
     }
     setResolvedBfVersion(yield* resolveBfVersion());
-    yield* writeHarnessFiles(options.outDir, options, specs);
-    const metadata: Record<string, unknown> = yield* collectMetadata(options);
+    yield* writeHarnessFiles(runOptions.outDir, runOptions, specs);
+    const metadata: Record<string, unknown> = yield* collectMetadata(runOptions);
     metadata.specOrderSeed = specOrderSeed;
     metadata.runProtocol = runProtocol;
 
     if (options.writeMatrixOnly) {
-      yield* writeSummaryEffect(options.outDir, [], options, specs, metadata);
-      log(`Wrote ScaffBench 2 matrix to ${options.outDir}`);
+      yield* writeSummaryEffect(runOptions.outDir, [], runOptions, specs, metadata);
+      log(`Wrote ScaffBench 2 matrix to ${runOptions.outDir}`);
       return;
     }
 
     const home = process.env.HOME ?? "";
     const nativeBunx = path.join(home, ".bun", "bin", "bunx");
     const bunx = (yield* fs.exists(nativeBunx)) ? nativeBunx : "bunx";
-    const emptyMcpPath = path.join(options.outDir, "empty-mcp.json");
-    const bfsMcpPath = path.join(options.outDir, "better-fullstack-mcp.json");
+    const emptyMcpPath = path.join(runOptions.outDir, "empty-mcp.json");
+    const bfsMcpPath = path.join(runOptions.outDir, "better-fullstack-mcp.json");
     yield* writeMcpConfigs(emptyMcpPath, bfsMcpPath, bunx);
 
-    const provider = providerForModel(options.model);
+    const provider = providerForModel(runOptions.model);
+    assertScheduleSupported(schedule, provider, runOptions.model);
     const workspaceRoot = path.join(
       os.tmpdir(),
       "scaffbench21-work",
-      path.basename(options.outDir),
+      path.basename(runOptions.outDir),
     );
     yield* fs.makeDirectory(workspaceRoot, { recursive: true });
 
     if (!options.validateExisting) {
       for (const spec of specs) {
-        const specPaths = resolveSpecPaths(spec, options.paths);
-        const skippedPaths = options.paths.filter((pathMode) => !specPaths.includes(pathMode));
+        const specPaths = resolveSpecPaths(spec, runOptions.paths);
+        const skippedPaths = runOptions.paths.filter((pathMode) => !specPaths.includes(pathMode));
         if (skippedPaths.length > 0) {
           log(
-            `PATHS ${spec.id}: runs ${specPaths.join(", ") || "(none)"} — skipping ${skippedPaths.join(", ")} (frontier/prompt-only or pinned spec.paths)`,
+            `PATHS ${spec.id}: runs ${specPaths.join(", ") || "(none)"}, skipping ${skippedPaths.join(", ")} (frontier/prompt-only or pinned spec.paths)`,
           );
         }
       }
 
       yield* Effect.forEach(
-        buildGenerationSchedule(specs, options, specOrderSeed),
+        schedule,
         ({ spec, effort, pathMode, trial }) =>
           runOneGeneration({
             spec,
             effort,
             pathMode,
             trial,
-            options,
+            options: runOptions,
             specs,
             provider,
             bunx,
@@ -208,11 +225,11 @@ function runScaffbenchUnlocked(options: ScaffbenchOptions, log: Log) {
     }
 
     if (!options.skipValidation && !options.generateOnly) {
-      yield* validatePendingResults(results, options, specs, metadata, log);
+      yield* validatePendingResults(results, runOptions, specs, metadata, log);
       if (options.repair) {
         yield* repairFailedResults({
           results,
-          options,
+          options: runOptions,
           specs,
           metadata,
           provider,
@@ -336,7 +353,7 @@ function runOneGeneration(input: {
     const scored = generatedDir
       ? yield* fromPromise(() => scoreProject(spec, generatedDir, options.promptStyle))
       : {
-          artifact: emptyArtifactScore(spec),
+          artifact: emptyArtifactScore(spec, options.promptStyle),
           faithfulness: undefined,
           acceptance:
             options.promptStyle === "natural" && spec.acceptanceSets
@@ -368,7 +385,7 @@ function runOneGeneration(input: {
       yield* fs.remove(workDir, { recursive: true, force: true });
     }
 
-    const totalCostUsd = claudeCostUsd(options.model, parsed?.usage) ?? parsed?.total_cost_usd;
+    const totalCostUsd = resolvedCostUsd(provider, options.model, parsed);
     const maxBudgetUsd = normalizedBudget(options.maxBudgetUsd);
     const result: RunResult = {
       id,
@@ -408,6 +425,7 @@ function runOneGeneration(input: {
         harnessVersion: HARNESS_VERSION,
         validationCacheVersion: VALIDATION_CACHE_VERSION,
         promptVersion: PROMPT_VERSION,
+        resourceProfileId: VALIDATION_RESOURCE_PROFILE_ID,
         agentAdapter: provider,
         configuredTrials: options.repeats,
         specOrderSeed: input.specOrderSeed,
@@ -455,7 +473,7 @@ export function repairPromptFor(
     .split("\n")
     .slice(-50)
     .join("\n");
-  return `Repair the existing project in the current directory. Do not recreate it and do not start a dev server.
+  return `Repair the existing project in the current directory. Do not recreate it. Kill every process you start before finishing.
 The ScaffBench validation step \`${stepName}\` failed. Make the smallest changes needed for that step and the project build to pass, then run a focused check.
 
 Failing-step stderr tail:
@@ -573,7 +591,7 @@ function repairFailedResults(input: {
             durationMs: finished - started,
             resultDurationMs: parsed?.duration_ms,
             outputTokens: parsed?.usage?.output_tokens,
-            totalCostUsd: claudeCostUsd(result.model, parsed?.usage) ?? parsed?.total_cost_usd,
+            totalCostUsd: resolvedCostUsd(repairProvider, result.model, parsed),
             sessionId: parsed?.session_id,
             terminalReason: parsed?.terminal_reason,
             spawnError: agentResult.spawnError,
@@ -738,7 +756,7 @@ function needsValidation(result: RunResult, options: ScaffbenchOptions) {
   );
 }
 
-function validatePendingResults(
+export function validatePendingResults(
   results: RunResult[],
   options: ScaffbenchOptions,
   specs: readonly BenchmarkSpec[],
@@ -767,7 +785,8 @@ function validatePendingResults(
         Effect.gen(function* () {
           const spec = specsById.get(result.specId);
           if (!spec) return;
-          if (!result.projectDir || !(yield* fs.exists(result.projectDir))) {
+          const projectDir = result.projectDir;
+          if (!projectDir || !(yield* fs.exists(projectDir))) {
             result.validation = {
               projectExists: false,
               qualityGateRequested: qualityGateRequested(options),
@@ -782,10 +801,19 @@ function validatePendingResults(
           }
 
           log(`VALIDATE ${result.id}`);
-          result.validation = yield* validateProjectCached(spec, result.projectDir, options);
+          result.validation = yield* validateProjectCached(spec, projectDir, options);
+          if (options.forceRevalidate) {
+            const scored = yield* fromPromise(() =>
+              scoreProject(spec, projectDir, result.promptStyle),
+            );
+            result.stackScore = scored.artifact;
+            result.generatorFaithfulness = scored.faithfulness;
+            result.acceptanceScore = scored.acceptance;
+          }
           if (result.provenance) {
             result.provenance.harnessVersion = HARNESS_VERSION;
             result.provenance.validationCacheVersion = VALIDATION_CACHE_VERSION;
+            result.provenance.resourceProfileId = VALIDATION_RESOURCE_PROFILE_ID;
           }
           result.outcome = classifyOutcome(result);
           result.outcomeEvidence = outcomeEvidenceFor(result);
@@ -926,7 +954,30 @@ export function specShuffleSeed(options: Pick<ScaffbenchOptions, "outDir" | "mod
 
 function normalizedBudget(value: string) {
   const parsed = Number.parseFloat(value);
-  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    throw new Error(`maxBudgetUsd must be a non-negative number, got ${JSON.stringify(value)}`);
+  }
+  return parsed;
+}
+
+export function resolvedCostUsd(
+  provider: ReturnType<typeof providerForModel>,
+  model: string,
+  parsed:
+    | {
+        usage?: {
+          input_tokens?: number;
+          output_tokens?: number;
+          cache_creation_input_tokens?: number;
+          cache_read_input_tokens?: number;
+        };
+        total_cost_usd?: number;
+      }
+    | null
+    | undefined,
+): number | undefined {
+  if (provider === "claude") return claudeCostUsd(model, parsed?.usage) ?? parsed?.total_cost_usd;
+  return parsed?.total_cost_usd;
 }
 
 function qualityGateRequested(options: ScaffbenchOptions) {
@@ -969,11 +1020,14 @@ export function assertResumeProtocol(input: {
   schedule: ReturnType<typeof buildGenerationSchedule>;
   model: string;
 }) {
-  const protocolChanged =
-    input.recorded !== undefined &&
-    (input.recorded.repeats !== input.current.repeats ||
-      input.recorded.seed !== input.current.seed);
-  if (!protocolChanged) return;
+  if (input.recorded === undefined) return;
+  if (input.recorded.repeats !== input.current.repeats) {
+    throw new Error(
+      `runProtocol conflict: this out-dir was launched with repeats=${input.recorded.repeats} and ` +
+        `cannot resume as repeats=${input.current.repeats}; start a fresh out-dir for a different repeat count`,
+    );
+  }
+  if (input.recorded.seed === input.current.seed) return;
 
   const aligned = input.results.every((result) => {
     const scheduled = input.schedule.find(
@@ -1023,30 +1077,72 @@ function readExistingSummary(outDir: string) {
   return Effect.gen(function* () {
     const fs = yield* FileSystem.FileSystem;
     const summaryPath = path.join(outDir, "summary.json");
-    if (!(yield* fs.exists(summaryPath))) return null;
-    return yield* fs.readFileString(summaryPath).pipe(
-      Effect.map((text) => JSON.parse(text)),
-      Effect.catchAll(() => Effect.succeed(null)),
-    );
+    if (!(yield* fs.exists(summaryPath))) return undefined;
+    const text = yield* fs.readFileString(summaryPath);
+    return yield* Effect.try({
+      try: () => JSON.parse(text) as unknown,
+      catch: (cause) =>
+        new Error(
+          `${summaryPath} is unreadable (${cause instanceof Error ? cause.message : String(cause)}); ` +
+            "repair or remove it before resuming this out-dir",
+        ),
+    });
   });
 }
 
-function completedResults(summary: any): RunResult[] {
-  return Array.isArray(summary?.results)
-    ? (summary.results.filter(isCompletedHarnessRun) as RunResult[])
-    : [];
+function asRecord(value: unknown): Record<string, unknown> | undefined {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : undefined;
 }
 
-function recordedRunProtocol(summary: any): RunProtocol | undefined {
-  const protocol = summary?.metadata?.runProtocol;
-  if (Number.isInteger(protocol?.repeats) && Number.isInteger(protocol?.seed)) {
-    return { repeats: protocol.repeats, seed: protocol.seed };
+function stringList(value: unknown): string[] | undefined {
+  return Array.isArray(value) && value.every((item) => typeof item === "string")
+    ? [...(value as string[])]
+    : undefined;
+}
+
+function recordedRunResults(summary: unknown): RunResult[] {
+  const results = asRecord(summary)?.results;
+  return Array.isArray(results) ? (results as RunResult[]) : [];
+}
+
+function completedResults(summary: unknown): RunResult[] {
+  return recordedRunResults(summary).filter(isCompletedHarnessRun);
+}
+
+export function recordedRunOptions(summary: unknown): Partial<ScaffbenchOptions> {
+  const options = asRecord(asRecord(summary)?.options);
+  if (!options) return {};
+  const recorded: Partial<ScaffbenchOptions> = {};
+  if (typeof options.model === "string") recorded.model = options.model;
+  if (Number.isInteger(options.repeats)) recorded.repeats = options.repeats as number;
+  if (options.promptStyle === "explicit" || options.promptStyle === "natural") {
+    recorded.promptStyle = options.promptStyle;
   }
-  if (
-    Number.isInteger(summary?.options?.repeats) &&
-    Number.isInteger(summary?.metadata?.specOrderSeed)
-  ) {
-    return { repeats: summary.options.repeats, seed: summary.metadata.specOrderSeed };
+  const efforts = stringList(options.efforts)?.filter((effort): effort is Effort =>
+    EFFORT_VALUES.includes(effort as Effort),
+  );
+  if (efforts && efforts.length > 0) recorded.efforts = efforts;
+  const paths = stringList(options.paths)?.filter((pathMode): pathMode is CreationPath =>
+    CREATION_PATH_VALUES.includes(pathMode as CreationPath),
+  );
+  if (paths && paths.length > 0) recorded.paths = paths;
+  const specs = stringList(options.specs);
+  if (specs && specs.length > 0) recorded.specs = specs;
+  return recorded;
+}
+
+function recordedRunProtocol(summary: unknown): RunProtocol | undefined {
+  const record = asRecord(summary);
+  const metadata = asRecord(record?.metadata);
+  const protocol = asRecord(metadata?.runProtocol);
+  if (Number.isInteger(protocol?.repeats) && Number.isInteger(protocol?.seed)) {
+    return { repeats: protocol!.repeats as number, seed: protocol!.seed as number };
+  }
+  const options = asRecord(record?.options);
+  if (Number.isInteger(options?.repeats) && Number.isInteger(metadata?.specOrderSeed)) {
+    return { repeats: options!.repeats as number, seed: metadata!.specOrderSeed as number };
   }
   return undefined;
 }
@@ -1055,13 +1151,27 @@ function readExistingResults(outDir: string) {
   return readExistingSummary(outDir).pipe(Effect.map(completedResults));
 }
 
-function isCompletedHarnessRun(result: RunResult) {
-  return (
-    result.claude.terminalReason !== undefined ||
-    result.claude.timedOut ||
-    result.validation.projectExists ||
-    result.claude.durationMs > 10_000
-  );
+export function isCompletedHarnessRun(result: RunResult) {
+  const outcome = classifyOutcome(result);
+  return outcome !== "provider-infra" && outcome !== "harness-infra";
+}
+
+export function assertScheduleSupported(
+  schedule: ReturnType<typeof buildGenerationSchedule>,
+  provider: ReturnType<typeof providerForModel>,
+  model: string,
+) {
+  if ((provider === "agy" || provider === "pi") && schedule.some((e) => e.pathMode === "mcp")) {
+    throw new Error(
+      `--paths mcp is not supported by the ${provider} adapter (${model}): it wires no MCP server, ` +
+        "so the agent would receive a prompt requiring tools it cannot call",
+    );
+  }
+  if (provider === "agy") {
+    for (const effort of new Set(schedule.map((entry) => entry.effort))) {
+      agyModelString(model, effort);
+    }
+  }
 }
 
 function writeSummaryEffect(

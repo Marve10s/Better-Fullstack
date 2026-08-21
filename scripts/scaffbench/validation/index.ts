@@ -2,8 +2,7 @@ import * as Effect from "effect/Effect";
 import * as Duration from "effect/Duration";
 import * as Option from "effect/Option";
 import { existsSync, readdirSync } from "node:fs";
-import { cp, mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
-import os from "node:os";
+import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import type {
@@ -15,19 +14,65 @@ import type {
   StepResult,
 } from "@/types";
 
-import { runCommand, tail } from "@/agents/command";
+import { tail } from "@/agents/command";
+import { runValidationCommand } from "@/validation/executor";
 import {
   bfSpec,
   VALIDATION_PROJECT_TIMEOUT_MS,
   VALIDATION_ROOT_CAP,
   VALIDATION_TIMEOUT_MS,
 } from "@/constants";
-import { typecheckGate } from "@/scoring";
+import { isAdvisoryStep, stepBaseName, typecheckGate } from "@/scoring";
+
+const INSTALL_STEP_KEYS = new Set(["install", "dotnetRestore"]);
 import { hasTransientNetworkSignature } from "@/validation/classification";
 import { parseJsonc, walk } from "@/validation/shared";
 
 function fromPromise<A>(evaluate: () => Promise<A>) {
   return Effect.tryPromise({ try: evaluate, catch: (cause) => cause });
+}
+
+function runCommand(
+  command: string,
+  args: readonly string[],
+  cwd: string,
+  env?: Record<string, string>,
+) {
+  return Effect.tryPromise({
+    try: (signal: AbortSignal) =>
+      runValidationCommand(command, args, cwd, VALIDATION_TIMEOUT_MS, env, signal),
+    catch: (cause) => cause,
+  });
+}
+
+type ValidationSteps = Record<string, StepResult | undefined>;
+
+type ValidationGate = {
+  key: string;
+  nonBlocking?: boolean;
+  run: () => Effect.Effect<StepResult, unknown>;
+};
+
+function emptySteps(): ValidationSteps {
+  return {};
+}
+
+function runGates(gates: readonly ValidationGate[], steps: ValidationSteps = {}) {
+  return Effect.gen(function* () {
+    let halted = false;
+    for (const gate of gates) {
+      if (halted) {
+        steps[`not-run:${gate.key}`] = notRunStep(
+          `${gate.key} not run: an earlier validation step failed`,
+        );
+        continue;
+      }
+      const step = yield* gate.run();
+      steps[gate.key] = step;
+      if (!gate.nonBlocking && stepFailed(step)) halted = true;
+    }
+    return steps;
+  });
 }
 
 type CommandStepOptions = {
@@ -42,9 +87,7 @@ export function commandStep(
   options: CommandStepOptions = {},
 ) {
   return Effect.gen(function* () {
-    const first = toStep(
-      yield* runCommand(command, args, cwd, VALIDATION_TIMEOUT_MS, { env: options.env }),
-    );
+    const first = toStep(yield* runCommand(command, args, cwd, options.env));
     if (
       !options.retryTransientNetwork ||
       first.exitCode === 0 ||
@@ -52,9 +95,7 @@ export function commandStep(
     ) {
       return first;
     }
-    const retry = toStep(
-      yield* runCommand(command, args, cwd, VALIDATION_TIMEOUT_MS, { env: options.env }),
-    );
+    const retry = toStep(yield* runCommand(command, args, cwd, options.env));
     return {
       ...retry,
       durationMs: first.durationMs + retry.durationMs,
@@ -122,6 +163,8 @@ export async function archiveProjectSource(srcDir: string, destDir: string) {
     ".venv",
     "bin",
     "obj",
+    "deps",
+    "_build",
   ]);
   await rm(destDir, { recursive: true, force: true });
   await cp(srcDir, destDir, {
@@ -273,12 +316,27 @@ export type ValidationLimits = {
   rootCap?: number;
 };
 
+export function effectiveValidationOptions(
+  spec: BenchmarkSpec,
+  options: ScaffbenchOptions,
+): ScaffbenchOptions {
+  const profile = spec.validationProfile;
+  return {
+    ...options,
+    qualityGate:
+      options.noQualityGate === true ? false : options.qualityGate || profile.qualityGate === true,
+    doctorCheck: options.doctorCheck && profile.doctorCheck === true,
+    routeCheck: options.routeCheck && profile.routeCheckCandidate === true,
+  };
+}
+
 export function validateProject(
   spec: BenchmarkSpec,
   projectDir: string | null,
-  options: ScaffbenchOptions,
+  requestedOptions: ScaffbenchOptions,
   limits: ValidationLimits = {},
 ) {
+  const options = effectiveValidationOptions(spec, requestedOptions);
   const qualityGateRequested = options.qualityGate;
   if (!projectDir) {
     return Effect.succeed({
@@ -330,22 +388,50 @@ export function validateProject(
     const subOptions = { ...options, doctorCheck: false, routeCheck: false };
 
     for (const [index, prerequisite] of (spec.prerequisiteCommands ?? []).entries()) {
-      const [command, ...args] = prerequisite;
-      const key = `prerequisite:${String(index + 1).padStart(2, "0")}:${command ?? "missing"}`;
-      steps[key] = command
-        ? yield* commandStep(command, args, projectDir)
-        : skipStep("empty prerequisite command");
-      if (!steps[key] || !stepGreen(steps[key])) {
+      const [command, ...args] = prerequisite.command;
+      const label = `prerequisite:${String(index + 1).padStart(2, "0")}:${command ?? "missing"}`;
+      if (!command) {
+        steps[label] = skipStep("empty prerequisite command");
         return buildProjectValidation(steps, qualityGateRequested);
+      }
+      const configs = prerequisite.whenConfigFound;
+      const roots = configs
+        ? yield* fromPromise(() => findManifestRoots(projectDir, configs))
+        : [projectDir];
+      if (roots.length === 0) {
+        steps[label] = naStep(`${command} (no ${configs?.join(" / ")} in the project)`);
+        continue;
+      }
+      for (const root of roots) {
+        const key = root === projectDir ? label : `${label}:${prefixFor(root)}`;
+        steps[key] = yield* commandStep(command, args, root);
+        if (!stepGreen(steps[key])) {
+          return buildProjectValidation(steps, qualityGateRequested);
+        }
       }
     }
     const prerequisiteStepCount = Object.keys(steps).length;
+
+    const coreVerdictFailed = () =>
+      Object.entries(steps).some(
+        ([name, step]) =>
+          !name.startsWith("unvalidated:") && !isAdvisoryStep(name) && stepFailed(step),
+      );
+    const recordNotRun = (eco: string, root: string) => {
+      steps[`not-run:${eco}:${prefixFor(root) || "."}`] = notRunStep(
+        `${eco} validation of ${prefixFor(root) || "."} not run: an earlier core step already failed`,
+      );
+    };
 
     const allBunRoots = yield* fromPromise(() => findBunManifestRoots(projectDir));
     const bunRoots = yield* fromPromise(() =>
       membershipAwareRoots(allBunRoots, bunWorkspacePatterns),
     );
     for (const root of takeRoots(bunRoots, "bun")) {
+      if (coreVerdictFailed()) {
+        recordNotRun("bun", root);
+        continue;
+      }
       const isRoot = root === projectDir;
       const bunSteps = yield* validateBunProject(root, isRoot ? options : subOptions);
       merge(bunSteps, prefixFor(root), "bun");
@@ -354,6 +440,10 @@ export function validateProject(
           coveredWorkspaceMembers(root, allBunRoots, bunWorkspacePatterns),
         );
         for (const member of takeRoots(members, "bun")) {
+          if (coreVerdictFailed()) {
+            recordNotRun("bun", member);
+            continue;
+          }
           merge(yield* validateBunProject(member, subOptions), prefixFor(member), "bun");
         }
       }
@@ -365,6 +455,10 @@ export function validateProject(
       membershipAwareRoots(allCargoRoots, cargoWorkspacePatterns),
     );
     for (const root of takeRoots(cargoRoots, "cargo")) {
+      if (coreVerdictFailed()) {
+        recordNotRun("cargo", root);
+        continue;
+      }
       merge(
         yield* validateCargoProject(root, root === projectDir ? options : subOptions),
         prefixFor(root),
@@ -375,14 +469,41 @@ export function validateProject(
       yield* fromPromise(() => findManifestRoots(projectDir, ["pyproject.toml"])),
     );
     for (const root of takeRoots(pythonRoots, "python")) {
+      if (coreVerdictFailed()) {
+        recordNotRun("python", root);
+        continue;
+      }
       merge(
         yield* validatePythonProject(root, root === projectDir ? options : subOptions),
         prefixFor(root),
         "python",
       );
     }
+    const requirementsRoots = dropNestedRoots(
+      yield* fromPromise(() => findManifestRoots(projectDir, ["requirements.txt"])),
+    ).filter(
+      (root) => !pythonRoots.some((python) => root === python || isNestedRoot(python, root)),
+    );
+    for (const root of takeRoots(requirementsRoots, "python")) {
+      if (coreVerdictFailed()) {
+        recordNotRun("python", root);
+        continue;
+      }
+      merge(
+        yield* validatePythonRequirementsProject(
+          root,
+          root === projectDir ? options : subOptions,
+        ),
+        prefixFor(root),
+        "python",
+      );
+    }
     const goRoots = yield* fromPromise(() => findManifestRoots(projectDir, ["go.mod"]));
     for (const root of takeRoots(goRoots, "go")) {
+      if (coreVerdictFailed()) {
+        recordNotRun("go", root);
+        continue;
+      }
       merge(
         yield* validateGoProject(root, root === projectDir ? options : subOptions),
         prefixFor(root),
@@ -390,25 +511,52 @@ export function validateProject(
       );
     }
     if (nativeProfiles.has("dotnet") || (yield* fromPromise(() => hasDotnetProject(projectDir)))) {
-      merge(
-        yield* validateDotnetProject(projectDir, options, {
-          targetCap: Math.max(0, rootCap - rootsUsed),
-        }),
-        "",
-        "dotnet",
-      );
+      if (coreVerdictFailed()) {
+        recordNotRun("dotnet", projectDir);
+      } else {
+        merge(
+          yield* validateDotnetProject(projectDir, options, {
+            targetCap: Math.max(0, rootCap - rootsUsed),
+          }),
+          "",
+          "dotnet",
+        );
+      }
     }
     if (nativeProfiles.has("java")) {
-      merge(yield* validateJavaProject(projectDir, options), "", "java");
+      if (coreVerdictFailed()) {
+        recordNotRun("java", projectDir);
+      } else {
+        merge(yield* validateJavaProject(projectDir, options), "", "java");
+      }
     }
     if (nativeProfiles.has("elixir")) {
-      merge(yield* validateElixirProject(projectDir, options), "", "elixir");
+      if (coreVerdictFailed()) {
+        recordNotRun("elixir", projectDir);
+      } else {
+        merge(yield* validateElixirProject(projectDir, options), "", "elixir");
+      }
     }
 
     if (Object.keys(steps).length === prerequisiteStepCount) {
       steps["unvalidated:project"] = unvalidatedStep(
         "project directory has no recognized build manifest",
       );
+    } else {
+      const substantiveCore = Object.entries(steps).some(
+        ([name, step]) =>
+          step !== undefined &&
+          step.status !== "skip" &&
+          step.status !== "na" &&
+          !isAdvisoryStep(name) &&
+          !name.startsWith("prerequisite:") &&
+          !INSTALL_STEP_KEYS.has(stepBaseName(name)),
+      );
+      if (!substantiveCore) {
+        steps["unvalidated:no-build-surface"] = unvalidatedStep(
+          "no build or typecheck surface was discovered. A green install alone is not a pass",
+        );
+      }
     }
     return buildProjectValidation(steps, qualityGateRequested);
   });
@@ -428,78 +576,113 @@ export function validateProject(
 
 export function validateBunProject(projectDir: string, options: ScaffbenchOptions) {
   return Effect.gen(function* () {
-    const steps: Record<string, StepResult | undefined> = {};
     const packageJsonPath = path.join(projectDir, "package.json");
-    if (!existsSync(packageJsonPath)) return steps;
+    if (!existsSync(packageJsonPath)) return emptySteps();
 
     const bun = existsSync(`${process.env.HOME}/.bun/bin/bun`)
       ? `${process.env.HOME}/.bun/bin/bun`
       : "bun";
-    steps.install = yield* commandStep(bun, ["install"], projectDir, {
-      retryTransientNetwork: true,
-    });
-    if (steps.install.exitCode !== 0 || steps.install.timedOut) return steps;
-
+    const bunx = existsSync(`${process.env.HOME}/.bun/bin/bunx`)
+      ? `${process.env.HOME}/.bun/bin/bunx`
+      : "bunx";
     const packageJson = yield* fromPromise(() => readPackageJson(packageJsonPath));
     const scripts = (packageJson.scripts ?? {}) as Record<string, string>;
+
+    const gates: ValidationGate[] = [
+      {
+        key: "install",
+        run: () =>
+          commandStep(
+            bun,
+            ["install", "--concurrent-scripts=2", "--network-concurrency=8"],
+            projectDir,
+            { retryTransientNetwork: true },
+          ),
+      },
+    ];
+
     const expoCommand = expoExportCommand(packageJson);
     if (expoCommand) {
-      steps.build = yield* commandStep(expoCommand.command, expoCommand.args, projectDir, {
-        env: { CI: "1", EXPO_NO_TELEMETRY: "1" },
+      gates.push({
+        key: "build",
+        run: () =>
+          commandStep(expoCommand.command, expoCommand.args, projectDir, {
+            env: { CI: "1", EXPO_NO_TELEMETRY: "1" },
+          }),
       });
     } else if (scripts.build) {
-      steps.build = yield* commandStep(bun, ["run", "build"], projectDir);
-    }
-    const gate = typecheckGate(scripts, existsSync(path.join(projectDir, "tsconfig.json")));
-    if (gate === "tsc") {
-      const bunx = existsSync(`${process.env.HOME}/.bun/bin/bunx`)
-        ? `${process.env.HOME}/.bun/bin/bunx`
-        : "bunx";
-      steps.typecheck = yield* commandStep(bunx, ["tsc", "--build"], projectDir);
-    } else if (gate) {
-      steps.typecheck = yield* commandStep(bun, ["run", gate], projectDir);
-    }
-    if (options.qualityGate || scripts.lint) {
-      const biomeBin = localBin(projectDir, "biome");
-      const eslintBin = localBin(projectDir, "eslint");
-      steps.lint = scripts.lint
-        ? yield* commandStep(bun, ["run", "lint"], projectDir)
-        : biomeBin
-          ? yield* commandStep(biomeBin, ["lint", "."], projectDir)
-          : eslintBin
-            ? yield* commandStep(eslintBin, ["."], projectDir)
-            : skipStep("lint (no linter configured)");
-    }
-    if (options.qualityGate) {
-      const biomeBin = localBin(projectDir, "biome");
-      const prettierBin = localBin(projectDir, "prettier");
-      steps.format = biomeBin
-        ? yield* commandStep(biomeBin, ["format", "."], projectDir)
-        : prettierBin
-          ? yield* commandStep(prettierBin, ["--check", "."], projectDir)
-          : skipStep("format (no formatter configured)");
-      steps.test = scripts.test
-        ? yield* commandStep(bun, ["run", "test"], projectDir)
-        : naStep("test (no test script)");
-    }
-    if (options.doctorCheck) {
-      const bunx = existsSync(`${process.env.HOME}/.bun/bin/bunx`)
-        ? `${process.env.HOME}/.bun/bin/bunx`
-        : "bunx";
-      steps.doctor = yield* commandStep(
-        bunx,
-        [bfSpec("create-better-fullstack"), "doctor", ".", "--skip-checks", "--json"],
-        projectDir,
-      );
-    }
-    if (options.routeCheck) {
-      steps.route = scripts.dev
-        ? yield* fromPromise(() => runProjectRouteCheck(projectDir, options.outDir))
-        : naStep("route-check (no dev script)");
+      gates.push({ key: "build", run: () => commandStep(bun, ["run", "build"], projectDir) });
     }
 
-    return steps;
+    const gate = typecheckGate(scripts, existsSync(path.join(projectDir, "tsconfig.json")));
+    if (gate === "tsc") {
+      gates.push({
+        key: "typecheck",
+        run: () => commandStep(bunx, ["tsc", "--build"], projectDir),
+      });
+    } else if (gate) {
+      gates.push({ key: "typecheck", run: () => commandStep(bun, ["run", gate], projectDir) });
+    }
+
+    if (options.qualityGate || scripts.lint) {
+      gates.push({ key: "lint", run: () => bunLintStep(projectDir, bun, scripts) });
+    }
+    if (options.qualityGate) {
+      gates.push(
+        { key: "format", run: () => bunFormatStep(projectDir, bun, scripts) },
+        {
+          key: "test",
+          nonBlocking: true,
+          run: () =>
+            scripts.test
+              ? commandStep(bun, ["run", "test"], projectDir)
+              : Effect.succeed(naStep("test (no test script)")),
+        },
+      );
+    }
+    if (options.doctorCheck) {
+      gates.push({
+        key: "doctor",
+        nonBlocking: true,
+        run: () =>
+          existsSync(path.join(projectDir, "bts.jsonc"))
+            ? commandStep(
+                bunx,
+                [bfSpec("create-better-fullstack"), "doctor", ".", "--skip-checks", "--json"],
+                projectDir,
+              )
+            : Effect.succeed(naStep("doctor (not a Better-Fullstack project)")),
+      });
+    }
+    if (options.routeCheck) {
+      gates.push({
+        key: "route",
+        nonBlocking: true,
+        run: () =>
+          scripts.dev
+            ? fromPromise(() => runProjectRouteCheck(projectDir, options.outDir))
+            : Effect.succeed(naStep("route-check (no dev script)")),
+      });
+    }
+
+    return yield* runGates(gates);
   });
+}
+
+function bunLintStep(projectDir: string, bun: string, scripts: Record<string, string>) {
+  if (scripts.lint) return commandStep(bun, ["run", "lint"], projectDir);
+  const biomeBin = localBin(projectDir, "biome");
+  if (biomeBin) return commandStep(biomeBin, ["lint", "."], projectDir);
+  const eslintBin = localBin(projectDir, "eslint");
+  if (eslintBin) return commandStep(eslintBin, ["."], projectDir);
+  return Effect.succeed(skipStep("lint (no linter configured)"));
+}
+
+function bunFormatStep(projectDir: string, bun: string, scripts: Record<string, string>) {
+  const formatCheck = formatCheckCommand(scripts, projectDir, bun);
+  return formatCheck
+    ? commandStep(formatCheck.command, formatCheck.args, projectDir)
+    : Effect.succeed(skipStep("format (no formatter configured)"));
 }
 
 async function runProjectRouteCheck(projectDir: string, outDir: string): Promise<StepResult> {
@@ -583,98 +766,200 @@ function verifyStepToHarnessStep(result: any): StepResult {
 
 export function validateCargoProject(projectDir: string, options: ScaffbenchOptions) {
   return Effect.gen(function* () {
-    const steps: Record<string, StepResult | undefined> = {};
-    if (!existsSync(path.join(projectDir, "Cargo.toml"))) return steps;
-    steps.cargoCheck = yield* commandStep(
-      "cargo",
-      ["check", "--workspace", "--all-targets"],
-      projectDir,
-    );
+    if (!existsSync(path.join(projectDir, "Cargo.toml"))) return emptySteps();
+    const gates: ValidationGate[] = [
+      {
+        key: "cargoCheck",
+        run: () => commandStep("cargo", ["check", "--workspace", "--all-targets"], projectDir),
+      },
+    ];
     if (options.qualityGate) {
-      steps.format = yield* commandStep("cargo", ["fmt", "--check"], projectDir);
-      steps.lint = yield* commandStep("cargo", ["clippy", "--", "-D", "warnings"], projectDir);
-      steps.test = yield* commandStep("cargo", ["test"], projectDir);
+      gates.push(
+        { key: "format", run: () => commandStep("cargo", ["fmt", "--check"], projectDir) },
+        {
+          key: "lint",
+          run: () => commandStep("cargo", ["clippy", "--", "-D", "warnings"], projectDir),
+        },
+        { key: "test", run: () => commandStep("cargo", ["test"], projectDir) },
+      );
     }
-    return steps;
+    return yield* runGates(gates);
   });
 }
 
 export function validatePythonProject(projectDir: string, options: ScaffbenchOptions) {
   return Effect.gen(function* () {
-    const steps: Record<string, StepResult | undefined> = {};
-    if (!existsSync(path.join(projectDir, "pyproject.toml"))) return steps;
-    steps.install =
-      steps.install ??
-      (yield* commandStep("uv", ["sync", "--all-extras"], projectDir, {
-        retryTransientNetwork: true,
-      }));
-    if (steps.install.exitCode !== 0 || steps.install.timedOut) return steps;
-    const srcDir = existsSync(path.join(projectDir, "src")) ? "src/" : ".";
-    steps.compile = yield* commandStep(
-      "uv",
-      ["run", "python", "-m", "compileall", "-q", srcDir],
-      projectDir,
-    );
+    if (!existsSync(path.join(projectDir, "pyproject.toml"))) return emptySteps();
+    const gates: ValidationGate[] = [
+      {
+        key: "install",
+        run: () =>
+          commandStep("uv", ["sync", "--all-extras"], projectDir, { retryTransientNetwork: true }),
+      },
+      {
+        key: "compile",
+        run: () =>
+          commandStep(
+            "uv",
+            ["run", "python", "-m", "compileall", "-q", pythonSourceDir(projectDir)],
+            projectDir,
+          ),
+      },
+      { key: "typecheck", run: () => pythonTypecheckStep(projectDir) },
+    ];
+    if (options.qualityGate) {
+      gates.push(
+        { key: "lint", run: () => commandStep("uv", ["run", "ruff", "check", "."], projectDir) },
+        {
+          key: "format",
+          run: () => commandStep("uv", ["run", "ruff", "format", "--check", "."], projectDir),
+        },
+        { key: "test", run: () => pytestStep(commandStep("uv", ["run", "pytest"], projectDir)) },
+      );
+    }
+    return yield* runGates(gates);
+  });
+}
+
+export function validatePythonRequirementsProject(
+  projectDir: string,
+  options: ScaffbenchOptions,
+) {
+  return Effect.gen(function* () {
+    if (!existsSync(path.join(projectDir, "requirements.txt"))) return emptySteps();
+    const python = path.join(projectDir, ".venv", "bin", "python");
+    const ruff = path.join(projectDir, ".venv", "bin", "ruff");
+    const pytestBin = path.join(projectDir, ".venv", "bin", "pytest");
+    const gates: ValidationGate[] = [
+      { key: "install", run: () => pipInstallStep(projectDir) },
+      {
+        key: "compile",
+        run: () =>
+          commandStep(
+            python,
+            ["-m", "compileall", "-q", "-x", "[\\\\/]\\.venv[\\\\/]", pythonSourceDir(projectDir)],
+            projectDir,
+          ),
+      },
+      { key: "typecheck", run: () => pythonImportSmokeStep(projectDir, python, []) },
+    ];
+    if (options.qualityGate) {
+      gates.push(
+        {
+          key: "lint",
+          run: () =>
+            existsSync(ruff)
+              ? commandStep(ruff, ["check", "."], projectDir)
+              : Effect.succeed(skipStep("lint (no linter installed)")),
+        },
+        {
+          key: "format",
+          run: () =>
+            existsSync(ruff)
+              ? commandStep(ruff, ["format", "--check", "."], projectDir)
+              : Effect.succeed(skipStep("format (no formatter installed)")),
+        },
+        {
+          key: "test",
+          run: () =>
+            existsSync(pytestBin)
+              ? pytestStep(commandStep(pytestBin, [], projectDir))
+              : Effect.succeed(naStep("pytest (not installed)")),
+        },
+      );
+    }
+    return yield* runGates(gates);
+  });
+}
+
+function pythonSourceDir(projectDir: string) {
+  return existsSync(path.join(projectDir, "src")) ? "src/" : ".";
+}
+
+function pipInstallStep(projectDir: string) {
+  return Effect.gen(function* () {
+    const venv = yield* commandStep("uv", ["venv"], projectDir);
+    if (!stepGreen(venv)) return venv;
+    return yield* commandStep("uv", ["pip", "install", "-r", "requirements.txt"], projectDir, {
+      retryTransientNetwork: true,
+    });
+  });
+}
+
+function pythonTypecheckStep(projectDir: string) {
+  return Effect.gen(function* () {
     const typechecker = yield* fromPromise(() => configuredPythonTypechecker(projectDir));
     if (typechecker === "mypy") {
       const mypyArguments = (yield* fromPromise(() => pythonMypyHasConfiguredTargets(projectDir)))
         ? []
         : ["."];
-      steps.typecheck = yield* commandStep("uv", ["run", "mypy", ...mypyArguments], projectDir);
-    } else if (typechecker === "pyright") {
-      steps.typecheck = yield* commandStep("uv", ["run", "pyright"], projectDir);
-    } else {
-      const entryTarget = yield* fromPromise(() => findPythonEntryTarget(projectDir));
-      steps.typecheck = entryTarget
-        ? yield* commandStep(
-            "uv",
-            ["run", "python", "-c", pythonFileImportCommand(entryTarget)],
-            projectDir,
-          )
-        : skipStep("python import smoke (no importable package found)");
+      return yield* commandStep("uv", ["run", "mypy", ...mypyArguments], projectDir);
     }
-    if (options.qualityGate) {
-      steps.lint = yield* commandStep("uv", ["run", "ruff", "check", "."], projectDir);
-      steps.format = yield* commandStep(
-        "uv",
-        ["run", "ruff", "format", "--check", "."],
-        projectDir,
-      );
-      const pytest = yield* commandStep("uv", ["run", "pytest"], projectDir);
-      steps.test = pytest.exitCode === 5 ? naStep("pytest (no tests collected)") : pytest;
+    if (typechecker === "pyright") {
+      return yield* commandStep("uv", ["run", "pyright"], projectDir);
     }
-    return steps;
+    return yield* pythonImportSmokeStep(projectDir, "uv", ["run", "python"]);
   });
+}
+
+function pythonImportSmokeStep(
+  projectDir: string,
+  command: string,
+  argumentPrefix: readonly string[],
+) {
+  return Effect.gen(function* () {
+    const entryTarget = yield* fromPromise(() => findPythonEntryTarget(projectDir));
+    if (!entryTarget) return skipStep("python import smoke (no importable package found)");
+    return yield* commandStep(
+      command,
+      [...argumentPrefix, "-c", pythonFileImportCommand(entryTarget)],
+      projectDir,
+    );
+  });
+}
+
+function pytestStep(run: Effect.Effect<StepResult, unknown>) {
+  return Effect.map(run, (pytest) =>
+    pytest.exitCode === 5 ? naStep("pytest (no tests collected)") : pytest,
+  );
 }
 
 export function validateGoProject(projectDir: string, options: ScaffbenchOptions) {
   return Effect.gen(function* () {
-    const steps: Record<string, StepResult | undefined> = {};
-    if (!existsSync(path.join(projectDir, "go.mod"))) return steps;
-    steps.install =
-      steps.install ??
-      (yield* commandStep("go", ["mod", "download"], projectDir, {
-        retryTransientNetwork: true,
-      }));
-    if (steps.install.exitCode !== 0 || steps.install.timedOut) return steps;
-    steps.build = steps.build ?? (yield* commandStep("go", ["build", "./..."], projectDir));
-    steps.tidy = yield* runGoTidyAdvisory(projectDir);
+    if (!existsSync(path.join(projectDir, "go.mod"))) return emptySteps();
+    const gates: ValidationGate[] = [
+      {
+        key: "install",
+        run: () =>
+          commandStep("go", ["mod", "download"], projectDir, { retryTransientNetwork: true }),
+      },
+      { key: "build", run: () => commandStep("go", ["build", "./..."], projectDir) },
+      { key: "tidy", nonBlocking: true, run: () => runGoTidyAdvisory(projectDir) },
+    ];
     if (options.qualityGate) {
-      steps.lint = yield* commandStep("go", ["vet", "./..."], projectDir);
-      const gofmt = yield* runCommand("gofmt", ["-l", "."], projectDir, VALIDATION_TIMEOUT_MS);
-      const unformatted = gofmt.stdout.trim();
-      steps.format = toStep(
-        gofmt.exitCode === 0 && unformatted
-          ? {
-              ...gofmt,
-              exitCode: 1,
-              stderr: `gofmt: ${unformatted.split("\n").filter(Boolean).length} file(s) need formatting:\n${unformatted}`,
-            }
-          : gofmt,
+      gates.push(
+        { key: "lint", run: () => commandStep("go", ["vet", "./..."], projectDir) },
+        { key: "format", run: () => gofmtStep(projectDir) },
+        { key: "test", run: () => commandStep("go", ["test", "./..."], projectDir) },
       );
-      steps.test = yield* commandStep("go", ["test", "./..."], projectDir);
     }
-    return steps;
+    return yield* runGates(gates);
+  });
+}
+
+function gofmtStep(projectDir: string) {
+  return Effect.gen(function* () {
+    const gofmt = yield* runCommand("gofmt", ["-l", "."], projectDir);
+    const unformatted = gofmt.stdout.trim();
+    return toStep(
+      gofmt.exitCode === 0 && unformatted
+        ? {
+            ...gofmt,
+            exitCode: 1,
+            stderr: `gofmt: ${unformatted.split("\n").filter(Boolean).length} file(s) need formatting:\n${unformatted}`,
+          }
+        : gofmt,
+    );
   });
 }
 
@@ -706,22 +991,15 @@ export function validateDotnetProject(
       if (acceptTarget(solution)) {
         const root = path.dirname(solution);
         const target = path.basename(solution);
-        steps.dotnetRestore = yield* commandStep("dotnet", ["restore", target], root, {
-          retryTransientNetwork: true,
-        });
-        if (stepGreen(steps.dotnetRestore)) {
-          steps.dotnetBuild = yield* commandStep(
-            "dotnet",
-            ["build", target, "--no-restore"],
-            root,
-          );
-          if (options.qualityGate && stepGreen(steps.dotnetBuild)) {
-            steps.test = yield* commandStep("dotnet", ["test", target, "--no-build"], root);
-          }
-        }
+        yield* runGates(dotnetGates(root, target, "", options), steps);
       }
     }
 
+    const dotnetCoreFailed = () =>
+      Object.entries(steps).some(
+        ([name, step]) =>
+          !name.startsWith("unvalidated:") && !isAdvisoryStep(name) && stepFailed(step),
+      );
     const projects =
       targets.kind === "solution" ? targets.uncoveredProjects : targets.targets;
     for (const project of projects) {
@@ -729,23 +1007,42 @@ export function validateDotnetProject(
       const root = path.dirname(project);
       const target = path.basename(project);
       const namespace = dotnetStepNamespace(projectDir, project);
-      const restoreKey = `${namespace}:dotnetRestore`;
-      const buildKey = `${namespace}:dotnetBuild`;
-      steps[restoreKey] = yield* commandStep("dotnet", ["restore", target], root, {
-        retryTransientNetwork: true,
-      });
-      if (!stepGreen(steps[restoreKey])) continue;
-      steps[buildKey] = yield* commandStep("dotnet", ["build", target, "--no-restore"], root);
-      if (options.qualityGate) {
-        steps[`${namespace}:test`] = yield* commandStep(
-          "dotnet",
-          ["test", target, "--no-build"],
-          root,
+      if (dotnetCoreFailed()) {
+        steps[`${namespace}:not-run`] = notRunStep(
+          `dotnet target ${namespace} not run: an earlier core step already failed`,
         );
+        continue;
       }
+      yield* runGates(dotnetGates(root, target, `${namespace}:`, options), steps);
     }
     return steps;
   });
+}
+
+function dotnetGates(
+  root: string,
+  target: string,
+  keyPrefix: string,
+  options: ScaffbenchOptions,
+): ValidationGate[] {
+  const gates: ValidationGate[] = [
+    {
+      key: `${keyPrefix}dotnetRestore`,
+      run: () =>
+        commandStep("dotnet", ["restore", target], root, { retryTransientNetwork: true }),
+    },
+    {
+      key: `${keyPrefix}dotnetBuild`,
+      run: () => commandStep("dotnet", ["build", target, "--no-restore"], root),
+    },
+  ];
+  if (options.qualityGate) {
+    gates.push({
+      key: `${keyPrefix}test`,
+      run: () => commandStep("dotnet", ["test", target, "--no-build"], root),
+    });
+  }
+  return gates;
 }
 
 export async function findBuildRoot(
@@ -767,11 +1064,10 @@ export async function findBuildRoot(
 
 export function validateJavaProject(projectDir: string, options: ScaffbenchOptions) {
   return Effect.gen(function* () {
-    const steps: Record<string, StepResult | undefined> = {};
     const root = yield* fromPromise(() =>
       findBuildRoot(projectDir, ["pom.xml", "build.gradle", "build.gradle.kts"]),
     );
-    if (!root) return steps;
+    if (!root) return emptySteps();
     const hasPom = existsSync(path.join(root, "pom.xml"));
     const wrapper = hasPom ? "mvnw" : "gradlew";
     const usesWrapper = existsSync(path.join(root, wrapper));
@@ -786,31 +1082,34 @@ export function validateJavaProject(projectDir: string, options: ScaffbenchOptio
           ["compileJava", "-x", "test", "--console=plain"],
           ["test", "--console=plain"],
         ] as const);
-    steps.build = yield* commandStep(bin, [...buildArgs], root);
-    if (steps.build.exitCode !== 0 || steps.build.timedOut) return steps;
+    const gates: ValidationGate[] = [
+      { key: "build", run: () => commandStep(bin, [...buildArgs], root) },
+    ];
     if (options.qualityGate) {
-      steps.test = yield* commandStep(bin, [...testArgs], root);
+      gates.push({ key: "test", run: () => commandStep(bin, [...testArgs], root) });
     }
-    return steps;
+    return yield* runGates(gates);
   });
 }
 
 export function validateElixirProject(projectDir: string, options: ScaffbenchOptions) {
   return Effect.gen(function* () {
-    const steps: Record<string, StepResult | undefined> = {};
     const root = yield* fromPromise(() => findBuildRoot(projectDir, ["mix.exs"]));
-    if (!root) return steps;
-    steps.install = yield* commandStep("mix", ["deps.get"], root, {
-      retryTransientNetwork: true,
-    });
-    if (steps.install.exitCode !== 0 || steps.install.timedOut) return steps;
-    steps.build = yield* commandStep("mix", ["compile"], root);
-    if (steps.build.exitCode !== 0 || steps.build.timedOut) return steps;
+    if (!root) return emptySteps();
+    const gates: ValidationGate[] = [
+      {
+        key: "install",
+        run: () => commandStep("mix", ["deps.get"], root, { retryTransientNetwork: true }),
+      },
+      { key: "build", run: () => commandStep("mix", ["compile"], root) },
+    ];
     if (options.qualityGate) {
-      steps.format = yield* commandStep("mix", ["format", "--check-formatted"], root);
-      steps.test = yield* commandStep("mix", ["test"], root);
+      gates.push(
+        { key: "format", run: () => commandStep("mix", ["format", "--check-formatted"], root) },
+        { key: "test", run: () => commandStep("mix", ["test"], root) },
+      );
     }
-    return steps;
+    return yield* runGates(gates);
   });
 }
 
@@ -927,6 +1226,29 @@ function skipStep(command: string): StepResult {
   };
 }
 
+function notRunStep(reason: string): StepResult {
+  return {
+    command: reason,
+    exitCode: null,
+    timedOut: false,
+    status: "skip",
+    durationMs: 0,
+    stdoutTail: "not run (verdict already determined)",
+    stderrTail: "",
+  };
+}
+
+function stepFailed(step: StepResult | undefined) {
+  return Boolean(
+    step &&
+      step.status !== "skip" &&
+      step.status !== "na" &&
+      (step.timedOut ||
+        step.spawnError === true ||
+        (step.exitCode !== null && step.exitCode !== 0)),
+  );
+}
+
 function unvalidatedStep(command: string): StepResult {
   return {
     command,
@@ -949,6 +1271,35 @@ function naStep(command: string): StepResult {
     stdoutTail: "n/a",
     stderrTail: "",
   };
+}
+
+const FORMAT_CHECK_SCRIPTS = ["format:check", "format-check", "check-format", "fmt:check"];
+const FORMAT_SCRIPT_CANDIDATES = [...FORMAT_CHECK_SCRIPTS, "format", "fmt"];
+const FORMAT_CHECK_FLAG = /(?:^|\s)(?:--check|--check-formatted|--list-different|-l)(?:\s|$)/;
+const FORMAT_WRITE_FLAG = /(?:^|\s)(?:--write|--fix|-w)(?:\s|$)/;
+const APPENDABLE_CHECK_FORMATTER = /(?:^|\s)(?:vp|oxfmt)(?:\s|$)/;
+
+export function formatCheckCommand(
+  scripts: Record<string, string>,
+  projectDir: string,
+  bun: string,
+): { command: string; args: readonly string[] } | null {
+  for (const name of FORMAT_SCRIPT_CANDIDATES) {
+    const script = scripts[name];
+    if (!script || FORMAT_WRITE_FLAG.test(script)) continue;
+    if (FORMAT_CHECK_FLAG.test(script) || FORMAT_CHECK_SCRIPTS.includes(name)) {
+      return { command: bun, args: ["run", name] };
+    }
+    if (APPENDABLE_CHECK_FORMATTER.test(script)) {
+      return { command: bun, args: ["run", name, "--check"] };
+    }
+  }
+
+  const biomeBin = localBin(projectDir, "biome");
+  if (biomeBin) return { command: biomeBin, args: ["format", "."] };
+  const prettierBin = localBin(projectDir, "prettier");
+  if (prettierBin) return { command: prettierBin, args: ["--check", "."] };
+  return null;
 }
 
 function localBin(projectDir: string, name: string): string | null {
@@ -1119,36 +1470,8 @@ function pythonFileImportCommand(target: PythonEntryTarget) {
 
 function runGoTidyAdvisory(projectDir: string) {
   return Effect.gen(function* () {
-    const tempRoot = yield* fromPromise(() =>
-      mkdtemp(path.join(os.tmpdir(), "scaffbench-go-tidy-")),
-    );
-    const copyDir = path.join(tempRoot, "project");
-    const cleanup = fromPromise(() => rm(tempRoot, { recursive: true, force: true })).pipe(
-      Effect.ignore,
-    );
-    return yield* Effect.gen(function* () {
-      yield* fromPromise(() =>
-        cp(projectDir, copyDir, {
-          recursive: true,
-          filter: (source) => ![".git", "vendor", "node_modules"].includes(path.basename(source)),
-        }),
-      );
-      const beforeMod = yield* fromPromise(() => readOptional(path.join(copyDir, "go.mod")));
-      const beforeSum = yield* fromPromise(() => readOptional(path.join(copyDir, "go.sum")));
-      const tidy = yield* commandStep("go", ["mod", "tidy"], copyDir);
-      const afterMod = yield* fromPromise(() => readOptional(path.join(copyDir, "go.mod")));
-      const afterSum = yield* fromPromise(() => readOptional(path.join(copyDir, "go.sum")));
-      if (!stepGreen(tidy)) return { ...tidy, command: "go mod tidy (advisory diff)" };
-      if (beforeMod !== afterMod || beforeSum !== afterSum) {
-        return {
-          ...tidy,
-          command: "go mod tidy (advisory diff)",
-          exitCode: 1,
-          stderrTail: tail("go mod tidy would change go.mod/go.sum"),
-        };
-      }
-      return { ...tidy, command: "go mod tidy (advisory diff)" };
-    }).pipe(Effect.ensuring(cleanup));
+    const tidy = yield* commandStep("go", ["mod", "tidy", "-diff"], projectDir);
+    return { ...tidy, command: "go mod tidy (advisory diff)" };
   });
 }
 

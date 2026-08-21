@@ -315,7 +315,7 @@ describe("ScaffBench hardening 2: timeout and accounting", () => {
         `{"type":"turn.completed","usage":{"output_tokens":5,"reasoning_output_tokens":7}}`,
       ].join("\n"),
     );
-    expect(codex?.usage.output_tokens).toBe(12);
+    expect(codex?.usage.output_tokens).toBe(5);
     const opencode = parseOpencodeResult(
       `{"part":{"type":"step-finish","reason":"tool-calls","tokens":{"output":4,"reasoning":6},"cost":1}}`,
     );
@@ -499,7 +499,6 @@ describe("ScaffBench hardening 4: trial integrity", () => {
       run({ id: "solo", trial: 1, provenance: provenance({ configuredTrials: 1 }) }),
     ];
     expect(publicationEligibility(single)).toBe("ranked");
-    // Version consistency is still the gate that matters at any trial count.
     expect(
       publicationEligibility([
         ...single,
@@ -622,10 +621,7 @@ describe("ScaffBench hardening 5: validator v4", () => {
       const spec: BenchmarkSpec = {
         ...aiSpec,
         id: "prerequisite-test",
-        prerequisiteCommands: [
-          [one, log],
-          [two, log],
-        ],
+        prerequisiteCommands: [{ command: [one, log] }, { command: [two, log] }],
       };
       const validation = await effectPromise(validateProject(spec, dir, options(dir)));
       expect(await readFile(log, "utf8")).toBe("one\ntwo\n");
@@ -636,7 +632,7 @@ describe("ScaffBench hardening 5: validator v4", () => {
       const frontier = SCAFFBENCH_2_SPECS.find(
         (candidate) => candidate.id === "frontier-polyglot-proto",
       )!;
-      expect(frontier.prerequisiteCommands?.[0]).toEqual(["buf", "generate"]);
+      expect(frontier.prerequisiteCommands?.[0]?.command).toEqual(["buf", "generate"]);
     } finally {
       await rm(dir, { recursive: true, force: true });
     }

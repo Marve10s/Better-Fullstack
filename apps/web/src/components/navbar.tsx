@@ -51,7 +51,7 @@ const BUILDER_COMMAND_SEARCH = { view: "command", file: "" } as const;
 const BUILDER_PRESETS_SEARCH = { view: "presets", file: "" } as const;
 const DOCS_ACTIVE_OPTIONS = { includeSearch: false } as const;
 const DOCS_ACTIVE_PROPS = { className: "active" } as const;
-const DOCS_SKILL_PARAMS = { _splat: "ai/skills" } as const;
+const DOCS_SKILL_PARAMS = { _splat: "ai/overview" } as const;
 
 const NAV_LINK_CLASS =
   "font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground [&.active]:text-foreground sm:text-[12px]";
@@ -161,7 +161,6 @@ function HeaderCopyButton() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Clipboard unavailable — no-op
     }
   };
 
@@ -250,7 +249,7 @@ function DocsMenuItems() {
         {m.navMcp()}
       </DropdownMenuItem>
       <DropdownMenuItem
-        render={<Link to="/docs/$" params={DOCS_SKILL_PARAMS} />}
+        render={<Link to="/docs/$" params={DOCS_SKILL_PARAMS} hash="agent-skill" />}
         className="cursor-pointer font-mono text-[11px] uppercase tracking-[0.18em]"
       >
         {m.navSkill()}
@@ -493,7 +492,7 @@ function MobileNavMenu({ onBuilder }: { onBuilder: boolean }) {
               {m.navMcp()}
             </DropdownMenuItem>
             <DropdownMenuItem
-              render={<Link to="/docs/$" params={DOCS_SKILL_PARAMS} />}
+              render={<Link to="/docs/$" params={DOCS_SKILL_PARAMS} hash="agent-skill" />}
               className={MOBILE_MENU_ITEM_CLASS}
             >
               <Sparkles className="size-4" />
@@ -549,7 +548,7 @@ export function Navbar() {
           <Link
             to="/"
             className="flex items-center font-mono text-sm font-bold tracking-[-0.02em] text-foreground sm:text-base"
-            aria-label={`${SITE_NAME} — ${m.navHome()}`}
+            aria-label={`${SITE_NAME}, ${m.navHome()}`}
           >
             <span
               aria-hidden

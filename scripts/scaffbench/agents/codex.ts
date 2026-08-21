@@ -53,13 +53,8 @@ type CodexUsage = {
   reasoning_output_tokens?: number;
 };
 
-// Published token pricing (USD per 1M tokens) for the models driven via Codex.
-// Codex's JSONL reports token usage but no cost, so we price it ourselves.
-// Update when provider pricing changes. Source: OpenAI API pricing, 2026.
 const CODEX_PRICING: Record<string, { input: number; cachedInput: number; output: number }> = {
   "gpt-5.5": { input: 5, cachedInput: 0.5, output: 30 },
-  // GPT-5.6 preview pricing (2026): output = 6x input across tiers; cache reads
-  // get a 90% discount (cachedInput = 0.1x input).
   "gpt-5.6-sol": { input: 5, cachedInput: 0.5, output: 30 },
   "gpt-5.6-terra": { input: 2.5, cachedInput: 0.25, output: 15 },
   "gpt-5.6-luna": { input: 1, cachedInput: 0.1, output: 6 },
@@ -73,13 +68,12 @@ function codexPricingFor(model: string) {
   );
 }
 
-/** Estimated USD cost from codex token usage; undefined if the model isn't priced. */
 export function codexCostUsd(model: string, usage: CodexUsage): number | undefined {
   const price = codexPricingFor(model);
   if (!price) return undefined;
   const input = usage.input_tokens ?? 0;
   const cached = usage.cached_input_tokens ?? 0;
-  const output = (usage.output_tokens ?? 0) + (usage.reasoning_output_tokens ?? 0);
+  const output = usage.output_tokens ?? 0;
   return (
     (Math.max(0, input - cached) * price.input +
       cached * price.cachedInput +
@@ -87,11 +81,7 @@ export function codexCostUsd(model: string, usage: CodexUsage): number | undefin
     1_000_000
   );
 }
-// Codex analogue of parseClaudeResult. The JSONL stream carries token usage on
-// the final `turn.completed` event and the session on `thread.started`. Codex
-// reports no USD cost, so we estimate it from token usage × CODEX_PRICING (pass
-// the model). Output tokens = answer + reasoning, so the cost of "thinking
-// harder" is visible in the token column.
+
 export function parseCodexResult(stdout: string, model?: string): any | null {
   const usageEvents: CodexUsage[] = [];
   let threadId: string | undefined;
@@ -121,19 +111,13 @@ export function parseCodexResult(stdout: string, model?: string): any | null {
     }
   }
   if (!sawUsage && !threadId && !terminalReason) return null;
-  // Codex versions have emitted both per-turn deltas and monotonically
-  // cumulative snapshots. When every successive snapshot is a non-decreasing
-  // field-wise superset, use the final snapshot; otherwise sum the deltas.
   const cumulative = usageEvents.every(
     (usage, index) => index === 0 || isUsageSuperset(usageEvents[index - 1]!, usage),
   );
   const usage = cumulative
     ? usageEvents.at(-1)
     : usageEvents.reduce<CodexUsage | undefined>(addCodexUsage, undefined);
-  const outputTokens =
-    usage !== undefined
-      ? (usage.output_tokens ?? 0) + (usage.reasoning_output_tokens ?? 0)
-      : undefined;
+  const outputTokens = usage !== undefined ? (usage.output_tokens ?? 0) : undefined;
   return {
     type: "result",
     usage: outputTokens !== undefined ? { output_tokens: outputTokens } : undefined,

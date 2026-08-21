@@ -16,33 +16,18 @@ import { getLocale } from "@/paraglide/runtime.js";
 
 import type { TocEntry } from "./remark-extract-toc";
 
-/**
- * Frontmatter shape every MDX file is expected to declare. Loosely typed so
- * a missing `description` or `title` doesn't blow up at build time — the
- * route handler renders fallbacks for those cases.
- */
 export type DocFrontmatter = {
   title?: string;
   description?: string;
   updated?: string;
   image?: string;
   translationStatus?: "pending";
-  /** `"landing"` drops the breadcrumb, default header, TOC rail, and prev/next nav. */
   layout?: "landing";
 };
 
-/**
- * Each compiled MDX module exposes the React component as default and the
- * named exports our remark plugins emit.
- */
 type ContentLocale = SupportedLocale;
 type LocalizedFrontmatter<T> = Partial<Record<LocalizedContentLocale, T>>;
 
-/**
- * Sidebar config per directory (mirrors Fumadocs `meta.json` shape so we can
- * keep the existing files). `pages` is an ordered list of names: bare
- * filenames (without `.mdx`), subdirectory names, or `---Label---` separators.
- */
 export type MetaFile = {
   title?: string;
   defaultOpen?: boolean;
@@ -61,11 +46,6 @@ export type FolderNode = {
   type: "folder";
   name: string;
   defaultOpen: boolean;
-  /**
-   * Reference to this folder's index page (the `index.mdx` inside it). The
-   * sidebar uses the index page's URL when the folder header itself is
-   * clicked.
-   */
   index?: DocPage;
   children: PageTreeNode[];
 };
@@ -77,13 +57,6 @@ export type SeparatorNode = {
 
 export type PageTreeNode = PageNode | FolderNode | SeparatorNode;
 
-/**
- * Per-page metadata exposed to routes, the sidebar, sitemap, etc. The actual
- * MDX component, table of contents, and raw markdown are intentionally NOT
- * here — they live in `DocPageContent` and are loaded on demand via
- * `useDocPageContent` so the full docs content never lands in the app entry
- * chunk. `path` is the on-disk relative path used for "Edit on GitHub" links.
- */
 export type DocPage = {
   slug: string[];
   url: string;
@@ -93,7 +66,6 @@ export type DocPage = {
   localizedFrontmatter?: LocalizedFrontmatter<DocFrontmatter>;
 };
 
-/** Heavy per-page bundle, loaded lazily for the page being viewed. */
 export type DocPageContent = {
   raw: string;
   toc: TocEntry[];
@@ -262,16 +234,11 @@ export function localizeDocPage(page: DocPage): DocPage {
   };
 }
 
-/**
- * Convert a Vite glob path like `../../../content/docs/cli/create.mdx` into a
- * canonical relative path `cli/create.mdx` and the matching slug array.
- */
 function normalizeMdxPath(filePath: string): { relativePath: string; slug: string[] } {
   const idx = filePath.indexOf(CONTENT_PREFIX);
   const relativePath = filePath.slice(idx + CONTENT_PREFIX.length);
   const noExt = relativePath.replace(/\.mdx$/, "");
   const segments = noExt.split("/");
-  // `index` collapses into the parent (root or section index page).
   const slug = segments[segments.length - 1] === "index" ? segments.slice(0, -1) : segments;
   return { relativePath, slug };
 }
@@ -283,11 +250,6 @@ function normalizeMetaPath(filePath: string): { dirSlug: string[] } {
   return { dirSlug };
 }
 
-/**
- * Build a stable lookup keyed by joined slug ("" for root, "cli/create" for
- * leaf pages). Lookups happen at module init time so route handlers run in
- * O(1).
- */
 const pagesBySlug = new Map<string, DocPage>();
 for (const { filePath, frontmatter, localizedFrontmatter } of docsMeta) {
   const { relativePath, slug } = normalizeMdxPath(filePath);
@@ -323,17 +285,12 @@ async function loadPageContent(page: DocPage): Promise<DocPageContent> {
   };
 }
 
-/**
- * Suspense hook: returns the page's MDX component/toc/raw, suspending while
- * the chunk loads. Callers must render inside a `<Suspense>` boundary.
- */
 export function useDocPageContent(page: DocPage): DocPageContent {
   return contentCache.read(contentCacheKey(page, currentContentLocale()), () =>
     loadPageContent(page),
   );
 }
 
-/** Start fetching a page's content chunk early (e.g. from a route loader). */
 export function preloadDocPageContent(slug: string[] | undefined): void {
   if (!canRenderDocPageContent()) return;
   const page = getPage(slug);
@@ -341,10 +298,6 @@ export function preloadDocPageContent(slug: string[] | undefined): void {
   contentCache.preload(contentCacheKey(page, currentContentLocale()), () => loadPageContent(page));
 }
 
-/**
- * Load the raw markdown of every docs page, keyed by glob file path. Used by
- * the search index — heavy, so callers must be lazy (e.g. on dialog open).
- */
 export async function loadAllRawPages(): Promise<Map<string, string>> {
   const locale = currentContentLocale();
   const entries = await Promise.all(
@@ -374,7 +327,6 @@ function buildFolder(
 ): FolderNode {
   const key = dirSlug.join("/");
   if (visited.has(key)) {
-    // Defensive guard against accidental meta.json self-references.
     return {
       type: "folder",
       name: meta?.title ?? key,
@@ -387,12 +339,9 @@ function buildFolder(
   const indexPage = pagesBySlug.get(key);
   const children: PageTreeNode[] = [];
 
-  // If meta.json declares `pages`, use it as the ordering. Otherwise fall
-  // back to alphabetical leaf pages in this directory.
   const declared = meta?.pages;
   if (declared && declared.length > 0) {
     for (const entry of declared) {
-      // Separator: ---Label---
       const separator = entry.match(/^---(.+)---$/);
       if (separator) {
         children.push({ type: "separator", name: separator[1].trim() });
@@ -404,9 +353,7 @@ function buildFolder(
       const childMeta = metaByDir.get(childKey);
 
       if (page && !childMeta) {
-        // Leaf page in current directory.
         if (entry === "index" && page.slug.join("/") === key) {
-          // Skip — the folder's index is rendered as the folder header link.
           continue;
         }
         children.push({
@@ -420,7 +367,6 @@ function buildFolder(
       }
 
       if (childMeta || hasPagesUnder(childKey)) {
-        // Subdirectory; recurse.
         const childDirSlug = childKey.split("/");
         const folder = buildFolder(childDirSlug, childMeta, visited);
         children.push(folder);
@@ -428,11 +374,10 @@ function buildFolder(
       }
     }
   } else {
-    // No meta.json: emit pages from this directory alphabetically.
     for (const [childKey, page] of pagesBySlug.entries()) {
       const parent = childKey.includes("/") ? childKey.slice(0, childKey.lastIndexOf("/")) : "";
       if (parent !== key) continue;
-      if (page.slug.join("/") === key) continue; // index handled above
+      if (page.slug.join("/") === key) continue;
       children.push({
         type: "page",
         name: page.frontmatter.title ?? page.slug[page.slug.length - 1],
@@ -502,11 +447,6 @@ export function getLocalizedPageTree(): FolderNode {
   return localizePageTreeNode(pageTree) as FolderNode;
 }
 
-/**
- * Flatten the page tree into a linear list of pages in sidebar order — used
- * to compute prev/next pagination links and to render the linear list in
- * mobile menus.
- */
 export function flattenPages(node: PageTreeNode = pageTree): PageNode[] {
   const localizedRoot = node === pageTree ? getLocalizedPageTree() : node;
   const out: PageNode[] = [];

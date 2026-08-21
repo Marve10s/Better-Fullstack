@@ -2,19 +2,18 @@ import type { BenchmarkSpec } from "@/types";
 
 export const MultiDotnetOpsSpec: BenchmarkSpec = {
     id: "multi-dotnet-ops",
-    introducedAt: "2026-06-25",
+    introducedAt: "2026-08-21",
     title: "Multi-ecosystem ops portal with TypeScript frontend and .NET Minimal API backend",
     lane: "core",
     family: "multi-ecosystem",
     supportedByBetterFullstack: true,
     requirements: [
-      "Create one multi-ecosystem project graph.",
+      "Create one multi-ecosystem project graph for an incident-ops portal: on-call engineers acknowledge incidents in the web UI, the backend fans out notifications.",
       "Use a Next.js TypeScript frontend with Tailwind and shadcn/ui.",
       "Use an ASP.NET Minimal API backend.",
-      "Use EF Core, ASP.NET Identity, Minimal API endpoints, xUnit, Testcontainers for .NET, Serilog, SignalR, FluentValidation, Hangfire, memory cache, and Docker output.",
+      "Use EF Core, ASP.NET Identity, Minimal API endpoints, xUnit, Testcontainers for .NET, Serilog, SignalR for live incident updates, FluentValidation, Hangfire for notification fan-out, memory cache, and Docker output.",
       "Use PostgreSQL as the shared database.",
       "Include Turborepo, Biome, and GitHub Actions.",
-      "Do not initialize git or start a dev server.",
     ],
     naturalPrompt:
       "Build a multi-ecosystem ops portal starter: a TypeScript web frontend and a .NET backend. It needs Postgres-backed identity, API endpoints, validation, background jobs, realtime notifications, observability/logging, tests, containers, and CI. Use the project graph instead of forcing everything into one ecosystem.",
@@ -105,9 +104,10 @@ export const MultiDotnetOpsSpec: BenchmarkSpec = {
     strictMarkers: [
       { id: "frontend:next", deps: ["next"] },
       { id: "frontend:tailwind", deps: ["tailwindcss"] },
-      { id: "frontend:shadcn", files: ["apps/web/components.json"] },
-      { id: "backend:aspnet-minimal", files: ["apps/server/Program.cs"], text: ["MapGet"] },
+      { id: "frontend:shadcn", files: ["components.json"] },
+      { id: "backend:aspnet-minimal", files: ["Program.cs"], text: ["MapGet"] },
       { id: "orm:ef-core", text: ["Microsoft.EntityFrameworkCore"] },
+      { id: "db:postgres", textAny: ["Npgsql"] },
       { id: "auth:aspnet-identity", text: ["Microsoft.AspNetCore.Identity"] },
       { id: "testing:xunit", text: ["xunit"] },
       { id: "testing:testcontainers", text: ["Testcontainers"] },
@@ -115,7 +115,14 @@ export const MultiDotnetOpsSpec: BenchmarkSpec = {
       { id: "realtime:signalr", text: ["SignalR"] },
       { id: "validation:fluentvalidation", text: ["FluentValidation"] },
       { id: "jobs:hangfire", text: ["Hangfire"] },
-      { id: "addon:github-actions", files: [".github/workflows/ci.yml"] },
+      {
+        id: "caching:memory-cache",
+        textAny: ["IMemoryCache", "AddMemoryCache", "Microsoft.Extensions.Caching.Memory"],
+      },
+      { id: "deploy:docker", files: ["Dockerfile"] },
+      { id: "addon:turborepo", deps: ["turbo"] },
+      { id: "addon:biome", deps: ["@biomejs/biome"] },
+      { id: "addon:github-actions", files: [".github/workflows/*.y*ml"] },
     ],
     validationProfile: {
       packageManager: "bun",

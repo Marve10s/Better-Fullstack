@@ -2,22 +2,21 @@ import type { BenchmarkSpec } from "@/types";
 
 export const RustLeptosAxumSpec: BenchmarkSpec = {
     id: "rust-leptos-axum",
-    introducedAt: "2026-06-25",
+    introducedAt: "2026-08-21",
     title: "Rust Axum API with a Leptos WASM frontend and typed service libraries",
     lane: "core",
     family: "rust",
     supportedByBetterFullstack: true,
     requirements: [
-      "Create a Rust project with Axum as the backend web framework.",
-      "Use Leptos specifically for the WASM frontend; do not replace it with Dioxus or React.",
+      "Create a Rust project for an internal feature-flag console with Axum as the backend web framework (not Actix).",
+      "Use Leptos specifically for the WASM frontend; do not replace it with Dioxus, Yew, or a JavaScript frontend.",
       "Use PostgreSQL with SQLx.",
       "Use Tonic for a typed API boundary.",
       "Include Clap CLI support, tracing, anyhow/thiserror, Moka caching, OAuth2 auth, Lapin jobs, OpenTelemetry, and Askama templates.",
       "Include serde, uuid, chrono, reqwest, config, utoipa, validator, and tokio-test libraries.",
-      "Do not initialize git or start a dev server.",
     ],
     naturalPrompt:
-      "Build a Rust starter for an internal product console. It should have an Axum server, a Rust WASM frontend, Postgres access, typed service/API boundaries, CLI/admin utilities, tracing, auth, cache, jobs, and template rendering. Choose the right Rust libraries rather than swapping in web defaults.",
+      "Build a Rust starter for an internal feature-flag console. It should have an Axum server, a Rust WASM frontend, Postgres access, typed service/API boundaries, CLI/admin utilities, tracing, auth, cache, jobs, and template rendering. Choose the right Rust libraries rather than swapping in web defaults.",
     rightLibraryNotes: [
       "Leptos is required for the Rust WASM frontend.",
       "Axum is required for the server.",
@@ -109,9 +108,13 @@ export const RustLeptosAxumSpec: BenchmarkSpec = {
       {
         id: "frontend:leptos",
         text: ["leptos", "leptos_router"],
-        files: ["crates/client/Cargo.toml"],
+        files: ["*/Cargo.toml"],
       },
       { id: "orm:sqlx", text: ["sqlx"] },
+      {
+        id: "db:postgres",
+        textAny: ["PgPool", "sqlx::postgres", "sqlx::Postgres", "tokio-postgres"],
+      },
       { id: "api:tonic", text: ["tonic"] },
       { id: "cli:clap", text: ["clap"] },
       { id: "logging:tracing", text: ["tracing"] },
@@ -120,7 +123,25 @@ export const RustLeptosAxumSpec: BenchmarkSpec = {
       { id: "jobs:lapin", text: ["lapin"] },
       { id: "observability:opentelemetry", text: ["opentelemetry"] },
       { id: "templating:askama", text: ["askama"] },
-      { id: "forbidden:dioxus", forbiddenText: ["dioxus-router", "Dioxus.toml"] },
+      { id: "errors:anyhow-thiserror", text: ["anyhow", "thiserror"] },
+      { id: "lib:serde", text: ["serde"] },
+      { id: "lib:uuid", text: ["uuid"] },
+      { id: "lib:chrono", text: ["chrono"] },
+      { id: "lib:reqwest", text: ["reqwest"] },
+      { id: "lib:config", textAny: ['config = "', "config = {", "config.workspace"] },
+      { id: "lib:utoipa", text: ["utoipa"] },
+      { id: "lib:validator", text: ["validator"] },
+      { id: "lib:tokio-test", text: ["tokio-test"] },
+      {
+        id: "forbidden:dioxus",
+        forbiddenText: ["dioxus-router", "dioxus::prelude", "dioxus = {", "dioxus.workspace"],
+        forbiddenFiles: ["Dioxus.toml"],
+      },
+      { id: "forbidden:actix", forbiddenText: ["actix-web"] },
+      {
+        id: "forbidden:yew",
+        forbiddenText: ["yew::prelude", "yew = {", 'yew = "', "yew.workspace"],
+      },
     ],
     validationProfile: { native: ["cargo"] },
   };

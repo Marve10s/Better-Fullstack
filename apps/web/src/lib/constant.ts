@@ -4176,7 +4176,7 @@ export const TECH_OPTIONS: Record<
       id: "anyhow-thiserror",
       name: "anyhow + thiserror",
       description:
-        "anyhow for application errors with thiserror for custom error types — the standard Rust combo",
+        "anyhow for application errors with thiserror for custom error types, the standard Rust combo",
       icon: "",
       color: "from-red-500 to-orange-600",
       default: true,

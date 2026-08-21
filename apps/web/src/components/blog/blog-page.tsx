@@ -23,8 +23,6 @@ const AUTHOR_LINKS: Record<string, string> = {
 const EMPTY_AUTHORS: string[] = [];
 
 export function BlogPostPageContent({ post }: { post: BlogPost }) {
-  // The MDX body chunk loads on demand; render nothing extra while waiting —
-  // the surrounding route shell (navbar etc.) stays visible.
   if (!canRenderBlogPostContent()) return <BlogPostShell post={post} />;
   return (
     <Suspense fallback={null}>

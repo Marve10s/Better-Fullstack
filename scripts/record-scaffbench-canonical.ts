@@ -3,7 +3,7 @@
 import * as BunContext from "@effect/platform-bun/BunContext";
 import * as Effect from "effect/Effect";
 import { existsSync } from "node:fs";
-import { mkdir, rm } from "node:fs/promises";
+import { mkdir, readdir, rm } from "node:fs/promises";
 import path from "node:path";
 
 import {
@@ -34,7 +34,7 @@ function scaffbenchOptions(specs: string[]): ScaffbenchOptions {
   return {
     model: "canonical-cli",
     efforts: ["default"],
-    paths: ["cli"],
+    paths: ["prompt"],
     specs,
     repeats: 1,
     outDir: path.resolve(OUTPUT_DIR),
@@ -81,9 +81,39 @@ function displayCommand(command: readonly string[]): string {
   return command.map((argument) => JSON.stringify(argument)).join(" ");
 }
 
+async function findGoModuleDirs(root: string, depth = 3): Promise<string[]> {
+  if (depth < 0) return [];
+  const found: string[] = [];
+  let entries;
+  try {
+    entries = await readdir(root, { withFileTypes: true });
+  } catch {
+    return found;
+  }
+  for (const entry of entries) {
+    if (entry.name === "node_modules" || entry.name === "vendor" || entry.name.startsWith(".")) {
+      continue;
+    }
+    const next = path.join(root, entry.name);
+    if (entry.isFile() && entry.name === "go.mod") found.push(root);
+    if (entry.isDirectory()) found.push(...(await findGoModuleDirs(next, depth - 1)));
+  }
+  return [...new Set(found)];
+}
+
+async function runDocumentedGoSetup(projectDir: string): Promise<void> {
+  for (const moduleDir of await findGoModuleDirs(projectDir)) {
+    // oxlint-disable-next-line no-await-in-loop
+    const tidy = await runCommand(["go", "mod", "tidy"], moduleDir);
+    if (tidy.exitCode !== 0) {
+      console.warn(`go mod tidy failed in ${path.relative(projectDir, moduleDir) || "."}`);
+    }
+  }
+}
+
 async function buildLocalCliBinary(): Promise<string> {
   for (const packageDirectory of ["packages/types", "packages/template-generator", "apps/cli"]) {
-    // oxlint-disable-next-line no-await-in-loop -- workspace packages must build in dependency order.
+    // oxlint-disable-next-line no-await-in-loop
     const result = await runCommand(
       [process.execPath, "run", "build"],
       path.join(REPO_ROOT, packageDirectory),
@@ -123,23 +153,27 @@ async function main(): Promise<void> {
     for (const spec of specs) {
       const projectName = `canonical-${spec.id}`;
       const projectDir = path.join(PROJECT_ROOT, projectName);
-      // oxlint-disable-next-line no-await-in-loop -- canonical runs stay isolated and deterministic.
+      // oxlint-disable-next-line no-await-in-loop
       await rm(projectDir, { recursive: true, force: true });
 
       const command = localCanonicalCommand(cliPath, spec, projectName);
       const commandText = displayCommand(command);
       console.log(`SCAFFBENCH ${spec.id}: ${commandText}`);
-      // oxlint-disable-next-line no-await-in-loop -- avoid overlapping package installs across specs.
+      // oxlint-disable-next-line no-await-in-loop
       const create = await runCommand(command, PROJECT_ROOT);
       const projectExists = create.exitCode === 0;
-      // oxlint-disable-next-line no-await-in-loop -- validate each isolated scaffold before scoring it.
+      if (projectExists) {
+        // oxlint-disable-next-line no-await-in-loop
+        await runDocumentedGoSetup(projectDir);
+      }
+      // oxlint-disable-next-line no-await-in-loop
       const validation = await validateProject(
         spec,
         projectExists ? projectDir : null,
         options,
       ).pipe(Effect.provide(BunContext.layer), Effect.runPromise);
       const scored = projectExists
-        ? // oxlint-disable-next-line no-await-in-loop -- scoring consumes the just-validated project.
+        ? // oxlint-disable-next-line no-await-in-loop
           await scoreProject(spec, projectDir, options.promptStyle)
         : {
             artifact: {
@@ -158,7 +192,7 @@ async function main(): Promise<void> {
         specTitle: spec.title,
         model: options.model,
         effort: "default",
-        path: "cli",
+        path: "prompt",
         trial: 1,
         promptStyle: options.promptStyle,
         runDir: projectDir,

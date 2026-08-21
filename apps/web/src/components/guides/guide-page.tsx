@@ -15,8 +15,6 @@ import { localizeGuidePage, localizeTocEntries } from "@/lib/i18n/content-copy";
 import { m } from "@/paraglide/messages.js";
 
 export function GuidePageContent({ page }: { page: GuidePage }) {
-  // The MDX body chunk loads on demand; render nothing extra while waiting —
-  // the surrounding route shell (navbar etc.) stays visible.
   if (!canRenderGuidePageContent()) return <GuidePageShell page={localizeGuidePage(page)} />;
   return (
     <Suspense fallback={null}>
