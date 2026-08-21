@@ -100,14 +100,14 @@ Do not assume a framework name implies one hosting vendor. Evaluate the actual g
 
 ## Decision table
 
-| If this is the stronger constraint | Start with |
-| --- | --- |
-| TanStack Router is the desired route model | TanStack Start |
-| Existing Next.js code and deployment knowledge | Next.js |
-| One web client, one deployment | Either framework-owned backend |
-| Stable API for multiple clients | Separate backend; then choose the web framework |
-| TypeScript schema-first SQL workflow | Either with Drizzle |
-| Prisma schema and client workflow | Either with Prisma, after verifying the exact selection |
+| If this is the stronger constraint             | Start with                                              |
+| ---------------------------------------------- | ------------------------------------------------------- |
+| TanStack Router is the desired route model     | TanStack Start                                          |
+| Existing Next.js code and deployment knowledge | Next.js                                                 |
+| One web client, one deployment                 | Either framework-owned backend                          |
+| Stable API for multiple clients                | Separate backend; then choose the web framework         |
+| TypeScript schema-first SQL workflow           | Either with Drizzle                                     |
+| Prisma schema and client workflow              | Either with Prisma, after verifying the exact selection |
 
 ## A reversible way to decide
 

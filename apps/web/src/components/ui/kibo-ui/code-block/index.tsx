@@ -97,6 +97,7 @@ export type BundledLanguage = string;
 
 type SupportedTheme =
   | "github-light"
+  | "github-light-default"
   | "github-dark-default"
   | "catppuccin-latte"
   | "catppuccin-mocha";
@@ -113,6 +114,7 @@ const DEFAULT_THEMES: { light: SupportedTheme; dark: SupportedTheme } = {
 
 const SUPPORTED_THEMES = new Set<SupportedTheme>([
   "github-light",
+  "github-light-default",
   "github-dark-default",
   "catppuccin-latte",
   "catppuccin-mocha",
@@ -173,6 +175,7 @@ const SUPPORTED_LANGUAGES = new Set<string>(Object.keys(LANGUAGE_LOADERS));
 
 const THEME_LOADERS: Record<SupportedTheme, DynamicShikiLoader> = {
   "github-light": () => import("shiki/dist/themes/github-light.mjs"),
+  "github-light-default": () => import("shiki/dist/themes/github-light-default.mjs"),
   "github-dark-default": () => import("shiki/dist/themes/github-dark-default.mjs"),
   "catppuccin-latte": () => import("shiki/dist/themes/catppuccin-latte.mjs"),
   "catppuccin-mocha": () => import("shiki/dist/themes/catppuccin-mocha.mjs"),
@@ -184,6 +187,7 @@ type HighlighterLike = {
     options: {
       lang: string;
       themes: ThemePair;
+      defaultColor: false;
       transformers: unknown[];
     },
   ) => string;
@@ -503,6 +507,9 @@ export const highlight = async (
       light: themePair.light,
       dark: themePair.dark,
     },
+    // Emit custom properties only, matching the build-time MDX pipeline, so
+    // the `.shiki` rules in global.css drive both paths.
+    defaultColor: false,
     transformers: [
       transformerNotationDiff({
         matchAlgorithm: "v3",

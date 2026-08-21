@@ -257,10 +257,10 @@ describe("SEO contracts", () => {
     const llms = generateLlmsTxt({
       docsPages: [
         {
-          url: "/docs/ai/mcp-tools",
-          slug: ["ai", "mcp-tools"],
+          url: "/docs/ai/mcp",
+          slug: ["ai", "mcp"],
           frontmatter: {
-            title: "MCP Tools Reference",
+            title: "MCP Server",
             description: "Detailed reference for Better Fullstack MCP tools.",
           },
         },
@@ -289,7 +289,7 @@ describe("SEO contracts", () => {
     expect(llms).toContain(
       "https://better-fullstack.dev/guides/typescript/create-tanstack-start-project",
     );
-    expect(llms).toContain("https://better-fullstack.dev/docs/ai/mcp-tools");
+    expect(llms).toContain("https://better-fullstack.dev/docs/ai/mcp");
     expect(llms).toContain("## Stack Templates");
     expect(llms).toContain("https://better-fullstack.dev/stack/nextjs-hono-drizzle-better-auth");
   });

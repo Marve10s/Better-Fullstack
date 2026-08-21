@@ -53,32 +53,32 @@
     },
     {
       "source": "/docs/sections/deployment.md",
-      "destination": "/docs/stack-guides/deployment.md",
+      "destination": "/docs/stack-guides.md",
       "permanent": true
     },
     {
       "source": "/docs/sections/frontend-and-apps.md",
-      "destination": "/docs/stack-guides/frontend-frameworks.md",
+      "destination": "/docs/stack-guides.md",
       "permanent": true
     },
     {
       "source": "/docs/sections/backend-and-api.md",
-      "destination": "/docs/stack-guides/backend-frameworks.md",
+      "destination": "/docs/stack-guides.md",
       "permanent": true
     },
     {
       "source": "/docs/sections/data-and-storage.md",
-      "destination": "/docs/stack-guides/database-orm-pairing.md",
+      "destination": "/docs/stack-guides.md",
       "permanent": true
     },
     {
       "source": "/docs/sections/auth-and-payments.md",
-      "destination": "/docs/stack-guides/auth-providers.md",
+      "destination": "/docs/stack-guides.md",
       "permanent": true
     },
     {
       "source": "/docs/sections.md",
-      "destination": "/docs/reference/options.md",
+      "destination": "/docs/cli/create.md",
       "permanent": true
     },
     {
@@ -118,32 +118,32 @@
     },
     {
       "source": "/docs/sections/deployment",
-      "destination": "/docs/stack-guides/deployment",
+      "destination": "/docs/stack-guides",
       "permanent": true
     },
     {
       "source": "/docs/sections/frontend-and-apps",
-      "destination": "/docs/stack-guides/frontend-frameworks",
+      "destination": "/docs/stack-guides",
       "permanent": true
     },
     {
       "source": "/docs/sections/backend-and-api",
-      "destination": "/docs/stack-guides/backend-frameworks",
+      "destination": "/docs/stack-guides",
       "permanent": true
     },
     {
       "source": "/docs/sections/data-and-storage",
-      "destination": "/docs/stack-guides/database-orm-pairing",
+      "destination": "/docs/stack-guides",
       "permanent": true
     },
     {
       "source": "/docs/sections/auth-and-payments",
-      "destination": "/docs/stack-guides/auth-providers",
+      "destination": "/docs/stack-guides",
       "permanent": true
     },
     {
       "source": "/docs/sections",
-      "destination": "/docs/reference/options",
+      "destination": "/docs/cli/create",
       "permanent": true
     },
     {
@@ -153,7 +153,352 @@
     },
     {
       "source": "/docs/sections/:path*",
-      "destination": "/docs/reference/options",
+      "destination": "/docs/cli/create",
+      "permanent": true
+    },
+    {
+      "source": "/docs/reference/options.md",
+      "destination": "/docs/cli/create.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/reference/options/:page.md",
+      "destination": "/docs/cli/create.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/reference/options",
+      "destination": "/docs/cli/create",
+      "permanent": true
+    },
+    {
+      "source": "/docs/reference/options/:path*",
+      "destination": "/docs/cli/create",
+      "permanent": true
+    },
+    {
+      "source": "/docs/reference/compatibility.md",
+      "destination": "/docs/stack-guides.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/reference/verified-combinations.md",
+      "destination": "/docs/cli/create.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/reference/versioning.md",
+      "destination": "/docs/cli.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/reference/compatibility",
+      "destination": "/new",
+      "permanent": true
+    },
+    {
+      "source": "/docs/reference/verified-combinations",
+      "destination": "/new",
+      "permanent": true
+    },
+    {
+      "source": "/docs/reference/versioning",
+      "destination": "/docs/cli",
+      "permanent": true
+    },
+    {
+      "source": "/docs/reference",
+      "destination": "/docs",
+      "permanent": true
+    },
+    {
+      "source": "/docs/reference/:path*",
+      "destination": "/docs",
+      "permanent": true
+    },
+    {
+      "source": "/docs/provider-setup/database-provisioning.md",
+      "destination": "/docs/stack-guides.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/provider-setup/environment-variables.md",
+      "destination": "/docs/getting-started/first-project.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/provider-setup/database-provisioning",
+      "destination": "/docs/stack-guides",
+      "permanent": true
+    },
+    {
+      "source": "/docs/provider-setup/environment-variables",
+      "destination": "/docs/getting-started/first-project",
+      "permanent": true
+    },
+    {
+      "source": "/docs/cli/remove.md",
+      "destination": "/docs/cli/add.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/cli/status.md",
+      "destination": "/docs/cli/update.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/cli/check.md",
+      "destination": "/docs/cli/update.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/cli/gen.md",
+      "destination": "/docs/cli/experimental.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/cli/registry.md",
+      "destination": "/docs/cli/experimental.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/cli/recommend.md",
+      "destination": "/docs/cli/experimental.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/cli/history.md",
+      "destination": "/docs/cli/create.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/cli/utilities.md",
+      "destination": "/docs/cli.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/cli/remove",
+      "destination": "/docs/cli/add",
+      "permanent": true
+    },
+    {
+      "source": "/docs/cli/status",
+      "destination": "/docs/cli/update",
+      "permanent": true
+    },
+    {
+      "source": "/docs/cli/check",
+      "destination": "/docs/cli/update",
+      "permanent": true
+    },
+    {
+      "source": "/docs/cli/gen",
+      "destination": "/docs/cli/experimental",
+      "permanent": true
+    },
+    {
+      "source": "/docs/cli/registry",
+      "destination": "/docs/cli/experimental",
+      "permanent": true
+    },
+    {
+      "source": "/docs/cli/recommend",
+      "destination": "/docs/cli/experimental",
+      "permanent": true
+    },
+    {
+      "source": "/docs/cli/history",
+      "destination": "/docs/cli/create",
+      "permanent": true
+    },
+    {
+      "source": "/docs/cli/utilities",
+      "destination": "/docs/cli",
+      "permanent": true
+    },
+    {
+      "source": "/docs/ai/mcp-tools.md",
+      "destination": "/docs/ai/mcp.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/ai/skills.md",
+      "destination": "/docs/ai/overview.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/ai/plugin.md",
+      "destination": "/docs/ai/overview.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/ai/mcp-tools",
+      "destination": "/docs/ai/mcp",
+      "permanent": true
+    },
+    {
+      "source": "/docs/ai/skills",
+      "destination": "/docs/ai/overview",
+      "permanent": true
+    },
+    {
+      "source": "/docs/ai/plugin",
+      "destination": "/docs/ai/overview",
+      "permanent": true
+    },
+    {
+      "source": "/docs/ecosystems/typescript.md",
+      "destination": "/docs/ecosystems.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/ecosystems/react-native.md",
+      "destination": "/docs/ecosystems.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/ecosystems/rust.md",
+      "destination": "/docs/ecosystems.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/ecosystems/python.md",
+      "destination": "/docs/ecosystems.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/ecosystems/go.md",
+      "destination": "/docs/ecosystems.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/ecosystems/java.md",
+      "destination": "/docs/ecosystems.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/ecosystems/elixir.md",
+      "destination": "/docs/ecosystems.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/ecosystems/dotnet.md",
+      "destination": "/docs/ecosystems.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/ecosystems/typescript",
+      "destination": "/docs/ecosystems",
+      "permanent": true
+    },
+    {
+      "source": "/docs/ecosystems/react-native",
+      "destination": "/docs/ecosystems",
+      "permanent": true
+    },
+    {
+      "source": "/docs/ecosystems/rust",
+      "destination": "/docs/ecosystems",
+      "permanent": true
+    },
+    {
+      "source": "/docs/ecosystems/python",
+      "destination": "/docs/ecosystems",
+      "permanent": true
+    },
+    {
+      "source": "/docs/ecosystems/go",
+      "destination": "/docs/ecosystems",
+      "permanent": true
+    },
+    {
+      "source": "/docs/ecosystems/java",
+      "destination": "/docs/ecosystems",
+      "permanent": true
+    },
+    {
+      "source": "/docs/ecosystems/elixir",
+      "destination": "/docs/ecosystems",
+      "permanent": true
+    },
+    {
+      "source": "/docs/ecosystems/dotnet",
+      "destination": "/docs/ecosystems",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stack-guides/deployment.md",
+      "destination": "/docs/stack-guides.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stack-guides/frontend-frameworks.md",
+      "destination": "/docs/stack-guides.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stack-guides/backend-frameworks.md",
+      "destination": "/docs/stack-guides.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stack-guides/database-orm-pairing.md",
+      "destination": "/docs/stack-guides.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stack-guides/auth-providers.md",
+      "destination": "/docs/stack-guides.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/web-builder/edit-and-run.md",
+      "destination": "/docs/web-builder.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/web-builder/download-and-share.md",
+      "destination": "/docs/web-builder.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stack-guides/deployment",
+      "destination": "/docs/stack-guides",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stack-guides/frontend-frameworks",
+      "destination": "/docs/stack-guides",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stack-guides/backend-frameworks",
+      "destination": "/docs/stack-guides",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stack-guides/database-orm-pairing",
+      "destination": "/docs/stack-guides",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stack-guides/auth-providers",
+      "destination": "/docs/stack-guides",
+      "permanent": true
+    },
+    {
+      "source": "/docs/web-builder/edit-and-run",
+      "destination": "/docs/web-builder",
+      "permanent": true
+    },
+    {
+      "source": "/docs/web-builder/download-and-share",
+      "destination": "/docs/web-builder",
+      "permanent": true
+    },
+    {
+      "source": "/docs/provider-setup/:path*",
+      "destination": "/docs/stack-guides",
       "permanent": true
     }
   ],

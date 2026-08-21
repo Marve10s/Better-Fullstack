@@ -70,13 +70,13 @@ Choose Spring Boot when you want a conventional Java backend with a large ecosys
 
 Choose this guide when you want a minimal Spring Boot API with persistence but not security and migration tooling on day one. Choose the secure Spring guide when every endpoint should start behind Spring Security and integration testing with Testcontainers is part of the baseline.
 
-| Decision point | Minimal Spring JPA | Secure Spring API |
-| --- | --- | --- |
-| Build tool | Maven | Gradle |
-| Security | Not selected | Spring Security selected |
-| Database changes | Hibernate `ddl-auto` local loop | Flyway migration path |
-| Tests | JUnit 5 | JUnit 5 plus Testcontainers |
-| Best for | Learning, prototypes, internal CRUD | Production-oriented API baseline |
+| Decision point   | Minimal Spring JPA                  | Secure Spring API                |
+| ---------------- | ----------------------------------- | -------------------------------- |
+| Build tool       | Maven                               | Gradle                           |
+| Security         | Not selected                        | Spring Security selected         |
+| Database changes | Hibernate `ddl-auto` local loop     | Flyway migration path            |
+| Tests            | JUnit 5                             | JUnit 5 plus Testcontainers      |
+| Best for         | Learning, prototypes, internal CRUD | Production-oriented API baseline |
 
 ## Representative snippets
 
@@ -189,12 +189,12 @@ For production, add migrations, add the PostgreSQL JDBC driver, configure connec
 
 ## Troubleshooting
 
-| Symptom | Check |
-| --- | --- |
-| App starts with H2 instead of Postgres | Override `spring.datasource.*` in environment-specific config. |
+| Symptom                                | Check                                                                                          |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| App starts with H2 instead of Postgres | Override `spring.datasource.*` in environment-specific config.                                 |
 | `POST /users` accepts incomplete input | Add `--java-libraries spring-validation` in a future scaffold or add Bean Validation manually. |
-| JPA entities do not appear | Keep entities under the generated application package so component scanning finds them. |
-| Maven commands fail | Use `./mvnw`, not a globally installed Maven with a different version. |
+| JPA entities do not appear             | Keep entities under the generated application package so component scanning finds them.        |
+| Maven commands fail                    | Use `./mvnw`, not a globally installed Maven with a different version.                         |
 
 ## Tradeoffs
 
@@ -203,5 +203,5 @@ Spring Boot is heavier than minimal API frameworks, but it pays off when you nee
 ## Next steps
 
 - Open the [Stack Builder](/new?eco=java&jwf=spring-boot&jbt=maven&db=postgres&jorm=spring-data-jpa&jtest=junit5).
-- Read the [Java ecosystem docs](/docs/ecosystems/java/).
+- Read the [Java ecosystem docs](/docs/ecosystems/#java-and-kotlin).
 - Review the [CLI create reference](/docs/cli/create/).

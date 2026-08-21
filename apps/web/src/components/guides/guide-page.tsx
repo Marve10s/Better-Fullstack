@@ -4,6 +4,7 @@ import { Suspense } from "react";
 
 import { TableOfContents } from "@/components/docs/table-of-contents";
 import { localizedContentMdxComponents } from "@/components/mdx/localized-content-components";
+import { formatContentDate } from "@/lib/content-date";
 import {
   canRenderGuidePageContent,
   getRelatedGuidePages,
@@ -11,20 +12,7 @@ import {
   useGuidePageContent,
 } from "@/lib/guides/source";
 import { localizeGuidePage, localizeTocEntries } from "@/lib/i18n/content-copy";
-import { getLocaleDateTag } from "@/lib/i18n/locales";
 import { m } from "@/paraglide/messages.js";
-import { getLocale } from "@/paraglide/runtime.js";
-
-function formatGuideDate(date: string): string {
-  const parsed = new Date(`${date}T00:00:00Z`);
-  if (Number.isNaN(parsed.getTime())) return date;
-  return parsed.toLocaleDateString(getLocaleDateTag(getLocale()), {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    timeZone: "UTC",
-  });
-}
 
 export function GuidePageContent({ page }: { page: GuidePage }) {
   // The MDX body chunk loads on demand; render nothing extra while waiting —
@@ -39,7 +27,7 @@ export function GuidePageContent({ page }: { page: GuidePage }) {
 
 function GuidePageShell({ page }: { page: GuidePage }) {
   return (
-    <main className="docs-shell mx-auto grid w-full max-w-[94rem] grid-cols-1 border-[var(--docs-border-subtle)] border-t xl:grid-cols-[minmax(0,52rem)_16rem] xl:justify-center">
+    <main className="docs-shell mx-auto grid w-full max-w-[94rem] grid-cols-1 border-[var(--docs-border-subtle)] border-t xl:grid-cols-[minmax(0,52rem)_17rem] xl:justify-center">
       <article className="mx-auto w-full max-w-[52rem] px-5 py-12 sm:px-8 lg:py-14">
         <GuidePageHeader page={page} isIndex={page.slug.length === 0} />
       </article>
@@ -55,7 +43,7 @@ function GuidePageBody({ page }: { page: GuidePage }) {
   const relatedGuides = getRelatedGuidePages(page).map(localizeGuidePage);
 
   return (
-    <main className="docs-shell mx-auto grid w-full max-w-[94rem] grid-cols-1 border-[var(--docs-border-subtle)] border-t xl:grid-cols-[minmax(0,52rem)_16rem] xl:justify-center">
+    <main className="docs-shell mx-auto grid w-full max-w-[94rem] grid-cols-1 border-[var(--docs-border-subtle)] border-t xl:grid-cols-[minmax(0,52rem)_17rem] xl:justify-center">
       <article className="mx-auto w-full max-w-[52rem] px-5 py-12 sm:px-8 lg:py-14">
         <GuidePageHeader page={localizedPage} isIndex={isIndex} />
 
@@ -95,7 +83,7 @@ function GuidePageBody({ page }: { page: GuidePage }) {
           </nav>
         ) : null}
       </article>
-      <aside className="hidden border-[var(--docs-border-subtle)] border-l bg-[var(--docs-surface)]/35 xl:block">
+      <aside className="hidden xl:block">
         <TableOfContents toc={localizeTocEntries(content.toc)} />
       </aside>
     </main>
@@ -104,20 +92,20 @@ function GuidePageBody({ page }: { page: GuidePage }) {
 
 function GuidePageHeader({ page, isIndex }: { page: GuidePage; isIndex: boolean }) {
   return (
-    <header className="mb-10 border-[var(--docs-border-subtle)] border-b pb-8">
-      <Link
-        to="/guides"
-        className="font-mono text-[0.72rem] text-[var(--docs-accent)] uppercase transition-colors hover:text-foreground"
-      >
-        {m.navGuides()}
-      </Link>
-      {page.frontmatter.category && !isIndex ? (
-        <span className="ml-2 font-mono text-[0.72rem] text-muted-foreground uppercase">
-          / {page.frontmatter.category}
-        </span>
-      ) : null}
+    <header className="mb-10">
+      <p className="flex items-center gap-1.5 text-[0.8125rem] text-muted-foreground">
+        <Link to="/guides" className="transition-colors hover:text-foreground">
+          {m.navGuides()}
+        </Link>
+        {page.frontmatter.category && !isIndex ? (
+          <>
+            <span aria-hidden>›</span>
+            <span className="text-foreground">{page.frontmatter.category}</span>
+          </>
+        ) : null}
+      </p>
       {page.frontmatter.title ? (
-        <h1 className="mt-5 font-semibold text-4xl text-foreground leading-[1.08] md:text-5xl">
+        <h1 className="mt-5 font-semibold text-[2.5rem] text-foreground leading-[1.05] tracking-[-0.03em] md:text-5xl">
           {page.frontmatter.title}
         </h1>
       ) : null}
@@ -127,8 +115,8 @@ function GuidePageHeader({ page, isIndex }: { page: GuidePage; isIndex: boolean 
         </p>
       ) : null}
       {page.frontmatter.updated && !isIndex ? (
-        <p className="mt-4 font-mono text-[0.72rem] text-muted-foreground uppercase">
-          {m.guidesUpdated({ date: formatGuideDate(page.frontmatter.updated) })}
+        <p className="mt-4 text-[0.8125rem] text-muted-foreground">
+          {m.guidesUpdated({ date: formatContentDate(page.frontmatter.updated) })}
         </p>
       ) : null}
       {page.frontmatter.tags?.length ? (
@@ -136,7 +124,7 @@ function GuidePageHeader({ page, isIndex }: { page: GuidePage; isIndex: boolean 
           {page.frontmatter.tags.map((tag) => (
             <span
               key={tag}
-              className="rounded-md border border-[var(--docs-border-subtle)] bg-[var(--docs-surface)]/70 px-2 py-1 font-mono text-[0.68rem] text-muted-foreground uppercase"
+              className="rounded-md border border-[var(--docs-border-subtle)] bg-[var(--docs-surface)]/70 px-2 py-0.5 text-[0.75rem] text-muted-foreground"
             >
               {tag}
             </span>

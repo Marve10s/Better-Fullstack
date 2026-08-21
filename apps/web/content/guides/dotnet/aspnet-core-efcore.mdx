@@ -172,6 +172,7 @@ Choose Minimal APIs over `--dotnet-web-framework aspnet-mvc` when the service is
   ```
 
   Then `builder.Services.AddValidatorsFromAssemblyContaining<SampleInputValidator>()` resolves. Without that package the call does not compile, whatever the generated file's own comment suggests.
+
 - Deployment targets for .NET come from `--dotnet-deploy`, not the TypeScript `--web-deploy` and `--server-deploy` flags.
 
 ## Deployment notes
@@ -182,13 +183,13 @@ Before deploying, set the production connection string, apply migrations, and co
 
 ## Troubleshooting
 
-| Symptom | Check |
-| --- | --- |
-| `relation "Todos" does not exist` | Create and apply an EF migration; nothing creates the schema at startup. |
-| App binds an unexpected port | `PORT` is only honored when `ASPNETCORE_URLS` is unset. |
-| Identity user store fails to resolve | `AppDbContext` needs to derive from `IdentityDbContext` and have a migration. |
-| Validators never run | Add `FluentValidation.DependencyInjectionExtensions`, then register them with `AddValidatorsFromAssemblyContaining`. |
-| Connection string changes are ignored | Real environment variables win over the local `.env` the app loads at startup. |
+| Symptom                               | Check                                                                                                                |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `relation "Todos" does not exist`     | Create and apply an EF migration; nothing creates the schema at startup.                                             |
+| App binds an unexpected port          | `PORT` is only honored when `ASPNETCORE_URLS` is unset.                                                              |
+| Identity user store fails to resolve  | `AppDbContext` needs to derive from `IdentityDbContext` and have a migration.                                        |
+| Validators never run                  | Add `FluentValidation.DependencyInjectionExtensions`, then register them with `AddValidatorsFromAssemblyContaining`. |
+| Connection string changes are ignored | Real environment variables win over the local `.env` the app loads at startup.                                       |
 
 ## Tradeoffs
 
@@ -197,5 +198,5 @@ A single `Program.cs` keeps the scaffold readable but stops scaling once you add
 ## Next steps
 
 - Open the [Stack Builder](/new?eco=dotnet&dnwf=aspnet-minimal&dnorm=ef-core&dnauth=aspnet-identity&dnapi=minimal-api&dnval=fluentvalidation&db=postgres).
-- Read the [.NET ecosystem docs](/docs/ecosystems/dotnet/).
+- Read the [.NET ecosystem docs](/docs/ecosystems/#net).
 - Review the [CLI create reference](/docs/cli/create/).

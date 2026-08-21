@@ -69,13 +69,13 @@ Choose this for AI APIs, retrieval workflows, agent backends, and Python service
 
 Choose this over a plain FastAPI database API when the first-class workflow is model orchestration. Choose the SQLAlchemy guide when persistence is the center of the service and AI may be added later.
 
-| Need | This LangChain stack | Plain FastAPI API |
-| --- | --- | --- |
-| Chat/completion endpoint | Generated starting point | Add by hand |
-| Streaming responses | Included in the AI route pattern | Add when needed |
-| Data model style | SQLModel combines tables and Pydantic shapes | SQLAlchemy models plus Pydantic schemas |
-| Prompt/tool growth | AI client module gives a clear home | You choose the module boundary |
-| Production concern | Provider keys, latency, retries, observability | Database and HTTP behavior first |
+| Need                     | This LangChain stack                           | Plain FastAPI API                       |
+| ------------------------ | ---------------------------------------------- | --------------------------------------- |
+| Chat/completion endpoint | Generated starting point                       | Add by hand                             |
+| Streaming responses      | Included in the AI route pattern               | Add when needed                         |
+| Data model style         | SQLModel combines tables and Pydantic shapes   | SQLAlchemy models plus Pydantic schemas |
+| Prompt/tool growth       | AI client module gives a clear home            | You choose the module boundary          |
+| Production concern       | Provider keys, latency, retries, observability | Database and HTTP behavior first        |
 
 ## Representative snippets
 
@@ -174,15 +174,15 @@ For production agent workflows, add request IDs and structured logs around each 
 
 ## Troubleshooting
 
-| Symptom | Check |
-| --- | --- |
-| AI route returns provider errors | Verify `OPENAI_API_KEY` or the provider-specific environment variables. |
-| Streaming works locally but buffers in production | Confirm the proxy/platform supports streaming responses. |
-| Tests are slow or flaky | Mock LangChain/provider clients in unit tests. |
-| SQLModel tables are missing | Run Alembic migrations or initialize the database before hitting routes. |
+| Symptom                                           | Check                                                                    |
+| ------------------------------------------------- | ------------------------------------------------------------------------ |
+| AI route returns provider errors                  | Verify `OPENAI_API_KEY` or the provider-specific environment variables.  |
+| Streaming works locally but buffers in production | Confirm the proxy/platform supports streaming responses.                 |
+| Tests are slow or flaky                           | Mock LangChain/provider clients in unit tests.                           |
+| SQLModel tables are missing                       | Run Alembic migrations or initialize the database before hitting routes. |
 
 ## Next steps
 
 - Open the [Stack Builder](/new?eco=python&pwf=fastapi&porm=sqlmodel&pval=pydantic&pai=langchain&pq=ruff).
 - Compare with [Next.js AI CLI Agent Workbench](/guides/ai/nextjs-ai-cli-agent-workbench/).
-- Read the [Python ecosystem docs](/docs/ecosystems/python/).
+- Read the [Python ecosystem docs](/docs/ecosystems/#python).

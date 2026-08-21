@@ -15,15 +15,12 @@ import { m } from "@/paraglide/messages.js";
 const ACTIVE_RAIL_TRANSITION = { type: "spring", stiffness: 380, damping: 32 } as const;
 
 /**
- * Top-level docs sidebar. Renders the page tree as a list of sections (each
- * a `<details>` element so collapsed state is preserved through reloads via
- * `defaultOpen`) interleaved with mono-uppercase separators.
+ * Top-level docs sidebar. Renders the page tree as a list of sections, each a
+ * `<details>` element so collapsed state survives a reload via `defaultOpen`.
  *
  * Active link styling uses a `motion.div` with `layoutId` so the indicator
- * rail animates between pages on client-side navigation. The rail is
- * intentionally subtle — a 1px column to the left of the link, painted with
- * the foreground color, drawn via React's layout animation (no JS scroll
- * math needed).
+ * rail animates between pages on client-side navigation, with no JS scroll
+ * math needed.
  */
 export function DocsSidebar({ className }: { className?: string }) {
   const location = useLocation();
@@ -33,9 +30,9 @@ export function DocsSidebar({ className }: { className?: string }) {
   return (
     <nav
       aria-label={m.navDocs()}
-      className={cn("flex w-full flex-col gap-5 px-3 py-6 font-mono text-sm", className)}
+      className={cn("flex w-full flex-col gap-5 px-3 py-6 text-sm", className)}
     >
-      <DocsSearchTrigger className="w-full justify-between border-[var(--docs-border-subtle)] bg-[var(--docs-surface-elevated)]/85 px-3 py-2 text-[0.78rem] shadow-sm backdrop-blur" />
+      <DocsSearchTrigger className="w-full justify-between border-[var(--docs-border-subtle)] bg-[var(--docs-surface-elevated)]/85 px-3 py-2 text-[0.8125rem] shadow-sm backdrop-blur" />
       {pageTree.children.map((node, index) => (
         <SidebarNode key={getNodeKey(node, index)} node={node} currentUrl={currentUrl} depth={0} />
       ))}
@@ -114,7 +111,7 @@ function SidebarFolder({
 
   return (
     <details open={expanded} onToggle={handleToggle} className="group select-none">
-      <summary className="flex cursor-pointer items-center justify-between rounded-md px-2.5 py-1.5 font-medium text-[0.72rem] text-muted-foreground uppercase transition-colors hover:bg-[var(--docs-surface-elevated)] hover:text-foreground">
+      <summary className="flex cursor-pointer items-center justify-between rounded-md px-2.5 py-1.5 font-medium text-[0.8125rem] text-foreground transition-colors hover:bg-[var(--docs-surface-elevated)]">
         <span>{folder.name}</span>
         <ChevronIcon
           className={cn(
@@ -157,9 +154,7 @@ function SidebarPageLink({
     <Link
       to={page.url}
       className={cn(
-        "relative flex items-center rounded-md py-1.5 text-[0.82rem] leading-snug transition-colors",
-        // Indentation: 2 base + (depth × 2.5) for visual hierarchy. Mono
-        // font keeps the column rhythm stable.
+        "relative flex items-center rounded-md py-1.5 text-[0.8125rem] leading-snug transition-colors",
         "pl-[var(--sidebar-pad)] pr-3",
         isActive
           ? "bg-[var(--docs-accent-soft)] text-foreground"

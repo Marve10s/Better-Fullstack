@@ -89,13 +89,13 @@ Choose this for production-oriented Java APIs where security, migrations, and in
 
 Choose the minimal Spring guide when you want the smallest JPA example and plan to add security later. Choose this guide when the first commit should already answer "how are endpoints protected, how do schemas change, and how do we test against a real database?"
 
-| Decision point | Secure Spring API | Minimal Spring JPA |
-| --- | --- | --- |
-| Security | HTTP Basic through Spring Security | Not selected |
-| Migrations | Flyway from the start | Add later |
-| Tests | JUnit 5 plus Testcontainers | JUnit 5 |
-| Runtime visibility | Actuator health/info/metrics | Basic health endpoint |
-| Cost | More generated files and config | Smaller starting point |
+| Decision point     | Secure Spring API                  | Minimal Spring JPA     |
+| ------------------ | ---------------------------------- | ---------------------- |
+| Security           | HTTP Basic through Spring Security | Not selected           |
+| Migrations         | Flyway from the start              | Add later              |
+| Tests              | JUnit 5 plus Testcontainers        | JUnit 5                |
+| Runtime visibility | Actuator health/info/metrics       | Basic health endpoint  |
+| Cost               | More generated files and config    | Smaller starting point |
 
 ## Representative snippets
 
@@ -195,13 +195,13 @@ Actuator is selected through `--java-libraries spring-actuator`, so health and m
 
 ## Troubleshooting
 
-| Symptom | Check |
-| --- | --- |
-| Every endpoint returns 401 | Send Basic auth credentials for everything except `/health`. |
-| Flyway fails on startup | Confirm the database is reachable and the migration history matches the schema. |
-| Testcontainers tests fail locally | Ensure Docker is running and the current user can start containers. |
-| App uses default `admin/change-me` | Set `APP_BASIC_USERNAME` and `APP_BASIC_PASSWORD` in the runtime environment. |
-| Actuator endpoint is missing | Confirm `spring-actuator` is still present in `--java-libraries`. |
+| Symptom                            | Check                                                                           |
+| ---------------------------------- | ------------------------------------------------------------------------------- |
+| Every endpoint returns 401         | Send Basic auth credentials for everything except `/health`.                    |
+| Flyway fails on startup            | Confirm the database is reachable and the migration history matches the schema. |
+| Testcontainers tests fail locally  | Ensure Docker is running and the current user can start containers.             |
+| App uses default `admin/change-me` | Set `APP_BASIC_USERNAME` and `APP_BASIC_PASSWORD` in the runtime environment.   |
+| Actuator endpoint is missing       | Confirm `spring-actuator` is still present in `--java-libraries`.               |
 
 ## Tradeoffs
 
@@ -210,4 +210,4 @@ This is heavier than a minimal Spring Boot API. If you want a smaller starting p
 ## Next steps
 
 - Open the [Stack Builder](/new?eco=java&jwf=spring-boot&jbt=gradle&db=postgres&jorm=spring-data-jpa&jauth=spring-security&jlib=spring-actuator,flyway&jtest=junit5,testcontainers).
-- Read the [Java ecosystem docs](/docs/ecosystems/java/).
+- Read the [Java ecosystem docs](/docs/ecosystems/#java-and-kotlin).

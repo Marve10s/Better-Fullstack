@@ -66,13 +66,13 @@ Choose Django when conventions, admin-oriented structure, and ecosystem depth ma
 
 Choose this over the FastAPI guide when you expect to add Django admin, Django auth, conventional middleware, or multiple Django apps. Choose FastAPI when the service should stay small, route-focused, and easy to embed beside AI or data-processing code.
 
-| Decision point | Django REST API | FastAPI service |
-| --- | --- | --- |
-| Team expectation | Django conventions and ecosystem | Explicit Python modules and route functions |
-| API layer | Django REST Framework | FastAPI + Pydantic |
-| Back-office/admin | Natural extension point | Add a separate tool |
-| Middleware/auth | Django-native path | Compose explicitly |
-| Startup complexity | More framework structure | Smaller initial surface |
+| Decision point     | Django REST API                  | FastAPI service                             |
+| ------------------ | -------------------------------- | ------------------------------------------- |
+| Team expectation   | Django conventions and ecosystem | Explicit Python modules and route functions |
+| API layer          | Django REST Framework            | FastAPI + Pydantic                          |
+| Back-office/admin  | Natural extension point          | Add a separate tool                         |
+| Middleware/auth    | Django-native path               | Compose explicitly                          |
+| Startup complexity | More framework structure         | Smaller initial surface                     |
 
 ## Representative snippets
 
@@ -164,12 +164,12 @@ If you stay with the generated lightweight entrypoint instead of a full Django p
 
 ## Troubleshooting
 
-| Symptom | Check |
-| --- | --- |
-| DRF imports fail | Confirm the project was created with `--python-api django-rest-framework`. |
+| Symptom                            | Check                                                                           |
+| ---------------------------------- | ------------------------------------------------------------------------------- |
+| DRF imports fail                   | Confirm the project was created with `--python-api django-rest-framework`.      |
 | Django settings are not configured | Ensure `DJANGO_SETTINGS_MODULE` is set before importing Django models or views. |
-| Migration confusion | Pick Django migrations or Alembic as the owner for each table. |
-| FastAPI examples do not apply | This stack uses Django/DRF routing, not FastAPI decorators. |
+| Migration confusion                | Pick Django migrations or Alembic as the owner for each table.                  |
+| FastAPI examples do not apply      | This stack uses Django/DRF routing, not FastAPI decorators.                     |
 
 ## Tradeoffs
 
@@ -178,4 +178,4 @@ For a smaller API service, use [FastAPI with PostgreSQL and SQLAlchemy](/guides/
 ## Next steps
 
 - Open the [Stack Builder](/new?eco=python&pwf=django&porm=sqlalchemy&pval=pydantic&papi=django-rest-framework&pq=ruff).
-- Read the [Python ecosystem docs](/docs/ecosystems/python/).
+- Read the [Python ecosystem docs](/docs/ecosystems/#python).

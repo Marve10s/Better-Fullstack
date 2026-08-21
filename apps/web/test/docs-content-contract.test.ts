@@ -31,45 +31,24 @@ const CONTENT_SECTION_ROOTS = new Map([
 ] as const);
 const BUILDER_URL_KEYS = new Set([...Object.values(STACK_SELECTION_URL_KEYS), "preset", "view"]);
 const PENDING_TRANSLATION_PATHS = [
-  "content/docs/ai/mcp-tools.mdx",
   "content/docs/ai/mcp.mdx",
   "content/docs/ai/overview.mdx",
   "content/docs/cli/add.mdx",
-  "content/docs/cli/check.mdx",
   "content/docs/cli/create.mdx",
-  "content/docs/cli/gen.mdx",
+  "content/docs/cli/experimental.mdx",
   "content/docs/cli/index.mdx",
   "content/docs/cli/mcp.mdx",
-  "content/docs/cli/recommend.mdx",
-  "content/docs/cli/remove.mdx",
-  "content/docs/cli/registry.mdx",
-  "content/docs/cli/status.mdx",
   "content/docs/cli/telemetry.mdx",
   "content/docs/cli/update.mdx",
-  "content/docs/cli/utilities.mdx",
-  "content/docs/ecosystems/dotnet.mdx",
-  "content/docs/ecosystems/elixir.mdx",
-  "content/docs/ecosystems/go.mdx",
   "content/docs/ecosystems/index.mdx",
-  "content/docs/ecosystems/java.mdx",
   "content/docs/ecosystems/multi-ecosystem.mdx",
   "content/docs/ecosystems/native-mobile.mdx",
-  "content/docs/ecosystems/python.mdx",
-  "content/docs/ecosystems/react-native.mdx",
-  "content/docs/ecosystems/rust.mdx",
-  "content/docs/ecosystems/typescript.mdx",
   "content/docs/getting-started/first-project.mdx",
   "content/docs/getting-started/installation.mdx",
   "content/docs/getting-started/lifecycle.mdx",
   "content/docs/index.mdx",
-  "content/docs/provider-setup/environment-variables.mdx",
-  "content/docs/reference/options/dotnet.mdx",
-  "content/docs/reference/options/typescript.mdx",
-  "content/docs/reference/versioning.mdx",
-  "content/docs/stack-guides/deployment.mdx",
-  "content/docs/web-builder/download-and-share.mdx",
-  "content/docs/web-builder/edit-and-run.mdx",
-  "content/docs/web-builder/index.mdx",
+  "content/docs/stack-guides.mdx",
+  "content/docs/web-builder.mdx",
   "content/blog/better-auth-architecture.mdx",
   "content/blog/drizzle-vs-prisma.mdx",
   "content/blog/self-backend-vs-separate-api.mdx",
@@ -509,7 +488,7 @@ describe("docs content contract", () => {
 
   it("documents the exact live MCP tool surface", () => {
     const mcpSource = readFileSync(join(WEB_ROOT, "../cli/src/mcp.ts"), "utf8");
-    const reference = readFileSync(join(DOCS_ROOT, "ai/mcp-tools.mdx"), "utf8");
+    const reference = readFileSync(join(DOCS_ROOT, "ai/mcp.mdx"), "utf8");
     const registeredTools = new Set(
       [...mcpSource.matchAll(/registerTool\(\s*"(bfs_[a-z_]+)"/g)].map((match) => match[1]),
     );
@@ -521,7 +500,7 @@ describe("docs content contract", () => {
   });
 
   it("documents the exact bundled plugin skill surface", () => {
-    const reference = readFileSync(join(DOCS_ROOT, "ai/plugin.mdx"), "utf8");
+    const reference = readFileSync(join(DOCS_ROOT, "ai/overview.mdx"), "utf8");
     const bundledSkills = readdirSync(PLUGIN_SKILLS_ROOT, { withFileTypes: true })
       .filter((entry) => entry.isDirectory())
       .map((entry) => {
@@ -563,9 +542,7 @@ describe("docs content contract", () => {
       "cli/create.mdx",
       "cli/add.mdx",
       "cli/update.mdx",
-      "cli/check.mdx",
-      "cli/gen.mdx",
-      "cli/registry.mdx",
+      "cli/experimental.mdx",
     ]) {
       const source = readFileSync(join(DOCS_ROOT, relativePath), "utf8");
       expect(source, relativePath).toContain("## Operational contract");
@@ -585,9 +562,7 @@ describe("docs content contract", () => {
 
     expect(manualInventories).toEqual([]);
     expect(misCasedAgentFiles).toEqual([]);
-    expect(readFileSync(join(DOCS_ROOT, "getting-started/installation.mdx"), "utf8")).toContain(
-      ".NET SDK 10",
-    );
+    expect(readFileSync(join(DOCS_ROOT, "ecosystems/index.mdx"), "utf8")).toContain(".NET SDK 10");
   });
 
   it("does not leave already-registered options as unchecked add work", () => {

@@ -55,7 +55,7 @@ Every generated project is validated **cold, on a clean machine**, the same way 
    on the solution, `tsc`, `go build ./...`, Expo export, protobuf codegen…).
 3. **Quality gates** — lint, format, tests. All of it, every run.
 
-The published number is the **Full pass rate**: the share of trials that clear *everything*. A
+The published number is the **Full pass rate**: the share of trials that clear _everything_. A
 project that compiles but fails its own lint or tests doesn't fully pass — that's the difference
 between "builds" and "done."
 
@@ -81,17 +81,17 @@ a working project handed to it, what separates models is whether their edits kee
 
 ## First 2.2 cohort: the GPT-5.6 family at high effort
 
-| Model | Full pass | Builds | Index |
-| --- | --- | --- | --- |
-| GPT-5.6 Luna | **44%** (17/39) | 72% | 78 |
-| GPT-5.6 Sol | **44%** (17/39) | 67% | 74 |
-| GPT-5.6 Terra | **38%** (15/39) | 72% | 78 |
+| Model         | Full pass       | Builds | Index |
+| ------------- | --------------- | ------ | ----- |
+| GPT-5.6 Luna  | **44%** (17/39) | 72%    | 78    |
+| GPT-5.6 Sol   | **44%** (17/39) | 67%    | 74    |
+| GPT-5.6 Terra | **38%** (15/39) | 72%    | 78    |
 
 Three things worth knowing behind those numbers:
 
 - **The smallest model ties the flagship.** Luna and Sol land on identical Full passes (17/39) —
   and that's the finding: scaffolding rewards restraint and convention, and Sol's extra capability
-  doesn't convert. It does show *somewhere*: Sol swept `ai-search-workbench` 3/3, the hardest
+  doesn't convert. It does show _somewhere_: Sol swept `ai-search-workbench` 3/3, the hardest
   TypeScript spec, which no model had ever passed. It gave those cells back by breaking its own
   build scripts on the polyglot gRPC spec that Luna passed 3/3.
 - **Self-verification works.** The Keycloak spec — failed by every previous GPT run on hallucinated

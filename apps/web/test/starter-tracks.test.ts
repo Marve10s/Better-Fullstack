@@ -1,6 +1,6 @@
+import { describe, expect, test } from "bun:test";
 import { existsSync } from "node:fs";
 import path from "node:path";
-import { describe, expect, test } from "bun:test";
 
 import { PRESET_TEMPLATES } from "../src/lib/constant";
 import { STARTER_TRACKS } from "../src/lib/starter-tracks";
@@ -9,11 +9,12 @@ const repoRoot = path.resolve(import.meta.dir, "../../..");
 const contentRoot = path.join(repoRoot, "apps/web/content");
 
 function contentFileForHref(href: string) {
-  const cleanHref = href.replace(/^\/+/, "").replace(/\/$/, "");
+  const cleanHref = href.replace(/#.*$/, "").replace(/^\/+/, "").replace(/\/$/, "");
   const [area, ...slugParts] = cleanHref.split("/");
   if (area !== "guides" && area !== "docs") return null;
 
-  return path.join(contentRoot, area, ...slugParts) + ".mdx";
+  const base = path.join(contentRoot, area, ...slugParts);
+  return existsSync(base + ".mdx") ? base + ".mdx" : path.join(base, "index.mdx");
 }
 
 describe("starter tracks", () => {

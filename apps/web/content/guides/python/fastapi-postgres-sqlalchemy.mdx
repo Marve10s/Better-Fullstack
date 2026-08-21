@@ -82,13 +82,13 @@ Choose FastAPI for APIs, AI-adjacent services, internal platforms, and backend s
 
 FastAPI is a better fit than Django when you want explicit route functions, OpenAPI-first request/response modeling, and a small project surface. Django is a better fit when you want its admin conventions, app structure, and mature built-in web framework defaults.
 
-| Decision point | FastAPI + SQLAlchemy | Django REST API |
-| --- | --- | --- |
-| Project shape | Small service with explicit modules | Convention-heavy Django project |
-| API modeling | Pydantic schemas close to routes | DRF serializers/views on Django conventions |
-| Admin/back-office | Add separately | Django admin ecosystem is the natural path |
-| Async-adjacent work | Common fit for API and AI service boundaries | Possible, but less minimal |
-| ORM preference | SQLAlchemy-first | Django ORM is conventional, though this stack records SQLAlchemy selection |
+| Decision point      | FastAPI + SQLAlchemy                         | Django REST API                                                            |
+| ------------------- | -------------------------------------------- | -------------------------------------------------------------------------- |
+| Project shape       | Small service with explicit modules          | Convention-heavy Django project                                            |
+| API modeling        | Pydantic schemas close to routes             | DRF serializers/views on Django conventions                                |
+| Admin/back-office   | Add separately                               | Django admin ecosystem is the natural path                                 |
+| Async-adjacent work | Common fit for API and AI service boundaries | Possible, but less minimal                                                 |
+| ORM preference      | SQLAlchemy-first                             | Django ORM is conventional, though this stack records SQLAlchemy selection |
 
 ## Representative snippets
 
@@ -181,12 +181,12 @@ If your deployment platform builds from the repository root, make sure it instal
 
 ## Troubleshooting
 
-| Symptom | Check |
-| --- | --- |
-| `psycopg` connection errors | Confirm `DATABASE_URL` uses a PostgreSQL URL reachable from the app runtime. |
-| Tables exist locally but not in production | Run Alembic migrations against the production database before boot. |
-| Import errors for `app.main` | Start from the project root or configure the source directory consistently. |
-| CORS works locally but fails in a browser deploy | Replace wildcard CORS with the deployed frontend origin. |
+| Symptom                                          | Check                                                                        |
+| ------------------------------------------------ | ---------------------------------------------------------------------------- |
+| `psycopg` connection errors                      | Confirm `DATABASE_URL` uses a PostgreSQL URL reachable from the app runtime. |
+| Tables exist locally but not in production       | Run Alembic migrations against the production database before boot.          |
+| Import errors for `app.main`                     | Start from the project root or configure the source directory consistently.  |
+| CORS works locally but fails in a browser deploy | Replace wildcard CORS with the deployed frontend origin.                     |
 
 ## Tradeoffs
 
@@ -196,5 +196,5 @@ FastAPI is a strong API default. If you need a more batteries-included web frame
 
 - Inspect the [FastAPI + PostgreSQL + SQLAlchemy template](/stack/python-fastapi-postgres-sqlalchemy).
 - Open the [Stack Builder](/new?eco=python&pwf=fastapi&db=postgres&porm=sqlalchemy&pval=pydantic&pq=ruff).
-- Read the [Python ecosystem docs](/docs/ecosystems/python/).
+- Read the [Python ecosystem docs](/docs/ecosystems/#python).
 - Review the [CLI create flags](/docs/cli/create/).

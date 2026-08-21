@@ -1,20 +1,5 @@
 {
   "title": "CLI",
-  "defaultOpen": true,
-  "pages": [
-    "index",
-    "create",
-    "add",
-    "remove",
-    "status",
-    "update",
-    "check",
-    "gen",
-    "registry",
-    "recommend",
-    "history",
-    "mcp",
-    "telemetry",
-    "utilities"
-  ]
+  "defaultOpen": false,
+  "pages": ["index", "create", "add", "update", "experimental", "mcp", "telemetry"]
 }

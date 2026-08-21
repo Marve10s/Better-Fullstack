@@ -54,6 +54,7 @@ export function buildSearchSections(
         .slice(lastIndex, endIndex)
         .replace(/```[\s\S]*?```/g, " ") // drop fenced code
         .replace(/`[^`]+`/g, " ") // drop inline code
+        .replace(/<\/?[A-Z]\w*(\s[^<>]*)?\/?>/g, " ") // drop MDX component tags, keep their text children
         .replace(/!\[[^\]]*\]\([^)]*\)/g, " ") // drop images
         .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1") // unwrap links
         .replace(/[*_~]/g, " ") // strip markdown emphasis chars

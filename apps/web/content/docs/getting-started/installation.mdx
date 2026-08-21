@@ -1,38 +1,19 @@
 ---
 title: Installation
-description: Set up your environment and scaffold your first Better Fullstack project.
+description: What you need installed, the command that creates a project, and what the wizard asks.
 translationStatus: pending
-updated: 2026-08-07
+updated: 2026-08-21
 ---
 
-Better Fullstack runs through the `create-better-fullstack` package. You do not need to install it globally; run it with your package manager, answer the prompts, and the CLI writes the selected project.
-
-<Callout kind="tip" title="Online preview">
-Prefer to choose visually? Open the [Stack Builder](https://better-fullstack.dev/new), pick a compatible stack, and copy the generated command.
-</Callout>
+One command creates a Better Fullstack project. Your package manager runs the CLI on demand, so there is nothing to install globally.
 
 ## Prerequisites
 
-- Node.js 20 or newer for the CLI.
-- A terminal.
-- Git only if you want the CLI to initialize a repository.
-- Ecosystem-specific tools only for the project you generate.
+- **Node.js 20 or newer**, and only to run the CLI. Get it from [nodejs.org](https://nodejs.org/en/download).
+- **Git**, optional, and only if you want the CLI to initialize a repository.
+- **Your language toolchain**, optional, and only to build the project after the CLI writes it. Each [ecosystem page](/docs/ecosystems/) lists what its projects need.
 
-| Ecosystem    | Extra tooling                                                             |
-| ------------ | ------------------------------------------------------------------------- |
-| TypeScript   | npm, pnpm, Yarn, or Bun                                                   |
-| React Native | Expo-compatible iOS/Android tooling when running on a simulator or device |
-| Rust         | Rust toolchain and Cargo                                                  |
-| Python       | Python and `uv`                                                           |
-| Go           | Go toolchain                                                              |
-| Java         | Java 21                                                                   |
-| Elixir       | Elixir, Erlang/OTP, and PostgreSQL for database-backed Phoenix flows      |
-| .NET         | .NET SDK 10 or newer                                                      |
-
-Multi-ecosystem projects can also include Kotlin Compose, SwiftUI, Flutter, Blazor, or Rust frontend
-parts. Install Android/Gradle, Xcode, Flutter, .NET, or Rust tooling only for the app parts you select.
-
-## Run the CLI
+## Create a project
 
 <PMTabs
   npm="npm create better-fullstack@latest"
@@ -41,69 +22,33 @@ parts. Install Android/Gradle, Xcode, Flutter, .NET, or Rust tooling only for th
   yarn="yarn create better-fullstack@latest"
 />
 
-Add a project name to start the wizard:
+Pass a name to answer the first question up front:
 
 ```npm
 npm create better-fullstack@latest my-app
 ```
 
-The wizard asks for the ecosystem, stack options, dedicated tooling capabilities, Git, and dependency installation.
+## What the wizard asks
 
-## Use explicit flags
+1. **Solo or multi-ecosystem.** One language for the whole project, or parts composed from several.
+2. **Ecosystem.** TypeScript, React Native, Rust, Python, Go, Java, Elixir, or .NET.
+3. **How much to configure.** Answer every question, or pick the sections you care about and take defaults for the rest.
+4. **The stack.** Frontend, backend, database, ORM, API layer, auth, and the tooling your ecosystem supports.
+5. **Git and dependency install.** Both run after the files are written.
 
-Explicit flags skip the prompts they cover. This is the best form for scripts, docs, generated commands, and reproducible bug reports.
+Each answer narrows the next one, so the wizard only offers options that work with what you already picked.
 
-```npm
-npm create better-fullstack@latest my-app -- \
-  --ecosystem typescript \
-  --frontend tanstack-router \
-  --backend hono \
-  --runtime node \
-  --database sqlite \
-  --orm drizzle \
-  --api orpc \
-  --auth better-auth \
-  --db-setup none \
-  --ai-docs none \
-  --version-channel stable \
-  --no-install \
-  --no-git
-```
+## Build it in the browser instead
 
-With `npm create`, Better Fullstack flags go after `--`. The rendered pnpm, Bun, and Yarn tabs remove that npm-only separator.
+The [Stack Builder](/new) has the same options in a visual editor, and needs nothing installed. Pick a stack, watch incompatible options switch off as you go, then copy the command it writes or download the project as a ZIP.
 
-Use `--ai-docs none` when you do not want generated AI instruction files. Use `--no-install` when you want to inspect files before dependency installation.
+## Skip the prompts
 
-## Templates
+Every flag answers the prompt it covers, so a fully flagged command never asks anything. Use that form in CI, in bug reports, and anywhere someone else has to reproduce your stack.
 
-Templates are shorthand for common stacks:
-
-| Template  | Stack                                          |
-| --------- | ---------------------------------------------- |
-| `t3`      | Next.js, tRPC, Prisma, PostgreSQL, Better Auth |
-| `mern`    | MongoDB, Express, React Router, Node.js        |
-| `pern`    | PostgreSQL, Express, TanStack Router, Node.js  |
-| `uniwind` | Expo + Uniwind, mobile-only                    |
-| `none`    | No shorthand template                          |
-
-```npm
-npm create better-fullstack@latest my-app -- --template t3
-```
-
-## Validate before writing files
-
-Use `--dry-run` to preview generated files without writing a project:
-
-```npm
-npm create better-fullstack@latest my-app -- --dry-run
-```
-
-Use `--verify` when you want the CLI to run every generated target check after scaffolding. It does
-not start dev servers, but the invoked toolchains may fetch dependencies and write lockfiles,
-caches, compiler output, or build artifacts.
+[CLI Create](/docs/cli/create/) documents every flag, the `--template` presets, and `--dry-run` for listing generated files without writing them.
 
 ## Next
 
-- Walk through the [First Project](/docs/getting-started/first-project/) flow.
-- Browse all flags in [CLI Create](/docs/cli/create/).
+- Build and run a project end to end in [First Project](/docs/getting-started/first-project/).
 - Compare language support in [Ecosystems](/docs/ecosystems/).

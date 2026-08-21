@@ -9,10 +9,13 @@ export const CALLOUT_KINDS = ["info", "tip", "warning", "danger"] as const;
 export type CalloutKind = (typeof CALLOUT_KINDS)[number];
 
 const config: Record<CalloutKind, { icon: typeof Info; tone: string; rail: string }> = {
+  // `info` is the default kind and the most common one on reference pages, so
+  // it stays a quiet bordered note. The rail is reserved for kinds that are
+  // meant to interrupt reading.
   info: {
     icon: Info,
-    tone: "text-[var(--docs-accent)]",
-    rail: "border-l-[var(--docs-accent)]",
+    tone: "text-muted-foreground",
+    rail: "border-l-[var(--docs-border-subtle)]",
   },
   tip: {
     icon: Lightbulb,

@@ -2,7 +2,7 @@
 title: First Project
 description: Scaffold, inspect, install, and run a Better Fullstack project.
 translationStatus: pending
-updated: 2026-08-07
+updated: 2026-08-21
 ---
 
 This walkthrough creates a project, previews what the CLI can generate, and shows where to look after the scaffold finishes.
@@ -88,7 +88,43 @@ mix deps.get
 dotnet restore
 ```
 
-## 5. Run and verify the project
+## 5. Configure environment variables
+
+Generated projects include a `.env.example` for the integrations in your stack. Copy each example
+to `.env` in the same directory, then replace the placeholders before starting the project:
+
+```bash
+cp .env.example .env
+```
+
+Some multi-app projects have more than one `.env.example`. Keep server secrets out of variables
+with public prefixes such as `VITE_`, `NEXT_PUBLIC_`, `PUBLIC_`, or `EXPO_PUBLIC_`.
+
+Common TypeScript integrations use these keys. The generated `.env.example` files remain the source
+of truth for your selected stack, including database URLs and provider-specific keys.
+
+{/* env-contract:better-auth BETTER_AUTH_SECRET,BETTER_AUTH_URL */}
+{/* env-contract:stripe VITE_STRIPE_PUBLISHABLE_KEY,STRIPE_SECRET_KEY,STRIPE_WEBHOOK_SECRET */}
+{/* env-contract:resend RESEND_API_KEY,RESEND_FROM_EMAIL */}
+{/* env-contract:sentry SENTRY_DSN,SENTRY_ENVIRONMENT,SENTRY_TRACES_SAMPLE_RATE,SENTRY_PROFILES_SAMPLE_RATE */}
+{/* env-contract:upstash-redis UPSTASH_REDIS_REST_URL,UPSTASH_REDIS_REST_TOKEN,UPSTASH_REDIS_URL */}
+{/* env-contract:s3 AWS_S3_REGION,AWS_S3_ACCESS_KEY_ID,AWS_S3_SECRET_ACCESS_KEY,AWS_S3_BUCKET_NAME */}
+{/* env-contract:r2 R2_ACCOUNT_ID,R2_ACCESS_KEY_ID,R2_SECRET_ACCESS_KEY,R2_BUCKET_NAME */}
+
+| Selection     | Common generated keys                                                                          |
+| ------------- | ---------------------------------------------------------------------------------------------- |
+| Better Auth   | `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`                                                        |
+| Stripe        | `VITE_STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`                    |
+| Resend        | `RESEND_API_KEY`, `RESEND_FROM_EMAIL`                                                          |
+| Sentry        | `SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `SENTRY_TRACES_SAMPLE_RATE`, `SENTRY_PROFILES_SAMPLE_RATE` |
+| Upstash Redis | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `UPSTASH_REDIS_URL`                      |
+| Amazon S3     | `AWS_S3_REGION`, `AWS_S3_ACCESS_KEY_ID`, `AWS_S3_SECRET_ACCESS_KEY`, `AWS_S3_BUCKET_NAME`      |
+| Cloudflare R2 | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`                  |
+
+Generate strong values for secrets such as `BETTER_AUTH_SECRET`. Keep `.env` out of version control,
+and set the same required keys in your hosting provider before deployment.
+
+## 6. Run and verify the project
 
 For the default TypeScript scaffold, start the generated development scripts:
 
@@ -116,7 +152,7 @@ authority:
 Run the generated test/check command after the first successful startup. Do not assume one universal
 command across ecosystems.
 
-## 6. Inspect the project
+## 7. Inspect the project
 
 Generated projects include:
 
@@ -126,7 +162,7 @@ Generated projects include:
 - Optional AI docs such as `CLAUDE.md`, `AGENTS.md`, or `.cursorrules`.
 - README and setup notes where the selected templates provide them.
 
-## 7. Change the selected stack later
+## 8. Change the selected stack later
 
 Inside a generated project, use `add` for capabilities and stack selections. Preview the plan
 first:
@@ -139,7 +175,7 @@ npm create better-fullstack@latest add -- --email resend
 The `add` command reads `bts.jsonc`, skips selections already present, protects generated files that
 you changed, and prints install guidance when dependencies are not installed automatically.
 
-## 8. Check and update the scaffold
+## 9. Check and update the scaffold
 
 ```npm
 npm create better-fullstack@latest check -- --skip-checks
@@ -157,5 +193,5 @@ manifests whose original lineage remains unverified.
 - [CLI Create](/docs/cli/create/) lists every scaffold flag.
 - [CLI Add](/docs/cli/add/) explains existing-project stack updates.
 - [CLI Update](/docs/cli/update/) explains baseline-aware template updates.
-- [Web Builder](/docs/web-builder/) explains browser preview, Edit & Run, and ZIP download.
+- [Stack Builder](/docs/web-builder/) explains browser preview, Edit & Run, and ZIP download.
 - [Ecosystems](/docs/ecosystems/) compares the supported project families.

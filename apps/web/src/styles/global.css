@@ -267,18 +267,23 @@
   --tracking-normal: 0em;
 
   /*
-   * Code block surfaces — GitHub Dark Default palette so token colors and
-   * chrome always match. Light-mode pages get a near-black code block (the
-   * classic dark-on-white contrast used by Next.js docs, shadcn/ui, Linear).
+   * Code block surfaces follow the theme. `--code-bg` matches the background
+   * github-light-default was designed against, so the theme's token contrast
+   * ratios hold exactly; it reads as an elevated card on the warm-stone page.
    */
-  --code-bg: #0d1117;
-  --code-border: #30363d;
+  --code-bg: #ffffff;
+  --code-border: #d1d9e0;
+  --code-fg: #1f2328;
+  --code-muted: #59636d;
+  --code-chrome-bg: #f6f8fa;
   --docs-surface: color-mix(in srgb, var(--background) 84%, white);
   --docs-surface-elevated: #faf9f5;
   --docs-border-subtle: color-mix(in srgb, var(--border) 72%, transparent);
+  --docs-border-strong: color-mix(in srgb, var(--docs-link) 30%, transparent);
   --docs-accent: #1b1a17;
   --docs-accent-soft: color-mix(in srgb, var(--primary) 10%, transparent);
   --docs-link: #1b1a17;
+  --docs-link-brand: #4d7c0f;
 }
 
 .dark {
@@ -341,15 +346,24 @@
   --shadow-xl: 0px 12px 24px 0px hsl(240 30% 5% / 0.35), 0px 8px 10px -1px hsl(240 30% 5% / 0.3);
   --shadow-2xl: 0px 16px 32px 0px hsl(240 30% 5% / 0.4);
 
-  /* Dark mode: slightly elevated from the page bg so code blocks lift off the surface */
+  /*
+   * Dark mode: slightly elevated from the page bg so code blocks lift off the
+   * surface. github-dark-default's own bg is #0d1117, which is invisible
+   * against the #0e0e10 page, so the surface stays token-driven here.
+   */
   --code-bg: #161b22;
   --code-border: #30363d;
+  --code-fg: #e6edf3;
+  --code-muted: #8b949e;
+  --code-chrome-bg: #21262d;
   --docs-surface: #111113;
   --docs-surface-elevated: #151518;
   --docs-border-subtle: #2a2a2e;
+  --docs-border-strong: color-mix(in srgb, var(--docs-link) 30%, transparent);
   --docs-accent: #f2eeee;
   --docs-accent-soft: rgb(242 238 238 / 0.08);
   --docs-link: #f2eeee;
+  --docs-link-brand: var(--brand);
 }
 /* @layer base {
 	* {
@@ -626,11 +640,33 @@
 }
 
 .docs-shell {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--docs-surface) 82%, transparent) 0%,
-    var(--background) 18rem
-  );
+  background: var(--background);
+}
+
+/*
+ * Dual-theme Shiki output. `defaultColor: false` in the rehype config means
+ * Shiki emits only custom properties, so these rules choose the variant. The
+ * blocking script in __root.tsx sets `.dark` before first paint, so the switch
+ * costs no flash and no re-highlighting.
+ *
+ * The `inherit` fallbacks matter: a token that only one theme italicises still
+ * emits the sibling var on the other side, and a missing var without a
+ * fallback makes the declaration invalid at computed-value time.
+ */
+.shiki,
+.shiki span {
+  color: var(--shiki-light, inherit);
+  font-style: var(--shiki-light-font-style, inherit);
+  font-weight: var(--shiki-light-font-weight, inherit);
+  text-decoration: var(--shiki-light-text-decoration, inherit);
+}
+
+.dark .shiki,
+.dark .shiki span {
+  color: var(--shiki-dark, inherit);
+  font-style: var(--shiki-dark-font-style, inherit);
+  font-weight: var(--shiki-dark-font-weight, inherit);
+  text-decoration: var(--shiki-dark-text-decoration, inherit);
 }
 
 /*
@@ -655,28 +691,35 @@
 .docs-prose h4 {
   color: var(--prose-text);
   font-weight: 600;
-  letter-spacing: 0;
   scroll-margin-top: 5rem;
 }
 
+/*
+ * Section starts are marked by space and weight, not rules. A border-top on
+ * every h2 stacked a second horizontal line right under the page header.
+ */
 .docs-prose h2 {
   margin-top: 3rem;
-  border-top: 1px solid var(--docs-border-subtle);
-  padding-top: 2rem;
-  font-size: 1.55rem;
-  line-height: 1.25;
+  font-size: 1.5rem;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
 }
 
 .docs-prose > h2:first-child {
   margin-top: 0;
-  border-top: 0;
-  padding-top: 0;
+}
+
+.docs-prose h2 + *,
+.docs-prose h3 + *,
+.docs-prose h4 + * {
+  margin-top: 0.85rem;
 }
 
 .docs-prose h3 {
   margin-top: 2.2rem;
-  font-size: 1.18rem;
-  line-height: 1.35;
+  font-size: 1.125rem;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
 }
 
 .docs-prose h4 {
@@ -702,25 +745,37 @@
   text-decoration-color: currentColor;
 }
 
-/*
- * Inline code — neutral chip that doesn't compete with body text.
- * Excludes <code> inside <pre> so Shiki token colors stay untouched.
- */
-.docs-prose code:not(:where(.docs-prose pre code)) {
-  border-radius: 0.35rem;
-  border: 1px solid var(--docs-border-subtle);
-  padding: 0.1rem 0.35rem;
-  background: var(--docs-surface);
-  color: var(--foreground);
-  font-family: var(--font-mono);
-  font-size: 0.85em;
+.docs-prose.docs-landing a:not(:where(.docs-landing .not-prose *)) {
+  color: var(--docs-link-brand);
+  text-decoration-color: color-mix(in srgb, var(--docs-link-brand) 40%, transparent);
 }
 
 /*
- * Suppress Shiki's own injected background-color on <pre> and <code> so
- * the wrapper div's `--code-bg` surface shows through cleanly.
- * Token text colors are output as direct inline styles (single theme) and
- * don't need additional CSS to activate.
+ * Inline code — neutral chip that doesn't compete with body text. Excludes
+ * <code> inside <pre> so Shiki token colors stay untouched.
+ *
+ * `box-decoration-break: clone` gives each fragment of a wrapped chip its own
+ * padding and border. Without it a long token such as
+ * `npx create-better-fullstack@latest` breaks across lines as two half-drawn
+ * boxes.
+ */
+.docs-prose code:not(:where(.docs-prose pre code)) {
+  border-radius: 0.25rem;
+  border: 1px solid color-mix(in srgb, var(--foreground) 12%, transparent);
+  padding: 0.1rem 0.3rem;
+  background: var(--docs-surface);
+  color: var(--foreground);
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/*
+ * Suppress Shiki's own injected background-color on <pre> and <code> so the
+ * wrapper div's `--code-bg` surface shows through cleanly. With
+ * `defaultColor: false` the build-time pipeline no longer emits one, but the
+ * client highlighter behind PMTabs and the stack builder still can.
  */
 .docs-prose pre,
 .docs-prose .shiki {
@@ -751,27 +806,29 @@
   font-style: italic;
 }
 
+/*
+ * Tables carry a tinted header strip and row dividers only. The old full grid
+ * of 1px cell borders plus even-row striping fought the surrounding prose for
+ * attention on pages that are mostly reference tables.
+ */
 .docs-prose table {
   width: 100%;
-  border: 1px solid var(--docs-border-subtle);
   border-collapse: separate;
   border-spacing: 0;
-  border-radius: 0.5rem;
-  font-size: 0.88rem;
-  overflow: hidden;
+  font-size: 0.9375rem;
 }
 
 .docs-prose th,
 .docs-prose td {
-  border-right: 1px solid var(--docs-border-subtle);
   border-bottom: 1px solid var(--docs-border-subtle);
-  padding: 0.65rem 0.8rem;
+  padding: 0.7rem 0.9rem;
   text-align: left;
+  vertical-align: top;
 }
 
-.docs-prose th:last-child,
-.docs-prose td:last-child {
-  border-right: 0;
+.docs-prose th:first-child,
+.docs-prose td:first-child {
+  padding-left: 0.75rem;
 }
 
 .docs-prose tbody tr:last-child td {
@@ -779,23 +836,38 @@
 }
 
 .docs-prose th {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0;
   color: var(--prose-muted);
   background: var(--docs-surface);
 }
 
-.docs-prose tbody tr:nth-child(even) {
-  background: color-mix(in srgb, var(--docs-surface) 55%, transparent);
+.docs-prose thead tr:first-child th:first-child {
+  border-top-left-radius: 0.5rem;
+}
+
+.docs-prose thead tr:first-child th:last-child {
+  border-top-right-radius: 0.5rem;
+}
+
+.docs-prose .docs-table-scroll {
+  overflow-x: auto;
 }
 
 .docs-prose hr {
   border: 0;
   border-top: 1px solid var(--docs-border-subtle);
   margin: 2.8rem 0;
+}
+
+/*
+ * Landing docs pages run a wide column so a three-column card grid fits.
+ * Plain prose blocks keep a reading measure instead of stretching to it.
+ */
+.docs-landing > p,
+.docs-landing > ul,
+.docs-landing > ol {
+  max-width: 46rem;
 }
 
 /* Heading anchor target offset already handled via scroll-margin-top above */

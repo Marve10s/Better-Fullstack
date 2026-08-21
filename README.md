@@ -102,7 +102,7 @@ claude plugin install better-fullstack@better-fullstack
 
 - **Codex plugin catalog** — `.agents/plugins/marketplace.json`
 - **Any MCP client** — `npx -y create-better-fullstack@latest mcp`
-- **Docs** — [better-fullstack.dev/docs/ai/plugin](https://better-fullstack.dev/docs/ai/plugin)
+- **Docs** — [better-fullstack.dev/docs/ai/overview](https://better-fullstack.dev/docs/ai/overview)
 
 <br>
 

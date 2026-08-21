@@ -5,15 +5,14 @@ import { BrowserTelemetryControls } from "./browser-telemetry-controls";
 import { Callout } from "./callout";
 import { CliFlagTable } from "./cli-flags-table";
 import { CodeBlock } from "./code-block";
-import { CompatibilityMatrix } from "./compatibility-matrix";
+import { DocsCard, DocsCardGrid, DocsHero } from "./docs-landing";
 import { GuideCompatibilityNote } from "./guide-compatibility-note";
 import { GuideStackSnapshot } from "./guide-stack-snapshot";
 import { McpClientTabs } from "./mcp-client-tabs";
-import { OptionCategoryTable, OptionReferenceSummary } from "./option-reference";
 import { CategoryCount, OptionCount } from "./option-stats";
 import { PMTabs } from "./pm-tabs";
 import { StarterPackCta, StarterPackHub } from "./starter-pack-cta";
-import { VerifiedCombinationsSummary } from "./verified-combinations-summary";
+import { DocsTable } from "./table";
 
 /**
  * Registry of components passed to `<MDXProvider>` (or directly via the
@@ -28,6 +27,7 @@ import { VerifiedCombinationsSummary } from "./verified-combinations-summary";
 export const mdxComponents: Record<string, ComponentType<any>> = {
   // HTML overrides
   pre: CodeBlock,
+  table: DocsTable,
 
   // MDX-only components — referenced by name from .mdx files
   BenchBarChart,
@@ -35,15 +35,14 @@ export const mdxComponents: Record<string, ComponentType<any>> = {
   Callout,
   CategoryCount,
   CliFlagTable,
-  CompatibilityMatrix,
+  DocsCard,
+  DocsCardGrid,
+  DocsHero,
   GuideCompatibilityNote,
   GuideStackSnapshot,
   McpClientTabs,
   OptionCount,
-  OptionCategoryTable,
-  OptionReferenceSummary,
   PMTabs,
   StarterPackCta,
   StarterPackHub,
-  VerifiedCombinationsSummary,
 };

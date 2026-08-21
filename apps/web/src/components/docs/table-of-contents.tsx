@@ -71,11 +71,9 @@ export function TableOfContents({ toc }: { toc: TocEntry[] }) {
     <nav
       ref={containerRef}
       aria-label={m.tocOnThisPage()}
-      className="sticky top-20 hidden h-[calc(100vh-6rem)] w-64 shrink-0 overflow-y-auto px-4 py-8 xl:block"
+      className="sticky top-14 hidden max-h-[calc(100vh-3.5rem)] overflow-y-auto px-5 py-8 xl:block"
     >
-      <h2 className="mb-3 font-mono text-[0.7rem] text-muted-foreground uppercase">
-        {m.tocOnThisPage()}
-      </h2>
+      <h2 className="mb-3 font-medium text-[0.8125rem] text-foreground">{m.tocOnThisPage()}</h2>
       <ul className="flex flex-col border-[var(--docs-border-subtle)] border-l">
         {toc.map((entry) => {
           const isActive = activeId === entry.id;
@@ -84,7 +82,7 @@ export function TableOfContents({ toc }: { toc: TocEntry[] }) {
               <a
                 href={`#${entry.id}`}
                 className={cn(
-                  "relative flex py-1.5 pl-[var(--toc-pad)] text-[0.78rem] leading-snug transition-colors",
+                  "relative flex py-1.5 pl-[var(--toc-pad)] text-[0.8125rem] leading-snug transition-colors",
                   isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground",
                 )}
                 style={

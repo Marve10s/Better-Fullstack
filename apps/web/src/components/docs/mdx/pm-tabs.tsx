@@ -10,7 +10,7 @@ const MANAGERS = ["npm", "pnpm", "bun", "yarn"] as const;
 type Manager = (typeof MANAGERS)[number];
 
 const ACTIVE_TAB_TRANSITION = { type: "spring", stiffness: 380, damping: 32 } as const;
-const PM_CODE_THEMES = { light: "github-dark-default", dark: "github-dark-default" } as const;
+const PM_CODE_THEMES = { light: "github-light-default", dark: "github-dark-default" } as const;
 
 /**
  * Renders a 4-tab package-manager picker around a shell command. Each
@@ -64,11 +64,11 @@ export function PMTabs({
   }, [active, commands]);
 
   return (
-    <div className="my-6 overflow-hidden rounded-lg border bg-[var(--code-bg)] border-[var(--code-border)] shadow-sm">
+    <div className="my-6 overflow-hidden rounded-lg border bg-[var(--code-bg)] border-[var(--code-border)]">
       <div
         role="tablist"
         aria-label="Package manager"
-        className="flex items-center overflow-x-auto border-[var(--code-border)] border-b"
+        className="flex items-center overflow-x-auto border-[var(--code-border)] border-b bg-[var(--code-chrome-bg)]"
       >
         {MANAGERS.map((manager) => {
           const isActive = active === manager;
@@ -82,8 +82,10 @@ export function PMTabs({
               value={manager}
               onClick={handleTabClick}
               className={cn(
-                "relative flex items-center gap-2 px-4 py-2 font-mono text-[0.72rem] uppercase transition-colors",
-                isActive ? "text-[#e6edf3]" : "text-[#8b949e] hover:text-[#e6edf3]",
+                "relative flex items-center gap-2 px-4 py-2 text-[0.8125rem] transition-colors",
+                isActive
+                  ? "text-[var(--code-fg)]"
+                  : "text-[var(--code-muted)] hover:text-[var(--code-fg)]",
               )}
             >
               <PackageIcon pm={manager} className="h-3.5 w-3.5 shrink-0" />
@@ -91,7 +93,7 @@ export function PMTabs({
               {isActive ? (
                 <motion.span
                   layoutId={`docs-pm-active-tab-${instanceId}`}
-                  className="absolute inset-x-2 bottom-0 h-px bg-[#e6edf3]"
+                  className="absolute inset-x-2 bottom-0 h-px bg-[var(--code-fg)]"
                   transition={ACTIVE_TAB_TRANSITION}
                 />
               ) : null}
@@ -103,7 +105,7 @@ export function PMTabs({
             type="button"
             onClick={onCopy}
             aria-label={copied ? "Copied" : "Copy command"}
-            className="flex h-7 w-7 items-center justify-center rounded-md text-[#8b949e] transition-colors hover:text-[#e6edf3]"
+            className="flex size-7 items-center justify-center rounded-md text-[var(--code-muted)] transition-colors hover:bg-[var(--code-bg)] hover:text-[var(--code-fg)]"
           >
             {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
           </button>
@@ -113,7 +115,7 @@ export function PMTabs({
         language="bash"
         themes={PM_CODE_THEMES}
         className={cn(
-          "text-[0.84rem] leading-relaxed",
+          "text-[0.875rem] leading-relaxed",
           "[&_.shiki]:!bg-transparent",
           "[&_pre]:!overflow-x-auto [&_pre]:!bg-transparent",
           "[&_pre]:px-4 [&_pre]:py-4",

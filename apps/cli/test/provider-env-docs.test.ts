@@ -9,7 +9,7 @@ import { listVirtualTreeFiles } from "./virtual-tree-utils";
 
 const ENV_DOCS_PATH = resolve(
   import.meta.dir,
-  "../../web/content/docs/provider-setup/environment-variables.mdx",
+  "../../web/content/docs/getting-started/first-project.mdx",
 );
 
 type ProviderEnvContract = {

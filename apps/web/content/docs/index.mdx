@@ -1,66 +1,91 @@
 ---
 title: Better Fullstack Docs
-description: Learn how Better Fullstack scaffolds typed projects across web, mobile, and language-native ecosystems.
+description: Requirements, the command that creates a project, and the commands that follow it.
 translationStatus: pending
-updated: 2026-08-07
+layout: landing
+updated: 2026-08-20
 ---
 
-Better Fullstack is a project generator for typed product stacks. Pick the frontend, backend, data layer, services, tooling, and target ecosystem; the CLI writes the matching files and records the stack in `bts.jsonc`.
+<DocsHero
+  title="Scaffold anything with Better Fullstack"
+  subhead="Choose a frontend, backend, data layer, services, and tooling. The CLI writes the project across TypeScript, React Native, Rust, Python, Go, Java, Elixir, and .NET."
+  actions={[
+    { label: "Get started", href: "/docs/getting-started/first-project/", primary: true },
+    { label: "Open Stack Builder", href: "/new" },
+    { label: "Set up AI agents", href: "/docs/ai/overview/" },
+  ]}
+>
 
-Use the interactive CLI when you want a guided setup, the [Stack Builder](https://better-fullstack.dev/new) when you want to compare, preview, run, and download options visually, and explicit flags when you need a reproducible command for CI, docs, or another developer.
+```npm
+npm create better-fullstack@latest
+```
+
+</DocsHero>
 
 ## Requirements
 
-The CLI runs on Node.js 20 or newer.
+[Node.js](https://nodejs.org/en/download) 20 or newer, and only if you run the CLI.
 
-```bash
-node --version
-```
+To skip that install, configure the project in the [Stack Builder](/new) and download it as a ZIP. That path needs nothing but a browser.
 
-Generated projects may also need their ecosystem toolchain: Expo tooling for React Native, Cargo for Rust, `uv` for Python, Go, Java/Kotlin tooling, Elixir/Erlang for Phoenix, the .NET SDK, Android/Gradle for Compose, Xcode for SwiftUI, or Flutter for Dart.
+## Start and learn
 
-## Create your first project
+<DocsCardGrid>
+  <DocsCard title="Installation" href="/docs/getting-started/installation/" icon="download">
+    Launchers for every package manager, plus the toolchain each ecosystem needs.
+  </DocsCard>
+  <DocsCard title="First project" href="/docs/getting-started/first-project/" icon="terminal">
+    Scaffold, inspect, install, and run one project from an empty directory.
+  </DocsCard>
+  <DocsCard title="Project lifecycle" href="/docs/getting-started/lifecycle/" icon="refresh">
+    Which command creates, evolves, refreshes, generates inside, and diagnoses a project.
+  </DocsCard>
+</DocsCardGrid>
 
-Run the wizard and answer the prompts:
+## Build and evolve
 
-```npm
-npm create better-fullstack@latest my-app
-```
+<DocsCardGrid>
+  <DocsCard title="Stack Builder" href="/docs/web-builder/" icon="grid">
+    Compose a stack, run it in the browser, then share a URL or download a ZIP.
+  </DocsCard>
+  <DocsCard title="Create command" href="/docs/cli/create/" icon="adjustments">
+    Every flag, and scripted examples that reproduce a stack in CI or an issue report.
+  </DocsCard>
+  <DocsCard title="Add features" href="/docs/cli/add/" icon="plus">
+    Add typed tooling, deployment targets, and stack capabilities to an existing project.
+  </DocsCard>
+  <DocsCard title="Update projects" href="/docs/cli/update/" icon="checklist">
+    Plan, apply, and recover current-template changes without losing your edits.
+  </DocsCard>
+  <DocsCard title="CLI reference" href="/docs/cli/" icon="terminal">
+    Every command for creating projects, updating generated apps, and opening resources.
+  </DocsCard>
+</DocsCardGrid>
 
-For npm, Better Fullstack flags go after the `--` separator. The rendered package-manager tabs show the matching pnpm, Bun, and Yarn commands where the separator is not needed.
+## Choose a stack
 
-## What the defaults create
+<DocsCardGrid>
+  <DocsCard title="Ecosystems" href="/docs/ecosystems/" icon="stack">
+    What Better Fullstack scaffolds for each supported language ecosystem.
+  </DocsCard>
+  <DocsCard title="Multi-ecosystem" href="/docs/ecosystems/multi-ecosystem/" icon="relation">
+    Compose frontend, backend, database, and mobile parts from different ecosystems.
+  </DocsCard>
+  <DocsCard title="Stack guides" href="/docs/stack-guides/" icon="browser">
+    How frontend, backend, database, auth, and deployment choices constrain each other.
+  </DocsCard>
+</DocsCardGrid>
 
-Accepting defaults creates a TypeScript project with:
+## Work with AI agents
 
-- TanStack Router frontend and Hono backend.
-- Bun runtime, SQLite, Drizzle, Better Auth, and tRPC.
-- Tailwind CSS, shadcn/ui, Vitest, and Turborepo.
-- The package manager used to launch the CLI, stable dependency versions, Git, install enabled, and
-  both `CLAUDE.md` and `AGENTS.md`.
-
-You can keep that stack, start from a template, or switch ecosystems entirely.
-
-## Ways to choose a stack
-
-| Path               | Use it when                                                                                            |
-| ------------------ | ------------------------------------------------------------------------------------------------------ |
-| CLI wizard         | You want prompts and sensible defaults.                                                                |
-| Stack Builder      | You want to explore compatible combinations before scaffolding.                                        |
-| Browser Edit & Run | You want to execute and edit a supported solo TypeScript web stack before downloading it.              |
-| ZIP download       | You want generated source without installing a CLI; use the copied command as the reproducible record. |
-| Explicit flags     | You want repeatable output in scripts, docs, or issue reports.                                         |
-| Agent Skill        | You want a coding agent to use the CLI workflow without hand-writing starter files.                    |
-| MCP server         | You want an AI coding agent to inspect the schema, validate compatibility, and dry-run safely.         |
-
-## Generated project context
-
-Every generated project includes:
-
-- `bts.jsonc` with the selected stack.
-- A reproducible command printed by the CLI.
-- Framework, package, and config files for the selected ecosystem.
-- Optional AI instruction files such as `CLAUDE.md`, `AGENTS.md`, or `.cursorrules`.
+<DocsCardGrid>
+  <DocsCard title="AI agents" href="/docs/ai/overview/" icon="robot">
+    Generated context files, the agent skill, and the plugin bundle for coding agents.
+  </DocsCard>
+  <DocsCard title="MCP server" href="/docs/ai/mcp/" icon="plug">
+    Connect an MCP client, then read every tool it can call and the order to call them in.
+  </DocsCard>
+</DocsCardGrid>
 
 ## After the first scaffold
 
@@ -70,19 +95,3 @@ Every generated project includes:
 | The selected stack is unchanged, but templates have advanced | `update`; review, then apply with its exact token and keep its recovery command. |
 | You want a supported resource generated inside the project   | `gen ... --dry-run`, then `gen`.                                                 |
 | You installed dependencies or changed environment values     | `check`, plus the project's own tests.                                           |
-
-The [Project Lifecycle](/docs/getting-started/lifecycle/) explains manifest-v2 provenance, exact
-review tokens, transactional rollback, recovery commands, and unverified migrated/adopted lineage.
-The [Guides](/guides/) pair complete scaffold commands with install, run, and verification steps.
-
-## Next
-
-- [Installation](/docs/getting-started/installation/) explains launchers and toolchains.
-- [First Project](/docs/getting-started/first-project/) walks through scaffold, dry-run, install, and inspection.
-- [Project Lifecycle](/docs/getting-started/lifecycle/) distinguishes create, add, update, gen, and check.
-- [Guides](/guides/) provide end-to-end paths for TypeScript, Python, Go, Rust, Java, and .NET stacks.
-- [CLI Create](/docs/cli/create/) lists flags and scripted examples.
-- [Ecosystems](/docs/ecosystems/) compares every supported project ecosystem.
-- [Multi-Ecosystem](/docs/ecosystems/multi-ecosystem/) shows how to combine web, backend, database, and mobile parts in one project.
-- [Web Builder](/docs/web-builder/) covers preview, Edit & Run, ZIP download, saved stacks, and shared URLs.
-- [CLI Update](/docs/cli/update/) explains safe post-scaffold template updates.

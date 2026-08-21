@@ -1,8 +1,8 @@
 ---
-title: Add Features
-description: Add typed tooling, deployment targets, and stack capabilities to existing Better Fullstack projects.
+title: Add and Remove Capabilities
+description: Add typed tooling, deployment targets, and stack capabilities to an existing project, or remove one under review.
 translationStatus: pending
-updated: 2026-08-18
+updated: 2026-08-21
 ---
 
 The `add` command updates an existing Better Fullstack project. It reads `bts.jsonc`, plans the requested stack change, writes safe generated-file updates, and updates the project config.
@@ -47,24 +47,24 @@ Use `--dry-run` to inspect the file, dependency, env var, compatibility, and man
 
 ## Flags
 
-| Flag                                      | Values or behavior                                                                                                                                                                                     |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `--part`                                  | One or more canonical `role:ecosystem:tool` Stack Part specs. Owner-scoped parts use `ownerRole.role:ecosystem:tool` or an explicit part ID.                                               |
-| `--dry-run`                               | Plan the update and print the summary without writing files.                                                                                                                                           |
-| `--project-dir`                           | Path to the generated project. Defaults to the current directory.                                                                                                                                      |
-| `--install`                               | Install dependencies after adding files. Defaults to false for `add`. The lockfile it writes stays outside the transaction, so recovery restores generated files only and you must re-run install.      |
-| `--package-manager`                       | `npm` `pnpm` `bun` `yarn`                                                                                                                                                                              |
-| `--email`                                 | Add an email provider such as `resend`, when compatible with the existing stack.                                                                                                                       |
-| `--observability`                         | Add an observability provider such as `sentry`, when compatible with the existing stack.                                                                                                               |
-| `--search` `--vector-db` `--file-storage` | Add supported service integrations.                                                                                                                                                                    |
-| `--web-deploy` `--server-deploy`          | Add or update supported deployment targets.                                                                                                                                                            |
+| Flag                                      | Values or behavior                                                                                                                                                                                 |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--part`                                  | One or more canonical `role:ecosystem:tool` Stack Part specs. Owner-scoped parts use `ownerRole.role:ecosystem:tool` or an explicit part ID.                                                       |
+| `--dry-run`                               | Plan the update and print the summary without writing files.                                                                                                                                       |
+| `--project-dir`                           | Path to the generated project. Defaults to the current directory.                                                                                                                                  |
+| `--install`                               | Install dependencies after adding files. Defaults to false for `add`. The lockfile it writes stays outside the transaction, so recovery restores generated files only and you must re-run install. |
+| `--package-manager`                       | `npm` `pnpm` `bun` `yarn`                                                                                                                                                                          |
+| `--email`                                 | Add an email provider such as `resend`, when compatible with the existing stack.                                                                                                                   |
+| `--observability`                         | Add an observability provider such as `sentry`, when compatible with the existing stack.                                                                                                           |
+| `--search` `--vector-db` `--file-storage` | Add supported service integrations.                                                                                                                                                                |
+| `--web-deploy` `--server-deploy`          | Add or update supported deployment targets.                                                                                                                                                        |
 
 Most create-time stack fields are accepted for existing-project updates when the planner can apply them safely. Risky architecture swaps may require manual review or a fresh scaffold.
 
 ## Selected capability examples
 
-This table explains common choices; it is not the complete accepted-value inventory. Use the
-[TypeScript options reference](/docs/reference/options/typescript/) for the current exhaustive list.
+This table explains common choices; it is not the complete accepted-value inventory. Use the [CLI Create flag tables](/docs/cli/create/#typescript-flags) for the current exhaustive
+list.
 
 | Capability                                                                                | Purpose                                                                                                            |
 | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
@@ -99,3 +99,26 @@ Canonical `stackParts` in `bts.jsonc` are the source of truth. Legacy flat proje
 4. Re-run `add` without `--dry-run`.
 5. Install dependencies if the command skipped install.
 6. Run `create-better-fullstack check --skip-checks` for config/dependency/env validation, then the project's test, lint, or typecheck command.
+
+## Remove a capability
+
+`remove` takes one selected capability back out. It plans by default, names the affected config
+fields and generated files, and returns a review token. No files are written during planning.
+
+Use the exact stack-part spec reported by `status --json` or `bts.jsonc`:
+
+<PMTabs
+  npm="npx -y create-better-fullstack@latest remove backend.auth:typescript:better-auth"
+  pnpm="pnpm dlx create-better-fullstack@latest remove backend.auth:typescript:better-auth"
+  bun="bunx create-better-fullstack@latest remove backend.auth:typescript:better-auth"
+  yarn="yarn dlx create-better-fullstack@latest remove backend.auth:typescript:better-auth"
+/>
+
+After reviewing the plan, repeat the same target with `--apply --review-token <token>`. The token is
+bound to the proposed config and file operations; missing or stale tokens fail closed. Apply uses
+the same transaction and recovery contract as `add` and [`update`](/docs/cli/update/).
+
+Primary frontend, backend, mobile, and database roles cannot be removed. Replace those choices with
+`add` so compatibility and migration risks are reviewed. When a removal is itself
+architecture-sensitive, apply also requires `--acknowledge-architecture-change`; Better Fullstack
+never migrates application data or schemas automatically.

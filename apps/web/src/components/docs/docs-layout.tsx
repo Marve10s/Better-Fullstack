@@ -24,9 +24,19 @@ import { m } from "@/paraglide/messages.js";
  *
  * The sidebar collapses into a slide-in drawer on small screens. The TOC
  * disappears entirely below `xl` so the reading column keeps a generous
- * measure on tablet-sized screens.
+ * measure on tablet-sized screens. Both rails are fixed at 17rem and the
+ * reading column takes what is left, so the article's own `max-w` centers it
+ * the same way at every width above `md`.
  */
-export function DocsLayout({ toc, children }: { toc: TocEntry[]; children: ReactNode }) {
+export function DocsLayout({
+  toc,
+  variant = "default",
+  children,
+}: {
+  toc: TocEntry[];
+  variant?: "default" | "landing";
+  children: ReactNode;
+}) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
 
@@ -55,29 +65,43 @@ export function DocsLayout({ toc, children }: { toc: TocEntry[]; children: React
 
   return (
     <div className="docs-shell min-h-[calc(100vh-3.5rem)] border-[var(--docs-border-subtle)] border-t">
-      {/* Mobile sidebar toggle */}
-      <button
-        type="button"
-        onClick={() => setMobileOpen(true)}
-        className="fixed bottom-6 left-6 z-30 flex h-10 w-10 items-center justify-center rounded-full border border-[var(--docs-border-subtle)] bg-[var(--docs-surface-elevated)]/95 text-muted-foreground shadow-lg backdrop-blur transition-colors hover:text-foreground md:hidden"
-        aria-label={m.docsOpenNavigation()}
-      >
-        <Menu className="size-4" />
-      </button>
+      {/*
+        On small screens the nav opens from a sticky bar under the navbar
+        rather than a floating circle, which used to sit on top of the article
+        text and could not be dismissed.
+      */}
+      <div className="sticky top-14 z-20 border-[var(--docs-border-subtle)] border-b bg-background/95 backdrop-blur md:hidden">
+        <button
+          type="button"
+          onClick={() => setMobileOpen(true)}
+          aria-label={m.docsOpenNavigation()}
+          className="flex h-11 items-center gap-2 px-5 text-[0.8125rem] text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <Menu className="size-4" />
+          {m.navDocs()}
+        </button>
+      </div>
 
-      <div className="mx-auto grid w-full max-w-[94rem] grid-cols-1 md:grid-cols-[16rem_minmax(0,1fr)] xl:grid-cols-[16rem_minmax(0,52rem)_16rem] xl:justify-center">
+      <div
+        className={cn(
+          "mx-auto grid w-full max-w-[100rem] grid-cols-1 md:grid-cols-[17rem_minmax(0,1fr)]",
+          variant === "default" && "xl:grid-cols-[17rem_minmax(0,1fr)_17rem]",
+        )}
+      >
         {/* Desktop sidebar */}
-        <aside className="hidden border-[var(--docs-border-subtle)] border-r bg-[var(--docs-surface)]/55 md:block">
+        <aside className="hidden border-[var(--docs-border-subtle)] border-r md:block">
           <div className="sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto">
             <DocsSidebar />
           </div>
         </aside>
 
-        <main className="min-w-0 bg-background/70">{children}</main>
+        <main className="min-w-0">{children}</main>
 
-        <aside className="hidden border-[var(--docs-border-subtle)] border-l bg-[var(--docs-surface)]/35 xl:block">
-          <TableOfContents toc={toc} />
-        </aside>
+        {variant === "default" ? (
+          <aside className="hidden xl:block">
+            <TableOfContents toc={toc} />
+          </aside>
+        ) : null}
       </div>
 
       {/* Mobile slide-in drawer */}
