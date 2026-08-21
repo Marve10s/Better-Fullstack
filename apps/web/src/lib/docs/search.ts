@@ -3,12 +3,6 @@ import matter from "gray-matter";
 
 import type { DocFrontmatter } from "./source";
 
-/**
- * Each searchable section corresponds to one heading-anchored chunk inside a
- * doc page. Pages are split on h2/h3 boundaries so results can deep-link to
- * the specific section that matched, the same UX Fumadocs and Algolia
- * DocSearch use.
- */
 export type SearchSection = {
   id: string;
   pageId: string;
@@ -17,32 +11,21 @@ export type SearchSection = {
   sectionTitle: string;
   sectionUrl: string;
   body: string;
-  /** "page" for the title section, "heading" otherwise. */
   kind: "page" | "heading";
 };
 
 export type SearchHit = SearchSection & { score: number };
 
-/**
- * Build the searchable-section list from raw MDX strings + their resolved
- * URL/title. Runs once at module load (build-time on the server, then
- * shipped to the client) — the docs corpus is small (~30 pages) so this
- * stays cheap.
- */
 export function buildSearchSections(
   pages: Array<{ url: string; rawSource?: unknown; frontmatter?: DocFrontmatter }>,
 ): SearchSection[] {
   const out: SearchSection[] = [];
 
   for (const page of pages) {
-    // Parse frontmatter so its YAML doesn't leak into the search body.
     const rawSource = typeof page.rawSource === "string" ? page.rawSource : "";
     const { data, content } = matter(rawSource);
     const pageTitle = (data?.title as string) ?? page.frontmatter?.title ?? page.url;
 
-    // Split on top-level (## / ###) headings. Anything before the first
-    // heading is treated as the page-title section so the page itself is
-    // searchable too.
     const headingRe = /^(#{2,4})\s+(.+)$/gm;
     let lastIndex = 0;
     let lastSectionTitle = pageTitle;
@@ -52,12 +35,12 @@ export function buildSearchSections(
     const flush = (endIndex: number) => {
       const body = content
         .slice(lastIndex, endIndex)
-        .replace(/```[\s\S]*?```/g, " ") // drop fenced code
-        .replace(/`[^`]+`/g, " ") // drop inline code
-        .replace(/<\/?[A-Z]\w*(\s[^<>]*)?\/?>/g, " ") // drop MDX component tags, keep their text children
-        .replace(/!\[[^\]]*\]\([^)]*\)/g, " ") // drop images
-        .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1") // unwrap links
-        .replace(/[*_~]/g, " ") // strip markdown emphasis chars
+        .replace(/```[\s\S]*?```/g, " ")
+        .replace(/`[^`]+`/g, " ")
+        .replace(/<\/?[A-Z]\w*(\s[^<>]*)?\/?>/g, " ")
+        .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
+        .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+        .replace(/[*_~]/g, " ")
         .replace(/\s+/g, " ")
         .trim();
       if (!body && lastKind !== "page") return;
@@ -99,12 +82,6 @@ function slugify(text: string): string {
     .replace(/^-|-$/g, "");
 }
 
-/**
- * Wraps Orama with a stable, async-free `query()` returning ordered hits
- * trimmed to a fixed limit. Initialisation is async (Orama's API), but we
- * memoise the resolved instance behind a promise so callers await exactly
- * once.
- */
 export type DocSearch = {
   query(input: string, limit?: number): Promise<SearchHit[]>;
 };
@@ -128,8 +105,6 @@ export async function createDocSearch(sections: SearchSection[]): Promise<DocSea
       pageTitle: section.pageTitle,
       sectionTitle: section.sectionTitle,
       body: section.body,
-      // Orama strips unknown fields when searching; we keep the original
-      // section in a side map indexed by id so we can rehydrate on hit.
     })),
   );
 

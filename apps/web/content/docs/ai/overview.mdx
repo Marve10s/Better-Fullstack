@@ -31,10 +31,10 @@ Better Fullstack gives coding agents four ways to reach the generator. They all 
 
 | Value         | File generated |
 | ------------- | -------------- |
-| `claude-md`   | `CLAUDE.md`    |
-| `agents-md`   | `AGENTS.md`    |
-| `cursorrules` | `.cursorrules` |
-| `none`        | No AI docs     |
+|`claude-md`   |`CLAUDE.md`    |
+|`agents-md`   |`AGENTS.md`    |
+|`cursorrules` |`.cursorrules` |
+|`none`        | No AI docs     |
 
 Pass more than one value to write more than one file:
 
@@ -64,14 +64,14 @@ npm create better-fullstack@latest my-app -- \
 ```
 
 <Callout kind="info" title="CLI rules for agents">
-`--yes` accepts defaults and is incompatible with core stack flags. Explicit flags skip only the categories they cover. Pass `none` for optional categories you want disabled.
+`--yes` accepts defaults and is incompatible with core stack flags. Explicit flags skip only the categories they cover. Pass`none` for optional categories you want disabled.
 </Callout>
 
 ## Agent skill
 
 The agent skill teaches an agent to use the CLI instead of hand-writing starter files. It maps the requested stack to graph parts, runs a dry-run, scaffolds without install or Git side effects, then reports the follow-up commands.
 
-The skill lives in this repository at `.agents/skills/better-fullstack`. The repository holds other internal skills too, so install only `better-fullstack`:
+The skill lives in this repository at`.agents/skills/better-fullstack`. The repository holds other internal skills too, so install only`better-fullstack`:
 
 <PMTabs
   npm="npx skills@latest add Marve10s/Better-Fullstack --skill better-fullstack --agent codex --global --yes"
@@ -90,7 +90,7 @@ bunx skills@latest add Marve10s/Better-Fullstack \
   --yes
 ```
 
-Omit `--global` for a project-local install, which records the skill version with the repository.
+Omit`--global` for a project-local install, which records the skill version with the repository.
 
 Invoke the skill by name:
 
@@ -98,14 +98,14 @@ Invoke the skill by name:
 Use $better-fullstack to create a React + Vite app with Hono, SQLite, Drizzle, tRPC, Tailwind, DaisyUI, Pino, Vitest, and Biome.
 ```
 
-Agents that match skills implicitly can also pick it up from a plain request to scaffold, plan, or extend a Better Fullstack project. Either way the skill maps the stack to flags, dry-runs it, runs the same command for real when the plan succeeds, keeps `--no-install` and `--no-git` on unless you ask otherwise, and reports the command it used along with any compatibility adjustment.
+Agents that match skills implicitly can also pick it up from a plain request to scaffold, plan, or extend a Better Fullstack project. Either way the skill maps the stack to flags, dry-runs it, runs the same command for real when the plan succeeds, keeps`--no-install` and`--no-git` on unless you ask otherwise, and reports the command it used along with any compatibility adjustment.
 
 ## Agent plugin
 
 The plugin bundles the MCP server with two focused skills:
 
-- `scaffold-project` plans and creates new Better Fullstack projects.
-- `add-to-project` previews and applies supported additions to existing generated projects.
+-`scaffold-project` plans and creates new Better Fullstack projects.
+-`add-to-project` previews and applies supported additions to existing generated projects.
 
 Use it when your agent supports plugin marketplaces and you want one install to cover both the server and the skills.
 
@@ -116,14 +116,14 @@ claude plugin marketplace add Marve10s/Better-Fullstack
 claude plugin install better-fullstack@better-fullstack
 ```
 
-The interactive `/plugin` flow works too. Claude Code namespaces the bundled skills by plugin name, so they are `better-fullstack:scaffold-project` and `better-fullstack:add-to-project`.
+The interactive`/plugin` flow works too. Claude Code namespaces the bundled skills by plugin name, so they are`better-fullstack:scaffold-project` and`better-fullstack:add-to-project`.
 
-For Codex, the repository ships a marketplace catalog at `.agents/plugins/marketplace.json` pointing at the shared bundle in `./plugin`. Install it through the Codex plugin marketplace flow with this repository as the source. The Codex manifest is `plugin/.codex-plugin/plugin.json` and the MCP server definition stays shared at `plugin/.mcp.json`.
+For Codex, the repository ships a marketplace catalog at`.agents/plugins/marketplace.json` pointing at the shared bundle in`./plugin`. Install it through the Codex plugin marketplace flow with this repository as the source. The Codex manifest is`plugin/.codex-plugin/plugin.json` and the MCP server definition stays shared at`plugin/.mcp.json`.
 
-The bundle also implements the open Agent Plugins 1.0 format. Its root `plugin.json` identifies the plugin, `skills/` holds the reusable skills, and `mcp.json` declares the stdio MCP server, so a compatible client can load the same package without a client-specific layout.
+The bundle also implements the open Agent Plugins 1.0 format. Its root`plugin.json` identifies the plugin,`skills/` holds the reusable skills, and`mcp.json` declares the stdio MCP server, so a compatible client can load the same package without a client-specific layout.
 
 ## MCP server
 
 The MCP server exposes schema and preset discovery, deterministic recommendations, compatibility checks, dry-run previews, project creation, stack updates, and focused capability additions as structured tool calls. See the [MCP server guide](/docs/ai/mcp/) for setup and the full tool reference.
 
-This is a different thing from the generated-project `mcp` capability. The server helps an agent create Better Fullstack projects. The capability writes MCP configuration inside a project you generated.
+This is a different thing from the generated-project`mcp` capability. The server helps an agent create Better Fullstack projects. The capability writes MCP configuration inside a project you generated.

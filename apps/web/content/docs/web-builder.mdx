@@ -22,7 +22,7 @@ rules, and template generator as the CLI. Changes update the reproducible comman
 
 Solo mode exposes one ecosystem's complete category surface. Multi-Ecosystem mode composes primary
 frontend, backend, database, and mobile parts, then attaches capabilities to their owners. The
-generated command preserves this graph with repeated `--part role:ecosystem:tool` flags. See
+generated command preserves this graph with repeated`--part role:ecosystem:tool` flags. See
 [Multi-Ecosystem](/docs/ecosystems/multi-ecosystem/) for how Stack Parts and ownership work.
 
 Builder state is encoded in the URL, so a shared link restores the selection. Saved stacks remain in
@@ -49,7 +49,7 @@ use Preview and ZIP download, then run with their native toolchains after downlo
 1. The browser generates the project from the selected stack.
 2. The execution copy uses npm because WebContainers provide Node and npm. This does not change the package manager selected for downloads or CLI scaffolds.
 3. Files are mounted in the WebContainer and dependencies are installed.
-4. The generated `dev:web` or `dev` script starts and its preview URL appears in the panel.
+4. The generated`dev:web` or`dev` script starts and its preview URL appears in the panel.
 
 Dependency installation requires network access from the browser runtime and can take longer on the
 first run. Runtime logs stay in the browser panel.
@@ -58,7 +58,7 @@ first run. Runtime logs stay in the browser panel.
 
 Select a text file from the generated file tree and edit it in the code pane. Binary template assets
 are view-only. Changes live in the disposable browser workspace; choose **Save & rerun** to sync them
-to the running project. Editing `package.json` triggers another dependency install.
+to the running project. Editing`package.json` triggers another dependency install.
 
 When the status becomes **Ready**, the preview frame shows the generated application. After a **Save
 & rerun**, the status cycles through startup again and the preview shows the saved change. Discard
@@ -81,8 +81,8 @@ template generator, loads text and binary template assets, and creates an archiv
 - The archive has one sanitized top-level project directory.
 - Generated executable scripts retain executable file metadata.
 - The selected package manager is preserved.
-- `bts.jsonc` contains the schema-validated current stack configuration.
-- `bts.lock.json` v2 records generator/template provenance and hashes the exact bytes of template-comparable archived files. It keeps structured `package.json` and `*.env.example` baselines used by three-way updates. Hashing excludes `bts.jsonc`, `bts.lock.json`, and install-generated lock artifacts (`bun.lock`, `bun.lockb`, `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, `Cargo.lock`, `uv.lock`, `poetry.lock`, `go.sum`, and `mix.lock`).
+-`bts.jsonc` contains the schema-validated current stack configuration.
+-`bts.lock.json` v2 records generator/template provenance and hashes the exact bytes of template-comparable archived files. It keeps structured`package.json` and`*.env.example` baselines used by three-way updates. Hashing excludes`bts.jsonc`,`bts.lock.json`, and install-generated lock artifacts (`bun.lock`,`bun.lockb`,`package-lock.json`,`pnpm-lock.yaml`,`yarn.lock`,`Cargo.lock`,`uv.lock`,`poetry.lock`,`go.sum`, and`mix.lock`).
 - No server-side project workspace is created.
 
 After extraction, follow the generated README and use the matching ecosystem install command. ZIP
@@ -110,8 +110,8 @@ same browser, but are not a cloud project store.
 ## Move to the CLI
 
 For reproducible automation, copy the generated command instead of treating the ZIP as the only
-record. Browser ZIPs and CLI scaffolds both include `bts.jsonc` plus the current `bts.lock.json`,
-enabling later `add`, `update`, and `check` workflows.
+record. Browser ZIPs and CLI scaffolds both include`bts.jsonc` plus the current`bts.lock.json`,
+enabling later`add`,`update`, and`check` workflows.
 
 ## Privacy
 

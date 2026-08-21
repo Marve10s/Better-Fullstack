@@ -12,12 +12,12 @@ npm create better-fullstack@latest telemetry enable
 ```
 
 `status --json` prints the effective state, saved preference, and environment override. The runtime
-override `BTS_TELEMETRY_DISABLED=1` takes precedence over the saved preference.
+override`BTS_TELEMETRY_DISABLED=1` takes precedence over the saved preference.
 
 ## Collected when enabled
 
 Official CLI releases enable anonymous telemetry by default and show a one-time interactive notice.
-Preview builds disable it. A saved preference or `BTS_TELEMETRY_DISABLED=1` always takes precedence.
+Preview builds disable it. A saved preference or`BTS_TELEMETRY_DISABLED=1` always takes precedence.
 
 - bounded stack/capability identifiers and counts;
 - command/action state, success/failure, duration, and bounded quality counts such as conflicts,
@@ -33,7 +33,7 @@ or values, secrets, URLs, runtime logs, raw error messages, and personal informa
 both the CLI and Convex ingest boundaries.
 
 Telemetry delivery is best-effort, has a one-second network timeout, and can never fail a command.
-Programmatic `create()` disables analytics by default; CLI creation also supports
+Programmatic`create()` disables analytics by default; CLI creation also supports
 `--disable-analytics`.
 
 ## Browser analytics

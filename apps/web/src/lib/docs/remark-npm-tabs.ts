@@ -1,26 +1,9 @@
 import type { Code, Root } from "mdast";
+
 import { visit } from "unist-util-visit";
 
 type RemarkPlugin = () => (tree: Root) => void;
 
-/**
- * Convert each ```npm code block into a `<PMTabs />` MDX JSX element with
- * auto-generated pnpm/bun/yarn variants alongside the original npm command.
- *
- * The transformation rules below cover the commands actually used in our
- * docs (create, install, run scripts, dlx-style invocations). Commands the
- * rules don't recognise pass through verbatim.
- *
- *   npm install <pkg>         → pnpm add <pkg>      bun add <pkg>      yarn add <pkg>
- *   npm install -D <pkg>      → pnpm add -D <pkg>   bun add -d <pkg>   yarn add -D <pkg>
- *   npm install (no pkg)      → pnpm install        bun install        yarn install
- *   npm uninstall <pkg>       → pnpm remove <pkg>   bun remove <pkg>   yarn remove <pkg>
- *   npm run <script>          → pnpm <script>       bun run <script>   yarn <script>
- *   npm create <starter> [project] -- <args> → pnpm/bun/yarn create <starter> [project] <args>
- *
- * The fence body may contain multiple lines (line continuations or chained
- * commands). We rewrite each line independently and re-join with newlines.
- */
 const PMTABS_COMPONENT = "PMTabs";
 
 export const remarkNpmTabs: RemarkPlugin = () => {
@@ -46,8 +29,7 @@ type CommandSet = {
 
 export function expandNpmCommand(npmSource: string): CommandSet {
   const lines = npmSource.split("\n");
-  const transform = (managerLine: (line: string) => string) =>
-    lines.map(managerLine).join("\n");
+  const transform = (managerLine: (line: string) => string) => lines.map(managerLine).join("\n");
 
   return {
     npm: npmSource,
@@ -82,7 +64,6 @@ function toPnpm(line: string): string {
   if (m) {
     return `${m[1]}pnpm create ${m[2]}${stripNpmCreateSeparator(m[3])}`;
   }
-  // Fallback: replace bare "npm" with "pnpm" if it appears at the start.
   return line.replace(/^(\s*)npm(\s)/, "$1pnpm$2");
 }
 
@@ -122,10 +103,6 @@ function toYarn(line: string): string {
   return line.replace(/^(\s*)npm(\s)/, "$1yarn$2");
 }
 
-/**
- * Build an `mdxJsxFlowElement` node that renders as
- * `<PMTabs npm="..." pnpm="..." bun="..." yarn="..." />`.
- */
 function buildPMTabsJsx(commands: CommandSet) {
   const attr = (name: keyof CommandSet) => ({
     type: "mdxJsxAttribute",

@@ -22,7 +22,7 @@
 
 <br>
 
-**Scaffold production-ready fullstack apps in TypeScript, React Native, Rust, Go, Python, Java, .NET, and Elixir — pick your stack, the CLI wires it together.**
+**Scaffold production-ready fullstack apps in TypeScript, React Native, Rust, Go, Python, Java, .NET, and Elixir, pick your stack, the CLI wires it together.**
 
 <br>
 
@@ -40,11 +40,11 @@
 
 Most scaffolding tools lock you into one framework and one opinion. Better Fullstack doesn't.
 
-- **Broad stack catalog** — frontend, backend, database, ORM, auth, API layer, payments, AI, DevOps, and more
-- **Multi-ecosystem projects** — compose web, mobile, and backend stacks across TypeScript, React Native, Rust, Go, Python, Java, .NET, and Elixir
-- **Visual builder** — configure your stack in the browser, get a ready-to-run CLI command
-- **Lifecycle-aware** — create, add, update, check, and generate from the recorded `bts.jsonc` project model
-- **Compatibility-checked** — the planner rejects or adjusts invalid selections before files are generated
+- **Broad stack catalog.** Frontend, backend, database, ORM, auth, API layer, payments, AI, DevOps, and more
+- **Multi-ecosystem projects.** Compose web, mobile, and backend stacks across TypeScript, React Native, Rust, Go, Python, Java, .NET, and Elixir
+- **Visual builder.** Configure your stack in the browser, get a ready-to-run CLI command
+- **Lifecycle-aware.** Create, add, update, check, and generate from the recorded`bts.jsonc` project model
+- **Compatibility-checked.** The planner rejects or adjusts invalid selections before files are generated
 
 <br>
 
@@ -56,7 +56,7 @@ Most scaffolding tools lock you into one framework and one opinion. Better Fulls
 
 ### 🌐 Web Builder (Recommended)
 
-Configure your stack visually — pick every option from a UI, preview your choices, and get a ready-to-run command.
+Configure your stack visually, pick every option from a UI, preview your choices, and get a ready-to-run command.
 
 ### **[Open the App Builder →](https://better-fullstack.dev/new)**
 
@@ -100,13 +100,13 @@ claude plugin marketplace add Marve10s/Better-Fullstack
 claude plugin install better-fullstack@better-fullstack
 ```
 
-- **Codex plugin catalog** — `.agents/plugins/marketplace.json`
-- **Any MCP client** — `npx -y create-better-fullstack@latest mcp`
-- **Docs** — [better-fullstack.dev/docs/ai/overview](https://better-fullstack.dev/docs/ai/overview)
+- **Codex plugin catalog**,`.agents/plugins/marketplace.json`
+- **Any MCP client**,`npx -y create-better-fullstack@latest mcp`
+- **Docs**, [better-fullstack.dev/docs/ai/overview](https://better-fullstack.dev/docs/ai/overview)
 
 <br>
 
-Ask any agent to build your stack — the **skill** runs the scaffold workflow, and the **MCP** exposes `bfs_*` tools (check compatibility, plan, create) to any client.
+Ask any agent to build your stack, the **skill** runs the scaffold workflow, and the **MCP** exposes`bfs_*` tools (check compatibility, plan, create) to any client.
 
 <br>
 

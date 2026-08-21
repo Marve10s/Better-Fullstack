@@ -66,7 +66,7 @@ In a self backend, the browser and server usually share one application origin. 
 
 In a split architecture, decide whether browsers call the API directly or the web server calls it on their behalf. Direct browser calls require exact CORS origins and deliberate credential policy. Server-to-server calls avoid browser CORS, but they require a secure way to propagate user identity or service credentials.
 
-Do not choose “JWT” as a reflex. Write down revocation, audience, expiration, refresh, and storage behavior. Do not choose cross-subdomain cookies without verifying domain, `sameSite`, `secure`, proxy, and callback configuration.
+Do not choose “JWT” as a reflex. Write down revocation, audience, expiration, refresh, and storage behavior. Do not choose cross-subdomain cookies without verifying domain,`sameSite`,`secure`, proxy, and callback configuration.
 
 The [Hono with Better Auth guide](/guides/typescript/hono-better-auth/) focuses on those boundaries.
 

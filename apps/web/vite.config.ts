@@ -105,13 +105,8 @@ export default defineConfig({
     sourcemap: false,
     minify: "esbuild",
     rollupOptions: {
-      // ts-morph is only used by template-generator processors in Node.js (CLI).
-      // The browser dynamic imports gracefully catch the failure, so exclude it
-      // from the client bundle entirely (~1.4MB gzip savings).
       external: ["ts-morph"],
       output: {
-        // Stamp known on-demand payloads with stable prefixes so the
-        // performance-budget check can keep them out of initial-load JS totals.
         chunkFileNames(chunkInfo) {
           const id = chunkInfo.facadeModuleId;
           if (id) {
@@ -146,21 +141,12 @@ export default defineConfig({
   plugins: [
     contentMetaPlugin(),
     ssrMdxLoaderAliasPlugin(),
-    // Preview generation runs from a browser-only dynamic import inside an
-    // effect. Keep its large embedded-template bundle out of Nitro's SSR graph.
     ssrTemplateGeneratorAliasPlugin(),
     paraglideVitePlugin(paraglideCompilerOptions),
     tsconfigPaths({
       projects: ["./tsconfig.json"],
       ignoreConfigErrors: true,
     }),
-    // MDX must come BEFORE react/start plugins so .mdx files are compiled to
-    // JSX before downstream plugins try to transform them. The pipeline is:
-    //   1. remark-frontmatter      — recognise YAML frontmatter blocks
-    //   2. remark-mdx-frontmatter  — re-export it as `export const frontmatter`
-    //   3. remark-gfm              — GitHub-flavoured markdown (tables, etc.)
-    //   4. remark-extract-toc      — emit `export const toc` + heading ids
-    //   5. rehype-shiki            — syntax highlighting using existing shiki dep
     {
       enforce: "pre",
       ...mdx({
@@ -193,9 +179,6 @@ export default defineConfig({
     nitro({
       config: {
         preset: "vercel",
-        // The client bundles remain minified by Vite. Keeping the final Nitro
-        // server bundle unminified avoids a large heap spike when many MDX
-        // chunks are present for localized content.
         minify: false,
         sourceMap: false,
         routeRules: {

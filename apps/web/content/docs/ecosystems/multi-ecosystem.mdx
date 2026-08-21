@@ -7,7 +7,7 @@ updated: 2026-08-07
 
 Multi-Ecosystem mode models a project as connected stack parts instead of one flat ecosystem selection. Use it when a product spans languages, for example a TypeScript frontend, Go API, shared PostgreSQL database, and React Native mobile app.
 
-Open it in the [Stack Builder](https://better-fullstack.dev/new?mode=multi) or pass repeated `--part` flags to the CLI.
+Open it in the [Stack Builder](https://better-fullstack.dev/new?mode=multi) or pass repeated`--part` flags to the CLI.
 
 ## Stack parts
 
@@ -22,16 +22,16 @@ Top-level roles describe generated apps or shared infrastructure. Owned roles at
 
 | Example                              | Meaning                                            |
 | ------------------------------------ | -------------------------------------------------- |
-| `frontend:typescript:next`           | Generate a TypeScript Next.js frontend.            |
-| `backend:go:gin`                     | Generate a Go Gin backend.                         |
-| `backend.orm:go:gorm`                | Attach GORM to the selected backend.               |
-| `backend.api:rust:tonic`             | Attach Tonic gRPC to a Rust backend.               |
-| `database:universal:postgres`        | Add a shared PostgreSQL database part.             |
-| `mobile:react-native:native-bare`    | Generate a React Native mobile app.                |
-| `mobile:kotlin:jetpack-compose`      | Generate a Kotlin Jetpack Compose app.             |
-| `mobile:swift:swiftui`               | Generate a SwiftUI app.                            |
-| `mobile:dart:flutter`                | Generate a Flutter app.                            |
-| `frontend:dotnet:blazor-webassembly` | Generate a standalone Blazor WebAssembly frontend. |
+|`frontend:typescript:next`           | Generate a TypeScript Next.js frontend.            |
+|`backend:go:gin`                     | Generate a Go Gin backend.                         |
+|`backend.orm:go:gorm`                | Attach GORM to the selected backend.               |
+|`backend.api:rust:tonic`             | Attach Tonic gRPC to a Rust backend.               |
+|`database:universal:postgres`        | Add a shared PostgreSQL database part.             |
+|`mobile:react-native:native-bare`    | Generate a React Native mobile app.                |
+|`mobile:kotlin:jetpack-compose`      | Generate a Kotlin Jetpack Compose app.             |
+|`mobile:swift:swiftui`               | Generate a SwiftUI app.                            |
+|`mobile:dart:flutter`                | Generate a Flutter app.                            |
+|`frontend:dotnet:blazor-webassembly` | Generate a standalone Blazor WebAssembly frontend. |
 
 ## Scripted example
 
@@ -50,9 +50,9 @@ npm create better-fullstack@latest my-mixed-app -- \
 
 ## Source of truth
 
-Multi-ecosystem projects write `stackParts` to `bts.jsonc`. Those parts are the source of truth for generated structure, history, and reproducible commands. Legacy fields such as `backend`, `orm`, or `frontend` may still appear as compatibility fallbacks derived from the graph.
+Multi-ecosystem projects write`stackParts` to`bts.jsonc`. Those parts are the source of truth for generated structure, history, and reproducible commands. Legacy fields such as`backend`,`orm`, or`frontend` may still appear as compatibility fallbacks derived from the graph.
 
-Generated commands preserve the graph as repeated `--part` flags, so the project can be recreated without relying on hidden builder state.
+Generated commands preserve the graph as repeated`--part` flags, so the project can be recreated without relying on hidden builder state.
 
 ## Builder flow
 
@@ -68,14 +68,14 @@ The Stack Builder's Multi-Ecosystem mode walks through:
 ## Compatibility
 
 - Primary services can use an explicit stable ID as a fourth segment, such as
-  `backend:go:gin:api`. Capabilities then target that ID, such as `api.orm:go:gorm`.
-- Repeatable named backend services render under `services/<id>` when the selected adapters support
+`backend:go:gin:api`. Capabilities then target that ID, such as`api.orm:go:gorm`.
+- Repeatable named backend services render under`services/<id>` when the selected adapters support
   independent output. Compatibility rejects repeated primary projections that cannot be rendered
   safely.
-- Owned capability parts must reference an owner, such as `backend.orm:go:gorm`.
+- Owned capability parts must reference an owner, such as`backend.orm:go:gorm`.
 - Capability ecosystems generally need to match their owner ecosystem.
 - Universal database parts can be shared across ecosystems.
-- Some tools provide implied parts. For example, selected backends may provide database or routing assumptions that appear in generated `stackParts`.
+- Some tools provide implied parts. For example, selected backends may provide database or routing assumptions that appear in generated`stackParts`.
 - The compatibility checker validates graph parts before generation and reports owner, duplicate, and unsupported-tool issues.
 
 ## Multiple named services

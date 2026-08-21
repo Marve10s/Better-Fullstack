@@ -191,25 +191,65 @@ function computeScaffbenchModelRows(specs: ReadonlySet<string>): ModelLeaderRow[
       harness: HARNESS_LABEL[model.provider],
       pass: formatPercent(passSuccesses, passTrials),
       buildOnly: scored.length > 0 && !qualityMeasured,
-      wired: scored.length > 0 ? `${Math.round(mean(scored.map((cell) => cell.wiredPct)))}%` : "—",
-      time: durations.length > 0 ? formatDuration(mean(durations)) : "—",
+      wired: scored.length > 0 ? `${Math.round(mean(scored.map((cell) => cell.wiredPct)))}%` : "–",
+      time: durations.length > 0 ? formatDuration(mean(durations)) : "–",
       costNum: costs.length > 0 ? mean(costs) : Number.POSITIVE_INFINITY,
-      cost: costs.length > 0 ? `$${mean(costs).toFixed(2)}` : "—",
-      outTok: tokens.length > 0 ? `${(mean(tokens) / 1000).toFixed(1)}k` : "—",
-      steps: steps.length > 0 ? String(Math.round(mean(steps))) : "—",
-      loc: locValues.length > 0 ? `${(mean(locValues) / 1000).toFixed(1)}k` : "—",
+      cost: costs.length > 0 ? `$${mean(costs).toFixed(2)}` : "–",
+      outTok: tokens.length > 0 ? `${(mean(tokens) / 1000).toFixed(1)}k` : "–",
+      steps: steps.length > 0 ? String(Math.round(mean(steps))) : "–",
+      loc: locValues.length > 0 ? `${(mean(locValues) / 1000).toFixed(1)}k` : "–",
     };
   });
   return sortLeaderRows(rows);
 }
 
-export default function LLMBenchmarkSection() {
+interface LLMBenchmarkSectionProps {
+  layout?: "two-column" | "stacked";
+  className?: string;
+}
+
+export default function LLMBenchmarkSection({
+  layout = "two-column",
+  className,
+}: LLMBenchmarkSectionProps = {}) {
+  if (layout === "stacked") {
+    return (
+      <section
+        id="benchmark"
+        className={cn("relative scroll-mt-16 border-t border-border bg-muted/20", className)}
+      >
+        <div className="px-4 py-20 sm:px-8 sm:py-24">
+          <StackedMasthead />
+          <BenchmarkChartCard className="mt-12" />
+          <ScaffbenchLeaderboardCard className="mt-8" />
+          <AgentInstallPanel className="mt-14" />
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <section id="benchmark" className="relative scroll-mt-16 border-t border-border bg-muted/20">
-      <div className="px-4 py-20 sm:px-8 sm:py-24">
-        <Masthead />
-        <BenchmarkChartCard />
-        <ScaffbenchLeaderboardCard />
+    <section
+      id="benchmark"
+      className={cn("relative scroll-mt-16 border-t border-border bg-muted/20", className)}
+    >
+      <div className="border-b border-border">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(240px,1fr)_minmax(0,4fr)]">
+          <BenchmarkSidebar />
+          <div className="min-w-0 p-3 sm:p-5 lg:p-6">
+            <BenchmarkChartCard />
+          </div>
+        </div>
+      </div>
+      <div className="border-b border-border">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(240px,1fr)_minmax(0,4fr)]">
+          <LeaderboardSidebar />
+          <div className="min-w-0 p-3 sm:p-5 lg:p-6">
+            <ScaffbenchLeaderboardCard />
+          </div>
+        </div>
+      </div>
+      <div className="px-4 py-12 sm:px-8 sm:py-16">
         <AgentInstallPanel />
       </div>
     </section>
@@ -231,17 +271,16 @@ const PASS_AXIS: AxisSpec = {
 };
 
 const VB_W = 1120;
-const VB_H = 470;
-const M_L = 56;
-const M_R = 30;
-const M_T = 20;
-const M_B = 52;
+const VB_H = 480;
+const M_L = 60;
+const M_R = 32;
+const M_T = 24;
+const M_B = 56;
 const PLOT_W = VB_W - M_L - M_R;
 const PLOT_H = VB_H - M_T - M_B;
-const X_INSET = 18;
 
 function plotX(value: number, axis: AxisSpec): number {
-  return M_L + (1 - value / axis.max) * (PLOT_W - X_INSET);
+  return M_L + (1 - value / axis.max) * PLOT_W;
 }
 
 function plotY(value: number, axis: AxisSpec): number {
@@ -291,20 +330,20 @@ interface LabelPlacement {
 }
 
 const PLACEMENT_CANDIDATES: readonly LabelPlacement[] = [
-  { anchor: "start", dx: 10, dy: 4 },
-  { anchor: "end", dx: -10, dy: 4 },
-  { anchor: "middle", dx: 0, dy: 22 },
-  { anchor: "middle", dx: 0, dy: -14 },
-  { anchor: "end", dx: -10, dy: 18 },
-  { anchor: "end", dx: -10, dy: -10 },
-  { anchor: "middle", dx: 0, dy: 36 },
-  { anchor: "middle", dx: 0, dy: -28 },
-  { anchor: "start", dx: 10, dy: 18 },
-  { anchor: "start", dx: 10, dy: -10 },
-  { anchor: "end", dx: -10, dy: 32 },
-  { anchor: "end", dx: -10, dy: 46 },
-  { anchor: "middle", dx: 0, dy: 50 },
-  { anchor: "middle", dx: 0, dy: -42 },
+  { anchor: "start", dx: 13, dy: 4.5 },
+  { anchor: "end", dx: -13, dy: 4.5 },
+  { anchor: "middle", dx: 0, dy: 24 },
+  { anchor: "middle", dx: 0, dy: -16 },
+  { anchor: "end", dx: -13, dy: 20 },
+  { anchor: "end", dx: -13, dy: -12 },
+  { anchor: "middle", dx: 0, dy: 38 },
+  { anchor: "middle", dx: 0, dy: -30 },
+  { anchor: "start", dx: 13, dy: 20 },
+  { anchor: "start", dx: 13, dy: -12 },
+  { anchor: "end", dx: -13, dy: 34 },
+  { anchor: "end", dx: -13, dy: 48 },
+  { anchor: "middle", dx: 0, dy: 52 },
+  { anchor: "middle", dx: 0, dy: -44 },
 ];
 
 interface LabelBox {
@@ -314,16 +353,16 @@ interface LabelBox {
   y2: number;
 }
 
-const LABEL_CHAR_W = 6.2;
-const LABEL_ASCENT = 9;
-const LABEL_DESCENT = 3;
-const DOT_PAD = 8;
+const LABEL_CHAR_W = 7.5;
+const LABEL_ASCENT = 11;
+const LABEL_DESCENT = 4;
+const DOT_PAD = 12;
 
 function labelBox(x: number, y: number, width: number, p: LabelPlacement): LabelBox {
-  const anchorX = x + (p.dx ?? 10);
+  const anchorX = x + (p.dx ?? 13);
   const x1 =
     p.anchor === "end" ? anchorX - width : p.anchor === "middle" ? anchorX - width / 2 : anchorX;
-  const baseline = y + (p.dy ?? 4);
+  const baseline = y + (p.dy ?? 4.5);
   return { x1, y1: baseline - LABEL_ASCENT, x2: x1 + width, y2: baseline + LABEL_DESCENT };
 }
 
@@ -422,25 +461,32 @@ function v2MetricValue(point: MetricBearing, metric: V2Metric): number | null {
 }
 
 function formatV2Metric(point: MetricBearing, metric: V2Metric): string {
-  if (metric === "cost") return point.cost === null ? "—" : `$${point.cost.toFixed(2)}`;
-  if (metric === "steps") return point.steps === null ? "—" : `${Math.round(point.steps)} steps`;
-  if (metric === "lines") return point.lines === null ? "—" : `${point.lines.toFixed(1)}k lines`;
-  return point.tokens === null ? "—" : `${point.tokens.toFixed(1)}k tokens`;
+  if (metric === "cost") return point.cost === null ? "–" : `$${point.cost.toFixed(2)}`;
+  if (metric === "steps") return point.steps === null ? "–" : `${Math.round(point.steps)} steps`;
+  if (metric === "lines") return point.lines === null ? "–" : `${point.lines.toFixed(1)}k lines`;
+  return point.tokens === null ? "–" : `${point.tokens.toFixed(1)}k tokens`;
 }
 
 function formatV2MetricCompact(point: MetricBearing, metric: V2Metric): string {
-  if (metric === "cost") return point.cost === null ? "—" : `$${point.cost.toFixed(2)}`;
-  if (metric === "steps") return point.steps === null ? "—" : `${Math.round(point.steps)}`;
-  if (metric === "lines") return point.lines === null ? "—" : `${point.lines.toFixed(1)}k`;
-  return point.tokens === null ? "—" : `${point.tokens.toFixed(1)}k`;
+  if (metric === "cost") return point.cost === null ? "–" : `$${point.cost.toFixed(2)}`;
+  if (metric === "steps") return point.steps === null ? "–" : `${Math.round(point.steps)}`;
+  if (metric === "lines") return point.lines === null ? "–" : `${point.lines.toFixed(1)}k`;
+  return point.tokens === null ? "–" : `${point.tokens.toFixed(1)}k`;
 }
 
 function niceStep(maxValue: number): number {
   if (maxValue <= 0) return 1;
-  const target = maxValue / 3.5;
+  const target = maxValue / 4;
   const magnitude = 10 ** Math.floor(Math.log10(target));
   const normalized = target / magnitude;
-  const niceNormalized = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10;
+  let niceNormalized = 1;
+  if (normalized > 5) {
+    niceNormalized = 10;
+  } else if (normalized > 2.5) {
+    niceNormalized = 5;
+  } else if (normalized > 1.2) {
+    niceNormalized = 2;
+  }
   return niceNormalized * magnitude;
 }
 
@@ -453,10 +499,11 @@ function buildV2Axis(metric: V2Metric, points: readonly MetricBearing[]): AxisSp
       .filter((value): value is number => value !== null),
   );
   const step = niceStep(dataMax);
-  const max = Math.max(Math.ceil((dataMax * 1.12) / step) * step, step);
+  const max = Math.max(Math.ceil((dataMax * 1.15) / step) * step, step);
   const ticks: number[] = [];
-  for (let tick = max; tick >= 0; tick -= step) {
-    ticks.push(Math.round(tick * 100) / 100);
+  const decimals = step < 1 ? Math.max(0, -Math.floor(Math.log10(step))) : 0;
+  for (let tick = max; tick >= -1e-9; tick -= step) {
+    ticks.push(Number(tick.toFixed(decimals)));
   }
   return { max, ticks, unit: tab.unit, label: tab.axisLabel };
 }
@@ -504,11 +551,15 @@ function computeV2LabelPlacements(
   axis: AxisSpec,
   metric: V2Metric,
 ): Record<string, LabelPlacement> {
-  const mapped = points.map((point) => ({
+  const inRange = points.filter((point) => {
+    const val = v2MetricValue(point, metric);
+    return val !== null && val <= axis.max;
+  });
+  const mapped = inRange.map((point) => ({
     point,
     x: plotX(v2MetricValue(point, metric) ?? 0, axis),
     y: plotY(point.pass, PASS_AXIS),
-    width: (`${point.label} · ${point.harness}`.length + 1) * LABEL_CHAR_W,
+    width: (point.label.length + 1) * LABEL_CHAR_W,
   }));
   const obstacles: LabelBox[] = mapped.map((p) => ({
     x1: p.x - DOT_PAD,
@@ -529,7 +580,7 @@ function computeV2LabelPlacements(
     let placed: LabelPlacement = { hidden: true };
     for (const candidate of PLACEMENT_CANDIDATES) {
       const box = labelBox(p.x, p.y, p.width, candidate);
-      if (box.x1 < 2 || box.x2 > VB_W - 2 || box.y1 < 12 || box.y2 > M_T + PLOT_H + 16) continue;
+      if (box.x1 < M_L || box.x2 > VB_W - 2 || box.y1 < 12 || box.y2 > M_T + PLOT_H + 16) continue;
       if (obstacles.some((o) => boxesOverlap(box, o))) continue;
       placed = candidate;
       obstacles.push(box);
@@ -540,7 +591,7 @@ function computeV2LabelPlacements(
   return placements;
 }
 
-function BenchmarkChartCard() {
+function BenchmarkChartCard({ className }: { className?: string } = {}) {
   const [metric, setMetric] = useState<V2Metric>("tokens");
   const [hoveredModel, setHoveredModel] = useState<string | null>(null);
   const modelPoints = useMemo(() => computeV2ModelPoints(), []);
@@ -572,7 +623,7 @@ function BenchmarkChartCard() {
     () =>
       visiblePoints
         .filter((point) => v2MetricValue(point, metric) === null)
-        .map((point) => `${point.label} · ${point.harness}`),
+        .map((point) => point.label),
     [visiblePoints, metric],
   );
   const axis = useMemo(() => buildV2Axis(metric, plottedPoints), [metric, plottedPoints]);
@@ -593,8 +644,9 @@ function BenchmarkChartCard() {
       viewport={viewportOnceNear}
       transition={fadeUpTransition}
       className={cn(
-        "mt-12 overflow-hidden rounded-2xl border border-[#e1e0d8] bg-[#faf9f5] text-[#1b1a17] [color-scheme:light] dark:border-[rgba(237,235,228,0.10)] dark:bg-[#161614] dark:text-[#dad8d0] dark:[color-scheme:dark]",
+        "overflow-hidden rounded-2xl border border-[#e1e0d8] bg-[#faf9f5] text-[#1b1a17] [color-scheme:light] dark:border-[rgba(237,235,228,0.10)] dark:bg-[#161614] dark:text-[#dad8d0] dark:[color-scheme:dark]",
         CHART_THEME_VARS,
+        className,
       )}
     >
       <div className="border-b border-[#e1e0d8] px-3 py-4 dark:border-[rgba(237,235,228,0.10)] sm:px-6">
@@ -627,27 +679,30 @@ function BenchmarkChartCard() {
 
       <div ref={ref} className="px-3 pb-2 pt-5 sm:px-6">
         <section aria-label={m.llmScatterAria()} className="overflow-x-auto" tabIndex={0}>
-          <div className="mx-auto w-full min-w-[560px] max-w-[1180px]">
+          <div className="mx-auto w-full max-w-[1180px]">
             <p className="px-3 text-sm font-semibold">{PASS_AXIS.label}</p>
             <svg viewBox={`0 0 ${VB_W} ${VB_H}`} className="mt-2 h-auto w-full">
               <AxisLayer key={`${metric}-${axis.max}`} x={axis} note={axisNote} palette={palette} />
-              {plottedPoints.map((point, index) => (
-                <V2Dot
-                  key={point.key}
-                  point={point}
-                  x={plotX(v2MetricValue(point, metric) ?? 0, axis)}
-                  y={plotY(point.pass, PASS_AXIS)}
-                  cardBg={palette.circleStroke}
-                  metricLabel={formatV2Metric(point, metric)}
-                  xAxisValue={formatV2MetricCompact(point, metric)}
-                  placement={labelPlacements[point.key]}
-                  index={index}
-                  inView={inView}
-                  reduceMotion={reduceMotion === true}
-                  active={hoveredModel === point.key}
-                  onActiveChange={setHoveredModel}
-                />
-              ))}
+              {plottedPoints.map((point, index) => {
+                const val = v2MetricValue(point, metric);
+                return (
+                  <V2Dot
+                    key={point.key}
+                    point={point}
+                    x={plotX(val ?? 0, axis)}
+                    y={plotY(point.pass, PASS_AXIS)}
+                    cardBg={palette.circleStroke}
+                    metricLabel={formatV2Metric(point, metric)}
+                    xAxisValue={formatV2MetricCompact(point, metric)}
+                    placement={labelPlacements[point.key]}
+                    index={index}
+                    inView={inView}
+                    reduceMotion={reduceMotion === true}
+                    active={hoveredModel === point.key}
+                    onActiveChange={setHoveredModel}
+                  />
+                );
+              })}
             </svg>
           </div>
         </section>
@@ -676,12 +731,12 @@ function AxisLayer({
         const tx = plotX(tick, x);
         return (
           <g key={`x-${tick}`}>
-            <line x1={tx} y1={M_T} x2={tx} y2={M_T + PLOT_H} stroke={palette.grid} />
+            <line x1={tx} y1={M_T} x2={tx} y2={M_T + PLOT_H} stroke={palette.grid} strokeWidth={1} />
             <text
               x={tx}
-              y={M_T + PLOT_H + 22}
+              y={M_T + PLOT_H + 24}
               textAnchor="middle"
-              fontSize={11}
+              fontSize={12.5}
               fill={palette.axisTick}
               className="font-mono"
             >
@@ -695,12 +750,12 @@ function AxisLayer({
         const y = plotY(tick, PASS_AXIS);
         return (
           <g key={`y-${tick}`}>
-            <line x1={M_L} y1={y} x2={M_L + PLOT_W} y2={y} stroke={palette.grid} />
+            <line x1={M_L} y1={y} x2={M_L + PLOT_W} y2={y} stroke={palette.grid} strokeWidth={1} />
             <text
-              x={M_L - 10}
-              y={y + 4}
+              x={M_L - 12}
+              y={y + 4.5}
               textAnchor="end"
-              fontSize={11}
+              fontSize={12.5}
               fill={palette.axisTick}
               className="font-mono"
             >
@@ -714,7 +769,7 @@ function AxisLayer({
         x={M_L + PLOT_W - 8}
         y={M_T + 18}
         textAnchor="end"
-        fontSize={12}
+        fontSize={12.5}
         fontStyle="italic"
         fill={palette.note}
       >
@@ -722,9 +777,10 @@ function AxisLayer({
       </text>
       <text
         x={M_L + PLOT_W / 2}
-        y={VB_H - 6}
+        y={VB_H - 10}
         textAnchor="middle"
-        fontSize={12}
+        fontSize={13}
+        fontWeight={500}
         fill={palette.axisLabel}
       >
         {x.label}
@@ -752,8 +808,8 @@ function HoverGuides({
         x2={0}
         y2={0}
         stroke={hex}
-        strokeWidth={1.5}
-        strokeDasharray="8 8"
+        strokeWidth={1.75}
+        strokeDasharray="6 6"
       />
       <line
         x1={0}
@@ -761,18 +817,34 @@ function HoverGuides({
         x2={0}
         y2={M_T + PLOT_H - y}
         stroke={hex}
-        strokeWidth={1.5}
-        strokeDasharray="8 8"
+        strokeWidth={1.75}
+        strokeDasharray="6 6"
       />
     </g>
   );
 }
 
-function ChartMarker({ hex, cardBg }: { hex: string; cardBg: string }) {
+function ChartMarker({
+  hex,
+  cardBg,
+  active,
+}: {
+  hex: string;
+  cardBg: string;
+  active?: boolean;
+}) {
   return (
     <>
-      <circle r={14} fill="transparent" stroke="transparent" />
-      <circle r={4.5} fill={hex} stroke={cardBg} strokeWidth={2} />
+      <circle r={22} fill="transparent" stroke="transparent" />
+      {active ? (
+        <circle r={11} fill="none" stroke={hex} strokeWidth={1.5} opacity={0.4} />
+      ) : null}
+      <circle
+        r={active ? 7.5 : 6}
+        fill={hex}
+        stroke={cardBg}
+        strokeWidth={active ? 3 : 2.5}
+      />
     </>
   );
 }
@@ -869,7 +941,7 @@ function V2ModelMenuItem({
     <DropdownMenuCheckboxItem checked={checked} onCheckedChange={handleChange} closeOnClick={false}>
       <span className="size-2.5 shrink-0 rounded-[2px]" style={swatchStyle} />
       <span className="min-w-0 flex-1">
-        {point.label} · {point.harness}{" "}
+        {point.label}{" "}
         <span className="text-[10px] opacity-70">[{point.reasoning}]</span>
       </span>
     </DropdownMenuCheckboxItem>
@@ -909,7 +981,11 @@ function V2Dot({
     () =>
       reduceMotion
         ? { duration: 0 }
-        : { x: chartMove, y: chartMove, opacity: { duration: 0.45, delay: 0.1 + index * 0.08 } },
+        : {
+            x: chartMove,
+            y: chartMove,
+            opacity: { duration: 0.35, delay: 0.1 + index * 0.08 },
+          },
     [index, reduceMotion],
   );
   const activate = useCallback(() => onActiveChange(point.key), [onActiveChange, point.key]);
@@ -926,50 +1002,52 @@ function V2Dot({
       onFocus={activate}
       onBlur={deactivate}
       className="outline-none"
-      focusable="true"
-      aria-label={`${point.label} · ${point.harness} · ${point.reasoning} · ${point.pass}% pass · ${metricLabel}`}
+      aria-label={`${point.label} · ${point.reasoning} · ${point.pass}% pass · ${metricLabel}`}
     >
       <HoverGuides active={active} hex={point.color} x={x} y={y} />
-      <ChartMarker hex={point.color} cardBg={cardBg} />
+      <ChartMarker hex={point.color} cardBg={cardBg} active={active} />
       {placement && !placement.hidden ? (
         <text
-          x={placement.dx ?? 10}
-          y={placement.dy ?? 4}
+          x={placement.dx ?? 13}
+          y={placement.dy ?? 4.5}
           textAnchor={placement.anchor ?? "start"}
-          fontSize={11}
+          fontSize={13}
           fontWeight={active ? 700 : 600}
           fill={point.color}
           stroke={cardBg}
-          strokeWidth={3}
+          strokeWidth={3.5}
           paintOrder="stroke"
         >
-          {point.label} · {point.harness}
+          {point.label}
         </text>
       ) : active ? (
         <text
-          x={nearRightEdge ? -10 : 10}
-          y={-12}
+          x={nearRightEdge ? -13 : 13}
+          y={-14}
           textAnchor={nearRightEdge ? "end" : "start"}
-          fontSize={11}
+          fontSize={13}
           fontWeight={700}
           fill={point.color}
           stroke={cardBg}
-          strokeWidth={3}
+          strokeWidth={3.5}
           paintOrder="stroke"
         >
-          {point.label} · {point.harness}
+          {point.label}
         </text>
       ) : null}
-      <g className="pointer-events-none transition-opacity duration-150" opacity={active ? 1 : 0}>
+      <g
+        className="pointer-events-none transition-opacity duration-150"
+        opacity={active ? 1 : 0}
+      >
         <text
-          x={M_L - x - 10}
-          y={4}
+          x={M_L - x - 12}
+          y={4.5}
           textAnchor="end"
-          fontSize={11}
+          fontSize={13}
           fontWeight={700}
           fill={point.color}
           stroke={cardBg}
-          strokeWidth={3}
+          strokeWidth={3.5}
           paintOrder="stroke"
           className="font-mono"
         >
@@ -977,13 +1055,13 @@ function V2Dot({
         </text>
         <text
           x={0}
-          y={M_T + PLOT_H - y + 22}
+          y={M_T + PLOT_H - y + 24}
           textAnchor="middle"
-          fontSize={11}
+          fontSize={13}
           fontWeight={700}
           fill={point.color}
           stroke={cardBg}
-          strokeWidth={3}
+          strokeWidth={3.5}
           paintOrder="stroke"
           className="font-mono"
         >
@@ -994,7 +1072,164 @@ function V2Dot({
   );
 }
 
-function Masthead() {
+interface LegendItem {
+  key: string;
+  label: string;
+  badge?: string;
+  description: string;
+}
+
+const CHART_METRIC_ITEMS: readonly LegendItem[] = [
+  {
+    key: "tokens",
+    label: "Tokens",
+    badge: "Output",
+    description: "Avg output tokens generated per scaffold run.",
+  },
+  {
+    key: "cost",
+    label: "Cost",
+    badge: "USD",
+    description: "Avg API cost per scaffold in USD.",
+  },
+  {
+    key: "steps",
+    label: "Steps",
+    badge: "Actions",
+    description: "Avg tool steps and commands executed per run.",
+  },
+  {
+    key: "lines",
+    label: "Code",
+    badge: "LoC",
+    description: "Avg lines of code written per scaffold, lockfiles excluded.",
+  },
+] as const;
+
+function BenchmarkSidebar() {
+  return (
+    <div className="flex flex-col divide-y divide-border border-b border-border bg-background/50 lg:border-b-0 lg:border-r lg:justify-between">
+      <div className="p-5 sm:p-6">
+        <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.22em] text-[#71706a] dark:text-[#8f8d84]">
+          ✦ ScaffBench
+        </p>
+        <div className="mt-3 flex items-center gap-2.5">
+          <ScaffBenchMark className="size-7 shrink-0 text-foreground sm:size-8" />
+          <h2 className="font-mono text-2xl font-bold tracking-[-0.03em] sm:text-3xl lg:text-2xl xl:text-3xl">
+            ScaffBench
+          </h2>
+        </div>
+        <p className="mt-3 text-pretty text-xs leading-relaxed text-muted-foreground sm:text-sm">
+          {m.llmBenchmarkDescription()}
+        </p>
+      </div>
+
+      <div className="hidden divide-y divide-border lg:block">
+        {CHART_METRIC_ITEMS.map((item) => (
+          <div key={item.key} className="px-5 py-2.5 sm:px-6">
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-mono text-xs font-bold text-foreground">{item.label}</span>
+              {item.badge ? (
+                <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] font-medium text-muted-foreground">
+                  {item.badge}
+                </span>
+              ) : null}
+            </div>
+            <p className="mt-0.5 text-pretty text-xs leading-relaxed text-muted-foreground">
+              {item.description}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      <div className="p-5 sm:p-6">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:grid-cols-1">
+          <Link
+            to="/blog/$"
+            params={blogPostParams}
+            className="group flex w-full items-center justify-between rounded-md bg-[#C6E853] px-3.5 py-2 text-xs font-semibold text-[#0a0a0a] transition-all hover:bg-[#b8da45]"
+          >
+            <span>{m.llmReadBlog()}</span>
+            <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+          <a
+            href="/run"
+            className="group flex w-full items-center justify-between rounded-md border border-border bg-card/60 px-3.5 py-2 text-xs font-medium text-foreground transition-colors hover:border-brand hover:bg-muted/40 dark:hover:text-brand"
+          >
+            <span>{m.llmRunItYourself()}</span>
+            <ArrowUpRight className="size-3.5 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+          </a>
+          <Link
+            to="/mcp"
+            className="group flex w-full items-center justify-between rounded-md border border-border bg-card/60 px-3.5 py-2 text-xs font-medium text-foreground transition-colors hover:border-brand hover:bg-muted/40 dark:hover:text-brand"
+          >
+            <span>{m.llmTryMcp()}</span>
+            <ArrowUpRight className="size-3.5 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const LEADERBOARD_LEGEND_ITEMS: readonly LegendItem[] = [
+  {
+    key: "pass",
+    label: "Pass",
+    badge: "Primary",
+    description: "Installs, builds, type-checks, and clears all quality gates cold.",
+  },
+  {
+    key: "wired",
+    label: "Wired",
+    badge: "Libs",
+    description: "Required spec libraries present and imported.",
+  },
+  {
+    key: "stats",
+    label: "Stats",
+    badge: "Mean / run",
+    description: "Mean time, cost, tokens, steps, and LoC.",
+  },
+] as const;
+
+function LeaderboardSidebar() {
+  return (
+    <div className="flex flex-col divide-y divide-border border-b border-border bg-background/50 lg:border-b-0 lg:border-r">
+      <div className="p-5 sm:p-6">
+        <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.22em] text-[#71706a] dark:text-[#8f8d84]">
+          ✦ Metric Legend
+        </p>
+        <h2 className="mt-3 font-mono text-2xl font-bold tracking-[-0.03em] sm:text-3xl lg:text-2xl xl:text-3xl">
+          Leaderboard
+        </h2>
+        <p className="mt-3 text-pretty text-xs leading-relaxed text-muted-foreground sm:text-sm">
+          Scored across 13 specs on a clean machine. Higher pass rate is better; lower cost, time, and tokens are better.
+        </p>
+      </div>
+
+      <div className="hidden divide-y divide-border lg:block">
+        {LEADERBOARD_LEGEND_ITEMS.map((item) => (
+          <div key={item.key} className="px-5 py-2.5 sm:px-6">
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-mono text-xs font-bold text-foreground">{item.label}</span>
+              {item.badge ? (
+                <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] font-medium text-muted-foreground">
+                  {item.badge}
+                </span>
+              ) : null}
+            </div>
+            <p className="mt-0.5 text-pretty text-xs leading-relaxed text-muted-foreground">
+              {item.description}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function StackedMasthead() {
   return (
     <div className="flex flex-col items-center text-center">
       <div className="flex items-center gap-3 sm:gap-4">
@@ -1032,6 +1267,8 @@ function Masthead() {
   );
 }
 
+const Masthead = StackedMasthead;
+
 function ScaffBenchMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 48 48" aria-hidden className={className} xmlns="http://www.w3.org/2000/svg">
@@ -1059,7 +1296,7 @@ function MetricHelp({ label, children }: { label: string; children: ReactNode })
   );
 }
 
-function ScaffbenchLeaderboardCard() {
+function ScaffbenchLeaderboardCard({ className }: { className?: string } = {}) {
   const [selectedSpecs, setSelectedSpecs] = useState<readonly string[]>(SCAFFBENCH22_SPECS);
   const [selectedModelKeys, setSelectedModelKeys] = useState<readonly string[]>(() =>
     SCAFFBENCH22_MODELS.map((model) => model.key),
@@ -1101,8 +1338,9 @@ function ScaffbenchLeaderboardCard() {
       viewport={viewportOnceNear}
       transition={fadeUpTransition}
       className={cn(
-        "mt-8 overflow-hidden rounded-2xl border border-[#e1e0d8] bg-[#faf9f5] text-[#1b1a17] [color-scheme:light] dark:border-[rgba(237,235,228,0.10)] dark:bg-[#161614] dark:text-[#dad8d0] dark:[color-scheme:dark]",
+        "overflow-hidden rounded-2xl border border-[#e1e0d8] bg-[#faf9f5] text-[#1b1a17] [color-scheme:light] dark:border-[rgba(237,235,228,0.10)] dark:bg-[#161614] dark:text-[#dad8d0] dark:[color-scheme:dark]",
         LEADERBOARD_THEME_VARS,
+        className,
       )}
     >
       <div className="border-b border-[#e1e0d8] px-3 py-4 dark:border-[rgba(237,235,228,0.10)] sm:px-6">
@@ -1146,7 +1384,7 @@ function ScaffbenchLeaderboardCard() {
               <span aria-hidden />
               <span className="flex items-center justify-end gap-1">
                 Pass
-                <MetricHelp label="Full pass@1">
+                <MetricHelp label="Full pass">
                   The project installs, builds, type-checks, AND clears every applicable quality
                   gate (lint, format, tests) on a clean machine. Agents may install and build to
                   self-verify while generating; grading happens cold afterward.
@@ -1156,7 +1394,7 @@ function ScaffbenchLeaderboardCard() {
                 Wired
                 <MetricHelp label="Wired libs">
                   How many of the spec's required libraries actually show up in the generated
-                  project — dependencies, imports, and files — not just mentioned by name.
+                  project, dependencies, imports, and files, not just mentioned by name.
                 </MetricHelp>
               </span>
               <span className="text-right">Time</span>
@@ -1167,7 +1405,7 @@ function ScaffbenchLeaderboardCard() {
                 LoC
                 <MetricHelp label="Lines of code">
                   Mean lines the model actually wrote per scaffold (lockfiles and binaries
-                  excluded). Not part of any score — two green runs can differ 10x in how much code
+                  excluded). Not part of any score, two green runs can differ 10x in how much code
                   they took, and that difference is worth seeing.
                 </MetricHelp>
               </span>
@@ -1218,7 +1456,7 @@ function ModelLeaderRow({ row }: { row: ModelLeaderRow }) {
         <ProviderLogo logo={row.logo} />
         <span
           className="truncate font-mono text-sm font-bold"
-          title={row.harness ? `${row.label} — ${row.harness}` : row.label}
+          title={row.label}
         >
           {row.label}
         </span>
@@ -1399,14 +1637,14 @@ function SpecMenuItem({
   );
 }
 
-function AgentInstallPanel() {
+function AgentInstallPanel({ className }: { className?: string } = {}) {
   return (
     <motion.div
       initial={fadeUpInitial}
       whileInView={fadeUpVisible}
       viewport={viewportOnceNear}
       transition={fadeUpTransition}
-      className="mt-14 grid grid-cols-12 items-end gap-x-6 gap-y-6"
+      className={cn("grid grid-cols-12 items-end gap-x-6 gap-y-6", className)}
     >
       <div className="col-span-12 lg:col-span-4">
         <h3 className="max-w-[16ch] text-balance font-mono text-2xl font-bold tracking-[-0.03em] sm:text-3xl">
