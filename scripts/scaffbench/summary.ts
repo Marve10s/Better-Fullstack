@@ -527,18 +527,27 @@ export function collectMetadata(options: ScaffbenchOptions) {
   });
 }
 
+let toolchainVersionsMemo: Record<string, string | undefined> | undefined;
+
 export function collectToolchainVersions() {
   const probes: Record<string, readonly [string, readonly string[]]> = {
+    bun: ["bun", ["--version"]],
+    node: ["node", ["--version"]],
     rustc: ["rustc", ["--version"]],
     cargo: ["cargo", ["--version"]],
     go: ["go", ["version"]],
     dotnet: ["dotnet", ["--version"]],
     python: ["python3", ["--version"]],
     uv: ["uv", ["--version"]],
+    java: ["java", ["--version"]],
+    mvn: ["mvn", ["-v"]],
+    mix: ["mix", ["--version"]],
+    buf: ["buf", ["--version"]],
     protoc: ["protoc", ["--version"]],
     psql: ["psql", ["--version"]],
   };
   return Effect.gen(function* () {
+    if (toolchainVersionsMemo) return toolchainVersionsMemo;
     const entries = yield* Effect.forEach(
       Object.entries(probes),
       ([name, [command, args]]) =>
@@ -548,7 +557,8 @@ export function collectToolchainVersions() {
         }),
       { concurrency: "unbounded" },
     );
-    return Object.fromEntries(entries);
+    toolchainVersionsMemo = Object.fromEntries(entries);
+    return toolchainVersionsMemo;
   });
 }
 

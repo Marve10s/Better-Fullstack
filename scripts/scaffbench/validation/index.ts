@@ -2,8 +2,7 @@ import * as Effect from "effect/Effect";
 import * as Duration from "effect/Duration";
 import * as Option from "effect/Option";
 import { existsSync, readdirSync } from "node:fs";
-import { cp, mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
-import os from "node:os";
+import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import type {
@@ -15,14 +14,17 @@ import type {
   StepResult,
 } from "@/types";
 
-import { runCommand, tail } from "@/agents/command";
+import { tail } from "@/agents/command";
+import { runValidationCommand } from "@/validation/executor";
 import {
   bfSpec,
   VALIDATION_PROJECT_TIMEOUT_MS,
   VALIDATION_ROOT_CAP,
   VALIDATION_TIMEOUT_MS,
 } from "@/constants";
-import { typecheckGate } from "@/scoring";
+import { isAdvisoryStep, stepBaseName, typecheckGate } from "@/scoring";
+
+const INSTALL_STEP_KEYS = new Set(["install", "dotnetRestore"]);
 import { hasTransientNetworkSignature } from "@/validation/classification";
 import { parseJsonc, walk } from "@/validation/shared";
 
@@ -43,7 +45,9 @@ export function commandStep(
 ) {
   return Effect.gen(function* () {
     const first = toStep(
-      yield* runCommand(command, args, cwd, VALIDATION_TIMEOUT_MS, { env: options.env }),
+      yield* fromPromise(() =>
+        runValidationCommand(command, args, cwd, VALIDATION_TIMEOUT_MS, options.env),
+      ),
     );
     if (
       !options.retryTransientNetwork ||
@@ -53,7 +57,9 @@ export function commandStep(
       return first;
     }
     const retry = toStep(
-      yield* runCommand(command, args, cwd, VALIDATION_TIMEOUT_MS, { env: options.env }),
+      yield* fromPromise(() =>
+        runValidationCommand(command, args, cwd, VALIDATION_TIMEOUT_MS, options.env),
+      ),
     );
     return {
       ...retry,
@@ -341,11 +347,26 @@ export function validateProject(
     }
     const prerequisiteStepCount = Object.keys(steps).length;
 
+    const coreVerdictFailed = () =>
+      Object.entries(steps).some(
+        ([name, step]) =>
+          !name.startsWith("unvalidated:") && !isAdvisoryStep(name) && stepFailed(step),
+      );
+    const recordNotRun = (eco: string, root: string) => {
+      steps[`not-run:${eco}:${prefixFor(root) || "."}`] = notRunStep(
+        `${eco} validation of ${prefixFor(root) || "."} not run: an earlier core step already failed`,
+      );
+    };
+
     const allBunRoots = yield* fromPromise(() => findBunManifestRoots(projectDir));
     const bunRoots = yield* fromPromise(() =>
       membershipAwareRoots(allBunRoots, bunWorkspacePatterns),
     );
     for (const root of takeRoots(bunRoots, "bun")) {
+      if (coreVerdictFailed()) {
+        recordNotRun("bun", root);
+        continue;
+      }
       const isRoot = root === projectDir;
       const bunSteps = yield* validateBunProject(root, isRoot ? options : subOptions);
       merge(bunSteps, prefixFor(root), "bun");
@@ -354,6 +375,10 @@ export function validateProject(
           coveredWorkspaceMembers(root, allBunRoots, bunWorkspacePatterns),
         );
         for (const member of takeRoots(members, "bun")) {
+          if (coreVerdictFailed()) {
+            recordNotRun("bun", member);
+            continue;
+          }
           merge(yield* validateBunProject(member, subOptions), prefixFor(member), "bun");
         }
       }
@@ -365,6 +390,10 @@ export function validateProject(
       membershipAwareRoots(allCargoRoots, cargoWorkspacePatterns),
     );
     for (const root of takeRoots(cargoRoots, "cargo")) {
+      if (coreVerdictFailed()) {
+        recordNotRun("cargo", root);
+        continue;
+      }
       merge(
         yield* validateCargoProject(root, root === projectDir ? options : subOptions),
         prefixFor(root),
@@ -375,6 +404,10 @@ export function validateProject(
       yield* fromPromise(() => findManifestRoots(projectDir, ["pyproject.toml"])),
     );
     for (const root of takeRoots(pythonRoots, "python")) {
+      if (coreVerdictFailed()) {
+        recordNotRun("python", root);
+        continue;
+      }
       merge(
         yield* validatePythonProject(root, root === projectDir ? options : subOptions),
         prefixFor(root),
@@ -383,6 +416,10 @@ export function validateProject(
     }
     const goRoots = yield* fromPromise(() => findManifestRoots(projectDir, ["go.mod"]));
     for (const root of takeRoots(goRoots, "go")) {
+      if (coreVerdictFailed()) {
+        recordNotRun("go", root);
+        continue;
+      }
       merge(
         yield* validateGoProject(root, root === projectDir ? options : subOptions),
         prefixFor(root),
@@ -390,25 +427,52 @@ export function validateProject(
       );
     }
     if (nativeProfiles.has("dotnet") || (yield* fromPromise(() => hasDotnetProject(projectDir)))) {
-      merge(
-        yield* validateDotnetProject(projectDir, options, {
-          targetCap: Math.max(0, rootCap - rootsUsed),
-        }),
-        "",
-        "dotnet",
-      );
+      if (coreVerdictFailed()) {
+        recordNotRun("dotnet", projectDir);
+      } else {
+        merge(
+          yield* validateDotnetProject(projectDir, options, {
+            targetCap: Math.max(0, rootCap - rootsUsed),
+          }),
+          "",
+          "dotnet",
+        );
+      }
     }
     if (nativeProfiles.has("java")) {
-      merge(yield* validateJavaProject(projectDir, options), "", "java");
+      if (coreVerdictFailed()) {
+        recordNotRun("java", projectDir);
+      } else {
+        merge(yield* validateJavaProject(projectDir, options), "", "java");
+      }
     }
     if (nativeProfiles.has("elixir")) {
-      merge(yield* validateElixirProject(projectDir, options), "", "elixir");
+      if (coreVerdictFailed()) {
+        recordNotRun("elixir", projectDir);
+      } else {
+        merge(yield* validateElixirProject(projectDir, options), "", "elixir");
+      }
     }
 
     if (Object.keys(steps).length === prerequisiteStepCount) {
       steps["unvalidated:project"] = unvalidatedStep(
         "project directory has no recognized build manifest",
       );
+    } else {
+      const substantiveCore = Object.entries(steps).some(
+        ([name, step]) =>
+          step !== undefined &&
+          step.status !== "skip" &&
+          step.status !== "na" &&
+          !isAdvisoryStep(name) &&
+          !name.startsWith("prerequisite:") &&
+          !INSTALL_STEP_KEYS.has(stepBaseName(name)),
+      );
+      if (!substantiveCore) {
+        steps["unvalidated:no-build-surface"] = unvalidatedStep(
+          "no build or typecheck surface was discovered — a green install alone is not a pass",
+        );
+      }
     }
     return buildProjectValidation(steps, qualityGateRequested);
   });
@@ -435,9 +499,12 @@ export function validateBunProject(projectDir: string, options: ScaffbenchOption
     const bun = existsSync(`${process.env.HOME}/.bun/bin/bun`)
       ? `${process.env.HOME}/.bun/bin/bun`
       : "bun";
-    steps.install = yield* commandStep(bun, ["install"], projectDir, {
-      retryTransientNetwork: true,
-    });
+    steps.install = yield* commandStep(
+      bun,
+      ["install", "--concurrent-scripts=2", "--network-concurrency=8"],
+      projectDir,
+      { retryTransientNetwork: true },
+    );
     if (steps.install.exitCode !== 0 || steps.install.timedOut) return steps;
 
     const packageJson = yield* fromPromise(() => readPackageJson(packageJsonPath));
@@ -450,6 +517,7 @@ export function validateBunProject(projectDir: string, options: ScaffbenchOption
     } else if (scripts.build) {
       steps.build = yield* commandStep(bun, ["run", "build"], projectDir);
     }
+    if (stepFailed(steps.build)) return steps;
     const gate = typecheckGate(scripts, existsSync(path.join(projectDir, "tsconfig.json")));
     if (gate === "tsc") {
       const bunx = existsSync(`${process.env.HOME}/.bun/bin/bunx`)
@@ -459,6 +527,7 @@ export function validateBunProject(projectDir: string, options: ScaffbenchOption
     } else if (gate) {
       steps.typecheck = yield* commandStep(bun, ["run", gate], projectDir);
     }
+    if (stepFailed(steps.typecheck)) return steps;
     if (options.qualityGate || scripts.lint) {
       const biomeBin = localBin(projectDir, "biome");
       const eslintBin = localBin(projectDir, "eslint");
@@ -470,6 +539,7 @@ export function validateBunProject(projectDir: string, options: ScaffbenchOption
             ? yield* commandStep(eslintBin, ["."], projectDir)
             : skipStep("lint (no linter configured)");
     }
+    if (stepFailed(steps.lint)) return steps;
     if (options.qualityGate) {
       const biomeBin = localBin(projectDir, "biome");
       const prettierBin = localBin(projectDir, "prettier");
@@ -478,6 +548,7 @@ export function validateBunProject(projectDir: string, options: ScaffbenchOption
         : prettierBin
           ? yield* commandStep(prettierBin, ["--check", "."], projectDir)
           : skipStep("format (no formatter configured)");
+      if (stepFailed(steps.format)) return steps;
       steps.test = scripts.test
         ? yield* commandStep(bun, ["run", "test"], projectDir)
         : naStep("test (no test script)");
@@ -590,9 +661,12 @@ export function validateCargoProject(projectDir: string, options: ScaffbenchOpti
       ["check", "--workspace", "--all-targets"],
       projectDir,
     );
+    if (stepFailed(steps.cargoCheck)) return steps;
     if (options.qualityGate) {
       steps.format = yield* commandStep("cargo", ["fmt", "--check"], projectDir);
+      if (stepFailed(steps.format)) return steps;
       steps.lint = yield* commandStep("cargo", ["clippy", "--", "-D", "warnings"], projectDir);
+      if (stepFailed(steps.lint)) return steps;
       steps.test = yield* commandStep("cargo", ["test"], projectDir);
     }
     return steps;
@@ -615,6 +689,7 @@ export function validatePythonProject(projectDir: string, options: ScaffbenchOpt
       ["run", "python", "-m", "compileall", "-q", srcDir],
       projectDir,
     );
+    if (stepFailed(steps.compile)) return steps;
     const typechecker = yield* fromPromise(() => configuredPythonTypechecker(projectDir));
     if (typechecker === "mypy") {
       const mypyArguments = (yield* fromPromise(() => pythonMypyHasConfiguredTargets(projectDir)))
@@ -633,13 +708,16 @@ export function validatePythonProject(projectDir: string, options: ScaffbenchOpt
           )
         : skipStep("python import smoke (no importable package found)");
     }
+    if (stepFailed(steps.typecheck)) return steps;
     if (options.qualityGate) {
       steps.lint = yield* commandStep("uv", ["run", "ruff", "check", "."], projectDir);
+      if (stepFailed(steps.lint)) return steps;
       steps.format = yield* commandStep(
         "uv",
         ["run", "ruff", "format", "--check", "."],
         projectDir,
       );
+      if (stepFailed(steps.format)) return steps;
       const pytest = yield* commandStep("uv", ["run", "pytest"], projectDir);
       steps.test = pytest.exitCode === 5 ? naStep("pytest (no tests collected)") : pytest;
     }
@@ -658,10 +736,14 @@ export function validateGoProject(projectDir: string, options: ScaffbenchOptions
       }));
     if (steps.install.exitCode !== 0 || steps.install.timedOut) return steps;
     steps.build = steps.build ?? (yield* commandStep("go", ["build", "./..."], projectDir));
+    if (stepFailed(steps.build)) return steps;
     steps.tidy = yield* runGoTidyAdvisory(projectDir);
     if (options.qualityGate) {
       steps.lint = yield* commandStep("go", ["vet", "./..."], projectDir);
-      const gofmt = yield* runCommand("gofmt", ["-l", "."], projectDir, VALIDATION_TIMEOUT_MS);
+      if (stepFailed(steps.lint)) return steps;
+      const gofmt = yield* fromPromise(() =>
+        runValidationCommand("gofmt", ["-l", "."], projectDir, VALIDATION_TIMEOUT_MS),
+      );
       const unformatted = gofmt.stdout.trim();
       steps.format = toStep(
         gofmt.exitCode === 0 && unformatted
@@ -672,6 +754,7 @@ export function validateGoProject(projectDir: string, options: ScaffbenchOptions
             }
           : gofmt,
       );
+      if (stepFailed(steps.format)) return steps;
       steps.test = yield* commandStep("go", ["test", "./..."], projectDir);
     }
     return steps;
@@ -722,6 +805,11 @@ export function validateDotnetProject(
       }
     }
 
+    const dotnetCoreFailed = () =>
+      Object.entries(steps).some(
+        ([name, step]) =>
+          !name.startsWith("unvalidated:") && !isAdvisoryStep(name) && stepFailed(step),
+      );
     const projects =
       targets.kind === "solution" ? targets.uncoveredProjects : targets.targets;
     for (const project of projects) {
@@ -729,6 +817,12 @@ export function validateDotnetProject(
       const root = path.dirname(project);
       const target = path.basename(project);
       const namespace = dotnetStepNamespace(projectDir, project);
+      if (dotnetCoreFailed()) {
+        steps[`${namespace}:not-run`] = notRunStep(
+          `dotnet target ${namespace} not run: an earlier core step already failed`,
+        );
+        continue;
+      }
       const restoreKey = `${namespace}:dotnetRestore`;
       const buildKey = `${namespace}:dotnetBuild`;
       steps[restoreKey] = yield* commandStep("dotnet", ["restore", target], root, {
@@ -808,6 +902,7 @@ export function validateElixirProject(projectDir: string, options: ScaffbenchOpt
     if (steps.build.exitCode !== 0 || steps.build.timedOut) return steps;
     if (options.qualityGate) {
       steps.format = yield* commandStep("mix", ["format", "--check-formatted"], root);
+      if (stepFailed(steps.format)) return steps;
       steps.test = yield* commandStep("mix", ["test"], root);
     }
     return steps;
@@ -925,6 +1020,29 @@ function skipStep(command: string): StepResult {
     stdoutTail: "skipped (tool not configured)",
     stderrTail: "",
   };
+}
+
+function notRunStep(reason: string): StepResult {
+  return {
+    command: reason,
+    exitCode: null,
+    timedOut: false,
+    status: "skip",
+    durationMs: 0,
+    stdoutTail: "not run (verdict already determined)",
+    stderrTail: "",
+  };
+}
+
+function stepFailed(step: StepResult | undefined) {
+  return Boolean(
+    step &&
+      step.status !== "skip" &&
+      step.status !== "na" &&
+      (step.timedOut ||
+        step.spawnError === true ||
+        (step.exitCode !== null && step.exitCode !== 0)),
+  );
 }
 
 function unvalidatedStep(command: string): StepResult {
@@ -1119,36 +1237,8 @@ function pythonFileImportCommand(target: PythonEntryTarget) {
 
 function runGoTidyAdvisory(projectDir: string) {
   return Effect.gen(function* () {
-    const tempRoot = yield* fromPromise(() =>
-      mkdtemp(path.join(os.tmpdir(), "scaffbench-go-tidy-")),
-    );
-    const copyDir = path.join(tempRoot, "project");
-    const cleanup = fromPromise(() => rm(tempRoot, { recursive: true, force: true })).pipe(
-      Effect.ignore,
-    );
-    return yield* Effect.gen(function* () {
-      yield* fromPromise(() =>
-        cp(projectDir, copyDir, {
-          recursive: true,
-          filter: (source) => ![".git", "vendor", "node_modules"].includes(path.basename(source)),
-        }),
-      );
-      const beforeMod = yield* fromPromise(() => readOptional(path.join(copyDir, "go.mod")));
-      const beforeSum = yield* fromPromise(() => readOptional(path.join(copyDir, "go.sum")));
-      const tidy = yield* commandStep("go", ["mod", "tidy"], copyDir);
-      const afterMod = yield* fromPromise(() => readOptional(path.join(copyDir, "go.mod")));
-      const afterSum = yield* fromPromise(() => readOptional(path.join(copyDir, "go.sum")));
-      if (!stepGreen(tidy)) return { ...tidy, command: "go mod tidy (advisory diff)" };
-      if (beforeMod !== afterMod || beforeSum !== afterSum) {
-        return {
-          ...tidy,
-          command: "go mod tidy (advisory diff)",
-          exitCode: 1,
-          stderrTail: tail("go mod tidy would change go.mod/go.sum"),
-        };
-      }
-      return { ...tidy, command: "go mod tidy (advisory diff)" };
-    }).pipe(Effect.ensuring(cleanup));
+    const tidy = yield* commandStep("go", ["mod", "tidy", "-diff"], projectDir);
+    return { ...tidy, command: "go mod tidy (advisory diff)" };
   });
 }
 

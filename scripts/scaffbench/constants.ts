@@ -4,11 +4,27 @@ import type { BenchmarkSpec, CreationPath, Effort } from "@/types";
 
 import { runCommand } from "@/agents/command";
 
-export const HARNESS_VERSION = "2.2.2";
-export const SCAFFBENCH_SUITE_VERSION = "2.1";
-export const PROMPT_VERSION = "2026-07-17-round-2";
+export const HARNESS_VERSION = "3.1.0";
+export const SCAFFBENCH_SUITE_VERSION = "3.0";
+export const PROMPT_VERSION = "2026-08-21-scaffbench-3";
 export const MIN_RANKED_TRIALS = 1;
 export const MIN_CI_RUNS = 8;
+
+export const VALIDATION_RESOURCE_PROFILE_ID = "low-2w-v1";
+export const VALIDATION_RESOURCE_ENV: Readonly<Record<string, string>> = {
+  GOMAXPROCS: "2",
+  CARGO_BUILD_JOBS: "2",
+  UV_CONCURRENT_BUILDS: "2",
+  UV_CONCURRENT_INSTALLS: "2",
+  UV_CONCURRENT_DOWNLOADS: "8",
+  ERL_FLAGS: "+S 2:2",
+  JAVA_TOOL_OPTIONS: "-XX:ActiveProcessorCount=2",
+  MSBUILDDISABLENODEREUSE: "1",
+  GIT_TERMINAL_PROMPT: "0",
+};
+export const VALIDATION_ENV_SCRUB_PATTERN =
+  /(TOKEN|SECRET|PASSWORD|CREDENTIAL|API_KEY|APIKEY|PRIVATE_KEY|AUTH|SSH_|AWS_|GCP_|GOOGLE_APPLICATION|AZURE_|OPENAI|ANTHROPIC|GEMINI|GH_|GITHUB_|NPM_|VERCEL|CLOUDFLARE|SENTRY|POSTHOG|STRIPE|SUPABASE|DATABASE_URL)/i;
+export const VALIDATION_OUTPUT_LIMIT_BYTES = 16 * 1024 * 1024;
 
 export const SCAFFBENCH_INDEX_WEIGHTS = {
   prompt: {
@@ -22,7 +38,7 @@ export const SCAFFBENCH_INDEX_WEIGHTS = {
     discipline: 0.15,
   },
 } as const;
-export const VALIDATION_CACHE_VERSION = 6;
+export const VALIDATION_CACHE_VERSION = 7;
 
 export function indexWeightsForPath(pathMode: CreationPath) {
   return pathMode === "prompt"
@@ -71,8 +87,8 @@ export const GEN_TIMEOUT_MS = 90 * 60_000;
 export const CLAUDE_TIMEOUT_MS = GEN_TIMEOUT_MS;
 export const GEN_IDLE_TIMEOUT_MS = 20 * 60_000;
 export const TIMEOUT_PROGRESS_WINDOW_MS = 10 * 60_000;
-export const VALIDATION_TIMEOUT_MS = 10 * 60_000;
-export const VALIDATION_PROJECT_TIMEOUT_MS = 45 * 60_000;
+export const VALIDATION_TIMEOUT_MS = 20 * 60_000;
+export const VALIDATION_PROJECT_TIMEOUT_MS = 90 * 60_000;
 export const VALIDATION_ROOT_CAP = 12;
 export const ESTIMATED_BUDGET_TOLERANCE = 1.25;
 export const FAST_TIMEOUT_MS = 60_000;
@@ -123,7 +139,7 @@ export const AI_SEARCH_STACK = {
   uiLibrary: "shadcn-ui",
 } as const;
 
-export const AI_SEARCH_ADDONS = ["turborepo", "biome", "devcontainer", "github-actions"] as const;
+export const AI_SEARCH_ADDONS = ["vite-plus", "devcontainer", "github-actions"] as const;
 
 export const AI_SEARCH_FLAGS = [
   "--ecosystem",
@@ -199,8 +215,7 @@ export const AI_SEARCH_FLAGS = [
   "--server-deploy",
   "none",
   "--addons",
-  "turborepo",
-  "biome",
+  "vite-plus",
   "devcontainer",
   "github-actions",
   "--examples",

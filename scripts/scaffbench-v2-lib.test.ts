@@ -143,12 +143,9 @@ describe("ScaffBench 2 harness config", () => {
   });
 
   it("keeps creation paths isolated in prompts", () => {
-    const cliPrompt = promptFor(aiSpec, "cli", "/tmp/run", "workbench", "explicit");
     const promptOnly = promptFor(aiSpec, "prompt", "/tmp/run", "workbench", "natural");
     const mcpPrompt = promptFor(aiSpec, "mcp", "/tmp/run", "workbench", "explicit");
 
-    expect(cliPrompt).toContain("--dry-run");
-    expect(cliPrompt).toContain("bun create better-fullstack@latest");
     expect(promptOnly).toContain("Do not use the Better-Fullstack MCP server");
     expect(promptOnly).toContain(aiSpec.naturalPrompt);
     expect(mcpPrompt).toContain("bfs_get_guidance");
@@ -156,13 +153,13 @@ describe("ScaffBench 2 harness config", () => {
   });
 
   it("does not leak the canonical command (answer key) into agent-facing prompts", () => {
-    const cliPrompt = promptFor(aiSpec, "cli", "/tmp/run", "workbench", "explicit");
+    const mcpPrompt = promptFor(aiSpec, "mcp", "/tmp/run", "workbench", "explicit");
 
-    // The agent must map requirements to flags itself; the full flag list is
-    // kept only in canonical-command.txt / spec.json for grading.
-    expect(cliPrompt).not.toContain(canonicalCommand(aiSpec, "workbench"));
-    expect(cliPrompt).not.toContain("--vector-db");
-    expect(cliPrompt).not.toContain("--shadcn-base");
+    // The agent must derive the stack itself; the full flag list is kept only in
+    // canonical-command.txt / spec.json for grading.
+    expect(mcpPrompt).not.toContain(canonicalCommand(aiSpec, "workbench"));
+    expect(mcpPrompt).not.toContain("--vector-db");
+    expect(mcpPrompt).not.toContain("--shadcn-base");
   });
 
   it("records missing spawned tools as failed commands", async () => {
@@ -190,7 +187,7 @@ describe("ScaffBench 2 scoring", () => {
       }),
     );
 
-    expect(score).toMatchObject({ matched: 24, total: 24, percent: 100 });
+    expect(score).toMatchObject({ matched: 23, total: 23, percent: 100 });
     expect(score.misses).toEqual([]);
   });
 
@@ -869,6 +866,7 @@ describe("ScaffBench 2 discovery lane", () => {
             pino: "*",
             vitest: "*",
             i18next: "*",
+            turbo: "*", // alternative to the canonical vite-plus
           },
         }),
       );
@@ -876,7 +874,7 @@ describe("ScaffBench 2 discovery lane", () => {
       await writeFile(join(dir, ".github", "workflows", "ci.yml"), "name: ci");
 
       const { acceptance } = await scoreProject(aiSpec, dir, "natural");
-      expect(acceptance).toMatchObject({ matched: 12, total: 12 });
+      expect(acceptance).toMatchObject({ matched: 13, total: 13 });
 
       // explicit lane returns no acceptance score (strict markers only)
       const explicit = await scoreProject(aiSpec, dir, "explicit");
@@ -998,41 +996,6 @@ describe("ScaffBench 2 command discipline from trajectory (P2)", () => {
     expect(uses).toHaveLength(1);
     expect(uses[0]).toMatchObject({ name: "Bash" });
     expect(uses[0]?.command).toContain("--dry-run");
-  });
-
-  it("scores the CLI path on actual bun-create + dry-run tool calls", async () => {
-    const out = streamJson(
-      bashUse("bun create better-fullstack@2.1.1 app --dry-run"),
-      bashUse("bun create better-fullstack@2.1.1 app --no-install"),
-      resultEvent,
-    );
-    expect(await scoreToolCompliance("cli", null, claudeOutput(out))).toMatchObject({
-      score: 3,
-      total: 3,
-    });
-  });
-
-  it("fails dry-run-first when the real scaffold precedes the dry-run", async () => {
-    // Scaffolds for real, THEN dry-runs — presence is satisfied but the order is
-    // wrong, so the discipline check must fail (it previously passed on presence).
-    const out = streamJson(
-      bashUse("bun create better-fullstack@2.1.1 app --no-install"),
-      bashUse("bun create better-fullstack@2.1.1 app --dry-run"),
-      resultEvent,
-    );
-    const tc = await scoreToolCompliance("cli", null, claudeOutput(out));
-    expect(tc.checks.find((check) => check.id === "dry-run-first")?.status).toBe("fail");
-  });
-
-  it("ignores --help probes when checking dry-run-first ordering", async () => {
-    const out = streamJson(
-      bashUse("bun create better-fullstack@2.1.1 --help"),
-      bashUse("bun create better-fullstack@2.1.1 app --dry-run"),
-      bashUse("bun create better-fullstack@2.1.1 app --no-install"),
-      resultEvent,
-    );
-    const tc = await scoreToolCompliance("cli", null, claudeOutput(out));
-    expect(tc.checks.find((check) => check.id === "dry-run-first")?.status).toBe("pass");
   });
 
   it("fails a prompt-only run that shells out to the BF CLI", async () => {

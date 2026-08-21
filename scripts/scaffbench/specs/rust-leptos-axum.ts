@@ -2,22 +2,21 @@ import type { BenchmarkSpec } from "@/types";
 
 export const RustLeptosAxumSpec: BenchmarkSpec = {
     id: "rust-leptos-axum",
-    introducedAt: "2026-06-25",
+    introducedAt: "2026-08-21",
     title: "Rust Axum API with a Leptos WASM frontend and typed service libraries",
     lane: "core",
     family: "rust",
     supportedByBetterFullstack: true,
     requirements: [
-      "Create a Rust project with Axum as the backend web framework.",
-      "Use Leptos specifically for the WASM frontend; do not replace it with Dioxus or React.",
+      "Create a Rust project for an internal feature-flag console with Axum as the backend web framework (not Actix).",
+      "Use Leptos specifically for the WASM frontend; do not replace it with Dioxus, Yew, or a JavaScript frontend.",
       "Use PostgreSQL with SQLx.",
       "Use Tonic for a typed API boundary.",
       "Include Clap CLI support, tracing, anyhow/thiserror, Moka caching, OAuth2 auth, Lapin jobs, OpenTelemetry, and Askama templates.",
       "Include serde, uuid, chrono, reqwest, config, utoipa, validator, and tokio-test libraries.",
-      "Do not initialize git or start a dev server.",
     ],
     naturalPrompt:
-      "Build a Rust starter for an internal product console. It should have an Axum server, a Rust WASM frontend, Postgres access, typed service/API boundaries, CLI/admin utilities, tracing, auth, cache, jobs, and template rendering. Choose the right Rust libraries rather than swapping in web defaults.",
+      "Build a Rust starter for an internal feature-flag console. It should have an Axum server, a Rust WASM frontend, Postgres access, typed service/API boundaries, CLI/admin utilities, tracing, auth, cache, jobs, and template rendering. Choose the right Rust libraries rather than swapping in web defaults.",
     rightLibraryNotes: [
       "Leptos is required for the Rust WASM frontend.",
       "Axum is required for the server.",
@@ -121,6 +120,7 @@ export const RustLeptosAxumSpec: BenchmarkSpec = {
       { id: "observability:opentelemetry", text: ["opentelemetry"] },
       { id: "templating:askama", text: ["askama"] },
       { id: "forbidden:dioxus", forbiddenText: ["dioxus-router", "Dioxus.toml"] },
+      { id: "forbidden:actix", forbiddenText: ["actix-web"] },
     ],
     validationProfile: { native: ["cargo"] },
   };

@@ -2,18 +2,17 @@ import type { BenchmarkSpec } from "@/types";
 
 export const PythonIngestionApiSpec: BenchmarkSpec = {
     id: "python-ingestion-api",
-    introducedAt: "2026-06-25",
+    introducedAt: "2026-08-21",
     title: "Python FastAPI ingestion API with AI, queues, realtime, and quality gates",
     lane: "core",
     family: "python",
     supportedByBetterFullstack: true,
     requirements: [
-      "Create a Python API project using FastAPI.",
+      "Create a Python API project using FastAPI for an AI document-ingestion pipeline: upload, queue, extract, and stream progress.",
       "Use SQLModel for database models and Pydantic for validation.",
-      "Use LangGraph and OpenAI SDK for AI workflows.",
-      "Use JWT auth, Celery task queues, WebSockets realtime, Redis caching, OpenTelemetry, Typer, Rich, Ruff, Pytest, and Hypothesis.",
-      "Do not choose Django REST Framework or Django Ninja because this is not a Django project.",
-      "Do not initialize git or start a dev server.",
+      "Use LangGraph and OpenAI SDK for the extraction workflow.",
+      "Use JWT auth, Celery task queues, WebSockets for realtime job progress, Redis caching, OpenTelemetry, Typer, Rich, Ruff, Pytest, and Hypothesis.",
+      "Do not choose Django REST Framework, Django Ninja, or Flask — this is a FastAPI project.",
     ],
     naturalPrompt:
       "Build a Python ingestion API starter for AI document processing. It needs FastAPI, SQL-backed models, strict validation, AI workflow libraries, queued workers, realtime job updates, Redis cache, tracing, CLI tools, and real test/quality tooling. Avoid Django-only API libraries.",
@@ -104,6 +103,7 @@ export const PythonIngestionApiSpec: BenchmarkSpec = {
       { id: "realtime:websockets", text: ["websockets"] },
       { id: "cli:typer+rich", text: ["typer", "rich"] },
       { id: "forbidden:django-api", forbiddenText: ["django-rest-framework", "django-ninja"] },
+      { id: "forbidden:flask", forbiddenText: ["flask"] },
     ],
     validationProfile: { native: ["python"] },
   };

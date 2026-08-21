@@ -41,6 +41,7 @@ import {
   PROMPT_VERSION,
   SCAFFBENCH_SUITE_VERSION,
   VALIDATION_CACHE_VERSION,
+  VALIDATION_RESOURCE_PROFILE_ID,
   QUEUE_POLL_MS,
   STALE_LOCK_MS,
   bfSpec,
@@ -408,6 +409,7 @@ function runOneGeneration(input: {
         harnessVersion: HARNESS_VERSION,
         validationCacheVersion: VALIDATION_CACHE_VERSION,
         promptVersion: PROMPT_VERSION,
+        resourceProfileId: VALIDATION_RESOURCE_PROFILE_ID,
         agentAdapter: provider,
         configuredTrials: options.repeats,
         specOrderSeed: input.specOrderSeed,
@@ -455,7 +457,7 @@ export function repairPromptFor(
     .split("\n")
     .slice(-50)
     .join("\n");
-  return `Repair the existing project in the current directory. Do not recreate it and do not start a dev server.
+  return `Repair the existing project in the current directory. Do not recreate it. Kill every process you start before finishing.
 The ScaffBench validation step \`${stepName}\` failed. Make the smallest changes needed for that step and the project build to pass, then run a focused check.
 
 Failing-step stderr tail:
@@ -786,6 +788,7 @@ function validatePendingResults(
           if (result.provenance) {
             result.provenance.harnessVersion = HARNESS_VERSION;
             result.provenance.validationCacheVersion = VALIDATION_CACHE_VERSION;
+            result.provenance.resourceProfileId = VALIDATION_RESOURCE_PROFILE_ID;
           }
           result.outcome = classifyOutcome(result);
           result.outcomeEvidence = outcomeEvidenceFor(result);

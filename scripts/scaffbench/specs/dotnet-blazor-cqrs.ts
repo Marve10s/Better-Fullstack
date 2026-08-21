@@ -2,7 +2,7 @@ import type { BenchmarkSpec } from "@/types";
 
 export const DotnetBlazorCqrsSpec: BenchmarkSpec = {
     id: "dotnet-blazor-cqrs",
-    introducedAt: "2026-06-30",
+    introducedAt: "2026-08-21",
     title: ".NET Blazor app with Dapper, Duende IdentityServer, and HotChocolate GraphQL",
     lane: "core",
     family: "dotnet",
@@ -18,7 +18,6 @@ export const DotnetBlazorCqrsSpec: BenchmarkSpec = {
       "Use SignalR for realtime.",
       "Use OpenTelemetry, NLog, and health checks for observability (not Serilog).",
       "Use FluentValidation, Redis caching, and Docker deploy output.",
-      "Do not initialize git or start a dev server.",
     ],
     naturalPrompt:
       "Build a .NET starter for an internal operations console. It needs a C# web UI, lightweight data access, a dedicated identity server, a GraphQL API, Postgres, background scheduling, realtime updates, validation, caching, observability, and container output. Choose the right .NET libraries rather than the framework defaults.",
@@ -79,6 +78,7 @@ export const DotnetBlazorCqrsSpec: BenchmarkSpec = {
       { id: "observability:nlog", text: ["NLog"] },
       { id: "forbidden:hangfire", forbiddenText: ["Hangfire"] },
       { id: "forbidden:serilog", forbiddenText: ["Serilog"] },
+      { id: "forbidden:ef-core", forbiddenText: ["Microsoft.EntityFrameworkCore"] },
     ],
     validationProfile: { native: ["dotnet"] },
   };

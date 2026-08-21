@@ -2,17 +2,17 @@ import type { BenchmarkSpec } from "@/types";
 
 export const GoRealtimeApiSpec: BenchmarkSpec = {
     id: "go-realtime-api",
-    introducedAt: "2026-06-25",
+    introducedAt: "2026-08-21",
     title: "Go realtime API with Chi, Ent, gRPC, NATS, Redis, and OpenTelemetry",
     lane: "core",
     family: "go",
     supportedByBetterFullstack: true,
     requirements: [
-      "Create a Go API project using Chi, not Gin/Echo/Fiber.",
+      "Create a Go API project for a fleet-tracking admin service: vehicles report positions, operators watch them live.",
+      "Use Chi as the router, not Gin/Echo/Fiber.",
       "Use PostgreSQL with Ent.",
-      "Use gRPC for typed service contracts.",
-      "Use Cobra CLI tooling, Zap logging, JWT auth, Testify + GoMock tests, Gorilla WebSocket realtime, NATS messaging, Redis caching, Viper config, and OpenTelemetry.",
-      "Do not initialize git or start a dev server.",
+      "Use gRPC for the vehicle-ingest service contract.",
+      "Use Cobra CLI tooling, Zap logging, JWT auth, Testify + GoMock tests, Gorilla WebSocket for live position updates, NATS messaging, Redis caching, Viper config, and OpenTelemetry.",
     ],
     naturalPrompt:
       "Build a Go backend starter for a realtime admin API. It needs a lightweight router, Ent/Postgres models, typed gRPC service contracts, CLI/admin commands, structured logging, auth, websocket updates, event messaging, Redis cache, configuration, tracing, and test doubles.",
@@ -98,6 +98,8 @@ export const GoRealtimeApiSpec: BenchmarkSpec = {
       { id: "config:viper", text: ["github.com/spf13/viper"] },
       { id: "observability:opentelemetry", text: ["go.opentelemetry.io/otel"] },
       { id: "forbidden:gin", forbiddenText: ["github.com/gin-gonic/gin"] },
+      { id: "forbidden:echo", forbiddenText: ["github.com/labstack/echo"] },
+      { id: "forbidden:fiber", forbiddenText: ["github.com/gofiber/fiber"] },
     ],
     validationProfile: { native: ["go"] },
   };

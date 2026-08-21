@@ -2,19 +2,18 @@ import type { BenchmarkSpec } from "@/types";
 
 export const MultiDotnetOpsSpec: BenchmarkSpec = {
     id: "multi-dotnet-ops",
-    introducedAt: "2026-06-25",
+    introducedAt: "2026-08-21",
     title: "Multi-ecosystem ops portal with TypeScript frontend and .NET Minimal API backend",
     lane: "core",
     family: "multi-ecosystem",
     supportedByBetterFullstack: true,
     requirements: [
-      "Create one multi-ecosystem project graph.",
+      "Create one multi-ecosystem project graph for an incident-ops portal: on-call engineers acknowledge incidents in the web UI, the backend fans out notifications.",
       "Use a Next.js TypeScript frontend with Tailwind and shadcn/ui.",
       "Use an ASP.NET Minimal API backend.",
-      "Use EF Core, ASP.NET Identity, Minimal API endpoints, xUnit, Testcontainers for .NET, Serilog, SignalR, FluentValidation, Hangfire, memory cache, and Docker output.",
+      "Use EF Core, ASP.NET Identity, Minimal API endpoints, xUnit, Testcontainers for .NET, Serilog, SignalR for live incident updates, FluentValidation, Hangfire for notification fan-out, memory cache, and Docker output.",
       "Use PostgreSQL as the shared database.",
       "Include Turborepo, Biome, and GitHub Actions.",
-      "Do not initialize git or start a dev server.",
     ],
     naturalPrompt:
       "Build a multi-ecosystem ops portal starter: a TypeScript web frontend and a .NET backend. It needs Postgres-backed identity, API endpoints, validation, background jobs, realtime notifications, observability/logging, tests, containers, and CI. Use the project graph instead of forcing everything into one ecosystem.",

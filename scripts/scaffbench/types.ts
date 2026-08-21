@@ -1,9 +1,4 @@
-// Creation path = HOW the agent is asked to build each project.
-// - "prompt": hand-write from scratch, no Better-Fullstack tooling. THE DEFAULT —
-//   the only path we run by default (raw model capability).
-// - "mcp": drive the Better-Fullstack MCP server. Opt-in via `--paths mcp`.
-// - "cli": map requirements to CLI flags. LEGACY — kept working, not default.
-export type CreationPath = "prompt" | "mcp" | "cli";
+export type CreationPath = "prompt" | "mcp";
 export type Effort = "default" | "low" | "medium" | "high" | "xhigh" | "max";
 export type PromptStyle = "explicit" | "natural";
 export type CommandStatus = "pass" | "fail" | "unknown" | "skipped";
@@ -217,6 +212,8 @@ export type RunProvenance = {
   harnessVersion: string;
   validationCacheVersion: number;
   promptVersion: string;
+  /** Fixed validation resource profile (worker caps, QoS, output limit). */
+  resourceProfileId?: string;
   agentAdapter: string;
   configuredTrials: number;
   specOrderSeed: number;

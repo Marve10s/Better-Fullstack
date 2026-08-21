@@ -385,14 +385,6 @@ export async function scoreToolCompliance(
     .map((use) => (use.command ?? "").toLowerCase());
   const isBfsCli = (cmd: string) => /create\s+better-fullstack|create-better-fullstack/.test(cmd);
   const ranBfsCli = bashCommands.some(isBfsCli);
-  // Order matters: the FIRST real scaffold invocation must be the dry-run, so a
-  // transcript that writes for real and only dry-runs afterward fails the check.
-  // --help/--version probes inspect flags without scaffolding, so they don't count.
-  const bfsScaffoldCommands = bashCommands.filter(
-    (cmd) => isBfsCli(cmd) && !/--help|--version/.test(cmd),
-  );
-  const dryRanFirst =
-    bfsScaffoldCommands.length > 0 && bfsScaffoldCommands[0]!.includes("--dry-run");
 
   const checks: CommandDisciplineCheck[] = [];
   if (pathMode === "prompt") {
@@ -405,22 +397,6 @@ export async function scoreToolCompliance(
       id: "no-bf-tool",
       status: usedAnyBfsTool || ranBfsCli ? "fail" : "pass",
       detail: "prompt-only must not call a Better-Fullstack MCP tool or CLI",
-    });
-  } else if (pathMode === "cli") {
-    checks.push({
-      id: "used-cli",
-      status: ranBfsCli || hasBtsConfig ? "pass" : "fail",
-      detail: "CLI path must run bun create better-fullstack",
-    });
-    checks.push({
-      id: "dry-run-first",
-      status: dryRanFirst ? "pass" : "fail",
-      detail: "CLI path must dry-run before writing",
-    });
-    checks.push({
-      id: "no-mcp",
-      status: usedBfsCreate ? "fail" : "pass",
-      detail: "CLI path must not use MCP creation",
     });
   } else {
     checks.push({
@@ -451,7 +427,7 @@ const ADVISORY_STEP_KEYS = new Set(["lint", "format", "test", "doctor", "route",
 export function stepBaseName(name: string) {
   return name.slice(name.lastIndexOf(":") + 1);
 }
-function isAdvisoryStep(name: string) {
+export function isAdvisoryStep(name: string) {
   return ADVISORY_STEP_KEYS.has(stepBaseName(name));
 }
 

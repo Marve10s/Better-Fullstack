@@ -52,7 +52,7 @@ export function parseArgs(argv: string[]): ScaffbenchOptions {
       ["default", "low", "medium", "high", "xhigh", "max"],
       DEFAULT_EFFORTS,
     ),
-    paths: parseList(args.get("paths"), ["prompt", "mcp", "cli"], DEFAULT_PATHS),
+    paths: parseList(args.get("paths"), ["prompt", "mcp"], DEFAULT_PATHS),
     specs,
     repeats,
     outDir: requestedOutDir

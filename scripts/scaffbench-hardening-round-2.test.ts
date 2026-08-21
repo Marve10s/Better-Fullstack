@@ -191,7 +191,7 @@ describe("ScaffBench hardening round 2", () => {
 
   it("C snapshots a non-contradictory install policy for every path mode", () => {
     const snapshot: Record<string, string[]> = {};
-    for (const pathMode of ["prompt", "mcp", "cli"] as const) {
+    for (const pathMode of ["prompt", "mcp"] as const) {
       const prompts = SCAFFBENCH_2_SPECS.map((spec) =>
         promptFor(spec, pathMode, "/tmp/scaffbench-prompt-snapshot", "project", "explicit"),
       );
@@ -207,11 +207,10 @@ describe("ScaffBench hardening round 2", () => {
       ];
     }
     const allowed =
-      "You may install dependencies, query package registries, and run builds or type checks to verify your work before finishing — the project is graded by whether it installs and builds on a clean machine.";
+      "You may install dependencies, query package registries, run builds or type checks, and start servers to verify your work before finishing — the project is graded by whether it installs and builds on a clean machine. Kill every process you start; nothing may still be running when you finish.";
     expect(snapshot).toEqual({
       prompt: [allowed],
       mcp: [allowed],
-      cli: [allowed, "Use `--no-install --no-git --disable-analytics`."],
     });
   });
 
@@ -677,21 +676,22 @@ describe("ScaffBench hardening round 2", () => {
   });
 
   it("N uses content-introduction dates from git history instead of the file-split date", () => {
+    // The 3.0 spec refresh (2026-08-21) rewrote every spec, so every cohort date moved.
     const expected = {
-      "ai-search-workbench": "2026-06-25",
-      "rust-leptos-axum": "2026-06-25",
-      "python-ingestion-api": "2026-06-25",
-      "go-realtime-api": "2026-06-25",
-      "multi-dotnet-ops": "2026-06-25",
-      "ts-minimal-restraint": "2026-06-25",
-      "ts-svelte-edge-orpc": "2026-06-30",
-      "dotnet-blazor-cqrs": "2026-06-30",
-      "multi-ts-go-grpc": "2026-06-30",
-      "java-spring-jooq-keycloak": "2026-06-30",
-      "elixir-broadway-absinthe": "2026-06-30",
-      "react-native-expo": "2026-06-30",
-      "frontier-polyglot-proto": "2026-06-30",
-      "frontier-effect-eventsourcing": "2026-06-30",
+      "ai-search-workbench": "2026-08-21",
+      "rust-leptos-axum": "2026-08-21",
+      "python-ingestion-api": "2026-08-21",
+      "go-realtime-api": "2026-08-21",
+      "multi-dotnet-ops": "2026-08-21",
+      "ts-minimal-restraint": "2026-08-21",
+      "ts-svelte-edge-orpc": "2026-08-21",
+      "dotnet-blazor-cqrs": "2026-08-21",
+      "multi-ts-go-grpc": "2026-08-21",
+      "java-spring-jooq-keycloak": "2026-08-21",
+      "elixir-broadway-absinthe": "2026-08-21",
+      "react-native-expo": "2026-08-21",
+      "frontier-polyglot-proto": "2026-08-21",
+      "frontier-effect-eventsourcing": "2026-08-21",
     };
     expect(Object.fromEntries(SCAFFBENCH_2_SPECS.map((spec) => [spec.id, spec.introducedAt]))).toEqual(
       expected,

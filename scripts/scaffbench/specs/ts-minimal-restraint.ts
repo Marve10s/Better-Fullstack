@@ -2,22 +2,24 @@ import type { BenchmarkSpec } from "@/types";
 
 export const TsMinimalRestraintSpec: BenchmarkSpec = {
     id: "ts-minimal-restraint",
-    introducedAt: "2026-06-25",
+    introducedAt: "2026-08-21",
     title: "Minimal React + Tailwind SPA with no backend, data, or auth (restraint test)",
     lane: "extended",
     family: "typescript",
     supportedByBetterFullstack: true,
     requirements: [
       "Create a minimal TypeScript React single-page app built with Vite and Tailwind.",
-      "It is a static marketing/landing page only.",
-      "Do NOT add a backend, database, ORM, API layer, auth, payments, email, file storage, jobs, CMS, or analytics.",
+      "It is the launch page for a developer tool: hero, feature grid, pricing table, and a waitlist email form.",
+      "The waitlist form POSTs to an external form endpoint read from an env var — you do NOT build the endpoint.",
+      "Pricing is three static tiers — no checkout, no billing provider.",
+      "Do NOT add a backend, database, ORM, API layer, auth, payments, email, file storage, jobs, CMS, or analytics. Every one of those is tempting here; adding any of them is a failure.",
       "Include Turborepo tooling.",
-      "Do not initialize git or start a dev server.",
     ],
     naturalPrompt:
-      "Build a small static marketing landing page as a React single-page app with Tailwind. It has no accounts, no database, and no server — just a clean front end. Keep it lean and do not add backend or data tooling.",
+      "Build the launch page for a developer tool as a React single-page app with Tailwind: hero, feature grid, static three-tier pricing, and a waitlist email form that posts to an external form service configured by env var. There are no accounts, no database, and no server of your own — keep it a lean front end and resist adding backend or data tooling.",
     rightLibraryNotes: [
       "This is a frontend-only starter: do not add a backend, database, ORM, API, auth, payments, or email.",
+      "The pricing table and waitlist form are bait — they need no billing provider and no server.",
     ],
     canonicalFlags: [
       "--ecosystem", "typescript",

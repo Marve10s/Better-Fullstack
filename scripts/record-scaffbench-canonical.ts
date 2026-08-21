@@ -3,7 +3,7 @@
 import * as BunContext from "@effect/platform-bun/BunContext";
 import * as Effect from "effect/Effect";
 import { existsSync } from "node:fs";
-import { mkdir, rm } from "node:fs/promises";
+import { mkdir, readdir, rm } from "node:fs/promises";
 import path from "node:path";
 
 import {
@@ -34,7 +34,7 @@ function scaffbenchOptions(specs: string[]): ScaffbenchOptions {
   return {
     model: "canonical-cli",
     efforts: ["default"],
-    paths: ["cli"],
+    paths: ["prompt"],
     specs,
     repeats: 1,
     outDir: path.resolve(OUTPUT_DIR),
@@ -79,6 +79,36 @@ export function localCanonicalCommand(
 
 function displayCommand(command: readonly string[]): string {
   return command.map((argument) => JSON.stringify(argument)).join(" ");
+}
+
+async function findGoModuleDirs(root: string, depth = 3): Promise<string[]> {
+  if (depth < 0) return [];
+  const found: string[] = [];
+  let entries;
+  try {
+    entries = await readdir(root, { withFileTypes: true });
+  } catch {
+    return found;
+  }
+  for (const entry of entries) {
+    if (entry.name === "node_modules" || entry.name === "vendor" || entry.name.startsWith(".")) {
+      continue;
+    }
+    const next = path.join(root, entry.name);
+    if (entry.isFile() && entry.name === "go.mod") found.push(root);
+    if (entry.isDirectory()) found.push(...(await findGoModuleDirs(next, depth - 1)));
+  }
+  return [...new Set(found)];
+}
+
+async function runDocumentedGoSetup(projectDir: string): Promise<void> {
+  for (const moduleDir of await findGoModuleDirs(projectDir)) {
+    // oxlint-disable-next-line no-await-in-loop -- tidy modules one at a time.
+    const tidy = await runCommand(["go", "mod", "tidy"], moduleDir);
+    if (tidy.exitCode !== 0) {
+      console.warn(`go mod tidy failed in ${path.relative(projectDir, moduleDir) || "."}`);
+    }
+  }
 }
 
 async function buildLocalCliBinary(): Promise<string> {
@@ -132,6 +162,10 @@ async function main(): Promise<void> {
       // oxlint-disable-next-line no-await-in-loop -- avoid overlapping package installs across specs.
       const create = await runCommand(command, PROJECT_ROOT);
       const projectExists = create.exitCode === 0;
+      if (projectExists) {
+        // oxlint-disable-next-line no-await-in-loop -- setup precedes this spec's validation.
+        await runDocumentedGoSetup(projectDir);
+      }
       // oxlint-disable-next-line no-await-in-loop -- validate each isolated scaffold before scoring it.
       const validation = await validateProject(
         spec,
@@ -158,7 +192,7 @@ async function main(): Promise<void> {
         specTitle: spec.title,
         model: options.model,
         effort: "default",
-        path: "cli",
+        path: "prompt",
         trial: 1,
         promptStyle: options.promptStyle,
         runDir: projectDir,

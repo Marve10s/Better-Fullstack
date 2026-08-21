@@ -2,24 +2,23 @@ import type { BenchmarkSpec } from "@/types";
 
 export const MultiTsGoGrpcSpec: BenchmarkSpec = {
     id: "multi-ts-go-grpc",
-    introducedAt: "2026-06-30",
+    introducedAt: "2026-08-21",
     title: "Multi-ecosystem app: Nuxt (Vue) frontend with a Go Chi + gRPC backend",
     lane: "core",
     family: "multi-ecosystem",
     supportedByBetterFullstack: true,
     requirements: [
-      "Create one multi-ecosystem project graph.",
+      "Create one multi-ecosystem project graph for a live auction dashboard: a Vue web frontend over a Go bid-processing backend.",
       "Use a Nuxt (Vue) TypeScript frontend with Tailwind.",
       "Use a Go backend with the Chi router (not Gin/Echo/Fiber).",
       "Use sqlc for data access (not GORM or Ent).",
       "Use gRPC-Go for typed service contracts.",
-      "Use goth for auth, Centrifuge for realtime, Watermill for messaging, Ristretto for caching, koanf for config, and zerolog for logging.",
+      "Use goth for auth, Centrifuge for realtime bid updates, Watermill for messaging, Ristretto for caching, koanf for config, and zerolog for logging.",
       "Use OpenTelemetry and Testify + GoMock.",
       "Use PostgreSQL as the shared database.",
-      "Do not initialize git or start a dev server.",
     ],
     naturalPrompt:
-      "Build a multi-ecosystem starter: a Vue/Nuxt web frontend and a Go backend. The Go side needs a lightweight router, type-safe SQL, typed gRPC contracts, social auth, scalable realtime, a messaging abstraction, an in-process cache, config management, structured logging, tracing, and test doubles. Use the project graph instead of one ecosystem.",
+      "Build a multi-ecosystem starter for a live auction dashboard: a Vue/Nuxt web frontend and a Go backend. The Go side needs a lightweight router, type-safe SQL, typed gRPC contracts, social auth, scalable realtime, a messaging abstraction, an in-process cache, config management, structured logging, tracing, and test doubles. Use the project graph instead of one ecosystem.",
     rightLibraryNotes: [
       "The frontend must be TypeScript Nuxt (Vue).",
       "The Go backend must use Chi, sqlc, and gRPC-Go.",
