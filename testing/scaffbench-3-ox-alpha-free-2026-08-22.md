@@ -68,11 +68,11 @@ Failure tags across the run: test-failed 9, format-failed 8, lint-failed 7,
 stack-mismatch 6, validation-failed 5, typecheck-failed 3, build-failed 1,
 project-not-found 1.
 
-## Two failures the model did not cause
+## One failure the model did not cause, and one it did
 
-The harness marks this row `ranked`, so both of these need settling before it
-goes anywhere near the board. Excluding them puts Pass@1 at 8 of 11, or 73%. That
-is an 11 point swing.
+The harness marks this row `ranked`, so both of these needed settling before it
+went anywhere near the board. Only one survives as a genuine exclusion. Dropping
+it puts Pass@1 at 8 of 12, or 67%, and a re-run may return it to 8 of 13 at 62%.
 
 ### ai-search-workbench: the provider dropped the request
 
@@ -90,11 +90,12 @@ worked, so it fell through and scored as a model failure. Any opencode run that
 dies mid-flight will be mis-scored the same way, which is the more expensive
 problem: it looks exactly like a real failure in published data.
 
-### frontier-polyglot-proto: prerequisites run before install
+### frontier-polyglot-proto: a real failure, reached the long way
 
 The spec runs `buf generate` as a prerequisite. It failed with
 `plugin protoc-gen-ts_proto: executable file not found in $PATH`, fail-fast
-stopped the run, and install never executed. What I measured:
+stopped the run, and install never executed. That prerequisite ordering is a
+harness bug in its own right:
 
 - The model declared `ts-proto` as a devDependency, so the plugin binary lands in
   `node_modules/.bin`.
@@ -104,9 +105,25 @@ stopped the run, and install never executed. What I measured:
 
 So `prerequisiteCommands` running before install makes any npm-based local codegen
 plugin impossible to pass, whatever the model writes. Only exclusively-remote
-plugins survive. The model is not blameless, since it shipped no package.json
-scripts at all and nothing in the project would ever put `.bin` on `$PATH`, but a
-model that did everything right still fails this step.
+plugins survive. That will cost a better model a spec later, so it is worth fixing.
+
+It did not cost this one a spec. Building each half by hand, after install and a
+working `buf generate`, shows the project does not hold up:
+
+| module | result |
+| --- | --- |
+| `gateway/go-gateway` | builds, exit 0 |
+| `services/rust-core` (cargo) | builds, exit 0 |
+| `clients/ts-client` (tsc) | typechecks, exit 0 |
+| `gen/go` | fails |
+
+`gen/go` is its own module. Its `go.mod` requires grpc and protobuf, but the model
+never wrote a `go.sum`, so building it standalone fails with `missing go.sum entry`
+for every generated import. The gateway gets away with it by pulling `gen/go`
+through a `replace` directive and covering those dependencies in its own `go.sum`.
+`validation/index.ts:501` calls `findManifestRoots(projectDir, ["go.mod"])` and
+validates every Go root it finds, so the validator builds `gen/go` directly and it
+fails. Fixing the prerequisite ordering would only move the failure one step later.
 
 ## Toolchains
 
