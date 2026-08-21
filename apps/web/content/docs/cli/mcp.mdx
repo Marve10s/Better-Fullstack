@@ -5,7 +5,7 @@ translationStatus: pending
 updated: 2026-08-10
 ---
 
-The`mcp` command starts the Better Fullstack MCP server over stdio. Agents can use it to discover
+The `mcp` command starts the Better Fullstack MCP server over stdio. Agents can use it to discover
 and recommend stacks, inspect schemas, validate compatibility, preview generated files, create
 projects, and safely evolve existing projects.
 
@@ -29,14 +29,14 @@ Claude Code with npm:
 claude mcp add --transport stdio better-fullstack -- npx -y create-better-fullstack@latest mcp
 ```
 
-For pnpm, Bun, or Yarn, replace the command after`--` with the matching launcher:
+For pnpm, Bun, or Yarn, replace the command after `--` with the matching launcher:
 
 | Package manager | Launcher                                      |
 | --------------- | --------------------------------------------- |
-| npm             |`npx -y create-better-fullstack@latest mcp`   |
-| pnpm            |`pnpm dlx create-better-fullstack@latest mcp` |
-| Bun             |`bunx create-better-fullstack@latest mcp`     |
-| Yarn            |`yarn dlx create-better-fullstack@latest mcp` |
+| npm             | `npx -y create-better-fullstack@latest mcp`   |
+| pnpm            | `pnpm dlx create-better-fullstack@latest mcp` |
+| Bun             | `bunx create-better-fullstack@latest mcp`     |
+| Yarn            | `yarn dlx create-better-fullstack@latest mcp` |
 
 Generic MCP client config with npm:
 
@@ -53,62 +53,62 @@ Generic MCP client config with npm:
 
 Equivalent command/args for other package managers:
 
-| Package manager |`command` |`args`                                             |
+| Package manager | `command` | `args`                                             |
 | --------------- | --------- | -------------------------------------------------- |
-| pnpm            |`pnpm`    |`["dlx", "create-better-fullstack@latest", "mcp"]` |
-| Bun             |`bunx`    |`["create-better-fullstack@latest", "mcp"]`        |
-| Yarn            |`yarn`    |`["dlx", "create-better-fullstack@latest", "mcp"]` |
+| pnpm            | `pnpm`    | `["dlx", "create-better-fullstack@latest", "mcp"]` |
+| Bun             | `bunx`    | `["create-better-fullstack@latest", "mcp"]`        |
+| Yarn            | `yarn`    | `["dlx", "create-better-fullstack@latest", "mcp"]` |
 
 ## Tool Surface
 
 | Tool                              | Purpose                                                                     |
 | --------------------------------- | --------------------------------------------------------------------------- |
-|`bfs_get_guidance`                | Returns workflow rules and field semantics.                                 |
-|`bfs_get_schema`                  | Returns valid options for one category or all categories.                   |
-|`bfs_list_presets`                | Lists ready-made stack presets.                                             |
-|`bfs_recommend_stack`             | Recommends a validated stack from a product brief.                          |
-|`bfs_check_compatibility`         | Validates stack selections before generation.                               |
-|`bfs_plan_project`                | Dry-runs generation in memory.                                              |
-|`bfs_create_project`              | Writes a new project to disk.                                               |
-|`bfs_get_project_status`          | Reads project and manifest prerequisites without checks.                    |
-|`bfs_check_project`               | Executes every target; toolchains may write locks/caches/artifacts.         |
-|`bfs_plan_part_removal`           | Plans exact non-primary capability removal and returns a review token.      |
-|`bfs_apply_part_removal`          | Applies a reviewed capability removal in a recoverable transaction.         |
-|`bfs_plan_project_update`         | Plans manifest-v2 drift; token requires bounded inspectable merge content.  |
-|`bfs_apply_project_update`        | Applies token-bound files transactionally with provenance-aware safeguards. |
-|`bfs_recover_project_transaction` | Restores a successful or interrupted transaction exactly once.              |
-|`bfs_plan_stack_update`           | Plans broad stack changes for an existing project.                          |
-|`bfs_apply_stack_update`          | Applies a reviewed stack update.                                            |
-|`bfs_plan_addition`               | Plans focused capability or deploy changes.                                 |
-|`bfs_add_feature`                 | Applies focused capability or deploy changes.                               |
+| `bfs_get_guidance`                | Returns workflow rules and field semantics.                                 |
+| `bfs_get_schema`                  | Returns valid options for one category or all categories.                   |
+| `bfs_list_presets`                | Lists ready-made stack presets.                                             |
+| `bfs_recommend_stack`             | Recommends a validated stack from a product brief.                          |
+| `bfs_check_compatibility`         | Validates stack selections before generation.                               |
+| `bfs_plan_project`                | Dry-runs generation in memory.                                              |
+| `bfs_create_project`              | Writes a new project to disk.                                               |
+| `bfs_get_project_status`          | Reads project and manifest prerequisites without checks.                    |
+| `bfs_check_project`               | Executes every target; toolchains may write locks/caches/artifacts.         |
+| `bfs_plan_part_removal`           | Plans exact non-primary capability removal and returns a review token.      |
+| `bfs_apply_part_removal`          | Applies a reviewed capability removal in a recoverable transaction.         |
+| `bfs_plan_project_update`         | Plans manifest-v2 drift; token requires bounded inspectable merge content.  |
+| `bfs_apply_project_update`        | Applies token-bound files transactionally with provenance-aware safeguards. |
+| `bfs_recover_project_transaction` | Restores a successful or interrupted transaction exactly once.              |
+| `bfs_plan_stack_update`           | Plans broad stack changes for an existing project.                          |
+| `bfs_apply_stack_update`          | Applies a reviewed stack update.                                            |
+| `bfs_plan_addition`               | Plans focused capability or deploy changes.                                 |
+| `bfs_add_feature`                 | Applies focused capability or deploy changes.                               |
 
-Project planning, creation, and addition responses include graph metadata (`graphSummary`,`effectiveStack`, and`stackPartSpecs`) alongside the generated file or mutation summary.
+Project planning, creation, and addition responses include graph metadata (`graphSummary`, `effectiveStack`, and `stackPartSpecs`) alongside the generated file or mutation summary.
 
 See the [MCP server guide](/docs/ai/mcp/) for inputs, outputs, and safe workflows.
 
 ## Safety notes
 
 - Planning tools do not write files.
--`bfs_get_project_status` is read-only and does not execute toolchains.`bfs_check_project` does
+- `bfs_get_project_status` is read-only and does not execute toolchains. `bfs_check_project` does
   not directly rewrite Better Fullstack source/configuration, but build tools may fetch dependencies
   and write locks, caches, compiler output, or build artifacts; missing prerequisites fail the check.
--`bfs_create_project`,`bfs_apply_part_removal`,`bfs_apply_project_update`,
-`bfs_apply_stack_update`, and`bfs_add_feature` write files but do not install dependencies.
-- Current-template apply requires the exact bounded`reviewToken`; missing, stale, cross-project,
+- `bfs_create_project`, `bfs_apply_part_removal`, `bfs_apply_project_update`,
+  `bfs_apply_stack_update`, and `bfs_add_feature` write files but do not install dependencies.
+- Current-template apply requires the exact bounded `reviewToken`; missing, stale, cross-project,
   or oversized-review-ineligible tokens fail closed. Migrated or manually adopted projects also
-  require`acknowledgeUnprovenManifestV1: true` because their original generator lineage is
+  require `acknowledgeUnprovenManifestV1: true` because their original generator lineage is
   unverified. Apply snapshots bounded paths, rolls operation-owned writes back on failure, and
   returns a transaction ID for one-command recovery.
 - Stack updates refuse to overwrite user-edited generated files. Architecture changes require an
   explicit acknowledgement and never migrate application data or schemas automatically.
 - Part removal requires an exact selected non-primary stack part and the token from
-`bfs_plan_part_removal`; primary roles must be replaced through stack update instead.
-- Agents should call`bfs_get_guidance`, inspect the live schema, and plan before any write.
+  `bfs_plan_part_removal`; primary roles must be replaced through stack update instead.
+- Agents should call `bfs_get_guidance`, inspect the live schema, and plan before any write.
 
 ## Related Commands
 
--`docs` opens the public documentation site.
--`builder` opens the interactive Stack Builder.
--`sponsors` shows Better Fullstack sponsors.
+- `docs` opens the public documentation site.
+- `builder` opens the interactive Stack Builder.
+- `sponsors` shows Better Fullstack sponsors.
 
 See the [CLI reference](/docs/cli/) for examples of these utility commands.

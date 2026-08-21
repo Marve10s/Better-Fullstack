@@ -19,7 +19,7 @@ Accept the defaults for a TypeScript starter, or change the prompts to match the
 
 ## 2. Preview without writing
 
-Use`--dry-run` when you want to inspect the generated file tree first:
+Use `--dry-run` when you want to inspect the generated file tree first:
 
 ```npm
 npm create better-fullstack@latest my-app -- --dry-run
@@ -61,12 +61,12 @@ npm create better-fullstack@latest my-app -- \
 ```
 
 <Callout kind="info" title="Prompt behavior">
-Explicit flags skip the categories they cover.`--yes` accepts defaults and conflicts with core stack flags such as`--frontend`,`--backend`, and`--database`. Use`none` for optional categories you want disabled.
+Explicit flags skip the categories they cover. `--yes` accepts defaults and conflicts with core stack flags such as `--frontend`, `--backend`, and `--database`. Use `none` for optional categories you want disabled.
 </Callout>
 
 ## 4. Install dependencies
 
-If you used`--no-install`, install manually inside the project:
+If you used `--no-install`, install manually inside the project:
 
 ```bash
 cd my-app
@@ -141,13 +141,13 @@ authority:
 
 | Ecosystem    | Typical development command                                                          |
 | ------------ | ------------------------------------------------------------------------------------ |
-| React Native | Package-manager`start` script, followed by the Expo simulator/device workflow       |
-| Rust         |`cargo run` or the workspace command named in the README                             |
-| Python       | The`uv run ...` command named for the selected framework                            |
-| Go           |`go run ...` for the generated`main` package                                        |
-| Java/Kotlin  |`./mvnw spring-boot:run`,`./gradlew bootRun`, or the generated framework equivalent |
-| Elixir       |`mix phx.server` for Phoenix projects                                                |
-| .NET         |`dotnet run` with the generated project path when required                           |
+| React Native | Package-manager `start` script, followed by the Expo simulator/device workflow       |
+| Rust         | `cargo run` or the workspace command named in the README                             |
+| Python       | The `uv run ...` command named for the selected framework                            |
+| Go           | `go run ...` for the generated `main` package                                        |
+| Java/Kotlin  | `./mvnw spring-boot:run`, `./gradlew bootRun`, or the generated framework equivalent |
+| Elixir       | `mix phx.server` for Phoenix projects                                                |
+| .NET         | `dotnet run` with the generated project path when required                           |
 
 Run the generated test/check command after the first successful startup. Do not assume one universal
 command across ecosystems.
@@ -156,15 +156,15 @@ command across ecosystems.
 
 Generated projects include:
 
--`bts.jsonc` with the selected stack and schema reference.
+- `bts.jsonc` with the selected stack and schema reference.
 - Framework, package, and config files for the selected ecosystem.
 - A reproducible command printed by the CLI.
-- Optional AI docs such as`CLAUDE.md`,`AGENTS.md`, or`.cursorrules`.
+- Optional AI docs such as `CLAUDE.md`, `AGENTS.md`, or `.cursorrules`.
 - README and setup notes where the selected templates provide them.
 
 ## 8. Change the selected stack later
 
-Inside a generated project, use`add` for capabilities and stack selections. Preview the plan
+Inside a generated project, use `add` for capabilities and stack selections. Preview the plan
 first:
 
 ```npm
@@ -172,7 +172,7 @@ npm create better-fullstack@latest add -- --email resend --dry-run
 npm create better-fullstack@latest add -- --email resend
 ```
 
-The`add` command reads`bts.jsonc`, skips selections already present, protects generated files that
+The `add` command reads `bts.jsonc`, skips selections already present, protects generated files that
 you changed, and prints install guidance when dependencies are not installed automatically.
 
 ## 9. Check and update the scaffold
@@ -182,7 +182,7 @@ npm create better-fullstack@latest check -- --skip-checks
 npm create better-fullstack@latest update
 ```
 
-`check` diagnoses config, dependencies, env files, and optionally native/build checks.`update`
+`check` diagnoses config, dependencies, env files, and optionally native/build checks. `update`
 defaults to a review-only template-drift plan. Review the categorized paths and pass that exact plan
 token. Apply creates a recovery point and rolls failed writes back. The additional
 `--acknowledge-unproven-manifest-v1` flag is required only for migrated or manually adopted

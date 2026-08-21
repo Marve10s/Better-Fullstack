@@ -517,8 +517,11 @@ export function collectMetadata(options: ScaffbenchOptions) {
 let toolchainVersionsMemo: Record<string, string | undefined> | undefined;
 
 export function collectToolchainVersions() {
+  const bunBin = existsSync(`${process.env.HOME}/.bun/bin/bun`)
+    ? `${process.env.HOME}/.bun/bin/bun`
+    : "bun";
   const probes: Record<string, readonly [string, readonly string[]]> = {
-    bun: ["bun", ["--version"]],
+    bun: [bunBin, ["--version"]],
     node: ["node", ["--version"]],
     rustc: ["rustc", ["--version"]],
     cargo: ["cargo", ["--version"]],

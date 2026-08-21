@@ -5,18 +5,18 @@ translationStatus: pending
 updated: 2026-08-21
 ---
 
-Three commands maintain a project after it is scaffolded.`status` answers whether anything needs
-attention without running anything.`check` executes the generated target matrix and tells you
-whether the project actually builds.`update` compares the project with the current templates and
+Three commands maintain a project after it is scaffolded. `status` answers whether anything needs
+attention without running anything. `check` executes the generated target matrix and tells you
+whether the project actually builds. `update` compares the project with the current templates and
 applies the difference under a review token.
 
 ## Operational contract
 
 | Command  | Preconditions                                                                        | Writes                                                                                      | Recovery                                                                                        |
 | -------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-|`status` | A generated project with`bts.jsonc`.                                                | Nothing. It never executes generated toolchains.                                            | Not applicable.                                                                                 |
-|`check`  |`bts.jsonc`, installed dependencies, and every toolchain the generated targets need. | No scaffold source or config. Invoked build tools may write their normal caches and output. | Not applicable.                                                                                 |
-|`update` |`bts.jsonc`; apply also needs a valid versioned`bts.lock.json`.                     | Only`--apply` and`--record-baseline` write files.                                         | Apply snapshots bounded paths, rolls failed writes back, and returns a one-command recovery ID. |
+| `status` | A generated project with `bts.jsonc`.                                                | Nothing. It never executes generated toolchains.                                            | Not applicable.                                                                                 |
+| `check`  | `bts.jsonc`, installed dependencies, and every toolchain the generated targets need. | No scaffold source or config. Invoked build tools may write their normal caches and output. | Not applicable.                                                                                 |
+| `update` | `bts.jsonc`; apply also needs a valid versioned `bts.lock.json`.                     | Only `--apply` and `--record-baseline` write files.                                         | Apply snapshots bounded paths, rolls failed writes back, and returns a one-command recovery ID. |
 
 Local edits, conflicts, secrets, lockfiles, and template removals are never silently overwritten or
 deleted.
@@ -34,24 +34,24 @@ reviewing?
   yarn="yarn dlx create-better-fullstack@latest status ."
 />
 
-Use`--json` for automation. The result includes dependency and environment diagnostics, manifest
+Use `--json` for automation. The result includes dependency and environment diagnostics, manifest
 provenance and recovery eligibility, plus a compact upgrade summary grouped into drift, merges,
 new files, local edits, conflicts, manual review, and template removals.
 
-`status` is intentionally non-executable. Run`check` to verify every generated target, then
+`status` is intentionally non-executable. Run `check` to verify every generated target, then
 `update` to inspect exact file changes and obtain an apply token.
 
 ## Check
 
-`check` validates a scaffolded project.`doctor` is the older name for the same command and stays
+`check` validates a scaffolded project. `doctor` is the older name for the same command and stays
 available.
 
 ```npm
 npm create better-fullstack@latest check -- --skip-checks
 ```
 
-It reads and validates`bts.jsonc`, checks whether dependencies are installed for the detected
-package manager or ecosystem, reports missing required environment variables from`.env.example`
+It reads and validates `bts.jsonc`, checks whether dependencies are installed for the detected
+package manager or ecosystem, reports missing required environment variables from `.env.example`
 files, discovers every executable frontend, backend, mobile, and database target from the stack
 graph, runs each target's generated type/build contract in deterministic order, and reports each
 target directory, toolchain, planned commands, executed commands, status, and reason. It exits
@@ -62,20 +62,20 @@ non-zero for failed targets, missing targets or toolchains, and incomplete execu
 | Flag                         | Behavior                                                                                                                                                            |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | positional project directory | Project directory to diagnose. Defaults to the current directory.                                                                                                   |
-|`--skip-checks`              | Skip generated type/build checks and only inspect config, dependencies, and env files.                                                                              |
-|`--json`                     | Print structured JSON. Without`--run-checks`, ecosystem checks are skipped and reported as a warning so machine consumers keep a fast, toolchain-independent gate. |
-|`--run-checks`               | With`--json`: execute the identical complete target matrix. The command exits non-zero for failed or incomplete verification.                                      |
+| `--skip-checks`              | Skip generated type/build checks and only inspect config, dependencies, and env files.                                                                              |
+| `--json`                     | Print structured JSON. Without `--run-checks`, ecosystem checks are skipped and reported as a warning so machine consumers keep a fast, toolchain-independent gate. |
+| `--run-checks`               | With `--json`: execute the identical complete target matrix. The command exits non-zero for failed or incomplete verification.                                      |
 
 <Callout kind="warning" title="Checks can mutate toolchain state">
 Generated checks may fetch dependencies and write normal locks, caches, compiler output, or build
-artifacts. JSON captures output but does not make the commands read-only. Use`--skip-checks` for
+artifacts. JSON captures output but does not make the commands read-only. Use `--skip-checks` for
 inspection without generated target commands.
 </Callout>
 
 ## Update
 
-`update` re-renders the stack recorded in`bts.jsonc` and compares it with the scaffold baseline in
-`bts.lock.json`. Its default behavior is a dry-run plan; it does not write files unless`--apply` or
+`update` re-renders the stack recorded in `bts.jsonc` and compares it with the scaffold baseline in
+`bts.lock.json`. Its default behavior is a dry-run plan; it does not write files unless `--apply` or
 `--record-baseline` is explicit.
 
 ```npm
@@ -86,29 +86,29 @@ npm create better-fullstack@latest update
 
 The engine compares the baseline, current template render, and current disk contents. It classifies
 files as unchanged, template drift, structured merge, new, locally edited, conflict, removed,
-or manual review.`package.json` and`.env.example` can use structured merges. Lockfiles, secrets,
+or manual review. `package.json` and `.env.example` can use structured merges. Lockfiles, secrets,
 conflicts, and local edits are never silently overwritten; removed template files are not deleted.
 
 ### Update modes
 
 | Flag                                 | Behavior                                                                                 |
 | ------------------------------------ | ---------------------------------------------------------------------------------------- |
-| no mode flag /`--dry-run`           | Print the plan without writing.                                                          |
-|`--apply`                            | Transactionally write actionable drift, merges, and new files; requires the token below. |
-|`--review-token <token>`             | Exact token from the categorized plan being applied.                                     |
-|`--acknowledge-unproven-manifest-v1` | Required only for migrated/adopted manifests with unverified original lineage.           |
-|`--recover <transaction-id>`         | Restore every path bound to a successful or interrupted transaction.                     |
-|`--check`                            | CI gate: exit non-zero when actionable template drift exists.                            |
-|`--record-baseline`                  | Manually adopt current bytes as a baseline; this is not generator-lineage proof.         |
-|`--json`                             | Print categorized paths, hashes, counts, and the review token as structured JSON.        |
+| no mode flag / `--dry-run`           | Print the plan without writing.                                                          |
+| `--apply`                            | Transactionally write actionable drift, merges, and new files; requires the token below. |
+| `--review-token <token>`             | Exact token from the categorized plan being applied.                                     |
+| `--acknowledge-unproven-manifest-v1` | Required only for migrated/adopted manifests with unverified original lineage.           |
+| `--recover <transaction-id>`         | Restore every path bound to a successful or interrupted transaction.                     |
+| `--check`                            | CI gate: exit non-zero when actionable template drift exists.                            |
+| `--record-baseline`                  | Manually adopt current bytes as a baseline; this is not generator-lineage proof.         |
+| `--json`                             | Print categorized paths, hashes, counts, and the review token as structured JSON.        |
 | positional project directory         | Target directory; defaults to the current directory.                                     |
 
-The write/check/baseline modes are mutually exclusive.`--dry-run` cannot be combined with
-`--apply` or`--record-baseline`.
+The write/check/baseline modes are mutually exclusive. `--dry-run` cannot be combined with
+`--apply` or `--record-baseline`.
 
 ### Recommended workflow
 
-1. Run`update --json` and review categorized actionable paths, conflicts, manual entries, hashes,
+1. Run `update --json` and review categorized actionable paths, conflicts, manual entries, hashes,
    provenance, and recovery eligibility.
 2. Pass that plan's exact token. The emitted command adds the lineage acknowledgement only when the
    manifest was migrated or manually adopted.
@@ -124,7 +124,7 @@ Use the exact version-pinned command emitted by the plan. It is labeled and quot
 on Windows and for a POSIX shell on other supported platforms.
 
 3. Inspect the resulting diff and save the returned recovery command until verification passes.
-4. Resolve remaining files manually, run`check`, then run the generated project's tests.
+4. Resolve remaining files manually, run `check`, then run the generated project's tests.
 
 <Callout kind="warning" title="Baseline adoption">
 `--record-baseline` is manual adoption of the current project state. It cannot reconstruct or prove
@@ -137,5 +137,5 @@ actionable file preimage. Those checks detect ordinary concurrent edits, but the
 guarantee against an active local filesystem adversary. If a later check fails, operation-owned
 writes are restored; a concurrent edit is preserved and reported instead of being overwritten.
 
-`update` updates generated project templates. The maintainer-only`update-deps` command updates the
+`update` updates generated project templates. The maintainer-only `update-deps` command updates the
 generator repository's dependency catalog and is unrelated.

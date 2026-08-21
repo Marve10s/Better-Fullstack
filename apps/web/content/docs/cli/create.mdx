@@ -5,7 +5,7 @@ translationStatus: pending
 updated: 2026-08-18
 ---
 
-The`create` command writes a new project from a typed stack configuration. Use it interactively for exploration, or pass flags when you need the same project shape every time.
+The `create` command writes a new project from a typed stack configuration. Use it interactively for exploration, or pass flags when you need the same project shape every time.
 
 <PMTabs
   npm="npm create better-fullstack@latest [project-name] -- [flags]"
@@ -14,26 +14,26 @@ The`create` command writes a new project from a typed stack configuration. Use i
   yarn="yarn create better-fullstack@latest [project-name] [flags]"
 />
 
-For npm, Better Fullstack flags go after`--`. Generated npm commands may use`npx create-better-fullstack@latest`; that runs the same package entrypoint in a non-interactive form.
+For npm, Better Fullstack flags go after `--`. Generated npm commands may use `npx create-better-fullstack@latest`; that runs the same package entrypoint in a non-interactive form.
 
 ## Operational contract
 
 | Concern         | Contract                                                                                                                                                              |
 | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Preview         | Add`--dry-run` to render and list files without writing them.                                                                                                        |
-| Writes          | Creates a project directory; dependency installation and Git initialization follow`--install` and`--git`.                                                           |
-| Safe inspection | Combine`--dry-run`,`--no-install`, and`--no-git`.                                                                                                                  |
-| Recovery        | Generate into a new directory, inspect it, and remove that directory if you reject the scaffold. Existing-directory behavior is controlled by`--directory-conflict`. |
+| Preview         | Add `--dry-run` to render and list files without writing them.                                                                                                        |
+| Writes          | Creates a project directory; dependency installation and Git initialization follow `--install` and `--git`.                                                           |
+| Safe inspection | Combine `--dry-run`, `--no-install`, and `--no-git`.                                                                                                                  |
+| Recovery        | Generate into a new directory, inspect it, and remove that directory if you reject the scaffold. Existing-directory behavior is controlled by `--directory-conflict`. |
 | Source of truth | The live CLI schema and the generated flag tables below.                                                                                                              |
 
 ## Command modes
 
 | Mode     | Command shape                         | Use it when                                 |
 | -------- | ------------------------------------- | ------------------------------------------- |
-| Wizard   |`[launcher] my-app`                   | You want prompts and defaults.              |
-| Defaults |`[launcher] my-app [flags] --yes`     | You want the default stack without prompts. |
-| Scripted |`[launcher] my-app [flags]`           | You want repeatable output.                 |
-| Dry run  |`[launcher] my-app [flags] --dry-run` | You want to inspect files before writing.   |
+| Wizard   | `[launcher] my-app`                   | You want prompts and defaults.              |
+| Defaults | `[launcher] my-app [flags] --yes`     | You want the default stack without prompts. |
+| Scripted | `[launcher] my-app [flags]`           | You want repeatable output.                 |
+| Dry run  | `[launcher] my-app [flags] --dry-run` | You want to inspect files before writing.   |
 
 ## Project shapes
 
@@ -41,12 +41,12 @@ For npm, Better Fullstack flags go after`--`. Generated npm commands may use`npx
 
 | Shape               | Asks                                                        | Result                                          |
 | ------------------- | ----------------------------------------------------------- | ----------------------------------------------- |
-|`--shape fullstack` | Nothing extra; the standard composition prompt runs.        | The full guided flow.                           |
-|`--shape frontend`  | TypeScript, Rust, or .NET.                                  | A client app with the server half switched off. |
-|`--shape backend`   | TypeScript, Go, Rust, Python, Java/Kotlin, .NET, or Elixir. | An API with no web frontend.                    |
-|`--shape mobile`    | React Native, Kotlin, Swift, or Flutter.                    | A mobile app on the platform you pick.          |
+| `--shape fullstack` | Nothing extra; the standard composition prompt runs.        | The full guided flow.                           |
+| `--shape frontend`  | TypeScript, Rust, or .NET.                                  | A client app with the server half switched off. |
+| `--shape backend`   | TypeScript, Go, Rust, Python, Java/Kotlin, .NET, or Elixir. | An API with no web frontend.                    |
+| `--shape mobile`    | React Native, Kotlin, Swift, or Flutter.                    | A mobile app on the platform you pick.          |
 
-Platform and ecosystem flags answer the shape's own question ahead of time. The remaining prompts for that stack still run, so add`--yes` when you need a command that never asks anything:
+Platform and ecosystem flags answer the shape's own question ahead of time. The remaining prompts for that stack still run, so add `--yes` when you need a command that never asks anything:
 
 ```bash
 # Prompts for the mobile platform
@@ -59,22 +59,22 @@ bun create better-fullstack@latest my-app --shape mobile --kotlin-mobile compose
 bun create better-fullstack@latest my-app --shape backend --ecosystem go --yes
 ```
 
-With`--yes` there is nothing to prompt, so a shape falls back to its default: TypeScript for`frontend` and`backend`, React Native for`mobile`.
+With `--yes` there is nothing to prompt, so a shape falls back to its default: TypeScript for `frontend` and `backend`, React Native for `mobile`.
 
-A shape decides the stack, so it is rejected rather than silently overruled when the rest of the command already decides it too:`--config`,`--from-history`,`--part`, and`--template` each carry a complete stack, a flag the shape switches off contradicts it, and`--shape mobile` accepts selectors for exactly one platform. Kotlin, Swift, and Flutter apps are built by Gradle, XcodeGen, and Flutter, which the CLI does not run, so`--install` is skipped with a notice on those platforms instead of reporting an install that did not happen.
+A shape decides the stack, so it is rejected rather than silently overruled when the rest of the command already decides it too: `--config`, `--from-history`, `--part`, and `--template` each carry a complete stack, a flag the shape switches off contradicts it, and `--shape mobile` accepts selectors for exactly one platform. Kotlin, Swift, and Flutter apps are built by Gradle, XcodeGen, and Flutter, which the CLI does not run, so `--install` is skipped with a notice on those platforms instead of reporting an install that did not happen.
 
 ## Templates
 
-`--template` starts from a filled-in stack instead of individual flags. Any flag you pass alongside it overrides that field, and`--yes` accepts the rest of the template as-is.
+`--template` starts from a filled-in stack instead of individual flags. Any flag you pass alongside it overrides that field, and `--yes` accepts the rest of the template as-is.
 
 | Template  | Stack                                                                        |
 | --------- | ---------------------------------------------------------------------------- |
-|`t3`      | Next.js, tRPC, Prisma, PostgreSQL, Better Auth, Biome, Turborepo             |
-|`saas`    | Next.js, tRPC, Drizzle, PostgreSQL, Better Auth organizations, Creem billing |
-|`mern`    | React Router, Express, Mongoose, MongoDB Atlas, oRPC, Better Auth            |
-|`pern`    | TanStack Router, Express, Drizzle, PostgreSQL, tRPC, Better Auth             |
-|`uniwind` | Expo with Uniwind, mobile only, no backend                                   |
-|`none`    | No template                                                                  |
+| `t3`      | Next.js, tRPC, Prisma, PostgreSQL, Better Auth, Biome, Turborepo             |
+| `saas`    | Next.js, tRPC, Drizzle, PostgreSQL, Better Auth organizations, Creem billing |
+| `mern`    | React Router, Express, Mongoose, MongoDB Atlas, oRPC, Better Auth            |
+| `pern`    | TanStack Router, Express, Drizzle, PostgreSQL, tRPC, Better Auth             |
+| `uniwind` | Expo with Uniwind, mobile only, no backend                                   |
+| `none`    | No template                                                                  |
 
 ```npm
 npm create better-fullstack@latest my-app -- --template t3
@@ -83,12 +83,12 @@ npm create better-fullstack@latest my-app -- --template t3
 ## Prompt behavior
 
 - Explicit flags skip only the categories they cover.
--`--yes` accepts defaults and conflicts with core stack flags such as`--frontend`,`--backend`,`--database`,`--orm`,`--auth`, and`--api`.
-- Use`none` to disable optional categories, including`--ai-docs none`.
-- Use`--no-install` and`--no-git` when you want to inspect generated files before side effects.
--`--verify` runs every generated target check after scaffolding without starting dev servers. Those
+- `--yes` accepts defaults and conflicts with core stack flags such as `--frontend`, `--backend`, `--database`, `--orm`, `--auth`, and `--api`.
+- Use `none` to disable optional categories, including `--ai-docs none`.
+- Use `--no-install` and `--no-git` when you want to inspect generated files before side effects.
+- `--verify` runs every generated target check after scaffolding without starting dev servers. Those
   toolchains may fetch dependencies and write normal lockfiles, caches, compiler output, or build artifacts.
--`--version-channel latest` follows npm`latest` tags except for temporary compatibility holds that
+- `--version-channel latest` follows npm `latest` tags except for temporary compatibility holds that
   keep the generated project installable.
 
 ## Common flags
@@ -99,7 +99,7 @@ The tables below are generated from the same shared schemas the CLI, Stack Build
 
 ## TypeScript flags
 
-Use these with`--ecosystem typescript`.
+Use these with `--ecosystem typescript`.
 
 <CliFlagTable group="typescript-stack" />
 
@@ -117,7 +117,7 @@ Use these with`--ecosystem typescript`.
 
 ## React Native flags
 
-Use these with`--ecosystem react-native`.
+Use these with `--ecosystem react-native`.
 
 <CliFlagTable group="react-native" />
 
@@ -135,7 +135,7 @@ Use these with`--ecosystem react-native`.
 
 <CliFlagTable group="go" />
 
-GoBetterAuth is selected with the global`--auth go-better-auth` value. Go-native helpers use`--go-auth`.
+GoBetterAuth is selected with the global `--auth go-better-auth` value. Go-native helpers use `--go-auth`.
 
 ### Java
 
@@ -156,7 +156,7 @@ GoBetterAuth is selected with the global`--auth go-better-auth` value. Go-native
 `--workspace-shape single-app` flattens a thin Next.js or TanStack Start self-backend scaffold into
 the project root. It is a create-time layout choice. If the stack needs separate database, ORM,
 auth, API, service, native, container, or deployment packages, compatibility safely restores the
-default`monorepo` layout.
+default `monorepo` layout.
 
 ```npm
 npm create better-fullstack@latest thin-next-app -- \
@@ -259,18 +259,18 @@ it to recreate a stack, compare generated output, or share a known-good command.
 
 | Flag      | Default | Description                        |
 | --------- | ------- | ---------------------------------- |
-|`--limit` |`10`    | Number of history entries to show. |
-|`--clear` |`false` | Clear all saved scaffold history.  |
-|`--json`  |`false` | Print history as JSON for scripts. |
+| `--limit` | `10`    | Number of history entries to show. |
+| `--clear` | `false` | Clear all saved scaffold history.  |
+| `--json`  | `false` | Print history as JSON for scripts. |
 
-To reuse a stack, run`history`, copy the reproducible command for the one you want, and re-run it
+To reuse a stack, run `history`, copy the reproducible command for the one you want, and re-run it
 with a new project name or adjusted flags. History is stored locally under your user directory and
 does not affect generated project files.
 
 ## Compatibility
 
 - The CLI validates stack compatibility before generation.
-- TypeScript`backend self` is for fullstack frontends and pairs with`runtime none`.
+- TypeScript `backend self` is for fullstack frontends and pairs with `runtime none`.
 - tRPC is React-oriented.
 - Workers runtime support depends on the frontend/backend combination.
 - UI libraries, deployment targets, providers, and tooling capabilities are stack-sensitive.

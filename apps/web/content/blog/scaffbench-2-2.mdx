@@ -51,8 +51,8 @@ happened; three tell you what's true. A spec scored 2/3 isn't a pass or a fail, 
 Every generated project is validated **cold, on a clean machine**, the same way for every model:
 
 1. **Install.** Real package managers against live registries. Invented versions die here.
-2. **Build + typecheck.** The ecosystem's real toolchain (`cargo check --workspace`,`dotnet build`
-   on the solution,`tsc`,`go build ./...`, Expo export, protobuf codegen…).
+2. **Build + typecheck.** The ecosystem's real toolchain (`cargo check --workspace`, `dotnet build`
+   on the solution, `tsc`, `go build ./...`, Expo export, protobuf codegen…).
 3. **Quality gates.** Lint, format, tests. All of it, every run.
 
 The published number is the **Full pass rate**: the share of trials that clear _everything_. A
@@ -91,7 +91,7 @@ Three things worth knowing behind those numbers:
 
 - **The smallest model ties the flagship.** Luna and Sol land on identical Full passes (17/39),
   and that's the finding: scaffolding rewards restraint and convention, and Sol's extra capability
-  doesn't convert. It does show _somewhere_: Sol swept`ai-search-workbench` 3/3, the hardest
+  doesn't convert. It does show _somewhere_: Sol swept `ai-search-workbench` 3/3, the hardest
   TypeScript spec, which no model had ever passed. It gave those cells back by breaking its own
   build scripts on the polyglot gRPC spec that Luna passed 3/3.
 - **Self-verification works.** The Keycloak spec, failed by every previous GPT run on hallucinated
@@ -107,7 +107,7 @@ Three things worth knowing behind those numbers:
   because the board does.
 - These three rows are one vendor family. Claude and the free-tier endpoints run next; nothing
   from older harness versions is mixed into this board.
-- Every 2.2 row is`ranked`-eligible: same harness (2.2.2), same prompt, same validator, three
+- Every 2.2 row is `ranked`-eligible: same harness (2.2.2), same prompt, same validator, three
   consistent trials per cell. Older boards stay published as history, clearly marked.
 - All artifacts were re-scored under validator v6 (which stopped mistaking generated marker files
   for project roots) on an otherwise idle machine. A few cells moved either way, quality gates

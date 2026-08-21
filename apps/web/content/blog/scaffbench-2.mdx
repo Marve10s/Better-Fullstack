@@ -45,27 +45,27 @@ benchmark:
 - **Scoring beyond "it builds."** We added a **quality gate** (lint / format / test) on top of
   install + build + typecheck, plus an artifact-grounded **wired-libraries** score and a composite
   **ScaffBench Index**.
-- **An honest run-outcome taxonomy.** Every run is`success`,`model-failure`, or
-`infra-inconclusive`, toolchain stalls don't get charged to the model, and (per SWE-bench) a
+- **An honest run-outcome taxonomy.** Every run is `success`, `model-failure`, or
+  `infra-inconclusive`, toolchain stalls don't get charged to the model, and (per SWE-bench) a
   generation timeout _does_.
 - **No answer-key leakage.** The agent works in an isolated temp directory disjoint from the
   grading tree, so it can't read a canonical command or sibling runs.
-- **Reproducibility.** The exact`create-better-fullstack` version under test (here, **2.1.1**) and
+- **Reproducibility.** The exact `create-better-fullstack` version under test (here, **2.1.1**) and
   the host toolchain versions are pinned and recorded.
 
 ## Headline result
 
 The prompt path is brutal. Across the four measurable specs, **no current config gets more than two
 of four to build from scratch**, and most land at one. The single deep-dive, **Claude Opus 4.8** at
-default reasoning, managed exactly one:`python-ingestion-api`. It timed out on the TypeScript spec
+default reasoning, managed exactly one: `python-ingestion-api`. It timed out on the TypeScript spec
 after 93 steps, and produced non-building Rust and Go projects while burning 50–62k tokens trying.
 
 | Spec                   | Ecosystem  | Opus 4.8 (prompt) | Wired libs | Out tokens |
 | ---------------------- | ---------- | :---------------: | ---------: | ---------: |
-|`python-ingestion-api` | Python     |     ✅ builds     |       100% |     31,262 |
-|`ai-search-workbench`  | TypeScript |    ❌ timeout     |       100% |         –|
-|`rust-leptos-axum`     | Rust       |    ❌ no build    |        92% |     56,222 |
-|`go-realtime-api`      | Go         |    ❌ no build    |       100% |     62,537 |
+| `python-ingestion-api` | Python     |     ✅ builds     |       100% |     31,262 |
+| `ai-search-workbench`  | TypeScript |    ❌ timeout     |       100% |          – |
+| `rust-leptos-axum`     | Rust       |    ❌ no build    |        92% |     56,222 |
+| `go-realtime-api`      | Go         |    ❌ no build    |       100% |     62,537 |
 
 Two things stand out immediately:
 
@@ -85,11 +85,11 @@ agent picks a _near_ neighbour and gets it subtly wrong.
 
 | Spec                   | Ecosystem       | The trap                                                                       |
 | ---------------------- | --------------- | ------------------------------------------------------------------------------ |
-|`ai-search-workbench`  | TypeScript      | Distinguish Qdrant, OpenSearch, Inngest, and oRPC from their look-alikes       |
-|`rust-leptos-axum`     | Rust            | Choose Leptos + Axum + SQLx + Tonic over nearby Rust alternatives              |
-|`python-ingestion-api` | Python          | Combine FastAPI + SQLModel + AI + queues without drifting to Django-only tools |
-|`go-realtime-api`      | Go              | Chi + Ent + gRPC + NATS + Redis + OpenTelemetry under explicit constraints     |
-|`multi-dotnet-ops`     | Multi-ecosystem | Compose a TypeScript frontend + .NET Minimal API backend                       |
+| `ai-search-workbench`  | TypeScript      | Distinguish Qdrant, OpenSearch, Inngest, and oRPC from their look-alikes       |
+| `rust-leptos-axum`     | Rust            | Choose Leptos + Axum + SQLx + Tonic over nearby Rust alternatives              |
+| `python-ingestion-api` | Python          | Combine FastAPI + SQLModel + AI + queues without drifting to Django-only tools |
+| `go-realtime-api`      | Go              | Chi + Ent + gRPC + NATS + Redis + OpenTelemetry under explicit constraints     |
+| `multi-dotnet-ops`     | Multi-ecosystem | Compose a TypeScript frontend + .NET Minimal API backend                       |
 
 `multi-dotnet-ops` is excluded from the rates below: the grading host has no .NET SDK, so it's
 [infra-inconclusive](#the-honest-part-one-spec-we-couldnt-score), not a model failure.
@@ -98,7 +98,7 @@ agent picks a _near_ neighbour and gets it subtly wrong.
 
 <Callout kind="info">
   **Core vs Full.** *Core* validation is the load-bearing question, does the project install,
-  build, and type-check (plus native checks like`cargo check` /`go build`)? *Full* adds the
+  build, and type-check (plus native checks like `cargo check` / `go build`)? *Full* adds the
   quality gate: lint, format, and test. On the prompt path, Core is the headline, most runs don't
   get that far, and Full is a strict subset of Core (it requires the project to exist, at least one
   real validation step, and every step green).
@@ -114,7 +114,7 @@ rather than magic.
 
 Borrowing SWE-bench's rigor, each run lands in one of three buckets:
 
-- **success** / **model-failure.** Both count in the denominator. A`build` script that exits
+- **success** / **model-failure.** Both count in the denominator. A `build` script that exits
   non-zero, a wrong library, _or a generation timeout_ is a model failure.
 - **infra-inconclusive.** Excluded from rates and surfaced separately: a validator that can't even
   spawn (missing toolchain), an exhausted budget, or a tool-server that stalls. Not the agent's
@@ -149,7 +149,7 @@ Three things fall out:
    **Opus 4.5 collapses to 0%.** The oldest Opus is the only Claude model that can't get a single
    hard spec to build unassisted. It still wires the right libraries (92%); the code just doesn't
    compile.
-2. **GPT-5.5 at`xhigh` is the only config to clear half.** And it lands the study's **one and only
+2. **GPT-5.5 at `xhigh` is the only config to clear half**, and it lands the study's **one and only
    prompt-path Full pass**. More on why below.
 3. **GPT-5.5 is markedly more token-frugal** at low/medium effort, ~11–15k output tokens to Opus's
    25–50k for the same Core result. The cost of capability is paid in tokens, and Opus pays more of
@@ -157,24 +157,24 @@ Three things fall out:
 
 ## Does thinking harder help?
 
-We swept reasoning effort two ways: **Opus 4.8 at`max` vs`default`**, and **GPT-5.5 at`low`,
-`medium`, and`xhigh`**. The short answer: on the prompt path, more reasoning only helps where the
+We swept reasoning effort two ways: **Opus 4.8 at `max` vs `default`**, and **GPT-5.5 at `low`,
+`medium`, and `xhigh`**. The short answer: on the prompt path, more reasoning only helps where the
 work is genuinely hard.
 
-**Opus 4.8`max`** matched`default` on the prompt board (still 1/4), it just spent the extra
+**Opus 4.8 `max`** matched `default` on the prompt board (still 1/4), it just spent the extra
 budget timing out on more cells. A frozen difficulty ceiling doesn't move because the model thinks
 longer about it.
 
-**GPT-5.5`xhigh`** is where reasoning paid off. On`go-realtime-api`,`low` and`medium` both died
-at the very first step,`go mod tidy` (exit 1), by pinning a **non-existent module revision**
-(`go.opentelemetry.io/contrib` otelchi at`v0.62.0` /`v0.59.0`, "unknown revision"). At`xhigh`,
+**GPT-5.5 `xhigh`** is where reasoning paid off. On `go-realtime-api`, `low` and `medium` both died
+at the very first step, `go mod tidy` (exit 1), by pinning a **non-existent module revision**
+(`go.opentelemetry.io/contrib` otelchi at `v0.62.0` / `v0.59.0`, "unknown revision"). At `xhigh`,
 GPT-5.5 spent ~4× the output tokens (50.5k), picked self-consistent versions, and produced a project
-that resolves, builds, vets, and tests clean,`passRate=100`,`stackPercent=100`, at $2.35. That's
+that resolves, builds, vets, and tests clean, `passRate=100`, `stackPercent=100`, at $2.35. That's
 the study's **first genuine prompt-path Full pass**, end to end.
 
 <Callout kind="info">
   **The bench isn't malfunctioning, it's measuring.** Every swing here is backed by honest compiler
-  output, not score noise: a Go`unknown revision` that more reasoning resolved, real`TS`/build
+  output, not score noise: a Go `unknown revision` that more reasoning resolved, real `TS`/build
   errors where it didn't. Hard, dependency-resolution work has headroom that extra thinking can
   actually buy. The one caveat we keep flagging: n=1 per cell, so these are reproducible, explainable
   outcomes, not statistical equivalence claims.
@@ -198,8 +198,8 @@ free tier). They failed in exactly opposite ways.
 For a few minutes, North-mini _topped the Full-pass leaderboard at 58%_, above every Opus and GPT
 config. That is exactly the kind of result that should make you distrust a benchmark, so we chased
 it. The cause was a real scoring bug: when a weak model emits a "project" with no recognizable build
-entrypoint, the harness runs **zero** validation steps, and a Full pass defined as`passRate === 100`
-reads`0 failures ÷ 0 steps` as a perfect score. Several of North-mini's "passes" were **empty
+entrypoint, the harness runs **zero** validation steps, and a Full pass defined as `passRate === 100`
+reads `0 failures ÷ 0 steps` as a perfect score. Several of North-mini's "passes" were **empty
 validations**, credit for producing nothing.
 
 We fixed the definition to mirror Core: a Full pass now requires the project to exist **and** at
@@ -217,13 +217,13 @@ this lane and put both free models under a dedicated **Free tier** divider on th
 
 A scaffolding benchmark is also a continuous audit of the scaffolder, and this run pulled its
 weight. While exercising the specs, the suite surfaced a batch of defects in our _own_ generated
-templates, Rust output that failed`cargo clippy -D warnings` /`cargo fmt --check`, Python that
-tripped`ruff`, plus env-schema and dependency-version gaps across several stacks. None of it was the
+templates, Rust output that failed `cargo clippy -D warnings` / `cargo fmt --check`, Python that
+tripped `ruff`, plus env-schema and dependency-version gaps across several stacks. None of it was the
 agent's fault; the generator was shipping code that wasn't lint-clean out of the box.
 
 <Callout kind="info">
   **Caught and fixed.** Those template gaps are now resolved and shipped in
-  **`create-better-fullstack@2.1.3`.** Generated projects pass their own read-only lint/format/test
+  **`create-better-fullstack@2.1.3`**, generated projects pass their own read-only lint/format/test
   gate across TypeScript, Rust, Python, Go, Java, and Elixir. The run above was recorded against
   2.1.1; a re-run on the fixed templates is queued. This is exactly the kind of regression the suite
   exists to catch, and the first one it caught, in ScaffBench 1, was a native-template build bug.
@@ -232,7 +232,7 @@ agent's fault; the generator was shipping code that wasn't lint-clean out of the
 ## The honest part: one spec we couldn't score
 
 `multi-dotnet-ops` is excluded because the grading host has no .NET SDK, the validator can't even
-spawn, so the taxonomy classifies it`infra-inconclusive` rather than charging a failure to the
+spawn, so the taxonomy classifies it `infra-inconclusive` rather than charging a failure to the
 model. It needs a clean re-run on a host with the .NET toolchain installed. Reporting it as a model
 failure would have been the easy, dishonest choice.
 
@@ -242,7 +242,7 @@ We benchmarked the benchmarks. A few conventions from Artificial Analysis, SWE-b
 it into v2:
 
 - **Model + reasoning as a first-class identity** (Artificial Analysis): the leaderboard leads with
-`Opus 4.8 · default reasoning`, so a second reasoning effort or a second model is just another row.
+  `Opus 4.8 · default reasoning`, so a second reasoning effort or a second model is just another row.
 - **A transparent composite Index with published weights** (AA's Intelligence Index): one headline
   number, but you can see the formula.
 - **A contract-adherence axis separate from task success** (Aider): _wired libraries_ is reported
@@ -270,12 +270,12 @@ them compile.
 
 | Spec                   | Outcome            | Core | Full | Wired |  Cost | Out tokens | Steps |
 | ---------------------- | ------------------ | :--: | :--: | ----: | ----: | ---------: | ----: |
-|`python-ingestion-api` | model-failure      |  ✅  |  ❌  |  100% | $2.32 |     31,262 |    47 |
-|`ai-search-workbench`  | model-failure      |  ❌  |  ❌  |  100% |    –|    timeout |    93 |
-|`rust-leptos-axum`     | model-failure      |  ❌  |  ❌  |   92% | $3.52 |     56,222 |    42 |
-|`go-realtime-api`      | model-failure      |  ❌  |  ❌  |  100% | $4.24 |     62,537 |    59 |
-|`multi-dotnet-ops`     | infra-inconclusive | –  | –  |   62% |    –|         –|    30 |
+| `python-ingestion-api` | model-failure      |  ✅  |  ❌  |  100% | $2.32 |     31,262 |    47 |
+| `ai-search-workbench`  | model-failure      |  ❌  |  ❌  |  100% |     – |    timeout |    93 |
+| `rust-leptos-axum`     | model-failure      |  ❌  |  ❌  |   92% | $3.52 |     56,222 |    42 |
+| `go-realtime-api`      | model-failure      |  ❌  |  ❌  |  100% | $4.24 |     62,537 |    59 |
+| `multi-dotnet-ops`     | infra-inconclusive |  –   |  –   |   62% |     – |          – |    30 |
 
-_Run:`claude-opus-4-8`, default reasoning, prompt path, 1 run/cell, harness 2.0.0, generator
-`create-better-fullstack@2.1.1`, 2026-06-26.`python-ingestion-api` Core-passes (installs, builds,
+_Run: `claude-opus-4-8`, default reasoning, prompt path, 1 run/cell, harness 2.0.0, generator
+`create-better-fullstack@2.1.1`, 2026-06-26. `python-ingestion-api` Core-passes (installs, builds,
 type-checks) but misses Full on a template lint gap since fixed in 2.1.3._

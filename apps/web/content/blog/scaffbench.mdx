@@ -27,7 +27,7 @@ through three creation paths to isolate how much tooling helps:
 
 - **MCP.** The agent uses the Better-Fullstack MCP server to plan and scaffold the project.
 - **BF mention.** No MCP; the prompt points the agent at the Better-Fullstack CLI and docs, and it
-  composes the`create` command itself.
+  composes the `create` command itself.
 - **Prompt.** No Better-Fullstack at all; the agent hand-writes every file from scratch.
 
 We ran the full suite twice, on two different agent CLIs: **OpenAI Codex CLI** with three GPT
@@ -101,7 +101,7 @@ the project.
 ```
 
 And BF-mention runs sit in between, no MCP tools, but the prompt names the CLI and a README the
-agent may read before composing a non-interactive`create` command itself.
+agent may read before composing a non-interactive `create` command itself.
 
 ### The four project specs
 
@@ -110,10 +110,10 @@ about for a week":
 
 | Spec              | What it asks for                                                                                                                                                                                                                                                                                                                                                             |
 | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-|`light-ts`        | React + Vite, Hono on Bun, tRPC, SQLite + Drizzle, Tailwind + DaisyUI, Pino, Vitest, Biome, no auth, no payments                                                                                                                                                                                                                                                            |
-|`heavy-ts`        | Next.js **and** an Expo/React Native app, Hono on Bun, oRPC, PostgreSQL + Drizzle, Better Auth, Stripe, Resend, UploadThing, Effect, TanStack Store/Form/Query, Valibot, Vitest + Playwright, Vercel AI SDK, Socket.IO, Inngest, Framer Motion, OpenTelemetry, PostHog, Umami, Sanity, Upstash Redis, Algolia, S3, shadcn/ui, Turborepo, MSW, Storybook, PWA, Docker compose |
-|`python-ai`       | FastAPI, SQLModel, PostgreSQL, Pydantic, JWT auth, Celery, Strawberry GraphQL, LangChain + OpenAI SDK + LangGraph + CrewAI, Ruff                                                                                                                                                                                                                                             |
-|`multi-ecosystem` | TypeScript Next.js frontend, Python FastAPI backend (SQLModel/Pydantic/LangChain/Celery), Go Gin service (GORM, gRPC, Cobra, Zap), shared PostgreSQL                                                                                                                                                                                                                         |
+| `light-ts`        | React + Vite, Hono on Bun, tRPC, SQLite + Drizzle, Tailwind + DaisyUI, Pino, Vitest, Biome, no auth, no payments                                                                                                                                                                                                                                                            |
+| `heavy-ts`        | Next.js **and** an Expo/React Native app, Hono on Bun, oRPC, PostgreSQL + Drizzle, Better Auth, Stripe, Resend, UploadThing, Effect, TanStack Store/Form/Query, Valibot, Vitest + Playwright, Vercel AI SDK, Socket.IO, Inngest, Framer Motion, OpenTelemetry, PostHog, Umami, Sanity, Upstash Redis, Algolia, S3, shadcn/ui, Turborepo, MSW, Storybook, PWA, Docker compose |
+| `python-ai`       | FastAPI, SQLModel, PostgreSQL, Pydantic, JWT auth, Celery, Strawberry GraphQL, LangChain + OpenAI SDK + LangGraph + CrewAI, Ruff                                                                                                                                                                                                                                             |
+| `multi-ecosystem` | TypeScript Next.js frontend, Python FastAPI backend (SQLModel/Pydantic/LangChain/Celery), Go Gin service (GORM, gRPC, Cobra, Zap), shared PostgreSQL                                                                                                                                                                                                                         |
 
 `heavy-ts` is the stress test. It is also where every interesting failure in this benchmark
 happened.
@@ -123,9 +123,9 @@ happened.
 Two sweeps, one harness design:
 
 - **Claude sweep:** Claude Code in headless mode (`claude -p`), JSON event stream captured per
-  run. Models:`claude-fable-5`,`claude-opus-4-8`,`claude-sonnet-4-6`, default reasoning effort.
+  run. Models: `claude-fable-5`, `claude-opus-4-8`, `claude-sonnet-4-6`, default reasoning effort.
 - **GPT sweep:** OpenAI Codex CLI (`codex exec`), JSON event stream captured per run. Models:
-`gpt-5.3-codex-spark` (high effort),`gpt-5.4` (medium),`gpt-5.5` (medium).
+  `gpt-5.3-codex-spark` (high effort), `gpt-5.4` (medium), `gpt-5.5` (medium).
 - **Isolation:** every run gets a fresh empty workspace; MCP runs get a strict MCP config with only
   the Better-Fullstack server attached.
 - **Timeout:** 900 seconds per run. A timeout counts as a failure for the agent.
@@ -141,9 +141,9 @@ results harder, and why the two sweeps shouldn't be compared head-to-head on pas
 
 Validation runs _after_ the agent finishes, against whatever it left on disk:
 
-- **TypeScript:**`bun install`, then the project's own`build` (or`check`/`lint`/`test`) script.
-- **Python:**`compileall` across the project, excluding virtualenvs and vendored packages.
-- **Go:**`go mod download` and the module must compile.
+- **TypeScript:** `bun install`, then the project's own `build` (or `check`/`lint`/`test`) script.
+- **Python:** `compileall` across the project, excluding virtualenvs and vendored packages.
+- **Go:** `go mod download` and the module must compile.
 
 A run passes only if every applicable check exits zero. "It looks like a project" doesn't count;
 it has to build.
@@ -158,15 +158,15 @@ it has to build.
 </Callout>
 
 On the Claude sweep this mattered exactly three times: all three models, on the BF-mention path,
-scaffolded`heavy-ts` correctly via the CLI, and all three hit the same generator bug in our
-native (Expo) template where`app.json` sets a web output mode that only works with`expo-router`.
+scaffolded `heavy-ts` correctly via the CLI, and all three hit the same generator bug in our
+native (Expo) template where `app.json` sets a web output mode that only works with `expo-router`.
 The agents did everything right; the template couldn't build. Those three runs are excluded.
 Prompt-path failures (two timeouts, one broken hand-written build) are entirely agent-authored and
 count in full.
 
-On the GPT sweep, which ran against the pre-fix generator, it mattered seven times:`heavy-ts`
+On the GPT sweep, which ran against the pre-fix generator, it mattered seven times: `heavy-ts`
 through MCP and through the CLI failed for all three models on the since-fixed Storybook/Expo bug
-chain, plus one multi-ecosystem scaffold whose Go service shipped without a generated`go.sum`.
+chain, plus one multi-ecosystem scaffold whose Go service shipped without a generated `go.sum`.
 All seven are excluded for the same reason; the GPT agents' own failures (three broken
 hand-written builds on the prompt path) count in full.
 
@@ -188,7 +188,7 @@ Times and tokens are averages across the four specs; cost is the metered API tot
 | Sonnet 4.6 | BF mention |    98.3s |             4,834 |          $1.31 |          3/3\* |
 | Sonnet 4.6 | Prompt     |   464.9s |            31,188 |          $7.11 |            3/4 |
 
-\*`heavy-ts` excluded (generator bug on our side). † Timed-out runs report no cost, so these
+\* `heavy-ts` excluded (generator bug on our side). † Timed-out runs report no cost, so these
 totals under-count the true spend.
 
 ### Cost
@@ -197,7 +197,7 @@ The Claude sweep cost **$60.60** in metered API usage (less than the true number
 timed-out runs report $0; the Codex harness doesn't report cost at all). Reading the spread is
 more interesting than the total:
 
-- Cheapest passing run: **$0.12.** Sonnet 4.6 scaffolding`light-ts` through the CLI in 21 seconds.
+- Cheapest passing run: **$0.12.** Sonnet 4.6 scaffolding `light-ts` through the CLI in 21 seconds.
 - Most expensive passing runs: **$3.50–$4.21.** Fable 5 hand-writing projects on the prompt path.
 - For Sonnet, the prompt path cost ~5× its MCP path ($7.11 vs $1.47) and was ~6.6× slower, for a
   _lower_ pass rate.
@@ -208,7 +208,7 @@ itself, the more you pay for a less reliable result.
 ## GPT models on Codex CLI
 
 The GPT sweep ran the identical specs and prompts through OpenAI's Codex CLI two days before the
-Claude sweep:`gpt-5.3-codex-spark` at high reasoning effort,`gpt-5.4` and`gpt-5.5` at medium.
+Claude sweep: `gpt-5.3-codex-spark` at high reasoning effort, `gpt-5.4` and `gpt-5.5` at medium.
 Generator-bug failures are excluded exactly as above (seven runs here, this sweep predates the
 template fixes).
 
@@ -224,7 +224,7 @@ template fixes).
 | GPT-5.5             | BF mention |    74.1s |             4,548 |          3/3\* |
 | GPT-5.5             | Prompt     |   264.2s |            15,650 |            4/4 |
 
-\*`heavy-ts` excluded on MCP and BF mention for all three models, plus one GPT-5.5 multi-ecosystem
+\* `heavy-ts` excluded on MCP and BF mention for all three models, plus one GPT-5.5 multi-ecosystem
 MCP run, all on since-fixed generator bugs (this sweep ran before the fixes shipped).
 
 What the GPT sweep adds to the picture:
@@ -236,7 +236,7 @@ What the GPT sweep adds to the picture:
   scaffold, the fastest cells in the whole benchmark, but on the prompt path its speed came at
   the price of reliability: it hand-wrote projects in under a minute and only half of them built.
 - **GPT-5.5 is the prompt-path outlier.** It was the only model across both sweeps to pass _every_
-  prompt-only spec, including`heavy-ts`, at 542 seconds and 28k output tokens for that one run,
+  prompt-only spec, including `heavy-ts`, at 542 seconds and 28k output tokens for that one run,
   versus 108 seconds through MCP.
 - **GPT models lean harder on the tools.** Codex runs made 10–34 MCP calls per scaffold versus
   Claude's 3–10, re-checking compatibility and re-planning more often, with the same end result.
@@ -282,8 +282,8 @@ What the light sweep adds:
   seconds and 640 output tokens via the BF mention path. The structure we saw on Claude and GPT
   isn't a frontier-model phenomenon; the tooling levels the playing field all the way down.
 - **Prompt-only is where the field splits.** Three of nine models shipped broken projects, each in
-  an instructive way: Step-3.7 Flash pinned`pino-http` to a version that doesn't exist (install
-  failed); MiniMax M3 named a tRPC procedure`useContext`, colliding with tRPC's built-in client
+  an instructive way: Step-3.7 Flash pinned `pino-http` to a version that doesn't exist (install
+  failed); MiniMax M3 named a tRPC procedure `useContext`, colliding with tRPC's built-in client
   method (type check failed); Nex N2-Pro wrote an import that doesn't resolve (Rollup failed).
   None of these failure modes exist on the assisted paths, because the agent never hand-writes a
   manifest.
@@ -304,19 +304,19 @@ seconds as approximate.
 
 ### MCP keeps agents on rails
 
-MCP runs converged on the same tool sequence:`bfs_get_guidance` → compatibility check → plan →
+MCP runs converged on the same tool sequence: `bfs_get_guidance` → compatibility check → plan →
 `bfs_create_project`, between 3 and 10 calls per run (the multi-ecosystem spec needed the most
 iterations to settle a valid stack). Output stays small because the agent's job collapses to
 _choosing a configuration_, the file-writing is done by the generator, deterministically. That's
-also why pass rates don't degrade as the spec grows:`heavy-ts` through MCP passed for every
+also why pass rates don't degrade as the spec grows: `heavy-ts` through MCP passed for every
 model.
 
 ### Prompt-only agents drown in the heavy spec
 
-On the prompt path,`heavy-ts` defeated almost everyone. Fable 5 and Opus 4.8 were still writing
+On the prompt path, `heavy-ts` defeated almost everyone. Fable 5 and Opus 4.8 were still writing
 files at the 15-minute timeout. Sonnet 4.6 finished a 90-file monorepo in 767 seconds, and it
 didn't build. GPT-5.3 Codex Spark sprinted to a hand-written project in 68 seconds, it didn't
-build either. The single exception across both sweeps was GPT-5.5, which ground through`heavy-ts`
+build either. The single exception across both sweeps was GPT-5.5, which ground through `heavy-ts`
 prompt-only in 542 seconds and passed. The lighter specs mostly passed prompt-only, but at minutes
 of wall-clock and 10k–37k output tokens each. Hand-writing a starter is something frontier models
 _can_ do; it's just the slowest, most expensive, least reliable way to get one.
@@ -325,19 +325,19 @@ _can_ do; it's just the slowest, most expensive, least reliable way to get one.
 
 The most useful failures were ours. Validating every generated project surfaced **six layered
 template bugs** in our generator, most hiding behind a single "Storybook build fails" symptom on
-`heavy-ts`. The GPT sweep hit them first, eight of its nine`heavy-ts` builds failed, six of
+`heavy-ts`. The GPT sweep hit them first, eight of its nine `heavy-ts` builds failed, six of
 them on this generator chain, and the Claude sweep two days later confirmed which fixes held:
 
-1. Storybook templates tested the frontend with an equality check, but`frontend` is an array.
+1. Storybook templates tested the frontend with an equality check, but `frontend` is an array.
 2. A database package path mismatch left the DB package without its dependencies in graph-part mode.
-3.`expo-network` was missing from a native template variant.
-4. Storybook 8 framework packages don't re-export`Meta`/`StoryObj` types, imports had to move to
+3. `expo-network` was missing from a native template variant.
+4. Storybook 8 framework packages don't re-export `Meta`/`StoryObj` types, imports had to move to
    the renderer packages.
-5.`@better-auth/expo` needed four Expo peer dependencies installed explicitly.
-6. Native`app.json` sets a static web output mode that only works with`expo-router`, this one is
+5. `@better-auth/expo` needed four Expo peer dependencies installed explicitly.
+6. Native `app.json` sets a static web output mode that only works with `expo-router`, this one is
    still open, and is the bug behind the three excluded BF-mention runs.
 
-Five of the six were fixed and shipped in`create-better-fullstack` 2.0.2 before this post went
+Five of the six were fixed and shipped in `create-better-fullstack` 2.0.2 before this post went
 out. Running your own product through an agent benchmark turns out to be a brutally effective QA
 pass.
 
@@ -345,7 +345,7 @@ pass.
 
 Sonnet 4.6 was the fastest and cheapest on every path, and with tooling it gave up nothing in
 reliability. Fable 5 was the most deliberate, highest token counts, longest runs, and on the
-prompt path that thoroughness still wasn't enough to beat the timeout on`heavy-ts`. Opus 4.8 sat
+prompt path that thoroughness still wasn't enough to beat the timeout on `heavy-ts`. Opus 4.8 sat
 reliably in between. The ranking never changed across paths; the _gap_ did. Tooling is the great
 equalizer: on MCP, the spread between best and worst model was 102 seconds; prompt-only it was
 varying minutes and, twice, a wall-clock ceiling.
@@ -384,7 +384,7 @@ varying minutes and, twice, a wall-clock ceiling.
 | Fable 5    | BF mention | light-ts        | 314s |        16,132 | $3.74 | pass           |
 | Fable 5    | BF mention | multi-ecosystem | 470s |        15,196 | $2.98 | pass           |
 | Fable 5    | BF mention | python-ai       | 226s |         9,404 | $1.95 | pass           |
-| Fable 5    | Prompt     | heavy-ts        | 900s |            –|    –| timed out      |
+| Fable 5    | Prompt     | heavy-ts        | 900s |             – |     – | timed out      |
 | Fable 5    | Prompt     | light-ts        | 413s |        32,080 | $3.50 | pass           |
 | Fable 5    | Prompt     | multi-ecosystem | 570s |        37,436 | $4.21 | pass           |
 | Fable 5    | Prompt     | python-ai       | 408s |        30,103 | $3.55 | pass           |
@@ -396,7 +396,7 @@ varying minutes and, twice, a wall-clock ceiling.
 | Opus 4.8   | BF mention | light-ts        |  39s |         2,754 | $0.32 | pass           |
 | Opus 4.8   | BF mention | multi-ecosystem | 116s |         8,038 | $0.70 | pass           |
 | Opus 4.8   | BF mention | python-ai       | 118s |         7,211 | $0.81 | pass           |
-| Opus 4.8   | Prompt     | heavy-ts        | 900s |            –|    –| timed out      |
+| Opus 4.8   | Prompt     | heavy-ts        | 900s |             – |     – | timed out      |
 | Opus 4.8   | Prompt     | light-ts        | 435s |        33,390 | $2.50 | pass           |
 | Opus 4.8   | Prompt     | multi-ecosystem | 395s |        28,598 | $2.43 | pass           |
 | Opus 4.8   | Prompt     | python-ai       | 313s |        23,952 | $1.96 | pass           |
@@ -414,7 +414,7 @@ varying minutes and, twice, a wall-clock ceiling.
 | Sonnet 4.6 | Prompt     | python-ai       | 226s |        16,418 | $0.85 | pass           |
 
 \* Failed on a since-identified template generator bug on our side (excluded from agent pass
-rates). The Sonnet 4.6 prompt-path`heavy-ts` failure is agent-authored and counts.
+rates). The Sonnet 4.6 prompt-path `heavy-ts` failure is agent-authored and counts.
 
 ### GPT sweep (Codex CLI, June 10, pre-fix generator)
 
