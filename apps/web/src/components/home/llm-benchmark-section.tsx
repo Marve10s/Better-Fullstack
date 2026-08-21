@@ -10,7 +10,6 @@ import {
   type ReactNode,
 } from "react";
 import {
-  TbArrowRight as ArrowRight,
   TbArrowUpRight as ArrowUpRight,
   TbCheck as Check,
   TbChevronDown as ChevronDown,
@@ -50,8 +49,6 @@ const headingStyle: CSSProperties = {
   fontSize: "clamp(2.2rem, 6vw, 4rem)",
   lineHeight: 0.98,
 };
-
-const blogPostParams = { _splat: "scaffbench-2-2" } as const;
 
 function isFreeModel(model: ScaffbenchModel): boolean {
   return /(?:-free$|:free$|\/free$)/i.test(model.model);
@@ -1181,14 +1178,6 @@ function BenchmarkSidebar() {
 
       <div className="p-5 sm:p-6">
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:grid-cols-1">
-          <Link
-            to="/blog/$"
-            params={blogPostParams}
-            className="group flex w-full items-center justify-between rounded-md bg-[#C6E853] px-3.5 py-2 text-xs font-semibold text-[#0a0a0a] transition-all hover:bg-[#b8da45]"
-          >
-            <span>{m.llmReadBlog()}</span>
-            <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
-          </Link>
           <a
             href="/run"
             className="group flex w-full items-center justify-between rounded-md border border-border bg-card/60 px-3.5 py-2 text-xs font-medium text-foreground transition-colors hover:border-brand hover:bg-muted/40 dark:hover:text-brand"
@@ -1276,14 +1265,6 @@ function StackedMasthead() {
         {m.llmBenchmarkDescription()}
       </p>
       <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-        <Link
-          to="/blog/$"
-          params={blogPostParams}
-          className="group inline-flex items-center gap-1.5 rounded-md bg-[#C6E853] px-5 py-2.5 text-sm font-semibold text-[#0a0a0a] transition-all hover:gap-2.5"
-        >
-          {m.llmReadBlog()}
-          <ArrowRight className="size-4" />
-        </Link>
         <a
           href="/run"
           className="rounded-md border border-border px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-brand dark:hover:text-brand"
