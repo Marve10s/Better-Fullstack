@@ -40,7 +40,7 @@ react-native-expo             13/13  ██████████████�
 frontier-effect-eventsourcing 14/14  ████████████████████  100%  FAIL build
 frontier-polyglot-proto       10/10  ████████████████████  100%  FAIL buf prerequisite
 python-ingestion-api          15/16  ███████████████████░   94%  FAIL typecheck
-ai-search-workbench           0/27   ░░░░░░░░░░░░░░░░░░░░    0%  FAIL provider drop
+ai-search-workbench           26/27  ███████████████████░   96%  FAIL build (vite+ clash)
 ```
 
 Three of the five failures scored a perfect stack. The model assembled everything
@@ -61,34 +61,52 @@ the spec asked for and still could not make it compile.
 | react-native-expo | fail | 13/13 | typecheck |
 | python-ingestion-api | fail | 15/16 | typecheck |
 | frontier-effect-eventsourcing | fail | 14/14 | build |
-| ai-search-workbench | fail | 0/27 | none reached |
+| ai-search-workbench | fail | 26/27 | build |
 | frontier-polyglot-proto | fail | 10/10 | prerequisite: buf generate |
 
 Failure tags across the run: test-failed 9, format-failed 8, lint-failed 7,
 stack-mismatch 6, validation-failed 5, typecheck-failed 3, build-failed 1,
 project-not-found 1.
 
-## One failure the model did not cause, and one it did
+## Both disputed failures are settled, and neither changes the score
 
-The harness marks this row `ranked`, so both of these needed settling before it
-went anywhere near the board. Only one survives as a genuine exclusion. Dropping
-it puts Pass@1 at 8 of 12, or 67%, and a re-run may return it to 8 of 13 at 62%.
+Both needed settling before this `ranked` row went near the board. Neither
+survives as an exclusion, so Pass@1 stands at 8 of 13, or 62%, with no asterisk.
 
-### ai-search-workbench: the provider dropped the request
+### ai-search-workbench: a dropped request, then a real failure
 
-The session ran two steps that made four tool calls (bash, todowrite, bash,
+The first attempt ran two steps that made four tool calls (bash, todowrite, bash,
 websearch), emitted 588 output tokens, then returned a third step with
 `reason: "unknown"` and zero tokens in and out. The process exited 0 after two
-minutes with no project on disk. This is the opencode dead-request signature
+minutes with no project on disk. That is the opencode dead-request signature
 already seen with Kimi K3, where a dropped request arrives as a zero-usage
 unknown rather than an error.
 
-`agents/opencode.ts:109` already guards for this, but the condition is
-`stepReason === "unknown" && outputTokens === 0 && !sawTool && !sawAssistantText`.
-It only catches sessions that die before doing anything. This one had already
+The re-run settled it. This time the model worked for 31 minutes, exited on
+`stop`, emitted 46,337 output tokens and wired 26 of the 27 requested libraries.
+Install passed and `build` failed:
+
+```
+$ vp run build
+error: Failed to load task graph
+* Task sb21-ai-search-workbench#dev conflicts with a package.json script
+  of the same name. Remove the script from package.json or rename the task
+```
+
+The model put the project on Vite+ as the spec demands, wrote `"dev": "vp run dev"`
+into the root package.json, and also defined a `dev` task in the Vite+ config.
+Vite+ refuses to load a task graph when a task name collides with a script name,
+so every `vp` command dies, which is why typecheck, lint, format and test never
+ran. One naming collision took down the whole toolchain. That is a fair failure
+and a good trap: the model knows the tool's surface and not its constraints.
+
+The harness bug behind the first attempt is still real and still unfixed.
+`agents/opencode.ts:109` guards for the dead-request signature, but the condition
+is `stepReason === "unknown" && outputTokens === 0 && !sawTool && !sawAssistantText`.
+It only catches sessions that die before doing anything. That one had already
 worked, so it fell through and scored as a model failure. Any opencode run that
-dies mid-flight will be mis-scored the same way, which is the more expensive
-problem: it looks exactly like a real failure in published data.
+dies mid-flight is mis-scored the same way, which is the expensive case: it looks
+exactly like a real failure in published data.
 
 ### frontier-polyglot-proto: a real failure, reached the long way
 
@@ -134,8 +152,6 @@ elixir 1.20.3 on OTP 29, buf 1.72.0, protoc 35.1, psql 16.15.
 ## Not done yet
 
 - gpt-5.6-luna at high effort is running now for comparison.
-- ai-search-workbench needs a re-run to test whether the drop was transient. If it
-  dies the same way twice, that is still not a model verdict.
 - The publication gates from the pre-run audit are untouched: the three canonical
   runs are not re-recorded under cache v8, dotnet-blazor-cqrs has no canonical, and
   the weak-versus-strong calibration pass has not run. Nothing here belongs on the

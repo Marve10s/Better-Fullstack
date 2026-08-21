@@ -36,6 +36,7 @@ import { OpenAIMark, ProviderLogo, type ProviderLogoId } from "./provider-marks"
 import { SCAFFBENCH21_CELLS, SCAFFBENCH21_MODELS } from "./scaffbench-2-1-data";
 import { SCAFFBENCH22_CELLS, SCAFFBENCH22_MODELS, SCAFFBENCH22_SPECS } from "./scaffbench-2-2-data";
 import { type ScaffbenchCell, type ScaffbenchModel } from "./scaffbench-2-data";
+import { SCAFFBENCH3_CELLS, SCAFFBENCH3_MODELS } from "./scaffbench-3-board-data";
 
 const fadeUpInitial = { opacity: 0, y: 12 } as const;
 
@@ -148,6 +149,7 @@ type BoardEntry = {
   legacy: boolean;
 };
 
+const CURRENT_KEYS_3: readonly string[] = ["opencode/x-preview-f-free|high"];
 const LEGACY_KEYS_2_2: readonly string[] = ["claude-opus-5|high", "gpt-5.6-sol|high"];
 const LEGACY_KEYS_2_1: readonly string[] = ["claude-fable-5|low", "claude-fable-5|high"];
 
@@ -165,6 +167,7 @@ function boardEntries(
 }
 
 const BOARD_ENTRIES: readonly BoardEntry[] = [
+  ...boardEntries(SCAFFBENCH3_MODELS, SCAFFBENCH3_CELLS, CURRENT_KEYS_3, false),
   ...boardEntries(SCAFFBENCH22_MODELS, SCAFFBENCH22_CELLS, LEGACY_KEYS_2_2, true),
   ...boardEntries(SCAFFBENCH21_MODELS, SCAFFBENCH21_CELLS, LEGACY_KEYS_2_1, true),
 ];
@@ -683,7 +686,7 @@ function BenchmarkChartCard({ className }: { className?: string } = {}) {
     >
       <div className="border-b border-[#e1e0d8] px-3 py-4 dark:border-[rgba(237,235,228,0.10)] sm:px-6">
         <div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-center justify-between gap-4 px-3">
-          <p className="text-sm font-semibold">ScaffBench 2.2 · Prompt path</p>
+          <p className="text-sm font-semibold">ScaffBench 3</p>
           <div className="flex flex-wrap items-center justify-end gap-2.5">
             <div
               className="inline-flex overflow-hidden rounded-md border border-[#d9d8d2] dark:border-[rgba(237,235,228,0.14)]"
@@ -1142,10 +1145,7 @@ function BenchmarkSidebar() {
   return (
     <div className="flex flex-col divide-y divide-border border-b border-border bg-background/50 lg:border-b-0 lg:border-r lg:justify-between">
       <div className="p-5 sm:p-6">
-        <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.22em] text-[#71706a] dark:text-[#8f8d84]">
-          ✦ ScaffBench
-        </p>
-        <div className="mt-3 flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5">
           <ScaffBenchMark className="size-7 shrink-0 text-foreground sm:size-8" />
           <h2 className="font-mono text-2xl font-bold tracking-[-0.03em] sm:text-3xl lg:text-2xl xl:text-3xl">
             ScaffBench
@@ -1229,10 +1229,7 @@ function LeaderboardSidebar() {
   return (
     <div className="flex flex-col divide-y divide-border border-b border-border bg-background/50 lg:border-b-0 lg:border-r">
       <div className="p-5 sm:p-6">
-        <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.22em] text-[#71706a] dark:text-[#8f8d84]">
-          ✦ Metric Legend
-        </p>
-        <h2 className="mt-3 font-mono text-2xl font-bold tracking-[-0.03em] sm:text-3xl lg:text-2xl xl:text-3xl">
+        <h2 className="font-mono text-2xl font-bold tracking-[-0.03em] sm:text-3xl lg:text-2xl xl:text-3xl">
           Leaderboard
         </h2>
         <p className="mt-3 text-pretty text-xs leading-relaxed text-muted-foreground sm:text-sm">
@@ -1394,18 +1391,11 @@ function ScaffbenchLeaderboardCard({ className }: { className?: string } = {}) {
 
       <div className="px-3 pb-4 pt-5 sm:px-6">
         <section
-          aria-label="ScaffBench 2.2 pass-rate leaderboard"
+          aria-label="ScaffBench 3 pass-rate leaderboard"
           className="overflow-x-auto"
           tabIndex={0}
         >
           <div className="mx-auto w-full min-w-[920px] max-w-[1180px] px-3">
-            <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-              <p className="text-sm font-semibold">Pass 1 by model</p>
-              <p className="text-xs text-[#71706a] dark:text-[#8f8d84]">
-                Prompt · Full pass, wired libs & time
-              </p>
-            </div>
-
             <div
               className={cn(
                 LEADERBOARD_GRID,
