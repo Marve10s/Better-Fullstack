@@ -1,0 +1,65 @@
+---
+title: Stack Builder
+description: Compose, preview, run, share, and download Better Fullstack projects in the browser.
+translationStatus: pending
+updated: 2026-08-22
+---
+
+The [Stack Builder](https://better-fullstack.dev/new) uses the same schemas, compatibility rules, and template generator as the CLI. Every change updates the reproducible command and the shareable URL.
+
+## Views
+
+| View       | What it does                                                                        |
+| ---------- | ------------------------------------------------------------------------------------ |
+| Build      | Select compatible stack options and copy the generated CLI command.                  |
+| Preview    | Inspect the generated file tree without writing anything to disk.                    |
+| Edit & Run | Generate, edit, install, and run supported TypeScript web stacks in a WebContainer. |
+| Presets    | Apply curated stack selections. Solo mode only.                                      |
+| Saved      | Store named configurations in this browser. Solo mode only.                          |
+
+## Two modes
+
+Solo mode exposes one ecosystem's full category surface. Multi-Ecosystem mode composes frontend, backend, database, and mobile parts from different languages, then attaches capabilities to their owners through repeated `--part role:ecosystem:tool` flags. See [Multi-Ecosystem](/docs/ecosystems/multi-ecosystem/) for how parts and ownership work.
+
+Builder state lives in the URL. Share a link and the recipient gets your exact selection; nothing is uploaded. Saved stacks stay in browser storage.
+
+## Compatibility adjustments
+
+The builder runs every selection through the same compatibility engine as the CLI. When a choice requires another option or conflicts with the current stack, it explains or applies the compatible state before generating files. Read the final command when you accept an adjustment, so you know what changed.
+
+## Edit & Run
+
+Edit & Run creates a disposable generated project and executes it in a browser WebContainer. It never deploys anything and never sends your edits to a server.
+
+Requirements: Solo mode, the TypeScript ecosystem, at least one web frontend, and a WebContainer-capable browser. Redwood is excluded because its layout hides the root dev script the runner needs. Native and multi-ecosystem projects can still use Preview and ZIP download, then run locally with their own toolchains.
+
+The flow: generate from the selection, mount files in the WebContainer, install dependencies with npm (WebContainers provide Node and npm; this does not change the package manager recorded for downloads or CLI scaffolds), start `dev:web` or `dev`, and show the preview URL. First installs need network access and can take a while.
+
+### Editing
+
+Pick a text file from the tree and edit it in the code pane. **Save & rerun** syncs changes into the running project; editing `package.json` triggers another dependency install. **Discard** restores the last contents that synced successfully, **Stop** terminates the dev server, and reloading the page destroys the workspace along with unsaved edits. Copy out anything worth keeping before you leave.
+
+When a stack or runtime reports as unsupported, download the ZIP and run it locally instead. If installation fails, check network access and console output; corporate proxies and content blockers commonly block WebContainer downloads. If the server stops responding, stop it and start again; a page reload is the final reset.
+
+## Download a ZIP
+
+**Download ZIP** regenerates your selected stack with the shared template generator and builds an archive entirely in the browser:
+
+- One sanitized top-level project directory; scripts keep executable metadata.
+- The selected package manager is preserved.
+- `bts.jsonc` holds the schema-validated configuration and `bts.lock.json` v2 records generator provenance plus byte hashes of template-comparable files, which later `add`, `update`, and `check` workflows rely on.
+- No server-side workspace is ever created, and dependencies are not installed.
+
+<Callout kind="warning" title="ZIP regenerates from the stack">
+The archive is built from the current selection. Edits made inside the disposable Edit & Run workspace are not exported. Copy experiments out before leaving the page.
+</Callout>
+
+After extraction, follow the generated README and run the matching ecosystem install command.
+
+## Move to the CLI
+
+For reproducible automation, copy the generated command rather than treating the ZIP as the only record. Browser ZIPs and CLI scaffolds both include the BTS files, so either path can continue with `add`, `update`, and `check`.
+
+## Privacy
+
+Better Fullstack records bounded anonymous run outcomes such as started, ready, failed stage, duration, ecosystem, and capability IDs. It never records edited source, filenames, logs, URLs, env values, or raw errors. One browser-local preference gates all analytics and Do Not Track disables everything. See [Anonymous Telemetry](/docs/cli/telemetry/).
