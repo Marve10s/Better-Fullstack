@@ -155,6 +155,13 @@ export function buildRows(runSources: readonly string[]) {
   for (const dir of runSources) {
     const summary = JSON.parse(readFileSync(`${dir}/summary.json`, "utf8")) as Summary;
     assertCohort(summary, dir);
+    const recordedPaths = summary.options.paths ?? ["prompt"];
+    if (recordedPaths.length !== 1 || recordedPaths[0] !== "prompt") {
+      throw new Error(
+        `${dir}: board rows are prompt-only, but this run recorded paths=${recordedPaths.join(",")}; ` +
+          "re-run with --paths prompt instead of publishing a filtered slice of a multi-path run",
+      );
+    }
     const promptResults = summary.results.filter((result) => result.path === "prompt");
     assertProtocol(promptResults, dir);
     if (summary.generatedAt > generatedAt) generatedAt = summary.generatedAt;

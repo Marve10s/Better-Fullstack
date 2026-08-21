@@ -374,7 +374,7 @@ export function renderMarkdown(summary: ScaffbenchSummary) {
     )
     .join("\n");
 
-  return `# ScaffBench 2 Run
+  return `# ScaffBench ${SCAFFBENCH_SUITE_VERSION} Run
 
 Harness: ${summary.harnessVersion}
 Agent: ${agentLabelForModel(summary.options.model)} (single agent; single model family per row)

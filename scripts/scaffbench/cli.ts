@@ -31,7 +31,7 @@ export function parseList<T extends string>(
 
 function parseBudget(value: string) {
   const parsed = Number.parseFloat(value);
-  if (!Number.isFinite(parsed) || parsed < 0) {
+  if (!/^\d+(?:\.\d+)?$/.test(value.trim()) || !Number.isFinite(parsed) || parsed < 0) {
     throw new Error(`--max-budget-usd: expected a non-negative number, got ${JSON.stringify(value)}`);
   }
   return value;
