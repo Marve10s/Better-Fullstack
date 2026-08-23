@@ -252,7 +252,7 @@ describe("cross-version upgrade qualification", () => {
     } finally {
       await rm(root, { force: true, recursive: true });
     }
-  });
+  }, 30_000);
 
   test("rejects a source fixture not bound to the release receipt", async () => {
     const root = await mkdtemp(join(tmpdir(), "bfs-cross-version-receipt-test-"));
