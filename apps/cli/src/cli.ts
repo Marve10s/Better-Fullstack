@@ -29,6 +29,6 @@ if (firstArg === "mcp" && process.argv.length === 3) {
       await analytics.flushTelemetry();
     }
 
-    process.exit(exitCode);
+    process.exitCode = exitCode;
   })();
 }
