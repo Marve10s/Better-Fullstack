@@ -2,7 +2,6 @@ import { describe, expect, it } from "bun:test";
 
 import type { StackSelectionInput } from "../src/stack-translation";
 
-import { isToolingOverlayPart } from "../src/tooling-capabilities";
 import {
   DEFAULT_STACK_SELECTION,
   STACK_SELECTION_KEYS,
@@ -16,6 +15,7 @@ import {
   parseStackSelectionFromUrlRecord,
   stackSelectionToProjectConfig,
 } from "../src/stack-translation";
+import { isToolingOverlayPart } from "../src/tooling-capabilities";
 
 const DEFAULT_SELECTION = DEFAULT_STACK_SELECTION;
 
@@ -62,6 +62,8 @@ describe("stack selection translation", () => {
       projectName: "parity-app",
       webFrontend: ["astro"],
       astroIntegration: "react",
+      shadcnStyle: "luma",
+      shadcnFont: "geist",
       backend: "self-next",
       codeQuality: ["none", "biome"],
       documentation: ["fumadocs"],
@@ -665,7 +667,7 @@ describe("stack selection translation", () => {
   });
 
   it("preserves TypeScript frontend graph scalar settings", () => {
-    const command = generateStackSelectionCommand({
+    const selection = {
       ...DEFAULT_SELECTION,
       stackMode: "multi",
       projectName: "styled-graph-app",
@@ -673,12 +675,18 @@ describe("stack selection translation", () => {
       astroIntegration: "react",
       shadcnStyle: "luma",
       shadcnFont: "geist",
-    });
+    } satisfies StackSelectionInput;
+    const command = generateStackSelectionCommand(selection);
+    const config = toProjectConfig(selection);
+    const frontendPart = config.stackParts?.find((part) => part.role === "frontend");
+    const uiPart = config.stackParts?.find((part) => part.role === "ui");
 
     expect(command).toContain("--part frontend:typescript:astro");
     expect(command).toContain("--astro-integration react");
     expect(command).toContain("--shadcn-style luma");
     expect(command).toContain("--shadcn-font geist");
+    expect(frontendPart?.settings?.astroIntegration).toBe("react");
+    expect(uiPart?.settings).toMatchObject({ shadcnStyle: "luma", shadcnFont: "geist" });
   });
 
   it("keeps partial CLI preselection flags out of stackParts until config is complete", () => {

@@ -4,6 +4,7 @@ import {
   formatStackPartSpec,
   getAddonStackPartBinding,
   legacyProjectConfigToStackParts,
+  projectStackPartSettingsToProjectConfig,
 } from "../types";
 
 function getBaseCommand(packageManager: ProjectConfig["packageManager"]) {
@@ -223,12 +224,21 @@ function appendChangedArrayFlag(
 }
 
 function appendAstroIntegrationFlag(flags: string[], config: ProjectConfig) {
-  if (config.frontend.includes("astro") && config.astroIntegration !== "none") {
-    flags.push(`--astro-integration ${config.astroIntegration}`);
+  const graphSettings = projectStackPartSettingsToProjectConfig(config.stackParts ?? [], {
+    includeDefaults: true,
+  });
+  const astroIntegration = config.stackParts?.length
+    ? graphSettings.astroIntegration
+    : config.astroIntegration;
+  if (config.frontend.includes("astro") && astroIntegration !== "none") {
+    flags.push(`--astro-integration ${astroIntegration}`);
   }
 }
 
 function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
+  const graphSettings = projectStackPartSettingsToProjectConfig(config.stackParts ?? [], {
+    includeDefaults: true,
+  });
   if (!hasAnyGraphExamplePart(config)) {
     appendChangedArrayFlag(flags, "examples", config.examples, []);
   }
@@ -250,7 +260,7 @@ function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
 
   if (hasGraphPrimaryPart(config, "frontend", "typescript")) {
     const graphUiPart = getGraphPartIncludingDisabled(config, "ui", "typescript");
-    const effectiveUiLibrary = graphUiPart?.toolId ?? config.uiLibrary;
+    const effectiveUiLibrary = graphUiPart?.toolId ?? "none";
 
     appendAstroIntegrationFlag(flags, config);
     appendChangedOwnedGraphStringFlag(
@@ -282,28 +292,33 @@ function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
       "shadcn-ui",
     );
     if (effectiveUiLibrary === "shadcn-ui") {
-      appendChangedStringFlag(flags, "shadcn-base", config.shadcnBase ?? "radix", "radix");
-      appendChangedStringFlag(flags, "shadcn-style", config.shadcnStyle ?? "nova", "nova");
+      appendChangedStringFlag(flags, "shadcn-base", graphSettings.shadcnBase ?? "radix", "radix");
+      appendChangedStringFlag(flags, "shadcn-style", graphSettings.shadcnStyle ?? "nova", "nova");
       appendChangedStringFlag(
         flags,
         "shadcn-icon-library",
-        config.shadcnIconLibrary ?? "lucide",
+        graphSettings.shadcnIconLibrary ?? "lucide",
         "lucide",
       );
       appendChangedStringFlag(
         flags,
         "shadcn-color-theme",
-        config.shadcnColorTheme ?? "neutral",
+        graphSettings.shadcnColorTheme ?? "neutral",
         "neutral",
       );
       appendChangedStringFlag(
         flags,
         "shadcn-base-color",
-        config.shadcnBaseColor ?? "neutral",
+        graphSettings.shadcnBaseColor ?? "neutral",
         "neutral",
       );
-      appendChangedStringFlag(flags, "shadcn-font", config.shadcnFont ?? "inter", "inter");
-      appendChangedStringFlag(flags, "shadcn-radius", config.shadcnRadius ?? "default", "default");
+      appendChangedStringFlag(flags, "shadcn-font", graphSettings.shadcnFont ?? "inter", "inter");
+      appendChangedStringFlag(
+        flags,
+        "shadcn-radius",
+        graphSettings.shadcnRadius ?? "default",
+        "default",
+      );
     }
     appendChangedGraphStringFlag(
       flags,

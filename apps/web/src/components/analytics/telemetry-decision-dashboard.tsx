@@ -297,6 +297,9 @@ export function TelemetryDecisionDashboard({ data }: { data: TelemetryDashboardD
             <div>
               <dt className={MUTED}>Coverage</dt>
               <dd className="mt-1 font-semibold">{formatRate(data.decisionCoverage)}</dd>
+              <dd className={cn("mt-1 normal-case tracking-normal", MUTED)}>
+                {formatCount(data.decisionEligibleEvents)} eligible decisions
+              </dd>
             </div>
             <div>
               <dt className={MUTED}>Last signal</dt>
@@ -358,9 +361,9 @@ export function TelemetryDecisionDashboard({ data }: { data: TelemetryDashboardD
           />
           <SignalCell
             step="04"
-            label="Return · 7d"
-            value={formatRate(data.repeatUse.repeat7dRate)}
-            detail={`${formatCount(data.repeatUse.repeat7d)} anonymous IDs active on 2+ distinct days`}
+            label="Lifecycle return · 7d"
+            value={formatRate(data.repeatUse.lifecycleRepeat7dRate)}
+            detail={`${formatCount(data.repeatUse.lifecycleRepeat7d)} lifecycle users active on 2+ distinct days`}
           />
         </div>
       </section>
@@ -378,29 +381,29 @@ export function TelemetryDecisionDashboard({ data }: { data: TelemetryDashboardD
         <section className={PANEL} aria-label="Repeat use">
           <PanelHeading
             index="02 / HABIT"
-            title="Repeat use"
-            detail="An anonymous client ID is returning when it is active on more than one distinct UTC date in the window."
+            title="Repeat lifecycle use"
+            detail="Lifecycle return counts only terminal existing-project commands on more than one distinct UTC date."
           />
           <div className="grid grid-cols-2 divide-x divide-y divide-[#deddd5] dark:divide-white/10">
             <BrowserMetric
-              label="7d repeat share"
-              value={formatRate(data.repeatUse.repeat7dRate)}
-              detail={`${formatCount(data.repeatUse.repeat7d)} / ${formatCount(data.repeatUse.active7d)} active`}
+              label="Lifecycle · 7d"
+              value={formatRate(data.repeatUse.lifecycleRepeat7dRate)}
+              detail={`${formatCount(data.repeatUse.lifecycleRepeat7d)} / ${formatCount(data.repeatUse.lifecycleActive7d)} active`}
             />
             <BrowserMetric
-              label="30d repeat share"
-              value={formatRate(data.repeatUse.repeat30dRate)}
-              detail={`${formatCount(data.repeatUse.repeat30d)} / ${formatCount(data.repeatUse.active30d)} active`}
+              label="Lifecycle · 30d"
+              value={formatRate(data.repeatUse.lifecycleRepeat30dRate)}
+              detail={`${formatCount(data.repeatUse.lifecycleRepeat30d)} / ${formatCount(data.repeatUse.lifecycleActive30d)} active`}
             />
             <BrowserMetric
-              label="New · 30d"
-              value={formatCount(data.repeatUse.new30d)}
-              detail="First-seen anonymous IDs"
+              label="Lifecycle events"
+              value={formatCount(data.repeatUse.lifecycleEvents)}
+              detail="Terminal existing-project actions"
             />
             <BrowserMetric
-              label="Returning · all"
-              value={formatCount(data.repeatUse.returningMachines)}
-              detail={`${formatCount(data.repeatUse.uniqueMachines)} unique anonymous IDs`}
+              label="Lifecycle return · all"
+              value={formatCount(data.repeatUse.lifecycleReturningMachines)}
+              detail={`${formatCount(data.repeatUse.lifecycleUniqueMachines)} lifecycle users`}
             />
           </div>
         </section>
@@ -414,6 +417,33 @@ export function TelemetryDecisionDashboard({ data }: { data: TelemetryDashboardD
         />
         <ActivityChart data={data.activity} />
       </section>
+
+      <div className="mt-5 grid gap-5 lg:grid-cols-2 xl:grid-cols-5">
+        <section className={PANEL} aria-label="Selection outcomes">
+          <PanelHeading index="04A" title="Selection outcomes" detail={data.operationScopeLabel} />
+          <RankedList items={data.selection.outcomes} empty="No covered outcomes" />
+        </section>
+        <section className={PANEL} aria-label="Selection problems">
+          <PanelHeading
+            index="04B"
+            title="Problem signal"
+            detail="Discoverability versus missing capability"
+          />
+          <RankedList items={data.selection.problems} empty="No classified problems" />
+        </section>
+        <section className={PANEL} aria-label="Chosen evidence levels">
+          <PanelHeading index="04C" title="Evidence chosen" detail={data.operationScopeLabel} />
+          <RankedList items={data.selection.evidenceLevels} empty="No evidence choices" />
+        </section>
+        <section className={PANEL} aria-label="Starter track adoption">
+          <PanelHeading index="04D" title="Starter tracks" detail={data.operationScopeLabel} />
+          <RankedList items={data.selection.starterTracks} empty="No track choices" />
+        </section>
+        <section className={PANEL} aria-label="Selection decision stages">
+          <PanelHeading index="04E" title="Decision stage" detail={data.operationScopeLabel} />
+          <RankedList items={data.selection.stages} empty="No classified stages" />
+        </section>
+      </div>
 
       <div className="mt-5 grid gap-5 lg:grid-cols-2">
         <section className={PANEL} aria-label="Ecosystem adoption">
@@ -510,12 +540,16 @@ export function TelemetryDecisionDashboard({ data }: { data: TelemetryDashboardD
             Read before deciding
           </span>
           <ul className={cn("mt-4 space-y-3 text-xs leading-relaxed", MUTED)}>
-            <li>• Window metrics fall back to all-time when aggregate coverage is below 80%.</li>
+            <li>
+              • Coverage is complete decision events divided by eligible decision events. Window
+              metrics fall back to all-time below 80%.
+            </li>
             <li>
               • Setup completion excludes MCP generation, skipped installs, and unknown legacy rows.
             </li>
             <li>
-              • Repeat share is distinct-day usage, not cohort retention or an identity graph.
+              • Lifecycle repeat share uses terminal existing-project actions on distinct days. It
+              is not cohort retention or an identity graph.
             </li>
             <li>
               • Counts reflect telemetry-enabled clients and should guide priorities, not

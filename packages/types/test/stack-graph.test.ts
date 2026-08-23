@@ -122,6 +122,7 @@ import {
   ANIMATION_VALUES,
   ASTRO_INTEGRATION_VALUES,
   STATE_MANAGEMENT_VALUES,
+  StackPartSchema,
   TESTING_VALUES,
   UI_LIBRARY_VALUES,
   VALIDATION_VALUES,
@@ -129,12 +130,16 @@ import {
 } from "../src/schemas";
 import {
   ELIXIR_UNSUPPORTED_GRAPH_TOOLS,
+  createStackPart,
   getAddonStackPartBinding,
   getStackPartCompatibilityIssueForPart,
   getStackPartOptions,
   formatStackPartSpec,
   legacyProjectConfigToStackParts,
+  mergeProjectConfigSettingsIntoStackParts,
   parseStackPartSpecs,
+  PROJECT_METADATA_SETTING_KEYS,
+  projectStackPartSettingsToProjectConfig,
   stackGraphToLegacyProjectConfigForEcosystem,
   stackPartsToLegacyProjectConfigPartial,
   validateStackParts,
@@ -1032,18 +1037,20 @@ describe("stack graph", () => {
     const goBackend = goParts.find((part) => part.role === "backend");
     expect(goBackend).toBeDefined();
 
-    expect(
-      getStackPartCompatibilityIssueForPart(
-        {
-          id: "candidate:backend.search:go:algolia",
-          role: "search",
-          toolId: "algolia",
-          ecosystem: "go",
-          ownerPartId: goBackend?.id,
-        },
-        goParts,
-      )?.message,
-    ).toBe("Only Meilisearch search is available for non-TypeScript ecosystems");
+    const goSearchIssue = getStackPartCompatibilityIssueForPart(
+      {
+        id: "candidate:backend.search:go:algolia",
+        role: "search",
+        toolId: "algolia",
+        ecosystem: "go",
+        ownerPartId: goBackend?.id,
+      },
+      goParts,
+    );
+    expect(goSearchIssue?.message).toBe(
+      "Search must use Meilisearch or an ecosystem-native option for non-TypeScript backends",
+    );
+    expect(goSearchIssue?.alternatives).toContain("meilisearch");
   });
 
   it("rejects Elixir graph selections that the current scaffold cannot generate", () => {
@@ -1397,9 +1404,9 @@ describe("stack graph structural round-trip (phase 0)", () => {
 
     expect(frameworkPart?.ownerPartId).toBe(backend?.id);
     expect(addonTestingParts.map((part) => part.toolId).sort()).toEqual(["msw", "storybook"]);
-    expect(
-      addonTestingParts.find((part) => part.toolId === "storybook")?.ownerPartId,
-    ).toBe(frontend?.id);
+    expect(addonTestingParts.find((part) => part.toolId === "storybook")?.ownerPartId).toBe(
+      frontend?.id,
+    );
     expect(addonTestingParts.find((part) => part.toolId === "msw")?.ownerPartId).toBeUndefined();
     expect(validateStackParts(parts).issues).toEqual([]);
 
@@ -1527,6 +1534,109 @@ describe("stack graph structural round-trip (phase 0)", () => {
     expect(
       stackPartsToLegacyProjectConfigPartial(noIntegrationParts).astroIntegration,
     ).toBeUndefined();
+  });
+
+  it("owns the full shadcn settings cluster on the selected UI part", () => {
+    const shadcnSettings = {
+      shadcnBase: "base",
+      shadcnStyle: "luma",
+      shadcnIconLibrary: "tabler",
+      shadcnColorTheme: "blue",
+      shadcnBaseColor: "zinc",
+      shadcnFont: "geist",
+      shadcnRadius: "large",
+    } as const;
+    const parts = legacyProjectConfigToStackParts({
+      ecosystem: "typescript",
+      frontend: ["next"],
+      backend: "none",
+      database: "none",
+      orm: "none",
+      api: "none",
+      auth: "none",
+      uiLibrary: "shadcn-ui",
+      ...shadcnSettings,
+    });
+    const uiPart = parts.find((part) => part.role === "ui" && part.toolId === "shadcn-ui");
+
+    expect(uiPart?.settings).toMatchObject(shadcnSettings);
+    expect(projectStackPartSettingsToProjectConfig(parts)).toEqual(shadcnSettings);
+    expect(stackPartsToLegacyProjectConfigPartial(parts)).toMatchObject(shadcnSettings);
+
+    const reimported = legacyProjectConfigToStackParts(
+      stackPartsToLegacyProjectConfigPartial(parts),
+    );
+    expect(projectStackPartSettingsToProjectConfig(reimported)).toEqual(shadcnSettings);
+  });
+
+  it("lets explicit graph settings override stale flat compatibility fields", () => {
+    const parts = mergeProjectConfigSettingsIntoStackParts(
+      parseStackPartSpecs(["frontend:typescript:next", "frontend.ui:typescript:shadcn-ui"]),
+      {
+        shadcnStyle: "luma",
+        shadcnFont: "geist",
+      },
+    );
+    const base = createCliDefaultProjectConfigBase("bun");
+    const projected = stackGraphToLegacyProjectConfigForEcosystem(
+      {
+        ...base,
+        projectDir: "/tmp/graph-settings",
+        stackParts: parts,
+        shadcnStyle: "nova",
+        shadcnFont: "inter",
+      },
+      "typescript",
+    );
+
+    expect(projected.shadcnStyle).toBe("luma");
+    expect(projected.shadcnFont).toBe("geist");
+    expect(projected.stackParts?.find((part) => part.role === "ui")?.settings).toMatchObject({
+      shadcnStyle: "luma",
+      shadcnFont: "geist",
+    });
+  });
+
+  it("keeps Elixir JSON at the explicit project-metadata boundary", () => {
+    expect(PROJECT_METADATA_SETTING_KEYS).toEqual(["elixirJson"]);
+    const parts = legacyProjectConfigToStackParts({
+      ecosystem: "elixir",
+      elixirWebFramework: "phoenix",
+      elixirJson: "jason",
+    });
+
+    expect(parts.some((part) => part.settings?.elixirJson !== undefined)).toBe(false);
+    expect(stackPartsToLegacyProjectConfigPartial(parts).elixirJson).toBeUndefined();
+
+    const projected = stackGraphToLegacyProjectConfigForEcosystem(
+      {
+        ...createCliDefaultProjectConfigBase("bun"),
+        projectDir: "/tmp/elixir-json-metadata",
+        ecosystem: "elixir",
+        elixirJson: "jason",
+        stackParts: parts,
+      },
+      "elixir",
+    );
+    expect(projected.elixirJson).toBe("jason");
+  });
+
+  it("rejects settings stored outside their declared authority boundary", () => {
+    const wrongShadcnOwner = createStackPart({
+      role: "frontend",
+      ecosystem: "typescript",
+      toolId: "next",
+      settings: { shadcnStyle: "luma" },
+    });
+    const elixirMetadataOnPart = createStackPart({
+      role: "backend",
+      ecosystem: "elixir",
+      toolId: "phoenix",
+      settings: { elixirJson: "jason" },
+    });
+
+    expect(StackPartSchema.safeParse(wrongShadcnOwner).success).toBe(false);
+    expect(StackPartSchema.safeParse(elixirMetadataOnPart).success).toBe(false);
   });
 
   it("round-trips every deploy, runtime, and db setup value as a scoped graph part", () => {

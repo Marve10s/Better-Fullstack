@@ -23,8 +23,13 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { getPartRemovalApplyCommand } from "../src/commands/remove";
+import { getPrimaryRoleReplacementApplyCommand } from "../src/commands/replace";
 import { CreateCommandOptionsSchema } from "../src/create-command-input";
 import { addHandler } from "../src/helpers/core/add-handler";
+import {
+  applyPrimaryRoleReplacement,
+  planPrimaryRoleReplacement,
+} from "../src/helpers/core/primary-role-replacement";
 import { applyPartRemoval, planPartRemoval } from "../src/helpers/core/remove-handler";
 import {
   applyStackUpdate,
@@ -614,6 +619,18 @@ describe("stack update planner", () => {
     expect(btsConfig.shadcnStyle).toBe("maia");
     expect(btsConfig.shadcnColorTheme).toBe("blue");
     expect(btsConfig.vectorDb).toBe("qdrant");
+    expect(btsConfig.stackParts?.find((part) => part.role === "ui")?.settings).toMatchObject({
+      shadcnStyle: "maia",
+      shadcnColorTheme: "blue",
+    });
+
+    const secondResult = await applyStackUpdate(projectDir, { shadcnStyle: "sera" });
+    expect(secondResult.success).toBe(true);
+    const updatedBtsConfig = await readJsonc(join(projectDir, "bts.jsonc"));
+    expect(updatedBtsConfig.shadcnStyle).toBe("sera");
+    expect(
+      updatedBtsConfig.stackParts?.find((part) => part.role === "ui")?.settings?.shadcnStyle,
+    ).toBe("sera");
   });
 
   it("persists Astro integration stack updates in bts config", async () => {
@@ -638,6 +655,9 @@ describe("stack update planner", () => {
 
     const btsConfig = await readJsonc(join(projectDir, "bts.jsonc"));
     expect(btsConfig.astroIntegration).toBe("vue");
+    expect(
+      btsConfig.stackParts?.find((part) => part.role === "frontend")?.settings?.astroIntegration,
+    ).toBe("vue");
   });
 
   it("plans and applies stack updates from graph-authoritative bts config instead of stale cache fields", async () => {
@@ -718,7 +738,7 @@ describe("stack update planner", () => {
     expect(plan.effectiveStack).not.toHaveProperty("frontend.ui");
 
     const result = await applyStackUpdate(projectDir, { webDeploy: "vercel" });
-    expect(result.success).toBe(true);
+    if (!result.success) throw new Error(result.error);
 
     const btsConfig = await readJsonc(configPath);
     expect(btsConfig.frontend).toEqual(["next", "native-bare"]);
@@ -881,6 +901,46 @@ describe("stack update planner", () => {
         }),
       ]),
     );
+  });
+
+  it("preserves graph-only metadata during unrelated stack updates", async () => {
+    const root = await makeTempRoot("bfs-stack-update-graph-metadata-");
+    const projectDir = join(root, "app");
+    const stackParts = parseStackPartSpecs([
+      "frontend:typescript:next",
+      "backend:go:gin:api",
+      "api.orm:go:gorm",
+    ]);
+    const backend = stackParts.find((part) => part.id === "api");
+    if (!backend) throw new Error("Expected named backend part");
+    backend.targetPath = "services/custom-api";
+    backend.settings = { deploymentRegion: "eu-central" };
+    await scaffoldGeneratedProject(
+      makeConfig(projectDir, {
+        stackParts,
+        frontend: ["next"],
+        ecosystem: "go",
+        runtime: "none",
+        goWebFramework: "gin",
+        goOrm: "gorm",
+      }),
+    );
+
+    const plan = await planStackUpdate(projectDir, { webDeploy: "vercel" });
+    expect(plan.success).toBe(true);
+    if (!plan.success) return;
+    expect(plan.proposedConfig.stackParts?.find((part) => part.id === "api")).toMatchObject({
+      targetPath: "services/custom-api",
+      settings: { deploymentRegion: "eu-central" },
+    });
+
+    const result = await applyStackUpdate(projectDir, { webDeploy: "vercel" });
+    if (!result.success) throw new Error(result.error);
+    const btsConfig = await readJsonc(join(projectDir, "bts.jsonc"));
+    expect(btsConfig.stackParts?.find((part) => part.id === "api")).toMatchObject({
+      targetPath: "services/custom-api",
+      settings: { deploymentRegion: "eu-central" },
+    });
   });
 
   it("keeps scoped graph ownership when updating an existing scoped flat value", async () => {
@@ -3694,6 +3754,162 @@ describe("stack update planner", () => {
     );
   });
 
+  it("plans and applies frontend Primary Role replacement with owner rewiring", async () => {
+    const root = await makeTempRoot("bfs-primary-replace-frontend-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(
+      makeConfig(projectDir, {
+        stackParts: parseStackPartSpecs([
+          "frontend:typescript:react-vite",
+          "frontend.css:typescript:tailwind",
+          "frontend.ui:typescript:shadcn-ui",
+          "backend:typescript:hono",
+          "backend.runtime:typescript:bun",
+        ]),
+        frontend: ["react-vite"],
+      }),
+    );
+
+    const plan = await planPrimaryRoleReplacement(
+      projectDir,
+      "frontend:typescript:react-vite",
+      "frontend:typescript:next",
+    );
+    expect(plan.success).toBe(true);
+    if (!plan.success) return;
+    expect(plan.reviewToken).toMatch(/^[0-9a-f]{64}$/);
+    expect(plan.primaryReplacement.rewiredDependentParts).toEqual([
+      "frontend.css:typescript:tailwind",
+      "frontend.ui:typescript:shadcn-ui",
+    ]);
+    expect(plan.architectureChanges).toContainEqual({
+      key: "frontend",
+      from: "typescript:react-vite",
+      to: "typescript:next",
+    });
+    expect(plan.migrationSteps.join(" ")).toContain("routes, client state");
+    expect(getPrimaryRoleReplacementApplyCommand(plan, "linux")).toContain(
+      "replace 'frontend:typescript:react-vite' 'frontend:typescript:next'",
+    );
+    const nextFrontend = plan.proposedConfig.stackParts?.find(
+      (part) => part.role === "frontend" && !part.ownerPartId,
+    );
+    expect(nextFrontend?.toolId).toBe("next");
+    expect(
+      plan.proposedConfig.stackParts
+        ?.filter((part) => part.role === "css" || part.role === "ui")
+        .every((part) => part.ownerPartId === nextFrontend?.id),
+    ).toBe(true);
+
+    const refused = await applyPrimaryRoleReplacement(
+      projectDir,
+      "frontend:typescript:react-vite",
+      "frontend:typescript:next",
+      plan.reviewToken,
+      false,
+    );
+    expect(refused).toMatchObject({
+      success: false,
+      error: expect.stringContaining("architecture change requires acknowledgment"),
+    });
+
+    const applied = await applyPrimaryRoleReplacement(
+      projectDir,
+      "frontend:typescript:react-vite",
+      "frontend:typescript:next",
+      plan.reviewToken,
+      true,
+    );
+    expect(applied.success).toBe(true);
+    if (!applied.success) return;
+    expect(applied.lifecycle.operation).toBe("replace");
+    expect(applied.recoveryId).toMatch(/[0-9a-f-]{36}/);
+    const persisted = await readBtsConfig(projectDir);
+    const persistedFrontend = persisted?.stackParts?.find(
+      (part) => part.role === "frontend" && !part.ownerPartId,
+    );
+    expect(persistedFrontend?.toolId).toBe("next");
+    expect(
+      persisted?.stackParts
+        ?.filter((part) => part.role === "css" || part.role === "ui")
+        .every((part) => part.ownerPartId === persistedFrontend?.id),
+    ).toBe(true);
+    await expectFileContains(join(projectDir, "MIGRATION.md"), "routes, client state");
+  });
+
+  it("preserves custom mobile identity and warns about app-local data", async () => {
+    const root = await makeTempRoot("bfs-primary-replace-mobile-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(
+      makeConfig(projectDir, {
+        ecosystem: "react-native",
+        stackParts: parseStackPartSpecs([
+          "mobile:react-native:native-bare:client",
+          "client.navigation:react-native:expo-router",
+          "client.storage:react-native:mmkv",
+          "backend:typescript:hono",
+          "backend.runtime:typescript:bun",
+        ]),
+        frontend: ["native-bare"],
+        backend: "hono",
+        runtime: "bun",
+        mobileNavigation: "expo-router",
+        mobileStorage: "mmkv",
+      }),
+    );
+
+    const plan = await planPrimaryRoleReplacement(
+      projectDir,
+      "client",
+      "mobile:react-native:native-uniwind",
+    );
+    expect(plan.success).toBe(true);
+    if (!plan.success) return;
+    const mobile = plan.proposedConfig.stackParts?.find(
+      (part) => part.role === "mobile" && !part.ownerPartId,
+    );
+    expect(mobile).toMatchObject({ id: "client", toolId: "native-uniwind" });
+    expect(
+      plan.proposedConfig.stackParts
+        ?.filter((part) => part.role === "navigation" || part.role === "storage")
+        .every((part) => part.ownerPartId === "client"),
+    ).toBe(true);
+    expect(plan.migrationSteps.join(" ")).toContain("app-local user data");
+    expect(plan.migrationSteps.join(" ")).toContain("secure storage");
+  });
+
+  it("keeps cross-ecosystem dependent capabilities outside automatic replacement", async () => {
+    const root = await makeTempRoot("bfs-primary-replace-mobile-boundary-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(
+      makeConfig(projectDir, {
+        ecosystem: "react-native",
+        stackParts: parseStackPartSpecs([
+          "mobile:react-native:native-bare",
+          "mobile.navigation:react-native:expo-router",
+        ]),
+        frontend: ["native-bare"],
+        backend: "none",
+        runtime: "none",
+        database: "none",
+        orm: "none",
+        api: "none",
+        auth: "none",
+        mobileNavigation: "expo-router",
+      }),
+    );
+
+    const plan = await planPrimaryRoleReplacement(
+      projectDir,
+      "mobile:react-native:native-bare",
+      "mobile:kotlin:jetpack-compose",
+    );
+    expect(plan.success).toBe(false);
+    if (plan.success) return;
+    expect(plan.error).toContain("Automatic cross-ecosystem replacement stops");
+    expect(plan.error).toContain("mobile.navigation:react-native:expo-router");
+  });
+
   it("refuses to apply an architecture change without acknowledgment and leaves the project untouched", async () => {
     const root = await makeTempRoot("bfs-stack-update-arch-refuse-");
     const projectDir = join(root, "app");
@@ -4443,7 +4659,7 @@ describe("stack update planner", () => {
     expect(after).toEqual(before);
   });
 
-  it("keeps a crashed apply recoverable when mutations land before the journal", async () => {
+  it("keeps a crashed apply recoverable after a journaled removal", async () => {
     const root = await makeTempRoot("bfs-stack-update-crash-journal-");
     const projectDir = join(root, "app");
     const crashedDir = join(root, "crashed");
@@ -4486,6 +4702,10 @@ describe("stack update planner", () => {
 
     const [transactionId] = await readdir(join(crashedDir, RECOVERY_ROOT));
     expect(transactionId).toBeDefined();
+    const recoveryMetadata = JSON.parse(
+      await readFile(join(crashedDir, RECOVERY_ROOT, transactionId, "transaction.json"), "utf-8"),
+    ) as { outputs?: Record<string, string | null> };
+    expect(recoveryMetadata.outputs?.[removedPath]).toBeNull();
     await recoverProjectTransaction(crashedDir, transactionId);
     expect(await readFile(join(crashedDir, removedPath), "utf-8")).toBe(removedContent);
   });

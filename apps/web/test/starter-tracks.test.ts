@@ -1,7 +1,14 @@
+import {
+  getCapabilityInventory,
+  getStarterTrackCatalog,
+  parseStackPartSpecs,
+  validateStackParts,
+} from "@better-fullstack/types";
 import { describe, expect, test } from "bun:test";
 import { existsSync } from "node:fs";
 import path from "node:path";
 
+import { selectionAnalyticsProperties } from "../src/lib/campaign-analytics";
 import { PRESET_TEMPLATES } from "../src/lib/constant";
 import { STARTER_TRACKS } from "../src/lib/starter-tracks";
 
@@ -26,6 +33,20 @@ describe("starter tracks", () => {
     }
   });
 
+  test("use the same schema-valid graph as the shared catalog", () => {
+    for (const track of getStarterTrackCatalog().tracks) {
+      const preset = PRESET_TEMPLATES.find((candidate) => candidate.id === track.presetId);
+
+      expect(preset, track.id).toBeDefined();
+      expect(preset?.stack.stackMode, track.id).toBe("multi");
+      expect(preset?.stack.stackPartSpecs, track.id).toEqual(track.stackPartSpecs);
+      expect(
+        validateStackParts(parseStackPartSpecs(track.stackPartSpecs)).issues,
+        track.id,
+      ).toEqual([]);
+    }
+  });
+
   test("point at existing guide and docs pages", () => {
     for (const track of STARTER_TRACKS) {
       const guideFile = contentFileForHref(track.guideHref);
@@ -36,5 +57,16 @@ describe("starter tracks", () => {
       expect(existsSync(guideFile as string), track.guideHref).toBe(true);
       expect(existsSync(docsFile as string), track.docsHref).toBe(true);
     }
+  });
+
+  test("reports only bounded track and evidence identifiers for selection analytics", () => {
+    const track = getStarterTrackCatalog().tracks.find((candidate) => candidate.id === "rest-api");
+    if (!track) throw new Error("REST API track is missing");
+
+    expect(selectionAnalyticsProperties(track.selection, getCapabilityInventory())).toMatchObject({
+      ecosystem: "python",
+      starter_track: "rest-api",
+      selected_evidence_level: "listed",
+    });
   });
 });

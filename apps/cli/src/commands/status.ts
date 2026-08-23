@@ -36,6 +36,14 @@ export async function statusCommand(input: StatusCommandInput): Promise<ProjectR
     `Lifecycle: ${result.prerequisites.wave1.generatorProvenance} provenance · ` +
       `${result.prerequisites.wave1.recovery} recovery`,
   );
+  const supportWindow =
+    result.updateSupport.supportedFrom && result.updateSupport.supportedTo
+      ? `${result.updateSupport.supportedFrom} to ${result.updateSupport.supportedTo}`
+      : "not yet qualified";
+  log.message(`Update support: ${result.updateSupport.eligibility} · window ${supportWindow}`);
+  if (result.updateSupport.requiresManualReview) {
+    log.warn(pc.yellow(result.updateSupport.reason));
+  }
 
   if (result.upgrade.available) {
     const summary = result.upgrade.summary;

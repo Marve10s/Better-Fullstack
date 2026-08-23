@@ -17,13 +17,13 @@ import type {
 } from "./types";
 
 import { getCapabilityDisabledReason, normalizeCapabilitySelection } from "./capabilities";
-import { ANALYTICS_VALUES } from "./schemas";
 import {
   CATEGORY_ORDER,
   getCategoryDisplayName,
   isMultiEcosystemMobileCategory,
   type OptionCategory,
 } from "./option-metadata";
+import { ANALYTICS_VALUES } from "./schemas";
 import {
   getUnsupportedWebDeployFrontend,
   hasPWACompatibleFrontend,
@@ -53,6 +53,37 @@ export {
 } from "./stack-compatibility-rules";
 
 export type CompatibilityCategory = OptionCategory;
+
+export type CompatibilityCapabilityReference = {
+  id: string;
+  category: CompatibilityCategory;
+  optionId: string;
+};
+
+export type CompatibilityStackPartReference = {
+  id: string;
+  role: StackPartRole;
+  ecosystem: StackPartEcosystem;
+  toolId: string;
+};
+
+export type CompatibilityExplanation = {
+  schemaVersion: 1;
+  ruleId: string;
+  reason: string;
+  message: string;
+  capability: CompatibilityCapabilityReference;
+  owner: {
+    kind: "stack-part" | "capability";
+    capability: CompatibilityCapabilityReference;
+    stackPart: CompatibilityStackPartReference | null;
+  };
+  candidateStackPart: {
+    role: StackPartRole;
+    ecosystem: StackPartEcosystem;
+  } | null;
+  alternatives: CompatibilityCapabilityReference[];
+};
 
 const SIGNOZ_SUPPORTED_GO_WEB_FRAMEWORKS = new Set(["gin", "echo", "fiber", "chi", "stdlib"]);
 const SIGNOZ_SUPPORTED_PYTHON_WEB_FRAMEWORKS = new Set(["fastapi"]);
@@ -110,10 +141,7 @@ export function isAnalyticsFrontendSupported(analytics: Analytics, frontend: str
   return analytics !== "none" && ANALYTICS_FRONTEND_SUPPORT[analytics].has(frontend);
 }
 
-export function supportsAnalyticsFrontends(
-  analytics: Analytics,
-  frontends: readonly string[],
-) {
+export function supportsAnalyticsFrontends(analytics: Analytics, frontends: readonly string[]) {
   const webFrontends = frontends.filter(
     (frontend) => frontend !== "none" && !frontend.startsWith("native-"),
   );
@@ -254,6 +282,7 @@ export type CompatibilityIssue = {
   optionId?: string;
   provided?: Record<string, string | string[]>;
   suggestions?: string[];
+  explanation?: CompatibilityExplanation;
 };
 
 export type CompatibilityEvaluation = {
@@ -3525,16 +3554,10 @@ export const getDisabledReason = (
     if (currentStack.nativeFrontend.some((frontend) => frontend !== "none")) {
       return "Bot protection is not supported when a native frontend is selected";
     }
-    if (
-      currentStack.auth !== "better-auth" &&
-      currentStack.auth !== "better-auth-organizations"
-    ) {
+    if (currentStack.auth !== "better-auth" && currentStack.auth !== "better-auth-organizations") {
       return "Bot protection requires Better Auth";
     }
-    if (
-      optionId === "botid" &&
-      webFrontends.some((frontend) => !isBotIdWebFrontend(frontend))
-    ) {
+    if (optionId === "botid" && webFrontends.some((frontend) => !isBotIdWebFrontend(frontend))) {
       return "Vercel BotID is only available for Next.js frontends";
     }
     if (optionId === "botid" && currentStack.backend !== "self-next") {
@@ -4178,6 +4201,88 @@ export const isOptionCompatible = (
   return getDisabledReason(currentStack, category, optionId) === null;
 };
 
+export type CompatibilityDecision = {
+  reason: string | null;
+  suggestedReplacements: string[];
+  explanation: CompatibilityExplanation | null;
+};
+
+function capabilityReference(
+  category: CompatibilityCategory,
+  optionId: string,
+): CompatibilityCapabilityReference {
+  return {
+    id: `${category}:${optionId}`,
+    category,
+    optionId,
+  };
+}
+
+export function getCompatibilityExplanation(
+  currentStack: CompatibilityInput,
+  category: CompatibilityCategory,
+  optionId: string,
+  reasonOverride?: string,
+): CompatibilityExplanation | null {
+  const reason = reasonOverride ?? getDisabledReason(currentStack, category, optionId);
+  if (!reason) return null;
+
+  const graphDecision = getGraphDisabledReason(currentStack, category, optionId);
+  const replacementIds = graphDecision.reason === reason ? (graphDecision.alternatives ?? []) : [];
+  const capability = capabilityReference(category, optionId);
+  const alternatives = replacementIds.map((replacementId) =>
+    capabilityReference(category, replacementId),
+  );
+  const punctuatedReason = /[.!?]$/.test(reason) ? reason : `${reason}.`;
+  const message =
+    alternatives.length === 0
+      ? reason
+      : `${punctuatedReason} Compatible alternatives: ${alternatives
+          .map((alternative) => alternative.optionId)
+          .join(", ")}.`;
+
+  return {
+    schemaVersion: 1,
+    ruleId: `compatibility:${category}:${optionId}`,
+    reason,
+    message,
+    capability,
+    owner: {
+      kind: graphDecision.ownerPart ? "stack-part" : "capability",
+      capability,
+      stackPart: graphDecision.ownerPart ?? null,
+    },
+    candidateStackPart: graphDecision.candidateStackPart ?? null,
+    alternatives,
+  };
+}
+
+export function getCompatibilityDecision(
+  currentStack: CompatibilityInput,
+  category: CompatibilityCategory,
+  optionId: string,
+): CompatibilityDecision {
+  const reason = getDisabledReason(currentStack, category, optionId);
+  if (!reason) {
+    return { reason: null, suggestedReplacements: [], explanation: null };
+  }
+
+  const explanation = getCompatibilityExplanation(currentStack, category, optionId, reason);
+  return {
+    reason,
+    suggestedReplacements:
+      explanation?.alternatives.map((alternative) => alternative.optionId) ?? [],
+    explanation,
+  };
+}
+
+export function formatCompatibilityDecision(decision: CompatibilityDecision): string | null {
+  if (!decision.reason) return null;
+  if (decision.explanation) return decision.explanation.message;
+  if (decision.suggestedReplacements.length === 0) return decision.reason;
+  return `${decision.reason} Compatible alternatives: ${decision.suggestedReplacements.join(", ")}.`;
+}
+
 type GraphDisabledReasonOwnerRole = "frontend" | "backend" | "mobile" | "database";
 
 type GraphDisabledReasonBinding = {
@@ -4197,6 +4302,12 @@ type GraphDisabledReasonResult = {
   handled: boolean;
   authoritative: boolean;
   reason: string | null;
+  alternatives?: string[];
+  ownerPart?: CompatibilityStackPartReference;
+  candidateStackPart?: {
+    role: StackPartRole;
+    ecosystem: StackPartEcosystem;
+  };
 };
 
 const SHARED_BACKEND_SERVICE_CATEGORIES = new Set<CompatibilityCategory>([
@@ -4879,7 +4990,11 @@ function getGraphDisabledReason(
   category: CompatibilityCategory,
   optionId: string,
 ): GraphDisabledReasonResult {
-  const unhandled = { handled: false, authoritative: false, reason: null };
+  const unhandled: GraphDisabledReasonResult = {
+    handled: false,
+    authoritative: false,
+    reason: null,
+  };
 
   if (optionId === "false") return unhandled;
 
@@ -4917,6 +5032,10 @@ function getGraphDisabledReason(
       handled: true,
       authoritative: binding.authoritative === true,
       reason: binding.missingOwnerReason ?? null,
+      candidateStackPart: {
+        role: binding.role,
+        ecosystem: binding.ecosystem,
+      },
     };
   }
 
@@ -4939,6 +5058,19 @@ function getGraphDisabledReason(
     handled: true,
     authoritative: binding.authoritative === true,
     reason: issue?.message ?? (!owner ? (binding.missingOwnerReason ?? null) : null),
+    alternatives: issue?.alternatives,
+    ownerPart: owner
+      ? {
+          id: owner.id,
+          role: owner.role,
+          ecosystem: owner.ecosystem,
+          toolId: owner.toolId,
+        }
+      : undefined,
+    candidateStackPart: {
+      role: binding.role,
+      ecosystem: binding.ecosystem,
+    },
   };
 }
 
@@ -5594,6 +5726,21 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
     ["auth", input.auth],
     ["payments", input.payments],
     ["email", input.email],
+    ["fileUpload", input.fileUpload],
+    ["logging", input.logging],
+    ["observability", input.observability],
+    ["realtime", input.realtime],
+    ["jobQueue", input.jobQueue],
+    ["validation", input.validation],
+    ["testing", input.testing],
+    ["ai", input.aiSdk],
+    ["caching", input.caching],
+    ["rateLimit", input.rateLimit],
+    ["i18n", input.i18n],
+    ["search", input.search],
+    ["vectorDb", input.vectorDb],
+    ["fileStorage", input.fileStorage],
+    ["analytics", input.analytics],
     ["cssFramework", input.cssFramework],
     ["uiLibrary", input.uiLibrary],
     ["webDeploy", input.webDeploy],
@@ -5790,5 +5937,23 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
     }
   }
 
-  return { issues };
+  return {
+    issues: issues.map((issue) => {
+      if (!issue.category || !issue.optionId) return issue;
+      const explanation = getCompatibilityExplanation(
+        input,
+        issue.category,
+        issue.optionId,
+        issue.message,
+      );
+      const suggestions =
+        issue.suggestions ??
+        explanation?.alternatives.map((alternative) => `Use '${alternative.optionId}'`);
+      return {
+        ...issue,
+        ...(suggestions && suggestions.length > 0 ? { suggestions } : {}),
+        ...(explanation ? { explanation } : {}),
+      };
+    }),
+  };
 }

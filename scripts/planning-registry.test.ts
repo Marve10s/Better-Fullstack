@@ -67,22 +67,24 @@ describe("project lifecycle registry", () => {
     const active = activeRows(index);
 
     expect(active.map((row) => row.path).sort()).toEqual([
+      "active/capability-recipe-evidence.md",
       "active/documentation-follow-ups.md",
       "active/platform-features.md",
-      "active/single-source-of-truth-stack-graph.md",
     ]);
     for (const row of active) {
       expect(roadmap).toContain(`## ${row.lane}`);
     }
   });
 
-  test("Operational Trust is the first stop-the-line roadmap lane", async () => {
+  test("Phase 0 is the first stop-the-line roadmap lane", async () => {
     const roadmap = await Bun.file("docs/next-updates-roadmap.md").text();
-    const operationalTrust = roadmap.indexOf("## Now — Operational Trust");
-    const lifecycleReliability = roadmap.indexOf("## Now — Lifecycle Reliability");
+    const reproducibleClaims = roadmap.indexOf("## Phase 0: make every claim reproducible");
+    const supportedUpdates = roadmap.indexOf(
+      "## Phase 1: establish a real supported update window",
+    );
 
-    expect(operationalTrust).toBeGreaterThan(-1);
-    expect(operationalTrust).toBeLessThan(lifecycleReliability);
+    expect(reproducibleClaims).toBeGreaterThan(-1);
+    expect(reproducibleClaims).toBeLessThan(supportedUpdates);
     expect(roadmap).toContain("[project lifecycle](projects/README.md)");
     expect(roadmap).toContain("[backend runbook](../packages/backend/README.md)");
   });

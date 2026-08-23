@@ -1,6 +1,7 @@
 import type { ProjectConfig, StackPart } from "@better-fullstack/types";
 
 import {
+  formatStackGraphIssue,
   getRoleTargetPath,
   hasVitePlusWorkspaceRoot,
   isToolingOverlayOnly,
@@ -132,13 +133,13 @@ function validateGraphContainerAddons(config: ProjectConfig): string[] {
 
   return validateStackParts(effectiveParts)
     .issues.filter((issue) => issue.partId !== undefined && containerPartIds.has(issue.partId))
-    .map((issue) => issue.message);
+    .map(formatStackGraphIssue);
 }
 
 function validateGraphRenderingSupport(config: ProjectConfig): string[] {
   return validateStackParts(config.stackParts ?? [])
     .issues.filter((issue) => issue.code === "UNSUPPORTED_REPEATED_PRIMARY")
-    .map((issue) => issue.message);
+    .map(formatStackGraphIssue);
 }
 
 function hasGeneratedJavascriptTestScript(config: ProjectConfig): boolean {
@@ -430,7 +431,8 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
       };
     }
 
-    const usesGraphParts = Boolean(config.stackParts?.length) && !isToolingOverlayOnly(config.stackParts);
+    const usesGraphParts =
+      Boolean(config.stackParts?.length) && !isToolingOverlayOnly(config.stackParts);
 
     const hasVitePlusRoot = usesGraphParts
       ? hasVitePlusWorkspaceRoot(config.stackParts)
@@ -523,7 +525,11 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
       }
     }
 
-    if (!usesGraphParts && config.ecosystem !== "typescript" && config.ecosystem !== "react-native") {
+    if (
+      !usesGraphParts &&
+      config.ecosystem !== "typescript" &&
+      config.ecosystem !== "react-native"
+    ) {
       await processAddonTemplates(vfs, templates, config);
       processEnvVariables(vfs, config);
     }

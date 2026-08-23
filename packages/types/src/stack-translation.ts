@@ -13,7 +13,9 @@ import {
   formatStackPartSpec,
   getAddonStackPartBinding,
   legacyProjectConfigToStackParts,
+  mergeProjectConfigSettingsIntoStackParts,
   parseStackPartSpecs,
+  projectStackPartSettingsToProjectConfig,
   stackPartsToLegacyProjectConfigPartial,
   validateStackParts,
 } from "./stack-graph";
@@ -1953,7 +1955,7 @@ function getGraphStackParts(selection: StackSelectionInput) {
   if (validation.issues.length > 0) {
     throw new Error(validation.issues.map((issue) => issue.message).join("\n"));
   }
-  return stackParts;
+  return mergeProjectConfigSettingsIntoStackParts(stackParts, selection);
 }
 
 function getAdjustedSelection(selection: StackSelectionInput): StackSelectionInput {
@@ -2118,9 +2120,12 @@ function getCliGraphStackParts(input: CLIInput): StackPart[] {
   addScopedBackendPart("elixir", "api", input.elixirApi);
   addScopedBackendPart("elixir", "auth", input.elixirAuth);
 
-  return parseStackPartSpecs(
-    expandScopedStackPartSpecs(stackPartSpecs, getCliScopedPartFields(input)),
-    "selected",
+  return mergeProjectConfigSettingsIntoStackParts(
+    parseStackPartSpecs(
+      expandScopedStackPartSpecs(stackPartSpecs, getCliScopedPartFields(input)),
+      "selected",
+    ),
+    input,
   );
 }
 
@@ -2424,8 +2429,18 @@ function getBaseCommand(selection: StackSelectionInput) {
 
 function generateGraphCommand(selection: StackSelectionInput, projectName: string) {
   const stackParts = getGraphStackParts(selection);
+  const graphSettings = projectStackPartSettingsToProjectConfig(stackParts, {
+    includeDefaults: true,
+  });
   const hasTypeScriptFrontend = hasGraphPrimaryPart(stackParts, "frontend", "typescript");
   const hasAstroFrontend = hasGraphPrimaryPart(stackParts, "frontend", "typescript", "astro");
+  const hasShadcnUi = stackParts.some(
+    (part) =>
+      part.source !== "provided" &&
+      part.role === "ui" &&
+      part.ecosystem === "typescript" &&
+      part.toolId === "shadcn-ui",
+  );
   const hasRustBackend = hasGraphPrimaryPart(stackParts, "backend", "rust");
   const hasPythonBackend = hasGraphPrimaryPart(stackParts, "backend", "python");
   const hasGoBackend = hasGraphPrimaryPart(stackParts, "backend", "go");
@@ -2444,11 +2459,11 @@ function generateGraphCommand(selection: StackSelectionInput, projectName: strin
     ...stackParts
       .filter((part) => part.source !== "provided" && part.toolId !== "none")
       .map((part) => `--part ${formatStackPartSpec(part, stackParts)}`),
-    ...(hasAstroFrontend && selection.astroIntegration !== "none"
-      ? [`--astro-integration ${selection.astroIntegration}`]
+    ...(hasAstroFrontend && graphSettings.astroIntegration !== "none"
+      ? [`--astro-integration ${graphSettings.astroIntegration}`]
       : []),
-    ...(hasTypeScriptFrontend && selection.uiLibrary === "shadcn-ui"
-      ? formatChangedStringFlags(selection, GRAPH_SHADCN_FLAG_KEYS)
+    ...(hasTypeScriptFrontend && hasShadcnUi
+      ? formatChangedStringFlags({ ...selection, ...graphSettings }, GRAPH_SHADCN_FLAG_KEYS)
       : []),
     ...(hasNonTypeScriptBackend
       ? formatChangedStringFlags(selection, GRAPH_SHARED_BACKEND_FLAG_KEYS)

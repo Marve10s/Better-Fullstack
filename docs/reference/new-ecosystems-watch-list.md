@@ -11,10 +11,9 @@ only after demand and ecosystem maturity justify implementation.
 
 ## Detailed Plans
 
-| File                                                                             | Language          | Effort       | Priority                           |
-| -------------------------------------------------------------------------------- | ----------------- | ------------ | ---------------------------------- |
-| [java-ecosystem-follow-ups.md](../projects/backlog/java-ecosystem-follow-ups.md) | Java expansion    | Medium/Large | Follow-up — Actuator example depth |
-| [elixir-ecosystem.md](../projects/backlog/elixir-ecosystem.md)                   | Elixir follow-ups | Large        | Deeper Phoenix/LiveView coverage   |
+| File                                                           | Language          | Effort | Priority                             |
+| -------------------------------------------------------------- | ----------------- | ------ | ------------------------------------ |
+| [elixir-ecosystem.md](../projects/backlog/elixir-ecosystem.md) | Elixir follow-ups | Large  | Deeper Phoenix and LiveView coverage |
 
 ---
 

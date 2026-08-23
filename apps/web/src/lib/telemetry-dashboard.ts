@@ -10,6 +10,7 @@ export type RawTelemetryStats = {
 export type RawProductInsights = {
   totalEvents: number;
   decisionEvents: number;
+  decisionEligibleEvents?: number;
   actions: TelemetryDistribution;
   actionStatuses: TelemetryDistribution;
   actionOutcomes: TelemetryDistribution;
@@ -23,6 +24,11 @@ export type RawProductInsights = {
   setupFailureStats: TelemetryDistribution;
   setupOutcomes: TelemetryDistribution;
   installSelections: TelemetryDistribution;
+  selectionOutcomes?: TelemetryDistribution;
+  evidenceLevels?: TelemetryDistribution;
+  decisionStages?: TelemetryDistribution;
+  starterTracks?: TelemetryDistribution;
+  selectionProblems?: TelemetryDistribution;
 };
 
 export type RawDailyTelemetry = {
@@ -33,6 +39,7 @@ export type RawDailyTelemetry = {
   successfulEvents?: number;
   failedEvents?: number;
   decisionEvents?: number;
+  decisionEligibleEvents?: number;
   actions?: TelemetryDistribution;
   actionStatuses?: TelemetryDistribution;
   actionOutcomes?: TelemetryDistribution;
@@ -41,6 +48,11 @@ export type RawDailyTelemetry = {
   ecosystems?: TelemetryDistribution;
   setupOutcomes?: TelemetryDistribution;
   installSelections?: TelemetryDistribution;
+  selectionOutcomes?: TelemetryDistribution;
+  evidenceLevels?: TelemetryDistribution;
+  decisionStages?: TelemetryDistribution;
+  starterTracks?: TelemetryDistribution;
+  selectionProblems?: TelemetryDistribution;
   failureStages?: TelemetryDistribution;
   failureReasons?: TelemetryDistribution;
   actionFailureStages?: TelemetryDistribution;
@@ -56,6 +68,13 @@ export type RawEngagement = {
   activeMachinesLast30d: number;
   returningMachinesLast7d: number;
   returningMachinesLast30d: number;
+  uniqueLifecycleMachines?: number;
+  returningLifecycleMachines?: number;
+  lifecycleTrackedEvents?: number;
+  activeLifecycleMachinesLast7d?: number;
+  activeLifecycleMachinesLast30d?: number;
+  returningLifecycleMachinesLast7d?: number;
+  returningLifecycleMachinesLast30d?: number;
 };
 
 export type RankedSignal = {
@@ -81,6 +100,7 @@ export type TelemetryDashboardData = {
   operationScope: "window" | "all-time";
   operationScopeLabel: string;
   decisionCoverage: number;
+  decisionEligibleEvents: number;
   totalEventsInWindow: number;
   totalProjectsInWindow: number;
   totalProjectsAllTime: number;
@@ -121,6 +141,22 @@ export type TelemetryDashboardData = {
     repeat30d: number;
     repeat30dRate: number | null;
     new30d: number;
+    lifecycleUniqueMachines: number;
+    lifecycleReturningMachines: number;
+    lifecycleEvents: number;
+    lifecycleActive7d: number;
+    lifecycleRepeat7d: number;
+    lifecycleRepeat7dRate: number | null;
+    lifecycleActive30d: number;
+    lifecycleRepeat30d: number;
+    lifecycleRepeat30dRate: number | null;
+  };
+  selection: {
+    outcomes: RankedSignal[];
+    evidenceLevels: RankedSignal[];
+    stages: RankedSignal[];
+    starterTracks: RankedSignal[];
+    problems: RankedSignal[];
   };
   operations: OperationReliability[];
   adoption: RankedSignal[];
@@ -151,7 +187,17 @@ type DecisionDistributions = Pick<
   | "actionFailureReasons"
   | "setupOutcomes"
   | "installSelections"
->;
+> &
+  Required<
+    Pick<
+      RawProductInsights,
+      | "selectionOutcomes"
+      | "evidenceLevels"
+      | "decisionStages"
+      | "starterTracks"
+      | "selectionProblems"
+    >
+  >;
 
 const ECOSYSTEM_LABELS: Record<string, string> = {
   typescript: "TypeScript",
@@ -202,6 +248,11 @@ function emptyDecisionDistributions(): DecisionDistributions {
     actionFailureReasons: {},
     setupOutcomes: {},
     installSelections: {},
+    selectionOutcomes: {},
+    evidenceLevels: {},
+    decisionStages: {},
+    starterTracks: {},
+    selectionProblems: {},
   };
 }
 
@@ -219,6 +270,11 @@ function aggregateWindow(daily: readonly RawDailyTelemetry[]): DecisionDistribut
     sumDistribution(aggregate.actionFailureReasons, day.actionFailureReasons);
     sumDistribution(aggregate.setupOutcomes, day.setupOutcomes);
     sumDistribution(aggregate.installSelections, day.installSelections);
+    sumDistribution(aggregate.selectionOutcomes, day.selectionOutcomes);
+    sumDistribution(aggregate.evidenceLevels, day.evidenceLevels);
+    sumDistribution(aggregate.decisionStages, day.decisionStages);
+    sumDistribution(aggregate.starterTracks, day.starterTracks);
+    sumDistribution(aggregate.selectionProblems, day.selectionProblems);
   }
   return aggregate;
 }
@@ -352,8 +408,12 @@ export function buildTelemetryDashboard(
     0,
   );
   const decisionEventsInWindow = raw.daily.reduce((sum, day) => sum + (day.decisionEvents ?? 0), 0);
-  const windowCoverage = ratio(decisionEventsInWindow, totalEventsInWindow) ?? 0;
-  const useWindow = totalEventsInWindow > 0 && windowCoverage >= minimumWindowCoverage;
+  const decisionEligibleEventsInWindow = raw.daily.reduce(
+    (sum, day) => sum + (day.decisionEligibleEvents ?? 0),
+    0,
+  );
+  const windowCoverage = ratio(decisionEventsInWindow, decisionEligibleEventsInWindow) ?? 0;
+  const useWindow = decisionEligibleEventsInWindow > 0 && windowCoverage >= minimumWindowCoverage;
   const windowDistributions = aggregateWindow(raw.daily);
   const distributions: DecisionDistributions = useWindow
     ? windowDistributions
@@ -369,8 +429,14 @@ export function buildTelemetryDashboard(
         actionFailureReasons: raw.insights.actionFailureReasons,
         setupOutcomes: raw.insights.setupOutcomes,
         installSelections: raw.insights.installSelections,
+        selectionOutcomes: raw.insights.selectionOutcomes ?? {},
+        evidenceLevels: raw.insights.evidenceLevels ?? {},
+        decisionStages: raw.insights.decisionStages ?? {},
+        starterTracks: raw.insights.starterTracks ?? {},
+        selectionProblems: raw.insights.selectionProblems ?? {},
       };
-  const allTimeCoverage = ratio(raw.insights.decisionEvents, raw.insights.totalEvents) ?? 0;
+  const allTimeEligibleEvents = raw.insights.decisionEligibleEvents ?? 0;
+  const allTimeCoverage = ratio(raw.insights.decisionEvents, allTimeEligibleEvents) ?? 0;
   const setup = distributions.setupOutcomes;
   const installs = distributions.installSelections;
   const actions = distributions.actions;
@@ -400,6 +466,7 @@ export function buildTelemetryDashboard(
     operationScope: useWindow ? "window" : "all-time",
     operationScopeLabel: useWindow ? `Last ${windowDays} days` : "All time",
     decisionCoverage: useWindow ? windowCoverage : allTimeCoverage,
+    decisionEligibleEvents: useWindow ? decisionEligibleEventsInWindow : allTimeEligibleEvents,
     totalEventsInWindow,
     totalProjectsInWindow: raw.daily.reduce((sum, day) => sum + day.count, 0),
     totalProjectsAllTime: raw.stats.totalProjects,
@@ -449,6 +516,28 @@ export function buildTelemetryDashboard(
         raw.engagement.activeMachinesLast30d,
       ),
       new30d: raw.engagement.newMachinesLast30d,
+      lifecycleUniqueMachines: raw.engagement.uniqueLifecycleMachines ?? 0,
+      lifecycleReturningMachines: raw.engagement.returningLifecycleMachines ?? 0,
+      lifecycleEvents: raw.engagement.lifecycleTrackedEvents ?? 0,
+      lifecycleActive7d: raw.engagement.activeLifecycleMachinesLast7d ?? 0,
+      lifecycleRepeat7d: raw.engagement.returningLifecycleMachinesLast7d ?? 0,
+      lifecycleRepeat7dRate: ratio(
+        raw.engagement.returningLifecycleMachinesLast7d ?? 0,
+        raw.engagement.activeLifecycleMachinesLast7d ?? 0,
+      ),
+      lifecycleActive30d: raw.engagement.activeLifecycleMachinesLast30d ?? 0,
+      lifecycleRepeat30d: raw.engagement.returningLifecycleMachinesLast30d ?? 0,
+      lifecycleRepeat30dRate: ratio(
+        raw.engagement.returningLifecycleMachinesLast30d ?? 0,
+        raw.engagement.activeLifecycleMachinesLast30d ?? 0,
+      ),
+    },
+    selection: {
+      outcomes: ranked(distributions.selectionOutcomes, 8),
+      evidenceLevels: ranked(distributions.evidenceLevels, 3),
+      stages: ranked(distributions.decisionStages, 4),
+      starterTracks: ranked(distributions.starterTracks, 7),
+      problems: ranked(distributions.selectionProblems, 5),
     },
     operations: buildOperations(distributions),
     adoption: ranked(useWindow ? ecosystemWindow : raw.stats.ecosystem, 8, ECOSYSTEM_LABELS),

@@ -14,19 +14,27 @@ const LOCALIZED_CONTENT_ROOT = join(CONTENT_ROOT, "i18n");
 const TEMP_ROOTS: string[] = [];
 const NON_SCAFFOLD_COMMANDS = new Set([
   "add",
+  "adopt",
   "builder",
   "check",
+  "compatibility",
+  "context",
   "docs",
   "doctor",
+  "evidence",
   "gen",
   "history",
   "mcp",
   "recommend",
+  "recovery",
   "remove",
+  "replace",
+  "recipes",
   "registry",
   "sponsors",
   "status",
   "telemetry",
+  "tracks",
   "update",
 ]);
 const LAUNCHERS = [

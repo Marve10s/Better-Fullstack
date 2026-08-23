@@ -101,17 +101,57 @@ export const StackPartSourceSchema = z
   .enum(["selected", "defaulted", "provided", "legacy", "adjusted"])
   .describe("How a stack part entered the stack graph");
 
-export const StackPartSchema = z.object({
-  id: z.string().min(1),
-  role: StackPartRoleSchema,
-  toolId: z.string().min(1),
-  ecosystem: StackPartEcosystemSchema,
-  ownerPartId: z.string().min(1).optional(),
-  source: StackPartSourceSchema,
-  providedByPartId: z.string().min(1).optional(),
-  targetPath: z.string().min(1).optional(),
-  settings: z.record(z.string(), z.unknown()).optional(),
-});
+const LazyStackPartSettingsSchema: z.ZodType<Record<string, unknown>> = z.lazy(
+  () => StackPartSettingsSchema,
+);
+
+export const StackPartSchema = z
+  .object({
+    id: z.string().min(1),
+    role: StackPartRoleSchema,
+    toolId: z.string().min(1),
+    ecosystem: StackPartEcosystemSchema,
+    ownerPartId: z.string().min(1).optional(),
+    source: StackPartSourceSchema,
+    providedByPartId: z.string().min(1).optional(),
+    targetPath: z.string().min(1).optional(),
+    settings: LazyStackPartSettingsSchema.optional(),
+  })
+  .superRefine((part, context) => {
+    if (!part.settings) return;
+    if (part.settings.elixirJson !== undefined) {
+      context.addIssue({
+        code: "custom",
+        path: ["settings", "elixirJson"],
+        message: "elixirJson is project metadata and cannot be stored on a Stack Part.",
+      });
+    }
+    if (
+      part.settings.astroIntegration !== undefined &&
+      !(
+        part.role === "frontend" &&
+        part.ecosystem === "typescript" &&
+        part.toolId === "astro" &&
+        !part.ownerPartId
+      )
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["settings", "astroIntegration"],
+        message: "astroIntegration belongs to the selected TypeScript Astro frontend part.",
+      });
+    }
+    if (
+      SHADCN_STACK_PART_SETTING_KEYS.some((key) => part.settings?.[key] !== undefined) &&
+      !(part.role === "ui" && part.ecosystem === "typescript" && part.toolId === "shadcn-ui")
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["settings"],
+        message: "shadcn settings belong to the selected TypeScript shadcn-ui part.",
+      });
+    }
+  });
 
 export const DatabaseSchema = z
   .enum(["none", "sqlite", "postgres", "mysql", "mongodb", "edgedb", "redis"])
@@ -1096,6 +1136,29 @@ export const ShadcnFontSchema = z
 export const ShadcnRadiusSchema = z
   .enum(["default", "none", "small", "medium", "large"])
   .describe("shadcn/ui border radius preset");
+
+export const SHADCN_STACK_PART_SETTING_KEYS = [
+  "shadcnBase",
+  "shadcnStyle",
+  "shadcnIconLibrary",
+  "shadcnColorTheme",
+  "shadcnBaseColor",
+  "shadcnFont",
+  "shadcnRadius",
+] as const;
+
+export const StackPartSettingsSchema = z
+  .object({
+    astroIntegration: AstroIntegrationSchema.optional(),
+    shadcnBase: ShadcnBaseSchema.optional(),
+    shadcnStyle: ShadcnStyleSchema.optional(),
+    shadcnIconLibrary: ShadcnIconLibrarySchema.optional(),
+    shadcnColorTheme: ShadcnColorThemeSchema.optional(),
+    shadcnBaseColor: ShadcnBaseColorSchema.optional(),
+    shadcnFont: ShadcnFontSchema.optional(),
+    shadcnRadius: ShadcnRadiusSchema.optional(),
+  })
+  .catchall(z.unknown());
 
 export const DirectoryConflictSchema = z
   .enum(["merge", "overwrite", "increment", "error"])

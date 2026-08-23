@@ -1014,6 +1014,35 @@ describe("API Configurations", () => {
     }
   });
 
+  describe("GraphQL Yoga API", () => {
+    it("mounts the Yoga handler on Hono with Better Auth session context", async () => {
+      const result = await runTRPCTest({
+        projectName: "graphql-yoga-hono-auth",
+        api: "graphql-yoga",
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "better-auth",
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const serverIndex = await readFile(`${result.projectDir}/apps/server/src/index.ts`, "utf-8");
+      expect(serverIndex).toContain("createGraphQLHandler");
+      expect(serverIndex).toContain('app.on(["GET", "POST"], "/graphql"');
+      expect(serverIndex).toContain("graphqlHandler.fetch(c.req.raw)");
+      expect(serverIndex).toContain("auth.api.getSession");
+      expect(serverIndex).toContain("createGraphQLContext(session)");
+    });
+  });
+
   describe("Apollo Server API", () => {
     const supportedBackends: Backend[] = ["hono", "effect", "express", "fastify", "elysia"];
 

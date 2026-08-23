@@ -1429,6 +1429,10 @@ describe("Rust Ecosystem", () => {
       expect(cliMainContent).toContain("use clap::{Parser, Subcommand}");
       expect(cliMainContent).toContain("#[derive(Parser, Debug)]");
       expect(cliMainContent).toContain("Commands");
+      expect(cliMainContent).toContain('tokio::process::Command::new("cargo")');
+      expect(cliMainContent).toContain("reqwest::get(&url).await?");
+      expect(cliMainContent).not.toContain("TODO");
+      expect(cliMainContent).not.toContain("Not implemented");
     });
 
     it("should NOT create CLI crate when clap is not selected", async () => {

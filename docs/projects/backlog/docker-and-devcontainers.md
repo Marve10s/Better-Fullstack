@@ -1,40 +1,41 @@
-# Docker Follow-Ups & DevContainers
+# Deployment and workspace-shape follow-ups
 
-Highly requested across both Better-Fullstack (#76 non-monorepo) and better-t-stack (#557, #806, #821). Docker is essential for self-hosted deployments and consistent dev environments. Status refreshed on 2026-06-30; only unfinished follow-ups remain here.
+Docker, Docker Compose, DevContainer output, and a constrained single-app workspace shape have
+shipped. This backlog contains only broader outcomes that still need demand and verification.
 
----
+## Shipped boundary
 
-## Non-Monorepo / Single-App Mode
+- `workspaceShape: "single-app"` flattens qualifying thin self-contained Next.js and TanStack Start
+  projects into one root application.
+- Compatibility normalizes unsupported single-app requests back to `monorepo`. Separate backend,
+  database, auth, API, and container services remain monorepo-only.
+- `docker-compose`, `devcontainer`, and deployment targets generate stack-aware files for their
+  supported recipes.
 
-Related request from GitHub (#76, better-t-stack #678): scaffold a single app without Turborepo.
+The historical foundation is recorded in
+`../completed/deployment-docs-and-docker-foundation-2026-05-21.md`.
 
-- [ ] Add `--monorepo false` or `--single-app` flag
-  - Flatten project structure: no `apps/`, no `packages/`
-  - Single `package.json` at root
-  - No Turborepo, no workspace configuration
-  - Simpler Dockerfile (no workspace copying)
-  - Useful for small projects, quick prototypes, or teams that don't want monorepo complexity
+## Broader single-app coverage
 
-### Implementation
+Start only after measured demand identifies a concrete recipe outside the shipped thin mode.
 
-- Skip Turborepo/Nx workspace setup
-- Merge `apps/web` and `apps/server` into root (or colocate)
-- Adjust all template paths
-- Single `tsconfig.json` instead of project references
-- This is a significant architectural change — needs careful design
+- [ ] Name the exact graph shape and explain how its multiple Primary Roles collapse without path,
+      package, command, or ownership ambiguity.
+- [ ] Keep `workspaceShape` authoritative across CLI, web, config, manifest, generator, and update
+      reporting.
+- [ ] Prove clean install, build, generated checks, and lifecycle update for each added recipe.
+- [ ] Keep unsupported graphs fail-closed as monorepos rather than flattening partial output.
 
----
+## Deployment output evidence
 
-## Implementation Notes
+- [ ] Add focused generated-project checks for Dockerfiles, Compose, DevContainer, and generated
+      GitHub Actions output.
+- [ ] Run the smallest real container or configuration validation for each advertised golden
+      recipe.
+- [ ] Expose the resulting build or runtime evidence instead of treating file presence as proof.
 
-- Docker generation is opt-in through deploy targets or the `docker-compose` addon
-- Existing deploy targets such as Fly.io and Railway use Dockerfiles where applicable
-- DevContainers are optional through the `devcontainer` addon and generate stack-aware `.devcontainer/` files.
-- Consider generating a `Makefile` or `justfile` with common Docker commands
+## Conditional convenience commands
 
----
-
-## Priority Order
-
-1. **Non-monorepo mode** — architectural change, larger effort
-2. **Generated Docker/CI quality checks** — ensure Docker, Compose, DevContainer, and GitHub Actions outputs are exercised in focused generated-project tests
+Consider a generated `Makefile` or `justfile` only after repeated support reports show that the
+existing package and container commands are hard to discover. Any generated command must run in
+the representative recipe evidence lane.

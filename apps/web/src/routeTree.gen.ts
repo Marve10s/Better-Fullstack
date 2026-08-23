@@ -26,6 +26,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as StackRouteImport } from './routes/stack'
 import { Route as TelemetryRouteImport } from './routes/telemetry'
 import { Route as TemplatesRouteImport } from './routes/templates'
+import { Route as ApiCapabilityEvidenceRouteImport } from './routes/api/capability-evidence'
 import { Route as ApiPreviewRouteImport } from './routes/api/preview'
 import { Route as ApiStatsRouteImport } from './routes/api/stats'
 import { Route as ApiVerifiedCombinationsRouteImport } from './routes/api/verified-combinations'
@@ -127,6 +128,11 @@ const TemplatesRoute = TemplatesRouteImport.update({
   path: '/templates',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCapabilityEvidenceRoute = ApiCapabilityEvidenceRouteImport.update({
+  id: '/api/capability-evidence',
+  path: '/api/capability-evidence',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPreviewRoute = ApiPreviewRouteImport.update({
   id: '/api/preview',
   path: '/api/preview',
@@ -223,6 +229,7 @@ export interface FileRoutesByFullPath {
   '/stack': typeof StackRoute
   '/telemetry': typeof TelemetryRoute
   '/templates': typeof TemplatesRoute
+  '/api/capability-evidence': typeof ApiCapabilityEvidenceRoute
   '/api/preview': typeof ApiPreviewRoute
   '/api/stats': typeof ApiStatsRoute
   '/api/verified-combinations': typeof ApiVerifiedCombinationsRoute
@@ -257,6 +264,7 @@ export interface FileRoutesByTo {
   '/stack': typeof StackRoute
   '/telemetry': typeof TelemetryRoute
   '/templates': typeof TemplatesRoute
+  '/api/capability-evidence': typeof ApiCapabilityEvidenceRoute
   '/api/preview': typeof ApiPreviewRoute
   '/api/stats': typeof ApiStatsRoute
   '/api/verified-combinations': typeof ApiVerifiedCombinationsRoute
@@ -292,6 +300,7 @@ export interface FileRoutesById {
   '/stack': typeof StackRoute
   '/telemetry': typeof TelemetryRoute
   '/templates': typeof TemplatesRoute
+  '/api/capability-evidence': typeof ApiCapabilityEvidenceRoute
   '/api/preview': typeof ApiPreviewRoute
   '/api/stats': typeof ApiStatsRoute
   '/api/verified-combinations': typeof ApiVerifiedCombinationsRoute
@@ -328,6 +337,7 @@ export interface FileRouteTypes {
     | '/stack'
     | '/telemetry'
     | '/templates'
+    | '/api/capability-evidence'
     | '/api/preview'
     | '/api/stats'
     | '/api/verified-combinations'
@@ -362,6 +372,7 @@ export interface FileRouteTypes {
     | '/stack'
     | '/telemetry'
     | '/templates'
+    | '/api/capability-evidence'
     | '/api/preview'
     | '/api/stats'
     | '/api/verified-combinations'
@@ -396,6 +407,7 @@ export interface FileRouteTypes {
     | '/stack'
     | '/telemetry'
     | '/templates'
+    | '/api/capability-evidence'
     | '/api/preview'
     | '/api/stats'
     | '/api/verified-combinations'
@@ -431,6 +443,7 @@ export interface RootRouteChildren {
   StackRoute: typeof StackRoute
   TelemetryRoute: typeof TelemetryRoute
   TemplatesRoute: typeof TemplatesRoute
+  ApiCapabilityEvidenceRoute: typeof ApiCapabilityEvidenceRoute
   ApiPreviewRoute: typeof ApiPreviewRoute
   ApiStatsRoute: typeof ApiStatsRoute
   ApiVerifiedCombinationsRoute: typeof ApiVerifiedCombinationsRoute
@@ -569,6 +582,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TemplatesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/capability-evidence': {
+      id: '/api/capability-evidence'
+      path: '/api/capability-evidence'
+      fullPath: '/api/capability-evidence'
+      preLoaderRoute: typeof ApiCapabilityEvidenceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/preview': {
       id: '/api/preview'
       path: '/api/preview'
@@ -695,6 +715,7 @@ const rootRouteChildren: RootRouteChildren = {
   StackRoute: StackRoute,
   TelemetryRoute: TelemetryRoute,
   TemplatesRoute: TemplatesRoute,
+  ApiCapabilityEvidenceRoute: ApiCapabilityEvidenceRoute,
   ApiPreviewRoute: ApiPreviewRoute,
   ApiStatsRoute: ApiStatsRoute,
   ApiVerifiedCombinationsRoute: ApiVerifiedCombinationsRoute,

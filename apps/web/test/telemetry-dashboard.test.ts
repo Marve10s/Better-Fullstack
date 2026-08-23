@@ -13,6 +13,7 @@ function emptyInsights(overrides: Partial<RawProductInsights> = {}): RawProductI
   return {
     totalEvents: 0,
     decisionEvents: 0,
+    decisionEligibleEvents: 0,
     actions: {},
     actionStatuses: {},
     actionOutcomes: {},
@@ -26,6 +27,11 @@ function emptyInsights(overrides: Partial<RawProductInsights> = {}): RawProductI
     setupFailureStats: {},
     setupOutcomes: {},
     installSelections: {},
+    selectionOutcomes: {},
+    evidenceLevels: {},
+    decisionStages: {},
+    starterTracks: {},
+    selectionProblems: {},
     ...overrides,
   };
 }
@@ -45,6 +51,13 @@ const engagement: RawEngagement = {
   activeMachinesLast30d: 25,
   returningMachinesLast7d: 4,
   returningMachinesLast30d: 10,
+  uniqueLifecycleMachines: 30,
+  returningLifecycleMachines: 9,
+  lifecycleTrackedEvents: 75,
+  activeLifecycleMachinesLast7d: 8,
+  activeLifecycleMachinesLast30d: 20,
+  returningLifecycleMachinesLast7d: 3,
+  returningLifecycleMachinesLast30d: 7,
 };
 
 describe("telemetry decision dashboard", () => {
@@ -54,7 +67,8 @@ describe("telemetry decision dashboard", () => {
         stats,
         insights: emptyInsights({
           totalEvents: 500,
-          decisionEvents: 500,
+          decisionEvents: 18,
+          decisionEligibleEvents: 20,
           setupFailureStats: { "install-dependencies": 3 },
         }),
         engagement,
@@ -65,7 +79,13 @@ describe("telemetry decision dashboard", () => {
             totalEvents: 30,
             successfulEvents: 12,
             failedEvents: 2,
-            decisionEvents: 30,
+            decisionEvents: 8,
+            decisionEligibleEvents: 10,
+            selectionOutcomes: { "create-completed": 5, "plan-abandoned": 3 },
+            evidenceLevels: { listed: 6, "build-verified": 2 },
+            decisionStages: { create: 5, plan: 3 },
+            starterTracks: { "saas-app": 4 },
+            selectionProblems: { none: 5, "missing-capability": 3 },
             actions: {
               "builder-run-started": 5,
               "builder-run-ready": 4,
@@ -109,7 +129,13 @@ describe("telemetry decision dashboard", () => {
             totalEvents: 10,
             successfulEvents: 5,
             failedEvents: 0,
-            decisionEvents: 10,
+            decisionEvents: 5,
+            decisionEligibleEvents: 5,
+            selectionOutcomes: { "handoff-completed": 5 },
+            evidenceLevels: { listed: 3, "runtime-verified": 2 },
+            decisionStages: { plan: 5 },
+            starterTracks: { "rest-api": 2 },
+            selectionProblems: { none: 5 },
             actions: { "builder-command-copied": 2 },
             actionStatuses: {
               "create:started": 2,
@@ -130,7 +156,8 @@ describe("telemetry decision dashboard", () => {
     );
 
     expect(data.operationScope).toBe("window");
-    expect(data.decisionCoverage).toBe(1);
+    expect(data.decisionCoverage).toBe(13 / 15);
+    expect(data.decisionEligibleEvents).toBe(15);
     expect(data.totalProjectsInWindow).toBe(10);
     expect(data.setup.completionRate).toBe(7 / 8);
     expect(data.installs.requestRate).toBe(8 / 10);
@@ -156,6 +183,16 @@ describe("telemetry decision dashboard", () => {
     expect(data.operations.find((operation) => operation.id === "status")?.attempts).toBe(3);
     expect(data.adoption.map((item) => item.name)).toEqual(["TypeScript", "Rust", "Python"]);
     expect(data.repeatUse.repeat7dRate).toBe(0.4);
+    expect(data.repeatUse.lifecycleRepeat7dRate).toBe(3 / 8);
+    expect(data.selection.problems.map((item) => item.name)).toEqual([
+      "None",
+      "Missing Capability",
+    ]);
+    expect(data.selection.evidenceLevels.map((item) => item.name)).toEqual([
+      "Listed",
+      "Build Verified",
+      "Runtime Verified",
+    ]);
     expect(data.failureReasons[0]?.name).toBe("Create / Install");
     expect(data.failureReasons.map((item) => item.name)).toContain("Unattributed / Install");
     expect(data.failureReasons.map((item) => item.name)).toContain("Unattributed / Network");
@@ -169,6 +206,7 @@ describe("telemetry decision dashboard", () => {
         insights: emptyInsights({
           totalEvents: 100,
           decisionEvents: 90,
+          decisionEligibleEvents: 100,
           actionStatuses: {
             "update:started": 12,
             "update:succeeded": 9,
@@ -185,6 +223,7 @@ describe("telemetry decision dashboard", () => {
             count: 2,
             totalEvents: 10,
             decisionEvents: 2,
+            decisionEligibleEvents: 10,
             actionStatuses: { "update:succeeded": 1 },
           },
         ],

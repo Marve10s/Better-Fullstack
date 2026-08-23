@@ -8,6 +8,8 @@ import {
   createStackPart,
   getAddonStackPartBinding,
   legacyProjectConfigToStackParts,
+  mergeProjectConfigSettingsIntoStackParts,
+  projectStackPartSettingsToProjectConfig,
   stackPartsToLegacyProjectConfigPartial,
 } from "../types";
 import { getLatestCLIVersion } from "./get-latest-cli-version";
@@ -59,7 +61,10 @@ function normalizeGraphConfigForPersistence(
 ) {
   if (!stackParts) return projectConfig;
 
-  const legacyConfig = stackPartsToLegacyProjectConfigPartial(stackParts);
+  const legacyConfig = {
+    ...stackPartsToLegacyProjectConfigPartial(stackParts),
+    ...projectStackPartSettingsToProjectConfig(stackParts, { includeDefaults: true }),
+  };
   const selectedEcosystems = new Set(
     stackParts.filter((part) => part.source !== "provided").map((part) => part.ecosystem),
   );
@@ -337,7 +342,10 @@ export function buildBtsConfigForPersistence(
   projectConfig: ProjectConfig,
   metadata: Partial<BtsConfigMetadata> = {},
 ): BetterTStackConfig {
-  const stackParts = projectConfig.stackParts ?? legacyProjectConfigToStackParts(projectConfig);
+  const stackParts = mergeProjectConfigSettingsIntoStackParts(
+    projectConfig.stackParts ?? legacyProjectConfigToStackParts(projectConfig),
+    projectConfig,
+  );
   const persistedConfig = normalizeGraphConfigForPersistence(projectConfig, stackParts);
   const graphSummary = stackParts.length > 0 ? getGraphSummary({ stackParts }) : null;
   const effectiveStack = stackParts.length > 0 ? getEffectiveStack({ stackParts }) : undefined;
@@ -528,10 +536,10 @@ export function previewBtsConfigUpdate(
   );
 }
 
-export async function writeBtsConfig(
+export function serializeBtsConfig(
   projectConfig: ProjectConfig,
   metadata: Partial<BtsConfigMetadata> = {},
-) {
+): string {
   const btsConfig = buildBtsConfigForPersistence(projectConfig, metadata);
   const baseContent = {
     $schema: "https://better-fullstack-web.vercel.app/schema.json",
@@ -720,8 +728,15 @@ export async function writeBtsConfig(
 ${graphNote}
 
 ${configContent}`;
+  return finalContent;
+}
+
+export async function writeBtsConfig(
+  projectConfig: ProjectConfig,
+  metadata: Partial<BtsConfigMetadata> = {},
+) {
   const configPath = path.join(projectConfig.projectDir, BTS_CONFIG_FILE);
-  await fs.writeFile(configPath, finalContent, "utf-8");
+  await fs.writeFile(configPath, serializeBtsConfig(projectConfig, metadata), "utf-8");
 }
 
 export async function readBtsConfig(projectDir: string) {

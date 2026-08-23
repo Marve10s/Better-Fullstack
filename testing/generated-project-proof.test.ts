@@ -7,35 +7,52 @@ import {
   GENERATED_PROJECT_PROOF_CASES,
 } from "./lib/generated-project-proof-matrix";
 
-describe("generated project install/build proof matrix", () => {
+describe("generated project runtime proof matrix", () => {
   it("pins the exact required lifecycle cases and toolchains", () => {
     expect(GENERATED_PROJECT_PROOF_CASES.map((entry) => entry.id)).toEqual([
-      "typescript-go",
-      "python",
+      "typescript",
+      "react-native",
       "rust",
+      "python",
+      "go",
+      "java",
+      "elixir",
       "dotnet",
-      "mobile-backend",
     ]);
     expect(
       new Set(GENERATED_PROJECT_PROOF_CASES.flatMap((entry) => entry.requiredToolchains)),
-    ).toEqual(new Set(["node", "bun", "bunx", "go", "uv", "cargo", "dotnet"]));
+    ).toEqual(new Set(["node", "bun", "bunx", "go", "uv", "cargo", "java", "mix", "dotnet"]));
+    expect(new Set(GENERATED_PROJECT_PROOF_CASES.map((entry) => entry.ecosystem))).toEqual(
+      new Set(["typescript", "react-native", "rust", "python", "go", "java", "elixir", "dotnet"]),
+    );
     expect(
       GENERATED_PROJECT_PROOF_CASES.every((entry) => entry.requiredSteps.includes("scaffold")),
     ).toBe(true);
     expect(
-      GENERATED_PROJECT_PROOF_CASES.find((entry) => entry.id === "typescript-go")?.flags,
-    ).toEqual(expect.arrayContaining(["frontend:typescript:react-vite", "backend:go:gin"]));
+      GENERATED_PROJECT_PROOF_CASES.every(
+        (entry) =>
+          entry.requiredSteps.includes("runtime") &&
+          entry.runtime.command.length > 0 &&
+          entry.runtime.bodyIncludes.length > 0 &&
+          entry.runtime.limitation.length > 0 &&
+          entry.maintainer.length > 0,
+      ),
+    ).toBe(true);
+    expect(GENERATED_PROJECT_PROOF_CASES.find((entry) => entry.id === "go")?.requiredSteps).toEqual(
+      expect.arrayContaining(["mod-tidy", "build"]),
+    );
     expect(
-      GENERATED_PROJECT_PROOF_CASES.find((entry) => entry.id === "typescript-go")?.requiredSteps,
-    ).toEqual(expect.arrayContaining(["go-tidy", "go-build"]));
-    expect(
-      GENERATED_PROJECT_PROOF_CASES.find((entry) => entry.id === "typescript-go")?.requiredSteps,
-    ).not.toContain("go-download");
-    expect(
-      GENERATED_PROJECT_PROOF_CASES.find((entry) => entry.id === "mobile-backend")?.flags,
+      GENERATED_PROJECT_PROOF_CASES.find((entry) => entry.id === "react-native")?.flags,
     ).toEqual(
       expect.arrayContaining(["mobile:react-native:native-bare", "backend:typescript:hono"]),
     );
+    expect(
+      GENERATED_PROJECT_PROOF_CASES.every(
+        (entry) =>
+          entry.stackParts.length > 0 &&
+          entry.stackParts.every((part) => part.split(":").length === 3),
+      ),
+    ).toBe(true);
   });
 
   it("fails closed when a required step is absent, skipped, or failed", () => {

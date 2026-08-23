@@ -1,4 +1,9 @@
 import {
+  createStarterTrackFilterSearchParams,
+  parseStarterTrackFilters,
+  type StarterTrackFilters,
+} from "@better-fullstack/types";
+import {
   createStackSelectionSearchParams as createStackSearchParams,
   normalizeStackSelection as normalizeStackStateSelections,
   parseStackSelectionFromSearch as parseStackFromSearch,
@@ -20,6 +25,7 @@ type InitialBuilderState = {
   viewMode: BuilderViewMode;
   selectedFile: string;
   campaign?: string;
+  starterTrackFilters: StarterTrackFilters;
   initialized: boolean;
 };
 
@@ -39,6 +45,7 @@ export function getInitialBuilderState(
       viewMode: "command",
       selectedFile: "",
       campaign: undefined,
+      starterTrackFilters: {},
       initialized: Boolean(fallbackStack),
     };
   }
@@ -51,6 +58,7 @@ export function getInitialBuilderState(
     viewMode: search.view || "command",
     selectedFile: search.file || "",
     campaign: normalizeCampaignSlug(search.campaign),
+    starterTrackFilters: parseStarterTrackFilters(search),
     initialized: true,
   };
 }
@@ -60,6 +68,7 @@ export function createLiveBuilderSearchParams(
   viewMode: BuilderViewMode,
   selectedFile: string,
   campaign?: string,
+  starterTrackFilters: StarterTrackFilters = {},
 ): URLSearchParams {
   const params = createStackSearchParams(normalizeStackStateSelections(stack));
 
@@ -76,6 +85,10 @@ export function createLiveBuilderSearchParams(
     params.set("campaign", normalizedCampaign);
   }
 
+  for (const [key, value] of createStarterTrackFilterSearchParams(starterTrackFilters)) {
+    params.set(key, value);
+  }
+
   return params;
 }
 
@@ -90,6 +103,9 @@ export function useStackState(fallbackStack?: StackState) {
   const [viewMode, setViewModeState] = useState<BuilderViewMode>(initialState.current.viewMode);
   const [selectedFile, setSelectedFileState] = useState<string>(initialState.current.selectedFile);
   const [campaign, setCampaign] = useState<string | undefined>(initialState.current.campaign);
+  const [starterTrackFilters, setStarterTrackFilters] = useState<StarterTrackFilters>(
+    initialState.current.starterTrackFilters,
+  );
   const initialized = useRef(initialState.current.initialized);
 
   useEffect(() => {
@@ -101,6 +117,7 @@ export function useStackState(fallbackStack?: StackState) {
       setViewModeState(nextInitialState.viewMode);
       setSelectedFileState(nextInitialState.selectedFile);
       setCampaign(nextInitialState.campaign);
+      setStarterTrackFilters(nextInitialState.starterTrackFilters);
     }
   }, [fallbackStack, search]);
 
@@ -114,6 +131,10 @@ export function useStackState(fallbackStack?: StackState) {
   useEffect(() => {
     setCampaign(search?.campaign);
   }, [search?.campaign]);
+
+  useEffect(() => {
+    setStarterTrackFilters(parseStarterTrackFilters(search ?? {}));
+  }, [search]);
 
   useEffect(() => {
     if (!initialized.current) return;
@@ -130,7 +151,13 @@ export function useStackState(fallbackStack?: StackState) {
       return;
     }
 
-    const nextParams = createLiveBuilderSearchParams(stack, viewMode, selectedFile, campaign);
+    const nextParams = createLiveBuilderSearchParams(
+      stack,
+      viewMode,
+      selectedFile,
+      campaign,
+      starterTrackFilters,
+    );
     const nextSearch = nextParams.toString();
     const basePath = url.pathname === "/stack" || url.pathname === "/new" ? url.pathname : "/new";
     const nextUrl = nextSearch ? `${basePath}?${nextSearch}` : basePath;
@@ -139,7 +166,7 @@ export function useStackState(fallbackStack?: StackState) {
     if (nextUrl !== currentUrl) {
       window.history.replaceState(window.history.state, "", nextUrl);
     }
-  }, [campaign, stack, viewMode, selectedFile]);
+  }, [campaign, stack, starterTrackFilters, viewMode, selectedFile]);
 
   const updateStack = useCallback(
     (updates: Partial<StackState> | ((prev: StackState) => Partial<StackState>)) => {
@@ -167,5 +194,7 @@ export function useStackState(fallbackStack?: StackState) {
     selectedFile,
     setSelectedFile,
     campaign,
+    starterTrackFilters,
+    setStarterTrackFilters,
   ] as const;
 }

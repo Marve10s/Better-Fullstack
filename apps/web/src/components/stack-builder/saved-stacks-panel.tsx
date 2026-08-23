@@ -1,6 +1,8 @@
 import { getCategoryOrderForEcosystem } from "@better-fullstack/types";
+import { useState } from "react";
 import {
   TbCopy as Copy,
+  TbArrowsDiff as Diff,
   TbDotsVertical as EllipsisVertical,
   TbFolderOpen as FolderOpen,
   TbPencil as Pencil,
@@ -8,11 +10,14 @@ import {
   TbAdjustmentsHorizontal as SlidersHorizontal,
   TbTrash as Trash2,
 } from "react-icons/tb";
-import { useState } from "react";
 
 import type { StackState } from "@/lib/constant";
 import type { SavedStackEntry } from "@/lib/saved-stacks";
 
+import {
+  StackGraphComparison,
+  stackStateToStackParts,
+} from "@/components/stack-builder/stack-graph-comparison";
 import { TechIcon } from "@/components/stack-builder/tech-icon";
 import { Button } from "@/components/ui/button";
 import {
@@ -62,6 +67,7 @@ const HIGHLIGHT_KEYS_BY_ECOSYSTEM: Record<string, readonly (keyof StackState)[]>
 
 interface SavedStacksPanelProps {
   entries: SavedStackEntry[];
+  currentStack: StackState;
   onLoadEntry: (entryId: string) => void;
   onOverwriteEntry: (entryId: string) => void;
   onDeleteEntry: (entryId: string) => void;
@@ -141,6 +147,7 @@ function renderConfigValue(value: string | string[]) {
 
 export function SavedStacksPanel({
   entries,
+  currentStack,
   onLoadEntry,
   onOverwriteEntry,
   onDeleteEntry,
@@ -150,6 +157,7 @@ export function SavedStacksPanel({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
   const [viewingEntryId, setViewingEntryId] = useState<string | null>(null);
+  const [comparingEntryId, setComparingEntryId] = useState<string | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const pendingDeleteEntry = pendingDeleteId
     ? entries.find((entry) => entry.id === pendingDeleteId) || null
@@ -157,6 +165,10 @@ export function SavedStacksPanel({
   const sortedEntries = [...entries].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
   const viewingEntry =
     viewingEntryId === null ? null : entries.find((entry) => entry.id === viewingEntryId) || null;
+  const comparingEntry =
+    comparingEntryId === null
+      ? null
+      : entries.find((entry) => entry.id === comparingEntryId) || null;
   const viewingConfigEntries = viewingEntry
     ? (() => {
         const eco = viewingEntry.stack.ecosystem || "typescript";
@@ -238,6 +250,49 @@ export function SavedStacksPanel({
                 <div className="flex items-center">{renderConfigValue(value)}</div>
               </div>
             ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        open={comparingEntry !== null}
+        onOpenChange={(open) => !open && setComparingEntryId(null)}
+      >
+        <DialogContent className="max-h-[90vh] overflow-hidden p-0 sm:max-w-4xl">
+          <div className="border-b border-border/50 px-5 pt-5 pb-4">
+            <DialogHeader>
+              <DialogTitle>Compare saved Stack Graph</DialogTitle>
+              <DialogDescription>
+                Review additions, removals, replacements, ownership, and evidence before loading
+                {comparingEntry ? ` “${comparingEntry.name}”` : " this saved stack"}.
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+          <div className="min-h-0 overflow-y-auto px-5 py-4">
+            {comparingEntry ? (
+              <StackGraphComparison
+                before={stackStateToStackParts(currentStack)}
+                after={stackStateToStackParts(comparingEntry.stack)}
+                beforeLabel="Current builder"
+                afterLabel={comparingEntry.name}
+              />
+            ) : null}
+          </div>
+          <div className="flex justify-end gap-2 border-t border-border/50 px-5 py-4">
+            <Button type="button" variant="outline" onClick={() => setComparingEntryId(null)}>
+              Close
+            </Button>
+            <Button
+              type="button"
+              disabled={!comparingEntry}
+              onClick={() => {
+                if (!comparingEntry) return;
+                onLoadEntry(comparingEntry.id);
+                setComparingEntryId(null);
+              }}
+            >
+              <FolderOpen className="h-3.5 w-3.5" />
+              Load reviewed stack
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -340,6 +395,10 @@ export function SavedStacksPanel({
                           <EllipsisVertical className="h-4 w-4" />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" sideOffset={6} className="w-40">
+                          <DropdownMenuItem onClick={() => setComparingEntryId(entry.id)}>
+                            <Diff className="h-3.5 w-3.5" />
+                            Compare with current
+                          </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => {
                               setEditingId(entry.id);

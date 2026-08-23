@@ -16,12 +16,12 @@ const BTS_CONFIG_FILE = "bts.jsonc";
  * serverDeploy and would rewrite the derived stack graph). It edits the two
  * dedicated keys in place with JSONC.modify so comments and formatting survive.
  */
-export async function recordPackInBtsConfig(
+export async function planPackBtsConfig(
   projectDir: string,
   manifest: CapabilityPackManifest,
-): Promise<void> {
+): Promise<string | null> {
   const configPath = path.join(projectDir, BTS_CONFIG_FILE);
-  if (!(await fs.pathExists(configPath))) return;
+  if (!(await fs.pathExists(configPath))) return null;
 
   let content = await fs.readFile(configPath, "utf-8");
   const errors: JSONC.ParseError[] = [];
@@ -29,7 +29,7 @@ export async function recordPackInBtsConfig(
     allowTrailingComma: true,
     disallowComments: false,
   }) as { capabilityPacks?: string[]; capabilityPackAddons?: string[] } | undefined;
-  if (errors.length > 0 || typeof parsed !== "object" || parsed === null) return;
+  if (errors.length > 0 || typeof parsed !== "object" || parsed === null) return null;
 
   const packRef = `${manifest.name}@${manifest.version}`;
   const existingPacks = Array.isArray(parsed.capabilityPacks) ? parsed.capabilityPacks : [];
@@ -55,5 +55,14 @@ export async function recordPackInBtsConfig(
     content = JSONC.applyEdits(content, addonEdit);
   }
 
-  await fs.writeFile(configPath, content, "utf-8");
+  return content;
+}
+
+export async function recordPackInBtsConfig(
+  projectDir: string,
+  manifest: CapabilityPackManifest,
+): Promise<void> {
+  const content = await planPackBtsConfig(projectDir, manifest);
+  if (content === null) return;
+  await fs.writeFile(path.join(projectDir, BTS_CONFIG_FILE), content, "utf-8");
 }

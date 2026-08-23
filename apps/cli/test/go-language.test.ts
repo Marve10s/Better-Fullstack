@@ -1501,6 +1501,11 @@ describe("Go Language Support", () => {
       expect(hasFile(root, "proto/greeter.go")).toBe(true);
       expect(hasFile(root, "proto/greeter.pb.go")).toBe(true);
       expect(hasFile(root, "proto/greeter_grpc.pb.go")).toBe(true);
+      expect(hasFile(root, "proto/greeter_test.go")).toBe(true);
+      const runtimeTest = getFileContent(root, "proto/greeter_test.go");
+      expect(runtimeTest).toContain("bufconn.Listen");
+      expect(runtimeTest).toContain("NewGreeterClient(connection).SayHello");
+      expect(runtimeTest).toContain('"Hello, Better Fullstack!"');
     });
 
     it("should not generate proto files when gRPC not selected", async () => {

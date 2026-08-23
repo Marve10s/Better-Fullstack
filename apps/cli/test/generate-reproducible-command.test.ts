@@ -2,7 +2,11 @@ import { describe, expect, it } from "bun:test";
 
 import type { ProjectConfig } from "../src/types";
 
-import { createCliDefaultProjectConfigBase, parseStackPartSpecs } from "../src/types";
+import {
+  createCliDefaultProjectConfigBase,
+  mergeProjectConfigSettingsIntoStackParts,
+  parseStackPartSpecs,
+} from "../src/types";
 import { generateReproducibleCommand } from "../src/utils/generate-reproducible-command";
 
 function makeConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
@@ -895,12 +899,15 @@ describe("generateReproducibleCommand", () => {
   });
 
   it("preserves Astro integration when stackParts are present", () => {
-    const stackParts = parseStackPartSpecs(["frontend:typescript:astro", "backend:rust:axum"]);
+    const stackParts = mergeProjectConfigSettingsIntoStackParts(
+      parseStackPartSpecs(["frontend:typescript:astro", "backend:rust:axum"]),
+      { astroIntegration: "react" },
+    );
     const command = generateReproducibleCommand(
       makeConfig({
         stackParts,
         frontend: ["astro"],
-        astroIntegration: "react",
+        astroIntegration: "none",
         backend: "none",
         runtime: "none",
         api: "none",
@@ -1033,12 +1040,16 @@ describe("generateReproducibleCommand", () => {
   });
 
   it("preserves non-graph selections when stackParts are present", () => {
-    const stackParts = parseStackPartSpecs([
-      "frontend:typescript:next",
-      "backend:typescript:hono",
-      "backend.orm:typescript:drizzle",
-      "database:universal:postgres",
-    ]);
+    const stackParts = mergeProjectConfigSettingsIntoStackParts(
+      parseStackPartSpecs([
+        "frontend:typescript:next",
+        "frontend.ui:typescript:shadcn-ui",
+        "backend:typescript:hono",
+        "backend.orm:typescript:drizzle",
+        "database:universal:postgres",
+      ]),
+      { shadcnStyle: "luma", shadcnFont: "geist" },
+    );
     const command = generateReproducibleCommand(
       makeConfig({
         stackParts,
@@ -1053,8 +1064,8 @@ describe("generateReproducibleCommand", () => {
         dbSetup: "docker",
         webDeploy: "vercel",
         serverDeploy: "railway",
-        shadcnStyle: "luma",
-        shadcnFont: "geist",
+        shadcnStyle: "nova",
+        shadcnFont: "inter",
       }),
     );
 

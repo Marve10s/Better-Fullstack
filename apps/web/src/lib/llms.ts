@@ -48,9 +48,9 @@ export function generateLlmsTxt({
       "/docs/ai/mcp",
       "/docs/ecosystems",
       "/docs/ecosystems/multi-ecosystem",
-      "/docs/ecosystems/native-mobile",
-      "/docs/web-builder",
-      "/docs/stack-guides",
+      "/docs/ecosystems/native-apps",
+      "/docs/builder",
+      "/docs/choosing-a-stack",
     ].includes(page.url),
   );
   const stackPagesByEcosystem = new Map<string, LlmsStackPage[]>();
@@ -72,7 +72,7 @@ export function generateLlmsTxt({
   return [
     `# ${SITE_NAME}`,
     "",
-    `> Scaffold production-ready fullstack apps in seconds. Pick your stack from ${OPTION_COUNT_LABEL} options across ${ECOSYSTEM_NAMES.join(", ")}.`,
+    `> Scaffold configurable fullstack projects. Pick your stack from ${OPTION_COUNT_LABEL} options across ${ECOSYSTEM_NAMES.join(", ")}, then inspect the generated result and its evidence.`,
     "",
     `${SITE_NAME} is an open-source CLI tool and visual web builder for generating configured fullstack applications. It supports ${ECOSYSTEM_COUNT_LABEL} language ecosystems and helps developers combine frontend frameworks, backend frameworks, databases, ORMs, authentication, payments, AI integrations, deployment targets, and project tooling.`,
     "",
@@ -135,7 +135,7 @@ export function generateLlmsTxt({
     "",
     "### What is Better Fullstack?",
     "",
-    `Better Fullstack is a CLI and web-based stack builder that scaffolds production-ready fullstack applications with ${OPTION_COUNT_LABEL} configurable options across ${ECOSYSTEM_COUNT_LABEL} language ecosystems.`,
+    `Better Fullstack is a CLI and web-based stack builder that scaffolds configurable fullstack projects with ${OPTION_COUNT_LABEL} options across ${ECOSYSTEM_COUNT_LABEL} language ecosystems.`,
     "",
     "### How is it different from create-t3-app?",
     "",

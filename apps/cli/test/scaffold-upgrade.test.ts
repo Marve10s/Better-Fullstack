@@ -2,7 +2,18 @@ import { EMBEDDED_TEMPLATES, generateVirtualProject } from "@better-fullstack/te
 import { writeTreeToFilesystem } from "@better-fullstack/template-generator/fs-writer";
 import { createCliDefaultProjectConfigBase, type ProjectConfig } from "@better-fullstack/types";
 import { afterAll, describe, expect, it } from "bun:test";
-import { mkdir, mkdtemp, readFile, rm, symlink, unlink, writeFile } from "node:fs/promises";
+import {
+  cp,
+  mkdir,
+  mkdtemp,
+  readFile,
+  readdir,
+  rename,
+  rm,
+  symlink,
+  unlink,
+  writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, dirname, join } from "node:path";
 
@@ -18,11 +29,12 @@ import {
   applyScaffoldUpgrade,
   getUpgradePlanDigest,
   planScaffoldUpgrade,
-  recordUpgradeBaseline,
 } from "../src/helpers/core/scaffold-upgrade";
 import { buildBtsConfigForPersistence, writeBtsConfig } from "../src/utils/bts-config";
 import { formatProject } from "../src/utils/file-formatter";
 import { getLatestCLIVersion } from "../src/utils/get-latest-cli-version";
+import { planProjectAdoption } from "../src/utils/project-adoption";
+import { RECOVERY_ROOT, recoverProjectTransaction } from "../src/utils/project-transaction";
 import {
   collectStructuredBaselines,
   hashContent,
@@ -314,6 +326,60 @@ describe("scaffold-upgrade engine", () => {
     await expect(readFile(targetPath, "utf-8")).rejects.toThrow();
   });
 
+  it("preserves a user-renamed baseline file and keeps the missing original non-actionable", async () => {
+    const dir = await makeTempDir();
+    await scaffoldWithBaseline(dir, makeConfig(dir));
+    const baseline = await planScaffoldUpgrade(dir);
+    assertSuccess(baseline);
+    const original = pickSourceFile(baseline.unchanged);
+    const renamed = join(dirname(original), `local-${basename(original)}`);
+    const originalBytes = await readFile(join(dir, original));
+    await rename(join(dir, original), join(dir, renamed));
+
+    const plan = await planScaffoldUpgrade(dir);
+    assertSuccess(plan);
+    expect(plan.userEdited).toContain(original);
+    expect(plan.actionable).not.toContain(original);
+    expect(plan.files.some((file) => file.path === renamed)).toBe(false);
+
+    const applied = await applyAcknowledged(dir);
+    assertSuccess(applied);
+    expect(await readFile(join(dir, renamed))).toEqual(originalBytes);
+    await expect(readFile(join(dir, original))).rejects.toThrow();
+  });
+
+  it("models a template rename as an additive new file and a retained removed path", async () => {
+    const dir = await makeTempDir();
+    await scaffoldWithBaseline(dir, makeConfig(dir));
+    const baseline = await planScaffoldUpgrade(dir);
+    assertSuccess(baseline);
+    const currentPath = pickSourceFile(baseline.unchanged);
+    const previousPath = join(dirname(currentPath), `legacy-${basename(currentPath)}`);
+    const currentBytes = await readFile(join(dir, currentPath));
+    await rename(join(dir, currentPath), join(dir, previousPath));
+    const manifest = await readScaffoldManifest(dir);
+    expect(manifest).not.toBeNull();
+    delete manifest!.hashes[currentPath];
+    manifest!.hashes[previousPath] = hashContent(currentBytes);
+    await writeScaffoldManifest(dir, manifest!);
+
+    const plan = await planScaffoldUpgrade(dir);
+    assertSuccess(plan);
+    expect(plan.newFiles).toContain(currentPath);
+    expect(plan.removed).toContain(previousPath);
+    expect(plan.actionable).toContain(currentPath);
+    const before = await readFile(join(dir, previousPath));
+
+    const applied = await applyAcknowledged(dir);
+    assertSuccess(applied);
+    expect(await readFile(join(dir, currentPath))).toEqual(currentBytes);
+    expect(await readFile(join(dir, previousPath))).toEqual(before);
+    expect(applied.recoveryId).toBeDefined();
+    await recoverProjectTransaction(dir, applied.recoveryId!);
+    await expect(readFile(join(dir, currentPath))).rejects.toThrow();
+    expect(await readFile(join(dir, previousPath))).toEqual(before);
+  });
+
   it("flags a conflict when both the template and the local copy changed", async () => {
     const dir = await makeTempDir();
     await scaffoldWithBaseline(dir, makeConfig(dir));
@@ -366,6 +432,35 @@ describe("scaffold-upgrade engine", () => {
     expect(await readFile(pkgPath, "utf-8")).toContain("left-pad");
   });
 
+  it("cleanly auto-merges a structured template addition with no local divergence", async () => {
+    const dir = await makeTempDir();
+    await scaffoldWithBaseline(dir, makeConfig(dir));
+    const target = "apps/server/package.json";
+    const pkgPath = join(dir, target);
+    const render = JSON.parse(await readFile(pkgPath, "utf-8"));
+    const [templateDep] = Object.keys(render.dependencies);
+    expect(templateDep).toBeDefined();
+    const older = structuredClone(render);
+    delete older.dependencies[templateDep];
+    const olderContent = `${JSON.stringify(older, null, 2)}\n`;
+    const manifest = await readScaffoldManifest(dir);
+    expect(manifest).not.toBeNull();
+    manifest!.baselines![target] = olderContent;
+    manifest!.hashes[target] = hashContent(olderContent);
+    await writeScaffoldManifest(dir, manifest!);
+    await writeFile(pkgPath, olderContent, "utf-8");
+
+    const plan = await planScaffoldUpgrade(dir);
+    assertSuccess(plan);
+    expect(plan.merged).toContain(target);
+    expect(plan.conflicts).not.toContain(target);
+    const applied = await applyAcknowledged(dir);
+    assertSuccess(applied);
+    expect(JSON.parse(await readFile(pkgPath, "utf-8")).dependencies[templateDep!]).toBe(
+      render.dependencies[templateDep!],
+    );
+  });
+
   it("structurally merges template dependency/script additions into a user-edited package.json", async () => {
     const dir = await makeTempDir();
     await scaffoldWithBaseline(dir, makeConfig(dir));
@@ -401,6 +496,14 @@ describe("scaffold-upgrade engine", () => {
     expect(plan.merged).toContain(target);
     expect(plan.actionable).toContain(target);
     expect(plan.manual.map((entry) => entry.path)).not.toContain(target);
+    expect(plan.lifecycle.affected.dependencies).toContainEqual(
+      expect.objectContaining({
+        name: templateDep,
+        action: "update",
+        version: render.dependencies[templateDep],
+        target: `${target}:dependencies`,
+      }),
+    );
 
     const applied = await applyAcknowledged(dir);
     assertSuccess(applied);
@@ -851,6 +954,74 @@ describe("scaffold-upgrade engine", () => {
     expect(await readFile(join(dir, ordered[1]!), "utf-8")).toBe(concurrentBytes);
   });
 
+  it("rolls back exact preimages when an actionable write reports a failure", async () => {
+    const dir = await makeTempDir();
+    await scaffoldWithBaseline(dir, makeConfig(dir));
+    const baseline = await planScaffoldUpgrade(dir);
+    assertSuccess(baseline);
+    const target = pickSourceFile(baseline.unchanged);
+    const targetPath = join(dir, target);
+    const current = await readFile(targetPath, "utf-8");
+    const old = `// old template\n${current}`;
+    await writeFile(targetPath, old, "utf-8");
+    const manifest = await readScaffoldManifest(dir);
+    expect(manifest).not.toBeNull();
+    manifest!.hashes[target] = hashContent(old);
+    await writeScaffoldManifest(dir, manifest!);
+    const manifestBefore = await readFile(join(dir, SCAFFOLD_MANIFEST_FILE));
+
+    const reviewed = await planScaffoldUpgrade(dir);
+    assertSuccess(reviewed);
+    const result = await applyAcknowledged(dir, {
+      expectedPlanDigest: getUpgradePlanDigest(reviewed),
+      afterActionableWrite: () => {
+        throw new Error("injected write failure");
+      },
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toContain("injected write failure");
+      expect(result.lifecycle?.status).toBe("rolled-back");
+    }
+    expect(await readFile(targetPath, "utf-8")).toBe(old);
+    expect(await readFile(join(dir, SCAFFOLD_MANIFEST_FILE))).toEqual(manifestBefore);
+  });
+
+  it("keeps a crashed template write recoverable from its durable postimage", async () => {
+    const dir = await makeTempDir();
+    const crashRoot = await makeTempDir();
+    const crashedDir = join(crashRoot, "project");
+    await scaffoldWithBaseline(dir, makeConfig(dir));
+    const baseline = await planScaffoldUpgrade(dir);
+    assertSuccess(baseline);
+    const target = pickSourceFile(baseline.unchanged);
+    const before = `// old template\n${await readFile(join(dir, target), "utf-8")}`;
+    await writeFile(join(dir, target), before, "utf-8");
+    const manifest = await readScaffoldManifest(dir);
+    manifest!.hashes[target] = hashContent(before);
+    await writeScaffoldManifest(dir, manifest!);
+    const reviewed = await planScaffoldUpgrade(dir);
+    assertSuccess(reviewed);
+
+    const result = await applyAcknowledged(dir, {
+      expectedPlanDigest: getUpgradePlanDigest(reviewed),
+      afterActionableWrite: async () => {
+        await cp(dir, crashedDir, { recursive: true });
+        throw new Error("injected process stop");
+      },
+    });
+    expect(result.success).toBe(false);
+
+    const [transactionId] = await readdir(join(crashedDir, RECOVERY_ROOT));
+    const metadata = JSON.parse(
+      await readFile(join(crashedDir, RECOVERY_ROOT, transactionId, "transaction.json"), "utf-8"),
+    ) as { outputs?: Record<string, string | null> };
+    expect(metadata.outputs?.[target]).toBe(reviewed.actionableHashes[target]);
+    await recoverProjectTransaction(crashedDir, transactionId);
+    expect(await readFile(join(crashedDir, target), "utf-8")).toBe(before);
+  });
+
   it("fails before baseline refresh when an already-written output changes", async () => {
     const dir = await makeTempDir();
     await scaffoldWithBaseline(dir, makeConfig(dir));
@@ -1023,7 +1194,7 @@ describe("scaffold-upgrade engine", () => {
     expect(await readFile(join(outsideParent, basename(targetPath)), "utf-8")).toBe(drifted);
   });
 
-  it("refuses record-baseline through a symlinked manifest target", async () => {
+  it("refuses adoption through a symlinked manifest target", async () => {
     const dir = await makeTempDir();
     await scaffoldWithBaseline(dir, makeConfig(dir));
     const manifestPath = join(dir, SCAFFOLD_MANIFEST_FILE);
@@ -1033,7 +1204,8 @@ describe("scaffold-upgrade engine", () => {
     await unlink(manifestPath);
     await symlink(outsidePath, manifestPath, "file");
 
-    expect(await recordUpgradeBaseline(dir)).toBeNull();
+    const plan = await planProjectAdoption(dir);
+    expect(plan.success).toBe(false);
     expect(await readFile(outsidePath, "utf-8")).toBe(outsideBytes);
   });
 });

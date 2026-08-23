@@ -2274,7 +2274,14 @@ export const publicProcedure = t.procedure;
   router,
 } from "../index";
 
+// <better-fullstack:recipe-imports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-imports>
+
 export const appRouter = router({
+  // <better-fullstack:recipe-registrations sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+  // </better-fullstack:recipe-registrations>
   healthCheck: publicProcedure.query(() => {
     return "OK";
   }),
@@ -2426,6 +2433,10 @@ export const db = drizzle({ client, schema });
     {
       "content": 
 "export * from "./example";
+
+// <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-schema-exports>
 "
 ,
       "path": "packages/db/src/schema/index.ts",
@@ -2932,7 +2943,14 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
   router,
 } from "../index";
 
+// <better-fullstack:recipe-imports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-imports>
+
 export const appRouter = router({
+  // <better-fullstack:recipe-registrations sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+  // </better-fullstack:recipe-registrations>
   healthCheck: publicProcedure.query(() => {
     return "OK";
   }),
@@ -3267,6 +3285,10 @@ export const accountRelations = relations(account, ({ one }) => ({
     {
       "content": 
 "export * from "./auth";
+
+// <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-schema-exports>
 "
 ,
       "path": "packages/db/src/schema/index.ts",
@@ -3760,6 +3782,10 @@ export const db = drizzle({ client, schema });
     {
       "content": 
 "export * from "./example";
+
+// <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-schema-exports>
 "
 ,
       "path": "packages/db/src/schema/index.ts",
@@ -4290,6 +4316,10 @@ export const db = drizzle({ client, schema });
     {
       "content": 
 "export * from "./example";
+
+// <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-schema-exports>
 "
 ,
       "path": "packages/db/src/schema/index.ts",
@@ -5140,6 +5170,10 @@ export const accountRelations = relations(account, ({ one }) => ({
     {
       "content": 
 "export * from "./auth";
+
+// <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-schema-exports>
 "
 ,
       "path": "packages/db/src/schema/index.ts",
@@ -5768,7 +5802,14 @@ export const publicProcedure = t.procedure;
   router,
 } from "../index";
 
+// <better-fullstack:recipe-imports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-imports>
+
 export const appRouter = router({
+  // <better-fullstack:recipe-registrations sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+  // </better-fullstack:recipe-registrations>
   healthCheck: publicProcedure.query(() => {
     return "OK";
   }),
@@ -6713,6 +6754,10 @@ export const db = drizzle({ client, schema });
     {
       "content": 
 "export * from "./example";
+
+// <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-schema-exports>
 "
 ,
       "path": "packages/db/src/schema/index.ts",
@@ -7859,6 +7904,10 @@ export const accountRelations = relations(account, ({ one }) => ({
     {
       "content": 
 "export * from "./auth";
+
+// <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-schema-exports>
 "
 ,
       "path": "packages/db/src/schema/index.ts",
@@ -8947,6 +8996,10 @@ export const accountRelations = relations(account, ({ one }) => ({
     {
       "content": 
 "export * from "./auth";
+
+// <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-schema-exports>
 "
 ,
       "path": "packages/db/src/schema/index.ts",
@@ -9630,7 +9683,14 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
   router,
 } from "../index";
 
+// <better-fullstack:recipe-imports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-imports>
+
 export const appRouter = router({
+  // <better-fullstack:recipe-registrations sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+  // </better-fullstack:recipe-registrations>
   healthCheck: publicProcedure.query(() => {
     return "OK";
   }),
@@ -9971,6 +10031,10 @@ export const accountRelations = relations(account, ({ one }) => ({
     {
       "content": 
 "export * from "./auth";
+
+// <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-schema-exports>
 "
 ,
       "path": "packages/db/src/schema/index.ts",
@@ -10969,7 +11033,14 @@ export const publicProcedure = t.procedure;
   router,
 } from "../index";
 
+// <better-fullstack:recipe-imports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-imports>
+
 export const appRouter = router({
+  // <better-fullstack:recipe-registrations sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+  // </better-fullstack:recipe-registrations>
   healthCheck: publicProcedure.query(() => {
     return "OK";
   }),
@@ -11121,6 +11192,10 @@ export const db = drizzle({ client, schema });
     {
       "content": 
 "export * from "./example";
+
+// <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-schema-exports>
 "
 ,
       "path": "packages/db/src/schema/index.ts",
@@ -11820,6 +11895,10 @@ export const db = drizzle({ client, schema });
     {
       "content": 
 "export * from "./example";
+
+// <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-schema-exports>
 "
 ,
       "path": "packages/db/src/schema/index.ts",
@@ -12440,7 +12519,14 @@ export const publicProcedure = t.procedure;
   router,
 } from "../index";
 
+// <better-fullstack:recipe-imports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-imports>
+
 export const appRouter = router({
+  // <better-fullstack:recipe-registrations sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+  // </better-fullstack:recipe-registrations>
   healthCheck: publicProcedure.query(() => {
     return "OK";
   }),
@@ -13177,7 +13263,14 @@ export const publicProcedure = t.procedure;
   router,
 } from "../index";
 
+// <better-fullstack:recipe-imports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-imports>
+
 export const appRouter = router({
+  // <better-fullstack:recipe-registrations sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+  // </better-fullstack:recipe-registrations>
   healthCheck: publicProcedure.query(() => {
     return "OK";
   }),
@@ -13938,7 +14031,14 @@ export const publicProcedure = t.procedure;
   router,
 } from "../index";
 
+// <better-fullstack:recipe-imports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-imports>
+
 export const appRouter = router({
+  // <better-fullstack:recipe-registrations sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+  // </better-fullstack:recipe-registrations>
   healthCheck: publicProcedure.query(() => {
     return "OK";
   }),
@@ -14090,6 +14190,10 @@ export const db = drizzle({ client, schema });
     {
       "content": 
 "export * from "./example";
+
+// <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-schema-exports>
 "
 ,
       "path": "packages/db/src/schema/index.ts",
@@ -14724,7 +14828,14 @@ export const publicProcedure = t.procedure;
   router,
 } from "../index";
 
+// <better-fullstack:recipe-imports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-imports>
+
 export const appRouter = router({
+  // <better-fullstack:recipe-registrations sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+  // </better-fullstack:recipe-registrations>
   healthCheck: publicProcedure.query(() => {
     return "OK";
   }),
@@ -14876,6 +14987,10 @@ export const db = drizzle({ client, schema });
     {
       "content": 
 "export * from "./example";
+
+// <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-schema-exports>
 "
 ,
       "path": "packages/db/src/schema/index.ts",
@@ -15353,7 +15468,14 @@ export const publicProcedure = t.procedure;
   router,
 } from "../index";
 
+// <better-fullstack:recipe-imports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-imports>
+
 export const appRouter = router({
+  // <better-fullstack:recipe-registrations sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+  // </better-fullstack:recipe-registrations>
   healthCheck: publicProcedure.query(() => {
     return "OK";
   }),
@@ -15505,6 +15627,10 @@ export const db = drizzle({ client, schema });
     {
       "content": 
 "export * from "./example";
+
+// <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-schema-exports>
 "
 ,
       "path": "packages/db/src/schema/index.ts",
@@ -16154,7 +16280,14 @@ export const publicProcedure = t.procedure;
   router,
 } from "../index";
 
+// <better-fullstack:recipe-imports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-imports>
+
 export const appRouter = router({
+  // <better-fullstack:recipe-registrations sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+  // </better-fullstack:recipe-registrations>
   healthCheck: publicProcedure.query(() => {
     return "OK";
   }),
@@ -16306,6 +16439,10 @@ export const db = drizzle({ client, schema });
     {
       "content": 
 "export * from "./example";
+
+// <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-schema-exports>
 "
 ,
       "path": "packages/db/src/schema/index.ts",
@@ -16945,7 +17082,14 @@ export const publicProcedure = t.procedure;
   router,
 } from "../index";
 
+// <better-fullstack:recipe-imports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-imports>
+
 export const appRouter = router({
+  // <better-fullstack:recipe-registrations sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+  // </better-fullstack:recipe-registrations>
   healthCheck: publicProcedure.query(() => {
     return "OK";
   }),
@@ -17097,6 +17241,10 @@ export const db = drizzle({ client, schema });
     {
       "content": 
 "export * from "./example";
+
+// <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-schema-exports>
 "
 ,
       "path": "packages/db/src/schema/index.ts",
@@ -17731,7 +17879,14 @@ export const publicProcedure = t.procedure;
   router,
 } from "../index";
 
+// <better-fullstack:recipe-imports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-imports>
+
 export const appRouter = router({
+  // <better-fullstack:recipe-registrations sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+  // </better-fullstack:recipe-registrations>
   healthCheck: publicProcedure.query(() => {
     return "OK";
   }),
@@ -17883,6 +18038,10 @@ export const db = drizzle({ client, schema });
     {
       "content": 
 "export * from "./example";
+
+// <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-schema-exports>
 "
 ,
       "path": "packages/db/src/schema/index.ts",
@@ -18951,7 +19110,14 @@ export const publicProcedure = t.procedure;
   router,
 } from "../index";
 
+// <better-fullstack:recipe-imports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-imports>
+
 export const appRouter = router({
+  // <better-fullstack:recipe-registrations sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+  // </better-fullstack:recipe-registrations>
   healthCheck: publicProcedure.query(() => {
     return "OK";
   }),
@@ -19103,6 +19269,10 @@ export const db = drizzle({ client, schema });
     {
       "content": 
 "export * from "./example";
+
+// <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-schema-exports>
 "
 ,
       "path": "packages/db/src/schema/index.ts",
@@ -21066,6 +21236,8 @@ dotenvy = "0.15"
 # CLI (Clap)
 clap = { version = "4", features = ["derive"] }
 
+# HTTP client
+reqwest = { version = "0.13.3", default-features = false, features = ["json", "rustls"] }
 
 
 [profile.dev]
@@ -21103,6 +21275,7 @@ tokio.workspace = true
 # Serialization
 serde.workspace = true
 serde_json.workspace = true
+reqwest.workspace = true
 
 # Error handling
 anyhow.workspace = true
@@ -21146,64 +21319,9 @@ struct Cli {
 
 #[derive(Subcommand, Debug)]
 enum Commands {
-    /// Start the application
-    Start {
-        /// Port to listen on
-        #[arg(short, long, default_value = "3000")]
-        port: u16,
+    /// Print the resolved CLI configuration
+    Info,
 
-        /// Host to bind to
-        #[arg(short = 'H', long, default_value = "127.0.0.1")]
-        host: String,
-    },
-
-    /// Check configuration and health
-    Check {
-        /// Check database connection
-        #[arg(long)]
-        database: bool,
-
-        /// Check all services
-        #[arg(long)]
-        all: bool,
-    },
-
-    /// Run database migrations
-    Migrate {
-        /// Run pending migrations
-        #[arg(long)]
-        up: bool,
-
-        /// Rollback last migration
-        #[arg(long)]
-        down: bool,
-
-        /// Migration status
-        #[arg(long)]
-        status: bool,
-    },
-
-    /// Generate project components
-    Generate {
-        /// Component type to generate
-        #[arg(value_enum)]
-        component: GenerateComponent,
-
-        /// Name for the generated component
-        name: String,
-    },
-}
-
-#[derive(clap::ValueEnum, Clone, Debug)]
-enum GenerateComponent {
-    /// Generate a new model
-    Model,
-    /// Generate a new handler/controller
-    Handler,
-    /// Generate a new service
-    Service,
-    /// Generate a new migration
-    Migration,
 }
 
 #[tokio::main]
@@ -21227,71 +21345,15 @@ async fn main() -> Result<()> {
     }
 
     match cli.command {
-        Commands::Start { port, host } => {
-            tracing::info!("Starting server on {}:{}", host, port);
-            // TODO: Implement server start logic
-            // This is where you would start your Axum/Actix server
-            println!("Server would start on {}:{}", host, port);
-        }
-
-        Commands::Check { database, all } => {
-            tracing::info!("Running health checks...");
-
-            if database || all {
-                tracing::info!("Checking database connection...");
-                // TODO: Implement database check
-                println!("Database check: Not implemented");
-            }
-
-            if all {
-                tracing::info!("Checking all services...");
-                // TODO: Implement other service checks
-                println!("All checks complete");
-            }
-
-            if !database && !all {
-                println!("No checks specified. Use --database or --all");
-            }
-        }
-
-        Commands::Migrate { up, down, status } => {
-            if status {
-                tracing::info!("Checking migration status...");
-                // TODO: Implement migration status check
-                println!("Migration status: Not implemented");
-            } else if up {
-                tracing::info!("Running pending migrations...");
-                // TODO: Implement migration up
-                println!("Migrations run: Not implemented");
-            } else if down {
-                tracing::info!("Rolling back last migration...");
-                // TODO: Implement migration down
-                println!("Migration rollback: Not implemented");
-            } else {
-                println!("No migration action specified. Use --up, --down, or --status");
-            }
-        }
-
-        Commands::Generate { component, name } => {
-            tracing::info!("Generating {:?}: {}", component, name);
-            match component {
-                GenerateComponent::Model => {
-                    println!("Would generate model: {}", name);
-                    // TODO: Implement model generation
-                }
-                GenerateComponent::Handler => {
-                    println!("Would generate handler: {}", name);
-                    // TODO: Implement handler generation
-                }
-                GenerateComponent::Service => {
-                    println!("Would generate service: {}", name);
-                    // TODO: Implement service generation
-                }
-                GenerateComponent::Migration => {
-                    println!("Would generate migration: {}", name);
-                    // TODO: Implement migration generation
-                }
-            }
+        Commands::Info => {
+            println!(
+                "{}",
+                serde_json::json!({
+                    "name": "snapshot-rust-cli-clap",
+                    "verbose": cli.verbose,
+                    "config": cli.config,
+                })
+            );
         }
     }
 
@@ -22688,6 +22750,7 @@ exports[`Template Snapshots - Go Ecosystem Go File Structure Snapshots file stru
   "proto/greeter.pb.go",
   "proto/greeter.proto",
   "proto/greeter_grpc.pb.go",
+  "proto/greeter_test.go",
   "sql/queries/posts.sql",
   "sql/queries/users.sql",
   "sql/schema/001_schema.sql",
@@ -22919,7 +22982,7 @@ OTEL_EXPORTER_OTLP_HEADERS="
 
 exports[`Template Snapshots - Go Ecosystem Go Key File Content Snapshots key files: echo-sqlc-grpc 1`] = `
 {
-  "fileCount": 18,
+  "fileCount": 19,
   "files": [
     {
       "content": 
@@ -22972,6 +23035,10 @@ LOG_LEVEL=debug"
     {
       "content": "[exists]",
       "path": "proto/greeter_grpc.pb.go",
+    },
+    {
+      "content": "[exists]",
+      "path": "proto/greeter_test.go",
     },
     {
       "content": "[exists]",

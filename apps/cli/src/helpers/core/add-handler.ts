@@ -39,7 +39,7 @@ export interface AddResult {
   plan?: StackUpdatePlan;
 }
 
-const ADD_CONTROL_KEYS = new Set(["projectDir", "install", "dryRun"]);
+const ADD_CONTROL_KEYS = new Set(["projectDir", "install", "dryRun", "json"]);
 const WORKSPACE_RUNNERS = new Set<Addons>(["turborepo", "nx", "vite-plus"]);
 
 function getRequestedCapabilityIds(input: AddInput): Addons[] {
@@ -185,8 +185,27 @@ function logStackUpdateSummary(plan: StackUpdatePlan, dryRun: boolean) {
   }
 }
 
-function appendRecoveryNote(lifecycle: LifecycleResult, note: string | undefined): LifecycleResult {
-  return note ? { ...lifecycle, nextActions: [...lifecycle.nextActions, note] } : lifecycle;
+type PackageManagerOutcome = {
+  status: "applied" | "failed" | "manual" | "not-run";
+  description: string;
+  compensatingAction: string;
+};
+
+function recordPostCommitOutcome(
+  lifecycle: LifecycleResult,
+  outcome: PackageManagerOutcome | undefined,
+  note: string | undefined,
+): LifecycleResult {
+  const nextActions = note ? [...lifecycle.nextActions, note] : lifecycle.nextActions;
+  if (!outcome) return { ...lifecycle, nextActions };
+  return {
+    ...lifecycle,
+    nextActions,
+    sideEffects: [
+      ...lifecycle.sideEffects.filter((sideEffect) => sideEffect.kind !== "package-manager"),
+      { kind: "package-manager", ...outcome },
+    ],
+  };
 }
 
 function buildAddonSetupConfig(
@@ -314,6 +333,7 @@ async function runStackUpdateAdd(
   }
 
   let recoveryNote: string | undefined;
+  let packageManagerOutcome: PackageManagerOutcome | undefined;
   try {
     const addonsToSetup = await getAddonsToSetup(input, currentConfig, projectDir);
     const setupConfig = buildAddonSetupConfig(projectDir, projectName, currentConfig, result);
@@ -330,13 +350,35 @@ async function runStackUpdateAdd(
         });
         installFailed = !installResult.success;
         recoveryNote = `Recovery restores generated files only. The lockfile this install wrote is not rolled back, so re-run '${result.installCommand}' after recovering.`;
-      } else if (!isSilent()) {
-        log.warn(
-          pc.yellow(
-            `Automatic --install is only supported for JavaScript package-manager installs. Run '${result.installCommand}' instead.`,
-          ),
-        );
+        packageManagerOutcome = {
+          status: installResult.success ? "applied" : "failed",
+          description: installResult.success
+            ? "Dependency installation completed after the filesystem transaction committed."
+            : "Dependency installation failed after the filesystem transaction committed.",
+          compensatingAction: `Run '${result.installCommand}' after recovery or after fixing the install failure.`,
+        };
+      } else {
+        if (!isSilent()) {
+          log.warn(
+            pc.yellow(
+              `Automatic --install is only supported for JavaScript package-manager installs. Run '${result.installCommand}' instead.`,
+            ),
+          );
+        }
+        packageManagerOutcome = {
+          status: "not-run",
+          description: "Automatic dependency installation is not supported for this ecosystem.",
+          compensatingAction: `Run '${result.installCommand}'.`,
+        };
       }
+    } else if (
+      result.lifecycle.sideEffects.some((sideEffect) => sideEffect.kind === "package-manager")
+    ) {
+      packageManagerOutcome = {
+        status: "manual",
+        description: "Dependency manifests changed, but no package manager was run.",
+        compensatingAction: `Run '${result.installCommand}'.`,
+      };
     }
 
     if (!isSilent()) {
@@ -372,7 +414,7 @@ async function runStackUpdateAdd(
       addedAddons: addonsToSetup,
       projectDir,
       setupWarnings: setupWarnings.length > 0 ? setupWarnings : undefined,
-      lifecycle: appendRecoveryNote(result.lifecycle, recoveryNote),
+      lifecycle: recordPostCommitOutcome(result.lifecycle, packageManagerOutcome, recoveryNote),
       recoveryId: result.recoveryId,
     };
   } catch (error) {
@@ -393,7 +435,7 @@ async function runStackUpdateAdd(
       addedAddons: [],
       projectDir,
       error: message,
-      lifecycle: appendRecoveryNote(result.lifecycle, recoveryNote),
+      lifecycle: recordPostCommitOutcome(result.lifecycle, packageManagerOutcome, recoveryNote),
       recoveryId: result.recoveryId,
     };
   }

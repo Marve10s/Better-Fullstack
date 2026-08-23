@@ -1,148 +1,83 @@
-import { processTemplateString } from "@better-fullstack/template-generator";
 import { log } from "@clack/prompts";
 import fs from "fs-extra";
 import path from "node:path";
 import pc from "picocolors";
 
-import type { ProjectConfig } from "../types";
+import type {
+  RecipeAdapterContext,
+  RecipeKind,
+  RecipePlannedFile,
+  RecipeVerificationCheck,
+} from "../recipes/types";
+import type { LifecyclePlan, LifecycleResult } from "../utils/lifecycle-contract";
+import type { ProjectTransaction } from "../utils/project-transaction";
 
+import { planRecipeAgentContext } from "../recipes/agent-context";
+import { createRecipeRecordFile, readRecipeRecords } from "../recipes/records";
+import { resolveRecipeAdapter, validateRecipeAdapterRegistry } from "../recipes/registry";
 import { readBtsConfig } from "../utils/bts-config";
+import { getProjectRecoveryCommand } from "../utils/lifecycle-command";
+import { lifecyclePlan, lifecycleResult } from "../utils/lifecycle-contract";
+import {
+  beginProjectTransaction,
+  commitProjectTransaction,
+  journalProjectTransactionWrites,
+  markProjectTransactionWrite,
+  rollbackProjectTransaction,
+} from "../utils/project-transaction";
+import { createReviewToken } from "../utils/review-token";
+import { getCurrentLifecycleVersions, hashContent } from "../utils/scaffold-manifest";
 
-export type GenKind = "resource" | "route";
+export type GenKind = RecipeKind;
 
 export type GenCommandInput = {
   kind: GenKind;
   name: string;
   dir?: string;
   dryRun?: boolean;
+  apply?: boolean;
+  reviewToken?: string;
+  json?: boolean;
 };
 
-export type GenStatus = "created" | "manual-wiring" | "unsupported";
+export type GenStatus =
+  | "planned"
+  | "created"
+  | "blocked"
+  | "unsupported"
+  | "rolled-back"
+  | "failed";
+
+export type GenPlannedFile = RecipePlannedFile;
 
 export type GenResult = {
+  success: boolean;
   status: GenStatus;
   message: string;
+  projectDir?: string;
+  recipeId?: string;
+  adapterId?: string;
+  adapterVersion?: number;
+  maintenanceOwner?: string;
+  persistent?: boolean;
   resourceFile?: string;
+  routerIndexFile?: string;
   registered?: boolean;
+  files?: GenPlannedFile[];
+  checks?: RecipeVerificationCheck[];
+  migrationGuidance?: string[];
+  reviewToken?: string;
+  operationPlan?: LifecyclePlan;
+  lifecycle?: LifecycleResult;
+  recoveryId?: string;
 };
 
-/**
- * Inline resource template (rendered with the project's ProjectConfig via the
- * template-generator's Handlebars pipeline). Kept as a string constant so `gen`
- * works in a published CLI with no template directory / EMBEDDED_TEMPLATES
- * dependency. Branches on `api` (trpc | orpc) and `auth` (better-auth ->
- * protectedProcedure).
- */
-const RESOURCE_TEMPLATE = `{{#if (eq api "trpc")}}
-import { z } from "zod";
-
-import { {{#if (isBetterAuth auth)}}protectedProcedure{{else}}publicProcedure{{/if}}, router } from "../index{{importExt}}";
-
-export type {{ResourceName}} = {
-  id: string;
-  name: string;
-  createdAt: string;
+export type GenApplyOptions = {
+  beforeTransactionSnapshot?: () => void | Promise<void>;
+  beforeMutation?: () => void | Promise<void>;
+  afterWrite?: (file: GenPlannedFile, index: number) => void | Promise<void>;
+  writeFile?: (target: string, content: string) => void | Promise<void>;
 };
-
-const {{resourceName}}Store: {{ResourceName}}[] = [];
-let {{resourceName}}NextId = 1;
-
-const {{resourceName}}Procedure = {{#if (isBetterAuth auth)}}protectedProcedure{{else}}publicProcedure{{/if}};
-
-export const {{resourceName}}Router = router({
-  list: {{resourceName}}Procedure.query(() => {
-    return {{resourceName}}Store;
-  }),
-  byId: {{resourceName}}Procedure.input(z.object({ id: z.string() })).query(({ input }) => {
-    return {{resourceName}}Store.find((item) => item.id === input.id) ?? null;
-  }),
-  create: {{resourceName}}Procedure
-    .input(z.object({ name: z.string().min(1) }))
-    .mutation(({ input }) => {
-      const item: {{ResourceName}} = {
-        id: String({{resourceName}}NextId++),
-        name: input.name,
-        createdAt: new Date().toISOString(),
-      };
-      {{resourceName}}Store.push(item);
-      return item;
-    }),
-  update: {{resourceName}}Procedure
-    .input(z.object({ id: z.string(), name: z.string().min(1) }))
-    .mutation(({ input }) => {
-      const item = {{resourceName}}Store.find((entry) => entry.id === input.id);
-      if (!item) return null;
-      item.name = input.name;
-      return item;
-    }),
-  remove: {{resourceName}}Procedure.input(z.object({ id: z.string() })).mutation(({ input }) => {
-    const index = {{resourceName}}Store.findIndex((entry) => entry.id === input.id);
-    if (index === -1) return { success: false };
-    {{resourceName}}Store.splice(index, 1);
-    return { success: true };
-  }),
-});
-{{else}}
-import { z } from "zod";
-
-import { {{#if (isBetterAuth auth)}}protectedProcedure{{else}}publicProcedure{{/if}} } from "../index{{importExt}}";
-
-export type {{ResourceName}} = {
-  id: string;
-  name: string;
-  createdAt: string;
-};
-
-const {{resourceName}}Store: {{ResourceName}}[] = [];
-let {{resourceName}}NextId = 1;
-
-const {{resourceName}}Procedure = {{#if (isBetterAuth auth)}}protectedProcedure{{else}}publicProcedure{{/if}};
-
-export const {{resourceName}}Router = {
-  list: {{resourceName}}Procedure.handler(() => {
-    return {{resourceName}}Store;
-  }),
-  byId: {{resourceName}}Procedure
-    .input(z.object({ id: z.string() }))
-    .handler(({ input }) => {
-      return {{resourceName}}Store.find((item) => item.id === input.id) ?? null;
-    }),
-  create: {{resourceName}}Procedure
-    .input(z.object({ name: z.string().min(1) }))
-    .handler(({ input }) => {
-      const item: {{ResourceName}} = {
-        id: String({{resourceName}}NextId++),
-        name: input.name,
-        createdAt: new Date().toISOString(),
-      };
-      {{resourceName}}Store.push(item);
-      return item;
-    }),
-  update: {{resourceName}}Procedure
-    .input(z.object({ id: z.string(), name: z.string().min(1) }))
-    .handler(({ input }) => {
-      const item = {{resourceName}}Store.find((entry) => entry.id === input.id);
-      if (!item) return null;
-      item.name = input.name;
-      return item;
-    }),
-  remove: {{resourceName}}Procedure
-    .input(z.object({ id: z.string() }))
-    .handler(({ input }) => {
-      const index = {{resourceName}}Store.findIndex((entry) => entry.id === input.id);
-      if (index === -1) return { success: false };
-      {{resourceName}}Store.splice(index, 1);
-      return { success: true };
-    }),
-};
-{{/if}}
-`;
-
-/** Candidate roots (relative to the project) that may hold a routers/index.ts. */
-const ROUTER_INDEX_CANDIDATES = [
-  "packages/api/src/routers/index.ts",
-  "apps/server/src/routers/index.ts",
-];
 
 function splitWords(raw: string): string[] {
   return raw
@@ -153,8 +88,7 @@ function splitWords(raw: string): string[] {
 }
 
 function toCamelCase(raw: string): string {
-  const words = splitWords(raw);
-  return words
+  return splitWords(raw)
     .map((word, index) =>
       index === 0 ? word.toLowerCase() : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
     )
@@ -166,192 +100,389 @@ function toPascalCase(raw: string): string {
   return camel.charAt(0).toUpperCase() + camel.slice(1);
 }
 
-/**
- * Scans for an existing routers/index.ts to register the new resource in.
- * Checks the well-known locations first, then any `<root>/src/routers/index.ts`
- * under apps/* and packages/* (robust across hono/express/elysia split backends
- * and the packages/api layout).
- */
-async function findRouterIndex(projectDir: string): Promise<string | null> {
-  for (const candidate of ROUTER_INDEX_CANDIDATES) {
-    const full = path.join(projectDir, candidate);
-    if (await fs.pathExists(full)) return full;
+async function getProjectName(projectDir: string): Promise<string> {
+  const dbPackage = await fs
+    .readJson(path.join(projectDir, "packages/db/package.json"))
+    .catch(() => null);
+  if (
+    dbPackage &&
+    typeof dbPackage === "object" &&
+    "name" in dbPackage &&
+    typeof dbPackage.name === "string"
+  ) {
+    const match = /^@([^/]+)\/db$/.exec(dbPackage.name);
+    if (match?.[1]) return match[1];
   }
-
-  for (const workspace of ["apps", "packages"]) {
-    const workspaceDir = path.join(projectDir, workspace);
-    if (!(await fs.pathExists(workspaceDir))) continue;
-    let entries: string[];
-    try {
-      entries = await fs.readdir(workspaceDir);
-    } catch {
-      continue;
-    }
-    for (const entry of entries) {
-      const full = path.join(workspaceDir, entry, "src", "routers", "index.ts");
-      if (await fs.pathExists(full)) return full;
-    }
-  }
-
-  return null;
+  return path.basename(projectDir);
 }
 
-/** Mirrors the relative-import extension used by the existing routers/index.ts. */
-function detectImportExtension(indexContent: string): string {
-  return /from\s+["']\.\.\/index\.js["']/.test(indexContent) ? ".js" : "";
+function unsupportedGenResult(projectDir: string, message: string): GenResult {
+  return { success: false, status: "unsupported", projectDir, message };
 }
 
-type Injection = { ok: true; content: string } | { ok: false; reason: string };
-
-function injectResource(
-  indexContent: string,
-  api: "trpc" | "orpc",
-  resourceName: string,
-  importExt: string,
-): Injection {
-  const anchor =
-    api === "trpc" ? "export const appRouter = router({" : "export const appRouter = {";
-
-  const lines = indexContent.split("\n");
-  const anchorIdx = lines.findIndex((line) => line.includes(anchor));
-  if (anchorIdx === -1) {
-    return { ok: false, reason: `Could not find the appRouter anchor (\`${anchor}\`)` };
-  }
-
-  const registrationKey = `${resourceName}:`;
-  const alreadyRegistered = lines.some(
-    (line, idx) => idx > anchorIdx && line.trim().startsWith(registrationKey),
-  );
-  if (alreadyRegistered) {
-    return { ok: false, reason: `\`${resourceName}\` is already registered in appRouter` };
-  }
-
-  const importLine = `import { ${resourceName}Router } from "./${resourceName}${importExt}";`;
-  const registrationLine = `  ${resourceName}: ${resourceName}Router,`;
-
-  // Insert the import after the last top-of-file import line (before the anchor).
-  let lastImportIdx = -1;
-  for (let i = 0; i < anchorIdx; i += 1) {
-    const line = lines[i];
-    if (line !== undefined && line.trimStart().startsWith("import ")) {
-      lastImportIdx = i;
-    }
-  }
-  lines.splice(lastImportIdx + 1, 0, importLine);
-
-  // Anchor moved down by one after the import insert; re-find it.
-  const newAnchorIdx = lines.findIndex((line) => line.includes(anchor));
-  lines.splice(newAnchorIdx + 1, 0, registrationLine);
-
-  return { ok: true, content: lines.join("\n") };
+function blockedGenResult(projectDir: string, message: string): GenResult {
+  const versions = getCurrentLifecycleVersions();
+  return {
+    success: false,
+    status: "blocked",
+    projectDir,
+    message,
+    lifecycle: lifecycleResult({
+      operation: "gen",
+      status: "blocked",
+      projectDir,
+      changes: { manual: 1 },
+      blockers: [message],
+      provenance: { source: versions, target: versions, verified: true },
+      recovery: { available: false },
+      checks: [{ id: "recipe-plan", status: "fail", message }],
+      sideEffects: [{ kind: "filesystem", status: "not-run", description: "No files written." }],
+    }),
+  };
 }
 
-export async function genCommand(input: GenCommandInput): Promise<GenResult> {
-  const projectDir = path.resolve(input.dir || process.cwd());
-  const dryRun = input.dryRun ?? false;
+function findPlannedPath(files: readonly GenPlannedFile[], suffix: string): string | undefined {
+  return files.find((file) => file.path.endsWith(suffix))?.path;
+}
 
-  const btsConfig = await readBtsConfig(projectDir);
-  if (!btsConfig) {
+export async function planGen(input: GenCommandInput): Promise<GenResult> {
+  const requestedProjectDir = path.resolve(input.dir || process.cwd());
+  const projectDir = await fs.realpath(requestedProjectDir).catch(() => requestedProjectDir);
+  const config = await readBtsConfig(projectDir);
+  if (!config) {
     throw new Error(
       `No Better Fullstack project found in ${projectDir}. Make sure bts.jsonc exists.`,
     );
   }
 
-  const resourceName = toCamelCase(input.name);
-  const ResourceName = toPascalCase(input.name);
-  if (!resourceName || !/^[a-z]/i.test(resourceName)) {
+  const registryErrors = validateRecipeAdapterRegistry();
+  if (registryErrors.length > 0) {
+    return blockedGenResult(projectDir, `Recipe registry is invalid: ${registryErrors.join(" ")}`);
+  }
+
+  const name = toCamelCase(input.name);
+  const typeName = toPascalCase(input.name);
+  if (!name || !/^[a-z]/i.test(name)) {
     throw new Error(
-      `Invalid resource name "${input.name}". Use a name that starts with a letter, e.g. "post".`,
+      `Invalid resource name "${input.name}". Use a name that starts with a letter, for example "post".`,
     );
   }
 
-  const ecosystem = btsConfig.ecosystem;
-  const api = btsConfig.api;
-
-  // Scope guard: only TypeScript + trpc/orpc is supported for now. Everything
-  // else prints an honest "not yet supported" message and writes nothing.
-  if (ecosystem !== "typescript" || (api !== "trpc" && api !== "orpc")) {
-    const stack = `${ecosystem}${api && api !== "none" ? ` + ${api}` : ""}`;
-    const message = `\`gen ${input.kind}\` is not yet supported for this stack (${stack}). Currently supported: TypeScript projects with a trpc or orpc API.`;
-    log.warn(pc.yellow(message));
-    return { status: "unsupported", message };
-  }
-
-  const routerIndexPath = await findRouterIndex(projectDir);
-  if (!routerIndexPath) {
-    const message = `Could not locate a \`routers/index.ts\` in this project. Is this a trpc/orpc project? No files were written.`;
-    log.warn(pc.yellow(message));
-    return { status: "unsupported", message };
-  }
-
-  const routersDir = path.dirname(routerIndexPath);
-  const resourceFile = path.join(routersDir, `${resourceName}.ts`);
-  const relResourceFile = path.relative(projectDir, resourceFile);
-
-  // Idempotency: never overwrite an existing resource file.
-  if (await fs.pathExists(resourceFile)) {
-    throw new Error(
-      `Resource "${resourceName}" already exists at ${relResourceFile}. Delete it first or choose another name.`,
+  const context: RecipeAdapterContext = {
+    projectDir,
+    config,
+    kind: input.kind,
+    requestedName: input.name,
+    projectName: await getProjectName(projectDir),
+    name,
+    typeName,
+  };
+  const resolution = resolveRecipeAdapter(context);
+  if (!resolution.adapter) {
+    return unsupportedGenResult(
+      projectDir,
+      `Generation is not yet supported for this Stack Graph. ${resolution.reasons.join(" ")}`,
     );
   }
 
-  const indexContent = await fs.readFile(routerIndexPath, "utf-8");
-  const importExt = detectImportExtension(indexContent);
+  const existingRecords = await readRecipeRecords(projectDir);
+  if (existingRecords.some((record) => record.recipeId === `typescript-resource:${name}`)) {
+    throw new Error(`Recipe '${name}' already exists.`);
+  }
 
-  const templateContext = {
-    ...btsConfig,
-    resourceName,
-    ResourceName,
-    importExt,
-  } as unknown as ProjectConfig;
+  let adapterPlan;
+  try {
+    adapterPlan = await resolution.adapter.plan(context);
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    if (/already exists/.test(reason)) throw error;
+    return blockedGenResult(projectDir, `Generation is blocked before writes: ${reason}`);
+  }
 
-  const resourceContent = processTemplateString(RESOURCE_TEMPLATE, templateContext).trimStart();
+  let files: GenPlannedFile[];
+  try {
+    const agentDocs = await planRecipeAgentContext(projectDir, existingRecords, adapterPlan);
+    const planWithDocs = { ...adapterPlan, files: [...adapterPlan.files, ...agentDocs] };
+    const record = createRecipeRecordFile(planWithDocs, config);
+    files = [...planWithDocs.files, record];
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    return blockedGenResult(projectDir, `Generation is blocked before writes: ${reason}`);
+  }
 
-  const injection = injectResource(indexContent, api, resourceName, importExt);
+  const reviewToken = createReviewToken("gen", {
+    projectDir,
+    kind: input.kind,
+    recipeId: adapterPlan.recipeId,
+    adapterId: adapterPlan.adapterId,
+    adapterVersion: adapterPlan.adapterVersion,
+    files: files.map(({ path: filePath, action, preimageSha256, postimageSha256 }) => ({
+      path: filePath,
+      action,
+      preimageSha256,
+      postimageSha256,
+    })),
+  });
+  const versions = getCurrentLifecycleVersions();
+  const operationPlan = lifecyclePlan({
+    operation: "gen",
+    status: "planned",
+    projectDir,
+    changes: {
+      added: files.filter((file) => file.action === "create").length,
+      patched: files.filter((file) => file.action === "update").length,
+    },
+    provenance: { source: versions, target: versions, verified: true },
+    recovery: { available: true, automaticRollback: true },
+    affected: {
+      stackParts: adapterPlan.ownerPartId ? [adapterPlan.ownerPartId] : [],
+      files: files.map((file) => ({ path: file.path, action: file.action })),
+      dependencies: [],
+    },
+    checks: [
+      { id: "project-config", status: "pass" },
+      { id: "recipe-adapter", status: "pass", message: adapterPlan.adapterId },
+      ...adapterPlan.checks.map((check) => ({
+        id: check.id,
+        status: "pending" as const,
+        message: check.command ?? check.description,
+      })),
+    ],
+    sideEffects: [
+      {
+        kind: "filesystem",
+        status: "planned",
+        description: "Write the complete recipe through one recovery transaction.",
+      },
+    ],
+    review: { required: true, token: reviewToken },
+    preconditions: files.map((file) => ({
+      id: `preimage:${file.path}`,
+      status: "pass" as const,
+      message: file.preimageSha256 ? "Existing file is hash-bound." : "Target is absent.",
+    })),
+    nextActions: ["Review every file, then apply with the exact review token."],
+  });
+  const resourceFile = findPlannedPath(files, `/routers/${name}.ts`);
+  const routerIndexFile = findPlannedPath(files, "/routers/index.ts");
 
-  if (dryRun) {
-    log.info(pc.cyan(`[dry run] Would create ${relResourceFile}`));
-    log.message(resourceContent);
-    if (injection.ok) {
-      log.info(
-        pc.cyan(
-          `[dry run] Would register \`${resourceName}: ${resourceName}Router\` in ${path.relative(
-            projectDir,
-            routerIndexPath,
-          )}`,
-        ),
-      );
-    } else {
-      log.warn(pc.yellow(`[dry run] Manual wiring required: ${injection.reason}`));
-    }
+  return {
+    success: true,
+    status: "planned",
+    projectDir,
+    recipeId: adapterPlan.recipeId,
+    adapterId: adapterPlan.adapterId,
+    adapterVersion: adapterPlan.adapterVersion,
+    maintenanceOwner: adapterPlan.maintenanceOwner,
+    persistent: adapterPlan.persistent,
+    resourceFile: resourceFile ? path.join(projectDir, resourceFile) : undefined,
+    routerIndexFile: routerIndexFile ? path.join(projectDir, routerIndexFile) : undefined,
+    registered: Boolean(routerIndexFile),
+    files,
+    checks: adapterPlan.checks,
+    migrationGuidance: adapterPlan.migrationGuidance,
+    reviewToken,
+    operationPlan,
+    lifecycle: lifecycleResult({ ...operationPlan, status: "planned" }),
+    message: `${adapterPlan.summary} The plan contains ${files.length} reviewed file changes.`,
+  };
+}
+
+async function currentPreimage(projectDir: string, file: GenPlannedFile): Promise<string | null> {
+  const absolutePath = path.join(projectDir, file.path);
+  if (!(await fs.pathExists(absolutePath))) return null;
+  return hashContent(await fs.readFile(absolutePath));
+}
+
+export async function applyGen(
+  input: GenCommandInput,
+  reviewToken: string | undefined,
+  options: GenApplyOptions = {},
+): Promise<GenResult> {
+  const reviewed = await planGen({ ...input, apply: false, reviewToken: undefined });
+  if (!reviewed.success || reviewed.status !== "planned" || !reviewed.files) return reviewed;
+  if (!reviewToken || reviewed.reviewToken !== reviewToken) {
     return {
-      status: injection.ok ? "created" : "manual-wiring",
-      message: "dry run",
-      resourceFile,
-      registered: injection.ok,
+      ...reviewed,
+      success: false,
+      status: "blocked",
+      message: "The gen review token is missing or stale. Create and review a new plan.",
+      lifecycle: lifecycleResult({
+        ...(reviewed.lifecycle as LifecycleResult),
+        status: "blocked",
+        blockers: ["The gen review token is missing or stale."],
+        checks: [{ id: "review-token", status: "fail" }],
+      }),
     };
   }
 
-  await fs.writeFile(resourceFile, resourceContent, "utf-8");
-
-  if (!injection.ok) {
-    const relIndex = path.relative(projectDir, routerIndexPath);
-    const message = `Created ${relResourceFile}, but could not auto-register it: ${injection.reason}. Wire it manually.`;
-    log.warn(pc.yellow(message));
-    log.message(
-      [
-        `Add these two lines to ${relIndex}:`,
-        pc.dim(`  import { ${resourceName}Router } from "./${resourceName}${importExt}";`),
-        pc.dim(`  ${resourceName}: ${resourceName}Router,   // inside appRouter`),
-      ].join("\n"),
+  let transaction: ProjectTransaction;
+  try {
+    await options.beforeTransactionSnapshot?.();
+    transaction = await beginProjectTransaction(
+      reviewed.projectDir as string,
+      "gen",
+      reviewed.files.map((file) => file.path),
     );
-    return { status: "manual-wiring", message, resourceFile, registered: false };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return {
+      ...reviewed,
+      success: false,
+      status: "failed",
+      message: `Could not create the recovery snapshot: ${message}`,
+      lifecycle: lifecycleResult({
+        ...(reviewed.lifecycle as LifecycleResult),
+        status: "failed",
+        blockers: [message],
+        sideEffects: [{ kind: "filesystem", status: "not-run", description: message }],
+      }),
+    };
   }
 
-  await fs.writeFile(routerIndexPath, injection.content, "utf-8");
+  try {
+    await options.beforeMutation?.();
+    for (const file of reviewed.files) {
+      if ((await currentPreimage(reviewed.projectDir as string, file)) !== file.preimageSha256) {
+        throw new Error(`Reviewed preimage changed before apply: ${file.path}`);
+      }
+    }
+    for (const [index, file] of reviewed.files.entries()) {
+      markProjectTransactionWrite(transaction, file.path, file.postimageSha256);
+      await journalProjectTransactionWrites(transaction, [file.path]);
+      const target = path.join(reviewed.projectDir as string, file.path);
+      await fs.ensureDir(path.dirname(target));
+      if (options.writeFile) await options.writeFile(target, file.content);
+      else await fs.writeFile(target, file.content, "utf-8");
+      await options.afterWrite?.(file, index);
+    }
+    await journalProjectTransactionWrites(transaction);
+    await commitProjectTransaction(transaction);
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    try {
+      await rollbackProjectTransaction(transaction);
+    } catch (rollbackError) {
+      const rollbackReason =
+        rollbackError instanceof Error ? rollbackError.message : String(rollbackError);
+      return {
+        ...reviewed,
+        success: false,
+        status: "rolled-back",
+        recoveryId: transaction.id,
+        message: `${reason}. Automatic rollback failed: ${rollbackReason}.`,
+        lifecycle: lifecycleResult({
+          ...(reviewed.lifecycle as LifecycleResult),
+          status: "failed",
+          recovery: {
+            available: true,
+            transactionId: transaction.id,
+            command: getProjectRecoveryCommand(
+              reviewed.projectDir as string,
+              transaction.id,
+              process.platform,
+              undefined,
+            ),
+          },
+          sideEffects: [
+            {
+              kind: "filesystem",
+              status: "failed",
+              description: reason,
+              compensatingAction: "Run the reported recovery command.",
+            },
+          ],
+        }),
+      };
+    }
+    return {
+      ...reviewed,
+      success: false,
+      status: "rolled-back",
+      recoveryId: transaction.id,
+      message: `${reason}. Every gen preimage was restored.`,
+      lifecycle: lifecycleResult({
+        ...(reviewed.lifecycle as LifecycleResult),
+        status: "rolled-back",
+        recovery: { available: true, transactionId: transaction.id, automaticRollback: true },
+        history: { recorded: true, recoveryId: transaction.id },
+        sideEffects: [
+          {
+            kind: "filesystem",
+            status: "restored",
+            description: "Every gen preimage was restored.",
+          },
+        ],
+      }),
+    };
+  }
 
-  const relIndex = path.relative(projectDir, routerIndexPath);
-  const message = `Created ${relResourceFile} and registered \`${resourceName}: ${resourceName}Router\` in ${relIndex}.`;
-  log.success(pc.green(message));
-  return { status: "created", message, resourceFile, registered: true };
+  return {
+    ...reviewed,
+    status: "created",
+    recoveryId: transaction.id,
+    message: `Applied ${reviewed.recipeId} as one recoverable recipe transaction.`,
+    lifecycle: lifecycleResult({
+      ...(reviewed.lifecycle as LifecycleResult),
+      status: "applied",
+      recovery: {
+        available: true,
+        transactionId: transaction.id,
+        command: getProjectRecoveryCommand(
+          reviewed.projectDir as string,
+          transaction.id,
+          process.platform,
+          undefined,
+        ),
+        automaticRollback: true,
+      },
+      history: { recorded: true, recoveryId: transaction.id },
+      sideEffects: [
+        {
+          kind: "filesystem",
+          status: "applied",
+          description: "Applied every reviewed recipe file and managed entry.",
+        },
+      ],
+      nextActions: ["Run the declared recipe checks, then review migration guidance."],
+    }),
+  };
+}
+
+function reportGenResult(result: GenResult): void {
+  if (result.status === "planned") {
+    log.info(pc.cyan(result.message));
+    for (const file of result.files ?? []) {
+      log.message(pc.dim(`  ${file.action === "create" ? "+" : "~"} ${file.path}`));
+    }
+    if (result.reviewToken) log.info(`Review token: ${pc.cyan(result.reviewToken)}`);
+    return;
+  }
+  if (result.status === "created") {
+    log.success(pc.green(result.message));
+    if (result.lifecycle?.recovery.command) {
+      log.info(pc.dim(`Recovery: ${result.lifecycle.recovery.command}`));
+    }
+    return;
+  }
+  log.warn(pc.yellow(result.message));
+}
+
+export async function genCommand(input: GenCommandInput): Promise<GenResult> {
+  let result: GenResult;
+  if (input.dryRun && input.apply) {
+    result = {
+      success: false,
+      status: "blocked",
+      message: "--dry-run and --apply cannot be used together.",
+    };
+  } else if (input.apply) {
+    result = await applyGen(input, input.reviewToken);
+  } else {
+    result = await planGen(input);
+  }
+
+  if (input.json) console.log(JSON.stringify(result, null, 2));
+  else reportGenResult(result);
+  return result;
 }

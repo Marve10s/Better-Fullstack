@@ -3,10 +3,11 @@ import { appendFile, lstat, mkdtemp, readlink, readdir, readFile, rm } from "nod
 import { tmpdir } from "node:os";
 import path from "node:path";
 
+import { applyScaffoldUpgrade } from "../apps/cli/src/helpers/core/scaffold-upgrade";
 import {
-  applyScaffoldUpgrade,
-  recordUpgradeBaseline,
-} from "../apps/cli/src/helpers/core/scaffold-upgrade";
+  confirmProjectAdoption,
+  planProjectAdoption,
+} from "../apps/cli/src/utils/project-adoption";
 import { planReviewedProjectUpdate } from "../apps/cli/src/utils/project-lifecycle";
 import { recoverProjectTransaction } from "../apps/cli/src/utils/project-transaction";
 
@@ -126,9 +127,10 @@ async function validate(repository: string, root: string): Promise<ValidationRes
   const projectDir = path.join(root, repository.replace("/", "--"));
   try {
     await clone(repository, projectDir);
-    if (!(await recordUpgradeBaseline(projectDir))) {
-      throw new Error("Could not adopt a manifest-v2 baseline");
-    }
+    const adoptionPlan = await planProjectAdoption(projectDir);
+    if (!adoptionPlan.success) throw new Error(adoptionPlan.error);
+    const adoption = await confirmProjectAdoption(projectDir, adoptionPlan.confirmationToken);
+    if (!adoption.success) throw new Error(adoption.error);
     const userEdit = await injectUserEdit(projectDir);
     const before = await snapshot(projectDir);
     const plan = await planReviewedProjectUpdate(projectDir);

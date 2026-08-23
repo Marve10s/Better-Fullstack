@@ -1,4 +1,10 @@
-import type { AiDocs, ProjectConfig } from "@better-fullstack/types";
+import {
+  formatStackPartSpec,
+  getCapabilityInventory,
+  legacyProjectConfigToStackParts,
+  type AiDocs,
+  type ProjectConfig,
+} from "@better-fullstack/types";
 
 import type { VirtualFileSystem } from "../core/virtual-fs";
 
@@ -169,9 +175,57 @@ function generateMarkdownDoc(config: ProjectConfig, docType: AiDocs): string {
   sections.push(generateTechStackSection(config));
   sections.push(generateStructureSection(config));
   sections.push(generateCommandsSection(config));
+  sections.push(generateBetterFullstackContextSection(config));
   sections.push(generateMaintenanceSection(docType));
 
   return sections.join("\n");
+}
+
+function generateBetterFullstackContextSection(config: ProjectConfig): string {
+  const parts = config.stackParts ?? legacyProjectConfigToStackParts(config);
+  const inventory = getCapabilityInventory();
+  const partLines = parts
+    .filter((part) => part.source !== "provided" && part.toolId !== "none")
+    .map((part) => {
+      const owner = part.ownerPartId
+        ? parts.find((candidate) => candidate.id === part.ownerPartId)
+        : undefined;
+      const evidence =
+        inventory.find(
+          (record) => record.ecosystem === part.ecosystem && record.optionId === part.toolId,
+        ) ?? inventory.find((record) => record.optionId === part.toolId);
+      const ownerText = owner ? ` It belongs to \`${formatStackPartSpec(owner, parts)}\`.` : "";
+      const pathText = part.targetPath ? ` Its generated target is \`${part.targetPath}\`.` : "";
+      const evidenceText = evidence
+        ? ` Evidence is \`${evidence.evidenceLevel}\` with \`${evidence.freshness}\` freshness. Verification maintainer: ${evidence.maintenanceOwner}.`
+        : " Evidence is not mapped for this installed option.";
+      return `- \`${formatStackPartSpec(part, parts)}\`.${ownerText}${pathText}${evidenceText}`;
+    })
+    .sort();
+
+  return `
+## Better Fullstack project context
+
+\`bts.jsonc\` is the authority for the current Stack Graph. Its \`stackParts\` array owns role selection and \`ownerPartId\` bindings. Top-level option fields are a compatibility projection and must not become a second mutation path.
+
+### Stack Parts, ownership, and evidence
+
+${partLines.join("\n") || "- No selected Stack Parts were recorded."}
+
+### Installed-version authority
+
+Use \`bts.jsonc\` for the generator and schema version. Use local package manifests and lockfiles for installed dependency versions. Do not assume that documentation for a newer Better Fullstack release matches this project.
+
+### Compatibility and lifecycle safety
+
+Run \`create-better-fullstack context --json\` for bounded roles, capabilities, evidence, compatibility issues, and safe next actions. Run \`create-better-fullstack doctor --json\` before repairing graph drift. Existing-project writes must start with a plan and use the exact review token. Use \`create-better-fullstack recipes check --json\` before editing recipe-owned paths or managed regions, and use recipe history plus project recovery commands to undo a reviewed operation.
+
+User code outside an explicit Better Fullstack managed region is not generator-owned. Missing or changed managed-region hashes stop recipe planning for manual review.
+
+<!-- <better-fullstack:recipes sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855> -->
+
+<!-- </better-fullstack:recipes> -->
+`;
 }
 
 function generateTechStackSection(config: ProjectConfig): string {

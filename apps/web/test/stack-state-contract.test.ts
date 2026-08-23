@@ -175,6 +175,44 @@ describe("StackState contract", () => {
     expect(params.get("campaign")).toBe("run-before-you-clone");
   });
 
+  it("round-trips schema-backed starter track filters through builder URL state", () => {
+    const initialState = getInitialBuilderState({
+      tr: "python",
+      td: "container",
+      tpm: "uv",
+      tdb: "postgres",
+      ta: "none",
+      tws: "single-app",
+      te: "listed",
+    });
+    const params = createLiveBuilderSearchParams(
+      initialState.stack,
+      initialState.viewMode,
+      initialState.selectedFile,
+      initialState.campaign,
+      initialState.starterTrackFilters,
+    );
+
+    expect(initialState.starterTrackFilters).toEqual({
+      evidence: "listed",
+      runtime: "python",
+      deploymentTarget: "container",
+      packageManager: "uv",
+      database: "postgres",
+      auth: "none",
+      workspaceShape: "single-app",
+    });
+    expect(Object.fromEntries(params.entries())).toMatchObject({
+      te: "listed",
+      tr: "python",
+      td: "container",
+      tpm: "uv",
+      tdb: "postgres",
+      ta: "none",
+      tws: "single-app",
+    });
+  });
+
   it("supports compact share paths for exact ecosystem and default multi stacks", () => {
     const elixirStack = parseStackShareSlug("Elixir");
     const multiStack = createDefaultMultiEcosystemShareStack();

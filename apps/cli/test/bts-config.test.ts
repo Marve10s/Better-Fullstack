@@ -77,6 +77,15 @@ describe("bts.jsonc graph persistence", () => {
     expect(parsed.goWebFramework).toBe("none");
     expect(parsed.javaWebFramework).toBe("none");
     expect(parsed.elixirWebFramework).toBe("none");
+    expect(parsed.stackParts?.find((part) => part.role === "ui")?.settings).toMatchObject({
+      shadcnBase: "radix",
+      shadcnStyle: "nova",
+      shadcnIconLibrary: "lucide",
+      shadcnColorTheme: "neutral",
+      shadcnBaseColor: "neutral",
+      shadcnFont: "inter",
+      shadcnRadius: "default",
+    });
 
     const readBack = await readBtsConfig(config.projectDir);
     expect(readBack?.frontend).toEqual(["tanstack-router"]);
@@ -165,6 +174,58 @@ describe("bts.jsonc graph persistence", () => {
     expect(readBack?.mobilePush).toBe("expo-notifications");
     expect(readBack?.mobileOTA).toBe("expo-updates");
     expect(readBack?.mobileDeepLinking).toBe("expo-linking");
+  });
+
+  it("migrates missing graph settings once and then lets the graph win", async () => {
+    const stackParts = parseStackPartSpecs([
+      "frontend:typescript:next",
+      "frontend.ui:typescript:shadcn-ui",
+    ]);
+    const config = await makeProjectConfig({
+      stackParts,
+      shadcnStyle: "luma",
+      shadcnFont: "geist",
+    });
+
+    await writeBtsConfig(config);
+
+    const first = await readJsonc(config.projectDir);
+    const uiPart = first.parsed.stackParts?.find((part) => part.role === "ui");
+    expect(uiPart?.settings).toMatchObject({ shadcnStyle: "luma", shadcnFont: "geist" });
+
+    let staleContent = first.raw;
+    for (const [key, value] of Object.entries({ shadcnStyle: "nova", shadcnFont: "inter" })) {
+      staleContent = JSONC.applyEdits(
+        staleContent,
+        JSONC.modify(staleContent, [key], value, {
+          formattingOptions: { tabSize: 2, insertSpaces: true, eol: "\n" },
+        }),
+      );
+    }
+    await writeFile(join(config.projectDir, "bts.jsonc"), staleContent, "utf8");
+
+    const readBack = await readBtsConfig(config.projectDir);
+    expect(readBack?.shadcnStyle).toBe("luma");
+    expect(readBack?.shadcnFont).toBe("geist");
+    expect(readBack?.stackParts?.find((part) => part.role === "ui")?.settings).toMatchObject({
+      shadcnStyle: "luma",
+      shadcnFont: "geist",
+    });
+  });
+
+  it("persists Elixir JSON as project metadata even when graph parts exist", async () => {
+    const config = await makeProjectConfig({
+      ecosystem: "elixir",
+      elixirWebFramework: "phoenix",
+      elixirJson: "jason",
+      stackParts: parseStackPartSpecs(["backend:elixir:phoenix"]),
+    });
+
+    await writeBtsConfig(config);
+
+    const { parsed } = await readJsonc(config.projectDir);
+    expect(parsed.elixirJson).toBe("jason");
+    expect(parsed.stackParts?.some((part) => part.settings?.elixirJson !== undefined)).toBe(false);
   });
 
   it("normalizes stale non-selected cache fields when reading stackParts", async () => {

@@ -3,7 +3,12 @@ import pc from "picocolors";
 
 import type { ProjectConfig } from "../types";
 
-import { STACK_TOOL_DEFINITIONS, StackPartEcosystemSchema, StackPartRoleSchema } from "../types";
+import {
+  getProjectConfigEvidence,
+  STACK_TOOL_DEFINITIONS,
+  StackPartEcosystemSchema,
+  StackPartRoleSchema,
+} from "../types";
 import { getLatestCLIVersion } from "./get-latest-cli-version";
 import { canPromptInteractively } from "./prompt-environment";
 import { TelemetryDeliveryQueue } from "./telemetry-delivery";
@@ -570,5 +575,18 @@ export async function trackProjectCreation(
   disableAnalytics = false,
   outcome: TelemetryOutcome = {},
 ) {
-  await trackEvent("project_created", config, outcome, disableAnalytics);
+  const evidence = getProjectConfigEvidence(config);
+  const failed = outcome.success === false;
+  await trackEvent(
+    "project_created",
+    {
+      ...config,
+      decision_stage: "create",
+      selection_outcome: failed ? "create-failed" : "create-completed",
+      selected_evidence_level: evidence.level,
+      selection_problem: failed ? "reliability" : "none",
+    },
+    outcome,
+    disableAnalytics,
+  );
 }

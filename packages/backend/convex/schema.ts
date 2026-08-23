@@ -205,6 +205,13 @@ export default defineSchema({
     setupOutcomes: v.optional(distributionValidator),
     installSelections: v.optional(distributionValidator),
     decisionEvents: v.optional(v.number()),
+    decisionEligibleEvents: v.optional(v.number()),
+    decisionCoverageVersion: v.optional(v.number()),
+    selectionOutcomes: v.optional(distributionValidator),
+    evidenceLevels: v.optional(distributionValidator),
+    decisionStages: v.optional(distributionValidator),
+    starterTracks: v.optional(distributionValidator),
+    selectionProblems: v.optional(distributionValidator),
     durationBuckets: v.optional(distributionValidator),
     fileCountBuckets: v.optional(distributionValidator),
     changedFileCountBuckets: v.optional(distributionValidator),
@@ -218,6 +225,9 @@ export default defineSchema({
     returningMachines: v.optional(v.number()),
     returningMachinesVersion: v.optional(v.number()),
     trackedMachineEvents: v.optional(v.number()),
+    lifecycleMachineEvents: v.optional(v.number()),
+    uniqueLifecycleMachines: v.optional(v.number()),
+    returningLifecycleMachines: v.optional(v.number()),
   }),
 
   analyticsDailyStats: defineTable({
@@ -230,6 +240,13 @@ export default defineSchema({
     // Optional for compatibility with rows created before decision-window
     // aggregates shipped. `decisionEvents / totalEvents` exposes coverage.
     decisionEvents: v.optional(v.number()),
+    decisionEligibleEvents: v.optional(v.number()),
+    decisionCoverageVersion: v.optional(v.number()),
+    selectionOutcomes: v.optional(distributionValidator),
+    evidenceLevels: v.optional(distributionValidator),
+    decisionStages: v.optional(distributionValidator),
+    starterTracks: v.optional(distributionValidator),
+    selectionProblems: v.optional(distributionValidator),
     actions: v.optional(distributionValidator),
     actionStatuses: v.optional(distributionValidator),
     actionOutcomes: v.optional(distributionValidator),
@@ -255,6 +272,24 @@ export default defineSchema({
   }).index("by_machine_id", ["machineId"]),
 
   analyticsMachineDailyActivity: defineTable({
+    date: v.string(),
+    machineId: v.string(),
+    eventCount: v.number(),
+    firstSeen: v.number(),
+    lastSeen: v.number(),
+  })
+    .index("by_date", ["date"])
+    .index("by_date_machine", ["date", "machineId"])
+    .index("by_machine_date", ["machineId", "date"]),
+
+  analyticsLifecycleMachines: defineTable({
+    machineId: v.string(),
+    firstSeen: v.number(),
+    lastSeen: v.number(),
+    eventCount: v.number(),
+  }).index("by_machine_id", ["machineId"]),
+
+  analyticsLifecycleMachineDailyActivity: defineTable({
     date: v.string(),
     machineId: v.string(),
     eventCount: v.number(),

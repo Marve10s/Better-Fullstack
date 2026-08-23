@@ -105,6 +105,7 @@ import {
   KotlinMobileSchema,
   legacyProjectConfigToStackParts,
   LoggingSchema,
+  mergeProjectConfigSettingsIntoStackParts,
   ObservabilitySchema,
   ORMSchema,
   OPTION_CATEGORY_METADATA,
@@ -137,6 +138,7 @@ import {
   PythonWebFrameworkSchema,
   RateLimitSchema,
   BotProtectionSchema,
+  CAPABILITY_EVIDENCE_LEVEL_IDS,
   RealtimeSchema,
   RuntimeSchema,
   RustApiSchema,
@@ -165,6 +167,14 @@ import {
   ShadcnStyleSchema,
   stackPartsToLegacyProjectConfigPartial,
   StateManagementSchema,
+  STARTER_TRACK_AUTH_IDS,
+  STARTER_TRACK_DATABASE_IDS,
+  STARTER_TRACK_DEPLOYMENT_TARGET_IDS,
+  STARTER_TRACK_IDS,
+  STARTER_TRACK_PACKAGE_MANAGER_IDS,
+  STARTER_TRACK_RUNTIME_IDS,
+  STARTER_TRACK_WORKSPACE_SHAPE_IDS,
+  type StarterTrackFilters,
   SwiftMobileSchema,
   TestingSchema,
   UILibrarySchema,
@@ -185,23 +195,58 @@ import { McpServer } from "@modelcontextprotocol/server";
 import { serveStdio } from "@modelcontextprotocol/server/stdio";
 import z from "zod";
 
+import { applyGen, planGen } from "./commands/gen";
+import { getRecipesResult } from "./commands/recipes";
+import { getStarterTrackRecommendation, getStarterTracksResult } from "./commands/starter-tracks";
+import {
+  applyPrimaryRoleReplacement,
+  planPrimaryRoleReplacement,
+} from "./helpers/core/primary-role-replacement";
+import { applyPackInstall, planPackInstall } from "./helpers/core/registry-handler";
 import { applyStackUpdate, planStackUpdate } from "./helpers/core/stack-update";
 import { trackEvent, trackProjectCreation, withCommandTelemetry } from "./utils/analytics";
 import { readBtsConfig } from "./utils/bts-config";
+import { getCapabilityEvidenceReport } from "./utils/capability-evidence";
+import { applyConfigDriftRepair, planConfigDriftRepair } from "./utils/config-drift-repair";
 import { applyEffectBackendDefaults } from "./utils/config-processing";
 import { runWithContextAsync } from "./utils/context";
 import { generateReproducibleCommand } from "./utils/generate-reproducible-command";
 import { getLatestCLIVersion } from "./utils/get-latest-cli-version";
 import { getEffectiveStack, getGraphSummary } from "./utils/graph-summary";
 import {
+  LIFECYCLE_CONTRACT_VERSION,
+  SUPPORTED_LIFECYCLE_CONTRACT_VERSIONS,
+} from "./utils/lifecycle-contract";
+import {
+  lifecycleResultOutputSchema,
+  genMutationOutputSchema,
+  partRemovalOutputSchema,
+  projectAdoptionOutputSchema,
+  projectContextOutputSchema,
+  projectStatusOutputSchema,
+  projectUpdateOutputSchema,
+  projectVerificationOutputSchema,
+  recoveryManagementOutputSchema,
+  recoveryOutputSchema,
+  recipesOutputSchema,
+  registryMutationOutputSchema,
+} from "./utils/mcp-lifecycle-output-schemas";
+import {
   applyMcpPartRemoval,
   applyMcpProjectUpdate,
   checkMcpProject,
+  confirmMcpProjectAdoption,
+  getMcpProjectRecoveryPoint,
   getMcpProjectStatus,
+  listMcpProjectRecoveryPoints,
   planMcpPartRemoval,
+  planMcpProjectAdoption,
   planMcpProjectUpdate,
+  pruneMcpProjectRecoveryPoints,
   recoverMcpProjectTransaction,
+  verifyMcpProjectRecoveryPoint,
 } from "./utils/mcp-project-lifecycle";
+import { getProjectContext } from "./utils/project-context";
 import { getCompatibilityBackend } from "./utils/stack-compatibility";
 import { getTemplateConfig, getTemplateDescription } from "./utils/templates";
 
@@ -222,11 +267,15 @@ RECOMMENDED WORKFLOW:
 
 For existing projects:
 1. Call bfs_get_project_status, then bfs_check_project for truthful target verification.
-2. Call bfs_plan_project_update to review current-template drift. Only a valid manifest v2 baseline returns a reviewToken.
-3. Pass that exact reviewToken to bfs_apply_project_update, adding acknowledgeUnprovenManifestV1: true only when the plan reports unverified provenance. Apply creates its own recovery point.
-4. For removal, call bfs_plan_part_removal with one exact non-primary stack part, review the result, then pass its unchanged token to bfs_apply_part_removal.
-5. Use bfs_plan_stack_update / bfs_apply_stack_update for provider changes.
-6. Use bfs_plan_addition / bfs_add_feature for owner-scoped tooling Stack Parts and deploy targets.
+2. If bts.lock.json is missing, call bfs_plan_project_adoption. Review its likely Stack Parts and uncertainty, then pass its exact token to bfs_confirm_project_adoption only with user approval.
+3. Call bfs_plan_project_update to review current-template drift. Only a valid manifest v2 baseline returns a reviewToken.
+4. Pass that exact reviewToken to bfs_apply_project_update, adding acknowledgeUnprovenManifestV1: true only when the plan reports unverified provenance. Apply creates its own recovery point.
+5. For removal, call bfs_plan_part_removal with one exact non-primary stack part, review the result, then pass its unchanged token to bfs_apply_part_removal.
+6. Use bfs_plan_stack_update / bfs_apply_stack_update for provider changes.
+7. Use bfs_plan_addition / bfs_add_feature for owner-scoped tooling Stack Parts and deploy targets.
+8. Use bfs_list_project_recovery_points when a recovery ID is unknown, then show or verify the point before restore. Pruning is a dry run unless apply is true.
+9. For in-project generation, call bfs_plan_gen, review every exact file and managed-region change, then call bfs_apply_gen with its unchanged token. Run the declared migration and integration checks, then call bfs_check_recipes.
+10. For a local capability pack, call bfs_plan_registry_add, review all files and dependency metadata, then call bfs_apply_registry_add with its unchanged token.
 
 CRITICAL RULES:
 - Dependency installation is ALWAYS skipped in MCP mode (timeout risk). After scaffolding, tell the user to run install manually.
@@ -240,6 +289,12 @@ CRITICAL RULES:
 
 function getGuidance() {
   return {
+    lifecycleContract: {
+      currentVersion: LIFECYCLE_CONTRACT_VERSION,
+      supportedVersions: [...SUPPORTED_LIFECYCLE_CONTRACT_VERSIONS],
+      unknownVersionBehavior:
+        "Do not apply. Treat the structured mutation result as unsupported and require a compatible client.",
+    },
     workflow: [
       "Call bfs_get_guidance (this tool) to understand field semantics and rules.",
       "Call bfs_get_schema to see valid values for each category.",
@@ -248,6 +303,7 @@ function getGuidance() {
       "Call bfs_create_project to scaffold the project on disk.",
       "For existing projects: call bfs_get_project_status and bfs_check_project, then use the reviewed project-update or stack-update workflow that matches the requested change.",
       "Use bfs_plan_addition / bfs_add_feature for owner-scoped tooling Stack Parts and deploy targets.",
+      "Use bfs_list_project_recovery_points to discover recovery IDs, then show or verify one before restore. Preview pruning before setting apply to true.",
     ],
     ecosystems: {
       typescript:
@@ -792,9 +848,12 @@ function buildProjectConfig(
   }
 
   if (Array.isArray(input.part) && input.part.length > 0) {
-    const stackParts = parseStackPartSpecs(
-      input.part.filter((part): part is string => typeof part === "string"),
-      "selected",
+    const stackParts = mergeProjectConfigSettingsIntoStackParts(
+      parseStackPartSpecs(
+        input.part.filter((part): part is string => typeof part === "string"),
+        "selected",
+      ),
+      config,
     );
     if (isToolingOverlayOnly(stackParts)) {
       config.stackParts = stackParts;
@@ -1100,6 +1159,11 @@ type McpToolAnnotations = {
 };
 
 const guidanceOutputSchema = z.object({
+  lifecycleContract: z.object({
+    currentVersion: z.literal("2"),
+    supportedVersions: z.array(z.literal("2")),
+    unknownVersionBehavior: z.string(),
+  }),
   workflow: z.array(z.string()),
   ecosystems: z.record(z.string(), z.string()),
   fieldRules: z.record(z.string(), z.string()),
@@ -1114,6 +1178,39 @@ const schemaOutputSchema = z.object({
   error: z.string().optional(),
 });
 
+const compatibilityCapabilityReferenceOutputSchema = z.object({
+  id: z.string(),
+  category: z.string(),
+  optionId: z.string(),
+});
+
+const compatibilityExplanationOutputSchema = z.object({
+  schemaVersion: z.literal(1),
+  ruleId: z.string(),
+  reason: z.string(),
+  message: z.string(),
+  capability: compatibilityCapabilityReferenceOutputSchema,
+  owner: z.object({
+    kind: z.enum(["stack-part", "capability"]),
+    capability: compatibilityCapabilityReferenceOutputSchema,
+    stackPart: z
+      .object({
+        id: z.string(),
+        role: z.string(),
+        ecosystem: z.string(),
+        toolId: z.string(),
+      })
+      .nullable(),
+  }),
+  candidateStackPart: z
+    .object({
+      role: z.string(),
+      ecosystem: z.string(),
+    })
+    .nullable(),
+  alternatives: z.array(compatibilityCapabilityReferenceOutputSchema),
+});
+
 const compatibilityIssueOutputSchema = z.object({
   code: z.string(),
   message: z.string(),
@@ -1121,6 +1218,7 @@ const compatibilityIssueOutputSchema = z.object({
   optionId: z.string().optional(),
   provided: z.record(z.string(), z.union([z.string(), z.array(z.string())])).optional(),
   suggestions: z.array(z.string()).optional(),
+  explanation: compatibilityExplanationOutputSchema.optional(),
 });
 
 const compatibilityOutputSchema = z.object({
@@ -1130,46 +1228,113 @@ const compatibilityOutputSchema = z.object({
   hasIssues: z.boolean(),
 });
 
+const starterTrackOutputSchema = z.object({
+  id: z.enum(STARTER_TRACK_IDS),
+  name: z.string(),
+  intent: z.string(),
+  description: z.string(),
+  presetId: z.string(),
+  ecosystem: EcosystemSchema,
+  icon: z.string(),
+  guideHref: z.string(),
+  docsHref: z.string(),
+  highlights: z.array(z.string()),
+  audience: z.string(),
+  outcome: z.string(),
+  ctaLabel: z.string(),
+  selection: z.record(z.string(), z.unknown()),
+  stackPartSpecs: z.array(z.string()),
+  compatibility: z.object({
+    valid: z.boolean(),
+    issues: z.array(z.record(z.string(), z.unknown())),
+  }),
+  evidence: z.record(z.string(), z.unknown()),
+  facets: z.object({
+    runtimes: z.array(z.enum(STARTER_TRACK_RUNTIME_IDS)),
+    deploymentTargets: z.array(z.enum(STARTER_TRACK_DEPLOYMENT_TARGET_IDS)),
+    packageManagers: z.array(z.enum(STARTER_TRACK_PACKAGE_MANAGER_IDS)),
+    databases: z.array(z.enum(STARTER_TRACK_DATABASE_IDS)),
+    auth: z.array(z.enum(STARTER_TRACK_AUTH_IDS)),
+    workspaceShapes: z.array(z.enum(STARTER_TRACK_WORKSPACE_SHAPE_IDS)),
+  }),
+});
+
+const starterTrackCatalogOutputSchema = z.object({
+  schemaVersion: z.number(),
+  filters: z.record(z.string(), z.string().optional()),
+  ecosystem: EcosystemSchema.nullable(),
+  trackId: z.enum(STARTER_TRACK_IDS).nullable(),
+  total: z.number(),
+  tracks: z.array(starterTrackOutputSchema),
+});
+
+const starterTrackRecommendationOutputSchema = z.object({
+  schemaVersion: z.literal(1),
+  recommendationMode: z.literal("deterministic"),
+  modelUsed: z.literal(false),
+  track: starterTrackOutputSchema,
+  matchedTerms: z.array(z.string()),
+  score: z.number(),
+  rationale: z.string(),
+  constraints: z.array(z.string()),
+  projectName: z.string(),
+  reproducibleCommand: z.string(),
+});
+
+const capabilityEvidenceOutputSchema = z.object({
+  schemaVersion: z.number(),
+  inventorySchemaVersion: z.number(),
+  levels: z.array(
+    z.object({
+      id: z.string(),
+      label: z.string(),
+      proves: z.string(),
+      doesNotProve: z.string(),
+      requiredEvidence: z.array(z.string()),
+    }),
+  ),
+  summary: z.object({
+    totalOptions: z.number(),
+    evidence: z.record(z.string(), z.number()),
+    freshness: z.record(z.string(), z.number()),
+  }),
+  recipes: z.array(z.record(z.string(), z.unknown())),
+  maintenanceCosts: z.array(
+    z.object({
+      recipeId: z.string(),
+      flakyRuns: z.number(),
+      repairMinutes: z.number(),
+      dependencyChanges: z.number(),
+      maintainerPresent: z.boolean(),
+      recurringCostScore: z.number(),
+    }),
+  ),
+  inventory: z.array(
+    z.object({
+      id: z.string(),
+      ecosystem: z.string(),
+      category: z.string(),
+      optionId: z.string(),
+      label: z.string(),
+      maintenanceOwner: z.string(),
+      maturity: z.string(),
+      public: z.boolean(),
+      declaredEvidenceLevel: z.string(),
+      evidenceLevel: z.string(),
+      freshness: z.string(),
+      lastVerifiedVersion: z.string().nullable(),
+      lastVerifiedAt: z.string().nullable(),
+      limitation: z.string(),
+      recipeIds: z.array(z.string()),
+    }),
+  ),
+});
+
 const graphPreviewOutputShape = {
   graphSummary: z.string().optional(),
   effectiveStack: z.record(z.string(), z.string()).optional(),
   stackPartSpecs: z.array(z.string()).optional(),
 };
-
-const lifecycleVersionsOutputSchema = z.object({
-  cli: z.string(),
-  generator: z.string(),
-  templateSet: z.string(),
-  schema: z.string(),
-});
-
-const lifecycleResultOutputSchema = z.object({
-  contractVersion: z.literal("1"),
-  operation: z.enum(["create", "add", "remove", "stack-update", "template-update", "recover"]),
-  status: z.enum(["planned", "applied", "blocked", "failed", "rolled-back", "recovered"]),
-  projectDir: z.string(),
-  changes: z.object({
-    added: z.number(),
-    patched: z.number(),
-    merged: z.number(),
-    removed: z.number(),
-    manual: z.number(),
-  }),
-  warnings: z.array(z.string()),
-  blockers: z.array(z.string()),
-  provenance: z.object({
-    source: lifecycleVersionsOutputSchema.nullable(),
-    target: lifecycleVersionsOutputSchema.nullable(),
-    verified: z.boolean(),
-  }),
-  recovery: z.object({
-    available: z.boolean(),
-    transactionId: z.string().optional(),
-    command: z.string().optional(),
-    automaticRollback: z.boolean().optional(),
-  }),
-  nextActions: z.array(z.string()),
-});
 
 const planProjectOutputSchema = z.object({
   success: z.boolean(),
@@ -1238,7 +1403,39 @@ const stackUpdateOutputSchema = z.object({
   message: z.string().optional(),
   lifecycle: lifecycleResultOutputSchema.optional(),
   recoveryId: z.string().optional(),
+  applyAllowed: z.boolean().optional(),
+  reviewToken: z.string().optional(),
+  primaryReplacement: z
+    .object({
+      target: z.string(),
+      replacement: z.string(),
+      before: z.string(),
+      after: z.string(),
+      rewiredDependentParts: z.array(z.string()),
+      configKeys: z.array(z.string()),
+    })
+    .optional(),
   ...graphPreviewOutputShape,
+});
+
+const configDriftRepairOutputSchema = z.object({
+  success: z.boolean(),
+  mode: z.enum(["plan", "applied"]).optional(),
+  projectDir: z.string(),
+  changed: z.boolean().optional(),
+  changes: z
+    .array(
+      z.object({
+        path: z.string(),
+        action: z.enum(["add", "update", "remove"]),
+        reason: z.string(),
+      }),
+    )
+    .optional(),
+  reviewToken: z.string().optional(),
+  recoveryId: z.string().optional(),
+  error: z.string().optional(),
+  lifecycle: lifecycleResultOutputSchema.optional(),
 });
 
 function buildPresetStackSummary(config: CreateInput): string {
@@ -1286,220 +1483,8 @@ function listMcpPresets() {
   return presets;
 }
 
-function briefMatches(text: string, keywords: string[]): boolean {
-  const tokens = new Set(text.split(/[^a-z0-9]+/i).filter(Boolean));
-  return keywords.some((keyword) =>
-    keyword.includes(" ") ? text.includes(keyword) : tokens.has(keyword),
-  );
-}
-
-function matchNearestPreset(input: Record<string, unknown>): Template | null {
-  const signatureKeys = ["database", "backend", "api", "auth"] as const;
-  const inputFrontend = (input.frontend as string[] | undefined)?.[0];
-  let best: { id: Template; score: number } | null = null;
-  for (const id of TEMPLATE_VALUES) {
-    if (id === "none") continue;
-    const config = getTemplateConfig(id);
-    if (!config) continue;
-    let score = 0;
-    for (const key of signatureKeys) {
-      const value = config[key];
-      if (value !== undefined && value === input[key]) score += 1;
-    }
-    const presetFrontend = (config.frontend ?? [])[0];
-    if (presetFrontend && presetFrontend === inputFrontend) score += 1;
-    if (!best || score > best.score) best = { id, score };
-  }
-  return best && best.score >= 3 ? best.id : null;
-}
-
-export function recommendStackFromBrief(
-  brief: string,
-  ecosystemHint?: ProjectConfig["ecosystem"],
-): { input: Record<string, unknown>; rationale: string[]; matchedPreset: Template | null } {
-  const text = brief.toLowerCase();
-  const has = (...keywords: string[]) => briefMatches(text, keywords);
-  const rationale: string[] = [];
-  const input: Record<string, unknown> = {};
-
-  if (ecosystemHint && ecosystemHint !== "typescript") {
-    input.ecosystem = ecosystemHint;
-    rationale.push(
-      `Ecosystem forced to ${ecosystemHint} from the provided hint; using ${ecosystemHint} defaults.`,
-    );
-    rationale.push(
-      `Brief keyword analysis (database/auth/payments/AI feature detection) currently applies to the TypeScript ecosystem only — configure those features explicitly for ${ecosystemHint} via bfs_check_compatibility.`,
-    );
-    return { input, rationale, matchedPreset: null };
-  }
-
-  const wantsMobile =
-    has("mobile", "ios", "android", "expo") ||
-    text.includes("react native") ||
-    text.includes("react-native") ||
-    text.includes("app store") ||
-    text.includes("play store");
-  if (wantsMobile) {
-    input.ecosystem = "react-native";
-    input.frontend = ["native-uniwind"];
-    input.backend = "none";
-    input.runtime = "none";
-    input.api = "none";
-    input.database = "none";
-    input.orm = "none";
-    rationale.push(
-      "Mobile app detected: React Native (Expo) with the native-uniwind styling preset and no bundled backend.",
-    );
-    return { input, rationale, matchedPreset: "uniwind" };
-  }
-
-  input.ecosystem = "typescript";
-  input.frontend = ["tanstack-router"];
-  input.backend = "hono";
-  input.runtime = "bun";
-  input.database = "sqlite";
-  input.orm = "drizzle";
-  input.api = "trpc";
-  rationale.push(
-    "Default TypeScript fullstack baseline: TanStack Router + Hono + tRPC on SQLite/Drizzle (Bun).",
-  );
-
-  if (has("postgres", "postgresql", "supabase", "neon")) {
-    input.database = "postgres";
-    input.orm = "drizzle";
-    rationale.push("Postgres requested: database=postgres, orm=drizzle.");
-  } else if (has("mysql", "planetscale")) {
-    input.database = "mysql";
-    input.orm = "drizzle";
-    rationale.push("MySQL requested: database=mysql, orm=drizzle.");
-  } else if (has("mongo", "mongodb")) {
-    input.database = "mongodb";
-    input.orm = "mongoose";
-    rationale.push("MongoDB requested: database=mongodb, orm=mongoose.");
-  }
-
-  const wantsSaas = has(
-    "saas",
-    "payment",
-    "payments",
-    "billing",
-    "subscription",
-    "subscriptions",
-    "checkout",
-    "stripe",
-    "ecommerce",
-  );
-  if (wantsSaas) {
-    input.payments = "stripe";
-    input.auth = "better-auth";
-    if (input.database === "sqlite") {
-      input.database = "postgres";
-      input.orm = "drizzle";
-    }
-    rationale.push(
-      "SaaS/payments detected: Stripe + better-auth, upgraded to Postgres/Drizzle for production data.",
-    );
-  } else if (
-    has(
-      "auth",
-      "login",
-      "signin",
-      "signup",
-      "account",
-      "accounts",
-      "user",
-      "users",
-      "authentication",
-      "admin",
-      "dashboard",
-      "portal",
-      "members",
-      "rbac",
-      "permissions",
-      "roles",
-    )
-  ) {
-    input.auth = "better-auth";
-    rationale.push("Authentication requested: auth=better-auth.");
-  }
-
-  if (
-    has("ai", "chatbot", "llm", "gpt", "rag", "agent", "agents", "openai", "assistant", "copilot")
-  ) {
-    input.ai = "vercel-ai";
-    input.examples = ["ai"];
-    rationale.push("AI/chatbot detected: Vercel AI SDK with the bundled AI example.");
-  }
-
-  if (has("blog", "content", "cms", "marketing", "landing", "publishing")) {
-    input.cms = "sanity";
-    rationale.push("Content/marketing site detected: Sanity CMS.");
-  }
-
-  if (
-    has("realtime", "collaborative", "collaboration", "multiplayer", "presence") ||
-    text.includes("real-time") ||
-    text.includes("real time")
-  ) {
-    input.realtime = "socket-io";
-    rationale.push("Realtime/collaboration detected: Socket.IO.");
-  }
-
-  let matchedPreset: Template | null = null;
-  if (has("t3")) matchedPreset = "t3";
-  else if (has("mern")) matchedPreset = "mern";
-  else if (has("pern")) matchedPreset = "pern";
-  else matchedPreset = matchNearestPreset(input);
-  if (matchedPreset) {
-    rationale.push(`Closest ready-made preset: ${matchedPreset}.`);
-  }
-
-  return { input, rationale, matchedPreset };
-}
-
-function normalizeAdjustedToInput(
-  adjusted: Record<string, unknown>,
-  base: Record<string, unknown>,
-): Record<string, unknown> {
-  const webFrontend = (adjusted.webFrontend as string[] | undefined) ?? [];
-  const nativeFrontend = (adjusted.nativeFrontend as string[] | undefined) ?? [];
-  const frontend = [...webFrontend, ...nativeFrontend];
-  const codeQuality = (adjusted.codeQuality as string[] | undefined) ?? [];
-  const documentation = (adjusted.documentation as string[] | undefined) ?? [];
-  const appPlatforms = (adjusted.appPlatforms as string[] | undefined) ?? [];
-  return {
-    ...adjusted,
-    projectName: base.projectName,
-    ecosystem: adjusted.ecosystem ?? base.ecosystem,
-    frontend: frontend.length > 0 ? frontend : (base.frontend as string[] | undefined),
-    addons: [...codeQuality, ...documentation, ...appPlatforms],
-    ai: adjusted.aiSdk ?? base.ai,
-  };
-}
-
-function summarizeRecommendedConfig(config: ProjectConfig) {
-  const isTsWeb = config.ecosystem === "typescript" || config.ecosystem === "react-native";
-  return {
-    projectName: config.projectName,
-    ecosystem: config.ecosystem,
-    ...(isTsWeb
-      ? {
-          frontend: config.frontend,
-          backend: config.backend,
-          runtime: config.runtime,
-          api: config.api,
-        }
-      : {}),
-    database: config.database,
-    orm: config.orm,
-    auth: config.auth,
-    payments: config.payments,
-    ai: config.ai,
-    cms: config.cms,
-    realtime: config.realtime,
-    examples: config.examples,
-    stackPartSpecs: getMcpGraphPreview(config).stackPartSpecs,
-  };
+export function recommendStackFromBrief(brief: string, ecosystemHint?: ProjectConfig["ecosystem"]) {
+  return getStarterTrackRecommendation({ brief, ecosystem: ecosystemHint });
 }
 
 const mobileInputSchema = {
@@ -1856,10 +1841,84 @@ export function createMcpServer(): McpServer {
   );
 
   registerTool(
+    "bfs_list_starter_tracks",
+    {
+      description:
+        "Lists the canonical schema-valid starter tracks with their exact editable Stack Parts, compatibility result, evidence breakdown, and bounded filters. Returns the same catalog used by the web builder and CLI.",
+      outputSchema: starterTrackCatalogOutputSchema,
+      inputSchema: mcpInputSchema({
+        id: z.enum(STARTER_TRACK_IDS).optional().describe("Return one exact starter track"),
+        ecosystem: EcosystemSchema.optional().describe("Filter by language ecosystem"),
+        evidence: z.enum(CAPABILITY_EVIDENCE_LEVEL_IDS).optional(),
+        runtime: z.enum(STARTER_TRACK_RUNTIME_IDS).optional(),
+        deploymentTarget: z.enum(STARTER_TRACK_DEPLOYMENT_TARGET_IDS).optional(),
+        packageManager: z.enum(STARTER_TRACK_PACKAGE_MANAGER_IDS).optional(),
+        database: z.enum(STARTER_TRACK_DATABASE_IDS).optional(),
+        auth: z.enum(STARTER_TRACK_AUTH_IDS).optional(),
+        workspaceShape: z.enum(STARTER_TRACK_WORKSPACE_SHAPE_IDS).optional(),
+        receipt: z
+          .record(z.string(), z.unknown())
+          .optional()
+          .describe("Optional capability evidence receipt JSON"),
+      }),
+      annotations: {
+        title: "List starter tracks",
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async ({
+      id,
+      ecosystem,
+      evidence,
+      runtime,
+      deploymentTarget,
+      packageManager,
+      database,
+      auth,
+      workspaceShape,
+      receipt,
+    }: {
+      id?: (typeof STARTER_TRACK_IDS)[number];
+      ecosystem?: ProjectConfig["ecosystem"];
+      evidence?: (typeof CAPABILITY_EVIDENCE_LEVEL_IDS)[number];
+      runtime?: (typeof STARTER_TRACK_RUNTIME_IDS)[number];
+      deploymentTarget?: (typeof STARTER_TRACK_DEPLOYMENT_TARGET_IDS)[number];
+      packageManager?: (typeof STARTER_TRACK_PACKAGE_MANAGER_IDS)[number];
+      database?: (typeof STARTER_TRACK_DATABASE_IDS)[number];
+      auth?: (typeof STARTER_TRACK_AUTH_IDS)[number];
+      workspaceShape?: (typeof STARTER_TRACK_WORKSPACE_SHAPE_IDS)[number];
+      receipt?: Record<string, unknown>;
+    }) => {
+      const filters: StarterTrackFilters = {
+        evidence,
+        runtime,
+        deploymentTarget,
+        packageManager,
+        database,
+        auth,
+        workspaceShape,
+      };
+      const result = getStarterTracksResult({
+        ecosystem,
+        filters,
+        receipt,
+        trackId: id,
+      });
+      return {
+        content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+        structuredContent: result,
+      };
+    },
+  );
+
+  registerTool(
     "bfs_recommend_stack",
     {
       description:
         "Recommends a compatibility-validated stack from a natural-language brief using deterministic keyword rules (no LLM). Returns the config, rationale, any auto-applied compatibility adjustments, the nearest matching preset, and a reproducible CLI command.",
+      outputSchema: starterTrackRecommendationOutputSchema,
       inputSchema: mcpInputSchema({
         brief: z
           .string()
@@ -1873,6 +1932,10 @@ export function createMcpServer(): McpServer {
           .string()
           .optional()
           .describe("Project name (kebab-case). Default: 'my-app'."),
+        receipt: z
+          .record(z.string(), z.unknown())
+          .optional()
+          .describe("Optional capability evidence receipt JSON"),
       }),
       annotations: {
         title: "Recommend stack",
@@ -1885,36 +1948,20 @@ export function createMcpServer(): McpServer {
       brief,
       ecosystem,
       projectName,
+      receipt,
     }: {
       brief: string;
       ecosystem?: ProjectConfig["ecosystem"];
       projectName?: string;
+      receipt?: Record<string, unknown>;
     }) => {
       try {
-        const {
-          input: recommended,
-          rationale,
-          matchedPreset,
-        } = recommendStackFromBrief(brief, ecosystem);
-        const baseInput: Record<string, unknown> = {
-          projectName: projectName ?? "my-app",
-          ...recommended,
-        };
-        const compatResult = analyzeStackCompatibility(buildMcpCompatibilityInput(baseInput));
-        const normalizedInput = compatResult.adjustedStack
-          ? normalizeAdjustedToInput(
-              compatResult.adjustedStack as unknown as Record<string, unknown>,
-              baseInput,
-            )
-          : baseInput;
-        const finalConfig = buildProjectConfig(normalizedInput, {
-          projectDir: `/${baseInput.projectName as string}`,
+        const result = getStarterTrackRecommendation({
+          brief,
+          ecosystem,
+          projectName,
+          receipt,
         });
-        const adjustments = compatResult.changes.map(
-          (change) => `${change.category}: ${change.message}`,
-        );
-        const graphPreview = getMcpGraphPreview(finalConfig);
-        const reproducibleCommand = generateReproducibleCommand(finalConfig);
         return {
           content: [
             {
@@ -1922,20 +1969,16 @@ export function createMcpServer(): McpServer {
               text: JSON.stringify(
                 {
                   brief,
-                  config: summarizeRecommendedConfig(finalConfig),
-                  rationale,
-                  adjustments,
-                  matchedPreset,
-                  reproducibleCommand,
-                  ...graphPreview,
+                  ...result,
                   nextSteps:
-                    "Call bfs_plan_project with this config to preview the files, then bfs_create_project to scaffold it.",
+                    "Review the exact Stack Parts, then call bfs_plan_project before bfs_create_project.",
                 },
                 null,
                 2,
               ),
             },
           ],
+          structuredContent: result,
         };
       } catch (error) {
         return {
@@ -2237,6 +2280,7 @@ export function createMcpServer(): McpServer {
       inputSchema: mcpInputSchema({
         projectDir: z.string().describe("Path to the existing Better Fullstack project"),
       }),
+      outputSchema: projectStatusOutputSchema,
       annotations: {
         title: "Get project status",
         readOnlyHint: true,
@@ -2262,6 +2306,7 @@ export function createMcpServer(): McpServer {
       inputSchema: mcpInputSchema({
         projectDir: z.string().describe("Path to the existing Better Fullstack project"),
       }),
+      outputSchema: projectVerificationOutputSchema,
       annotations: {
         title: "Check project",
         readOnlyHint: false,
@@ -2280,6 +2325,285 @@ export function createMcpServer(): McpServer {
   );
 
   registerTool(
+    "bfs_plan_doctor_fix",
+    {
+      description:
+        "Plans canonical bts.jsonc Stack Graph and compatibility-cache repair. It reports exact fields and a current-state review token without writing.",
+      inputSchema: mcpInputSchema({
+        projectDir: z.string().describe("Path to the existing Better Fullstack project"),
+      }),
+      outputSchema: configDriftRepairOutputSchema,
+      annotations: {
+        title: "Plan doctor config repair",
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async (input: { projectDir: string }) => {
+      const payload = await planConfigDriftRepair(sanitizePath(input.projectDir));
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
+        ...(!payload.success ? { isError: true } : {}),
+      };
+    },
+  );
+
+  registerTool(
+    "bfs_apply_doctor_fix",
+    {
+      description:
+        "Applies one unchanged bfs_plan_doctor_fix result to bts.jsonc inside a recovery transaction. A missing or stale token fails before the config write.",
+      inputSchema: mcpInputSchema({
+        projectDir: z.string().describe("Path to the existing Better Fullstack project"),
+        reviewToken: z
+          .string()
+          .length(64)
+          .describe("Exact reviewToken returned by bfs_plan_doctor_fix"),
+      }),
+      outputSchema: configDriftRepairOutputSchema,
+      annotations: {
+        title: "Apply doctor config repair",
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: false,
+      },
+    },
+    async (input: { projectDir: string; reviewToken: string }) => {
+      const payload = await applyConfigDriftRepair(
+        sanitizePath(input.projectDir),
+        input.reviewToken,
+      );
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
+        ...(!payload.success ? { isError: true } : {}),
+      };
+    },
+  );
+
+  registerTool(
+    "bfs_plan_gen",
+    {
+      description:
+        "Plans an in-project resource generator operation. It returns every exact file body, router-index edit, preimage hash, and a review token. It never writes.",
+      inputSchema: mcpInputSchema({
+        projectDir: z.string().describe("Path to the existing Better Fullstack project"),
+        kind: z.enum(["resource", "route"]).default("resource"),
+        name: z.string().min(1).describe("Resource name, for example post"),
+      }),
+      outputSchema: genMutationOutputSchema,
+      annotations: {
+        title: "Plan in-project generation",
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async (input: { projectDir: string; kind: "resource" | "route"; name: string }) => {
+      const payload = await planGen({
+        dir: sanitizePath(input.projectDir),
+        kind: input.kind,
+        name: input.name,
+      });
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
+        ...(!payload.success ? { isError: true } : {}),
+      };
+    },
+  );
+
+  registerTool(
+    "bfs_apply_gen",
+    {
+      description:
+        "Applies an unchanged bfs_plan_gen result in one filesystem recovery transaction. A stale anchor, file, or token fails before writes.",
+      inputSchema: mcpInputSchema({
+        projectDir: z.string().describe("Path to the existing Better Fullstack project"),
+        kind: z.enum(["resource", "route"]).default("resource"),
+        name: z.string().min(1).describe("Resource name from the reviewed plan"),
+        reviewToken: z.string().length(64).describe("Exact token returned by bfs_plan_gen"),
+      }),
+      outputSchema: genMutationOutputSchema,
+      annotations: {
+        title: "Apply reviewed in-project generation",
+        readOnlyHint: false,
+        destructiveHint: true,
+        idempotentHint: false,
+        openWorldHint: false,
+      },
+    },
+    async (input: {
+      projectDir: string;
+      kind: "resource" | "route";
+      name: string;
+      reviewToken: string;
+    }) => {
+      const payload = await applyGen(
+        { dir: sanitizePath(input.projectDir), kind: input.kind, name: input.name },
+        input.reviewToken,
+      );
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
+        ...(!payload.success ? { isError: true } : {}),
+      };
+    },
+  );
+
+  registerTool(
+    "bfs_check_recipes",
+    {
+      description:
+        "Checks each recipe-owned file and exact managed-region entry against its deterministic local record. It reads files but does not execute generated code or mutate the project.",
+      inputSchema: mcpInputSchema({
+        projectDir: z.string().describe("Path to the existing Better Fullstack project"),
+        name: z.string().optional().describe("Optional recipe name or recipe ID"),
+      }),
+      outputSchema: recipesOutputSchema,
+      annotations: {
+        title: "Check generated recipes",
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async (input: { projectDir: string; name?: string }) => {
+      const payload = await getRecipesResult({
+        action: "check",
+        dir: sanitizePath(input.projectDir),
+        name: input.name,
+      });
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
+        ...(!payload.success ? { isError: true } : {}),
+      };
+    },
+  );
+
+  registerTool(
+    "bfs_get_recipe_history",
+    {
+      description:
+        "Correlates deterministic recipe records with their project recovery transactions. It does not modify the project.",
+      inputSchema: mcpInputSchema({
+        projectDir: z.string().describe("Path to the existing Better Fullstack project"),
+      }),
+      outputSchema: recipesOutputSchema,
+      annotations: {
+        title: "Get recipe history",
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async (input: { projectDir: string }) => {
+      const payload = await getRecipesResult({
+        action: "history",
+        dir: sanitizePath(input.projectDir),
+      });
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
+      };
+    },
+  );
+
+  registerTool(
+    "bfs_get_project_context",
+    {
+      description:
+        "Returns the bounded project roles, capabilities, evidence, owning Stack Parts, compatibility issues, installed-version references, recipes, commands, and safe next actions without exposing source code.",
+      inputSchema: mcpInputSchema({
+        projectDir: z.string().describe("Path to the existing Better Fullstack project"),
+      }),
+      outputSchema: projectContextOutputSchema,
+      annotations: {
+        title: "Get project context",
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async (input: { projectDir: string }) => {
+      const payload = await getProjectContext(sanitizePath(input.projectDir));
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
+      };
+    },
+  );
+
+  registerTool(
+    "bfs_plan_registry_add",
+    {
+      description:
+        "Plans installation of a local capability pack. It returns exact file bodies, dependency changes, metadata merges, side-effect boundaries, and a review token. Remote sources are rejected.",
+      inputSchema: mcpInputSchema({
+        projectDir: z.string().describe("Path to the existing Better Fullstack project"),
+        source: z.string().describe("Local path or file:// URL to a capability pack"),
+      }),
+      outputSchema: registryMutationOutputSchema,
+      annotations: {
+        title: "Plan local capability pack install",
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async (input: { projectDir: string; source: string }) => {
+      const payload = await planPackInstall({
+        projectDir: sanitizePath(input.projectDir),
+        source: input.source,
+      });
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
+        ...(!payload.success ? { isError: true } : {}),
+      };
+    },
+  );
+
+  registerTool(
+    "bfs_apply_registry_add",
+    {
+      description:
+        "Applies an unchanged local capability-pack plan in one filesystem recovery transaction. It edits dependency manifests but never runs a package manager.",
+      inputSchema: mcpInputSchema({
+        projectDir: z.string().describe("Path to the existing Better Fullstack project"),
+        source: z.string().describe("Local path or file:// URL from the reviewed plan"),
+        reviewToken: z
+          .string()
+          .regex(/^v2\.[A-Za-z0-9_-]+\.[0-9a-f]{64}$/)
+          .describe("Exact token returned by bfs_plan_registry_add"),
+      }),
+      outputSchema: registryMutationOutputSchema,
+      annotations: {
+        title: "Apply reviewed local capability pack",
+        readOnlyHint: false,
+        destructiveHint: true,
+        idempotentHint: false,
+        openWorldHint: false,
+      },
+    },
+    async (input: { projectDir: string; source: string; reviewToken: string }) => {
+      const payload = await applyPackInstall(
+        { projectDir: sanitizePath(input.projectDir), source: input.source },
+        input.reviewToken,
+      );
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
+        ...(!payload.success ? { isError: true } : {}),
+      };
+    },
+  );
+
+  registerTool(
     "bfs_plan_part_removal",
     {
       description:
@@ -2290,6 +2614,7 @@ export function createMcpServer(): McpServer {
           .string()
           .describe("Exact stack part spec or ID, for example backend.auth:typescript:better-auth"),
       }),
+      outputSchema: partRemovalOutputSchema,
       annotations: {
         title: "Plan stack part removal",
         readOnlyHint: true,
@@ -2328,6 +2653,7 @@ export function createMcpServer(): McpServer {
             "Required when the plan reports an architecture-sensitive removal; data and schema are not migrated automatically.",
           ),
       }),
+      outputSchema: partRemovalOutputSchema,
       annotations: {
         title: "Apply reviewed stack part removal",
         readOnlyHint: false,
@@ -2357,6 +2683,66 @@ export function createMcpServer(): McpServer {
   );
 
   registerTool(
+    "bfs_plan_project_adoption",
+    {
+      description:
+        "Builds a read-only adoption plan for a project without bts.lock.json. It reports likely Stack Parts, current-template evidence, explicit uncertainty, and a token bound to the exact config and project bytes.",
+      inputSchema: mcpInputSchema({
+        projectDir: z.string().describe("Path to the existing Better Fullstack project"),
+      }),
+      outputSchema: projectAdoptionOutputSchema,
+      annotations: {
+        title: "Plan project adoption",
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async (input: { projectDir: string }) => {
+      const payload = await planMcpProjectAdoption(sanitizePath(input.projectDir));
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
+        ...(!payload.success ? { isError: true } : {}),
+      };
+    },
+  );
+
+  registerTool(
+    "bfs_confirm_project_adoption",
+    {
+      description:
+        "Creates bts.lock.json only when the exact token from bfs_plan_project_adoption still matches. The baseline records adopted-unverified lineage and cannot establish historical upgrade support.",
+      inputSchema: mcpInputSchema({
+        projectDir: z.string().describe("Path to the existing Better Fullstack project"),
+        confirmationToken: z
+          .string()
+          .length(64)
+          .describe("Exact confirmationToken returned by bfs_plan_project_adoption"),
+      }),
+      outputSchema: projectAdoptionOutputSchema,
+      annotations: {
+        title: "Confirm project adoption",
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: false,
+      },
+    },
+    async (input: { projectDir: string; confirmationToken: string }) => {
+      const payload = await confirmMcpProjectAdoption(
+        sanitizePath(input.projectDir),
+        input.confirmationToken,
+      );
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
+        ...(!payload.success ? { isError: true } : {}),
+      };
+    },
+  );
+
+  registerTool(
     "bfs_plan_project_update",
     {
       description:
@@ -2364,6 +2750,7 @@ export function createMcpServer(): McpServer {
       inputSchema: mcpInputSchema({
         projectDir: z.string().describe("Path to the existing Better Fullstack project"),
       }),
+      outputSchema: projectUpdateOutputSchema,
       annotations: {
         title: "Plan project update",
         readOnlyHint: true,
@@ -2399,6 +2786,7 @@ export function createMcpServer(): McpServer {
           .default(false)
           .describe("Required only when the plan reports unverified migrated/adopted lineage"),
       }),
+      outputSchema: projectUpdateOutputSchema,
       annotations: {
         title: "Apply reviewed project update",
         readOnlyHint: false,
@@ -2426,6 +2814,143 @@ export function createMcpServer(): McpServer {
   );
 
   registerTool(
+    "bfs_list_project_recovery_points",
+    {
+      description:
+        "Lists lifecycle recovery points with operation, status, integrity, and restore safety. This does not modify the project.",
+      inputSchema: mcpInputSchema({
+        projectDir: z.string().describe("Path to the existing Better Fullstack project"),
+      }),
+      outputSchema: recoveryManagementOutputSchema,
+      annotations: {
+        title: "List project recovery points",
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async (input: { projectDir: string }) => {
+      const payload = await listMcpProjectRecoveryPoints(sanitizePath(input.projectDir));
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
+        ...(!payload.success ? { isError: true } : {}),
+      };
+    },
+  );
+
+  registerTool(
+    "bfs_get_project_recovery_point",
+    {
+      description:
+        "Shows one recovery point and validates its metadata, backup hashes, and current restore preconditions without writing.",
+      inputSchema: mcpInputSchema({
+        projectDir: z.string().describe("Path to the existing Better Fullstack project"),
+        transactionId: z.string().uuid().describe("Recovery transaction ID"),
+      }),
+      outputSchema: recoveryManagementOutputSchema,
+      annotations: {
+        title: "Show project recovery point",
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async (input: { projectDir: string; transactionId: string }) => {
+      const payload = await getMcpProjectRecoveryPoint(
+        sanitizePath(input.projectDir),
+        input.transactionId,
+      );
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
+        ...(!payload.success ? { isError: true } : {}),
+      };
+    },
+  );
+
+  registerTool(
+    "bfs_verify_project_recovery_point",
+    {
+      description:
+        "Checks one recovery point's metadata, backup hashes, and current restore preconditions without writing.",
+      inputSchema: mcpInputSchema({
+        projectDir: z.string().describe("Path to the existing Better Fullstack project"),
+        transactionId: z.string().uuid().describe("Recovery transaction ID"),
+      }),
+      outputSchema: recoveryManagementOutputSchema,
+      annotations: {
+        title: "Verify project recovery point",
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async (input: { projectDir: string; transactionId: string }) => {
+      const payload = await verifyMcpProjectRecoveryPoint(
+        sanitizePath(input.projectDir),
+        input.transactionId,
+      );
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
+        ...(!payload.success ? { isError: true } : {}),
+      };
+    },
+  );
+
+  registerTool(
+    "bfs_prune_project_recovery_points",
+    {
+      description:
+        "Previews retention candidates by default. With apply true, deletes only terminal, valid recovery points outside the age and newest-count safeguards. Pending and invalid points are retained.",
+      inputSchema: mcpInputSchema({
+        projectDir: z.string().describe("Path to the existing Better Fullstack project"),
+        olderThanDays: z
+          .number()
+          .int()
+          .min(0)
+          .optional()
+          .default(30)
+          .describe("Only consider terminal points at least this old"),
+        keep: z
+          .number()
+          .int()
+          .min(0)
+          .optional()
+          .default(5)
+          .describe("Always retain this many newest valid recovery points"),
+        apply: z
+          .boolean()
+          .optional()
+          .default(false)
+          .describe("Delete the previewed candidates; false returns a dry-run result"),
+      }),
+      outputSchema: recoveryManagementOutputSchema,
+      annotations: {
+        title: "Prune project recovery points",
+        readOnlyHint: false,
+        destructiveHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async (input: { projectDir: string; olderThanDays: number; keep: number; apply: boolean }) => {
+      const payload = await pruneMcpProjectRecoveryPoints(
+        sanitizePath(input.projectDir),
+        input.olderThanDays,
+        input.keep,
+        input.apply,
+      );
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
+        ...(!payload.success ? { isError: true } : {}),
+      };
+    },
+  );
+
+  registerTool(
     "bfs_recover_project_transaction",
     {
       description:
@@ -2434,6 +2959,7 @@ export function createMcpServer(): McpServer {
         projectDir: z.string().describe("Path to the existing Better Fullstack project"),
         transactionId: z.string().uuid().describe("Recovery transaction ID returned by apply"),
       }),
+      outputSchema: recoveryOutputSchema,
       annotations: {
         title: "Recover project transaction",
         readOnlyHint: false,
@@ -2451,6 +2977,101 @@ export function createMcpServer(): McpServer {
         content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
         structuredContent: payload,
         ...(!payload.success ? { isError: true } : {}),
+      };
+    },
+  );
+
+  registerTool(
+    "bfs_plan_primary_role_replacement",
+    {
+      description:
+        "Plans replacement of one exact frontend, backend, mobile, or database Primary Role. It preserves stable custom identity, rewires compatible owner-scoped parts, and never writes.",
+      inputSchema: mcpInputSchema({
+        projectDir: z.string().describe("Path to the existing Better Fullstack project"),
+        target: z.string().describe("Exact selected Primary Role spec or stable ID"),
+        replacement: z.string().describe("Replacement Stack Part spec with the same Primary Role"),
+      }),
+      outputSchema: stackUpdateOutputSchema,
+      annotations: {
+        title: "Plan Primary Role replacement",
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async (input: { projectDir: string; target: string; replacement: string }) => {
+      const result = await planPrimaryRoleReplacement(
+        sanitizePath(input.projectDir),
+        input.target,
+        input.replacement,
+      );
+      if (!result.success) {
+        return {
+          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+          structuredContent: result,
+          isError: true,
+        };
+      }
+      const { operations: _operations, filesUnchanged: _filesUnchanged, ...payload } = result;
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
+      };
+    },
+  );
+
+  registerTool(
+    "bfs_apply_primary_role_replacement",
+    {
+      description:
+        "Applies one reviewed Primary Role replacement with its exact token and migration acknowledgement. Cross-ecosystem owner capabilities remain outside the automatic boundary.",
+      inputSchema: mcpInputSchema({
+        projectDir: z.string().describe("Path to the existing Better Fullstack project"),
+        target: z.string().describe("Exact target from the reviewed replacement plan"),
+        replacement: z.string().describe("Exact replacement from the reviewed plan"),
+        reviewToken: z
+          .string()
+          .length(64)
+          .describe("Exact reviewToken returned by bfs_plan_primary_role_replacement"),
+        acknowledgeArchitectureChange: z
+          .boolean()
+          .default(false)
+          .describe("Acknowledge the complete migration and application-data checklist"),
+      }),
+      outputSchema: stackUpdateOutputSchema,
+      annotations: {
+        title: "Apply Primary Role replacement",
+        readOnlyHint: false,
+        destructiveHint: true,
+        idempotentHint: false,
+        openWorldHint: false,
+      },
+    },
+    async (input: {
+      projectDir: string;
+      target: string;
+      replacement: string;
+      reviewToken: string;
+      acknowledgeArchitectureChange: boolean;
+    }) => {
+      const result = await applyPrimaryRoleReplacement(
+        sanitizePath(input.projectDir),
+        input.target,
+        input.replacement,
+        input.reviewToken,
+        input.acknowledgeArchitectureChange,
+      );
+      if (!result.success) {
+        return {
+          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+          structuredContent: result,
+          isError: true,
+        };
+      }
+      const { operations: _operations, filesUnchanged: _filesUnchanged, ...payload } = result;
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
       };
     },
   );
@@ -2771,6 +3392,82 @@ export function createMcpServer(): McpServer {
         };
       }
     },
+  );
+
+  registerTool(
+    "bfs_get_capability_evidence",
+    {
+      description:
+        "Returns per-option evidence, maturity, freshness, maintenance ownership, golden runtime recipes, and structured limitations. Without a current matching receipt, evidence fails closed to listed.",
+      inputSchema: mcpInputSchema({
+        ecosystem: EcosystemSchema.optional().describe("Optional ecosystem filter"),
+        category: z.string().optional().describe("Optional canonical option-category filter"),
+        optionId: z.string().optional().describe("Optional exact option ID filter"),
+        receiptJson: z
+          .string()
+          .optional()
+          .describe("Optional capability-runtime receipt JSON from a trusted release artifact"),
+        producerFingerprint: z
+          .string()
+          .regex(/^[0-9a-f]{64}$/i)
+          .optional()
+          .describe("Expected producer fingerprint when a receipt is supplied"),
+      }),
+      outputSchema: capabilityEvidenceOutputSchema,
+      annotations: {
+        title: "Inspect capability evidence",
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async (input: {
+      ecosystem?: OptionCategoryEcosystem;
+      category?: string;
+      optionId?: string;
+      receiptJson?: string;
+      producerFingerprint?: string;
+    }) => {
+      if (input.category && !(input.category in OPTION_CATEGORY_METADATA)) {
+        throw new Error(`Unknown option category: ${input.category}`);
+      }
+      const receipt = input.receiptJson ? (JSON.parse(input.receiptJson) as unknown) : undefined;
+      const payload = getCapabilityEvidenceReport({
+        receipt,
+        catalogVersion: getLatestCLIVersion(),
+        producerFingerprint: input.producerFingerprint,
+        ecosystem: input.ecosystem,
+        category: input.category as OptionCategory | undefined,
+        optionId: input.optionId,
+      });
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
+      };
+    },
+  );
+
+  server.registerResource(
+    "capability-evidence-levels",
+    "docs://capability-evidence-levels",
+    {
+      description:
+        "The shared listed, generated, build-verified, and runtime-verified capability evidence contract.",
+      mimeType: "application/json",
+      cacheHint: { ttlMs: 300_000, cacheScope: "public" },
+    },
+    async () => ({
+      contents: [
+        {
+          uri: "docs://capability-evidence-levels",
+          text: JSON.stringify(
+            getCapabilityEvidenceReport({ catalogVersion: getLatestCLIVersion() }),
+            null,
+            2,
+          ),
+        },
+      ],
+    }),
   );
 
   server.registerResource(

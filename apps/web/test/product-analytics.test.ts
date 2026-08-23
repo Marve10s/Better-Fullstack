@@ -13,6 +13,12 @@ describe("browser product analytics", () => {
         failure_reason: "dependency_install_exit",
         duration_ms: 1200.4,
         rerun: true,
+        decision_stage: "plan",
+        selection_outcome: "plan-abandoned",
+        selected_evidence_level: "runtime-verified",
+        selection_problem: "missing-capability",
+        starter_track: "rest-api",
+        brief: "private prompt content",
         status: "failed",
         machineId: "caller-controlled-id",
         projectName: "private-client",
@@ -33,6 +39,11 @@ describe("browser product analytics", () => {
       failure_reason: "dependency_install_exit",
       duration_ms: 1200,
       rerun: true,
+      decision_stage: "plan",
+      selection_outcome: "plan-abandoned",
+      selected_evidence_level: "runtime-verified",
+      selection_problem: "missing-capability",
+      starter_track: "rest-api",
     });
   });
 

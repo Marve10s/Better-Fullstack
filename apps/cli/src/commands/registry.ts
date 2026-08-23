@@ -16,6 +16,8 @@ export type RegistryCommandInput = {
   projectDir?: string;
   json?: boolean;
   dryRun?: boolean;
+  apply?: boolean;
+  reviewToken?: string;
 };
 
 function formatCount(count: number, noun: string): string {
@@ -23,10 +25,10 @@ function formatCount(count: number, noun: string): string {
 }
 
 function reportAddResult(result: RegistryAddResult): void {
-  const label = result.dryRun ? "[dry run] Would install" : "Installed";
+  const label = result.mode === "plan" ? "Would install" : "Installed";
   log.info(pc.cyan(`${label} ${result.pack.name}@${result.pack.version}`));
 
-  const fileLabel = result.dryRun ? "would write" : "wrote";
+  const fileLabel = result.mode === "plan" ? "would write" : "wrote";
   log.message(
     pc.dim(
       `Files: ${fileLabel} ${formatCount(result.filesWritten.length, "file")}` +
@@ -49,6 +51,12 @@ function reportAddResult(result: RegistryAddResult): void {
   if (result.envKeys.length > 0 && result.envFile) {
     log.message(pc.dim(`Env: ${formatCount(result.envKeys.length, "var")} -> ${result.envFile}`));
     for (const key of result.envKeys) log.message(pc.dim(`  + ${key}`));
+  }
+  if (result.mode === "plan" && result.reviewToken) {
+    log.info(`Review token: ${pc.cyan(result.reviewToken)}`);
+  }
+  if (result.mode === "applied" && result.lifecycle.recovery.command) {
+    log.info(pc.dim(`Recovery: ${result.lifecycle.recovery.command}`));
   }
 }
 
@@ -102,14 +110,34 @@ export async function registryHandler(input: RegistryCommandInput): Promise<void
     throw error;
   }
 
-  const dryRun = input.dryRun ?? false;
+  if (input.dryRun && input.apply) {
+    const error = new CLIError("--dry-run and --apply cannot be used together.");
+    if (input.json) reportJsonError(error);
+    throw error;
+  }
+  if (input.apply && !input.reviewToken) {
+    const error = new CLIError("--review-token is required with --apply.");
+    if (input.json) reportJsonError(error);
+    throw error;
+  }
   let result: RegistryAddResult;
   try {
-    result = await addPack({ projectDir, source: input.source, dryRun });
+    result = await addPack({
+      projectDir,
+      source: input.source,
+      dryRun: input.dryRun,
+      reviewToken: input.apply ? input.reviewToken : undefined,
+    });
   } catch (error) {
     if (input.json) {
       reportJsonError(error);
     }
+    throw error;
+  }
+
+  if (!result.success) {
+    const error = new CLIError(result.error ?? "Capability pack apply failed.");
+    if (input.json) reportJsonError(error);
     throw error;
   }
 
@@ -119,9 +147,17 @@ export async function registryHandler(input: RegistryCommandInput): Promise<void
   }
 
   renderTitle();
-  intro(pc.magenta(dryRun ? "Preview capability pack install" : "Install capability pack"));
+  intro(
+    pc.magenta(
+      result.mode === "plan" ? "Preview capability pack install" : "Install capability pack",
+    ),
+  );
   reportAddResult(result);
   outro(
-    pc.magenta(dryRun ? "Dry run complete. No files were written." : "Capability pack installed."),
+    pc.magenta(
+      result.mode === "plan"
+        ? "Plan complete. No files were written."
+        : "Capability pack installed.",
+    ),
   );
 }

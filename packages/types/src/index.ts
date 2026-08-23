@@ -11,3 +11,8 @@ export * from "./stack-translation";
 export * from "./stack-graph";
 export * from "./tooling-capabilities";
 export * from "./registry";
+export * from "./evidence";
+export * from "./capability-inventory";
+export * from "./update-support";
+export * from "./stack-comparison";
+export * from "./starter-tracks";

@@ -2,8 +2,9 @@ import type { CompatibilityAnalysisResult, CompatibilityCategory } from "@better
 
 import {
   analyzeStackCompatibility as analyzeStackCompatibilityShared,
+  formatCompatibilityDecision,
   getCategoryDisplayName,
-  getDisabledReason as getDisabledReasonShared,
+  getCompatibilityDecision,
   getToolingCategory,
   getToolingSelectionOptions,
   hasPWACompatibleFrontend,
@@ -77,7 +78,9 @@ export const getDisabledReason = (
   const toolingCategory = getToolingCategoryForUi(category);
   const selection = getToolingOptionForUi(category, optionId);
   if (!toolingCategory || !selection) {
-    return getDisabledReasonShared(currentStack, toCompatibilityCategory(category), optionId);
+    return formatCompatibilityDecision(
+      getCompatibilityDecision(currentStack, toCompatibilityCategory(category), optionId),
+    );
   }
 
   const replacementCategories =
@@ -115,7 +118,9 @@ export const getDisabledReason = (
         : toolingCategory === "documentation"
           ? "documentation"
           : "appPlatforms";
-    const reason = getDisabledReasonShared(compatibilityStack, compatibilityCategory, toolId);
+    const reason = formatCompatibilityDecision(
+      getCompatibilityDecision(compatibilityStack, compatibilityCategory, toolId),
+    );
     if (reason) return reason;
   }
   return null;

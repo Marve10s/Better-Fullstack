@@ -12,7 +12,7 @@ import {
   stackPartsToLegacyProjectConfigPartial,
 } from "../../types";
 import { readBtsConfig } from "../../utils/bts-config";
-import { hashContent } from "../../utils/scaffold-manifest";
+import { createReviewToken } from "../../utils/review-token";
 import { ADDONS_REQUIRING_IMPERATIVE_SETUP } from "../addons/addons-setup";
 import {
   applyStackUpdate,
@@ -195,13 +195,11 @@ async function resolveRemoval(projectDirInput: string, target: string): Promise<
 }
 
 function removalReviewToken(plan: StackUpdatePlan, removal: PartRemoval): string {
-  return hashContent(
-    JSON.stringify({
-      projectDir: plan.projectDir,
-      removal,
-      planDigest: getStackUpdatePlanDigest(plan),
-    }),
-  );
+  return createReviewToken("part-removal", {
+    projectDir: plan.projectDir,
+    removal,
+    planDigest: getStackUpdatePlanDigest(plan),
+  });
 }
 
 export async function planPartRemoval(

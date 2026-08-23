@@ -1,79 +1,28 @@
-export type VerifiedEvidenceLane = {
-  pass: number;
-  total: number;
-  current?: boolean;
-};
-
-export type VerifiedBadgeSummary = {
-  expiresAt?: string;
-  gitHead?: string;
-  expectedTotals?: {
-    releaseGuard: number;
-    publishedPackage: number;
-  };
-  smoke: VerifiedEvidenceLane[];
-  scaffbench: VerifiedEvidenceLane[];
-  releaseGuard: VerifiedEvidenceLane | null;
-  publishedPackage: VerifiedEvidenceLane | null;
-};
+import type { PublicVerificationReport } from "./release-verification";
 
 export type VerifiedCombinationsBadgePayload = {
   schemaVersion: 1;
   label: string;
   message: string;
-  color: "brightgreen" | "yellow" | "red";
+  color: "brightgreen" | "red";
   namedLogo: string;
+  verification: PublicVerificationReport;
 };
 
-export function verifiedEvidenceExpired(summary: VerifiedBadgeSummary, now: Date): boolean {
-  const expiry = summary.expiresAt ? Date.parse(summary.expiresAt) : Number.NaN;
-  return !Number.isFinite(expiry) || now.getTime() > expiry;
-}
-
-export function verifiedEvidenceMatchesDeployment(
-  summary: VerifiedBadgeSummary,
-  deployedGitHead?: string,
-): boolean {
-  return (
-    typeof deployedGitHead === "string" &&
-    /^[0-9a-f]{40}$/i.test(deployedGitHead) &&
-    summary.gitHead === deployedGitHead
-  );
-}
-
 export function verifiedCombinationsBadgePayload(
-  summary: VerifiedBadgeSummary,
-  now: Date = new Date(),
-  deployedGitHead?: string,
+  verification: PublicVerificationReport,
 ): VerifiedCombinationsBadgePayload {
-  const expired = verifiedEvidenceExpired(summary, now);
-  const revisionCurrent = verifiedEvidenceMatchesDeployment(summary, deployedGitHead);
-  const required = [
-    ...summary.smoke,
-    ...summary.scaffbench,
-    summary.releaseGuard ?? {
-      pass: 0,
-      total: summary.expectedTotals?.releaseGuard ?? 1,
-      current: false,
-    },
-    summary.publishedPackage ?? {
-      pass: 0,
-      total: summary.expectedTotals?.publishedPackage ?? 3,
-      current: false,
-    },
-  ];
-  const laneCurrent = (lane: VerifiedEvidenceLane) =>
-    !expired && revisionCurrent && lane.current === true;
-  const pass = required.reduce((total, lane) => total + (laneCurrent(lane) ? lane.pass : 0), 0);
-  const total = required.reduce((sum, lane) => sum + lane.total, 0);
-  const allCurrent = required.every((lane) => laneCurrent(lane));
-  const allPassing = allCurrent && total > 0 && pass === total;
-
+  const passed = verification.cases.filter((entry) => entry.result === "pass").length;
+  const total = verification.cases.length;
   return {
     schemaVersion: 1,
-    label: "verified combinations",
-    message: `${pass}/${total} passing`,
-    color: allPassing ? "brightgreen" : allCurrent && pass > 0 ? "yellow" : "red",
+    label: "Better Fullstack proof",
+    message:
+      verification.status === "verified"
+        ? `${passed}/${total} runtime verified`
+        : `0/${total} ${verification.status}`,
+    color: verification.status === "verified" ? "brightgreen" : "red",
     namedLogo: "githubactions",
+    verification,
   };
 }

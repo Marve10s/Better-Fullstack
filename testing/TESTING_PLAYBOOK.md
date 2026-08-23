@@ -13,17 +13,22 @@ The runtime hardening stack is split into separate lanes on purpose.
 - `bun test apps/cli/test/e2e/web-command-roundtrip.test.ts --timeout 600000`
   Verifies web-generated commands against the built CLI.
 - `bun run testing/generated-project-proof.ts`
-  Generates fresh projects for the exact Wave 2 install/build matrix: TypeScript + Go, Python,
-  Rust, .NET, and React Native + TypeScript backend. It writes SHA-bound evidence under
-  `testing/.smoke-output/generated-project-proof/`.
+  Generates one fresh project for each of the eight supported ecosystems. Every row installs or
+  builds and then crosses a live HTTP, gRPC, authentication, migration, or generated-command
+  boundary. It writes SHA-bound evidence under `testing/.smoke-output/generated-project-proof/`.
+- `bun run test:recipe-runtime`
+  Generates a fresh supported TypeScript project, applies a reviewed persistent resource recipe,
+  installs dependencies, applies its Drizzle schema, runs CRUD through tRPC, and verifies local
+  recipe ownership.
 
 Keep these lanes separate. A package-manager regression should fail the package-manager lane, not the smoke presets, and a runtime template regression should fail the relevant preset group.
 
 The generated-project proof lane is stricter than exploratory smoke coverage. Every declared
 toolchain must exist, every exact matrix row must be present, and every required step must execute
 successfully. Missing tools, skipped required steps, a dirty workspace, or a non-full/mismatched
-Git SHA produce non-green evidence and a nonzero exit. It proves fresh scaffold install/build
-health; it does not exercise an older project version or claim version-to-version upgrade safety.
+Git SHA produce non-green evidence and a nonzero exit. The lane proves only the behavior declared
+by each recipe. It does not claim behavior outside those assertions or version-to-version upgrade
+safety.
 
 ## Curated Generated-Project Proof
 
@@ -34,7 +39,7 @@ Prerequisites:
 
 - A clean Git worktree checked out at a real commit, so evidence can bind to the full 40-character
   SHA.
-- Node.js 22, Bun, `bunx`, Go, `uv`, Rust/Cargo, and the .NET SDK on `PATH`.
+- Node.js, Bun, `bunx`, Go, `uv`, Rust/Cargo, Java, Elixir/Mix, and the .NET SDK on `PATH`.
 - Network access to the package registries used by every matrix row.
 
 From the repository root:
@@ -45,17 +50,19 @@ bun run --cwd packages/types build
 bun run --cwd packages/template-generator build
 bun test testing/generated-project-proof.test.ts apps/web/test/project-download.test.ts
 bun test apps/web/test/browser-cli-lifecycle.test.ts --timeout 120000
+bun run test:recipe-runtime
 bun run testing/generated-project-proof.ts
 ```
 
-Success means both contract-test commands pass and the runner exits zero for all five exact rows:
-TypeScript + Go, Python, Rust, .NET, and React Native + TypeScript backend. The browser lifecycle
-contract deliberately checks an extracted, uninstalled ZIP as non-green, then proves current
-update planning plus public add dry-run/apply recognition without installing dependencies.
+Success means both contract-test commands pass and the runner exits zero for TypeScript, React
+Native, Rust, Python, Go, Java, Elixir, and .NET. The browser lifecycle contract deliberately checks
+an extracted, uninstalled ZIP as non-green, then proves current update planning plus public add
+dry-run and apply recognition without installing dependencies.
 
 Evidence is written to
 `testing/.smoke-output/generated-project-proof/generated-project-proof.json`; the readable summary
-is `testing/.smoke-output/generated-project-proof/generated-project-proof.md`. On failure, inspect
+is `testing/.smoke-output/generated-project-proof/generated-project-proof.md`. The capability
+projection is `testing/.smoke-output/generated-project-proof/capability-runtime-receipt.json`. On failure, inspect
 each recorded command, duration, exit/timeout status, and stdout/stderr tail in the JSON. Missing
 toolchains, skipped steps, a dirty worktree, or a short/mismatched SHA are proof failures, not
 warnings.

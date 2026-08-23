@@ -1,5 +1,8 @@
-import { OPTION_CATEGORY_METADATA } from "@better-fullstack/types";
-import { STACK_SELECTION_URL_KEYS } from "@better-fullstack/types/stack-translation";
+import {
+  OPTION_CATEGORY_METADATA,
+  STACK_SELECTION_URL_KEYS,
+  STARTER_TRACK_FILTER_URL_KEYS,
+} from "@better-fullstack/types";
 import { describe, expect, it } from "bun:test";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative, sep } from "node:path";
@@ -29,13 +32,19 @@ const CONTENT_SECTION_ROOTS = new Map([
   ["guides", GUIDES_ROOT],
   ["blog", BLOG_ROOT],
 ] as const);
-const BUILDER_URL_KEYS = new Set([...Object.values(STACK_SELECTION_URL_KEYS), "preset", "view"]);
+const BUILDER_URL_KEYS = new Set([
+  ...Object.values(STACK_SELECTION_URL_KEYS),
+  ...Object.values(STARTER_TRACK_FILTER_URL_KEYS),
+  "preset",
+  "view",
+]);
 const PENDING_TRANSLATION_PATHS = [
   "content/docs/ai/mcp.mdx",
   "content/docs/ai/overview.mdx",
   "content/docs/cli/add.mdx",
   "content/docs/cli/create.mdx",
   "content/docs/cli/experimental.mdx",
+  "content/docs/cli/gen.mdx",
   "content/docs/cli/index.mdx",
   "content/docs/cli/mcp.mdx",
   "content/docs/cli/telemetry.mdx",
@@ -48,6 +57,7 @@ const PENDING_TRANSLATION_PATHS = [
   "content/docs/getting-started/lifecycle.mdx",
   "content/docs/index.mdx",
   "content/docs/stack-guides.mdx",
+  "content/docs/verification.mdx",
   "content/docs/web-builder.mdx",
   "content/blog/better-auth-architecture.mdx",
   "content/blog/drizzle-vs-prisma.mdx",

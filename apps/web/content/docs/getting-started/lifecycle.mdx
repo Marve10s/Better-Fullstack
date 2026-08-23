@@ -1,26 +1,25 @@
 ---
 title: Project Lifecycle
-description: Choose the right Better Fullstack command to create, evolve, refresh, generate inside, and diagnose a project.
+description: Which Better Fullstack command creates, evolves, refreshes, generates inside, and diagnoses a project.
 translationStatus: pending
-updated: 2026-08-12
+updated: 2026-08-23
 ---
 
-Better Fullstack records a generated project's selected stack in `bts.jsonc` and its comparison
-baseline in `bts.lock.json`. Those files help later commands classify current-template changes and
-local edits. Manifest v2 records CLI, generator, template-set, and schema provenance plus lifecycle
-history. Valid v1 manifests migrate deterministically without inventing original provenance.
+Better Fullstack records the selected stack in `bts.jsonc` and the comparison baseline in `bts.lock.json`. Later commands use those files to tell current-template changes apart from your local edits. Manifest v2 adds CLI, generator, template-set, and schema provenance plus lifecycle history; valid v1 manifests migrate deterministically without inventing provenance.
 
-## Lifecycle at a glance
+## Commands at a glance
 
 | Goal                                           | Command                        | Writes by default?                                   |
 | ---------------------------------------------- | ------------------------------ | ---------------------------------------------------- |
-| Create a project                               | `create` (the default command) | Yes; use `--dry-run` to preview.                     |
+| Create a project                               | `create` (the default command) | Yes; `--dry-run` previews.                           |
 | Inspect health and upgrade readiness           | `status`                       | No.                                                  |
-| Change selected capabilities                   | `add`                          | Yes; use `--dry-run` to preview.                     |
+| Adopt a pre-manifest-v2 project                | `adopt`                        | No; confirmation needs the exact plan token.         |
+| Change selected capabilities                   | `add`                          | Yes; `--dry-run` previews.                           |
 | Remove one selected non-primary capability     | `remove`                       | No; apply needs the exact plan token.                |
 | Apply newer templates to the same stack        | `update`                       | No; apply needs the exact plan token.                |
-| Generate an in-project resource                | `gen`                          | Yes; use `--dry-run` to preview.                     |
-| Diagnose config, dependencies, env, and checks | `check`                        | Toolchains may write locks, caches, or build output. |
+| Find, inspect, restore, or prune recovery data | `recovery`                     | No, except explicit restore or prune apply.          |
+| Generate an in-project resource                | `gen`                          | Yes; `--dry-run` previews.                           |
+| Diagnose config, dependencies, env, and builds | `check`                        | Toolchains may write locks, caches, or build output. |
 
 ## 1. Create
 
@@ -33,18 +32,13 @@ Preview first when the stack is new or scripted:
   yarn="yarn create better-fullstack@latest my-app --dry-run"
 />
 
-Remove `--dry-run` to scaffold. Commit the generated `bts.jsonc` and `bts.lock.json`; both are part
-of the project's reproducible history.
+Remove `--dry-run` to scaffold, then commit both BTS files.
 
-Choose the workspace layout during creation. `monorepo` is the default. `single-app` is restricted
-to thin Next.js and TanStack Start self-backend stacks that do not emit sibling database, auth, API,
-service, native, container, or deployment packages; later lifecycle commands preserve the recorded
-layout rather than converting an established project in place.
+Choose the workspace layout during creation. `monorepo` is the default. `single-app` is restricted to thin Next.js and TanStack Start self-backend stacks that do not emit sibling database, auth, API, service, native, container, or deployment packages; later lifecycle commands preserve the recorded layout rather than converting an established project in place.
 
-## 2. Evolve the selected stack
+## 2. Evolve the stack with add
 
-Use `add` when the desired configuration changes, for example, adding email, observability, an
-capability, or a deploy target. Plan the change before writing:
+Use `add` when the desired configuration changes: a new email provider, observability, a tooling capability, a deploy target. Plan before writing:
 
 <PMTabs
   npm="npm create better-fullstack@latest add -- --email resend --dry-run"
@@ -53,17 +47,23 @@ capability, or a deploy target. Plan the change before writing:
   yarn="yarn create better-fullstack@latest add --email resend --dry-run"
 />
 
-Commit or stash local work first. The planner refuses to overwrite edited generated files and
-reports any manual-review blockers.
+Commit or stash local work first. The planner refuses to overwrite edited generated files and reports manual-review blockers instead.
 
-Use `remove` for one exact selected non-primary stack part. It plans by default and requires the
-same target plus its review token for transactional apply. Replace primary frontend, backend,
-mobile, or database choices through `add` so compatibility and migration checks can run.
+Use `remove` to take out one exact non-primary capability. It plans by default and requires the same target plus its review token for transactional apply. Replace primary frontend, backend, mobile, or database choices through `add`, so compatibility and migration checks can run.
 
-## 3. Refresh templates
+## 3. Adopt a project created before manifest v2
 
-Use `update` when the stack selection stays the same but newer Better Fullstack templates exist.
-The default invocation is already a dry run:
+Run `adopt` before `update` when `bts.jsonc` exists but `bts.lock.json` does not:
+
+```bash
+npx create-better-fullstack@latest adopt .
+```
+
+The default is read-only. Review the likely Stack Parts, confidence, current-template evidence, and uncertainty. Only the exact confirmation command emitted by that plan may create `bts.lock.json`. The adopted baseline records unverified lineage and never claims a historical supported upgrade.
+
+## 4. Refresh templates with update
+
+Use `update` when the selection stays the same but newer templates exist. The default invocation is already a dry run:
 
 <PMTabs
   npm="npm create better-fullstack@latest update"
@@ -72,64 +72,32 @@ The default invocation is already a dry run:
   yarn="yarn create better-fullstack@latest update"
 />
 
-Review the categorized plan and its token, then run the exact emitted apply command:
+Review the categorized plan, then run the exact apply command it emits, including its version pin and review token. Local edits, secrets, removed files, and conflicts are never selected for automatic writes. Apply rolls failed writes back and returns a recovery command for successful transactions.
 
-<PMTabs
-  npm="npm create better-fullstack@[same-cli-version] update [project-directory] -- --apply --review-token [64-character-token]"
-  pnpm="pnpm dlx create-better-fullstack@[same-cli-version] update [project-directory] --apply --review-token [64-character-token]"
-  bun="bunx create-better-fullstack@[same-cli-version] update [project-directory] --apply --review-token [64-character-token]"
-  yarn="yarn dlx create-better-fullstack@[same-cli-version] update [project-directory] --apply --review-token [64-character-token]"
-/>
+If that terminal output is gone, run `recovery list`. Use `recovery show <transaction-id>` or `recovery verify <transaction-id>` before restoring with `recovery apply <transaction-id>`. Recovery inspection checks metadata, backup hashes, and whether project files still match the recorded post-operation state.
 
-Use the exact version-pinned command emitted by the plan. On Windows the CLI labels and quotes it
-for PowerShell; on other supported platforms it emits POSIX-shell quoting.
+## 5. Generate resources with gen
 
-Local edits, secrets, removed files, and conflicts are not selected for automatic writes. Apply
-rolls failed writes back and emits a recovery command for successful transactions. Migrated or
-manually adopted manifests require the additional lineage acknowledgement shown by their plan.
+`gen` is an experimental in-project generator that currently creates TypeScript tRPC/oRPC resource routers:
 
-## 4. Generate inside the project
+```npm
+npm create better-fullstack@latest gen resource post -- --dry-run
+```
 
-`gen` is a narrow, experimental in-project generator. Today it can preview and create TypeScript
-tRPC/oRPC resource routers:
-
-<PMTabs
-  npm="npm create better-fullstack@latest gen resource post -- --dry-run"
-  pnpm="pnpm create better-fullstack@latest gen resource post --dry-run"
-  bun="bun create better-fullstack@latest gen resource post --dry-run"
-  yarn="yarn create better-fullstack@latest gen resource post --dry-run"
-/>
-
-## 5. Diagnose and verify
+## 6. Diagnose with check
 
 Run `check` after creation, additions, updates, dependency installs, and environment changes:
 
-<PMTabs
-  npm="npm create better-fullstack@latest check"
-  pnpm="pnpm create better-fullstack@latest check"
-  bun="bun create better-fullstack@latest check"
-  yarn="yarn create better-fullstack@latest check"
-/>
+```npm
+npm create better-fullstack@latest check
+```
 
-Normal output runs the deterministic target matrix, including supported native ecosystem checks.
-JSON mode reports status without running those checks unless you explicitly pass `--run-checks`:
-
-<PMTabs
-  npm="npm create better-fullstack@latest check -- --json --run-checks"
-  pnpm="pnpm create better-fullstack@latest check --json --run-checks"
-  bun="bun create better-fullstack@latest check --json --run-checks"
-  yarn="yarn create better-fullstack@latest check --json --run-checks"
-/>
-
-With `--run-checks`, JSON changes presentation and captures subprocess output; it does not make
-those commands read-only. Missing targets, toolchains, or incomplete execution fail the command.
+The normal output runs every generated target check in deterministic order. Add `--json --run-checks` for machine-readable results with full execution; plain `--json` skips ecosystem checks so CI gates stay fast and toolchain-independent.
 
 ## Recovery rule
 
-Before any write to an established project, commit or stash your work, run the matching plan/dry
-run, and inspect blockers. If a requested architecture change includes a database, ORM, auth, API,
-backend, or runtime replacement, plan application-data and schema migrations separately.
+Before any write to an established project, commit or stash your work, run the matching dry run, and read the blockers. If a change replaces the database, ORM, auth, API, backend, or runtime, plan application-data and schema migrations separately. Better Fullstack never migrates application data on its own.
 
-Continue with [Add and Remove Capabilities](/docs/cli/add/),
-[Update and Check Projects](/docs/cli/update/), or a complete
-[stack guide](/guides/).
+`recovery prune` is also a dry run by default. It retains pending and invalid points and keeps the five newest valid points unless you change the retention options. Add `--apply` only after reviewing the candidate IDs.
+
+Continue with [Add and Remove Capabilities](/docs/cli/add/), [Status, Check, Update](/docs/cli/update/), or [Choosing a Stack](/docs/stack-guides/) for guidance on what to select next.

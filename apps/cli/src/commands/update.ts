@@ -6,7 +6,6 @@ import {
   applyScaffoldUpgrade,
   getUpgradePlanDigest,
   planScaffoldUpgrade,
-  recordUpgradeBaseline,
   type UpgradePlan,
 } from "../helpers/core/scaffold-upgrade";
 import { flushTelemetry, trackCommand } from "../utils/analytics";
@@ -97,14 +96,14 @@ function renderPlan(plan: UpgradePlan): void {
         ? `Manifest v${plan.manifestVersion ?? "unknown"} baseline (${plan.lifecycle.provenance.verified ? "verified lineage" : "unverified origin"}): bts.lock.json${
             plan.baselineCreatedAt ? ` (recorded ${plan.baselineCreatedAt})` : ""
           }`
-        : "Baseline: none — `update --record-baseline` manually adopts current bytes but does not prove generator lineage",
+        : "Baseline: none. Run `adopt` to inspect likely Stack Parts and obtain a confirmation token.",
     ),
   );
   if (plan.manifestState === "invalid") {
     log.warn(
       pc.yellow(
         `bts.lock.json is malformed and was ignored for this plan: ${plan.manifestError ?? "validation failed"}. ` +
-          "Apply is blocked until the manifest is fixed or re-recorded with `update --record-baseline`.",
+          "Apply is blocked until the manifest is fixed. Adoption never replaces a malformed manifest.",
       ),
     );
   }
@@ -294,50 +293,9 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
   }
 
   if (recordBaseline) {
-    const manifest = await recordUpgradeBaseline(projectDir);
-    await trackCommand(
-      "update",
-      manifest ? "succeeded" : "failed",
-      {
-        source: "cli-flags",
-        mode: "record-baseline",
-        fileCount: manifest ? Object.keys(manifest.hashes).length : 0,
-        durationMs: Date.now() - startedAt,
-      },
-      { ecosystem: btsConfig.ecosystem },
+    return fail(
+      "`--record-baseline` no longer writes a baseline directly. Run the read-only `adopt` command, review its inferred Stack Parts and uncertainty, then pass its exact confirmation token.",
     );
-    if (json) {
-      console.log(
-        JSON.stringify(
-          {
-            projectDir,
-            ok: manifest !== null,
-            recordedBaseline: manifest !== null,
-            files: manifest ? Object.keys(manifest.hashes).length : 0,
-          },
-          null,
-          2,
-        ),
-      );
-      if (!manifest) process.exit(1);
-      return;
-    }
-    renderTitle();
-    intro(pc.magenta("Record scaffold baseline"));
-    if (!manifest) {
-      handleError(`Failed to record a baseline for ${projectDir}.`);
-    }
-    log.success(
-      pc.green(
-        `Recorded bts.lock.json with ${formatCount(Object.keys(manifest.hashes).length, "file")}.`,
-      ),
-    );
-    outro(
-      pc.magenta(
-        "Manual-adoption manifest v2 recorded. Its origin remains unverified, so apply still requires explicit acknowledgement; transactional recovery is available.",
-      ),
-    );
-    return;
   }
 
   let plan: UpgradePlan;

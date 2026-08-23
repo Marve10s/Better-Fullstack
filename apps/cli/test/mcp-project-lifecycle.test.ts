@@ -3,32 +3,196 @@ import { afterEach, describe, expect, it } from "bun:test";
 import fs from "fs-extra";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { prettifyError, type ZodType } from "zod";
 
-import { recordUpgradeBaseline } from "../src/helpers/core/scaffold-upgrade";
+import { renderCurrentProject } from "../src/helpers/core/scaffold-upgrade";
+import { treeToFileMap } from "../src/helpers/core/stack-update";
 import { readBtsConfig, writeBtsConfig } from "../src/utils/bts-config";
+import {
+  partRemovalOutputSchema,
+  projectAdoptionOutputSchema,
+  projectStatusOutputSchema,
+  projectUpdateOutputSchema,
+  projectVerificationOutputSchema,
+  recoveryManagementOutputSchema,
+  recoveryOutputSchema,
+} from "../src/utils/mcp-lifecycle-output-schemas";
 import {
   applyMcpPartRemoval,
   applyMcpProjectUpdate,
   boundMcpUpdateReview,
   checkMcpProject,
+  confirmMcpProjectAdoption,
+  getMcpProjectRecoveryPoint,
   getMcpProjectStatus,
+  listMcpProjectRecoveryPoints,
   planMcpPartRemoval,
+  planMcpProjectAdoption,
   planMcpProjectUpdate,
+  pruneMcpProjectRecoveryPoints,
+  recoverMcpProjectTransaction,
+  verifyMcpProjectRecoveryPoint,
   MCP_UPDATE_REVIEW_CONTENT_LIMIT_BYTES,
 } from "../src/utils/mcp-project-lifecycle";
+import { confirmProjectAdoption, planProjectAdoption } from "../src/utils/project-adoption";
 import { planReviewedProjectUpdate } from "../src/utils/project-lifecycle";
 import { inspectProject } from "../src/utils/project-status";
-import { readScaffoldManifest, writeScaffoldManifest } from "../src/utils/scaffold-manifest";
+import {
+  readScaffoldManifest,
+  recordScaffoldManifest,
+  writeScaffoldManifest,
+} from "../src/utils/scaffold-manifest";
 
 const historicalFixture = path.join(import.meta.dir, "fixtures/cross-version/2.4.0");
 const roots: string[] = [];
+
+function assertOutputSchema(schema: ZodType, value: unknown) {
+  const parsed = schema.safeParse(value);
+  if (!parsed.success) throw new Error(prettifyError(parsed.error));
+}
+
+async function adoptProject(projectDir: string) {
+  const plan = await planProjectAdoption(projectDir);
+  expect(plan.success).toBe(true);
+  if (!plan.success) return plan;
+  const result = await confirmProjectAdoption(projectDir, plan.confirmationToken);
+  expect(result.success).toBe(true);
+  return result;
+}
+
 afterEach(async () => {
   await Promise.all(roots.splice(0).map((root) => fs.remove(root)));
 });
 
 describe("MCP project lifecycle parity", () => {
+  it("plans and confirms pre-manifest adoption through one declared schema", async () => {
+    const projectDir = await fs.mkdtemp(path.join(tmpdir(), "bfs-mcp-adoption-"));
+    roots.push(projectDir);
+    await fs.copy(historicalFixture, projectDir);
+
+    const plan = await planMcpProjectAdoption(projectDir);
+    assertOutputSchema(projectAdoptionOutputSchema, plan);
+    expect(plan.success).toBe(true);
+    if (!plan.success) return;
+    expect(plan).toMatchObject({
+      mode: "plan",
+      adopted: false,
+      provenanceState: "adopted-unverified",
+      confirmationRequired: true,
+    });
+    expect(plan.likelyStackParts.length).toBeGreaterThan(0);
+
+    const refused = await confirmMcpProjectAdoption(projectDir, "0".repeat(64));
+    assertOutputSchema(projectAdoptionOutputSchema, refused);
+    expect(refused.success).toBe(false);
+
+    const confirmed = await confirmMcpProjectAdoption(projectDir, plan.confirmationToken);
+    assertOutputSchema(projectAdoptionOutputSchema, confirmed);
+    expect(confirmed).toMatchObject({
+      success: true,
+      mode: "adopted",
+      adopted: true,
+      manifest: { provenanceState: "adopted-unverified" },
+    });
+  });
+
+  it("validates current lifecycle success and failure payloads against declared schemas", async () => {
+    const missingProject = path.join(tmpdir(), "bfs-missing-project-output-contract");
+    assertOutputSchema(projectStatusOutputSchema, await getMcpProjectStatus(missingProject));
+    assertOutputSchema(projectVerificationOutputSchema, await checkMcpProject(missingProject));
+    assertOutputSchema(
+      partRemovalOutputSchema,
+      await planMcpPartRemoval(missingProject, "backend.validation:typescript:zod"),
+    );
+    assertOutputSchema(projectUpdateOutputSchema, await planMcpProjectUpdate(missingProject));
+    assertOutputSchema(
+      recoveryOutputSchema,
+      await recoverMcpProjectTransaction(missingProject, "00000000-0000-4000-8000-000000000000"),
+    );
+    assertOutputSchema(
+      recoveryManagementOutputSchema,
+      await listMcpProjectRecoveryPoints(missingProject),
+    );
+    assertOutputSchema(
+      recoveryManagementOutputSchema,
+      await getMcpProjectRecoveryPoint(missingProject, "00000000-0000-4000-8000-000000000000"),
+    );
+
+    const projectDir = await fs.mkdtemp(path.join(tmpdir(), "bfs-mcp-output-contract-"));
+    roots.push(projectDir);
+    await fs.copy(historicalFixture, projectDir);
+
+    assertOutputSchema(projectStatusOutputSchema, await getMcpProjectStatus(projectDir));
+    assertOutputSchema(
+      projectVerificationOutputSchema,
+      await checkMcpProject(projectDir, {
+        commandExists: async () => true,
+        execute: async () => ({ exitCode: 0 }),
+      }),
+    );
+
+    const target = "backend:typescript:hono.validation:typescript:zod";
+    const removalPlan = await planMcpPartRemoval(projectDir, target);
+    assertOutputSchema(partRemovalOutputSchema, removalPlan);
+    expect(removalPlan.success).toBe(true);
+    if (!removalPlan.success || !removalPlan.reviewToken) return;
+    const removal = await applyMcpPartRemoval(projectDir, target, removalPlan.reviewToken, false);
+    assertOutputSchema(partRemovalOutputSchema, removal);
+    expect(removal.success).toBe(true);
+    if (!removal.success || !removal.recoveryId) return;
+    const listedRecovery = await listMcpProjectRecoveryPoints(projectDir);
+    assertOutputSchema(recoveryManagementOutputSchema, listedRecovery);
+    expect(listedRecovery).toMatchObject({
+      success: true,
+      action: "list",
+      points: [expect.objectContaining({ id: removal.recoveryId, recoverable: true })],
+    });
+    const shownRecovery = await getMcpProjectRecoveryPoint(projectDir, removal.recoveryId);
+    assertOutputSchema(recoveryManagementOutputSchema, shownRecovery);
+    expect(shownRecovery).toMatchObject({
+      success: true,
+      action: "show",
+      verification: { id: removal.recoveryId, valid: true, recoverable: true },
+    });
+    const verifiedRecovery = await verifyMcpProjectRecoveryPoint(projectDir, removal.recoveryId);
+    assertOutputSchema(recoveryManagementOutputSchema, verifiedRecovery);
+    expect(verifiedRecovery).toMatchObject({ success: true, action: "verify" });
+    const prunePreview = await pruneMcpProjectRecoveryPoints(projectDir, 0, 5, false);
+    assertOutputSchema(recoveryManagementOutputSchema, prunePreview);
+    expect(prunePreview).toMatchObject({
+      success: true,
+      action: "prune",
+      prune: { applied: false, candidates: [] },
+    });
+    const recoveredRemoval = await recoverMcpProjectTransaction(projectDir, removal.recoveryId);
+    assertOutputSchema(recoveryOutputSchema, recoveredRemoval);
+    expect(recoveredRemoval.success).toBe(true);
+
+    await adoptProject(projectDir);
+    const updatePlan = await planMcpProjectUpdate(projectDir);
+    assertOutputSchema(projectUpdateOutputSchema, updatePlan);
+    expect(updatePlan.success).toBe(true);
+    if (!updatePlan.success || !updatePlan.reviewToken) return;
+    const refusedUpdate = await applyMcpProjectUpdate(projectDir, "0".repeat(64), true);
+    assertOutputSchema(projectUpdateOutputSchema, refusedUpdate);
+    expect(refusedUpdate.success).toBe(false);
+    const appliedUpdate = await applyMcpProjectUpdate(projectDir, updatePlan.reviewToken, true);
+    assertOutputSchema(projectUpdateOutputSchema, appliedUpdate);
+    expect(appliedUpdate.success).toBe(true);
+  });
+
   it("truthfully annotates executable checks and recoverable apply", async () => {
     const source = await Bun.file(path.join(import.meta.dir, "../src/mcp.ts")).text();
+    const structuredToolBlocks = source
+      .split("\n  registerTool(")
+      .slice(1)
+      .filter((block) => block.includes("structuredContent"));
+    expect(structuredToolBlocks.length).toBeGreaterThan(0);
+    for (const block of structuredToolBlocks) {
+      const outputSchemaIndex = block.indexOf("outputSchema:");
+      expect(outputSchemaIndex).toBeGreaterThan(-1);
+      expect(outputSchemaIndex).toBeLessThan(block.indexOf("structuredContent"));
+    }
     const checkBlock = source.slice(
       source.indexOf('registerTool(\n    "bfs_check_project"'),
       source.indexOf('registerTool(\n    "bfs_plan_project_update"'),
@@ -65,6 +229,36 @@ describe("MCP project lifecycle parity", () => {
       applyAllowed: false,
       guarantee: "unverified-origin-recoverable",
     });
+    expect(result.updateSupport).toMatchObject({
+      supportedFrom: null,
+      supportedTo: null,
+      sourceVersion: "2.4.0",
+      eligibility: "manual-review-required",
+      reasonCode: "manifest-v2-required",
+      requiresManualReview: true,
+    });
+  });
+
+  it("reports same-release reconciliation without inventing a historical window", async () => {
+    const projectDir = await fs.mkdtemp(path.join(tmpdir(), "bfs-current-update-support-"));
+    roots.push(projectDir);
+    await fs.copy(historicalFixture, projectDir);
+    expect(await recordScaffoldManifest(projectDir)).not.toBeNull();
+
+    const result = await getMcpProjectStatus(projectDir);
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.updateSupport).toMatchObject({
+      policyStatus: "qualification",
+      supportedFrom: null,
+      supportedTo: null,
+      eligibility: "same-release",
+      eligible: true,
+      historicalUpgrade: false,
+      requiresManualReview: false,
+      reasonCode: "same-release",
+    });
+    assertOutputSchema(projectStatusOutputSchema, result);
   });
 
   it("runs the shared check service and fails absent generated targets", async () => {
@@ -253,7 +447,7 @@ describe("MCP project lifecycle parity", () => {
     const projectDir = await fs.mkdtemp(path.join(tmpdir(), "bfs-current-lifecycle-"));
     roots.push(projectDir);
     await fs.copy(historicalFixture, projectDir);
-    expect(await recordUpgradeBaseline(projectDir)).not.toBeNull();
+    await adoptProject(projectDir);
 
     const status = await getMcpProjectStatus(projectDir);
     expect(status.success).toBe(true);
@@ -321,7 +515,7 @@ describe("MCP project lifecycle parity", () => {
     const projectDir = await fs.mkdtemp(path.join(tmpdir(), "bfs-bounded-review-"));
     roots.push(projectDir);
     await fs.copy(historicalFixture, projectDir);
-    expect(await recordUpgradeBaseline(projectDir)).not.toBeNull();
+    await adoptProject(projectDir);
     const planned = await planMcpProjectUpdate(projectDir);
     expect(planned.success).toBe(true);
     if (!planned.success || !planned.reviewToken) return;
@@ -365,7 +559,7 @@ describe("MCP project lifecycle parity", () => {
     const projectDir = await fs.mkdtemp(path.join(tmpdir(), "bfs-unavailable-review-"));
     roots.push(projectDir);
     await fs.copy(historicalFixture, projectDir);
-    expect(await recordUpgradeBaseline(projectDir)).not.toBeNull();
+    await adoptProject(projectDir);
     const planned = await planMcpProjectUpdate(projectDir);
     expect(planned.success).toBe(true);
     if (!planned.success) return;
@@ -392,7 +586,14 @@ describe("MCP project lifecycle parity", () => {
     const projectDir = await fs.mkdtemp(path.join(tmpdir(), "bfs-oversized-apply-"));
     roots.push(projectDir);
     await fs.copy(historicalFixture, projectDir);
-    expect(await recordUpgradeBaseline(projectDir)).not.toBeNull();
+    const rendered = await renderCurrentProject(projectDir);
+    if ("error" in rendered) throw new Error(rendered.error);
+    const packageJson = treeToFileMap(rendered.tree).get("package.json");
+    if (!packageJson || packageJson.content === "[Binary file]") {
+      throw new Error("Current fixture render has no text package.json");
+    }
+    await fs.writeFile(path.join(projectDir, "package.json"), packageJson.content);
+    await adoptProject(projectDir);
     const manifest = await readScaffoldManifest(projectDir);
     expect(manifest?.baselines?.["package.json"]).toBeDefined();
     const proposed = JSON.parse(manifest!.baselines!["package.json"]!) as Record<

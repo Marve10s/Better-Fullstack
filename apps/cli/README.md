@@ -82,6 +82,21 @@ Use `--workspace-shape single-app` only for thin Next.js or TanStack Start self-
 Selections that require sibling database, auth, API, service, native, or deployment packages use
 the default monorepo layout.
 
+## Choosing a starter track
+
+The web builder, CLI, and MCP server use the same seven schema-valid starter tracks and the same
+fail-closed evidence inventory.
+
+```bash
+npx create-better-fullstack@latest tracks --runtime python --database postgres
+npx create-better-fullstack@latest compatibility --track java-api --category search --option algolia
+npx create-better-fullstack@latest recommend --brief "a secure Java API"
+```
+
+`tracks --json` returns exact editable Stack Parts, compatibility results, evidence, and filters.
+`recommend` uses the deterministic scorer. A controlled release gate keeps a model layer disabled
+while the deterministic baseline remains accurate, repeatable, and schema-valid.
+
 ## Links
 
 - [Website](https://better-fullstack.dev)

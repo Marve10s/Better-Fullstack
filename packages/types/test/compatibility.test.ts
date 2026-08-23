@@ -4,8 +4,10 @@ import {
   analyzeStackCompatibility,
   allowedApisForFrontends,
   evaluateCompatibility,
+  formatCompatibilityDecision,
   getAIFrontendCompatibilityIssue,
   getApiFrontendCompatibilityIssue,
+  getCompatibilityDecision,
   getCompatibleFormLibraries,
   getDisabledReason,
   isAnalyticsFrontendSupported,
@@ -13,6 +15,40 @@ import {
 import { DEFAULT_STACK_SELECTION } from "../src/stack-translation";
 
 describe("compatibility issue helpers", () => {
+  it("returns graph reasons and replacement options from one decision", () => {
+    const stack = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "go" as const,
+      goWebFramework: "gin" as const,
+      search: "algolia" as const,
+    };
+    const decision = getCompatibilityDecision(stack, "search", "algolia");
+    const issue = evaluateCompatibility(stack).issues.find(
+      (candidate) => candidate.category === "search" && candidate.optionId === "algolia",
+    );
+
+    expect(decision.reason).toBe(
+      "Search must use Meilisearch or an ecosystem-native option for non-TypeScript backends",
+    );
+    expect(decision.suggestedReplacements).toEqual(["meilisearch", "bleve"]);
+    expect(decision.explanation).toMatchObject({
+      schemaVersion: 1,
+      ruleId: "compatibility:search:algolia",
+      capability: { id: "search:algolia" },
+      owner: {
+        kind: "stack-part",
+        stackPart: { id: "backend:go:gin", role: "backend", toolId: "gin" },
+      },
+      alternatives: [{ id: "search:meilisearch" }, { id: "search:bleve" }],
+    });
+    expect(formatCompatibilityDecision(decision)).toContain(
+      "Compatible alternatives: meilisearch, bleve.",
+    );
+    expect(issue?.message).toBe(decision.reason);
+    expect(issue?.suggestions).toEqual(["Use 'meilisearch'", "Use 'bleve'"]);
+    expect(issue?.explanation).toEqual(decision.explanation);
+  });
+
   it("keeps bot protection within its generated auth and frontend boundaries", () => {
     const nextStack = { ...DEFAULT_STACK_SELECTION, webFrontend: ["next"] };
     const botIdStack = { ...nextStack, backend: "self-next" };
@@ -25,74 +61,34 @@ describe("compatibility issue helpers", () => {
     expect(getDisabledReason(viteStack, "botProtection", "botid")).toContain("Next.js frontends");
     expect(getDisabledReason(viteStack, "botProtection", "turnstile")).toBeNull();
     expect(
-      getDisabledReason(
-        { ...botIdStack, webDeploy: "netlify" },
-        "botProtection",
-        "botid",
-      ),
+      getDisabledReason({ ...botIdStack, webDeploy: "netlify" }, "botProtection", "botid"),
     ).toContain("Vercel deployment");
     expect(
-      getDisabledReason(
-        { ...botIdStack, botProtection: "botid" },
-        "webFrontend",
-        "svelte",
-      ),
+      getDisabledReason({ ...botIdStack, botProtection: "botid" }, "webFrontend", "svelte"),
     ).toContain("Next.js frontends");
     expect(
-      getDisabledReason(
-        { ...botIdStack, botProtection: "botid" },
-        "webDeploy",
-        "netlify",
-      ),
+      getDisabledReason({ ...botIdStack, botProtection: "botid" }, "webDeploy", "netlify"),
     ).toContain("Vercel deployment");
     expect(
-      getDisabledReason(
-        { ...nextStack, auth: "none" },
-        "botProtection",
-        "turnstile",
-      ),
+      getDisabledReason({ ...nextStack, auth: "none" }, "botProtection", "turnstile"),
     ).toContain("Better Auth");
     expect(
-      getDisabledReason(
-        { ...nextStack, backend: "none" },
-        "botProtection",
-        "turnstile",
-      ),
+      getDisabledReason({ ...nextStack, backend: "none" }, "botProtection", "turnstile"),
     ).toContain("server-side verification");
     expect(
-      getDisabledReason(
-        { ...nextStack, backend: "convex" },
-        "botProtection",
-        "turnstile",
-      ),
+      getDisabledReason({ ...nextStack, backend: "convex" }, "botProtection", "turnstile"),
     ).toContain("Convex");
     expect(
-      getDisabledReason(
-        { ...botIdStack, backend: "convex" },
-        "botProtection",
-        "botid",
-      ),
+      getDisabledReason({ ...botIdStack, backend: "convex" }, "botProtection", "botid"),
     ).toContain("self-hosted Next.js backend");
     expect(
-      getDisabledReason(
-        { ...nextStack, webFrontend: ["svelte"] },
-        "botProtection",
-        "turnstile",
-      ),
+      getDisabledReason({ ...nextStack, webFrontend: ["svelte"] }, "botProtection", "turnstile"),
     ).toContain("React web frontends only");
     expect(
-      getDisabledReason(
-        { ...nextStack, webFrontend: ["redwood"] },
-        "botProtection",
-        "turnstile",
-      ),
+      getDisabledReason({ ...nextStack, webFrontend: ["redwood"] }, "botProtection", "turnstile"),
     ).toContain("React web frontends only");
     expect(
-      getDisabledReason(
-        { ...botIdStack, webFrontend: ["vinext"] },
-        "botProtection",
-        "botid",
-      ),
+      getDisabledReason({ ...botIdStack, webFrontend: ["vinext"] }, "botProtection", "botid"),
     ).toContain("Next.js frontends");
     for (const botProtection of ["botid", "turnstile"] as const) {
       expect(
@@ -198,9 +194,7 @@ describe("compatibility issue helpers", () => {
     ] as const;
 
     for (const webFrontend of ga4Frontends) {
-      expect(
-        isAnalyticsFrontendSupported("ga4", webFrontend),
-      ).toBe(true);
+      expect(isAnalyticsFrontendSupported("ga4", webFrontend)).toBe(true);
     }
   });
 
@@ -225,9 +219,7 @@ describe("compatibility issue helpers", () => {
       webFrontend: ["vanilla-vite" as const],
       analytics: "vercel-analytics" as const,
     };
-    expect(getDisabledReason(unsupported, "webFrontend", "qwik")).toContain(
-      "does not yet mount",
-    );
+    expect(getDisabledReason(unsupported, "webFrontend", "qwik")).toContain("does not yet mount");
     expect(analyzeStackCompatibility(unsupported).adjustedStack?.analytics).toBe("none");
 
     const mixed = {
@@ -235,9 +227,7 @@ describe("compatibility issue helpers", () => {
       webFrontend: ["next", "qwik"],
       analytics: "vercel-analytics" as const,
     };
-    expect(getDisabledReason(mixed, "analytics", "vercel-analytics")).toContain(
-      "not yet mounted",
-    );
+    expect(getDisabledReason(mixed, "analytics", "vercel-analytics")).toContain("not yet mounted");
     expect(analyzeStackCompatibility(mixed).adjustedStack?.analytics).toBe("none");
   });
 
@@ -1559,7 +1549,7 @@ describe("compatibility issue helpers", () => {
     );
 
     expect(getDisabledReason(rustBase, "search", "algolia")).toBe(
-      "Only Meilisearch search is available for non-TypeScript ecosystems",
+      "Search must use Meilisearch or an ecosystem-native option for non-TypeScript backends",
     );
 
     expect(getDisabledReason(javaWithoutBuildTool, "email", "resend")).toBe(

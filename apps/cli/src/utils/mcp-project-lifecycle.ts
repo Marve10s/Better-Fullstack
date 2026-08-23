@@ -2,6 +2,7 @@ import type { GeneratedCheckDependencies } from "./generated-checks";
 
 import { applyPartRemoval, planPartRemoval } from "../helpers/core/remove-handler";
 import { lifecycleResult } from "./lifecycle-contract";
+import { confirmProjectAdoption, planProjectAdoption } from "./project-adoption";
 import {
   applyReviewedProjectUpdate,
   planReviewedProjectUpdate,
@@ -10,6 +11,7 @@ import {
 import { getProjectReport } from "./project-report";
 import { inspectProject } from "./project-status";
 import { recoverProjectTransaction } from "./project-transaction";
+import { manageProjectRecovery } from "./recovery-management";
 import { hashContent } from "./scaffold-manifest";
 
 export const MCP_UPDATE_REVIEW_CONTENT_LIMIT_BYTES = 32 * 1024;
@@ -71,6 +73,17 @@ export async function checkMcpProject(
 export async function planMcpProjectUpdate(projectDir: string) {
   const result = await planReviewedProjectUpdate(projectDir);
   return result.success ? boundMcpUpdateReview(result) : result;
+}
+
+export async function planMcpProjectAdoption(projectDir: string) {
+  return planProjectAdoption(projectDir);
+}
+
+export async function confirmMcpProjectAdoption(
+  projectDir: string,
+  confirmationToken: string | undefined,
+) {
+  return confirmProjectAdoption(projectDir, confirmationToken);
 }
 
 export async function planMcpPartRemoval(projectDir: string, target: string) {
@@ -137,4 +150,31 @@ export async function recoverMcpProjectTransaction(projectDir: string, transacti
       error: error instanceof Error ? error.message : String(error),
     };
   }
+}
+
+export async function listMcpProjectRecoveryPoints(projectDir: string) {
+  return manageProjectRecovery({ action: "list", projectDir });
+}
+
+export async function getMcpProjectRecoveryPoint(projectDir: string, transactionId: string) {
+  return manageProjectRecovery({ action: "show", projectDir, transactionId });
+}
+
+export async function verifyMcpProjectRecoveryPoint(projectDir: string, transactionId: string) {
+  return manageProjectRecovery({ action: "verify", projectDir, transactionId });
+}
+
+export async function pruneMcpProjectRecoveryPoints(
+  projectDir: string,
+  olderThanDays: number,
+  keep: number,
+  apply: boolean,
+) {
+  return manageProjectRecovery({
+    action: "prune",
+    projectDir,
+    olderThanDays,
+    keep,
+    applyPrune: apply,
+  });
 }

@@ -13,6 +13,7 @@ import { CategoryCount, OptionCount } from "./option-stats";
 import { PMTabs } from "./pm-tabs";
 import { StarterPackCta, StarterPackHub } from "./starter-pack-cta";
 import { DocsTable } from "./table";
+import { VerificationStatus } from "./verification-status";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const mdxComponents: Record<string, ComponentType<any>> = {
@@ -34,4 +35,5 @@ export const mdxComponents: Record<string, ComponentType<any>> = {
   PMTabs,
   StarterPackCta,
   StarterPackHub,
+  VerificationStatus,
 };

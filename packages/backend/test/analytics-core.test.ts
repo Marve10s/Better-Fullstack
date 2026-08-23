@@ -2,8 +2,10 @@ import { describe, expect, it } from "bun:test";
 
 import {
   applyFailureClassifications,
+  classifySelectionDecision,
   classifyProjectSetupOutcome,
   countReturningMachinesFromActivity,
+  isLifecycleTerminalEvent,
   type FailureAggregates,
 } from "../convex/analytics_core";
 
@@ -106,5 +108,55 @@ describe("analytics aggregate helpers", () => {
         setupFailures: [],
       }),
     ).toBeUndefined();
+  });
+
+  it("counts decision coverage only when the bounded selection fields are complete", () => {
+    expect(
+      classifySelectionDecision({
+        eventType: "web_action",
+        action: "builder-plan-abandoned",
+        status: "cancelled",
+        stack: {
+          decision_stage: "plan",
+          selection_outcome: "plan-abandoned",
+          selected_evidence_level: "listed",
+          selection_problem: "missing-capability",
+        },
+      }),
+    ).toMatchObject({
+      eligible: true,
+      covered: true,
+      decisionStage: "plan",
+      selectionOutcome: "plan-abandoned",
+      evidenceLevel: "listed",
+      selectionProblem: "missing-capability",
+    });
+    expect(
+      classifySelectionDecision({
+        eventType: "web_action",
+        action: "builder-plan-abandoned",
+        status: "cancelled",
+        stack: { selection_outcome: "plan-abandoned" },
+      }),
+    ).toMatchObject({ eligible: true, covered: false });
+    expect(
+      classifySelectionDecision({
+        eventType: "web_action",
+        action: "builder-viewed",
+        status: "started",
+      }),
+    ).toEqual({ eligible: false, covered: false });
+  });
+
+  it("classifies only terminal existing-project commands as lifecycle use", () => {
+    expect(isLifecycleTerminalEvent({ action: "update", status: "succeeded" })).toBe(true);
+    expect(isLifecycleTerminalEvent({ action: "bfs_apply_project_update", status: "failed" })).toBe(
+      true,
+    );
+    expect(isLifecycleTerminalEvent({ action: "update", status: "started" })).toBe(false);
+    expect(isLifecycleTerminalEvent({ action: "create", status: "succeeded" })).toBe(false);
+    expect(isLifecycleTerminalEvent({ action: "bfs_recommend_stack", status: "succeeded" })).toBe(
+      false,
+    );
   });
 });

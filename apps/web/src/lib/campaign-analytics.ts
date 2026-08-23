@@ -1,4 +1,10 @@
-import { parseStackPartSpecs, type Ecosystem } from "@better-fullstack/types";
+import {
+  getStackSelectionEvidence,
+  parseStackPartSpecs,
+  STARTER_TRACK_DEFINITIONS,
+  type CapabilityInventoryRecord,
+  type Ecosystem,
+} from "@better-fullstack/types";
 import { track } from "@vercel/analytics";
 
 import type { StackState } from "@/lib/stack-defaults";
@@ -26,7 +32,10 @@ export type CampaignEvent =
   | "builder_zip_failed"
   | "builder_share_prompted"
   | "builder_stack_shared"
-  | "builder_github_clicked";
+  | "builder_github_clicked"
+  | "builder_starter_track_applied"
+  | "builder_incompatibility_recovered"
+  | "builder_plan_abandoned";
 
 type CampaignProperties = Record<string, string | number | boolean | null | undefined>;
 
@@ -65,9 +74,11 @@ export function trackCampaignEvent(event: CampaignEvent, properties?: CampaignPr
   track(event, safeProperties);
   const status = event.endsWith("_failed")
     ? "failed"
-    : event.endsWith("_started") || event.endsWith("_viewed") || event.endsWith("_opened")
-      ? "started"
-      : "succeeded";
+    : event.endsWith("_abandoned")
+      ? "cancelled"
+      : event.endsWith("_started") || event.endsWith("_viewed") || event.endsWith("_opened")
+        ? "started"
+        : "succeeded";
   const productProperties = { ...safeProperties };
   if (status === "failed") {
     productProperties.failure_stage = productProperties.stage;
@@ -126,4 +137,22 @@ export function stackAnalyticsProperties(
     database: stack.database,
     ...extra,
   };
+}
+
+export function selectionAnalyticsProperties(
+  stack: StackState,
+  inventory: readonly CapabilityInventoryRecord[],
+  extra?: CampaignProperties,
+): CampaignProperties {
+  const selectionSignature = [...stack.stackPartSpecs].sort().join("|");
+  const track = STARTER_TRACK_DEFINITIONS.find(
+    (candidate) => [...candidate.selection.stackPartSpecs].sort().join("|") === selectionSignature,
+  );
+  const evidence = getStackSelectionEvidence(stack, { inventory });
+
+  return stackAnalyticsProperties(stack, {
+    ...extra,
+    selected_evidence_level: evidence.level,
+    ...(track ? { starter_track: track.id } : {}),
+  });
 }

@@ -234,6 +234,9 @@ describe("CLI add command", () => {
 
       expect(result?.success, result?.error).toBe(true);
       expect(result?.lifecycle?.recovery.command).toBeDefined();
+      expect(result?.lifecycle?.sideEffects).toContainEqual(
+        expect.objectContaining({ kind: "package-manager", status: "failed" }),
+      );
       expect(
         result?.lifecycle?.nextActions.filter(
           (action) => action.includes("not rolled back") && action.includes("after recovering"),
@@ -617,6 +620,17 @@ describe("CLI add command", () => {
       };
       expect(dryRunConfig.email).not.toBe("resend");
       expect(existsSync(join(projectDir, "apps/server/src/lib/email.ts"))).toBe(false);
+
+      const jsonPlanResult = await runCli(
+        ["add", "--project-dir", projectDir, "--email", "resend", "--dry-run", "--json"],
+        { cwd: root },
+      );
+      expect(jsonPlanResult.exitCode, jsonPlanResult.all).toBe(0);
+      const jsonPlan = JSON.parse(jsonPlanResult.stdout) as {
+        plan?: { lifecycle?: { contractVersion?: string; affected?: unknown } };
+      };
+      expect(jsonPlan.plan?.lifecycle?.contractVersion).toBe("2");
+      expect(jsonPlan.plan?.lifecycle?.affected).toBeDefined();
 
       const addResult = await runCli(["add", "--project-dir", projectDir, "--email", "resend"], {
         cwd: root,

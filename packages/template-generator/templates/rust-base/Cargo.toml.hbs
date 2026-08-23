@@ -282,7 +282,7 @@ uuid = { version = "1.23.1", features = ["v4", "v7", "serde"] }
 # Date and time
 chrono = { version = "0.4.44", features = ["serde"] }
 {{/if}}
-{{#if (includes rustLibraries "reqwest")}}
+{{#if (or (eq rustCli "clap") (includes rustLibraries "reqwest"))}}
 # HTTP client
 reqwest = { version = "0.13.3", default-features = false, features = ["json", "rustls"] }
 {{/if}}

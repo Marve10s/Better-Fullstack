@@ -30,25 +30,25 @@ describe("docs navigation", () => {
       "create",
       "add",
       "update",
+      "gen",
       "experimental",
-      "mcp",
       "telemetry",
     ]);
-    expect(ecosystemsMeta.pages).toEqual(["index", "multi-ecosystem", "native-mobile"]);
+    expect(ecosystemsMeta.pages).toEqual(["index", "multi-ecosystem", "native-apps"]);
     expect(aiMeta.pages).toEqual(["overview", "mcp"]);
     expect(gettingStartedMeta.pages).toContain("lifecycle");
   });
 
   it("keeps linked milestone docs backed by MDX files", async () => {
-    await expectDocPage("stack-guides.mdx");
+    await expectDocPage("choosing-a-stack.mdx");
     await expectDocPage("cli/index.mdx");
     await expectDocPage("cli/update.mdx");
+    await expectDocPage("cli/gen.mdx");
     await expectDocPage("cli/experimental.mdx");
     await expectDocPage("cli/telemetry.mdx");
-    await expectDocPage("cli/mcp.mdx");
     await expectDocPage("ecosystems/multi-ecosystem.mdx");
-    await expectDocPage("ecosystems/native-mobile.mdx");
-    await expectDocPage("web-builder.mdx");
+    await expectDocPage("ecosystems/native-apps.mdx");
+    await expectDocPage("builder.mdx");
     await expectDocPage("ai/mcp.mdx");
     await expectDocPage("getting-started/lifecycle.mdx");
   });

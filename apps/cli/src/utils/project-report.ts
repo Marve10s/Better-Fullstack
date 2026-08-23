@@ -1,9 +1,12 @@
+import type { UpdateSupportEligibility } from "@better-fullstack/types";
+
 import { planReviewedProjectUpdate } from "./project-lifecycle";
 import {
   inspectProject,
   type ProjectStatusFailure,
   type ProjectStatusResult,
 } from "./project-status";
+import { getProjectUpdateSupport } from "./update-support";
 
 export type ProjectUpgradeReport =
   | {
@@ -34,16 +37,25 @@ export type ProjectUpgradeReport =
 
 export type ProjectReportResult =
   | ProjectStatusFailure
-  | (ProjectStatusResult & { upgrade: ProjectUpgradeReport });
+  | (ProjectStatusResult & {
+      updateSupport: UpdateSupportEligibility;
+      upgrade: ProjectUpgradeReport;
+    });
 
 export async function getProjectReport(projectDir: string): Promise<ProjectReportResult> {
   const status = await inspectProject(projectDir, { runChecks: false });
   if (!status.success) return status;
+  const updateSupport = await getProjectUpdateSupport(
+    status.projectDir,
+    status.prerequisites.config.version,
+    status.prerequisites.config.currentVersion,
+  );
 
   const reviewed = await planReviewedProjectUpdate(projectDir);
   if (!reviewed.success) {
     return {
       ...status,
+      updateSupport,
       upgrade: {
         available: false,
         actionable: false,
@@ -64,6 +76,7 @@ export async function getProjectReport(projectDir: string): Promise<ProjectRepor
     plan.removed.length > 0;
   return {
     ...status,
+    updateSupport,
     upgrade: {
       available: true,
       actionable: plan.actionable.length > 0,

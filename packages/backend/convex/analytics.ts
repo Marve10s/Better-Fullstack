@@ -6,8 +6,10 @@ import { internal } from "./_generated/api";
 import { internalAction, internalMutation, internalQuery } from "./_generated/server";
 import {
   applyFailureClassifications,
+  classifySelectionDecision,
   classifyProjectSetupOutcome,
   countReturningMachinesFromActivity,
+  isLifecycleTerminalEvent,
   type Distribution,
 } from "./analytics_core";
 
@@ -16,6 +18,7 @@ type StackValue = string | boolean | string[];
 type StackRecord = Record<string, StackValue>;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const RETURNING_MACHINES_VERSION = 2;
+const DECISION_COVERAGE_VERSION = 2;
 
 // Legacy per-field aggregates kept for the existing getStats consumers.
 // New stack options do NOT need to be added here: they are covered
@@ -282,6 +285,13 @@ type StatsShape = {
   setupOutcomes: Dist;
   installSelections: Dist;
   decisionEvents: number;
+  decisionEligibleEvents: number;
+  decisionCoverageVersion: number;
+  selectionOutcomes: Dist;
+  evidenceLevels: Dist;
+  decisionStages: Dist;
+  starterTracks: Dist;
+  selectionProblems: Dist;
   durationBuckets: Dist;
   fileCountBuckets: Dist;
   changedFileCountBuckets: Dist;
@@ -295,6 +305,9 @@ type StatsShape = {
   returningMachines: number;
   returningMachinesVersion: number;
   trackedMachineEvents: number;
+  lifecycleMachineEvents: number;
+  uniqueLifecycleMachines: number;
+  returningLifecycleMachines: number;
 } & { [K in (typeof SINGLE_FIELDS)[number]]: Dist } & {
   [K in (typeof MULTI_FIELDS)[number]]: Dist;
 } & { [K in (typeof BOOL_FIELDS)[number]]: Dist };
@@ -334,6 +347,13 @@ function emptyStats(): StatsShape {
     setupOutcomes: {},
     installSelections: {},
     decisionEvents: 0,
+    decisionEligibleEvents: 0,
+    decisionCoverageVersion: DECISION_COVERAGE_VERSION,
+    selectionOutcomes: {},
+    evidenceLevels: {},
+    decisionStages: {},
+    starterTracks: {},
+    selectionProblems: {},
     durationBuckets: {},
     fileCountBuckets: {},
     changedFileCountBuckets: {},
@@ -347,6 +367,9 @@ function emptyStats(): StatsShape {
     returningMachines: 0,
     returningMachinesVersion: RETURNING_MACHINES_VERSION,
     trackedMachineEvents: 0,
+    lifecycleMachineEvents: 0,
+    uniqueLifecycleMachines: 0,
+    returningLifecycleMachines: 0,
   } as StatsShape;
   for (const k of [...SINGLE_FIELDS, ...MULTI_FIELDS, ...BOOL_FIELDS]) stats[k] = {};
   return stats;
@@ -380,6 +403,31 @@ function applyProjectDecisionAggregates(
   inc(stats.installSelections, installSelection);
 }
 
+type SelectionDecisionAggregates = {
+  decisionEvents: number;
+  decisionEligibleEvents: number;
+  selectionOutcomes: Dist;
+  evidenceLevels: Dist;
+  decisionStages: Dist;
+  starterTracks: Dist;
+  selectionProblems: Dist;
+};
+
+function applySelectionDecisionAggregates(
+  stats: SelectionDecisionAggregates,
+  ev: AnalyticsEvent,
+): void {
+  const decision = classifySelectionDecision(ev);
+  if (!decision.eligible) return;
+  stats.decisionEligibleEvents += 1;
+  if (decision.covered) stats.decisionEvents += 1;
+  inc(stats.selectionOutcomes, decision.selectionOutcome);
+  inc(stats.evidenceLevels, decision.evidenceLevel);
+  inc(stats.decisionStages, decision.decisionStage);
+  inc(stats.starterTracks, decision.starterTrack);
+  inc(stats.selectionProblems, decision.selectionProblem);
+}
+
 type DailyStatsShape = {
   date: string;
   count: number;
@@ -388,6 +436,13 @@ type DailyStatsShape = {
   successfulEvents: number;
   failedEvents: number;
   decisionEvents: number;
+  decisionEligibleEvents: number;
+  decisionCoverageVersion: number;
+  selectionOutcomes: Dist;
+  evidenceLevels: Dist;
+  decisionStages: Dist;
+  starterTracks: Dist;
+  selectionProblems: Dist;
   actions: Dist;
   actionStatuses: Dist;
   actionOutcomes: Dist;
@@ -411,6 +466,13 @@ function emptyDailyStats(date: string): DailyStatsShape {
     successfulEvents: 0,
     failedEvents: 0,
     decisionEvents: 0,
+    decisionEligibleEvents: 0,
+    decisionCoverageVersion: DECISION_COVERAGE_VERSION,
+    selectionOutcomes: {},
+    evidenceLevels: {},
+    decisionStages: {},
+    starterTracks: {},
+    selectionProblems: {},
     actions: {},
     actionStatuses: {},
     actionOutcomes: {},
@@ -428,7 +490,7 @@ function emptyDailyStats(date: string): DailyStatsShape {
 
 function applyDailyEvent(daily: DailyStatsShape, ev: AnalyticsEvent): void {
   daily.totalEvents += 1;
-  daily.decisionEvents += 1;
+  applySelectionDecisionAggregates(daily, ev);
   if (ev.success === true) daily.successfulEvents += 1;
   else if (ev.success === false) daily.failedEvents += 1;
 
@@ -455,7 +517,7 @@ function applyEvent(stats: StatsShape, ev: AnalyticsEvent): void {
 
   // Envelope aggregates: every event type.
   stats.totalEvents += 1;
-  stats.decisionEvents += 1;
+  applySelectionDecisionAggregates(stats, ev);
   inc(stats.eventTypes, ev.eventType ?? "project_created");
   inc(stats.sources, ev.source ?? "unknown");
   inc(stats.outcomes, ev.success === undefined ? "unknown" : ev.success ? "success" : "failure");
@@ -643,6 +705,16 @@ export const ingestEvent = internalMutation({
         stats.returningMachines = countReturningMachinesFromActivity(activity);
         stats.returningMachinesVersion = RETURNING_MACHINES_VERSION;
       }
+      if (existing.decisionCoverageVersion !== DECISION_COVERAGE_VERSION) {
+        stats.decisionEvents = 0;
+        stats.decisionEligibleEvents = 0;
+        stats.decisionCoverageVersion = DECISION_COVERAGE_VERSION;
+        stats.selectionOutcomes = {};
+        stats.evidenceLevels = {};
+        stats.decisionStages = {};
+        stats.starterTracks = {};
+        stats.selectionProblems = {};
+      }
     } else {
       stats = emptyStats();
     }
@@ -705,6 +777,54 @@ export const ingestEvent = internalMutation({
       }
     }
 
+    if (args.machineId && isLifecycleTerminalEvent(args)) {
+      const machineId = args.machineId;
+      stats.lifecycleMachineEvents += 1;
+      const lifecycleMachine = await ctx.db
+        .query("analyticsLifecycleMachines")
+        .withIndex("by_machine_id", (q) => q.eq("machineId", machineId))
+        .first();
+      if (lifecycleMachine) {
+        await ctx.db.patch("analyticsLifecycleMachines", lifecycleMachine._id, {
+          lastSeen: now,
+          eventCount: lifecycleMachine.eventCount + 1,
+        });
+      } else {
+        stats.uniqueLifecycleMachines += 1;
+        await ctx.db.insert("analyticsLifecycleMachines", {
+          machineId,
+          firstSeen: now,
+          lastSeen: now,
+          eventCount: 1,
+        });
+      }
+      const lifecycleActivity = await ctx.db
+        .query("analyticsLifecycleMachineDailyActivity")
+        .withIndex("by_date_machine", (q) => q.eq("date", today).eq("machineId", machineId))
+        .first();
+      if (lifecycleActivity) {
+        await ctx.db.patch("analyticsLifecycleMachineDailyActivity", lifecycleActivity._id, {
+          eventCount: lifecycleActivity.eventCount + 1,
+          lastSeen: now,
+        });
+      } else {
+        if (lifecycleMachine) {
+          const priorLifecycleDays = await ctx.db
+            .query("analyticsLifecycleMachineDailyActivity")
+            .withIndex("by_machine_date", (q) => q.eq("machineId", machineId))
+            .take(2);
+          if (priorLifecycleDays.length === 1) stats.returningLifecycleMachines += 1;
+        }
+        await ctx.db.insert("analyticsLifecycleMachineDailyActivity", {
+          date: today,
+          machineId,
+          eventCount: 1,
+          firstSeen: now,
+          lastSeen: now,
+        });
+      }
+    }
+
     if (existing) {
       await ctx.db.patch("analyticsStats", existing._id, stats);
     } else {
@@ -726,7 +846,18 @@ export const ingestEvent = internalMutation({
         successfulEvents: daily.successfulEvents ?? 0,
         failedEvents: daily.failedEvents ?? 0,
         decisionEvents: daily.decisionEvents ?? 0,
+        decisionEligibleEvents: daily.decisionEligibleEvents ?? 0,
       };
+      if (daily.decisionCoverageVersion !== DECISION_COVERAGE_VERSION) {
+        dailyStats.decisionEvents = 0;
+        dailyStats.decisionEligibleEvents = 0;
+        dailyStats.decisionCoverageVersion = DECISION_COVERAGE_VERSION;
+        dailyStats.selectionOutcomes = {};
+        dailyStats.evidenceLevels = {};
+        dailyStats.decisionStages = {};
+        dailyStats.starterTracks = {};
+        dailyStats.selectionProblems = {};
+      }
     }
     applyDailyEvent(dailyStats, { ...args, creationTime: now });
     if (newMachine) dailyStats.newMachines += 1;
@@ -779,6 +910,12 @@ export const getDailyStats = internalQuery({
       successfulEvents: v.optional(v.number()),
       failedEvents: v.optional(v.number()),
       decisionEvents: v.optional(v.number()),
+      decisionEligibleEvents: v.optional(v.number()),
+      selectionOutcomes: v.optional(distributionValidator),
+      evidenceLevels: v.optional(distributionValidator),
+      decisionStages: v.optional(distributionValidator),
+      starterTracks: v.optional(distributionValidator),
+      selectionProblems: v.optional(distributionValidator),
       actions: v.optional(distributionValidator),
       actionStatuses: v.optional(distributionValidator),
       actionOutcomes: v.optional(distributionValidator),
@@ -807,27 +944,36 @@ export const getDailyStats = internalQuery({
 
     return allDaily
       .filter((d) => d.date >= cutoffDate && d.date <= today)
-      .map((d) => ({
-        date: d.date,
-        count: d.count,
-        newMachines: d.newMachines,
-        totalEvents: d.totalEvents,
-        successfulEvents: d.successfulEvents,
-        failedEvents: d.failedEvents,
-        decisionEvents: d.decisionEvents,
-        actions: d.actions,
-        actionStatuses: d.actionStatuses,
-        actionOutcomes: d.actionOutcomes,
-        clients: d.clients,
-        sources: d.sources,
-        ecosystems: d.ecosystems,
-        setupOutcomes: d.setupOutcomes,
-        installSelections: d.installSelections,
-        failureStages: d.failureStages,
-        failureReasons: d.failureReasons,
-        actionFailureStages: d.actionFailureStages,
-        actionFailureReasons: d.actionFailureReasons,
-      }));
+      .map((d) => {
+        const hasCurrentDecisionCoverage = d.decisionCoverageVersion === DECISION_COVERAGE_VERSION;
+        return {
+          date: d.date,
+          count: d.count,
+          newMachines: d.newMachines,
+          totalEvents: d.totalEvents,
+          successfulEvents: d.successfulEvents,
+          failedEvents: d.failedEvents,
+          decisionEvents: hasCurrentDecisionCoverage ? d.decisionEvents : 0,
+          decisionEligibleEvents: hasCurrentDecisionCoverage ? d.decisionEligibleEvents : 0,
+          selectionOutcomes: hasCurrentDecisionCoverage ? d.selectionOutcomes : {},
+          evidenceLevels: hasCurrentDecisionCoverage ? d.evidenceLevels : {},
+          decisionStages: hasCurrentDecisionCoverage ? d.decisionStages : {},
+          starterTracks: hasCurrentDecisionCoverage ? d.starterTracks : {},
+          selectionProblems: hasCurrentDecisionCoverage ? d.selectionProblems : {},
+          actions: d.actions,
+          actionStatuses: d.actionStatuses,
+          actionOutcomes: d.actionOutcomes,
+          clients: d.clients,
+          sources: d.sources,
+          ecosystems: d.ecosystems,
+          setupOutcomes: d.setupOutcomes,
+          installSelections: d.installSelections,
+          failureStages: d.failureStages,
+          failureReasons: d.failureReasons,
+          actionFailureStages: d.actionFailureStages,
+          actionFailureReasons: d.actionFailureReasons,
+        };
+      });
   },
 });
 
@@ -842,6 +988,13 @@ export const getEngagement = internalQuery({
     activeMachinesLast30d: v.number(),
     returningMachinesLast7d: v.number(),
     returningMachinesLast30d: v.number(),
+    uniqueLifecycleMachines: v.number(),
+    returningLifecycleMachines: v.number(),
+    lifecycleTrackedEvents: v.number(),
+    activeLifecycleMachinesLast7d: v.number(),
+    activeLifecycleMachinesLast30d: v.number(),
+    returningLifecycleMachinesLast7d: v.number(),
+    returningLifecycleMachinesLast30d: v.number(),
   }),
   handler: async (ctx) => {
     const stats = await ctx.db.query("analyticsStats").first();
@@ -857,6 +1010,10 @@ export const getEngagement = internalQuery({
       .query("analyticsMachineDailyActivity")
       .withIndex("by_date", (q) => q.gte("date", cutoffDate30d))
       .collect();
+    const lifecycleActivity = await ctx.db
+      .query("analyticsLifecycleMachineDailyActivity")
+      .withIndex("by_date", (q) => q.gte("date", cutoffDate30d))
+      .collect();
     const activityThroughToday = activity.filter((event) => event.date <= today);
     const activeMachinesLast30d = new Set(activityThroughToday.map((event) => event.machineId));
     const activeMachinesLast7d = new Set(
@@ -870,6 +1027,29 @@ export const getEngagement = internalQuery({
       activeDaysLast30d.set(event.machineId, (activeDaysLast30d.get(event.machineId) ?? 0) + 1);
       if (event.date >= cutoffDate7d) {
         activeDaysLast7d.set(event.machineId, (activeDaysLast7d.get(event.machineId) ?? 0) + 1);
+      }
+    }
+    const lifecycleActivityThroughToday = lifecycleActivity.filter((event) => event.date <= today);
+    const activeLifecycleMachinesLast30d = new Set(
+      lifecycleActivityThroughToday.map((event) => event.machineId),
+    );
+    const activeLifecycleMachinesLast7d = new Set(
+      lifecycleActivityThroughToday
+        .filter((event) => event.date >= cutoffDate7d)
+        .map((event) => event.machineId),
+    );
+    const lifecycleDaysLast30d = new Map<string, number>();
+    const lifecycleDaysLast7d = new Map<string, number>();
+    for (const event of lifecycleActivityThroughToday) {
+      lifecycleDaysLast30d.set(
+        event.machineId,
+        (lifecycleDaysLast30d.get(event.machineId) ?? 0) + 1,
+      );
+      if (event.date >= cutoffDate7d) {
+        lifecycleDaysLast7d.set(
+          event.machineId,
+          (lifecycleDaysLast7d.get(event.machineId) ?? 0) + 1,
+        );
       }
     }
     const returningMachines = !stats
@@ -890,6 +1070,13 @@ export const getEngagement = internalQuery({
       activeMachinesLast30d: activeMachinesLast30d.size,
       returningMachinesLast7d: countReturning(activeDaysLast7d),
       returningMachinesLast30d: countReturning(activeDaysLast30d),
+      uniqueLifecycleMachines: stats?.uniqueLifecycleMachines ?? 0,
+      returningLifecycleMachines: stats?.returningLifecycleMachines ?? 0,
+      lifecycleTrackedEvents: stats?.lifecycleMachineEvents ?? 0,
+      activeLifecycleMachinesLast7d: activeLifecycleMachinesLast7d.size,
+      activeLifecycleMachinesLast30d: activeLifecycleMachinesLast30d.size,
+      returningLifecycleMachinesLast7d: countReturning(lifecycleDaysLast7d),
+      returningLifecycleMachinesLast30d: countReturning(lifecycleDaysLast30d),
     };
   },
 });
@@ -904,6 +1091,12 @@ export const getProductInsights = internalQuery({
   returns: v.object({
     totalEvents: v.number(),
     decisionEvents: v.number(),
+    decisionEligibleEvents: v.number(),
+    selectionOutcomes: distributionValidator,
+    evidenceLevels: distributionValidator,
+    decisionStages: distributionValidator,
+    starterTracks: distributionValidator,
+    selectionProblems: distributionValidator,
     actions: distributionValidator,
     statuses: distributionValidator,
     modes: distributionValidator,
@@ -938,9 +1131,17 @@ export const getProductInsights = internalQuery({
   }),
   handler: async (ctx) => {
     const stats = await ctx.db.query("analyticsStats").first();
+    const decisionStats =
+      stats?.decisionCoverageVersion === DECISION_COVERAGE_VERSION ? stats : undefined;
     return {
       totalEvents: stats?.totalEvents ?? 0,
-      decisionEvents: stats?.decisionEvents ?? 0,
+      decisionEvents: decisionStats?.decisionEvents ?? 0,
+      decisionEligibleEvents: decisionStats?.decisionEligibleEvents ?? 0,
+      selectionOutcomes: decisionStats?.selectionOutcomes ?? {},
+      evidenceLevels: decisionStats?.evidenceLevels ?? {},
+      decisionStages: decisionStats?.decisionStages ?? {},
+      starterTracks: decisionStats?.starterTracks ?? {},
+      selectionProblems: decisionStats?.selectionProblems ?? {},
       actions: stats?.actions ?? {},
       statuses: stats?.statuses ?? {},
       modes: stats?.modes ?? {},
@@ -999,6 +1200,8 @@ const AGGREGATE_TABLES = [
   "analyticsDailyStats",
   "analyticsMachines",
   "analyticsMachineDailyActivity",
+  "analyticsLifecycleMachines",
+  "analyticsLifecycleMachineDailyActivity",
 ] as const;
 
 /**
@@ -1141,6 +1344,55 @@ export const backfillPage = internalMutation({
             .take(2);
           if (priorDays.length === 1) stats.returningMachines += 1;
           await ctx.db.insert("analyticsMachineDailyActivity", {
+            date,
+            machineId,
+            eventCount: 1,
+            firstSeen: now,
+            lastSeen: now,
+          });
+        }
+      }
+      if (machineId && isLifecycleTerminalEvent(event)) {
+        stats.lifecycleMachineEvents += 1;
+        const lifecycleMachine = await ctx.db
+          .query("analyticsLifecycleMachines")
+          .withIndex("by_machine_id", (q) => q.eq("machineId", machineId))
+          .first();
+        if (lifecycleMachine) {
+          await ctx.db.patch("analyticsLifecycleMachines", lifecycleMachine._id, {
+            firstSeen: Math.min(lifecycleMachine.firstSeen, now),
+            lastSeen: Math.max(lifecycleMachine.lastSeen, now),
+            eventCount: lifecycleMachine.eventCount + 1,
+          });
+        } else {
+          stats.uniqueLifecycleMachines += 1;
+          await ctx.db.insert("analyticsLifecycleMachines", {
+            machineId,
+            firstSeen: now,
+            lastSeen: now,
+            eventCount: 1,
+          });
+        }
+
+        const lifecycleActivity = await ctx.db
+          .query("analyticsLifecycleMachineDailyActivity")
+          .withIndex("by_date_machine", (q) => q.eq("date", date).eq("machineId", machineId))
+          .first();
+        if (lifecycleActivity) {
+          await ctx.db.patch("analyticsLifecycleMachineDailyActivity", lifecycleActivity._id, {
+            eventCount: lifecycleActivity.eventCount + 1,
+            firstSeen: Math.min(lifecycleActivity.firstSeen, now),
+            lastSeen: Math.max(lifecycleActivity.lastSeen, now),
+          });
+        } else {
+          if (lifecycleMachine) {
+            const priorLifecycleDays = await ctx.db
+              .query("analyticsLifecycleMachineDailyActivity")
+              .withIndex("by_machine_date", (q) => q.eq("machineId", machineId))
+              .take(2);
+            if (priorLifecycleDays.length === 1) stats.returningLifecycleMachines += 1;
+          }
+          await ctx.db.insert("analyticsLifecycleMachineDailyActivity", {
             date,
             machineId,
             eventCount: 1,

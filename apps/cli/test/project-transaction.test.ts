@@ -8,10 +8,14 @@ import { getProjectRecoveryCommand } from "../src/utils/lifecycle-command";
 import {
   beginProjectTransaction,
   commitProjectTransaction,
+  getProjectRecoveryPoint,
+  listProjectRecoveryPoints,
   markProjectTransactionWrite,
   journalProjectTransactionWrites,
+  pruneProjectRecoveryPoints,
   recoverProjectTransaction,
   rollbackProjectTransaction,
+  verifyProjectRecoveryPoint,
 } from "../src/utils/project-transaction";
 import { hashContent } from "../src/utils/scaffold-manifest";
 
@@ -105,12 +109,60 @@ describe("project lifecycle transactions", () => {
     const projectDir = await makeProject();
     await fs.writeFile(path.join(projectDir, "file.txt"), "before\n");
     const transaction = await beginProjectTransaction(projectDir, "stack-update", ["file.txt"]);
+    markProjectTransactionWrite(transaction, "file.txt", hashContent("after\n"));
     await journalProjectTransactionWrites(transaction, ["file.txt"]);
-    await fs.writeFile(path.join(projectDir, "file.txt"), "partial write\n");
+    await fs.writeFile(path.join(projectDir, "file.txt"), "after\n");
 
     const recovered = await recoverProjectTransaction(projectDir, transaction.id);
     expect(recovered.status).toBe("recovered");
     expect(await fs.readFile(path.join(projectDir, "file.txt"), "utf-8")).toBe("before\n");
+  });
+
+  it("refuses an interrupted write without an exact postimage", async () => {
+    const projectDir = await makeProject();
+    await fs.writeFile(path.join(projectDir, "file.txt"), "before\n");
+    const transaction = await beginProjectTransaction(projectDir, "stack-update", ["file.txt"]);
+    await journalProjectTransactionWrites(transaction, ["file.txt"]);
+    await fs.writeFile(path.join(projectDir, "file.txt"), "partial write\n");
+
+    await expect(recoverProjectTransaction(projectDir, transaction.id)).rejects.toThrow(
+      "Refused to overwrite files changed after the transaction",
+    );
+    expect(await fs.readFile(path.join(projectDir, "file.txt"), "utf-8")).toBe("partial write\n");
+  });
+
+  it("recovers interrupted gen and registry transactions after a process stop", async () => {
+    for (const operation of ["gen", "registry-add"] as const) {
+      const projectDir = await makeProject();
+      await fs.writeFile(path.join(projectDir, "file.txt"), "before\n");
+      const transaction = await beginProjectTransaction(projectDir, operation, ["file.txt"]);
+      markProjectTransactionWrite(transaction, "file.txt", hashContent("after\n"));
+      await journalProjectTransactionWrites(transaction, ["file.txt"]);
+      const persisted = await fs.readJson(path.join(transaction.recoveryDir, "transaction.json"));
+      expect(persisted.outputs).toEqual({ "file.txt": hashContent("after\n") });
+      await fs.writeFile(path.join(projectDir, "file.txt"), "after\n");
+
+      const recovered = await recoverProjectTransaction(projectDir, transaction.id);
+      expect(recovered.status).toBe("recovered");
+      expect(await fs.readFile(path.join(projectDir, "file.txt"), "utf-8")).toBe("before\n");
+    }
+  });
+
+  it("refuses interrupted gen and registry recovery over a later edit", async () => {
+    for (const operation of ["gen", "registry-add"] as const) {
+      const projectDir = await makeProject();
+      await fs.writeFile(path.join(projectDir, "file.txt"), "before\n");
+      const transaction = await beginProjectTransaction(projectDir, operation, ["file.txt"]);
+      markProjectTransactionWrite(transaction, "file.txt", hashContent("after\n"));
+      await journalProjectTransactionWrites(transaction, ["file.txt"]);
+      await fs.writeFile(path.join(projectDir, "file.txt"), "after\n");
+      await fs.writeFile(path.join(projectDir, "file.txt"), "hand edited\n");
+
+      await expect(recoverProjectTransaction(projectDir, transaction.id)).rejects.toThrow(
+        "Refused to overwrite files changed after the transaction",
+      );
+      expect(await fs.readFile(path.join(projectDir, "file.txt"), "utf-8")).toBe("hand edited\n");
+    }
   });
 
   it("restores executable file modes", async () => {
@@ -211,5 +263,95 @@ describe("project lifecycle transactions", () => {
     );
     expect(await fs.readFile(path.join(projectDir, "a.txt"), "utf-8")).toBe("a-after\n");
     expect(await fs.readFile(path.join(projectDir, "z.txt"), "utf-8")).toBe("z-after\n");
+  });
+
+  it("lists, shows, and verifies recovery points without changing files", async () => {
+    const projectDir = await makeProject();
+    await fs.writeFile(path.join(projectDir, "file.txt"), "before\n");
+    const transaction = await beginProjectTransaction(projectDir, "template-update", ["file.txt"]);
+    markProjectTransactionWrite(transaction, "file.txt", hashContent("after\n"));
+    await fs.writeFile(path.join(projectDir, "file.txt"), "after\n");
+    await commitProjectTransaction(transaction);
+
+    expect(await listProjectRecoveryPoints(projectDir)).toEqual([
+      expect.objectContaining({
+        id: transaction.id,
+        operation: "template-update",
+        status: "applied",
+        valid: true,
+        recoverable: true,
+        fileCount: 1,
+        errors: [],
+      }),
+    ]);
+    expect(await getProjectRecoveryPoint(projectDir, transaction.id)).toMatchObject({
+      id: transaction.id,
+      valid: true,
+      recoverable: true,
+      metadata: { id: transaction.id, status: "applied" },
+    });
+    expect(await fs.readFile(path.join(projectDir, "file.txt"), "utf-8")).toBe("after\n");
+
+    await fs.writeFile(path.join(projectDir, "file.txt"), "later user edit\n");
+    expect(await verifyProjectRecoveryPoint(projectDir, transaction.id)).toMatchObject({
+      valid: true,
+      recoverable: false,
+      errors: ["Recovery target changed after the transaction: file.txt"],
+    });
+  });
+
+  it("retains pending and invalid recovery points during explicit pruning", async () => {
+    const projectDir = await makeProject();
+    await fs.writeFile(path.join(projectDir, "pending.txt"), "before\n");
+    await fs.writeFile(path.join(projectDir, "applied.txt"), "before\n");
+    const pending = await beginProjectTransaction(projectDir, "stack-update", ["pending.txt"]);
+    const applied = await beginProjectTransaction(projectDir, "template-update", ["applied.txt"]);
+    markProjectTransactionWrite(applied, "applied.txt", hashContent("after\n"));
+    await fs.writeFile(path.join(projectDir, "applied.txt"), "after\n");
+    await commitProjectTransaction(applied);
+    await fs.outputFile(
+      path.join(projectDir, ".bts/recovery/not-a-transaction/transaction.json"),
+      "{}",
+    );
+
+    const preview = await pruneProjectRecoveryPoints(projectDir, {
+      olderThanDays: 0,
+      keep: 0,
+      apply: false,
+    });
+    expect(preview.candidates).toEqual([applied.id]);
+    expect(preview.pruned).toEqual([]);
+    expect(preview.retained).toEqual(
+      expect.arrayContaining([pending.id, applied.id, "not-a-transaction"]),
+    );
+
+    const result = await pruneProjectRecoveryPoints(projectDir, {
+      olderThanDays: 0,
+      keep: 0,
+      apply: true,
+    });
+    expect(result.pruned).toEqual([applied.id]);
+    expect(result.retained).toEqual(expect.arrayContaining([pending.id, "not-a-transaction"]));
+    expect(await fs.pathExists(applied.recoveryDir)).toBe(false);
+    expect(await verifyProjectRecoveryPoint(projectDir, pending.id)).toMatchObject({
+      valid: true,
+      recoverable: true,
+      metadata: { status: "pending" },
+    });
+  });
+
+  it("rejects recovery metadata outputs that are not bound to a snapshot", async () => {
+    const projectDir = await makeProject();
+    const transaction = await beginProjectTransaction(projectDir, "add", ["file.txt"]);
+    const metadataPath = path.join(transaction.recoveryDir, "transaction.json");
+    const metadata = await fs.readJson(metadataPath);
+    metadata.outputs = { "unbound.txt": hashContent("bytes") };
+    await fs.writeJson(metadataPath, metadata);
+
+    expect(await verifyProjectRecoveryPoint(projectDir, transaction.id)).toMatchObject({
+      valid: false,
+      recoverable: false,
+      errors: ["Recovery metadata contains an output that is not bound to a file snapshot."],
+    });
   });
 });

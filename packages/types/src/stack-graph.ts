@@ -13,6 +13,7 @@ import {
   AI_VALUES,
   ANALYTICS_VALUES,
   ANIMATION_VALUES,
+  ASTRO_INTEGRATION_VALUES,
   BACKEND_VALUES,
   CACHING_VALUES,
   CMS_VALUES,
@@ -140,6 +141,13 @@ import {
   RUST_WEB_FRAMEWORK_VALUES,
   SERVER_DEPLOY_VALUES,
   SEARCH_VALUES,
+  SHADCN_BASE_COLOR_VALUES,
+  SHADCN_BASE_VALUES,
+  SHADCN_COLOR_THEME_VALUES,
+  SHADCN_FONT_VALUES,
+  SHADCN_ICON_LIBRARY_VALUES,
+  SHADCN_RADIUS_VALUES,
+  SHADCN_STYLE_VALUES,
   VECTOR_DB_VALUES,
   I18N_VALUES,
   ELIXIR_HTTP_VALUES,
@@ -228,6 +236,7 @@ export type StackGraphIssue = {
   partId?: string;
   role?: StackPartRole;
   toolId?: string;
+  alternatives?: string[];
 };
 
 export type StackGraphValidationResult = {
@@ -641,7 +650,8 @@ const SHARED_NON_TYPESCRIPT_BACKEND_SERVICE_RULES: Partial<
   },
   search: {
     allowedToolId: "meilisearch",
-    unsupportedToolMessage: "Only Meilisearch search is available for non-TypeScript ecosystems",
+    unsupportedToolMessage:
+      "Search must use Meilisearch or an ecosystem-native option for non-TypeScript backends",
     javaNoBuildToolMessage:
       "Meilisearch search for Java requires Maven or Gradle to manage the SDK dependency",
   },
@@ -816,6 +826,127 @@ const GRAPH_PROJECTION_DEFAULT_LEGACY_CATEGORIES = [
     Object.values(categories),
   ),
 ] as Array<keyof ProjectConfig>;
+
+export const STACK_PART_PROJECT_SETTING_KEYS = [
+  "astroIntegration",
+  "shadcnBase",
+  "shadcnStyle",
+  "shadcnIconLibrary",
+  "shadcnColorTheme",
+  "shadcnBaseColor",
+  "shadcnFont",
+  "shadcnRadius",
+] as const satisfies readonly (keyof ProjectConfig)[];
+
+export const PROJECT_METADATA_SETTING_KEYS = [
+  "elixirJson",
+] as const satisfies readonly (keyof ProjectConfig)[];
+
+export type StackPartProjectSettingKey = (typeof STACK_PART_PROJECT_SETTING_KEYS)[number];
+
+type StackPartProjectSettings = Partial<Pick<ProjectConfig, StackPartProjectSettingKey>>;
+type StackPartProjectSettingsInput = Partial<Record<StackPartProjectSettingKey, unknown>>;
+
+const SHADCN_PROJECT_SETTING_KEYS = [
+  "shadcnBase",
+  "shadcnStyle",
+  "shadcnIconLibrary",
+  "shadcnColorTheme",
+  "shadcnBaseColor",
+  "shadcnFont",
+  "shadcnRadius",
+] as const satisfies readonly StackPartProjectSettingKey[];
+
+const STACK_PART_PROJECT_SETTING_VALUES = {
+  astroIntegration: ASTRO_INTEGRATION_VALUES,
+  shadcnBase: SHADCN_BASE_VALUES,
+  shadcnStyle: SHADCN_STYLE_VALUES,
+  shadcnIconLibrary: SHADCN_ICON_LIBRARY_VALUES,
+  shadcnColorTheme: SHADCN_COLOR_THEME_VALUES,
+  shadcnBaseColor: SHADCN_BASE_COLOR_VALUES,
+  shadcnFont: SHADCN_FONT_VALUES,
+  shadcnRadius: SHADCN_RADIUS_VALUES,
+} as const satisfies Record<StackPartProjectSettingKey, readonly string[]>;
+
+export const DEFAULT_SHADCN_STACK_PART_SETTINGS = {
+  shadcnBase: "radix",
+  shadcnStyle: "nova",
+  shadcnIconLibrary: "lucide",
+  shadcnColorTheme: "neutral",
+  shadcnBaseColor: "neutral",
+  shadcnFont: "inter",
+  shadcnRadius: "default",
+} as const satisfies Pick<ProjectConfig, (typeof SHADCN_PROJECT_SETTING_KEYS)[number]>;
+
+function isStackPartProjectSettingValue(
+  key: StackPartProjectSettingKey,
+  value: unknown,
+): value is string {
+  return (
+    typeof value === "string" &&
+    (STACK_PART_PROJECT_SETTING_VALUES[key] as readonly string[]).includes(value)
+  );
+}
+
+function isStackPartSettingsOwner(part: StackPart, key: StackPartProjectSettingKey): boolean {
+  if (part.source === "provided") return false;
+  if (key === "astroIntegration") {
+    return (
+      part.role === "frontend" &&
+      part.ecosystem === "typescript" &&
+      part.toolId === "astro" &&
+      !part.ownerPartId
+    );
+  }
+  return part.role === "ui" && part.ecosystem === "typescript" && part.toolId === "shadcn-ui";
+}
+
+export function mergeProjectConfigSettingsIntoStackParts(
+  parts: readonly StackPart[],
+  config: StackPartProjectSettingsInput,
+  options: { replaceKeys?: readonly StackPartProjectSettingKey[] } = {},
+): StackPart[] {
+  const replaceKeys = new Set(options.replaceKeys ?? []);
+
+  return parts.map((part) => {
+    const ownedKeys = STACK_PART_PROJECT_SETTING_KEYS.filter((key) =>
+      isStackPartSettingsOwner(part, key),
+    );
+    if (ownedKeys.length === 0) return { ...part };
+
+    const settings = { ...part.settings };
+    for (const key of ownedKeys) {
+      const value = config[key];
+      if (!isStackPartProjectSettingValue(key, value)) continue;
+      if (settings[key] === undefined || replaceKeys.has(key)) {
+        settings[key] = value;
+      }
+    }
+
+    return Object.keys(settings).length > 0 ? { ...part, settings } : { ...part };
+  });
+}
+
+export function projectStackPartSettingsToProjectConfig(
+  parts: readonly StackPart[],
+  options: { includeDefaults?: boolean } = {},
+): StackPartProjectSettings {
+  const projected: StackPartProjectSettings = options.includeDefaults
+    ? { astroIntegration: "none", ...DEFAULT_SHADCN_STACK_PART_SETTINGS }
+    : {};
+
+  for (const part of parts) {
+    for (const key of STACK_PART_PROJECT_SETTING_KEYS) {
+      if (!isStackPartSettingsOwner(part, key)) continue;
+      const value = part.settings?.[key];
+      if (isStackPartProjectSettingValue(key, value)) {
+        (projected as Record<string, unknown>)[key] = value;
+      }
+    }
+  }
+
+  return projected;
+}
 
 function defineTools(
   values: readonly string[],
@@ -2007,14 +2138,17 @@ function createAddonCompatibilityIssue(
         message: "TanStack Query is already included via the selected API layer.",
       });
     }
-
   }
 
   if (
     (part.role === "dataFetching" || part.role === "libraries") &&
-    ["tanstack-query", "tanstack-table", "tanstack-virtual", "tanstack-db", "tanstack-pacer"].includes(
-      part.toolId,
-    ) &&
+    [
+      "tanstack-query",
+      "tanstack-table",
+      "tanstack-virtual",
+      "tanstack-db",
+      "tanstack-pacer",
+    ].includes(part.toolId) &&
     frontendTool === "astro" &&
     context.settings?.astroIntegration === "none"
   ) {
@@ -2817,7 +2951,19 @@ export function getStackPartCompatibilityIssueForPart(
   part: Pick<StackPart, "id" | "role" | "toolId" | "ecosystem" | "ownerPartId" | "settings">,
   parts: readonly StackPart[],
 ): StackGraphIssue | undefined {
-  return getStackPartCompatibilityIssue(part, getStackPartOptionContextForPart(part, parts));
+  const context = getStackPartOptionContextForPart(part, parts);
+  const issue = getStackPartCompatibilityIssue(part, context);
+  if (!issue) return undefined;
+
+  const alternatives = getStackPartOptions(context)
+    .filter((toolId) => toolId !== part.toolId)
+    .slice(0, 3);
+  return alternatives.length > 0 ? { ...issue, alternatives } : issue;
+}
+
+export function formatStackGraphIssue(issue: StackGraphIssue): string {
+  if (!issue.alternatives || issue.alternatives.length === 0) return issue.message;
+  return `${issue.message} Compatible alternatives: ${issue.alternatives.join(", ")}.`;
 }
 
 export function hasJavaScriptWorkspaceRoot(parts: readonly StackPart[] | undefined) {
@@ -3221,16 +3367,6 @@ export function legacyProjectConfigToStackParts(
   const webFrontend = webFrontends[0];
   const nativeFrontend = nativeFrontends[0];
   const frontendPart = addLegacyPart(parts, "frontend", "typescript", webFrontend, source);
-  // The Astro sub-framework choice is a settings-shaped detail carried on the
-  // Astro frontend part itself (rather than a scoped capability part), so a pure
-  // graph round-trips the integration without a flat-field side channel.
-  if (
-    frontendPart?.toolId === "astro" &&
-    config.astroIntegration &&
-    config.astroIntegration !== "none"
-  ) {
-    frontendPart.settings = { astroIntegration: config.astroIntegration };
-  }
   const mobilePart = addLegacyPart(parts, "mobile", "react-native", nativeFrontend, source);
   addLegacyPart(parts, "frontend", "dotnet", config.dotnetFrontend, source);
   const kotlinMobilePart = addLegacyPart(parts, "mobile", "kotlin", config.kotlinMobile, source);
@@ -3438,7 +3574,7 @@ export function legacyProjectConfigToStackParts(
     }
   }
 
-  return materializeProvidedStackParts(parts);
+  return mergeProjectConfigSettingsIntoStackParts(materializeProvidedStackParts(parts), config);
 }
 
 function ecosystemForLegacy(parts: readonly StackPart[]): Ecosystem {
@@ -3572,6 +3708,8 @@ export function stackPartsToLegacyProjectConfigPartial(
     config.validation = "effect-schema";
   }
 
+  Object.assign(config, projectStackPartSettingsToProjectConfig(parts));
+
   return config;
 }
 
@@ -3694,7 +3832,7 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
   config: ProjectConfig,
   ecosystem: GraphProjectionEcosystem,
 ): ProjectConfig {
-  const parts = config.stackParts ?? [];
+  const parts = mergeProjectConfigSettingsIntoStackParts(config.stackParts ?? [], config);
   const backend = parts.find(
     (part) => part.role === "backend" && part.ecosystem === ecosystem && !part.ownerPartId,
   );
@@ -3716,6 +3854,7 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
   const projected: ProjectConfig = {
     ...config,
     ecosystem,
+    stackParts: parts,
     frontend: [
       ...(frontend && frontend.ecosystem === "typescript" ? [frontend.toolId] : []),
       ...(mobile && ["typescript", "react-native"].includes(ecosystem) ? [mobile.toolId] : []),
@@ -3732,6 +3871,10 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
   }
   projected.addons = [];
   projected.examples = [];
+  Object.assign(
+    projected,
+    projectStackPartSettingsToProjectConfig(parts, { includeDefaults: true }),
+  );
 
   projectLegacyCategoryFromPart(projected, backend, ecosystem, parts);
   projectLegacyCategoryFromPart(projected, frontend, ecosystem, parts);
@@ -3741,18 +3884,6 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
   projectLegacyCategoryFromPart(projected, auth, ecosystem, parts);
   if (ecosystem === "go" && config.auth === "go-better-auth") {
     projected.auth = config.auth;
-  }
-
-  // astroIntegration is reset to "none" by the default-category loop above; prefer
-  // the graph-owned value carried on the Astro frontend part's settings, falling
-  // back to the flat field so graph-mode specs (which cannot express the setting)
-  // keep projecting the same value the spread used to carry.
-  const astroIntegrationSetting =
-    frontend?.toolId === "astro" ? frontend.settings?.astroIntegration : undefined;
-  if (typeof astroIntegrationSetting === "string") {
-    projected.astroIntegration = astroIntegrationSetting as ProjectConfig["astroIntegration"];
-  } else if (config.astroIntegration !== undefined) {
-    projected.astroIntegration = config.astroIntegration;
   }
 
   const backendScopedPartRoles = new Set<StackPartRole>(["database", "orm", "api", "auth"]);

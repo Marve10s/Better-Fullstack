@@ -1,0 +1,79 @@
+---
+title: Generate dependable recipes
+description: Plan, apply, verify, and recover a persistence-backed resource inside an existing Better Fullstack project.
+translationStatus: pending
+updated: 2026-08-23
+---
+
+`gen` adds a complete recipe to an existing project through the same review and recovery contract
+as other lifecycle mutations. The first supported persistent adapter targets a Bun-managed
+TypeScript monorepo with tRPC, Drizzle, SQLite, and either Better Auth or no authentication.
+
+## Plan and apply
+
+Planning computes every exact file body, validates current managed regions, records file
+preimages, and returns a token. It does not write.
+
+```bash
+bunx create-better-fullstack@latest gen resource post --dir ./my-app --json
+```
+
+Review the planned schema, database query service, router, integration test, recipe guide, shared
+registrations, and agent-context changes. Apply only the unchanged plan:
+
+```bash
+bunx create-better-fullstack@latest gen resource post \
+  --dir ./my-app \
+  --apply \
+  --review-token <token>
+```
+
+Apply writes the complete slice in one recovery transaction. A changed preimage, changed managed
+entry, missing syntax anchor, stale token, or unsupported Stack Graph stops before any recipe file
+is written. A write failure rolls back the full operation.
+
+## Persistence and verification
+
+The persistent resource contains create, read, update, delete, and list operations. It owns its
+new files and only its exact entries inside shared router, schema, and agent-document regions.
+Adding another recipe does not transfer ownership of an earlier entry.
+
+The generated guide under `docs/recipes/<name>.md` contains version-matched migration and test
+commands. Apply the database schema before running the generated integration test. For example:
+
+```bash
+bun run db:push
+bun test packages/api/src/routers/post.integration.test.ts
+bunx create-better-fullstack@latest recipes check post --dir .
+```
+
+`recipes check` validates recorded full-file hashes and exact shared-region entries. It does not
+execute application code. `recipes history` correlates recipe records with local recovery points:
+
+```bash
+bunx create-better-fullstack@latest recipes check --dir . --json
+bunx create-better-fullstack@latest recipes history --dir . --json
+```
+
+Use the normal `recovery show`, `recovery verify`, and `recovery apply` commands with the returned
+transaction ID when the complete recipe needs inspection or restoration.
+
+## Project context for tools
+
+`context` returns a bounded schema-versioned document with current roles, capabilities, evidence,
+owning Stack Parts, installed-version references, compatibility results, recipes, commands, and
+safe next actions. It omits source code and absolute project paths.
+
+```bash
+bunx create-better-fullstack@latest context ./my-app --json
+```
+
+The MCP `bfs_get_project_context` tool returns the same document. Generated `AGENTS.md` and
+`CLAUDE.md` files carry the human-readable project context and receive recipe-owned entries through
+hash-validated managed regions.
+
+## Adapter admission
+
+Adapters are registered product contracts, not command-handler branches. A new adapter must name a
+maintenance owner, cite repeated demand, declare owned artifacts and checks, and enter with a golden
+runtime recipe. Unsupported stacks report why each registered adapter declined the project.

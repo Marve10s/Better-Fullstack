@@ -9,6 +9,7 @@ import { hashContent } from "./scaffold-manifest";
 export const RECOVERY_ROOT = ".bts/recovery";
 const RECOVERY_METADATA_FILE = "transaction.json";
 const RECOVERY_VERSION = 1;
+const RECOVERY_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export type RecoveryFile =
   | { path: string; state: "absent" }
@@ -34,6 +35,42 @@ export type ProjectTransaction = {
   writes: Map<string, string | null>;
 };
 
+export type RecoveryPointVerification = {
+  id: string;
+  valid: boolean;
+  recoverable: boolean;
+  errors: string[];
+  metadata?: RecoveryMetadata;
+};
+
+export type RecoveryPointSummary = {
+  id: string;
+  valid: boolean;
+  recoverable: boolean;
+  operation?: LifecycleOperation;
+  status?: RecoveryMetadata["status"];
+  createdAt?: string;
+  completedAt?: string;
+  fileCount?: number;
+  errors: string[];
+};
+
+export type PruneRecoveryPointsOptions = {
+  olderThanDays: number;
+  keep: number;
+  apply: boolean;
+  now?: Date;
+};
+
+export type PruneRecoveryPointsResult = {
+  projectDir: string;
+  applied: boolean;
+  candidates: string[];
+  pruned: string[];
+  retained: string[];
+  invalid: string[];
+};
+
 function isPortableProjectPath(relativePath: string): boolean {
   return (
     relativePath.length > 0 &&
@@ -47,7 +84,7 @@ function isPortableProjectPath(relativePath: string): boolean {
 }
 
 function recoveryPath(projectDir: string, transactionId: string): string {
-  if (!/^[0-9a-f-]+$/.test(transactionId)) {
+  if (!RECOVERY_ID.test(transactionId)) {
     throw new Error("Recovery transaction ID is invalid.");
   }
   return path.join(projectDir, RECOVERY_ROOT, transactionId);
@@ -67,6 +104,7 @@ async function assertSafeTarget(projectDir: string, relativePath: string): Promi
   let current = projectRealpath;
   for (const segment of relative.split(path.sep).filter(Boolean)) {
     current = path.join(current, segment);
+    // oxlint-disable-next-line no-await-in-loop -- each ancestor must be checked in path order
     const stats = await fs.lstat(current).catch(() => null);
     if (!stats) break;
     if (stats.isSymbolicLink()) {
@@ -150,6 +188,7 @@ export function bindProjectTransactionWrite(
   transaction: ProjectTransaction,
   relativePath: string,
 ): void {
+  if (transaction.writes.has(relativePath)) return;
   markProjectTransactionWrite(transaction, relativePath, UNVERIFIED_WRITE);
 }
 
@@ -212,7 +251,7 @@ async function restoreFiles(
 
     const hasExpectedCurrentHash = expectedCurrentHashes?.has(file.path) ?? false;
     const expectedCurrentHash = expectedCurrentHashes?.get(file.path);
-    if (hasExpectedCurrentHash && expectedCurrentHash !== UNVERIFIED_WRITE) {
+    if (hasExpectedCurrentHash) {
       const stillAtPreimage =
         (file.state === "absent" && current === null) ||
         (file.state === "file" &&
@@ -220,6 +259,10 @@ async function restoreFiles(
           (file.mode === undefined || ((currentStats?.mode ?? -1) & 0o7777) === file.mode));
       if (stillAtPreimage) {
         restorations.push({ file, target, backup, skip: true });
+        continue;
+      }
+      if (expectedCurrentHash === UNVERIFIED_WRITE) {
+        concurrentChanges.push(file.path);
         continue;
       }
       const expectedCurrentMode = expectedCurrentModes?.get(file.path);
@@ -303,9 +346,18 @@ function validateRecoveryMetadata(value: unknown, expectedId: string): RecoveryM
     metadata.id !== expectedId ||
     !Array.isArray(metadata.files) ||
     typeof metadata.operation !== "string" ||
-    !["create", "add", "remove", "stack-update", "template-update", "recover"].includes(
-      metadata.operation,
-    ) ||
+    ![
+      "create",
+      "add",
+      "remove",
+      "replace",
+      "doctor-fix",
+      "stack-update",
+      "template-update",
+      "gen",
+      "registry-add",
+      "recover",
+    ].includes(metadata.operation) ||
     typeof metadata.createdAt !== "string" ||
     !["pending", "applied", "rolled-back", "recovered"].includes(metadata.status ?? "")
   ) {
@@ -344,6 +396,7 @@ function validateRecoveryMetadata(value: unknown, expectedId: string): RecoveryM
       throw new Error("Recovery metadata contains an invalid output mode entry.");
     }
   }
+  const filePaths = new Set<string>();
   for (const file of metadata.files) {
     if (
       !file ||
@@ -365,20 +418,242 @@ function validateRecoveryMetadata(value: unknown, expectedId: string): RecoveryM
     ) {
       throw new Error("Recovery metadata contains an invalid file entry.");
     }
+    if (filePaths.has(file.path)) {
+      throw new Error("Recovery metadata contains duplicate file entries.");
+    }
+    filePaths.add(file.path);
+  }
+  if (
+    Object.keys(metadata.outputs ?? {}).some((outputPath) => !filePaths.has(outputPath)) ||
+    Object.keys(metadata.outputModes ?? {}).some(
+      (outputPath) => !filePaths.has(outputPath) || !(outputPath in (metadata.outputs ?? {})),
+    )
+  ) {
+    throw new Error("Recovery metadata contains an output that is not bound to a file snapshot.");
   }
   return metadata as RecoveryMetadata;
 }
 
-export async function recoverProjectTransaction(
+async function loadProjectRecoveryPoint(
   projectDirInput: string,
   transactionId: string,
-): Promise<RecoveryMetadata> {
+): Promise<ProjectTransaction> {
   const projectDir = await fs.realpath(path.resolve(projectDirInput));
   const recoveryDir = recoveryPath(projectDir, transactionId);
   const metadata = validateRecoveryMetadata(
     await fs.readJson(path.join(recoveryDir, RECOVERY_METADATA_FILE)),
     transactionId,
   );
+  return {
+    id: transactionId,
+    projectDir,
+    recoveryDir,
+    metadata,
+    writes: new Map(),
+  };
+}
+
+async function verifyRecoveryBackups(transaction: ProjectTransaction): Promise<string[]> {
+  const errors: string[] = [];
+  for (const file of transaction.metadata.files) {
+    const backupPath = path.join(transaction.recoveryDir, "files", file.path);
+    // oxlint-disable-next-line no-await-in-loop -- every declared backup receives an integrity check
+    const stats = await fs.lstat(backupPath).catch(() => null);
+    if (file.state === "absent") {
+      if (stats) errors.push(`Unexpected backup exists for absent preimage: ${file.path}`);
+      continue;
+    }
+    if (!stats?.isFile() || stats.isSymbolicLink()) {
+      errors.push(`Recovery backup is missing or is not a regular file: ${file.path}`);
+      continue;
+    }
+    // oxlint-disable-next-line no-await-in-loop -- hash each bounded backup before reporting validity
+    const backup = await fs.readFile(backupPath);
+    if (hashContent(backup) !== file.sha256) {
+      errors.push(`Recovery backup failed integrity validation: ${file.path}`);
+    }
+  }
+  return errors;
+}
+
+async function verifyRecoveryCurrentState(transaction: ProjectTransaction): Promise<string[]> {
+  if (transaction.metadata.status !== "applied" && transaction.metadata.status !== "pending") {
+    return [];
+  }
+  const errors: string[] = [];
+  const outputs = transaction.metadata.outputs ?? {};
+  const outputModes = transaction.metadata.outputModes ?? {};
+  for (const file of transaction.metadata.files) {
+    // oxlint-disable-next-line no-await-in-loop -- inspect every bounded restore target without writing
+    const target = await assertSafeTarget(transaction.projectDir, file.path).catch((error) => {
+      errors.push(error instanceof Error ? error.message : String(error));
+      return null;
+    });
+    if (!target) continue;
+    // oxlint-disable-next-line no-await-in-loop
+    const stats = await fs.lstat(target).catch(() => null);
+    if (stats && !stats.isFile()) {
+      errors.push(`Recovery target is no longer a regular file: ${file.path}`);
+      continue;
+    }
+    // oxlint-disable-next-line no-await-in-loop
+    const current = stats ? await fs.readFile(target) : null;
+    const currentHash = current ? hashContent(current) : null;
+    const expectedHash =
+      file.path in outputs ? outputs[file.path] : file.state === "file" ? file.sha256 : null;
+    const expectedMode = outputModes[file.path];
+    const stillAtPreimage =
+      (file.state === "absent" && current === null) ||
+      (file.state === "file" &&
+        currentHash === file.sha256 &&
+        (file.mode === undefined || ((stats?.mode ?? -1) & 0o7777) === file.mode));
+    if (stillAtPreimage) continue;
+    if (expectedHash === UNVERIFIED_WRITE) {
+      errors.push(`Recovery target changed after the transaction: ${file.path}`);
+      continue;
+    }
+    if (
+      currentHash !== expectedHash ||
+      (expectedMode !== undefined && ((stats?.mode ?? -1) & 0o7777) !== expectedMode)
+    ) {
+      errors.push(`Recovery target changed after the transaction: ${file.path}`);
+    }
+  }
+  return errors;
+}
+
+export async function verifyProjectRecoveryPoint(
+  projectDirInput: string,
+  transactionId: string,
+): Promise<RecoveryPointVerification> {
+  try {
+    const transaction = await loadProjectRecoveryPoint(projectDirInput, transactionId);
+    const integrityErrors = await verifyRecoveryBackups(transaction);
+    const currentStateErrors = await verifyRecoveryCurrentState(transaction);
+    const eligibleStatus =
+      transaction.metadata.status === "applied" || transaction.metadata.status === "pending";
+    return {
+      id: transactionId,
+      valid: integrityErrors.length === 0,
+      recoverable:
+        eligibleStatus && integrityErrors.length === 0 && currentStateErrors.length === 0,
+      errors: [...integrityErrors, ...currentStateErrors],
+      metadata: transaction.metadata,
+    };
+  } catch (error) {
+    return {
+      id: transactionId,
+      valid: false,
+      recoverable: false,
+      errors: [error instanceof Error ? error.message : String(error)],
+    };
+  }
+}
+
+export async function getProjectRecoveryPoint(
+  projectDirInput: string,
+  transactionId: string,
+): Promise<RecoveryPointVerification> {
+  return verifyProjectRecoveryPoint(projectDirInput, transactionId);
+}
+
+export async function listProjectRecoveryPoints(
+  projectDirInput: string,
+): Promise<RecoveryPointSummary[]> {
+  const projectDir = await fs.realpath(path.resolve(projectDirInput));
+  const root = path.join(projectDir, RECOVERY_ROOT);
+  const entries = await fs.readdir(root, { withFileTypes: true }).catch(() => []);
+  const points: RecoveryPointSummary[] = [];
+  for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
+    if (!entry.isDirectory() || !RECOVERY_ID.test(entry.name)) {
+      points.push({
+        id: entry.name,
+        valid: false,
+        recoverable: false,
+        errors: ["Recovery entry is not a valid transaction directory."],
+      });
+      continue;
+    }
+    // oxlint-disable-next-line no-await-in-loop -- each independent recovery point is bounded
+    const verification = await verifyProjectRecoveryPoint(projectDir, entry.name);
+    points.push({
+      id: entry.name,
+      valid: verification.valid,
+      recoverable: verification.recoverable,
+      operation: verification.metadata?.operation,
+      status: verification.metadata?.status,
+      createdAt: verification.metadata?.createdAt,
+      completedAt: verification.metadata?.completedAt,
+      fileCount: verification.metadata?.files.length,
+      errors: verification.errors,
+    });
+  }
+  return points.sort((left, right) => (right.createdAt ?? "").localeCompare(left.createdAt ?? ""));
+}
+
+export async function pruneProjectRecoveryPoints(
+  projectDirInput: string,
+  options: PruneRecoveryPointsOptions,
+): Promise<PruneRecoveryPointsResult> {
+  if (!Number.isInteger(options.olderThanDays) || options.olderThanDays < 0) {
+    throw new Error("olderThanDays must be a non-negative integer.");
+  }
+  if (!Number.isInteger(options.keep) || options.keep < 0) {
+    throw new Error("keep must be a non-negative integer.");
+  }
+  const projectDir = await fs.realpath(path.resolve(projectDirInput));
+  const points = await listProjectRecoveryPoints(projectDir);
+  const invalid = points.filter((point) => !point.valid).map((point) => point.id);
+  const valid = points.filter(
+    (
+      point,
+    ): point is RecoveryPointSummary & {
+      createdAt: string;
+      status: RecoveryMetadata["status"];
+    } => point.valid && point.createdAt !== undefined && point.status !== undefined,
+  );
+  const cutoff = (options.now ?? new Date()).getTime() - options.olderThanDays * 86_400_000;
+  const retainedByCount = new Set(valid.slice(0, options.keep).map((point) => point.id));
+  const candidates = valid
+    .filter(
+      (point) =>
+        point.status !== "pending" &&
+        !retainedByCount.has(point.id) &&
+        Number.isFinite(Date.parse(point.createdAt)) &&
+        Date.parse(point.createdAt) <= cutoff,
+    )
+    .map((point) => point.id);
+  const pruned: string[] = [];
+
+  if (options.apply) {
+    for (const transactionId of candidates) {
+      // oxlint-disable-next-line no-await-in-loop -- revalidate immediately before each bounded deletion
+      const verification = await verifyProjectRecoveryPoint(projectDir, transactionId);
+      if (!verification.valid || verification.metadata?.status === "pending") continue;
+      // oxlint-disable-next-line no-await-in-loop -- explicit, validated recovery-point deletion
+      await fs.remove(recoveryPath(projectDir, transactionId));
+      pruned.push(transactionId);
+    }
+  }
+
+  return {
+    projectDir,
+    applied: options.apply,
+    candidates,
+    pruned,
+    retained: points
+      .map((point) => point.id)
+      .filter((transactionId) => !pruned.includes(transactionId)),
+    invalid,
+  };
+}
+
+export async function recoverProjectTransaction(
+  projectDirInput: string,
+  transactionId: string,
+): Promise<RecoveryMetadata> {
+  const loaded = await loadProjectRecoveryPoint(projectDirInput, transactionId);
+  const { projectDir, recoveryDir, metadata } = loaded;
   if (metadata.status !== "applied" && metadata.status !== "pending") {
     throw new Error(
       `Recovery transaction ${transactionId} is ${metadata.status}, not applied or interrupted.`,

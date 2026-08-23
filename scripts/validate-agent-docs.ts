@@ -1,6 +1,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 
+import { CAPABILITY_EVIDENCE_LEVELS } from "../packages/types/src/evidence";
+
 const root = resolve(import.meta.dir, "..");
 
 const tracked = Bun.spawnSync(
@@ -24,6 +26,7 @@ const markdownFiles = new TextDecoder()
   .filter((path) => existsSync(resolve(root, path)))
   .filter(
     (path) =>
+      !path.startsWith(".zcode/") &&
       !path.startsWith("plugin/skills/") &&
       !path.startsWith("packages/template-generator/templates/"),
   );
@@ -101,6 +104,82 @@ requireIndexed("docs/projects/backlog", "docs/projects/README.md");
 requireIndexed("docs/projects/completed", "docs/projects/README.md");
 requireIndexed("docs/reference", "docs/reference/README.md");
 requireIndexed("docs", "docs/README.md");
+
+const roadmapPath = "docs/next-updates-roadmap.md";
+const roadmap = readFileSync(resolve(root, roadmapPath), "utf8");
+const roadmapTaskIds = [...roadmap.matchAll(/^\|\s+((?:T\d+\.\d+)|(?:B\d+))\s+\|/gmu)].map(
+  (match) => match[1],
+);
+const duplicateTaskIds = roadmapTaskIds.filter(
+  (taskId, index) => roadmapTaskIds.indexOf(taskId) !== index,
+);
+
+if (roadmapTaskIds.length === 0) {
+  errors.push(`${roadmapPath}: contains no machine-readable task rows`);
+}
+for (const taskId of new Set(duplicateTaskIds)) {
+  errors.push(`${roadmapPath}: duplicate task id ${taskId}`);
+}
+
+function headingSlug(heading: string) {
+  return heading
+    .trim()
+    .toLowerCase()
+    .replace(/[`*_~]/gu, "")
+    .replace(/[^\p{L}\p{N}\s-]/gu, "")
+    .replace(/\s+/gu, "-")
+    .replace(/-+/gu, "-");
+}
+
+const roadmapAnchors = new Set(
+  [...roadmap.matchAll(/^#{1,6}\s+(.+)$/gmu)].map((match) => headingSlug(match[1])),
+);
+const projectIndexPath = "docs/projects/README.md";
+const projectIndex = readFileSync(resolve(root, projectIndexPath), "utf8");
+
+for (const match of projectIndex.matchAll(/\]\(\.\.\/next-updates-roadmap\.md#([^)]+)\)/gu)) {
+  const anchor = match[1];
+  if (!roadmapAnchors.has(anchor)) {
+    errors.push(`${projectIndexPath}: missing roadmap heading #${anchor}`);
+  }
+}
+
+const stalePlanningClaims = [
+  {
+    path: "docs/projects/active/platform-features.md",
+    pattern:
+      /- \[ \] (?:Record explicit generator\/template versions|Add manifest-v2 provenance|Add transactional, recoverable)/u,
+    description: "lists shipped lifecycle provenance or recovery work as unfinished",
+  },
+  {
+    path: "docs/projects/backlog/docker-and-devcontainers.md",
+    pattern: /- \[ \] Add `--monorepo false` or `--single-app` flag/u,
+    description: "lists the shipped constrained single-app mode as unimplemented",
+  },
+  {
+    path: "docs/projects/completed/deployment-docs-and-docker-foundation-2026-05-21.md",
+    pattern: /^- (?:DevContainer generation|Non-monorepo \/ single-app mode)\.$/mu,
+    description: "lists shipped deployment foundation work as still planned",
+  },
+];
+
+for (const claim of stalePlanningClaims) {
+  const contents = readFileSync(resolve(root, claim.path), "utf8");
+  if (claim.pattern.test(contents)) {
+    errors.push(`${claim.path}: ${claim.description}`);
+  }
+}
+
+const evidenceGuidePath = "docs/guidelines/capability-evidence-levels.md";
+const evidenceGuide = readFileSync(resolve(root, evidenceGuidePath), "utf8");
+const normalizedEvidenceGuide = evidenceGuide.replace(/\s+/gu, " ");
+for (const level of CAPABILITY_EVIDENCE_LEVELS) {
+  for (const requiredText of [level.label, level.proves, level.doesNotProve]) {
+    if (!normalizedEvidenceGuide.includes(requiredText.replace(/\s+/gu, " "))) {
+      errors.push(`${evidenceGuidePath}: missing canonical ${level.id} text: ${requiredText}`);
+    }
+  }
+}
 
 for (const path of markdownFiles) {
   const text = readFileSync(resolve(root, path), "utf8");

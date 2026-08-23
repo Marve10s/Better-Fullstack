@@ -13,7 +13,9 @@ export {
   telemetry,
   doctor,
   check,
+  evidence,
   update,
+  adopt,
 } from "./run";
 
 import type { ProjectConfig } from "./types";

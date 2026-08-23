@@ -2,97 +2,55 @@
 title: Experimental Commands
 description: Deterministic stack recommendations, in-project resource generation, and local capability packs.
 translationStatus: pending
-updated: 2026-08-21
+updated: 2026-08-22
 ---
 
-Three commands have intentionally narrow support today. They work, but their scope is smaller than
-the rest of the CLI and it will change.
+Three commands have intentionally narrow scope today. They work, but their surface is smaller than the rest of the CLI and it will change.
 
 ## Operational contract
 
 | Command     | Preconditions                                                               | Preview                                  | Writes                                                                      |
 | ----------- | --------------------------------------------------------------------------- | ---------------------------------------- | --------------------------------------------------------------------------- |
-| `recommend` | None. It runs before a project exists.                                      | The command only prints.                 | Nothing.                                                                    |
-| `gen`       | An existing generated TypeScript project using tRPC or oRPC.                | `--dry-run` prints source and wiring.    | One resource file, plus the router index when a safe anchor exists.         |
+| `recommend` | None. Runs before a project exists.                                         | The command only prints.                 | Nothing.                                                                    |
+| `gen`       | An existing generated TypeScript project using tRPC or oRPC.                | `--dry-run` prints source and wiring.    | One resource file plus the router index when a safe anchor exists.          |
 | `registry`  | A generated project and a trusted local directory or `file://` pack source. | `--dry-run` lists files, deps, env keys. | New files and metadata. Existing files are skipped rather than overwritten. |
 
 Run any of them on a clean Git worktree so you can revert the diff.
 
 ## Recommend a stack
 
-`recommend` maps keywords in a brief to a validated preset-style configuration and prints the
-rationale. It is deterministic and does not call a language model.
+`recommend` maps keywords in a brief to a validated preset-style configuration and prints the rationale. It is deterministic and never calls a language model:
 
 ```npm
 npm create better-fullstack@latest recommend -- --brief "a SaaS with Postgres, auth and payments"
 ```
 
-| Flag          | Behavior                                                                         |
-| ------------- | -------------------------------------------------------------------------------- |
-| `--brief`     | Required natural-language description. Used locally and never sent in telemetry. |
-| `--ecosystem` | Force a supported ecosystem identifier.                                          |
-| `--json`      | Print structured recommendation output.                                          |
+Flags: `--brief` (required; used locally and never sent in telemetry), `--ecosystem`, and `--json`.
 
-TypeScript has the deepest keyword mapping. Other ecosystem hints currently return ecosystem
-defaults with a warning rather than a detailed architecture. Always review compatibility and the
-printed configuration before scaffolding.
-
-For exact control, use explicit `create --part ...` or ecosystem flags. For agent planning, the
-[MCP server](/docs/ai/mcp/) exposes structured schema, compatibility, and plan tools.
+TypeScript has the deepest keyword mapping. Other ecosystem hints currently return ecosystem defaults with a warning. Always review the printed configuration before scaffolding, and prefer explicit `create --part ...` flags when you know exactly what you want.
 
 ## Generate resources
 
-`gen` creates a CRUD-style API resource router for TypeScript projects using tRPC or oRPC. `route`
-is an alias for `resource`.
+`gen resource <name>` creates a CRUD-style API resource router for TypeScript projects using tRPC or oRPC. `route` is an alias:
 
 ```npm
 npm create better-fullstack@latest gen resource post
 ```
 
-Preview the generated source and router registration:
+The generator converts the name to camelCase/PascalCase, writes a sibling file next to `src/routers/index.ts`, and registers it in `appRouter`. It never overwrites an existing resource, and it reports manual wiring when it cannot find a safe registration anchor. Flags: `--dir` for the project directory and `--dry-run` to preview source and registration.
 
-```npm
-npm create better-fullstack@latest gen resource post -- --dry-run
-```
-
-| Argument/flag         | Behavior                                                        |
-| --------------------- | --------------------------------------------------------------- |
-| `resource` or `route` | Generator kind.                                                 |
-| resource name         | Converted to camelCase/PascalCase and must start with a letter. |
-| `--dir`               | Generated project directory; defaults to current.               |
-| `--dry-run`           | Print planned source and registration without writing.          |
-
-The generator locates a known `src/routers/index.ts`, writes a sibling resource file, and registers
-it in `appRouter`. It never overwrites an existing resource. If it can generate the file but cannot
-find a safe registration anchor, it reports manual wiring.
-
-<Callout kind="info" title="Experimental scope">
-Other ecosystems, API styles, database-backed models, migrations, and frontend screens are not yet
-supported. The generated example uses an in-memory store and is a starting point, not persistence.
-</Callout>
+Other ecosystems, API styles, database-backed models, migrations, and frontend screens are not supported yet. The generated example uses an in-memory store as a starting point, not persistence.
 
 ## Capability registry
 
-`registry` installs additive capability packs into an existing project, or lists installed packs.
+`registry list` shows installed packs and `registry add <source>` installs one from a local path or `file://` URL:
 
-```npm
-npm create better-fullstack@latest registry list
-npm create better-fullstack@latest registry add ../my-capability-pack -- --dry-run
+```bash
+npx create-better-fullstack@latest registry add ../my-capability-pack --dry-run
 ```
 
-| Argument/flag   | Behavior                                                      |
-| --------------- | ------------------------------------------------------------- |
-| `list`          | Default action. Read installed-pack records from the project. |
-| `add <source>`  | Install a pack from a local path or `file://` URL.            |
-| `--project-dir` | Target generated project; defaults to current.                |
-| `--dry-run`     | Preview files, dependencies, and env keys without writing.    |
-| `--json`        | Print structured output.                                      |
+Packs may add files, dependencies, and `.env.example` keys. Existing files are skipped instead of overwritten, sources are resolved with traversal and symlink-escape protection, and `--json` prints structured output.
 
-Packs may add files, dependencies, and `.env.example` keys. Existing files are skipped instead of
-overwritten. Sources are resolved with traversal and symlink-escape protection.
-
-<Callout kind="warning" title="Local-only experimental feature">
-HTTP/HTTPS registries, discovery, authentication, signing, updates, uninstall, dependency graphs,
-and enforced compatibility are not implemented. Pack compatibility metadata is advisory. Review a
-pack's local contents and dry-run result before installing it.
+<Callout kind="warning" title="Local-only feature">
+HTTP registries, discovery, authentication, signing, updates, uninstall, dependency graphs, and enforced compatibility are not implemented. Pack compatibility metadata is advisory. Read a pack's contents and its dry-run result before installing.
 </Callout>

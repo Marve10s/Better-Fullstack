@@ -1,0 +1,49 @@
+{{#if (or (eq goApi "grpc-go") (eq goApi "grpc-gateway"))}}
+package proto
+
+import (
+	"context"
+	"net"
+	"testing"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/test/bufconn"
+)
+
+func TestGreeterRPC(t *testing.T) {
+	listener := bufconn.Listen(1024 * 1024)
+	server := grpc.NewServer()
+	RegisterGreeterServer(server, &GreeterService{})
+	go func() {
+		if err := server.Serve(listener); err != nil {
+			t.Errorf("serve gRPC: %v", err)
+		}
+	}()
+	t.Cleanup(server.Stop)
+
+	connection, err := grpc.DialContext(
+		context.Background(),
+		"passthrough:///bufnet",
+		grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
+			return listener.Dial()
+		}),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		t.Fatalf("dial gRPC: %v", err)
+	}
+	t.Cleanup(func() { _ = connection.Close() })
+
+	response, err := NewGreeterClient(connection).SayHello(
+		context.Background(),
+		&HelloRequest{Name: "Better Fullstack"},
+	)
+	if err != nil {
+		t.Fatalf("call SayHello: %v", err)
+	}
+	if response.GetMessage() != "Hello, Better Fullstack!" {
+		t.Fatalf("unexpected response: %q", response.GetMessage())
+	}
+}
+{{/if}}

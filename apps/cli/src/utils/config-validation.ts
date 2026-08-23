@@ -4,6 +4,7 @@ import pc from "picocolors";
 import type { CLIInput, Database, DatabaseSetup, Frontend, ProjectConfig, Runtime } from "../types";
 
 import {
+  formatStackGraphIssue,
   getDisabledReason,
   hasVitePlusWorkspaceRoot,
   hasSignozSupportedGoServerTarget,
@@ -1195,7 +1196,10 @@ function validateBotProtectionConstraints(config: Partial<ProjectConfig>) {
   if ((config.ecosystem ?? "typescript") !== "typescript") {
     incompatibilityError({
       message: "Bot protection is currently available for TypeScript web applications only.",
-      provided: { ecosystem: config.ecosystem ?? "typescript", "bot-protection": config.botProtection },
+      provided: {
+        ecosystem: config.ecosystem ?? "typescript",
+        "bot-protection": config.botProtection,
+      },
       suggestions: ["Use --bot-protection none"],
     });
   }
@@ -1608,7 +1612,7 @@ export function validateFullConfig(
   if (config.stackParts && !isToolingOverlayOnly(config.stackParts) && !options.yolo) {
     const graphValidation = validateStackParts(config.stackParts);
     if (graphValidation.issues.length > 0) {
-      exitWithError(graphValidation.issues.map((issue) => issue.message).join("\n"));
+      exitWithError(graphValidation.issues.map(formatStackGraphIssue).join("\n"));
     }
   }
 
@@ -1784,7 +1788,7 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
     if (config.stackParts) {
       const graphValidation = validateStackParts(config.stackParts);
       if (graphValidation.issues.length > 0) {
-        throw new Error(graphValidation.issues.map((issue) => issue.message).join("\n"));
+        throw new Error(graphValidation.issues.map(formatStackGraphIssue).join("\n"));
       }
     }
 

@@ -1,10 +1,6 @@
 import { m } from "@/paraglide/messages.js";
 
-import {
-  ECOSYSTEM_NAMES,
-  OPTION_COUNT_LABEL,
-  SOFTWARE_APPLICATION_COUNTS,
-} from "./project-stats";
+import { ECOSYSTEM_NAMES, OPTION_COUNT_LABEL, SOFTWARE_APPLICATION_COUNTS } from "./project-stats";
 
 export const SITE_NAME = "Better Fullstack";
 export const SITE_URL = "https://better-fullstack.dev";
@@ -34,8 +30,7 @@ export function getEcosystemOgImage(ecosystem: string) {
   return ECOSYSTEM_OG_IMAGES[ecosystem] ?? DEFAULT_OG_IMAGE_URL;
 }
 
-export const DEFAULT_DESCRIPTION =
-  `Scaffold production-ready fullstack apps in seconds. Pick your stack from ${OPTION_COUNT_LABEL} options across ${ECOSYSTEM_NAMES.join(", ")} — frameworks, databases, auth, payments, AI, and deployment — all wired together by one CLI.`;
+export const DEFAULT_DESCRIPTION = `Scaffold configurable fullstack projects. Pick your stack from ${OPTION_COUNT_LABEL} options across ${ECOSYSTEM_NAMES.join(", ")}, then inspect the generated files and current verification evidence.`;
 
 export const DEFAULT_ROBOTS =
   "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1";

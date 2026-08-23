@@ -2,7 +2,7 @@ import type { VirtualFileTree, VirtualNode } from "@better-fullstack/template-ge
 import type { Dirent } from "node:fs";
 
 import fs from "fs-extra";
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import path from "node:path";
 
 import type {
@@ -170,6 +170,11 @@ export async function writeScaffoldManifest(
   projectDir: string,
   manifest: ScaffoldManifest,
 ): Promise<void> {
+  const manifestPath = path.join(projectDir, SCAFFOLD_MANIFEST_FILE);
+  await fs.writeFile(manifestPath, serializeScaffoldManifest(manifest), "utf-8");
+}
+
+export function serializeScaffoldManifest(manifest: ScaffoldManifest): string {
   const sortEntries = (record: Record<string, string>) =>
     Object.fromEntries(Object.entries(record).sort(([a], [b]) => a.localeCompare(b)));
   const sorted: ScaffoldManifest = {
@@ -183,8 +188,53 @@ export async function writeScaffoldManifest(
       ? { baselines: sortEntries(manifest.baselines) }
       : {}),
   };
+  return `${JSON.stringify(sorted, null, 2)}\n`;
+}
+
+export async function createAdoptedScaffoldManifest(
+  projectDir: string,
+  input: {
+    hashes: Record<string, string>;
+    baselines?: Record<string, string>;
+    createdAt?: string;
+  },
+): Promise<ScaffoldManifest> {
+  const createdAt = input.createdAt ?? new Date().toISOString();
+  const manifest: ScaffoldManifest = {
+    version: SCAFFOLD_MANIFEST_VERSION,
+    createdAt,
+    updatedAt: createdAt,
+    provenance: {
+      state: "adopted-unverified",
+      createdWith: null,
+      current: null,
+    },
+    history: [
+      {
+        id: hashContent(`baseline-adoption:${createdAt}:${projectDir}`).slice(0, 24),
+        operation: "baseline-adoption",
+        completedAt: createdAt,
+        source: null,
+        target: null,
+        changes: { ...emptyChanges(), added: Object.keys(input.hashes).length },
+      },
+    ],
+    hashes: input.hashes,
+    baselines: input.baselines,
+  };
   const manifestPath = path.join(projectDir, SCAFFOLD_MANIFEST_FILE);
-  await fs.writeFile(manifestPath, `${JSON.stringify(sorted, null, 2)}\n`, "utf-8");
+  const temporaryPath = path.join(projectDir, `.bts-lock-adoption-${randomUUID()}.tmp`);
+  try {
+    await fs.writeFile(temporaryPath, serializeScaffoldManifest(manifest), {
+      encoding: "utf-8",
+      flag: "wx",
+      mode: 0o644,
+    });
+    await fs.link(temporaryPath, manifestPath);
+  } finally {
+    await fs.rm(temporaryPath, { force: true });
+  }
+  return manifest;
 }
 
 export async function recordScaffoldManifest(
@@ -431,6 +481,7 @@ export async function refreshScaffoldManifestFiles(
     changes: LifecycleChangeSummary;
     recoveryId?: string;
   },
+  beforeWrite?: (content: string) => void | Promise<void>,
 ): Promise<void> {
   const manifest = await readScaffoldManifest(projectDir);
   if (!manifest) return;
@@ -469,5 +520,7 @@ export async function refreshScaffoldManifestFiles(
     });
   }
 
-  await writeScaffoldManifest(projectDir, manifest);
+  const content = serializeScaffoldManifest(manifest);
+  await beforeWrite?.(content);
+  await fs.writeFile(path.join(projectDir, SCAFFOLD_MANIFEST_FILE), content, "utf-8");
 }
