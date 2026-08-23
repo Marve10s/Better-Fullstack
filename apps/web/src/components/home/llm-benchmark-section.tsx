@@ -72,7 +72,7 @@ const PROVIDER_BAR_COLOR: Record<"claude" | "codex" | "opencode" | "kilo" | "agy
 const BAR_TRACK_STYLE: CSSProperties = { backgroundColor: "var(--bar-track)" };
 
 const LEADERBOARD_GRID =
-  "grid grid-cols-[minmax(9rem,13rem)_minmax(0,1fr)_4.25rem_4.5rem_4rem_4.5rem_4rem_3rem_3.5rem] items-center gap-x-3";
+  "grid grid-cols-[minmax(9rem,13rem)_minmax(0,1fr)_4.25rem_4.25rem_4.5rem_4rem_4.5rem_4rem_3rem_3.5rem] items-center gap-x-3";
 
 const PASS_AXIS_TICKS: readonly number[] = [0, 20, 40, 60, 80, 100] as const;
 
@@ -81,6 +81,7 @@ interface ModelLeaderRow {
   label: string;
   effort: string;
   legacy: boolean;
+  core: number;
   color: string;
   logo?: ProviderLogoId;
   harness?: string;
@@ -171,6 +172,13 @@ const BOARD_ENTRIES: readonly BoardEntry[] = [
 
 const BOARD_MODELS: readonly ScaffbenchModel[] = BOARD_ENTRIES.map((entry) => entry.model);
 
+function coreTally(scored: readonly ScaffbenchCell[]): { successes: number; trials: number } {
+  return {
+    successes: scored.reduce((sum, cell) => sum + (cell.passCount ?? (cell.corePass ? 1 : 0)), 0),
+    trials: scored.reduce((sum, cell) => sum + (cell.scoredTrials ?? 1), 0),
+  };
+}
+
 function passTally(scored: readonly ScaffbenchCell[]): {
   successes: number;
   trials: number;
@@ -220,6 +228,7 @@ function computeScaffbenchModelRows(specs: ReadonlySet<string>): ModelLeaderRow[
       logo: PROVIDER_LOGO[model.provider],
       harness: HARNESS_LABEL[model.provider],
       pass: formatPercent(passSuccesses, passTrials),
+      core: formatPercent(coreTally(scored).successes, coreTally(scored).trials),
       buildOnly: scored.length > 0 && !qualityMeasured,
       wired: scored.length > 0 ? `${Math.round(mean(scored.map((cell) => cell.wiredPct)))}%` : "–",
       time: durations.length > 0 ? formatDuration(mean(durations)) : "–",
@@ -445,6 +454,7 @@ const V2_CHART_TABS: readonly V2ChartTabSpec[] = [
 
 interface PathMetrics {
   pass: number;
+  corePct: number;
   tokens: number | null;
   cost: number | null;
   steps: number | null;
@@ -466,8 +476,10 @@ function aggregatePathMetrics(sourceCells: readonly ScaffbenchCell[]): PathMetri
     .map((cell) => cell.lines)
     .filter((value): value is number => value !== null && value !== undefined && value > 0);
   const tally = passTally(scored);
+  const core = coreTally(scored);
   return {
     pass: formatPercent(tally.successes, tally.trials),
+    corePct: formatPercent(core.successes, core.trials),
     tokens: tokens.length > 0 ? mean(tokens) / 1000 : null,
     cost: costs.length > 0 ? mean(costs) : null,
     steps: steps.length > 0 ? mean(steps) : null,
@@ -553,9 +565,22 @@ function v2PointLabel(model: ScaffbenchModel): string {
   return `${model.label} ${effort}`;
 }
 
-function computeV2ModelPoints(): V2ModelPoint[] {
+type PassMode = "full" | "core";
+
+const PASS_MODE_TABS: readonly { id: PassMode; label: string }[] = [
+  { id: "full", label: "Full" },
+  { id: "core", label: "Core" },
+];
+
+const PASS_MODE_LABEL: Record<PassMode, string> = {
+  full: "Full pass rate",
+  core: "Core pass rate",
+};
+
+function computeV2ModelPoints(passMode: PassMode): V2ModelPoint[] {
   return BOARD_ENTRIES.map(({ model, cells, legacy }, index) => {
     const metrics = aggregatePathMetrics(cells);
+    if (passMode === "core") metrics.pass = metrics.corePct;
     const free = isFreeModel(model);
     if (metrics.cost === null && free && metrics.scoredCount > 0) {
       metrics.cost = 0;
@@ -630,8 +655,9 @@ function computeV2LabelPlacements(
 
 function BenchmarkChartCard({ className }: { className?: string } = {}) {
   const [metric, setMetric] = useState<V2Metric>("tokens");
+  const [passMode, setPassMode] = useState<PassMode>("full");
   const [hoveredModel, setHoveredModel] = useState<string | null>(null);
-  const modelPoints = useMemo(() => computeV2ModelPoints(), []);
+  const modelPoints = useMemo(() => computeV2ModelPoints(passMode), [passMode]);
   const eligiblePoints = useMemo(
     () => modelPoints.filter((point) => v2PointEligible(point, metric)),
     [modelPoints, metric],
@@ -693,6 +719,21 @@ function BenchmarkChartCard({ className }: { className?: string } = {}) {
             <div
               className="inline-flex overflow-hidden rounded-md border border-[#d9d8d2] dark:border-[rgba(237,235,228,0.14)]"
               role="tablist"
+              aria-label="Pass metric"
+            >
+              {PASS_MODE_TABS.map((t) => (
+                <MetricTabButton
+                  key={t.id}
+                  id={t.id}
+                  label={t.label}
+                  active={passMode === t.id}
+                  onSelect={setPassMode}
+                />
+              ))}
+            </div>
+            <div
+              className="inline-flex overflow-hidden rounded-md border border-[#d9d8d2] dark:border-[rgba(237,235,228,0.14)]"
+              role="tablist"
               aria-label={m.llmBenchmarkMetric()}
             >
               {V2_CHART_TABS.map((t) => (
@@ -717,7 +758,7 @@ function BenchmarkChartCard({ className }: { className?: string } = {}) {
       <div ref={ref} className="px-3 pb-2 pt-5 sm:px-6">
         <section aria-label={m.llmScatterAria()} className="overflow-x-auto" tabIndex={0}>
           <div className="mx-auto w-full max-w-[1180px]">
-            <p className="px-3 text-sm font-semibold">{PASS_AXIS.label}</p>
+            <p className="px-3 text-sm font-semibold">{PASS_MODE_LABEL[passMode]}</p>
             <svg viewBox={`0 0 ${VB_W} ${VB_H}`} className="mt-2 h-auto w-full">
               <AxisLayer key={`${metric}-${axis.max}`} x={axis} note={axisNote} palette={palette} />
               {plottedPoints.map((point, index) => {
@@ -1381,7 +1422,7 @@ function ScaffbenchLeaderboardCard({ className }: { className?: string } = {}) {
           className="overflow-x-auto"
           tabIndex={0}
         >
-          <div className="mx-auto w-full min-w-[920px] max-w-[1180px] px-3">
+          <div className="mx-auto w-full min-w-[980px] max-w-[1180px] px-3">
             <div
               className={cn(
                 LEADERBOARD_GRID,
@@ -1396,6 +1437,14 @@ function ScaffbenchLeaderboardCard({ className }: { className?: string } = {}) {
                   The project installs, builds, type-checks, AND clears every applicable quality
                   gate (lint, format, tests) on a clean machine. Agents may install and build to
                   self-verify while generating; grading happens cold afterward.
+                </MetricHelp>
+              </span>
+              <span className="flex items-center justify-end gap-1">
+                Core
+                <MetricHelp label="Core pass">
+                  The project installs, builds, type-checks and natively compiles on a clean
+                  machine. Quality gates are excluded, so Core answers whether the code runs at
+                  all. Full is always a subset of Core.
                 </MetricHelp>
               </span>
               <span className="flex items-center justify-end gap-1">
@@ -1505,6 +1554,7 @@ function ModelLeaderRow({ row }: { row: ModelLeaderRow }) {
           </Tooltip>
         ) : null}
       </span>
+      <span className="text-right font-mono text-xs tabular-nums">{row.core}%</span>
       <span className="text-right font-mono text-xs">{row.wired}</span>
       <span className="text-right font-mono text-xs">{row.time}</span>
       <span className="text-right font-mono text-xs">{row.cost}</span>
