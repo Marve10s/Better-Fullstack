@@ -101,7 +101,7 @@ export function CapabilityEvidenceBadge({
           evidence.evidenceLevel === "runtime-verified" && !warning
             ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
             : warning
-              ? "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+              ? "border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-400"
               : "border-border bg-muted/40 text-muted-foreground",
           className,
         )}
