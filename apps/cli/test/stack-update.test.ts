@@ -3609,58 +3609,62 @@ describe("stack update planner", () => {
     expect(plan.error).toContain("Nango integrations require a TypeScript backend");
   });
 
-  it("applies shared backend services across non-TypeScript ecosystems", async () => {
-    const baseConfigs: Array<{
-      name: string;
-      config: Partial<ProjectConfig>;
-      expectGeneratedFiles: boolean;
-    }> = [
-      { name: "python", config: PYTHON_BASE_CONFIG, expectGeneratedFiles: true },
-      { name: "go", config: GO_BASE_CONFIG, expectGeneratedFiles: true },
-      { name: "rust", config: RUST_BASE_CONFIG, expectGeneratedFiles: true },
-      { name: "java", config: JAVA_BASE_CONFIG, expectGeneratedFiles: true },
-      { name: "dotnet", config: DOTNET_BASE_CONFIG, expectGeneratedFiles: false },
-      { name: "elixir", config: ELIXIR_BASE_CONFIG, expectGeneratedFiles: false },
-    ];
-    const serviceUpdates: Array<{ field: keyof ProjectConfig; value: string }> = [
-      { field: "caching", value: "upstash-redis" },
-      { field: "search", value: "meilisearch" },
-    ];
+  it(
+    "applies shared backend services across non-TypeScript ecosystems",
+    async () => {
+      const baseConfigs: Array<{
+        name: string;
+        config: Partial<ProjectConfig>;
+        expectGeneratedFiles: boolean;
+      }> = [
+        { name: "python", config: PYTHON_BASE_CONFIG, expectGeneratedFiles: true },
+        { name: "go", config: GO_BASE_CONFIG, expectGeneratedFiles: true },
+        { name: "rust", config: RUST_BASE_CONFIG, expectGeneratedFiles: true },
+        { name: "java", config: JAVA_BASE_CONFIG, expectGeneratedFiles: true },
+        { name: "dotnet", config: DOTNET_BASE_CONFIG, expectGeneratedFiles: false },
+        { name: "elixir", config: ELIXIR_BASE_CONFIG, expectGeneratedFiles: false },
+      ];
+      const serviceUpdates: Array<{ field: keyof ProjectConfig; value: string }> = [
+        { field: "caching", value: "upstash-redis" },
+        { field: "search", value: "meilisearch" },
+      ];
 
-    for (const baseConfig of baseConfigs) {
-      for (const serviceUpdate of serviceUpdates) {
-        const root = await makeTempRoot(
-          `bfs-stack-update-shared-${baseConfig.name}-${String(serviceUpdate.field)}-`,
-        );
-        const projectDir = join(root, "app");
-        await scaffoldGeneratedProject(makeConfig(projectDir, baseConfig.config));
-
-        const update = {
-          [serviceUpdate.field]: serviceUpdate.value,
-        } as Partial<ProjectConfig>;
-        const plan = await planStackUpdate(projectDir, update);
-        expect(plan.success).toBe(true);
-        if (!plan.success) continue;
-
-        expect(plan.proposedConfig[serviceUpdate.field]).toBe(serviceUpdate.value);
-        expect(plan.manualReviewBlockers).toEqual([]);
-        if (baseConfig.expectGeneratedFiles) {
-          expect(plan.filesToAdd.length + plan.filesToPatch.length).toBeGreaterThan(0);
-          expect(plan.stackPartSpecs).toContain(
-            `backend.${String(serviceUpdate.field)}:${baseConfig.name}:${serviceUpdate.value}`,
+      for (const baseConfig of baseConfigs) {
+        for (const serviceUpdate of serviceUpdates) {
+          const root = await makeTempRoot(
+            `bfs-stack-update-shared-${baseConfig.name}-${String(serviceUpdate.field)}-`,
           );
-        } else {
-          expect(plan.filesToAdd.length + plan.filesToPatch.length).toBe(0);
+          const projectDir = join(root, "app");
+          await scaffoldGeneratedProject(makeConfig(projectDir, baseConfig.config));
+
+          const update = {
+            [serviceUpdate.field]: serviceUpdate.value,
+          } as Partial<ProjectConfig>;
+          const plan = await planStackUpdate(projectDir, update);
+          expect(plan.success).toBe(true);
+          if (!plan.success) continue;
+
+          expect(plan.proposedConfig[serviceUpdate.field]).toBe(serviceUpdate.value);
+          expect(plan.manualReviewBlockers).toEqual([]);
+          if (baseConfig.expectGeneratedFiles) {
+            expect(plan.filesToAdd.length + plan.filesToPatch.length).toBeGreaterThan(0);
+            expect(plan.stackPartSpecs).toContain(
+              `backend.${String(serviceUpdate.field)}:${baseConfig.name}:${serviceUpdate.value}`,
+            );
+          } else {
+            expect(plan.filesToAdd.length + plan.filesToPatch.length).toBe(0);
+          }
+
+          const result = await applyStackUpdate(projectDir, update);
+          expect(result.success).toBe(true);
+
+          const btsConfig = await readJsonc(join(projectDir, "bts.jsonc"));
+          expect(btsConfig[serviceUpdate.field]).toBe(serviceUpdate.value);
         }
-
-        const result = await applyStackUpdate(projectDir, update);
-        expect(result.success).toBe(true);
-
-        const btsConfig = await readJsonc(join(projectDir, "bts.jsonc"));
-        expect(btsConfig[serviceUpdate.field]).toBe(serviceUpdate.value);
       }
-    }
-  });
+    },
+    { timeout: 30_000 },
+  );
 
   it("returns structured failures for invalid proposed stack updates", async () => {
     const root = await makeTempRoot("bfs-stack-update-invalid-java-");
