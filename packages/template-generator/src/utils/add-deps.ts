@@ -658,6 +658,10 @@ export const dependencyVersionMap = {
   "@storybook/addon-interactions": "^8.6.18",
   "@storybook/test": "^8.6.18",
 
+  // React Native animation runtime
+  "react-native-reanimated": "^4.5.3",
+  "react-native-worklets": "^0.11.4",
+
   // Animation
   motion: "^12.43.0",
   gsap: "^3.15.0",

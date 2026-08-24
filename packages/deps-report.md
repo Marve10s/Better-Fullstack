@@ -1,13 +1,13 @@
 # Dependency Version Check Report
 
-Generated: 2026-08-24T09:53:29.698Z
+Generated: 2026-08-24T16:44:11.807Z
 
 ## Summary
 
-- **Outdated**: 137
-- **Template-only** (not in version map): 49
+- **Outdated**: 136
+- **Template-only** (not in version map): 48
 - **Downgrades detected**: 0
-- **Up to date**: 604
+- **Up to date**: 605
 - **Errors**: 0
 
 ## Outdated Packages
@@ -38,7 +38,7 @@ Generated: 2026-08-24T09:53:29.698Z
 | @tanstack/vue-table | ^8.21.3 | ^9.1.2 | - | map |
 | @tanstack/svelte-table | ^8.21.3 | ^9.1.2 | - | map |
 | @tanstack/solid-table | ^8.21.3 | ^9.1.2 | - | map |
-| @tanstack/angular-table | ^8.21.4 | ^9.2.1 | - | map |
+| @tanstack/angular-table | ^8.21.4 | ^9.2.2 | - | map |
 | @tanstack/angular-virtual | ^5.0.8 | ^6.0.3 | - | map |
 | @tanstack/db | ^0.6.17 | ^0.8.2 | - | map |
 | @tanstack/react-db | ^0.1.95 | ^0.3.2 | - | map |
@@ -84,7 +84,7 @@ Generated: 2026-08-24T09:53:29.698Z
 | framer-motion | ^12.43.0 | ^13.1.1 | - | map |
 | mobx | ^6.16.1 | ^7.0.3 | - | map |
 | mobx-react-lite | ^4.1.1 | ^5.0.3 | - | map |
-| typia | ^12.1.1 | ^14.0.1 | - | map |
+| typia | ^12.1.1 | ^14.0.2 | - | map |
 | bullmq | ^5.81.2 | ^6.2.0 | - | map |
 | ioredis | ^5.11.1 | ^6.0.0 | - | map |
 | jsdom | ^29.1.1 | ^30.0.1 | - | map |
@@ -104,10 +104,6 @@ Generated: 2026-08-24T09:53:29.698Z
 | next-intlayer | ^8.12.4 | ^9.3.3 | - | map |
 | vite-intlayer | ^8.12.4 | ^9.3.3 | - | map |
 | meilisearch | ^0.58.0 | ^0.60.0 | - | map |
-| @nuxtjs/mdc | ^0.22.2 | ^0.23.1 | - | template |
-| @solidjs/router | ^0.16.2 | ^1.0.0 | - | template |
-| web-vitals | ^5.3.0 | ^6.1.1 | - | template |
-| vinext | ^0.1.8 | ^0.2.1 | - | template |
 | expo | ^56.0.12 | ^57.0.15 | - | template |
 | expo-audio | ~56.0.12 | ^57.0.4 | - | template |
 | expo-background-task | ~56.0.22 | ^57.0.12 | - | template |
@@ -131,6 +127,7 @@ Generated: 2026-08-24T09:53:29.698Z
 | expo-video | ~56.1.4 | ^57.0.2 | - | template |
 | expo-device | ^56.0.4 | ^57.0.1 | - | template |
 | expo-crypto | ^56.0.4 | ^57.0.1 | - | template |
+| expo-navigation-bar | ^56.0.3 | ^57.0.2 | - | template |
 | expo-notifications | ^56.0.18 | ^57.0.13 | - | template |
 | expo-router | ^56.2.11 | ^57.0.15 | - | template |
 | expo-secure-store | ^56.0.4 | ^57.0.1 | - | template |
@@ -138,19 +135,21 @@ Generated: 2026-08-24T09:53:29.698Z
 | expo-status-bar | ^56.0.4 | ^57.0.1 | - | template |
 | expo-system-ui | ^56.0.5 | ^57.0.2 | - | template |
 | expo-updates | ^56.0.19 | ^57.0.16 | - | template |
-| expo-dev-client | ^56.0.20 | ^57.0.14 | - | template |
 | @babel/runtime | ^7.26.0 | ^8.0.0 | - | template |
 | react-native | ^0.86.2 | ^0.87.0 | - | template |
-| react-native-nitro-modules | ^0.35.10 | ^0.37.0 | - | template |
-| react-native-worklets | ^0.10.2 | ^0.12.1 | - | template |
 | @babel/core | ^7.26.0 | ^8.0.1 | - | template |
 | babel-preset-expo | ^56.0.15 | ^57.0.7 | - | template |
 | @react-native/jest-preset | ^0.86.2 | ^0.87.0 | - | template |
 | jest-expo | ^56.0.5 | ^57.0.4 | - | template |
-| expo-navigation-bar | ^56.0.3 | ^57.0.2 | - | template |
 | @expo/metro-runtime | ^56.0.15 | ^57.0.12 | - | template |
 | expo-font | ^56.0.7 | ^57.0.1 | - | template |
 | expo-haptics | ^56.0.3 | ^57.0.1 | - | template |
+| expo-dev-client | ^56.0.20 | ^57.0.14 | - | template |
+| react-native-nitro-modules | ^0.35.10 | ^0.37.0 | - | template |
+| @nuxtjs/mdc | ^0.22.2 | ^0.23.1 | - | template |
+| @solidjs/router | ^0.16.2 | ^1.0.0 | - | template |
+| vinext | ^0.1.8 | ^0.2.1 | - | template |
+| web-vitals | ^5.3.0 | ^6.1.1 | - | template |
 | fumadocs-core | ^16.14.4 | ^17.0.0 | - | template |
 | fumadocs-ui | ^16.14.4 | ^17.0.0 | - | template |
 
