@@ -47,6 +47,9 @@ describe("generated project runtime proof matrix", () => {
       expect.arrayContaining(["mobile:react-native:native-bare", "backend:typescript:hono"]),
     );
     expect(
+      GENERATED_PROJECT_PROOF_CASES.find((entry) => entry.id === "typescript")?.runtime.command,
+    ).toEqual(["bun", "run", "--cwd", "apps/server", "dev"]);
+    expect(
       GENERATED_PROJECT_PROOF_CASES.every(
         (entry) =>
           entry.stackParts.length > 0 &&

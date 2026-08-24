@@ -138,7 +138,7 @@ export const GOLDEN_RUNTIME_RECIPES = [
       name: "Hono GraphQL and Better Auth boundaries",
       processCwd: ".",
       setupCommands: [["bun", "run", "db:push"]],
-      command: ["bun", "--cwd", "apps/server", "run", "dev"],
+      command: ["bun", "run", "--cwd", "apps/server", "dev"],
       request: {
         url: "http://127.0.0.1:3000/graphql",
         method: "POST",
