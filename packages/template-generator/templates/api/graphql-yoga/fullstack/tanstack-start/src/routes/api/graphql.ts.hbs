@@ -1,9 +1,9 @@
-import { createAPIFileRoute } from "@tanstack/react-start/api";
+import { createFileRoute } from "@tanstack/react-router";
 import { createYoga } from "graphql-yoga";
 import { schema } from "@{{projectName}}/api";
 import { createContext } from "@{{projectName}}/api/context";
 {{#if (isBetterAuth auth)}}
-import { auth } from "@/lib/auth";
+import { auth } from "@{{projectName}}/auth";
 {{/if}}
 
 const yoga = createYoga({
@@ -21,7 +21,11 @@ const yoga = createYoga({
   },
 });
 
-export const APIRoute = createAPIFileRoute("/api/graphql")({
-  GET: async ({ request }) => yoga.handleRequest(request, {}),
-  POST: async ({ request }) => yoga.handleRequest(request, {}),
+export const Route = createFileRoute("/api/graphql")({
+  server: {
+    handlers: {
+      GET: async ({ request }) => yoga.handleRequest(request, {}),
+      POST: async ({ request }) => yoga.handleRequest(request, {}),
+    },
+  },
 });

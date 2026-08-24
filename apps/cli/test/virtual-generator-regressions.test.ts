@@ -927,6 +927,53 @@ describe("Virtual Generator Regressions", () => {
     expect(graphqlClient).toContain("export const queryClient");
   });
 
+  it("wires the TanStack Start router to the GraphQL Yoga query client", async () => {
+    const result = await createVirtual({
+      projectName: "tanstack-start-graphql-yoga",
+      frontend: ["tanstack-start"],
+      backend: "self",
+      runtime: "none",
+      api: "graphql-yoga",
+      database: "sqlite",
+      orm: "drizzle",
+      auth: "better-auth",
+      stackParts: parseStackPartSpecs([
+        "frontend:typescript:tanstack-start",
+        "backend:typescript:self",
+        "database:universal:sqlite",
+        "backend.orm:typescript:drizzle",
+        "backend.api:typescript:graphql-yoga",
+        "backend.auth:typescript:better-auth",
+      ]),
+      addons: [],
+      examples: [],
+      dbSetup: "none",
+      webDeploy: "none",
+      serverDeploy: "none",
+    });
+
+    expect(result.success).toBe(true);
+
+    const router = readTextFromTree(result.tree!, "apps/web/src/router.tsx");
+    const graphqlClient = readTextFromTree(result.tree!, "apps/web/src/utils/graphql.ts");
+    const graphqlRoute = readTextFromTree(result.tree!, "apps/web/src/routes/api/graphql.ts");
+
+    expect(router).toContain('import { queryClient } from "./utils/graphql"');
+    expect(router).toContain("<QueryClientProvider client={queryClient}>");
+    expect(graphqlClient).toContain("export const queryClient");
+    expect(graphqlRoute).toContain(
+      'import { createFileRoute } from "@tanstack/react-router"',
+    );
+    expect(graphqlRoute).toContain('export const Route = createFileRoute("/api/graphql")');
+    expect(graphqlRoute).toContain("server: {");
+    expect(graphqlRoute).toContain("handlers: {");
+    expect(graphqlRoute).toContain(
+      'import { auth } from "@tanstack-start-graphql-yoga/auth"',
+    );
+    expect(graphqlRoute).not.toContain("createAPIFileRoute");
+    expect(graphqlRoute).not.toContain('from "@/lib/auth"');
+  });
+
   it("wires Nuxt self-backend oRPC auth context from Nitro request headers", async () => {
     const result = await createVirtual({
       projectName: "nuxt-orpc-auth",

@@ -28,6 +28,9 @@ import { orpc, queryClient } from "./utils/orpc";
 {{else if (eq api "garph")}}
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./utils/garph";
+{{else if (eq api "graphql-yoga")}}
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "./utils/graphql";
 {{/if}}
 {{/if}}
 
@@ -128,7 +131,7 @@ export const getRouter = () => {
 				</TRPCProvider>
 			</QueryClientProvider>
 		),
-{{else if (or (eq api "orpc") (eq api "garph"))}}
+{{else if (or (eq api "orpc") (eq api "garph") (eq api "graphql-yoga"))}}
 		Wrap: ({ children }) => (
 			<QueryClientProvider client={queryClient}>
 				{children}
