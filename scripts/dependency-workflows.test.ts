@@ -74,4 +74,13 @@ describe("automated dependency PR verification", () => {
     expect(report).toContain("Report truncated");
     expect(report).not.toContain("�");
   });
+
+  it("closes a fenced log excerpt when truncation lands inside it", () => {
+    const source = `Before\n\n\`\`\`text\n${"failure output\n".repeat(100)}\`\`\`\n\nAfter`;
+    const report = composeMarkdownReport([source], 180);
+
+    expect(report.match(/^\`\`\`/gm)).toHaveLength(2);
+    expect(new TextEncoder().encode(report).length).toBeLessThanOrEqual(180);
+    expect(report).toContain("Report truncated");
+  });
 });
