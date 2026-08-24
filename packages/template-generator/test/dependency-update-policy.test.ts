@@ -56,6 +56,16 @@ describe("dependency update policy", () => {
     });
   });
 
+  it("keeps the Better Auth family on the reviewed exact release", () => {
+    expect(dependencyVersionMap).toMatchObject({
+      "better-auth": "1.6.22",
+      "@better-auth/expo": "1.6.22",
+      "@better-auth/drizzle-adapter": "1.6.22",
+      "@better-auth/prisma-adapter": "1.6.22",
+      "@better-auth/mongo-adapter": "1.6.22",
+    });
+  });
+
   it("never automates downgrades", () => {
     const downgrade = candidate("example", "downgrade");
 

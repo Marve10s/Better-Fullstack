@@ -2835,7 +2835,7 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
       "next": "^16.3.1",
       "@trpc/server": "^11.18.0",
       "@trpc/client": "^11.18.0",
-      "better-auth": "^1.6.22"
+      "better-auth": "1.6.22"
     }
   },
   "scripts": {
@@ -3010,7 +3010,7 @@ export type AppRouter = typeof appRouter;
     "@snapshot-next-self-fullstack/env": "workspace:*",
     "@snapshot-next-self-fullstack/db": "workspace:*",
     "better-auth": "catalog:",
-    "@better-auth/drizzle-adapter": "^1.6.22"
+    "@better-auth/drizzle-adapter": "1.6.22"
   }
 }
 "
@@ -4713,7 +4713,7 @@ export default defineConfig({
       "@orpc/client": "^1.15.0",
       "@orpc/openapi": "^1.15.0",
       "@orpc/zod": "^1.15.0",
-      "better-auth": "^1.6.22"
+      "better-auth": "1.6.22"
     }
   },
   "scripts": {
@@ -4877,7 +4877,7 @@ export type AppRouterClient = RouterClient<typeof appRouter>;
     "@snapshot-solid-start-v2-fullstack/env": "workspace:*",
     "@snapshot-solid-start-v2-fullstack/db": "workspace:*",
     "better-auth": "catalog:",
-    "@better-auth/drizzle-adapter": "^1.6.22"
+    "@better-auth/drizzle-adapter": "1.6.22"
   }
 }
 "
@@ -7347,7 +7347,7 @@ export default defineConfig({
       "typescript": "^6.0.3",
       "@types/bun": "^1.3.14",
       "hono": "^4.12.27",
-      "better-auth": "^1.6.22",
+      "better-auth": "1.6.22",
       "@libsql/client": "^0.17.4",
       "libsql": "^0.5.29"
     }
@@ -7604,7 +7604,7 @@ export const openApiDocument = createOpenApiDocument();
     "@snapshot-hono-openapi/env": "workspace:*",
     "@snapshot-hono-openapi/db": "workspace:*",
     "better-auth": "catalog:",
-    "@better-auth/drizzle-adapter": "^1.6.22"
+    "@better-auth/drizzle-adapter": "1.6.22"
   }
 }
 "
@@ -8435,7 +8435,7 @@ export default defineConfig({
       "typescript": "^6.0.3",
       "@types/bun": "^1.3.14",
       "hono": "^4.12.27",
-      "better-auth": "^1.6.22",
+      "better-auth": "1.6.22",
       "@libsql/client": "^0.17.4",
       "libsql": "^0.5.29"
     }
@@ -8696,7 +8696,7 @@ export async function executeApolloRequest(
     "@snapshot-hono-apollo-server/env": "workspace:*",
     "@snapshot-hono-apollo-server/db": "workspace:*",
     "better-auth": "catalog:",
-    "@better-auth/drizzle-adapter": "^1.6.22"
+    "@better-auth/drizzle-adapter": "1.6.22"
   }
 }
 "
@@ -9573,7 +9573,7 @@ export default defineConfig({
       "@types/bun": "^1.3.14",
       "hono": "^4.12.27",
       "@trpc/server": "^11.18.0",
-      "better-auth": "^1.6.22",
+      "better-auth": "1.6.22",
       "@trpc/client": "^11.18.0"
     }
   },
@@ -9750,7 +9750,7 @@ export type AppRouter = typeof appRouter;
     "@snapshot-better-auth-full/env": "workspace:*",
     "@snapshot-better-auth-full/db": "workspace:*",
     "better-auth": "catalog:",
-    "@better-auth/drizzle-adapter": "^1.6.22"
+    "@better-auth/drizzle-adapter": "1.6.22"
   }
 }
 "

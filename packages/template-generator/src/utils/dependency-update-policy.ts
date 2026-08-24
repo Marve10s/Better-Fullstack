@@ -117,24 +117,29 @@ export const DEPENDENCY_UPDATE_POLICIES: Readonly<Record<string, DependencyUpdat
     reason: "Keep generated Next.js Auth0 integration on the explicitly tested SDK line.",
   },
   "better-auth": {
-    pinnedVersion: "^1.6.22",
-    reason: "Keep the Better Auth family aligned with the reviewed Kysely and Yarn combination.",
+    pinnedVersion: "1.6.22",
+    reason:
+      "Keep the Better Auth family on the reviewed 1.6 schema until the 1.7 account identity migration is implemented.",
   },
   "@better-auth/expo": {
-    pinnedVersion: "^1.6.22",
-    reason: "Keep the Better Auth family aligned with the reviewed Kysely and Yarn combination.",
+    pinnedVersion: "1.6.22",
+    reason:
+      "Keep the Better Auth family on the reviewed 1.6 schema until the 1.7 account identity migration is implemented.",
   },
   "@better-auth/drizzle-adapter": {
-    pinnedVersion: "^1.6.22",
-    reason: "Keep the Better Auth family aligned with the reviewed Kysely and Yarn combination.",
+    pinnedVersion: "1.6.22",
+    reason:
+      "Keep the Better Auth family on the reviewed 1.6 schema until the 1.7 account identity migration is implemented.",
   },
   "@better-auth/prisma-adapter": {
-    pinnedVersion: "^1.6.22",
-    reason: "Keep the Better Auth family aligned with the reviewed Kysely and Yarn combination.",
+    pinnedVersion: "1.6.22",
+    reason:
+      "Keep the Better Auth family on the reviewed 1.6 schema until the 1.7 account identity migration is implemented.",
   },
   "@better-auth/mongo-adapter": {
-    pinnedVersion: "^1.6.22",
-    reason: "Keep the Better Auth family aligned with the reviewed Kysely and Yarn combination.",
+    pinnedVersion: "1.6.22",
+    reason:
+      "Keep the Better Auth family on the reviewed 1.6 schema until the 1.7 account identity migration is implemented.",
   },
   "@opentelemetry/sdk-node": {
     pinnedVersion: "0.220.0",

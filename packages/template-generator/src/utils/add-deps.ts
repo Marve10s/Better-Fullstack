@@ -18,19 +18,19 @@ export const dependencyVersionMap = {
   // (nitro dev/build crash). Unpin when @nuxt/ui supports nuxt 4.5.
   nuxt: "4.4.8",
 
-  // Keep Better Auth pinned until the Kysely adapter supports Kysely 0.29+
-  // and the 1.6.13 adapter packages are no longer quarantined by Yarn.
-  "better-auth": "^1.6.22",
-  "@better-auth/expo": "^1.6.22",
+  // Exact-pin the reviewed Better Auth family. Version 1.7 changes the required
+  // account identity schema and cannot be admitted by the 1.6 template range.
+  "better-auth": "1.6.22",
+  "@better-auth/expo": "1.6.22",
   // Runtime imports of @better-auth/expo's client — must exist in the
   // native app even when the corresponding mobile options are "none".
   "expo-linking": "^56.0.14",
   "expo-constants": "^56.0.18",
   "expo-web-browser": "^56.0.5",
   "expo-network": "^56.0.5",
-  "@better-auth/drizzle-adapter": "^1.6.22",
-  "@better-auth/prisma-adapter": "^1.6.22",
-  "@better-auth/mongo-adapter": "^1.6.22",
+  "@better-auth/drizzle-adapter": "1.6.22",
+  "@better-auth/prisma-adapter": "1.6.22",
+  "@better-auth/mongo-adapter": "1.6.22",
 
   "@clerk/nextjs": "^7.7.6",
   "@clerk/clerk-react": "^5.61.3",
