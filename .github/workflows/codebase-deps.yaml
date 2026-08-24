@@ -131,15 +131,22 @@ jobs:
             echo "has_changes=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Run Full Test Suite
+      - name: Run Repository Verification
         id: full-tests
         if: steps.pending.outputs.has_changes == 'true'
         run: |
           set +e
-          bun run test 2>&1 | tee "$RUNNER_TEMP/full-test.log"
+          bun run lint 2>&1 | tee "$RUNNER_TEMP/lint.log"
+          LINT_EXIT_CODE=${PIPESTATUS[0]}
+          bun run test 2>&1 | tee "$RUNNER_TEMP/test.log"
           TEST_EXIT_CODE=${PIPESTATUS[0]}
           set -e
-          echo "exit_code=$TEST_EXIT_CODE" >> "$GITHUB_OUTPUT"
+          cat "$RUNNER_TEMP/lint.log" "$RUNNER_TEMP/test.log" > "$RUNNER_TEMP/full-test.log"
+          if [ "$LINT_EXIT_CODE" -eq 0 ] && [ "$TEST_EXIT_CODE" -eq 0 ]; then
+            echo "exit_code=0" >> "$GITHUB_OUTPUT"
+          else
+            echo "exit_code=1" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Capture Test Verification Report
         id: test-report
@@ -147,7 +154,8 @@ jobs:
         run: |
           bun run .github/scripts/format-test-report.ts \
             "$RUNNER_TEMP/full-test.log" \
-            "${{ steps.full-tests.outputs.exit_code }}" > "$RUNNER_TEMP/test-verification.md"
+            "${{ steps.full-tests.outputs.exit_code }}" \
+            '`bun run lint` and `bun run test`' > "$RUNNER_TEMP/test-verification.md"
           {
             echo 'report<<EOF'
             cat "$RUNNER_TEMP/test-verification.md"

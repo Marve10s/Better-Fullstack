@@ -1,8 +1,8 @@
 #!/usr/bin/env bun
 
-const [logPath, exitCodeValue] = process.argv.slice(2);
+const [logPath, exitCodeValue, commandLabel = "`bun run test`"] = process.argv.slice(2);
 if (!logPath || exitCodeValue === undefined) {
-  throw new Error("Usage: format-test-report.ts <log-path> <exit-code>");
+  throw new Error("Usage: format-test-report.ts <log-path> <exit-code> [command-label]");
 }
 
 const exitCode = Number(exitCodeValue);
@@ -56,14 +56,14 @@ let report = "### ✅ Safe\n\n";
 if (passedSuites.length > 0) {
   report += passedSuites.map((suite) => `- \`${suite}\` test suite passed.`).join("\n");
 } else if (exitCode === 0) {
-  report += "- Full repository test suite passed.";
+  report += `- ${commandLabel} completed successfully.`;
 } else {
-  report += "- No passing suite could be identified before the test command failed.";
+  report += "- No passing suite could be identified before repository verification failed.";
 }
 
 report += "\n\n### ⚠️ Needs attention\n\n";
 if (exitCode === 0) {
-  report += "- None. `bun run test` completed successfully.";
+  report += `- None. ${commandLabel} completed successfully.`;
 } else if (failures.length > 0) {
   // A cascading regression can fail hundreds of tests; an unbounded report
   // overflows the PR body and breaks the step that opens the PR.
@@ -91,7 +91,7 @@ if (exitCode === 0) {
     .join("\n")
     .replaceAll("```", "'''")
     .trim();
-  report += `#### \`bun run test\` exited with code ${exitCode}\n\n\`\`\`text\n${excerpt}\n\`\`\``;
+  report += `#### ${commandLabel} exited with code ${exitCode}\n\n\`\`\`text\n${excerpt}\n\`\`\``;
 }
 
 console.log(report);

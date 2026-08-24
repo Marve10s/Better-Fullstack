@@ -25,7 +25,7 @@
     "test:ai-examples": "cd apps/cli && bun test test/examples.test.ts",
     "test:plugin-bundle": "bun run scripts/validate-plugin-bundle.ts",
     "test:agent-docs": "bun run scripts/validate-agent-docs.ts",
-    "test:workflow-security": "bun test scripts/validate-preview-workflows.test.ts && bun run scripts/validate-preview-workflows.ts",
+    "test:workflow-security": "bun test scripts/dependency-workflows.test.ts scripts/validate-preview-workflows.test.ts && bun run scripts/validate-preview-workflows.ts",
     "test:operational-trust": "bun test apps/analytics/test/retirement.test.ts packages/backend/test/analytics-backfill-contract.test.ts scripts/planning-registry.test.ts scripts/record-scaffbench-canonical.test.ts apps/cli/test/scaffbench-solvability-contract.test.ts",
     "test:external-upgrades": "bun run scripts/validate-external-upgrades.ts",
     "test:published-package": "bun run scripts/published-package-smoke.ts",
