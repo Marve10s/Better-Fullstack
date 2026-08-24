@@ -32,6 +32,19 @@ async function makeProject(): Promise<string> {
   return projectDir;
 }
 
+async function simulateStoppedOwner(projectDir: string): Promise<void> {
+  const recoveryRoot = path.join(projectDir, RECOVERY_ROOT);
+  const lockName = (await fs.readdir(recoveryRoot))
+    .filter((name) => name === "active.lock" || /^active\.lock\.\d{12}$/.test(name))
+    .sort()
+    .at(-1);
+  if (!lockName) throw new Error("Expected a lifecycle transaction lock generation.");
+  const lockPath = path.join(recoveryRoot, lockName);
+  const lock = await fs.readJson(lockPath);
+  lock.pid = 2_147_483_647;
+  await fs.writeJson(lockPath, lock);
+}
+
 async function writeStaleGraphCache(projectDir: string): Promise<string> {
   const configPath = path.join(projectDir, "bts.jsonc");
   let content = await fs.readFile(configPath, "utf-8");
@@ -124,14 +137,45 @@ describe("doctor config drift repair", () => {
     });
     expect(result.success).toBe(false);
 
-    const [transactionId] = await fs.readdir(path.join(crashedDir, RECOVERY_ROOT));
+    const transactionId = (await fs.readdir(path.join(crashedDir, RECOVERY_ROOT))).find((entry) =>
+      /^[0-9a-f-]{36}$/i.test(entry),
+    );
+    expect(transactionId).toBeDefined();
+    if (!transactionId) return;
     const metadata = (await fs.readJson(
       path.join(crashedDir, RECOVERY_ROOT, transactionId, "transaction.json"),
     )) as { outputs?: Record<string, string | null> };
     const crashedContent = await fs.readFile(path.join(crashedDir, "bts.jsonc"), "utf-8");
     expect(metadata.outputs?.["bts.jsonc"]).toBe(hashContent(crashedContent));
+    await simulateStoppedOwner(crashedDir);
     await recoverProjectTransaction(crashedDir, transactionId);
     expect(await fs.readFile(path.join(crashedDir, "bts.jsonc"), "utf-8")).toBe(before);
+  });
+
+  it("reports a failed rollback without claiming a concurrent edit was restored", async () => {
+    const projectDir = await makeProject();
+    await writeStaleGraphCache(projectDir);
+    const plan = await planConfigDriftRepair(projectDir);
+    expect(plan.success).toBe(true);
+    if (!plan.success || !plan.reviewToken) return;
+    const configPath = path.join(projectDir, "bts.jsonc");
+
+    const result = await applyConfigDriftRepair(projectDir, plan.reviewToken, {
+      afterWrite: async () => {
+        await fs.writeFile(configPath, "concurrent user edit\n");
+        throw new Error("injected failure after concurrent edit");
+      },
+    });
+
+    expect(result).toMatchObject({
+      success: false,
+      error: expect.stringContaining("Automatic rollback failed"),
+      lifecycle: {
+        status: "failed",
+        sideEffects: [{ kind: "filesystem", status: "failed" }],
+      },
+    });
+    expect(await fs.readFile(configPath, "utf-8")).toBe("concurrent user edit\n");
   });
 
   it("rejects a stale plan after bts.jsonc changes", async () => {

@@ -153,6 +153,28 @@ export async function setupAddons(
   return warnings;
 }
 
+export async function repairExistingAddonSetup(
+  config: ProjectConfig,
+  addonsToRepair: ProjectConfig["addons"],
+): Promise<void> {
+  const repairSet = new Set(addonsToRepair);
+  const addons = new Set(config.addons);
+
+  if (repairSet.has("gitleaks")) {
+    if (addons.has("husky")) await ensureGitleaksHuskyHook(config.projectDir);
+    if (addons.has("lefthook")) await ensureGitleaksLefthookHook(config.projectDir);
+  }
+
+  if (addons.has("lefthook")) {
+    for (const linter of ["biome", "oxlint"] as const) {
+      if (repairSet.has(linter) && addons.has(linter)) {
+        // oxlint-disable-next-line no-await-in-loop -- each requested hook repair is independent
+        await ensureLinterLefthookHook(config.projectDir, linter, config.packageManager);
+      }
+    }
+  }
+}
+
 async function setupBiome(projectDir: string) {
   await addPackageDependency({
     devDependencies: ["@biomejs/biome"],

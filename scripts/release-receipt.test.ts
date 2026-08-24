@@ -372,6 +372,50 @@ describe("release verification receipt", () => {
     expect(() => validateVerificationReceipt(receipt, inputs)).not.toThrow();
   });
 
+  test("accepts no-op upgrade cases while requiring recovery for actionable cases", () => {
+    const { inputs, receipt } = fixture();
+    const cases = REQUIRED_UPGRADE_FIXTURE_CASE_IDS.map((id, index) => ({
+      actionable: index === 0 ? 1 : 0,
+      build: { passed: true, verified: true },
+      id,
+      recoveredExactly: index === 0,
+      result: "pass",
+    }));
+    const qualification = {
+      cases,
+      completedAt: "2026-08-23T11:59:00.000Z",
+      evidenceType: CROSS_VERSION_UPGRADE_EVIDENCE_TYPE,
+      overallSuccess: true,
+      recoveredCaseCount: 1,
+      requiredCaseIds: [...REQUIRED_UPGRADE_FIXTURE_CASE_IDS],
+      schemaVersion: CROSS_VERSION_UPGRADE_SCHEMA_VERSION,
+      source: { version: "2.8.0" },
+      status: "passed",
+      target: {
+        manifestSha256: inputs.manifestSha256,
+        sha: SHA,
+        version: inputs.expectedReleaseVersion,
+      },
+    };
+    inputs.qualification = qualification;
+    receipt.upgradeQualification = {
+      buildsVerified: true,
+      caseIds: [...REQUIRED_UPGRADE_FIXTURE_CASE_IDS],
+      sha256: inputs.qualificationSha256,
+      sourceVersion: "2.8.0",
+      status: "passed",
+      targetVersion: inputs.expectedReleaseVersion,
+    };
+
+    expect(() => validateVerificationReceipt(receipt, inputs)).not.toThrow();
+
+    cases[0]!.recoveredExactly = false;
+    qualification.recoveredCaseCount = 0;
+    expect(() => validateVerificationReceipt(receipt, inputs)).toThrow(
+      "Cross-version qualification pass evidence is incomplete",
+    );
+  });
+
   test("fails closed for missing, dirty, partial, and failed proof data", () => {
     for (const mutate of [
       (value: ReturnType<typeof fixture>) => value.receipt.release.packages.pop(),

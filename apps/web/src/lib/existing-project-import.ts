@@ -47,6 +47,15 @@ type ImportOptions = {
 const NATIVE_FRONTENDS = new Set(["native-bare", "native-uniwind", "native-unistyles"]);
 const CODE_QUALITY_CATEGORIES = new Set(["codeQuality", "gitHooks", "staticAnalysis"]);
 
+export function resolveImportedProjectName(
+  fileName: string,
+  currentProjectName: string | null | undefined,
+): string {
+  const fileStem = fileName.replace(/\.jsonc?$/i, "").trim();
+  if (fileStem && fileStem.toLowerCase() !== "bts") return fileStem;
+  return currentProjectName?.trim() || "imported-project";
+}
+
 function parseDiagnostic(content: string, error: JSONC.ParseError): ProjectImportDiagnostic {
   const location = JSONC.getLocation(content, error.offset);
   const line = content.slice(0, error.offset).split(/\r?\n/).length;

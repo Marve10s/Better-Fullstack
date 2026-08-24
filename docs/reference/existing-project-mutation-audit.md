@@ -1,8 +1,8 @@
 # Existing-project mutation audit
 
-This audit covers every command that writes to an existing Better Fullstack project. The source
-registry is `scripts/mutation-contract-audit.ts`. Its validator checks the implementation markers
-and this document during the release guard.
+This audit covers the Phase 2 command set: `add`, `remove`, `update`, `gen`, and local
+`registry add`. The source registry is `scripts/mutation-contract-audit.ts`. Its validator checks
+the implementation markers and this document during the release guard.
 
 All machine-readable lifecycle results use `contractVersion: "2"`. Clients must check the version
 before reading fields. Version 2 adds affected Stack Parts, files, dependencies, compatibility
@@ -35,3 +35,14 @@ review-token helper while keeping their different domain rules.
 Package-manager and toolchain processes cannot be part of the byte-for-byte filesystem transaction.
 Version 2 reports those side effects, their status, and a compensating action. A restored filesystem
 does not imply that an external process was undone.
+
+## Other write boundaries
+
+Project adoption is a create-only exception. Its token binds the complete project state, and apply
+publishes a new derived `bts.lock.json` with link-if-absent. It cannot replace user bytes, and its
+first history entry records `baseline-adoption`.
+
+`replace` shares the removal and stack-update engine. `doctor --fix` has its own token-bound
+transaction contract. Recovery apply restores an existing recovery point, while destructive prune
+holds the same project lock. The maintainer-only `update-deps` command updates generator source and
+is not an existing generated-project lifecycle command.

@@ -8,6 +8,7 @@ export default defineConfig({
     "src/defaults.ts",
     "src/stack-translation.ts",
     "src/stack-graph.ts",
+    "src/telemetry.ts",
     "src/types.ts",
   ],
   format: ["esm"],

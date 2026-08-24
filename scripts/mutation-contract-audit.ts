@@ -126,7 +126,7 @@ export async function validateMutationContractAudit(rootDir = process.cwd()): Pr
   }
   const expected = ["add", "remove", "update", "gen", "registry add"];
   if (expected.some((command) => !commands.has(command))) {
-    throw new Error("Mutation audit does not cover every existing-project writing command.");
+    throw new Error("Mutation audit does not cover every Phase 2 lifecycle command.");
   }
 
   const documentation = await fs.readFile(

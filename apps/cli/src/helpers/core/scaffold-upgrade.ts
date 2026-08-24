@@ -16,9 +16,8 @@ import {
 import {
   beginProjectTransaction,
   commitProjectTransaction,
-  journalProjectTransactionWrites,
-  markProjectTransactionWrite,
   rollbackProjectTransaction,
+  writeProjectTransactionFile,
 } from "../../utils/project-transaction";
 import { createReviewToken } from "../../utils/review-token";
 import {
@@ -30,7 +29,6 @@ import {
   serializeScaffoldManifest,
   SCAFFOLD_MANIFEST_FILE,
   type ScaffoldManifest,
-  writeScaffoldManifest,
 } from "../../utils/scaffold-manifest";
 import {
   configFromBtsConfig,
@@ -43,6 +41,7 @@ import {
 } from "./stack-update";
 
 const BINARY_FILE_MARKER = "[Binary file]";
+const EXECUTABLE_FILE_NAMES = new Set(["mvnw", "gradlew"]);
 
 function isConservativeFile(relPath: string): boolean {
   const name = path.basename(relPath);
@@ -324,6 +323,23 @@ async function computeRenderHashes(tree: VirtualFileTree): Promise<Map<string, s
   }
 
   return hashes;
+}
+
+async function readRenderedFileBytes(tree: VirtualFileTree, filePath: string): Promise<Buffer> {
+  const file = treeToFileMap(tree).get(filePath);
+  if (!file) throw new Error(`Rendered transaction output is missing: ${filePath}`);
+  if (file.content !== BINARY_FILE_MARKER) return Buffer.from(file.content, "utf-8");
+
+  const tempDir = await fs.mkdtemp(path.join(tmpdir(), "bfs-update-binary-write-"));
+  try {
+    const written = await writeSelectedFiles(tree, tempDir, (candidate) => candidate === filePath);
+    if (!written.includes(filePath)) {
+      throw new Error(`Rendered binary transaction output is missing: ${filePath}`);
+    }
+    return await fs.readFile(path.join(tempDir, filePath));
+  } finally {
+    await fs.rm(tempDir, { recursive: true, force: true });
+  }
 }
 
 export async function renderCurrentProject(
@@ -920,9 +936,11 @@ export async function applyScaffoldUpgrade(
   for (const candidate of [...toWrite].sort()) {
     try {
       await assertActionablePreimage(plan, candidate);
-      markProjectTransactionWrite(transaction, candidate, plan.actionableHashes[candidate]);
-      await journalProjectTransactionWrites(transaction, [candidate]);
-      await writeSelectedFiles(tree, projectDir, (filePath) => filePath === candidate);
+      const content = await readRenderedFileBytes(tree, candidate);
+      await writeProjectTransactionFile(transaction, candidate, content, {
+        expectedSha256: plan.actionableHashes[candidate],
+        ...(EXECUTABLE_FILE_NAMES.has(path.basename(candidate)) ? { mode: 0o755 } : {}),
+      });
       const written = await fs.readFile(path.join(projectDir, candidate));
       if (hashContent(written) !== plan.actionableHashes[candidate]) {
         throw new Error(`Written bytes did not match the reviewed plan: ${candidate}`);
@@ -937,9 +955,9 @@ export async function applyScaffoldUpgrade(
   for (const entry of mergedEntries) {
     try {
       await assertActionablePreimage(plan, entry.path);
-      markProjectTransactionWrite(transaction, entry.path, plan.actionableHashes[entry.path]);
-      await journalProjectTransactionWrites(transaction, [entry.path]);
-      await fs.writeFile(path.join(projectDir, entry.path), entry.mergedContent, "utf-8");
+      await writeProjectTransactionFile(transaction, entry.path, entry.mergedContent, {
+        expectedSha256: plan.actionableHashes[entry.path],
+      });
       const written = await fs.readFile(path.join(projectDir, entry.path));
       if (hashContent(written) !== plan.actionableHashes[entry.path]) {
         throw new Error(`Written bytes did not match the reviewed plan: ${entry.path}`);
@@ -969,6 +987,11 @@ export async function applyScaffoldUpgrade(
       const renderHash = renderHashes.get(filePath);
       if (renderHash) manifest.hashes[filePath] = renderHash;
     }
+    for (const filePath of plan.newFiles) {
+      // oxlint-disable-next-line no-await-in-loop -- each newly generated file records its exact mode
+      const stats = await fs.stat(path.join(projectDir, filePath));
+      (manifest.modes ??= {})[filePath] = stats.mode & 0o7777;
+    }
     for (const entry of mergedEntries) {
       manifest.hashes[entry.path] = hashContent(Buffer.from(entry.mergedContent, "utf-8"));
     }
@@ -997,13 +1020,7 @@ export async function applyScaffoldUpgrade(
     try {
       await validateWritePath(plan.projectRealpath, SCAFFOLD_MANIFEST_FILE);
       const manifestContent = serializeScaffoldManifest(manifest);
-      markProjectTransactionWrite(
-        transaction,
-        SCAFFOLD_MANIFEST_FILE,
-        hashContent(Buffer.from(manifestContent, "utf-8")),
-      );
-      await journalProjectTransactionWrites(transaction, [SCAFFOLD_MANIFEST_FILE]);
-      await writeScaffoldManifest(projectDir, manifest);
+      await writeProjectTransactionFile(transaction, SCAFFOLD_MANIFEST_FILE, manifestContent);
     } catch (error) {
       return await failWrites(error);
     }

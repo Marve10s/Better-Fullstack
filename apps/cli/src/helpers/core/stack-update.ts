@@ -31,7 +31,6 @@ import {
   buildBtsConfigForPersistence,
   readBtsConfig,
   serializeBtsConfig,
-  writeBtsConfig,
 } from "../../utils/bts-config";
 import { validateConfigForProgrammaticUse } from "../../utils/config-validation";
 import {
@@ -46,10 +45,10 @@ import { lifecycleResult, type LifecycleResult } from "../../utils/lifecycle-con
 import {
   beginProjectTransaction,
   commitProjectTransaction,
-  journalProjectTransactionWrites,
-  markProjectTransactionWrite,
+  removeProjectTransactionFile,
   rollbackProjectTransaction,
   type ProjectTransaction,
+  writeProjectTransactionFile,
 } from "../../utils/project-transaction";
 import { createReviewToken } from "../../utils/review-token";
 import {
@@ -239,6 +238,7 @@ export const PACKAGE_JSON_SECTIONS = [
   "scripts",
 ];
 const BINARY_FILE_MARKER = "[Binary file]";
+const EXECUTABLE_FILE_NAMES = new Set(["mvnw", "gradlew"]);
 
 function isEnvFilePath(filePath: string): boolean {
   const name = path.basename(filePath);
@@ -1983,9 +1983,13 @@ export async function planStackUpdate(
       if (proposedGeneratedFiles.has(filePath)) continue;
       const targetPath = path.join(projectDir, filePath);
       let existingBuffer: Buffer;
+      let existingMode: number;
       try {
         // oxlint-disable-next-line no-await-in-loop -- each candidate needs its live preimage
-        existingBuffer = await fs.readFile(targetPath);
+        const [buffer, stats] = await Promise.all([fs.readFile(targetPath), fs.stat(targetPath)]);
+        if (!stats.isFile()) throw new Error("path is not a regular file");
+        existingBuffer = buffer;
+        existingMode = stats.mode & 0o7777;
       } catch (error) {
         if ((error as NodeJS.ErrnoException).code === "ENOENT") continue;
         manualReviewBlockers.push(
@@ -2004,14 +2008,27 @@ export async function planStackUpdate(
         manualReviewBlockers.push(`${filePath}: obsolete generated file has no recorded baseline`);
         continue;
       }
-      if (hashContent(existingBuffer) === baselineHash) {
-        filesToRemove.push(filePath);
-        operations.push({ kind: "remove", path: filePath, writeMode: "remove" });
-      } else {
+      const baselineMode = manifest.modes?.[filePath];
+      if (baselineMode === undefined) {
+        manualReviewBlockers.push(
+          `${filePath}: obsolete generated file has no recorded baseline mode`,
+        );
+        continue;
+      }
+      if (hashContent(existingBuffer) !== baselineHash) {
         manualReviewBlockers.push(
           `${filePath}: obsolete generated file differs from the generated baseline`,
         );
+        continue;
       }
+      if (existingMode !== baselineMode) {
+        manualReviewBlockers.push(
+          `${filePath}: obsolete generated file mode differs from the generated baseline`,
+        );
+        continue;
+      }
+      filesToRemove.push(filePath);
+      operations.push({ kind: "remove", path: filePath, writeMode: "remove" });
     }
   }
 
@@ -2308,22 +2325,22 @@ export async function applyStackUpdate(
 
     if (generatedPaths.size > 0) {
       const generatedFiles = treeToFileMap(proposedTree);
-      const expectedHashes = new Map<string, string>();
+      const generatedOutputs = new Map<string, Buffer>();
       for (const filePath of generatedPaths) {
         const file = generatedFiles.get(filePath);
         if (!file) throw new Error(`Generated transaction output is missing: ${filePath}`);
         // oxlint-disable-next-line no-await-in-loop -- binary templates are materialized individually
         const binaryBytes = await readGeneratedFileBytes(proposedTree, filePath, file);
         const expectedBytes = binaryBytes ?? Buffer.from(file.content, "utf-8");
-        expectedHashes.set(filePath, hashContent(expectedBytes));
+        generatedOutputs.set(filePath, expectedBytes);
       }
-      for (const [filePath, expectedHash] of expectedHashes) {
-        markProjectTransactionWrite(transaction, filePath, expectedHash);
+      for (const [filePath, content] of generatedOutputs) {
+        // oxlint-disable-next-line no-await-in-loop -- each reviewed output is replaced atomically
+        await writeProjectTransactionFile(transaction, filePath, content, {
+          expectedSha256: hashContent(content),
+          ...(EXECUTABLE_FILE_NAMES.has(path.basename(filePath)) ? { mode: 0o755 } : {}),
+        });
       }
-      await journalProjectTransactionWrites(transaction, generatedPaths);
-      await writeSelectedFiles(proposedTree, plan.projectDir, (filePath) =>
-        generatedPaths.has(filePath),
-      );
     }
 
     const contentOperations = plan.operations.filter(
@@ -2331,18 +2348,8 @@ export async function applyStackUpdate(
     );
     if (contentOperations.length > 0) {
       for (const operation of contentOperations) {
-        const targetPath = path.join(plan.projectDir, operation.path);
-        markProjectTransactionWrite(
-          transaction,
-          operation.path,
-          hashContent(Buffer.from(operation.content, "utf-8")),
-        );
-        // oxlint-disable-next-line no-await-in-loop -- rollback must wait for each bound write
-        await journalProjectTransactionWrites(transaction, [operation.path]);
-        // oxlint-disable-next-line no-await-in-loop -- rollback must wait for each bound write
-        await fs.ensureDir(path.dirname(targetPath));
-        // oxlint-disable-next-line no-await-in-loop -- rollback must wait for each bound write
-        await fs.writeFile(targetPath, operation.content, "utf-8");
+        // oxlint-disable-next-line no-await-in-loop -- each reviewed output is replaced atomically
+        await writeProjectTransactionFile(transaction, operation.path, operation.content);
       }
     }
 
@@ -2351,60 +2358,44 @@ export async function applyStackUpdate(
     );
     if (removeOperations.length > 0) {
       for (const operation of removeOperations) {
-        markProjectTransactionWrite(transaction, operation.path, null);
-        // oxlint-disable-next-line no-await-in-loop -- rollback must bind each removal in order
-        await journalProjectTransactionWrites(transaction, [operation.path]);
-        // oxlint-disable-next-line no-await-in-loop -- rollback must bind each removal in order
-        await fs.remove(path.join(plan.projectDir, operation.path));
+        // oxlint-disable-next-line no-await-in-loop -- each reviewed removal is journaled and revalidated
+        await removeProjectTransactionFile(transaction, operation.path);
       }
     }
 
     const migrationContent = await buildMigrationChecklistContent(plan.projectDir, plan);
     if (migrationContent !== null) {
-      markProjectTransactionWrite(
-        transaction,
-        "MIGRATION.md",
-        hashContent(Buffer.from(migrationContent, "utf-8")),
-      );
-      await journalProjectTransactionWrites(transaction, ["MIGRATION.md"]);
-      await fs.writeFile(path.join(plan.projectDir, "MIGRATION.md"), migrationContent, "utf-8");
+      await writeProjectTransactionFile(transaction, "MIGRATION.md", migrationContent);
     }
     const configMetadata = {
       version: plan.proposedConfig.version,
       createdAt: plan.proposedConfig.createdAt,
     };
     const configContent = serializeBtsConfig(proposedConfig, configMetadata);
-    markProjectTransactionWrite(
-      transaction,
-      "bts.jsonc",
-      hashContent(Buffer.from(configContent, "utf-8")),
-    );
-    await journalProjectTransactionWrites(transaction, ["bts.jsonc"]);
-    await writeBtsConfig(proposedConfig, configMetadata);
+    await writeProjectTransactionFile(transaction, "bts.jsonc", configContent);
 
     const versionChannelRewrites: string[] = [];
     if (options.applyVersionChannel) {
       const plannedRewrites =
         (plan as InternalStackUpdatePlan)[PLANNED_VERSION_CHANNEL_REWRITES] ?? [];
-      for (const rewrite of plannedRewrites) {
-        const relativePath = toPosixPath(path.relative(plan.projectDir, rewrite.packageJsonPath));
-        markProjectTransactionWrite(transaction, relativePath, rewrite.sha256);
-      }
-      await journalProjectTransactionWrites(
-        transaction,
-        plannedRewrites.map((rewrite) =>
-          toPosixPath(path.relative(plan.projectDir, rewrite.packageJsonPath)),
-        ),
-      );
       await applyDependencyVersionChannel(
         plan.projectDir,
         plan.proposedConfig.versionChannel,
-        (packageJsonPath, sha256) => {
+        (packageJsonPath) => {
           const relativePath = toPosixPath(path.relative(plan.projectDir, packageJsonPath));
           versionChannelRewrites.push(relativePath);
-          markProjectTransactionWrite(transaction, relativePath, sha256);
         },
-        { rewrites: plannedRewrites },
+        {
+          rewrites: plannedRewrites,
+          writeFile: async (rewrite) => {
+            const relativePath = toPosixPath(
+              path.relative(plan.projectDir, rewrite.packageJsonPath),
+            );
+            await writeProjectTransactionFile(transaction, relativePath, rewrite.content, {
+              expectedSha256: rewrite.sha256,
+            });
+          },
+        },
       );
     }
 
@@ -2431,13 +2422,10 @@ export async function applyStackUpdate(
         changes: plan.lifecycle.changes,
         recoveryId: transaction.id,
       },
-      async (manifestContent) => {
-        markProjectTransactionWrite(
-          transaction,
-          SCAFFOLD_MANIFEST_FILE,
-          hashContent(Buffer.from(manifestContent, "utf-8")),
-        );
-        await journalProjectTransactionWrites(transaction, [SCAFFOLD_MANIFEST_FILE]);
+      {
+        writeFile: async (manifestContent) => {
+          await writeProjectTransactionFile(transaction, SCAFFOLD_MANIFEST_FILE, manifestContent);
+        },
       },
     );
     await commitProjectTransaction(transaction);

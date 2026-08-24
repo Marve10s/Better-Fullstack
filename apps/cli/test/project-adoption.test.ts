@@ -7,6 +7,7 @@ import { parse } from "jsonc-parser";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
+import { planScaffoldUpgrade } from "../src/helpers/core/scaffold-upgrade";
 import { buildBtsConfigForPersistence, writeBtsConfig } from "../src/utils/bts-config";
 import { formatProject } from "../src/utils/file-formatter";
 import { confirmProjectAdoption, planProjectAdoption } from "../src/utils/project-adoption";
@@ -127,6 +128,56 @@ describe("project adoption", () => {
     });
     expect(manifest?.baselines?.["package.json"]).toBe(
       await fs.readFile(path.join(projectDir, "package.json"), "utf-8"),
+    );
+    expect(Object.keys(manifest?.modes ?? {})).toEqual(Object.keys(manifest?.hashes ?? {}));
+  });
+
+  it("rejects an adoption token after a mode-only project change", async () => {
+    const projectDir = await makeProject();
+    const plan = await planProjectAdoption(projectDir);
+    expect(plan.success).toBe(true);
+    if (!plan.success) return;
+
+    await fs.chmod(path.join(projectDir, "apps/server/src/index.ts"), 0o700);
+
+    const confirmed = await confirmProjectAdoption(projectDir, plan.confirmationToken);
+    expect(confirmed.success).toBe(false);
+    if (!confirmed.success) expect(confirmed.error).toContain("stale");
+    expect(await readScaffoldManifestResult(projectDir)).toEqual({ status: "missing" });
+  });
+
+  it("does not record divergent user files as generated baselines", async () => {
+    const projectDir = await makeProject();
+    const sourcePath = "apps/server/src/index.ts";
+    await fs.appendFile(path.join(projectDir, sourcePath), "\n// user-owned route\n");
+    const packageJson = await fs.readJson(path.join(projectDir, "package.json"));
+    packageJson.betterFullstackUserMetadata = true;
+    await fs.writeJson(path.join(projectDir, "package.json"), packageJson, { spaces: 2 });
+
+    const plan = await planProjectAdoption(projectDir);
+    expect(plan.success).toBe(true);
+    if (!plan.success) return;
+    expect(plan.templateEvidence.divergentPaths).toContain(sourcePath);
+    expect(plan.templateEvidence.divergentPaths).toContain("package.json");
+
+    const confirmed = await confirmProjectAdoption(projectDir, plan.confirmationToken);
+    expect(confirmed.success).toBe(true);
+    if (!confirmed.success) return;
+    const manifest = await readScaffoldManifest(projectDir);
+    expect(manifest?.hashes[sourcePath]).toBeUndefined();
+    expect(manifest?.hashes["package.json"]).toBeUndefined();
+    expect(manifest?.modes?.[sourcePath]).toBeUndefined();
+    expect(manifest?.modes?.["package.json"]).toBeUndefined();
+    expect(manifest?.baselines?.["package.json"]).toBeUndefined();
+
+    const updatePlan = await planScaffoldUpgrade(projectDir);
+    expect(updatePlan.success).toBe(true);
+    if (!updatePlan.success) return;
+    expect(updatePlan.manual).toContainEqual(
+      expect.objectContaining({ path: sourcePath, category: "manual" }),
+    );
+    expect(updatePlan.manual).toContainEqual(
+      expect.objectContaining({ path: "package.json", category: "manual" }),
     );
   });
 

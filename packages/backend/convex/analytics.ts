@@ -79,6 +79,7 @@ type AnalyticsEvent = {
   failureReason?: string;
   setupFailures?: string[];
   durationMs?: number;
+  archiveBytes?: number;
   fileCount?: number;
   changedFileCount?: number;
   capabilityCount?: number;
@@ -622,6 +623,7 @@ const eventArgs = {
   failureReason: v.optional(v.string()),
   setupFailures: v.optional(v.array(v.string())),
   durationMs: v.optional(v.number()),
+  archiveBytes: v.optional(v.number()),
   fileCount: v.optional(v.number()),
   changedFileCount: v.optional(v.number()),
   capabilityCount: v.optional(v.number()),

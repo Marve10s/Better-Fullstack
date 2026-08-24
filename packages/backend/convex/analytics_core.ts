@@ -84,7 +84,16 @@ const SELECTION_OUTCOMES = new Set([
   "create-failed",
   "handoff-completed",
 ]);
-const EVIDENCE_LEVELS = new Set(["listed", "build-verified", "runtime-verified"]);
+const EVIDENCE_LEVELS = new Set(["listed", "generated", "build-verified", "runtime-verified"]);
+export const TELEMETRY_STARTER_TRACKS: ReadonlySet<string> = new Set([
+  "saas-app",
+  "ai-agent-app",
+  "rest-api",
+  "java-api",
+  "rust-backend",
+  "mobile-app",
+  "internal-tool",
+]);
 const SELECTION_PROBLEMS = new Set([
   "none",
   "discoverability",
@@ -109,7 +118,11 @@ type SelectionDecisionEvent = {
   stack?: Record<string, string | boolean | string[]>;
 };
 
-function boundedStackValue(event: SelectionDecisionEvent, key: string, allowed: Set<string>) {
+function boundedStackValue(
+  event: SelectionDecisionEvent,
+  key: string,
+  allowed: ReadonlySet<string>,
+) {
   const value = event.stack?.[key];
   return typeof value === "string" && allowed.has(value) ? value : undefined;
 }
@@ -153,8 +166,7 @@ export function classifySelectionDecision(
         : undefined);
   const evidenceLevel = boundedStackValue(event, "selected_evidence_level", EVIDENCE_LEVELS);
   const selectionProblem = boundedStackValue(event, "selection_problem", SELECTION_PROBLEMS);
-  const starterTrackValue = event.stack?.starter_track;
-  const starterTrack = typeof starterTrackValue === "string" ? starterTrackValue : undefined;
+  const starterTrack = boundedStackValue(event, "starter_track", TELEMETRY_STARTER_TRACKS);
   const needsProblem =
     selectionOutcome === "plan-abandoned" || selectionOutcome === "create-failed";
   const covered = Boolean(
@@ -174,12 +186,15 @@ export function classifySelectionDecision(
 
 const CLI_LIFECYCLE_ACTIONS = new Set([
   "add",
+  "adopt",
   "check",
   "doctor",
   "gen",
   "history",
-  "recover",
+  "recovery",
+  "registry",
   "remove",
+  "replace",
   "status",
   "update",
 ]);

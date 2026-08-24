@@ -10,10 +10,9 @@ import { lifecycleResult, type LifecycleResult } from "./lifecycle-contract";
 import {
   beginProjectTransaction,
   commitProjectTransaction,
-  journalProjectTransactionWrites,
-  markProjectTransactionWrite,
   rollbackProjectTransaction,
   type ProjectTransaction,
+  writeProjectTransactionFile,
 } from "./project-transaction";
 import { createReviewToken } from "./review-token";
 import { getCurrentLifecycleVersions, hashContent } from "./scaffold-manifest";
@@ -140,7 +139,13 @@ function repairLifecycle(
             {
               kind: "filesystem",
               status:
-                status === "applied" ? "applied" : status === "planned" ? "planned" : "restored",
+                status === "applied"
+                  ? "applied"
+                  : status === "planned"
+                    ? "planned"
+                    : status === "failed"
+                      ? "failed"
+                      : "restored",
               description: "Rewrite bts.jsonc inside one recovery transaction.",
             },
           ]
@@ -279,9 +284,9 @@ export async function applyConfigDriftRepair(
     if (hashContent(live) !== plan.preimage.sha256) {
       throw new Error("bts.jsonc changed after the recovery snapshot. Re-run `doctor --fix`.");
     }
-    markProjectTransactionWrite(transaction, CONFIG_PATH, hashContent(plan.proposedContent));
-    await journalProjectTransactionWrites(transaction, [CONFIG_PATH]);
-    await fs.writeFile(path.join(plan.projectDir, CONFIG_PATH), plan.proposedContent, "utf-8");
+    await writeProjectTransactionFile(transaction, CONFIG_PATH, plan.proposedContent, {
+      expectedSha256: hashContent(plan.proposedContent),
+    });
     await options.afterWrite?.();
     await commitProjectTransaction(transaction);
     return {
@@ -296,7 +301,25 @@ export async function applyConfigDriftRepair(
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    await rollbackProjectTransaction(transaction).catch(() => undefined);
+    try {
+      await rollbackProjectTransaction(transaction);
+    } catch (rollbackError) {
+      const rollbackMessage =
+        rollbackError instanceof Error ? rollbackError.message : String(rollbackError);
+      const failure = `${message}. Automatic rollback failed: ${rollbackMessage}. Recovery transaction: ${transaction.id}.`;
+      return {
+        success: false,
+        projectDir: plan.projectDir,
+        error: failure,
+        lifecycle: repairLifecycle(
+          plan.projectDir,
+          "failed",
+          plan.changes,
+          transaction.id,
+          failure,
+        ),
+      };
+    }
     return {
       success: false,
       projectDir: plan.projectDir,

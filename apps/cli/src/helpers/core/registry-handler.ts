@@ -25,9 +25,8 @@ import { lifecyclePlan, lifecycleResult } from "../../utils/lifecycle-contract";
 import {
   beginProjectTransaction,
   commitProjectTransaction,
-  journalProjectTransactionWrites,
-  markProjectTransactionWrite,
   rollbackProjectTransaction,
+  writeProjectTransactionFile,
 } from "../../utils/project-transaction";
 import { planPackBtsConfig } from "../../utils/registry-bts";
 import { createReviewToken, getReviewTokenContext } from "../../utils/review-token";
@@ -610,15 +609,14 @@ export async function applyPackInstall(
       }
     }
     for (const [index, file] of reviewed.files.entries()) {
-      markProjectTransactionWrite(transaction, file.path, file.postimageSha256);
-      await journalProjectTransactionWrites(transaction, [file.path]);
-      const target = path.join(reviewed.lifecycle.projectDir, file.path);
-      await fs.ensureDir(path.dirname(target));
-      if (hooks.writeFile) await hooks.writeFile(target, file.content);
-      else await fs.writeFile(target, file.content, "utf-8");
+      await writeProjectTransactionFile(transaction, file.path, file.content, {
+        expectedSha256: file.postimageSha256,
+        ...(hooks.writeFile
+          ? { writeFile: (target) => hooks.writeFile?.(target, file.content) }
+          : {}),
+      });
       await hooks.afterWrite?.(file, index);
     }
-    await journalProjectTransactionWrites(transaction);
     await commitProjectTransaction(transaction);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

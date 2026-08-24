@@ -8,7 +8,7 @@ import { renderCurrentProject } from "../helpers/core/scaffold-upgrade";
 import { formatStackPartSpec, legacyProjectConfigToStackParts } from "../types";
 import { readBtsConfig } from "./bts-config";
 import {
-  computeScaffoldHashes,
+  computeScaffoldSnapshot,
   createAdoptedScaffoldManifest,
   hashContent,
   isStructuredBaselinePath,
@@ -79,8 +79,8 @@ export type ConfirmedProjectAdoption = Omit<ProjectAdoptionPlan, "mode" | "adopt
   };
 };
 
-function stateHash(hashes: Record<string, string>): string {
-  return hashContent(JSON.stringify(hashes));
+function stateHash(hashes: Record<string, string>, modes: Record<string, number>): string {
+  return hashContent(JSON.stringify({ hashes, modes }));
 }
 
 function tokenForPlan(plan: Omit<ProjectAdoptionPlan, "confirmationToken">): string {
@@ -159,7 +159,7 @@ export async function planProjectAdoption(projectDirInput: string): Promise<Proj
   const rendered = await renderCurrentProject(projectDir);
   if ("error" in rendered) return projectFailure(projectDir, rendered.error);
 
-  const projectHashes = await computeScaffoldHashes(projectDir);
+  const { hashes: projectHashes, modes: projectModes } = await computeScaffoldSnapshot(projectDir);
   const configBytesAfter = await fs.readFile(configPath).catch(() => null);
   if (!configBytesAfter || !configBytesBefore.equals(configBytesAfter)) {
     return projectFailure(projectDir, "bts.jsonc changed while the adoption plan was being built.");
@@ -190,7 +190,7 @@ export async function planProjectAdoption(projectDirInput: string): Promise<Proj
     provenanceState: "adopted-unverified",
     confirmationRequired: true,
     configHash: hashContent(configBytesAfter),
-    projectStateHash: stateHash(projectHashes),
+    projectStateHash: stateHash(projectHashes, projectModes),
     likelyStackParts: stackPartCandidates(stackParts, explicitGraph),
     templateEvidence: {
       expectedFiles: expectedPaths.length,
@@ -253,25 +253,38 @@ export async function confirmProjectAdoption(
     );
   }
 
-  const projectHashes = await computeScaffoldHashes(plan.projectDir);
+  const { hashes: projectHashes, modes: projectModes } = await computeScaffoldSnapshot(
+    plan.projectDir,
+  );
   const configBytes = await fs.readFile(path.join(plan.projectDir, "bts.jsonc")).catch(() => null);
   if (
     !configBytes ||
     hashContent(configBytes) !== plan.configHash ||
-    stateHash(projectHashes) !== plan.projectStateHash
+    stateHash(projectHashes, projectModes) !== plan.projectStateHash
   ) {
     return projectFailure(
       plan.projectDir,
       "The project changed after the adoption plan. Build and confirm a new plan.",
     );
   }
-  const baselines = await collectAdoptedBaselines(plan.projectDir, projectHashes);
+  const nonTemplatePaths = new Set([
+    ...plan.templateEvidence.divergentPaths,
+    ...plan.templateEvidence.extraPaths,
+  ]);
+  const adoptedHashes = Object.fromEntries(
+    Object.entries(projectHashes).filter(([filePath]) => !nonTemplatePaths.has(filePath)),
+  );
+  const adoptedModes = Object.fromEntries(
+    Object.entries(projectModes).filter(([filePath]) => !nonTemplatePaths.has(filePath)),
+  );
+  const baselines = await collectAdoptedBaselines(plan.projectDir, adoptedHashes);
   if (!baselines.success) return baselines;
 
   let manifest: ScaffoldManifest;
   try {
     manifest = await createAdoptedScaffoldManifest(plan.projectDir, {
-      hashes: projectHashes,
+      hashes: adoptedHashes,
+      modes: adoptedModes,
       baselines: baselines.baselines,
     });
   } catch (error) {
@@ -281,14 +294,14 @@ export async function confirmProjectAdoption(
     );
   }
 
-  const [configAfter, hashesAfter] = await Promise.all([
+  const [configAfter, snapshotAfter] = await Promise.all([
     fs.readFile(path.join(plan.projectDir, "bts.jsonc")).catch(() => null),
-    computeScaffoldHashes(plan.projectDir),
+    computeScaffoldSnapshot(plan.projectDir),
   ]);
   if (
     !configAfter ||
     hashContent(configAfter) !== plan.configHash ||
-    stateHash(hashesAfter) !== plan.projectStateHash
+    stateHash(snapshotAfter.hashes, snapshotAfter.modes) !== plan.projectStateHash
   ) {
     const manifestPath = path.join(plan.projectDir, SCAFFOLD_MANIFEST_FILE);
     const currentManifest = await fs.readFile(manifestPath, "utf-8").catch(() => null);

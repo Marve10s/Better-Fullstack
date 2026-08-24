@@ -66,6 +66,7 @@ export type ScaffoldManifest = {
   };
   history: ScaffoldManifestOperation[];
   hashes: Record<string, string>;
+  modes?: Record<string, number>;
   baselines?: Record<string, string>;
 };
 
@@ -155,15 +156,29 @@ async function walkFiles(rootDir: string): Promise<string[]> {
   return results;
 }
 
-export async function computeScaffoldHashes(projectDir: string): Promise<Record<string, string>> {
+export async function computeScaffoldSnapshot(
+  projectDir: string,
+): Promise<{ hashes: Record<string, string>; modes: Record<string, number> }> {
   const files = await walkFiles(projectDir);
   const entries = await Promise.all(
     files.map(async (fullPath) => {
-      const bytes = await fs.readFile(fullPath);
-      return [toPosixRelative(projectDir, fullPath), hashContent(bytes)] as const;
+      const [bytes, stats] = await Promise.all([fs.readFile(fullPath), fs.stat(fullPath)]);
+      return [
+        toPosixRelative(projectDir, fullPath),
+        hashContent(bytes),
+        stats.mode & 0o7777,
+      ] as const;
     }),
   );
-  return Object.fromEntries(entries.sort(([a], [b]) => a.localeCompare(b)));
+  const sorted = entries.sort(([a], [b]) => a.localeCompare(b));
+  return {
+    hashes: Object.fromEntries(sorted.map(([filePath, hash]) => [filePath, hash])),
+    modes: Object.fromEntries(sorted.map(([filePath, , mode]) => [filePath, mode])),
+  };
+}
+
+export async function computeScaffoldHashes(projectDir: string): Promise<Record<string, string>> {
+  return (await computeScaffoldSnapshot(projectDir)).hashes;
 }
 
 export async function writeScaffoldManifest(
@@ -175,7 +190,7 @@ export async function writeScaffoldManifest(
 }
 
 export function serializeScaffoldManifest(manifest: ScaffoldManifest): string {
-  const sortEntries = (record: Record<string, string>) =>
+  const sortEntries = <Value>(record: Record<string, Value>) =>
     Object.fromEntries(Object.entries(record).sort(([a], [b]) => a.localeCompare(b)));
   const sorted: ScaffoldManifest = {
     version: SCAFFOLD_MANIFEST_VERSION,
@@ -184,6 +199,9 @@ export function serializeScaffoldManifest(manifest: ScaffoldManifest): string {
     provenance: manifest.provenance,
     history: manifest.history,
     hashes: sortEntries(manifest.hashes),
+    ...(manifest.modes && Object.keys(manifest.modes).length > 0
+      ? { modes: sortEntries(manifest.modes) }
+      : {}),
     ...(manifest.baselines && Object.keys(manifest.baselines).length > 0
       ? { baselines: sortEntries(manifest.baselines) }
       : {}),
@@ -195,6 +213,7 @@ export async function createAdoptedScaffoldManifest(
   projectDir: string,
   input: {
     hashes: Record<string, string>;
+    modes: Record<string, number>;
     baselines?: Record<string, string>;
     createdAt?: string;
   },
@@ -220,6 +239,7 @@ export async function createAdoptedScaffoldManifest(
       },
     ],
     hashes: input.hashes,
+    modes: input.modes,
     baselines: input.baselines,
   };
   const manifestPath = path.join(projectDir, SCAFFOLD_MANIFEST_FILE);
@@ -251,7 +271,7 @@ export async function recordScaffoldManifest(
     const createdAt = metadata.createdAt ?? new Date().toISOString();
     const versions = getCurrentLifecycleVersions();
     const provenanceState = metadata.provenanceState ?? "verified";
-    const hashes = await computeScaffoldHashes(projectDir);
+    const { hashes, modes } = await computeScaffoldSnapshot(projectDir);
     const manifest: ScaffoldManifest = {
       version: SCAFFOLD_MANIFEST_VERSION,
       createdAt,
@@ -275,6 +295,7 @@ export async function recordScaffoldManifest(
         },
       ],
       hashes,
+      modes,
       baselines: metadata.baselines,
     };
     await writeScaffoldManifest(projectDir, manifest);
@@ -372,6 +393,28 @@ function validateManifest(parsed: unknown): ScaffoldManifestReadResult {
     }
     if (typeof digest !== "string" || !/^[0-9a-f]{64}$/.test(digest)) {
       return { status: "invalid", error: `hashes[${JSON.stringify(filePath)}] must be SHA-256` };
+    }
+  }
+  if (parsed.modes !== undefined) {
+    if (!isPlainRecord(parsed.modes)) {
+      return { status: "invalid", error: "modes must be a non-null plain record" };
+    }
+    for (const [filePath, mode] of Object.entries(parsed.modes)) {
+      if (!isPortableProjectRelativePath(filePath)) {
+        return { status: "invalid", error: `modes contains an unsafe project path: ${filePath}` };
+      }
+      if (!Object.hasOwn(parsed.hashes, filePath)) {
+        return {
+          status: "invalid",
+          error: `modes contains a path without a recorded hash: ${filePath}`,
+        };
+      }
+      if (typeof mode !== "number" || !Number.isInteger(mode) || mode < 0 || mode > 0o7777) {
+        return {
+          status: "invalid",
+          error: `modes[${JSON.stringify(filePath)}] must be a file permission mode`,
+        };
+      }
     }
   }
   if (parsed.baselines !== undefined) {
@@ -481,7 +524,10 @@ export async function refreshScaffoldManifestFiles(
     changes: LifecycleChangeSummary;
     recoveryId?: string;
   },
-  beforeWrite?: (content: string) => void | Promise<void>,
+  hooks: {
+    beforeWrite?: (content: string) => void | Promise<void>;
+    writeFile?: (content: string) => void | Promise<void>;
+  } = {},
 ): Promise<void> {
   const manifest = await readScaffoldManifest(projectDir);
   if (!manifest) return;
@@ -489,14 +535,19 @@ export async function refreshScaffoldManifestFiles(
   for (const relativePath of new Set(relativePaths)) {
     const fullPath = path.join(projectDir, relativePath);
     const manifestPath = relativePath.split(path.sep).join("/");
+    const hadRecordedHash = Object.hasOwn(manifest.hashes, manifestPath);
     if (!(await fs.pathExists(fullPath))) {
       delete manifest.hashes[manifestPath];
+      if (manifest.modes) delete manifest.modes[manifestPath];
       if (manifest.baselines) delete manifest.baselines[manifestPath];
       continue;
     }
     const stats = await fs.stat(fullPath).catch(() => null);
     if (!stats?.isFile()) continue;
     manifest.hashes[manifestPath] = hashContent(await fs.readFile(fullPath));
+    if (!hadRecordedHash) {
+      (manifest.modes ??= {})[manifestPath] = stats.mode & 0o7777;
+    }
   }
 
   if (baselines && Object.keys(baselines).length > 0) {
@@ -521,6 +572,7 @@ export async function refreshScaffoldManifestFiles(
   }
 
   const content = serializeScaffoldManifest(manifest);
-  await beforeWrite?.(content);
-  await fs.writeFile(path.join(projectDir, SCAFFOLD_MANIFEST_FILE), content, "utf-8");
+  await hooks.beforeWrite?.(content);
+  if (hooks.writeFile) await hooks.writeFile(content);
+  else await fs.writeFile(path.join(projectDir, SCAFFOLD_MANIFEST_FILE), content, "utf-8");
 }

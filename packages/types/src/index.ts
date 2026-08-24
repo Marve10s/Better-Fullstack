@@ -16,3 +16,4 @@ export * from "./capability-inventory";
 export * from "./update-support";
 export * from "./stack-comparison";
 export * from "./starter-tracks";
+export * from "./telemetry";

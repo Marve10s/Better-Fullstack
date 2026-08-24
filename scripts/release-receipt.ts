@@ -248,6 +248,9 @@ function qualificationReceipt(
   const source = record(qualification.source);
   const cases = Array.isArray(qualification.cases) ? qualification.cases.map(record) : [];
   const requiredCaseIds = stringArray(qualification.requiredCaseIds);
+  const actionableCaseCount = cases.filter(
+    (entry) => typeof entry.actionable === "number" && entry.actionable > 0,
+  ).length;
   if (
     qualification.status !== "passed" ||
     qualification.overallSuccess !== true ||
@@ -258,15 +261,20 @@ function qualificationReceipt(
     cases.length !== REQUIRED_UPGRADE_FIXTURE_CASE_IDS.length ||
     cases.some((entry, index) => {
       const build = record(entry.build);
+      const actionable = entry.actionable;
       return (
         entry.id !== REQUIRED_UPGRADE_FIXTURE_CASE_IDS[index] ||
         entry.result !== "pass" ||
-        entry.recoveredExactly !== true ||
+        typeof actionable !== "number" ||
+        !Number.isInteger(actionable) ||
+        actionable < 0 ||
+        entry.recoveredExactly !== actionable > 0 ||
         build.verified !== true ||
         build.passed !== true
       );
     }) ||
-    qualification.recoveredCaseCount !== REQUIRED_UPGRADE_FIXTURE_CASE_IDS.length ||
+    actionableCaseCount === 0 ||
+    qualification.recoveredCaseCount !== actionableCaseCount ||
     typeof qualification.completedAt !== "string"
   ) {
     throw new Error("Cross-version qualification pass evidence is incomplete");

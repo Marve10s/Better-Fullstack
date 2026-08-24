@@ -1,7 +1,10 @@
 import { evaluateUpdateSupport, parseStackPartSpecs } from "@better-fullstack/types";
 import { describe, expect, it } from "bun:test";
 
-import { parseImportedBtsConfigText } from "../src/lib/existing-project-import";
+import {
+  parseImportedBtsConfigText,
+  resolveImportedProjectName,
+} from "../src/lib/existing-project-import";
 
 const TARGET_VERSION = "2.6.1";
 
@@ -16,6 +19,21 @@ function configText(parts: ReturnType<typeof parseStackPartSpecs>, extra = "") {
 }
 
 describe("existing project config import", () => {
+  it("keeps the current builder project name for a canonical bts config filename", () => {
+    const result = parseImportedBtsConfigText(
+      configText(parseStackPartSpecs(["backend:go:gin", "database:universal:postgres"])),
+      {
+        targetVersion: TARGET_VERSION,
+        projectName: resolveImportedProjectName("bts.jsonc", "existing-app"),
+      },
+    );
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.stack.projectName).toBe("existing-app");
+    expect(resolveImportedProjectName("catalog.jsonc", "existing-app")).toBe("catalog");
+  });
+
   it("parses JSONC comments and trailing commas without filesystem access", () => {
     const result = parseImportedBtsConfigText(
       configText(

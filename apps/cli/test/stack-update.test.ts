@@ -6,9 +6,9 @@ import {
   type ProjectConfig,
 } from "@better-fullstack/types";
 import { afterAll, describe, expect, it } from "bun:test";
-import fsExtra from "fs-extra";
 import * as JSONC from "jsonc-parser";
 import {
+  chmod,
   cp,
   mkdir,
   mkdtemp,
@@ -16,6 +16,7 @@ import {
   readFile,
   rename,
   rm,
+  stat,
   symlink,
   writeFile,
 } from "node:fs/promises";
@@ -55,6 +56,19 @@ async function makeTempRoot(prefix: string): Promise<string> {
   const root = await mkdtemp(join(tmpdir(), prefix));
   TEMP_ROOTS.push(root);
   return root;
+}
+
+async function simulateStoppedTransactionOwner(projectDir: string): Promise<void> {
+  const recoveryRoot = join(projectDir, RECOVERY_ROOT);
+  const lockName = (await readdir(recoveryRoot))
+    .filter((name) => name === "active.lock" || /^active\.lock\.\d{12}$/.test(name))
+    .sort()
+    .at(-1);
+  if (!lockName) throw new Error("Expected a lifecycle transaction lock generation.");
+  const lockPath = join(recoveryRoot, lockName);
+  const lock = JSON.parse(await readFile(lockPath, "utf-8")) as Record<string, unknown>;
+  lock.pid = 2_147_483_647;
+  await writeFile(lockPath, `${JSON.stringify(lock)}\n`);
 }
 
 function makeConfig(projectDir: string, overrides: Partial<ProjectConfig> = {}): ProjectConfig {
@@ -356,6 +370,9 @@ describe("stack update planner", () => {
     const emailPath = "apps/server/src/lib/email.ts";
     expect(manifest?.hashes[emailPath]).toBe(
       hashContent(await readFile(join(projectDir, emailPath))),
+    );
+    expect(manifest?.modes?.[emailPath]).toBe(
+      (await stat(join(projectDir, emailPath))).mode & 0o7777,
     );
   });
 
@@ -4318,6 +4335,60 @@ describe("stack update planner", () => {
     expect(manifest?.history.at(-1)?.operation).toBe("remove");
   });
 
+  it("keeps chmod-ed obsolete generated files for manual review", async () => {
+    const root = await makeTempRoot("bfs-stack-remove-chmod-guard-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir, { email: "resend" }));
+    const config = await readBtsConfig(projectDir);
+    const target = config?.stackParts?.find((part) => part.role === "email")?.id;
+    expect(target).toBeDefined();
+
+    const initialPlan = await planPartRemoval(projectDir, target!);
+    expect(initialPlan.success).toBe(true);
+    if (!initialPlan.success) return;
+    const obsoletePath = initialPlan.filesToRemove[0];
+    expect(obsoletePath).toBeDefined();
+    await chmod(join(projectDir, obsoletePath!), 0o700);
+
+    const plan = await planPartRemoval(projectDir, target!);
+    expect(plan.success).toBe(true);
+    if (!plan.success) return;
+    expect(plan.filesToRemove).not.toContain(obsoletePath);
+    expect(plan.manualReviewBlockers).toContainEqual(
+      expect.stringContaining(`${obsoletePath}: obsolete generated file mode differs`),
+    );
+    expect(plan.applyAllowed).toBe(false);
+    expect(plan.reviewToken).toBeUndefined();
+
+    const applied = await applyPartRemoval(projectDir, target!, undefined);
+    expect(applied.success).toBe(false);
+    expect(await pathExists(join(projectDir, obsoletePath!))).toBe(true);
+  });
+
+  it("keeps obsolete files when a legacy baseline has no recorded modes", async () => {
+    const root = await makeTempRoot("bfs-stack-remove-mode-less-baseline-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir, { email: "resend" }));
+    const config = await readBtsConfig(projectDir);
+    const target = config?.stackParts?.find((part) => part.role === "email")?.id;
+    expect(target).toBeDefined();
+    const manifestPath = join(projectDir, "bts.lock.json");
+    const manifest = JSON.parse(await readFile(manifestPath, "utf-8")) as {
+      modes?: Record<string, number>;
+    };
+    delete manifest.modes;
+    await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+
+    const plan = await planPartRemoval(projectDir, target!);
+    expect(plan.success).toBe(true);
+    if (!plan.success) return;
+    expect(plan.filesToRemove).toEqual([]);
+    expect(plan.manualReviewBlockers).toContainEqual(
+      expect.stringContaining("obsolete generated file has no recorded baseline mode"),
+    );
+    expect(plan.applyAllowed).toBe(false);
+  });
+
   it("uses the recorded package baseline to classify dependency removals", async () => {
     const root = await makeTempRoot("bfs-stack-remove-recorded-package-baseline-");
     const projectDir = join(root, "app");
@@ -4676,36 +4747,35 @@ describe("stack update planner", () => {
     expect(removedPath).toBeDefined();
     const removedContent = await readFile(join(projectDir, removedPath), "utf-8");
 
-    const originalRemove = fsExtra.remove;
     let crashed = false;
-    fsExtra.remove = (async (target: string) => {
-      await originalRemove(target);
-      if (!crashed && target === join(projectDir, removedPath)) {
-        crashed = true;
-        await cp(projectDir, crashedDir, { recursive: true });
-        throw new Error("injected crash after removal");
-      }
-    }) as typeof fsExtra.remove;
-
-    try {
-      const result = await applyStackUpdate(
-        projectDir,
-        { email: "none" },
-        { removeObsoleteGeneratedArtifacts: true },
-      );
-      expect(result.success).toBe(false);
-    } finally {
-      fsExtra.remove = originalRemove;
-    }
+    const result = await applyStackUpdate(
+      projectDir,
+      { email: "none" },
+      {
+        removeObsoleteGeneratedArtifacts: true,
+        beforeManifestRefresh: async () => {
+          expect(await pathExists(join(projectDir, removedPath))).toBe(false);
+          if (crashed) return;
+          crashed = true;
+          await cp(projectDir, crashedDir, { recursive: true });
+          throw new Error("injected crash after removal");
+        },
+      },
+    );
+    expect(result.success).toBe(false);
     expect(crashed).toBe(true);
     expect(await pathExists(join(crashedDir, removedPath))).toBe(false);
 
-    const [transactionId] = await readdir(join(crashedDir, RECOVERY_ROOT));
+    const transactionId = (await readdir(join(crashedDir, RECOVERY_ROOT))).find((entry) =>
+      /^[0-9a-f-]{36}$/i.test(entry),
+    );
     expect(transactionId).toBeDefined();
+    if (!transactionId) return;
     const recoveryMetadata = JSON.parse(
       await readFile(join(crashedDir, RECOVERY_ROOT, transactionId, "transaction.json"), "utf-8"),
     ) as { outputs?: Record<string, string | null> };
     expect(recoveryMetadata.outputs?.[removedPath]).toBeNull();
+    await simulateStoppedTransactionOwner(crashedDir);
     await recoverProjectTransaction(crashedDir, transactionId);
     expect(await readFile(join(crashedDir, removedPath), "utf-8")).toBe(removedContent);
   });
@@ -4747,8 +4817,12 @@ describe("stack update planner", () => {
     }
 
     expect(await readFile(join(crashedDir, "custom/package.json"), "utf-8")).toContain("^9.9.9");
-    const [transactionId] = await readdir(join(crashedDir, RECOVERY_ROOT));
+    const transactionId = (await readdir(join(crashedDir, RECOVERY_ROOT))).find((entry) =>
+      /^[0-9a-f-]{36}$/i.test(entry),
+    );
     expect(transactionId).toBeDefined();
+    if (!transactionId) return;
+    await simulateStoppedTransactionOwner(crashedDir);
     await recoverProjectTransaction(crashedDir, transactionId);
     expect(await readFile(join(crashedDir, "custom/package.json"), "utf-8")).toBe(customContent);
   });

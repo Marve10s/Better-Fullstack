@@ -21,9 +21,8 @@ import { lifecyclePlan, lifecycleResult } from "../utils/lifecycle-contract";
 import {
   beginProjectTransaction,
   commitProjectTransaction,
-  journalProjectTransactionWrites,
-  markProjectTransactionWrite,
   rollbackProjectTransaction,
+  writeProjectTransactionFile,
 } from "../utils/project-transaction";
 import { createReviewToken } from "../utils/review-token";
 import { getCurrentLifecycleVersions, hashContent } from "../utils/scaffold-manifest";
@@ -348,15 +347,14 @@ export async function applyGen(
       }
     }
     for (const [index, file] of reviewed.files.entries()) {
-      markProjectTransactionWrite(transaction, file.path, file.postimageSha256);
-      await journalProjectTransactionWrites(transaction, [file.path]);
-      const target = path.join(reviewed.projectDir as string, file.path);
-      await fs.ensureDir(path.dirname(target));
-      if (options.writeFile) await options.writeFile(target, file.content);
-      else await fs.writeFile(target, file.content, "utf-8");
+      await writeProjectTransactionFile(transaction, file.path, file.content, {
+        expectedSha256: file.postimageSha256,
+        ...(options.writeFile
+          ? { writeFile: (target) => options.writeFile?.(target, file.content) }
+          : {}),
+      });
       await options.afterWrite?.(file, index);
     }
-    await journalProjectTransactionWrites(transaction);
     await commitProjectTransaction(transaction);
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);
@@ -368,7 +366,7 @@ export async function applyGen(
       return {
         ...reviewed,
         success: false,
-        status: "rolled-back",
+        status: "failed",
         recoveryId: transaction.id,
         message: `${reason}. Automatic rollback failed: ${rollbackReason}.`,
         lifecycle: lifecycleResult({

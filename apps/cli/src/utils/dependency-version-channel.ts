@@ -437,7 +437,10 @@ export async function applyDependencyVersionChannel(
   projectDir: string,
   channel: VersionChannel,
   onWrite?: (packageJsonPath: string, sha256: string) => void | Promise<void>,
-  options: { rewrites?: readonly DependencyVersionChannelRewrite[] } = {},
+  options: {
+    rewrites?: readonly DependencyVersionChannelRewrite[];
+    writeFile?: (rewrite: DependencyVersionChannelRewrite) => void | Promise<void>;
+  } = {},
 ): Promise<string[]> {
   const rewrites = options.rewrites ?? (await planDependencyVersionChannel(projectDir, channel));
 
@@ -446,8 +449,13 @@ export async function applyDependencyVersionChannel(
       // oxlint-disable-next-line no-await-in-loop -- bind each rewrite before its first byte changes
       await onWrite(rewrite.packageJsonPath, rewrite.sha256);
     }
-    // oxlint-disable-next-line no-await-in-loop -- persist reviewed rewrites in transaction order
-    await fs.writeFile(rewrite.packageJsonPath, rewrite.content, "utf-8");
+    if (options.writeFile) {
+      // oxlint-disable-next-line no-await-in-loop -- persist reviewed rewrites in transaction order
+      await options.writeFile(rewrite);
+    } else {
+      // oxlint-disable-next-line no-await-in-loop -- persist reviewed rewrites in transaction order
+      await fs.writeFile(rewrite.packageJsonPath, rewrite.content, "utf-8");
+    }
   }
 
   return rewrites.map((rewrite) => rewrite.packageJsonPath);

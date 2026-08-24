@@ -2,12 +2,13 @@ import { afterAll, describe, expect, it } from "bun:test";
 import * as JSONC from "jsonc-parser";
 import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
-import { mkdtemp, mkdir, readFile, realpath, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, realpath, rm, stat, writeFile } from "node:fs/promises";
 import { homedir, tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
 import { addHandler } from "../src/helpers/core/add-handler";
 import { flushTelemetry } from "../src/utils/analytics";
+import { recoverProjectTransaction } from "../src/utils/project-transaction";
 
 const CLI_ENTRY = resolve(import.meta.dir, "..", "src", "cli.ts");
 const NATIVE_BUN = resolve(homedir(), ".bun", "bin", "bun");
@@ -535,16 +536,24 @@ describe("CLI add command", () => {
 
       const huskyPath = join(projectDir, ".husky", "pre-commit");
       await Promise.all([rm(huskyPath), rm(lefthookPath)]);
-      const recreate = await runCli(["add", "--project-dir", projectDir, "--addons", "gitleaks"], {
-        cwd: root,
-      });
-      expect(recreate.exitCode, `recreate failed\n${recreate.all}`).toBe(0);
+      const recreate = await addHandler(
+        { projectDir, addons: ["gitleaks"], install: false },
+        { silent: true },
+      );
+      expect(recreate?.success, recreate?.error).toBe(true);
+      expect(recreate?.recoveryId).toBeDefined();
+      if (!recreate?.recoveryId) return;
       expect(await readFile(huskyPath, "utf8")).toContain(
         "gitleaks git --pre-commit --redact --staged --verbose",
       );
       expect(await readFile(lefthookPath, "utf8")).toContain(
         "gitleaks git --pre-commit --redact --staged --verbose",
       );
+      expect((await stat(huskyPath)).mode & 0o777).toBe(0o755);
+
+      await recoverProjectTransaction(projectDir, recreate.recoveryId);
+      expect(existsSync(huskyPath)).toBe(false);
+      expect(existsSync(lefthookPath)).toBe(false);
     },
     CLI_COMMAND_TEST_TIMEOUT_MS,
   );
@@ -575,16 +584,119 @@ describe("CLI add command", () => {
       };
       expect(configAfterFailure.addons).toContain("biome");
 
+      const beforeRepair = "pre-commit:\n  commands:\n    existing:\n      run: bun run lint\n";
+      await writeFile(lefthookPath, beforeRepair);
+      const manifestPath = join(projectDir, "bts.lock.json");
+      const manifestBeforePlan = await readFile(manifestPath, "utf8");
+      const planned = await addHandler(
+        {
+          projectDir,
+          part: ["codeQuality:universal:biome"],
+          install: false,
+          dryRun: true,
+        },
+        { silent: true },
+      );
+      const repairPlan = planned?.plan as
+        | { kind?: string; files?: Array<{ path: string; action: string }> }
+        | undefined;
+      expect(planned?.success, planned?.error).toBe(true);
+      expect(planned?.lifecycle?.status).toBe("planned");
+      expect(repairPlan?.kind).toBe("addon-repair");
+      expect(repairPlan?.files).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ path: "lefthook.yml", action: "update" }),
+          expect.objectContaining({ path: "bts.lock.json", action: "update" }),
+        ]),
+      );
+      expect(await readFile(lefthookPath, "utf8")).toBe(beforeRepair);
+      expect(await readFile(manifestPath, "utf8")).toBe(manifestBeforePlan);
+
+      const retry = await addHandler(
+        { projectDir, part: ["codeQuality:universal:biome"], install: false },
+        { silent: true },
+      );
+      expect(retry?.success, retry?.error).toBe(true);
+      expect(retry?.recoveryId).toBeDefined();
+      expect(retry?.lifecycle?.recovery.command).toBeDefined();
+      if (!retry?.recoveryId) return;
+      expect(await readFile(lefthookPath, "utf8")).toContain("biome check --write");
+      const manifestAfterRepair = await readFile(manifestPath, "utf8");
+      expect(manifestAfterRepair).not.toBe(manifestBeforePlan);
+      expect(
+        (
+          JSON.parse(manifestAfterRepair) as { history?: Array<{ recoveryId?: string }> }
+        ).history?.at(-1)?.recoveryId,
+      ).toBe(retry.recoveryId);
+
+      await recoverProjectTransaction(projectDir, retry.recoveryId);
+      expect(await readFile(lefthookPath, "utf8")).toBe(beforeRepair);
+      expect(await readFile(manifestPath, "utf8")).toBe(manifestBeforePlan);
+    },
+    CLI_COMMAND_TEST_TIMEOUT_MS,
+  );
+
+  it(
+    "repairs a Lefthook linter hook when Ultracite is also configured",
+    async () => {
+      const root = await makeTempRoot("bfs-add-ultracite-linter-repair-test-");
+      const projectName = "app";
+      const projectDir = join(root, projectName);
+      const createResult = await createWithImperativeAddons(root, projectName, [
+        "lefthook",
+        "biome",
+        "ultracite",
+      ]);
+      expect(createResult.exitCode, createResult.all).toBe(0);
+
+      const lefthookPath = join(projectDir, "lefthook.yml");
       await writeFile(
         lefthookPath,
         "pre-commit:\n  commands:\n    existing:\n      run: bun run lint\n",
       );
-      const retry = await runCli(["add", "--project-dir", projectDir, ...biomePart], {
-        cwd: root,
-      });
-      expect(retry.exitCode, `retry failed\n${retry.all}`).toBe(0);
-      expect(cliOutput(retry)).toContain("Repaired tooling setup: biome");
+      const repair = await addHandler(
+        { projectDir, part: ["codeQuality:universal:biome"], install: false },
+        { silent: true },
+      );
+
+      expect(repair?.success, repair?.error).toBe(true);
+      expect(repair?.recoveryId).toBeDefined();
       expect(await readFile(lefthookPath, "utf8")).toContain("biome check --write");
+    },
+    CLI_COMMAND_TEST_TIMEOUT_MS,
+  );
+
+  it(
+    "rejects mixed addon repair and stack changes without mutating either request",
+    async () => {
+      const root = await makeTempRoot("bfs-add-mixed-repair-test-");
+      const projectName = "app";
+      const projectDir = join(root, projectName);
+      const createResult = await createWithImperativeAddons(root, projectName, [
+        "lefthook",
+        "biome",
+      ]);
+      expect(createResult.exitCode, createResult.all).toBe(0);
+
+      const configPath = join(projectDir, "bts.jsonc");
+      const lefthookPath = join(projectDir, "lefthook.yml");
+      const incompleteHook = "pre-commit:\n  commands:\n    existing:\n      run: bun run lint\n";
+      await writeFile(lefthookPath, incompleteHook);
+      const configBefore = await readFile(configPath, "utf8");
+
+      const result = await addHandler(
+        {
+          projectDir,
+          part: ["codeQuality:universal:biome", "database:universal:postgres"],
+          install: false,
+        },
+        { silent: true },
+      );
+
+      expect(result?.success).toBe(false);
+      expect(result?.error).toContain("Run the tooling repair and stack update separately");
+      expect(await readFile(configPath, "utf8")).toBe(configBefore);
+      expect(await readFile(lefthookPath, "utf8")).toBe(incompleteHook);
     },
     CLI_COMMAND_TEST_TIMEOUT_MS,
   );

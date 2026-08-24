@@ -5,9 +5,14 @@ import type { ProjectConfig } from "../types";
 
 import {
   getProjectConfigEvidence,
-  STACK_TOOL_DEFINITIONS,
-  StackPartEcosystemSchema,
-  StackPartRoleSchema,
+  isRegisteredTelemetryStackPartSelection,
+  sanitizeTelemetryAction,
+  sanitizeTelemetryErrorName,
+  sanitizeTelemetryFailureReason,
+  sanitizeTelemetryFailureStage,
+  sanitizeTelemetryMode,
+  sanitizeTelemetrySetupFailure,
+  sanitizeTelemetryStackDimension,
 } from "../types";
 import { getLatestCLIVersion } from "./get-latest-cli-version";
 import { canPromptInteractively } from "./prompt-environment";
@@ -179,63 +184,6 @@ export type TelemetryOutcome = {
 const TELEMETRY_STATUSES = new Set(["started", "succeeded", "failed", "cancelled"]);
 const TELEMETRY_SOURCES = new Set(["cli-interactive", "cli-flags", "mcp", "programmatic"]);
 
-const BLOCKED_TELEMETRY_KEYS = new Set([
-  "projectname",
-  "projectdir",
-  "relativepath",
-  "targetdir",
-  "workspaceroot",
-  "name",
-  "brief",
-  "prompt",
-  "source",
-  "sourcecode",
-  "content",
-  "code",
-  "message",
-  "error",
-  "path",
-  "file",
-  "filename",
-  "files",
-  "env",
-  "environment",
-  "envkey",
-  "envvalue",
-  "log",
-  "logs",
-  "secret",
-  "secrets",
-  "token",
-  "apikey",
-  "url",
-]);
-
-const TELEMETRY_KEY = /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/;
-const TELEMETRY_IDENTIFIER = /^[A-Za-z0-9][A-Za-z0-9_.:+-]{0,99}$/;
-
-const REGISTERED_STACK_TOOL_IDS = new Set(
-  STACK_TOOL_DEFINITIONS.map((definition) => definition.toolId),
-);
-
-function isRegisteredStackPartRole(value: string | undefined): boolean {
-  return value !== undefined && StackPartRoleSchema.safeParse(value).success;
-}
-
-function isRegisteredStackPartEcosystem(value: string): boolean {
-  return StackPartEcosystemSchema.safeParse(value).success;
-}
-
-function isRegisteredStackToolId(value: string): boolean {
-  return REGISTERED_STACK_TOOL_IDS.has(value);
-}
-
-function sanitizeIdentifier(value: unknown): string | undefined {
-  if (typeof value !== "string") return undefined;
-  const trimmed = value.trim();
-  return TELEMETRY_IDENTIFIER.test(trimmed) ? trimmed : undefined;
-}
-
 const SETUP_FAILURE_IDENTIFIERS: Readonly<Record<string, string>> = {
   "Install dependencies": "install-dependencies",
   "Database setup": "database-setup",
@@ -252,24 +200,6 @@ const SETUP_FAILURE_IDENTIFIERS: Readonly<Record<string, string>> = {
  * sent: it carries absolute paths, registry URLs and occasionally credentials.
  * A code is enough to tell "npm cannot resolve peers" from "the disk is full".
  */
-const SETUP_FAILURE_REASONS = new Set([
-  "network",
-  "registry-not-found",
-  "registry-auth",
-  "peer-conflict",
-  "arborist-crash",
-  "lockfile-mismatch",
-  "disk-space",
-  "permission",
-  "path-too-long",
-  "missing-tool",
-  "engine-mismatch",
-  "build-script-failed",
-  "out-of-memory",
-  "timeout",
-  "unknown",
-]);
-
 const SETUP_FAILURE_PATTERNS: ReadonlyArray<readonly [RegExp, string]> = [
   [/ENOSPC|no space left/i, "disk-space"],
   [/ENAMETOOLONG|path too long|filename too long|MAX_PATH/i, "path-too-long"],
@@ -314,8 +244,7 @@ function sanitizeSetupFailure(value: unknown): string | undefined {
   const pythonInstall = /^(pip|poetry) install \(Python dependencies\)$/.exec(trimmed);
   if (pythonInstall?.[1]) return `python-${pythonInstall[1]}-install`;
 
-  // Preserve already-normalized identifiers emitted by older callers.
-  return sanitizeIdentifier(trimmed);
+  return sanitizeTelemetrySetupFailure(trimmed);
 }
 
 /**
@@ -328,7 +257,6 @@ export function sanitizeTelemetryConfig(
 ): Record<string, string | boolean | string[]> {
   const safe: Record<string, string | boolean | string[]> = {};
   for (const [key, value] of Object.entries(config)) {
-    if (BLOCKED_TELEMETRY_KEYS.has(key.toLowerCase()) || !TELEMETRY_KEY.test(key)) continue;
     if (key === "stackParts" && Array.isArray(value)) {
       const selections: string[] = [];
       const ecosystems = new Set<string>();
@@ -337,18 +265,31 @@ export function sanitizeTelemetryConfig(
         if (!rawPart || typeof rawPart !== "object" || Array.isArray(rawPart)) continue;
         const part = rawPart as Record<string, unknown>;
         if (part.source === "provided" || part.toolId === "none") continue;
-        const role = sanitizeIdentifier(part.role);
-        const ecosystem = sanitizeIdentifier(part.ecosystem);
-        const toolId = sanitizeIdentifier(part.toolId);
-        if (!role || !ecosystem || !toolId) continue;
-        selections.push(`${role}:${ecosystem}:${toolId}`);
+        if (
+          typeof part.role !== "string" ||
+          typeof part.ecosystem !== "string" ||
+          typeof part.toolId !== "string"
+        ) {
+          continue;
+        }
+        const selection = `${part.role}:${part.ecosystem}:${part.toolId}`;
+        if (!isRegisteredTelemetryStackPartSelection(selection)) continue;
+        selections.push(selection);
+        const role = part.role;
+        const ecosystem = part.ecosystem;
         roles.add(role);
         if (ecosystem !== "universal") ecosystems.add(ecosystem);
       }
-      if (selections.length > 0) safe.stackPartSelections = [...new Set(selections)];
-      if (roles.size > 0) safe.stackPartRoles = [...roles];
-      if (ecosystems.size > 0) safe.stackPartEcosystems = [...ecosystems];
-      safe.multiEcosystem = ecosystems.size > 1;
+      const graphDimensions = {
+        stackPartSelections: [...new Set(selections)],
+        stackPartRoles: [...roles],
+        stackPartEcosystems: [...ecosystems],
+        multiEcosystem: ecosystems.size > 1,
+      };
+      for (const [dimensionKey, dimensionValue] of Object.entries(graphDimensions)) {
+        const sanitized = sanitizeTelemetryStackDimension(dimensionKey, dimensionValue);
+        if (sanitized !== undefined) safe[dimensionKey] = sanitized;
+      }
       continue;
     }
     if (key === "part" && Array.isArray(value)) {
@@ -356,34 +297,17 @@ export function sanitizeTelemetryConfig(
         if (typeof spec !== "string") return [];
         const [rolePath = "", ecosystem = "", toolId = ""] = spec.split(":");
         const role = rolePath.split(".").pop();
-        if (
-          !isRegisteredStackPartRole(role) ||
-          !isRegisteredStackPartEcosystem(ecosystem) ||
-          !isRegisteredStackToolId(toolId)
-        ) {
-          return [];
-        }
-        return [`${role}:${ecosystem}:${toolId}`];
+        const selection = `${role ?? ""}:${ecosystem}:${toolId}`;
+        return isRegisteredTelemetryStackPartSelection(selection) ? [selection] : [];
       });
-      if (selections.length > 0) safe.stackPartSelections = [...new Set(selections)];
+      const sanitized = sanitizeTelemetryStackDimension("stackPartSelections", [
+        ...new Set(selections),
+      ]);
+      if (sanitized !== undefined) safe.stackPartSelections = sanitized;
       continue;
     }
-    if (typeof value === "boolean") {
-      safe[key] = value;
-      continue;
-    }
-    const identifier = sanitizeIdentifier(value);
-    if (identifier !== undefined) {
-      safe[key] = identifier;
-      continue;
-    }
-    if (Array.isArray(value)) {
-      const identifiers = value
-        .slice(0, 64)
-        .map(sanitizeIdentifier)
-        .filter((item): item is string => item !== undefined);
-      if (identifiers.length > 0) safe[key] = identifiers;
-    }
+    const sanitized = sanitizeTelemetryStackDimension(key, value);
+    if (sanitized !== undefined) safe[key] = sanitized;
   }
   return safe;
 }
@@ -423,21 +347,28 @@ function boundedCount(value: unknown): number | undefined {
 export function sanitizeTelemetryOutcome(outcome: TelemetryOutcome): TelemetryOutcome {
   const source = TELEMETRY_SOURCES.has(outcome.source ?? "") ? outcome.source : undefined;
   const status = TELEMETRY_STATUSES.has(outcome.status ?? "") ? outcome.status : undefined;
-  const setupFailures = outcome.setupFailures
-    ?.slice(0, 32)
-    .map(sanitizeSetupFailure)
-    .filter((item): item is string => item !== undefined);
+  const sanitizedSetupFailures =
+    outcome.setupFailures && outcome.setupFailures.length <= 32
+      ? outcome.setupFailures
+          .map(sanitizeSetupFailure)
+          .filter((item): item is string => item !== undefined)
+      : undefined;
+  const setupFailures =
+    sanitizedSetupFailures &&
+    (outcome.setupFailures?.length === 0 || sanitizedSetupFailures.length > 0)
+      ? sanitizedSetupFailures
+      : undefined;
   return {
     source,
-    action: sanitizeIdentifier(outcome.action),
+    action: sanitizeTelemetryAction(outcome.action),
     status,
-    mode: sanitizeIdentifier(outcome.mode),
+    mode: sanitizeTelemetryMode(outcome.mode),
     success: typeof outcome.success === "boolean" ? outcome.success : undefined,
-    errorName: sanitizeIdentifier(outcome.errorName),
-    failureStage: sanitizeSetupFailure(outcome.failureStage),
-    failureReason: SETUP_FAILURE_REASONS.has(outcome.failureReason ?? "")
-      ? outcome.failureReason
-      : undefined,
+    errorName: sanitizeTelemetryErrorName(outcome.errorName),
+    failureStage:
+      sanitizeSetupFailure(outcome.failureStage) ??
+      sanitizeTelemetryFailureStage(outcome.failureStage),
+    failureReason: sanitizeTelemetryFailureReason(outcome.failureReason),
     setupFailures: setupFailures ? [...new Set(setupFailures)] : undefined,
     durationMs: boundedCount(outcome.durationMs),
     fileCount: boundedCount(outcome.fileCount),

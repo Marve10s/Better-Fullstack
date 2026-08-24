@@ -57,6 +57,19 @@ async function makeTempDir(): Promise<string> {
   return dir;
 }
 
+async function simulateStoppedTransactionOwner(projectDir: string): Promise<void> {
+  const recoveryRoot = join(projectDir, RECOVERY_ROOT);
+  const lockName = (await readdir(recoveryRoot))
+    .filter((name) => name === "active.lock" || /^active\.lock\.\d{12}$/.test(name))
+    .sort()
+    .at(-1);
+  if (!lockName) throw new Error("Expected a lifecycle transaction lock generation.");
+  const lockPath = join(recoveryRoot, lockName);
+  const lock = JSON.parse(await readFile(lockPath, "utf-8")) as Record<string, unknown>;
+  lock.pid = 2_147_483_647;
+  await writeFile(lockPath, `${JSON.stringify(lock)}\n`);
+}
+
 function makeConfig(projectDir: string, overrides: Partial<ProjectConfig> = {}): ProjectConfig {
   return {
     ...createCliDefaultProjectConfigBase(),
@@ -150,13 +163,19 @@ describe("scaffold-upgrade engine", () => {
     const manifest = await readScaffoldManifest(dir);
     expect(manifest).not.toBeNull();
     const hashes = manifest!.hashes;
+    const modes = manifest!.modes;
     expect(Object.keys(hashes).length).toBeGreaterThan(10);
+    expect(Object.keys(modes ?? {})).toEqual(Object.keys(hashes));
     // Excluded from its own walk + the config file is not template-comparable.
     expect(hashes[SCAFFOLD_MANIFEST_FILE]).toBeUndefined();
     expect(hashes["bts.jsonc"]).toBeUndefined();
     // Every value is a sha256 hex digest.
     for (const value of Object.values(hashes)) {
       expect(value).toMatch(/^[0-9a-f]{64}$/);
+    }
+    for (const value of Object.values(modes ?? {})) {
+      expect(value).toBeGreaterThanOrEqual(0);
+      expect(value).toBeLessThanOrEqual(0o7777);
     }
   });
 
@@ -211,6 +230,32 @@ describe("scaffold-upgrade engine", () => {
     });
     if (first.status === "valid") {
       expect(first.manifest.history[0]?.id).toMatch(/^[0-9a-f]{24}$/);
+      expect(first.manifest.modes).toBeUndefined();
+    }
+  });
+
+  it("fails closed on malformed manifest file modes", async () => {
+    const dir = await makeTempDir();
+    const valid = {
+      version: "2",
+      createdAt: "2026-08-10T00:00:00.000Z",
+      updatedAt: "2026-08-10T00:00:00.000Z",
+      provenance: { state: "migrated-v1", createdWith: null, current: null },
+      history: [],
+      hashes: { "src/index.ts": "a".repeat(64) },
+      modes: { "src/index.ts": 0o4644 },
+    };
+    const malformed = [
+      { ...valid, modes: null },
+      { ...valid, modes: { "../outside.ts": 0o644 } },
+      { ...valid, modes: { "src/index.ts": "0644" } },
+      { ...valid, modes: { "src/index.ts": 0o10000 } },
+      { ...valid, modes: { "src/missing.ts": 0o644 } },
+    ];
+
+    for (const candidate of malformed) {
+      await writeFile(join(dir, SCAFFOLD_MANIFEST_FILE), JSON.stringify(candidate), "utf-8");
+      expect((await readScaffoldManifestResult(dir)).status).toBe("invalid");
     }
   });
 
@@ -361,6 +406,10 @@ describe("scaffold-upgrade engine", () => {
     expect(manifest).not.toBeNull();
     delete manifest!.hashes[currentPath];
     manifest!.hashes[previousPath] = hashContent(currentBytes);
+    const currentMode = manifest!.modes?.[currentPath];
+    expect(currentMode).toBeDefined();
+    delete manifest!.modes![currentPath];
+    manifest!.modes![previousPath] = currentMode!;
     await writeScaffoldManifest(dir, manifest!);
 
     const plan = await planScaffoldUpgrade(dir);
@@ -1013,11 +1062,16 @@ describe("scaffold-upgrade engine", () => {
     });
     expect(result.success).toBe(false);
 
-    const [transactionId] = await readdir(join(crashedDir, RECOVERY_ROOT));
+    const transactionId = (await readdir(join(crashedDir, RECOVERY_ROOT))).find((entry) =>
+      /^[0-9a-f-]{36}$/i.test(entry),
+    );
+    expect(transactionId).toBeDefined();
+    if (!transactionId) return;
     const metadata = JSON.parse(
       await readFile(join(crashedDir, RECOVERY_ROOT, transactionId, "transaction.json"), "utf-8"),
     ) as { outputs?: Record<string, string | null> };
     expect(metadata.outputs?.[target]).toBe(reviewed.actionableHashes[target]);
+    await simulateStoppedTransactionOwner(crashedDir);
     await recoverProjectTransaction(crashedDir, transactionId);
     expect(await readFile(join(crashedDir, target), "utf-8")).toBe(before);
   });

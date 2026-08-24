@@ -61,6 +61,26 @@ describe("telemetry privacy boundary", () => {
     expect(JSON.stringify(safe)).not.toContain("internal-secret-tool");
   });
 
+  it("keeps only canonical command dimensions and drops the duplicate MCP tool field", () => {
+    expect(
+      sanitizeTelemetryConfig({
+        backend: "customer-private-backend",
+        targetEcosystem: "go",
+        generatorKind: "resource",
+        registryAction: "list",
+        mcpTool: "bfs_get_guidance",
+      }),
+    ).toEqual({
+      targetEcosystem: "go",
+      generatorKind: "resource",
+      registryAction: "list",
+    });
+
+    expect(sanitizeTelemetryOutcome({ action: "bfs_get_guidance" }).action).toBe(
+      "bfs_get_guidance",
+    );
+  });
+
   it("retains normalized graph dimensions without paths or settings", () => {
     expect(
       sanitizeTelemetryConfig({
@@ -107,7 +127,7 @@ describe("telemetry privacy boundary", () => {
         success: undefined,
         mode: "dry-run",
         errorName: "/private/path Error: user content",
-        setupFailures: ["install", "raw failure with a path /tmp/x"],
+        setupFailures: ["Install dependencies", "raw failure with a path /tmp/x"],
         durationMs: Number.POSITIVE_INFINITY,
         conflictCount: 3.7,
       }),
@@ -117,9 +137,29 @@ describe("telemetry privacy boundary", () => {
       status: "started",
       mode: "dry-run",
       errorName: undefined,
-      setupFailures: ["install"],
+      setupFailures: ["install-dependencies"],
       durationMs: undefined,
       conflictCount: 4,
+    });
+  });
+
+  it("drops arbitrary identifier-shaped outcome values", () => {
+    expect(
+      sanitizeTelemetryOutcome({
+        action: "private-customer",
+        mode: "secret-mode",
+        errorName: "PrivateCustomerError",
+        failureStage: "secret-stage",
+        failureReason: "secret-reason",
+        setupFailures: ["secret-step"],
+      }),
+    ).toMatchObject({
+      action: undefined,
+      mode: undefined,
+      errorName: undefined,
+      failureStage: undefined,
+      failureReason: undefined,
+      setupFailures: undefined,
     });
   });
 

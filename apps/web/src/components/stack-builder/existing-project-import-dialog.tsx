@@ -15,7 +15,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { parseImportedBtsConfigText } from "@/lib/existing-project-import";
+import {
+  parseImportedBtsConfigText,
+  resolveImportedProjectName,
+} from "@/lib/existing-project-import";
 import { generateStackCommand } from "@/lib/stack-utils";
 import { cn } from "@/lib/utils";
 
@@ -63,7 +66,7 @@ export function ExistingProjectImportDialog({
       setResult(
         parseImportedBtsConfigText(content, {
           targetVersion: __BFS_CLI_VERSION__,
-          projectName: file.name.replace(/\.jsonc?$/i, "") || "imported-project",
+          projectName: resolveImportedProjectName(file.name, currentStack.projectName),
         }),
       );
     } catch (error) {

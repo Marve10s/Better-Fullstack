@@ -258,6 +258,50 @@ describe("gen resource", () => {
     expect(await readFile(routerIndexPath(dir), "utf-8")).toBe(indexBefore);
   });
 
+  it("reports failed when an automatic rollback cannot restore a concurrent edit", async () => {
+    const dir = await stageFixture("trpc");
+    const result = await applyReviewedGen(
+      { kind: "resource", name: "post", dir },
+      {
+        afterWrite: async (file, index) => {
+          if (index !== 0) return;
+          await fs.writeFile(join(dir, file.path), "concurrent edit\n", "utf-8");
+          throw new Error("injected write failure");
+        },
+      },
+    );
+
+    expect(result.status).toBe("failed");
+    expect(result.lifecycle?.status).toBe("failed");
+    expect(result.lifecycle?.recovery.available).toBe(true);
+    expect(await fs.readFile(join(dir, result.files?.[0]?.path ?? ""), "utf-8")).toBe(
+      "concurrent edit\n",
+    );
+  });
+
+  it("keeps transaction targets intact when a disk write stops after partial bytes", async () => {
+    const dir = await stageFixture("trpc");
+    const indexBefore = await readFile(routerIndexPath(dir), "utf-8");
+    let writes = 0;
+    const result = await applyReviewedGen(
+      { kind: "resource", name: "post", dir },
+      {
+        writeFile: async (target, content) => {
+          writes += 1;
+          if (writes === 2) {
+            await fs.writeFile(target, content.slice(0, 8), "utf-8");
+            throw new Error("injected partial disk write");
+          }
+          await fs.writeFile(target, content, "utf-8");
+        },
+      },
+    );
+
+    expect(result.lifecycle?.status).toBe("rolled-back");
+    expect(await fs.pathExists(resourcePath(dir, "post"))).toBe(false);
+    expect(await readFile(routerIndexPath(dir), "utf-8")).toBe(indexBefore);
+  });
+
   it("writes nothing when the recovery snapshot cannot be created", async () => {
     const dir = await stageFixture("trpc");
     const result = await applyReviewedGen(

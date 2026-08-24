@@ -50,6 +50,10 @@
     "./types": {
       "types": "./dist/types.d.mts",
       "default": "./dist/types.mjs"
+    },
+    "./telemetry": {
+      "types": "./dist/telemetry.d.mts",
+      "default": "./dist/telemetry.mjs"
     }
   },
   "publishConfig": {

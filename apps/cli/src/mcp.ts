@@ -1739,7 +1739,6 @@ export function createMcpServer(): McpServer {
       withCommandTelemetry(name, async () => cb(input), {
         source: "mcp",
         mode: config.annotations?.readOnlyHint ? "read" : "write",
-        dimensions: { mcpTool: name },
         resultStatus: (result) =>
           result &&
           typeof result === "object" &&
