@@ -135,17 +135,25 @@ jobs:
         id: full-tests
         if: steps.pending.outputs.has_changes == 'true'
         run: |
-          bun run --cwd packages/types build
-          bun run --cwd packages/template-generator build
           set +e
+          bun run --cwd packages/types build 2>&1 | tee "$RUNNER_TEMP/types-build.log"
+          TYPES_BUILD_EXIT_CODE=${PIPESTATUS[0]}
+          bun run --cwd packages/template-generator build 2>&1 | tee "$RUNNER_TEMP/template-generator-build.log"
+          TEMPLATE_GENERATOR_BUILD_EXIT_CODE=${PIPESTATUS[0]}
           bun run lint 2>&1 | tee "$RUNNER_TEMP/lint.log"
           LINT_EXIT_CODE=${PIPESTATUS[0]}
           bun run test 2>&1 | tee "$RUNNER_TEMP/test.log"
           TEST_EXIT_CODE=${PIPESTATUS[0]}
           set -e
+          BUILD_EXIT_CODE=0
+          if [ "$TYPES_BUILD_EXIT_CODE" -ne 0 ] || [ "$TEMPLATE_GENERATOR_BUILD_EXIT_CODE" -ne 0 ]; then
+            BUILD_EXIT_CODE=1
+          fi
+          cat "$RUNNER_TEMP/types-build.log" "$RUNNER_TEMP/template-generator-build.log" > "$RUNNER_TEMP/build.log"
+          echo "build_exit_code=$BUILD_EXIT_CODE" >> "$GITHUB_OUTPUT"
           echo "lint_exit_code=$LINT_EXIT_CODE" >> "$GITHUB_OUTPUT"
           echo "test_exit_code=$TEST_EXIT_CODE" >> "$GITHUB_OUTPUT"
-          if [ "$LINT_EXIT_CODE" -eq 0 ] && [ "$TEST_EXIT_CODE" -eq 0 ]; then
+          if [ "$BUILD_EXIT_CODE" -eq 0 ] && [ "$LINT_EXIT_CODE" -eq 0 ] && [ "$TEST_EXIT_CODE" -eq 0 ]; then
             echo "exit_code=0" >> "$GITHUB_OUTPUT"
           else
             echo "exit_code=1" >> "$GITHUB_OUTPUT"
@@ -156,6 +164,10 @@ jobs:
         if: steps.pending.outputs.has_changes == 'true'
         run: |
           bun run .github/scripts/format-test-report.ts \
+            "$RUNNER_TEMP/build.log" \
+            "${{ steps.full-tests.outputs.build_exit_code }}" \
+            '`bun run --cwd packages/types build` and `bun run --cwd packages/template-generator build`' > "$RUNNER_TEMP/build-verification.md"
+          bun run .github/scripts/format-test-report.ts \
             "$RUNNER_TEMP/lint.log" \
             "${{ steps.full-tests.outputs.lint_exit_code }}" \
             '`bun run lint`' > "$RUNNER_TEMP/lint-verification.md"
@@ -164,12 +176,21 @@ jobs:
             "${{ steps.full-tests.outputs.test_exit_code }}" \
             '`bun run test`' > "$RUNNER_TEMP/test-verification.md"
           {
-            echo 'report<<EOF'
+            echo '## Build verification'
+            cat "$RUNNER_TEMP/build-verification.md"
+            echo
             echo '## Lint verification'
             cat "$RUNNER_TEMP/lint-verification.md"
             echo
             echo '## Test verification'
             cat "$RUNNER_TEMP/test-verification.md"
+          } > "$RUNNER_TEMP/verification-source.md"
+          bun run .github/scripts/compose-markdown-report.ts \
+            50000 \
+            "$RUNNER_TEMP/verification-source.md" > "$RUNNER_TEMP/verification-report.md"
+          {
+            echo 'report<<EOF'
+            cat "$RUNNER_TEMP/verification-report.md"
             echo EOF
           } >> "$GITHUB_OUTPUT"
 
