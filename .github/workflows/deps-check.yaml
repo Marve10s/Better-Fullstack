@@ -145,7 +145,8 @@ jobs:
           bun run test 2>&1 | tee "$RUNNER_TEMP/test.log"
           TEST_EXIT_CODE=${PIPESTATUS[0]}
           set -e
-          cat "$RUNNER_TEMP/lint.log" "$RUNNER_TEMP/test.log" > "$RUNNER_TEMP/full-test.log"
+          echo "lint_exit_code=$LINT_EXIT_CODE" >> "$GITHUB_OUTPUT"
+          echo "test_exit_code=$TEST_EXIT_CODE" >> "$GITHUB_OUTPUT"
           if [ "$LINT_EXIT_CODE" -eq 0 ] && [ "$TEST_EXIT_CODE" -eq 0 ]; then
             echo "exit_code=0" >> "$GITHUB_OUTPUT"
           else
@@ -157,11 +158,19 @@ jobs:
         if: steps.check.outputs.effective_update_mode == 'patch-minor' || steps.check.outputs.effective_update_mode == 'all'
         run: |
           bun run .github/scripts/format-test-report.ts \
-            "$RUNNER_TEMP/full-test.log" \
-            "${{ steps.full-tests.outputs.exit_code }}" \
-            '`bun run lint` and `bun run test`' > "$RUNNER_TEMP/test-verification.md"
+            "$RUNNER_TEMP/lint.log" \
+            "${{ steps.full-tests.outputs.lint_exit_code }}" \
+            '`bun run lint`' > "$RUNNER_TEMP/lint-verification.md"
+          bun run .github/scripts/format-test-report.ts \
+            "$RUNNER_TEMP/test.log" \
+            "${{ steps.full-tests.outputs.test_exit_code }}" \
+            '`bun run test`' > "$RUNNER_TEMP/test-verification.md"
           {
             echo 'report<<EOF'
+            echo '## Lint verification'
+            cat "$RUNNER_TEMP/lint-verification.md"
+            echo
+            echo '## Test verification'
             cat "$RUNNER_TEMP/test-verification.md"
             echo EOF
           } >> "$GITHUB_OUTPUT"
