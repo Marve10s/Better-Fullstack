@@ -116,7 +116,10 @@ export async function paraglideMiddleware(request, resolve, options) {
         return /** @type {Response} */ (await requestAsyncLocalStorage?.run({ locale, origin, messageCalls }, () => resolve({ locale, request: newRequest })));
     }
     const strategy = runtime.getStrategyForUrl(url.href);
-    const decision = await runtime.shouldRedirect({ request, effectiveRequestUrl: url });
+    const decision = await runtime.shouldRedirect({
+        request,
+        effectiveRequestUrl: url,
+    });
     const locale = decision.locale;
     // if the client makes a request to a URL that doesn't match
     // the localizedUrl, redirect the client to the localized URL
@@ -201,7 +204,8 @@ function resolveMiddlewareUrl(request, effectiveRequestUrl) {
     if (typeof effectiveRequestUrl === "function") {
         return new URL(effectiveRequestUrl(request), request.url);
     }
-    if (typeof effectiveRequestUrl === "string" || effectiveRequestUrl instanceof URL) {
+    if (typeof effectiveRequestUrl === "string" ||
+        effectiveRequestUrl instanceof URL) {
         return new URL(effectiveRequestUrl, request.url);
     }
     return new URL(request.url);
