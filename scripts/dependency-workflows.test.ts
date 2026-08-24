@@ -56,6 +56,13 @@ describe("automated dependency PR verification", () => {
     expect(workflow).not.toContain("${{ steps.test-report.outputs.report }}");
   });
 
+  it("appends the dependency summary without shell-interpolating Markdown", async () => {
+    const workflow = await Bun.file(".github/workflows/deps-check.yaml").text();
+
+    expect(workflow).toContain('cat "$RUNNER_TEMP/final-report.md" >> "$GITHUB_STEP_SUMMARY"');
+    expect(workflow).not.toContain('echo "${{ steps.final-report.outputs.report }}"');
+  });
+
   it("preserves reports below the configured size budget", () => {
     expect(composeMarkdownReport(["first", "second"], 100)).toBe("first\n\nsecond");
   });

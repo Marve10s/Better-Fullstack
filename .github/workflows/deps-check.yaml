@@ -267,10 +267,8 @@ jobs:
           echo "**Downgrades Detected:** ${{ steps.check.outputs.downgrade_count }}" >> $GITHUB_STEP_SUMMARY
           echo "**Major Updates:** ${{ steps.check.outputs.has_major_updates }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Report" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "${{ steps.final-report.outputs.report }}" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "### Report" >> "$GITHUB_STEP_SUMMARY"
+          cat "$RUNNER_TEMP/final-report.md" >> "$GITHUB_STEP_SUMMARY"
 
   deps-smoke:
     name: Dependency Update Smoke Test
