@@ -1894,10 +1894,10 @@ export default app;
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "@vitejs/plugin-react": "^6.0.5",
+    "@vitejs/plugin-react": "^6.1.0",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.1",
+    "vite": "^8.2.2",
     "typescript": "catalog:",
     "@snapshot-tanstack-router-minimal/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.101.4"
@@ -2178,7 +2178,7 @@ export default defineConfig({
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
-      "@types/bun": "^1.3.14",
+      "@types/bun": "^1.4.0",
       "hono": "^4.12.27",
       "@trpc/server": "^11.18.0",
       "@libsql/client": "^0.17.4",
@@ -2820,8 +2820,8 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
     "catalog": {
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
-      "@types/bun": "^1.3.14",
-      "next": "^16.3.1",
+      "@types/bun": "^1.4.0",
+      "next": "^16.3.2",
       "@trpc/server": "^11.18.0",
       "@trpc/client": "^11.18.0",
       "better-auth": "^1.6.22"
@@ -3137,7 +3137,7 @@ export default defineConfig({
     "typescript": "^6.0.3",
     "@snapshot-next-self-fullstack/config": "workspace:*",
     "drizzle-kit": "^0.31.10",
-    "@types/pg": "^8.21.0"
+    "@types/pg": "^8.23.1"
   },
   "dependencies": {
     "dotenv": "catalog:",
@@ -3386,11 +3386,11 @@ exports[`Template Snapshots Key File Content Snapshots key files: astro-react-in
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^7.2.2",
-    "@astrojs/react": "^6.0.2",
+    "astro": "^7.2.4",
+    "@astrojs/react": "^6.0.4",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "@astrojs/node": "^11.1.2",
+    "@astrojs/node": "^11.1.4",
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@snapshot-astro-react-integration/env": "workspace:*",
@@ -3518,7 +3518,7 @@ export const orpc = createTanstackQueryUtils(client)
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
-      "@types/bun": "^1.3.14",
+      "@types/bun": "^1.4.0",
       "@libsql/client": "^0.17.4",
       "libsql": "^0.5.29"
     }
@@ -3953,7 +3953,7 @@ export default defineNuxtConfig({
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@nuxt/ui": "^4.10.0",
+    "@nuxt/ui": "^4.11.0",
     "@nuxt/content": "^3.15.2",
     "@nuxtjs/mdc": "^0.22.2",
     "nuxt": "4.4.8",
@@ -3974,7 +3974,7 @@ export default defineNuxtConfig({
   },
   "devDependencies": {
     "tailwindcss": "^4.3.3",
-    "@iconify-json/lucide": "^1.2.123",
+    "@iconify-json/lucide": "^1.2.125",
     "typescript": "catalog:",
     "@snapshot-nuxt-standalone/config": "workspace:*",
     "@tanstack/vue-query-devtools": "^6.1.38"
@@ -4044,7 +4044,7 @@ export default defineNuxtConfig({
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
-      "@types/bun": "^1.3.14",
+      "@types/bun": "^1.4.0",
       "@libsql/client": "^0.17.4",
       "libsql": "^0.5.29",
       "@orpc/server": "^1.15.0",
@@ -4403,9 +4403,9 @@ exports[`Template Snapshots Key File Content Snapshots key files: solid-start-v2
   "dependencies": {
     "@solidjs/meta": "^0.29.4",
     "@solidjs/router": "^0.16.2",
-    "@solidjs/start": "^2.0.0",
+    "@solidjs/start": "^2.0.3",
     "nitro": "^3.0.260610-beta",
-    "solid-js": "^1.9.14",
+    "solid-js": "^1.9.15",
     "@tailwindcss/vite": "^4.3.3",
     "tailwindcss": "^4.3.3",
     "lucide-solid": "^1.21.0",
@@ -4425,7 +4425,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: solid-start-v2
     "better-auth": "catalog:"
   },
   "devDependencies": {
-    "vite": "^8.2.1",
+    "vite": "^8.2.2",
     "typescript": "catalog:",
     "@snapshot-solid-start-v2-fullstack/config": "workspace:*",
     "@tanstack/solid-router-devtools": "1.167.0"
@@ -5390,10 +5390,10 @@ app.listen(3000, () => {
     "@types/node": "catalog:",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "@vitejs/plugin-react": "^6.0.5",
+    "@vitejs/plugin-react": "^6.1.0",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.1",
+    "vite": "^8.2.2",
     "typescript": "catalog:",
     "@snapshot-express-node-trpc/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.101.4"
@@ -5861,7 +5861,7 @@ export type AppRouter = typeof appRouter;
     "typescript": "catalog:",
     "@snapshot-express-node-trpc/config": "workspace:*",
     "prisma": "^7.9.1",
-    "@types/pg": "^8.21.0"
+    "@types/pg": "^8.23.1"
   },
   "dependencies": {
     "dotenv": "catalog:",
@@ -6184,10 +6184,10 @@ export default app;
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "@vitejs/plugin-react": "^6.0.5",
+    "@vitejs/plugin-react": "^6.1.0",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.1",
+    "vite": "^8.2.2",
     "typescript": "catalog:",
     "@snapshot-hono-bun-orpc/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.101.4"
@@ -6464,7 +6464,7 @@ export default defineConfig({
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
-      "@types/bun": "^1.3.14",
+      "@types/bun": "^1.4.0",
       "hono": "^4.12.27",
       "@orpc/server": "^1.15.0",
       "@orpc/openapi": "^1.15.0",
@@ -6830,8 +6830,8 @@ exports[`Template Snapshots Key File Content Snapshots key files: hono-openapi 1
     "@snapshot-hono-openapi/auth": "workspace:*",
     "@snapshot-hono-openapi/db": "workspace:*",
     "hono": "catalog:",
-    "@hono/zod-openapi": "^1.6.0",
-    "@scalar/hono-api-reference": "^0.11.14",
+    "@hono/zod-openapi": "^1.6.1",
+    "@scalar/hono-api-reference": "^0.11.16",
     "better-auth": "catalog:"
   },
   "devDependencies": {
@@ -7027,10 +7027,10 @@ export default app;
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "@vitejs/plugin-react": "^6.0.5",
+    "@vitejs/plugin-react": "^6.1.0",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.1",
+    "vite": "^8.2.2",
     "typescript": "catalog:",
     "@snapshot-hono-openapi/config": "workspace:*"
   }
@@ -7300,7 +7300,7 @@ export default defineConfig({
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
-      "@types/bun": "^1.3.14",
+      "@types/bun": "^1.4.0",
       "hono": "^4.12.27",
       "better-auth": "^1.6.22",
       "@libsql/client": "^0.17.4",
@@ -8107,10 +8107,10 @@ export default app;
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "@vitejs/plugin-react": "^6.0.5",
+    "@vitejs/plugin-react": "^6.1.0",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.1",
+    "vite": "^8.2.2",
     "typescript": "catalog:",
     "@snapshot-hono-apollo-server/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.101.4"
@@ -8384,7 +8384,7 @@ export default defineConfig({
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
-      "@types/bun": "^1.3.14",
+      "@types/bun": "^1.4.0",
       "hono": "^4.12.27",
       "better-auth": "^1.6.22",
       "@libsql/client": "^0.17.4",
@@ -9203,10 +9203,10 @@ export default app;
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "@vitejs/plugin-react": "^6.0.5",
+    "@vitejs/plugin-react": "^6.1.0",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.1",
+    "vite": "^8.2.2",
     "typescript": "catalog:",
     "@snapshot-better-auth-full/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.101.4"
@@ -9517,7 +9517,7 @@ export default defineConfig({
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
-      "@types/bun": "^1.3.14",
+      "@types/bun": "^1.4.0",
       "hono": "^4.12.27",
       "@trpc/server": "^11.18.0",
       "better-auth": "^1.6.22",
@@ -9841,7 +9841,7 @@ export default defineConfig({
     "typescript": "catalog:",
     "@snapshot-better-auth-full/config": "workspace:*",
     "drizzle-kit": "^0.31.10",
-    "@types/pg": "^8.21.0"
+    "@types/pg": "^8.23.1"
   },
   "dependencies": {
     "dotenv": "catalog:",
@@ -10112,10 +10112,10 @@ exports[`Template Snapshots Key File Content Snapshots key files: convex-clerk 1
     "@types/node": "catalog:",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "@vitejs/plugin-react": "^6.0.5",
+    "@vitejs/plugin-react": "^6.1.0",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.1",
+    "vite": "^8.2.2",
     "typescript": "catalog:",
     "@snapshot-convex-clerk/config": "workspace:*"
   }
@@ -10368,8 +10368,8 @@ export default defineConfig({
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
-      "@types/bun": "^1.3.14",
-      "convex": "^1.44.0",
+      "@types/bun": "^1.4.0",
+      "convex": "^1.45.0",
       "@types/node": "^26.2.0"
     }
   },
@@ -10667,7 +10667,7 @@ export default nextConfig;
     "@trpc/client": "catalog:",
     "@trpc/tanstack-react-query": "^11.18.0",
     "@tanstack/react-query": "^5.101.4",
-    "@clerk/nextjs": "^7.7.6",
+    "@clerk/nextjs": "^7.8.0",
     "lucide-react": "^1.21.0"
   },
   "devDependencies": {
@@ -10874,8 +10874,8 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
     "catalog": {
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
-      "@types/bun": "^1.3.14",
-      "next": "^16.3.1",
+      "@types/bun": "^1.4.0",
+      "next": "^16.3.2",
       "@libsql/client": "^0.17.4",
       "libsql": "^0.5.29",
       "@trpc/server": "^11.18.0",
@@ -11258,7 +11258,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: self-tanstack-
     "@orpc/openapi": "catalog:",
     "@orpc/zod": "catalog:",
     "@orpc/tanstack-query": "^1.15.0",
-    "@clerk/tanstack-react-start": "^1.5.2",
+    "@clerk/tanstack-react-start": "^1.5.6",
     "srvx": "^0.11.22",
     "lucide-react": "^1.21.0"
   },
@@ -11269,9 +11269,9 @@ exports[`Template Snapshots Key File Content Snapshots key files: self-tanstack-
     "@testing-library/react": "^16.3.2",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "@vitejs/plugin-react": "^6.0.5",
+    "@vitejs/plugin-react": "^6.1.0",
     "jsdom": "^29.1.1",
-    "vite": "^8.2.1",
+    "vite": "^8.2.2",
     "web-vitals": "^5.3.0",
     "typescript": "catalog:",
     "@snapshot-self-tanstack-start-clerk/config": "workspace:*"
@@ -11574,7 +11574,7 @@ export default defineConfig({
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
-      "@types/bun": "^1.3.14",
+      "@types/bun": "^1.4.0",
       "@libsql/client": "^0.17.4",
       "libsql": "^0.5.29",
       "@orpc/server": "^1.15.0",
@@ -12067,10 +12067,10 @@ export default app;
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "@vitejs/plugin-react": "^6.0.5",
+    "@vitejs/plugin-react": "^6.1.0",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.1",
+    "vite": "^8.2.2",
     "typescript": "catalog:",
     "@snapshot-mongodb-mongoose/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.101.4"
@@ -12351,7 +12351,7 @@ export default defineConfig({
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
-      "@types/bun": "^1.3.14",
+      "@types/bun": "^1.4.0",
       "hono": "^4.12.27",
       "@trpc/server": "^11.18.0",
       "@trpc/client": "^11.18.0"
@@ -12532,7 +12532,7 @@ export type AppRouter = typeof appRouter;
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@snapshot-mongodb-mongoose/env": "workspace:*",
-    "mongoose": "^9.9.2"
+    "mongoose": "^9.9.3"
   }
 }
 "
@@ -12799,10 +12799,10 @@ export default app;
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "@vitejs/plugin-react": "^6.0.5",
+    "@vitejs/plugin-react": "^6.1.0",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.1",
+    "vite": "^8.2.2",
     "typescript": "catalog:",
     "@snapshot-postgres-prisma/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.101.4"
@@ -13083,7 +13083,7 @@ export default defineConfig({
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
-      "@types/bun": "^1.3.14",
+      "@types/bun": "^1.4.0",
       "hono": "^4.12.27",
       "@trpc/server": "^11.18.0",
       "@prisma/client": "^7.9.1",
@@ -13270,7 +13270,7 @@ export type AppRouter = typeof appRouter;
     "typescript": "catalog:",
     "@snapshot-postgres-prisma/config": "workspace:*",
     "prisma": "^7.9.1",
-    "@types/pg": "^8.21.0"
+    "@types/pg": "^8.23.1"
   },
   "dependencies": {
     "dotenv": "catalog:",
@@ -13422,7 +13422,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: algolia-search
     "hono": "catalog:",
     "@trpc/server": "catalog:",
     "@hono/trpc-server": "^0.4.2",
-    "algoliasearch": "^5.56.0"
+    "algoliasearch": "^5.57.0"
   },
   "devDependencies": {
     "typescript": "catalog:",
@@ -13558,10 +13558,10 @@ export default app;
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "@vitejs/plugin-react": "^6.0.5",
+    "@vitejs/plugin-react": "^6.1.0",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.1",
+    "vite": "^8.2.2",
     "typescript": "catalog:",
     "@snapshot-algolia-search-hono/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.101.4"
@@ -13842,7 +13842,7 @@ export default defineConfig({
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
-      "@types/bun": "^1.3.14",
+      "@types/bun": "^1.4.0",
       "hono": "^4.12.27",
       "@trpc/server": "^11.18.0",
       "@libsql/client": "^0.17.4",
@@ -14344,10 +14344,10 @@ export default app;
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "@vitejs/plugin-react": "^6.0.5",
+    "@vitejs/plugin-react": "^6.1.0",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.1",
+    "vite": "^8.2.2",
     "typescript": "catalog:",
     "@snapshot-opensearch-search-hono/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.101.4"
@@ -14628,7 +14628,7 @@ export default defineConfig({
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
-      "@types/bun": "^1.3.14",
+      "@types/bun": "^1.4.0",
       "hono": "^4.12.27",
       "@trpc/server": "^11.18.0",
       "@libsql/client": "^0.17.4",
@@ -15043,7 +15043,7 @@ export default nextConfig;
     "@tanstack/react-query": "^5.101.4",
     "lucide-react": "^1.21.0",
     "@keystatic/core": "^0.5.51",
-    "@keystatic/next": "^5.0.4",
+    "@keystatic/next": "^5.0.5",
     "@markdoc/markdoc": "^0.5.9"
   },
   "devDependencies": {
@@ -15258,8 +15258,8 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
     "catalog": {
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
-      "@types/bun": "^1.3.14",
-      "next": "^16.3.1",
+      "@types/bun": "^1.4.0",
+      "next": "^16.3.2",
       "@libsql/client": "^0.17.4",
       "libsql": "^0.5.29",
       "@trpc/server": "^11.18.0",
@@ -15763,10 +15763,10 @@ export default app;
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "@vitejs/plugin-react": "^6.0.5",
+    "@vitejs/plugin-react": "^6.1.0",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.1",
+    "vite": "^8.2.2",
     "typescript": "catalog:",
     "@snapshot-i18n-paraglide-tanstack-router/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.101.4",
@@ -16058,7 +16058,7 @@ export default defineConfig({
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
-      "@types/bun": "^1.3.14",
+      "@types/bun": "^1.4.0",
       "hono": "^4.12.27",
       "@trpc/server": "^11.18.0",
       "@libsql/client": "^0.17.4",
@@ -16559,10 +16559,10 @@ export default app;
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "@vitejs/plugin-react": "^6.0.5",
+    "@vitejs/plugin-react": "^6.1.0",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.1",
+    "vite": "^8.2.2",
     "typescript": "catalog:",
     "@snapshot-ai-cli-root-tooling/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.101.4"
@@ -16843,7 +16843,7 @@ export default defineConfig({
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
-      "@types/bun": "^1.3.14",
+      "@types/bun": "^1.4.0",
       "hono": "^4.12.27",
       "@trpc/server": "^11.18.0",
       "@libsql/client": "^0.17.4",
@@ -17346,10 +17346,10 @@ export default app;
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "@vitejs/plugin-react": "^6.0.5",
+    "@vitejs/plugin-react": "^6.1.0",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.1",
+    "vite": "^8.2.2",
     "typescript": "catalog:",
     "@snapshot-nx-root-tooling/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.101.4"
@@ -17634,7 +17634,7 @@ export default defineConfig({
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
-      "@types/bun": "^1.3.14",
+      "@types/bun": "^1.4.0",
       "hono": "^4.12.27",
       "@trpc/server": "^11.18.0",
       "@libsql/client": "^0.17.4",
@@ -18021,10 +18021,10 @@ exports[`Template Snapshots Key File Content Snapshots key files: frontend-only-
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "@vitejs/plugin-react": "^6.0.5",
+    "@vitejs/plugin-react": "^6.1.0",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.1",
+    "vite": "^8.2.2",
     "typescript": "catalog:",
     "@snapshot-frontend-only-no-backend/config": "workspace:*"
   }
@@ -18242,7 +18242,7 @@ export default defineConfig({
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
-      "@types/bun": "^1.3.14"
+      "@types/bun": "^1.4.0"
     }
   },
   "scripts": {
@@ -18638,10 +18638,10 @@ fontWeight: "bold",
   },
   "dependencies": {
     "@expo/vector-icons": "^15.1.1",
-    "@react-navigation/bottom-tabs": "^7.18.16",
-    "@react-navigation/drawer": "^7.13.8",
-    "@react-navigation/native": "^7.3.16",
-    "@react-navigation/native-stack": "^7.18.8",
+    "@react-navigation/bottom-tabs": "^7.18.17",
+    "@react-navigation/drawer": "^7.13.9",
+    "@react-navigation/native": "^7.3.17",
+    "@react-navigation/native-stack": "^7.18.9",
     "@tanstack/react-form": "^1.33.0",
     "@tanstack/react-query": "^5.101.4",
     "expo": "^56.0.12",
@@ -18662,10 +18662,10 @@ fontWeight: "bold",
     "react-native": "^0.86.2",
     "react-native-gesture-handler": "^3.2.1",
     "react-native-reanimated": "^4.5.3",
-    "react-native-safe-area-context": "^5.9.0",
+    "react-native-safe-area-context": "^5.9.1",
     "react-native-screens": "^4.27.0",
     "react-native-web": "^0.21.2",
-    "react-native-worklets": "^0.10.2",
+    "react-native-worklets": "^0.11.4",
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@snapshot-native-react-native/env": "workspace:*",
@@ -18857,7 +18857,7 @@ export default app;
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
-      "@types/bun": "^1.3.14",
+      "@types/bun": "^1.4.0",
       "hono": "^4.12.27",
       "@trpc/server": "^11.18.0",
       "@trpc/client": "^11.18.0"
@@ -19351,10 +19351,10 @@ registerRootComponent(App);
   },
   "dependencies": {
     "@expo/vector-icons": "^15.1.1",
-    "@react-navigation/bottom-tabs": "^7.18.16",
-    "@react-navigation/drawer": "^7.13.8",
-    "@react-navigation/native": "^7.3.16",
-    "@react-navigation/native-stack": "^7.18.8",
+    "@react-navigation/bottom-tabs": "^7.18.17",
+    "@react-navigation/drawer": "^7.13.9",
+    "@react-navigation/native": "^7.3.17",
+    "@react-navigation/native-stack": "^7.18.9",
     "@tanstack/react-form": "^1.33.0",
     "@gluestack-ui/themed": "^1.1.73",
     "@tanstack/react-query": "^5.101.4",
@@ -19379,10 +19379,10 @@ registerRootComponent(App);
     "react-native-mmkv": "^4.3.2",
     "react-native-gesture-handler": "^3.2.1",
     "react-native-reanimated": "^4.5.3",
-    "react-native-safe-area-context": "^5.9.0",
+    "react-native-safe-area-context": "^5.9.1",
     "react-native-screens": "^4.27.0",
     "react-native-web": "^0.21.2",
-    "react-native-worklets": "^0.10.2",
+    "react-native-worklets": "^0.11.4",
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@snapshot-native-mobile-integrations/env": "workspace:*",
@@ -19620,7 +19620,7 @@ export default app;
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
-      "@types/bun": "^1.3.14",
+      "@types/bun": "^1.4.0",
       "hono": "^4.12.27",
       "@orpc/server": "^1.15.0",
       "@orpc/openapi": "^1.15.0",

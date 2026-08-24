@@ -5,6 +5,7 @@ import type { VirtualFile, VirtualNode } from "../src/types";
 import { generateVirtualProject } from "../src/generator";
 import { insertBeforeFormSubscribe } from "../src/template-handlers/bot-protection";
 import { EMBEDDED_TEMPLATES } from "../src/templates.generated";
+import { dependencyVersionMap } from "../src/utils/add-deps";
 import { makeConfig } from "./_fixtures/config-factory";
 
 function files(node: VirtualNode): VirtualFile[] {
@@ -39,7 +40,9 @@ describe("bot protection generation", () => {
 
   it("wires Turnstile into the auth form and enforces Siteverify on the server", async () => {
     const output = await generate("turnstile");
-    expect(output.get("apps/web/package.json")).toContain('"@marsidev/react-turnstile": "^1.5.4"');
+    expect(output.get("apps/web/package.json")).toContain(
+      `"@marsidev/react-turnstile": "${dependencyVersionMap["@marsidev/react-turnstile"]}"`,
+    );
     expect(output.get("apps/web/src/components/bot-protection.tsx")).toContain("<Turnstile");
     for (const path of [
       "apps/web/src/components/sign-in-form.tsx",
