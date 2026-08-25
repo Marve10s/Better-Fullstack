@@ -98,12 +98,18 @@ describe("generated project runtime proof matrix", () => {
       "utf8",
     );
     const typesBuild = workflow.indexOf("bun run --cwd packages/types build");
+    const projectLifecycleBuild = workflow.indexOf(
+      "bun run --cwd packages/project-lifecycle build",
+    );
     const generatorBuild = workflow.indexOf("bun run --cwd packages/template-generator build");
+    const cliBuild = workflow.indexOf("bun run --cwd apps/cli build");
     const lifecycleTests = workflow.indexOf("bun test testing/generated-project-proof.test.ts");
 
     expect(typesBuild).toBeGreaterThan(-1);
-    expect(generatorBuild).toBeGreaterThan(typesBuild);
-    expect(lifecycleTests).toBeGreaterThan(generatorBuild);
+    expect(projectLifecycleBuild).toBeGreaterThan(typesBuild);
+    expect(generatorBuild).toBeGreaterThan(projectLifecycleBuild);
+    expect(cliBuild).toBeGreaterThan(generatorBuild);
+    expect(lifecycleTests).toBeGreaterThan(cliBuild);
   });
 
   it("runs when CLI package metadata changes on pull requests and development pushes", async () => {

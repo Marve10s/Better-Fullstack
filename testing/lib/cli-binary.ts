@@ -72,6 +72,7 @@ export async function buildFreshCliBinary(
   const cliBinaryPath = resolveCliBinaryPath({ repoRoot });
 
   await buildCommand(repoRoot, ["--cwd", "packages/types", "build"]);
+  await buildCommand(repoRoot, ["--cwd", "packages/project-lifecycle", "build"]);
   await buildCommand(repoRoot, ["--cwd", "packages/template-generator", "build"]);
   await buildCommand(repoRoot, ["--cwd", "apps/cli", "build"]);
 

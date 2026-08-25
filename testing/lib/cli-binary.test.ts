@@ -59,6 +59,7 @@ describe("resolveCliBinaryPath", () => {
       expect(result).toBe(binary);
       expect(commands).toEqual([
         ["--cwd", "packages/types", "build"],
+        ["--cwd", "packages/project-lifecycle", "build"],
         ["--cwd", "packages/template-generator", "build"],
         ["--cwd", "apps/cli", "build"],
       ]);
