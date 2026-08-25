@@ -1,10 +1,9 @@
-import { describe, expect, test } from "bun:test";
-
 import {
   loadReleaseWorkflow,
   loadRequiredCiWorkflow,
   validateReleaseWorkflow,
 } from "@scripts/release/validate-release-workflow";
+import { describe, expect, test } from "bun:test";
 
 type WorkflowDocument = Record<string, unknown>;
 
@@ -141,7 +140,7 @@ describe("release workflow contract", () => {
       (step) => step.name === "Publish absent packages and verify every registry identity",
     );
     publishStep!.run = String(publishStep!.run).replace(
-      /bun .*release-receipt\.ts[\s\S]*?--sha "\$SOURCE_SHA"\n/,
+      /bun .*release-receipt\.mjs[\s\S]*?--sha "\$SOURCE_SHA"\n/,
       "",
     );
     const finalize = jobs(workflow).finalize;

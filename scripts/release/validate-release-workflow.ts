@@ -92,6 +92,7 @@ export function validateReleaseWorkflow(
     prepare,
     "Create SHA-bound verification receipt from clean evidence",
   );
+  const receiptBundleStep = stepByName(prepare, "Bundle artifact-only receipt verifier");
   if (
     record(identityStep?.env).SOURCE_SHA !== "${{ github.event.workflow_run.head_sha }}" ||
     !stepText(prepareStep ?? {}).includes("release-state.ts prepare") ||
@@ -124,6 +125,8 @@ export function validateReleaseWorkflow(
     !stepText(receiptStep ?? {}).includes("cross-version-qualification.v1.json") ||
     !stepText(receiptStep ?? {}).includes("workflow_run.id") ||
     !stepText(receiptStep ?? {}).includes("workflow_run.conclusion") ||
+    !stepText(receiptBundleStep ?? {}).includes("bun build scripts/release/release-receipt.ts") ||
+    !stepText(receiptBundleStep ?? {}).includes("release-receipt.mjs") ||
     JSON.stringify(prepare).includes("bun run test:release")
   ) {
     errors.push("prepare must create the receipt from a fresh complete generated-project proof");
@@ -156,11 +159,11 @@ export function validateReleaseWorkflow(
     preflightIndex >= publishIndex ||
     !stepText(publishSteps[publishIndex] ?? {}).includes("release-state.ts") ||
     !stepText(publishSteps[publishIndex] ?? {}).includes("release-manifest.json") ||
-    !stepText(publishSteps[preflightIndex] ?? {}).includes("release-receipt.ts") ||
+    !stepText(publishSteps[preflightIndex] ?? {}).includes("release-receipt.mjs") ||
     !stepText(publishSteps[preflightIndex] ?? {}).includes("verification-receipt.v1.json") ||
     !stepText(publishSteps[preflightIndex] ?? {}).includes("upgrade-fixture.v1.json") ||
     !stepText(publishSteps[preflightIndex] ?? {}).includes("cross-version-qualification.v1.json") ||
-    !stepText(publishSteps[publishIndex] ?? {}).includes("release-receipt.ts") ||
+    !stepText(publishSteps[publishIndex] ?? {}).includes("release-receipt.mjs") ||
     !stepText(publishSteps[publishIndex] ?? {}).includes("verification-receipt.v1.json") ||
     !stepText(publishSteps[publishIndex] ?? {}).includes("upgrade-fixture.v1.json") ||
     !stepText(publishSteps[publishIndex] ?? {}).includes("cross-version-qualification.v1.json")
@@ -206,7 +209,7 @@ export function validateReleaseWorkflow(
     !stepText(finalizeStep ?? {}).includes("release-state.ts") ||
     !stepText(finalizeStep ?? {}).includes("finalize") ||
     !stepText(finalizeStep ?? {}).includes("release-manifest.json") ||
-    !stepText(finalizeStep ?? {}).includes("release-receipt.ts") ||
+    !stepText(finalizeStep ?? {}).includes("release-receipt.mjs") ||
     !stepText(finalizeStep ?? {}).includes("verification-receipt.v1.json") ||
     !stepText(finalizeStep ?? {}).includes("upgrade-fixture.v1.json") ||
     !stepText(finalizeStep ?? {}).includes("cross-version-qualification.v1.json") ||

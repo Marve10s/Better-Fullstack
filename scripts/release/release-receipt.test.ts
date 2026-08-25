@@ -1,9 +1,3 @@
-import { describe, expect, test } from "bun:test";
-import { createHash } from "node:crypto";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-
 import {
   CAPABILITY_EVIDENCE_SCHEMA_VERSION,
   CAPABILITY_RECEIPT_SCHEMA_VERSION,
@@ -30,7 +24,16 @@ import {
   type ReceiptVerificationInputs,
   type VerificationReceipt,
 } from "@scripts/release/release-receipt";
-import { RELEASE_TOOLCHAINS, type CommandRunner, type ReleaseManifest } from "@scripts/release/release-state";
+import {
+  RELEASE_TOOLCHAINS,
+  type CommandRunner,
+  type ReleaseManifest,
+} from "@scripts/release/release-state";
+import { describe, expect, test } from "bun:test";
+import { createHash } from "node:crypto";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 const NOW = new Date("2026-08-23T12:00:00.000Z");
 const SHA = "a".repeat(40);
@@ -50,6 +53,31 @@ const CLEAN_TOOLCHAIN_RUNNER: CommandRunner = async (command) => {
   if (version) return { exitCode: 0, stderr: "", stdout: `${version}\n` };
   throw new Error(`Unexpected command: ${command.join(" ")}`);
 };
+
+test("the bundled receipt verifier runs outside the repository", async () => {
+  const outputDirectory = await mkdtemp(join(tmpdir(), "release-receipt-bundle-"));
+  try {
+    const build = await Bun.build({
+      entrypoints: [join(import.meta.dir, "release-receipt.ts")],
+      outdir: outputDirectory,
+      naming: "release-receipt.mjs",
+      target: "bun",
+    });
+    expect(build.success, build.logs.map(String).join("\n")).toBe(true);
+
+    const run = Bun.spawnSync({
+      cmd: [process.execPath, join(outputDirectory, "release-receipt.mjs")],
+      cwd: outputDirectory,
+      stderr: "pipe",
+      stdout: "pipe",
+    });
+    expect(run.exitCode).toBe(1);
+    expect(run.stderr.toString()).toContain("Usage: release-receipt.ts <create|verify>");
+    expect(run.stderr.toString()).not.toMatch(/Cannot find (package|module)/);
+  } finally {
+    await rm(outputDirectory, { force: true, recursive: true });
+  }
+});
 
 function packageHashes(bytes: Uint8Array) {
   return {

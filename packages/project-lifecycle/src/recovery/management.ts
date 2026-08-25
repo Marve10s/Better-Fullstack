@@ -62,13 +62,13 @@ export async function manageProjectRecovery(
         input.action === "show"
           ? await getProjectRecoveryPoint(projectDir, transactionId)
           : await verifyProjectRecoveryPoint(projectDir, transactionId);
-      if (input.action === "verify" && !verification.valid) {
+      if (input.action === "verify" && !verification.recoverable) {
         return {
           success: false,
           action: input.action,
           projectDir,
           verification,
-          error: verification.errors.join(" ") || "Recovery point failed integrity verification.",
+          error: verification.errors.join(" ") || "Recovery point is not recoverable.",
         };
       }
       return { success: true, action: input.action, projectDir, verification };

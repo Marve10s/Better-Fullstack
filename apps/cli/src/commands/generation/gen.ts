@@ -100,6 +100,55 @@ function toPascalCase(raw: string): string {
   return camel.charAt(0).toUpperCase() + camel.slice(1);
 }
 
+const JAVASCRIPT_RESERVED_IDENTIFIERS = new Set([
+  "await",
+  "break",
+  "case",
+  "catch",
+  "class",
+  "const",
+  "continue",
+  "debugger",
+  "default",
+  "delete",
+  "do",
+  "else",
+  "enum",
+  "export",
+  "extends",
+  "false",
+  "finally",
+  "for",
+  "function",
+  "if",
+  "implements",
+  "import",
+  "in",
+  "instanceof",
+  "interface",
+  "let",
+  "new",
+  "null",
+  "package",
+  "private",
+  "protected",
+  "public",
+  "return",
+  "static",
+  "super",
+  "switch",
+  "this",
+  "throw",
+  "true",
+  "try",
+  "typeof",
+  "var",
+  "void",
+  "while",
+  "with",
+  "yield",
+]);
+
 async function getDatabasePackageName(projectDir: string): Promise<string | null> {
   const dbPackage = await fs
     .readJson(path.join(projectDir, "packages/db/package.json"))
@@ -165,6 +214,11 @@ export async function planGen(input: GenCommandInput): Promise<GenResult> {
   if (!name || !/^[a-z]/i.test(name)) {
     throw new Error(
       `Invalid resource name "${input.name}". Use a name that starts with a letter, for example "post".`,
+    );
+  }
+  if (JAVASCRIPT_RESERVED_IDENTIFIERS.has(name)) {
+    throw new Error(
+      `Invalid resource name "${input.name}". Choose a name that is not a JavaScript reserved word.`,
     );
   }
 

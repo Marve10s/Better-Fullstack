@@ -167,6 +167,14 @@ jobs:
           --ci-name "$CI_NAME"
           --conclusion "$CI_CONCLUSION"
 
+      - name: Bundle artifact-only receipt verifier
+        env:
+          ARTIFACT_DIR: ${{ runner.temp }}/npm-release
+        run: >-
+          bun build scripts/release/release-receipt.ts
+          --target bun
+          --outfile "$ARTIFACT_DIR/release-receipt.mjs"
+
       - name: Upload immutable release artifact set
         uses: actions/upload-artifact@v4
         with:
@@ -215,7 +223,7 @@ jobs:
           RELEASE_VERSION: ${{ needs.prepare.outputs.release_version }}
           SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
         run: |
-          bun "${{ runner.temp }}/npm-release/release-receipt.ts" verify \
+          bun "${{ runner.temp }}/npm-release/release-receipt.mjs" verify \
             --receipt "${{ runner.temp }}/npm-release/verification-receipt.v1.json" \
             --manifest "${{ runner.temp }}/npm-release/release-manifest.json" \
             --fixture "${{ runner.temp }}/npm-release/upgrade-fixture.v1.json" \
@@ -233,7 +241,7 @@ jobs:
           RELEASE_VERSION: ${{ needs.prepare.outputs.release_version }}
           SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
         run: |
-          bun "${{ runner.temp }}/npm-release/release-receipt.ts" verify \
+          bun "${{ runner.temp }}/npm-release/release-receipt.mjs" verify \
             --receipt "${{ runner.temp }}/npm-release/verification-receipt.v1.json" \
             --manifest "${{ runner.temp }}/npm-release/release-manifest.json" \
             --fixture "${{ runner.temp }}/npm-release/upgrade-fixture.v1.json" \
@@ -324,7 +332,7 @@ jobs:
           RELEASE_VERSION: ${{ needs.prepare.outputs.release_version }}
           SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
         run: |
-          bun "${{ runner.temp }}/npm-release/release-receipt.ts" verify \
+          bun "${{ runner.temp }}/npm-release/release-receipt.mjs" verify \
             --receipt "${{ runner.temp }}/npm-release/verification-receipt.v1.json" \
             --manifest "${{ runner.temp }}/npm-release/release-manifest.json" \
             --fixture "${{ runner.temp }}/npm-release/upgrade-fixture.v1.json" \

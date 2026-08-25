@@ -925,7 +925,7 @@ export function recommendStarterTrack(
         matched.add(keyword);
       }
     }
-    if (normalized.includes(track.ecosystem)) {
+    if (tokens.has(track.ecosystem)) {
       score += 4;
       matched.add(track.ecosystem);
     }

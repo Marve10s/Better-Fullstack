@@ -160,6 +160,37 @@ describe("analytics aggregate helpers", () => {
     ).toEqual({ eligible: false, covered: false });
   });
 
+  it("uses project creation as the single source for create decisions", () => {
+    for (const status of ["failed", "cancelled"] as const) {
+      expect(
+        classifySelectionDecision({
+          eventType: "command_used",
+          action: "create",
+          status,
+          stack: {
+            decision_stage: "create",
+            selected_evidence_level: "listed",
+            selection_problem: "reliability",
+          },
+        }),
+      ).toEqual({ eligible: false, covered: false });
+    }
+
+    expect(
+      classifySelectionDecision({
+        eventType: "project_created",
+        status: "failed",
+        success: false,
+        stack: {
+          decision_stage: "create",
+          selection_outcome: "create-failed",
+          selected_evidence_level: "listed",
+          selection_problem: "reliability",
+        },
+      }),
+    ).toMatchObject({ eligible: true, covered: true, selectionOutcome: "create-failed" });
+  });
+
   it("accepts every canonical capability evidence level", () => {
     for (const evidenceLevel of CAPABILITY_EVIDENCE_LEVEL_IDS) {
       expect(

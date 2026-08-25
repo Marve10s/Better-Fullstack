@@ -416,6 +416,22 @@ export async function planPackInstall(
     );
   }
 
+  const dependencyPackagePaths = new Set(
+    [manifest.dependencies, manifest.devDependencies].flatMap((group) =>
+      Object.keys(group ?? {}).map((dir) =>
+        path.join(dir === "." ? "" : dir, "package.json").replaceAll("\\", "/"),
+      ),
+    ),
+  );
+  const overlappingPackagePaths = [...dependencyPackagePaths].filter((packagePath) =>
+    writes.has(packagePath),
+  );
+  if (overlappingPackagePaths.length > 0) {
+    throw new CLIError(
+      `Capability pack cannot both write and merge dependencies into: ${overlappingPackagePaths.join(", ")}.`,
+    );
+  }
+
   const { changes: dependencies, writes: packageJsonWrites } = await planDependencyChanges(
     projectDir,
     manifest,

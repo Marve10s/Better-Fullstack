@@ -115,6 +115,13 @@ describe("starter tracks", () => {
     expect(result.score).toBe(0);
   });
 
+  it("matches ecosystem names only as whole tokens", () => {
+    const result = recommendStarterTrack("a JavaScript service");
+
+    expect(result.track.id).toBe("rest-api");
+    expect(result.matchedTerms).not.toContain("java");
+  });
+
   it("derives project evidence from authoritative Stack Parts", () => {
     const config = {
       ...createCliDefaultProjectConfigBase(),

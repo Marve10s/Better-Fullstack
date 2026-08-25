@@ -1,10 +1,4 @@
-import { afterEach, describe, expect, it } from "bun:test";
-import fs from "fs-extra";
-import { tmpdir } from "node:os";
-import path from "node:path";
-
-import { getLatestCLIVersion } from "@/platform/get-latest-cli-version";
-import { getProjectRecoveryCommand } from "@/lifecycle/lifecycle-command";
+import { manageProjectRecovery } from "@better-fullstack/project-lifecycle/recovery";
 import {
   beginProjectTransaction,
   commitProjectTransaction,
@@ -19,8 +13,14 @@ import {
   verifyProjectRecoveryPoint,
   writeProjectTransactionFile,
 } from "@better-fullstack/project-lifecycle/transaction";
-import { manageProjectRecovery } from "@better-fullstack/project-lifecycle/recovery";
+import { afterEach, describe, expect, it } from "bun:test";
+import fs from "fs-extra";
+import { tmpdir } from "node:os";
+import path from "node:path";
+
+import { getProjectRecoveryCommand } from "@/lifecycle/lifecycle-command";
 import { hashContent } from "@/lifecycle/scaffold-manifest";
+import { getLatestCLIVersion } from "@/platform/get-latest-cli-version";
 
 const roots: string[] = [];
 
@@ -694,6 +694,17 @@ describe("project lifecycle transactions", () => {
       valid: true,
       recoverable: false,
       errors: ["Recovery target changed after the transaction: file.txt"],
+    });
+    expect(
+      await manageProjectRecovery({
+        action: "verify",
+        projectDir,
+        transactionId: transaction.id,
+      }),
+    ).toMatchObject({
+      success: false,
+      verification: { valid: true, recoverable: false },
+      error: "Recovery target changed after the transaction: file.txt",
     });
   });
 

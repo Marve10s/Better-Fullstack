@@ -174,6 +174,31 @@ describe("registry add", () => {
     expect(lock.packs[0].files).toContain("apps/server/src/lib/rate-limit.ts");
   });
 
+  it("rejects packs that write and merge dependencies into the same package manifest", async () => {
+    const dir = await stageProject();
+    const pack = await mkdtemp(join(tmpdir(), "bfs-registry-overlap-"));
+    TEMP_ROOTS.push(pack);
+    await fs.writeJson(join(pack, "registry.json"), {
+      name: "@acme/overlapping-package",
+      version: "1.0.0",
+      files: [
+        {
+          path: "apps/server/package.json",
+          content: '{"name":"replaced"}\n',
+          overwrite: true,
+        },
+      ],
+      dependencies: { "apps/server": { hono: "^4.1.0" } },
+      env: [],
+    });
+
+    const before = await fs.readFile(serverFile(dir, "package.json"), "utf-8");
+    await expect(planPackInstall({ projectDir: dir, source: pack })).rejects.toThrow(
+      /cannot both write and merge dependencies into: apps\/server\/package\.json/,
+    );
+    expect(await fs.readFile(serverFile(dir, "package.json"), "utf-8")).toBe(before);
+  });
+
   it("rejects an invalid manifest with a clear validation error", async () => {
     const dir = await stageProject();
     await expect(addPack({ projectDir: dir, source: INVALID_PACK })).rejects.toThrow(

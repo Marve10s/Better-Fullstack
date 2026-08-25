@@ -187,6 +187,16 @@ describe("gen resource", () => {
     expect(index).toContain("blogPost: blogPostRouter,");
   });
 
+  it("rejects JavaScript reserved words before planning resource files", async () => {
+    const dir = await stageFixture("trpc");
+
+    await expect(genCommand({ kind: "resource", name: "class", dir })).rejects.toThrow(
+      /JavaScript reserved word/,
+    );
+    expect(await fs.pathExists(resourcePath(dir, "class"))).toBe(false);
+    expect(await fs.pathExists(join(dir, "packages/db/src/schema/class.ts"))).toBe(false);
+  });
+
   it("gracefully refuses an unsupported (non-typescript) stack and writes nothing", async () => {
     const dir = await stageFixture("unsupported");
 

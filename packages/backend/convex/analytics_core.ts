@@ -143,14 +143,7 @@ export function classifySelectionDecision(
   const isTerminal = event.status !== "started";
   const isProjectCompletion =
     (event.eventType === undefined || event.eventType === "project_created") && isTerminal;
-  const isFailedCreateCommand =
-    (event.action === "create" || event.action === "bfs_create_project") &&
-    isTerminal &&
-    event.status !== "succeeded";
-  const eligible =
-    isProjectCompletion ||
-    isFailedCreateCommand ||
-    (isTerminal && SELECTION_ACTIONS.has(event.action ?? ""));
+  const eligible = isProjectCompletion || (isTerminal && SELECTION_ACTIONS.has(event.action ?? ""));
   if (!eligible) return { eligible: false, covered: false };
 
   const decisionStage = boundedStackValue(event, "decision_stage", DECISION_STAGES);
@@ -161,9 +154,7 @@ export function classifySelectionDecision(
       ? event.success === false
         ? "create-failed"
         : "create-completed"
-      : isFailedCreateCommand
-        ? "create-failed"
-        : undefined);
+      : undefined);
   const evidenceLevel = boundedStackValue(event, "selected_evidence_level", EVIDENCE_LEVELS);
   const selectionProblem = boundedStackValue(event, "selection_problem", SELECTION_PROBLEMS);
   const starterTrack = boundedStackValue(event, "starter_track", TELEMETRY_STARTER_TRACKS);
