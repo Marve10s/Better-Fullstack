@@ -3,10 +3,10 @@ import { describe, expect, it } from "bun:test";
 
 import type { VirtualFile, VirtualNode } from "@/types";
 
+import { dependencyVersionMap } from "@/dependencies/add-deps";
 import { generateVirtualProject } from "@/generator";
 import { insertBeforeFormSubscribe } from "@/template-handlers/features/bot-protection";
 import { EMBEDDED_TEMPLATES } from "@/templates.generated";
-import { dependencyVersionMap } from "@/utils/add-deps";
 
 function files(node: VirtualNode): VirtualFile[] {
   return node.type === "file" ? [node] : node.children.flatMap(files);

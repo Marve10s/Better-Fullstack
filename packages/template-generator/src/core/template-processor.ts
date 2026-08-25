@@ -357,14 +357,29 @@ export function elixirDeployAppName(projectName?: string): string {
 }
 
 function nativeIdentifierSegment(value: string): string {
-  const normalized = value
-    .toLowerCase()
-    .replace(/[^a-z0-9_]+/g, "_")
-    .replace(/^_+|_+$/g, "")
-    .replace(/_+/g, "_");
+  const parts: string[] = [];
+  let pendingSeparator = false;
+
+  for (const char of value.toLowerCase()) {
+    const code = char.charCodeAt(0);
+    const isLetter = code >= 97 && code <= 122;
+    const isDigit = code >= 48 && code <= 57;
+
+    if (isLetter || isDigit) {
+      if (pendingSeparator && parts.length > 0) parts.push("_");
+      parts.push(char);
+      pendingSeparator = false;
+    } else {
+      pendingSeparator = parts.length > 0;
+    }
+  }
+
+  const normalized = parts.join("");
 
   if (!normalized) return "app";
-  return /^[a-z]/.test(normalized) ? normalized : `app_${normalized}`;
+  const firstCode = normalized.charCodeAt(0);
+  const startsWithLetter = firstCode >= 97 && firstCode <= 122;
+  return startsWithLetter ? normalized : `app_${normalized}`;
 }
 
 export function nativeApplicationId(projectName?: string): string {

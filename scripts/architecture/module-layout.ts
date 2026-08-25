@@ -510,18 +510,6 @@ function normalizedMove(move: Move): Move {
   if (move.from.startsWith("apps/cli/src/utils/")) {
     return { ...move, to: move.to.replace("apps/cli/src/utils/", "apps/cli/src/") };
   }
-  if (move.from.startsWith("apps/cli/src/commands/")) {
-    return { ...move, to: move.to.replace("apps/cli/src/commands/", "apps/cli/src/commands/") };
-  }
-  if (move.from.startsWith("apps/cli/src/prompts/")) {
-    return { ...move, to: move.to.replace("apps/cli/src/prompts/", "apps/cli/src/prompts/") };
-  }
-  if (move.from.startsWith("apps/web/src/lib/")) {
-    return { ...move, to: move.to.replace("apps/web/src/lib/", "apps/web/src/lib/") };
-  }
-  if (move.from.startsWith("packages/types/src/")) {
-    return { ...move, to: move.to.replace("packages/types/src/", "packages/types/src/") };
-  }
   return move;
 }
 

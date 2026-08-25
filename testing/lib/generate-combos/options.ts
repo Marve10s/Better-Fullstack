@@ -145,10 +145,10 @@ import {
   type Ecosystem,
   type ProjectConfig,
 } from "@better-fullstack/types";
+import { processFlags } from "@cli/config/config-processing";
+import { validateFullConfig } from "@cli/config/config-validation";
 import { getDefaultConfig } from "@cli/constants";
-import { processFlags } from "@cli/utils/config-processing";
-import { validateFullConfig } from "@cli/utils/config-validation";
-import { runWithContext } from "@cli/utils/context";
+import { runWithContext } from "@cli/presentation/context";
 import {
   buildHistoryFingerprint,
   fingerprintToKey,

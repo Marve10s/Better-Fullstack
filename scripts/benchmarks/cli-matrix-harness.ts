@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -15,13 +15,15 @@ const VERBOSE = process.argv.includes("--verbose");
 const TIMEOUT_CREATE = 120_000;
 const TIMEOUT_INSTALL = 180_000;
 
+type Command = [executable: string, ...args: string[]];
+
 interface MatrixEntry {
   name: string;
   description: string;
   ecosystem: string;
   flags: Record<string, string | string[] | boolean>;
   expectedFiles: string[];
-  installCmd?: string;
+  installCommands?: Command[];
 }
 
 interface StepResult {
@@ -87,7 +89,10 @@ const MATRIX: MatrixEntry[] = [
       packageManager: "pnpm",
     },
     expectedFiles: ["package.json", "tsconfig.json"],
-    installCmd: "pnpm install --no-frozen-lockfile 2>/dev/null || pnpm install",
+    installCommands: [
+      ["pnpm", "install", "--no-frozen-lockfile"],
+      ["pnpm", "install"],
+    ],
   },
   {
     name: "ts-astro-hono-node",
@@ -108,7 +113,10 @@ const MATRIX: MatrixEntry[] = [
       packageManager: "bun",
     },
     expectedFiles: ["package.json"],
-    installCmd: "bun install --frozen-lockfile 2>/dev/null || bun install",
+    installCommands: [
+      ["bun", "install", "--frozen-lockfile"],
+      ["bun", "install"],
+    ],
   },
   {
     name: "ts-qwik-standalone",
@@ -127,7 +135,10 @@ const MATRIX: MatrixEntry[] = [
       packageManager: "npm",
     },
     expectedFiles: ["package.json"],
-    installCmd: "npm install 2>/dev/null || npm install --legacy-peer-deps",
+    installCommands: [
+      ["npm", "install"],
+      ["npm", "install", "--legacy-peer-deps"],
+    ],
   },
   {
     name: "ts-rr-nitro-workers",
@@ -148,7 +159,10 @@ const MATRIX: MatrixEntry[] = [
       packageManager: "bun",
     },
     expectedFiles: ["package.json"],
-    installCmd: "bun install --frozen-lockfile 2>/dev/null || bun install",
+    installCommands: [
+      ["bun", "install", "--frozen-lockfile"],
+      ["bun", "install"],
+    ],
   },
   {
     name: "ts-svelte-express-node",
@@ -168,7 +182,10 @@ const MATRIX: MatrixEntry[] = [
       packageManager: "pnpm",
     },
     expectedFiles: ["package.json"],
-    installCmd: "pnpm install --no-frozen-lockfile 2>/dev/null || pnpm install",
+    installCommands: [
+      ["pnpm", "install", "--no-frozen-lockfile"],
+      ["pnpm", "install"],
+    ],
   },
   {
     name: "ts-next-self-betterauth",
@@ -188,7 +205,10 @@ const MATRIX: MatrixEntry[] = [
       packageManager: "pnpm",
     },
     expectedFiles: ["package.json", "tsconfig.json"],
-    installCmd: "pnpm install --no-frozen-lockfile 2>/dev/null || pnpm install",
+    installCommands: [
+      ["pnpm", "install", "--no-frozen-lockfile"],
+      ["pnpm", "install"],
+    ],
   },
   {
     name: "ts-tanstack-elysia-trpc",
@@ -208,7 +228,10 @@ const MATRIX: MatrixEntry[] = [
       packageManager: "bun",
     },
     expectedFiles: ["package.json"],
-    installCmd: "bun install --frozen-lockfile 2>/dev/null || bun install",
+    installCommands: [
+      ["bun", "install", "--frozen-lockfile"],
+      ["bun", "install"],
+    ],
   },
   {
     name: "ts-redwood-standalone",
@@ -227,7 +250,10 @@ const MATRIX: MatrixEntry[] = [
       packageManager: "bun",
     },
     expectedFiles: ["package.json"],
-    installCmd: "bun install --frozen-lockfile 2>/dev/null || bun install",
+    installCommands: [
+      ["bun", "install", "--frozen-lockfile"],
+      ["bun", "install"],
+    ],
   },
   {
     name: "ts-solid-hono-orpc",
@@ -247,7 +273,10 @@ const MATRIX: MatrixEntry[] = [
       packageManager: "bun",
     },
     expectedFiles: ["package.json"],
-    installCmd: "bun install --frozen-lockfile 2>/dev/null || bun install",
+    installCommands: [
+      ["bun", "install", "--frozen-lockfile"],
+      ["bun", "install"],
+    ],
   },
   {
     name: "ts-nuxt-hono-prisma",
@@ -267,7 +296,10 @@ const MATRIX: MatrixEntry[] = [
       packageManager: "bun",
     },
     expectedFiles: ["package.json"],
-    installCmd: "bun install --frozen-lockfile 2>/dev/null || bun install",
+    installCommands: [
+      ["bun", "install", "--frozen-lockfile"],
+      ["bun", "install"],
+    ],
   },
 ];
 
@@ -303,12 +335,13 @@ function log(msg: string) {
 }
 
 function runCommand(
-  cmd: string,
+  command: Command,
   options: { cwd?: string; timeout?: number } = {},
 ): { success: boolean; output: string; durationMs: number } {
   const start = Date.now();
+  const [executable, ...args] = command;
   try {
-    const output = execSync(cmd, {
+    const output = execFileSync(executable, args, {
       cwd: options.cwd ?? process.cwd(),
       timeout: options.timeout ?? 60_000,
       encoding: "utf-8",
@@ -323,18 +356,35 @@ function runCommand(
   }
 }
 
+function runCommandAlternatives(
+  commands: Command[],
+  options: { cwd?: string; timeout?: number } = {},
+): { success: boolean; output: string; durationMs: number } {
+  const outputs: string[] = [];
+  let durationMs = 0;
+
+  for (const command of commands) {
+    const result = runCommand(command, options);
+    durationMs += result.durationMs;
+    if (result.success) return { ...result, durationMs };
+    outputs.push(result.output);
+  }
+
+  return {
+    success: false,
+    output: outputs.join("\n"),
+    durationMs,
+  };
+}
+
 function toKebab(str: string): string {
   return str.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
 }
 
-function buildCliCommand(entry: MatrixEntry, projectName: string): string {
-  const args: string[] = [];
-
-  if (USE_PROD) {
-    args.push("bun", "create", "better-fullstack@latest", projectName);
-  } else {
-    args.push("bun", CLI_SOURCE, projectName);
-  }
+function buildCliCommand(entry: MatrixEntry, projectName: string): Command {
+  const args: Command = USE_PROD
+    ? ["bun", "create", "better-fullstack@latest", projectName]
+    : ["bun", CLI_SOURCE, projectName];
 
   if (entry.ecosystem !== "typescript") {
     args.push("--yes");
@@ -366,7 +416,7 @@ function buildCliCommand(entry: MatrixEntry, projectName: string): string {
     }
   }
 
-  return args.join(" ");
+  return args;
 }
 
 function checkProjectStructure(
@@ -405,7 +455,7 @@ function ensureWorkspaceBuild(): void {
   if (USE_PROD) return;
 
   log("Ensuring workspace packages are built...");
-  const build = runCommand("turbo build --filter=create-better-fullstack", {
+  const build = runCommand(["turbo", "build", "--filter=create-better-fullstack"], {
     cwd: REPO_ROOT,
     timeout: 120_000,
   });
@@ -447,10 +497,10 @@ async function runCycle(): Promise<CycleReport> {
     log(`\n--- [${i + 1}/${MATRIX.length}] ${entry.name} ---`);
     log(`  ${entry.description}`);
 
-    const cmd = buildCliCommand(entry, entry.name);
-    if (VERBOSE) log(`  CMD: ${cmd}`);
+    const command = buildCliCommand(entry, entry.name);
+    if (VERBOSE) log(`  CMD: ${command.map((argument) => JSON.stringify(argument)).join(" ")}`);
 
-    const creationRun = runCommand(cmd, { cwd: TEMP_ROOT, timeout: TIMEOUT_CREATE });
+    const creationRun = runCommand(command, { cwd: TEMP_ROOT, timeout: TIMEOUT_CREATE });
     log(
       `  Create: ${creationRun.success ? "PASS" : "FAIL"} (${formatDuration(creationRun.durationMs)})`,
     );
@@ -468,10 +518,10 @@ async function runCycle(): Promise<CycleReport> {
     }
 
     const install: StepResult = { success: false, durationMs: 0, skipped: true };
-    if (creationRun.success && structure.success && entry.installCmd) {
+    if (creationRun.success && structure.success && entry.installCommands) {
       install.skipped = false;
       log(`  Installing deps...`);
-      const installRun = runCommand(entry.installCmd, {
+      const installRun = runCommandAlternatives(entry.installCommands, {
         cwd: projectDir,
         timeout: TIMEOUT_INSTALL,
       });

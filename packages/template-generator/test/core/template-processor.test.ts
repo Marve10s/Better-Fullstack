@@ -3,6 +3,7 @@ import { describe, expect, it } from "bun:test";
 
 import {
   isBinaryFile,
+  nativeApplicationId,
   processFileContent,
   processTemplateString,
   transformFilename,
@@ -52,6 +53,10 @@ describe("template processor", () => {
     expect(transformFilename("frontend/react/_gitignore")).toBe("frontend/react/.gitignore");
     expect(transformFilename("frontend/react/_npmrc")).toBe("frontend/react/.npmrc");
   });
+
+  it("normalizes long native application identifiers in linear time", () => {
+    expect(nativeApplicationId(`a${"_".repeat(100_000)}b`)).toBe("com.betterfullstack.a_b");
+  }, 1_000);
 
   it("detects binary files by extension", () => {
     expect(isBinaryFile("public/logo.png")).toBe(true);

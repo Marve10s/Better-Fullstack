@@ -9,7 +9,10 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { dependencyVersionMap } from "@/dependencies/add-deps";
-import { getPinnedDependencyVersion, isMajorUpdateAllowlisted } from "@/dependencies/dependency-update-policy";
+import {
+  getPinnedDependencyVersion,
+  isMajorUpdateAllowlisted,
+} from "@/dependencies/dependency-update-policy";
 
 // Types
 export type UpdateType = "downgrade" | "major" | "minor" | "patch" | "none";
@@ -568,7 +571,7 @@ async function fetchPackageInfo(packageName: string): Promise<NpmPackageInfo> {
     return cached.info;
   }
 
-  const encodedName = encodeURIComponent(packageName).replace("%40", "@");
+  const encodedName = encodeURIComponent(packageName).replaceAll("%40", "@");
   const url = `https://registry.npmjs.org/${encodedName}`;
 
   let response = await fetch(url, { headers: { Accept: "application/json" } });
@@ -687,7 +690,7 @@ export async function checkVersionExists(
 ): Promise<boolean> {
   try {
     const cleanVersion = parseVersion(versionSpec).raw;
-    const encodedName = encodeURIComponent(packageName).replace("%40", "@");
+    const encodedName = encodeURIComponent(packageName).replaceAll("%40", "@");
     const url = `https://registry.npmjs.org/${encodedName}`;
 
     const response = await fetch(url, {

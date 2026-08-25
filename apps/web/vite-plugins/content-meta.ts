@@ -36,6 +36,29 @@ const LOCALIZED_MDX_BUNDLE_PREFIX = "virtual:localized-content-mdx-bundle/";
 const LOCALIZED_MDX_PREFIX = "virtual:localized-content-mdx/";
 const LOCALIZED_RAW_PREFIX = "virtual:localized-content-raw/";
 
+const UNSAFE_MODULE_CODE_CHARACTER = /[<>\b\f\n\r\t\0\u2028\u2029]/gu;
+const MODULE_CODE_CHARACTER_ESCAPE: Record<string, string> = {
+  "<": "\\u003C",
+  ">": "\\u003E",
+  "\b": "\\b",
+  "\f": "\\f",
+  "\n": "\\n",
+  "\r": "\\r",
+  "\t": "\\t",
+  "\0": "\\0",
+  "\u2028": "\\u2028",
+  "\u2029": "\\u2029",
+};
+
+function serializeModuleValue(value: unknown): string {
+  const serialized = JSON.stringify(value);
+  if (serialized === undefined) throw new Error("Cannot serialize undefined into module source.");
+  return serialized.replace(
+    UNSAFE_MODULE_CODE_CHARACTER,
+    (character) => MODULE_CODE_CHARACTER_ESCAPE[character] ?? character,
+  );
+}
+
 function rawImporterName(locale: LocalizedContentLocale): string {
   return `__raw_${locale.replace(/[^a-zA-Z0-9]/g, "_")}`;
 }
@@ -269,14 +292,14 @@ export function contentMetaPlugin(): Plugin {
           const key = localizedLoaderKey(locale, contentSubdir, relativePath);
           const bundleId = localizedMdxBundleModuleId(contentSubdir, locale);
           maps[contentSubdir].mdxLoaders.push(
-            `${JSON.stringify(key)}: () => import(${JSON.stringify(bundleId)}).then((m) => m.default[${JSON.stringify(key)}])`,
+            `${serializeModuleValue(key)}: () => import(${serializeModuleValue(bundleId)}).then((m) => m.default[${serializeModuleValue(key)}])`,
           );
           // Raw MDX source is only consumed by the search index (opened on
           // demand). Load it lazily from a per-locale bundle so the source text
           // stays OUT of the initial-load chunk instead of being inlined here.
           rawLocales.add(locale);
           maps[contentSubdir].rawLoaders.push(
-            `${JSON.stringify(key)}: () => ${rawImporterName(locale)}().then((m) => m.default[${JSON.stringify(key)}] ?? "")`,
+            `${serializeModuleValue(key)}: () => ${rawImporterName(locale)}().then((m) => m.default[${serializeModuleValue(key)}] ?? "")`,
           );
         }
       }
@@ -284,7 +307,7 @@ export function contentMetaPlugin(): Plugin {
 
     const rawImporters = [...rawLocales].map(
       (locale) =>
-        `const ${rawImporterName(locale)} = () => import(${JSON.stringify(
+        `const ${rawImporterName(locale)} = () => import(${serializeModuleValue(
           LOCALIZED_RAW_PREFIX + locale,
         )});`,
     );
@@ -314,7 +337,7 @@ export function contentMetaPlugin(): Plugin {
         if (!entry.body) continue;
         const key = localizedLoaderKey(locale, "docs", relativePath);
         entriesOut.push(
-          `${JSON.stringify(key)}: ${JSON.stringify(localizedEntryToMdxSource(entry))}`,
+          `${serializeModuleValue(key)}: ${serializeModuleValue(localizedEntryToMdxSource(entry))}`,
         );
       }
     }
@@ -338,8 +361,8 @@ export function contentMetaPlugin(): Plugin {
       const key = localizedLoaderKey(locale, contentSubdir, relativePath);
       const moduleId = localizedMdxModuleId(contentSubdir, locale, relativePath);
       const binding = `__localized_mdx_${index++}`;
-      imports.push(`import * as ${binding} from ${JSON.stringify(moduleId)};`);
-      exports.push(`${JSON.stringify(key)}: ${binding}`);
+      imports.push(`import * as ${binding} from ${serializeModuleValue(moduleId)};`);
+      exports.push(`${serializeModuleValue(key)}: ${binding}`);
     }
 
     return `${imports.join("\n")}\nexport default {${exports.join(",")}};`;
@@ -360,7 +383,7 @@ export function contentMetaPlugin(): Plugin {
         .replace(/\.mdx$/, "")
         .replace(/(^|\/)index$/, "")
         .replace(/\/$/, "");
-      return `${JSON.stringify(slug)}: ${JSON.stringify(fs.readFileSync(file, "utf8"))}`;
+      return `${serializeModuleValue(slug)}: ${serializeModuleValue(fs.readFileSync(file, "utf8"))}`;
     });
     return `export const ${exportName} = {${entries.join(",")}};`;
   }
@@ -450,9 +473,9 @@ export function contentMetaPlugin(): Plugin {
         this.addWatchFile(filePath);
       }
       return (
-        `export const docsMeta = ${JSON.stringify(docs.entries)};\n` +
-        `export const guidesMeta = ${JSON.stringify(guides.entries)};\n` +
-        `export const blogMeta = ${JSON.stringify(blog.entries)};\n`
+        `export const docsMeta = ${serializeModuleValue(docs.entries)};\n` +
+        `export const guidesMeta = ${serializeModuleValue(guides.entries)};\n` +
+        `export const blogMeta = ${serializeModuleValue(blog.entries)};\n`
       );
     },
     handleHotUpdate(ctx) {

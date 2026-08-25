@@ -82,6 +82,7 @@
   },
   "devDependencies": {
     "@better-fullstack/project-lifecycle": "workspace:*",
+    "@better-fullstack/template-generator": "workspace:*",
     "@better-fullstack/types": "workspace:*",
     "@effect/platform": "^0.96.2",
     "@effect/platform-bun": "^0.90.0",
