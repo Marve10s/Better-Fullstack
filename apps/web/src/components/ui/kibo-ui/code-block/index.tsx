@@ -1,4 +1,3 @@
-
 import type { ComponentProps, HTMLAttributes, ReactNode } from "react";
 import type { IconType } from "react-icons";
 
@@ -10,7 +9,6 @@ import {
   transformerNotationHighlight,
   transformerNotationWordHighlight,
 } from "@shikijs/transformers";
-import { TbCheck as CheckIcon, TbCopy as CopyIcon } from "react-icons/tb";
 import { createContext, useContext, useEffect, useState } from "react";
 import {
   SiAstro,
@@ -82,6 +80,7 @@ import {
   SiVuedotjs,
   SiWebassembly,
 } from "react-icons/si";
+import { TbCheck as CheckIcon, TbCopy as CopyIcon } from "react-icons/tb";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -91,7 +90,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
 
 export type BundledLanguage = string;
 

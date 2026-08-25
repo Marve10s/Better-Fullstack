@@ -1,0 +1,29 @@
+import { describe, expect, it } from "bun:test";
+
+import { createVirtual } from "@/index";
+import { listVirtualTreeFilePaths } from "@test/support/virtual-tree-utils";
+
+describe("Debug CrewAI", () => {
+  it("should generate langchain files", async () => {
+    const result = await createVirtual({
+      projectName: "test-langchain",
+      ecosystem: "python",
+      pythonWebFramework: "fastapi",
+      pythonOrm: "none",
+      pythonValidation: "none",
+      pythonAi: ["langchain"],
+      pythonTaskQueue: "none",
+      pythonQuality: "none",
+    });
+
+    expect(result.success).toBe(true);
+    const files = listVirtualTreeFilePaths(result.tree!);
+    console.log("LangChain Generated files:", files);
+
+    // Check for langchain files
+    const langchainFiles = files.filter((f) => f.includes("langchain"));
+    console.log("LangChain files:", langchainFiles);
+
+    expect(langchainFiles.length).toBeGreaterThan(0);
+  });
+});

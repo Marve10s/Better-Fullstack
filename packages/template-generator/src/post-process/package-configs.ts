@@ -5,11 +5,11 @@
 
 import type { ProjectConfig } from "@better-fullstack/types";
 
-import type { VirtualFileSystem } from "../core/virtual-fs";
+import type { VirtualFileSystem } from "@/core/virtual-fs";
 
-import { dependencyVersionMap } from "../utils/add-deps";
-import { getGraphBackendConnection, getGraphBackendConnections } from "../utils/graph-backend";
-import { getServerPackagePath } from "../utils/project-paths";
+import { dependencyVersionMap } from "@/dependencies/add-deps";
+import { getGraphBackendConnection, getGraphBackendConnections } from "@/graph/graph-backend";
+import { getServerPackagePath } from "@/platform/project-paths";
 
 type PackageJson = {
   name?: string;

@@ -1,7 +1,6 @@
+import { generateBatch } from "@testing/lib/generate-combos/options";
+import { createSeededRandom, seedFromString } from "@testing/lib/generate-combos/seed-random";
 import { describe, expect, it } from "bun:test";
-
-import { generateBatch } from "./options";
-import { createSeededRandom, seedFromString } from "./seed-random";
 
 describe("smoke combo generation", () => {
   it("keeps native frontends in the React Native ecosystem", () => {

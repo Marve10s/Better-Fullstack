@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { fetchPublicCapabilityEvidenceReport } from "@/lib/docs/release-verification";
-import { NOINDEX_ROBOTS } from "@/lib/robots";
+import { NOINDEX_ROBOTS } from "@/lib/seo/robots";
 
 export const Route = createFileRoute("/api/capability-evidence")({
   server: {

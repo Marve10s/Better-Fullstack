@@ -44,7 +44,7 @@ Do not fabricate freshness dates. Update them when the page was substantively re
 
 ## Schema-Derived Reference
 
-- CLI flag tables come from `packages/types/src/cli-flags.ts`.
+- CLI flag tables come from `packages/types/src/catalog/cli-flags.ts`.
 - Option inventories should derive from shared schema/metadata instead of manual lists.
 - Compatibility examples may be authored, but accepted/rejected facts must be backed by executable
   compatibility behavior.

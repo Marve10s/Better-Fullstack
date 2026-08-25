@@ -1,7 +1,15 @@
 import path from "node:path";
 
-import type { CLIInput, ProjectConfig } from "./types";
+import type { CLIInput, ProjectConfig } from "@/types";
 
+import {
+  applyEffectBackendDefaults,
+  getProvidedFlags,
+  processFlags,
+  validateArrayOptions,
+} from "@/config/config-processing";
+import { validateConfigForProgrammaticUse, validateFullConfig } from "@/config/config-validation";
+import { exitWithError } from "@/presentation/errors";
 import {
   NATIVE_FRONTENDS,
   SHAPE_ECOSYSTEMS,
@@ -9,16 +17,8 @@ import {
   shapeControlledFlags,
   shapeRequiredHalfKeys,
   shapeSupportsEcosystem,
-} from "./prompts/project-shape";
-import { ProjectNameSchema } from "./types";
-import {
-  applyEffectBackendDefaults,
-  getProvidedFlags,
-  processFlags,
-  validateArrayOptions,
-} from "./utils/config-processing";
-import { validateConfigForProgrammaticUse, validateFullConfig } from "./utils/config-validation";
-import { exitWithError } from "./utils/errors";
+} from "@/prompts/project/project-shape";
+import { ProjectNameSchema } from "@/types";
 
 const CORE_STACK_FLAGS = new Set([
   "database",
@@ -43,7 +43,11 @@ const CORE_STACK_FLAGS = new Set([
 
 function isSameStackValue(provided: unknown, offValue: unknown) {
   const normalize = (value: unknown) =>
-    Array.isArray(value) ? value.filter((entry) => entry !== "none") : value === "none" ? [] : value;
+    Array.isArray(value)
+      ? value.filter((entry) => entry !== "none")
+      : value === "none"
+        ? []
+        : value;
   const left = normalize(provided);
   const right = normalize(offValue);
   if (Array.isArray(left) && Array.isArray(right)) return left.length === right.length;
@@ -91,8 +95,7 @@ export function assertShapeInputIsUsable(
 
   const controlled = Object.entries(shapeControlledFlags(shape)).filter(
     ([key, offValue]) =>
-      providedFlags.has(key) &&
-      !isSameStackValue(options[key as keyof CLIInput], offValue),
+      providedFlags.has(key) && !isSameStackValue(options[key as keyof CLIInput], offValue),
   );
   if (controlled.length > 0) {
     exitWithError(
@@ -104,8 +107,7 @@ export function assertShapeInputIsUsable(
   // Disabling the half the shape exists to build leaves an empty project. The
   // ecosystem may still be unchosen, so every half the shape could need counts.
   const disabledHalf = shapeRequiredHalfKeys(shape, options.ecosystem).find(
-    (key) =>
-      providedFlags.has(key) && isSameStackValue(options[key as keyof CLIInput], "none"),
+    (key) => providedFlags.has(key) && isSameStackValue(options[key as keyof CLIInput], "none"),
   );
   if (disabledHalf) {
     exitWithError(

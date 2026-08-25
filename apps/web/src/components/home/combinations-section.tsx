@@ -1,8 +1,8 @@
 import { motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 
-import { combinationsMetrics } from "@/lib/combinations-count";
-import { PROJECT_ECOSYSTEM_COPY } from "@/lib/project-stats";
+import { combinationsMetrics } from "@/lib/builder/combinations-count";
+import { PROJECT_ECOSYSTEM_COPY } from "@/lib/project/project-stats";
 import { m } from "@/paraglide/messages.js";
 
 const { totalScientific, yearsAtOneMillisecondScientific, universeLifetimesScientific } =

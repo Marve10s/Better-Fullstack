@@ -1,13 +1,12 @@
 import type { ProjectConfig } from "@better-fullstack/types";
-
 import type {
   FingerprintValue,
   LedgerRowDoc,
   TemplateFingerprint,
   TemplateFingerprintKey,
-} from "./types";
+} from "@testing/lib/generate-combos/types";
 
-import { TEMPLATE_FINGERPRINT_KEYS } from "./types";
+import { TEMPLATE_FINGERPRINT_KEYS } from "@testing/lib/generate-combos/types";
 
 const ARRAY_OPTION_KEYS = new Set([
   "frontend",

@@ -1,11 +1,10 @@
-
 import { TbAlertTriangle as AlertTriangle } from "react-icons/tb";
 
-import type { StackState } from "@/lib/constant";
+import type { StackState } from "@/lib/stack/constant";
 
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
 import { m } from "@/paraglide/messages.js";
 
 interface YoloToggleProps {
@@ -33,9 +32,7 @@ export function YoloToggle({ stack, onToggle }: YoloToggleProps) {
         />
       </TooltipTrigger>
       <TooltipContent side="top" align="start" className="max-w-xs">
-        <p className="text-xs">
-          {m.builderYoloTooltip()}
-        </p>
+        <p className="text-xs">{m.builderYoloTooltip()}</p>
       </TooltipContent>
     </Tooltip>
   );

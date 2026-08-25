@@ -2,12 +2,12 @@ import { isCancel, log, multiselect, select, spinner } from "@clack/prompts";
 import { $ } from "execa";
 import pc from "picocolors";
 
-import type { ProjectConfig } from "../../types";
+import type { ProjectConfig } from "@/types";
 
-import { shouldSkipExternalCommands } from "../../utils/external-commands";
-import { getPackageRunnerPrefix } from "../../utils/package-runner";
-import { canPromptInteractively } from "../../utils/prompt-environment";
-import { runInstallWithRetries } from "./retry-install";
+import { runInstallWithRetries } from "@/helpers/addons/retry-install";
+import { shouldSkipExternalCommands } from "@/platform/external-commands";
+import { getPackageRunnerPrefix } from "@/platform/package-runner";
+import { canPromptInteractively } from "@/presentation/prompt-environment";
 
 type McpTransport = "http" | "sse";
 

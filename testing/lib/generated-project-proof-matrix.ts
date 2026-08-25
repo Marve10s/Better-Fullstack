@@ -1,4 +1,4 @@
-import { GOLDEN_RUNTIME_RECIPES, type GoldenRuntimeAssertion } from "../../packages/types/src";
+import { GOLDEN_RUNTIME_RECIPES, type GoldenRuntimeAssertion } from "@better-fullstack/types";
 
 export type GeneratedProjectProofCase = {
   id: string;

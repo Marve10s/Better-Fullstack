@@ -1,6 +1,5 @@
+import { getPresetCombos, listPresetGroupIds } from "@testing/lib/presets";
 import { describe, expect, it } from "bun:test";
-
-import { getPresetCombos, listPresetGroupIds } from "./presets";
 
 const PR_CORE_PRESET_NAMES = [
   "preset-tanstack-fullstack",

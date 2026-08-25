@@ -1,12 +1,9 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 
 import { StackBuilderPage } from "@/components/stack-builder/stack-builder-page";
-import { buildPageHead, getEcosystemOgImage, SITE_NAME } from "@/lib/seo";
-import { parseStackShareSlug } from "@/lib/stack-share-paths";
-import {
-  getCanonicalStackSharePath,
-  normalizeStackShareSlug,
-} from "@/lib/stack-share-slugs";
+import { buildPageHead, getEcosystemOgImage, SITE_NAME } from "@/lib/seo/seo";
+import { parseStackShareSlug } from "@/lib/stack/stack-share-paths";
+import { getCanonicalStackSharePath, normalizeStackShareSlug } from "@/lib/stack/stack-share-slugs";
 
 const STACK_SHARE_LABELS = {
   typescript: "TypeScript",

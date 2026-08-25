@@ -5,10 +5,10 @@ This note records the lifecycle work that shipped before the supported historica
 ## Verified as shipped
 
 - Manifest v2 records CLI, generator, template-set, schema, and operation provenance in
-  `apps/cli/src/utils/scaffold-manifest.ts`.
+  `apps/cli/src/lifecycle/scaffold-manifest.ts`.
 - Project and stack update apply paths bind writes to the reviewed plan instead of recalculating a
   different operation at apply time.
-- `apps/cli/src/utils/project-transaction.ts` provides integrity-checked preimages and recovery
+- `apps/cli/src/lifecycle/project-transaction.ts` provides integrity-checked preimages and recovery
   points for managed filesystem transactions.
 - Human status output, CLI JSON, and MCP derive project health and update reporting from shared
   project-report services.

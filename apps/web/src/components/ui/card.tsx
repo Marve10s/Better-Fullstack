@@ -12,8 +12,8 @@ import {
 import * as React from "react";
 import { createContext, useContext } from "react";
 
-import { registryTheme } from "@/lib/registry-theme";
-import { cn } from "@/lib/utils";
+import { registryTheme } from "@/lib/content/registry-theme";
+import { cn } from "@/lib/platform/utils";
 
 interface ReducedMotionProp {
   reducedMotion?: boolean;
@@ -25,9 +25,7 @@ function useResolvedReducedMotion(reducedMotion?: boolean) {
   const reducedMotionOverride = useContext(ReducedMotionOverrideContext);
   const prefersReducedMotion = useReducedMotion() ?? false;
 
-  return Boolean(
-    reducedMotion || reducedMotionOverride || prefersReducedMotion
-  );
+  return Boolean(reducedMotion || reducedMotionOverride || prefersReducedMotion);
 }
 
 function ReducedMotionConfig({
@@ -63,8 +61,7 @@ const cardLayoutTransition = {
   mass: 0.85,
 };
 
-const CARD_SHADOW_HOVER =
-  "0 20px 42px -30px rgba(15,23,42,0.22), 0 0 0 1px rgba(15,23,42,0.06)";
+const CARD_SHADOW_HOVER = "0 20px 42px -30px rgba(15,23,42,0.22), 0 0 0 1px rgba(15,23,42,0.06)";
 
 type MotionSafeDivProps = Omit<
   React.HTMLAttributes<HTMLDivElement>,
@@ -119,7 +116,7 @@ function useCardHoverMotion(enabled: boolean) {
       if (!enabled) return;
       hoverTarget.set(active ? 1 : 0);
     },
-    [enabled, hoverTarget]
+    [enabled, hoverTarget],
   );
 
   React.useEffect(() => {
@@ -153,14 +150,13 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
       onPointerLeave,
       ...props
     },
-    ref
+    ref,
   ) => {
     const prefersReducedMotion = useResolvedReducedMotion(reducedMotion);
     const motionEnabled = interactive && !prefersReducedMotion;
     const focusWithinRef = React.useRef(false);
     const pointerInsideRef = React.useRef(false);
-    const { hoverStyle, shadowOpacity, setHover } =
-      useCardHoverMotion(motionEnabled);
+    const { hoverStyle, shadowOpacity, setHover } = useCardHoverMotion(motionEnabled);
 
     const activateHover = React.useCallback(() => {
       setHover(true);
@@ -189,7 +185,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
         pointerInsideRef.current = true;
         activateHover();
       },
-      [activateHover, onPointerEnter]
+      [activateHover, onPointerEnter],
     );
 
     const handlePointerLeave = React.useCallback(
@@ -199,7 +195,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
         pointerInsideRef.current = false;
         deactivateHover();
       },
-      [deactivateHover, onPointerLeave]
+      [deactivateHover, onPointerLeave],
     );
 
     const handleFocusCapture = React.useCallback(
@@ -209,7 +205,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
         focusWithinRef.current = true;
         activateHover();
       },
-      [activateHover, onFocusCapture]
+      [activateHover, onFocusCapture],
     );
 
     const handleBlurCapture = React.useCallback(
@@ -225,7 +221,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
         focusWithinRef.current = false;
         deactivateHover();
       },
-      [deactivateHover, onBlurCapture]
+      [deactivateHover, onBlurCapture],
     );
 
     return (
@@ -254,7 +250,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
             !interactive && [
               "transition-[border-color,background-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
             ],
-            className
+            className,
           )}
           data-interactive={interactive ? "true" : undefined}
           data-slot="card"
@@ -286,7 +282,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
         </MotionDiv>
       </ReducedMotionConfig>
     );
-  }
+  },
 );
 
 Card.displayName = "Card";
@@ -296,7 +292,7 @@ function CardHeader({ className, ...props }: CardSectionProps) {
     <MotionDiv
       className={cn(
         "group/card-header @container/card-header grid auto-rows-min items-start gap-1.5 px-4 has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto]",
-        className
+        className,
       )}
       data-slot="card-header"
       {...cardSectionMotionProps}
@@ -310,7 +306,7 @@ function CardTitle({ className, ...props }: CardSectionProps) {
     <MotionDiv
       className={cn(
         "cn-font-heading font-medium text-base leading-snug tracking-[-0.01em]",
-        className
+        className,
       )}
       data-slot="card-title"
       {...cardSectionMotionProps}
@@ -333,10 +329,7 @@ function CardDescription({ className, ...props }: CardSectionProps) {
 function CardAction({ className, ...props }: CardSectionProps) {
   return (
     <MotionDiv
-      className={cn(
-        "col-start-2 row-span-2 row-start-1 self-start justify-self-end",
-        className
-      )}
+      className={cn("col-start-2 row-span-2 row-start-1 self-start justify-self-end", className)}
       data-slot="card-action"
       {...cardSectionMotionProps}
       {...props}
@@ -360,7 +353,7 @@ function CardFooter({ className, ...props }: CardSectionProps) {
     <MotionDiv
       className={cn(
         "flex items-center rounded-b-[inherit] border-border/60 border-t bg-muted/45 p-4 text-muted-foreground backdrop-blur-[1px] transition-colors duration-300",
-        className
+        className,
       )}
       data-slot="card-footer"
       {...cardSectionMotionProps}
@@ -369,12 +362,4 @@ function CardFooter({ className, ...props }: CardSectionProps) {
   );
 }
 
-export {
-  Card,
-  CardHeader,
-  CardFooter,
-  CardTitle,
-  CardAction,
-  CardDescription,
-  CardContent,
-};
+export { Card, CardHeader, CardFooter, CardTitle, CardAction, CardDescription, CardContent };

@@ -1,8 +1,8 @@
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
-import { TbX as XIcon } from "react-icons/tb";
 import * as React from "react";
+import { TbX as XIcon } from "react-icons/tb";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
 import { m } from "@/paraglide/messages.js";
 
 function DottedDialog({ ...props }: DialogPrimitive.Root.Props) {

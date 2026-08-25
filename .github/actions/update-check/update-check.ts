@@ -10,7 +10,7 @@ import {
   unexpectedChangedPaths,
   type JsonRecord,
   type UpdateGateEvaluation,
-} from "./gate";
+} from "@/gate";
 
 type CommandResult = {
   exitCode: number;

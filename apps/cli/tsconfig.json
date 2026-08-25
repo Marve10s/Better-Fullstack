@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
@@ -8,7 +9,14 @@
     "strict": true,
     "skipLibCheck": true,
     "outDir": "dist",
-    "types": ["node"]
+    "types": ["node"],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@scaffbench/*": ["../../scripts/scaffbench/*"],
+      "@test/*": ["./test/*"],
+      "@testing/*": ["../../testing/*"],
+      "@web/*": ["../web/src/*"]
+    }
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "**/*.test.ts", "**/*.spec.ts"]

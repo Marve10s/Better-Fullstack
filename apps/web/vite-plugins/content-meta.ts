@@ -1,10 +1,9 @@
 import type { Plugin } from "vite";
 
+import { LOCALIZED_CONTENT_LOCALES, type LocalizedContentLocale } from "#web/lib/i18n/locales";
 import fs from "node:fs";
 import path from "node:path";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
-
-import { LOCALIZED_CONTENT_LOCALES, type LocalizedContentLocale } from "../src/lib/i18n/locales";
 
 /**
  * Build-time frontmatter extraction for docs/guides MDX content.

@@ -1,13 +1,12 @@
 import type { ExecaChildProcess } from "execa";
 
 import { getLocalWebDevPort } from "@better-fullstack/types";
+import { runTRPCTest, type TestConfig } from "@test/support/test-utils";
+import { scaffoldWithCli, type CliScaffoldResult } from "@testing/lib/cli-scaffold";
 import { execa } from "execa";
 import { readFile } from "node:fs/promises";
 import { Socket } from "node:net";
 import { basename, dirname, join } from "node:path";
-
-import { scaffoldWithCli, type CliScaffoldResult } from "../../../../testing/lib/cli-scaffold";
-import { runTRPCTest, type TestConfig } from "../test-utils";
 
 type E2EPackageManager = "bun" | "npm" | "pnpm" | "yarn";
 

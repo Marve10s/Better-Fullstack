@@ -1,2 +1,1 @@
-export { validateDotnetProject } from "@/validation/index";
-
+export { validateDotnetProject } from "@scaffbench/validation/index";

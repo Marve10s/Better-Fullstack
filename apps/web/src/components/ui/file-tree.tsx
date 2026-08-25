@@ -1,11 +1,14 @@
-
 import { Accordion as AccordionPrimitive } from "@base-ui/react/accordion";
-import { TbFile as FileIcon, TbFolder as FolderIcon, TbFolderOpen as FolderOpenIcon } from "react-icons/tb";
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
+import {
+  TbFile as FileIcon,
+  TbFolder as FolderIcon,
+  TbFolderOpen as FolderOpenIcon,
+} from "react-icons/tb";
 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
 import { m } from "@/paraglide/messages.js";
 
 type TreeViewElement = {

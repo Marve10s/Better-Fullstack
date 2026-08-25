@@ -1,2 +1,1 @@
-export { validatePythonProject } from "@/validation/index";
-
+export { validatePythonProject } from "@scaffbench/validation/index";

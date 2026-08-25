@@ -1,7 +1,7 @@
 import { MDXProvider } from "@mdx-js/react";
 import { Link } from "@tanstack/react-router";
-import { TbArrowLeft as ArrowLeft, TbArrowRight as ArrowRight } from "react-icons/tb";
 import { Suspense } from "react";
+import { TbArrowLeft as ArrowLeft, TbArrowRight as ArrowRight } from "react-icons/tb";
 
 import type { TocEntry } from "@/lib/docs/remark-extract-toc";
 import type { DocPage, PageNode } from "@/lib/docs/source";
@@ -10,7 +10,7 @@ import { DocsLayout } from "@/components/docs/docs-layout";
 import { DocsPageActions } from "@/components/docs/docs-page-actions";
 import { mdxComponents } from "@/components/docs/mdx";
 import { canRenderDocPageContent, localizeDocPage, useDocPageContent } from "@/lib/docs/source";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
 import { m } from "@/paraglide/messages.js";
 
 /**

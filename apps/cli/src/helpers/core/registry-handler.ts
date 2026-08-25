@@ -1,36 +1,30 @@
+import type { LifecyclePlan, LifecycleResult } from "@better-fullstack/project-lifecycle/contracts";
 import type { z } from "zod";
 
-import { processTemplateString } from "@better-fullstack/template-generator";
-import fs from "fs-extra";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-
-import type {
-  CapabilityPackManifest,
-  InstalledPack,
-  ProjectConfig,
-  RegistryLock,
-} from "../../types";
-import type { LifecyclePlan, LifecycleResult } from "../../utils/lifecycle-contract";
-
+import { lifecyclePlan, lifecycleResult } from "@better-fullstack/project-lifecycle/contracts";
 import {
-  CapabilityPackManifestSchema,
-  REGISTRY_LOCK_VERSION,
-  RegistryLockSchema,
-} from "../../types";
-import { readBtsConfig } from "../../utils/bts-config";
-import { CLIError } from "../../utils/errors";
-import { getProjectRecoveryCommand } from "../../utils/lifecycle-command";
-import { lifecyclePlan, lifecycleResult } from "../../utils/lifecycle-contract";
+  createReviewToken,
+  getReviewTokenContext,
+} from "@better-fullstack/project-lifecycle/review-token";
 import {
   beginProjectTransaction,
   commitProjectTransaction,
   rollbackProjectTransaction,
   writeProjectTransactionFile,
-} from "../../utils/project-transaction";
-import { planPackBtsConfig } from "../../utils/registry-bts";
-import { createReviewToken, getReviewTokenContext } from "../../utils/review-token";
-import { getCurrentLifecycleVersions, hashContent } from "../../utils/scaffold-manifest";
+} from "@better-fullstack/project-lifecycle/transaction";
+import { processTemplateString } from "@better-fullstack/template-generator";
+import fs from "fs-extra";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+import type { CapabilityPackManifest, InstalledPack, ProjectConfig, RegistryLock } from "@/types";
+
+import { readBtsConfig } from "@/config/bts-config";
+import { planPackBtsConfig } from "@/config/registry-bts";
+import { getProjectRecoveryCommand } from "@/lifecycle/lifecycle-command";
+import { getCurrentLifecycleVersions, hashContent } from "@/lifecycle/scaffold-manifest";
+import { CLIError } from "@/presentation/errors";
+import { CapabilityPackManifestSchema, REGISTRY_LOCK_VERSION, RegistryLockSchema } from "@/types";
 
 const LOCK_DIR = ".better-fullstack";
 const LOCK_FILE = "registry.json";

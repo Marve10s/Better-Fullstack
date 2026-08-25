@@ -1,8 +1,7 @@
 import type { ProjectConfig } from "@better-fullstack/types";
 
+import { getRoutesForConfig } from "@testing/lib/route-check";
 import { describe, expect, it } from "bun:test";
-
-import { getRoutesForConfig } from "./route-check";
 
 function makeConfig(overrides: Partial<ProjectConfig>): ProjectConfig {
   return {

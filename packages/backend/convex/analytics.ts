@@ -1,9 +1,9 @@
 import { v } from "convex/values";
 
-import type { Doc, Id } from "./_generated/dataModel";
+import type { Doc, Id } from "@/_generated/dataModel";
 
-import { internal } from "./_generated/api";
-import { internalAction, internalMutation, internalQuery } from "./_generated/server";
+import { internal } from "@/_generated/api";
+import { internalAction, internalMutation, internalQuery } from "@/_generated/server";
 import {
   applyFailureClassifications,
   classifySelectionDecision,
@@ -11,7 +11,7 @@ import {
   countReturningMachinesFromActivity,
   isLifecycleTerminalEvent,
   type Distribution,
-} from "./analytics_core";
+} from "@/analytics_core";
 
 type Dist = Distribution;
 type StackValue = string | boolean | string[];

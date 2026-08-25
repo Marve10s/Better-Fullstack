@@ -1,6 +1,6 @@
-import { cn } from "@/lib/utils";
+import type { StackAnalyticsData, StackDistribution } from "@/lib/analytics/analytics-aggregate";
 
-import type { StackAnalyticsData, StackDistribution } from "@/lib/analytics-aggregate";
+import { cn } from "@/lib/platform/utils";
 
 const CARD_CLASS =
   "overflow-hidden rounded-2xl border border-[#e1e0d8] bg-[#faf9f5] text-[#1b1a17] [color-scheme:light] dark:border-[rgba(237,235,228,0.10)] dark:bg-[#161614] dark:text-[#dad8d0] dark:[color-scheme:dark]";
@@ -29,7 +29,10 @@ function LeaderboardRow({
 
   return (
     <li className="flex items-center gap-3">
-      <span className={cn("shrink-0 truncate font-mono text-[12px] sm:text-[13px]", nameClass)} title={item.name}>
+      <span
+        className={cn("shrink-0 truncate font-mono text-[12px] sm:text-[13px]", nameClass)}
+        title={item.name}
+      >
         {item.name}
       </span>
       <div className={cn("relative h-2.5 flex-1 overflow-hidden rounded-[3px]", TRACK)}>
@@ -58,7 +61,9 @@ function Leaderboard({
     <section aria-label={title}>
       <div className={cn("flex items-baseline justify-between border-b pb-2", DIVIDER)}>
         <h2 className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em]">{title}</h2>
-        <span className={cn("font-mono text-[10px] uppercase tracking-[0.18em]", MUTED)}>share</span>
+        <span className={cn("font-mono text-[10px] uppercase tracking-[0.18em]", MUTED)}>
+          share
+        </span>
       </div>
       {items.length === 0 ? (
         <p className={cn("py-4 font-mono text-[12px]", MUTED)}>No data yet</p>
@@ -86,7 +91,9 @@ export function StackLeaderboard({ data }: { data: StackAnalyticsData }) {
         )}
       >
         <div>
-          <h1 className="font-mono text-xl font-bold tracking-[-0.02em] sm:text-2xl">Stack analytics</h1>
+          <h1 className="font-mono text-xl font-bold tracking-[-0.02em] sm:text-2xl">
+            Stack analytics
+          </h1>
           <p className={cn("mt-1.5 max-w-md text-sm", MUTED)}>
             What developers actually pick when scaffolding with Better Fullstack.
           </p>
@@ -111,13 +118,21 @@ export function StackLeaderboard({ data }: { data: StackAnalyticsData }) {
             <Leaderboard title="Database" items={database} />
             <Leaderboard title="ORM" items={orm} />
           </div>
-          <p className={cn("border-t pt-4 font-mono text-[10px] uppercase tracking-[0.16em]", DIVIDER, MUTED)}>
+          <p
+            className={cn(
+              "border-t pt-4 font-mono text-[10px] uppercase tracking-[0.16em]",
+              DIVIDER,
+              MUTED,
+            )}
+          >
             Aggregated from anonymous, opt-in CLI telemetry
           </p>
         </div>
       ) : (
         <div className="px-5 py-16 text-center sm:px-7">
-          <p className={cn("font-mono text-sm", MUTED)}>Live analytics are not available right now.</p>
+          <p className={cn("font-mono text-sm", MUTED)}>
+            Live analytics are not available right now.
+          </p>
         </div>
       )}
     </div>

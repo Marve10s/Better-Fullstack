@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { fetchPublicVerificationReport } from "@/lib/docs/release-verification";
 import { verifiedCombinationsBadgePayload } from "@/lib/docs/verified-combinations-badge";
-import { NOINDEX_ROBOTS } from "@/lib/robots";
+import { NOINDEX_ROBOTS } from "@/lib/seo/robots";
 
 export const Route = createFileRoute("/api/verified-combinations")({
   server: {

@@ -1,17 +1,17 @@
+import { EMBEDDED_TEMPLATES, generateVirtualProject } from "@better-fullstack/template-generator";
+import { writeTreeToFilesystem } from "@better-fullstack/template-generator/fs-writer";
+import { createCliDefaultProjectConfigBase, type ProjectConfig } from "@better-fullstack/types";
+import {
+  applyGen,
+  buildBtsConfigForPersistence,
+  checkRecipeRecords,
+  planGen,
+  writeBtsConfig,
+} from "create-better-fullstack/testing";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-
-import { applyGen, planGen } from "../apps/cli/src/commands/gen";
-import { checkRecipeRecords } from "../apps/cli/src/recipes/records";
-import { buildBtsConfigForPersistence, writeBtsConfig } from "../apps/cli/src/utils/bts-config";
-import { writeTreeToFilesystem } from "../packages/template-generator/src/fs-writer";
-import {
-  EMBEDDED_TEMPLATES,
-  generateVirtualProject,
-} from "../packages/template-generator/src/index";
-import { createCliDefaultProjectConfigBase, type ProjectConfig } from "../packages/types/src/index";
 
 export async function runRecipeGenerationProof(): Promise<void> {
   const proofRoot = await mkdtemp(path.join(os.tmpdir(), "better-fullstack-recipe-proof-"));

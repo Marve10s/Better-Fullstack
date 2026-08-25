@@ -1,6 +1,6 @@
 import { dirname, extname, normalize, join } from "pathe";
 
-import type { VirtualDirectory, VirtualFile } from "../types";
+import type { VirtualDirectory, VirtualFile } from "@/types";
 
 /**
  * Pure-JS in-memory virtual file system.

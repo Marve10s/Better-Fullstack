@@ -188,6 +188,7 @@ jobs:
       - name: Build Packages
         run: |
           cd packages/types && bun run build
+          cd ../project-lifecycle && bun run build
           cd ../template-generator && bun run build
           cd ../../apps/cli && bun run build
 
@@ -201,8 +202,8 @@ jobs:
           CHANGED=$(gh pr view ${{ github.event.pull_request.number }} --json files --jq '.files[].path' 2>/dev/null || true)
 
           # Detect new options added to schemas.ts
-          if echo "$CHANGED" | grep -q "packages/types/src/schemas.ts"; then
-            DIFF=$(gh pr diff ${{ github.event.pull_request.number }} -- packages/types/src/schemas.ts 2>/dev/null || true)
+          if echo "$CHANGED" | grep -q "packages/types/src/config/schemas.ts"; then
+            DIFF=$(gh pr diff ${{ github.event.pull_request.number }} -- packages/types/src/config/schemas.ts 2>/dev/null || true)
 
             # Extract newly added enum values from the diff (lines starting with +)
             # Pattern: look for added lines containing quoted strings in enum arrays

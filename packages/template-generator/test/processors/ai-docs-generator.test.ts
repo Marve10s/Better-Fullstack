@@ -1,9 +1,9 @@
 import { parseStackPartSpecs } from "@better-fullstack/types";
+import { makeConfig } from "@test/_fixtures/config-factory";
 import { describe, expect, it } from "bun:test";
 
-import { VirtualFileSystem } from "../../src/core/virtual-fs";
-import { processAiDocs } from "../../src/processors/ai-docs-generator";
-import { makeConfig } from "../_fixtures/config-factory";
+import { VirtualFileSystem } from "@/core/virtual-fs";
+import { processAiDocs } from "@/processors/config/ai-docs-generator";
 
 describe("processAiDocs", () => {
   it("records Stack Part ownership, evidence, installed-version authority, and safe lifecycle commands", () => {

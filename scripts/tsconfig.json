@@ -3,7 +3,12 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./scaffbench/*"]
+      "@actions/*": ["../.github/actions/*"],
+      "@root/*": ["../*"],
+      "@scaffbench/*": ["./scaffbench/*"],
+      "@scripts/*": ["./*"],
+      "@testing/*": ["../testing/*"],
+      "@web/*": ["../apps/web/src/*"]
     }
   },
   "include": ["**/*.ts"]

@@ -1,11 +1,12 @@
 import type { Ecosystem, ProjectConfig } from "@better-fullstack/types";
+import type { ComboCandidate } from "@testing/lib/generate-combos/types";
 
+import {
+  buildHistoryFingerprint,
+  fingerprintToKey,
+} from "@testing/lib/generate-combos/fingerprint";
+import { buildCommand } from "@testing/lib/generate-combos/render";
 import * as path from "node:path";
-
-import type { ComboCandidate } from "./generate-combos/types";
-
-import { buildHistoryFingerprint, fingerprintToKey } from "./generate-combos/fingerprint";
-import { buildCommand } from "./generate-combos/render";
 
 export function makeBaseConfig(name: string, ecosystem: Ecosystem): ProjectConfig {
   return {

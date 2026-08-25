@@ -1,15 +1,15 @@
 import type { ReactNode } from "react";
 
 import { useLocation } from "@tanstack/react-router";
-import { TbMenu2 as Menu, TbX as X } from "react-icons/tb";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
+import { TbMenu2 as Menu, TbX as X } from "react-icons/tb";
 
 import type { TocEntry } from "@/lib/docs/remark-extract-toc";
 
 import { DocsSidebar } from "@/components/docs/sidebar";
 import { TableOfContents } from "@/components/docs/table-of-contents";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
 import { m } from "@/paraglide/messages.js";
 
 /**

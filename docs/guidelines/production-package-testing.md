@@ -25,7 +25,7 @@ This is not the default test path for normal feature work. Open these files only
 - `testing/PROMPT_TEMPLATE.md` is the reusable operator prompt.
 - `testing/combos-*.json` files are the historical combo ledger. Avoid duplicate combos in new cycles.
 - `testing/generate-combos.ts` helps produce candidate combinations.
-- `scripts/published-package-smoke.ts` is the automated post-publish smoke check used by preview and release CI.
+- `scripts/release/published-package-smoke.ts` is the automated post-publish smoke check used by preview and release CI.
 
 ## Recommended flow
 

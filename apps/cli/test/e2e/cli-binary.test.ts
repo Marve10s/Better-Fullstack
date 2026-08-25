@@ -1,10 +1,9 @@
+import { scaffoldWithCLIBinary, typecheckProject } from "@test/e2e/e2e-utils";
+import { formatCliScaffoldFailure, type CliScaffoldResult } from "@testing/lib/cli-scaffold";
 import { describe, expect, it, beforeAll, afterAll } from "bun:test";
-import { mkdir, rm } from "node:fs/promises";
 import { existsSync } from "node:fs";
+import { mkdir, rm } from "node:fs/promises";
 import { join } from "node:path";
-
-import { formatCliScaffoldFailure, type CliScaffoldResult } from "../../../../testing/lib/cli-scaffold";
-import { scaffoldWithCLIBinary, typecheckProject } from "./e2e-utils";
 
 const SMOKE_DIR = join(import.meta.dir, "..", "..", ".smoke-binary");
 
@@ -45,7 +44,11 @@ describe("CLI Binary Tests", () => {
     it("scaffolds Rust project", async () => {
       const dir = join(SMOKE_DIR, "rust");
       const result = await scaffoldWithCLIBinary(dir, [
-        "--ecosystem", "rust", "--yes", "--no-install", "--no-git",
+        "--ecosystem",
+        "rust",
+        "--yes",
+        "--no-install",
+        "--no-git",
       ]);
       assertScaffoldSuccess(result, ["bts.jsonc", "Cargo.toml"]);
       expect(existsSync(join(dir, "Cargo.toml"))).toBe(true);
@@ -54,7 +57,11 @@ describe("CLI Binary Tests", () => {
     it("scaffolds Python project", async () => {
       const dir = join(SMOKE_DIR, "python");
       const result = await scaffoldWithCLIBinary(dir, [
-        "--ecosystem", "python", "--yes", "--no-install", "--no-git",
+        "--ecosystem",
+        "python",
+        "--yes",
+        "--no-install",
+        "--no-git",
       ]);
       assertScaffoldSuccess(result, ["bts.jsonc", "pyproject.toml"]);
       expect(existsSync(join(dir, "pyproject.toml"))).toBe(true);
@@ -63,7 +70,11 @@ describe("CLI Binary Tests", () => {
     it("scaffolds Go project", async () => {
       const dir = join(SMOKE_DIR, "go");
       const result = await scaffoldWithCLIBinary(dir, [
-        "--ecosystem", "go", "--yes", "--no-install", "--no-git",
+        "--ecosystem",
+        "go",
+        "--yes",
+        "--no-install",
+        "--no-git",
       ]);
       assertScaffoldSuccess(result, ["bts.jsonc", "go.mod"]);
       expect(existsSync(join(dir, "go.mod"))).toBe(true);

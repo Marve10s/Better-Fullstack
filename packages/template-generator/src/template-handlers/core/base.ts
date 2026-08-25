@@ -1,0 +1,14 @@
+import type { ProjectConfig } from "@better-fullstack/types";
+
+import type { VirtualFileSystem } from "@/core/virtual-fs";
+
+import { type TemplateData, processTemplatesFromPrefix } from "@/template-handlers/core/utils";
+
+export async function processBaseTemplate(
+  vfs: VirtualFileSystem,
+  templates: TemplateData,
+  config: ProjectConfig,
+  targetPath = "",
+): Promise<void> {
+  processTemplatesFromPrefix(vfs, templates, "base", targetPath, config);
+}

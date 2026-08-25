@@ -1,10 +1,9 @@
 import type { CommandExecutor } from "@effect/platform/CommandExecutor";
+import type { CommandResult, Effort } from "@scaffbench/types";
 import type * as Effect from "effect/Effect";
 
-import type { CommandResult, Effort } from "@/types";
-
-import { agentRunCommandOptions, runCommand } from "@/agents/command";
-import { GEN_TIMEOUT_MS } from "@/constants";
+import { agentRunCommandOptions, runCommand } from "@scaffbench/agents/command";
+import { GEN_TIMEOUT_MS } from "@scaffbench/constants";
 
 export function runClaude(input: {
   cwd: string;

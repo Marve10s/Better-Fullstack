@@ -1,9 +1,8 @@
-
 import { formatHex, oklch } from "culori";
 import QR from "qrcode";
 import { type HTMLAttributes, useEffect, useState } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
 
 export type QRCodeProps = HTMLAttributes<HTMLDivElement> & {
   data: string;

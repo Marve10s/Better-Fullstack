@@ -1,5 +1,8 @@
 import type { IconType } from "react-icons";
+
 import { Link } from "@tanstack/react-router";
+import { motion, useReducedMotion } from "motion/react";
+import { useEffect, useState } from "react";
 import {
   TbActivity as Activity,
   TbArrowRight as ArrowRight,
@@ -19,8 +22,6 @@ import {
   TbX as X,
   TbBolt as Zap,
 } from "react-icons/tb";
-import { motion, useReducedMotion } from "motion/react";
-import { useEffect, useState } from "react";
 
 import {
   Dialog,
@@ -37,8 +38,8 @@ import {
   LAUNCH_RADAR_OPEN_EVENT,
   LAUNCH_RADAR_TOTAL,
   markLaunchRadarSeen,
-} from "@/lib/launch-radar";
-import { cn } from "@/lib/utils";
+} from "@/lib/content/launch-radar";
+import { cn } from "@/lib/platform/utils";
 import { m } from "@/paraglide/messages.js";
 
 type ToolMark =
@@ -82,10 +83,7 @@ function LaunchRadarToolMark({ optionId, name }: { optionId: string; name: strin
   if (override.kind === "monogram") {
     return (
       <>
-        <span
-          className={cn("font-pixel text-[11px] leading-none", override.className)}
-          aria-hidden
-        >
+        <span className={cn("font-pixel text-[11px] leading-none", override.className)} aria-hidden>
           {override.monogram}
         </span>
         <span className="sr-only">{name} icon</span>
@@ -210,7 +208,9 @@ export default function LaunchRadarStrip() {
                             <TooltipTrigger className="flex size-6 cursor-default items-center justify-center bg-surface-raised transition-transform duration-200 hover:-translate-y-0.5">
                               <LaunchRadarToolMark optionId={optionId} name={label} />
                             </TooltipTrigger>
-                            <TooltipContent className="font-mono text-[11px]">{label}</TooltipContent>
+                            <TooltipContent className="font-mono text-[11px]">
+                              {label}
+                            </TooltipContent>
                           </Tooltip>
                         );
                       })}

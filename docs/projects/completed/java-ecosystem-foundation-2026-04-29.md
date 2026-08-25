@@ -92,9 +92,9 @@ Java is now a first-class Better Fullstack ecosystem across schemas, CLI prompts
 ## Validation
 
 - `bun run test:release`
-- `bun test packages/template-generator/test/template-handlers/java-base.test.ts apps/cli/test/java-ecosystem.test.ts apps/web/test/java-ecosystem.test.ts`
-- `bun test apps/cli/test/template-snapshots.test.ts`
-- `bun run scripts/check-dep-versions.ts --ecosystem java`
+- `bun test packages/template-generator/test/template-handlers/java-base.test.ts apps/cli/test/ecosystems/java-ecosystem.test.ts apps/web/test/ecosystems/java-ecosystem.test.ts`
+- `bun test apps/cli/test/support/template-snapshots.test.ts`
+- `bun run scripts/maintenance/check-dep-versions.ts --ecosystem java`
 - `bun run --cwd apps/web validate:tech-links`
 
 Generated Java Maven/Gradle runtime tests were not run locally during implementation because that environment did not have a Java Runtime installed. Template structure and generated file content are covered by the repo test suite.

@@ -1,3 +1,4 @@
+import { useCallback, useMemo, useState } from "react";
 import {
   TbCheck as Check,
   TbCopy as Copy,
@@ -5,10 +6,9 @@ import {
   TbShare2 as Share2,
   TbBrandTwitter as Twitter,
 } from "react-icons/tb";
-import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import type { StackState } from "@/lib/stack-defaults";
+import type { StackState } from "@/lib/stack/stack-defaults";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -18,18 +18,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dotted-dialog";
-import {
-  stackAnalyticsProperties,
-  trackCampaignEvent,
-} from "@/lib/campaign-analytics";
+import { stackAnalyticsProperties, trackCampaignEvent } from "@/lib/analytics/campaign-analytics";
+import { markBuilderShareModalSeen } from "@/lib/builder/builder-share-modal-visibility";
 import {
   getCampaignShareMessage,
   getCampaignShareTitle,
   getCampaignShareUrl,
   type ShareMoment,
-} from "@/lib/campaign-share";
-import { markBuilderShareModalSeen } from "@/lib/builder-share-modal-visibility";
-import { cn } from "@/lib/utils";
+} from "@/lib/campaign/campaign-share";
+import { cn } from "@/lib/platform/utils";
 import { m } from "@/paraglide/messages.js";
 
 const GITHUB_URL = "https://github.com/Marve10s/Better-Fullstack";
@@ -131,9 +128,7 @@ export function BuilderShareModal({
           <DialogHeader className="gap-2.5 pr-8">
             <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-border/60 bg-muted/40 px-2.5 py-1 font-mono text-[10px] text-muted-foreground uppercase tracking-wide">
               <Check className="size-3 text-emerald-500" aria-hidden="true" />
-              {moment === "run"
-                ? m.campaignShareRunComplete()
-                : m.campaignShareDownloadComplete()}
+              {moment === "run" ? m.campaignShareRunComplete() : m.campaignShareDownloadComplete()}
             </span>
             <DialogTitle className="text-balance font-semibold text-xl text-foreground leading-tight sm:text-2xl">
               {m.campaignShareTitle()}

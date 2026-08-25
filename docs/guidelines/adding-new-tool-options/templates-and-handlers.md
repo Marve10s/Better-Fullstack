@@ -38,12 +38,12 @@ function processTemplatesFromPrefix(
 
 ### Key behaviors to remember
 
-| Behavior | Detail |
-|----------|--------|
-| Prefix must match from start | `"search/algolia"` matches `"search/algolia/server/..."` but NOT `"cms/search/algolia/..."` |
-| Trailing slash is auto-normalized | `"search/algolia/"` and `"search/algolia"` are equivalent |
-| Nested paths are preserved | `server/base/src/lib/search.ts.hbs` keeps its full directory structure under destPrefix |
-| Empty output = no file | A `.hbs` file that renders to whitespace-only is not written |
+| Behavior                               | Detail                                                                                              |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Prefix must match from start           | `"search/algolia"` matches `"search/algolia/server/..."` but NOT `"cms/search/algolia/..."`         |
+| Trailing slash is auto-normalized      | `"search/algolia/"` and `"search/algolia"` are equivalent                                           |
+| Nested paths are preserved             | `server/base/src/lib/search.ts.hbs` keeps its full directory structure under destPrefix             |
+| Empty output = no file                 | A `.hbs` file that renders to whitespace-only is not written                                        |
 | `excludePrefixes` is path-prefix based | Use to carve out subdirectories: `excludePrefixes: ["search/algolia/server/base/src/experimental"]` |
 
 ### When to use `excludePrefixes`
@@ -56,15 +56,15 @@ Rarely. Most handlers just call `processTemplatesFromPrefix` multiple times with
 
 **Registered in:** `packages/template-generator/src/core/template-processor.ts`
 
-| Helper | Signature | Example |
-|--------|-----------|---------|
-| `eq` | `(a, b) => a === b` | `{{#if (eq backend "hono")}}` |
-| `ne` | `(a, b) => a !== b` | `{{#if (ne auth "none")}}` |
-| `not` | `(a) => !a` | `{{#if (not hasDatabase)}}` |
-| `and` | `(...args) => all truthy` | `{{#if (and hasDb hasAuth)}}` |
-| `or` | `(...args) => any truthy` | `{{#if (or isNext isTanstack)}}` |
+| Helper     | Signature                         | Example                              |
+| ---------- | --------------------------------- | ------------------------------------ |
+| `eq`       | `(a, b) => a === b`               | `{{#if (eq backend "hono")}}`        |
+| `ne`       | `(a, b) => a !== b`               | `{{#if (ne auth "none")}}`           |
+| `not`      | `(a) => !a`                       | `{{#if (not hasDatabase)}}`          |
+| `and`      | `(...args) => all truthy`         | `{{#if (and hasDb hasAuth)}}`        |
+| `or`       | `(...args) => any truthy`         | `{{#if (or isNext isTanstack)}}`     |
 | `includes` | `(arr, val) => arr.includes(val)` | `{{#if (includes frontend "next")}}` |
-| `replace` | `(str, find, repl)` | `{{replace projectName "-" "_"}}` |
+| `replace`  | `(str, find, repl)`               | `{{replace projectName "-" "_"}}`    |
 
 ### Context variables
 
@@ -81,6 +81,7 @@ cssFramework, uiLibrary, ...
 ```
 
 For non-TS ecosystems:
+
 ```
 rustWebFramework, rustFrontend, rustOrm, rustApi, rustCli, rustLibraries (array)
 pythonWebFramework, pythonOrm, pythonValidation, pythonAi (array), pythonTaskQueue, pythonQuality
@@ -234,7 +235,7 @@ export function createContext(_opts: { context: Context }) {
 Each category has its own handler file. The handler calls `processTemplatesFromPrefix()` to route template directories to output directories.
 
 ```typescript
-// packages/template-generator/src/template-handlers/search.ts
+// packages/template-generator/src/template-handlers/features/search.ts
 export async function processSearchTemplates(
   vfs: VirtualFileSystem, templates: TemplateData, config: ProjectConfig,
 ): Promise<void> {
@@ -257,6 +258,7 @@ export async function processSearchTemplates(
 ```
 
 **Pattern to follow when adding a new handler:**
+
 1. Early return if feature is `"none"` or not applicable
 2. Compute `serverDir` based on backend type (`"self"` uses `apps/web`, others use `apps/server`)
 3. Process server templates first, then framework-specific web templates
@@ -388,13 +390,13 @@ export async function processPythonBaseTemplate(vfs, templates, config) {
 
 ### Summary of handler differences
 
-| Behavior | Rust | Go | Python | TypeScript |
-|----------|------|-----|--------|------------|
-| Handler type | Monolithic | Monolithic | Monolithic | Modular (per category) |
-| Conditional inclusion | Handler-level path skips | Handler-level path skips | Template-only conditionals | `processTemplatesFromPrefix` calls |
-| Empty file skipping | NO | YES | YES | YES (via `processTemplatesFromPrefix`) |
-| Adding new feature requires handler edit | Yes (add boolean + skip) | Yes (add boolean + skip) | No | Yes (add handler call in generator.ts) |
-| Dependency management | Cargo.toml.hbs | go.mod.hbs | pyproject.toml.hbs | Programmatic (add-deps.ts + processors) |
+| Behavior                                 | Rust                     | Go                       | Python                     | TypeScript                              |
+| ---------------------------------------- | ------------------------ | ------------------------ | -------------------------- | --------------------------------------- |
+| Handler type                             | Monolithic               | Monolithic               | Monolithic                 | Modular (per category)                  |
+| Conditional inclusion                    | Handler-level path skips | Handler-level path skips | Template-only conditionals | `processTemplatesFromPrefix` calls      |
+| Empty file skipping                      | NO                       | YES                      | YES                        | YES (via `processTemplatesFromPrefix`)  |
+| Adding new feature requires handler edit | Yes (add boolean + skip) | Yes (add boolean + skip) | No                         | Yes (add handler call in generator.ts)  |
+| Dependency management                    | Cargo.toml.hbs           | go.mod.hbs               | pyproject.toml.hbs         | Programmatic (add-deps.ts + processors) |
 
 ---
 

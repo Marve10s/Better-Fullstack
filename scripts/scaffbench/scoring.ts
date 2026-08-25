@@ -1,7 +1,3 @@
-import { existsSync } from "node:fs";
-import { readFile, readdir, stat } from "node:fs/promises";
-import path from "node:path";
-
 import type {
   BenchmarkSpec,
   CommandDisciplineCheck,
@@ -18,11 +14,14 @@ import type {
   StackScore,
   StepResult,
   ToolCompliance,
-} from "@/types";
+} from "@scaffbench/types";
 
-import { ESTIMATED_BUDGET_TOLERANCE } from "@/constants";
-import { isRecurringTransientFailure } from "@/validation/classification";
-import { walk, parseJsonc } from "@/validation/shared";
+import { ESTIMATED_BUDGET_TOLERANCE } from "@scaffbench/constants";
+import { isRecurringTransientFailure } from "@scaffbench/validation/classification";
+import { walk, parseJsonc } from "@scaffbench/validation/shared";
+import { existsSync } from "node:fs";
+import { readFile, readdir, stat } from "node:fs/promises";
+import path from "node:path";
 
 export function typecheckGate(
   scripts: Record<string, string>,

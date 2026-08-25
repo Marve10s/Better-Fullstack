@@ -1,3 +1,4 @@
+import { lifecycleResult } from "@better-fullstack/project-lifecycle/contracts";
 import { intro, log, note, outro } from "@clack/prompts";
 import consola from "consola";
 import fs from "fs-extra";
@@ -10,13 +11,32 @@ import type {
   DirectoryConflict,
   ProjectConfig,
   ToolingCategoryId,
-} from "../../types";
+} from "@/types";
 
-import { BUILDER_URL, getDefaultConfig } from "../../constants";
-import { CreateCommandOptionsSchema } from "../../create-command-input";
-import { gatherConfig } from "../../prompts/config-prompts";
-import { isCancel, isGoBack, navigableSelect } from "../../prompts/navigable";
-import { getProjectName } from "../../prompts/project-name";
+import { resolveCreateConfigBase } from "@/config/config-source";
+import { displayConfig } from "@/config/display-config";
+import { resolveCompatibilityAdjustments } from "@/config/stack-compatibility";
+import { getTemplateConfig, getTemplateDescription } from "@/config/templates";
+import { BUILDER_URL, getDefaultConfig } from "@/constants";
+import { CreateCommandOptionsSchema } from "@/create-command-input";
+import { createProject } from "@/helpers/core/create-project";
+import { generateReproducibleCommand } from "@/lifecycle/generate-reproducible-command";
+import { getCurrentLifecycleVersions } from "@/lifecycle/scaffold-manifest";
+import { openUrl } from "@/platform/open-url";
+import { isSilent, runWithContextAsync } from "@/presentation/context";
+import { CLIError, UserCancelledError, exitCancelled, exitWithError } from "@/presentation/errors";
+import { displayPreflightWarnings } from "@/presentation/preflight-display";
+import { canPromptInteractively } from "@/presentation/prompt-environment";
+import { renderTitle } from "@/presentation/render-title";
+import {
+  assertGeneratedVerificationComplete,
+  runGeneratedChecks,
+} from "@/project/generated-checks";
+import { handleDirectoryConflict, setupProjectDirectory } from "@/project/project-directory";
+import { addToHistory } from "@/project/project-history";
+import { gatherConfig } from "@/prompts/core/config-prompts";
+import { isCancel, isGoBack, navigableSelect } from "@/prompts/core/navigable";
+import { getProjectName } from "@/prompts/project/project-name";
 import {
   SHAPE_DEFAULT_ECOSYSTEM,
   dotnetFrontendPartSpecs,
@@ -24,48 +44,28 @@ import {
   nativeMobilePartSpecs,
   noticeNativeInstallSkipped,
   shapeFlagsForEcosystem,
-} from "../../prompts/project-shape";
-import { getVersionChannelChoice } from "../../prompts/version-channel";
+} from "@/prompts/project/project-shape";
+import { getVersionChannelChoice } from "@/prompts/project/version-channel";
+import {
+  maybeShowTelemetryNotice,
+  type TelemetrySource,
+  trackEvent,
+  trackProjectCreation,
+} from "@/telemetry/analytics";
 import {
   getKotlinJavaIncompatibilityReason,
   getToolingCapability,
   getToolingCategory,
   isToolingOverlayPart,
   legacyProjectConfigToStackParts,
-} from "../../types";
-import {
-  maybeShowTelemetryNotice,
-  type TelemetrySource,
-  trackEvent,
-  trackProjectCreation,
-} from "../../utils/analytics";
-import { resolveCreateConfigBase } from "../../utils/config-source";
-import { isSilent, runWithContextAsync } from "../../utils/context";
-import { displayConfig } from "../../utils/display-config";
-import { CLIError, UserCancelledError, exitCancelled, exitWithError } from "../../utils/errors";
-import { generateReproducibleCommand } from "../../utils/generate-reproducible-command";
-import {
-  assertGeneratedVerificationComplete,
-  runGeneratedChecks,
-} from "../../utils/generated-checks";
-import { lifecycleResult } from "../../utils/lifecycle-contract";
-import { openUrl } from "../../utils/open-url";
-import { displayPreflightWarnings } from "../../utils/preflight-display";
-import { handleDirectoryConflict, setupProjectDirectory } from "../../utils/project-directory";
-import { addToHistory } from "../../utils/project-history";
-import { canPromptInteractively } from "../../utils/prompt-environment";
-import { renderTitle } from "../../utils/render-title";
-import { getCurrentLifecycleVersions } from "../../utils/scaffold-manifest";
-import { resolveCompatibilityAdjustments } from "../../utils/stack-compatibility";
-import { getTemplateConfig, getTemplateDescription } from "../../utils/templates";
+} from "@/types";
 import {
   getProvidedFlags,
   assertShapeInputIsUsable,
   processAndValidateFlags,
   processProvidedFlagsWithoutValidation,
   validateConfigCompatibility,
-} from "../../validation";
-import { createProject } from "./create-project";
+} from "@/validation";
 
 export interface CreateHandlerOptions {
   silent?: boolean;

@@ -4,7 +4,7 @@ import { Suspense } from "react";
 
 import { TableOfContents } from "@/components/docs/table-of-contents";
 import { localizedContentMdxComponents } from "@/components/mdx/localized-content-components";
-import { formatContentDate } from "@/lib/content-date";
+import { formatContentDate } from "@/lib/content/content-date";
 import {
   canRenderGuidePageContent,
   getRelatedGuidePages,

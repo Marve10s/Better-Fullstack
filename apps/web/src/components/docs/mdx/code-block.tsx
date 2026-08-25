@@ -1,7 +1,7 @@
-import { TbCheck as Check, TbCopy as Copy } from "react-icons/tb";
 import { useEffect, useRef, useState } from "react";
+import { TbCheck as Check, TbCopy as Copy } from "react-icons/tb";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
 
 /**
  * Wraps the `<pre>` element rehype-shiki produces so we can layer a language

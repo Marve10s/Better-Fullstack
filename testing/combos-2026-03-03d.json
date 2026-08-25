@@ -15,7 +15,7 @@
       "@latest initial result: 8 pass, 2 fail",
       "BugU_react_icons_dep: React web templates import icon components based on shadcnIconLibrary even when uiLibrary is not shadcn-ui; icon deps were not added for non-shadcn UI libs",
       "  Fix: add icon dependency injection for React/Astro-React projects in processUILibraryDeps using config.shadcnIconLibrary",
-      "  File: packages/template-generator/src/processors/css-ui-deps.ts",
+      "  File: packages/template-generator/src/processors/dependencies/css-ui-deps.ts",
       "BugV_nitro_trpc_context: trpc nitro route passes createContext({ req }), but trpc context template had no nitro backend branch (signature/type mismatch, ctx.session typed never)",
       "  Fix: add nitro branch in trpc context template with Request-based context and better-auth session fetch",
       "  File: packages/template-generator/templates/api/trpc/server/src/context.ts.hbs",

@@ -1,5 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 
+import type { GeneratedStackPage } from "@/lib/stack-pages/types";
+
 import { StackCombinationPage } from "@/components/stack-pages/stack-combination-page";
 import {
   DEFAULT_OG_IMAGE_ALT,
@@ -10,9 +12,8 @@ import {
   SITE_URL,
   canonicalUrl,
   getEcosystemOgImage,
-} from "@/lib/seo";
+} from "@/lib/seo/seo";
 import { getStackPage } from "@/lib/stack-pages/source";
-import type { GeneratedStackPage } from "@/lib/stack-pages/types";
 
 function stackPageJsonLd(page: GeneratedStackPage) {
   const url = canonicalUrl(`/stack/${page.slug}`);
@@ -26,9 +27,7 @@ function stackPageJsonLd(page: GeneratedStackPage) {
         url,
         dateModified: page.updated,
         isPartOf: { "@type": "WebSite", name: SITE_NAME, url: SITE_URL },
-        about: page.canonicalParts
-          .filter((part) => part.id !== "none")
-          .map((part) => part.label),
+        about: page.canonicalParts.filter((part) => part.id !== "none").map((part) => part.label),
       },
       {
         "@type": "BreadcrumbList",

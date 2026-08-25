@@ -1,7 +1,7 @@
 # Stack-Graph Phase 0 — Library Inventory & Phase 2 Work Plan
 
 > Historical Phase 0 inventory for [domain authority and mutation contracts](../projects/completed/domain-authority-and-mutation-contracts-2026-08-23.md).
-> Status: **Reference inventory with remaining Phase 3/4 follow-up**. Companion deliverable: structural round-trip tests in `packages/types/test/stack-graph.test.ts`.
+> Status: **Reference inventory with remaining Phase 3/4 follow-up**. Companion deliverable: structural round-trip tests in `packages/types/test/stack/stack-graph.test.ts`.
 
 This catalogs every flat `ProjectConfig` field, its target graph role, owner part, supported ecosystems, selection mode, and where its compatibility rules live today — so Phase 2 (promote libraries to owned parts) can be executed in planned batches instead of discovered incrementally.
 
@@ -11,7 +11,7 @@ All line references are as of commit `7a1580b2`.
 
 ## 1. Current registry coverage (what the graph already knows)
 
-`STACK_TOOL_DEFINITIONS` (`packages/types/src/stack-graph.ts:190-253`) registers:
+`STACK_TOOL_DEFINITIONS` (`packages/types/src/stack/stack-graph.ts:190-253`) registers:
 
 | Already registered                        | Roles                                                                                                                                                          | Ecosystems                                                     |
 | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
@@ -28,7 +28,7 @@ All line references are as of commit `7a1580b2`.
 
 ## 2. Inventory — TypeScript/web library fields
 
-Roles marked **NEW** do not exist in `StackPartRoleSchema` (`packages/types/src/schemas.ts:11-45`) yet. "Owner" is the proposed `ownerPartId` target; "solo collapse" means the single-ecosystem default owner.
+Roles marked **NEW** do not exist in `StackPartRoleSchema` (`packages/types/src/config/schemas.ts:11-45`) yet. "Owner" is the proposed `ownerPartId` target; "solo collapse" means the single-ecosystem default owner.
 
 | Flat field                                                      | Options (excl. none) | Graph role                                              | Owner part                                                              | Mode      | Compatibility rules today                                                                                                                         |
 | --------------------------------------------------------------- | -------------------- | ------------------------------------------------------- | ----------------------------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -120,4 +120,4 @@ Keep this file as the library-role reference while finishing the graph authority
 - [ ] Continue treating global backend locks and settings-shaped constraints as flat until their final graph-settings shape is settled.
 - [ ] Keep graph-derived cache behavior covered for CLI config writes, add/deploy updates, MCP responses, reproducible command generation, URL/import paths, config-file replay, and history replay as more categories move into graph ownership.
 
-Files touched per batch: `packages/types/src/stack-graph.ts` (registry + translation), `schemas.ts` (roles), `compatibility.ts` (rule consolidation, Phase 3), `apps/cli/src/utils/generate-reproducible-command.ts` (emit `--part` instead of flag, lines 99+/217+), `apps/cli/src/utils/bts-config.ts` (migration), `apps/web/src/components/stack-builder/stack-builder.tsx:521-600`, `packages/template-generator/src/generator.ts` (projection must stay byte-identical — guarded by scaffold snapshot tests).
+Files touched per batch: `packages/types/src/stack/stack-graph.ts` (registry + translation), `schemas.ts` (roles), `compatibility.ts` (rule consolidation, Phase 3), `apps/cli/src/lifecycle/generate-reproducible-command.ts` (emit `--part` instead of flag, lines 99+/217+), `apps/cli/src/config/bts-config.ts` (migration), `apps/web/src/components/stack-builder/stack-builder.tsx:521-600`, `packages/template-generator/src/generator.ts` (projection must stay byte-identical — guarded by scaffold snapshot tests).

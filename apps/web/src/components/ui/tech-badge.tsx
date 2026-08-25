@@ -1,6 +1,5 @@
-
 import { TechIcon } from "@/components/ui/tech-icon";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
 
 interface TechBadgeProps {
   icon: string;

@@ -8,8 +8,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useTheme } from "@/lib/theme";
-import { cn } from "@/lib/utils";
+import { useTheme } from "@/lib/content/theme";
+import { cn } from "@/lib/platform/utils";
 import { m } from "@/paraglide/messages.js";
 
 export interface AgentTab {
@@ -289,9 +289,7 @@ function AgentTabIcon({ tab, active }: { tab: AgentTab; active: boolean }) {
   }
 
   if (tab.iconSrc) {
-    return (
-      <img src={tab.iconSrc} alt="" width={16} height={16} className="size-3.5 sm:size-4" />
-    );
+    return <img src={tab.iconSrc} alt="" width={16} height={16} className="size-3.5 sm:size-4" />;
   }
 
   if (!tab.iconSlug) {

@@ -1,6 +1,4 @@
 import { compile } from "@inlang/paraglide-js";
-
-import { paraglideCompilerOptions } from "../paraglide.config";
+import { paraglideCompilerOptions } from "@web-root/paraglide.config";
 
 await compile(paraglideCompilerOptions);
-

@@ -1,8 +1,8 @@
-import { TbChevronRight as ChevronRight } from "react-icons/tb";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { TbChevronRight as ChevronRight } from "react-icons/tb";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
 
 interface CollapsibleSectionProps {
   title: string;

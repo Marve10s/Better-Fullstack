@@ -1,44 +1,49 @@
-import { intro, log, outro } from "@clack/prompts";
-import fs from "fs-extra";
-import { tmpdir } from "node:os";
-import path from "node:path";
-import pc from "picocolors";
+import type { LifecycleResult } from "@better-fullstack/project-lifecycle/contracts";
 
-import type { AddInput, Addons, BetterTStackConfig, ProjectConfig } from "../../types";
-import type { LifecycleResult } from "../../utils/lifecycle-contract";
-
-import { getDefaultConfig } from "../../constants";
-import { getCapabilityPartSpecsToAdd } from "../../prompts/addons";
-import { getToolingCapability } from "../../types";
-import { maybeShowTelemetryNotice, type TelemetrySource, trackEvent } from "../../utils/analytics";
-import { readBtsConfig } from "../../utils/bts-config";
-import { isSilent, runWithContextAsync } from "../../utils/context";
-import { CLIError, UserCancelledError } from "../../utils/errors";
-import { getProjectRecoveryCommand } from "../../utils/lifecycle-command";
-import { lifecycleResult } from "../../utils/lifecycle-contract";
+import { lifecycleResult } from "@better-fullstack/project-lifecycle/contracts";
 import {
   beginProjectTransaction,
   commitProjectTransaction,
   rollbackProjectTransaction,
   type ProjectTransaction,
   writeProjectTransactionFile,
-} from "../../utils/project-transaction";
-import { renderTitle } from "../../utils/render-title";
+} from "@better-fullstack/project-lifecycle/transaction";
+import { intro, log, outro } from "@clack/prompts";
+import fs from "fs-extra";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import pc from "picocolors";
+
+import type { AddInput, Addons, BetterTStackConfig, ProjectConfig } from "@/types";
+
+import { readBtsConfig } from "@/config/bts-config";
+import { getDefaultConfig } from "@/constants";
+import {
+  ADDONS_REQUIRING_IMPERATIVE_SETUP,
+  isGitleaksSetupComplete,
+  isLinterLefthookSetupComplete,
+  repairExistingAddonSetup,
+} from "@/helpers/addons/addons-setup";
+import { installDependencies } from "@/helpers/core/install-dependencies";
+import {
+  applyStackUpdate,
+  planStackUpdate,
+  type StackUpdatePlan,
+} from "@/helpers/core/stack-update";
+import { getProjectRecoveryCommand } from "@/lifecycle/lifecycle-command";
 import {
   getCurrentLifecycleVersions,
   hashContent,
   readScaffoldManifestResult,
   refreshScaffoldManifestFiles,
   SCAFFOLD_MANIFEST_FILE,
-} from "../../utils/scaffold-manifest";
-import {
-  ADDONS_REQUIRING_IMPERATIVE_SETUP,
-  isGitleaksSetupComplete,
-  isLinterLefthookSetupComplete,
-  repairExistingAddonSetup,
-} from "../addons/addons-setup";
-import { installDependencies } from "./install-dependencies";
-import { applyStackUpdate, planStackUpdate, type StackUpdatePlan } from "./stack-update";
+} from "@/lifecycle/scaffold-manifest";
+import { isSilent, runWithContextAsync } from "@/presentation/context";
+import { CLIError, UserCancelledError } from "@/presentation/errors";
+import { renderTitle } from "@/presentation/render-title";
+import { getCapabilityPartSpecsToAdd } from "@/prompts/developer/addons";
+import { maybeShowTelemetryNotice, type TelemetrySource, trackEvent } from "@/telemetry/analytics";
+import { getToolingCapability } from "@/types";
 
 export interface AddHandlerOptions {
   silent?: boolean;

@@ -1,12 +1,13 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { TbArrowRight as ArrowRight, TbArrowUpRight as ArrowUpRight } from "react-icons/tb";
 import type { CSSProperties } from "react";
 
-import { formatContentDate } from "@/lib/content-date";
+import { Link, createFileRoute } from "@tanstack/react-router";
+import { TbArrowRight as ArrowRight, TbArrowUpRight as ArrowUpRight } from "react-icons/tb";
+
 import type { BlogPost } from "@/lib/blog/source";
 
 import { blogIndexHead } from "@/lib/blog/seo";
 import { getAllBlogPosts } from "@/lib/blog/source";
+import { formatContentDate } from "@/lib/content/content-date";
 import { localizeBlogPost } from "@/lib/i18n/content-copy";
 import { m } from "@/paraglide/messages.js";
 

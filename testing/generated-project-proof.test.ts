@@ -1,11 +1,10 @@
-import { describe, expect, it } from "bun:test";
-import { readFile } from "node:fs/promises";
-
 import {
   hasEligibleEvidenceIdentity,
   missingRequiredSteps,
   GENERATED_PROJECT_PROOF_CASES,
-} from "./lib/generated-project-proof-matrix";
+} from "@testing/lib/generated-project-proof-matrix";
+import { describe, expect, it } from "bun:test";
+import { readFile } from "node:fs/promises";
 
 describe("generated project runtime proof matrix", () => {
   it("pins the exact required lifecycle cases and toolchains", () => {

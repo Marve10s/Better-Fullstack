@@ -1,32 +1,34 @@
 #!/usr/bin/env bun
 
 import type { Ecosystem } from "@better-fullstack/types";
-
-import { existsSync, readFileSync } from "node:fs";
-import { mkdir, rm, writeFile } from "node:fs/promises";
-import { join, resolve } from "node:path";
-
-import type { ComboCandidate, GeneratorArgs, HistoricalLedger } from "./lib/generate-combos/types";
+import type {
+  ComboCandidate,
+  GeneratorArgs,
+  HistoricalLedger,
+} from "@testing/lib/generate-combos/types";
 
 import {
   EVIDENCE_SCHEMA_VERSION,
   type SmokeEvidenceEnvelope,
-} from "../scripts/verified-combinations/evidence";
-import { ensureBuiltCliBinary } from "./lib/cli-binary";
+} from "@scripts/verified-combinations/evidence";
+import { ensureBuiltCliBinary } from "@testing/lib/cli-binary";
 import {
   formatCliScaffoldFailure,
   scaffoldWithCli,
   type CliScaffoldResult,
-} from "./lib/cli-scaffold";
-import { generateBatch } from "./lib/generate-combos/options";
-import { createSeededRandom, seedFromString } from "./lib/generate-combos/seed-random";
+} from "@testing/lib/cli-scaffold";
+import { generateBatch } from "@testing/lib/generate-combos/options";
+import { createSeededRandom, seedFromString } from "@testing/lib/generate-combos/seed-random";
 import {
   buildMajorDepCombos,
   buildMajorDepCombosFromDiff,
   type MajorDepInfo,
-} from "./lib/major-dep-combos";
-import { getPresetCombos } from "./lib/presets";
-import { getVerifier, type VerifyResult } from "./lib/verify";
+} from "@testing/lib/major-dep-combos";
+import { getPresetCombos } from "@testing/lib/presets";
+import { getVerifier, type VerifyResult } from "@testing/lib/verify";
+import { existsSync, readFileSync } from "node:fs";
+import { mkdir, rm, writeFile } from "node:fs/promises";
+import { join, resolve } from "node:path";
 
 const SUPPORTED_SMOKE_ECOSYSTEMS: readonly Ecosystem[] = [
   "typescript",
@@ -403,7 +405,7 @@ if (args.majorDeps) {
     // Auto-detect from git diff
     try {
       const proc = Bun.spawn(
-        ["git", "diff", "HEAD~1", "--", "packages/template-generator/src/utils/add-deps.ts"],
+        ["git", "diff", "HEAD~1", "--", "packages/template-generator/src/dependencies/add-deps.ts"],
         { stdout: "pipe", stderr: "pipe" },
       );
       const diffText = await new Response(proc.stdout).text();

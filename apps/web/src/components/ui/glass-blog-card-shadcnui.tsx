@@ -1,11 +1,12 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 // Project standardizes on `motion/react` (Motion); `framer-motion` is its
 // legacy package name and is not installed here. The API used below is identical.
 import { motion } from "motion/react";
 import { TbBook as BookOpen, TbClock as Clock } from "react-icons/tb";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/platform/utils";
 
 interface GlassBlogCardProps {
   title?: string;
@@ -23,10 +24,8 @@ interface GlassBlogCardProps {
 
 const defaultPost = {
   title: "The Future of UI Design",
-  excerpt:
-    "Exploring the latest trends in glassmorphism, 3D elements, and micro-interactions.",
-  image:
-    "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80",
+  excerpt: "Exploring the latest trends in glassmorphism, 3D elements, and micro-interactions.",
+  image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80",
   author: {
     name: "Moumen Soliman",
     avatar: "https://github.com/shadcn.png",
@@ -94,9 +93,7 @@ export function GlassBlogCard({
             <h3 className="text-xl font-semibold leading-tight tracking-tight text-foreground transition-colors group-hover:text-primary">
               {title}
             </h3>
-            <p className="line-clamp-2 text-sm text-muted-foreground">
-              {excerpt}
-            </p>
+            <p className="line-clamp-2 text-sm text-muted-foreground">{excerpt}</p>
           </div>
 
           <div className="flex items-center justify-between border-t border-border/50 pt-4">
@@ -106,9 +103,7 @@ export function GlassBlogCard({
                 <AvatarFallback>{author.name[0]}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col text-xs">
-                <span className="font-medium text-foreground">
-                  {author.name}
-                </span>
+                <span className="font-medium text-foreground">{author.name}</span>
                 <span className="text-muted-foreground">{date}</span>
               </div>
             </div>

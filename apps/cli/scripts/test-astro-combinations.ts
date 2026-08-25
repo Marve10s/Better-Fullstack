@@ -10,9 +10,9 @@
 import { mkdir, rm } from "node:fs/promises";
 import { join } from "node:path";
 
-import type { CreateInput } from "../src/types";
+import type { CreateInput } from "@/types";
 
-import { create } from "../src/index";
+import { create } from "@/index";
 
 // ============================================
 // Types

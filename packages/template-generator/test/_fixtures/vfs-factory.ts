@@ -1,6 +1,6 @@
 import { dirname } from "pathe";
 
-import { VirtualFileSystem } from "../../src/core/virtual-fs";
+import { VirtualFileSystem } from "@/core/virtual-fs";
 
 type PackageJson = {
   name?: string;

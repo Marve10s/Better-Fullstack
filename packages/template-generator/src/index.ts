@@ -1,16 +1,16 @@
-export * from "./types";
-export * from "./core/virtual-fs";
-export * from "./core/template-processor";
-export * from "./generator";
-export { processAddonTemplates } from "./template-handlers";
-export { processAddonsDeps } from "./processors";
+export * from "@/types";
+export * from "@/core/virtual-fs";
+export * from "@/core/template-processor";
+export * from "@/generator";
+export { processAddonTemplates } from "@/template-handlers";
+export { processAddonsDeps } from "@/processors";
 
-export { EMBEDDED_TEMPLATES, TEMPLATE_COUNT } from "./templates.generated";
-export { dependencyVersionMap, type AvailableDependencies } from "./utils/add-deps";
-export * from "./utils/dependency-checker";
-export * from "./utils/dependency-update-policy";
+export { EMBEDDED_TEMPLATES, TEMPLATE_COUNT } from "@/templates.generated";
+export { dependencyVersionMap, type AvailableDependencies } from "@/dependencies/add-deps";
+export * from "@/dependencies/dependency-checker";
+export * from "@/dependencies/dependency-update-policy";
 export {
   validatePreflightConfig,
   type PreflightWarning,
   type PreflightResult,
-} from "./preflight-validation";
+} from "@/preflight-validation";

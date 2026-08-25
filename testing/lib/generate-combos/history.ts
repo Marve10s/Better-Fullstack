@@ -1,10 +1,9 @@
+import type { HistoricalLedger, LedgerRowDoc } from "@testing/lib/generate-combos/types";
+
+import { fingerprintToKey, parseRowFingerprint } from "@testing/lib/generate-combos/fingerprint";
+import { Effect } from "effect";
 import { readdir, readFile } from "node:fs/promises";
 import * as path from "node:path";
-
-import { Effect } from "effect";
-
-import { fingerprintToKey, parseRowFingerprint } from "./fingerprint";
-import type { HistoricalLedger, LedgerRowDoc } from "./types";
 
 const TESTING_DIR = path.resolve(import.meta.dir, "../..");
 const LEGACY_COMBOS_FILE = path.join(TESTING_DIR, "combos.json");

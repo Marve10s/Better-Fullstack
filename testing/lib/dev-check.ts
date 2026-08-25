@@ -1,7 +1,7 @@
 import type { ProjectConfig } from "@better-fullstack/types";
-import { getLocalWebDevPort } from "@better-fullstack/types";
+import type { StepResult } from "@testing/lib/verify";
 
-import type { StepResult } from "./verify";
+import { getLocalWebDevPort } from "@better-fullstack/types";
 
 const DEV_STARTUP_TIMEOUT_MS = 120_000;
 const TOTAL_DEV_CHECK_TIMEOUT_MS = 150_000;
@@ -52,8 +52,16 @@ function getExpectedDevUrl(config: ProjectConfig): string {
 }
 
 const EXTERNAL_DB_TYPES = new Set([
-  "postgres", "mysql", "mongodb", "edgedb", "redis",
-  "planetscale", "neon", "turso", "xata", "supabase",
+  "postgres",
+  "mysql",
+  "mongodb",
+  "edgedb",
+  "redis",
+  "planetscale",
+  "neon",
+  "turso",
+  "xata",
+  "supabase",
 ]);
 
 export function isDbDependentProject(config: ProjectConfig): boolean {
@@ -130,13 +138,16 @@ export function validateHtmlResponse(
     if (frontend === "nuxt" && !body.includes("_nuxt")) {
       errors.push("Missing Nuxt asset markers");
     }
-    if (["tanstack-router", "react-router", "react-vite"].includes(frontend || "") && !body.includes('type="module"')) {
+    if (
+      ["tanstack-router", "react-router", "react-vite"].includes(frontend || "") &&
+      !body.includes('type="module"')
+    ) {
       errors.push("Missing Vite module scripts");
     }
     if (
-      frontend === "svelte"
-      && !body.includes('type="module"')
-      && !body.includes("data-sveltekit")
+      frontend === "svelte" &&
+      !body.includes('type="module"') &&
+      !body.includes("data-sveltekit")
     ) {
       errors.push("Missing SvelteKit hydration markers");
     }
@@ -243,10 +254,7 @@ export async function startDevServer(
   let _stderrBuf = "";
   const decoder = new TextDecoder();
 
-  const readStream = (
-    stream: ReadableStream<Uint8Array>,
-    target: "stdout" | "stderr",
-  ) => {
+  const readStream = (stream: ReadableStream<Uint8Array>, target: "stdout" | "stderr") => {
     const reader = stream.getReader();
     (async () => {
       try {
@@ -272,15 +280,14 @@ export async function startDevServer(
     await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
 
     if (proc.exitCode !== null) {
-      throw Object.assign(
-        new Error(`Dev server exited with code ${proc.exitCode}`),
-        { stdoutBuf: _stdoutBuf, stderrBuf: _stderrBuf },
-      );
+      throw Object.assign(new Error(`Dev server exited with code ${proc.exitCode}`), {
+        stdoutBuf: _stdoutBuf,
+        stderrBuf: _stderrBuf,
+      });
     }
 
     const port = getExpectedPort(config);
-    serverUrl =
-      extractUrlFromOutput(_stdoutBuf, port) || extractUrlFromOutput(_stderrBuf, port);
+    serverUrl = extractUrlFromOutput(_stdoutBuf, port) || extractUrlFromOutput(_stderrBuf, port);
 
     if (!serverUrl && Date.now() >= nextStartupProbeAt) {
       nextStartupProbeAt = Date.now() + STARTUP_PROBE_INTERVAL_MS;
@@ -338,10 +345,7 @@ export async function stopDevServer(handle: DevServerHandle): Promise<void> {
 
 // ── Original runDevCheck (backward-compatible wrapper) ──────────────────
 
-export async function runDevCheck(
-  projectDir: string,
-  config: ProjectConfig,
-): Promise<StepResult> {
+export async function runDevCheck(projectDir: string, config: ProjectConfig): Promise<StepResult> {
   const start = Date.now();
   const isDbDependent = isDbDependentProject(config);
 
@@ -398,8 +402,7 @@ export async function runDevCheck(
           };
         }
       } catch (error) {
-        lastError =
-          error instanceof Error ? error.message : String(error);
+        lastError = error instanceof Error ? error.message : String(error);
       }
 
       if (attempt < MAX_FETCH_RETRIES - 1) {

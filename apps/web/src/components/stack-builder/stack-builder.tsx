@@ -59,9 +59,35 @@ import {
 } from "react-icons/tb";
 import { toast } from "sonner";
 
-import type { ShareMoment } from "@/lib/campaign-share";
-import type { Ecosystem } from "@/lib/types";
+import type { ShareMoment } from "@/lib/campaign/campaign-share";
+import type { Ecosystem } from "@/lib/stack/types";
 
+import { BuilderShareModal } from "@/components/stack-builder/builder-share-modal";
+import {
+  CapabilityEvidenceBadge,
+  CapabilityEvidenceProvider,
+  useCapabilityEvidenceInventory,
+} from "@/components/stack-builder/capability-evidence-badge";
+import { ExistingProjectImportDialog } from "@/components/stack-builder/existing-project-import-dialog";
+import { PresetsPanel } from "@/components/stack-builder/presets-panel";
+import { SavedStacksPanel } from "@/components/stack-builder/saved-stacks-panel";
+import {
+  type BuilderSectionDef,
+  getBuilderSections,
+  isHiddenMobilePlatformCategory,
+} from "@/components/stack-builder/section-groups";
+import { ShareButton } from "@/components/stack-builder/share-button";
+import { TechIcon } from "@/components/stack-builder/tech-icon";
+import {
+  analyzeStackCompatibility,
+  GRAPH_COMMON_CATEGORY_ORDER,
+  getCategoryDisplayName,
+  getDisabledReason,
+  getVisibleOptions,
+  isOptionCompatible,
+  validateProjectName,
+} from "@/components/stack-builder/utils";
+import { YoloToggle } from "@/components/stack-builder/yolo-toggle";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -84,8 +110,13 @@ import {
   failureDurationMs,
   type BuilderRunFailure,
   type BuilderZipFailureStage,
-} from "@/lib/builder-failure-analytics";
-import { clearBuilderMode, publishBuilderMode } from "@/lib/builder-mode-bridge";
+} from "@/lib/analytics/builder-failure-analytics";
+import {
+  selectionAnalyticsProperties,
+  stackAnalyticsProperties,
+  trackCampaignEvent,
+} from "@/lib/analytics/campaign-analytics";
+import { clearBuilderMode, publishBuilderMode } from "@/lib/builder/builder-mode-bridge";
 import {
   buildBuilderSearchLookup,
   createBuilderSearchIndex,
@@ -95,71 +126,39 @@ import {
   saveBuilderSearchPreferences,
   type BuilderSearchLookup,
   type BuilderSearchPreferences,
-} from "@/lib/builder-search-preferences";
-import { hasSeenBuilderShareModal } from "@/lib/builder-share-modal-visibility";
+} from "@/lib/builder/builder-search-preferences";
+import { hasSeenBuilderShareModal } from "@/lib/builder/builder-share-modal-visibility";
 import {
-  selectionAnalyticsProperties,
-  stackAnalyticsProperties,
-  trackCampaignEvent,
-} from "@/lib/campaign-analytics";
+  buildSavedStackEntry,
+  loadSavedStacks,
+  saveSavedStacks,
+  type SavedStackEntry,
+} from "@/lib/builder/saved-stacks";
+import {
+  getLocalizedCategoryDisplayName,
+  getLocalizedSectionName,
+  getLocalizedTechOption,
+} from "@/lib/i18n/builder-copy";
+import { cn } from "@/lib/platform/utils";
+import { getStackRunSupport } from "@/lib/project/run-support";
 import {
   DEFAULT_STACK,
   ECOSYSTEMS,
   PRESET_TEMPLATES,
   type StackState,
   TECH_OPTIONS,
-} from "@/lib/constant";
-import {
-  getLocalizedCategoryDisplayName,
-  getLocalizedSectionName,
-  getLocalizedTechOption,
-} from "@/lib/i18n/builder-copy";
-import { getStackRunSupport } from "@/lib/run-support";
-import {
-  buildSavedStackEntry,
-  loadSavedStacks,
-  saveSavedStacks,
-  type SavedStackEntry,
-} from "@/lib/saved-stacks";
-import { useStackState } from "@/lib/stack-url-state";
+} from "@/lib/stack/constant";
+import { useStackState } from "@/lib/stack/stack-url-state";
 import {
   generateStackCommand,
   generateStackSharingUrl,
   getStackKeyForCategory,
   getToolingCategoryForUi,
   getToolingOptionForUi,
-} from "@/lib/stack-utils";
-import { ICON_REGISTRY } from "@/lib/tech-icons";
-import { getTechResourceLinks } from "@/lib/tech-resource-links";
-import { cn } from "@/lib/utils";
+} from "@/lib/stack/stack-utils";
+import { ICON_REGISTRY } from "@/lib/stack/tech-icons";
+import { getTechResourceLinks } from "@/lib/stack/tech-resource-links";
 import { m } from "@/paraglide/messages.js";
-
-import { BuilderShareModal } from "./builder-share-modal";
-import {
-  CapabilityEvidenceBadge,
-  CapabilityEvidenceProvider,
-  useCapabilityEvidenceInventory,
-} from "./capability-evidence-badge";
-import { ExistingProjectImportDialog } from "./existing-project-import-dialog";
-import { PresetsPanel } from "./presets-panel";
-import { SavedStacksPanel } from "./saved-stacks-panel";
-import {
-  type BuilderSectionDef,
-  getBuilderSections,
-  isHiddenMobilePlatformCategory,
-} from "./section-groups";
-import { ShareButton } from "./share-button";
-import { TechIcon } from "./tech-icon";
-import {
-  analyzeStackCompatibility,
-  GRAPH_COMMON_CATEGORY_ORDER,
-  getCategoryDisplayName,
-  getDisabledReason,
-  getVisibleOptions,
-  isOptionCompatible,
-  validateProjectName,
-} from "./utils";
-import { YoloToggle } from "./yolo-toggle";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -1557,12 +1556,12 @@ const SHADCN_SUB_CATEGORIES = new Set<keyof typeof TECH_OPTIONS>([
 ]);
 
 const PreviewPanel = lazy(async () => {
-  const module = await import("./preview-panel");
+  const module = await import("@/components/stack-builder/preview-panel");
   return { default: module.PreviewPanel };
 });
 
 const RunPanel = lazy(async () => {
-  const module = await import("./run-panel");
+  const module = await import("@/components/stack-builder/run-panel");
   return { default: module.RunPanel };
 });
 
@@ -2703,7 +2702,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
     );
     try {
       const { createStackProjectArchive, downloadProjectArchive } =
-        await import("@/lib/project-download");
+        await import("@/lib/project/project-download");
       const archive = await createStackProjectArchive(stackToDownload);
       failureStage = "browser_download";
       downloadProjectArchive(archive);
@@ -2937,7 +2936,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
   // synchronously — a suspended mount would delay the copy button's
   // shared-layout landing target past the command bar's exit.
   useEffect(() => {
-    if (runSupported) void import("./run-panel");
+    if (runSupported) void import("@/components/stack-builder/run-panel");
   }, [runSupported]);
 
   const handleRunStarted = useCallback(

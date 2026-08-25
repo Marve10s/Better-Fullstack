@@ -10,7 +10,7 @@ import {
   isTelemetryPageRequest,
   telemetryAuthFailureResponse,
   withPrivateTelemetryHeaders,
-} from "@/lib/telemetry-auth.server";
+} from "@/lib/telemetry/telemetry-auth.server";
 import { paraglideMiddleware } from "@/paraglide/server.js";
 
 export default createServerEntry({

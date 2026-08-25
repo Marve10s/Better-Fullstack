@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
 
 const VERTEX_SHADER = `
 attribute vec2 a_position;
@@ -33,12 +33,7 @@ interface ShaderCanvasProps {
   paused?: boolean;
 }
 
-export function ShaderCanvas({
-  fragmentShader,
-  className,
-  uniforms,
-  paused,
-}: ShaderCanvasProps) {
+export function ShaderCanvas({ fragmentShader, className, uniforms, paused }: ShaderCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const uniformsRef = useRef(uniforms);
   uniformsRef.current = uniforms;
@@ -68,11 +63,7 @@ export function ShaderCanvas({
 
     const buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]),
-      gl.STATIC_DRAW,
-    );
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
 
     const aPos = gl.getAttribLocation(program, "a_position");
     gl.enableVertexAttribArray(aPos);
@@ -154,11 +145,5 @@ export function ShaderCanvas({
     };
   }, [fragmentShader]);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      aria-hidden
-      className={cn("block h-full w-full", className)}
-    />
-  );
+  return <canvas ref={canvasRef} aria-hidden className={cn("block h-full w-full", className)} />;
 }

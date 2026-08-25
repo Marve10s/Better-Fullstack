@@ -1,4 +1,5 @@
-import type { ChangelogRelease } from "@/lib/changelog";
+import type { ChangelogRelease } from "@/lib/content/changelog";
+
 import { m } from "@/paraglide/messages.js";
 
 export function getLocalizedChangelogRelease(release: ChangelogRelease): ChangelogRelease {

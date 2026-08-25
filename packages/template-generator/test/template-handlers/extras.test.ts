@@ -1,9 +1,9 @@
+import { makeConfig } from "@test/_fixtures/config-factory";
+import { makeTemplates } from "@test/_fixtures/template-factory";
 import { describe, expect, it } from "bun:test";
 
-import { VirtualFileSystem } from "../../src/core/virtual-fs";
-import { processExtrasTemplates } from "../../src/template-handlers/extras";
-import { makeConfig } from "../_fixtures/config-factory";
-import { makeTemplates } from "../_fixtures/template-factory";
+import { VirtualFileSystem } from "@/core/virtual-fs";
+import { processExtrasTemplates } from "@/template-handlers/core/extras";
 
 describe("processExtrasTemplates", () => {
   it("emits pnpm .npmrc for native workspaces", async () => {

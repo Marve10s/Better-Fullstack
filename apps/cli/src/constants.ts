@@ -2,9 +2,9 @@ import { createCliDefaultProjectConfigBase } from "@better-fullstack/types";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import type { CSSFramework, Frontend, UILibrary } from "./types";
+import type { CSSFramework, Frontend, UILibrary } from "@/types";
 
-import { getUserPkgManager } from "./utils/get-package-manager";
+import { getUserPkgManager } from "@/platform/get-package-manager";
 
 // Re-export from template-generator (single source of truth).
 // Type-only: the value lives in the heavy template-generator bundle and must

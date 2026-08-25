@@ -1,11 +1,15 @@
 import type { Ecosystem, ProjectConfig } from "@better-fullstack/types";
 
+import {
+  runDevCheck,
+  startDevServer,
+  stopDevServer,
+  isDbDependentProject,
+} from "@testing/lib/dev-check";
+import { runRouteCheck } from "@testing/lib/route-check";
 import { readFileSync, existsSync } from "node:fs";
 import { readdir } from "node:fs/promises";
 import { join } from "node:path";
-
-import { runDevCheck, startDevServer, stopDevServer, isDbDependentProject } from "./dev-check";
-import { runRouteCheck } from "./route-check";
 
 const STEP_TIMEOUT_MS = 300_000; // 5 minutes per step
 const NUXT_INSTALL_TIMEOUT_MS = 900_000; // Nuxt dependency resolution is materially heavier.

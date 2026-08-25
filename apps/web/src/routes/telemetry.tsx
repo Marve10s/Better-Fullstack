@@ -1,19 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 
-import type { TelemetryDashboardData } from "@/lib/telemetry-dashboard";
+import type { TelemetryDashboardData } from "@/lib/telemetry/telemetry-dashboard";
 
 import { TelemetryDecisionDashboard } from "@/components/analytics/telemetry-decision-dashboard";
 import Footer from "@/components/home/footer";
-import { NOINDEX_ROBOTS } from "@/lib/robots";
-import { canonicalUrl } from "@/lib/seo";
+import { NOINDEX_ROBOTS } from "@/lib/seo/robots";
+import { canonicalUrl } from "@/lib/seo/seo";
 
 type LoaderResult =
   | { status: "ready"; data: TelemetryDashboardData }
   | { status: "unconfigured" | "empty" | "unavailable" | "unauthorized" };
 
 const loadTelemetry = createServerFn({ method: "GET" }).handler(async (): Promise<LoaderResult> => {
-  const { loadTelemetryForOwner } = await import("@/lib/telemetry-data.server");
+  const { loadTelemetryForOwner } = await import("@/lib/telemetry/telemetry-data.server");
   return loadTelemetryForOwner();
 });
 

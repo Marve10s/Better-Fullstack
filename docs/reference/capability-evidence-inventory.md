@@ -2,7 +2,7 @@
 
 The capability inventory gives each public option an evidence level, maturity, freshness state,
 maintenance owner, last verified release, limitation, and closing recipe. The executable authority
-lives in `packages/types/src/capability-inventory.ts`.
+lives in `packages/types/src/capabilities/capability-inventory.ts`.
 
 ## Evidence levels
 
@@ -68,7 +68,7 @@ The same inventory appears in these places:
 Run the source audit before promoting an option:
 
 ```bash
-bun run scripts/capability-evidence-audit.ts --markdown
+bun run scripts/evidence/capability-evidence-audit.ts --markdown
 ```
 
 The audit reports TODO branches, placeholders, manual setup, and dependency-only candidates. A
@@ -78,7 +78,7 @@ Each capability receipt records flaky runs, repair minutes, dependency changes, 
 verification maintainer is present. Compare one or more receipts with:
 
 ```bash
-bun run scripts/capability-maintenance-report.ts --markdown path/to/receipt.json
+bun run scripts/evidence/capability-maintenance-report.ts --markdown path/to/receipt.json
 ```
 
 The report recommends `keep`, `watch`, or `quarantine` for each recipe. A current failed run or

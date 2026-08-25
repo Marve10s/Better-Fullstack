@@ -16,6 +16,15 @@ import {
   TbCopy as Copy,
 } from "react-icons/tb";
 
+import { OpenAIMark, ProviderLogo, type ProviderLogoId } from "@/components/home/provider-marks";
+import { SCAFFBENCH21_CELLS, SCAFFBENCH21_MODELS } from "@/components/home/scaffbench-2-1-data";
+import {
+  SCAFFBENCH22_CELLS,
+  SCAFFBENCH22_MODELS,
+  SCAFFBENCH22_SPECS,
+} from "@/components/home/scaffbench-2-2-data";
+import { type ScaffbenchCell, type ScaffbenchModel } from "@/components/home/scaffbench-2-data";
+import { SCAFFBENCH3_CELLS, SCAFFBENCH3_MODELS } from "@/components/home/scaffbench-3-board-data";
 import { AgentCommandTabs } from "@/components/mcp/agent-command-tabs";
 import {
   DropdownMenu,
@@ -27,15 +36,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { useTheme } from "@/lib/theme";
-import { cn } from "@/lib/utils";
+import { useTheme } from "@/lib/content/theme";
+import { cn } from "@/lib/platform/utils";
 import { m } from "@/paraglide/messages.js";
-
-import { OpenAIMark, ProviderLogo, type ProviderLogoId } from "./provider-marks";
-import { SCAFFBENCH21_CELLS, SCAFFBENCH21_MODELS } from "./scaffbench-2-1-data";
-import { SCAFFBENCH22_CELLS, SCAFFBENCH22_MODELS, SCAFFBENCH22_SPECS } from "./scaffbench-2-2-data";
-import { type ScaffbenchCell, type ScaffbenchModel } from "./scaffbench-2-data";
-import { SCAFFBENCH3_CELLS, SCAFFBENCH3_MODELS } from "./scaffbench-3-board-data";
 
 const fadeUpInitial = { opacity: 0, y: 12 } as const;
 
@@ -746,11 +749,7 @@ function BenchmarkChartCard({ className }: { className?: string } = {}) {
                 />
               ))}
             </div>
-            <V2ModelFilter
-              points={eligiblePoints}
-              selected={selectedKeys}
-              onToggle={toggleModel}
-            />
+            <V2ModelFilter points={eligiblePoints} selected={selectedKeys} onToggle={toggleModel} />
           </div>
         </div>
       </div>
@@ -794,22 +793,21 @@ function BenchmarkChartCard({ className }: { className?: string } = {}) {
   );
 }
 
-function AxisLayer({
-  x,
-  note,
-  palette,
-}: {
-  x: AxisSpec;
-  note: string;
-  palette: ChartPalette;
-}) {
+function AxisLayer({ x, note, palette }: { x: AxisSpec; note: string; palette: ChartPalette }) {
   return (
     <g>
       {x.ticks.map((tick) => {
         const tx = plotX(tick, x);
         return (
           <g key={`x-${tick}`}>
-            <line x1={tx} y1={M_T} x2={tx} y2={M_T + PLOT_H} stroke={palette.grid} strokeWidth={1} />
+            <line
+              x1={tx}
+              y1={M_T}
+              x2={tx}
+              y2={M_T + PLOT_H}
+              stroke={palette.grid}
+              strokeWidth={1}
+            />
             <text
               x={tx}
               y={M_T + PLOT_H + 24}
@@ -902,27 +900,12 @@ function HoverGuides({
   );
 }
 
-function ChartMarker({
-  hex,
-  cardBg,
-  active,
-}: {
-  hex: string;
-  cardBg: string;
-  active?: boolean;
-}) {
+function ChartMarker({ hex, cardBg, active }: { hex: string; cardBg: string; active?: boolean }) {
   return (
     <>
       <circle r={22} fill="transparent" stroke="transparent" />
-      {active ? (
-        <circle r={11} fill="none" stroke={hex} strokeWidth={1.5} opacity={0.4} />
-      ) : null}
-      <circle
-        r={active ? 7.5 : 6}
-        fill={hex}
-        stroke={cardBg}
-        strokeWidth={active ? 3 : 2.5}
-      />
+      {active ? <circle r={11} fill="none" stroke={hex} strokeWidth={1.5} opacity={0.4} /> : null}
+      <circle r={active ? 7.5 : 6} fill={hex} stroke={cardBg} strokeWidth={active ? 3 : 2.5} />
     </>
   );
 }
@@ -1019,8 +1002,7 @@ function V2ModelMenuItem({
     <DropdownMenuCheckboxItem checked={checked} onCheckedChange={handleChange} closeOnClick={false}>
       <span className="size-2.5 shrink-0 rounded-[2px]" style={swatchStyle} />
       <span className="min-w-0 flex-1">
-        {point.label}{" "}
-        <span className="text-[10px] opacity-70">[{point.reasoning}]</span>
+        {point.label} <span className="text-[10px] opacity-70">[{point.reasoning}]</span>
       </span>
     </DropdownMenuCheckboxItem>
   );
@@ -1113,10 +1095,7 @@ function V2Dot({
           {point.label}
         </text>
       ) : null}
-      <g
-        className="pointer-events-none transition-opacity duration-150"
-        opacity={active ? 1 : 0}
-      >
+      <g className="pointer-events-none transition-opacity duration-150" opacity={active ? 1 : 0}>
         <text
           x={M_L - x - 12}
           y={4.5}
@@ -1268,7 +1247,8 @@ function LeaderboardSidebar() {
           Leaderboard
         </h2>
         <p className="mt-3 text-pretty text-xs leading-relaxed text-muted-foreground sm:text-sm">
-          Scored across 13 specs on a clean machine. Higher pass rate is better; lower cost, time, and tokens are better.
+          Scored across 13 specs on a clean machine. Higher pass rate is better; lower cost, time,
+          and tokens are better.
         </p>
       </div>
 
@@ -1443,8 +1423,8 @@ function ScaffbenchLeaderboardCard({ className }: { className?: string } = {}) {
                 Core
                 <MetricHelp label="Core pass">
                   The project installs, builds, type-checks and natively compiles on a clean
-                  machine. Quality gates are excluded, so Core answers whether the code runs at
-                  all. Full is always a subset of Core.
+                  machine. Quality gates are excluded, so Core answers whether the code runs at all.
+                  Full is always a subset of Core.
                 </MetricHelp>
               </span>
               <span className="flex items-center justify-end gap-1">
@@ -1511,10 +1491,7 @@ function ModelLeaderRow({ row }: { row: ModelLeaderRow }) {
           </span>
         ) : null}
         <ProviderLogo logo={row.logo} />
-        <span
-          className="truncate font-mono text-sm font-bold"
-          title={row.label}
-        >
+        <span className="truncate font-mono text-sm font-bold" title={row.label}>
           {row.label}
         </span>
         {row.effort ? (

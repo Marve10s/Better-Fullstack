@@ -1,4 +1,6 @@
 import { Link } from "@tanstack/react-router";
+import { motion, useReducedMotion } from "motion/react";
+import { useEffect } from "react";
 import {
   TbArrowRight as ArrowRight,
   TbCheck as Check,
@@ -9,18 +11,16 @@ import {
   TbShieldLock as Shield,
   TbTerminal2 as Terminal,
 } from "react-icons/tb";
-import { motion, useReducedMotion } from "motion/react";
-import { useEffect } from "react";
 
 import { TechIcon } from "@/components/ui/tech-icon";
+import { trackCampaignEvent } from "@/lib/analytics/campaign-analytics";
 import {
   CAMPAIGN_BUILDER_SEARCH,
   CAMPAIGN_PRESETS,
   CAMPAIGN_SLUG,
   getCampaignPresetUrl,
-} from "@/lib/campaign";
-import { trackCampaignEvent } from "@/lib/campaign-analytics";
-import { cn } from "@/lib/utils";
+} from "@/lib/campaign/campaign";
+import { cn } from "@/lib/platform/utils";
 import { m } from "@/paraglide/messages.js";
 
 const ACCENTS = {
@@ -76,10 +76,7 @@ function ProductWindow() {
                 initial={reduceMotion ? false : { opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.42 + index * 0.06 }}
-                className={cn(
-                  "rounded px-2 py-1.5",
-                  index === 1 && "bg-white/7 text-white/85",
-                )}
+                className={cn("rounded px-2 py-1.5", index === 1 && "bg-white/7 text-white/85")}
               >
                 {index < 2 ? "⌄ " : "  "}
                 {file}

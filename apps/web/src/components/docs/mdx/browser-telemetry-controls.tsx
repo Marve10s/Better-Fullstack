@@ -5,8 +5,8 @@ import {
   setBrowserTelemetryEnabled,
   subscribeBrowserTelemetry,
   type BrowserTelemetryStatus,
-} from "@/lib/product-analytics";
-import { cn } from "@/lib/utils";
+} from "@/lib/analytics/product-analytics";
+import { cn } from "@/lib/platform/utils";
 
 const STATUS_COPY: Record<BrowserTelemetryStatus["reason"], string> = {
   enabled: "Browser analytics are enabled.",

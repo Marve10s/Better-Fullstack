@@ -1,10 +1,10 @@
 import { cliInputToProjectConfigPartial, parseStackPartSpecs } from "@better-fullstack/types";
 import { describe, expect, it } from "bun:test";
 
-import { processPackageConfigs } from "../../src/post-process/package-configs";
-import { dependencyVersionMap } from "../../src/utils/add-deps";
-import { makeConfig } from "../_fixtures/config-factory";
-import { createSeededVFS } from "../_fixtures/vfs-factory";
+import { processPackageConfigs } from "@/post-process/package-configs";
+import { dependencyVersionMap } from "@/dependencies/add-deps";
+import { makeConfig } from "@test/_fixtures/config-factory";
+import { createSeededVFS } from "@test/_fixtures/vfs-factory";
 
 type PackageJson = {
   name?: string;

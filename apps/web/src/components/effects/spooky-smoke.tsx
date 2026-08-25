@@ -1,4 +1,4 @@
-import { ShaderCanvas } from "./shader-canvas";
+import { ShaderCanvas } from "@/components/effects/shader-canvas";
 
 const FRAGMENT = `
 precision highp float;

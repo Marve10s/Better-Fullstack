@@ -4,10 +4,10 @@ import fs from "fs-extra";
 import path from "node:path";
 import pc from "picocolors";
 
-import type { ProjectConfig } from "../../types";
+import type { ProjectConfig } from "@/types";
 
-import { getPackageExecutionArgs } from "../../utils/package-runner";
-import { selectAddonOptionOrDefault } from "./interactive-selection";
+import { selectAddonOptionOrDefault } from "@/helpers/addons/interactive-selection";
+import { getPackageExecutionArgs } from "@/platform/package-runner";
 
 type TuiTemplate = "core" | "react" | "solid";
 

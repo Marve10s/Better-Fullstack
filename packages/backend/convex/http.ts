@@ -17,9 +17,9 @@ import {
 } from "@better-fullstack/types/telemetry";
 import { httpRouter } from "convex/server";
 
-import { internal } from "./_generated/api";
-import { httpAction } from "./_generated/server";
-import { getTelemetryDashboardAccess } from "./analytics_access";
+import { internal } from "@/_generated/api";
+import { httpAction } from "@/_generated/server";
+import { getTelemetryDashboardAccess } from "@/analytics_access";
 
 // Envelope fields handled explicitly (not part of the stack config).
 const META_KEYS = new Set([

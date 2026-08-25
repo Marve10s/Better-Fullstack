@@ -1,19 +1,19 @@
-import { AiSearchWorkbenchSpec } from "@/specs/ai-search-workbench";
-import { RustLeptosAxumSpec } from "@/specs/rust-leptos-axum";
-import { PythonIngestionApiSpec } from "@/specs/python-ingestion-api";
-import { GoRealtimeApiSpec } from "@/specs/go-realtime-api";
-import { MultiDotnetOpsSpec } from "@/specs/multi-dotnet-ops";
-import { TsMinimalRestraintSpec } from "@/specs/ts-minimal-restraint";
-import { TsSvelteEdgeOrpcSpec } from "@/specs/ts-svelte-edge-orpc";
-import { DotnetBlazorCqrsSpec } from "@/specs/dotnet-blazor-cqrs";
-import { MultiTsGoGrpcSpec } from "@/specs/multi-ts-go-grpc";
-import { JavaSpringJooqKeycloakSpec } from "@/specs/java-spring-jooq-keycloak";
-import { ElixirBroadwayAbsintheSpec } from "@/specs/elixir-broadway-absinthe";
-import { ReactNativeExpoSpec } from "@/specs/react-native-expo";
-import { FrontierPolyglotProtoSpec } from "@/specs/frontier-polyglot-proto";
-import { FrontierEffectEventsourcingSpec } from "@/specs/frontier-effect-eventsourcing";
+import type { BenchmarkSpec } from "@scaffbench/types";
 
-import type { BenchmarkSpec } from "@/types";
+import { AiSearchWorkbenchSpec } from "@scaffbench/specs/ai-search-workbench";
+import { DotnetBlazorCqrsSpec } from "@scaffbench/specs/dotnet-blazor-cqrs";
+import { ElixirBroadwayAbsintheSpec } from "@scaffbench/specs/elixir-broadway-absinthe";
+import { FrontierEffectEventsourcingSpec } from "@scaffbench/specs/frontier-effect-eventsourcing";
+import { FrontierPolyglotProtoSpec } from "@scaffbench/specs/frontier-polyglot-proto";
+import { GoRealtimeApiSpec } from "@scaffbench/specs/go-realtime-api";
+import { JavaSpringJooqKeycloakSpec } from "@scaffbench/specs/java-spring-jooq-keycloak";
+import { MultiDotnetOpsSpec } from "@scaffbench/specs/multi-dotnet-ops";
+import { MultiTsGoGrpcSpec } from "@scaffbench/specs/multi-ts-go-grpc";
+import { PythonIngestionApiSpec } from "@scaffbench/specs/python-ingestion-api";
+import { ReactNativeExpoSpec } from "@scaffbench/specs/react-native-expo";
+import { RustLeptosAxumSpec } from "@scaffbench/specs/rust-leptos-axum";
+import { TsMinimalRestraintSpec } from "@scaffbench/specs/ts-minimal-restraint";
+import { TsSvelteEdgeOrpcSpec } from "@scaffbench/specs/ts-svelte-edge-orpc";
 
 export const SCAFFBENCH_2_SPECS: readonly BenchmarkSpec[] = [
   AiSearchWorkbenchSpec,
@@ -31,4 +31,3 @@ export const SCAFFBENCH_2_SPECS: readonly BenchmarkSpec[] = [
   FrontierPolyglotProtoSpec,
   FrontierEffectEventsourcingSpec,
 ];
-

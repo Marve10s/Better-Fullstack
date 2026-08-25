@@ -4,7 +4,7 @@ Better Fullstack does not yet advertise a historical update window. The policy r
 `qualification` until two consecutive manifest-v2 releases pass the executable cross-version
 matrix. The current source list is empty, so `supportedFrom` and `supportedTo` are both `null`.
 
-The executable policy lives in `packages/types/src/update-support.ts`. Project status returns its
+The executable policy lives in `packages/types/src/stack/update-support.ts`. Project status returns its
 decision through the same service for CLI human output, CLI JSON, and MCP.
 
 ## Current outcomes
@@ -71,7 +71,7 @@ failed qualification blocks the release.
 | `interrupted-apply`    | A pending transaction remains discoverable and can restore every journaled preimage.                              |
 | `failed-write`         | A reported write failure rolls operation-owned files and the manifest back to exact preimages.                    |
 
-`scripts/validate-update-qualification.ts` binds each declared case to its focused test. The release
+`scripts/release/validate-update-qualification.ts` binds each declared case to its focused test. The release
 guard fails if a case loses either its documented result or its executable evidence.
 
 ## Separate qualification cohorts

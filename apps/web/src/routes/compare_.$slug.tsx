@@ -6,7 +6,7 @@ import {
   getCompetitorComparison,
   competitorComparisonHead,
   type CompetitorComparison,
-} from "@/lib/compare-tools";
+} from "@/lib/builder/compare-tools";
 
 export const Route = createFileRoute("/compare_/$slug")({
   loader: ({ params }) => {

@@ -1,8 +1,7 @@
 import type { ComponentType } from "react";
 
 import type { TocEntry } from "@/lib/docs/remark-extract-toc";
-
-import type { GuideFrontmatter } from "./source";
+import type { GuideFrontmatter } from "@/lib/guides/source";
 
 export type GuideMdxModule = {
   default: ComponentType<{ components?: Record<string, ComponentType<unknown>> }>;
@@ -11,6 +10,6 @@ export type GuideMdxModule = {
 };
 
 export const guideMdxLoaders = import.meta.glob<GuideMdxModule>([
-  "../../../content/guides/**/*.mdx",
-  "!../../../content/guides/**/*.{es,zh,ja,ko,zh-Hant,de,fr,uk}.mdx",
+  "@web-root/content/guides/**/*.mdx",
+  "!@web-root/content/guides/**/*.{es,zh,ja,ko,zh-Hant,de,fr,uk}.mdx",
 ]);

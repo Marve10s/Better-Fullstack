@@ -11,14 +11,14 @@ import type {
   RecipeAdapterContext,
   RecipeAdapterPlan,
   RecipePlannedFile,
-} from "./types";
+} from "@/recipes/types";
 
-import { hashContent } from "../utils/scaffold-manifest";
+import { hashContent } from "@/lifecycle/scaffold-manifest";
 import {
   appendManagedRegionLine,
   ensureRouterManagedRegions,
   ensureSchemaManagedRegion,
-} from "./managed-region";
+} from "@/recipes/managed-region";
 
 const ROUTER_INDEX_CANDIDATES = [
   "packages/api/src/routers/index.ts",

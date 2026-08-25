@@ -1,10 +1,3 @@
-import * as Effect from "effect/Effect";
-import * as Duration from "effect/Duration";
-import * as Option from "effect/Option";
-import { existsSync, readdirSync } from "node:fs";
-import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
-import path from "node:path";
-
 import type {
   BenchmarkSpec,
   CommandResult,
@@ -12,21 +5,27 @@ import type {
   RunResult,
   ScaffbenchOptions,
   StepResult,
-} from "@/types";
+} from "@scaffbench/types";
 
-import { tail } from "@/agents/command";
-import { runValidationCommand } from "@/validation/executor";
+import { tail } from "@scaffbench/agents/command";
 import {
   bfSpec,
   VALIDATION_PROJECT_TIMEOUT_MS,
   VALIDATION_ROOT_CAP,
   VALIDATION_TIMEOUT_MS,
-} from "@/constants";
-import { isAdvisoryStep, stepBaseName, typecheckGate } from "@/scoring";
+} from "@scaffbench/constants";
+import { isAdvisoryStep, stepBaseName, typecheckGate } from "@scaffbench/scoring";
+import { runValidationCommand } from "@scaffbench/validation/executor";
+import * as Duration from "effect/Duration";
+import * as Effect from "effect/Effect";
+import * as Option from "effect/Option";
+import { existsSync, readdirSync } from "node:fs";
+import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import path from "node:path";
 
 const INSTALL_STEP_KEYS = new Set(["install", "dotnetRestore"]);
-import { hasTransientNetworkSignature } from "@/validation/classification";
-import { parseJsonc, walk } from "@/validation/shared";
+import { hasTransientNetworkSignature } from "@scaffbench/validation/classification";
+import { parseJsonc, walk } from "@scaffbench/validation/shared";
 
 function fromPromise<A>(evaluate: () => Promise<A>) {
   return Effect.tryPromise({ try: evaluate, catch: (cause) => cause });
@@ -197,11 +196,13 @@ function isNestedRoot(parent: string, candidate: string) {
 function expandBraces(pattern: string): string[] {
   const match = pattern.match(/\{([^{}]+)\}/);
   if (!match || match.index === undefined) return [pattern];
-  return match[1]!.split(",").flatMap((choice) =>
-    expandBraces(
-      `${pattern.slice(0, match.index)}${choice}${pattern.slice(match.index! + match[0].length)}`,
-    ),
-  );
+  return match[1]!
+    .split(",")
+    .flatMap((choice) =>
+      expandBraces(
+        `${pattern.slice(0, match.index)}${choice}${pattern.slice(match.index! + match[0].length)}`,
+      ),
+    );
 }
 
 function workspaceGlobMatches(pattern: string, relativeRoot: string) {
@@ -290,10 +291,7 @@ async function membershipAwareRoots(
     (candidate) =>
       !roots.some((parent) => {
         if (!isNestedRoot(parent, candidate)) return false;
-        return workspacePatternsCover(
-          patterns.get(parent) ?? [],
-          path.relative(parent, candidate),
-        );
+        return workspacePatternsCover(patterns.get(parent) ?? [], path.relative(parent, candidate));
       }),
   );
 }
@@ -490,10 +488,7 @@ export function validateProject(
         continue;
       }
       merge(
-        yield* validatePythonRequirementsProject(
-          root,
-          root === projectDir ? options : subOptions,
-        ),
+        yield* validatePythonRequirementsProject(root, root === projectDir ? options : subOptions),
         prefixFor(root),
         "python",
       );
@@ -692,8 +687,8 @@ async function runProjectRouteCheck(projectDir: string, outDir: string): Promise
   const start = Date.now();
   let handle: any = null;
   try {
-    const devCheck = await import("../../../testing/lib/dev-check");
-    const routeCheck = await import("../../../testing/lib/route-check");
+    const devCheck = await import("@testing/lib/dev-check");
+    const routeCheck = await import("@testing/lib/route-check");
     handle = await devCheck.startDevServer(projectDir, config);
     const result = await routeCheck.runRouteCheck(
       handle,
@@ -713,7 +708,7 @@ async function runProjectRouteCheck(projectDir: string, outDir: string): Promise
   } finally {
     if (handle) {
       try {
-        const devCheck = await import("../../../testing/lib/dev-check");
+        const devCheck = await import("@testing/lib/dev-check");
         await devCheck.stopDevServer(handle);
       } catch {}
     }
@@ -821,10 +816,7 @@ export function validatePythonProject(projectDir: string, options: ScaffbenchOpt
   });
 }
 
-export function validatePythonRequirementsProject(
-  projectDir: string,
-  options: ScaffbenchOptions,
-) {
+export function validatePythonRequirementsProject(projectDir: string, options: ScaffbenchOptions) {
   return Effect.gen(function* () {
     if (!existsSync(path.join(projectDir, "requirements.txt"))) return emptySteps();
     const python = path.join(projectDir, ".venv", "bin", "python");
@@ -1000,8 +992,7 @@ export function validateDotnetProject(
         ([name, step]) =>
           !name.startsWith("unvalidated:") && !isAdvisoryStep(name) && stepFailed(step),
       );
-    const projects =
-      targets.kind === "solution" ? targets.uncoveredProjects : targets.targets;
+    const projects = targets.kind === "solution" ? targets.uncoveredProjects : targets.targets;
     for (const project of projects) {
       if (!acceptTarget(project)) continue;
       const root = path.dirname(project);
@@ -1028,8 +1019,7 @@ function dotnetGates(
   const gates: ValidationGate[] = [
     {
       key: `${keyPrefix}dotnetRestore`,
-      run: () =>
-        commandStep("dotnet", ["restore", target], root, { retryTransientNetwork: true }),
+      run: () => commandStep("dotnet", ["restore", target], root, { retryTransientNetwork: true }),
     },
     {
       key: `${keyPrefix}dotnetBuild`,
@@ -1241,11 +1231,9 @@ function notRunStep(reason: string): StepResult {
 function stepFailed(step: StepResult | undefined) {
   return Boolean(
     step &&
-      step.status !== "skip" &&
-      step.status !== "na" &&
-      (step.timedOut ||
-        step.spawnError === true ||
-        (step.exitCode !== null && step.exitCode !== 0)),
+    step.status !== "skip" &&
+    step.status !== "na" &&
+    (step.timedOut || step.spawnError === true || (step.exitCode !== null && step.exitCode !== 0)),
   );
 }
 
@@ -1482,4 +1470,3 @@ async function readOptional(filePath: string) {
     return null;
   }
 }
-

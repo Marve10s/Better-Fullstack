@@ -1,0 +1,387 @@
+import {
+  getCategoryCliValues,
+  getOptionMetadata,
+  type OptionCategory,
+  OPTION_CATEGORY_METADATA,
+} from "@better-fullstack/types";
+import {
+  STACK_SELECTION_KEYS,
+  STACK_SELECTION_OPTION_CATEGORY_BY_KEY,
+} from "@better-fullstack/types/stack-translation";
+import { describe, expect, it } from "bun:test";
+
+import { TECH_OPTIONS } from "@web/lib/stack/constant";
+import { DEFAULT_CONFIG } from "@/constants";
+import { CreateCommandOptionsSchema } from "@/create-command-input";
+import {
+  resolveJavaLibrariesPrompt,
+  resolveJavaTestingLibrariesPrompt,
+} from "@/prompts/ecosystems/java-ecosystem";
+import { PROMPT_RESOLVER_REGISTRY } from "@/prompts/core/prompt-resolver-registry";
+import { resolveRustLibrariesPrompt } from "@/prompts/ecosystems/rust-ecosystem";
+import { resolveSearchPrompt } from "@/prompts/data/search";
+import { validateArrayOptions } from "@/config/config-processing";
+
+const BUILDER_CATEGORY_TO_CLI_OPTION_KEY: Partial<
+  Record<keyof typeof TECH_OPTIONS, keyof typeof CreateCommandOptionsSchema.shape>
+> = {
+  webFrontend: "frontend",
+  nativeFrontend: "frontend",
+  backendLibraries: "effect",
+  ai: "ai",
+  codeQuality: "part",
+  documentation: "part",
+  appShells: "part",
+  appPlatforms: "part",
+  toolchainProfile: "part",
+  workspaceRunner: "part",
+  codeQualityProfile: "part",
+  gitHooks: "part",
+  staticAnalysis: "part",
+  aiTooling: "part",
+  testingTools: "part",
+  dataClient: "part",
+  frontendUtilities: "part",
+  httpClientTool: "part",
+  codeGeneration: "part",
+  developerEnvironment: "part",
+  containerOrchestration: "part",
+  apiGateway: "part",
+  continuousIntegration: "part",
+  backendUtilitiesTool: "part",
+};
+
+const NON_BUILDER_CREATE_OPTION_KEYS = new Set([
+  "addons",
+  "ecosystem",
+  "template",
+  // Seeds the guided flow with a language/platform question rather than
+  // selecting any single builder option.
+  "shape",
+  "fromHistory",
+  "config",
+  "yes",
+  "yolo",
+  "verbose",
+  "dryRun",
+  "verify",
+  "directoryConflict",
+  "renderTitle",
+  "disableAnalytics",
+  "manualDb",
+  "part",
+]);
+
+const createOptionKeys = Object.keys(CreateCommandOptionsSchema.shape);
+
+function getCreateOptionKey(category: keyof typeof TECH_OPTIONS) {
+  return BUILDER_CATEGORY_TO_CLI_OPTION_KEY[category] ?? category;
+}
+
+describe("CLI and Builder catalog parity", () => {
+  const categoryMetadata = OPTION_CATEGORY_METADATA;
+  const categoriesToTest = Object.keys(categoryMetadata) as OptionCategory[];
+
+  it("keeps every canonical category exposed in the builder", () => {
+    const missingBuilderCategories = categoriesToTest.filter(
+      (category) => !TECH_OPTIONS[category as keyof typeof TECH_OPTIONS],
+    );
+
+    expect(missingBuilderCategories).toEqual([]);
+  });
+
+  it("keeps explicit canonical labels for the tools added in this PR", () => {
+    const expectedLabels: Array<[OptionCategory, string, string]> = [
+      ["uiLibrary", "mui", "MUI"],
+      ["uiLibrary", "antd", "Ant Design"],
+      ["shadcnStyle", "luma", "Luma"],
+      ["shadcnStyle", "sera", "Sera"],
+      ["shadcnIconLibrary", "heroicons", "Heroicons"],
+      ["shadcnIconLibrary", "react-icons", "React Icons"],
+      ["rustLibraries", "uuid", "uuid"],
+      ["rustLibraries", "chrono", "Chrono"],
+      ["rustLibraries", "reqwest", "Reqwest"],
+      ["rustLibraries", "config", "config"],
+      ["rustLibraries", "dashmap", "DashMap"],
+      ["rustLibraries", "parking-lot", "parking_lot"],
+      ["rustLibraries", "secrecy", "Secrecy"],
+      ["rustLibraries", "tokio-util", "Tokio Util"],
+      ["rustLibraries", "utoipa", "utoipa"],
+      ["rustLibraries", "proptest", "Proptest"],
+      ["rustLibraries", "insta", "Insta"],
+      ["pythonAi", "haystack", "Haystack"],
+      ["pythonApi", "django-rest-framework", "Django REST Framework"],
+      ["pythonApi", "django-ninja", "Django Ninja"],
+      ["pythonTaskQueue", "rq", "RQ"],
+      ["pythonTaskQueue", "dramatiq", "Dramatiq"],
+      ["pythonTaskQueue", "huey", "Huey"],
+      ["pythonGraphql", "ariadne", "Ariadne"],
+      ["pythonQuality", "mypy", "mypy"],
+      ["pythonQuality", "pyright", "Pyright"],
+      ["goCli", "urfave-cli", "urfave/cli"],
+      ["goLogging", "logrus", "Logrus"],
+      ["javaWebFramework", "quarkus", "Quarkus"],
+      ["javaLibraries", "resilience4j", "Resilience4j"],
+      ["javaLibraries", "spring-webflux", "Spring WebFlux"],
+      ["javaLibraries", "spring-batch", "Spring Batch"],
+      ["javaLibraries", "spring-kafka", "Spring for Apache Kafka"],
+      ["javaLibraries", "spring-mail", "Spring Mail"],
+      ["javaLibraries", "spring-devtools", "Spring Boot DevTools"],
+      ["javaLibraries", "micrometer-prometheus", "Micrometer Prometheus"],
+      ["javaLibraries", "thymeleaf", "Thymeleaf"],
+      ["appPlatforms", "devcontainer", "DevContainer"],
+    ];
+
+    for (const [category, id, label] of expectedLabels) {
+      expect(getOptionMetadata(category, id)?.label).toBe(label);
+    }
+  });
+
+  for (const category of categoriesToTest) {
+    const builderOptions = TECH_OPTIONS[category as keyof typeof TECH_OPTIONS];
+    if (!builderOptions) continue;
+
+    describe(`Category: ${category}`, () => {
+      it("only exposes builder options that are valid CLI values", () => {
+        const cliValues = new Set(getCategoryCliValues(category));
+        const invalidBuilderValues = builderOptions
+          .map((option) => getOptionMetadata(category, option.id)?.cliValue ?? option.id)
+          .filter((value) => !cliValues.has(value));
+
+        expect(invalidBuilderValues).toEqual([]);
+      });
+
+      it("keeps every CLI value represented in the builder", () => {
+        const builderCliValues = new Set(
+          builderOptions.map(
+            (option) => getOptionMetadata(category, option.id)?.cliValue ?? option.id,
+          ),
+        );
+        const missingBuilderValues = getCategoryCliValues(category).filter(
+          (value) => !builderCliValues.has(value),
+        );
+
+        expect(missingBuilderValues).toEqual([]);
+      });
+
+      it("uses canonical labels for aliased builder options", () => {
+        for (const entry of builderOptions) {
+          const metadata = getOptionMetadata(category, entry.id);
+          if (!metadata || metadata.aliases.length === 0) continue;
+
+          expect(entry.name).toBe(metadata.label);
+        }
+      });
+    });
+  }
+
+  it("keeps every builder category backed by a CLI create-command option", () => {
+    const missingCliKeys = (Object.keys(TECH_OPTIONS) as Array<keyof typeof TECH_OPTIONS>)
+      .map((category) => getCreateOptionKey(category))
+      .filter((key) => !createOptionKeys.includes(key));
+
+    expect(missingCliKeys).toEqual([]);
+  });
+
+  it("does not introduce unexpected CLI create options without an explicit non-builder reason", () => {
+    const builderBackedKeys = new Set(
+      (Object.keys(TECH_OPTIONS) as Array<keyof typeof TECH_OPTIONS>).map((category) =>
+        getCreateOptionKey(category),
+      ),
+    );
+
+    const unexpectedKeys = createOptionKeys.filter(
+      (key) => !builderBackedKeys.has(key) && !NON_BUILDER_CREATE_OPTION_KEYS.has(key),
+    );
+
+    expect(unexpectedKeys).toEqual([]);
+  });
+});
+
+describe("StackState to CLI input parity", () => {
+  it("maps every option-backed StackState key to a create-command input field", () => {
+    const missingCliKeys = STACK_SELECTION_KEYS.filter(
+      (key) => STACK_SELECTION_OPTION_CATEGORY_BY_KEY[key] !== undefined,
+    )
+      .map((key) => {
+        const techCategory = key === "aiSdk" ? "ai" : key;
+        return getCreateOptionKey(techCategory as keyof typeof TECH_OPTIONS);
+      })
+      .filter((key) => !createOptionKeys.includes(key));
+
+    expect(missingCliKeys).toEqual([]);
+  });
+});
+
+describe("CLI prompts vs schemas parity", () => {
+  for (const [category, contract] of Object.entries(PROMPT_RESOLVER_REGISTRY)) {
+    describe(`Prompt: ${category}`, () => {
+      const schemaValues = new Set(contract.schemaValues);
+      const coverageValues = new Set<string>();
+      const resolutions = contract.coverageContexts.map((context) => contract.resolve(context));
+
+      for (const resolution of resolutions) {
+        for (const promptOption of resolution.options) {
+          coverageValues.add(promptOption.value);
+        }
+
+        const autoValues = resolution.autoValue;
+        if (typeof autoValues === "string") {
+          coverageValues.add(autoValues);
+        } else if (Array.isArray(autoValues)) {
+          for (const value of autoValues) {
+            coverageValues.add(value);
+          }
+        }
+      }
+
+      it("only exposes schema-valid prompt option values", () => {
+        const invalidOptions = resolutions.flatMap((resolution) =>
+          resolution.options
+            .map((promptOption) => promptOption.value)
+            .filter((value) => !schemaValues.has(value)),
+        );
+
+        expect(invalidOptions).toEqual([]);
+      });
+
+      it("covers every schema value via prompt paths or auto-resolved values", () => {
+        const missingValues = contract.schemaValues.filter((value) => !coverageValues.has(value));
+
+        expect(missingValues).toEqual([]);
+      });
+    });
+  }
+
+  it("auto-resolves API when the backend makes API selection irrelevant", () => {
+    const resolution = PROMPT_RESOLVER_REGISTRY.api.resolve({ backend: "convex" });
+
+    expect(resolution.shouldPrompt).toBe(false);
+    expect(resolution.autoValue).toBe("none");
+  });
+
+  it("auto-resolves runtime when the backend does not use a runtime prompt", () => {
+    const resolution = PROMPT_RESOLVER_REGISTRY.runtime.resolve({ backend: "self" });
+
+    expect(resolution.shouldPrompt).toBe(false);
+    expect(resolution.autoValue).toBe("none");
+  });
+
+  it("filters auth options by ecosystem and backend/frontend context", () => {
+    const typescriptResolution = PROMPT_RESOLVER_REGISTRY.auth.resolve({
+      ecosystem: "typescript",
+      backend: "self",
+      frontend: ["next"],
+    });
+    const goResolution = PROMPT_RESOLVER_REGISTRY.auth.resolve({
+      ecosystem: "go",
+      backend: "none",
+      frontend: [],
+    });
+
+    expect(typescriptResolution.options.map((option) => option.value)).toContain("nextauth");
+    expect(typescriptResolution.options.map((option) => option.value)).not.toContain(
+      "go-better-auth",
+    );
+    expect(goResolution.options.map((option) => option.value)).toContain("go-better-auth");
+  });
+
+  it("offers RevenueCat payments for backendless native stacks", () => {
+    const resolution = PROMPT_RESOLVER_REGISTRY.payments.resolve({
+      backend: "none",
+      frontends: ["native-bare"],
+    });
+
+    expect(resolution.shouldPrompt).toBe(true);
+    expect(resolution.options.map((option) => option.value)).toEqual(["revenuecat", "none"]);
+  });
+
+  it("auto-resolves shared service prompts for ecosystems that do not use them", () => {
+    for (const prompt of ["email", "observability", "caching"] as const) {
+      const reactNativeResolution = PROMPT_RESOLVER_REGISTRY[prompt].resolve({
+        ecosystem: "react-native",
+        backend: "none",
+      });
+      const elixirResolution = PROMPT_RESOLVER_REGISTRY[prompt].resolve({
+        ecosystem: "elixir",
+        backend: "none",
+      });
+
+      expect(reactNativeResolution.shouldPrompt).toBe(false);
+      expect(reactNativeResolution.autoValue).toBe("none");
+      expect(elixirResolution.shouldPrompt).toBe(false);
+      expect(elixirResolution.autoValue).toBe("none");
+    }
+
+    const searchResolution = resolveSearchPrompt({
+      ecosystem: "elixir",
+      backend: "none",
+    });
+
+    expect(searchResolution.shouldPrompt).toBe(false);
+    expect(searchResolution.autoValue).toBe("none");
+  });
+
+  it("keeps the Rust libraries prompt default aligned with CLI defaults", () => {
+    const resolution = resolveRustLibrariesPrompt();
+
+    expect(resolution.mode).toBe("multiple");
+    expect(resolution.initialValue).toEqual(DEFAULT_CONFIG.rustLibraries);
+  });
+
+  it("keeps the Java testing libraries prompt default aligned with CLI defaults", () => {
+    const resolution = resolveJavaTestingLibrariesPrompt();
+
+    expect(resolution.mode).toBe("multiple");
+    expect(resolution.initialValue).toEqual(DEFAULT_CONFIG.javaTestingLibraries);
+  });
+
+  it("keeps the Java libraries prompt default aligned with CLI defaults", () => {
+    const resolution = resolveJavaLibrariesPrompt();
+
+    expect(resolution.mode).toBe("multiple");
+    expect(resolution.initialValue).toEqual(DEFAULT_CONFIG.javaLibraries);
+  });
+});
+
+describe("CLI array exclusivity", () => {
+  it("rejects aiDocs mixed with none", () => {
+    expect(() =>
+      validateArrayOptions({
+        aiDocs: ["none", "agents-md"],
+      }),
+    ).toThrow("Cannot combine 'none' with other ai docs.");
+  });
+
+  it("rejects rustLibraries mixed with none", () => {
+    expect(() =>
+      validateArrayOptions({
+        rustLibraries: ["none", "mockall"],
+      }),
+    ).toThrow("Cannot combine 'none' with other rust libraries.");
+  });
+
+  it("rejects pythonAi mixed with none", () => {
+    expect(() =>
+      validateArrayOptions({
+        pythonAi: ["none", "langchain"],
+      }),
+    ).toThrow("Cannot combine 'none' with other python ai libraries.");
+  });
+
+  it("rejects javaTestingLibraries mixed with none", () => {
+    expect(() =>
+      validateArrayOptions({
+        javaTestingLibraries: ["none", "junit5"],
+      }),
+    ).toThrow("Cannot combine 'none' with other java testing libraries.");
+  });
+
+  it("rejects javaLibraries mixed with none", () => {
+    expect(() =>
+      validateArrayOptions({
+        javaLibraries: ["none", "spring-actuator"],
+      }),
+    ).toThrow("Cannot combine 'none' with other java libraries.");
+  });
+});

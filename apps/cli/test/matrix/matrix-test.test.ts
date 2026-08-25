@@ -15,7 +15,7 @@
 
 import { describe, it, expect, beforeAll, afterAll } from "bun:test";
 
-import { createVirtual } from "../../src/index";
+import { createVirtual } from "@/index";
 import {
   validateAllTypeScriptFiles,
   validateAllJSONFiles,
@@ -26,14 +26,14 @@ import {
   resetSharedProject,
   disposeSharedProject,
   type ValidationResult,
-} from "../validation-utils";
+} from "@test/support/validation-utils";
 import {
   generateValidCombinations,
   generateTier1Combinations,
   getCombinationStats,
   printCombinationSummary,
   type MatrixCombination,
-} from "./combination-generator";
+} from "@test/features/combination-generator";
 
 // ============================================================================
 // TEST CONFIGURATION

@@ -1,10 +1,9 @@
 import "@fontsource/opendyslexic/400.css";
 import "@fontsource/opendyslexic/700.css";
-
 import { MDXProvider } from "@mdx-js/react";
 import { Link } from "@tanstack/react-router";
-import { TbArrowLeft as ArrowLeft } from "react-icons/tb";
 import { Fragment, Suspense } from "react";
+import { TbArrowLeft as ArrowLeft } from "react-icons/tb";
 
 import { ReadingControls } from "@/components/blog/reading-controls";
 import { ReadingProgress } from "@/components/blog/reading-progress";
@@ -12,7 +11,7 @@ import { ShareActions } from "@/components/blog/share-actions";
 import { TableOfContents } from "@/components/docs/table-of-contents";
 import { localizedContentMdxComponents } from "@/components/mdx/localized-content-components";
 import { type BlogPost, canRenderBlogPostContent, useBlogPostContent } from "@/lib/blog/source";
-import { formatContentDate } from "@/lib/content-date";
+import { formatContentDate } from "@/lib/content/content-date";
 import { localizeTocEntries } from "@/lib/i18n/content-copy";
 import { m } from "@/paraglide/messages.js";
 

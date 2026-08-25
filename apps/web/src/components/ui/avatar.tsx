@@ -1,12 +1,12 @@
 "use client";
 
-import * as React from "react";
 // Uses the already-installed unified `radix-ui` package (the project does not
 // pull in the standalone `@radix-ui/react-avatar`). The `Avatar` namespace
 // exposes the same Root/Image/Fallback primitives.
 import { Avatar as AvatarPrimitive } from "radix-ui";
+import * as React from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
 
 const Avatar = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Root>,

@@ -1,9 +1,9 @@
+import { makeConfig } from "@test/_fixtures/config-factory";
+import { makeTemplates } from "@test/_fixtures/template-factory";
 import { describe, expect, it, spyOn } from "bun:test";
 
-import { VirtualFileSystem } from "../../src/core/virtual-fs";
-import { processJavaBaseTemplate } from "../../src/template-handlers/java-base";
-import { makeConfig } from "../_fixtures/config-factory";
-import { makeTemplates } from "../_fixtures/template-factory";
+import { VirtualFileSystem } from "@/core/virtual-fs";
+import { processJavaBaseTemplate } from "@/template-handlers/ecosystems/java-base";
 
 const JAVA_TEMPLATES = {
   "java-base/pom.xml.hbs":

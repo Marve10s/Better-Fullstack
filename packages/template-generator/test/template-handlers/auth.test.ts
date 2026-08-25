@@ -1,9 +1,9 @@
+import { makeConfig } from "@test/_fixtures/config-factory";
+import { makeTemplates } from "@test/_fixtures/template-factory";
 import { describe, expect, it } from "bun:test";
 
-import { VirtualFileSystem } from "../../src/core/virtual-fs";
-import { processAuthTemplates } from "../../src/template-handlers/auth";
-import { makeConfig } from "../_fixtures/config-factory";
-import { makeTemplates } from "../_fixtures/template-factory";
+import { VirtualFileSystem } from "@/core/virtual-fs";
+import { processAuthTemplates } from "@/template-handlers/features/auth";
 
 describe("processAuthTemplates", () => {
   it("routes convex Clerk templates for backend, web, and native", async () => {

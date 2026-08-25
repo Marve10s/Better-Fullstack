@@ -1,6 +1,9 @@
 import type { IconType } from "react-icons";
+
 import NumberFlow from "@number-flow/react";
 import { Link, createFileRoute } from "@tanstack/react-router";
+import { motion, useInView } from "motion/react";
+import { useCallback, useMemo, useRef, useState, type CSSProperties } from "react";
 import {
   TbArrowRight as ArrowRight,
   TbArrowUpRight as ArrowUpRight,
@@ -13,10 +16,10 @@ import {
   TbSparkles as Sparkles,
   TbTool as Wrench,
 } from "react-icons/tb";
-import { motion, useInView } from "motion/react";
-import { useCallback, useMemo, useRef, useState, type CSSProperties } from "react";
 
 import Footer from "@/components/home/footer";
+import { useTheme } from "@/lib/content/theme";
+import { cn } from "@/lib/platform/utils";
 import {
   DEFAULT_OG_IMAGE_ALT,
   DEFAULT_OG_IMAGE_HEIGHT,
@@ -25,9 +28,7 @@ import {
   DEFAULT_ROBOTS,
   DEFAULT_X_IMAGE_URL,
   canonicalUrl,
-} from "@/lib/seo";
-import { useTheme } from "@/lib/theme";
-import { cn } from "@/lib/utils";
+} from "@/lib/seo/seo";
 import { m } from "@/paraglide/messages.js";
 
 export const Route = createFileRoute("/mcp")({
@@ -670,9 +671,7 @@ function AgentIcon({ agent, active }: { agent: Agent; active: boolean }) {
   }
 
   if (agent.iconSrc) {
-    return (
-      <img src={agent.iconSrc} alt="" width={16} height={16} className="size-3.5 sm:size-4" />
-    );
+    return <img src={agent.iconSrc} alt="" width={16} height={16} className="size-3.5 sm:size-4" />;
   }
 
   if (!agent.iconSlug) {
@@ -842,13 +841,7 @@ function TerminalCard() {
   );
 }
 
-function WorkflowLine({
-  line,
-  index,
-}: {
-  line: (typeof WORKFLOW_LINES)[number];
-  index: number;
-}) {
+function WorkflowLine({ line, index }: { line: (typeof WORKFLOW_LINES)[number]; index: number }) {
   const transition = useMemo(() => ({ duration: 0.4, delay: 0.3 + index * 0.18 }), [index]);
 
   return (
@@ -860,7 +853,9 @@ function WorkflowLine({
       className="flex flex-wrap items-baseline gap-x-3 leading-6"
     >
       <span className="text-[#C6E853]">{line.kind === "done" ? "✓" : "→"}</span>
-      <span className={cn(line.kind === "done" ? "font-semibold text-[#C6E853]" : "text-[#fafafa]")}>
+      <span
+        className={cn(line.kind === "done" ? "font-semibold text-[#C6E853]" : "text-[#fafafa]")}
+      >
         {getWorkflowName(line)}
       </span>
       <span className="text-[#7a7a7a]">{getWorkflowNote(line.id)}</span>
@@ -871,12 +866,7 @@ function WorkflowLine({
 function CtaSection() {
   return (
     <section className="px-4 py-20 text-center sm:px-8 sm:py-24">
-      <p
-        className={cn(
-          "font-mono text-[11px] uppercase tracking-[0.22em]",
-          ACCENT_TEXT,
-        )}
-      >
+      <p className={cn("font-mono text-[11px] uppercase tracking-[0.22em]", ACCENT_TEXT)}>
         ✦ {m.mcpFinalEyebrow()}
       </p>
       <h2

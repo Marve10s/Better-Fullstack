@@ -1,7 +1,6 @@
 import { createCliDefaultProjectConfigBase, type ProjectConfig } from "@better-fullstack/types";
+import { buildCommand, formatNameFromFingerprint } from "@testing/lib/generate-combos/render";
 import { describe, expect, it } from "bun:test";
-
-import { buildCommand, formatNameFromFingerprint } from "./render";
 
 describe("smoke combo command rendering", () => {
   it("keeps generated names safe for Phoenix test database identifiers", () => {

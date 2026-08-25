@@ -1,29 +1,28 @@
 #!/usr/bin/env bun
 
-import { spawn } from "node:child_process";
-import { createHash } from "node:crypto";
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
-import { isAbsolute, join, relative, resolve } from "node:path";
-
 import {
   CAPABILITY_EVIDENCE_SCHEMA_VERSION,
   CAPABILITY_RECEIPT_SCHEMA_VERSION,
-} from "../packages/types/src";
-import { buildFreshCliBinary } from "./lib/cli-binary";
+} from "@better-fullstack/types";
+import { buildFreshCliBinary } from "@testing/lib/cli-binary";
 import {
   formatCliScaffoldFailure,
   scaffoldWithCli,
   type CliScaffoldResult,
-} from "./lib/cli-scaffold";
+} from "@testing/lib/cli-scaffold";
 import {
   hasEligibleEvidenceIdentity,
   missingRequiredSteps,
   GENERATED_PROJECT_PROOF_CASES,
   type GeneratedProjectProofCase,
   type GeneratedProjectProofStep,
-} from "./lib/generated-project-proof-matrix";
-import { getPresetCombos } from "./lib/presets";
-import { getVerifier, type StepResult } from "./lib/verify";
+} from "@testing/lib/generated-project-proof-matrix";
+import { getPresetCombos } from "@testing/lib/presets";
+import { getVerifier, type StepResult } from "@testing/lib/verify";
+import { spawn } from "node:child_process";
+import { createHash } from "node:crypto";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { isAbsolute, join, relative, resolve } from "node:path";
 
 const EVIDENCE_SCHEMA_VERSION = 2;
 const STEP_TIMEOUT_MS = 600_000;

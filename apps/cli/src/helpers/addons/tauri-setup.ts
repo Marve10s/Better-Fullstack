@@ -1,4 +1,4 @@
-import type { ProjectConfig } from "../../types";
+import type { ProjectConfig } from "@/types";
 
 /**
  * Tauri setup is now handled entirely by template generation.

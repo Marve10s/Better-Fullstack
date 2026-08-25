@@ -1,14 +1,15 @@
-import { Link } from "@tanstack/react-router";
-import { TbArrowRight as ArrowRight } from "react-icons/tb";
-import { motion } from "motion/react";
 import type { CSSProperties } from "react";
 
-import { cn } from "@/lib/utils";
-import { m } from "@/paraglide/messages.js";
+import { Link } from "@tanstack/react-router";
+import { motion } from "motion/react";
+import { TbArrowRight as ArrowRight } from "react-icons/tb";
 
-import { ProviderLogo, type ProviderLogoId } from "./provider-marks";
-import type { ScaffbenchModel } from "./scaffbench-2-data";
-import { SCAFFBENCH21_CELLS, SCAFFBENCH21_MODELS } from "./scaffbench-2-1-data";
+import type { ScaffbenchModel } from "@/components/home/scaffbench-2-data";
+
+import { ProviderLogo, type ProviderLogoId } from "@/components/home/provider-marks";
+import { SCAFFBENCH21_CELLS, SCAFFBENCH21_MODELS } from "@/components/home/scaffbench-2-1-data";
+import { cn } from "@/lib/platform/utils";
+import { m } from "@/paraglide/messages.js";
 
 // The teaser tells the MCP story: the same agent scaffolding through our MCP
 // tools vs. hand-writing every file from the prompt. We surface the model that
@@ -66,10 +67,11 @@ function computeMcpHighlight(): McpHighlight | null {
     if (!prompt || !mcp) continue;
     const uplift = mcp.pass - prompt.pass;
     if (best && uplift <= best.mcp.pass - best.prompt.pass) continue;
+    const provider = model.provider as ScaffbenchModel["provider"];
     best = {
       label: model.label,
-      isFree: isFreeProvider(model.provider),
-      logo: PROVIDER_LOGO[model.provider],
+      isFree: isFreeProvider(provider),
+      logo: PROVIDER_LOGO[provider],
       prompt,
       mcp,
       tokenFactor:
@@ -199,7 +201,10 @@ function UpliftBar({
         {label}
       </span>
       <span className="h-2.5 w-full overflow-hidden rounded-full" style={BAR_TRACK}>
-        <span className="block h-full rounded-full transition-[width] duration-700 ease-out" style={fillStyle} />
+        <span
+          className="block h-full rounded-full transition-[width] duration-700 ease-out"
+          style={fillStyle}
+        />
       </span>
       <span className="text-right font-mono text-sm font-bold tabular-nums">{pass}%</span>
     </div>
@@ -209,9 +214,7 @@ function UpliftBar({
 function StatTile({ factor, unit }: { factor: number; unit: string }) {
   return (
     <div className="rounded-lg bg-[#f1efe7] px-3 py-2.5 dark:bg-[rgba(237,235,228,0.05)]">
-      <p className="font-mono text-xl font-bold tabular-nums">
-        {factor > 1 ? `${factor}×` : "—"}
-      </p>
+      <p className="font-mono text-xl font-bold tabular-nums">{factor > 1 ? `${factor}×` : "—"}</p>
       <p className="mt-0.5 text-xs text-[#71706a] dark:text-[#8f8d84]">{unit}</p>
     </div>
   );

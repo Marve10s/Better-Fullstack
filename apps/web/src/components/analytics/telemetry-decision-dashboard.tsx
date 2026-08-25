@@ -1,6 +1,6 @@
-import type { RankedSignal, TelemetryDashboardData } from "@/lib/telemetry-dashboard";
+import type { RankedSignal, TelemetryDashboardData } from "@/lib/telemetry/telemetry-dashboard";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
 
 const numberFormatter = new Intl.NumberFormat("en-US");
 const compactFormatter = new Intl.NumberFormat("en-US", {

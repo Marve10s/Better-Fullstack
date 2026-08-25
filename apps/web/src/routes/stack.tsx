@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { StackBuilderPage } from "@/components/stack-builder/stack-builder-page";
-import { buildPageHead, EDIT_AND_RUN_OG_IMAGE_URL } from "@/lib/seo";
+import { buildPageHead, EDIT_AND_RUN_OG_IMAGE_URL } from "@/lib/seo/seo";
 import { m } from "@/paraglide/messages.js";
 
 export const Route = createFileRoute("/stack")({

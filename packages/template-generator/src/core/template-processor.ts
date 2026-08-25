@@ -3,8 +3,8 @@ import type { ProjectConfig } from "@better-fullstack/types";
 import Handlebars from "handlebars";
 import { extname } from "pathe";
 
-import { composeTheme, type BaseColorName, type AccentColorName } from "../shadcn-themes";
-import { BINARY_EXTENSIONS } from "./binary-extensions";
+import { BINARY_EXTENSIONS } from "@/core/binary-extensions";
+import { composeTheme, type BaseColorName, type AccentColorName } from "@/shadcn-themes";
 
 Handlebars.registerHelper("eq", (a, b) => a === b);
 Handlebars.registerHelper("ne", (a, b) => a !== b);

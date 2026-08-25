@@ -2,9 +2,13 @@ import { useMemo, useState } from "react";
 import { TbCheck as Check, TbCopy as Copy, TbFileImport as FileImport } from "react-icons/tb";
 import { toast } from "sonner";
 
-import type { ProjectImportResult } from "@/lib/existing-project-import";
-import type { StackState } from "@/lib/stack-defaults";
+import type { ProjectImportResult } from "@/lib/builder/existing-project-import";
+import type { StackState } from "@/lib/stack/stack-defaults";
 
+import {
+  StackGraphComparison,
+  stackStateToStackParts,
+} from "@/components/stack-builder/stack-graph-comparison";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,11 +22,9 @@ import { Input } from "@/components/ui/input";
 import {
   parseImportedBtsConfigText,
   resolveImportedProjectName,
-} from "@/lib/existing-project-import";
-import { generateStackCommand } from "@/lib/stack-utils";
-import { cn } from "@/lib/utils";
-
-import { StackGraphComparison, stackStateToStackParts } from "./stack-graph-comparison";
+} from "@/lib/builder/existing-project-import";
+import { cn } from "@/lib/platform/utils";
+import { generateStackCommand } from "@/lib/stack/stack-utils";
 
 const MAX_CONFIG_BYTES = 1024 * 1024;
 

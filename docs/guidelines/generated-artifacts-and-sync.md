@@ -36,7 +36,7 @@ dirty worktree belongs to its author; do not overwrite or reformat it during unr
 
 ## CLI Reference Data
 
-- Source: `packages/types/src/cli-flags.ts`.
+- Source: `packages/types/src/catalog/cli-flags.ts`.
 - Producer: `apps/web/scripts/generate-cli-flags-data.ts`.
 - Output: `apps/web/src/lib/docs/cli-flags-data.ts`.
 - Command: `bun run --cwd apps/web docs:cli-flags`.

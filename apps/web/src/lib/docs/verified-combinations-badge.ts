@@ -1,4 +1,4 @@
-import type { PublicVerificationReport } from "./release-verification";
+import type { PublicVerificationReport } from "@/lib/docs/release-verification";
 
 export type VerifiedCombinationsBadgePayload = {
   schemaVersion: 1;

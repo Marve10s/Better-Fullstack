@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 import type { BlogReadingStats } from "@/lib/blog/source";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
 import { m } from "@/paraglide/messages.js";
 
 const FONT_STORAGE_KEY = "bf-blog-font";
@@ -133,9 +133,7 @@ export function ReadingControls({ readingStats }: { readingStats?: BlogReadingSt
   const handleVersionChange = (long: boolean) => {
     if (long === isLong) return;
     setIsLong(long);
-    for (const section of document.querySelectorAll<HTMLElement>(
-      "article [data-long-version]",
-    )) {
+    for (const section of document.querySelectorAll<HTMLElement>("article [data-long-version]")) {
       transitionSection(section, long, timeoutsRef.current);
       syncTocWithSection(section, long);
     }

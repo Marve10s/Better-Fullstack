@@ -1,7 +1,8 @@
 import { TbBrandGithub as Github, TbGlobe as Globe, TbStar as Star } from "react-icons/tb";
 
+import type { Sponsor, SponsorsData } from "@/lib/stack/types";
+
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import type { Sponsor, SponsorsData } from "@/lib/types";
 
 const SPONSORS_URL = "https://better-fullstack-web.vercel.app/sponsors.json";
 

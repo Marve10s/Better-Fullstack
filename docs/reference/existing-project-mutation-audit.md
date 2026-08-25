@@ -1,7 +1,7 @@
 # Existing-project mutation audit
 
 This audit covers the Phase 2 command set: `add`, `remove`, `update`, `gen`, and local
-`registry add`. The source registry is `scripts/mutation-contract-audit.ts`. Its validator checks
+`registry add`. The source registry is `scripts/validation/mutation-contract-audit.ts`. Its validator checks
 the implementation markers and this document during the release guard.
 
 All machine-readable lifecycle results use `contractVersion: "2"`. Clients must check the version

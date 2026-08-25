@@ -6,20 +6,20 @@ consecutive published releases to complete the flow.
 
 ## Executable release fixtures
 
-- `scripts/capture-release-fixture.ts` creates projects with the exact packed release binaries for
+- `scripts/release/capture-release-fixture.ts` creates projects with the exact packed release binaries for
   TypeScript, React Native, Rust, Python, Go, Java, Elixir, and .NET.
-- `scripts/release-fixture.ts` stores every file as exact bytes, modes, and hashes. It also records
+- `scripts/release/release-fixture.ts` stores every file as exact bytes, modes, and hashes. It also records
   package integrity, lifecycle provenance, Stack Parts, and the generation command.
 - The release receipt binds the fixture digest and case IDs to the source commit and package
   manifest. The release workflow publishes that fixture as a release asset.
 
 ## Cross-version qualification
 
-- `scripts/cross-version-upgrade.ts` verifies the source release receipt before materializing any
+- `scripts/release/cross-version-upgrade.ts` verifies the source release receipt before materializing any
   fixture.
 - The harness installs the exact target tarballs, applies a managed user edit, plans and applies the
   target update, proves exact recovery, reapplies the plan, and runs the strict ecosystem verifier.
-- `scripts/qualify-previous-release.ts` records an explicit awaiting state for the first
+- `scripts/release/qualify-previous-release.ts` records an explicit awaiting state for the first
   fixture-bearing release. Later releases must download the previous fixture and receipt and pass
   the full qualification before their own receipt can be created.
 - The qualification report is bound to the target package manifest and published as a separate
@@ -31,7 +31,7 @@ consecutive published releases to complete the flow.
   generator-only edits, compatible dual edits, conflicts, deletion, user and template renames,
   missing baselines, interrupted apply, and failed writes.
 - Focused transaction and scaffold-upgrade tests prove those results and exact rollback behavior.
-- `scripts/validate-update-qualification.ts` prevents a declared result from losing its executable
+- `scripts/release/validate-update-qualification.ts` prevents a declared result from losing its executable
   test. The validator runs in the release gate.
 
 ## Remaining boundary

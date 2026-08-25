@@ -1,8 +1,10 @@
+import {
+  CAPABILITY_EVIDENCE_LEVEL_IDS,
+  STARTER_TRACK_IDS,
+  TELEMETRY_STACK_DIMENSION_KEYS,
+} from "@better-fullstack/types";
 import { describe, expect, it } from "bun:test";
 
-import { CAPABILITY_EVIDENCE_LEVEL_IDS } from "../../types/src/evidence";
-import { STARTER_TRACK_IDS } from "../../types/src/starter-tracks";
-import { TELEMETRY_STACK_DIMENSION_KEYS } from "../../types/src/telemetry";
 import {
   applyFailureClassifications,
   classifySelectionDecision,
@@ -10,14 +12,14 @@ import {
   countReturningMachinesFromActivity,
   isLifecycleTerminalEvent,
   type FailureAggregates,
-} from "../convex/analytics_core";
+} from "@/analytics_core";
 import {
   extractStack,
   legacyStackFields,
   sanitizeIngestEnvelope,
   sanitizeTelemetryIdentifier,
   TELEMETRY_STACK_KEYS,
-} from "../convex/http";
+} from "@/http";
 
 function emptyFailureAggregates(): FailureAggregates {
   return {

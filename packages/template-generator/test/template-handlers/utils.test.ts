@@ -1,15 +1,16 @@
+import { makeConfig } from "@test/_fixtures/config-factory";
+import { makeTemplates } from "@test/_fixtures/template-factory";
 import { describe, expect, it } from "bun:test";
 
-import { VirtualFileSystem } from "../../src/core/virtual-fs";
+import type { VirtualDirectory, VirtualFile } from "@/types";
+
+import { VirtualFileSystem } from "@/core/virtual-fs";
 import {
   hasTemplatesWithPrefix,
   isEmptyTemplateOutput,
   processSingleTemplate,
   processTemplatesFromPrefix,
-} from "../../src/template-handlers/utils";
-import type { VirtualDirectory, VirtualFile } from "../../src/types";
-import { makeConfig } from "../_fixtures/config-factory";
-import { makeTemplates } from "../_fixtures/template-factory";
+} from "@/template-handlers/core/utils";
 
 function findFile(node: VirtualDirectory, path: string): VirtualFile | undefined {
   for (const child of node.children) {
@@ -64,13 +65,7 @@ describe("template handler utils", () => {
     });
     const vfs = new VirtualFileSystem();
 
-    processSingleTemplate(
-      vfs,
-      templates,
-      "extras/optional.ts",
-      "optional.ts",
-      makeConfig(),
-    );
+    processSingleTemplate(vfs, templates, "extras/optional.ts", "optional.ts", makeConfig());
 
     expect(vfs.fileExists("optional.ts")).toBe(false);
   });

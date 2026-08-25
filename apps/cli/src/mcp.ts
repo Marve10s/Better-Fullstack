@@ -1,4 +1,8 @@
 import {
+  LIFECYCLE_CONTRACT_VERSION,
+  SUPPORTED_LIFECYCLE_CONTRACT_VERSIONS,
+} from "@better-fullstack/project-lifecycle/contracts";
+import {
   type AddInput,
   AddonsSchema,
   AISchema,
@@ -195,28 +199,25 @@ import { McpServer } from "@modelcontextprotocol/server";
 import { serveStdio } from "@modelcontextprotocol/server/stdio";
 import z from "zod";
 
-import { applyGen, planGen } from "./commands/gen";
-import { getRecipesResult } from "./commands/recipes";
-import { getStarterTrackRecommendation, getStarterTracksResult } from "./commands/starter-tracks";
+import { applyGen, planGen } from "@/commands/generation/gen";
+import { getRecipesResult } from "@/commands/generation/recipes";
+import {
+  getStarterTrackRecommendation,
+  getStarterTracksResult,
+} from "@/commands/stack/starter-tracks";
+import { readBtsConfig } from "@/config/bts-config";
+import { applyConfigDriftRepair, planConfigDriftRepair } from "@/config/config-drift-repair";
+import { applyEffectBackendDefaults } from "@/config/config-processing";
+import { getEffectiveStack, getGraphSummary } from "@/config/graph-summary";
+import { getCompatibilityBackend } from "@/config/stack-compatibility";
+import { getTemplateConfig, getTemplateDescription } from "@/config/templates";
 import {
   applyPrimaryRoleReplacement,
   planPrimaryRoleReplacement,
-} from "./helpers/core/primary-role-replacement";
-import { applyPackInstall, planPackInstall } from "./helpers/core/registry-handler";
-import { applyStackUpdate, planStackUpdate } from "./helpers/core/stack-update";
-import { trackEvent, trackProjectCreation, withCommandTelemetry } from "./utils/analytics";
-import { readBtsConfig } from "./utils/bts-config";
-import { getCapabilityEvidenceReport } from "./utils/capability-evidence";
-import { applyConfigDriftRepair, planConfigDriftRepair } from "./utils/config-drift-repair";
-import { applyEffectBackendDefaults } from "./utils/config-processing";
-import { runWithContextAsync } from "./utils/context";
-import { generateReproducibleCommand } from "./utils/generate-reproducible-command";
-import { getLatestCLIVersion } from "./utils/get-latest-cli-version";
-import { getEffectiveStack, getGraphSummary } from "./utils/graph-summary";
-import {
-  LIFECYCLE_CONTRACT_VERSION,
-  SUPPORTED_LIFECYCLE_CONTRACT_VERSIONS,
-} from "./utils/lifecycle-contract";
+} from "@/helpers/core/primary-role-replacement";
+import { applyPackInstall, planPackInstall } from "@/helpers/core/registry-handler";
+import { applyStackUpdate, planStackUpdate } from "@/helpers/core/stack-update";
+import { generateReproducibleCommand } from "@/lifecycle/generate-reproducible-command";
 import {
   lifecycleResultOutputSchema,
   genMutationOutputSchema,
@@ -230,7 +231,7 @@ import {
   recoveryOutputSchema,
   recipesOutputSchema,
   registryMutationOutputSchema,
-} from "./utils/mcp-lifecycle-output-schemas";
+} from "@/mcp/mcp-lifecycle-output-schemas";
 import {
   applyMcpPartRemoval,
   applyMcpProjectUpdate,
@@ -245,10 +246,12 @@ import {
   pruneMcpProjectRecoveryPoints,
   recoverMcpProjectTransaction,
   verifyMcpProjectRecoveryPoint,
-} from "./utils/mcp-project-lifecycle";
-import { getProjectContext } from "./utils/project-context";
-import { getCompatibilityBackend } from "./utils/stack-compatibility";
-import { getTemplateConfig, getTemplateDescription } from "./utils/templates";
+} from "@/mcp/mcp-project-lifecycle";
+import { getLatestCLIVersion } from "@/platform/get-latest-cli-version";
+import { runWithContextAsync } from "@/presentation/context";
+import { getCapabilityEvidenceReport } from "@/project/capability-evidence";
+import { getProjectContext } from "@/project/project-context";
+import { trackEvent, trackProjectCreation, withCommandTelemetry } from "@/telemetry/analytics";
 
 const OPTION_ENTRY_COUNT = Object.values(OPTION_CATEGORY_METADATA).reduce(
   (sum, metadata) => sum + metadata.options.length,
@@ -2202,7 +2205,7 @@ export function createMcpServer(): McpServer {
         const targetDir = input.targetDir ? sanitizePath(input.targetDir as string) : undefined;
         const projectDir = path.resolve(targetDir ?? process.cwd(), projectName);
         const config = buildProjectConfig(input, { projectDir });
-        const { createProject } = await import("./helpers/core/create-project.js");
+        const { createProject } = await import("@/helpers/core/create-project.js");
         const result = await runWithContextAsync({ silent: true }, () =>
           createProject(config, { allowExistingDirectory: false }),
         );
@@ -3324,7 +3327,7 @@ export function createMcpServer(): McpServer {
     async (input: Record<string, unknown> & { projectDir: string }) => {
       try {
         const safePath = sanitizePath(input.projectDir);
-        const { add } = await import("./index.js");
+        const { add } = await import("@/index.js");
 
         const configBefore = await readBtsConfig(safePath);
         const requestedParts = mergeLegacyAddonParts(

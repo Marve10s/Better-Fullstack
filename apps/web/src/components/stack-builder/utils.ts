@@ -13,9 +13,9 @@ import {
   validateProjectName,
 } from "@better-fullstack/types";
 
-import type { StackState, TECH_OPTIONS } from "@/lib/constant";
+import type { StackState, TECH_OPTIONS } from "@/lib/stack/constant";
 
-import { getToolingCategoryForUi, getToolingOptionForUi } from "@/lib/stack-utils";
+import { getToolingCategoryForUi, getToolingOptionForUi } from "@/lib/stack/stack-utils";
 
 export {
   getCategoryDisplayName,

@@ -1,7 +1,7 @@
 import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 
-import { SEARCH_MEDIA_SPECS } from "../src/search-media/specs";
+import { SEARCH_MEDIA_SPECS } from "@/search-media/specs";
 
 const entry = resolve(import.meta.dir, "../src/index.ts");
 const videoRoot = resolve(import.meta.dir, "..");
@@ -25,13 +25,7 @@ async function renderSpec(index: number): Promise<void> {
   if (!spec) return;
 
   await render(
-    [
-      "still",
-      entry,
-      spec.stillId,
-      resolve(outputDirectory, `${spec.fileName}.png`),
-      "--overwrite",
-    ],
+    ["still", entry, spec.stillId, resolve(outputDirectory, `${spec.fileName}.png`), "--overwrite"],
     spec.stillId,
   );
   await render(

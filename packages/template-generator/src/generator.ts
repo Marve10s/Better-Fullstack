@@ -10,16 +10,16 @@ import {
   validateStackParts,
 } from "@better-fullstack/types";
 
-import type { GeneratorOptions, GeneratorResult, VirtualFileTree } from "./types";
+import type { GeneratorOptions, GeneratorResult, VirtualFileTree } from "@/types";
 
-import { VirtualFileSystem } from "./core/virtual-fs";
+import { VirtualFileSystem } from "@/core/virtual-fs";
 import {
   flattenSingleApp,
   processCatalogs,
   processPackageConfigs,
   qualifiesForSingleApp,
   updateDbPackageJson,
-} from "./post-process";
+} from "@/post-process";
 import {
   processDatabaseDeps,
   processDependencies,
@@ -29,12 +29,12 @@ import {
   processParaglidePlugins,
   processPwaPlugins,
   processEnvVariables,
-} from "./processors";
-import { processAiDocs } from "./processors/ai-docs-generator";
+} from "@/processors";
+import { processAiDocs } from "@/processors/config/ai-docs-generator";
 import {
   processGraphBackendConnection,
   processGraphBackendEnv,
-} from "./processors/graph-backend-connection";
+} from "@/processors/config/graph-backend-connection";
 import {
   type TemplateData,
   processBaseTemplate,
@@ -75,7 +75,7 @@ import {
   processVectorDbTemplates,
   processFileStorageTemplates,
   processTestingTemplates,
-} from "./template-handlers";
+} from "@/template-handlers";
 
 export type { TemplateData };
 

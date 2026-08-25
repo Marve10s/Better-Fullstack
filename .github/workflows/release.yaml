@@ -114,7 +114,7 @@ jobs:
           RELEASE_VERSION: ${{ steps.release.outputs.release_version }}
           SOURCE_SHA: ${{ steps.release.outputs.source_sha }}
         run: >-
-          bun run scripts/release-state.ts prepare
+          bun run scripts/release/release-state.ts prepare
           --artifact-dir "$ARTIFACT_DIR"
           --release-version "$RELEASE_VERSION"
           --sha "$SOURCE_SHA"
@@ -130,7 +130,7 @@ jobs:
           ARTIFACT_DIR: ${{ runner.temp }}/npm-release
           BTS_TELEMETRY: 0
         run: >-
-          bun run scripts/capture-release-fixture.ts
+          bun run scripts/release/capture-release-fixture.ts
           --manifest "$ARTIFACT_DIR/release-manifest.json"
           --output "$ARTIFACT_DIR/upgrade-fixture.v1.json"
 
@@ -140,7 +140,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REPOSITORY: ${{ github.repository }}
         run: >-
-          bun run scripts/qualify-previous-release.ts
+          bun run scripts/release/qualify-previous-release.ts
           --repository "$REPOSITORY"
           --target-manifest "$ARTIFACT_DIR/release-manifest.json"
           --output "$ARTIFACT_DIR/cross-version-qualification.v1.json"
@@ -155,7 +155,7 @@ jobs:
           PROOF_PATH: ${{ runner.temp }}/generated-project-proof/generated-project-proof.json
           SOURCE_SHA: ${{ steps.release.outputs.source_sha }}
         run: >-
-          bun run scripts/release-receipt.ts create
+          bun run scripts/release/release-receipt.ts create
           --manifest "$ARTIFACT_DIR/release-manifest.json"
           --fixture "$ARTIFACT_DIR/upgrade-fixture.v1.json"
           --qualification "$ARTIFACT_DIR/cross-version-qualification.v1.json"

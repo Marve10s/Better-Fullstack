@@ -8,6 +8,7 @@ Provided Capability, and Legacy Flat Config.
 
 ```text
 packages/types
+  -> packages/project-lifecycle contracts and transactions
   -> apps/cli prompts, commands, and MCP
   -> apps/web builder, URLs, previews, docs, and downloads
   -> packages/template-generator virtual project
@@ -32,6 +33,18 @@ Owns executable product vocabulary:
 
 Put a cross-interface rule here when CLI, web, and MCP must agree. Do not import from an app into
 this package.
+
+### `packages/project-lifecycle`
+
+Owns project mutation contracts that must work outside the CLI:
+
+- transaction planning, application, rollback, and recovery;
+- lifecycle result and evidence contracts;
+- review-token validation and content hashing;
+- recovery state inspection and repair.
+
+Keep terminal rendering, prompts, and command routing in `apps/cli`. Scripts, tests, and other apps
+must consume this package instead of importing CLI internals.
 
 ### `packages/template-generator`
 
@@ -107,6 +120,8 @@ belongs in the CLI or shared packages.
 
 - Apps may depend on packages.
 - `template-generator` may depend on `types`.
+- CLI and repository tooling may depend on `project-lifecycle` for project mutations.
+- `project-lifecycle` must remain independent of apps, prompts, and terminal presentation.
 - `types` must remain independent of apps and generator implementation.
 - Shared packages must not read app-local constants to recover metadata.
 - Web-only code must not leak Node filesystem assumptions into browser generation.

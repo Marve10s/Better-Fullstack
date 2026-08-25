@@ -5,9 +5,9 @@ on:
     paths:
       - "apps/cli/src/**"
       - "apps/cli/package.json"
-      - "apps/web/src/lib/project-download.ts"
-      - "apps/web/test/browser-cli-lifecycle.test.ts"
-      - "apps/web/test/project-download.test.ts"
+      - "apps/web/src/lib/project/project-download.ts"
+      - "apps/web/test/project/browser-cli-lifecycle.test.ts"
+      - "apps/web/test/project/project-download.test.ts"
       - "packages/types/**"
       - "packages/template-generator/**"
       - "testing/**"
@@ -17,9 +17,9 @@ on:
     paths:
       - "apps/cli/src/**"
       - "apps/cli/package.json"
-      - "apps/web/src/lib/project-download.ts"
-      - "apps/web/test/browser-cli-lifecycle.test.ts"
-      - "apps/web/test/project-download.test.ts"
+      - "apps/web/src/lib/project/project-download.ts"
+      - "apps/web/test/project/browser-cli-lifecycle.test.ts"
+      - "apps/web/test/project/project-download.test.ts"
       - "packages/types/**"
       - "packages/template-generator/**"
       - "testing/**"
@@ -88,12 +88,13 @@ jobs:
       - name: Build lifecycle workspace packages
         run: |
           bun run --cwd packages/types build
+          bun run --cwd packages/project-lifecycle build
           bun run --cwd packages/template-generator build
 
       - name: Verify lifecycle contracts
         run: |
-          bun test testing/generated-project-proof.test.ts apps/web/test/project-download.test.ts
-          bun test apps/web/test/browser-cli-lifecycle.test.ts --timeout 120000
+          bun test testing/generated-project-proof.test.ts apps/web/test/project/project-download.test.ts
+          bun test apps/web/test/project/browser-cli-lifecycle.test.ts --timeout 120000
 
       - name: Run persistent recipe runtime proof
         run: bun run test:recipe-runtime

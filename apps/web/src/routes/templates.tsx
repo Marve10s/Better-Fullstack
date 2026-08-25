@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import type { GeneratedStackPage } from "@/lib/stack-pages/types";
+
 import Footer from "@/components/home/footer";
 import {
   DEFAULT_OG_IMAGE_ALT,
@@ -9,9 +11,8 @@ import {
   SITE_NAME,
   SITE_URL,
   canonicalUrl,
-} from "@/lib/seo";
+} from "@/lib/seo/seo";
 import { getPublishedStackPages } from "@/lib/stack-pages/source";
-import type { GeneratedStackPage } from "@/lib/stack-pages/types";
 
 const TEMPLATE_IMAGE = canonicalUrl("/search-media/stack-decisions-1200x630.png");
 const ECOSYSTEM_ORDER = ["typescript", "python", "go", "rust"] as const;
@@ -115,14 +116,15 @@ function TemplateCard({ page, ordinal }: { page: GeneratedStackPage; ordinal: nu
         <h3 className="mt-5 max-w-xl text-balance font-mono font-bold text-lg leading-7 tracking-tight sm:text-xl">
           {page.title}
         </h3>
-        <p className="mt-3 max-w-xl text-sm text-muted-foreground leading-6">
-          {page.description}
-        </p>
+        <p className="mt-3 max-w-xl text-sm text-muted-foreground leading-6">{page.description}</p>
       </div>
       <div className="mt-7 flex flex-wrap items-end justify-between gap-4">
         <ul className="flex flex-wrap gap-1.5" aria-label="Included technologies">
           {technologies.map((technology) => (
-            <li key={technology} className="border border-border/80 px-2 py-1 font-mono text-[0.68rem]">
+            <li
+              key={technology}
+              className="border border-border/80 px-2 py-1 font-mono text-[0.68rem]"
+            >
               {technology}
             </li>
           ))}
@@ -163,7 +165,10 @@ function TemplatesPage() {
                 Every page below is produced from a real generator selection. It records the exact
                 command, generated file shape, compatibility result, and a link back to the builder.
               </p>
-              <a href="/new" className="mt-5 inline-block font-mono text-foreground underline underline-offset-4">
+              <a
+                href="/new"
+                className="mt-5 inline-block font-mono text-foreground underline underline-offset-4"
+              >
                 Build a custom stack →
               </a>
             </div>
@@ -174,7 +179,10 @@ function TemplatesPage() {
             if (!ecosystemPages.length) return null;
 
             return (
-              <section key={ecosystem} className="grid gap-8 py-14 lg:grid-cols-[13rem_minmax(0,1fr)]">
+              <section
+                key={ecosystem}
+                className="grid gap-8 py-14 lg:grid-cols-[13rem_minmax(0,1fr)]"
+              >
                 <div>
                   <p className="font-mono text-[0.68rem] text-muted-foreground uppercase tracking-[0.2em]">
                     Ecosystem
@@ -182,7 +190,9 @@ function TemplatesPage() {
                   <h2 className="mt-2 font-mono font-bold text-2xl">
                     {ECOSYSTEM_LABELS[ecosystem] ?? ecosystem}
                   </h2>
-                  <p className="mt-3 text-sm text-muted-foreground">{ecosystemPages.length} templates</p>
+                  <p className="mt-3 text-sm text-muted-foreground">
+                    {ecosystemPages.length} templates
+                  </p>
                 </div>
                 <div className="grid md:grid-cols-2">
                   {ecosystemPages.map((page, index) => (
@@ -200,13 +210,22 @@ function TemplatesPage() {
               The builder turns the final selection into a reproducible command.
             </p>
             <div className="mt-7 flex flex-wrap justify-center gap-3">
-              <a href="/guides" className="border border-border px-4 py-2 font-mono text-sm hover:bg-muted/40">
+              <a
+                href="/guides"
+                className="border border-border px-4 py-2 font-mono text-sm hover:bg-muted/40"
+              >
                 Read guides
               </a>
-              <a href="/blog" className="border border-border px-4 py-2 font-mono text-sm hover:bg-muted/40">
+              <a
+                href="/blog"
+                className="border border-border px-4 py-2 font-mono text-sm hover:bg-muted/40"
+              >
                 Compare choices
               </a>
-              <a href="/new" className="bg-foreground px-4 py-2 font-mono text-background text-sm hover:bg-foreground/90">
+              <a
+                href="/new"
+                className="bg-foreground px-4 py-2 font-mono text-background text-sm hover:bg-foreground/90"
+              >
                 Open builder
               </a>
             </div>

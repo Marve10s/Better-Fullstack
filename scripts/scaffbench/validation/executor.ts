@@ -1,14 +1,13 @@
-import { existsSync } from "node:fs";
+import type { CommandResult } from "@scaffbench/types";
 
-import type { CommandResult } from "@/types";
-
-import { quoteArg, tail } from "@/agents/command";
+import { quoteArg, tail } from "@scaffbench/agents/command";
 import {
   VALIDATION_ENV_SCRUB_PATTERN,
   VALIDATION_OUTPUT_LIMIT_BYTES,
   VALIDATION_RESOURCE_ENV,
-} from "@/constants";
-import { spawnProcessTree } from "@/process-tree";
+} from "@scaffbench/constants";
+import { spawnProcessTree } from "@scaffbench/process-tree";
+import { existsSync } from "node:fs";
 
 const TASKPOLICY = "/usr/sbin/taskpolicy";
 const useTaskpolicy = process.platform === "darwin" && existsSync(TASKPOLICY);

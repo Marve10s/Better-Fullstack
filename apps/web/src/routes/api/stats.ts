@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { NOINDEX_ROBOTS } from "@/lib/robots";
+import { NOINDEX_ROBOTS } from "@/lib/seo/robots";
 
 type StatsPayload = {
   github: {

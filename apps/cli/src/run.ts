@@ -17,16 +17,26 @@ import pc from "picocolors";
 import { createCli } from "trpc-cli";
 import z from "zod";
 
-import type { AddResult } from "./helpers/core/add-handler";
-import type { TelemetrySource } from "./utils/analytics";
+import type { AddResult } from "@/helpers/core/add-handler";
+import type { TelemetrySource } from "@/telemetry/analytics";
 
-import { getCompatibilityExplanationResult } from "./commands/compatibility";
-import { historyHandler } from "./commands/history";
-import { getStarterTrackRecommendation, getStarterTracksResult } from "./commands/starter-tracks";
-import { telemetryHandler } from "./commands/telemetry";
-import { BUILDER_URL } from "./constants";
-import { CreateCommandInputSchema, CreateCommandOptionsSchema } from "./create-command-input";
-import { createProjectHandler } from "./helpers/core/command-handlers";
+import { getCompatibilityExplanationResult } from "@/commands/stack/compatibility";
+import {
+  getStarterTrackRecommendation,
+  getStarterTracksResult,
+} from "@/commands/stack/starter-tracks";
+import { historyHandler } from "@/commands/system/history";
+import { telemetryHandler } from "@/commands/system/telemetry";
+import { BUILDER_URL } from "@/constants";
+import { CreateCommandInputSchema, CreateCommandOptionsSchema } from "@/create-command-input";
+import { createProjectHandler } from "@/helpers/core/command-handlers";
+import { getLatestCLIVersion } from "@/platform/get-latest-cli-version";
+import { openUrl } from "@/platform/open-url";
+import { handleError } from "@/presentation/errors";
+import { renderTitle } from "@/presentation/render-title";
+import { displaySponsors, fetchSponsors } from "@/presentation/sponsors";
+import { getCapabilityEvidenceReport } from "@/project/capability-evidence";
+import { statusFromCommandResult, withCommandTelemetry } from "@/telemetry/analytics";
 import {
   type AddInput,
   AISchema,
@@ -185,14 +195,7 @@ import {
   ShadcnBaseColorSchema,
   ShadcnFontSchema,
   ShadcnRadiusSchema,
-} from "./types";
-import { statusFromCommandResult, withCommandTelemetry } from "./utils/analytics";
-import { getCapabilityEvidenceReport } from "./utils/capability-evidence";
-import { handleError } from "./utils/errors";
-import { getLatestCLIVersion } from "./utils/get-latest-cli-version";
-import { openUrl } from "./utils/open-url";
-import { renderTitle } from "./utils/render-title";
-import { displaySponsors, fetchSponsors } from "./utils/sponsors";
+} from "@/types";
 
 const OPTION_ENTRY_COUNT = Object.values(OPTION_CATEGORY_METADATA).reduce(
   (sum, metadata) => sum + metadata.options.length,
@@ -358,7 +361,7 @@ export const router = os.router({
     })
     .input(AddCommandInputSchema)
     .handler(async ({ input }) => {
-      const { addHandler } = await import("./helpers/core/add-handler.js");
+      const { addHandler } = await import("@/helpers/core/add-handler.js");
       const hasExplicitSelection = Object.entries(input).some(([key, value]) => {
         if (["projectDir", "install", "dryRun", "json"].includes(key)) return false;
         if (value === undefined || value === false) return false;
@@ -397,7 +400,7 @@ export const router = os.router({
     )
     .handler(async ({ input }) => {
       const [projectDir, options] = input;
-      const { statusCommand } = await import("./commands/status.js");
+      const { statusCommand } = await import("@/commands/lifecycle/status.js");
       await withCommandTelemetry(
         "status",
         () => statusCommand({ projectDir, json: options.json }),
@@ -437,7 +440,7 @@ export const router = os.router({
     )
     .handler(async ({ input }) => {
       const [target, options] = input;
-      const { removeCommand } = await import("./commands/remove.js");
+      const { removeCommand } = await import("@/commands/stack/remove.js");
       await withCommandTelemetry("remove", () => removeCommand({ target, ...options }), {
         source: "cli-flags",
         mode: options.apply ? "apply" : "dry-run",
@@ -482,7 +485,7 @@ export const router = os.router({
     )
     .handler(async ({ input }) => {
       const [target, replacement, options] = input;
-      const { replaceCommand } = await import("./commands/replace.js");
+      const { replaceCommand } = await import("@/commands/stack/replace.js");
       await withCommandTelemetry(
         "replace",
         () => replaceCommand({ target, replacement, ...options }),
@@ -554,7 +557,7 @@ export const router = os.router({
       }),
     )
     .handler(async ({ input }) => {
-      const { updateDepsHandler, showEcosystems } = await import("./commands/update-deps.js");
+      const { updateDepsHandler, showEcosystems } = await import("@/commands/stack/update-deps.js");
       if (input["list-ecosystems"]) {
         showEcosystems();
         return;
@@ -601,7 +604,7 @@ export const router = os.router({
     )
     .handler(async ({ input }) => {
       const [kind, name, options] = input;
-      const { genCommand } = await import("./commands/gen.js");
+      const { genCommand } = await import("@/commands/generation/gen.js");
       await withCommandTelemetry(
         "gen",
         () =>
@@ -642,7 +645,7 @@ export const router = os.router({
     )
     .handler(async ({ input }) => {
       const [dir, options] = input;
-      const { contextCommand } = await import("./commands/context.js");
+      const { contextCommand } = await import("@/commands/system/context.js");
       await contextCommand({ dir, json: options.json });
     }),
   recipes: os
@@ -662,7 +665,7 @@ export const router = os.router({
     )
     .handler(async ({ input }) => {
       const [action, name, options] = input;
-      const { recipesCommand } = await import("./commands/recipes.js");
+      const { recipesCommand } = await import("@/commands/generation/recipes.js");
       await recipesCommand({ action, name, dir: options.dir, json: options.json });
     }),
   registry: os
@@ -703,7 +706,7 @@ export const router = os.router({
     )
     .handler(async ({ input }) => {
       const [action, source, options] = input;
-      const { registryHandler } = await import("./commands/registry.js");
+      const { registryHandler } = await import("@/commands/generation/registry.js");
       await withCommandTelemetry(
         "registry",
         () =>
@@ -782,7 +785,7 @@ export const router = os.router({
     )
     .handler(async ({ input }) => {
       const [projectDir, options] = input;
-      const { updateCommand } = await import("./commands/update.js");
+      const { updateCommand } = await import("@/commands/lifecycle/update.js");
       await updateCommand({ projectDir, ...options });
     }),
   adopt: os
@@ -808,7 +811,7 @@ export const router = os.router({
     )
     .handler(async ({ input }) => {
       const [projectDir, options] = input;
-      const { adoptCommand } = await import("./commands/adopt.js");
+      const { adoptCommand } = await import("@/commands/lifecycle/adopt.js");
       await adoptCommand({ projectDir, ...options });
     }),
   recovery: os
@@ -851,7 +854,7 @@ export const router = os.router({
     )
     .handler(async ({ input }) => {
       const [action, transactionId, options] = input;
-      const { recoveryCommand } = await import("./commands/recovery.js");
+      const { recoveryCommand } = await import("@/commands/lifecycle/recovery.js");
       await withCommandTelemetry(
         "recovery",
         () => recoveryCommand({ action, transactionId, ...options }),
@@ -888,7 +891,7 @@ export const router = os.router({
     .input(ProjectCheckInputSchema)
     .handler(async ({ input }) => {
       const [projectDir, options] = input;
-      const { doctorCommand } = await import("./commands/doctor.js");
+      const { doctorCommand } = await import("@/commands/lifecycle/doctor.js");
       await doctorCommand({ projectDir, ...options, commandName: "doctor" });
     }),
   check: os
@@ -899,7 +902,7 @@ export const router = os.router({
     .input(ProjectCheckInputSchema)
     .handler(async ({ input }) => {
       const [projectDir, options] = input;
-      const { doctorCommand } = await import("./commands/doctor.js");
+      const { doctorCommand } = await import("@/commands/lifecycle/doctor.js");
       await doctorCommand({ projectDir, ...options, commandName: "check" });
     }),
   evidence: os
@@ -1225,7 +1228,7 @@ export async function add(
   input: AddInput,
   options?: { telemetrySource?: TelemetrySource },
 ): Promise<AddResult | undefined> {
-  const { addHandler } = await import("./helpers/core/add-handler.js");
+  const { addHandler } = await import("@/helpers/core/add-handler.js");
   return addHandler(input, {
     silent: true,
     telemetrySource: options?.telemetrySource ?? "programmatic",

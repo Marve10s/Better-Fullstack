@@ -5,7 +5,7 @@ Fullstack has qualified a historical update window.
 
 ## Machine-readable support policy
 
-- `packages/types/src/update-support.ts` owns the versioned update-window policy and evaluator.
+- `packages/types/src/stack/update-support.ts` owns the versioned update-window policy and evaluator.
 - The policy requires two consecutive published manifest-v2 releases before a historical window
   can become active.
 - The current policy remains in qualification state with no supported historical range.

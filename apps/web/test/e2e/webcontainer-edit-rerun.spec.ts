@@ -3,8 +3,7 @@ import {
   DEFAULT_STACK_SELECTION,
 } from "@better-fullstack/types/stack-translation";
 import { expect, test } from "@playwright/test";
-
-import { gotoAppPage } from "./test-helpers";
+import { gotoAppPage } from "@test/e2e/test-helpers";
 
 test.describe("real WebContainer lifecycle", { tag: "@webcontainer-proof" }, () => {
   // Two full attempts, browser setup, and artifact upload must fit inside the

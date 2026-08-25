@@ -1,13 +1,11 @@
 import type { CommandExecutor } from "@effect/platform/CommandExecutor";
+import type { CommandResult, Effort } from "@scaffbench/types";
 
 import * as FileSystem from "@effect/platform/FileSystem";
+import { agentRunCommandOptions, runCommand } from "@scaffbench/agents/command";
+import { bfSpec, GEN_TIMEOUT_MS } from "@scaffbench/constants";
 import * as Effect from "effect/Effect";
 import path from "node:path";
-
-import type { CommandResult, Effort } from "@/types";
-
-import { agentRunCommandOptions, runCommand } from "@/agents/command";
-import { bfSpec, GEN_TIMEOUT_MS } from "@/constants";
 
 export function runOpencode(input: {
   binary: "opencode" | "kilo";

@@ -1,12 +1,11 @@
 import { expect, test } from "@playwright/test";
-
 import {
   clickVisibleTestId,
   commandOutput,
   gotoAppPage,
   openBuilder,
   visibleTestId,
-} from "./test-helpers";
+} from "@test/e2e/test-helpers";
 
 test.describe("Builder parity", () => {
   test.describe.configure({ mode: "serial" });

@@ -1,10 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { TbArrowRight as ArrowRight, TbArrowUpRight as ArrowUpRight, TbCheck as Check, TbCopy as Copy } from "react-icons/tb";
 import { useCallback, useState, type CSSProperties } from "react";
+import {
+  TbArrowRight as ArrowRight,
+  TbArrowUpRight as ArrowUpRight,
+  TbCheck as Check,
+  TbCopy as Copy,
+} from "react-icons/tb";
 
 import Footer from "@/components/home/footer";
-import { buildPageHead, SITE_NAME } from "@/lib/seo";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
+import { buildPageHead, SITE_NAME } from "@/lib/seo/seo";
 import { m } from "@/paraglide/messages.js";
 
 export const Route = createFileRoute("/run")({
@@ -25,7 +30,15 @@ const REPORTS_URL = `${REPO_URL}/tree/main/benchmarks`;
 
 // Copyable command / code block. `code` is verbatim shell (never localized);
 // `label` is a short localized caption.
-function CodeBlock({ label, code, shell = true }: { label: string; code: string; shell?: boolean }) {
+function CodeBlock({
+  label,
+  code,
+  shell = true,
+}: {
+  label: string;
+  code: string;
+  shell?: boolean;
+}) {
   const [copied, setCopied] = useState(false);
   const copy = useCallback(() => {
     navigator.clipboard.writeText(code).then(
@@ -50,7 +63,9 @@ function CodeBlock({ label, code, shell = true }: { label: string; code: string;
           aria-label={m.mcpCopyAgentConfiguration({ agent: label })}
           className={cn(
             "flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors active:translate-y-[1px]",
-            copied ? "text-lime-700 dark:text-[#C6E853]" : "text-muted-foreground hover:text-foreground",
+            copied
+              ? "text-lime-700 dark:text-[#C6E853]"
+              : "text-muted-foreground hover:text-foreground",
           )}
         >
           {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
@@ -146,9 +161,17 @@ function ModeTab({
 
 // Technical reference — model ids / auth commands are code, kept verbatim.
 const AGENTS: ReadonlyArray<{ agent: string; models: string; auth: string }> = [
-  { agent: "Claude Code", models: "claude-opus-4-8, claude-sonnet-5, claude-sonnet-4-6", auth: "subscription · ANTHROPIC_API_KEY" },
+  {
+    agent: "Claude Code",
+    models: "claude-opus-4-8, claude-sonnet-5, claude-sonnet-4-6",
+    auth: "subscription · ANTHROPIC_API_KEY",
+  },
   { agent: "Codex", models: "gpt-5.5, gpt-5.3-codex-spark", auth: "OPENAI_API_KEY" },
-  { agent: "Antigravity (agy)", models: "gemini-3.5-flash, gemini-3.1-pro", auth: "Google sign-in" },
+  {
+    agent: "Antigravity (agy)",
+    models: "gemini-3.5-flash, gemini-3.1-pro",
+    auth: "Google sign-in",
+  },
   { agent: "opencode", models: "opencode/<model> (incl. free tier)", auth: "opencode login" },
   { agent: "Kilo Code", models: "kilo/<provider>/<model> (incl. free tier)", auth: "kilo login" },
 ];
@@ -194,7 +217,8 @@ function RunPage() {
               className="mt-4 max-w-[16ch] text-balance font-mono font-bold tracking-[-0.04em]"
               style={h1Style}
             >
-              {m.runHeroTitleA()} <span className="italic text-muted-foreground">{m.runHeroTitleB()}</span>
+              {m.runHeroTitleA()}{" "}
+              <span className="italic text-muted-foreground">{m.runHeroTitleB()}</span>
             </h1>
             <p className="mt-6 max-w-2xl text-pretty text-sm text-muted-foreground sm:text-base">
               {m.runHeroDescription()}
@@ -236,7 +260,9 @@ function RunPage() {
                 <div className="mt-4 max-w-3xl">
                   <CodeBlock
                     label={m.runLabelClone()}
-                    code={"git clone https://github.com/Marve10s/Better-Fullstack.git\ncd Better-Fullstack\nbun install"}
+                    code={
+                      "git clone https://github.com/Marve10s/Better-Fullstack.git\ncd Better-Fullstack\nbun install"
+                    }
                   />
                 </div>
               </li>
@@ -251,12 +277,16 @@ function RunPage() {
                 <div className="mt-4 max-w-3xl space-y-4">
                   <CodeBlock
                     label={m.runLabelRunAll()}
-                    code={"bun run scaffbench:2 --model claude-opus-4-8 --efforts max --paths prompt"}
+                    code={
+                      "bun run scaffbench:2 --model claude-opus-4-8 --efforts max --paths prompt"
+                    }
                   />
                   <p className="text-sm text-muted-foreground">{m.runTwoPhaseNote()}</p>
                   <CodeBlock
                     label={m.runLabelTwoPhase()}
-                    code={"bun run scaffbench:2:generate --model gpt-5.5 --paths prompt --out-dir runs/gpt55\nbun run scaffbench:2:validate --out-dir runs/gpt55"}
+                    code={
+                      "bun run scaffbench:2:generate --model gpt-5.5 --paths prompt --out-dir runs/gpt55\nbun run scaffbench:2:validate --out-dir runs/gpt55"
+                    }
                   />
                   <p className="text-sm text-muted-foreground">
                     {m.runResultsNotePre()}
@@ -302,7 +332,9 @@ function RunPage() {
                   {AGENTS.map((a) => (
                     <tr key={a.agent} className="border-b border-border/60">
                       <td className="py-3 pr-4 font-mono font-semibold">{a.agent}</td>
-                      <td className="py-3 pr-4 font-mono text-xs text-muted-foreground">{a.models}</td>
+                      <td className="py-3 pr-4 font-mono text-xs text-muted-foreground">
+                        {a.models}
+                      </td>
                       <td className="py-3 font-mono text-xs text-muted-foreground">{a.auth}</td>
                     </tr>
                   ))}
@@ -323,7 +355,10 @@ function RunPage() {
             </h2>
             <ul className="mt-10 max-w-3xl divide-y divide-border/60">
               {FLAGS.map((f) => (
-                <li key={f.flag} className="grid grid-cols-1 gap-1 py-4 sm:grid-cols-[minmax(0,18rem)_1fr] sm:gap-4">
+                <li
+                  key={f.flag}
+                  className="grid grid-cols-1 gap-1 py-4 sm:grid-cols-[minmax(0,18rem)_1fr] sm:gap-4"
+                >
                   <code className={cn("font-mono text-xs font-semibold sm:text-sm", ACCENT_TEXT)}>
                     {f.flag}
                   </code>

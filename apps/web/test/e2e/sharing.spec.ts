@@ -1,10 +1,8 @@
+import { createStackSelectionSearchParams as createStackSearchParams } from "@better-fullstack/types/stack-translation";
 import { test, expect } from "@playwright/test";
-import {
-  createStackSelectionSearchParams as createStackSearchParams,
-} from "@better-fullstack/types/stack-translation";
+import { commandOutput, gotoAppPage } from "@test/e2e/test-helpers";
 
-import { DEFAULT_STACK } from "../../src/lib/stack-defaults";
-import { commandOutput, gotoAppPage } from "./test-helpers";
+import { DEFAULT_STACK } from "@/lib/stack/stack-defaults";
 
 test.describe("URL Sharing", () => {
   test("navigating with search params restores stack", async ({ page }) => {

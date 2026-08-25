@@ -20,8 +20,8 @@ If generated output changes but the web preview or CLI does not, the change is u
 
 ## Snapshot expectations
 
-- `apps/cli/test/template-snapshots.test.ts` protects high-value generated output.
-- `apps/cli/test/snapshot-utils.ts` normalizes CRLF and trailing whitespace before snapshotting.
+- `apps/cli/test/support/template-snapshots.test.ts` protects high-value generated output.
+- `apps/cli/test/support/snapshot-utils.ts` normalizes CRLF and trailing whitespace before snapshotting.
 - Snapshot updates should reflect meaningful template changes, not line-ending noise.
 
 ## Validation advice
@@ -34,7 +34,7 @@ If generated output changes but the web preview or CLI does not, the change is u
 
 ## Good verification targets
 
-- `bun test apps/cli/test/template-snapshots.test.ts`
-- `bun test apps/cli/test/cli-builder-sync.test.ts`
+- `bun test apps/cli/test/support/template-snapshots.test.ts`
+- `bun test apps/cli/test/recommendations/cli-builder-sync.test.ts`
 - package-local lint or type checks for the package you changed
 - focused generator scripts or matrix tests when the change touches a broad compatibility surface

@@ -8,9 +8,9 @@ import {
 } from "@better-fullstack/types";
 import { z } from "zod";
 
-import { PUBLIC_VERIFICATION_CASE_IDS } from "./release-verification-cases";
+import { PUBLIC_VERIFICATION_CASE_IDS } from "@/lib/docs/release-verification-cases";
 
-export { PUBLIC_VERIFICATION_CASE_IDS } from "./release-verification-cases";
+export { PUBLIC_VERIFICATION_CASE_IDS } from "@/lib/docs/release-verification-cases";
 
 export const VERIFICATION_RECEIPT_URL =
   "https://github.com/Marve10s/Better-Fullstack/releases/latest/download/verification-receipt.v1.json";

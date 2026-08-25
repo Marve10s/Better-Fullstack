@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import type { PublicVerificationReport } from "@/lib/docs/release-verification";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
 
 type VerificationApiResponse = {
   verification?: PublicVerificationReport;

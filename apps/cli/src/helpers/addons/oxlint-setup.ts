@@ -3,10 +3,10 @@ import { $ } from "execa";
 import fs from "fs-extra";
 import path from "node:path";
 
-import type { PackageManager } from "../../types";
+import type { PackageManager } from "@/types";
 
-import { addPackageDependency } from "../../utils/add-package-deps";
-import { getPackageExecutionArgs } from "../../utils/package-runner";
+import { addPackageDependency } from "@/platform/add-package-deps";
+import { getPackageExecutionArgs } from "@/platform/package-runner";
 
 export async function setupOxlint(projectDir: string, packageManager: PackageManager) {
   await addPackageDependency({

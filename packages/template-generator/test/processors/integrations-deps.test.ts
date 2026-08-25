@@ -1,8 +1,8 @@
+import { makeConfig } from "@test/_fixtures/config-factory";
+import { createSeededVFS, getDeps } from "@test/_fixtures/vfs-factory";
 import { describe, expect, it } from "bun:test";
 
-import { processIntegrationsDeps } from "../../src/processors/integrations-deps";
-import { makeConfig } from "../_fixtures/config-factory";
-import { createSeededVFS, getDeps } from "../_fixtures/vfs-factory";
+import { processIntegrationsDeps } from "@/processors/dependencies/integrations-deps";
 
 describe("processIntegrationsDeps", () => {
   it("adds the Nango SDK to supported self backends", () => {

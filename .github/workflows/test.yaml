@@ -68,7 +68,8 @@ jobs:
 
       - name: Build Core Packages
         run: |
-          rm -rf packages/types/dist packages/template-generator/dist
+          rm -rf packages/project-lifecycle/dist packages/types/dist packages/template-generator/dist
+          bun run --filter=@better-fullstack/project-lifecycle build
           bun run --filter=@better-fullstack/types build
           bun run --filter=@better-fullstack/template-generator build
 

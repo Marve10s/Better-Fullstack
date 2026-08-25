@@ -1,25 +1,33 @@
 import type { VirtualFileTree } from "@better-fullstack/template-generator";
 
-import { writeSelectedFiles } from "@better-fullstack/template-generator/fs-writer";
-import fs from "fs-extra";
-import { tmpdir } from "node:os";
-import path from "node:path";
-
-import { readBtsConfig } from "../../utils/bts-config";
-import { formatCode } from "../../utils/file-formatter";
-import { getProjectRecoveryCommand } from "../../utils/lifecycle-command";
 import {
   lifecycleResult,
   type LifecycleDependencyChange,
   type LifecycleResult,
-} from "../../utils/lifecycle-contract";
+} from "@better-fullstack/project-lifecycle/contracts";
+import { createReviewToken } from "@better-fullstack/project-lifecycle/review-token";
 import {
   beginProjectTransaction,
   commitProjectTransaction,
   rollbackProjectTransaction,
   writeProjectTransactionFile,
-} from "../../utils/project-transaction";
-import { createReviewToken } from "../../utils/review-token";
+} from "@better-fullstack/project-lifecycle/transaction";
+import { writeSelectedFiles } from "@better-fullstack/template-generator/fs-writer";
+import fs from "fs-extra";
+import { tmpdir } from "node:os";
+import path from "node:path";
+
+import { readBtsConfig } from "@/config/bts-config";
+import {
+  configFromBtsConfig,
+  formatGeneratedTree,
+  generateTree,
+  mergeEnvExample,
+  mergePackageJson,
+  PACKAGE_JSON_SECTIONS,
+  treeToFileMap,
+} from "@/helpers/core/stack-update";
+import { getProjectRecoveryCommand } from "@/lifecycle/lifecycle-command";
 import {
   getCurrentLifecycleVersions,
   hashContent,
@@ -29,16 +37,8 @@ import {
   serializeScaffoldManifest,
   SCAFFOLD_MANIFEST_FILE,
   type ScaffoldManifest,
-} from "../../utils/scaffold-manifest";
-import {
-  configFromBtsConfig,
-  formatGeneratedTree,
-  generateTree,
-  mergeEnvExample,
-  mergePackageJson,
-  PACKAGE_JSON_SECTIONS,
-  treeToFileMap,
-} from "./stack-update";
+} from "@/lifecycle/scaffold-manifest";
+import { formatCode } from "@/platform/file-formatter";
 
 const BINARY_FILE_MARKER = "[Binary file]";
 const EXECUTABLE_FILE_NAMES = new Set(["mvnw", "gradlew"]);

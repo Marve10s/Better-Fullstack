@@ -19,7 +19,7 @@ import type { ProjectConfig } from "@better-fullstack/types";
 import { isToolingOverlayOnly } from "@better-fullstack/types";
 import yaml from "yaml";
 
-import type { VirtualFileSystem } from "../core/virtual-fs";
+import type { VirtualFileSystem } from "@/core/virtual-fs";
 
 /** Web frameworks whose flat layout is supported (both expose `@/*` -> ./src). */
 const SINGLE_APP_WEB_FRONTENDS = new Set(["next", "tanstack-start"]);

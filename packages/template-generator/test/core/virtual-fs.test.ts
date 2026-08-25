@@ -1,7 +1,8 @@
 import { describe, expect, it } from "bun:test";
 
-import { VirtualFileSystem } from "../../src/core/virtual-fs";
-import type { VirtualDirectory, VirtualFile } from "../../src/types";
+import type { VirtualDirectory, VirtualFile } from "@/types";
+
+import { VirtualFileSystem } from "@/core/virtual-fs";
 
 function findFile(node: VirtualDirectory, path: string): VirtualFile | undefined {
   for (const child of node.children) {

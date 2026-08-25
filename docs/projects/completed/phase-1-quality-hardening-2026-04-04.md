@@ -21,7 +21,7 @@
 - Each preset lane uploads its smoke output as a GitHub Actions artifact for failure triage.
 - `apps/cli/src/helpers/addons/retry-install.ts` now provides shared retry/backoff handling used by `mcp-setup.ts` and `skills-setup.ts`.
 - `apps/web/test/e2e/a11y.spec.ts` adds axe-core accessibility checks for the landing page and stack builder.
-- `apps/cli/test/auth.test.ts` now covers Clerk with `typeorm`, `mikroorm`, and `sequelize`.
+- `apps/cli/test/features/auth.test.ts` now covers Clerk with `typeorm`, `mikroorm`, and `sequelize`.
 - `apps/cli/src/helpers/core/post-installation.ts` now gives actionable Turso + Prisma and Prisma + MongoDB + Docker guidance.
 - `apps/cli/src/index.ts` now gives more descriptive help text for `create`, `add`, and `mcp`.
 - `apps/cli/src/helpers/core/post-installation.ts` now provides setup instructions for:
@@ -33,8 +33,8 @@
 
 ## Validation
 
-- `~/.bun/bin/bun test apps/cli/test/retry-install.test.ts` -> PASS
-- `~/.bun/bin/bun test apps/cli/test/auth.test.ts --test-name-pattern "should scaffold (TypeORM|MikroORM|Sequelize) with Clerk"` -> PASS
+- `~/.bun/bin/bun test apps/cli/test/generation/retry-install.test.ts` -> PASS
+- `~/.bun/bin/bun test apps/cli/test/features/auth.test.ts --test-name-pattern "should scaffold (TypeORM|MikroORM|Sequelize) with Clerk"` -> PASS
 - `~/.bun/bin/bun run --cwd apps/cli check-types` -> PASS
 - `~/.bun/bin/bun run test:smoke -- --preset react-hono --output testing/.smoke-output/react-hono-local` -> PASS
 - `~/.bun/bin/bun run --cwd apps/web lint` -> PASS (existing warnings only)

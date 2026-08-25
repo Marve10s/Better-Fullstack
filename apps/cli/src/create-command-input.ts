@@ -166,7 +166,7 @@ import {
   ValidationSchema,
   VersionChannelSchema,
   WebDeploySchema,
-} from "./types";
+} from "@/types";
 
 export const CreateCommandOptionsSchema = z.object({
   template: TemplateSchema.optional().describe("Use a predefined template"),

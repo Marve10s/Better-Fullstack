@@ -4,8 +4,8 @@ import { motion, useReducedMotion } from "motion/react";
 import { useState, type ReactNode } from "react";
 import { TbCheck as Check, TbCopy as Copy } from "react-icons/tb";
 
-import { requestLaunchRadarOpen } from "@/lib/launch-radar";
-import { cn } from "@/lib/utils";
+import { requestLaunchRadarOpen } from "@/lib/content/launch-radar";
+import { cn } from "@/lib/platform/utils";
 import { m } from "@/paraglide/messages.js";
 
 const GUIDE_LINKS = [
@@ -146,14 +146,13 @@ export default function Footer() {
             </li>
           </LinkColumn>
 
-          <LinkColumn title={m.footerPopularGuides()} className="col-span-6 sm:col-span-3 lg:col-span-2">
+          <LinkColumn
+            title={m.footerPopularGuides()}
+            className="col-span-6 sm:col-span-3 lg:col-span-2"
+          >
             {GUIDE_LINKS.map((link) => (
               <li key={link.slug}>
-                <Link
-                  to="/guides/$"
-                  params={{ _splat: link.slug }}
-                  className={FOOTER_LINK}
-                >
+                <Link to="/guides/$" params={{ _splat: link.slug }} className={FOOTER_LINK}>
                   {link.label}
                 </Link>
               </li>

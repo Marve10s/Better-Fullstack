@@ -5,8 +5,9 @@ Synthesized from two independent research reports (Fable 5 + GPT-5.6 Sol) over
 from SWE-bench Verified / Terminal-Bench / Aider / LiveCodeBench.
 
 SCOPE RULES
-- You may modify: `scripts/scaffbench/**`, `scripts/build-scaffbench-data.ts`,
-  `scripts/build-scaffbench-2-1-data.ts`, `scripts/splice-scaffbench-2-1.ts`,
+
+- You may modify: `scripts/scaffbench/**`, `scripts/benchmarks/build-scaffbench-data.ts`,
+  `scripts/benchmarks/build-scaffbench-2-1-data.ts`, `scripts/benchmarks/splice-scaffbench-2-1.ts`,
   and test files under `scripts/`.
 - Do NOT modify anything under `apps/web/` (a parallel work stream owns it).
 - Do NOT run benchmark sweeps. Do NOT touch `testing/llm-benchmarks/` run dirs
@@ -93,7 +94,7 @@ all 317 published cells — a constant, not a signal); assisted lanes keep
 `build-scaffbench-2-1-data.ts` W, splice script W).
 
 3b. Gate the composite: a row with zero validation passes cannot exceed index
-= 0.25 * wired mean (i.e. no discipline floor). Simply follows from 3a for the
+= 0.25 \* wired mean (i.e. no discipline floor). Simply follows from 3a for the
 prompt lane; assert with a test.
 
 3c. Consistency: validation aggregates exclude infra-inconclusive runs but
@@ -182,6 +183,7 @@ per-spec pass spread across models; flag ceiling (>90% pass) and floor (0%)
 specs.
 
 ## Explicitly OUT of scope
+
 - Registry snapshotting/containerized validation (live registries are the
   bench's subject matter — drift is managed by 5h + run-metadata stamps).
 - Retrofitting functional verifiers/oracles onto all existing specs.

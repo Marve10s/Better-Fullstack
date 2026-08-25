@@ -29,8 +29,8 @@ Additional focused release-facing checks:
 
 - `bun run test:plugin-bundle` validates the local installable agent plugin manifest, marketplace entry, MCP command, icon paths, and bundled skills.
 - `bun run test:ai-examples` runs the CLI AI/chat example suite from the `apps/cli` package context so workspace package resolution matches local package scripts.
-- `bun test apps/cli/test/add-history-commands.test.ts` covers the user-facing `add` command, including stack-update dry-runs and apply flows.
-- `bun test apps/cli/test/stack-update.test.ts` covers the lower-level planner/apply conflict model and create-time stack-field coverage.
+- `bun test apps/cli/test/lifecycle/add-history-commands.test.ts` covers the user-facing `add` command, including stack-update dry-runs and apply flows.
+- `bun test apps/cli/test/lifecycle/stack-update.test.ts` covers the lower-level planner/apply conflict model and create-time stack-field coverage.
 - `bun run test:published-package -- --specifier <npm-tag-or-version>` validates the already-published npm package through Bun, npm, and pnpm scaffold runs. Use this only after a package has been published to npm.
 
 ## Important package-specific notes
@@ -70,16 +70,16 @@ Additional focused release-facing checks:
 # Markdown report
 bun run upstream-gap-report
 # or
-bun run scripts/upstream-gap-report.ts --markdown
+bun run scripts/maintenance/upstream-gap-report.ts --markdown
 
 # JSON output
-bun run scripts/upstream-gap-report.ts --json
+bun run scripts/maintenance/upstream-gap-report.ts --json
 
 # Compare against a specific base ref
-bun run scripts/upstream-gap-report.ts --base origin/main --markdown
+bun run scripts/maintenance/upstream-gap-report.ts --base origin/main --markdown
 
 # Limit displayed commits per area
-bun run scripts/upstream-gap-report.ts --markdown --max-per-area 25
+bun run scripts/maintenance/upstream-gap-report.ts --markdown --max-per-area 25
 ```
 
 The report classifies likely backport candidates into `reliability`, `dependency-safety`, and `compatibility`. Treat it as advisory — no automatic merge/cherry-pick in CI.

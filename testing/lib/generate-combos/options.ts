@@ -1,3 +1,10 @@
+import type {
+  CandidateDraft,
+  ComboCandidate,
+  GeneratorArgs,
+  HistoricalLedger,
+} from "@testing/lib/generate-combos/types";
+
 import {
   ADDONS_VALUES,
   AI_VALUES,
@@ -142,14 +149,14 @@ import { getDefaultConfig } from "@cli/constants";
 import { processFlags } from "@cli/utils/config-processing";
 import { validateFullConfig } from "@cli/utils/config-validation";
 import { runWithContext } from "@cli/utils/context";
+import {
+  buildHistoryFingerprint,
+  fingerprintToKey,
+} from "@testing/lib/generate-combos/fingerprint";
+import { formatNameFromFingerprint, buildCommand } from "@testing/lib/generate-combos/render";
+import { DEFAULT_ECOSYSTEM_WEIGHTS } from "@testing/lib/generate-combos/types";
 import { randomInt } from "node:crypto";
 import * as path from "node:path";
-
-import type { CandidateDraft, ComboCandidate, GeneratorArgs, HistoricalLedger } from "./types";
-
-import { buildHistoryFingerprint, fingerprintToKey } from "./fingerprint";
-import { formatNameFromFingerprint, buildCommand } from "./render";
-import { DEFAULT_ECOSYSTEM_WEIGHTS } from "./types";
 
 function secureRandom(): number {
   return randomInt(0x1_0000_0000) / 0x1_0000_0000;

@@ -1,7 +1,18 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { TbArrowRight as ArrowRight, TbCheck as Check, TbMinus as Minus, TbX as X } from "react-icons/tb";
+import {
+  TbArrowRight as ArrowRight,
+  TbCheck as Check,
+  TbMinus as Minus,
+  TbX as X,
+} from "react-icons/tb";
 
 import Footer from "@/components/home/footer";
+import {
+  COMPARISON_COUNTS,
+  ECOSYSTEM_COUNT_LABEL,
+  ECOSYSTEM_NAMES,
+  OPTION_COUNT_LABEL,
+} from "@/lib/project/project-stats";
 import {
   DEFAULT_OG_IMAGE_ALT,
   DEFAULT_OG_IMAGE_HEIGHT,
@@ -10,13 +21,7 @@ import {
   DEFAULT_ROBOTS,
   DEFAULT_X_IMAGE_URL,
   canonicalUrl,
-} from "@/lib/seo";
-import {
-  COMPARISON_COUNTS,
-  ECOSYSTEM_COUNT_LABEL,
-  ECOSYSTEM_NAMES,
-  OPTION_COUNT_LABEL,
-} from "@/lib/project-stats";
+} from "@/lib/seo/seo";
 import { m } from "@/paraglide/messages.js";
 
 export const Route = createFileRoute("/compare")({
@@ -516,7 +521,9 @@ function ComparePage() {
                     <th
                       key={tool.name}
                       className={`px-3 py-3 text-center font-medium ${
-                        tool.name === "Better Fullstack" ? "text-foreground" : "text-muted-foreground"
+                        tool.name === "Better Fullstack"
+                          ? "text-foreground"
+                          : "text-muted-foreground"
                       }`}
                     >
                       <a

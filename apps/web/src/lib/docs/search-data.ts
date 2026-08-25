@@ -1,7 +1,6 @@
+import { buildSearchSections, type SearchSection } from "@/lib/docs/search";
+import { getAllPages, getLocalizedDocFrontmatter, loadAllRawPages } from "@/lib/docs/source";
 import { getLocale } from "@/paraglide/runtime.js";
-
-import { buildSearchSections, type SearchSection } from "./search";
-import { getAllPages, getLocalizedDocFrontmatter, loadAllRawPages } from "./source";
 
 const sectionsPromises = new Map<string, Promise<SearchSection[]>>();
 

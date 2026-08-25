@@ -16,11 +16,11 @@ export {
   evidence,
   update,
   adopt,
-} from "./run";
+} from "@/run";
 
-import type { ProjectConfig } from "./types";
+import type { ProjectConfig } from "@/types";
 
-import { applyEffectBackendDefaults } from "./utils/config-processing";
+import { applyEffectBackendDefaults } from "@/config/config-processing";
 
 // Re-export virtual filesystem types for programmatic usage
 export {
@@ -262,8 +262,8 @@ export async function createVirtual(
       );
     if (config.integrations === "nango" || config.payments !== "none" || hasLegacyContainerAddon) {
       const [{ validateConfigForProgrammaticUse }, { runWithContextAsync }] = await Promise.all([
-        import("./utils/config-validation"),
-        import("./utils/context"),
+        import("@/config/config-validation"),
+        import("@/presentation/context"),
       ]);
       await runWithContextAsync({ silent: true }, async () =>
         validateConfigForProgrammaticUse(config),
@@ -368,5 +368,5 @@ export type {
   ElixirQuality,
   ElixirDeploy,
   AiDocs,
-} from "./types";
-export type { AddResult } from "./helpers/core/add-handler";
+} from "@/types";
+export type { AddResult } from "@/helpers/core/add-handler";

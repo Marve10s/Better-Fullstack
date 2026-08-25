@@ -4,15 +4,20 @@ import type {
   StackSelectionKey,
   StackSelectionState,
 } from "@better-fullstack/types";
+
 import {
   getCategoryDisplayName,
   getOptionMetadata,
   STACK_SELECTION_OPTION_CATEGORY_BY_KEY,
 } from "@better-fullstack/types";
 
-import { TECH_OPTIONS } from "@/lib/constant";
+import type {
+  GeneratedStackPage,
+  GeneratedStackPart,
+  PublishedStackSeed,
+} from "@/lib/stack-pages/types";
 
-import type { GeneratedStackPage, GeneratedStackPart, PublishedStackSeed } from "./types";
+import { TECH_OPTIONS } from "@/lib/stack/constant";
 
 const CORE_KEYS_BY_ECOSYSTEM: Record<string, StackSelectionKey[]> = {
   typescript: [
@@ -36,13 +41,7 @@ const CORE_KEYS_BY_ECOSYSTEM: Record<string, StackSelectionKey[]> = {
     "rustLogging",
     "rustErrorHandling",
   ],
-  python: [
-    "pythonWebFramework",
-    "database",
-    "pythonOrm",
-    "pythonValidation",
-    "pythonQuality",
-  ],
+  python: ["pythonWebFramework", "database", "pythonOrm", "pythonValidation", "pythonQuality"],
   go: ["goWebFramework", "database", "goOrm", "goLogging"],
 };
 
@@ -119,9 +118,9 @@ export function deriveCanonicalParts(
       if (value === "none" && !explicitKeys.has(key)) continue;
       const metadata = getOptionMetadata(category, value);
       if (!metadata) continue;
-      const graphPart = parts.find(
-        (part) => part.toolId === value && part.ecosystem !== "universal",
-      ) ?? parts.find((part) => part.toolId === value);
+      const graphPart =
+        parts.find((part) => part.toolId === value && part.ecosystem !== "universal") ??
+        parts.find((part) => part.toolId === value);
 
       result.push({
         role: ROLE_LABELS[category] ?? getCategoryDisplayName(category),
@@ -159,7 +158,9 @@ export function deriveArchitecture(
   }
 
   if (selection.backend.startsWith("self-")) {
-    facts.push("The selected frontend framework owns the server boundary through its self backend.");
+    facts.push(
+      "The selected frontend framework owns the server boundary through its self backend.",
+    );
   }
 
   for (const part of canonicalParts) {

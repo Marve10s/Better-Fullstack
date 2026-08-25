@@ -48,8 +48,8 @@ From the repository root:
 bun install --frozen-lockfile
 bun run --cwd packages/types build
 bun run --cwd packages/template-generator build
-bun test testing/generated-project-proof.test.ts apps/web/test/project-download.test.ts
-bun test apps/web/test/browser-cli-lifecycle.test.ts --timeout 120000
+bun test testing/generated-project-proof.test.ts apps/web/test/project/project-download.test.ts
+bun test apps/web/test/project/browser-cli-lifecycle.test.ts --timeout 120000
 bun run test:recipe-runtime
 bun run testing/generated-project-proof.ts
 ```

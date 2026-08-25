@@ -1,4 +1,9 @@
 import {
+  getProjectRecoveryPoint,
+  listProjectRecoveryPoints,
+  type RecoveryPointSummary,
+} from "@better-fullstack/project-lifecycle/transaction";
+import {
   formatStackPartSpec,
   getCapabilityInventory,
   legacyProjectConfigToStackParts,
@@ -8,15 +13,10 @@ import fs from "fs-extra";
 import path from "node:path";
 import { z } from "zod";
 
-import type { RecipeAdapterPlan, RecipePlannedFile } from "./types";
+import type { RecipeAdapterPlan, RecipePlannedFile } from "@/recipes/types";
 
-import {
-  getProjectRecoveryPoint,
-  listProjectRecoveryPoints,
-  type RecoveryPointSummary,
-} from "../utils/project-transaction";
-import { hashContent } from "../utils/scaffold-manifest";
-import { getManagedRegionBody, getManagedRegionHash } from "./managed-region";
+import { hashContent } from "@/lifecycle/scaffold-manifest";
+import { getManagedRegionBody, getManagedRegionHash } from "@/recipes/managed-region";
 
 export const RECIPE_RECORD_ROOT = ".better-fullstack/recipes";
 export const RECIPE_RECORD_SCHEMA_VERSION = 1 as const;

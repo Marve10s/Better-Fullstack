@@ -1,3 +1,4 @@
+import { makeConfig } from "@test/_fixtures/config-factory";
 import { describe, expect, it } from "bun:test";
 
 import {
@@ -5,8 +6,7 @@ import {
   processFileContent,
   processTemplateString,
   transformFilename,
-} from "../../src/core/template-processor";
-import { makeConfig } from "../_fixtures/config-factory";
+} from "@/core/template-processor";
 
 describe("template processor", () => {
   it("renders logical and string helpers inside templates", () => {
@@ -79,11 +79,7 @@ describe("template processor", () => {
   });
 
   it("returns a binary placeholder for binary files", () => {
-    const result = processFileContent(
-      "public/logo.png",
-      "raw-binary-content",
-      makeConfig(),
-    );
+    const result = processFileContent("public/logo.png", "raw-binary-content", makeConfig());
 
     expect(result).toBe("[Binary file]");
   });

@@ -1,6 +1,5 @@
 import { test, expect } from "@playwright/test";
-
-import { commandOutput, gotoAppPage, openBuilder, visibleTestId } from "./test-helpers";
+import { commandOutput, gotoAppPage, openBuilder, visibleTestId } from "@test/e2e/test-helpers";
 
 test.use({ viewport: { width: 390, height: 844 } });
 

@@ -1,4 +1,17 @@
 import {
+  lifecycleResult,
+  type LifecycleResult,
+} from "@better-fullstack/project-lifecycle/contracts";
+import { createReviewToken } from "@better-fullstack/project-lifecycle/review-token";
+import {
+  beginProjectTransaction,
+  commitProjectTransaction,
+  removeProjectTransactionFile,
+  rollbackProjectTransaction,
+  type ProjectTransaction,
+  writeProjectTransactionFile,
+} from "@better-fullstack/project-lifecycle/transaction";
+import {
   EMBEDDED_TEMPLATES,
   generateVirtualProject,
   type VirtualFile,
@@ -10,8 +23,38 @@ import fs from "fs-extra";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-import { getDefaultConfig } from "../../constants";
-import { CreateCommandOptionsSchema } from "../../create-command-input";
+import {
+  buildBtsConfigForPersistence,
+  readBtsConfig,
+  serializeBtsConfig,
+} from "@/config/bts-config";
+import { validateConfigForProgrammaticUse } from "@/config/config-validation";
+import { getEffectiveStack, getGraphSummary } from "@/config/graph-summary";
+import {
+  asString,
+  asStringArray,
+  buildCompatibilityInputFromConfig,
+  compatibilityChangesToProjectConfig,
+  getCompatibilityBackend,
+  hasSelectedTypeScriptBackendPart,
+} from "@/config/stack-compatibility";
+import { getDefaultConfig } from "@/constants";
+import { CreateCommandOptionsSchema } from "@/create-command-input";
+import {
+  applyDependencyVersionChannel,
+  planDependencyVersionChannel,
+  type DependencyVersionChannelRewrite,
+} from "@/lifecycle/dependency-version-channel";
+import { getProjectRecoveryCommand } from "@/lifecycle/lifecycle-command";
+import {
+  collectStructuredBaselines,
+  getCurrentLifecycleVersions,
+  hashContent,
+  readScaffoldManifestResult,
+  refreshScaffoldManifestFiles,
+  SCAFFOLD_MANIFEST_FILE,
+} from "@/lifecycle/scaffold-manifest";
+import { formatCode } from "@/platform/file-formatter";
 import {
   analyzeStackCompatibility,
   createStackPart,
@@ -26,47 +69,7 @@ import {
   stackPartsToLegacyProjectConfigPartial,
   type BetterTStackConfig,
   type ProjectConfig,
-} from "../../types";
-import {
-  buildBtsConfigForPersistence,
-  readBtsConfig,
-  serializeBtsConfig,
-} from "../../utils/bts-config";
-import { validateConfigForProgrammaticUse } from "../../utils/config-validation";
-import {
-  applyDependencyVersionChannel,
-  planDependencyVersionChannel,
-  type DependencyVersionChannelRewrite,
-} from "../../utils/dependency-version-channel";
-import { formatCode } from "../../utils/file-formatter";
-import { getEffectiveStack, getGraphSummary } from "../../utils/graph-summary";
-import { getProjectRecoveryCommand } from "../../utils/lifecycle-command";
-import { lifecycleResult, type LifecycleResult } from "../../utils/lifecycle-contract";
-import {
-  beginProjectTransaction,
-  commitProjectTransaction,
-  removeProjectTransactionFile,
-  rollbackProjectTransaction,
-  type ProjectTransaction,
-  writeProjectTransactionFile,
-} from "../../utils/project-transaction";
-import { createReviewToken } from "../../utils/review-token";
-import {
-  collectStructuredBaselines,
-  getCurrentLifecycleVersions,
-  hashContent,
-  readScaffoldManifestResult,
-  refreshScaffoldManifestFiles,
-  SCAFFOLD_MANIFEST_FILE,
-} from "../../utils/scaffold-manifest";
-import {
-  asString,
-  asStringArray,
-  buildCompatibilityInputFromConfig,
-  compatibilityChangesToProjectConfig,
-  getCompatibilityBackend,
-  hasSelectedTypeScriptBackendPart,
-} from "../../utils/stack-compatibility";
+} from "@/types";
 
 type JsonObject = Record<string, unknown>;
 

@@ -1,25 +1,16 @@
+import { lifecycleResult } from "@better-fullstack/project-lifecycle/contracts";
 import { log } from "@clack/prompts";
 import { $ } from "execa";
 import fs from "fs-extra";
 import os from "node:os";
 import path from "node:path";
 
-import type { ProjectConfig } from "../../types";
+import type { ProjectConfig } from "@/types";
 
-import { writeBtsConfig } from "../../utils/bts-config";
-import { isSilent } from "../../utils/context";
-import { applyDependencyVersionChannel } from "../../utils/dependency-version-channel";
-import { CLIError } from "../../utils/errors";
-import { formatProject } from "../../utils/file-formatter";
-import { lifecycleResult } from "../../utils/lifecycle-contract";
-import {
-  collectStructuredBaselines,
-  getCurrentLifecycleVersions,
-  recordScaffoldManifest,
-} from "../../utils/scaffold-manifest";
-import { setupAddons } from "../addons/addons-setup";
-import { setupDatabase } from "../core/db-setup";
-import { commitInitialScaffold, initializeGit } from "./git";
+import { writeBtsConfig } from "@/config/bts-config";
+import { setupAddons } from "@/helpers/addons/addons-setup";
+import { setupDatabase } from "@/helpers/core/db-setup";
+import { commitInitialScaffold, initializeGit } from "@/helpers/core/git";
 import {
   installDependencies,
   runCargoBuild,
@@ -29,8 +20,17 @@ import {
   runGoModTidy,
   runMixCompile,
   type SetupStepResult,
-} from "./install-dependencies";
-import { displayPostInstallInstructions } from "./post-installation";
+} from "@/helpers/core/install-dependencies";
+import { displayPostInstallInstructions } from "@/helpers/core/post-installation";
+import { applyDependencyVersionChannel } from "@/lifecycle/dependency-version-channel";
+import {
+  collectStructuredBaselines,
+  getCurrentLifecycleVersions,
+  recordScaffoldManifest,
+} from "@/lifecycle/scaffold-manifest";
+import { formatProject } from "@/platform/file-formatter";
+import { isSilent } from "@/presentation/context";
+import { CLIError } from "@/presentation/errors";
 
 export interface CreateProjectOptions {
   manualDb?: boolean;

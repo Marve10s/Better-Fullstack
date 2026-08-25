@@ -1,0 +1,120 @@
+import type { ProjectConfig } from "@better-fullstack/types";
+
+import type { VirtualFileSystem } from "@/core/virtual-fs";
+
+import { hasTemplatesWithPrefix, type TemplateData, processTemplatesFromPrefix } from "@/template-handlers/core/utils";
+
+export async function processApiTemplates(
+  vfs: VirtualFileSystem,
+  templates: TemplateData,
+  config: ProjectConfig,
+): Promise<void> {
+  if (config.api === "none") return;
+  if (config.backend === "convex") return;
+
+  processTemplatesFromPrefix(vfs, templates, `api/${config.api}/server`, "packages/api", config);
+
+  const hasReactWeb = config.frontend.some((f) =>
+    ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext"].includes(f),
+  );
+  const hasNuxtWeb = config.frontend.includes("nuxt");
+  const hasSvelteWeb = config.frontend.includes("svelte");
+  const hasSolidWeb = config.frontend.includes("solid");
+  const hasSolidStartWeb = config.frontend.includes("solid-start");
+  const hasAstroWeb = config.frontend.includes("astro");
+
+  if (hasReactWeb) {
+    processTemplatesFromPrefix(
+      vfs,
+      templates,
+      `api/${config.api}/web/react/base`,
+      "apps/web",
+      config,
+    );
+
+    const reactFramework = config.frontend.find((f) =>
+      ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext"].includes(f),
+    );
+    if (
+      config.backend === "self" &&
+      (reactFramework === "next" || reactFramework === "vinext" || reactFramework === "tanstack-start")
+    ) {
+      processTemplatesFromPrefix(
+        vfs,
+        templates,
+        `api/${config.api}/fullstack/${reactFramework}`,
+        "apps/web",
+        config,
+      );
+    }
+  } else if (hasAstroWeb) {
+    // Astro with React integration can use tRPC or oRPC
+    if (config.astroIntegration === "react") {
+      processTemplatesFromPrefix(
+        vfs,
+        templates,
+        `api/${config.api}/web/react/base`,
+        "apps/web",
+        config,
+      );
+    } else if (config.api === "orpc" || config.api === "garph" || config.api === "graphql-yoga") {
+      // Non-React Astro integrations use oRPC, Garph, or GraphQL Yoga
+      processTemplatesFromPrefix(vfs, templates, `api/${config.api}/web/astro`, "apps/web", config);
+    }
+
+    // Astro fullstack mode
+    if (config.backend === "self") {
+      processTemplatesFromPrefix(
+        vfs,
+        templates,
+        `api/${config.api}/fullstack/astro`,
+        "apps/web",
+        config,
+      );
+    }
+  } else if (hasNuxtWeb && config.api === "orpc") {
+    processTemplatesFromPrefix(vfs, templates, `api/${config.api}/web/nuxt`, "apps/web", config);
+    if (
+      config.backend === "self" &&
+      hasTemplatesWithPrefix(templates, `api/${config.api}/fullstack/nuxt`)
+    ) {
+      processTemplatesFromPrefix(
+        vfs,
+        templates,
+        `api/${config.api}/fullstack/nuxt`,
+        "apps/web",
+        config,
+      );
+    }
+  } else if (hasSvelteWeb && config.api === "orpc") {
+    processTemplatesFromPrefix(vfs, templates, `api/${config.api}/web/svelte`, "apps/web", config);
+    if (config.backend === "self") {
+      processTemplatesFromPrefix(
+        vfs,
+        templates,
+        `api/${config.api}/fullstack/svelte`,
+        "apps/web",
+        config,
+      );
+    }
+  } else if (hasSolidWeb && config.api === "orpc") {
+    processTemplatesFromPrefix(vfs, templates, `api/${config.api}/web/solid`, "apps/web", config);
+  } else if (hasSolidStartWeb && config.api === "orpc") {
+    processTemplatesFromPrefix(
+      vfs,
+      templates,
+      `api/${config.api}/web/solid-start`,
+      "apps/web",
+      config,
+    );
+    if (config.backend === "self") {
+      processTemplatesFromPrefix(
+        vfs,
+        templates,
+        `api/${config.api}/fullstack/solid-start`,
+        "apps/web",
+        config,
+      );
+    }
+  }
+}

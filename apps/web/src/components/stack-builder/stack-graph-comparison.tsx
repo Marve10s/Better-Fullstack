@@ -17,10 +17,10 @@ import {
   TbShieldCheck as ShieldCheck,
 } from "react-icons/tb";
 
-import type { StackState } from "@/lib/stack-defaults";
+import type { StackState } from "@/lib/stack/stack-defaults";
 
-import { stackStateToProjectConfig } from "@/lib/preview-config";
-import { cn } from "@/lib/utils";
+import { stackStateToProjectConfig } from "@/lib/builder/preview-config";
+import { cn } from "@/lib/platform/utils";
 
 const INVENTORY = getCapabilityInventory();
 

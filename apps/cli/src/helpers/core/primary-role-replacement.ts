@@ -1,24 +1,24 @@
+import { createReviewToken } from "@better-fullstack/project-lifecycle/review-token";
 import fs from "fs-extra";
 import path from "node:path";
 
-import type { ProjectConfig, StackPart } from "../../types";
+import type { ProjectConfig, StackPart } from "@/types";
 
-import {
-  createStackPart,
-  formatStackPartSpec,
-  legacyProjectConfigToStackParts,
-  parseStackPartSpecs,
-  stackPartsToLegacyProjectConfigPartial,
-} from "../../types";
-import { readBtsConfig } from "../../utils/bts-config";
-import { createReviewToken } from "../../utils/review-token";
+import { readBtsConfig } from "@/config/bts-config";
 import {
   applyStackUpdate,
   getStackUpdatePlanDigest,
   planStackUpdate,
   type StackUpdatePlan,
   type StackUpdateResult,
-} from "./stack-update";
+} from "@/helpers/core/stack-update";
+import {
+  createStackPart,
+  formatStackPartSpec,
+  legacyProjectConfigToStackParts,
+  parseStackPartSpecs,
+  stackPartsToLegacyProjectConfigPartial,
+} from "@/types";
 
 const PRIMARY_ROLES = new Set<StackPart["role"]>(["frontend", "backend", "mobile", "database"]);
 

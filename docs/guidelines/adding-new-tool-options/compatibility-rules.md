@@ -11,15 +11,19 @@ How to validate that a new tool works with all existing options, add compatibili
 Not every new tool needs compatibility rules. Use this decision tree:
 
 **Does the tool work with ALL backends?**
+
 - If no → add a disabled reason for incompatible backends (e.g., Vercel serverDeploy can't host NestJS/AdonisJS)
 
 **Does the tool work with ALL frontends?**
+
 - If no → add a disabled reason for incompatible frontends
 
 **Does the tool require a specific runtime, database, or ORM?**
+
 - If yes → add a disabled reason or auto-adjustment
 
 **Does the tool silently produce broken output for certain combos?**
+
 - If yes → add a preflight warning (non-blocking) or hard block
 
 **Rule of thumb:** If a user can select the option but the generated project won't work, you need a compatibility rule.
@@ -39,6 +43,7 @@ For every backend/frontend/runtime combination you mark as supported, verify all
 Do not treat compatibility files as aspirational product design. They are part of the executable contract of the generator.
 
 Examples:
+
 - If `allowedApisForFrontends()` allows `graphql-yoga` for Nuxt/Svelte/Solid, `template-handlers/api.ts` must route those frontends to `templates/api/graphql-yoga/...` paths that actually exist.
 - If `webDeploy === "vercel"` is enabled for a frontend, `templates/deploy/vercel/...` must contain the matching config and dependency support for that frontend.
 
@@ -60,7 +65,7 @@ If any of those are missing, do not present the combo as supported. Keep it disa
 
 ### Type 1: Disabled Reason (Web UI grays out the option)
 
-**File:** `packages/types/src/compatibility.ts` → `getDisabledReason()`
+**File:** `packages/types/src/stack/compatibility.ts` → `getDisabledReason()`
 
 The web builder calls this for every option in every category. Returns `null` (enabled) or a string message (disabled with tooltip).
 
@@ -81,7 +86,7 @@ case "serverDeploy":
 
 ### Type 2: Auto-Adjustment (Cascade fix)
 
-**File:** `packages/types/src/compatibility.ts` → `analyzeStackCompatibility()`
+**File:** `packages/types/src/stack/compatibility.ts` → `analyzeStackCompatibility()`
 
 Automatically changes conflicting selections. The user sees a note explaining what was adjusted.
 
@@ -97,7 +102,7 @@ if (nextStack.backend === "convex") {
 
 ### Type 3: Hard Block (CLI exits with error)
 
-**File:** `apps/cli/src/utils/compatibility-rules.ts` + `apps/cli/src/utils/config-validation.ts`
+**File:** `apps/cli/src/config/compatibility-rules.ts` + `apps/cli/src/config/config-validation.ts`
 
 Immediate error when the user passes incompatible flags.
 
@@ -151,7 +156,6 @@ Before adding a tool, check what it's compatible with:
    - Vercel: https://vercel.com/docs/frameworks
    - Render: https://docs.render.com
    - Fly.io: https://fly.io/docs
-   
 2. **Check if it's serverless or persistent:**
    - Serverless (Vercel, Cloudflare Workers) → can't host NestJS, AdonisJS, Express with WebSockets
    - Persistent (Fly.io, Railway, Render, Docker) → can host anything
@@ -179,12 +183,12 @@ Before adding a tool, check what it's compatible with:
 
 ## 4. Where to Add Each Rule Type
 
-| Rule type | File | Function | Test file |
-|-----------|------|----------|-----------|
-| Disabled reason | `packages/types/src/compatibility.ts` | `getDisabledReason()` | The nearest compatibility-focused suite, for example `apps/cli/test/auth-capabilities.test.ts` or `apps/cli/test/go-language.test.ts`; create a dedicated compatibility test file if no existing suite fits cleanly |
-| Auto-adjustment | `packages/types/src/compatibility.ts` | `analyzeStackCompatibility()` | The nearest compatibility-focused suite, for example `apps/cli/test/auth-capabilities.test.ts` or `apps/cli/test/go-language.test.ts`; create a dedicated compatibility test file if no existing suite fits cleanly |
-| Hard block | `apps/cli/src/utils/compatibility-rules.ts` + `config-validation.ts` | New validator function + register in `validateFullConfig()` | `apps/cli/test/basic-configurations.test.ts` |
-| Preflight warning | `packages/template-generator/src/preflight-validation.ts` | Add to `PREFLIGHT_RULES` array | `apps/cli/test/preflight-validation.test.ts` |
+| Rule type         | File                                                                  | Function                                                    | Test file                                                                                                                                                                                                                               |
+| ----------------- | --------------------------------------------------------------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Disabled reason   | `packages/types/src/stack/compatibility.ts`                           | `getDisabledReason()`                                       | The nearest compatibility-focused suite, for example `apps/cli/test/features/auth-capabilities.test.ts` or `apps/cli/test/ecosystems/go-language.test.ts`; create a dedicated compatibility test file if no existing suite fits cleanly |
+| Auto-adjustment   | `packages/types/src/stack/compatibility.ts`                           | `analyzeStackCompatibility()`                               | The nearest compatibility-focused suite, for example `apps/cli/test/features/auth-capabilities.test.ts` or `apps/cli/test/ecosystems/go-language.test.ts`; create a dedicated compatibility test file if no existing suite fits cleanly |
+| Hard block        | `apps/cli/src/config/compatibility-rules.ts` + `config-validation.ts` | New validator function + register in `validateFullConfig()` | `apps/cli/test/architecture/basic-configurations.test.ts`                                                                                                                                                                               |
+| Preflight warning | `packages/template-generator/src/preflight-validation.ts`             | Add to `PREFLIGHT_RULES` array                              | `apps/cli/test/architecture/preflight-validation.test.ts`                                                                                                                                                                               |
 
 ---
 
@@ -219,7 +223,7 @@ test("vercel server deploy enabled for hono backend", () => {
 ### Preflight warnings (unit test)
 
 ```typescript
-// In apps/cli/test/preflight-validation.test.ts
+// In apps/cli/test/architecture/preflight-validation.test.ts
 test("warns about vercel + nestjs", () => {
   const result = validatePreflightConfig(config({
     serverDeploy: "vercel",
@@ -232,7 +236,7 @@ test("warns about vercel + nestjs", () => {
 ### Hard blocks (integration test)
 
 ```typescript
-// In apps/cli/test/basic-configurations.test.ts
+// In apps/cli/test/architecture/basic-configurations.test.ts
 test("should fail with vercel + nestjs", async () => {
   const result = await runTRPCTest({
     serverDeploy: "vercel",
@@ -251,44 +255,45 @@ When adding a deploy target like Vercel, check every combo:
 
 ### Backend compatibility matrix
 
-| Backend | Serverless (Vercel/CF) | Persistent (Fly/Railway/Docker) | Self (fullstack) |
-|---------|----------------------|--------------------------------|-------------------|
-| hono | ✅ | ✅ | N/A |
-| express | ✅ (with adapter) | ✅ | N/A |
-| fastify | ✅ (with adapter) | ✅ | N/A |
-| elysia | ⚠️ (Bun-only) | ✅ | N/A |
-| fets | ✅ | ✅ | N/A |
-| nestjs | ❌ (persistent process) | ✅ | N/A |
-| adonisjs | ❌ (persistent process) | ✅ | N/A |
-| nitro | ✅ | ✅ | N/A |
-| encore | ❌ (own infra) | ❌ (own infra) | N/A |
-| convex | ❌ (own deploy) | ❌ (own deploy) | N/A |
-| self | N/A | N/A | Uses webDeploy |
-| none | N/A | N/A | N/A |
+| Backend  | Serverless (Vercel/CF)  | Persistent (Fly/Railway/Docker) | Self (fullstack) |
+| -------- | ----------------------- | ------------------------------- | ---------------- |
+| hono     | ✅                      | ✅                              | N/A              |
+| express  | ✅ (with adapter)       | ✅                              | N/A              |
+| fastify  | ✅ (with adapter)       | ✅                              | N/A              |
+| elysia   | ⚠️ (Bun-only)           | ✅                              | N/A              |
+| fets     | ✅                      | ✅                              | N/A              |
+| nestjs   | ❌ (persistent process) | ✅                              | N/A              |
+| adonisjs | ❌ (persistent process) | ✅                              | N/A              |
+| nitro    | ✅                      | ✅                              | N/A              |
+| encore   | ❌ (own infra)          | ❌ (own infra)                  | N/A              |
+| convex   | ❌ (own deploy)         | ❌ (own deploy)                 | N/A              |
+| self     | N/A                     | N/A                             | Uses webDeploy   |
+| none     | N/A                     | N/A                             | N/A              |
 
 ### Frontend compatibility matrix
 
-| Frontend | Vercel | Notes |
-|----------|--------|-------|
-| next | ✅ Native | Zero-config, auto-detected |
-| tanstack-router | ✅ | Vite SPA, needs buildCommand/outputDirectory |
-| tanstack-start | ✅ | SSR, needs outputDirectory |
-| react-router | ✅ | Vite SPA |
-| react-vite | ✅ | Maps to tanstack-router template |
-| svelte | ✅ | Needs `@sveltejs/adapter-vercel` |
-| nuxt | ✅ Native | Auto-detected |
-| solid | ✅ | Vite SPA |
-| solid-start | ✅ | SSR |
-| astro | ✅ | Needs `@astrojs/vercel` (NOT in current templateMap — gap) |
-| angular | ✅ | Needs custom build config (NOT in current templateMap — gap) |
-| qwik | ⚠️ | Experimental Vercel adapter |
-| redwood | ❌ | Has own deploy system |
-| fresh | ❌ | Deno-only, not Vercel-compatible |
-| native-* | N/A | Mobile apps, no web deploy |
+| Frontend        | Vercel    | Notes                                                        |
+| --------------- | --------- | ------------------------------------------------------------ |
+| next            | ✅ Native | Zero-config, auto-detected                                   |
+| tanstack-router | ✅        | Vite SPA, needs buildCommand/outputDirectory                 |
+| tanstack-start  | ✅        | SSR, needs outputDirectory                                   |
+| react-router    | ✅        | Vite SPA                                                     |
+| react-vite      | ✅        | Maps to tanstack-router template                             |
+| svelte          | ✅        | Needs `@sveltejs/adapter-vercel`                             |
+| nuxt            | ✅ Native | Auto-detected                                                |
+| solid           | ✅        | Vite SPA                                                     |
+| solid-start     | ✅        | SSR                                                          |
+| astro           | ✅        | Needs `@astrojs/vercel` (NOT in current templateMap — gap)   |
+| angular         | ✅        | Needs custom build config (NOT in current templateMap — gap) |
+| qwik            | ⚠️        | Experimental Vercel adapter                                  |
+| redwood         | ❌        | Has own deploy system                                        |
+| fresh           | ❌        | Deno-only, not Vercel-compatible                             |
+| native-\*       | N/A       | Mobile apps, no web deploy                                   |
 
 ### Rules to implement
 
 For each ❌ or ⚠️ in the matrix above:
+
 1. Add `getDisabledReason()` entry → grays out in web builder
 2. Add `validateFullConfig()` entry → blocks in CLI
 3. Add preflight warning if ⚠️ (works but may have issues)
@@ -299,7 +304,7 @@ For each ❌ or ⚠️ in the matrix above:
 
 When a deploy target claims support for a frontend, verify all four layers stay aligned:
 
-1. `packages/types/src/compatibility.ts`
+1. `packages/types/src/stack/compatibility.ts`
 2. `packages/template-generator/templates/deploy/<target>/...`
 3. Any dependency/setup logic such as `processors/deploy-deps.ts`
 4. At least one scaffold test for the claimed combo

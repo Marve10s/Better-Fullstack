@@ -9,7 +9,7 @@ import { createContext, type ReactNode, useContext, useEffect, useMemo, useState
 import type { PublicCapabilityEvidenceReport } from "@/lib/docs/release-verification";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
 
 const BASELINE_INVENTORY = getCapabilityInventory();
 

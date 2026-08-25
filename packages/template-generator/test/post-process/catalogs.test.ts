@@ -1,9 +1,9 @@
 import { describe, expect, it } from "bun:test";
 import yaml from "yaml";
 
-import { processCatalogs } from "../../src/post-process/catalogs";
-import { makeConfig } from "../_fixtures/config-factory";
-import { createSeededVFS } from "../_fixtures/vfs-factory";
+import { processCatalogs } from "@/post-process/catalogs";
+import { makeConfig } from "@test/_fixtures/config-factory";
+import { createSeededVFS } from "@test/_fixtures/vfs-factory";
 
 type WorkspaceJson = {
   workspaces?: string[] | { packages?: string[]; catalog?: Record<string, string> };

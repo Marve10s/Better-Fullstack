@@ -4,11 +4,11 @@ import fs from "fs-extra";
 import path from "node:path";
 import pc from "picocolors";
 
-import type { ProjectConfig } from "../../types";
+import type { ProjectConfig } from "@/types";
 
-import { exitCancelled } from "../../utils/errors";
-import { getPackageExecutionArgs, getPackageExecutionCommand } from "../../utils/package-runner";
-import { canPromptInteractively } from "../../utils/prompt-environment";
+import { getPackageExecutionArgs, getPackageExecutionCommand } from "@/platform/package-runner";
+import { exitCancelled } from "@/presentation/errors";
+import { canPromptInteractively } from "@/presentation/prompt-environment";
 
 export async function setupRuler(config: ProjectConfig) {
   const { packageManager, projectDir } = config;

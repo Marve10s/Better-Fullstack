@@ -1,23 +1,23 @@
+import type { ShikiTransformer } from "shiki";
+
+import { contentMetaPlugin } from "#vite-plugins/content-meta";
+import { paraglideCompilerOptions } from "#web-root/paraglide.config";
+import { remarkExtractToc } from "#web/lib/docs/remark-extract-toc";
+import { remarkNpmTabs } from "#web/lib/docs/remark-npm-tabs";
 import { paraglideVitePlugin } from "@inlang/paraglide-js";
 import mdx from "@mdx-js/rollup";
 import rehypeShiki from "@shikijs/rehype";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
+import cliPackage from "create-better-fullstack/package.json" with { type: "json" };
 import { nitro } from "nitro/vite";
 import { fileURLToPath } from "node:url";
 import remarkFrontmatter from "remark-frontmatter";
 import remarkGfm from "remark-gfm";
 import remarkMdxFrontmatter from "remark-mdx-frontmatter";
-import type { ShikiTransformer } from "shiki";
 import { defineConfig, type PluginOption } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
-
-import cliPackage from "../cli/package.json";
-import { paraglideCompilerOptions } from "./paraglide.config";
-import { remarkExtractToc } from "./src/lib/docs/remark-extract-toc";
-import { remarkNpmTabs } from "./src/lib/docs/remark-npm-tabs";
-import { contentMetaPlugin } from "./vite-plugins/content-meta";
 
 const languageClassOnPre: ShikiTransformer = {
   name: "language-class-on-pre",
@@ -56,7 +56,7 @@ const ssrMdxLoaderAliases = new Map([
 ]);
 
 const ssrTemplateGeneratorStub = fileURLToPath(
-  new URL("./src/lib/template-generator-browser.ssr.ts", import.meta.url),
+  new URL("./src/lib/project/template-generator-browser.ssr.ts", import.meta.url),
 );
 
 function ssrMdxLoaderAliasPlugin(): PluginOption {
@@ -91,6 +91,14 @@ function ssrTemplateGeneratorAliasPlugin(): PluginOption {
 }
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      "@template-assets": fileURLToPath(
+        new URL("../../packages/template-generator/templates-binary", import.meta.url),
+      ),
+      "@web-root": fileURLToPath(new URL(".", import.meta.url)),
+    },
+  },
   server: {
     port: 3333,
     headers: webContainerHeaders,

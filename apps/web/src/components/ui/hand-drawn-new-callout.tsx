@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 
 import { PencilSketchDefs, PENCIL_INK_PINK } from "@/components/ui/pencil-sketch-defs";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
 
 type HandDrawnNewCalloutProps = {
   className?: string;

@@ -1,6 +1,9 @@
 import { docsMeta } from "virtual:content-meta";
 import { localizedDocsMdxLoaders, localizedDocsRawMdxLoaders } from "virtual:localized-content";
 
+import type { TocEntry } from "@/lib/docs/remark-extract-toc";
+
+import { createSuspenseCache } from "@/lib/content/mdx-suspense-cache";
 import {
   docsMdxLoaders as mdxLoaders,
   docsRawMdxLoaders as rawMdxLoaders,
@@ -11,10 +14,7 @@ import {
   type SupportedLocale,
   toSupportedLocale,
 } from "@/lib/i18n/locales";
-import { createSuspenseCache } from "@/lib/mdx-suspense-cache";
 import { getLocale } from "@/paraglide/runtime.js";
-
-import type { TocEntry } from "./remark-extract-toc";
 
 export type DocFrontmatter = {
   title?: string;
@@ -176,7 +176,7 @@ const DOC_FOLDER_TITLE_TRANSLATIONS: Record<string, LocalizedFrontmatter<{ title
   },
 };
 
-const metaModules = import.meta.glob<{ default: MetaFile }>("../../../content/docs/**/meta.json", {
+const metaModules = import.meta.glob<{ default: MetaFile }>("@web-root/content/docs/**/meta.json", {
   eager: true,
 });
 

@@ -3,7 +3,7 @@
 import { Mesh, Program, Renderer, Triangle } from "ogl";
 import { useEffect, useRef, type HTMLAttributes } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
 
 const DEFAULT_BASE_COLOR: [number, number, number] = [0.1, 0.1, 0.1];
 

@@ -4,7 +4,9 @@
     "baseUrl": ".",
     "paths": {
       "@better-fullstack/types": ["../packages/types/src"],
-      "@cli/*": ["../apps/cli/src/*"]
+      "@cli/*": ["../apps/cli/src/*"],
+      "@scripts/*": ["../scripts/*"],
+      "@testing/*": ["./*"]
     }
   }
 }

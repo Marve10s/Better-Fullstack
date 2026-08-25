@@ -1,5 +1,5 @@
-import { ECOSYSTEMS, PRESET_CATEGORIES, TECH_OPTIONS } from "../src/lib/constant";
-import { computeSiUrl, ICON_REGISTRY, type IconConfig } from "../src/lib/tech-icons";
+import { ECOSYSTEMS, PRESET_CATEGORIES, TECH_OPTIONS } from "@/lib/stack/constant";
+import { computeSiUrl, ICON_REGISTRY, type IconConfig } from "@/lib/stack/tech-icons";
 
 type IconTarget = {
   owner: string;

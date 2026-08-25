@@ -1,8 +1,7 @@
 import type { ProjectConfig } from "@better-fullstack/types";
+import type { TemplateFingerprint } from "@testing/lib/generate-combos/types";
 
-import type { TemplateFingerprint } from "./types";
-
-import { fingerprintToKey } from "./fingerprint";
+import { fingerprintToKey } from "@testing/lib/generate-combos/fingerprint";
 
 // Phoenix derives test database names by appending `_test`. Keep generated
 // project names within PostgreSQL's 63-byte identifier limit after that suffix.

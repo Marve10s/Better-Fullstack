@@ -7,15 +7,15 @@ import {
 import { useMemo } from "react";
 import { TbCheck as Check, TbPencil as Pencil, TbBolt as Zap } from "react-icons/tb";
 
-import type { StackState } from "@/lib/constant";
+import type { StackState } from "@/lib/stack/constant";
 
 import { useCapabilityEvidenceInventory } from "@/components/stack-builder/capability-evidence-badge";
 import { StarterTrackFilters } from "@/components/stack-builder/starter-track-filters";
 import { TechIcon } from "@/components/stack-builder/tech-icon";
-import { PRESET_CATEGORIES, PRESET_TEMPLATES } from "@/lib/constant";
 import { getLocalizedPresetTemplate } from "@/lib/i18n/builder-copy";
-import { DEFAULT_STACK } from "@/lib/stack-defaults";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
+import { PRESET_CATEGORIES, PRESET_TEMPLATES } from "@/lib/stack/constant";
+import { DEFAULT_STACK } from "@/lib/stack/stack-defaults";
 import { m } from "@/paraglide/messages.js";
 
 interface PresetsPanelProps {

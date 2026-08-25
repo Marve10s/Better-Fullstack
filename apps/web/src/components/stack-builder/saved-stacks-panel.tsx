@@ -11,8 +11,8 @@ import {
   TbTrash as Trash2,
 } from "react-icons/tb";
 
-import type { StackState } from "@/lib/constant";
-import type { SavedStackEntry } from "@/lib/saved-stacks";
+import type { SavedStackEntry } from "@/lib/builder/saved-stacks";
+import type { StackState } from "@/lib/stack/constant";
 
 import {
   StackGraphComparison,
@@ -35,8 +35,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { getLocalizedCategoryDisplayName } from "@/lib/i18n/builder-copy";
-import { getStackKeyForCategory } from "@/lib/stack-utils";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
+import { getStackKeyForCategory } from "@/lib/stack/stack-utils";
 import { m } from "@/paraglide/messages.js";
 
 /** Subset of keys used for the card highlight badges. */

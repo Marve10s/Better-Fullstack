@@ -1,11 +1,11 @@
 import fs from "fs-extra";
 import path from "node:path";
 
-import type { RecipeRecord } from "./records";
-import type { RecipeAdapterPlan, RecipePlannedFile } from "./types";
+import type { RecipeRecord } from "@/recipes/records";
+import type { RecipeAdapterPlan, RecipePlannedFile } from "@/recipes/types";
 
-import { hashContent } from "../utils/scaffold-manifest";
-import { replaceMarkdownManagedRegion } from "./managed-region";
+import { hashContent } from "@/lifecycle/scaffold-manifest";
+import { replaceMarkdownManagedRegion } from "@/recipes/managed-region";
 
 const AGENT_DOCS = ["AGENTS.md", "CLAUDE.md"] as const;
 

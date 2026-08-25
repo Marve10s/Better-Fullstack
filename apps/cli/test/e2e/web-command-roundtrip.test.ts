@@ -1,13 +1,12 @@
+import { scaffoldWithCLIBinary } from "@test/e2e/e2e-utils";
+import { formatCliScaffoldFailure } from "@testing/lib/cli-scaffold";
+import { DEFAULT_STACK } from "@web/lib/stack/stack-defaults";
+import { generateStackCommand } from "@web/lib/stack/stack-utils";
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { parse } from "jsonc-parser";
 import { existsSync, readFileSync } from "node:fs";
 import { mkdir, readFile, rm } from "node:fs/promises";
 import { join } from "node:path";
-
-import { DEFAULT_STACK } from "../../../web/src/lib/stack-defaults";
-import { generateStackCommand } from "../../../web/src/lib/stack-utils";
-import { formatCliScaffoldFailure } from "../../../../testing/lib/cli-scaffold";
-import { scaffoldWithCLIBinary } from "./e2e-utils";
 
 const SMOKE_DIR = join(import.meta.dir, "..", "..", ".smoke-web-command-roundtrip");
 const CLI_BINARY_PATH = join(import.meta.dir, "..", "..", "dist", "cli.mjs");
@@ -108,9 +107,7 @@ const CASES: RoundtripCase[] = [
       install: "false",
     },
     assertConfig: (config) => {
-      expect(config.addons).toEqual(
-        expect.arrayContaining(["biome", "pwa"]),
-      );
+      expect(config.addons).toEqual(expect.arrayContaining(["biome", "pwa"]));
     },
   },
   {
@@ -230,7 +227,9 @@ const CASES: RoundtripCase[] = [
       expect(webPackageJson.dependencies.swr).toBeDefined();
       expect(existsSync(join(projectDir, "apps", "server", "src", "lib", "logger.ts"))).toBe(true);
       expect(existsSync(join(projectDir, "apps", "server", "src", "lib", "storage.ts"))).toBe(true);
-      expect(existsSync(join(projectDir, "apps", "web", "src", "directus", "client.ts"))).toBe(true);
+      expect(existsSync(join(projectDir, "apps", "web", "src", "directus", "client.ts"))).toBe(
+        true,
+      );
       expect(webEnv).toContain("VITE_DIRECTUS_URL");
       expect(serverEnv).toContain("CLOUDINARY_CLOUD_NAME");
     },
@@ -264,7 +263,10 @@ const CASES: RoundtripCase[] = [
         dependencies: Record<string, string>;
         devDependencies: Record<string, string>;
       };
-      const componentsJson = readFileSync(join(projectDir, "apps", "web", "components.json"), "utf8");
+      const componentsJson = readFileSync(
+        join(projectDir, "apps", "web", "components.json"),
+        "utf8",
+      );
       const appCss = readFileSync(join(projectDir, "apps", "web", "src", "app.css"), "utf8");
       const utils = readFileSync(join(projectDir, "apps", "web", "src", "lib", "utils.ts"), "utf8");
 
@@ -273,8 +275,8 @@ const CASES: RoundtripCase[] = [
       expect(webPackageJson.dependencies.clsx).toBeDefined();
       expect(webPackageJson.dependencies["tailwind-merge"]).toBeDefined();
       expect(webPackageJson.dependencies["shadcn-svelte"]).toBeDefined();
-      expect(componentsJson).toContain("\"aliases\"");
-      expect(appCss).toContain("@import \"tw-animate-css\"");
+      expect(componentsJson).toContain('"aliases"');
+      expect(appCss).toContain('@import "tw-animate-css"');
       expect(utils).toContain("export function cn");
     },
   },
@@ -293,30 +295,38 @@ describe("Web command roundtrip", () => {
   }, CLEANUP_TIMEOUT_MS);
 
   for (const testCase of CASES) {
-    it(`executes the built CLI for ${testCase.name}`, async () => {
-      const generatedCommand = generateStackCommand(testCase.stack);
-      const { projectName, flags } = parseCommand(generatedCommand);
-      const projectDir = join(SMOKE_DIR, projectName);
-      const timeoutMs = testCase.timeoutMs ?? DEFAULT_CASE_TIMEOUT_MS;
+    it(
+      `executes the built CLI for ${testCase.name}`,
+      async () => {
+        const generatedCommand = generateStackCommand(testCase.stack);
+        const { projectName, flags } = parseCommand(generatedCommand);
+        const projectDir = join(SMOKE_DIR, projectName);
+        const timeoutMs = testCase.timeoutMs ?? DEFAULT_CASE_TIMEOUT_MS;
 
-      const result = await scaffoldWithCLIBinary(projectDir, flags, {
-        cliPath: CLI_BINARY_PATH,
-        timeout: timeoutMs,
-        expectedFiles: ["bts.jsonc"],
-      });
+        const result = await scaffoldWithCLIBinary(projectDir, flags, {
+          cliPath: CLI_BINARY_PATH,
+          timeout: timeoutMs,
+          expectedFiles: ["bts.jsonc"],
+        });
 
-      const failureDetails = formatCliScaffoldFailure(result, {
-        header: `Web command roundtrip failed for ${testCase.name}`,
-        expectedFiles: ["bts.jsonc"],
-      });
+        const failureDetails = formatCliScaffoldFailure(result, {
+          header: `Web command roundtrip failed for ${testCase.name}`,
+          expectedFiles: ["bts.jsonc"],
+        });
 
-      if (!result.ok || result.stderr.includes("ValidationError") || !existsSync(join(projectDir, "bts.jsonc"))) {
-        throw new Error(failureDetails);
-      }
+        if (
+          !result.ok ||
+          result.stderr.includes("ValidationError") ||
+          !existsSync(join(projectDir, "bts.jsonc"))
+        ) {
+          throw new Error(failureDetails);
+        }
 
-      const config = await readJsoncFile(join(projectDir, "bts.jsonc"));
-      testCase.assertConfig(config);
-      await testCase.assertMarkers?.(projectDir);
-    }, (testCase.timeoutMs ?? DEFAULT_CASE_TIMEOUT_MS) + 60_000);
+        const config = await readJsoncFile(join(projectDir, "bts.jsonc"));
+        testCase.assertConfig(config);
+        await testCase.assertMarkers?.(projectDir);
+      },
+      (testCase.timeoutMs ?? DEFAULT_CASE_TIMEOUT_MS) + 60_000,
+    );
   }
 });

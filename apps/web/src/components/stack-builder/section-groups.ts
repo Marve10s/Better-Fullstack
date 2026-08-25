@@ -7,8 +7,8 @@ import {
   isReactNativeOnlyCategory,
 } from "@better-fullstack/types";
 
-import type { StackState } from "@/lib/stack-defaults";
-import type { TechCategory } from "@/lib/types";
+import type { StackState } from "@/lib/stack/stack-defaults";
+import type { TechCategory } from "@/lib/stack/types";
 
 export type BuilderSectionDef = {
   key: string;
@@ -89,7 +89,14 @@ const TYPESCRIPT_SECTIONS: readonly BuilderSectionDef[] = [
   section(
     "qualityTesting",
     "Quality & Testing",
-    ["testing", "testingTools", "codeQualityProfile", "gitHooks", "staticAnalysis", "documentation"],
+    [
+      "testing",
+      "testingTools",
+      "codeQualityProfile",
+      "gitHooks",
+      "staticAnalysis",
+      "documentation",
+    ],
     true,
   ),
   section("workspaceTooling", "Workspace & Tooling", [
@@ -217,7 +224,11 @@ const GO_SECTIONS: readonly BuilderSectionDef[] = [
 ];
 
 const JAVA_SECTIONS: readonly BuilderSectionDef[] = [
-  section("frameworkBuild", "Framework & Build", ["javaWebFramework", "javaLanguage", "javaBuildTool"]),
+  section("frameworkBuild", "Framework & Build", [
+    "javaWebFramework",
+    "javaLanguage",
+    "javaBuildTool",
+  ]),
   section("data", "Data & Storage", ["javaOrm", "caching", "search"]),
   section("services", "Auth & Services", ["javaAuth", "javaApi", "email"]),
   section("libraries", "Libraries & Utilities", ["javaLibraries", "javaTestingLibraries"]),

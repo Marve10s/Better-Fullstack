@@ -1,10 +1,10 @@
-import { TbCheck as Check, TbCopy as Copy } from "react-icons/tb";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useId, useMemo, useState } from "react";
+import { TbCheck as Check, TbCopy as Copy } from "react-icons/tb";
 
 import PackageIcon from "@/components/home/icons";
 import { CodeBlockContent } from "@/components/ui/kibo-ui/code-block";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
 
 const MANAGERS = ["npm", "pnpm", "bun", "yarn"] as const;
 type Manager = (typeof MANAGERS)[number];

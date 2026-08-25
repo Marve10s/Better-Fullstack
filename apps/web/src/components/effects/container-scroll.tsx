@@ -1,7 +1,7 @@
 import { motion, useScroll, useTransform } from "motion/react";
 import { type ReactNode, useRef } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
 
 interface ContainerScrollProps {
   children: ReactNode;
@@ -28,11 +28,7 @@ export function ContainerScroll({
   const cardTranslate = useTransform(scrollYProgress, [0, 0.5], [40, 0]);
 
   return (
-    <div
-      ref={ref}
-      className={cn("relative", className)}
-      style={{ perspective: "1200px" }}
-    >
+    <div ref={ref} className={cn("relative", className)} style={{ perspective: "1200px" }}>
       {title ? (
         <motion.div
           style={{ translateY: titleTranslate }}

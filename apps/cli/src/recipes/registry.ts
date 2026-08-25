@@ -1,9 +1,9 @@
-import type { RecipeAdapter, RecipeAdapterContext } from "./types";
+import type { RecipeAdapter, RecipeAdapterContext } from "@/recipes/types";
 
 import {
   typescriptMemoryResourceAdapter,
   typescriptPersistentResourceAdapter,
-} from "./typescript-api-resource";
+} from "@/recipes/typescript-api-resource";
 
 export const RECIPE_ADAPTERS: readonly RecipeAdapter[] = [
   typescriptPersistentResourceAdapter,

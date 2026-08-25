@@ -15,7 +15,7 @@
       "Type-check verification: bun install + bun run check-types",
       "@latest initial result: 7 pass, 3 fail",
       "BugQ_hugeicons_version: @hugeicons/core-free-icons pinned to ^0.3.0 in dependency map (no matching version); updated to ^3.3.0",
-      "  Files: packages/template-generator/src/utils/add-deps.ts",
+      "  Files: packages/template-generator/src/dependencies/add-deps.ts",
       "BugR_tabler_icon_export: sonner template imports IconOctagonX from @tabler/icons-react (export does not exist); changed to IconCircleX",
       "  Files: packages/template-generator/templates/frontend/react/web-base/src/components/ui/sonner.tsx.hbs",
       "Template embed regenerated after fixes (templates.generated.ts)",

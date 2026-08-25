@@ -1,12 +1,10 @@
 import type { ProjectConfig } from "@better-fullstack/types";
+import type { DevServerHandle } from "@testing/lib/dev-check";
+import type { StepResult } from "@testing/lib/verify";
 
+import { HTML_ERROR_PATTERNS } from "@testing/lib/dev-check";
 import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
-
-import type { DevServerHandle } from "./dev-check";
-import type { StepResult } from "./verify";
-
-import { HTML_ERROR_PATTERNS } from "./dev-check";
 
 const ROUTE_CHECK_TIMEOUT_MS = 30_000;
 

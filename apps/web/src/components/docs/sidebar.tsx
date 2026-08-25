@@ -9,7 +9,7 @@ import {
   type PageNode,
   type PageTreeNode,
 } from "@/lib/docs/source";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
 import { m } from "@/paraglide/messages.js";
 
 const ACTIVE_RAIL_TRANSITION = { type: "spring", stiffness: 380, damping: 32 } as const;

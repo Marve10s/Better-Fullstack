@@ -1,27 +1,25 @@
 import { Composition, Still } from "remotion";
 
-import "./fonts";
-
+import "@/fonts";
+import { OgCard, type OgCardProps } from "@/campaign/og-card";
+import { OG_CARD_OUTPUTS } from "@/campaign/og-outputs";
 import {
   CAMPAIGN_DURATION,
   CAMPAIGN_FPS,
   FeatureClip,
   RunBeforeYouCloneVideo,
-} from "./campaign/video";
-import { OgCard, type OgCardProps } from "./campaign/og-card";
-import { OG_CARD_OUTPUTS } from "./campaign/og-outputs";
-import { SearchMediaStill, SearchMediaVideo } from "./search-media/search-media";
+} from "@/campaign/video";
+import { SearchMediaStill, SearchMediaVideo } from "@/search-media/search-media";
 import {
   SEARCH_MEDIA_DURATION,
   SEARCH_MEDIA_FPS,
   SEARCH_MEDIA_HEIGHT,
   SEARCH_MEDIA_SPECS,
   SEARCH_MEDIA_WIDTH,
-} from "./search-media/specs";
-import { BF_COLORS } from "./styles";
+} from "@/search-media/specs";
+import { BF_COLORS } from "@/styles";
 
-const icon = (slug: string, color: string) =>
-  `https://cdn.simpleicons.org/${slug}/${color}`;
+const icon = (slug: string, color: string) => `https://cdn.simpleicons.org/${slug}/${color}`;
 
 const sharedOg = {
   body: "Inspect the generated code, run it in your browser and download the real project.",
@@ -242,14 +240,7 @@ export function RemotionRoot() {
         height={1080}
       />
       {ogCards.map(({ id, props }) => (
-        <Still
-          key={id}
-          id={id}
-          component={OgCard}
-          width={1200}
-          height={630}
-          defaultProps={props}
-        />
+        <Still key={id} id={id} component={OgCard} width={1200} height={630} defaultProps={props} />
       ))}
       {SEARCH_MEDIA_SPECS.map((spec) => (
         <Still
