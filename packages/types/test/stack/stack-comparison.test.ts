@@ -24,10 +24,12 @@ describe("stack graph comparison", () => {
     expect(comparison.replacements.map((change) => change.before.toolId)).toEqual([
       "drizzle",
       "react-vite",
+      "shadcn-ui",
     ]);
     expect(comparison.replacements.map((change) => change.after.toolId)).toEqual([
       "prisma",
       "next",
+      "shadcn-ui",
     ]);
     expect(comparison.ownerChanges).toHaveLength(1);
     expect(comparison.ownerChanges[0]?.before.toolId).toBe("shadcn-ui");
@@ -54,5 +56,30 @@ describe("stack graph comparison", () => {
     });
     expect(comparison.evidenceChanges).toHaveLength(1);
     expect(comparison.ownerChanges).toHaveLength(0);
+  });
+
+  it("reports changes to persisted graph metadata", () => {
+    const before = parseStackPartSpecs(["frontend:typescript:astro"]);
+    const after = before.map((part) => ({
+      ...part,
+      targetPath: "apps/site",
+      settings: { astroIntegration: "vue" },
+      source: "adjusted" as const,
+    }));
+
+    const comparison = compareStackGraphs(before, after);
+
+    expect(comparison.hasChanges).toBe(true);
+    expect(comparison.unchanged).toBe(0);
+    expect(comparison.replacements).toEqual([
+      expect.objectContaining({
+        before: expect.objectContaining({ targetPath: "apps/web", source: "selected" }),
+        after: expect.objectContaining({
+          targetPath: "apps/site",
+          source: "adjusted",
+          settings: { astroIntegration: "vue" },
+        }),
+      }),
+    ]);
   });
 });

@@ -152,6 +152,26 @@ describe("registry add", () => {
 
     const lock = await fs.readJson(join(dir, ".better-fullstack", "registry.json"));
     expect(lock.packs).toHaveLength(1);
+    expect(lock.packs[0].files).toContain("apps/server/src/lib/rate-limit.ts");
+  });
+
+  it("blocks a version upgrade when existing pack files cannot be reconciled", async () => {
+    const dir = await stageProject();
+    await applyReviewedPack({ projectDir: dir, source: SAMPLE_PACK });
+    const upgradedPack = await mkdtemp(join(tmpdir(), "bfs-registry-upgrade-"));
+    TEMP_ROOTS.push(upgradedPack);
+    await fs.copy(SAMPLE_PACK, upgradedPack);
+    const manifestPath = join(upgradedPack, "registry.json");
+    const manifest = await fs.readJson(manifestPath);
+    await fs.writeJson(manifestPath, { ...manifest, version: "2.0.0" }, { spaces: 2 });
+
+    await expect(planPackInstall({ projectDir: dir, source: upgradedPack })).rejects.toThrow(
+      /Cannot update .* existing pack files would be skipped/,
+    );
+
+    const lock = await fs.readJson(join(dir, ".better-fullstack", "registry.json"));
+    expect(lock.packs[0]).toMatchObject({ version: "1.0.0" });
+    expect(lock.packs[0].files).toContain("apps/server/src/lib/rate-limit.ts");
   });
 
   it("rejects an invalid manifest with a clear validation error", async () => {

@@ -1,12 +1,14 @@
-import type { ProjectCheck, ProjectStatusFailure, ProjectStatusResult } from "@/project/project-status";
+import type {
+  ProjectCheck,
+  ProjectStatusFailure,
+  ProjectStatusResult,
+} from "@/project/project-status";
 
-import { legacyProjectConfigToStackParts } from "@/types";
 import { readBtsConfig } from "@/config/bts-config";
 import { getCurrentLifecycleVersions } from "@/lifecycle/scaffold-manifest";
+import { isRegisteredTelemetryStackPartSelection, legacyProjectConfigToStackParts } from "@/types";
 
 type ProjectInspection = ProjectStatusResult | ProjectStatusFailure;
-
-const SAFE_PART_TOKEN = /^[a-z0-9][a-z0-9.-]*$/u;
 
 function diagnosticCode(check: ProjectCheck) {
   if (check.label === "bts.jsonc") return "project_config";
@@ -48,15 +50,9 @@ async function selectedParts(projectDir: string) {
   return [
     ...new Set(
       parts
-        .filter(
-          (part) =>
-            part.source !== "provided" &&
-            part.toolId !== "none" &&
-            SAFE_PART_TOKEN.test(part.role) &&
-            SAFE_PART_TOKEN.test(part.ecosystem) &&
-            SAFE_PART_TOKEN.test(part.toolId),
-        )
-        .map((part) => `${part.role}:${part.ecosystem}:${part.toolId}`),
+        .filter((part) => part.source !== "provided" && part.toolId !== "none")
+        .map((part) => `${part.role}:${part.ecosystem}:${part.toolId}`)
+        .filter(isRegisteredTelemetryStackPartSelection),
     ),
   ]
     .sort()

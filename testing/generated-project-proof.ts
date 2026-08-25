@@ -4,6 +4,7 @@ import {
   CAPABILITY_EVIDENCE_SCHEMA_VERSION,
   CAPABILITY_RECEIPT_SCHEMA_VERSION,
 } from "@better-fullstack/types";
+import { capabilityProducerFingerprint } from "@testing/lib/capability-producer-fingerprint";
 import { buildFreshCliBinary } from "@testing/lib/cli-binary";
 import {
   formatCliScaffoldFailure,
@@ -20,7 +21,6 @@ import {
 import { getPresetCombos } from "@testing/lib/presets";
 import { getVerifier, type StepResult } from "@testing/lib/verify";
 import { spawn } from "node:child_process";
-import { createHash } from "node:crypto";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { isAbsolute, join, relative, resolve } from "node:path";
 
@@ -580,31 +580,6 @@ async function runCase(
   };
 }
 
-async function capabilityProducerFingerprint(): Promise<{
-  files: string[];
-  sha256: string;
-}> {
-  const paths = await gitText([
-    "ls-files",
-    "bun.lock",
-    "packages/types/src",
-    "packages/template-generator/src",
-    "packages/template-generator/templates",
-    "testing/generated-project-proof.ts",
-    "testing/lib/generated-project-proof-matrix.ts",
-    "testing/lib/presets.ts",
-  ]);
-  const files = paths.split("\n").filter(Boolean).sort();
-  const hash = createHash("sha256");
-  for (const file of files) {
-    hash.update(`${file}\0`);
-    // oxlint-disable-next-line no-await-in-loop -- file order is part of the digest contract
-    hash.update(await readFile(file));
-    hash.update("\0");
-  }
-  return { files, sha256: hash.digest("hex") };
-}
-
 async function main(): Promise<void> {
   const outputArgument = process.argv.indexOf("--output");
   const requestedOutput = outputArgument >= 0 ? process.argv[outputArgument + 1] : undefined;
@@ -614,7 +589,7 @@ async function main(): Promise<void> {
 
   const gitHead = await gitText(["rev-parse", "HEAD"]);
   const workspaceClean = (await gitText(["status", "--porcelain"])) === "";
-  const producer = await capabilityProducerFingerprint();
+  const producer = capabilityProducerFingerprint(process.cwd());
   const catalogVersion = (
     JSON.parse(await readFile("packages/types/package.json", "utf8")) as { version: string }
   ).version;

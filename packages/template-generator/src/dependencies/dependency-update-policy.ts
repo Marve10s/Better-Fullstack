@@ -175,6 +175,18 @@ export const DEPENDENCY_UPDATE_POLICIES: Readonly<Record<string, DependencyUpdat
     reason:
       "Storybook 10.x requires a whole-family upgrade; core storybook and @storybook/svelte-vite are still on 8.x, so a 10.x renderer makes the peer graph unsatisfiable.",
   },
+  "react-native-reanimated": {
+    pinnedVersion: "^4.5.3",
+    holdLatestChannel: true,
+    reason:
+      "Reanimated 4.6 with Worklets 0.12 calls requestAnimationFrame during Expo 56 static rendering; 4.5.3 supports React Native 0.86 and exports successfully with Worklets 0.11.4.",
+  },
+  "react-native-worklets": {
+    pinnedVersion: "^0.11.4",
+    holdLatestChannel: true,
+    reason:
+      "Keep Worklets on the Expo 56 static-export-compatible release paired with Reanimated 4.5.3.",
+  },
   vitest: {
     pinnedVersion: "4.1.8",
     reason: "The Vitest family is exact-pinned to the latest reviewed Yarn-compatible patch.",

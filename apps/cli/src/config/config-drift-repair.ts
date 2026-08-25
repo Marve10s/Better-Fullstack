@@ -1,3 +1,15 @@
+import {
+  lifecycleResult,
+  type LifecycleResult,
+} from "@better-fullstack/project-lifecycle/contracts";
+import { createReviewToken } from "@better-fullstack/project-lifecycle/review-token";
+import {
+  beginProjectTransaction,
+  commitProjectTransaction,
+  rollbackProjectTransaction,
+  type ProjectTransaction,
+  writeProjectTransactionFile,
+} from "@better-fullstack/project-lifecycle/transaction";
 import fs from "fs-extra";
 import * as JSONC from "jsonc-parser";
 import path from "node:path";
@@ -6,15 +18,6 @@ import type { ProjectConfig } from "@/types";
 
 import { readBtsConfig, serializeBtsConfig } from "@/config/bts-config";
 import { getProjectRecoveryCommand } from "@/lifecycle/lifecycle-command";
-import { lifecycleResult, type LifecycleResult } from "@better-fullstack/project-lifecycle/contracts";
-import {
-  beginProjectTransaction,
-  commitProjectTransaction,
-  rollbackProjectTransaction,
-  type ProjectTransaction,
-  writeProjectTransactionFile,
-} from "@better-fullstack/project-lifecycle/transaction";
-import { createReviewToken } from "@better-fullstack/project-lifecycle/review-token";
 import { getCurrentLifecycleVersions, hashContent } from "@/lifecycle/scaffold-manifest";
 
 const CONFIG_PATH = "bts.jsonc";
@@ -84,6 +87,23 @@ function getChanges(
       action: !(key in current) ? "add" : !(key in proposed) ? "remove" : "update",
       reason: changeReason(key, hasGraph),
     }));
+}
+
+function applyConfigChanges(
+  currentContent: string,
+  proposed: Record<string, unknown>,
+  changes: readonly ConfigDriftChange[],
+): string {
+  return changes.reduce(
+    (content, change) =>
+      JSONC.applyEdits(
+        content,
+        JSONC.modify(content, [change.path], proposed[change.path], {
+          formattingOptions: { tabSize: 2, insertSpaces: true, eol: "\n" },
+        }),
+      ),
+    currentContent,
+  );
 }
 
 function repairToken(plan: Pick<InternalPlan, "projectDir" | "changes" | "preimage">): string {
@@ -173,13 +193,14 @@ async function buildInternalPlan(projectDirInput: string): Promise<InternalPlan>
   if (!normalized) {
     throw new Error("bts.jsonc cannot be normalized to the current configuration contract.");
   }
-  const proposedContent = serializeBtsConfig(
+  const canonicalContent = serializeBtsConfig(
     { ...normalized, projectDir } as unknown as ProjectConfig,
     { version: normalized.version, createdAt: normalized.createdAt },
   );
-  const proposedObject = parseObject(proposedContent);
+  const proposedObject = parseObject(canonicalContent);
   if (!proposedObject) throw new Error("The canonical config producer returned invalid JSONC.");
   const changes = getChanges(currentObject, proposedObject);
+  const proposedContent = applyConfigChanges(currentContent, proposedObject, changes);
   const preimage = { sha256: hashContent(currentContent), mode: stats.mode & 0o7777 };
   const base: InternalPlan = {
     success: true,

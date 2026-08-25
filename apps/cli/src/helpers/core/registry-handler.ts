@@ -390,6 +390,8 @@ export async function planPackInstall(
   const { manifestPath, resolvedSource } = await resolvePackSource(options.source);
   const manifest = await loadPackManifest(manifestPath);
   const templateContext = btsConfig as unknown as ProjectConfig;
+  const lock = await readRegistryLock(projectDir);
+  const previousInstall = lock.packs.find((pack) => pack.name === manifest.name);
   const filesWritten: string[] = [];
   const filesSkipped: string[] = [];
   const writes = new Map<string, string>();
@@ -407,6 +409,11 @@ export async function planPackInstall(
       file.template ? processTemplateString(file.content, templateContext) : file.content,
     );
     filesWritten.push(normalized);
+  }
+  if (previousInstall && previousInstall.version !== manifest.version && filesSkipped.length > 0) {
+    throw new CLIError(
+      `Cannot update ${manifest.name} from ${previousInstall.version} to ${manifest.version} because existing pack files would be skipped: ${filesSkipped.join(", ")}. Reconcile those files with an overwrite-enabled pack first.`,
+    );
   }
 
   const { changes: dependencies, writes: packageJsonWrites } = await planDependencyChanges(
@@ -439,13 +446,12 @@ export async function planPackInstall(
     path.join(projectDir, lockRelativePath),
     "registry lock target",
   );
-  const lock = await readRegistryLock(projectDir);
   const installed: InstalledPack = {
     name: manifest.name,
     version: manifest.version,
     source: resolvedSource,
-    files: filesWritten,
-    installedAt: plannedAt,
+    files: [...new Set([...(previousInstall?.files ?? []), ...filesWritten])].sort(),
+    installedAt: filesWritten.length > 0 ? plannedAt : (previousInstall?.installedAt ?? plannedAt),
   };
   lock.version = REGISTRY_LOCK_VERSION;
   lock.packs = [...lock.packs.filter((pack) => pack.name !== manifest.name), installed];

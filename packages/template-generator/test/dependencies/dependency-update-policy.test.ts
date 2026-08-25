@@ -66,6 +66,15 @@ describe("dependency update policy", () => {
     });
   });
 
+  it("holds Expo 56 static exports on the verified Reanimated pair", () => {
+    expect(dependencyVersionMap).toMatchObject({
+      "react-native-reanimated": "^4.5.3",
+      "react-native-worklets": "^0.11.4",
+    });
+    expect(getLatestChannelPinnedVersion("react-native-reanimated")).toBe("^4.5.3");
+    expect(getLatestChannelPinnedVersion("react-native-worklets")).toBe("^0.11.4");
+  });
+
   it("never automates downgrades", () => {
     const downgrade = candidate("example", "downgrade");
 

@@ -185,60 +185,58 @@ export default defineConfig({
       srcDirectory: "src",
     }),
     nitro({
-      config: {
-        preset: "vercel",
-        minify: false,
-        sourceMap: false,
-        routeRules: {
-          "/": {
-            headers: {
-              "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
-            },
+      preset: "vercel",
+      minify: false,
+      sourcemap: false,
+      routeRules: {
+        "/": {
+          headers: {
+            "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
           },
-          "/new": {
-            headers: {
-              "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
-              ...webContainerHeaders,
-            },
+        },
+        "/new": {
+          headers: {
+            "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
+            ...webContainerHeaders,
           },
-          "/typescript": { headers: webContainerHeaders },
-          "/multi-ecosystem": { headers: webContainerHeaders },
-          "/stack": {
-            headers: {
-              "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
-              ...webContainerHeaders,
-            },
+        },
+        "/typescript": { headers: webContainerHeaders },
+        "/multi-ecosystem": { headers: webContainerHeaders },
+        "/stack": {
+          headers: {
+            "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
+            ...webContainerHeaders,
           },
-          "/stack/**": {
-            headers: {
-              "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
-              ...webContainerHeaders,
-            },
+        },
+        "/stack/**": {
+          headers: {
+            "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
+            ...webContainerHeaders,
           },
-          "/benchmark": {
-            headers: {
-              "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
-            },
+        },
+        "/benchmark": {
+          headers: {
+            "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
           },
-          "/compare": {
-            headers: {
-              "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
-            },
+        },
+        "/compare": {
+          headers: {
+            "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
           },
-          "/docs/**": {
-            headers: {
-              "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
-            },
+        },
+        "/docs/**": {
+          headers: {
+            "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
           },
-          "/guides/**": {
-            headers: {
-              "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
-            },
+        },
+        "/guides/**": {
+          headers: {
+            "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
           },
-          "/sitemap.xml": {
-            headers: {
-              "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
-            },
+        },
+        "/sitemap.xml": {
+          headers: {
+            "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
           },
         },
       },

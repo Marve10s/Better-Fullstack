@@ -1,13 +1,19 @@
 import { describe, expect, it } from "bun:test";
 
 import {
+  CAPABILITY_EVIDENCE_SCHEMA_VERSION,
+  CAPABILITY_RECEIPT_SCHEMA_VERSION,
+  createCliDefaultProjectConfigBase,
   createStarterTrackFilterSearchParams,
+  getProjectConfigEvidence,
   getCapabilityInventory,
   getStarterTrackCatalog,
+  GOLDEN_RUNTIME_RECIPES,
   parseStackPartSpecs,
   parseStarterTrackFilters,
   recommendStarterTrack,
   STARTER_TRACK_IDS,
+  type ProjectConfig,
   validateStackParts,
 } from "@/";
 
@@ -99,5 +105,65 @@ describe("starter tracks", () => {
       expect(first.track.compatibility.valid).toBe(true);
       expect(first.track.evidence.level).toBeDefined();
     }
+  });
+
+  it("does not match short keywords inside ordinary words", () => {
+    const result = recommendStarterTrack("email newsletter");
+
+    expect(result.track.id).toBe("saas-app");
+    expect(result.matchedTerms).not.toContain("ai");
+    expect(result.score).toBe(0);
+  });
+
+  it("derives project evidence from authoritative Stack Parts", () => {
+    const config = {
+      ...createCliDefaultProjectConfigBase(),
+      projectName: "multi-service",
+      projectDir: "/multi-service",
+      relativePath: "multi-service",
+      stackParts: parseStackPartSpecs(["backend:go:gin:api", "backend:rust:axum:worker"]),
+    } as ProjectConfig;
+
+    const evidence = getProjectConfigEvidence(config);
+
+    expect(evidence.partCount).toBe(2);
+    expect(evidence.records.map((record) => record.partSpec)).toEqual([
+      "backend:go:gin:api",
+      "backend:rust:axum:worker",
+    ]);
+  });
+
+  it("rejects receipts that do not match the expected producer", () => {
+    const receipt = {
+      schemaVersion: CAPABILITY_RECEIPT_SCHEMA_VERSION,
+      evidenceSchemaVersion: CAPABILITY_EVIDENCE_SCHEMA_VERSION,
+      receiptType: "better-fullstack/capability-runtime" as const,
+      sourceSha: "a".repeat(40),
+      catalogVersion: "2.6.1",
+      producerFingerprint: "b".repeat(64),
+      createdAt: new Date().toISOString(),
+      toolchains: {},
+      recipes: GOLDEN_RUNTIME_RECIPES.map((recipe) => ({
+        id: recipe.id,
+        definitionVersion: recipe.definitionVersion,
+        success: true,
+        startedAt: new Date().toISOString(),
+        completedAt: new Date().toISOString(),
+        flakyRuns: 0,
+        repairMinutes: 0,
+        dependencyChanges: 0,
+        maintainerPresent: true,
+      })),
+    };
+
+    const catalog = getStarterTrackCatalog({
+      receipt,
+      catalogVersion: "2.6.1",
+      producerFingerprint: "c".repeat(64),
+    });
+
+    expect(catalog.tracks.every((track) => track.evidence.freshness === "producer-mismatch")).toBe(
+      true,
+    );
   });
 });

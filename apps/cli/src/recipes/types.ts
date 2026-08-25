@@ -43,7 +43,7 @@ export type RecipeAdapterContext = {
   config: BetterTStackConfig;
   kind: RecipeKind;
   requestedName: string;
-  projectName: string;
+  databasePackageName: string | null;
   name: string;
   typeName: string;
 };

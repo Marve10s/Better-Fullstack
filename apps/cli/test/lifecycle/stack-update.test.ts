@@ -1,3 +1,7 @@
+import {
+  RECOVERY_ROOT,
+  recoverProjectTransaction,
+} from "@better-fullstack/project-lifecycle/transaction";
 import { generateVirtualProject, EMBEDDED_TEMPLATES } from "@better-fullstack/template-generator";
 import { writeTreeToFilesystem } from "@better-fullstack/template-generator/fs-writer";
 import {
@@ -25,6 +29,7 @@ import { join } from "node:path";
 
 import { getPartRemovalApplyCommand } from "@/commands/stack/remove";
 import { getPrimaryRoleReplacementApplyCommand } from "@/commands/stack/replace";
+import { buildBtsConfigForPersistence, readBtsConfig, writeBtsConfig } from "@/config/bts-config";
 import { CreateCommandOptionsSchema } from "@/create-command-input";
 import { addHandler } from "@/helpers/core/add-handler";
 import {
@@ -37,18 +42,12 @@ import {
   planStackUpdate,
   SUPPORTED_STACK_UPDATE_KEYS,
 } from "@/helpers/core/stack-update";
-import { MCP_STACK_UPDATE_SCHEMA } from "@/mcp";
-import {
-  buildBtsConfigForPersistence,
-  readBtsConfig,
-  writeBtsConfig,
-} from "@/config/bts-config";
-import { RECOVERY_ROOT, recoverProjectTransaction } from "@better-fullstack/project-lifecycle/transaction";
 import {
   hashContent,
   readScaffoldManifest,
   recordScaffoldManifest,
 } from "@/lifecycle/scaffold-manifest";
+import { MCP_STACK_UPDATE_SCHEMA } from "@/mcp";
 
 const TEMP_ROOTS: string[] = [];
 
@@ -3856,6 +3855,41 @@ describe("stack update planner", () => {
         .every((part) => part.ownerPartId === persistedFrontend?.id),
     ).toBe(true);
     await expectFileContains(join(projectDir, "MIGRATION.md"), "routes, client state");
+  });
+
+  it("drops Astro-only settings when replacing the frontend", async () => {
+    const root = await makeTempRoot("bfs-primary-replace-astro-");
+    const projectDir = join(root, "app");
+    const stackParts = parseStackPartSpecs([
+      "frontend:typescript:astro",
+      "backend:typescript:hono",
+      "backend.runtime:typescript:bun",
+    ]).map((part) =>
+      part.role === "frontend"
+        ? { ...part, settings: { astroIntegration: "react" as const } }
+        : part,
+    );
+    await scaffoldGeneratedProject(
+      makeConfig(projectDir, {
+        stackParts,
+        frontend: ["astro"],
+        astroIntegration: "react",
+      }),
+    );
+
+    const plan = await planPrimaryRoleReplacement(
+      projectDir,
+      "frontend:typescript:astro",
+      "frontend:typescript:next",
+    );
+
+    expect(plan.success).toBe(true);
+    if (!plan.success) return;
+    const frontendPart = plan.proposedConfig.stackParts?.find(
+      (part) => part.role === "frontend" && !part.ownerPartId,
+    );
+    expect(frontendPart?.toolId).toBe("next");
+    expect(frontendPart?.settings).toBeUndefined();
   });
 
   it("preserves custom mobile identity and warns about app-local data", async () => {

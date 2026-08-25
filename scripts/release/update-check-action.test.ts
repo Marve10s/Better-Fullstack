@@ -1,6 +1,7 @@
 import {
   evaluateUpdateGate,
   expectedChangedPaths,
+  reviewedChangedPaths,
   unexpectedChangedPaths,
   type JsonRecord,
 } from "@actions/update-check/gate";
@@ -114,7 +115,7 @@ describe("opt-in update action gate", () => {
     }
   });
 
-  test("allows staging only reviewed paths, the manifest, and local recovery data", () => {
+  test("stages only reviewed paths and the manifest", () => {
     const expected = expectedChangedPaths("apps/demo", ["src/generated.ts"]);
     expect(expected).toEqual(["apps/demo/bts.lock.json", "apps/demo/src/generated.ts"]);
     expect(
@@ -128,6 +129,16 @@ describe("opt-in update action gate", () => {
       ),
     ).toEqual([]);
     expect(unexpectedChangedPaths(["README.md"], expected)).toEqual(["README.md"]);
+    expect(
+      reviewedChangedPaths(
+        [
+          "apps/demo/.bts/recovery/id/metadata.json",
+          "apps/demo/bts.lock.json",
+          "apps/demo/src/generated.ts",
+        ],
+        expected,
+      ),
+    ).toEqual(["apps/demo/bts.lock.json", "apps/demo/src/generated.ts"]);
   });
 
   test("pins action dependencies and never pushes the protected base branch", async () => {
@@ -143,6 +154,8 @@ describe("opt-in update action gate", () => {
     expect(implementation).toContain("updateBranch === baseBranch");
     expect(implementation).toContain("pullRequestBody(finalReceipt, digest)");
     expect(implementation).toContain("worktreeCleanAfterCheck");
+    expect(implementation).toContain('["auth", "setup-git"]');
+    expect(implementation).toContain('["add", "--", ...reviewedChanges]');
     expect(implementation).not.toMatch(/git[^\n]*push[^\n]*baseBranch/);
     expect(await validateUpdateAction(root)).toEqual([]);
   });

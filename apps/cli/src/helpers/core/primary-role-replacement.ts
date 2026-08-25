@@ -184,12 +184,14 @@ async function resolvePrimaryRoleReplacement(
     );
   }
 
+  const { settings: _currentSettings, ...currentWithoutSettings } = current;
   const nextPrimary: StackPart = {
-    ...current,
+    ...currentWithoutSettings,
     id: replacementId,
     ecosystem: replacement.ecosystem,
     toolId: replacement.toolId,
     source: "selected",
+    ...(replacement.settings ? { settings: replacement.settings } : {}),
   };
   const nextParts = parts.map((part) => {
     if (part.id === current.id) return nextPrimary;

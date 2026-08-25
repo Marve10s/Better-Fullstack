@@ -6,6 +6,7 @@ import {
   asRecord,
   evaluateUpdateGate,
   expectedChangedPaths,
+  reviewedChangedPaths,
   sha256,
   unexpectedChangedPaths,
   type JsonRecord,
@@ -436,6 +437,7 @@ async function runUpdateCheck(): Promise<void> {
   const actualChanges = await changedPaths(workspace);
   const expectedChanges = expectedChangedPaths(projectDirectory, gate.actionablePaths);
   const unexpected = unexpectedChangedPaths(actualChanges, expectedChanges);
+  const reviewedChanges = reviewedChangedPaths(actualChanges, expectedChanges);
   if (actualChanges.length === 0) throw new Error("Update apply produced no Git changes.");
   if (unexpected.length > 0) {
     throw new Error(
@@ -450,12 +452,13 @@ async function runUpdateCheck(): Promise<void> {
     ["config", "user.email", "better-fullstack[bot]@users.noreply.github.com"],
     workspace,
   );
-  await runSuccessful("git", ["add", "--", ...actualChanges], workspace);
+  await runSuccessful("git", ["add", "--", ...reviewedChanges], workspace);
   await runSuccessful(
     "git",
     ["commit", "-m", "chore: update Better Fullstack templates"],
     workspace,
   );
+  await runSuccessful("gh", ["auth", "setup-git"], workspace, { GH_TOKEN: githubToken });
   await runSuccessful("git", ["push", "origin", `HEAD:refs/heads/${updateBranch}`], workspace, {
     GH_TOKEN: githubToken,
   });

@@ -6,6 +6,7 @@ import {
   getToolingCapability,
   legacyProjectConfigToStackParts,
   normalizeStackSelection,
+  parseStackPartSpecs,
   projectStackPartSettingsToProjectConfig,
   stackPartsToLegacyProjectConfigPartial,
   validateStackParts,
@@ -46,6 +47,41 @@ type ImportOptions = {
 
 const NATIVE_FRONTENDS = new Set(["native-bare", "native-uniwind", "native-unistyles"]);
 const CODE_QUALITY_CATEGORIES = new Set(["codeQuality", "gitHooks", "staticAnalysis"]);
+
+function graphRoundTripDiagnostics(parts: readonly StackPart[]): ProjectImportDiagnostic[] {
+  const editable = parts.filter((part) => part.source !== "provided" && part.toolId !== "none");
+  const roundTripped = parseStackPartSpecs(
+    editable.map((part) => formatStackPartSpec(part, parts)),
+    "selected",
+  );
+  const diagnostics: ProjectImportDiagnostic[] = [];
+
+  for (const part of editable) {
+    const candidate = roundTripped.find((entry) => entry.id === part.id);
+    const lostFields = [
+      part.targetPath !== candidate?.targetPath ? "targetPath" : null,
+      JSON.stringify(part.settings ?? null) !== JSON.stringify(candidate?.settings ?? null)
+        ? "settings"
+        : null,
+      part.providedByPartId !== candidate?.providedByPartId ? "providedByPartId" : null,
+    ].filter((field): field is string => field !== null);
+    if (lostFields.length > 0) {
+      diagnostics.push({
+        severity: "error",
+        code: "GRAPH_FIELDS_NOT_ROUND_TRIPPABLE",
+        message: `${formatStackPartSpec(part, parts)} uses ${lostFields.join(", ")}, which the builder command cannot preserve.`,
+      });
+    } else if (part.source !== "selected") {
+      diagnostics.push({
+        severity: "warning",
+        code: "GRAPH_SOURCE_NORMALIZED",
+        message: `${formatStackPartSpec(part, parts)} will change source from ${part.source} to selected if you copy the builder command.`,
+      });
+    }
+  }
+
+  return diagnostics;
+}
 
 export function resolveImportedProjectName(
   fileName: string,
@@ -160,6 +196,10 @@ function normalizeAuthoritativeGraph(
     });
     return { config, parts };
   }
+
+  const roundTripDiagnostics = graphRoundTripDiagnostics(parts);
+  diagnostics.push(...roundTripDiagnostics);
+  if (roundTripDiagnostics.some((diagnostic) => diagnostic.severity === "error")) return null;
 
   const projection = stackPartsToLegacyProjectConfigPartial(parts);
   const settings = projectStackPartSettingsToProjectConfig(parts, { includeDefaults: true });

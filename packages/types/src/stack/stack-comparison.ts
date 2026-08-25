@@ -10,7 +10,15 @@ export type StackPartEvidenceSnapshot = {
 
 export type StackPartComparisonSnapshot = Pick<
   StackPart,
-  "id" | "role" | "ecosystem" | "toolId" | "ownerPartId" | "source" | "targetPath"
+  | "id"
+  | "role"
+  | "ecosystem"
+  | "toolId"
+  | "ownerPartId"
+  | "source"
+  | "providedByPartId"
+  | "targetPath"
+  | "settings"
 > & {
   spec: string;
   ownerSpec?: string;
@@ -75,7 +83,9 @@ function snapshot(
     toolId: part.toolId,
     ownerPartId: part.ownerPartId,
     source: part.source,
+    providedByPartId: part.providedByPartId,
     targetPath: part.targetPath,
+    settings: part.settings,
     spec: formatStackPartSpec(part, parts),
     ownerSpec: ownerSpec(part, parts),
     evidence,
@@ -84,6 +94,31 @@ function snapshot(
 
 function evidenceKey(value: StackPartEvidenceSnapshot | null | undefined): string {
   return JSON.stringify(value ?? null);
+}
+
+function canonicalValue(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(canonicalValue);
+  if (!value || typeof value !== "object") return value;
+  return Object.fromEntries(
+    Object.entries(value)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, entry]) => [key, canonicalValue(entry)]),
+  );
+}
+
+function persistedPartKey(part: StackPart): string {
+  return JSON.stringify(
+    canonicalValue({
+      id: part.id,
+      role: part.role,
+      ecosystem: part.ecosystem,
+      toolId: part.toolId,
+      source: part.source,
+      providedByPartId: part.providedByPartId ?? null,
+      targetPath: part.targetPath ?? null,
+      settings: part.settings ?? null,
+    }),
+  );
 }
 
 function sortSnapshots<T extends StackPartComparisonSnapshot>(values: T[]): T[] {
@@ -241,10 +276,7 @@ export function compareStackGraphs(
     const beforeSnapshot = snapshot(match.before, before, options);
     const afterSnapshot = snapshot(match.after, after, options);
     const pair = { before: beforeSnapshot, after: afterSnapshot };
-    const replaced =
-      match.before.role !== match.after.role ||
-      match.before.ecosystem !== match.after.ecosystem ||
-      match.before.toolId !== match.after.toolId;
+    const replaced = persistedPartKey(match.before) !== persistedPartKey(match.after);
     const ownerChanged = (match.before.ownerPartId ?? null) !== (match.after.ownerPartId ?? null);
     const beforeEvidence = options.evidenceForPart?.(match.before) ?? null;
     const afterEvidence = options.evidenceForPart?.(match.after) ?? null;

@@ -1,3 +1,4 @@
+import { makeConfig } from "@test/_fixtures/config-factory";
 import { describe, expect, it } from "bun:test";
 
 import type { VirtualFile, VirtualNode } from "@/types";
@@ -5,7 +6,7 @@ import type { VirtualFile, VirtualNode } from "@/types";
 import { generateVirtualProject } from "@/generator";
 import { insertBeforeFormSubscribe } from "@/template-handlers/features/bot-protection";
 import { EMBEDDED_TEMPLATES } from "@/templates.generated";
-import { makeConfig } from "@test/_fixtures/config-factory";
+import { dependencyVersionMap } from "@/utils/add-deps";
 
 function files(node: VirtualNode): VirtualFile[] {
   return node.type === "file" ? [node] : node.children.flatMap(files);
@@ -39,7 +40,9 @@ describe("bot protection generation", () => {
 
   it("wires Turnstile into the auth form and enforces Siteverify on the server", async () => {
     const output = await generate("turnstile");
-    expect(output.get("apps/web/package.json")).toContain('"@marsidev/react-turnstile": "^1.5.4"');
+    expect(output.get("apps/web/package.json")).toContain(
+      `"@marsidev/react-turnstile": "${dependencyVersionMap["@marsidev/react-turnstile"]}"`,
+    );
     expect(output.get("apps/web/src/components/bot-protection.tsx")).toContain("<Turnstile");
     for (const path of [
       "apps/web/src/components/sign-in-form.tsx",
@@ -83,9 +86,7 @@ describe("bot protection generation", () => {
     expect(output.get("apps/server/src/index.ts")).toContain('"X-Turnstile-Token"');
   });
 
-  const turnstileRejections: Array<
-    [string, Parameters<typeof makeConfig>[0], string]
-  > = [
+  const turnstileRejections: Array<[string, Parameters<typeof makeConfig>[0], string]> = [
     ["backendless projects", { auth: "none", backend: "none" }, "requires Better Auth"],
     ["Convex", { backend: "convex" }, "not wired for Convex"],
     ["Svelte", { frontend: ["svelte"] }, "React web frontends only"],

@@ -250,6 +250,7 @@ import {
 import { getLatestCLIVersion } from "@/platform/get-latest-cli-version";
 import { runWithContextAsync } from "@/presentation/context";
 import { getCapabilityEvidenceReport } from "@/project/capability-evidence";
+import { getExpectedCapabilityProducerFingerprint } from "@/project/capability-producer";
 import { getProjectContext } from "@/project/project-context";
 import { trackEvent, trackProjectCreation, withCommandTelemetry } from "@/telemetry/analytics";
 
@@ -1906,6 +1907,8 @@ export function createMcpServer(): McpServer {
         ecosystem,
         filters,
         receipt,
+        catalogVersion: getLatestCLIVersion(),
+        producerFingerprint: getExpectedCapabilityProducerFingerprint(receipt),
         trackId: id,
       });
       return {
@@ -1963,6 +1966,8 @@ export function createMcpServer(): McpServer {
           ecosystem,
           projectName,
           receipt,
+          catalogVersion: getLatestCLIVersion(),
+          producerFingerprint: getExpectedCapabilityProducerFingerprint(receipt),
         });
         return {
           content: [
@@ -3409,11 +3414,6 @@ export function createMcpServer(): McpServer {
           .string()
           .optional()
           .describe("Optional capability-runtime receipt JSON from a trusted release artifact"),
-        producerFingerprint: z
-          .string()
-          .regex(/^[0-9a-f]{64}$/i)
-          .optional()
-          .describe("Expected producer fingerprint when a receipt is supplied"),
       }),
       outputSchema: capabilityEvidenceOutputSchema,
       annotations: {
@@ -3428,7 +3428,6 @@ export function createMcpServer(): McpServer {
       category?: string;
       optionId?: string;
       receiptJson?: string;
-      producerFingerprint?: string;
     }) => {
       if (input.category && !(input.category in OPTION_CATEGORY_METADATA)) {
         throw new Error(`Unknown option category: ${input.category}`);
@@ -3437,7 +3436,7 @@ export function createMcpServer(): McpServer {
       const payload = getCapabilityEvidenceReport({
         receipt,
         catalogVersion: getLatestCLIVersion(),
-        producerFingerprint: input.producerFingerprint,
+        producerFingerprint: getExpectedCapabilityProducerFingerprint(receipt),
         ecosystem: input.ecosystem,
         category: input.category as OptionCategory | undefined,
         optionId: input.optionId,

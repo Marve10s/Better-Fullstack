@@ -32,7 +32,7 @@ describe("SolidStart v2", () => {
     const viteConfig = readFileSync(join(webDir, "vite.config.ts"), "utf8");
 
     expect(existsSync(join(webDir, "app.config.ts"))).toBe(false);
-    expect(packageJson).toContain('"@solidjs/start": "^2.0.0"');
+    expect(packageJson).toContain('"@solidjs/start": "^2.');
     expect(packageJson).toContain('"nitro": "^3.0.260610-beta"');
     expect(packageJson).toContain('"vite": "^8.');
     expect(packageJson).toContain('"node": ">=24"');

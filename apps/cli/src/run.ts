@@ -32,10 +32,11 @@ import { CreateCommandInputSchema, CreateCommandOptionsSchema } from "@/create-c
 import { createProjectHandler } from "@/helpers/core/command-handlers";
 import { getLatestCLIVersion } from "@/platform/get-latest-cli-version";
 import { openUrl } from "@/platform/open-url";
-import { handleError } from "@/presentation/errors";
+import { CLIError, handleError } from "@/presentation/errors";
 import { renderTitle } from "@/presentation/render-title";
 import { displaySponsors, fetchSponsors } from "@/presentation/sponsors";
 import { getCapabilityEvidenceReport } from "@/project/capability-evidence";
+import { getExpectedCapabilityProducerFingerprint } from "@/project/capability-producer";
 import { statusFromCommandResult, withCommandTelemetry } from "@/telemetry/analytics";
 import {
   type AddInput,
@@ -605,7 +606,7 @@ export const router = os.router({
     .handler(async ({ input }) => {
       const [kind, name, options] = input;
       const { genCommand } = await import("@/commands/generation/gen.js");
-      await withCommandTelemetry(
+      const result = await withCommandTelemetry(
         "gen",
         () =>
           genCommand({
@@ -629,6 +630,7 @@ export const router = os.router({
           }),
         },
       );
+      if (!result.success) throw new CLIError(result.message);
     }),
   context: os
     .meta({
@@ -666,7 +668,8 @@ export const router = os.router({
     .handler(async ({ input }) => {
       const [action, name, options] = input;
       const { recipesCommand } = await import("@/commands/generation/recipes.js");
-      await recipesCommand({ action, name, dir: options.dir, json: options.json });
+      const result = await recipesCommand({ action, name, dir: options.dir, json: options.json });
+      if (!result.success) throw new CLIError("Recipe verification failed.");
     }),
   registry: os
     .meta({
@@ -933,6 +936,7 @@ export const router = os.router({
       const report = getCapabilityEvidenceReport({
         receipt,
         catalogVersion: getLatestCLIVersion(),
+        producerFingerprint: getExpectedCapabilityProducerFingerprint(receipt),
         ecosystem: input.ecosystem,
         category: input.category as keyof typeof OPTION_CATEGORY_METADATA | undefined,
         optionId: input.option,
@@ -1002,6 +1006,8 @@ export const router = os.router({
         ecosystem: input.ecosystem,
         filters,
         receipt,
+        catalogVersion: getLatestCLIVersion(),
+        producerFingerprint: getExpectedCapabilityProducerFingerprint(receipt),
         trackId: input.id,
       });
 

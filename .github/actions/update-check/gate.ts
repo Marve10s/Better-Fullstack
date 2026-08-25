@@ -164,3 +164,8 @@ export function unexpectedChangedPaths(actualPaths: string[], expectedPaths: str
       !filePath.startsWith(".bts/recovery/"),
   );
 }
+
+export function reviewedChangedPaths(actualPaths: string[], expectedPaths: string[]): string[] {
+  const expected = new Set(expectedPaths);
+  return actualPaths.filter((filePath) => expected.has(filePath));
+}

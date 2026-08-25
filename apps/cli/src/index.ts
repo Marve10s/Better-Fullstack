@@ -16,6 +16,7 @@ export {
   evidence,
   update,
   adopt,
+  recovery,
 } from "@/run";
 
 import type { ProjectConfig } from "@/types";

@@ -1,5 +1,6 @@
 import { afterAll, describe, expect, it } from "bun:test";
 import fs from "fs-extra";
+import * as JSONC from "jsonc-parser";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -105,6 +106,39 @@ describe("gen resource", () => {
     expect(index).toContain("<better-fullstack:recipe-registrations");
   });
 
+  it("protects organization-auth memory resources", async () => {
+    const dir = await stageFixture("trpc");
+    const configPath = join(dir, "bts.jsonc");
+    const content = await fs.readFile(configPath, "utf-8");
+    await fs.writeFile(
+      configPath,
+      content
+        .replace('"auth": "better-auth"', '"auth": "better-auth-organizations"')
+        .replace('"toolId": "better-auth"', '"toolId": "better-auth-organizations"'),
+    );
+
+    const result = await applyReviewedGen({ kind: "resource", name: "team", dir });
+
+    expect(result.persistent).toBe(false);
+    const resource = await readFile(resourcePath(dir, "team"), "utf-8");
+    expect(resource).toContain("protectedProcedure");
+    expect(resource).not.toContain("publicProcedure");
+  });
+
+  it("imports the declared database workspace package name", async () => {
+    const dir = await stageFixture("trpc");
+    await fs.writeJson(join(dir, "packages/db/package.json"), {
+      name: "@company/database",
+      type: "module",
+    });
+
+    await applyReviewedGen({ kind: "resource", name: "post", dir });
+
+    expect(await readFile(resourcePath(dir, "post"), "utf-8")).toContain(
+      'from "@company/database/queries/post";',
+    );
+  });
+
   it("is idempotent: re-running for an existing resource throws and does not clobber", async () => {
     const dir = await stageFixture("trpc");
 
@@ -179,6 +213,51 @@ describe("gen resource", () => {
     expect(await fs.pathExists(resourcePath(dir, "post"))).toBe(false);
     const indexAfter = await readFile(routerIndexPath(dir), "utf-8");
     expect(indexAfter).toBe(indexBefore);
+  });
+
+  it("blocks a plan when any persistent create target already exists", async () => {
+    const dir = await stageFixture("trpc");
+    await fs.outputFile(join(dir, "packages/db/src/queries/post.ts"), "user-owned query\n");
+
+    await expect(planGen({ kind: "resource", name: "post", dir })).rejects.toThrow(
+      "packages/db/src/queries/post.ts",
+    );
+  });
+
+  it("blocks ambiguous multi-router projects instead of choosing an arbitrary owner", async () => {
+    const dir = await stageFixture("trpc");
+    const configPath = join(dir, "bts.jsonc");
+    const config = JSONC.parse(await fs.readFile(configPath, "utf-8")) as {
+      stackParts: Array<Record<string, unknown>>;
+    };
+    config.stackParts.push(
+      {
+        id: "admin",
+        role: "backend",
+        toolId: "hono",
+        ecosystem: "typescript",
+        source: "selected",
+        targetPath: "apps/admin",
+      },
+      {
+        id: "admin.api:typescript:trpc",
+        role: "api",
+        toolId: "trpc",
+        ecosystem: "typescript",
+        ownerPartId: "admin",
+        source: "selected",
+      },
+    );
+    await fs.writeJson(configPath, config, { spaces: 2 });
+    await fs.outputFile(
+      join(dir, "apps/admin/src/routers/index.ts"),
+      await fs.readFile(routerIndexPath(dir), "utf-8"),
+    );
+
+    const result = await planGen({ kind: "resource", name: "post", dir });
+
+    expect(result).toMatchObject({ success: false, status: "blocked" });
+    expect(result.message).toContain("Multiple TypeScript API owners");
   });
 
   it("returns the complete versioned plan in JSON mode", async () => {
@@ -325,5 +404,65 @@ describe("gen resource", () => {
     expect(result.status).toBe("blocked");
     expect(result.reviewToken).toBeUndefined();
     expect(await fs.pathExists(resourcePath(dir, "post"))).toBe(false);
+  });
+
+  it("returns a nonzero CLI exit for a rejected gen result", async () => {
+    const dir = await stageFixture("unsupported");
+    const child = Bun.spawn(
+      [
+        process.execPath,
+        join(import.meta.dir, "../../src/cli.ts"),
+        "gen",
+        "resource",
+        "post",
+        "--dir",
+        dir,
+        "--json",
+      ],
+      {
+        env: { ...process.env, BTS_TELEMETRY_DISABLED: "1" },
+        stdout: "pipe",
+        stderr: "pipe",
+      },
+    );
+    const [exitCode, stdout] = await Promise.all([
+      child.exited,
+      new Response(child.stdout).text(),
+      new Response(child.stderr).text(),
+    ]);
+
+    expect(exitCode).toBe(1);
+    expect(JSON.parse(stdout)).toMatchObject({ success: false, status: "unsupported" });
+  });
+
+  it("returns a nonzero CLI exit when recipe verification fails", async () => {
+    const dir = await stageFixture("trpc");
+    await applyReviewedGen({ kind: "resource", name: "post", dir });
+    await fs.writeFile(resourcePath(dir, "post"), "drifted\n");
+    const child = Bun.spawn(
+      [
+        process.execPath,
+        join(import.meta.dir, "../../src/cli.ts"),
+        "recipes",
+        "check",
+        "post",
+        "--dir",
+        dir,
+        "--json",
+      ],
+      {
+        env: { ...process.env, BTS_TELEMETRY_DISABLED: "1" },
+        stdout: "pipe",
+        stderr: "pipe",
+      },
+    );
+    const [exitCode, stdout] = await Promise.all([
+      child.exited,
+      new Response(child.stdout).text(),
+      new Response(child.stderr).text(),
+    ]);
+
+    expect(exitCode).toBe(1);
+    expect(JSON.parse(stdout)).toMatchObject({ success: false, action: "check" });
   });
 });

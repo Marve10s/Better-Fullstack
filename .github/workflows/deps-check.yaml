@@ -137,28 +137,43 @@ jobs:
           bun test apps/cli/test/generation/generated-command-contract.test.ts
           bun test apps/web/test/builder/preview-config.test.ts
 
-      - name: Run Full Test Suite
+      - name: Run Repository Verification
         id: full-tests
         if: steps.check.outputs.effective_update_mode == 'patch-minor' || steps.check.outputs.effective_update_mode == 'all'
         run: |
           set +e
-          bun run test 2>&1 | tee "$RUNNER_TEMP/full-test.log"
+          bun run lint 2>&1 | tee "$RUNNER_TEMP/lint.log"
+          LINT_EXIT_CODE=${PIPESTATUS[0]}
+          bun run test 2>&1 | tee "$RUNNER_TEMP/test.log"
           TEST_EXIT_CODE=${PIPESTATUS[0]}
           set -e
-          echo "exit_code=$TEST_EXIT_CODE" >> "$GITHUB_OUTPUT"
+          echo "lint_exit_code=$LINT_EXIT_CODE" >> "$GITHUB_OUTPUT"
+          echo "test_exit_code=$TEST_EXIT_CODE" >> "$GITHUB_OUTPUT"
+          if [ "$LINT_EXIT_CODE" -eq 0 ] && [ "$TEST_EXIT_CODE" -eq 0 ]; then
+            echo "exit_code=0" >> "$GITHUB_OUTPUT"
+          else
+            echo "exit_code=1" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Capture Test Verification Report
         id: test-report
         if: steps.check.outputs.effective_update_mode == 'patch-minor' || steps.check.outputs.effective_update_mode == 'all'
         run: |
           bun run .github/scripts/format-test-report.ts \
-            "$RUNNER_TEMP/full-test.log" \
-            "${{ steps.full-tests.outputs.exit_code }}" > "$RUNNER_TEMP/test-verification.md"
+            "$RUNNER_TEMP/lint.log" \
+            "${{ steps.full-tests.outputs.lint_exit_code }}" \
+            '`bun run lint`' > "$RUNNER_TEMP/lint-verification.md"
+          bun run .github/scripts/format-test-report.ts \
+            "$RUNNER_TEMP/test.log" \
+            "${{ steps.full-tests.outputs.test_exit_code }}" \
+            '`bun run test`' > "$RUNNER_TEMP/test-verification.md"
           {
-            echo 'report<<EOF'
+            echo '## Lint verification'
+            cat "$RUNNER_TEMP/lint-verification.md"
+            echo
+            echo '## Test verification'
             cat "$RUNNER_TEMP/test-verification.md"
-            echo EOF
-          } >> "$GITHUB_OUTPUT"
+          } > "$RUNNER_TEMP/verification-source.md"
 
       - name: Derive Targeted Smoke Flags
         id: smoke-flags
@@ -192,9 +207,16 @@ jobs:
       - name: Capture Final Report
         id: final-report
         run: |
+          REPORT_INPUTS=(packages/deps-report.md)
+          if [ -f "$RUNNER_TEMP/verification-source.md" ]; then
+            REPORT_INPUTS+=("$RUNNER_TEMP/verification-source.md")
+          fi
+          bun run .github/scripts/compose-markdown-report.ts \
+            50000 \
+            "${REPORT_INPUTS[@]}" > "$RUNNER_TEMP/final-report.md"
           {
             echo 'report<<EOF'
-            cat packages/deps-report.md
+            cat "$RUNNER_TEMP/final-report.md"
             echo EOF
           } >> "$GITHUB_OUTPUT"
 
@@ -223,8 +245,6 @@ jobs:
 
             ${{ steps.final-report.outputs.report }}
 
-            ${{ steps.test-report.outputs.report }}
-
             ### Review Checklist
             - [ ] Review the version changes
             - [ ] Run `bun install` to update lockfile
@@ -249,10 +269,8 @@ jobs:
           echo "**Downgrades Detected:** ${{ steps.check.outputs.downgrade_count }}" >> $GITHUB_STEP_SUMMARY
           echo "**Major Updates:** ${{ steps.check.outputs.has_major_updates }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Report" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "${{ steps.final-report.outputs.report }}" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "### Report" >> "$GITHUB_STEP_SUMMARY"
+          cat "$RUNNER_TEMP/final-report.md" >> "$GITHUB_STEP_SUMMARY"
 
   deps-smoke:
     name: Dependency Update Smoke Test

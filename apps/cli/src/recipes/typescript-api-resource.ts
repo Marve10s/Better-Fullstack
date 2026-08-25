@@ -40,10 +40,11 @@ function plannedFile(
   };
 }
 
-async function findRouterIndex(projectDir: string): Promise<string | null> {
+async function findRouterIndexes(projectDir: string): Promise<string[]> {
+  const matches = new Set<string>();
   for (const candidate of ROUTER_INDEX_CANDIDATES) {
     const full = path.join(projectDir, candidate);
-    if (await fs.pathExists(full)) return full;
+    if (await fs.pathExists(full)) matches.add(full);
   }
   for (const workspace of ["apps", "packages"]) {
     const workspaceDir = path.join(projectDir, workspace);
@@ -51,36 +52,54 @@ async function findRouterIndex(projectDir: string): Promise<string | null> {
     const entries = await fs.readdir(workspaceDir).catch(() => []);
     for (const entry of entries) {
       const full = path.join(workspaceDir, entry, "src", "routers", "index.ts");
-      if (await fs.pathExists(full)) return full;
+      if (await fs.pathExists(full)) matches.add(full);
     }
   }
-  return null;
+  return [...matches].sort();
 }
 
 function detectImportExtension(indexContent: string): string {
   return /from\s+["']\.\.\/index\.js["']/.test(indexContent) ? ".js" : "";
 }
 
-function ownerPartId(config: BetterTStackConfig): string | null {
+function recipeOwner(config: BetterTStackConfig) {
   const parts = config.stackParts ?? legacyProjectConfigToStackParts(config);
-  return (
-    parts.find(
-      (part) => part.role === "backend" && part.ecosystem === "typescript" && !part.ownerPartId,
-    )?.id ?? null
+  const ownerIds = new Set(
+    parts
+      .filter(
+        (part) =>
+          part.role === "api" &&
+          part.ecosystem === "typescript" &&
+          (part.toolId === "trpc" || part.toolId === "orpc") &&
+          part.ownerPartId,
+      )
+      .flatMap((part) => (part.ownerPartId ? [part.ownerPartId] : [])),
   );
-}
-
-function ownerSpec(config: BetterTStackConfig): string | null {
-  const parts = config.stackParts ?? legacyProjectConfigToStackParts(config);
-  const owner = parts.find(
-    (part) => part.role === "backend" && part.ecosystem === "typescript" && !part.ownerPartId,
+  const owners = parts.filter(
+    (part) =>
+      ownerIds.has(part.id) &&
+      part.role === "backend" &&
+      part.ecosystem === "typescript" &&
+      !part.ownerPartId,
   );
-  return owner ? formatStackPartSpec(owner, parts) : null;
+  if (owners.length !== 1) {
+    throw new Error(
+      owners.length === 0
+        ? "Could not resolve the TypeScript API owner from the Stack Graph."
+        : "Multiple TypeScript API owners are selected. Choose one owner before generating a resource.",
+    );
+  }
+  const part = owners[0];
+  if (!part) throw new Error("Could not resolve the TypeScript API owner from the Stack Graph.");
+  return { part, spec: formatStackPartSpec(part, parts) };
 }
 
 function memoryResource(context: RecipeAdapterContext, importExt: string): string {
   const { config, name, typeName } = context;
-  const procedure = config.auth === "better-auth" ? "protectedProcedure" : "publicProcedure";
+  const procedure =
+    config.auth === "better-auth" || config.auth === "better-auth-organizations"
+      ? "protectedProcedure"
+      : "publicProcedure";
   if (config.api === "trpc") {
     return `import { z } from "zod";
 
@@ -211,9 +230,14 @@ export async function remove${context.typeName}Record(id: string) {
 }
 
 function persistentRouter(context: RecipeAdapterContext, importExt: string): string {
-  const packageName = `@${context.projectName}/db`;
+  if (!context.databasePackageName) {
+    throw new Error("packages/db/package.json must declare a package name for persistent recipes.");
+  }
+  const packageName = context.databasePackageName;
   const procedure =
-    context.config.auth === "better-auth" ? "protectedProcedure" : "publicProcedure";
+    context.config.auth === "better-auth" || context.config.auth === "better-auth-organizations"
+      ? "protectedProcedure"
+      : "publicProcedure";
   return `import {
   create${context.typeName}Record,
   get${context.typeName}Record,
@@ -260,11 +284,11 @@ describe("${context.name} persistent recipe", () => {
 `;
 }
 
-function recipeGuide(context: RecipeAdapterContext): string {
+function recipeGuide(context: RecipeAdapterContext, ownerSpec: string): string {
   const pm = context.config.packageManager;
   return `# ${context.typeName} persistence recipe
 
-This recipe is owned by ${ownerSpec(context.config) ?? "the TypeScript backend"}.
+This recipe is owned by ${ownerSpec}.
 
 ## Migration
 
@@ -300,8 +324,22 @@ async function planRouterFiles(
   routerIndex: string;
   resourcePath: string;
   importExtension: string;
+  ownerPartId: string;
+  ownerSpec: string;
 }> {
-  const routerIndexPath = await findRouterIndex(context.projectDir);
+  const owner = recipeOwner(context.config);
+  const routerIndexes = await findRouterIndexes(context.projectDir);
+  if (routerIndexes.length === 0) {
+    throw new Error("Could not locate a TypeScript API routers/index.ts.");
+  }
+  if (routerIndexes.length > 1) {
+    throw new Error(
+      `Multiple TypeScript API router indexes were found: ${routerIndexes
+        .map((routerIndex) => path.relative(context.projectDir, routerIndex).replaceAll("\\", "/"))
+        .join(", ")}. Choose one API owner before generating a resource.`,
+    );
+  }
+  const routerIndexPath = routerIndexes[0];
   if (!routerIndexPath) throw new Error("Could not locate a TypeScript API routers/index.ts.");
   const routersDir = path.dirname(routerIndexPath);
   const resourcePath = path.join(routersDir, `${context.name}.ts`);
@@ -334,7 +372,20 @@ async function planRouterFiles(
     routerIndex: relativeRouter,
     resourcePath: relativeResource,
     importExtension,
+    ownerPartId: owner.part.id,
+    ownerSpec: owner.spec,
   };
+}
+
+async function assertCreateTargetsMissing(
+  projectDir: string,
+  targets: readonly string[],
+): Promise<void> {
+  for (const target of targets) {
+    if (await fs.pathExists(path.join(projectDir, target))) {
+      throw new Error(`Recipe output already exists at ${target}.`);
+    }
+  }
 }
 
 export const typescriptPersistentResourceAdapter: RecipeAdapter = {
@@ -382,6 +433,7 @@ export const typescriptPersistentResourceAdapter: RecipeAdapter = {
     const testPath = router.resourcePath.replace(/\.ts$/, ".integration.test.ts");
     const servicePath = `packages/db/src/queries/${context.name}.ts`;
     const guidePath = `docs/recipes/${context.name}.md`;
+    await assertCreateTargetsMissing(context.projectDir, [servicePath, testPath, guidePath]);
     const files = [
       ...router.files,
       plannedFile(schemaPath, "create", persistentSchema(context), null),
@@ -393,7 +445,7 @@ export const typescriptPersistentResourceAdapter: RecipeAdapter = {
         schemaIndexOriginal,
       ),
       plannedFile(testPath, "create", persistentIntegrationTest(context), null),
-      plannedFile(guidePath, "create", recipeGuide(context), null),
+      plannedFile(guidePath, "create", recipeGuide(context, router.ownerSpec), null),
     ];
     return {
       adapterId: typescriptPersistentResourceAdapter.id,
@@ -403,7 +455,7 @@ export const typescriptPersistentResourceAdapter: RecipeAdapter = {
       name: context.name,
       summary: `Generate a persistent ${context.name} tRPC CRUD slice with Drizzle and SQLite.`,
       persistent: true,
-      ownerPartId: ownerPartId(context.config),
+      ownerPartId: router.ownerPartId,
       files,
       ownedArtifacts: [
         { path: router.resourcePath, ownership: "full" },
@@ -475,7 +527,7 @@ export const typescriptMemoryResourceAdapter: RecipeAdapter = {
       name: context.name,
       summary: `Generate an in-memory ${context.name} CRUD API resource.`,
       persistent: false,
-      ownerPartId: ownerPartId(context.config),
+      ownerPartId: router.ownerPartId,
       files: router.files,
       ownedArtifacts: [
         { path: router.resourcePath, ownership: "full" },

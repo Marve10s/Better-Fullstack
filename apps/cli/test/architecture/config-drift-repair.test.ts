@@ -1,3 +1,7 @@
+import {
+  RECOVERY_ROOT,
+  recoverProjectTransaction,
+} from "@better-fullstack/project-lifecycle/transaction";
 import { createCliDefaultProjectConfigBase, type ProjectConfig } from "@better-fullstack/types";
 import { afterAll, describe, expect, it } from "bun:test";
 import fs from "fs-extra";
@@ -8,7 +12,6 @@ import path from "node:path";
 import { getDoctorFixApplyCommand } from "@/commands/lifecycle/doctor";
 import { writeBtsConfig } from "@/config/bts-config";
 import { applyConfigDriftRepair, planConfigDriftRepair } from "@/config/config-drift-repair";
-import { RECOVERY_ROOT, recoverProjectTransaction } from "@better-fullstack/project-lifecycle/transaction";
 import { hashContent } from "@/lifecycle/scaffold-manifest";
 
 const roots: string[] = [];
@@ -117,6 +120,25 @@ describe("doctor config drift repair", () => {
     if (!applied.recoveryId) return;
     await recoverProjectTransaction(projectDir, applied.recoveryId);
     expect(await fs.readFile(path.join(projectDir, "bts.jsonc"), "utf-8")).toBe(before);
+  });
+
+  it("preserves unrelated JSONC comments while repairing derived fields", async () => {
+    const projectDir = await makeProject();
+    const configPath = path.join(projectDir, "bts.jsonc");
+    await writeStaleGraphCache(projectDir);
+    const content = await fs.readFile(configPath, "utf-8");
+    await fs.writeFile(
+      configPath,
+      content.replace('"packageManager":', '// Keep this user note.\n  "packageManager":'),
+    );
+    const plan = await planConfigDriftRepair(projectDir);
+    expect(plan.success).toBe(true);
+    if (!plan.success) return;
+
+    const applied = await applyConfigDriftRepair(projectDir, plan.reviewToken);
+
+    expect(applied.success).toBe(true);
+    expect(await fs.readFile(configPath, "utf-8")).toContain("// Keep this user note.");
   });
 
   it("keeps a crashed config repair recoverable from its durable postimage", async () => {

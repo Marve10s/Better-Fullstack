@@ -1,3 +1,14 @@
+import type { LifecyclePlan, LifecycleResult } from "@better-fullstack/project-lifecycle/contracts";
+import type { ProjectTransaction } from "@better-fullstack/project-lifecycle/transaction";
+
+import { lifecyclePlan, lifecycleResult } from "@better-fullstack/project-lifecycle/contracts";
+import { createReviewToken } from "@better-fullstack/project-lifecycle/review-token";
+import {
+  beginProjectTransaction,
+  commitProjectTransaction,
+  rollbackProjectTransaction,
+  writeProjectTransactionFile,
+} from "@better-fullstack/project-lifecycle/transaction";
 import { log } from "@clack/prompts";
 import fs from "fs-extra";
 import path from "node:path";
@@ -9,23 +20,13 @@ import type {
   RecipePlannedFile,
   RecipeVerificationCheck,
 } from "@/recipes/types";
-import type { LifecyclePlan, LifecycleResult } from "@better-fullstack/project-lifecycle/contracts";
-import type { ProjectTransaction } from "@better-fullstack/project-lifecycle/transaction";
 
+import { readBtsConfig } from "@/config/bts-config";
+import { getProjectRecoveryCommand } from "@/lifecycle/lifecycle-command";
+import { getCurrentLifecycleVersions, hashContent } from "@/lifecycle/scaffold-manifest";
 import { planRecipeAgentContext } from "@/recipes/agent-context";
 import { createRecipeRecordFile, readRecipeRecords } from "@/recipes/records";
 import { resolveRecipeAdapter, validateRecipeAdapterRegistry } from "@/recipes/registry";
-import { readBtsConfig } from "@/config/bts-config";
-import { getProjectRecoveryCommand } from "@/lifecycle/lifecycle-command";
-import { lifecyclePlan, lifecycleResult } from "@better-fullstack/project-lifecycle/contracts";
-import {
-  beginProjectTransaction,
-  commitProjectTransaction,
-  rollbackProjectTransaction,
-  writeProjectTransactionFile,
-} from "@better-fullstack/project-lifecycle/transaction";
-import { createReviewToken } from "@better-fullstack/project-lifecycle/review-token";
-import { getCurrentLifecycleVersions, hashContent } from "@/lifecycle/scaffold-manifest";
 
 export type GenKind = RecipeKind;
 
@@ -99,7 +100,7 @@ function toPascalCase(raw: string): string {
   return camel.charAt(0).toUpperCase() + camel.slice(1);
 }
 
-async function getProjectName(projectDir: string): Promise<string> {
+async function getDatabasePackageName(projectDir: string): Promise<string | null> {
   const dbPackage = await fs
     .readJson(path.join(projectDir, "packages/db/package.json"))
     .catch(() => null);
@@ -107,12 +108,12 @@ async function getProjectName(projectDir: string): Promise<string> {
     dbPackage &&
     typeof dbPackage === "object" &&
     "name" in dbPackage &&
-    typeof dbPackage.name === "string"
+    typeof dbPackage.name === "string" &&
+    dbPackage.name.trim().length > 0
   ) {
-    const match = /^@([^/]+)\/db$/.exec(dbPackage.name);
-    if (match?.[1]) return match[1];
+    return dbPackage.name;
   }
-  return path.basename(projectDir);
+  return null;
 }
 
 function unsupportedGenResult(projectDir: string, message: string): GenResult {
@@ -172,7 +173,7 @@ export async function planGen(input: GenCommandInput): Promise<GenResult> {
     config,
     kind: input.kind,
     requestedName: input.name,
-    projectName: await getProjectName(projectDir),
+    databasePackageName: await getDatabasePackageName(projectDir),
     name,
     typeName,
   };

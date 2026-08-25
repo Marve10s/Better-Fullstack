@@ -661,12 +661,18 @@ export function getProjectConfigEvidence(
   options: {
     inventory?: readonly CapabilityInventoryRecord[];
     receipt?: CapabilityEvidenceReceipt | unknown;
+    catalogVersion?: string;
+    producerFingerprint?: string;
   } = {},
 ) {
   const inventory =
     options.inventory ??
-    getCapabilityInventory(options.receipt ? { receipt: options.receipt } : {});
-  const parts = legacyProjectConfigToStackParts(config).filter(
+    getCapabilityInventory({
+      receipt: options.receipt,
+      catalogVersion: options.catalogVersion,
+      producerFingerprint: options.producerFingerprint,
+    });
+  const parts = (config.stackParts ?? legacyProjectConfigToStackParts(config)).filter(
     (part) => part.toolId !== "none" && part.source !== "provided",
   );
   const records = parts.map((part) => {
@@ -708,6 +714,8 @@ export function getStackSelectionEvidence(
   options: {
     inventory?: readonly CapabilityInventoryRecord[];
     receipt?: CapabilityEvidenceReceipt | unknown;
+    catalogVersion?: string;
+    producerFingerprint?: string;
   } = {},
 ) {
   return getProjectConfigEvidence(
@@ -804,12 +812,18 @@ export function getStarterTrackCatalog(
     filters?: StarterTrackFilters;
     inventory?: readonly CapabilityInventoryRecord[];
     receipt?: CapabilityEvidenceReceipt | unknown;
+    catalogVersion?: string;
+    producerFingerprint?: string;
   } = {},
 ) {
   const filters = StarterTrackFiltersSchema.parse(options.filters ?? {});
   const inventory =
     options.inventory ??
-    getCapabilityInventory(options.receipt ? { receipt: options.receipt } : {});
+    getCapabilityInventory({
+      receipt: options.receipt,
+      catalogVersion: options.catalogVersion,
+      producerFingerprint: options.producerFingerprint,
+    });
   const tracks = STARTER_TRACK_DEFINITIONS.map((definition) =>
     materializeStarterTrack(definition, inventory),
   ).filter((track) => track.compatibility.valid && matchesFilters(track, filters));
@@ -864,11 +878,15 @@ export function recommendStarterTrack(
     trackIds?: readonly StarterTrackId[];
     inventory?: readonly CapabilityInventoryRecord[];
     receipt?: CapabilityEvidenceReceipt | unknown;
+    catalogVersion?: string;
+    producerFingerprint?: string;
   } = {},
 ) {
   const catalog = getStarterTrackCatalog({
     inventory: options.inventory,
     receipt: options.receipt,
+    catalogVersion: options.catalogVersion,
+    producerFingerprint: options.producerFingerprint,
   });
   const allowedTracks = options.trackIds
     ? catalog.tracks.filter((track) => options.trackIds?.includes(track.id))
@@ -902,7 +920,7 @@ export function recommendStarterTrack(
       }
     }
     for (const keyword of definition.keywords) {
-      if (tokens.has(keyword) || normalized.includes(keyword)) {
+      if (tokens.has(keyword)) {
         score += 3;
         matched.add(keyword);
       }

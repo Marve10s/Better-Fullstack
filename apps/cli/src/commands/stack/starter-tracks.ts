@@ -14,6 +14,8 @@ export type StarterTrackCatalogOptions = {
   ecosystem?: ProjectConfig["ecosystem"];
   filters?: StarterTrackFilters;
   receipt?: unknown;
+  catalogVersion?: string;
+  producerFingerprint?: string;
   trackId?: StarterTrackId;
 };
 
@@ -21,6 +23,8 @@ export function getStarterTracksResult(options: StarterTrackCatalogOptions = {})
   const catalog = getStarterTrackCatalog({
     filters: options.filters,
     receipt: options.receipt,
+    catalogVersion: options.catalogVersion,
+    producerFingerprint: options.producerFingerprint,
   });
   const tracks = catalog.tracks.filter(
     (track) =>
@@ -42,11 +46,15 @@ export function getStarterTrackRecommendation(options: {
   ecosystem?: ProjectConfig["ecosystem"];
   projectName?: string;
   receipt?: unknown;
+  catalogVersion?: string;
+  producerFingerprint?: string;
 }) {
   const projectName = options.projectName ?? "my-app";
   const recommendation = recommendStarterTrack(options.brief, {
     ecosystem: options.ecosystem,
     receipt: options.receipt,
+    catalogVersion: options.catalogVersion,
+    producerFingerprint: options.producerFingerprint,
   });
   const selection = normalizeStackSelection({
     ...recommendation.track.selection,

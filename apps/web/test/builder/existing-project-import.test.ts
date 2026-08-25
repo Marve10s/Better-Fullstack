@@ -131,4 +131,24 @@ describe("existing project config import", () => {
       "backend.orm:go:gorm",
     ]);
   });
+
+  it("rejects graph fields that the builder command cannot round-trip", () => {
+    const parts = parseStackPartSpecs(["backend:go:gin:catalog"]).map((part) => ({
+      ...part,
+      targetPath: "services/catalog-api",
+    }));
+
+    const result = parseImportedBtsConfigText(configText(parts), {
+      targetVersion: TARGET_VERSION,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.diagnostics).toContainEqual(
+      expect.objectContaining({
+        severity: "error",
+        code: "GRAPH_FIELDS_NOT_ROUND_TRIPPABLE",
+        message: expect.stringContaining("targetPath"),
+      }),
+    );
+  });
 });

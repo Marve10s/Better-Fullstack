@@ -78,4 +78,23 @@ describe("privacy-safe support bundle", () => {
       ]),
     );
   });
+
+  it("drops unknown Stack Part identifiers from the bundle", async () => {
+    const projectDir = await fs.mkdtemp(path.join(tmpdir(), "support-bundle-private-part-"));
+    roots.push(projectDir);
+    await fs.copy(historicalFixture, projectDir);
+    const inspection = await inspectProject(projectDir, { runChecks: false });
+    expect(inspection.success).toBe(true);
+    if (!inspection.success) return;
+    const configPath = path.join(projectDir, "bts.jsonc");
+    const content = await fs.readFile(configPath, "utf-8");
+    await fs.writeFile(
+      configPath,
+      content.replace('"toolId": "hono"', '"toolId": "customer-secret"'),
+    );
+
+    const serialized = JSON.stringify(await buildSupportBundle(projectDir, inspection));
+
+    expect(serialized).not.toContain("customer-secret");
+  });
 });
