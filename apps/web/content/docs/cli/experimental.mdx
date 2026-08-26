@@ -46,7 +46,7 @@ Other ecosystems, API styles, database-backed models, migrations, and frontend s
 `registry list` shows installed packs and `registry add <source>` installs one from a local path or `file://` URL:
 
 ```bash
-npx create-better-fullstack@latest registry add ../my-capability-pack -- --dry-run
+npx create-better-fullstack@latest registry add ../my-capability-pack --dry-run
 ```
 
 Packs may add files, dependencies, and `.env.example` keys. Existing files are skipped instead of overwritten, sources are resolved with traversal and symlink-escape protection, and `--json` prints structured output.

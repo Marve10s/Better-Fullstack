@@ -45,7 +45,7 @@ Most create-time stack fields are accepted for existing projects when the planne
 | `--search` `--vector-db` `--file-storage` | Add supported service integrations.                                                                                                                   |
 | `--web-deploy` `--server-deploy`          | Add or update deployment targets.                                                                                                                     |
 
-Commonly added parts include `turborepo`, `docker-compose`, `eslint`, `prettier`, `pwa`, `electron`, `capacitor`, `msw`, `storybook`, and the TanStack data utilities. Vite+ is a toolchain profile selected as `tooling:universal:vite-plus`; the package-manager flag still chooses npm, pnpm, Yarn, or Bun underneath it.
+Commonly added parts include `turborepo`, `docker-compose`, `eslint`, `prettier`, `pwa`, `electron`, `capacitor`, `msw`, `storybook`, and the TanStack data utilities. Vite+ is a toolchain profile selected as `toolchain:universal:vite-plus`; the package-manager flag still chooses npm, pnpm, Yarn, or Bun underneath it.
 
 <Callout kind="warning" title="Create-time only capabilities">
 `mcp`, `skills`, `ruler`, `biome`, `oxlint`, `ultracite`, `lefthook`, `husky`, `gitleaks`, `starlight`, `fumadocs`, `tauri`, `wxt`, and `opentui` run imperative setup steps that the transactional planner cannot write or roll back. `add` refuses them; select them with `create` so every generated file lands in the baseline.

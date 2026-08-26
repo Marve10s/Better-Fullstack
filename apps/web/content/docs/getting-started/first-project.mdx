@@ -25,31 +25,20 @@ npm create better-fullstack@latest my-app -- --dry-run
 
 Do this before trying a new ecosystem, deployment target, or multi-ecosystem stack.
 
-## 3. Scaffold from flags
+## 3. Scaffold from a template
 
-Explicit flags make the scaffold repeatable. This example creates a Next.js self-backend project and skips install and Git so you can review files first:
+A complete template with `--yes` makes the scaffold repeatable. This example creates the Next.js, tRPC, Prisma, PostgreSQL, and Better Auth T3 stack, then skips install and Git so you can review files first:
 
 ```npm
 npm create better-fullstack@latest my-app -- \
-  --ecosystem typescript \
-  --frontend next \
-  --backend self \
-  --runtime none \
-  --database postgres \
-  --orm drizzle \
-  --auth better-auth \
-  --api trpc \
-  --db-setup none \
-  --css-framework tailwind \
-  --ui-library shadcn-ui \
-  --ai-docs none \
-  --examples none \
+  --template t3 \
+  --yes \
   --no-install \
   --no-git
 ```
 
 <Callout kind="info" title="Prompt behavior">
-Explicit flags skip only the categories they cover. `--yes` accepts defaults and conflicts with core stack flags such as `--frontend`, `--backend`, and `--database`. Pass `none` for optional categories you want disabled.
+`--yes` accepts every remaining template value without prompting. It conflicts with core stack flags such as `--frontend`, `--backend`, and `--database`. For a custom prompt-free stack, use a complete `bts.jsonc` with `--config`.
 </Callout>
 
 [CLI Create](/docs/cli/create/) lists every flag, the `--template` presets, and `--shape` shortcuts for frontend-only, backend-only, and mobile projects.
@@ -57,6 +46,10 @@ Explicit flags skip only the categories they cover. `--yes` accepts defaults and
 ## 4. Install dependencies
 
 If you used `--no-install`, install inside the project with your package manager:
+
+```bash
+cd my-app
+```
 
 ```npm
 npm install

@@ -20,7 +20,7 @@ Five choices shape a stack: frontend, backend, database with ORM, auth provider,
 
 Four constraints come from the frontend:
 
-- tRPC only works with React-based frontends. Use `--api orpc` for Svelte, Solid, Vue, and Qwik.
+- tRPC only works with React-based frontends. Use `--api orpc` for Nuxt, Svelte, Solid, and SolidStart.
 - `--backend self` pairs with fullstack frontends (`next`, `vinext`, `tanstack-start`, `astro`, `nuxt`, `svelte`, `solid-start`) and requires `--runtime none`.
 - Qwik ships its own server, so it takes `--backend none --api none`. Angular takes `--api none`.
 - Astro needs `--astro-integration <react|vue|svelte|solid|none>`. Workers support depends on the pair you choose.
@@ -78,7 +78,7 @@ MongoDB pairs with `prisma` or `mongoose`. `--db-setup` layers hosted configurat
 
 Three pairing rules matter:
 
-- Better Auth needs an adapter. It works with `drizzle`, `prisma`, `kysely`, and `mikroorm`; `typeorm` and `sequelize` have none, so pair them with `--auth none`.
+- Better Auth needs an adapter. It works with `drizzle`, `prisma`, `kysely`, and `mongoose`; `mikroorm`, `typeorm`, and `sequelize` have none, so pair them with `--auth none`.
 - Some payments require it too. Polar needs Better Auth plus a web frontend.
 - Hosted providers read keys from environment variables, and the scaffold writes every required key into `.env.example`.
 
@@ -93,7 +93,7 @@ Deployment is a stack section, not a separate step. `--web-deploy` and `--server
 | Flag              | Values                                                                         |
 | ----------------- | ------------------------------------------------------------------------------ |
 | `--web-deploy`    | `vercel` `cloudflare` `fly` `railway` `render` `netlify` `docker` `sst` `none` |
-| `--server-deploy` | `vercel` `cloudflare` `fly` `railway` `render` `docker` `sst` `none`           |
+| `--server-deploy` | `vercel` `cloudflare` `fly` `railway` `render` `netlify` `docker` `sst` `none` |
 
 | Target     | Best fit                                                                     |
 | ---------- | ----------------------------------------------------------------------------- |
@@ -103,11 +103,11 @@ Deployment is a stack section, not a separate step. `--web-deploy` and `--server
 | Fly.io     | Docker-backed hosting with regional placement and long-running services.      |
 | Railway    | Git-connected builds with managed services.                                   |
 | Render     | Blueprint-driven deploys via `render.yaml`; web and server deploy separately. |
-| Netlify    | Static and SSR web frontends. Web-only target.                                |
+| Netlify    | Static and SSR web frontends, or Hono APIs running on Node.js Functions.       |
 | SST        | AWS infrastructure as code for TypeScript workflows.                          |
 
 Fullstack frontends usually deploy through the web app rather than a separate server target, and Convex or Encore manage their own platform path. Before deploying, set production environment variables, run migrations against the production database, and keep test credentials out of source control.
 
 To change a target on an existing project, run `add --dry-run --web-deploy <target>` or the `--server-deploy` equivalent and review the plan first. See [Add and Remove Capabilities](/docs/cli/add/).
 
-Every accepted value lives in the generated tables on [CLI Create](/docs/cli/create/#typescript-flags).
+Every accepted value lives in the generated tables on [CLI Create](/docs/cli/create/#typescript-stack).
