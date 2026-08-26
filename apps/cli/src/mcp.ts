@@ -2910,7 +2910,7 @@ export function createMcpServer(): McpServer {
     "bfs_prune_project_recovery_points",
     {
       description:
-        "Previews retention candidates by default. With apply true, deletes only terminal, valid recovery points outside the age and newest-count safeguards. Pending and invalid points are retained.",
+        "Previews retention candidates and returns a review token. With apply true, pass that unchanged token to delete only the reviewed terminal, valid recovery points outside the age and newest-count safeguards. Pending and invalid points are retained.",
       inputSchema: mcpInputSchema({
         projectDir: z.string().describe("Path to the existing Better Fullstack project"),
         olderThanDays: z
@@ -2931,7 +2931,11 @@ export function createMcpServer(): McpServer {
           .boolean()
           .optional()
           .default(false)
-          .describe("Delete the previewed candidates; false returns a dry-run result"),
+          .describe("Delete the previewed candidates with reviewToken; false returns a dry-run result"),
+        reviewToken: z
+          .string()
+          .optional()
+          .describe("Exact token returned by the latest prune preview; required when apply is true"),
       }),
       outputSchema: recoveryManagementOutputSchema,
       annotations: {
@@ -2942,12 +2946,19 @@ export function createMcpServer(): McpServer {
         openWorldHint: false,
       },
     },
-    async (input: { projectDir: string; olderThanDays: number; keep: number; apply: boolean }) => {
+    async (input: {
+      projectDir: string;
+      olderThanDays: number;
+      keep: number;
+      apply: boolean;
+      reviewToken?: string;
+    }) => {
       const payload = await pruneMcpProjectRecoveryPoints(
         sanitizePath(input.projectDir),
         input.olderThanDays,
         input.keep,
         input.apply,
+        input.reviewToken,
       );
       return {
         content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],

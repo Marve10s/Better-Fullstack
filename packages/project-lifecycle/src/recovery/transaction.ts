@@ -1,11 +1,13 @@
 import fs from "fs-extra";
 import { randomUUID } from "node:crypto";
+import type { Dirent } from "node:fs";
 import { open } from "node:fs/promises";
 import path from "node:path";
 
 import type { LifecycleOperation } from "@/contracts/lifecycle";
 
 import { hashContent } from "@/crypto/hash";
+import { createReviewToken } from "@/review/token";
 
 export const RECOVERY_ROOT = ".bts/recovery";
 const RECOVERY_METADATA_FILE = "transaction.json";
@@ -81,6 +83,7 @@ export type PruneRecoveryPointsOptions = {
   olderThanDays: number;
   keep: number;
   apply: boolean;
+  reviewToken?: string;
   now?: Date;
 };
 
@@ -91,6 +94,7 @@ export type PruneRecoveryPointsResult = {
   pruned: string[];
   retained: string[];
   invalid: string[];
+  reviewToken?: string;
 };
 
 type ActiveTransactionLock = {
@@ -1628,7 +1632,14 @@ export async function listProjectRecoveryPoints(
 ): Promise<RecoveryPointSummary[]> {
   const projectDir = await fs.realpath(path.resolve(projectDirInput));
   const root = path.join(projectDir, RECOVERY_ROOT);
-  const entries = await fs.readdir(root, { withFileTypes: true }).catch(() => []);
+  let entries: Dirent[];
+  try {
+    entries = await fs.readdir(root, { withFileTypes: true });
+  } catch (error) {
+    const code = error instanceof Error && "code" in error ? error.code : undefined;
+    if (code === "ENOENT") return [];
+    throw error;
+  }
   const points: RecoveryPointSummary[] = [];
   for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
     if (
@@ -1663,6 +1674,19 @@ export async function listProjectRecoveryPoints(
   return points.sort((left, right) => (right.createdAt ?? "").localeCompare(left.createdAt ?? ""));
 }
 
+function createPruneReviewToken(
+  projectDir: string,
+  options: Pick<PruneRecoveryPointsOptions, "olderThanDays" | "keep">,
+  candidates: string[],
+): string {
+  return createReviewToken("recovery-prune", {
+    projectDir,
+    olderThanDays: options.olderThanDays,
+    keep: options.keep,
+    candidates,
+  });
+}
+
 export async function pruneProjectRecoveryPoints(
   projectDirInput: string,
   options: PruneRecoveryPointsOptions,
@@ -1672,6 +1696,11 @@ export async function pruneProjectRecoveryPoints(
   }
   if (!Number.isInteger(options.keep) || options.keep < 0) {
     throw new Error("keep must be a non-negative integer.");
+  }
+  if (options.apply && !options.reviewToken) {
+    throw new Error(
+      "A recovery prune review token is required. Re-run the prune preview first.",
+    );
   }
   const projectDir = await fs.realpath(path.resolve(projectDirInput));
   const pruneLockId = options.apply ? randomUUID() : null;
@@ -1699,6 +1728,12 @@ export async function pruneProjectRecoveryPoints(
           Date.parse(point.createdAt) <= cutoff,
       )
       .map((point) => point.id);
+    const reviewToken = createPruneReviewToken(projectDir, options, candidates);
+    if (options.apply && options.reviewToken !== reviewToken) {
+      throw new Error(
+        "The recovery prune review token is missing or stale. Re-run the prune preview first.",
+      );
+    }
     const pruned: string[] = [];
 
     if (options.apply) {
@@ -1721,6 +1756,7 @@ export async function pruneProjectRecoveryPoints(
         .map((point) => point.id)
         .filter((transactionId) => !pruned.includes(transactionId)),
       invalid,
+      ...(!options.apply ? { reviewToken } : {}),
     };
   } finally {
     if (pruneLock) await releaseActiveTransactionLock(projectDir, pruneLock);

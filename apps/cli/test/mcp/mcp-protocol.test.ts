@@ -414,7 +414,42 @@ describe("Better Fullstack MCP protocol support", () => {
     });
     expect(context.isError).not.toBe(true);
     expect(context.structuredContent).toEqual(await getProjectContext(projectDir));
-    expect(JSON.stringify(context.structuredContent)).not.toContain(projectDir);
+    const contextCommands = context.structuredContent?.commands ?? [];
+    const safeNextActions = context.structuredContent?.safeNextActions ?? [];
+    for (const entry of [...contextCommands, ...safeNextActions]) {
+      expect(entry.command).toContain(projectDir);
+    }
+    expect(contextCommands).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "project-check",
+          command: `create-better-fullstack check ${projectDir} --json --run-checks`,
+        }),
+      ]),
+    );
+
+    const fixtureDir = path.join(
+      process.cwd(),
+      "apps",
+      "cli",
+      "test",
+      "fixtures",
+      "registry",
+      "project",
+    );
+    const fixtureContext = await getProjectContext(fixtureDir);
+    const fixtureProjectPath = "./apps/cli/test/fixtures/registry/project";
+    for (const entry of [...fixtureContext.commands, ...fixtureContext.safeNextActions]) {
+      expect(entry.command).toContain(fixtureProjectPath);
+    }
+    expect(fixtureContext.commands).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "status",
+          command: `create-better-fullstack status ${fixtureProjectPath} --json`,
+        }),
+      ]),
+    );
   });
 
   it("plans and applies a local registry pack without running a package manager", async () => {

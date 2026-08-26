@@ -255,7 +255,7 @@ export async function planGen(input: GenCommandInput): Promise<GenResult> {
 
   let files: GenPlannedFile[];
   try {
-    const agentDocs = await planRecipeAgentContext(projectDir, existingRecords, adapterPlan);
+    const agentDocs = await planRecipeAgentContext(projectDir, existingRecords, adapterPlan, config);
     const planWithDocs = { ...adapterPlan, files: [...adapterPlan.files, ...agentDocs] };
     const record = createRecipeRecordFile(planWithDocs, config);
     files = [...planWithDocs.files, record];

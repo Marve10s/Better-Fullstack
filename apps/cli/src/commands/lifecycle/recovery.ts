@@ -17,6 +17,7 @@ export type RecoveryCommandInput = {
   olderThanDays?: number;
   keep?: number;
   apply?: boolean;
+  reviewToken?: string;
   json?: boolean;
 };
 
@@ -58,7 +59,10 @@ function renderRecoveryResult(result: RecoveryManagementResult): void {
     );
     for (const id of prune.applied ? prune.pruned : prune.candidates) log.info(pc.dim(id));
     if (!prune.applied && prune.candidates.length > 0) {
-      log.info(pc.dim("Review the candidates, then repeat with --apply."));
+      log.info(pc.dim("Review the candidates, then repeat with --apply --review-token."));
+    }
+    if (prune.reviewToken) {
+      log.info(`Review token: ${pc.cyan(prune.reviewToken)}`);
     }
     if (prune.invalid.length > 0) {
       log.warn(pc.yellow(`${prune.invalid.length} invalid entries were retained.`));
@@ -80,6 +84,7 @@ export async function recoveryCommand(
     olderThanDays: input.olderThanDays,
     keep: input.keep,
     applyPrune: input.apply,
+    reviewToken: input.reviewToken,
   });
   if (input.json) {
     console.log(JSON.stringify(result, null, 2));

@@ -169,6 +169,7 @@ export async function pruneMcpProjectRecoveryPoints(
   olderThanDays: number,
   keep: number,
   apply: boolean,
+  reviewToken?: string,
 ) {
   return manageProjectRecovery({
     action: "prune",
@@ -176,5 +177,6 @@ export async function pruneMcpProjectRecoveryPoints(
     olderThanDays,
     keep,
     applyPrune: apply,
+    reviewToken,
   });
 }

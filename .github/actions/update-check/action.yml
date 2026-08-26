@@ -28,7 +28,7 @@ inputs:
 
 outputs:
   decision:
-    description: blocked, current, changes-detected, or pull-request-created.
+    description: blocked, current, changes-detected, pull-request-ready, or pull-request-created.
     value: ${{ steps.update-check.outputs.decision }}
   has-changes:
     description: Whether the verified plan contained actionable template changes.

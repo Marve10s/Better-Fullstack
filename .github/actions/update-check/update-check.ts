@@ -31,6 +31,15 @@ const receiptPath = path.join(
   "better-fullstack-update-check-receipt.v1.json",
 );
 let receiptWritten = false;
+let outputsEmitted = false;
+let pendingOutputs:
+  | {
+      decision: ReceiptDecision;
+      hasChanges: boolean;
+      receiptSha256: string;
+      pullRequestUrl?: string;
+    }
+  | undefined;
 
 function requiredEnvironment(name: string): string {
   const value = process.env[name]?.trim();
@@ -249,6 +258,17 @@ async function emitOutputs(input: {
   await appendFile(outputPath, `${values.join("\n")}\n`, "utf-8");
 }
 
+async function emitReceiptOutputs(input: {
+  decision: ReceiptDecision;
+  hasChanges: boolean;
+  receiptSha256: string;
+  pullRequestUrl?: string;
+}): Promise<void> {
+  pendingOutputs = input;
+  await emitOutputs(input);
+  outputsEmitted = true;
+}
+
 function htmlEscape(value: string): string {
   return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 }
@@ -346,7 +366,7 @@ async function runUpdateCheck(): Promise<void> {
       error: gate.reasons.join(" "),
     });
     const digest = await writeReceipt(receipt);
-    await emitOutputs({
+    await emitReceiptOutputs({
       decision: "blocked",
       hasChanges: gate.hasChanges,
       receiptSha256: digest,
@@ -366,7 +386,7 @@ async function runUpdateCheck(): Promise<void> {
       beforeCheck: beforeCheck.payload,
     });
     const digest = await writeReceipt(receipt);
-    await emitOutputs({ decision: "current", hasChanges: false, receiptSha256: digest });
+    await emitReceiptOutputs({ decision: "current", hasChanges: false, receiptSha256: digest });
     console.log("Better Fullstack templates are current and fully verified.");
     return;
   }
@@ -383,7 +403,7 @@ async function runUpdateCheck(): Promise<void> {
       beforeCheck: beforeCheck.payload,
     });
     const digest = await writeReceipt(receipt);
-    await emitOutputs({
+    await emitReceiptOutputs({
       decision: "changes-detected",
       hasChanges: true,
       receiptSha256: digest,
@@ -488,6 +508,11 @@ async function runUpdateCheck(): Promise<void> {
     baseBranch,
   });
   let digest = await writeReceipt(readyReceipt);
+  pendingOutputs = {
+    decision: "pull-request-ready",
+    hasChanges: true,
+    receiptSha256: digest,
+  };
   const bodyDir = await mkdtemp(path.join(process.env.RUNNER_TEMP || tmpdir(), "bfs-update-pr-"));
   const bodyPath = path.join(bodyDir, "body.md");
   await writeFile(bodyPath, pullRequestBody(readyReceipt, digest), "utf-8");
@@ -530,16 +555,17 @@ async function runUpdateCheck(): Promise<void> {
     pullRequestUrl,
   });
   digest = await writeReceipt(finalReceipt);
-  await writeFile(bodyPath, pullRequestBody(finalReceipt, digest), "utf-8");
-  await runSuccessful("gh", ["pr", "edit", pullRequestUrl, "--body-file", bodyPath], workspace, {
-    GH_TOKEN: githubToken,
-  });
-  await emitOutputs({
+  pendingOutputs = {
     decision: "pull-request-created",
     hasChanges: true,
     receiptSha256: digest,
     pullRequestUrl,
+  };
+  await writeFile(bodyPath, pullRequestBody(finalReceipt, digest), "utf-8");
+  await runSuccessful("gh", ["pr", "edit", pullRequestUrl, "--body-file", bodyPath], workspace, {
+    GH_TOKEN: githubToken,
   });
+  await emitReceiptOutputs(pendingOutputs);
   console.log(`Opened ${pullRequestUrl} from ${updateBranch}.`);
 }
 
@@ -557,8 +583,9 @@ if (import.meta.main) {
         error: message,
       };
       const digest = await writeReceipt(fallback);
-      await emitOutputs({ decision: "blocked", hasChanges: false, receiptSha256: digest });
+      pendingOutputs = { decision: "blocked", hasChanges: false, receiptSha256: digest };
     }
+    if (!outputsEmitted && pendingOutputs) await emitReceiptOutputs(pendingOutputs);
     console.error(message);
     process.exit(1);
   });

@@ -13,7 +13,7 @@ import {
   verifyProjectRecoveryPoint,
   writeProjectTransactionFile,
 } from "@better-fullstack/project-lifecycle/transaction";
-import { afterEach, describe, expect, it } from "bun:test";
+import { afterEach, describe, expect, it, spyOn } from "bun:test";
 import fs from "fs-extra";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -708,6 +708,20 @@ describe("project lifecycle transactions", () => {
     });
   });
 
+  it("treats a missing recovery directory as empty and rethrows other listing errors", async () => {
+    const projectDir = await makeProject();
+    await expect(listProjectRecoveryPoints(projectDir)).resolves.toEqual([]);
+
+    await fs.ensureDir(path.join(projectDir, RECOVERY_ROOT));
+    const permissionError = Object.assign(new Error("Permission denied"), { code: "EACCES" });
+    const readdir = spyOn(fs, "readdir").mockRejectedValue(permissionError);
+    try {
+      await expect(listProjectRecoveryPoints(projectDir)).rejects.toBe(permissionError);
+    } finally {
+      readdir.mockRestore();
+    }
+  });
+
   it("retains pending and invalid recovery points and serializes destructive pruning", async () => {
     const projectDir = await makeProject();
     await fs.writeFile(path.join(projectDir, "pending.txt"), "before\n");
@@ -737,16 +751,23 @@ describe("project lifecycle transactions", () => {
         olderThanDays: 0,
         keep: 0,
         apply: true,
+        reviewToken: preview.reviewToken,
       }),
     ).rejects.toThrow(
       `Another lifecycle transaction is active or awaiting recovery: ${pending.id}`,
     );
     await rollbackProjectTransaction(pending);
 
+    const applyPreview = await pruneProjectRecoveryPoints(projectDir, {
+      olderThanDays: 0,
+      keep: 1,
+      apply: false,
+    });
     const result = await pruneProjectRecoveryPoints(projectDir, {
       olderThanDays: 0,
       keep: 1,
       apply: true,
+      reviewToken: applyPreview.reviewToken,
     });
     expect(result.pruned).toEqual([applied.id]);
     expect(result.retained).toEqual(expect.arrayContaining([pending.id, "not-a-transaction"]));
@@ -756,6 +777,46 @@ describe("project lifecycle transactions", () => {
       recoverable: false,
       metadata: { status: "rolled-back" },
     });
+  });
+
+  it("rejects stale prune candidates before deleting any recovery point", async () => {
+    const projectDir = await makeProject();
+    const first = await beginProjectTransaction(projectDir, "template-update", []);
+    await commitProjectTransaction(first);
+    const now = new Date("2030-01-01T00:00:00.000Z");
+
+    await expect(
+      pruneProjectRecoveryPoints(projectDir, {
+        olderThanDays: 0,
+        keep: 0,
+        apply: true,
+        now,
+      }),
+    ).rejects.toThrow("recovery prune review token is required");
+
+    const preview = await pruneProjectRecoveryPoints(projectDir, {
+      olderThanDays: 0,
+      keep: 0,
+      apply: false,
+      now,
+    });
+    expect(preview.candidates).toEqual([first.id]);
+    expect(preview.reviewToken).toMatch(/^[a-f0-9]{64}$/);
+
+    const second = await beginProjectTransaction(projectDir, "stack-update", []);
+    await commitProjectTransaction(second);
+
+    await expect(
+      pruneProjectRecoveryPoints(projectDir, {
+        olderThanDays: 0,
+        keep: 0,
+        apply: true,
+        reviewToken: preview.reviewToken,
+        now,
+      }),
+    ).rejects.toThrow("recovery prune review token is missing or stale");
+    expect(await fs.pathExists(first.recoveryDir)).toBe(true);
+    expect(await fs.pathExists(second.recoveryDir)).toBe(true);
   });
 
   it("recovers the exact preimage when a repeated staged write fails", async () => {

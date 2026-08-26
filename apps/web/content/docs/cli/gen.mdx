@@ -62,7 +62,10 @@ transaction ID when the complete recipe needs inspection or restoration.
 
 `context` returns a bounded schema-versioned document with current roles, capabilities, evidence,
 owning Stack Parts, installed-version references, compatibility results, recipes, commands, and
-safe next actions. It omits source code and absolute project paths.
+safe next actions. It omits source code.
+
+Each command targets the inspected project. Context uses a relative path when the project is inside
+the caller's working directory and an absolute path otherwise.
 
 ```bash
 bunx create-better-fullstack@latest context ./my-app --json

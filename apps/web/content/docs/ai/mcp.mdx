@@ -112,7 +112,7 @@ Call the live guidance and schema tools instead of trusting prose; the schema is
 | `bfs_list_project_recovery_points`   | Lists recovery IDs, lifecycle status, integrity, and current restore safety.         |
 | `bfs_get_project_recovery_point`     | Shows and validates one recovery point without writing.                              |
 | `bfs_verify_project_recovery_point`  | Rechecks one recovery point against its backups and current project state.           |
-| `bfs_prune_project_recovery_points`  | Previews retention by default; explicit apply deletes only eligible terminal points. |
+| `bfs_prune_project_recovery_points`  | Previews retention and returns a token; apply deletes only the reviewed eligible terminal points. |
 | `bfs_recover_project_transaction`    | Restores every bound path of a transaction exactly once.                             |
 | `bfs_plan_part_removal`              | Plans exact non-primary capability removal and returns a review token.               |
 | `bfs_apply_part_removal`             | Applies a reviewed removal in a recoverable transaction.                             |
@@ -153,14 +153,15 @@ reviewed removal or replacement.
 
 **Refresh templates.** Read status, run the executable check when truthful verification is wanted, plan the update, review the hash-bound categories, then apply the exact unchanged token. Structured merge content is exact up to 32 KiB per file; oversized reviews return metadata and no token. Keep the returned recovery ID until checks pass, and recover with the transaction ID if anything goes wrong.
 
-**Manage recovery points.** List first when the transaction ID is unknown. Show or verify the selected point before restore. Prune with `apply: false` first; pending and invalid points are always retained, and `keep` protects the newest valid points.
+**Manage recovery points.** List first when the transaction ID is unknown. Show or verify the selected point before restore. Prune with `apply: false` first, then pass its unchanged `reviewToken` with `apply: true`. Pending and invalid points are always retained, and `keep` protects the newest valid points.
 
 **Generate a persistent recipe.** Call `bfs_plan_gen`, review every exact file and shared-region
 change, then call `bfs_apply_gen` with its unchanged token. Run the returned migration and
 integration commands. Use `bfs_check_recipes` for ownership integrity and
 `bfs_get_recipe_history` to find the recovery transaction. `bfs_get_project_context` returns the
-same bounded context document as CLI JSON and never includes source code or the absolute project
-path.
+same bounded context document as CLI JSON and does not include source code. Its commands use a
+relative project path when possible, or an absolute path when that is required to target the
+inspected project.
 
 ## Rules for agents
 

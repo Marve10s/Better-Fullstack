@@ -320,7 +320,9 @@ console.log(JSON.stringify(payload));
       ]);
       expect(exitCode, stderr).toBe(0);
       expect(stdout).toContain("templates are current and fully verified");
-      expect(await readFile(outputPath, "utf-8")).toContain("decision=current");
+      const outputs = await readFile(outputPath, "utf-8");
+      expect(outputs).toContain("decision=current");
+      expect(outputs.match(/^decision=/gm)).toHaveLength(1);
       const receipt = JSON.parse(
         await readFile(path.join(root, "better-fullstack-update-check-receipt.v1.json"), "utf-8"),
       ) as JsonRecord;
@@ -334,6 +336,130 @@ console.log(JSON.stringify(payload));
           afterApply: null,
         },
       });
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  test("emits the provisional receipt outputs when pull request creation fails", async () => {
+    const root = await mkdtemp(path.join(tmpdir(), "bfs-update-action-pr-failure-"));
+    const repository = path.join(root, "repository");
+    const origin = path.join(root, "origin.git");
+    const bin = path.join(root, "bin");
+    await Promise.all([mkdir(repository), mkdir(bin)]);
+    try {
+      await writeFile(path.join(repository, "bts.jsonc"), "{}\n");
+      await run("git", ["init", "--bare", origin], root);
+      await run("git", ["init", "-b", "main"], repository);
+      await run("git", ["config", "user.name", "Update action test"], repository);
+      await run("git", ["config", "user.email", "update-action@example.com"], repository);
+      await run("git", ["add", "bts.jsonc"], repository);
+      await run("git", ["commit", "-m", "fixture"], repository);
+      await run("git", ["remote", "add", "origin", origin], repository);
+      await run("git", ["push", "-u", "origin", "main"], repository);
+
+      const fakeBunx = path.join(bin, "bunx");
+      await writeFile(
+        fakeBunx,
+        `#!/usr/bin/env bun
+import { mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
+
+const command = process.argv[4];
+const projectDirectory = process.argv[5];
+const applying = process.argv.includes("--apply");
+const hasAppliedUpdate = await Bun.file(path.join(projectDirectory, "src/generated.ts")).exists();
+const plan = {
+  ok: true,
+  guarantee: "verified-manifest-v2-recoverable",
+  reviewToken: "${"a".repeat(64)}",
+  actionable: hasAppliedUpdate ? [] : ["src/generated.ts"],
+  actionableHashes: hasAppliedUpdate ? {} : { "src/generated.ts": "${"b".repeat(64)}" },
+  conflicts: [],
+  manual: [],
+  removed: []
+};
+if (applying) {
+  await mkdir(path.join(projectDirectory, "src"), { recursive: true });
+  await writeFile(path.join(projectDirectory, "src/generated.ts"), "export {};\\n");
+  await writeFile(path.join(projectDirectory, "bts.lock.json"), "{}\\n");
+}
+const payload = command === "status"
+  ? {
+      success: true,
+      ok: true,
+      updateSupport: { eligible: true, requiresManualReview: false },
+      upgrade: { applyAllowed: true }
+    }
+  : command === "check"
+    ? {
+        success: true,
+        ok: true,
+        verification: {
+          complete: true,
+          expectedTargets: 1,
+          executedTargets: 1,
+          failedTargets: 0
+        }
+      }
+    : plan;
+console.log(JSON.stringify(payload));
+`,
+      );
+      await chmod(fakeBunx, 0o755);
+      const fakeGh = path.join(bin, "gh");
+      await writeFile(
+        fakeGh,
+        `#!/usr/bin/env bun
+if (process.argv[2] === "auth") process.exit(0);
+console.error("pull request creation failed");
+process.exit(1);
+`,
+      );
+      await chmod(fakeGh, 0o755);
+
+      const outputPath = path.join(root, "github-output");
+      const actionPath = path.resolve(
+        import.meta.dir,
+        "../../.github/actions/update-check/update-check.ts",
+      );
+      const child = Bun.spawn([process.execPath, actionPath], {
+        cwd: repository,
+        env: {
+          ...process.env,
+          PATH: `${bin}:${process.env.PATH ?? ""}`,
+          GITHUB_WORKSPACE: repository,
+          GITHUB_OUTPUT: outputPath,
+          GITHUB_REPOSITORY: "example/project",
+          GITHUB_SERVER_URL: "https://github.example.com",
+          GITHUB_RUN_ID: "123",
+          GITHUB_RUN_ATTEMPT: "1",
+          GITHUB_REF_NAME: "main",
+          RUNNER_TEMP: root,
+          INPUT_PROJECT_DIRECTORY: ".",
+          INPUT_CLI_VERSION: "2.6.1",
+          INPUT_OPEN_PULL_REQUEST: "true",
+          INPUT_FAIL_ON_CHANGES: "true",
+          INPUT_GITHUB_TOKEN: "test-token",
+        },
+        stdout: "pipe",
+        stderr: "pipe",
+      });
+      const [exitCode, _stdout, stderr] = await Promise.all([
+        child.exited,
+        new Response(child.stdout).text(),
+        new Response(child.stderr).text(),
+      ]);
+      expect(exitCode).toBe(1);
+      expect(stderr).toContain("pull request creation failed");
+      const outputs = await readFile(outputPath, "utf-8");
+      expect(outputs).toContain("decision=pull-request-ready");
+      expect(outputs).toContain("receipt-path=");
+      expect(outputs.match(/^decision=/gm)).toHaveLength(1);
+      const receipt = JSON.parse(
+        await readFile(path.join(root, "better-fullstack-update-check-receipt.v1.json"), "utf-8"),
+      ) as JsonRecord;
+      expect(receipt.decision).toBe("pull-request-ready");
     } finally {
       await rm(root, { recursive: true, force: true });
     }

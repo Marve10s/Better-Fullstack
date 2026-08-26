@@ -672,6 +672,7 @@ const recoveryPruneOutputSchema = z.object({
   pruned: z.array(z.string()),
   retained: z.array(z.string()),
   invalid: z.array(z.string()),
+  reviewToken: z.string().optional(),
 });
 
 export const recoveryManagementOutputSchema = z.object({

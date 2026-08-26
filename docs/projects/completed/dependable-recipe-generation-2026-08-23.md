@@ -20,7 +20,8 @@ This record covers Phase 5 of the canonical product roadmap.
   installed-version authority, compatibility rules, and lifecycle-safe commands. Recipe additions
   update one hash-validated region.
 - CLI `context --json` and MCP `bfs_get_project_context` return the same bounded versioned document
-  without source code or absolute project paths.
+  without source code. Commands use a relative project path when possible, or an absolute path
+  when that is required to target the inspected project.
 
 ## Verification
 

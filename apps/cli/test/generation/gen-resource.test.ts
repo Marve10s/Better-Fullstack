@@ -270,6 +270,35 @@ describe("gen resource", () => {
     expect(result.message).toContain("Multiple TypeScript API owners");
   });
 
+  it("formats custom recipe owners consistently in agent context and records", async () => {
+    const dir = await stageFixture("trpc");
+    const configPath = join(dir, "bts.jsonc");
+    const config = JSONC.parse(await fs.readFile(configPath, "utf-8")) as {
+      stackParts: Array<Record<string, unknown>>;
+    };
+    const previousOwnerId = "backend:typescript:hono";
+    config.stackParts = config.stackParts.map((part) => ({
+      ...part,
+      ...(part.id === previousOwnerId ? { id: "admin" } : {}),
+      ...(part.ownerPartId === previousOwnerId ? { ownerPartId: "admin" } : {}),
+    }));
+    await fs.writeJson(configPath, config, { spaces: 2 });
+    await fs.writeFile(join(dir, "AGENTS.md"), "# Project instructions\n");
+
+    const result = await planGen({ kind: "resource", name: "post", dir });
+    const agentContext = result.files?.find((file) => file.path === "AGENTS.md")?.content;
+    const recordContent = result.files?.find((file) =>
+      file.path.startsWith(".better-fullstack/recipes/"),
+    )?.content;
+
+    expect(agentContext).toContain("Owning Stack Part: `backend:typescript:hono:admin`");
+    expect(recordContent).toBeDefined();
+    expect(JSON.parse(recordContent ?? "{}")).toMatchObject({
+      ownerPartId: "admin",
+      ownerPartSpec: "backend:typescript:hono:admin",
+    });
+  });
+
   it("returns the complete versioned plan in JSON mode", async () => {
     const dir = await stageFixture("trpc");
     const originalLog = console.log;

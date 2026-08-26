@@ -98,6 +98,6 @@ The normal output runs every generated target check in deterministic order. Add 
 
 Before any write to an established project, commit or stash your work, run the matching dry run, and read the blockers. If a change replaces the database, ORM, auth, API, backend, or runtime, plan application-data and schema migrations separately. Better Fullstack never migrates application data on its own.
 
-`recovery prune` is also a dry run by default. It retains pending and invalid points and keeps the five newest valid points unless you change the retention options. Add `--apply` only after reviewing the candidate IDs.
+`recovery prune` is also a dry run by default. It retains pending and invalid points and keeps the five newest valid points unless you change the retention options. The preview returns a review token bound to the project, options, and candidate IDs. Add `--apply --review-token <token>` only after reviewing those candidates.
 
 Continue with [Add and Remove Capabilities](/docs/cli/add/), [Status, Check, Update](/docs/cli/update/), or [Choosing a Stack](/docs/choosing-a-stack/) for guidance on what to select next.

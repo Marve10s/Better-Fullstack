@@ -1,3 +1,8 @@
+import {
+  formatStackPartSpec,
+  legacyProjectConfigToStackParts,
+  type BetterTStackConfig,
+} from "@better-fullstack/types";
 import fs from "fs-extra";
 import path from "node:path";
 
@@ -26,22 +31,28 @@ function summarizeRecord(record: RecipeRecord): RecipeSummary {
   };
 }
 
-function summarizePlan(plan: RecipeAdapterPlan): RecipeSummary {
+function summarizePlan(plan: RecipeAdapterPlan, config: BetterTStackConfig): RecipeSummary {
+  const parts = config.stackParts ?? legacyProjectConfigToStackParts(config);
+  const owner = plan.ownerPartId ? parts.find((part) => part.id === plan.ownerPartId) : undefined;
   return {
     recipeId: plan.recipeId,
     name: plan.name,
     adapterId: plan.adapterId,
     maintenanceOwner: plan.maintenanceOwner,
     persistent: plan.persistent,
-    ownerPartSpec: plan.ownerPartId,
+    ownerPartSpec: owner ? formatStackPartSpec(owner, parts) : null,
     paths: [...new Set(plan.ownedArtifacts.map((artifact) => artifact.path))].sort(),
   };
 }
 
-function recipeContextBody(records: readonly RecipeRecord[], plan: RecipeAdapterPlan): string {
+function recipeContextBody(
+  records: readonly RecipeRecord[],
+  plan: RecipeAdapterPlan,
+  config: BetterTStackConfig,
+): string {
   const summaries = [
     ...records.filter((record) => record.recipeId !== plan.recipeId).map(summarizeRecord),
-    summarizePlan(plan),
+    summarizePlan(plan, config),
   ].sort((left, right) => left.recipeId.localeCompare(right.recipeId));
   const recipes = summaries.flatMap((recipe) => [
     `### ${recipe.recipeId}`,
@@ -72,8 +83,9 @@ export async function planRecipeAgentContext(
   projectDir: string,
   records: readonly RecipeRecord[],
   plan: RecipeAdapterPlan,
+  config: BetterTStackConfig,
 ): Promise<RecipePlannedFile[]> {
-  const body = recipeContextBody(records, plan);
+  const body = recipeContextBody(records, plan, config);
   const files: RecipePlannedFile[] = [];
   for (const relativePath of AGENT_DOCS) {
     const target = path.join(projectDir, relativePath);

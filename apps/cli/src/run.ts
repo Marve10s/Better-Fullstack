@@ -853,7 +853,11 @@ export const router = os.router({
             .boolean()
             .optional()
             .default(false)
-            .describe("For prune: delete the previewed candidates; omitted means preview only"),
+            .describe("For prune: delete the previewed candidates with --review-token; omitted means preview only"),
+          reviewToken: z
+            .string()
+            .optional()
+            .describe("For prune apply: exact token returned by the latest prune preview"),
           json: z.boolean().optional().default(false).describe("Output the result as JSON"),
         }),
       ]),
@@ -1386,6 +1390,7 @@ export async function recovery(
     olderThanDays?: number;
     keep?: number;
     apply?: boolean;
+    reviewToken?: string;
     json?: boolean;
   },
 ) {
@@ -1397,6 +1402,7 @@ export async function recovery(
       olderThanDays: options?.olderThanDays ?? 30,
       keep: options?.keep ?? 5,
       apply: options?.apply ?? false,
+      reviewToken: options?.reviewToken,
       json: options?.json ?? false,
     },
   ]);

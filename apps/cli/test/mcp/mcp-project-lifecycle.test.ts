@@ -165,7 +165,7 @@ describe("MCP project lifecycle parity", () => {
       expect(prunePreview).toMatchObject({
         success: true,
         action: "prune",
-        prune: { applied: false, candidates: [] },
+        prune: { applied: false, candidates: [], reviewToken: expect.any(String) },
       });
       const recoveredRemoval = await recoverMcpProjectTransaction(projectDir, removal.recoveryId);
       assertOutputSchema(recoveryOutputSchema, recoveredRemoval);

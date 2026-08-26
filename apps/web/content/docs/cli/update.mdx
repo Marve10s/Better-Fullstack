@@ -143,11 +143,11 @@ npx create-better-fullstack@latest recovery apply <transaction-id> --project-dir
 
 List, show, and verify do not write. Verification checks metadata structure, backup hashes, file modes, and current file hashes. Apply refuses to overwrite files edited after the recorded transaction.
 
-Pruning previews candidates unless `--apply` is present:
+Pruning previews candidates and returns a review token. Apply requires that exact token:
 
 ```bash
 npx create-better-fullstack@latest recovery prune --project-dir . --older-than-days 30 --keep 5
-npx create-better-fullstack@latest recovery prune --project-dir . --older-than-days 30 --keep 5 --apply
+npx create-better-fullstack@latest recovery prune --project-dir . --older-than-days 30 --keep 5 --apply --review-token <token>
 ```
 
 Pruning never selects pending or invalid entries. The newest valid entries protected by `--keep` also remain. Invalid entries stay available for manual diagnosis instead of being deleted automatically.

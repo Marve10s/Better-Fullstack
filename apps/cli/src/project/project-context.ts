@@ -55,6 +55,18 @@ function safeTargetPath(value: string | undefined): string | null {
   return normalized;
 }
 
+function shellPath(value: string): string {
+  return /^[A-Za-z0-9_./-]+$/.test(value) ? value : `'${value.replaceAll("'", "'\\''")}'`;
+}
+
+function commandProjectPath(projectDir: string): string {
+  const relative = path.relative(process.cwd(), projectDir);
+  if (!relative) return ".";
+  const safeRelative = safeTargetPath(relative);
+  if (safeRelative) return shellPath(`./${safeRelative}`);
+  return shellPath(projectDir);
+}
+
 async function installedVersionReferences(
   projectDir: string,
   targetPaths: readonly (string | undefined)[],
@@ -127,24 +139,45 @@ export async function getProjectContext(projectDirInput: string) {
   const versions = getCurrentLifecycleVersions();
   const updateSupport = await getProjectUpdateSupport(projectDir, config.version, versions.cli);
   const recipeRecords = await readRecipeRecords(projectDir);
+  const projectPath = commandProjectPath(projectDir);
   const roles = stackParts.filter(
     (part) => !part.ownerPartId && part.source !== "provided" && PRIMARY_ROLES.has(part.role),
   );
   const capabilities = stackParts.filter((part) => !roles.includes(part));
   const commands = [
-    { id: "context", command: "create-better-fullstack context --json", mutates: false },
-    { id: "status", command: "create-better-fullstack status --json", mutates: false },
-    { id: "doctor", command: "create-better-fullstack doctor --json", mutates: false },
-    { id: "project-check", command: "create-better-fullstack check --json", mutates: false },
     {
-      id: "update-check",
-      command: "create-better-fullstack update --check --json",
+      id: "context",
+      command: `create-better-fullstack context ${projectPath} --json`,
       mutates: false,
     },
-    { id: "recipe-check", command: "create-better-fullstack recipes check --json", mutates: false },
+    {
+      id: "status",
+      command: `create-better-fullstack status ${projectPath} --json`,
+      mutates: false,
+    },
+    {
+      id: "doctor",
+      command: `create-better-fullstack doctor ${projectPath} --json`,
+      mutates: false,
+    },
+    {
+      id: "project-check",
+      command: `create-better-fullstack check ${projectPath} --json --run-checks`,
+      mutates: false,
+    },
+    {
+      id: "update-check",
+      command: `create-better-fullstack update ${projectPath} --check --json`,
+      mutates: false,
+    },
+    {
+      id: "recipe-check",
+      command: `create-better-fullstack recipes check --dir ${projectPath} --json`,
+      mutates: false,
+    },
     {
       id: "recipe-history",
-      command: "create-better-fullstack recipes history --json",
+      command: `create-better-fullstack recipes history --dir ${projectPath} --json`,
       mutates: false,
     },
   ];
@@ -153,7 +186,7 @@ export async function getProjectContext(projectDirInput: string) {
       ? [
           {
             id: "review-compatibility",
-            command: "create-better-fullstack doctor --json",
+            command: `create-better-fullstack doctor ${projectPath} --json`,
             reason: "Review Stack Graph compatibility issues before planning a mutation.",
           },
         ]
@@ -162,19 +195,19 @@ export async function getProjectContext(projectDirInput: string) {
       ? [
           {
             id: "check-recipes",
-            command: "create-better-fullstack recipes check --json",
+            command: `create-better-fullstack recipes check --dir ${projectPath} --json`,
             reason: "Verify recipe-owned files and managed entries before editing them.",
           },
         ]
       : []),
     {
       id: "check-project",
-      command: "create-better-fullstack check --json",
+      command: `create-better-fullstack check ${projectPath} --json --run-checks`,
       reason: "Run the owning target checks without changing project files.",
     },
     {
       id: "review-update",
-      command: "create-better-fullstack update --check --json",
+      command: `create-better-fullstack update ${projectPath} --check --json`,
       reason: updateSupport.reason,
     },
   ];

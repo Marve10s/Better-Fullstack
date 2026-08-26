@@ -22,6 +22,7 @@ export type RecoveryManagementInput = {
   olderThanDays?: number;
   keep?: number;
   applyPrune?: boolean;
+  reviewToken?: string;
 };
 
 export type RecoveryManagementResult = {
@@ -82,6 +83,7 @@ export async function manageProjectRecovery(
           olderThanDays: input.olderThanDays ?? 30,
           keep: input.keep ?? 5,
           apply: input.applyPrune === true,
+          reviewToken: input.reviewToken,
         }),
       };
     }
