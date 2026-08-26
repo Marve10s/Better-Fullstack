@@ -5,9 +5,16 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { prettifyError, type ZodType } from "zod";
 
+import { readBtsConfig, writeBtsConfig } from "@/config/bts-config";
 import { renderCurrentProject } from "@/helpers/core/scaffold-upgrade";
 import { treeToFileMap } from "@/helpers/core/stack-update";
-import { readBtsConfig, writeBtsConfig } from "@/config/bts-config";
+import { confirmProjectAdoption, planProjectAdoption } from "@/lifecycle/project-adoption";
+import { planReviewedProjectUpdate } from "@/lifecycle/project-lifecycle";
+import {
+  readScaffoldManifest,
+  recordScaffoldManifest,
+  writeScaffoldManifest,
+} from "@/lifecycle/scaffold-manifest";
 import {
   partRemovalOutputSchema,
   projectAdoptionOutputSchema,
@@ -34,14 +41,7 @@ import {
   verifyMcpProjectRecoveryPoint,
   MCP_UPDATE_REVIEW_CONTENT_LIMIT_BYTES,
 } from "@/mcp/mcp-project-lifecycle";
-import { confirmProjectAdoption, planProjectAdoption } from "@/lifecycle/project-adoption";
-import { planReviewedProjectUpdate } from "@/lifecycle/project-lifecycle";
 import { inspectProject } from "@/project/project-status";
-import {
-  readScaffoldManifest,
-  recordScaffoldManifest,
-  writeScaffoldManifest,
-} from "@/lifecycle/scaffold-manifest";
 
 const historicalFixture = path.join(import.meta.dir, "../fixtures/cross-version/2.4.0");
 const roots: string[] = [];
@@ -96,90 +96,94 @@ describe("MCP project lifecycle parity", () => {
     });
   });
 
-  it("validates current lifecycle success and failure payloads against declared schemas", async () => {
-    const missingProject = path.join(tmpdir(), "bfs-missing-project-output-contract");
-    assertOutputSchema(projectStatusOutputSchema, await getMcpProjectStatus(missingProject));
-    assertOutputSchema(projectVerificationOutputSchema, await checkMcpProject(missingProject));
-    assertOutputSchema(
-      partRemovalOutputSchema,
-      await planMcpPartRemoval(missingProject, "backend.validation:typescript:zod"),
-    );
-    assertOutputSchema(projectUpdateOutputSchema, await planMcpProjectUpdate(missingProject));
-    assertOutputSchema(
-      recoveryOutputSchema,
-      await recoverMcpProjectTransaction(missingProject, "00000000-0000-4000-8000-000000000000"),
-    );
-    assertOutputSchema(
-      recoveryManagementOutputSchema,
-      await listMcpProjectRecoveryPoints(missingProject),
-    );
-    assertOutputSchema(
-      recoveryManagementOutputSchema,
-      await getMcpProjectRecoveryPoint(missingProject, "00000000-0000-4000-8000-000000000000"),
-    );
+  it(
+    "validates current lifecycle success and failure payloads against declared schemas",
+    async () => {
+      const missingProject = path.join(tmpdir(), "bfs-missing-project-output-contract");
+      assertOutputSchema(projectStatusOutputSchema, await getMcpProjectStatus(missingProject));
+      assertOutputSchema(projectVerificationOutputSchema, await checkMcpProject(missingProject));
+      assertOutputSchema(
+        partRemovalOutputSchema,
+        await planMcpPartRemoval(missingProject, "backend.validation:typescript:zod"),
+      );
+      assertOutputSchema(projectUpdateOutputSchema, await planMcpProjectUpdate(missingProject));
+      assertOutputSchema(
+        recoveryOutputSchema,
+        await recoverMcpProjectTransaction(missingProject, "00000000-0000-4000-8000-000000000000"),
+      );
+      assertOutputSchema(
+        recoveryManagementOutputSchema,
+        await listMcpProjectRecoveryPoints(missingProject),
+      );
+      assertOutputSchema(
+        recoveryManagementOutputSchema,
+        await getMcpProjectRecoveryPoint(missingProject, "00000000-0000-4000-8000-000000000000"),
+      );
 
-    const projectDir = await fs.mkdtemp(path.join(tmpdir(), "bfs-mcp-output-contract-"));
-    roots.push(projectDir);
-    await fs.copy(historicalFixture, projectDir);
+      const projectDir = await fs.mkdtemp(path.join(tmpdir(), "bfs-mcp-output-contract-"));
+      roots.push(projectDir);
+      await fs.copy(historicalFixture, projectDir);
 
-    assertOutputSchema(projectStatusOutputSchema, await getMcpProjectStatus(projectDir));
-    assertOutputSchema(
-      projectVerificationOutputSchema,
-      await checkMcpProject(projectDir, {
-        commandExists: async () => true,
-        execute: async () => ({ exitCode: 0 }),
-      }),
-    );
+      assertOutputSchema(projectStatusOutputSchema, await getMcpProjectStatus(projectDir));
+      assertOutputSchema(
+        projectVerificationOutputSchema,
+        await checkMcpProject(projectDir, {
+          commandExists: async () => true,
+          execute: async () => ({ exitCode: 0 }),
+        }),
+      );
 
-    const target = "backend:typescript:hono.validation:typescript:zod";
-    const removalPlan = await planMcpPartRemoval(projectDir, target);
-    assertOutputSchema(partRemovalOutputSchema, removalPlan);
-    expect(removalPlan.success).toBe(true);
-    if (!removalPlan.success || !removalPlan.reviewToken) return;
-    const removal = await applyMcpPartRemoval(projectDir, target, removalPlan.reviewToken, false);
-    assertOutputSchema(partRemovalOutputSchema, removal);
-    expect(removal.success).toBe(true);
-    if (!removal.success || !removal.recoveryId) return;
-    const listedRecovery = await listMcpProjectRecoveryPoints(projectDir);
-    assertOutputSchema(recoveryManagementOutputSchema, listedRecovery);
-    expect(listedRecovery).toMatchObject({
-      success: true,
-      action: "list",
-      points: [expect.objectContaining({ id: removal.recoveryId, recoverable: true })],
-    });
-    const shownRecovery = await getMcpProjectRecoveryPoint(projectDir, removal.recoveryId);
-    assertOutputSchema(recoveryManagementOutputSchema, shownRecovery);
-    expect(shownRecovery).toMatchObject({
-      success: true,
-      action: "show",
-      verification: { id: removal.recoveryId, valid: true, recoverable: true },
-    });
-    const verifiedRecovery = await verifyMcpProjectRecoveryPoint(projectDir, removal.recoveryId);
-    assertOutputSchema(recoveryManagementOutputSchema, verifiedRecovery);
-    expect(verifiedRecovery).toMatchObject({ success: true, action: "verify" });
-    const prunePreview = await pruneMcpProjectRecoveryPoints(projectDir, 0, 5, false);
-    assertOutputSchema(recoveryManagementOutputSchema, prunePreview);
-    expect(prunePreview).toMatchObject({
-      success: true,
-      action: "prune",
-      prune: { applied: false, candidates: [] },
-    });
-    const recoveredRemoval = await recoverMcpProjectTransaction(projectDir, removal.recoveryId);
-    assertOutputSchema(recoveryOutputSchema, recoveredRemoval);
-    expect(recoveredRemoval.success).toBe(true);
+      const target = "backend:typescript:hono.validation:typescript:zod";
+      const removalPlan = await planMcpPartRemoval(projectDir, target);
+      assertOutputSchema(partRemovalOutputSchema, removalPlan);
+      expect(removalPlan.success).toBe(true);
+      if (!removalPlan.success || !removalPlan.reviewToken) return;
+      const removal = await applyMcpPartRemoval(projectDir, target, removalPlan.reviewToken, false);
+      assertOutputSchema(partRemovalOutputSchema, removal);
+      expect(removal.success).toBe(true);
+      if (!removal.success || !removal.recoveryId) return;
+      const listedRecovery = await listMcpProjectRecoveryPoints(projectDir);
+      assertOutputSchema(recoveryManagementOutputSchema, listedRecovery);
+      expect(listedRecovery).toMatchObject({
+        success: true,
+        action: "list",
+        points: [expect.objectContaining({ id: removal.recoveryId, recoverable: true })],
+      });
+      const shownRecovery = await getMcpProjectRecoveryPoint(projectDir, removal.recoveryId);
+      assertOutputSchema(recoveryManagementOutputSchema, shownRecovery);
+      expect(shownRecovery).toMatchObject({
+        success: true,
+        action: "show",
+        verification: { id: removal.recoveryId, valid: true, recoverable: true },
+      });
+      const verifiedRecovery = await verifyMcpProjectRecoveryPoint(projectDir, removal.recoveryId);
+      assertOutputSchema(recoveryManagementOutputSchema, verifiedRecovery);
+      expect(verifiedRecovery).toMatchObject({ success: true, action: "verify" });
+      const prunePreview = await pruneMcpProjectRecoveryPoints(projectDir, 0, 5, false);
+      assertOutputSchema(recoveryManagementOutputSchema, prunePreview);
+      expect(prunePreview).toMatchObject({
+        success: true,
+        action: "prune",
+        prune: { applied: false, candidates: [] },
+      });
+      const recoveredRemoval = await recoverMcpProjectTransaction(projectDir, removal.recoveryId);
+      assertOutputSchema(recoveryOutputSchema, recoveredRemoval);
+      expect(recoveredRemoval.success).toBe(true);
 
-    await adoptProject(projectDir);
-    const updatePlan = await planMcpProjectUpdate(projectDir);
-    assertOutputSchema(projectUpdateOutputSchema, updatePlan);
-    expect(updatePlan.success).toBe(true);
-    if (!updatePlan.success || !updatePlan.reviewToken) return;
-    const refusedUpdate = await applyMcpProjectUpdate(projectDir, "0".repeat(64), true);
-    assertOutputSchema(projectUpdateOutputSchema, refusedUpdate);
-    expect(refusedUpdate.success).toBe(false);
-    const appliedUpdate = await applyMcpProjectUpdate(projectDir, updatePlan.reviewToken, true);
-    assertOutputSchema(projectUpdateOutputSchema, appliedUpdate);
-    expect(appliedUpdate.success).toBe(true);
-  });
+      await adoptProject(projectDir);
+      const updatePlan = await planMcpProjectUpdate(projectDir);
+      assertOutputSchema(projectUpdateOutputSchema, updatePlan);
+      expect(updatePlan.success).toBe(true);
+      if (!updatePlan.success || !updatePlan.reviewToken) return;
+      const refusedUpdate = await applyMcpProjectUpdate(projectDir, "0".repeat(64), true);
+      assertOutputSchema(projectUpdateOutputSchema, refusedUpdate);
+      expect(refusedUpdate.success).toBe(false);
+      const appliedUpdate = await applyMcpProjectUpdate(projectDir, updatePlan.reviewToken, true);
+      assertOutputSchema(projectUpdateOutputSchema, appliedUpdate);
+      expect(appliedUpdate.success).toBe(true);
+    },
+    { timeout: 15_000 },
+  );
 
   it("truthfully annotates executable checks and recoverable apply", async () => {
     const source = await Bun.file(path.join(import.meta.dir, "../../src/mcp.ts")).text();

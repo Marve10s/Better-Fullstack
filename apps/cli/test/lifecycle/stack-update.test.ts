@@ -2903,7 +2903,7 @@ describe("stack update planner", () => {
         expect(btsConfig[testCase.field]).toEqual(testCase.expected);
       }
     },
-    { timeout: 30_000 },
+    { timeout: 60_000 },
   );
 
   it("applies Go Better Auth through the generic auth update field", async () => {

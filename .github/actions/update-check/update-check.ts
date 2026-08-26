@@ -280,6 +280,15 @@ function safeBranch(value: string): boolean {
   );
 }
 
+export function isExpectedPullRequestUrl(
+  pullRequestUrl: string,
+  serverUrl: string,
+  repository: string,
+): boolean {
+  const prefix = `${serverUrl.replace(/\/+$/, "")}/${repository}/pull/`;
+  return pullRequestUrl.startsWith(prefix) && /^\d+$/.test(pullRequestUrl.slice(prefix.length));
+}
+
 async function runUpdateCheck(): Promise<void> {
   const workspace = await realpath(requiredEnvironment("GITHUB_WORKSPACE"));
   const requestedProject = process.env.INPUT_PROJECT_DIRECTORY?.trim() || ".";
@@ -385,6 +394,7 @@ async function runUpdateCheck(): Promise<void> {
   }
 
   const githubToken = requiredEnvironment("INPUT_GITHUB_TOKEN");
+  const githubServerUrl = requiredEnvironment("GITHUB_SERVER_URL");
   const repository = requiredEnvironment("GITHUB_REPOSITORY");
   const baseBranch =
     process.env.INPUT_BASE_BRANCH?.trim() ||
@@ -500,7 +510,7 @@ async function runUpdateCheck(): Promise<void> {
     workspace,
     { GH_TOKEN: githubToken },
   );
-  if (!/^https:\/\/github\.com\/[^/]+\/[^/]+\/pull\/\d+$/.test(pullRequestUrl)) {
+  if (!isExpectedPullRequestUrl(pullRequestUrl, githubServerUrl, repository)) {
     throw new Error(`gh returned an unexpected pull request URL: ${pullRequestUrl}`);
   }
 

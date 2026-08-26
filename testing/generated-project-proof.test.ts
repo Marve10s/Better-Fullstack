@@ -112,12 +112,13 @@ describe("generated project runtime proof matrix", () => {
     expect(lifecycleTests).toBeGreaterThan(cliBuild);
   });
 
-  it("runs when CLI package metadata changes on pull requests and development pushes", async () => {
+  it("runs when CLI or lifecycle package inputs change", async () => {
     const workflow = await readFile(
       new URL("../.github/workflows/generated-project-proof.yaml", import.meta.url),
       "utf8",
     );
 
     expect(workflow.match(/- "apps\/cli\/package\.json"/g)).toHaveLength(2);
+    expect(workflow.match(/- "packages\/project-lifecycle\/\*\*"/g)).toHaveLength(2);
   });
 });

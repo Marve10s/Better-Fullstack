@@ -368,7 +368,7 @@ export const router = os.router({
         if (value === undefined || value === false) return false;
         return !Array.isArray(value) || value.length > 0;
       });
-      await withCommandTelemetry(
+      const result = await withCommandTelemetry(
         "add",
         async () => {
           const result = await addHandler(input as AddInput, { silent: input.json });
@@ -385,6 +385,9 @@ export const router = os.router({
           }),
         },
       );
+      if (input.json && !result?.success) {
+        throw new CLIError(result?.error ?? "Add command failed.");
+      }
     }),
   status: os
     .meta({

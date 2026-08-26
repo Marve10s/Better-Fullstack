@@ -1,3 +1,4 @@
+import { recoverProjectTransaction } from "@better-fullstack/project-lifecycle/transaction";
 import { afterAll, describe, expect, it } from "bun:test";
 import * as JSONC from "jsonc-parser";
 import { spawn } from "node:child_process";
@@ -8,7 +9,6 @@ import { join, resolve } from "node:path";
 
 import { addHandler } from "@/helpers/core/add-handler";
 import { flushTelemetry } from "@/telemetry/analytics";
-import { recoverProjectTransaction } from "@better-fullstack/project-lifecycle/transaction";
 
 const CLI_ENTRY = resolve(import.meta.dir, "..", "..", "src", "cli.ts");
 const NATIVE_BUN = resolve(homedir(), ".bun", "bin", "bun");
@@ -166,6 +166,17 @@ afterAll(async () => {
 }, 30_000);
 
 describe("CLI add command", () => {
+  it("returns a nonzero exit code when JSON add fails", async () => {
+    const root = await makeTempRoot("bfs-add-json-failure-");
+    const result = await runCli(
+      ["add", "--project-dir", join(root, "missing-project"), "--email", "resend", "--json"],
+      { cwd: root },
+    );
+
+    expect(result.exitCode).toBe(1);
+    expect(JSON.parse(result.stdout)).toMatchObject({ success: false });
+  });
+
   it("classifies tooling part additions as feature telemetry", async () => {
     const root = await makeTempRoot("bfs-add-telemetry-test-");
     const originalFetch = globalThis.fetch;

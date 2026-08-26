@@ -5,6 +5,7 @@ import {
   unexpectedChangedPaths,
   type JsonRecord,
 } from "@actions/update-check/gate";
+import { isExpectedPullRequestUrl } from "@actions/update-check/update-check";
 import {
   validateUpdateAction,
   validateUpdateActionSources,
@@ -65,6 +66,44 @@ async function run(command: string, args: string[], cwd: string) {
 }
 
 describe("opt-in update action gate", () => {
+  test("validates pull request URLs against the configured GitHub server", () => {
+    expect(
+      isExpectedPullRequestUrl(
+        "https://github.com/example/project/pull/123",
+        "https://github.com",
+        "example/project",
+      ),
+    ).toBe(true);
+    expect(
+      isExpectedPullRequestUrl(
+        "https://github.example.com/example/project/pull/123",
+        "https://github.example.com/",
+        "example/project",
+      ),
+    ).toBe(true);
+    expect(
+      isExpectedPullRequestUrl(
+        "https://github.com/example/project/pull/123",
+        "https://github.example.com",
+        "example/project",
+      ),
+    ).toBe(false);
+    expect(
+      isExpectedPullRequestUrl(
+        "https://github.example.com/other/project/pull/123",
+        "https://github.example.com",
+        "example/project",
+      ),
+    ).toBe(false);
+    expect(
+      isExpectedPullRequestUrl(
+        "https://github.example.com/example/project/pull/123/files",
+        "https://github.example.com",
+        "example/project",
+      ),
+    ).toBe(false);
+  });
+
   test("accepts only deterministic, eligible, conflict-free, fully verified plans", () => {
     const result = evaluateUpdateGate(evidence());
     expect(result).toMatchObject({
