@@ -624,6 +624,7 @@ const recoveryFileOutputSchema = z.union([
 
 const recoveryMetadataOutputSchema = z.object({
   version: z.literal(1),
+  writeFormat: z.literal(2).optional(),
   id: z.string(),
   operation: z.enum([
     "create",
@@ -643,6 +644,18 @@ const recoveryMetadataOutputSchema = z.object({
   files: z.array(recoveryFileOutputSchema),
   outputs: z.record(z.string(), z.string().nullable()).optional(),
   outputModes: z.record(z.string(), z.number()).optional(),
+  outputHistory: z
+    .record(
+      z.string(),
+      z.array(
+        z.union([
+          z.object({ sha256: z.null() }),
+          z.object({ sha256: z.string(), mode: z.number() }),
+        ]),
+      ),
+    )
+    .optional(),
+  stagingFiles: z.record(z.string(), z.string()).optional(),
 });
 
 const recoveryPointVerificationOutputSchema = z.object({

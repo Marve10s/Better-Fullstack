@@ -1,9 +1,5 @@
 #!/usr/bin/env bun
 
-import { createHash } from "node:crypto";
-import { copyFile, readFile, writeFile } from "node:fs/promises";
-import { basename, dirname, join, resolve } from "node:path";
-
 import {
   CAPABILITY_EVIDENCE_SCHEMA_VERSION,
   CAPABILITY_RECEIPT_SCHEMA_VERSION,
@@ -28,6 +24,9 @@ import {
   CROSS_VERSION_UPGRADE_SCHEMA_VERSION,
   UPGRADE_QUALIFICATION_CONTRACT_PATH,
 } from "@scripts/release/upgrade-qualification-contract";
+import { createHash } from "node:crypto";
+import { copyFile, readFile, writeFile } from "node:fs/promises";
+import { basename, dirname, join, resolve } from "node:path";
 
 export const VERIFICATION_RECEIPT_SCHEMA_VERSION = 1;
 export const VERIFICATION_RECEIPT_TYPE = "better-fullstack/release-verification";
@@ -235,7 +234,14 @@ function qualificationReceipt(
     ) {
       throw new Error("Cross-version qualification wait state is malformed");
     }
-    assertTimestamp("cross-version qualification createdAt", qualification.createdAt, now);
+    const createdAt = assertTimestamp(
+      "cross-version qualification createdAt",
+      qualification.createdAt,
+      now,
+    );
+    if (createdAt > now.getTime()) {
+      throw new Error("Cross-version qualification was created after its verification receipt");
+    }
     return {
       buildsVerified: false,
       caseIds: [],
@@ -279,7 +285,14 @@ function qualificationReceipt(
   ) {
     throw new Error("Cross-version qualification pass evidence is incomplete");
   }
-  assertTimestamp("cross-version qualification completedAt", qualification.completedAt, now);
+  const completedAt = assertTimestamp(
+    "cross-version qualification completedAt",
+    qualification.completedAt,
+    now,
+  );
+  if (completedAt > now.getTime()) {
+    throw new Error("Cross-version qualification completed after its verification receipt");
+  }
   return {
     buildsVerified: true,
     caseIds: requiredCaseIds,
@@ -537,7 +550,13 @@ export function validateVerificationReceipt(
   inputs: ReceiptVerificationInputs,
 ): void {
   const now = inputs.now ?? new Date();
-  const createdAt = assertTimestamp("receipt createdAt", receipt.createdAt, now);
+  const createdAt = assertTimestamp(
+    "receipt createdAt",
+    receipt.createdAt,
+    now,
+    PUBLIC_RECEIPT_VALIDITY_MS,
+  );
+  const receiptIssuedAt = new Date(createdAt);
   const validUntil = Date.parse(receipt.validUntil);
   if (
     !Number.isFinite(validUntil) ||
@@ -576,7 +595,11 @@ export function validateVerificationReceipt(
   exactJson(inputs.actualToolchains, RELEASE_TOOLCHAINS, "Active release toolchains");
 
   const fixture = validateUpgradeFixtureBundle(inputs.fixture, inputs.manifest);
-  const fixtureCreatedAt = assertTimestamp("upgrade fixture createdAt", fixture.createdAt, now);
+  const fixtureCreatedAt = assertTimestamp(
+    "upgrade fixture createdAt",
+    fixture.createdAt,
+    receiptIssuedAt,
+  );
   if (fixtureCreatedAt > createdAt) {
     throw new Error("Upgrade fixture was created after its verification receipt");
   }
@@ -595,11 +618,16 @@ export function validateVerificationReceipt(
   );
   exactJson(
     receipt.upgradeQualification,
-    qualificationReceipt(inputs.qualification, inputs),
+    qualificationReceipt(inputs.qualification, { ...inputs, now: receiptIssuedAt }),
     "Cross-version qualification receipt",
   );
 
-  const proof = validateProof(inputs.proof, inputs.expectedSha, inputs.expectedReleaseVersion, now);
+  const proof = validateProof(
+    inputs.proof,
+    inputs.expectedSha,
+    inputs.expectedReleaseVersion,
+    receiptIssuedAt,
+  );
   if (Date.parse(proof.generatedAt) > Date.parse(receipt.createdAt)) {
     throw new Error("Generated-project proof was created after its receipt");
   }

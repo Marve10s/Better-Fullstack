@@ -1,8 +1,13 @@
+import {
+  RECOVERY_ROOT,
+  recoverProjectTransaction,
+} from "@better-fullstack/project-lifecycle/transaction";
 import { EMBEDDED_TEMPLATES, generateVirtualProject } from "@better-fullstack/template-generator";
 import { writeTreeToFilesystem } from "@better-fullstack/template-generator/fs-writer";
 import { createCliDefaultProjectConfigBase, type ProjectConfig } from "@better-fullstack/types";
 import { afterAll, describe, expect, it } from "bun:test";
 import {
+  chmod,
   cp,
   mkdir,
   mkdtemp,
@@ -10,6 +15,7 @@ import {
   readdir,
   rename,
   rm,
+  stat,
   symlink,
   unlink,
   writeFile,
@@ -25,25 +31,25 @@ import {
   quotePosixShellArgument,
   toJsonPlan,
 } from "@/commands/lifecycle/update";
+import { buildBtsConfigForPersistence, writeBtsConfig } from "@/config/bts-config";
 import {
   applyScaffoldUpgrade,
   getUpgradePlanDigest,
   planScaffoldUpgrade,
 } from "@/helpers/core/scaffold-upgrade";
-import { buildBtsConfigForPersistence, writeBtsConfig } from "@/config/bts-config";
-import { formatProject } from "@/platform/file-formatter";
-import { getLatestCLIVersion } from "@/platform/get-latest-cli-version";
 import { planProjectAdoption } from "@/lifecycle/project-adoption";
-import { RECOVERY_ROOT, recoverProjectTransaction } from "@better-fullstack/project-lifecycle/transaction";
 import {
   collectStructuredBaselines,
   hashContent,
   readScaffoldManifest,
   readScaffoldManifestResult,
   recordScaffoldManifest,
+  refreshScaffoldManifestFiles,
   SCAFFOLD_MANIFEST_FILE,
   writeScaffoldManifest,
 } from "@/lifecycle/scaffold-manifest";
+import { formatProject } from "@/platform/file-formatter";
+import { getLatestCLIVersion } from "@/platform/get-latest-cli-version";
 
 const TEMP_ROOTS: string[] = [];
 
@@ -177,6 +183,20 @@ describe("scaffold-upgrade engine", () => {
       expect(value).toBeGreaterThanOrEqual(0);
       expect(value).toBeLessThanOrEqual(0o7777);
     }
+  });
+
+  it("refreshes the recorded mode for an existing reconciled file", async () => {
+    const dir = await makeTempDir();
+    const executable = join(dir, "mvnw");
+    await writeFile(executable, "#!/bin/sh\n");
+    await chmod(executable, 0o644);
+    await recordScaffoldManifest(dir);
+
+    await chmod(executable, 0o755);
+    await refreshScaffoldManifestFiles(dir, ["mvnw"]);
+
+    const manifest = await readScaffoldManifest(dir);
+    expect(manifest?.modes?.mvnw).toBe((await stat(executable)).mode & 0o7777);
   });
 
   it("fails closed on malformed manifest-v1 field shapes", async () => {

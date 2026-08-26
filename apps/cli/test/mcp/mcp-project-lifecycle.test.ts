@@ -1,3 +1,8 @@
+import {
+  beginProjectTransaction,
+  commitProjectTransaction,
+  writeProjectTransactionFile,
+} from "@better-fullstack/project-lifecycle/transaction";
 import { parseStackPartSpecs, type ProjectConfig } from "@better-fullstack/types";
 import { afterEach, describe, expect, it } from "bun:test";
 import fs from "fs-extra";
@@ -152,6 +157,7 @@ describe("MCP project lifecycle parity", () => {
       });
       const shownRecovery = await getMcpProjectRecoveryPoint(projectDir, removal.recoveryId);
       assertOutputSchema(recoveryManagementOutputSchema, shownRecovery);
+      expect(recoveryManagementOutputSchema.parse(shownRecovery)).toEqual(shownRecovery);
       expect(shownRecovery).toMatchObject({
         success: true,
         action: "show",
@@ -160,6 +166,18 @@ describe("MCP project lifecycle parity", () => {
       const verifiedRecovery = await verifyMcpProjectRecoveryPoint(projectDir, removal.recoveryId);
       assertOutputSchema(recoveryManagementOutputSchema, verifiedRecovery);
       expect(verifiedRecovery).toMatchObject({ success: true, action: "verify" });
+
+      await fs.writeFile(path.join(projectDir, "repeated.txt"), "before\n");
+      const repeated = await beginProjectTransaction(projectDir, "stack-update", ["repeated.txt"]);
+      await writeProjectTransactionFile(repeated, "repeated.txt", "intermediate\n");
+      await writeProjectTransactionFile(repeated, "repeated.txt", "after\n");
+      await commitProjectTransaction(repeated);
+      const repeatedRecovery = await getMcpProjectRecoveryPoint(projectDir, repeated.id);
+      expect(repeatedRecovery.verification?.metadata?.outputHistory?.["repeated.txt"]).toHaveLength(
+        1,
+      );
+      expect(recoveryManagementOutputSchema.parse(repeatedRecovery)).toEqual(repeatedRecovery);
+
       const prunePreview = await pruneMcpProjectRecoveryPoints(projectDir, 0, 5, false);
       assertOutputSchema(recoveryManagementOutputSchema, prunePreview);
       expect(prunePreview).toMatchObject({

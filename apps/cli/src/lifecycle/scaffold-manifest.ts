@@ -1,11 +1,10 @@
 import type { VirtualFileTree, VirtualNode } from "@better-fullstack/template-generator";
 import type { Dirent } from "node:fs";
 
+import { hashContent } from "@better-fullstack/project-lifecycle/hash";
 import fs from "fs-extra";
 import { randomUUID } from "node:crypto";
 import path from "node:path";
-
-import { hashContent } from "@better-fullstack/project-lifecycle/hash";
 
 export { hashContent };
 
@@ -535,7 +534,6 @@ export async function refreshScaffoldManifestFiles(
   for (const relativePath of new Set(relativePaths)) {
     const fullPath = path.join(projectDir, relativePath);
     const manifestPath = relativePath.split(path.sep).join("/");
-    const hadRecordedHash = Object.hasOwn(manifest.hashes, manifestPath);
     if (!(await fs.pathExists(fullPath))) {
       delete manifest.hashes[manifestPath];
       if (manifest.modes) delete manifest.modes[manifestPath];
@@ -545,9 +543,7 @@ export async function refreshScaffoldManifestFiles(
     const stats = await fs.stat(fullPath).catch(() => null);
     if (!stats?.isFile()) continue;
     manifest.hashes[manifestPath] = hashContent(await fs.readFile(fullPath));
-    if (!hadRecordedHash) {
-      (manifest.modes ??= {})[manifestPath] = stats.mode & 0o7777;
-    }
+    (manifest.modes ??= {})[manifestPath] = stats.mode & 0o7777;
   }
 
   if (baselines && Object.keys(baselines).length > 0) {

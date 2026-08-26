@@ -400,6 +400,18 @@ describe("release verification receipt", () => {
     expect(() => validateVerificationReceipt(receipt, inputs)).not.toThrow();
   });
 
+  test("accepts a retained receipt while keeping evidence fresh at issuance", () => {
+    const { inputs, receipt } = fixture();
+    inputs.now = new Date(NOW.getTime() + 14 * 24 * 60 * 60 * 1_000);
+    expect(() => validateVerificationReceipt(receipt, inputs)).not.toThrow();
+
+    const qualification = inputs.qualification as { createdAt: string };
+    qualification.createdAt = new Date(NOW.getTime() + 1).toISOString();
+    expect(() => validateVerificationReceipt(receipt, inputs)).toThrow(
+      "Cross-version qualification was created after its verification receipt",
+    );
+  });
+
   test("accepts no-op upgrade cases while requiring recovery for actionable cases", () => {
     const { inputs, receipt } = fixture();
     const cases = REQUIRED_UPGRADE_FIXTURE_CASE_IDS.map((id, index) => ({

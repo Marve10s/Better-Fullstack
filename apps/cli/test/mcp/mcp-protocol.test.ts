@@ -19,13 +19,9 @@ import {
   getStarterTrackRecommendation,
   getStarterTracksResult,
 } from "@/commands/stack/starter-tracks";
-import {
-  buildBtsConfigForPersistence,
-  readBtsConfig,
-  writeBtsConfig,
-} from "@/config/bts-config";
-import { getProjectContext } from "@/project/project-context";
+import { buildBtsConfigForPersistence, readBtsConfig, writeBtsConfig } from "@/config/bts-config";
 import { recordScaffoldManifest } from "@/lifecycle/scaffold-manifest";
+import { getProjectContext } from "@/project/project-context";
 
 const clients: Client[] = [];
 const roots: string[] = [];
@@ -428,17 +424,9 @@ describe("Better Fullstack MCP protocol support", () => {
       ]),
     );
 
-    const fixtureDir = path.join(
-      process.cwd(),
-      "apps",
-      "cli",
-      "test",
-      "fixtures",
-      "registry",
-      "project",
-    );
+    const fixtureDir = path.join(import.meta.dir, "..", "fixtures", "registry", "project");
     const fixtureContext = await getProjectContext(fixtureDir);
-    const fixtureProjectPath = "./apps/cli/test/fixtures/registry/project";
+    const fixtureProjectPath = `./${path.relative(process.cwd(), fixtureDir).split(path.sep).join("/")}`;
     for (const entry of [...fixtureContext.commands, ...fixtureContext.safeNextActions]) {
       expect(entry.command).toContain(fixtureProjectPath);
     }

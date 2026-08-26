@@ -987,8 +987,9 @@ export async function applyScaffoldUpgrade(
       const renderHash = renderHashes.get(filePath);
       if (renderHash) manifest.hashes[filePath] = renderHash;
     }
-    for (const filePath of plan.newFiles) {
-      // oxlint-disable-next-line no-await-in-loop -- each newly generated file records its exact mode
+    const writtenPaths = new Set([...toWrite, ...mergedEntries.map((entry) => entry.path)]);
+    for (const filePath of writtenPaths) {
+      // oxlint-disable-next-line no-await-in-loop -- each reconciled file records its exact mode
       const stats = await fs.stat(path.join(projectDir, filePath));
       (manifest.modes ??= {})[filePath] = stats.mode & 0o7777;
     }
