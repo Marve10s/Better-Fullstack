@@ -20,7 +20,9 @@ afterAll(async () => {
   await Promise.all(roots.map((root) => fs.remove(root)));
 });
 
-async function makeProject(): Promise<string> {
+async function makeProject(
+  packageManager: ProjectConfig["packageManager"] = "bun",
+): Promise<string> {
   const projectDir = await fs.mkdtemp(path.join(tmpdir(), "bfs-doctor-fix-"));
   roots.push(projectDir);
   const config = {
@@ -30,6 +32,7 @@ async function makeProject(): Promise<string> {
     relativePath: ".",
     git: false,
     install: false,
+    packageManager,
   } as ProjectConfig;
   await writeBtsConfig(config);
   return projectDir;
@@ -69,14 +72,14 @@ async function writeStaleGraphCache(projectDir: string): Promise<string> {
 
 describe("doctor config drift repair", () => {
   it("plans graph and compatibility-cache repair without writing", async () => {
-    const projectDir = await makeProject();
+    const projectDir = await makeProject("pnpm");
     const before = await writeStaleGraphCache(projectDir);
 
     const plan = await planConfigDriftRepair(projectDir);
 
     expect(plan.success).toBe(true);
     if (!plan.success) return;
-    expect(plan).toMatchObject({ mode: "plan", changed: true });
+    expect(plan).toMatchObject({ mode: "plan", packageManager: "pnpm", changed: true });
     expect(plan.reviewToken).toMatch(/^[0-9a-f]{64}$/);
     expect(plan.changes.map((change) => change.path)).toEqual(
       expect.arrayContaining(["backend", "effectiveStack", "graphSummary"]),
@@ -86,7 +89,9 @@ describe("doctor config drift repair", () => {
       status: "planned",
       recovery: { available: true, automaticRollback: true },
     });
-    expect(getDoctorFixApplyCommand(plan, "linux")).toContain(
+    const applyCommand = getDoctorFixApplyCommand(plan, "linux");
+    expect(applyCommand).toStartWith("pnpm dlx create-better-fullstack@");
+    expect(applyCommand).toContain(
       `doctor '${plan.projectDir}' --fix --apply --review-token ${plan.reviewToken}`,
     );
     expect(await fs.readFile(path.join(projectDir, "bts.jsonc"), "utf-8")).toBe(before);
@@ -109,7 +114,7 @@ describe("doctor config drift repair", () => {
     const applied = await applyConfigDriftRepair(projectDir, plan.reviewToken);
     expect(applied.success).toBe(true);
     if (!applied.success) return;
-    expect(applied).toMatchObject({ mode: "applied", changed: true });
+    expect(applied).toMatchObject({ mode: "applied", packageManager: "bun", changed: true });
     expect(applied.recoveryId).toMatch(/[0-9a-f-]{36}/);
     const repaired = await fs.readFile(path.join(projectDir, "bts.jsonc"), "utf-8");
     expect(repaired).not.toBe(before);

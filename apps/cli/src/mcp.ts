@@ -1426,6 +1426,7 @@ const configDriftRepairOutputSchema = z.object({
   success: z.boolean(),
   mode: z.enum(["plan", "applied"]).optional(),
   projectDir: z.string(),
+  packageManager: PackageManagerSchema.optional(),
   changed: z.boolean().optional(),
   changes: z
     .array(
@@ -1441,6 +1442,20 @@ const configDriftRepairOutputSchema = z.object({
   error: z.string().optional(),
   lifecycle: lifecycleResultOutputSchema.optional(),
 });
+
+function projectPartRemovalPayload(
+  payload: Awaited<ReturnType<typeof planMcpPartRemoval>>,
+) {
+  if (!payload.success) return payload;
+  const {
+    filesUnchanged: _filesUnchanged,
+    operations: _operations,
+    preimages: _preimages,
+    versionChannelRewrites: _versionChannelRewrites,
+    ...projected
+  } = payload;
+  return projected;
+}
 
 function buildPresetStackSummary(config: CreateInput): string {
   const parts: string[] = [];
@@ -2630,7 +2645,9 @@ export function createMcpServer(): McpServer {
       },
     },
     async (input: { projectDir: string; target: string }) => {
-      const payload = await planMcpPartRemoval(sanitizePath(input.projectDir), input.target);
+      const payload = projectPartRemovalPayload(
+        await planMcpPartRemoval(sanitizePath(input.projectDir), input.target),
+      );
       return {
         content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
         structuredContent: payload,
@@ -2675,11 +2692,13 @@ export function createMcpServer(): McpServer {
       reviewToken: string;
       acknowledgeArchitectureChange: boolean;
     }) => {
-      const payload = await applyMcpPartRemoval(
-        sanitizePath(input.projectDir),
-        input.target,
-        input.reviewToken,
-        input.acknowledgeArchitectureChange,
+      const payload = projectPartRemovalPayload(
+        await applyMcpPartRemoval(
+          sanitizePath(input.projectDir),
+          input.target,
+          input.reviewToken,
+          input.acknowledgeArchitectureChange,
+        ),
       );
       return {
         content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],

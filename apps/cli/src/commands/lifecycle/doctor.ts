@@ -96,7 +96,7 @@ export function getDoctorFixApplyCommand(
   if (!result.changed || !result.reviewToken) return null;
   const quoteArgument = platform === "win32" ? quotePowerShellArgument : quotePosixShellArgument;
   return (
-    `${getPackageExecPrefix(undefined)} create-better-fullstack@${getLatestCLIVersion()} doctor ` +
+    `${getPackageExecPrefix(result.packageManager)} create-better-fullstack@${getLatestCLIVersion()} doctor ` +
     `${quoteArgument(result.projectDir)} --fix --apply --review-token ${result.reviewToken}`
   );
 }

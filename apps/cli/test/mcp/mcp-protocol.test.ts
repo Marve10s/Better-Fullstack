@@ -241,6 +241,33 @@ describe("Better Fullstack MCP protocol support", () => {
     expect(result.structuredContent?.filesToRemove).toContain("turbo.json");
   });
 
+  it("does not borrow capability evidence from another ecosystem", async () => {
+    const projectDir = await fs.mkdtemp(path.join(tmpdir(), "bfs-context-evidence-"));
+    roots.push(projectDir);
+    const config = {
+      ...createCliDefaultProjectConfigBase(),
+      projectName: "context-evidence",
+      projectDir,
+      relativePath: ".",
+      ecosystem: "go",
+      goWebFramework: "gin",
+      git: false,
+      install: false,
+      stackParts: parseStackPartSpecs([
+        "backend:go:gin",
+        "database:universal:sqlite",
+      ]),
+    } as ProjectConfig;
+    await writeBtsConfig(config);
+
+    const context = await getProjectContext(projectDir);
+
+    expect(context.evidence.selected).toContainEqual({
+      partId: "database:universal:sqlite",
+      evidence: null,
+    });
+  });
+
   it("plans and applies graph config drift repair with the exact MCP token", async () => {
     const client = await connectClient("modern");
     const root = await fs.mkdtemp(path.join(tmpdir(), "bfs-mcp-doctor-fix-"));
@@ -339,6 +366,50 @@ describe("Better Fullstack MCP protocol support", () => {
     expect(
       config?.stackParts?.find((part) => part.role === "frontend" && !part.ownerPartId)?.toolId,
     ).toBe("next");
+  });
+
+  it("projects part-removal results to the declared MCP schema", async () => {
+    const client = await connectClient("modern");
+    const root = await fs.mkdtemp(path.join(tmpdir(), "bfs-mcp-part-removal-"));
+    roots.push(root);
+    const projectDir = path.join(root, "app");
+    await scaffoldProject(projectDir, {
+      frontend: ["react-vite"],
+      backend: "hono",
+      runtime: "bun",
+      stackParts: parseStackPartSpecs([
+        "frontend:typescript:react-vite",
+        "frontend.css:typescript:tailwind",
+        "backend:typescript:hono",
+        "backend.runtime:typescript:bun",
+      ]),
+    });
+
+    const planned = await client.callTool({
+      name: "bfs_plan_part_removal",
+      arguments: { projectDir, target: "frontend.css:typescript:tailwind" },
+    });
+    const plan = planned.structuredContent as { reviewToken?: string } | undefined;
+    expect(planned.isError).not.toBe(true);
+    expect(plan?.reviewToken).toHaveLength(64);
+    expect(planned.structuredContent).not.toHaveProperty("filesUnchanged");
+    expect(planned.structuredContent).not.toHaveProperty("operations");
+    expect(planned.structuredContent).not.toHaveProperty("preimages");
+    expect(planned.structuredContent).not.toHaveProperty("versionChannelRewrites");
+
+    const applied = await client.callTool({
+      name: "bfs_apply_part_removal",
+      arguments: {
+        projectDir,
+        target: "frontend.css:typescript:tailwind",
+        reviewToken: plan?.reviewToken,
+      },
+    });
+    expect(applied.isError).not.toBe(true);
+    expect(applied.structuredContent).not.toHaveProperty("filesUnchanged");
+    expect(applied.structuredContent).not.toHaveProperty("operations");
+    expect(applied.structuredContent).not.toHaveProperty("preimages");
+    expect(applied.structuredContent).not.toHaveProperty("versionChannelRewrites");
   });
 
   it("plans and applies in-project generation through the shared lifecycle contract", async () => {

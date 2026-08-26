@@ -32,6 +32,7 @@ export type ConfigDriftRepairPlan = {
   success: true;
   mode: "plan" | "applied";
   projectDir: string;
+  packageManager: ProjectConfig["packageManager"];
   changed: boolean;
   changes: ConfigDriftChange[];
   reviewToken?: string;
@@ -206,6 +207,7 @@ async function buildInternalPlan(projectDirInput: string): Promise<InternalPlan>
     success: true,
     mode: "plan",
     projectDir,
+    packageManager: normalized.packageManager,
     changed: changes.length > 0,
     changes,
     proposedContent,
@@ -314,6 +316,7 @@ export async function applyConfigDriftRepair(
       success: true,
       mode: "applied",
       projectDir: plan.projectDir,
+      packageManager: plan.packageManager,
       changed: true,
       changes: plan.changes,
       reviewToken,

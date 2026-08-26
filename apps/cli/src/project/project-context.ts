@@ -108,9 +108,11 @@ export async function getProjectContext(projectDirInput: string) {
       const owner = part.ownerPartId
         ? parts.find((candidate) => candidate.id === part.ownerPartId)
         : undefined;
-      const evidence =
-        evidenceByOption.get(`${part.ecosystem}:${part.toolId}`) ??
-        inventory.find((record) => record.optionId === part.toolId);
+      const evidenceEcosystems =
+        part.ecosystem === "universal" ? [config.ecosystem, "universal"] : [part.ecosystem];
+      const evidence = evidenceEcosystems
+        .map((ecosystem) => evidenceByOption.get(`${ecosystem}:${part.toolId}`))
+        .find((record) => record !== undefined);
       return {
         id: part.id,
         spec: formatStackPartSpec(part, parts),
