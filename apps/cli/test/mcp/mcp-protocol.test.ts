@@ -419,10 +419,13 @@ describe("Better Fullstack MCP protocol support", () => {
       expect.arrayContaining([
         expect.objectContaining({
           id: "project-check",
-          command: `create-better-fullstack check ${projectDir} --json --run-checks`,
+          command: `create-better-fullstack check ${projectDir} --json`,
         }),
       ]),
     );
+    for (const entry of [...contextCommands, ...safeNextActions]) {
+      expect(entry.command).not.toContain("--run-checks");
+    }
 
     const fixtureDir = path.join(import.meta.dir, "..", "fixtures", "registry", "project");
     const fixtureContext = await getProjectContext(fixtureDir);

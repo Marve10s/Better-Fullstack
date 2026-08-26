@@ -5,7 +5,10 @@ import {
   unexpectedChangedPaths,
   type JsonRecord,
 } from "@actions/update-check/gate";
-import { isExpectedPullRequestUrl } from "@actions/update-check/update-check";
+import {
+  hasEmptyDecisionArrays,
+  isExpectedPullRequestUrl,
+} from "@actions/update-check/update-check";
 import {
   validateUpdateAction,
   validateUpdateActionSources,
@@ -66,6 +69,17 @@ async function run(command: string, args: string[], cwd: string) {
 }
 
 describe("opt-in update action gate", () => {
+  test("fails closed when post-apply decision arrays are missing or malformed", () => {
+    const valid = { actionable: [], conflicts: [], manual: [], removed: [] };
+    expect(hasEmptyDecisionArrays(valid)).toBe(true);
+
+    for (const field of Object.keys(valid)) {
+      expect(hasEmptyDecisionArrays({ ...valid, [field]: undefined }), field).toBe(false);
+      expect(hasEmptyDecisionArrays({ ...valid, [field]: {} }), field).toBe(false);
+      expect(hasEmptyDecisionArrays({ ...valid, [field]: ["pending"] }), field).toBe(false);
+    }
+  });
+
   test("validates pull request URLs against the configured GitHub server", () => {
     expect(
       isExpectedPullRequestUrl(

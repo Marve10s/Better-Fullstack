@@ -41,6 +41,18 @@ export const REQUIRED_BUILD_PROOF_CASE_IDS = [
   "elixir",
   "dotnet",
 ] as const;
+export const REQUIRED_BUILD_PROOF_TOOLCHAINS = [
+  "bun",
+  "bunx",
+  "cargo",
+  "dotnet",
+  "go",
+  "java",
+  "mix",
+  "node",
+  "python",
+  "uv",
+] as const;
 const REQUIRED_CI_NAME = "Lint, Test & Build";
 const EXPECTED_PROJECT_SCHEMA_VERSION = "1";
 const EXPECTED_SCAFFOLD_MANIFEST_VERSION = "2";
@@ -386,6 +398,8 @@ function proofToolchains(proof: Record<string, unknown>): ReceiptMatrixToolchain
     required.length === 0 ||
     !unique(required) ||
     !unique(names) ||
+    JSON.stringify([...required].sort()) !==
+      JSON.stringify([...REQUIRED_BUILD_PROOF_TOOLCHAINS].sort()) ||
     JSON.stringify([...names].sort()) !== JSON.stringify([...required].sort())
   ) {
     throw new Error("Generated-project proof toolchain matrix is partial");

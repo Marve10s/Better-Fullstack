@@ -59,7 +59,12 @@ jobs:
         with:
           go-version: 1.25.1
 
-      - name: Setup pinned Python and uv
+      - name: Setup pinned Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12.12
+
+      - name: Setup pinned uv
         uses: astral-sh/setup-uv@v5
         with:
           version: 0.8.14

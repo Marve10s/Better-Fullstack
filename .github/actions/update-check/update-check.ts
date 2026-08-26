@@ -138,6 +138,13 @@ function completeVerification(check: JsonRecord): boolean {
   );
 }
 
+export function hasEmptyDecisionArrays(plan: JsonRecord): boolean {
+  return ["actionable", "conflicts", "manual", "removed"].every((field) => {
+    const value = plan[field];
+    return Array.isArray(value) && value.length === 0;
+  });
+}
+
 function arrayLength(value: unknown): number {
   return Array.isArray(value) ? value.length : 0;
 }
@@ -456,10 +463,7 @@ async function runUpdateCheck(): Promise<void> {
     !completeVerification(afterCheck.payload) ||
     postPlan.exitCode !== 0 ||
     postPlan.payload.ok !== true ||
-    arrayLength(postPlan.payload.actionable) > 0 ||
-    arrayLength(postPlan.payload.conflicts) > 0 ||
-    arrayLength(postPlan.payload.manual) > 0 ||
-    arrayLength(postPlan.payload.removed) > 0
+    !hasEmptyDecisionArrays(postPlan.payload)
   ) {
     throw new Error("Post-apply verification or reconciliation failed.");
   }

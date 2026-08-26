@@ -83,6 +83,7 @@ export function validateReleaseWorkflow(
   const identityStep = stepByName(prepare, "Resolve exact release identity");
   const prepareStep = stepByName(prepare, "Build and pack every publishable workspace package");
   const proofStep = stepByName(prepare, "Run complete generated-project proof");
+  const pythonStep = stepByName(prepare, "Setup pinned Python");
   const fixtureStep = stepByName(
     prepare,
     "Capture executable upgrade fixtures from exact package artifacts",
@@ -130,6 +131,12 @@ export function validateReleaseWorkflow(
     JSON.stringify(prepare).includes("bun run test:release")
   ) {
     errors.push("prepare must create the receipt from a fresh complete generated-project proof");
+  }
+  if (
+    pythonStep?.uses !== "actions/setup-python@v5" ||
+    record(pythonStep.with)["python-version"] !== "3.12.12"
+  ) {
+    errors.push("release prepare must pin Python to 3.12.12");
   }
   const uploads = steps(prepare).filter((step) =>
     String(step.uses ?? "").startsWith("actions/upload-artifact@"),
@@ -238,6 +245,7 @@ export function validateReleaseWorkflow(
     "11.6.2",
     "10.20.0",
     "1.25.1",
+    "3.12.12",
     "0.8.14",
     "1.89.0",
     "21.0.8",
@@ -250,6 +258,7 @@ export function validateReleaseWorkflow(
   }
   for (const setup of [
     "actions/setup-go@v5",
+    "actions/setup-python@v5",
     "astral-sh/setup-uv@v5",
     "dtolnay/rust-toolchain@1.89.0",
     "actions/setup-java@v4",

@@ -20,7 +20,9 @@ describe("generated project runtime proof matrix", () => {
     ]);
     expect(
       new Set(GENERATED_PROJECT_PROOF_CASES.flatMap((entry) => entry.requiredToolchains)),
-    ).toEqual(new Set(["node", "bun", "bunx", "go", "uv", "cargo", "java", "mix", "dotnet"]));
+    ).toEqual(
+      new Set(["node", "bun", "bunx", "go", "python", "uv", "cargo", "java", "mix", "dotnet"]),
+    );
     expect(new Set(GENERATED_PROJECT_PROOF_CASES.map((entry) => entry.ecosystem))).toEqual(
       new Set(["typescript", "react-native", "rust", "python", "go", "java", "elixir", "dotnet"]),
     );

@@ -238,7 +238,7 @@ export const GOLDEN_RUNTIME_RECIPES = [
     sourceBuildProofCaseId: "python",
     projectName: "proof-python",
     generationInputs: { preset: "python-fastapi-sqlalchemy" },
-    requiredToolchains: ["node", "uv"],
+    requiredToolchains: ["node", "python", "uv"],
     buildSteps: ["scaffold", "install", "compile-check"],
     stackParts: ["backend:python:fastapi", "backend.orm:python:sqlalchemy"],
     coveredOptions: [

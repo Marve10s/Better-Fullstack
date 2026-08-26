@@ -162,7 +162,7 @@ export async function getProjectContext(projectDirInput: string) {
     },
     {
       id: "project-check",
-      command: `create-better-fullstack check ${projectPath} --json --run-checks`,
+      command: `create-better-fullstack check ${projectPath} --json`,
       mutates: false,
     },
     {
@@ -202,8 +202,8 @@ export async function getProjectContext(projectDirInput: string) {
       : []),
     {
       id: "check-project",
-      command: `create-better-fullstack check ${projectPath} --json --run-checks`,
-      reason: "Run the owning target checks without changing project files.",
+      command: `create-better-fullstack check ${projectPath} --json`,
+      reason: "Inspect project health without running target toolchains.",
     },
     {
       id: "review-update",

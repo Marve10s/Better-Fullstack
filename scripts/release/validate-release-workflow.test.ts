@@ -105,6 +105,20 @@ describe("release workflow contract", () => {
     );
   });
 
+  test("rejects a missing or floating Python runtime", async () => {
+    const { release, requiredCi } = await fixtures();
+    const workflow = clone(release);
+    const prepare = jobs(workflow).prepare;
+    const python = (prepare.steps as Array<Record<string, unknown>>).find(
+      (step) => step.name === "Setup pinned Python",
+    );
+    (python!.with as Record<string, unknown>)["python-version"] = "3.12";
+
+    expect(validateReleaseWorkflow(workflow, requiredCi)).toContain(
+      "release prepare must pin Python to 3.12.12",
+    );
+  });
+
   test("rejects a floating required-CI Bun runtime", async () => {
     const { release, requiredCi } = await fixtures();
     const floatingCi = clone(requiredCi);
