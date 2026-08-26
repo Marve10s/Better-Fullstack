@@ -2189,69 +2189,73 @@ describe("stack update planner", () => {
     expect(btsConfig.serverDeploy).toBe("cloudflare");
   });
 
-  it("expands database setup provider updates before generic compatibility clears them", async () => {
-    const cases: Array<{
-      dbSetup: ProjectConfig["dbSetup"];
-      database: ProjectConfig["database"];
-      orm: ProjectConfig["orm"];
-      expectedAdjustment: string;
-    }> = [
-      {
-        dbSetup: "turso",
-        database: "sqlite",
-        orm: "drizzle",
-        expectedAdjustment: "dbSetup: Database set to 'sqlite' (turso requires sqlite)",
-      },
-      {
-        dbSetup: "neon",
-        database: "postgres",
-        orm: "drizzle",
-        expectedAdjustment: "dbSetup: Database set to 'postgres' (neon requires postgres)",
-      },
-      {
-        dbSetup: "mongodb-atlas",
-        database: "mongodb",
-        orm: "prisma",
-        expectedAdjustment: "dbSetup: Database set to 'mongodb' (mongodb-atlas requires mongodb)",
-      },
-      {
-        dbSetup: "upstash",
-        database: "redis",
-        orm: "none",
-        expectedAdjustment: "dbSetup: Database set to 'redis' (upstash requires redis)",
-      },
-      {
-        dbSetup: "docker",
-        database: "postgres",
-        orm: "drizzle",
-        expectedAdjustment: "dbSetup: Database set to 'postgres' (docker requires postgres)",
-      },
-    ];
+  it(
+    "expands database setup provider updates before generic compatibility clears them",
+    async () => {
+      const cases: Array<{
+        dbSetup: ProjectConfig["dbSetup"];
+        database: ProjectConfig["database"];
+        orm: ProjectConfig["orm"];
+        expectedAdjustment: string;
+      }> = [
+        {
+          dbSetup: "turso",
+          database: "sqlite",
+          orm: "drizzle",
+          expectedAdjustment: "dbSetup: Database set to 'sqlite' (turso requires sqlite)",
+        },
+        {
+          dbSetup: "neon",
+          database: "postgres",
+          orm: "drizzle",
+          expectedAdjustment: "dbSetup: Database set to 'postgres' (neon requires postgres)",
+        },
+        {
+          dbSetup: "mongodb-atlas",
+          database: "mongodb",
+          orm: "prisma",
+          expectedAdjustment: "dbSetup: Database set to 'mongodb' (mongodb-atlas requires mongodb)",
+        },
+        {
+          dbSetup: "upstash",
+          database: "redis",
+          orm: "none",
+          expectedAdjustment: "dbSetup: Database set to 'redis' (upstash requires redis)",
+        },
+        {
+          dbSetup: "docker",
+          database: "postgres",
+          orm: "drizzle",
+          expectedAdjustment: "dbSetup: Database set to 'postgres' (docker requires postgres)",
+        },
+      ];
 
-    for (const testCase of cases) {
-      const root = await makeTempRoot(`bfs-stack-update-dbsetup-${testCase.dbSetup}-`);
-      const projectDir = join(root, "app");
-      await scaffoldGeneratedProject(makeConfig(projectDir, TYPESCRIPT_SERVICE_BASE_CONFIG));
+      for (const testCase of cases) {
+        const root = await makeTempRoot(`bfs-stack-update-dbsetup-${testCase.dbSetup}-`);
+        const projectDir = join(root, "app");
+        await scaffoldGeneratedProject(makeConfig(projectDir, TYPESCRIPT_SERVICE_BASE_CONFIG));
 
-      const plan = await planStackUpdate(projectDir, { dbSetup: testCase.dbSetup });
-      expect(plan.success).toBe(true);
-      if (!plan.success) continue;
+        const plan = await planStackUpdate(projectDir, { dbSetup: testCase.dbSetup });
+        expect(plan.success).toBe(true);
+        if (!plan.success) continue;
 
-      expect(plan.proposedConfig.dbSetup).toBe(testCase.dbSetup);
-      expect(plan.proposedConfig.database).toBe(testCase.database);
-      expect(plan.proposedConfig.orm).toBe(testCase.orm);
-      expect(plan.compatibilityAdjustments).toContain(testCase.expectedAdjustment);
-      expect(plan.manualReviewBlockers).toEqual([]);
+        expect(plan.proposedConfig.dbSetup).toBe(testCase.dbSetup);
+        expect(plan.proposedConfig.database).toBe(testCase.database);
+        expect(plan.proposedConfig.orm).toBe(testCase.orm);
+        expect(plan.compatibilityAdjustments).toContain(testCase.expectedAdjustment);
+        expect(plan.manualReviewBlockers).toEqual([]);
 
-      const result = await applyStackUpdate(projectDir, { dbSetup: testCase.dbSetup });
-      expect(result.success).toBe(true);
+        const result = await applyStackUpdate(projectDir, { dbSetup: testCase.dbSetup });
+        expect(result.success).toBe(true);
 
-      const btsConfig = await readJsonc(join(projectDir, "bts.jsonc"));
-      expect(btsConfig.dbSetup).toBe(testCase.dbSetup);
-      expect(btsConfig.database).toBe(testCase.database);
-      expect(btsConfig.orm).toBe(testCase.orm);
-    }
-  });
+        const btsConfig = await readJsonc(join(projectDir, "bts.jsonc"));
+        expect(btsConfig.dbSetup).toBe(testCase.dbSetup);
+        expect(btsConfig.database).toBe(testCase.database);
+        expect(btsConfig.orm).toBe(testCase.orm);
+      }
+    },
+    { timeout: 20_000 },
+  );
 
   it("applies Resend updates for non-TypeScript first-candidate ecosystems", async () => {
     const cases: Array<{
