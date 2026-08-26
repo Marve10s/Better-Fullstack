@@ -2,15 +2,14 @@
   "title": "Better Fullstack",
   "pages": [
     "index",
-    "---Start and Learn---",
+    "---Start---",
     "getting-started",
-    "---Build and Evolve---",
-    "web-builder",
-    "cli",
-    "---Choose a Stack---",
+    "---Build---",
+    "builder",
+    "choosing-a-stack",
     "ecosystems",
-    "stack-guides",
-    "---Work with AI Agents---",
+    "---Automate---",
+    "cli",
     "ai"
   ]
 }

@@ -1,0 +1,113 @@
+---
+title: Choosing a Stack
+description: Pick a frontend, backend, database and ORM, auth provider, and deployment target, and see which choices constrain the others.
+translationStatus: pending
+updated: 2026-08-22
+---
+
+Five choices shape a stack: frontend, backend, database with ORM, auth provider, and deployment target. Each one narrows the rest. The [Stack Builder](/new) and the CLI reject combinations that do not work, so they decide the exact matrix; this page explains how to pick deliberately.
+
+## Frontend
+
+| Family          | Frameworks                                      | Choose it when                                                            |
+| --------------- | ----------------------------------------------- | -------------------------------------------------------------------------- |
+| React SPA       | `tanstack-router`, `react-router`, `react-vite` | You want client-rendered React with a separate backend.                   |
+| React fullstack | `next`, `tanstack-start`, `vinext`, `redwood`   | You want SSR or RSC in one deployable unit.                               |
+| Vue / Nuxt      | `nuxt`                                          | You prefer Vue with an integrated server.                                 |
+| Svelte / Solid  | `svelte`, `solid`, `solid-start`                | You want compiler-first frameworks with fine-grained reactivity.          |
+| Content / edge  | `astro`, `qwik`, `fresh`                        | You lead with content or want minimal client JavaScript.                  |
+| Angular         | `angular`                                       | You want Angular's batteries-included framework and built-in HttpClient.  |
+
+Four constraints come from the frontend:
+
+- tRPC only works with React-based frontends. Use `--api orpc` for Nuxt, Svelte, Solid, and SolidStart.
+- `--backend self` pairs with fullstack frontends (`next`, `vinext`, `tanstack-start`, `astro`, `nuxt`, `svelte`, `solid-start`) and requires `--runtime none`.
+- Qwik ships its own server, so it takes `--backend none --api none`. Angular takes `--api none`.
+- Astro needs `--astro-integration <react|vue|svelte|solid|none>`. Workers support depends on the pair you choose.
+
+Unsure? Take `tanstack-router` with a `hono` backend. That is the scaffolded default and works across runtimes.
+
+## Backend
+
+| Backend    | Character                                       | Note                                                |
+| ---------- | ------------------------------------------------ | --------------------------------------------------- |
+| `hono`     | Small, fast, runs on Bun, Node, and Workers.     | The default; broadest runtime support.              |
+| `express`  | The classic Node framework.                      | Largest ecosystem, Node runtime.                    |
+| `fastify`  | High-throughput Node framework with schemas.     | Good for JSON APIs.                                 |
+| `elysia`   | Bun-first framework with end-to-end types.       | Best on the Bun runtime.                            |
+| `fets`     | Fetch-API framework with OpenAPI.                | Standards-based handlers.                           |
+| `effect`   | Effect-based HTTP platform.                      | Pairs with the `--effect` capability flags.         |
+| `nestjs`   | Opinionated, decorator-driven framework.         | Requires `--runtime node`.                          |
+| `adonisjs` | Full MVC framework with its own tooling.         | Requires `--runtime node`.                          |
+| `nitro`    | Universal server toolkit.                        | Deploys to many targets.                            |
+| `encore`   | Backend framework with built-in infrastructure.  | Encore.ts workflow.                                 |
+| `convex`   | Reactive backend-as-a-service.                   | Owns database and API choices and auto-adjusts them. |
+| `self`     | The frontend serves its own API.                 | Needs `--runtime none` and a fullstack frontend.    |
+
+Start with `hono` for portability, `elysia` if you are all-in on Bun, `nestjs` or `adonisjs` for structured Node apps, and `convex` when you want managed realtime data. You can also layer Effect onto another backend with `--effect effect` or `--effect effect-full`.
+
+## Database and ORM
+
+`--database` accepts `sqlite`, `postgres`, `mysql`, `mongodb`, `edgedb`, `redis`, or `none`. Relational engines cover most apps; pick Postgres unless you have a reason not to.
+
+| ORM         | SQLite | Postgres | MySQL | MongoDB |
+| ----------- | ------ | -------- | ----- | ------- |
+| `drizzle`   | Yes    | Yes      | Yes   | No      |
+| `prisma`    | Yes    | Yes      | Yes   | Yes     |
+| `kysely`    | Yes    | Yes      | Yes   | No      |
+| `mikroorm`  | Yes    | Yes      | Yes   | No      |
+| `typeorm`   | Yes    | Yes      | Yes   | No      |
+| `sequelize` | Yes    | Yes      | Yes   | No      |
+| `mongoose`  | No     | No       | No    | Yes     |
+
+MongoDB pairs with `prisma` or `mongoose`. `--db-setup` layers hosted configuration onto the engine choice: Turso, Neon, Prisma Postgres, PlanetScale, MongoDB Atlas, Supabase, Upstash, Cloudflare D1, or Docker. Create the database in the provider's dashboard, then paste its connection string into `.env`.
+
+## Auth
+
+| Provider                    | Hosting     | Note                                                              |
+| --------------------------- | ----------- | ------------------------------------------------------------------ |
+| `better-auth`               | Self-hosted | Owns tables in your database; needs a compatible ORM.              |
+| `better-auth-organizations` | Self-hosted | Better Auth plus organizations and teams plugin.                   |
+| `nextauth`                  | Self-hosted | Auth.js; strongest fit for Next.js.                                |
+| `clerk`                     | Hosted      | Drop-in components and hosted user management.                     |
+| `stack-auth`                | Hosted      | Generous free tier.                                                |
+| `supabase-auth`             | Hosted      | Pairs naturally with Supabase Postgres.                            |
+| `auth0`                     | Hosted IdP  | Enterprise identity provider.                                      |
+| `workos`                    | Hosted IdP  | AuthKit and enterprise SSO.                                        |
+| `kinde`                     | Hosted IdP  | Hosted auth and feature flags.                                     |
+
+Three pairing rules matter:
+
+- Better Auth needs an adapter. It works with `drizzle`, `prisma`, `kysely`, and `mongoose`; `mikroorm`, `typeorm`, and `sequelize` have none, so pair them with `--auth none`.
+- Some payments require it too. Polar needs Better Auth plus a web frontend.
+- Hosted providers read keys from environment variables, and the scaffold writes every required key into `.env.example`.
+
+Own the data with `better-auth` when you already use a supported ORM. Take `clerk` or `stack-auth` for the fastest hosted setup and `auth0`, `workos`, or `kinde` when enterprise SSO decides.
+
+Other ecosystems expose native helpers instead: Go uses `--auth go-better-auth` or `--go-auth`, Python uses `--python-auth`, Rust uses `--rust-auth`, Java uses `--java-auth`, and Elixir uses `--elixir-auth`.
+
+## Deployment
+
+Deployment is a stack section, not a separate step. `--web-deploy` and `--server-deploy` control whether platform files are emitted during creation:
+
+| Flag              | Values                                                                         |
+| ----------------- | ------------------------------------------------------------------------------ |
+| `--web-deploy`    | `vercel` `cloudflare` `fly` `railway` `render` `netlify` `docker` `sst` `none` |
+| `--server-deploy` | `vercel` `cloudflare` `fly` `railway` `render` `netlify` `docker` `sst` `none` |
+
+| Target     | Best fit                                                                     |
+| ---------- | ----------------------------------------------------------------------------- |
+| Docker     | Self-hosting, reproducible production images, local service orchestration.    |
+| Vercel     | Supported React, Nuxt, SvelteKit, Solid, and serverless deployments.          |
+| Cloudflare | Workers runtime stacks and edge-first Hono servers.                           |
+| Fly.io     | Docker-backed hosting with regional placement and long-running services.      |
+| Railway    | Git-connected builds with managed services.                                   |
+| Render     | Blueprint-driven deploys via `render.yaml`; web and server deploy separately. |
+| Netlify    | Static and SSR web frontends, or Hono APIs running on Node.js Functions.       |
+| SST        | AWS infrastructure as code for TypeScript workflows.                          |
+
+Fullstack frontends usually deploy through the web app rather than a separate server target, and Convex or Encore manage their own platform path. Before deploying, set production environment variables, run migrations against the production database, and keep test credentials out of source control.
+
+To change a target on an existing project, run `add --dry-run --web-deploy <target>` or the `--server-deploy` equivalent and review the plan first. See [Add and Remove Capabilities](/docs/cli/add/).
+
+Every accepted value lives in the generated tables on [CLI Create](/docs/cli/create/#typescript-stack).

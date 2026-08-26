@@ -1,72 +1,51 @@
 ---
 title: First Project
-description: Scaffold, inspect, install, and run a Better Fullstack project.
+description: Scaffold, inspect, install, configure, and run a Better Fullstack project end to end.
 translationStatus: pending
-updated: 2026-08-21
+updated: 2026-08-22
 ---
 
-This walkthrough creates a project, previews what the CLI can generate, and shows where to look after the scaffold finishes.
+This walkthrough creates a project, previews what the CLI generates, and shows where to look once the scaffold finishes.
 
 ## 1. Create a project
-
-Run the wizard:
 
 ```npm
 npm create better-fullstack@latest my-app
 ```
 
-Accept the defaults for a TypeScript starter, or change the prompts to match the stack you want.
+Accept the defaults for a TypeScript starter, or change the prompts to match the stack you want. The default stack is TanStack Router, Hono, Bun, SQLite, Drizzle, Better Auth, and tRPC in a Turborepo workspace.
 
 ## 2. Preview without writing
 
-Use `--dry-run` when you want to inspect the generated file tree first:
+Add `--dry-run` to inspect the generated file tree before anything lands on disk:
 
 ```npm
 npm create better-fullstack@latest my-app -- --dry-run
 ```
 
-The dry run is useful before trying a new ecosystem, deployment target, or multi-ecosystem stack.
+Do this before trying a new ecosystem, deployment target, or multi-ecosystem stack.
 
-## 3. Scaffold from a command
+## 3. Scaffold from a template
 
-Explicit flags make the scaffold repeatable. This example creates a Next.js self-backend project and skips install/Git so you can review files first:
+A complete template with `--yes` makes the scaffold repeatable. This example creates the Next.js, tRPC, Prisma, PostgreSQL, and Better Auth T3 stack, then skips install and Git so you can review files first:
 
 ```npm
 npm create better-fullstack@latest my-app -- \
-  --ecosystem typescript \
-  --frontend next \
-  --backend self \
-  --runtime none \
-  --database postgres \
-  --orm drizzle \
-  --auth better-auth \
-  --api trpc \
-  --db-setup none \
-  --css-framework tailwind \
-  --ui-library shadcn-ui \
-  --shadcn-base radix \
-  --shadcn-style nova \
-  --shadcn-icon-library lucide \
-  --shadcn-color-theme neutral \
-  --shadcn-base-color neutral \
-  --shadcn-font geist \
-  --shadcn-radius default \
-  --ai none \
-  --payments none \
-  --examples none \
-  --ai-docs none \
-  --version-channel stable \
+  --template t3 \
+  --yes \
   --no-install \
   --no-git
 ```
 
 <Callout kind="info" title="Prompt behavior">
-Explicit flags skip the categories they cover. `--yes` accepts defaults and conflicts with core stack flags such as `--frontend`, `--backend`, and `--database`. Use `none` for optional categories you want disabled.
+`--yes` accepts every remaining template value without prompting. It conflicts with core stack flags such as `--frontend`, `--backend`, and `--database`. For a custom prompt-free stack, use a complete `bts.jsonc` with `--config`.
 </Callout>
+
+[CLI Create](/docs/cli/create/) lists every flag, the `--template` presets, and `--shape` shortcuts for frontend-only, backend-only, and mobile projects.
 
 ## 4. Install dependencies
 
-If you used `--no-install`, install manually inside the project:
+If you used `--no-install`, install inside the project with your package manager:
 
 ```bash
 cd my-app
@@ -76,32 +55,19 @@ cd my-app
 npm install
 ```
 
-Language-native ecosystems use their own tools:
-
-```bash
-cargo build
-uv sync --extra dev
-go mod tidy
-./mvnw test
-./gradlew test
-mix deps.get
-dotnet restore
-```
+Language-native ecosystems use their own tools: `cargo build`, `uv sync --extra dev`, `go mod tidy`, `./mvnw test`, `./gradlew test`, `mix deps.get`, or `dotnet restore`. The generated README names the right one.
 
 ## 5. Configure environment variables
 
-Generated projects include a `.env.example` for the integrations in your stack. Copy each example
-to `.env` in the same directory, then replace the placeholders before starting the project:
+Every generated project includes a `.env.example` for the integrations in your stack. Copy it to `.env` in the same directory and replace the placeholders:
 
 ```bash
 cp .env.example .env
 ```
 
-Some multi-app projects have more than one `.env.example`. Keep server secrets out of variables
-with public prefixes such as `VITE_`, `NEXT_PUBLIC_`, `PUBLIC_`, or `EXPO_PUBLIC_`.
+Some multi-app projects have more than one `.env.example`. Keep server secrets out of variables with public prefixes such as `VITE_`, `NEXT_PUBLIC_`, `PUBLIC_`, or `EXPO_PUBLIC_`. Generate strong values for secrets like `BETTER_AUTH_SECRET`, keep `.env` out of version control, and set the same keys in your hosting provider before deploying.
 
-Common TypeScript integrations use these keys. The generated `.env.example` files remain the source
-of truth for your selected stack, including database URLs and provider-specific keys.
+Common TypeScript integrations use these keys. The generated `.env.example` files remain the source of truth for your selected stack.
 
 {/* env-contract:better-auth BETTER_AUTH_SECRET,BETTER_AUTH_URL */}
 {/* env-contract:stripe VITE_STRIPE_PUBLISHABLE_KEY,STRIPE_SECRET_KEY,STRIPE_WEBHOOK_SECRET */}
@@ -111,7 +77,7 @@ of truth for your selected stack, including database URLs and provider-specific 
 {/* env-contract:s3 AWS_S3_REGION,AWS_S3_ACCESS_KEY_ID,AWS_S3_SECRET_ACCESS_KEY,AWS_S3_BUCKET_NAME */}
 {/* env-contract:r2 R2_ACCOUNT_ID,R2_ACCESS_KEY_ID,R2_SECRET_ACCESS_KEY,R2_BUCKET_NAME */}
 
-| Selection     | Common generated keys                                                                          |
+| Selection     | Keys                                                                                           |
 | ------------- | ---------------------------------------------------------------------------------------------- |
 | Better Auth   | `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`                                                        |
 | Stripe        | `VITE_STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`                    |
@@ -121,77 +87,28 @@ of truth for your selected stack, including database URLs and provider-specific 
 | Amazon S3     | `AWS_S3_REGION`, `AWS_S3_ACCESS_KEY_ID`, `AWS_S3_SECRET_ACCESS_KEY`, `AWS_S3_BUCKET_NAME`      |
 | Cloudflare R2 | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`                  |
 
-Generate strong values for secrets such as `BETTER_AUTH_SECRET`. Keep `.env` out of version control,
-and set the same required keys in your hosting provider before deployment.
+## 6. Run and verify
 
-## 6. Run and verify the project
-
-For the default TypeScript scaffold, start the generated development scripts:
+For TypeScript projects, start the generated development scripts:
 
 ```npm
 npm run dev
 ```
 
-Open the web URL printed by the command and confirm that the starter page loads. If the stack has a
-separate backend, confirm its health or example endpoint using the URL printed in the terminal. Stop
-the processes before continuing.
+Open the web URL the command prints and confirm the starter page loads. With a separate backend, confirm its health endpoint too. Native-language entrypoints vary by framework, so the generated README is the command authority: `cargo run` for Rust, `uv run ...` for Python, `go run ...` for Go, `mix phx.server` for Phoenix, `dotnet run` for .NET, and the Expo start script for React Native.
 
-Language-native entrypoints vary with the selected framework, so the generated README is the command
-authority:
+Run the generated test or check command after the first successful startup. Do not assume one universal command across ecosystems.
 
-| Ecosystem    | Typical development command                                                          |
-| ------------ | ------------------------------------------------------------------------------------ |
-| React Native | Package-manager `start` script, followed by the Expo simulator/device workflow       |
-| Rust         | `cargo run` or the workspace command named in the README                             |
-| Python       | The `uv run ...` command named for the selected framework                            |
-| Go           | `go run ...` for the generated `main` package                                        |
-| Java/Kotlin  | `./mvnw spring-boot:run`, `./gradlew bootRun`, or the generated framework equivalent |
-| Elixir       | `mix phx.server` for Phoenix projects                                                |
-| .NET         | `dotnet run` with the generated project path when required                           |
+## 7. Inspect what you got
 
-Run the generated test/check command after the first successful startup. Do not assume one universal
-command across ecosystems.
+Generated projects include `bts.jsonc` with the selected stack, `bts.lock.json` with the scaffold baseline, framework and config files for the ecosystem, the reproducible command that created them, and optional AI docs such as `CLAUDE.md` or `AGENTS.md`. Commit both BTS files; later commands depend on them.
 
-## 7. Inspect the project
+## 8. Change the stack later
 
-Generated projects include:
-
-- `bts.jsonc` with the selected stack and schema reference.
-- Framework, package, and config files for the selected ecosystem.
-- A reproducible command printed by the CLI.
-- Optional AI docs such as `CLAUDE.md`, `AGENTS.md`, or `.cursorrules`.
-- README and setup notes where the selected templates provide them.
-
-## 8. Change the selected stack later
-
-Inside a generated project, use `add` for capabilities and stack selections. Preview the plan
-first:
+Inside an existing project, use `add` for new capabilities and preview first:
 
 ```npm
 npm create better-fullstack@latest add -- --email resend --dry-run
-npm create better-fullstack@latest add -- --email resend
 ```
 
-The `add` command reads `bts.jsonc`, skips selections already present, protects generated files that
-you changed, and prints install guidance when dependencies are not installed automatically.
-
-## 9. Check and update the scaffold
-
-```npm
-npm create better-fullstack@latest check -- --skip-checks
-npm create better-fullstack@latest update
-```
-
-`check` diagnoses config, dependencies, env files, and optionally native/build checks. `update`
-defaults to a review-only template-drift plan. Review the categorized paths and pass that exact plan
-token. Apply creates a recovery point and rolls failed writes back. The additional
-`--acknowledge-unproven-manifest-v1` flag is required only for migrated or manually adopted
-manifests whose original lineage remains unverified.
-
-## Next
-
-- [CLI Create](/docs/cli/create/) lists every scaffold flag.
-- [CLI Add](/docs/cli/add/) explains existing-project stack updates.
-- [CLI Update](/docs/cli/update/) explains baseline-aware template updates.
-- [Stack Builder](/docs/web-builder/) explains browser preview, Edit & Run, and ZIP download.
-- [Ecosystems](/docs/ecosystems/) compares the supported project families.
+`add` reads `bts.jsonc`, skips selections already present, and refuses to overwrite files you edited. [Project Lifecycle](/docs/getting-started/lifecycle/) explains when to use `add`, `update`, `check`, and the rest.
