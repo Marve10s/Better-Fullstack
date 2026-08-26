@@ -25,7 +25,7 @@
     "test:ai-examples": "cd apps/cli && bun test test/examples.test.ts",
     "test:plugin-bundle": "bun run scripts/validate-plugin-bundle.ts",
     "test:agent-docs": "bun run scripts/validate-agent-docs.ts",
-    "test:workflow-security": "bun test scripts/validate-preview-workflows.test.ts && bun run scripts/validate-preview-workflows.ts",
+    "test:workflow-security": "bun test scripts/dependency-workflows.test.ts scripts/validate-preview-workflows.test.ts && bun run scripts/validate-preview-workflows.ts",
     "test:operational-trust": "bun test apps/analytics/test/retirement.test.ts packages/backend/test/analytics-backfill-contract.test.ts scripts/planning-registry.test.ts scripts/record-scaffbench-canonical.test.ts apps/cli/test/scaffbench-solvability-contract.test.ts",
     "test:external-upgrades": "bun run scripts/validate-external-upgrades.ts",
     "test:published-package": "bun run scripts/published-package-smoke.ts",
@@ -72,20 +72,23 @@
   "devDependencies": {
     "@effect/platform": "^0.96.2",
     "@effect/platform-bun": "^0.90.0",
-    "@types/bun": "^1.3.14",
+    "@types/bun": "^1.4.0",
     "@types/three": "^0.183.1",
     "changelogithub": "^14.0.0",
     "effect": "^3.22.1",
     "lefthook": "^2.1.10",
     "lint-staged": "^16.4.0",
     "oxfmt": "^0.19.0",
-    "oxlint": "^1.78.0",
+    "oxlint": "^1.79.0",
     "playwright": "1.62.1",
-    "turbo": "^2.10.10",
+    "turbo": "^2.10.11",
     "typescript": "5.9.3"
   },
   "engines": {
     "node": ">=20"
+  },
+  "overrides": {
+    "changelogen": "0.6.2"
   },
   "packageManager": "bun@1.3.5"
 }
