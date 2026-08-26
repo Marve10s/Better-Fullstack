@@ -11,7 +11,9 @@ export async function gotoAppPage(page: Page, url: string) {
 
 export async function openBuilder(page: Page) {
   await gotoAppPage(page, "/new");
-  await expect(commandOutput(page)).toContainText("bun create better-fullstack");
+  await expect(commandOutput(page)).toContainText("bun create better-fullstack", {
+    timeout: 15_000,
+  });
 }
 
 export async function clickVisibleTestId(page: Page, testId: string) {

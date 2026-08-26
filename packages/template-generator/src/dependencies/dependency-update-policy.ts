@@ -23,7 +23,7 @@ export const DEPENDENCY_UPDATE_POLICIES: Readonly<Record<string, DependencyUpdat
     reason: "TypeScript 7 currently breaks generated database package type portability (TS2883).",
   },
   turbo: {
-    pinnedVersion: "^2.10.0",
+    pinnedVersion: "2.10.11",
     reason: "Newer 2.10.x releases are quarantined by Yarn hardened mode.",
   },
   tsdown: {

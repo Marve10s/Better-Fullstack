@@ -420,7 +420,7 @@ describe("Virtual Generator Regressions", () => {
     expect(packageHasDependency(dbPackageJson, "pg")).toBe(true);
     expect(packageHasDependency(authPackageJson, "better-auth")).toBe(true);
     expect(packageHasDependency(authPackageJson, "@better-auth/drizzle-adapter")).toBe(true);
-    expect(packageHasDependency(rootPackageJson, "turbo")).toBe(true);
+    expect(rootPackageJson?.devDependencies?.turbo).toBe("2.10.11");
 
     for (const filePath of [
       ".devcontainer/devcontainer.json",

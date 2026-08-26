@@ -174,7 +174,7 @@ export const dependencyVersionMap = {
   // feTS
   fets: "^0.8.10",
 
-  turbo: "^2.10.0",
+  turbo: "2.10.11",
   nx: "^23.1.1",
   "vite-plus": "^0.2.9",
   "@voidzero-dev/vite-plus-core": "^0.2.9",

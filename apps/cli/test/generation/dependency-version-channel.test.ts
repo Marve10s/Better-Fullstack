@@ -448,7 +448,7 @@ describe("applyDependencyVersionChannel", () => {
       {
         name: "beta-floor-test",
         devDependencies: {
-          turbo: "^2.10.0",
+          turbo: "2.10.11",
           vite: "^7.2.0",
         },
       },
@@ -497,7 +497,7 @@ describe("applyDependencyVersionChannel", () => {
 
     const packageJson = await fs.readJson(path.join(projectDir, "package.json"));
 
-    expect(packageJson.devDependencies.turbo).toBe("^2.10.0");
+    expect(packageJson.devDependencies.turbo).toBe("2.10.11");
     expect(packageJson.devDependencies.vite).toBe("^8.0.0-beta.1");
   });
 
