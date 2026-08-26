@@ -15,6 +15,18 @@ import {
 import { DEFAULT_STACK_SELECTION } from "@/stack/stack-translation";
 
 describe("compatibility issue helpers", () => {
+  it("preserves Encore's managed runtime sentinel", () => {
+    const stack = {
+      ...DEFAULT_STACK_SELECTION,
+      backend: "encore",
+      runtime: "none",
+    } as const;
+    const result = analyzeStackCompatibility(stack);
+
+    expect(result.adjustedStack?.runtime ?? stack.runtime).toBe("none");
+    expect(result.changes).not.toContainEqual(expect.objectContaining({ category: "runtime" }));
+  });
+
   it("returns graph reasons and replacement options from one decision", () => {
     const stack = {
       ...DEFAULT_STACK_SELECTION,

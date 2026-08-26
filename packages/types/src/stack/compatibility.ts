@@ -1079,10 +1079,11 @@ export const analyzeStackCompatibility = (
     });
   }
 
-  // Runtime "none" only for convex and fullstack backends
+  // Runtime "none" only for backends that provide or do not need a runtime
   if (
     nextStack.runtime === "none" &&
     nextStack.backend !== "convex" &&
+    nextStack.backend !== "encore" &&
     nextStack.backend !== "none" &&
     nextStack.backend !== "self-next" &&
     nextStack.backend !== "self-vinext" &&

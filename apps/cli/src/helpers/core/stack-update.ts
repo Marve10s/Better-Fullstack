@@ -1713,10 +1713,17 @@ export async function planStackUpdate(
     return {
       success: false,
       projectDir,
-      error: `The ${SCAFFOLD_MANIFEST_FILE} scaffold manifest is invalid: ${manifestResult.error}. Repair or delete it before updating the stack.`,
+      error: `The ${SCAFFOLD_MANIFEST_FILE} scaffold manifest is invalid: ${manifestResult.error}. Repair it, or delete it and complete the adoption flow before updating the stack.`,
     };
   }
-  const manifest = manifestResult.status === "valid" ? manifestResult.manifest : null;
+  if (manifestResult.status === "missing") {
+    return {
+      success: false,
+      projectDir,
+      error: `No ${SCAFFOLD_MANIFEST_FILE} scaffold baseline found. Run the read-only adopt plan and confirm its exact token before updating the stack.`,
+    };
+  }
+  const manifest = manifestResult.manifest;
 
   const projectName = await inferProjectName(projectDir);
   const currentConfig = configFromBtsConfig(currentBtsConfig, projectDir, projectName);
@@ -2416,6 +2423,7 @@ export async function applyStackUpdate(
       );
     }
 
+    let manifestWritten = false;
     await refreshScaffoldManifestFiles(
       plan.projectDir,
       [...plan.operations.map((operation) => operation.path), ...versionChannelRewrites],
@@ -2428,9 +2436,13 @@ export async function applyStackUpdate(
       {
         writeFile: async (manifestContent) => {
           await writeProjectTransactionFile(transaction, SCAFFOLD_MANIFEST_FILE, manifestContent);
+          manifestWritten = true;
         },
       },
     );
+    if (!manifestWritten) {
+      throw new Error("Scaffold manifest changed before the stack update could refresh it.");
+    }
     await commitProjectTransaction(transaction);
   } catch (error) {
     try {

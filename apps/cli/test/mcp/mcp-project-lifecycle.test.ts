@@ -123,6 +123,7 @@ describe("MCP project lifecycle parity", () => {
       const projectDir = await fs.mkdtemp(path.join(tmpdir(), "bfs-mcp-output-contract-"));
       roots.push(projectDir);
       await fs.copy(historicalFixture, projectDir);
+      await adoptProject(projectDir);
 
       assertOutputSchema(projectStatusOutputSchema, await getMcpProjectStatus(projectDir));
       assertOutputSchema(
@@ -170,7 +171,6 @@ describe("MCP project lifecycle parity", () => {
       assertOutputSchema(recoveryOutputSchema, recoveredRemoval);
       expect(recoveredRemoval.success).toBe(true);
 
-      await adoptProject(projectDir);
       const updatePlan = await planMcpProjectUpdate(projectDir);
       assertOutputSchema(projectUpdateOutputSchema, updatePlan);
       expect(updatePlan.success).toBe(true);
@@ -407,6 +407,7 @@ describe("MCP project lifecycle parity", () => {
     const projectDir = await fs.mkdtemp(path.join(tmpdir(), "bfs-part-removal-"));
     roots.push(projectDir);
     await fs.copy(historicalFixture, projectDir);
+    await adoptProject(projectDir);
     const target = "backend:typescript:hono.validation:typescript:zod";
 
     const plan = await planMcpPartRemoval(projectDir, target);

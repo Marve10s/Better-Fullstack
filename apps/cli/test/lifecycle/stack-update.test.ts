@@ -4768,6 +4768,29 @@ describe("stack update planner", () => {
     expect(after).toEqual(before);
   });
 
+  it("rolls back when the scaffold manifest disappears before refresh", async () => {
+    const root = await makeTempRoot("bfs-stack-update-manifest-refresh-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir));
+    const configBefore = await readFile(join(projectDir, "bts.jsonc"), "utf-8");
+
+    const result = await applyStackUpdate(
+      projectDir,
+      { email: "resend" },
+      {
+        beforeManifestRefresh: () => rm(join(projectDir, "bts.lock.json")),
+      },
+    );
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toContain("manifest changed before the stack update could refresh it");
+      expect(result.lifecycle?.status).toBe("rolled-back");
+    }
+    expect(await readFile(join(projectDir, "bts.jsonc"), "utf-8")).toBe(configBefore);
+    expect(await pathExists(join(projectDir, "bts.lock.json"))).toBe(false);
+  });
+
   it("keeps a crashed apply recoverable after a journaled removal", async () => {
     const root = await makeTempRoot("bfs-stack-update-crash-journal-");
     const projectDir = join(root, "app");
@@ -4880,6 +4903,27 @@ describe("stack update planner", () => {
     const applied = await applyStackUpdate(projectDir, { email: "resend" });
     expect(applied.success).toBe(false);
     expect(await readFile(join(projectDir, "bts.lock.json"), "utf-8")).toBe("{ not json");
+  });
+
+  it("refuses stack updates without an adopted scaffold baseline", async () => {
+    const root = await makeTempRoot("bfs-stack-update-missing-manifest-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir));
+    const configPath = join(projectDir, "bts.jsonc");
+    const configBefore = await readFile(configPath, "utf-8");
+    await rm(join(projectDir, "bts.lock.json"));
+
+    const plan = await planStackUpdate(projectDir, { email: "resend" });
+    expect(plan.success).toBe(false);
+    if (!plan.success) {
+      expect(plan.error).toContain("bts.lock.json");
+      expect(plan.error).toContain("adopt");
+    }
+
+    const applied = await applyStackUpdate(projectDir, { email: "resend" });
+    expect(applied.success).toBe(false);
+    expect(await readFile(configPath, "utf-8")).toBe(configBefore);
+    expect(await pathExists(join(projectDir, "bts.lock.json"))).toBe(false);
   });
 
   it("does not gate additive (none -> X) stack additions", async () => {

@@ -35,6 +35,22 @@ describe("resolveCompatibilityAdjustments", () => {
     expect(result).toEqual({ changes: {}, adjustments: [] });
   });
 
+  it("stays silent for Encore's managed runtime", () => {
+    const result = resolveCompatibilityAdjustments(
+      {
+        ...TS_FLAG_BASE,
+        backend: "encore",
+        runtime: "none",
+        database: "none",
+        orm: "none",
+        api: "none",
+      },
+      { onlyDefinedKeys: true },
+    );
+
+    expect(result).toEqual({ changes: {}, adjustments: [] });
+  });
+
   it("stays silent for a valid Effect backend stack (no spurious backendLibraries change)", () => {
     const result = resolveCompatibilityAdjustments(
       {

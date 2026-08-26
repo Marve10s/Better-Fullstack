@@ -43,8 +43,8 @@ export function sha256(value: string | Buffer): string {
   return createHash("sha256").update(value).digest("hex");
 }
 
-function stringArray(value: unknown): string[] {
-  return Array.isArray(value) && value.every((entry) => typeof entry === "string") ? value : [];
+function stringArray(value: unknown): string[] | null {
+  return Array.isArray(value) && value.every((entry) => typeof entry === "string") ? value : null;
 }
 
 function verificationSummary(check: JsonRecord) {
@@ -80,10 +80,22 @@ export function evaluateUpdateGate(input: {
   const support = asRecord(input.status.updateSupport);
   const upgrade = asRecord(input.status.upgrade);
   const verification = verificationSummary(input.check);
-  const conflicts = stringArray(input.secondPlan.conflicts);
-  const manual = Array.isArray(input.secondPlan.manual) ? input.secondPlan.manual : [];
-  const removed = stringArray(input.secondPlan.removed);
-  const actionablePaths = stringArray(input.secondPlan.actionable);
+  const conflictsValue = stringArray(input.secondPlan.conflicts);
+  const manualValue = Array.isArray(input.secondPlan.manual) ? input.secondPlan.manual : null;
+  const removedValue = stringArray(input.secondPlan.removed);
+  const actionableValue = stringArray(input.secondPlan.actionable);
+  const malformedDecisionArrays = [
+    ["conflicts", conflictsValue],
+    ["manual", manualValue],
+    ["removed", removedValue],
+    ["actionable", actionableValue],
+  ]
+    .filter(([, value]) => value === null)
+    .map(([field]) => field);
+  const conflicts = conflictsValue ?? [];
+  const manual = manualValue ?? [];
+  const removed = removedValue ?? [];
+  const actionablePaths = actionableValue ?? [];
   const reviewToken =
     typeof input.secondPlan.reviewToken === "string" &&
     /^[0-9a-f]{64}$/.test(input.secondPlan.reviewToken)
@@ -109,6 +121,11 @@ export function evaluateUpdateGate(input: {
     reasons.push("The update plan lacks verified manifest-v2 recovery guarantees.");
   }
   if (!reviewToken) reasons.push("The update plan did not issue a valid review token.");
+  if (malformedDecisionArrays.length > 0) {
+    reasons.push(
+      `The update plan contains malformed decision arrays: ${malformedDecisionArrays.join(", ")}.`,
+    );
+  }
   if (conflicts.length > 0) reasons.push("The update plan contains conflicts.");
   if (manual.length > 0) reasons.push("The update plan contains manual-review files.");
   if (removed.length > 0) reasons.push("The update plan contains retained template removals.");

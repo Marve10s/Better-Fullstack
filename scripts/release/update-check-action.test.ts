@@ -154,6 +154,26 @@ describe("opt-in update action gate", () => {
     }
   });
 
+  test("fails closed when decision arrays are malformed", () => {
+    const cases: Array<[string, unknown]> = [
+      ["actionable", ["src/generated.ts", 1]],
+      ["conflicts", ["blocked.ts", 1]],
+      ["removed", ["old.ts", 1]],
+      ["manual", {}],
+    ];
+
+    for (const [field, malformed] of cases) {
+      const value = evidence();
+      value.firstPlan[field] = malformed;
+      value.secondPlan[field] = structuredClone(malformed);
+      const result = evaluateUpdateGate(value);
+      expect(result.eligible, field).toBe(false);
+      expect(result.reasons, field).toContain(
+        `The update plan contains malformed decision arrays: ${field}.`,
+      );
+    }
+  });
+
   test("stages only reviewed paths and the manifest", () => {
     const expected = expectedChangedPaths("apps/demo", ["src/generated.ts"]);
     expect(expected).toEqual(["apps/demo/bts.lock.json", "apps/demo/src/generated.ts"]);
