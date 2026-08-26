@@ -10,10 +10,10 @@ Three commands have intentionally narrow scope today. They work, but their surfa
 ## Operational contract
 
 | Command     | Preconditions                                                               | Preview                                  | Writes                                                                      |
-| ----------- | --------------------------------------------------------------------------- | ---------------------------------------- | --------------------------------------------------------------------------- |
-| `recommend` | None. Runs before a project exists.                                         | The command only prints.                 | Nothing.                                                                    |
-| `gen`       | An existing generated TypeScript project using tRPC or oRPC.                | `--dry-run` prints source and wiring.    | One resource file plus the router index when a safe anchor exists.          |
-| `registry`  | A generated project and a trusted local directory or `file://` pack source. | `--dry-run` lists files, deps, env keys. | New files and metadata. Existing files are skipped rather than overwritten. |
+| ----------- | ------------------------------------------------------------------------------ | ------------------------------------------- | ------------------------------------------------------------------------------ |
+| `recommend` | None. Runs before a project exists.                                             | The command only prints.                    | Nothing.                                                                        |
+| `gen`       | An existing generated TypeScript project using tRPC or oRPC.                    | `--dry-run` prints source and wiring.       | One resource file plus the router index when a safe anchor exists.             |
+| `registry`  | A generated project and a trusted local directory or `file://` pack source.    | `--dry-run` lists files, deps, env keys.    | New files and metadata. Existing files are skipped rather than overwritten.    |
 
 Run any of them on a clean Git worktree so you can revert the diff.
 

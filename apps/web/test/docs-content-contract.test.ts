@@ -8,12 +8,12 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { CALLOUT_KINDS } from "@/components/docs/mdx/callout";
-import { GUIDE_COMPATIBILITY_KINDS } from "@/components/docs/mdx/guide-compatibility-note";
-import { buildSearchSections } from "@/lib/docs/search";
-import { LOCALIZED_CONTENT_LOCALES } from "@/lib/i18n/locales";
+import { CALLOUT_KINDS } from "../src/components/docs/mdx/callout";
+import { GUIDE_COMPATIBILITY_KINDS } from "../src/components/docs/mdx/guide-compatibility-note";
+import { buildSearchSections } from "../src/lib/docs/search";
+import { LOCALIZED_CONTENT_LOCALES } from "../src/lib/i18n/locales";
 
-const WEB_ROOT = dirname(dirname(dirname(fileURLToPath(import.meta.url))));
+const WEB_ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const CONTENT_ROOT = join(WEB_ROOT, "content");
 const DOCS_ROOT = join(CONTENT_ROOT, "docs");
 const GUIDES_ROOT = join(CONTENT_ROOT, "guides");
@@ -41,24 +41,23 @@ const BUILDER_URL_KEYS = new Set([
 const PENDING_TRANSLATION_PATHS = [
   "content/docs/ai/mcp.mdx",
   "content/docs/ai/overview.mdx",
+  "content/docs/builder.mdx",
+  "content/docs/choosing-a-stack.mdx",
   "content/docs/cli/add.mdx",
   "content/docs/cli/create.mdx",
   "content/docs/cli/experimental.mdx",
   "content/docs/cli/gen.mdx",
   "content/docs/cli/index.mdx",
-  "content/docs/cli/mcp.mdx",
   "content/docs/cli/telemetry.mdx",
   "content/docs/cli/update.mdx",
   "content/docs/ecosystems/index.mdx",
   "content/docs/ecosystems/multi-ecosystem.mdx",
-  "content/docs/ecosystems/native-mobile.mdx",
+  "content/docs/ecosystems/native-apps.mdx",
   "content/docs/getting-started/first-project.mdx",
   "content/docs/getting-started/installation.mdx",
   "content/docs/getting-started/lifecycle.mdx",
   "content/docs/index.mdx",
-  "content/docs/stack-guides.mdx",
   "content/docs/verification.mdx",
-  "content/docs/web-builder.mdx",
   "content/blog/better-auth-architecture.mdx",
   "content/blog/drizzle-vs-prisma.mdx",
   "content/blog/self-backend-vs-separate-api.mdx",

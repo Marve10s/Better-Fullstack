@@ -2,16 +2,16 @@
 title: Installation
 description: What you need installed, the command that creates a project, and what the wizard asks.
 translationStatus: pending
-updated: 2026-08-21
+updated: 2026-08-22
 ---
 
-One command creates a Better Fullstack project. Your package manager runs the CLI on demand, so there is nothing to install globally.
+One command creates a project. Nothing installs globally because your package manager runs the CLI on demand.
 
 ## Prerequisites
 
-- **Node.js 20 or newer**, and only to run the CLI. Get it from [nodejs.org](https://nodejs.org/en/download).
-- **Git**, optional, and only if you want the CLI to initialize a repository.
-- **Your language toolchain**, optional, and only to build the project after the CLI writes it. Each [ecosystem page](/docs/ecosystems/) lists what its projects need.
+- Node.js 20 or newer, and only to run the CLI. Get it from [nodejs.org](https://nodejs.org/en/download).
+- Git, optional, if you want repository initialization.
+- Your language toolchain, optional, and only to build the project after scaffolding. Each [ecosystem page](/docs/ecosystems/) lists what its projects need.
 
 ## Create a project
 
@@ -32,23 +32,15 @@ npm create better-fullstack@latest my-app
 
 1. **Solo or multi-ecosystem.** One language for the whole project, or parts composed from several.
 2. **Ecosystem.** TypeScript, React Native, Rust, Python, Go, Java, Elixir, or .NET.
-3. **How much to configure.** Answer every question, or pick the sections you care about and take defaults for the rest.
-4. **The stack.** Frontend, backend, database, ORM, API layer, auth, and the tooling your ecosystem supports.
-5. **Git and dependency install.** Both run after the files are written.
+3. **How much to configure.** Answer every question, or pick the sections you care about.
+4. **The stack.** Frontend, backend, database, ORM, API layer, auth, and tooling.
 
 Each answer narrows the next one, so the wizard only offers options that work with what you already picked.
 
 ## Build it in the browser instead
 
-The [Stack Builder](/new) has the same options in a visual editor, and needs nothing installed. Pick a stack, watch incompatible options switch off as you go, then copy the command it writes or download the project as a ZIP.
+The [Stack Builder](/new) has the same options in a visual editor and needs nothing installed. Pick a stack, watch incompatible options switch off as you go, then copy the command or download the ZIP.
 
 ## Skip the prompts
 
-Every flag answers the prompt it covers, so a fully flagged command never asks anything. Use that form in CI, in bug reports, and anywhere someone else has to reproduce your stack.
-
-[CLI Create](/docs/cli/create/) documents every flag, the `--template` presets, and `--dry-run` for listing generated files without writing them.
-
-## Next
-
-- Build and run a project end to end in [First Project](/docs/getting-started/first-project/).
-- Compare language support in [Ecosystems](/docs/ecosystems/).
+Every flag answers the prompt it covers, so a fully flagged command never asks anything. Use that form in CI, in bug reports, and anywhere someone else has to reproduce your stack. [CLI Create](/docs/cli/create/) documents every flag plus `--dry-run` for listing files without writing them.

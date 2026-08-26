@@ -1,42 +1,42 @@
 ---
 title: AI Agents
-description: How AI coding agents drive Better Fullstack through generated context files, the agent skill, the plugin bundle, and the MCP server.
+description: How coding agents drive Better Fullstack through the MCP server, the agent plugin, the agent skill, or explicit CLI flags.
 translationStatus: pending
-updated: 2026-08-21
+updated: 2026-08-22
 ---
 
-Better Fullstack gives coding agents four ways to reach the generator. They all run the same code, so pick the narrowest one your agent supports.
+Better Fullstack gives coding agents four ways to reach the generator. All of them run the same code, so pick the narrowest one your agent supports.
 
 ## Choose an integration
 
-| Integration                 | Includes                                             | Best for                                                                  |
-| --------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------- |
-| [MCP server](/docs/ai/mcp/) | Structured tools and resources over stdio            | Clients that need schema lookup, validation, planning, and guarded writes |
-| Agent plugin                | The MCP server and two skills in one portable bundle | Agents with plugin or marketplace support                                 |
-| Agent skill                 | A CLI-driven scaffold workflow                       | Agents with shell access and no MCP connection                            |
-| Explicit CLI flags          | Nothing to install                                   | Any agent that can run a command                                          |
+| Integration                        | Includes                                             | Best for                                                                  |
+| ---------------------------------- | ------------------------------------------------------ | --------------------------------------------------------------------------- |
+| [MCP server](/docs/ai/mcp/)        | Structured tools and resources over stdio              | Clients that need schema lookup, validation, planning, and guarded writes   |
+| Agent plugin                       | The MCP server and two skills in one portable bundle   | Agents with plugin or marketplace support                                   |
+| [Agent skill](#agent-skill)        | A CLI-driven scaffold workflow                         | Agents with shell access and no MCP connection                              |
+| Explicit CLI flags                 | Nothing to install                                     | Any agent that can run a command                                            |
 
 ## Preferred workflow
 
-1. Choose the target ecosystem from the [Ecosystem reference](/docs/ecosystems/).
-2. Drive the generator through the MCP server, the agent skill, or explicit CLI flags.
+1. Pick the ecosystem from [Ecosystems](/docs/ecosystems/).
+2. Drive the generator through the MCP server, the skill, or explicit flags.
 3. Validate compatibility before scaffolding.
 4. Dry-run to inspect the file tree.
-5. Scaffold with dependency installation disabled while an agent is driving.
-6. Tell the user the exact install, test, and run commands.
+5. Scaffold with `--no-install` while an agent drives.
+6. Report the exact install, test, and run commands to the user.
 
 ## Generated AI docs
 
 `--ai-docs` writes project-local context files that a coding agent reads inside the generated project:
 
 | Value         | File generated |
-| ------------- | -------------- |
-| `claude-md`   | `CLAUDE.md`    |
-| `agents-md`   | `AGENTS.md`    |
-| `cursorrules` | `.cursorrules` |
-| `none`        | No AI docs     |
+| ------------- | --------------- |
+| `claude-md`   | `CLAUDE.md`     |
+| `agents-md`   | `AGENTS.md`     |
+| `cursorrules` | `.cursorrules`  |
+| `none`        | No AI docs      |
 
-Pass more than one value to write more than one file:
+Pass several values to write several files:
 
 ```npm
 npm create better-fullstack@latest my-app -- --ai-docs claude-md agents-md
@@ -58,20 +58,19 @@ npm create better-fullstack@latest my-app -- \
   --api trpc \
   --db-setup none \
   --ai-docs agents-md \
-  --version-channel stable \
   --no-install \
   --no-git
 ```
 
 <Callout kind="info" title="CLI rules for agents">
-`--yes` accepts defaults and is incompatible with core stack flags. Explicit flags skip only the categories they cover. Pass `none` for optional categories you want disabled.
+`--yes` accepts defaults and conflicts with core stack flags. Explicit flags skip only their own categories. Pass `none` for optional categories you want disabled.
 </Callout>
 
 ## Agent skill
 
-The agent skill teaches an agent to use the CLI instead of hand-writing starter files. It maps the requested stack to graph parts, runs a dry-run, scaffolds without install or Git side effects, then reports the follow-up commands.
+The skill teaches an agent to use the CLI instead of hand-writing starter files. It maps a requested stack to graph parts, dry-runs, scaffolds without install or Git side effects, then reports follow-up commands.
 
-The skill lives in this repository at `.agents/skills/better-fullstack`. The repository holds other internal skills too, so install only `better-fullstack`:
+The skill lives in this repository at `.agents/skills/better-fullstack`. The repository holds internal skills too, so install only this one:
 
 <PMTabs
   npm="npx skills@latest add Marve10s/Better-Fullstack --skill better-fullstack --agent codex --global --yes"
@@ -80,25 +79,15 @@ The skill lives in this repository at `.agents/skills/better-fullstack`. The rep
   yarn="yarn dlx skills@latest add Marve10s/Better-Fullstack --skill better-fullstack --agent codex --global --yes"
 />
 
-Pass several agents in one command:
+Pass several agents in one command by repeating values after `--agent`: codex, claude-code, cursor, github-copilot, gemini-cli, and others that the skills CLI supports. Omit `--global` for a project-local install that records the version with the repository.
 
-```bash
-bunx skills@latest add Marve10s/Better-Fullstack \
-  --skill better-fullstack \
-  --agent codex claude-code cursor github-copilot gemini-cli \
-  --global \
-  --yes
-```
-
-Omit `--global` for a project-local install, which records the skill version with the repository.
-
-Invoke the skill by name:
+Invoke it by name:
 
 ```text
 Use $better-fullstack to create a React + Vite app with Hono, SQLite, Drizzle, tRPC, Tailwind, DaisyUI, Pino, Vitest, and Biome.
 ```
 
-Agents that match skills implicitly can also pick it up from a plain request to scaffold, plan, or extend a Better Fullstack project. Either way the skill maps the stack to flags, dry-runs it, runs the same command for real when the plan succeeds, keeps `--no-install` and `--no-git` on unless you ask otherwise, and reports the command it used along with any compatibility adjustment.
+Agents that match skills implicitly also pick it up from a plain request to scaffold, plan, or extend a Better Fullstack project.
 
 ## Agent plugin
 
@@ -107,23 +96,21 @@ The plugin bundles the MCP server with two focused skills:
 - `scaffold-project` plans and creates new Better Fullstack projects.
 - `add-to-project` previews and applies supported additions to existing generated projects.
 
-Use it when your agent supports plugin marketplaces and you want one install to cover both the server and the skills.
+Use it when your agent supports plugin marketplaces and you want one install to cover the server and both skills.
 
-For Claude Code, add this repository as a marketplace and install from it:
+For Claude Code:
 
 ```bash
 claude plugin marketplace add Marve10s/Better-Fullstack
 claude plugin install better-fullstack@better-fullstack
 ```
 
-The interactive `/plugin` flow works too. Claude Code namespaces the bundled skills by plugin name, so they are `better-fullstack:scaffold-project` and `better-fullstack:add-to-project`.
+Claude Code namespaces bundled skills as `better-fullstack:scaffold-project` and `better-fullstack:add-to-project`.
 
-For Codex, the repository ships a marketplace catalog at `.agents/plugins/marketplace.json` pointing at the shared bundle in `./plugin`. Install it through the Codex plugin marketplace flow with this repository as the source. The Codex manifest is `plugin/.codex-plugin/plugin.json` and the MCP server definition stays shared at `plugin/.mcp.json`.
+For Codex, the repository ships a marketplace catalog at `.agents/plugins/marketplace.json` pointing at the shared bundle in `./plugin`. The Codex manifest is `plugin/.codex-plugin/plugin.json` and the MCP definition stays shared at `plugin/.mcp.json`.
 
-The bundle also implements the open Agent Plugins 1.0 format. Its root `plugin.json` identifies the plugin, `skills/` holds the reusable skills, and `mcp.json` declares the stdio MCP server, so a compatible client can load the same package without a client-specific layout.
+The bundle also implements the open Agent Plugins 1.0 format: root `plugin.json` identifies it, `skills/` holds reusable skills, and `mcp.json` declares the stdio server, so compatible clients load the same package directly.
 
-## MCP server
+## One thing not to confuse
 
-The MCP server exposes schema and preset discovery, deterministic recommendations, compatibility checks, dry-run previews, project creation, stack updates, and focused capability additions as structured tool calls. See the [MCP server guide](/docs/ai/mcp/) for setup and the full tool reference.
-
-This is a different thing from the generated-project `mcp` capability. The server helps an agent create Better Fullstack projects. The capability writes MCP configuration inside a project you generated.
+The MCP **server** helps an agent create Better Fullstack projects. The generated-project `mcp` capability is different: it writes MCP configuration inside an app you generated. See [MCP Server](/docs/ai/mcp/) for the former.

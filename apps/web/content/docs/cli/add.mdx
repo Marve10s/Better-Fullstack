@@ -2,18 +2,10 @@
 title: Add and Remove Capabilities
 description: Add typed tooling, deployment targets, and stack capabilities to an existing project, or remove one under review.
 translationStatus: pending
-updated: 2026-08-21
+updated: 2026-08-22
 ---
 
-The `add` command updates an existing Better Fullstack project. It reads `bts.jsonc`, plans the requested stack change, writes safe generated-file updates, and updates the project config.
-
-```npm
-npm create better-fullstack@latest add -- \
-  --part codeQuality:universal:eslint \
-  --part codeQuality:universal:prettier
-```
-
-Preview a service update before writing files:
+`add` updates an existing Better Fullstack project. It reads `bts.jsonc`, plans the requested change, writes safe generated-file updates, and records the new selection.
 
 ```npm
 npm create better-fullstack@latest add -- --email resend --dry-run
@@ -21,104 +13,63 @@ npm create better-fullstack@latest add -- --email resend --dry-run
 
 ## Operational contract
 
-| Concern       | Contract                                                                                                    |
-| ------------- | ----------------------------------------------------------------------------------------------------------- |
-| Preconditions | Run inside a generated project with `bts.jsonc`, or pass `--project-dir`. Commit or stash local work first. |
-| Preview       | `add [flags] --dry-run` plans without writing.                                                              |
-| Writes        | Updates safe scaffold-owned files, dependencies, env examples, `bts.jsonc`, and the scaffold manifest.      |
-| Refuses       | Never overwrites a generated file that has diverged from its recorded baseline.                             |
-| Recovery      | Review the dry run, apply on a clean Git worktree, and revert the resulting commit if needed.               |
+| Concern       | Contract                                                                                                     |
+| ------------- | -------------------------------------------------------------------------------------------------------------- |
+| Preconditions | Run inside a generated project with `bts.jsonc`, or pass `--project-dir`. Commit or stash local work first.    |
+| Preview       | `add [flags] --dry-run` plans without writing.                                                                  |
+| Writes        | Updates scaffold-owned files, dependencies, env examples, `bts.jsonc`, and the manifest.                        |
+| Refuses       | Never overwrites a generated file that diverged from its recorded baseline.                                    |
+| Recovery      | Review the dry run, apply on a clean Git worktree, revert the commit if needed.                                |
 
 ## What add does
 
-- Reads `bts.jsonc` from the current project, or from `--project-dir`.
-- Prompts in dedicated tooling and capability sections when no explicit stack flags are passed.
-- Accepts additive stack flags such as `--email`, `--observability`, `--search`, `--file-storage`, `--web-deploy`, and `--server-deploy`.
-- Uses the same safe planning engine as the MCP stack-update tools for explicit stack flags.
-- Skips capabilities that are already selected.
-- Refuses capabilities whose setup is imperative rather than generated. They must be selected at `create` time.
-- Writes generated files, dependency changes, env examples, and config updates when the existing files still match the generated baseline.
-- Refuses to overwrite user-edited generated files and prints the manual-review blockers.
-- Prints an install command when dependency installation is skipped.
+- Prompts in tooling and capability sections when no explicit stack flags are passed.
+- Accepts additive flags such as `--email resend`, `--observability sentry`, `--search`, `--vector-db`, `--file-storage`, `--web-deploy`, and `--server-deploy`.
+- Accepts `--part role:ecosystem:tool` specs for anything part-addressable.
+- Uses the same planning engine as the MCP stack-update tools.
+- Skips capabilities already selected and refuses capabilities whose setup is imperative rather than generated.
+- Prints install guidance when dependency installation is skipped.
 
-<Callout kind="info" title="Preview first">
-Use `--dry-run` to inspect the file, dependency, env var, compatibility, and manual-review summary before applying a stack capability.
-</Callout>
+Most create-time stack fields are accepted for existing projects when the planner can apply them safely. Risky architecture swaps require manual review or a fresh scaffold.
 
 ## Flags
 
-| Flag                                      | Values or behavior                                                                                                                                                                                 |
-| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--part`                                  | One or more canonical `role:ecosystem:tool` Stack Part specs. Owner-scoped parts use `ownerRole.role:ecosystem:tool` or an explicit part ID.                                                       |
-| `--dry-run`                               | Plan the update and print the summary without writing files.                                                                                                                                       |
-| `--project-dir`                           | Path to the generated project. Defaults to the current directory.                                                                                                                                  |
-| `--install`                               | Install dependencies after adding files. Defaults to false for `add`. The lockfile it writes stays outside the transaction, so recovery restores generated files only and you must re-run install. |
-| `--package-manager`                       | `npm` `pnpm` `bun` `yarn`                                                                                                                                                                          |
-| `--email`                                 | Add an email provider such as `resend`, when compatible with the existing stack.                                                                                                                   |
-| `--observability`                         | Add an observability provider such as `sentry`, when compatible with the existing stack.                                                                                                           |
-| `--search` `--vector-db` `--file-storage` | Add supported service integrations.                                                                                                                                                                |
-| `--web-deploy` `--server-deploy`          | Add or update supported deployment targets.                                                                                                                                                        |
+| Flag                                      | Behavior                                                                                                                                            |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--part`                                  | One or more canonical `role:ecosystem:tool` specs; owner-scoped parts use `owner.role:ecosystem:tool`.                                                |
+| `--dry-run`                               | Plan the update and print the summary without writing files.                                                                                          |
+| `--project-dir`                           | Path to the generated project. Defaults to the current directory.                                                                                     |
+| `--install`                               | Install dependencies after adding files. Defaults to false; the lockfile stays outside the transaction, so re-run install after recovery.             |
+| `--package-manager`                       | `npm` `pnpm` `bun` `yarn`                                                                                                                              |
+| `--email` `--observability`               | Add providers such as `resend` or `sentry` when compatible with the stack.                                                                            |
+| `--search` `--vector-db` `--file-storage` | Add supported service integrations.                                                                                                                   |
+| `--web-deploy` `--server-deploy`          | Add or update deployment targets.                                                                                                                     |
 
-Most create-time stack fields are accepted for existing-project updates when the planner can apply them safely. Risky architecture swaps may require manual review or a fresh scaffold.
-
-## Selected capability examples
-
-This table explains common choices; it is not the complete accepted-value inventory. Use the [CLI Create flag tables](/docs/cli/create/#typescript-flags) for the current exhaustive
-list.
-
-| Capability                                                                                | Purpose                                                                                                            |
-| ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `turborepo`                                                                               | Monorepo orchestration.                                                                                            |
-| `vite-plus`                                                                               | Unified web toolchain and workspace orchestration (Beta).                                                          |
-| `docker-compose`                                                                          | Local service orchestration for supported stacks.                                                                  |
-| `eslint` `prettier`                                                                       | Code quality.                                                                                                      |
-| `pwa` `electron` `capacitor`                                                              | Progressive web app and desktop or mobile shells.                                                                  |
-| `msw` `storybook`                                                                         | Testing and component development utilities.                                                                       |
-| `swr` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` | Data fetching and UI utilities.                                                                                    |
-| `backend-utils`                                                                           | asyncHandler, ApiResponse, and a global error handler for Hono, Express, Fastify, Elysia, feTS, or NestJS servers. |
+Commonly added parts include `turborepo`, `docker-compose`, `eslint`, `prettier`, `pwa`, `electron`, `capacitor`, `msw`, `storybook`, and the TanStack data utilities. Vite+ is a toolchain profile selected as `toolchain:universal:vite-plus`; the package-manager flag still chooses npm, pnpm, Yarn, or Bun underneath it.
 
 <Callout kind="warning" title="Create-time only capabilities">
-`mcp`, `skills`, `ruler`, `biome`, `oxlint`, `ultracite`, `lefthook`, `husky`, `gitleaks`,
-`starlight`, `fumadocs`, `tauri`, `wxt`, and `opentui` run imperative setup steps that the
-transactional planner cannot write or roll back. `add` refuses them and the `add` prompts do not
-offer them; select them with `create` so every generated file lands in the scaffold baseline.
+`mcp`, `skills`, `ruler`, `biome`, `oxlint`, `ultracite`, `lefthook`, `husky`, `gitleaks`, `starlight`, `fumadocs`, `tauri`, `wxt`, and `opentui` run imperative setup steps that the transactional planner cannot write or roll back. `add` refuses them; select them with `create` so every generated file lands in the baseline.
 </Callout>
-
-Vite+ is a toolchain profile: select it as `toolchain:universal:vite-plus`. The package-manager
-flag still chooses npm, pnpm, Yarn, or Bun underneath Vite+.
-
-## Idempotency
-
-Canonical `stackParts` in `bts.jsonc` are the source of truth. Legacy flat projections remain readable for older projects, but new commands and prompts use Stack Parts. If every requested capability is already present, `add` reports that there are no stack changes to apply.
 
 ## Recommended workflow
 
 1. Commit or stash current work.
-2. Run `add --dry-run` with explicit stack flags.
-3. Review generated file changes.
-4. Re-run `add` without `--dry-run`.
-5. Install dependencies if the command skipped install.
-6. Run `create-better-fullstack check --skip-checks` for config/dependency/env validation, then the project's test, lint, or typecheck command.
+2. Run `add --dry-run` with explicit flags.
+3. Review the file, dependency, env, and manual-review summary.
+4. Re-run without `--dry-run`.
+5. Install dependencies if the command skipped it.
+6. Run `check --skip-checks`, then the project's own tests.
+
+If every requested capability is already present, `add` reports that there are no stack changes to apply.
 
 ## Remove a capability
 
-`remove` takes one selected capability back out. It plans by default, names the affected config
-fields and generated files, and returns a review token. No files are written during planning.
+`remove` takes one selected non-primary capability back out. It plans by default, names the affected config fields and generated files, and returns a review token. Nothing is written during planning:
 
-Use the exact stack-part spec reported by `status --json` or `bts.jsonc`:
+```bash
+npx create-better-fullstack@latest remove backend.auth:typescript:better-auth
+```
 
-<PMTabs
-  npm="npx -y create-better-fullstack@latest remove backend.auth:typescript:better-auth"
-  pnpm="pnpm dlx create-better-fullstack@latest remove backend.auth:typescript:better-auth"
-  bun="bunx create-better-fullstack@latest remove backend.auth:typescript:better-auth"
-  yarn="yarn dlx create-better-fullstack@latest remove backend.auth:typescript:better-auth"
-/>
+After reviewing, repeat the same target with `--apply --review-token <token>`. The token binds to the proposed config and file operations; missing or stale tokens fail closed. Apply uses the same transaction and recovery contract as [`update`](/docs/cli/update/).
 
-After reviewing the plan, repeat the same target with `--apply --review-token <token>`. The token is
-bound to the proposed config and file operations; missing or stale tokens fail closed. Apply uses
-the same transaction and recovery contract as `add` and [`update`](/docs/cli/update/).
-
-Primary frontend, backend, mobile, and database roles cannot be removed. Replace those choices with
-`add` so compatibility and migration risks are reviewed. When a removal is itself
-architecture-sensitive, apply also requires `--acknowledge-architecture-change`; Better Fullstack
-never migrates application data or schemas automatically.
+Primary frontend, backend, mobile, and database roles cannot be removed; replace those choices through `add` so compatibility and migration risks get reviewed. Architecture-sensitive removals additionally require `--acknowledge-architecture-change`. Application data and schemas are never migrated automatically.

@@ -43,7 +43,7 @@
     },
     {
       "source": "/docs/recipes/browser-zip-workflow.md",
-      "destination": "/docs/web-builder.md",
+      "destination": "/docs/builder.md",
       "permanent": true
     },
     {
@@ -53,27 +53,27 @@
     },
     {
       "source": "/docs/sections/deployment.md",
-      "destination": "/docs/stack-guides.md",
+      "destination": "/docs/choosing-a-stack.md",
       "permanent": true
     },
     {
       "source": "/docs/sections/frontend-and-apps.md",
-      "destination": "/docs/stack-guides.md",
+      "destination": "/docs/choosing-a-stack.md",
       "permanent": true
     },
     {
       "source": "/docs/sections/backend-and-api.md",
-      "destination": "/docs/stack-guides.md",
+      "destination": "/docs/choosing-a-stack.md",
       "permanent": true
     },
     {
       "source": "/docs/sections/data-and-storage.md",
-      "destination": "/docs/stack-guides.md",
+      "destination": "/docs/choosing-a-stack.md",
       "permanent": true
     },
     {
       "source": "/docs/sections/auth-and-payments.md",
-      "destination": "/docs/stack-guides.md",
+      "destination": "/docs/choosing-a-stack.md",
       "permanent": true
     },
     {
@@ -108,7 +108,7 @@
     },
     {
       "source": "/docs/recipes/browser-zip-workflow",
-      "destination": "/docs/web-builder",
+      "destination": "/docs/builder",
       "permanent": true
     },
     {
@@ -118,27 +118,27 @@
     },
     {
       "source": "/docs/sections/deployment",
-      "destination": "/docs/stack-guides",
+      "destination": "/docs/choosing-a-stack",
       "permanent": true
     },
     {
       "source": "/docs/sections/frontend-and-apps",
-      "destination": "/docs/stack-guides",
+      "destination": "/docs/choosing-a-stack",
       "permanent": true
     },
     {
       "source": "/docs/sections/backend-and-api",
-      "destination": "/docs/stack-guides",
+      "destination": "/docs/choosing-a-stack",
       "permanent": true
     },
     {
       "source": "/docs/sections/data-and-storage",
-      "destination": "/docs/stack-guides",
+      "destination": "/docs/choosing-a-stack",
       "permanent": true
     },
     {
       "source": "/docs/sections/auth-and-payments",
-      "destination": "/docs/stack-guides",
+      "destination": "/docs/choosing-a-stack",
       "permanent": true
     },
     {
@@ -178,7 +178,7 @@
     },
     {
       "source": "/docs/reference/compatibility.md",
-      "destination": "/docs/stack-guides.md",
+      "destination": "/docs/choosing-a-stack.md",
       "permanent": true
     },
     {
@@ -218,7 +218,7 @@
     },
     {
       "source": "/docs/provider-setup/database-provisioning.md",
-      "destination": "/docs/stack-guides.md",
+      "destination": "/docs/choosing-a-stack.md",
       "permanent": true
     },
     {
@@ -228,7 +228,7 @@
     },
     {
       "source": "/docs/provider-setup/database-provisioning",
-      "destination": "/docs/stack-guides",
+      "destination": "/docs/choosing-a-stack",
       "permanent": true
     },
     {
@@ -428,77 +428,127 @@
     },
     {
       "source": "/docs/stack-guides/deployment.md",
-      "destination": "/docs/stack-guides.md",
+      "destination": "/docs/choosing-a-stack.md",
       "permanent": true
     },
     {
       "source": "/docs/stack-guides/frontend-frameworks.md",
-      "destination": "/docs/stack-guides.md",
+      "destination": "/docs/choosing-a-stack.md",
       "permanent": true
     },
     {
       "source": "/docs/stack-guides/backend-frameworks.md",
-      "destination": "/docs/stack-guides.md",
+      "destination": "/docs/choosing-a-stack.md",
       "permanent": true
     },
     {
       "source": "/docs/stack-guides/database-orm-pairing.md",
-      "destination": "/docs/stack-guides.md",
+      "destination": "/docs/choosing-a-stack.md",
       "permanent": true
     },
     {
       "source": "/docs/stack-guides/auth-providers.md",
-      "destination": "/docs/stack-guides.md",
+      "destination": "/docs/choosing-a-stack.md",
       "permanent": true
     },
     {
       "source": "/docs/web-builder/edit-and-run.md",
-      "destination": "/docs/web-builder.md",
+      "destination": "/docs/builder.md",
       "permanent": true
     },
     {
       "source": "/docs/web-builder/download-and-share.md",
-      "destination": "/docs/web-builder.md",
+      "destination": "/docs/builder.md",
       "permanent": true
     },
     {
       "source": "/docs/stack-guides/deployment",
-      "destination": "/docs/stack-guides",
+      "destination": "/docs/choosing-a-stack",
       "permanent": true
     },
     {
       "source": "/docs/stack-guides/frontend-frameworks",
-      "destination": "/docs/stack-guides",
+      "destination": "/docs/choosing-a-stack",
       "permanent": true
     },
     {
       "source": "/docs/stack-guides/backend-frameworks",
-      "destination": "/docs/stack-guides",
+      "destination": "/docs/choosing-a-stack",
       "permanent": true
     },
     {
       "source": "/docs/stack-guides/database-orm-pairing",
-      "destination": "/docs/stack-guides",
+      "destination": "/docs/choosing-a-stack",
       "permanent": true
     },
     {
       "source": "/docs/stack-guides/auth-providers",
-      "destination": "/docs/stack-guides",
+      "destination": "/docs/choosing-a-stack",
       "permanent": true
     },
     {
       "source": "/docs/web-builder/edit-and-run",
-      "destination": "/docs/web-builder",
+      "destination": "/docs/builder",
       "permanent": true
     },
     {
       "source": "/docs/web-builder/download-and-share",
-      "destination": "/docs/web-builder",
+      "destination": "/docs/builder",
       "permanent": true
     },
     {
       "source": "/docs/provider-setup/:path*",
-      "destination": "/docs/stack-guides",
+      "destination": "/docs/choosing-a-stack",
+      "permanent": true
+    },
+    {
+      "source": "/docs/web-builder.md",
+      "destination": "/docs/builder.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/web-builder",
+      "destination": "/docs/builder",
+      "permanent": true
+    },
+    {
+      "source": "/docs/web-builder/:path*",
+      "destination": "/docs/builder",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stack-guides.md",
+      "destination": "/docs/choosing-a-stack.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stack-guides",
+      "destination": "/docs/choosing-a-stack",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stack-guides/:path*",
+      "destination": "/docs/choosing-a-stack",
+      "permanent": true
+    },
+    {
+      "source": "/docs/ecosystems/native-mobile.md",
+      "destination": "/docs/ecosystems/native-apps.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/ecosystems/native-mobile",
+      "destination": "/docs/ecosystems/native-apps",
+      "permanent": true
+    },
+    {
+      "source": "/docs/cli/mcp.md",
+      "destination": "/docs/ai/mcp.md",
+      "permanent": true
+    },
+    {
+      "source": "/docs/cli/mcp",
+      "destination": "/docs/ai/mcp",
       "permanent": true
     }
   ],

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 
-const DOCS_ROOT = new URL("../../content/docs/", import.meta.url);
+const DOCS_ROOT = new URL("../content/docs/", import.meta.url);
 
 async function readJson<T>(path: string): Promise<T> {
   return Bun.file(new URL(path, DOCS_ROOT)).json() as Promise<T>;
@@ -24,6 +24,7 @@ describe("docs navigation", () => {
     expect(rootMeta.pages).not.toContain("sections");
     expect(rootMeta.pages).not.toContain("recipes");
     expect(rootMeta.pages).not.toContain("deployment");
+    expect(rootMeta.pages).toContain("verification");
     const ecosystemsMeta = await readJson<{ pages: string[] }>("ecosystems/meta.json");
     expect(cliMeta.pages).toEqual([
       "index",
@@ -31,27 +32,26 @@ describe("docs navigation", () => {
       "add",
       "update",
       "gen",
-      "mcp",
       "experimental",
       "telemetry",
     ]);
-    expect(ecosystemsMeta.pages).toEqual(["index", "multi-ecosystem", "native-mobile"]);
+    expect(ecosystemsMeta.pages).toEqual(["index", "multi-ecosystem", "native-apps"]);
     expect(aiMeta.pages).toEqual(["overview", "mcp"]);
     expect(gettingStartedMeta.pages).toContain("lifecycle");
   });
 
   it("keeps linked milestone docs backed by MDX files", async () => {
-    await expectDocPage("stack-guides.mdx");
+    await expectDocPage("choosing-a-stack.mdx");
     await expectDocPage("cli/index.mdx");
     await expectDocPage("cli/update.mdx");
     await expectDocPage("cli/gen.mdx");
-    await expectDocPage("cli/mcp.mdx");
     await expectDocPage("cli/experimental.mdx");
     await expectDocPage("cli/telemetry.mdx");
     await expectDocPage("ecosystems/multi-ecosystem.mdx");
-    await expectDocPage("ecosystems/native-mobile.mdx");
-    await expectDocPage("web-builder.mdx");
+    await expectDocPage("ecosystems/native-apps.mdx");
+    await expectDocPage("builder.mdx");
     await expectDocPage("ai/mcp.mdx");
     await expectDocPage("getting-started/lifecycle.mdx");
+    await expectDocPage("verification.mdx");
   });
 });
