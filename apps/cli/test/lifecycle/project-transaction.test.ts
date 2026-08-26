@@ -722,6 +722,41 @@ describe("project lifecycle transactions", () => {
     }
   });
 
+  it("surfaces target stat errors instead of treating them as absence", async () => {
+    const projectDir = await makeProject();
+    const target = path.join(await fs.realpath(projectDir), "created.txt");
+    const transaction = await beginProjectTransaction(projectDir, "stack-update", ["created.txt"]);
+    await writeProjectTransactionFile(transaction, "created.txt", "created\n");
+    await commitProjectTransaction(transaction);
+
+    const permissionError = Object.assign(new Error("Permission denied"), { code: "EACCES" });
+    const realLstat = fs.lstat.bind(fs);
+    const lstat = spyOn(fs, "lstat").mockImplementation(async (candidate) => {
+      if (String(candidate).endsWith(`${path.basename(projectDir)}${path.sep}created.txt`)) {
+        throw permissionError;
+      }
+      return await realLstat(candidate);
+    });
+    try {
+      const verification = await verifyProjectRecoveryPoint(projectDir, transaction.id);
+      expect(verification).toMatchObject({
+        valid: true,
+        recoverable: false,
+        errors: ["Permission denied"],
+      });
+      await expect(recoverProjectTransaction(projectDir, transaction.id)).rejects.toThrow(
+        "Permission denied",
+      );
+    } finally {
+      lstat.mockRestore();
+    }
+
+    expect(await fs.readJson(path.join(transaction.recoveryDir, "transaction.json"))).toMatchObject(
+      { status: "applied" },
+    );
+    expect(await fs.readFile(target, "utf-8")).toBe("created\n");
+  });
+
   it("retains pending and invalid recovery points and serializes destructive pruning", async () => {
     const projectDir = await makeProject();
     await fs.writeFile(path.join(projectDir, "pending.txt"), "before\n");

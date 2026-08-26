@@ -122,6 +122,20 @@ describe("starter tracks", () => {
     expect(result.matchedTerms).not.toContain("java");
   });
 
+  it("matches punctuated and hyphenated brief tokens", () => {
+    const punctuated = recommendStarterTrack("build an AI.");
+    expect(punctuated.track.id).toBe("ai-agent-app");
+    expect(punctuated.matchedTerms).toContain("ai");
+
+    const hyphenated = recommendStarterTrack("AI-powered service");
+    expect(hyphenated.track.id).toBe("ai-agent-app");
+    expect(hyphenated.matchedTerms).toContain("ai");
+
+    const ecosystem = recommendStarterTrack("a react-native product");
+    expect(ecosystem.track.id).toBe("mobile-app");
+    expect(ecosystem.matchedTerms).toContain("react-native");
+  });
+
   it("derives project evidence from authoritative Stack Parts", () => {
     const config = {
       ...createCliDefaultProjectConfigBase(),

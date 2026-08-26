@@ -865,10 +865,11 @@ export function createStarterTrackFilterSearchParams(filters: StarterTrackFilter
 export type StarterTrackRecommendation = ReturnType<typeof recommendStarterTrack>;
 
 function briefTokens(brief: string) {
-  return brief
-    .toLowerCase()
-    .split(/[^a-z0-9+#.-]+/)
-    .filter((token) => token.length >= 2);
+  return (
+    brief
+      .toLowerCase()
+      .match(/(?<![a-z0-9])(?:react-native|\.net|c\+\+|c#)(?![a-z0-9])|[a-z0-9]+/g) ?? []
+  ).filter((token) => token.length >= 2);
 }
 
 export function recommendStarterTrack(

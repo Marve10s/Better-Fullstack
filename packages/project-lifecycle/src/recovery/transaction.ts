@@ -1,6 +1,7 @@
+import type { Dirent } from "node:fs";
+
 import fs from "fs-extra";
 import { randomUUID } from "node:crypto";
-import type { Dirent } from "node:fs";
 import { open } from "node:fs/promises";
 import path from "node:path";
 
@@ -220,8 +221,13 @@ async function readObservedFileState(
   target: string,
   relativePath: string,
 ): Promise<ObservedFileState> {
-  const stats = await fs.lstat(target).catch(() => null);
-  if (!stats) return { sha256: null };
+  let stats;
+  try {
+    stats = await fs.lstat(target);
+  } catch (error) {
+    if ((error as { code?: string }).code === "ENOENT") return { sha256: null };
+    throw error;
+  }
   if (!stats.isFile()) {
     throw new Error(`Transaction target is not a regular file: ${relativePath}`);
   }
@@ -1698,9 +1704,7 @@ export async function pruneProjectRecoveryPoints(
     throw new Error("keep must be a non-negative integer.");
   }
   if (options.apply && !options.reviewToken) {
-    throw new Error(
-      "A recovery prune review token is required. Re-run the prune preview first.",
-    );
+    throw new Error("A recovery prune review token is required. Re-run the prune preview first.");
   }
   const projectDir = await fs.realpath(path.resolve(projectDirInput));
   const pruneLockId = options.apply ? randomUUID() : null;
