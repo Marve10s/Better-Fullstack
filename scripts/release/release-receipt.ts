@@ -26,6 +26,7 @@ import {
 } from "@scripts/release/upgrade-qualification-contract";
 import { createHash } from "node:crypto";
 import { copyFile, readFile, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 
 export const VERIFICATION_RECEIPT_SCHEMA_VERSION = 1;
@@ -501,8 +502,8 @@ function normalizeToolVersion(tool: keyof typeof RELEASE_TOOLCHAINS, output: str
   return tool === "node" ? firstLine.replace(/^v/, "") : firstLine;
 }
 
-const defaultRunner: CommandRunner = async (command) => {
-  const process = Bun.spawn(command, { stderr: "pipe", stdout: "pipe" });
+const defaultRunner: CommandRunner = async (command, cwd) => {
+  const process = Bun.spawn(command, { cwd, stderr: "pipe", stdout: "pipe" });
   const [stdout, stderr, exitCode] = await Promise.all([
     new Response(process.stdout).text(),
     new Response(process.stderr).text(),
@@ -514,6 +515,7 @@ const defaultRunner: CommandRunner = async (command) => {
 export async function actualReleaseToolchains(
   runner: CommandRunner = defaultRunner,
 ): Promise<ActualReleaseToolchains> {
+  const toolchainCwd = tmpdir();
   const commands: Record<keyof typeof RELEASE_TOOLCHAINS, string[]> = {
     bun: ["bun", "--version"],
     node: ["node", "--version"],
@@ -523,7 +525,7 @@ export async function actualReleaseToolchains(
   const entries = await Promise.all(
     Object.entries(commands).map(async ([name, command]) => {
       const tool = name as keyof typeof RELEASE_TOOLCHAINS;
-      const result = await runner(command);
+      const result = await runner(command, toolchainCwd);
       if (result.exitCode !== 0) throw new Error(`Could not record ${tool} version`);
       const version = normalizeToolVersion(tool, result.stdout || result.stderr);
       if (version !== RELEASE_TOOLCHAINS[tool]) {
