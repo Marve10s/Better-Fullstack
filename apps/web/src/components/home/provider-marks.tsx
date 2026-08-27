@@ -1,9 +1,17 @@
-// Provider logomarks shared by the ScaffBench leaderboard (llm-benchmark-section)
-// and the homepage benchmark teaser. Kept in their own module so the teaser can
-// reuse the exact marks without pulling in the full chart component.
+// Vendor and harness logomarks shared by the ScaffBench leaderboard
+// (llm-benchmark-section) and the homepage benchmark teaser. Kept in their own
+// module so the teaser can reuse the exact marks without pulling in the full
+// chart component.
 
-/** Provider brands we render a logo for. */
-export type ProviderLogoId = "anthropic" | "openai" | "google" | "opencode" | "kilo" | "pi";
+/** Brands we render a logo for: model vendors first, then harnesses. */
+export type ProviderLogoId =
+  | "anthropic"
+  | "openai"
+  | "google"
+  | "zai"
+  | "opencode"
+  | "kilo"
+  | "pi";
 
 // OpenAI logomark (from simple-icons; renders in currentColor).
 export function OpenAIMark({ className }: { className?: string }) {
@@ -43,6 +51,28 @@ export function GoogleMark({ className }: { className?: string }) {
       <path
         fill="#34A853"
         d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+      />
+    </svg>
+  );
+}
+
+// Z.ai logomark - the squared "Z" monogram, flattened to currentColor.
+export function ZaiMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden className={className} xmlns="http://www.w3.org/2000/svg">
+      <rect
+        x="1.6"
+        y="1.6"
+        width="20.8"
+        height="20.8"
+        rx="5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.7"
+      />
+      <path
+        fill="currentColor"
+        d="M7.1 6.6h9.8v1.9l-6.4 7h6.4v1.9H7.1v-1.9l6.4-7H7.1V6.6Z"
       />
     </svg>
   );
@@ -94,6 +124,9 @@ export function ProviderLogo({ logo }: { logo?: ProviderLogoId }) {
   }
   if (logo === "google") {
     return <GoogleMark className="size-3.5 shrink-0" />;
+  }
+  if (logo === "zai") {
+    return <ZaiMark className="size-3.5 shrink-0" />;
   }
   if (logo === "opencode") {
     return <OpencodeMark className="size-3.5 shrink-0" />;

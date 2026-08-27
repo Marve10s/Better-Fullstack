@@ -57,13 +57,6 @@ import {
   type StepResult,
 } from "@scaffbench/index";
 
-import {
-  buildPublishedCells,
-  discriminationRows,
-  resultTrialKey,
-  type PublishedCell,
-} from "@scripts/benchmarks/build-scaffbench-2-1-data";
-import { fullPass, scaffbenchIndex } from "@scripts/benchmarks/build-scaffbench-data";
 
 const aiSpec = SCAFFBENCH_2_SPECS.find((spec) => spec.id === "ai-search-workbench")!;
 const goSpec = SCAFFBENCH_2_SPECS.find((spec) => spec.id === "go-realtime-api")!;
@@ -377,8 +370,6 @@ describe("ScaffBench hardening 3: scoring", () => {
       wiredLibs: 0.25,
       discipline: 0,
     });
-    expect(scaffbenchIndex("prompt", 50, 80, 0)).toBe(57.5);
-    expect(scaffbenchIndex("mcp", 50, 80, 50)).toBe(57.5);
   });
 
   it("3b gates a zero-validation prompt cell at exactly 25% of wired mean", () => {
@@ -419,53 +410,10 @@ describe("ScaffBench hardening 3: scoring", () => {
   it("3d represents an unrequested quality gate as na/null, never pass", () => {
     const unrequested = run();
     expect(qualityPassed(unrequested)).toBe("na");
-    expect(fullPass(unrequested)).toBeNull();
   });
 });
 
 describe("ScaffBench hardening 4: trial integrity", () => {
-  it("4a keys every trial and publishes aggregate repeat statistics", () => {
-    const results = [run({ id: "a", trial: 1 }), run({ id: "b", trial: 2 })];
-    results[1]!.validation = {
-      projectExists: true,
-      qualityGateRequested: false,
-      steps: { build: step({ exitCode: 1 }) },
-    };
-    expect(new Set(results.map(resultTrialKey)).size).toBe(2);
-    const summary = {
-      options: options(),
-      results,
-      aggregates: {
-        bySpecCell: [
-          {
-            model: "gpt-5.6-sol",
-            effort: "high",
-            path: "prompt",
-            specId: aiSpec.id,
-            scoredRuns: 2,
-            passCount: 1,
-            qualityScoredRuns: 0,
-            qualityPassCount: 0,
-            stackPercent: 50,
-            commandDisciplinePercent: 100,
-            avgOutputTokens: 10,
-            medianDurationMs: 10,
-          },
-        ],
-      },
-    };
-    const cell = buildPublishedCells(summary, "/missing")[0]!;
-    expect(cell).toMatchObject({
-      trials: 2,
-      scoredTrials: 2,
-      passCount: 1,
-      passRate: 50,
-      passAny: true,
-      passAll: false,
-      corePass: false,
-    });
-  });
-
   it("4b interleaves repeat rounds and uses a deterministic seeded shuffle", () => {
     const specs = [aiSpec, goSpec];
     const schedule = buildGenerationSchedule(
@@ -758,42 +706,6 @@ describe("ScaffBench hardening 6: opt-in batch-4 features", () => {
     expect(cohorts[0]).toMatchObject({ specs: 2, scoredRuns: 2, passCount: 1, passRate: 50 });
   });
 
-  it("6d reports per-spec model spread and flags ceiling/floor specs", () => {
-    const cell = (spec: string, modelKey: string, passRate: number): PublishedCell => ({
-      modelKey,
-      path: "prompt",
-      spec,
-      scored: true,
-      corePass: passRate === 100,
-      fullPass: null,
-      trials: 1,
-      scoredTrials: 1,
-      passCount: passRate > 0 ? 1 : 0,
-      passRate,
-      passAny: passRate > 0,
-      passAll: passRate === 100,
-      qualityPassCount: null,
-      qualityPassRate: null,
-      wiredPct: 0,
-      cmdPct: 0,
-      costUsd: null,
-      outTokens: null,
-      steps: 0,
-      durationMs: null,
-      lines: null,
-    });
-    const rows = discriminationRows([
-      cell("ceiling", "a", 100),
-      cell("ceiling", "b", 100),
-      cell("floor", "a", 0),
-      cell("floor", "b", 0),
-      cell("spread", "a", 100),
-      cell("spread", "b", 0),
-    ]);
-    expect(rows.find((row) => row.spec === "ceiling")?.flag).toBe("ceiling");
-    expect(rows.find((row) => row.spec === "floor")?.flag).toBe("floor");
-    expect(rows.find((row) => row.spec === "spread")?.spread).toBe(100);
-  });
 });
 
 it("routes kilocode/ ids to the kilo binary with the prefix stripped at invocation", () => {

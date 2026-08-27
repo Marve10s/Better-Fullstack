@@ -1,11 +1,12 @@
-# ScaffBench 3: Ox Alpha Free at high effort
+# ScaffBench 3: GLM 5.3 Flash at high effort
 
-First run of the reset suite. Ox Alpha Free is opencode's free 1M-context stealth
-reasoning model, listed in the CLI as `opencode/x-preview-f-free` and shown in the
-model picker as "Ox Alpha Free (Unlimited)". The two names are only linked through
-the `name` field in the models.dev catalog, which is worth knowing before anyone
-goes looking for an `ox-alpha` id. The `opencode-go/ox-alpha-free` id is a
-different door onto the subscription endpoint and needs a funded workspace.
+First run of the reset suite. The model ran under opencode's stealth alias "Ox
+Alpha Free (Unlimited)" and has since been identified as Z.ai's GLM 5.3 Flash. It
+is listed in the CLI as `opencode/x-preview-f-free`. The alias and the id are only
+linked through the `name` field in the models.dev catalog, which is worth knowing
+before anyone goes looking for an `ox-alpha` or `glm-5.3-flash` id on that
+endpoint. The `opencode-go/ox-alpha-free` id is a different door onto the
+subscription endpoint and needs a funded workspace.
 
 Run on a dedicated Linux box (6 cores, 15 GiB), not a laptop. Protocol: harness
 3.1.0, suite 3.0, prompt 2026-08-21-scaffbench-3.1, validation cache v8, resource

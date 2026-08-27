@@ -516,7 +516,6 @@
   "runCtaTitle": "Sehen Sie, wie Ihr Durchlauf abschneidet",
   "runCtaDesc": "Ihre Zahlen werden im gleichen Format wie die Rangliste angezeigt. Haben Sie etwas Interessantes ausprobiert? Erstellen Sie einen Pull Request mit Ihrem Bericht.",
   "runCtaLeaderboard": "Rangliste ansehen",
-  "runCtaWriteup": "Lesen Sie den Artikel.",
   "llmRunItYourself": "Führen Sie es selbst aus",
   "navBenchmark": "Benchmark",
   "benchmarkTeaserTitle": "Wie gut bauen KI-Modelle deine Projekte?",

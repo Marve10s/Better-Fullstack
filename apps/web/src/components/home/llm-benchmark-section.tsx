@@ -16,15 +16,6 @@ import {
   TbCopy as Copy,
 } from "react-icons/tb";
 
-import { OpenAIMark, ProviderLogo, type ProviderLogoId } from "@/components/home/provider-marks";
-import { SCAFFBENCH21_CELLS, SCAFFBENCH21_MODELS } from "@/components/home/scaffbench-2-1-data";
-import {
-  SCAFFBENCH22_CELLS,
-  SCAFFBENCH22_MODELS,
-  SCAFFBENCH22_SPECS,
-} from "@/components/home/scaffbench-2-2-data";
-import { type ScaffbenchCell, type ScaffbenchModel } from "@/components/home/scaffbench-2-data";
-import { SCAFFBENCH3_CELLS, SCAFFBENCH3_MODELS } from "@/components/home/scaffbench-3-board-data";
 import { AgentCommandTabs } from "@/components/mcp/agent-command-tabs";
 import {
   DropdownMenu,
@@ -40,6 +31,17 @@ import { useTheme } from "@/lib/content/theme";
 import { cn } from "@/lib/platform/utils";
 import { m } from "@/paraglide/messages.js";
 
+import { SCAFFBENCH3_SPECS } from "@/components/scaffbench/scaffbench-3-data";
+
+import { OpenAIMark, ProviderLogo, type ProviderLogoId } from "@/components/home/provider-marks";
+import { SCAFFBENCH3_CELLS, SCAFFBENCH3_MODELS } from "@/components/home/scaffbench-3-board-data";
+import type {
+  ScaffbenchCell,
+  ScaffbenchHarness,
+  ScaffbenchModel,
+  ScaffbenchVendor,
+} from "@/components/home/scaffbench-types";
+
 const fadeUpInitial = { opacity: 0, y: 12 } as const;
 
 const fadeUpVisible = { opacity: 1, y: 0 } as const;
@@ -53,29 +55,52 @@ const headingStyle: CSSProperties = {
   lineHeight: 0.98,
 };
 
-function isFreeModel(model: ScaffbenchModel): boolean {
-  return /(?:-free$|:free$|\/free$)/i.test(model.model);
+/** A run is unmetered when the provider billed nothing for any scored spec. */
+function isUnmeteredModel(modelKey: string): boolean {
+  const scored = SCAFFBENCH3_CELLS.filter((cell) => cell.modelKey === modelKey && cell.scored);
+  return scored.length > 0 && scored.every((cell) => cell.costUsd === 0);
 }
 
-const LEADERBOARD_THEME_VARS = cn(
-  "[--bar-claude:#c2410c] [--bar-codex:#15803d] [--bar-opencode:#6d28d9] [--bar-kilo:#0891b2] [--bar-agy:#1a73e8] [--bar-pi:#b45309] [--bar-track:#ececec]",
-  "dark:[--bar-claude:#fb923c] dark:[--bar-codex:#4ade80] dark:[--bar-opencode:#a78bfa] dark:[--bar-kilo:#22d3ee] dark:[--bar-agy:#8ab4f8] dark:[--bar-pi:#fbbf24] dark:[--bar-track:#edebe414]",
+// One color per model vendor, so a lab reads the same in the scatter and the
+// leaderboard. Light values are the darkened twins of the dark ones.
+const VENDOR_THEME_VARS = cn(
+  "[--v-anthropic:#c2410c] [--v-openai:#15803d] [--v-google:#1a73e8] [--v-zai:#0d9488] [--v-moonshot:#dc2626]",
+  "[--v-deepseek:#6d28d9] [--v-qwen:#0891b2] [--v-xai:#4f46e5] [--v-meta:#4338ca] [--v-mistral:#b45309]",
+  "dark:[--v-anthropic:#fb923c] dark:[--v-openai:#4ade80] dark:[--v-google:#60a5fa] dark:[--v-zai:#5eead4] dark:[--v-moonshot:#f87171]",
+  "dark:[--v-deepseek:#a78bfa] dark:[--v-qwen:#38bdf8] dark:[--v-xai:#a5b4fc] dark:[--v-meta:#818cf8] dark:[--v-mistral:#fbbf24]",
 );
 
-const PROVIDER_BAR_COLOR: Record<"claude" | "codex" | "opencode" | "kilo" | "agy" | "pi", string> =
-  {
-    claude: "var(--bar-claude)",
-    codex: "var(--bar-codex)",
-    opencode: "var(--bar-opencode)",
-    kilo: "var(--bar-kilo)",
-    agy: "var(--bar-agy)",
-    pi: "var(--bar-pi)",
-  };
+const LEADERBOARD_THEME_VARS = cn(
+  VENDOR_THEME_VARS,
+  "[--bar-track:#ececec] [--ci-line:#57564f] [--row-rule:#e7e5dd]",
+  "dark:[--bar-track:#edebe40f] dark:[--ci-line:#c9c7be] dark:[--row-rule:rgba(237,235,228,0.07)]",
+);
+
+const VENDOR_COLOR: Record<ScaffbenchVendor, string> = {
+  anthropic: "var(--v-anthropic)",
+  openai: "var(--v-openai)",
+  google: "var(--v-google)",
+  zai: "var(--v-zai)",
+  moonshot: "var(--v-moonshot)",
+  deepseek: "var(--v-deepseek)",
+  qwen: "var(--v-qwen)",
+  xai: "var(--v-xai)",
+  meta: "var(--v-meta)",
+  mistral: "var(--v-mistral)",
+};
+
+const VENDOR_LOGO: Partial<Record<ScaffbenchVendor, ProviderLogoId>> = {
+  anthropic: "anthropic",
+  openai: "openai",
+  google: "google",
+  zai: "zai",
+};
 
 const BAR_TRACK_STYLE: CSSProperties = { backgroundColor: "var(--bar-track)" };
 
+// Model name and effort get a fixed, generous column so neither is ever clipped.
 const LEADERBOARD_GRID =
-  "grid grid-cols-[minmax(9rem,13rem)_minmax(0,1fr)_4.25rem_4.25rem_4.5rem_4rem_4.5rem_4rem_3rem_3.5rem] items-center gap-x-3";
+  "grid grid-cols-[minmax(15rem,19rem)_minmax(8rem,1fr)_5.75rem_3.5rem_3.75rem_3.5rem_4.5rem_4rem_3rem_3.5rem] items-center gap-x-3";
 
 const PASS_AXIS_TICKS: readonly number[] = [0, 20, 40, 60, 80, 100] as const;
 
@@ -83,13 +108,15 @@ interface ModelLeaderRow {
   key: string;
   label: string;
   effort: string;
-  legacy: boolean;
   core: number;
   color: string;
   logo?: ProviderLogoId;
-  harness?: string;
+  harness: string;
   pass: number;
-  buildOnly?: boolean;
+  /** half-width of the 95% Wilson interval around pass, in points. */
+  passMargin: number;
+  ciLow: number;
+  ciHigh: number;
   wired: string;
   time: string;
   costNum: number;
@@ -111,6 +138,20 @@ function formatPercent(passing: number, total: number): number {
   return total === 0 ? 0 : Math.round((100 * passing) / total);
 }
 
+/** 95% Wilson score interval, the same one the harness reports. */
+function wilsonInterval(successes: number, total: number): { low: number; high: number } {
+  if (total === 0) return { low: 0, high: 0 };
+  const z = 1.96;
+  const p = successes / total;
+  const denom = 1 + (z * z) / total;
+  const center = p + (z * z) / (2 * total);
+  const margin = z * Math.sqrt((p * (1 - p) + (z * z) / (4 * total)) / total);
+  return {
+    low: Math.max(0, Math.round(((center - margin) / denom) * 100)),
+    high: Math.min(100, Math.round(((center + margin) / denom) * 100)),
+  };
+}
+
 function formatDuration(ms: number): string {
   const seconds = ms / 1000;
   return seconds < 120 ? `${Math.round(seconds)}s` : `${(seconds / 60).toFixed(1)}m`;
@@ -124,18 +165,7 @@ function sortLeaderRows(rows: ModelLeaderRow[]): ModelLeaderRow[] {
   return [...rows].sort((a, b) => b.pass - a.pass || a.costNum - b.costNum);
 }
 
-const PROVIDER_LOGO: Partial<
-  Record<"claude" | "codex" | "opencode" | "kilo" | "agy" | "pi", ProviderLogoId>
-> = {
-  claude: "anthropic",
-  codex: "openai",
-  agy: "google",
-  opencode: "opencode",
-  kilo: "kilo",
-  pi: "pi",
-};
-
-const HARNESS_LABEL: Record<"claude" | "codex" | "opencode" | "kilo" | "agy" | "pi", string> = {
+const HARNESS_LABEL: Record<ScaffbenchHarness, string> = {
   claude: "Claude Code",
   codex: "Codex",
   opencode: "opencode",
@@ -144,100 +174,60 @@ const HARNESS_LABEL: Record<"claude" | "codex" | "opencode" | "kilo" | "agy" | "
   pi: "Pi",
 };
 
-type BoardEntry = {
-  model: ScaffbenchModel;
-  cells: readonly ScaffbenchCell[];
-  legacy: boolean;
-};
+const BOARD_MODELS: readonly ScaffbenchModel[] = [...SCAFFBENCH3_MODELS].sort(
+  (a, b) => b.sortIndex - a.sortIndex,
+);
 
-const CURRENT_KEYS_3: readonly string[] = ["opencode/x-preview-f-free|high"];
-const LEGACY_KEYS_2_2: readonly string[] = ["claude-opus-5|high", "gpt-5.6-sol|high"];
-const LEGACY_KEYS_2_1: readonly string[] = ["claude-fable-5|low", "claude-fable-5|high"];
+const BOARD_SPECS: readonly string[] = SCAFFBENCH3_SPECS.map((spec) => spec.id);
 
-function boardEntries(
-  models: readonly ScaffbenchModel[],
-  cells: readonly ScaffbenchCell[],
-  keys: readonly string[],
-  legacy: boolean,
-): BoardEntry[] {
-  return keys.flatMap((key) => {
-    const model = models.find((entry) => entry.key === key);
-    if (!model) return [];
-    return [{ model, cells: cells.filter((cell) => cell.modelKey === key), legacy }];
-  });
+function cellsFor(modelKey: string): readonly ScaffbenchCell[] {
+  return SCAFFBENCH3_CELLS.filter((cell) => cell.modelKey === modelKey);
 }
-
-const BOARD_ENTRIES: readonly BoardEntry[] = [
-  ...boardEntries(SCAFFBENCH3_MODELS, SCAFFBENCH3_CELLS, CURRENT_KEYS_3, false),
-  ...boardEntries(SCAFFBENCH22_MODELS, SCAFFBENCH22_CELLS, LEGACY_KEYS_2_2, true),
-  ...boardEntries(SCAFFBENCH21_MODELS, SCAFFBENCH21_CELLS, LEGACY_KEYS_2_1, true),
-];
-
-const BOARD_MODELS: readonly ScaffbenchModel[] = BOARD_ENTRIES.map((entry) => entry.model);
 
 function coreTally(scored: readonly ScaffbenchCell[]): { successes: number; trials: number } {
   return {
-    successes: scored.reduce((sum, cell) => sum + (cell.passCount ?? (cell.corePass ? 1 : 0)), 0),
-    trials: scored.reduce((sum, cell) => sum + (cell.scoredTrials ?? 1), 0),
+    successes: scored.reduce((sum, cell) => sum + cell.passCount, 0),
+    trials: scored.reduce((sum, cell) => sum + cell.scoredTrials, 0),
   };
 }
 
-function passTally(scored: readonly ScaffbenchCell[]): {
-  successes: number;
-  trials: number;
-  buildOnly: boolean;
-} {
-  const coreTrials = scored.reduce((sum, cell) => sum + (cell.scoredTrials ?? 1), 0);
-  const coreSuccesses = scored.reduce(
-    (sum, cell) => sum + (cell.passCount ?? (cell.corePass ? 1 : 0)),
-    0,
-  );
-  const fullMeasured = scored.filter((cell) => cell.fullPass !== null);
-  const qualityMeasured = scored.length > 0 && fullMeasured.length === scored.length;
-  if (!qualityMeasured) return { successes: coreSuccesses, trials: coreTrials, buildOnly: true };
+function fullTally(scored: readonly ScaffbenchCell[]): { successes: number; trials: number } {
   return {
-    successes: fullMeasured.reduce(
-      (sum, cell) => sum + (cell.qualityPassCount ?? (cell.fullPass ? 1 : 0)),
-      0,
-    ),
-    trials: fullMeasured.reduce((sum, cell) => sum + (cell.scoredTrials ?? 1), 0),
-    buildOnly: false,
+    successes: scored.reduce((sum, cell) => sum + cell.qualityPassCount, 0),
+    trials: scored.reduce((sum, cell) => sum + cell.scoredTrials, 0),
   };
 }
 
 function computeScaffbenchModelRows(specs: ReadonlySet<string>): ModelLeaderRow[] {
-  const rows = BOARD_ENTRIES.flatMap(({ model, cells: entryCells, legacy }) => {
-    const cells = entryCells.filter((cell) => cell.path === "prompt" && specs.has(cell.spec));
-    const scored = cells.filter((cell) => cell.scored);
-    const tally = passTally(scored);
-    const passSuccesses = tally.successes;
-    const passTrials = tally.trials;
-    const qualityMeasured = !tally.buildOnly;
+  const rows = BOARD_MODELS.map((model) => {
+    const scored = cellsFor(model.key).filter((cell) => cell.scored && specs.has(cell.spec));
+    const full = fullTally(scored);
+    const pass = formatPercent(full.successes, full.trials);
+    const ci = wilsonInterval(full.successes, full.trials);
     const costs = scored.map((cell) => cell.costUsd).filter((v): v is number => v !== null);
     const tokens = scored.map((cell) => cell.outTokens).filter((v): v is number => v !== null);
     const durations = scored
       .map((cell) => cell.durationMs)
-      .filter((v): v is number => v !== null && v !== undefined && v > 0);
-    const locValues = scored
-      .map((cell) => cell.lines)
-      .filter((v): v is number => v !== null && v !== undefined && v > 0);
-    const steps = scored.map((cell) => cell.steps).filter((value) => value > 0);
+      .filter((v): v is number => v !== null && v > 0);
+    const locValues = scored.map((cell) => cell.lines).filter((v): v is number => v !== null && v > 0);
+    const steps = scored.map((cell) => cell.steps).filter((v): v is number => v !== null && v > 0);
     return {
       key: model.key,
       label: model.label,
       effort: model.effort,
-      legacy,
-      color: PROVIDER_BAR_COLOR[model.provider],
-      logo: PROVIDER_LOGO[model.provider],
-      harness: HARNESS_LABEL[model.provider],
-      pass: formatPercent(passSuccesses, passTrials),
+      color: VENDOR_COLOR[model.vendor],
+      logo: VENDOR_LOGO[model.vendor],
+      harness: HARNESS_LABEL[model.harness],
+      pass,
+      passMargin: Math.round((ci.high - ci.low) / 2),
+      ciLow: ci.low,
+      ciHigh: ci.high,
       core: formatPercent(coreTally(scored).successes, coreTally(scored).trials),
-      buildOnly: scored.length > 0 && !qualityMeasured,
       wired: scored.length > 0 ? `${Math.round(mean(scored.map((cell) => cell.wiredPct)))}%` : "–",
       time: durations.length > 0 ? formatDuration(mean(durations)) : "–",
       costNum: costs.length > 0 ? mean(costs) : Number.POSITIVE_INFINITY,
       cost: costs.length > 0 ? `$${mean(costs).toFixed(2)}` : "–",
-      outTok: tokens.length > 0 ? `${(mean(tokens) / 1000).toFixed(1)}k` : "–",
+      outTok: tokens.length > 0 ? `${(mean(tokens) / 1000).toFixed(0)}k` : "–",
       steps: steps.length > 0 ? String(Math.round(mean(steps))) : "–",
       loc: locValues.length > 0 ? `${(mean(locValues) / 1000).toFixed(1)}k` : "–",
     };
@@ -349,22 +339,10 @@ const CHART_PALETTE: ChartPalette = {
 };
 
 const CHART_THEME_VARS = cn(
-  "[--ch-grid:#ececec] [--ch-tick:#9c9a93] [--ch-label:#71706a] [--ch-note:#9c9a93] [--ch-stroke:#ffffff] [--ch-legacy:#a8a69e]",
-  "[--ch-m1:#e85d11] [--ch-m2:#4c5fd5] [--ch-m3:#0d9488] [--ch-m4:#c13a6e] [--ch-m5:#9333ea] [--ch-m6:#b45309]",
-  "dark:[--ch-grid:#edebe414] dark:[--ch-tick:#6c6a61] dark:[--ch-label:#8f8d84] dark:[--ch-note:#8f8d84] dark:[--ch-stroke:#161614] dark:[--ch-legacy:#6c6a61]",
-  "dark:[--ch-m1:#e0894f] dark:[--ch-m2:#98a6f2] dark:[--ch-m3:#4fd0c0] dark:[--ch-m4:#e887ad] dark:[--ch-m5:#c08ef5] dark:[--ch-m6:#dba05c]",
+  VENDOR_THEME_VARS,
+  "[--ch-grid:#ececec] [--ch-tick:#9c9a93] [--ch-label:#71706a] [--ch-note:#9c9a93] [--ch-stroke:#ffffff]",
+  "dark:[--ch-grid:#edebe414] dark:[--ch-tick:#6c6a61] dark:[--ch-label:#8f8d84] dark:[--ch-note:#8f8d84] dark:[--ch-stroke:#161614]",
 );
-
-const V2_LEGACY_COLOR = "var(--ch-legacy)";
-
-const V2_MODEL_COLORS: readonly string[] = [
-  "var(--ch-m1)",
-  "var(--ch-m2)",
-  "var(--ch-m3)",
-  "var(--ch-m4)",
-  "var(--ch-m5)",
-  "var(--ch-m6)",
-];
 
 interface LabelPlacement {
   dx?: number;
@@ -466,22 +444,21 @@ interface PathMetrics {
 }
 
 function aggregatePathMetrics(sourceCells: readonly ScaffbenchCell[]): PathMetrics {
-  const cells = sourceCells.filter((cell) => cell.path === "prompt");
-  const scored = cells.filter((cell) => cell.scored);
+  const scored = sourceCells.filter((cell) => cell.scored);
   const tokens = scored
     .map((cell) => cell.outTokens)
     .filter((value): value is number => value !== null);
   const costs = scored
     .map((cell) => cell.costUsd)
     .filter((value): value is number => value !== null);
-  const steps = scored.map((cell) => cell.steps).filter((value) => value > 0);
+  const steps = scored.map((cell) => cell.steps).filter((v): v is number => v !== null && v > 0);
   const lines = scored
     .map((cell) => cell.lines)
-    .filter((value): value is number => value !== null && value !== undefined && value > 0);
-  const tally = passTally(scored);
+    .filter((value): value is number => value !== null && value > 0);
+  const full = fullTally(scored);
   const core = coreTally(scored);
   return {
-    pass: formatPercent(tally.successes, tally.trials),
+    pass: formatPercent(full.successes, full.trials),
     corePct: formatPercent(core.successes, core.trials),
     tokens: tokens.length > 0 ? mean(tokens) / 1000 : null,
     cost: costs.length > 0 ? mean(costs) : null,
@@ -560,7 +537,6 @@ interface V2ModelPoint extends PathMetrics {
   harness: string;
   color: string;
   free: boolean;
-  legacy: boolean;
 }
 
 function v2PointLabel(model: ScaffbenchModel): string {
@@ -581,21 +557,17 @@ const PASS_MODE_LABEL: Record<PassMode, string> = {
 };
 
 function computeV2ModelPoints(passMode: PassMode): V2ModelPoint[] {
-  return BOARD_ENTRIES.map(({ model, cells, legacy }, index) => {
-    const metrics = aggregatePathMetrics(cells);
+  return BOARD_MODELS.map((model) => {
+    const metrics = aggregatePathMetrics(cellsFor(model.key));
     if (passMode === "core") metrics.pass = metrics.corePct;
-    const free = isFreeModel(model);
-    if (metrics.cost === null && free && metrics.scoredCount > 0) {
-      metrics.cost = 0;
-    }
+    const free = isUnmeteredModel(model.key);
     return {
       key: model.key,
       label: v2PointLabel(model),
       reasoning: model.effort,
-      harness: HARNESS_LABEL[model.provider],
-      color: legacy ? V2_LEGACY_COLOR : V2_MODEL_COLORS[index % V2_MODEL_COLORS.length],
+      harness: HARNESS_LABEL[model.harness],
+      color: VENDOR_COLOR[model.vendor],
       free,
-      legacy,
       ...metrics,
     };
   });
@@ -749,7 +721,11 @@ function BenchmarkChartCard({ className }: { className?: string } = {}) {
                 />
               ))}
             </div>
-            <V2ModelFilter points={eligiblePoints} selected={selectedKeys} onToggle={toggleModel} />
+            <V2ModelFilter
+              points={eligiblePoints}
+              selected={selectedKeys}
+              onToggle={toggleModel}
+            />
           </div>
         </div>
       </div>
@@ -793,21 +769,22 @@ function BenchmarkChartCard({ className }: { className?: string } = {}) {
   );
 }
 
-function AxisLayer({ x, note, palette }: { x: AxisSpec; note: string; palette: ChartPalette }) {
+function AxisLayer({
+  x,
+  note,
+  palette,
+}: {
+  x: AxisSpec;
+  note: string;
+  palette: ChartPalette;
+}) {
   return (
     <g>
       {x.ticks.map((tick) => {
         const tx = plotX(tick, x);
         return (
           <g key={`x-${tick}`}>
-            <line
-              x1={tx}
-              y1={M_T}
-              x2={tx}
-              y2={M_T + PLOT_H}
-              stroke={palette.grid}
-              strokeWidth={1}
-            />
+            <line x1={tx} y1={M_T} x2={tx} y2={M_T + PLOT_H} stroke={palette.grid} strokeWidth={1} />
             <text
               x={tx}
               y={M_T + PLOT_H + 24}
@@ -900,12 +877,27 @@ function HoverGuides({
   );
 }
 
-function ChartMarker({ hex, cardBg, active }: { hex: string; cardBg: string; active?: boolean }) {
+function ChartMarker({
+  hex,
+  cardBg,
+  active,
+}: {
+  hex: string;
+  cardBg: string;
+  active?: boolean;
+}) {
   return (
     <>
       <circle r={22} fill="transparent" stroke="transparent" />
-      {active ? <circle r={11} fill="none" stroke={hex} strokeWidth={1.5} opacity={0.4} /> : null}
-      <circle r={active ? 7.5 : 6} fill={hex} stroke={cardBg} strokeWidth={active ? 3 : 2.5} />
+      {active ? (
+        <circle r={11} fill="none" stroke={hex} strokeWidth={1.5} opacity={0.4} />
+      ) : null}
+      <circle
+        r={active ? 7.5 : 6}
+        fill={hex}
+        stroke={cardBg}
+        strokeWidth={active ? 3 : 2.5}
+      />
     </>
   );
 }
@@ -1002,7 +994,8 @@ function V2ModelMenuItem({
     <DropdownMenuCheckboxItem checked={checked} onCheckedChange={handleChange} closeOnClick={false}>
       <span className="size-2.5 shrink-0 rounded-[2px]" style={swatchStyle} />
       <span className="min-w-0 flex-1">
-        {point.label} <span className="text-[10px] opacity-70">[{point.reasoning}]</span>
+        {point.label}{" "}
+        <span className="text-[10px] opacity-70">[{point.reasoning}]</span>
       </span>
     </DropdownMenuCheckboxItem>
   );
@@ -1095,7 +1088,10 @@ function V2Dot({
           {point.label}
         </text>
       ) : null}
-      <g className="pointer-events-none transition-opacity duration-150" opacity={active ? 1 : 0}>
+      <g
+        className="pointer-events-none transition-opacity duration-150"
+        opacity={active ? 1 : 0}
+      >
         <text
           x={M_L - x - 12}
           y={4.5}
@@ -1247,8 +1243,7 @@ function LeaderboardSidebar() {
           Leaderboard
         </h2>
         <p className="mt-3 text-pretty text-xs leading-relaxed text-muted-foreground sm:text-sm">
-          Scored across 13 specs on a clean machine. Higher pass rate is better; lower cost, time,
-          and tokens are better.
+          Scored across 13 specs on a clean machine. Higher pass rate is better; lower cost, time, and tokens are better.
         </p>
       </div>
 
@@ -1333,7 +1328,7 @@ function MetricHelp({ label, children }: { label: string; children: ReactNode })
 }
 
 function ScaffbenchLeaderboardCard({ className }: { className?: string } = {}) {
-  const [selectedSpecs, setSelectedSpecs] = useState<readonly string[]>(SCAFFBENCH22_SPECS);
+  const [selectedSpecs, setSelectedSpecs] = useState<readonly string[]>(BOARD_SPECS);
   const [selectedModelKeys, setSelectedModelKeys] = useState<readonly string[]>(() =>
     BOARD_MODELS.map((model) => model.key),
   );
@@ -1351,7 +1346,7 @@ function ScaffbenchLeaderboardCard({ className }: { className?: string } = {}) {
     setSelectedSpecs((prev) =>
       prev.includes(spec)
         ? prev.filter((selectedSpec) => selectedSpec !== spec)
-        : SCAFFBENCH22_SPECS.filter(
+        : BOARD_SPECS.filter(
             (availableSpec) => availableSpec === spec || prev.includes(availableSpec),
           ),
     );
@@ -1388,7 +1383,7 @@ function ScaffbenchLeaderboardCard({ className }: { className?: string } = {}) {
               onToggle={toggleModel}
             />
             <SpecFilter
-              specs={SCAFFBENCH22_SPECS}
+              specs={BOARD_SPECS}
               selectedSpecs={selectedSpecs}
               onToggle={toggleSpec}
             />
@@ -1402,29 +1397,30 @@ function ScaffbenchLeaderboardCard({ className }: { className?: string } = {}) {
           className="overflow-x-auto"
           tabIndex={0}
         >
-          <div className="mx-auto w-full min-w-[980px] max-w-[1180px] px-3">
+          <div className="mx-auto w-full min-w-[1120px] max-w-[1180px] px-3">
             <div
               className={cn(
                 LEADERBOARD_GRID,
-                "mb-1 text-[10px] font-medium uppercase tracking-[0.1em] text-[#71706a] dark:text-[#8f8d84]",
+                "border-b border-[var(--row-rule)] pb-2.5 text-[10px] font-medium uppercase tracking-[0.14em] text-[#71706a] dark:text-[#8f8d84]",
               )}
             >
               <span>Model</span>
               <span aria-hidden />
               <span className="flex items-center justify-end gap-1">
-                Pass
-                <MetricHelp label="Full pass">
+                Pass@1
+                <MetricHelp label="Full pass@1">
                   The project installs, builds, type-checks, AND clears every applicable quality
                   gate (lint, format, tests) on a clean machine. Agents may install and build to
-                  self-verify while generating; grading happens cold afterward.
+                  self-verify while generating; grading happens cold afterward. The ± is the
+                  95% Wilson interval over the scored specs.
                 </MetricHelp>
               </span>
               <span className="flex items-center justify-end gap-1">
                 Core
                 <MetricHelp label="Core pass">
                   The project installs, builds, type-checks and natively compiles on a clean
-                  machine. Quality gates are excluded, so Core answers whether the code runs at all.
-                  Full is always a subset of Core.
+                  machine. Quality gates are excluded, so Core answers whether the code runs at
+                  all. Full is always a subset of Core.
                 </MetricHelp>
               </span>
               <span className="flex items-center justify-end gap-1">
@@ -1448,13 +1444,13 @@ function ScaffbenchLeaderboardCard({ className }: { className?: string } = {}) {
               </span>
             </div>
 
-            <div>
+            <div className="divide-y divide-[var(--row-rule)]">
               {rows.map((row) => (
                 <ModelLeaderRow key={row.key} row={row} />
               ))}
             </div>
 
-            <div className={cn(LEADERBOARD_GRID, "mt-1.5")}>
+            <div className={cn(LEADERBOARD_GRID, "mt-2")}>
               <span aria-hidden />
               <div className="flex justify-between font-mono text-[10px] text-[#9c9a93] dark:text-[#6c6a61]">
                 {PASS_AXIS_TICKS.map((tick) => (
@@ -1481,64 +1477,66 @@ function ModelLeaderRow({ row }: { row: ModelLeaderRow }) {
     () => ({ width: `${row.pass}%`, backgroundColor: row.color }),
     [row.pass, row.color],
   );
+  const whiskerStyle = useMemo<CSSProperties>(
+    () => ({ left: `${row.ciLow}%`, width: `${Math.max(row.ciHigh - row.ciLow, 0)}%` }),
+    [row.ciLow, row.ciHigh],
+  );
 
   return (
-    <div className={cn(LEADERBOARD_GRID, "py-2.5")}>
-      <span className="flex min-w-0 items-center gap-1.5">
+    <div className={cn(LEADERBOARD_GRID, "py-3.5")}>
+      <span className="flex items-center gap-2 whitespace-nowrap">
         {row.rank !== undefined ? (
-          <span className="w-6 shrink-0 text-right font-mono text-[11px] tabular-nums text-[#9c9a93] dark:text-[#6c6a61]">
+          <span className="w-5 shrink-0 text-right font-mono text-[11px] tabular-nums text-[#9c9a93] dark:text-[#6c6a61]">
             {row.rank}
           </span>
         ) : null}
         <ProviderLogo logo={row.logo} />
-        <span className="truncate font-mono text-sm font-bold" title={row.label}>
-          {row.label}
-        </span>
+        <Tooltip delay={0}>
+          <TooltipTrigger type="button" className="cursor-default font-mono text-[15px] font-medium">
+            {row.label}
+          </TooltipTrigger>
+          <TooltipContent className="normal-case tracking-normal">
+            <p className="font-normal">Run through {row.harness}</p>
+          </TooltipContent>
+        </Tooltip>
         {row.effort ? (
-          <span className="shrink-0 font-mono text-[11px] text-[#9c9a93] dark:text-[#6c6a61]">
+          <span className="font-mono text-[13px] text-[#9c9a93] dark:text-[#6c6a61]">
             [{row.effort}]
           </span>
         ) : null}
-        {row.legacy ? (
-          <span className="shrink-0 rounded-sm border border-[#dcdad3] px-1 font-mono text-[10px] uppercase text-[#9c9a93] dark:border-[#3a382f] dark:text-[#6c6a61]">
-            legacy
-          </span>
-        ) : null}
       </span>
-      <div className="h-2.5 w-full overflow-hidden rounded-full" style={BAR_TRACK_STYLE}>
-        <div
-          className="h-full rounded-full transition-[width] duration-500 ease-out"
-          style={fillStyle}
-        />
+
+      <div className="relative h-4">
+        <div className="absolute inset-y-[3px] left-0 right-0 rounded-sm" style={BAR_TRACK_STYLE} />
+        <div className="absolute inset-y-[3px] left-0 rounded-sm" style={fillStyle} />
+        <ConfidenceWhisker style={whiskerStyle} />
       </div>
-      <span className="text-right font-mono text-sm font-bold">
-        {row.pass}%
-        {row.buildOnly ? (
-          <Tooltip delay={0}>
-            <TooltipTrigger
-              type="button"
-              aria-label="Build-level pass; quality gates pending"
-              className="cursor-help align-super text-[9px] font-semibold text-[#9c9a93] dark:text-[#6c6a61]"
-            >
-              *
-            </TooltipTrigger>
-            <TooltipContent className="max-w-[16rem] normal-case tracking-normal">
-              <p className="font-normal">
-                Build-level pass (install/build/typecheck). This row's sweeps predate quality-gated
-                runs; the Full number lands with its re-run.
-              </p>
-            </TooltipContent>
-          </Tooltip>
-        ) : null}
+
+      <span className="flex items-baseline justify-end gap-1">
+        <span className="font-mono text-[17px] font-bold tabular-nums">{row.pass}%</span>
+        <span className="font-mono text-[11px] tabular-nums text-[#9c9a93] dark:text-[#6c6a61]">
+          ±{row.passMargin}%
+        </span>
       </span>
-      <span className="text-right font-mono text-xs tabular-nums">{row.core}%</span>
-      <span className="text-right font-mono text-xs">{row.wired}</span>
-      <span className="text-right font-mono text-xs">{row.time}</span>
-      <span className="text-right font-mono text-xs">{row.cost}</span>
-      <span className="text-right font-mono text-xs">{row.outTok}</span>
-      <span className="text-right font-mono text-xs">{row.steps}</span>
-      <span className="text-right font-mono text-xs">{row.loc}</span>
+      <span className="text-right font-mono text-[13px] tabular-nums">{row.core}%</span>
+      <span className="text-right font-mono text-[13px] tabular-nums">{row.wired}</span>
+      <span className="text-right font-mono text-[13px] tabular-nums">{row.time}</span>
+      <span className="text-right font-mono text-[13px] tabular-nums">{row.cost}</span>
+      <span className="text-right font-mono text-[13px] tabular-nums">{row.outTok}</span>
+      <span className="text-right font-mono text-[13px] tabular-nums">{row.steps}</span>
+      <span className="text-right font-mono text-[13px] tabular-nums">{row.loc}</span>
     </div>
+  );
+}
+
+/** 95% Wilson interval drawn over the bar: a rule with a cap at each bound. */
+function ConfidenceWhisker({ style }: { style: CSSProperties }) {
+  return (
+    <span className="pointer-events-none absolute inset-y-0 text-[var(--ci-line)]" style={style}>
+      <span className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-current opacity-70" />
+      <span className="absolute inset-y-0 left-0 w-px bg-current" />
+      <span className="absolute inset-y-0 right-0 w-px bg-current" />
+    </span>
   );
 }
 
@@ -1551,7 +1549,7 @@ function ModelPicker({
   selectedKeys: readonly string[];
   onToggle: (key: string) => void;
 }) {
-  const firstFreeModelIndex = models.findIndex(isFreeModel);
+  const firstFreeModelIndex = models.findIndex((model) => isUnmeteredModel(model.key));
 
   return (
     <DropdownMenu>

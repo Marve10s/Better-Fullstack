@@ -516,7 +516,6 @@
   "runCtaTitle": "あなたの実行結果がどれだけ通用するか見てみましょう",
   "runCtaDesc": "あなたの数値はリーダーボードと同じ形式で表示されます。何か興味深い結果が出ましたか？レポートを添えてプルリクエストを作成してください。",
   "runCtaLeaderboard": "リーダーボードを見る",
-  "runCtaWriteup": "記事を読んでください",
   "llmRunItYourself": "自分で実行してください",
   "navBenchmark": "ベンチマーク",
   "benchmarkTeaserTitle": "AIモデルはあなたのプロジェクトをどれだけうまく構築できるか？",

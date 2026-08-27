@@ -44,8 +44,6 @@ import {
 } from "@scaffbench/index";
 
 import { buildRows } from "@scripts/benchmarks/build-scaffbench-3-data";
-import { buildPublishedCells } from "@scripts/benchmarks/build-scaffbench-2-1-data";
-import { normalizeExistingCell } from "@scripts/benchmarks/splice-scaffbench-2-1";
 
 const aiSpec = SCAFFBENCH_2_SPECS.find((spec) => spec.id === "ai-search-workbench")!;
 const cargoSpec = SCAFFBENCH_2_SPECS.find((spec) => spec.id === "rust-leptos-axum")!;
@@ -137,76 +135,6 @@ async function withFakePath<A>(directory: string, action: () => Promise<A>) {
 }
 
 describe("ScaffBench hardening round 2", () => {
-  it("A counts a scored stepless failure and rejects aggregate mismatches", () => {
-    const results = [
-      run({
-        id: "failed-no-project",
-        trial: 1,
-        outcome: "model-failure",
-        projectDir: null,
-        validation: { projectExists: false, qualityGateRequested: false, steps: {} },
-      }),
-      run({ id: "pass-2", trial: 2, outcome: "success" }),
-      run({ id: "pass-3", trial: 3, outcome: "success" }),
-    ];
-    const aggregate = {
-      model: "gpt-5.6-sol",
-      effort: "high",
-      path: "prompt",
-      specId: aiSpec.id,
-      runs: 3,
-      scoredRuns: 3,
-      passCount: 2,
-      qualityScoredRuns: 0,
-      qualityPassCount: 0,
-      stackPercent: 100,
-      commandDisciplinePercent: 100,
-      avgOutputTokens: 10,
-      medianDurationMs: 10,
-    };
-    const summary = {
-      options: options(),
-      results,
-      aggregates: { bySpecCell: [aggregate] },
-    };
-
-    expect(buildPublishedCells(summary, "/missing")[0]).toMatchObject({
-      trials: 3,
-      scoredTrials: 3,
-      passCount: 2,
-      passRate: 67,
-      passAny: true,
-      passAll: false,
-    });
-    expect(() =>
-      buildPublishedCells(
-        {
-          ...summary,
-          aggregates: { bySpecCell: [{ ...aggregate, passCount: 3 }] },
-        },
-        "/mismatch",
-      ),
-    ).toThrow(/passCount/i);
-  });
-
-  it("B preserves null quality through splice normalization", () => {
-    const normalized = normalizeExistingCell({
-      modelKey: "m|high",
-      path: "prompt",
-      spec: "s",
-      scored: true,
-      corePass: true,
-      fullPass: null,
-      wiredPct: 100,
-      cmdPct: 100,
-      costUsd: null,
-      outTokens: null,
-      steps: 1,
-    } as never);
-    expect(normalized.qualityPassCount).toBeNull();
-    expect(normalized.qualityPassRate).toBeNull();
-  });
-
   it("C snapshots a non-contradictory install policy for every path mode", () => {
     const snapshot: Record<string, string[]> = {};
     for (const pathMode of ["prompt", "mcp"] as const) {

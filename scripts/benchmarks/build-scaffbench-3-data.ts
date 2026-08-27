@@ -12,6 +12,8 @@ const MODEL_LABELS: Record<string, string> = {
   "gpt-5.6-sol": "GPT-5.6 Sol",
   "gpt-5.6-terra": "GPT-5.6 Terra",
   "gpt-5.6-luna": "GPT-5.6 Luna",
+  // Ran behind opencode's "Ox Alpha Free" stealth alias; the model is GLM 5.3 Flash.
+  "opencode/x-preview-f-free": "GLM 5.3 Flash",
 };
 
 const PROTOCOL = {

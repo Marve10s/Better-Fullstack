@@ -530,7 +530,6 @@
   "runCtaTitle": "See how your run stacks up",
   "runCtaDesc": "Your numbers land in the same format as the leaderboard. Ran something interesting? Open a pull request with your report.",
   "runCtaLeaderboard": "View the leaderboard",
-  "runCtaWriteup": "Read the writeup",
   "llmRunItYourself": "Run it yourself",
   "navBenchmark": "Benchmark",
   "benchmarkTeaserTitle": "How good are AI models at building your projects?",

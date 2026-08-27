@@ -516,7 +516,6 @@
   "runCtaTitle": "Подивіться, як виглядає ваш прогін",
   "runCtaDesc": "Ваші числа мають той самий формат, що й leaderboard. Запустили щось цікаве? Відкрийте PR зі звітом.",
   "runCtaLeaderboard": "Переглянути leaderboard",
-  "runCtaWriteup": "Читати розбір",
   "llmRunItYourself": "Запустіть самостійно",
   "navBenchmark": "Бенчмарк",
   "benchmarkTeaserTitle": "Наскільки добре моделі ШІ створюють ваші проєкти?",
