@@ -42,14 +42,13 @@
     },
     "apps/cli": {
       "name": "create-better-fullstack",
-      "version": "2.6.1",
+      "version": "2.6.2",
       "bin": {
         "create-better-fullstack": "dist/cli.mjs",
       },
       "dependencies": {
-        "@better-fullstack/project-lifecycle": "^2.6.1",
-        "@better-fullstack/template-generator": "^2.6.1",
-        "@better-fullstack/types": "^2.6.1",
+        "@better-fullstack/template-generator": "^2.6.2",
+        "@better-fullstack/types": "^2.6.2",
         "@clack/core": "^0.5.0",
         "@clack/prompts": "^1.7.0",
         "@modelcontextprotocol/server": "^2.0.0",
@@ -68,6 +67,7 @@
         "zod": "4.4.3",
       },
       "devDependencies": {
+        "@better-fullstack/project-lifecycle": "workspace:*",
         "@modelcontextprotocol/client": "^2.0.0",
         "@types/bun": "^1.4.0",
         "@types/fs-extra": "^11.0.4",
@@ -174,7 +174,7 @@
     },
     "packages/create-bfs": {
       "name": "create-bfs",
-      "version": "2.6.1",
+      "version": "2.6.2",
       "bin": {
         "create-bfs": "cli.js",
       },
@@ -184,7 +184,7 @@
     },
     "packages/project-lifecycle": {
       "name": "@better-fullstack/project-lifecycle",
-      "version": "2.6.1",
+      "version": "2.6.2",
       "dependencies": {
         "fs-extra": "^11.4.0",
       },
@@ -197,9 +197,9 @@
     },
     "packages/template-generator": {
       "name": "@better-fullstack/template-generator",
-      "version": "2.6.1",
+      "version": "2.6.2",
       "dependencies": {
-        "@better-fullstack/types": "^2.6.1",
+        "@better-fullstack/types": "^2.6.2",
         "handlebars": "^4.7.9",
         "pathe": "^2.0.3",
         "ts-morph": "^27.0.2",
@@ -217,7 +217,7 @@
     },
     "packages/types": {
       "name": "@better-fullstack/types",
-      "version": "2.6.1",
+      "version": "2.6.2",
       "dependencies": {
         "zod": "4.4.3",
       },

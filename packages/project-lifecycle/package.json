@@ -1,6 +1,7 @@
 {
   "name": "@better-fullstack/project-lifecycle",
   "version": "2.6.2",
+  "private": true,
   "description": "Transactional project lifecycle contracts and recovery for Better Fullstack",
   "license": "MIT",
   "files": [
@@ -33,13 +34,9 @@
       "default": "./dist/recovery/transaction.mjs"
     }
   },
-  "publishConfig": {
-    "access": "public"
-  },
   "scripts": {
     "build": "tsdown",
-    "lint": "oxlint . && tsc --noEmit",
-    "prepublishOnly": "bun run build"
+    "lint": "oxlint . && tsc --noEmit"
   },
   "dependencies": {
     "fs-extra": "^11.4.0"

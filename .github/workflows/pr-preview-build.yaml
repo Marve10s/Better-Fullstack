@@ -67,13 +67,11 @@ jobs:
           jq --arg v "$PREVIEW_VERSION" '.version = $v' packages/types/package.json > packages/types/package.json.tmp
           mv packages/types/package.json.tmp packages/types/package.json
           bun run --cwd packages/types build
-          jq --arg v "$PREVIEW_VERSION" '.version = $v' packages/project-lifecycle/package.json > packages/project-lifecycle/package.json.tmp
-          mv packages/project-lifecycle/package.json.tmp packages/project-lifecycle/package.json
           bun run --cwd packages/project-lifecycle build
           jq --arg v "$PREVIEW_VERSION" '.version = $v | .dependencies["@better-fullstack/types"] = $v' packages/template-generator/package.json > packages/template-generator/package.json.tmp
           mv packages/template-generator/package.json.tmp packages/template-generator/package.json
           bun run --cwd packages/template-generator build
-          jq --arg v "$PREVIEW_VERSION" '.version = $v | .dependencies["@better-fullstack/project-lifecycle"] = $v | .dependencies["@better-fullstack/types"] = $v | .dependencies["@better-fullstack/template-generator"] = $v' apps/cli/package.json > apps/cli/package.json.tmp
+          jq --arg v "$PREVIEW_VERSION" '.version = $v | .dependencies["@better-fullstack/types"] = $v | .dependencies["@better-fullstack/template-generator"] = $v' apps/cli/package.json > apps/cli/package.json.tmp
           mv apps/cli/package.json.tmp apps/cli/package.json
           bun run --cwd apps/cli build
           jq --arg v "$PREVIEW_VERSION" '.version = $v | .dependencies["create-better-fullstack"] = $v' packages/create-bfs/package.json > packages/create-bfs/package.json.tmp
@@ -94,7 +92,6 @@ jobs:
             mv -- "$ARTIFACT_DIR/$filename" "$ARTIFACT_DIR/$output_name"
           }
           pack_package packages/types types.tgz
-          pack_package packages/project-lifecycle project-lifecycle.tgz
           pack_package packages/template-generator template-generator.tgz
           pack_package apps/cli cli.tgz
           pack_package packages/create-bfs create-bfs.tgz
