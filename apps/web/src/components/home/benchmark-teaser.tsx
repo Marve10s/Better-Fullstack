@@ -1,19 +1,20 @@
-import { Link } from "@tanstack/react-router";
-import { TbArrowRight as ArrowRight } from "react-icons/tb";
-import { motion } from "motion/react";
 import type { CSSProperties } from "react";
 
-import { cn } from "@/lib/platform/utils";
-import { m } from "@/paraglide/messages.js";
+import { Link } from "@tanstack/react-router";
+import { motion } from "motion/react";
+import { TbArrowRight as ArrowRight } from "react-icons/tb";
+
+import type { ScaffbenchVendor } from "@/components/home/scaffbench-types";
 
 import { ProviderLogo, type ProviderLogoId } from "@/components/home/provider-marks";
 import { SCAFFBENCH3_CELLS, SCAFFBENCH3_MODELS } from "@/components/home/scaffbench-3-board-data";
-import type { ScaffbenchVendor } from "@/components/home/scaffbench-types";
+import { cn } from "@/lib/platform/utils";
+import { m } from "@/paraglide/messages.js";
 
 // The teaser shows the leading row of the live ScaffBench 3 board: how often the
-// model's project merely compiles (Core) against how often it also clears lint,
-// format and tests (Full). Numbers come straight from the committed run data, so
-// they can't drift from the full leaderboard.
+// model's project builds, against its ScaffBench Index, the graded and
+// difficulty-weighted score the leaderboard sorts by. Numbers come straight from
+// the committed run data, so they can't drift from the full leaderboard.
 const VENDOR_LOGO: Partial<Record<ScaffbenchVendor, ProviderLogoId>> = {
   anthropic: "anthropic",
   openai: "openai",
@@ -30,7 +31,7 @@ type BoardLeader = {
   logo?: ProviderLogoId;
   isFree: boolean;
   core: number;
-  full: number;
+  score: number;
   costUsd: number | null;
   minutes: number | null;
 };
@@ -50,11 +51,15 @@ function computeLeader(): BoardLeader | null {
       logo: VENDOR_LOGO[model.vendor],
       isFree: costs.length > 0 && costs.every((cost) => cost === 0),
       core: Math.round((100 * scored.reduce((sum, c) => sum + c.passCount, 0)) / trials),
-      full: Math.round((100 * scored.reduce((sum, c) => sum + c.qualityPassCount, 0)) / trials),
+      score: model.sortIndex,
       costUsd: costs.length > 0 ? mean(costs) : null,
       minutes: durations.length > 0 ? mean(durations) / 60000 : null,
     };
-    if (!best || leader.full > best.full || (leader.full === best.full && leader.core > best.core)) {
+    if (
+      !best ||
+      leader.score > best.score ||
+      (leader.score === best.score && leader.core > best.core)
+    ) {
       best = leader;
     }
   }
@@ -126,15 +131,17 @@ function BoardLeaderCard({ leader }: { leader: BoardLeader }) {
 
       <div className="space-y-3">
         <PassBar label="Builds" pass={leader.core} accent="muted" />
-        <PassBar label="Ships clean" pass={leader.full} accent="lime" />
+        <PassBar label="Index" pass={leader.score} accent="lime" />
       </div>
       <p className="mt-2 text-right font-mono text-[10px] uppercase tracking-[0.14em] text-[#71706a] dark:text-[#8f8d84]">
-        Pass@1 over 13 specs
+        Over 13 specs
       </p>
 
       <div className="mt-5 grid grid-cols-2 gap-3 border-t border-[#e1e0d8] pt-5 dark:border-[rgba(237,235,228,0.10)]">
         <StatTile
-          value={leader.costUsd === null ? "-" : `$${leader.costUsd.toFixed(2)}`}
+          value={
+            leader.costUsd === null || leader.costUsd === 0 ? "-" : `$${leader.costUsd.toFixed(2)}`
+          }
           unit="avg cost per project"
         />
         <StatTile

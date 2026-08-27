@@ -40,6 +40,9 @@ export type ScaffbenchCell = {
   fullPass: boolean;
   /** share of the spec's required libraries actually wired into the project. */
   wiredPct: number;
+  /** graded spec score, 0-100: 0.6 core pass + 0.2 lint/format share + 0.2 wired.
+   *  null when the run predates the graded index. */
+  score: number | null;
   cmdPct: number;
   trials: number;
   scoredTrials: number;

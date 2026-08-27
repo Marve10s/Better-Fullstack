@@ -16,7 +16,17 @@ import {
   TbCopy as Copy,
 } from "react-icons/tb";
 
+import type {
+  ScaffbenchCell,
+  ScaffbenchHarness,
+  ScaffbenchModel,
+  ScaffbenchVendor,
+} from "@/components/home/scaffbench-types";
+
+import { OpenAIMark, ProviderLogo, type ProviderLogoId } from "@/components/home/provider-marks";
+import { SCAFFBENCH3_CELLS, SCAFFBENCH3_MODELS } from "@/components/home/scaffbench-3-board-data";
 import { AgentCommandTabs } from "@/components/mcp/agent-command-tabs";
+import { SCAFFBENCH3_SPECS } from "@/components/scaffbench/scaffbench-3-data";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -30,17 +40,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useTheme } from "@/lib/content/theme";
 import { cn } from "@/lib/platform/utils";
 import { m } from "@/paraglide/messages.js";
-
-import { SCAFFBENCH3_SPECS } from "@/components/scaffbench/scaffbench-3-data";
-
-import { OpenAIMark, ProviderLogo, type ProviderLogoId } from "@/components/home/provider-marks";
-import { SCAFFBENCH3_CELLS, SCAFFBENCH3_MODELS } from "@/components/home/scaffbench-3-board-data";
-import type {
-  ScaffbenchCell,
-  ScaffbenchHarness,
-  ScaffbenchModel,
-  ScaffbenchVendor,
-} from "@/components/home/scaffbench-types";
 
 const fadeUpInitial = { opacity: 0, y: 12 } as const;
 
@@ -72,8 +71,8 @@ const VENDOR_THEME_VARS = cn(
 
 const LEADERBOARD_THEME_VARS = cn(
   VENDOR_THEME_VARS,
-  "[--bar-track:#ececec] [--ci-line:#57564f] [--row-rule:#e7e5dd]",
-  "dark:[--bar-track:#edebe40f] dark:[--ci-line:#c9c7be] dark:[--row-rule:rgba(237,235,228,0.07)]",
+  "[--bar-track:#ececec] [--row-rule:#e7e5dd]",
+  "dark:[--bar-track:#edebe40f] dark:[--row-rule:rgba(237,235,228,0.07)]",
 );
 
 const VENDOR_COLOR: Record<ScaffbenchVendor, string> = {
@@ -100,7 +99,7 @@ const BAR_TRACK_STYLE: CSSProperties = { backgroundColor: "var(--bar-track)" };
 
 // Model name and effort get a fixed, generous column so neither is ever clipped.
 const LEADERBOARD_GRID =
-  "grid grid-cols-[minmax(15rem,19rem)_minmax(8rem,1fr)_5.75rem_3.5rem_3.75rem_3.5rem_4.5rem_4rem_3rem_3.5rem] items-center gap-x-3";
+  "grid grid-cols-[minmax(15rem,19rem)_minmax(8rem,1fr)_5rem_3.5rem_4.5rem_4rem_3rem_3.5rem] items-center gap-x-3";
 
 const PASS_AXIS_TICKS: readonly number[] = [0, 20, 40, 60, 80, 100] as const;
 
@@ -112,12 +111,8 @@ interface ModelLeaderRow {
   color: string;
   logo?: ProviderLogoId;
   harness: string;
-  pass: number;
-  /** half-width of the 95% Wilson interval around pass, in points. */
-  passMargin: number;
-  ciLow: number;
-  ciHigh: number;
-  wired: string;
+  /** ScaffBench Index, 0-100: difficulty-weighted mean of the per-spec graded scores. */
+  score: number;
   time: string;
   costNum: number;
   cost: string;
@@ -138,20 +133,6 @@ function formatPercent(passing: number, total: number): number {
   return total === 0 ? 0 : Math.round((100 * passing) / total);
 }
 
-/** 95% Wilson score interval, the same one the harness reports. */
-function wilsonInterval(successes: number, total: number): { low: number; high: number } {
-  if (total === 0) return { low: 0, high: 0 };
-  const z = 1.96;
-  const p = successes / total;
-  const denom = 1 + (z * z) / total;
-  const center = p + (z * z) / (2 * total);
-  const margin = z * Math.sqrt((p * (1 - p) + (z * z) / (4 * total)) / total);
-  return {
-    low: Math.max(0, Math.round(((center - margin) / denom) * 100)),
-    high: Math.min(100, Math.round(((center + margin) / denom) * 100)),
-  };
-}
-
 function formatDuration(ms: number): string {
   const seconds = ms / 1000;
   return seconds < 120 ? `${Math.round(seconds)}s` : `${(seconds / 60).toFixed(1)}m`;
@@ -162,7 +143,7 @@ function mean(values: readonly number[]): number {
 }
 
 function sortLeaderRows(rows: ModelLeaderRow[]): ModelLeaderRow[] {
-  return [...rows].sort((a, b) => b.pass - a.pass || a.costNum - b.costNum);
+  return [...rows].sort((a, b) => b.score - a.score || a.costNum - b.costNum);
 }
 
 const HARNESS_LABEL: Record<ScaffbenchHarness, string> = {
@@ -191,25 +172,31 @@ function coreTally(scored: readonly ScaffbenchCell[]): { successes: number; tria
   };
 }
 
-function fullTally(scored: readonly ScaffbenchCell[]): { successes: number; trials: number } {
-  return {
-    successes: scored.reduce((sum, cell) => sum + cell.qualityPassCount, 0),
-    trials: scored.reduce((sum, cell) => sum + cell.scoredTrials, 0),
-  };
+const SPEC_DIFFICULTY = new Map(SCAFFBENCH3_SPECS.map((spec) => [spec.id, spec.difficulty]));
+
+function scaffbenchIndex(scored: readonly ScaffbenchCell[]): number {
+  let sum = 0;
+  let weight = 0;
+  for (const cell of scored) {
+    if (cell.score === null) continue;
+    const w = SPEC_DIFFICULTY.get(cell.spec) ?? 1;
+    sum += w * cell.score;
+    weight += w;
+  }
+  return weight === 0 ? 0 : Math.round(sum / weight);
 }
 
 function computeScaffbenchModelRows(specs: ReadonlySet<string>): ModelLeaderRow[] {
   const rows = BOARD_MODELS.map((model) => {
     const scored = cellsFor(model.key).filter((cell) => cell.scored && specs.has(cell.spec));
-    const full = fullTally(scored);
-    const pass = formatPercent(full.successes, full.trials);
-    const ci = wilsonInterval(full.successes, full.trials);
     const costs = scored.map((cell) => cell.costUsd).filter((v): v is number => v !== null);
     const tokens = scored.map((cell) => cell.outTokens).filter((v): v is number => v !== null);
     const durations = scored
       .map((cell) => cell.durationMs)
       .filter((v): v is number => v !== null && v > 0);
-    const locValues = scored.map((cell) => cell.lines).filter((v): v is number => v !== null && v > 0);
+    const locValues = scored
+      .map((cell) => cell.lines)
+      .filter((v): v is number => v !== null && v > 0);
     const steps = scored.map((cell) => cell.steps).filter((v): v is number => v !== null && v > 0);
     return {
       key: model.key,
@@ -218,15 +205,11 @@ function computeScaffbenchModelRows(specs: ReadonlySet<string>): ModelLeaderRow[
       color: VENDOR_COLOR[model.vendor],
       logo: VENDOR_LOGO[model.vendor],
       harness: HARNESS_LABEL[model.harness],
-      pass,
-      passMargin: Math.round((ci.high - ci.low) / 2),
-      ciLow: ci.low,
-      ciHigh: ci.high,
+      score: scaffbenchIndex(scored),
       core: formatPercent(coreTally(scored).successes, coreTally(scored).trials),
-      wired: scored.length > 0 ? `${Math.round(mean(scored.map((cell) => cell.wiredPct)))}%` : "–",
       time: durations.length > 0 ? formatDuration(mean(durations)) : "–",
       costNum: costs.length > 0 ? mean(costs) : Number.POSITIVE_INFINITY,
-      cost: costs.length > 0 ? `$${mean(costs).toFixed(2)}` : "–",
+      cost: costs.length === 0 || mean(costs) === 0 ? "–" : `$${mean(costs).toFixed(2)}`,
       outTok: tokens.length > 0 ? `${(mean(tokens) / 1000).toFixed(0)}k` : "–",
       steps: steps.length > 0 ? String(Math.round(mean(steps))) : "–",
       loc: locValues.length > 0 ? `${(mean(locValues) / 1000).toFixed(1)}k` : "–",
@@ -266,19 +249,14 @@ export default function LLMBenchmarkSection({
       className={cn("relative scroll-mt-16 border-t border-border bg-muted/20", className)}
     >
       <div className="border-b border-border">
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(240px,1fr)_minmax(0,4fr)]">
-          <BenchmarkSidebar />
-          <div className="min-w-0 p-3 sm:p-5 lg:p-6">
-            <BenchmarkChartCard />
-          </div>
+        <div className="mx-auto min-w-0 max-w-[1220px] p-4 sm:p-6 lg:p-8">
+          <BenchmarkMasthead />
+          <BenchmarkChartCard className="mt-8" />
         </div>
       </div>
       <div className="border-b border-border">
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(240px,1fr)_minmax(0,4fr)]">
-          <LeaderboardSidebar />
-          <div className="min-w-0 p-3 sm:p-5 lg:p-6">
-            <ScaffbenchLeaderboardCard />
-          </div>
+        <div className="mx-auto min-w-0 max-w-[1220px] p-4 sm:p-6 lg:p-8">
+          <ScaffbenchLeaderboardCard />
         </div>
       </div>
       <div className="px-4 py-12 sm:px-8 sm:py-16">
@@ -298,8 +276,8 @@ interface AxisSpec {
 const PASS_AXIS: AxisSpec = {
   max: 110,
   ticks: [0, 25, 50, 75, 100],
-  unit: "%",
-  label: "Full pass rate",
+  unit: "",
+  label: "ScaffBench Index",
 };
 
 const VB_W = 1120;
@@ -392,7 +370,7 @@ function boxesOverlap(a: LabelBox, b: LabelBox): boolean {
   return a.x1 < b.x2 && b.x1 < a.x2 && a.y1 < b.y2 && b.y1 < a.y2;
 }
 
-type V2Metric = "tokens" | "cost" | "steps" | "lines";
+type V2Metric = "tokens" | "cost" | "steps" | "time" | "lines";
 
 interface V2ChartTabSpec {
   id: V2Metric;
@@ -406,7 +384,7 @@ const V2_CHART_TABS: readonly V2ChartTabSpec[] = [
   {
     id: "tokens",
     label: "Tokens",
-    note: "cheap + reliable ↗",
+    note: "efficient + reliable ↗",
     unit: "k",
     axisLabel: "Avg output tokens per scaffold",
   },
@@ -420,9 +398,16 @@ const V2_CHART_TABS: readonly V2ChartTabSpec[] = [
   {
     id: "steps",
     label: "Steps",
-    note: "cheap + reliable ↗",
+    note: "direct + reliable ↗",
     unit: "",
     axisLabel: "Avg tool steps per scaffold",
+  },
+  {
+    id: "time",
+    label: "Time",
+    note: "fast + reliable ↗",
+    unit: "m",
+    axisLabel: "Avg minutes per scaffold",
   },
   {
     id: "lines",
@@ -439,6 +424,7 @@ interface PathMetrics {
   tokens: number | null;
   cost: number | null;
   steps: number | null;
+  time: number | null;
   lines: number | null;
   scoredCount: number;
 }
@@ -452,17 +438,20 @@ function aggregatePathMetrics(sourceCells: readonly ScaffbenchCell[]): PathMetri
     .map((cell) => cell.costUsd)
     .filter((value): value is number => value !== null);
   const steps = scored.map((cell) => cell.steps).filter((v): v is number => v !== null && v > 0);
+  const durations = scored
+    .map((cell) => cell.durationMs)
+    .filter((value): value is number => value !== null && value > 0);
   const lines = scored
     .map((cell) => cell.lines)
     .filter((value): value is number => value !== null && value > 0);
-  const full = fullTally(scored);
   const core = coreTally(scored);
   return {
-    pass: formatPercent(full.successes, full.trials),
+    pass: scaffbenchIndex(scored),
     corePct: formatPercent(core.successes, core.trials),
     tokens: tokens.length > 0 ? mean(tokens) / 1000 : null,
     cost: costs.length > 0 ? mean(costs) : null,
     steps: steps.length > 0 ? mean(steps) : null,
+    time: durations.length > 0 ? mean(durations) / 60_000 : null,
     lines: lines.length > 0 ? mean(lines) / 1000 : null,
     scoredCount: scored.length,
   };
@@ -472,12 +461,14 @@ type MetricBearing = {
   tokens: number | null;
   cost: number | null;
   steps: number | null;
+  time: number | null;
   lines: number | null;
 };
 
 function v2MetricValue(point: MetricBearing, metric: V2Metric): number | null {
   if (metric === "cost") return point.cost;
   if (metric === "steps") return point.steps;
+  if (metric === "time") return point.time;
   if (metric === "lines") return point.lines;
   return point.tokens;
 }
@@ -485,6 +476,7 @@ function v2MetricValue(point: MetricBearing, metric: V2Metric): number | null {
 function formatV2Metric(point: MetricBearing, metric: V2Metric): string {
   if (metric === "cost") return point.cost === null ? "–" : `$${point.cost.toFixed(2)}`;
   if (metric === "steps") return point.steps === null ? "–" : `${Math.round(point.steps)} steps`;
+  if (metric === "time") return point.time === null ? "–" : `${point.time.toFixed(1)} min`;
   if (metric === "lines") return point.lines === null ? "–" : `${point.lines.toFixed(1)}k lines`;
   return point.tokens === null ? "–" : `${point.tokens.toFixed(1)}k tokens`;
 }
@@ -492,6 +484,7 @@ function formatV2Metric(point: MetricBearing, metric: V2Metric): string {
 function formatV2MetricCompact(point: MetricBearing, metric: V2Metric): string {
   if (metric === "cost") return point.cost === null ? "–" : `$${point.cost.toFixed(2)}`;
   if (metric === "steps") return point.steps === null ? "–" : `${Math.round(point.steps)}`;
+  if (metric === "time") return point.time === null ? "–" : `${point.time.toFixed(1)}m`;
   if (metric === "lines") return point.lines === null ? "–" : `${point.lines.toFixed(1)}k`;
   return point.tokens === null ? "–" : `${point.tokens.toFixed(1)}k`;
 }
@@ -544,22 +537,9 @@ function v2PointLabel(model: ScaffbenchModel): string {
   return `${model.label} ${effort}`;
 }
 
-type PassMode = "full" | "core";
-
-const PASS_MODE_TABS: readonly { id: PassMode; label: string }[] = [
-  { id: "full", label: "Full" },
-  { id: "core", label: "Core" },
-];
-
-const PASS_MODE_LABEL: Record<PassMode, string> = {
-  full: "Full pass rate",
-  core: "Core pass rate",
-};
-
-function computeV2ModelPoints(passMode: PassMode): V2ModelPoint[] {
+function computeV2ModelPoints(): V2ModelPoint[] {
   return BOARD_MODELS.map((model) => {
     const metrics = aggregatePathMetrics(cellsFor(model.key));
-    if (passMode === "core") metrics.pass = metrics.corePct;
     const free = isUnmeteredModel(model.key);
     return {
       key: model.key,
@@ -579,6 +559,7 @@ function v2PointEligible(point: V2ModelPoint, metric: V2Metric): boolean {
     if (point.free) return false;
     return point.cost !== null;
   }
+  if (metric === "time") return point.time !== null;
   if (metric === "lines") return point.lines !== null;
   return true;
 }
@@ -630,9 +611,8 @@ function computeV2LabelPlacements(
 
 function BenchmarkChartCard({ className }: { className?: string } = {}) {
   const [metric, setMetric] = useState<V2Metric>("tokens");
-  const [passMode, setPassMode] = useState<PassMode>("full");
   const [hoveredModel, setHoveredModel] = useState<string | null>(null);
-  const modelPoints = useMemo(() => computeV2ModelPoints(passMode), [passMode]);
+  const modelPoints = useMemo(() => computeV2ModelPoints(), []);
   const eligiblePoints = useMemo(
     () => modelPoints.filter((point) => v2PointEligible(point, metric)),
     [modelPoints, metric],
@@ -681,60 +661,39 @@ function BenchmarkChartCard({ className }: { className?: string } = {}) {
       whileInView={fadeUpVisible}
       viewport={viewportOnceNear}
       transition={fadeUpTransition}
-      className={cn(
-        "overflow-hidden rounded-2xl border border-[#e1e0d8] bg-[#faf9f5] text-[#1b1a17] [color-scheme:light] dark:border-[rgba(237,235,228,0.10)] dark:bg-[#161614] dark:text-[#dad8d0] dark:[color-scheme:dark]",
-        CHART_THEME_VARS,
-        className,
-      )}
+      className={cn("w-full", CHART_THEME_VARS, className)}
     >
-      <div className="border-b border-[#e1e0d8] px-3 py-4 dark:border-[rgba(237,235,228,0.10)] sm:px-6">
-        <div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-center justify-between gap-4 px-3">
-          <p className="text-sm font-semibold">ScaffBench 3</p>
-          <div className="flex flex-wrap items-center justify-end gap-2.5">
-            <div
-              className="inline-flex overflow-hidden rounded-md border border-[#d9d8d2] dark:border-[rgba(237,235,228,0.14)]"
-              role="tablist"
-              aria-label="Pass metric"
-            >
-              {PASS_MODE_TABS.map((t) => (
-                <MetricTabButton
-                  key={t.id}
-                  id={t.id}
-                  label={t.label}
-                  active={passMode === t.id}
-                  onSelect={setPassMode}
-                />
-              ))}
-            </div>
-            <div
-              className="inline-flex overflow-hidden rounded-md border border-[#d9d8d2] dark:border-[rgba(237,235,228,0.14)]"
-              role="tablist"
-              aria-label={m.llmBenchmarkMetric()}
-            >
-              {V2_CHART_TABS.map((t) => (
-                <MetricTabButton
-                  key={t.id}
-                  id={t.id}
-                  label={t.label}
-                  active={metric === t.id}
-                  onSelect={setMetric}
-                />
-              ))}
-            </div>
-            <V2ModelFilter
-              points={eligiblePoints}
-              selected={selectedKeys}
-              onToggle={toggleModel}
+      <div className="mb-3 flex flex-wrap items-center justify-end gap-2.5">
+        <div
+          className="inline-flex overflow-hidden rounded-md border border-[#d9d8d2] dark:border-[rgba(237,235,228,0.14)]"
+          role="tablist"
+          aria-label={m.llmBenchmarkMetric()}
+        >
+          {V2_CHART_TABS.map((t) => (
+            <MetricTabButton
+              key={t.id}
+              id={t.id}
+              label={t.label}
+              active={metric === t.id}
+              onSelect={setMetric}
             />
-          </div>
+          ))}
         </div>
+        <V2ModelFilter points={eligiblePoints} selected={selectedKeys} onToggle={toggleModel} />
       </div>
 
-      <div ref={ref} className="px-3 pb-2 pt-5 sm:px-6">
+      <div
+        ref={ref}
+        className="overflow-hidden rounded-2xl border border-[#e1e0d8] bg-[#faf9f5] px-4 pb-6 pt-6 text-[#1b1a17] [color-scheme:light] dark:border-[rgba(237,235,228,0.10)] dark:bg-[#161614] dark:text-[#dad8d0] dark:[color-scheme:dark] sm:px-8 sm:pb-8 sm:pt-7"
+      >
         <section aria-label={m.llmScatterAria()} className="overflow-x-auto" tabIndex={0}>
-          <div className="mx-auto w-full max-w-[1180px]">
-            <p className="px-3 text-sm font-semibold">{PASS_MODE_LABEL[passMode]}</p>
-            <svg viewBox={`0 0 ${VB_W} ${VB_H}`} className="mt-2 h-auto w-full">
+          <div className="w-full">
+            <p className="px-3 text-sm font-semibold">ScaffBench Index</p>
+            <svg
+              viewBox={`0 0 ${VB_W} ${VB_H}`}
+              className="mt-3 h-auto max-h-[420px] w-full"
+              preserveAspectRatio="xMidYMid meet"
+            >
               <AxisLayer key={`${metric}-${axis.max}`} x={axis} note={axisNote} palette={palette} />
               {plottedPoints.map((point, index) => {
                 const val = v2MetricValue(point, metric);
@@ -760,7 +719,7 @@ function BenchmarkChartCard({ className }: { className?: string } = {}) {
           </div>
         </section>
         {unmeteredLabels.length > 0 ? (
-          <p className="mx-auto w-full max-w-[1180px] px-3 pb-1 pt-1 text-xs text-[#71706a] dark:text-[#8f8d84]">
+          <p className="w-full px-3 pb-1 pt-1 text-xs text-[#71706a] dark:text-[#8f8d84]">
             {m.llmScatterUnmetered({ models: unmeteredLabels.join(", ") })}
           </p>
         ) : null}
@@ -769,22 +728,21 @@ function BenchmarkChartCard({ className }: { className?: string } = {}) {
   );
 }
 
-function AxisLayer({
-  x,
-  note,
-  palette,
-}: {
-  x: AxisSpec;
-  note: string;
-  palette: ChartPalette;
-}) {
+function AxisLayer({ x, note, palette }: { x: AxisSpec; note: string; palette: ChartPalette }) {
   return (
     <g>
       {x.ticks.map((tick) => {
         const tx = plotX(tick, x);
         return (
           <g key={`x-${tick}`}>
-            <line x1={tx} y1={M_T} x2={tx} y2={M_T + PLOT_H} stroke={palette.grid} strokeWidth={1} />
+            <line
+              x1={tx}
+              y1={M_T}
+              x2={tx}
+              y2={M_T + PLOT_H}
+              stroke={palette.grid}
+              strokeWidth={1}
+            />
             <text
               x={tx}
               y={M_T + PLOT_H + 24}
@@ -877,27 +835,12 @@ function HoverGuides({
   );
 }
 
-function ChartMarker({
-  hex,
-  cardBg,
-  active,
-}: {
-  hex: string;
-  cardBg: string;
-  active?: boolean;
-}) {
+function ChartMarker({ hex, cardBg, active }: { hex: string; cardBg: string; active?: boolean }) {
   return (
     <>
       <circle r={22} fill="transparent" stroke="transparent" />
-      {active ? (
-        <circle r={11} fill="none" stroke={hex} strokeWidth={1.5} opacity={0.4} />
-      ) : null}
-      <circle
-        r={active ? 7.5 : 6}
-        fill={hex}
-        stroke={cardBg}
-        strokeWidth={active ? 3 : 2.5}
-      />
+      {active ? <circle r={11} fill="none" stroke={hex} strokeWidth={1.5} opacity={0.4} /> : null}
+      <circle r={active ? 7.5 : 6} fill={hex} stroke={cardBg} strokeWidth={active ? 3 : 2.5} />
     </>
   );
 }
@@ -994,8 +937,7 @@ function V2ModelMenuItem({
     <DropdownMenuCheckboxItem checked={checked} onCheckedChange={handleChange} closeOnClick={false}>
       <span className="size-2.5 shrink-0 rounded-[2px]" style={swatchStyle} />
       <span className="min-w-0 flex-1">
-        {point.label}{" "}
-        <span className="text-[10px] opacity-70">[{point.reasoning}]</span>
+        {point.label} <span className="text-[10px] opacity-70">[{point.reasoning}]</span>
       </span>
     </DropdownMenuCheckboxItem>
   );
@@ -1055,7 +997,7 @@ function V2Dot({
       onFocus={activate}
       onBlur={deactivate}
       className="outline-none"
-      aria-label={`${point.label} · ${point.reasoning} · ${point.pass}% pass · ${metricLabel}`}
+      aria-label={`${point.label} · ${point.reasoning} · index ${point.pass} · ${metricLabel}`}
     >
       <HoverGuides active={active} hex={point.color} x={x} y={y} />
       <ChartMarker hex={point.color} cardBg={cardBg} active={active} />
@@ -1088,10 +1030,7 @@ function V2Dot({
           {point.label}
         </text>
       ) : null}
-      <g
-        className="pointer-events-none transition-opacity duration-150"
-        opacity={active ? 1 : 0}
-      >
+      <g className="pointer-events-none transition-opacity duration-150" opacity={active ? 1 : 0}>
         <text
           x={M_L - x - 12}
           y={4.5}
@@ -1125,144 +1064,36 @@ function V2Dot({
   );
 }
 
-interface LegendItem {
-  key: string;
-  label: string;
-  badge?: string;
-  description: string;
-}
-
-const CHART_METRIC_ITEMS: readonly LegendItem[] = [
-  {
-    key: "tokens",
-    label: "Tokens",
-    badge: "Output",
-    description: "Avg output tokens generated per scaffold run.",
-  },
-  {
-    key: "cost",
-    label: "Cost",
-    badge: "USD",
-    description: "Avg API cost per scaffold in USD.",
-  },
-  {
-    key: "steps",
-    label: "Steps",
-    badge: "Actions",
-    description: "Avg tool steps and commands executed per run.",
-  },
-  {
-    key: "lines",
-    label: "Code",
-    badge: "LoC",
-    description: "Avg lines of code written per scaffold, lockfiles excluded.",
-  },
-] as const;
-
-function BenchmarkSidebar() {
+function BenchmarkMasthead() {
   return (
-    <div className="flex flex-col divide-y divide-border border-b border-border bg-background/50 lg:border-b-0 lg:border-r lg:justify-between">
-      <div className="p-5 sm:p-6">
+    <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+      <div className="min-w-0">
         <div className="flex items-center gap-2.5">
           <ScaffBenchMark className="size-7 shrink-0 text-foreground sm:size-8" />
-          <h2 className="font-mono text-2xl font-bold tracking-[-0.03em] sm:text-3xl lg:text-2xl xl:text-3xl">
-            ScaffBench
+          <h2 className="font-mono text-2xl font-bold tracking-[-0.03em] sm:text-3xl">
+            ScaffBench 3
           </h2>
         </div>
-        <p className="mt-3 text-pretty text-xs leading-relaxed text-muted-foreground sm:text-sm">
+        <p className="mt-3 max-w-xl text-pretty text-xs leading-relaxed text-muted-foreground sm:text-sm">
           {m.llmBenchmarkDescription()}
         </p>
       </div>
 
-      <div className="hidden divide-y divide-border lg:block">
-        {CHART_METRIC_ITEMS.map((item) => (
-          <div key={item.key} className="px-5 py-2.5 sm:px-6">
-            <div className="flex items-center justify-between gap-2">
-              <span className="font-mono text-xs font-bold text-foreground">{item.label}</span>
-              {item.badge ? (
-                <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] font-medium text-muted-foreground">
-                  {item.badge}
-                </span>
-              ) : null}
-            </div>
-            <p className="mt-0.5 text-pretty text-xs leading-relaxed text-muted-foreground">
-              {item.description}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      <div className="p-5 sm:p-6">
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:grid-cols-1">
-          <a
-            href="/run"
-            className="group flex w-full items-center justify-between rounded-md border border-border bg-card/60 px-3.5 py-2 text-xs font-medium text-foreground transition-colors hover:border-brand hover:bg-muted/40 dark:hover:text-brand"
-          >
-            <span>{m.llmRunItYourself()}</span>
-            <ArrowUpRight className="size-3.5 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-          </a>
-          <Link
-            to="/mcp"
-            className="group flex w-full items-center justify-between rounded-md border border-border bg-card/60 px-3.5 py-2 text-xs font-medium text-foreground transition-colors hover:border-brand hover:bg-muted/40 dark:hover:text-brand"
-          >
-            <span>{m.llmTryMcp()}</span>
-            <ArrowUpRight className="size-3.5 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-const LEADERBOARD_LEGEND_ITEMS: readonly LegendItem[] = [
-  {
-    key: "pass",
-    label: "Pass",
-    badge: "Primary",
-    description: "Installs, builds, type-checks, and clears all quality gates cold.",
-  },
-  {
-    key: "wired",
-    label: "Wired",
-    badge: "Libs",
-    description: "Required spec libraries present and imported.",
-  },
-  {
-    key: "stats",
-    label: "Stats",
-    badge: "Mean / run",
-    description: "Mean time, cost, tokens, steps, and LoC.",
-  },
-] as const;
-
-function LeaderboardSidebar() {
-  return (
-    <div className="flex flex-col divide-y divide-border border-b border-border bg-background/50 lg:border-b-0 lg:border-r">
-      <div className="p-5 sm:p-6">
-        <h2 className="font-mono text-2xl font-bold tracking-[-0.03em] sm:text-3xl lg:text-2xl xl:text-3xl">
-          Leaderboard
-        </h2>
-        <p className="mt-3 text-pretty text-xs leading-relaxed text-muted-foreground sm:text-sm">
-          Scored across 13 specs on a clean machine. Higher pass rate is better; lower cost, time, and tokens are better.
-        </p>
-      </div>
-
-      <div className="hidden divide-y divide-border lg:block">
-        {LEADERBOARD_LEGEND_ITEMS.map((item) => (
-          <div key={item.key} className="px-5 py-2.5 sm:px-6">
-            <div className="flex items-center justify-between gap-2">
-              <span className="font-mono text-xs font-bold text-foreground">{item.label}</span>
-              {item.badge ? (
-                <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] font-medium text-muted-foreground">
-                  {item.badge}
-                </span>
-              ) : null}
-            </div>
-            <p className="mt-0.5 text-pretty text-xs leading-relaxed text-muted-foreground">
-              {item.description}
-            </p>
-          </div>
-        ))}
+      <div className="flex flex-wrap items-center gap-2">
+        <a
+          href="/run"
+          className="group flex items-center gap-2 rounded-md border border-border bg-card/60 px-3.5 py-2 text-xs font-medium text-foreground transition-colors hover:border-brand hover:bg-muted/40 dark:hover:text-brand"
+        >
+          <span>{m.llmRunItYourself()}</span>
+          <ArrowUpRight className="size-3.5 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+        </a>
+        <Link
+          to="/mcp"
+          className="group flex items-center gap-2 rounded-md border border-border bg-card/60 px-3.5 py-2 text-xs font-medium text-foreground transition-colors hover:border-brand hover:bg-muted/40 dark:hover:text-brand"
+        >
+          <span>{m.llmTryMcp()}</span>
+          <ArrowUpRight className="size-3.5 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+        </Link>
       </div>
     </div>
   );
@@ -1327,30 +1158,17 @@ function MetricHelp({ label, children }: { label: string; children: ReactNode })
   );
 }
 
+const ALL_SPEC_ROWS: readonly ModelLeaderRow[] = computeScaffbenchModelRows(new Set(BOARD_SPECS));
+
 function ScaffbenchLeaderboardCard({ className }: { className?: string } = {}) {
-  const [selectedSpecs, setSelectedSpecs] = useState<readonly string[]>(BOARD_SPECS);
   const [selectedModelKeys, setSelectedModelKeys] = useState<readonly string[]>(() =>
     BOARD_MODELS.map((model) => model.key),
   );
-  const specsSet = useMemo(() => new Set<string>(selectedSpecs), [selectedSpecs]);
   const modelKeysSet = useMemo(() => new Set<string>(selectedModelKeys), [selectedModelKeys]);
   const rows = useMemo(
-    () =>
-      annotateRanks(
-        computeScaffbenchModelRows(specsSet).filter((row) => modelKeysSet.has(row.key)),
-      ),
-    [specsSet, modelKeysSet],
+    () => annotateRanks(ALL_SPEC_ROWS.filter((row) => modelKeysSet.has(row.key))),
+    [modelKeysSet],
   );
-
-  const toggleSpec = useCallback((spec: string) => {
-    setSelectedSpecs((prev) =>
-      prev.includes(spec)
-        ? prev.filter((selectedSpec) => selectedSpec !== spec)
-        : BOARD_SPECS.filter(
-            (availableSpec) => availableSpec === spec || prev.includes(availableSpec),
-          ),
-    );
-  }, []);
 
   const toggleModel = useCallback((key: string) => {
     setSelectedModelKeys((prev) =>
@@ -1363,41 +1181,28 @@ function ScaffbenchLeaderboardCard({ className }: { className?: string } = {}) {
   }, []);
 
   return (
-    <motion.div
-      initial={fadeUpInitial}
-      whileInView={fadeUpVisible}
-      viewport={viewportOnceNear}
-      transition={fadeUpTransition}
-      className={cn(
-        "overflow-hidden rounded-2xl border border-[#e1e0d8] bg-[#faf9f5] text-[#1b1a17] [color-scheme:light] dark:border-[rgba(237,235,228,0.10)] dark:bg-[#161614] dark:text-[#dad8d0] dark:[color-scheme:dark]",
-        LEADERBOARD_THEME_VARS,
-        className,
-      )}
-    >
-      <div className="border-b border-[#e1e0d8] px-3 py-4 dark:border-[rgba(237,235,228,0.10)] sm:px-6">
-        <div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-center justify-end gap-3 px-3">
-          <div className="flex items-center gap-2">
-            <ModelPicker
-              models={BOARD_MODELS}
-              selectedKeys={selectedModelKeys}
-              onToggle={toggleModel}
-            />
-            <SpecFilter
-              specs={BOARD_SPECS}
-              selectedSpecs={selectedSpecs}
-              onToggle={toggleSpec}
-            />
-          </div>
-        </div>
+    <div className={cn(LEADERBOARD_THEME_VARS, className)}>
+      <div className="mb-3 flex flex-wrap items-center justify-end gap-2">
+        <ModelPicker
+          models={BOARD_MODELS}
+          selectedKeys={selectedModelKeys}
+          onToggle={toggleModel}
+        />
       </div>
 
-      <div className="px-3 pb-4 pt-5 sm:px-6">
+      <motion.div
+        initial={fadeUpInitial}
+        whileInView={fadeUpVisible}
+        viewport={viewportOnceNear}
+        transition={fadeUpTransition}
+        className="overflow-hidden rounded-2xl border border-[#e1e0d8] bg-[#faf9f5] px-3 py-6 text-[#1b1a17] [color-scheme:light] dark:border-[rgba(237,235,228,0.10)] dark:bg-[#161614] dark:text-[#dad8d0] dark:[color-scheme:dark] sm:px-6 sm:py-8"
+      >
         <section
-          aria-label="ScaffBench 3 pass-rate leaderboard"
+          aria-label="ScaffBench 3 index leaderboard"
           className="overflow-x-auto"
           tabIndex={0}
         >
-          <div className="mx-auto w-full min-w-[1120px] max-w-[1180px] px-3">
+          <div className="w-full min-w-[1000px] px-1">
             <div
               className={cn(
                 LEADERBOARD_GRID,
@@ -1407,27 +1212,16 @@ function ScaffbenchLeaderboardCard({ className }: { className?: string } = {}) {
               <span>Model</span>
               <span aria-hidden />
               <span className="flex items-center justify-end gap-1">
-                Pass@1
-                <MetricHelp label="Full pass@1">
-                  The project installs, builds, type-checks, AND clears every applicable quality
-                  gate (lint, format, tests) on a clean machine. Agents may install and build to
-                  self-verify while generating; grading happens cold afterward. The ± is the
-                  95% Wilson interval over the scored specs.
-                </MetricHelp>
-              </span>
-              <span className="flex items-center justify-end gap-1">
-                Core
-                <MetricHelp label="Core pass">
-                  The project installs, builds, type-checks and natively compiles on a clean
-                  machine. Quality gates are excluded, so Core answers whether the code runs at
-                  all. Full is always a subset of Core.
-                </MetricHelp>
-              </span>
-              <span className="flex items-center justify-end gap-1">
-                Wired
-                <MetricHelp label="Wired libs">
-                  How many of the spec's required libraries actually show up in the generated
-                  project, dependencies, imports, and files, not just mentioned by name.
+                Index
+                <MetricHelp label="ScaffBench Index">
+                  Every spec earns a graded score: 0.6 when the project installs, builds,
+                  type-checks and compiles on a clean machine, 0.2 for the share of lint and format
+                  gates that pass, and 0.2 for the share of the spec's required libraries it
+                  actually wired in: dependencies, imports and files, not names mentioned in
+                  passing. The index is the mean over 13 specs, weighted by spec difficulty (1 easy,
+                  2 hard, 3 frontier). Tests, cost, time and lines of code are shown but never
+                  scored. The small +N and the faded extension on a bar show how far the plain build
+                  rate sits above the index.
                 </MetricHelp>
               </span>
               <span className="text-right">Time</span>
@@ -1463,23 +1257,26 @@ function ScaffbenchLeaderboardCard({ className }: { className?: string } = {}) {
               <span aria-hidden />
               <span aria-hidden />
               <span aria-hidden />
-              <span aria-hidden />
             </div>
           </div>
         </section>
-      </div>
-    </motion.div>
+      </motion.div>
+    </div>
   );
 }
 
 function ModelLeaderRow({ row }: { row: ModelLeaderRow }) {
   const fillStyle = useMemo<CSSProperties>(
-    () => ({ width: `${row.pass}%`, backgroundColor: row.color }),
-    [row.pass, row.color],
+    () => ({ width: `${row.score}%`, backgroundColor: row.color }),
+    [row.score, row.color],
   );
-  const whiskerStyle = useMemo<CSSProperties>(
-    () => ({ left: `${row.ciLow}%`, width: `${Math.max(row.ciHigh - row.ciLow, 0)}%` }),
-    [row.ciLow, row.ciHigh],
+  const coreStyle = useMemo<CSSProperties>(
+    () => ({ width: `${row.core}%`, backgroundColor: row.color }),
+    [row.core, row.color],
+  );
+  const coreBandStyle = useMemo<CSSProperties>(
+    () => ({ left: `${row.score}%`, width: `${Math.max(row.core - row.score, 0)}%` }),
+    [row.core, row.score],
   );
 
   return (
@@ -1492,7 +1289,10 @@ function ModelLeaderRow({ row }: { row: ModelLeaderRow }) {
         ) : null}
         <ProviderLogo logo={row.logo} />
         <Tooltip delay={0}>
-          <TooltipTrigger type="button" className="cursor-default font-mono text-[15px] font-medium">
+          <TooltipTrigger
+            type="button"
+            className="cursor-default font-mono text-[15px] font-medium"
+          >
             {row.label}
           </TooltipTrigger>
           <TooltipContent className="normal-case tracking-normal">
@@ -1508,35 +1308,43 @@ function ModelLeaderRow({ row }: { row: ModelLeaderRow }) {
 
       <div className="relative h-4">
         <div className="absolute inset-y-[3px] left-0 right-0 rounded-sm" style={BAR_TRACK_STYLE} />
+        <div className="absolute inset-y-[3px] left-0 rounded-sm opacity-30" style={coreStyle} />
         <div className="absolute inset-y-[3px] left-0 rounded-sm" style={fillStyle} />
-        <ConfidenceWhisker style={whiskerStyle} />
+        {row.core > row.score ? (
+          <Tooltip delay={0}>
+            <TooltipTrigger
+              type="button"
+              aria-label={`Built ${row.core}%`}
+              className="absolute inset-y-0 cursor-help"
+              style={coreBandStyle}
+            />
+            <TooltipContent className="max-w-[17rem] normal-case tracking-normal">
+              <p className="font-semibold">Built {row.core}%</p>
+              <p className="mt-1 font-normal">
+                Share of specs whose project installs, builds, type-checks and compiles on a clean
+                machine. The solid bar is the index: those builds credited for green lint and format
+                gates and for the share of the required stack they wired, weighted by spec
+                difficulty.
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        ) : null}
       </div>
 
       <span className="flex items-baseline justify-end gap-1">
-        <span className="font-mono text-[17px] font-bold tabular-nums">{row.pass}%</span>
-        <span className="font-mono text-[11px] tabular-nums text-[#9c9a93] dark:text-[#6c6a61]">
-          ±{row.passMargin}%
-        </span>
+        <span className="font-mono text-[17px] font-bold tabular-nums">{row.score}</span>
+        {row.core > row.score ? (
+          <span className="font-mono text-[11px] tabular-nums text-[#9c9a93] dark:text-[#6c6a61]">
+            +{row.core - row.score}
+          </span>
+        ) : null}
       </span>
-      <span className="text-right font-mono text-[13px] tabular-nums">{row.core}%</span>
-      <span className="text-right font-mono text-[13px] tabular-nums">{row.wired}</span>
       <span className="text-right font-mono text-[13px] tabular-nums">{row.time}</span>
       <span className="text-right font-mono text-[13px] tabular-nums">{row.cost}</span>
       <span className="text-right font-mono text-[13px] tabular-nums">{row.outTok}</span>
       <span className="text-right font-mono text-[13px] tabular-nums">{row.steps}</span>
       <span className="text-right font-mono text-[13px] tabular-nums">{row.loc}</span>
     </div>
-  );
-}
-
-/** 95% Wilson interval drawn over the bar: a rule with a cap at each bound. */
-function ConfidenceWhisker({ style }: { style: CSSProperties }) {
-  return (
-    <span className="pointer-events-none absolute inset-y-0 text-[var(--ci-line)]" style={style}>
-      <span className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-current opacity-70" />
-      <span className="absolute inset-y-0 left-0 w-px bg-current" />
-      <span className="absolute inset-y-0 right-0 w-px bg-current" />
-    </span>
   );
 }
 
@@ -1611,66 +1419,6 @@ function ModelPickerItem({
           {effort}
         </span>
       ) : null}
-    </DropdownMenuCheckboxItem>
-  );
-}
-
-function SpecFilter({
-  specs,
-  selectedSpecs,
-  onToggle,
-}: {
-  specs: readonly string[];
-  selectedSpecs: readonly string[];
-  onToggle: (spec: string) => void;
-}) {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        aria-label="Filter specs"
-        className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-[#d9d8d2] px-3.5 py-2 text-xs font-medium text-[#71706a] transition-colors hover:text-[#1b1a17] dark:border-[rgba(237,235,228,0.14)] dark:text-[#8f8d84] dark:hover:text-[#dad8d0]"
-      >
-        Specs
-        <span className="rounded-sm bg-[#C6E853] px-1.5 font-mono text-[10px] font-semibold text-[#0a0a0a]">
-          {selectedSpecs.length}/{specs.length}
-        </span>
-        <ChevronDown className="size-3.5" />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-72 max-w-[calc(100vw-2rem)]">
-        <DropdownMenuGroup>
-          <DropdownMenuLabel className="font-mono text-[10px] uppercase tracking-[0.14em]">
-            Specs
-          </DropdownMenuLabel>
-          {specs.map((spec) => (
-            <SpecMenuItem
-              key={spec}
-              spec={spec}
-              checked={selectedSpecs.includes(spec)}
-              onToggle={onToggle}
-            />
-          ))}
-        </DropdownMenuGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
-
-function SpecMenuItem({
-  spec,
-  checked,
-  onToggle,
-}: {
-  spec: string;
-  checked: boolean;
-  onToggle: (spec: string) => void;
-}) {
-  const handleChange = useCallback(() => {
-    onToggle(spec);
-  }, [onToggle, spec]);
-
-  return (
-    <DropdownMenuCheckboxItem checked={checked} onCheckedChange={handleChange} closeOnClick={false}>
-      <span className="min-w-0 flex-1 font-mono text-xs">{spec}</span>
     </DropdownMenuCheckboxItem>
   );
 }

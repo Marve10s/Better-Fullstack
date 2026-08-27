@@ -16,6 +16,8 @@ export type Scaffbench3Spec = {
   family: string;
   title: string;
   trap: string | null;
+  /** index weight, pinned per suite: 1 easy, 2 hard, 3 frontier. */
+  difficulty: 1 | 2 | 3;
 };
 
 export type Scaffbench3Row = {
@@ -56,6 +58,7 @@ export const SCAFFBENCH3_META = {
 export const SCAFFBENCH3_SPECS: readonly Scaffbench3Spec[] = [
   {
     id: "ai-search-workbench",
+    difficulty: 2,
     index: 1,
     family: "TypeScript",
     title: "AI support search workbench on the Vite+ toolchain",
@@ -63,6 +66,7 @@ export const SCAFFBENCH3_SPECS: readonly Scaffbench3Spec[] = [
   },
   {
     id: "rust-leptos-axum",
+    difficulty: 1,
     index: 2,
     family: "Rust",
     title: "Feature-flag console: Axum API + Leptos WASM frontend",
@@ -70,6 +74,7 @@ export const SCAFFBENCH3_SPECS: readonly Scaffbench3Spec[] = [
   },
   {
     id: "python-ingestion-api",
+    difficulty: 1,
     index: 3,
     family: "Python",
     title: "FastAPI document-ingestion pipeline with LangGraph workers",
@@ -77,6 +82,7 @@ export const SCAFFBENCH3_SPECS: readonly Scaffbench3Spec[] = [
   },
   {
     id: "go-realtime-api",
+    difficulty: 1,
     index: 4,
     family: "Go",
     title: "Fleet-tracking API: Chi + Ent + gRPC + NATS",
@@ -84,6 +90,7 @@ export const SCAFFBENCH3_SPECS: readonly Scaffbench3Spec[] = [
   },
   {
     id: "multi-dotnet-ops",
+    difficulty: 2,
     index: 5,
     family: "Multi",
     title: "Incident-ops portal: Next.js frontend, ASP.NET Minimal API backend",
@@ -91,6 +98,7 @@ export const SCAFFBENCH3_SPECS: readonly Scaffbench3Spec[] = [
   },
   {
     id: "ts-svelte-edge-orpc",
+    difficulty: 2,
     index: 6,
     family: "TypeScript",
     title: "Edge link-in-bio app: SvelteKit + Hono + D1 on Workers",
@@ -98,6 +106,7 @@ export const SCAFFBENCH3_SPECS: readonly Scaffbench3Spec[] = [
   },
   {
     id: "dotnet-blazor-cqrs",
+    difficulty: 2,
     index: 7,
     family: ".NET",
     title: "Operations console: Blazor + Dapper + Duende + HotChocolate",
@@ -105,6 +114,7 @@ export const SCAFFBENCH3_SPECS: readonly Scaffbench3Spec[] = [
   },
   {
     id: "multi-ts-go-grpc",
+    difficulty: 2,
     index: 8,
     family: "Multi",
     title: "Live auction dashboard: Nuxt (Vue) over a Go Chi + gRPC backend",
@@ -112,6 +122,7 @@ export const SCAFFBENCH3_SPECS: readonly Scaffbench3Spec[] = [
   },
   {
     id: "java-spring-jooq-keycloak",
+    difficulty: 1,
     index: 9,
     family: "Java",
     title: "Event-driven service: Spring Boot + jOOQ + Keycloak + GraphQL",
@@ -119,6 +130,7 @@ export const SCAFFBENCH3_SPECS: readonly Scaffbench3Spec[] = [
   },
   {
     id: "elixir-broadway-absinthe",
+    difficulty: 2,
     index: 10,
     family: "Elixir",
     title: "Realtime ingestion: Phoenix LiveView + Broadway + Oban + Nx",
@@ -126,6 +138,7 @@ export const SCAFFBENCH3_SPECS: readonly Scaffbench3Spec[] = [
   },
   {
     id: "react-native-expo",
+    difficulty: 2,
     index: 11,
     family: "React Native",
     title: "Offline habit tracker: Expo Router + Uniwind + MMKV",
@@ -133,6 +146,7 @@ export const SCAFFBENCH3_SPECS: readonly Scaffbench3Spec[] = [
   },
   {
     id: "frontier-polyglot-proto",
+    difficulty: 3,
     index: 12,
     family: "Frontier",
     title: "One proto contract across Rust gRPC, a Go gateway, and a TS client",
@@ -140,6 +154,7 @@ export const SCAFFBENCH3_SPECS: readonly Scaffbench3Spec[] = [
   },
   {
     id: "frontier-effect-eventsourcing",
+    difficulty: 3,
     index: 13,
     family: "Frontier",
     title: "Effect bank ledger: event sourcing, CQRS, tRPC over WebSockets",
