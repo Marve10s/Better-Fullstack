@@ -5,6 +5,7 @@ export const PythonIngestionApiSpec: BenchmarkSpec = {
   introducedAt: "2026-08-21",
   title: "Python FastAPI ingestion API with AI, queues, realtime, and quality gates",
   lane: "core",
+  difficulty: 1,
   family: "python",
   supportedByBetterFullstack: true,
   requirements: [

@@ -14,7 +14,10 @@ profile low-2w-v1, repeats 1, prompt path only.
 
 ## Headline
 
-Pass@1 is 8 of 13, or 62%, with a 95% Wilson interval of 36 to 82. Index 69.
+Pass@1 is 8 of 13, or 62%, with a 95% Wilson interval of 36 to 82. Index 69 under
+the 75/25 formula the suite launched with; 58 under the graded, difficulty-weighted
+index adopted on 2026-08-27 (see the Scoring section of
+`docs/guidelines/scaffbench-benchmark.md`).
 Cost was zero across every spec.
 
 The gap between wiring and compiling is the story. Stack score averages 90%, so

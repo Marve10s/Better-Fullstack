@@ -1,10 +1,4 @@
 import * as BunContext from "@effect/platform-bun/BunContext";
-import { describe, expect, it } from "bun:test";
-import * as Effect from "effect/Effect";
-import { chmod, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import path from "node:path";
-
 import {
   CALIBRATION_WEAK_MODEL,
   CLAUDE_TIMEOUT_MS,
@@ -30,7 +24,9 @@ import {
   generationTimeoutMs,
   hasTransientNetworkSignature,
   hashProjectSource,
-  indexWeightsForPath,
+  SCAFFBENCH_SPEC_SCORE_WEIGHTS,
+  specDifficulty,
+  specScore,
   parseArgs,
   parseClaudeResult,
   parseCodexResult,
@@ -56,7 +52,11 @@ import {
   type ScaffbenchOptions,
   type StepResult,
 } from "@scaffbench/index";
-
+import { describe, expect, it } from "bun:test";
+import * as Effect from "effect/Effect";
+import { chmod, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 
 const aiSpec = SCAFFBENCH_2_SPECS.find((spec) => spec.id === "ai-search-workbench")!;
 const goSpec = SCAFFBENCH_2_SPECS.find((spec) => spec.id === "go-realtime-api")!;
@@ -364,15 +364,56 @@ describe("ScaffBench hardening 2: timeout and accounting", () => {
 });
 
 describe("ScaffBench hardening 3: scoring", () => {
-  it("3a uses prompt and assisted path-specific weights everywhere", () => {
-    expect(indexWeightsForPath("prompt")).toEqual({
-      validation: 0.75,
-      wiredLibs: 0.25,
-      discipline: 0,
+  it("3a grades a spec as core, lint/format share, and stack; tests carry no weight", () => {
+    expect(SCAFFBENCH_SPEC_SCORE_WEIGHTS).toEqual({ core: 0.6, quality: 0.2, stack: 0.2 });
+    const lintRedTestsRed = run({
+      validation: {
+        projectExists: true,
+        qualityGateRequested: true,
+        steps: {
+          build: step(),
+          lint: step({ exitCode: 1 }),
+          format: step(),
+          test: step({ exitCode: 1 }),
+        },
+      },
+      stackScore: { matched: 1, total: 2, percent: 50, misses: ["x"] },
     });
+    const graded = specScore(lintRedTestsRed);
+    expect(graded).toMatchObject({ core: 1, quality: 0.5, stack: 0.5 });
+    expect(graded.score).toBeCloseTo(0.8, 10);
+
+    const failedBuild = run({
+      validation: {
+        projectExists: true,
+        qualityGateRequested: true,
+        steps: {
+          build: step({ exitCode: 1 }),
+          "not-run:lint": step({ exitCode: null, status: "skip" }),
+          "not-run:format": step({ exitCode: null, status: "skip" }),
+        },
+      },
+    });
+    expect(specScore(failedBuild)).toMatchObject({ core: 0, quality: 0, stack: 1 });
   });
 
-  it("3b gates a zero-validation prompt cell at exactly 25% of wired mean", () => {
+  it("3a2 weights the index by pinned spec difficulty, not by spec count", () => {
+    const easyPass = run({ id: "easy", specId: "go-realtime-api" });
+    const frontierFail = run({
+      id: "frontier",
+      specId: "frontier-polyglot-proto",
+      validation: {
+        projectExists: true,
+        qualityGateRequested: false,
+        steps: { build: step({ exitCode: 1 }) },
+      },
+    });
+    expect(specDifficulty("go-realtime-api")).toBe(1);
+    expect(specDifficulty("frontier-polyglot-proto")).toBe(3);
+    expect(aggregateResults([easyPass, frontierFail]).leaderboard[0]?.index).toBe(40);
+  });
+
+  it("3b keeps only the stack share for a failed build", () => {
     const failed = run({
       validation: {
         projectExists: true,
@@ -382,7 +423,7 @@ describe("ScaffBench hardening 3: scoring", () => {
       stackScore: { matched: 1, total: 1, percent: 100, misses: [] },
       toolCompliance: { score: 2, total: 2, checks: [] },
     });
-    expect(aggregateResults([failed]).leaderboard[0]?.index).toBe(25);
+    expect(aggregateResults([failed]).leaderboard[0]?.index).toBe(20);
   });
 
   it("3c computes wired and discipline components over the same scored trials", () => {
@@ -443,9 +484,7 @@ describe("ScaffBench hardening 4: trial integrity", () => {
   });
 
   it("4c ranks a single-trial row now that MIN_RANKED_TRIALS is 1", () => {
-    const single = [
-      run({ id: "solo", trial: 1, provenance: provenance({ configuredTrials: 1 }) }),
-    ];
+    const single = [run({ id: "solo", trial: 1, provenance: provenance({ configuredTrials: 1 }) })];
     expect(publicationEligibility(single)).toBe("ranked");
     expect(
       publicationEligibility([
@@ -547,12 +586,7 @@ describe("ScaffBench hardening 5: validator v4", () => {
     ).toMatchObject({ command: "npx", args: ["expo", "export", "--platform", "web"] });
     expect(expoExportCommand({ dependencies: { expo: "^55" } })?.args).toEqual(["expo", "export"]);
     const denied = await effectPromise(
-      runCommand(
-        "/bin/sh",
-        ["-c", "echo 'expo command denied' >&2; exit 126"],
-        process.cwd(),
-        500,
-      ),
+      runCommand("/bin/sh", ["-c", "echo 'expo command denied' >&2; exit 126"], process.cwd(), 500),
     );
     expect(denied.exitCode).toBe(126);
     expect(denied.stderrTail).toContain("expo command denied");
@@ -705,7 +739,6 @@ describe("ScaffBench hardening 6: opt-in batch-4 features", () => {
     );
     expect(cohorts[0]).toMatchObject({ specs: 2, scoredRuns: 2, passCount: 1, passRate: 50 });
   });
-
 });
 
 it("routes kilocode/ ids to the kilo binary with the prefix stripped at invocation", () => {

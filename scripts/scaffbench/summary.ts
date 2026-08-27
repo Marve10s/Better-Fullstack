@@ -11,9 +11,8 @@ import type {
 
 import { agentLabelForModel, providerForModel } from "@scaffbench/agents";
 import {
-  indexWeightsForPath,
   resolvedBfVersion,
-  SCAFFBENCH_INDEX_WEIGHTS,
+  SCAFFBENCH_SPEC_SCORE_WEIGHTS,
   MIN_CI_RUNS,
   MIN_RANKED_TRIALS,
   HARNESS_VERSION,
@@ -28,7 +27,9 @@ import {
   classifyOutcome,
   outcomeEvidenceFor,
   scoredOutcome,
+  specScore,
 } from "@scaffbench/scoring";
+import { specDifficulty } from "@scaffbench/specs";
 import { EVIDENCE_SCHEMA_VERSION } from "@scripts/verified-combinations/evidence";
 import * as Effect from "effect/Effect";
 import { existsSync } from "node:fs";
@@ -104,11 +105,21 @@ function aggregateBy(
             : 0,
         ),
       );
-      const weights = indexWeightsForPath(first.path);
-      const index = Math.round(
-        weights.validation * macroPassRate +
-          weights.wiredLibs * stackPercent +
-          weights.discipline * commandDisciplinePercent,
+      const scoresBySpec = new Map<string, number[]>();
+      for (const result of scored) {
+        const scores = scoresBySpec.get(result.specId) ?? [];
+        scoresBySpec.set(result.specId, [...scores, specScore(result).score]);
+      }
+      const weighted = [...scoresBySpec.entries()].reduce(
+        (acc, [specId, scores]) => {
+          const weight = specDifficulty(specId);
+          return { sum: acc.sum + weight * averagePrecise(scores), weight: acc.weight + weight };
+        },
+        { sum: 0, weight: 0 },
+      );
+      const index = weighted.weight > 0 ? Math.round((100 * weighted.sum) / weighted.weight) : 0;
+      const specScorePercent = Math.round(
+        100 * averagePrecise(scored.map((result) => specScore(result).score)),
       );
       const durations = group.map((result) => result.claude.durationMs);
 
@@ -143,6 +154,7 @@ function aggregateBy(
         acceptancePercent: maybeAverage(scored.map((result) => result.acceptanceScore?.percent)),
         commandDisciplinePercent,
         index,
+        specScore: specScorePercent,
         avgDurationMs: average(durations),
         medianDurationMs: percentile(durations, 50),
         p95DurationMs: percentile(durations, 95),
@@ -401,8 +413,11 @@ specs solved on every repeat. The Wilson "CI95" is shown only when a cell has
 ≥ ${MIN_CI_RUNS} scored runs (below that it reads \`n<${MIN_CI_RUNS}\`, since e.g. 3/3 and 0/3
 intervals overlap and the interval is not informative).
 
-"Index" is the single rankable 0-100 composite the table is sorted by. Prompt
-uses ${Math.round(SCAFFBENCH_INDEX_WEIGHTS.prompt.validation * 100)}% macro validation + ${Math.round(SCAFFBENCH_INDEX_WEIGHTS.prompt.wiredLibs * 100)}% wired-libs; assisted lanes use ${Math.round(SCAFFBENCH_INDEX_WEIGHTS.assisted.validation * 100)}% + ${Math.round(SCAFFBENCH_INDEX_WEIGHTS.assisted.wiredLibs * 100)}% + ${Math.round(SCAFFBENCH_INDEX_WEIGHTS.assisted.discipline * 100)}% command discipline.
+"Index" is the single rankable 0-100 composite the table is sorted by. Each
+spec earns a graded score: ${Math.round(SCAFFBENCH_SPEC_SCORE_WEIGHTS.core * 100)}% for a Core pass, ${Math.round(SCAFFBENCH_SPEC_SCORE_WEIGHTS.quality * 100)}% for the share of lint and
+format gates green (tests are not scored), and ${Math.round(SCAFFBENCH_SPEC_SCORE_WEIGHTS.stack * 100)}% for the stack score (wired libs,
+traps, restraint). The index is the difficulty-weighted mean of those per-spec
+scores (spec difficulty 1, 2, or 3 is pinned in the spec file), times 100.
 Latency is median / p95 (wall-clock
 moves with provider load, so the mean alone is misleading over small samples).
 

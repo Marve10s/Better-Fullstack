@@ -47,6 +47,18 @@ function parseRepeats(value: string | undefined) {
   return parsed;
 }
 
+function parseTopUp(value: string | undefined, repeatsGiven: boolean) {
+  if (value === undefined) return undefined;
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < 2) {
+    throw new Error(`--top-up: expected an integer of at least 2, got ${JSON.stringify(value)}`);
+  }
+  if (repeatsGiven) {
+    throw new Error("--top-up extends an existing out-dir and cannot be combined with --repeats");
+  }
+  return parsed;
+}
+
 export function parseArgs(argv: string[]): ScaffbenchOptions {
   const command = argv[0] === "calibrate" ? "calibrate" : "run";
   const args = new Map<string, string>();
@@ -72,6 +84,10 @@ export function parseArgs(argv: string[]): ScaffbenchOptions {
       : parseList("specs", specsArg, specIds, CORE_SPEC_IDS);
   const promptStyle = args.get("prompt-style") === "natural" ? "natural" : "explicit";
   const repeats = parseRepeats(args.get("repeats"));
+  const topUp = parseTopUp(args.get("top-up"), args.has("repeats"));
+  if (topUp !== undefined && !requestedOutDir) {
+    throw new Error("--top-up needs --out-dir pointing at the run to extend");
+  }
 
   return {
     command,
@@ -80,6 +96,7 @@ export function parseArgs(argv: string[]): ScaffbenchOptions {
     paths: parseList("paths", args.get("paths"), CREATION_PATH_VALUES, DEFAULT_PATHS),
     specs,
     repeats,
+    topUp,
     outDir: requestedOutDir
       ? path.resolve(process.cwd(), requestedOutDir)
       : path.resolve(

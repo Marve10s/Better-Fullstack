@@ -5,6 +5,7 @@ export const TsMinimalRestraintSpec: BenchmarkSpec = {
   introducedAt: "2026-08-21",
   title: "Minimal React + Tailwind SPA with no backend, data, or auth (restraint test)",
   lane: "extended",
+  difficulty: 1,
   family: "typescript",
   supportedByBetterFullstack: true,
   requirements: [

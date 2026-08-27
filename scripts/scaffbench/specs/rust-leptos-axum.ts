@@ -5,6 +5,7 @@ export const RustLeptosAxumSpec: BenchmarkSpec = {
   introducedAt: "2026-08-21",
   title: "Rust Axum API with a Leptos WASM frontend and typed service libraries",
   lane: "core",
+  difficulty: 1,
   family: "rust",
   supportedByBetterFullstack: true,
   requirements: [

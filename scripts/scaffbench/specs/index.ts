@@ -1,4 +1,4 @@
-import type { BenchmarkSpec } from "@scaffbench/types";
+import type { BenchmarkSpec, SpecDifficulty } from "@scaffbench/types";
 
 import { AiSearchWorkbenchSpec } from "@scaffbench/specs/ai-search-workbench";
 import { DotnetBlazorCqrsSpec } from "@scaffbench/specs/dotnet-blazor-cqrs";
@@ -31,3 +31,7 @@ export const SCAFFBENCH_2_SPECS: readonly BenchmarkSpec[] = [
   FrontierPolyglotProtoSpec,
   FrontierEffectEventsourcingSpec,
 ];
+
+export function specDifficulty(specId: string): SpecDifficulty {
+  return SCAFFBENCH_2_SPECS.find((spec) => spec.id === specId)?.difficulty ?? 1;
+}

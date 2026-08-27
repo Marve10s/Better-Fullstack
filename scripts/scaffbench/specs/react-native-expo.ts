@@ -5,6 +5,7 @@ export const ReactNativeExpoSpec: BenchmarkSpec = {
   introducedAt: "2026-08-21",
   title: "React Native Expo habit tracker with Expo Router, Uniwind, MMKV, and Maestro + RNTL",
   lane: "core",
+  difficulty: 2,
   family: "react-native",
   supportedByBetterFullstack: true,
   requirements: [

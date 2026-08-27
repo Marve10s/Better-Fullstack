@@ -2,7 +2,13 @@
 
 export type Scaffbench3Provider = "claude" | "codex" | "opencode" | "kilo" | "agy" | "pi";
 
-export type Scaffbench3SpecResult = "full" | "core" | "fail" | "inconclusive";
+export type Scaffbench3SpecCell = {
+  trials: number;
+  scored: number;
+  core: number;
+  full: number;
+  score: number | null;
+};
 
 export type Scaffbench3Spec = {
   id: string;
@@ -19,15 +25,19 @@ export type Scaffbench3Row = {
   provider: Scaffbench3Provider;
   effort: string;
   eligibility: "ranked" | "exploratory";
+  trials: number;
+  topUp: "none" | "uniform" | "partial";
   fullPasses: number;
   corePasses: number;
+  fullPassPct: number;
+  corePassPct: number;
   scoredSpecs: number;
   wiredPct: number;
   scaffIndex: number;
   totalCostUsd: number | null;
   avgOutTokens: number | null;
   medianMinutes: number | null;
-  results: Record<string, Scaffbench3SpecResult>;
+  results: Record<string, Scaffbench3SpecCell>;
 };
 
 export const SCAFFBENCH3_META = {

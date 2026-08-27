@@ -5,6 +5,7 @@ export const MultiDotnetOpsSpec: BenchmarkSpec = {
   introducedAt: "2026-08-21",
   title: "Multi-ecosystem ops portal with TypeScript frontend and .NET Minimal API backend",
   lane: "core",
+  difficulty: 2,
   family: "multi-ecosystem",
   supportedByBetterFullstack: true,
   requirements: [

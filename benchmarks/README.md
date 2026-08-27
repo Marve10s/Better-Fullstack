@@ -34,6 +34,12 @@ gigabytes.
   on a clean machine.
 - **Wired libraries**: did the agent actually use the libraries the spec calls for? Scored against
   the dependencies, imports, and files present in the generated tree, not names it mentioned.
+  Trap and restraint markers (a forbidden ORM, a forbidden build tool) live in the same score.
+- **Index** (0-100): the board's sort key. Every spec earns a graded score, 0.6 for a Core pass,
+  0.2 for the share of lint and format gates green, and 0.2 for wired libraries. Tests are not
+  scored, since the harness can only run the tests the model wrote. The index is the mean of those
+  scores weighted by spec difficulty (1 easy, 2 hard, 3 frontier, pinned in each spec), times 100.
+  Cost, time, and lines of code are shown beside the index and never enter it.
 - **Run outcome**: every run is `success`, `model-failure`, or `infra-inconclusive`. Toolchain stalls
   and un-measurable runs are excluded from the rate. A generation timeout counts as a model failure,
   as in SWE-bench.

@@ -25,25 +25,8 @@ export const VALIDATION_ENV_SCRUB_PATTERN =
   /(TOKEN|SECRET|PASSWORD|CREDENTIAL|API_KEY|APIKEY|PRIVATE_KEY|AUTH|SSH_|AWS_|GCP_|GOOGLE_APPLICATION|AZURE_|OPENAI|ANTHROPIC|GEMINI|GH_|GITHUB_|NPM_|VERCEL|CLOUDFLARE|SENTRY|POSTHOG|STRIPE|SUPABASE|DATABASE_URL)/i;
 export const VALIDATION_OUTPUT_LIMIT_BYTES = 16 * 1024 * 1024;
 
-export const SCAFFBENCH_INDEX_WEIGHTS = {
-  prompt: {
-    validation: 0.75,
-    wiredLibs: 0.25,
-    discipline: 0,
-  },
-  assisted: {
-    validation: 0.6,
-    wiredLibs: 0.25,
-    discipline: 0.15,
-  },
-} as const;
+export const SCAFFBENCH_SPEC_SCORE_WEIGHTS = { core: 0.6, quality: 0.2, stack: 0.2 } as const;
 export const VALIDATION_CACHE_VERSION = 8;
-
-export function indexWeightsForPath(pathMode: CreationPath) {
-  return pathMode === "prompt"
-    ? SCAFFBENCH_INDEX_WEIGHTS.prompt
-    : SCAFFBENCH_INDEX_WEIGHTS.assisted;
-}
 
 let RESOLVED_BF_VERSION = "latest";
 

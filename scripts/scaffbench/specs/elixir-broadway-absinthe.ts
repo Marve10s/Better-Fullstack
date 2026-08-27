@@ -5,6 +5,7 @@ export const ElixirBroadwayAbsintheSpec: BenchmarkSpec = {
   introducedAt: "2026-08-21",
   title: "Elixir Phoenix LiveView app with Absinthe, Broadway, Oban, and Nx",
   lane: "core",
+  difficulty: 2,
   family: "elixir",
   supportedByBetterFullstack: true,
   requirements: [

@@ -16,7 +16,7 @@ import type {
   ToolCompliance,
 } from "@scaffbench/types";
 
-import { ESTIMATED_BUDGET_TOLERANCE } from "@scaffbench/constants";
+import { ESTIMATED_BUDGET_TOLERANCE, SCAFFBENCH_SPEC_SCORE_WEIGHTS } from "@scaffbench/constants";
 import { isRecurringTransientFailure } from "@scaffbench/validation/classification";
 import { walk, parseJsonc } from "@scaffbench/validation/shared";
 import { existsSync } from "node:fs";
@@ -465,6 +465,23 @@ export function validationPassed(result: RunResult) {
   const core = applicableSteps(result, (name) => !isAdvisoryStep(name));
   if (core.length === 0) return false;
   return stepsAllGreen(core);
+}
+
+const GRADED_QUALITY_STEPS = new Set(["lint", "format"]);
+
+export function specScore(result: RunResult) {
+  const core = validationPassed(result) ? 1 : 0;
+  const gates = applicableSteps(result, (name) => GRADED_QUALITY_STEPS.has(stepBaseName(name)));
+  const quality =
+    gates.length === 0 ? core : gates.filter((gate) => stepsAllGreen([gate])).length / gates.length;
+  const stack = result.stackScore.percent / 100;
+  const weights = SCAFFBENCH_SPEC_SCORE_WEIGHTS;
+  return {
+    core,
+    quality,
+    stack,
+    score: weights.core * core + weights.quality * quality + weights.stack * stack,
+  };
 }
 
 export function qualityPassed(result: RunResult) {

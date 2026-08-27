@@ -5,6 +5,7 @@ export const TsSvelteEdgeOrpcSpec: BenchmarkSpec = {
   introducedAt: "2026-08-21",
   title: "SvelteKit edge app on Cloudflare Workers with Hono + oRPC and D1",
   lane: "core",
+  difficulty: 2,
   family: "typescript",
   supportedByBetterFullstack: true,
   requirements: [

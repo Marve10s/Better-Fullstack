@@ -1,6 +1,12 @@
 // AUTO-GENERATED from the ScaffBench 3 run summaries. Do not edit rows by hand.
 // Suite 3.0, harness 3.1.0, prompt path, 1 trial per spec. Only models we have
 // actually run appear here; the board renders exactly these rows.
+// sortIndex follows the graded index (docs/guidelines/scaffbench-benchmark.md,
+// Scoring): 0.6 Core + 0.2 lint/format share + 0.2 stack per spec, weighted by
+// spec difficulty. GLM 5.3 Flash is exact (per-gate results in its run report).
+// GPT-5.6 Luna is the lower bound (73; upper 83): its cells record Full only, so
+// every Core-only spec counts lint and format as red until the run summary is
+// rebuilt with the current harness and the exact per-gate results replace it.
 import type { ScaffbenchCell, ScaffbenchModel } from "@web/components/home/scaffbench-types";
 
 export const SCAFFBENCH3_MODELS: readonly ScaffbenchModel[] = [
@@ -12,7 +18,7 @@ export const SCAFFBENCH3_MODELS: readonly ScaffbenchModel[] = [
     harness: "codex",
     vendor: "openai",
     label: "GPT-5.6 Luna",
-    sortIndex: 88,
+    sortIndex: 73,
     eligibility: "ranked",
   },
   {
@@ -23,7 +29,7 @@ export const SCAFFBENCH3_MODELS: readonly ScaffbenchModel[] = [
     harness: "opencode",
     vendor: "zai",
     label: "GLM 5.3 Flash",
-    sortIndex: 69,
+    sortIndex: 58,
     eligibility: "exploratory",
   },
 ];

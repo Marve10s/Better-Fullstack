@@ -5,6 +5,7 @@ import type {
   ProjectValidation,
   RepairResult,
   RunProtocol,
+  TopUpRecord,
   RunResult,
   ScaffbenchOptions,
   StepResult,
@@ -137,16 +138,68 @@ function runScaffbenchUnlocked(options: ScaffbenchOptions, log: Log) {
 
     yield* fs.makeDirectory(options.outDir, { recursive: true });
     const existingSummary = yield* readExistingSummary(options.outDir);
-    const runOptions: ScaffbenchOptions = options.validateExisting
-      ? { ...options, ...recordedRunOptions(existingSummary) }
-      : options;
+    const recordedProtocol = recordedRunProtocol(existingSummary);
+    if (options.topUp !== undefined && recordedProtocol === undefined) {
+      return yield* Effect.fail(
+        new Error(
+          `--top-up extends a finished run, but ${options.outDir} has no recorded run protocol`,
+        ),
+      );
+    }
+    const runOptions: ScaffbenchOptions =
+      options.validateExisting || options.topUp !== undefined
+        ? { ...options, ...recordedRunOptions(existingSummary) }
+        : options;
 
     const specs = selectedSpecs(runOptions.specs);
     const specOrderSeed = specShuffleSeed(runOptions);
-    const runProtocol = { repeats: runOptions.repeats, seed: specOrderSeed } satisfies RunProtocol;
+    const topUpSpecIds =
+      options.topUp === undefined ? undefined : topUpSpecSelection(options.specs, runOptions.specs);
+    const previousTopUps = recordedProtocol?.topUps ?? [];
+    const topUps =
+      topUpSpecIds && options.topUp !== undefined
+        ? [
+            ...previousTopUps,
+            { trials: options.topUp, specs: topUpSpecIds, recordedAt: new Date().toISOString() },
+          ]
+        : previousTopUps;
+    const runProtocol = {
+      repeats: runOptions.repeats,
+      seed: specOrderSeed,
+      ...(topUps.length > 0 ? { topUps } : {}),
+    } satisfies RunProtocol;
     const results = completedResults(existingSummary);
     const recordedResults = recordedRunResults(existingSummary);
-    const schedule = buildGenerationSchedule(specs, runOptions, specOrderSeed);
+    const schedule = topUpSpecIds
+      ? buildGenerationSchedule(
+          selectedSpecs(topUpSpecIds),
+          { ...runOptions, repeats: options.topUp! },
+          specOrderSeed,
+        )
+      : buildGenerationSchedule(specs, runOptions, specOrderSeed);
+    if (topUpSpecIds) {
+      const pending = schedule.filter(
+        (entry) =>
+          !findCompletedTrial(
+            results,
+            entry.spec,
+            runOptions.model,
+            entry.effort,
+            entry.pathMode,
+            entry.trial,
+          ),
+      );
+      if (pending.length === 0) {
+        return yield* Effect.fail(
+          new Error(
+            `--top-up ${options.topUp}: every selected spec already has ${options.topUp} completed trials`,
+          ),
+        );
+      }
+      log(
+        `TOP-UP ${runOptions.model}: ${pending.length} generation(s) to reach ${options.topUp} trials on ${topUpSpecIds.join(", ")}`,
+      );
+    }
     if (schedule.length === 0 && !runOptions.writeMatrixOnly) {
       return yield* Effect.fail(
         new Error(
@@ -267,8 +320,9 @@ function runOneGeneration(input: {
   return Effect.gen(function* () {
     const fs = yield* FileSystem.FileSystem;
     const { effort, log, options, pathMode, provider, results, spec, trial } = input;
-    const projectName = buildProjectName(spec, pathMode, effort, trial, options.repeats);
-    const id = buildRunId(spec, options.model, effort, pathMode, trial, options.repeats);
+    const configuredTrials = Math.max(options.repeats, options.topUp ?? 0);
+    const projectName = buildProjectName(spec, pathMode, effort, trial, configuredTrials);
+    const id = buildRunId(spec, options.model, effort, pathMode, trial, configuredTrials);
     const runDir = path.join(options.outDir, "runs", id);
     const workDir = path.join(input.workspaceRoot, id);
 
@@ -430,7 +484,7 @@ function runOneGeneration(input: {
         promptVersion: PROMPT_VERSION,
         resourceProfileId: VALIDATION_RESOURCE_PROFILE_ID,
         agentAdapter: provider,
-        configuredTrials: options.repeats,
+        configuredTrials,
         specOrderSeed: input.specOrderSeed,
       },
       validation,
@@ -1136,12 +1190,40 @@ export function recordedRunOptions(summary: unknown): Partial<ScaffbenchOptions>
   return recorded;
 }
 
-function recordedRunProtocol(summary: unknown): RunProtocol | undefined {
+export function topUpSpecSelection(requested: readonly string[], recorded: readonly string[]) {
+  if (recorded.every((id) => requested.includes(id))) return [...recorded];
+  const unknown = requested.filter((id) => !recorded.includes(id));
+  if (unknown.length > 0) {
+    throw new Error(
+      `--top-up: ${unknown.join(", ")} not in this out-dir's recorded specs (${recorded.join(", ")})`,
+    );
+  }
+  return [...requested];
+}
+
+function topUpRecords(value: unknown): TopUpRecord[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const records = value.flatMap((item) => {
+    const record = asRecord(item);
+    const specs = stringList(record?.specs);
+    return Number.isInteger(record?.trials) && specs && typeof record?.recordedAt === "string"
+      ? [{ trials: record.trials as number, specs, recordedAt: record.recordedAt }]
+      : [];
+  });
+  return records.length > 0 ? records : undefined;
+}
+
+export function recordedRunProtocol(summary: unknown): RunProtocol | undefined {
   const record = asRecord(summary);
   const metadata = asRecord(record?.metadata);
   const protocol = asRecord(metadata?.runProtocol);
   if (Number.isInteger(protocol?.repeats) && Number.isInteger(protocol?.seed)) {
-    return { repeats: protocol!.repeats as number, seed: protocol!.seed as number };
+    const topUps = topUpRecords(protocol!.topUps);
+    return {
+      repeats: protocol!.repeats as number,
+      seed: protocol!.seed as number,
+      ...(topUps ? { topUps } : {}),
+    };
   }
   const options = asRecord(record?.options);
   if (Number.isInteger(options?.repeats) && Number.isInteger(metadata?.specOrderSeed)) {

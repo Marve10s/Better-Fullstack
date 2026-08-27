@@ -6,6 +6,7 @@ export const FrontierPolyglotProtoSpec: BenchmarkSpec = {
   title:
     "Frontier: polyglot monorepo, shared protobuf across a Rust gRPC service, a Go gateway, and a TS client",
   lane: "core",
+  difficulty: 3,
   family: "multi-ecosystem",
   supportedByBetterFullstack: false,
   paths: ["prompt"],

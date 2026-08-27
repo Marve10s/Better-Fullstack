@@ -5,6 +5,7 @@ export const GoRealtimeApiSpec: BenchmarkSpec = {
   introducedAt: "2026-08-21",
   title: "Go realtime API with Chi, Ent, gRPC, NATS, Redis, and OpenTelemetry",
   lane: "core",
+  difficulty: 1,
   family: "go",
   supportedByBetterFullstack: true,
   requirements: [
