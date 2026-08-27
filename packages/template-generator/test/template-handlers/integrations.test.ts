@@ -1,9 +1,9 @@
+import { makeConfig } from "@test/_fixtures/config-factory";
+import { makeTemplates } from "@test/_fixtures/template-factory";
 import { describe, expect, it } from "bun:test";
 
-import { VirtualFileSystem } from "../../src/core/virtual-fs";
-import { processIntegrationsTemplates } from "../../src/template-handlers/integrations";
-import { makeConfig } from "../_fixtures/config-factory";
-import { makeTemplates } from "../_fixtures/template-factory";
+import { VirtualFileSystem } from "@/core/virtual-fs";
+import { processIntegrationsTemplates } from "@/template-handlers/features/integrations";
 
 describe("processIntegrationsTemplates", () => {
   const templates = makeTemplates({

@@ -1,6 +1,4 @@
-import path from "node:path";
-
-import type { ScaffbenchOptions } from "@/types";
+import type { ScaffbenchOptions } from "@scaffbench/types";
 
 import {
   CORE_SPEC_IDS,
@@ -8,8 +6,9 @@ import {
   DEFAULT_EFFORTS,
   DEFAULT_PATHS,
   EFFORT_VALUES,
-} from "@/constants";
-import { SCAFFBENCH_2_SPECS } from "@/specs";
+} from "@scaffbench/constants";
+import { SCAFFBENCH_2_SPECS } from "@scaffbench/specs";
+import path from "node:path";
 
 export function parseList<T extends string>(
   flag: string,
@@ -32,7 +31,9 @@ export function parseList<T extends string>(
 function parseBudget(value: string) {
   const parsed = Number.parseFloat(value);
   if (!/^\d+(?:\.\d+)?$/.test(value.trim()) || !Number.isFinite(parsed) || parsed < 0) {
-    throw new Error(`--max-budget-usd: expected a non-negative number, got ${JSON.stringify(value)}`);
+    throw new Error(
+      `--max-budget-usd: expected a non-negative number, got ${JSON.stringify(value)}`,
+    );
   }
   return value;
 }

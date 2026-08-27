@@ -1,6 +1,6 @@
 import { httpRouter } from "convex/server";
 
-import { options, trackProjectCreation } from "./ingest";
+import { options, trackProjectCreation } from "@/ingest";
 
 const http = httpRouter();
 

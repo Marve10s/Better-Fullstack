@@ -2,7 +2,7 @@
 title: Anonymous Telemetry
 description: What Better Fullstack CLI and browser telemetry collect when enabled, what they never collect, and how to turn them off.
 translationStatus: pending
-updated: 2026-08-22
+updated: 2026-08-23
 ---
 
 ```npm
@@ -21,6 +21,8 @@ Official CLI releases enable anonymous telemetry by default after a one-time not
 - Command state, success/failure, duration, and bounded quality counts such as conflicts, warnings, changed files, or manual-review items.
 - CLI/runtime version, OS family, CI boolean/provider, and invocation source.
 - A random anonymous install ID used only for unique, active, and repeat-use aggregates.
+- Bounded selection outcome IDs for create completion, starter-track use, compatibility recovery,
+  abandoned plans, chosen evidence level, and problem class.
 
 ## Never collected
 
@@ -35,3 +37,24 @@ The Stack Builder uses a separate browser-local anonymous ID for bounded run, ed
 <BrowserTelemetryControls />
 
 Disabling here saves a local preference in this browser only. It does not affect CLI telemetry on the same machine.
+
+## Decision coverage
+
+The private decision room treats an event as eligible only when it represents a terminal selection
+decision, such as create completion, a builder handoff, compatibility recovery, or an abandoned
+plan. A decision is covered when it also contains a bounded stage, outcome, and evidence level.
+Failed creates and abandoned plans additionally require a bounded problem class.
+
+Coverage is `covered decisions / eligible decisions`. General page views and command starts are
+not part of the denominator. Window reporting activates at 80 percent coverage; otherwise the
+decision room falls back to current all-time aggregates. Old aggregates use a different version
+and are excluded instead of being reinterpreted as covered.
+
+Problem classes separate `discoverability`, `missing-capability`, `compatibility`, and
+`reliability`. These are fixed identifiers, not user text. Repeat lifecycle use counts terminal
+existing-project actions on distinct UTC dates. It does not treat general visits or creation alone
+as lifecycle return.
+
+Production reporting still requires the maintenance-owner activation and reconciliation drill.
+Repository tests prove the contract and aggregation behavior, but they do not prove that a deployed
+environment has reached 80 percent coverage.

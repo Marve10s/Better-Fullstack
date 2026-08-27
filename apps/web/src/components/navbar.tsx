@@ -1,4 +1,6 @@
 import { Link, useMatchRoute, useRouterState } from "@tanstack/react-router";
+import { motion, LayoutGroup, useReducedMotion } from "motion/react";
+import { useEffect, useState } from "react";
 import {
   TbArrowRight as ArrowRight,
   TbBlocks as Blocks,
@@ -17,8 +19,6 @@ import {
   TbStar as Star,
   TbSun as Sun,
 } from "react-icons/tb";
-import { motion, LayoutGroup, useReducedMotion } from "motion/react";
-import { useEffect, useState } from "react";
 
 import { formatCompactStat, useProjectStats } from "@/components/home/hero-stats";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -38,12 +38,12 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { type BuilderMode, useBuilderMode } from "@/lib/builder-mode-bridge";
+import { type BuilderMode, useBuilderMode } from "@/lib/builder/builder-mode-bridge";
+import { useTheme } from "@/lib/content/theme";
 import { LOCALE_LABELS } from "@/lib/i18n/locales";
-import { isStackShareSlug } from "@/lib/stack-share-slugs";
-import { SITE_NAME } from "@/lib/seo";
-import { useTheme } from "@/lib/theme";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
+import { SITE_NAME } from "@/lib/seo/seo";
+import { isStackShareSlug } from "@/lib/stack/stack-share-slugs";
 import { m } from "@/paraglide/messages.js";
 import { getLocale, setLocale, locales, type Locale } from "@/paraglide/runtime.js";
 
@@ -142,8 +142,8 @@ function HeaderCopyButton() {
         { generateStackCommand },
       ] = await Promise.all([
         import("@better-fullstack/types/stack-translation"),
-        import("@/lib/stack-share-paths"),
-        import("@/lib/stack-utils"),
+        import("@/lib/stack/stack-share-paths"),
+        import("@/lib/stack/stack-utils"),
       ]);
       const sp = new URLSearchParams(window.location.search);
       const record: Record<string, string | string[]> = {};
@@ -160,8 +160,7 @@ function HeaderCopyButton() {
       await navigator.clipboard.writeText(generateStackCommand(stack));
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch {
-    }
+    } catch {}
   };
 
   return (

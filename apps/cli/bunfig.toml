@@ -1,6 +1,6 @@
 [test]
 # Preload setup file for global setup/teardown
-preload = ["./test/setup.ts"]
+preload = ["./test/support/setup.ts"]
 
 # Per-test timeout (3 minutes for smoke tests)
 timeout = 180000

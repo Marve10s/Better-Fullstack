@@ -22,7 +22,7 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: 1.3.12
 
       - name: Cache Dependencies
         uses: actions/cache@v4
@@ -51,7 +51,7 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: 1.3.12
 
       - name: Cache Dependencies
         uses: actions/cache@v4
@@ -68,7 +68,8 @@ jobs:
 
       - name: Build Core Packages
         run: |
-          rm -rf packages/types/dist packages/template-generator/dist
+          rm -rf packages/project-lifecycle/dist packages/types/dist packages/template-generator/dist
+          bun run --filter=@better-fullstack/project-lifecycle build
           bun run --filter=@better-fullstack/types build
           bun run --filter=@better-fullstack/template-generator build
 
@@ -92,7 +93,7 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: 1.3.12
 
       - name: Setup Deno
         uses: denoland/setup-deno@v2
@@ -131,7 +132,7 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: 1.3.12
 
       - name: Cache Dependencies
         uses: actions/cache@v4

@@ -2,12 +2,12 @@ import { group, log, multiselect, select, spinner } from "@clack/prompts";
 import { $ } from "execa";
 import pc from "picocolors";
 
-import type { ProjectConfig } from "../../types";
+import type { ProjectConfig } from "@/types";
 
-import { exitCancelled } from "../../utils/errors";
-import { shouldSkipExternalCommands } from "../../utils/external-commands";
-import { getPackageExecutionArgs } from "../../utils/package-runner";
-import { canPromptInteractively } from "../../utils/prompt-environment";
+import { shouldSkipExternalCommands } from "@/platform/external-commands";
+import { getPackageExecutionArgs } from "@/platform/package-runner";
+import { exitCancelled } from "@/presentation/errors";
+import { canPromptInteractively } from "@/presentation/prompt-environment";
 
 type UltraciteLinter = "biome" | "eslint" | "oxlint";
 

@@ -4,11 +4,11 @@ import fs from "fs-extra";
 import path from "node:path";
 import pc from "picocolors";
 
-import type { ProjectConfig } from "../../types";
+import type { ProjectConfig } from "@/types";
 
-import { addEnvVariablesToFile, type EnvVariable } from "../../utils/env-utils";
-import { exitCancelled } from "../../utils/errors";
-import { canPromptInteractively } from "../../utils/prompt-environment";
+import { addEnvVariablesToFile, type EnvVariable } from "@/platform/env-utils";
+import { exitCancelled } from "@/presentation/errors";
+import { canPromptInteractively } from "@/presentation/prompt-environment";
 
 type UpstashConfig = {
   redisUrl: string;

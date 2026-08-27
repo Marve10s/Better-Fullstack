@@ -39,5 +39,5 @@ manual and never creates them during update. A regression test preserves stable 
 that case.
 
 Re-run the qualification with `bun run test:external-upgrades`. The repository list and fail-closed
-20-success threshold live in `scripts/validate-external-upgrades.ts`; the networked lane is kept out
+20-success threshold live in `scripts/validation/validate-external-upgrades.ts`; the networked lane is kept out
 of the ordinary release test because it depends on external repository availability.

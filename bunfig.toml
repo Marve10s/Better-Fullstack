@@ -15,7 +15,7 @@ coverageSkipTestFiles = true  # default false
 
 # Performance optimizations for matrix testing
 # Preload test utilities for faster startup
-preload = ["./apps/cli/test/validation-utils.ts"]
+preload = ["./apps/cli/test/support/validation-utils.ts"]
 
 # Timeout per test (ms) - default is 5000
 timeout = 30000

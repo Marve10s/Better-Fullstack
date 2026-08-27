@@ -1,0 +1,501 @@
+import { describe, expect, test } from "bun:test";
+import { readFile } from "node:fs/promises";
+
+import { createCustomConfig, expectSuccess, runTRPCTest } from "@test/support/test-utils";
+
+describe("File Storage Options", () => {
+  describe("Cloudinary storage", () => {
+    test("cloudinary with Hono backend", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "cloudinary-hono",
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          fileStorage: "cloudinary",
+        }),
+      );
+
+      expectSuccess(result);
+      const storage = await readFile(`${result.projectDir}/apps/server/src/lib/storage.ts`, "utf-8");
+      const pkg = await readFile(`${result.projectDir}/apps/server/package.json`, "utf-8");
+      const env = await readFile(`${result.projectDir}/apps/server/.env`, "utf-8");
+
+      expect(storage).toContain("cloudinary");
+      expect(pkg).toContain('"cloudinary"');
+      expect(env).toContain("CLOUDINARY_CLOUD_NAME");
+    });
+  });
+
+  describe("Supabase Storage", () => {
+    test("supabase-storage with Hono backend", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "supabase-storage-hono",
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          fileStorage: "supabase-storage",
+        }),
+      );
+
+      expectSuccess(result);
+      const storage = await readFile(`${result.projectDir}/apps/server/src/lib/storage.ts`, "utf-8");
+      const pkg = await readFile(`${result.projectDir}/apps/server/package.json`, "utf-8");
+      const env = await readFile(`${result.projectDir}/apps/server/.env`, "utf-8");
+
+      expect(storage).toContain("@supabase/supabase-js");
+      expect(storage).toContain("Promise<SupabaseStorageFile[]>");
+      expect(pkg).toContain('"@supabase/supabase-js"');
+      expect(env).toContain("SUPABASE_URL");
+      expect(env).toContain("SUPABASE_SERVICE_ROLE_KEY");
+    });
+  });
+
+  describe("AWS S3 with different backends", () => {
+    test("s3 with Hono backend", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "s3-hono",
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          fileStorage: "s3",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("s3 with Express backend", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "s3-express",
+          frontend: ["tanstack-router"],
+          backend: "express",
+          runtime: "node",
+          fileStorage: "s3",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("s3 with Fastify backend", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "s3-fastify",
+          frontend: ["tanstack-router"],
+          backend: "fastify",
+          runtime: "node",
+          fileStorage: "s3",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("s3 with Elysia backend", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "s3-elysia",
+          frontend: ["tanstack-router"],
+          backend: "elysia",
+          runtime: "bun",
+          fileStorage: "s3",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("s3 with NestJS backend", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "s3-nestjs",
+          frontend: ["tanstack-router"],
+          backend: "nestjs",
+          runtime: "node",
+          fileStorage: "s3",
+        }),
+      );
+      expectSuccess(result);
+    });
+  });
+
+  describe("AWS S3 with fullstack frameworks", () => {
+    test("s3 with Next.js fullstack", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "s3-nextjs",
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          fileStorage: "s3",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("s3 with TanStack Start", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "s3-tanstack-start",
+          frontend: ["tanstack-start"],
+          backend: "self",
+          runtime: "none",
+          fileStorage: "s3",
+        }),
+      );
+      expectSuccess(result);
+    });
+  });
+
+  describe("AWS S3 with different frontends", () => {
+    test("s3 with TanStack Router", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "s3-tanstack-router",
+          frontend: ["tanstack-router"],
+          fileStorage: "s3",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("s3 with React Router", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "s3-react-router",
+          frontend: ["react-router"],
+          fileStorage: "s3",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("s3 with Svelte", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "s3-svelte",
+          frontend: ["svelte"],
+          uiLibrary: "daisyui",
+          api: "orpc",
+          fileStorage: "s3",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("s3 with Solid", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "s3-solid",
+          frontend: ["solid"],
+          uiLibrary: "daisyui",
+          api: "orpc",
+          fileStorage: "s3",
+        }),
+      );
+      expectSuccess(result);
+    });
+  });
+
+  describe("AWS S3 with database setups", () => {
+    test("s3 with PostgreSQL and Drizzle", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "s3-postgres-drizzle",
+          frontend: ["tanstack-router"],
+          database: "postgres",
+          orm: "drizzle",
+          fileStorage: "s3",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("s3 with SQLite and Prisma", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "s3-sqlite-prisma",
+          frontend: ["tanstack-router"],
+          database: "sqlite",
+          orm: "prisma",
+          fileStorage: "s3",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("s3 with MySQL and TypeORM", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "s3-mysql-typeorm",
+          frontend: ["tanstack-router"],
+          database: "mysql",
+          orm: "typeorm",
+          runtime: "node",
+          fileStorage: "s3",
+        }),
+      );
+      expectSuccess(result);
+    });
+  });
+
+  describe("AWS S3 with authentication", () => {
+    test("s3 with Better Auth", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "s3-better-auth",
+          frontend: ["tanstack-router"],
+          auth: "better-auth",
+          fileStorage: "s3",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("s3 with Auth.js", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "s3-authjs",
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          auth: "nextauth",
+          fileStorage: "s3",
+        }),
+      );
+      expectSuccess(result);
+    });
+  });
+
+  describe("Cloudflare R2 with different backends", () => {
+    test("r2 with Hono backend", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "r2-hono",
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          fileStorage: "r2",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("r2 with Express backend", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "r2-express",
+          frontend: ["tanstack-router"],
+          backend: "express",
+          runtime: "node",
+          fileStorage: "r2",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("r2 with Fastify backend", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "r2-fastify",
+          frontend: ["tanstack-router"],
+          backend: "fastify",
+          runtime: "node",
+          fileStorage: "r2",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("r2 with Elysia backend", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "r2-elysia",
+          frontend: ["tanstack-router"],
+          backend: "elysia",
+          runtime: "bun",
+          fileStorage: "r2",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("r2 with NestJS backend", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "r2-nestjs",
+          frontend: ["tanstack-router"],
+          backend: "nestjs",
+          runtime: "node",
+          fileStorage: "r2",
+        }),
+      );
+      expectSuccess(result);
+    });
+  });
+
+  describe("Cloudflare R2 with fullstack frameworks", () => {
+    test("r2 with Next.js fullstack", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "r2-nextjs",
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          fileStorage: "r2",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("r2 with TanStack Start", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "r2-tanstack-start",
+          frontend: ["tanstack-start"],
+          backend: "self",
+          runtime: "none",
+          fileStorage: "r2",
+        }),
+      );
+      expectSuccess(result);
+    });
+  });
+
+  describe("Cloudflare R2 with different frontends", () => {
+    test("r2 with TanStack Router", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "r2-tanstack-router",
+          frontend: ["tanstack-router"],
+          fileStorage: "r2",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("r2 with React Router", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "r2-react-router",
+          frontend: ["react-router"],
+          fileStorage: "r2",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("r2 with Svelte", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "r2-svelte",
+          frontend: ["svelte"],
+          uiLibrary: "daisyui",
+          api: "orpc",
+          fileStorage: "r2",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("r2 with Solid", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "r2-solid",
+          frontend: ["solid"],
+          uiLibrary: "daisyui",
+          api: "orpc",
+          fileStorage: "r2",
+        }),
+      );
+      expectSuccess(result);
+    });
+  });
+
+  describe("Cloudflare R2 with database setups", () => {
+    test("r2 with PostgreSQL and Drizzle", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "r2-postgres-drizzle",
+          frontend: ["tanstack-router"],
+          database: "postgres",
+          orm: "drizzle",
+          fileStorage: "r2",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("r2 with SQLite and Prisma", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "r2-sqlite-prisma",
+          frontend: ["tanstack-router"],
+          database: "sqlite",
+          orm: "prisma",
+          fileStorage: "r2",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("r2 with MySQL and TypeORM", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "r2-mysql-typeorm",
+          frontend: ["tanstack-router"],
+          database: "mysql",
+          orm: "typeorm",
+          runtime: "node",
+          fileStorage: "r2",
+        }),
+      );
+      expectSuccess(result);
+    });
+  });
+
+  describe("Cloudflare R2 with authentication", () => {
+    test("r2 with Better Auth", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "r2-better-auth",
+          frontend: ["tanstack-router"],
+          auth: "better-auth",
+          fileStorage: "r2",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("r2 with Auth.js", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "r2-authjs",
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          auth: "nextauth",
+          fileStorage: "r2",
+        }),
+      );
+      expectSuccess(result);
+
+      const storage = await readFile(`${result.projectDir}/apps/web/src/lib/storage.ts`, "utf-8");
+      const pkg = await readFile(`${result.projectDir}/apps/web/package.json`, "utf-8");
+      const env = await readFile(`${result.projectDir}/apps/web/.env`, "utf-8");
+
+      expect(storage).toContain("@aws-sdk/client-s3");
+      expect(pkg).toContain('"@aws-sdk/client-s3"');
+      expect(env).toContain("R2_BUCKET_NAME");
+    });
+  });
+
+  describe("No file storage option", () => {
+    test("none file storage option", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "no-file-storage",
+          frontend: ["tanstack-router"],
+          fileStorage: "none",
+        }),
+      );
+      expectSuccess(result);
+    });
+  });
+});

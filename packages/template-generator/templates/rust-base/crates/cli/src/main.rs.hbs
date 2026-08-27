@@ -25,6 +25,10 @@ struct Cli {
 
 #[derive(Subcommand, Debug)]
 enum Commands {
+    /// Print the resolved CLI configuration
+    Info,
+
+{{#if (ne rustWebFramework "none")}}
     /// Start the application
     Start {
         /// Port to listen on
@@ -36,53 +40,13 @@ enum Commands {
         host: String,
     },
 
-    /// Check configuration and health
+    /// Call the generated server health endpoint
     Check {
-        /// Check database connection
-        #[arg(long)]
-        database: bool,
-
-        /// Check all services
-        #[arg(long)]
-        all: bool,
+        /// Health URL to request
+        #[arg(long, default_value = "http://127.0.0.1:3000/health")]
+        url: String,
     },
-
-    /// Run database migrations
-    Migrate {
-        /// Run pending migrations
-        #[arg(long)]
-        up: bool,
-
-        /// Rollback last migration
-        #[arg(long)]
-        down: bool,
-
-        /// Migration status
-        #[arg(long)]
-        status: bool,
-    },
-
-    /// Generate project components
-    Generate {
-        /// Component type to generate
-        #[arg(value_enum)]
-        component: GenerateComponent,
-
-        /// Name for the generated component
-        name: String,
-    },
-}
-
-#[derive(clap::ValueEnum, Clone, Debug)]
-enum GenerateComponent {
-    /// Generate a new model
-    Model,
-    /// Generate a new handler/controller
-    Handler,
-    /// Generate a new service
-    Service,
-    /// Generate a new migration
-    Migration,
+{{/if}}
 }
 
 #[tokio::main]
@@ -111,72 +75,45 @@ async fn main() -> {{#if (or (eq rustErrorHandling "anyhow-thiserror") (eq rustE
     }
 
     match cli.command {
+        Commands::Info => {
+            println!(
+                "{}",
+                serde_json::json!({
+                    "name": "{{projectName}}",
+                    "verbose": cli.verbose,
+                    "config": cli.config,
+                })
+            );
+        }
+{{#if (ne rustWebFramework "none")}}
         Commands::Start { port, host } => {
             tracing::info!("Starting server on {}:{}", host, port);
-            // TODO: Implement server start logic
-            // This is where you would start your Axum/Actix server
-            println!("Server would start on {}:{}", host, port);
-        }
-
-        Commands::Check { database, all } => {
-            tracing::info!("Running health checks...");
-
-            if database || all {
-                tracing::info!("Checking database connection...");
-                // TODO: Implement database check
-                println!("Database check: Not implemented");
-            }
-
-            if all {
-                tracing::info!("Checking all services...");
-                // TODO: Implement other service checks
-                println!("All checks complete");
-            }
-
-            if !database && !all {
-                println!("No checks specified. Use --database or --all");
+            let status = tokio::process::Command::new("cargo")
+                .args(["run", "--locked", "--bin", "server"])
+                .env("HOST", &host)
+                .env("PORT", port.to_string())
+                .status()
+                .await?;
+            if !status.success() {
+                return Err(std::io::Error::other(format!(
+                    "generated server exited with {status}"
+                )).into());
             }
         }
 
-        Commands::Migrate { up, down, status } => {
-            if status {
-                tracing::info!("Checking migration status...");
-                // TODO: Implement migration status check
-                println!("Migration status: Not implemented");
-            } else if up {
-                tracing::info!("Running pending migrations...");
-                // TODO: Implement migration up
-                println!("Migrations run: Not implemented");
-            } else if down {
-                tracing::info!("Rolling back last migration...");
-                // TODO: Implement migration down
-                println!("Migration rollback: Not implemented");
-            } else {
-                println!("No migration action specified. Use --up, --down, or --status");
+        Commands::Check { url } => {
+            tracing::info!("Requesting health endpoint: {}", url);
+            let response = reqwest::get(&url).await?;
+            let status = response.status();
+            let body = response.text().await?;
+            if !status.is_success() {
+                return Err(std::io::Error::other(format!(
+                    "health request returned {status}: {body}"
+                )).into());
             }
+            println!("{body}");
         }
-
-        Commands::Generate { component, name } => {
-            tracing::info!("Generating {:?}: {}", component, name);
-            match component {
-                GenerateComponent::Model => {
-                    println!("Would generate model: {}", name);
-                    // TODO: Implement model generation
-                }
-                GenerateComponent::Handler => {
-                    println!("Would generate handler: {}", name);
-                    // TODO: Implement handler generation
-                }
-                GenerateComponent::Service => {
-                    println!("Would generate service: {}", name);
-                    // TODO: Implement service generation
-                }
-                GenerateComponent::Migration => {
-                    println!("Would generate migration: {}", name);
-                    // TODO: Implement migration generation
-                }
-            }
-        }
+{{/if}}
     }
 
     Ok(())

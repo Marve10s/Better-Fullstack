@@ -150,7 +150,7 @@ I reviewed the current working tree and excluded the two supplied bugs. The name
 
 ### 15. “Full pass” is true when no quality gate ran
 
-**Location:** [scaffbench-v2-lib.ts:4115](/Users/ibrahime/Documents/Better-Fullstack/scripts/scaffbench-v2-lib.ts:4115), [build-scaffbench-data.ts:85](/Users/ibrahime/Documents/Better-Fullstack/scripts/build-scaffbench-data.ts:85)
+**Location:** [scaffbench-v2-lib.ts:4115](/Users/ibrahime/Documents/Better-Fullstack/scripts/scaffbench-v2-lib.ts:4115), [build-scaffbench-data.ts:85](/Users/ibrahime/Documents/Better-Fullstack/scripts/benchmarks/build-scaffbench-data.ts:85)
 
 **Scenario:** `qualityPassed` applies `every()` to an empty advisory-step list. The consumer’s `fullPass` similarly requires only that all existing applicable steps pass; core steps make the list nonempty. With `qualityGate: false`, a native project can therefore receive Full pass without lint, format, or tests having run. TypeScript is inconsistently stricter because a shipped lint script runs even when the quality option is disabled.
 
@@ -160,7 +160,7 @@ I reviewed the current working tree and excluded the two supplied bugs. The name
 
 ### 16. Multiple efforts or trials collapse to one arbitrary result in leaderboard consumers
 
-**Location:** [build-scaffbench-data.ts:113](/Users/ibrahime/Documents/Better-Fullstack/scripts/build-scaffbench-data.ts:113), [splice-scaffbench-2-1.ts:86](/Users/ibrahime/Documents/Better-Fullstack/scripts/splice-scaffbench-2-1.ts:86)
+**Location:** [build-scaffbench-data.ts:113](/Users/ibrahime/Documents/Better-Fullstack/scripts/benchmarks/build-scaffbench-data.ts:113), [splice-scaffbench-2-1.ts:86](/Users/ibrahime/Documents/Better-Fullstack/scripts/benchmarks/splice-scaffbench-2-1.ts:86)
 
 **Scenario:** `resByCell` is keyed only by `path|specId`, omitting effort and trial. Later results overwrite earlier ones. Meanwhile `scoredRuns`, wired score, cost, and other fields come from the aggregate. A multi-effort or repeated run can therefore publish the last result’s core/full verdict alongside another effort’s identity and an aggregate from several trials; array order can flip the cell.
 

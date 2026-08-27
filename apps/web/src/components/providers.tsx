@@ -1,5 +1,5 @@
 import { Toaster } from "@/components/ui/sonner";
-import { ThemeProvider } from "@/lib/theme";
+import { ThemeProvider } from "@/lib/content/theme";
 
 // Convex is intentionally NOT wired up here: no routed page consumes it today,
 // and the client SDK is too heavy for the app entry chunk. If an analytics

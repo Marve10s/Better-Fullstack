@@ -1,14 +1,15 @@
-name: Generated Project Install & Build Proof
+name: Generated Project Runtime Proof
 
 on:
   pull_request:
     paths:
       - "apps/cli/src/**"
       - "apps/cli/package.json"
-      - "apps/web/src/lib/project-download.ts"
-      - "apps/web/test/browser-cli-lifecycle.test.ts"
-      - "apps/web/test/project-download.test.ts"
+      - "apps/web/src/lib/project/project-download.ts"
+      - "apps/web/test/project/browser-cli-lifecycle.test.ts"
+      - "apps/web/test/project/project-download.test.ts"
       - "packages/types/**"
+      - "packages/project-lifecycle/**"
       - "packages/template-generator/**"
       - "testing/**"
       - ".github/workflows/generated-project-proof.yaml"
@@ -17,10 +18,11 @@ on:
     paths:
       - "apps/cli/src/**"
       - "apps/cli/package.json"
-      - "apps/web/src/lib/project-download.ts"
-      - "apps/web/test/browser-cli-lifecycle.test.ts"
-      - "apps/web/test/project-download.test.ts"
+      - "apps/web/src/lib/project/project-download.ts"
+      - "apps/web/test/project/browser-cli-lifecycle.test.ts"
+      - "apps/web/test/project/project-download.test.ts"
       - "packages/types/**"
+      - "packages/project-lifecycle/**"
       - "packages/template-generator/**"
       - "testing/**"
       - ".github/workflows/generated-project-proof.yaml"
@@ -34,10 +36,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  generated-project-install-build:
-    name: Fresh generated projects install and build
+  generated-project-runtime:
+    name: Fresh generated projects pass live boundary recipes
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -45,28 +47,42 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.3.5
+          bun-version: 1.3.12
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: 24.11.1
 
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: stable
+          go-version: 1.25.1
 
       - name: Setup Python and uv
         uses: astral-sh/setup-uv@v5
+        with:
+          version: 0.8.14
 
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.89.0
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "10.0.x"
+          dotnet-version: 10.0.100
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21.0.8
+
+      - name: Setup Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: 28.0.2
+          elixir-version: 1.19.0
 
       - name: Install repository dependencies
         run: bun install --frozen-lockfile
@@ -74,14 +90,19 @@ jobs:
       - name: Build lifecycle workspace packages
         run: |
           bun run --cwd packages/types build
+          bun run --cwd packages/project-lifecycle build
           bun run --cwd packages/template-generator build
+          bun run --cwd apps/cli build
 
       - name: Verify lifecycle contracts
         run: |
-          bun test testing/generated-project-proof.test.ts apps/web/test/project-download.test.ts
-          bun test apps/web/test/browser-cli-lifecycle.test.ts --timeout 120000
+          bun test testing/generated-project-proof.test.ts apps/web/test/project/project-download.test.ts
+          bun test apps/web/test/project/browser-cli-lifecycle.test.ts --timeout 120000
 
-      - name: Run generated project install/build proof
+      - name: Run persistent recipe runtime proof
+        run: bun run test:recipe-runtime
+
+      - name: Run eight-ecosystem generated project runtime proof
         run: bun run testing/generated-project-proof.ts
 
       - name: Publish job summary

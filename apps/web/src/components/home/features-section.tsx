@@ -1,15 +1,15 @@
 import NumberFlow from "@number-flow/react";
 import { Link } from "@tanstack/react-router";
-import { TbArrowRight as ArrowRight } from "react-icons/tb";
 import { motion, useInView } from "motion/react";
 import { lazy, Suspense, useMemo, useRef } from "react";
+import { TbArrowRight as ArrowRight } from "react-icons/tb";
 
-import type { TechCategory } from "@/lib/types";
+import type { TechCategory } from "@/lib/stack/types";
 
 import { ContainerScroll } from "@/components/effects/container-scroll";
 import { TechIcon } from "@/components/ui/tech-icon";
-import { ECOSYSTEMS, TECH_OPTIONS } from "@/lib/constant";
-import { OPTION_ENTRY_COUNT, PROJECT_ECOSYSTEM_COPY } from "@/lib/project-stats";
+import { OPTION_ENTRY_COUNT, PROJECT_ECOSYSTEM_COPY } from "@/lib/project/project-stats";
+import { ECOSYSTEMS, TECH_OPTIONS } from "@/lib/stack/constant";
 import { m } from "@/paraglide/messages.js";
 
 const WebGLShader = lazy(async () => {

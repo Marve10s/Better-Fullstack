@@ -1,9 +1,3 @@
-import { afterAll, beforeAll, describe, expect, it } from "bun:test";
-import { mkdir, rm } from "node:fs/promises";
-import { join } from "node:path";
-
-import type { API, Auth, Backend, Frontend, Runtime } from "../../src/types";
-
 import {
   callORPC,
   callTRPC,
@@ -17,7 +11,12 @@ import {
   validateFrameworkPage,
   type DevServerProcess,
   type ServerProcess,
-} from "./e2e-utils";
+} from "@test/e2e/e2e-utils";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
+import { mkdir, rm } from "node:fs/promises";
+import { join } from "node:path";
+
+import type { API, Auth, Backend, Frontend, Runtime } from "@/types";
 
 const shouldRunE2E = process.env.E2E === "1";
 const describeE2E = shouldRunE2E ? describe : describe.skip;

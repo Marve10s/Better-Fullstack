@@ -1,17 +1,16 @@
 import * as BunContext from "@effect/platform-bun/BunContext";
-import { afterAll, beforeAll, describe, expect, it } from "bun:test";
-import * as Effect from "effect/Effect";
-import { mkdir, rm } from "node:fs/promises";
-import { join } from "node:path";
-
 import {
   isAdvisoryStep,
   parseArgs,
   SCAFFBENCH_2_SPECS,
   validateProject,
   type BenchmarkSpec,
-} from "../../../../scripts/scaffbench/index";
-import { scaffoldWithCLIBinary } from "./e2e-utils";
+} from "@scaffbench/index";
+import { scaffoldWithCLIBinary } from "@test/e2e/e2e-utils";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
+import * as Effect from "effect/Effect";
+import { mkdir, rm } from "node:fs/promises";
+import { join } from "node:path";
 
 const SMOKE_DIR = join(import.meta.dir, "..", "..", ".smoke-scaffbench-solvability");
 const CLI_BINARY_PATH = join(import.meta.dir, "..", "..", "dist", "cli.mjs");

@@ -6,8 +6,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { PRESET_TEMPLATES } from "@/lib/constant";
 import { getLocalizedPresetTemplate } from "@/lib/i18n/builder-copy";
+import { PRESET_TEMPLATES } from "@/lib/stack/constant";
 import { m } from "@/paraglide/messages.js";
 
 interface PresetDropdownProps {

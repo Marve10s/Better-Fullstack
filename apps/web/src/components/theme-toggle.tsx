@@ -1,7 +1,7 @@
-import { TbMoon as Moon, TbSun as Sun } from "react-icons/tb";
 import * as React from "react";
+import { TbMoon as Moon, TbSun as Sun } from "react-icons/tb";
 
-import { useTheme } from "@/lib/theme";
+import { useTheme } from "@/lib/content/theme";
 import { m } from "@/paraglide/messages.js";
 
 export function ThemeToggle() {

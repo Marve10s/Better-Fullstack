@@ -27,7 +27,7 @@ Default one-pass run. This runs one model, the default effort, all three creatio
 (`prompt`, `mcp`, `cli`), the five core specs, and one repeat:
 
 ```bash
-bun run scripts/scaffbench-v2.ts \
+bun run scripts/benchmarks/scaffbench-v2.ts \
   --model claude-opus-4-8
 ```
 
@@ -40,7 +40,7 @@ once.
 Generation-only lane, useful before leaving validation to run later:
 
 ```bash
-bun run scripts/scaffbench-v2.ts \
+bun run scripts/benchmarks/scaffbench-v2.ts \
   --model claude-opus-4-8 \
   --generate-only
 ```
@@ -48,7 +48,7 @@ bun run scripts/scaffbench-v2.ts \
 Validate previously generated runs without making model calls:
 
 ```bash
-bun run scripts/scaffbench-v2.ts \
+bun run scripts/benchmarks/scaffbench-v2.ts \
   --model claude-opus-4-8 \
   --out-dir testing/llm-benchmarks/v2/<run-dir> \
   --validate-existing
@@ -61,7 +61,7 @@ validation result; they do not switch to a lighter validation mode.
 Quality-gated run with the same one-repeat matrix:
 
 ```bash
-bun run scripts/scaffbench-v2.ts \
+bun run scripts/benchmarks/scaffbench-v2.ts \
   --model claude-opus-4-8 \
   --quality-gate \
   --doctor-check
@@ -70,7 +70,7 @@ bun run scripts/scaffbench-v2.ts \
 Natural-prompt lane with the same one-repeat matrix:
 
 ```bash
-bun run scripts/scaffbench-v2.ts \
+bun run scripts/benchmarks/scaffbench-v2.ts \
   --model claude-opus-4-8 \
   --prompt-style natural
 ```
@@ -79,7 +79,7 @@ Browser route-check lane, which starts generated dev servers and runs Playwright
 routes:
 
 ```bash
-bun run scripts/scaffbench-v2.ts \
+bun run scripts/benchmarks/scaffbench-v2.ts \
   --model claude-opus-4-8 \
   --efforts high \
   --paths mcp,cli \
@@ -92,7 +92,7 @@ bun run scripts/scaffbench-v2.ts \
 Matrix-only artifact check, with no Claude calls:
 
 ```bash
-bun run scripts/scaffbench-v2.ts \
+bun run scripts/benchmarks/scaffbench-v2.ts \
   --write-matrix-only \
   --out-dir testing/.tmp-scaffbench-2
 ```
@@ -222,7 +222,7 @@ to catch.
 - `default` is not a reasoning level. The harness records the requested effort and a known effective
   reasoning value when the model default is known.
 - The discarded V2 draft data has been removed from the homepage chart (it now shows the V1
-  cross-vendor sweep only). ScaffBench 2 results are not hand-typed: `scripts/build-benchmark-data.ts`
+  cross-vendor sweep only). ScaffBench 2 results are not hand-typed: `scripts/benchmarks/build-benchmark-data.ts`
   transforms a run's `summary.json` into a stable `benchmark-data.json` (version, harness + generator
   version, and per-cell rows: Index, pass rate, macro/pass@k/pass^k, wired libs, command discipline,
   latency, tokens, cost, failure tags). Run it on a real ScaffBench 2 `summary.json` to produce the

@@ -17,8 +17,10 @@ import {
   TbX as X,
 } from "react-icons/tb";
 
-import type { StackState } from "@/lib/stack-defaults";
+import type { StackState } from "@/lib/stack/stack-defaults";
 
+import { getLanguage } from "@/components/stack-builder/code-viewer";
+import { FileExplorer, type VirtualFile } from "@/components/stack-builder/file-explorer";
 import { highlight } from "@/components/ui/kibo-ui/code-block";
 import {
   classifyBuilderRunFailure,
@@ -26,20 +28,17 @@ import {
   shouldReportBuilderRunFailure,
   type BuilderRunFailure,
   type BuilderRunFailureStage,
-} from "@/lib/builder-failure-analytics";
+} from "@/lib/analytics/builder-failure-analytics";
+import { cn } from "@/lib/platform/utils";
 import {
   createRunnableProject,
   getDefaultRunnableFile,
   hasDependencyManifestChanges,
   type RunnableProject,
   type RunnableSourceFile,
-} from "@/lib/project-runner";
-import { getStackRunSupport } from "@/lib/run-support";
-import { cn } from "@/lib/utils";
+} from "@/lib/project/project-runner";
+import { getStackRunSupport } from "@/lib/project/run-support";
 import * as m from "@/paraglide/messages";
-
-import { getLanguage } from "./code-viewer";
-import { FileExplorer, type VirtualFile } from "./file-explorer";
 
 type RunStatus =
   | "idle"
@@ -306,7 +305,7 @@ export function RunPanel({
   }, [reportRunFailure, stackSignature, support.supported]);
 
   useEffect(() => {
-    void import("@/lib/webcontainer-runtime").then(({ stopDevelopmentServer }) => {
+    void import("@/lib/project/webcontainer-runtime").then(({ stopDevelopmentServer }) => {
       stopDevelopmentServer();
       return undefined;
     });
@@ -316,7 +315,7 @@ export function RunPanel({
       runIdRef.current += 1;
       runtimeMountedRef.current = false;
       dependenciesInstalledRef.current = false;
-      void import("@/lib/webcontainer-runtime").then(({ stopDevelopmentServer }) => {
+      void import("@/lib/project/webcontainer-runtime").then(({ stopDevelopmentServer }) => {
         stopDevelopmentServer();
         return undefined;
       });
@@ -378,7 +377,7 @@ export function RunPanel({
     let failureStage: BuilderRunFailureStage = "runtime_boot";
 
     try {
-      const runtimeModule = await import("@/lib/webcontainer-runtime");
+      const runtimeModule = await import("@/lib/project/webcontainer-runtime");
       failureStage = "browser_support";
       if (!runtimeModule.canBootBrowserRuntime()) {
         const failure = classifyBuilderRunFailure(failureStage);
@@ -459,7 +458,7 @@ export function RunPanel({
 
   const stopProject = async () => {
     runIdRef.current += 1;
-    const { stopDevelopmentServer } = await import("@/lib/webcontainer-runtime");
+    const { stopDevelopmentServer } = await import("@/lib/project/webcontainer-runtime");
     stopDevelopmentServer();
     setPreviewUrl(null);
     setStatus("stopped");

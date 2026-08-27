@@ -1,4 +1,17 @@
 import {
+  lifecycleResult,
+  type LifecycleResult,
+} from "@better-fullstack/project-lifecycle/contracts";
+import { createReviewToken } from "@better-fullstack/project-lifecycle/review-token";
+import {
+  beginProjectTransaction,
+  commitProjectTransaction,
+  removeProjectTransactionFile,
+  rollbackProjectTransaction,
+  type ProjectTransaction,
+  writeProjectTransactionFile,
+} from "@better-fullstack/project-lifecycle/transaction";
+import {
   EMBEDDED_TEMPLATES,
   generateVirtualProject,
   type VirtualFile,
@@ -10,52 +23,13 @@ import fs from "fs-extra";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-import { getDefaultConfig } from "../../constants";
-import { CreateCommandOptionsSchema } from "../../create-command-input";
-import {
-  analyzeStackCompatibility,
-  createStackPart,
-  formatStackPartSpec,
-  getToolingCapability,
-  getToolingCategory,
-  legacyProjectConfigToStackParts,
-  parseStackPartSpecs,
-  requiresChatSdkVercelAI,
-  stackPartsToLegacyProjectConfigPartial,
-  type BetterTStackConfig,
-  type ProjectConfig,
-} from "../../types";
 import {
   buildBtsConfigForPersistence,
   readBtsConfig,
-  writeBtsConfig,
-} from "../../utils/bts-config";
-import { validateConfigForProgrammaticUse } from "../../utils/config-validation";
-import {
-  applyDependencyVersionChannel,
-  planDependencyVersionChannel,
-  type DependencyVersionChannelRewrite,
-} from "../../utils/dependency-version-channel";
-import { formatCode } from "../../utils/file-formatter";
-import { getEffectiveStack, getGraphSummary } from "../../utils/graph-summary";
-import { getProjectRecoveryCommand } from "../../utils/lifecycle-command";
-import { lifecycleResult, type LifecycleResult } from "../../utils/lifecycle-contract";
-import {
-  beginProjectTransaction,
-  commitProjectTransaction,
-  journalProjectTransactionWrites,
-  markProjectTransactionWrite,
-  rollbackProjectTransaction,
-  type ProjectTransaction,
-} from "../../utils/project-transaction";
-import {
-  collectStructuredBaselines,
-  getCurrentLifecycleVersions,
-  hashContent,
-  readScaffoldManifestResult,
-  refreshScaffoldManifestFiles,
-  SCAFFOLD_MANIFEST_FILE,
-} from "../../utils/scaffold-manifest";
+  serializeBtsConfig,
+} from "@/config/bts-config";
+import { validateConfigForProgrammaticUse } from "@/config/config-validation";
+import { getEffectiveStack, getGraphSummary } from "@/config/graph-summary";
 import {
   asString,
   asStringArray,
@@ -63,7 +37,39 @@ import {
   compatibilityChangesToProjectConfig,
   getCompatibilityBackend,
   hasSelectedTypeScriptBackendPart,
-} from "../../utils/stack-compatibility";
+} from "@/config/stack-compatibility";
+import { getDefaultConfig } from "@/constants";
+import { CreateCommandOptionsSchema } from "@/create-command-input";
+import {
+  applyDependencyVersionChannel,
+  planDependencyVersionChannel,
+  type DependencyVersionChannelRewrite,
+} from "@/lifecycle/dependency-version-channel";
+import { getProjectRecoveryCommand } from "@/lifecycle/lifecycle-command";
+import {
+  collectStructuredBaselines,
+  getCurrentLifecycleVersions,
+  hashContent,
+  readScaffoldManifestResult,
+  refreshScaffoldManifestFiles,
+  SCAFFOLD_MANIFEST_FILE,
+} from "@/lifecycle/scaffold-manifest";
+import { formatCode } from "@/platform/file-formatter";
+import {
+  analyzeStackCompatibility,
+  createStackPart,
+  formatStackPartSpec,
+  getToolingCapability,
+  getToolingCategory,
+  legacyProjectConfigToStackParts,
+  mergeProjectConfigSettingsIntoStackParts,
+  parseStackPartSpecs,
+  requiresChatSdkVercelAI,
+  STACK_PART_PROJECT_SETTING_KEYS,
+  stackPartsToLegacyProjectConfigPartial,
+  type BetterTStackConfig,
+  type ProjectConfig,
+} from "@/types";
 
 type JsonObject = Record<string, unknown>;
 
@@ -148,17 +154,15 @@ export type StackUpdatePlanOptions = {
 };
 
 export function getStackUpdatePlanDigest(plan: StackUpdatePlan): string {
-  return hashContent(
-    JSON.stringify({
-      requestedChanges: plan.requestedChanges,
-      proposedConfig: plan.proposedConfig,
-      operations: plan.operations,
-      preimages: plan.preimages,
-      versionChannelRewrites: plan.versionChannelRewrites,
-      blockers: plan.manualReviewBlockers,
-      architectureChanges: plan.architectureChanges,
-    }),
-  );
+  return createReviewToken("stack-update", {
+    requestedChanges: plan.requestedChanges,
+    proposedConfig: plan.proposedConfig,
+    operations: plan.operations,
+    preimages: plan.preimages,
+    versionChannelRewrites: plan.versionChannelRewrites,
+    blockers: plan.manualReviewBlockers,
+    architectureChanges: plan.architectureChanges,
+  });
 }
 
 const ARRAY_UPDATE_KEYS = new Set<keyof ProjectConfig>([
@@ -237,6 +241,7 @@ export const PACKAGE_JSON_SECTIONS = [
   "scripts",
 ];
 const BINARY_FILE_MARKER = "[Binary file]";
+const EXECUTABLE_FILE_NAMES = new Set(["mvnw", "gradlew"]);
 
 function isEnvFilePath(filePath: string): boolean {
   const name = path.basename(filePath);
@@ -430,15 +435,46 @@ function mergeStackPartSpecs(
     if (!capability) return true;
     return !requestedSingleCategories.has(`${part.ownerPartId ?? "root"}:${capability.category}`);
   });
+  const stackPartsWithSettings = mergeProjectConfigSettingsIntoStackParts(
+    restoreUnchangedStackPartMetadata(stackParts, currentStackParts),
+    currentConfig,
+  );
   return {
-    ...stackPartsToLegacyProjectConfigPartial(stackParts),
-    stackParts,
+    ...stackPartsToLegacyProjectConfigPartial(stackPartsWithSettings),
+    stackParts: stackPartsWithSettings,
   };
 }
 
 type StackPart = NonNullable<ProjectConfig["stackParts"]>[number];
 
 const GRAPH_CACHE_CONFIG_KEYS = new Set<string>(["stackParts", "graphSummary", "effectiveStack"]);
+
+function stackPartIdentity(part: StackPart): string {
+  return JSON.stringify([
+    part.id,
+    part.role,
+    part.ecosystem,
+    part.toolId,
+    part.ownerPartId,
+    part.source,
+    part.providedByPartId,
+  ]);
+}
+
+function restoreUnchangedStackPartMetadata(
+  parts: readonly StackPart[],
+  originals: readonly StackPart[],
+): StackPart[] {
+  const originalsByIdentity = new Map(
+    originals.map((part) => [stackPartIdentity(part), part] as const),
+  );
+  return parts.map((part) => {
+    const original = originalsByIdentity.get(stackPartIdentity(part));
+    return original
+      ? { ...original, settings: original.settings && { ...original.settings } }
+      : part;
+  });
+}
 
 function stableJson(value: unknown): string {
   return JSON.stringify(value);
@@ -586,7 +622,13 @@ function mergeDerivedStackPartsWithExistingGraph(
     }
   }
 
-  return parseStackPartSpecs(pruneScopedSpecsWithoutOwners([...new Set(nextSpecs)]), "selected");
+  const mergedParts = restoreUnchangedStackPartMetadata(
+    parseStackPartSpecs(pruneScopedSpecsWithoutOwners([...new Set(nextSpecs)]), "selected"),
+    currentStackParts,
+  );
+  return mergeProjectConfigSettingsIntoStackParts(mergedParts, proposedConfig, {
+    replaceKeys: STACK_PART_PROJECT_SETTING_KEYS.filter((key) => changedKeys.has(key)),
+  });
 }
 
 function preserveMatchingStackPartIdentity(
@@ -622,6 +664,44 @@ function computeArchitectureChanges(
   if (includeScopedChanges) {
     const currentParts = currentConfig.stackParts ?? [];
     const proposedParts = proposedConfig.stackParts ?? [];
+    const changedFlatRoles = new Set(changes.map((change) => change.key));
+    const currentPrimaryParts = currentParts.filter(
+      (part) => !part.ownerPartId && part.source !== "provided" && part.toolId !== "none",
+    );
+    const proposedPrimaryParts = proposedParts.filter(
+      (part) => !part.ownerPartId && part.source !== "provided" && part.toolId !== "none",
+    );
+    const consumedProposedPrimaryIds = new Set<string>();
+    for (const part of currentPrimaryParts) {
+      let proposedPart = proposedPrimaryParts.find(
+        (candidate) => candidate.id === part.id && !consumedProposedPrimaryIds.has(candidate.id),
+      );
+      if (!proposedPart) {
+        const currentRoleParts = currentPrimaryParts.filter(
+          (candidate) => candidate.role === part.role,
+        );
+        const proposedRoleParts = proposedPrimaryParts.filter(
+          (candidate) =>
+            candidate.role === part.role && !consumedProposedPrimaryIds.has(candidate.id),
+        );
+        if (currentRoleParts.length === 1 && proposedRoleParts.length === 1) {
+          proposedPart = proposedRoleParts[0];
+        }
+      }
+      if (!proposedPart) continue;
+      consumedProposedPrimaryIds.add(proposedPart.id);
+      if (
+        (part.ecosystem === proposedPart.ecosystem && part.toolId === proposedPart.toolId) ||
+        changedFlatRoles.has(part.role)
+      ) {
+        continue;
+      }
+      changes.push({
+        key: part.role,
+        from: `${part.ecosystem}:${part.toolId}`,
+        to: `${proposedPart.ecosystem}:${proposedPart.toolId}`,
+      });
+    }
     for (const part of currentParts) {
       if (
         !part.ownerPartId ||
@@ -738,6 +818,18 @@ function buildMigrationSteps(changes: ArchitectureChange[]): string[] {
         steps.push(
           `${label}: Update the runtime toolchain, scripts, and deploy target for ${to}.`,
           `${label}: Verify runtime-specific APIs and environment bindings behave correctly on ${to}.`,
+        );
+        break;
+      case "frontend":
+        steps.push(
+          `${label}: Preserve routes, client state, public assets, and user-edited UI before replacing the frontend.`,
+          `${label}: Port framework-specific pages, data loading, environment access, and deployment settings manually.`,
+        );
+        break;
+      case "mobile":
+        steps.push(
+          `${label}: Back up app-local user data, secure storage, and persisted schema state before replacing the mobile app.`,
+          `${label}: Port navigation, deep links, native permissions, build signing, and device-specific integrations manually.`,
         );
         break;
       default:
@@ -1621,10 +1713,17 @@ export async function planStackUpdate(
     return {
       success: false,
       projectDir,
-      error: `The ${SCAFFOLD_MANIFEST_FILE} scaffold manifest is invalid: ${manifestResult.error}. Repair or delete it before updating the stack.`,
+      error: `The ${SCAFFOLD_MANIFEST_FILE} scaffold manifest is invalid: ${manifestResult.error}. Repair it, or delete it and complete the adoption flow before updating the stack.`,
     };
   }
-  const manifest = manifestResult.status === "valid" ? manifestResult.manifest : null;
+  if (manifestResult.status === "missing") {
+    return {
+      success: false,
+      projectDir,
+      error: `No ${SCAFFOLD_MANIFEST_FILE} scaffold baseline found. Run the read-only adopt plan and confirm its exact token before updating the stack.`,
+    };
+  }
+  const manifest = manifestResult.manifest;
 
   const projectName = await inferProjectName(projectDir);
   const currentConfig = configFromBtsConfig(currentBtsConfig, projectDir, projectName);
@@ -1894,9 +1993,13 @@ export async function planStackUpdate(
       if (proposedGeneratedFiles.has(filePath)) continue;
       const targetPath = path.join(projectDir, filePath);
       let existingBuffer: Buffer;
+      let existingMode: number;
       try {
         // oxlint-disable-next-line no-await-in-loop -- each candidate needs its live preimage
-        existingBuffer = await fs.readFile(targetPath);
+        const [buffer, stats] = await Promise.all([fs.readFile(targetPath), fs.stat(targetPath)]);
+        if (!stats.isFile()) throw new Error("path is not a regular file");
+        existingBuffer = buffer;
+        existingMode = stats.mode & 0o7777;
       } catch (error) {
         if ((error as NodeJS.ErrnoException).code === "ENOENT") continue;
         manualReviewBlockers.push(
@@ -1915,14 +2018,27 @@ export async function planStackUpdate(
         manualReviewBlockers.push(`${filePath}: obsolete generated file has no recorded baseline`);
         continue;
       }
-      if (hashContent(existingBuffer) === baselineHash) {
-        filesToRemove.push(filePath);
-        operations.push({ kind: "remove", path: filePath, writeMode: "remove" });
-      } else {
+      const baselineMode = manifest.modes?.[filePath];
+      if (baselineMode === undefined) {
+        manualReviewBlockers.push(
+          `${filePath}: obsolete generated file has no recorded baseline mode`,
+        );
+        continue;
+      }
+      if (hashContent(existingBuffer) !== baselineHash) {
         manualReviewBlockers.push(
           `${filePath}: obsolete generated file differs from the generated baseline`,
         );
+        continue;
       }
+      if (existingMode !== baselineMode) {
+        manualReviewBlockers.push(
+          `${filePath}: obsolete generated file mode differs from the generated baseline`,
+        );
+        continue;
+      }
+      filesToRemove.push(filePath);
+      operations.push({ kind: "remove", path: filePath, writeMode: "remove" });
     }
   }
 
@@ -1989,6 +2105,40 @@ export async function planStackUpdate(
       error: `Could not bind the stack update plan to safe transaction targets: ${error instanceof Error ? error.message : String(error)}`,
     };
   }
+  const affectedFileActions = new Map<string, "create" | "update" | "merge" | "remove">();
+  for (const operation of operations) {
+    affectedFileActions.set(
+      operation.path,
+      operation.writeMode === "remove"
+        ? "remove"
+        : operation.writeMode === "content"
+          ? "merge"
+          : operation.kind === "add"
+            ? "create"
+            : "update",
+    );
+  }
+  for (const filePath of [
+    "bts.jsonc",
+    SCAFFOLD_MANIFEST_FILE,
+    ...Object.keys(versionChannelRewrites),
+  ]) {
+    affectedFileActions.set(filePath, preimages[filePath]?.sha256 === null ? "create" : "update");
+  }
+  if (architectureChanges.length > 0) {
+    affectedFileActions.set(
+      "MIGRATION.md",
+      preimages["MIGRATION.md"]?.sha256 === null ? "create" : "update",
+    );
+  }
+  const affectedDependencies = Object.entries(dependencyChanges).flatMap(([target, dependencies]) =>
+    Object.entries(dependencies).map(([name, version]) => ({
+      name,
+      action: version === "removed" ? ("remove" as const) : ("update" as const),
+      ...(version === "removed" ? {} : { version }),
+      target,
+    })),
+  );
   const plan: InternalStackUpdatePlan = {
     success: true,
     projectDir,
@@ -2028,6 +2178,41 @@ export async function planStackUpdate(
         verified: manifest?.provenance.state === "verified",
       },
       recovery: { available: true, automaticRollback: true },
+      affected: {
+        stackParts: graphPreview.stackPartSpecs,
+        files: [...affectedFileActions.entries()].map(([filePath, action]) => ({
+          path: filePath,
+          action,
+        })),
+        dependencies: affectedDependencies,
+      },
+      compatibilityDecisions: compatibilityAdjustments.map((message) => ({
+        code: "compatibility-adjustment",
+        message,
+        alternatives: [],
+      })),
+      manualReviewReasons: manualReviewBlockers,
+      checks: Object.keys(preimages).map((filePath) => ({
+        id: `preimage:${filePath}`,
+        status: "pass",
+      })),
+      sideEffects: [
+        {
+          kind: "filesystem",
+          status: "planned",
+          description: "Apply generated and merged files in one recovery transaction.",
+        },
+        ...(affectedDependencies.length > 0
+          ? [
+              {
+                kind: "package-manager" as const,
+                status: "manual" as const,
+                description: "Dependency manifests change outside package-manager execution.",
+                compensatingAction: getInstallCommand(normalizedProposedConfig),
+              },
+            ]
+          : []),
+      ],
       nextActions: ["Review the complete plan before apply."],
     }),
     ...graphPreview,
@@ -2043,7 +2228,7 @@ export async function applyStackUpdate(
   input: Record<string, unknown>,
   options: {
     beforeManifestRefresh?: () => void | Promise<void>;
-    operation?: "add" | "remove" | "stack-update";
+    operation?: "add" | "remove" | "replace" | "stack-update";
     replaceArrayKeys?: ReadonlySet<keyof ProjectConfig>;
     removeObsoleteGeneratedArtifacts?: boolean;
     stackPartsOverride?: readonly StackPart[];
@@ -2150,23 +2335,22 @@ export async function applyStackUpdate(
 
     if (generatedPaths.size > 0) {
       const generatedFiles = treeToFileMap(proposedTree);
-      const expectedHashes = new Map<string, string>();
+      const generatedOutputs = new Map<string, Buffer>();
       for (const filePath of generatedPaths) {
         const file = generatedFiles.get(filePath);
         if (!file) throw new Error(`Generated transaction output is missing: ${filePath}`);
         // oxlint-disable-next-line no-await-in-loop -- binary templates are materialized individually
         const binaryBytes = await readGeneratedFileBytes(proposedTree, filePath, file);
         const expectedBytes = binaryBytes ?? Buffer.from(file.content, "utf-8");
-        expectedHashes.set(filePath, hashContent(expectedBytes));
+        generatedOutputs.set(filePath, expectedBytes);
       }
-      await journalProjectTransactionWrites(transaction, generatedPaths);
-      await writeSelectedFiles(proposedTree, plan.projectDir, (filePath) =>
-        generatedPaths.has(filePath),
-      );
-      for (const [filePath, expectedHash] of expectedHashes) {
-        markProjectTransactionWrite(transaction, filePath, expectedHash);
+      for (const [filePath, content] of generatedOutputs) {
+        // oxlint-disable-next-line no-await-in-loop -- each reviewed output is replaced atomically
+        await writeProjectTransactionFile(transaction, filePath, content, {
+          expectedSha256: hashContent(content),
+          ...(EXECUTABLE_FILE_NAMES.has(path.basename(filePath)) ? { mode: 0o755 } : {}),
+        });
       }
-      await journalProjectTransactionWrites(transaction);
     }
 
     const contentOperations = plan.operations.filter(
@@ -2174,23 +2358,9 @@ export async function applyStackUpdate(
     );
     if (contentOperations.length > 0) {
       for (const operation of contentOperations) {
-        const targetPath = path.join(plan.projectDir, operation.path);
-        // Journal only the path about to change: an UNVERIFIED marker tells
-        // recovery to skip byte validation, so marking untouched files would
-        // let recovery clobber edits the transaction never made.
-        // oxlint-disable-next-line no-await-in-loop -- rollback must wait for each bound write
-        await journalProjectTransactionWrites(transaction, [operation.path]);
-        // oxlint-disable-next-line no-await-in-loop -- rollback must wait for each bound write
-        await fs.ensureDir(path.dirname(targetPath));
-        // oxlint-disable-next-line no-await-in-loop -- rollback must wait for each bound write
-        await fs.writeFile(targetPath, operation.content, "utf-8");
-        markProjectTransactionWrite(
-          transaction,
-          operation.path,
-          hashContent(Buffer.from(operation.content, "utf-8")),
-        );
+        // oxlint-disable-next-line no-await-in-loop -- each reviewed output is replaced atomically
+        await writeProjectTransactionFile(transaction, operation.path, operation.content);
       }
-      await journalProjectTransactionWrites(transaction);
     }
 
     const removeOperations = plan.operations.filter(
@@ -2198,54 +2368,45 @@ export async function applyStackUpdate(
     );
     if (removeOperations.length > 0) {
       for (const operation of removeOperations) {
-        // oxlint-disable-next-line no-await-in-loop -- rollback must bind each removal in order
-        await journalProjectTransactionWrites(transaction, [operation.path]);
-        // oxlint-disable-next-line no-await-in-loop -- rollback must bind each removal in order
-        await fs.remove(path.join(plan.projectDir, operation.path));
-        markProjectTransactionWrite(transaction, operation.path, null);
+        // oxlint-disable-next-line no-await-in-loop -- each reviewed removal is journaled and revalidated
+        await removeProjectTransactionFile(transaction, operation.path);
       }
-      await journalProjectTransactionWrites(transaction);
     }
 
     const migrationContent = await buildMigrationChecklistContent(plan.projectDir, plan);
     if (migrationContent !== null) {
-      await journalProjectTransactionWrites(transaction, ["MIGRATION.md"]);
-      await fs.writeFile(path.join(plan.projectDir, "MIGRATION.md"), migrationContent, "utf-8");
-      markProjectTransactionWrite(
-        transaction,
-        "MIGRATION.md",
-        hashContent(Buffer.from(migrationContent, "utf-8")),
-      );
+      await writeProjectTransactionFile(transaction, "MIGRATION.md", migrationContent);
     }
-    await journalProjectTransactionWrites(transaction, ["bts.jsonc"]);
-    await writeBtsConfig(proposedConfig, {
+    const configMetadata = {
       version: plan.proposedConfig.version,
       createdAt: plan.proposedConfig.createdAt,
-    });
-    const configBytes = await fs.readFile(path.join(plan.projectDir, "bts.jsonc"));
-    markProjectTransactionWrite(transaction, "bts.jsonc", hashContent(configBytes));
+    };
+    const configContent = serializeBtsConfig(proposedConfig, configMetadata);
+    await writeProjectTransactionFile(transaction, "bts.jsonc", configContent);
 
     const versionChannelRewrites: string[] = [];
     if (options.applyVersionChannel) {
       const plannedRewrites =
         (plan as InternalStackUpdatePlan)[PLANNED_VERSION_CHANNEL_REWRITES] ?? [];
-      await journalProjectTransactionWrites(
-        transaction,
-        plannedRewrites.map((rewrite) =>
-          toPosixPath(path.relative(plan.projectDir, rewrite.packageJsonPath)),
-        ),
-      );
       await applyDependencyVersionChannel(
         plan.projectDir,
         plan.proposedConfig.versionChannel,
-        (packageJsonPath, sha256) => {
+        (packageJsonPath) => {
           const relativePath = toPosixPath(path.relative(plan.projectDir, packageJsonPath));
           versionChannelRewrites.push(relativePath);
-          markProjectTransactionWrite(transaction, relativePath, sha256);
         },
-        { rewrites: plannedRewrites },
+        {
+          rewrites: plannedRewrites,
+          writeFile: async (rewrite) => {
+            const relativePath = toPosixPath(
+              path.relative(plan.projectDir, rewrite.packageJsonPath),
+            );
+            await writeProjectTransactionFile(transaction, relativePath, rewrite.content, {
+              expectedSha256: rewrite.sha256,
+            });
+          },
+        },
       );
-      await journalProjectTransactionWrites(transaction);
     }
 
     await options.beforeManifestRefresh?.();
@@ -2262,7 +2423,7 @@ export async function applyStackUpdate(
       );
     }
 
-    await journalProjectTransactionWrites(transaction, [SCAFFOLD_MANIFEST_FILE]);
+    let manifestWritten = false;
     await refreshScaffoldManifestFiles(
       plan.projectDir,
       [...plan.operations.map((operation) => operation.path), ...versionChannelRewrites],
@@ -2272,11 +2433,15 @@ export async function applyStackUpdate(
         changes: plan.lifecycle.changes,
         recoveryId: transaction.id,
       },
+      {
+        writeFile: async (manifestContent) => {
+          await writeProjectTransactionFile(transaction, SCAFFOLD_MANIFEST_FILE, manifestContent);
+          manifestWritten = true;
+        },
+      },
     );
-    const manifestPath = path.join(plan.projectDir, SCAFFOLD_MANIFEST_FILE);
-    if (await fs.pathExists(manifestPath)) {
-      const manifestBytes = await fs.readFile(manifestPath);
-      markProjectTransactionWrite(transaction, SCAFFOLD_MANIFEST_FILE, hashContent(manifestBytes));
+    if (!manifestWritten) {
+      throw new Error("Scaffold manifest changed before the stack update could refresh it.");
     }
     await commitProjectTransaction(transaction);
   } catch (error) {
@@ -2300,6 +2465,12 @@ export async function applyStackUpdate(
               plan.proposedConfig.packageManager,
             ),
           },
+          history: { recorded: true, recoveryId: transaction.id },
+          sideEffects: plan.lifecycle.sideEffects.map((sideEffect) =>
+            sideEffect.kind === "filesystem"
+              ? { ...sideEffect, status: "failed" as const }
+              : { ...sideEffect, status: "not-run" as const },
+          ),
         }),
       };
     }
@@ -2311,6 +2482,12 @@ export async function applyStackUpdate(
         ...plan.lifecycle,
         status: "rolled-back",
         recovery: { available: true, transactionId: transaction.id, automaticRollback: true },
+        history: { recorded: true, recoveryId: transaction.id },
+        sideEffects: plan.lifecycle.sideEffects.map((sideEffect) =>
+          sideEffect.kind === "filesystem"
+            ? { ...sideEffect, status: "restored" as const }
+            : { ...sideEffect, status: "not-run" as const },
+        ),
       }),
     };
   }
@@ -2326,13 +2503,19 @@ export async function applyStackUpdate(
         available: true,
         transactionId: transaction.id,
         command: getProjectRecoveryCommand(
-              plan.projectDir,
-              transaction.id,
-              process.platform,
-              plan.proposedConfig.packageManager,
-            ),
+          plan.projectDir,
+          transaction.id,
+          process.platform,
+          plan.proposedConfig.packageManager,
+        ),
         automaticRollback: true,
       },
+      history: { recorded: true, recoveryId: transaction.id },
+      sideEffects: plan.lifecycle.sideEffects.map((sideEffect) =>
+        sideEffect.kind === "filesystem"
+          ? { ...sideEffect, status: "applied" as const }
+          : sideEffect,
+      ),
       nextActions: [
         plan.installCommand,
         "Run `create-better-fullstack check` to verify every generated target.",

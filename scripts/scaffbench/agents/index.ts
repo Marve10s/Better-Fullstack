@@ -1,17 +1,17 @@
-export { providerForModel, agentLabelForModel } from "@/agents/routing";
-export type { AgentProvider } from "@/agents/routing";
-export { runClaude, claudeCostUsd, parseClaudeResult } from "@/agents/claude";
-export { runCodex, codexCostUsd, parseCodexResult } from "@/agents/codex";
-export { runAgy, parseAgyResult, agyModelString } from "@/agents/agy";
-export { runOpencode, parseOpencodeResult } from "@/agents/opencode";
-export { runKilo } from "@/agents/kilo";
+export { providerForModel, agentLabelForModel } from "@scaffbench/agents/routing";
+export type { AgentProvider } from "@scaffbench/agents/routing";
+export { runClaude, claudeCostUsd, parseClaudeResult } from "@scaffbench/agents/claude";
+export { runCodex, codexCostUsd, parseCodexResult } from "@scaffbench/agents/codex";
+export { runAgy, parseAgyResult, agyModelString } from "@scaffbench/agents/agy";
+export { runOpencode, parseOpencodeResult } from "@scaffbench/agents/opencode";
+export { runKilo } from "@scaffbench/agents/kilo";
 export {
   runPi,
   parsePiResult,
   piCommandArgs,
   piProviderAndModel,
   piThinkingArgs,
-} from "@/agents/pi";
+} from "@scaffbench/agents/pi";
 export {
   agentRunCommandOptions,
   runCommand,
@@ -19,4 +19,4 @@ export {
   tail,
   progressEventTime,
   spawnErrorCode,
-} from "@/agents/command";
+} from "@scaffbench/agents/command";

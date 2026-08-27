@@ -1,12 +1,11 @@
+import { scaffoldWithCLIBinary } from "@test/e2e/e2e-utils";
+import { formatCliScaffoldFailure } from "@testing/lib/cli-scaffold";
+import { getPresetCombos } from "@testing/lib/presets";
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { execa } from "execa";
 import { existsSync, readFileSync } from "node:fs";
 import { mkdir, rm } from "node:fs/promises";
 import { join } from "node:path";
-
-import { formatCliScaffoldFailure } from "../../../../testing/lib/cli-scaffold";
-import { getPresetCombos } from "../../../../testing/lib/presets";
-import { scaffoldWithCLIBinary } from "./e2e-utils";
 
 const SMOKE_DIR = join(import.meta.dir, "..", "..", ".smoke-benchmark-install-path");
 const CLI_BINARY_PATH = join(import.meta.dir, "..", "..", "dist", "cli.mjs");

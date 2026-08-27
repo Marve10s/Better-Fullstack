@@ -1,9 +1,9 @@
+import { makeConfig } from "@test/_fixtures/config-factory";
+import { makeTemplates } from "@test/_fixtures/template-factory";
 import { describe, expect, it } from "bun:test";
 
-import { VirtualFileSystem } from "../../src/core/virtual-fs";
-import { processFrontendTemplates } from "../../src/template-handlers/frontend";
-import { makeConfig } from "../_fixtures/config-factory";
-import { makeTemplates } from "../_fixtures/template-factory";
+import { VirtualFileSystem } from "@/core/virtual-fs";
+import { processFrontendTemplates } from "@/template-handlers/core/frontend";
 
 describe("processFrontendTemplates", () => {
   it("routes React web base and framework-specific templates", async () => {

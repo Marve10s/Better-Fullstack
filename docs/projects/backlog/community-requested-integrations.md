@@ -21,6 +21,11 @@ library status before promotion; issue age alone is not product priority.
       existing `none` ORM value only skips ORM generation and does not satisfy this request.
 - [ ] Evaluate InstantDB as a managed realtime/offline database across React and React Native.
 
+The raw-SQL request fails at `listed` because no raw-SQL Stack Part exists. Its closing recipe must
+add the canonical role and compatibility rules, generate a connection pool and typed query helper,
+apply a migration to local SQLite or Postgres, execute one write and read through the generated
+helper, and expose the result through the generated backend boundary.
+
 ## AI
 
 - [ ] Deepen Mastra generation if its current surface remains dependency-light.

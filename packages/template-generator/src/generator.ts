@@ -1,6 +1,7 @@
 import type { ProjectConfig, StackPart } from "@better-fullstack/types";
 
 import {
+  formatStackGraphIssue,
   getRoleTargetPath,
   hasVitePlusWorkspaceRoot,
   isToolingOverlayOnly,
@@ -9,16 +10,16 @@ import {
   validateStackParts,
 } from "@better-fullstack/types";
 
-import type { GeneratorOptions, GeneratorResult, VirtualFileTree } from "./types";
+import type { GeneratorOptions, GeneratorResult, VirtualFileTree } from "@/types";
 
-import { VirtualFileSystem } from "./core/virtual-fs";
+import { VirtualFileSystem } from "@/core/virtual-fs";
 import {
   flattenSingleApp,
   processCatalogs,
   processPackageConfigs,
   qualifiesForSingleApp,
   updateDbPackageJson,
-} from "./post-process";
+} from "@/post-process";
 import {
   processDatabaseDeps,
   processDependencies,
@@ -28,12 +29,12 @@ import {
   processParaglidePlugins,
   processPwaPlugins,
   processEnvVariables,
-} from "./processors";
-import { processAiDocs } from "./processors/ai-docs-generator";
+} from "@/processors";
+import { processAiDocs } from "@/processors/config/ai-docs-generator";
 import {
   processGraphBackendConnection,
   processGraphBackendEnv,
-} from "./processors/graph-backend-connection";
+} from "@/processors/config/graph-backend-connection";
 import {
   type TemplateData,
   processBaseTemplate,
@@ -74,7 +75,7 @@ import {
   processVectorDbTemplates,
   processFileStorageTemplates,
   processTestingTemplates,
-} from "./template-handlers";
+} from "@/template-handlers";
 
 export type { TemplateData };
 
@@ -132,13 +133,13 @@ function validateGraphContainerAddons(config: ProjectConfig): string[] {
 
   return validateStackParts(effectiveParts)
     .issues.filter((issue) => issue.partId !== undefined && containerPartIds.has(issue.partId))
-    .map((issue) => issue.message);
+    .map(formatStackGraphIssue);
 }
 
 function validateGraphRenderingSupport(config: ProjectConfig): string[] {
   return validateStackParts(config.stackParts ?? [])
     .issues.filter((issue) => issue.code === "UNSUPPORTED_REPEATED_PRIMARY")
-    .map((issue) => issue.message);
+    .map(formatStackGraphIssue);
 }
 
 function hasGeneratedJavascriptTestScript(config: ProjectConfig): boolean {
@@ -430,7 +431,8 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
       };
     }
 
-    const usesGraphParts = Boolean(config.stackParts?.length) && !isToolingOverlayOnly(config.stackParts);
+    const usesGraphParts =
+      Boolean(config.stackParts?.length) && !isToolingOverlayOnly(config.stackParts);
 
     const hasVitePlusRoot = usesGraphParts
       ? hasVitePlusWorkspaceRoot(config.stackParts)
@@ -523,7 +525,11 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
       }
     }
 
-    if (!usesGraphParts && config.ecosystem !== "typescript" && config.ecosystem !== "react-native") {
+    if (
+      !usesGraphParts &&
+      config.ecosystem !== "typescript" &&
+      config.ecosystem !== "react-native"
+    ) {
       await processAddonTemplates(vfs, templates, config);
       processEnvVariables(vfs, config);
     }

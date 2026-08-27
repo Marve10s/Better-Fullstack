@@ -1,0 +1,735 @@
+import type {
+  RustApi,
+  RustAuth,
+  RustRealtime,
+  RustMessageQueue,
+  RustObservability,
+  RustTemplating,
+  RustCli,
+  RustErrorHandling,
+  RustCaching,
+  RustFrontend,
+  RustLibraries,
+  RustLogging,
+  RustOrm,
+  RustWebFramework,
+} from "@/types";
+
+import { exitCancelled } from "@/presentation/errors";
+import {
+  createStaticMultiPromptResolution,
+  createStaticSinglePromptResolution,
+  type PromptOption,
+} from "@/prompts/core/prompt-contract";
+import { isCancel, navigableMultiselect, navigableSelect } from "@/prompts/core/navigable";
+
+const RUST_WEB_FRAMEWORK_PROMPT_OPTIONS: PromptOption<RustWebFramework>[] = [
+  {
+    value: "axum",
+    label: "Axum",
+    hint: "Ergonomic and modular web framework from Tokio",
+  },
+  {
+    value: "actix-web",
+    label: "Actix Web",
+    hint: "Powerful, pragmatic, and extremely fast web framework",
+  },
+  {
+    value: "rocket",
+    label: "Rocket",
+    hint: "Convention-over-configuration web framework, 25k+ stars",
+  },
+  {
+    value: "poem",
+    label: "Poem",
+    hint: "Full-featured, fast web framework built on Tokio and hyper",
+  },
+  {
+    value: "loco",
+    label: "Loco",
+    hint: "The Rails of Rust: opinionated full-stack framework (runs DB-free too)",
+  },
+  {
+    value: "warp",
+    label: "Warp",
+    hint: "Composable, filter-based async web framework",
+  },
+  {
+    value: "salvo",
+    label: "Salvo",
+    hint: "Batteries-included async framework with OpenAPI and HTTP/3 support",
+  },
+  {
+    value: "none",
+    label: "None",
+    hint: "No web framework",
+  },
+];
+
+const RUST_FRONTEND_PROMPT_OPTIONS: PromptOption<RustFrontend>[] = [
+  {
+    value: "leptos",
+    label: "Leptos",
+    hint: "Build fast web applications with Rust",
+  },
+  {
+    value: "dioxus",
+    label: "Dioxus",
+    hint: "Fullstack, cross-platform UI library for Rust",
+  },
+  {
+    value: "yew",
+    label: "Yew",
+    hint: "Mature React-like framework for client-side Rust/WASM applications",
+  },
+  {
+    value: "none",
+    label: "None",
+    hint: "No Rust frontend (API only)",
+  },
+];
+
+const RUST_ORM_PROMPT_OPTIONS: PromptOption<RustOrm>[] = [
+  {
+    value: "sea-orm",
+    label: "SeaORM",
+    hint: "Async & dynamic ORM for Rust",
+  },
+  {
+    value: "sqlx",
+    label: "SQLx",
+    hint: "Async SQL toolkit with compile-time checked queries",
+  },
+  {
+    value: "diesel",
+    label: "Diesel",
+    hint: "Safe, extensible ORM with compile-time query validation",
+  },
+  {
+    value: "mongodb",
+    label: "MongoDB Rust Driver",
+    hint: "Official async MongoDB driver with typed BSON support",
+  },
+  {
+    value: "rusqlite",
+    label: "rusqlite",
+    hint: "Ergonomic embedded SQLite access",
+  },
+  {
+    value: "tokio-postgres",
+    label: "tokio-postgres",
+    hint: "Native asynchronous PostgreSQL client without an ORM",
+  },
+  {
+    value: "none",
+    label: "None",
+    hint: "No database layer",
+  },
+];
+
+const RUST_API_PROMPT_OPTIONS: PromptOption<RustApi>[] = [
+  {
+    value: "tonic",
+    label: "Tonic",
+    hint: "gRPC implementation for Rust",
+  },
+  {
+    value: "async-graphql",
+    label: "async-graphql",
+    hint: "High-performance GraphQL server library",
+  },
+  {
+    value: "jsonrpsee",
+    label: "jsonrpsee",
+    hint: "Async JSON-RPC server and client framework",
+  },
+  {
+    value: "none",
+    label: "None",
+    hint: "REST API only",
+  },
+];
+
+const RUST_CLI_PROMPT_OPTIONS: PromptOption<RustCli>[] = [
+  {
+    value: "clap",
+    label: "Clap",
+    hint: "Command Line Argument Parser for Rust",
+  },
+  {
+    value: "ratatui",
+    label: "Ratatui",
+    hint: "Build rich terminal user interfaces",
+  },
+  {
+    value: "none",
+    label: "None",
+    hint: "No CLI tools",
+  },
+];
+
+const RUST_LIBRARIES_PROMPT_OPTIONS: PromptOption<RustLibraries>[] = [
+  {
+    value: "serde",
+    label: "Serde",
+    hint: "Serialization framework for Rust",
+  },
+  {
+    value: "uuid",
+    label: "uuid",
+    hint: "UUID generation and parsing with Serde support",
+  },
+  {
+    value: "chrono",
+    label: "Chrono",
+    hint: "Date and time library with Serde support",
+  },
+  {
+    value: "reqwest",
+    label: "Reqwest",
+    hint: "Ergonomic HTTP client with JSON and Rustls TLS support",
+  },
+  {
+    value: "config",
+    label: "config",
+    hint: "Layered configuration from files, environment, and defaults",
+  },
+  {
+    value: "dashmap",
+    label: "DashMap",
+    hint: "Concurrent hash map for shared mutable state",
+  },
+  {
+    value: "parking-lot",
+    label: "parking_lot",
+    hint: "Compact, fast synchronization primitives",
+  },
+  {
+    value: "secrecy",
+    label: "Secrecy",
+    hint: "Secret value wrapper that avoids accidental exposure",
+  },
+  {
+    value: "tokio-util",
+    label: "Tokio Util",
+    hint: "Tokio utilities for codecs, cancellation tokens, and IO helpers",
+  },
+  {
+    value: "utoipa",
+    label: "utoipa",
+    hint: "OpenAPI documentation generation from Rust types",
+  },
+  {
+    value: "validator",
+    label: "Validator",
+    hint: "Struct validation derive macros",
+  },
+  {
+    value: "jsonwebtoken",
+    label: "jsonwebtoken",
+    hint: "JWT encoding/decoding library",
+  },
+  {
+    value: "argon2",
+    label: "Argon2",
+    hint: "Password hashing library",
+  },
+  {
+    value: "tokio-test",
+    label: "Tokio Test",
+    hint: "Testing utilities for Tokio",
+  },
+  {
+    value: "mockall",
+    label: "Mockall",
+    hint: "Powerful mocking library for Rust",
+  },
+  {
+    value: "proptest",
+    label: "Proptest",
+    hint: "Property-based testing for Rust",
+  },
+  {
+    value: "insta",
+    label: "Insta",
+    hint: "Snapshot testing for Rust",
+  },
+  {
+    value: "rand",
+    label: "rand",
+    hint: "Randomness, sampling, and test-data generation",
+  },
+  {
+    value: "regex",
+    label: "regex",
+    hint: "Fast, safe regular expressions with linear-time matching",
+  },
+  {
+    value: "rayon",
+    label: "Rayon",
+    hint: "Data parallelism for CPU-bound iterators and collections",
+  },
+  {
+    value: "itertools",
+    label: "Itertools",
+    hint: "Additional iterator adaptors, grouping, and collection helpers",
+  },
+  {
+    value: "rstest",
+    label: "rstest",
+    hint: "Fixture-based and parameterized Rust tests",
+  },
+  {
+    value: "cargo-nextest",
+    label: "cargo-nextest",
+    hint: "Fast, isolated test runner with CI-friendly profiles",
+  },
+  {
+    value: "cargo-audit",
+    label: "cargo-audit",
+    hint: "RustSec vulnerability auditing for Cargo dependencies",
+  },
+];
+
+const RUST_LOGGING_PROMPT_OPTIONS: PromptOption<RustLogging>[] = [
+  {
+    value: "tracing",
+    label: "Tracing",
+    hint: "Structured, composable instrumentation framework from Tokio",
+  },
+  {
+    value: "env-logger",
+    label: "env_logger",
+    hint: "Simple logger configured via environment variables",
+  },
+  {
+    value: "none",
+    label: "None",
+    hint: "No logging library",
+  },
+];
+
+const RUST_ERROR_HANDLING_PROMPT_OPTIONS: PromptOption<RustErrorHandling>[] = [
+  {
+    value: "anyhow-thiserror",
+    label: "anyhow + thiserror",
+    hint: "anyhow for application errors, thiserror for custom error types",
+  },
+  {
+    value: "eyre",
+    label: "eyre + color-eyre",
+    hint: "Customizable error reports with pretty backtraces via color-eyre",
+  },
+  {
+    value: "none",
+    label: "None",
+    hint: "No error handling library (uses standard library only)",
+  },
+];
+
+const RUST_CACHING_PROMPT_OPTIONS: PromptOption<RustCaching>[] = [
+  {
+    value: "moka",
+    label: "Moka",
+    hint: "High-performance concurrent in-memory cache (Caffeine-inspired)",
+  },
+  {
+    value: "redis",
+    label: "Redis",
+    hint: "Redis client with async support and connection pooling",
+  },
+  {
+    value: "none",
+    label: "None",
+    hint: "No caching library",
+  },
+];
+
+export function resolveRustWebFrameworkPrompt(rustWebFramework?: RustWebFramework) {
+  return createStaticSinglePromptResolution(
+    RUST_WEB_FRAMEWORK_PROMPT_OPTIONS,
+    "axum",
+    rustWebFramework,
+  );
+}
+
+export async function getRustWebFrameworkChoice(rustWebFramework?: RustWebFramework) {
+  const resolution = resolveRustWebFrameworkPrompt(rustWebFramework);
+  if (!resolution.shouldPrompt) {
+    return resolution.autoValue ?? "none";
+  }
+
+  const response = await navigableSelect<RustWebFramework>({
+    message: "Select Rust web framework",
+    options: resolution.options,
+    initialValue: resolution.initialValue as RustWebFramework,
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}
+
+export function resolveRustFrontendPrompt(rustFrontend?: RustFrontend) {
+  return createStaticSinglePromptResolution(
+    RUST_FRONTEND_PROMPT_OPTIONS,
+    "none",
+    rustFrontend,
+  );
+}
+
+export async function getRustFrontendChoice(rustFrontend?: RustFrontend) {
+  const resolution = resolveRustFrontendPrompt(rustFrontend);
+  if (!resolution.shouldPrompt) {
+    return resolution.autoValue ?? "none";
+  }
+
+  const response = await navigableSelect<RustFrontend>({
+    message: "Select Rust frontend framework",
+    options: resolution.options,
+    initialValue: resolution.initialValue as RustFrontend,
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}
+
+export function resolveRustOrmPrompt(rustOrm?: RustOrm) {
+  return createStaticSinglePromptResolution(RUST_ORM_PROMPT_OPTIONS, "none", rustOrm);
+}
+
+export async function getRustOrmChoice(rustOrm?: RustOrm) {
+  const resolution = resolveRustOrmPrompt(rustOrm);
+  if (!resolution.shouldPrompt) {
+    return resolution.autoValue ?? "none";
+  }
+
+  const response = await navigableSelect<RustOrm>({
+    message: "Select Rust ORM/database layer",
+    options: resolution.options,
+    initialValue: resolution.initialValue as RustOrm,
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}
+
+export function resolveRustApiPrompt(rustApi?: RustApi) {
+  return createStaticSinglePromptResolution(RUST_API_PROMPT_OPTIONS, "none", rustApi);
+}
+
+export async function getRustApiChoice(rustApi?: RustApi) {
+  const resolution = resolveRustApiPrompt(rustApi);
+  if (!resolution.shouldPrompt) {
+    return resolution.autoValue ?? "none";
+  }
+
+  const response = await navigableSelect<RustApi>({
+    message: "Select Rust API layer",
+    options: resolution.options,
+    initialValue: resolution.initialValue as RustApi,
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}
+
+export function resolveRustCliPrompt(rustCli?: RustCli) {
+  return createStaticSinglePromptResolution(RUST_CLI_PROMPT_OPTIONS, "none", rustCli);
+}
+
+export async function getRustCliChoice(rustCli?: RustCli) {
+  const resolution = resolveRustCliPrompt(rustCli);
+  if (!resolution.shouldPrompt) {
+    return resolution.autoValue ?? "none";
+  }
+
+  const response = await navigableSelect<RustCli>({
+    message: "Select Rust CLI tools",
+    options: resolution.options,
+    initialValue: resolution.initialValue as RustCli,
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}
+
+export function resolveRustLibrariesPrompt(rustLibraries?: RustLibraries[]) {
+  return createStaticMultiPromptResolution(
+    RUST_LIBRARIES_PROMPT_OPTIONS,
+    [],
+    rustLibraries,
+  );
+}
+
+export async function getRustLibrariesChoice(rustLibraries?: RustLibraries[]) {
+  const resolution = resolveRustLibrariesPrompt(rustLibraries);
+  if (!resolution.shouldPrompt) {
+    return (resolution.autoValue as RustLibraries[]) ?? [];
+  }
+
+  const response = await navigableMultiselect({
+    message: "Select Rust libraries",
+    options: resolution.options,
+    required: false,
+    initialValues: resolution.initialValue as RustLibraries[],
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response as RustLibraries[];
+}
+
+export function resolveRustLoggingPrompt(rustLogging?: RustLogging) {
+  return createStaticSinglePromptResolution(
+    RUST_LOGGING_PROMPT_OPTIONS,
+    "tracing",
+    rustLogging,
+  );
+}
+
+export async function getRustLoggingChoice(rustLogging?: RustLogging) {
+  const resolution = resolveRustLoggingPrompt(rustLogging);
+  if (!resolution.shouldPrompt) {
+    return resolution.autoValue ?? "none";
+  }
+
+  const response = await navigableSelect<RustLogging>({
+    message: "Select Rust logging library",
+    options: resolution.options,
+    initialValue: resolution.initialValue as RustLogging,
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}
+
+export function resolveRustErrorHandlingPrompt(rustErrorHandling?: RustErrorHandling) {
+  return createStaticSinglePromptResolution(
+    RUST_ERROR_HANDLING_PROMPT_OPTIONS,
+    "anyhow-thiserror",
+    rustErrorHandling,
+  );
+}
+
+export async function getRustErrorHandlingChoice(rustErrorHandling?: RustErrorHandling) {
+  const resolution = resolveRustErrorHandlingPrompt(rustErrorHandling);
+  if (!resolution.shouldPrompt) {
+    return resolution.autoValue ?? "none";
+  }
+
+  const response = await navigableSelect<RustErrorHandling>({
+    message: "Select Rust error handling library",
+    options: resolution.options,
+    initialValue: resolution.initialValue as RustErrorHandling,
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}
+
+export function resolveRustCachingPrompt(rustCaching?: RustCaching) {
+  return createStaticSinglePromptResolution(
+    RUST_CACHING_PROMPT_OPTIONS,
+    "none",
+    rustCaching,
+  );
+}
+
+export async function getRustCachingChoice(rustCaching?: RustCaching) {
+  const resolution = resolveRustCachingPrompt(rustCaching);
+  if (!resolution.shouldPrompt) {
+    return resolution.autoValue ?? "none";
+  }
+
+  const response = await navigableSelect<RustCaching>({
+    message: "Select Rust caching library",
+    options: resolution.options,
+    initialValue: resolution.initialValue as RustCaching,
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}
+
+export async function getRustAuthChoice(rustAuth?: RustAuth) {
+  if (rustAuth !== undefined) return rustAuth;
+
+  const options = [
+    {
+      value: "oauth2" as const,
+      label: "OAuth2",
+      hint: "OAuth2 client with authorization code, PKCE, and token exchange flows",
+    },
+    {
+      value: "torii" as const,
+      label: "Torii",
+      hint: "Auth framework with passwords, sessions, and pluggable storage",
+    },
+    {
+      value: "openidconnect" as const,
+      label: "OpenID Connect",
+      hint: "Strongly typed OIDC discovery, authorization, and token flows",
+    },
+    {
+      value: "tower-sessions" as const,
+      label: "tower-sessions",
+      hint: "Tower and Axum session middleware with pluggable stores",
+    },
+    {
+      value: "none" as const,
+      label: "None",
+      hint: "No authentication library",
+    },
+  ];
+
+  const response = await navigableSelect<RustAuth>({
+    message: "Select Rust authentication library",
+    options,
+    initialValue: "none",
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}
+
+export async function getRustRealtimeChoice(rustRealtime?: RustRealtime) {
+  if (rustRealtime !== undefined) return rustRealtime;
+
+  const options = [
+    {
+      value: "tokio-tungstenite" as const,
+      label: "tokio-tungstenite",
+      hint: "Standard async WebSocket server/client for Tokio",
+    },
+    {
+      value: "none" as const,
+      label: "None",
+      hint: "No realtime layer",
+    },
+  ];
+
+  const response = await navigableSelect<RustRealtime>({
+    message: "Select Rust realtime library",
+    options,
+    initialValue: "none",
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}
+
+export async function getRustMessageQueueChoice(rustMessageQueue?: RustMessageQueue) {
+  if (rustMessageQueue !== undefined) return rustMessageQueue;
+
+  const options = [
+    {
+      value: "lapin" as const,
+      label: "Lapin",
+      hint: "Async RabbitMQ (AMQP) client",
+    },
+    {
+      value: "rdkafka" as const,
+      label: "rdkafka",
+      hint: "High-performance Kafka client backed by librdkafka",
+    },
+    {
+      value: "async-nats" as const,
+      label: "async-nats",
+      hint: "Async NATS and JetStream client for cloud-native messaging",
+    },
+    {
+      value: "none" as const,
+      label: "None",
+      hint: "No message queue",
+    },
+  ];
+
+  const response = await navigableSelect<RustMessageQueue>({
+    message: "Select Rust message queue",
+    options,
+    initialValue: "none",
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}
+
+export async function getRustObservabilityChoice(rustObservability?: RustObservability) {
+  if (rustObservability !== undefined) return rustObservability;
+
+  const options = [
+    {
+      value: "opentelemetry" as const,
+      label: "OpenTelemetry",
+      hint: "Official OTel SDK with OTLP/HTTP export",
+    },
+    {
+      value: "metrics" as const,
+      label: "metrics",
+      hint: "Lightweight metrics facade with a Prometheus exporter",
+    },
+    {
+      value: "none" as const,
+      label: "None",
+      hint: "No tracing/metrics SDK",
+    },
+  ];
+
+  const response = await navigableSelect<RustObservability>({
+    message: "Select Rust observability",
+    options,
+    initialValue: "none",
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}
+
+export async function getRustTemplatingChoice(rustTemplating?: RustTemplating) {
+  if (rustTemplating !== undefined) return rustTemplating;
+
+  const options = [
+    {
+      value: "askama" as const,
+      label: "Askama",
+      hint: "Compile-time, type-safe Jinja-style templates",
+    },
+    {
+      value: "tera" as const,
+      label: "Tera",
+      hint: "Runtime Jinja2-style templates with dynamic loading",
+    },
+    {
+      value: "minijinja" as const,
+      label: "MiniJinja",
+      hint: "Lightweight Jinja-compatible runtime template engine",
+    },
+    {
+      value: "none" as const,
+      label: "None",
+      hint: "No template engine",
+    },
+  ];
+
+  const response = await navigableSelect<RustTemplating>({
+    message: "Select Rust template engine",
+    options,
+    initialValue: "none",
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}

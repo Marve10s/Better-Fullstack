@@ -5,8 +5,12 @@ import { lazy, Suspense, type ReactNode, useSyncExternalStore } from "react";
 
 import { Navbar } from "@/components/navbar";
 import Providers from "@/components/providers";
-import { isBrowserTelemetryEnabled, subscribeBrowserTelemetry } from "@/lib/product-analytics";
-import { NOINDEX_ROBOTS } from "@/lib/robots";
+import {
+  isBrowserTelemetryEnabled,
+  subscribeBrowserTelemetry,
+} from "@/lib/analytics/product-analytics";
+import { THEME_STORAGE_KEY } from "@/lib/content/theme";
+import { NOINDEX_ROBOTS } from "@/lib/seo/robots";
 import {
   DEFAULT_OG_IMAGE_ALT,
   DEFAULT_OG_IMAGE_HEIGHT,
@@ -19,8 +23,7 @@ import {
   getDefaultDescription,
   getSiteJsonLd,
   ogLocale,
-} from "@/lib/seo";
-import { THEME_STORAGE_KEY } from "@/lib/theme";
+} from "@/lib/seo/seo";
 import { m } from "@/paraglide/messages.js";
 import { getLocale, getTextDirection } from "@/paraglide/runtime.js";
 import "@/styles/global.css";

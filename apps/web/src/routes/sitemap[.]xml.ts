@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { generateSitemapXml } from "@/lib/sitemap";
+import { generateSitemapXml } from "@/lib/seo/sitemap";
 
 export const Route = createFileRoute("/sitemap.xml")({
   server: {

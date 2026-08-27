@@ -1,5 +1,6 @@
-import { GENERATED_STACK_PAGES } from "./generated";
-import type { GeneratedStackPage, StackPageSummary } from "./types";
+import type { GeneratedStackPage, StackPageSummary } from "@/lib/stack-pages/types";
+
+import { GENERATED_STACK_PAGES } from "@/lib/stack-pages/generated";
 
 const stackPagesBySlug = new Map<string, GeneratedStackPage>(
   GENERATED_STACK_PAGES.map((page) => [page.slug, page as GeneratedStackPage]),

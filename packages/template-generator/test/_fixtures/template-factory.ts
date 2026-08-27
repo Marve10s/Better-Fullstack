@@ -1,4 +1,4 @@
-import type { TemplateData } from "../../src/template-handlers/utils";
+import type { TemplateData } from "@/template-handlers/core/utils";
 
 export function makeTemplates(
   entries: Record<string, string> | Array<[string, string]>,

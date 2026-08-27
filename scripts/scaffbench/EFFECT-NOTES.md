@@ -33,7 +33,7 @@ The existing root `effect` dependency is `3.21.4`.
 ## Verification
 
 - `bun test scripts/ --timeout 1200000`: 74 passed, 0 failed.
-- `bun run scripts/splice-scaffbench-2-1.ts` followed by a diff of `apps/web/src/components/home/scaffbench-2-1-data.ts`: zero diff.
-- `bun run scripts/scaffbench-v2.ts --list-specs`: 13 specs.
+- `bun run scripts/benchmarks/splice-scaffbench-2-1.ts` followed by a diff of `apps/web/src/components/home/scaffbench-2-1-data.ts`: zero diff.
+- `bun run scripts/benchmarks/scaffbench-v2.ts --list-specs`: 13 specs.
 - `bunx tsc --noEmit -p scripts/tsconfig.json`: 31 pre-existing errors remain versus 40 at baseline; no new errors. All four former `agents/command.ts` child-process typing errors are gone.
 - Required Python smoke revalidation: completed with `DONE python-ingestion-api-gpt-5.6-luna-medium-mcp validation=true cache=miss`.

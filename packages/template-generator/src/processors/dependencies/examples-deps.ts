@@ -1,0 +1,316 @@
+import type { ProjectConfig } from "@better-fullstack/types";
+
+import type { VirtualFileSystem } from "@/core/virtual-fs";
+
+import { addPackageDependency, type AvailableDependencies } from "@/dependencies/add-deps";
+
+export function processExamplesDeps(vfs: VirtualFileSystem, config: ProjectConfig): void {
+  if (!config.examples || config.examples.length === 0 || config.examples[0] === "none") return;
+
+  if (config.examples.includes("ai")) {
+    setupAIDependencies(vfs, config);
+  }
+
+  if (config.examples.includes("chat-sdk")) {
+    setupChatSdkDependencies(vfs, config);
+  }
+
+  if (config.examples.includes("tanstack-showcase")) {
+    setupTanStackShowcaseDependencies(vfs, config);
+  }
+}
+
+function setupChatSdkDependencies(vfs: VirtualFileSystem, config: ProjectConfig): void {
+  const { frontend, backend, runtime } = config;
+
+  const webPkgPath = "apps/web/package.json";
+  const serverPkgPath = "apps/server/package.json";
+  const webExists = vfs.exists(webPkgPath);
+  const serverExists = vfs.exists(serverPkgPath);
+
+  const isSelfNext = backend === "self" && (frontend.includes("next") || frontend.includes("vinext"));
+  const isSelfTanStackStart = backend === "self" && frontend.includes("tanstack-start");
+  const isSelfNuxt = backend === "self" && frontend.includes("nuxt");
+  const isHonoNode = backend === "hono" && runtime === "node";
+
+  if ((isSelfNext || isSelfTanStackStart) && webExists) {
+    addPackageDependency({
+      vfs,
+      packagePath: webPkgPath,
+      dependencies: ["chat", "@chat-adapter/slack", "@chat-adapter/state-memory"],
+    });
+  }
+
+  if (isSelfNuxt && webExists) {
+    addPackageDependency({
+      vfs,
+      packagePath: webPkgPath,
+      dependencies: [
+        "chat",
+        "@chat-adapter/discord",
+        "@chat-adapter/state-memory",
+        "ai",
+        "@ai-sdk/anthropic",
+      ],
+    });
+  }
+
+  if (isHonoNode && serverExists) {
+    addPackageDependency({
+      vfs,
+      packagePath: serverPkgPath,
+      dependencies: [
+        "chat",
+        "@chat-adapter/github",
+        "@chat-adapter/state-memory",
+        "@octokit/rest",
+        "@vercel/sandbox",
+        "bash-tool",
+        "ai",
+      ],
+    });
+  }
+}
+
+function setupAIDependencies(vfs: VirtualFileSystem, config: ProjectConfig): void {
+  const { frontend, backend, ai } = config;
+
+  const webPkgPath = "apps/web/package.json";
+  const nativePkgPath = "apps/native/package.json";
+  const serverPkgPath = "apps/server/package.json";
+  const convexBackendPkgPath = "packages/backend/package.json";
+
+  const webExists = vfs.exists(webPkgPath);
+  const nativeExists = vfs.exists(nativePkgPath);
+  const serverExists = vfs.exists(serverPkgPath);
+  const convexBackendExists = vfs.exists(convexBackendPkgPath);
+
+  const hasReactWeb = frontend.some((f) =>
+    ["react-router", "react-vite", "tanstack-router", "next", "vinext", "tanstack-start"].includes(f),
+  );
+  const hasNuxt = frontend.includes("nuxt");
+  const hasSvelte = frontend.includes("svelte");
+  const hasReactNative = frontend.some((f) =>
+    ["native-bare", "native-uniwind", "native-unistyles"].includes(f),
+  );
+
+  // Check which AI SDK is selected
+  const useMastra = ai === "mastra";
+  const useVoltAgent = ai === "voltagent";
+  const useLangGraph = ai === "langgraph";
+  const useOpenAIAgents = ai === "openai-agents";
+  const useGoogleADK = ai === "google-adk";
+  const useModelFusion = ai === "modelfusion";
+  const sharedAIExampleServerDeps: AvailableDependencies[] = ["ai", "@ai-sdk/google", "@ai-sdk/devtools"];
+  const modelFusionServerDeps: AvailableDependencies[] =
+    backend === "nitro" || backend === "self"
+      ? ["modelfusion"]
+      : ["modelfusion", ...sharedAIExampleServerDeps];
+
+  if (backend === "convex" && convexBackendExists) {
+    addPackageDependency({
+      vfs,
+      packagePath: convexBackendPkgPath,
+      dependencies: ["@convex-dev/agent"],
+      customDependencies: { ai: "^5.0.117", "@ai-sdk/google": "^2.0.52" },
+    });
+  } else if (backend === "self" && webExists) {
+    if (useMastra) {
+      addPackageDependency({
+        vfs,
+        packagePath: webPkgPath,
+        dependencies: ["mastra", "@mastra/core", ...sharedAIExampleServerDeps],
+      });
+    } else if (useVoltAgent) {
+      addPackageDependency({
+        vfs,
+        packagePath: webPkgPath,
+        dependencies: [
+          "@voltagent/core",
+          "@voltagent/server-hono",
+          "@voltagent/libsql",
+          ...sharedAIExampleServerDeps,
+        ],
+        customDependencies: { ai: "^6.0.0", "@ai-sdk/google": "^3.0.1", zod: "^3.25.76" },
+      });
+    } else if (useLangGraph) {
+      addPackageDependency({
+        vfs,
+        packagePath: webPkgPath,
+        dependencies: [
+          "@langchain/langgraph",
+          "@langchain/core",
+          "@langchain/google-genai",
+          "ai",
+          "@ai-sdk/google",
+          "@ai-sdk/devtools",
+        ],
+      });
+    } else if (useOpenAIAgents) {
+      addPackageDependency({
+        vfs,
+        packagePath: webPkgPath,
+        dependencies: ["@openai/agents", ...sharedAIExampleServerDeps],
+        customDependencies: { zod: "^3.25.67" },
+      });
+    } else if (useGoogleADK) {
+      addPackageDependency({
+        vfs,
+        packagePath: webPkgPath,
+        dependencies: ["@google/adk", ...sharedAIExampleServerDeps],
+        customDependencies: { zod: "^3.25.67" },
+      });
+    } else if (useModelFusion) {
+      addPackageDependency({
+        vfs,
+        packagePath: webPkgPath,
+        dependencies: modelFusionServerDeps,
+      });
+    } else {
+      addPackageDependency({
+        vfs,
+        packagePath: webPkgPath,
+        dependencies: ["ai", "@ai-sdk/google", "@ai-sdk/devtools"],
+      });
+    }
+  } else if (serverExists && backend !== "none") {
+    if (useMastra) {
+      addPackageDependency({
+        vfs,
+        packagePath: serverPkgPath,
+        dependencies: ["mastra", "@mastra/core", ...sharedAIExampleServerDeps],
+      });
+    } else if (useVoltAgent) {
+      addPackageDependency({
+        vfs,
+        packagePath: serverPkgPath,
+        dependencies: [
+          "@voltagent/core",
+          "@voltagent/server-hono",
+          "@voltagent/libsql",
+          ...sharedAIExampleServerDeps,
+        ],
+        customDependencies: { ai: "^6.0.0", "@ai-sdk/google": "^3.0.1", zod: "^3.25.76" },
+      });
+    } else if (useLangGraph) {
+      addPackageDependency({
+        vfs,
+        packagePath: serverPkgPath,
+        dependencies: [
+          "@langchain/langgraph",
+          "@langchain/core",
+          "@langchain/google-genai",
+          "ai",
+          "@ai-sdk/google",
+          "@ai-sdk/devtools",
+        ],
+      });
+    } else if (useOpenAIAgents) {
+      addPackageDependency({
+        vfs,
+        packagePath: serverPkgPath,
+        dependencies: ["@openai/agents", ...sharedAIExampleServerDeps],
+        customDependencies: { zod: "^3.25.67" },
+      });
+    } else if (useGoogleADK) {
+      addPackageDependency({
+        vfs,
+        packagePath: serverPkgPath,
+        dependencies: ["@google/adk", ...sharedAIExampleServerDeps],
+        customDependencies: { zod: "^3.25.67" },
+      });
+    } else if (useModelFusion) {
+      addPackageDependency({
+        vfs,
+        packagePath: serverPkgPath,
+        dependencies: modelFusionServerDeps,
+      });
+    } else {
+      addPackageDependency({
+        vfs,
+        packagePath: serverPkgPath,
+        dependencies: ["ai", "@ai-sdk/google", "@ai-sdk/devtools"],
+      });
+    }
+  }
+
+  if (webExists) {
+    const deps: AvailableDependencies[] = [];
+    if (backend === "convex") {
+      if (hasReactWeb) deps.push("@convex-dev/agent", "streamdown");
+    } else if (useMastra) {
+      addAITransportClientDeps(deps, { hasReactWeb, hasNuxt, hasSvelte });
+    } else if (useVoltAgent) {
+      addAITransportClientDeps(deps, { hasReactWeb, hasNuxt, hasSvelte });
+    } else if (useLangGraph) {
+      // LangGraph uses native streaming - no special frontend SDK needed
+      // Frontend still uses Vercel AI SDK transport primitives + streamdown for React markdown rendering
+      deps.push("ai");
+      if (hasReactWeb) deps.push("streamdown");
+    } else if (useOpenAIAgents) {
+      addAITransportClientDeps(deps, { hasReactWeb, hasNuxt, hasSvelte });
+    } else if (useGoogleADK) {
+      addAITransportClientDeps(deps, { hasReactWeb, hasNuxt, hasSvelte });
+    } else if (useModelFusion) {
+      // ModelFusion uses native streaming - no special frontend SDK needed
+      // Just add streamdown for markdown rendering
+      if (hasReactWeb) deps.push("streamdown");
+    } else {
+      addAITransportClientDeps(deps, { hasReactWeb, hasNuxt, hasSvelte });
+    }
+    // AI example React templates always use lucide-react icons (Send, Loader2)
+    // regardless of the configured shadcn icon library
+    if (hasReactWeb) {
+      deps.push("lucide-react");
+    }
+
+    if (deps.length > 0) {
+      addPackageDependency({ vfs, packagePath: webPkgPath, dependencies: deps });
+    }
+  }
+
+  if (nativeExists && hasReactNative) {
+    if (backend === "convex") {
+      addPackageDependency({
+        vfs,
+        packagePath: nativePkgPath,
+        dependencies: ["@convex-dev/agent"],
+      });
+    } else {
+      addPackageDependency({
+        vfs,
+        packagePath: nativePkgPath,
+        dependencies: ["ai", "@ai-sdk/react"],
+      });
+    }
+  }
+}
+
+function addAITransportClientDeps(
+  deps: AvailableDependencies[],
+  options: { hasReactWeb: boolean; hasNuxt: boolean; hasSvelte: boolean },
+): void {
+  deps.push("ai");
+  if (options.hasNuxt) deps.push("@ai-sdk/vue");
+  else if (options.hasSvelte) deps.push("@ai-sdk/svelte");
+  else if (options.hasReactWeb) deps.push("@ai-sdk/react", "streamdown");
+}
+
+function setupTanStackShowcaseDependencies(vfs: VirtualFileSystem, _config: ProjectConfig): void {
+  const webPkgPath = "apps/web/package.json";
+  if (!vfs.exists(webPkgPath)) return;
+
+  // Showcase pages import these directly. Some may already be installed via
+  // addon selections — addPackageDependency is idempotent.
+  const deps: AvailableDependencies[] = [
+    "@tanstack/react-query",
+    "@tanstack/react-table",
+    "@tanstack/react-virtual",
+    "@tanstack/react-form",
+    "@tanstack/store",
+    "@tanstack/react-store",
+    "@tanstack/react-pacer",
+  ];
+
+  addPackageDependency({ vfs, packagePath: webPkgPath, dependencies: deps });
+}

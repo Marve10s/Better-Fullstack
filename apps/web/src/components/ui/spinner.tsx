@@ -1,6 +1,6 @@
 import { TbLoader2 as Loader2Icon } from "react-icons/tb";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
 import { m } from "@/paraglide/messages.js";
 
 function Spinner({ className, ...props }: React.ComponentProps<"svg">) {

@@ -1,6 +1,7 @@
-import { bfSpec } from "@/constants";
-import { quoteArg } from "@/agents/command";
-import type { BenchmarkSpec, CreationPath, PromptStyle } from "@/types";
+import type { BenchmarkSpec, CreationPath, PromptStyle } from "@scaffbench/types";
+
+import { quoteArg } from "@scaffbench/agents/command";
+import { bfSpec } from "@scaffbench/constants";
 
 export function canonicalCommand(spec: BenchmarkSpec, projectName: string) {
   return ["bun", "create", bfSpec("better-fullstack"), projectName, ...spec.canonicalFlags]
@@ -54,4 +55,3 @@ Creation mode: Better-Fullstack MCP.
 Use the Better-Fullstack MCP tools. Start with bfs_get_guidance, then use schema/compatibility/plan as needed, and call bfs_create_project to create the project.
 Do not use the Better-Fullstack CLI for creation.`;
 }
-

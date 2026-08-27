@@ -4,6 +4,11 @@
   "private": true,
   "type": "module",
   "sideEffects": false,
+  "imports": {
+    "#vite-plugins/*": "./vite-plugins/*.ts",
+    "#web/*": "./src/*.ts",
+    "#web-root/*": "./*.ts"
+  },
   "scripts": {
     "i18n:compile": "bun run scripts/compile-paraglide.ts",
     "docs:cli-flags": "bun run scripts/generate-cli-flags-data.ts",
@@ -13,7 +18,7 @@
     "dev": "bun run i18n:compile && vite dev --port 3333",
     "start": "node .output/server/index.mjs",
     "lint": "bun run i18n:compile && oxlint -c ../../.oxlintrc.json . && tsc --noEmit",
-    "test": "bun run i18n:compile && bun test ./test/*.test.ts",
+    "test": "bun run i18n:compile && bun test ./test/{builder,content,ecosystems,interface,project,stack,telemetry}/*.test.ts",
     "typecheck": "bun run i18n:compile && tsc --noEmit",
     "validate:tech-links": "bun run scripts/validate-tech-resource-links.ts",
     "validate:tech-icons": "bun run scripts/validate-tech-icons.ts",
@@ -52,6 +57,7 @@
     "fflate": "^0.8.3",
     "geist": "^1.7.2",
     "gray-matter": "^4.0.3",
+    "jsonc-parser": "^3.3.1",
     "mdast-util-to-string": "^4.0.0",
     "mdast-util-toc": "^7.1.0",
     "motion": "^12.43.0",

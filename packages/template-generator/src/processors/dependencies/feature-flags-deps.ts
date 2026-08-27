@@ -1,0 +1,159 @@
+import type { ProjectConfig } from "@better-fullstack/types";
+
+import type { VirtualFileSystem } from "@/core/virtual-fs";
+
+import { addPackageDependency } from "@/dependencies/add-deps";
+import { getWebPackagePath } from "@/platform/project-paths";
+
+const REACT_FEATURE_FLAG_FRONTENDS = new Set([
+  "tanstack-router",
+  "react-router",
+  "react-vite",
+  "tanstack-start",
+  "next",
+]);
+
+export function processFeatureFlagsDeps(vfs: VirtualFileSystem, config: ProjectConfig): void {
+  const { featureFlags, frontend, backend } = config;
+  if (!featureFlags || featureFlags === "none") return;
+
+  // Check if we have a web frontend
+  const hasWebFrontend = frontend.some((f) => REACT_FEATURE_FLAG_FRONTENDS.has(f));
+
+  const webPath = getWebPackagePath(frontend, backend);
+
+  if (featureFlags === "growthbook") {
+    // Add client-side React SDK to web app
+    if (hasWebFrontend) {
+      if (vfs.exists(webPath)) {
+        addPackageDependency({
+          vfs,
+          packagePath: webPath,
+          dependencies: ["@growthbook/growthbook-react"],
+        });
+      }
+    }
+
+    // Add server-side SDK to backend
+    if (backend !== "none" && backend !== "convex") {
+      const serverPath = "apps/server/package.json";
+      if (vfs.exists(serverPath)) {
+        addPackageDependency({
+          vfs,
+          packagePath: serverPath,
+          dependencies: ["@growthbook/growthbook"],
+        });
+      }
+    }
+
+    // For fullstack frameworks (Next.js, etc.), add both SDKs to web
+    if (backend === "self" && hasWebFrontend) {
+      if (vfs.exists(webPath)) {
+        addPackageDependency({
+          vfs,
+          packagePath: webPath,
+          dependencies: ["@growthbook/growthbook-react", "@growthbook/growthbook"],
+        });
+      }
+    }
+  }
+
+  if (featureFlags === "posthog") {
+    // Add client-side PostHog SDK to web app
+    if (hasWebFrontend) {
+      if (vfs.exists(webPath)) {
+        addPackageDependency({
+          vfs,
+          packagePath: webPath,
+          dependencies: ["posthog-js"],
+        });
+      }
+    }
+
+    // Add server-side PostHog SDK to backend
+    if (backend !== "none" && backend !== "convex") {
+      const serverPath = "apps/server/package.json";
+      if (vfs.exists(serverPath)) {
+        addPackageDependency({
+          vfs,
+          packagePath: serverPath,
+          dependencies: ["posthog-node"],
+        });
+      }
+    }
+
+    // For fullstack frameworks (Next.js, etc.), add both SDKs to web
+    if (backend === "self" && hasWebFrontend) {
+      if (vfs.exists(webPath)) {
+        addPackageDependency({
+          vfs,
+          packagePath: webPath,
+          dependencies: ["posthog-js", "posthog-node"],
+        });
+      }
+    }
+  }
+
+  if (featureFlags === "launchdarkly") {
+    if (hasWebFrontend && vfs.exists(webPath)) {
+      addPackageDependency({
+        vfs,
+        packagePath: webPath,
+        dependencies: ["@launchdarkly/js-client-sdk"],
+      });
+    }
+
+    if (backend !== "none" && backend !== "convex") {
+      const serverPath = backend === "self" ? webPath : "apps/server/package.json";
+      if (vfs.exists(serverPath)) {
+        addPackageDependency({
+          vfs,
+          packagePath: serverPath,
+          dependencies: ["@launchdarkly/node-server-sdk"],
+        });
+      }
+    }
+  }
+
+  if (featureFlags === "flagsmith") {
+    if (hasWebFrontend && vfs.exists(webPath)) {
+      addPackageDependency({
+        vfs,
+        packagePath: webPath,
+        dependencies: ["@flagsmith/flagsmith"],
+      });
+    }
+
+    if (backend !== "none" && backend !== "convex") {
+      const serverPath = backend === "self" ? webPath : "apps/server/package.json";
+      if (vfs.exists(serverPath)) {
+        addPackageDependency({
+          vfs,
+          packagePath: serverPath,
+          dependencies: ["flagsmith-nodejs"],
+        });
+      }
+    }
+  }
+
+  if (featureFlags === "unleash") {
+    if (hasWebFrontend && vfs.exists(webPath)) {
+      addPackageDependency({
+        vfs,
+        packagePath: webPath,
+        dependencies: ["@unleash/proxy-client-react", "unleash-proxy-client"],
+      });
+    }
+
+    if (backend !== "none" && backend !== "convex") {
+      const serverPath = backend === "self" ? webPath : "apps/server/package.json";
+      if (vfs.exists(serverPath)) {
+        addPackageDependency({
+          vfs,
+          packagePath: serverPath,
+          dependencies: ["unleash-client"],
+        });
+      }
+    }
+  }
+}

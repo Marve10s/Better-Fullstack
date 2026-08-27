@@ -1,4 +1,4 @@
-import type {} from "@/types";
+import type {} from "@scaffbench/types";
 
 export type AgentProvider = "claude" | "codex" | "opencode" | "kilo" | "agy" | "pi";
 

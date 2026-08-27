@@ -20,3 +20,14 @@ Completion requires:
 - CLI, web builder, and MCP parity;
 - generated-project assertions for both supported and rejected combinations;
 - provider setup and webhook documentation.
+
+## Evidence closure
+
+The organization-aware billing composition currently fails at `runtime-verified`. Provider
+packages, environment files, and generated helpers do not prove subscription behavior.
+
+The closing recipe must generate one named organization preset against a provider sandbox. It must
+create an organization subscription, deliver a signed webhook to the generated route, persist the
+entitlement, allow an entitled request, reject an unentitled request, and verify the documented
+replay behavior. The recipe must record the provider, API version, fixture identity, and secret
+handling limit.

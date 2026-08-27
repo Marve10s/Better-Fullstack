@@ -1,8 +1,3 @@
-import * as Effect from "effect/Effect";
-import { existsSync } from "node:fs";
-import { rename, writeFile } from "node:fs/promises";
-import path from "node:path";
-
 import type {
   BenchmarkSpec,
   Effort,
@@ -12,9 +7,9 @@ import type {
   ScaffbenchOptions,
   ScaffbenchSummary,
   SummaryAggregate,
-} from "@/types";
+} from "@scaffbench/types";
 
-import { agentLabelForModel, providerForModel } from "@/agents";
+import { agentLabelForModel, providerForModel } from "@scaffbench/agents";
 import {
   indexWeightsForPath,
   resolvedBfVersion,
@@ -26,16 +21,19 @@ import {
   SCAFFBENCH_SUITE_VERSION,
   VALIDATION_CACHE_VERSION,
   tryCommandText,
-} from "@/constants";
+} from "@scaffbench/constants";
 import {
   validationPassed,
   qualityPassed,
   classifyOutcome,
   outcomeEvidenceFor,
   scoredOutcome,
-} from "@/scoring";
-
-import { EVIDENCE_SCHEMA_VERSION } from "../verified-combinations/evidence";
+} from "@scaffbench/scoring";
+import { EVIDENCE_SCHEMA_VERSION } from "@scripts/verified-combinations/evidence";
+import * as Effect from "effect/Effect";
+import { existsSync } from "node:fs";
+import { rename, writeFile } from "node:fs/promises";
+import path from "node:path";
 
 export function aggregateResults(results: readonly RunResult[]) {
   const bySpecCell = aggregateBy(results, (result) =>

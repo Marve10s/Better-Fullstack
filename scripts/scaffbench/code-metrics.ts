@@ -1,9 +1,8 @@
+import type { CodeMetrics } from "@scaffbench/types";
+
+import { PROJECT_WALK_SKIP_DIRECTORIES } from "@scaffbench/validation/shared";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
-
-import type { CodeMetrics } from "@/types";
-
-import { PROJECT_WALK_SKIP_DIRECTORIES } from "@/validation/shared";
 
 const LOCKFILES = new Set([
   "bun.lock",

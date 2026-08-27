@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 
 import type { TocEntry } from "@/lib/docs/remark-extract-toc";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
 import { m } from "@/paraglide/messages.js";
 
 /**

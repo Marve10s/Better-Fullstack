@@ -1,9 +1,9 @@
 import * as fs from "node:fs/promises";
 import { join, dirname } from "pathe";
 
-import type { VirtualFileTree, VirtualNode, VirtualFile, VirtualDirectory } from "./types";
+import type { VirtualFileTree, VirtualNode, VirtualFile, VirtualDirectory } from "@/types";
 
-import { getBinaryTemplatesRoot } from "./core/template-reader";
+import { getBinaryTemplatesRoot } from "@/core/template-reader";
 
 const BINARY_FILE_MARKER = "[Binary file]";
 const EXECUTABLE_FILE_NAMES = new Set(["mvnw", "gradlew"]);

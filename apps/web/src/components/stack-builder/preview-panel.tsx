@@ -1,5 +1,6 @@
 import type { PreflightWarning } from "@better-fullstack/template-generator/browser";
 
+import { useEffect, useState, useCallback } from "react";
 import {
   TbAlertTriangle as AlertTriangle,
   TbChevronLeft as ChevronLeft,
@@ -8,17 +9,19 @@ import {
   TbInfoCircle as Info,
   TbLoader2 as Loader2,
 } from "react-icons/tb";
-import { useEffect, useState, useCallback } from "react";
 
-import type { StackState } from "@/lib/constant";
+import type { StackState } from "@/lib/stack/constant";
 
+import { CodeViewer, CodeViewerEmpty } from "@/components/stack-builder/code-viewer";
+import {
+  FileExplorer,
+  type VirtualFile,
+  type VirtualDirectory,
+} from "@/components/stack-builder/file-explorer";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { stackStateToProjectConfig } from "@/lib/preview-config";
-import { cn } from "@/lib/utils";
+import { stackStateToProjectConfig } from "@/lib/builder/preview-config";
+import { cn } from "@/lib/platform/utils";
 import * as m from "@/paraglide/messages";
-
-import { CodeViewer, CodeViewerEmpty } from "./code-viewer";
-import { FileExplorer, type VirtualFile, type VirtualDirectory } from "./file-explorer";
 
 // Client-side generation via dynamic import — the ~354KB template-generator
 // bundle is only loaded when the user actually opens the Preview tab.

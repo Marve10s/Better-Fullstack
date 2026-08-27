@@ -31,6 +31,10 @@ import {
 {{#if (eq api "apollo-server")}}
 import { executeApolloRequest } from "@{{projectName}}/api";
 {{/if}}
+{{#if (eq api "graphql-yoga")}}
+import { createGraphQLHandler } from "@{{projectName}}/api";
+import { createContext as createGraphQLContext } from "@{{projectName}}/api/context";
+{{/if}}
 {{#if (isBetterAuth auth)}}
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
@@ -125,6 +129,18 @@ app.use(
 		},
 	})
 );
+{{/if}}
+{{#if (eq api "graphql-yoga")}}
+const graphqlHandler = createGraphQLHandler(async (request) => {
+{{#if (isBetterAuth auth)}}
+	const session = await auth.api.getSession({ headers: request.headers });
+	return createGraphQLContext(session);
+{{else}}
+	return createGraphQLContext();
+{{/if}}
+});
+
+app.on(["GET", "POST"], "/graphql", (c) => graphqlHandler.fetch(c.req.raw));
 {{/if}}
 {{#if (eq api "apollo-server")}}
 app.on(["GET", "POST"], "/graphql", async (c) => {

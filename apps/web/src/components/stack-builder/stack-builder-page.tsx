@@ -1,6 +1,6 @@
 import { Suspense, lazy } from "react";
 
-import type { StackState } from "@/lib/stack-defaults";
+import type { StackState } from "@/lib/stack/stack-defaults";
 
 import { m } from "@/paraglide/messages.js";
 

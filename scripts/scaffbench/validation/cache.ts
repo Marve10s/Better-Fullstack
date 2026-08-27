@@ -1,23 +1,22 @@
+import type { BenchmarkSpec, ProjectValidation, ScaffbenchOptions } from "@scaffbench/types";
+
 import * as FileSystem from "@effect/platform/FileSystem";
+import {
+  HARNESS_VERSION,
+  VALIDATION_CACHE_VERSION,
+  VALIDATION_RESOURCE_PROFILE_ID,
+} from "@scaffbench/constants";
+import { collectToolchainVersions } from "@scaffbench/summary";
+import {
+  hasTransientNetworkSignature,
+  isRecurringTransientFailure,
+} from "@scaffbench/validation/classification";
+import { effectiveValidationOptions, validateProject } from "@scaffbench/validation/index";
 import * as Effect from "effect/Effect";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { cp, lstat, readFile, readdir, readlink, rm } from "node:fs/promises";
 import path from "node:path";
-
-import type { BenchmarkSpec, ProjectValidation, ScaffbenchOptions } from "@/types";
-
-import {
-  HARNESS_VERSION,
-  VALIDATION_CACHE_VERSION,
-  VALIDATION_RESOURCE_PROFILE_ID,
-} from "@/constants";
-import { collectToolchainVersions } from "@/summary";
-import {
-  hasTransientNetworkSignature,
-  isRecurringTransientFailure,
-} from "@/validation/classification";
-import { effectiveValidationOptions, validateProject } from "@/validation/index";
 
 const HASH_SKIP_DIRECTORIES = new Set([
   "node_modules",

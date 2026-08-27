@@ -3,10 +3,10 @@ import consola from "consola";
 import { $ } from "execa";
 import pc from "picocolors";
 
-import type { Addons, PackageManager, PythonPackageManager } from "../../types";
+import type { Addons, PackageManager, PythonPackageManager } from "@/types";
 
-import { classifySetupFailure } from "../../utils/analytics";
-import { commandExists } from "../../utils/command-exists";
+import { commandExists } from "@/platform/command-exists";
+import { classifySetupFailure } from "@/telemetry/analytics";
 
 /**
  * Result of a post-scaffold setup step (dependency install, native build, db setup).

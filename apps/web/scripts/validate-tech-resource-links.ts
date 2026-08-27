@@ -1,5 +1,5 @@
-import { TECH_OPTIONS } from "../src/lib/constant";
-import { getTechResourceLinks } from "../src/lib/tech-resource-links";
+import { TECH_OPTIONS } from "@/lib/stack/constant";
+import { getTechResourceLinks } from "@/lib/stack/tech-resource-links";
 
 type LinkKind = "docsUrl" | "githubUrl";
 

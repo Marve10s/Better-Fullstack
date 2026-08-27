@@ -1,0 +1,2422 @@
+import { getLocalWebDevPort, type ProjectConfig } from "@better-fullstack/types";
+
+import type { VirtualFileSystem } from "@/core/virtual-fs";
+
+import { getGraphBackendConnection, hasWebFrontend } from "@/graph/graph-backend";
+
+const JAVA_GROUP_ID = "com.example";
+const JAVA_RESERVED_WORDS = new Set([
+  "abstract",
+  "assert",
+  "boolean",
+  "break",
+  "byte",
+  "case",
+  "catch",
+  "char",
+  "class",
+  "const",
+  "continue",
+  "default",
+  "do",
+  "double",
+  "else",
+  "enum",
+  "extends",
+  "final",
+  "finally",
+  "float",
+  "for",
+  "goto",
+  "if",
+  "implements",
+  "import",
+  "instanceof",
+  "int",
+  "interface",
+  "long",
+  "native",
+  "new",
+  "non-sealed",
+  "package",
+  "private",
+  "protected",
+  "public",
+  "return",
+  "sealed",
+  "short",
+  "static",
+  "strictfp",
+  "super",
+  "switch",
+  "synchronized",
+  "this",
+  "throw",
+  "throws",
+  "transient",
+  "try",
+  "void",
+  "volatile",
+  "while",
+  "yield",
+  "record",
+  "permits",
+  "true",
+  "false",
+  "null",
+]);
+
+export function processReadme(vfs: VirtualFileSystem, config: ProjectConfig): void {
+  let content: string;
+  if (config.stackParts?.length) {
+    content = generateGraphReadmeContent(config);
+  } else if (config.ecosystem === "rust") {
+    content = generateRustReadmeContent(config);
+  } else if (config.ecosystem === "python") {
+    content = generatePythonReadmeContent(config);
+  } else if (config.ecosystem === "go") {
+    content = generateGoReadmeContent(config);
+  } else if (config.ecosystem === "java") {
+    content = generateJavaReadmeContent(config);
+  } else if (config.ecosystem === "elixir") {
+    content = generateElixirReadmeContent(config);
+  } else {
+    content = generateReadmeContent(config);
+  }
+  vfs.writeFile("README.md", content);
+}
+
+function generateGraphReadmeContent(config: ProjectConfig): string {
+  const graphBackend = getGraphBackendConnection(config);
+  const hasWeb = hasWebFrontend(config);
+  const frontendPart = (config.stackParts ?? []).find(
+    (part) => part.role === "frontend" && !part.ownerPartId && part.source !== "provided",
+  );
+  const databasePart = (config.stackParts ?? []).find(
+    (part) => part.role === "database" && part.source !== "provided" && part.toolId !== "none",
+  );
+  const graphOrmPart = (config.stackParts ?? []).find(
+    (part) => part.role === "orm" && part.source !== "provided",
+  );
+  const frontendLabel = frontendPart?.toolId ?? config.frontend.find((entry) => entry !== "none");
+  const installCommand =
+    config.packageManager === "npm"
+      ? "npm install"
+      : config.packageManager === "pnpm"
+        ? "pnpm install"
+        : config.packageManager === "yarn"
+          ? "yarn install"
+          : "bun install";
+  const packageManagerRunCommand =
+    config.packageManager === "npm" ? "npm run" : config.packageManager;
+  const setupLine = graphBackend?.setupCommand
+    ? `\n\`\`\`sh\n${graphBackend.setupCommand}\n\`\`\`\n`
+    : "";
+  const databaseNote =
+    databasePart && graphBackend?.ecosystem === "java" && graphOrmPart?.toolId === "spring-data-jpa"
+      ? "\nThe generated Spring Data JPA example uses an embedded H2 dev database. Update `apps/server/src/main/resources/application.yml` when switching to an external database.\n"
+      : databasePart
+        ? `\nDatabase-backed backend selections expect a local ${databasePart.toolId} database or a matching \`DATABASE_URL\` in the backend environment before you start the server. Copy the backend \`.env.example\` to \`.env\` and adjust it for your machine.\n`
+        : "";
+  const hasJavaSpringSecurity = (config.stackParts ?? []).some(
+    (part) =>
+      part.role === "auth" && part.ecosystem === "java" && part.toolId === "spring-security",
+  );
+  const authNote = hasJavaSpringSecurity
+    ? "\nSpring Security is enabled. HTTP Basic auth protects application endpoints except `/health`; set `APP_BASIC_USERNAME` and `APP_BASIC_PASSWORD` before running locally if you want credentials other than the dev defaults.\n"
+    : "";
+  const serverScripts = graphBackend
+    ? [
+        graphBackend.setupCommand
+          ? "- `setup:server` installs or prepares backend dependencies."
+          : null,
+        "- `dev:server` starts the generated backend.",
+        graphBackend.checkCommand ? "- `check:server` runs the backend compile/check lane." : null,
+        graphBackend.testCommand ? "- `test:server` runs backend tests." : null,
+      ]
+        .filter(Boolean)
+        .join("\n")
+    : null;
+
+  return `# ${config.projectName}
+
+This project was created with [Better Fullstack](https://github.com/Marve10s/Better-Fullstack) using the multi-ecosystem project graph.
+
+## Stack
+
+- Frontend: ${frontendLabel ?? "not selected"}${frontendPart ? ` (${frontendPart.ecosystem})` : ""}
+${graphBackend ? `- Backend: ${graphBackend.label} (${graphBackend.ecosystem})` : "- Backend: not selected"}
+
+## Project Structure
+
+\`\`\`text
+${config.projectName}/
+├── apps/
+${hasWebFrontend(config) ? "│   ├── web/         # Frontend application\n" : ""}${graphBackend ? "│   └── server/      # Backend application\n" : ""}└── package.json     # Root scripts for the generated graph
+\`\`\`
+
+## Local Development
+
+Install the JavaScript workspace dependencies first. If you created the project with \`--no-install\`, this step has not run yet.
+
+\`\`\`sh
+${installCommand}
+\`\`\`
+
+${graphBackend?.setupCommand ? `Prepare the backend dependencies and database state before starting the server:\n${setupLine}` : ""}${databaseNote}${authNote}
+Run the generated apps in separate terminals so each ecosystem keeps its native watcher and logs.
+
+${
+  hasWeb
+    ? `\`\`\`sh
+${packageManagerRunCommand} dev:web
+\`\`\`
+`
+    : ""
+}${
+    config.frontend.some((entry) => entry.startsWith("native-"))
+      ? `\`\`\`sh
+${packageManagerRunCommand} dev:native
+\`\`\`
+`
+      : ""
+  }
+${
+  graphBackend
+    ? `Start the backend:
+\`\`\`sh
+${graphBackend.devCommand}
+\`\`\``
+    : ""
+}
+${graphBackend && hasWeb ? `The frontend is configured to call the backend at \`${graphBackend.serverUrl}\`. The generated health check reads the matching public server URL from the web environment file and targets \`${graphBackend.healthPath}\`.\n` : ""}
+## Root Scripts
+
+- \`dev\` starts the primary generated workspace for graph projects.
+${hasWeb ? "- `dev:web` starts the frontend workspace.\n" : ""}${config.frontend.some((entry) => entry.startsWith("native-")) ? "- `dev:native` starts the React Native/Expo workspace.\n" : ""}
+${serverScripts ? `${serverScripts}\n` : ""}
+
+## Compatibility Notes
+
+- TypeScript frontends can be generated with Elixir Phoenix backends; Phoenix runs on port 4000 and exposes \`/api/health\`.
+- Astro frontends can be generated with Rust backends; Rust web servers run on port 3000 and expose \`/health\`.
+- Cross-ecosystem graph projects share an HTTP boundary. Framework-specific API clients such as tRPC are not assumed across language boundaries; the scaffold wires the frontend to the backend base URL and health endpoint.
+`;
+}
+
+function generateElixirReadmeContent(config: ProjectConfig): string {
+  const hasPhoenix = config.elixirWebFramework !== "none";
+  const hasEcto = config.elixirOrm !== "none";
+  const hasEctoSql = config.elixirOrm === "ecto-sql";
+  const features = [
+    hasPhoenix
+      ? config.elixirWebFramework === "phoenix-live-view"
+        ? "Phoenix LiveView"
+        : "Phoenix"
+      : "Plain Elixir",
+    hasEctoSql ? "ecto-sql with PostgreSQL" : hasEcto ? config.elixirOrm : null,
+    config.elixirApi !== "none" ? `API: ${config.elixirApi}` : null,
+    config.elixirRealtime !== "none" ? `Realtime: ${config.elixirRealtime}` : null,
+    config.elixirJobs !== "none" ? `Jobs: ${config.elixirJobs}` : null,
+    config.elixirAuth !== "none" ? `Auth: ${config.elixirAuth}` : null,
+    config.elixirDeploy !== "none" ? `Deploy: ${config.elixirDeploy}` : null,
+  ].filter(Boolean) as string[];
+
+  return `# ${config.projectName}
+
+This project was created with [Better Fullstack](https://github.com/Marve10s/Better-Fullstack) for the Elixir${hasPhoenix ? "/Phoenix" : ""} ecosystem.
+
+## Stack
+
+${features.map((feature) => `- ${feature}`).join("\n")}
+
+## Getting Started
+
+Make sure Elixir and Erlang/OTP${hasEctoSql ? ", and PostgreSQL" : ""} are installed.
+
+\`\`\`sh
+mix deps.get
+${hasEctoSql ? "mix ecto.setup\n" : ""}${hasPhoenix ? "mix phx.server" : "iex -S mix"}
+\`\`\`
+
+${hasPhoenix ? "Open http://localhost:4000.\n\n" : ""}## Tests
+
+\`\`\`sh
+mix test
+\`\`\`
+
+${hasPhoenix || hasEctoSql ? "Copy `.env.example` values into your environment before production release builds.\n" : ""}`;
+}
+
+function sanitizeJavaPackageSuffix(projectName: string): string {
+  const alphanumericOnly = projectName
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
+  const withLetterPrefix = /^[a-z]/.test(alphanumericOnly)
+    ? alphanumericOnly
+    : `app${alphanumericOnly}`;
+  const guarded = JAVA_RESERVED_WORDS.has(withLetterPrefix)
+    ? `app${withLetterPrefix}`
+    : withLetterPrefix;
+  return guarded || "app";
+}
+
+function getJavaMainClass(config: ProjectConfig): string {
+  return `${JAVA_GROUP_ID}.${sanitizeJavaPackageSuffix(config.projectName)}.Application`;
+}
+
+function getJavaMainSourcePath(config: ProjectConfig): string {
+  return `src/main/java/${getJavaMainClass(config).replace(/\./g, "/")}.java`;
+}
+
+function isSpringBootJavaProject(config: ProjectConfig): boolean {
+  return config.javaWebFramework === "spring-boot" && config.javaBuildTool !== "none";
+}
+
+function isQuarkusJavaProject(config: ProjectConfig): boolean {
+  return config.javaWebFramework === "quarkus" && config.javaBuildTool !== "none";
+}
+
+function getEffectiveJavaLibraries(config: ProjectConfig): string[] {
+  if (!isSpringBootJavaProject(config)) return [];
+  const hasJavaJpa = config.javaOrm === "spring-data-jpa";
+  const libraries = (config.javaLibraries || []).filter((library) => library !== "none");
+  return libraries.filter((library) => {
+    if ((library === "flyway" || library === "liquibase") && !hasJavaJpa) {
+      return false;
+    }
+    if (library === "liquibase" && libraries.includes("flyway")) {
+      return false;
+    }
+    return true;
+  });
+}
+
+function getEffectiveJavaTestingLibraries(config: ProjectConfig): string[] {
+  return config.javaBuildTool === "none"
+    ? []
+    : (config.javaTestingLibraries || []).filter((library) => library !== "none");
+}
+
+function getJavaBuildToolCommand(config: ProjectConfig): string | null {
+  return config.javaBuildTool === "gradle"
+    ? "./gradlew"
+    : config.javaBuildTool === "maven"
+      ? "./mvnw"
+      : null;
+}
+
+function generateJavaReadmeContent(config: ProjectConfig): string {
+  const isSpringBoot = isSpringBootJavaProject(config);
+  const isQuarkus = isQuarkusJavaProject(config);
+  const buildToolCommand = getJavaBuildToolCommand(config);
+  const runCommand = buildToolCommand
+    ? isSpringBoot
+      ? config.javaBuildTool === "gradle"
+        ? `${buildToolCommand} bootRun`
+        : `${buildToolCommand} spring-boot:run`
+      : isQuarkus
+        ? config.javaBuildTool === "gradle"
+          ? `${buildToolCommand} quarkusDev`
+          : `${buildToolCommand} quarkus:dev`
+        : config.javaBuildTool === "gradle"
+          ? `${buildToolCommand} run`
+          : `${buildToolCommand} exec:java`
+    : null;
+  const packageCommand = buildToolCommand
+    ? config.javaBuildTool === "gradle"
+      ? `${buildToolCommand} build`
+      : `${buildToolCommand} package`
+    : null;
+  const testCommand =
+    buildToolCommand && getEffectiveJavaTestingLibraries(config).length > 0
+      ? `${buildToolCommand} test`
+      : null;
+  const compileCommand = buildToolCommand ? null : `javac -d out ${getJavaMainSourcePath(config)}`;
+  const sourceOnlyRunCommand = buildToolCommand ? null : `java -cp out ${getJavaMainClass(config)}`;
+  const javaLibraries = getEffectiveJavaLibraries(config);
+  const testingLibraries = getEffectiveJavaTestingLibraries(config);
+  const features = [
+    "Java 21",
+    isSpringBoot ? "Spring Boot 4" : isQuarkus ? "Quarkus 3" : "Plain Java",
+    config.javaBuildTool === "maven" ? "Maven Wrapper" : null,
+    config.javaBuildTool === "gradle" ? "Gradle Wrapper" : null,
+    config.javaBuildTool === "none" ? "No build tool" : null,
+    isSpringBoot && config.javaOrm === "spring-data-jpa" ? "Spring Data JPA + H2" : null,
+    isSpringBoot && config.javaAuth === "spring-security" ? "Spring Security" : null,
+    javaLibraries.length > 0 ? `Libraries: ${javaLibraries.join(", ")}` : null,
+    testingLibraries.length > 0 ? `Testing: ${testingLibraries.join(", ")}` : null,
+  ].filter(Boolean) as string[];
+
+  const structureLines = [
+    `${config.projectName}/`,
+    config.javaBuildTool === "gradle"
+      ? "├── gradle/                # Gradle Wrapper configuration"
+      : config.javaBuildTool === "maven"
+        ? "├── .mvn/                  # Maven Wrapper configuration"
+        : null,
+    config.javaBuildTool === "gradle"
+      ? "├── gradlew                # Gradle Wrapper launcher"
+      : config.javaBuildTool === "maven"
+        ? "├── mvnw                   # Maven Wrapper launcher"
+        : null,
+    config.javaBuildTool === "gradle"
+      ? "├── build.gradle.kts       # Gradle build definition"
+      : config.javaBuildTool === "maven"
+        ? "├── pom.xml                # Build and dependency configuration"
+        : null,
+    "├── src/main/java/         # Application source code",
+    isSpringBoot ? "├── src/main/resources/    # Spring configuration" : null,
+    isQuarkus ? "├── src/main/java/*/resource/ # Quarkus REST resources" : null,
+  ].filter(Boolean) as string[];
+
+  if (testingLibraries.length > 0) {
+    structureLines.push("├── src/test/java/         # Test suite");
+  }
+
+  return `# ${config.projectName}
+
+This project was created with [Better Fullstack](https://github.com/Marve10s/Better-Fullstack) for the Java ecosystem.
+
+## Stack
+
+${features.map((feature) => `- ${feature}`).join("\n")}
+
+## Getting Started
+
+Make sure Java 21 or newer is installed.
+
+${
+  testCommand
+    ? `Run the test suite:
+
+\`\`\`bash
+${testCommand}
+\`\`\`
+
+`
+    : ""
+}${
+    buildToolCommand && runCommand
+      ? `${isSpringBoot ? "Start the Spring Boot application" : isQuarkus ? "Start the Quarkus dev server" : "Run the application"}:
+
+\`\`\`bash
+${runCommand}
+\`\`\`
+
+`
+      : compileCommand && sourceOnlyRunCommand
+        ? `Compile the application:
+
+\`\`\`bash
+${compileCommand}
+\`\`\`
+
+Run the application:
+
+\`\`\`bash
+${sourceOnlyRunCommand}
+\`\`\`
+
+`
+        : ""
+  }${isSpringBoot ? "The health endpoint is available at `http://localhost:8080/health`.\n" : ""}
+${isQuarkus ? "The sample endpoint is available at `http://localhost:8080/hello`.\n" : ""}
+${
+  isSpringBoot && config.javaOrm === "spring-data-jpa"
+    ? "\nThe generated JPA example also exposes `GET /users` and `POST /users`, backed by an embedded H2 database.\n"
+    : ""
+}
+${
+  javaLibraries.includes("spring-actuator")
+    ? "\nSpring Actuator is enabled with `/actuator/health`, `/actuator/info`, and `/actuator/metrics`.\n"
+    : ""
+}
+${
+  javaLibraries.includes("springdoc-openapi")
+    ? "\nOpenAPI documentation is available at `/v3/api-docs`, with Swagger UI at `/swagger-ui.html`.\n"
+    : ""
+}
+${
+  javaLibraries.includes("caffeine")
+    ? "\nSpring Cache is enabled with Caffeine, and the sample cache endpoint is available at `GET /cache/time`.\n"
+    : ""
+}
+${
+  javaLibraries.includes("resilience4j")
+    ? "\nResilience4j is available for circuit breakers, retries, rate limiters, and bulkheads.\n"
+    : ""
+}
+${
+  javaLibraries.includes("mapstruct") && config.javaOrm === "spring-data-jpa"
+    ? "\nMapStruct is configured with a generated mapper example for the JPA user DTO.\n"
+    : javaLibraries.includes("mapstruct")
+      ? "\nMapStruct is configured for compile-time DTO and object mapping.\n"
+      : ""
+}
+${
+  isSpringBoot && config.javaAuth === "spring-security"
+    ? "\n## Authentication\n\nHTTP Basic auth protects application endpoints except `/health`.\n\nSet these environment variables before running locally:\n\n- `APP_BASIC_USERNAME`\n- `APP_BASIC_PASSWORD`\n"
+    : ""
+}
+
+## Project Structure
+
+\`\`\`
+${structureLines.join("\n")}
+\`\`\`
+
+## Common Commands
+
+${
+  buildToolCommand && runCommand && packageCommand
+    ? `${testCommand ? `- \`${testCommand}\` - Run the test suite\n` : ""}- \`${runCommand}\` - Start the application
+- \`${packageCommand}\` - Build the jar`
+    : compileCommand && sourceOnlyRunCommand
+      ? `- \`${compileCommand}\` - Compile the application
+- \`${sourceOnlyRunCommand}\` - Run the application`
+      : "- Configure Maven or Gradle before running build commands"
+}
+`;
+}
+
+function generateReadmeContent(options: ProjectConfig): string {
+  const {
+    projectName,
+    packageManager,
+    database,
+    auth,
+    addons = [],
+    orm = "drizzle",
+    runtime = "bun",
+    frontend = ["tanstack-router"],
+    backend = "hono",
+    api = "trpc",
+    webDeploy,
+    serverDeploy,
+    dbSetup,
+    examples = [],
+    ai = "none",
+  } = options;
+
+  const isConvex = backend === "convex";
+  const hasNative = frontend.some((f) =>
+    ["native-bare", "native-uniwind", "native-unistyles"].includes(f),
+  );
+  const hasWeb = hasWebFrontend(options);
+  const packageManagerRunCmd = `${packageManager} run`;
+  const webPort = String(getLocalWebDevPort(frontend));
+
+  const stackDescription = generateStackDescription(frontend, backend, api, isConvex);
+
+  return `# ${projectName}
+
+This project was created with [Better Fullstack](https://github.com/Marve10s/Better-Fullstack), a modern TypeScript stack${
+    stackDescription ? ` that combines ${stackDescription}` : ""
+  }.
+
+## Features
+
+${generateFeaturesList(database, auth, addons, orm, runtime, frontend, backend, api, options)}
+
+## Getting Started
+
+First, install the dependencies:
+
+\`\`\`bash
+${packageManager} install
+\`\`\`
+  ${
+    isConvex
+      ? `
+## Convex Setup
+
+This project uses Convex as a backend. You'll need to set up Convex before running the app:
+
+\`\`\`bash
+${packageManagerRunCmd} dev:setup
+\`\`\`
+
+Follow the prompts to create a new Convex project and connect it to your application.
+
+Copy environment variables from \`packages/backend/.env.local\` to \`apps/*/.env\`.
+${
+  auth === "clerk"
+    ? `
+### Clerk Authentication Setup
+
+- Follow the guide: [Convex + Clerk](https://docs.convex.dev/auth/clerk)
+- Set \`CLERK_JWT_ISSUER_DOMAIN\` in Convex Dashboard
+- Set \`CLERK_PUBLISHABLE_KEY\` in \`apps/*/.env\``
+    : ""
+}`
+      : generateDatabaseSetup(database, packageManagerRunCmd, orm, dbSetup, backend)
+  }
+  ${
+    !isConvex &&
+    backend === "self" &&
+    auth === "clerk" &&
+    (frontend.includes("next") || frontend.includes("tanstack-start"))
+      ? `
+## Clerk Authentication Setup
+
+- Create a Clerk application in the [Clerk Dashboard](https://dashboard.clerk.com/)
+- Set Clerk keys in \`apps/web/.env\`:
+  - \`${frontend.includes("next") ? "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" : "VITE_CLERK_PUBLISHABLE_KEY"}\`
+  - \`CLERK_SECRET_KEY\`
+- Clerk middleware and a protected \`/dashboard\` route are already generated`
+      : ""
+  }
+
+Then, run the development server:
+
+\`\`\`bash
+${packageManagerRunCmd} dev
+\`\`\`
+
+${generateRunningInstructions(frontend, backend, webPort, hasWeb, hasNative, isConvex)}
+${
+  options.botProtection === "turnstile"
+    ? `
+## Cloudflare Turnstile
+
+Create a Turnstile widget in Cloudflare, then set the generated public site key in the web app environment and \`TURNSTILE_SECRET_KEY\` in the server environment. Sign-in and sign-up tokens are verified with Cloudflare Siteverify before Better Auth handles the request.
+`
+    : options.botProtection === "botid"
+      ? `
+## Vercel BotID
+
+BotID is initialized for the generated authentication routes and requires deployment on Vercel. Enable BotID for the project in the Vercel dashboard; no application secret is required.
+`
+      : ""
+}
+${
+  options.analytics === "vercel-analytics"
+    ? `
+## Vercel Web Analytics
+
+The analytics component is already mounted and requires no environment variables. Enable Web Analytics for the project in the Vercel dashboard, then deploy to Vercel to begin collecting privacy-friendly page views.
+`
+    : ""
+}
+${ai === "ai-cli" ? `\n${generateAICLISection(packageManagerRunCmd, packageManager)}\n` : ""}
+${
+  examples.includes("chat-sdk")
+    ? `\n${generateChatSdkExampleSection(options, packageManagerRunCmd, webPort, ai)}\n`
+    : ""
+}
+  ${
+    addons.includes("pwa") && (frontend.includes("react-router") || frontend.includes("react-vite"))
+      ? "\n## PWA Support with React Router v7\n\nThere is a known compatibility issue between VitePWA and React Router v7.\nSee: https://github.com/vite-pwa/vite-plugin-pwa/issues/809\n"
+      : ""
+  }
+${generateDeploymentCommands(packageManagerRunCmd, webDeploy, serverDeploy)}
+${generateGitHooksSection(packageManagerRunCmd, addons)}
+
+## Project Structure
+
+\`\`\`
+${generateProjectStructure(projectName, frontend, backend, addons, isConvex, api, auth)}
+\`\`\`
+
+## Available Scripts
+
+${generateScriptsList(packageManagerRunCmd, database, orm, hasWeb, hasNative, addons, backend, dbSetup)}
+`;
+}
+
+function generateAICLISection(
+  packageManagerRunCmd: string,
+  packageManager: ProjectConfig["packageManager"],
+): string {
+  const runPrefix = `${packageManagerRunCmd}`;
+  const dotenvNote =
+    packageManager === "bun"
+      ? "Bun loads the root `.env` file automatically for these scripts."
+      : "If your package manager does not load `.env` automatically, export the variables in your shell before running these commands.";
+
+  return `## AI CLI
+
+This project includes [AI CLI](https://github.com/vercel-labs/ai-cli), exposed through root package scripts for text, image, video, model discovery, and shell completions.
+
+### API keys
+
+Set at least one API key in the root \`.env\` file:
+
+\`\`\`bash
+AI_GATEWAY_API_KEY=your_vercel_ai_gateway_key
+# or use a provider-specific key:
+OPENAI_API_KEY=your_openai_key
+\`\`\`
+
+Optional defaults are also generated in \`.env\`:
+
+\`\`\`bash
+AI_CLI_TEXT_MODEL=openai/gpt-5.5
+AI_CLI_IMAGE_MODEL=openai/gpt-image-2
+AI_CLI_VIDEO_MODEL=bytedance/seedance-2.0
+AI_CLI_OUTPUT_DIR=ai-output
+\`\`\`
+
+${dotenvNote}
+
+### Commands
+
+\`\`\`bash
+${runPrefix} ai:text -- "summarize this repository"
+${runPrefix} ai:image -- "a product screenshot in a clean dashboard style" --output ai-output
+${runPrefix} ai:video -- "animate this product concept" --output ai-output
+${runPrefix} ai:models -- --type text
+${runPrefix} ai:completions -- zsh
+\`\`\`
+
+You can pipe local context into text generation:
+
+\`\`\`bash
+git diff | ${runPrefix} ai:text -- "explain these changes"
+cat notes.md | ${runPrefix} ai:text -- "turn this into release notes"
+\`\`\`
+
+Use \`--model\` to override the default model for a single command:
+
+\`\`\`bash
+${runPrefix} ai:text -- --model openai/gpt-5.5 "write a concise PR summary"
+\`\`\``;
+}
+
+function generateChatSdkExampleSection(
+  options: ProjectConfig,
+  packageManagerRunCmd: string,
+  webPort: string,
+  ai: ProjectConfig["ai"],
+): string {
+  const { backend, frontend, runtime } = options;
+  const isNextSlack = backend === "self" && frontend.includes("next");
+  const isTanStackStartSlack = backend === "self" && frontend.includes("tanstack-start");
+  const isNuxtDiscord = backend === "self" && frontend.includes("nuxt");
+  const isHonoGithub = backend === "hono" && runtime === "node";
+
+  if (!isNextSlack && !isTanStackStartSlack && !isNuxtDiscord && !isHonoGithub) {
+    return "";
+  }
+
+  if (isNextSlack || isTanStackStartSlack) {
+    return `## Chat SDK Example (Slack Bot)
+
+This project includes a Chat SDK Slack bot example using \`@chat-adapter/state-memory\` for local development.
+
+### Environment variables
+
+Set these in \`apps/web/.env\`:
+
+- \`SLACK_BOT_TOKEN\`
+- \`SLACK_SIGNING_SECRET\`
+- Optional: \`BOT_USERNAME\`
+
+### Local setup
+
+1. Start the app: \`${packageManagerRunCmd} dev\`
+2. Expose the app with a tunnel (for example, ngrok)
+3. Point Slack Event Subscriptions + Interactivity to \`/api/webhooks/slack\`
+4. Mention your bot in a channel to start a thread
+
+### Production note
+
+The generated example uses in-memory state. For production, switch to \`@chat-adapter/state-redis\` and set \`REDIS_URL\`.
+
+### Docs
+
+- https://chat-sdk.dev/docs/guides/slack-nextjs
+- https://chat-sdk.dev/docs/adapters/slack
+`;
+  }
+
+  if (isNuxtDiscord) {
+    return `## Chat SDK Example (Discord Support Bot)
+
+This project includes a Chat SDK Discord bot example with a Gateway forwarder route and an AI response flow.
+
+### Environment variables
+
+Set these in \`apps/web/.env\`:
+
+- \`DISCORD_BOT_TOKEN\`
+- \`DISCORD_PUBLIC_KEY\`
+- \`DISCORD_APPLICATION_ID\`
+- \`ANTHROPIC_API_KEY\`
+- \`NUXT_PUBLIC_SITE_URL\`
+
+The Chat SDK Nuxt Discord profile is scaffolded with \`ai=vercel-ai\` in v1${ai === "vercel-ai" ? " (already selected)." : "."}
+
+### Local setup
+
+1. Start the app: \`${packageManagerRunCmd} dev\`
+2. Open \`http://localhost:${webPort}/api/discord/gateway\` to start the Gateway listener
+3. Expose the app with a tunnel
+4. Set your Discord Interactions Endpoint URL to \`/api/webhooks/discord\`
+5. Mention the bot in your Discord server
+
+### Production note
+
+The generated example uses in-memory state. For production, switch to \`@chat-adapter/state-redis\` and set \`REDIS_URL\`.
+
+The Gateway listener runs for a limited duration. Configure a cron job to hit \`/api/discord/gateway\` periodically (for example every 9 minutes). Better-Fullstack does not generate Vercel cron config for this in v1.
+
+### Docs
+
+- https://chat-sdk.dev/docs/guides/discord-nuxt
+- https://chat-sdk.dev/docs/adapters/discord
+`;
+  }
+
+  return `## Chat SDK Example (GitHub Review Bot)
+
+This project includes a Chat SDK GitHub pull request review bot example on Hono with a Vercel Sandbox-based review helper.
+
+### Environment variables
+
+Set these in \`apps/server/.env\`:
+
+- \`GITHUB_TOKEN\`
+- \`GITHUB_WEBHOOK_SECRET\`
+- Optional: \`BOT_USERNAME\`
+
+### Local setup
+
+1. Start the server: \`${packageManagerRunCmd} dev\`
+2. Expose it with a tunnel
+3. Configure your GitHub repository webhook to \`/api/webhooks/github\`
+4. Mention the bot in a PR comment or review thread
+
+### Production note
+
+The generated example uses in-memory state. For production, switch to \`@chat-adapter/state-redis\` and set \`REDIS_URL\`.
+
+The review helper depends on \`@vercel/sandbox\` and \`bash-tool\` to inspect diffs and repo files. Review the upstream guide before productionizing the workflow.
+
+### Docs
+
+- https://chat-sdk.dev/docs/guides/code-review-hono
+- https://chat-sdk.dev/docs/adapters/github
+`;
+}
+
+function generateStackDescription(
+  frontend: ProjectConfig["frontend"],
+  backend: ProjectConfig["backend"],
+  api: ProjectConfig["api"],
+  isConvex: boolean,
+): string {
+  const parts: string[] = [];
+
+  const frontendMap: Record<string, string> = {
+    "tanstack-router": "React, TanStack Router",
+    "react-router": "React, React Router",
+    "react-vite": "React, Vite SPA",
+    "vanilla-vite": "Vanilla TypeScript, Vite",
+    vue: "Vue 3, Vite",
+    next: "Next.js",
+    "tanstack-start": "React, TanStack Start",
+    svelte: "SvelteKit",
+    nuxt: "Nuxt",
+    solid: "SolidJS",
+  };
+
+  for (const fe of frontend) {
+    if (frontendMap[fe]) {
+      parts.push(frontendMap[fe]);
+      break;
+    }
+  }
+
+  if (backend !== "none") {
+    parts.push((backend[0]?.toUpperCase() ?? "") + backend.slice(1));
+  }
+
+  if (!isConvex && api !== "none") {
+    parts.push(api.toUpperCase());
+  }
+
+  return parts.length > 0 ? `${parts.join(", ")}, and more` : "";
+}
+
+function generateRunningInstructions(
+  frontend: ProjectConfig["frontend"],
+  backend: ProjectConfig["backend"],
+  webPort: string,
+  hasWeb: boolean,
+  hasNative: boolean,
+  isConvex: boolean,
+): string {
+  const instructions: string[] = [];
+  const isBackendSelf = backend === "self";
+
+  if (hasWeb) {
+    const desc = isBackendSelf ? "fullstack application" : "web application";
+    instructions.push(
+      `Open [http://localhost:${webPort}](http://localhost:${webPort}) in your browser to see the ${desc}.`,
+    );
+  }
+
+  if (hasNative) {
+    instructions.push("Use the Expo Go app to run the mobile application.");
+  }
+
+  if (isConvex) {
+    instructions.push("Your app will connect to the Convex cloud backend automatically.");
+  } else if (backend !== "none" && !isBackendSelf) {
+    instructions.push("The API is running at [http://localhost:3000](http://localhost:3000).");
+  }
+
+  return instructions.join("\n");
+}
+
+function generateProjectStructure(
+  projectName: string,
+  frontend: ProjectConfig["frontend"],
+  backend: ProjectConfig["backend"],
+  addons: ProjectConfig["addons"],
+  isConvex: boolean,
+  api: ProjectConfig["api"],
+  auth: ProjectConfig["auth"],
+): string {
+  const structure: string[] = [`${projectName}/`, "├── apps/"];
+  const hasWeb = hasWebFrontend({ frontend });
+  const isBackendSelf = backend === "self";
+  const hasNative = frontend.some((f) =>
+    ["native-bare", "native-uniwind", "native-unistyles"].includes(f),
+  );
+
+  if (hasWeb) {
+    const frontendTypes: Record<string, string> = {
+      "tanstack-router": "React + TanStack Router",
+      "react-router": "React + React Router",
+      "react-vite": "React + Vite SPA",
+      "vanilla-vite": "Vite + Vanilla TypeScript",
+      vue: "Vue 3 + Vite",
+      next: "Next.js",
+      "tanstack-start": "React + TanStack Start",
+      svelte: "SvelteKit",
+      nuxt: "Nuxt",
+      solid: "SolidJS",
+    };
+    const frontendType = frontend.find((f) => frontendTypes[f])
+      ? frontendTypes[frontend.find((f) => frontendTypes[f]) || ""]
+      : "";
+
+    const prefix = isBackendSelf ? "└──" : "├──";
+    const desc = isBackendSelf ? "Fullstack application" : "Frontend application";
+    structure.push(`│   ${prefix} web/         # ${desc} (${frontendType})`);
+  }
+
+  if (hasNative) {
+    structure.push(
+      `│   ${hasWeb ? "├──" : "└──"} native/      # Mobile application (React Native, Expo)`,
+    );
+  }
+
+  if (addons.includes("starlight")) {
+    structure.push("│   ├── docs/        # Documentation site (Astro Starlight)");
+  }
+
+  if (!isBackendSelf && backend !== "none" && !isConvex) {
+    const backendName = (backend[0]?.toUpperCase() ?? "") + backend.slice(1);
+    const apiName = api !== "none" ? api.toUpperCase() : "";
+    const desc = apiName ? `${backendName}, ${apiName}` : backendName;
+    structure.push(`│   └── server/      # Backend API (${desc})`);
+  }
+
+  if (isConvex || backend !== "none") {
+    structure.push("├── packages/");
+
+    if (isConvex) {
+      structure.push("│   ├── backend/     # Convex backend functions and schema");
+      if (auth === "clerk") {
+        structure.push(
+          "│   │   ├── convex/    # Convex functions and schema",
+          "│   │   └── .env.local # Convex environment variables",
+        );
+      }
+    }
+
+    if (!isConvex) {
+      structure.push("│   ├── api/         # API layer / business logic");
+      if (auth !== "none") {
+        structure.push("│   ├── auth/        # Authentication configuration & logic");
+      }
+      if (api !== "none" || auth !== "none") {
+        structure.push("│   └── db/          # Database schema & queries");
+      }
+    }
+  }
+
+  return structure.join("\n");
+}
+
+function generateFeaturesList(
+  database: ProjectConfig["database"],
+  auth: ProjectConfig["auth"],
+  addons: ProjectConfig["addons"],
+  orm: ProjectConfig["orm"],
+  runtime: ProjectConfig["runtime"],
+  frontend: ProjectConfig["frontend"],
+  backend: ProjectConfig["backend"],
+  api: ProjectConfig["api"],
+  options: ProjectConfig,
+): string {
+  const isConvex = backend === "convex";
+  const hasNative = frontend.some((f) =>
+    ["native-bare", "native-uniwind", "native-unistyles"].includes(f),
+  );
+  const hasFrontend = frontend.length > 0 && !frontend.includes("none");
+
+  const features = ["- **TypeScript** - For type safety and improved developer experience"];
+
+  const frontendFeatures: Record<string, string> = {
+    "tanstack-router": "- **TanStack Router** - File-based routing with full type safety",
+    "react-router": "- **React Router** - Declarative routing for React",
+    "react-vite": "- **React + Vite** - Client-routed React SPA powered by Vite",
+    "vanilla-vite": "- **Vite + TypeScript** - Framework-free TypeScript SPA powered by Vite",
+    vue: "- **Vue 3 + Vite** - Standalone Vue SPA with first-class TypeScript support",
+    next: "- **Next.js** - Full-stack React framework",
+    "tanstack-start": "- **TanStack Start** - SSR framework with TanStack Router",
+    svelte: "- **SvelteKit** - Web framework for building Svelte apps",
+    nuxt: "- **Nuxt** - The Intuitive Vue Framework",
+    solid: "- **SolidJS** - Simple and performant reactivity",
+  };
+
+  for (const fe of frontend) {
+    if (frontendFeatures[fe]) {
+      features.push(frontendFeatures[fe]);
+      break;
+    }
+  }
+
+  if (hasNative) {
+    features.push(
+      "- **React Native** - Build mobile apps using React",
+      "- **Expo** - Tools for React Native development",
+    );
+  }
+
+  if (hasFrontend) {
+    const cssNames: Record<string, string> = {
+      tailwind: "TailwindCSS",
+      scss: "SCSS",
+      less: "Less",
+      "postcss-only": "PostCSS",
+    };
+    const cssName = cssNames[options.cssFramework || ""] || options.cssFramework;
+    if (cssName && options.cssFramework !== "none") {
+      features.push(`- **${cssName}** - CSS framework`);
+    }
+
+    const uiNames: Record<string, string> = {
+      "shadcn-ui": "shadcn/ui",
+      "shadcn-svelte": "shadcn-svelte",
+      daisyui: "daisyUI",
+      mantine: "Mantine",
+      "radix-ui": "Radix UI",
+      "headless-ui": "Headless UI",
+      "chakra-ui": "Chakra UI",
+      mui: "MUI",
+      antd: "Ant Design",
+      "base-ui": "Base UI",
+      "park-ui": "Park UI",
+      "ark-ui": "Ark UI",
+      "react-aria": "React Aria",
+      nextui: "HeroUI",
+    };
+    const uiName = uiNames[options.uiLibrary || ""];
+    if (uiName) {
+      features.push(`- **${uiName}** - UI components`);
+    }
+  }
+
+  const backendFeatures: Record<string, string> = {
+    convex: "- **Convex** - Reactive backend-as-a-service platform",
+    hono: "- **Hono** - Lightweight, performant server framework",
+    express: "- **Express** - Fast, unopinionated web framework",
+    fastify: "- **Fastify** - Fast, low-overhead web framework",
+    elysia: "- **Elysia** - Type-safe, high-performance framework",
+  };
+
+  if (backendFeatures[backend]) {
+    features.push(backendFeatures[backend]);
+  }
+
+  if (!isConvex && api === "trpc") {
+    features.push("- **tRPC** - End-to-end type-safe APIs");
+  } else if (!isConvex && api === "orpc") {
+    features.push("- **oRPC** - End-to-end type-safe APIs with OpenAPI integration");
+  }
+
+  if (!isConvex && backend !== "none" && runtime !== "none") {
+    const runtimeName = runtime === "bun" ? "Bun" : runtime === "node" ? "Node.js" : runtime;
+    features.push(`- **${runtimeName}** - Runtime environment`);
+  }
+
+  if (database !== "none" && !isConvex) {
+    const ormNames: Record<string, string> = {
+      drizzle: "Drizzle",
+      prisma: "Prisma",
+      mongoose: "Mongoose",
+    };
+    const dbNames: Record<string, string> = {
+      sqlite: "SQLite/Turso",
+      postgres: "PostgreSQL",
+      mysql: "MySQL",
+      mongodb: "MongoDB",
+    };
+    features.push(
+      `- **${ormNames[orm] || "ORM"}** - TypeScript-first ORM`,
+      `- **${dbNames[database] || "Database"}** - Database engine`,
+    );
+  }
+
+  if (auth !== "none") {
+    const authNames: Record<string, string> = {
+      "better-auth": "Better Auth",
+      clerk: "Clerk",
+      nextauth: "NextAuth.js",
+      "supabase-auth": "Supabase Auth",
+      auth0: "Auth0",
+      "stack-auth": "Stack Auth",
+    };
+    const authLabel = authNames[auth] || auth;
+    features.push(`- **Authentication** - ${authLabel}`);
+  }
+
+  const addonFeatures: Record<string, string> = {
+    pwa: "- **PWA** - Progressive Web App support",
+    tauri: "- **Tauri** - Build native desktop applications",
+    biome: "- **Biome** - Linting and formatting",
+    oxlint: "- **Oxlint** - Oxlint + Oxfmt (linting & formatting)",
+    husky: "- **Husky** - Git hooks for code quality",
+    starlight: "- **Starlight** - Documentation site with Astro",
+    turborepo: "- **Turborepo** - Optimized monorepo build system",
+    "vite-plus": "- **Vite+** - Unified web toolchain and workspace runner",
+    msw: "- **MSW** - Mock Service Worker for API mocking",
+    storybook: "- **Storybook** - Component development and testing",
+    swr: "- **SWR** - React Hooks for data fetching and caching",
+    "tanstack-query": "- **TanStack Query** - Async state management & data fetching",
+    "tanstack-table": "- **TanStack Table** - Headless table with sorting, filtering & pagination",
+    "tanstack-virtual": "- **TanStack Virtual** - Virtualized lists & grids for 60fps performance",
+    "tanstack-db": "- **TanStack DB** - Reactive client-first data store",
+    "tanstack-pacer": "- **TanStack Pacer** - Debounce, throttle & rate-limit utilities",
+  };
+
+  for (const addon of addons) {
+    if (addonFeatures[addon]) {
+      features.push(addonFeatures[addon]);
+    }
+  }
+
+  return features.join("\n");
+}
+
+function generateDatabaseSetup(
+  database: ProjectConfig["database"],
+  packageManagerRunCmd: string,
+  orm: ProjectConfig["orm"],
+  dbSetup: ProjectConfig["dbSetup"],
+  backend: ProjectConfig["backend"],
+): string {
+  if (database === "none") return "";
+
+  const isBackendSelf = backend === "self";
+  const envPath = isBackendSelf ? "apps/web/.env" : "apps/server/.env";
+  const ormDesc =
+    orm === "drizzle" ? " with Drizzle ORM" : orm === "prisma" ? " with Prisma" : ` with ${orm}`;
+
+  let setup = "## Database Setup\n\n";
+
+  const dbDescriptions: Record<string, string> = {
+    sqlite: `This project uses SQLite${ormDesc}.
+
+1. Start the local SQLite database (optional):
+${
+  dbSetup === "d1"
+    ? "D1 local development and migrations are handled automatically by Alchemy during dev and deploy."
+    : `\`\`\`bash
+${packageManagerRunCmd} db:local
+\`\`\``
+}
+
+2. Update your \`.env\` file in the \`${isBackendSelf ? "apps/web" : "apps/server"}\` directory with the appropriate connection details if needed.`,
+
+    postgres: `This project uses PostgreSQL${ormDesc}.
+
+1. Make sure you have a PostgreSQL database set up.
+2. Update your \`${envPath}\` file with your PostgreSQL connection details.`,
+
+    mysql: `This project uses MySQL${ormDesc}.
+
+1. Make sure you have a MySQL database set up.
+2. Update your \`${envPath}\` file with your MySQL connection details.`,
+
+    mongodb: `This project uses MongoDB ${ormDesc.replace(" with ", "with ")}.
+
+1. Make sure you have MongoDB set up.
+2. Update your \`${envPath}\` file with your MongoDB connection URI.`,
+  };
+
+  setup += dbDescriptions[database] || "";
+
+  setup += `
+
+3. Apply the schema to your database:
+\`\`\`bash
+${packageManagerRunCmd} db:push
+\`\`\`
+`;
+
+  return setup;
+}
+
+function generateScriptsList(
+  packageManagerRunCmd: string,
+  database: ProjectConfig["database"],
+  orm: ProjectConfig["orm"],
+  hasWeb: boolean,
+  hasNative: boolean,
+  addons: ProjectConfig["addons"],
+  backend: ProjectConfig["backend"],
+  dbSetup: ProjectConfig["dbSetup"],
+): string {
+  const isConvex = backend === "convex";
+  const isBackendSelf = backend === "self";
+
+  let scripts = `- \`${packageManagerRunCmd} dev\`: Start all applications in development mode
+- \`${packageManagerRunCmd} build\`: Build all applications`;
+
+  if (hasWeb && !isBackendSelf) {
+    scripts += `\n- \`${packageManagerRunCmd} dev:web\`: Start only the web application`;
+  }
+
+  if (isConvex) {
+    scripts += `\n- \`${packageManagerRunCmd} dev:setup\`: Setup and configure your Convex project`;
+  } else if (backend !== "none" && !isBackendSelf) {
+    scripts += `\n- \`${packageManagerRunCmd} dev:server\`: Start only the server`;
+  }
+
+  scripts += `\n- \`${packageManagerRunCmd} check-types\`: Check TypeScript types across all apps`;
+
+  if (hasNative) {
+    scripts += `\n- \`${packageManagerRunCmd} dev:native\`: Start the React Native/Expo development server`;
+  }
+
+  if (database !== "none" && !isConvex) {
+    scripts += `\n- \`${packageManagerRunCmd} db:push\`: Push schema changes to database
+- \`${packageManagerRunCmd} db:studio\`: Open database studio UI`;
+
+    if (database === "sqlite" && dbSetup !== "d1") {
+      scripts += `\n- \`${packageManagerRunCmd} db:local\`: Start the local SQLite database`;
+    }
+  }
+
+  if (addons.includes("biome")) {
+    scripts += `\n- \`${packageManagerRunCmd} check\`: Run Biome formatting and linting`;
+  }
+
+  if (addons.includes("oxlint")) {
+    scripts += `\n- \`${packageManagerRunCmd} check\`: Run Oxlint and Oxfmt`;
+  }
+
+  if (addons.includes("pwa")) {
+    scripts += `\n- \`cd apps/web && ${packageManagerRunCmd} generate-pwa-assets\`: Generate PWA assets`;
+  }
+
+  if (addons.includes("tauri")) {
+    scripts += `\n- \`cd apps/web && ${packageManagerRunCmd} desktop:dev\`: Start Tauri desktop app in development
+- \`cd apps/web && ${packageManagerRunCmd} desktop:build\`: Build Tauri desktop app`;
+  }
+
+  if (addons.includes("starlight")) {
+    scripts += `\n- \`cd apps/docs && ${packageManagerRunCmd} dev\`: Start documentation site
+- \`cd apps/docs && ${packageManagerRunCmd} build\`: Build documentation site`;
+  }
+
+  return scripts;
+}
+
+function generateDeploymentCommands(
+  packageManagerRunCmd: string,
+  webDeploy: ProjectConfig["webDeploy"],
+  serverDeploy: ProjectConfig["serverDeploy"],
+): string {
+  if (webDeploy !== "cloudflare" && serverDeploy !== "cloudflare") {
+    return "";
+  }
+
+  const lines: string[] = ["## Deployment (Cloudflare via Alchemy)"];
+
+  if (webDeploy === "cloudflare" && serverDeploy !== "cloudflare") {
+    lines.push(
+      `- Dev: cd apps/web && ${packageManagerRunCmd} alchemy dev`,
+      `- Deploy: cd apps/web && ${packageManagerRunCmd} deploy`,
+      `- Destroy: cd apps/web && ${packageManagerRunCmd} destroy`,
+    );
+  }
+
+  if (serverDeploy === "cloudflare" && webDeploy !== "cloudflare") {
+    lines.push(
+      `- Dev: cd apps/server && ${packageManagerRunCmd} dev`,
+      `- Deploy: cd apps/server && ${packageManagerRunCmd} deploy`,
+      `- Destroy: cd apps/server && ${packageManagerRunCmd} destroy`,
+    );
+  }
+
+  if (webDeploy === "cloudflare" && serverDeploy === "cloudflare") {
+    lines.push(
+      `- Dev: ${packageManagerRunCmd} dev`,
+      `- Deploy: ${packageManagerRunCmd} deploy`,
+      `- Destroy: ${packageManagerRunCmd} destroy`,
+    );
+  }
+
+  lines.push(
+    "",
+    "For more details, see the guide on [Deploying to Cloudflare with Alchemy](https://better-fullstack-web.vercel.app/docs/guides/cloudflare-alchemy).",
+  );
+
+  return `${lines.join("\n")}\n`;
+}
+
+function generateGitHooksSection(
+  packageManagerRunCmd: string,
+  addons: ProjectConfig["addons"],
+): string {
+  const hasHusky = addons.includes("husky");
+  const hasLinting = addons.includes("biome") || addons.includes("oxlint");
+
+  if (!hasHusky && !hasLinting) {
+    return "";
+  }
+
+  const lines: string[] = ["## Git Hooks and Formatting", ""];
+
+  if (hasHusky) {
+    lines.push(`- Initialize hooks: \`${packageManagerRunCmd} prepare\``);
+  }
+
+  if (hasLinting) {
+    lines.push(`- Format and lint fix: \`${packageManagerRunCmd} check\``);
+  }
+
+  return `${lines.join("\n")}\n\n`;
+}
+
+function generateRustReadmeContent(config: ProjectConfig): string {
+  const { projectName, rustWebFramework, rustFrontend, rustOrm, rustApi, rustCli, rustLibraries } =
+    config;
+
+  const features: string[] = ["- **Rust** - Memory-safe, high-performance systems programming"];
+
+  // Web framework
+  if (rustWebFramework === "axum") {
+    features.push("- **Axum** - Ergonomic and modular web framework by Tokio team");
+  } else if (rustWebFramework === "actix-web") {
+    features.push("- **Actix-web** - Powerful, pragmatic, and extremely fast web framework");
+  } else if (rustWebFramework === "rocket") {
+    features.push("- **Rocket** - Convention-over-configuration web framework for Rust");
+  } else if (rustWebFramework === "poem") {
+    features.push("- **Poem** - Full-featured async web framework built on Tokio and Hyper");
+  } else if (rustWebFramework === "loco") {
+    features.push("- **Loco** - Opinionated Rails-inspired application framework");
+  } else if (rustWebFramework === "warp") {
+    features.push("- **Warp** - Composable filter-based async web framework");
+  } else if (rustWebFramework === "salvo") {
+    features.push("- **Salvo** - Batteries-included async web framework");
+  }
+
+  // Frontend
+  if (rustFrontend === "leptos") {
+    features.push("- **Leptos** - Fine-grained reactive framework with SSR support");
+    features.push("- **WebAssembly** - High-performance frontend compiled from Rust");
+  } else if (rustFrontend === "dioxus") {
+    features.push("- **Dioxus** - React-like GUI library for web, desktop, and mobile");
+    features.push("- **WebAssembly** - High-performance frontend compiled from Rust");
+  } else if (rustFrontend === "yew") {
+    features.push("- **Yew** - Mature React-like framework for Rust and WebAssembly");
+    features.push("- **WebAssembly** - High-performance frontend compiled from Rust");
+  }
+
+  // ORM
+  if (rustOrm === "sea-orm") {
+    features.push("- **SeaORM** - Async & dynamic ORM with ActiveRecord pattern");
+  } else if (rustOrm === "sqlx") {
+    features.push("- **SQLx** - Async SQL toolkit with compile-time checked queries");
+  } else if (rustOrm === "diesel") {
+    features.push("- **Diesel** - Safe, extensible ORM with compile-time query validation");
+  } else if (rustOrm === "mongodb") {
+    features.push("- **MongoDB Rust Driver** - Official async BSON document database client");
+  } else if (rustOrm === "rusqlite") {
+    features.push("- **rusqlite** - Ergonomic embedded SQLite access");
+  } else if (rustOrm === "tokio-postgres") {
+    features.push("- **tokio-postgres** - Native asynchronous PostgreSQL client");
+  }
+
+  // API
+  if (rustApi === "tonic") {
+    features.push("- **Tonic** - Production-ready gRPC implementation");
+  } else if (rustApi === "async-graphql") {
+    features.push("- **async-graphql** - High-performance GraphQL server");
+  } else if (rustApi === "jsonrpsee") {
+    features.push("- **jsonrpsee** - Async JSON-RPC server on a dedicated port");
+  }
+
+  // CLI
+  if (rustCli === "clap") {
+    features.push("- **Clap** - CLI argument parser with derive macros");
+  } else if (rustCli === "ratatui") {
+    features.push("- **Ratatui** - Terminal user interface library");
+  }
+
+  // Libraries
+  const libs = Array.isArray(rustLibraries) ? rustLibraries : [];
+  if (libs.includes("uuid")) {
+    features.push("- **uuid** - UUID generation and parsing with Serde support");
+  }
+  if (libs.includes("chrono")) {
+    features.push("- **Chrono** - Date and time handling with Serde support");
+  }
+  if (libs.includes("reqwest")) {
+    features.push("- **Reqwest** - Ergonomic async HTTP client");
+  }
+  if (libs.includes("config")) {
+    features.push("- **config** - Layered app configuration from files and environment");
+  }
+  if (libs.includes("validator")) {
+    features.push("- **Validator** - Derive-based validation");
+  }
+  if (libs.includes("jsonwebtoken")) {
+    features.push("- **jsonwebtoken** - JWT encoding/decoding");
+  }
+  if (libs.includes("argon2")) {
+    features.push("- **Argon2** - Secure password hashing");
+  }
+  if (libs.includes("tokio-test")) {
+    features.push("- **Tokio Test** - Async testing utilities");
+  }
+  if (libs.includes("rand")) features.push("- **rand** - Randomness and sampling");
+  if (libs.includes("regex")) features.push("- **regex** - Safe linear-time regular expressions");
+  if (libs.includes("rayon")) features.push("- **Rayon** - Data parallel iterators");
+  if (libs.includes("itertools")) features.push("- **Itertools** - Extended iterator utilities");
+  if (libs.includes("rstest")) features.push("- **rstest** - Fixture and parameterized tests");
+  if (libs.includes("cargo-nextest")) {
+    features.push("- **cargo-nextest** - Fast isolated test runner with CI profiles");
+  }
+  if (libs.includes("cargo-audit")) {
+    features.push("- **cargo-audit** - RustSec dependency vulnerability auditing");
+  }
+
+  // Logging
+  const { rustLogging } = config;
+  if (rustLogging === "tracing") {
+    features.push("- **Tracing** - Structured, composable instrumentation framework");
+  } else if (rustLogging === "env-logger") {
+    features.push("- **env_logger** - Simple logger configured via environment variables");
+  }
+
+  // Error handling
+  const { rustErrorHandling } = config;
+  if (rustErrorHandling === "anyhow-thiserror") {
+    features.push(
+      "- **anyhow + thiserror** - Application errors (anyhow) with custom error types (thiserror)",
+    );
+  } else if (rustErrorHandling === "eyre") {
+    features.push("- **eyre + color-eyre** - Customizable error reports with pretty backtraces");
+  }
+
+  // Caching
+  const { rustCaching } = config;
+  if (rustCaching === "moka") {
+    features.push("- **Moka** - High-performance concurrent in-memory cache (Caffeine-inspired)");
+  } else if (rustCaching === "redis") {
+    features.push("- **Redis** - Redis client with async support and connection pooling");
+  }
+
+  // Auth
+  const { rustAuth } = config;
+  if (rustAuth === "oauth2") {
+    features.push(
+      "- **OAuth2** - OAuth2 client with authorization code, PKCE, and token exchange flows",
+    );
+  } else if (rustAuth === "openidconnect") {
+    features.push("- **OpenID Connect** - Provider discovery and typed authorization flows");
+  } else if (rustAuth === "tower-sessions") {
+    features.push("- **tower-sessions** - Cookie-backed Axum session middleware");
+  }
+
+  // Project structure
+  const structure: string[] = [`${projectName}/`, "├── Cargo.toml            # Workspace manifest"];
+
+  if (rustFrontend === "leptos") {
+    structure.push(
+      "├── crates/",
+      "│   ├── server/           # Backend API server",
+      "│   │   ├── Cargo.toml",
+      "│   │   └── src/main.rs",
+      "│   └── client/           # Leptos WASM frontend",
+      "│       ├── Cargo.toml",
+      "│       ├── Trunk.toml    # Trunk build config",
+      "│       ├── index.html",
+      "│       ├── src/lib.rs",
+      "│       └── style/main.css",
+    );
+  } else if (rustFrontend === "dioxus") {
+    structure.push(
+      "├── crates/",
+      "│   ├── server/           # Backend API server",
+      "│   │   ├── Cargo.toml",
+      "│   │   └── src/main.rs",
+      "│   └── dioxus-client/    # Dioxus WASM frontend",
+      "│       ├── Cargo.toml",
+      "│       ├── Dioxus.toml   # Dioxus CLI config",
+      "│       ├── src/main.rs",
+      "│       └── assets/main.css",
+    );
+  } else if (rustFrontend === "yew") {
+    structure.push(
+      "├── crates/",
+      "│   ├── server/           # Backend API server",
+      "│   │   ├── Cargo.toml",
+      "│   │   └── src/main.rs",
+      "│   └── yew-client/       # Yew WASM frontend",
+      "│       ├── Cargo.toml",
+      "│       ├── Trunk.toml    # Trunk build config",
+      "│       ├── index.html",
+      "│       ├── src/main.rs",
+      "│       └── style/main.css",
+    );
+  } else {
+    structure.push(
+      "├── crates/",
+      "│   └── server/           # Backend API server",
+      "│       ├── Cargo.toml",
+      "│       └── src/main.rs",
+    );
+  }
+
+  structure.push(
+    "├── rust-toolchain.toml   # Rust version config",
+    "├── .env.example          # Environment variables",
+    "└── .gitignore",
+  );
+
+  // Scripts
+  let scripts = `- \`cargo build\`: Build all crates
+- \`cargo run --bin server\`: Run the server
+- \`cargo test\`: Run all tests
+- \`cargo clippy\`: Run linter
+- \`cargo fmt\`: Format code`;
+
+  if (rustFrontend === "leptos") {
+    scripts += `
+- \`cd crates/client && trunk serve\`: Start Leptos dev server
+- \`cd crates/client && trunk build --release\`: Build Leptos for production`;
+  } else if (rustFrontend === "dioxus") {
+    scripts += `
+- \`cd crates/dioxus-client && dx serve\`: Start Dioxus dev server
+- \`cd crates/dioxus-client && dx build --release\`: Build Dioxus for production`;
+  } else if (rustFrontend === "yew") {
+    scripts += `
+- \`cd crates/yew-client && trunk serve\`: Start Yew dev server
+- \`cd crates/yew-client && trunk build --release\`: Build Yew for production`;
+  }
+  if (libs.includes("cargo-nextest")) scripts += "\n- `cargo nextest run`: Run tests with nextest";
+  if (libs.includes("cargo-audit")) scripts += "\n- `cargo audit`: Audit dependencies with RustSec";
+
+  return `# ${projectName}
+
+This project was created with [Better Fullstack](https://github.com/Marve10s/Better-Fullstack), a high-performance Rust stack.
+
+## Features
+
+${features.join("\n")}
+
+## Prerequisites
+
+- [Rust](https://rustup.rs/) (stable toolchain)
+${rustFrontend === "leptos" || rustFrontend === "yew" ? "- [Trunk](https://trunkrs.dev/) (`cargo install trunk`)\n- [wasm32-unknown-unknown target](https://rustwasm.github.io/docs/book/) (`rustup target add wasm32-unknown-unknown`)" : ""}${rustFrontend === "dioxus" ? "- [Dioxus CLI](https://dioxuslabs.com/learn/0.6/getting_started) (`cargo install dioxus-cli`)\n- [wasm32-unknown-unknown target](https://rustwasm.github.io/docs/book/) (`rustup target add wasm32-unknown-unknown`)" : ""}${libs.includes("cargo-nextest") ? "\n- [cargo-nextest](https://nexte.st/) (`cargo install cargo-nextest --locked`)" : ""}${libs.includes("cargo-audit") ? "\n- [cargo-audit](https://rustsec.org/) (`cargo install cargo-audit --locked`)" : ""}
+
+## Getting Started
+
+First, copy the environment file:
+
+\`\`\`bash
+cp .env.example .env
+\`\`\`
+
+Then, build and run the server:
+
+\`\`\`bash
+cargo run --bin server
+\`\`\`
+
+${rustWebFramework !== "none" ? "The API server will be running at [http://localhost:3000](http://localhost:3000)." : ""}
+
+${
+  rustFrontend === "leptos"
+    ? `### Running the Frontend
+
+In a separate terminal, start the Leptos frontend:
+
+\`\`\`bash
+cd crates/client
+trunk serve
+\`\`\`
+
+The frontend will be available at [http://localhost:8080](http://localhost:8080).
+`
+    : ""
+}${
+    rustFrontend === "dioxus"
+      ? `### Running the Frontend
+
+In a separate terminal, start the Dioxus frontend:
+
+\`\`\`bash
+cd crates/dioxus-client
+dx serve
+\`\`\`
+
+The frontend will be available at [http://localhost:8080](http://localhost:8080).
+`
+      : ""
+  }${
+    rustFrontend === "yew"
+      ? `### Running the Frontend
+
+In a separate terminal, start the Yew frontend:
+
+\`\`\`bash
+cd crates/yew-client
+trunk serve
+\`\`\`
+
+The frontend will be available at [http://localhost:8080](http://localhost:8080).
+`
+      : ""
+  }
+## Project Structure
+
+\`\`\`
+${structure.join("\n")}
+\`\`\`
+
+## Available Commands
+
+${scripts}
+`;
+}
+
+function generatePythonReadmeContent(config: ProjectConfig): string {
+  const {
+    projectName,
+    pythonWebFramework,
+    pythonOrm,
+    pythonValidation,
+    pythonAi,
+    pythonApi,
+    pythonTaskQueue,
+    pythonQuality,
+    pythonTesting,
+    pythonCloudSdk,
+    pythonHttpClient,
+    pythonData,
+    pythonMedia,
+    pythonServer,
+    pythonPackageManager: configuredPythonPackageManager,
+    pythonMessageQueue,
+    pythonObservability,
+  } = config;
+
+  // Graph-derived and legacy configs may omit this recently introduced field.
+  // Keep generated docs aligned with the CLI's canonical Python default.
+  const pythonPackageManager = configuredPythonPackageManager ?? "uv";
+  const venvBin = process.platform === "win32" ? ".venv\\Scripts\\" : ".venv/bin/";
+  const venvPip = process.platform === "win32" ? ".venv/Scripts/pip.exe" : ".venv/bin/pip";
+
+  const runPrefix =
+    pythonPackageManager === "poetry"
+      ? "poetry run "
+      : pythonPackageManager === "uv"
+        ? "uv run "
+        : venvBin;
+  const runCommand = (command: string) => `${runPrefix}${command}`;
+  const installCommand =
+    pythonPackageManager === "poetry"
+      ? "poetry install --extras dev"
+      : pythonPackageManager === "uv"
+        ? "uv sync --extra dev"
+        : `${process.platform === "win32" ? "python" : "python3"} -m venv .venv && ${venvPip} install -e ".[dev]"`;
+
+  const features: string[] = ["- **Python** - Modern, readable programming language"];
+
+  // Web framework
+  if (pythonWebFramework === "fastapi") {
+    features.push("- **FastAPI** - Modern, fast (high-performance) async web framework");
+  } else if (pythonWebFramework === "django") {
+    features.push("- **Django** - High-level Python web framework with batteries included");
+  } else if (pythonWebFramework === "flask") {
+    features.push("- **Flask** - Lightweight WSGI web framework with minimal boilerplate");
+  } else if (pythonWebFramework === "litestar") {
+    features.push("- **Litestar** - High-performance ASGI framework with typed handlers");
+  } else if (pythonWebFramework === "starlette") {
+    features.push("- **Starlette** - Lightweight ASGI toolkit for async services");
+  } else if (pythonWebFramework === "aiohttp") {
+    features.push("- **aiohttp** - Async HTTP server and client framework");
+  } else if (pythonWebFramework === "streamlit") {
+    features.push("- **Streamlit** - Interactive data and AI application framework");
+  }
+
+  // ORM
+  if (pythonOrm === "sqlalchemy") {
+    features.push("- **SQLAlchemy** - The SQL toolkit and ORM for Python");
+    features.push("- **Alembic** - Database migrations for SQLAlchemy");
+  } else if (pythonOrm === "sqlmodel") {
+    features.push("- **SQLModel** - SQL databases with Pydantic and SQLAlchemy");
+    features.push("- **Alembic** - Database migrations");
+  } else if (pythonOrm === "tortoise-orm") {
+    features.push("- **Tortoise ORM** - Async-first Python ORM with Django-like API");
+    features.push("- **Aerich** - Database migrations for Tortoise ORM");
+  } else if (pythonOrm === "peewee") {
+    features.push("- **Peewee** - Small, expressive relational ORM");
+  } else if (pythonOrm === "pymongo") {
+    features.push("- **PyMongo** - Official MongoDB driver and database helpers");
+  }
+
+  // Validation
+  if (pythonValidation === "pydantic") {
+    features.push("- **Pydantic** - Data validation using Python type hints");
+    features.push("- **pydantic-settings** - Settings management with environment variables");
+  }
+
+  // AI/ML
+  const aiLibs = Array.isArray(pythonAi) ? pythonAi : [];
+  if (aiLibs.includes("langchain")) {
+    features.push("- **LangChain** - Building applications with LLMs through composability");
+    features.push("- **LangChain OpenAI** - OpenAI integration for LangChain");
+  }
+  if (aiLibs.includes("llamaindex")) {
+    features.push("- **LlamaIndex** - Data framework for LLM applications");
+  }
+  if (aiLibs.includes("openai-sdk")) {
+    features.push("- **OpenAI SDK** - Official OpenAI Python client");
+  }
+  if (aiLibs.includes("anthropic-sdk")) {
+    features.push("- **Anthropic SDK** - Official Claude API client");
+  }
+  if (aiLibs.includes("langgraph")) {
+    features.push("- **LangGraph** - Graph-based agent orchestration");
+  }
+  if (aiLibs.includes("crewai")) {
+    features.push("- **CrewAI** - Multi-agent orchestration framework");
+  }
+  if (aiLibs.includes("pytorch")) {
+    features.push("- **PyTorch** - Tensor computation and neural-network toolkit");
+  }
+  if (aiLibs.includes("transformers")) {
+    features.push("- **Transformers** - Hugging Face pretrained model pipelines");
+  }
+  if (aiLibs.includes("scikit-learn")) {
+    features.push("- **scikit-learn** - Classical machine-learning pipelines");
+  }
+  if (aiLibs.includes("tensorflow")) {
+    features.push("- **TensorFlow** - Keras-based deep-learning workflows");
+  }
+  if (aiLibs.includes("mcp")) {
+    features.push("- **MCP Python SDK** - Model Context Protocol server starter");
+  }
+
+  if (pythonCloudSdk === "boto3") features.push("- **Boto3** - AWS SDK with an S3 helper");
+  if (pythonHttpClient === "requests") {
+    features.push("- **Requests** - Retrying synchronous HTTP session helper");
+  }
+  if (pythonData.includes("numpy")) features.push("- **NumPy** - Numerical array utilities");
+  if (pythonData.includes("pandas")) features.push("- **pandas** - DataFrame utilities");
+  if (pythonData.includes("scipy")) features.push("- **SciPy** - Scientific statistics utilities");
+  if (pythonMedia === "pillow") features.push("- **Pillow** - Image thumbnail helper");
+  if (pythonServer === "gunicorn") features.push("- **Gunicorn** - Production process manager");
+  if (pythonPackageManager === "poetry") {
+    features.push("- **Poetry** - Dependency and environment management");
+  }
+  if (pythonMessageQueue === "confluent-kafka") {
+    features.push("- **Confluent Kafka** - JSON event producer helper");
+  }
+  if (pythonObservability === "prometheus-client") {
+    features.push("- **Prometheus Client** - Metrics counters and exposition helper");
+  } else if (pythonObservability === "signoz") {
+    features.push("- **SigNoz** - OpenTelemetry tracing with SigNoz-ready OTLP configuration");
+  } else if (pythonObservability === "opentelemetry") {
+    features.push("- **OpenTelemetry** - OTLP tracing and exporter configuration");
+  }
+  if (pythonTesting.includes("pytest-cov")) {
+    features.push("- **pytest-cov** - Coverage reports for the generated test suite");
+  }
+
+  // API framework
+  if (pythonApi === "django-rest-framework") {
+    features.push("- **Django REST Framework** - Mature toolkit for building Django REST APIs");
+  } else if (pythonApi === "django-ninja") {
+    features.push(
+      "- **Django Ninja** - FastAPI-style Django APIs with type hints and OpenAPI docs",
+    );
+  }
+
+  // Task queue
+  if (pythonTaskQueue === "celery") {
+    features.push("- **Celery** - Distributed task queue");
+  } else if (pythonTaskQueue === "rq") {
+    features.push("- **RQ** - Simple Redis-backed job queue");
+  }
+
+  // Quality
+  if (pythonQuality === "ruff") {
+    features.push("- **Ruff** - Extremely fast Python linter and formatter");
+  } else if (pythonQuality === "mypy") {
+    features.push("- **mypy** - Static type checker for Python");
+  } else if (pythonQuality === "pyright") {
+    features.push("- **Pyright** - Fast Python type checker");
+  }
+
+  // Project structure
+  const structure: string[] = [
+    `${projectName}/`,
+    "├── pyproject.toml        # Project configuration and dependencies",
+  ];
+
+  // Add Alembic config for SQLAlchemy
+  if (pythonOrm === "sqlalchemy" || pythonOrm === "sqlmodel") {
+    structure.push("├── alembic.ini           # Alembic migration configuration");
+    structure.push("├── migrations/           # Database migrations");
+    structure.push("│   ├── env.py");
+    structure.push("│   ├── script.py.mako");
+    structure.push("│   └── versions/");
+  }
+
+  structure.push("├── src/");
+  structure.push("│   └── app/");
+  structure.push("│       ├── __init__.py");
+  structure.push("│       └── main.py       # Application entry point");
+
+  // Add Pydantic settings file
+  if (pythonValidation === "pydantic") {
+    structure.push("│       ├── settings.py   # Application settings (pydantic-settings)");
+  }
+
+  // Add SQLAlchemy files
+  if (pythonOrm === "sqlalchemy") {
+    structure.push("│       ├── database.py   # Database configuration");
+    structure.push("│       ├── models.py     # SQLAlchemy models");
+    structure.push("│       ├── schemas.py    # Pydantic schemas");
+    structure.push("│       └── crud.py       # CRUD operations");
+  }
+
+  // Add SQLModel files
+  if (pythonOrm === "sqlmodel") {
+    structure.push("│       ├── database.py   # Database configuration");
+    structure.push("│       ├── models.py     # SQLModel models (with schemas)");
+    structure.push("│       └── crud.py       # CRUD operations");
+  }
+
+  // Add Tortoise ORM files
+  if (pythonOrm === "tortoise-orm") {
+    structure.push("│       ├── database.py   # Database configuration");
+    structure.push("│       ├── models.py     # Tortoise ORM models");
+    structure.push("│       └── crud.py       # CRUD operations");
+  }
+
+  if (pythonOrm === "pymongo") {
+    structure.push("│       └── database.py   # MongoDB client and health helper");
+  }
+
+  // Add standalone Pydantic schemas (no ORM)
+  if (pythonOrm === "none" && pythonValidation === "pydantic") {
+    structure.push("│       └── schemas.py    # Pydantic validation schemas");
+  }
+
+  // Add LangChain files
+  if (aiLibs.includes("langchain")) {
+    structure.push("│       ├── langchain_client.py  # LangChain client utilities");
+    structure.push("│       └── langchain_schemas.py # LangChain request/response models");
+  }
+
+  // Add LlamaIndex files
+  if (aiLibs.includes("llamaindex")) {
+    structure.push("│       ├── llamaindex_client.py  # LlamaIndex client utilities");
+    structure.push("│       └── llamaindex_schemas.py # LlamaIndex request/response models");
+  }
+
+  // Add OpenAI SDK files
+  if (aiLibs.includes("openai-sdk")) {
+    structure.push("│       ├── openai_client.py  # OpenAI SDK client utilities");
+    structure.push("│       └── openai_schemas.py # OpenAI request/response models");
+  }
+
+  // Add Anthropic SDK files
+  if (aiLibs.includes("anthropic-sdk")) {
+    structure.push("│       ├── anthropic_client.py  # Anthropic SDK client utilities");
+    structure.push("│       └── anthropic_schemas.py # Anthropic request/response models");
+  }
+
+  // Add LangGraph files
+  if (aiLibs.includes("langgraph")) {
+    structure.push("│       ├── langgraph_client.py  # LangGraph client utilities");
+    structure.push("│       └── langgraph_schemas.py # LangGraph request/response models");
+  }
+
+  // Add CrewAI files
+  if (aiLibs.includes("crewai")) {
+    structure.push("│       ├── crewai_client.py  # CrewAI client utilities");
+    structure.push("│       └── crewai_schemas.py # CrewAI request/response models");
+  }
+
+  if (aiLibs.includes("pytorch"))
+    structure.push("│       ├── pytorch_model.py # PyTorch model factory");
+  if (aiLibs.includes("transformers")) {
+    structure.push("│       ├── transformers_client.py # Hugging Face text generation");
+  }
+  if (aiLibs.includes("scikit-learn")) {
+    structure.push("│       ├── sklearn_model.py # scikit-learn pipeline factory");
+  }
+  if (aiLibs.includes("tensorflow")) {
+    structure.push("│       ├── tensorflow_model.py # TensorFlow model factory");
+  }
+  if (aiLibs.includes("mcp")) structure.push("│       ├── mcp_server.py # MCP tool server");
+  if (pythonCloudSdk === "boto3")
+    structure.push("│       ├── aws.py        # Boto3 service helpers");
+  if (pythonHttpClient === "requests") {
+    structure.push("│       ├── http_client.py # Retrying Requests session");
+  }
+  if (pythonData.length > 0) structure.push("│       ├── data_tools.py # Data/scientific helpers");
+  if (pythonMedia === "pillow") structure.push("│       ├── media.py      # Pillow image helpers");
+  if (pythonMessageQueue === "confluent-kafka") {
+    structure.push("│       ├── kafka.py      # Confluent Kafka producer");
+  }
+  if (pythonObservability === "prometheus-client") {
+    structure.push("│       ├── metrics.py    # Prometheus metrics helpers");
+  } else if (pythonObservability === "signoz" || pythonObservability === "opentelemetry") {
+    structure.push("│       ├── otel.py       # OpenTelemetry tracing helpers");
+  }
+
+  structure.push("├── tests/");
+  structure.push("│   ├── __init__.py");
+  structure.push("│   └── test_main.py      # Test suite");
+
+  if (pythonOrm === "sqlalchemy" || pythonOrm === "sqlmodel" || pythonOrm === "tortoise-orm") {
+    structure.push("│   └── test_database.py  # Database tests");
+  }
+
+  structure.push("├── .env.example          # Environment variables template");
+  structure.push("└── .gitignore");
+
+  // Scripts
+  let scripts = `- \`${runCommand("python -m app.main")}\`: Run the application`;
+
+  if (pythonWebFramework === "fastapi") {
+    scripts = `- \`${runCommand("uvicorn app.main:app --reload --host 0.0.0.0 --port 8000")}\`: Start FastAPI dev server`;
+  } else if (pythonWebFramework === "django") {
+    scripts = `- \`${runCommand("python -m app.main")}\`: Start Django dev server`;
+  } else if (pythonWebFramework === "flask") {
+    scripts = `- \`${runCommand("flask --app app.main run --reload --port 8000")}\`: Start Flask dev server`;
+  } else if (pythonWebFramework === "litestar") {
+    scripts = `- \`${runCommand("litestar --app src.app.main:app run --reload --port 8000")}\`: Start Litestar dev server`;
+  } else if (pythonWebFramework === "streamlit") {
+    scripts = `- \`${runCommand("streamlit run src/app/main.py --server.port 8000")}\`: Start Streamlit`;
+  }
+
+  scripts += `
+- \`${runCommand("pytest")}\`: Run tests`;
+
+  if (pythonServer === "gunicorn") {
+    const target =
+      pythonWebFramework === "aiohttp"
+        ? "gunicorn app.main:app --worker-class aiohttp.GunicornWebWorker"
+        : pythonWebFramework === "django"
+          ? "gunicorn app.main:application"
+          : pythonWebFramework === "flask"
+            ? "gunicorn app.main:app"
+            : "gunicorn app.main:app --worker-class uvicorn.workers.UvicornWorker";
+    scripts += `\n- \`${runCommand(target)}\`: Start the production server`;
+  }
+
+  if (pythonQuality === "ruff") {
+    scripts += `
+- \`${runCommand("ruff check .")}\`: Run linter
+- \`${runCommand("ruff format .")}\`: Format code`;
+  } else if (pythonQuality === "mypy") {
+    scripts += `
+- \`${runCommand("mypy src/app tests")}\`: Run type checks`;
+  } else if (pythonQuality === "pyright") {
+    scripts += `
+- \`${runCommand("pyright")}\`: Run type checks`;
+  }
+
+  if (pythonOrm === "sqlalchemy" || pythonOrm === "sqlmodel") {
+    scripts += `
+- \`${runCommand('alembic revision --autogenerate -m "description"')}\`: Generate migration
+- \`${runCommand("alembic upgrade head")}\`: Apply migrations
+- \`${runCommand("alembic downgrade -1")}\`: Rollback last migration`;
+  }
+
+  if (pythonOrm === "tortoise-orm") {
+    scripts += `
+- \`${runCommand("aerich init -t app.database.TORTOISE_ORM")}\`: Initialize Aerich
+- \`${runCommand("aerich init-db")}\`: Create initial migration
+- \`${runCommand("aerich migrate")}\`: Generate migration
+- \`${runCommand("aerich upgrade")}\`: Apply migrations`;
+  }
+
+  return `# ${projectName}
+
+This project was created with [Better Fullstack](https://github.com/Marve10s/Better-Fullstack), a high-performance Python stack.
+
+## Features
+
+${features.join("\n")}
+
+## Prerequisites
+
+- [Python](https://www.python.org/) 3.11 or higher
+${
+  pythonPackageManager === "poetry"
+    ? "- [Poetry](https://python-poetry.org/docs/)"
+    : pythonPackageManager === "uv"
+      ? "- [uv](https://docs.astral.sh/uv/)"
+      : "- pip and venv"
+}
+
+## Getting Started
+
+First, copy the environment file:
+
+\`\`\`bash
+cp .env.example .env
+\`\`\`
+
+Then, install dependencies:
+
+\`\`\`bash
+${installCommand}
+\`\`\`
+
+${
+  pythonWebFramework === "fastapi"
+    ? `Start the FastAPI development server:
+
+\`\`\`bash
+${runCommand("uvicorn app.main:app --reload")}
+\`\`\`
+
+The API will be running at [http://localhost:8000](http://localhost:8000).
+`
+    : pythonWebFramework === "django"
+      ? `Start the Django development server:
+
+\`\`\`bash
+${runCommand("python -m app.main")}
+\`\`\`
+
+The application will be running at [http://localhost:8000](http://localhost:8000).
+`
+      : pythonWebFramework === "flask"
+        ? `Start the Flask development server:
+
+\`\`\`bash
+${runCommand("flask --app app.main run --reload --port 8000")}
+\`\`\`
+
+The API will be running at [http://localhost:8000](http://localhost:8000).
+`
+        : pythonWebFramework === "litestar"
+          ? `Start the Litestar development server:
+
+\`\`\`bash
+${runCommand("litestar --app src.app.main:app run --reload --port 8000")}
+\`\`\`
+
+The API will be running at [http://localhost:8000](http://localhost:8000).
+`
+          : pythonWebFramework === "streamlit"
+            ? `Start Streamlit:
+
+\`\`\`bash
+${runCommand("streamlit run src/app/main.py --server.port 8000")}
+\`\`\`
+
+The application will be running at [http://localhost:8000](http://localhost:8000).
+`
+            : `Run the application:
+
+\`\`\`bash
+${runCommand("python -m app.main")}
+\`\`\`
+`
+}
+## Project Structure
+
+\`\`\`
+${structure.join("\n")}
+\`\`\`
+
+## Available Commands
+
+${scripts}
+`;
+}
+
+function generateGoReadmeContent(config: ProjectConfig): string {
+  const {
+    projectName,
+    goWebFramework,
+    goOrm,
+    goApi,
+    goCli,
+    goLogging,
+    goAuth,
+    goTesting,
+    goMessageQueue,
+    goObservability,
+    goValidation,
+    goQuality,
+    goMigrations,
+    goTemplating,
+    goProtoTooling,
+    goDI,
+    auth,
+  } = config;
+
+  const features: string[] = ["- **Go** - Fast, reliable, and efficient programming language"];
+
+  // Web framework
+  if (goWebFramework === "gin") {
+    features.push("- **Gin** - High-performance HTTP web framework");
+  } else if (goWebFramework === "echo") {
+    features.push("- **Echo** - High performance, minimalist Go web framework");
+  } else if (goWebFramework === "fiber") {
+    features.push("- **Fiber** - Express-inspired web framework built on Fasthttp");
+  } else if (goWebFramework === "chi") {
+    features.push("- **Chi** - Lightweight, zero-dependency router built on net/http");
+  } else if (goWebFramework === "stdlib") {
+    features.push("- **net/http** - Standard-library HTTP routing");
+  } else if (goWebFramework === "go-zero") {
+    features.push("- **go-zero** - API-first resilient microservice framework");
+  } else if (goWebFramework === "kratos") {
+    features.push("- **Kratos** - Cloud-native HTTP and gRPC framework");
+  } else if (goWebFramework === "httprouter") {
+    features.push("- **HttpRouter** - High-performance radix-tree router");
+  }
+
+  // ORM/Database
+  if (goOrm === "gorm") {
+    features.push("- **GORM** - Full-featured ORM for Go");
+  } else if (goOrm === "sqlc") {
+    features.push("- **SQLc** - Generate type-safe code from SQL");
+  } else if (goOrm === "ent") {
+    features.push("- **Ent** - Code-first ORM by Meta with graph traversal API");
+  } else if (goOrm === "bun") {
+    features.push("- **Bun** - SQL-first ORM and query builder");
+  } else if (goOrm === "sqlx") {
+    features.push("- **sqlx** - Lightweight database/sql extensions");
+  }
+
+  // API
+  if (goApi === "grpc-go") {
+    features.push("- **gRPC** - High-performance RPC framework");
+  } else if (goApi === "grpc-gateway") {
+    features.push("- **grpc-gateway** - REST/JSON gateway for protobuf services");
+  } else if (goApi === "connect-go") {
+    features.push("- **Connect-Go** - Multi-protocol RPC over HTTP");
+  } else if (goApi === "oapi-codegen") {
+    features.push("- **oapi-codegen** - Typed OpenAPI code generation");
+  }
+
+  // CLI
+  if (goCli === "cobra") {
+    features.push("- **Cobra** - CLI application framework");
+  } else if (goCli === "bubbletea") {
+    features.push("- **Bubble Tea** - Terminal UI framework");
+  } else if (goCli === "urfave-cli") {
+    features.push("- **urfave/cli** - Declarative CLI framework");
+  }
+
+  // Logging
+  if (goLogging === "zap") {
+    features.push("- **Zap** - Blazing fast, structured logging");
+  } else if (goLogging === "zerolog") {
+    features.push("- **Zerolog** - Zero-allocation JSON logger");
+  } else if (goLogging === "slog") {
+    features.push("- **slog** - Go stdlib structured logging");
+  }
+
+  // Auth
+  if (goAuth === "casbin") {
+    features.push("- **Casbin** - Model-based authorization (ACL, RBAC, ABAC)");
+  } else if (goAuth === "jwt") {
+    features.push("- **golang-jwt** - JWT token creation and validation");
+  } else if (goAuth === "oauth2") {
+    features.push("- **x/oauth2** - OAuth2 client configuration");
+  }
+
+  if (goTesting.length > 0) features.push(`- **Testing** - ${goTesting.join(", ")}`);
+  if (goMessageQueue !== "none") features.push(`- **Messaging** - ${goMessageQueue}`);
+  if (goObservability !== "none") features.push(`- **Observability** - ${goObservability}`);
+  if (goValidation !== "none") features.push(`- **Validation** - ${goValidation}`);
+  if (goQuality !== "none") features.push(`- **Code Quality** - ${goQuality}`);
+  if (goMigrations !== "none") features.push(`- **Migrations** - ${goMigrations}`);
+  if (goTemplating !== "none") features.push(`- **Templating** - ${goTemplating}`);
+  if (goProtoTooling !== "none") features.push(`- **Protobuf Tooling** - ${goProtoTooling}`);
+  if (goDI !== "none") features.push(`- **Dependency Injection** - ${goDI}`);
+
+  if (auth === "go-better-auth") {
+    features.push(
+      "- **GoBetterAuth** - Embedded auth routes with email/password and session support",
+    );
+  }
+
+  // Project structure
+  const structure: string[] = [`${projectName}/`, "├── go.mod                # Module definition"];
+
+  structure.push("├── cmd/");
+  structure.push("│   └── server/           # HTTP server entry point");
+  structure.push("│       └── main.go");
+
+  if (goCli === "cobra") {
+    structure.push("│   └── cli/              # CLI application");
+    structure.push("│       └── main.go");
+  } else if (goCli === "urfave-cli") {
+    structure.push("│   └── cli/              # CLI application");
+    structure.push("│       └── main.go");
+  } else if (goCli === "bubbletea") {
+    structure.push("│   └── tui/              # Terminal UI application");
+    structure.push("│       └── main.go");
+  }
+
+  if (goOrm !== "none") {
+    structure.push("├── internal/");
+    if (auth === "go-better-auth") {
+      structure.push("│   ├── auth/             # GoBetterAuth bootstrap and config");
+      structure.push("│   │   └── auth.go");
+    }
+    structure.push("│   ├── database/         # Database configuration");
+    structure.push("│   │   └── database.go");
+    if (goOrm === "gorm") {
+      structure.push("│   ├── models/           # GORM models");
+      structure.push("│   │   └── models.go");
+      structure.push("│   └── handlers/         # HTTP handlers");
+      structure.push("│       └── handlers.go");
+    } else if (goOrm === "ent") {
+      structure.push("│   ├── models/           # Request/response types");
+      structure.push("│   │   └── models.go");
+      structure.push("│   └── handlers/         # HTTP handlers");
+      structure.push("│       └── handlers.go");
+    }
+  } else if (auth === "go-better-auth") {
+    structure.push("├── internal/");
+    structure.push("│   └── auth/             # GoBetterAuth bootstrap and config");
+    structure.push("│       └── auth.go");
+  }
+
+  if (goApi === "grpc-go" || goApi === "grpc-gateway") {
+    structure.push("├── proto/                # Protocol buffer definitions");
+    structure.push("│   ├── greeter.proto");
+    structure.push("│   ├── greeter.pb.go");
+    structure.push("│   └── greeter_grpc.pb.go");
+  } else if (goProtoTooling === "buf") {
+    structure.push("├── proto/                # Protocol buffer definitions");
+    structure.push("│   └── greeter.proto");
+  }
+
+  structure.push("├── .env.example          # Environment variables template");
+  structure.push("└── .gitignore");
+
+  // Scripts/Commands
+  let goScripts = `- \`go build ./...\`: Build all packages
+- \`go run cmd/server/main.go\`: Run the server
+- \`go test ./...\`: Run all tests
+- \`go fmt ./...\`: Format code
+- \`go vet ./...\`: Run static analysis`;
+
+  if (goCli === "cobra") {
+    goScripts += `
+- \`go run cmd/cli/main.go\`: Run the CLI application`;
+  } else if (goCli === "urfave-cli") {
+    goScripts += `
+- \`go run cmd/cli/main.go\`: Run the CLI application`;
+  } else if (goCli === "bubbletea") {
+    goScripts += `
+- \`go run cmd/tui/main.go\`: Run the TUI application`;
+  }
+
+  if (goApi === "grpc-go") {
+    goScripts += `
+- \`protoc --go_out=. --go-grpc_out=. proto/*.proto\`: Regenerate protobuf code`;
+  }
+  if (goApi === "grpc-gateway")
+    goScripts += `\n- \`go run cmd/gateway/main.go\`: Run the REST gateway`;
+  if (goApi === "connect-go")
+    goScripts += `\n- \`go run cmd/connect/main.go\`: Run the Connect RPC server`;
+  if (goApi === "oapi-codegen")
+    goScripts += `\n- \`go generate ./internal/api\`: Regenerate OpenAPI types`;
+  if (goTemplating === "templ")
+    goScripts += `\n- \`go run github.com/a-h/templ/cmd/templ generate\`: Generate templ components`;
+  if (goProtoTooling === "buf")
+    goScripts += `\n- \`go run github.com/bufbuild/buf/cmd/buf generate\`: Generate protobuf code`;
+  if (goMigrations === "golang-migrate")
+    goScripts += `\n- \`migrate -path migrations -database "$DATABASE_URL" up\`: Run migrations`;
+
+  let authSetup = "";
+  if (auth === "go-better-auth") {
+    authSetup = `
+## Authentication Setup
+
+This project mounts GoBetterAuth at \`/api/auth\` and ships with:
+
+- email/password sign-in
+- cookie-based sessions
+- local SMTP defaults for development
+
+Auth-specific environment variables in \`.env\`:
+
+- \`GO_BETTER_AUTH_BASE_URL=http://localhost:8080\`
+- \`GO_BETTER_AUTH_SECRET=change-me-to-a-real-secret-at-least-32-chars\`
+- \`GO_BETTER_AUTH_DATABASE_URL=./gobetterauth.db\`
+- \`FROM_ADDRESS=noreply@localhost\`
+- \`SMTP_HOST=localhost\`
+- \`SMTP_PORT=1025\`
+
+The generated config disables verification emails on sign-up so the server can boot cleanly without extra setup. For password reset and email flows, point the SMTP settings at a local mail catcher or your real provider.
+`;
+  }
+
+  // Database setup section
+  let databaseSetup = "";
+  if (goOrm === "gorm") {
+    databaseSetup = `
+## Database Setup
+
+This project uses GORM with SQLite by default. To configure the database:
+
+1. Copy the environment file:
+\`\`\`bash
+cp .env.example .env
+\`\`\`
+
+2. Update \`DATABASE_URL\` in \`.env\` with your database connection string.
+
+Supported databases:
+- SQLite (default): \`DATABASE_URL=./data.db\`
+- PostgreSQL: \`DATABASE_URL=postgres://user:pass@localhost:5432/dbname\`
+`;
+  } else if (goOrm === "sqlc") {
+    databaseSetup = `
+## Database Setup
+
+This project uses SQLc for type-safe SQL. To set up:
+
+1. Copy the environment file:
+\`\`\`bash
+cp .env.example .env
+\`\`\`
+
+2. Update \`DATABASE_URL\` in \`.env\` with your PostgreSQL connection string.
+
+3. Run migrations and generate code:
+\`\`\`bash
+sqlc generate
+\`\`\`
+`;
+  } else if (goOrm === "ent") {
+    databaseSetup = `
+## Database Setup
+
+This project uses Ent (by Meta) as the ORM. To set up:
+
+1. Copy the environment file:
+\`\`\`bash
+cp .env.example .env
+\`\`\`
+
+2. Update \`DATABASE_URL\` in \`.env\` with your database connection string.
+
+3. Generate Ent client code from schemas:
+\`\`\`bash
+go generate ./ent
+\`\`\`
+
+Supported databases:
+- SQLite (default): leave \`DATABASE_URL\` empty
+- PostgreSQL: \`DATABASE_URL=postgres://user:pass@localhost:5432/dbname?sslmode=disable\`
+`;
+  } else if (goOrm === "sqlx") {
+    databaseSetup = `
+## Database Setup
+
+This project uses sqlx with SQLite by default and PostgreSQL when \`DATABASE_URL\` starts with \`postgres\`.
+Copy \`.env.example\` to \`.env\`, then set \`DATABASE_URL\` for your environment.
+`;
+  }
+
+  // gRPC setup section
+  let grpcSetup = "";
+  if (goApi === "grpc-go") {
+    grpcSetup = `
+## gRPC Setup
+
+This project includes gRPC support. The server runs both HTTP and gRPC concurrently.
+
+- HTTP server: \`http://localhost:8080\`
+- gRPC server: \`localhost:50051\`
+
+To regenerate protobuf code after modifying \`.proto\` files:
+\`\`\`bash
+protoc --go_out=. --go-grpc_out=. proto/*.proto
+\`\`\`
+`;
+  }
+
+  return `# ${projectName}
+
+This project was created with [Better Fullstack](https://github.com/Marve10s/Better-Fullstack), a high-performance Go stack.
+
+## Features
+
+${features.join("\n")}
+
+## Prerequisites
+
+- [Go](https://go.dev/) 1.25 or higher
+${goApi === "grpc-go" || goApi === "grpc-gateway" ? "- [Protocol Buffers](https://protobuf.dev/) compiler (`protoc`)\n- [Go gRPC plugins](https://grpc.io/docs/languages/go/quickstart/)" : ""}
+
+## Getting Started
+
+First, copy the environment file:
+
+\`\`\`bash
+cp .env.example .env
+\`\`\`
+
+Then, install dependencies and run the server:
+
+\`\`\`bash
+go mod tidy
+go run cmd/server/main.go
+\`\`\`
+
+${goWebFramework !== "none" || auth === "go-better-auth" ? `The server will be running at [http://localhost:8080](http://localhost:8080).` : ""}
+${databaseSetup}${authSetup}${grpcSetup}
+## Project Structure
+
+\`\`\`
+${structure.join("\n")}
+\`\`\`
+
+## Available Commands
+
+${goScripts}
+`;
+}

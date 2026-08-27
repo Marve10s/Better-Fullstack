@@ -1,8 +1,8 @@
+import { makeConfig } from "@test/_fixtures/config-factory";
+import { createSeededVFS, getDeps } from "@test/_fixtures/vfs-factory";
 import { describe, expect, it } from "bun:test";
 
-import { processPaymentsDeps } from "../../src/processors/payments-deps";
-import { makeConfig } from "../_fixtures/config-factory";
-import { createSeededVFS, getDeps } from "../_fixtures/vfs-factory";
+import { processPaymentsDeps } from "@/processors/dependencies/payments-deps";
 
 function expectIncludesAll(actual: readonly string[], expected: readonly string[]): void {
   for (const item of expected) {
@@ -88,7 +88,11 @@ describe("processPaymentsDeps", () => {
   });
 
   it("adds Lemon Squeezy to server and auth packages only", () => {
-    const vfs = createSeededVFS(["apps/server/package.json", "packages/auth/package.json", "apps/web/package.json"]);
+    const vfs = createSeededVFS([
+      "apps/server/package.json",
+      "packages/auth/package.json",
+      "apps/web/package.json",
+    ]);
 
     processPaymentsDeps(
       vfs,
@@ -98,7 +102,9 @@ describe("processPaymentsDeps", () => {
       }),
     );
 
-    expect(getDeps(vfs, "apps/server/package.json").deps).toEqual(["@lemonsqueezy/lemonsqueezy.js"]);
+    expect(getDeps(vfs, "apps/server/package.json").deps).toEqual([
+      "@lemonsqueezy/lemonsqueezy.js",
+    ]);
     expect(getDeps(vfs, "packages/auth/package.json").deps).toEqual([
       "@lemonsqueezy/lemonsqueezy.js",
     ]);
@@ -132,7 +138,9 @@ describe("processPaymentsDeps", () => {
       }),
     );
 
-    expect(getDeps(paddleVfs, "apps/server/package.json").deps).toEqual(["@paddle/paddle-node-sdk"]);
+    expect(getDeps(paddleVfs, "apps/server/package.json").deps).toEqual([
+      "@paddle/paddle-node-sdk",
+    ]);
     expect(getDeps(paddleVfs, "packages/auth/package.json").deps).toEqual([
       "@paddle/paddle-node-sdk",
     ]);
@@ -144,7 +152,11 @@ describe("processPaymentsDeps", () => {
   });
 
   it("does nothing when payments is none", () => {
-    const vfs = createSeededVFS(["apps/server/package.json", "packages/auth/package.json", "apps/web/package.json"]);
+    const vfs = createSeededVFS([
+      "apps/server/package.json",
+      "packages/auth/package.json",
+      "apps/web/package.json",
+    ]);
 
     processPaymentsDeps(vfs, makeConfig({ payments: "none" }));
 

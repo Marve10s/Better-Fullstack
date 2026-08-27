@@ -1,9 +1,8 @@
+import type { RunOutcome, ScaffbenchOptions } from "@scaffbench/types";
+
+import { CALIBRATION_WEAK_MODEL } from "@scaffbench/constants";
+import { rollupOutcome } from "@scaffbench/scoring";
 import path from "node:path";
-
-import type { RunOutcome, ScaffbenchOptions } from "@/types";
-
-import { CALIBRATION_WEAK_MODEL } from "@/constants";
-import { rollupOutcome } from "@/scoring";
 
 export type CalibrationVerdict = "keep" | "cut" | "inconclusive";
 

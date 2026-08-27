@@ -3,13 +3,13 @@ import { localizedGuideMdxLoaders } from "virtual:localized-content";
 
 import type { TocEntry } from "@/lib/docs/remark-extract-toc";
 
+import { createSuspenseCache } from "@/lib/content/mdx-suspense-cache";
 import { guideMdxLoaders as mdxLoaders, type GuideMdxModule } from "@/lib/guides/mdx-loaders";
 import {
   type LocalizedContentLocale,
   type SupportedLocale,
   toSupportedLocale,
 } from "@/lib/i18n/locales";
-import { createSuspenseCache } from "@/lib/mdx-suspense-cache";
 import { getLocale } from "@/paraglide/runtime.js";
 
 export type GuideFrontmatter = {

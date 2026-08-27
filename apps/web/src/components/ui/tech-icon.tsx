@@ -1,6 +1,6 @@
-import { computeSiUrl, getInvertClass, ICON_REGISTRY } from "@/lib/tech-icons";
-import { useTheme } from "@/lib/theme";
-import { cn } from "@/lib/utils";
+import { useTheme } from "@/lib/content/theme";
+import { cn } from "@/lib/platform/utils";
+import { computeSiUrl, getInvertClass, ICON_REGISTRY } from "@/lib/stack/tech-icons";
 
 interface TechIconProps {
   /** Preferred: look up colour-aware config from the registry */

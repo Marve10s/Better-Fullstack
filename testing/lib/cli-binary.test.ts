@@ -1,9 +1,8 @@
+import { buildFreshCliBinary, resolveCliBinaryPath } from "@testing/lib/cli-binary";
 import { describe, expect, it } from "bun:test";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-
-import { buildFreshCliBinary, resolveCliBinaryPath } from "./cli-binary";
 
 describe("resolveCliBinaryPath", () => {
   it("uses the named CLI bin entry when package.json exports a bin map", () => {
@@ -60,6 +59,7 @@ describe("resolveCliBinaryPath", () => {
       expect(result).toBe(binary);
       expect(commands).toEqual([
         ["--cwd", "packages/types", "build"],
+        ["--cwd", "packages/project-lifecycle", "build"],
         ["--cwd", "packages/template-generator", "build"],
         ["--cwd", "apps/cli", "build"],
       ]);

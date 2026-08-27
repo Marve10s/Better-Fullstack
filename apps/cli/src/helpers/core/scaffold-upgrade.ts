@@ -1,33 +1,23 @@
 import type { VirtualFileTree } from "@better-fullstack/template-generator";
 
+import {
+  lifecycleResult,
+  type LifecycleDependencyChange,
+  type LifecycleResult,
+} from "@better-fullstack/project-lifecycle/contracts";
+import { createReviewToken } from "@better-fullstack/project-lifecycle/review-token";
+import {
+  beginProjectTransaction,
+  commitProjectTransaction,
+  rollbackProjectTransaction,
+  writeProjectTransactionFile,
+} from "@better-fullstack/project-lifecycle/transaction";
 import { writeSelectedFiles } from "@better-fullstack/template-generator/fs-writer";
 import fs from "fs-extra";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-import { readBtsConfig } from "../../utils/bts-config";
-import { formatCode } from "../../utils/file-formatter";
-import { getProjectRecoveryCommand } from "../../utils/lifecycle-command";
-import { lifecycleResult, type LifecycleResult } from "../../utils/lifecycle-contract";
-import {
-  beginProjectTransaction,
-  commitProjectTransaction,
-  journalProjectTransactionWrites,
-  markProjectTransactionWrite,
-  rollbackProjectTransaction,
-} from "../../utils/project-transaction";
-import {
-  collectStructuredBaselines,
-  getCurrentLifecycleVersions,
-  hashContent,
-  isStructuredBaselinePath,
-  readScaffoldManifest,
-  readScaffoldManifestResult,
-  recordScaffoldManifest,
-  SCAFFOLD_MANIFEST_FILE,
-  type ScaffoldManifest,
-  writeScaffoldManifest,
-} from "../../utils/scaffold-manifest";
+import { readBtsConfig } from "@/config/bts-config";
 import {
   configFromBtsConfig,
   formatGeneratedTree,
@@ -36,9 +26,22 @@ import {
   mergePackageJson,
   PACKAGE_JSON_SECTIONS,
   treeToFileMap,
-} from "./stack-update";
+} from "@/helpers/core/stack-update";
+import { getProjectRecoveryCommand } from "@/lifecycle/lifecycle-command";
+import {
+  getCurrentLifecycleVersions,
+  hashContent,
+  isStructuredBaselinePath,
+  readScaffoldManifest,
+  readScaffoldManifestResult,
+  serializeScaffoldManifest,
+  SCAFFOLD_MANIFEST_FILE,
+  type ScaffoldManifest,
+} from "@/lifecycle/scaffold-manifest";
+import { formatCode } from "@/platform/file-formatter";
 
 const BINARY_FILE_MARKER = "[Binary file]";
+const EXECUTABLE_FILE_NAMES = new Set(["mvnw", "gradlew"]);
 
 function isConservativeFile(relPath: string): boolean {
   const name = path.basename(relPath);
@@ -76,7 +79,23 @@ export type UpgradeFileEntry = {
   reason?: string;
   preserveBaseline?: boolean;
   mergedContent?: string;
+  dependencyChanges?: LifecycleDependencyChange[];
 };
+
+function lifecycleDependencyChanges(
+  filePath: string,
+  changes: Record<string, Record<string, string>>,
+): LifecycleDependencyChange[] {
+  return Object.entries(changes).flatMap(([section, dependencies]) =>
+    Object.entries(dependencies).map(([name, version]) => ({
+      name,
+      action: version === "removed" ? ("remove" as const) : ("update" as const),
+      ...(version === "removed" ? {} : { version }),
+      target: `${filePath}:${section}`,
+      dev: section === "devDependencies",
+    })),
+  );
+}
 
 export type UpgradePlan = {
   success: true;
@@ -115,28 +134,27 @@ export type UpgradeApplyResult =
   | { success: false; projectDir?: string; error: string; lifecycle?: LifecycleResult };
 
 export function getUpgradePlanDigest(plan: UpgradePlan): string {
-  return hashContent(
-    JSON.stringify({
-      projectDir: plan.projectDir,
-      projectRealpath: plan.projectRealpath,
-      configHash: plan.configHash,
-      manifestHash: plan.manifestHash,
-      hasBaseline: plan.hasBaseline,
-      manifestVersion: plan.manifestVersion,
-      baselineCreatedAt: plan.baselineCreatedAt,
-      files: plan.files.map((file) => ({
-        path: file.path,
-        category: file.category,
-        reason: file.reason,
-        preserveBaseline: file.preserveBaseline,
-        mergedContent: file.mergedContent,
-      })),
-      actionable: plan.actionable,
-      actionableHashes: plan.actionableHashes,
-      actionablePreimages: plan.actionablePreimages,
-      lifecycle: plan.lifecycle,
-    }),
-  );
+  return createReviewToken("template-update", {
+    projectDir: plan.projectDir,
+    projectRealpath: plan.projectRealpath,
+    configHash: plan.configHash,
+    manifestHash: plan.manifestHash,
+    hasBaseline: plan.hasBaseline,
+    manifestVersion: plan.manifestVersion,
+    baselineCreatedAt: plan.baselineCreatedAt,
+    files: plan.files.map((file) => ({
+      path: file.path,
+      category: file.category,
+      reason: file.reason,
+      preserveBaseline: file.preserveBaseline,
+      mergedContent: file.mergedContent,
+      dependencyChanges: file.dependencyChanges,
+    })),
+    actionable: plan.actionable,
+    actionableHashes: plan.actionableHashes,
+    actionablePreimages: plan.actionablePreimages,
+    lifecycle: plan.lifecycle,
+  });
 }
 
 async function canonicalProjectDir(projectDirInput: string): Promise<string> {
@@ -307,7 +325,24 @@ async function computeRenderHashes(tree: VirtualFileTree): Promise<Map<string, s
   return hashes;
 }
 
-async function renderCurrentProject(
+async function readRenderedFileBytes(tree: VirtualFileTree, filePath: string): Promise<Buffer> {
+  const file = treeToFileMap(tree).get(filePath);
+  if (!file) throw new Error(`Rendered transaction output is missing: ${filePath}`);
+  if (file.content !== BINARY_FILE_MARKER) return Buffer.from(file.content, "utf-8");
+
+  const tempDir = await fs.mkdtemp(path.join(tmpdir(), "bfs-update-binary-write-"));
+  try {
+    const written = await writeSelectedFiles(tree, tempDir, (candidate) => candidate === filePath);
+    if (!written.includes(filePath)) {
+      throw new Error(`Rendered binary transaction output is missing: ${filePath}`);
+    }
+    return await fs.readFile(path.join(tempDir, filePath));
+  } finally {
+    await fs.rm(tempDir, { recursive: true, force: true });
+  }
+}
+
+export async function renderCurrentProject(
   projectDir: string,
 ): Promise<{ tree: VirtualFileTree; renderHashes: Map<string, string> } | { error: string }> {
   const btsConfig = await readBtsConfig(projectDir);
@@ -399,7 +434,7 @@ function classifyStructuredMerge(
       path: filePath,
       category: "manual",
       reason:
-        "no structured-merge baseline recorded — merge by hand or re-run `update --record-baseline`",
+        "no structured-merge baseline recorded; merge by hand or complete the token-bound `adopt` flow",
     };
   }
 
@@ -426,6 +461,7 @@ function classifyStructuredMerge(
         category: "merged",
         reason: merged.summary.join("; "),
         mergedContent: merged.content,
+        dependencyChanges: lifecycleDependencyChanges(filePath, merged.dependencyChanges),
       };
     }
     return {
@@ -471,6 +507,17 @@ function summarize(
   const manual = files.filter((file) => file.category === "manual");
   const removed = byCategory("removed");
   const provenanceVerified = manifest?.provenance.state === "verified";
+  const blockers = [
+    ...conflicts.map((filePath) => `${filePath}: template and local copy both changed`),
+    ...manual.map((entry) => `${entry.path}: ${entry.reason ?? "manual review required"}`),
+  ];
+  const affectedFiles = [
+    ...newFiles.map((filePath) => ({ path: filePath, action: "create" as const })),
+    ...drift.map((filePath) => ({ path: filePath, action: "update" as const })),
+    ...merged.map((filePath) => ({ path: filePath, action: "merge" as const })),
+    { path: SCAFFOLD_MANIFEST_FILE, action: "update" as const },
+  ];
+  const affectedDependencies = files.flatMap((file) => file.dependencyChanges ?? []);
 
   return {
     success: true,
@@ -506,16 +553,30 @@ function summarize(
         removed: removed.length,
         manual: conflicts.length + manual.length,
       },
-      blockers: [
-        ...conflicts.map((filePath) => `${filePath}: template and local copy both changed`),
-        ...manual.map((entry) => `${entry.path}: ${entry.reason ?? "manual review required"}`),
-      ],
+      blockers,
       provenance: {
         source: manifest?.provenance.current ?? null,
         target: getCurrentLifecycleVersions(),
         verified: provenanceVerified,
       },
       recovery: { available: true, automaticRollback: true },
+      affected: {
+        stackParts: [],
+        files: affectedFiles,
+        dependencies: affectedDependencies,
+      },
+      manualReviewReasons: blockers,
+      checks: Object.keys(actionablePreimages).map((filePath) => ({
+        id: `preimage:${filePath}`,
+        status: "pass",
+      })),
+      sideEffects: [
+        {
+          kind: "filesystem",
+          status: "planned",
+          description: "Apply current-template drift in one recovery transaction.",
+        },
+      ],
       nextActions: ["Review the complete plan before apply."],
     }),
   };
@@ -632,7 +693,7 @@ export async function planScaffoldUpgrade(projectDirInput: string): Promise<Upgr
         category: "manual",
         reason: hasBaseline
           ? "no baseline recorded for this file"
-          : "no scaffold baseline — run `update --record-baseline` first",
+          : "no scaffold baseline; run the read-only `adopt` plan and confirm its exact token first",
       });
       continue;
     }
@@ -848,6 +909,11 @@ export async function applyScaffoldUpgrade(
               projectPackageManager,
             ),
           },
+          history: { recorded: true, recoveryId: transaction.id },
+          sideEffects: plan.lifecycle.sideEffects.map((sideEffect) => ({
+            ...sideEffect,
+            status: "failed" as const,
+          })),
         }),
       };
     }
@@ -859,19 +925,26 @@ export async function applyScaffoldUpgrade(
         ...plan.lifecycle,
         status: "rolled-back",
         recovery: { available: true, transactionId: transaction.id, automaticRollback: true },
+        history: { recorded: true, recoveryId: transaction.id },
+        sideEffects: plan.lifecycle.sideEffects.map((sideEffect) => ({
+          ...sideEffect,
+          status: "restored" as const,
+        })),
       }),
     };
   };
   for (const candidate of [...toWrite].sort()) {
     try {
       await assertActionablePreimage(plan, candidate);
-      await journalProjectTransactionWrites(transaction, [candidate]);
-      await writeSelectedFiles(tree, projectDir, (filePath) => filePath === candidate);
+      const content = await readRenderedFileBytes(tree, candidate);
+      await writeProjectTransactionFile(transaction, candidate, content, {
+        expectedSha256: plan.actionableHashes[candidate],
+        ...(EXECUTABLE_FILE_NAMES.has(path.basename(candidate)) ? { mode: 0o755 } : {}),
+      });
       const written = await fs.readFile(path.join(projectDir, candidate));
       if (hashContent(written) !== plan.actionableHashes[candidate]) {
         throw new Error(`Written bytes did not match the reviewed plan: ${candidate}`);
       }
-      markProjectTransactionWrite(transaction, candidate, plan.actionableHashes[candidate]);
       await options.afterActionableWrite?.({ path: candidate, index: actionableIndex });
       actionableIndex += 1;
     } catch (error) {
@@ -882,13 +955,13 @@ export async function applyScaffoldUpgrade(
   for (const entry of mergedEntries) {
     try {
       await assertActionablePreimage(plan, entry.path);
-      await journalProjectTransactionWrites(transaction, [entry.path]);
-      await fs.writeFile(path.join(projectDir, entry.path), entry.mergedContent, "utf-8");
+      await writeProjectTransactionFile(transaction, entry.path, entry.mergedContent, {
+        expectedSha256: plan.actionableHashes[entry.path],
+      });
       const written = await fs.readFile(path.join(projectDir, entry.path));
       if (hashContent(written) !== plan.actionableHashes[entry.path]) {
         throw new Error(`Written bytes did not match the reviewed plan: ${entry.path}`);
       }
-      markProjectTransactionWrite(transaction, entry.path, plan.actionableHashes[entry.path]);
       await options.afterActionableWrite?.({ path: entry.path, index: actionableIndex });
       actionableIndex += 1;
     } catch (error) {
@@ -913,6 +986,12 @@ export async function applyScaffoldUpgrade(
       if (preserveBaselines.has(filePath)) continue;
       const renderHash = renderHashes.get(filePath);
       if (renderHash) manifest.hashes[filePath] = renderHash;
+    }
+    const writtenPaths = new Set([...toWrite, ...mergedEntries.map((entry) => entry.path)]);
+    for (const filePath of writtenPaths) {
+      // oxlint-disable-next-line no-await-in-loop -- each reconciled file records its exact mode
+      const stats = await fs.stat(path.join(projectDir, filePath));
+      (manifest.modes ??= {})[filePath] = stats.mode & 0o7777;
     }
     for (const entry of mergedEntries) {
       manifest.hashes[entry.path] = hashContent(Buffer.from(entry.mergedContent, "utf-8"));
@@ -941,13 +1020,8 @@ export async function applyScaffoldUpgrade(
     manifest.provenance.current = targetVersions;
     try {
       await validateWritePath(plan.projectRealpath, SCAFFOLD_MANIFEST_FILE);
-      await journalProjectTransactionWrites(transaction, [SCAFFOLD_MANIFEST_FILE]);
-      await writeScaffoldManifest(projectDir, manifest);
-      markProjectTransactionWrite(
-        transaction,
-        SCAFFOLD_MANIFEST_FILE,
-        hashContent(await fs.readFile(path.join(projectDir, SCAFFOLD_MANIFEST_FILE))),
-      );
+      const manifestContent = serializeScaffoldManifest(manifest);
+      await writeProjectTransactionFile(transaction, SCAFFOLD_MANIFEST_FILE, manifestContent);
     } catch (error) {
       return await failWrites(error);
     }
@@ -973,13 +1047,18 @@ export async function applyScaffoldUpgrade(
         available: true,
         transactionId: transaction.id,
         command: getProjectRecoveryCommand(
-              projectDir,
-              transaction.id,
-              process.platform,
-              projectPackageManager,
-            ),
+          projectDir,
+          transaction.id,
+          process.platform,
+          projectPackageManager,
+        ),
         automaticRollback: true,
       },
+      history: { recorded: true, recoveryId: transaction.id },
+      sideEffects: plan.lifecycle.sideEffects.map((sideEffect) => ({
+        ...sideEffect,
+        status: "applied" as const,
+      })),
       nextActions: ["Run `create-better-fullstack check` to verify every generated target."],
     }),
     applied: {
@@ -988,22 +1067,4 @@ export async function applyScaffoldUpgrade(
       merged: mergedEntries.map((entry) => entry.path),
     },
   };
-}
-
-export async function recordUpgradeBaseline(
-  projectDirInput: string,
-): Promise<ScaffoldManifest | null> {
-  const projectDir = await canonicalProjectDir(projectDirInput);
-  try {
-    await validateWritePath(projectDir, SCAFFOLD_MANIFEST_FILE);
-  } catch {
-    return null;
-  }
-  const rendered = await renderCurrentProject(projectDir);
-  const baselines = "error" in rendered ? undefined : collectStructuredBaselines(rendered.tree);
-  return recordScaffoldManifest(projectDir, {
-    baselines,
-    provenanceState: "adopted-unverified",
-    operation: "baseline-adoption",
-  });
 }

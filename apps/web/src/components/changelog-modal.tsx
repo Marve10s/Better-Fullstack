@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { changelogReleases, latestChangelogRelease } from "@/lib/changelog";
+import { changelogReleases, latestChangelogRelease } from "@/lib/content/changelog";
 import { getLocalizedChangelogRelease } from "@/lib/i18n/changelog-copy";
 import { getLocaleDateTag } from "@/lib/i18n/locales";
 import { m } from "@/paraglide/messages.js";

@@ -1,4 +1,4 @@
-import type { PublishedStackSeed } from "./types";
+import type { PublishedStackSeed } from "@/lib/stack-pages/types";
 
 const INITIAL_PUBLICATION_DATE = "2026-07-17";
 const SEARCH_GROWTH_PUBLICATION_DATE = "2026-07-30";

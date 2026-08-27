@@ -1,3 +1,3 @@
-import { startMcpServer } from "./mcp.js";
+import { startMcpServer } from "@/mcp.js";
 
 startMcpServer();

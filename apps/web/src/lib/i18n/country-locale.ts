@@ -3,7 +3,7 @@ import {
   LOCALE_COOKIE_NAME,
   type SupportedLocale,
   isSupportedLocale,
-} from "./locales";
+} from "@/lib/i18n/locales";
 
 const COUNTRY_HEADER_NAMES = [
   "x-vercel-ip-country",
@@ -82,7 +82,9 @@ function parseCookieHeader(cookieHeader: string | null): Map<string, string> {
 
 function appendCookieHeader(cookieHeader: string | null, name: string, value: string): string {
   const nextCookie = `${name}=${encodeURIComponent(value)}`;
-  return cookieHeader && cookieHeader.trim().length > 0 ? `${cookieHeader}; ${nextCookie}` : nextCookie;
+  return cookieHeader && cookieHeader.trim().length > 0
+    ? `${cookieHeader}; ${nextCookie}`
+    : nextCookie;
 }
 
 function appendVary(headers: Headers, values: readonly string[]) {
@@ -123,7 +125,11 @@ export function getRequestLocaleCookie(request: Request): SupportedLocale | unde
 export function shouldDetectCountryLocale(request: Request): boolean {
   const url = new URL(request.url);
   if (url.pathname.startsWith("/api/")) return false;
-  if (url.pathname === "/sitemap.xml" || url.pathname === "/robots.txt" || url.pathname === "/llms.txt") {
+  if (
+    url.pathname === "/sitemap.xml" ||
+    url.pathname === "/robots.txt" ||
+    url.pathname === "/llms.txt"
+  ) {
     return false;
   }
   if (/\.[a-z0-9]+$/i.test(url.pathname)) return false;

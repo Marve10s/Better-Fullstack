@@ -1,2 +1,1 @@
-export { findProjectDir, archiveProjectSource } from "@/validation/index";
-
+export { findProjectDir, archiveProjectSource } from "@scaffbench/validation/index";

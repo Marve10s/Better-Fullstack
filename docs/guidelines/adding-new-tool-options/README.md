@@ -34,72 +34,73 @@ For deeper dives, see the companion files:
 
 ### Adding an option to an existing TypeScript category
 
-| # | File | What to Add |
-|---|------|-------------|
-| 1 | `packages/types/src/schemas.ts` | New value in the Zod enum (e.g., `SearchSchema`) |
-| 2 | `packages/types/src/option-metadata.ts` | Label override in `EXACT_LABEL_OVERRIDES` (if auto-humanize is wrong) |
-| 3 | `packages/template-generator/src/utils/add-deps.ts` | Package version(s) in `dependencyVersionMap` |
-| 4 | `packages/template-generator/src/processors/<cat>-deps.ts` | Dependency installation branch |
-| 5 | `packages/template-generator/src/processors/env-vars.ts` | Environment variable entries |
-| 6 | `packages/template-generator/templates/<cat>/<id>/` | `.hbs` template files |
-| 7 | `packages/template-generator/src/template-handlers/<cat>.ts` | `processTemplatesFromPrefix()` call — **only if handler doesn't already use dynamic routing** (see note below) |
-| 8 | `apps/cli/src/prompts/<cat>.ts` | Interactive prompt choice |
-| 9 | `apps/web/src/lib/constant.ts` | `TECH_OPTIONS[category]` entry |
-| 10 | `apps/web/src/lib/tech-icons.ts` | Icon registry entry |
-| 11 | `apps/web/src/lib/tech-resource-links.ts` | Docs / GitHub URLs |
-| 12 | `apps/cli/src/helpers/core/post-installation.ts` | Setup instructions (only if other options in the same category have them — be consistent) |
-| 13 | `packages/types/src/compatibility.ts` | Disable rules (only if constrained) |
-| 14 | `apps/cli/test/<cat>.test.ts` | At least one generation test |
-| 15 | `apps/cli/test/template-snapshots.test.ts` | Representative snapshot combo |
+| #   | File                                                            | What to Add                                                                                                    |
+| --- | --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| 1   | `packages/types/src/config/schemas.ts`                          | New value in the Zod enum (e.g., `SearchSchema`)                                                               |
+| 2   | `packages/types/src/catalog/option-metadata.ts`                 | Label override in `EXACT_LABEL_OVERRIDES` (if auto-humanize is wrong)                                          |
+| 3   | `packages/template-generator/src/dependencies/add-deps.ts`      | Package version(s) in `dependencyVersionMap`                                                                   |
+| 4   | `packages/template-generator/src/processors/<cat>-deps.ts`      | Dependency installation branch                                                                                 |
+| 5   | `packages/template-generator/src/processors/config/env-vars.ts` | Environment variable entries                                                                                   |
+| 6   | `packages/template-generator/templates/<cat>/<id>/`             | `.hbs` template files                                                                                          |
+| 7   | `packages/template-generator/src/template-handlers/<cat>.ts`    | `processTemplatesFromPrefix()` call — **only if handler doesn't already use dynamic routing** (see note below) |
+| 8   | `apps/cli/src/prompts/<cat>.ts`                                 | Interactive prompt choice                                                                                      |
+| 9   | `apps/web/src/lib/stack/constant.ts`                            | `TECH_OPTIONS[category]` entry                                                                                 |
+| 10  | `apps/web/src/lib/stack/tech-icons.ts`                          | Icon registry entry                                                                                            |
+| 11  | `apps/web/src/lib/stack/tech-resource-links.ts`                 | Docs / GitHub URLs                                                                                             |
+| 12  | `apps/cli/src/helpers/core/post-installation.ts`                | Setup instructions (only if other options in the same category have them — be consistent)                      |
+| 13  | `packages/types/src/stack/compatibility.ts`                     | Disable rules (only if constrained)                                                                            |
+| 14  | `apps/cli/test/<cat>.test.ts`                                   | At least one generation test                                                                                   |
+| 15  | `apps/cli/test/support/template-snapshots.test.ts`              | Representative snapshot combo                                                                                  |
 
 **Note on handler edits (item 7):** Some handlers use **dynamic path routing** like `search/${config.search}/server/base` — they auto-discover new template directories without code changes. Before adding handler code, open the handler file and check if it already dispatches dynamically. If so, skip this step.
 
 ### Files also needed for NEW categories (in addition to above)
 
-| # | File | What to Add |
-|---|------|-------------|
-| **CLI wiring** | | |
-| 16 | `apps/cli/src/index.ts` | 4 spots: import, router input schema, prompt call, config mapping |
-| 17 | `apps/cli/src/prompts/config-prompts.ts` | Import prompt function, add to `PromptGroupResults` type, add to navigable group, add to return mapping |
-| 18 | `apps/cli/src/mcp.ts` | **5 spots:** import schema, add to tool parameter schemas, add to `buildProjectConfig()`, add to `buildCompatibilityInput()`, and add MCP schema aliases/overrides only when the public Legacy Flat Config key differs from `OPTION_CATEGORY_METADATA` |
-| 19 | `apps/cli/src/utils/bts-config.ts` | Field mapping in both write and read paths of `writeBtsConfig()` |
-| 20 | `apps/cli/src/constants.ts` | Ecosystem-aware default value — use a meaningful default when the category has a clear winner (e.g., Rust logging defaults to `"tracing"`, not `"none"`; use `"none"` only when no default makes sense) |
-| 21 | `apps/cli/src/helpers/core/command-handlers.ts` | Add field with `"none"` default to error fallback config |
-| 22 | `apps/cli/src/utils/generate-reproducible-command.ts` | Add `--<flag-name>` to reproduced command output |
-| 23 | `apps/cli/src/utils/config-processing.ts` | Add type import + `processFlags()` branch for the new field |
-| **Tests** | | |
-| 24 | `apps/cli/test/generate-reproducible-command.test.ts` | Add field to `makeConfig()` defaults + update expected command strings |
-| 25 | `apps/cli/test/add-history-commands.test.ts` | Add `--<flag> none` to CLI args and expected command in Python/Go/Rust history tests |
-| **Compatibility** | | |
-| 23 | `packages/types/src/compatibility.ts` | Add field to `CompatibilityInput` type and any constraint rules; display names live in `packages/types/src/option-metadata.ts` |
-| **Web builder** | | |
-| 24 | `apps/web/src/lib/preview-config.ts` | Add field to `stackToConfig()` mapping (maps StackState → ProjectConfig for web preview) |
-| 25 | `packages/types/src/stack-translation.ts` | Add `DEFAULT_STACK_SELECTION` value, `STACK_SELECTION_URL_KEYS` short key, and `generateStackSelectionCommand()` flag; category order lives in `packages/types/src/option-metadata.ts` |
-| **Smoke test wiring** | | |
-| 28 | `testing/lib/generate-combos/options.ts` | Import `*_VALUES`, add `sampleScalar()` in `make*Draft()`, add default in base config |
-| 29 | `testing/lib/presets.ts` | Add field to `makeBaseConfig()` so existing presets don't break |
+| #                     | File                                                             | What to Add                                                                                                                                                                                                                                            |
+| --------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **CLI wiring**        |                                                                  |                                                                                                                                                                                                                                                        |
+| 16                    | `apps/cli/src/index.ts`                                          | 4 spots: import, router input schema, prompt call, config mapping                                                                                                                                                                                      |
+| 17                    | `apps/cli/src/prompts/core/config-prompts.ts`                    | Import prompt function, add to `PromptGroupResults` type, add to navigable group, add to return mapping                                                                                                                                                |
+| 18                    | `apps/cli/src/mcp.ts`                                            | **5 spots:** import schema, add to tool parameter schemas, add to `buildProjectConfig()`, add to `buildCompatibilityInput()`, and add MCP schema aliases/overrides only when the public Legacy Flat Config key differs from `OPTION_CATEGORY_METADATA` |
+| 19                    | `apps/cli/src/config/bts-config.ts`                              | Field mapping in both write and read paths of `writeBtsConfig()`                                                                                                                                                                                       |
+| 20                    | `apps/cli/src/constants.ts`                                      | Ecosystem-aware default value — use a meaningful default when the category has a clear winner (e.g., Rust logging defaults to `"tracing"`, not `"none"`; use `"none"` only when no default makes sense)                                                |
+| 21                    | `apps/cli/src/helpers/core/command-handlers.ts`                  | Add field with `"none"` default to error fallback config                                                                                                                                                                                               |
+| 22                    | `apps/cli/src/lifecycle/generate-reproducible-command.ts`        | Add `--<flag-name>` to reproduced command output                                                                                                                                                                                                       |
+| 23                    | `apps/cli/src/config/config-processing.ts`                       | Add type import + `processFlags()` branch for the new field                                                                                                                                                                                            |
+| **Tests**             |                                                                  |                                                                                                                                                                                                                                                        |
+| 24                    | `apps/cli/test/generation/generate-reproducible-command.test.ts` | Add field to `makeConfig()` defaults + update expected command strings                                                                                                                                                                                 |
+| 25                    | `apps/cli/test/lifecycle/add-history-commands.test.ts`           | Add `--<flag> none` to CLI args and expected command in Python/Go/Rust history tests                                                                                                                                                                   |
+| **Compatibility**     |                                                                  |                                                                                                                                                                                                                                                        |
+| 23                    | `packages/types/src/stack/compatibility.ts`                      | Add field to `CompatibilityInput` type and any constraint rules; display names live in `packages/types/src/catalog/option-metadata.ts`                                                                                                                 |
+| **Web builder**       |                                                                  |                                                                                                                                                                                                                                                        |
+| 24                    | `apps/web/src/lib/builder/preview-config.ts`                     | Add field to `stackToConfig()` mapping (maps StackState → ProjectConfig for web preview)                                                                                                                                                               |
+| 25                    | `packages/types/src/stack/stack-translation.ts`                  | Add `DEFAULT_STACK_SELECTION` value, `STACK_SELECTION_URL_KEYS` short key, and `generateStackSelectionCommand()` flag; category order lives in `packages/types/src/catalog/option-metadata.ts`                                                         |
+| **Smoke test wiring** |                                                                  |                                                                                                                                                                                                                                                        |
+| 28                    | `testing/lib/generate-combos/options.ts`                         | Import `*_VALUES`, add `sampleScalar()` in `make*Draft()`, add default in base config                                                                                                                                                                  |
+| 29                    | `testing/lib/presets.ts`                                         | Add field to `makeBaseConfig()` so existing presets don't break                                                                                                                                                                                        |
 
 See the [Worked Example](worked-example.md) for exact code at each spot.
 
 ### Adding an option to an existing Rust/Go/Python category
 
-| # | File | What to Add |
-|---|------|-------------|
-| 1 | `packages/types/src/schemas.ts` | New value in the ecosystem Zod enum |
-| 2 | `packages/types/src/option-metadata.ts` | Label override (if needed) |
-| 3 | `packages/template-generator/templates/<eco>-base/` | Template conditionals in shared `.hbs` files + dependency entries in `Cargo.toml.hbs` / `go.mod.hbs` / `pyproject.toml.hbs` |
-| 4 | `packages/template-generator/src/template-handlers/<eco>-base.ts` | **Only if feature gets its own directory** — web frameworks/ORMs use template conditionals (no handler change) |
-| 5 | `apps/cli/src/prompts/<eco>-ecosystem.ts` | Interactive prompt choice |
-| 6 | `apps/web/src/lib/constant.ts` | `TECH_OPTIONS` + `EXACT_LABEL_OVERRIDES` entry |
-| 7 | `apps/web/src/lib/tech-icons.ts` | Icon entry |
-| 8 | `apps/web/src/lib/tech-resource-links.ts` | Docs / GitHub URLs |
-| 9 | `packages/template-generator/src/processors/readme-generator.ts` | Framework name/description for generated README |
-| 10 | `packages/template-generator/src/processors/ai-docs-generator.ts` | Dev server command for generated CLAUDE.md (only when the new option changes the dev server invocation — e.g., Python FastAPI vs Flask, but NOT Go gin vs fiber which use the same `go run` command) |
-| 11 | `apps/cli/src/helpers/core/post-installation.ts` | Framework run command and display name (check if other options have post-install) |
-| 12 | `apps/cli/test/<eco>-language.test.ts` or `<eco>-ecosystem.test.ts` | Generation test |
-| 13 | `apps/cli/test/template-snapshots.test.ts` | Snapshot combo |
+| #   | File                                                                     | What to Add                                                                                                                                                                                          |
+| --- | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `packages/types/src/config/schemas.ts`                                   | New value in the ecosystem Zod enum                                                                                                                                                                  |
+| 2   | `packages/types/src/catalog/option-metadata.ts`                          | Label override (if needed)                                                                                                                                                                           |
+| 3   | `packages/template-generator/templates/<eco>-base/`                      | Template conditionals in shared `.hbs` files + dependency entries in `Cargo.toml.hbs` / `go.mod.hbs` / `pyproject.toml.hbs`                                                                          |
+| 4   | `packages/template-generator/src/template-handlers/<eco>-base.ts`        | **Only if feature gets its own directory** — web frameworks/ORMs use template conditionals (no handler change)                                                                                       |
+| 5   | `apps/cli/src/prompts/<eco>-ecosystem.ts`                                | Interactive prompt choice                                                                                                                                                                            |
+| 6   | `apps/web/src/lib/stack/constant.ts`                                     | `TECH_OPTIONS` + `EXACT_LABEL_OVERRIDES` entry                                                                                                                                                       |
+| 7   | `apps/web/src/lib/stack/tech-icons.ts`                                   | Icon entry                                                                                                                                                                                           |
+| 8   | `apps/web/src/lib/stack/tech-resource-links.ts`                          | Docs / GitHub URLs                                                                                                                                                                                   |
+| 9   | `packages/template-generator/src/processors/config/readme-generator.ts`  | Framework name/description for generated README                                                                                                                                                      |
+| 10  | `packages/template-generator/src/processors/config/ai-docs-generator.ts` | Dev server command for generated CLAUDE.md (only when the new option changes the dev server invocation — e.g., Python FastAPI vs Flask, but NOT Go gin vs fiber which use the same `go run` command) |
+| 11  | `apps/cli/src/helpers/core/post-installation.ts`                         | Framework run command and display name (check if other options have post-install)                                                                                                                    |
+| 12  | `apps/cli/test/<eco>-language.test.ts` or `<eco>-ecosystem.test.ts`      | Generation test                                                                                                                                                                                      |
+| 13  | `apps/cli/test/support/template-snapshots.test.ts`                       | Snapshot combo                                                                                                                                                                                       |
 
 **Go-specific gotchas when adding a web framework:**
+
 - Existing `.hbs` files may have outer guards like `{{#if (or (eq goWebFramework "gin") (eq goWebFramework "echo"))}}` — **widen these** to include your new framework.
 - Fiber's middleware packages (`logger`, `recover`, `cors`) collide with Go keywords and existing variable names — use **import aliases** like `fiberlogger`, `fiberrecover`, `fibercors`.
 - Auth adapter patterns differ per framework: gin uses `gin.WrapH()`, echo uses `echo.WrapHandler()`, Fiber needs `github.com/gofiber/adaptor/v2` with `adaptor.HTTPHandler()` — this adds an extra dependency in `go.mod.hbs`.
@@ -112,7 +113,7 @@ Use this when the category already exists (e.g., adding `algolia` to Search, add
 
 ### Step 1 — Schema (always first)
 
-**File:** `packages/types/src/schemas.ts`
+**File:** `packages/types/src/config/schemas.ts`
 
 Add the new value to the existing Zod enum:
 
@@ -136,13 +137,14 @@ export const GO_WEB_FRAMEWORK_VALUES = GoWebFrameworkSchema.options; // auto-upd
 ```
 
 **Also verify** the value appears in all three config schemas in the same file:
+
 - `CreateInputSchema` (CLI input)
 - `ProjectConfigSchema` (generator config)
 - `BetterTStackConfigSchema` (bts.jsonc output)
 
 ### Step 2 — Option metadata
 
-**File:** `packages/types/src/option-metadata.ts`
+**File:** `packages/types/src/catalog/option-metadata.ts`
 
 Add a label override only if the auto-humanize function produces the wrong display name:
 
@@ -164,7 +166,7 @@ Add CLI value overrides in `CLI_VALUE_OVERRIDES` only if the schema ID differs f
 
 For TypeScript tools, dependencies are managed programmatically via three files.
 
-**File:** `packages/template-generator/src/utils/add-deps.ts`
+**File:** `packages/template-generator/src/dependencies/add-deps.ts`
 
 Add every npm package and its pinned version to the central version map:
 
@@ -202,12 +204,13 @@ export function processSearchDeps(vfs: VirtualFileSystem, config: ProjectConfig)
 ```
 
 **Pattern rules:**
+
 - Early return if `=== "none"` or feature not selected
 - Use `getServerPackagePath()` / `getWebPackagePath()` from `utils/project-paths.ts`
 - Use `addPackageDependency()` — never write package.json directly
 - Separate `dependencies` (runtime) from `devDependencies` (types, CLI tools)
 
-**File:** `packages/template-generator/src/processors/env-vars.ts`
+**File:** `packages/template-generator/src/processors/config/env-vars.ts`
 
 Add environment variables in the matching `build*Vars()` function:
 
@@ -237,6 +240,7 @@ if (search === "algolia") {
 Non-TypeScript ecosystems manage dependencies inside Handlebars templates, not via processor files.
 
 **Rust** — edit `packages/template-generator/templates/rust-base/Cargo.toml.hbs`:
+
 ```toml
 [workspace.dependencies]
 {{#if (eq rustOrm "diesel")}}
@@ -245,6 +249,7 @@ diesel = { version = "2.2", features = ["postgres"] }
 ```
 
 **Go** — edit `packages/template-generator/templates/go-base/go.mod.hbs`:
+
 ```
 require (
 {{#if (eq goWebFramework "fiber")}}
@@ -254,6 +259,7 @@ require (
 ```
 
 **Python** — edit `packages/template-generator/templates/python-base/pyproject.toml.hbs`:
+
 ```toml
 dependencies = [
 {{#if (eq pythonWebFramework "flask")}}
@@ -283,6 +289,7 @@ packages/template-generator/templates/<category>/<option-id>/
 ```
 
 **Template naming rules:**
+
 - Directory name matches schema ID exactly (`algolia`, not `Algolia`)
 - Use `.hbs` extension — removed after processing
 - Use `_gitignore` for `.gitignore`, `_npmrc` for `.npmrc`
@@ -365,6 +372,7 @@ const options = [
 ```
 
 **Rules:**
+
 - Always use `as const` for value typing
 - Always include a `"none"` option
 - Prompt functions return early if value already provided (non-interactive mode)
@@ -372,7 +380,7 @@ const options = [
 
 ### Step 7 — Web builder
 
-**File:** `apps/web/src/lib/constant.ts`
+**File:** `apps/web/src/lib/stack/constant.ts`
 
 Add entry to the `TECH_OPTIONS` object under the matching category key:
 
@@ -389,7 +397,7 @@ search: [
 ],
 ```
 
-**File:** `apps/web/src/lib/tech-icons.ts`
+**File:** `apps/web/src/lib/stack/tech-icons.ts`
 
 ```typescript
 algolia: { type: "si", slug: "algolia", hex: "003DFF" },
@@ -399,7 +407,7 @@ algolia: { type: "local", src: "/icon/algolia.svg", needsInvert: "dark" },
 
 If using a local icon, place the SVG at `apps/web/public/icon/algolia.svg`.
 
-**File:** `apps/web/src/lib/tech-resource-links.ts`
+**File:** `apps/web/src/lib/stack/tech-resource-links.ts`
 
 ```typescript
 algolia: {
@@ -429,7 +437,7 @@ if (config.search === "algolia") {
 
 ### Step 9 — Compatibility rules (if constrained)
 
-**File:** `packages/types/src/compatibility.ts`
+**File:** `packages/types/src/stack/compatibility.ts`
 
 Only needed if the option has framework restrictions:
 
@@ -448,7 +456,7 @@ Everything from Scenario A, plus these additional files:
 
 ### Additional schema work
 
-**File:** `packages/types/src/schemas.ts`
+**File:** `packages/types/src/config/schemas.ts`
 
 Create the new Zod schema and add it to all three config schemas:
 
@@ -480,7 +488,7 @@ export const BetterTStackConfigSchema = z.object({
 });
 ```
 
-**File:** `packages/types/src/types.ts`
+**File:** `packages/types/src/config/types.ts`
 
 Export the inferred type:
 
@@ -640,7 +648,7 @@ Also add it to `buildProjectConfig()` and `buildCompatibilityInput()` defaults/m
 
 ### bts.jsonc config writer
 
-**File:** `apps/cli/src/utils/bts-config.ts`
+**File:** `apps/cli/src/config/bts-config.ts`
 
 Add the field mapping inside `writeBtsConfig()`:
 
@@ -650,7 +658,7 @@ rateLimiting: projectConfig.rateLimiting,
 
 ### Additional web builder files for new categories
 
-**File:** `packages/types/src/stack-translation.ts`
+**File:** `packages/types/src/stack/stack-translation.ts`
 
 Add the shared stack-selection default and URL key:
 
@@ -669,7 +677,7 @@ Add the command flag mapping:
 `--rate-limiting ${selection.rateLimiting}`,
 ```
 
-**File:** `packages/types/src/option-metadata.ts`
+**File:** `packages/types/src/catalog/option-metadata.ts`
 
 Add the category to the shared TypeScript order:
 
@@ -687,7 +695,7 @@ Add the category to the shared TypeScript order:
 5. Update `<eco>-base/*.hbs` dependency files (Cargo.toml / go.mod / pyproject.toml)
 6. Add web builder entries (constant.ts, icons, links)
 7. Wire into `apps/cli/src/index.ts` (4 spots — same as TS new category)
-8. Wire into `apps/cli/src/mcp.ts` and `apps/cli/src/utils/bts-config.ts`
+8. Wire into `apps/cli/src/mcp.ts` and `apps/cli/src/config/bts-config.ts`
 
 ---
 
@@ -697,57 +705,58 @@ Use this when adding a language that doesn't exist yet (e.g., Java, Elixir, C#).
 
 ### Checklist
 
-| # | File | What to Add |
-|---|------|-------------|
-| **Schema layer** | | |
-| 1 | `packages/types/src/schemas.ts` | Add `"java"` to `EcosystemSchema`. Create `JavaWebFrameworkSchema`, `JavaOrmSchema`, etc. Add all to `CreateInputSchema`, `ProjectConfigSchema`, `BetterTStackConfigSchema`. Export `*_VALUES`. |
-| 2 | `packages/types/src/types.ts` | Export inferred types (`JavaWebFramework`, `JavaOrm`, etc.) |
-| 3 | `packages/types/src/option-metadata.ts` | Add `CATEGORY_VALUE_IDS` entries and label overrides for all Java categories |
-| **Template generator** | | |
-| 4 | `packages/template-generator/templates/java-base/` | Create entire template directory: manifest file (`pom.xml.hbs` or `build.gradle.kts.hbs`), source directories, config files |
-| 5 | `packages/template-generator/src/template-handlers/java-base.ts` | Create monolithic handler (follow Go pattern: boolean+skip+empty-file-skip) |
-| 6 | `packages/template-generator/src/template-handlers/index.ts` | Re-export the new handler |
-| 7 | `packages/template-generator/src/generator.ts` | Add `else if (config.ecosystem === "java")` branch calling `processJavaBaseTemplate()`. Note: `processReadme()` and `processAiDocs()` run after and are shared across all ecosystems — no change needed there. |
-| **CLI** | | |
-| 8 | `apps/cli/src/prompts/java-ecosystem.ts` | Create prompt file with `getJavaWebFrameworkChoice()`, `getJavaOrmChoice()`, etc. |
-| 9 | `apps/cli/src/prompts/config-prompts.ts` | Import Java prompt functions, add to `PromptGroupResults`, add to navigable group, add to return mapping |
-| 10 | `apps/cli/src/index.ts` | Register all Java-prefixed Commander flags (`--java-web-framework`, `--java-orm`, etc.), add schema imports, add prompt calls (gated by `ecosystem === "java"`), add config mapping |
-| 11 | `apps/cli/src/mcp.ts` | Import schema, add tool parameters, add `buildProjectConfig()`/`buildCompatibilityInput()` wiring, and add MCP schema aliases/overrides only for Legacy Flat Config naming differences |
-| 12 | `apps/cli/src/utils/bts-config.ts` | Add all Java field mappings to both write and read paths |
-| 13 | `apps/cli/src/constants.ts` | Add ecosystem-aware defaults for all Java categories |
-| 14 | `apps/cli/src/helpers/core/command-handlers.ts` | Add all Java fields with `"none"` defaults to error fallback config |
-| 15 | `apps/cli/src/utils/generate-reproducible-command.ts` | Add all Java flags to reproduced command output |
-| 16 | `apps/cli/src/helpers/core/post-installation.ts` | Add Java-specific setup instructions (Maven/Gradle, JDK version, etc.) |
-| 17 | `packages/template-generator/src/processors/readme-generator.ts` | Add Java framework descriptions and commands for generated README |
-| 18 | `packages/template-generator/src/processors/ai-docs-generator.ts` | Add Java dev server commands for generated CLAUDE.md |
-| **Compatibility** | | |
-| 19 | `packages/types/src/compatibility.ts` | Add all Java fields to `CompatibilityInput` type and any constraint rules; display names live in `packages/types/src/option-metadata.ts` |
-| **Web builder** | | |
-| 20 | `apps/web/src/lib/constant.ts` | Add `"java"` to ecosystem options and add all Java `TECH_OPTIONS` categories. Ecosystem category order lives in `packages/types/src/option-metadata.ts`. |
-| 21 | `apps/web/src/lib/tech-icons.ts` | Add icons for all Java tools |
-| 22 | `apps/web/src/lib/tech-resource-links.ts` | Add docs/GitHub URLs for all Java tools |
-| 23 | `apps/web/src/lib/preview-config.ts` | Add all `java*` fields to `stackToConfig()` mapping |
-| 24 | `packages/types/src/stack-translation.ts` | Add all Java defaults, short URL keys (`javaWebFramework: "jwf"`, etc.), `generateJavaCommand()`, and `generateStackSelectionCommand()` dispatch; category order lives in `packages/types/src/option-metadata.ts` |
-| **Tests** | | |
-| 27 | `apps/cli/test/java-ecosystem.test.ts` | Create test file using `createVirtual` API (same pattern as `rust-ecosystem.test.ts`) |
-| 28 | `apps/cli/test/template-snapshots.test.ts` | Add Java snapshot configs |
-| 29 | `apps/cli/test/cli-builder-sync.test.ts` | No edit needed — auto-detects from schema |
+| #                      | File                                                                        | What to Add                                                                                                                                                                                                               |
+| ---------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Schema layer**       |                                                                             |                                                                                                                                                                                                                           |
+| 1                      | `packages/types/src/config/schemas.ts`                                      | Add `"java"` to `EcosystemSchema`. Create `JavaWebFrameworkSchema`, `JavaOrmSchema`, etc. Add all to `CreateInputSchema`, `ProjectConfigSchema`, `BetterTStackConfigSchema`. Export `*_VALUES`.                           |
+| 2                      | `packages/types/src/config/types.ts`                                        | Export inferred types (`JavaWebFramework`, `JavaOrm`, etc.)                                                                                                                                                               |
+| 3                      | `packages/types/src/catalog/option-metadata.ts`                             | Add `CATEGORY_VALUE_IDS` entries and label overrides for all Java categories                                                                                                                                              |
+| **Template generator** |                                                                             |                                                                                                                                                                                                                           |
+| 4                      | `packages/template-generator/templates/java-base/`                          | Create entire template directory: manifest file (`pom.xml.hbs` or `build.gradle.kts.hbs`), source directories, config files                                                                                               |
+| 5                      | `packages/template-generator/src/template-handlers/ecosystems/java-base.ts` | Create monolithic handler (follow Go pattern: boolean+skip+empty-file-skip)                                                                                                                                               |
+| 6                      | `packages/template-generator/src/template-handlers/index.ts`                | Re-export the new handler                                                                                                                                                                                                 |
+| 7                      | `packages/template-generator/src/generator.ts`                              | Add `else if (config.ecosystem === "java")` branch calling `processJavaBaseTemplate()`. Note: `processReadme()` and `processAiDocs()` run after and are shared across all ecosystems — no change needed there.            |
+| **CLI**                |                                                                             |                                                                                                                                                                                                                           |
+| 8                      | `apps/cli/src/prompts/ecosystems/java-ecosystem.ts`                         | Create prompt file with `getJavaWebFrameworkChoice()`, `getJavaOrmChoice()`, etc.                                                                                                                                         |
+| 9                      | `apps/cli/src/prompts/core/config-prompts.ts`                               | Import Java prompt functions, add to `PromptGroupResults`, add to navigable group, add to return mapping                                                                                                                  |
+| 10                     | `apps/cli/src/index.ts`                                                     | Register all Java-prefixed Commander flags (`--java-web-framework`, `--java-orm`, etc.), add schema imports, add prompt calls (gated by `ecosystem === "java"`), add config mapping                                       |
+| 11                     | `apps/cli/src/mcp.ts`                                                       | Import schema, add tool parameters, add `buildProjectConfig()`/`buildCompatibilityInput()` wiring, and add MCP schema aliases/overrides only for Legacy Flat Config naming differences                                    |
+| 12                     | `apps/cli/src/config/bts-config.ts`                                         | Add all Java field mappings to both write and read paths                                                                                                                                                                  |
+| 13                     | `apps/cli/src/constants.ts`                                                 | Add ecosystem-aware defaults for all Java categories                                                                                                                                                                      |
+| 14                     | `apps/cli/src/helpers/core/command-handlers.ts`                             | Add all Java fields with `"none"` defaults to error fallback config                                                                                                                                                       |
+| 15                     | `apps/cli/src/lifecycle/generate-reproducible-command.ts`                   | Add all Java flags to reproduced command output                                                                                                                                                                           |
+| 16                     | `apps/cli/src/helpers/core/post-installation.ts`                            | Add Java-specific setup instructions (Maven/Gradle, JDK version, etc.)                                                                                                                                                    |
+| 17                     | `packages/template-generator/src/processors/config/readme-generator.ts`     | Add Java framework descriptions and commands for generated README                                                                                                                                                         |
+| 18                     | `packages/template-generator/src/processors/config/ai-docs-generator.ts`    | Add Java dev server commands for generated CLAUDE.md                                                                                                                                                                      |
+| **Compatibility**      |                                                                             |                                                                                                                                                                                                                           |
+| 19                     | `packages/types/src/stack/compatibility.ts`                                 | Add all Java fields to `CompatibilityInput` type and any constraint rules; display names live in `packages/types/src/catalog/option-metadata.ts`                                                                          |
+| **Web builder**        |                                                                             |                                                                                                                                                                                                                           |
+| 20                     | `apps/web/src/lib/stack/constant.ts`                                        | Add `"java"` to ecosystem options and add all Java `TECH_OPTIONS` categories. Ecosystem category order lives in `packages/types/src/catalog/option-metadata.ts`.                                                          |
+| 21                     | `apps/web/src/lib/stack/tech-icons.ts`                                      | Add icons for all Java tools                                                                                                                                                                                              |
+| 22                     | `apps/web/src/lib/stack/tech-resource-links.ts`                             | Add docs/GitHub URLs for all Java tools                                                                                                                                                                                   |
+| 23                     | `apps/web/src/lib/builder/preview-config.ts`                                | Add all `java*` fields to `stackToConfig()` mapping                                                                                                                                                                       |
+| 24                     | `packages/types/src/stack/stack-translation.ts`                             | Add all Java defaults, short URL keys (`javaWebFramework: "jwf"`, etc.), `generateJavaCommand()`, and `generateStackSelectionCommand()` dispatch; category order lives in `packages/types/src/catalog/option-metadata.ts` |
+| **Tests**              |                                                                             |                                                                                                                                                                                                                           |
+| 27                     | `apps/cli/test/ecosystems/java-ecosystem.test.ts`                           | Create test file using `createVirtual` API (same pattern as `rust-ecosystem.test.ts`)                                                                                                                                     |
+| 28                     | `apps/cli/test/support/template-snapshots.test.ts`                          | Add Java snapshot configs                                                                                                                                                                                                 |
+| 29                     | `apps/cli/test/recommendations/cli-builder-sync.test.ts`                    | No edit needed — auto-detects from schema                                                                                                                                                                                 |
 
 ### Design decisions for the new handler
 
 Choose one of three handler patterns based on project structure:
 
-| Pattern | When to use | Empty file skip? |
-|---------|-------------|------------------|
-| **Rust-style** (boolean+skip, no empty-file-skip) | When the ecosystem has many conditional modules that must always produce a file | No |
-| **Go-style** (boolean+skip, with empty-file-skip) | When some templates are entirely conditional and should auto-drop | Yes (recommended default) |
-| **Python-style** (template-only conditionals) | When the project has minimal conditional directories — all logic in `.hbs` files | Yes |
+| Pattern                                           | When to use                                                                      | Empty file skip?          |
+| ------------------------------------------------- | -------------------------------------------------------------------------------- | ------------------------- |
+| **Rust-style** (boolean+skip, no empty-file-skip) | When the ecosystem has many conditional modules that must always produce a file  | No                        |
+| **Go-style** (boolean+skip, with empty-file-skip) | When some templates are entirely conditional and should auto-drop                | Yes (recommended default) |
+| **Python-style** (template-only conditionals)     | When the project has minimal conditional directories — all logic in `.hbs` files | Yes                       |
 
 For most new ecosystems, the **Go-style pattern** is the safest default.
 
 ### What the guidelines cannot cover
 
 The hardest part of adding a new ecosystem is writing the **template content** — the actual Java/Elixir/C# code inside `.hbs` files. This requires:
+
 - Domain expertise in the target language and frameworks
 - Understanding of the language's build system (Maven, Gradle, Mix, MSBuild)
 - Knowledge of the language's project structure conventions
@@ -761,61 +770,61 @@ Study the existing `rust-base/`, `go-base/`, and `python-base/` templates as str
 
 ### Types & Schemas
 
-| File | Purpose | When to edit |
-|------|---------|--------------|
-| `packages/types/src/schemas.ts` | Zod enums, config schemas, value exports | Always |
-| `packages/types/src/types.ts` | TypeScript type aliases (inferred from Zod) | New category only |
-| `packages/types/src/option-metadata.ts` | Labels, aliases, CLI value overrides | When auto-humanize is wrong or aliases exist |
-| `packages/types/src/compatibility.ts` | `getDisabledReason()`, `analyzeStackCompatibility()` | When option has framework constraints |
-| `packages/types/src/capabilities.ts` | Capability definitions (auth, addons) | When option uses capability-based selection |
+| File                                              | Purpose                                              | When to edit                                 |
+| ------------------------------------------------- | ---------------------------------------------------- | -------------------------------------------- |
+| `packages/types/src/config/schemas.ts`            | Zod enums, config schemas, value exports             | Always                                       |
+| `packages/types/src/config/types.ts`              | TypeScript type aliases (inferred from Zod)          | New category only                            |
+| `packages/types/src/catalog/option-metadata.ts`   | Labels, aliases, CLI value overrides                 | When auto-humanize is wrong or aliases exist |
+| `packages/types/src/stack/compatibility.ts`       | `getDisabledReason()`, `analyzeStackCompatibility()` | When option has framework constraints        |
+| `packages/types/src/capabilities/capabilities.ts` | Capability definitions (auth, addons)                | When option uses capability-based selection  |
 
 ### Template Generator
 
-| File | Purpose | When to edit |
-|------|---------|--------------|
-| `packages/template-generator/src/utils/add-deps.ts` | Central version map for all npm packages | Every new TS dependency |
-| `packages/template-generator/src/processors/<cat>-deps.ts` | Dependency injection per category | Every new TS option |
-| `packages/template-generator/src/processors/env-vars.ts` | `.env` file generation | When tool needs env vars |
-| `packages/template-generator/src/processors/index.ts` | Processor pipeline orchestration | New category only |
-| `packages/template-generator/src/template-handlers/<cat>.ts` | Template file routing | When templates exist |
-| `packages/template-generator/src/template-handlers/index.ts` | Handler re-exports | New category only |
-| `packages/template-generator/src/generator.ts` | Main generation pipeline | New category only |
-| `packages/template-generator/src/post-process/package-configs.ts` | Script & pkg.json mutations | When tool needs custom scripts |
-| `packages/template-generator/src/post-process/catalogs.ts` | pnpm/bun catalog dedup | Rarely (auto-handled) |
-| `packages/template-generator/templates/<cat>/<id>/` | Handlebars template files | Every new TS option with templates |
-| `packages/template-generator/templates/<eco>-base/` | Non-TS ecosystem templates | Every new Rust/Go/Python option |
+| File                                                              | Purpose                                  | When to edit                       |
+| ----------------------------------------------------------------- | ---------------------------------------- | ---------------------------------- |
+| `packages/template-generator/src/dependencies/add-deps.ts`        | Central version map for all npm packages | Every new TS dependency            |
+| `packages/template-generator/src/processors/<cat>-deps.ts`        | Dependency injection per category        | Every new TS option                |
+| `packages/template-generator/src/processors/config/env-vars.ts`   | `.env` file generation                   | When tool needs env vars           |
+| `packages/template-generator/src/processors/index.ts`             | Processor pipeline orchestration         | New category only                  |
+| `packages/template-generator/src/template-handlers/<cat>.ts`      | Template file routing                    | When templates exist               |
+| `packages/template-generator/src/template-handlers/index.ts`      | Handler re-exports                       | New category only                  |
+| `packages/template-generator/src/generator.ts`                    | Main generation pipeline                 | New category only                  |
+| `packages/template-generator/src/post-process/package-configs.ts` | Script & pkg.json mutations              | When tool needs custom scripts     |
+| `packages/template-generator/src/post-process/catalogs.ts`        | pnpm/bun catalog dedup                   | Rarely (auto-handled)              |
+| `packages/template-generator/templates/<cat>/<id>/`               | Handlebars template files                | Every new TS option with templates |
+| `packages/template-generator/templates/<eco>-base/`               | Non-TS ecosystem templates               | Every new Rust/Go/Python option    |
 
 ### CLI
 
-| File | Purpose | When to edit |
-|------|---------|--------------|
-| `apps/cli/src/index.ts` | Commander flags, schema wiring, prompt calls, config mapping (4 spots) | New category only; existing categories already wired |
-| `apps/cli/src/prompts/<cat>.ts` | Interactive prompt for TS categories | Every new TS option |
-| `apps/cli/src/prompts/<eco>-ecosystem.ts` | Interactive prompt for Rust/Go/Python | Every new non-TS option |
-| `apps/cli/src/prompts/config-prompts.ts` | Prompt group wiring (imports, `PromptGroupResults`, return mapping) | New category only |
-| `apps/cli/src/helpers/core/post-installation.ts` | Post-scaffold setup instructions + framework display name | When user action needed, or when other options in same category have post-install |
-| `apps/cli/src/mcp.ts` | Import schema, tool parameter schemas, config builder, compatibility input, and MCP schema aliases/overrides only for Legacy Flat Config naming differences | New category only |
-| `apps/cli/src/utils/bts-config.ts` | `writeBtsConfig()` field mapping (write + read paths) | New category only |
-| `apps/cli/src/constants.ts` | Ecosystem-aware default values | New category only |
-| `apps/cli/src/helpers/core/command-handlers.ts` | Error fallback config (`"none"` for new fields) | New category only |
-| `apps/cli/src/utils/generate-reproducible-command.ts` | `--flag-name` in reproduced command output | New category only |
+| File                                                      | Purpose                                                                                                                                                     | When to edit                                                                      |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `apps/cli/src/index.ts`                                   | Commander flags, schema wiring, prompt calls, config mapping (4 spots)                                                                                      | New category only; existing categories already wired                              |
+| `apps/cli/src/prompts/<cat>.ts`                           | Interactive prompt for TS categories                                                                                                                        | Every new TS option                                                               |
+| `apps/cli/src/prompts/<eco>-ecosystem.ts`                 | Interactive prompt for Rust/Go/Python                                                                                                                       | Every new non-TS option                                                           |
+| `apps/cli/src/prompts/core/config-prompts.ts`             | Prompt group wiring (imports, `PromptGroupResults`, return mapping)                                                                                         | New category only                                                                 |
+| `apps/cli/src/helpers/core/post-installation.ts`          | Post-scaffold setup instructions + framework display name                                                                                                   | When user action needed, or when other options in same category have post-install |
+| `apps/cli/src/mcp.ts`                                     | Import schema, tool parameter schemas, config builder, compatibility input, and MCP schema aliases/overrides only for Legacy Flat Config naming differences | New category only                                                                 |
+| `apps/cli/src/config/bts-config.ts`                       | `writeBtsConfig()` field mapping (write + read paths)                                                                                                       | New category only                                                                 |
+| `apps/cli/src/constants.ts`                               | Ecosystem-aware default values                                                                                                                              | New category only                                                                 |
+| `apps/cli/src/helpers/core/command-handlers.ts`           | Error fallback config (`"none"` for new fields)                                                                                                             | New category only                                                                 |
+| `apps/cli/src/lifecycle/generate-reproducible-command.ts` | `--flag-name` in reproduced command output                                                                                                                  | New category only                                                                 |
 
 ### Template Generator (non-TS specific)
 
-| File | Purpose | When to edit |
-|------|---------|--------------|
-| `packages/template-generator/src/processors/readme-generator.ts` | Framework name/description in generated README | Every non-TS option that changes framework/tool name |
-| `packages/template-generator/src/processors/ai-docs-generator.ts` | Dev server command in generated CLAUDE.md | Every non-TS option that changes run commands |
+| File                                                                     | Purpose                                        | When to edit                                         |
+| ------------------------------------------------------------------------ | ---------------------------------------------- | ---------------------------------------------------- |
+| `packages/template-generator/src/processors/config/readme-generator.ts`  | Framework name/description in generated README | Every non-TS option that changes framework/tool name |
+| `packages/template-generator/src/processors/config/ai-docs-generator.ts` | Dev server command in generated CLAUDE.md      | Every non-TS option that changes run commands        |
 
 ### Web Builder
 
-| File | Purpose | When to edit |
-|------|---------|--------------|
-| `apps/web/src/lib/constant.ts` | `TECH_OPTIONS` and ecosystem option entries; category order is derived from `packages/types/src/option-metadata.ts` | Always |
-| `apps/web/src/lib/tech-icons.ts` | Icon registry (SimpleIcons CDN or local SVG) | Always |
-| `apps/web/src/lib/tech-resource-links.ts` | Docs URL, GitHub URL | Always |
-| `apps/web/public/icon/<id>.svg` | Local SVG icon file | When not using SimpleIcons |
-| `packages/types/src/stack-translation.ts` | Shared stack defaults, URL keys, URL serialization, and command generation flags | New category only |
+| File                                            | Purpose                                                                                                                     | When to edit               |
+| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| `apps/web/src/lib/stack/constant.ts`            | `TECH_OPTIONS` and ecosystem option entries; category order is derived from `packages/types/src/catalog/option-metadata.ts` | Always                     |
+| `apps/web/src/lib/stack/tech-icons.ts`          | Icon registry (SimpleIcons CDN or local SVG)                                                                                | Always                     |
+| `apps/web/src/lib/stack/tech-resource-links.ts` | Docs URL, GitHub URL                                                                                                        | Always                     |
+| `apps/web/public/icon/<id>.svg`                 | Local SVG icon file                                                                                                         | When not using SimpleIcons |
+| `packages/types/src/stack/stack-translation.ts` | Shared stack defaults, URL keys, URL serialization, and command generation flags                                            | New category only          |
 
 ---
 
@@ -869,15 +878,15 @@ Study the existing `rust-base/`, `go-base/`, and `python-base/` templates as str
 
 TypeScript uses a **modular pipeline** (20+ processors, 20+ template handlers, programmatic deps). Rust/Go/Python each use a **single monolithic template handler** with conditional paths and template-based dependency management.
 
-| Behavior | Rust | Go | Python | TypeScript |
-|----------|------|-----|--------|------------|
-| Handler type | Monolithic | Monolithic | Monolithic | Modular (per category) |
-| Optional modules (new dirs) | Handler-level path skips | Handler-level path skips | Template-only conditionals | `processTemplatesFromPrefix()` calls |
-| Core options (frameworks, ORMs) | Template conditionals in shared files | Template conditionals in shared files | Template conditionals in shared files | Separate template directories per option |
-| Empty file skipping | **NO** | YES | YES | YES |
-| Adding new optional module | Handler edit (boolean + skip) | Handler edit (boolean + skip) | **No** (wrap in conditional) | New handler + generator.ts call |
-| Adding option to existing category | **No** (template conditionals only) | **No** (template conditionals only) | **No** (template conditionals only) | Handler edit (new prefix call) |
-| Dependency file | `Cargo.toml.hbs` | `go.mod.hbs` | `pyproject.toml.hbs` | Programmatic (add-deps.ts + processors) |
+| Behavior                           | Rust                                  | Go                                    | Python                                | TypeScript                               |
+| ---------------------------------- | ------------------------------------- | ------------------------------------- | ------------------------------------- | ---------------------------------------- |
+| Handler type                       | Monolithic                            | Monolithic                            | Monolithic                            | Modular (per category)                   |
+| Optional modules (new dirs)        | Handler-level path skips              | Handler-level path skips              | Template-only conditionals            | `processTemplatesFromPrefix()` calls     |
+| Core options (frameworks, ORMs)    | Template conditionals in shared files | Template conditionals in shared files | Template conditionals in shared files | Separate template directories per option |
+| Empty file skipping                | **NO**                                | YES                                   | YES                                   | YES                                      |
+| Adding new optional module         | Handler edit (boolean + skip)         | Handler edit (boolean + skip)         | **No** (wrap in conditional)          | New handler + generator.ts call          |
+| Adding option to existing category | **No** (template conditionals only)   | **No** (template conditionals only)   | **No** (template conditionals only)   | Handler edit (new prefix call)           |
+| Dependency file                    | `Cargo.toml.hbs`                      | `go.mod.hbs`                          | `pyproject.toml.hbs`                  | Programmatic (add-deps.ts + processors)  |
 
 See [Templates & Handlers guide](templates-and-handlers.md) for full handler code, `processTemplatesFromPrefix()` reference, and Handlebars conditional patterns.
 
@@ -889,9 +898,10 @@ See [Routing Gotchas](routing-gotchas.md) for edge cases that affect ~40-50% of 
 
 ### Auto-detection tests (catch missing files automatically)
 
-**File:** `apps/cli/test/cli-builder-sync.test.ts`
+**File:** `apps/cli/test/recommendations/cli-builder-sync.test.ts`
 
 This test **auto-discovers** all schema values and verifies they exist in the web builder. It catches:
+
 - New option added to schema but missing from `constant.ts`
 - New option in builder but missing from schema
 - Prompt file missing the option
@@ -900,7 +910,7 @@ This test **auto-discovers** all schema values and verifies they exist in the we
 **You don't need to edit this test** — it will fail automatically if you miss a file. Run it to verify:
 
 ```bash
-bun test apps/cli/test/cli-builder-sync.test.ts
+bun test apps/cli/test/recommendations/cli-builder-sync.test.ts
 ```
 
 ### Manual test additions
@@ -954,7 +964,7 @@ it("should include diesel when selected", async () => {
 
 See [Testing guide](testing.md) for full test utility reference, both APIs, and assertion patterns.
 
-**File:** `apps/cli/test/template-snapshots.test.ts`
+**File:** `apps/cli/test/support/template-snapshots.test.ts`
 
 Add a representative combo to snapshot configs:
 
@@ -984,7 +994,7 @@ Add a representative combo to snapshot configs:
 }
 ```
 
-**File:** `apps/cli/test/template-validation.test.ts`
+**File:** `apps/cli/test/generation/template-validation.test.ts`
 
 Add the new option to combo arrays so it's tested with multiple frontends/backends:
 
@@ -998,7 +1008,7 @@ const SEARCH_CONFIGS: TSConfig[] = SEARCH_VALUES.filter(s => s !== "none").map(s
 }));
 ```
 
-**File:** `apps/cli/test/preflight-validation.test.ts`
+**File:** `apps/cli/test/architecture/preflight-validation.test.ts`
 
 If the option has compatibility constraints:
 
@@ -1018,17 +1028,21 @@ The smoke test randomly generates project combos by sampling from schema value a
 For a new category (e.g., `rustLogging`):
 
 1. Import the values constant:
+
 ```typescript
 import { RUST_LOGGING_VALUES } from "@better-fullstack/types";
 ```
 
 2. Add sampling in the ecosystem's `make*Draft()` function:
+
 ```typescript
 rustLogging: sampleScalar(RUST_LOGGING_VALUES, 0.15),
 ```
+
 The second argument is the "none" probability (0.15 = 15% chance of "none").
 
 3. Add default in the base config (same file):
+
 ```typescript
 rustLogging: "tracing",
 ```
@@ -1036,6 +1050,7 @@ rustLogging: "tracing",
 **File:** `testing/lib/presets.ts`
 
 Add the field to `makeBaseConfig()` so existing presets don't break:
+
 ```typescript
 rustLogging: "tracing",
 ```
@@ -1045,6 +1060,7 @@ rustLogging: "tracing",
 ### How auto-discovery works for existing categories
 
 When you add a new option to an **existing** category (e.g., `"algolia"` to `SearchSchema`), the combo generator automatically picks it up because:
+
 - It imports `SEARCH_VALUES` from `@better-fullstack/types`
 - `SEARCH_VALUES` derives from the Zod enum
 - `sampleScalar(SEARCH_VALUES, 0.9)` randomly selects from all values including the new one
@@ -1054,6 +1070,7 @@ No code changes needed in the generator for existing-category additions.
 ### CI validation
 
 Tests run automatically on every PR via:
+
 - `.github/workflows/test.yaml` — runs `bun run test:release`, `bun run validate:tech-links`
 - `.github/workflows/template-matrix.yaml` — runs smoke tests for curated presets (weekly/manual)
 
@@ -1078,7 +1095,7 @@ bun run --filter=create-better-fullstack build
 ### Step 2 — Auto-sync test (catches missing builder/prompt/schema entries)
 
 ```bash
-bun test apps/cli/test/cli-builder-sync.test.ts
+bun test apps/cli/test/recommendations/cli-builder-sync.test.ts
 ```
 
 If this fails, you missed a file. Check the error message — it tells you exactly which option is missing from which file.
@@ -1090,7 +1107,7 @@ bun run --cwd apps/cli check-types
 bun run --cwd apps/web typecheck
 ```
 
-If web typecheck fails with "Property 'X' is missing," you forgot to add your new field to `preview-config.ts` or `DEFAULT_STACK_SELECTION` in `packages/types/src/stack-translation.ts`.
+If web typecheck fails with "Property 'X' is missing," you forgot to add your new field to `preview-config.ts` or `DEFAULT_STACK_SELECTION` in `packages/types/src/stack/stack-translation.ts`.
 
 ### Step 4 — Category-specific tests
 
@@ -1108,13 +1125,14 @@ bun test apps/cli/test/<eco>-ecosystem.test.ts
 
 ```bash
 # Generate/update snapshots
-bun test apps/cli/test/template-snapshots.test.ts -u
+bun test apps/cli/test/support/template-snapshots.test.ts -u
 
 # Verify they pass cleanly now
-bun test apps/cli/test/template-snapshots.test.ts
+bun test apps/cli/test/support/template-snapshots.test.ts
 ```
 
 **You MUST commit the updated `.snap` file.** This is the #1 CI failure cause:
+
 - Adding a snapshot config in `template-snapshots.test.ts` without running `-u` = missing `.snap` entry
 - Changing templates that affect existing snapshots without running `-u` = stale `.snap` content
 - The `.snap` file lives at `apps/cli/test/__snapshots__/template-snapshots.test.ts.snap`
@@ -1148,38 +1166,38 @@ Before running `git add` and `git commit`, verify:
 
 ### What CI runs (so you know what will fail remotely)
 
-| CI Job | What it checks | Local equivalent |
-|--------|---------------|------------------|
-| **Lint** | `turbo lint` across all packages | `bun run --cwd apps/cli check-types && bun run --cwd apps/web typecheck` |
-| **Test** | `bun run test:coverage` (all 2500+ tests) | `bun test apps/cli/test/` |
-| **Release Guard** | Snapshot verification + CLI/builder parity | `bun run test:release` |
-| **Build Check** | Full build of all packages | Step 1 above |
-| **Smoke Test** | Curated preset generation | `bun run test:smoke -- --preset <name>` |
-| **CodeQL** | Security analysis | (runs remotely only) |
+| CI Job            | What it checks                             | Local equivalent                                                         |
+| ----------------- | ------------------------------------------ | ------------------------------------------------------------------------ |
+| **Lint**          | `turbo lint` across all packages           | `bun run --cwd apps/cli check-types && bun run --cwd apps/web typecheck` |
+| **Test**          | `bun run test:coverage` (all 2500+ tests)  | `bun test apps/cli/test/`                                                |
+| **Release Guard** | Snapshot verification + CLI/builder parity | `bun run test:release`                                                   |
+| **Build Check**   | Full build of all packages                 | Step 1 above                                                             |
+| **Smoke Test**    | Curated preset generation                  | `bun run test:smoke -- --preset <name>`                                  |
+| **CodeQL**        | Security analysis                          | (runs remotely only)                                                     |
 
 ---
 
 ## 8. Naming Conventions
 
-| Element | Convention | Examples |
-|---------|-----------|----------|
-| Schema ID (Zod enum value) | lowercase kebab-case | `"algolia"`, `"upstash-ratelimit"`, `"better-auth"` |
-| Schema name | PascalCase + `Schema` suffix | `SearchSchema`, `GoWebFrameworkSchema` |
-| Values export | SCREAMING_SNAKE + `_VALUES` | `SEARCH_VALUES`, `GO_WEB_FRAMEWORK_VALUES` |
-| Type alias | PascalCase | `Search`, `GoWebFramework` |
-| Template directory | matches schema ID exactly | `templates/search/algolia/` |
-| Processor file | `<category>-deps.ts` | `search-deps.ts`, `rate-limiting-deps.ts` |
-| Handler file | `<category>.ts` | `search.ts`, `rate-limiting.ts` |
-| Prompt file (TS) | `<category>.ts` | `search.ts`, `rate-limiting.ts` |
-| Prompt file (non-TS) | `<ecosystem>-ecosystem.ts` | `rust-ecosystem.ts`, `go-ecosystem.ts` |
-| Prompt function | `get<Category>Choice` | `getSearchChoice`, `getGoWebFrameworkChoice` |
-| Test file | `<category>.test.ts` | `search.test.ts`, `go-language.test.ts` |
-| Icon (SimpleIcons) | `{ type: "si", slug, hex }` | `{ type: "si", slug: "algolia", hex: "003DFF" }` |
-| Icon (local SVG) | `{ type: "local", src }` | `{ type: "local", src: "/icon/algolia.svg" }` |
-| Dependency map key | exact npm package name | `"algoliasearch"`, `"@arcjet/node"` |
-| CLI flag | `--<kebab-case>` | `--search`, `--rate-limiting` |
-| Env var (server) | `SCREAMING_SNAKE` | `ALGOLIA_API_KEY` |
-| Env var (client) | framework prefix + name | `NEXT_PUBLIC_ALGOLIA_APP_ID` |
+| Element                    | Convention                   | Examples                                            |
+| -------------------------- | ---------------------------- | --------------------------------------------------- |
+| Schema ID (Zod enum value) | lowercase kebab-case         | `"algolia"`, `"upstash-ratelimit"`, `"better-auth"` |
+| Schema name                | PascalCase + `Schema` suffix | `SearchSchema`, `GoWebFrameworkSchema`              |
+| Values export              | SCREAMING_SNAKE + `_VALUES`  | `SEARCH_VALUES`, `GO_WEB_FRAMEWORK_VALUES`          |
+| Type alias                 | PascalCase                   | `Search`, `GoWebFramework`                          |
+| Template directory         | matches schema ID exactly    | `templates/search/algolia/`                         |
+| Processor file             | `<category>-deps.ts`         | `search-deps.ts`, `rate-limiting-deps.ts`           |
+| Handler file               | `<category>.ts`              | `search.ts`, `rate-limiting.ts`                     |
+| Prompt file (TS)           | `<category>.ts`              | `search.ts`, `rate-limiting.ts`                     |
+| Prompt file (non-TS)       | `<ecosystem>-ecosystem.ts`   | `rust-ecosystem.ts`, `go-ecosystem.ts`              |
+| Prompt function            | `get<Category>Choice`        | `getSearchChoice`, `getGoWebFrameworkChoice`        |
+| Test file                  | `<category>.test.ts`         | `search.test.ts`, `go-language.test.ts`             |
+| Icon (SimpleIcons)         | `{ type: "si", slug, hex }`  | `{ type: "si", slug: "algolia", hex: "003DFF" }`    |
+| Icon (local SVG)           | `{ type: "local", src }`     | `{ type: "local", src: "/icon/algolia.svg" }`       |
+| Dependency map key         | exact npm package name       | `"algoliasearch"`, `"@arcjet/node"`                 |
+| CLI flag                   | `--<kebab-case>`             | `--search`, `--rate-limiting`                       |
+| Env var (server)           | `SCREAMING_SNAKE`            | `ALGOLIA_API_KEY`                                   |
+| Env var (client)           | framework prefix + name      | `NEXT_PUBLIC_ALGOLIA_APP_ID`                        |
 
 ---
 
@@ -1204,46 +1222,46 @@ If any one of those checks fails, the PR is not finished. The usual failure mode
 
 These are the most frequently missed files based on git history analysis and real validation runs across all supported ecosystems:
 
-| Mistake | Consequence | How to catch |
-|---------|-------------|--------------|
-| Missing schema enum value | CLI rejects the flag, type errors | `bun run --cwd apps/cli check-types` |
-| Missing `constant.ts` entry | Option not visible in web builder | `cli-builder-sync.test.ts` auto-fails |
-| Missing `tech-icons.ts` entry | Broken icon in builder UI | `validate:tech-links` script |
-| Missing `tech-resource-links.ts` entry | Broken docs/GitHub links | `validate:tech-links` script |
-| Missing `add-deps.ts` version | Build-time error during generation | Generator throws on unknown package |
-| Missing prompt option | Not offered in interactive mode | `cli-builder-sync.test.ts` prompt coverage |
-| Wrong env var prefix | Client can't read env var at runtime | Manual testing per framework |
-| Forgot `generate-templates` after `.hbs` edit | Templates not included in build | Stale output, test failures |
-| Forgot to rebuild `packages/types` | Downstream packages use stale types | Type errors in CLI/web |
-| Missing test combo | Broken generation discovered in production | Smoke test or user report |
-| Compatibility updated without matching handler/template coverage | Builder allows a combo the generator cannot actually emit | Compare `compatibility.ts` changes against handler branches and template directories; add a scaffold combo for every newly allowed frontend/backend family |
-| Template dir name doesn't match schema ID | Handler can't find templates | Empty generated output |
-| New dependency added but never referenced in generated code | Dead dependency, misleading starter, unnecessary install weight | Search templates for imports/usages and add a file-content assertion |
-| Runtime feature only checked by compile/snapshot tests | Semantically wrong generated code ships despite passing CI | Add behavioral file assertions for routes, headers, body parsing, rewrites, and framework-specific helpers |
-| Forgot trailing newline in `.hbs` file | Linting warnings | Previous audit fixed 52 files — keep the habit |
-| **New cat:** missing `config-prompts.ts` wiring | Prompt never called in interactive mode | Type error on missing `PromptGroupResults` field |
-| **New cat:** missing `mcp.ts` updates (5 spots) | MCP server can't scaffold with new option | Manual MCP testing |
-| **New cat:** missing `constants.ts` default | Wrong default used when option not specified | Behavioral bug in non-interactive mode |
-| **New cat:** missing `command-handlers.ts` fallback | Type error on error path | `check-types` fails |
-| **New cat:** missing `generate-reproducible-command.test.ts` update | Reproducible command test has stale assertion (missing new flag) | `bun test apps/cli/test/generate-reproducible-command.test.ts` |
-| **Non-TS:** missing `readme-generator.ts` branch | Generated README references wrong framework | Manual inspection of generated project |
-| **Non-TS:** missing `ai-docs-generator.ts` branch | Generated CLAUDE.md has wrong dev command | Manual inspection of generated project |
-| **Go:** forgot to widen `.hbs` outer guards | New framework option generates empty handlers file | `createVirtual` test with content assertion |
-| Editing handler when template conditionals suffice | Unnecessary code; may break empty-file-skip logic | Review handler before editing |
-| **New cat:** missing `generate-combos/options.ts` wiring | New category never randomly tested by smoke tests — bugs go undetected | Import `*_VALUES`, add `sampleScalar()` in `make*Draft()`, add default |
-| **#1 CI killer:** Snapshot file not committed | Added snapshot config in test but didn't run `-u` or didn't `git add` the `.snap` file — Release Guard fails | Run `bun test apps/cli/test/template-snapshots.test.ts -u` then `git add apps/cli/test/__snapshots__/` |
-| **Go/Rust:** Unbalanced `{{#if}}`/`{{/if}}` in large `.hbs` files | New framework block inserted inside another block's unclosed conditional — breaks ALL generation for that ecosystem | Count `{{#if` and `{{/if}}` in the file after editing; they must match. Search for the previous framework's closing `{{/if}}` before inserting. |
-| **New cat:** missing `config-processing.ts` branch | CLI silently ignores the `--flag` value, always prompts interactively | `bun run --cwd apps/cli check-types` (type error on missing property) |
-| **New cat:** missing `add-history-commands.test.ts` update | History command test has stale expected output (missing new flag) | Now caught by `test:release` |
-| **New cat:** missing `generate-reproducible-command.test.ts` update | Reproducible command test has stale assertion | Now caught by `test:release` |
-| **Cross-PR:** Duplicate keys in `tech-resource-links.ts` or `tech-icons.ts` | Rebase brings in entries from another merged PR, your branch adds the same key | `bun run --cwd apps/web lint` (oxlint catches duplicate object keys) |
+| Mistake                                                                     | Consequence                                                                                                         | How to catch                                                                                                                                               |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Missing schema enum value                                                   | CLI rejects the flag, type errors                                                                                   | `bun run --cwd apps/cli check-types`                                                                                                                       |
+| Missing `constant.ts` entry                                                 | Option not visible in web builder                                                                                   | `cli-builder-sync.test.ts` auto-fails                                                                                                                      |
+| Missing `tech-icons.ts` entry                                               | Broken icon in builder UI                                                                                           | `validate:tech-links` script                                                                                                                               |
+| Missing `tech-resource-links.ts` entry                                      | Broken docs/GitHub links                                                                                            | `validate:tech-links` script                                                                                                                               |
+| Missing `add-deps.ts` version                                               | Build-time error during generation                                                                                  | Generator throws on unknown package                                                                                                                        |
+| Missing prompt option                                                       | Not offered in interactive mode                                                                                     | `cli-builder-sync.test.ts` prompt coverage                                                                                                                 |
+| Wrong env var prefix                                                        | Client can't read env var at runtime                                                                                | Manual testing per framework                                                                                                                               |
+| Forgot `generate-templates` after `.hbs` edit                               | Templates not included in build                                                                                     | Stale output, test failures                                                                                                                                |
+| Forgot to rebuild `packages/types`                                          | Downstream packages use stale types                                                                                 | Type errors in CLI/web                                                                                                                                     |
+| Missing test combo                                                          | Broken generation discovered in production                                                                          | Smoke test or user report                                                                                                                                  |
+| Compatibility updated without matching handler/template coverage            | Builder allows a combo the generator cannot actually emit                                                           | Compare `compatibility.ts` changes against handler branches and template directories; add a scaffold combo for every newly allowed frontend/backend family |
+| Template dir name doesn't match schema ID                                   | Handler can't find templates                                                                                        | Empty generated output                                                                                                                                     |
+| New dependency added but never referenced in generated code                 | Dead dependency, misleading starter, unnecessary install weight                                                     | Search templates for imports/usages and add a file-content assertion                                                                                       |
+| Runtime feature only checked by compile/snapshot tests                      | Semantically wrong generated code ships despite passing CI                                                          | Add behavioral file assertions for routes, headers, body parsing, rewrites, and framework-specific helpers                                                 |
+| Forgot trailing newline in `.hbs` file                                      | Linting warnings                                                                                                    | Previous audit fixed 52 files — keep the habit                                                                                                             |
+| **New cat:** missing `config-prompts.ts` wiring                             | Prompt never called in interactive mode                                                                             | Type error on missing `PromptGroupResults` field                                                                                                           |
+| **New cat:** missing `mcp.ts` updates (5 spots)                             | MCP server can't scaffold with new option                                                                           | Manual MCP testing                                                                                                                                         |
+| **New cat:** missing `constants.ts` default                                 | Wrong default used when option not specified                                                                        | Behavioral bug in non-interactive mode                                                                                                                     |
+| **New cat:** missing `command-handlers.ts` fallback                         | Type error on error path                                                                                            | `check-types` fails                                                                                                                                        |
+| **New cat:** missing `generate-reproducible-command.test.ts` update         | Reproducible command test has stale assertion (missing new flag)                                                    | `bun test apps/cli/test/generation/generate-reproducible-command.test.ts`                                                                                  |
+| **Non-TS:** missing `readme-generator.ts` branch                            | Generated README references wrong framework                                                                         | Manual inspection of generated project                                                                                                                     |
+| **Non-TS:** missing `ai-docs-generator.ts` branch                           | Generated CLAUDE.md has wrong dev command                                                                           | Manual inspection of generated project                                                                                                                     |
+| **Go:** forgot to widen `.hbs` outer guards                                 | New framework option generates empty handlers file                                                                  | `createVirtual` test with content assertion                                                                                                                |
+| Editing handler when template conditionals suffice                          | Unnecessary code; may break empty-file-skip logic                                                                   | Review handler before editing                                                                                                                              |
+| **New cat:** missing `generate-combos/options.ts` wiring                    | New category never randomly tested by smoke tests — bugs go undetected                                              | Import `*_VALUES`, add `sampleScalar()` in `make*Draft()`, add default                                                                                     |
+| **#1 CI killer:** Snapshot file not committed                               | Added snapshot config in test but didn't run `-u` or didn't `git add` the `.snap` file — Release Guard fails        | Run `bun test apps/cli/test/support/template-snapshots.test.ts -u` then `git add apps/cli/test/__snapshots__/`                                             |
+| **Go/Rust:** Unbalanced `{{#if}}`/`{{/if}}` in large `.hbs` files           | New framework block inserted inside another block's unclosed conditional — breaks ALL generation for that ecosystem | Count `{{#if` and `{{/if}}` in the file after editing; they must match. Search for the previous framework's closing `{{/if}}` before inserting.            |
+| **New cat:** missing `config-processing.ts` branch                          | CLI silently ignores the `--flag` value, always prompts interactively                                               | `bun run --cwd apps/cli check-types` (type error on missing property)                                                                                      |
+| **New cat:** missing `add-history-commands.test.ts` update                  | History command test has stale expected output (missing new flag)                                                   | Now caught by `test:release`                                                                                                                               |
+| **New cat:** missing `generate-reproducible-command.test.ts` update         | Reproducible command test has stale assertion                                                                       | Now caught by `test:release`                                                                                                                               |
+| **Cross-PR:** Duplicate keys in `tech-resource-links.ts` or `tech-icons.ts` | Rebase brings in entries from another merged PR, your branch adds the same key                                      | `bun run --cwd apps/web lint` (oxlint catches duplicate object keys)                                                                                       |
 
 ### The golden rule
 
 **Always run `cli-builder-sync.test.ts` after changes.** It auto-discovers every schema value and verifies it exists in the builder, prompts, and CLI flags. If it passes, you've covered the most common omissions.
 
 ```bash
-bun test apps/cli/test/cli-builder-sync.test.ts
+bun test apps/cli/test/recommendations/cli-builder-sync.test.ts
 ```
 
 ### The second golden rule

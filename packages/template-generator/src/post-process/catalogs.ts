@@ -7,7 +7,7 @@ import type { ProjectConfig } from "@better-fullstack/types";
 
 import yaml from "yaml";
 
-import type { VirtualFileSystem } from "../core/virtual-fs";
+import type { VirtualFileSystem } from "@/core/virtual-fs";
 
 type PackageJson = {
   name?: string;
@@ -87,7 +87,10 @@ export function processCatalogs(vfs: VirtualFileSystem, config: ProjectConfig): 
  * entries again lets a later pass fold in dependencies added in between (e.g.
  * the database package) instead of leaving them at literal versions.
  */
-function readExistingCatalog(vfs: VirtualFileSystem, config: ProjectConfig): Record<string, string> {
+function readExistingCatalog(
+  vfs: VirtualFileSystem,
+  config: ProjectConfig,
+): Record<string, string> {
   if (config.packageManager === "bun") {
     const pkgJson = vfs.readJson<PackageJson>("package.json");
     const workspaces = pkgJson?.workspaces;

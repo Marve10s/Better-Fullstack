@@ -1,11 +1,3 @@
-import * as FileSystem from "@effect/platform/FileSystem";
-import * as Effect from "effect/Effect";
-import * as Either from "effect/Either";
-import * as Option from "effect/Option";
-import { createHash } from "node:crypto";
-import os from "node:os";
-import path from "node:path";
-
 import type {
   BenchmarkSpec,
   CreationPath,
@@ -16,8 +8,9 @@ import type {
   RunResult,
   ScaffbenchOptions,
   StepResult,
-} from "@/types";
+} from "@scaffbench/types";
 
+import * as FileSystem from "@effect/platform/FileSystem";
 import {
   agyModelString,
   claudeCostUsd,
@@ -33,10 +26,14 @@ import {
   runOpencode,
   runPi,
   tail,
-} from "@/agents";
-import { calibrationOptions, calibrationVerdict, formatCalibrationVerdict } from "@/calibrate";
-import { selectedSpecs } from "@/cli";
-import { measureProjectCode } from "@/code-metrics";
+} from "@scaffbench/agents";
+import {
+  calibrationOptions,
+  calibrationVerdict,
+  formatCalibrationVerdict,
+} from "@scaffbench/calibrate";
+import { selectedSpecs } from "@scaffbench/cli";
+import { measureProjectCode } from "@scaffbench/code-metrics";
 import {
   CREATION_PATH_VALUES,
   EFFORT_VALUES,
@@ -52,8 +49,8 @@ import {
   resolveSpecPaths,
   setResolvedBfVersion,
   generationTimeoutMs,
-} from "@/constants";
-import { canonicalCommand, promptFor } from "@/prompts";
+} from "@scaffbench/constants";
+import { canonicalCommand, promptFor } from "@scaffbench/prompts";
 import {
   deriveFailureTags,
   emptyAcceptanceScore,
@@ -65,11 +62,17 @@ import {
   outcomeEvidenceFor,
   rollupOutcome,
   stepBaseName,
-} from "@/scoring";
-import { SCAFFBENCH_2_SPECS } from "@/specs";
-import { collectMetadata, effectiveReasoning, writeSummary } from "@/summary";
-import { archiveProjectSource, findProjectDir } from "@/validation";
-import { validateProjectCached } from "@/validation/cache";
+} from "@scaffbench/scoring";
+import { SCAFFBENCH_2_SPECS } from "@scaffbench/specs";
+import { collectMetadata, effectiveReasoning, writeSummary } from "@scaffbench/summary";
+import { archiveProjectSource, findProjectDir } from "@scaffbench/validation";
+import { validateProjectCached } from "@scaffbench/validation/cache";
+import * as Effect from "effect/Effect";
+import * as Either from "effect/Either";
+import * as Option from "effect/Option";
+import { createHash } from "node:crypto";
+import os from "node:os";
+import path from "node:path";
 
 type Log = (message: string) => void;
 

@@ -1,7 +1,7 @@
-export { processCatalogs } from "./catalogs";
-export { processPackageConfigs, updateDbPackageJson } from "./package-configs";
+export { processCatalogs } from "@/post-process/catalogs";
+export { processPackageConfigs, updateDbPackageJson } from "@/post-process/package-configs";
 export {
   flattenSingleApp,
   qualifiesForSingleApp,
   resolveWorkspaceLayout,
-} from "./flatten-single-app";
+} from "@/post-process/flatten-single-app";

@@ -1,11 +1,14 @@
 import {
   CATEGORY_ORDER,
   getCategoryOrderForEcosystem,
+  getStarterTrackCatalog,
   getStackPartOptions,
   isMultiSelectCategory,
   parseStackPartSpecs,
   stackPartsToLegacyProjectConfigPartial,
+  STARTER_TRACK_DEFINITIONS,
   type OptionCategory,
+  type OptionCategoryEcosystem,
   type StackPartEcosystem,
   type StackPartOptionContext,
   type StackPartRole,
@@ -36,6 +39,7 @@ import {
   TbDownload as Download,
   TbDotsVertical as EllipsisVertical,
   TbEye as Eye,
+  TbFileImport as FileImport,
   TbBrandGithub as Github,
   TbHammer as Hammer,
   TbInfoCircle as InfoIcon,
@@ -55,9 +59,35 @@ import {
 } from "react-icons/tb";
 import { toast } from "sonner";
 
-import type { ShareMoment } from "@/lib/campaign-share";
-import type { Ecosystem } from "@/lib/types";
+import type { ShareMoment } from "@/lib/campaign/campaign-share";
+import type { Ecosystem } from "@/lib/stack/types";
 
+import { BuilderShareModal } from "@/components/stack-builder/builder-share-modal";
+import {
+  CapabilityEvidenceBadge,
+  CapabilityEvidenceProvider,
+  useCapabilityEvidenceInventory,
+} from "@/components/stack-builder/capability-evidence-badge";
+import { ExistingProjectImportDialog } from "@/components/stack-builder/existing-project-import-dialog";
+import { PresetsPanel } from "@/components/stack-builder/presets-panel";
+import { SavedStacksPanel } from "@/components/stack-builder/saved-stacks-panel";
+import {
+  type BuilderSectionDef,
+  getBuilderSections,
+  isHiddenMobilePlatformCategory,
+} from "@/components/stack-builder/section-groups";
+import { ShareButton } from "@/components/stack-builder/share-button";
+import { TechIcon } from "@/components/stack-builder/tech-icon";
+import {
+  analyzeStackCompatibility,
+  GRAPH_COMMON_CATEGORY_ORDER,
+  getCategoryDisplayName,
+  getDisabledReason,
+  getVisibleOptions,
+  isOptionCompatible,
+  validateProjectName,
+} from "@/components/stack-builder/utils";
+import { YoloToggle } from "@/components/stack-builder/yolo-toggle";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -80,8 +110,13 @@ import {
   failureDurationMs,
   type BuilderRunFailure,
   type BuilderZipFailureStage,
-} from "@/lib/builder-failure-analytics";
-import { clearBuilderMode, publishBuilderMode } from "@/lib/builder-mode-bridge";
+} from "@/lib/analytics/builder-failure-analytics";
+import {
+  selectionAnalyticsProperties,
+  stackAnalyticsProperties,
+  trackCampaignEvent,
+} from "@/lib/analytics/campaign-analytics";
+import { clearBuilderMode, publishBuilderMode } from "@/lib/builder/builder-mode-bridge";
 import {
   buildBuilderSearchLookup,
   createBuilderSearchIndex,
@@ -91,61 +126,39 @@ import {
   saveBuilderSearchPreferences,
   type BuilderSearchLookup,
   type BuilderSearchPreferences,
-} from "@/lib/builder-search-preferences";
-import { hasSeenBuilderShareModal } from "@/lib/builder-share-modal-visibility";
-import { stackAnalyticsProperties, trackCampaignEvent } from "@/lib/campaign-analytics";
+} from "@/lib/builder/builder-search-preferences";
+import { hasSeenBuilderShareModal } from "@/lib/builder/builder-share-modal-visibility";
+import {
+  buildSavedStackEntry,
+  loadSavedStacks,
+  saveSavedStacks,
+  type SavedStackEntry,
+} from "@/lib/builder/saved-stacks";
+import {
+  getLocalizedCategoryDisplayName,
+  getLocalizedSectionName,
+  getLocalizedTechOption,
+} from "@/lib/i18n/builder-copy";
+import { cn } from "@/lib/platform/utils";
+import { getStackRunSupport } from "@/lib/project/run-support";
 import {
   DEFAULT_STACK,
   ECOSYSTEMS,
   PRESET_TEMPLATES,
   type StackState,
   TECH_OPTIONS,
-} from "@/lib/constant";
-import {
-  getLocalizedCategoryDisplayName,
-  getLocalizedSectionName,
-  getLocalizedTechOption,
-} from "@/lib/i18n/builder-copy";
-import { getStackRunSupport } from "@/lib/run-support";
-import {
-  buildSavedStackEntry,
-  loadSavedStacks,
-  saveSavedStacks,
-  type SavedStackEntry,
-} from "@/lib/saved-stacks";
-import { useStackState } from "@/lib/stack-url-state";
+} from "@/lib/stack/constant";
+import { useStackState } from "@/lib/stack/stack-url-state";
 import {
   generateStackCommand,
   generateStackSharingUrl,
   getStackKeyForCategory,
   getToolingCategoryForUi,
   getToolingOptionForUi,
-} from "@/lib/stack-utils";
-import { ICON_REGISTRY } from "@/lib/tech-icons";
-import { getTechResourceLinks } from "@/lib/tech-resource-links";
-import { cn } from "@/lib/utils";
+} from "@/lib/stack/stack-utils";
+import { ICON_REGISTRY } from "@/lib/stack/tech-icons";
+import { getTechResourceLinks } from "@/lib/stack/tech-resource-links";
 import { m } from "@/paraglide/messages.js";
-
-import { BuilderShareModal } from "./builder-share-modal";
-import { PresetsPanel } from "./presets-panel";
-import {
-  type BuilderSectionDef,
-  getBuilderSections,
-  isHiddenMobilePlatformCategory,
-} from "./section-groups";
-import { SavedStacksPanel } from "./saved-stacks-panel";
-import { ShareButton } from "./share-button";
-import { TechIcon } from "./tech-icon";
-import {
-  analyzeStackCompatibility,
-  GRAPH_COMMON_CATEGORY_ORDER,
-  getCategoryDisplayName,
-  getDisabledReason,
-  getVisibleOptions,
-  isOptionCompatible,
-  validateProjectName,
-} from "./utils";
-import { YoloToggle } from "./yolo-toggle";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -1524,7 +1537,10 @@ function resolveDisplayedSections(
   ecosystem: Ecosystem,
 ): BuilderSectionDef[] {
   if (stackMode === "multi") {
-    return getBuilderSections("typescript", GRAPH_COMMON_CATEGORY_ORDER as readonly OptionCategory[]);
+    return getBuilderSections(
+      "typescript",
+      GRAPH_COMMON_CATEGORY_ORDER as readonly OptionCategory[],
+    );
   }
   return getBuilderSections(ecosystem, getCategoryOrderForEcosystem(ecosystem));
 }
@@ -1540,12 +1556,12 @@ const SHADCN_SUB_CATEGORIES = new Set<keyof typeof TECH_OPTIONS>([
 ]);
 
 const PreviewPanel = lazy(async () => {
-  const module = await import("./preview-panel");
+  const module = await import("@/components/stack-builder/preview-panel");
   return { default: module.PreviewPanel };
 });
 
 const RunPanel = lazy(async () => {
-  const module = await import("./run-panel");
+  const module = await import("@/components/stack-builder/run-panel");
   return { default: module.RunPanel };
 });
 
@@ -1554,12 +1570,16 @@ function GraphOptionButton({
   selected,
   testId,
   disabledReason,
+  evidenceEcosystem,
+  evidenceCategory,
   onSelect,
 }: {
   option: TechOption;
   selected: boolean;
   testId: string;
   disabledReason?: string | null;
+  evidenceEcosystem: OptionCategoryEcosystem;
+  evidenceCategory: OptionCategory;
   onSelect: () => void;
 }) {
   const isDisabled = Boolean(disabledReason);
@@ -1611,6 +1631,11 @@ function GraphOptionButton({
           <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
             {localizedOption.description}
           </p>
+          <CapabilityEvidenceBadge
+            ecosystem={evidenceEcosystem}
+            category={evidenceCategory}
+            optionId={option.id}
+          />
           {disabledReason && <DisabledReasonInline reason={disabledReason} />}
         </div>
       </div>
@@ -1625,6 +1650,8 @@ function GraphOptionGroup({
   selectedCount,
   isOptionSelected,
   testIdPrefix,
+  evidenceEcosystem,
+  evidenceCategory,
   defaultCollapsed = false,
   getDisabledReasonForOption,
   onSelect,
@@ -1635,6 +1662,8 @@ function GraphOptionGroup({
   selectedCount?: number;
   isOptionSelected?: (optionId: string) => boolean;
   testIdPrefix: string;
+  evidenceEcosystem: OptionCategoryEcosystem;
+  evidenceCategory: OptionCategory;
   defaultCollapsed?: boolean;
   getDisabledReasonForOption?: (optionId: string) => string | null;
   onSelect: (id: string) => void;
@@ -1685,6 +1714,8 @@ function GraphOptionGroup({
                     selected={selected}
                     testId={`${testIdPrefix}-${option.id}`}
                     disabledReason={disabledReason}
+                    evidenceEcosystem={evidenceEcosystem}
+                    evidenceCategory={evidenceCategory}
                     onSelect={() => onSelect(option.id)}
                   />
                 );
@@ -2118,6 +2149,8 @@ function CreationModeComposer({
       selectedCount={getSelectedCount(category, stack)}
       isOptionSelected={(optionId) => isSelectedCheck(stack, category, optionId)}
       testIdPrefix={testIdPrefix}
+      evidenceEcosystem={compatibilityStack.ecosystem}
+      evidenceCategory={category}
       defaultCollapsed={defaultCollapsed}
       getDisabledReasonForOption={(optionId) =>
         isOptionCompatible(compatibilityStack, category, optionId)
@@ -2171,6 +2204,8 @@ function CreationModeComposer({
               options={frontendOptions}
               selectedId={graphSelection.frontend}
               testIdPrefix="multi-frontend-tool"
+              evidenceEcosystem={frontendConfig.ecosystem}
+              evidenceCategory={frontendConfig.frameworkCategory}
               onSelect={(frontend) =>
                 updateGraphSelection({
                   frontend,
@@ -2270,6 +2305,8 @@ function CreationModeComposer({
               options={backendOptions}
               selectedId={graphSelection.backend}
               testIdPrefix="multi-backend-tool"
+              evidenceEcosystem={backendConfig.ecosystem}
+              evidenceCategory={backendConfig.frameworkCategory}
               onSelect={(backend) => {
                 const nextSelection: GraphSelection = {
                   ...graphSelection,
@@ -2291,6 +2328,8 @@ function CreationModeComposer({
                 options={backendOrmOptions}
                 selectedId={graphSelection.backendOrm}
                 testIdPrefix="multi-backend-orm"
+                evidenceEcosystem={backendConfig.ecosystem}
+                evidenceCategory={backendConfig.ormCategory}
                 onSelect={(backendOrm) => {
                   const nextSelection: GraphSelection = { ...graphSelection, backendOrm };
                   updateGraphSelection(reconcileBackendCapabilities(nextSelection, backendConfig));
@@ -2298,28 +2337,38 @@ function CreationModeComposer({
               />
             )}
 
-            {graphSelection.backend !== "none" && backendApiOptions.length > 0 && (
-              <GraphOptionGroup
-                label={m.builderApiGroup({ ecosystem: backendLabel })}
-                options={backendApiOptions}
-                selectedId={graphSelection.backendApi}
-                testIdPrefix="multi-backend-api"
-                onSelect={(backendApi) => {
-                  const nextSelection: GraphSelection = { ...graphSelection, backendApi };
-                  updateGraphSelection(reconcileBackendCapabilities(nextSelection, backendConfig));
-                }}
-              />
-            )}
+            {graphSelection.backend !== "none" &&
+              backendConfig.apiCategory &&
+              backendApiOptions.length > 0 && (
+                <GraphOptionGroup
+                  label={m.builderApiGroup({ ecosystem: backendLabel })}
+                  options={backendApiOptions}
+                  selectedId={graphSelection.backendApi}
+                  testIdPrefix="multi-backend-api"
+                  evidenceEcosystem={backendConfig.ecosystem}
+                  evidenceCategory={backendConfig.apiCategory}
+                  onSelect={(backendApi) => {
+                    const nextSelection: GraphSelection = { ...graphSelection, backendApi };
+                    updateGraphSelection(
+                      reconcileBackendCapabilities(nextSelection, backendConfig),
+                    );
+                  }}
+                />
+              )}
 
-            {graphSelection.backend !== "none" && backendAuthOptions.length > 0 && (
-              <GraphOptionGroup
-                label={m.builderAuthGroup({ ecosystem: backendLabel })}
-                options={backendAuthOptions}
-                selectedId={graphSelection.backendAuth}
-                testIdPrefix="multi-backend-auth"
-                onSelect={(backendAuth) => updateGraphSelection({ backendAuth })}
-              />
-            )}
+            {graphSelection.backend !== "none" &&
+              backendConfig.authCategory &&
+              backendAuthOptions.length > 0 && (
+                <GraphOptionGroup
+                  label={m.builderAuthGroup({ ecosystem: backendLabel })}
+                  options={backendAuthOptions}
+                  selectedId={graphSelection.backendAuth}
+                  testIdPrefix="multi-backend-auth"
+                  evidenceEcosystem={backendConfig.ecosystem}
+                  evidenceCategory={backendConfig.authCategory}
+                  onSelect={(backendAuth) => updateGraphSelection({ backendAuth })}
+                />
+              )}
 
             {backendAdvancedCategories.map((category) => (
               <div key={category}>
@@ -2352,6 +2401,8 @@ function CreationModeComposer({
               options={databaseOptions}
               selectedId={graphSelection.database}
               testIdPrefix="multi-database-tool"
+              evidenceEcosystem="typescript"
+              evidenceCategory="database"
               onSelect={(database) =>
                 updateGraphSelection({
                   database,
@@ -2403,6 +2454,8 @@ function CreationModeComposer({
               options={mobileOptions}
               selectedId={graphSelection.mobile}
               testIdPrefix="multi-mobile-tool"
+              evidenceEcosystem="react-native"
+              evidenceCategory={mobileConfig.frameworkCategory}
               onSelect={(mobile) => updateGraphSelection({ mobile })}
             />
 
@@ -2521,9 +2574,19 @@ function CreationModeComposer({
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
-const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
-  const [stack, setStack, viewMode, setViewMode, selectedFile, setSelectedFile, campaign] =
-    useStackState(initialStack);
+const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
+  const [
+    stack,
+    setStack,
+    viewMode,
+    setViewMode,
+    selectedFile,
+    setSelectedFile,
+    campaign,
+    starterTrackFilters,
+    setStarterTrackFilters,
+  ] = useStackState(initialStack);
+  const evidenceInventory = useCapabilityEvidenceInventory();
 
   const [command, setCommand] = useState("");
   const [copied, setCopied] = useState(false);
@@ -2535,6 +2598,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
   const [savePresetName, setSavePresetName] = useState("");
   const [isDownloadingProject, setIsDownloadingProject] = useState(false);
   const [sharePromptOpen, setSharePromptOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [sharePromptMoment, setSharePromptMoment] = useState<ShareMoment>("run");
   const [pendingUpdateEntryId, setPendingUpdateEntryId] = useState<string | null>(null);
   const [multiActiveStep, setMultiActiveStep] = useState<MultiStackStepId>("frontend");
@@ -2554,6 +2618,9 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
   const trackedBuilderViewRef = useRef(false);
   const lastTrackedViewModeRef = useRef(viewMode);
   const suppressCompatibilityToastRef = useRef(false);
+  const selectionEngagedRef = useRef(false);
+  const selectionCompletedRef = useRef(false);
+  const abandonmentTrackedRef = useRef(false);
 
   const scrollToTop = () => {
     scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
@@ -2564,6 +2631,36 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
     if (!compatibilityAnalysis.adjustedStack) return null;
     return { ...stack, ...compatibilityAnalysis.adjustedStack };
   }, [stack, compatibilityAnalysis.adjustedStack]);
+
+  useEffect(() => {
+    const trackAbandonment = () => {
+      if (
+        !selectionEngagedRef.current ||
+        selectionCompletedRef.current ||
+        abandonmentTrackedRef.current
+      ) {
+        return;
+      }
+      abandonmentTrackedRef.current = true;
+      const currentStack = adjustedStack || stack;
+      const hasMatchingTrack = getStarterTrackCatalog({
+        filters: starterTrackFilters,
+        inventory: evidenceInventory,
+      }).tracks.some((track) => track.ecosystem === currentStack.ecosystem);
+      trackCampaignEvent(
+        "builder_plan_abandoned",
+        selectionAnalyticsProperties(currentStack, evidenceInventory, {
+          campaign,
+          decision_stage: "plan",
+          selection_outcome: "plan-abandoned",
+          selection_problem: hasMatchingTrack ? "discoverability" : "missing-capability",
+        }),
+      );
+    };
+
+    window.addEventListener("pagehide", trackAbandonment);
+    return () => window.removeEventListener("pagehide", trackAbandonment);
+  }, [adjustedStack, campaign, evidenceInventory, stack, starterTrackFilters]);
   const projectNameError = validateProjectName(stack.projectName || "");
 
   const promptForShare = useCallback(
@@ -2605,17 +2702,21 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
     );
     try {
       const { createStackProjectArchive, downloadProjectArchive } =
-        await import("@/lib/project-download");
+        await import("@/lib/project/project-download");
       const archive = await createStackProjectArchive(stackToDownload);
       failureStage = "browser_download";
       downloadProjectArchive(archive);
+      selectionCompletedRef.current = true;
       trackCampaignEvent(
         "builder_zip_downloaded",
-        stackAnalyticsProperties(stackToDownload, {
+        selectionAnalyticsProperties(stackToDownload, evidenceInventory, {
           campaign,
           duration_ms: failureDurationMs(startedAt),
           rerun: attempt.isRetry,
           archive_bytes: archive.bytes.byteLength,
+          decision_stage: "create",
+          selection_outcome: "handoff-completed",
+          selection_problem: "none",
         }),
       );
       toast.success(m.builderDownloadComplete({ fileName: archive.fileName }));
@@ -2749,6 +2850,18 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
       const adjustedStackString = JSON.stringify(adjustedStack);
 
       if (lastAppliedStackString.current !== adjustedStackString) {
+        if (compatibilityAnalysis.changes.length > 0) {
+          selectionEngagedRef.current = true;
+          trackCampaignEvent(
+            "builder_incompatibility_recovered",
+            selectionAnalyticsProperties(adjustedStack, evidenceInventory, {
+              campaign,
+              decision_stage: "evaluate",
+              selection_outcome: "incompatibility-recovered",
+              selection_problem: "compatibility",
+            }),
+          );
+        }
         startTransition(() => {
           if (!suppressCompatibilityToastRef.current && compatibilityAnalysis.changes.length > 0) {
             if (compatibilityAnalysis.changes.length === 1) {
@@ -2768,7 +2881,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
         });
       }
     }
-  }, [adjustedStack, compatibilityAnalysis.changes, setStack]);
+  }, [adjustedStack, campaign, compatibilityAnalysis.changes, evidenceInventory, setStack]);
 
   useEffect(() => {
     const stackToUse = adjustedStack || stack;
@@ -2823,7 +2936,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
   // synchronously — a suspended mount would delay the copy button's
   // shared-layout landing target past the command bar's exit.
   useEffect(() => {
-    if (runSupported) void import("./run-panel");
+    if (runSupported) void import("@/components/stack-builder/run-panel");
   }, [runSupported]);
 
   const handleRunStarted = useCallback(
@@ -2838,13 +2951,20 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
 
   const handleRunReady = useCallback(
     (rerun: boolean) => {
+      selectionCompletedRef.current = true;
       trackCampaignEvent(
         "builder_run_ready",
-        stackAnalyticsProperties(adjustedStack || stack, { campaign, rerun }),
+        selectionAnalyticsProperties(adjustedStack || stack, evidenceInventory, {
+          campaign,
+          rerun,
+          decision_stage: "create",
+          selection_outcome: "handoff-completed",
+          selection_problem: "none",
+        }),
       );
       promptForShare("run");
     },
-    [adjustedStack, campaign, promptForShare, stack],
+    [adjustedStack, campaign, evidenceInventory, promptForShare, stack],
   );
 
   const handleRunFailed = useCallback(
@@ -2881,9 +3001,16 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(command);
+    selectionCompletedRef.current = true;
     trackCampaignEvent(
       "builder_command_copied",
-      stackAnalyticsProperties(adjustedStack || stack, { campaign, view: viewMode }),
+      selectionAnalyticsProperties(adjustedStack || stack, evidenceInventory, {
+        campaign,
+        view: viewMode,
+        decision_stage: "plan",
+        selection_outcome: "handoff-completed",
+        selection_problem: "none",
+      }),
     );
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -2910,6 +3037,8 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
   const handleTechSelect = (category: keyof typeof TECH_OPTIONS, techId: string) => {
     if (!isOptionCompatible(getCompatibilityStackForCategory(category), category, techId)) return;
 
+    selectionEngagedRef.current = true;
+    selectionCompletedRef.current = false;
     startTransition(() => {
       setStack((currentStack: StackState) => {
         const update = getStackOptionUpdate(currentStack, category, techId);
@@ -2969,12 +3098,16 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
   }, [stack.stackMode]);
 
   const resetStack = () => {
+    selectionEngagedRef.current = true;
+    selectionCompletedRef.current = false;
     startTransition(() => {
       setStack(DEFAULT_STACK);
     });
   };
 
   const getRandomStack = () => {
+    selectionEngagedRef.current = true;
+    selectionCompletedRef.current = false;
     startTransition(() => {
       setStack({
         ...(buildRandomStack(stack) as StackState),
@@ -2989,12 +3122,37 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
     const preset = PRESET_TEMPLATES.find((template) => template.id === presetId);
     if (preset) {
       const fullStack = { ...DEFAULT_STACK, ...preset.stack } as StackState;
+      selectionEngagedRef.current = true;
+      selectionCompletedRef.current = false;
       startTransition(() => {
         setStack(fullStack);
       });
+      const starterTrack = STARTER_TRACK_DEFINITIONS.find((track) => track.presetId === presetId);
+      if (starterTrack) {
+        trackCampaignEvent(
+          "builder_starter_track_applied",
+          selectionAnalyticsProperties(fullStack, evidenceInventory, {
+            campaign,
+            preset: presetId,
+            starter_track: starterTrack.id,
+            decision_stage: "discover",
+            selection_outcome: "track-applied",
+            selection_problem: "none",
+          }),
+        );
+      }
       toast.success(`Applied preset: ${preset.name}`);
     }
   };
+
+  const updateStarterTrackFilters = useCallback(
+    (filters: typeof starterTrackFilters) => {
+      selectionEngagedRef.current = true;
+      selectionCompletedRef.current = false;
+      setStarterTrackFilters(filters);
+    },
+    [setStarterTrackFilters],
+  );
 
   const persistSavedEntries = (entries: SavedStackEntry[]) => {
     setSavedStacks(entries);
@@ -3018,6 +3176,13 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
       setViewMode("command");
     });
     toast.success(m.savedPresetLoaded({ name: entry.name }));
+  };
+
+  const loadImportedStack = (importedStack: StackState) => {
+    startTransition(() => {
+      setStack(importedStack);
+      setViewMode("command");
+    });
   };
 
   const overwriteSavedStack = (entryId: string) => {
@@ -3208,6 +3373,12 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
         stack={adjustedStack || stack}
         moment={sharePromptMoment}
         campaign={campaign}
+      />
+      <ExistingProjectImportDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        currentStack={adjustedStack || stack}
+        onLoadImported={loadImportedStack}
       />
       <div className="relative flex h-full w-full flex-col overflow-hidden border-border text-foreground">
         {/* Single scroller: header + toolbar + content scroll together (header is not pinned) */}
@@ -3636,6 +3807,10 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                           </DropdownMenuItem>
                         </>
                       )}
+                      <DropdownMenuItem onClick={() => setImportDialogOpen(true)}>
+                        <FileImport className="h-3.5 w-3.5" />
+                        Import bts.jsonc
+                      </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={async () => {
                           try {
@@ -3772,306 +3947,107 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                                             <InfoIcon className="h-3.5 w-3.5 shrink-0 text-amber-500" />
                                           )}
                                         </div>
-                                          <div className="space-y-4">
-                                            {categoryOptionGroups.map((group) => (
-                                      <div key={group.key}>
-                                        {group.heading && (
-                                          <h3 className="mb-2 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                                            {group.heading}
-                                          </h3>
-                                        )}
-                                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 2xl:grid-cols-4">
-                                          {group.options.map((tech) => {
-                                            const compatibilityStack =
-                                              getCompatibilityStackForCategory(group.category);
-                                            const isSelected = isSelectedCheck(
-                                              stack,
-                                              group.category,
-                                              tech.id,
-                                            );
-                                            const isDisabled = !isOptionCompatible(
-                                              compatibilityStack,
-                                              group.category,
-                                              tech.id,
-                                            );
-                                            const disabledReason = isDisabled
-                                              ? getDisabledReason(
-                                                  compatibilityStack,
-                                                  group.category,
-                                                  tech.id,
-                                                )
-                                              : null;
-
-                                            return (
-                                              <motion.div
-                                                key={tech.id}
-                                                data-testid={`option-${group.category}-${tech.id}`}
-                                                className={cn(
-                                                  "group relative cursor-pointer rounded-lg border p-3 transition-all sm:p-4",
-                                                  isSelected
-                                                    ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                                                    : isDisabled
-                                                      ? "border-destructive/30 bg-destructive/5 opacity-50 hover:opacity-75"
-                                                      : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
-                                                )}
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  handleTechSelect(group.category, tech.id);
-                                                }}
-                                                title={disabledReason || undefined}
-                                              >
-                                                <div className="absolute top-2 right-2 flex items-center gap-1">
-                                                  <TechResourceButtons
-                                                    category={group.category}
-                                                    techId={tech.id}
-                                                  />
-                                                  {tech.default && !isSelected && (
-                                                    <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground">
-                                                      {m.builderDefault()}
-                                                    </span>
-                                                  )}
-                                                  {tech.legacy && (
-                                                    <Tooltip>
-                                                      <TooltipTrigger
-                                                        onClick={(e) => e.stopPropagation()}
-                                                        className="cursor-default"
-                                                      >
-                                                        <span className="rounded-sm border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 font-mono text-[9px] text-amber-500 dark:text-amber-400">
-                                                          {m.builderLegacy()}
-                                                        </span>
-                                                      </TooltipTrigger>
-                                                      <TooltipContent>
-                                                        {m.builderLegacyTooltip()}
-                                                      </TooltipContent>
-                                                    </Tooltip>
-                                                  )}
-                                                </div>
-                                                <div className="flex items-start gap-3">
-                                                  {(tech.icon !== "" || ICON_REGISTRY[tech.id]) && (
-                                                    <div className="flex shrink-0 flex-col items-center gap-1">
-                                                      <div
-                                                        className={cn(
-                                                          "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
-                                                          isSelected
-                                                            ? "bg-primary/10"
-                                                            : "bg-muted/50 group-hover:bg-muted",
-                                                        )}
-                                                      >
-                                                        <TechIcon
-                                                          techId={tech.id}
-                                                          icon={tech.icon}
-                                                          name={tech.name}
-                                                          className="h-5 w-5"
-                                                        />
-                                                      </div>
-                                                    </div>
-                                                  )}
-                                                  <div className="min-w-0 flex-1 pt-0.5">
-                                                    <span
-                                                      className={cn(
-                                                        "block font-semibold text-sm",
-                                                        isSelected
-                                                          ? "text-primary"
-                                                          : "text-foreground",
-                                                      )}
-                                                    >
-                                                      {tech.name}
-                                                    </span>
-                                                    <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
-                                                      {getLocalizedTechOption(tech).description}
-                                                    </p>
-                                                    {isDisabled && disabledReason && (
-                                                      <DisabledReasonInline
-                                                        reason={disabledReason}
-                                                      />
-                                                    )}
-                                                  </div>
-                                                </div>
-                                              </motion.div>
-                                            );
-                                          })}
-                                        </div>
-                                      </div>
-                                    ))}
-                                          </div>
-
-                          {/* shadcn/ui Configuration - shown only when shadcn-ui is selected */}
-                          {categoryKey === "uiLibrary" && (
-                            <AnimatePresence>
-                              {stack.uiLibrary === "shadcn-ui" && (
-                                <motion.section
-                                  ref={(el) => {
-                                    sectionRefs.current.shadcnBase = el;
-                                  }}
-                                  initial={{ opacity: 0, height: 0 }}
-                                  animate={{ opacity: 1, height: "auto" }}
-                                  exit={{ opacity: 0, height: 0 }}
-                                  transition={{ duration: 0.3, ease: "easeInOut" }}
-                                  data-testid="category-shadcnBase"
-                                  className="mt-4 scroll-mt-16 overflow-hidden"
-                                >
-                                  <button
-                                    type="button"
-                                    onClick={() => toggleSection("shadcnBase")}
-                                    data-testid="category-toggle-shadcnBase"
-                                    className="mb-3 flex w-full items-center gap-2 border-b border-border/60 pb-2 text-left transition-opacity hover:opacity-80"
-                                  >
-                                    <Terminal className="h-3.5 w-3.5 shrink-0 text-muted-foreground sm:h-4 sm:w-4" />
-                                    <h2 className="flex-1 font-mono text-foreground text-xs sm:text-sm">
-                                      {m.builderShadcnConfiguration()}
-                                    </h2>
-                                    <motion.div
-                                      animate={{
-                                        rotate: isSectionCollapsed("shadcnBase") ? 0 : 180,
-                                      }}
-                                      transition={{ duration: 0.2 }}
-                                    >
-                                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                                    </motion.div>
-                                  </button>
-                                  <AnimatePresence initial={false}>
-                                    {!isSectionCollapsed("shadcnBase") && (
-                                      <motion.div
-                                        initial={{ height: 0, opacity: 0 }}
-                                        animate={{ height: "auto", opacity: 1 }}
-                                        exit={{ height: 0, opacity: 0 }}
-                                        transition={{ duration: 0.25, ease: "easeInOut" }}
-                                        className="overflow-hidden"
-                                      >
                                         <div className="space-y-4">
-                                          {(
-                                            [
-                                              {
-                                                key: "shadcnBase" as const,
-                                                label: getLocalizedCategoryDisplayName(
-                                                  "shadcnBase",
-                                                  "Base Library",
-                                                ),
-                                              },
-                                              {
-                                                key: "shadcnStyle" as const,
-                                                label: getLocalizedCategoryDisplayName(
-                                                  "shadcnStyle",
-                                                  "Visual Style",
-                                                ),
-                                              },
-                                              {
-                                                key: "shadcnIconLibrary" as const,
-                                                label: getLocalizedCategoryDisplayName(
-                                                  "shadcnIconLibrary",
-                                                  "Icon Library",
-                                                ),
-                                              },
-                                              {
-                                                key: "shadcnColorTheme" as const,
-                                                label: getLocalizedCategoryDisplayName(
-                                                  "shadcnColorTheme",
-                                                  "Color Theme",
-                                                ),
-                                              },
-                                              {
-                                                key: "shadcnBaseColor" as const,
-                                                label: getLocalizedCategoryDisplayName(
-                                                  "shadcnBaseColor",
-                                                  "Base Color",
-                                                ),
-                                              },
-                                              {
-                                                key: "shadcnFont" as const,
-                                                label: getLocalizedCategoryDisplayName(
-                                                  "shadcnFont",
-                                                  "Font",
-                                                ),
-                                              },
-                                              {
-                                                key: "shadcnRadius" as const,
-                                                label: getLocalizedCategoryDisplayName(
-                                                  "shadcnRadius",
-                                                  "Border Radius",
-                                                ),
-                                              },
-                                            ] as const
-                                          ).map(({ key, label }) => (
-                                            <div key={key}>
-                                              <h3 className="mb-2 font-medium text-muted-foreground text-xs uppercase tracking-wider">
-                                                {label}
-                                              </h3>
-                                              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 2xl:grid-cols-5">
-                                                {(TECH_OPTIONS[key] || []).map((tech) => {
-                                                  const isSelected =
-                                                    stack[key as keyof StackState] === tech.id;
+                                          {categoryOptionGroups.map((group) => (
+                                            <div key={group.key}>
+                                              {group.heading && (
+                                                <h3 className="mb-2 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                                                  {group.heading}
+                                                </h3>
+                                              )}
+                                              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 2xl:grid-cols-4">
+                                                {group.options.map((tech) => {
+                                                  const compatibilityStack =
+                                                    getCompatibilityStackForCategory(
+                                                      group.category,
+                                                    );
+                                                  const isSelected = isSelectedCheck(
+                                                    stack,
+                                                    group.category,
+                                                    tech.id,
+                                                  );
+                                                  const isDisabled = !isOptionCompatible(
+                                                    compatibilityStack,
+                                                    group.category,
+                                                    tech.id,
+                                                  );
+                                                  const disabledReason = isDisabled
+                                                    ? getDisabledReason(
+                                                        compatibilityStack,
+                                                        group.category,
+                                                        tech.id,
+                                                      )
+                                                    : null;
+
                                                   return (
                                                     <motion.div
                                                       key={tech.id}
-                                                      data-testid={`option-${key}-${tech.id}`}
+                                                      data-testid={`option-${group.category}-${tech.id}`}
                                                       className={cn(
-                                                        "group relative cursor-pointer rounded-lg border p-2.5 transition-all sm:p-3",
+                                                        "group relative cursor-pointer rounded-lg border p-3 transition-all sm:p-4",
                                                         isSelected
                                                           ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                                                          : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
+                                                          : isDisabled
+                                                            ? "border-destructive/30 bg-destructive/5 opacity-50 hover:opacity-75"
+                                                            : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
                                                       )}
                                                       onClick={(e) => {
                                                         e.stopPropagation();
-                                                        handleTechSelect(key, tech.id);
+                                                        handleTechSelect(group.category, tech.id);
                                                       }}
+                                                      title={disabledReason || undefined}
                                                     >
-                                                      <div className="absolute top-1.5 right-1.5 flex items-center gap-1">
+                                                      <div className="absolute top-2 right-2 flex items-center gap-1">
                                                         <TechResourceButtons
-                                                          category={key}
+                                                          category={group.category}
                                                           techId={tech.id}
                                                         />
                                                         {tech.default && !isSelected && (
-                                                          <span className="rounded-full bg-muted px-1.5 py-0.5 font-medium text-[9px] text-muted-foreground">
+                                                          <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground">
                                                             {m.builderDefault()}
                                                           </span>
                                                         )}
+                                                        {tech.legacy && (
+                                                          <Tooltip>
+                                                            <TooltipTrigger
+                                                              onClick={(e) => e.stopPropagation()}
+                                                              className="cursor-default"
+                                                            >
+                                                              <span className="rounded-sm border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 font-mono text-[9px] text-amber-500 dark:text-amber-400">
+                                                                {m.builderLegacy()}
+                                                              </span>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                              {m.builderLegacyTooltip()}
+                                                            </TooltipContent>
+                                                          </Tooltip>
+                                                        )}
                                                       </div>
-                                                      <div className="flex items-start gap-2.5">
-                                                        {key === "shadcnColorTheme" ||
-                                                        key === "shadcnBaseColor" ? (
+                                                      <div className="flex items-start gap-3">
+                                                        {(tech.icon !== "" ||
+                                                          ICON_REGISTRY[tech.id]) && (
                                                           <div className="flex shrink-0 flex-col items-center gap-1">
                                                             <div
                                                               className={cn(
-                                                                "flex h-8 w-8 items-center justify-center rounded-md transition-colors",
+                                                                "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
                                                                 isSelected
                                                                   ? "bg-primary/10"
                                                                   : "bg-muted/50 group-hover:bg-muted",
                                                               )}
                                                             >
-                                                              <div
-                                                                className={cn(
-                                                                  "h-4 w-4 rounded-full bg-gradient-to-br",
-                                                                  tech.color,
-                                                                )}
+                                                              <TechIcon
+                                                                techId={tech.id}
+                                                                icon={tech.icon}
+                                                                name={tech.name}
+                                                                className="h-5 w-5"
                                                               />
                                                             </div>
                                                           </div>
-                                                        ) : (
-                                                          (tech.icon !== "" ||
-                                                            ICON_REGISTRY[tech.id]) && (
-                                                            <div className="flex shrink-0 flex-col items-center gap-1">
-                                                              <div
-                                                                className={cn(
-                                                                  "flex h-8 w-8 items-center justify-center rounded-md transition-colors",
-                                                                  isSelected
-                                                                    ? "bg-primary/10"
-                                                                    : "bg-muted/50 group-hover:bg-muted",
-                                                                )}
-                                                              >
-                                                                <TechIcon
-                                                                  techId={tech.id}
-                                                                  icon={tech.icon}
-                                                                  name={tech.name}
-                                                                  className="h-4 w-4"
-                                                                />
-                                                              </div>
-                                                            </div>
-                                                          )
                                                         )}
-                                                        <div className="min-w-0 flex-1">
+                                                        <div className="min-w-0 flex-1 pt-0.5">
                                                           <span
                                                             className={cn(
-                                                              "block font-semibold text-xs sm:text-sm",
+                                                              "block font-semibold text-sm",
                                                               isSelected
                                                                 ? "text-primary"
                                                                 : "text-foreground",
@@ -4079,12 +4055,22 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                                                           >
                                                             {tech.name}
                                                           </span>
-                                                          <p className="mt-0.5 line-clamp-1 text-muted-foreground text-[10px] sm:text-xs leading-relaxed">
+                                                          <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
                                                             {
                                                               getLocalizedTechOption(tech)
                                                                 .description
                                                             }
                                                           </p>
+                                                          <CapabilityEvidenceBadge
+                                                            ecosystem={stack.ecosystem}
+                                                            category={group.category}
+                                                            optionId={tech.id}
+                                                          />
+                                                          {isDisabled && disabledReason && (
+                                                            <DisabledReasonInline
+                                                              reason={disabledReason}
+                                                            />
+                                                          )}
                                                         </div>
                                                       </div>
                                                     </motion.div>
@@ -4094,132 +4080,387 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                                             </div>
                                           ))}
                                         </div>
-                                      </motion.div>
-                                    )}
-                                  </AnimatePresence>
-                                </motion.section>
-                              )}
-                            </AnimatePresence>
-                          )}
 
-                          {/* Astro Integration - shown only when Astro is selected, right after webFrontend */}
-                          {categoryKey === "webFrontend" && (
-                            <AnimatePresence>
-                              {stack.webFrontend.includes("astro") && (
-                                <motion.section
-                                  ref={(el) => {
-                                    sectionRefs.current.astroIntegration = el;
-                                  }}
-                                  initial={{ opacity: 0, height: 0 }}
-                                  animate={{ opacity: 1, height: "auto" }}
-                                  exit={{ opacity: 0, height: 0 }}
-                                  transition={{ duration: 0.3, ease: "easeInOut" }}
-                                  data-testid="category-astroIntegration"
-                                  className="mt-4 scroll-mt-16 overflow-hidden"
-                                >
-                                  <div className="mb-3 flex items-center gap-2 border-border/60 border-b pb-2">
-                                    <Terminal className="h-3.5 w-3.5 shrink-0 text-muted-foreground sm:h-4 sm:w-4" />
-                                    <h2 className="font-mono text-foreground text-xs sm:text-sm">
-                                      {m.builderAstroIntegration()}
-                                    </h2>
-                                  </div>
-                                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 2xl:grid-cols-4">
-                                    {(TECH_OPTIONS.astroIntegration || []).map((tech) => {
-                                      const isSelected = stack.astroIntegration === tech.id;
-                                      const isDisabled = !isOptionCompatible(
-                                        stack,
-                                        "astroIntegration",
-                                        tech.id,
-                                      );
-                                      const disabledReason = isDisabled
-                                        ? getDisabledReason(stack, "astroIntegration", tech.id)
-                                        : null;
-
-                                      return (
-                                        <motion.div
-                                          key={tech.id}
-                                          data-testid={`option-astroIntegration-${tech.id}`}
-                                          className={cn(
-                                            "group relative cursor-pointer rounded-lg border p-3 transition-all sm:p-4",
-                                            isSelected
-                                              ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                                              : isDisabled
-                                                ? "border-destructive/30 bg-destructive/5 opacity-50 hover:opacity-75"
-                                                : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
-                                          )}
-                                          whileHover={{ scale: 1.01 }}
-                                          whileTap={{ scale: 0.99 }}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleTechSelect("astroIntegration", tech.id);
-                                          }}
-                                          title={disabledReason || undefined}
-                                        >
-                                          {tech.default && !isSelected && (
-                                            <span className="absolute top-2 right-2 rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground">
-                                              {m.builderDefault()}
-                                            </span>
-                                          )}
-                                          {tech.legacy && (
-                                            <Tooltip>
-                                              <TooltipTrigger
-                                                onClick={(e) => e.stopPropagation()}
-                                                className="absolute top-2 right-2 cursor-default"
+                                        {/* shadcn/ui Configuration - shown only when shadcn-ui is selected */}
+                                        {categoryKey === "uiLibrary" && (
+                                          <AnimatePresence>
+                                            {stack.uiLibrary === "shadcn-ui" && (
+                                              <motion.section
+                                                ref={(el) => {
+                                                  sectionRefs.current.shadcnBase = el;
+                                                }}
+                                                initial={{ opacity: 0, height: 0 }}
+                                                animate={{ opacity: 1, height: "auto" }}
+                                                exit={{ opacity: 0, height: 0 }}
+                                                transition={{ duration: 0.3, ease: "easeInOut" }}
+                                                data-testid="category-shadcnBase"
+                                                className="mt-4 scroll-mt-16 overflow-hidden"
                                               >
-                                                <span className="rounded-sm border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 font-mono text-[9px] text-amber-500 dark:text-amber-400">
-                                                  {m.builderLegacy()}
-                                                </span>
-                                              </TooltipTrigger>
-                                              <TooltipContent>
-                                                {m.builderLegacyTooltip()}
-                                              </TooltipContent>
-                                            </Tooltip>
-                                          )}
-                                          <div className="flex items-start gap-3">
-                                            {(tech.icon !== "" || ICON_REGISTRY[tech.id]) && (
-                                              <div className="flex shrink-0 flex-col items-center gap-1">
-                                                <div
-                                                  className={cn(
-                                                    "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
-                                                    isSelected
-                                                      ? "bg-primary/10"
-                                                      : "bg-muted/50 group-hover:bg-muted",
-                                                  )}
+                                                <button
+                                                  type="button"
+                                                  onClick={() => toggleSection("shadcnBase")}
+                                                  data-testid="category-toggle-shadcnBase"
+                                                  className="mb-3 flex w-full items-center gap-2 border-b border-border/60 pb-2 text-left transition-opacity hover:opacity-80"
                                                 >
-                                                  <TechIcon
-                                                    techId={tech.id}
-                                                    icon={tech.icon}
-                                                    name={tech.name}
-                                                    className="h-5 w-5"
-                                                  />
-                                                </div>
-                                              </div>
+                                                  <Terminal className="h-3.5 w-3.5 shrink-0 text-muted-foreground sm:h-4 sm:w-4" />
+                                                  <h2 className="flex-1 font-mono text-foreground text-xs sm:text-sm">
+                                                    {m.builderShadcnConfiguration()}
+                                                  </h2>
+                                                  <motion.div
+                                                    animate={{
+                                                      rotate: isSectionCollapsed("shadcnBase")
+                                                        ? 0
+                                                        : 180,
+                                                    }}
+                                                    transition={{ duration: 0.2 }}
+                                                  >
+                                                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                                                  </motion.div>
+                                                </button>
+                                                <AnimatePresence initial={false}>
+                                                  {!isSectionCollapsed("shadcnBase") && (
+                                                    <motion.div
+                                                      initial={{ height: 0, opacity: 0 }}
+                                                      animate={{ height: "auto", opacity: 1 }}
+                                                      exit={{ height: 0, opacity: 0 }}
+                                                      transition={{
+                                                        duration: 0.25,
+                                                        ease: "easeInOut",
+                                                      }}
+                                                      className="overflow-hidden"
+                                                    >
+                                                      <div className="space-y-4">
+                                                        {(
+                                                          [
+                                                            {
+                                                              key: "shadcnBase" as const,
+                                                              label:
+                                                                getLocalizedCategoryDisplayName(
+                                                                  "shadcnBase",
+                                                                  "Base Library",
+                                                                ),
+                                                            },
+                                                            {
+                                                              key: "shadcnStyle" as const,
+                                                              label:
+                                                                getLocalizedCategoryDisplayName(
+                                                                  "shadcnStyle",
+                                                                  "Visual Style",
+                                                                ),
+                                                            },
+                                                            {
+                                                              key: "shadcnIconLibrary" as const,
+                                                              label:
+                                                                getLocalizedCategoryDisplayName(
+                                                                  "shadcnIconLibrary",
+                                                                  "Icon Library",
+                                                                ),
+                                                            },
+                                                            {
+                                                              key: "shadcnColorTheme" as const,
+                                                              label:
+                                                                getLocalizedCategoryDisplayName(
+                                                                  "shadcnColorTheme",
+                                                                  "Color Theme",
+                                                                ),
+                                                            },
+                                                            {
+                                                              key: "shadcnBaseColor" as const,
+                                                              label:
+                                                                getLocalizedCategoryDisplayName(
+                                                                  "shadcnBaseColor",
+                                                                  "Base Color",
+                                                                ),
+                                                            },
+                                                            {
+                                                              key: "shadcnFont" as const,
+                                                              label:
+                                                                getLocalizedCategoryDisplayName(
+                                                                  "shadcnFont",
+                                                                  "Font",
+                                                                ),
+                                                            },
+                                                            {
+                                                              key: "shadcnRadius" as const,
+                                                              label:
+                                                                getLocalizedCategoryDisplayName(
+                                                                  "shadcnRadius",
+                                                                  "Border Radius",
+                                                                ),
+                                                            },
+                                                          ] as const
+                                                        ).map(({ key, label }) => (
+                                                          <div key={key}>
+                                                            <h3 className="mb-2 font-medium text-muted-foreground text-xs uppercase tracking-wider">
+                                                              {label}
+                                                            </h3>
+                                                            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 2xl:grid-cols-5">
+                                                              {(TECH_OPTIONS[key] || []).map(
+                                                                (tech) => {
+                                                                  const isSelected =
+                                                                    stack[
+                                                                      key as keyof StackState
+                                                                    ] === tech.id;
+                                                                  return (
+                                                                    <motion.div
+                                                                      key={tech.id}
+                                                                      data-testid={`option-${key}-${tech.id}`}
+                                                                      className={cn(
+                                                                        "group relative cursor-pointer rounded-lg border p-2.5 transition-all sm:p-3",
+                                                                        isSelected
+                                                                          ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                                                                          : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
+                                                                      )}
+                                                                      onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleTechSelect(
+                                                                          key,
+                                                                          tech.id,
+                                                                        );
+                                                                      }}
+                                                                    >
+                                                                      <div className="absolute top-1.5 right-1.5 flex items-center gap-1">
+                                                                        <TechResourceButtons
+                                                                          category={key}
+                                                                          techId={tech.id}
+                                                                        />
+                                                                        {tech.default &&
+                                                                          !isSelected && (
+                                                                            <span className="rounded-full bg-muted px-1.5 py-0.5 font-medium text-[9px] text-muted-foreground">
+                                                                              {m.builderDefault()}
+                                                                            </span>
+                                                                          )}
+                                                                      </div>
+                                                                      <div className="flex items-start gap-2.5">
+                                                                        {key ===
+                                                                          "shadcnColorTheme" ||
+                                                                        key ===
+                                                                          "shadcnBaseColor" ? (
+                                                                          <div className="flex shrink-0 flex-col items-center gap-1">
+                                                                            <div
+                                                                              className={cn(
+                                                                                "flex h-8 w-8 items-center justify-center rounded-md transition-colors",
+                                                                                isSelected
+                                                                                  ? "bg-primary/10"
+                                                                                  : "bg-muted/50 group-hover:bg-muted",
+                                                                              )}
+                                                                            >
+                                                                              <div
+                                                                                className={cn(
+                                                                                  "h-4 w-4 rounded-full bg-gradient-to-br",
+                                                                                  tech.color,
+                                                                                )}
+                                                                              />
+                                                                            </div>
+                                                                          </div>
+                                                                        ) : (
+                                                                          (tech.icon !== "" ||
+                                                                            ICON_REGISTRY[
+                                                                              tech.id
+                                                                            ]) && (
+                                                                            <div className="flex shrink-0 flex-col items-center gap-1">
+                                                                              <div
+                                                                                className={cn(
+                                                                                  "flex h-8 w-8 items-center justify-center rounded-md transition-colors",
+                                                                                  isSelected
+                                                                                    ? "bg-primary/10"
+                                                                                    : "bg-muted/50 group-hover:bg-muted",
+                                                                                )}
+                                                                              >
+                                                                                <TechIcon
+                                                                                  techId={tech.id}
+                                                                                  icon={tech.icon}
+                                                                                  name={tech.name}
+                                                                                  className="h-4 w-4"
+                                                                                />
+                                                                              </div>
+                                                                            </div>
+                                                                          )
+                                                                        )}
+                                                                        <div className="min-w-0 flex-1">
+                                                                          <span
+                                                                            className={cn(
+                                                                              "block font-semibold text-xs sm:text-sm",
+                                                                              isSelected
+                                                                                ? "text-primary"
+                                                                                : "text-foreground",
+                                                                            )}
+                                                                          >
+                                                                            {tech.name}
+                                                                          </span>
+                                                                          <p className="mt-0.5 line-clamp-1 text-muted-foreground text-[10px] sm:text-xs leading-relaxed">
+                                                                            {
+                                                                              getLocalizedTechOption(
+                                                                                tech,
+                                                                              ).description
+                                                                            }
+                                                                          </p>
+                                                                          <CapabilityEvidenceBadge
+                                                                            ecosystem={
+                                                                              stack.ecosystem
+                                                                            }
+                                                                            category={key}
+                                                                            optionId={tech.id}
+                                                                          />
+                                                                        </div>
+                                                                      </div>
+                                                                    </motion.div>
+                                                                  );
+                                                                },
+                                                              )}
+                                                            </div>
+                                                          </div>
+                                                        ))}
+                                                      </div>
+                                                    </motion.div>
+                                                  )}
+                                                </AnimatePresence>
+                                              </motion.section>
                                             )}
-                                            <div className="min-w-0 flex-1 pt-0.5">
-                                              <span
-                                                className={cn(
-                                                  "block font-semibold text-sm",
-                                                  isSelected ? "text-primary" : "text-foreground",
-                                                )}
+                                          </AnimatePresence>
+                                        )}
+
+                                        {/* Astro Integration - shown only when Astro is selected, right after webFrontend */}
+                                        {categoryKey === "webFrontend" && (
+                                          <AnimatePresence>
+                                            {stack.webFrontend.includes("astro") && (
+                                              <motion.section
+                                                ref={(el) => {
+                                                  sectionRefs.current.astroIntegration = el;
+                                                }}
+                                                initial={{ opacity: 0, height: 0 }}
+                                                animate={{ opacity: 1, height: "auto" }}
+                                                exit={{ opacity: 0, height: 0 }}
+                                                transition={{ duration: 0.3, ease: "easeInOut" }}
+                                                data-testid="category-astroIntegration"
+                                                className="mt-4 scroll-mt-16 overflow-hidden"
                                               >
-                                                {tech.name}
-                                              </span>
-                                              <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
-                                                {getLocalizedTechOption(tech).description}
-                                              </p>
-                                              {isDisabled && disabledReason && (
-                                                <DisabledReasonInline reason={disabledReason} />
-                                              )}
-                                            </div>
-                                          </div>
-                                        </motion.div>
-                                      );
-                                    })}
-                                  </div>
-                                </motion.section>
-                              )}
-                            </AnimatePresence>
-                          )}
+                                                <div className="mb-3 flex items-center gap-2 border-border/60 border-b pb-2">
+                                                  <Terminal className="h-3.5 w-3.5 shrink-0 text-muted-foreground sm:h-4 sm:w-4" />
+                                                  <h2 className="font-mono text-foreground text-xs sm:text-sm">
+                                                    {m.builderAstroIntegration()}
+                                                  </h2>
+                                                </div>
+                                                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 2xl:grid-cols-4">
+                                                  {(TECH_OPTIONS.astroIntegration || []).map(
+                                                    (tech) => {
+                                                      const isSelected =
+                                                        stack.astroIntegration === tech.id;
+                                                      const isDisabled = !isOptionCompatible(
+                                                        stack,
+                                                        "astroIntegration",
+                                                        tech.id,
+                                                      );
+                                                      const disabledReason = isDisabled
+                                                        ? getDisabledReason(
+                                                            stack,
+                                                            "astroIntegration",
+                                                            tech.id,
+                                                          )
+                                                        : null;
+
+                                                      return (
+                                                        <motion.div
+                                                          key={tech.id}
+                                                          data-testid={`option-astroIntegration-${tech.id}`}
+                                                          className={cn(
+                                                            "group relative cursor-pointer rounded-lg border p-3 transition-all sm:p-4",
+                                                            isSelected
+                                                              ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                                                              : isDisabled
+                                                                ? "border-destructive/30 bg-destructive/5 opacity-50 hover:opacity-75"
+                                                                : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
+                                                          )}
+                                                          whileHover={{ scale: 1.01 }}
+                                                          whileTap={{ scale: 0.99 }}
+                                                          onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleTechSelect(
+                                                              "astroIntegration",
+                                                              tech.id,
+                                                            );
+                                                          }}
+                                                          title={disabledReason || undefined}
+                                                        >
+                                                          {tech.default && !isSelected && (
+                                                            <span className="absolute top-2 right-2 rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground">
+                                                              {m.builderDefault()}
+                                                            </span>
+                                                          )}
+                                                          {tech.legacy && (
+                                                            <Tooltip>
+                                                              <TooltipTrigger
+                                                                onClick={(e) => e.stopPropagation()}
+                                                                className="absolute top-2 right-2 cursor-default"
+                                                              >
+                                                                <span className="rounded-sm border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 font-mono text-[9px] text-amber-500 dark:text-amber-400">
+                                                                  {m.builderLegacy()}
+                                                                </span>
+                                                              </TooltipTrigger>
+                                                              <TooltipContent>
+                                                                {m.builderLegacyTooltip()}
+                                                              </TooltipContent>
+                                                            </Tooltip>
+                                                          )}
+                                                          <div className="flex items-start gap-3">
+                                                            {(tech.icon !== "" ||
+                                                              ICON_REGISTRY[tech.id]) && (
+                                                              <div className="flex shrink-0 flex-col items-center gap-1">
+                                                                <div
+                                                                  className={cn(
+                                                                    "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
+                                                                    isSelected
+                                                                      ? "bg-primary/10"
+                                                                      : "bg-muted/50 group-hover:bg-muted",
+                                                                  )}
+                                                                >
+                                                                  <TechIcon
+                                                                    techId={tech.id}
+                                                                    icon={tech.icon}
+                                                                    name={tech.name}
+                                                                    className="h-5 w-5"
+                                                                  />
+                                                                </div>
+                                                              </div>
+                                                            )}
+                                                            <div className="min-w-0 flex-1 pt-0.5">
+                                                              <span
+                                                                className={cn(
+                                                                  "block font-semibold text-sm",
+                                                                  isSelected
+                                                                    ? "text-primary"
+                                                                    : "text-foreground",
+                                                                )}
+                                                              >
+                                                                {tech.name}
+                                                              </span>
+                                                              <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
+                                                                {
+                                                                  getLocalizedTechOption(tech)
+                                                                    .description
+                                                                }
+                                                              </p>
+                                                              <CapabilityEvidenceBadge
+                                                                ecosystem={stack.ecosystem}
+                                                                category="astroIntegration"
+                                                                optionId={tech.id}
+                                                              />
+                                                              {isDisabled && disabledReason && (
+                                                                <DisabledReasonInline
+                                                                  reason={disabledReason}
+                                                                />
+                                                              )}
+                                                            </div>
+                                                          </div>
+                                                        </motion.div>
+                                                      );
+                                                    },
+                                                  )}
+                                                </div>
+                                              </motion.section>
+                                            )}
+                                          </AnimatePresence>
+                                        )}
                                       </div>
                                     );
                                   })}
@@ -4283,12 +4524,15 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                       applyPreset(presetId);
                       setViewMode("command");
                     }}
+                    starterTrackFilters={starterTrackFilters}
+                    onStarterTrackFiltersChange={updateStarterTrackFilters}
                   />
                 </div>
               ) : (
                 <div className="min-h-0 flex-1 overflow-hidden">
                   <SavedStacksPanel
                     entries={savedStacks}
+                    currentStack={adjustedStack || stack}
                     onLoadEntry={loadSavedStack}
                     onOverwriteEntry={overwriteSavedStack}
                     onDeleteEntry={deleteSavedStack}
@@ -4554,5 +4798,11 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
     </TooltipProvider>
   );
 };
+
+const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => (
+  <CapabilityEvidenceProvider>
+    <StackBuilderInner initialStack={initialStack} />
+  </CapabilityEvidenceProvider>
+);
 
 export default StackBuilder;

@@ -1,6 +1,5 @@
 import { test, expect } from "@playwright/test";
-
-import { clickVisibleTestId, openBuilder, visibleTestId } from "./test-helpers";
+import { clickVisibleTestId, openBuilder, visibleTestId } from "@test/e2e/test-helpers";
 
 test.describe("Preview Panel", () => {
   test("preview tab loads file tree", async ({ page }) => {

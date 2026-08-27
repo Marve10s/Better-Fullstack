@@ -1,0 +1,53 @@
+{
+  "name": "@better-fullstack/project-lifecycle",
+  "version": "2.6.1",
+  "description": "Transactional project lifecycle contracts and recovery for Better Fullstack",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
+    },
+    "./contracts": {
+      "types": "./dist/contracts/lifecycle.d.mts",
+      "default": "./dist/contracts/lifecycle.mjs"
+    },
+    "./hash": {
+      "types": "./dist/crypto/hash.d.mts",
+      "default": "./dist/crypto/hash.mjs"
+    },
+    "./recovery": {
+      "types": "./dist/recovery/management.d.mts",
+      "default": "./dist/recovery/management.mjs"
+    },
+    "./review-token": {
+      "types": "./dist/review/token.d.mts",
+      "default": "./dist/review/token.mjs"
+    },
+    "./transaction": {
+      "types": "./dist/recovery/transaction.d.mts",
+      "default": "./dist/recovery/transaction.mjs"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "lint": "oxlint . && tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "dependencies": {
+    "fs-extra": "^11.4.0"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^25.9.3",
+    "tsdown": "^0.18.2",
+    "typescript": "^5.9.3"
+  }
+}

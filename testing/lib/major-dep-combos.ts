@@ -1,10 +1,13 @@
-import * as path from "node:path";
 import type { ProjectConfig } from "@better-fullstack/types";
+import type { ComboCandidate } from "@testing/lib/generate-combos/types";
 
-import { buildHistoryFingerprint, fingerprintToKey } from "./generate-combos/fingerprint";
-import { buildCommand } from "./generate-combos/render";
-import type { ComboCandidate } from "./generate-combos/types";
-import { makeBaseConfig } from "./presets";
+import {
+  buildHistoryFingerprint,
+  fingerprintToKey,
+} from "@testing/lib/generate-combos/fingerprint";
+import { buildCommand } from "@testing/lib/generate-combos/render";
+import { makeBaseConfig } from "@testing/lib/presets";
+import * as path from "node:path";
 
 // ── Types ───────────────────────────────────────────────────────────────
 

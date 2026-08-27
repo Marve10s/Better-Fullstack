@@ -1,27 +1,49 @@
+import type { LifecycleResult } from "@better-fullstack/project-lifecycle/contracts";
+
+import { lifecycleResult } from "@better-fullstack/project-lifecycle/contracts";
+import {
+  beginProjectTransaction,
+  commitProjectTransaction,
+  rollbackProjectTransaction,
+  type ProjectTransaction,
+  writeProjectTransactionFile,
+} from "@better-fullstack/project-lifecycle/transaction";
 import { intro, log, outro } from "@clack/prompts";
+import fs from "fs-extra";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import pc from "picocolors";
 
-import type { AddInput, Addons, BetterTStackConfig, ProjectConfig } from "../../types";
-import type { LifecycleResult } from "../../utils/lifecycle-contract";
+import type { AddInput, Addons, BetterTStackConfig, ProjectConfig } from "@/types";
 
-import { getDefaultConfig } from "../../constants";
-import { getCapabilityPartSpecsToAdd } from "../../prompts/addons";
-import { getToolingCapability } from "../../types";
-import { maybeShowTelemetryNotice, type TelemetrySource, trackEvent } from "../../utils/analytics";
-import { readBtsConfig } from "../../utils/bts-config";
-import { isSilent, runWithContextAsync } from "../../utils/context";
-import { applyDependencyVersionChannel } from "../../utils/dependency-version-channel";
-import { CLIError, UserCancelledError } from "../../utils/errors";
-import { renderTitle } from "../../utils/render-title";
+import { readBtsConfig } from "@/config/bts-config";
+import { getDefaultConfig } from "@/constants";
 import {
   ADDONS_REQUIRING_IMPERATIVE_SETUP,
   isGitleaksSetupComplete,
   isLinterLefthookSetupComplete,
-  setupAddons,
-} from "../addons/addons-setup";
-import { installDependencies } from "./install-dependencies";
-import { applyStackUpdate, planStackUpdate, type StackUpdatePlan } from "./stack-update";
+  repairExistingAddonSetup,
+} from "@/helpers/addons/addons-setup";
+import { installDependencies } from "@/helpers/core/install-dependencies";
+import {
+  applyStackUpdate,
+  planStackUpdate,
+  type StackUpdatePlan,
+} from "@/helpers/core/stack-update";
+import { getProjectRecoveryCommand } from "@/lifecycle/lifecycle-command";
+import {
+  getCurrentLifecycleVersions,
+  hashContent,
+  readScaffoldManifestResult,
+  refreshScaffoldManifestFiles,
+  SCAFFOLD_MANIFEST_FILE,
+} from "@/lifecycle/scaffold-manifest";
+import { isSilent, runWithContextAsync } from "@/presentation/context";
+import { CLIError, UserCancelledError } from "@/presentation/errors";
+import { renderTitle } from "@/presentation/render-title";
+import { getCapabilityPartSpecsToAdd } from "@/prompts/developer/addons";
+import { maybeShowTelemetryNotice, type TelemetrySource, trackEvent } from "@/telemetry/analytics";
+import { getToolingCapability } from "@/types";
 
 export interface AddHandlerOptions {
   silent?: boolean;
@@ -36,10 +58,25 @@ export interface AddResult {
   setupWarnings?: string[];
   lifecycle?: LifecycleResult;
   recoveryId?: string;
-  plan?: StackUpdatePlan;
+  plan?: StackUpdatePlan | ExistingAddonRepairPlan;
 }
 
-const ADD_CONTROL_KEYS = new Set(["projectDir", "install", "dryRun"]);
+export type ExistingAddonRepairPlan = {
+  kind: "addon-repair";
+  projectDir: string;
+  addons: Addons[];
+  files: Array<{
+    path: string;
+    action: "create" | "update";
+    beforeSha256: string | null;
+    afterSha256?: string;
+    beforeMode: number | null;
+    afterMode?: number;
+  }>;
+  lifecycle: LifecycleResult;
+};
+
+const ADD_CONTROL_KEYS = new Set(["projectDir", "install", "dryRun", "json"]);
 const WORKSPACE_RUNNERS = new Set<Addons>(["turborepo", "nx", "vite-plus"]);
 
 function getRequestedCapabilityIds(input: AddInput): Addons[] {
@@ -185,8 +222,27 @@ function logStackUpdateSummary(plan: StackUpdatePlan, dryRun: boolean) {
   }
 }
 
-function appendRecoveryNote(lifecycle: LifecycleResult, note: string | undefined): LifecycleResult {
-  return note ? { ...lifecycle, nextActions: [...lifecycle.nextActions, note] } : lifecycle;
+type PackageManagerOutcome = {
+  status: "applied" | "failed" | "manual" | "not-run";
+  description: string;
+  compensatingAction: string;
+};
+
+function recordPostCommitOutcome(
+  lifecycle: LifecycleResult,
+  outcome: PackageManagerOutcome | undefined,
+  note: string | undefined,
+): LifecycleResult {
+  const nextActions = note ? [...lifecycle.nextActions, note] : lifecycle.nextActions;
+  if (!outcome) return { ...lifecycle, nextActions };
+  return {
+    ...lifecycle,
+    nextActions,
+    sideEffects: [
+      ...lifecycle.sideEffects.filter((sideEffect) => sideEffect.kind !== "package-manager"),
+      { kind: "package-manager", ...outcome },
+    ],
+  };
 }
 
 function buildAddonSetupConfig(
@@ -238,6 +294,376 @@ function buildCurrentAddonSetupConfig(
   } as ProjectConfig;
 }
 
+type RepairFileSnapshot = {
+  content: Buffer;
+  mode: number;
+  sha256: string;
+};
+
+type RepairFileChange = {
+  path: string;
+  before?: RepairFileSnapshot;
+  after?: RepairFileSnapshot;
+};
+
+type PlannedExistingAddonRepair = {
+  publicPlan: ExistingAddonRepairPlan;
+  changes: RepairFileChange[];
+  repairPaths: string[];
+  preimages: Map<string, RepairFileSnapshot>;
+  setupConfig: ProjectConfig;
+  expectedConfig: BetterTStackConfig;
+  refreshManifest: boolean;
+};
+
+function getExistingAddonRepairPaths(
+  currentConfig: BetterTStackConfig,
+  addonsToRepair: Addons[],
+): string[] {
+  const selected = new Set(currentConfig.addons ?? []);
+  const paths = new Set<string>();
+  if (addonsToRepair.includes("gitleaks")) {
+    if (selected.has("husky")) paths.add(".husky/pre-commit");
+    if (selected.has("lefthook")) paths.add("lefthook.yml");
+  }
+  if (
+    selected.has("lefthook") &&
+    addonsToRepair.some((addon) => addon === "biome" || addon === "oxlint")
+  ) {
+    paths.add("lefthook.yml");
+  }
+  return [...paths].sort();
+}
+
+async function snapshotRepairFiles(
+  rootDir: string,
+  relativePaths: Iterable<string>,
+): Promise<Map<string, RepairFileSnapshot>> {
+  const snapshots = new Map<string, RepairFileSnapshot>();
+  for (const relativePath of [...new Set(relativePaths)].sort()) {
+    const filePath = path.join(rootDir, relativePath);
+    // oxlint-disable-next-line no-await-in-loop -- every candidate is bound to one file state
+    const stats = await fs.lstat(filePath).catch(() => null);
+    if (!stats) continue;
+    if (!stats.isFile() || stats.isSymbolicLink()) {
+      throw new Error(`Addon repair target is not a regular file: ${relativePath}`);
+    }
+    // oxlint-disable-next-line no-await-in-loop -- candidate bytes are hashed before planning
+    const content = await fs.readFile(filePath);
+    snapshots.set(relativePath, {
+      content,
+      mode: stats.mode & 0o7777,
+      sha256: hashContent(content),
+    });
+  }
+  return snapshots;
+}
+
+async function copyRepairFiles(
+  targetDir: string,
+  relativePaths: Iterable<string>,
+  snapshots: Map<string, RepairFileSnapshot>,
+): Promise<void> {
+  await fs.ensureDir(targetDir);
+  for (const relativePath of relativePaths) {
+    const snapshot = snapshots.get(relativePath);
+    if (!snapshot) continue;
+    const target = path.join(targetDir, relativePath);
+    // oxlint-disable-next-line no-await-in-loop -- each repair input is copied with its exact mode
+    await fs.ensureDir(path.dirname(target));
+    // oxlint-disable-next-line no-await-in-loop -- the sandbox never aliases project files
+    await fs.writeFile(target, snapshot.content, { mode: snapshot.mode });
+    // oxlint-disable-next-line no-await-in-loop -- an existing umask must not change the plan
+    await fs.chmod(target, snapshot.mode);
+  }
+}
+
+function getRepairFileChanges(
+  before: Map<string, RepairFileSnapshot>,
+  after: Map<string, RepairFileSnapshot>,
+): RepairFileChange[] {
+  return [...new Set([...before.keys(), ...after.keys()])].sort().flatMap((relativePath) => {
+    const previous = before.get(relativePath);
+    const next = after.get(relativePath);
+    if (previous?.sha256 === next?.sha256 && previous?.mode === next?.mode) return [];
+    return [{ path: relativePath, before: previous, after: next }];
+  });
+}
+
+async function assertRepairConfigState(
+  projectDir: string,
+  expectedConfig: BetterTStackConfig,
+): Promise<void> {
+  const liveConfig = await readBtsConfig(projectDir);
+  if (!liveConfig || JSON.stringify(liveConfig) !== JSON.stringify(expectedConfig)) {
+    throw new Error("Addon repair config changed while planning: bts.jsonc");
+  }
+}
+
+function assertRepairTransactionPreimages(
+  transaction: ProjectTransaction,
+  before: Map<string, RepairFileSnapshot>,
+): void {
+  for (const file of transaction.metadata.files) {
+    const expected = before.get(file.path);
+    const matches = expected
+      ? file.state === "file" && file.sha256 === expected.sha256 && file.mode === expected.mode
+      : file.state === "absent";
+    if (!matches) throw new Error(`Addon repair target changed while planning: ${file.path}`);
+  }
+}
+
+function assertRepairSnapshotsMatch(
+  expected: Map<string, RepairFileSnapshot>,
+  current: Map<string, RepairFileSnapshot>,
+  relativePaths: Iterable<string>,
+): void {
+  for (const relativePath of relativePaths) {
+    const expectedFile = expected.get(relativePath);
+    const currentFile = current.get(relativePath);
+    if (expectedFile?.sha256 !== currentFile?.sha256 || expectedFile?.mode !== currentFile?.mode) {
+      throw new Error(`Addon repair input changed while planning: ${relativePath}`);
+    }
+  }
+}
+
+async function assertAddonRepairComplete(
+  stagedProjectDir: string,
+  setupConfig: ProjectConfig,
+  addonsToRepair: Addons[],
+): Promise<void> {
+  if (
+    addonsToRepair.includes("gitleaks") &&
+    !(await isGitleaksSetupComplete(stagedProjectDir, setupConfig.addons))
+  ) {
+    throw new Error("Gitleaks hook repair did not produce a complete setup.");
+  }
+  for (const linter of ["biome", "oxlint"] as const) {
+    if (
+      addonsToRepair.includes(linter) &&
+      !(await isLinterLefthookSetupComplete(stagedProjectDir, linter, setupConfig.packageManager))
+    ) {
+      throw new Error(`${linter} Lefthook repair did not produce a complete setup.`);
+    }
+  }
+}
+
+function getRepairStackPartSpecs(addonsToRepair: Addons[]): string[] {
+  return addonsToRepair.map((addon) => {
+    const capability = getToolingCapability(addon);
+    return capability ? `${capability.role}:${capability.ecosystem}:${addon}` : addon;
+  });
+}
+
+async function planExistingAddonRepair(
+  projectDir: string,
+  projectName: string,
+  currentConfig: BetterTStackConfig,
+  addonsToRepair: Addons[],
+): Promise<PlannedExistingAddonRepair> {
+  const repairPaths = getExistingAddonRepairPaths(currentConfig, addonsToRepair);
+  if (repairPaths.length === 0) {
+    throw new Error("No supported existing-addon repair targets were found.");
+  }
+  const transactionPaths = ["bts.jsonc", SCAFFOLD_MANIFEST_FILE, ...repairPaths];
+  const preimages = await snapshotRepairFiles(projectDir, transactionPaths);
+  await assertRepairConfigState(projectDir, currentConfig);
+  const manifestResult = await readScaffoldManifestResult(projectDir);
+  if (manifestResult.status === "invalid") {
+    throw new Error(
+      `Cannot repair tooling with an invalid scaffold manifest: ${manifestResult.error}`,
+    );
+  }
+  const tempRoot = await fs.mkdtemp(path.join(tmpdir(), "bfs-addon-repair-"));
+  const stagedProjectDir = path.join(tempRoot, projectName);
+
+  try {
+    await copyRepairFiles(stagedProjectDir, repairPaths, preimages);
+    const before = await snapshotRepairFiles(stagedProjectDir, repairPaths);
+    const setupConfig = buildCurrentAddonSetupConfig(stagedProjectDir, projectName, currentConfig);
+    await repairExistingAddonSetup(setupConfig, addonsToRepair);
+    await assertAddonRepairComplete(stagedProjectDir, setupConfig, addonsToRepair);
+    const after = await snapshotRepairFiles(stagedProjectDir, repairPaths);
+    const changes = getRepairFileChanges(before, after);
+    const currentInputs = await snapshotRepairFiles(projectDir, transactionPaths);
+    assertRepairSnapshotsMatch(preimages, currentInputs, transactionPaths);
+    await assertRepairConfigState(projectDir, currentConfig);
+    const added = changes.filter((change) => change.before === undefined).length;
+    const patched = changes.length - added;
+    const refreshManifest = manifestResult.status === "valid" && changes.length > 0;
+    const affectedFiles: ExistingAddonRepairPlan["files"] = changes.map((change) => ({
+      path: change.path,
+      action: change.before ? "update" : "create",
+      beforeSha256: change.before?.sha256 ?? null,
+      afterSha256: change.after?.sha256,
+      beforeMode: change.before?.mode ?? null,
+      afterMode: change.after?.mode,
+    }));
+    if (refreshManifest) {
+      const manifestPreimage = preimages.get(SCAFFOLD_MANIFEST_FILE);
+      affectedFiles.push({
+        path: SCAFFOLD_MANIFEST_FILE,
+        action: "update",
+        beforeSha256: manifestPreimage?.sha256 ?? null,
+        beforeMode: manifestPreimage?.mode ?? null,
+      });
+    }
+    const lifecycle = lifecycleResult({
+      operation: "add",
+      status: "planned",
+      projectDir,
+      changes: { added, patched },
+      provenance: {
+        source:
+          manifestResult.status === "valid" ? manifestResult.manifest.provenance.current : null,
+        target: getCurrentLifecycleVersions(),
+        verified:
+          manifestResult.status === "valid" &&
+          manifestResult.manifest.provenance.state === "verified",
+      },
+      recovery: { available: changes.length > 0, automaticRollback: true },
+      affected: {
+        stackParts: getRepairStackPartSpecs(addonsToRepair),
+        files: affectedFiles.map((file) => ({ path: file.path, action: file.action })),
+      },
+      checks: addonsToRepair.map((addon) => ({
+        id: `repair:${addon}`,
+        status: "pass",
+        message: "The staged repair completed its setup check.",
+      })),
+      sideEffects: [
+        {
+          kind: "filesystem",
+          status: changes.length > 0 ? "planned" : "not-run",
+          description:
+            changes.length > 0
+              ? "Apply the reviewed tooling repair and manifest refresh in one recovery transaction."
+              : "The requested tooling setup is already complete.",
+        },
+      ],
+    });
+    return {
+      changes,
+      repairPaths,
+      preimages,
+      setupConfig,
+      expectedConfig: currentConfig,
+      refreshManifest,
+      publicPlan: {
+        kind: "addon-repair",
+        projectDir,
+        addons: addonsToRepair,
+        files: affectedFiles,
+        lifecycle,
+      },
+    };
+  } finally {
+    await fs.remove(tempRoot).catch(() => undefined);
+  }
+}
+
+async function applyExistingAddonRepair(plan: PlannedExistingAddonRepair): Promise<AddResult> {
+  const { projectDir } = plan.publicPlan;
+  if (plan.changes.length === 0) {
+    return {
+      success: true,
+      addedAddons: [],
+      projectDir,
+      lifecycle: lifecycleResult({
+        ...plan.publicPlan.lifecycle,
+        status: "applied",
+        recovery: { available: false },
+      }),
+    };
+  }
+
+  const transactionPaths = ["bts.jsonc", SCAFFOLD_MANIFEST_FILE, ...plan.repairPaths];
+  let transaction: ProjectTransaction | undefined;
+  let committed = false;
+  try {
+    const activeTransaction = await beginProjectTransaction(projectDir, "add", transactionPaths);
+    transaction = activeTransaction;
+    assertRepairTransactionPreimages(activeTransaction, plan.preimages);
+    await assertRepairConfigState(projectDir, plan.expectedConfig);
+
+    for (const change of plan.changes) {
+      if (!change.after) throw new Error(`Addon repair output is missing: ${change.path}`);
+      // oxlint-disable-next-line no-await-in-loop -- every reviewed output is journaled separately
+      await writeProjectTransactionFile(activeTransaction, change.path, change.after.content, {
+        expectedSha256: change.after.sha256,
+        mode: change.after.mode,
+      });
+    }
+    await assertAddonRepairComplete(projectDir, plan.setupConfig, plan.publicPlan.addons);
+
+    const changes = plan.publicPlan.lifecycle.changes;
+    if (plan.refreshManifest) {
+      let manifestWritten = false;
+      await refreshScaffoldManifestFiles(
+        projectDir,
+        plan.changes.map((change) => change.path),
+        undefined,
+        { type: "add", changes, recoveryId: activeTransaction.id },
+        {
+          writeFile: async (content) => {
+            await writeProjectTransactionFile(activeTransaction, SCAFFOLD_MANIFEST_FILE, content);
+            manifestWritten = true;
+          },
+        },
+      );
+      if (!manifestWritten) {
+        throw new Error("Scaffold manifest changed before the addon repair could refresh it.");
+      }
+    }
+    await commitProjectTransaction(activeTransaction);
+    committed = true;
+
+    const recoveryCommand = getProjectRecoveryCommand(
+      projectDir,
+      activeTransaction.id,
+      process.platform,
+      plan.setupConfig.packageManager,
+    );
+    return {
+      success: true,
+      addedAddons: [],
+      projectDir,
+      recoveryId: activeTransaction.id,
+      lifecycle: lifecycleResult({
+        ...plan.publicPlan.lifecycle,
+        status: "applied",
+        recovery: {
+          available: true,
+          transactionId: activeTransaction.id,
+          command: recoveryCommand,
+          automaticRollback: true,
+        },
+        sideEffects: [
+          {
+            kind: "filesystem",
+            status: "applied",
+            description: "Repaired existing tooling files inside one recovery transaction.",
+            compensatingAction: recoveryCommand,
+          },
+        ],
+        history: { recorded: true, recoveryId: activeTransaction.id },
+        nextActions: ["Run `create-better-fullstack check` to verify every generated target."],
+      }),
+    };
+  } catch (error) {
+    if (transaction && !committed) {
+      try {
+        await rollbackProjectTransaction(transaction);
+      } catch (rollbackError) {
+        throw new CLIError(
+          `${error instanceof Error ? error.message : String(error)}. Automatic rollback failed: ${rollbackError instanceof Error ? rollbackError.message : String(rollbackError)}. Recovery transaction: ${transaction.id}.`,
+        );
+      }
+    }
+    throw error;
+  }
+}
+
 async function runStackUpdateAdd(
   input: AddInput,
   projectDir: string,
@@ -261,27 +687,57 @@ async function runStackUpdateAdd(
     );
   }
   const addonsToRepair = await getAddonsToSetup(input, currentConfig, projectDir);
-  const isExistingAddonRepair =
-    !dryRun &&
+  const existingAddonsToRepair = addonsToRepair.filter((addon) => existingAddons.has(addon));
+  const repairAddonSet = new Set(existingAddonsToRepair);
+  const repairPartSpecs = new Set(getRepairStackPartSpecs(existingAddonsToRepair));
+  const isRepairOnlyRequest =
     Object.keys(request).every((key) => key === "addons" || key === "part") &&
     requestedAddons.length > 0 &&
-    requestedAddons.every((addon) => existingAddons.has(addon)) &&
-    addonsToRepair.length > 0;
+    requestedAddons.every((addon) => repairAddonSet.has(addon)) &&
+    (input.addons ?? []).every((addon) => addon === "none" || repairAddonSet.has(addon)) &&
+    (input.part ?? []).every((spec) => repairPartSpecs.has(spec));
+
+  if (existingAddonsToRepair.length > 0 && !isRepairOnlyRequest) {
+    throw new CLIError(
+      `Cannot combine repair of existing tooling (${existingAddonsToRepair.join(", ")}) with other add requests. Run the tooling repair and stack update separately so no requested change can be skipped.`,
+    );
+  }
+
+  const isExistingAddonRepair = existingAddonsToRepair.length > 0 && isRepairOnlyRequest;
 
   if (isExistingAddonRepair) {
-    const setupConfig = buildCurrentAddonSetupConfig(projectDir, projectName, currentConfig);
-    const setupWarnings = await setupAddons(setupConfig, addonsToRepair);
-    await applyDependencyVersionChannel(projectDir, setupConfig.versionChannel);
+    const repairPlan = await planExistingAddonRepair(
+      projectDir,
+      projectName,
+      currentConfig,
+      existingAddonsToRepair,
+    );
+    if (dryRun) {
+      if (!isSilent()) {
+        log.info(pc.cyan("Tooling repair plan:"));
+        for (const file of repairPlan.publicPlan.files) {
+          log.info(pc.dim(`  ${file.action}: ${file.path}`));
+        }
+        outro(pc.magenta("Dry run complete. No files were written."));
+      }
+      return {
+        success: true,
+        addedAddons: [],
+        projectDir,
+        plan: repairPlan.publicPlan,
+        lifecycle: repairPlan.publicPlan.lifecycle,
+      };
+    }
+
+    const result = await applyExistingAddonRepair(repairPlan);
     if (!isSilent()) {
-      log.success(pc.green(`Repaired tooling setup: ${addonsToRepair.join(", ")}`));
+      log.success(pc.green(`Repaired tooling setup: ${existingAddonsToRepair.join(", ")}`));
+      if (result.lifecycle?.recovery.command) {
+        log.info(pc.dim(`Recovery: ${result.lifecycle.recovery.command}`));
+      }
       outro(pc.magenta("Project updated successfully!"));
     }
-    return {
-      success: true,
-      addedAddons: [],
-      projectDir,
-      setupWarnings: setupWarnings.length > 0 ? setupWarnings : undefined,
-    };
+    return result;
   }
 
   const result = dryRun
@@ -314,6 +770,7 @@ async function runStackUpdateAdd(
   }
 
   let recoveryNote: string | undefined;
+  let packageManagerOutcome: PackageManagerOutcome | undefined;
   try {
     const addonsToSetup = await getAddonsToSetup(input, currentConfig, projectDir);
     const setupConfig = buildAddonSetupConfig(projectDir, projectName, currentConfig, result);
@@ -330,13 +787,35 @@ async function runStackUpdateAdd(
         });
         installFailed = !installResult.success;
         recoveryNote = `Recovery restores generated files only. The lockfile this install wrote is not rolled back, so re-run '${result.installCommand}' after recovering.`;
-      } else if (!isSilent()) {
-        log.warn(
-          pc.yellow(
-            `Automatic --install is only supported for JavaScript package-manager installs. Run '${result.installCommand}' instead.`,
-          ),
-        );
+        packageManagerOutcome = {
+          status: installResult.success ? "applied" : "failed",
+          description: installResult.success
+            ? "Dependency installation completed after the filesystem transaction committed."
+            : "Dependency installation failed after the filesystem transaction committed.",
+          compensatingAction: `Run '${result.installCommand}' after recovery or after fixing the install failure.`,
+        };
+      } else {
+        if (!isSilent()) {
+          log.warn(
+            pc.yellow(
+              `Automatic --install is only supported for JavaScript package-manager installs. Run '${result.installCommand}' instead.`,
+            ),
+          );
+        }
+        packageManagerOutcome = {
+          status: "not-run",
+          description: "Automatic dependency installation is not supported for this ecosystem.",
+          compensatingAction: `Run '${result.installCommand}'.`,
+        };
       }
+    } else if (
+      result.lifecycle.sideEffects.some((sideEffect) => sideEffect.kind === "package-manager")
+    ) {
+      packageManagerOutcome = {
+        status: "manual",
+        description: "Dependency manifests changed, but no package manager was run.",
+        compensatingAction: `Run '${result.installCommand}'.`,
+      };
     }
 
     if (!isSilent()) {
@@ -372,7 +851,7 @@ async function runStackUpdateAdd(
       addedAddons: addonsToSetup,
       projectDir,
       setupWarnings: setupWarnings.length > 0 ? setupWarnings : undefined,
-      lifecycle: appendRecoveryNote(result.lifecycle, recoveryNote),
+      lifecycle: recordPostCommitOutcome(result.lifecycle, packageManagerOutcome, recoveryNote),
       recoveryId: result.recoveryId,
     };
   } catch (error) {
@@ -393,7 +872,7 @@ async function runStackUpdateAdd(
       addedAddons: [],
       projectDir,
       error: message,
-      lifecycle: appendRecoveryNote(result.lifecycle, recoveryNote),
+      lifecycle: recordPostCommitOutcome(result.lifecycle, packageManagerOutcome, recoveryNote),
       recoveryId: result.recoveryId,
     };
   }

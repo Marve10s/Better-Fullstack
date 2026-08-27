@@ -23,7 +23,7 @@ import {
   findTemplateFilesWithPackage,
   selectAutomatedUpdates,
   type VersionInfo,
-} from "../src/utils/dependency-checker";
+} from "@/dependencies/dependency-checker";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -83,12 +83,18 @@ async function updateAddDepsFile(updates: VersionInfo[]): Promise<boolean> {
   for (const update of updates) {
     const escapedName = update.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const isIdentifierKey = /^[A-Za-z_$][\w$]*$/.test(update.name);
-    const quotedPattern = new RegExp(`((?:["'])${escapedName}(?:["'])\\s*:\\s*["'])([^"']+)(["'])`, "g");
+    const quotedPattern = new RegExp(
+      `((?:["'])${escapedName}(?:["'])\\s*:\\s*["'])([^"']+)(["'])`,
+      "g",
+    );
 
     let newContent = content.replace(quotedPattern, `$1${update.latest}$3`);
 
     if (isIdentifierKey) {
-      const unquotedPattern = new RegExp(`(^[\\t ]*${escapedName}\\s*:\\s*["'])([^"']+)(["'])`, "gm");
+      const unquotedPattern = new RegExp(
+        `(^[\\t ]*${escapedName}\\s*:\\s*["'])([^"']+)(["'])`,
+        "gm",
+      );
       newContent = newContent.replace(unquotedPattern, `$1${update.latest}$3`);
     }
 
@@ -106,10 +112,7 @@ async function updateAddDepsFile(updates: VersionInfo[]): Promise<boolean> {
   return false;
 }
 
-async function updateTemplateFiles(
-  updates: VersionInfo[],
-  templatesDir: string,
-): Promise<boolean> {
+async function updateTemplateFiles(updates: VersionInfo[], templatesDir: string): Promise<boolean> {
   const templateUpdates = updates.filter((u) => u.source === "template");
   if (templateUpdates.length === 0) return false;
 
@@ -216,7 +219,9 @@ async function main() {
       console.error(`Found ${templateCount} additional packages in template files`);
     }
     if (versionMismatches.length > 0) {
-      console.error(`Found ${versionMismatches.length} version mismatches between map and templates`);
+      console.error(
+        `Found ${versionMismatches.length} version mismatches between map and templates`,
+      );
     }
   }
 
@@ -266,7 +271,9 @@ async function main() {
       const mapUpdates = toApply.filter((u) => u.source !== "template");
       const templateUpdates = toApply.filter((u) => u.source === "template");
 
-      console.log(`\nApplying ${toApply.length} updates (${mapUpdates.length} in version map, ${templateUpdates.length} in templates)...`);
+      console.log(
+        `\nApplying ${toApply.length} updates (${mapUpdates.length} in version map, ${templateUpdates.length} in templates)...`,
+      );
 
       let anySuccess = false;
 
@@ -295,7 +302,9 @@ async function main() {
         }
 
         if (fixedMismatchCount > 0) {
-          console.log(`\nSynchronized ${fixedMismatchCount} template version mismatch(es) with dependencyVersionMap.`);
+          console.log(
+            `\nSynchronized ${fixedMismatchCount} template version mismatch(es) with dependencyVersionMap.`,
+          );
         }
       } else {
         console.error("Failed to apply updates.");

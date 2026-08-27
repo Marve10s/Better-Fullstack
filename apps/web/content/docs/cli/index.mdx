@@ -2,49 +2,110 @@
 title: CLI Reference
 description: Every command for creating projects, evolving generated apps, running AI-agent workflows, and opening resources.
 translationStatus: pending
-updated: 2026-08-22
+updated: 2026-08-23
 ---
 
 The CLI exposes a project lifecycle: create, evolve, refresh, diagnose, generate. Commands marked experimental have intentionally narrow support today.
 
 ## Commands
 
-| Command     | Purpose                                                                                                    |
-| ----------- | ----------------------------------------------------------------------------------------------------------- |
-| `create`    | Scaffold a new project from a stack configuration. This is the default command.                             |
-| `add`       | Add supported tooling, deployment settings, or stack capabilities to an existing project.                   |
-| `remove`    | Plan and apply removal of one exact non-primary stack capability.                                           |
-| `status`    | Summarize project health, lifecycle guarantees, and template drift without running toolchains.              |
-| `update`    | Plan or apply current template drift against the `bts.lock.json` scaffold baseline.                         |
-| `check`     | Diagnose config, dependency, env, and generated-target issues. `doctor` is a compatibility alias.           |
-| `history`   | Show, export, or clear local scaffold history and reproducible commands.                                    |
-| `gen`       | Experimental: generate a TypeScript tRPC/oRPC resource router in an existing project.                       |
-| `registry`  | Experimental: add or list local capability packs. Remote URLs are not supported.                            |
-| `recommend` | Experimental: deterministic keyword/preset recommendation from a brief.                                     |
-| `mcp`       | Start the Better Fullstack MCP server over stdio for AI coding agents.                                      |
-| `telemetry` | Inspect, enable, or disable anonymous CLI telemetry.                                                        |
+| Command         | Purpose                                                                                              |
+| --------------- | ---------------------------------------------------------------------------------------------------- |
+| `create`        | Scaffold a new project from a stack configuration. This is the default command.                      |
+| `add`           | Add supported tooling, deployment settings, or stack capabilities to an existing project.            |
+| `remove`        | Plan and apply removal of one exact non-primary stack capability.                                    |
+| `replace`       | Plan and apply replacement of one exact frontend, backend, mobile, or database Primary Role.         |
+| `status`        | Summarize project health, lifecycle guarantees, and template drift without running toolchains.       |
+| `adopt`         | Plan pre-manifest-v2 adoption, then create an unverified baseline with the exact confirmation token. |
+| `update`        | Plan or apply current template drift against the `bts.lock.json` scaffold baseline.                  |
+| `check`         | Diagnose config, dependency, env, and generated-target issues without repair flags.                  |
+| `doctor`        | Diagnose a project and plan or apply token-bound graph/config drift repair.                          |
+| `history`       | Show, export, or clear local scaffold history and reproducible commands.                             |
+| `recovery`      | List, inspect, verify, restore, or prune lifecycle recovery points.                                  |
+| `gen`           | Plan and apply a registered, recoverable in-project recipe.                                          |
+| `recipes`       | Check recipe ownership or correlate recipes with recovery history.                                   |
+| `context`       | Return bounded project roles, evidence, versions, commands, and safe next actions.                   |
+| `registry`      | Experimental: add or list local capability packs. Remote URLs are not supported.                     |
+| `tracks`        | List canonical editable starter tracks with evidence and bounded selection filters.                  |
+| `compatibility` | Explain one capability decision against a starter track, including alternatives and its owner.       |
+| `recommend`     | Deterministic, evidence-aware starter-track recommendation from a brief.                             |
+| `mcp`           | Start the Better Fullstack MCP server over stdio for AI coding agents.                               |
+| `evidence`      | Inspect option evidence, freshness, maturity, owners, recipes, and limitations without writing.      |
+| `telemetry`     | Inspect, enable, or disable anonymous CLI telemetry.                                                 |
 
 Most people need four of these day to day: `create`, `add`, `check`, and `history`. Agents use `mcp`.
+
+The first persistent [`gen` recipe](/docs/cli/gen/) adds a complete tRPC, Drizzle, and SQLite CRUD
+slice. It uses exact review tokens, managed-region ownership, one recovery transaction, generated
+integration checks, and the shared CLI/MCP context contract.
 
 <Callout kind="info" title="Add changes the stack; update refreshes templates">
 Use `add` when you want a new selected capability. Use `update` when the selection stays the same and you want newer generator templates. Both are review-first.
 </Callout>
+
+## Repair graph/config drift
+
+`doctor --fix` derives canonical `bts.jsonc` projections from the authoritative Stack Graph. The
+first call only reports changed fields and a review token. Apply accepts that token only while the
+reviewed file preimage still matches, writes one bounded config file, and creates a recovery point.
+
+```bash
+bunx create-better-fullstack@latest doctor ./my-app --fix
+bunx create-better-fullstack@latest doctor ./my-app --fix --apply --review-token <token>
+```
+
+Malformed configs and symbolic-link targets fail before a plan. A stale token fails before the
+write. Run `recovery show <transaction-id>` or `recovery apply <transaction-id>` when you need to
+inspect or restore the recorded preimage.
+
+## Replace a Primary Role
+
+`replace` changes one exact frontend, backend, mobile, or database Primary Role. The plan shows
+file operations, owner rewiring, migration steps, application-data boundaries, and the exact apply
+command. The replacement must keep the same role.
+
+```bash
+bunx create-better-fullstack@latest replace \
+  'frontend:typescript:react-vite' \
+  'frontend:typescript:next' \
+  --project-dir ./my-app
+```
+
+Apply the emitted token and include `--acknowledge-architecture-change` when the plan requires it.
+Stable custom service IDs are preserved. Automatic cross-ecosystem replacement stops when an
+owner-scoped capability would cross ecosystems; remove or replace those capabilities explicitly
+first.
 
 ## Utility commands
 
 These open a resource and never modify a generated project:
 
 | Command    | Behavior                                                                 |
-| ---------- | ------------------------------------------------------------------------- |
+| ---------- | ------------------------------------------------------------------------ |
 | `docs`     | Open the Better Fullstack docs in the default browser, or print the URL. |
-| `builder`  | Open the visual Stack Builder.                                            |
-| `sponsors` | Fetch and display current sponsors.                                       |
+| `builder`  | Open the visual Stack Builder.                                           |
+| `sponsors` | Fetch and display current sponsors.                                      |
 
 ```bash
 npx create-better-fullstack@latest docs
 ```
 
 Swap the launcher for `pnpm dlx`, `bunx`, or `yarn dlx`; the rest stays identical for `builder` and `sponsors`.
+
+## Capability evidence
+
+The evidence command fails closed to `listed` unless you provide a current matching capability
+receipt. JSON output includes every option plus the eight golden runtime recipes and their recorded
+maintenance cost.
+
+```bash
+bunx create-better-fullstack@latest evidence --json
+bunx create-better-fullstack@latest evidence --ecosystem rust --category rustCli --option clap
+bunx create-better-fullstack@latest evidence --receipt ./capability-runtime-receipt.json --json
+```
+
+The receipt proves only its named recipe, toolchains, release version, and age. It does not promote
+uncovered options.
 
 ## Maintainer command
 

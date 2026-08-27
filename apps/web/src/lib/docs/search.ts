@@ -1,7 +1,7 @@
 import { create, insertMultiple, search } from "@orama/orama";
 import matter from "gray-matter";
 
-import type { DocFrontmatter } from "./source";
+import type { DocFrontmatter } from "@/lib/docs/source";
 
 export type SearchSection = {
   id: string;

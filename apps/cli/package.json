@@ -1,7 +1,7 @@
 {
   "name": "create-better-fullstack",
   "version": "2.6.1",
-  "description": "Scaffold production-ready fullstack apps in TypeScript, React Native, Rust, Go, Python, Java, .NET, and Elixir — visual builder, CLI, and MCP server, with every integration wired together.",
+  "description": "Scaffold configurable fullstack projects in TypeScript, React Native, Rust, Go, Python, Java, .NET, and Elixir through a visual builder, CLI, and MCP server.",
   "keywords": [
     "ai-agent",
     "algolia",
@@ -123,7 +123,12 @@
     "./mcp": {
       "types": "./dist/mcp-entry.d.mts",
       "import": "./dist/mcp-entry.mjs"
-    }
+    },
+    "./testing": {
+      "types": "./dist/testing.d.mts",
+      "import": "./dist/testing.mjs"
+    },
+    "./package.json": "./package.json"
   },
   "publishConfig": {
     "access": "public"
@@ -131,11 +136,11 @@
   "scripts": {
     "build": "tsdown --publint",
     "dev": "tsdown --watch",
-    "lint": "oxlint . && tsc --noEmit && bun test test/cli-builder-sync.test.ts",
+    "lint": "oxlint . && tsc --noEmit && bun test test/recommendations/cli-builder-sync.test.ts",
     "check-types": "tsc --noEmit",
-    "test": "bun test ./test/*.test.ts",
+    "test": "bun test ./test/{architecture,benchmarks,ecosystems,features,generation,lifecycle,mcp,prompts,recommendations,support,telemetry}/*.test.ts",
     "test:watch": "bun test --watch",
-    "test:coverage": "bun test --coverage ./test/*.test.ts",
+    "test:coverage": "bun test --coverage ./test/{architecture,benchmarks,ecosystems,features,generation,lifecycle,mcp,prompts,recommendations,support,telemetry}/*.test.ts",
     "test:ci": "CI=1 bun test --bail=5",
     "test:e2e": "E2E=1 bun test test/e2e/e2e.e2e.ts --timeout 600000",
     "test:integration": "bun test test/e2e/cli-interaction.test.ts test/e2e/cli-binary.test.ts",
@@ -146,6 +151,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
+    "@better-fullstack/project-lifecycle": "^2.6.1",
     "@better-fullstack/template-generator": "^2.6.1",
     "@better-fullstack/types": "^2.6.1",
     "@clack/core": "^0.5.0",
@@ -161,6 +167,7 @@
     "oxfmt": "^0.19.0",
     "picocolors": "^1.1.1",
     "trpc-cli": "^0.12.1",
+    "ts-morph": "^27.0.2",
     "yaml": "^2.9.0",
     "zod": "4.4.3"
   },
@@ -170,7 +177,6 @@
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^25.9.3",
     "publint": "^0.3.24",
-    "ts-morph": "^27.0.2",
     "tsdown": "^0.18.2",
     "typescript": "^5.9.3"
   }

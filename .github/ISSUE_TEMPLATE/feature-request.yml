@@ -1,0 +1,51 @@
+name: Feature request
+description: Propose an outcome for an existing lifecycle step or verified recipe
+title: "[request]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Better Fullstack prioritizes verified recipes and safe project lifecycle work over option count. Explain the repeated job or failure this request would solve.
+  - type: dropdown
+    id: lifecycle
+    attributes:
+      label: Lifecycle step
+      options:
+        - choose
+        - create
+        - understand or diagnose
+        - add, remove, or replace
+        - verify
+        - update or recover
+        - generate inside an existing project
+        - agent or MCP workflow
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Repeated problem
+      description: Describe the user job and how often it occurs. Do not include private project details.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Successful outcome
+      description: State the observable result. Avoid prescribing an implementation unless it is a hard compatibility constraint.
+    validations:
+      required: true
+  - type: textarea
+    id: proof
+    attributes:
+      label: Verification
+      description: What real command, build, request, or runtime behavior would prove this works?
+    validations:
+      required: true
+  - type: textarea
+    id: maintenance
+    attributes:
+      label: Maintenance context
+      description: Link public demand or name a verification maintainer if one exists.

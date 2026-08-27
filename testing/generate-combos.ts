@@ -1,10 +1,9 @@
 #!/usr/bin/env bun
 
+import { loadHistoricalLedger } from "@testing/lib/generate-combos/history";
+import { generateBatch } from "@testing/lib/generate-combos/options";
+import { DEFAULT_ARGS, type GeneratorArgs } from "@testing/lib/generate-combos/types";
 import { Console, Effect } from "effect";
-
-import { loadHistoricalLedger } from "./lib/generate-combos/history";
-import { generateBatch } from "./lib/generate-combos/options";
-import { DEFAULT_ARGS, type GeneratorArgs } from "./lib/generate-combos/types";
 
 function parseArgs(argv: string[]): GeneratorArgs {
   const args = { ...DEFAULT_ARGS };

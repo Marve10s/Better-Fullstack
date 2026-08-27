@@ -10,7 +10,7 @@ import {
   DEFAULT_ROBOTS,
   DEFAULT_X_IMAGE_URL,
   canonicalUrl,
-} from "@/lib/seo";
+} from "@/lib/seo/seo";
 import { m } from "@/paraglide/messages.js";
 
 export const Route = createFileRoute("/benchmark")({

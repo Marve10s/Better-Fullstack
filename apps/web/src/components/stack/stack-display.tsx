@@ -1,5 +1,6 @@
-import { Link } from "@tanstack/react-router";
 import { CATEGORY_ORDER } from "@better-fullstack/types";
+import { Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import {
   TbCheck as Check,
   TbCopy as Copy,
@@ -7,19 +8,18 @@ import {
   TbShare2 as Share2,
   TbTerminal as Terminal,
 } from "react-icons/tb";
-import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { ShareDialog } from "@/components/ui/share-dialog";
 import { TechBadge } from "@/components/ui/tech-badge";
-import { DEFAULT_STACK, type StackState, TECH_OPTIONS } from "@/lib/constant";
+import { cn } from "@/lib/platform/utils";
+import { DEFAULT_STACK, type StackState, TECH_OPTIONS } from "@/lib/stack/constant";
 import {
   generateStackCommand,
   generateStackSharingUrl,
   generateStackSummary,
   generateStackUrlFromState,
-} from "@/lib/stack-utils";
-import { cn } from "@/lib/utils";
+} from "@/lib/stack/stack-utils";
 import { m } from "@/paraglide/messages.js";
 
 interface StackDisplayProps {

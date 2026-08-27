@@ -1,4 +1,4 @@
-import { httpAction } from "./_generated/server";
+import { httpAction } from "@/_generated/server";
 
 const RETIRED_RESPONSE_HEADERS = {
   "Cache-Control": "private, no-store",

@@ -3,8 +3,9 @@
   "compilerOptions": {
     "baseUrl": "..",
     "paths": {
-      "@/*": ["./scaffbench/*"],
-      "@better-fullstack/types": ["./scaffbench/typecheck-shims.d.ts"]
+      "@scaffbench/*": ["./scaffbench/*"],
+      "@scripts/*": ["./*"],
+      "@testing/*": ["../testing/*"]
     }
   },
   "include": [

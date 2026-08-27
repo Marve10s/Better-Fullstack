@@ -1,9 +1,11 @@
 /* oxlint-disable react-perf/jsx-no-new-object-as-prop -- Remotion styles are frame-derived. */
 import type { CSSProperties } from "react";
+
 import { Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 
-import { BF_COLORS, FONT_MONO, FONT_SANS, GridBackground, Wordmark } from "../styles";
-import type { SearchMediaItem, SearchMediaSpec } from "./specs";
+import type { SearchMediaItem, SearchMediaSpec } from "@/search-media/specs";
+
+import { BF_COLORS, FONT_MONO, FONT_SANS, GridBackground, Wordmark } from "@/styles";
 
 type SearchMediaProps = {
   spec: SearchMediaSpec;
@@ -66,7 +68,15 @@ function FlowLayout({ items, animated }: { items: SearchMediaItem[]; animated: b
     : 1;
 
   return (
-    <div style={{ position: "relative", width: 390, display: "flex", flexDirection: "column", gap: 14 }}>
+    <div
+      style={{
+        position: "relative",
+        width: 390,
+        display: "flex",
+        flexDirection: "column",
+        gap: 14,
+      }}
+    >
       <div
         style={{
           position: "absolute",
@@ -100,8 +110,12 @@ function FlowLayout({ items, animated }: { items: SearchMediaItem[]; animated: b
           >
             <TechIcon item={item} />
             <div>
-              <div style={{ fontFamily: FONT_MONO, fontSize: 18, fontWeight: 650 }}>{item.name}</div>
-              <div style={{ marginTop: 3, color: BF_COLORS.muted, fontSize: 14 }}>{item.detail}</div>
+              <div style={{ fontFamily: FONT_MONO, fontSize: 18, fontWeight: 650 }}>
+                {item.name}
+              </div>
+              <div style={{ marginTop: 3, color: BF_COLORS.muted, fontSize: 14 }}>
+                {item.detail}
+              </div>
             </div>
           </div>
         );
@@ -113,12 +127,19 @@ function FlowLayout({ items, animated }: { items: SearchMediaItem[]; animated: b
 function DecisionLayout({ items, animated }: { items: SearchMediaItem[]; animated: boolean }) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const lineProgress = animated
-    ? interpolate(frame, [0.55 * fps, 1.25 * fps], [0, 1], clamp)
-    : 1;
+  const lineProgress = animated ? interpolate(frame, [0.55 * fps, 1.25 * fps], [0, 1], clamp) : 1;
 
   return (
-    <div style={{ width: 420, height: 310, position: "relative", display: "flex", gap: 14, alignItems: "center" }}>
+    <div
+      style={{
+        width: 420,
+        height: 310,
+        position: "relative",
+        display: "flex",
+        gap: 14,
+        alignItems: "center",
+      }}
+    >
       <div
         style={{
           position: "absolute",
@@ -154,7 +175,9 @@ function DecisionLayout({ items, animated }: { items: SearchMediaItem[]; animate
           >
             <TechIcon item={item} size={42} />
             <div>
-              <div style={{ fontFamily: FONT_MONO, fontSize: 18, fontWeight: 650, lineHeight: 1.15 }}>
+              <div
+                style={{ fontFamily: FONT_MONO, fontSize: 18, fontWeight: 650, lineHeight: 1.15 }}
+              >
                 {item.name}
               </div>
               <div style={{ marginTop: 8, color: BF_COLORS.muted, fontSize: 14, lineHeight: 1.35 }}>
@@ -217,8 +240,12 @@ function MatrixLayout({ items, animated }: { items: SearchMediaItem[]; animated:
             >
               <TechIcon item={item} size={29} />
               <div>
-                <div style={{ fontFamily: FONT_MONO, fontSize: 15, fontWeight: 650 }}>{item.name}</div>
-                <div style={{ marginTop: 2, color: BF_COLORS.muted, fontSize: 12 }}>{item.detail}</div>
+                <div style={{ fontFamily: FONT_MONO, fontSize: 15, fontWeight: 650 }}>
+                  {item.name}
+                </div>
+                <div style={{ marginTop: 2, color: BF_COLORS.muted, fontSize: 12 }}>
+                  {item.detail}
+                </div>
               </div>
             </div>
           );
@@ -236,7 +263,14 @@ function ProcessLine({ animated }: { animated: boolean }) {
   const progress = animated ? interpolate(frame, [1.1 * fps, 2.25 * fps], [0, 1], clamp) : 1;
 
   return (
-    <div style={{ position: "relative", display: "flex", marginTop: 30, justifyContent: "space-between" }}>
+    <div
+      style={{
+        position: "relative",
+        display: "flex",
+        marginTop: 30,
+        justifyContent: "space-between",
+      }}
+    >
       <div
         style={{
           position: "absolute",
@@ -247,7 +281,9 @@ function ProcessLine({ animated }: { animated: boolean }) {
           background: BF_COLORS.border,
         }}
       >
-        <div style={{ width: `${progress * 100}%`, height: "100%", background: BF_COLORS.purple }} />
+        <div
+          style={{ width: `${progress * 100}%`, height: "100%", background: BF_COLORS.purple }}
+        />
       </div>
       {steps.map((step, index) => (
         <div key={step} style={{ position: "relative", textAlign: "center" }}>
@@ -257,11 +293,14 @@ function ProcessLine({ animated }: { animated: boolean }) {
               height: 13,
               margin: "0 auto 9px",
               borderRadius: 999,
-              background: progress >= index / (steps.length - 1) ? BF_COLORS.purple : BF_COLORS.panel,
+              background:
+                progress >= index / (steps.length - 1) ? BF_COLORS.purple : BF_COLORS.panel,
               border: `1px solid ${progress >= index / (steps.length - 1) ? BF_COLORS.purple : BF_COLORS.border}`,
             }}
           />
-          <span style={{ fontFamily: FONT_MONO, color: BF_COLORS.muted, fontSize: 11 }}>{step}</span>
+          <span style={{ fontFamily: FONT_MONO, color: BF_COLORS.muted, fontSize: 11 }}>
+            {step}
+          </span>
         </div>
       ))}
     </div>
@@ -325,8 +364,24 @@ export function SearchMedia({ spec, animated }: SearchMediaProps) {
           </div>
         </div>
 
-        <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1.25fr 0.9fr", alignItems: "center", gap: 48 }}>
-          <div style={{ alignSelf: "stretch", paddingTop: 56, paddingBottom: 4, display: "flex", flexDirection: "column" }}>
+        <div
+          style={{
+            flex: 1,
+            display: "grid",
+            gridTemplateColumns: "1.25fr 0.9fr",
+            alignItems: "center",
+            gap: 48,
+          }}
+        >
+          <div
+            style={{
+              alignSelf: "stretch",
+              paddingTop: 56,
+              paddingBottom: 4,
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
             <h1
               style={{
                 maxWidth: 640,

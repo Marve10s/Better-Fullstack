@@ -34,7 +34,7 @@ Every library/category must land across ALL of these layers (the .NET foundation
 3. **`packages/template-generator`**
    - `.hbs` templates with real, compiling code; deps pinned in the ecosystem manifest template
      (`go.mod.hbs`, `pyproject.toml.hbs`, `Cargo.toml.hbs`, `pom.xml.hbs`/`build.gradle.hbs`,
-     `mix.exs.hbs`, `*.csproj.hbs`) so `scripts/check-dep-versions.ts` picks them up automatically
+     `mix.exs.hbs`, `*.csproj.hbs`) so `scripts/maintenance/check-dep-versions.ts` picks them up automatically
    - `bun run --filter=@better-fullstack/template-generator generate-templates` + builds after edits
 4. **`apps/web`**
    - `lib/constant.ts` — `TECH_OPTIONS` entries (verified icons), preset updates if relevant
@@ -42,7 +42,7 @@ Every library/category must land across ALL of these layers (the .NET foundation
      `GRAPH_BACKEND_ADVANCED_CATEGORY_ORDER_BY_ECOSYSTEM` in `stack-builder.tsx`
    - docs page under `content/docs/ecosystems/<eco>.mdx` (flags + category table)
 5. **Tests**
-   - `packages/types/test/stack-graph.test.ts` — extend the ecosystem's round-trip property case
+   - `packages/types/test/stack/stack-graph.test.ts` — extend the ecosystem's round-trip property case
    - `apps/web/test/<eco>-ecosystem.test.ts` — preset/serialization coverage
    - `apps/cli` template snapshot/regression tests where templates branch
    - `testing/lib/generate-combos/options.ts` sampler + `render.ts` flags (every new flag MUST be

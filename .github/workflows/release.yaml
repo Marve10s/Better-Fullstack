@@ -1,240 +1,364 @@
 name: Release
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: ["Lint, Test & Build"]
+    types: [completed]
 
 permissions:
-  contents: write
-  pull-requests: write
-  id-token: write
+  contents: read
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-${{ github.event.workflow_run.head_sha }}
   cancel-in-progress: false
 
 jobs:
-  release:
-    name: Release to NPM
-    if: startsWith(github.event.head_commit.message, 'chore(release):')
+  prepare:
+    name: Build exact release artifacts
+    if: >-
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      startsWith(github.event.workflow_run.head_commit.message, 'chore(release):')
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    environment: npm-publish
+    timeout-minutes: 90
+    outputs:
+      artifact_name: ${{ steps.release.outputs.artifact_name }}
+      cli_version: ${{ steps.release.outputs.cli_version }}
+      release_version: ${{ steps.release.outputs.release_version }}
+      source_sha: ${{ steps.release.outputs.source_sha }}
     steps:
-      - name: Checkout Code
+      - name: Checkout the exact required-CI revision
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 0
+          persist-credentials: false
 
-      - name: Extract version from commit message
-        id: version
-        run: |
-          FIRST_LINE=$(echo "${{ github.event.head_commit.message }}" | head -n 1)
-          VERSION=$(echo "$FIRST_LINE" | sed -E 's/^chore\(release\): ([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Releasing version: $VERSION"
-
-      - name: Validate version format
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Error: Invalid version format '$VERSION'. Expected semver (x.y.z)"
-            exit 1
-          fi
-
-      - name: Check if version already exists
-        id: check-version
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          if npm view create-better-fullstack@$VERSION version 2>/dev/null; then
-            echo "Version $VERSION already exists on NPM"
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "Version $VERSION is new"
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Create and push tag
-        if: steps.check-version.outputs.exists == 'false'
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          git config --local user.email "amanvarshney.work@gmail.com"
-          git config --local user.name "Aman Varshney"
-          if ! git rev-parse "v$VERSION" >/dev/null 2>&1; then
-            git tag -a "v$VERSION" -m "Release v$VERSION"
-            git push --tags
-          else
-            echo "Tag v$VERSION already exists, skipping"
-          fi
-
-      - name: Setup Bun
+      - name: Setup pinned Bun
         uses: oven-sh/setup-bun@v2
         with:
-          # Keep the release toolchain deterministic. Floating to `latest`
-          # made publish debugging harder by changing Bun between runs.
           bun-version: 1.3.12
 
-      - name: Setup Node for npm publish
+      - name: Setup pinned Node
         uses: actions/setup-node@v4
         with:
-          node-version: "24"
-          registry-url: "https://registry.npmjs.org"
+          node-version: 24.11.1
+          registry-url: https://registry.npmjs.org
 
-      - name: Cache Dependencies
-        uses: actions/cache@v4
+      - name: Setup pinned npm
+        run: npm install --global npm@11.6.2
+
+      - name: Setup pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.20.0 --activate
+
+      - name: Setup pinned Go
+        uses: actions/setup-go@v5
         with:
-          path: |
-            node_modules
-            ~/.bun/install/cache
-          key: release-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
-          restore-keys: |
-            release-${{ runner.os }}-bun-
+          go-version: 1.25.1
 
-      - name: Install Dependencies
+      - name: Setup pinned Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12.12
+
+      - name: Setup pinned uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: 0.8.14
+
+      - name: Setup pinned Rust
+        uses: dtolnay/rust-toolchain@1.89.0
+
+      - name: Setup pinned Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21.0.8
+
+      - name: Setup pinned Erlang and Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: 28.0.2
+          elixir-version: 1.19.0
+
+      - name: Setup pinned .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.100
+
+      - name: Install dependencies
         run: bun install --frozen-lockfile
-
-      - name: Run Release Verification
-        if: steps.check-version.outputs.exists == 'false'
-        run: bun run test:release
-
-      - name: Create GitHub Release
-        if: steps.check-version.outputs.exists == 'false'
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          if ! gh release view "v$VERSION" >/dev/null 2>&1; then
-            bunx changelogithub
-          else
-            echo "Release v$VERSION already exists, skipping"
-          fi
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BTS_TELEMETRY: 0
 
-      - name: Update types package version
-        if: steps.check-version.outputs.exists == 'false'
+      - name: Resolve exact release identity
+        id: release
+        env:
+          COMMIT_MESSAGE: ${{ github.event.workflow_run.head_commit.message }}
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          cd packages/types
-          jq --arg v "$VERSION" '.version = $v' package.json > tmp.json && mv tmp.json package.json
+          set -euo pipefail
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          FIRST_LINE=${COMMIT_MESSAGE%%$'\n'*}
+          RELEASE_VERSION=$(sed -nE 's/^chore\(release\): ([0-9]+\.[0-9]+\.[0-9]+)( .*)?$/\1/p' <<< "$FIRST_LINE")
+          [[ "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          CLI_VERSION=$(jq -r '.version' apps/cli/package.json)
+          [[ "$CLI_VERSION" == "$RELEASE_VERSION" ]]
+          ARTIFACT_NAME="npm-release-${SOURCE_SHA}-${RELEASE_VERSION}"
+          echo "artifact_name=$ARTIFACT_NAME" >> "$GITHUB_OUTPUT"
+          echo "cli_version=$CLI_VERSION" >> "$GITHUB_OUTPUT"
+          echo "release_version=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
+          echo "source_sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"
 
-      - name: Build types package
-        if: steps.check-version.outputs.exists == 'false'
-        run: cd packages/types && bun run build
+      - name: Build and pack every publishable workspace package
+        env:
+          ARTIFACT_DIR: ${{ runner.temp }}/npm-release
+          RELEASE_VERSION: ${{ steps.release.outputs.release_version }}
+          SOURCE_SHA: ${{ steps.release.outputs.source_sha }}
+        run: >-
+          bun run scripts/release/release-state.ts prepare
+          --artifact-dir "$ARTIFACT_DIR"
+          --release-version "$RELEASE_VERSION"
+          --sha "$SOURCE_SHA"
 
-      - name: Publish types to NPM
-        if: steps.check-version.outputs.exists == 'false'
-        run: cd packages/types && npm publish --access public --provenance
+      - name: Run complete generated-project proof
+        env:
+          PROOF_DIR: ${{ runner.temp }}/generated-project-proof
+          BTS_TELEMETRY: 0
+        run: bun run testing/generated-project-proof.ts --output "$PROOF_DIR"
+
+      - name: Capture executable upgrade fixtures from exact package artifacts
+        env:
+          ARTIFACT_DIR: ${{ runner.temp }}/npm-release
+          BTS_TELEMETRY: 0
+        run: >-
+          bun run scripts/release/capture-release-fixture.ts
+          --manifest "$ARTIFACT_DIR/release-manifest.json"
+          --output "$ARTIFACT_DIR/upgrade-fixture.v1.json"
+
+      - name: Qualify the previous executable release fixture
+        env:
+          ARTIFACT_DIR: ${{ runner.temp }}/npm-release
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        run: >-
+          bun run scripts/release/qualify-previous-release.ts
+          --repository "$REPOSITORY"
+          --target-manifest "$ARTIFACT_DIR/release-manifest.json"
+          --output "$ARTIFACT_DIR/cross-version-qualification.v1.json"
+
+      - name: Create SHA-bound verification receipt from clean evidence
+        env:
+          ARTIFACT_DIR: ${{ runner.temp }}/npm-release
+          CI_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          CI_NAME: ${{ github.event.workflow_run.name }}
+          CI_RUN_ID: ${{ github.event.workflow_run.id }}
+          CI_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}
+          PROOF_PATH: ${{ runner.temp }}/generated-project-proof/generated-project-proof.json
+          SOURCE_SHA: ${{ steps.release.outputs.source_sha }}
+        run: >-
+          bun run scripts/release/release-receipt.ts create
+          --manifest "$ARTIFACT_DIR/release-manifest.json"
+          --fixture "$ARTIFACT_DIR/upgrade-fixture.v1.json"
+          --qualification "$ARTIFACT_DIR/cross-version-qualification.v1.json"
+          --proof "$PROOF_PATH"
+          --output "$ARTIFACT_DIR/verification-receipt.v1.json"
+          --sha "$SOURCE_SHA"
+          --ci-run-id "$CI_RUN_ID"
+          --ci-run-url "$CI_RUN_URL"
+          --ci-name "$CI_NAME"
+          --conclusion "$CI_CONCLUSION"
+
+      - name: Bundle artifact-only receipt verifier
+        env:
+          ARTIFACT_DIR: ${{ runner.temp }}/npm-release
+        run: >-
+          bun build scripts/release/release-receipt.ts
+          --target bun
+          --outfile "$ARTIFACT_DIR/release-receipt.mjs"
+
+      - name: Upload immutable release artifact set
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.release.outputs.artifact_name }}
+          path: ${{ runner.temp }}/npm-release
+          if-no-files-found: error
+          retention-days: 14
+
+  publish:
+    name: Preflight and publish exact npm artifacts
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: npm-publish
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Download exact prepared artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.prepare.outputs.artifact_name }}
+          path: ${{ runner.temp }}/npm-release
+
+      - name: Setup pinned Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.12
+
+      - name: Setup pinned Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.11.1
+          registry-url: https://registry.npmjs.org
+
+      - name: Setup pinned npm
+        run: npm install --global npm@11.6.2
+
+      - name: Setup pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.20.0 --activate
+
+      - name: Verify receipt and preflight every package
+        env:
+          RELEASE_VERSION: ${{ needs.prepare.outputs.release_version }}
+          SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
+        run: |
+          bun "${{ runner.temp }}/npm-release/release-receipt.mjs" verify \
+            --receipt "${{ runner.temp }}/npm-release/verification-receipt.v1.json" \
+            --manifest "${{ runner.temp }}/npm-release/release-manifest.json" \
+            --fixture "${{ runner.temp }}/npm-release/upgrade-fixture.v1.json" \
+            --qualification "${{ runner.temp }}/npm-release/cross-version-qualification.v1.json" \
+            --proof "${{ runner.temp }}/npm-release/generated-project-proof.json" \
+            --release-version "$RELEASE_VERSION" \
+            --sha "$SOURCE_SHA"
+          bun "${{ runner.temp }}/npm-release/release-state.ts" preflight \
+            --manifest "${{ runner.temp }}/npm-release/release-manifest.json"
+
+      - name: Publish absent packages and verify every registry identity
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          BTS_TELEMETRY: 1
-          CONVEX_INGEST_URL: ${{ secrets.CONVEX_INGEST_URL }}
-
-      - name: Update template-generator package version and types dependency
-        if: steps.check-version.outputs.exists == 'false'
+          NPM_CONFIG_PROVENANCE: true
+          RELEASE_VERSION: ${{ needs.prepare.outputs.release_version }}
+          SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          cd packages/template-generator
-          jq --arg v "$VERSION" --arg dep "^$VERSION" '.version = $v | .dependencies["@better-fullstack/types"] = $dep' package.json > tmp.json && mv tmp.json package.json
+          bun "${{ runner.temp }}/npm-release/release-receipt.mjs" verify \
+            --receipt "${{ runner.temp }}/npm-release/verification-receipt.v1.json" \
+            --manifest "${{ runner.temp }}/npm-release/release-manifest.json" \
+            --fixture "${{ runner.temp }}/npm-release/upgrade-fixture.v1.json" \
+            --qualification "${{ runner.temp }}/npm-release/cross-version-qualification.v1.json" \
+            --proof "${{ runner.temp }}/npm-release/generated-project-proof.json" \
+            --release-version "$RELEASE_VERSION" \
+            --sha "$SOURCE_SHA"
+          bun "${{ runner.temp }}/npm-release/release-state.ts" publish \
+            --manifest "${{ runner.temp }}/npm-release/release-manifest.json"
 
-      - name: Build template-generator package
-        if: steps.check-version.outputs.exists == 'false'
-        run: cd packages/template-generator && bun run build
+  smoke:
+    name: Smoke the exact published CLI version
+    needs: [prepare, publish]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout the exact required-CI revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.source_sha }}
+          persist-credentials: false
 
-      - name: Publish template-generator to NPM
-        if: steps.check-version.outputs.exists == 'false'
-        run: cd packages/template-generator && npm publish --access public --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          BTS_TELEMETRY: 1
-          CONVEX_INGEST_URL: ${{ secrets.CONVEX_INGEST_URL }}
+      - name: Setup pinned Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.12
 
-      - name: Update CLI types and template-generator dependencies and version
-        if: steps.check-version.outputs.exists == 'false'
+      - name: Setup pinned Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.11.1
+
+      - name: Setup pinned npm and pnpm
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          cd apps/cli
-          jq --arg version "$VERSION" --arg dep "^$VERSION" '.version = $version | .dependencies["@better-fullstack/types"] = $dep | .dependencies["@better-fullstack/template-generator"] = $dep' package.json > tmp.json && mv tmp.json package.json
+          npm install --global npm@11.6.2
+          corepack enable
+          corepack prepare pnpm@10.20.0 --activate
 
-      - name: Build CLI
-        if: steps.check-version.outputs.exists == 'false'
-        run: cd apps/cli && bun run build
+      - name: Install smoke harness dependencies
+        run: bun install --frozen-lockfile
         env:
-          BTS_TELEMETRY: 1
-          CONVEX_INGEST_URL: ${{ secrets.CONVEX_INGEST_URL }}
+          BTS_TELEMETRY: 0
 
-      - name: Update create-bfs alias package version
-        if: steps.check-version.outputs.exists == 'false'
+      - name: Smoke exact published release
+        env:
+          PUBLISHED_VERSION: ${{ needs.prepare.outputs.cli_version }}
+          BTS_TELEMETRY: 0
+        run: bun run test:published-package --specifier "$PUBLISHED_VERSION"
+
+  finalize:
+    name: Create success tag and GitHub release
+    needs: [prepare, publish, smoke]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Download exact prepared artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.prepare.outputs.artifact_name }}
+          path: ${{ runner.temp }}/npm-release
+
+      - name: Setup pinned Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.12
+
+      - name: Setup pinned Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.11.1
+
+      - name: Setup pinned npm
+        run: npm install --global npm@11.6.2
+
+      - name: Setup pinned pnpm
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          cd packages/create-bfs
-          jq --arg v "$VERSION" --arg dep "^$VERSION" '.version = $v | .dependencies["create-better-fullstack"] = $dep' package.json > tmp.json && mv tmp.json package.json
+          corepack enable
+          corepack prepare pnpm@10.20.0 --activate
 
-      - name: Publish CLI to NPM
-        if: steps.check-version.outputs.exists == 'false'
-        run: cd apps/cli && npm publish --access public --provenance
+      - name: Reverify packages, then create tag and release
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          BTS_TELEMETRY: 1
-          CONVEX_INGEST_URL: ${{ secrets.CONVEX_INGEST_URL }}
-
-      - name: Publish create-bfs alias to NPM
-        if: steps.check-version.outputs.exists == 'false'
-        run: cd packages/create-bfs && npm publish --access public --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          BTS_TELEMETRY: 1
-          CONVEX_INGEST_URL: ${{ secrets.CONVEX_INGEST_URL }}
-
-      - name: Setup pnpm for published package smoke
-        run: corepack enable && corepack prepare pnpm@latest --activate
-
-      - name: Smoke published release packages
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          RELEASE_VERSION: ${{ needs.prepare.outputs.release_version }}
+          SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          for attempt in 1 2 3 4 5; do
-            if bun run test:published-package --specifier "$VERSION"; then
-              exit 0
-            fi
+          bun "${{ runner.temp }}/npm-release/release-receipt.mjs" verify \
+            --receipt "${{ runner.temp }}/npm-release/verification-receipt.v1.json" \
+            --manifest "${{ runner.temp }}/npm-release/release-manifest.json" \
+            --fixture "${{ runner.temp }}/npm-release/upgrade-fixture.v1.json" \
+            --qualification "${{ runner.temp }}/npm-release/cross-version-qualification.v1.json" \
+            --proof "${{ runner.temp }}/npm-release/generated-project-proof.json" \
+            --release-version "$RELEASE_VERSION" \
+            --sha "$SOURCE_SHA"
+          bun "${{ runner.temp }}/npm-release/release-state.ts" finalize \
+            --manifest "${{ runner.temp }}/npm-release/release-manifest.json" \
+            --repository "$REPOSITORY" \
+            --sha "$SOURCE_SHA" \
+            --asset "${{ runner.temp }}/npm-release/release-manifest.json" \
+            --asset "${{ runner.temp }}/npm-release/verification-receipt.v1.json" \
+            --asset "${{ runner.temp }}/npm-release/upgrade-fixture.v1.json" \
+            --asset "${{ runner.temp }}/npm-release/cross-version-qualification.v1.json"
 
-            if [ "$attempt" -eq 5 ]; then
-              echo "Published package smoke failed after $attempt attempts."
-              exit 1
-            fi
-
-            delay=$((attempt * 30))
-            echo "Published package smoke failed on attempt $attempt; waiting ${delay}s for npm registry propagation..."
-            sleep "$delay"
-          done
+      - name: Write release summary
         env:
-          BTS_TELEMETRY: 1
-          CONVEX_INGEST_URL: ${{ secrets.CONVEX_INGEST_URL }}
-
-      - name: Publish packages to GitHub Packages
+          RELEASE_VERSION: ${{ needs.prepare.outputs.release_version }}
+          REPOSITORY: ${{ github.repository }}
         run: |
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
-          echo "@better-fullstack:registry=https://npm.pkg.github.com" >> ~/.npmrc
-
-          for pkg in packages/types packages/template-generator apps/cli packages/create-bfs; do
-            cd ${{ github.workspace }}/$pkg
-            jq '.publishConfig.registry = "https://npm.pkg.github.com"' package.json > tmp.json && mv tmp.json package.json
-            npm publish --access public 2>/dev/null || echo "Skipped $pkg (may already exist on GitHub Packages)"
-          done
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Release Summary
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          echo "## Release v$VERSION Complete!" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Published Packages" >> $GITHUB_STEP_SUMMARY
-          echo "- [create-better-fullstack@$VERSION](https://www.npmjs.com/package/create-better-fullstack/v/$VERSION)" >> $GITHUB_STEP_SUMMARY
-          echo "- [create-bfs@$VERSION](https://www.npmjs.com/package/create-bfs/v/$VERSION)" >> $GITHUB_STEP_SUMMARY
-          echo "- [@better-fullstack/types@$VERSION](https://www.npmjs.com/package/@better-fullstack/types/v/$VERSION)" >> $GITHUB_STEP_SUMMARY
-          echo "- [@better-fullstack/template-generator@$VERSION](https://www.npmjs.com/package/@better-fullstack/template-generator/v/$VERSION)" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Published Package Smoke" >> $GITHUB_STEP_SUMMARY
-          echo "Bun, npm, and pnpm scaffold checks passed for create-better-fullstack@$VERSION." >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### GitHub Release" >> $GITHUB_STEP_SUMMARY
-          echo "[v$VERSION](https://github.com/${{ github.repository }}/releases/tag/v$VERSION)" >> $GITHUB_STEP_SUMMARY
+          echo "## Release v$RELEASE_VERSION complete" >> "$GITHUB_STEP_SUMMARY"
+          echo "All exact package artifacts passed registry identity checks and the published-package smoke lane. The release includes eight executable manifest-v2 upgrade fixtures." >> "$GITHUB_STEP_SUMMARY"
+          echo "https://github.com/$REPOSITORY/releases/tag/v$RELEASE_VERSION" >> "$GITHUB_STEP_SUMMARY"

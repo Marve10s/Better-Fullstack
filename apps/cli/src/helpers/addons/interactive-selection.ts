@@ -1,8 +1,8 @@
 import { isCancel, log, select, type Option } from "@clack/prompts";
 
-import { isSilent } from "../../utils/context";
-import { exitCancelled } from "../../utils/errors";
-import { canPromptInteractively, type PromptEnvironment } from "../../utils/prompt-environment";
+import { isSilent } from "@/presentation/context";
+import { exitCancelled } from "@/presentation/errors";
+import { canPromptInteractively, type PromptEnvironment } from "@/presentation/prompt-environment";
 
 type AddonSelectParams<T extends string> = {
   addonName: string;

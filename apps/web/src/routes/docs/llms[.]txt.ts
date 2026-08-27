@@ -6,7 +6,7 @@ export const Route = createFileRoute("/docs/llms.txt")({
       GET: async () => {
         const [{ getAllPages }, { generateDocsLlmsTxt }] = await Promise.all([
           import("@/lib/docs/source"),
-          import("@/lib/llms"),
+          import("@/lib/content/llms"),
         ]);
         return new Response(
           generateDocsLlmsTxt(getAllPages(), {

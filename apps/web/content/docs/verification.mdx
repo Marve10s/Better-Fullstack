@@ -1,0 +1,33 @@
+---
+title: Release verification
+description: See the exact release receipt, runtime recipes, evidence age, commit, package version, and limits of Better Fullstack's current verification.
+translationStatus: pending
+updated: 2026-08-23
+---
+
+Better Fullstack publishes a versioned verification receipt only after required CI passes for the
+exact release commit, every package is packed, and one clean generated project per supported
+ecosystem completes its declared build and live behavior stages.
+
+<VerificationStatus />
+
+## What this proves
+
+`runtime-verified` means the recorded project was generated from the release commit, installed on
+the recorded toolchains, built, started, and passed its declared live boundary assertions. Those
+assertions cover HTTP health, GraphQL mounting, an auth flow, migrations, a gRPC call, and generated
+CLI behavior across the eight recipes. They do not prove behavior outside the named recipe.
+
+The page fails closed. Missing, expired, malformed, partial, or commit-mismatched evidence displays
+no current evidence and marks every recipe as not run. The badge endpoint at
+[`/api/verified-combinations`](/api/verified-combinations) uses the same result.
+
+The builder and stack pages read the option-level projection from
+[`/api/capability-evidence`](/api/capability-evidence). Options without a current matching runtime
+recipe remain listed and show their limitation. A template, schema, dependency, toolchain, or
+deployed-commit change needs a new receipt.
+
+## Separate from ScaffBench
+
+ScaffBench evaluates how coding models respond to scaffold tasks. It does not verify a Better
+Fullstack release, and it does not raise the evidence level shown here.

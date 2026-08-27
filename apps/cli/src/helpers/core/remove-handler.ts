@@ -1,8 +1,18 @@
+import { createReviewToken } from "@better-fullstack/project-lifecycle/review-token";
 import fs from "fs-extra";
 import path from "node:path";
 
-import type { Addons, ProjectConfig, StackPart } from "../../types";
+import type { Addons, ProjectConfig, StackPart } from "@/types";
 
+import { readBtsConfig } from "@/config/bts-config";
+import { ADDONS_REQUIRING_IMPERATIVE_SETUP } from "@/helpers/addons/addons-setup";
+import {
+  applyStackUpdate,
+  getStackUpdatePlanDigest,
+  planStackUpdate,
+  type StackUpdatePlan,
+  type StackUpdateResult,
+} from "@/helpers/core/stack-update";
 import {
   formatStackPartSpec,
   getAddonStackPartBinding,
@@ -10,17 +20,7 @@ import {
   getToolingCapability,
   legacyProjectConfigToStackParts,
   stackPartsToLegacyProjectConfigPartial,
-} from "../../types";
-import { readBtsConfig } from "../../utils/bts-config";
-import { hashContent } from "../../utils/scaffold-manifest";
-import { ADDONS_REQUIRING_IMPERATIVE_SETUP } from "../addons/addons-setup";
-import {
-  applyStackUpdate,
-  getStackUpdatePlanDigest,
-  planStackUpdate,
-  type StackUpdatePlan,
-  type StackUpdateResult,
-} from "./stack-update";
+} from "@/types";
 
 const PRIMARY_ROLES = new Set<StackPart["role"]>(["frontend", "backend", "mobile", "database"]);
 
@@ -195,13 +195,11 @@ async function resolveRemoval(projectDirInput: string, target: string): Promise<
 }
 
 function removalReviewToken(plan: StackUpdatePlan, removal: PartRemoval): string {
-  return hashContent(
-    JSON.stringify({
-      projectDir: plan.projectDir,
-      removal,
-      planDigest: getStackUpdatePlanDigest(plan),
-    }),
-  );
+  return createReviewToken("part-removal", {
+    projectDir: plan.projectDir,
+    removal,
+    planDigest: getStackUpdatePlanDigest(plan),
+  });
 }
 
 export async function planPartRemoval(

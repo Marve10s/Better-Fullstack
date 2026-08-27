@@ -25,6 +25,7 @@ behavior. Reference and completed documents must never override them.
 - `docs/projects/README.md` - active, backlog, and completed project documents
 - `docs/reference/README.md` - historical research and technical inventories
 - `docs/next-updates-roadmap.md` - canonical product direction and priority order
+- `docs/update-support-policy.md` - rolling update-window contract and current qualification state
 - `docs/verified-combinations.md` - generated compatibility evidence
 - `testing/README.md` - production-package and smoke-test workspace
 - `benchmarks/README.md` - committed benchmark summaries

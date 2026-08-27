@@ -1,4 +1,4 @@
-import { CATEGORY_COUNT, OPTION_ENTRY_COUNT } from "@/lib/project-stats";
+import { CATEGORY_COUNT, OPTION_ENTRY_COUNT } from "@/lib/project/project-stats";
 
 /**
  * Renders the total option entry count, computed from OPTION_CATEGORY_METADATA

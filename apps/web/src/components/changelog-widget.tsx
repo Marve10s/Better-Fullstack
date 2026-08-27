@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { ChangelogModal } from "@/components/changelog-modal";
-import { latestChangelogRelease } from "@/lib/changelog";
+import { registerVisit } from "@/lib/analytics/visitor";
+import { latestChangelogRelease } from "@/lib/content/changelog";
 import {
   type ChangelogInteractionState,
   markChangelogReleaseInteracted,
   shouldShowChangelogRelease,
-} from "@/lib/changelog-visibility";
+} from "@/lib/content/changelog-visibility";
 import { getLocalizedChangelogRelease } from "@/lib/i18n/changelog-copy";
 import { getLocaleDateTag } from "@/lib/i18n/locales";
-import { registerVisit } from "@/lib/visitor";
 import { m } from "@/paraglide/messages.js";
 import { getLocale } from "@/paraglide/runtime.js";
 

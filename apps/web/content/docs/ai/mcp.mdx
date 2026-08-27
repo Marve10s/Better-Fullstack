@@ -48,11 +48,11 @@ Clients that read a config file (Cursor, Claude Desktop, Zed, Windsurf, Goose) t
 Cursor reads `.cursor/mcp.json`, VS Code uses `servers`, Zed uses `context_servers`, and opencode plus Kilo Code use `mcp` with `"type": "local"`. Swap the launcher per package manager:
 
 | Package manager | `command` | `args`                                             |
-| --------------- | --------- | ---------------------------------------------------- |
-| npm             | `npx`     | `["-y", "create-better-fullstack@latest", "mcp"]`    |
-| pnpm            | `pnpm`    | `["dlx", "create-better-fullstack@latest", "mcp"]`   |
-| Bun             | `bunx`    | `["create-better-fullstack@latest", "mcp"]`          |
-| Yarn            | `yarn`    | `["dlx", "create-better-fullstack@latest", "mcp"]`   |
+| --------------- | --------- | -------------------------------------------------- |
+| npm             | `npx`     | `["-y", "create-better-fullstack@latest", "mcp"]`  |
+| pnpm            | `pnpm`    | `["dlx", "create-better-fullstack@latest", "mcp"]` |
+| Bun             | `bunx`    | `["create-better-fullstack@latest", "mcp"]`        |
+| Yarn            | `yarn`    | `["dlx", "create-better-fullstack@latest", "mcp"]` |
 
 Codex also accepts a TOML entry in `~/.codex/config.toml`:
 
@@ -66,11 +66,12 @@ If your agent supports plugins, the [agent plugin](/docs/ai/overview/#agent-plug
 
 ## Resources
 
-| Resource                     | Contents                                      |
-| ---------------------------- | ----------------------------------------------- |
-| `docs://compatibility-rules` | Compatibility rules for stack combinations.     |
-| `docs://stack-options`       | Available technology options by category.       |
-| `docs://getting-started`     | Quick-start recipes for supported ecosystems.   |
+| Resource                            | Contents                                                        |
+| ----------------------------------- | --------------------------------------------------------------- |
+| `docs://compatibility-rules`        | Compatibility rules for stack combinations.                     |
+| `docs://stack-options`              | Available technology options by category.                       |
+| `docs://getting-started`            | Quick-start recipes for supported ecosystems.                   |
+| `docs://capability-evidence-levels` | Per-option evidence, freshness, ownership, recipes, and limits. |
 
 ## Tools
 
@@ -78,36 +79,55 @@ Call the live guidance and schema tools instead of trusting prose; the schema is
 
 ### Discovery and validation (read-only)
 
-| Tool                      | Purpose                                                                        |
-| ------------------------- | -------------------------------------------------------------------------------- |
-| `bfs_get_guidance`        | Current workflow rules, field semantics, and constraints. Call it first.         |
-| `bfs_get_schema`          | Valid options for one category or all, optionally scoped to an ecosystem.        |
-| `bfs_list_presets`        | Ready-made stack presets with IDs and summaries.                                 |
-| `bfs_recommend_stack`     | Deterministic recommendation from a natural-language brief.                      |
-| `bfs_check_compatibility` | Adjusted selections, changes, and remaining issues for a proposed stack.         |
+| Tool                          | Purpose                                                                   |
+| ----------------------------- | ------------------------------------------------------------------------- |
+| `bfs_get_guidance`            | Current workflow rules, field semantics, and constraints. Call it first.  |
+| `bfs_get_schema`              | Valid options for one category or all, optionally scoped to an ecosystem. |
+| `bfs_list_presets`            | Ready-made stack presets with IDs and summaries.                          |
+| `bfs_list_starter_tracks`     | Canonical editable tracks with exact Stack Parts, filters, and evidence.  |
+| `bfs_recommend_stack`         | Deterministic recommendation from a natural-language brief.               |
+| `bfs_check_compatibility`     | Adjusted selections, changes, and remaining issues for a proposed stack.  |
+| `bfs_get_capability_evidence` | Receipt-backed evidence, maturity, freshness, owners, and limitations.    |
+| `bfs_get_project_context`     | Bounded project roles, evidence, versions, recipes, and safe actions.     |
 
 ### New projects
 
-| Tool                 | Purpose                                                                     |
-| -------------------- | ------------------------------------------------------------------------------ |
-| `bfs_plan_project`   | Generates the project in memory and returns the file summary. Never writes.    |
-| `bfs_create_project` | Writes files and `bts.jsonc` with manifest-v2 provenance. No install, no Git.  |
+| Tool                 | Purpose                                                                       |
+| -------------------- | ----------------------------------------------------------------------------- |
+| `bfs_plan_project`   | Generates the project in memory and returns the file summary. Never writes.   |
+| `bfs_create_project` | Writes files and `bts.jsonc` with manifest-v2 provenance. No install, no Git. |
 
 ### Existing-project lifecycle
 
-| Tool                                | Purpose                                                                                     |
-| ----------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `bfs_get_project_status`            | Read-only recognition, dependency/env diagnostics, provenance, upgrade summary.                  |
-| `bfs_check_project`                 | Executes every generated target; build tools may write locks, caches, or artifacts.              |
-| `bfs_plan_project_update`           | Categorizes current-template drift and returns a bounded review token when eligible.             |
-| `bfs_apply_project_update`          | Applies token-bound files transactionally with provenance-aware safeguards.                     |
-| `bfs_recover_project_transaction`   | Restores every bound path of a transaction exactly once.                                         |
-| `bfs_plan_part_removal`             | Plans exact non-primary capability removal and returns a review token.                           |
-| `bfs_apply_part_removal`            | Applies a reviewed removal in a recoverable transaction.                                         |
-| `bfs_plan_stack_update`             | Plans broad stack changes against `bts.jsonc`.                                                    |
-| `bfs_apply_stack_update`            | Applies a reviewed stack update, preserving user-edited generated files.                          |
-| `bfs_plan_addition`                 | Plans focused Stack Part or deploy additions.                                                     |
-| `bfs_add_feature`                   | Applies focused Stack Part or deploy additions after review.                                      |
+| Tool                                 | Purpose                                                                              |
+| ------------------------------------ | ------------------------------------------------------------------------------------ |
+| `bfs_get_project_status`             | Read-only recognition, dependency/env diagnostics, provenance, upgrade summary.      |
+| `bfs_check_project`                  | Executes every generated target; build tools may write locks, caches, or artifacts.  |
+| `bfs_plan_doctor_fix`                | Plans canonical graph/config drift repair and returns a current-state review token.  |
+| `bfs_apply_doctor_fix`               | Applies the unchanged config repair in one recoverable transaction.                  |
+| `bfs_plan_project_adoption`          | Infers likely Stack Parts and uncertainty without writing a baseline.                |
+| `bfs_confirm_project_adoption`       | Creates an unverified baseline only with the exact current-state token.              |
+| `bfs_plan_project_update`            | Categorizes current-template drift and returns a bounded review token when eligible. |
+| `bfs_apply_project_update`           | Applies token-bound files transactionally with provenance-aware safeguards.          |
+| `bfs_list_project_recovery_points`   | Lists recovery IDs, lifecycle status, integrity, and current restore safety.         |
+| `bfs_get_project_recovery_point`     | Shows and validates one recovery point without writing.                              |
+| `bfs_verify_project_recovery_point`  | Rechecks one recovery point against its backups and current project state.           |
+| `bfs_prune_project_recovery_points`  | Previews retention and returns a token; apply deletes only the reviewed eligible terminal points. |
+| `bfs_recover_project_transaction`    | Restores every bound path of a transaction exactly once.                             |
+| `bfs_plan_part_removal`              | Plans exact non-primary capability removal and returns a review token.               |
+| `bfs_apply_part_removal`             | Applies a reviewed removal in a recoverable transaction.                             |
+| `bfs_plan_primary_role_replacement`  | Plans exact Primary Role replacement, owner rewiring, and migration boundaries.      |
+| `bfs_apply_primary_role_replacement` | Applies the reviewed replacement with its token and architecture acknowledgement.    |
+| `bfs_plan_stack_update`              | Plans broad stack changes against `bts.jsonc`.                                       |
+| `bfs_apply_stack_update`             | Applies a reviewed stack update, preserving user-edited generated files.             |
+| `bfs_plan_addition`                  | Plans focused Stack Part or deploy additions.                                        |
+| `bfs_add_feature`                    | Applies focused Stack Part or deploy additions after review.                         |
+| `bfs_plan_gen`                       | Plans an in-project resource or route with exact file bodies and preimage hashes.    |
+| `bfs_apply_gen`                      | Applies the unchanged generation token in one recovery transaction.                  |
+| `bfs_check_recipes`                  | Validates recipe-owned files and managed entries without executing code.             |
+| `bfs_get_recipe_history`             | Correlates local recipe records with recovery transactions.                          |
+| `bfs_plan_registry_add`              | Plans a local capability pack, including files, dependencies, and metadata merges.   |
+| `bfs_apply_registry_add`             | Applies the unchanged local-pack token without running a package manager.            |
 
 Planning, creation, and addition responses include graph metadata (`graphSummary`, `effectiveStack`, `stackPartSpecs`) alongside the generated file or mutation summary.
 
@@ -119,7 +139,29 @@ Planning, creation, and addition responses include graph metadata (`graphSummary
 
 **Update an existing stack.** Plan with an absolute project directory and the scaffold-time fields to change, review adjustments and blockers, then apply the same fields. Set `acknowledgeArchitectureChange` only after the user accepts listed data/schema risks.
 
+**Repair config drift.** Call `bfs_plan_doctor_fix`, show every changed field and reason, then pass
+the exact unchanged `reviewToken` to `bfs_apply_doctor_fix`. A stale token fails before the
+`bts.jsonc` write. Keep the returned recovery ID until project checks pass.
+
+**Replace a Primary Role.** Call `bfs_plan_primary_role_replacement` with one exact selected
+frontend, backend, mobile, or database part and a same-role replacement. Show owner rewiring,
+migration steps, and application-data boundaries. Call the apply tool only with the unchanged token
+and the required architecture acknowledgement. Cross-ecosystem owner capabilities need a separate
+reviewed removal or replacement.
+
+**Adopt an older project.** When status reports a missing manifest, call `bfs_plan_project_adoption`. Show the likely Stack Parts, confidence, template evidence, and uncertainty to the user. Call `bfs_confirm_project_adoption` only after approval and only with the unchanged token. The result remains unverified lineage.
+
 **Refresh templates.** Read status, run the executable check when truthful verification is wanted, plan the update, review the hash-bound categories, then apply the exact unchanged token. Structured merge content is exact up to 32 KiB per file; oversized reviews return metadata and no token. Keep the returned recovery ID until checks pass, and recover with the transaction ID if anything goes wrong.
+
+**Manage recovery points.** List first when the transaction ID is unknown. Show or verify the selected point before restore. Prune with `apply: false` first, then pass its unchanged `reviewToken` with `apply: true`. Pending and invalid points are always retained, and `keep` protects the newest valid points.
+
+**Generate a persistent recipe.** Call `bfs_plan_gen`, review every exact file and shared-region
+change, then call `bfs_apply_gen` with its unchanged token. Run the returned migration and
+integration commands. Use `bfs_check_recipes` for ownership integrity and
+`bfs_get_recipe_history` to find the recovery transaction. `bfs_get_project_context` returns the
+same bounded context document as CLI JSON and does not include source code. Its commands use a
+relative project path when possible, or an absolute path when that is required to target the
+inspected project.
 
 ## Rules for agents
 
@@ -144,5 +186,8 @@ the returned install, test, and run commands because write tools do not
 install dependencies. For current-template drift, call bfs_get_project_status,
 bfs_check_project, and bfs_plan_project_update; only pass its exact reviewToken
 to bfs_apply_project_update after I approve. Keep the returned recovery
-transaction ID until checks pass.
+transaction ID until checks pass. Use bfs_plan_doctor_fix before
+bfs_apply_doctor_fix for graph/config drift. Use
+bfs_plan_primary_role_replacement before bfs_apply_primary_role_replacement
+for frontend, backend, mobile, or database replacement.
 ```

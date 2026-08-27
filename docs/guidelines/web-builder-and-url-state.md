@@ -4,10 +4,10 @@ Use this guide for changes in `apps/web` that affect stack selection, builder st
 
 ## Builder state flow
 
-- `packages/types/src/stack-translation.ts` defines the shared `StackState` shape, defaults, short URL params, parsing, and serialization.
-- `apps/web/src/lib/stack-defaults.ts` re-exports the shared stack state type and defaults under web-facing names.
+- `packages/types/src/stack/stack-translation.ts` defines the shared `StackState` shape, defaults, short URL params, parsing, and serialization.
+- `apps/web/src/lib/stack/stack-defaults.ts` re-exports the shared stack state type and defaults under web-facing names.
 - Web callers import shared stack parsing, serialization, and normalization helpers directly from `@better-fullstack/types/stack-translation`.
-- `apps/web/src/lib/preview-config.ts` converts normalized stack state into preview data.
+- `apps/web/src/lib/builder/preview-config.ts` converts normalized stack state into preview data.
 - Some UI category keys intentionally differ from stack keys. The TypeScript AI category is rendered as `TECH_OPTIONS.ai`, but stack state and command generation use `aiSdk`; map the category to the stack key anywhere selection state is read or written.
 
 If URL parsing changes without normalization, alias handling usually breaks somewhere between shared links and preview rendering.
@@ -23,21 +23,21 @@ If URL parsing changes without normalization, alias handling usually breaks some
 
 ## Editing guidance
 
-- When adding a stack field to shareable URLs, update `DEFAULT_STACK_SELECTION` and `STACK_SELECTION_URL_KEYS` in `packages/types/src/stack-translation.ts`; parsing and serialization are derived from those shared maps.
+- When adding a stack field to shareable URLs, update `DEFAULT_STACK_SELECTION` and `STACK_SELECTION_URL_KEYS` in `packages/types/src/stack/stack-translation.ts`; parsing and serialization are derived from those shared maps.
 - Keep builder labels aligned with canonical metadata from `packages/types` unless there is a deliberate UX reason to diverge.
 - Before cleaning up homepage sections, check whether a component is actually imported by `apps/web/src/routes/index.tsx`. The home component directory can contain dead marketing sections.
 - For SvelteKit or SolidStart with Tailwind + DaisyUI, plugin activation lives in `apps/web/src/app.css` via `@plugin "daisyui";`, not in `tailwind.config.ts`.
-- Keep `apps/web/src/lib/stack-search-schema.ts` on the shared `EcosystemSchema` when adding or renaming ecosystems so URL parsing does not drift from `@better-fullstack/types`.
+- Keep `apps/web/src/lib/stack/stack-search-schema.ts` on the shared `EcosystemSchema` when adding or renaming ecosystems so URL parsing does not drift from `@better-fullstack/types`.
 
 ## Ecosystem and auth rendering
 
-- Go builder rendering depends on `GO_CATEGORY_ORDER` in `packages/types/src/option-metadata.ts`; `ECOSYSTEM_CATEGORIES.go` in `apps/web/src/lib/constant.ts` is derived from that shared order. If a Go option exists in the metadata but not the builder UI, check the shared ecosystem order first.
+- Go builder rendering depends on `GO_CATEGORY_ORDER` in `packages/types/src/catalog/option-metadata.ts`; `ECOSYSTEM_CATEGORIES.go` in `apps/web/src/lib/stack/constant.ts` is derived from that shared order. If a Go option exists in the metadata but not the builder UI, check the shared ecosystem order first.
 - Auth capability metadata is intentionally global across ecosystems in `packages/types`, but the web builder should filter visible auth choices by ecosystem in `apps/web/src/components/stack-builder/utils.ts`. Do not assume disabled reasons alone are enough to produce the desired builder UI.
 - The builder has two auth option render paths in `apps/web/src/components/stack-builder/stack-builder.tsx` (sidebar accordion + main category grid). Apply auth visibility filtering in both paths to avoid inconsistent options between sidebar and main content.
 
 ## Useful verification
 
 - `bun run --cwd apps/web lint`
-- `bun test apps/web/test/preview-config.test.ts`
+- `bun test apps/web/test/builder/preview-config.test.ts`
 - `bun run build:web` when route generation, bundling, or preview wiring changed
 - For Builder Playwright tests, click option cards directly unless a section is in `INITIALLY_COLLAPSED_SET`; clicking an already-open `category-toggle-*` collapses it. Scope `command-output` locators to visible elements.

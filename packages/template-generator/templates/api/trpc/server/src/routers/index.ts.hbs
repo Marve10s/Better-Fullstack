@@ -2,7 +2,14 @@
 import { {{#if (isBetterAuth auth)}}protectedProcedure, {{/if}}publicProcedure } from "../index{{#if (eq backend "adonisjs")}}.js{{/if}}";
 import type { RouterClient } from "@orpc/server";
 
+// <better-fullstack:recipe-imports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-imports>
+
 export const appRouter = {
+  // <better-fullstack:recipe-registrations sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+  // </better-fullstack:recipe-registrations>
   healthCheck: publicProcedure.handler(() => {
     return "OK";
   }),
@@ -23,7 +30,14 @@ import {
   router,
 } from "../index{{#if (eq backend "adonisjs")}}.js{{/if}}";
 
+// <better-fullstack:recipe-imports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+// </better-fullstack:recipe-imports>
+
 export const appRouter = router({
+  // <better-fullstack:recipe-registrations sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
+
+  // </better-fullstack:recipe-registrations>
   healthCheck: publicProcedure.query(() => {
     return "OK";
   }),

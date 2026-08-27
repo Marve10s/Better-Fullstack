@@ -4,11 +4,11 @@ Use this guide when the task changes supported technologies, stack names, compat
 
 ## Source of truth
 
-- `packages/types/src/schemas.ts` defines the raw allowed values for CLI-facing schemas.
-- `packages/types/src/option-metadata.ts` defines canonical option IDs, display labels, aliases, multi-select vs single-select semantics, and CLI value overrides.
-- `packages/types/src/compatibility.ts` defines invalid combinations and user-facing compatibility messages.
-- `apps/web/src/lib/constant.ts` exposes builder options and marketing copy for each category.
-- `apps/cli/test/cli-builder-sync.test.ts` is the guardrail that checks builder options against canonical metadata and schema values.
+- `packages/types/src/config/schemas.ts` defines the raw allowed values for CLI-facing schemas.
+- `packages/types/src/catalog/option-metadata.ts` defines canonical option IDs, display labels, aliases, multi-select vs single-select semantics, and CLI value overrides.
+- `packages/types/src/stack/compatibility.ts` defines invalid combinations and user-facing compatibility messages.
+- `apps/web/src/lib/stack/constant.ts` exposes builder options and marketing copy for each category.
+- `apps/cli/test/recommendations/cli-builder-sync.test.ts` is the guardrail that checks builder options against canonical metadata and schema values.
 
 ## Canonical metadata rules
 
@@ -26,9 +26,9 @@ Current examples:
 
 ## When adding or changing an option
 
-1. Update the schema value list in `packages/types/src/schemas.ts`.
-2. Update `packages/types/src/option-metadata.ts` if the option needs a friendly label, alias, or CLI value override.
-3. Add or update the builder entry in `apps/web/src/lib/constant.ts`.
+1. Update the schema value list in `packages/types/src/config/schemas.ts`.
+2. Update `packages/types/src/catalog/option-metadata.ts` if the option needs a friendly label, alias, or CLI value override.
+3. Add or update the builder entry in `apps/web/src/lib/stack/constant.ts`.
 4. Update compatibility rules if the option has framework-specific constraints.
 5. Update any tech links, preview labels, or prompt copy that mention the option.
 6. If the option is safe for existing-project updates, add or update stack-update coverage and make sure explicit `add --<flag>` handling remains aligned with create-time flags.
@@ -39,7 +39,7 @@ Current examples:
 - `shadcn-ui` is intentionally incompatible with `svelte` and `solid-start`.
 - Redwood currently requires `api=none` and only supports `daisyui` or `none` for `uiLibrary`.
 - Backend-aware path rules matter for Redwood: `web/api` only applies when Redwood owns both layers.
-- Before trusting older files under `docs/projects/backlog/` or `docs/reference/`, verify roadmap and catalog claims against `packages/types/src/schemas.ts`, `packages/types/src/option-metadata.ts`, and CLI addon helpers. Backlog and reference documents can lag behind shipped support.
+- Before trusting older files under `docs/projects/backlog/` or `docs/reference/`, verify roadmap and catalog claims against `packages/types/src/config/schemas.ts`, `packages/types/src/catalog/option-metadata.ts`, and CLI addon helpers. Backlog and reference documents can lag behind shipped support.
 
 ## Sync-test discipline
 

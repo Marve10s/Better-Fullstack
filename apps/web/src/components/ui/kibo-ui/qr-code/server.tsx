@@ -2,7 +2,7 @@ import type { HTMLAttributes } from "react";
 
 import QR from "qrcode";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
 
 export type QRCodeProps = HTMLAttributes<HTMLDivElement> & {
   data: string;

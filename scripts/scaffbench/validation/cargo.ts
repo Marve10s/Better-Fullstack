@@ -1,2 +1,1 @@
-export { validateCargoProject } from "@/validation/index";
-
+export { validateCargoProject } from "@scaffbench/validation/index";

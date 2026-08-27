@@ -1,7 +1,7 @@
 import type { ComponentType } from "react";
 
-import type { TocEntry } from "./remark-extract-toc";
-import type { DocFrontmatter } from "./source";
+import type { TocEntry } from "@/lib/docs/remark-extract-toc";
+import type { DocFrontmatter } from "@/lib/docs/source";
 
 export type DocMdxModule = {
   default: ComponentType<{ components?: Record<string, ComponentType<unknown>> }>;
@@ -12,14 +12,14 @@ export type DocMdxModule = {
 export type RawMdxModule = string;
 
 export const docsMdxLoaders = import.meta.glob<DocMdxModule>([
-  "../../../content/docs/**/*.mdx",
-  "!../../../content/docs/**/*.{es,zh,ja,ko,zh-Hant,de,fr,uk}.mdx",
+  "@web-root/content/docs/**/*.mdx",
+  "!@web-root/content/docs/**/*.{es,zh,ja,ko,zh-Hant,de,fr,uk}.mdx",
 ]);
 
 export const docsRawMdxLoaders = import.meta.glob<RawMdxModule>(
   [
-    "../../../content/docs/**/*.mdx",
-    "!../../../content/docs/**/*.{es,zh,ja,ko,zh-Hant,de,fr,uk}.mdx",
+    "@web-root/content/docs/**/*.mdx",
+    "!@web-root/content/docs/**/*.{es,zh,ja,ko,zh-Hant,de,fr,uk}.mdx",
   ],
   {
     query: "?raw",

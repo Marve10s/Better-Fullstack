@@ -24,7 +24,7 @@ import {
   TbTerminal2 as Terminal2,
 } from "react-icons/tb";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
 
 const CARD_ICONS = {
   adjustments: Adjustments,
@@ -111,9 +111,7 @@ export function DocsHero({
 
 export function DocsCardGrid({ children }: { children?: ReactNode }) {
   return (
-    <div className="not-prose grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {children}
-    </div>
+    <div className="not-prose grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">{children}</div>
   );
 }
 

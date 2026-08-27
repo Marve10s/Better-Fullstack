@@ -5,9 +5,9 @@ import fs from "fs-extra";
 import path from "node:path";
 import pc from "picocolors";
 
-import type { ProjectConfig } from "../../types";
+import type { ProjectConfig } from "@/types";
 
-import { getPackageExecutionArgs } from "../../utils/package-runner";
+import { getPackageExecutionArgs } from "@/platform/package-runner";
 
 export async function setupStarlight(config: ProjectConfig) {
   const { packageManager, projectDir } = config;

@@ -1,12 +1,21 @@
+import {
+  getStarterTrackCatalog,
+  STARTER_TRACK_DEFINITIONS,
+  type StarterTrackCatalogEntry,
+  type StarterTrackFilters as StarterTrackFilterState,
+} from "@better-fullstack/types";
+import { useMemo } from "react";
 import { TbCheck as Check, TbPencil as Pencil, TbBolt as Zap } from "react-icons/tb";
 
-import type { StackState } from "@/lib/constant";
-import { PRESET_CATEGORIES, PRESET_TEMPLATES } from "@/lib/constant";
-import { getLocalizedPresetTemplate } from "@/lib/i18n/builder-copy";
-import { DEFAULT_STACK } from "@/lib/stack-defaults";
+import type { StackState } from "@/lib/stack/constant";
+
+import { useCapabilityEvidenceInventory } from "@/components/stack-builder/capability-evidence-badge";
+import { StarterTrackFilters } from "@/components/stack-builder/starter-track-filters";
 import { TechIcon } from "@/components/stack-builder/tech-icon";
-import { getStarterTracksForEcosystem, type StarterTrack } from "@/lib/starter-tracks";
-import { cn } from "@/lib/utils";
+import { getLocalizedPresetTemplate } from "@/lib/i18n/builder-copy";
+import { cn } from "@/lib/platform/utils";
+import { PRESET_CATEGORIES, PRESET_TEMPLATES } from "@/lib/stack/constant";
+import { DEFAULT_STACK } from "@/lib/stack/stack-defaults";
 import { m } from "@/paraglide/messages.js";
 
 interface PresetsPanelProps {
@@ -14,6 +23,8 @@ interface PresetsPanelProps {
   ecosystem: string;
   onApplyPreset: (presetId: string) => void;
   onCustomizePreset: (presetId: string) => void;
+  starterTrackFilters: StarterTrackFilterState;
+  onStarterTrackFiltersChange: (filters: StarterTrackFilterState) => void;
 }
 
 const HIGHLIGHT_SCALAR_KEYS = [
@@ -60,10 +71,7 @@ function getPresetHighlights(presetStack: Partial<StackState>): string[] {
   return highlights;
 }
 
-function isPresetActive(
-  presetStack: Partial<StackState>,
-  currentStack: StackState,
-): boolean {
+function isPresetActive(presetStack: Partial<StackState>, currentStack: StackState): boolean {
   const merged = { ...DEFAULT_STACK, ...presetStack };
 
   for (const key of Object.keys(presetStack) as (keyof StackState)[]) {
@@ -71,10 +79,7 @@ function isPresetActive(
     const currentVal = currentStack[key];
 
     if (Array.isArray(presetVal) && Array.isArray(currentVal)) {
-      if (
-        presetVal.length !== currentVal.length ||
-        presetVal.some((v, i) => v !== currentVal[i])
-      ) {
+      if (presetVal.length !== currentVal.length || presetVal.some((v, i) => v !== currentVal[i])) {
         return false;
       }
     } else if (presetVal !== currentVal) {
@@ -85,7 +90,7 @@ function isPresetActive(
   return true;
 }
 
-function getStarterTrackName(track: StarterTrack) {
+function getStarterTrackName(track: Pick<StarterTrackCatalogEntry, "id">) {
   switch (track.id) {
     case "saas-app":
       return m.presetTrackSaasName();
@@ -112,6 +117,7 @@ interface PresetCardProps {
   title?: string;
   onApplyPreset: (presetId: string) => void;
   onCustomizePreset: (presetId: string) => void;
+  starterTrack?: StarterTrackCatalogEntry;
 }
 
 function PresetCard({
@@ -120,6 +126,7 @@ function PresetCard({
   title,
   onApplyPreset,
   onCustomizePreset,
+  starterTrack,
 }: PresetCardProps) {
   const localizedPreset = getLocalizedPresetTemplate(preset);
   const active = isPresetActive(preset.stack, stack);
@@ -175,6 +182,20 @@ function PresetCard({
         <p className="text-xs leading-relaxed text-muted-foreground">
           {localizedPreset.description}
         </p>
+        {starterTrack ? (
+          <span
+            title={starterTrack.evidence.limitations.join(" ")}
+            className={cn(
+              "inline-flex border px-1.5 py-0.5 font-mono text-[9px]",
+              starterTrack.evidence.level === "runtime-verified" &&
+                starterTrack.evidence.freshness === "current"
+                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                : "border-border bg-muted/40 text-muted-foreground",
+            )}
+          >
+            {starterTrack.evidence.level.replace("-", " ")} evidence
+          </span>
+        ) : null}
       </div>
 
       <div className="flex flex-wrap gap-1.5">
@@ -197,12 +218,30 @@ function PresetCard({
   );
 }
 
-export function PresetsPanel({ stack, ecosystem, onApplyPreset, onCustomizePreset }: PresetsPanelProps) {
+export function PresetsPanel({
+  stack,
+  ecosystem,
+  onApplyPreset,
+  onCustomizePreset,
+  starterTrackFilters,
+  onStarterTrackFiltersChange,
+}: PresetsPanelProps) {
+  const evidenceInventory = useCapabilityEvidenceInventory();
   const filteredCategories = PRESET_CATEGORIES.filter((c) => c.ecosystem === ecosystem);
   const filteredPresets = PRESET_TEMPLATES.filter((p) =>
     filteredCategories.some((c) => c.id === p.category),
   );
-  const starterTracks = getStarterTracksForEcosystem(ecosystem);
+  const ecosystemHasStarterTracks = STARTER_TRACK_DEFINITIONS.some(
+    (track) => track.ecosystem === ecosystem,
+  );
+  const starterTracks = useMemo(
+    () =>
+      getStarterTrackCatalog({
+        inventory: evidenceInventory,
+        filters: starterTrackFilters,
+      }).tracks.filter((track) => track.ecosystem === ecosystem),
+    [ecosystem, evidenceInventory, starterTrackFilters],
+  );
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -221,10 +260,13 @@ export function PresetsPanel({ stack, ecosystem, onApplyPreset, onCustomizePrese
               <div className="mb-3 flex items-center gap-2">
                 <Zap className="h-4 w-4 text-primary" />
                 <h2 className="font-mono text-sm font-medium">{m.presetStarterTracks()}</h2>
-                <span className="text-xs text-muted-foreground">
-                  {starterTracks.length}
-                </span>
+                <span className="text-xs text-muted-foreground">{starterTracks.length}</span>
               </div>
+
+              <StarterTrackFilters
+                filters={starterTrackFilters}
+                onChange={onStarterTrackFiltersChange}
+              />
 
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {starterTracks.map((track) => {
@@ -237,6 +279,7 @@ export function PresetsPanel({ stack, ecosystem, onApplyPreset, onCustomizePrese
                       preset={preset}
                       stack={stack}
                       title={getStarterTrackName(track)}
+                      starterTrack={track}
                       onApplyPreset={onApplyPreset}
                       onCustomizePreset={onCustomizePreset}
                     />
@@ -246,24 +289,33 @@ export function PresetsPanel({ stack, ecosystem, onApplyPreset, onCustomizePrese
             </section>
           )}
 
+          {ecosystemHasStarterTracks && starterTracks.length === 0 && (
+            <section>
+              <div className="mb-3 flex items-center gap-2">
+                <Zap className="h-4 w-4 text-primary" />
+                <h2 className="font-mono text-sm font-medium">{m.presetStarterTracks()}</h2>
+              </div>
+              <StarterTrackFilters
+                filters={starterTrackFilters}
+                onChange={onStarterTrackFiltersChange}
+              />
+              <p className="border border-border bg-muted/20 p-3 text-xs text-muted-foreground">
+                No schema-valid starter track matches these filters. Clear a filter or customize a
+                preset below.
+              </p>
+            </section>
+          )}
+
           {filteredCategories.map((category) => {
-            const categoryPresets = filteredPresets.filter(
-              (p) => p.category === category.id,
-            );
+            const categoryPresets = filteredPresets.filter((p) => p.category === category.id);
             if (categoryPresets.length === 0) return null;
 
             return (
               <section key={category.id}>
                 <div className="mb-3 flex items-center gap-2">
-                  <TechIcon
-                    techId={category.icon}
-                    name={category.name}
-                    className="h-4 w-4"
-                  />
+                  <TechIcon techId={category.icon} name={category.name} className="h-4 w-4" />
                   <h2 className="font-mono text-sm font-medium">{category.name}</h2>
-                  <span className="text-xs text-muted-foreground">
-                    {categoryPresets.length}
-                  </span>
+                  <span className="text-xs text-muted-foreground">{categoryPresets.length}</span>
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

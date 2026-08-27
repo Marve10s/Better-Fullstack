@@ -2,19 +2,19 @@ import fs from "fs-extra";
 import path from "node:path";
 import { isAlias, isMap, isSeq, parseDocument } from "yaml";
 
-import type { Addons, ProjectConfig } from "../../types";
+import type { Addons, ProjectConfig } from "@/types";
 
-import { addPackageDependency } from "../../utils/add-package-deps";
-import { setupFumadocs } from "./fumadocs-setup";
-import { setupMcp } from "./mcp-setup";
-import { setupOxlint } from "./oxlint-setup";
-import { setupRuler } from "./ruler-setup";
-import { setupSkills } from "./skills-setup";
-import { setupStarlight } from "./starlight-setup";
-import { setupTauri } from "./tauri-setup";
-import { setupTui } from "./tui-setup";
-import { setupUltracite } from "./ultracite-setup";
-import { setupWxt } from "./wxt-setup";
+import { setupFumadocs } from "@/helpers/addons/fumadocs-setup";
+import { setupMcp } from "@/helpers/addons/mcp-setup";
+import { setupOxlint } from "@/helpers/addons/oxlint-setup";
+import { setupRuler } from "@/helpers/addons/ruler-setup";
+import { setupSkills } from "@/helpers/addons/skills-setup";
+import { setupStarlight } from "@/helpers/addons/starlight-setup";
+import { setupTauri } from "@/helpers/addons/tauri-setup";
+import { setupTui } from "@/helpers/addons/tui-setup";
+import { setupUltracite } from "@/helpers/addons/ultracite-setup";
+import { setupWxt } from "@/helpers/addons/wxt-setup";
+import { addPackageDependency } from "@/platform/add-package-deps";
 
 export const ADDONS_REQUIRING_IMPERATIVE_SETUP: ReadonlySet<Addons> = new Set([
   "biome",
@@ -151,6 +151,28 @@ export async function setupAddons(
   }
 
   return warnings;
+}
+
+export async function repairExistingAddonSetup(
+  config: ProjectConfig,
+  addonsToRepair: ProjectConfig["addons"],
+): Promise<void> {
+  const repairSet = new Set(addonsToRepair);
+  const addons = new Set(config.addons);
+
+  if (repairSet.has("gitleaks")) {
+    if (addons.has("husky")) await ensureGitleaksHuskyHook(config.projectDir);
+    if (addons.has("lefthook")) await ensureGitleaksLefthookHook(config.projectDir);
+  }
+
+  if (addons.has("lefthook")) {
+    for (const linter of ["biome", "oxlint"] as const) {
+      if (repairSet.has(linter) && addons.has(linter)) {
+        // oxlint-disable-next-line no-await-in-loop -- each requested hook repair is independent
+        await ensureLinterLefthookHook(config.projectDir, linter, config.packageManager);
+      }
+    }
+  }
 }
 
 async function setupBiome(projectDir: string) {

@@ -10,14 +10,13 @@ export const Route = createFileRoute("/llms.txt")({
           { getAllBlogPosts },
           { generateLlmsTxt },
           { getPublishedStackPageSummaries },
-        ] =
-          await Promise.all([
-            import("@/lib/docs/source"),
-            import("@/lib/guides/source"),
-            import("@/lib/blog/source"),
-            import("@/lib/llms"),
-            import("@/lib/stack-pages/source"),
-          ]);
+        ] = await Promise.all([
+          import("@/lib/docs/source"),
+          import("@/lib/guides/source"),
+          import("@/lib/blog/source"),
+          import("@/lib/content/llms"),
+          import("@/lib/stack-pages/source"),
+        ]);
 
         return new Response(
           generateLlmsTxt({

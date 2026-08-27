@@ -9,18 +9,18 @@ import fs from "fs-extra";
 import path from "node:path";
 import pc from "picocolors";
 
-import type { ProjectConfig } from "../../types";
-import type { SetupStepResult } from "./install-dependencies";
+import type { SetupStepResult } from "@/helpers/core/install-dependencies";
+import type { ProjectConfig } from "@/types";
 
-import { setupCloudflareD1 } from "../database-providers/d1-setup";
-import { setupDockerCompose } from "../database-providers/docker-compose-setup";
-import { setupMongoDBAtlas } from "../database-providers/mongodb-atlas-setup";
-import { setupNeonPostgres } from "../database-providers/neon-setup";
-import { setupPlanetScale } from "../database-providers/planetscale-setup";
-import { setupPrismaPostgres } from "../database-providers/prisma-postgres-setup";
-import { setupSupabase } from "../database-providers/supabase-setup";
-import { setupTurso } from "../database-providers/turso-setup";
-import { setupUpstash } from "../database-providers/upstash-setup";
+import { setupCloudflareD1 } from "@/helpers/database-providers/d1-setup";
+import { setupDockerCompose } from "@/helpers/database-providers/docker-compose-setup";
+import { setupMongoDBAtlas } from "@/helpers/database-providers/mongodb-atlas-setup";
+import { setupNeonPostgres } from "@/helpers/database-providers/neon-setup";
+import { setupPlanetScale } from "@/helpers/database-providers/planetscale-setup";
+import { setupPrismaPostgres } from "@/helpers/database-providers/prisma-postgres-setup";
+import { setupSupabase } from "@/helpers/database-providers/supabase-setup";
+import { setupTurso } from "@/helpers/database-providers/turso-setup";
+import { setupUpstash } from "@/helpers/database-providers/upstash-setup";
 
 export async function setupDatabase(
   config: ProjectConfig,

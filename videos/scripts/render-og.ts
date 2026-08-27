@@ -1,7 +1,7 @@
 import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 
-import { OG_CARD_OUTPUTS } from "../src/campaign/og-outputs";
+import { OG_CARD_OUTPUTS } from "@/campaign/og-outputs";
 
 const entry = resolve(import.meta.dir, "../src/index.ts");
 const videoRoot = resolve(import.meta.dir, "..");

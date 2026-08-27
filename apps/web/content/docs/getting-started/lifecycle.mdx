@@ -2,7 +2,7 @@
 title: Project Lifecycle
 description: Which Better Fullstack command creates, evolves, refreshes, generates inside, and diagnoses a project.
 translationStatus: pending
-updated: 2026-08-22
+updated: 2026-08-23
 ---
 
 Better Fullstack records the selected stack in `bts.jsonc` and the comparison baseline in `bts.lock.json`. Later commands use those files to tell current-template changes apart from your local edits. Manifest v2 adds CLI, generator, template-set, and schema provenance plus lifecycle history; valid v1 manifests migrate deterministically without inventing provenance.
@@ -13,9 +13,11 @@ Better Fullstack records the selected stack in `bts.jsonc` and the comparison ba
 | ---------------------------------------------- | ------------------------------ | ---------------------------------------------------- |
 | Create a project                               | `create` (the default command) | Yes; `--dry-run` previews.                           |
 | Inspect health and upgrade readiness           | `status`                       | No.                                                  |
+| Adopt a pre-manifest-v2 project                | `adopt`                        | No; confirmation needs the exact plan token.         |
 | Change selected capabilities                   | `add`                          | Yes; `--dry-run` previews.                           |
 | Remove one selected non-primary capability     | `remove`                       | No; apply needs the exact plan token.                |
 | Apply newer templates to the same stack        | `update`                       | No; apply needs the exact plan token.                |
+| Find, inspect, restore, or prune recovery data | `recovery`                     | No, except explicit restore or prune apply.          |
 | Generate an in-project resource                | `gen`                          | Yes; `--dry-run` previews.                           |
 | Diagnose config, dependencies, env, and builds | `check`                        | Toolchains may write locks, caches, or build output. |
 
@@ -49,7 +51,17 @@ Commit or stash local work first. The planner refuses to overwrite edited genera
 
 Use `remove` to take out one exact non-primary capability. It plans by default and requires the same target plus its review token for transactional apply. Replace primary frontend, backend, mobile, or database choices through `add`, so compatibility and migration checks can run.
 
-## 3. Refresh templates with update
+## 3. Adopt a project created before manifest v2
+
+Run `adopt` before `update` when `bts.jsonc` exists but `bts.lock.json` does not:
+
+```bash
+npx create-better-fullstack@latest adopt .
+```
+
+The default is read-only. Review the likely Stack Parts, confidence, current-template evidence, and uncertainty. Only the exact confirmation command emitted by that plan may create `bts.lock.json`. The adopted baseline records unverified lineage and never claims a historical supported upgrade.
+
+## 4. Refresh templates with update
 
 Use `update` when the selection stays the same but newer templates exist. The default invocation is already a dry run:
 
@@ -62,7 +74,9 @@ Use `update` when the selection stays the same but newer templates exist. The de
 
 Review the categorized plan, then run the exact apply command it emits, including its version pin and review token. Local edits, secrets, removed files, and conflicts are never selected for automatic writes. Apply rolls failed writes back and returns a recovery command for successful transactions.
 
-## 4. Generate resources with gen
+If that terminal output is gone, run `recovery list`. Use `recovery show <transaction-id>` or `recovery verify <transaction-id>` before restoring with `recovery apply <transaction-id>`. Recovery inspection checks metadata, backup hashes, and whether project files still match the recorded post-operation state.
+
+## 5. Generate resources with gen
 
 `gen` is an experimental in-project generator that currently creates TypeScript tRPC/oRPC resource routers:
 
@@ -70,7 +84,7 @@ Review the categorized plan, then run the exact apply command it emits, includin
 npm create better-fullstack@latest gen resource post -- --dry-run
 ```
 
-## 5. Diagnose with check
+## 6. Diagnose with check
 
 Run `check` after creation, additions, updates, dependency installs, and environment changes:
 
@@ -83,5 +97,7 @@ The normal output runs every generated target check in deterministic order. Add 
 ## Recovery rule
 
 Before any write to an established project, commit or stash your work, run the matching dry run, and read the blockers. If a change replaces the database, ORM, auth, API, backend, or runtime, plan application-data and schema migrations separately. Better Fullstack never migrates application data on its own.
+
+`recovery prune` is also a dry run by default. It retains pending and invalid points and keeps the five newest valid points unless you change the retention options. The preview returns a review token bound to the project, options, and candidate IDs. Add `--apply --review-token <token>` only after reviewing those candidates.
 
 Continue with [Add and Remove Capabilities](/docs/cli/add/), [Status, Check, Update](/docs/cli/update/), or [Choosing a Stack](/docs/choosing-a-stack/) for guidance on what to select next.

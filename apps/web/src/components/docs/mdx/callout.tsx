@@ -1,8 +1,13 @@
 import type { ReactNode } from "react";
 
-import { TbAlertCircle as AlertCircle, TbAlertTriangle as AlertTriangle, TbInfoCircle as Info, TbBulb as Lightbulb } from "react-icons/tb";
+import {
+  TbAlertCircle as AlertCircle,
+  TbAlertTriangle as AlertTriangle,
+  TbInfoCircle as Info,
+  TbBulb as Lightbulb,
+} from "react-icons/tb";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
 
 export const CALLOUT_KINDS = ["info", "tip", "warning", "danger"] as const;
 

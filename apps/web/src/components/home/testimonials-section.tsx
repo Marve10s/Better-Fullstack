@@ -1,12 +1,11 @@
-import { TbQuote as Quote } from "react-icons/tb";
 import { motion } from "motion/react";
+import { TbQuote as Quote } from "react-icons/tb";
 
-import { cn } from "@/lib/utils";
+import type { Testimonial } from "@/components/home/testimonials-data";
+
+import { LIKED_BY, ROW_1, ROW_2, ROW_3 } from "@/components/home/testimonials-data";
+import { cn } from "@/lib/platform/utils";
 import { m } from "@/paraglide/messages.js";
-
-import type { Testimonial } from "./testimonials-data";
-
-import { LIKED_BY, ROW_1, ROW_2, ROW_3 } from "./testimonials-data";
 
 const SHORT_REACTION_MAX_LENGTH = 28;
 const ALL_TESTIMONIALS: Testimonial[] = [...ROW_1, ...ROW_2, ...ROW_3];

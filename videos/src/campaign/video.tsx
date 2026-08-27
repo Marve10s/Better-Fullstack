@@ -2,8 +2,8 @@ import { TransitionSeries, linearTiming } from "@remotion/transitions";
 import { fade } from "@remotion/transitions/fade";
 import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 
-import { BrowserWindow, type BrowserWindowMode } from "./browser-window";
-import { BF_COLORS, FONT_MONO, GridBackground, Wordmark } from "../styles";
+import { BrowserWindow, type BrowserWindowMode } from "@/campaign/browser-window";
+import { BF_COLORS, FONT_MONO, GridBackground, Wordmark } from "@/styles";
 
 export const CAMPAIGN_FPS = 30;
 export const CAMPAIGN_SCENES = [81, 126, 75] as const;
@@ -182,9 +182,7 @@ export function FeatureClip({ mode }: { mode: BrowserWindowMode }) {
   const label = labels[mode];
 
   return (
-    <GridBackground
-      style={{ alignItems: "center", justifyContent: "center", padding: 74 }}
-    >
+    <GridBackground style={{ alignItems: "center", justifyContent: "center", padding: 74 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 58 }}>
         <div style={{ width: 390 }}>
           <Wordmark size={24} />

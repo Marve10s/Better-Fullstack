@@ -1,8 +1,8 @@
+import { makeConfig } from "@test/_fixtures/config-factory";
+import { createSeededVFS, getDeps } from "@test/_fixtures/vfs-factory";
 import { describe, expect, it } from "bun:test";
 
-import { processBackendDeps } from "../../src/processors/backend-deps";
-import { makeConfig } from "../_fixtures/config-factory";
-import { createSeededVFS, getDeps } from "../_fixtures/vfs-factory";
+import { processBackendDeps } from "@/processors/dependencies/backend-deps";
 
 function expectIncludesAll(actual: readonly string[], expected: readonly string[]): void {
   for (const item of expected) {

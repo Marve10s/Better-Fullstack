@@ -2,8 +2,8 @@
 
 import { useEffect, useRef } from "react";
 
-import { useTheme } from "@/lib/theme";
-import { cn } from "@/lib/utils";
+import { useTheme } from "@/lib/content/theme";
+import { cn } from "@/lib/platform/utils";
 
 /**
  * Theme-aware ASCII hero scene, drawn on a fine glyph grid (no external
@@ -415,7 +415,10 @@ export function AsciiHeroBackground({ className, variant = "graph" }: AsciiHeroB
 
       if (!typingDone) return;
       const start = TERM_CMD.length * TERM_TYPE_S + 0.4;
-      const visible = Math.min(TERM_LINES.length, Math.floor(Math.max(0, tc - start) / TERM_LINE_S));
+      const visible = Math.min(
+        TERM_LINES.length,
+        Math.floor(Math.max(0, tc - start) / TERM_LINE_S),
+      );
       for (let i = 0; i < visible; i++) {
         const line = TERM_LINES[i];
         const y = top + (i + 1.6) * lineH;

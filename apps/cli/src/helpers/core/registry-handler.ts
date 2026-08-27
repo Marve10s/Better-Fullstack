@@ -1,26 +1,30 @@
+import type { LifecyclePlan, LifecycleResult } from "@better-fullstack/project-lifecycle/contracts";
 import type { z } from "zod";
 
-import { processTemplateString, VirtualFileSystem } from "@better-fullstack/template-generator";
-import { writeTreeToFilesystem } from "@better-fullstack/template-generator/fs-writer";
+import { lifecyclePlan, lifecycleResult } from "@better-fullstack/project-lifecycle/contracts";
+import {
+  createReviewToken,
+  getReviewTokenContext,
+} from "@better-fullstack/project-lifecycle/review-token";
+import {
+  beginProjectTransaction,
+  commitProjectTransaction,
+  rollbackProjectTransaction,
+  writeProjectTransactionFile,
+} from "@better-fullstack/project-lifecycle/transaction";
+import { processTemplateString } from "@better-fullstack/template-generator";
 import fs from "fs-extra";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import type {
-  CapabilityPackManifest,
-  InstalledPack,
-  ProjectConfig,
-  RegistryLock,
-} from "../../types";
+import type { CapabilityPackManifest, InstalledPack, ProjectConfig, RegistryLock } from "@/types";
 
-import {
-  CapabilityPackManifestSchema,
-  REGISTRY_LOCK_VERSION,
-  RegistryLockSchema,
-} from "../../types";
-import { readBtsConfig } from "../../utils/bts-config";
-import { CLIError } from "../../utils/errors";
-import { recordPackInBtsConfig } from "../../utils/registry-bts";
+import { readBtsConfig } from "@/config/bts-config";
+import { planPackBtsConfig } from "@/config/registry-bts";
+import { getProjectRecoveryCommand } from "@/lifecycle/lifecycle-command";
+import { getCurrentLifecycleVersions, hashContent } from "@/lifecycle/scaffold-manifest";
+import { CLIError } from "@/presentation/errors";
+import { CapabilityPackManifestSchema, REGISTRY_LOCK_VERSION, RegistryLockSchema } from "@/types";
 
 const LOCK_DIR = ".better-fullstack";
 const LOCK_FILE = "registry.json";
@@ -32,6 +36,7 @@ export interface RegistryAddOptions {
   projectDir: string;
   source: string;
   dryRun?: boolean;
+  reviewToken?: string;
 }
 
 export interface RegistryDependencyChange {
@@ -42,6 +47,8 @@ export interface RegistryDependencyChange {
 }
 
 export interface RegistryAddResult {
+  success: boolean;
+  mode: "plan" | "applied" | "blocked" | "rolled-back" | "failed";
   pack: { name: string; version: string };
   source: string;
   filesWritten: string[];
@@ -50,6 +57,27 @@ export interface RegistryAddResult {
   envKeys: string[];
   envFile?: string;
   dryRun: boolean;
+  files: RegistryPlannedFile[];
+  reviewToken?: string;
+  operationPlan?: LifecyclePlan;
+  lifecycle: LifecycleResult;
+  recoveryId?: string;
+  error?: string;
+}
+
+export interface RegistryPlannedFile {
+  path: string;
+  action: "create" | "update";
+  content: string;
+  preimageSha256: string | null;
+  postimageSha256: string;
+}
+
+export interface RegistryApplyOptions {
+  beforeTransactionSnapshot?: () => void | Promise<void>;
+  beforeMutation?: () => void | Promise<void>;
+  afterWrite?: (file: RegistryPlannedFile, index: number) => void | Promise<void>;
+  writeFile?: (target: string, content: string) => void | Promise<void>;
 }
 
 interface ResolvedPackSource {
@@ -162,12 +190,6 @@ export async function readRegistryLock(projectDir: string): Promise<RegistryLock
   } catch {
     return { version: REGISTRY_LOCK_VERSION, packs: [] };
   }
-}
-
-async function writeRegistryLock(projectDir: string, lock: RegistryLock): Promise<void> {
-  const file = lockPath(projectDir);
-  await fs.ensureDir(path.dirname(file));
-  await fs.writeFile(file, `${JSON.stringify(lock, null, 2)}\n`, "utf-8");
 }
 
 /** Lists packs recorded as installed in the per-project lockfile. */
@@ -312,17 +334,52 @@ async function planDependencyChanges(
   return { changes, writes };
 }
 
-/**
- * Installs a capability pack into an existing Better Fullstack project.
- *
- * Reuses the same building blocks as the `add` handler: readBtsConfig to assert
- * a real project, the template-generator VFS + writeTreeToFilesystem to stage
- * and write files, and processTemplateString to render templated files.
- */
-export async function addPack(options: RegistryAddOptions): Promise<RegistryAddResult> {
-  const projectDir = path.resolve(options.projectDir);
-  const dryRun = options.dryRun ?? false;
+async function plannedFile(
+  projectDir: string,
+  filePath: string,
+  content: string,
+): Promise<RegistryPlannedFile> {
+  const target = path.join(projectDir, filePath);
+  const existing = (await fs.pathExists(target)) ? await fs.readFile(target) : null;
+  return {
+    path: filePath.replaceAll("\\", "/"),
+    action: existing === null ? "create" : "update",
+    content,
+    preimageSha256: existing === null ? null : hashContent(existing),
+    postimageSha256: hashContent(Buffer.from(content, "utf-8")),
+  };
+}
 
+function registryReviewToken(
+  projectDir: string,
+  source: string,
+  pack: { name: string; version: string },
+  files: readonly RegistryPlannedFile[],
+  plannedAt: string,
+): string {
+  return createReviewToken(
+    "registry-add",
+    {
+      projectDir,
+      source,
+      pack,
+      files: files.map(({ path: filePath, action, preimageSha256, postimageSha256 }) => ({
+        path: filePath,
+        action,
+        preimageSha256,
+        postimageSha256,
+      })),
+    },
+    plannedAt,
+  );
+}
+
+export async function planPackInstall(
+  options: RegistryAddOptions,
+  plannedAt = new Date().toISOString(),
+): Promise<RegistryAddResult> {
+  const requestedProjectDir = path.resolve(options.projectDir);
+  const projectDir = await fs.realpath(requestedProjectDir).catch(() => requestedProjectDir);
   const btsConfig = await readBtsConfig(projectDir);
   if (!btsConfig) {
     throw new CLIError(
@@ -333,12 +390,11 @@ export async function addPack(options: RegistryAddOptions): Promise<RegistryAddR
   const { manifestPath, resolvedSource } = await resolvePackSource(options.source);
   const manifest = await loadPackManifest(manifestPath);
   const templateContext = btsConfig as unknown as ProjectConfig;
-
-  // Stage files: decide write-vs-skip up front (respecting the overwrite flag),
-  // render templated content, and only stage files that should be written.
-  const vfs = new VirtualFileSystem();
+  const lock = await readRegistryLock(projectDir);
+  const previousInstall = lock.packs.find((pack) => pack.name === manifest.name);
   const filesWritten: string[] = [];
   const filesSkipped: string[] = [];
+  const writes = new Map<string, string>();
 
   for (const file of manifest.files) {
     const normalized = file.path.replaceAll("\\", "/").replace(/^\.\//, "");
@@ -348,94 +404,149 @@ export async function addPack(options: RegistryAddOptions): Promise<RegistryAddR
       filesSkipped.push(normalized);
       continue;
     }
-    const content = file.template
-      ? processTemplateString(file.content, templateContext)
-      : file.content;
-    vfs.writeFile(normalized, content);
+    writes.set(
+      normalized,
+      file.template ? processTemplateString(file.content, templateContext) : file.content,
+    );
     filesWritten.push(normalized);
   }
+  if (previousInstall && previousInstall.version !== manifest.version && filesSkipped.length > 0) {
+    throw new CLIError(
+      `Cannot update ${manifest.name} from ${previousInstall.version} to ${manifest.version} because existing pack files would be skipped: ${filesSkipped.join(", ")}. Reconcile those files with an overwrite-enabled pack first.`,
+    );
+  }
 
-  // Plan dependency merges and env additions.
+  const dependencyPackagePaths = new Set(
+    [manifest.dependencies, manifest.devDependencies].flatMap((group) =>
+      Object.keys(group ?? {}).map((dir) =>
+        path.join(dir === "." ? "" : dir, "package.json").replaceAll("\\", "/"),
+      ),
+    ),
+  );
+  const overlappingPackagePaths = [...dependencyPackagePaths].filter((packagePath) =>
+    writes.has(packagePath),
+  );
+  if (overlappingPackagePaths.length > 0) {
+    throw new CLIError(
+      `Capability pack cannot both write and merge dependencies into: ${overlappingPackagePaths.join(", ")}.`,
+    );
+  }
+
   const { changes: dependencies, writes: packageJsonWrites } = await planDependencyChanges(
     projectDir,
     manifest,
   );
+  for (const [packagePath, packageJson] of packageJsonWrites) {
+    const relativePath = path.relative(projectDir, packagePath).replaceAll("\\", "/");
+    writes.set(relativePath, `${JSON.stringify(packageJson, null, 2)}\n`);
+  }
 
   let envFile: string | undefined;
   let envKeys: string[] = [];
-  let envContent: string | undefined;
   if (manifest.env.length > 0) {
-    envFile = await resolveEnvExamplePath(projectDir);
-    const envAbs = path.join(projectDir, envFile);
-    await assertPathInsideProject(projectDir, envAbs, `environment target "${envFile}"`);
+    const candidate = await resolveEnvExamplePath(projectDir);
+    const envAbs = path.join(projectDir, candidate);
+    await assertPathInsideProject(projectDir, envAbs, `environment target "${candidate}"`);
     const existing = (await fs.pathExists(envAbs)) ? await fs.readFile(envAbs, "utf-8") : "";
     const merged = appendEnvVars(existing, manifest.env);
     envKeys = merged.keys;
     if (merged.keys.length > 0) {
-      envContent = merged.content;
-    } else {
-      envFile = undefined;
+      envFile = candidate;
+      writes.set(candidate, merged.content);
     }
   }
 
-  if (dryRun) {
-    return {
-      pack: { name: manifest.name, version: manifest.version },
-      source: resolvedSource,
-      filesWritten,
-      filesSkipped,
-      dependencies,
-      envKeys,
-      envFile,
-      dryRun: true,
-    };
-  }
-
+  const lockRelativePath = `${LOCK_DIR}/${LOCK_FILE}`;
   await assertPathInsideProject(
     projectDir,
-    path.join(projectDir, LOCK_DIR, LOCK_FILE),
+    path.join(projectDir, lockRelativePath),
     "registry lock target",
   );
-  await assertPathInsideProject(projectDir, path.join(projectDir, "bts.jsonc"), "config target");
-
-  // Write staged pack files.
-  if (filesWritten.length > 0) {
-    const tree = {
-      root: vfs.toTree(manifest.name),
-      fileCount: vfs.getFileCount(),
-      directoryCount: vfs.getDirectoryCount(),
-      config: templateContext,
-    };
-    await writeTreeToFilesystem(tree, projectDir);
-  }
-
-  // Merge dependencies into their package.json files.
-  for (const [pkgAbsPath, pkgJson] of packageJsonWrites) {
-    await fs.writeJson(pkgAbsPath, pkgJson, { spaces: 2 });
-  }
-
-  // Append env vars.
-  if (envFile && envContent !== undefined) {
-    await fs.writeFile(path.join(projectDir, envFile), envContent, "utf-8");
-  }
-
-  // Record the install in the lockfile (dedupe by name for re-install/upgrade).
-  const lock = await readRegistryLock(projectDir);
   const installed: InstalledPack = {
     name: manifest.name,
     version: manifest.version,
     source: resolvedSource,
-    files: filesWritten,
-    installedAt: new Date().toISOString(),
+    files: [...new Set([...(previousInstall?.files ?? []), ...filesWritten])].sort(),
+    installedAt: filesWritten.length > 0 ? plannedAt : (previousInstall?.installedAt ?? plannedAt),
   };
   lock.version = REGISTRY_LOCK_VERSION;
   lock.packs = [...lock.packs.filter((pack) => pack.name !== manifest.name), installed];
-  await writeRegistryLock(projectDir, lock);
+  writes.set(lockRelativePath, `${JSON.stringify(lock, null, 2)}\n`);
 
-  // Additively record the pack (and its declared addon metadata) in bts.jsonc.
-  await recordPackInBtsConfig(projectDir, manifest);
+  await assertPathInsideProject(projectDir, path.join(projectDir, "bts.jsonc"), "config target");
+  const btsContent = await planPackBtsConfig(projectDir, manifest);
+  if (btsContent !== null) writes.set("bts.jsonc", btsContent);
+
+  const files = await Promise.all(
+    [...writes.entries()]
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([filePath, content]) => plannedFile(projectDir, filePath, content)),
+  );
+  const reviewToken = registryReviewToken(
+    projectDir,
+    resolvedSource,
+    { name: manifest.name, version: manifest.version },
+    files,
+    plannedAt,
+  );
+  const versions = getCurrentLifecycleVersions();
+  const packageManagerAction = `Run the project's ${btsConfig.packageManager} install command after apply.`;
+  const operationPlan = lifecyclePlan({
+    operation: "registry-add",
+    status: "planned",
+    projectDir,
+    changes: {
+      added: files.filter((file) => file.action === "create").length,
+      patched: files.filter((file) => file.action === "update").length,
+    },
+    provenance: { source: versions, target: versions, verified: true },
+    recovery: { available: true, automaticRollback: true },
+    affected: {
+      stackParts: [],
+      files: files.map((file) => ({ path: file.path, action: file.action })),
+      dependencies: dependencies.map((dependency) => ({
+        name: dependency.name,
+        action: "add",
+        version: dependency.version,
+        target: dependency.dir,
+        dev: dependency.dev,
+      })),
+    },
+    checks: [
+      { id: "local-source", status: "pass", message: resolvedSource },
+      { id: "manifest-schema", status: "pass" },
+      { id: "write-paths", status: "pass" },
+    ],
+    sideEffects: [
+      {
+        kind: "filesystem",
+        status: "planned",
+        description: "Apply every pack file and metadata merge in one recovery transaction.",
+      },
+      ...(dependencies.length > 0
+        ? [
+            {
+              kind: "package-manager" as const,
+              status: "manual" as const,
+              description:
+                "Dependency manifests change, but registry apply does not run a package manager.",
+              compensatingAction: packageManagerAction,
+            },
+          ]
+        : []),
+    ],
+    review: { required: true, token: reviewToken },
+    preconditions: files.map((file) => ({
+      id: `preimage:${file.path}`,
+      status: "pass",
+      message: file.preimageSha256 ?? "absent",
+    })),
+    nextActions: dependencies.length > 0 ? [packageManagerAction] : [],
+  });
 
   return {
+    success: true,
+    mode: "plan",
     pack: { name: manifest.name, version: manifest.version },
     source: resolvedSource,
     filesWritten,
@@ -443,6 +554,173 @@ export async function addPack(options: RegistryAddOptions): Promise<RegistryAddR
     dependencies,
     envKeys,
     envFile,
-    dryRun: false,
+    dryRun: true,
+    files,
+    reviewToken,
+    operationPlan,
+    lifecycle: lifecycleResult({ ...operationPlan, status: "planned" }),
   };
+}
+
+async function registryPreimage(
+  projectDir: string,
+  file: RegistryPlannedFile,
+): Promise<string | null> {
+  const target = path.join(projectDir, file.path);
+  if (!(await fs.pathExists(target))) return null;
+  return hashContent(await fs.readFile(target));
+}
+
+export async function applyPackInstall(
+  options: RegistryAddOptions,
+  reviewToken: string | undefined,
+  hooks: RegistryApplyOptions = {},
+): Promise<RegistryAddResult> {
+  const plannedAt = getReviewTokenContext(reviewToken);
+  const reviewed = await planPackInstall(options, plannedAt ?? new Date(0).toISOString());
+  if (!plannedAt || !reviewToken || reviewed.reviewToken !== reviewToken) {
+    return {
+      ...reviewed,
+      success: false,
+      mode: "blocked",
+      error: "The registry review token is missing or stale. Create and review a new plan.",
+      lifecycle: lifecycleResult({
+        ...reviewed.lifecycle,
+        status: "blocked",
+        blockers: ["The registry review token is missing or stale."],
+        checks: [{ id: "review-token", status: "fail" }],
+      }),
+    };
+  }
+
+  let transaction;
+  try {
+    await hooks.beforeTransactionSnapshot?.();
+    transaction = await beginProjectTransaction(
+      reviewed.lifecycle.projectDir,
+      "registry-add",
+      reviewed.files.map((file) => file.path),
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return {
+      ...reviewed,
+      success: false,
+      mode: "failed",
+      error: `Could not create the recovery snapshot: ${message}`,
+      lifecycle: lifecycleResult({
+        ...reviewed.lifecycle,
+        status: "failed",
+        blockers: [message],
+        sideEffects: [{ kind: "filesystem", status: "not-run", description: message }],
+      }),
+    };
+  }
+
+  try {
+    await hooks.beforeMutation?.();
+    for (const file of reviewed.files) {
+      if ((await registryPreimage(reviewed.lifecycle.projectDir, file)) !== file.preimageSha256) {
+        throw new Error(`Reviewed preimage changed before apply: ${file.path}`);
+      }
+    }
+    for (const [index, file] of reviewed.files.entries()) {
+      await writeProjectTransactionFile(transaction, file.path, file.content, {
+        expectedSha256: file.postimageSha256,
+        ...(hooks.writeFile
+          ? { writeFile: (target) => hooks.writeFile?.(target, file.content) }
+          : {}),
+      });
+      await hooks.afterWrite?.(file, index);
+    }
+    await commitProjectTransaction(transaction);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    try {
+      await rollbackProjectTransaction(transaction);
+    } catch (rollbackError) {
+      const rollbackMessage =
+        rollbackError instanceof Error ? rollbackError.message : String(rollbackError);
+      return {
+        ...reviewed,
+        success: false,
+        mode: "failed",
+        recoveryId: transaction.id,
+        error: `${message}. Automatic rollback failed: ${rollbackMessage}.`,
+        lifecycle: lifecycleResult({
+          ...reviewed.lifecycle,
+          status: "failed",
+          recovery: {
+            available: true,
+            transactionId: transaction.id,
+            command: getProjectRecoveryCommand(
+              reviewed.lifecycle.projectDir,
+              transaction.id,
+              process.platform,
+              undefined,
+            ),
+          },
+          sideEffects: [
+            {
+              kind: "filesystem",
+              status: "failed",
+              description: message,
+              compensatingAction: "Run the reported recovery command.",
+            },
+          ],
+        }),
+      };
+    }
+    return {
+      ...reviewed,
+      success: false,
+      mode: "rolled-back",
+      recoveryId: transaction.id,
+      error: `${message}. Every registry preimage was restored.`,
+      lifecycle: lifecycleResult({
+        ...reviewed.lifecycle,
+        status: "rolled-back",
+        recovery: { available: true, transactionId: transaction.id, automaticRollback: true },
+        history: { recorded: true, recoveryId: transaction.id },
+        sideEffects: [
+          {
+            kind: "filesystem",
+            status: "restored",
+            description: "Every registry preimage was restored.",
+          },
+        ],
+      }),
+    };
+  }
+
+  return {
+    ...reviewed,
+    mode: "applied",
+    dryRun: false,
+    recoveryId: transaction.id,
+    lifecycle: lifecycleResult({
+      ...reviewed.lifecycle,
+      status: "applied",
+      recovery: {
+        available: true,
+        transactionId: transaction.id,
+        command: getProjectRecoveryCommand(
+          reviewed.lifecycle.projectDir,
+          transaction.id,
+          process.platform,
+          undefined,
+        ),
+        automaticRollback: true,
+      },
+      history: { recorded: true, recoveryId: transaction.id },
+      sideEffects: reviewed.lifecycle.sideEffects.map((sideEffect) =>
+        sideEffect.kind === "filesystem" ? { ...sideEffect, status: "applied" } : sideEffect,
+      ),
+    }),
+  };
+}
+
+export async function addPack(options: RegistryAddOptions): Promise<RegistryAddResult> {
+  if (options.reviewToken) return applyPackInstall(options, options.reviewToken);
+  return planPackInstall(options);
 }

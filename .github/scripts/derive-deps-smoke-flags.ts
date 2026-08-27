@@ -1,13 +1,10 @@
 #!/usr/bin/env bun
 
-import {
-  getCategoryOptionIds,
-  type OptionCategory,
-} from "../../packages/types/src/option-metadata";
+import { getCategoryOptionIds, type OptionCategory } from "@better-fullstack/types";
 import { execFileSync } from "node:child_process";
 import { relative, resolve } from "node:path";
 
-const VERSION_MAP_PATH = "packages/template-generator/src/utils/add-deps.ts";
+const VERSION_MAP_PATH = "packages/template-generator/src/dependencies/add-deps.ts";
 const TEMPLATE_ROOT = "packages/template-generator/templates";
 const SOURCE_ROOT = "packages/template-generator/src";
 const MAX_FORCED_CATEGORIES = 8;
@@ -362,6 +359,6 @@ if (args.includes("--test")) {
   }
 } else {
   const baseIndex = args.indexOf("--base");
-  const base = baseIndex >= 0 && args[baseIndex + 1] ? args[baseIndex + 1] : "origin/main";
+  const base = baseIndex >= 0 ? (args[baseIndex + 1] ?? "origin/main") : "origin/main";
   console.log(await deriveForceFlags(readDiff(base)));
 }

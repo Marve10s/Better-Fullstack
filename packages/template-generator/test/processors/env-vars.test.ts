@@ -1,8 +1,8 @@
+import { makeConfig } from "@test/_fixtures/config-factory";
+import { createSeededVFS, getEnvVars } from "@test/_fixtures/vfs-factory";
 import { describe, expect, it } from "bun:test";
 
-import { processEnvVariables } from "../../src/processors/env-vars";
-import { makeConfig } from "../_fixtures/config-factory";
-import { createSeededVFS, getEnvVars } from "../_fixtures/vfs-factory";
+import { processEnvVariables } from "@/processors/config/env-vars";
 
 function countMatchingLines(content: string, prefix: string): number {
   return content.split("\n").filter((line) => line.startsWith(prefix)).length;
@@ -101,9 +101,7 @@ describe("processEnvVariables", () => {
 
     expect(getEnvVars(nextVfs, "apps/web/.env").PAYLOAD_SECRET).toMatch(/^[A-Za-z0-9]{32}$/);
     expect(getEnvVars(reactVfs, "apps/web/.env").PAYLOAD_SECRET).toBeUndefined();
-    expect(getEnvVars(reactVfs, "packages/infra/.env").ALCHEMY_PASSWORD).toBe(
-      "please-change-this",
-    );
+    expect(getEnvVars(reactVfs, "packages/infra/.env").ALCHEMY_PASSWORD).toBe("please-change-this");
   });
 
   it("writes chat-sdk example vars for supported branches", () => {

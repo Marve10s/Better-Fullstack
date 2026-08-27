@@ -1,1 +1,1 @@
-export { runOpencode as runKilo } from "@/agents/opencode";
+export { runOpencode as runKilo } from "@scaffbench/agents/opencode";

@@ -1,2 +1,1 @@
-export { validateJavaProject } from "@/validation/index";
-
+export { validateJavaProject } from "@scaffbench/validation/index";

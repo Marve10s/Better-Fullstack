@@ -24,12 +24,14 @@ describe("docs navigation", () => {
     expect(rootMeta.pages).not.toContain("sections");
     expect(rootMeta.pages).not.toContain("recipes");
     expect(rootMeta.pages).not.toContain("deployment");
+    expect(rootMeta.pages).toContain("verification");
     const ecosystemsMeta = await readJson<{ pages: string[] }>("ecosystems/meta.json");
     expect(cliMeta.pages).toEqual([
       "index",
       "create",
       "add",
       "update",
+      "gen",
       "experimental",
       "telemetry",
     ]);
@@ -42,6 +44,7 @@ describe("docs navigation", () => {
     await expectDocPage("choosing-a-stack.mdx");
     await expectDocPage("cli/index.mdx");
     await expectDocPage("cli/update.mdx");
+    await expectDocPage("cli/gen.mdx");
     await expectDocPage("cli/experimental.mdx");
     await expectDocPage("cli/telemetry.mdx");
     await expectDocPage("ecosystems/multi-ecosystem.mdx");
@@ -49,5 +52,6 @@ describe("docs navigation", () => {
     await expectDocPage("builder.mdx");
     await expectDocPage("ai/mcp.mdx");
     await expectDocPage("getting-started/lifecycle.mdx");
+    await expectDocPage("verification.mdx");
   });
 });

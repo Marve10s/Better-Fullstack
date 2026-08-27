@@ -1,0 +1,73 @@
+name: Bug report
+description: Report a reproducible Better Fullstack failure
+title: "[bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include source code, credentials, environment values, private URLs, or personal paths.
+        Run `create-better-fullstack doctor . --support-bundle` to print a redacted diagnostic report. Invoking that flag is explicit consent to print the bounded report to your terminal. Inspect it before attaching it here.
+  - type: input
+    id: version
+    attributes:
+      label: Better Fullstack version
+      description: Run `create-better-fullstack --version`.
+      placeholder: 2.4.0
+    validations:
+      required: true
+  - type: dropdown
+    id: operation
+    attributes:
+      label: Operation
+      options:
+        - create
+        - status
+        - check or doctor
+        - add or remove
+        - update or recover
+        - gen
+        - registry
+        - MCP
+        - web builder
+        - release or installation
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: List the prompt-free command and the smallest safe sequence that reproduces the failure. Replace project names and paths with placeholders.
+      placeholder: |
+        1. Run `create-better-fullstack create example ... --no-install --no-git`.
+        2. Run `create-better-fullstack check example`.
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed result
+      description: Summarize the failure. Do not paste raw logs if they contain user content.
+    validations:
+      required: true
+  - type: textarea
+    id: support_bundle
+    attributes:
+      label: Redacted support bundle
+      description: Paste the output of `doctor --support-bundle` after inspecting it. This field is optional.
+      render: json
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: I removed source code, secrets, environment values, private URLs, raw logs, and personal paths.
+          required: true

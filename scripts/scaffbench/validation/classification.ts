@@ -1,4 +1,4 @@
-import type { StepResult } from "@/types";
+import type { StepResult } from "@scaffbench/types";
 
 const TRANSIENT_NETWORK_PATTERNS = [
   /\bEAI_AGAIN\b/i,

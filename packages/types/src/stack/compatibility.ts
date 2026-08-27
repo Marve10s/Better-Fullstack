@@ -1,0 +1,5960 @@
+import type {
+  AI,
+  Addons,
+  Analytics,
+  API,
+  AstroIntegration,
+  Auth,
+  Backend,
+  CSSFramework,
+  Forms,
+  Frontend,
+  ProjectConfig,
+  Runtime,
+  StackPartEcosystem,
+  StackPartRole,
+  UILibrary,
+} from "@/config/types";
+
+import { getCapabilityDisabledReason, normalizeCapabilitySelection } from "@/capabilities/capabilities";
+import {
+  CATEGORY_ORDER,
+  getCategoryDisplayName,
+  isMultiEcosystemMobileCategory,
+  type OptionCategory,
+} from "@/catalog/option-metadata";
+import { ANALYTICS_VALUES } from "@/config/schemas";
+import {
+  getUnsupportedWebDeployFrontend,
+  hasPWACompatibleFrontend,
+  hasTanStackAICompatibleFrontend,
+  hasTauriCompatibleFrontend,
+  requiresChatSdkVercelAIForExamples,
+  UI_LIBRARY_COMPATIBILITY,
+} from "@/stack/stack-compatibility-rules";
+import {
+  getAddonStackPartBinding,
+  getStackPartCompatibilityIssueForPart,
+  legacyProjectConfigToStackParts,
+} from "@/stack/stack-graph";
+
+export {
+  BACKEND_UTILS_COMPATIBLE_BACKENDS,
+  getUnsupportedWebDeployFrontend,
+  hasDockerComposeCompatibleFrontend,
+  hasPWACompatibleFrontend,
+  hasTanStackAICompatibleFrontend,
+  hasTauriCompatibleFrontend,
+  isBackendUtilsCompatibleBackend,
+  isExampleAIAllowed,
+  isExampleChatSdkAllowed,
+  requiresChatSdkVercelAIForExamples,
+  UI_LIBRARY_COMPATIBILITY,
+} from "@/stack/stack-compatibility-rules";
+
+export type CompatibilityCategory = OptionCategory;
+
+export type CompatibilityCapabilityReference = {
+  id: string;
+  category: CompatibilityCategory;
+  optionId: string;
+};
+
+export type CompatibilityStackPartReference = {
+  id: string;
+  role: StackPartRole;
+  ecosystem: StackPartEcosystem;
+  toolId: string;
+};
+
+export type CompatibilityExplanation = {
+  schemaVersion: 1;
+  ruleId: string;
+  reason: string;
+  message: string;
+  capability: CompatibilityCapabilityReference;
+  owner: {
+    kind: "stack-part" | "capability";
+    capability: CompatibilityCapabilityReference;
+    stackPart: CompatibilityStackPartReference | null;
+  };
+  candidateStackPart: {
+    role: StackPartRole;
+    ecosystem: StackPartEcosystem;
+  } | null;
+  alternatives: CompatibilityCapabilityReference[];
+};
+
+const SIGNOZ_SUPPORTED_GO_WEB_FRAMEWORKS = new Set(["gin", "echo", "fiber", "chi", "stdlib"]);
+const SIGNOZ_SUPPORTED_PYTHON_WEB_FRAMEWORKS = new Set(["fastapi"]);
+const VERCEL_ANALYTICS_FRONTENDS = new Set([
+  "next",
+  "vinext",
+  "tanstack-router",
+  "tanstack-start",
+  "react-router",
+  "react-vite",
+  "svelte",
+  "nuxt",
+  "vue",
+  "solid",
+  "solid-start",
+  "astro",
+]);
+
+const REACT_ANALYTICS_FRONTENDS = new Set([
+  "tanstack-router",
+  "react-router",
+  "react-vite",
+  "tanstack-start",
+  "next",
+  "vinext",
+]);
+
+const GA4_FRONTENDS = new Set([
+  ...VERCEL_ANALYTICS_FRONTENDS,
+  "vanilla-vite",
+  "qwik",
+  "angular",
+  "redwood",
+  "fresh",
+]);
+
+const STANDARD_ANALYTICS_FRONTENDS = new Set([
+  ...REACT_ANALYTICS_FRONTENDS,
+  "svelte",
+  "nuxt",
+  "vue",
+  "solid",
+  "solid-start",
+]);
+
+export const ANALYTICS_FRONTEND_SUPPORT = {
+  ga4: GA4_FRONTENDS,
+  plausible: REACT_ANALYTICS_FRONTENDS,
+  posthog: STANDARD_ANALYTICS_FRONTENDS,
+  umami: STANDARD_ANALYTICS_FRONTENDS,
+  "vercel-analytics": VERCEL_ANALYTICS_FRONTENDS,
+} as const satisfies Record<Exclude<Analytics, "none">, ReadonlySet<string>>;
+
+export function isAnalyticsFrontendSupported(analytics: Analytics, frontend: string) {
+  return analytics !== "none" && ANALYTICS_FRONTEND_SUPPORT[analytics].has(frontend);
+}
+
+export function supportsAnalyticsFrontends(analytics: Analytics, frontends: readonly string[]) {
+  const webFrontends = frontends.filter(
+    (frontend) => frontend !== "none" && !frontend.startsWith("native-"),
+  );
+  return (
+    webFrontends.length > 0 &&
+    webFrontends.every((frontend) => isAnalyticsFrontendSupported(analytics, frontend))
+  );
+}
+
+export function isVercelAnalyticsFrontend(frontend: string) {
+  return isAnalyticsFrontendSupported("vercel-analytics", frontend);
+}
+
+export function isSignozSupportedGoWebFramework(framework: string): boolean {
+  return SIGNOZ_SUPPORTED_GO_WEB_FRAMEWORKS.has(framework);
+}
+
+export function hasSignozSupportedGoServerTarget(stack: {
+  goWebFramework?: string;
+  goApi?: string;
+  auth?: string;
+}): boolean {
+  return (
+    isSignozSupportedGoWebFramework(stack.goWebFramework ?? "none") ||
+    ((stack.goWebFramework ?? "none") === "none" &&
+      (stack.goApi === "grpc-go" || stack.auth === "go-better-auth"))
+  );
+}
+
+export function isSignozSupportedPythonWebFramework(framework: string): boolean {
+  return SIGNOZ_SUPPORTED_PYTHON_WEB_FRAMEWORKS.has(framework);
+}
+
+// ============================================
+// KOTLIN (JAVA ECOSYSTEM) SUPPORT GATE
+// ============================================
+// Kotlin is a `javaLanguage` variant of the Java ecosystem, wired only for the
+// Spring Boot scaffold and the option surface that has Kotlin source templates.
+// This is the single source of truth for that gate — the stack normalization
+// below, `getDisabledReason`, the CLI create path, and the template generator
+// all consume it so the lists can never drift apart.
+
+export const KOTLIN_UNSUPPORTED_JAVA_TESTING_LIBRARIES: ReadonlySet<string> = new Set([
+  "testcontainers",
+  "rest-assured",
+  "wiremock",
+  "awaitility",
+  "archunit",
+  "jqwik",
+]);
+
+// Java annotation-processor tooling the Kotlin scaffold drops rather than
+// blocks: data classes replace Lombok, and MapStruct would need kapt.
+export const KOTLIN_DROPPED_JAVA_LIBRARIES: ReadonlySet<string> = new Set(["lombok", "mapstruct"]);
+
+export type KotlinJavaGateInput = {
+  javaWebFramework?: string;
+  javaBuildTool?: string;
+  javaOrm?: string;
+  javaApi?: string;
+  javaTestingLibraries?: string[];
+  email?: string;
+  search?: string;
+  caching?: string;
+  observability?: string;
+};
+
+export function getKotlinJavaIncompatibilityReason(stack: KotlinJavaGateInput): string | null {
+  if (stack.javaWebFramework !== "spring-boot" && stack.javaWebFramework !== "ktor") {
+    return "Kotlin sources are only wired for the Spring Boot and Ktor scaffolds";
+  }
+  if (!stack.javaBuildTool || stack.javaBuildTool === "none") {
+    return "Kotlin requires Maven or Gradle";
+  }
+  if (stack.javaOrm === "jooq" || stack.javaOrm === "mybatis") {
+    return "The Kotlin scaffold supports Spring Data JPA or no ORM (jOOQ/MyBatis sources are Java-only)";
+  }
+  if (stack.javaApi === "grpc" || stack.javaApi === "openapi-generator") {
+    return "The Kotlin scaffold supports Spring GraphQL or no API layer (gRPC/OpenAPI codegen paths are Java-only)";
+  }
+  if (stack.email === "resend") {
+    return "The Resend email integration is Java-only in the Java ecosystem scaffold";
+  }
+  if (stack.search === "meilisearch") {
+    return "The Meilisearch integration is Java-only in the Java ecosystem scaffold";
+  }
+  if (stack.caching === "upstash-redis") {
+    return "The Upstash Redis integration is Java-only in the Java ecosystem scaffold";
+  }
+  if (stack.observability === "sentry") {
+    return "The Sentry integration is Java-only in the Java ecosystem scaffold";
+  }
+  const unsupportedTestingLibrary = (stack.javaTestingLibraries ?? []).find((library) =>
+    KOTLIN_UNSUPPORTED_JAVA_TESTING_LIBRARIES.has(library),
+  );
+  if (unsupportedTestingLibrary) {
+    return `The '${unsupportedTestingLibrary}' testing library is not wired for the Kotlin scaffold`;
+  }
+  return null;
+}
+
+// ============================================
+// MOBILE PLATFORM GATE
+// ============================================
+// Mobile spans four independent platforms (React Native, Kotlin, Swift,
+// Flutter) whose library catalogs never mix. This is the single source of truth
+// for which categories belong to React Native — `getDisabledReason` and the web
+// builder's category visibility both read it, so Expo options can never be
+// offered without an Expo app and Kotlin libraries can never be offered for one.
+
+const REACT_NATIVE_ONLY_CATEGORIES: ReadonlySet<string> = new Set([
+  "mobileNavigation",
+  "mobileUI",
+  "mobileStorage",
+  "mobileTesting",
+  "mobilePush",
+  "mobileOTA",
+  "mobileDeepLinking",
+  "mobileLibraries",
+]);
+
+export function isReactNativeOnlyCategory(category: string): boolean {
+  return REACT_NATIVE_ONLY_CATEGORIES.has(category);
+}
+
+export function hasReactNativeApp(stack: { nativeFrontend?: string[] }): boolean {
+  return (stack.nativeFrontend ?? []).some((frontend) => frontend !== "none");
+}
+
+function hasKotlinMobileApp(stack: { kotlinMobile?: string }): boolean {
+  return (stack.kotlinMobile ?? "none") !== "none";
+}
+
+export type CompatibilityIssue = {
+  code: string;
+  message: string;
+  category?: CompatibilityCategory;
+  optionId?: string;
+  provided?: Record<string, string | string[]>;
+  suggestions?: string[];
+  explanation?: CompatibilityExplanation;
+};
+
+export type CompatibilityEvaluation = {
+  issues: CompatibilityIssue[];
+};
+
+const TURNSTILE_WEB_FRONTENDS = new Set([
+  "next",
+  "react-router",
+  "react-vite",
+  "tanstack-router",
+  "tanstack-start",
+]);
+
+export function isTurnstileWebFrontend(frontend: string) {
+  return TURNSTILE_WEB_FRONTENDS.has(frontend);
+}
+
+export function isBotIdWebFrontend(frontend: string) {
+  return frontend === "next";
+}
+
+export type CompatibilityAdjustment = {
+  category: string;
+  message: string;
+};
+
+export type CompatibilityInput = {
+  ecosystem:
+    | "typescript"
+    | "react-native"
+    | "rust"
+    | "python"
+    | "go"
+    | "java"
+    | "elixir"
+    | "dotnet";
+  projectName: string | null;
+  webFrontend: string[];
+  nativeFrontend: string[];
+  astroIntegration: string;
+  runtime: string;
+  backend: string;
+  database: string;
+  orm: string;
+  dbSetup: string;
+  auth: string;
+  payments: string;
+  email: string;
+  fileUpload: string;
+  logging: string;
+  observability: string;
+  featureFlags: string;
+  integrations: string;
+  ecommerce: string;
+  analytics: string;
+  backendLibraries: string;
+  stateManagement: string;
+  forms: string;
+  validation: string;
+  testing: string;
+  realtime: string;
+  jobQueue: string;
+  caching: string;
+  rateLimit: string;
+  botProtection: string;
+  animation: string;
+  cssFramework: string;
+  uiLibrary: string;
+  shadcnBase: string;
+  shadcnStyle: string;
+  shadcnIconLibrary: string;
+  shadcnColorTheme: string;
+  shadcnBaseColor: string;
+  shadcnFont: string;
+  shadcnRadius: string;
+  cms: string;
+  i18n: string;
+  search: string;
+  vectorDb: string;
+  fileStorage: string;
+  mobileNavigation: string;
+  mobileUI: string;
+  mobileStorage: string;
+  mobileTesting: string;
+  mobilePush: string;
+  mobileOTA: string;
+  mobileDeepLinking: string;
+  mobileLibraries: string[];
+  codeQuality: string[];
+  documentation: string[];
+  appPlatforms: string[];
+  packageManager: string;
+  workspaceShape: string;
+  versionChannel: string;
+  examples: string[];
+  aiSdk: string;
+  aiDocs: string[];
+  git: string;
+  install: string;
+  api: string;
+  webDeploy: string;
+  serverDeploy: string;
+  yolo: string;
+  rustWebFramework: string;
+  rustFrontend: string;
+  dotnetFrontend?: string;
+  kotlinMobile?: string;
+  kotlinMobileLibraries?: string[];
+  swiftMobile?: string;
+  dartMobile?: string;
+  rustOrm: string;
+  rustApi: string;
+  rustCli: string;
+  rustLibraries: string[];
+  rustLogging: string;
+  rustErrorHandling: string;
+  rustCaching: string;
+  rustAuth: string;
+  rustRealtime: string;
+  rustMessageQueue: string;
+  rustObservability: string;
+  rustTemplating: string;
+  pythonWebFramework: string;
+  pythonOrm: string;
+  pythonValidation: string;
+  pythonAi: string[];
+  pythonAuth: string;
+  pythonApi: string;
+  pythonTaskQueue: string;
+  pythonGraphql: string;
+  pythonQuality: string;
+  pythonTesting: string[];
+  pythonCaching: string;
+  pythonRealtime: string;
+  pythonObservability: string;
+  pythonCli: string[];
+  pythonCloudSdk: string;
+  pythonHttpClient: string;
+  pythonData: string[];
+  pythonMedia: string;
+  pythonServer: string;
+  pythonPackageManager: string;
+  pythonMessageQueue: string;
+  goWebFramework: string;
+  goOrm: string;
+  goApi: string;
+  goCli: string;
+  goLogging: string;
+  goAuth: string;
+  goTesting: string[];
+  goRealtime: string;
+  goMessageQueue: string;
+  goCaching: string;
+  goConfig: string;
+  goObservability: string;
+  goValidation: string;
+  goQuality: string;
+  goMigrations: string;
+  goTemplating: string;
+  goProtoTooling: string;
+  goDI: string;
+  javaLanguage: string;
+  javaWebFramework: string;
+  javaBuildTool: string;
+  javaOrm: string;
+  javaAuth: string;
+  javaApi: string;
+  javaLogging: string;
+  javaLibraries: string[];
+  javaTestingLibraries: string[];
+  dotnetWebFramework: string;
+  dotnetOrm: string;
+  dotnetAuth: string;
+  dotnetApi: string;
+  dotnetTesting: string[];
+  dotnetJobQueue: string;
+  dotnetRealtime: string;
+  dotnetObservability: string[];
+  dotnetValidation: string;
+  dotnetCaching: string;
+  dotnetDeploy: string;
+  dotnetLibraries: string[];
+  elixirWebFramework: string;
+  elixirOrm: string;
+  elixirAuth: string;
+  elixirApi: string;
+  elixirRealtime: string;
+  elixirJobs: string;
+  elixirValidation: string;
+  elixirHttp: string;
+  elixirJson: string;
+  elixirEmail: string;
+  elixirCaching: string;
+  elixirObservability: string;
+  elixirTesting: string;
+  elixirQuality: string;
+  elixirI18n: string;
+  elixirHttpServer: string;
+  elixirApplicationFramework: string;
+  elixirDocumentation: string;
+  elixirClustering: string;
+  elixirDeploy: string;
+  elixirLibraries: string[];
+};
+
+const DEFAULT_RUNTIME = "bun";
+const REVENUECAT_NATIVE_FRONTENDS = new Set<Frontend>([
+  "native-bare",
+  "native-uniwind",
+  "native-unistyles",
+]);
+const PARAGLIDE_COMPATIBLE_FRONTENDS = new Set<Frontend>([
+  "next",
+  "nuxt",
+  "vinext",
+  "tanstack-router",
+  "tanstack-start",
+  "react-router",
+  "react-vite",
+  "vanilla-vite",
+  "vue",
+  "svelte",
+  "solid",
+  "solid-start",
+  "astro",
+]);
+const INTLAYER_COMPATIBLE_FRONTENDS = new Set<Frontend>([
+  "next",
+  "vinext",
+  "tanstack-router",
+  "tanstack-start",
+  "react-router",
+  "react-vite",
+]);
+
+const hasRevenueCatCompatibleNativeFrontend = (frontends: readonly string[]) =>
+  frontends.some((frontend) => REVENUECAT_NATIVE_FRONTENDS.has(frontend as Frontend));
+
+export function validateProjectName(name: string): string | undefined {
+  const INVALID_CHARS = ["<", ">", ":", '"', "|", "?", "*", "/", "\\"];
+  const MAX_LENGTH = 255;
+
+  if (name === ".") return undefined;
+
+  if (!name) return "Project name cannot be empty";
+  if (name.length > MAX_LENGTH) {
+    return `Project name must be less than ${MAX_LENGTH} characters`;
+  }
+  if (INVALID_CHARS.some((char) => name.includes(char))) {
+    return "Project name contains invalid characters";
+  }
+  if (name.startsWith(".") || name.startsWith("-")) {
+    return "Project name cannot start with a dot or dash";
+  }
+  if (name.toLowerCase() === "node_modules" || name.toLowerCase() === "favicon.ico") {
+    return "Project name is reserved";
+  }
+  return undefined;
+}
+
+const isChatSdkExampleSupported = (stack: CompatibilityInput): boolean => {
+  if (stack.ecosystem !== "typescript") return false;
+
+  if (
+    stack.backend === "self-next" ||
+    stack.backend === "self-vinext" ||
+    stack.backend === "self-tanstack-start"
+  ) {
+    return true;
+  }
+
+  if (stack.backend === "self-nuxt") {
+    return true;
+  }
+
+  if (stack.backend === "hono") {
+    return stack.runtime === "node";
+  }
+
+  return false;
+};
+
+export const requiresChatSdkVercelAI = (stack: CompatibilityInput): boolean => {
+  return requiresChatSdkVercelAIForExamples(stack.backend, stack.runtime, stack.examples);
+};
+
+export type CompatibilityAnalysisResult = {
+  adjustedStack: CompatibilityInput | null;
+  notes: Record<string, { notes: string[]; hasIssue: boolean }>;
+  changes: CompatibilityAdjustment[];
+};
+
+/**
+ * Analyzes the stack and auto-adjusts incompatible selections.
+ * This follows the CLI approach: when you make a selection, dependent items adjust automatically.
+ * The flow is: frontend -> backend -> runtime -> database -> orm -> api -> auth -> etc.
+ */
+/**
+ * Backends that can collapse into a flat single-app layout (no separate
+ * apps/server or packages/* workspace). These are the "thin self" fullstack
+ * frameworks whose web app already owns the server via route handlers AND that
+ * expose a `@/*` -> ./src path alias so the inlined env module resolves cleanly.
+ * Nuxt is intentionally excluded from the MVP (different alias convention).
+ */
+const SINGLE_APP_SELF_BACKENDS = new Set(["self-next", "self-tanstack-start"]);
+const SINGLE_APP_CONTAINER_ADDONS = new Set(["docker-compose", "devcontainer", "kong"]);
+const FULLSTACK_SELF_BACKENDS = new Set([
+  "self-next",
+  "self-vinext",
+  "self-tanstack-start",
+  "self-astro",
+  "self-nuxt",
+  "self-svelte",
+  "self-solid-start",
+]);
+const SINGLE_APP_WEB_FRONTEND_BY_BACKEND: Record<string, string> = {
+  "self-next": "next",
+  "self-tanstack-start": "tanstack-start",
+};
+
+/**
+ * A single-app (flat) layout is only safe for a "thin self" stack that emits no
+ * sibling workspace package (database/orm, better-auth server, trpc/orpc
+ * packages/api, payments, email, etc.) and no separate native/server app. For
+ * anything else, `single-app` is normalized back to `monorepo` so we never emit
+ * a broken flat layout. appPlatforms (turborepo/nx) are ignored here — the
+ * generator drops the workspace tooling when it flattens.
+ */
+export function stackQualifiesForSingleApp(stack: CompatibilityInput): boolean {
+  if (!SINGLE_APP_SELF_BACKENDS.has(stack.backend)) return false;
+  if ((stack.appPlatforms ?? []).some((addon) => SINGLE_APP_CONTAINER_ADDONS.has(addon))) {
+    return false;
+  }
+
+  const nativeFrontends = (stack.nativeFrontend ?? []).filter((f) => f && f !== "none");
+  if (nativeFrontends.length > 0) return false;
+
+  const webFrontends = (stack.webFrontend ?? []).filter((f) => f && f !== "none");
+  if (webFrontends.length !== 1) return false;
+  if (webFrontends[0] !== SINGLE_APP_WEB_FRONTEND_BY_BACKEND[stack.backend]) return false;
+  if (stack.analytics !== "none" && stack.analytics !== "vercel-analytics") return false;
+
+  const siblingPackageScalars = [
+    stack.api,
+    stack.database,
+    stack.orm,
+    stack.auth,
+    stack.payments,
+    stack.email,
+    stack.fileUpload,
+    stack.realtime,
+    stack.jobQueue,
+    stack.caching,
+    stack.rateLimit,
+    stack.i18n,
+    stack.search,
+    stack.vectorDb,
+    stack.fileStorage,
+    stack.cms,
+    stack.aiSdk,
+    stack.featureFlags,
+    stack.integrations,
+    stack.ecommerce,
+    stack.observability,
+    stack.logging,
+    stack.webDeploy,
+    stack.serverDeploy,
+  ];
+  if (siblingPackageScalars.some((value) => value && value !== "none")) return false;
+
+  const nonNoneExamples = (stack.examples ?? []).filter((e) => e && e !== "none");
+  if (nonNoneExamples.length > 0) return false;
+
+  return true;
+}
+
+const usesCloudflareFullstackRuntime = (stack: CompatibilityInput): boolean =>
+  stack.webDeploy === "cloudflare" && FULLSTACK_SELF_BACKENDS.has(stack.backend);
+
+export const analyzeStackCompatibility = (
+  stack: CompatibilityInput,
+): CompatibilityAnalysisResult => {
+  // Skip all validation if YOLO mode is enabled
+  if (stack.yolo === "true") {
+    return {
+      adjustedStack: null,
+      notes: {},
+      changes: [],
+    };
+  }
+
+  const nextStack = { ...stack };
+  // Newer optional fields may be absent from older callers and fixtures. Treat
+  // them as "none" before service overrides report schema-default adjustments.
+  if (nextStack.vectorDb === undefined) {
+    nextStack.vectorDb = "none";
+  }
+  if (nextStack.integrations === undefined) {
+    nextStack.integrations = "none";
+  }
+  if (nextStack.ecommerce === undefined) {
+    nextStack.ecommerce = "none";
+  }
+  let changed = false;
+  const notes: CompatibilityAnalysisResult["notes"] = {};
+  const changes: CompatibilityAdjustment[] = [];
+
+  if (
+    nextStack.observability === "signoz" &&
+    (nextStack.backend === "none" || nextStack.backend === "convex")
+  ) {
+    nextStack.observability = "none";
+    changed = true;
+    changes.push({
+      category: "observability",
+      message: "Observability set to 'None' (SigNoz tracing requires a generated server target)",
+    });
+  }
+
+  if (
+    nextStack.observability === "signoz" &&
+    (nextStack.backend === "self-tanstack-start" || nextStack.backend === "self-astro")
+  ) {
+    nextStack.observability = "none";
+    changed = true;
+    changes.push({
+      category: "observability",
+      message:
+        "Observability set to 'None' (SigNoz tracing is not yet bootstrapped for this fullstack frontend)",
+    });
+  }
+
+  if (
+    nextStack.observability === "signoz" &&
+    nextStack.webDeploy === "cloudflare" &&
+    (nextStack.backend === "self" || nextStack.backend.startsWith("self-"))
+  ) {
+    nextStack.observability = "none";
+    changed = true;
+    changes.push({
+      category: "observability",
+      message:
+        "Observability set to 'None' (SigNoz's Node SDK is incompatible with Cloudflare-hosted fullstack apps)",
+    });
+  }
+
+  if (
+    nextStack.ecosystem !== "typescript" &&
+    nextStack.ecosystem !== "react-native" &&
+    nextStack.codeQuality.includes("knip")
+  ) {
+    nextStack.codeQuality = nextStack.codeQuality.filter((addon) => addon !== "knip");
+    changed = true;
+    changes.push({
+      category: "codeQuality",
+      message: "Removed Knip (Knip requires a TypeScript or React Native workspace)",
+    });
+  }
+
+  if (nextStack.ecosystem === "react-native") {
+    const supportedCodeQuality = new Set(["knip", "gitleaks"]);
+    const filteredCodeQuality = nextStack.codeQuality.filter((addon) =>
+      supportedCodeQuality.has(addon),
+    );
+    if (filteredCodeQuality.length !== nextStack.codeQuality.length) {
+      nextStack.codeQuality = filteredCodeQuality;
+      changed = true;
+      changes.push({
+        category: "codeQuality",
+        message: "Removed code-quality tools that are not supported by React Native projects",
+      });
+    }
+  }
+
+  for (const cat of CATEGORY_ORDER) {
+    notes[cat] = { notes: [], hasIssue: false };
+  }
+
+  // ============================================
+  // BACKEND CONSTRAINTS
+  // ============================================
+
+  if (nextStack.backend === "convex") {
+    // Convex handles its own runtime, database, orm, api, dbSetup
+    const convexOverrides: Partial<CompatibilityInput> = {
+      runtime: "none",
+      database: "none",
+      orm: "none",
+      api: "none",
+      dbSetup: "none",
+      serverDeploy: "none",
+      search: "none",
+      vectorDb: "none",
+      rateLimit: "none",
+      fileStorage: "none",
+      integrations: "none",
+      ecommerce: "none",
+    };
+
+    for (const [key, value] of Object.entries(convexOverrides)) {
+      const catKey = key as keyof CompatibilityInput;
+      if (nextStack[catKey] !== value) {
+        nextStack[catKey] = value as never;
+        changed = true;
+        changes.push({
+          category: "backend",
+          message: `${getCategoryDisplayName(catKey)} set to '${value}' (Convex provides this)`,
+        });
+      }
+    }
+
+    // Remove incompatible frontends
+    if (nextStack.webFrontend.includes("solid")) {
+      nextStack.webFrontend = nextStack.webFrontend.filter((f) => f !== "solid");
+      if (nextStack.webFrontend.length === 0) nextStack.webFrontend = ["none"];
+      changed = true;
+      changes.push({
+        category: "backend",
+        message: "Removed Solid (incompatible with Convex)",
+      });
+    }
+    if (nextStack.webFrontend.includes("solid-start")) {
+      nextStack.webFrontend = nextStack.webFrontend.filter((f) => f !== "solid-start");
+      if (nextStack.webFrontend.length === 0) nextStack.webFrontend = ["none"];
+      changed = true;
+      changes.push({
+        category: "backend",
+        message: "Removed SolidStart (incompatible with Convex)",
+      });
+    }
+    if (nextStack.webFrontend.includes("astro")) {
+      nextStack.webFrontend = nextStack.webFrontend.filter((f) => f !== "astro");
+      if (nextStack.webFrontend.length === 0) nextStack.webFrontend = ["none"];
+      nextStack.astroIntegration = "none";
+      changed = true;
+      changes.push({
+        category: "backend",
+        message: "Removed Astro (incompatible with Convex)",
+      });
+    }
+
+    // Remove AI example if incompatible frontends are selected (Convex AI supports React-based frontends, including React + Vite)
+    if (nextStack.examples.includes("ai")) {
+      const hasIncompatibleFrontend = nextStack.webFrontend.some((f) =>
+        ["solid", "svelte", "nuxt"].includes(f),
+      );
+      if (hasIncompatibleFrontend) {
+        nextStack.examples = nextStack.examples.filter((e) => e !== "ai");
+        if (nextStack.examples.length === 0) nextStack.examples = ["none"];
+        changed = true;
+        changes.push({
+          category: "examples",
+          message:
+            "AI example removed (Convex AI only supports React-based frontends including React + Vite)",
+        });
+      }
+    }
+  }
+
+  if (nextStack.backend === "none") {
+    // No backend means no runtime, database, orm, api, auth, dbSetup, serverDeploy
+    const shouldKeepRevenueCatPayments =
+      nextStack.payments === "revenuecat" &&
+      (nextStack.ecosystem === "react-native" ||
+        hasRevenueCatCompatibleNativeFrontend(nextStack.nativeFrontend));
+    const noneOverrides: Partial<CompatibilityInput> = {
+      runtime: "none",
+      database: "none",
+      orm: "none",
+      api: "none",
+      dbSetup: "none",
+      serverDeploy: "none",
+      search: "none",
+      vectorDb: "none",
+      rateLimit: "none",
+      fileStorage: "none",
+      integrations: "none",
+      ecommerce: "none",
+    };
+
+    if (nextStack.ecosystem !== "go") {
+      noneOverrides.auth = "none";
+    }
+
+    for (const [key, value] of Object.entries(noneOverrides)) {
+      const catKey = key as keyof CompatibilityInput;
+      if (nextStack[catKey] !== value) {
+        nextStack[catKey] = value as never;
+        changed = true;
+        changes.push({
+          category: "backend",
+          message: `${getCategoryDisplayName(catKey)} set to '${value}' (no backend)`,
+        });
+      }
+    }
+
+    if (!shouldKeepRevenueCatPayments && nextStack.payments !== "none") {
+      nextStack.payments = "none";
+      changed = true;
+      changes.push({
+        category: "backend",
+        message: "Payments set to 'none' (no backend)",
+      });
+    }
+
+    // Clear examples
+    if (
+      nextStack.examples.length > 0 &&
+      !(nextStack.examples.length === 1 && nextStack.examples[0] === "none")
+    ) {
+      nextStack.examples = ["none"];
+      changed = true;
+      changes.push({
+        category: "backend",
+        message: "Examples cleared (no backend)",
+      });
+    }
+  }
+
+  // Self (fullstack) backend constraints
+  if (
+    nextStack.backend === "self-next" ||
+    nextStack.backend === "self-vinext" ||
+    nextStack.backend === "self-tanstack-start" ||
+    nextStack.backend === "self-astro" ||
+    nextStack.backend === "self-nuxt" ||
+    nextStack.backend === "self-svelte" ||
+    nextStack.backend === "self-solid-start"
+  ) {
+    // Fullstack uses frontend's API routes, no separate runtime needed
+    if (nextStack.runtime !== "none") {
+      nextStack.runtime = "none";
+      changed = true;
+      changes.push({
+        category: "backend",
+        message: "Runtime set to 'None' (fullstack uses frontend's API routes)",
+      });
+    }
+    if (nextStack.serverDeploy !== "none") {
+      nextStack.serverDeploy = "none";
+      changed = true;
+      changes.push({
+        category: "backend",
+        message: "Server deploy set to 'None' (fullstack uses frontend deployment)",
+      });
+    }
+
+    // Ensure correct frontend is selected
+    if (nextStack.backend === "self-next" && !nextStack.webFrontend.includes("next")) {
+      nextStack.webFrontend = ["next"];
+      changed = true;
+      changes.push({
+        category: "backend",
+        message: "Frontend set to 'Next.js' (required for Next.js fullstack)",
+      });
+    }
+    if (nextStack.backend === "self-vinext" && !nextStack.webFrontend.includes("vinext")) {
+      nextStack.webFrontend = ["vinext"];
+      changed = true;
+      changes.push({
+        category: "backend",
+        message: "Frontend set to 'Vinext' (required for Vinext fullstack)",
+      });
+    }
+    if (
+      nextStack.backend === "self-tanstack-start" &&
+      !nextStack.webFrontend.includes("tanstack-start")
+    ) {
+      nextStack.webFrontend = ["tanstack-start"];
+      changed = true;
+      changes.push({
+        category: "backend",
+        message: "Frontend set to 'TanStack Start' (required for TanStack Start fullstack)",
+      });
+    }
+    if (nextStack.backend === "self-astro" && !nextStack.webFrontend.includes("astro")) {
+      nextStack.webFrontend = ["astro"];
+      if (nextStack.astroIntegration === "none") {
+        nextStack.astroIntegration = "react";
+      }
+      changed = true;
+      changes.push({
+        category: "backend",
+        message: "Frontend set to 'Astro' (required for Astro fullstack)",
+      });
+    }
+    if (nextStack.backend === "self-nuxt" && !nextStack.webFrontend.includes("nuxt")) {
+      nextStack.webFrontend = ["nuxt"];
+      changed = true;
+      changes.push({
+        category: "backend",
+        message: "Frontend set to 'Nuxt' (required for Nuxt fullstack)",
+      });
+    }
+    if (nextStack.backend === "self-svelte" && !nextStack.webFrontend.includes("svelte")) {
+      nextStack.webFrontend = ["svelte"];
+      changed = true;
+      changes.push({
+        category: "backend",
+        message: "Frontend set to 'SvelteKit' (required for SvelteKit fullstack)",
+      });
+    }
+    if (
+      nextStack.backend === "self-solid-start" &&
+      !nextStack.webFrontend.includes("solid-start")
+    ) {
+      nextStack.webFrontend = ["solid-start"];
+      changed = true;
+      changes.push({
+        category: "backend",
+        message: "Frontend set to 'SolidStart' (required for SolidStart fullstack)",
+      });
+    }
+  }
+
+  if (nextStack.backend === "effect") {
+    if (nextStack.backendLibraries !== "effect-full") {
+      nextStack.backendLibraries = "effect-full";
+      changed = true;
+      changes.push({
+        category: "backendLibraries",
+        message: "Effect services set to 'Effect Platform + SQL' (required for Effect backend)",
+      });
+    }
+    if (nextStack.validation !== "effect-schema") {
+      nextStack.validation = "effect-schema";
+      changed = true;
+      changes.push({
+        category: "validation",
+        message: "Validation set to 'Effect Schema' (required for Effect backend)",
+      });
+    }
+  }
+
+  // ============================================
+  // RUNTIME CONSTRAINTS
+  // ============================================
+
+  // Workers runtime requires Hono backend
+  if (nextStack.runtime === "workers" && nextStack.backend !== "hono") {
+    nextStack.backend = "hono";
+    changed = true;
+    changes.push({
+      category: "runtime",
+      message: "Backend set to 'Hono' (required for Workers)",
+    });
+  }
+
+  // The SigNoz TypeScript scaffold uses the OpenTelemetry Node SDK. Bun/fetch
+  // is instrumented explicitly, but the SDK itself is not Workers-compatible.
+  if (nextStack.runtime === "workers" && nextStack.observability === "signoz") {
+    nextStack.observability = "none";
+    changed = true;
+    changes.push({
+      category: "observability",
+      message: "Observability set to 'None' (SigNoz requires the Node.js or Bun runtime)",
+    });
+  }
+
+  // Workers runtime requires server deployment
+  if (nextStack.runtime === "workers" && nextStack.serverDeploy === "none") {
+    nextStack.serverDeploy = "cloudflare";
+    changed = true;
+    changes.push({
+      category: "runtime",
+      message: "Server deploy set to 'Cloudflare' (required for Workers)",
+    });
+  }
+
+  // Workers runtime is incompatible with MongoDB
+  if (nextStack.runtime === "workers" && nextStack.database === "mongodb") {
+    nextStack.database = "sqlite";
+    nextStack.orm = "drizzle";
+    nextStack.dbSetup = "d1";
+    changed = true;
+    changes.push({
+      category: "runtime",
+      message:
+        "Database changed to SQLite with D1 (Better-Fullstack doesn't support MongoDB with Workers)",
+    });
+  }
+
+  if (
+    (nextStack.runtime === "workers" || usesCloudflareFullstackRuntime(nextStack)) &&
+    nextStack.integrations !== "none"
+  ) {
+    nextStack.integrations = "none";
+    changed = true;
+    changes.push({
+      category: "integrations",
+      message:
+        "Integrations set to 'none' (Nango's Node SDK is not available on Cloudflare Workers)",
+    });
+  }
+
+  // Runtime "none" only for backends that provide or do not need a runtime
+  if (
+    nextStack.runtime === "none" &&
+    nextStack.backend !== "convex" &&
+    nextStack.backend !== "encore" &&
+    nextStack.backend !== "none" &&
+    nextStack.backend !== "self-next" &&
+    nextStack.backend !== "self-vinext" &&
+    nextStack.backend !== "self-tanstack-start" &&
+    nextStack.backend !== "self-astro" &&
+    nextStack.backend !== "self-nuxt" &&
+    nextStack.backend !== "self-svelte" &&
+    nextStack.backend !== "self-solid-start"
+  ) {
+    nextStack.runtime = DEFAULT_RUNTIME;
+    changed = true;
+    changes.push({
+      category: "runtime",
+      message: `Runtime set to '${DEFAULT_RUNTIME}' (required for this backend)`,
+    });
+  }
+
+  // ============================================
+  // DATABASE & ORM CONSTRAINTS (CLI-like flow)
+  // ============================================
+
+  // Skip if backend doesn't use database
+  if (nextStack.backend !== "convex" && nextStack.backend !== "none") {
+    // If database is none, ORM and dbSetup must be none
+    if (nextStack.database === "none") {
+      if (nextStack.orm !== "none") {
+        nextStack.orm = "none";
+        changed = true;
+        changes.push({
+          category: "database",
+          message: "ORM set to 'None' (no database selected)",
+        });
+      }
+      if (nextStack.dbSetup !== "none") {
+        nextStack.dbSetup = "none";
+        changed = true;
+        changes.push({
+          category: "database",
+          message: "DB Setup set to 'None' (no database selected)",
+        });
+      }
+    }
+
+    // MongoDB requires Prisma or Mongoose
+    if (nextStack.database === "mongodb") {
+      if (nextStack.orm !== "prisma" && nextStack.orm !== "mongoose") {
+        nextStack.orm = "prisma";
+        changed = true;
+        changes.push({
+          category: "database",
+          message: "ORM set to 'Prisma' (required for MongoDB)",
+        });
+      }
+      // MongoDB only works with mongodb-atlas or none for dbSetup
+      if (
+        nextStack.dbSetup !== "mongodb-atlas" &&
+        nextStack.dbSetup !== "none" &&
+        nextStack.dbSetup !== "docker"
+      ) {
+        nextStack.dbSetup = "none";
+        changed = true;
+        changes.push({
+          category: "database",
+          message: "DB Setup set to 'None' (incompatible with MongoDB)",
+        });
+      }
+    }
+
+    // Relational databases (sqlite, postgres, mysql) need Drizzle or Prisma
+    if (["sqlite", "postgres", "mysql"].includes(nextStack.database)) {
+      if (nextStack.orm === "none") {
+        nextStack.orm = "drizzle";
+        changed = true;
+        changes.push({
+          category: "database",
+          message: "ORM set to 'Drizzle' (required for database)",
+        });
+      }
+      if (nextStack.orm === "mongoose") {
+        nextStack.orm = "drizzle";
+        changed = true;
+        changes.push({
+          category: "database",
+          message: "ORM set to 'Drizzle' (Mongoose only works with MongoDB)",
+        });
+      }
+    }
+
+    // ORM selected but no database - select appropriate database
+    if (nextStack.orm !== "none" && nextStack.database === "none") {
+      if (nextStack.orm === "mongoose") {
+        nextStack.database = "mongodb";
+        changed = true;
+        changes.push({
+          category: "orm",
+          message: "Database set to 'MongoDB' (required for Mongoose)",
+        });
+      } else {
+        nextStack.database = "sqlite";
+        changed = true;
+        changes.push({
+          category: "orm",
+          message: "Database set to 'SQLite' (required for ORM)",
+        });
+      }
+    }
+
+    // DB Setup constraints
+    if (nextStack.dbSetup === "turso" && nextStack.database !== "sqlite") {
+      nextStack.database = "sqlite";
+      changed = true;
+      changes.push({
+        category: "dbSetup",
+        message: "Database set to 'SQLite' (required for Turso)",
+      });
+    }
+    if (nextStack.dbSetup === "d1") {
+      if (nextStack.database !== "sqlite") {
+        nextStack.database = "sqlite";
+        changed = true;
+        changes.push({
+          category: "dbSetup",
+          message: "Database set to 'SQLite' (required for D1)",
+        });
+      }
+      if (nextStack.runtime !== "workers") {
+        nextStack.runtime = "workers";
+        nextStack.backend = "hono";
+        changed = true;
+        changes.push({
+          category: "dbSetup",
+          message: "Runtime set to 'Workers' with 'Hono' (required for D1)",
+        });
+      }
+    }
+    if (nextStack.dbSetup === "neon" && nextStack.database !== "postgres") {
+      nextStack.database = "postgres";
+      changed = true;
+      changes.push({
+        category: "dbSetup",
+        message: "Database set to 'PostgreSQL' (required for Neon)",
+      });
+    }
+    if (nextStack.dbSetup === "supabase" && nextStack.database !== "postgres") {
+      nextStack.database = "postgres";
+      changed = true;
+      changes.push({
+        category: "dbSetup",
+        message: "Database set to 'PostgreSQL' (required for Supabase)",
+      });
+    }
+    if (nextStack.dbSetup === "prisma-postgres" && nextStack.database !== "postgres") {
+      nextStack.database = "postgres";
+      changed = true;
+      changes.push({
+        category: "dbSetup",
+        message: "Database set to 'PostgreSQL' (required for Prisma Postgres)",
+      });
+    }
+    if (nextStack.dbSetup === "mongodb-atlas" && nextStack.database !== "mongodb") {
+      nextStack.database = "mongodb";
+      if (nextStack.orm !== "prisma" && nextStack.orm !== "mongoose") {
+        nextStack.orm = "prisma";
+      }
+      changed = true;
+      changes.push({
+        category: "dbSetup",
+        message: "Database set to 'MongoDB' (required for MongoDB Atlas)",
+      });
+    }
+    if (
+      nextStack.dbSetup === "planetscale" &&
+      nextStack.database !== "postgres" &&
+      nextStack.database !== "mysql"
+    ) {
+      nextStack.database = "postgres";
+      changed = true;
+      changes.push({
+        category: "dbSetup",
+        message: "Database set to 'PostgreSQL' (required for PlanetScale)",
+      });
+    }
+    if (nextStack.dbSetup === "docker") {
+      if (nextStack.database === "sqlite") {
+        nextStack.dbSetup = "none";
+        changed = true;
+        changes.push({
+          category: "dbSetup",
+          message: "DB Setup set to 'None' (SQLite doesn't need Docker)",
+        });
+      }
+      if (nextStack.runtime === "workers") {
+        nextStack.dbSetup = "d1";
+        changed = true;
+        changes.push({
+          category: "dbSetup",
+          message:
+            "DB Setup set to 'D1' (Better-Fullstack doesn't support Docker setup with Workers)",
+        });
+      }
+    }
+  }
+
+  // ============================================
+  // API CONSTRAINTS
+  // ============================================
+
+  if (nextStack.backend !== "convex" && nextStack.backend !== "none") {
+    const hasStandaloneViteFrontend = nextStack.webFrontend.some((frontend) =>
+      ["vanilla-vite", "vue"].includes(frontend),
+    );
+    if (hasStandaloneViteFrontend && ["trpc", "orpc", "ts-rest", "garph"].includes(nextStack.api)) {
+      nextStack.api = "graphql-yoga";
+      changed = true;
+      changes.push({
+        category: "api",
+        message: "API set to 'GraphQL Yoga' (supported by standalone Vite frontends)",
+      });
+    }
+
+    // Nuxt, Svelte, Solid, SolidStart require oRPC for React-only API clients.
+    const needsOrpc = nextStack.webFrontend.some((f) =>
+      ["nuxt", "svelte", "solid", "solid-start"].includes(f),
+    );
+    if (needsOrpc && (nextStack.api === "trpc" || nextStack.api === "apollo-server")) {
+      nextStack.api = "orpc";
+      changed = true;
+      changes.push({
+        category: "api",
+        message: "API set to 'oRPC' (required for this frontend)",
+      });
+    }
+
+    // Astro with non-React integration requires oRPC for React-only API clients.
+    if (
+      nextStack.webFrontend.includes("astro") &&
+      nextStack.astroIntegration !== "react" &&
+      (nextStack.api === "trpc" || nextStack.api === "apollo-server")
+    ) {
+      const apiName = nextStack.api === "apollo-server" ? "Apollo Server" : "tRPC";
+      nextStack.api = "orpc";
+      changed = true;
+      changes.push({
+        category: "api",
+        message: `API set to 'oRPC' (${apiName} requires React integration with Astro)`,
+      });
+    }
+  }
+
+  // ============================================
+  // ASTRO INTEGRATION CONSTRAINTS
+  // ============================================
+
+  // If Astro is not selected, reset astroIntegration
+  if (!nextStack.webFrontend.includes("astro") && nextStack.astroIntegration !== "none") {
+    nextStack.astroIntegration = "none";
+    changed = true;
+    changes.push({
+      category: "astroIntegration",
+      message: "Astro integration reset (Astro not selected)",
+    });
+  }
+
+  // If Astro is selected but no integration is set, default to react
+  if (nextStack.webFrontend.includes("astro") && nextStack.astroIntegration === "none") {
+    // Only set default if api is trpc (which requires react)
+    if (nextStack.api === "trpc") {
+      nextStack.astroIntegration = "react";
+      changed = true;
+      changes.push({
+        category: "astroIntegration",
+        message: "Astro integration set to 'React' (required for tRPC)",
+      });
+    }
+  }
+
+  // ============================================
+  // AUTH CONSTRAINTS
+  // ============================================
+
+  // Redis is a key-value store without SQL support — better-auth requires SQL tables
+  const isBetterAuthSelection =
+    nextStack.auth === "better-auth" || nextStack.auth === "better-auth-organizations";
+
+  if (isBetterAuthSelection && nextStack.database === "redis") {
+    nextStack.auth = "none";
+    changed = true;
+    changes.push({
+      category: "auth",
+      message: "Auth set to 'None' (Better Auth requires a SQL database, not Redis)",
+    });
+  }
+
+  const ormsWithoutBetterAuth = ["typeorm", "sequelize", "mikroorm"];
+  if (isBetterAuthSelection && ormsWithoutBetterAuth.includes(nextStack.orm)) {
+    nextStack.auth = "none";
+    changed = true;
+    changes.push({
+      category: "auth",
+      message: `Auth set to 'None' (${nextStack.orm} has no Better Auth adapter)`,
+    });
+  }
+
+  const normalizedAuth = normalizeCapabilitySelection(
+    "auth",
+    {
+      ecosystem: nextStack.ecosystem,
+      backend: nextStack.backend,
+      webFrontend: nextStack.webFrontend,
+      nativeFrontend: nextStack.nativeFrontend,
+    },
+    nextStack.auth as Auth,
+  );
+
+  if (normalizedAuth.normalized && nextStack.auth !== normalizedAuth.value) {
+    nextStack.auth = normalizedAuth.value;
+    changed = true;
+    changes.push({
+      category: "auth",
+      message: normalizedAuth.message ?? "Auth set to 'None'",
+    });
+  }
+
+  // ============================================
+  // CACHING CONSTRAINTS
+  // ============================================
+
+  // Self-hosted Redis caching (ioredis) is TypeScript-only; other ecosystems
+  // have their own native caching fields (goCaching/rustCaching/pythonCaching).
+  if (nextStack.caching === "redis" && nextStack.ecosystem !== "typescript") {
+    nextStack.caching = "none";
+    changed = true;
+    changes.push({
+      category: "caching",
+      message:
+        "Caching set to 'None' (self-hosted Redis is only available for the TypeScript ecosystem)",
+    });
+  }
+
+  // ============================================
+  // SEARCH CONSTRAINTS
+  // ============================================
+
+  // Bleve is a Go-only embedded search engine; drop it for non-Go ecosystems.
+  if (nextStack.search === "bleve" && nextStack.ecosystem !== "go") {
+    nextStack.search = "none";
+    changed = true;
+    changes.push({
+      category: "search",
+      message: "Search set to 'None' (Bleve is only available for the Go ecosystem)",
+    });
+  }
+
+  // ============================================
+  // PAYMENTS CONSTRAINTS
+  // ============================================
+
+  if (nextStack.payments === "dodo" && nextStack.webFrontend.includes("react-vite")) {
+    nextStack.payments = "none";
+    changed = true;
+    changes.push({
+      category: "payments",
+      message:
+        "Payments set to 'None' (Dodo Payments support is not available for React + Vite yet)",
+    });
+  }
+
+  if (nextStack.payments === "polar") {
+    if (nextStack.auth !== "better-auth" && nextStack.auth !== "better-auth-organizations") {
+      nextStack.payments = "none";
+      changed = true;
+      changes.push({
+        category: "payments",
+        message: "Payments set to 'None' (Polar requires Better Auth)",
+      });
+    }
+    const hasWebFrontend = nextStack.webFrontend.some((f) => f !== "none");
+    if (!hasWebFrontend) {
+      nextStack.payments = "none";
+      changed = true;
+      changes.push({
+        category: "payments",
+        message: "Payments set to 'None' (Polar requires web frontend)",
+      });
+    }
+  }
+
+  if (nextStack.payments === "revenuecat") {
+    const hasNativeFrontend =
+      nextStack.ecosystem === "react-native" ||
+      hasRevenueCatCompatibleNativeFrontend(nextStack.nativeFrontend);
+    if (!hasNativeFrontend) {
+      nextStack.payments = "none";
+      changed = true;
+      changes.push({
+        category: "payments",
+        message: "Payments set to 'None' (RevenueCat requires a native frontend)",
+      });
+    }
+  }
+
+  if (nextStack.payments === "paypal") {
+    const hasWebFrontend = nextStack.webFrontend.some((f) => f !== "none");
+    if (!hasWebFrontend || ["none", "convex"].includes(nextStack.backend)) {
+      nextStack.payments = "none";
+      changed = true;
+      changes.push({
+        category: "payments",
+        message: hasWebFrontend
+          ? "Payments set to 'None' (PayPal requires a standalone or fullstack backend)"
+          : "Payments set to 'None' (PayPal requires a web frontend)",
+      });
+    }
+  }
+
+  if (nextStack.payments === "xendit" && ["none", "convex"].includes(nextStack.backend)) {
+    nextStack.payments = "none";
+    changed = true;
+    changes.push({
+      category: "payments",
+      message: "Payments set to 'None' (Xendit Payment Sessions require a server backend)",
+    });
+  }
+
+  if (
+    ["openai-sdk", "anthropic-sdk"].includes(nextStack.aiSdk) &&
+    ["none", "convex"].includes(nextStack.backend)
+  ) {
+    nextStack.aiSdk = "none";
+    changed = true;
+    changes.push({
+      category: "ai",
+      message: "AI SDK set to 'None' (direct provider SDKs require a backend)",
+    });
+  }
+
+  if (nextStack.realtime === "ws" && nextStack.backend !== "express") {
+    nextStack.realtime = "none";
+    changed = true;
+    changes.push({
+      category: "realtime",
+      message: "Realtime set to 'None' (the ws integration requires Express)",
+    });
+  }
+
+  // ============================================
+  // EMAIL CONSTRAINTS
+  // ============================================
+
+  if (nextStack.email !== "none") {
+    if (nextStack.backend === "convex") {
+      nextStack.email = "none";
+      changed = true;
+      changes.push({
+        category: "email",
+        message: "Email set to 'None' (incompatible with Convex)",
+      });
+    }
+    if (nextStack.backend === "none") {
+      nextStack.email = "none";
+      changed = true;
+      changes.push({
+        category: "email",
+        message: "Email set to 'None' (requires backend)",
+      });
+    }
+  }
+
+  // ============================================
+  // CSS FRAMEWORK & UI LIBRARY CONSTRAINTS
+  // ============================================
+
+  // If no web frontend, reset CSS framework and UI library to none
+  if (!nextStack.webFrontend.some((f) => f !== "none")) {
+    if (nextStack.cssFramework !== "none") {
+      nextStack.cssFramework = "none";
+      changed = true;
+      changes.push({
+        category: "cssFramework",
+        message: "CSS framework set to 'None' (no web frontend)",
+      });
+    }
+    if (nextStack.uiLibrary !== "none") {
+      nextStack.uiLibrary = "none";
+      changed = true;
+      changes.push({
+        category: "uiLibrary",
+        message: "UI library set to 'None' (no web frontend)",
+      });
+    }
+  }
+
+  let hasNativeFrontend = nextStack.nativeFrontend.some((f) => f !== "none");
+
+  if (nextStack.ecosystem === "react-native") {
+    const reactNativeOnlyCategories = [
+      ["webFrontend", ["none"], "Web frontend set to 'None' (React Native ecosystem)"],
+      ["backend", "none", "Backend set to 'None' (React Native ecosystem)"],
+      ["runtime", "none", "Runtime set to 'None' (React Native ecosystem)"],
+      ["api", "none", "API set to 'None' (React Native ecosystem)"],
+      ["database", "none", "Database set to 'None' (React Native ecosystem)"],
+      ["orm", "none", "ORM set to 'None' (React Native ecosystem)"],
+      ["dbSetup", "none", "Database setup set to 'None' (React Native ecosystem)"],
+      ["webDeploy", "none", "Web deployment set to 'None' (React Native ecosystem)"],
+      ["serverDeploy", "none", "Server deployment set to 'None' (React Native ecosystem)"],
+      ["cssFramework", "none", "CSS framework set to 'None' (React Native ecosystem)"],
+      ["uiLibrary", "none", "UI library set to 'None' (React Native ecosystem)"],
+      ["testing", "none", "Web testing set to 'None' (React Native ecosystem)"],
+      ["forms", "none", "Web forms set to 'None' (React Native ecosystem)"],
+      ["stateManagement", "none", "Web state management set to 'None' (React Native ecosystem)"],
+      ["animation", "none", "Web animation set to 'None' (React Native ecosystem)"],
+      ["realtime", "none", "Realtime set to 'None' (React Native ecosystem)"],
+      ["jobQueue", "none", "Job queue set to 'None' (React Native ecosystem)"],
+      ["fileUpload", "none", "File upload set to 'None' (React Native ecosystem)"],
+      ["email", "none", "Email set to 'None' (React Native ecosystem)"],
+      ["search", "none", "Search set to 'None' (React Native ecosystem)"],
+      ["vectorDb", "none", "Vector database set to 'None' (React Native ecosystem)"],
+      ["rateLimit", "none", "Rate limiting set to 'None' (React Native ecosystem)"],
+      ["fileStorage", "none", "File storage set to 'None' (React Native ecosystem)"],
+      ["cms", "none", "CMS set to 'None' (React Native ecosystem)"],
+      ["caching", "none", "Caching set to 'None' (React Native ecosystem)"],
+      ["i18n", "none", "i18n set to 'None' (React Native ecosystem)"],
+      ["featureFlags", "none", "Feature flags set to 'None' (React Native ecosystem)"],
+      ["ecommerce", "none", "E-commerce set to 'None' (React Native ecosystem)"],
+      ["integrations", "none", "Integrations set to 'None' (React Native ecosystem)"],
+      ["analytics", "none", "Analytics set to 'None' (React Native ecosystem)"],
+      ["aiSdk", "none", "AI SDK set to 'None' (React Native ecosystem)"],
+      ["backendLibraries", "none", "Backend libraries set to 'None' (React Native ecosystem)"],
+      ["examples", [], "Examples cleared (React Native ecosystem)"],
+    ] as const;
+
+    for (const [category, value, message] of reactNativeOnlyCategories) {
+      const currentValue = nextStack[category];
+      const isSameArray =
+        Array.isArray(currentValue) &&
+        Array.isArray(value) &&
+        currentValue.length === value.length &&
+        currentValue.every((entry, index) => entry === value[index]);
+      if (Array.isArray(value) ? !isSameArray : currentValue !== value) {
+        (nextStack as Record<string, unknown>)[category] = Array.isArray(value)
+          ? [...value]
+          : value;
+        changed = true;
+        changes.push({ category, message });
+      }
+    }
+
+    if (nextStack.payments !== "none" && nextStack.payments !== "revenuecat") {
+      nextStack.payments = "none";
+      changed = true;
+      changes.push({
+        category: "payments",
+        message: "Payments set to 'None' (React Native payments currently support RevenueCat only)",
+      });
+    }
+
+    if (!hasNativeFrontend) {
+      nextStack.nativeFrontend = ["native-bare"];
+      hasNativeFrontend = true;
+      changed = true;
+      changes.push({
+        category: "nativeFrontend",
+        message: "Native frontend set to 'Expo + StyleSheet' (React Native ecosystem)",
+      });
+    }
+  }
+
+  if (!hasNativeFrontend) {
+    const nativeOnlyCategories = [
+      ["mobileNavigation", "none", "Mobile navigation set to 'None' (no native frontend)"],
+      ["mobileUI", "none", "Mobile UI set to 'None' (no native frontend)"],
+      ["mobileStorage", "none", "Mobile storage set to 'None' (no native frontend)"],
+      ["mobileTesting", "none", "Mobile testing set to 'None' (no native frontend)"],
+      ["mobilePush", "none", "Mobile push set to 'None' (no native frontend)"],
+      ["mobileOTA", "none", "Mobile OTA set to 'None' (no native frontend)"],
+      ["mobileDeepLinking", "none", "Mobile deep linking set to 'None' (no native frontend)"],
+    ] as const;
+
+    for (const [category, value, message] of nativeOnlyCategories) {
+      if (nextStack[category] !== value) {
+        nextStack[category] = value;
+        changed = true;
+        changes.push({ category, message });
+      }
+    }
+    if ((nextStack.mobileLibraries?.length ?? 0) > 0) {
+      nextStack.mobileLibraries = [];
+      changed = true;
+      changes.push({
+        category: "mobileLibraries",
+        message: "Mobile libraries cleared (no native frontend)",
+      });
+    }
+  } else {
+    if (nextStack.mobileNavigation === "none") {
+      nextStack.mobileNavigation = "expo-router";
+      changed = true;
+      changes.push({
+        category: "mobileNavigation",
+        message: "Mobile navigation set to 'Expo Router' (native frontend selected)",
+      });
+    }
+
+    if (nextStack.mobileDeepLinking === "none" && nextStack.auth !== "none") {
+      nextStack.mobileDeepLinking = "expo-linking";
+      changed = true;
+      changes.push({
+        category: "mobileDeepLinking",
+        message: "Mobile deep linking set to 'Expo Linking' (required for mobile auth redirects)",
+      });
+    }
+
+    if (nextStack.nativeFrontend.includes("native-uniwind") && nextStack.mobileUI !== "uniwind") {
+      nextStack.mobileUI = "uniwind";
+      changed = true;
+      changes.push({
+        category: "mobileUI",
+        message: "Mobile UI set to 'Uniwind' (required by Expo + Uniwind)",
+      });
+    }
+
+    if (
+      nextStack.nativeFrontend.includes("native-unistyles") &&
+      nextStack.mobileUI !== "unistyles"
+    ) {
+      nextStack.mobileUI = "unistyles";
+      changed = true;
+      changes.push({
+        category: "mobileUI",
+        message: "Mobile UI set to 'Unistyles' (required by Expo + Unistyles)",
+      });
+    }
+  }
+
+  if (
+    (nextStack.kotlinMobile === undefined || nextStack.kotlinMobile === "none") &&
+    (nextStack.kotlinMobileLibraries?.length ?? 0) > 0
+  ) {
+    nextStack.kotlinMobileLibraries = [];
+    changed = true;
+    changes.push({
+      category: "kotlinMobileLibraries",
+      message: "Kotlin mobile libraries cleared (no Kotlin mobile app)",
+    });
+  }
+
+  // UI libraries requiring Tailwind - auto-adjust CSS framework or clear UI library
+  const styledComponentsFrontends = new Set([
+    "tanstack-router",
+    "react-router",
+    "react-vite",
+    "tanstack-start",
+    "next",
+    "vinext",
+    "redwood",
+  ]);
+  if (
+    nextStack.cssFramework === "styled-components" &&
+    !nextStack.webFrontend.some((frontend) => styledComponentsFrontends.has(frontend))
+  ) {
+    nextStack.cssFramework = "none";
+    changed = true;
+    changes.push({
+      category: "cssFramework",
+      message: "CSS framework set to 'None' (styled-components requires a React frontend)",
+    });
+  }
+
+  const requiresTailwind = ["shadcn-ui", "shadcn-svelte", "daisyui", "nextui"].includes(
+    nextStack.uiLibrary,
+  );
+  if (requiresTailwind && nextStack.cssFramework !== "tailwind") {
+    // Auto-set Tailwind when selecting a Tailwind-dependent UI library
+    nextStack.cssFramework = "tailwind";
+    changed = true;
+    changes.push({
+      category: "cssFramework",
+      message: `CSS framework set to 'Tailwind' (required by ${nextStack.uiLibrary})`,
+    });
+  }
+
+  // React-only UI libraries - check frontend compatibility
+  const reactOnlyLibraries = ["shadcn-ui", "radix-ui", "chakra-ui", "nextui", "mui", "antd"];
+  const reactFrontends = [
+    "tanstack-router",
+    "react-router",
+    "react-vite",
+    "tanstack-start",
+    "next",
+    "vinext",
+  ];
+  if (reactOnlyLibraries.includes(nextStack.uiLibrary)) {
+    const hasReactFrontend = nextStack.webFrontend.some((f) => reactFrontends.includes(f));
+    const hasAstroReact =
+      nextStack.webFrontend.includes("astro") && nextStack.astroIntegration === "react";
+    if (!hasReactFrontend && !hasAstroReact && nextStack.webFrontend.some((f) => f !== "none")) {
+      // Reset to a compatible UI library (daisyui works with all frontends)
+      nextStack.uiLibrary = "daisyui";
+      changed = true;
+      changes.push({
+        category: "uiLibrary",
+        message:
+          "UI library changed to 'daisyUI' (React-only library incompatible with this frontend)",
+      });
+    }
+  }
+
+  if (nextStack.uiLibrary === "shadcn-svelte") {
+    const hasSvelteFrontend = nextStack.webFrontend.includes("svelte");
+    const hasAstroSvelte =
+      nextStack.webFrontend.includes("astro") && nextStack.astroIntegration === "svelte";
+    if (!hasSvelteFrontend && !hasAstroSvelte && nextStack.webFrontend.some((f) => f !== "none")) {
+      nextStack.uiLibrary = "daisyui";
+      changed = true;
+      changes.push({
+        category: "uiLibrary",
+        message:
+          "UI library changed to 'daisyUI' (shadcn-svelte requires SvelteKit or Astro + Svelte)",
+      });
+    }
+  }
+
+  // Headless UI requires React or Vue
+  if (nextStack.uiLibrary === "headless-ui") {
+    const hasReactFrontend = nextStack.webFrontend.some((f) => reactFrontends.includes(f));
+    const hasVueFrontend = nextStack.webFrontend.includes("nuxt");
+    const hasAstroReactOrVue =
+      nextStack.webFrontend.includes("astro") &&
+      ["react", "vue"].includes(nextStack.astroIntegration);
+    if (!hasReactFrontend && !hasVueFrontend && !hasAstroReactOrVue) {
+      nextStack.uiLibrary = "daisyui";
+      changed = true;
+      changes.push({
+        category: "uiLibrary",
+        message: "UI library changed to 'daisyUI' (Headless UI requires React or Vue)",
+      });
+    }
+  }
+
+  // Park UI requires React, Vue, or Solid
+  if (nextStack.uiLibrary === "park-ui") {
+    const hasReactFrontend = nextStack.webFrontend.some((f) => reactFrontends.includes(f));
+    const hasVueFrontend = nextStack.webFrontend.includes("nuxt");
+    const hasSolidFrontend = nextStack.webFrontend.includes("solid");
+    const hasAstroCompatible =
+      nextStack.webFrontend.includes("astro") &&
+      ["react", "vue", "solid"].includes(nextStack.astroIntegration);
+    if (
+      !hasReactFrontend &&
+      !hasVueFrontend &&
+      !hasSolidFrontend &&
+      !hasAstroCompatible &&
+      nextStack.webFrontend.some((f) => f !== "none")
+    ) {
+      nextStack.uiLibrary = "daisyui";
+      changed = true;
+      changes.push({
+        category: "uiLibrary",
+        message: "UI library changed to 'daisyUI' (Park UI requires React, Vue, or Solid)",
+      });
+    }
+  }
+
+  // ============================================
+  // APP PLATFORMS CONSTRAINTS
+  // ============================================
+
+  const pwaCompat = hasPWACompatibleFrontend(nextStack.webFrontend);
+  const tauriCompat = hasTauriCompatibleFrontend(nextStack.webFrontend);
+
+  if (!pwaCompat && nextStack.appPlatforms.includes("pwa")) {
+    nextStack.appPlatforms = nextStack.appPlatforms.filter((a) => a !== "pwa");
+    changed = true;
+    changes.push({
+      category: "appPlatforms",
+      message: "PWA removed (requires compatible frontend)",
+    });
+  }
+
+  if (!tauriCompat && nextStack.appPlatforms.includes("tauri")) {
+    nextStack.appPlatforms = nextStack.appPlatforms.filter((a) => a !== "tauri");
+    changed = true;
+    changes.push({
+      category: "appPlatforms",
+      message: "Tauri removed (requires compatible frontend)",
+    });
+  }
+
+  for (const platform of ["electron", "capacitor"] as const) {
+    if (
+      nextStack.appPlatforms.includes(platform) &&
+      !validateAddonCompatibility(platform, nextStack.webFrontend as Frontend[]).isCompatible
+    ) {
+      nextStack.appPlatforms = nextStack.appPlatforms.filter((addon) => addon !== platform);
+      changed = true;
+      changes.push({
+        category: "appPlatforms",
+        message: `${platform === "electron" ? "Electron" : "Capacitor"} removed (requires compatible frontend)`,
+      });
+    }
+  }
+
+  for (const platform of ["docker-compose", "devcontainer", "kong", "vite-plus"] as const) {
+    if (!nextStack.appPlatforms.includes(platform)) continue;
+    const reason = getDisabledReason(nextStack, "appPlatforms", platform);
+    if (!reason) continue;
+
+    nextStack.appPlatforms = nextStack.appPlatforms.filter((addon) => addon !== platform);
+    changed = true;
+    const label =
+      platform === "docker-compose"
+        ? "Docker Compose"
+        : platform === "devcontainer"
+          ? "DevContainer"
+          : platform === "kong"
+            ? "Kong Gateway"
+            : "Vite+";
+    changes.push({
+      category: "appPlatforms",
+      message: `${label} removed (${reason})`,
+    });
+  }
+
+  if (
+    nextStack.appPlatforms.includes("graphql-codegen") &&
+    !["garph", "graphql-yoga", "apollo-server"].includes(nextStack.api) &&
+    !nextStack.webFrontend.includes("redwood")
+  ) {
+    nextStack.appPlatforms = nextStack.appPlatforms.filter(
+      (platform) => platform !== "graphql-codegen",
+    );
+    changed = true;
+    changes.push({
+      category: "appPlatforms",
+      message: "GraphQL Code Generator removed (requires a GraphQL API selection)",
+    });
+  }
+
+  // ============================================
+  // EXAMPLES CONSTRAINTS
+  // ============================================
+
+  // AI example constraints
+  if (nextStack.examples.includes("ai")) {
+    // Solid/SolidStart frontend is incompatible with AI example
+    if (nextStack.webFrontend.includes("solid") || nextStack.webFrontend.includes("solid-start")) {
+      nextStack.examples = nextStack.examples.filter((e) => e !== "ai");
+      if (nextStack.examples.length === 0) nextStack.examples = ["none"];
+      changed = true;
+      changes.push({
+        category: "examples",
+        message: "AI removed (not compatible with Solid frontend)",
+      });
+    }
+    // Convex AI only supports React-based frontends (not Svelte/Nuxt)
+    if (nextStack.backend === "convex") {
+      const hasIncompatibleFrontend = nextStack.webFrontend.some((f) =>
+        ["svelte", "nuxt"].includes(f),
+      );
+      if (hasIncompatibleFrontend) {
+        nextStack.examples = nextStack.examples.filter((e) => e !== "ai");
+        if (nextStack.examples.length === 0) nextStack.examples = ["none"];
+        changed = true;
+        changes.push({
+          category: "examples",
+          message:
+            "AI removed (Convex AI only supports React-based frontends including React + Vite)",
+        });
+      }
+    }
+  }
+
+  // Chat SDK example constraints (framework-specific profiles in v1)
+  if (nextStack.examples.includes("chat-sdk")) {
+    const hasReactVite = nextStack.webFrontend.includes("react-vite");
+
+    if (hasReactVite || !isChatSdkExampleSupported(nextStack)) {
+      nextStack.examples = nextStack.examples.filter((e) => e !== "chat-sdk");
+      if (nextStack.examples.length === 0) nextStack.examples = ["none"];
+      changed = true;
+
+      let reason = "unsupported stack";
+      if (hasReactVite) {
+        reason = "React + Vite support is not available yet";
+      } else if (nextStack.ecosystem !== "typescript") {
+        reason = "TypeScript ecosystem only";
+      } else if (nextStack.backend === "convex") {
+        reason = "Convex backend not supported in v1";
+      } else if (nextStack.backend === "none") {
+        reason = "requires a backend";
+      } else if (nextStack.backend === "hono" && nextStack.runtime !== "node") {
+        reason = "Hono profile requires Node runtime";
+      } else if (nextStack.backend.startsWith("self-")) {
+        reason = "self backend only supports Next.js, TanStack Start, or Nuxt in v1";
+      }
+
+      changes.push({
+        category: "examples",
+        message: `Chat SDK removed (${reason})`,
+      });
+    } else if (requiresChatSdkVercelAI(nextStack) && nextStack.aiSdk !== "vercel-ai") {
+      nextStack.aiSdk = "vercel-ai";
+      changed = true;
+      changes.push({
+        category: "ai",
+        message: "AI SDK set to 'Vercel AI SDK' (required by Chat SDK Nuxt/Hono profile in v1)",
+      });
+    }
+  }
+
+  // ============================================
+  // FRESH FRONTEND CONSTRAINTS
+  // Fresh is Preact-based and incompatible with React-specific packages
+  // ============================================
+
+  const isFresh = nextStack.webFrontend.includes("fresh");
+
+  const hasStandaloneViteFrontend = nextStack.webFrontend.some((frontend) =>
+    ["vanilla-vite", "vue"].includes(frontend),
+  );
+  if (hasStandaloneViteFrontend && nextStack.forms !== "none") {
+    nextStack.forms = "none";
+    changed = true;
+    changes.push({
+      category: "forms",
+      message: "Forms set to 'None' (standalone Vue and Vanilla integrations are not wired yet)",
+    });
+  }
+  if (hasStandaloneViteFrontend && nextStack.cms !== "none" && nextStack.cms !== "contentful") {
+    nextStack.cms = "none";
+    changed = true;
+    changes.push({
+      category: "cms",
+      message: "CMS set to 'None' (standalone Vue and Vanilla CMS templates are not wired yet)",
+    });
+  }
+  if (hasStandaloneViteFrontend && nextStack.featureFlags !== "none") {
+    nextStack.featureFlags = "none";
+    changed = true;
+    changes.push({
+      category: "featureFlags",
+      message:
+        "Feature flags set to 'None' (standalone Vue and Vanilla client integrations are not wired yet)",
+    });
+  }
+
+  if (isFresh) {
+    // TanStack Form has no Preact adapter
+    if (nextStack.forms === "tanstack-form") {
+      nextStack.forms = "none";
+      changed = true;
+      changes.push({
+        category: "forms",
+        message: "Forms set to 'None' (TanStack Form has no Preact adapter)",
+      });
+    }
+
+    // State management libraries that require React bindings
+    const reactOnlyStateManagement = ["nanostores", "xstate", "tanstack-store"];
+    if (reactOnlyStateManagement.includes(nextStack.stateManagement)) {
+      const oldValue = nextStack.stateManagement;
+      nextStack.stateManagement = "none";
+      changed = true;
+      changes.push({
+        category: "stateManagement",
+        message: `State management set to 'None' (${oldValue} requires React bindings)`,
+      });
+    }
+
+    // Lottie uses lottie-react which requires React
+    if (nextStack.animation === "lottie") {
+      nextStack.animation = "none";
+      changed = true;
+      changes.push({
+        category: "animation",
+        message: "Animation set to 'None' (Lottie requires lottie-react)",
+      });
+    }
+  }
+
+  // ============================================
+  // PYTHON ECOSYSTEM CONSTRAINTS
+  // ============================================
+
+  if (nextStack.ecosystem === "python") {
+    if (
+      nextStack.pythonObservability === "signoz" &&
+      !isSignozSupportedPythonWebFramework(nextStack.pythonWebFramework)
+    ) {
+      nextStack.pythonObservability = "none";
+      changed = true;
+      changes.push({
+        category: "pythonObservability",
+        message: "Python observability set to 'None' (SigNoz request tracing is wired for FastAPI)",
+      });
+    }
+    if (nextStack.pythonWebFramework !== "django" && nextStack.pythonApi !== "none") {
+      nextStack.pythonApi = "none";
+      changed = true;
+      changes.push({
+        category: "pythonWebFramework",
+        message: "Python API framework set to 'None' (DRF and Django Ninja require Django)",
+      });
+    }
+    if (nextStack.pythonOrm === "pymongo" && nextStack.database !== "mongodb") {
+      nextStack.database = "mongodb";
+      changed = true;
+      changes.push({
+        category: "pythonOrm",
+        message: "Database set to MongoDB (required by PyMongo)",
+      });
+    }
+    if (
+      nextStack.pythonOrm === "pymongo" &&
+      nextStack.dbSetup !== "mongodb-atlas" &&
+      nextStack.dbSetup !== "none" &&
+      nextStack.dbSetup !== "docker"
+    ) {
+      // This runs after the generic DB-setup normalization, so clear setups
+      // that only support relational databases (Neon, Supabase, Turso, ...).
+      nextStack.dbSetup = "none";
+      changed = true;
+      changes.push({
+        category: "pythonOrm",
+        message: "DB Setup set to 'None' (incompatible with MongoDB)",
+      });
+    }
+    if (
+      nextStack.database === "mongodb" &&
+      nextStack.pythonOrm !== "pymongo" &&
+      nextStack.pythonOrm !== "none"
+    ) {
+      nextStack.database = "sqlite";
+      changed = true;
+      changes.push({
+        category: "database",
+        message: `Database set to SQLite (MongoDB requires PyMongo, not ${nextStack.pythonOrm})`,
+      });
+    }
+    if (
+      (nextStack.pythonWebFramework === "none" ||
+        nextStack.pythonWebFramework === "aiohttp" ||
+        nextStack.pythonWebFramework === "starlette" ||
+        nextStack.pythonWebFramework === "streamlit") &&
+      nextStack.pythonGraphql !== "none"
+    ) {
+      nextStack.pythonGraphql = "none";
+      changed = true;
+      changes.push({
+        category: "pythonGraphql",
+        message: "GraphQL set to 'None' (only wired for FastAPI, Django, Flask, and Litestar)",
+      });
+    }
+    if (
+      (nextStack.pythonWebFramework === "none" ||
+        nextStack.pythonWebFramework === "aiohttp" ||
+        nextStack.pythonWebFramework === "starlette" ||
+        nextStack.pythonWebFramework === "streamlit") &&
+      nextStack.pythonAuth !== "none"
+    ) {
+      nextStack.pythonAuth = "none";
+      changed = true;
+      changes.push({
+        category: "pythonAuth",
+        message: `Auth set to 'None' (auth routes are not wired for ${nextStack.pythonWebFramework})`,
+      });
+    }
+    if (
+      (nextStack.pythonWebFramework === "streamlit" || nextStack.pythonWebFramework === "none") &&
+      nextStack.pythonObservability === "prometheus-client"
+    ) {
+      nextStack.pythonObservability = "none";
+      changed = true;
+      changes.push({
+        category: "pythonObservability",
+        message:
+          "Observability set to 'None' (prometheus-client needs an HTTP server to expose /metrics)",
+      });
+    }
+    if (
+      nextStack.pythonServer === "gunicorn" &&
+      (nextStack.pythonWebFramework === "streamlit" || nextStack.pythonWebFramework === "none")
+    ) {
+      nextStack.pythonServer = "none";
+      changed = true;
+      changes.push({
+        category: "pythonServer",
+        message: "Production server set to 'None' (Gunicorn requires a WSGI, ASGI, or aiohttp app)",
+      });
+    }
+  }
+
+  if (
+    nextStack.ecosystem === "go" &&
+    nextStack.goObservability === "signoz" &&
+    !hasSignozSupportedGoServerTarget(nextStack)
+  ) {
+    nextStack.goObservability = "none";
+    changed = true;
+    changes.push({
+      category: "goObservability",
+      message:
+        "Go observability set to 'None' (SigNoz requires an instrumented HTTP, gRPC, or Go Better Auth server target)",
+    });
+  }
+
+  // ============================================
+  // JAVA ECOSYSTEM CONSTRAINTS
+  // ============================================
+
+  if (nextStack.ecosystem === "java") {
+    if (nextStack.javaBuildTool === "none") {
+      if (nextStack.javaWebFramework !== "none") {
+        nextStack.javaWebFramework = "none";
+        changed = true;
+        changes.push({
+          category: "javaBuildTool",
+          message: "Java web framework set to 'None' (source-only Java does not use a framework)",
+        });
+      }
+
+      if (nextStack.javaTestingLibraries.some((library) => library !== "none")) {
+        nextStack.javaTestingLibraries = [];
+        changed = true;
+        changes.push({
+          category: "javaBuildTool",
+          message:
+            "Java testing libraries cleared (a build tool is required for test dependencies)",
+        });
+      }
+    }
+
+    if (nextStack.javaWebFramework !== "spring-boot" || nextStack.javaBuildTool === "none") {
+      if (nextStack.javaOrm !== "none") {
+        nextStack.javaOrm = "none";
+        changed = true;
+        changes.push({
+          category: "javaWebFramework",
+          message: "Java ORM set to 'None' (current scaffold only supports it with Spring Boot)",
+        });
+      }
+
+      if (nextStack.javaAuth !== "none") {
+        nextStack.javaAuth = "none";
+        changed = true;
+        changes.push({
+          category: "javaWebFramework",
+          message: "Java auth set to 'None' (current scaffold only supports it with Spring Boot)",
+        });
+      }
+
+      if (nextStack.javaApi !== "none") {
+        nextStack.javaApi = "none";
+        changed = true;
+        changes.push({
+          category: "javaWebFramework",
+          message: "Java API set to 'None' (current scaffold only supports it with Spring Boot)",
+        });
+      }
+
+      if (nextStack.javaLibraries.some((library) => library !== "none")) {
+        nextStack.javaLibraries = [];
+        changed = true;
+        changes.push({
+          category: "javaWebFramework",
+          message: "Java libraries cleared (Spring libraries require Spring Boot)",
+        });
+      }
+    }
+
+    if (nextStack.javaWebFramework === "spring-boot" && nextStack.javaBuildTool !== "none") {
+      if (nextStack.javaOrm !== "spring-data-jpa") {
+        const filteredLibraries = nextStack.javaLibraries.filter(
+          (library) => library !== "flyway" && library !== "liquibase",
+        );
+        if (filteredLibraries.length !== nextStack.javaLibraries.length) {
+          nextStack.javaLibraries = filteredLibraries;
+          changed = true;
+          changes.push({
+            category: "javaOrm",
+            message:
+              "Java migration libraries cleared (Flyway and Liquibase require Spring Data JPA)",
+          });
+        }
+      }
+
+      if (
+        nextStack.javaLibraries.includes("flyway") &&
+        nextStack.javaLibraries.includes("liquibase")
+      ) {
+        nextStack.javaLibraries = nextStack.javaLibraries.filter(
+          (library) => library !== "liquibase",
+        );
+        changed = true;
+        changes.push({
+          category: "javaLibraries",
+          message: "Liquibase cleared (Flyway and Liquibase cannot be combined)",
+        });
+      }
+    }
+
+    // Kotlin is only wired for the Spring Boot scaffold (with Maven or Gradle)
+    // and its common option surface. For every other Java combination we
+    // normalize the language back to `java` so the generator never emits a
+    // half-built Kotlin project. See `getKotlinJavaIncompatibilityReason` for
+    // the full gate (shared with getDisabledReason, the CLI, and the generator).
+    if (nextStack.javaLanguage === "kotlin") {
+      const kotlinBlocker = getKotlinJavaIncompatibilityReason(nextStack);
+      if (kotlinBlocker) {
+        nextStack.javaLanguage = "java";
+        changed = true;
+        changes.push({
+          category: "javaLanguage",
+          message: `Java language set to 'Java' (${kotlinBlocker})`,
+        });
+      } else {
+        const kotlinLibraries = nextStack.javaLibraries.filter(
+          (library) => !KOTLIN_DROPPED_JAVA_LIBRARIES.has(library),
+        );
+        if (kotlinLibraries.length !== nextStack.javaLibraries.length) {
+          nextStack.javaLibraries = kotlinLibraries;
+          changed = true;
+          changes.push({
+            category: "javaLibraries",
+            message:
+              "Java annotation-processor libraries cleared (Lombok and MapStruct are not wired for Kotlin)",
+          });
+        }
+      }
+    }
+  }
+
+  if (nextStack.i18n === "intlayer") {
+    const hasWebFrontend = nextStack.webFrontend.some((frontend) => frontend !== "none");
+    const unsupportedFrontend = nextStack.webFrontend.find(
+      (frontend) => frontend !== "none" && !INTLAYER_COMPATIBLE_FRONTENDS.has(frontend as Frontend),
+    );
+
+    if (!hasWebFrontend || unsupportedFrontend) {
+      nextStack.i18n = "none";
+      changed = true;
+      changes.push({
+        category: "i18n",
+        message: unsupportedFrontend
+          ? `i18n set to 'None' (Intlayer is not wired for the '${unsupportedFrontend}' frontend)`
+          : "i18n set to 'None' (Intlayer requires a web frontend)",
+      });
+    }
+  }
+
+  // ============================================
+  // ELIXIR ECOSYSTEM CONSTRAINTS
+  // ============================================
+
+  if (nextStack.ecosystem === "elixir") {
+    if (nextStack.elixirWebFramework === "none") {
+      const dependentKeys: Array<keyof CompatibilityInput> = [
+        "elixirAuth",
+        "elixirApi",
+        "elixirRealtime",
+        "elixirObservability",
+        "elixirI18n",
+        "elixirHttpServer",
+      ];
+
+      for (const key of dependentKeys) {
+        const value = nextStack[key];
+        const shouldClear =
+          key !== "elixirObservability" ? value !== "none" : value === "phoenix-telemetry";
+
+        if (shouldClear) {
+          nextStack[key] = "none" as never;
+          changed = true;
+          changes.push({
+            category: "elixirWebFramework",
+            message: `${getCategoryDisplayName(key)} set to 'None' (requires Phoenix)`,
+          });
+        }
+      }
+    }
+
+    if (nextStack.elixirWebFramework === "phoenix-live-view" && nextStack.elixirApi === "none") {
+      nextStack.elixirRealtime = "live-view-streams";
+      changed = true;
+      changes.push({
+        category: "elixirRealtime",
+        message: "Elixir realtime set to 'LiveView Streams' (Phoenix LiveView selected)",
+      });
+    }
+
+    if (nextStack.elixirOrm === "none") {
+      if (nextStack.elixirJobs === "oban") {
+        nextStack.elixirJobs = "none";
+        changed = true;
+        changes.push({
+          category: "elixirOrm",
+          message: "Elixir jobs set to 'None' (Oban requires Ecto SQL with PostgreSQL)",
+        });
+      }
+      if (nextStack.elixirAuth === "phx-gen-auth") {
+        nextStack.elixirAuth = "none";
+        changed = true;
+        changes.push({
+          category: "elixirOrm",
+          message: "Elixir auth set to 'None' (phx.gen.auth requires Ecto)",
+        });
+      }
+      if (nextStack.elixirApi === "absinthe") {
+        nextStack.elixirApi = "rest";
+        changed = true;
+        changes.push({
+          category: "elixirOrm",
+          message: "Elixir API set to 'REST' (the generated Absinthe resolver needs Ecto)",
+        });
+      }
+    }
+
+    if (nextStack.elixirJobs === "oban" && nextStack.elixirOrm !== "ecto-sql") {
+      nextStack.elixirJobs = "none";
+      changed = true;
+      changes.push({
+        category: "elixirJobs",
+        message: "Elixir jobs set to 'None' (Oban requires Ecto SQL with PostgreSQL)",
+      });
+    }
+
+    if (nextStack.elixirAuth === "phx-gen-auth" && nextStack.elixirOrm !== "ecto-sql") {
+      nextStack.elixirAuth = "none";
+      changed = true;
+      changes.push({
+        category: "elixirAuth",
+        message: "Elixir auth set to 'None' (phx.gen.auth requires Ecto SQL with PostgreSQL)",
+      });
+    }
+
+    const sqlBackedElixirOrms = new Set(["ecto-sql", "myxql", "ecto_sqlite3"]);
+    if (nextStack.elixirAuth === "pow" && !sqlBackedElixirOrms.has(nextStack.elixirOrm)) {
+      nextStack.elixirAuth = "none";
+      changed = true;
+      changes.push({
+        category: "elixirAuth",
+        message: "Elixir auth set to 'None' (Pow requires an Ecto SQL repository)",
+      });
+    }
+  }
+
+  // ============================================
+  // DEPLOYMENT CONSTRAINTS
+  // ============================================
+
+  // Web deploy requires web frontend
+  if (nextStack.webDeploy !== "none" && !nextStack.webFrontend.some((f) => f !== "none")) {
+    nextStack.webDeploy = "none";
+    changed = true;
+    changes.push({
+      category: "webDeploy",
+      message: "Web deploy set to 'None' (no web frontend)",
+    });
+  }
+
+  const unsupportedWebDeployFrontend = getUnsupportedWebDeployFrontend(
+    nextStack.webDeploy,
+    nextStack.webFrontend,
+  );
+  if (nextStack.webDeploy !== "none" && unsupportedWebDeployFrontend) {
+    const webDeploy = nextStack.webDeploy;
+    nextStack.webDeploy = "none";
+    changed = true;
+    changes.push({
+      category: "webDeploy",
+      message: `Web deploy set to 'None' ('${webDeploy}' is not wired for the '${unsupportedWebDeployFrontend}' frontend)`,
+    });
+  }
+
+  if (nextStack.botProtection && nextStack.botProtection !== "none") {
+    const webFrontends = nextStack.webFrontend.filter((frontend) => frontend !== "none");
+    const hasNativeFrontend = nextStack.nativeFrontend.some((frontend) => frontend !== "none");
+    const hasBetterAuth =
+      nextStack.auth === "better-auth" || nextStack.auth === "better-auth-organizations";
+    const invalidBotId =
+      nextStack.botProtection === "botid" &&
+      (hasNativeFrontend ||
+        webFrontends.length === 0 ||
+        webFrontends.some((frontend) => !isBotIdWebFrontend(frontend)) ||
+        nextStack.backend !== "self-next" ||
+        (nextStack.webDeploy !== "none" && nextStack.webDeploy !== "vercel"));
+    const invalidTurnstile =
+      nextStack.botProtection === "turnstile" &&
+      (hasNativeFrontend ||
+        webFrontends.length === 0 ||
+        webFrontends.some((frontend) => !isTurnstileWebFrontend(frontend)) ||
+        nextStack.backend === "none" ||
+        nextStack.backend === "convex");
+
+    if (!hasBetterAuth || invalidBotId || invalidTurnstile) {
+      const provider = nextStack.botProtection;
+      nextStack.botProtection = "none";
+      changed = true;
+      changes.push({
+        category: "botProtection",
+        message: `Bot protection set to 'None' ('${provider}' is not wired for the selected frontend, auth, backend, or deployment)`,
+      });
+    }
+  }
+
+  // Server deploy constraints
+  if (nextStack.serverDeploy === "cloudflare") {
+    if (nextStack.runtime !== "workers" || nextStack.backend !== "hono") {
+      nextStack.serverDeploy = "none";
+      changed = true;
+      changes.push({
+        category: "serverDeploy",
+        message: "Server deploy set to 'None' (Cloudflare requires Workers + Hono)",
+      });
+    }
+  }
+
+  if (
+    nextStack.serverDeploy !== "none" &&
+    [
+      "none",
+      "convex",
+      "self-next",
+      "self-vinext",
+      "self-tanstack-start",
+      "self-astro",
+      "self-nuxt",
+      "self-svelte",
+      "self-solid-start",
+    ].includes(nextStack.backend)
+  ) {
+    nextStack.serverDeploy = "none";
+    changed = true;
+    changes.push({
+      category: "serverDeploy",
+      message: "Server deploy set to 'None' (not needed for this backend)",
+    });
+  }
+
+  const selectedAnalytics = ANALYTICS_VALUES.find((value) => value === nextStack.analytics);
+  if (
+    selectedAnalytics &&
+    selectedAnalytics !== "none" &&
+    !supportsAnalyticsFrontends(selectedAnalytics, nextStack.webFrontend)
+  ) {
+    const wasVercel = selectedAnalytics === "vercel-analytics";
+    nextStack.analytics = "none";
+    changed = true;
+    changes.push({
+      category: "analytics",
+      message: wasVercel
+        ? "Analytics set to 'None' (Vercel Analytics is not mounted for this frontend)"
+        : "Analytics set to 'None' (no analytics template for this frontend)",
+    });
+  }
+
+  // Workspace shape: single-app (flat) only applies to a qualifying thin self
+  // app; normalize back to monorepo for anything else so we never emit a broken
+  // flat layout.
+  if (nextStack.workspaceShape === "single-app" && !stackQualifiesForSingleApp(nextStack)) {
+    nextStack.workspaceShape = "monorepo";
+    changed = true;
+    changes.push({
+      category: "workspaceShape",
+      message:
+        "Workspace shape set to 'Monorepo' (single-app only supports a thin self app: Next.js or TanStack Start fullstack with no separate database/auth/api/server packages)",
+    });
+  }
+
+  return {
+    adjustedStack: changed ? nextStack : null,
+    notes,
+    changes,
+  };
+};
+
+/**
+ * Returns a reason why an option is disabled, or null if it's enabled.
+ *
+ * PHILOSOPHY: Only disable options that are TRULY incompatible.
+ * - Don't create circular dependencies
+ * - Allow users to select options that will trigger auto-adjustments
+ * - Follow CLI behavior: filter options based on UPSTREAM selections only
+ */
+export const getDisabledReason = (
+  currentStack: CompatibilityInput,
+  category: CompatibilityCategory,
+  optionId: string,
+): string | null => {
+  if (
+    optionId !== "none" &&
+    category === "kotlinMobileLibraries" &&
+    !hasKotlinMobileApp(currentStack)
+  ) {
+    return "Kotlin mobile libraries require a Jetpack Compose or Compose Multiplatform app";
+  }
+
+  if (
+    currentStack.ecosystem === "react-native" &&
+    category === "codeQuality" &&
+    optionId !== "knip" &&
+    optionId !== "gitleaks"
+  ) {
+    return "React Native code quality currently supports Knip and Gitleaks only";
+  }
+
+  if (
+    category === "codeQuality" &&
+    optionId === "knip" &&
+    currentStack.ecosystem !== "typescript" &&
+    currentStack.ecosystem !== "react-native"
+  ) {
+    return "Knip requires a TypeScript or React Native workspace";
+  }
+
+  if (
+    category === "appPlatforms" &&
+    optionId === "vite-plus" &&
+    (currentStack.ecosystem !== "typescript" ||
+      !currentStack.webFrontend.some((frontend) => frontend !== "none"))
+  ) {
+    return "Vite+ requires a generated TypeScript web frontend";
+  }
+
+  if (
+    ((category === "observability" && optionId === "signoz") ||
+      (category === "backend" && currentStack.observability === "signoz")) &&
+    (category === "backend"
+      ? optionId === "none" || optionId === "convex"
+      : currentStack.backend === "none" || currentStack.backend === "convex")
+  ) {
+    return "SigNoz tracing requires a generated server target";
+  }
+
+  if (
+    ((category === "observability" && optionId === "signoz") ||
+      (category === "backend" && currentStack.observability === "signoz")) &&
+    (category === "backend"
+      ? optionId === "self-tanstack-start" || optionId === "self-astro"
+      : currentStack.backend === "self-tanstack-start" || currentStack.backend === "self-astro")
+  ) {
+    return "SigNoz tracing is not yet bootstrapped for TanStack Start or Astro fullstack apps";
+  }
+
+  const signozBackend = category === "backend" ? optionId : currentStack.backend;
+  const signozWebDeploy = category === "webDeploy" ? optionId : currentStack.webDeploy;
+  const signozSelected =
+    (category === "observability" && optionId === "signoz") ||
+    currentStack.observability === "signoz";
+  if (
+    signozSelected &&
+    signozWebDeploy === "cloudflare" &&
+    (signozBackend === "self" || signozBackend.startsWith("self-"))
+  ) {
+    return "SigNoz's Node SDK is incompatible with Cloudflare-hosted fullstack apps";
+  }
+
+  if (
+    category === "appPlatforms" &&
+    optionId === "kong" &&
+    currentStack.ecosystem === "typescript" &&
+    currentStack.backend === "encore"
+  ) {
+    return "Kong Gateway does not yet support Encore's container workflow";
+  }
+
+  const hasStandaloneViteFrontend = currentStack.webFrontend.some((frontend) =>
+    ["vanilla-vite", "vue"].includes(frontend),
+  );
+  if (
+    category === "api" &&
+    hasStandaloneViteFrontend &&
+    ["trpc", "orpc", "ts-rest", "garph"].includes(optionId)
+  ) {
+    return "Standalone Vite frontends support only GraphQL and OpenAPI API integrations";
+  }
+  if (category === "forms" && hasStandaloneViteFrontend && optionId !== "none") {
+    return "Form library integrations are not yet wired for standalone Vue or Vanilla Vite";
+  }
+  if (
+    category === "cms" &&
+    hasStandaloneViteFrontend &&
+    optionId !== "none" &&
+    optionId !== "contentful"
+  ) {
+    return "CMS integrations other than Contentful are not yet wired for standalone Vue or Vanilla Vite";
+  }
+  if (category === "featureFlags" && hasStandaloneViteFrontend && optionId !== "none") {
+    return "Feature flag client integrations are not yet wired for standalone Vue or Vanilla Vite";
+  }
+
+  // ============================================
+  // CONVEX BACKEND - locks down many options
+  // ============================================
+  if (currentStack.backend === "convex") {
+    if (category === "runtime" && optionId !== "none") {
+      return "Convex provides its own runtime";
+    }
+    if (category === "database" && optionId !== "none") {
+      return "Convex provides its own database";
+    }
+    if (category === "orm" && optionId !== "none") {
+      return "Convex has built-in data access";
+    }
+    if (category === "api" && optionId !== "none") {
+      return "Convex provides its own API layer";
+    }
+    if (category === "dbSetup" && optionId !== "none") {
+      return "Convex handles database setup";
+    }
+    if (category === "serverDeploy" && optionId !== "none") {
+      return "Convex has its own deployment";
+    }
+    if (category === "search" && optionId !== "none") {
+      return "Search requires a standalone backend";
+    }
+    if (category === "vectorDb" && optionId !== "none") {
+      return "Vector database requires a standalone backend (Convex has built-in vector search)";
+    }
+    if (category === "rateLimit" && optionId !== "none") {
+      return "Rate limiting requires a standalone backend";
+    }
+    if (category === "fileStorage" && optionId !== "none") {
+      return "File storage requires a standalone backend";
+    }
+    if (category === "webFrontend" && optionId === "solid") {
+      return "In Better-Fullstack, the Convex backend is currently not available with Solid";
+    }
+    if (category === "webFrontend" && optionId === "astro") {
+      return "In Better-Fullstack, the Convex backend is currently not available with Astro";
+    }
+    if (category === "examples" && optionId === "ai") {
+      const hasIncompatibleFrontend = currentStack.webFrontend.some((f) =>
+        ["solid", "svelte", "nuxt"].includes(f),
+      );
+      if (hasIncompatibleFrontend) {
+        const frontendName = currentStack.webFrontend.find((f) =>
+          ["solid", "svelte", "nuxt"].includes(f),
+        );
+        return `Convex AI example only supports React-based frontends including React + Vite (not ${frontendName})`;
+      }
+    }
+  }
+
+  if (currentStack.ecosystem === "react-native") {
+    const reactNativeCategories = new Set([
+      "nativeFrontend",
+      "mobileNavigation",
+      "mobileUI",
+      "mobileStorage",
+      "mobileTesting",
+      "mobilePush",
+      "mobileOTA",
+      "mobileDeepLinking",
+      "mobileLibraries",
+      "auth",
+      "payments",
+      "packageManager",
+      "aiDocs",
+      "git",
+      "install",
+      "codeQuality",
+    ]);
+
+    if (category === "payments" && optionId !== "none" && optionId !== "revenuecat") {
+      return "React Native payments currently support RevenueCat only";
+    }
+
+    // A graph selection whose only primary part is a Kotlin, Swift or Flutter
+    // app still lowers to the react-native ecosystem (`ecosystemForLegacy`), so
+    // this allowlist cannot speak for those categories. Their own gates above
+    // enforce the real constraint.
+    if (
+      !reactNativeCategories.has(category) &&
+      !isMultiEcosystemMobileCategory(category) &&
+      optionId !== "none" &&
+      optionId !== "false"
+    ) {
+      return "React Native ecosystem only supports native mobile options";
+    }
+  }
+
+  // ============================================
+  // NO BACKEND - locks down backend-dependent options
+  // ============================================
+  if (currentStack.backend === "none") {
+    if (category === "runtime" && optionId !== "none") {
+      return "No backend selected";
+    }
+    if (category === "database" && optionId !== "none") {
+      return "No backend selected";
+    }
+    if (category === "orm" && optionId !== "none") {
+      return "No backend selected";
+    }
+    if (category === "api" && optionId !== "none") {
+      return "No backend selected";
+    }
+    if (category === "dbSetup" && optionId !== "none") {
+      return "No backend selected";
+    }
+    if (category === "serverDeploy" && optionId !== "none") {
+      return "No backend selected";
+    }
+    if (category === "payments" && optionId !== "none" && optionId !== "revenuecat") {
+      return "No backend selected";
+    }
+    if (category === "search" && optionId !== "none") {
+      return "No backend selected";
+    }
+    if (category === "vectorDb" && optionId !== "none") {
+      return "No backend selected";
+    }
+    if (category === "rateLimit" && optionId !== "none") {
+      return "No backend selected";
+    }
+    if (category === "fileStorage" && optionId !== "none") {
+      return "No backend selected";
+    }
+    if (category === "integrations" && optionId !== "none") {
+      return "No backend selected";
+    }
+    if (category === "ecommerce" && optionId !== "none") {
+      return "No backend selected";
+    }
+    if (category === "examples" && optionId !== "none") {
+      return "No backend selected";
+    }
+  }
+
+  if (currentStack.backend === "effect") {
+    if (category === "backendLibraries" && optionId !== "effect-full") {
+      return "Effect backend requires Effect Platform + SQL services";
+    }
+    if (category === "validation" && optionId !== "effect-schema") {
+      return "Effect backend requires Effect Schema validation";
+    }
+  }
+
+  // ============================================
+  // KOTLIN (JAVA LANGUAGE VARIANT) RULES
+  // ============================================
+  // Grey out the 'kotlin' option when the current stack excludes it, and grey
+  // out Kotlin-incompatible options while Kotlin is selected — instead of
+  // silently normalizing the language back to Java after the fact. Shares the
+  // gate in getKotlinJavaIncompatibilityReason. These run BEFORE the graph
+  // delegation below: the graph engine authoritatively handles categories like
+  // javaOrm and the ecosystem-scoped email/search/caching/observability rules
+  // return early for non-TypeScript ecosystems, so later placement would make
+  // these rules unreachable.
+  if (category === "javaLanguage" && optionId === "kotlin" && currentStack.ecosystem === "java") {
+    const kotlinBlocker = getKotlinJavaIncompatibilityReason(currentStack);
+    if (kotlinBlocker) {
+      return kotlinBlocker;
+    }
+  }
+
+  if (currentStack.ecosystem === "java" && currentStack.javaLanguage === "kotlin") {
+    if (category === "javaWebFramework" && optionId !== "spring-boot" && optionId !== "ktor") {
+      return "Kotlin sources are only wired for the Spring Boot and Ktor scaffolds";
+    }
+    if (category === "javaBuildTool" && optionId === "none") {
+      return "Kotlin requires Maven or Gradle";
+    }
+    if (category === "javaOrm" && (optionId === "jooq" || optionId === "mybatis")) {
+      return "The Kotlin scaffold supports Spring Data JPA or no ORM (jOOQ/MyBatis sources are Java-only)";
+    }
+    if (category === "javaApi" && (optionId === "grpc" || optionId === "openapi-generator")) {
+      return "The Kotlin scaffold supports Spring GraphQL or no API layer (gRPC/OpenAPI codegen paths are Java-only)";
+    }
+    if (category === "javaLibraries" && KOTLIN_DROPPED_JAVA_LIBRARIES.has(optionId)) {
+      return "Java annotation-processor tooling is not wired for Kotlin (data classes replace Lombok; MapStruct would need kapt)";
+    }
+    if (
+      category === "javaTestingLibraries" &&
+      KOTLIN_UNSUPPORTED_JAVA_TESTING_LIBRARIES.has(optionId)
+    ) {
+      return `The '${optionId}' testing library is not wired for the Kotlin scaffold`;
+    }
+    if (category === "email" && optionId === "resend") {
+      return "The Resend email integration is Java-only in the Java ecosystem scaffold";
+    }
+    if (category === "search" && optionId === "meilisearch") {
+      return "The Meilisearch integration is Java-only in the Java ecosystem scaffold";
+    }
+    if (category === "caching" && optionId === "upstash-redis") {
+      return "The Upstash Redis integration is Java-only in the Java ecosystem scaffold";
+    }
+    if (category === "observability" && optionId === "sentry") {
+      return "The Sentry integration is Java-only in the Java ecosystem scaffold";
+    }
+  }
+
+  if (currentStack.ecosystem === "rust") {
+    const filterOnlyFramework =
+      currentStack.rustWebFramework === "warp" || currentStack.rustWebFramework === "salvo";
+
+    if (
+      category === "rustApi" &&
+      filterOnlyFramework &&
+      optionId !== "none" &&
+      optionId !== "jsonrpsee"
+    ) {
+      return "Warp and Salvo currently support REST or the standalone jsonrpsee server";
+    }
+    if (
+      category === "rustWebFramework" &&
+      (optionId === "warp" || optionId === "salvo") &&
+      currentStack.rustApi !== "none" &&
+      currentStack.rustApi !== "jsonrpsee"
+    ) {
+      return "Warp and Salvo currently support REST or the standalone jsonrpsee server";
+    }
+    if (
+      category === "rustApi" &&
+      currentStack.rustWebFramework === "loco" &&
+      optionId === "jsonrpsee"
+    ) {
+      return "Loco owns the server boot sequence; jsonrpsee is available with the other Rust frameworks";
+    }
+    if (
+      category === "rustWebFramework" &&
+      optionId === "loco" &&
+      currentStack.rustApi === "jsonrpsee"
+    ) {
+      return "Loco owns the server boot sequence and cannot start the generated jsonrpsee server";
+    }
+    if (
+      category === "rustAuth" &&
+      optionId === "tower-sessions" &&
+      currentStack.rustWebFramework !== "axum"
+    ) {
+      return "The generated tower-sessions middleware is wired specifically for Axum";
+    }
+    if (
+      category === "rustWebFramework" &&
+      optionId !== "axum" &&
+      currentStack.rustAuth === "tower-sessions"
+    ) {
+      return "tower-sessions requires the generated Axum middleware stack";
+    }
+    // Torii's SQLite storage pins sqlx 0.8.0 (libsqlite3-sys 0.28) while
+    // rusqlite uses libsqlite3-sys 0.36 — cargo permits only one crate to link
+    // the native sqlite3 library, so this pair can never resolve.
+    if (category === "rustAuth" && optionId === "torii" && currentStack.rustOrm === "rusqlite") {
+      return "Torii's sqlx-based storage conflicts with rusqlite (both link the native sqlite3 library)";
+    }
+    if (category === "rustOrm" && optionId === "rusqlite" && currentStack.rustAuth === "torii") {
+      return "rusqlite conflicts with Torii's sqlx-based storage (both link the native sqlite3 library)";
+    }
+  }
+
+  // Python prerequisites must run before graph-owned category handling returns.
+  if (category === "pythonApi") {
+    if (optionId !== "none" && currentStack.pythonWebFramework !== "django") {
+      return "Python API frameworks currently require Django";
+    }
+  }
+  if (
+    category === "pythonServer" &&
+    optionId === "gunicorn" &&
+    (currentStack.pythonWebFramework === "streamlit" || currentStack.pythonWebFramework === "none")
+  ) {
+    return "Gunicorn requires a WSGI, ASGI, or aiohttp application";
+  }
+
+  // Runtime-specific observability gates must run before graph-owned category
+  // handling returns an authoritative result.
+  if (
+    (category === "observability" && optionId === "signoz" && currentStack.runtime === "workers") ||
+    (category === "runtime" && optionId === "workers" && currentStack.observability === "signoz")
+  ) {
+    return "SigNoz tracing currently requires the Node.js or Bun runtime";
+  }
+  if (
+    ((category === "goObservability" && optionId === "signoz") ||
+      (category === "goWebFramework" && currentStack.goObservability === "signoz") ||
+      (category === "goApi" && currentStack.goObservability === "signoz") ||
+      (category === "auth" && currentStack.goObservability === "signoz")) &&
+    !hasSignozSupportedGoServerTarget({
+      ...currentStack,
+      ...(category === "goWebFramework" ? { goWebFramework: optionId } : {}),
+      ...(category === "goApi" ? { goApi: optionId } : {}),
+      ...(category === "auth" ? { auth: optionId } : {}),
+    })
+  ) {
+    return "SigNoz requires Gin, Echo, Fiber, Chi, net/http, gRPC, or Go Better Auth to provide a server target";
+  }
+  if (
+    ((category === "pythonObservability" && optionId === "signoz") ||
+      (category === "pythonWebFramework" && currentStack.pythonObservability === "signoz")) &&
+    !isSignozSupportedPythonWebFramework(
+      category === "pythonWebFramework" ? optionId : currentStack.pythonWebFramework,
+    )
+  ) {
+    return "SigNoz request tracing is currently wired for FastAPI";
+  }
+  if (
+    category === "integrations" &&
+    optionId === "nango" &&
+    usesCloudflareFullstackRuntime(currentStack)
+  ) {
+    return "Nango's Node SDK is not available on Cloudflare Workers";
+  }
+  if (
+    category === "webDeploy" &&
+    optionId === "cloudflare" &&
+    currentStack.integrations === "nango" &&
+    FULLSTACK_SELF_BACKENDS.has(currentStack.backend)
+  ) {
+    return "Nango's Node SDK is not available on Cloudflare Workers";
+  }
+  if (
+    category === "webFrontend" &&
+    currentStack.botProtection === "botid" &&
+    optionId !== "none" &&
+    !isBotIdWebFrontend(optionId)
+  ) {
+    return "Vercel BotID is only available for Next.js frontends";
+  }
+  if (
+    category === "webDeploy" &&
+    currentStack.botProtection === "botid" &&
+    optionId !== "none" &&
+    optionId !== "vercel"
+  ) {
+    return "Vercel BotID requires Vercel deployment";
+  }
+
+  if (category === "analytics" && optionId === "vercel-analytics") {
+    if (!currentStack.webFrontend.some((frontend) => frontend !== "none")) {
+      return "Vercel Analytics requires a web frontend";
+    }
+    if (!supportsAnalyticsFrontends("vercel-analytics", currentStack.webFrontend)) {
+      return "Vercel Analytics is not yet mounted for the selected frontend";
+    }
+  }
+  if (
+    category === "webFrontend" &&
+    currentStack.analytics === "vercel-analytics" &&
+    optionId !== "none" &&
+    !isVercelAnalyticsFrontend(optionId)
+  ) {
+    return "The selected frontend does not yet mount Vercel Analytics";
+  }
+
+  const graphDisabledReason =
+    (category === "payments" && optionId === "revenuecat") ||
+    (category === "i18n" && optionId === "intlayer")
+      ? { handled: false, authoritative: false, reason: null }
+      : getGraphDisabledReason(currentStack, category, optionId);
+  if (graphDisabledReason.reason) {
+    return graphDisabledReason.reason;
+  }
+  if (graphDisabledReason.handled && graphDisabledReason.authoritative) {
+    return null;
+  }
+
+  // ============================================
+  // FULLSTACK BACKEND CONSTRAINTS
+  // ============================================
+  if (currentStack.backend === "self-next") {
+    if (category === "runtime" && optionId !== "none") {
+      return "Next.js fullstack uses built-in API routes";
+    }
+    if (category === "webFrontend" && optionId !== "next" && optionId !== "none") {
+      return "Next.js fullstack requires Next.js frontend";
+    }
+    if (category === "serverDeploy" && optionId !== "none") {
+      return "Fullstack uses frontend deployment";
+    }
+  }
+
+  if (currentStack.backend === "self-vinext") {
+    if (category === "runtime" && optionId !== "none") {
+      return "Vinext fullstack uses built-in API routes";
+    }
+    if (category === "webFrontend" && optionId !== "vinext" && optionId !== "none") {
+      return "Vinext fullstack requires Vinext frontend";
+    }
+    if (category === "serverDeploy" && optionId !== "none") {
+      return "Fullstack uses frontend deployment";
+    }
+  }
+
+  if (currentStack.backend === "self-tanstack-start") {
+    if (category === "runtime" && optionId !== "none") {
+      return "TanStack Start fullstack uses built-in API routes";
+    }
+    if (category === "webFrontend" && optionId !== "tanstack-start" && optionId !== "none") {
+      return "TanStack Start fullstack requires TanStack Start frontend";
+    }
+    if (category === "serverDeploy" && optionId !== "none") {
+      return "Fullstack uses frontend deployment";
+    }
+  }
+
+  if (currentStack.backend === "self-astro") {
+    if (category === "runtime" && optionId !== "none") {
+      return "Astro fullstack uses built-in API routes";
+    }
+    if (category === "webFrontend" && optionId !== "astro" && optionId !== "none") {
+      return "Astro fullstack requires Astro frontend";
+    }
+    if (category === "serverDeploy" && optionId !== "none") {
+      return "Fullstack uses frontend deployment";
+    }
+  }
+
+  if (currentStack.backend === "self-nuxt") {
+    if (category === "runtime" && optionId !== "none") {
+      return "Nuxt fullstack uses built-in API routes";
+    }
+    if (category === "webFrontend" && optionId !== "nuxt" && optionId !== "none") {
+      return "Nuxt fullstack requires Nuxt frontend";
+    }
+    if (category === "serverDeploy" && optionId !== "none") {
+      return "Fullstack uses frontend deployment";
+    }
+  }
+
+  if (currentStack.backend === "self-svelte") {
+    if (category === "runtime" && optionId !== "none") {
+      return "SvelteKit fullstack uses built-in API routes";
+    }
+    if (category === "webFrontend" && optionId !== "svelte" && optionId !== "none") {
+      return "SvelteKit fullstack requires SvelteKit frontend";
+    }
+    if (category === "serverDeploy" && optionId !== "none") {
+      return "Fullstack uses frontend deployment";
+    }
+  }
+
+  if (currentStack.backend === "self-solid-start") {
+    if (category === "runtime" && optionId !== "none") {
+      return "SolidStart fullstack uses built-in API routes";
+    }
+    if (category === "webFrontend" && optionId !== "solid-start" && optionId !== "none") {
+      return "SolidStart fullstack requires SolidStart frontend";
+    }
+    if (category === "serverDeploy" && optionId !== "none") {
+      return "Fullstack uses frontend deployment";
+    }
+  }
+
+  // ============================================
+  // BACKEND SELECTION CONSTRAINTS
+  // ============================================
+  if (category === "backend") {
+    if (optionId === "self-next" && !currentStack.webFrontend.includes("next")) {
+      return "Requires Next.js frontend";
+    }
+    if (optionId === "self-vinext" && !currentStack.webFrontend.includes("vinext")) {
+      return "Requires Vinext frontend";
+    }
+    if (
+      optionId === "self-tanstack-start" &&
+      !currentStack.webFrontend.includes("tanstack-start")
+    ) {
+      return "Requires TanStack Start frontend";
+    }
+    if (optionId === "self-astro" && !currentStack.webFrontend.includes("astro")) {
+      return "Requires Astro frontend";
+    }
+    if (optionId === "self-nuxt" && !currentStack.webFrontend.includes("nuxt")) {
+      return "Requires Nuxt frontend";
+    }
+    if (optionId === "self-svelte" && !currentStack.webFrontend.includes("svelte")) {
+      return "Requires SvelteKit frontend";
+    }
+    if (optionId === "self-solid-start" && !currentStack.webFrontend.includes("solid-start")) {
+      return "Requires SolidStart frontend";
+    }
+    if (optionId === "convex" && currentStack.webFrontend.includes("solid")) {
+      return "In Better-Fullstack, Convex is currently not available with Solid";
+    }
+    if (optionId === "convex" && currentStack.webFrontend.includes("solid-start")) {
+      return "In Better-Fullstack, Convex is currently not available with SolidStart";
+    }
+    if (optionId === "convex" && currentStack.webFrontend.includes("astro")) {
+      return "In Better-Fullstack, Convex is currently not available with Astro";
+    }
+    // Workers runtime only works with Hono backend
+    if (currentStack.runtime === "workers" && optionId !== "hono" && optionId !== "none") {
+      return "In Better-Fullstack, Workers runtime is currently supported only with Hono";
+    }
+  }
+
+  // ============================================
+  // RUNTIME CONSTRAINTS
+  // ============================================
+  if (category === "runtime") {
+    if (optionId === "workers" && currentStack.observability === "signoz") {
+      return "SigNoz tracing currently requires the Node.js or Bun runtime";
+    }
+    if (optionId === "workers" && currentStack.integrations === "nango") {
+      return "Nango's Node SDK is not available on Workers runtime";
+    }
+    if (optionId === "workers" && currentStack.backend !== "hono") {
+      return "In Better-Fullstack, Workers runtime currently requires the Hono backend";
+    }
+    if (
+      optionId === "workers" &&
+      currentStack.cms === "keystatic" &&
+      currentStack.webFrontend.includes("astro") &&
+      !currentStack.webFrontend.includes("next")
+    ) {
+      return "Keystatic's Astro integration is not Astro 7-compatible yet.";
+    }
+    if (optionId === "none") {
+      const allowedBackends = [
+        "convex",
+        "none",
+        "self-next",
+        "self-vinext",
+        "self-tanstack-start",
+        "self-astro",
+        "self-nuxt",
+        "self-svelte",
+        "self-solid-start",
+      ];
+      if (!allowedBackends.includes(currentStack.backend)) {
+        return "Runtime 'None' only for Convex or fullstack backends";
+      }
+    }
+  }
+
+  // ============================================
+  // DATABASE CONSTRAINTS
+  // ============================================
+  if (category === "database") {
+    if (optionId === "mongodb" && currentStack.runtime === "workers") {
+      return "In Better-Fullstack, MongoDB is currently not available with Workers runtime";
+    }
+    // Allow all databases when ORM is none - system will auto-select ORM
+  }
+
+  // ============================================
+  // ORM CONSTRAINTS
+  // ============================================
+  if (category === "orm") {
+    if (optionId === "mongoose") {
+      if (currentStack.runtime === "workers") {
+        return "Mongoose requires MongoDB, and Better-Fullstack currently doesn't support MongoDB with Workers runtime";
+      }
+      // Only block if a non-MongoDB database is EXPLICITLY selected
+      if (currentStack.database !== "none" && currentStack.database !== "mongodb") {
+        return "Mongoose only works with MongoDB";
+      }
+      // Allow when database is "none" - system will auto-select MongoDB
+    }
+    if (optionId === "drizzle" && currentStack.database === "mongodb") {
+      return "Drizzle does not support MongoDB";
+    }
+    if (optionId === "none" && currentStack.database !== "none") {
+      return "Database requires an ORM";
+    }
+  }
+
+  // ============================================
+  // DB SETUP CONSTRAINTS
+  // ============================================
+  if (category === "dbSetup" && optionId !== "none") {
+    if (currentStack.database === "none") {
+      return "Select a database first";
+    }
+
+    // Database-specific setups
+    if (optionId === "turso" && currentStack.database !== "sqlite") {
+      return "Turso requires SQLite";
+    }
+    if (optionId === "d1") {
+      if (currentStack.database !== "sqlite") return "D1 requires SQLite";
+      if (currentStack.runtime !== "workers") return "D1 requires Workers runtime";
+    }
+    if (optionId === "neon" && currentStack.database !== "postgres") {
+      return "Neon requires PostgreSQL";
+    }
+    if (optionId === "supabase" && currentStack.database !== "postgres") {
+      return "Supabase requires PostgreSQL";
+    }
+    if (optionId === "prisma-postgres" && currentStack.database !== "postgres") {
+      return "Prisma Postgres requires PostgreSQL";
+    }
+    if (optionId === "mongodb-atlas" && currentStack.database !== "mongodb") {
+      return "MongoDB Atlas requires MongoDB";
+    }
+    if (
+      optionId === "planetscale" &&
+      currentStack.database !== "postgres" &&
+      currentStack.database !== "mysql"
+    ) {
+      return "PlanetScale requires PostgreSQL or MySQL";
+    }
+    if (optionId === "docker") {
+      if (currentStack.database === "sqlite") return "SQLite doesn't need Docker";
+      if (currentStack.runtime === "workers") return "Docker is incompatible with Workers";
+    }
+  }
+
+  // ============================================
+  // API CONSTRAINTS
+  // ============================================
+  if (category === "api" && optionId === "trpc") {
+    const needsOrpc = currentStack.webFrontend.some((f) =>
+      ["nuxt", "svelte", "solid", "solid-start"].includes(f),
+    );
+    if (needsOrpc) {
+      const frontendName = currentStack.webFrontend.find((f) =>
+        ["nuxt", "svelte", "solid", "solid-start"].includes(f),
+      );
+      return `${frontendName} requires oRPC, not tRPC`;
+    }
+    // Astro with non-React integration requires oRPC
+    if (
+      currentStack.webFrontend.includes("astro") &&
+      currentStack.astroIntegration !== "react" &&
+      currentStack.astroIntegration !== "none"
+    ) {
+      return `Astro with ${currentStack.astroIntegration} integration requires oRPC, not tRPC`;
+    }
+  }
+
+  if (category === "api" && optionId === "openapi") {
+    if (currentStack.backend === "self") {
+      return "OpenAPI server scaffolding currently requires a standalone TypeScript backend";
+    }
+    if (currentStack.nativeFrontend.length > 0) {
+      return "OpenAPI is currently available for web frontends, not React Native";
+    }
+    if (!["hono", "effect", "express", "fastify", "elysia"].includes(currentStack.backend)) {
+      return "OpenAPI currently supports Hono, Effect, Express, Fastify, and Elysia backends";
+    }
+  }
+
+  if (category === "api" && optionId === "apollo-server") {
+    const needsReactFrontend = currentStack.webFrontend.some((f) =>
+      ["nuxt", "svelte", "solid", "solid-start"].includes(f),
+    );
+    if (needsReactFrontend) {
+      const frontendName = currentStack.webFrontend.find((f) =>
+        ["nuxt", "svelte", "solid", "solid-start"].includes(f),
+      );
+      return `${frontendName} requires oRPC, not Apollo Server`;
+    }
+    if (currentStack.webFrontend.includes("astro") && currentStack.astroIntegration !== "react") {
+      return "Apollo Server requires React integration with Astro";
+    }
+    if (currentStack.backend === "self") {
+      return "Apollo Server scaffolding currently requires a standalone TypeScript backend";
+    }
+    if (currentStack.nativeFrontend.length > 0) {
+      return "Apollo Server is currently available for web frontends, not React Native";
+    }
+    if (!["hono", "effect", "express", "fastify", "elysia"].includes(currentStack.backend)) {
+      return "Apollo Server currently supports Hono, Effect, Express, Fastify, and Elysia backends";
+    }
+  }
+
+  if (category === "appPlatforms" && ["turborepo", "nx", "vite-plus"].includes(optionId)) {
+    const otherRunner = currentStack.appPlatforms.find(
+      (selected) => selected !== optionId && ["turborepo", "nx", "vite-plus"].includes(selected),
+    );
+    if (otherRunner) return "Choose one workspace runner: Turborepo, Nx, or Vite+";
+  }
+
+  // ============================================
+  // ASTRO INTEGRATION CONSTRAINTS
+  // ============================================
+  if (category === "astroIntegration") {
+    if (!currentStack.webFrontend.includes("astro") && optionId !== "none") {
+      return "Astro integration requires Astro frontend";
+    }
+    // React-only APIs require React integration
+    if (
+      currentStack.webFrontend.includes("astro") &&
+      currentStack.api === "apollo-server" &&
+      optionId !== "react"
+    ) {
+      return "Apollo Server requires React integration with Astro";
+    }
+    if (
+      currentStack.webFrontend.includes("astro") &&
+      currentStack.api === "trpc" &&
+      optionId !== "react" &&
+      optionId !== "none"
+    ) {
+      return "tRPC requires React integration with Astro";
+    }
+  }
+
+  // ============================================
+  // AUTH CONSTRAINTS
+  // ============================================
+  if (category === "auth") {
+    const isBetterAuthOption =
+      optionId === "better-auth" || optionId === "better-auth-organizations";
+    if (isBetterAuthOption && currentStack.database === "redis") {
+      return "Better Auth requires a SQL database (not Redis)";
+    }
+    const ormsWithoutBetterAuth = ["typeorm", "sequelize", "mikroorm"];
+    if (isBetterAuthOption && ormsWithoutBetterAuth.includes(currentStack.orm)) {
+      return `Better Auth has no ${currentStack.orm} adapter`;
+    }
+    return getCapabilityDisabledReason(
+      "auth",
+      {
+        ecosystem: currentStack.ecosystem,
+        backend: currentStack.backend,
+        webFrontend: currentStack.webFrontend,
+        nativeFrontend: currentStack.nativeFrontend,
+      },
+      optionId as Auth,
+    );
+  }
+
+  // ============================================
+  // PAYMENTS CONSTRAINTS
+  // ============================================
+  if (category === "payments" && optionId === "polar") {
+    if (currentStack.auth !== "better-auth" && currentStack.auth !== "better-auth-organizations") {
+      return "Polar requires Better Auth";
+    }
+    if (!currentStack.webFrontend.some((f) => f !== "none")) {
+      return "Polar requires a web frontend";
+    }
+  }
+
+  if (
+    category === "payments" &&
+    optionId !== "none" &&
+    currentStack.webFrontend.includes("react-vite") &&
+    optionId === "dodo"
+  ) {
+    return "Dodo Payments are not yet supported for React + Vite projects";
+  }
+
+  if (category === "payments" && optionId === "revenuecat") {
+    const hasNativeFrontend = hasRevenueCatCompatibleNativeFrontend(currentStack.nativeFrontend);
+    if (!hasNativeFrontend) {
+      return "RevenueCat payments requires a native frontend (native-bare, native-uniwind, or native-unistyles)";
+    }
+  }
+
+  if (category === "payments" && optionId === "paypal") {
+    if (!currentStack.webFrontend.some((f) => f !== "none")) {
+      return "PayPal requires a web frontend";
+    }
+    if (["none", "convex"].includes(currentStack.backend)) {
+      return "PayPal checkout requires a standalone or fullstack backend";
+    }
+  }
+
+  if (
+    category === "payments" &&
+    optionId === "xendit" &&
+    ["none", "convex"].includes(currentStack.backend)
+  ) {
+    return "Xendit Payment Sessions require a standalone or fullstack backend";
+  }
+
+  // ============================================
+  // CMS CONSTRAINTS
+  // ============================================
+  if (category === "cms" && optionId === "payload") {
+    if (!currentStack.webFrontend.includes("next")) {
+      return "Payload CMS v3 requires Next.js";
+    }
+  }
+  if (category === "cms" && optionId === "keystatic") {
+    if (!currentStack.webFrontend.includes("next")) {
+      return "Keystatic is currently scaffolded for Next.js only because @keystatic/astro is not Astro 7-compatible yet.";
+    }
+  }
+
+  if (category === "realtime" && optionId === "ws" && currentStack.backend !== "express") {
+    return "The ws integration is currently wired for the Express backend";
+  }
+
+  // ============================================
+  // EMAIL CONSTRAINTS
+  // ============================================
+  if (category === "email" && optionId !== "none") {
+    if (currentStack.ecosystem !== "typescript") {
+      return null;
+    }
+    if (currentStack.backend === "convex") {
+      return "Email integration is not available with Convex backend";
+    }
+    if (currentStack.backend === "none") {
+      return "Email integration requires a backend";
+    }
+  }
+
+  if (category === "ecommerce" && optionId !== "none") {
+    if (currentStack.ecosystem !== "typescript") {
+      return "MedusaJS SDK generation is only available for the TypeScript ecosystem";
+    }
+    if (currentStack.backend === "convex") {
+      return "MedusaJS SDK generation is not available with Convex backend";
+    }
+    if (currentStack.backend === "none") {
+      return "MedusaJS SDK generation requires a backend";
+    }
+  }
+
+  // ============================================
+  // OBSERVABILITY CONSTRAINTS
+  // ============================================
+  if (category === "observability" && optionId !== "none") {
+    if (currentStack.ecosystem !== "typescript") {
+      return null;
+    }
+  }
+
+  if (category === "integrations" && optionId !== "none") {
+    if (currentStack.ecosystem !== "typescript") {
+      return "Nango SDK generation is only available for the TypeScript ecosystem";
+    }
+    if (currentStack.backend === "convex") {
+      return "Nango SDK generation is not available with Convex backend";
+    }
+    if (currentStack.backend === "none") {
+      return "Nango SDK generation requires a backend";
+    }
+    if (currentStack.runtime === "workers" || usesCloudflareFullstackRuntime(currentStack)) {
+      return "Nango's Node SDK is not available on Cloudflare Workers";
+    }
+  }
+
+  // ============================================
+  // CACHING CONSTRAINTS
+  // ============================================
+  if (category === "caching" && optionId === "redis" && currentStack.ecosystem !== "typescript") {
+    return "Self-hosted Redis caching (ioredis) is only available for the TypeScript ecosystem";
+  }
+  if (category === "caching" && optionId !== "none") {
+    if (currentStack.ecosystem !== "typescript") {
+      return null;
+    }
+  }
+
+  // ============================================
+  // RATE LIMITING CONSTRAINTS
+  // ============================================
+  if (category === "rateLimit" && optionId !== "none") {
+    if (currentStack.ecosystem !== "typescript") {
+      return null;
+    }
+    if (currentStack.backend === "convex") {
+      return "Rate limiting helpers are not generated with Convex backend";
+    }
+    if (currentStack.backend === "none") {
+      return "Rate limiting requires a backend";
+    }
+  }
+
+  // ============================================
+  // BOT PROTECTION CONSTRAINTS
+  // ============================================
+  if (category === "botProtection" && optionId !== "none") {
+    if (currentStack.ecosystem !== "typescript") {
+      return "Bot protection is currently available for TypeScript web applications";
+    }
+    const webFrontends = currentStack.webFrontend.filter((frontend) => frontend !== "none");
+    if (webFrontends.length === 0) {
+      return "Bot protection requires a web frontend";
+    }
+    if (currentStack.nativeFrontend.some((frontend) => frontend !== "none")) {
+      return "Bot protection is not supported when a native frontend is selected";
+    }
+    if (currentStack.auth !== "better-auth" && currentStack.auth !== "better-auth-organizations") {
+      return "Bot protection requires Better Auth";
+    }
+    if (optionId === "botid" && webFrontends.some((frontend) => !isBotIdWebFrontend(frontend))) {
+      return "Vercel BotID is only available for Next.js frontends";
+    }
+    if (optionId === "botid" && currentStack.backend !== "self-next") {
+      return "Vercel BotID requires the self-hosted Next.js backend";
+    }
+    if (
+      optionId === "botid" &&
+      currentStack.webDeploy !== "none" &&
+      currentStack.webDeploy !== "vercel"
+    ) {
+      return "Vercel BotID requires Vercel deployment when a web deployment is selected";
+    }
+    if (
+      optionId === "turnstile" &&
+      webFrontends.some((frontend) => !isTurnstileWebFrontend(frontend))
+    ) {
+      return "Cloudflare Turnstile is currently wired for React web frontends only";
+    }
+    if (optionId === "turnstile" && currentStack.backend === "convex") {
+      return "Cloudflare Turnstile is not wired for Convex auth forms";
+    }
+    if (optionId === "turnstile" && currentStack.backend === "none") {
+      return "Cloudflare Turnstile requires a backend for server-side verification";
+    }
+  }
+
+  // ============================================
+  // SEARCH CONSTRAINTS
+  // ============================================
+  if (category === "search" && optionId === "bleve" && currentStack.ecosystem !== "go") {
+    return "Bleve is an embedded Go search engine, only available for the Go ecosystem";
+  }
+  if (category === "search" && optionId !== "none") {
+    if (currentStack.ecosystem !== "typescript") {
+      return null;
+    }
+  }
+
+  // ============================================
+  // VECTOR DATABASE CONSTRAINTS
+  // ============================================
+  if (category === "vectorDb" && optionId !== "none") {
+    // Vector DB is a TypeScript-ecosystem feature only.
+    if (currentStack.ecosystem !== "typescript") {
+      return "Vector database is only available for the TypeScript ecosystem";
+    }
+  }
+
+  // ============================================
+  // AI CONSTRAINTS
+  // ============================================
+  if (category === "ai" && requiresChatSdkVercelAI(currentStack) && optionId !== "vercel-ai") {
+    return "Chat SDK example (Nuxt/Hono profile) requires Vercel AI SDK in v1";
+  }
+
+  if (
+    category === "ai" &&
+    ["openai-sdk", "anthropic-sdk"].includes(optionId) &&
+    ["none", "convex"].includes(currentStack.backend)
+  ) {
+    return "Direct AI provider SDKs require a standalone or fullstack backend";
+  }
+
+  // TanStack AI: React and Solid only (client adapter). Server-side core works anywhere.
+  if (category === "ai" && optionId === "tanstack-ai") {
+    const compatibleFrontends = [
+      "tanstack-router",
+      "react-router",
+      "react-vite",
+      "tanstack-start",
+      "next",
+      "redwood",
+      "solid",
+      "solid-start",
+    ];
+    const hasCompatible = currentStack.webFrontend.some((f) => compatibleFrontends.includes(f));
+
+    if (!hasCompatible) {
+      return "TanStack AI requires React or Solid frontend (no Vue/Svelte/Angular adapter yet)";
+    }
+  }
+
+  // ============================================
+  // APP PLATFORMS CONSTRAINTS
+  // ============================================
+  if (category === "appPlatforms") {
+    // TanStack addons with Astro require a UI framework integration
+    const tanstackAddons = [
+      "tanstack-query",
+      "tanstack-table",
+      "tanstack-virtual",
+      "tanstack-db",
+      "tanstack-pacer",
+    ];
+    if (
+      tanstackAddons.includes(optionId) &&
+      currentStack.webFrontend.length === 1 &&
+      currentStack.webFrontend[0] === "astro" &&
+      (!currentStack.astroIntegration || currentStack.astroIntegration === "none")
+    ) {
+      return "TanStack libraries with Astro require a UI framework integration (React, Vue, Svelte, or Solid)";
+    }
+
+    if (
+      optionId === "graphql-codegen" &&
+      !["garph", "graphql-yoga", "apollo-server"].includes(currentStack.api) &&
+      !currentStack.webFrontend.includes("redwood")
+    ) {
+      return "GraphQL Code Generator requires a GraphQL API selection";
+    }
+
+    if (optionId === "openapi-typescript" && currentStack.api !== "openapi") {
+      return "openapi-typescript requires the OpenAPI API selection";
+    }
+
+    if (optionId === "openapi-typescript" && currentStack.backend === "self") {
+      return "openapi-typescript requires a standalone backend that exposes an OpenAPI schema";
+    }
+
+    if (
+      optionId === "apollo-client" &&
+      !["garph", "graphql-yoga", "apollo-server"].includes(currentStack.api)
+    ) {
+      return "Apollo Client requires a GraphQL API selection";
+    }
+  }
+
+  // ============================================
+  // CSS FRAMEWORK CONSTRAINTS
+  // ============================================
+  if (category === "cssFramework") {
+    // CSS frameworks only apply to web frontends
+    if (!currentStack.webFrontend.some((f) => f !== "none")) {
+      if (optionId !== "none") {
+        return "CSS framework requires a web frontend";
+      }
+    }
+    if (
+      optionId === "styled-components" &&
+      !currentStack.webFrontend.some((f) =>
+        [
+          "tanstack-router",
+          "react-router",
+          "react-vite",
+          "tanstack-start",
+          "next",
+          "vinext",
+          "redwood",
+        ].includes(f),
+      )
+    ) {
+      return "styled-components requires a React frontend";
+    }
+    // Some UI libraries require Tailwind
+    const requiresTailwind = ["shadcn-ui", "shadcn-svelte", "daisyui", "nextui"].includes(
+      currentStack.uiLibrary,
+    );
+    if (requiresTailwind && optionId !== "tailwind") {
+      const libraryName =
+        currentStack.uiLibrary === "shadcn-ui"
+          ? "shadcn/ui"
+          : currentStack.uiLibrary === "shadcn-svelte"
+            ? "shadcn-svelte"
+            : currentStack.uiLibrary === "daisyui"
+              ? "daisyUI"
+              : "NextUI";
+      return `${libraryName} requires Tailwind CSS`;
+    }
+  }
+
+  if (isReactNativeOnlyCategory(category)) {
+    if (!hasReactNativeApp(currentStack) && optionId !== "none") {
+      return `${getCategoryDisplayName(category)} requires a native Expo frontend`;
+    }
+
+    if (category === "mobileNavigation" && optionId === "react-navigation") {
+      return null;
+    }
+
+    if (category === "mobileUI") {
+      if (optionId === "uniwind" && !currentStack.nativeFrontend.includes("native-uniwind")) {
+        return "Uniwind mobile UI requires Expo + Uniwind frontend";
+      }
+      if (optionId === "unistyles" && !currentStack.nativeFrontend.includes("native-unistyles")) {
+        return "Unistyles mobile UI requires Expo + Unistyles frontend";
+      }
+      if (
+        ["tamagui", "gluestack-ui"].includes(optionId) &&
+        currentStack.nativeFrontend.some((f) => ["native-uniwind", "native-unistyles"].includes(f))
+      ) {
+        return "Tamagui and Gluestack UI require Expo + StyleSheet to avoid conflicting styling setup";
+      }
+    }
+
+    if (
+      (category === "mobilePush" && optionId === "expo-notifications") ||
+      (category === "mobileOTA" && optionId === "expo-updates") ||
+      (category === "mobileDeepLinking" && optionId === "expo-linking")
+    ) {
+      return null;
+    }
+  }
+
+  // ============================================
+  // UI LIBRARY CONSTRAINTS
+  // ============================================
+  if (category === "uiLibrary") {
+    // UI libraries only apply to web frontends
+    if (!currentStack.webFrontend.some((f) => f !== "none")) {
+      if (optionId !== "none") {
+        return "UI library requires a web frontend";
+      }
+    }
+
+    // React-only UI libraries
+    const reactOnlyLibraries = ["shadcn-ui", "radix-ui", "chakra-ui", "nextui", "mui", "antd"];
+    const reactFrontends = [
+      "tanstack-router",
+      "react-router",
+      "react-vite",
+      "tanstack-start",
+      "next",
+    ];
+
+    if (reactOnlyLibraries.includes(optionId)) {
+      const hasReactFrontend = currentStack.webFrontend.some((f) => reactFrontends.includes(f));
+      // Astro with React integration also works
+      const hasAstroReact =
+        currentStack.webFrontend.includes("astro") && currentStack.astroIntegration === "react";
+      if (!hasReactFrontend && !hasAstroReact) {
+        const libraryName =
+          optionId === "shadcn-ui"
+            ? "shadcn/ui"
+            : optionId === "radix-ui"
+              ? "Radix UI"
+              : optionId === "chakra-ui"
+                ? "Chakra UI"
+                : optionId === "mui"
+                  ? "MUI"
+                  : optionId === "antd"
+                    ? "Ant Design"
+                    : "NextUI";
+        return `${libraryName} requires a React-based frontend`;
+      }
+    }
+
+    if (optionId === "shadcn-svelte") {
+      const hasSvelteFrontend = currentStack.webFrontend.includes("svelte");
+      const hasAstroSvelte =
+        currentStack.webFrontend.includes("astro") && currentStack.astroIntegration === "svelte";
+      if (!hasSvelteFrontend && !hasAstroSvelte) {
+        return "shadcn-svelte requires SvelteKit or Astro with Svelte integration";
+      }
+    }
+
+    // Headless UI works with React and Vue
+    if (optionId === "headless-ui") {
+      const hasReactFrontend = currentStack.webFrontend.some((f) => reactFrontends.includes(f));
+      const hasVueFrontend = currentStack.webFrontend.includes("nuxt");
+      const hasAstroReactOrVue =
+        currentStack.webFrontend.includes("astro") &&
+        ["react", "vue"].includes(currentStack.astroIntegration);
+      if (!hasReactFrontend && !hasVueFrontend && !hasAstroReactOrVue) {
+        return "Headless UI requires React or Vue frontend";
+      }
+    }
+
+    // Park UI works with React, Vue, and Solid
+    if (optionId === "park-ui") {
+      const hasReactFrontend = currentStack.webFrontend.some((f) => reactFrontends.includes(f));
+      const hasVueFrontend = currentStack.webFrontend.includes("nuxt");
+      const hasSolidFrontend =
+        currentStack.webFrontend.includes("solid") ||
+        currentStack.webFrontend.includes("solid-start");
+      const hasAstroCompatible =
+        currentStack.webFrontend.includes("astro") &&
+        ["react", "vue", "solid"].includes(currentStack.astroIntegration);
+      if (!hasReactFrontend && !hasVueFrontend && !hasSolidFrontend && !hasAstroCompatible) {
+        return "Park UI requires React, Vue, or Solid frontend";
+      }
+      // Park UI requires a CSS framework (not "none")
+      if (currentStack.cssFramework === "none") {
+        return "Park UI requires a CSS framework";
+      }
+    }
+
+    // UI libraries requiring Tailwind
+    if (["shadcn-ui", "shadcn-svelte", "daisyui", "nextui"].includes(optionId)) {
+      if (currentStack.cssFramework !== "tailwind") {
+        const libraryName =
+          optionId === "shadcn-ui"
+            ? "shadcn/ui"
+            : optionId === "shadcn-svelte"
+              ? "shadcn-svelte"
+              : optionId === "daisyui"
+                ? "daisyUI"
+                : "NextUI";
+        return `${libraryName} requires Tailwind CSS`;
+      }
+    }
+  }
+
+  // ============================================
+  // DEPLOYMENT CONSTRAINTS
+  // ============================================
+  if (category === "webDeploy" && optionId !== "none") {
+    if (!currentStack.webFrontend.some((f) => f !== "none")) {
+      return "Web deployment requires a web frontend";
+    }
+    if (optionId === "vercel") {
+      // These frontends don't have Vercel templates
+      if (currentStack.webFrontend.some((f) => ["redwood", "fresh"].includes(f))) {
+        return "Vercel deployment is not available for Redwood/Fresh (they have their own deploy systems)";
+      }
+    }
+    if (optionId === "render" || optionId === "netlify") {
+      const blocked = getUnsupportedWebDeployFrontend(optionId, currentStack.webFrontend);
+      if (blocked) {
+        const deployName = optionId === "render" ? "Render" : "Netlify";
+        return `${deployName} deployment is not yet wired up for the '${blocked}' frontend`;
+      }
+    }
+  }
+
+  if (category === "serverDeploy") {
+    if (optionId === "cloudflare") {
+      if (currentStack.runtime !== "workers") {
+        return "In Better-Fullstack, Cloudflare server deploy currently requires Workers runtime";
+      }
+      if (currentStack.backend !== "hono") {
+        return "In Better-Fullstack, Cloudflare server deploy is currently supported only with Hono";
+      }
+    }
+    if (optionId === "vercel") {
+      // Vercel serverless can't host persistent-process backends
+      if (["nestjs", "adonisjs"].includes(currentStack.backend)) {
+        return "Vercel serverless functions are incompatible with persistent-process backends like NestJS/AdonisJS. Use Fly.io or Railway instead.";
+      }
+      // Encore has its own deployment
+      if (currentStack.backend === "encore") {
+        return "Encore manages its own deployment infrastructure";
+      }
+    }
+    if (optionId === "netlify") {
+      if (currentStack.backend !== "hono") {
+        return "Netlify Functions server deploy is currently supported only with Hono";
+      }
+      if (currentStack.runtime !== "node") {
+        return "Netlify Functions server deploy requires Node.js runtime";
+      }
+    }
+    if (optionId !== "none") {
+      const noServerDeploy = [
+        "none",
+        "convex",
+        "self-next",
+        "self-tanstack-start",
+        "self-astro",
+        "self-nuxt",
+        "self-svelte",
+        "self-solid-start",
+      ];
+      if (noServerDeploy.includes(currentStack.backend)) {
+        return "Server deployment not needed for this backend";
+      }
+    }
+    if (optionId === "none" && currentStack.runtime === "workers") {
+      return "Workers requires server deployment";
+    }
+  }
+
+  // ============================================
+  // I18N RULES
+  // ============================================
+  if (category === "i18n") {
+    if (optionId !== "none" && !currentStack.webFrontend.some((f) => f !== "none")) {
+      return "i18n requires a web frontend";
+    }
+
+    if (optionId === "paraglide") {
+      const unsupportedFrontend = currentStack.webFrontend.find(
+        (frontend) =>
+          frontend !== "none" && !PARAGLIDE_COMPATIBLE_FRONTENDS.has(frontend as Frontend),
+      );
+
+      if (unsupportedFrontend) {
+        return `Paraglide is not yet wired for the '${unsupportedFrontend}' frontend`;
+      }
+    }
+
+    if (optionId === "next-intl") {
+      if (!currentStack.webFrontend.includes("next")) {
+        return "next-intl requires Next.js";
+      }
+    }
+
+    if (optionId === "intlayer") {
+      const unsupportedFrontend = currentStack.webFrontend.find(
+        (frontend) =>
+          frontend !== "none" && !INTLAYER_COMPATIBLE_FRONTENDS.has(frontend as Frontend),
+      );
+
+      if (unsupportedFrontend) {
+        return `Intlayer is not yet wired for the '${unsupportedFrontend}' frontend`;
+      }
+    }
+  }
+
+  // ============================================
+  // GO ECOSYSTEM RULES
+  // ============================================
+  if (
+    category === "goMigrations" &&
+    optionId !== "none" &&
+    currentStack.ecosystem === "go" &&
+    !["sqlite", "postgres", "mysql"].includes(currentStack.database)
+  ) {
+    return "Go migrations require SQLite, PostgreSQL, or MySQL";
+  }
+
+  if (
+    category === "database" &&
+    currentStack.ecosystem === "go" &&
+    currentStack.goMigrations !== "none" &&
+    !["sqlite", "postgres", "mysql"].includes(optionId)
+  ) {
+    return "The selected Go migration tool requires SQLite, PostgreSQL, or MySQL";
+  }
+
+  // ============================================
+  // JAVA ECOSYSTEM RULES
+  // ============================================
+  if (category === "javaWebFramework") {
+    if (optionId !== "none" && currentStack.javaBuildTool === "none") {
+      return "Java web frameworks require Maven or Gradle";
+    }
+  }
+
+  if (category === "javaBuildTool") {
+    if (optionId === "none") {
+      if (currentStack.javaWebFramework !== "none") {
+        return "Java web frameworks require Maven or Gradle";
+      }
+      if (currentStack.javaOrm !== "none") {
+        return "Java ORM support requires Maven or Gradle";
+      }
+      if (currentStack.javaAuth !== "none") {
+        return "Java auth support requires Maven or Gradle";
+      }
+      if (currentStack.javaApi !== "none") {
+        return "Java API support requires Maven or Gradle";
+      }
+      if (currentStack.javaLibraries.some((library) => library !== "none")) {
+        return "Java libraries require Maven or Gradle";
+      }
+      if (currentStack.javaTestingLibraries.some((library) => library !== "none")) {
+        return "Java testing libraries require Maven or Gradle";
+      }
+    }
+  }
+
+  if (category === "javaOrm") {
+    if (optionId !== "none" && currentStack.javaWebFramework !== "spring-boot") {
+      return "Java ORM support currently requires Spring Boot";
+    }
+    if (optionId !== "none" && currentStack.javaBuildTool === "none") {
+      return "Java ORM support requires Maven or Gradle";
+    }
+  }
+
+  if (category === "javaAuth") {
+    if (optionId !== "none" && currentStack.javaWebFramework !== "spring-boot") {
+      return "Java auth support currently requires Spring Boot";
+    }
+    if (optionId !== "none" && currentStack.javaBuildTool === "none") {
+      return "Java auth support requires Maven or Gradle";
+    }
+  }
+
+  if (category === "javaApi") {
+    if (optionId !== "none" && currentStack.javaWebFramework !== "spring-boot") {
+      return "Java API support currently requires Spring Boot";
+    }
+    if (optionId !== "none" && currentStack.javaBuildTool === "none") {
+      return "Java API support requires Maven or Gradle";
+    }
+  }
+
+  if (category === "javaLibraries") {
+    if (optionId !== "none" && currentStack.javaWebFramework !== "spring-boot") {
+      return "Spring libraries currently require Spring Boot in the Java scaffold";
+    }
+    if (optionId !== "none" && currentStack.javaBuildTool === "none") {
+      return "Java libraries require Maven or Gradle";
+    }
+    if (optionId === "flyway" && currentStack.javaOrm !== "spring-data-jpa") {
+      return "Flyway currently requires Spring Data JPA in the Java scaffold";
+    }
+    if (optionId === "liquibase" && currentStack.javaOrm !== "spring-data-jpa") {
+      return "Liquibase currently requires Spring Data JPA in the Java scaffold";
+    }
+    if (optionId === "flyway" && currentStack.javaLibraries.includes("liquibase")) {
+      return "Flyway cannot be combined with Liquibase in the current Java scaffold";
+    }
+    if (optionId === "liquibase" && currentStack.javaLibraries.includes("flyway")) {
+      return "Liquibase cannot be combined with Flyway in the current Java scaffold";
+    }
+  }
+
+  if (category === "javaTestingLibraries") {
+    if (optionId !== "none" && currentStack.javaBuildTool === "none") {
+      return "Java testing libraries require Maven or Gradle";
+    }
+  }
+
+  // ============================================
+  // ELIXIR ECOSYSTEM RULES
+  // ============================================
+  const elixirCategories = new Set<CompatibilityCategory>([
+    "elixirOrm",
+    "elixirAuth",
+    "elixirApi",
+    "elixirRealtime",
+    "elixirJobs",
+    "elixirValidation",
+    "elixirHttp",
+    "elixirJson",
+    "elixirEmail",
+    "elixirCaching",
+    "elixirObservability",
+    "elixirTesting",
+    "elixirQuality",
+    "elixirI18n",
+    "elixirHttpServer",
+    "elixirApplicationFramework",
+    "elixirDocumentation",
+    "elixirClustering",
+    "elixirDeploy",
+  ]);
+
+  if (elixirCategories.has(category) && optionId !== "none") {
+    if (currentStack.ecosystem !== "elixir") {
+      return "Elixir options only apply when the Elixir ecosystem is selected";
+    }
+  }
+
+  if (
+    category === "elixirTesting" &&
+    optionId === "wallaby" &&
+    currentStack.ecosystem === "elixir" &&
+    currentStack.elixirWebFramework === "none"
+  ) {
+    return "Wallaby browser tests require Phoenix";
+  }
+
+  if (
+    category === "elixirTesting" &&
+    optionId === "ex_machina" &&
+    currentStack.ecosystem === "elixir" &&
+    !["ecto-sql", "myxql", "ecto_sqlite3"].includes(currentStack.elixirOrm)
+  ) {
+    return "ExMachina requires an Ecto SQL repository";
+  }
+
+  if (
+    category === "elixirAuth" &&
+    optionId === "pow" &&
+    currentStack.ecosystem === "elixir" &&
+    (currentStack.elixirWebFramework === "none" ||
+      !["ecto-sql", "myxql", "ecto_sqlite3"].includes(currentStack.elixirOrm))
+  ) {
+    return "Pow requires Phoenix and an Ecto SQL repository";
+  }
+
+  if (
+    ((category === "elixirApi" && optionId === "open_api_spex") ||
+      (category === "elixirI18n" && optionId === "gettext")) &&
+    currentStack.ecosystem === "elixir" &&
+    currentStack.elixirWebFramework === "none"
+  ) {
+    return `${getCategoryDisplayName(category)} requires Phoenix`;
+  }
+
+  if (
+    category === "elixirHttpServer" &&
+    currentStack.ecosystem === "elixir" &&
+    ((optionId === "none" && currentStack.elixirWebFramework !== "none") ||
+      (optionId !== "none" && currentStack.elixirWebFramework === "none"))
+  ) {
+    return currentStack.elixirWebFramework === "none"
+      ? "HTTP server adapters require Phoenix"
+      : "Phoenix requires Bandit or Cowboy";
+  }
+
+  if (
+    category === "elixirJobs" &&
+    optionId === "oban" &&
+    currentStack.ecosystem === "elixir" &&
+    currentStack.elixirOrm !== "ecto-sql"
+  ) {
+    return "Oban requires the PostgreSQL Ecto SQL option";
+  }
+
+  if (
+    category === "elixirOrm" &&
+    ["myxql", "ecto_sqlite3"].includes(optionId) &&
+    currentStack.ecosystem === "elixir" &&
+    currentStack.elixirJobs === "oban"
+  ) {
+    return "Oban requires PostgreSQL-backed Ecto SQL";
+  }
+
+  if (
+    category === "elixirWebFramework" &&
+    optionId !== "none" &&
+    currentStack.ecosystem !== "elixir"
+  ) {
+    return "Elixir web frameworks are available only in the Elixir ecosystem";
+  }
+
+  if (
+    category === "elixirJson" &&
+    optionId === "none" &&
+    currentStack.ecosystem === "elixir" &&
+    currentStack.elixirWebFramework !== "none"
+  ) {
+    return "Phoenix JSON scaffolds require Jason";
+  }
+
+  return null;
+};
+
+export const isOptionCompatible = (
+  currentStack: CompatibilityInput,
+  category: CompatibilityCategory,
+  optionId: string,
+): boolean => {
+  if (currentStack.yolo === "true") {
+    return true;
+  }
+  return getDisabledReason(currentStack, category, optionId) === null;
+};
+
+export type CompatibilityDecision = {
+  reason: string | null;
+  suggestedReplacements: string[];
+  explanation: CompatibilityExplanation | null;
+};
+
+function capabilityReference(
+  category: CompatibilityCategory,
+  optionId: string,
+): CompatibilityCapabilityReference {
+  return {
+    id: `${category}:${optionId}`,
+    category,
+    optionId,
+  };
+}
+
+export function getCompatibilityExplanation(
+  currentStack: CompatibilityInput,
+  category: CompatibilityCategory,
+  optionId: string,
+  reasonOverride?: string,
+): CompatibilityExplanation | null {
+  const reason = reasonOverride ?? getDisabledReason(currentStack, category, optionId);
+  if (!reason) return null;
+
+  const graphDecision = getGraphDisabledReason(currentStack, category, optionId);
+  const replacementIds = graphDecision.reason === reason ? (graphDecision.alternatives ?? []) : [];
+  const capability = capabilityReference(category, optionId);
+  const alternatives = replacementIds.map((replacementId) =>
+    capabilityReference(category, replacementId),
+  );
+  const punctuatedReason = /[.!?]$/.test(reason) ? reason : `${reason}.`;
+  const message =
+    alternatives.length === 0
+      ? reason
+      : `${punctuatedReason} Compatible alternatives: ${alternatives
+          .map((alternative) => alternative.optionId)
+          .join(", ")}.`;
+
+  return {
+    schemaVersion: 1,
+    ruleId: `compatibility:${category}:${optionId}`,
+    reason,
+    message,
+    capability,
+    owner: {
+      kind: graphDecision.ownerPart ? "stack-part" : "capability",
+      capability,
+      stackPart: graphDecision.ownerPart ?? null,
+    },
+    candidateStackPart: graphDecision.candidateStackPart ?? null,
+    alternatives,
+  };
+}
+
+export function getCompatibilityDecision(
+  currentStack: CompatibilityInput,
+  category: CompatibilityCategory,
+  optionId: string,
+): CompatibilityDecision {
+  const reason = getDisabledReason(currentStack, category, optionId);
+  if (!reason) {
+    return { reason: null, suggestedReplacements: [], explanation: null };
+  }
+
+  const explanation = getCompatibilityExplanation(currentStack, category, optionId, reason);
+  return {
+    reason,
+    suggestedReplacements:
+      explanation?.alternatives.map((alternative) => alternative.optionId) ?? [],
+    explanation,
+  };
+}
+
+export function formatCompatibilityDecision(decision: CompatibilityDecision): string | null {
+  if (!decision.reason) return null;
+  if (decision.explanation) return decision.explanation.message;
+  if (decision.suggestedReplacements.length === 0) return decision.reason;
+  return `${decision.reason} Compatible alternatives: ${decision.suggestedReplacements.join(", ")}.`;
+}
+
+type GraphDisabledReasonOwnerRole = "frontend" | "backend" | "mobile" | "database";
+
+type GraphDisabledReasonBinding = {
+  role: StackPartRole;
+  ecosystem: StackPartEcosystem;
+  ownerRole?: GraphDisabledReasonOwnerRole;
+  ownerEcosystem?: StackPartEcosystem;
+  currentEcosystem?: StackPartEcosystem;
+  allowNoneCandidate?: boolean;
+  allowOwnerlessCandidate?: boolean;
+  authoritative?: boolean;
+  candidateIdPrefix?: string;
+  missingOwnerReason?: string;
+};
+
+type GraphDisabledReasonResult = {
+  handled: boolean;
+  authoritative: boolean;
+  reason: string | null;
+  alternatives?: string[];
+  ownerPart?: CompatibilityStackPartReference;
+  candidateStackPart?: {
+    role: StackPartRole;
+    ecosystem: StackPartEcosystem;
+  };
+};
+
+const SHARED_BACKEND_SERVICE_CATEGORIES = new Set<CompatibilityCategory>([
+  "email",
+  "observability",
+  "caching",
+  "rateLimit",
+  "search",
+]);
+
+const SHARED_BACKEND_SERVICE_MISSING_OWNER_REASONS: Partial<Record<CompatibilityCategory, string>> =
+  {
+    email: "Email integration requires a backend",
+    rateLimit: "Rate limiting requires a backend",
+  };
+
+function getSharedBackendServiceGraphBinding(
+  currentStack: CompatibilityInput,
+  category: CompatibilityCategory,
+): GraphDisabledReasonBinding | undefined {
+  if (!SHARED_BACKEND_SERVICE_CATEGORIES.has(category)) return undefined;
+  if (currentStack.ecosystem === "react-native") return undefined;
+
+  return {
+    role: category as StackPartRole,
+    ecosystem: currentStack.ecosystem,
+    ownerRole: "backend",
+    ownerEcosystem: currentStack.ecosystem,
+    authoritative: true,
+    missingOwnerReason: SHARED_BACKEND_SERVICE_MISSING_OWNER_REASONS[category],
+  };
+}
+
+const ELIXIR_GRAPH_DISABLED_REASON_ROLES: Partial<Record<CompatibilityCategory, StackPartRole>> = {
+  elixirOrm: "orm",
+  elixirAuth: "auth",
+  elixirApi: "api",
+  elixirRealtime: "realtime",
+  elixirJobs: "jobQueue",
+  elixirValidation: "validation",
+  elixirHttp: "httpClient",
+  elixirEmail: "email",
+  elixirCaching: "caching",
+  elixirObservability: "observability",
+  elixirTesting: "testing",
+  elixirQuality: "codeQuality",
+  elixirI18n: "i18n",
+  elixirHttpServer: "runtime",
+  elixirApplicationFramework: "libraries",
+  elixirDocumentation: "documentation",
+  elixirClustering: "config",
+  elixirDeploy: "deploy",
+};
+
+function getElixirGraphBinding(
+  currentStack: CompatibilityInput,
+  category: CompatibilityCategory,
+): GraphDisabledReasonBinding | undefined {
+  const role = ELIXIR_GRAPH_DISABLED_REASON_ROLES[category];
+  if (!role || currentStack.ecosystem !== "elixir") return undefined;
+
+  return {
+    role,
+    ecosystem: "elixir",
+    ownerRole: "backend",
+    ownerEcosystem: "elixir",
+    currentEcosystem: "elixir",
+    allowOwnerlessCandidate: true,
+    authoritative: true,
+    candidateIdPrefix: "candidate:native",
+  };
+}
+
+function getAddonOrExampleGraphBinding(
+  category: CompatibilityCategory,
+  optionId: string,
+): GraphDisabledReasonBinding | undefined {
+  if (category === "examples") {
+    return {
+      role: "examples",
+      ecosystem: "universal",
+      allowOwnerlessCandidate: true,
+      authoritative: true,
+    };
+  }
+
+  if (category !== "appPlatforms") return undefined;
+
+  const binding = getAddonStackPartBinding(optionId);
+  if (!binding) return undefined;
+
+  return {
+    role: binding.role,
+    ecosystem: binding.ecosystem,
+    ownerRole: binding.ownerRole,
+    ownerEcosystem: binding.ownerRole ? binding.ecosystem : undefined,
+    allowOwnerlessCandidate: binding.ownerRole !== "frontend",
+    authoritative: true,
+    missingOwnerReason:
+      binding.ownerRole === "frontend" ? `${optionId} requires a web frontend` : undefined,
+  };
+}
+
+const GRAPH_DISABLED_REASON_BINDINGS: Partial<
+  Record<CompatibilityCategory, GraphDisabledReasonBinding>
+> = {
+  cssFramework: {
+    role: "css",
+    ecosystem: "typescript",
+    ownerRole: "frontend",
+    ownerEcosystem: "typescript",
+    authoritative: true,
+    missingOwnerReason: "CSS framework requires a web frontend",
+  },
+  uiLibrary: {
+    role: "ui",
+    ecosystem: "typescript",
+    ownerRole: "frontend",
+    ownerEcosystem: "typescript",
+    authoritative: true,
+    missingOwnerReason: "UI library requires a web frontend",
+  },
+  forms: {
+    role: "forms",
+    ecosystem: "typescript",
+    ownerRole: "frontend",
+    ownerEcosystem: "typescript",
+    authoritative: true,
+    missingOwnerReason: "Forms requires a web frontend",
+  },
+  stateManagement: {
+    role: "stateManagement",
+    ecosystem: "typescript",
+    ownerRole: "frontend",
+    ownerEcosystem: "typescript",
+    authoritative: true,
+    missingOwnerReason: "State management requires a web frontend",
+  },
+  animation: {
+    role: "animation",
+    ecosystem: "typescript",
+    ownerRole: "frontend",
+    ownerEcosystem: "typescript",
+    authoritative: true,
+    missingOwnerReason: "Animation requires a web frontend",
+  },
+  fileUpload: {
+    role: "fileUpload",
+    ecosystem: "typescript",
+    ownerRole: "frontend",
+    ownerEcosystem: "typescript",
+    authoritative: true,
+    missingOwnerReason: "File upload requires a web frontend",
+  },
+  i18n: {
+    role: "i18n",
+    ecosystem: "typescript",
+    ownerRole: "frontend",
+    ownerEcosystem: "typescript",
+    authoritative: true,
+    missingOwnerReason: "i18n requires a web frontend",
+  },
+  analytics: {
+    role: "analytics",
+    ecosystem: "typescript",
+    ownerRole: "frontend",
+    ownerEcosystem: "typescript",
+    authoritative: true,
+    missingOwnerReason: "Analytics requires a web frontend",
+  },
+  webDeploy: {
+    role: "deploy",
+    ecosystem: "typescript",
+    ownerRole: "frontend",
+    ownerEcosystem: "typescript",
+    authoritative: true,
+    missingOwnerReason: "Web deployment requires a web frontend",
+  },
+  payments: {
+    role: "payments",
+    ecosystem: "typescript",
+    ownerRole: "backend",
+    ownerEcosystem: "typescript",
+    authoritative: true,
+    missingOwnerReason: "Payments requires a backend",
+  },
+  cms: {
+    role: "cms",
+    ecosystem: "typescript",
+    ownerRole: "backend",
+    ownerEcosystem: "typescript",
+    authoritative: true,
+    missingOwnerReason: "CMS requires a backend",
+  },
+  ai: {
+    role: "ai",
+    ecosystem: "typescript",
+    ownerRole: "backend",
+    ownerEcosystem: "typescript",
+    authoritative: true,
+  },
+  vectorDb: {
+    role: "vectorDb",
+    ecosystem: "typescript",
+    ownerRole: "backend",
+    ownerEcosystem: "typescript",
+    currentEcosystem: "typescript",
+    authoritative: true,
+  },
+  fileStorage: {
+    role: "fileStorage",
+    ecosystem: "typescript",
+    ownerRole: "backend",
+    ownerEcosystem: "typescript",
+    currentEcosystem: "typescript",
+    authoritative: true,
+  },
+  serverDeploy: {
+    role: "deploy",
+    ecosystem: "typescript",
+    ownerRole: "backend",
+    ownerEcosystem: "typescript",
+    authoritative: true,
+  },
+  dbSetup: {
+    role: "dbSetup",
+    ecosystem: "universal",
+    ownerRole: "database",
+    ownerEcosystem: "universal",
+    authoritative: true,
+    missingOwnerReason: "Select a database first",
+  },
+  mobileNavigation: {
+    role: "navigation",
+    ecosystem: "react-native",
+    ownerRole: "mobile",
+    ownerEcosystem: "react-native",
+    authoritative: true,
+    missingOwnerReason: "Mobile navigation requires a native Expo frontend",
+  },
+  mobileUI: {
+    role: "ui",
+    ecosystem: "react-native",
+    ownerRole: "mobile",
+    ownerEcosystem: "react-native",
+    authoritative: true,
+    missingOwnerReason: "Mobile UI requires a native Expo frontend",
+  },
+  mobileStorage: {
+    role: "storage",
+    ecosystem: "react-native",
+    ownerRole: "mobile",
+    ownerEcosystem: "react-native",
+    authoritative: true,
+    missingOwnerReason: "Mobile storage requires a native Expo frontend",
+  },
+  mobileTesting: {
+    role: "testing",
+    ecosystem: "react-native",
+    ownerRole: "mobile",
+    ownerEcosystem: "react-native",
+    authoritative: true,
+    missingOwnerReason: "Mobile testing requires a native Expo frontend",
+  },
+  mobilePush: {
+    role: "push",
+    ecosystem: "react-native",
+    ownerRole: "mobile",
+    ownerEcosystem: "react-native",
+    authoritative: true,
+    missingOwnerReason: "Mobile push requires a native Expo frontend",
+  },
+  mobileOTA: {
+    role: "ota",
+    ecosystem: "react-native",
+    ownerRole: "mobile",
+    ownerEcosystem: "react-native",
+    authoritative: true,
+    missingOwnerReason: "Mobile OTA requires a native Expo frontend",
+  },
+  mobileDeepLinking: {
+    role: "deepLinking",
+    ecosystem: "react-native",
+    ownerRole: "mobile",
+    ownerEcosystem: "react-native",
+    authoritative: true,
+    missingOwnerReason: "Mobile deep linking requires a native Expo frontend",
+  },
+  mobileLibraries: {
+    role: "libraries",
+    ecosystem: "react-native",
+    ownerRole: "mobile",
+    ownerEcosystem: "react-native",
+    authoritative: true,
+    missingOwnerReason: "Mobile libraries require a native Expo frontend",
+    candidateIdPrefix: "candidate:native",
+  },
+  javaBuildTool: {
+    role: "buildTool",
+    ecosystem: "java",
+    ownerRole: "backend",
+    ownerEcosystem: "java",
+    currentEcosystem: "java",
+    allowNoneCandidate: true,
+    authoritative: true,
+  },
+  javaOrm: {
+    role: "orm",
+    ecosystem: "java",
+    ownerRole: "backend",
+    ownerEcosystem: "java",
+    currentEcosystem: "java",
+    authoritative: true,
+    missingOwnerReason: "Java ORM support currently requires Spring Boot",
+  },
+  javaAuth: {
+    role: "auth",
+    ecosystem: "java",
+    ownerRole: "backend",
+    ownerEcosystem: "java",
+    currentEcosystem: "java",
+    authoritative: true,
+    missingOwnerReason: "Java auth support currently requires Spring Boot",
+  },
+  javaLibraries: {
+    role: "libraries",
+    ecosystem: "java",
+    ownerRole: "backend",
+    ownerEcosystem: "java",
+    currentEcosystem: "java",
+    authoritative: true,
+    missingOwnerReason: "Spring libraries currently require Spring Boot in the Java scaffold",
+  },
+  javaTestingLibraries: {
+    role: "testing",
+    ecosystem: "java",
+    ownerRole: "backend",
+    ownerEcosystem: "java",
+    currentEcosystem: "java",
+    authoritative: true,
+  },
+  rustRealtime: {
+    role: "realtime",
+    ecosystem: "rust",
+    ownerRole: "backend",
+    ownerEcosystem: "rust",
+    currentEcosystem: "rust",
+    authoritative: true,
+  },
+  rustMessageQueue: {
+    role: "jobQueue",
+    ecosystem: "rust",
+    ownerRole: "backend",
+    ownerEcosystem: "rust",
+    currentEcosystem: "rust",
+    authoritative: true,
+  },
+  rustObservability: {
+    role: "observability",
+    ecosystem: "rust",
+    ownerRole: "backend",
+    ownerEcosystem: "rust",
+    currentEcosystem: "rust",
+    authoritative: true,
+    candidateIdPrefix: "candidate:native",
+  },
+  rustTemplating: {
+    role: "templating",
+    ecosystem: "rust",
+    ownerRole: "backend",
+    ownerEcosystem: "rust",
+    currentEcosystem: "rust",
+    authoritative: true,
+  },
+  pythonTesting: {
+    role: "testing",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  pythonCaching: {
+    role: "caching",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+    candidateIdPrefix: "candidate:native",
+  },
+  pythonRealtime: {
+    role: "realtime",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  pythonObservability: {
+    role: "observability",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+    candidateIdPrefix: "candidate:native",
+  },
+  pythonCli: {
+    role: "cli",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  pythonCloudSdk: {
+    role: "cloudSdk",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  pythonHttpClient: {
+    role: "httpClient",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  pythonData: {
+    role: "data",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  pythonMedia: {
+    role: "media",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  pythonServer: {
+    role: "server",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  pythonPackageManager: {
+    role: "packageManager",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  pythonMessageQueue: {
+    role: "messageQueue",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
+  },
+  goTesting: {
+    role: "testing",
+    ecosystem: "go",
+    ownerRole: "backend",
+    ownerEcosystem: "go",
+    currentEcosystem: "go",
+    authoritative: true,
+  },
+  goRealtime: {
+    role: "realtime",
+    ecosystem: "go",
+    ownerRole: "backend",
+    ownerEcosystem: "go",
+    currentEcosystem: "go",
+    authoritative: true,
+  },
+  goMessageQueue: {
+    role: "jobQueue",
+    ecosystem: "go",
+    ownerRole: "backend",
+    ownerEcosystem: "go",
+    currentEcosystem: "go",
+    authoritative: true,
+  },
+  goCaching: {
+    role: "caching",
+    ecosystem: "go",
+    ownerRole: "backend",
+    ownerEcosystem: "go",
+    currentEcosystem: "go",
+    authoritative: true,
+    candidateIdPrefix: "candidate:native",
+  },
+  goConfig: {
+    role: "config",
+    ecosystem: "go",
+    ownerRole: "backend",
+    ownerEcosystem: "go",
+    currentEcosystem: "go",
+    authoritative: true,
+  },
+  goObservability: {
+    role: "observability",
+    ecosystem: "go",
+    ownerRole: "backend",
+    ownerEcosystem: "go",
+    currentEcosystem: "go",
+    authoritative: true,
+    candidateIdPrefix: "candidate:native",
+  },
+  goValidation: {
+    role: "validation",
+    ecosystem: "go",
+    ownerRole: "backend",
+    ownerEcosystem: "go",
+    currentEcosystem: "go",
+    authoritative: true,
+  },
+  goQuality: {
+    role: "codeQuality",
+    ecosystem: "go",
+    ownerRole: "backend",
+    ownerEcosystem: "go",
+    currentEcosystem: "go",
+    authoritative: true,
+  },
+  goMigrations: {
+    role: "migrations",
+    ecosystem: "go",
+    ownerRole: "backend",
+    ownerEcosystem: "go",
+    currentEcosystem: "go",
+    authoritative: true,
+  },
+  goTemplating: {
+    role: "templating",
+    ecosystem: "go",
+    ownerRole: "backend",
+    ownerEcosystem: "go",
+    currentEcosystem: "go",
+    authoritative: true,
+  },
+  goProtoTooling: {
+    role: "buildTool",
+    ecosystem: "go",
+    ownerRole: "backend",
+    ownerEcosystem: "go",
+    currentEcosystem: "go",
+    authoritative: true,
+  },
+  goDI: {
+    role: "libraries",
+    ecosystem: "go",
+    ownerRole: "backend",
+    ownerEcosystem: "go",
+    currentEcosystem: "go",
+    authoritative: true,
+  },
+  dotnetOrm: {
+    role: "orm",
+    ecosystem: "dotnet",
+    ownerRole: "backend",
+    ownerEcosystem: "dotnet",
+    currentEcosystem: "dotnet",
+    authoritative: true,
+    missingOwnerReason: ".NET data access requires an ASP.NET backend",
+  },
+  dotnetAuth: {
+    role: "auth",
+    ecosystem: "dotnet",
+    ownerRole: "backend",
+    ownerEcosystem: "dotnet",
+    currentEcosystem: "dotnet",
+    authoritative: true,
+    missingOwnerReason: ".NET auth requires an ASP.NET backend",
+  },
+  dotnetApi: {
+    role: "api",
+    ecosystem: "dotnet",
+    ownerRole: "backend",
+    ownerEcosystem: "dotnet",
+    currentEcosystem: "dotnet",
+    authoritative: true,
+  },
+  dotnetTesting: {
+    role: "testing",
+    ecosystem: "dotnet",
+    ownerRole: "backend",
+    ownerEcosystem: "dotnet",
+    currentEcosystem: "dotnet",
+    authoritative: true,
+  },
+  dotnetJobQueue: {
+    role: "jobQueue",
+    ecosystem: "dotnet",
+    ownerRole: "backend",
+    ownerEcosystem: "dotnet",
+    currentEcosystem: "dotnet",
+    authoritative: true,
+  },
+  dotnetRealtime: {
+    role: "realtime",
+    ecosystem: "dotnet",
+    ownerRole: "backend",
+    ownerEcosystem: "dotnet",
+    currentEcosystem: "dotnet",
+    authoritative: true,
+  },
+  dotnetObservability: {
+    role: "observability",
+    ecosystem: "dotnet",
+    ownerRole: "backend",
+    ownerEcosystem: "dotnet",
+    currentEcosystem: "dotnet",
+    authoritative: true,
+    candidateIdPrefix: "candidate:native",
+  },
+  dotnetCaching: {
+    role: "caching",
+    ecosystem: "dotnet",
+    ownerRole: "backend",
+    ownerEcosystem: "dotnet",
+    currentEcosystem: "dotnet",
+    authoritative: true,
+    candidateIdPrefix: "candidate:native",
+  },
+  dotnetDeploy: {
+    role: "deploy",
+    ecosystem: "dotnet",
+    ownerRole: "backend",
+    ownerEcosystem: "dotnet",
+    currentEcosystem: "dotnet",
+    authoritative: true,
+  },
+  dotnetLibraries: {
+    role: "libraries",
+    ecosystem: "dotnet",
+    ownerRole: "backend",
+    ownerEcosystem: "dotnet",
+    currentEcosystem: "dotnet",
+    authoritative: true,
+    candidateIdPrefix: "candidate:native",
+  },
+};
+
+function compatibilityInputToGraphProjectConfig(
+  currentStack: CompatibilityInput,
+): Partial<ProjectConfig> {
+  const frontend = [
+    ...currentStack.webFrontend.filter((frontend) => frontend !== "none"),
+    ...currentStack.nativeFrontend.filter((frontend) => frontend !== "none"),
+  ];
+
+  return {
+    ...currentStack,
+    frontend: (frontend.length > 0 ? frontend : ["none"]) as ProjectConfig["frontend"],
+    addons: [
+      ...currentStack.codeQuality,
+      ...currentStack.documentation,
+      ...currentStack.appPlatforms,
+    ] as ProjectConfig["addons"],
+    ai: currentStack.aiSdk as ProjectConfig["ai"],
+  } as unknown as Partial<ProjectConfig>;
+}
+
+function getGraphDisabledReason(
+  currentStack: CompatibilityInput,
+  category: CompatibilityCategory,
+  optionId: string,
+): GraphDisabledReasonResult {
+  const unhandled: GraphDisabledReasonResult = {
+    handled: false,
+    authoritative: false,
+    reason: null,
+  };
+
+  if (optionId === "false") return unhandled;
+
+  const binding =
+    getAddonOrExampleGraphBinding(category, optionId) ??
+    getSharedBackendServiceGraphBinding(currentStack, category) ??
+    getElixirGraphBinding(currentStack, category) ??
+    GRAPH_DISABLED_REASON_BINDINGS[category];
+  if (!binding) return unhandled;
+  if (binding.currentEcosystem && currentStack.ecosystem !== binding.currentEcosystem) {
+    return unhandled;
+  }
+  if (optionId === "none" && category !== "cssFramework" && !binding.allowNoneCandidate) {
+    return unhandled;
+  }
+
+  let parts;
+  try {
+    parts = legacyProjectConfigToStackParts(compatibilityInputToGraphProjectConfig(currentStack));
+  } catch {
+    return unhandled;
+  }
+
+  const owner = binding.ownerRole
+    ? parts.find(
+        (part) =>
+          part.role === binding.ownerRole &&
+          !part.ownerPartId &&
+          (!binding.ownerEcosystem || part.ecosystem === binding.ownerEcosystem),
+      )
+    : undefined;
+  if (!owner && optionId === "none") return unhandled;
+  if (!owner && !binding.allowOwnerlessCandidate) {
+    return {
+      handled: true,
+      authoritative: binding.authoritative === true,
+      reason: binding.missingOwnerReason ?? null,
+      candidateStackPart: {
+        role: binding.role,
+        ecosystem: binding.ecosystem,
+      },
+    };
+  }
+
+  const issue = getStackPartCompatibilityIssueForPart(
+    {
+      id: `${binding.candidateIdPrefix ?? "candidate"}:${binding.ownerRole}.${binding.role}:${binding.ecosystem}:${optionId}`,
+      role: binding.role,
+      toolId: optionId,
+      ecosystem: binding.ecosystem,
+      ownerPartId: owner?.id,
+      settings: {
+        astroIntegration: currentStack.astroIntegration,
+        ecosystem: currentStack.ecosystem,
+      },
+    },
+    parts,
+  );
+
+  return {
+    handled: true,
+    authoritative: binding.authoritative === true,
+    reason: issue?.message ?? (!owner ? (binding.missingOwnerReason ?? null) : null),
+    alternatives: issue?.alternatives,
+    ownerPart: owner
+      ? {
+          id: owner.id,
+          role: owner.role,
+          ecosystem: owner.ecosystem,
+          toolId: owner.toolId,
+        }
+      : undefined,
+    candidateStackPart: {
+      role: binding.role,
+      ecosystem: binding.ecosystem,
+    },
+  };
+}
+
+const WEB_FRAMEWORKS: readonly Frontend[] = [
+  "tanstack-router",
+  "react-router",
+  "react-vite",
+  "vanilla-vite",
+  "vue",
+  "tanstack-start",
+  "next",
+  "vinext",
+  "nuxt",
+  "svelte",
+  "solid",
+  "solid-start",
+  "astro",
+  "qwik",
+  "angular",
+  "redwood",
+  "fresh",
+  "none",
+] as const;
+
+const CODEGEN_COMPATIBLE_FRONTENDS: readonly Frontend[] = [
+  "tanstack-router",
+  "react-router",
+  "react-vite",
+  "vanilla-vite",
+  "vue",
+  "tanstack-start",
+  "next",
+  "vinext",
+  "nuxt",
+  "svelte",
+  "solid",
+  "solid-start",
+  "astro",
+  "qwik",
+  "angular",
+  "redwood",
+  "fresh",
+];
+
+const ADDON_COMPATIBILITY: Record<Addons, readonly Frontend[]> = {
+  pwa: [
+    "tanstack-router",
+    "react-router",
+    "react-vite",
+    "vanilla-vite",
+    "vue",
+    "solid",
+    "next",
+    "vinext",
+    "astro",
+    "qwik",
+    "angular",
+    "redwood",
+    "fresh",
+  ],
+  tauri: [
+    "tanstack-router",
+    "react-router",
+    "react-vite",
+    "vanilla-vite",
+    "vue",
+    "nuxt",
+    "svelte",
+    "solid",
+    "next",
+    "astro",
+    "qwik",
+    "angular",
+    "redwood",
+    "fresh",
+  ],
+  electron: ["tanstack-router", "react-vite", "vanilla-vite", "vue", "solid"],
+  capacitor: ["tanstack-router", "react-vite", "vanilla-vite", "vue", "solid"],
+  biome: [],
+  eslint: [],
+  prettier: [],
+  husky: [],
+  lefthook: [],
+  knip: [],
+  gitleaks: [],
+  turborepo: [],
+  nx: [],
+  "vite-plus": [],
+  starlight: [],
+  ultracite: [],
+  ruler: [],
+  mcp: [],
+  skills: [],
+  oxlint: [],
+  fumadocs: [],
+  opentui: [],
+  wxt: [],
+  msw: [],
+  storybook: ["tanstack-router", "react-router", "react-vite", "next", "nuxt", "svelte", "solid"],
+  axios: [
+    "tanstack-router",
+    "react-router",
+    "react-vite",
+    "vanilla-vite",
+    "vue",
+    "tanstack-start",
+    "next",
+    "vinext",
+    "nuxt",
+    "svelte",
+    "solid",
+    "solid-start",
+    "astro",
+    "qwik",
+    "angular",
+  ],
+  firebase: [
+    "tanstack-router",
+    "react-router",
+    "react-vite",
+    "vanilla-vite",
+    "vue",
+    "tanstack-start",
+    "next",
+    "vinext",
+    "nuxt",
+    "svelte",
+    "solid",
+    "solid-start",
+    "astro",
+    "qwik",
+    "angular",
+  ],
+  "graphql-codegen": CODEGEN_COMPATIBLE_FRONTENDS,
+  "openapi-typescript": CODEGEN_COMPATIBLE_FRONTENDS,
+  "apollo-client": [
+    "tanstack-router",
+    "react-router",
+    "react-vite",
+    "vue",
+    "tanstack-start",
+    "next",
+    "vinext",
+    "nuxt",
+    "svelte",
+    "solid",
+    "solid-start",
+  ],
+  swr: [
+    "tanstack-router",
+    "react-router",
+    "react-vite",
+    "tanstack-start",
+    "next",
+    "vinext",
+    "astro",
+    "redwood",
+  ],
+  "tanstack-query": [
+    "tanstack-router",
+    "react-router",
+    "react-vite",
+    "tanstack-start",
+    "next",
+    "nuxt",
+    "svelte",
+    "solid",
+    "solid-start",
+    "angular",
+    "astro",
+    "redwood",
+  ],
+  "tanstack-table": [
+    "tanstack-router",
+    "react-router",
+    "react-vite",
+    "tanstack-start",
+    "next",
+    "nuxt",
+    "svelte",
+    "solid",
+    "solid-start",
+    "angular",
+    "astro",
+    "redwood",
+  ],
+  "tanstack-virtual": [
+    "tanstack-router",
+    "react-router",
+    "react-vite",
+    "tanstack-start",
+    "next",
+    "nuxt",
+    "svelte",
+    "solid",
+    "solid-start",
+    "angular",
+    "astro",
+    "redwood",
+  ],
+  "tanstack-db": [
+    "tanstack-router",
+    "react-router",
+    "react-vite",
+    "tanstack-start",
+    "next",
+    "nuxt",
+    "svelte",
+    "solid",
+    "solid-start",
+    "astro",
+    "redwood",
+  ],
+  "tanstack-pacer": [
+    "tanstack-router",
+    "react-router",
+    "react-vite",
+    "tanstack-start",
+    "next",
+    "nuxt",
+    "svelte",
+    "solid",
+    "solid-start",
+    "angular",
+    "astro",
+    "redwood",
+  ],
+  "backend-utils": [],
+  "docker-compose": [],
+  kong: [],
+  devcontainer: [],
+  "github-actions": [],
+  none: [],
+};
+
+export function isWebFrontend(value: Frontend) {
+  return WEB_FRAMEWORKS.includes(value);
+}
+
+export function splitFrontends(values: Frontend[] = []): {
+  web: Frontend[];
+  native: Frontend[];
+} {
+  const web = values.filter((f) => isWebFrontend(f));
+  const native = values.filter(
+    (f) => f === "native-bare" || f === "native-uniwind" || f === "native-unistyles",
+  );
+  return { web, native };
+}
+
+export function allowedApisForFrontends(
+  frontends: Frontend[] = [],
+  astroIntegration?: AstroIntegration,
+) {
+  const includesNuxt = frontends.includes("nuxt");
+  const includesSvelte = frontends.includes("svelte");
+  const includesSolid = frontends.includes("solid");
+  const includesAstro = frontends.includes("astro");
+  const includesQwik = frontends.includes("qwik");
+  const includesAngular = frontends.includes("angular");
+  const includesRedwood = frontends.includes("redwood");
+  const includesFresh = frontends.includes("fresh");
+  const includesStandaloneVite = frontends.includes("vanilla-vite") || frontends.includes("vue");
+  const includesNative = frontends.some((frontend) =>
+    ["native-bare", "native-uniwind", "native-unistyles"].includes(frontend),
+  );
+  const base: API[] = [
+    "trpc",
+    "orpc",
+    "ts-rest",
+    "garph",
+    "graphql-yoga",
+    "apollo-server",
+    "openapi",
+    "none",
+  ];
+
+  if (includesNative) {
+    return ["trpc", "orpc", "ts-rest", "garph", "none"] as API[];
+  }
+
+  if (includesStandaloneVite) {
+    return ["graphql-yoga", "apollo-server", "openapi", "none"] as API[];
+  }
+
+  if (includesQwik || includesAngular || includesRedwood || includesFresh) {
+    return ["graphql-yoga", "none"] as API[];
+  }
+
+  const includesSolidStartApi = frontends.includes("solid-start");
+  if (includesNuxt || includesSvelte || includesSolid || includesSolidStartApi) {
+    return ["orpc", "graphql-yoga", "openapi", "none"] as API[];
+  }
+
+  if (includesAstro && astroIntegration !== "react") {
+    return ["orpc", "graphql-yoga", "openapi", "none"] as API[];
+  }
+
+  return base;
+}
+
+function getReactOnlyApiDisplayName(api: API) {
+  if (api === "trpc") return "tRPC";
+  if (api === "ts-rest") return "ts-rest";
+  if (api === "openapi") return "OpenAPI";
+  if (api === "apollo-server") return "Apollo Server";
+  return "garph";
+}
+
+export function getApiFrontendCompatibilityIssue(
+  api: API | undefined,
+  frontends: Frontend[] = [],
+  astroIntegration?: AstroIntegration,
+): CompatibilityIssue | undefined {
+  if (!api || api === "none") return undefined;
+
+  const includesNuxt = frontends.includes("nuxt");
+  const includesSvelte = frontends.includes("svelte");
+  const includesSolid = frontends.includes("solid");
+  const includesAstro = frontends.includes("astro");
+  const includesQwik = frontends.includes("qwik");
+  const includesAngular = frontends.includes("angular");
+  const includesRedwood = frontends.includes("redwood");
+  const includesFresh = frontends.includes("fresh");
+  const includesSolidStart = frontends.includes("solid-start");
+  const includesStandaloneVite = frontends.includes("vanilla-vite") || frontends.includes("vue");
+  const isReactOnlyApi =
+    api === "trpc" || api === "ts-rest" || api === "garph" || api === "apollo-server";
+
+  if (
+    includesStandaloneVite &&
+    (api === "trpc" || api === "orpc" || api === "ts-rest" || api === "garph")
+  ) {
+    const incompatibleFrontend = frontends.includes("vanilla-vite") ? "vanilla-vite" : "vue";
+    return {
+      code: "STANDALONE_VITE_API_UNSUPPORTED",
+      message: "Standalone Vite frontends support only GraphQL and OpenAPI API integrations.",
+      category: "api",
+      optionId: api,
+      provided: { api, frontend: incompatibleFrontend },
+      suggestions: [
+        "Use --api graphql-yoga, --api apollo-server, or --api openapi",
+        "Choose a React-based frontend for tRPC, oRPC, ts-rest, or garph",
+        "Use --api none",
+      ],
+    };
+  }
+
+  if ((includesNuxt || includesSvelte || includesSolid || includesSolidStart) && isReactOnlyApi) {
+    const incompatibleFrontend = includesNuxt
+      ? "nuxt"
+      : includesSvelte
+        ? "svelte"
+        : includesSolid
+          ? "solid"
+          : "solid-start";
+
+    return {
+      code: "API_REQUIRES_REACT_FRONTEND",
+      message: `${getReactOnlyApiDisplayName(api)} API requires React-based frontends.`,
+      category: "api",
+      optionId: api,
+      provided: { api, frontend: incompatibleFrontend },
+      suggestions: [
+        "Use --api orpc (works with all frontends)",
+        "Use --api none",
+        "Choose next, react-router, react-vite, or tanstack-start",
+      ],
+    };
+  }
+
+  if (includesQwik) {
+    return {
+      code: "QWIK_REJECTS_EXTERNAL_API",
+      message: "Qwik has built-in server capabilities and doesn't support external APIs.",
+      category: "api",
+      optionId: api,
+      provided: { api, frontend: "qwik" },
+      suggestions: ["Use --api none with Qwik"],
+    };
+  }
+
+  if (includesAngular) {
+    return {
+      code: "ANGULAR_REJECTS_EXTERNAL_API",
+      message: "Angular has built-in HttpClient and doesn't support external APIs.",
+      category: "api",
+      optionId: api,
+      provided: { api, frontend: "angular" },
+      suggestions: ["Use --api none with Angular"],
+    };
+  }
+
+  if (includesRedwood) {
+    return {
+      code: "REDWOOD_REJECTS_EXTERNAL_API",
+      message: "RedwoodJS has built-in GraphQL API and doesn't support external APIs.",
+      category: "api",
+      optionId: api,
+      provided: { api, frontend: "redwood" },
+      suggestions: ["Use --api none with RedwoodJS"],
+    };
+  }
+
+  if (includesFresh) {
+    return {
+      code: "FRESH_REJECTS_EXTERNAL_API",
+      message: "Fresh has built-in server capabilities and doesn't support external APIs.",
+      category: "api",
+      optionId: api,
+      provided: { api, frontend: "fresh" },
+      suggestions: ["Use --api none with Fresh"],
+    };
+  }
+
+  if (includesAstro && astroIntegration !== "react" && isReactOnlyApi) {
+    return {
+      code: "ASTRO_API_REQUIRES_REACT_INTEGRATION",
+      message: `${getReactOnlyApiDisplayName(api)} API requires React integration with Astro.`,
+      category: "api",
+      optionId: api,
+      provided: { api, "astro-integration": astroIntegration ?? "none" },
+      suggestions: [
+        "Use --api orpc (works with all Astro integrations)",
+        "Use --api none",
+        "Use --astro-integration react",
+      ],
+    };
+  }
+
+  return undefined;
+}
+
+export function getAIFrontendCompatibilityIssue(
+  ai: AI | undefined,
+  frontends: Frontend[] = [],
+): CompatibilityIssue | undefined {
+  if (!ai || ai !== "tanstack-ai") return undefined;
+
+  if (hasTanStackAICompatibleFrontend(frontends)) return undefined;
+
+  return {
+    code: "TANSTACK_AI_REQUIRES_REACT_OR_SOLID_FRONTEND",
+    message:
+      "TanStack AI requires React or Solid frontend (no Vue/Svelte/Angular adapter yet). " +
+      "Please use a React-based frontend (Next.js, TanStack Router, React Router, etc.) or Solid.",
+    category: "ai",
+    optionId: ai,
+    provided: { ai, frontend: frontends.length > 0 ? frontends : "none" },
+    suggestions: [
+      "Use a React-based frontend such as Next.js, TanStack Router, or React Router",
+      "Use Solid or SolidStart",
+      "Choose a different AI SDK",
+    ],
+  };
+}
+
+export function isFrontendAllowedWithBackend(frontend: Frontend, backend?: Backend, auth?: string) {
+  if (backend === "convex" && frontend === "solid") return false;
+  if (backend === "convex" && frontend === "solid-start") return false;
+  if (backend === "convex" && frontend === "astro") return false;
+  if (backend === "convex" && frontend === "qwik") return false;
+  if (backend === "convex" && frontend === "angular") return false;
+  if (backend === "convex" && frontend === "redwood") return false;
+  if (backend === "convex" && frontend === "fresh") return false;
+
+  if (frontend === "qwik" && backend && backend !== "none") return false;
+  if (frontend === "angular" && backend === "self") {
+    return false;
+  }
+  if (frontend === "redwood" && backend && backend !== "none") return false;
+  if (frontend === "fresh" && backend && backend !== "none") return false;
+
+  if (auth && auth !== "none") {
+    return (
+      getCapabilityDisabledReason(
+        "auth",
+        {
+          ecosystem: "typescript",
+          backend,
+          webFrontend: [frontend],
+        },
+        auth as Auth,
+      ) === null
+    );
+  }
+
+  return true;
+}
+
+export function requiresChatSdkVercelAIForSelection(
+  backend?: Backend | string,
+  frontends: Frontend[] = [],
+  runtime?: Runtime | string,
+) {
+  if (backend === "self" && frontends.includes("nuxt")) return true;
+  if (backend === "self-nuxt") return true;
+  if (backend === "hono" && runtime === "node") return true;
+  return false;
+}
+
+export function validateAddonCompatibility(
+  addon: Addons,
+  frontend: Frontend[],
+  _auth?: Auth,
+): { isCompatible: boolean; reason?: string } {
+  const compatibleFrontends = ADDON_COMPATIBILITY[addon];
+
+  if (compatibleFrontends.length > 0) {
+    const hasCompatibleFrontend = frontend.some((f) =>
+      (compatibleFrontends as readonly string[]).includes(f),
+    );
+
+    if (!hasCompatibleFrontend) {
+      const frontendList = compatibleFrontends.join(", ");
+      return {
+        isCompatible: false,
+        reason: `${addon} requires one of these frontends: ${frontendList}`,
+      };
+    }
+  }
+
+  return { isCompatible: true };
+}
+
+export function getCompatibleAddons(
+  allAddons: Addons[],
+  frontend: Frontend[],
+  existingAddons: Addons[] = [],
+  auth?: Auth,
+) {
+  return allAddons.filter((addon) => {
+    if (existingAddons.includes(addon)) return false;
+    if (addon === "none") return false;
+    const { isCompatible } = validateAddonCompatibility(addon, frontend, auth);
+    return isCompatible;
+  });
+}
+
+export function getCompatibleUILibraries(
+  frontends: Frontend[] = [],
+  astroIntegration?: AstroIntegration,
+): UILibrary[] {
+  const { web } = splitFrontends(frontends);
+  if (web.length === 0) return ["none"];
+
+  const webFrontend = web[0];
+  const allUILibraries = Object.keys(UI_LIBRARY_COMPATIBILITY) as UILibrary[];
+
+  return allUILibraries.filter((lib) => {
+    if (lib === "none") return true;
+
+    const compatibility = UI_LIBRARY_COMPATIBILITY[lib];
+    if (webFrontend === "astro") {
+      if (astroIntegration === "react") {
+        return compatibility.frontends.some((f) =>
+          [
+            "tanstack-router",
+            "react-router",
+            "react-vite",
+            "tanstack-start",
+            "next",
+            "astro",
+          ].includes(f),
+        );
+      }
+      return compatibility.frontends.some((f) =>
+        ["nuxt", "svelte", "solid", "qwik", "angular"].includes(f),
+      );
+    }
+
+    return compatibility.frontends.includes(webFrontend);
+  });
+}
+
+export function getCompatibleCSSFrameworks(
+  uiLibrary: UILibrary | undefined,
+  frontends: Frontend[] = [],
+): CSSFramework[] {
+  const frameworks =
+    !uiLibrary || uiLibrary === "none"
+      ? ([
+          "tailwind",
+          "scss",
+          "less",
+          "postcss-only",
+          "styled-components",
+          "none",
+        ] as CSSFramework[])
+      : ([...UI_LIBRARY_COMPATIBILITY[uiLibrary].cssFrameworks] as CSSFramework[]);
+
+  if (frontends.length === 0) return frameworks;
+
+  const reactFrontends: Frontend[] = [
+    "tanstack-router",
+    "react-router",
+    "react-vite",
+    "tanstack-start",
+    "next",
+    "vinext",
+    "redwood",
+  ];
+  return frontends.some((frontend) => reactFrontends.includes(frontend))
+    ? frameworks
+    : frameworks.filter((framework) => framework !== "styled-components");
+}
+
+export function hasWebStyling(frontends: Frontend[] = []): boolean {
+  const { web } = splitFrontends(frontends);
+  return web.length > 0;
+}
+
+export function getCompatibleFormLibraries(frontends: Frontend[] = []): Forms[] {
+  if (frontends.some((frontend) => ["vanilla-vite", "vue"].includes(frontend))) {
+    return ["none"];
+  }
+
+  const hasSolid = frontends.includes("solid");
+  const hasSolidStart = frontends.includes("solid-start");
+  const hasQwik = frontends.includes("qwik");
+  const hasFresh = frontends.includes("fresh");
+
+  const all: Forms[] = [
+    "tanstack-form",
+    "react-hook-form",
+    "formik",
+    "final-form",
+    "conform",
+    "modular-forms",
+    "none",
+  ];
+
+  if (hasFresh) {
+    return all.filter((f) => f !== "tanstack-form" && f !== "react-hook-form" && f !== "formik");
+  }
+
+  if (hasSolid || hasSolidStart || hasQwik) {
+    return all.filter((f) => f !== "react-hook-form" && f !== "formik" && f !== "final-form");
+  }
+
+  return all;
+}
+
+export function evaluateCompatibility(input: CompatibilityInput): CompatibilityEvaluation {
+  const issues: CompatibilityIssue[] = [];
+
+  const scalarChecks: Array<[CompatibilityCategory, string]> = [
+    ["runtime", input.runtime],
+    ["backend", input.backend],
+    ["database", input.database],
+    ["orm", input.orm],
+    ["dbSetup", input.dbSetup],
+    ["auth", input.auth],
+    ["payments", input.payments],
+    ["email", input.email],
+    ["fileUpload", input.fileUpload],
+    ["logging", input.logging],
+    ["observability", input.observability],
+    ["realtime", input.realtime],
+    ["jobQueue", input.jobQueue],
+    ["validation", input.validation],
+    ["testing", input.testing],
+    ["ai", input.aiSdk],
+    ["caching", input.caching],
+    ["rateLimit", input.rateLimit],
+    ["i18n", input.i18n],
+    ["search", input.search],
+    ["vectorDb", input.vectorDb],
+    ["fileStorage", input.fileStorage],
+    ["analytics", input.analytics],
+    ["cssFramework", input.cssFramework],
+    ["uiLibrary", input.uiLibrary],
+    ["webDeploy", input.webDeploy],
+    ["serverDeploy", input.serverDeploy],
+    ["forms", input.forms],
+    ["stateManagement", input.stateManagement],
+    ["animation", input.animation],
+    ["cms", input.cms],
+    ["featureFlags", input.featureFlags],
+    ["integrations", input.integrations],
+    ["ecommerce", input.ecommerce],
+    ["botProtection", input.botProtection],
+    ["pythonApi", input.pythonApi],
+    ["javaWebFramework", input.javaWebFramework],
+    ["javaBuildTool", input.javaBuildTool],
+    ["javaOrm", input.javaOrm],
+    ["javaAuth", input.javaAuth],
+    ["dotnetWebFramework", input.dotnetWebFramework],
+    ["dotnetOrm", input.dotnetOrm],
+    ["dotnetAuth", input.dotnetAuth],
+    ["dotnetApi", input.dotnetApi],
+    ["dotnetJobQueue", input.dotnetJobQueue],
+    ["dotnetRealtime", input.dotnetRealtime],
+    ["dotnetCaching", input.dotnetCaching],
+    ["dotnetDeploy", input.dotnetDeploy],
+    ["elixirWebFramework", input.elixirWebFramework],
+    ["elixirOrm", input.elixirOrm],
+    ["elixirAuth", input.elixirAuth],
+    ["elixirApi", input.elixirApi],
+    ["elixirRealtime", input.elixirRealtime],
+    ["elixirJobs", input.elixirJobs],
+    ["elixirValidation", input.elixirValidation],
+    ["elixirHttp", input.elixirHttp],
+    ["elixirJson", input.elixirJson],
+    ["elixirEmail", input.elixirEmail],
+    ["elixirCaching", input.elixirCaching],
+    ["elixirObservability", input.elixirObservability],
+    ["elixirTesting", input.elixirTesting],
+    ["elixirQuality", input.elixirQuality],
+    ["elixirI18n", input.elixirI18n],
+    ["elixirHttpServer", input.elixirHttpServer],
+    ["elixirApplicationFramework", input.elixirApplicationFramework],
+    ["elixirDocumentation", input.elixirDocumentation],
+    ["elixirClustering", input.elixirClustering],
+    ["elixirDeploy", input.elixirDeploy],
+  ];
+
+  for (const [category, optionId] of scalarChecks) {
+    const reason = getDisabledReason(input, category, optionId);
+    if (reason) {
+      issues.push({
+        code: `INCOMPATIBLE_${category.toUpperCase()}`,
+        message: reason,
+        category,
+        optionId,
+      });
+    }
+  }
+
+  const apiFrontendIssue = getApiFrontendCompatibilityIssue(
+    input.api as API | undefined,
+    [...input.webFrontend, ...input.nativeFrontend] as Frontend[],
+    input.astroIntegration as AstroIntegration | undefined,
+  );
+  if (apiFrontendIssue) {
+    issues.push(apiFrontendIssue);
+  }
+
+  const aiFrontendIssue = getAIFrontendCompatibilityIssue(
+    input.aiSdk as AI | undefined,
+    [...input.webFrontend, ...input.nativeFrontend] as Frontend[],
+  );
+  if (aiFrontendIssue) {
+    issues.push(aiFrontendIssue);
+  }
+
+  for (const frontend of input.webFrontend) {
+    const reason = getDisabledReason(input, "webFrontend", frontend);
+    if (reason) {
+      issues.push({
+        code: "INCOMPATIBLE_FRONTEND",
+        message: reason,
+        category: "webFrontend",
+        optionId: frontend,
+      });
+    }
+  }
+
+  for (const addon of [...input.codeQuality, ...input.documentation, ...input.appPlatforms]) {
+    const reason = getDisabledReason(input, "appPlatforms", addon);
+    if (reason) {
+      issues.push({
+        code: "INCOMPATIBLE_ADDON",
+        message: reason,
+        category: "appPlatforms",
+        optionId: addon,
+      });
+    }
+  }
+
+  for (const addon of input.examples) {
+    const reason = getDisabledReason(input, "examples", addon);
+    if (reason) {
+      issues.push({
+        code: "INCOMPATIBLE_ADDON",
+        message: reason,
+        category: "examples",
+        optionId: addon,
+      });
+    }
+  }
+
+  for (const javaLibrary of input.javaLibraries) {
+    const reason = getDisabledReason(input, "javaLibraries", javaLibrary);
+    if (reason) {
+      issues.push({
+        code: "INCOMPATIBLE_JAVA_LIBRARY",
+        message: reason,
+        category: "javaLibraries",
+        optionId: javaLibrary,
+      });
+    }
+  }
+
+  for (const mobileLibrary of input.mobileLibraries ?? []) {
+    const reason = getDisabledReason(input, "mobileLibraries", mobileLibrary);
+    if (reason) {
+      issues.push({
+        code: "INCOMPATIBLE_MOBILE_LIBRARY",
+        message: reason,
+        category: "mobileLibraries",
+        optionId: mobileLibrary,
+      });
+    }
+  }
+
+  for (const kotlinLibrary of input.kotlinMobileLibraries ?? []) {
+    const reason = getDisabledReason(input, "kotlinMobileLibraries", kotlinLibrary);
+    if (reason) {
+      issues.push({
+        code: "INCOMPATIBLE_KOTLIN_MOBILE_LIBRARY",
+        message: reason,
+        category: "kotlinMobileLibraries",
+        optionId: kotlinLibrary,
+      });
+    }
+  }
+
+  for (const testingLibrary of input.javaTestingLibraries) {
+    const reason = getDisabledReason(input, "javaTestingLibraries", testingLibrary);
+    if (reason) {
+      issues.push({
+        code: "INCOMPATIBLE_JAVA_TESTING_LIBRARY",
+        message: reason,
+        category: "javaTestingLibraries",
+        optionId: testingLibrary,
+      });
+    }
+  }
+
+  for (const testingLibrary of input.dotnetTesting) {
+    const reason = getDisabledReason(input, "dotnetTesting", testingLibrary);
+    if (reason) {
+      issues.push({
+        code: "INCOMPATIBLE_DOTNET_TESTING_LIBRARY",
+        message: reason,
+        category: "dotnetTesting",
+        optionId: testingLibrary,
+      });
+    }
+  }
+
+  for (const observabilityLibrary of input.dotnetObservability) {
+    const reason = getDisabledReason(input, "dotnetObservability", observabilityLibrary);
+    if (reason) {
+      issues.push({
+        code: "INCOMPATIBLE_DOTNET_OBSERVABILITY",
+        message: reason,
+        category: "dotnetObservability",
+        optionId: observabilityLibrary,
+      });
+    }
+  }
+
+  for (const dotnetLibrary of input.dotnetLibraries ?? []) {
+    const reason = getDisabledReason(input, "dotnetLibraries", dotnetLibrary);
+    if (reason) {
+      issues.push({
+        code: "INCOMPATIBLE_DOTNET_LIBRARY",
+        message: reason,
+        category: "dotnetLibraries",
+        optionId: dotnetLibrary,
+      });
+    }
+  }
+
+  return {
+    issues: issues.map((issue) => {
+      if (!issue.category || !issue.optionId) return issue;
+      const explanation = getCompatibilityExplanation(
+        input,
+        issue.category,
+        issue.optionId,
+        issue.message,
+      );
+      const suggestions =
+        issue.suggestions ??
+        explanation?.alternatives.map((alternative) => `Use '${alternative.optionId}'`);
+      return {
+        ...issue,
+        ...(suggestions && suggestions.length > 0 ? { suggestions } : {}),
+        ...(explanation ? { explanation } : {}),
+      };
+    }),
+  };
+}

@@ -1,6 +1,6 @@
 import type { CompilerOptions } from "@inlang/paraglide-js";
 
-import { LOCALE_COOKIE_NAME } from "./src/lib/i18n/locales";
+import { LOCALE_COOKIE_NAME } from "#web/lib/i18n/locales";
 
 export const paraglideCompilerOptions = {
   project: "./project.inlang",

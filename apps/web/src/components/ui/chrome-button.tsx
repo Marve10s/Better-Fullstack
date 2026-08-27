@@ -5,7 +5,7 @@ import { motion, type Transition } from "motion/react";
 import { type ComponentProps, type ReactNode } from "react";
 
 import { LiquidChrome } from "@/components/ui/liquid-chrome";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
 
 const MULTI_CHROME_BASE: [number, number, number] = [
   0.0392156862745098, 0.0392156862745098, 0.0392156862745098,

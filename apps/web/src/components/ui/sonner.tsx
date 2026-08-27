@@ -1,4 +1,3 @@
-
 import {
   TbCircleCheck as CircleCheckIcon,
   TbInfoCircle as InfoIcon,
@@ -8,7 +7,7 @@ import {
 } from "react-icons/tb";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
 
-import { useTheme } from "@/lib/theme";
+import { useTheme } from "@/lib/content/theme";
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme();

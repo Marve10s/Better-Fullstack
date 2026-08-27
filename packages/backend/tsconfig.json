@@ -1,5 +1,12 @@
 {
   "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./convex/*"],
+      "@test/*": ["./test/*"]
+    }
+  },
   "include": ["convex/**/*"],
   "exclude": ["convex/_generated", "node_modules"]
 }

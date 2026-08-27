@@ -1,6 +1,6 @@
 const firstArg = process.argv[2];
 if (firstArg === "mcp" && process.argv.length === 3) {
-  Promise.all([import("./mcp.js"), import("./utils/analytics.js")]).then(
+  Promise.all([import("@/mcp.js"), import("@/telemetry/analytics.js")]).then(
     async ([mcp, analytics]) => {
       await analytics.trackCommand("mcp", "started", { source: "cli-flags" });
       return mcp.startMcpServer();
@@ -9,8 +9,8 @@ if (firstArg === "mcp" && process.argv.length === 3) {
 } else {
   void (async () => {
     const [run, analytics] = await Promise.all([
-      import("./run.js"),
-      import("./utils/analytics.js"),
+      import("@/run.js"),
+      import("@/telemetry/analytics.js"),
     ]);
     let exitCode = 0;
 
@@ -29,6 +29,6 @@ if (firstArg === "mcp" && process.argv.length === 3) {
       await analytics.flushTelemetry();
     }
 
-    process.exit(exitCode);
+    process.exitCode = exitCode;
   })();
 }

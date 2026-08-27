@@ -1,8 +1,7 @@
+import type { BenchmarkSpec, CreationPath, Effort } from "@scaffbench/types";
+
+import { runCommand } from "@scaffbench/agents/command";
 import * as Effect from "effect/Effect";
-
-import type { BenchmarkSpec, CreationPath, Effort } from "@/types";
-
-import { runCommand } from "@/agents/command";
 
 export const HARNESS_VERSION = "3.1.0";
 export const SCAFFBENCH_SUITE_VERSION = "3.0";

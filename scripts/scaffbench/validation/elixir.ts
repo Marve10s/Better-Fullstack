@@ -1,2 +1,1 @@
-export { validateElixirProject } from "@/validation/index";
-
+export { validateElixirProject } from "@scaffbench/validation/index";

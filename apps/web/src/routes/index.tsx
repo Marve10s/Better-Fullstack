@@ -17,7 +17,7 @@ import {
   DEFAULT_X_IMAGE_URL,
   canonicalUrl,
   getDefaultDescription,
-} from "@/lib/seo";
+} from "@/lib/seo/seo";
 import { m } from "@/paraglide/messages.js";
 
 export const Route = createFileRoute("/")({

@@ -9,11 +9,10 @@ import {
   TbCopy as Copy,
 } from "react-icons/tb";
 
+import { LIKED_BY } from "@/components/home/testimonials-data";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
 import { m } from "@/paraglide/messages.js";
-
-import { LIKED_BY } from "./testimonials-data";
 
 const PMS = ["bun", "pnpm", "npm", "yarn"] as const;
 type PM = (typeof PMS)[number];
@@ -159,7 +158,9 @@ export default function HeroSection() {
                   aria-pressed={pm === entry}
                   className={cn(
                     "cursor-pointer rounded-full px-2 py-1 font-mono transition-colors",
-                    pm === entry ? cn("bg-surface-raised", ACCENT_TEXT) : "text-soft hover:text-ink",
+                    pm === entry
+                      ? cn("bg-surface-raised", ACCENT_TEXT)
+                      : "text-soft hover:text-ink",
                   )}
                 >
                   {entry}

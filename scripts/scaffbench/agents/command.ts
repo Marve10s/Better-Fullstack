@@ -1,9 +1,8 @@
+import type { CommandResult } from "@scaffbench/types";
+
+import { GEN_IDLE_TIMEOUT_MS, TIMEOUT_PROGRESS_WINDOW_MS } from "@scaffbench/constants";
+import { spawnProcessTree } from "@scaffbench/process-tree";
 import * as Effect from "effect/Effect";
-
-import type { CommandResult } from "@/types";
-
-import { GEN_IDLE_TIMEOUT_MS, TIMEOUT_PROGRESS_WINDOW_MS } from "@/constants";
-import { spawnProcessTree } from "@/process-tree";
 
 export type RunCommandOptions = {
   idleTimeoutMs?: number;

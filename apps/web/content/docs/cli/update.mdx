@@ -2,18 +2,19 @@
 title: Status, Check, and Update
 description: Inspect project health, run generated target checks, and apply current-template changes under review.
 translationStatus: pending
-updated: 2026-08-22
+updated: 2026-08-23
 ---
 
-Three commands maintain a project after scaffolding. `status` answers whether anything needs attention without running anything. `check` executes the generated targets and tells you whether the project builds. `update` compares the project with current templates and applies the difference under a review token.
+Four commands maintain a project after scaffolding. `status` answers whether anything needs attention without running anything. `check` executes the generated targets and tells you whether the project builds. `adopt` creates a reviewable baseline for older projects. `update` compares that baseline with current templates and applies the difference under a review token.
 
 ## Operational contract
 
-| Command  | Preconditions                                                                        | Writes                                                                                      | Recovery                                                                                        |
-| -------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `status` | A generated project with `bts.jsonc`.                                                   | Nothing. It never executes toolchains.                                                        | Not applicable.                                                                                   |
-| `check`  | `bts.jsonc`, installed dependencies, and every toolchain the targets need.             | No scaffold source or config. Invoked build tools may write their normal caches and output.   | Not applicable.                                                                                   |
-| `update` | `bts.jsonc`; apply also needs a valid versioned `bts.lock.json`.                        | Only `--apply` and `--record-baseline` write files.                                           | Apply snapshots bounded paths, rolls failed writes back, and returns a one-command recovery ID.   |
+| Command  | Preconditions                                                              | Writes                                                                                      | Recovery                                                                                        |
+| -------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `status` | A generated project with `bts.jsonc`.                                      | Nothing. It never executes toolchains.                                                      | Not applicable.                                                                                 |
+| `check`  | `bts.jsonc`, installed dependencies, and every toolchain the targets need. | No scaffold source or config. Invoked build tools may write their normal caches and output. | Not applicable.                                                                                 |
+| `adopt`  | A valid `bts.jsonc` and no `bts.lock.json`.                                | Nothing by default. Exact token confirmation creates only `bts.lock.json`.                  | A stale token or existing manifest blocks the write.                                            |
+| `update` | `bts.jsonc`; apply also needs a valid versioned `bts.lock.json`.           | Only token-bound `--apply` writes project files.                                            | Apply snapshots bounded paths, rolls failed writes back, and returns a one-command recovery ID. |
 
 Local edits, conflicts, secrets, lockfiles, and template removals are never silently overwritten or deleted.
 
@@ -33,16 +34,34 @@ npm create better-fullstack@latest check -- --skip-checks
 
 `check` validates `bts.jsonc`, verifies installed dependencies for the detected package manager or ecosystem, reports missing required environment variables from `.env.example` files, discovers every executable frontend, backend, mobile, and database target from the stack graph, runs each target's type/build contract in deterministic order, and reports status per target. It exits non-zero on failures, missing toolchains, or incomplete execution.
 
-| Flag                         | Behavior                                                                                                                              |
-| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| positional directory         | Project to diagnose; defaults to the current directory.                                                                                 |
-| `--skip-checks`              | Inspect config, dependencies, and env files only.                                                                                        |
-| `--json`                     | Structured JSON. Without `--run-checks`, ecosystem checks are skipped and reported as warnings.                                          |
-| `--run-checks`               | With `--json`: execute the full target matrix.                                                                                            |
+| Flag                 | Behavior                                                                                        |
+| -------------------- | ----------------------------------------------------------------------------------------------- |
+| positional directory | Project to diagnose; defaults to the current directory.                                         |
+| `--skip-checks`      | Inspect config, dependencies, and env files only.                                               |
+| `--json`             | Structured JSON. Without `--run-checks`, ecosystem checks are skipped and reported as warnings. |
+| `--run-checks`       | With `--json`: execute the full target matrix.                                                  |
 
 <Callout kind="warning" title="Checks can mutate toolchain state">
 Generated checks may fetch dependencies and write locks, caches, compiler output, or build artifacts. JSON captures output but does not make commands read-only.
 </Callout>
+
+## Adopt an older project
+
+Projects created before manifest v2 can build a read-only adoption plan:
+
+```bash
+npx create-better-fullstack@latest adopt . --json
+```
+
+The plan reports likely Stack Parts, whether each part came from an explicit graph or legacy flat config, and medium or low confidence. It also compares current project paths and bytes with current templates. That comparison cannot reconstruct the original CLI, generator, template set, or schema version, so adoption always records `adopted-unverified` lineage.
+
+No file is written until the exact plan token is confirmed:
+
+```bash
+npx create-better-fullstack@latest adopt . --confirm-token <token>
+```
+
+The token binds the canonical project path, raw `bts.jsonc`, all baseline file hashes, detected Stack Parts, template evidence, and uncertainty. Any project change makes it stale. Confirmation creates `bts.lock.json` exclusively and refuses to replace an existing or malformed manifest. Future update apply remains recoverable but requires `--acknowledge-unproven-manifest-v1` because adoption does not prove release history.
 
 ## Update
 
@@ -56,16 +75,16 @@ The engine compares baseline bytes, the current template render, and current dis
 
 ### Modes
 
-| Flag                                 | Behavior                                                                                  |
-| ------------------------------------ | ------------------------------------------------------------------------------------------- |
-| no mode flag / `--dry-run`           | Print the plan without writing.                                                             |
-| `--apply --review-token <token>`     | Transactionally write actionable drift, merges, and new files with the plan's exact token.  |
-| `--recover <transaction-id>`         | Restore every path bound to a successful or interrupted transaction.                         |
-| `--check`                            | CI gate: exit non-zero when actionable drift exists.                                         |
-| `--record-baseline`                  | Adopt current bytes as the baseline manually; not generator-lineage proof.                   |
-| `--json`                             | Categorized paths, hashes, counts, and the review token as JSON.                             |
+| Flag                             | Behavior                                                                                     |
+| -------------------------------- | -------------------------------------------------------------------------------------------- |
+| no mode flag / `--dry-run`       | Print the plan without writing.                                                              |
+| `--apply --review-token <token>` | Transactionally write actionable drift, merges, and new files with the plan's exact token.   |
+| `--recover <transaction-id>`     | Compatibility shortcut for restoring one known transaction.                                  |
+| `--check`                        | CI gate: exit non-zero when actionable drift exists.                                         |
+| `--record-baseline`              | Deprecated safety stop. It directs users to the token-bound `adopt` flow and does not write. |
+| `--json`                         | Categorized paths, hashes, counts, and the review token as JSON.                             |
 
-The write/check/baseline modes are mutually exclusive.
+The write and check modes are mutually exclusive.
 
 ### Workflow
 
@@ -74,8 +93,61 @@ The write/check/baseline modes are mutually exclusive.
 3. Keep the returned recovery command until verification passes.
 4. Resolve remaining files manually, then run `check` and the project's tests.
 
-<Callout kind="warning" title="Baseline adoption">
-`--record-baseline` adopts the current project state without proving its historical generator lineage. The resulting manifest stays marked unverified and requires `--acknowledge-unproven-manifest-v1` when applying later plans.
-</Callout>
-
 Apply rechecks config, manifest, intended hashes, observed path state, and each file preimage before writing. That catches ordinary concurrent edits but is not a defense against an active filesystem adversary. If a late check fails, operation-owned writes roll back while concurrent edits are preserved and reported.
+
+## Opt-in GitHub Action
+
+The repository includes `.github/actions/update-check`, a composite action for an exact CLI version. The caller must check out a clean commit and prepare every project dependency and ecosystem toolchain before invoking it. Check-only mode fails when a verified update exists by default.
+
+Pull request mode needs explicit write permissions:
+
+```yaml
+name: Better Fullstack update
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - run: bun install --frozen-lockfile # Replace with the preparation required by your stack.
+      - uses: Marve10s/Better-Fullstack/.github/actions/update-check@<immutable-commit-sha>
+        with:
+          project-directory: .
+          cli-version: "2.6.1"
+          open-pull-request: "true"
+          base-branch: main
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+```
+
+Pin both the action and `cli-version`; moving package tags are rejected. The action reads the shared support report, plans twice around a full `check --json --run-checks`, and requires byte-identical plans, verified manifest-v2 lineage, complete target execution, a clean worktree, and no conflicts, manual files, or retained template removals. It applies only the reviewed paths, pushes a generated `better-fullstack/update-<run-id>-<attempt>` branch, and never pushes the base branch.
+
+Every run uploads `better-fullstack-update-check-receipt.v1.json`. Pull request mode also embeds the exact final receipt and its SHA-256 in the pull request body. A blocked or check-only run cannot create a branch or pull request.
+
+## Recovery discovery and retention
+
+Use the dedicated command when you no longer have the transaction ID or want to inspect recovery safety first:
+
+```bash
+npx create-better-fullstack@latest recovery list --project-dir .
+npx create-better-fullstack@latest recovery show <transaction-id> --project-dir .
+npx create-better-fullstack@latest recovery verify <transaction-id> --project-dir .
+npx create-better-fullstack@latest recovery apply <transaction-id> --project-dir .
+```
+
+List, show, and verify do not write. Verification checks metadata structure, backup hashes, file modes, and current file hashes. Apply refuses to overwrite files edited after the recorded transaction.
+
+Pruning previews candidates and returns a review token. Apply requires that exact token:
+
+```bash
+npx create-better-fullstack@latest recovery prune --project-dir . --older-than-days 30 --keep 5
+npx create-better-fullstack@latest recovery prune --project-dir . --older-than-days 30 --keep 5 --apply --review-token <token>
+```
+
+Pruning never selects pending or invalid entries. The newest valid entries protected by `--keep` also remain. Invalid entries stay available for manual diagnosis instead of being deleted automatically.

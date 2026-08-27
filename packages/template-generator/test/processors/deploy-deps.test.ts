@@ -1,8 +1,8 @@
+import { makeConfig } from "@test/_fixtures/config-factory";
+import { createSeededVFS, getDeps } from "@test/_fixtures/vfs-factory";
 import { describe, expect, it } from "bun:test";
 
-import { processDeployDeps } from "../../src/processors/deploy-deps";
-import { makeConfig } from "../_fixtures/config-factory";
-import { createSeededVFS, getDeps } from "../_fixtures/vfs-factory";
+import { processDeployDeps } from "@/processors/dependencies/deploy-deps";
 
 function expectIncludesAll(actual: readonly string[], expected: readonly string[]): void {
   for (const item of expected) {
@@ -56,9 +56,15 @@ describe("processDeployDeps", () => {
       }),
     );
 
-    expectIncludesAll(getDeps(nextVfs, "package.json").devDeps, ["sst", "aws-cdk-lib", "constructs"]);
+    expectIncludesAll(getDeps(nextVfs, "package.json").devDeps, [
+      "sst",
+      "aws-cdk-lib",
+      "constructs",
+    ]);
     expect(getDeps(nextVfs, "apps/web/package.json").devDeps).toEqual(["@opennextjs/aws"]);
-    expectIncludesAll(getDeps(svelteVfs, "apps/web/package.json").devDeps, ["@sveltejs/adapter-node"]);
+    expectIncludesAll(getDeps(svelteVfs, "apps/web/package.json").devDeps, [
+      "@sveltejs/adapter-node",
+    ]);
   });
 
   it("adds Vercel root dependency and the Svelte adapter when needed", () => {

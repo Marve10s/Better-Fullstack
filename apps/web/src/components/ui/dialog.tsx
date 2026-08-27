@@ -1,9 +1,8 @@
-
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
-import { TbX as XIcon } from "react-icons/tb";
 import * as React from "react";
+import { TbX as XIcon } from "react-icons/tb";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
 import { m } from "@/paraglide/messages.js";
 
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {
@@ -95,9 +94,7 @@ function DialogFooter({
     >
       {children}
       {showCloseButton && (
-        <DialogPrimitive.Close
-          className="inline-flex h-9 items-center justify-center rounded-lg border border-border/50 bg-muted/20 px-4 text-xs font-medium text-muted-foreground transition-colors duration-150 hover:bg-muted/40 hover:text-foreground"
-        >
+        <DialogPrimitive.Close className="inline-flex h-9 items-center justify-center rounded-lg border border-border/50 bg-muted/20 px-4 text-xs font-medium text-muted-foreground transition-colors duration-150 hover:bg-muted/40 hover:text-foreground">
           {m.uiClose()}
         </DialogPrimitive.Close>
       )}

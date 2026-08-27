@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import type { StackState } from "@/lib/stack-defaults";
+import type { StackState } from "@/lib/stack/stack-defaults";
 
-import { stackStateToProjectConfig } from "@/lib/preview-config";
-import { NOINDEX_ROBOTS } from "@/lib/robots";
+import { stackStateToProjectConfig } from "@/lib/builder/preview-config";
+import { NOINDEX_ROBOTS } from "@/lib/seo/robots";
 
 const ENABLE_STACK_PREVIEW = "1";
 

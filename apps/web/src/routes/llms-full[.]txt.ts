@@ -16,7 +16,7 @@ export const Route = createFileRoute("/llms-full.txt")({
           import("@/lib/docs/source"),
           import("@/lib/guides/source"),
           import("@/lib/blog/source"),
-          import("@/lib/llms"),
+          import("@/lib/content/llms"),
           import("virtual:docs-raw"),
           import("virtual:guides-raw"),
           import("virtual:blog-raw"),

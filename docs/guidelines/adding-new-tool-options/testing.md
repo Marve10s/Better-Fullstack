@@ -99,7 +99,7 @@ it("should include diesel crate when selected", async () => {
 
 ---
 
-## 2. Test Utility Functions (`apps/cli/test/test-utils.ts`)
+## 2. Test Utility Functions (`apps/cli/test/support/test-utils.ts`)
 
 ### Core utilities
 
@@ -203,35 +203,37 @@ interface TestResult {
 
 ### A. Auto-detection test (NO edits needed)
 
-**File:** `apps/cli/test/cli-builder-sync.test.ts`
+**File:** `apps/cli/test/recommendations/cli-builder-sync.test.ts`
 
 This test automatically enumerates all schema values and verifies they appear in the web builder, CLI prompts, and CLI flags. **You never edit this test.** If it fails after adding a new option, it means you missed a file elsewhere.
 
 What it catches automatically:
+
 - Schema value not in `TECH_OPTIONS` (constant.ts)
 - Schema value not in CLI prompt options
 - CLI flag missing for a category
 - Label/alias mismatch between builder and metadata
 
 **Run first after any change:**
+
 ```bash
-bun test apps/cli/test/cli-builder-sync.test.ts
+bun test apps/cli/test/recommendations/cli-builder-sync.test.ts
 ```
 
 ### Test placement map
 
 Use the closest existing suite instead of inventing a new test file by default.
 
-| Change type | Preferred test location |
-|-------------|--------------------------|
-| Schema/prompt/builder wiring parity | `apps/cli/test/cli-builder-sync.test.ts` |
-| Hard CLI validation blocks | `apps/cli/test/basic-configurations.test.ts` |
-| Preflight warnings | `apps/cli/test/preflight-validation.test.ts` |
-| Auth capability / compatibility behavior | `apps/cli/test/auth-capabilities.test.ts` |
-| Rust ecosystem generation / compatibility behavior | `apps/cli/test/rust-ecosystem.test.ts` |
-| Python ecosystem generation behavior | `apps/cli/test/python-language.test.ts` |
-| Go ecosystem generation / compatibility behavior | `apps/cli/test/go-language.test.ts` |
-| Template output regression coverage | `apps/cli/test/template-snapshots.test.ts` |
+| Change type                                          | Preferred test location                                                                |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Schema/prompt/builder wiring parity                  | `apps/cli/test/recommendations/cli-builder-sync.test.ts`                               |
+| Hard CLI validation blocks                           | `apps/cli/test/architecture/basic-configurations.test.ts`                              |
+| Preflight warnings                                   | `apps/cli/test/architecture/preflight-validation.test.ts`                              |
+| Auth capability / compatibility behavior             | `apps/cli/test/features/auth-capabilities.test.ts`                                     |
+| Rust ecosystem generation / compatibility behavior   | `apps/cli/test/ecosystems/rust-ecosystem.test.ts`                                      |
+| Python ecosystem generation behavior                 | `apps/cli/test/ecosystems/python-language.test.ts`                                     |
+| Go ecosystem generation / compatibility behavior     | `apps/cli/test/ecosystems/go-language.test.ts`                                         |
+| Template output regression coverage                  | `apps/cli/test/support/template-snapshots.test.ts`                                     |
 | New option with no natural home in an existing suite | Create a dedicated test file only if the assertion does not fit cleanly anywhere above |
 
 If a change affects multiple layers, use multiple suites. Do not overload snapshots with compatibility assertions or use `cli-builder-sync.test.ts` as a substitute for runtime/behavioral checks.
@@ -241,13 +243,14 @@ If a change affects multiple layers, use multiple suites. Do not overload snapsh
 **File:** `apps/cli/test/<category>.test.ts`
 
 Every new option needs at least:
+
 1. One **basic generation test** — proves the option scaffolds without error
 2. One **file content test** — proves templates output correct code and dependencies
 
 **Pattern for existing category:**
 
 ```typescript
-// apps/cli/test/search.test.ts
+// apps/cli/test/features/search.test.ts
 describe("OpenSearch", () => {
   test("opensearch with Hono backend", async () => {
     const result = await runTRPCTest(
@@ -298,7 +301,7 @@ describe("OpenSearch", () => {
 **Pattern for Rust/Go/Python option:**
 
 ```typescript
-// apps/cli/test/rust-ecosystem.test.ts
+// apps/cli/test/ecosystems/rust-ecosystem.test.ts
 describe("Rust Diesel ORM", () => {
   it("should generate project with diesel", async () => {
     const result = await createVirtual({
@@ -327,15 +330,16 @@ describe("Rust Diesel ORM", () => {
 ### C. Compatibility rule tests (MUST add when rules change)
 
 If you change any of these files:
-- `packages/types/src/compatibility.ts`
+
+- `packages/types/src/stack/compatibility.ts`
 - `packages/template-generator/src/preflight-validation.ts`
-- `apps/cli/src/utils/config-validation.ts`
+- `apps/cli/src/config/config-validation.ts`
 
 then add or update tests in the corresponding suite:
 
-- Disabled reasons / auto-adjustments: the nearest compatibility-focused suite such as `apps/cli/test/auth-capabilities.test.ts` or another domain-specific compatibility test
-- Preflight warnings: `apps/cli/test/preflight-validation.test.ts`
-- Hard CLI blocks: `apps/cli/test/basic-configurations.test.ts`
+- Disabled reasons / auto-adjustments: the nearest compatibility-focused suite such as `apps/cli/test/features/auth-capabilities.test.ts` or another domain-specific compatibility test
+- Preflight warnings: `apps/cli/test/architecture/preflight-validation.test.ts`
+- Hard CLI blocks: `apps/cli/test/architecture/basic-configurations.test.ts`
 
 Do not stop at `cli-builder-sync.test.ts`. That test proves wiring, not behavioral correctness.
 
@@ -344,12 +348,14 @@ Do not stop at `cli-builder-sync.test.ts`. That test proves wiring, not behavior
 For features that introduce new runtime behavior, add assertions that prove the generated code shape is correct, not just present.
 
 This especially applies to:
+
 - auth routes and middleware
 - API client/server integrations
 - deploy adapters and generated platform config
 - framework-specific request/response handling
 
 Examples of high-signal assertions:
+
 - Generated route file contains the correct endpoint path and framework-specific decorator/helper
 - Header/body/query extraction uses the framework's actual API rather than a placeholder function parameter
 - Newly added dependencies are imported or referenced by generated code
@@ -368,7 +374,7 @@ This catches dead starter dependencies such as "added to the manifest, never ref
 
 ### F. Snapshot test (SHOULD add combo)
 
-**File:** `apps/cli/test/template-snapshots.test.ts`
+**File:** `apps/cli/test/support/template-snapshots.test.ts`
 
 Snapshot tests detect unexpected changes in generated file structure. Add one representative combo if the new option significantly changes the output:
 
@@ -391,13 +397,14 @@ Snapshot tests detect unexpected changes in generated file structure. Add one re
 The minimum required fields for a TS snapshot config are: `frontend`, `backend`, `api`, `database`, `orm`, `auth`, plus whatever category you're testing. Look at existing entries in `template-snapshots.test.ts` for the full pattern.
 
 After adding, update snapshots:
+
 ```bash
-bun test apps/cli/test/template-snapshots.test.ts -u
+bun test apps/cli/test/support/template-snapshots.test.ts -u
 ```
 
 ### G. Template validation test (SHOULD include in combos)
 
-**File:** `apps/cli/test/template-validation.test.ts`
+**File:** `apps/cli/test/generation/template-validation.test.ts`
 
 This test runs many combinations and validates TypeScript syntax of generated files. If your option should work with multiple backends/frontends, ensure it appears in the combo arrays:
 
@@ -415,7 +422,7 @@ Your new option will be auto-included if you added it to the schema (since `SEAR
 
 ### H. Preflight validation test (IF constrained)
 
-**File:** `apps/cli/test/preflight-validation.test.ts`
+**File:** `apps/cli/test/architecture/preflight-validation.test.ts`
 
 Only needed if your option has compatibility constraints:
 
@@ -456,17 +463,17 @@ Presets run in the weekly `template-matrix.yaml` CI workflow.
 
 ## 4. Test File Locations by Ecosystem
 
-| Ecosystem | Test file | API used |
-|-----------|-----------|----------|
-| TypeScript (search, CMS, auth, etc.) | `apps/cli/test/<category>.test.ts` | `runTRPCTest` |
-| Rust | `apps/cli/test/rust-ecosystem.test.ts` | `createVirtual` |
-| Go | `apps/cli/test/go-language.test.ts` | `createVirtual` |
-| Python | `apps/cli/test/python-language.test.ts` | `createVirtual` |
-| Schema sync | `apps/cli/test/cli-builder-sync.test.ts` | N/A (schema inspection) |
-| Snapshots | `apps/cli/test/template-snapshots.test.ts` | `createVirtual` |
-| Validation | `apps/cli/test/template-validation.test.ts` | `runTRPCTest` |
-| Preflight | `apps/cli/test/preflight-validation.test.ts` | Direct function calls |
-| Smoke | `testing/smoke-test.ts` | CLI invocation |
+| Ecosystem                            | Test file                                                 | API used                |
+| ------------------------------------ | --------------------------------------------------------- | ----------------------- |
+| TypeScript (search, CMS, auth, etc.) | `apps/cli/test/<category>.test.ts`                        | `runTRPCTest`           |
+| Rust                                 | `apps/cli/test/ecosystems/rust-ecosystem.test.ts`         | `createVirtual`         |
+| Go                                   | `apps/cli/test/ecosystems/go-language.test.ts`            | `createVirtual`         |
+| Python                               | `apps/cli/test/ecosystems/python-language.test.ts`        | `createVirtual`         |
+| Schema sync                          | `apps/cli/test/recommendations/cli-builder-sync.test.ts`  | N/A (schema inspection) |
+| Snapshots                            | `apps/cli/test/support/template-snapshots.test.ts`        | `createVirtual`         |
+| Validation                           | `apps/cli/test/generation/template-validation.test.ts`    | `runTRPCTest`           |
+| Preflight                            | `apps/cli/test/architecture/preflight-validation.test.ts` | Direct function calls   |
+| Smoke                                | `testing/smoke-test.ts`                                   | CLI invocation          |
 
 ---
 
@@ -474,13 +481,13 @@ Presets run in the weekly `template-matrix.yaml` CI workflow.
 
 ```bash
 # Single category test
-bun test apps/cli/test/search.test.ts
+bun test apps/cli/test/features/search.test.ts
 
 # Schema sync (catches most omissions automatically)
-bun test apps/cli/test/cli-builder-sync.test.ts
+bun test apps/cli/test/recommendations/cli-builder-sync.test.ts
 
 # Update snapshots after structural changes
-bun test apps/cli/test/template-snapshots.test.ts -u
+bun test apps/cli/test/support/template-snapshots.test.ts -u
 
 # Full test suite
 bun test apps/cli/test/
@@ -496,15 +503,15 @@ bun run --cwd apps/web validate:tech-links
 
 ## 6. What Breaks If You Forget
 
-| Missed file | Test that catches it | Error you'll see |
-|-------------|---------------------|------------------|
-| Schema enum value | Type errors at build time | `Type '"opensearch"' is not assignable to...` |
-| constant.ts entry | `cli-builder-sync.test.ts` | `Options in CLI but NOT in Builder: opensearch` |
-| Prompt option | `cli-builder-sync.test.ts` | `Prompt missing values: opensearch` |
-| tech-icons.ts | `validate:tech-links` | `Missing icon for: opensearch` |
-| tech-resource-links.ts | `validate:tech-links` | `Missing links for: opensearch` |
-| add-deps.ts version | Generator runtime error | `Unknown dependency: @opensearch-project/opensearch` |
-| Category test | Nothing (silent gap) | Broken generation discovered later |
-| Snapshot test | Nothing (silent gap) | File structure regression undetected |
+| Missed file            | Test that catches it       | Error you'll see                                     |
+| ---------------------- | -------------------------- | ---------------------------------------------------- |
+| Schema enum value      | Type errors at build time  | `Type '"opensearch"' is not assignable to...`        |
+| constant.ts entry      | `cli-builder-sync.test.ts` | `Options in CLI but NOT in Builder: opensearch`      |
+| Prompt option          | `cli-builder-sync.test.ts` | `Prompt missing values: opensearch`                  |
+| tech-icons.ts          | `validate:tech-links`      | `Missing icon for: opensearch`                       |
+| tech-resource-links.ts | `validate:tech-links`      | `Missing links for: opensearch`                      |
+| add-deps.ts version    | Generator runtime error    | `Unknown dependency: @opensearch-project/opensearch` |
+| Category test          | Nothing (silent gap)       | Broken generation discovered later                   |
+| Snapshot test          | Nothing (silent gap)       | File structure regression undetected                 |
 
 The first 5 are caught automatically. The last 2 require manual discipline — always add at least one test.

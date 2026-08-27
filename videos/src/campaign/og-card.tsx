@@ -1,6 +1,6 @@
 import { Img } from "remotion";
 
-import { BF_COLORS, FONT_MONO, GridBackground, Wordmark } from "../styles";
+import { BF_COLORS, FONT_MONO, GridBackground, Wordmark } from "@/styles";
 
 const DEFAULT_ACTIONS = ["inspect", "edit", "run", "download"] as const;
 

@@ -2,9 +2,9 @@ import { parseStackPartSpecs } from "@better-fullstack/types";
 
 import { describe, expect, it } from "bun:test";
 
-import { VirtualFileSystem } from "../../src/core/virtual-fs";
-import { flattenSingleApp, qualifiesForSingleApp } from "../../src/post-process/flatten-single-app";
-import { makeConfig } from "../_fixtures/config-factory";
+import { VirtualFileSystem } from "@/core/virtual-fs";
+import { flattenSingleApp, qualifiesForSingleApp } from "@/post-process/flatten-single-app";
+import { makeConfig } from "@test/_fixtures/config-factory";
 
 /**
  * Builds a minimal but realistic thin-self-app monorepo tree (Next.js + self,

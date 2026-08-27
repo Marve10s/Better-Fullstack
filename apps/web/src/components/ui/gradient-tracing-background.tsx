@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 
 import { GradientTracing } from "@/components/ui/gradient-tracing";
-import { useTheme } from "@/lib/theme";
-import { cn } from "@/lib/utils";
+import { useTheme } from "@/lib/content/theme";
+import { cn } from "@/lib/platform/utils";
 
 type GradientTracingBackgroundProps = {
   className?: string;

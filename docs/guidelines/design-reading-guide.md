@@ -6,11 +6,11 @@ Use this file when you need to **read every written design / visual-system spec*
 
 ## Precedence
 
-| Context | Wins |
-|--------|------|
-| Remotion videos **for this product** (palette, branding, anti-patterns) | [remotion-video-style.md](./remotion-video-style.md) |
-| Accessibility / interaction / UX audits on web UI | [Vercel Web Interface Guidelines](https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md) (fetched fresh; see [.agents/skills/web-design-guidelines/SKILL.md](../../.agents/skills/web-design-guidelines/SKILL.md)) |
-| Geist tokens and Remotion scene recipes | [.agents/skills/create-remotion-geist/](../../.agents/skills/create-remotion-geist/) (reconcile colors with BF tokens above when both apply) |
+| Context                                                                 | Wins                                                                                                                                                                                                                                                |
+| ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Remotion videos **for this product** (palette, branding, anti-patterns) | [remotion-video-style.md](./remotion-video-style.md)                                                                                                                                                                                                |
+| Accessibility / interaction / UX audits on web UI                       | [Vercel Web Interface Guidelines](https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md) (fetched fresh; see [.agents/skills/web-design-guidelines/SKILL.md](../../.agents/skills/web-design-guidelines/SKILL.md)) |
+| Geist tokens and Remotion scene recipes                                 | [.agents/skills/create-remotion-geist/](../../.agents/skills/create-remotion-geist/) (reconcile colors with BF tokens above when both apply)                                                                                                        |
 
 When `remotion-video-style.md` lists a skill stack order for overlapping skills, prefer that ordering after the precedence table above.
 
@@ -20,16 +20,16 @@ When `remotion-video-style.md` lists a skill stack order for overlapping skills,
 
 Read first for BF-aligned Remotion and homepage-adjacent visuals.
 
-- [remotion-video-style.md](./remotion-video-style.md) — duration, palette (`#0c0c0e`, `#f2eeee`, `#8839ef`, etc.), grid background, command box, typography (Geist Sans/Mono), motion, icon sources (`apps/web/src/lib/tech-icons.ts`), anti-patterns.
+- [remotion-video-style.md](./remotion-video-style.md) — duration, palette (`#0c0c0e`, `#f2eeee`, `#8839ef`, etc.), grid background, command box, typography (Geist Sans/Mono), motion, icon sources (`apps/web/src/lib/stack/tech-icons.ts`), anti-patterns.
 
 ---
 
 ## Phase 2 — Web and product UI (agent skills)
 
-| Path | Notes |
-|------|--------|
-| [.agents/skills/frontend-design/SKILL.md](../../.agents/skills/frontend-design/SKILL.md) | Bold direction, typography/color/background guidance; avoid generic “AI slop” patterns. |
-| [.agents/skills/frontend-design/LICENSE.txt](../../.agents/skills/frontend-design/LICENSE.txt) | License for the frontend-design skill text. |
+| Path                                                                                                 | Notes                                                                                                                                 |
+| ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| [.agents/skills/frontend-design/SKILL.md](../../.agents/skills/frontend-design/SKILL.md)             | Bold direction, typography/color/background guidance; avoid generic “AI slop” patterns.                                               |
+| [.agents/skills/frontend-design/LICENSE.txt](../../.agents/skills/frontend-design/LICENSE.txt)       | License for the frontend-design skill text.                                                                                           |
 | [.agents/skills/web-design-guidelines/SKILL.md](../../.agents/skills/web-design-guidelines/SKILL.md) | Routes to the **external** Web Interface Guidelines URL (accessibility, focus, forms, animation, typography, images, performance, …). |
 
 ---
@@ -81,7 +81,7 @@ Narrow reads to global styling and shared primitives (not every route):
 
 - [apps/web/src/styles/global.css](../../apps/web/src/styles/global.css) — Tailwind v4 imports, Geist `@font-face`, CSS variables and utilities
 - [apps/web/vite.config.ts](../../apps/web/vite.config.ts) — build/tooling that affects CSS and assets
-- Icon and builder-adjacent references called out in `remotion-video-style.md`: [apps/web/src/lib/tech-icons.ts](../../apps/web/src/lib/tech-icons.ts)
+- Icon and builder-adjacent references called out in `remotion-video-style.md`: [apps/web/src/lib/stack/tech-icons.ts](../../apps/web/src/lib/stack/tech-icons.ts)
 
 Search as needed: `theme`, `ModeToggle`, `apps/web/src/routes`, shared UI under `apps/web/src/components`.
 

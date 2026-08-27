@@ -22,7 +22,7 @@
 
 <br>
 
-**Scaffold production-ready fullstack apps in TypeScript, React Native, Rust, Go, Python, Java, .NET, and Elixir, pick your stack, the CLI wires it together.**
+**Scaffold configured fullstack projects in TypeScript, React Native, Rust, Go, Python, Java, .NET, and Elixir. Pick the Stack Parts, then inspect the generated result and its evidence.**
 
 <br>
 

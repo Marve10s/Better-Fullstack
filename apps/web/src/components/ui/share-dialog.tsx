@@ -1,11 +1,15 @@
-
 import { CATEGORY_ORDER } from "@better-fullstack/types";
-import { TbCheck as Check, TbCopy as Copy, TbTerminal as Terminal, TbBrandTwitter as Twitter } from "react-icons/tb";
 import QRCode from "qrcode";
 import React, { useEffect, useState } from "react";
+import {
+  TbCheck as Check,
+  TbCopy as Copy,
+  TbTerminal as Terminal,
+  TbBrandTwitter as Twitter,
+} from "react-icons/tb";
 import { toast } from "sonner";
 
-import type { StackState } from "@/lib/constant";
+import type { StackState } from "@/lib/stack/constant";
 
 import {
   Dialog,
@@ -16,9 +20,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { TechBadge } from "@/components/ui/tech-badge";
-import { DEFAULT_STACK, TECH_OPTIONS } from "@/lib/constant";
-import { useTheme } from "@/lib/theme";
-import { cn } from "@/lib/utils";
+import { useTheme } from "@/lib/content/theme";
+import { cn } from "@/lib/platform/utils";
+import { DEFAULT_STACK, TECH_OPTIONS } from "@/lib/stack/constant";
 import { m } from "@/paraglide/messages.js";
 
 interface ShareDialogProps {
@@ -102,9 +106,7 @@ export function ShareDialog({ children, stackUrl, stackState }: ShareDialogProps
   };
 
   const shareToTwitter = () => {
-    const text = encodeURIComponent(
-      m.shareTweetText({ count: techBadges.length }),
-    );
+    const text = encodeURIComponent(m.shareTweetText({ count: techBadges.length }));
     const url = encodeURIComponent(stackUrl);
     window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, "_blank");
   };

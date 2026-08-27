@@ -19,14 +19,14 @@ Use this guide for Remotion videos made for this project unless the user asks fo
 
 Use the homepage dark theme colors exactly:
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| Background | `#0c0c0e` | Primary background |
-| Foreground | `#f2eeee` | Primary text, active tabs |
-| Muted foreground | `#b3b0b0` | Secondary text, subtitles |
-| Border | `#2a2a2a` | Borders, dividers |
-| Secondary/Input | `#1a1a1a` | Command box bg, card bg |
-| Primary | `#8839ef` | Brand purple (use sparingly) |
+| Token            | Value     | Usage                        |
+| ---------------- | --------- | ---------------------------- |
+| Background       | `#0c0c0e` | Primary background           |
+| Foreground       | `#f2eeee` | Primary text, active tabs    |
+| Muted foreground | `#b3b0b0` | Secondary text, subtitles    |
+| Border           | `#2a2a2a` | Borders, dividers            |
+| Secondary/Input  | `#1a1a1a` | Command box bg, card bg      |
+| Primary          | `#8839ef` | Brand purple (use sparingly) |
 
 Apply the palette like this:
 
@@ -59,7 +59,7 @@ No package manager tabs — just show the command directly.
 - **Use official SVGs** — download from official repos (e.g. `denoland/fresh` for Fresh logo, Simple Icons for framework logos).
 - Don't hand-draw approximations — fetch the real thing.
 - Use the same icon system as the builder page: Simple Icons CDN (`cdn.simpleicons.org/{slug}`) or local `/public/icon/` assets.
-- Icon registry reference: `apps/web/src/lib/tech-icons.ts`.
+- Icon registry reference: `apps/web/src/lib/stack/tech-icons.ts`.
 - Keep icons bold enough to read on short scenes.
 - Animate icons with scale, position shifts, or opacity — not constant floating motion.
 

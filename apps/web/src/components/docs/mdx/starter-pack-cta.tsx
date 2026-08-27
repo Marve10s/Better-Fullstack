@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 import {
   TbArrowRight as ArrowRight,
   TbBook as BookOpen,
@@ -6,18 +7,17 @@ import {
   TbCopy as Copy,
   TbTerminal as Terminal,
 } from "react-icons/tb";
-import { useState } from "react";
 
 import { TechIcon } from "@/components/ui/tech-icon";
-import { PRESET_TEMPLATES } from "@/lib/constant";
 import {
   getStarterTrackBuilderSearch,
   getStarterTrackById,
   type StarterTrack,
-} from "@/lib/starter-tracks";
-import { DEFAULT_STACK, type StackState } from "@/lib/stack-defaults";
-import { generateStackCommand } from "@/lib/stack-utils";
-import { cn } from "@/lib/utils";
+} from "@/lib/builder/starter-tracks";
+import { cn } from "@/lib/platform/utils";
+import { PRESET_TEMPLATES } from "@/lib/stack/constant";
+import { DEFAULT_STACK, type StackState } from "@/lib/stack/stack-defaults";
+import { generateStackCommand } from "@/lib/stack/stack-utils";
 
 type StarterPackCtaProps = {
   id: StarterTrack["id"];

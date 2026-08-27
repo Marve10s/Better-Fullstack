@@ -13,8 +13,10 @@ scripts/); new regression tests per item. Append a section to
 testing/scaffbench-hardening-report-2026-07-17.md. End with exactly: LOC COMPLETE
 
 ## 1. measureProjectCode(dir) — new module scripts/scaffbench/code-metrics.ts
+
 Walk the generated project (the ARCHIVED generation output, pre-validation):
-- Skip directories: node_modules, target, .git, deps, _build, vendor, Pods,
+
+- Skip directories: node_modules, target, .git, deps, \_build, vendor, Pods,
   .venv, .dart_tool, .gradle, obj, bin, dist, build, .next, .expo, coverage
   (reuse/share the validation walk skip-list where practical).
 - Skip machine-generated lockfiles by NAME: bun.lock, bun.lockb,
@@ -26,20 +28,23 @@ Walk the generated project (the ARCHIVED generation output, pre-validation):
   wasm,keystore,p8,p12,db,sqlite).
 - Count every remaining file: lines (newline count, +1 for unterminated last
   line of non-empty files), bytes.
-Return { files: number, lines: number, bytes: number }.
+  Return { files: number, lines: number, bytes: number }.
 
 ## 2. Persist at scoring time
+
 In the runner where scoreProject runs on generatedDir (generation phase,
 BEFORE validation installs anything), compute measureProjectCode and persist
 on the run result as `codeMetrics: { files, lines, bytes }` (null/absent when
 no project dir). Add to types.ts.
 
 ## 3. Aggregates
+
 summary.ts bySpecCell: `avgLines` (mean over SCORED trials, same eligibility
 set as other metrics; null when nothing scored). Leaderboard rows: `avgLines`
 mean over scored cells.
 
 ## 4. Publishers
+
 - build-scaffbench-2-1-data.ts PublishedCell: add `lines: number | null` —
   from cell aggregate avgLines when present, else recompute mean from raw
   results' codeMetrics, else null (legacy summaries).
@@ -47,9 +52,10 @@ mean over scored cells.
   stay null; never fabricate).
 - build-scaffbench-2-2-data.ts cells: emit `lines` the same way.
 
-## 5. Backfill script scripts/backfill-scaffbench-code-metrics.ts
+## 5. Backfill script scripts/benchmarks/backfill-scaffbench-code-metrics.ts
+
 For each dir passed as argv (default: the three 2.2 cohort dirs under
-testing/llm-benchmarks/v2-codex-{sol,terra,luna}/gpt-5-6-*-high-r3-2026-07-17):
+testing/llm-benchmarks/v2-codex-{sol,terra,luna}/gpt-5-6-\*-high-r3-2026-07-17):
 for every result with a projectDir that exists on disk, compute
 measureProjectCode and write codeMetrics into summary.json results (idempotent;
 skip results that already have codeMetrics unless --force). Recompute the
@@ -62,6 +68,7 @@ instead just run the backfill so summaries carry codeMetrics; the operator
 regenerates the web data file.
 
 ## 6. Tests (scripts/, assert failure scenarios)
+
 - lockfiles and binaries excluded; nested skip dirs excluded; unterminated
   last line counted.
 - cell avgLines uses scored trials only.

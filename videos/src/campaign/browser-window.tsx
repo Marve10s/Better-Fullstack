@@ -1,6 +1,6 @@
 import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 
-import { BF_COLORS, FONT_MONO } from "../styles";
+import { BF_COLORS, FONT_MONO } from "@/styles";
 
 export type BrowserWindowMode = "run" | "edit" | "download";
 
@@ -85,7 +85,9 @@ export function BrowserWindow({
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "180px 1fr", height: "calc(100% - 52px)" }}>
+      <div
+        style={{ display: "grid", gridTemplateColumns: "180px 1fr", height: "calc(100% - 52px)" }}
+      >
         <div
           style={{
             padding: 18,

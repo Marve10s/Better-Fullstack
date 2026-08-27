@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 
-import { getTelemetryDashboardAccess } from "../convex/analytics_access";
+import { getTelemetryDashboardAccess } from "@/analytics_access";
 
 const SECRET = "owner-only-telemetry-secret-0123456789";
 

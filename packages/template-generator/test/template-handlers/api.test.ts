@@ -1,9 +1,9 @@
+import { makeConfig } from "@test/_fixtures/config-factory";
+import { makeTemplates } from "@test/_fixtures/template-factory";
 import { describe, expect, it } from "bun:test";
 
-import { VirtualFileSystem } from "../../src/core/virtual-fs";
-import { processApiTemplates } from "../../src/template-handlers/api";
-import { makeConfig } from "../_fixtures/config-factory";
-import { makeTemplates } from "../_fixtures/template-factory";
+import { VirtualFileSystem } from "@/core/virtual-fs";
+import { processApiTemplates } from "@/template-handlers/features/api";
 
 describe("processApiTemplates", () => {
   it("returns early when api is none or backend is convex", async () => {

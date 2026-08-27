@@ -14,7 +14,7 @@ export const Route = createFileRoute("/sitemap.md")({
           import("@/lib/docs/source"),
           import("@/lib/guides/source"),
           import("@/lib/blog/source"),
-          import("@/lib/llms"),
+          import("@/lib/content/llms"),
           import("@/lib/stack-pages/source"),
         ]);
         return new Response(

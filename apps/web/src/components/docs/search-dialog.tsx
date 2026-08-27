@@ -1,13 +1,18 @@
 import { useNavigate } from "@tanstack/react-router";
-import { TbArrowRight as ArrowRight, TbFileText as FileText, TbHash as Hash, TbSearch as SearchIcon } from "react-icons/tb";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  TbArrowRight as ArrowRight,
+  TbFileText as FileText,
+  TbHash as Hash,
+  TbSearch as SearchIcon,
+} from "react-icons/tb";
 
 import type { DocSearch, SearchHit } from "@/lib/docs/search";
 
 import { createDocSearch } from "@/lib/docs/search";
 import { loadSearchSections } from "@/lib/docs/search-data";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/platform/utils";
 import { m } from "@/paraglide/messages.js";
 import { getLocale } from "@/paraglide/runtime.js";
 
@@ -181,8 +186,7 @@ export function DocsSearchDialog({
                 </Empty>
               ) : hits.length === 0 ? (
                 <Empty>
-                  {m.docsNoResultsPrefix()}{" "}
-                  <span className="text-foreground">"{query}"</span>
+                  {m.docsNoResultsPrefix()} <span className="text-foreground">"{query}"</span>
                 </Empty>
               ) : (
                 <ul className="flex flex-col">

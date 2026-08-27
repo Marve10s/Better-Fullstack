@@ -4,6 +4,7 @@
    * You can modify it, but some settings are required to use Convex.
    */
   "compilerOptions": {
+    "baseUrl": ".",
     /* These settings are not required by Convex and can be modified. */
     "allowJs": true,
     "strict": true,
@@ -18,7 +19,11 @@
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
     "isolatedModules": true,
-    "noEmit": true
+    "noEmit": true,
+    "paths": {
+      "@/*": ["./*"],
+      "@test/*": ["../test/*"]
+    }
   },
   "include": ["./**/*"],
   "exclude": ["./_generated"]

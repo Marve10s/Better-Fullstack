@@ -1,10 +1,9 @@
-import { describe, expect, it } from "bun:test";
-
 import {
   parseMajorUpdatesFromDiff,
   buildMajorDepCombos,
   buildMajorDepCombosFromDiff,
-} from "./major-dep-combos";
+} from "@testing/lib/major-dep-combos";
+import { describe, expect, it } from "bun:test";
 
 describe("parseMajorUpdatesFromDiff", () => {
   it("detects a simple major version bump", () => {
@@ -115,10 +114,27 @@ describe("buildMajorDepCombos", () => {
   it("caps at 15 combos", () => {
     // Pass every possible package to hit all rules
     const allPkgs = [
-      "astro", "@angular/core", "vitest", "storybook", "stripe", "mongoose",
-      "@clerk/nextjs", "sanity", "streamdown", "langchain", "resend",
-      "nodemailer", "pino", "@sentry/node", "inngest", "@mikro-orm/core",
-      "nanostores", "cypress", "@paddle/paddle-node-sdk", "mailgun.js", "posthog-node",
+      "astro",
+      "@angular/core",
+      "vitest",
+      "storybook",
+      "stripe",
+      "mongoose",
+      "@clerk/nextjs",
+      "sanity",
+      "streamdown",
+      "langchain",
+      "resend",
+      "nodemailer",
+      "pino",
+      "@sentry/node",
+      "inngest",
+      "@mikro-orm/core",
+      "nanostores",
+      "cypress",
+      "@paddle/paddle-node-sdk",
+      "mailgun.js",
+      "posthog-node",
     ];
     const combos = buildMajorDepCombos(allPkgs);
     expect(combos.length).toBeLessThanOrEqual(15);

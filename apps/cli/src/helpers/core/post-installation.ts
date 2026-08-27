@@ -12,17 +12,17 @@ import type {
   Runtime,
   ServerDeploy,
   WebDeploy,
-} from "../../types";
+} from "@/types";
 
-import { isWebFrontend } from "../../utils/compatibility-rules";
-import { getDockerStatus } from "../../utils/docker-utils";
+import { isWebFrontend } from "@/config/compatibility-rules";
 import {
   getGraphBackendDeployInstructions,
   getGraphBackendUrl,
   getGraphPart,
   getGraphSummary,
   hasGraphPart,
-} from "../../utils/graph-summary";
+} from "@/config/graph-summary";
+import { getDockerStatus } from "@/platform/docker-utils";
 
 export async function displayPostInstallInstructions(
   config: ProjectConfig & { depsInstalled: boolean },

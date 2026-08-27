@@ -1,6 +1,5 @@
 import { test, expect } from "@playwright/test";
-
-import { clickVisibleTestId, commandOutput, openBuilder } from "./test-helpers";
+import { clickVisibleTestId, commandOutput, openBuilder } from "@test/e2e/test-helpers";
 
 test.describe("Stack Builder - Compatibility", () => {
   test.beforeEach(async ({ page }) => {

@@ -1,3 +1,5 @@
+import type { GuidePage } from "@/lib/guides/source";
+
 import {
   DEFAULT_OG_IMAGE_ALT,
   DEFAULT_OG_IMAGE_HEIGHT,
@@ -9,10 +11,8 @@ import {
   SITE_URL,
   canonicalUrl,
   getDefaultDescription,
-} from "@/lib/seo";
+} from "@/lib/seo/seo";
 import { m } from "@/paraglide/messages.js";
-
-import type { GuidePage } from "./source";
 
 type JsonLdMeta = {
   "script:ld+json": Record<string, unknown>;
