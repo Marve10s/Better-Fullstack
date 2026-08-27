@@ -1,4 +1,4 @@
-# Adding New Tool Options — Compatibility Rules
+# Adding New Tool Options - Compatibility Rules
 
 How to validate that a new tool works with all existing options, add compatibility rules where needed, and test them.
 
@@ -283,8 +283,8 @@ When adding a deploy target like Vercel, check every combo:
 | nuxt            | ✅ Native | Auto-detected                                                |
 | solid           | ✅        | Vite SPA                                                     |
 | solid-start     | ✅        | SSR                                                          |
-| astro           | ✅        | Needs `@astrojs/vercel` (NOT in current templateMap — gap)   |
-| angular         | ✅        | Needs custom build config (NOT in current templateMap — gap) |
+| astro           | ✅        | Needs `@astrojs/vercel` (NOT in current templateMap - gap)   |
+| angular         | ✅        | Needs custom build config (NOT in current templateMap - gap) |
 | qwik            | ⚠️        | Experimental Vercel adapter                                  |
 | redwood         | ❌        | Has own deploy system                                        |
 | fresh           | ❌        | Deno-only, not Vercel-compatible                             |
@@ -368,4 +368,4 @@ All compatibility checks respect the `--yolo` flag:
 if (stack.yolo === "true") return null; // Skip all disabled reasons
 ```
 
-This lets power users bypass everything. Never remove this — it's the safety valve for edge cases the rules don't cover.
+This lets power users bypass everything. Never remove this - it's the safety valve for edge cases the rules don't cover.

@@ -1,6 +1,6 @@
 # Better Fullstack
 
-Scaffold configurable fullstack apps across web, mobile, and backend ecosystems — the CLI wires your selected stack together.
+Scaffold configurable fullstack apps across web, mobile, and backend ecosystems - the CLI wires your selected stack together.
 
 ## Quick Start
 
@@ -25,23 +25,23 @@ Bun is required only when the generated project selects Bun as its runtime or pa
 
 ## Web Builder
 
-Configure your stack visually — pick every option from a UI, preview your choices, and get a ready-to-run command.
+Configure your stack visually - pick every option from a UI, preview your choices, and get a ready-to-run command.
 
 **[Open the App Builder →](https://better-fullstack.dev/new)**
 
 ## Features
 
-- **Broad stack catalog** — frontend, backend, database, auth, payments, AI, DevOps, and more
-- **Multi-ecosystem projects** — compose web, mobile, and backend stacks across supported ecosystems
-- **Visual builder** — configure your stack in the browser
-- **Lifecycle-aware** — create, add, update, check, and generate from the recorded project model
-- **Compatibility-checked** — invalid selections are rejected or safely adjusted before generation
+- **Broad stack catalog** - frontend, backend, database, auth, payments, AI, DevOps, and more
+- **Multi-ecosystem projects** - compose web, mobile, and backend stacks across supported ecosystems
+- **Visual builder** - configure your stack in the browser
+- **Lifecycle-aware** - create, add, update, check, and generate from the recorded project model
+- **Compatibility-checked** - invalid selections are rejected or safely adjusted before generation
 
 ## CLI Flags
 
 ```bash
 --yes              # Accept all defaults
---yolo             # Scaffold a random stack — good for exploring
+--yolo             # Scaffold a random stack - good for exploring
 --template <name>  # Use a preset (t3, mern, pern, uniwind)
 --ecosystem <lang> # Choose the primary project ecosystem
 --part <binding>   # Add a multi-ecosystem stack part, e.g. frontend:typescript:next

@@ -562,7 +562,7 @@ function ComparePage() {
                   <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
                 </div>
                 <p className="mt-1.5 text-xs text-muted-foreground">
-                  One curated Next.js stack vs a configurable catalog — philosophy, maintenance
+                  One curated Next.js stack vs a configurable catalog - philosophy, maintenance
                   status, and when each fits.
                 </p>
               </Link>

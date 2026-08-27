@@ -154,7 +154,7 @@ const stackArb: fc.Arbitrary<Stack> = fc
 
 const RUNS = { numRuns: 500 } as const;
 
-describe("compatibility engine — property invariants", () => {
+describe("compatibility engine - property invariants", () => {
   it("is deterministic: analyzeStackCompatibility(x) === analyzeStackCompatibility(x)", () => {
     fc.assert(
       fc.property(stackArb, (stack) => {
@@ -239,7 +239,7 @@ describe("compatibility engine — property invariants", () => {
 });
 
 /**
- * NOTE — invariants intentionally NOT asserted, with evidence:
+ * NOTE - invariants intentionally NOT asserted, with evidence:
  *
  * 1. Single-pass idempotence (`apply(apply(x)) deepEquals apply(x)`) is FALSE.
  *    Example: dbSetup="d1" sets runtime="workers"+backend="hono" in the database

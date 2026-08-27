@@ -1,4 +1,4 @@
-# Adding New Tool Options — Testing Guide
+# Adding New Tool Options - Testing Guide
 
 Complete reference for all test utilities, patterns, and which tests to update when adding a new option.
 
@@ -244,8 +244,8 @@ If a change affects multiple layers, use multiple suites. Do not overload snapsh
 
 Every new option needs at least:
 
-1. One **basic generation test** — proves the option scaffolds without error
-2. One **file content test** — proves templates output correct code and dependencies
+1. One **basic generation test** - proves the option scaffolds without error
+2. One **file content test** - proves templates output correct code and dependencies
 
 **Pattern for existing category:**
 
@@ -409,7 +409,7 @@ bun test apps/cli/test/support/template-snapshots.test.ts -u
 This test runs many combinations and validates TypeScript syntax of generated files. If your option should work with multiple backends/frontends, ensure it appears in the combo arrays:
 
 ```typescript
-// Existing pattern — combos are defined as arrays of configs
+// Existing pattern - combos are defined as arrays of configs
 const SEARCH_CONFIGS = SEARCH_VALUES.filter(s => s !== "none").map(search => ({
   name: `search-${search}`,
   frontend: ["tanstack-router"],
@@ -514,4 +514,4 @@ bun run --cwd apps/web validate:tech-links
 | Category test          | Nothing (silent gap)       | Broken generation discovered later                   |
 | Snapshot test          | Nothing (silent gap)       | File structure regression undetected                 |
 
-The first 5 are caught automatically. The last 2 require manual discipline — always add at least one test.
+The first 5 are caught automatically. The last 2 require manual discipline - always add at least one test.

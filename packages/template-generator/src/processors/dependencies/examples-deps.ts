@@ -301,7 +301,7 @@ function setupTanStackShowcaseDependencies(vfs: VirtualFileSystem, _config: Proj
   if (!vfs.exists(webPkgPath)) return;
 
   // Showcase pages import these directly. Some may already be installed via
-  // addon selections — addPackageDependency is idempotent.
+  // addon selections - addPackageDependency is idempotent.
   const deps: AvailableDependencies[] = [
     "@tanstack/react-query",
     "@tanstack/react-table",

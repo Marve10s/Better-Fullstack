@@ -66,7 +66,7 @@ function reportManual(entries: UpgradePlan["manual"]): void {
   if (entries.length === 0) return;
   log.message(`Needs manual review (${entries.length}):`);
   for (const entry of entries) {
-    log.message(pc.dim(`  ! ${entry.path}${entry.reason ? ` — ${entry.reason}` : ""}`));
+    log.message(pc.dim(`  ! ${entry.path}${entry.reason ? ` - ${entry.reason}` : ""}`));
   }
 }
 
@@ -75,7 +75,7 @@ function reportMerged(plan: UpgradePlan): void {
   if (merged.length === 0) return;
   log.message(`Structured merges (template changes folded into your file) (${merged.length}):`);
   for (const entry of merged) {
-    log.message(pc.dim(`  ± ${entry.path}${entry.reason ? ` — ${entry.reason}` : ""}`));
+    log.message(pc.dim(`  ± ${entry.path}${entry.reason ? ` - ${entry.reason}` : ""}`));
   }
 }
 
@@ -84,7 +84,7 @@ function reportRemoved(plan: UpgradePlan): void {
   if (removed.length === 0) return;
   log.message(`Removed by templates (${removed.length}):`);
   for (const entry of removed) {
-    log.message(pc.dim(`  - ${entry.path}${entry.reason ? ` — ${entry.reason}` : ""}`));
+    log.message(pc.dim(`  - ${entry.path}${entry.reason ? ` - ${entry.reason}` : ""}`));
   }
 }
 
@@ -420,7 +420,7 @@ export async function updateCommand(input: UpdateCommandInput): Promise<void> {
       ),
     );
   }
-  outro(pc.magenta(apply ? "Update complete." : "Dry run — no files were written."));
+  outro(pc.magenta(apply ? "Update complete." : "Dry run - no files were written."));
 
   if (check && plan.actionable.length > 0) {
     process.exit(1);

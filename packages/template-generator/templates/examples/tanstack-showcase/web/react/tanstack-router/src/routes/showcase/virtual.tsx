@@ -34,7 +34,7 @@ function TraditionalList() {
           onClick={countNodes}
           className="rounded border border-border px-2 py-1 text-xs hover:bg-muted"
         >
-          Count DOM nodes: {rendered > 0 ? rendered.toLocaleString() : "—"}
+          Count DOM nodes: {rendered > 0 ? rendered.toLocaleString() : "-"}
         </button>
       </div>
       <div
@@ -116,7 +116,7 @@ function VirtualShowcase() {
       </Link>
       <h1 className="mb-2 text-3xl font-bold">TanStack Virtual</h1>
       <p className="mb-8 text-muted-foreground">
-        Virtualize lists, tables, and grids — only mount visible DOM nodes for
+        Virtualize lists, tables, and grids - only mount visible DOM nodes for
         silky-smooth 60fps scrolling even with 10,000+ items.
       </p>
 
@@ -146,7 +146,7 @@ function VirtualShowcase() {
 
       <div className="mt-8 rounded-lg border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
         <strong className="text-foreground">Why TanStack Virtual?</strong> The
-        traditional approach mounts {TOTAL_ITEMS.toLocaleString()} DOM nodes — the
+        traditional approach mounts {TOTAL_ITEMS.toLocaleString()} DOM nodes - the
         browser becomes sluggish, memory usage spikes, and initial render blocks
         the main thread. TanStack Virtual only mounts ~15-20 visible items plus a
         small overscan buffer, keeping the DOM lightweight at any scale.

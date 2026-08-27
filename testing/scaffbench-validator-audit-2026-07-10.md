@@ -44,7 +44,7 @@ I reviewed the current working tree and excluded the two supplied bugs. The name
 
 **Fix:** Treat core command timeouts as model failures unless there is positive evidence of machine-level failure. Track quality-tier inconclusiveness separately so an advisory timeout does not invalidate an already measured core verdict.
 
-### 5. Fast network and registry failures are model failures—and then get cached
+### 5. Fast network and registry failures are model failures-and then get cached
 
 **Location:** [scaffbench-v2-lib.ts:3108](/Users/ibrahime/Documents/Better-Fullstack/scripts/scaffbench-v2-lib.ts:3108), [scaffbench-v2-lib.ts:4138](/Users/ibrahime/Documents/Better-Fullstack/scripts/scaffbench-v2-lib.ts:4138)
 

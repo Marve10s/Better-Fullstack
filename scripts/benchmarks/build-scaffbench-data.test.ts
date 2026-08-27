@@ -104,7 +104,7 @@ describe("corePass / fullPass gate logic", () => {
       build: ok("bun run build"),
       test: na("test (no test script)"),
     });
-    // The 'na' test is neither pass nor fail — every real step is green.
+    // The 'na' test is neither pass nor fail - every real step is green.
     expect(corePass(r)).toBe(true);
     expect(fullPass(r)).toBe(true);
   });

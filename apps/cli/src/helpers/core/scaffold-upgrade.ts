@@ -452,7 +452,7 @@ function classifyStructuredMerge(
       return {
         path: filePath,
         category: "manual",
-        reason: `template changes the merge cannot apply (${uncovered.join(", ")}) — update by hand`,
+        reason: `template changes the merge cannot apply (${uncovered.join(", ")}) - update by hand`,
       };
     }
     if (merged.content) {
@@ -467,7 +467,7 @@ function classifyStructuredMerge(
     return {
       path: filePath,
       category: "user-edited",
-      reason: "template dependencies/scripts unchanged — local changes kept",
+      reason: "template dependencies/scripts unchanged - local changes kept",
     };
   }
 
@@ -483,7 +483,7 @@ function classifyStructuredMerge(
   return {
     path: filePath,
     category: "user-edited",
-    reason: "no new template env keys — local changes kept",
+    reason: "no new template env keys - local changes kept",
   };
 }
 
@@ -621,7 +621,7 @@ export async function planScaffoldUpgrade(projectDirInput: string): Promise<Upgr
         files.push({
           path: filePath,
           category: "manual",
-          reason: "secrets file is absent — create it manually; never generated during update",
+          reason: "secrets file is absent - create it manually; never generated during update",
         });
         continue;
       }
@@ -656,7 +656,7 @@ export async function planScaffoldUpgrade(projectDirInput: string): Promise<Upgr
       files.push({
         path: filePath,
         category: "manual",
-        reason: "lockfile / secrets file — never auto-patched",
+        reason: "lockfile / secrets file - never auto-patched",
       });
       continue;
     }

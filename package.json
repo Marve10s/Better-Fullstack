@@ -38,6 +38,8 @@
     "test:external-upgrades": "bun run scripts/validation/validate-external-upgrades.ts",
     "test:published-package": "bun run scripts/release/published-package-smoke.ts",
     "check": "oxfmt . && oxlint .",
+    "fix:em-dashes": "bun run scripts/replace-em-dashes.ts",
+    "check:em-dashes": "bun run scripts/replace-em-dashes.ts --check",
     "check:imports": "bun run scripts/architecture/import-aliases.ts --check",
     "check:layout": "bun run scripts/architecture/module-layout.ts --check && bun run scripts/architecture/test-layout.ts --check",
     "fix:imports": "bun run scripts/architecture/import-aliases.ts --write",

@@ -40,9 +40,9 @@ import { LightLeak } from "@remotion/light-leaks";
 
 ## Props
 
-- `durationInFrames?` — defaults to the parent sequence/composition duration. The effect reveals during the first half and retracts during the second half.
-- `seed?` — determines the shape of the light leak pattern. Different seeds produce different patterns. Default: `0`.
-- `hueShift?` — rotates the hue in degrees (`0`–`360`). Default: `0` (yellow-to-orange). `120` = green, `240` = blue.
+- `durationInFrames?` - defaults to the parent sequence/composition duration. The effect reveals during the first half and retracts during the second half.
+- `seed?` - determines the shape of the light leak pattern. Different seeds produce different patterns. Default: `0`.
+- `hueShift?` - rotates the hue in degrees (`0`–`360`). Default: `0` (yellow-to-orange). `120` = green, `240` = blue.
 
 ## Customizing the look
 

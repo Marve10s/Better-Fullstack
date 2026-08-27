@@ -82,12 +82,12 @@ bun run scripts/maintenance/upstream-gap-report.ts --base origin/main --markdown
 bun run scripts/maintenance/upstream-gap-report.ts --markdown --max-per-area 25
 ```
 
-The report classifies likely backport candidates into `reliability`, `dependency-safety`, and `compatibility`. Treat it as advisory — no automatic merge/cherry-pick in CI.
+The report classifies likely backport candidates into `reliability`, `dependency-safety`, and `compatibility`. Treat it as advisory - no automatic merge/cherry-pick in CI.
 
 ### Backport procedure
 
 1. Pick commits from the report by area and impact. Prefer reliability, DX, and compatibility fixes first; skip upstream architectural shifts that conflict with this fork.
-2. Implement manually — avoid large cherry-picks unless the change is isolated and low-risk.
+2. Implement manually - avoid large cherry-picks unless the change is isolated and low-risk.
 3. Keep Better-Fullstack-specific naming and architecture choices intact.
 4. Run gates:
    - `bun run check`

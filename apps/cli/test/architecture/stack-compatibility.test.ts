@@ -23,7 +23,7 @@ describe("resolveCompatibilityAdjustments", () => {
 
     expect(changes).toEqual({ api: "orpc" });
     expect(adjustments).toHaveLength(1);
-    expect(adjustments[0]).toStartWith("api: trpc → orpc — ");
+    expect(adjustments[0]).toStartWith("api: trpc → orpc - ");
   });
 
   it("stays silent for a compatible stack", () => {
@@ -105,7 +105,7 @@ describe("resolveCompatibilityAdjustments", () => {
     );
 
     expect(changes).toEqual({ api: "orpc" });
-    expect(adjustments[0]).toStartWith("api: trpc → orpc — ");
+    expect(adjustments[0]).toStartWith("api: trpc → orpc - ");
   });
 
   it("stays silent for rust-only flags without an ecosystem", () => {

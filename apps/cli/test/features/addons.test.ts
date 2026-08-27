@@ -3916,7 +3916,7 @@ describe("Addon Configurations", () => {
     });
 
     describe("Incompatible frontends", () => {
-      // TanStack AI requires React or Solid — all other frontends are rejected
+      // TanStack AI requires React or Solid - all other frontends are rejected
       const incompatibleCases = [
         {
           frontend: "svelte" as Frontend,

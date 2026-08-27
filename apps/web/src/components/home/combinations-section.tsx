@@ -110,7 +110,7 @@ export default function CombinationsSection() {
                 {yearsAtOneMillisecondScientific.mantissa} × 10
                 <sup>{yearsAtOneMillisecondScientific.exponent}</sup> {m.homeYears()}
               </span>{" "}
-              <span className="text-muted-foreground">— {m.homeThatIs()}</span>{" "}
+              <span className="text-muted-foreground">- {m.homeThatIs()}</span>{" "}
               <span className="font-mono font-semibold text-ink dark:text-brand">
                 {universeLifetimesScientific.mantissa} × 10
                 <sup>{universeLifetimesScientific.exponent}</sup> {m.homeUniverseLifetimes()}

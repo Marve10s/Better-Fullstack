@@ -258,15 +258,15 @@ const HEADING_TRANSLATIONS: Record<string, LocalizedText> = {
   },
   "Generate the SaaS starter": { es: "Generar el starter SaaS", zh: "生成 SaaS starter" },
   "GPT models on Codex CLI": { es: "Modelos GPT en Codex CLI", zh: "Codex CLI 上的 GPT 模型" },
-  "GPT sweep (Codex CLI, June 10 — pre-fix generator)": {
-    es: "Barrido GPT (Codex CLI, 10 de junio — generador previo al fix)",
+  "GPT sweep (Codex CLI, June 10 - pre-fix generator)": {
+    es: "Barrido GPT (Codex CLI, 10 de junio - generador previo al fix)",
     zh: "GPT 批测（Codex CLI，6 月 10 日，修复前生成器）",
   },
   "Handler and model examples": { es: "Ejemplos de handler y modelo", zh: "Handler 与模型示例" },
   "Headline results": { es: "Resultados principales", zh: "核心结果" },
   "How the AI pieces fit": { es: "Como encajan las piezas de IA", zh: "AI 组件如何配合" },
-  "Light sweep (Gemini CLI / Kilo / opencode, June 12 — light-ts only)": {
-    es: "Barrido ligero (Gemini CLI / Kilo / opencode, 12 de junio — solo light-ts)",
+  "Light sweep (Gemini CLI / Kilo / opencode, June 12 - light-ts only)": {
+    es: "Barrido ligero (Gemini CLI / Kilo / opencode, 12 de junio - solo light-ts)",
     zh: "轻量批测（Gemini CLI / Kilo / opencode，6 月 12 日，仅 light-ts）",
   },
   "MCP keeps agents on rails": { es: "MCP mantiene a los agentes encaminados", zh: "MCP 让代理保持在轨道上" },

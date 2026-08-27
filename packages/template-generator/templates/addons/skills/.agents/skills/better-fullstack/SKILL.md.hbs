@@ -31,21 +31,21 @@ the source of truth when adding stack features, fixing bugs, or extending apps.
 {{#if (or (eq api "trpc") (eq api "orpc"))}}
 This project exposes a **{{api}}** API. Routers live in `packages/api/src/routers/`, wired together in `packages/api/src/routers/index.ts`.
 
-- Fastest path — scaffold a CRUD resource with the generator:
+- Fastest path - scaffold a CRUD resource with the generator:
 
   ```bash
   {{#if (eq packageManager "bun")}}bunx{{else if (eq packageManager "pnpm")}}pnpm dlx{{else if (eq packageManager "yarn")}}yarn dlx{{else}}npx{{/if}} create-better-fullstack gen resource <name>
   ```
 
   It writes `packages/api/src/routers/<name>.ts` (auto-registered in `routers/index.ts`) using {{#if (isBetterAuth auth)}}`protectedProcedure` (auth-gated){{else}}`publicProcedure`{{/if}} for every handler.
-- Manual path — create `packages/api/src/routers/<name>.ts` exporting a `<name>Router`, then import it in `routers/index.ts` and add `<name>: <name>Router` to `appRouter`.
+- Manual path - create `packages/api/src/routers/<name>.ts` exporting a `<name>Router`, then import it in `routers/index.ts` and add `<name>: <name>Router` to `appRouter`.
 {{#if (eq api "trpc")}}
 - tRPC procedures chain `.input(z.object({ ... }))` then `.query(...)` (reads) or `.mutation(...)` (writes); `appRouter` is built with `router({ ... })`.
 {{else}}
 - oRPC procedures chain `.input(z.object({ ... }))` then `.handler(...)`; `appRouter` is a plain object literal of procedures.
 {{/if}}
 {{else if (and (eq ecosystem "typescript") (eq backend "self"))}}
-This project uses a **{{#each frontend}}{{#unless (eq this "none")}}{{this}}{{/unless}}{{/each}}** app with a built-in ({{backend}}) backend — there is no separate `packages/api`. Add server routes/handlers using the framework's own file-based server conventions inside `apps/web` (e.g. server routes, actions, or API route files).
+This project uses a **{{#each frontend}}{{#unless (eq this "none")}}{{this}}{{/unless}}{{/each}}** app with a built-in ({{backend}}) backend - there is no separate `packages/api`. Add server routes/handlers using the framework's own file-based server conventions inside `apps/web` (e.g. server routes, actions, or API route files).
 {{else if (and (eq ecosystem "typescript") (and (ne backend "none") (ne backend "self")))}}
 This project runs a **{{backend}}** server in `apps/server/`. Add a new route by registering a handler on the app instance in `apps/server/src/` (see the existing route wiring) and export any shared logic from `packages/api` if present.
 {{else if (ne goWebFramework "none")}}
@@ -83,7 +83,7 @@ Schema lives in `packages/db/prisma/schema/`. After editing it:
 
 For rapid local iteration you can push the schema directly with `{{packageManager}} run db:push` (prisma db push).
 {{else if (eq orm "mongoose")}}
-MongoDB via Mongoose has no migration step — models are schema-on-write. Edit the models in `packages/db/src/` and the collections adapt on the next write.
+MongoDB via Mongoose has no migration step - models are schema-on-write. Edit the models in `packages/db/src/` and the collections adapt on the next write.
 {{else if (and (ne orm "none") (eq ecosystem "typescript"))}}
 This project uses the **{{orm}}** ORM (schema in `packages/db/src/`). Use the ORM's own migration CLI to generate and apply migrations after editing the entities/models.
 {{else if (ne pythonOrm "none")}}
@@ -109,14 +109,14 @@ Unit tests use **Vitest**. Add `*.test.ts` files next to the code under test and
 {{packageManager}} run test
 ```
 {{#if (eq testing "vitest-playwright")}}
-End-to-end tests use **Playwright** in `apps/web` — add specs under its `e2e`/`tests` directory and run the app's `test:e2e` script.
+End-to-end tests use **Playwright** in `apps/web` - add specs under its `e2e`/`tests` directory and run the app's `test:e2e` script.
 {{/if}}
 {{else if (eq testing "jest")}}
 Unit tests use **Jest**. Add `*.test.ts` files next to the code under test and run `{{packageManager}} run test`.
 {{else if (eq testing "playwright")}}
 End-to-end tests use **Playwright**. Add specs under the Playwright `tests` directory and run the app's `test:e2e` script.
 {{else if (and (ne elixirTesting "none") (ne ecosystem "typescript"))}}
-Tests use **{{elixirTesting}}** — add test modules under `test/` and run `mix test`.
+Tests use **{{elixirTesting}}** - add test modules under `test/` and run `mix test`.
 {{else if (and (ne goTesting "none") (eq ecosystem "go"))}}
 Go tests use the standard `testing` package (plus configured helpers). Add `*_test.go` files next to the code and run `go test ./...`.
 {{else if (and (ne pythonTesting "none") (eq ecosystem "python"))}}

@@ -3417,7 +3417,7 @@ export function legacyProjectConfigToStackParts(
 
   // The generic `orm`/`api`/`auth` fields only describe TypeScript and React Native
   // stacks. For other ecosystems these are inert TS defaults and the ecosystem-specific
-  // blocks below own the real bindings — mapping the generic fields there would emit
+  // blocks below own the real bindings - mapping the generic fields there would emit
   // invalid or duplicate capability parts (e.g. `auth:go:better-auth` alongside `goAuth`).
   if (
     config.ecosystem === undefined ||
@@ -3862,7 +3862,7 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
   };
 
   for (const category of GRAPH_PROJECTION_DEFAULT_LEGACY_CATEGORIES) {
-    // Array-valued categories (e.g. mobileLibraries) must reset to [] — a "none"
+    // Array-valued categories (e.g. mobileLibraries) must reset to [] - a "none"
     // string would later be spread character-by-character by
     // appendUniqueLegacyArrayValue and read as truthy by templates.
     (projected as Record<string, unknown>)[category] = LEGACY_ARRAY_CATEGORIES.has(category)

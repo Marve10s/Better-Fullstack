@@ -1,4 +1,4 @@
-# TypeScript — Expand Existing Categories
+# TypeScript - Expand Existing Categories
 
 PostHog analytics, standalone Redis caching, Supabase Storage, and the direct Anthropic SDK are
 shipped. Only unfinished additions or category decisions remain below.

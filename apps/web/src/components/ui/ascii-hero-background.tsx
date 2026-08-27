@@ -7,7 +7,7 @@ import { cn } from "@/lib/platform/utils";
 
 /**
  * Theme-aware ASCII hero scene, drawn on a fine glyph grid (no external
- * embeds, no load flash — the canvas is transparent until the first frame).
+ * embeds, no load flash - the canvas is transparent until the first frame).
  *
  * Shared renderer: vector line-work is stroked on a tiny offscreen canvas
  * (1px per grid cell) and sampled back as dotted ASCII lines (full-alpha
@@ -16,7 +16,7 @@ import { cn } from "@/lib/platform/utils";
  * the rest; labels/typed text draw as real text on top.
  *
  * Variants (pick one, then prune the rest):
- * - "graph": stack wiring constellation — lime ✦ nodes (web/api/db/auth/ai/
+ * - "graph": stack wiring constellation - lime ✦ nodes (web/api/db/auth/ai/
  *   payments), dotted wires with traveling signal pulses.
  * - "stack": three isometric shaded slabs (frontend/api/database) with dotted
  *   connectors, gently bobbing.
@@ -102,7 +102,7 @@ const TERM_LINES = [
   "├─ apps/web",
   "├─ apps/server",
   "└─ packages/database",
-  "✓ ready — start shipping",
+  "✓ ready - start shipping",
 ] as const;
 const TERM_TYPE_S = 0.075;
 const TERM_LINE_S = 0.55;

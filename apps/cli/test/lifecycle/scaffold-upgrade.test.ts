@@ -797,7 +797,7 @@ describe("scaffold-upgrade engine", () => {
     await writeFile(envPath, lines.filter((line) => line !== keyLine).join("\n"), "utf-8");
 
     // Without a baseline, a merge would mistake the removed key for a template
-    // addition and re-append it — the file must go to manual review instead.
+    // addition and re-append it - the file must go to manual review instead.
     const plan = await planScaffoldUpgrade(dir);
     assertSuccess(plan);
     const entry = plan.manual.find((file) => file.path === target);
@@ -848,7 +848,7 @@ describe("scaffold-upgrade engine", () => {
     expect(first.manual).toContainEqual({
       path: target,
       category: "manual",
-      reason: "secrets file is absent — create it manually; never generated during update",
+      reason: "secrets file is absent - create it manually; never generated during update",
     });
     expect(first.actionable).not.toContain(target);
   });

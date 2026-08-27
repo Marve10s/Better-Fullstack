@@ -14,7 +14,7 @@ export async function processAuthPlugins(
   try {
     tsMorph = await import("ts-morph");
   } catch {
-    return; // ts-morph unavailable (browser environment) — skip AST transforms
+    return; // ts-morph unavailable (browser environment) - skip AST transforms
   }
 
   const content = vfs.readFile(authIndexPath);

@@ -22,7 +22,7 @@ export const dependencyVersionMap = {
   // account identity schema and cannot be admitted by the 1.6 template range.
   "better-auth": "1.6.22",
   "@better-auth/expo": "1.6.22",
-  // Runtime imports of @better-auth/expo's client — must exist in the
+  // Runtime imports of @better-auth/expo's client - must exist in the
   // native app even when the corresponding mobile options are "none".
   "expo-linking": "^56.0.14",
   "expo-constants": "^56.0.18",
@@ -248,7 +248,7 @@ export const dependencyVersionMap = {
   garph: "^0.6.8",
   "graphql-yoga": "^5.22.0",
   // graphql 16.x: garph (^16.6.0), graphql-yoga (^15||^16), and
-  // @apollo/server@5 (^16.11.0) all cap at v16 — v17 violates their peers
+  // @apollo/server@5 (^16.11.0) all cap at v16 - v17 violates their peers
   // and forces a 2nd graphql copy into packages/api (breaks garph's
   // cross-package GraphQLSchema typing). Keep on 16.x until they support 17.
   graphql: "^16.11.0",

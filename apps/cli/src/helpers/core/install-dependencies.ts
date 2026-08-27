@@ -10,7 +10,7 @@ import { classifySetupFailure } from "@/telemetry/analytics";
 
 /**
  * Result of a post-scaffold setup step (dependency install, native build, db setup).
- * Steps still log their own errors, but no longer swallow failure silently — callers
+ * Steps still log their own errors, but no longer swallow failure silently - callers
  * collect these so the CLI reports an accurate final status instead of always
  * printing "Project created successfully" on top of a broken install.
  */
@@ -31,7 +31,7 @@ function toErrorMessage(error: unknown): string {
 /**
  * execa's own message is only "Command failed with exit code 1", so the reason
  * has to come from the tool's stderr. The captured text is classified here and
- * discarded — only the resulting code is ever reported.
+ * discarded - only the resulting code is ever reported.
  */
 function toStepFailure(step: string, error: unknown, errorMessage: string): SetupStepResult {
   const stderr = (error as { stderr?: unknown })?.stderr;

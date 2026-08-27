@@ -35,7 +35,7 @@ export function createSuspenseCache<T>() {
     throw entry.promise;
   }
 
-  /** Kick off the load without suspending — call from route loaders. */
+  /** Kick off the load without suspending - call from route loaders. */
   function preload(key: string, load: () => Promise<T>): void {
     if (!cache.has(key)) start(key, load);
   }

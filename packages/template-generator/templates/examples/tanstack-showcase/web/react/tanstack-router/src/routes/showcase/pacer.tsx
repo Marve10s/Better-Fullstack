@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 // ── Mock data ────────────────────────────────────────────────────────
 const ITEMS = Array.from({ length: 200 }, (_, i) => ({
   id: i,
-  name: `Item ${i + 1} — ${["Alpha", "Beta", "Gamma", "Delta", "Epsilon"][i % 5]} ${["Widget", "Gadget", "Tool", "Device", "Module"][Math.floor(i / 5) % 5]}`,
+  name: `Item ${i + 1} - ${["Alpha", "Beta", "Gamma", "Delta", "Epsilon"][i % 5]} ${["Widget", "Gadget", "Tool", "Device", "Module"][Math.floor(i / 5) % 5]}`,
 }));
 
 export const Route = createFileRoute("/showcase/pacer")({
@@ -99,7 +99,7 @@ function PacerDebounce() {
   return (
     <div className="space-y-3">
       <p className="text-sm text-muted-foreground">
-        One hook — useDebouncer with configurable wait
+        One hook - useDebouncer with configurable wait
       </p>
       <input
         aria-label="Search items with TanStack Pacer"
@@ -144,7 +144,7 @@ function PacerShowcase() {
       </Link>
       <h1 className="mb-2 text-3xl font-bold">TanStack Pacer</h1>
       <p className="mb-8 text-muted-foreground">
-        Debounce, throttle, rate-limit, queue, and retry — well-tested hooks that
+        Debounce, throttle, rate-limit, queue, and retry - well-tested hooks that
         replace hand-rolled setTimeout patterns.
       </p>
 
@@ -177,7 +177,7 @@ function PacerShowcase() {
         manual approach requires useEffect + useRef + clearTimeout for every
         debounced value, and it&apos;s easy to forget cleanup or introduce stale
         closure bugs. TanStack Pacer gives you useDebouncer, useThrottler,
-        useRateLimiter, useQueuer, and more — each properly handling cleanup,
+        useRateLimiter, useQueuer, and more - each properly handling cleanup,
         cancellation, and async execution.
       </div>
     </div>

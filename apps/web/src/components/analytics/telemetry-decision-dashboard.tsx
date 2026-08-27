@@ -25,7 +25,7 @@ function formatCount(value: number): string {
 }
 
 function formatRate(value: number | null): string {
-  return value === null ? "—" : `${Math.round(value * 100)}%`;
+  return value === null ? "-" : `${Math.round(value * 100)}%`;
 }
 
 function PanelHeading({ index, title, detail }: { index: string; title: string; detail: string }) {

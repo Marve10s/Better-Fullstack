@@ -28,7 +28,7 @@ const TELEMETRY_DELIVERY_TIMEOUT_MS = 1_000;
 /**
  * Must stay above `TELEMETRY_DELIVERY_TIMEOUT_MS` plus the settings reads a
  * delivery performs first. A shorter budget aborts the terminal event of every
- * command — it is enqueued microseconds before the flush — while start events
+ * command - it is enqueued microseconds before the flush - while start events
  * survive on the command's own runtime.
  */
 const TELEMETRY_FLUSH_TIMEOUT_MS = 1_500;
@@ -98,7 +98,7 @@ export async function maybeShowTelemetryNotice(): Promise<void> {
     `${pc.bold("Anonymous usage telemetry is enabled.")}\n` +
       `${pc.dim("We collect your selected stack options (e.g. frontend, backend, database),")}\n` +
       `${pc.dim("command outcomes and bounded quality counts, CLI/runtime version, OS")}\n` +
-      `${pc.dim("platform, and a random anonymous install ID — never project names, file")}\n` +
+      `${pc.dim("platform, and a random anonymous install ID - never project names, file")}\n` +
       `${pc.dim("paths, prompts, source code, env values, secrets, or raw error messages.")}\n` +
       `Opt out anytime with ${pc.cyan("create-better-fullstack telemetry disable")} ` +
       `or ${pc.cyan("BTS_TELEMETRY_DISABLED=1")}.`,

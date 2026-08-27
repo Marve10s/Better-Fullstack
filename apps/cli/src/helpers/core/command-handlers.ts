@@ -162,7 +162,7 @@ export function shouldShowBuilderRecommendationPrompt({
 
 async function showBuilderRecommendationPrompt() {
   note(
-    `The Web Builder walks the full stack visually — every option, live compatibility checks — and hands you back a single command to run.\n\n${BUILDER_URL}`,
+    `The Web Builder walks the full stack visually - every option, live compatibility checks - and hands you back a single command to run.\n\n${BUILDER_URL}`,
     "Prefer a visual builder?",
   );
 
@@ -172,7 +172,7 @@ async function showBuilderRecommendationPrompt() {
       {
         value: "open",
         label: "Open the Web Builder",
-        hint: "recommended — opens in your browser",
+        hint: "recommended - opens in your browser",
       },
       {
         value: "continue",
@@ -820,7 +820,7 @@ export async function createProjectHandler(
           log.info(
             pc.bold(
               pc.cyan(
-                `Dry run complete — ${result.tree.fileCount} files in ${result.tree.directoryCount} directories`,
+                `Dry run complete - ${result.tree.fileCount} files in ${result.tree.directoryCount} directories`,
               ),
             ),
           );

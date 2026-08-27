@@ -3,7 +3,7 @@
  * WITHOUT regenerating the existing rows.
  *
  * build-scaffbench-2-1-data.ts is a full regenerate that reads every RUN_SOURCES
- * summary — but most of those testing/ dirs are gitignored and gone, so a full
+ * summary - but most of those testing/ dirs are gitignored and gone, so a full
  * regen would silently drop opus/sonnet/spark/gemini/free-tier. This script instead
  * imports the committed data, computes ONLY the new (model,effort) rows below, and
  * merges them in. Same per-cell computation as the build script.
@@ -25,7 +25,7 @@ import { buildPublishedCells, type PublishedCell } from "@scripts/benchmarks/bui
 import { scaffbenchIndex } from "@scripts/benchmarks/build-scaffbench-data";
 
 // hy3 published WITHOUT the two opencode free-tier infra deaths (elixir stalled
-// mid-stream, react-native-expo returned 0 bytes — both are endpoint failures,
+// mid-stream, react-native-expo returned 0 bytes - both are endpoint failures,
 // not model build failures). The two frontier specs never generated. So hy3 is
 // scored only on the 9 specs that genuinely ran.
 const HY3_GOOD = [
@@ -40,7 +40,7 @@ const HY3_GOOD = [
   "java-spring-jooq-keycloak",
 ];
 
-// New (model, effort) rows to add — plus every pre-existing row whose run
+// New (model, effort) rows to add - plus every pre-existing row whose run
 // artifacts survive on disk, re-scored under the 2026-07-10 validator fixes
 // (multi-root manifest discovery, no vacuous install-only passes). Rows whose
 // artifacts are gone keep their old-validator numbers; see the blog note.
@@ -50,8 +50,8 @@ const RUN_SOURCES: { dir: string; specs?: string[] }[] = [
 ];
 
 // Extra-lane runs merged into EXISTING rows: their cells are appended under the
-// row's modelKey (replacing any same-path cells) but the board row itself —
-// label, effort, sortIndex — is left untouched, so the main leaderboard stays a
+// row's modelKey (replacing any same-path cells) but the board row itself -
+// label, effort, sortIndex - is left untouched, so the main leaderboard stays a
 // prompt-only comparison. These cells feed the MCP tab.
 // `createRow: true` lets an assisted-lane source add its (model, effort) row when
 // the board has none: the row's sortIndex derives from PROMPT cells only (0 when
@@ -210,7 +210,7 @@ function main() {
   ];
 
   // Extra lanes: append cells under an existing row (replacing same-path cells)
-  // without recomputing that row — the board stays prompt-ranked.
+  // without recomputing that row - the board stays prompt-ranked.
   for (const source of MERGE_SOURCES) {
     if (!existsSync(path.join(source.dir, "summary.json"))) {
       console.error(`Skipping missing merge source: ${source.dir}`);

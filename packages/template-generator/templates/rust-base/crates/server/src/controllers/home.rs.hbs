@@ -7,7 +7,7 @@ struct HealthResponse {
     message: &'static str,
 }
 
-/// Health check endpoint — returns JSON status.
+/// Health check endpoint - returns JSON status.
 async fn health() -> Result<Response> {
     format::json(HealthResponse {
         status: "ok",

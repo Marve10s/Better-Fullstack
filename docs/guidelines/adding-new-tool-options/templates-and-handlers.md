@@ -1,4 +1,4 @@
-# Adding New Tool Options — Template & Handler Guide
+# Adding New Tool Options - Template & Handler Guide
 
 Deep reference for `processTemplatesFromPrefix()`, Handlebars conventions, and writing conditional templates across ecosystems.
 
@@ -6,7 +6,7 @@ Deep reference for `processTemplatesFromPrefix()`, Handlebars conventions, and w
 
 ---
 
-## 1. `processTemplatesFromPrefix()` — Full Reference
+## 1. `processTemplatesFromPrefix()` - Full Reference
 
 **Location:** `packages/template-generator/src/core/template-processor.ts`
 
@@ -15,7 +15,7 @@ Deep reference for `processTemplatesFromPrefix()`, Handlebars conventions, and w
 ```typescript
 function processTemplatesFromPrefix(
   vfs: VirtualFileSystem,        // Virtual file system to write output
-  templates: TemplateData,        // Map<string, string> — all loaded template contents
+  templates: TemplateData,        // Map<string, string> - all loaded template contents
   prefix: string,                 // e.g., "search/algolia/server/base"
   destPrefix: string,             // e.g., "apps/server"
   config: ProjectConfig,          // Full project config (passed to Handlebars as context)
@@ -33,7 +33,7 @@ function processTemplatesFromPrefix(
    - Output path: `apps/server/src/lib/search.ts` (`.hbs` stripped)
 4. **Filename transformation:** `_gitignore` becomes `.gitignore`, `_npmrc` becomes `.npmrc`, `.hbs` extension is removed.
 5. **Handlebars processing:** If the file ends in `.hbs`, the content is compiled as a Handlebars template with the full `ProjectConfig` as context. Non-`.hbs` files are copied as-is.
-6. **Empty file filtering:** If the processed output is an empty string (all content was behind unmatched conditionals), the file is **silently skipped** — not written to VFS.
+6. **Empty file filtering:** If the processed output is an empty string (all content was behind unmatched conditionals), the file is **silently skipped** - not written to VFS.
 7. **Binary file handling:** Files matching binary extensions (images, fonts, etc.) are stored with a `"[Binary file]"` placeholder and the original source path for later extraction.
 
 ### Key behaviors to remember
@@ -94,7 +94,7 @@ goWebFramework, goOrm, goApi, goCli, goLogging
 
 ### Pattern A: Simple single conditional
 
-Most templates use this — one feature gate:
+Most templates use this - one feature gate:
 
 ```handlebars
 {{#if (eq search "algolia")}}
@@ -125,7 +125,7 @@ const app = Fastify();
 {{/if}}
 ```
 
-Note: Handlebars has no native `else if`. Use separate `{{#if}}` blocks for mutually exclusive enums — only one will match since the config value is a single string.
+Note: Handlebars has no native `else if`. Use separate `{{#if}}` blocks for mutually exclusive enums - only one will match since the config value is a single string.
 
 ### Pattern C: Nested conditionals (backend x api x auth)
 
@@ -170,7 +170,7 @@ app.all("/api/auth/*", toNodeHandler(auth));
 {{/if}}
 ```
 
-**Key pattern:** Outer conditional selects the feature (api, auth). Inner conditional adapts to the backend framework. This is the standard approach — there is no macro system to abstract it.
+**Key pattern:** Outer conditional selects the feature (api, auth). Inner conditional adapts to the backend framework. This is the standard approach - there is no macro system to abstract it.
 
 ### Pattern D: Array field checks with `includes`
 
@@ -305,7 +305,7 @@ export async function processRustBaseTemplate(vfs, templates, config) {
 }
 ```
 
-**Critical difference from Go/Python: Rust does NOT skip empty files.** If a `.hbs` file renders to empty string, it's still written. This means Rust templates must be self-contained — don't rely on empty-file filtering.
+**Critical difference from Go/Python: Rust does NOT skip empty files.** If a `.hbs` file renders to empty string, it's still written. This means Rust templates must be self-contained - don't rely on empty-file filtering.
 
 **To add a new conditional feature to Rust:**
 
@@ -357,7 +357,7 @@ export async function processGoBaseTemplate(vfs, templates, config) {
 
 ### Python handler (`python-base.ts`)
 
-Simplest of all — **no handler-level conditionals**. All logic lives in templates:
+Simplest of all - **no handler-level conditionals**. All logic lives in templates:
 
 ```typescript
 export async function processPythonBaseTemplate(vfs, templates, config) {
@@ -452,7 +452,7 @@ templates/python-base/
 
 ## 6. Dependency File Patterns by Ecosystem
 
-### Rust — `Cargo.toml.hbs`
+### Rust - `Cargo.toml.hbs`
 
 ```handlebars
 [workspace.dependencies]
@@ -491,7 +491,7 @@ validator = { version = "0.19", features = ["derive"] }
 {{/if}}
 ```
 
-### Go — `go.mod.hbs`
+### Go - `go.mod.hbs`
 
 ```handlebars
 module {{replace projectName "-" "_"}}
@@ -514,7 +514,7 @@ require (
 )
 ```
 
-### Python — `pyproject.toml.hbs`
+### Python - `pyproject.toml.hbs`
 
 ```handlebars
 [project]
@@ -543,4 +543,4 @@ line-length = 120
 {{/if}}
 ```
 
-Note: Python `pythonAi` is an **array field** — use `includes`, not `eq`.
+Note: Python `pythonAi` is an **array field** - use `includes`, not `eq`.

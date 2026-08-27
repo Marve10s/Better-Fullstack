@@ -18,7 +18,7 @@ export async function processPwaPlugins(
   try {
     tsMorph = await import("ts-morph");
   } catch {
-    return; // ts-morph unavailable (browser environment) — skip AST transforms
+    return; // ts-morph unavailable (browser environment) - skip AST transforms
   }
 
   const content = vfs.readFile(viteConfigPath);

@@ -1,6 +1,6 @@
 # ScaffBench 2 Readiness
 
-> **Historical V2 runbook — updated 2026-08-07.** The suite and public result surface have shipped,
+> **Historical V2 runbook - updated 2026-08-07.** The suite and public result surface have shipped,
 > and the runner now supports more agents/models than several examples below name. Treat the current
 > script help and checked-in result artifacts as executable truth; retain this file for scoring and
 > operational context.
@@ -104,7 +104,7 @@ Each run directory writes:
 - `spec.json` with selected specs, canonical commands, and harness options
 - `summary.json` with raw results, aggregate rows, confidence intervals, failure tags, and metadata
   (the metadata records the resolved `create-better-fullstack` version actually under test, the host
-  toolchain versions — rustc/cargo/go/dotnet/python/uv/protoc/psql — and `environmentQualified: true`,
+  toolchain versions - rustc/cargo/go/dotnet/python/uv/protoc/psql - and `environmentQualified: true`,
   since validation runs non-frozen network installs on those toolchains; `gitHead` only describes the
   local checkout, not the published generator the assisted paths exercise)
 - `summary.md` with a leaderboard and run table
@@ -125,7 +125,7 @@ Right-library scoring is artifact-grounded for every path:
   tree (dependencies + source imports + required files) via strict markers.
 - `Faithful` (assisted-path diagnostic) scores whether `bts.jsonc` echoes the
   requested stack. A 100% faithful but sub-100% wired run is tagged
-  `stack-unwired` — the signature of a generator that recorded a library it
+  `stack-unwired` - the signature of a generator that recorded a library it
   never wired.
 
 Secondary diagnostic signals:
@@ -136,9 +136,9 @@ Secondary diagnostic signals:
 
 Reliability is reported per spec, not pooled:
 
-- `Macro` — mean of per-spec pass rates (each spec is one unit, so heterogeneous
+- `Macro` - mean of per-spec pass rates (each spec is one unit, so heterogeneous
   specs are not collapsed into a single binomial)
-- `pass@k` — specs solved on at least one repeat; `pass^k` — specs solved on
+- `pass@k` - specs solved on at least one repeat; `pass^k` - specs solved on
   every repeat (consistency)
 - Wilson 95% interval, shown only when a cell has at least 8 scored runs (below
   that it reads `n<8`, because e.g. 3/3 and 0/3 intervals overlap)
@@ -176,7 +176,7 @@ The harness emits stable failure tags:
   itself; the full flag list is retained only in `canonical-command.txt`/`spec.json` for grading, so
   the CLI lane measures requirement→flag mapping rather than copy-fidelity.
 - **Discovery lane (natural prompt + acceptance sets).** For specs with curated `acceptanceSets`,
-  the natural prompt style does NOT name the required libraries — the agent infers them from the
+  the natural prompt style does NOT name the required libraries - the agent infers them from the
   described capabilities, and scoring credits any accepted alternative (e.g. semantic search ∈
   {qdrant, pgvector, weaviate, …}) via an `Acceptance` (capability-satisfaction) column shown
   alongside the strict canonical `Wired` score. `ai-search-workbench` is curated; the other specs
@@ -188,7 +188,7 @@ The harness emits stable failure tags:
 - **Three-way run outcome.** Each run is `success`, `model-failure`, or `infra-inconclusive`.
   Infra-inconclusive runs are excluded from the pass-rate denominator and surfaced in a dedicated
   `Inconclusive` column: a validation-step timeout, an exhausted token budget (`budget-exhausted`),
-  a crash with no output, or `toolchain-missing` — raised only when the validator binary itself
+  a crash with no output, or `toolchain-missing` - raised only when the validator binary itself
   cannot be spawned (e.g. `cargo`/`uv`/`go`/`dotnet` absent). A generated script that runs and exits
   127 (a broken `build`/`test` script) stays a `model-failure`, as does a generation timeout (cf.
   SWE-bench).
@@ -202,7 +202,7 @@ type-checks. This guarantees a Better-Fullstack generator regression surfaces
 here rather than being silently charged to the model in the benchmark. It is
 toolchain-gated (a spec is skipped, with a logged warning, when its toolchain is
 absent) and runs as the scheduled / `workflow_dispatch` `scaffbench-solvability`
-CI job across all five ecosystems — it does not block per-PR checks. Run a
+CI job across all five ecosystems - it does not block per-PR checks. Run a
 single ecosystem locally with
 `SCAFFBENCH_SOLVABILITY_SPECS=<id> bun run scaffbench:solvability`.
 
@@ -211,7 +211,7 @@ Tonic/gRPC, whose build script compiles `.proto` files with `protoc` at
 `cargo check` time, so `protobuf-compiler` must be installed (the CI job does
 this). The first full CI run validated `ai-search-workbench`, `python-ingestion-api`,
 `go-realtime-api`, and `multi-dotnet-ops`; `rust-leptos-axum` surfaced the missing
-`protoc` build dependency — exactly the kind of environment gap this gate exists
+`protoc` build dependency - exactly the kind of environment gap this gate exists
 to catch.
 
 ## Notes

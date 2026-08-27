@@ -8,7 +8,7 @@ export type AgentProvider = "claude" | "codex" | "opencode" | "kilo" | "agy" | "
  *  individual tiers). */
 export function providerForModel(model: string): AgentProvider {
   if (/^pi\//i.test(model)) return "pi";
-  // `kilocode/<id>` drives the Kilo binary with an arbitrary provider id —
+  // `kilocode/<id>` drives the Kilo binary with an arbitrary provider id -
   // needed because bare `openai/*` ids are served by BOTH opencode and kilo
   // (kilo picks them up via the user's OpenAI oauth): `kilocode/openai/x`
   // disambiguates from opencode's `openai/x` and from kilo's own credit-gated
@@ -16,7 +16,7 @@ export function providerForModel(model: string): AgentProvider {
   if (/^kilocode\//i.test(model)) return "kilo";
   if (/^kilo\//i.test(model)) return "kilo";
   // The opencode CLI serves several tiers: free (`opencode/*`), the paid "Go"
-  // subscription (`opencode-go/*`), and the Cloudflare AI Gateway passthrough —
+  // subscription (`opencode-go/*`), and the Cloudflare AI Gateway passthrough -
   // all route to the opencode adapter with the full id passed through unchanged.
   if (/^(opencode(-go)?|cloudflare-ai-gateway|openai)\//i.test(model)) return "opencode";
   if (/gemini/i.test(model)) return "agy";
@@ -24,7 +24,7 @@ export function providerForModel(model: string): AgentProvider {
   return "claude";
 }
 
-// Human label for the agent that drove a model — for summary.md headers. Derived
+// Human label for the agent that drove a model - for summary.md headers. Derived
 // from the model so non-Claude runs aren't mislabeled "Claude Code".
 export function agentLabelForModel(model: string): string {
   switch (providerForModel(model)) {

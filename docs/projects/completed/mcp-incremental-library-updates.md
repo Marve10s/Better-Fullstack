@@ -1,6 +1,6 @@
 # MCP Incremental Library Updates
 
-> **Implementation history — superseded for priority decisions on 2026-08-07.** Generic MCP
+> **Implementation history - superseded for priority decisions on 2026-08-07.** Generic MCP
 > plan/apply and the CLI `add` lifecycle now cover the broad stack surface described below. Keep this
 > file for regression context; use `docs/next-updates-roadmap.md` for current priorities.
 

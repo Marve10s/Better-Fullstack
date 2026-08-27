@@ -1,6 +1,6 @@
 // AUTO-GENERATED from ten ScaffBench 2 run summaries (see scripts/benchmarks/build-scaffbench-data.ts).
 // Models: Opus 4.8/4.7/4.6/4.5 (Claude Code), GPT-5.5 low/medium/xhigh (Codex), and two
-// free-tier models — North-mini Code (opencode) + Nemotron-3 Super (Kilo Code). 2026-06-26.
+// free-tier models - North-mini Code (opencode) + Nemotron-3 Super (Kilo Code). 2026-06-26.
 // Per-cell signals from the harness bySpecCell aggregate (wired = stackPercent, cmd =
 // commandDisciplinePercent); corePass derived from validation steps minus the quality gate;
 // steps from the saved trajectory; GPT cost estimated from token usage × OpenAI pricing.
@@ -13,7 +13,7 @@ export type ScaffbenchModel = {
   effectiveReasoning: string;
   provider: "claude" | "codex" | "opencode" | "kilo" | "agy" | "pi";
   label: string;
-  /** overall ScaffBench Index across all scored cells — the group sort key. */
+  /** overall ScaffBench Index across all scored cells - the group sort key. */
   sortIndex: number;
   /** publication eligibility from run provenance (2.2+): "ranked" needs >=3
    *  consistent trials per cell; absent on older boards. */
@@ -21,11 +21,11 @@ export type ScaffbenchModel = {
 };
 
 export type ScaffbenchCell = {
-  /** "<model>|<effort>" — joins a cell to its ScaffbenchModel. */
+  /** "<model>|<effort>" - joins a cell to its ScaffbenchModel. */
   modelKey: string;
   path: ScaffbenchPath;
   spec: string;
-  /** false when the run was infra-inconclusive (timed-out toolchain) — excluded from rates. */
+  /** false when the run was infra-inconclusive (timed-out toolchain) - excluded from rates. */
   scored: boolean;
   corePass: boolean;
   /** null = quality gates were never run for this cell (Full unmeasured). */

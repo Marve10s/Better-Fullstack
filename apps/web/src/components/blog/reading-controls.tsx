@@ -108,10 +108,10 @@ function Segment({
 /**
  * Floating reading controls for blog posts, ported from the portfolio blog:
  *
- * - Short/Long toggle — posts wrap extra-depth sections in
+ * - Short/Long toggle - posts wrap extra-depth sections in
  *   `<div data-long-version="true">`; Short collapses them (animated) and
  *   hides their TOC entries. Only rendered when the post has such sections.
- * - Typeface toggle — Geist vs OpenDyslexic, persisted in localStorage and
+ * - Typeface toggle - Geist vs OpenDyslexic, persisted in localStorage and
  *   applied via `data-blog-font` on <body> (consumed by .blog-article CSS).
  */
 export function ReadingControls({ readingStats }: { readingStats?: BlogReadingStats }) {

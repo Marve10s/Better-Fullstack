@@ -142,7 +142,7 @@ import path from "node:path";
  * Tier-2 coverage guard (generalises check-types-coverage.test.ts).
  *
  * For every category enum in the schema, every non-"none" value must be
- * "generatable" — i.e. something in the template tree or the generator source
+ * "generatable" - i.e. something in the template tree or the generator source
  * actually produces output for it. A value is generatable when:
  *   (a) a template directory is named after the value (e.g. api/trpc, auth/clerk), OR
  *   (b) the value appears as a quoted Handlebars/string literal in a `.hbs`
@@ -422,7 +422,7 @@ describe("schema/template generatability coverage", () => {
         continue;
       }
       if (isGeneratable(value, category)) {
-        stale.push(`${key} (now generatable — remove from allowlist)`);
+        stale.push(`${key} (now generatable - remove from allowlist)`);
       }
     }
     expect(stale).toEqual([]);

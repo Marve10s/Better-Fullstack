@@ -150,7 +150,7 @@ function TanStackTable() {
   return (
     <div className="space-y-3">
       <p className="text-sm text-muted-foreground">
-        Declarative columns — sorting & pagination are plugins
+        Declarative columns - sorting & pagination are plugins
       </p>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
@@ -223,7 +223,7 @@ function TableShowcase() {
       </Link>
       <h1 className="mb-2 text-3xl font-bold">TanStack Table</h1>
       <p className="mb-8 text-muted-foreground">
-        A headless table engine — define columns declaratively, get sorting,
+        A headless table engine - define columns declaratively, get sorting,
         filtering, and pagination as composable plugins.
       </p>
 
@@ -254,7 +254,7 @@ function TableShowcase() {
       <div className="mt-8 rounded-lg border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
         <strong className="text-foreground">Why TanStack Table?</strong> Manual
         tables require re-implementing sort, filter, and pagination for every
-        table. TanStack Table provides a headless state machine — you own the
+        table. TanStack Table provides a headless state machine - you own the
         markup, it owns the logic. Add features like column resizing, row
         selection, or grouping by composing model functions.
       </div>

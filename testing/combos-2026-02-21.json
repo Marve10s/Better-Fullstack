@@ -18,9 +18,9 @@
       "  BugI: db/drizzle/mysql/src/index.ts.hbs used connection:{ uri: env.DATABASE_URL } which is wrong for drizzle-orm 0.45.1",
       "       mysql2 drizzle() expects connection:string with mode:'default' when schema is provided",
       "       This bug exists on main branch too (same template, same { uri: ... } format)",
-      "  BugJ: db package.json missing postinstall:prisma generate — bun install did not auto-generate Prisma client",
+      "  BugJ: db package.json missing postinstall:prisma generate - bun install did not auto-generate Prisma client",
       "       Fixed in package-configs.ts: added scripts['postinstall'] = 'prisma generate' for orm===prisma",
-      "Known incompatibility (not fixed): TypeORM + better-auth — better-auth has no TypeORM adapter",
+      "Known incompatibility (not fixed): TypeORM + better-auth - better-auth has no TypeORM adapter",
       "       Combo 5 uses --auth none to work around this; CLI does not block this combination",
       "Batch-3 cherry-picked fixes also active: NestJS tsconfig decorators, NestJS conditionals for orpc/trpc/ai files,",
       "  NestJS _res, AdonisJS router.route, AdonisJS 2-arg authHandler, Drizzle .js schema barrels, Elysia no const app="

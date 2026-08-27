@@ -791,7 +791,7 @@ function WorkflowSection() {
             <ul className="mt-8 space-y-3">
               {TIPS.map((tip) => (
                 <li key={tip} className="flex gap-2.5 text-xs text-muted-foreground sm:text-sm">
-                  <span className={cn("shrink-0 font-mono", ACCENT_TEXT)}>—</span>
+                  <span className={cn("shrink-0 font-mono", ACCENT_TEXT)}>-</span>
                   <span>{getTipText(tip)}</span>
                 </li>
               ))}

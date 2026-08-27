@@ -10,7 +10,7 @@ const TEMPLATES_DIR = path.resolve(
 /**
  * Generated workspace packages that intentionally do NOT ship a `check-types`
  * script. Every entry needs a documented reason. When adding a new generated
- * package, prefer giving it a real `check-types` script over allowlisting it —
+ * package, prefer giving it a real `check-types` script over allowlisting it -
  * a package that is never type-checked is exactly how drift (e.g. the
  * heroui-native and stripe apiVersion regressions) shipped silently.
  */
@@ -96,7 +96,7 @@ describe("generated package check-types coverage", () => {
         continue;
       }
       if (content.includes('"check-types"')) {
-        stale.push(`${rel} (now defines check-types — remove from allowlist)`);
+        stale.push(`${rel} (now defines check-types - remove from allowlist)`);
       }
     }
     expect(stale).toEqual([]);

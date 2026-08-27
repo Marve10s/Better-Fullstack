@@ -814,7 +814,7 @@ const EXACT_DESCRIPTIONS: Record<string, LocalizedMap> = {
     "zh-Hant": "類型安全 APIs 變得簡單",
     "de": "Typsichere APIs leicht gemacht",
     "fr": "Les APIs type-safe en toute simplicité",
-    "uk": "Типобезпечні API — це просто",
+    "uk": "Типобезпечні API - це просто",
   },
   "Modern type-safe router for React": {
     "es": "Router moderno y type-safe para React",
@@ -1029,15 +1029,15 @@ const EXACT_DESCRIPTIONS: Record<string, LocalizedMap> = {
 };
 
 const PRESET_DESCRIPTIONS: Record<string, LocalizedMap> = {
-  "Next.js + Tailwind + shadcn/ui — no database or backend": {
-    "es": "Next.js + Tailwind + shadcn/ui — sin base de datos ni backend",
-    "zh": "Next.js + Tailwind + shadcn/ui — 无数据库或后端",
-    "ja": "Next.js + Tailwind + shadcn/ui — データベースまたはバックエンドなし",
-    "ko": "Next.js + Tailwind + shadcn/ui — 데이터베이스 또는 백엔드 없음",
-    "zh-Hant": "Next.js + Tailwind + shadcn/ui — 無資料庫或後端",
+  "Next.js + Tailwind + shadcn/ui - no database or backend": {
+    "es": "Next.js + Tailwind + shadcn/ui - sin base de datos ni backend",
+    "zh": "Next.js + Tailwind + shadcn/ui - 无数据库或后端",
+    "ja": "Next.js + Tailwind + shadcn/ui - データベースまたはバックエンドなし",
+    "ko": "Next.js + Tailwind + shadcn/ui - 데이터베이스 또는 백엔드 없음",
+    "zh-Hant": "Next.js + Tailwind + shadcn/ui - 無資料庫或後端",
     "de": "Next.js + Tailwind + shadcn/ui – ohne Datenbank oder Backend",
-    "fr": "Next.js + Tailwind + shadcn/ui — pas de base de données ni de backend",
-    "uk": "Next.js + Tailwind + shadcn/ui — без бази даних або бекенда",
+    "fr": "Next.js + Tailwind + shadcn/ui - pas de base de données ni de backend",
+    "uk": "Next.js + Tailwind + shadcn/ui - без бази даних або бекенда",
   },
   "MongoDB + Express + React Router + Node.js": {
     "es": "MongoDB + Express + React Router + Node.js",
@@ -1059,15 +1059,15 @@ const PRESET_DESCRIPTIONS: Record<string, LocalizedMap> = {
     "fr": "Application native Expo + Uniwind sans backend",
     "uk": "Expo + Uniwind нативний додаток без бекенда",
   },
-  "Expo with bare workflow — no backend": {
-    "es": "Expo con bare workflow — sin backend",
-    "zh": "Expo bare workflow — 无后端",
-    "ja": "Expo (bare workflow) — バックエンドなし",
-    "ko": "베어 워크플로를 사용하는 Expo — 백엔드 없음",
-    "zh-Hant": "Expo 搭配 bare workflow — 無後端",
+  "Expo with bare workflow - no backend": {
+    "es": "Expo con bare workflow - sin backend",
+    "zh": "Expo bare workflow - 无后端",
+    "ja": "Expo (bare workflow) - バックエンドなし",
+    "ko": "베어 워크플로를 사용하는 Expo - 백엔드 없음",
+    "zh-Hant": "Expo 搭配 bare workflow - 無後端",
     "de": "Expo mit Bare Workflow – kein Backend",
     "fr": "Expo avec bare workflow – pas de backend",
-    "uk": "Expo з bare workflow — без бекенда",
+    "uk": "Expo з bare workflow - без бекенда",
   },
 };
 

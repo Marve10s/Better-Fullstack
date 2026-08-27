@@ -32,7 +32,7 @@ See `docs/guidelines/` for deeper reference on these topics:
 
 ## Web UI
 
-`apps/web` has established primitives — tabs, copy buttons, command/code bars, cards. Before adding any UI control, grep `apps/web/src/components` for an existing one and reuse it. Do not introduce a second visual language for a control that already exists (no pills where the app uses tabs). New visual patterns need Ibrahim's sign-off; `docs/guidelines/design-reading-guide.md` covers new visual direction, not substitutes for existing components.
+`apps/web` has established primitives - tabs, copy buttons, command/code bars, cards. Before adding any UI control, grep `apps/web/src/components` for an existing one and reuse it. Do not introduce a second visual language for a control that already exists (no pills where the app uses tabs). New visual patterns need Ibrahim's sign-off; `docs/guidelines/design-reading-guide.md` covers new visual direction, not substitutes for existing components.
 
 ## Workflow
 

@@ -12,7 +12,7 @@ import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
  * This is what lets the sidebar/sitemap/SEO read titles eagerly while the
  * compiled MDX modules themselves stay referenced ONLY via dynamic
  * `import.meta.glob`, each in its own lazy chunk. (Importing `frontmatter`
- * eagerly from the MDX modules would merge them into the entry chunk —
+ * eagerly from the MDX modules would merge them into the entry chunk -
  * Rollup cannot split one module's exports across chunks.)
  *
  * Keys intentionally match the `import.meta.glob` keys used in

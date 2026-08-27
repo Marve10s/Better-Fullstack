@@ -45,7 +45,7 @@ function ReducedMotionConfig({
 
 const MotionDiv = motion.div;
 
-/** Fluid hover — low bounce, long settle (same family as progress fill). */
+/** Fluid hover - low bounce, long settle (same family as progress fill). */
 const cardHoverSpring = {
   type: "spring" as const,
   stiffness: 95,

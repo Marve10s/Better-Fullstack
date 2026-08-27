@@ -266,7 +266,7 @@ RECOMMENDED WORKFLOW:
 1. Call bfs_get_guidance to understand field semantics, required fields, and workflow rules.
 2. Read the "docs://compatibility-rules" resource for valid stack combinations.
 3. Call bfs_check_compatibility to validate your planned stack before creating.
-4. Call bfs_plan_project to preview (dry-run) — no files are written.
+4. Call bfs_plan_project to preview (dry-run) - no files are written.
 5. Call bfs_create_project to scaffold the project on disk.
 
 For existing projects:
@@ -287,9 +287,9 @@ CRITICAL RULES:
 - Tooling is expressed with canonical "part" bindings. Use bfs_get_schema to discover dedicated toolchain, runner, quality, hooks, analysis, documentation, platform, testing, data, CI, and utility categories.
 - Array fields include "part", "frontend", "examples", "aiDocs", and the ecosystem library/testing collections. Most provider fields are strings.
 - "none" means "skip this feature entirely", not "use the default".
-- Always specify "ecosystem" first — it determines which other fields are relevant.
+- Always specify "ecosystem" first - it determines which other fields are relevant.
 - TypeScript web-specific fields (web frontend, backend, orm, etc.) are IGNORED for react-native/rust/python/go/java/dotnet/elixir ecosystems.
-- The compatibility engine auto-adjusts invalid combinations — always call bfs_check_compatibility first to see adjustments.`;
+- The compatibility engine auto-adjusts invalid combinations - always call bfs_check_compatibility first to see adjustments.`;
 
 function getGuidance() {
   return {
@@ -1078,13 +1078,13 @@ const COMPATIBILITY_RULES_MD = `# Better-Fullstack Compatibility Rules
 - Java Sentry requires Maven or Gradle so the generated project can manage the SDK dependency.
 
 ## Ecosystem Isolation
-- Rust, Python, Go, Java, and Elixir ecosystems are independent — TypeScript fields are ignored.
+- Rust, Python, Go, Java, and Elixir ecosystems are independent - TypeScript fields are ignored.
 - Each ecosystem generates a standalone project with its own build system.
 `;
 
 const GETTING_STARTED_MD = `# Getting Started with Better-Fullstack MCP
 
-## Quick Start — TypeScript Project
+## Quick Start - TypeScript Project
 1. Call bfs_create_project with:
    - projectName: "my-app"
    - ecosystem: "typescript"
@@ -1095,7 +1095,7 @@ const GETTING_STARTED_MD = `# Getting Started with Better-Fullstack MCP
    - orm: "drizzle"
 2. Tell the user to run: cd my-app && bun install && bun run dev
 
-## Quick Start — Rust Project
+## Quick Start - Rust Project
 1. Call bfs_create_project with:
    - projectName: "my-rust-app"
    - ecosystem: "rust"
@@ -1105,7 +1105,7 @@ const GETTING_STARTED_MD = `# Getting Started with Better-Fullstack MCP
    - observability: "sentry" (optional)
 2. Tell the user to run: cd my-rust-app && cargo build
 
-## Quick Start — Python Project
+## Quick Start - Python Project
 1. Call bfs_create_project with:
    - projectName: "my-python-app"
    - ecosystem: "python"
@@ -1116,7 +1116,7 @@ const GETTING_STARTED_MD = `# Getting Started with Better-Fullstack MCP
    - observability: "sentry" (optional)
 2. Tell the user to run: cd my-python-app && uv sync --extra dev
 
-## Quick Start — Go Project
+## Quick Start - Go Project
 1. Call bfs_create_project with:
    - projectName: "my-go-app"
    - ecosystem: "go"
@@ -1127,7 +1127,7 @@ const GETTING_STARTED_MD = `# Getting Started with Better-Fullstack MCP
    - observability: "sentry" (optional)
 2. Tell the user to run: cd my-go-app && go mod tidy && go run cmd/server/main.go
 
-## Quick Start — Java Project
+## Quick Start - Java Project
 1. Call bfs_create_project with:
    - projectName: "my-java-app"
    - ecosystem: "java"
@@ -1137,7 +1137,7 @@ const GETTING_STARTED_MD = `# Getting Started with Better-Fullstack MCP
    - observability: "sentry" (optional)
 2. Tell the user to run: cd my-java-app && ./mvnw test && ./mvnw spring-boot:run
 
-## Quick Start — Elixir Project
+## Quick Start - Elixir Project
 1. Call bfs_create_project with:
    - projectName: "my-elixir-app"
    - ecosystem: "elixir"
@@ -3506,7 +3506,7 @@ export function createMcpServer(): McpServer {
     "docs://compatibility-rules",
     {
       description:
-        "Stack compatibility rules — which frontend/backend/API/ORM combinations are valid. Read this BEFORE scaffolding.",
+        "Stack compatibility rules - which frontend/backend/API/ORM combinations are valid. Read this BEFORE scaffolding.",
       mimeType: "text/markdown",
       cacheHint: { ttlMs: 300_000, cacheScope: "public" },
     },

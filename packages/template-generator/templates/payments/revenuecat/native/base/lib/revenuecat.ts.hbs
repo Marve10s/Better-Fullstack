@@ -7,7 +7,7 @@ import Purchases, {
 } from "react-native-purchases";
 
 // RevenueCat SDK utility layer. Thin wrappers around `react-native-purchases`.
-// These are pure functions with no React state — they talk to the SDK directly.
+// These are pure functions with no React state - they talk to the SDK directly.
 // In components, prefer the `useRevenueCat()` / `useIsPro()` hooks from
 // `@/contexts/revenuecat-context` instead of importing from this file.
 
@@ -66,7 +66,7 @@ function pickFirstOfferingWithPackages(
 
 /**
  * One-time SDK initialization. Safe to call multiple times (no-ops after first).
- * Only `RevenueCatProvider` should call this — it owns the SDK lifecycle.
+ * Only `RevenueCatProvider` should call this - it owns the SDK lifecycle.
  */
 export async function configureRevenueCat(): Promise<RevenueCatInitResult> {
   if (Platform.OS !== "ios" && Platform.OS !== "android") {

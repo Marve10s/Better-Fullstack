@@ -308,7 +308,7 @@ export async function displayPostInstallInstructions(
   if (noOrmWarning) output += `\n${noOrmWarning.trim()}\n`;
   if (bunWebNativeWarning) output += `\n${bunWebNativeWarning.trim()}\n`;
 
-  output += `\n${pc.bold("Enjoying Better Fullstack?")} Help us grow — star the repo!\n`;
+  output += `\n${pc.bold("Enjoying Better Fullstack?")} Help us grow - star the repo!\n`;
   output += `${pc.cyan("https://github.com/Marve10s/Better-Fullstack")}\n`;
   output += pc.dim("Your star helps other developers discover the project.");
 
@@ -1000,7 +1000,7 @@ function displayRustInstructions(config: ProjectConfig & { depsInstalled: boolea
   output += `${pc.cyan("•")} Format: cargo fmt\n`;
   output += `${pc.cyan("•")} Lint: cargo clippy\n`;
 
-  output += `\n${pc.bold("Enjoying Better Fullstack?")} Help us grow — star the repo!\n`;
+  output += `\n${pc.bold("Enjoying Better Fullstack?")} Help us grow - star the repo!\n`;
   output += `${pc.cyan("https://github.com/Marve10s/Better-Fullstack")}\n`;
   output += pc.dim("Your star helps other developers discover the project.");
 
@@ -1143,7 +1143,7 @@ function displayGoInstructions(config: ProjectConfig & { depsInstalled: boolean 
     output += `${pc.cyan("•")} gRPC: localhost:50051\n`;
   }
 
-  output += `\n${pc.bold("Enjoying Better Fullstack?")} Help us grow — star the repo!\n`;
+  output += `\n${pc.bold("Enjoying Better Fullstack?")} Help us grow - star the repo!\n`;
   output += `${pc.cyan("https://github.com/Marve10s/Better-Fullstack")}\n`;
   output += pc.dim("Your star helps other developers discover the project.");
 
@@ -1428,7 +1428,7 @@ function displayJavaInstructions(config: ProjectConfig & { depsInstalled: boolea
     output += `${pc.cyan("•")} API: http://localhost:8080\n`;
   }
 
-  output += `\n${pc.bold("Enjoying Better Fullstack?")} Help us grow — star the repo!\n`;
+  output += `\n${pc.bold("Enjoying Better Fullstack?")} Help us grow - star the repo!\n`;
   output += `${pc.cyan("https://github.com/Marve10s/Better-Fullstack")}\n`;
   output += pc.dim("Your star helps other developers discover the project.");
 
@@ -1592,7 +1592,7 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
   output += `\n${pc.bold("Your project will be available at:")}\n`;
   output += `${pc.cyan("•")} API: http://localhost:8000\n`;
 
-  output += `\n${pc.bold("Enjoying Better Fullstack?")} Help us grow — star the repo!\n`;
+  output += `\n${pc.bold("Enjoying Better Fullstack?")} Help us grow - star the repo!\n`;
   output += `${pc.cyan("https://github.com/Marve10s/Better-Fullstack")}\n`;
   output += pc.dim("Your star helps other developers discover the project.");
 

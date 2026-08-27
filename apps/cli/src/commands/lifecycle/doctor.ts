@@ -50,7 +50,7 @@ function renderResult(result: ProjectStatusResult): void {
   for (const check of result.checks) {
     log.message(
       `${statusIcon(check.status)} ${check.label}${
-        check.detail ? pc.dim(` — ${check.detail}`) : ""
+        check.detail ? pc.dim(` - ${check.detail}`) : ""
       }`,
     );
   }

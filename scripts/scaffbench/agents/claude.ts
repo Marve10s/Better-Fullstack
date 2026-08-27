@@ -49,7 +49,7 @@ export function runClaude(input: {
 // CLI reports total_cost_usd = 0 on subscription / Max-plan usage (no per-token
 // API billing), which makes Claude look like the cheapest, most "reliable" row
 // on the leaderboard purely because it shows as free. So we price Claude from
-// token usage ourselves — exactly as the Codex path does — to get an
+// token usage ourselves - exactly as the Codex path does - to get an
 // API-equivalent cost comparable across vendors. Source: Anthropic API pricing,
 // 2026. Cache reads ≈ 0.1× input; cache writes (5-min TTL) ≈ 1.25× input.
 const CLAUDE_PRICING: Record<string, { input: number; output: number }> = {

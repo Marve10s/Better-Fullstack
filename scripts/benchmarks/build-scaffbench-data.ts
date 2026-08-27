@@ -38,13 +38,13 @@ const MODEL_LABELS: Record<string, string> = {
   "kilo/nvidia/nemotron-3-super-120b-a12b:free": "Nemotron-3 Super",
 };
 const PATH_ORDER = ["prompt", "mcp", "cli"] as const;
-// Quality-gate steps excluded from Core pass — they only affect Full pass. A
+// Quality-gate steps excluded from Core pass - they only affect Full pass. A
 // failed route-check (dev server didn't boot) must not fail Core, same as a
 // failed lint/format/test/doctor. (No step uses `clippy`/`fmt` keys, so those
 // dead alternatives were removed.)
 // Step keys may be namespaced "<subroot>:<step>" (multi-root validation);
 // the advisory/core split is decided by the base name after the last ":".
-// `tidy` (go mod tidy diff) is advisory since harness 2.2.1 — it must not gate
+// `tidy` (go mod tidy diff) is advisory since harness 2.2.1 - it must not gate
 // core pass here either, or the publisher disagrees with the harness verdicts.
 const GATE = /(?:^|:)(lint|format|test|doctor|route|tidy)$/i;
 const mean = (a: number[]) => (a.length ? a.reduce((s, v) => s + v, 0) / a.length : 0);
@@ -69,7 +69,7 @@ function prettyModel(model: string): string {
 }
 
 // A step is green when it actually ran and exited 0. A "skip" (a gate check that
-// should have run but no tool was configured) is NOT green — it carries exitCode
+// should have run but no tool was configured) is NOT green - it carries exitCode
 // null and disqualifies the run. (Matches validationPassed in the harness lib.)
 export function stepGreen(s: any): boolean {
   return s.status !== "skip" && s.exitCode === 0 && !s.timedOut && !s.spawnError;
@@ -145,7 +145,7 @@ for (const dir of RUNS) {
       stdout = readFileSync(path.join(result.runDir, "claude.stdout.json"), "utf8");
     } catch {}
     // multi-dotnet-ops is unvalidatable in this environment (no .NET SDK), so
-    // exclude it UNIFORMLY — the harness otherwise scores it inconsistently
+    // exclude it UNIFORMLY - the harness otherwise scores it inconsistently
     // (toolchain-missing exit 127 → inconclusive when a .NET project exists, but
     // a plain model-failure when the agent produced no .NET project at all),
     // which would give a handful of configs a 5-spec denominator vs everyone
@@ -195,9 +195,9 @@ for (const dir of RUNS) {
   });
 }
 
-// Sort model groups by overall Index (desc) — the leaderboard's own ordering.
+// Sort model groups by overall Index (desc) - the leaderboard's own ordering.
 models.sort((a, b) => b.sortIndex - a.sortIndex);
-// Order cells by model (sorted), then path, then spec — stable + readable.
+// Order cells by model (sorted), then path, then spec - stable + readable.
 const modelRank = new Map(models.map((m, i) => [m.key, i]));
 cells.sort(
   (a, b) =>
@@ -208,7 +208,7 @@ cells.sort(
 
 const out = `// AUTO-GENERATED from ten ScaffBench 2 run summaries (see scripts/benchmarks/build-scaffbench-data.ts).
 // Models: Opus 4.8/4.7/4.6/4.5 (Claude Code), GPT-5.5 low/medium/xhigh (Codex), and two
-// free-tier models — North-mini Code (opencode) + Nemotron-3 Super (Kilo Code). 2026-06-26.
+// free-tier models - North-mini Code (opencode) + Nemotron-3 Super (Kilo Code). 2026-06-26.
 // Per-cell signals from the harness bySpecCell aggregate (wired = stackPercent, cmd =
 // commandDisciplinePercent); corePass derived from validation steps minus the quality gate;
 // steps from the saved trajectory; GPT cost estimated from token usage × OpenAI pricing.
@@ -221,16 +221,16 @@ export type ScaffbenchModel = {
   effectiveReasoning: string;
   provider: "claude" | "codex" | "opencode" | "kilo" | "agy";
   label: string;
-  /** overall ScaffBench Index across all scored cells — the group sort key. */
+  /** overall ScaffBench Index across all scored cells - the group sort key. */
   sortIndex: number;
 };
 
 export type ScaffbenchCell = {
-  /** "<model>|<effort>" — joins a cell to its ScaffbenchModel. */
+  /** "<model>|<effort>" - joins a cell to its ScaffbenchModel. */
   modelKey: string;
   path: ScaffbenchPath;
   spec: string;
-  /** false when the run was infra-inconclusive (timed-out toolchain) — excluded from rates. */
+  /** false when the run was infra-inconclusive (timed-out toolchain) - excluded from rates. */
   scored: boolean;
   corePass: boolean;
   /** null when the quality gate was not requested. */

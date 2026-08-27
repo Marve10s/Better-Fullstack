@@ -759,7 +759,7 @@ const positions = useMemo(() => {
   const { vmin } = rect;
   const base = Transform3D.identity();
 
-  // Section bases — position each section in 3D space
+  // Section bases - position each section in 3D space
   const elementsBase = base.translate(0, -vmin * 120, 0).rotateX(15);
   const transitionsBase = base.translate(vmin * 200, vmin * 50, 0).rotateY(-15);
   const scenesBase = base.translate(-vmin * 120, vmin * 70, 0).rotateY(15);

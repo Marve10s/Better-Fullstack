@@ -1,4 +1,4 @@
-# Adding New Tool Options — Routing Gotchas
+# Adding New Tool Options - Routing Gotchas
 
 Edge cases that affect ~40-50% of real configurations. Every new handler and processor must account for these.
 
@@ -58,7 +58,7 @@ const serverDir = config.backend === "self" ? "apps/web" : "apps/server";
 | React Vite | No | - | - |
 | TanStack Router | No | - | - |
 
-**Auth providers have framework whitelists** — they are NOT all universal:
+**Auth providers have framework whitelists** - they are NOT all universal:
 
 | Auth provider | Self-backend frameworks |
 |--------------|------------------------|
@@ -94,7 +94,7 @@ const webPath = getWebPackagePath(config.frontend, config.backend);
 | Most frameworks | `apps/web/package.json` | `apps/server/package.json` |
 | Redwood (backend=none) | `web/package.json` | `api/package.json` |
 
-**What happens if you hardcode `apps/server/package.json`:** Every Redwood project breaks — dependencies get added to a non-existent path.
+**What happens if you hardcode `apps/server/package.json`:** Every Redwood project breaks - dependencies get added to a non-existent path.
 
 ---
 
@@ -136,7 +136,7 @@ const templateDir = reactFramework === "react-vite"
   : `react/${reactFramework}`;
 ```
 
-`react-vite` doesn't have its own template directory — it maps to `tanstack-router`. Missing this causes template-not-found errors.
+`react-vite` doesn't have its own template directory - it maps to `tanstack-router`. Missing this causes template-not-found errors.
 
 ### Pattern 5: Framework-specific imports inside shared templates
 
@@ -238,9 +238,9 @@ When `auth === "better-auth"` AND `payments !== "none"`, both systems write to t
 - **Auth plugins processor** then injects plugin code into `packages/auth/src/index.ts`
 
 **Generation order in `generator.ts`:**
-1. `processAuthTemplates()` — writes auth files
-2. `processPaymentsTemplates()` — writes payment files (into `packages/auth/`)
-3. `processAuthPlugins()` — injects plugin imports into existing auth files
+1. `processAuthTemplates()` - writes auth files
+2. `processPaymentsTemplates()` - writes payment files (into `packages/auth/`)
+3. `processAuthPlugins()` - injects plugin imports into existing auth files
 
 **What happens if you get this wrong:** If a new payment provider writes a file that conflicts with an auth file at the same path, one will overwrite the other. Always check what files auth already places in `packages/auth/` before adding payment-related templates there.
 

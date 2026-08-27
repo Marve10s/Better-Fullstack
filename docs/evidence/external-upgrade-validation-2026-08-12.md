@@ -1,4 +1,4 @@
-# External Upgrade Validation — 2026-08-12
+# External Upgrade Validation - 2026-08-12
 
 The lifecycle update engine completed 20 successful plan/apply/recover cycles across 20 public,
 non-fork Better Fullstack repositories discovered through GitHub code search for `bts.jsonc`.

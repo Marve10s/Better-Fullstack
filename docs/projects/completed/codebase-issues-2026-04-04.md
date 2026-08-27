@@ -4,7 +4,7 @@ Validated issues found during April 2026 audit. Each item was verified against t
 
 ---
 
-## P0 — Ship Blockers
+## P0 - Ship Blockers
 
 ### ~~1. Kysely empty Database interface~~ ✅ Fixed
 
@@ -16,7 +16,7 @@ Validated issues found during April 2026 audit. Each item was verified against t
 
 ---
 
-## P1 — Quality
+## P1 - Quality
 
 ### ~~3. Silent addon setup failures~~ ✅ Fixed
 
@@ -32,7 +32,7 @@ Validated issues found during April 2026 audit. Each item was verified against t
 
 ---
 
-## P2 — Polish
+## P2 - Polish
 
 ### ~~6. Missing trailing newlines (52 .hbs files)~~ ✅ Fixed
 
@@ -60,7 +60,7 @@ Validated issues found during April 2026 audit. Each item was verified against t
 
 ---
 
-## P3 — Security
+## P3 - Security
 
 Verified-complete CI/security items were moved to `docs/projects/completed/ci-security-foundation-2026-04-04.md`:
 

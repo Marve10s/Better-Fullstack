@@ -23,7 +23,7 @@ export function AnthropicMark({ className }: { className?: string }) {
   );
 }
 
-// Google "G" logomark — the modern four-color mark (fixed brand colors, not
+// Google "G" logomark - the modern four-color mark (fixed brand colors, not
 // currentColor, so it reads as the real Google logo) for Gemini rows.
 export function GoogleMark({ className }: { className?: string }) {
   return (

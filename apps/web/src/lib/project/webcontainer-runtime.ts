@@ -89,7 +89,7 @@ export async function installRunnableProject(
   // workspace-scoped installs (--workspace) trip it when workspaces depend on
   // each other, and even root installs trip it in #loadPeerSet while resolving
   // vite/tsdown peer sets (fixed in npm 11). Hence a full root install with
-  // --legacy-peer-deps, which skips peer-set resolution entirely — generated
+  // --legacy-peer-deps, which skips peer-set resolution entirely - generated
   // projects declare their real deps directly, so nothing relies on
   // auto-installed peers.
   const process = await runtime.spawn(

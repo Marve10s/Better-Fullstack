@@ -146,7 +146,7 @@ function StoreDemo() {
   return (
     <div className="space-y-3">
       <p className="text-sm text-muted-foreground">
-        No providers — import the store, read with useStore
+        No providers - import the store, read with useStore
       </p>
       <StoreCounter />
       <StoreThemeToggle />
@@ -166,7 +166,7 @@ function StoreShowcase() {
       </Link>
       <h1 className="mb-2 text-3xl font-bold">TanStack Store</h1>
       <p className="mb-8 text-muted-foreground">
-        Framework-agnostic reactive state — no providers, no context drilling.
+        Framework-agnostic reactive state - no providers, no context drilling.
         Sibling components share state by importing the same store.
       </p>
 
@@ -198,7 +198,7 @@ function StoreShowcase() {
         <strong className="text-foreground">Why TanStack Store?</strong> React
         Context requires a Provider tree, causes unnecessary re-renders of the
         entire subtree, and mixes dispatch logic with state shape. TanStack Store
-        is a simple reactive container — create it outside React, read slices
+        is a simple reactive container - create it outside React, read slices
         with selector-based useStore, and update with setState. Zero providers,
         surgical re-renders, framework-portable.
       </div>

@@ -434,8 +434,8 @@ Positions content in 3D space, independent of camera movement.
 | `style` | `React.CSSProperties?` | | Additional styles |
 
 **TransitionConfig** supports all transform and visual props (x, y, z, scale, rotate*, opacity, blur, color, etc.) plus:
-- `transform`: `AnimatedValue<Transform3D | Matrix4>` — 3D transform keyframes
-- `stagger`: `number` — frames between each child
+- `transform`: `AnimatedValue<Transform3D | Matrix4>` - 3D transform keyframes
+- `stagger`: `number` - frames between each child
 - `staggerDirection`: `"forward" | "reverse" | "center" | "random"`
 
 **Example with Transform3D keyframes:**
@@ -511,7 +511,7 @@ Supports all Transform3D properties:
 - `rotateX`, `rotateY`, `rotateZ` - Rotation (AnimatedValue)
 - `opacity` - Opacity (AnimatedValue)
 - `color`, `backgroundColor` - Colors (string[])
-- `transform` - `AnimatedValue<Transform3D | Matrix4>` — 3D transform keyframes (primary method for 3D positioning)
+- `transform` - `AnimatedValue<Transform3D | Matrix4>` - 3D transform keyframes (primary method for 3D positioning)
 - `duration` - Override transition duration (`number` or `"step"` to match step duration)
 - `delay` - Delay before animation
 - `easing` - Easing function

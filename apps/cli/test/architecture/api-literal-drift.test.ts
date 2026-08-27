@@ -7,7 +7,7 @@ import { describe, expect, it } from "bun:test";
  *
  * These templates embed third-party API literals directly in generated code.
  * When the underlying SDK changes its expected shape, these literals must be
- * bumped *intentionally* — a silent drift produces projects that compile but
+ * bumped *intentionally* - a silent drift produces projects that compile but
  * talk to the wrong API surface.
  *
  * Each expected value below is asserted against the literal currently shipped

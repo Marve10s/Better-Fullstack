@@ -8,7 +8,7 @@ export type ShareMoment = "run" | "download";
 function conciseStackName(stack: StackState) {
   // Ecosystem-scoped: the global category order leads with the TypeScript web
   // categories, and a Python/Rust/Go stack still carries default webFrontend /
-  // backend / runtime values — truncating that to four would describe someone's
+  // backend / runtime values - truncating that to four would describe someone's
   // Python API as a TanStack Router + Hono + Bun app.
   const selected = summarizeStackForEcosystem(stack)
     .split(" • ")
@@ -37,7 +37,7 @@ export function getCampaignShareMessage(
   shareUrl: string,
 ) {
   const action = moment === "run" ? "ran" : "generated";
-  return `I just ${action} ${conciseStackName(stack)} with Better Fullstack — inspect it, edit it, and download the real project: ${shareUrl}`;
+  return `I just ${action} ${conciseStackName(stack)} with Better Fullstack - inspect it, edit it, and download the real project: ${shareUrl}`;
 }
 
 export function getCampaignShareTitle(stack: StackState) {

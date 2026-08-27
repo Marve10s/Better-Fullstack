@@ -15,7 +15,7 @@
 ## Evidence
 
 - Verified `npm-publish` environment protections with `gh api repos/Marve10s/Better-Fullstack/environments/npm-publish`, which now returns a required reviewer rule.
-- `.github/workflows/test.yaml` adds a `security-audit` job that runs `bun audit --audit-level high` with `continue-on-error: true` (informational — current transitive deps have known highs that can't be patched yet).
+- `.github/workflows/test.yaml` adds a `security-audit` job that runs `bun audit --audit-level high` with `continue-on-error: true` (informational - current transitive deps have known highs that can't be patched yet).
 - `.github/workflows/template-matrix.yaml` now runs weekly/manual generated-project smoke verification for curated presets: `t3`, `tanstack-fullstack`, `react-hono`, `sveltekit`, `astro-sanity`, and `nuxt-fullstack`.
 - The matrix workflow now builds `packages/types`, `packages/template-generator`, and `apps/cli` before running `bun run test:smoke -- --preset <preset>`.
 - Each preset lane uploads its smoke output as a GitHub Actions artifact for failure triage.

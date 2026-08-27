@@ -60,7 +60,7 @@ export function CliFlagTable({ group }: { group: string }) {
                       {flag.defaultValue}
                     </code>
                   ) : (
-                    <span className="text-muted-foreground text-xs">—</span>
+                    <span className="text-muted-foreground text-xs">-</span>
                   )}
                 </td>
               </tr>

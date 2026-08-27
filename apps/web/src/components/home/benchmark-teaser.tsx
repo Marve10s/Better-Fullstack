@@ -57,7 +57,7 @@ type McpHighlight = {
   stepFactor: number;
 };
 
-// The model whose MCP path most outscores its prompt path — the sharpest proof
+// The model whose MCP path most outscores its prompt path - the sharpest proof
 // that the tools, not the model, close the gap.
 function computeMcpHighlight(): McpHighlight | null {
   let best: McpHighlight | null = null;
@@ -214,7 +214,7 @@ function UpliftBar({
 function StatTile({ factor, unit }: { factor: number; unit: string }) {
   return (
     <div className="rounded-lg bg-[#f1efe7] px-3 py-2.5 dark:bg-[rgba(237,235,228,0.05)]">
-      <p className="font-mono text-xl font-bold tabular-nums">{factor > 1 ? `${factor}×` : "—"}</p>
+      <p className="font-mono text-xl font-bold tabular-nums">{factor > 1 ? `${factor}×` : "-"}</p>
       <p className="mt-0.5 text-xs text-[#71706a] dark:text-[#8f8d84]">{unit}</p>
     </div>
   );

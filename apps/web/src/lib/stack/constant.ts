@@ -2016,7 +2016,7 @@ export const TECH_OPTIONS: Record<
     {
       id: "lucide",
       name: "Lucide",
-      description: "Default — clean, consistent icons",
+      description: "Default - clean, consistent icons",
       icon: "",
       color: "from-orange-400 to-orange-600",
       default: true,
@@ -4422,7 +4422,7 @@ export const TECH_OPTIONS: Record<
     {
       id: "starlette",
       name: "Starlette",
-      description: "Minimal ASGI toolkit that powers FastAPI — great for lean async apps",
+      description: "Minimal ASGI toolkit that powers FastAPI - great for lean async apps",
       icon: "https://cdn.simpleicons.org/modelcontextprotocol/000000",
       color: "from-cyan-500 to-teal-600",
       default: false,
@@ -4667,7 +4667,7 @@ export const TECH_OPTIONS: Record<
     {
       id: "authlib",
       name: "Authlib",
-      description: "Comprehensive auth library — OAuth1/2, OIDC, JWS, JWK, JWT",
+      description: "Comprehensive auth library - OAuth1/2, OIDC, JWS, JWK, JWT",
       icon: "https://cdn.simpleicons.org/auth0/EB5424",
       color: "from-orange-500 to-red-600",
       default: false,
@@ -5474,7 +5474,7 @@ export const TECH_OPTIONS: Record<
     {
       id: "testify",
       name: "Testify",
-      description: "Assertions, suites, and mocks — the Go testing standard",
+      description: "Assertions, suites, and mocks - the Go testing standard",
       icon: "https://cdn.simpleicons.org/go/00ADD8",
       color: "from-cyan-500 to-blue-600",
       default: false,
@@ -7688,7 +7688,7 @@ export const PRESET_TEMPLATES: {
   {
     id: "nextjs-minimal",
     name: "Next.js Minimal",
-    description: "Next.js + Tailwind + shadcn/ui — no database or backend",
+    description: "Next.js + Tailwind + shadcn/ui - no database or backend",
     category: "next",
     stack: {
       projectName: "my-app",
@@ -8271,7 +8271,7 @@ export const PRESET_TEMPLATES: {
   {
     id: "expo-bare",
     name: "Expo Bare",
-    description: "Expo with bare workflow — no backend",
+    description: "Expo with bare workflow - no backend",
     category: "mobile",
     stack: {
       ecosystem: "react-native",
@@ -8389,7 +8389,7 @@ export const PRESET_TEMPLATES: {
   {
     id: "rust-fullstack",
     name: "Rust Fullstack",
-    description: "Axum + Leptos + SeaORM — full-stack Rust with SSR",
+    description: "Axum + Leptos + SeaORM - full-stack Rust with SSR",
     category: "rust",
     stack: {
       ecosystem: "rust",
@@ -8408,14 +8408,14 @@ export const PRESET_TEMPLATES: {
   {
     id: "rust-api",
     name: "Rust API",
-    description: "Axum + SeaORM — backend REST API, no frontend",
+    description: "Axum + SeaORM - backend REST API, no frontend",
     category: "rust",
     stack: starterTrackSelection("rust-api"),
   },
   {
     id: "rust-grpc",
     name: "Rust gRPC",
-    description: "Axum + Tonic + SQLx — gRPC microservice",
+    description: "Axum + Tonic + SQLx - gRPC microservice",
     category: "rust",
     stack: {
       ecosystem: "rust",
@@ -8434,7 +8434,7 @@ export const PRESET_TEMPLATES: {
   {
     id: "rust-cli",
     name: "Rust CLI",
-    description: "Clap + Ratatui — terminal UI application",
+    description: "Clap + Ratatui - terminal UI application",
     category: "rust",
     stack: {
       ecosystem: "rust",
@@ -8483,7 +8483,7 @@ export const PRESET_TEMPLATES: {
   {
     id: "python-ai-agent",
     name: "AI Agent",
-    description: "FastAPI + LangChain + Pydantic — AI-powered API",
+    description: "FastAPI + LangChain + Pydantic - AI-powered API",
     category: "python",
     stack: {
       ecosystem: "python",
@@ -8505,7 +8505,7 @@ export const PRESET_TEMPLATES: {
   {
     id: "python-ai-anthropic",
     name: "AI Agent (Anthropic)",
-    description: "FastAPI + Anthropic SDK + Pydantic — Claude-powered API",
+    description: "FastAPI + Anthropic SDK + Pydantic - Claude-powered API",
     category: "python",
     stack: {
       ecosystem: "python",
@@ -8528,7 +8528,7 @@ export const PRESET_TEMPLATES: {
   {
     id: "go-gin",
     name: "Go API (Gin)",
-    description: "Gin + GORM + Zap — REST API with structured logging",
+    description: "Gin + GORM + Zap - REST API with structured logging",
     category: "go",
     stack: {
       ecosystem: "go",
@@ -8547,7 +8547,7 @@ export const PRESET_TEMPLATES: {
   {
     id: "go-echo",
     name: "Go API (Echo)",
-    description: "Echo + SQLC + Zap — type-safe SQL with Echo",
+    description: "Echo + SQLC + Zap - type-safe SQL with Echo",
     category: "go",
     stack: {
       ecosystem: "go",
@@ -8566,7 +8566,7 @@ export const PRESET_TEMPLATES: {
   {
     id: "go-grpc",
     name: "Go gRPC",
-    description: "Gin + gRPC-Go + GORM + Zap — gRPC microservice",
+    description: "Gin + gRPC-Go + GORM + Zap - gRPC microservice",
     category: "go",
     stack: {
       ecosystem: "go",
@@ -8585,7 +8585,7 @@ export const PRESET_TEMPLATES: {
   {
     id: "go-cli",
     name: "Go CLI",
-    description: "Cobra + Bubbletea — interactive terminal application",
+    description: "Cobra + Bubbletea - interactive terminal application",
     category: "go",
     stack: {
       ecosystem: "go",
@@ -8787,7 +8787,7 @@ export const PRESET_TEMPLATES: {
   {
     id: "elixir-plain-worker",
     name: "Plain Elixir Worker",
-    description: "Mix app + Quantum + Req — no Phoenix",
+    description: "Mix app + Quantum + Req - no Phoenix",
     category: "elixir",
     stack: {
       ecosystem: "elixir",
