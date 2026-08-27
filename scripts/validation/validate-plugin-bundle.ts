@@ -74,7 +74,7 @@ function readSkillName(path: string): string {
     parsed = Bun.YAML.parse(frontmatter);
   } catch (error) {
     throw new Error(
-      `${path} frontmatter is not valid YAML — Claude Code would load this skill with empty metadata: ${(error as Error).message}`,
+      `${path} frontmatter is not valid YAML - Claude Code would load this skill with empty metadata: ${(error as Error).message}`,
       { cause: error },
     );
   }

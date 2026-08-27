@@ -141,7 +141,7 @@ dependencies {
 	implementation("com.google.protobuf:protobuf-java:4.28.2")
 	// The grpc-java generated stubs are annotated with
 	// javax.annotation.Generated (source-retention), which is not on the JDK
-	// since Java 9 — supply it at compile time only.
+	// since Java 9 - supply it at compile time only.
 	compileOnly("org.apache.tomcat:annotations-api:6.0.53")
 {{/if}}
 {{#if hasJavaAmqp}}

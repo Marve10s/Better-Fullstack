@@ -11,7 +11,7 @@
  * The transform runs AFTER the normal monorepo generation (including catalog
  * setup), so it operates on a complete, valid monorepo tree. If the tree
  * contains any unexpected workspace directory it bails without mutating,
- * leaving a valid monorepo — never a broken flat layout.
+ * leaving a valid monorepo - never a broken flat layout.
  */
 
 import type { ProjectConfig } from "@better-fullstack/types";
@@ -117,7 +117,7 @@ export function resolveWorkspaceLayout(config: ProjectConfig): WorkspaceLayout {
 export function flattenSingleApp(vfs: VirtualFileSystem, config: ProjectConfig): boolean {
   // Safety net: only flatten a tree that contains exactly the expected thin-self
   // workspaces. Anything else means a capability slipped through the qualifying
-  // predicate — leave the complete, valid monorepo rather than emit a broken
+  // predicate - leave the complete, valid monorepo rather than emit a broken
   // flat layout.
   if (vfs.directoryExists("apps")) {
     const appDirs = vfs.listDir("apps");

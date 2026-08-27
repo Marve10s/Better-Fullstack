@@ -21,7 +21,7 @@
       "  BugN: unused 'context' param in trpc context.ts when auth=none (hono/elysia backends)",
       "       and unused TRPCError import in trpc index.ts when auth=none",
       "       Fixed: use _opts when auth is not better-auth; conditionalize TRPCError import",
-      "Known incompatibility (not fixed): Sequelize + better-auth — no auth adapter",
+      "Known incompatibility (not fixed): Sequelize + better-auth - no auth adapter",
       "       Combo 5 uses --auth none to work around this (same pattern as TypeORM in batch 4)"
     ]
   },

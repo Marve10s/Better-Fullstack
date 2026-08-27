@@ -340,7 +340,7 @@ export async function verifyTypeScript(
     steps.push(skippedStep("build"));
   } else if (hasPackageScript(projectDir, "build")) {
     const buildResult = await runStep("build", "bun", ["run", "build"], projectDir);
-    // Native-only projects have no web packages to build — treat as skip
+    // Native-only projects have no web packages to build - treat as skip
     if (
       !buildResult.success &&
       /No packages matched the filter/i.test(`${buildResult.stderr}\n${buildResult.stdout}`)
@@ -422,7 +422,7 @@ export async function verifyReactNative(
 
   // Metro/Babel bundle. Call `expo export` DIRECTLY rather than `bun run build`:
   // the native package has a `prebuild` lifecycle script (`expo prebuild`) that
-  // `bun run build` would trigger first, and that runs CocoaPods — macOS-only, so
+  // `bun run build` would trigger first, and that runs CocoaPods - macOS-only, so
   // it fails on the Linux CI runner. `expo export` is a pure JS/Metro bundle (no
   // native prebuild), so it runs on Linux and still exercises the Babel transform.
   // Typecheck alone does NOT: the 2026-06 `@babel/core` ^8 pin broke the Metro
@@ -452,7 +452,7 @@ export async function verifyRust(comboName: string, projectDir: string): Promise
   steps.push(await runStep("check", "cargo", ["check"], projectDir));
   if (!steps.at(-1)!.success) return wrapResult("rust", comboName, projectDir, steps);
 
-  // Step 2: cargo clippy (advisory — doesn't affect overall pass/fail)
+  // Step 2: cargo clippy (advisory - doesn't affect overall pass/fail)
   steps.push(
     await runAdvisoryStep("clippy", "cargo", ["clippy", "--", "-D", "warnings"], projectDir),
   );
@@ -478,7 +478,7 @@ export async function verifyPython(comboName: string, projectDir: string): Promi
     ),
   );
 
-  // Step 3: ruff lint (advisory — doesn't affect overall pass/fail)
+  // Step 3: ruff lint (advisory - doesn't affect overall pass/fail)
   if (fileContains(projectDir, "pyproject.toml", "ruff")) {
     steps.push(await runAdvisoryStep("lint", "uv", ["run", "ruff", "check", "."], projectDir));
   } else {
@@ -498,7 +498,7 @@ export async function verifyGo(comboName: string, projectDir: string): Promise<V
   // Step 2: go build
   steps.push(await runStep("build", "go", ["build", "./..."], projectDir));
 
-  // Step 3: go vet (advisory — doesn't affect overall pass/fail)
+  // Step 3: go vet (advisory - doesn't affect overall pass/fail)
   steps.push(await runAdvisoryStep("vet", "go", ["vet", "./..."], projectDir));
 
   return wrapResult("go", comboName, projectDir, steps);

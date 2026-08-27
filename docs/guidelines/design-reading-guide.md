@@ -16,15 +16,15 @@ When `remotion-video-style.md` lists a skill stack order for overlapping skills,
 
 ---
 
-## Phase 1 — Project-specific canonical style
+## Phase 1 - Project-specific canonical style
 
 Read first for BF-aligned Remotion and homepage-adjacent visuals.
 
-- [remotion-video-style.md](./remotion-video-style.md) — duration, palette (`#0c0c0e`, `#f2eeee`, `#8839ef`, etc.), grid background, command box, typography (Geist Sans/Mono), motion, icon sources (`apps/web/src/lib/stack/tech-icons.ts`), anti-patterns.
+- [remotion-video-style.md](./remotion-video-style.md) - duration, palette (`#0c0c0e`, `#f2eeee`, `#8839ef`, etc.), grid background, command box, typography (Geist Sans/Mono), motion, icon sources (`apps/web/src/lib/stack/tech-icons.ts`), anti-patterns.
 
 ---
 
-## Phase 2 — Web and product UI (agent skills)
+## Phase 2 - Web and product UI (agent skills)
 
 | Path                                                                                                 | Notes                                                                                                                                 |
 | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
@@ -34,7 +34,7 @@ Read first for BF-aligned Remotion and homepage-adjacent visuals.
 
 ---
 
-## Phase 3 — Geist / Remotion design system
+## Phase 3 - Geist / Remotion design system
 
 Read the skill entry, then references in this order (type and color before components):
 
@@ -50,7 +50,7 @@ Read the skill entry, then references in this order (type and color before compo
 
 ---
 
-## Phase 4 — Modern short video aesthetic and structure
+## Phase 4 - Modern short video aesthetic and structure
 
 - [.agents/skills/modern-short-video/rules/design-principles.md](../../.agents/skills/modern-short-video/rules/design-principles.md)
 - [.agents/skills/modern-short-video/rules/visual-elements.md](../../.agents/skills/modern-short-video/rules/visual-elements.md)
@@ -60,7 +60,7 @@ Read the skill entry, then references in this order (type and color before compo
 
 ---
 
-## Phase 5 (optional) — Broader Remotion and motion
+## Phase 5 (optional) - Broader Remotion and motion
 
 - [.agents/skills/remotion/SKILL.md](../../.agents/skills/remotion/SKILL.md)
 - [.agents/skills/remotion/README.md](../../.agents/skills/remotion/README.md)
@@ -75,12 +75,12 @@ Read the skill entry, then references in this order (type and color before compo
 
 ---
 
-## Phase 6 (optional) — Implemented web app UI
+## Phase 6 (optional) - Implemented web app UI
 
 Narrow reads to global styling and shared primitives (not every route):
 
-- [apps/web/src/styles/global.css](../../apps/web/src/styles/global.css) — Tailwind v4 imports, Geist `@font-face`, CSS variables and utilities
-- [apps/web/vite.config.ts](../../apps/web/vite.config.ts) — build/tooling that affects CSS and assets
+- [apps/web/src/styles/global.css](../../apps/web/src/styles/global.css) - Tailwind v4 imports, Geist `@font-face`, CSS variables and utilities
+- [apps/web/vite.config.ts](../../apps/web/vite.config.ts) - build/tooling that affects CSS and assets
 - Icon and builder-adjacent references called out in `remotion-video-style.md`: [apps/web/src/lib/stack/tech-icons.ts](../../apps/web/src/lib/stack/tech-icons.ts)
 
 Search as needed: `theme`, `ModeToggle`, `apps/web/src/routes`, shared UI under `apps/web/src/components`.

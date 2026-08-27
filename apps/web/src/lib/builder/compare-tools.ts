@@ -60,9 +60,9 @@ const createT3App: CompetitorComparison = {
   heading: "Better Fullstack vs create-t3-app",
   factsCheckedOn: "2026-07-17",
   intro: [
-    "create-t3-app and Better Fullstack solve the same problem — starting a typesafe fullstack app without a week of wiring — with opposite philosophies. create-t3-app scaffolds one deliberately minimal Next.js stack where each piece (tRPC, Prisma or Drizzle, NextAuth.js, Tailwind) is an on/off toggle. Better Fullstack is a configurable generator: you pick each layer from a catalog of " +
+    "create-t3-app and Better Fullstack solve the same problem - starting a typesafe fullstack app without a week of wiring - with opposite philosophies. create-t3-app scaffolds one deliberately minimal Next.js stack where each piece (tRPC, Prisma or Drizzle, NextAuth.js, Tailwind) is an on/off toggle. Better Fullstack is a configurable generator: you pick each layer from a catalog of " +
       `${OPTION_COUNT_LABEL} options across ${ECOSYSTEM_COUNT_LABEL} language ecosystems, and a compatibility engine validates the combination before anything is written to disk.`,
-    "If you want exactly the T3 shape — Next.js with tRPC, Prisma/Drizzle, and NextAuth — create-t3-app remains a well-documented, widely-taught choice. If you want to choose your frontend, backend, database, or auth provider, or you need anything the T3 scope deliberately excludes — payments, mobile, i18n, another language — Better Fullstack scaffolds it preconfigured.",
+    "If you want exactly the T3 shape - Next.js with tRPC, Prisma/Drizzle, and NextAuth - create-t3-app remains a well-documented, widely-taught choice. If you want to choose your frontend, backend, database, or auth provider, or you need anything the T3 scope deliberately excludes - payments, mobile, i18n, another language - Better Fullstack scaffolds it preconfigured.",
   ],
   rows: [
     {
@@ -115,8 +115,8 @@ const createT3App: CompetitorComparison = {
     {
       heading: "Two philosophies: curation versus configuration",
       paragraphs: [
-        "create-t3-app is explicit about what it is: \"an opinionated project\", \"modular at its core\", and \"NOT an all-inclusive template\". Its documentation states plainly that for anything beyond the core pieces, \"we expect you to bring your own libraries\" — state management, deployment, payments, and i18n are all deliberately out of scope. That restraint is a feature: fewer choices, fewer moving parts, and a huge body of tutorials that all describe the same project shape.",
-        "Better Fullstack takes the opposite bet: that the wiring between your chosen pieces — auth adapter to ORM, ORM to database, API layer to frontend client — is exactly the part worth automating, whatever the pieces are. Every option in the catalog is modeled in a compatibility graph, so invalid combinations are rejected or auto-adjusted before scaffolding, and the generated project type-checks out of the box.",
+        "create-t3-app is explicit about what it is: \"an opinionated project\", \"modular at its core\", and \"NOT an all-inclusive template\". Its documentation states plainly that for anything beyond the core pieces, \"we expect you to bring your own libraries\" - state management, deployment, payments, and i18n are all deliberately out of scope. That restraint is a feature: fewer choices, fewer moving parts, and a huge body of tutorials that all describe the same project shape.",
+        "Better Fullstack takes the opposite bet: that the wiring between your chosen pieces - auth adapter to ORM, ORM to database, API layer to frontend client - is exactly the part worth automating, whatever the pieces are. Every option in the catalog is modeled in a compatibility graph, so invalid combinations are rejected or auto-adjusted before scaffolding, and the generated project type-checks out of the box.",
       ],
     },
     {
@@ -129,14 +129,14 @@ const createT3App: CompetitorComparison = {
     {
       heading: "What Better Fullstack adds",
       paragraphs: [
-        `A catalog instead of a fixed shape: ${OPTION_COUNT_LABEL} options across frontends, backends, databases, ORMs, auth, API layers, payments, AI integrations, job queues, realtime, i18n, and deployment — across ${ECOSYSTEM_COUNT_LABEL} language ecosystems (${ECOSYSTEM_LIST}). Web, mobile, and backend parts can be composed into one multi-ecosystem project.`,
+        `A catalog instead of a fixed shape: ${OPTION_COUNT_LABEL} options across frontends, backends, databases, ORMs, auth, API layers, payments, AI integrations, job queues, realtime, i18n, and deployment - across ${ECOSYSTEM_COUNT_LABEL} language ecosystems (${ECOSYSTEM_LIST}). Web, mobile, and backend parts can be composed into one multi-ecosystem project.`,
         "The workflow is also broader than a CLI: a visual web builder lets you configure the stack in the browser and copy a ready-to-run command, and an MCP server exposes the same compatibility-checked scaffolding to AI agents like Claude Code and Codex.",
       ],
     },
     {
       heading: "Maintenance status, in dates",
       paragraphs: [
-        "As of 2026-07-17: create-t3-app's latest release is v7.40.0 (published 2025-11-05) and its last repository push was 2025-12-13. Its npm downloads went from roughly 8,500/month in October 2025 to roughly 3,000/month in June 2026. Community members dispute any \"unmaintained\" framing, and the project remains MIT-licensed with an active issue tracker — we present the dates and let you judge the trajectory.",
+        "As of 2026-07-17: create-t3-app's latest release is v7.40.0 (published 2025-11-05) and its last repository push was 2025-12-13. Its npm downloads went from roughly 8,500/month in October 2025 to roughly 3,000/month in June 2026. Community members dispute any \"unmaintained\" framing, and the project remains MIT-licensed with an active issue tracker - we present the dates and let you judge the trajectory.",
         "Better Fullstack ships multiple releases per month; the changelog and commit history are public on GitHub.",
       ],
     },
@@ -149,7 +149,7 @@ const createT3App: CompetitorComparison = {
     {
       heading: "Try the closest Better Fullstack equivalent",
       paragraphs: [
-        "Better Fullstack ships a T3-style preset — `bun create better-fullstack@latest my-app --template t3` scaffolds the familiar Next.js + tRPC + Tailwind shape, with the option to swap any piece: Drizzle for Prisma, Better-Auth for NextAuth, or a separate Hono API server when the project outgrows API routes.",
+        "Better Fullstack ships a T3-style preset - `bun create better-fullstack@latest my-app --template t3` scaffolds the familiar Next.js + tRPC + Tailwind shape, with the option to swap any piece: Drizzle for Prisma, Better-Auth for NextAuth, or a separate Hono API server when the project outgrows API routes.",
       ],
     },
   ],
@@ -203,7 +203,7 @@ const betterTStack: CompetitorComparison = {
     },
     {
       dimension: "Backends",
-      betterFullstack: "Hono, Elysia, Express, Fastify, NestJS, AdonisJS, Convex, self — plus Axum, FastAPI, Gin, Spring Boot, and more in other ecosystems",
+      betterFullstack: "Hono, Elysia, Express, Fastify, NestJS, AdonisJS, Convex, self - plus Axum, FastAPI, Gin, Spring Boot, and more in other ecosystems",
       competitor: "Hono, Express, Fastify, Elysia, Convex, self",
     },
     {
@@ -247,15 +247,15 @@ const betterTStack: CompetitorComparison = {
     {
       heading: "Where they differ: scope",
       paragraphs: [
-        `Better-T-Stack stays intentionally within TypeScript: its option list covers TypeScript web frontends, TypeScript backends, and React Native. Better Fullstack generalizes the model to ${ECOSYSTEM_COUNT_LABEL} ecosystems — the same menu-driven flow scaffolds an Axum + Leptos Rust app, a FastAPI + SQLAlchemy Python service, or a Spring Boot backend, and multi-ecosystem projects can compose parts across languages (for example a TypeScript web app with a Go backend).`,
+        `Better-T-Stack stays intentionally within TypeScript: its option list covers TypeScript web frontends, TypeScript backends, and React Native. Better Fullstack generalizes the model to ${ECOSYSTEM_COUNT_LABEL} ecosystems - the same menu-driven flow scaffolds an Axum + Leptos Rust app, a FastAPI + SQLAlchemy Python service, or a Spring Boot backend, and multi-ecosystem projects can compose parts across languages (for example a TypeScript web app with a Go backend).`,
         `The integration catalog is also broader per layer: ${COMPARISON_COUNTS.apis} API-layer options including OpenAPI and GraphQL (Better-T-Stack offers tRPC or oRPC), ${COMPARISON_COUNTS.authProviders} auth providers (vs Better Auth or Clerk), ${COMPARISON_COUNTS.paymentProviders} payment providers (vs Polar), plus categories Better-T-Stack doesn't model as first-class choices: AI SDKs, job queues, realtime, caching, search, file storage, i18n, feature flags, vector databases, and observability.`,
       ],
     },
     {
       heading: "Where Better-T-Stack shines",
       paragraphs: [
-        "It is a focused, very actively developed tool — multiple releases per week as of July 2026 — and its narrower scope means fewer templates to maintain per option and a tight default path (Hono + tRPC + Drizzle + Better Auth). As of July 2026 it is also the more downloaded of the two (roughly 11,900 npm downloads/month vs roughly 3,000 for Better Fullstack).",
-        "If your work is entirely TypeScript and its menu covers your stack, Better-T-Stack is an excellent choice — that focus is exactly what it optimizes for.",
+        "It is a focused, very actively developed tool - multiple releases per week as of July 2026 - and its narrower scope means fewer templates to maintain per option and a tight default path (Hono + tRPC + Drizzle + Better Auth). As of July 2026 it is also the more downloaded of the two (roughly 11,900 npm downloads/month vs roughly 3,000 for Better Fullstack).",
+        "If your work is entirely TypeScript and its menu covers your stack, Better-T-Stack is an excellent choice - that focus is exactly what it optimizes for.",
       ],
     },
     {
@@ -279,7 +279,7 @@ const betterTStack: CompetitorComparison = {
     {
       question: "Does Better-T-Stack support languages other than TypeScript?",
       answer:
-        "No — it is TypeScript-only by design, covering TypeScript web frontends, backends, and React Native. For Rust, Go, Python, Java, .NET, or Elixir scaffolding with the same menu-driven flow, use Better Fullstack.",
+        "No - it is TypeScript-only by design, covering TypeScript web frontends, backends, and React Native. For Rust, Go, Python, Java, .NET, or Elixir scaffolding with the same menu-driven flow, use Better Fullstack.",
     },
     {
       question: "Do both tools have a web builder and MCP support?",

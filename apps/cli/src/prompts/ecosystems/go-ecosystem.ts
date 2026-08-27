@@ -350,7 +350,7 @@ const GO_TESTING_PROMPT_OPTIONS: PromptOption<GoTesting>[] = [
   {
     value: "testify",
     label: "Testify",
-    hint: "Assertions, suites, and mocks — the Go testing standard",
+    hint: "Assertions, suites, and mocks - the Go testing standard",
   },
   {
     value: "gomock",

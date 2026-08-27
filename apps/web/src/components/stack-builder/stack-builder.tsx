@@ -1794,7 +1794,7 @@ function CreationModeComposer({
     graphSelection.backendEcosystem,
     backendCapabilityContext,
   );
-  // The Kotlin scaffold only has Kotlin sources for Spring Data JPA —
+  // The Kotlin scaffold only has Kotlin sources for Spring Data JPA -
   // jOOQ/MyBatis are Java-only (mirrors the spring-boot-only framework filter).
   const backendOrmOptions = filterKotlinBackendCapabilityOptions(
     graphSelection,
@@ -2933,7 +2933,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
   }, [runSupported, setViewMode, viewMode]);
 
   // Warm the run-panel chunk so the first switch to the Run tab mounts it
-  // synchronously — a suspended mount would delay the copy button's
+  // synchronously - a suspended mount would delay the copy button's
   // shared-layout landing target past the command bar's exit.
   useEffect(() => {
     if (runSupported) void import("@/components/stack-builder/run-panel");
@@ -3276,7 +3276,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
     setSectionCollapseOverrides((prev) => new Map(prev).set(sectionKey, false));
   };
 
-  // Sections shown in the navigation drawer — mirrors the rendered sections.
+  // Sections shown in the navigation drawer - mirrors the rendered sections.
   const navSections = useMemo(
     () =>
       displayedSections
@@ -3843,7 +3843,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                     onActiveStepChange={handleMultiActiveStepChange}
                   />
 
-                  {/* Grouped sections — each section renders its categories as
+                  {/* Grouped sections - each section renders its categories as
                       subsections. In multi mode these are the final "Finalize" step. */}
                   {(stack.stackMode !== "multi" || multiActiveStep === "finalize") &&
                     displayedSections.map((builderSection) => {

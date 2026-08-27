@@ -285,7 +285,7 @@ export function compatibilityChangesToProjectConfig(
 export type CompatibilityAdjustmentResult = {
   /** Config keys whose values must change, already mapped back to ProjectConfig shape. */
   changes: Partial<ProjectConfig>;
-  /** User-facing `option: <from> → <to> — <reason>` lines. */
+  /** User-facing `option: <from> → <to> - <reason>` lines. */
   adjustments: string[];
 };
 
@@ -345,7 +345,7 @@ export function resolveCompatibilityAdjustments(
 
   // Diff in config-key space against the engine INPUT (not the raw config) so
   // defaults injected by the input mapper (e.g. javaLanguage) never count as
-  // adjustments — only values the engine actually changed do.
+  // adjustments - only values the engine actually changed do.
   const mapped = compatibilityChangesToProjectConfig(result.adjustedStack);
   const mappedInput = compatibilityChangesToProjectConfig(input);
   const changes: Partial<ProjectConfig> = {};
@@ -375,7 +375,7 @@ export function resolveCompatibilityAdjustments(
     const fromLabel = formatCompatValue(from);
     const toLabel = formatCompatValue(to);
     return from !== undefined && fromLabel !== toLabel
-      ? `${label}: ${fromLabel} → ${toLabel} — ${change.message}`
+      ? `${label}: ${fromLabel} → ${toLabel} - ${change.message}`
       : `${label}: ${change.message}`;
   });
 

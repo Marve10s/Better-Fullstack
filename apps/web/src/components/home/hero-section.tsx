@@ -207,7 +207,7 @@ export default function HeroSection() {
                         href={`https://x.com/${person.handle}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        aria-label={`${person.name} — @${person.handle}`}
+                        aria-label={`${person.name} - @${person.handle}`}
                         className="block rounded-full outline-none focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                       />
                     }

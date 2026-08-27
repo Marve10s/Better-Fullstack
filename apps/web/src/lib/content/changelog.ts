@@ -64,7 +64,7 @@ export const changelogReleases: ChangelogRelease[] = [
       "Better Fullstack 2.5.1 makes the agent path portable and the project lifecycle verifiable. The MCP server and plugin bundle move to the 2026 spec so the same setup works across agents, generated projects prove their own create-run-update surfaces in CI, and telemetry choices are laid out in one place you can read before opting in.",
     highlights: [
       "Use one portable plugin bundle across agents: the MCP server adopts the 2026 spec, and the Claude Code and Codex plugins ship from a shared skill set and server config.",
-      "Trust the lifecycle surfaces you rely on — create, run, and update paths are now exercised end to end in CI against real generated projects, including a browser-run proof.",
+      "Trust the lifecycle surfaces you rely on - create, run, and update paths are now exercised end to end in CI against real generated projects, including a browser-run proof.",
       "Read exactly what anonymous usage reporting collects, and what it never sends, in a dedicated telemetry decision room before choosing a setting.",
       "Support the project through GitHub Sponsors, now the primary funding path across the site and docs.",
       "Get steadier scaffolds from pinned TanStack Router template dependencies and an oRPC version bump applied in lockstep across generated packages.",
@@ -81,9 +81,9 @@ export const changelogReleases: ChangelogRelease[] = [
     summary:
       "This release widens what a single multi-ecosystem command can create and clears the announcement furniture out of the builder. Non-interactive runs now resolve prompts to defaults instead of stalling, and CLI graph updates behave the same way the builder does.",
     highlights: [
-      "Compose more of your product in one pass — multi-ecosystem project creation covers a wider set of frontend, backend, database, and mobile combinations.",
+      "Compose more of your product in one pass - multi-ecosystem project creation covers a wider set of frontend, backend, database, and mobile combinations.",
       "Work in a quieter builder: the launch-radar surfaces, new-option badges, and the new-only filter are retired from the chrome now that the additions they announced have landed.",
-      "Run the CLI in CI and scripts without hanging — prompts resolve to their defaults in non-interactive environments.",
+      "Run the CLI in CI and scripts without hanging - prompts resolve to their defaults in non-interactive environments.",
       "Get consistent results from `bfs update` in graph-based projects, matching what the builder produces for the same stack.",
       "Scaffold SolidStart projects on SolidStart 2, and get a working Qdrant query in generated vector-search code.",
     ],
@@ -103,7 +103,7 @@ export const changelogReleases: ChangelogRelease[] = [
       "Put Kong Gateway in front of generated services, with container routing that keeps upstreams reachable only through the gateway.",
       "Add Xendit payments, SigNoz tracing, Knip dead-code detection, and Gitleaks secret scanning as first-class options.",
       "Get complete request tracing from SigNoz across edge, gRPC, and Nitro runtimes, including aborted and cancelled streams.",
-      "See why a builder run failed — failures are now captured instead of disappearing silently.",
+      "See why a builder run failed - failures are now captured instead of disappearing silently.",
     ],
     image: gradientArtwork(),
   },
@@ -154,7 +154,7 @@ export const changelogReleases: ChangelogRelease[] = [
     highlights: [
       "Pick from 20 new libraries in each of Rust, Go, and Elixir, covering frameworks, data access, messaging, observability, testing, and quality tooling.",
       "Keep your own edits when updating: `bfs update` now merges `package.json` and `.env.example` structurally rather than replacing them.",
-      "Reach cross-ecosystem backends from the browser without CORS surprises — generated services pin their allowed origin through `CORS_ORIGIN`.",
+      "Reach cross-ecosystem backends from the browser without CORS surprises - generated services pin their allowed origin through `CORS_ORIGIN`.",
       "Find options faster in the builder with search, and see incompatible create flags auto-adjusted with an explanation instead of a hard failure.",
       "Read the blog in a new editorial layout, reachable from the navbar.",
       "Generate buildable Next.js projects with NextAuth, and get safer automated template dependency updates.",
@@ -185,7 +185,7 @@ export const changelogReleases: ChangelogRelease[] = [
     summary:
       "Better Fullstack 2.1.7 makes starting a project more flexible and returning to one more dependable. Choose how guided you want the CLI to be, use Kotlin as a first-class option in solo and multi-ecosystem stacks, and keep evolving projects without losing their shape, language, or release-channel choices.",
     highlights: [
-      "Start interactive projects your way: jump to the Web Builder, choose Core for a quick setup, Full for every choice, or Custom for only the sections you care about—across solo and multi-ecosystem stacks.",
+      "Start interactive projects your way: jump to the Web Builder, choose Core for a quick setup, Full for every choice, or Custom for only the sections you care about-across solo and multi-ecosystem stacks.",
       "Choose Kotlin directly in the Web Builder and multi-ecosystem composer, or keep it grouped with Java; saved configurations, history, copied commands, and later updates remember your selection.",
       "Keep evolving projects with more confidence: `bfs add`, `bfs update`, and MCP-created projects retain a current baseline, preserve single-app layouts and native backend choices, and avoid unnecessary update conflicts.",
       "Use release channels predictably: latest and beta selections remain on the channel you chose, while generated commands preserve the details needed to reproduce the same stack.",
@@ -284,7 +284,7 @@ export const changelogReleases: ChangelogRelease[] = [
       "This release rebuilds the AI-agent scaffolding benchmark as ScaffBench 2 with honest, reproducible scoring and a live homepage leaderboard. It also makes every generated template pass its own type-check and format gates, fixes all five payment providers, and repairs a wave of stack combinations across the TypeScript, Rust, Go, Python, Java, and Elixir ecosystems.",
     highlights: [
       "Rebuilt the AI-agent benchmark as ScaffBench 2: a per-spec solvability gate, reproducibility metadata, pass@k / pass^k scoring, and an honest read-only quality gate, plus opencode/Kilo and GPT/Codex agent adapters and free-tier models on an 8-config homepage leaderboard with Core/Full tabs.",
-      "Made generated templates pass their own type-check and format gates — Biome 2.5 preset, Rust cargo fmt --check + clippy -D warnings, Python ruff, gofmt-clean Go, and the Java Testcontainers 2.x rename — so fresh scaffolds stay green.",
+      "Made generated templates pass their own type-check and format gates - Biome 2.5 preset, Rust cargo fmt --check + clippy -D warnings, Python ruff, gofmt-clean Go, and the Java Testcontainers 2.x rename - so fresh scaffolds stay green.",
       "Fixed all five payment providers: added env schema for Dodo, Paddle, and Lemon Squeezy, async Paddle webhook verification, Lemon Squeezy SDK type alignment, and stopped pinning a stale Stripe apiVersion.",
       "Repaired a batch of stack combos: Nuxt oRPC auth context, Kysely auth schema types, OpenAPI tsconfig base path, Qwik Rolldown chunk names, Solid TanStack Router route tree, and Svelte Better Auth builds.",
       "The homepage hero release badge now auto-updates from the latest GitHub release, and the benchmark leaderboard ships with real run data.",
@@ -354,7 +354,7 @@ export const changelogReleases: ChangelogRelease[] = [
     summary:
       "This release benchmarks how AI agents scaffold with Better Fullstack and publishes the results on the homepage, adds .NET as a first-class ecosystem on the new stack graph, and ships a much leaner install. It also fixes four scaffold bugs the benchmark itself uncovered.",
     highlights: [
-      "Benchmarked frontier models scaffolding the same project specs three ways — prompt-only, our CLI, and our MCP server. Agents on the MCP path finished up to 7× faster with 4× fewer output tokens; the full results live on the homepage with an interactive chart.",
+      "Benchmarked frontier models scaffolding the same project specs three ways - prompt-only, our CLI, and our MCP server. Agents on the MCP path finished up to 7× faster with 4× fewer output tokens; the full results live on the homepage with an interactive chart.",
       "Redesigned the MCP page with one-paste setup for Claude Code, Codex, Gemini CLI, Cursor, VS Code, Claude Desktop, Windsurf, and Zed.",
       "Added .NET as a first-class ecosystem, plus an enterprise tier, backend-utils, and Render/Netlify deployment options on the stack graph (Phases 0–4).",
       "Cut install size by 42% (122 MB → 71 MB) and the web entry chunk by 32%.",

@@ -126,7 +126,7 @@ export function validateHtmlResponse(
 
   // Empty body detection
   if (/<body[^>]*>\s*<\/body>/i.test(body)) {
-    errors.push("Empty body element — framework may have failed to render");
+    errors.push("Empty body element - framework may have failed to render");
   }
 
   // Framework-specific markers (advisory)

@@ -10,7 +10,7 @@ import {
 } from "@/lib/docs/source";
 
 /**
- * Exact match for `/docs` — renders the docs index page (`content/docs/index.mdx`).
+ * Exact match for `/docs` - renders the docs index page (`content/docs/index.mdx`).
  *
  * TanStack Router's splat route (`docs/$`) only matches non-empty splats, so
  * this index file is required to handle the bare `/docs` URL. Both routes

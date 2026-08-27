@@ -46,9 +46,9 @@ Version stamps:
 
 ## Test and typecheck results
 
-- `bun test scripts/` — **105 passed, 0 failed**.
-- `bun x tsc --noEmit -p scripts/scaffbench/tsconfig.json` — **clean**.
-- `git diff --check` — **clean**.
+- `bun test scripts/` - **105 passed, 0 failed**.
+- `bun x tsc --noEmit -p scripts/scaffbench/tsconfig.json` - **clean**.
+- `git diff --check` - **clean**.
 
 The focused TypeScript config is under `scripts/scaffbench/` and uses a dependency-light declaration shim for the dynamically imported route-check helpers, avoiding package build output or changes outside the permitted scope.
 
@@ -116,11 +116,11 @@ Each command below was run against the deleted monolith's history. The author da
 
 ### Round-2 verification
 
-- `bun test scripts/benchmarks/scaffbench-hardening-round-2.test.ts` — **18 passed, 0 failed** (134 assertions).
-- `bun test scripts/` — **123 passed, 0 failed** (414 assertions).
-- `bunx tsc --noEmit -p scripts/scaffbench/tsconfig.json` — **clean**.
-- Install-policy contradiction grep across `scripts/scaffbench/specs` and `prompts.ts` — **no matches**.
-- `git diff --check` — **clean**.
+- `bun test scripts/benchmarks/scaffbench-hardening-round-2.test.ts` - **18 passed, 0 failed** (134 assertions).
+- `bun test scripts/` - **123 passed, 0 failed** (414 assertions).
+- `bunx tsc --noEmit -p scripts/scaffbench/tsconfig.json` - **clean**.
+- Install-policy contradiction grep across `scripts/scaffbench/specs` and `prompts.ts` - **no matches**.
+- `git diff --check` - **clean**.
 
 ## Code-volume metric (LoC) (2026-07-18)
 
@@ -148,6 +148,6 @@ The web 2.2 data generator was intentionally not run; the operator remains respo
 
 ### LoC verification
 
-- `bun test scripts/benchmarks/scaffbench-code-metrics.test.ts` — **4 passed, 0 failed** (12 assertions).
-- `bun x tsc --noEmit -p scripts/scaffbench/tsconfig.json` — **clean**.
-- `cd scripts && bun test .` — **127 passed, 0 failed** (426 assertions across 7 files).
+- `bun test scripts/benchmarks/scaffbench-code-metrics.test.ts` - **4 passed, 0 failed** (12 assertions).
+- `bun x tsc --noEmit -p scripts/scaffbench/tsconfig.json` - **clean**.
+- `cd scripts && bun test .` - **127 passed, 0 failed** (426 assertions across 7 files).

@@ -39,7 +39,7 @@ def info() -> None:
     table.add_row("cli", "typer")
     console.print(table)
 {{else}}
-    typer.echo("{{projectName}} — built with Better Fullstack")
+    typer.echo("{{projectName}} - built with Better Fullstack")
 {{/if}}
 
 
@@ -84,5 +84,5 @@ console = Console()
 
 def print_banner() -> None:
     """Print a styled startup banner."""
-    console.print("[bold cyan]{{projectName}}[/bold cyan] — built with Better Fullstack")
+    console.print("[bold cyan]{{projectName}}[/bold cyan] - built with Better Fullstack")
 {{/if}}

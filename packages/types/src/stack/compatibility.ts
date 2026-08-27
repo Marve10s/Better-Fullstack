@@ -180,7 +180,7 @@ export function isSignozSupportedPythonWebFramework(framework: string): boolean 
 // ============================================
 // Kotlin is a `javaLanguage` variant of the Java ecosystem, wired only for the
 // Spring Boot scaffold and the option surface that has Kotlin source templates.
-// This is the single source of truth for that gate — the stack normalization
+// This is the single source of truth for that gate - the stack normalization
 // below, `getDisabledReason`, the CLI create path, and the template generator
 // all consume it so the lists can never drift apart.
 
@@ -248,7 +248,7 @@ export function getKotlinJavaIncompatibilityReason(stack: KotlinJavaGateInput): 
 // ============================================
 // Mobile spans four independent platforms (React Native, Kotlin, Swift,
 // Flutter) whose library catalogs never mix. This is the single source of truth
-// for which categories belong to React Native — `getDisabledReason` and the web
+// for which categories belong to React Native - `getDisabledReason` and the web
 // builder's category visibility both read it, so Expo options can never be
 // offered without an Expo app and Kotlin libraries can never be offered for one.
 
@@ -609,7 +609,7 @@ const SINGLE_APP_WEB_FRONTEND_BY_BACKEND: Record<string, string> = {
  * sibling workspace package (database/orm, better-auth server, trpc/orpc
  * packages/api, payments, email, etc.) and no separate native/server app. For
  * anything else, `single-app` is normalized back to `monorepo` so we never emit
- * a broken flat layout. appPlatforms (turborepo/nx) are ignored here — the
+ * a broken flat layout. appPlatforms (turborepo/nx) are ignored here - the
  * generator drops the workspace tooling when it flattens.
  */
 export function stackQualifiesForSingleApp(stack: CompatibilityInput): boolean {
@@ -1364,7 +1364,7 @@ export const analyzeStackCompatibility = (
   // AUTH CONSTRAINTS
   // ============================================
 
-  // Redis is a key-value store without SQL support — better-auth requires SQL tables
+  // Redis is a key-value store without SQL support - better-auth requires SQL tables
   const isBetterAuthSelection =
     nextStack.auth === "better-auth" || nextStack.auth === "better-auth-organizations";
 
@@ -2827,7 +2827,7 @@ export const getDisabledReason = (
   // KOTLIN (JAVA LANGUAGE VARIANT) RULES
   // ============================================
   // Grey out the 'kotlin' option when the current stack excludes it, and grey
-  // out Kotlin-incompatible options while Kotlin is selected — instead of
+  // out Kotlin-incompatible options while Kotlin is selected - instead of
   // silently normalizing the language back to Java after the fact. Shares the
   // gate in getKotlinJavaIncompatibilityReason. These run BEFORE the graph
   // delegation below: the graph engine authoritatively handles categories like
@@ -2926,7 +2926,7 @@ export const getDisabledReason = (
       return "tower-sessions requires the generated Axum middleware stack";
     }
     // Torii's SQLite storage pins sqlx 0.8.0 (libsqlite3-sys 0.28) while
-    // rusqlite uses libsqlite3-sys 0.36 — cargo permits only one crate to link
+    // rusqlite uses libsqlite3-sys 0.36 - cargo permits only one crate to link
     // the native sqlite3 library, so this pair can never resolve.
     if (category === "rustAuth" && optionId === "torii" && currentStack.rustOrm === "rusqlite") {
       return "Torii's sqlx-based storage conflicts with rusqlite (both link the native sqlite3 library)";

@@ -208,7 +208,7 @@ async function checkNativeTargetDependencies(
             target,
             ".venv",
             "warn",
-            "Missing .venv — generated checks provision it, or create it and install project dependencies",
+            "Missing .venv - generated checks provision it, or create it and install project dependencies",
           ),
         ];
       }

@@ -19,7 +19,7 @@ const loadTelemetry = createServerFn({ method: "GET" }).handler(async (): Promis
 
 export const Route = createFileRoute("/telemetry")({
   head: () => {
-    const title = "Product telemetry — Better Fullstack";
+    const title = "Product telemetry - Better Fullstack";
     const description =
       "Aggregate lifecycle, reliability, adoption, and repeat-use signals for Better Fullstack product decisions.";
     return {

@@ -23,7 +23,7 @@ import { stackStateToProjectConfig } from "@/lib/builder/preview-config";
 import { cn } from "@/lib/platform/utils";
 import * as m from "@/paraglide/messages";
 
-// Client-side generation via dynamic import — the ~354KB template-generator
+// Client-side generation via dynamic import - the ~354KB template-generator
 // bundle is only loaded when the user actually opens the Preview tab.
 const generatePreview = async (stack: StackState) => {
   const { generateVirtualProject, EMBEDDED_TEMPLATES, validatePreflightConfig } =

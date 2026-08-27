@@ -44,8 +44,8 @@ Use this template to plan video structure before implementation.
 ```
 
 ### Elements
-1. **Element Name** — Description — style notes
-2. **Element Name** — Description — style notes
+1. **Element Name** - Description - style notes
+2. **Element Name** - Description - style notes
 
 ### Animation
 | Element | Effect | Delay | Duration |
@@ -74,10 +74,10 @@ Crossfade 200ms
 ```
 
 ### Elements
-1. **Vercel Logo** — Triangle — 80px, white, center
-2. **Title** — "GEIST" — 120px, bold, white
-3. **Subtitle** — "Design System" — 48px, muted
-4. **Tagline** — Principles — 24px, muted
+1. **Vercel Logo** - Triangle - 80px, white, center
+2. **Title** - "GEIST" - 120px, bold, white
+3. **Subtitle** - "Design System" - 48px, muted
+4. **Tagline** - Principles - 24px, muted
 
 ### Animation
 | Element | Effect | Delay | Duration |
@@ -106,8 +106,8 @@ Crossfade 200ms
 ```
 
 ### Elements
-1. **Title** — "Core Principles" — 64px, bold
-2. **Card 1-4** — Feature cards — bg-200, border, icon + text
+1. **Title** - "Core Principles" - 64px, bold
+2. **Card 1-4** - Feature cards - bg-200, border, icon + text
 
 ### Animation
 | Element | Effect | Delay | Duration |

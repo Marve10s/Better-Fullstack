@@ -9,7 +9,7 @@ import { getVirtualFileContent } from "@test/support/virtual-tree-utils";
  * RN toolchain lock: the Expo / React Native stack (metro, babel-preset-expo,
  * react-native-gesture-handler, @babel/preset-typescript) requires **Babel 7**.
  * A major bump of `@babel/core` / `@babel/runtime` to ^8 breaks the Metro bundle
- * at build time — see the 2026-06 regression where an automated dep update pinned
+ * at build time - see the 2026-06 regression where an automated dep update pinned
  * `@babel/core: ^8.0.1` and `expo export` failed with a gesture-handler
  * SyntaxError while typecheck stayed green.
  *
@@ -62,7 +62,7 @@ const BASE_CONFIG: Partial<ProjectConfig> = {
   mobileDeepLinking: "none",
 };
 
-describe("native templates — RN toolchain version lock", () => {
+describe("native templates - RN toolchain version lock", () => {
   for (const frontend of NATIVE_VARIANTS) {
     it(`${frontend}: Babel stays on the 7.x line (RN toolchain requires Babel 7)`, async () => {
       const result = await createVirtual({

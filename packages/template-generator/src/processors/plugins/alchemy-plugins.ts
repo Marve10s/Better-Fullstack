@@ -167,7 +167,7 @@ function processSvelteAlchemy(vfs: VirtualFileSystem) {
 
   // Add the standard Cloudflare adapter as a build-time fallback. The Alchemy
   // adapter throws at `vite build` when its local wrangler config
-  // (.alchemy/local/wrangler.jsonc) is absent — the case on a fresh scaffold
+  // (.alchemy/local/wrangler.jsonc) is absent - the case on a fresh scaffold
   // before `alchemy dev`/`alchemy deploy` has run (e.g. in CI). Selecting the
   // adapter at config-load time keeps `bun run build` working pre-deploy while
   // still using Alchemy once the local config exists.
@@ -185,7 +185,7 @@ function processSvelteAlchemy(vfs: VirtualFileSystem) {
     'const adapter = existsSync(".alchemy/local/wrangler.jsonc") ? alchemy : cloudflareAdapter;',
   );
 
-  // The `kit.adapter: adapter()` call is intentionally left unchanged — `adapter`
+  // The `kit.adapter: adapter()` call is intentionally left unchanged - `adapter`
   // now resolves to the guard constant defined above.
 
   vfs.writeFile(svelteConfigPath, sourceFile.getFullText());

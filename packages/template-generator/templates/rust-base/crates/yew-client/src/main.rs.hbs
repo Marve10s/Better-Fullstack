@@ -44,7 +44,7 @@ fn app() -> Html {
     let status = match health.as_ref() {
         None => html! { <p>{"Checking the Rust server…"}</p> },
         Some(Ok(response)) => html! {
-            <p class="ok">{format!("{} — {}", response.status, response.message)}</p>
+            <p class="ok">{format!("{} - {}", response.status, response.message)}</p>
         },
         Some(Err(error)) => html! { <p class="error">{format!("Server unavailable: {error}")}</p> },
     };

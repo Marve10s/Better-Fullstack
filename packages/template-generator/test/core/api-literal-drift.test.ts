@@ -54,7 +54,7 @@ const API_LITERAL_GUARDS: readonly ApiLiteralGuard[] = [
   // The Stripe `apiVersion` guard was retired on 2026-06-29. The template no
   // longer pins a literal apiVersion: it defaults to the SDK's own
   // `LatestApiVersion`, which is staleness-proof (a pinned literal broke
-  // check-types on every SDK bump — "2024-12-18" → "2026-05-27.dahlia" →
+  // check-types on every SDK bump - "2024-12-18" → "2026-05-27.dahlia" →
   // "2026-06-24.dahlia"). The dedicated test below enforces that we never
   // reintroduce a pinned literal. Add new version-coupled literals here (e.g.
   // the drizzle mysql2 connection shape, the expo app.json web.output).
@@ -75,7 +75,7 @@ describe("stripe apiVersion stays unpinned", () => {
     const source = readTemplate("payments/stripe/server/base/src/lib/stripe.ts.hbs");
     // Pinning a literal apiVersion goes stale on every stripe SDK bump and
     // breaks check-types (TS2322). The SDK defaults to its own LatestApiVersion,
-    // so we intentionally omit it — see the rationale comment in stripe.ts.hbs.
+    // so we intentionally omit it - see the rationale comment in stripe.ts.hbs.
     expect(source).not.toMatch(/apiVersion:\s*"/);
   });
 });

@@ -13,7 +13,7 @@ const CACHING_PROMPT_OPTIONS = [
   {
     value: "redis" as const,
     label: "Redis",
-    hint: "Self-hosted Redis via ioredis (TCP) — full command surface",
+    hint: "Self-hosted Redis via ioredis (TCP) - full command surface",
   },
   {
     value: "none" as const,

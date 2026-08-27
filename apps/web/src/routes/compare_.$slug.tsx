@@ -140,7 +140,7 @@ function ComparisonContent({ comparison }: { comparison: CompetitorComparison })
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="font-mono text-xl font-bold sm:text-2xl">Try it in the builder</h2>
             <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-              Configure any stack visually and get a ready-to-run command — every combination is
+              Configure any stack visually and get a ready-to-run command - every combination is
               compatibility-checked.
             </p>
             <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">

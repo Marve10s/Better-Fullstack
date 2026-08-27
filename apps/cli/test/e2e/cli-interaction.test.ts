@@ -127,7 +127,7 @@ async function runCLI(
   const timeout = options?.timeout ?? 30_000;
 
   // The CLI requires project path to be relative to cwd.
-  // First arg should be the project dir — extract parent and name.
+  // First arg should be the project dir - extract parent and name.
   const projectPath = args[0];
   const parentDir = projectPath ? join(projectPath, "..") : SMOKE_DIR;
   const projectName = projectPath?.split("/").pop() || "test";

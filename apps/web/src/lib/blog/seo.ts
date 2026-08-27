@@ -171,7 +171,7 @@ export function blogPostHead(post: Pick<BlogPost, "url" | "frontmatter">) {
     ],
     links: [
       { rel: "canonical", href: url },
-      // Raw MDX source served by the /blog/$post.md route — lets AI
+      // Raw MDX source served by the /blog/$post.md route - lets AI
       // crawlers/readers fetch the post as plain markdown.
       { rel: "alternate", type: "text/markdown", href: `${url}.md` },
     ],

@@ -1,4 +1,4 @@
-# Competitive Analysis — better-t-stack
+# Competitive Analysis - better-t-stack
 
 Moved to completed on May 21, 2026 because this is now a historical snapshot rather than active planned work. Several gaps called out below have since shipped or changed status; verify current support against schemas, CLI helpers, and release notes before using this as a roadmap source.
 
@@ -42,7 +42,7 @@ Analysis of create-better-t-stack (5.2k stars, v3.27.0) as of April 2026.
 | Cloudflare Workers runtime | First-class runtime option (not just deploy target) |
 | Lefthook | Git hooks addon (we have it too) |
 | Ultracite | Opinionated linting with deep agent integrations |
-| Project config file | `.better-t-stack.json` — we have `bts.jsonc` ✅ |
+| Project config file | `.better-t-stack.json` - we have `bts.jsonc` ✅ |
 
 ---
 
@@ -52,35 +52,35 @@ Analysis of create-better-t-stack (5.2k stars, v3.27.0) as of April 2026.
 
 | Feature | Our Advantage |
 |---------|--------------|
-| **Multi-ecosystem** | Rust, Go, Python — they are TypeScript-only |
-| **Enterprise backends** | NestJS, AdonisJS — they only have lightweight frameworks |
-| **More ORMs** | TypeORM, Sequelize, MikroORM, Kysely — they only have Drizzle, Prisma, Mongoose |
-| **More frontends** | Angular, Qwik, Redwood, Fresh, Solid Start — broader framework coverage |
-| **Multiple deploy targets** | Vercel, Railway, Fly.io, Docker, SST — they only have Cloudflare |
-| **CMS integrations** | Payload, Sanity, Strapi, TinaCMS — they have none |
-| **Caching** | Upstash Redis — they have none |
-| **Search** | Meilisearch, Typesense — they have none |
-| **File Storage** | S3, R2 — they have none |
-| **File Upload** | Uploadthing, Filepond, Uppy — they have none |
-| **Email** | 8 providers — they have none |
-| **Realtime** | Socket.IO, PartyKit, Ably, Pusher, Liveblocks, Yjs — they have none |
-| **Job Queues** | BullMQ, Trigger.dev, Inngest, Temporal — they have none |
-| **Animation** | Framer Motion, GSAP, etc. — they have none |
-| **Forms** | TanStack Form, React Hook Form, etc. — they have none |
-| **State Management** | Zustand, Jotai, etc. — they have none |
-| **Logging** | Pino, Winston — they have none |
-| **Observability** | OpenTelemetry, Sentry, Grafana — they have none |
-| **Validation** | 7 options — they have none (beyond Zod in templates) |
-| **Effect** | Effect-ts integration — they have none |
-| **UI library choice** | 12 options — they use shadcn implicitly |
-| **CSS framework choice** | Tailwind, SCSS, Less, PostCSS — they are Tailwind-only |
+| **Multi-ecosystem** | Rust, Go, Python - they are TypeScript-only |
+| **Enterprise backends** | NestJS, AdonisJS - they only have lightweight frameworks |
+| **More ORMs** | TypeORM, Sequelize, MikroORM, Kysely - they only have Drizzle, Prisma, Mongoose |
+| **More frontends** | Angular, Qwik, Redwood, Fresh, Solid Start - broader framework coverage |
+| **Multiple deploy targets** | Vercel, Railway, Fly.io, Docker, SST - they only have Cloudflare |
+| **CMS integrations** | Payload, Sanity, Strapi, TinaCMS - they have none |
+| **Caching** | Upstash Redis - they have none |
+| **Search** | Meilisearch, Typesense - they have none |
+| **File Storage** | S3, R2 - they have none |
+| **File Upload** | Uploadthing, Filepond, Uppy - they have none |
+| **Email** | 8 providers - they have none |
+| **Realtime** | Socket.IO, PartyKit, Ably, Pusher, Liveblocks, Yjs - they have none |
+| **Job Queues** | BullMQ, Trigger.dev, Inngest, Temporal - they have none |
+| **Animation** | Framer Motion, GSAP, etc. - they have none |
+| **Forms** | TanStack Form, React Hook Form, etc. - they have none |
+| **State Management** | Zustand, Jotai, etc. - they have none |
+| **Logging** | Pino, Winston - they have none |
+| **Observability** | OpenTelemetry, Sentry, Grafana - they have none |
+| **Validation** | 7 options - they have none (beyond Zod in templates) |
+| **Effect** | Effect-ts integration - they have none |
+| **UI library choice** | 12 options - they use shadcn implicitly |
+| **CSS framework choice** | Tailwind, SCSS, Less, PostCSS - they are Tailwind-only |
 
 ---
 
 ## Strategic Takeaways
 
-1. ~~**Close the AI/agent gap**~~ ✅ Done — MCP server, skills addon, MCP addon all shipped.
-2. ~~**Ship `add` command**~~ ✅ Done — iterative post-scaffold additions implemented.
-3. **Desktop/extensions are niche** — Tauri/WXT/PWA are nice-to-have, next priority tier.
-4. **Our breadth is our moat** — multi-ecosystem, more integrations, more deploy targets. Keep expanding this.
-5. **Their release cadence is aggressive** — 20+ releases in 3 months. We should match or exceed this for feature velocity.
+1. ~~**Close the AI/agent gap**~~ ✅ Done - MCP server, skills addon, MCP addon all shipped.
+2. ~~**Ship `add` command**~~ ✅ Done - iterative post-scaffold additions implemented.
+3. **Desktop/extensions are niche** - Tauri/WXT/PWA are nice-to-have, next priority tier.
+4. **Our breadth is our moat** - multi-ecosystem, more integrations, more deploy targets. Keep expanding this.
+5. **Their release cadence is aggressive** - 20+ releases in 3 months. We should match or exceed this for feature velocity.

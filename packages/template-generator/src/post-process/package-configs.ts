@@ -469,11 +469,11 @@ function applyTsdownDevtoolsOverride(
   // npm 10's arborist crashes ("Cannot read properties of null (reading
   // 'edgesOut')") while resolving tsdown's optional peer @vitejs/devtools@*
   // against devtools 0.4.2 (published 2026-07-21). The peer is never actually
-  // installed, so pinning it to 0.4.1 has no runtime effect — it only gives
+  // installed, so pinning it to 0.4.1 has no runtime effect - it only gives
   // arborist a manifest it can resolve. Remove once npm 10 users can install
   // tsdown's peer graph again (upstream fix in tsdown, devtools, or npm).
   // tsdown ships with every server workspace (see workspace-deps), which is
-  // injected AFTER this post-processor runs — so gate on the workspace
+  // injected AFTER this post-processor runs - so gate on the workspace
   // existing rather than on the dep being present.
   if (config.packageManager !== "npm") return;
   if (!vfs.exists(getServerPackagePath(config.frontend, config.backend))) return;

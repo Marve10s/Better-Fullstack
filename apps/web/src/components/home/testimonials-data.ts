@@ -75,14 +75,14 @@ export const ROW_2: Testimonial[] = [
     avatar:
       "https://media.daily.dev/image/upload/s--5hPC52y_--/f_auto/v1773412842/avatars/avatar_8fkdziGASnSSBES6c4Ml9",
     comment:
-      "425 options sounds powerful. The real question is how deep the generated code goes — if it actually handles the opinionated glue between layers, this is genuinely impressive infrastructure.",
+      "425 options sounds powerful. The real question is how deep the generated code goes - if it actually handles the opinionated glue between layers, this is genuinely impressive infrastructure.",
   },
   {
     name: "Juan Felipe Velasquez Alvarez",
     avatar:
       "https://media.daily.dev/image/upload/s--PbZORXAj--/f_auto/v1757214438/avatars/avatar_mQctWDEB2",
     comment:
-      "Better Fullstack & SST — the perfect team. Better Fullstack gives you the tools to make your code clean and secure right from the start. SST takes that code and makes it work on the web in a professional way.",
+      "Better Fullstack & SST - the perfect team. Better Fullstack gives you the tools to make your code clean and secure right from the start. SST takes that code and makes it work on the web in a professional way.",
   },
   {
     name: "Maxx",
@@ -122,7 +122,7 @@ export const ROW_3: Testimonial[] = [
     name: "Alexander Schulz",
     avatar:
       "https://media.daily.dev/image/upload/s--QyqhQraa--/f_auto/v1739916402/avatars/avatar_ZSilQjs5aEuu2oZF7mSsN",
-    comment: "Reminds me of vike.dev/new — Nice work!!",
+    comment: "Reminds me of vike.dev/new - Nice work!!",
   },
   {
     name: "theLazyBoy",

@@ -54,9 +54,9 @@ Run `list_tools` to identify available MCP servers and their prefixes:
    For each screen:
    - Call `[stitch_prefix]:get_screen` with `projectId` and `screenId`
    - Retrieve:
-     - `screenshot.downloadUrl` — Visual asset for the video
-     - `htmlCode.downloadUrl` — Optional: for extracting text/content
-     - `width`, `height` — Screen dimensions for proper scaling
+     - `screenshot.downloadUrl` - Visual asset for the video
+     - `htmlCode.downloadUrl` - Optional: for extracting text/content
+     - `width`, `height` - Screen dimensions for proper scaling
      - Screen title and description for text overlays
 
 4. **Asset download**:
@@ -89,17 +89,17 @@ Run `list_tools` to identify available MCP servers and their prefixes:
 
 Create a modular Remotion composition with these components:
 
-1. **`ScreenSlide.tsx`** — Individual screen display component
+1. **`ScreenSlide.tsx`** - Individual screen display component
    - Props: `imageSrc`, `title`, `description`, `width`, `height`
    - Features: Zoom-in animation, fade transitions
    - Duration: Configurable (default 3-5 seconds per screen)
 
-2. **`WalkthroughComposition.tsx`** — Main video composition
+2. **`WalkthroughComposition.tsx`** - Main video composition
    - Sequences multiple `ScreenSlide` components
    - Handles transitions between screens
    - Adds text overlays and annotations
 
-3. **`config.ts`** — Video configuration
+3. **`config.ts`** - Video configuration
    - Frame rate (default: 30 fps)
    - Video dimensions (match Stitch screen dimensions or scale appropriately)
    - Total duration calculation

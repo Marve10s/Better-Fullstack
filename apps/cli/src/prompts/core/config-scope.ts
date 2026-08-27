@@ -447,7 +447,7 @@ export async function getConfigScopeChoice(): Promise<ConfigScope | symbol> {
       {
         value: "core",
         label: "Core",
-        hint: "essentials only — framework, database, auth, API; sensible defaults for everything else",
+        hint: "essentials only - framework, database, auth, API; sensible defaults for everything else",
       },
       {
         value: "full",

@@ -1048,7 +1048,7 @@ export function generateBatch(args: GeneratorArgs, history: HistoricalLedger): C
       }
     }
 
-    // An empty batch means every draft was rejected — usually impossible force
+    // An empty batch means every draft was rejected - usually impossible force
     // flags. Returning it would let the smoke runner report a vacuous success.
     if (totalNeeded > 0 && combos.length === 0) {
       throw new Error(

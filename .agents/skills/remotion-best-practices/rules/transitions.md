@@ -9,8 +9,8 @@ metadata:
 
 `<TransitionSeries>` arranges scenes and supports two ways to enhance the cut point between them:
 
-- **Transitions** (`<TransitionSeries.Transition>`) — crossfade, slide, wipe, etc. between two scenes. Shortens the timeline because both scenes play simultaneously during the transition.
-- **Overlays** (`<TransitionSeries.Overlay>`) — render an effect (e.g. a light leak) on top of the cut point without shortening the timeline.
+- **Transitions** (`<TransitionSeries.Transition>`) - crossfade, slide, wipe, etc. between two scenes. Shortens the timeline because both scenes play simultaneously during the transition.
+- **Overlays** (`<TransitionSeries.Overlay>`) - render an effect (e.g. a light leak) on top of the cut point without shortening the timeline.
 
 Children are absolutely positioned.
 
@@ -94,15 +94,15 @@ import { LightLeak } from "@remotion/light-leaks";
 
 `<TransitionSeries.Transition>` requires:
 
-- `presentation` — the visual effect (e.g. `fade()`, `slide()`, `wipe()`).
-- `timing` — controls speed and easing (e.g. `linearTiming()`, `springTiming()`).
+- `presentation` - the visual effect (e.g. `fade()`, `slide()`, `wipe()`).
+- `timing` - controls speed and easing (e.g. `linearTiming()`, `springTiming()`).
 
 ## Overlay props
 
 `<TransitionSeries.Overlay>` accepts:
 
-- `durationInFrames` — how long the overlay is visible (positive integer).
-- `offset?` — shifts the overlay relative to the cut point center. Positive = later, negative = earlier. Default: `0`.
+- `durationInFrames` - how long the overlay is visible (positive integer).
+- `offset?` - shifts the overlay relative to the cut point center. Positive = later, negative = earlier. Default: `0`.
 
 ## Available transition types
 

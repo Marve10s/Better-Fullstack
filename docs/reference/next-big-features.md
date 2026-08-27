@@ -1,11 +1,11 @@
-# Next Big Features — Prioritized Opportunities
+# Next Big Features - Prioritized Opportunities
 
 > **Superseded for priority decisions on 2026-08-07.** Retained as opportunity research. Use
 > `docs/next-updates-roadmap.md` for current sequencing; several features described below have
 > shipped since this analysis.
 
 Synthesis of internal readiness (codebase, plan docs, GitHub issues) and external evidence
-(competitive landscape as of June 12, 2026 — see `docs/reference/competitive-landscape-2026-06-12.md`).
+(competitive landscape as of June 12, 2026 - see `docs/reference/competitive-landscape-2026-06-12.md`).
 Updated 2026-06-30 to focus on the highest-leverage remaining product opportunities.
 
 ## Framing
@@ -19,9 +19,9 @@ verified-combinations guarantee. Both build directly on the stack-graph and vali
 
 ---
 
-## Tier 1 — Headline features (high leverage, nobody has them)
+## Tier 1 - Headline features (high leverage, nobody has them)
 
-### 1. Post-scaffold upgrade engine (`update`) — baseline shipped
+### 1. Post-scaffold upgrade engine (`update`) - baseline shipped
 
 This was the #1 unsolved problem identified by the June 2026 research. Better Fullstack has since
 shipped a baseline-aware dry-run/apply/check engine; the opportunity is now cross-version
@@ -59,16 +59,16 @@ for failure triage.
 
 ---
 
-## Tier 2 — Agent-native deepening (high demand, strong fit)
+## Tier 2 - Agent-native deepening (high demand, strong fit)
 
 ### 4. Per-stack skills + in-project generators
 
-The default consumer of a scaffolder in 2026 is an agent. create-next-app ships AGENTS.md by default; Open SaaS markets "skills + Claude Code plugin"; Nx ships generators-as-agent-tools (`nx-generate` skill); shadcn ships `shadcn/skills`. We have `--ai-docs` and the skills/MCP addons — the upgrade is:
+The default consumer of a scaffolder in 2026 is an agent. create-next-app ships AGENTS.md by default; Open SaaS markets "skills + Claude Code plugin"; Nx ships generators-as-agent-tools (`nx-generate` skill); shadcn ships `shadcn/skills`. We have `--ai-docs` and the skills/MCP addons - the upgrade is:
 
 - **Installable agent plugin**: bundle the existing MCP server, scaffold/add skills, and plugin
   metadata so agents can discover Better Fullstack as a product surface instead of relying on
   repo-local setup instructions.
-- **Stack-specific skills**: generated docs/skills that explain how to add a route, run migrations, or add a test _in this exact combo_ — not generic boilerplate.
+- **Stack-specific skills**: generated docs/skills that explain how to add a route, run migrations, or add a test _in this exact combo_ - not generic boilerplate.
 - **In-project generators**: `bfs gen resource <name>` style deterministic codegen inside scaffolded repos, per ecosystem (Loco's migration-first generators are the model). Agents prefer invoking deterministic tools over free-form generation.
 - Our own LLM benchmark data (36 runs; MCP path avg 66.9s vs prompt-only 170.7s) is the marketing material for this.
 
@@ -80,18 +80,18 @@ Meet the Lovable-shaped expectation: natural language → recommended config via
 
 shadcn's 2026 "GitHub registries" model (any repo with `registry.json` distributes feature kits, codemods, agent instructions) is the strongest architectural idea in the space and our enterprise/monetization wedge: let teams publish their own addons/templates without forking the generator.
 
-- Monetization path: free CLI + paid "pro capability packs" (wired-up payments/multi-tenancy/RBAC — proven willingness-to-pay at $149–600 per ShipFast/Makerkit/supastarter) and/or a team registry; longer term, a cloud layer (upgrade PRs as a service, à la Nx self-healing) is the durable model.
+- Monetization path: free CLI + paid "pro capability packs" (wired-up payments/multi-tenancy/RBAC - proven willingness-to-pay at $149–600 per ShipFast/Makerkit/supastarter) and/or a team registry; longer term, a cloud layer (upgrade PRs as a service, à la Nx self-healing) is the durable model.
 
 ---
 
-## Tier 3 — Nearer-term concrete items
+## Tier 3 - Nearer-term concrete items
 
-- **Payments and SaaS billing depth** — Creem, Autumn, Commet, Better Auth payment plugin wiring, and an opinionated organizations + billing + entitlement preset.
-- **Non-monorepo mode** — the remaining workspace request is a single-app mode.
-- **Stack graph Phase 4 storage/settings cleanup** — compatibility consolidation has shipped for promoted graph-owned roles; remaining graph work is retiring flat-authoritative storage/settings paths as new categories move into graph ownership.
-- **More evidence surfaces** — published-package smoke now covers Bun, npm, and pnpm package installs; next verification depth should target additional package specs and richer generated-project checks.
-- **AI chat example modernization** — migrate the TypeScript AI example surface to AI SDK 7 response helpers, shared chat UI components where available, and generated-project checks for the main web/backend/native presets.
-- **Integration backlog** — InstantDB, Intlayer, Plasmo, Effect HTTP, raw SQL/no-ORM, Supabase Storage, HeroUI naming/compatibility, and deeper template-quality passes for already-added libraries.
+- **Payments and SaaS billing depth** - Creem, Autumn, Commet, Better Auth payment plugin wiring, and an opinionated organizations + billing + entitlement preset.
+- **Non-monorepo mode** - the remaining workspace request is a single-app mode.
+- **Stack graph Phase 4 storage/settings cleanup** - compatibility consolidation has shipped for promoted graph-owned roles; remaining graph work is retiring flat-authoritative storage/settings paths as new categories move into graph ownership.
+- **More evidence surfaces** - published-package smoke now covers Bun, npm, and pnpm package installs; next verification depth should target additional package specs and richer generated-project checks.
+- **AI chat example modernization** - migrate the TypeScript AI example surface to AI SDK 7 response helpers, shared chat UI components where available, and generated-project checks for the main web/backend/native presets.
+- **Integration backlog** - InstantDB, Intlayer, Plasmo, Effect HTTP, raw SQL/no-ORM, Supabase Storage, HeroUI naming/compatibility, and deeper template-quality passes for already-added libraries.
 
 ---
 
@@ -105,5 +105,5 @@ Verified-combinations page/badge ──► More evidence surfaces (#3)          
 Per-stack skills + generators (#4)                                          [parallel]
 ```
 
-Treat upgrade reliability—not the already-shipped baseline command—as the headline lifecycle track
+Treat upgrade reliability-not the already-shipped baseline command-as the headline lifecycle track
 for the next major version.

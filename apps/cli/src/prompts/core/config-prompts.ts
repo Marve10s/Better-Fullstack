@@ -1482,7 +1482,7 @@ export async function gatherConfig(
       // run before this one; if an already-chosen integration is Java-only,
       // resolve to Java instead of offering a Kotlin option that would be
       // normalized away. The build tool is prompted after the language, so a
-      // Maven stand-in satisfies that gate check here — the build-tool prompt
+      // Maven stand-in satisfies that gate check here - the build-tool prompt
       // itself hides 'none' when Kotlin is selected.
       const kotlinBlocker = getKotlinJavaIncompatibilityReason({
         javaWebFramework: results.javaWebFramework,

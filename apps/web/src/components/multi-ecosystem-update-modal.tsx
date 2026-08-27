@@ -9,7 +9,7 @@ const MULTI_ECOSYSTEM_UPDATE_STORAGE_KEY =
 
 const RELEASE_DATE = "Jun 3, 2026";
 
-// Aurora mesh for the hero panel — magenta top-left → purple core → warm
+// Aurora mesh for the hero panel - magenta top-left → purple core → warm
 // ember bottom-right over a near-black base.
 const heroGradientStyle: CSSProperties = {
   backgroundImage: [
@@ -74,7 +74,7 @@ export function MultiEcosystemUpdateModal() {
             </DialogTitle>
 
             <DialogDescription className="mt-2 text-base text-muted-foreground leading-relaxed">
-              Build one project from multiple language ecosystems — choose a frontend, backend,
+              Build one project from multiple language ecosystems - choose a frontend, backend,
               database, and mobile layer independently, then generate the stack locally through the
               CLI.
             </DialogDescription>

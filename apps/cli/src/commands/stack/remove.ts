@@ -106,13 +106,13 @@ export async function removeCommand(input: RemoveCommandInput): Promise<PartRemo
   } else {
     const applyCommand = getPartRemovalApplyCommand(result);
     if (!applyCommand) {
-      outro(pc.yellow("Dry run — resolve manual-review blockers before applying."));
+      outro(pc.yellow("Dry run - resolve manual-review blockers before applying."));
       return result;
     }
     log.message("");
     log.info(`Review token: ${pc.cyan(result.reviewToken)}`);
     log.info(pc.dim(`Apply with: ${applyCommand}`));
-    outro(pc.magenta("Dry run — no files were written."));
+    outro(pc.magenta("Dry run - no files were written."));
   }
   return result;
 }

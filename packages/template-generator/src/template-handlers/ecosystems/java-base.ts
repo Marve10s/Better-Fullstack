@@ -206,7 +206,7 @@ function createJavaTemplateContext(config: ProjectConfig): JavaTemplateContext {
   // (see compatibility.ts `getDisabledReason` for the matching compat rule).
   // If the user selects Flyway without JPA, we silently drop it here so the
   // generated `pom.xml` / `build.gradle.kts` doesn't advertise a dependency
-  // that the scaffold cannot wire up — the Flyway auto-config would otherwise
+  // that the scaffold cannot wire up - the Flyway auto-config would otherwise
   // crash the app on startup with "No qualifying bean of type DataSource".
   const javaLibraries: typeof rawLibraries = [];
   for (const library of rawLibraries) {
@@ -218,7 +218,7 @@ function createJavaTemplateContext(config: ProjectConfig): JavaTemplateContext {
     }
     // Lombok and MapStruct are Java annotation-processor tooling. In Kotlin they
     // are redundant (data classes replace Lombok) and not wired (MapStruct would
-    // need kapt), so drop them from the effective library set — the Kotlin
+    // need kapt), so drop them from the effective library set - the Kotlin
     // scaffold uses idiomatic Kotlin instead of the DTO/mapper example.
     if (isJavaKotlin && KOTLIN_DROPPED_JAVA_LIBRARIES.has(library)) {
       continue;
@@ -442,7 +442,7 @@ function shouldSkipJavaTemplate(templatePath: string, context: JavaTemplateConte
   // Micronaut keeps its own web surface: a single `HelloController` (health +
   // root endpoint) and a Micronaut-flavoured `application.yml`. Skip the
   // Spring-specific `HealthController` and the Spring/plain-Java lifecycle tests
-  // (`Application.main` there either boots Spring or prints a greeting — neither
+  // (`Application.main` there either boots Spring or prints a greeting - neither
   // matches a Micronaut server main).
   if (context.isJavaMicronaut) {
     if (

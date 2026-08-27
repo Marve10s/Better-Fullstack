@@ -1193,8 +1193,8 @@ export const getRecentEvents = internalQuery({
 });
 
 const CLEAR_BATCH = 512;
-// The ingest accepts payloads up to 64 KiB, so the page size — not just the
-// document count — is what keeps a mutation inside its byte budget.
+// The ingest accepts payloads up to 64 KiB, so the page size - not just the
+// document count - is what keeps a mutation inside its byte budget.
 const BACKFILL_PAGE_SIZE = 64;
 
 const AGGREGATE_TABLES = [
@@ -1235,7 +1235,7 @@ export const sealAggregates = internalMutation({
 /**
  * Fold one page of events into the persisted aggregates. Every aggregate is
  * additive (counters and distributions) or a running min/max, so replaying the
- * log a page at a time lands on the same result as one pass over all of it —
+ * log a page at a time lands on the same result as one pass over all of it -
  * without reading the whole event table into a single mutation.
  */
 export const backfillPage = internalMutation({

@@ -54,7 +54,7 @@ const PYTHON_WEB_FRAMEWORK_PROMPT_OPTIONS: PromptOption<PythonWebFramework>[] = 
   {
     value: "starlette",
     label: "Starlette",
-    hint: "Minimal ASGI toolkit that powers FastAPI — great for lean async apps",
+    hint: "Minimal ASGI toolkit that powers FastAPI - great for lean async apps",
   },
   {
     value: "aiohttp",
@@ -206,7 +206,7 @@ const PYTHON_AUTH_PROMPT_OPTIONS: PromptOption<PythonAuth>[] = [
   {
     value: "authlib",
     label: "Authlib",
-    hint: "Comprehensive auth library — OAuth1/2, OIDC, JWS, JWK, JWT",
+    hint: "Comprehensive auth library - OAuth1/2, OIDC, JWS, JWK, JWT",
   },
   {
     value: "jwt",

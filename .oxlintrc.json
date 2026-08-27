@@ -1,5 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
+  "jsPlugins": ["./scripts/oxlint-plugins/no-em-dash.mts"],
   "plugins": [
     "eslint",
     "typescript",
@@ -22,6 +23,7 @@
     "nursery": "off"
   },
   "rules": {
+    "bfs/no-em-dash": "error",
     "jsx-a11y/no-noninteractive-tabindex": ["error", { "tags": ["section"] }],
     "eqeqeq": "error",
     "no-eval": "error",

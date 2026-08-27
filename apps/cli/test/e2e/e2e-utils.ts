@@ -528,7 +528,7 @@ export function validateFrameworkPage(html: string, frontend: string): Framework
   const missing: string[] = [];
 
   if (/<body[^>]*>\s*<\/body>/i.test(html)) {
-    missing.push("Empty body — framework may have failed to render");
+    missing.push("Empty body - framework may have failed to render");
   }
 
   switch (frontend) {

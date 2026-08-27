@@ -1,4 +1,4 @@
-# ScaffBench hardening — implementation spec (2026-07-17)
+# ScaffBench hardening - implementation spec (2026-07-17)
 
 Synthesized from two independent research reports (Fable 5 + GPT-5.6 Sol) over
 `scripts/scaffbench/`, the 2026-07-10 validator audit, and reference practice
@@ -23,15 +23,15 @@ SCOPE RULES
 
 ## 1. Automatic infra-vs-model classification (replaces hand-purging)
 
-1a. `agents/opencode.ts` — `parseOpencodeResult` currently hardcodes
+1a. `agents/opencode.ts` - `parseOpencodeResult` currently hardcodes
 `terminal_reason: undefined`. Derive it from the JSONL stream: error events,
 `step_finish` with `reason` values, zero-usage detection. A run with zero output
 tokens, no tool events, and no project directory must classify as
 `provider-infra`, never model-failure. opencode masks provider 429s by retrying
-internally then emitting `reason:"unknown"` with zero tokens — detect exactly
+internally then emitting `reason:"unknown"` with zero tokens - detect exactly
 that signature.
 
-1b. `scoring.ts` — replace the binary infra-inconclusive logic with evidence-
+1b. `scoring.ts` - replace the binary infra-inconclusive logic with evidence-
 backed outcome categories: `success | model-failure | provider-infra |
 harness-infra | validation-infra | budget-exhausted | deadline-exhausted`.
 Preserve the current three-way rollup for aggregate compatibility
@@ -43,9 +43,9 @@ install-class step stderr/stdout tails against a narrow list (EAI_AGAIN,
 ENOTFOUND, ETIMEDOUT, ECONNRESET, HTTP 429, 5xx from registries, TLS
 handshake). On first match retry that step once (`validation/index.ts`); if it
 recurs → `validation-infra`. Registry 404 / nonexistent package version is a
-MODEL failure, not infra — keep that distinction explicit and tested.
+MODEL failure, not infra - keep that distinction explicit and tested.
 
-1d. `validation/cache.ts` (`cacheableValidation`) — never cache a failure whose
+1d. `validation/cache.ts` (`cacheableValidation`) - never cache a failure whose
 steps match a transient signature; keep caching timeouts/spawnErrors excluded
 as today; cache green results always.
 
@@ -61,7 +61,7 @@ references a missing binary) from harness-level missing toolchain
 
 ## 2. Timeout & accounting
 
-2a. `agents/command.ts` + each `parse*Result` — on `timedOut`, salvage token/
+2a. `agents/command.ts` + each `parse*Result` - on `timedOut`, salvage token/
 cost accounting from the partial event stream (walk the same JSONL events; for
 codex sum `turn.completed`/usage events seen so far; for opencode sum
 `step-finish` parts; for claude use the last result-bearing event). The result
@@ -87,9 +87,9 @@ in-stream, detect budget exhaustion post-hoc (cost > cap) and classify
 
 ## 3. Scoring & index
 
-3a. `constants.ts` `SCAFFBENCH_INDEX_WEIGHTS` — make path-dependent: prompt
+3a. `constants.ts` `SCAFFBENCH_INDEX_WEIGHTS` - make path-dependent: prompt
 lane {validation: 0.75, wiredLibs: 0.25, discipline: 0} (discipline is 100% in
-all 317 published cells — a constant, not a signal); assisted lanes keep
+all 317 published cells - a constant, not a signal); assisted lanes keep
 {0.6, 0.25, 0.15}. Mirror wherever weights are consumed (`summary.ts`,
 `build-scaffbench-2-1-data.ts` W, splice script W).
 
@@ -110,12 +110,12 @@ true.
 ## 4. Trial integrity (prerequisite for repeats)
 
 4a. `build-scaffbench-2-1-data.ts` and `splice-scaffbench-2-1.ts` key results
-by `path|specId` only — a multi-trial dir silently publishes an arbitrary
+by `path|specId` only - a multi-trial dir silently publishes an arbitrary
 trial. Key by `model|effort|path|spec|trial`; when trials > 1, derive cell
 verdicts from aggregate pass counts (pass rate, pass@k, pass^k are already
 computed in `summary.ts`), and emit per-cell `trials: number`.
 
-4b. `runner.ts` — interleave repeats: trial loop OUTSIDE the spec loop so trial
+4b. `runner.ts` - interleave repeats: trial loop OUTSIDE the spec loop so trial
 2 of spec A doesn't immediately follow trial 1 (temporal decorrelation).
 Randomize spec order within a trial with a seeded shuffle; record the seed in
 metadata.
@@ -124,7 +124,7 @@ metadata.
 `"ranked"`-eligible when all its cells share suite version, harness version,
 validator cache version, prompt version (add a PROMPT_VERSION constant), agent
 adapter, and trials >= a `MIN_RANKED_TRIALS` constant (set 3; single-trial
-sweeps mark `"exploratory"`). This is metadata only — no behavior change to
+sweeps mark `"exploratory"`). This is metadata only - no behavior change to
 sweeps.
 
 ## 5. Validator v4 (verdict-changing; VALIDATION_CACHE_VERSION → 4)
@@ -174,7 +174,7 @@ each, prints keep/cut per the weak-fails/strong-passes rule from constants.ts
 comments. New subcommand file; reuse runner machinery.
 
 6c. `introducedAt: string` (ISO date) on every `BenchmarkSpec` (backfill:
-existing 13 specs use their git introduction dates — find via `git log
+existing 13 specs use their git introduction dates - find via `git log
 --follow --diff-filter=A -- <specfile>`); surface per-cohort pass rates in
 `summary.md` output.
 
@@ -185,7 +185,7 @@ specs.
 ## Explicitly OUT of scope
 
 - Registry snapshotting/containerized validation (live registries are the
-  bench's subject matter — drift is managed by 5h + run-metadata stamps).
+  bench's subject matter - drift is managed by 5h + run-metadata stamps).
 - Retrofitting functional verifiers/oracles onto all existing specs.
 - Any `apps/web` change.
 - Re-scoring the published board (that's a separate operator action after this

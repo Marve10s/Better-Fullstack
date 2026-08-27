@@ -295,7 +295,7 @@ function FormShowcase() {
         form handling requires separate useState for each field, a validation
         function, and manual error clearing. TanStack Form provides field-level
         validators, linked field validation (confirm password watches password),
-        and full TypeScript inference — all while staying headless.
+        and full TypeScript inference - all while staying headless.
       </div>
     </div>
   );

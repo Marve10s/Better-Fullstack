@@ -1,18 +1,18 @@
-# ScaffBench: code-volume metric (LoC) — implementation spec
+# ScaffBench: code-volume metric (LoC) - implementation spec
 
 Motivation: two rows can both pass a spec while one wrote 1k lines and the
 other 10k. Code volume is a visible dimension (like tokens/cost/steps), NOT
 part of the index.
 
 SCOPE: `scripts/**` only (harness + publishers + a backfill script + tests).
-Do NOT touch `apps/web/**` — the web consumer is being built in parallel and
+Do NOT touch `apps/web/**` - the web consumer is being built in parallel and
 will read the exact field shapes defined here. No benchmark sweeps.
 Acceptance: tsc scripts scope clean; `cd scripts && bun test .` green
-(root-cwd bun test loses child pipes on this machine — always run from
+(root-cwd bun test loses child pipes on this machine - always run from
 scripts/); new regression tests per item. Append a section to
 testing/scaffbench-hardening-report-2026-07-17.md. End with exactly: LOC COMPLETE
 
-## 1. measureProjectCode(dir) — new module scripts/scaffbench/code-metrics.ts
+## 1. measureProjectCode(dir) - new module scripts/scaffbench/code-metrics.ts
 
 Walk the generated project (the ARCHIVED generation output, pre-validation):
 
@@ -45,7 +45,7 @@ mean over scored cells.
 
 ## 4. Publishers
 
-- build-scaffbench-2-1-data.ts PublishedCell: add `lines: number | null` —
+- build-scaffbench-2-1-data.ts PublishedCell: add `lines: number | null` -
   from cell aggregate avgLines when present, else recompute mean from raw
   results' codeMetrics, else null (legacy summaries).
 - splice normalization: null-propagate (existing cells without the field
@@ -60,10 +60,10 @@ for every result with a projectDir that exists on disk, compute
 measureProjectCode and write codeMetrics into summary.json results (idempotent;
 skip results that already have codeMetrics unless --force). Recompute the
 bySpecCell avgLines aggregates consistently. NOTE: archived projects were
-PRUNED of node_modules/target etc. — the skip list makes this a no-op
+PRUNED of node_modules/target etc. - the skip list makes this a no-op
 difference, which is the point; state this in a comment.
 Then RUN the backfill on the three cohort dirs and regenerate
-apps/web/src/components/home/scaffbench-2-2-data.ts is FORBIDDEN (web scope) —
+apps/web/src/components/home/scaffbench-2-2-data.ts is FORBIDDEN (web scope) -
 instead just run the backfill so summaries carry codeMetrics; the operator
 regenerates the web data file.
 

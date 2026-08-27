@@ -79,7 +79,7 @@ export const MIN_RELEASE_AGE_MS = 48 * 60 * 60 * 1000;
 
 function isOldEnough(info: NpmPackageInfo, version: string): boolean {
   const published = info.time?.[version];
-  if (!published) return true; // no timestamp data — don't block the update
+  if (!published) return true; // no timestamp data - don't block the update
   const publishedMs = Date.parse(published);
   if (Number.isNaN(publishedMs)) return true;
   return Date.now() - publishedMs >= MIN_RELEASE_AGE_MS;

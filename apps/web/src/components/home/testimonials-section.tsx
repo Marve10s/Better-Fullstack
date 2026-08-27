@@ -38,7 +38,7 @@ function ReactionChip({ testimonial, index }: { testimonial: Testimonial; index:
       />
       <span className="text-foreground">&ldquo;{testimonial.comment}&rdquo;</span>
       <span className="hidden font-mono text-[10px] text-muted-foreground sm:inline">
-        — {testimonial.name}
+        - {testimonial.name}
       </span>
     </motion.span>
   );

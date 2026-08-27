@@ -22,13 +22,13 @@ const showcases = [
   {
     title: "TanStack Form",
     path: "/showcase/form",
-    description: "Type-safe form state with field-level validation — no boilerplate",
+    description: "Type-safe form state with field-level validation - no boilerplate",
     badge: "Forms",
   },
   {
     title: "TanStack Store",
     path: "/showcase/store",
-    description: "Framework-agnostic reactive state — no providers, no context drilling",
+    description: "Framework-agnostic reactive state - no providers, no context drilling",
     badge: "State",
   },
   {

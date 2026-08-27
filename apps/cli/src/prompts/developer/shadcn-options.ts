@@ -46,7 +46,7 @@ const STYLE_OPTIONS: { value: ShadcnStyle; label: string; hint: string }[] = [
 ];
 
 const ICON_LIBRARY_OPTIONS: { value: ShadcnIconLibrary; label: string; hint: string }[] = [
-  { value: "lucide", label: "Lucide", hint: "Default icon library — clean, consistent icons" },
+  { value: "lucide", label: "Lucide", hint: "Default icon library - clean, consistent icons" },
   { value: "tabler", label: "Tabler Icons", hint: "2000+ open-source SVG icons" },
   { value: "hugeicons", label: "HugeIcons", hint: "Modern icon set with wrapper component" },
   { value: "phosphor", label: "Phosphor Icons", hint: "Flexible, consistent icon family" },

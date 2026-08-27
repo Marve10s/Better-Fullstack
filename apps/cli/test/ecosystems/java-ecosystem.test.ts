@@ -1239,7 +1239,7 @@ describe("Java Ecosystem", () => {
     });
 
     it("normalizes Kotlin back to Java when the stack includes Java-only options", () => {
-      // email:'resend' is not testable through analyzeStackCompatibility here —
+      // email:'resend' is not testable through analyzeStackCompatibility here -
       // the generic email-requires-backend normalization clears it first (java
       // stacks always have backend 'none'), which also resolves the Kotlin
       // conflict. The email/search/caching/observability legs are covered by

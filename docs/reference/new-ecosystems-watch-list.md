@@ -24,7 +24,7 @@ only after demand and ecosystem maturity justify implementation.
 - Rapidly growing community (game dev, systems programming)
 - Interop with C libraries without overhead
 - Growing web ecosystem (zap HTTP framework)
-- **Status:** Premature — wait for web ecosystem maturity before investing
+- **Status:** Premature - wait for web ecosystem maturity before investing
 
 ### Kotlin
 
@@ -36,4 +36,4 @@ only after demand and ecosystem maturity justify implementation.
 
 ## Priority Order
 
-1. **Zig** — watch and wait
+1. **Zig** - watch and wait

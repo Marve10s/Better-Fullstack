@@ -38,7 +38,7 @@ _Avoid_: old schema, classic mode
 ## Example Dialogue
 
 > **Dev:** "Can Hono appear while choosing a TypeScript frontend?"
-> **Domain expert:** "No — Hono can be a **Stack Part** only through a backend **Role Binding**, so frontend discovery must filter it out."
+> **Domain expert:** "No - Hono can be a **Stack Part** only through a backend **Role Binding**, so frontend discovery must filter it out."
 
 ## Flagged Ambiguities
 

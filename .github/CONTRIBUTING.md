@@ -151,14 +151,14 @@ bun run sync-versions     # Check template version sync
 
 ## Making Changes
 
-1. **Open an issue** — Describe the bug or feature
-2. **Fork & clone** — Create your own copy
-3. **Branch** — `git checkout -b feat/your-feature` or `fix/your-bug`
-4. **Code** — Follow existing patterns
-5. **Test** — `bun run test`
-6. **Lint** — `bun run check`
-7. **Commit** — Use conventional commits (see below)
-8. **Push & PR** — Link the related issue
+1. **Open an issue** - Describe the bug or feature
+2. **Fork & clone** - Create your own copy
+3. **Branch** - `git checkout -b feat/your-feature` or `fix/your-bug`
+4. **Code** - Follow existing patterns
+5. **Test** - `bun run test`
+6. **Lint** - `bun run check`
+7. **Commit** - Use conventional commits (see below)
+8. **Push & PR** - Link the related issue
 
 <br>
 

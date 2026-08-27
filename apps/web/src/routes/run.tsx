@@ -111,7 +111,7 @@ function AuthPanel() {
             <CodeBlock
               label={m.runLabelSignin()}
               code={
-                "# Claude Code (Anthropic) — sign in via the app, or:\nclaude /login\n\n# Codex (OpenAI)\ncodex login\n\n# Antigravity (Gemini)\nagy   # sign in on first launch"
+                "# Claude Code (Anthropic) - sign in via the app, or:\nclaude /login\n\n# Codex (OpenAI)\ncodex login\n\n# Antigravity (Gemini)\nagy   # sign in on first launch"
               }
             />
           </>
@@ -159,7 +159,7 @@ function ModeTab({
   );
 }
 
-// Technical reference — model ids / auth commands are code, kept verbatim.
+// Technical reference - model ids / auth commands are code, kept verbatim.
 const AGENTS: ReadonlyArray<{ agent: string; models: string; auth: string }> = [
   {
     agent: "Claude Code",

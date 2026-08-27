@@ -34,7 +34,7 @@ export function ChangelogWidget() {
     try {
       // Deliberately NOT gated on the builder-share modal. That key is only
       // written when the share modal is dismissed, which requires completing a
-      // run or a ZIP download — so anyone who just opens /new or /stack and
+      // run or a ZIP download - so anyone who just opens /new or /stack and
       // browses would never write it and would never see a release note again.
       // The share modal is a focused dialog and sits above this widget anyway.
       const isReturningVisitor = registerVisit(window.localStorage, window.sessionStorage);

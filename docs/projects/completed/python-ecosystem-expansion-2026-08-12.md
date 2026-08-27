@@ -2,7 +2,7 @@
 
 > **Completed 2026-08-12.**
 
-The remaining scoped expansion—Python search—shipped with Meilisearch and Elasticsearch.
+The remaining scoped expansion-Python search-shipped with Meilisearch and Elasticsearch.
 
 ## Evidence
 

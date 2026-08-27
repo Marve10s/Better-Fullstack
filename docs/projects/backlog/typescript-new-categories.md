@@ -1,4 +1,4 @@
-# TypeScript — New Categories
+# TypeScript - New Categories
 
 Internationalization, Tauri, and WXT are shipped. This file tracks the remaining alternative
 surfaces.

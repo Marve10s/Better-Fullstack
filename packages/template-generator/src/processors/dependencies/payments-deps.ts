@@ -257,7 +257,7 @@ export function processPaymentsDeps(vfs: VirtualFileSystem, config: ProjectConfi
   }
 
   if (payments === "creem") {
-    // Creem is a redirect-based Merchant of Record — server SDK + Better Auth plugin,
+    // Creem is a redirect-based Merchant of Record - server SDK + Better Auth plugin,
     // plus the Better Auth client plugin for web frontends.
     if (vfs.exists(serverPath)) {
       addPackageDependency({
@@ -322,7 +322,7 @@ export function processPaymentsDeps(vfs: VirtualFileSystem, config: ProjectConfi
   }
 
   if (payments === "commet") {
-    // Commet is a redirect/portal-based billing API — server SDK only.
+    // Commet is a redirect/portal-based billing API - server SDK only.
     if (vfs.exists(serverPath)) {
       addPackageDependency({
         vfs,

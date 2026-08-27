@@ -4,7 +4,7 @@ import path from "node:path";
 
 /**
  * Convex rejects a push outright when any module path component contains a
- * character outside `[A-Za-z0-9_.]` — a hyphenated helper silently broke every
+ * character outside `[A-Za-z0-9_.]` - a hyphenated helper silently broke every
  * production deploy for twelve days before anyone noticed, because nothing in
  * CI deploys this package.
  */

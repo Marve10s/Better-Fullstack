@@ -166,7 +166,7 @@ rocket_cors = "0.6"
 poem = "3.1"
 {{/if}}
 {{#if (eq rustWebFramework "loco")}}
-# Web framework (Loco) — DB-free: routes only, no ORM/migrations required
+# Web framework (Loco) - DB-free: routes only, no ORM/migrations required
 loco-rs = { version = "0.16", default-features = false, features = ["cli"] }
 {{/if}}
 {{#if (eq rustWebFramework "warp")}}

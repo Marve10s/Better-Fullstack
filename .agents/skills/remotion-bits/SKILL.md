@@ -5,7 +5,7 @@ description: Animation components and utilities for Remotion video projects. Use
 
 # Remotion Bits
 
-Animation components and utilities for building Remotion videos. The library's most powerful feature is **Scene3D** — a camera-based 3D presentation system (like impress.js) that enables cinematic multi-section compositions with flying camera moves, step-aware element animations, and Transform3D position management.
+Animation components and utilities for building Remotion videos. The library's most powerful feature is **Scene3D** - a camera-based 3D presentation system (like impress.js) that enables cinematic multi-section compositions with flying camera moves, step-aware element animations, and Transform3D position management.
 
 **When building any non-trivial composition, prefer Scene3D as your foundation.** It handles camera movement, timing, element positioning, and responsive layout all in one system. Individual components (AnimatedText, Particles, etc.) work best as content placed inside Scene3D steps.
 
@@ -64,13 +64,13 @@ Keyframes are evenly distributed across the duration. With 4 keyframes over 60 f
 
 ```tsx
 const rect = useViewportRect();
-// rect.width   — composition width (e.g. 1920)
-// rect.height  — composition height (e.g. 1080)
-// rect.vw      — 1% of width (19.2)
-// rect.vh      — 1% of height (10.8)
-// rect.vmin    — min(vw, vh) — USE THIS for most sizing
-// rect.vmax    — max(vw, vh)
-// rect.cx, cy  — center coordinates
+// rect.width   - composition width (e.g. 1920)
+// rect.height  - composition height (e.g. 1080)
+// rect.vw      - 1% of width (19.2)
+// rect.vh      - 1% of height (10.8)
+// rect.vmin    - min(vw, vh) - USE THIS for most sizing
+// rect.vmax    - max(vw, vh)
+// rect.cx, cy  - center coordinates
 const { vmin } = rect;
 ```
 
@@ -101,7 +101,7 @@ Use `vmin` for font sizes, element dimensions, spacing, and padding. This ensure
 | Code / small text | `vmin * 1.5–2` | 16–22px | Code blocks, captions |
 | Fine print | `vmin * 1–1.2` | 11–13px | Code font in dense blocks |
 
-**Common mistake: using `vmin * 3` for headings.** At 1080p that's only 32px — fine for body text but too small for any heading. For prominent headings, start at `vmin * 8` minimum.
+**Common mistake: using `vmin * 3` for headings.** At 1080p that's only 32px - fine for body text but too small for any heading. For prominent headings, start at `vmin * 8` minimum.
 
 #### Aspect Ratio Awareness
 
@@ -112,8 +112,8 @@ The aspect ratio determines which dimension is the "min" for vmin:
 - **Square (1:1, 1080×1080):** `vmin = vmax = vh = vw`. All directions equal.
 
 **Layout implications:**
-- In landscape, full-width text can be very long — consider `width: vmin * 70` or `maxWidth` constraints
-- In portrait, titles may need to wrap — use fewer words or smaller multipliers for width-constrained text
+- In landscape, full-width text can be very long - consider `width: vmin * 70` or `maxWidth` constraints
+- In portrait, titles may need to wrap - use fewer words or smaller multipliers for width-constrained text
 - Use `vmin` for sizes that should scale uniformly regardless of orientation
 - Use `vw`/`vh` when sizing should follow a specific axis (e.g., full-width background: `rect.width`)
 
@@ -246,7 +246,7 @@ Bits use CSS variables for consistent theming. These are available when renderin
 2. **Missing AbsoluteFill:** Scene3D and full-viewport compositions need `<AbsoluteFill>` from remotion as their root.
 3. **Using CSS vars without defining them:** `var(--color-primary)` resolves to nothing in a bare Remotion project. Use literal colors.
 4. **Hardcoded pixel sizes:** Use `vmin`-based sizing from `useViewportRect()` instead.
-5. **Missing font settings:** Set `fontSize`, `fontWeight`, `fontFamily`, and `color` explicitly — there are no inherited defaults in Remotion.
+5. **Missing font settings:** Set `fontSize`, `fontWeight`, `fontFamily`, and `color` explicitly - there are no inherited defaults in Remotion.
 
 #### Three Layout Patterns
 
@@ -295,7 +295,7 @@ export const Component = () => {
 
 ## Transform3D (Critical for Complex Scenes)
 
-`Transform3D` represents a 3D transformation (position + rotation + scale) using Three.js internals. It is **immutable by convention** — every method returns a new instance.
+`Transform3D` represents a 3D transformation (position + rotation + scale) using Three.js internals. It is **immutable by convention** - every method returns a new instance.
 
 ```tsx
 import { Transform3D, Vector3 } from "remotion-bits";
@@ -409,12 +409,12 @@ Scene3D creates camera-based 3D presentations (like impress.js). The camera flie
 
 ```
 Scene3D (perspective, timing)
-├── Step (camera target 1) — children visible during this step
-├── Step (camera target 2) — children visible during this step
+├── Step (camera target 1) - children visible during this step
+├── Step (camera target 2) - children visible during this step
 ├── ...
-├── StepResponsive — element that animates differently per step
-├── StepResponsive — another step-aware element
-└── (any other children — always rendered)
+├── StepResponsive - element that animates differently per step
+├── StepResponsive - another step-aware element
+└── (any other children - always rendered)
 ```
 
 ### Scene3D Container
@@ -514,7 +514,7 @@ The key to complex scenes. Elements define how they should look/position at each
 **StepResponsive key behaviors:**
 - Properties **accumulate/inherit**: if step "elements" doesn't set opacity, it keeps the value from the last step that set it
 - Arrays flatten to their final value when moving to the next step (no re-animation of past keyframes)
-- `transform` accepts `Transform3D[]` arrays — the primary way to position elements in 3D
+- `transform` accepts `Transform3D[]` arrays - the primary way to position elements in 3D
 - `duration: "step"` makes the animation last the entire step duration
 - You can map the same props to multiple step IDs to hold position across steps
 
@@ -543,7 +543,7 @@ const mapToAllElementSteps = (props) => ({
 
 ## Building Complex Scenes (Architecture Guide)
 
-**This is the recommended approach for any non-trivial composition.** Scene3D provides camera management, step-based timing, 3D element positioning, and step-responsive animations — eliminating the need to manually manage `useCurrentFrame()`, `<Sequence>`, or CSS transforms.\n\n### Step 1: Plan the Scene Structure
+**This is the recommended approach for any non-trivial composition.** Scene3D provides camera management, step-based timing, 3D element positioning, and step-responsive animations - eliminating the need to manually manage `useCurrentFrame()`, `<Sequence>`, or CSS transforms.\n\n### Step 1: Plan the Scene Structure
 
 Decide on the major sections (acts) and what the camera shows in each:
 
@@ -632,7 +632,7 @@ Titles, icons, and persistent elements that move with the camera:
 
 ### Step 5: Content Inside Steps
 
-Steps can contain rich content — cards, particles, code blocks, counters:
+Steps can contain rich content - cards, particles, code blocks, counters:
 
 ```tsx
 <Step id="element-particles" {...cardPos.toProps()}
@@ -870,7 +870,7 @@ const items = useMemo(() => {
 }, [vmin]);
 ```
 
-`random(seed)` is deterministic — same seed always returns same value. Use unique string seeds per element.
+`random(seed)` is deterministic - same seed always returns same value. Use unique string seeds per element.
 
 ---
 

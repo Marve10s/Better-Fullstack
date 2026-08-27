@@ -10,5 +10,5 @@ import type { ProjectConfig } from "@/types";
  * This function is kept as a no-op for backward compatibility with addons-setup.ts.
  */
 export async function setupTauri(_config: ProjectConfig) {
-  // Templates handle everything — no runtime CLI execution needed.
+  // Templates handle everything - no runtime CLI execution needed.
 }

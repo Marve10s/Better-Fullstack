@@ -878,7 +878,7 @@ async function runStackUpdateAdd(
   }
 }
 
-// Keys that describe an addon/deploy-only `add` — anything else in the
+// Keys that describe an addon/deploy-only `add` - anything else in the
 // request means the project's stack itself is being updated.
 const ADD_FEATURE_KEYS = new Set(["addons", "webDeploy", "serverDeploy", "packageManager"]);
 
@@ -942,7 +942,7 @@ export async function addHandler(
       return result;
     } catch (error) {
       if (!(error instanceof UserCancelledError)) {
-        // Only the error class name is sent — messages can contain paths.
+        // Only the error class name is sent - messages can contain paths.
         await maybeShowTelemetryNotice();
         await trackAddEvent(input, options, {
           success: false,

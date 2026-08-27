@@ -197,7 +197,7 @@ function main() {
 
   const replacing = SCAFFBENCH22_MODELS.some((m) => m.key === key);
   if (replacing && !process.argv.includes("--replace")) {
-    throw new Error(`${key} is already published — pass --replace to update it`);
+    throw new Error(`${key} is already published - pass --replace to update it`);
   }
   const specs: string[] = summary.options.specs;
   assertCompleteSpecList(specs, SCAFFBENCH22_SPECS, dir);

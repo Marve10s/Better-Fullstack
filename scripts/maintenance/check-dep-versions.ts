@@ -303,7 +303,7 @@ function parseJavaTemplates(): DepEntry[] {
 function parseElixirMix(): DepEntry[] {
   const src = readFileSync(ELIXIR_MIX, "utf-8");
   const entries: DepEntry[] = [];
-  // Match: {:dep_name, "~> 1.2"} — skip ">= 0.0.0"-style floors (not meaningful to bump)
+  // Match: {:dep_name, "~> 1.2"} - skip ">= 0.0.0"-style floors (not meaningful to bump)
   const re = /\{:([a-z][a-z0-9_]*),\s*"~>\s*([0-9][^"]*)"/g;
   let m: RegExpExecArray | null;
   const seen = new Set<string>();
@@ -496,7 +496,7 @@ function updateNpmMap(outdated: CheckedDep[]): number {
   let src = readFileSync(NPM_MAP, "utf-8");
   let count = 0;
   for (const dep of outdated) {
-    if (dep.majorBump) continue; // skip major bumps — need manual review
+    if (dep.majorBump) continue; // skip major bumps - need manual review
     const escaped = dep.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const re = new RegExp(`("${escaped}":\\s*")\\^[^"]+(")`);
     const replacement = `$1^${dep.latest}$2`;
@@ -718,9 +718,9 @@ async function main() {
         break;
     }
     // Coverage guard: every ecosystem has hardcoded deps, so an empty parse means a
-    // template moved or a parser broke — fail loudly instead of silently dropping coverage.
+    // template moved or a parser broke - fail loudly instead of silently dropping coverage.
     if (entries.length === before) {
-      console.error(`Fatal: parsed 0 dependencies for ecosystem "${eco}" — check template paths`);
+      console.error(`Fatal: parsed 0 dependencies for ecosystem "${eco}" - check template paths`);
       process.exit(1);
     }
   }
@@ -751,7 +751,7 @@ async function main() {
   if (errors.length > 0) {
     console.log(`⚠️  ${errors.length} packages could not be checked:\n`);
     for (const e of errors) {
-      console.log(`   ${e.ecosystem}  ${e.name}  — ${e.error}`);
+      console.log(`   ${e.ecosystem}  ${e.name}  - ${e.error}`);
     }
     console.log();
   }
@@ -801,7 +801,7 @@ async function main() {
 
     console.log(`\n✅ Updated ${totalUpdated} dependencies in place.`);
     if (majorUpdates.length > 0) {
-      console.log(`   ${majorUpdates.length} major bumps were skipped — review manually.`);
+      console.log(`   ${majorUpdates.length} major bumps were skipped - review manually.`);
     }
   } else if (!shouldUpdate && outdated.length > 0) {
     console.log(`Run with --update to apply minor/patch updates.\n`);

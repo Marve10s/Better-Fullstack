@@ -33,7 +33,7 @@ export async function createCustomerPortalSession(customerId: string) {
 }
 
 // Verify a Commet webhook signature against the raw request body. Returns a
-// boolean — use this when you want to verify before parsing yourself.
+// boolean - use this when you want to verify before parsing yourself.
 export function verifyCommetWebhookSignature(
   payload: string,
   signature: string | null,

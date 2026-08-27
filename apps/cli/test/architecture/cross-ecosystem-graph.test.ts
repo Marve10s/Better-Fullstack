@@ -558,7 +558,7 @@ describe("Cross-ecosystem graph generation", () => {
     const root = result.tree!.root;
 
     // Frontend points at the backend's dev URL; backend pins CORS to the
-    // frontend's dev origin — both derived from getGraphBackendConnection.
+    // frontend's dev origin - both derived from getGraphBackendConnection.
     expect(fileContent(root, "apps/web/.env")).toContain(
       "NEXT_PUBLIC_SERVER_URL=http://localhost:8080",
     );

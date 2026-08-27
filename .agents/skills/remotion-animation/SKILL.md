@@ -11,11 +11,11 @@ Generates animation configuration documents that define spring behaviors, interp
 
 Generates animation configurations for:
 
-1. **Spring configs** — Damping, stiffness, mass parameters for spring animations
-2. **Interpolation mappings** — Input/output ranges for value transformations
-3. **Easing functions** — Timing function configurations
-4. **Animation timing** — Stagger delays, durations, transition points
-5. **Progress calculations** — Frame-based animation progress logic
+1. **Spring configs** - Damping, stiffness, mass parameters for spring animations
+2. **Interpolation mappings** - Input/output ranges for value transformations
+3. **Easing functions** - Timing function configurations
+4. **Animation timing** - Stagger delays, durations, transition points
+5. **Progress calculations** - Frame-based animation progress logic
 
 ## Scope Boundaries
 
@@ -549,11 +549,11 @@ remotion-composition
 ```
 
 **Works with:**
-- `/motion-designer` — Animation specs from design documents
-- `/remotion-scaffold` — Configs go into constants.ts
-- `/remotion-component-gen` — Components apply these configs
-- `/remotion-composition` — Timing coordinates with Sequence layout
-- `/remotion-spec-translator` — Orchestrates this skill when translating specs
+- `/motion-designer` - Animation specs from design documents
+- `/remotion-scaffold` - Configs go into constants.ts
+- `/remotion-component-gen` - Components apply these configs
+- `/remotion-composition` - Timing coordinates with Sequence layout
+- `/remotion-spec-translator` - Orchestrates this skill when translating specs
 
 ---
 

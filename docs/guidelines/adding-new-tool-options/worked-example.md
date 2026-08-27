@@ -1,12 +1,12 @@
-# Adding New Tool Options — Worked Example
+# Adding New Tool Options - Worked Example
 
 End-to-end walkthrough adding a hypothetical `"opensearch"` option to the existing **Search** category in the TypeScript ecosystem. Every file diff is shown.
 
-> Companion to [README.md](README.md). Read that first for concepts — this file is pure execution.
+> Companion to [README.md](README.md). Read that first for concepts - this file is pure execution.
 
 ---
 
-## File 1 — Schema enum
+## File 1 - Schema enum
 
 **File:** `packages/types/src/config/schemas.ts`
 
@@ -19,11 +19,11 @@ Find the `SearchSchema` (near the other category schemas) and append the value:
    .describe("Search engine solution");
 ```
 
-No other schema changes needed — `CreateInputSchema`, `ProjectConfigSchema`, and `BetterTStackConfigSchema` reference `SearchSchema` by variable, so they pick up the new value automatically. The `SEARCH_VALUES` export also auto-derives.
+No other schema changes needed - `CreateInputSchema`, `ProjectConfigSchema`, and `BetterTStackConfigSchema` reference `SearchSchema` by variable, so they pick up the new value automatically. The `SEARCH_VALUES` export also auto-derives.
 
 ---
 
-## File 2 — Option metadata (label override)
+## File 2 - Option metadata (label override)
 
 **File:** `packages/types/src/catalog/option-metadata.ts`
 
@@ -40,7 +40,7 @@ Find the `search` key inside `EXACT_LABEL_OVERRIDES` (it's in the large `Partial
 
 ---
 
-## File 3 — Dependency versions
+## File 3 - Dependency versions
 
 **File:** `packages/template-generator/src/dependencies/add-deps.ts`
 
@@ -54,7 +54,7 @@ Place it alphabetically among the `@o*` packages.
 
 ---
 
-## File 4 — Dependency processor
+## File 4 - Dependency processor
 
 **File:** `packages/template-generator/src/processors/dependencies/search-deps.ts`
 
@@ -72,7 +72,7 @@ Find the existing `processSearchDeps` function. Add a branch after the last sear
 
 ---
 
-## File 5 — Environment variables
+## File 5 - Environment variables
 
 **File:** `packages/template-generator/src/processors/config/env-vars.ts`
 
@@ -95,7 +95,7 @@ These are server-only variables (no framework prefix needed).
 
 ---
 
-## File 6 — Template files
+## File 6 - Template files
 
 Create the template directory:
 
@@ -130,7 +130,7 @@ Note: The `.hbs` extension is stripped during generation. The output file will b
 
 ---
 
-## File 7 — Template handler
+## File 7 - Template handler
 
 **File:** `packages/template-generator/src/template-handlers/features/search.ts`
 
@@ -146,7 +146,7 @@ Where `serverDir` is computed earlier in the function as either `"apps/web"` (se
 
 ---
 
-## File 8 — CLI prompt
+## File 8 - CLI prompt
 
 **File:** `apps/cli/src/prompts/data/search.ts`
 
@@ -159,7 +159,7 @@ Find the `options` array inside `getSearchChoice()` and add before the `"none"` 
 
 ---
 
-## File 9 — Web builder constant
+## File 9 - Web builder constant
 
 **File:** `apps/web/src/lib/stack/constant.ts`
 
@@ -177,7 +177,7 @@ Find the `search` key inside the `TECH_OPTIONS` object (look for `// search` or 
 
 ---
 
-## File 10 — Icon registry
+## File 10 - Icon registry
 
 **File:** `apps/web/src/lib/stack/tech-icons.ts`
 
@@ -189,7 +189,7 @@ Find the icon registry object (alphabetical) and add:
 
 ---
 
-## File 11 — Resource links
+## File 11 - Resource links
 
 **File:** `apps/web/src/lib/stack/tech-resource-links.ts`
 
@@ -204,7 +204,7 @@ Find the `BASE_LINKS` object (alphabetical) and add:
 
 ---
 
-## File 12 — Post-install instructions
+## File 12 - Post-install instructions
 
 **File:** `apps/cli/src/helpers/core/post-installation.ts`
 
@@ -225,7 +225,7 @@ Find the search section (look for existing `meilisearch` / `typesense` blocks):
 
 ---
 
-## File 13 — MCP server schema
+## File 13 - MCP server schema
 
 **File:** `apps/cli/src/mcp.ts`
 
@@ -239,14 +239,14 @@ For a **new category**, import the schema, add it to the relevant MCP tool param
 
 ---
 
-## File 14 — bts.jsonc config writer
+## File 14 - bts.jsonc config writer
 
 **File:** `apps/cli/src/config/bts-config.ts`
 
 Find the `writeBtsConfig()` function. The `search` field should already be mapped:
 
 ```typescript
-search: projectConfig.search,    // Already exists — no change for existing categories
+search: projectConfig.search,    // Already exists - no change for existing categories
 ```
 
 For a **new category**, add the mapping:
@@ -257,13 +257,13 @@ For a **new category**, add the mapping:
 
 ---
 
-## Files 15-16 — CLI index.ts wiring (4 spots)
+## Files 15-16 - CLI index.ts wiring (4 spots)
 
 **File:** `apps/cli/src/index.ts`
 
 For **existing categories** (like search), all 4 spots already exist. For a **new category**, here's the exact pattern using search as the template:
 
-**Spot 1 — Import (top of file, around line 82):**
+**Spot 1 - Import (top of file, around line 82):**
 
 ```diff
   SearchSchema,
@@ -271,7 +271,7 @@ For **existing categories** (like search), all 4 spots already exist. For a **ne
   FileStorageSchema,
 ```
 
-**Spot 2 — Router input schema (inside the `z.object()`, around line 186):**
+**Spot 2 - Router input schema (inside the `z.object()`, around line 186):**
 
 ```diff
   search: SearchSchema.optional().describe("Search engine solution"),
@@ -279,7 +279,7 @@ For **existing categories** (like search), all 4 spots already exist. For a **ne
   fileStorage: FileStorageSchema.optional().describe("File storage solution"),
 ```
 
-**Spot 3 — Config construction (inside `createVirtual()`, around line 565):**
+**Spot 3 - Config construction (inside `createVirtual()`, around line 565):**
 
 ```diff
   search: options.search || "none",
@@ -287,7 +287,7 @@ For **existing categories** (like search), all 4 spots already exist. For a **ne
   fileStorage: options.fileStorage || "none",
 ```
 
-**Spot 4 — Interactive prompt call (inside the interactive flow, before config construction):**
+**Spot 4 - Interactive prompt call (inside the interactive flow, before config construction):**
 
 ```diff
 + const rateLimiting = await getRateLimitingChoice(options.rateLimiting);
@@ -301,7 +301,7 @@ And add the import at the top:
 
 ---
 
-## File 17 — Stack defaults (new category only)
+## File 17 - Stack defaults (new category only)
 
 **File:** `packages/types/src/stack/stack-translation.ts`
 
@@ -313,7 +313,7 @@ Find the `DEFAULT_STACK_SELECTION` object and add:
 
 ---
 
-## File 18 — Stack URL key (new category only)
+## File 18 - Stack URL key (new category only)
 
 **File:** `packages/types/src/stack/stack-translation.ts`
 
@@ -323,7 +323,7 @@ Find the `DEFAULT_STACK_SELECTION` object and add:
 
 ---
 
-## File 19 — Category order and command translation (new category only)
+## File 19 - Category order and command translation (new category only)
 
 **File:** `packages/types/src/catalog/option-metadata.ts`
 
@@ -415,7 +415,7 @@ bun run --cwd apps/web validate:tech-links
 
 ---
 
-## Summary — Files touched
+## Summary - Files touched
 
 | #   | File                                                                     | Change type              |
 | --- | ------------------------------------------------------------------------ | ------------------------ |
@@ -440,9 +440,9 @@ For a **new category**: add ~7 more files (20 total), ~120 more lines.
 
 ## Non-TypeScript Worked Example: Adding "Fiber" to Go Web Frameworks
 
-This is shorter because Go has fewer files to touch — no processors, no env-vars.ts, no separate handler changes for web frameworks.
+This is shorter because Go has fewer files to touch - no processors, no env-vars.ts, no separate handler changes for web frameworks.
 
-### File 1 — Schema
+### File 1 - Schema
 
 **File:** `packages/types/src/config/schemas.ts`
 
@@ -455,7 +455,7 @@ Find `GoWebFrameworkSchema` (in the Go ecosystem schemas section):
    .describe("Go web framework");
 ```
 
-### File 2 — Option metadata
+### File 2 - Option metadata
 
 **File:** `packages/types/src/catalog/option-metadata.ts`
 
@@ -467,7 +467,7 @@ Find `GoWebFrameworkSchema` (in the Go ecosystem schemas section):
  },
 ```
 
-### File 3 — CLI prompt
+### File 3 - CLI prompt
 
 **File:** `apps/cli/src/prompts/ecosystems/go-ecosystem.ts`
 
@@ -478,7 +478,7 @@ Find `getGoWebFrameworkChoice()` and add before the `"none"` option:
   { value: "none" as const, label: "None", hint: "No web framework" },
 ```
 
-### File 4 — Dependencies (go.mod.hbs)
+### File 4 - Dependencies (go.mod.hbs)
 
 **File:** `packages/template-generator/templates/go-base/go.mod.hbs`
 
@@ -490,7 +490,7 @@ Add a Fiber conditional block near the existing gin/echo blocks:
 +{{/if}}
 ```
 
-### File 5 — Server template (main.go.hbs)
+### File 5 - Server template (main.go.hbs)
 
 **File:** `packages/template-generator/templates/go-base/cmd/server/main.go.hbs`
 
@@ -521,15 +521,15 @@ func main() {
 {{/if}}
 ```
 
-**Note:** The real template is ~300 lines per framework covering ORM integration, auth middleware, logging, and gRPC. Copy the structure from the gin or echo block and adapt to Fiber's API. This requires knowledge of Fiber's Go API — the guideline cannot provide this domain knowledge.
+**Note:** The real template is ~300 lines per framework covering ORM integration, auth middleware, logging, and gRPC. Copy the structure from the gin or echo block and adapt to Fiber's API. This requires knowledge of Fiber's Go API - the guideline cannot provide this domain knowledge.
 
-### File 6 — Handler template (handlers.go.hbs)
+### File 6 - Handler template (handlers.go.hbs)
 
 **File:** `packages/template-generator/templates/go-base/internal/handlers/handlers.go.hbs`
 
-Same pattern — add `{{#if (eq goWebFramework "fiber")}}` blocks for each handler function, following the gin/echo patterns.
+Same pattern - add `{{#if (eq goWebFramework "fiber")}}` blocks for each handler function, following the gin/echo patterns.
 
-### File 7 — Web builder
+### File 7 - Web builder
 
 **File:** `apps/web/src/lib/stack/constant.ts`
 
@@ -545,7 +545,7 @@ Find the `goWebFramework` section in `TECH_OPTIONS`:
 + },
 ```
 
-### Files 8-9 — Icons and links
+### Files 8-9 - Icons and links
 
 **File:** `apps/web/src/lib/stack/tech-icons.ts`
 
@@ -559,7 +559,7 @@ Find the `goWebFramework` section in `TECH_OPTIONS`:
 + fiber: { docsUrl: "https://docs.gofiber.io/", githubUrl: "https://github.com/gofiber/fiber" },
 ```
 
-### File 10 — Test
+### File 10 - Test
 
 **File:** `apps/cli/test/ecosystems/go-language.test.ts`
 
@@ -586,12 +586,12 @@ it("should generate project with Fiber", async () => {
 
 ### Files NOT touched
 
-- **No handler change** — `go-base.ts` does not need edits for web frameworks (they use template conditionals, not directory skipping)
-- **No processor files** — Go manages deps in `go.mod.hbs`
-- **No env-vars.ts** — Go manages env in `.env.example.hbs`
-- **No add-deps.ts** — that's TypeScript-only
+- **No handler change** - `go-base.ts` does not need edits for web frameworks (they use template conditionals, not directory skipping)
+- **No processor files** - Go manages deps in `go.mod.hbs`
+- **No env-vars.ts** - Go manages env in `.env.example.hbs`
+- **No add-deps.ts** - that's TypeScript-only
 
-### Summary — Go option: 10 files, ~80 lines
+### Summary - Go option: 10 files, ~80 lines
 
 | #   | File                                                  | Change                                     |
 | --- | ----------------------------------------------------- | ------------------------------------------ |
@@ -610,11 +610,11 @@ it("should generate project with Fiber", async () => {
 
 ## Template Content: A Note on Domain Knowledge
 
-These guidelines cover **where** to put files, **how** to structure conditionals, and **what** infrastructure to wire. They intentionally do not cover **how to write idiomatic Go/Rust/Python code** inside templates — that requires domain expertise in the target framework.
+These guidelines cover **where** to put files, **how** to structure conditionals, and **what** infrastructure to wire. They intentionally do not cover **how to write idiomatic Go/Rust/Python code** inside templates - that requires domain expertise in the target framework.
 
 When writing template content for non-TS ecosystems:
 
 1. **Copy the structure** from an existing framework block (e.g., use the gin block as a template for Fiber)
 2. **Adapt API calls** to the new framework (requires knowing the framework's API)
-3. **Cover all ORM combinations** — each web framework block has inner conditionals for every ORM (gorm, sqlc, ent, none)
-4. **Test every permutation** — use `createVirtual` to generate each framework × ORM combo and verify the output compiles
+3. **Cover all ORM combinations** - each web framework block has inner conditionals for every ORM (gorm, sqlc, ent, none)
+4. **Test every permutation** - use `createVirtual` to generate each framework × ORM combo and verify the output compiles

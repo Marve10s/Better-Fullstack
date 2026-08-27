@@ -16,7 +16,7 @@ export const DEPENDENCY_UPDATE_POLICIES: Readonly<Record<string, DependencyUpdat
   nuxt: {
     pinnedVersion: "4.4.8",
     reason:
-      "nuxt 4.5.0 requires @unhead/vue ^3 while @nuxt/ui 4.10.0 still pins ^2 — nitro dev/build crash. Exact pin; unpin when @nuxt/ui supports nuxt 4.5.",
+      "nuxt 4.5.0 requires @unhead/vue ^3 while @nuxt/ui 4.10.0 still pins ^2 - nitro dev/build crash. Exact pin; unpin when @nuxt/ui supports nuxt 4.5.",
   },
   typescript: {
     pinnedVersion: "^6.0.3",

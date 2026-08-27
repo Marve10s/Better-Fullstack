@@ -55,7 +55,7 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
   try {
     await fs.ensureDir(projectDir);
 
-    // Loaded here instead of at module top to keep CLI startup fast — the
+    // Loaded here instead of at module top to keep CLI startup fast - the
     // template-generator bundle embeds all templates (~2.5 MB of source).
     const [{ generateVirtualProject, EMBEDDED_TEMPLATES }, { writeTreeToFilesystem }] =
       await Promise.all([
@@ -205,7 +205,7 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
 /**
  * Remove a half-written project directory after a fatal scaffolding error so the
  * user is not left with a broken, partially generated project. Only removes
- * directories we created ourselves (empty/new before scaffolding) — never one
+ * directories we created ourselves (empty/new before scaffolding) - never one
  * that already had user content (merge mode). Set BTS_KEEP_FAILED_OUTPUT=1 to
  * keep the partial output for debugging template failures.
  */

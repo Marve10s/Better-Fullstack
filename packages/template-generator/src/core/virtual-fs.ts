@@ -4,7 +4,7 @@ import type { VirtualDirectory, VirtualFile } from "@/types";
 
 /**
  * Pure-JS in-memory virtual file system.
- * Stores files as a Map<path, content> — no Node.js dependencies (memfs, Buffer, etc.)
+ * Stores files as a Map<path, content> - no Node.js dependencies (memfs, Buffer, etc.)
  * so this works identically in browsers and Node.js.
  */
 export class VirtualFileSystem {

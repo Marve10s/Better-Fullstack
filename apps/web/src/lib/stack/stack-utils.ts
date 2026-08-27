@@ -69,7 +69,7 @@ export function getToolingOptionForUi(category: TechCategory, optionId: string) 
  * TypeScript web categories. A non-TypeScript stack still carries default
  * webFrontend/backend/runtime values in its state, so callers that describe the
  * stack to a user (rather than dump every field) should pass the active
- * ecosystem's order — see summarizeStackForEcosystem.
+ * ecosystem's order - see summarizeStackForEcosystem.
  */
 export function generateStackSummary(
   stack: StackState,

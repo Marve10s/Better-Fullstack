@@ -1,5 +1,5 @@
 /**
- * ScaffBench 2 — publishable dataset builder.
+ * ScaffBench 2 - publishable dataset builder.
  *
  * Transforms a harness `summary.json` (ScaffbenchSummary) into a small, stable
  * `benchmark-data.json` that the homepage chart can render directly, so the

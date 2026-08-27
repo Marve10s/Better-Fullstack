@@ -16,7 +16,7 @@ function XLogo() {
 
 /**
  * Post actions: share intent, copy the canonical URL, open the raw
- * markdown (served by the /blog/$post.md route — handy for LLM readers).
+ * markdown (served by the /blog/$post.md route - handy for LLM readers).
  */
 export function ShareActions({ title, slug }: { title: string; slug: string[] }) {
   const [copied, setCopied] = useState(false);
@@ -35,7 +35,7 @@ export function ShareActions({ title, slug }: { title: string; slug: string[] })
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Clipboard unavailable — no-op
+      // Clipboard unavailable - no-op
     }
   };
 
