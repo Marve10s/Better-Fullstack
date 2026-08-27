@@ -636,6 +636,23 @@ describe("ScaffBench hardening round 2", () => {
     }
   });
 
+  it("H2 installs before a prerequisite and puts node_modules/.bin on its PATH", async () => {
+    const dir = await tempDirectory("sb-r2-prereq-");
+    try {
+      await writeFile(path.join(dir, "package.json"), JSON.stringify({ name: "prereq-fixture" }));
+      await mkdir(path.join(dir, "node_modules", ".bin"), { recursive: true });
+      await executable(path.join(dir, "node_modules", ".bin", "fake-gen"), "echo generated");
+      const spec: BenchmarkSpec = { ...aiSpec, prerequisiteCommands: [{ command: ["fake-gen"] }] };
+      const validation = (await effectPromise(
+        (validateProject as any)(spec, dir, options(dir), { deadlineMs: 60_000 }),
+      )) as RunResult["validation"];
+      expect(validation.steps["prerequisite:01:fake-gen:install"]?.exitCode).toBe(0);
+      expect(validation.steps["prerequisite:01:fake-gen"]?.exitCode).toBe(0);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
   it("I always suffixes run IDs and prevents same-spec cross-round adjacency", () => {
     expect(buildRunId(aiSpec, "gpt-5.6-sol", "high", "prompt", 1, 1)).toEndWith("-r01");
     const specs = [aiSpec, goSpec];
@@ -859,7 +876,7 @@ describe("ScaffBench hardening round 2", () => {
 const PUBLISH_PROVENANCE = {
   suiteVersion: "3.0",
   harnessVersion: "3.1.0",
-  validationCacheVersion: 8,
+  validationCacheVersion: 9,
   promptVersion: "2026-08-21-scaffbench-3.1",
   resourceProfileId: "low-2w-v1",
   agentAdapter: "codex",
@@ -1082,7 +1099,7 @@ describe("ScaffBench hardening round 3", () => {
       const { rows, qualityGates, trialsPerSpec } = buildRows([dir]);
       expect(rows.map((row) => row.key).sort()).toEqual(["gpt-5.6-sol|high", "gpt-5.6-sol|low"]);
       expect(rows.every((row) => row.totalCostUsd === CORE_SPEC_IDS.length)).toBe(true);
-      expect(rows.every((row) => row.fullPasses === CORE_SPEC_IDS.length)).toBe(true);
+      expect(rows.every((row) => row.qualityPasses === CORE_SPEC_IDS.length)).toBe(true);
       expect(qualityGates).toBe(true);
       expect(trialsPerSpec).toBe(1);
 
@@ -1170,16 +1187,16 @@ describe("ScaffBench hardening round 3", () => {
         topUp: "uniform",
         trials: 2,
         eligibility: "ranked",
-        fullPasses: 6.5,
+        qualityPasses: 6.5,
         corePasses: 6.5,
-        fullPassPct: 50,
+        qualityPassPct: 50,
         scoredSpecs: 13,
       });
       expect((row!.results as Record<string, unknown>)[aiSpec.id]).toEqual({
         trials: 2,
         scored: 2,
         core: 1,
-        full: 1,
+        quality: 1,
         score: 60,
       });
 
@@ -1194,7 +1211,7 @@ describe("ScaffBench hardening round 3", () => {
         topUp: "partial",
         trials: 2,
         eligibility: "exploratory",
-        fullPasses: 13,
+        qualityPasses: 13,
       });
 
       await writePublishableRun(ragged, "gpt-5.6-sol", ["high"], (summary) => {

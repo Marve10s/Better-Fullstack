@@ -30,12 +30,12 @@ gigabytes.
 
 - **Core pass@1**: does the project install, build, type-check, and native-compile (`cargo check`,
   `go build`, `dotnet build`, `mvn`, `mix`)? Everything hinges on this.
-- **Full pass@1**: the headline. Core, plus every applicable quality gate (lint, format, tests) green
-  on a clean machine.
+- **Quality pass@1**: Core plus lint and format green on a clean machine. Tests run and are
+  reported, but they do not affect any score.
 - **Wired libraries**: did the agent actually use the libraries the spec calls for? Scored against
   the dependencies, imports, and files present in the generated tree, not names it mentioned.
   Trap and restraint markers (a forbidden ORM, a forbidden build tool) live in the same score.
-- **Index** (0-100): the board's sort key. Every spec earns a graded score, 0.6 for a Core pass,
+- **Index** (0-100): the headline and the board's sort key. Every spec earns a graded score, 0.6 for a Core pass,
   0.2 for the share of lint and format gates green, and 0.2 for wired libraries. Tests are not
   scored, since the harness can only run the tests the model wrote. The index is the mean of those
   scores weighted by spec difficulty (1 easy, 2 hard, 3 frontier, pinned in each spec), times 100.

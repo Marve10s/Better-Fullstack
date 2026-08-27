@@ -6,7 +6,7 @@ export type Scaffbench3SpecCell = {
   trials: number;
   scored: number;
   core: number;
-  full: number;
+  quality: number;
   score: number | null;
 };
 
@@ -27,13 +27,13 @@ export type Scaffbench3Row = {
   eligibility: "ranked" | "exploratory";
   trials: number;
   topUp: "none" | "uniform" | "partial";
-  fullPasses: number;
+  qualityPasses: number;
   corePasses: number;
-  fullPassPct: number;
+  qualityPassPct: number;
   corePassPct: number;
   scoredSpecs: number;
   wiredPct: number;
-  scaffIndex: number;
+  index: number;
   totalCostUsd: number | null;
   avgOutTokens: number | null;
   medianMinutes: number | null;
@@ -44,7 +44,7 @@ export const SCAFFBENCH3_META = {
   suiteVersion: "3.0",
   harnessVersion: "3.1.0",
   promptVersion: "2026-08-21-scaffbench-3.1",
-  validationCacheVersion: 8,
+  validationCacheVersion: 9,
   resourceProfileId: "low-2w-v1",
   trialsPerSpec: 1,
   path: "prompt",

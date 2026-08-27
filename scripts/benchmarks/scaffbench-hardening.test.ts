@@ -162,6 +162,38 @@ describe("ScaffBench hardening 1: evidence-backed classification", () => {
       ].join("\n"),
     );
     expect(parsed?.terminal_reason).toBe("opencode-unknown-zero-usage-no-tools");
+    const midFlight = parseOpencodeResult(
+      [
+        `{"sessionID":"s2"}`,
+        `{"part":{"type":"tool","tool":"bash","state":{"input":{"command":"ls"}}}}`,
+        `{"part":{"type":"step-finish","reason":"tool-calls","tokens":{"output":588,"reasoning":0},"cost":0}}`,
+        `{"part":{"type":"step-finish","reason":"unknown","tokens":{"output":0,"reasoning":0},"cost":0}}`,
+      ].join("\n"),
+    );
+    expect(midFlight?.terminal_reason).toBe("opencode-unknown-zero-usage-step");
+    expect(
+      classifyOutcome(
+        run({
+          projectDir: null,
+          claude: {
+            exitCode: 0,
+            timedOut: false,
+            durationMs: 1,
+            outputTokens: 588,
+            terminalReason: midFlight.terminal_reason,
+          },
+          validation: { projectExists: false, qualityGateRequested: false, steps: {} },
+        }),
+      ),
+    ).toBe("provider-infra");
+    const finished = parseOpencodeResult(
+      [
+        `{"sessionID":"s3"}`,
+        `{"part":{"type":"step-finish","reason":"tool-calls","tokens":{"output":500,"reasoning":0},"cost":0}}`,
+        `{"part":{"type":"step-finish","reason":"stop","tokens":{"output":0,"reasoning":0},"cost":0}}`,
+      ].join("\n"),
+    );
+    expect(finished?.terminal_reason).toBe("stop");
     expect(
       classifyOutcome(
         run({
@@ -275,7 +307,7 @@ describe("ScaffBench hardening 1: evidence-backed classification", () => {
       },
     });
     expect(classifyOutcome(advisoryTimeout)).toBe("success");
-    expect(qualityPassed(advisoryTimeout)).toBe(false);
+    expect(qualityPassed(advisoryTimeout)).toBe(true);
   });
 
   it("1f separates project exit 127 from a spawn-level missing toolchain and records its code", async () => {

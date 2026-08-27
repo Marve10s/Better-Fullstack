@@ -36,7 +36,7 @@ export type ScaffbenchCell = {
   scored: boolean;
   /** installs, builds, type-checks, compiles. */
   corePass: boolean;
-  /** core plus every applicable quality gate (lint, format, tests). */
+  /** core plus lint and format green; tests are reported, not scored. */
   fullPass: boolean;
   /** share of the spec's required libraries actually wired into the project. */
   wiredPct: number;

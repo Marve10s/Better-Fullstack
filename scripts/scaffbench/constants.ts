@@ -26,7 +26,7 @@ export const VALIDATION_ENV_SCRUB_PATTERN =
 export const VALIDATION_OUTPUT_LIMIT_BYTES = 16 * 1024 * 1024;
 
 export const SCAFFBENCH_SPEC_SCORE_WEIGHTS = { core: 0.6, quality: 0.2, stack: 0.2 } as const;
-export const VALIDATION_CACHE_VERSION = 8;
+export const VALIDATION_CACHE_VERSION = 9;
 
 let RESOLVED_BF_VERSION = "latest";
 

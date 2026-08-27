@@ -19,7 +19,7 @@ const MODEL_LABELS: Record<string, string> = {
 const PROTOCOL = {
   suiteVersion: "3.0",
   harnessVersion: "3.1.0",
-  validationCacheVersion: 8,
+  validationCacheVersion: 9,
   promptVersion: "2026-08-21-scaffbench-3.1",
   resourceProfileId: "low-2w-v1",
 } as const;
@@ -90,7 +90,7 @@ function assertCohort(summary: Summary, dir: string) {
   }
   if (summary.options.qualityGate !== true || summary.options.noQualityGate === true) {
     throw new Error(
-      `${dir}: the board metric is the Full tier, so the source run must have quality gates ON ` +
+      `${dir}: the index scores lint and format, so the source run must have quality gates ON ` +
         "(this run recorded --no-quality-gate)",
     );
   }
@@ -136,7 +136,7 @@ function specCell(cell: SummaryAggregate | undefined) {
     trials: cell?.runs ?? 0,
     scored: cell?.scoredRuns ?? 0,
     core: cell?.passCount ?? 0,
-    full: cell?.qualityPassCount ?? 0,
+    quality: cell?.qualityPassCount ?? 0,
     score: cell && cell.scoredRuns > 0 ? cell.specScore : null,
   };
 }
@@ -209,9 +209,9 @@ export function buildRows(runSources: readonly string[]) {
       );
       const scoredCells = Object.values(results).filter((cell) => cell.scored > 0);
       const macroPasses = (
-        count: (cell: { scored: number; core: number; full: number }) => number,
+        count: (cell: { scored: number; core: number; quality: number }) => number,
       ) => Number(scoredCells.reduce((sum, cell) => sum + count(cell) / cell.scored, 0).toFixed(1));
-      const fullPasses = macroPasses((cell) => cell.full);
+      const qualityPasses = macroPasses((cell) => cell.quality);
       const corePasses = macroPasses((cell) => cell.core);
       const scoredSpecs = scoredCells.length;
       const pct = (passes: number) =>
@@ -229,13 +229,13 @@ export function buildRows(runSources: readonly string[]) {
         eligibility: topUp === "partial" ? "exploratory" : publicationEligibility(effortResults),
         trials: Math.max(...trialCounts.values()),
         topUp,
-        fullPasses,
+        qualityPasses,
         corePasses,
-        fullPassPct: pct(fullPasses),
+        qualityPassPct: pct(qualityPasses),
         corePassPct: pct(corePasses),
         scoredSpecs,
         wiredPct: Math.round(leaderboard.stackPercent),
-        scaffIndex: Math.round(leaderboard.index),
+        index: Math.round(leaderboard.index),
         totalCostUsd: costs.length > 0 ? Number(costs.reduce((a, b) => a + b, 0).toFixed(1)) : null,
         avgOutTokens: leaderboard.avgOutputTokens ?? null,
         medianMinutes:
@@ -248,8 +248,10 @@ export function buildRows(runSources: readonly string[]) {
   }
 
   rows.sort((a, b) => {
-    const fullDelta = (b.fullPassPct as number) - (a.fullPassPct as number);
-    return fullDelta !== 0 ? fullDelta : (b.scaffIndex as number) - (a.scaffIndex as number);
+    const indexDelta = (b.index as number) - (a.index as number);
+    return indexDelta !== 0
+      ? indexDelta
+      : (b.qualityPassPct as number) - (a.qualityPassPct as number);
   });
 
   const qualityGates = qualityGateFlags.length > 0 && qualityGateFlags.every(Boolean);
@@ -278,7 +280,7 @@ export type Scaffbench3SpecCell = {
   trials: number;
   scored: number;
   core: number;
-  full: number;
+  quality: number;
   score: number | null;
 };
 
@@ -299,13 +301,13 @@ export type Scaffbench3Row = {
   eligibility: "ranked" | "exploratory";
   trials: number;
   topUp: "none" | "uniform" | "partial";
-  fullPasses: number;
+  qualityPasses: number;
   corePasses: number;
-  fullPassPct: number;
+  qualityPassPct: number;
   corePassPct: number;
   scoredSpecs: number;
   wiredPct: number;
-  scaffIndex: number;
+  index: number;
   totalCostUsd: number | null;
   avgOutTokens: number | null;
   medianMinutes: number | null;

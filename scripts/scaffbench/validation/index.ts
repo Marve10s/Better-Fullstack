@@ -384,6 +384,17 @@ export function validateProject(
       return accepted;
     };
     const subOptions = { ...options, doctorCheck: false, routeCheck: false };
+    const bun = existsSync(`${process.env.HOME}/.bun/bin/bun`)
+      ? `${process.env.HOME}/.bun/bin/bun`
+      : "bun";
+    const installedRoots = new Set<string>();
+    const prerequisiteEnv = (root: string) => ({
+      PATH: [
+        path.join(root, "node_modules", ".bin"),
+        path.join(projectDir, "node_modules", ".bin"),
+        process.env.PATH ?? "",
+      ].join(path.delimiter),
+    });
 
     for (const [index, prerequisite] of (spec.prerequisiteCommands ?? []).entries()) {
       const [command, ...args] = prerequisite.command;
@@ -402,7 +413,23 @@ export function validateProject(
       }
       for (const root of roots) {
         const key = root === projectDir ? label : `${label}:${prefixFor(root)}`;
-        steps[key] = yield* commandStep(command, args, root);
+        const installRoot = [root, projectDir].find((dir) =>
+          existsSync(path.join(dir, "package.json")),
+        );
+        if (installRoot && !installedRoots.has(installRoot)) {
+          installedRoots.add(installRoot);
+          const installKey = `${key}:install`;
+          steps[installKey] = yield* commandStep(
+            bun,
+            ["install", "--concurrent-scripts=2", "--network-concurrency=8"],
+            installRoot,
+            { retryTransientNetwork: true },
+          );
+          if (!stepGreen(steps[installKey])) {
+            return buildProjectValidation(steps, qualityGateRequested);
+          }
+        }
+        steps[key] = yield* commandStep(command, args, root, { env: prerequisiteEnv(root) });
         if (!stepGreen(steps[key])) {
           return buildProjectValidation(steps, qualityGateRequested);
         }

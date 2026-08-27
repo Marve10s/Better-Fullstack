@@ -401,9 +401,10 @@ excluded; budget and generation-deadline exhaustion remain scored failures.
 
 "Pass@1" is the CORE pass rate, install + build + typecheck + native compile,
 i.e. does the project actually build and run. "Quality" is the stricter advisory
-tier (core + lint/format/test/doctor/route): a project can be Pass@1-green but
-Quality-red because it is mis-formatted or a style-lint warns. Formatting is a
-quality metric, never a brokenness verdict, so it does not move Pass@1. "Wired
+tier (core + lint/format; tests, doctor and route run and are reported but
+affect no score): a project can be Pass@1-green but Quality-red because it is
+mis-formatted or a style-lint warns. Formatting is a quality metric, never a
+brokenness verdict, so it does not move Pass@1. "Wired
 libs" is scored from the generated artifact (deps + imports + files);
 "Faithful" is the assisted-path bts.jsonc-vs-requested diagnostic.
 

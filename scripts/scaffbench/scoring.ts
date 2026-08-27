@@ -467,11 +467,15 @@ export function validationPassed(result: RunResult) {
   return stepsAllGreen(core);
 }
 
-const GRADED_QUALITY_STEPS = new Set(["lint", "format"]);
+const QUALITY_TIER_STEPS = new Set(["lint", "format"]);
+
+function isQualityTierStep(name: string) {
+  return QUALITY_TIER_STEPS.has(stepBaseName(name));
+}
 
 export function specScore(result: RunResult) {
   const core = validationPassed(result) ? 1 : 0;
-  const gates = applicableSteps(result, (name) => GRADED_QUALITY_STEPS.has(stepBaseName(name)));
+  const gates = applicableSteps(result, isQualityTierStep);
   const quality =
     gates.length === 0 ? core : gates.filter((gate) => stepsAllGreen([gate])).length / gates.length;
   const stack = result.stackScore.percent / 100;
@@ -489,7 +493,7 @@ export function qualityPassed(result: RunResult) {
     return "na" as const;
   }
   if (!validationPassed(result)) return false;
-  return stepsAllGreen(applicableSteps(result, isAdvisoryStep));
+  return stepsAllGreen(applicableSteps(result, isQualityTierStep));
 }
 
 const BUDGET_TERMINAL_REASON = /budget|cost[_-]?limit|max[_-]?cost|spend/i;
@@ -558,6 +562,7 @@ function hasProviderInfraEvidence(result: RunResult) {
   if (/(?:opencode-unknown|pi)-zero-usage-no-tools/.test(reason) && !result.claude.outputTokens) {
     return true;
   }
+  if (/opencode-unknown-zero-usage-step/.test(reason)) return true;
   const providerWithError =
     /\b(?:provider|upstream|endpoint|gateway)\b[^\n]{0,80}\b(?:error|fail(?:ed|ure)?|unavailable|timeout|timed out|rejected|denied)\b|\b(?:error|fail(?:ed|ure)?|unavailable|timeout|timed out|rejected|denied)\b[^\n]{0,80}\b(?:provider|upstream|endpoint|gateway)\b/i;
   const explicitInfraError =
