@@ -68,7 +68,6 @@ function useCapabilityEvidence(
 }
 
 const EVIDENCE_LABELS = {
-  listed: "Listed",
   generated: "Generated",
   "build-verified": "Build verified",
   "runtime-verified": "Runtime verified",
@@ -86,7 +85,7 @@ export function CapabilityEvidenceBadge({
   className?: string;
 }) {
   const evidence = useCapabilityEvidence(ecosystem, category, optionId);
-  if (!evidence) return null;
+  if (!evidence || evidence.evidenceLevel === "listed") return null;
   const warning =
     evidence.maturity !== "stable" || !["current", "unverified"].includes(evidence.freshness);
 

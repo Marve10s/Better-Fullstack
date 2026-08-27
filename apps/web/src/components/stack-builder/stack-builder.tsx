@@ -4007,21 +4007,6 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                                                             {m.builderDefault()}
                                                           </span>
                                                         )}
-                                                        {tech.legacy && (
-                                                          <Tooltip>
-                                                            <TooltipTrigger
-                                                              onClick={(e) => e.stopPropagation()}
-                                                              className="cursor-default"
-                                                            >
-                                                              <span className="rounded-sm border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 font-mono text-[9px] text-amber-500 dark:text-amber-400">
-                                                                {m.builderLegacy()}
-                                                              </span>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>
-                                                              {m.builderLegacyTooltip()}
-                                                            </TooltipContent>
-                                                          </Tooltip>
-                                                        )}
                                                       </div>
                                                       <div className="flex items-start gap-3">
                                                         {(tech.icon !== "" ||
@@ -4386,21 +4371,6 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                                                             <span className="absolute top-2 right-2 rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground">
                                                               {m.builderDefault()}
                                                             </span>
-                                                          )}
-                                                          {tech.legacy && (
-                                                            <Tooltip>
-                                                              <TooltipTrigger
-                                                                onClick={(e) => e.stopPropagation()}
-                                                                className="absolute top-2 right-2 cursor-default"
-                                                              >
-                                                                <span className="rounded-sm border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 font-mono text-[9px] text-amber-500 dark:text-amber-400">
-                                                                  {m.builderLegacy()}
-                                                                </span>
-                                                              </TooltipTrigger>
-                                                              <TooltipContent>
-                                                                {m.builderLegacyTooltip()}
-                                                              </TooltipContent>
-                                                            </Tooltip>
                                                           )}
                                                           <div className="flex items-start gap-3">
                                                             {(tech.icon !== "" ||
