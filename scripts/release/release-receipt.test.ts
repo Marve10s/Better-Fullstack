@@ -15,6 +15,7 @@ import {
   type UpgradeFixtureFile,
 } from "@scripts/release/release-fixture";
 import {
+  actualReleaseToolchains,
   createVerificationReceipt,
   PUBLIC_RECEIPT_VALIDITY_MS,
   REQUIRED_BUILD_PROOF_CASE_IDS,
@@ -78,6 +79,19 @@ test("the bundled receipt verifier runs outside the repository", async () => {
   } finally {
     await rm(outputDirectory, { force: true, recursive: true });
   }
+});
+
+test("toolchain detection ignores the repository package-manager policy", async () => {
+  const runner: CommandRunner = async (command, cwd) => {
+    const tool = command[0] as keyof typeof RELEASE_TOOLCHAINS;
+    if (tool === "pnpm" && cwd !== tmpdir()) {
+      return { exitCode: 1, stderr: "This project is configured to use bun", stdout: "" };
+    }
+    const version = tool === "node" ? `v${RELEASE_TOOLCHAINS.node}` : RELEASE_TOOLCHAINS[tool];
+    return { exitCode: 0, stderr: "", stdout: `${version}\n` };
+  };
+
+  await expect(actualReleaseToolchains(runner)).resolves.toEqual(RELEASE_TOOLCHAINS);
 });
 
 function packageHashes(bytes: Uint8Array) {
