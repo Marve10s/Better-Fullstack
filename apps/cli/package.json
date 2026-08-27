@@ -151,7 +151,6 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@better-fullstack/project-lifecycle": "^2.6.2",
     "@better-fullstack/template-generator": "^2.6.2",
     "@better-fullstack/types": "^2.6.2",
     "@clack/core": "^0.5.0",
@@ -172,6 +171,7 @@
     "zod": "4.4.3"
   },
   "devDependencies": {
+    "@better-fullstack/project-lifecycle": "workspace:*",
     "@modelcontextprotocol/client": "^2.0.0",
     "@types/bun": "^1.4.0",
     "@types/fs-extra": "^11.0.4",

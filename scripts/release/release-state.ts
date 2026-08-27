@@ -57,9 +57,16 @@ type PackageJson = {
   workspaces?: string[];
 };
 
+type WorkspacePackage = { directory: string; json: PackageJson };
+
 type PublishableWorkspacePackage = {
   directory: string;
   json: PackageJson & { name: string; version: string };
+};
+
+export type ReleaseBuildPlan = {
+  privateDependencies: WorkspacePackage[];
+  publishable: PublishableWorkspacePackage[];
 };
 
 export type CommandResult = { exitCode: number; stderr: string; stdout: string };
@@ -135,7 +142,7 @@ async function workspacePackageDirectories(root: string): Promise<string[]> {
   return directories.sort();
 }
 
-async function publishablePackages(root: string): Promise<PublishableWorkspacePackage[]> {
+export async function releaseBuildPlan(root: string): Promise<ReleaseBuildPlan> {
   const candidates = await workspacePackageDirectories(root);
   const inspected = await Promise.all(
     candidates.map(async (directory) => ({
@@ -143,6 +150,38 @@ async function publishablePackages(root: string): Promise<PublishableWorkspacePa
       json: await jsonFile<PackageJson>(join(directory, "package.json")),
     })),
   );
+  const publishable = publishablePackages(root, inspected);
+  return { privateDependencies: privateBuildDependencies(inspected, publishable), publishable };
+}
+
+function privateBuildDependencies(
+  all: WorkspacePackage[],
+  publishable: PublishableWorkspacePackage[],
+): WorkspacePackage[] {
+  const byName = new Map(all.flatMap((pkg) => (pkg.json.name ? [[pkg.json.name, pkg]] : [])));
+  const publishableNames = new Set(publishable.map((pkg) => pkg.json.name));
+  const result: WorkspacePackage[] = [];
+  const visited = new Set<string>();
+
+  function visit(pkg: WorkspacePackage) {
+    const dependencies = { ...pkg.json.dependencies, ...pkg.json.devDependencies };
+    for (const dependency of Object.keys(dependencies)) {
+      const internal = byName.get(dependency);
+      if (!internal || publishableNames.has(dependency) || visited.has(dependency)) continue;
+      visited.add(dependency);
+      visit(internal);
+      if (internal.json.scripts?.build) result.push(internal);
+    }
+  }
+
+  for (const pkg of publishable) visit(pkg);
+  return result;
+}
+
+function publishablePackages(
+  root: string,
+  inspected: WorkspacePackage[],
+): PublishableWorkspacePackage[] {
   const packages = inspected
     .filter((pkg) => pkg.json.private !== true)
     .map((pkg) => {
@@ -227,7 +266,7 @@ export async function prepareRelease(options: {
     throw new Error(`Invalid release version ${options.releaseVersion}`);
   }
 
-  const packages = await publishablePackages(root);
+  const { privateDependencies, publishable: packages } = await releaseBuildPlan(root);
   const cli = packages.find((pkg) => pkg.json.name === "create-better-fullstack");
   if (!cli) throw new Error("create-better-fullstack is not a publishable workspace package");
   if (cli.json.version !== options.releaseVersion) {
@@ -242,6 +281,11 @@ export async function prepareRelease(options: {
   }
   await rm(artifactDirectory, { force: true, recursive: true });
   await mkdir(join(artifactDirectory, "packages"), { recursive: true });
+
+  for (const pkg of privateDependencies) {
+    console.log(`Building private dependency ${pkg.json.name}`);
+    await requireSuccess(["bun", "run", "build"], pkg.directory);
+  }
 
   const artifacts: ReleasePackage[] = [];
   for (const [index, pkg] of packages.entries()) {

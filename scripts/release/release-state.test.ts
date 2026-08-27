@@ -10,6 +10,7 @@ import {
   loadAndVerifyManifest,
   publicationState,
   publishRelease,
+  releaseBuildPlan,
   RELEASE_TOOLCHAINS,
   type CommandRunner,
   type RegistryPackageState,
@@ -446,6 +447,63 @@ describe("release publication state", () => {
       );
     } finally {
       await rm(directory, { force: true, recursive: true });
+    }
+  });
+});
+
+async function workspaceFixture(packages: Record<string, object>) {
+  const root = await mkdtemp(join(tmpdir(), "release-plan-test-"));
+  await writeFile(
+    join(root, "package.json"),
+    JSON.stringify({ name: "root", private: true, workspaces: ["apps/*", "packages/*"] }),
+  );
+  await Promise.all(
+    Object.entries(packages).map(async ([directory, json]) => {
+      await mkdir(join(root, directory), { recursive: true });
+      await writeFile(join(root, directory, "package.json"), JSON.stringify(json));
+    }),
+  );
+  return root;
+}
+
+describe("release build plan", () => {
+  test("builds private workspace dependencies of publishable packages before them", async () => {
+    const root = await workspaceFixture({
+      "apps/cli": {
+        name: "create-better-fullstack",
+        version: "3.0.0",
+        scripts: { build: "true" },
+        dependencies: { "@better-fullstack/types": "^3.0.0" },
+        devDependencies: { "@better-fullstack/project-lifecycle": "workspace:*" },
+      },
+      "apps/web": { name: "web", private: true, scripts: { build: "true" } },
+      "packages/project-lifecycle": {
+        name: "@better-fullstack/project-lifecycle",
+        version: "3.0.0",
+        private: true,
+        scripts: { build: "true" },
+        devDependencies: { "@better-fullstack/private-base": "workspace:*" },
+      },
+      "packages/private-base": {
+        name: "@better-fullstack/private-base",
+        private: true,
+        scripts: { build: "true" },
+      },
+      "packages/private-tooling": { name: "@better-fullstack/tooling", private: true },
+      "packages/types": { name: "@better-fullstack/types", version: "3.0.0" },
+    });
+    try {
+      const plan = await releaseBuildPlan(root);
+      expect(plan.privateDependencies.map((pkg) => pkg.json.name)).toEqual([
+        "@better-fullstack/private-base",
+        "@better-fullstack/project-lifecycle",
+      ]);
+      expect(plan.publishable.map((pkg) => pkg.json.name)).toEqual([
+        "@better-fullstack/types",
+        "create-better-fullstack",
+      ]);
+    } finally {
+      await rm(root, { force: true, recursive: true });
     }
   });
 });

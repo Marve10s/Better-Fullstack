@@ -111,8 +111,6 @@ async function main(): Promise<void> {
 
   // Update package versions
   packageJson.version = newVersion;
-  const cliDependencies = packageJson.dependencies as Record<string, string>;
-  cliDependencies["@better-fullstack/project-lifecycle"] = `^${newVersion}`;
   await writeFile(CLI_PACKAGE_JSON_PATH, `${JSON.stringify(packageJson, null, 2)}\n`);
 
   // Update alias package version
@@ -167,7 +165,6 @@ This PR bumps the version to \`${newVersion}\`.
 ### Changes
 - Updated \`create-better-fullstack\` to v${newVersion}
 - Updated \`create-bts\` to v${newVersion}
-- Updated \`@better-fullstack/project-lifecycle\` to v${newVersion}
 - Updated \`@better-fullstack/types\` to v${newVersion}
 - Updated \`@better-fullstack/template-generator\` to v${newVersion}
 - Updated Better Fullstack plugin manifests to v${newVersion}

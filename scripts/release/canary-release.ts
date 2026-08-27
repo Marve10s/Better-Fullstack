@@ -212,15 +212,12 @@ async function main(): Promise<void> {
       `${JSON.stringify(projectLifecyclePackageJson, null, 2)}\n`,
     );
     const lifecycleSpin = spinner();
-    lifecycleSpin.start(
-      `Publishing @better-fullstack/project-lifecycle@${canaryVersion} (canary)...`,
-    );
+    lifecycleSpin.start("Building project-lifecycle package...");
     try {
       await $`cd packages/project-lifecycle && bun run build`;
-      await $`cd packages/project-lifecycle && bun publish --access public --tag canary`;
-      lifecycleSpin.stop("Project lifecycle package published");
+      lifecycleSpin.stop("Project lifecycle build complete");
     } catch (err) {
-      lifecycleSpin.stop("Project lifecycle package publish failed");
+      lifecycleSpin.stop("Project lifecycle build failed");
       throw err;
     }
 
@@ -256,7 +253,6 @@ async function main(): Promise<void> {
 
     // Update CLI package version and dependencies
     packageJson.version = canaryVersion;
-    packageJson.dependencies["@better-fullstack/project-lifecycle"] = canaryVersion;
     packageJson.dependencies["@better-fullstack/types"] = canaryVersion;
     packageJson.dependencies["@better-fullstack/template-generator"] = canaryVersion;
     await writeFile(CLI_PACKAGE_JSON_PATH, `${JSON.stringify(packageJson, null, 2)}\n`);
@@ -323,9 +319,6 @@ async function main(): Promise<void> {
     console.log(` NPM: https://www.npmjs.com/package/${packageName}/v/${canaryVersion}`);
     console.log(` NPM: https://www.npmjs.com/package/create-bts/v/${canaryVersion}`);
     console.log(` NPM: https://www.npmjs.com/package/@better-fullstack/types/v/${canaryVersion}`);
-    console.log(
-      ` NPM: https://www.npmjs.com/package/@better-fullstack/project-lifecycle/v/${canaryVersion}`,
-    );
     console.log(
       ` NPM: https://www.npmjs.com/package/@better-fullstack/template-generator/v/${canaryVersion}`,
     );

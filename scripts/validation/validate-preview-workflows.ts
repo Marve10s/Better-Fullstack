@@ -206,7 +206,6 @@ export function validateWorkflowDocuments(documents: Record<string, WorkflowDocu
   const identityRun = String(identityStep?.run ?? "");
   const identities = [
     'validate_package "$ARTIFACT_DIR/types.tgz" "@better-fullstack/types"',
-    'validate_package "$ARTIFACT_DIR/project-lifecycle.tgz" "@better-fullstack/project-lifecycle"',
     'validate_package "$ARTIFACT_DIR/template-generator.tgz" "@better-fullstack/template-generator"',
     'validate_package "$ARTIFACT_DIR/cli.tgz" "create-better-fullstack"',
     'validate_package "$ARTIFACT_DIR/create-bfs.tgz" "create-bfs"',

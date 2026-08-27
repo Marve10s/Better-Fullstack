@@ -4,7 +4,6 @@ import { $ } from "bun";
 const PACKAGES = [
   "create-better-fullstack",
   "create-bts",
-  "@better-fullstack/project-lifecycle",
   "@better-fullstack/types",
   "@better-fullstack/template-generator",
 ] as const;

@@ -136,7 +136,7 @@ jobs:
           NPM_CONFIG_CACHE: ${{ runner.temp }}/npm-cache
         run: |
           set -euo pipefail
-          expected_files=$'cli.tgz\ncreate-bfs.tgz\nproject-lifecycle.tgz\ntemplate-generator.tgz\ntypes.tgz'
+          expected_files=$'cli.tgz\ncreate-bfs.tgz\ntemplate-generator.tgz\ntypes.tgz'
           actual_files=$(find "$ARTIFACT_DIR" -mindepth 1 -maxdepth 1 -printf '%f\n' | sort)
           [[ "$actual_files" == "$expected_files" ]]
           while IFS= read -r file; do
@@ -151,7 +151,6 @@ jobs:
             [[ "$actual_name" == "$expected_name" && "$actual_version" == "$EXPECTED_VERSION" ]]
           }
           validate_package "$ARTIFACT_DIR/types.tgz" "@better-fullstack/types"
-          validate_package "$ARTIFACT_DIR/project-lifecycle.tgz" "@better-fullstack/project-lifecycle"
           validate_package "$ARTIFACT_DIR/template-generator.tgz" "@better-fullstack/template-generator"
           validate_package "$ARTIFACT_DIR/cli.tgz" "create-better-fullstack"
           validate_package "$ARTIFACT_DIR/create-bfs.tgz" "create-bfs"
@@ -178,7 +177,6 @@ jobs:
             fi
           }
           publish_package "$ARTIFACT_DIR/types.tgz" "@better-fullstack/types"
-          publish_package "$ARTIFACT_DIR/project-lifecycle.tgz" "@better-fullstack/project-lifecycle"
           publish_package "$ARTIFACT_DIR/template-generator.tgz" "@better-fullstack/template-generator"
           publish_package "$ARTIFACT_DIR/cli.tgz" "create-better-fullstack"
           publish_package "$ARTIFACT_DIR/create-bfs.tgz" "create-bfs"
