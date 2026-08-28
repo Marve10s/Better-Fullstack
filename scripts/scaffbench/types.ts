@@ -265,6 +265,7 @@ export type ScaffbenchOptions = {
   efforts: Effort[];
   paths: CreationPath[];
   specs: string[];
+  specsExplicit?: boolean;
   repeats: number;
   topUp?: number;
   outDir: string;

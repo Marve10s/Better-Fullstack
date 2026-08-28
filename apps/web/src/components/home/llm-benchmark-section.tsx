@@ -25,6 +25,7 @@ import type {
 
 import { OpenAIMark, ProviderLogo, type ProviderLogoId } from "@/components/home/provider-marks";
 import { SCAFFBENCH3_CELLS, SCAFFBENCH3_MODELS } from "@/components/home/scaffbench-3-board-data";
+import { isFreeModel } from "@/components/home/scaffbench-types";
 import { AgentCommandTabs } from "@/components/mcp/agent-command-tabs";
 import { SCAFFBENCH3_SPECS } from "@/components/scaffbench/scaffbench-3-data";
 import {
@@ -55,11 +56,6 @@ const headingStyle: CSSProperties = {
 };
 
 /** A run is unmetered when the provider billed nothing for any scored spec. */
-function isUnmeteredModel(modelKey: string): boolean {
-  const scored = SCAFFBENCH3_CELLS.filter((cell) => cell.modelKey === modelKey && cell.scored);
-  return scored.length > 0 && scored.every((cell) => cell.costUsd === 0);
-}
-
 // One color per model vendor, so a lab reads the same in the scatter and the
 // leaderboard. Light values are the darkened twins of the dark ones.
 const VENDOR_THEME_VARS = cn(
@@ -99,7 +95,7 @@ const BAR_TRACK_STYLE: CSSProperties = { backgroundColor: "var(--bar-track)" };
 
 // Model name and effort get a fixed, generous column so neither is ever clipped.
 const LEADERBOARD_GRID =
-  "grid grid-cols-[minmax(15rem,19rem)_minmax(8rem,1fr)_5rem_3.5rem_4.5rem_4rem_3rem_3.5rem] items-center gap-x-3";
+  "grid grid-cols-[minmax(15rem,19rem)_minmax(8rem,1fr)_5rem_3.5rem_4.5rem_4rem_3.5rem] items-center gap-x-3";
 
 const PASS_AXIS_TICKS: readonly number[] = [0, 20, 40, 60, 80, 100] as const;
 
@@ -111,20 +107,21 @@ interface ModelLeaderRow {
   color: string;
   logo?: ProviderLogoId;
   harness: string;
+  eligibility: ScaffbenchModel["eligibility"];
   /** ScaffBench Index, 0-100: difficulty-weighted mean of the per-spec graded scores. */
   score: number;
   time: string;
   costNum: number;
   cost: string;
   outTok: string;
-  steps: string;
   loc: string;
   rank?: number;
 }
 
 function annotateRanks(rows: ModelLeaderRow[]): ModelLeaderRow[] {
-  for (let i = 0; i < rows.length; i += 1) {
-    rows[i].rank = i + 1;
+  let rank = 0;
+  for (const row of rows) {
+    row.rank = row.eligibility === "ranked" ? (rank += 1) : undefined;
   }
   return rows;
 }
@@ -143,7 +140,10 @@ function mean(values: readonly number[]): number {
 }
 
 function sortLeaderRows(rows: ModelLeaderRow[]): ModelLeaderRow[] {
-  return [...rows].sort((a, b) => b.score - a.score || a.costNum - b.costNum);
+  const rankedFirst = (row: ModelLeaderRow) => (row.eligibility === "ranked" ? 0 : 1);
+  return [...rows].sort(
+    (a, b) => rankedFirst(a) - rankedFirst(b) || b.score - a.score || a.costNum - b.costNum,
+  );
 }
 
 const HARNESS_LABEL: Record<ScaffbenchHarness, string> = {
@@ -197,7 +197,6 @@ function computeScaffbenchModelRows(specs: ReadonlySet<string>): ModelLeaderRow[
     const locValues = scored
       .map((cell) => cell.lines)
       .filter((v): v is number => v !== null && v > 0);
-    const steps = scored.map((cell) => cell.steps).filter((v): v is number => v !== null && v > 0);
     return {
       key: model.key,
       label: model.label,
@@ -205,13 +204,13 @@ function computeScaffbenchModelRows(specs: ReadonlySet<string>): ModelLeaderRow[
       color: VENDOR_COLOR[model.vendor],
       logo: VENDOR_LOGO[model.vendor],
       harness: HARNESS_LABEL[model.harness],
+      eligibility: model.eligibility,
       score: scaffbenchIndex(scored),
       core: formatPercent(coreTally(scored).successes, coreTally(scored).trials),
       time: durations.length > 0 ? formatDuration(mean(durations)) : "–",
       costNum: costs.length > 0 ? mean(costs) : Number.POSITIVE_INFINITY,
       cost: costs.length === 0 || mean(costs) === 0 ? "–" : `$${mean(costs).toFixed(2)}`,
       outTok: tokens.length > 0 ? `${(mean(tokens) / 1000).toFixed(0)}k` : "–",
-      steps: steps.length > 0 ? String(Math.round(mean(steps))) : "–",
       loc: locValues.length > 0 ? `${(mean(locValues) / 1000).toFixed(1)}k` : "–",
     };
   });
@@ -370,7 +369,7 @@ function boxesOverlap(a: LabelBox, b: LabelBox): boolean {
   return a.x1 < b.x2 && b.x1 < a.x2 && a.y1 < b.y2 && b.y1 < a.y2;
 }
 
-type V2Metric = "tokens" | "cost" | "steps" | "time" | "lines";
+type V2Metric = "tokens" | "cost" | "time" | "lines";
 
 interface V2ChartTabSpec {
   id: V2Metric;
@@ -396,13 +395,6 @@ const V2_CHART_TABS: readonly V2ChartTabSpec[] = [
     axisLabel: "Avg cost per scaffold ($)",
   },
   {
-    id: "steps",
-    label: "Steps",
-    note: "direct + reliable ↗",
-    unit: "",
-    axisLabel: "Avg tool steps per scaffold",
-  },
-  {
     id: "time",
     label: "Time",
     note: "fast + reliable ↗",
@@ -423,7 +415,6 @@ interface PathMetrics {
   corePct: number;
   tokens: number | null;
   cost: number | null;
-  steps: number | null;
   time: number | null;
   lines: number | null;
   scoredCount: number;
@@ -437,7 +428,6 @@ function aggregatePathMetrics(sourceCells: readonly ScaffbenchCell[]): PathMetri
   const costs = scored
     .map((cell) => cell.costUsd)
     .filter((value): value is number => value !== null);
-  const steps = scored.map((cell) => cell.steps).filter((v): v is number => v !== null && v > 0);
   const durations = scored
     .map((cell) => cell.durationMs)
     .filter((value): value is number => value !== null && value > 0);
@@ -450,7 +440,6 @@ function aggregatePathMetrics(sourceCells: readonly ScaffbenchCell[]): PathMetri
     corePct: formatPercent(core.successes, core.trials),
     tokens: tokens.length > 0 ? mean(tokens) / 1000 : null,
     cost: costs.length > 0 ? mean(costs) : null,
-    steps: steps.length > 0 ? mean(steps) : null,
     time: durations.length > 0 ? mean(durations) / 60_000 : null,
     lines: lines.length > 0 ? mean(lines) / 1000 : null,
     scoredCount: scored.length,
@@ -460,14 +449,12 @@ function aggregatePathMetrics(sourceCells: readonly ScaffbenchCell[]): PathMetri
 type MetricBearing = {
   tokens: number | null;
   cost: number | null;
-  steps: number | null;
   time: number | null;
   lines: number | null;
 };
 
 function v2MetricValue(point: MetricBearing, metric: V2Metric): number | null {
   if (metric === "cost") return point.cost;
-  if (metric === "steps") return point.steps;
   if (metric === "time") return point.time;
   if (metric === "lines") return point.lines;
   return point.tokens;
@@ -475,7 +462,6 @@ function v2MetricValue(point: MetricBearing, metric: V2Metric): number | null {
 
 function formatV2Metric(point: MetricBearing, metric: V2Metric): string {
   if (metric === "cost") return point.cost === null ? "–" : `$${point.cost.toFixed(2)}`;
-  if (metric === "steps") return point.steps === null ? "–" : `${Math.round(point.steps)} steps`;
   if (metric === "time") return point.time === null ? "–" : `${point.time.toFixed(1)} min`;
   if (metric === "lines") return point.lines === null ? "–" : `${point.lines.toFixed(1)}k lines`;
   return point.tokens === null ? "–" : `${point.tokens.toFixed(1)}k tokens`;
@@ -483,7 +469,6 @@ function formatV2Metric(point: MetricBearing, metric: V2Metric): string {
 
 function formatV2MetricCompact(point: MetricBearing, metric: V2Metric): string {
   if (metric === "cost") return point.cost === null ? "–" : `$${point.cost.toFixed(2)}`;
-  if (metric === "steps") return point.steps === null ? "–" : `${Math.round(point.steps)}`;
   if (metric === "time") return point.time === null ? "–" : `${point.time.toFixed(1)}m`;
   if (metric === "lines") return point.lines === null ? "–" : `${point.lines.toFixed(1)}k`;
   return point.tokens === null ? "–" : `${point.tokens.toFixed(1)}k`;
@@ -540,7 +525,7 @@ function v2PointLabel(model: ScaffbenchModel): string {
 function computeV2ModelPoints(): V2ModelPoint[] {
   return BOARD_MODELS.map((model) => {
     const metrics = aggregatePathMetrics(cellsFor(model.key));
-    const free = isUnmeteredModel(model.key);
+    const free = isFreeModel(model);
     return {
       key: model.key,
       label: v2PointLabel(model),
@@ -1043,7 +1028,7 @@ function V2Dot({
           paintOrder="stroke"
           className="font-mono"
         >
-          {point.pass}%
+          {point.pass}
         </text>
         <text
           x={0}
@@ -1227,7 +1212,6 @@ function ScaffbenchLeaderboardCard({ className }: { className?: string } = {}) {
               <span className="text-right">Time</span>
               <span className="text-right">Avg cost</span>
               <span className="text-right">Out tok</span>
-              <span className="text-right">Steps</span>
               <span className="flex items-center justify-end gap-1">
                 LoC
                 <MetricHelp label="Lines of code">
@@ -1248,7 +1232,7 @@ function ScaffbenchLeaderboardCard({ className }: { className?: string } = {}) {
               <span aria-hidden />
               <div className="flex justify-between font-mono text-[10px] text-[#9c9a93] dark:text-[#6c6a61]">
                 {PASS_AXIS_TICKS.map((tick) => (
-                  <span key={tick}>{tick}%</span>
+                  <span key={tick}>{tick}</span>
                 ))}
               </div>
               <span aria-hidden />
@@ -1286,7 +1270,14 @@ function ModelLeaderRow({ row }: { row: ModelLeaderRow }) {
           <span className="w-5 shrink-0 text-right font-mono text-[11px] tabular-nums text-[#9c9a93] dark:text-[#6c6a61]">
             {row.rank}
           </span>
-        ) : null}
+        ) : (
+          <span
+            title="Exploratory row: its run provenance does not qualify it for a rank"
+            className="w-5 shrink-0 text-right font-mono text-[11px] text-[#9c9a93] dark:text-[#6c6a61]"
+          >
+            –
+          </span>
+        )}
         <ProviderLogo logo={row.logo} />
         <Tooltip delay={0}>
           <TooltipTrigger
@@ -1342,7 +1333,6 @@ function ModelLeaderRow({ row }: { row: ModelLeaderRow }) {
       <span className="text-right font-mono text-[13px] tabular-nums">{row.time}</span>
       <span className="text-right font-mono text-[13px] tabular-nums">{row.cost}</span>
       <span className="text-right font-mono text-[13px] tabular-nums">{row.outTok}</span>
-      <span className="text-right font-mono text-[13px] tabular-nums">{row.steps}</span>
       <span className="text-right font-mono text-[13px] tabular-nums">{row.loc}</span>
     </div>
   );
@@ -1357,7 +1347,7 @@ function ModelPicker({
   selectedKeys: readonly string[];
   onToggle: (key: string) => void;
 }) {
-  const firstFreeModelIndex = models.findIndex((model) => isUnmeteredModel(model.key));
+  const firstFreeModelIndex = models.findIndex((model) => isFreeModel(model));
 
   return (
     <DropdownMenu>

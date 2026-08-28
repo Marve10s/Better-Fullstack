@@ -442,7 +442,7 @@ describe("ScaffBench hardening 3: scoring", () => {
     });
     expect(specDifficulty("go-realtime-api")).toBe(1);
     expect(specDifficulty("frontier-polyglot-proto")).toBe(3);
-    expect(aggregateResults([easyPass, frontierFail]).leaderboard[0]?.index).toBe(40);
+    expect(aggregateResults([easyPass, frontierFail]).leaderboard[0]?.index).toBe(35);
   });
 
   it("3b keeps only the stack share for a failed build", () => {

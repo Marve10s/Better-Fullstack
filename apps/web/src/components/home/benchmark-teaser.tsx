@@ -4,10 +4,9 @@ import { Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { TbArrowRight as ArrowRight } from "react-icons/tb";
 
-import type { ScaffbenchVendor } from "@/components/home/scaffbench-types";
-
 import { ProviderLogo, type ProviderLogoId } from "@/components/home/provider-marks";
 import { SCAFFBENCH3_CELLS, SCAFFBENCH3_MODELS } from "@/components/home/scaffbench-3-board-data";
+import { isFreeModel, type ScaffbenchVendor } from "@/components/home/scaffbench-types";
 import { cn } from "@/lib/platform/utils";
 import { m } from "@/paraglide/messages.js";
 
@@ -40,7 +39,7 @@ function computeLeader(): BoardLeader | null {
   let best: BoardLeader | null = null;
   for (const model of SCAFFBENCH3_MODELS) {
     const scored = SCAFFBENCH3_CELLS.filter((cell) => cell.modelKey === model.key && cell.scored);
-    if (scored.length === 0) continue;
+    if (scored.length === 0 || model.eligibility !== "ranked") continue;
     const trials = scored.reduce((sum, cell) => sum + cell.scoredTrials, 0);
     const costs = scored.map((cell) => cell.costUsd).filter((v): v is number => v !== null);
     const durations = scored
@@ -49,7 +48,7 @@ function computeLeader(): BoardLeader | null {
     const leader: BoardLeader = {
       label: model.label,
       logo: VENDOR_LOGO[model.vendor],
-      isFree: costs.length > 0 && costs.every((cost) => cost === 0),
+      isFree: isFreeModel(model),
       core: Math.round((100 * scored.reduce((sum, c) => sum + c.passCount, 0)) / trials),
       score: model.sortIndex,
       costUsd: costs.length > 0 ? mean(costs) : null,

@@ -2,14 +2,14 @@ import { OPTION_CATEGORY_METADATA } from "@better-fullstack/types";
 import { describe, expect, it } from "bun:test";
 
 import { blogPostHead } from "@/lib/blog/seo";
-import { docsPageHead } from "@/lib/docs/seo";
-import { guidePageHead } from "@/lib/guides/seo";
 import {
   generateDocsLlmsTxt,
   generateLlmsFullTxt,
   generateLlmsTxt,
   generateMarkdownSitemap,
 } from "@/lib/content/llms";
+import { docsPageHead } from "@/lib/docs/seo";
+import { guidePageHead } from "@/lib/guides/seo";
 import { OPTION_COUNT_LABEL } from "@/lib/project/project-stats";
 import { NOINDEX_ROBOTS } from "@/lib/seo/robots";
 import { buildPageHead, canonicalUrl, getSiteJsonLd, SITE_NAME } from "@/lib/seo/seo";
@@ -204,14 +204,15 @@ describe("SEO contracts", () => {
         }),
       },
       {
-        title: `ScaffBench 2 | ${SITE_NAME}`,
-        url: "/blog/scaffbench-2",
+        title: `Drizzle vs Prisma for a fullstack starter | ${SITE_NAME}`,
+        url: "/blog/drizzle-vs-prisma",
         head: blogPostHead({
-          url: "/blog/scaffbench-2",
+          url: "/blog/drizzle-vs-prisma",
           frontmatter: {
-            title: "ScaffBench 2",
-            description: "Benchmarking fullstack scaffolding agents.",
-            date: "2026-06-26",
+            title: "Drizzle vs Prisma for a fullstack starter",
+            description:
+              "Choose Drizzle or Prisma by schema ownership, query style, migration workflow, deployment constraints, and team habits, not by a generic winner.",
+            date: "2026-07-30",
           },
         }),
       },

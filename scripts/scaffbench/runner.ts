@@ -139,6 +139,13 @@ function runScaffbenchUnlocked(options: ScaffbenchOptions, log: Log) {
     yield* fs.makeDirectory(options.outDir, { recursive: true });
     const existingSummary = yield* readExistingSummary(options.outDir);
     const recordedProtocol = recordedRunProtocol(existingSummary);
+    if (options.topUp !== undefined && (options.validateExisting || options.writeMatrixOnly)) {
+      return yield* Effect.fail(
+        new Error(
+          "--top-up generates new trials and cannot run in validate-only or matrix-only mode",
+        ),
+      );
+    }
     if (options.topUp !== undefined && recordedProtocol === undefined) {
       return yield* Effect.fail(
         new Error(
@@ -154,7 +161,12 @@ function runScaffbenchUnlocked(options: ScaffbenchOptions, log: Log) {
     const specs = selectedSpecs(runOptions.specs);
     const specOrderSeed = specShuffleSeed(runOptions);
     const topUpSpecIds =
-      options.topUp === undefined ? undefined : topUpSpecSelection(options.specs, runOptions.specs);
+      options.topUp === undefined
+        ? undefined
+        : topUpSpecSelection(
+            options.specsExplicit ? options.specs : runOptions.specs,
+            runOptions.specs,
+          );
     const previousTopUps = recordedProtocol?.topUps ?? [];
     const topUps =
       topUpSpecIds && options.topUp !== undefined
@@ -1174,6 +1186,7 @@ export function recordedRunOptions(summary: unknown): Partial<ScaffbenchOptions>
   const recorded: Partial<ScaffbenchOptions> = {};
   if (typeof options.model === "string") recorded.model = options.model;
   if (Number.isInteger(options.repeats)) recorded.repeats = options.repeats as number;
+  if (typeof options.maxBudgetUsd === "string") recorded.maxBudgetUsd = options.maxBudgetUsd;
   if (options.promptStyle === "explicit" || options.promptStyle === "natural") {
     recorded.promptStyle = options.promptStyle;
   }

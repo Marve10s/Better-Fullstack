@@ -1131,7 +1131,20 @@ describe("ScaffBench hardening round 3", () => {
   });
 
   it("Y parses --top-up as an extension of a recorded out-dir", () => {
-    expect(parseArgs(["--top-up", "3", "--out-dir", "x"])).toMatchObject({ topUp: 3, repeats: 1 });
+    expect(parseArgs(["--top-up", "3", "--out-dir", "x"])).toMatchObject({
+      topUp: 3,
+      repeats: 1,
+      specsExplicit: false,
+    });
+    expect(
+      parseArgs(["--top-up", "3", "--out-dir", "x", "--specs", "go-realtime-api"]).specsExplicit,
+    ).toBe(true);
+    expect(() => parseArgs(["--top-up", "3", "--out-dir", "x", "--validate-existing"])).toThrow(
+      /cannot be combined/,
+    );
+    expect(() => parseArgs(["--top-up", "3", "--out-dir", "x", "--write-matrix-only"])).toThrow(
+      /cannot be combined/,
+    );
     expect(() => parseArgs(["--top-up", "1", "--out-dir", "x"])).toThrow(/at least 2/);
     expect(() => parseArgs(["--top-up", "3", "--repeats", "3", "--out-dir", "x"])).toThrow(
       /cannot be combined/,
@@ -1197,7 +1210,7 @@ describe("ScaffBench hardening round 3", () => {
         scored: 2,
         core: 1,
         quality: 1,
-        score: 60,
+        score: 50,
       });
 
       await writePublishableRun(

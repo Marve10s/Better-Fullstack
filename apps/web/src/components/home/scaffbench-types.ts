@@ -56,3 +56,9 @@ export type ScaffbenchCell = {
   steps: number | null;
   durationMs: number | null;
 };
+
+/** Free tier is decided by the model id, never by a measured $0: subscription
+ *  adapters (opencode-go/*) also report zero cost for paid models. */
+export function isFreeModel(model: Pick<ScaffbenchModel, "model">): boolean {
+  return /(?:-free|:free)$/i.test(model.model);
+}

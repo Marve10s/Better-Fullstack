@@ -806,7 +806,7 @@ describe("ScaffBench 2 composite index", () => {
       macroPassRate: 50,
       stackPercent: 80,
       commandDisciplinePercent: 50,
-      index: 56,
+      index: 46,
       medianDurationMs: 1000,
       p95DurationMs: 3000,
     });

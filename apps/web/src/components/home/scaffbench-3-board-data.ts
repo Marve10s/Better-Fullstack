@@ -9,7 +9,9 @@
 // rebuilt with the current harness and the exact per-gate results replace it.
 // Gemini 3.7 Flash (low) is exact: computed by harness 3.1.0 under validator
 // cache v9 from testing/llm-benchmarks/v3/lane-3 on Zorro; agy reports no cost
-// or tokens, so those columns are empty by construction.
+// or tokens, so those columns are empty by construction. Its ts-svelte-edge-orpc
+// LoC is null until the archived project is re-measured with .svelte-kit excluded
+// from the walk; the run summary recorded the build output as 220,342 lines.
 import type { ScaffbenchCell, ScaffbenchModel } from "@web/components/home/scaffbench-types";
 
 export const SCAFFBENCH3_MODELS: readonly ScaffbenchModel[] = [
@@ -784,7 +786,7 @@ export const SCAFFBENCH3_CELLS: readonly ScaffbenchCell[] = [
     passCount: 0,
     qualityPassCount: 0,
     score: 20,
-    lines: 220342,
+    lines: null,
     costUsd: null,
     outTokens: null,
     steps: null,

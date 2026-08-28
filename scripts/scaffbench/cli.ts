@@ -88,6 +88,11 @@ export function parseArgs(argv: string[]): ScaffbenchOptions {
   if (topUp !== undefined && !requestedOutDir) {
     throw new Error("--top-up needs --out-dir pointing at the run to extend");
   }
+  if (topUp !== undefined && (args.has("validate-existing") || args.has("write-matrix-only"))) {
+    throw new Error(
+      "--top-up generates new trials and cannot be combined with --validate-existing or --write-matrix-only",
+    );
+  }
 
   return {
     command,
@@ -95,6 +100,7 @@ export function parseArgs(argv: string[]): ScaffbenchOptions {
     efforts: parseList("efforts", args.get("efforts"), EFFORT_VALUES, DEFAULT_EFFORTS),
     paths: parseList("paths", args.get("paths"), CREATION_PATH_VALUES, DEFAULT_PATHS),
     specs,
+    specsExplicit: args.has("specs") || args.has("spec"),
     repeats,
     topUp,
     outDir: requestedOutDir

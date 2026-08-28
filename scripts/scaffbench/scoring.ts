@@ -477,7 +477,9 @@ export function specScore(result: RunResult) {
   const core = validationPassed(result) ? 1 : 0;
   const gates = applicableSteps(result, isQualityTierStep);
   const quality =
-    gates.length === 0 ? core : gates.filter((gate) => stepsAllGreen([gate])).length / gates.length;
+    core === 0 || gates.length === 0
+      ? 0
+      : gates.filter((gate) => stepsAllGreen([gate])).length / gates.length;
   const stack = result.stackScore.percent / 100;
   const weights = SCAFFBENCH_SPEC_SCORE_WEIGHTS;
   return {

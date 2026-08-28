@@ -208,14 +208,13 @@ export function buildRows(runSources: readonly string[]) {
         specIds.map((specId) => [specId, specCell(cellsBySpec.get(specId))]),
       );
       const scoredCells = Object.values(results).filter((cell) => cell.scored > 0);
-      const macroPasses = (
+      const macroPassRate = (
         count: (cell: { scored: number; core: number; quality: number }) => number,
-      ) => Number(scoredCells.reduce((sum, cell) => sum + count(cell) / cell.scored, 0).toFixed(1));
-      const qualityPasses = macroPasses((cell) => cell.quality);
-      const corePasses = macroPasses((cell) => cell.core);
+      ) => scoredCells.reduce((sum, cell) => sum + count(cell) / cell.scored, 0);
+      const qualityRate = macroPassRate((cell) => cell.quality);
+      const coreRate = macroPassRate((cell) => cell.core);
       const scoredSpecs = scoredCells.length;
-      const pct = (passes: number) =>
-        scoredSpecs > 0 ? Math.round((100 * passes) / scoredSpecs) : 0;
+      const pct = (rate: number) => (scoredSpecs > 0 ? Math.round((100 * rate) / scoredSpecs) : 0);
       const costs = effortResults
         .map((result) => result.claude.totalCostUsd)
         .filter((value): value is number => typeof value === "number");
@@ -229,10 +228,10 @@ export function buildRows(runSources: readonly string[]) {
         eligibility: topUp === "partial" ? "exploratory" : publicationEligibility(effortResults),
         trials: Math.max(...trialCounts.values()),
         topUp,
-        qualityPasses,
-        corePasses,
-        qualityPassPct: pct(qualityPasses),
-        corePassPct: pct(corePasses),
+        qualityPasses: Number(qualityRate.toFixed(1)),
+        corePasses: Number(coreRate.toFixed(1)),
+        qualityPassPct: pct(qualityRate),
+        corePassPct: pct(coreRate),
         scoredSpecs,
         wiredPct: Math.round(leaderboard.stackPercent),
         index: Math.round(leaderboard.index),
@@ -258,12 +257,13 @@ export function buildRows(runSources: readonly string[]) {
   if (launchRepeats.size !== 1) {
     throw new Error(`published rows disagree on launch repeats (${[...launchRepeats].join(", ")})`);
   }
-  const trialsPerSpec = [...launchRepeats][0]!;
-  return { rows, generatedAt, qualityGates, trialsPerSpec };
+  const launchRepeatsValue = [...launchRepeats][0]!;
+  const trialsPerSpec = Math.max(launchRepeatsValue, ...rows.map((row) => row.trials as number));
+  return { rows, generatedAt, qualityGates, launchRepeats: launchRepeatsValue, trialsPerSpec };
 }
 
 function main() {
-  const { rows, generatedAt, qualityGates, trialsPerSpec } = buildRows(RUN_SOURCES);
+  const { rows, generatedAt, qualityGates, launchRepeats, trialsPerSpec } = buildRows(RUN_SOURCES);
 
   const target = "apps/web/src/components/scaffbench/scaffbench-3-data.ts";
   const current = readFileSync(target, "utf8");
@@ -315,7 +315,15 @@ export type Scaffbench3Row = {
 };
 
 export const SCAFFBENCH3_META = ${JSON.stringify(
-    { ...PROTOCOL, trialsPerSpec, path: "prompt", qualityGates, generatedAt, preview: false },
+    {
+      ...PROTOCOL,
+      launchRepeats,
+      trialsPerSpec,
+      path: "prompt",
+      qualityGates,
+      generatedAt,
+      preview: false,
+    },
     null,
     2,
   )} as const;
