@@ -1201,12 +1201,13 @@ function ScaffbenchLeaderboardCard({ className }: { className?: string } = {}) {
                 <MetricHelp label="ScaffBench Index">
                   Every spec earns a graded score: 0.6 when the project installs, builds,
                   type-checks and compiles on a clean machine, 0.2 for the share of lint and format
-                  gates that pass, and 0.2 for the share of the spec's required libraries it
-                  actually wired in: dependencies, imports and files, not names mentioned in
-                  passing. The index is the mean over 13 specs, weighted by spec difficulty (1 easy,
-                  2 hard, 3 frontier). Tests, cost, time and lines of code are shown but never
-                  scored. The small +N and the faded extension on a bar show how far the plain build
-                  rate sits above the index.
+                  gates that pass, and 0.2 for the stack score: the share of the spec's required
+                  libraries actually wired in (dependencies, imports and files, not names mentioned
+                  in passing), minus every trap or restraint marker it broke, such as a forbidden
+                  ORM or build tool. The index is the mean over 13 specs, weighted by spec
+                  difficulty (1 easy, 2 hard, 3 frontier). Tests, cost, time and lines of code are
+                  shown but never scored. The small +N and the faded extension on a bar show how far
+                  the plain build rate sits above the index.
                 </MetricHelp>
               </span>
               <span className="text-right">Time</span>

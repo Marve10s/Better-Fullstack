@@ -5,8 +5,9 @@
 // Scoring): 0.6 Core + 0.2 lint/format share + 0.2 stack per spec, weighted by
 // spec difficulty. GLM 5.3 Flash is exact (per-gate results in its run report).
 // GPT-5.6 Luna is the lower bound (73; upper 83): its cells record Full only, so
-// every Core-only spec counts lint and format as red until the run summary is
-// rebuilt with the current harness and the exact per-gate results replace it.
+// every Core-only spec counts lint and format as red. The row stays exploratory,
+// unranked, until the run summary is rebuilt with the current harness and the
+// exact per-gate results replace the bound.
 // Gemini 3.7 Flash (low) is exact: computed by harness 3.1.0 under validator
 // cache v9 from testing/llm-benchmarks/v3/lane-3 on Zorro; agy reports no cost
 // or tokens, so those columns are empty by construction. Its ts-svelte-edge-orpc
@@ -24,7 +25,8 @@ export const SCAFFBENCH3_MODELS: readonly ScaffbenchModel[] = [
     vendor: "openai",
     label: "GPT-5.6 Luna",
     sortIndex: 73,
-    eligibility: "ranked",
+    eligibility: "exploratory",
+    free: false,
   },
   {
     key: "glm-5.3-flash|high",
@@ -36,6 +38,7 @@ export const SCAFFBENCH3_MODELS: readonly ScaffbenchModel[] = [
     label: "GLM 5.3 Flash",
     sortIndex: 58,
     eligibility: "exploratory",
+    free: true,
   },
   {
     key: "gemini-3.7-flash|low",
@@ -47,6 +50,7 @@ export const SCAFFBENCH3_MODELS: readonly ScaffbenchModel[] = [
     label: "Gemini 3.7 Flash",
     sortIndex: 63,
     eligibility: "ranked",
+    free: false,
   },
 ];
 

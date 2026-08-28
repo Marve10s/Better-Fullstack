@@ -27,6 +27,9 @@ export type ScaffbenchModel = {
   sortIndex: number;
   /** "ranked" needs >=3 consistent trials per cell. */
   eligibility: "ranked" | "exploratory";
+  /** Free tier, carried explicitly because the display id can drop the source
+   *  alias (GLM 5.3 Flash ran as the free opencode/x-preview-f-free). */
+  free: boolean;
 };
 
 export type ScaffbenchCell = {
@@ -57,8 +60,8 @@ export type ScaffbenchCell = {
   durationMs: number | null;
 };
 
-/** Free tier is decided by the model id, never by a measured $0: subscription
+/** Free tier comes from row metadata, never from a measured $0: subscription
  *  adapters (opencode-go/*) also report zero cost for paid models. */
-export function isFreeModel(model: Pick<ScaffbenchModel, "model">): boolean {
-  return /(?:-free|:free)$/i.test(model.model);
+export function isFreeModel(model: Pick<ScaffbenchModel, "free">): boolean {
+  return model.free;
 }
